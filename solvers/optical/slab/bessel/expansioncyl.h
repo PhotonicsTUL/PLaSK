@@ -105,7 +105,7 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     bool gain_connected;
 
     /// Obtained gain
-    LazyData<double> gain;
+    LazyData<Tensor2<double>> gain;
 
     /// Matrices with computed integrals necessary to construct RE and RH matrices
     struct Integrals {

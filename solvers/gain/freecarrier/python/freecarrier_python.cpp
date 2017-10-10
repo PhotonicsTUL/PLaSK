@@ -89,7 +89,57 @@ static shared_ptr<GainSpectrum<GeometryT>> FreeCarrierGetGainSpectrum2(FreeCarri
 
 template <typename GeometryT>
 static py::object FreeCarrierGainSpectrum__call__(GainSpectrum<GeometryT>& self, py::object wavelengths) {
-   return PARALLEL_UFUNC<double>([&](double x){return self.getGain(x);}, wavelengths);
+   // return PARALLEL_UFUNC<double>([&](double x){return self.getGain(x);}, wavelengths);
+    try {
+        return py::object(self.getGain(py::extract<double>(wavelengths)));
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+
+        PyArrayObject* inarr = (PyArrayObject*)PyArray_FROM_OT(wavelengths.ptr(), NPY_DOUBLE);
+        if (inarr == NULL || PyArray_TYPE(inarr) != NPY_DOUBLE) {
+            Py_XDECREF(inarr);
+            throw TypeError("{}: Wavelengths for spectrum must be a scalar float or one-dimensional array of floats",
+                            self.solver->getId());
+        }
+        if(PyArray_NDIM(inarr) != 1) {
+            Py_DECREF(inarr);
+            throw TypeError("{}: Wavelengths for spectrum must be a scalar float or one-dimensional array of floats",
+                            self.solver->getId());
+        }
+
+        npy_intp size = PyArray_DIMS(inarr)[0];
+        npy_intp dims[] = { size, 2 };
+        PyObject* outarr = PyArray_SimpleNew(2, dims, NPY_DOUBLE);
+        if (outarr == nullptr) {
+            Py_DECREF(inarr);
+            throw plask::CriticalException("Cannot create array for gain");
+        }
+
+        double* indata = static_cast<double*>(PyArray_DATA(inarr));
+        Tensor2<double>* outdata = static_cast<Tensor2<double>*>(PyArray_DATA((PyArrayObject*)outarr));
+
+        npy_intp instride = PyArray_STRIDES(inarr)[0] / sizeof(double);
+
+        std::exception_ptr error;
+
+        #pragma omp parallel for
+        for (npy_intp i = 0; i < size; ++i) {
+            if (!error) try {
+                outdata[i] = self.getGain(indata[i*instride]);
+            } catch (...) {
+                #pragma omp critical
+                error = std::current_exception();
+            }
+        }
+        if (error) {
+            Py_XDECREF(inarr);
+            std::rethrow_exception(error);
+        }
+
+        Py_DECREF(inarr);
+
+        return py::object(py::handle<>(outarr));
+    }
 }
 
 

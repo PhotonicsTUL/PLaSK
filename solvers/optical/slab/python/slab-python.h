@@ -49,7 +49,7 @@ static inline py::object arrayFromVec2D(cvector data, bool sep, int dim=1) {
     npy_intp strides[] = { strid * sizeof(dcomplex), sizeof(dcomplex) };
     PyObject* arr = PyArray_New(&PyArray_Type, dim, dims, type, strides, (void*)data.data(), 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException("Cannot create array from field coefficients");
-    DataVectorWrap<const dcomplex,2> wrap(data);
+    PythonDataVector<const dcomplex,2> wrap(data);
     py::object odata(wrap); py::incref(odata.ptr());
     PyArray_SetBaseObject((PyArrayObject*)arr, odata.ptr()); // Make sure the data vector stays alive as long as the array
     return py::object(py::handle<>(arr));
@@ -349,8 +349,14 @@ inline void export_base(Class solver) {
     solver.template add_receiver<ReceiverFor<Gain, typename Solver::SpaceType>, Solver>("inGain", &Solver::inGain, "");
     solver.add_provider("outRefractiveIndex", &Solver::outRefractiveIndex, "");
     solver.add_provider("outLightMagnitude", &Solver::outLightMagnitude, "");
-    solver.add_provider("outElectricField", &Solver::outElectricField, "");
-    solver.add_provider("outMagneticField", &Solver::outMagneticField, "");
+    solver.add_provider("outLightE", &Solver::outLightE, "");
+    solver.def_readonly("outElectricField", reinterpret_cast<ProviderFor<LightE, typename Solver::SpaceType> Solver::*>(&Solver::outLightE),
+            "Alias for :attr:`outLightE`.");
+    solver.add_provider("outLightH", &Solver::outLightH, "");
+    solver.def_readonly("outMagneticField", reinterpret_cast<ProviderFor<LightH, typename Solver::SpaceType> Solver::*>(&Solver::outLightH),
+            "Alias for :attr:`outLightH`.");
+    solver.add_provider("outElectricField", &Solver::outLightE, "This is an alias for :attr:`outLightE`.");
+    solver.add_provider("outMagnrticField", &Solver::outLightH, "This is an alias for :attr:`outLightH`.");
     solver.def_readwrite("root", &Solver::root,
                          "Configuration of the root searching algorithm.\n\n"
                          ROOTDIGGER_ATTRS_DOC

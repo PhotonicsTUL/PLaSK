@@ -371,13 +371,13 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                     if (gain_connected && solver->lgained[layer]) {
                         auto roles = geometry->getRolesAt(vec(long_mesh->at(l), tran_mesh->at(t), matv));
                         if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-                            double g = 0.; int ng = 0;
+                            Tensor2<double> g = 0.; int ng = 0;
                             for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->vert()->size(); ++v, ++k)
                                 if (solver->stack[k] == layer) { g += gain[v]; ng++; }
-                            double ni = glam * g/ng * (0.25e-7/M_PI);
-                            cell[j].c00.imag(ni);
-                            cell[j].c11.imag(ni);
-                            cell[j].c22.imag(ni);
+                            Tensor2<double> ni = glam * g/ng * (0.25e-7/M_PI);
+                            cell[j].c00.imag(ni.c00);
+                            cell[j].c11.imag(ni.c00);
+                            cell[j].c22.imag(ni.c11);
                             cell[j].c01.imag(0.);
                         }
                     }

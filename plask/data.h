@@ -17,12 +17,13 @@ This file contains classes which can hold (or points to) datas.
 
 #include "memalloc.h"
 #include "exceptions.h"
+#include "log/log.h"
 
 #include <boost/type_traits.hpp>
 
 namespace plask {
 
-namespace hyman {
+namespace detail {
 
 #if defined(__clang__) || defined(__INTEL_COMPILER) || !defined(__GNUC__) || __GNUC__ > 4
 // clang and intel both define fake __GNUC__ see http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
@@ -127,7 +128,7 @@ struct DataVector {
     typedef typename std::remove_const<T>::type VT;
     typedef const T CT;
 
-    typedef hyman::DataVectorGC Gc;
+    typedef detail::DataVectorGC Gc;
   private:
 
     std::size_t size_;                  ///< size of the stored data
@@ -138,7 +139,7 @@ struct DataVector {
     void dec_ref() {    // see http://www.boost.org/doc/libs/1_53_0/doc/html/atomic/usage_examples.html "Reference counting" for optimal memory access description
         if (gc_ && gc_->count.fetch_sub(1, std::memory_order_release) == 1) {
             std::atomic_thread_fence(std::memory_order_acquire);
-            hyman::destroy_array(data_, data_ + size_);
+            detail::destroy_array(data_, data_ + size_);
             gc_->free(reinterpret_cast<void*>(const_cast<VT*>(data_)));
             delete gc_;
         }
@@ -169,7 +170,7 @@ struct DataVector {
      * @param size total size of the data
      */
     explicit DataVector(std::size_t size): size_(size), gc_(new Gc(1)), data_(aligned_malloc<T>(size)) {
-        hyman::construct_array(data_, data_ + size);
+        detail::construct_array(data_, data_ + size);
     }
 
     /**
@@ -189,26 +190,34 @@ struct DataVector {
      * Copy constructor. Only makes a shallow copy (doesn't copy data).
      * @param src data source
      */
-    DataVector(const DataVector<T>& src): size_(src.size_), gc_(src.gc_), data_(src.data_) { inc_ref(); }
+    DataVector(const DataVector<CT>& src): size_(src.size_), gc_(src.gc_), data_(const_cast<T*>(src.data_)) { inc_ref(); }
 
-    /**
+     /**
      * Copy constructor. Only makes a shallow copy (doesn't copy data).
      * @param src data source
      */
+    DataVector(const DataVector<VT>& src): size_(src.size_), gc_(src.gc_), data_(const_cast<T*>(src.data_)) { inc_ref(); }
+
+    /**
+     * Copy constructor. Due to the types incomatibilites it does copy data.
+     * @param src data source
+     */
     template <typename TS>
-    DataVector(const DataVector<TS>& src):
-        size_(src.size_), gc_(src.gc_), data_(src.data_) { inc_ref(); }
+    DataVector(const DataVector<TS>& src): size_(src.size()), gc_(new Gc(1)), data_(aligned_malloc<T>(src.size())) {
+        write_debug("copying data in constructor");
+        std::copy(src.begin(), src.end(), const_cast<VT*>(data_));
+    }
 
     /**
      * Assign operator. Only makes a shallow copy (doesn't copy data).
      * @param M data source
      * @return *this
      */
-    DataVector<T>& operator=(const DataVector<T>& M) {  //TODO maybe not needed?
-        const_cast<DataVector<T>&>(M).inc_ref();    // must be called before dec_ref in case of self-asigment with 1 reference
+    DataVector<T>& operator=(const DataVector<CT>& M) {
+        const_cast<DataVector<CT>&>(M).inc_ref();   // must be called before dec_ref in case of self-asigment with 1 reference
         this->dec_ref();                            // release old content, this can delete the old data
         size_ = M.size_;
-        data_ = M.data_;
+        data_ = const_cast<T*>(M.data_);
         gc_ = M.gc_;
         return *this;
     }
@@ -218,12 +227,11 @@ struct DataVector {
      * @param M data source
      * @return *this
      */
-    template <typename TS>
-    DataVector<T>& operator=(const DataVector<TS>& M) {
-        const_cast<DataVector<TS>&>(M).inc_ref();   // must be called before dec_ref in case of self-asigment with 1 reference
-        this->dec_ref();                            // release old content, this can delete old data
+    DataVector<T>& operator=(const DataVector<VT>& M) {
+        const_cast<DataVector<VT>&>(M).inc_ref();   // must be called before dec_ref in case of self-asigment with 1 reference
+        this->dec_ref();                            // release old content, this can delete the old data
         size_ = M.size_;
-        data_ = M.data_;
+        data_ = const_cast<T*>(M.data_);
         gc_ = M.gc_;
         return *this;
     }
@@ -232,7 +240,7 @@ struct DataVector {
      * Move constructor.
      * @param src data to move
      */
-    DataVector(DataVector<T>&& src) noexcept: size_(src.size_), gc_(src.gc_), data_(src.data_) {
+    DataVector(DataVector<CT>&& src) noexcept: size_(src.size_), gc_(src.gc_), data_(const_cast<T*>(src.data_)) {
         src.gc_ = nullptr;
     }
 
@@ -240,8 +248,7 @@ struct DataVector {
      * Move constructor.
      * @param src data to move
      */
-    template <typename TS>
-    DataVector(DataVector<TS>&& src) noexcept: size_(src.size_), gc_(src.gc_), data_(src.data_) {
+    DataVector(DataVector<VT>&& src) noexcept: size_(src.size_), gc_(src.gc_), data_(const_cast<T*>(src.data_)) {
         src.gc_ = nullptr;
     }
 
@@ -252,21 +259,6 @@ struct DataVector {
      */
     DataVector<T>& operator=(DataVector<T>&& src) noexcept {
         swap(src);
-        return *this;
-    }
-
-    /**
-     * Move operator.
-     * @param src data source
-     * @return *this
-     */
-    template <typename TS>
-    DataVector<T>& operator=(DataVector<TS>&& src) {
-        this->dec_ref();
-        size_ = std::move(src.size_);
-        gc_ = std::move(src.gc_);
-        data_ = std::move(src.data_);
-        src.gc_ = nullptr;
         return *this;
     }
 
@@ -388,7 +380,7 @@ struct DataVector {
         //    size == size_ && gc_ && gc_->count == 1 && ! gc_->deleter) return;
         dec_ref();
         data_ = aligned_malloc<T>(size);
-        hyman::construct_array(data_, data_ + size);
+        detail::construct_array(data_, data_ + size);
         gc_ = new Gc(1);
         size_ = size;
     }

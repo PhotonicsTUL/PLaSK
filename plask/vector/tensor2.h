@@ -9,6 +9,7 @@ This file contains implementation of tensor in 2D space.
 #include <boost/concept_check.hpp>
 
 #include "../math.h"
+#include "2d.h"
 
 namespace plask {
 
@@ -57,6 +58,12 @@ struct Tensor2 {
      */
     template <typename T0, typename T1>
     Tensor2(const std::pair<T0,T1>& comp): c00(comp.first), c11(comp.second) {}
+
+    /**
+     * Construct tensor from 2D vector
+     * \param vec vector
+     */
+    Tensor2(const Vec<2,T>& vec): c00(vec.c0), c11(vec.c1) {}
 
     /// Convert to std::tuple
     operator std::tuple<T,T>() const {

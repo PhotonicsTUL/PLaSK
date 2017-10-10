@@ -306,13 +306,16 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
      * \param interp interpolation method
      * \return gain distribution
      */
-    const LazyData<double> getGainData(Gain::EnumType what, const shared_ptr<const MeshD<2>>& dst_mesh, double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
+    const LazyData<Tensor2<double>> getGainData(Gain::EnumType what, const shared_ptr<const MeshD<2>>& dst_mesh,
+                                                double wavelength, InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
     /**
      * Compute the energy levels.
      * \return energy levels for specified active region
      */
-    const LazyData<std::vector<double>> getEnergyLevels(EnergyLevels::EnumType which, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod interp=INTERPOLATION_DEFAULT);
+    const LazyData<std::vector<double>> getEnergyLevels(EnergyLevels::EnumType which,
+                                                        const shared_ptr<const MeshD<2>>& dst_mesh,
+                                                        InterpolationMethod interp=INTERPOLATION_DEFAULT);
 
   public:
 
@@ -339,10 +342,10 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
     void findFermiLevels(double& Fc, double& Fv, double n, double T, const ActiveRegionParams& params) const;
 
     /// Find gain before convolution
-    double getGain0(double hw, double Fc, double Fv, double T, double nr, const ActiveRegionParams& params) const;
+    Tensor2<double> getGain0(double hw, double Fc, double Fv, double T, double nr, const ActiveRegionParams& params) const;
 
     /// Find gain after convolution
-    double getGain(double hw, double Fc, double Fv, double T, double nr, const ActiveRegionParams& params) const;
+    Tensor2<double> getGain(double hw, double Fc, double Fv, double T, double nr, const ActiveRegionParams& params) const;
 
     double getT0() const { return T0; }
     void setT0(double T) { T0 = T; this->invalidate(); }
@@ -429,7 +432,7 @@ struct GainSpectrum {
      * \param wavelength wavelength to get gain
      * \return gain
      */
-    double getGain(double wavelength) const {
+    Tensor2<double> getGain(double wavelength) const {
         double nr = solver->regions[reg].averageNr(wavelength, temp, conc);
         return solver->getGain(phys::h_eVc1e9 / wavelength, Fc, Fv, temp, nr, *params);
     }

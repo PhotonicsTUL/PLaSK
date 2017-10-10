@@ -159,7 +159,8 @@
 
   providers:
   - outLightMagnitude
-  - outElectricField
+  - outLightE
+  - outElectricField: LightE
   - outRefractiveIndex
   - outHeat
   - outNeff: EffectiveIndex
@@ -254,7 +255,7 @@
 
   providers:
   - outLightMagnitude
-  - outElectricField
+  - outElectricField: LightE
   - outRefractiveIndex
   - outHeat
   - outLoss: ModalLoss

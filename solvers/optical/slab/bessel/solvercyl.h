@@ -224,8 +224,8 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         outWavelength.fireChanged();
         outLoss.fireChanged();
         outLightMagnitude.fireChanged();
-        outElectricField.fireChanged();
-        outMagneticField.fireChanged();
+        outLightE.fireChanged();
+        outLightH.fireChanged();
         return modes.size()-1;
     }
 

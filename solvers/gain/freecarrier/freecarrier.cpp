@@ -663,39 +663,41 @@ void FreeCarrierGainSolver<GeometryT>::findFermiLevels(double& Fc, double& Fv, d
 
 
 template <typename GeometryT>
-double FreeCarrierGainSolver<GeometryT>::getGain0(double hw, double Fc, double Fv, double T, double nr,
+Tensor2<double> FreeCarrierGainSolver<GeometryT>::getGain0(double hw, double Fc, double Fv, double T, double nr,
                                                   const ActiveRegionParams& params) const
 {
     constexpr double fac = 1e4 * phys::qe*phys::qe / (2. * phys::c * phys::epsilon0 * phys::hb_J); // 1e4: 1/µm -> 1/cm
     const double ikT = (1./phys::kB_eV) / T;
-    const double Dlt = 2. * (hw - params.Eg);
+    const double Dhw = hw - params.Eg;
 
-    double g = 0.;
+    Tensor2<double> g(0., 0.);
 
     for (size_t i = 0; i < params.nhh; ++i) {
         const double Ec = params.levels[EL][i].E, Ev = params.levels[HH][i].E;
         const double Ep = hw - (Ec - Ev);
         if (Ep < 0.) continue;
-        const double pp = 1. - ((Dlt > 0.)? Ep / Dlt : 0.);
+        const double sin2 = (Dhw > 0.)? Ep / Dhw : 0.;
+        const Tensor2<double> pp(1. - 0.5*sin2, sin2);
         const double mu = 1. / (1. / params.levels[EL][i].M.c00 + 1. / params.levels[HH][i].M.c00);
         const double Ecp = Ec + Ep * mu / params.levels[EL][i].M.c00, Evp = Ev - Ep * mu / params.levels[HH][i].M.c00;
-        g += mu * pp * (1. / (exp(ikT*(Ecp-Fc)) + 1) - 1. / (exp(ikT*(Evp-Fv)) + 1));
+        g += mu * (1. / (exp(ikT*(Ecp-Fc)) + 1) - 1. / (exp(ikT*(Evp-Fv)) + 1)) * pp;
     }
 
     for (size_t i = 0; i < params.nlh; ++i) {
         const double Ec = params.levels[EL][i].E, Ev = params.levels[LH][i].E;
         const double Ep = hw - (Ec - Ev);
         if (Ep < 0.) continue;
-        const double pp = 0.3333333333333333333333 + ((Dlt > 0.)? Ep / Dlt : 0.);
+        const double sin2 = (Dhw > 0.)? Ep / Dhw : 0.;
+        const Tensor2<double> pp(0.3333333333333333333333 + 0.5*sin2, 1.3333333333333333333333 - sin2);
         const double mu = 1. / (1. / params.levels[EL][i].M.c00 + 1. / params.levels[LH][i].M.c00);
         const double Ecp = Ec + Ep * mu / params.levels[EL][i].M.c00, Evp = Ev - Ep * mu / params.levels[LH][i].M.c00;
-        g += mu * pp * (1. / (exp(ikT*(Ecp-Fc)) + 1) - 1. / (exp(ikT*(Evp-Fv)) + 1));
+        g += mu * (1. / (exp(ikT*(Ecp-Fc)) + 1) - 1. / (exp(ikT*(Evp-Fv)) + 1)) * pp;
     }
     return fac / (hw * nr * params.region.totalqw) * params.Mt * g;
 }
 
 template <typename GeometryT>
-double FreeCarrierGainSolver<GeometryT>::getGain(double hw, double Fc, double Fv, double T, double nr,
+Tensor2<double> FreeCarrierGainSolver<GeometryT>::getGain(double hw, double Fc, double Fv, double T, double nr,
                                                  const ActiveRegionParams& params) const
 {
     if (lifetime == 0)
@@ -709,9 +711,9 @@ double FreeCarrierGainSolver<GeometryT>::getGain(double hw, double Fc, double Fv
     const double tmin = std::max(-tmax, E0-hw);
     double dt = (tmax-tmin) / 1024.; //TODO Estimate integral precision and maybe chose better integration
 
-    double g = 0.;
+    Tensor2<double> g = Tensor2<double>(0., 0.);
     for (double t = tmin; t <= tmax; t += dt) {
-        // L(t) = b / (π (x²+b²)),
+        // L(t) = b / (π (t²+b²)),
         g += getGain0(hw+t, Fc, Fv, T, nr, params) / (t*t + b*b);
     }
     g *= b * dt / M_PI;
@@ -814,15 +816,15 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<DT>
 };
 
 template <typename GeometryT>
-struct FreeCarrierGainSolver<GeometryT>::InterpolatedData: public FreeCarrierGainSolver<GeometryT>::template DataBase<double>
+struct FreeCarrierGainSolver<GeometryT>::InterpolatedData: public FreeCarrierGainSolver<GeometryT>::template DataBase<Tensor2<double>>
 {
-    using typename DataBase<double>::AveragedData;
+    using typename DataBase<Tensor2<double>>::AveragedData;
 
     /// Computed interpolations in each active region
-    std::vector<LazyData<double>> data;
+    std::vector<LazyData<Tensor2<double>>> data;
 
     template <typename... Args>
-    InterpolatedData(Args... args): DataBase<double>(args...) {}
+    InterpolatedData(Args... args): DataBase<Tensor2<double>>(args...) {}
 
     void compute(double wavelength, InterpolationMethod interp)
     {
@@ -830,7 +832,7 @@ struct FreeCarrierGainSolver<GeometryT>::InterpolatedData: public FreeCarrierGai
         this->data.resize(this->solver->regions.size());
         for (size_t reg = 0; reg != this->solver->regions.size(); ++reg) {
             if (this->regpoints[reg]->size() == 0) {
-                this->data[reg] = LazyData<double>(this->dest_mesh->size(), 0.);
+                this->data[reg] = LazyData<Tensor2<double>>(this->dest_mesh->size(), Tensor2<double>(0., 0.));
                 continue;
             }
             AveragedData temps(this->solver, "temperature", this->regpoints[reg], this->solver->regions[reg]);
@@ -843,14 +845,14 @@ struct FreeCarrierGainSolver<GeometryT>::InterpolatedData: public FreeCarrierGai
         }
     }
 
-    virtual DataVector<double> getValues(double wavelength, InterpolationMethod interp, size_t reg,
-                                         const AveragedData& concs, const AveragedData& temps) = 0;
+    virtual DataVector<Tensor2<double>> getValues(double wavelength, InterpolationMethod interp, size_t reg,
+                                                  const AveragedData& concs, const AveragedData& temps) = 0;
 
-    double at(size_t i) const override {
+    Tensor2<double> at(size_t i) const override {
         for (size_t reg = 0; reg != this->solver->regions.size(); ++reg)
             if (this->solver->regions[reg].inQW(this->interpolation_flags.wrap(this->dest_mesh->at(i))))
                 return this->data[reg][i];
-        return 0.;
+        return Tensor2<double>(0., 0.);
     }
 };
 
@@ -858,16 +860,16 @@ struct FreeCarrierGainSolver<GeometryT>::InterpolatedData: public FreeCarrierGai
 template <typename GeometryT>
 struct FreeCarrierGainSolver<GeometryT>::GainData: public FreeCarrierGainSolver<GeometryT>::InterpolatedData
 {
-    using typename DataBase<double>::AveragedData;
+    using typename DataBase<Tensor2<double>>::AveragedData;
 
     template <typename... Args>
     GainData(Args... args): InterpolatedData(args...) {}
 
-    DataVector<double> getValues(double wavelength, InterpolationMethod interp, size_t reg,
-                                 const AveragedData& concs, const AveragedData& temps) override
+    DataVector<Tensor2<double>> getValues(double wavelength, InterpolationMethod interp, size_t reg,
+                                          const AveragedData& concs, const AveragedData& temps) override
     {
         double hw = phys::h_eVc1e9 / wavelength;
-        DataVector<double> values(this->regpoints[reg]->size());
+        DataVector<Tensor2<double>> values(this->regpoints[reg]->size());
         std::exception_ptr error;
 
         if (this->solver->inFermiLevels.hasProvider()) {
@@ -916,17 +918,17 @@ struct FreeCarrierGainSolver<GeometryT>::GainData: public FreeCarrierGainSolver<
 template <typename GeometryT>
 struct FreeCarrierGainSolver<GeometryT>::DgdnData: public FreeCarrierGainSolver<GeometryT>::InterpolatedData
 {
-    using typename DataBase<double>::AveragedData;
+    using typename DataBase<Tensor2<double>>::AveragedData;
 
     template <typename... Args>
     DgdnData(Args... args): InterpolatedData(args...) {}
 
-    DataVector<double> getValues(double wavelength, InterpolationMethod interp, size_t reg,
-                                 const AveragedData& concs, const AveragedData& temps) override
+    DataVector<Tensor2<double>> getValues(double wavelength, InterpolationMethod interp, size_t reg,
+                                          const AveragedData& concs, const AveragedData& temps) override
     {
         double hw = phys::h_eVc1e9 / wavelength;
         const double h = 0.5 * DIFF_STEP;
-        DataVector<double> values(this->regpoints[reg]->size());
+        DataVector<Tensor2<double>> values(this->regpoints[reg]->size());
         std::exception_ptr error;
         #pragma omp parallel for
         for (plask::openmp_size_t i = 0; i < this->regpoints[reg]->size(); ++i) {
@@ -938,9 +940,9 @@ struct FreeCarrierGainSolver<GeometryT>::DgdnData: public FreeCarrierGainSolver<
                 ActiveRegionParams params(this->solver, this->solver->params0[reg], T, bool(i));
                 double Fc = NAN, Fv = NAN;
                 this->solver->findFermiLevels(Fc, Fv, (1.-h)*conc, T, params);
-                double gain1 = this->solver->getGain(hw, Fc, Fv, T, nr, params);
+                Tensor2<double> gain1 = this->solver->getGain(hw, Fc, Fv, T, nr, params);
                 this->solver->findFermiLevels(Fc, Fv, (1.+h)*conc, T, params);
-                double gain2 = this->solver->getGain(hw, Fc, Fv, T, nr, params);
+                Tensor2<double> gain2 = this->solver->getGain(hw, Fc, Fv, T, nr, params);
                 values[i] = (gain2 - gain1) / (2.*h*conc);
             } catch(...) {
                 #pragma omp critical
@@ -955,7 +957,7 @@ struct FreeCarrierGainSolver<GeometryT>::DgdnData: public FreeCarrierGainSolver<
 
 
 template <typename GeometryType>
-const LazyData<double> FreeCarrierGainSolver<GeometryType>::getGainData(Gain::EnumType what,
+const LazyData<Tensor2<double>> FreeCarrierGainSolver<GeometryType>::getGainData(Gain::EnumType what,
                                                                         const shared_ptr<const MeshD<2>>& dst_mesh,
                                                                         double wavelength, InterpolationMethod interp)
 {
@@ -964,13 +966,13 @@ const LazyData<double> FreeCarrierGainSolver<GeometryType>::getGainData(Gain::En
         this->writelog(LOG_DETAIL, "Calculating gain");
         GainData* data = new GainData(this, dst_mesh);
         data->compute(wavelength, getInterpolationMethod<INTERPOLATION_SPLINE>(interp));
-        return LazyData<double>(data);
+        return LazyData<Tensor2<double>>(data);
     } else if (what == Gain::DGDN) {
         this->initCalculation(); // This must be called before any calculation!
         this->writelog(LOG_DETAIL, "Calculating gain over carriers concentration derivative");
         DgdnData* data = new DgdnData(this, dst_mesh);
         data->compute(wavelength, getInterpolationMethod<INTERPOLATION_SPLINE>(interp));
-        return LazyData<double>(data);
+        return LazyData<Tensor2<double>>(data);
     } else {
         throw BadInput(this->getId(), "Wrong gain type requested");
     }

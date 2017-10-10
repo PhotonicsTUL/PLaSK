@@ -13,7 +13,7 @@ EffectiveIndex2D::EffectiveIndex2D(const std::string& name) :
     vneff(0.),
     outNeff(this, &EffectiveIndex2D::getEffectiveIndex, &EffectiveIndex2D::nmodes),
     outLightMagnitude(this, &EffectiveIndex2D::getLightMagnitude, &EffectiveIndex2D::nmodes),
-    outElectricField(this, &EffectiveIndex2D::getElectricField, &EffectiveIndex2D::nmodes),
+    outLightE(this, &EffectiveIndex2D::getElectricField, &EffectiveIndex2D::nmodes),
     outRefractiveIndex(this, &EffectiveIndex2D::getRefractiveIndex),
     outHeat(this, &EffectiveIndex2D::getHeat),
     k0(2e3*M_PI/980) {
@@ -318,7 +318,7 @@ void EffectiveIndex2D::updateCache()
         auto midmesh = plask::make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
         auto temp = inTemperature(midmesh);
         bool have_gain = false;
-        LazyData<double> gain;
+        LazyData<Tensor2<double>> gain;
 
         for (size_t ix = xbegin; ix < xend; ++ix) {
             for (size_t iy = ybegin; iy < yend; ++iy) {
@@ -334,9 +334,9 @@ void EffectiveIndex2D::updateCache()
                         gain = inGain(midmesh, w);
                         have_gain = true;
                     }
-                    double g = gain[idx];
-                    nrCache[ix][iy] = dcomplex( real(geometry->getMaterial(point)->Nr(w, T)),
-                                                w * g * (0.25e-7/M_PI) );
+                    double g = (polarization==TM)? gain[idx].c11 : gain[idx].c00;
+                    nrCache[ix][iy] = dcomplex(real(geometry->getMaterial(point)->Nr(w, T)),
+                                               w * g * (0.25e-7/M_PI));
                 }
             }
         }
@@ -745,7 +745,7 @@ double EffectiveIndex2D::FieldDataBase<double>::value(dcomplex val) const {
 template <>
 void EffectiveIndex2D::FieldDataBase<Vec<3,dcomplex>>::setScale() {
     // <M> = ½ E conj(E) / Z0
-    scale = sqrt(2e-3 * solver->modes[num].power * 376.73031346177);
+    scale = sqrt(2e-3 * solver->modes[num].power * phys::Z0);
 }
 
 template <>

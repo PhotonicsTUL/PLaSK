@@ -461,8 +461,8 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
             if (modes[i] == mode) return i;
         modes.push_back(mode);
         outLightMagnitude.fireChanged();
-        outElectricField.fireChanged();
-        outMagneticField.fireChanged();
+        outLightE.fireChanged();
+        outLightH.fireChanged();
         return modes.size()-1;
     }
 
@@ -518,10 +518,10 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         double wavelength;
 
         /// Provider of the optical electric field
-        typename ProviderFor<LightE,Geometry3D>::Delegate outElectricField;
+        typename ProviderFor<LightE,Geometry3D>::Delegate outLightE;
 
         /// Provider of the optical magnetic field
-        typename ProviderFor<LightH,Geometry3D>::Delegate outMagneticField;
+        typename ProviderFor<LightH,Geometry3D>::Delegate outLightH;
 
         /// Provider of the optical field intensity
         typename ProviderFor<LightMagnitude,Geometry3D>::Delegate outLightMagnitude;
@@ -555,8 +555,8 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
          */
         Reflected(FourierSolver3D* parent, double wavelength, Expansion::Component polarization, Transfer::IncidentDirection side):
             parent(parent), polarization(polarization), side(side), wavelength(wavelength),
-            outElectricField(this, &FourierSolver3D::Reflected::getElectricField, size),
-            outMagneticField(this, &FourierSolver3D::Reflected::getMagneticField, size),
+            outLightE(this, &FourierSolver3D::Reflected::getElectricField, size),
+            outLightH(this, &FourierSolver3D::Reflected::getMagneticField, size),
             outLightMagnitude(this, &FourierSolver3D::Reflected::getLightMagnitude, size)
         {}
      };

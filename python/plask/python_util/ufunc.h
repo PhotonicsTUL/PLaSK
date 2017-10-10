@@ -124,7 +124,10 @@ py::object PARALLEL_UFUNC(F f, py::object input) {
             #pragma omp taskwait
 #endif
         }
-        if (error) std::rethrow_exception(error);
+        if (error) {
+            Py_XDECREF(inarr);
+            std::rethrow_exception(error);
+        }
         ret = NpyIter_GetOperandArray(iter)[1];
         Py_INCREF(ret);
         if (NpyIter_Deallocate(iter) != NPY_SUCCEED) {

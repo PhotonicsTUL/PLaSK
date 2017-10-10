@@ -284,8 +284,10 @@
 
   providers:
   - outLightMagnitude
-  - outElectricField
-  - outMagneticField
+  - outLightE
+  - outElectricField: LightE
+  - outLightH
+  - outMagneticField: LightH
   - outRefractiveIndex
   - outNeff
 
@@ -526,8 +528,10 @@
 
   providers:
   - outLightMagnitude
-  - outElectricField
-  - outMagneticField
+  - outLightE
+  - outElectricField: LightE
+  - outLightH
+  - outMagneticField: LightH
   - outRefractiveIndex
 
   receivers: *receivers
@@ -628,8 +632,10 @@
   providers:
   - outLightMagnitude
   - outLoss
-  - outElectricField
-  - outMagneticField
+  - outLightE
+  - outElectricField: LightE
+  - outLightH
+  - outMagneticField: LightH
   - outRefractiveIndex
   - outWavelength
 

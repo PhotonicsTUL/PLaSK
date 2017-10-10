@@ -119,7 +119,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     bool gain_connected;
 
     /// Obtained gain
-    LazyData<double> gain;
+    LazyData<Tensor2<double>> gain;
 
     void prepareIntegrals(double lam, double glam) override;
 

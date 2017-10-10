@@ -58,34 +58,41 @@ namespace plask { namespace python {
 extern PLASK_PYTHON_API py::object flow_module;
 
 template <typename T, int dim>
-struct DataVectorWrap : public DataVector<T> {
+struct PythonDataVector : public DataVector<T> {
     shared_ptr<MeshD<dim>> mesh;
     bool mesh_changed;
 
-    DataVectorWrap(const DataVector<T>& src, const shared_ptr<MeshD<dim>>& mesh):
+    PythonDataVector(const DataVector<T>& src, const shared_ptr<MeshD<dim>>& mesh):
         DataVector<T>(src), mesh(mesh), mesh_changed(false) {
-        mesh->changedConnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
+        mesh->changedConnectMethod(this, &PythonDataVector<T,dim>::onMeshChanged);
     }
 
-    DataVectorWrap(DataVector<T>&& src, const shared_ptr<MeshD<dim>>& mesh):
+    PythonDataVector(DataVector<T>&& src, const shared_ptr<MeshD<dim>>& mesh):
         DataVector<T>(std::forward<DataVector<T>>(src)), mesh(mesh), mesh_changed(false) {
-        mesh->changedConnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
+        mesh->changedConnectMethod(this, &PythonDataVector<T,dim>::onMeshChanged);
     }
 
-    DataVectorWrap(const DataVector<T>& src) : DataVector<T>(src) {}
+    PythonDataVector(const DataVector<T>& src) : DataVector<T>(src) {}
 
-    DataVectorWrap(DataVector<T>&& src) : DataVector<T>(std::forward<DataVector<T>>(src)) {}
+    PythonDataVector(DataVector<T>&& src) : DataVector<T>(std::forward<DataVector<T>>(src)) {}
 
-    DataVectorWrap() = default;
+    PythonDataVector() = default;
 
-    DataVectorWrap(const DataVectorWrap<T,dim>& src)
+    PythonDataVector(const PythonDataVector<T,dim>& src)
         : DataVector<T>(src), mesh(src.mesh), mesh_changed(src.mesh_changed)
     {
-        if (mesh) mesh->changedConnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
+        if (mesh) mesh->changedConnectMethod(this, &PythonDataVector<T,dim>::onMeshChanged);
     }
 
-    ~DataVectorWrap() {
-        if (mesh) mesh->changedDisconnectMethod(this, &DataVectorWrap<T,dim>::onMeshChanged);
+    template <typename TS>
+    PythonDataVector(const PythonDataVector<TS,dim>& src)
+        : DataVector<T>(src), mesh(src.mesh), mesh_changed(src.mesh_changed)
+    {
+        if (mesh) mesh->changedConnectMethod(this, &PythonDataVector<T,dim>::onMeshChanged);
+    }
+
+    ~PythonDataVector() {
+        if (mesh) mesh->changedDisconnectMethod(this, &PythonDataVector<T,dim>::onMeshChanged);
     }
 
     void onMeshChanged(const typename MeshD<dim>::Event& event) { mesh_changed = true; }
@@ -261,7 +268,7 @@ namespace detail {
         typedef typename ReceiverT::PropertyTag PropertyT;
         typedef typename ReceiverT::ValueType ValueT;
         static const int DIMS = ReceiverT::SpaceType::DIM;
-        typedef DataVectorWrap<const ValueT, DIMS> DataT;
+        typedef PythonDataVector<const ValueT, DIMS> DataT;
         typedef ProviderFor<PropertyT, typename ReceiverT::SpaceType> ProviderT;
 
         static void setter(ReceiverT& self, const py::object& obj) {
@@ -300,7 +307,7 @@ namespace detail {
         typedef typename ReceiverT::PropertyTag PropertyT;
         typedef typename ReceiverT::ValueType ValueT;
         static const int DIMS = ReceiverT::SpaceType::DIM;
-        typedef DataVectorWrap<const ValueT, DIMS> DataT;
+        typedef PythonDataVector<const ValueT, DIMS> DataT;
         typedef ProviderFor<PropertyT, typename ReceiverT::SpaceType> ProviderT;
         typedef typename PropertyT::EnumType EnumType;
 
@@ -419,8 +426,8 @@ public ProviderFor<typename ProviderT::PropertyTag>::Delegate {
 PLASK_PYTHON_API py::object Data(PyObject* obj, py::object omesh);
 
 template <typename T, int dim>
-DataVectorWrap<T,dim> PLASK_PYTHON_API dataInterpolate(
-    const DataVectorWrap<T,dim>& src, shared_ptr<MeshD<dim>> dst_mesh,
+PythonDataVector<T,dim> PLASK_PYTHON_API dataInterpolate(
+    const PythonDataVector<T,dim>& src, shared_ptr<MeshD<dim>> dst_mesh,
     InterpolationMethod method, const py::object& geometry=py::object());
 
 
@@ -454,7 +461,7 @@ namespace detail {
 
     template <typename ValueType, int dim>
     static inline LazyData<ValueType> parseProviderReturnedValue(const py::object& value, const py::object& mesh) {
-        typedef DataVectorWrap<const ValueType, dim> VectorType;
+        typedef PythonDataVector<const ValueType, dim> VectorType;
 
         py::extract<VectorType> data(value);
         if (data.check()) return data();
@@ -475,7 +482,7 @@ struct PythonProviderFor<ProviderT, FIELD_PROPERTY, VariadicTemplateTypesHolder<
 public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate {
 
     typedef typename ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::ProvidedType ProvidedType;
-    typedef DataVectorWrap<const typename ProviderT::ValueType, ProviderT::SpaceType::DIM> ReturnedType;
+    typedef PythonDataVector<const typename ProviderT::ValueType, ProviderT::SpaceType::DIM> ReturnedType;
 
     py::object function;
     OmpLock provider_omp_lock;
@@ -506,7 +513,7 @@ struct PythonProviderFor<ProviderT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesH
 public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::Delegate {
 
     typedef typename ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceType>::ProvidedType ProvidedType;
-    typedef DataVectorWrap<const typename ProviderT::ValueType, ProviderT::SpaceType::DIM> ReturnedType;
+    typedef PythonDataVector<const typename ProviderT::ValueType, ProviderT::SpaceType::DIM> ReturnedType;
 
     py::object function;
     OmpLock provider_omp_lock;
@@ -777,9 +784,9 @@ namespace detail {
         static const int DIMS = ProviderT::SpaceType::DIM;
         typedef typename ProviderT::PropertyTag PropertyT;
         typedef typename ProviderT::ValueType ValueT;
-        static DataVectorWrap<const ValueT,DIMS> __call__(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
+        static PythonDataVector<const ValueT,DIMS> __call__(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
             if (!mesh) throw TypeError("You must provide proper mesh to {0} provider", self.name());
-            return DataVectorWrap<const ValueT,DIMS>(self(mesh, params..., method), mesh);
+            return PythonDataVector<const ValueT,DIMS>(self(mesh, params..., method), mesh);
         }
         RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>(), spaceName<typename ProviderT::SpaceType>()) {
             this->provider_class.def("__call__", &__call__, PropertyArgsField<PropertyT>::value(),
@@ -801,17 +808,17 @@ namespace detail {
         typedef typename ProviderT::PropertyTag PropertyT;
         typedef typename ProviderT::ValueType ValueT;
         typedef typename ProviderT::EnumType EnumType;
-        static DataVectorWrap<const ValueT,DIMS> __call__n(ProviderT& self, EnumType num, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
+        static PythonDataVector<const ValueT,DIMS> __call__n(ProviderT& self, EnumType num, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
             if (!mesh) throw TypeError("You must provide proper mesh to {0} provider", self.name());
             int n = int(num);
             if (n < 0) num = EnumType(self.size() + n);
             if (n < 0 || n >= self.size())
                 throw NoValue(format("{0} [{1}]", self.name(), num).c_str());
-            return DataVectorWrap<const ValueT,DIMS>(self(num, mesh, params..., method), mesh);
+            return PythonDataVector<const ValueT,DIMS>(self(num, mesh, params..., method), mesh);
         }
-        static DataVectorWrap<const ValueT,DIMS> __call__0(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
+        static PythonDataVector<const ValueT,DIMS> __call__0(ProviderT& self, const shared_ptr<MeshD<DIMS>>& mesh, const ExtraParams&... params, InterpolationMethod method) {
             if (!mesh) throw TypeError("You must provide proper mesh to {0} provider", self.name());
-            return DataVectorWrap<const ValueT,DIMS>(self(EnumType(0), mesh, params..., method), mesh);
+            return PythonDataVector<const ValueT,DIMS>(self(EnumType(0), mesh, params..., method), mesh);
         }
         RegisterProviderImpl(): RegisterProviderBase<ProviderT>(spaceSuffix<typename ProviderT::SpaceType>(), spaceName<typename ProviderT::SpaceType>()) {
             this->provider_class.def("__call__", &__call__0, PropertyArgsField<PropertyT>::value());

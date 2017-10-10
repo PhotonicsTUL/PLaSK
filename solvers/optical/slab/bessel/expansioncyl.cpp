@@ -227,15 +227,15 @@ std::pair<dcomplex, dcomplex> ExpansionBessel::integrateLayer(size_t layer, doub
         if (gain_connected &&  solver->lgained[layer]) {
             auto roles = geometry->getRolesAt(vec(r, matz));
             if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-                double g = 0., W = 0.;
+                Tensor2<double> g = 0.; double W = 0.;
                 for (size_t k = 0, v = ri * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
                     if (solver->stack[k] == layer) {
                         double w = (k == 0 || k == mesh->vert()->size()-1)? 1e-6 : solver->vbounds[k] - solver->vbounds[k-1];
                         g += w * gain[v]; W += w;
                     }
                 }
-                double ni = glam * g/W * (0.25e-7/M_PI);
-                eps.c00.imag(ni); eps.c11.imag(ni); eps.c22.imag(ni);
+                Tensor2<double> ni = glam * g/W * (0.25e-7/M_PI);
+                eps.c00.imag(ni.c00); eps.c11.imag(ni.c00); eps.c22.imag(ni.c11);
             }
         }
         eps.sqr_inplace();

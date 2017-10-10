@@ -439,7 +439,7 @@ double FourierSolver3D::getTransmission(Expansion::Component polarization, Trans
 
 LazyData<Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
 {
-    if (num >= modes.size()) throw BadInput(this->getId()+".outElectricField", "Mode {0} has not been computed", num);
+    if (num >= modes.size()) throw BadInput(this->getId()+".outLightE", "Mode {0} has not been computed", num);
     assert(transfer);
     applyMode(modes[num]);
     return transfer->getFieldE(modes[num].power, dst_mesh, method);
@@ -448,7 +448,7 @@ LazyData<Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared_ptr<const Mes
 
 LazyData<Vec<3,dcomplex>> FourierSolver3D::getH(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
 {
-    if (num >= modes.size()) throw BadInput(this->getId()+".outMagneticField", "Mode {0} has not been computed", num);
+    if (num >= modes.size()) throw BadInput(this->getId()+".outLightH", "Mode {0} has not been computed", num);
     assert(transfer);
     applyMode(modes[num]);
     return transfer->getFieldH(modes[num].power, dst_mesh, method);

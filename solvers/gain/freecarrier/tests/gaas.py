@@ -135,7 +135,7 @@ class TestStructureGain(unittest.TestCase):
         solver = FreeCarrierCyl("self.solver")
         solver.geometry = self.geometry
         solver.inCarriersConcentration = self.concentration.outCarriersConcentration
-        self.assertAlmostEqual( solver.outGain(self.msh, 1275.)[0], 1254., 0 )
+        self.assertAlmostEqual( solver.outGain(self.msh, 1275.)[0][0], 1254., 0 )
         msh = mesh.Rectangular2D([0.], [100.])
         self.assertEqual( len(solver.outEnergyLevels('ELECTRONS', msh)[0]), 0 )
 
@@ -145,7 +145,7 @@ class TestStructureGain(unittest.TestCase):
         solver.geometry = geom
         solver.inBandEdges = flow.BandEdgesProviderCyl(self.get_bands)
         solver.inCarriersConcentration = self.concentration.outCarriersConcentration
-        self.assertAlmostEqual( solver.outGain(self.msh, 1275.)[0], 1254., 0 )
+        self.assertAlmostEqual( solver.outGain(self.msh, 1275.)[0][0], 1254., 0 )
         self.assertSequenceAlmostEqual(
             solver.outEnergyLevels('ELECTRONS', self.msh)[0],
             [0.3337, 0.3337, 0.3337, 0.3337, 0.5259, 0.5259, 0.5263, 0.5263, 0.5979, 0.5987],
@@ -165,7 +165,7 @@ class TestStructureGain(unittest.TestCase):
         solver.geometry = self.geometry
         solver.inCarriersConcentration = 0.
         solver.inFermiLevels = flow.FermiLevelsProviderCyl(self.get_fermi_level)
-        self.assertAlmostEqual( solver.outGain(self.msh, 1275.)[0], 1254., 0 )
+        self.assertAlmostEqual( solver.outGain(self.msh, 1275.)[0][0], 1254., 0 )
 
 
 if __name__ == '__main__':

@@ -23,7 +23,7 @@ namespace plask {
  * Providers of material gain should accept additional parameter,
  * which is the wavelength for which the gain should be computed.
  */
-struct PLASK_API Gain : public MultiFieldProperty<double, double> {
+struct PLASK_API Gain : public MultiFieldProperty<Tensor2<double>, double> {
     enum EnumType {
         GAIN = 0,
         DGDN = 1

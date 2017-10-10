@@ -86,7 +86,7 @@ class PythonProviderTest(unittest.TestCase):
         self.assertEqual( type(self.solver.inGain), plask.flow.GainReceiver2D )
         msh = plask.mesh.Rectangular2D(plask.mesh.Regular(0.,1., 2), plask.mesh.Regular(0.,1., 3))
         res = self.solver.inGain(msh, 10., 'spline')
-        self.assertEqual( list(res), [0., 10., 20., 30., 40., 50.] )
+        self.assertEqual( [r[0] for r in res], [0., 10., 20., 30., 40., 50.] )
         msh = plask.mesh.Rectangular2D([2.], [1.])
         self.assertEqual( list(self.solver.outTemperature(msh, 'linear')), [2.5] )
         self.assertEqual( list(self.binary_solver.inTemperature(msh, 'linear')), [2.5] )

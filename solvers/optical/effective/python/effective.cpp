@@ -316,7 +316,9 @@ BOOST_PYTHON_MODULE(effective)
         RECEIVER(inGain, "");
         PROVIDER(outNeff, "");
         PROVIDER(outLightMagnitude, "");
-        PROVIDER(outElectricField, "");
+        solver.def_readonly("outElectricField",
+                            reinterpret_cast<ProviderFor<LightE, Geometry2DCartesian> EffectiveIndex2D::*>(&EffectiveIndex2D::outLightE),
+                            "Alias for :attr:`outLightE`.");
         PROVIDER(outRefractiveIndex, "");
         PROVIDER(outHeat, "");
         RO_FIELD(modes,
@@ -440,7 +442,9 @@ BOOST_PYTHON_MODULE(effective)
         PROVIDER(outWavelength, "");
         PROVIDER(outLoss, "");
         PROVIDER(outLightMagnitude, "");
-        PROVIDER(outElectricField, "");
+        solver.def_readonly("outElectricField",
+                            reinterpret_cast<ProviderFor<LightE, Geometry2DCylindrical> EffectiveFrequencyCyl::*>(&EffectiveFrequencyCyl::outLightE),
+                            "Alias for :attr:`outLightE`.");
         PROVIDER(outRefractiveIndex, "");
         PROVIDER(outHeat, "");
         RO_FIELD(modes,

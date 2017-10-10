@@ -7,7 +7,7 @@
 
 namespace plask { namespace solvers { namespace slab {
 
-constexpr double Z0 = 376.73031346177; ///< Free space admittance
+using phys::Z0;
 
 struct SlabBase;
 

@@ -8,6 +8,9 @@ This file contains implementation of tensor in 2D space.
 #include <iostream>
 
 #include "../math.h"
+#include "tensor2.h"
+#include "2d.h"
+#include "3d.h"
 
 namespace plask {
 
@@ -74,6 +77,24 @@ struct Tensor3 {
      */
     template <typename T0, typename T1>
     Tensor3(const std::pair<T0,T1>& comp): c00(comp.first), c11(comp.first), c22(comp.second), c01(0.) {}
+
+    /**
+     * Construct tensor from 2D tensor
+     * \param tens tensor
+     */
+    Tensor3(const Tensor2<T>& tens): c00(tens.c00), c11(tens.c00), c22(tens.c11), c01(0.) {}
+
+    /**
+     * Construct tensor from 2D vector
+     * \param vec vector
+     */
+    Tensor3(const Vec<2,T>& vec): c00(vec.c0), c11(vec.c0), c22(vec.c1), c01(0.) {}
+
+    /**
+     * Construct tensor from 3D vector
+     * \param vec vector
+     */
+    Tensor3(const Vec<3,T>& vec): c00(vec.c0), c11(vec.c1), c22(vec.c2), c01(0.) {}
 
     /// Convert to std::tuple
     operator std::tuple<T,T,T,T>() const {

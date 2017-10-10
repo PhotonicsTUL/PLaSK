@@ -8,7 +8,8 @@ F77SUB dpbtrs_(const char& uplo, const int& n, const int& kd, const int& nrhs, d
 
 namespace plask { namespace solvers { namespace diffusion_cylindrical {
 
-const double inv_hc = 1.0e-9 / (plask::phys::c * plask::phys::h_J);
+constexpr double inv_hc = 1.0e-9 / (phys::c * phys::h_J);
+using phys::Z0;
 
 template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::loadConfiguration(XMLReader& reader, Manager& manager)
 {
@@ -262,7 +263,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                 if (overthreshold_computation)
                 {
                     // Compute E and F components for overthreshold computations
-                    if (inWavelength.size() != inLightMagnitude.size())
+                    if (inWavelength.size() != inLightE.size())
                     throw BadInput(this->getId(), "Number of modes in inWavelength and inLightMagnitude differ");
 
                     // Sum all modes
@@ -283,11 +284,10 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                         mesh_Li->setAxis0(current_mesh_ptr());
                         mesh_Li->setAxis1(plask::make_shared<plask::OrderedAxis>(getZQWCoordinates()));
 
-//                        auto Li = inLightMagnitude(n, mesh2, interpolation_method);
-                        auto initial_Li = inLightMagnitude(n, mesh_Li, interpolation_method);
-                        auto Li = averageLi(initial_Li, *mesh_Li);
+                        // auto Li = inLightMagnitude(n, mesh2, interpolation_method);
+                        auto Li = averageLi(inLightE(n, mesh_Li, interpolation_method), *mesh_Li);
 
-                        write_debug("Li[0]: {0} W/cm2", Li[0]*1.0e-4);
+                        write_debug("Li[0]: {0} W/cm2", Li[0]*1e-4);
                         int ile = 0;
                         for (auto n: n_present)
                         {
@@ -298,17 +298,17 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                         // write_debug("g[0]: {0} cm(-1)", g[0]);
                         auto dgdn = inGain(Gain::DGDN, mesh2, wavelength, interpolation_method);
                         // write_debug("dgdn[0]: {0} cm(-4)", dgdn[0]);
-                        auto factor = inv_hc * wavelength; // inverse one photon energy
+                        auto factor = inv_hc * wavelength * 1e-4; // inverse one photon energy
                         for (size_t i = 0; i != mesh2->size(); ++i)
                         {
-                            double common = factor * this->QW_material->nr(wavelength, T_on_the_mesh[i]) * (Li[i]*1.0e-4);
-                            double pm = common * g[i];
+                            auto common = factor * this->QW_material->nr(wavelength, T_on_the_mesh[i]) * Li[i];
+                            double pm = common.c00 * g[i].c00 + common.c11 * g[i].c11;
                             PM[i] += pm;
-                            overthreshold_dgdn[i] += common * dgdn[i];
+                            overthreshold_dgdn[i] += common.c00 * dgdn[i].c00 + common.c11 * dgdn[i].c11;;
                             // overthreshold_g[i] += common * g[i];
                             modesP[n] += pm * D * jacobian(current_mesh()[i]);
                         }
-                        modesP[n] *= 1.0e-5 * global_QW_width * (plask::phys::h_J*plask::phys::c/(wavelength*1.0e-9));
+                        modesP[n] *= 1.0e-5 * global_QW_width * (1e9 * phys::h_J * phys::c / wavelength);
                         // 1.0e-5 from µm to cm conversion and conversion to mW (r*dr), (...) - photon energy
                     }
                 }
@@ -899,21 +899,22 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 }
 
 template<typename Geometry2DType>
-plask::DataVector<const double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::averageLi(plask::LazyData<double> initLi,
-                                                                                                      const plask::RectangularMesh<2>& mesh_Li)
+plask::DataVector<const Tensor2<double>> FiniteElementMethodDiffusion2DSolver<Geometry2DType>
+    ::averageLi(plask::LazyData<Vec<3,dcomplex>> Le, const plask::RectangularMesh<2>& mesh_Li)
 {
-    plask::DataVector<double> Li(current_mesh().size());
+    plask::DataVector<Tensor2<double>> Li(current_mesh().size());
 
     for (int i = 0; i < current_mesh().size(); ++i)
     {
-        double current_Li = 0.0;
+        Tensor2<double> current_Li(0., 0.);
 
         for (int j = 0; j < detected_QW.size(); ++j)
         {
             int k = mesh_Li.index(i,j);
-            current_Li += initLi[k];
+            current_Li += Tensor2<double>(real(Le[k].c0*conj(Le[k].c0) + Le[k].c1*conj(Le[k].c1)),
+                                          real(Le[k].c2*conj(Le[k].c2)));
         }
-        Li[i] = current_Li/(detected_QW.size());
+        Li[i] = current_Li / detected_QW.size() * (0.5 / Z0);
     }
     return Li;
 }

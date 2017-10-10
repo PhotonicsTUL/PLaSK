@@ -161,7 +161,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     typename ProviderFor<LightMagnitude, Geometry2DCartesian>::Delegate outLightMagnitude;
 
     /// Provider of optical field
-    typename ProviderFor<LightE, Geometry2DCartesian>::Delegate outElectricField;
+    typename ProviderFor<LightE, Geometry2DCartesian>::Delegate outLightE;
 
     /// Provider for refractive index
     typename ProviderFor<RefractiveIndex, Geometry2DCartesian>::Delegate outRefractiveIndex;
@@ -406,7 +406,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
         modes.push_back(mode);
         outNeff.fireChanged();
         outLightMagnitude.fireChanged();
-        outElectricField.fireChanged();
+        outLightE.fireChanged();
         return modes.size()-1;
     }
 

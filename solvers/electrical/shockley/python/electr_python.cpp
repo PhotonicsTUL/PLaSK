@@ -14,18 +14,18 @@ static py::object outPotential(const py::object& self) {
 }
 
 // template <typename Cls>
-// static DataVectorWrap<const double, 2> getCondJunc(const Cls* self) {
+// static PythonDataVector<const double, 2> getCondJunc(const Cls* self) {
 //     if (self->getMesh() && self->getGeometry()) {
 //         auto midmesh = self->getMesh()->getMidpointsMesh();
 //         shared_ptr<OrderedAxis> line1 = plask::make_shared<OrderedAxis>();
 //         for (size_t n = 0; n < self->getActNo(); ++n)
 //             line1->addPoint(self->getMesh()->axis1->at((self->getActLo(n)+self->getActHi(n))/2));
 //         auto mesh = plask::make_shared<RectangularMesh<2>>(midmesh->axis0->clone(), line1);
-//         return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
+//         return PythonDataVector<const double,2>(self->getCondJunc(), mesh);
 //     } else {
 //         auto mesh = plask::make_shared<RectangularMesh<2>>(plask::make_shared<OrderedAxis>(std::initializer_list<double>{NAN}),
 //                                                     plask::make_shared<OrderedAxis>(std::initializer_list<double>{NAN}));
-//         return DataVectorWrap<const double,2>(self->getCondJunc(), mesh);
+//         return PythonDataVector<const double,2>(self->getCondJunc(), mesh);
 //     }
 // }
 //
@@ -41,7 +41,7 @@ static py::object outPotential(const py::object& self) {
 //     if (!self->getMesh()) throw NoMeshException(self->getId());
 //     size_t len = self->getMesh()->axis0->size()-1;
 //     try {
-//         const DataVectorWrap<const double,2>& val = py::extract<DataVectorWrap<const double,2>&>(value);
+//         const PythonDataVector<const double,2>& val = py::extract<PythonDataVector<const double,2>&>(value);
 //         {
 //             auto mesh = dynamic_pointer_cast<RectangularMesh<2>>(val.mesh);
 //             if (mesh && mesh->axis1->size() == self->getActNo() && val.size() == len) {

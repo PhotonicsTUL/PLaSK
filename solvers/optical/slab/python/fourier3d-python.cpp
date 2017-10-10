@@ -10,7 +10,7 @@ static inline py::object arrayFromVec3D(cvector data, size_t minor, int dim) {
     npy_intp strides[] = { 2*minor*sizeof(dcomplex), 2*sizeof(dcomplex), sizeof(dcomplex) };
     PyObject* arr = PyArray_New(&PyArray_Type, dim, dims, type, strides, (void*)data.data(), 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException("Cannot create array from field coefficients");
-    DataVectorWrap<const dcomplex,3> wrap(data);
+    PythonDataVector<const dcomplex,3> wrap(data);
     py::object odata(wrap); py::incref(odata.ptr());
     PyArray_SetBaseObject((PyArrayObject*)arr, odata.ptr()); // Make sure the data vector stays alive as long as the array
     return py::object(py::handle<>(arr));
@@ -675,14 +675,20 @@ void export_FourierSolver3D()
         "This class contains providers for the optical field for a reflected field"
         "under the normal incidence.\n"
         , py::no_init)
-        .def_readonly("outElectricField", reinterpret_cast<ProviderFor<LightE,Geometry3D> FourierSolver3D::Reflected::*>
-                                            (&FourierSolver3D::Reflected::outElectricField),
-            format(docstring_attr_provider<LightE>(), "LightE", "3D", "electric field", "V/m", "", "", "", "outElectricField").c_str()
+        .def_readonly("outLightE", reinterpret_cast<ProviderFor<LightE,Geometry3D> FourierSolver3D::Reflected::*>
+                                            (&FourierSolver3D::Reflected::outLightE),
+            format(docstring_attr_provider<LightE>(), "LightE", "3D", "electric field", "V/m", "", "", "", "outLightE").c_str()
         )
-        .def_readonly("outMagneticField", reinterpret_cast<ProviderFor<LightH,Geometry3D> FourierSolver3D::Reflected::*>
-                                            (&FourierSolver3D::Reflected::outMagneticField),
-            format(docstring_attr_provider<LightH>(), "LightH", "3D", "magnetic field", "A/m", "", "", "", "outMagneticField").c_str()
+        .def_readonly("outElectricField",
+                      reinterpret_cast<ProviderFor<LightE,Geometry3D> FourierSolver3D::Reflected::*> (&FourierSolver3D::Reflected::outLightE),
+                      "Alias for :attr:`outLightE`.")
+        .def_readonly("outLightH", reinterpret_cast<ProviderFor<LightH,Geometry3D> FourierSolver3D::Reflected::*>
+                                            (&FourierSolver3D::Reflected::outLightH),
+            format(docstring_attr_provider<LightH>(), "LightH", "3D", "magnetic field", "A/m", "", "", "", "outLightH").c_str()
         )
+        .def_readonly("outMagneticField",
+                      reinterpret_cast<ProviderFor<LightH,Geometry3D> FourierSolver3D::Reflected::*> (&FourierSolver3D::Reflected::outLightH),
+                      "Alias for :attr:`outLightH`.")
         .def_readonly("outLightMagnitude", reinterpret_cast<ProviderFor<LightMagnitude,Geometry3D> FourierSolver3D::Reflected::*>
                                             (&FourierSolver3D::Reflected::outLightMagnitude),
             format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", "3D", "light intensity", "W/m²", "", "", "", "outLightMagnitude").c_str()

@@ -255,15 +255,15 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
             if (gain_connected && solver->lgained[layer]) {
                 auto roles = geometry->getRolesAt(vec(mesh->tran()->at(j),maty));
                 if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-                    double g = 0.; W = 0.;
+                    Tensor2<double> g = 0.; W = 0.;
                     for (size_t k = 0, v = j * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
                         if (solver->stack[k] == layer) {
                             double w = (k == 0 || k == mesh->vert()->size()-1)? 1e-6 : solver->vbounds[k] - solver->vbounds[k-1];
                             g += w * gain[v]; W += w;
                         }
                     }
-                    double ni = glam * g/W * (0.25e-7/M_PI);
-                    nr.c00.imag(ni); nr.c11.imag(ni); nr.c22.imag(ni); nr.c01.imag(0.);
+                    Tensor2<double> ni = glam * g/W * (0.25e-7/M_PI);
+                    nr.c00.imag(ni.c00); nr.c11.imag(ni.c00); nr.c22.imag(ni.c11); nr.c01.imag(0.);
                 }
             }
             nr.sqr_inplace();

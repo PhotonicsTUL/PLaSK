@@ -459,8 +459,8 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         modes.push_back(mode);
         outNeff.fireChanged();
         outLightMagnitude.fireChanged();
-        outElectricField.fireChanged();
-        outMagneticField.fireChanged();
+        outLightE.fireChanged();
+        outLightH.fireChanged();
         return modes.size()-1;
     }
 
@@ -551,10 +551,10 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         double wavelength;
 
         /// Provider of the optical electric field
-        typename ProviderFor<LightE,Geometry2DCartesian>::Delegate outElectricField;
+        typename ProviderFor<LightE,Geometry2DCartesian>::Delegate outLightE;
 
         /// Provider of the optical magnetic field
-        typename ProviderFor<LightH,Geometry2DCartesian>::Delegate outMagneticField;
+        typename ProviderFor<LightH,Geometry2DCartesian>::Delegate outLightH;
 
         /// Provider of the optical field intensity
         typename ProviderFor<LightMagnitude,Geometry2DCartesian>::Delegate outLightMagnitude;
@@ -594,8 +594,8 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
          */
         Reflected(FourierSolver2D* parent, double wavelength, Expansion::Component polarization, Transfer::IncidentDirection side):
             parent(parent), polarization(polarization), side(side), wavelength(wavelength),
-            outElectricField(this, &FourierSolver2D::Reflected::getElectricField, size),
-            outMagneticField(this, &FourierSolver2D::Reflected::getMagneticField, size),
+            outLightE(this, &FourierSolver2D::Reflected::getElectricField, size),
+            outLightH(this, &FourierSolver2D::Reflected::getMagneticField, size),
             outLightMagnitude(this, &FourierSolver2D::Reflected::getLightMagnitude, size)
         {}
     };

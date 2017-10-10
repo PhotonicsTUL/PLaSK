@@ -32,8 +32,8 @@ SlabSolver<BaseT>::SlabSolver(const std::string& name): BaseT(name),
     smooth(0.),
     outRefractiveIndex(this, &SlabSolver<BaseT>::getRefractiveIndexProfile),
     outLightMagnitude(this, &SlabSolver<BaseT>::getMagnitude, &SlabSolver<BaseT>::nummodes),
-    outElectricField(this, &SlabSolver<BaseT>::getE, &SlabSolver<BaseT>::nummodes),
-    outMagneticField(this, &SlabSolver<BaseT>::getH, &SlabSolver<BaseT>::nummodes)
+    outLightE(this, &SlabSolver<BaseT>::getE, &SlabSolver<BaseT>::nummodes),
+    outLightH(this, &SlabSolver<BaseT>::getH, &SlabSolver<BaseT>::nummodes)
 {
     inTemperature = 300.; // temperature receiver has some sensible value
     this->inTemperature.changedConnectMethod(this, &SlabSolver<BaseT>::onInputChanged);

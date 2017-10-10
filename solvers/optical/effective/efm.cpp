@@ -18,7 +18,7 @@ EffectiveFrequencyCyl::EffectiveFrequencyCyl(const std::string& name) :
     outWavelength(this, &EffectiveFrequencyCyl::getWavelength, &EffectiveFrequencyCyl::nmodes),
     outLoss(this, &EffectiveFrequencyCyl::getModalLoss,  &EffectiveFrequencyCyl::nmodes),
     outLightMagnitude(this, &EffectiveFrequencyCyl::getLightMagnitude,  &EffectiveFrequencyCyl::nmodes),
-    outElectricField(this, &EffectiveFrequencyCyl::getElectricField,  &EffectiveFrequencyCyl::nmodes),
+    outLightE(this, &EffectiveFrequencyCyl::getElectricField,  &EffectiveFrequencyCyl::nmodes),
     outRefractiveIndex(this, &EffectiveFrequencyCyl::getRefractiveIndex),
     outHeat(this, &EffectiveFrequencyCyl::getHeat),
     asymptotic(false) {
@@ -273,7 +273,7 @@ void EffectiveFrequencyCyl::updateCache()
         auto midmesh = plask::make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
         auto temp = inTemperature(midmesh);
         bool have_gain = false;
-        LazyData<double> gain1, gain2;
+        LazyData<Tensor2<double>> gain1, gain2;
 
         for (size_t ir = 0; ir != rsize; ++ir) {
             for (size_t iz = zbegin; iz < zsize; ++iz) {
@@ -294,8 +294,8 @@ void EffectiveFrequencyCyl::updateCache()
                         gain2 = inGain(midmesh, lam2);
                         have_gain = true;
                     }
-                    double g = 0.5 * (gain1[idx] + gain2[idx]);
-                    double gs = (gain2[idx] - gain1[idx]) * i2h;
+                    double g = 0.5 * (gain1[idx].c00 + gain2[idx].c00);
+                    double gs = (gain2[idx].c00 - gain1[idx].c00) * i2h;
                     double nr = real(material->Nr(lam, T));
                     double ng = real(nr - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * i2h);
                     nrCache[ir][iz] = dcomplex(nr, (0.25e-7/M_PI) * lam * g);
@@ -781,7 +781,7 @@ double EffectiveFrequencyCyl::FieldDataBase<double>::value(dcomplex val) const {
 
 template <>
 EffectiveFrequencyCyl::FieldDataBase<Vec<3,dcomplex>>::FieldDataBase(EffectiveFrequencyCyl* solver, int num):
-    solver(solver), num(num), scale(sqrt(2e-3 * solver->modes[num].power * 376.73031346177))
+    solver(solver), num(num), scale(sqrt(2e-3 * phys::Z0 * solver->modes[num].power))
     // <M> = ½ E conj(E) / Z0
 {}
 

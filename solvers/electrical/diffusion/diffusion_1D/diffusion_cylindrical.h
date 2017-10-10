@@ -21,15 +21,15 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
         plask::ReceiverFor<plask::Temperature, Geometry2DType> inTemperature;
         plask::ReceiverFor<plask::Gain, Geometry2DType> inGain;
         plask::ReceiverFor<plask::Wavelength> inWavelength;
-        plask::ReceiverFor<plask::LightMagnitude, Geometry2DType> inLightMagnitude;
+        plask::ReceiverFor<plask::LightE, Geometry2DType> inLightE;
 
         typename ProviderFor<plask::CarriersConcentration, Geometry2DType>::Delegate outCarriersConcentration;
 
         InterpolationMethod interpolation_method;   ///< Selected interpolation method
         double relative_accuracy;                   ///< Relative accuracy
-        int max_mesh_changes;                  // maksymalna liczba zmian dr
-        int max_iterations;              // maksymalna liczba petli dyfuzji dla jednego dr
-        FemMethod fem_method;           // metoda obliczen MES ("linear" - elementy pierwszego rzedu lub "parabolic" - -||- drugiego rzedu)
+        int max_mesh_changes;                       ///< Maximum number of mesh refinemenst
+        int max_iterations;                         ///< Maximum number of diffusion iterations for sigle mesh size
+        FemMethod fem_method;                       ///< Finite element method (linear or parabolic)
         double minor_concentration;
         bool do_initial;                            ///< Should we start from initial computations
 
@@ -74,7 +74,7 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
         double burning_integral(void);  // całka strat nadprogu
 
         std::vector<double> modesP;                     // Integral for overthreshold computations summed for each mode
-        
+
     protected:
 
         shared_ptr<plask::RectangularMesh<2>> mesh2;         ///< Computational mesh
@@ -93,7 +93,7 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
         int iterations;
 
         double jacobian(double r);
-        
+
         std::vector<Box2D> detected_QW;
 
         plask::LazyData<Vec<2>> j_on_the_mesh;  // current density vector provided by inCurrentDensity reciever
@@ -135,7 +135,7 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::Solve
         double getZQWCoordinate();
         std::vector<double> getZQWCoordinates();
 
-        plask::DataVector<const double> averageLi(plask::LazyData<double> initLi, const plask::RectangularMesh<2>& mesh_Li);
+        plask::DataVector<const Tensor2<double>> averageLi(plask::LazyData<Vec<3,dcomplex>> initLi, const plask::RectangularMesh<2>& mesh_Li);
 
         virtual void onInitialize() override;
         virtual void onInvalidate() override;
@@ -167,6 +167,6 @@ double FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::jacobian(doubl
 template <> inline
 double FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::jacobian(double r) {
     return 2*M_PI * r;
-} // 2*M_PI from integral over full angle, 
+} // 2*M_PI from integral over full angle,
 
 }}} //namespace plask::solvers::diffusion_cylindrical

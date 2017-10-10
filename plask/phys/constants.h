@@ -20,6 +20,7 @@ namespace phys {
     constexpr double c = 299792458.;            ///< Speed of light [m/s]
     constexpr double mu0 = 4e-7 * M_PI;         ///< Vacuum permeability [V*s/A/m]
     constexpr double epsilon0 = 1./mu0/c/c;     ///< Vacuum permittivity [F/m]
+    constexpr double Z0 = 376.73031346177066;   ///< Free space admittance [Ω]
     constexpr double h_J = 6.62606957e-34;      ///< Planck's constant [J*s]
     constexpr double h_eV = 4.135667516e-15;    ///< Planck's constant [eV*s]
     constexpr double hb_J = 0.5*h_J/M_PI;       ///< Dirac's constant [J*s]
