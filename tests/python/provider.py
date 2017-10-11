@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from __future__ import print_function
+
 import sys
 import unittest
 import numpy
@@ -74,7 +76,8 @@ class PythonProviderTest(unittest.TestCase):
         inGain = plask.flow.GainReceiver2D()
         def get_gain(self, deriv, mesh, wavelength, interp):
             self.parent.assertEqual(interp, 'SPLINE')
-            return wavelength * numpy.arange(len(mesh))
+            ret = wavelength * numpy.array([range(len(mesh)), len(mesh) * [1.]]).T
+            return ret
 
     def setUp(self):
         self.solver = PythonProviderTest.CustomSolver(self)
@@ -86,7 +89,9 @@ class PythonProviderTest(unittest.TestCase):
         self.assertEqual( type(self.solver.inGain), plask.flow.GainReceiver2D )
         msh = plask.mesh.Rectangular2D(plask.mesh.Regular(0.,1., 2), plask.mesh.Regular(0.,1., 3))
         res = self.solver.inGain(msh, 10., 'spline')
+        print(res.dtype, list(res))
         self.assertEqual( [r[0] for r in res], [0., 10., 20., 30., 40., 50.] )
+        self.assertEqual( [r[1] for r in res], 6 * [10.] )
         msh = plask.mesh.Rectangular2D([2.], [1.])
         self.assertEqual( list(self.solver.outTemperature(msh, 'linear')), [2.5] )
         self.assertEqual( list(self.binary_solver.inTemperature(msh, 'linear')), [2.5] )

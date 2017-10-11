@@ -17,7 +17,19 @@ struct base_type_traits<PyArrayObject>
 
 }}
 
-namespace plask { namespace python {
+namespace plask {
+
+template <> template <>
+DataVector<const Tensor2<double>>::DataVector(const DataVector<const Vec<2,double>>& src)
+    : DataVector(reinterpret_cast<const DataVector<const Tensor2<double>>&>(src)) {
+}
+
+template <> template <>
+DataVector<const Tensor2<dcomplex>>::DataVector(const DataVector<const Vec<2,dcomplex>>& src)
+    : DataVector(reinterpret_cast<const DataVector<const Tensor2<dcomplex>>&>(src)) {
+}
+
+namespace python {
 
 static const char* DATA_DOCSTRING =
     "Data returned by field providers.\n\n"
@@ -340,11 +352,40 @@ namespace detail {
         size_t size;
         py::handle<PyArrayObject> newarr;
 
-        if (PyArray_NDIM(arr) != 1) {
+        if (PyArray_NDIM(arr) == 1) {
+            size = PyArray_DIMS(arr)[0] / type_dim<T>();
+            if (PyArray_STRIDES(arr)[0] != sizeof(T)) {
+                writelog(LOG_DEBUG, "Copying numpy array to make is contiguous");
+                npy_intp sizes[] = { PyArray_DIMS(arr)[0] };
+                npy_intp strides[] = { sizeof(T) };
+                newarr = py::handle<PyArrayObject>(
+                    (PyArrayObject*)PyArray_New(&PyArray_Type, 1, sizes,
+                                                PyArray_TYPE(arr), strides,
+                                                nullptr, 0, 0, nullptr)
+                );
+                PyArray_CopyInto(newarr.get(), arr);
+                arr = newarr.get();
+            }
+        } else if (type_dim<T>() != 1 && PyArray_NDIM(arr) == 2 &&
+                   PyArray_DIMS(arr)[0] == mesh->size() && PyArray_DIMS(arr)[1] == type_dim<T>()) {
+            size = mesh->size();
+            if (PyArray_STRIDES(arr)[0] != sizeof(T)) {
+                writelog(LOG_DEBUG, "Copying numpy array to make is contiguous");
+                npy_intp sizes[] = { static_cast<npy_intp>(size), type_dim<T>() };
+                npy_intp strides[] = { sizeof(T), sizeof(T) / type_dim<T>() };
+                newarr = py::handle<PyArrayObject>(
+                    (PyArrayObject*)PyArray_New(&PyArray_Type, 2, sizes,
+                                                PyArray_TYPE(arr), strides,
+                                                nullptr, 0, 0, nullptr)
+                );
+                PyArray_CopyInto(newarr.get(), arr);
+                arr = newarr.get();
+            }
+        } else {
             auto rectangular = dynamic_pointer_cast<RectangularMesh<dim>>(mesh);
             if (!rectangular) throw TypeError("For this mesh type only one-dimensional array is allowed");
             auto meshdims = mesh_dims(*rectangular);
-            if (type_dim<T>() != 1)  meshdims.push_back(type_dim<T>());
+            if (type_dim<T>() != 1) meshdims.push_back(type_dim<T>());
             size_t nd = meshdims.size();
             if ((size_t)PyArray_NDIM(arr) != nd) throw ValueError("Provided array must have either 1 or {0} dimensions", dim);
             for (size_t i = 0; i != nd; ++i)
@@ -354,21 +395,18 @@ namespace detail {
             for (size_t i = 0; i != nd; ++i) {
                 if (meshstrides[i] != PyArray_STRIDES(arr)[i]) {
                     writelog(LOG_DEBUG, "Copying numpy array to match mesh strides");
-
                     newarr = py::handle<PyArrayObject>(
                         (PyArrayObject*)PyArray_New(&PyArray_Type, nd, meshdims.data(),
                                                     PyArray_TYPE(arr), meshstrides.data(),
                                                     nullptr, 0, 0, nullptr)
                     );
-
                     PyArray_CopyInto(newarr.get(), arr);
                     arr = newarr.get();
                     break;
                 }
             }
             size = mesh->size();
-        } else
-            size = PyArray_DIMS(arr)[0] / type_dim<T>();
+        }
 
         if (size != mesh->size()) throw ValueError("Sizes of data ({0}) and mesh ({1}) do not match", size, mesh->size());
 
@@ -407,14 +445,18 @@ namespace detail {
     static py::object makeDataVector(PyArrayObject* arr, shared_ptr<MeshD<dim>> mesh) {
         size_t ndim = PyArray_NDIM(arr);
         size_t last_dim = PyArray_DIMS(arr)[ndim-1];
-        if (ndim == dim+1) {
-            if (last_dim == 2) return makeDataVectorImpl<Vec<2,T>, dim>(arr, mesh);
-            else if (last_dim == 3) return makeDataVectorImpl<Vec<3,T>, dim>(arr, mesh);
-            else if (last_dim == 4) return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
-        } else if (ndim == 1) {
+        if (ndim == 1) {
             if (last_dim == 2 * mesh->size()) return makeDataVectorImpl<Vec<2,T>, dim>(arr, mesh);
             else if (last_dim == 3 * mesh->size()) return makeDataVectorImpl<Vec<3,T>, dim>(arr, mesh);
             else if (last_dim == 4 * mesh->size()) return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
+        } else if (ndim == 2 && PyArray_DIMS(arr)[0] == mesh->size()) {
+            if (last_dim == 2) return makeDataVectorImpl<Vec<2,T>, dim>(arr, mesh);
+            else if (last_dim == 3) return makeDataVectorImpl<Vec<3,T>, dim>(arr, mesh);
+            else if (last_dim == 4) return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
+        } else if (ndim == dim+1) {
+            if (last_dim == 2) return makeDataVectorImpl<Vec<2,T>, dim>(arr, mesh);
+            else if (last_dim == 3) return makeDataVectorImpl<Vec<3,T>, dim>(arr, mesh);
+            else if (last_dim == 4) return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
         }
         return makeDataVectorImpl<T, dim>(arr, mesh);
     }
