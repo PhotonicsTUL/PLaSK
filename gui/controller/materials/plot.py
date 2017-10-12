@@ -184,7 +184,7 @@ class MaterialPlot(QWidget):
         if self.info.isVisible():
             self.info.setMaximumHeight(self.info.document().size().height())
         if self.axes is not None:
-            self.figure.tight_layout(0.2)
+            self.figure.tight_layout(pad=0.2)
 
     def update_materials(self, *args, **kwargs):
         text = self.material.currentText()

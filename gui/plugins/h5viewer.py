@@ -101,6 +101,18 @@ class FieldWidget(QWidget):
                 self.widgets['select_component'].setCurrentIndex(self.comp)
             self._axes = tuple(names[i] for i in idx)
 
+        def aspect(self):
+            try: parent = self.parent()
+            except TypeError: parent = self.parent
+            parent.aspect_locked = not parent.aspect_locked
+            if parent.aspect_locked:
+                parent.axes.set_aspect('equal')
+            else:
+                parent.axes.set_aspect('auto')
+            self._update_view()
+            parent.figure.tight_layout(pad=0.1)
+            self.canvas.draw()
+
     def __init__(self, controller=None, parent=None):
         super(FieldWidget, self).__init__(parent)
 
@@ -195,7 +207,7 @@ class FieldWidget(QWidget):
 
         self.axes.set_aspect('equal' if self.aspect_locked else 'auto')
         self.canvas.draw()
-        self.figure.set_tight_layout(0.1)
+        self.figure.tight_layout(pad=0.1)
 
 
 class ResultsWindow(QMainWindow):
@@ -207,7 +219,8 @@ class ResultsWindow(QMainWindow):
         def visit(name, item):
             if isinstance(item, h5py.Group):
                 if '_mesh' in item and '_data' in item:
-                    fields.append(name)
+                    fields.append('/'+name)
+        visit('', h5file)
         h5file.visititems(visit)
 
         return fields
@@ -218,6 +231,7 @@ class ResultsWindow(QMainWindow):
         self.plotted_field = None
 
         self.h5file = h5py.File(filename, 'r')
+        fields = self._get_fields(self.h5file)
 
         self.field_geometries = {}
 
@@ -229,16 +243,11 @@ class ResultsWindow(QMainWindow):
         self.setCentralWidget(splitter1)
 
         self.field_list = QListWidget(splitter2)
-        self.field_list.setSelectionMode(QAbstractItemView.SingleSelection)
-        fields = self._get_fields(self.h5file)
-        self.field_list.addItems(fields)
-        self.field_list.currentTextChanged.connect(self.field_changed)
         splitter2.addWidget(self.field_list)
 
         self.geometry_list = QListWidget(splitter2)
         splitter2.addWidget(self.geometry_list)
         self.geometry_list.hide()
-        self.geometry_list.currentTextChanged.connect(self.geometry_changed)
 
         self.plot_widget = FieldWidget(self, parent=splitter1)
         splitter1.addWidget(self.plot_widget)
@@ -247,7 +256,14 @@ class ResultsWindow(QMainWindow):
         self.update_geometries()
 
         if len(fields) > 0:
+            self.field_list.setSelectionMode(QAbstractItemView.SingleSelection)
+            self.field_list.addItems(fields)
+            self.field_list.currentTextChanged.connect(self.field_changed)
             self.field_list.item(0).setSelected(True)
+            self.geometry_list.currentTextChanged.connect(self.geometry_changed)
+        else:
+            self.field_list.setSelectionMode(QAbstractItemView.NoSelection)
+            self.field_list.addItem("No fields in the selected file!")
 
         self.showMaximized()
 
@@ -270,7 +286,7 @@ class ResultsWindow(QMainWindow):
 
     def resizeEvent(self, event):
         super(ResultsWindow, self).resizeEvent(event)
-        self.plot_widget.figure.set_tight_layout(0.1)
+        self.plot_widget.figure.tight_layout(pad=0.1)
 
     def field_changed(self, name):
         field = plask.load_field(self.h5file, name)

@@ -808,6 +808,9 @@ else:
                     return ssh
 
         def launch(self, main_window, args, defs):
+            if len(self.accounts) == 0:
+                QMessageBox.critical(None, "Remote Process Error", "No remote account configured!")
+                return
             account = self.accounts[self.accounts_combo.currentIndex()]
             user, host = account.userhost.split('@')
             port = account.port
