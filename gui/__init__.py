@@ -861,36 +861,46 @@ if 'systemid' not in LICENSE or not LICENSE['systemid']:
 
 
 def _handle_exception(exc_type, exc_value, exc_traceback):
+    global error_file
     if exc_type == SystemExit:
         sys.exit(exc_value.code)
     else:
         dat = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback)) + '\n'
-        if _DEBUG:
-            msg = dat
+        if error_file is None:
+            if _DEBUG:
+                msg = dat
+            else:
+                msg = exc_type.__name__ + ": " + str(exc_value)
         else:
-            msg = exc_type.__name__ + ": " + str(exc_value)
+            msg = None
 
         if _DEBUG and os.name != 'nt':
             out = sys.stderr
         else:
-            import time
-            outname = os.path.join(CURRENT_DIR,
-                                   time.strftime("plaskgui.%Y%m%d.%H%M%S.error.log", time.localtime(time.time())))
-            out = open(outname, 'w')
-            msg += "\n\n Error details saved to:\n{}".format(outname)
+            if error_file is None:
+                import time
+                error_file = os.path.join(CURRENT_DIR,
+                                          time.strftime("plaskgui.%Y%m%d.%H%M%S.error.log",
+                                                        time.localtime(time.time())))
+                msg += "\n\nError details saved to:\n{}".format(error_file)
+                msg += "\n\nFurther errors will not be reported (but they will be saved to the above file)."
+            out = open(error_file, 'a')
         out.write(dat)
         out.flush()
 
-        if os.name == 'nt':
-            import ctypes
-            MessageBox = ctypes.windll.user32.MessageBoxA
-            MessageBox(None, msg, "PLaSK GUI Error", 0x10)
-        elif not _DEBUG:
-            try:
-                QMessageBox.critical(None, "PLaSK GUI Error", msg)
-            except:
-                pass
+        if msg is not None:
+            if os.name == 'nt':
+                import ctypes
+                MessageBox = ctypes.windll.user32.MessageBoxA
+                MessageBox(None, msg, "PLaSK GUI Error", 0x10)
+            elif not _DEBUG:
+                try:
+                    QMessageBox.critical(None, "PLaSK GUI Error", msg)
+                except:
+                    pass
 
+
+error_file = None
 sys.excepthook = _handle_exception
 
 

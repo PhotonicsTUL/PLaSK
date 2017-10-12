@@ -347,6 +347,7 @@ print_log(LOG_RESULT, "ARGUMENTS")
 for arg in sys.argv[1:]:
     print_log(LOG_RESULT, arg)
 
+print ur"Python2 style"
 
 print(mesa + 0, )
 

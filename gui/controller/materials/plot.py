@@ -466,8 +466,9 @@ class MaterialPlot(QWidget):
             self.label.show()
             self.label.setText(' ')
             self.axes.set_xlim(start, end)
-            self.axes.set_xlabel(html_to_tex("{}{} [{}]".format(self.arg_button.descr[0].upper(), self.arg_button.descr[1:],
-                                                           self.arg_button.unit)))
+            self.axes.set_xlabel(html_to_tex(u"{}{} [{}]".format(self.arg_button.descr[0].upper(),
+                                                                 self.arg_button.descr[1:],
+                                                                 self.arg_button.unit)))
             self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
         self.axes.set_ylabel('[]')
         self.figure.tight_layout(pad=0.2)

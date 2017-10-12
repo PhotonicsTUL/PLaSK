@@ -7,7 +7,6 @@ https://bitbucket.org/henning/syntaxhighlighter/
 import re
 from ...qt.QtGui import QSyntaxHighlighter, QColor, QTextCharFormat, QFont, QBrush, QTextFormat
 
-
 try:
     unicode = unicode
 except NameError:
@@ -25,7 +24,7 @@ class Format(object):
 
     NAME = QTextFormat.UserProperty + 1
 
-    def __init__(self, name, color=None, bold=None, italic=None, base_format=None):
+    def __init__(self, name, color=None, bold=None, italic=None, underline=None, base_format=None):
         self.name = name
         tcf = QTextCharFormat()
         if base_format is not None:
@@ -44,9 +43,10 @@ class Format(object):
                 tcf.setFontWeight(QFont.Normal)
         if italic is not None:
             tcf.setFontItalic(italic)
+        if underline is not None:
+            tcf.setFontUnderline(underline)
         tcf.setProperty(Format.NAME, name)
         self.tcf = tcf
-
 
 
 class Partition(object):
@@ -63,11 +63,9 @@ class Partition(object):
         self.search_end = re.compile(end, re.M|re.S).search
 
 
-
 class PartitionScanner(object):
     # The idea to partition the source into different contexts comes from Eclipse.
     # http://wiki.eclipse.org/FAQ_What_is_a_document_partition%3F
-
 
     def __init__(self, partitions):
         start_groups = []
@@ -79,7 +77,6 @@ class PartitionScanner(object):
             start_groups.append("(?P<g%s_%s>%s)" % (i, p.name, p.start))
         start_pat = "|".join(start_groups)
         self.search_start = re.compile(start_pat, re.M|re.S).search
-
 
     def scan(self, current_state, text):
         last_pos = 0
@@ -120,11 +117,8 @@ class PartitionScanner(object):
         yield length, length, None, current_state, False
 
 
-
-
 class Token(object):
     __slots__ = ("name", "pattern", "prefix", "suffix")
-
 
     def __init__(self, name, pattern, prefix="", suffix=""):
         self.name = name
@@ -133,7 +127,6 @@ class Token(object):
         self.pattern = pattern
         self.prefix = prefix
         self.suffix = suffix
-
 
 
 class Scanner(object):
@@ -160,7 +153,6 @@ class Scanner(object):
         pat = "|".join(groups)
         self.search = re.compile(pat).search
 
-
     def scan(self, s):
         search = self.search
         #length = len(s)
@@ -176,9 +168,7 @@ class Scanner(object):
                 break
 
 
-
 class SyntaxHighlighter(QSyntaxHighlighter):
-
 
     def __init__(self, parent, partition_scanner, scanner, formats, default_font=None):
         """
@@ -206,7 +196,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
             else:
                 assert isinstance(f, Format)
             if isinstance(f, basestring):
-                f = (f,) # only color specified
+                f = (f,)  # only color specified
             if isinstance(f, (tuple,list)):
                 f = Format(*((fname,) + f))
             elif isinstance(f, dict):
@@ -224,7 +214,6 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         self.get_scanner = scan_inside.get
         self.scan_partitions = partition_scanner.scan
         self.get_format = self.formats.get
-
 
     def highlightBlock(self, text):
         "automatically called by Qt"
@@ -249,9 +238,6 @@ class SyntaxHighlighter(QSyntaxHighlighter):
                             set_format(start+token_pos, token_end-token_pos, f)
 
         self.setCurrentBlockState(new_state)
-
-
-
 
 
 def load_syntax(syntax, context=None):
