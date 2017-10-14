@@ -67,32 +67,6 @@ class BBoxIntersection(matplotlib.transforms.BboxBase):
     get_points.__doc__ = matplotlib.transforms.Bbox.get_points.__doc__
 
 
-class _MaterialToColor(object):
-
-    def __init__(self, axes=None):
-        if axes is None:
-            self._air_color = '#ffffff'
-        else:
-            try:
-                self._air_color = axes.get_facecolor()
-            except AttributeError:
-                self._air_color = axes.get_axis_bgcolor()
-
-    def __call__(self, material):
-        """
-            Generate color for given material.
-            :param plask.Material material: material
-            :return (float, float, float): RGB color, 3 floats, each in range [0, 1]
-        """
-        s = str(material)
-        if s == 'air':
-            return self._air_color
-        i = crc32(s.encode('utf8'))      # maybe crc32?
-        h, s, v = (i & 0xff), (i >> 8) & 0xff, (i >> 16) & 0xff
-        h, s, v = (h + 12.) / 279., (s + 153.) / 408., (v + 153.) / 408.
-        return colorsys.hsv_to_rgb(h, s, v)
-
-
 class ColorFromDict(object):
     """
     Get color from Python dictionary. The dictionary should map material name
@@ -106,9 +80,20 @@ class ColorFromDict(object):
     """
 
     def __init__(self, material_dict, axes=None):
-        super(ColorFromDict, self).__init__()
+        if material_dict is not DEFAULT_COLORS:
+            self.default_color = ColorFromDict(DEFAULT_COLORS, axes)
+            if any(isinstance(m, plask.material.Material) for m in material_dict):
+                material_dict = dict((str(k), v) for k, v in material_dict.items())
+        else:
+            if axes is None:
+                self._air_color = '#ffffff'
+            else:
+                try:
+                    self._air_color = axes.get_facecolor()
+                except AttributeError:
+                    self._air_color = axes.get_axis_bgcolor()
+            self.default_color = self.auto_color
         self.material_dict = material_dict
-        self.material_to_color = _MaterialToColor(axes)
 
     def __call__(self, material):
         """
@@ -135,7 +120,21 @@ class ColorFromDict(object):
                             return m.expand(c)
                 except AttributeError:
                     pass
-            return self.material_to_color(material)
+            return self.default_color(material)
+
+    def auto_color(self, material):
+        """
+            Generate color for given material.
+            :param plask.Material material: material
+            :return (float, float, float): RGB color, 3 floats, each in range [0, 1]
+        """
+        s = str(material)
+        if s == 'air':
+            return self._air_color
+        i = crc32(s.encode('utf8'))
+        h, s, v = (i & 0xff), (i >> 8) & 0xff, (i >> 16) & 0xff
+        h, s, v = (h + 12.) / 279., (s + 153.) / 408., (v + 153.) / 408.
+        return colorsys.hsv_to_rgb(h, s, v)
 
 
 class TertiaryColors(object):
@@ -574,8 +573,8 @@ def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=F
                 of the structure bounding box) to which the plot limits should
                 be set. If None, the axes limits are not adjusted.
 
-        get_color (callable): Callable that gets color for material given as
-                its parameter or dictionary from material names (strings)
+        get_color (callable or dict): Callable that gets color for material given
+                as its parameter or dictionary from material names (strings)
                 to colors. Material color should be given as a triple
                 (float, float, float) of red, green, blue components, each in
                 range [0, 1]. Any other format accepted by set_facecolor()
