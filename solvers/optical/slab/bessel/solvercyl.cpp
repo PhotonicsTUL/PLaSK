@@ -41,9 +41,22 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
             kscale = reader.getAttribute<double>("k-scale", kscale);
             kmethod = reader.enumAttribute<InfiniteWavevectors>("k-method")
                 .value("uniform", WAVEVECTORS_UNIFORM)
-                .value("laguerre", WAVEVECTORS_LAGUERRE)
                 // .value("legendre", WAVEVECTORS_LEGENDRE)
+                .value("laguerre", WAVEVECTORS_LAGUERRE)
+                .value("manual", WAVEVECTORS_MANUAL)
                 .get(kmethod);
+            if (reader.hasAttribute("k-list")) {
+                klist.clear();
+                for (auto val: boost::tokenizer<boost::char_separator<char>>(reader.requireAttribute("k-list"),
+                                                                             boost::char_separator<char>(" ,;\t\n"))) {
+                    try {
+                        double val = boost::lexical_cast<double>(val);
+                        klist.push_back(val);
+                    } catch (boost::bad_lexical_cast) {
+                        throw XMLException(reader, format("Value '{0}' cannot be converted to float", val));
+                    }
+                }
+            }
             reader.requireTagEnd();
         } else if (param == "interface") {
             if (reader.hasAttribute("index")) {

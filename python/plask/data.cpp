@@ -333,18 +333,6 @@ static py::object PythonDataVector_Array(py::object oself) {
 
 namespace detail {
 
-    struct NumpyDataDeleter {
-        PyArrayObject* arr;
-        NumpyDataDeleter(PyArrayObject* arr) : arr(arr) {
-            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            Py_XINCREF(arr);
-        }
-        void operator()(void*) {
-            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-            Py_XDECREF(arr);
-        }
-    };
-
     template <typename T, int dim>
     static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type
     makeDataVectorImpl(PyArrayObject* arr, shared_ptr<MeshD<dim>> mesh) {

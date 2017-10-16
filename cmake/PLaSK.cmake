@@ -145,6 +145,7 @@ macro(make_default)
                            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/solvers.yml
                            COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_CURRENT_SOURCE_DIR}/solvers.yml ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}.yml
                           )
+        add_custom_target(validate-${SOLVER_LIBRARY}-yml COMMAND ${CMAKE_SOURCE_DIR}/toolset/validate_solvers_yaml.py ${CMAKE_CURRENT_SOURCE_DIR}/solvers.yml)
         add_custom_target(${SOLVER_LIBRARY}-yml ALL DEPENDS ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}.yml)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/solvers.yml DESTINATION lib/plask/solvers/${SOLVER_CATEGORY_NAME} RENAME ${SOLVER_NAME}.yml COMPONENT solvers)
     endif()
@@ -169,6 +170,7 @@ macro(make_pure_python)
         install(FILES ${file} DESTINATION lib/plask/solvers/${SOLVER_DIR} COMPONENT solvers)
     endforeach()
     add_custom_target(${SOLVER_LIBRARY} DEPENDS ${python_targets} ${SOLVER_DEPENDS})
+    add_custom_target(validate-${SOLVER_LIBRARY}-yml COMMAND ${CMAKE_SOURCE_DIR}/toolset/validate_solvers_yaml.py ${CMAKE_CURRENT_SOURCE_DIR}/solvers.yml)
 
     if(BUILD_GUI)
         string(REPLACE "/" "." SOLVER_MODULE ${SOLVER_DIR})

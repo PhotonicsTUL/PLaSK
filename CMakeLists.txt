@@ -626,6 +626,7 @@ endif()
 
 # Build solvers
 set(solvers_test_targets "")
+set(validate_ymls_targets "")
 foreach(solv ${solvers})
     solv_option(${solv} opt)
     option(${opt} "Build solver '${solv}'" ON)
@@ -633,10 +634,13 @@ foreach(solv ${solvers})
         if(BUILD_TESTING)
             string(REGEX REPLACE "/|_" "" solvtarget ${solv})
             list(APPEND solvers_test_targets "solver-${solvtarget}-test")
+            list(APPEND validate_ymls_targets "validate-solver-${solvtarget}-yml")
         endif()
         add_subdirectory(solvers/${solv})
     endif()
 endforeach()
+
+add_custom_target(validate-yml DEPENDS ${validate_ymls_targets})
 
 if(BUILD_PYTHON AND BUILD_GUI)
     add_custom_target(plask-stubs ALL DEPENDS ${plask_stubs_files} ${plask_solvers_stubs_files})

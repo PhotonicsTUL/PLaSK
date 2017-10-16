@@ -56,6 +56,25 @@ inline void confirm_array(PyObject*& arr, py::object& self, py::object& dtype) {
     }
 }
 
+// ----------------------------------------------------------------------------------------------------------------------
+/**
+ * Tool to make DataVector from numpy array
+ */
+namespace detail {
+    struct NumpyDataDeleter {
+        PyArrayObject* arr;
+        NumpyDataDeleter(PyArrayObject* arr) : arr(arr) {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+            Py_XINCREF(arr);
+        }
+        void operator()(void*) {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+            Py_XDECREF(arr);
+        }
+    };
+}
+
+// ----------------------------------------------------------------------------------------------------------------------
 /*
  * Import numpy (needs to be called in every cpp, which uses arrays)
  */

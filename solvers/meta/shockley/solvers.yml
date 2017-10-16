@@ -150,6 +150,7 @@
     - &tfreq
       attr: tfreq
       label: Thermal update frequency
+      type: int
       default: 6
       help: >
         Number of electrical iterations per single thermal step. As temperature tends to converge faster,
@@ -546,10 +547,12 @@
       attrs:
       - attr: vmin
         label: min.
+        type: float
         help: >
           Minimum voltage to search threshold for. It should be below the threshold.
       - attr: vmax
         label: max.
+        type: float
         help: >
           Maximum voltage to search threshold for. It should be above the threshold.
     - attr: vtol

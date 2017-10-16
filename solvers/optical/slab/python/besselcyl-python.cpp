@@ -1,9 +1,9 @@
+#include <plask/python_numpy.h>
+
 #include "besselcyl-python.h"
 #include "slab-python.h"
 
-
 namespace plask { namespace solvers { namespace slab { namespace python {
-
 
 std::string BesselSolverCyl_Mode_str(const BesselSolverCyl::Mode& self) {
     return format("<m: {:d}, lam: {}nm, power: {:.2g}mW>", self.m, str(2e3*M_PI/self.k0, "({:.3f}{:+.3g}j)"), self.power);
@@ -37,7 +37,7 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
                 what = WHAT_WAVELENGTH; array = kwargs[*i];
             } else
                 k0.reset(2e3*M_PI / py::extract<dcomplex>(kwargs[*i])());
-        } else if (*i == "k0") {
+        } else if (*i == "kNumpyDataDeleter0") {
             if (what == WHAT_WAVELENGTH || k0)
                 throw BadInput(self->getId(), "'lam' and 'k0' are mutually exclusive");
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
@@ -134,6 +134,7 @@ void export_BesselSolverCyl()
         .value("UNIFORM", BesselSolverCyl::WAVEVECTORS_UNIFORM)
         //.value("LEGENDRE", BesselSolverCyl::WAVEVECTORS_LEGENDRE)
         .value("LAGUERRE", BesselSolverCyl::WAVEVECTORS_LAGUERRE)
+        .value("MANUAL", BesselSolverCyl::WAVEVECTORS_MANUAL)
     ;
 
     CLASS(BesselSolverCyl, "BesselCyl",
@@ -149,6 +150,11 @@ void export_BesselSolverCyl()
     RW_PROPERTY(kmethod, getKmethod, setKmethod,
         "Method of selecting wavevectors for numerical Hankel transform in infinite\n"
         "domain.");
+    RW_FIELD(klist,
+             "A list of relative wavevetors ranges. The numbers should be relative to\n"
+             "the inverse of the structure width. The actual wavevectors used in\n"
+             "the computations are the avrages of each two adjacent values specified here\n"
+             "and the integration weights are the sizes of each interval.");
     RW_PROPERTY(kscale, getKscale, setKscale,
                 "Scale factor for wavectors used in infinite domain. Multiplied by the expansions\n"
                 "size and divided by the geometry width it is a maximum considered wavevector.");

@@ -28,7 +28,8 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     enum InfiniteWavevectors {
         WAVEVECTORS_UNIFORM,
         // WAVEVECTORS_LEGENDRE,
-        WAVEVECTORS_LAGUERRE
+        WAVEVECTORS_LAGUERRE,
+        WAVEVECTORS_MANUAL
     };
 
     std::string getClassName() const override { return "optical.BesselCyl"; }
@@ -92,10 +93,10 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     /// How integration points and weight should be computed
     InfiniteWavevectors kmethod;
 
-//     /// Type of discrete cosine transform. Can be only 1 or two
-//     int dct;
-
   public:
+
+    /// Ranges for manual wavevectors
+    std::vector<double> klist;
 
     /// Class responsible for computing expansion coefficients
     std::unique_ptr<ExpansionBessel> expansion;

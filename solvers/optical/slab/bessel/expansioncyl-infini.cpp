@@ -37,15 +37,25 @@ void ExpansionBesselInfini::init2()
             kdelts.reset(N, SOLVER->kscale * ib);
             for (size_t i = 0; i != N; ++i) kpts[i] = (0.5 + i) * SOLVER->kscale;
             break;
-        case BesselSolverCyl::WAVEVECTORS_LAGUERRE:
-            gaussLaguerre(N, kpts, kdelts, 1. / (SOLVER->kscale));
-            kdelts *= ib;
-            break;
         // case BesselSolverCyl::WAVEVECTORS_LEGENDRE:
         //     gaussLegendre(N, kpts, kdelts);
         //     for (double& k: kpts) k = 0.5 * N * SOLVER->kscale * (1. + k);
         //     kdelts *= 0.5 * N * SOLVER->kscale * ib;
         //     break;
+        case BesselSolverCyl::WAVEVECTORS_LAGUERRE:
+            gaussLaguerre(N, kpts, kdelts, 1. / (SOLVER->kscale));
+            kdelts *= ib;
+            break;
+        case BesselSolverCyl::WAVEVECTORS_MANUAL:
+            if (SOLVER->klist.size() != N+1)
+                throw BadInput(SOLVER->getId(), "Number of manually specified wavevectors mjust be {}", N+1);
+            kpts.resize(N);
+            kdelts.reset(N);
+            for (size_t i = 0; i != N; ++i) {
+                kpts[i] = 0.5 * (SOLVER->klist[i] + SOLVER->klist[i+1]);
+                kdelts[i] = ib * (SOLVER->klist[i+1] - SOLVER->klist[i]);
+            }
+            break;
     }
 
     init3();
