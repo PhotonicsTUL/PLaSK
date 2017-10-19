@@ -70,12 +70,6 @@
 <grids>
   <generator method="divide" name="default" type="rectangular2d">
     <postdiv by0="2"/>
-    <!--postdiv by0="3" by1="2"/>
-    <refinements>
-      <axis0 object="oxide" at="-0.1"/>
-      <axis0 object="oxide" at="-0.05"/>
-      <axis0 object="aperture" at="0.1"/>
-    </refinements-->
     <warnings outside="no"/>
   </generator>
 </grids>
@@ -108,18 +102,11 @@ class GratingTest(unittest.TestCase):
         SOLVER.compute(save=False)
         self.assertAlmostEqual( SOLVER.get_total_current(), 1.754, 3 )
 
-  
+
 if __name__ == '__main__':
     import __main__
     __main__.GratingTest = GratingTest
     unittest.main()
-
-    figure()
-    SOLVER.plot_optical_field()
-    axvline(GEO.aperture.dr, color='0.75', ls=":", linewidth=1)
-    window_title("Light Intensity")
-    show()
-    
 
 ]]></script>
 

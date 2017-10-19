@@ -157,25 +157,24 @@ macro(make_default)
 endmacro()
 
 
-# This is macro that sets all the targets automagically
+# This is macro that sets all python targets automagically
 macro(make_pure_python)
 
-    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR})
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR})
     file(GLOB sources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.py solvers.yml)
     foreach(file ${sources})
-        list(APPEND python_targets ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}/${file})
-        add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}/${file}
-                           COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${file} ${CMAKE_BINARY_DIR}/lib/plask/solvers/${SOLVER_DIR}/${file}
+        list(APPEND python_targets ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}/${file})
+        add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}/${file}
+                           COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/${file} ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/solvers/${SOLVER_DIR}/${file}
                            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${file})
         install(FILES ${file} DESTINATION lib/plask/solvers/${SOLVER_DIR} COMPONENT solvers)
     endforeach()
-    add_custom_target(${SOLVER_LIBRARY} DEPENDS ${python_targets} ${SOLVER_DEPENDS})
+    add_custom_target(${SOLVER_LIBRARY} ALL DEPENDS ${python_targets} ${SOLVER_DEPENDS})
     add_custom_target(validate-${SOLVER_LIBRARY}-yml COMMAND ${CMAKE_SOURCE_DIR}/toolset/validate_solvers_yaml.py ${CMAKE_CURRENT_SOURCE_DIR}/solvers.yml)
 
     if(BUILD_GUI)
         string(REPLACE "/" "." SOLVER_MODULE ${SOLVER_DIR})
         set(SOLVER_STUB ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs/${SOLVER_DIR}.py)
-        #message("plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}")
         add_custom_command(OUTPUT ${SOLVER_STUB}
                             COMMAND plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}
                             DEPENDS ${SOLVER_PYTHON_MODULE} ${CMAKE_SOURCE_DIR}/toolset/makestub.py

@@ -898,7 +898,7 @@
       label: Wavevectors selection method
       type: choice
       default: uniform
-      choices: [ uniform, laguerre ]
+      choices: [ uniform, laguerre, manual ]
       help: >
         Method of selecting wavevectors for numerical Hankel transform in infinite domain.
     - attr: k-scale
@@ -909,6 +909,13 @@
       help: >
         Scale factor for wavectors used in infinite domain. Multiplied by the expansion size and divided
         by the geometry width it is a maximum considered wavevector.
+    - attr: k-list
+      label: Wavectors list
+      type: list of floats
+      help: >
+        A list of relative wavevetors ranges. The numbers should be relative to the inverse of the structure
+        width. The actual wavevectors used in the computations are the avrages of each two adjacent values
+        specified here and the integration weights are the sizes of each interval.
     - attr: transfer
       var: optical.transfer
       label: Transfer method
