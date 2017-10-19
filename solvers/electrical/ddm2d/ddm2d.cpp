@@ -14,7 +14,7 @@
 
 #include "ddm2d.h"
 
-namespace plask { namespace solvers { namespace drift_diffusion {
+namespace plask { namespace electrical { namespace drift_diffusion {
 
 /** Compute effective density of states
  * \param M carrier effective mass
@@ -1966,4 +1966,4 @@ template < > std::string DriftDiffusionModel2DSolver<Geometry2DCylindrical>::get
 template struct PLASK_SOLVER_API DriftDiffusionModel2DSolver<Geometry2DCartesian>;
 template struct PLASK_SOLVER_API DriftDiffusionModel2DSolver<Geometry2DCylindrical>;
 
-}}} // namespace plask::solvers::thermal
+}}} // namespace plask::electrical::thermal

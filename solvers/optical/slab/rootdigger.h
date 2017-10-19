@@ -4,7 +4,7 @@
 #include <functional>
 #include <plask/plask.hpp>
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 struct SlabBase;
 
@@ -70,6 +70,6 @@ struct RootDigger {
     virtual dcomplex find(dcomplex start) = 0;
 };
 
-}}} // namespace plask::solvers::slab
+}}} // namespace plask::optical::slab
 
 #endif // PLASK__OPTICAL_SLAB_ROOTDIGGER_H

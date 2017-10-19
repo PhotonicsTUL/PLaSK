@@ -3,7 +3,7 @@
 
 #include "rootdigger.h"
 
-namespace plask { namespace solvers { namespace effective {
+namespace plask { namespace optical { namespace effective {
 
 class RootMuller: public RootDigger {
 
@@ -24,5 +24,5 @@ class RootMuller: public RootDigger {
     dcomplex find(dcomplex start) const override;
 };
 
-}}} // namespace plask::solvers::effective
+}}} // namespace plask::optical::effective
 #endif // PLASK__OPTICAL_EFFECTIVE_MULLER_H

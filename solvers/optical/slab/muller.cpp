@@ -2,7 +2,7 @@
 #include "solver.h"
 using namespace std;
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 //**************************************************************************
 /// Search for a single mode starting from the given point: point
@@ -45,4 +45,4 @@ dcomplex RootMuller::find(dcomplex start)
     throw ComputationError(solver.getId(), "Muller: {0}: maximum number of iterations reached", log_value.chart_name);
 }
 
-}}} // namespace plask::solvers::slab
+}}} // namespace plask::optical::slab

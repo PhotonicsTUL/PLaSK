@@ -9,7 +9,7 @@
 #include "rootdigger.h"
 #include "bisection.h"
 
-namespace plask { namespace solvers { namespace effective {
+namespace plask { namespace optical { namespace effective {
 
 static constexpr int MH = 2; // Hankel function type (1 or 2)
 
@@ -83,6 +83,12 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     enum Emission {
         TOP,        ///< Top emission
         BOTTOM      ///< Bottom emission
+    };
+
+    /// Radial determinant modes
+    enum Determinant {
+        DETERMINANT_TRANSFER,   ///< Use transfer matrix method
+        DETERMINANT_FULL        ///< Construct one matrix for all layers
     };
 
     /// Details of the computed mode
@@ -190,6 +196,9 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     int rstripe;
 
   public:
+
+    /// Radial determinant mode
+    Determinant determinant;
 
     /// Return the main stripe number
     int getStripe() const {
@@ -470,6 +479,9 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      */
     double integrateBessel(Mode& mode);
 
+    /// Compute Bessel functions
+    void computeBessel(size_t i, dcomplex v, const Mode& mode, dcomplex* J1, dcomplex* H1, dcomplex* J2, dcomplex* H2);
+
     /// Return S matrix determinant for the whole structure
     dcomplex detS(const plask::dcomplex& lam, Mode& mode, bool save=false);
 
@@ -546,7 +558,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
 };
 
 
-}}} // namespace plask::solvers::effective
+}}} // namespace plask::optical::effective
 
 #endif // PLASK__MODULE_OPTICAL_EFM_HPP
 

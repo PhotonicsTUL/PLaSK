@@ -1,6 +1,6 @@
 #include <plask/plask.hpp>
 
-namespace plask { namespace solvers { namespace diffusion_cylindrical {
+namespace plask { namespace electrical { namespace diffusion_cylindrical {
 
 template<typename Geometry2DType>
 class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public plask::SolverWithMesh<Geometry2DType, plask::RegularMesh1D>
@@ -169,4 +169,4 @@ double FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::jacobian(dou
     return 2*M_PI * r;
 } // 2*M_PI from integral over full angle,
 
-}}} //namespace plask::solvers::diffusion_cylindrical
+}}} //namespace plask::electrical::diffusion_cylindrical

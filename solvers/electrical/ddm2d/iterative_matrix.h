@@ -15,7 +15,7 @@ F77SUB daxpy(const int& n, const double& sa, const double* sx, const int& incx, 
 F77SUB dsbmv(const char& uplo, const int& n, const int& k, const double& alpha, const double* a, const int& lda,
              const double* x, const int& incx, const double& beta, double* y, const int& incy); // y = alpha*A*x + beta*y,
 
-namespace plask { namespace solvers { namespace drift_diffusion {
+namespace plask { namespace electrical { namespace drift_diffusion {
 
 /// Error code of solveDCG
 struct DCGError: public std::exception {
@@ -235,6 +235,6 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
 }
 
 
-}}} // namespace plask::solvers::electrical
+}}} // namespace plask::electrical::electrical
 
 #endif // PLASK__MODULE_ELECTRICAL_ITERATIVE_MATRIX_H

@@ -7,7 +7,7 @@ using boost::algorithm::clamp;
 
 #define SOLVER static_cast<FourierSolver2D*>(solver)
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 ExpansionPW2D::ExpansionPW2D(FourierSolver2D* solver): Expansion(solver), initialized(false),
     symmetry(E_UNSPECIFIED), polarization(E_UNSPECIFIED) {}

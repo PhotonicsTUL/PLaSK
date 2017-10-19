@@ -9,7 +9,7 @@
  * Patterson quadrature for complex function along specified line
  */
 
-namespace plask { namespace solvers { namespace effective {
+namespace plask { namespace optical { namespace effective {
 
 /**
  * Compute Patterson quadrature along line a-b in complex plane with specified precision
@@ -23,6 +23,6 @@ template <typename S, typename T>
 S patterson(const std::function<S(T)>& fun, T a, T b, double& err);
 
 
-}}} // namespace plask::solvers::effective
+}}} // namespace plask::optical::effective
 
 #endif // PLASK__PATTERSON_H

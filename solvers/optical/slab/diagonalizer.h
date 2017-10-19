@@ -14,10 +14,10 @@
 
 #include "matrices.h"
 
-namespace plask { namespace  solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 struct Expansion;
-    
+
 /**
  * Base for the class determining and holding the necessary matrices
  * This is the abstract base class for all diagonalizers (multi-threaded,
@@ -117,5 +117,5 @@ class SimpleDiagonalizer : public Diagonalizer
     const cmatrix& invTH(size_t layer) const override { return Th1[layer]; }
 };
 
-}}} // namespace plask::solvers::slab
+}}} // namespace plask::optical::slab
 #endif // PLASK__SOLVER_SLAB_DIAGONALIZER_H

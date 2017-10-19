@@ -9,7 +9,7 @@ using namespace plask::python;
 
 #include "../eim.h"
 #include "../efm.h"
-using namespace plask::solvers::effective;
+using namespace plask::optical::effective;
 
 #define ROOTDIGGER_ATTRS_DOC \
     u8".. rubric:: Attributes:\n\n" \
@@ -316,6 +316,7 @@ BOOST_PYTHON_MODULE(effective)
         RECEIVER(inGain, "");
         PROVIDER(outNeff, "");
         PROVIDER(outLightMagnitude, "");
+        PROVIDER(outLightE, "");
         solver.def_readonly("outElectricField",
                             reinterpret_cast<ProviderFor<LightE, Geometry2DCartesian> EffectiveIndex2D::*>(&EffectiveIndex2D::outLightE),
                             "Alias for :attr:`outLightE`.");
@@ -375,6 +376,12 @@ BOOST_PYTHON_MODULE(effective)
 //                     "Flag indicating whether the solver uses asymptotic exponential field\n"
 //                     "in the outermost layer.")
         RW_PROPERTY(emission, getEmission, setEmission, u8"Emission direction.");
+        RW_FIELD(determinant,
+                 u8"Radial determinant mode.\n\n"
+                 u8"This parameter determines the method used to compute radial determinant.\n"
+                 u8"If it is set to 'transfer', 2x2 transfer matrix is used to ensure field\n"
+                 u8"continuity at the interfaces. For the 'full' value, one single matrix is\n"
+                 u8"constructed for all the interfaces and its determinant is returned.");
         METHOD(set_simple_mesh, setSimpleMesh, u8"Set simple mesh based on the geometry objects bounding boxes.");
         // METHOD(set_horizontal_mesh, setHorizontalMesh, u8"Set custom mesh in horizontal direction, vertical one is based on the geometry objects bounding boxes", "points");
         solver.def("find_mode", &EffectiveFrequencyCyl_findMode,
@@ -442,6 +449,7 @@ BOOST_PYTHON_MODULE(effective)
         PROVIDER(outWavelength, "");
         PROVIDER(outLoss, "");
         PROVIDER(outLightMagnitude, "");
+        PROVIDER(outLightE, "");
         solver.def_readonly("outElectricField",
                             reinterpret_cast<ProviderFor<LightE, Geometry2DCylindrical> EffectiveFrequencyCyl::*>(&EffectiveFrequencyCyl::outLightE),
                             "Alias for :attr:`outLightE`.");

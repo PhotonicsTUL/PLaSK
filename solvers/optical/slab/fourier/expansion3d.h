@@ -6,7 +6,7 @@
 #include "../expansion.h"
 #include "fft.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 struct FourierSolver3D;
 

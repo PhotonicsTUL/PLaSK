@@ -7,7 +7,7 @@
 
 #undef interface
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 /// Information about lateral PMLs
 struct PML {

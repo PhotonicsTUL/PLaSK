@@ -10,7 +10,7 @@
 #include <plask/plask.hpp>
 #include "fortran.h"
 
-namespace plask { namespace  solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 template <typename T> class MatrixDiagonal;
 

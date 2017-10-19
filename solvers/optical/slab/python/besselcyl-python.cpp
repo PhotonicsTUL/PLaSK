@@ -3,7 +3,7 @@
 #include "besselcyl-python.h"
 #include "slab-python.h"
 
-namespace plask { namespace solvers { namespace slab { namespace python {
+namespace plask { namespace optical { namespace slab { namespace python {
 
 std::string BesselSolverCyl_Mode_str(const BesselSolverCyl::Mode& self) {
     return format("<m: {:d}, lam: {}nm, power: {:.2g}mW>", self.m, str(2e3*M_PI/self.k0, "({:.3f}{:+.3g}j)"), self.power);
@@ -313,4 +313,4 @@ void export_BesselSolverCyl()
     ;
 }
 
-}}}} // namespace plask::solvers::slab::python
+}}}} // namespace plask::optical::slab::python

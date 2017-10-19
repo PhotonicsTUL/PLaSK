@@ -5,8 +5,8 @@ using namespace plask::python;
 #include "fourier2d-python.h"
 #include "fourier3d-python.h"
 #include "besselcyl-python.h"
-using namespace plask::solvers::slab;
-using namespace plask::solvers::slab::python;
+using namespace plask::optical::slab;
+using namespace plask::optical::slab::python;
 
 #ifndef NDEBUG
 struct CMatrix_Python {

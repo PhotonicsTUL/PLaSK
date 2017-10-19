@@ -15,9 +15,8 @@ include(PLaSK)
 #
 #find_package(Boost REQUIRED COMPONENTS math_tr1)
 #set(SOLVER_LINK_LIBRARIES ${Boost_MATH_TR1_LIBRARIES})
-#find_package(BLAS)
-#set(SOLVER_LINK_LIBRARIES ${BLAS_LIBRARIES})
-set(SOLVER_LINK_LIBRARIES camos)
+find_package(LAPACK)
+set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES} camos)
 
 # Uncomment and edit the line below if you need some special include directories.
 # If you use external libraries, you can use the variables returned by find_package.

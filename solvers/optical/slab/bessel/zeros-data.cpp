@@ -1,6 +1,6 @@
 #include "zeros-data.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 const double bessel_zeros[][100] = {
     {   // m = 0
@@ -515,4 +515,4 @@ const double bessel_zeros[][100] = {
     }
 };
 
-}}} // namespace plask::solvers::slab
+}}} // namespace plask::optical::slab

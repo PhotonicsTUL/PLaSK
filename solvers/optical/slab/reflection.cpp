@@ -8,7 +8,7 @@
 #include "fortran.h"
 #include "meshadapter.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 ReflectionTransfer::ReflectionTransfer(SlabBase* solver, Expansion& expansion): Transfer(solver, expansion)
 {
@@ -558,4 +558,4 @@ cvector ReflectionTransfer::getFieldVectorH(double z, int n)
 
 
 
-}}} // namespace plask::solvers::slab
+}}} // namespace plask::optical::slab

@@ -6,7 +6,7 @@
 #include "../solver.h"
 #include "expansion2d.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 /**
  * Reflection transformation solver in Cartesian 2D geometry.

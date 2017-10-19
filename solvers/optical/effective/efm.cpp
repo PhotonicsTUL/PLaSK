@@ -1,9 +1,10 @@
 #include "efm.h"
 #include "patterson.h"
+#include "gauss_matrix.h"
 
 using plask::dcomplex;
 
-namespace plask { namespace solvers { namespace effective {
+namespace plask { namespace optical { namespace effective {
 
 #define DLAM 1e-3
 
@@ -12,6 +13,7 @@ EffectiveFrequencyCyl::EffectiveFrequencyCyl(const std::string& name) :
     log_value(dataLog<dcomplex, dcomplex>("radial", "lam", "det")),
     emission(TOP),
     rstripe(-1),
+    determinant(DETERMINANT_FULL),
     perr(1e-3),
     k0(NAN),
     vlam(0.),
@@ -61,6 +63,10 @@ void EffectiveFrequencyCyl::loadConfiguration(XMLReader& reader, Manager& manage
             asymptotic = reader.getAttribute<bool>("asymptotic", asymptotic);
             reader.requireTagEnd();
         } else if (param == "root") {
+            determinant = reader.enumAttribute<Determinant>("determinant")
+                .value("full", DETERMINANT_FULL)
+                .value("transfer", DETERMINANT_TRANSFER)
+            .get(determinant);
             RootDigger::readRootDiggerConfig(reader, root);
         } else if (param == "stripe-root") {
             RootDigger::readRootDiggerConfig(reader, stripe_root);
@@ -580,99 +586,86 @@ double EffectiveFrequencyCyl::integrateBessel(Mode& mode)
     return 2.*M_PI * sum;
 }
 
-dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, plask::solvers::effective::EffectiveFrequencyCyl::Mode& mode, bool save)
+void EffectiveFrequencyCyl::computeBessel(size_t i, dcomplex v, const Mode& mode,
+                                          dcomplex* J1, dcomplex* H1, dcomplex* J2, dcomplex* H2)
+{
+    double r = mesh->axis0->at(i);
+    dcomplex x1 = r * k0 * sqrt(nng[i-1] * (veffs[i-1]-v));
+    if (real(x1) < 0.) x1 = -x1;
+    if (imag(x1) > SMALL) x1 = -x1;
+    dcomplex x2 = r * k0 * sqrt(nng[i] * (veffs[i]-v));
+    if (real(x2) < 0.) x2 = -x2;
+    if (imag(x2) > SMALL) x2 = -x2;
+    // Compute Bessel functions and their derivatives
+    double Jr[2], Ji[2], Hr[2], Hi[2];
+    long nz, ierr;
+    zbesj(x1.real(), x1.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
+    if (ierr != 0) throw ComputationError(getId(), "Could not compute J({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
+        mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i-1])));
+    zbesh(x1.real(), x1.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
+    if (ierr != 0) throw ComputationError(getId(), "Could not compute H({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
+        mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i-1])));
+    for (int j = 0; j < 2; ++j) { J1[j] = dcomplex(Jr[j], Ji[j]); H1[j] = dcomplex(Hr[j], Hi[j]); }
+    zbesj(x2.real(), x2.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
+    if (ierr != 0) throw ComputationError(getId(), "Could not compute J({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
+        mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i])));
+    zbesh(x2.real(), x2.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
+    if (ierr != 0) throw ComputationError(getId(), "Could not compute H({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
+        mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i])));
+    for (int j = 0; j < 2; ++j) { J2[j] = dcomplex(Jr[j], Ji[j]); H2[j] = dcomplex(Hr[j], Hi[j]); }
+    J1[1] *= x1; H1[1] *= x1;
+    J2[1] *= x2; H2[1] *= x2;
+}
+
+
+dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, Mode& mode, bool save)
 {
     dcomplex v = freqv(lam);
-    MatrixR T = MatrixR::eye();
     dcomplex J1[2], H1[2];
     dcomplex J2[2], H2[2];
 
-
-    // // In the intermostmost layer the solution is only the J function
-    // mode.rfields[0] = FieldR(1., 0.);
-    // for (size_t i = 1; i != rsize; ++i) {
-    //     double r = mesh->axis0->at(i);
-    //     dcomplex x1 = r * k0 * sqrt(nng[i-1] * (veffs[i-1]-v));
-    //     if (real(x1) < 0.) x1 = -x1;
-    //     if (imag(x1) > SMALL) x1 = -x1;
-    //     dcomplex x2 = r * k0 * sqrt(nng[i] * (veffs[i]-v));
-    //     if (real(x2) < 0.) x2 = -x2;
-    //     if (imag(x2) > SMALL) x2 = -x2;
-    //     // Compute Bessel functions and their derivatives
-    //     double Jr[2], Ji[2], Hr[2], Hi[2];
-    //     long nz, ierr;
-    //     zbesj(x1.real(), x1.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
-    //     if (ierr != 0) throw ComputationError(getId(), "Could not compute J({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
-    //         mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i-1])));
-    //     zbesh(x1.real(), x1.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
-    //     if (ierr != 0) throw ComputationError(getId(), "Could not compute H({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
-    //         mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i-1])));
-    //     for (int j = 0; j < 2; ++j) { J1[j] = dcomplex(Jr[j], Ji[j]); H1[j] = dcomplex(Hr[j], Hi[j]); }
-    //     zbesj(x2.real(), x2.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
-    //     if (ierr != 0) throw ComputationError(getId(), "Could not compute J({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
-    //         mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i])));
-    //     zbesh(x2.real(), x2.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
-    //     if (ierr != 0) throw ComputationError(getId(), "Could not compute H({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
-    //         mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i])));
-    //     for (int j = 0; j < 2; ++j) { J2[j] = dcomplex(Jr[j], Ji[j]); H2[j] = dcomplex(Hr[j], Hi[j]); }
-    //     MatrixR A(       J1[0],                   H1[0],
-    //               mode.m*J1[0] - x1*J1[1], mode.m*H1[0] - x1*H1[1]);
-    //     MatrixR B(       J2[0],                   H2[0],
-    //               mode.m*J2[0] - x2*J2[1], mode.m*H2[0] - x2*H2[1]);
-    //     T = B.solve(A) * T;
-    //     if (save) mode.rfields[i] = T * mode.rfields[0];
-    // }
-    // if (save) {
-    //     dcomplex f = 1e6 * sqrt(1. / integrateBessel(mode)); // 1e6: V/µm -> V/m
-    //     for (size_t r = 0; r != rsize; ++r) mode.rfields[r] *= f;
-    // }
-    // // In the outermost area there must only outgoing wave, so J = 0.
-    // //    0 = [ JJ JH ] 1
-    // //    h = [ HJ HH ] 0
-    // return T.JJ/T.HJ;// * J2[0]/H2[0];
-
-    // In the outermost layer there is only an outgoing wave so the solution is only the H function
-    mode.rfields[rsize-1] = FieldR(0., 1.);
-    for (size_t i = rsize-1; i > 0; --i) {
-        double r = mesh->axis0->at(i);
-        dcomplex x1 = r * k0 * sqrt(nng[i-1] * (veffs[i-1]-v));
-        if (real(x1) < 0.) x1 = -x1;
-        if (imag(x1) > SMALL) x1 = -x1;
-        dcomplex x2 = r * k0 * sqrt(nng[i] * (veffs[i]-v));
-        if (real(x2) < 0.) x2 = -x2;
-        if (imag(x2) > SMALL) x2 = -x2;
-        // Compute Bessel functions and their derivatives
-        double Jr[2], Ji[2], Hr[2], Hi[2];
-        long nz, ierr;
-        zbesj(x1.real(), x1.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
-        if (ierr != 0) throw ComputationError(getId(), "Could not compute J({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
-            mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i-1])));
-        zbesh(x1.real(), x1.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
-        if (ierr != 0) throw ComputationError(getId(), "Could not compute H({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
-            mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i-1])));
-        for (int j = 0; j < 2; ++j) { J1[j] = dcomplex(Jr[j], Ji[j]); H1[j] = dcomplex(Hr[j], Hi[j]); }
-        zbesj(x2.real(), x2.imag(), mode.m, 1, 2, Jr, Ji, nz, ierr);
-        if (ierr != 0) throw ComputationError(getId(), "Could not compute J({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
-            mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i])));
-        zbesh(x2.real(), x2.imag(), mode.m, 1, MH, 2, Hr, Hi, nz, ierr);
-        if (ierr != 0) throw ComputationError(getId(), "Could not compute H({0}, {1})\n @ r = {2} um, lam = {3} nm, vlam = {4} nm",
-            mode.m, str(x1), r, str(lambda(v)), str(lambda(veffs[i])));
-        for (int j = 0; j < 2; ++j) { J2[j] = dcomplex(Jr[j], Ji[j]); H2[j] = dcomplex(Hr[j], Hi[j]); }
-        MatrixR A(       J1[0],                   H1[0],
-                  mode.m*J1[0] - x1*J1[1], mode.m*H1[0] - x1*H1[1]);
-        MatrixR B(       J2[0],                   H2[0],
-                  mode.m*J2[0] - x2*J2[1], mode.m*H2[0] - x2*H2[1]);
-        T = A.solve(B) * T;
-        if (save) mode.rfields[i-1] = T * mode.rfields[rsize-1];
-    }
-    if (save) {
+    if (determinant == DETERMINANT_FULL && !save) {
+        size_t N = 2 * rsize;
+        ZgbMatrix matrix(N);
+        // In the intermostmost layer the solution is only the J function
+        matrix(0, 0) = 1.;
+        matrix(0, 1) =0.;
+        for (size_t i = 1, n = 1; i != rsize; ++i, n += 2) {
+            computeBessel(i, v, mode, J1, H1, J2, H2);
+            matrix(n-1, n+1) =   0.;
+            matrix(n  , n-1) =   H1[0];
+            matrix(n  , n  ) =   J1[0];
+            matrix(n  , n+1) = - H2[0];
+            matrix(n  , n+2) = - J2[0];
+            matrix(n+1, n-1) =   mode.m * H1[0] - H1[1];
+            matrix(n+1, n  ) =   mode.m * J1[0] - J1[1];
+            matrix(n+1, n+1) = - mode.m * H2[0] + H2[1];
+            matrix(n+1, n+2) = - mode.m * J2[0] + J2[1];
+            matrix(n+2, n  ) =   0.;
+        }
+        // In the outermost area there must only outgoing wave, so J = 0.
+        matrix(N-1, N-1) = 1.;
+        matrix(N-1, N-2) = 0.;
+        return matrix.determinant();
+    } else {
+        MatrixR T = MatrixR::eye();
+        mode.rfields[rsize-1] = FieldR(0., 1.);
+        for (size_t i = rsize-1; i > 0; --i) {
+            computeBessel(i, v, mode, J1, H1, J2, H2);
+            MatrixR A(       J1[0],                H1[0],
+                      mode.m*J1[0] - J1[1], mode.m*H1[0] - H1[1]);
+            MatrixR B(       J2[0],                H2[0],
+                      mode.m*J2[0] - J2[1], mode.m*H2[0] - H2[1]);
+            T = A.solve(B) * T;
+            if (save) mode.rfields[i-1] = T * mode.rfields[rsize-1];
+        }
         dcomplex f = 1e6 * sqrt(1. / integrateBessel(mode)); // 1e6: V/µm -> V/m
         for (size_t r = 0; r != rsize; ++r) mode.rfields[r] *= f;
+        // In the innermost area there must not be any infinity, so H_0 = 0.
+        //    j = [ JJ JH ] 0
+        //    0 = [ HJ HH ] 1
+        return T.HH/T.JH * H1[0]/J1[0];
     }
-    // In the innermost area there must not be any infinity, so H_0 = 0.
-    //    j = [ JJ JH ] 0
-    //    0 = [ HJ HH ] 1
-    return T.HH/T.JH * H1[0]/J1[0];
 }
 
 
@@ -1031,4 +1024,4 @@ const LazyData<double> EffectiveFrequencyCyl::getHeat(const shared_ptr<const Mes
 }
 
 
-}}} // namespace plask::solvers::effective
+}}} // namespace plask::optical::effective

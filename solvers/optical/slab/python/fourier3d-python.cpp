@@ -1,7 +1,7 @@
 #include "fourier3d-python.h"
 #include "slab-python.h"
 
-namespace plask { namespace solvers { namespace slab { namespace python {
+namespace plask { namespace optical { namespace slab { namespace python {
 
 
 template <NPY_TYPES type>
@@ -725,4 +725,4 @@ void export_FourierSolver3D()
     FourierSolver3D_SymmetryLongTranWrapper::register_();
 }
 
-}}}} // namespace plask::solvers::slab::python
+}}}} // namespace plask::optical::slab::python

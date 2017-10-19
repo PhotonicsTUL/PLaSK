@@ -8,7 +8,7 @@
 #include "../meshadapter.h"
 
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 struct PLASK_SOLVER_API ExpansionBesselInfini: public ExpansionBessel {
 
@@ -40,6 +40,6 @@ struct PLASK_SOLVER_API ExpansionBesselInfini: public ExpansionBessel {
     void layerIntegrals(size_t layer, double lam, double glam) override;
 };
 
-}}} // # namespace plask::solvers::slab
+}}} // # namespace plask::optical::slab
 
 #endif // PLASK__SOLVER__SLAB_EXPANSIONCYL_INFINI_H

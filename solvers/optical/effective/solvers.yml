@@ -223,6 +223,16 @@
       Parameters of the horizontal root-finding algorithm.
     attrs:
     - *method
+    - attr: determinant
+      label: Determinant method
+      type: choice
+      choices: [ full, transfer ]
+      default: full
+      help: >
+        This parameter determines the method used to compute radial determinant.
+        If it is set to 'transfer', 2x2 transfer matrix is used to ensure field
+        continuity at the interfaces. For the 'full' value, one single matrix is
+        constructed for all the interfaces and its determinant is returned.
     - &tolx-efm
       attr: tolx
       label: Tolerance on effective frequency

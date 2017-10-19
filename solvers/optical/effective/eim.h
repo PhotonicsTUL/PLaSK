@@ -8,7 +8,7 @@
 #include "rootdigger.h"
 #include "bisection.h"
 
-namespace plask { namespace solvers { namespace effective {
+namespace plask { namespace optical { namespace effective {
 
 /**
  * Solver performing calculations in 2D Cartesian space using effective index method
@@ -444,6 +444,6 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
 };
 
 
-}}} // namespace plask::solvers::effective
+}}} // namespace plask::optical::effective
 
 #endif // PLASK__MODULE_OPTICAL_EIM_HPP

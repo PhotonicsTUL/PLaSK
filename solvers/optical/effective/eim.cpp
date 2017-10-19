@@ -1,7 +1,7 @@
 #include <exception>
 #include "eim.h"
 
-namespace plask { namespace solvers { namespace effective {
+namespace plask { namespace optical { namespace effective {
 
 EffectiveIndex2D::EffectiveIndex2D(const std::string& name) :
     SolverWithMesh<Geometry2DCartesian, RectangularMesh<2>>(name),
@@ -948,4 +948,4 @@ const LazyData<double> EffectiveIndex2D::getHeat(shared_ptr<const MeshD<2>> dst_
 }
 
 
-}}} // namespace plask::solvers::effective
+}}} // namespace plask::optical::effective

@@ -15,7 +15,7 @@ using namespace plask::python;
 #   undef interface
 #endif
 
-namespace plask { namespace solvers { namespace slab { namespace python {
+namespace plask { namespace optical { namespace slab { namespace python {
 
 #define ROOTDIGGER_ATTRS_DOC \
     ".. rubric:: Attributes:\n\n" \
@@ -400,7 +400,7 @@ inline void export_base(Class solver) {
 }
 
 
-}}}} // # namespace plask::solvers::slab::python
+}}}} // # namespace plask::optical::slab::python
 
 #endif // PLASK__SOLVER__OPTICAL__SLAB_PYTHON_H
 

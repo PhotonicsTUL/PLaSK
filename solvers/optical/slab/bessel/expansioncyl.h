@@ -7,7 +7,7 @@
 #include "../patterson.h"
 #include "../meshadapter.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 struct BesselSolverCyl;
 
@@ -241,6 +241,6 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 #endif
 };
 
-}}} // # namespace plask::solvers::slab
+}}} // # namespace plask::optical::slab
 
 #endif // PLASK__SOLVER__SLAB_EXPANSIONCYL_H

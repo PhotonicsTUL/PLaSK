@@ -1,7 +1,7 @@
 #include "brent.h"
 using namespace std;
 
-namespace plask { namespace solvers { namespace effective {
+namespace plask { namespace optical { namespace effective {
 
 #define carg(x) realaxis? dcomplex(x, imag(start)) : dcomplex(real(start), x)
 #define fun(x) abs(val_function(carg(x)))
@@ -172,4 +172,4 @@ dcomplex RootBrent::find(dcomplex xstart) const
     return xstart;
 }
 
-}}} // namespace plask::solvers::effective
+}}} // namespace plask::optical::effective

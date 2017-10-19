@@ -4,7 +4,7 @@
 #include "rootdigger.h"
 #include "solver.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 class RootMuller: public RootDigger {
 
@@ -30,5 +30,5 @@ class RootMuller: public RootDigger {
     dcomplex find(dcomplex start) override;
 };
 
-}}} // namespace plask::solvers::slab
+}}} // namespace plask::optical::slab
 #endif // PLASK__OPTICAL_SLAB_MULLER_H

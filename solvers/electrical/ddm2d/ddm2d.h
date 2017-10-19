@@ -11,7 +11,7 @@
 #include "gauss_matrix.h"
 #include <fstream>
 
-namespace plask { namespace solvers { namespace drift_diffusion {
+namespace plask { namespace electrical { namespace drift_diffusion {
 
 /// Choice of matrix factorization algorithms
 enum Algorithm {

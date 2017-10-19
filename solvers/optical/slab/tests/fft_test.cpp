@@ -26,7 +26,7 @@ std::string normalize_test_case_name(const_string name) {
 
 #include "../fourier/fft.h"
 using namespace plask;
-using namespace plask::solvers::slab;
+using namespace plask::optical::slab;
 
 BOOST_AUTO_TEST_SUITE(fft)
 

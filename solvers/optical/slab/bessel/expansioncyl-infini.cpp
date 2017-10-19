@@ -10,7 +10,7 @@ using boost::math::cyl_bessel_j;
 
 #define SOLVER static_cast<BesselSolverCyl*>(solver)
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 ExpansionBesselInfini::ExpansionBesselInfini(BesselSolverCyl* solver): ExpansionBessel(solver)
 {
@@ -118,4 +118,4 @@ void ExpansionBesselInfini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
     }
 }
 
-}}} // # namespace plask::solvers::slab
+}}} // # namespace plask::optical::slab

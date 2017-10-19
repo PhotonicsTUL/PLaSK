@@ -4,7 +4,7 @@
 #include <functional>
 #include <plask/plask.hpp>
 
-namespace plask { namespace solvers { namespace effective {
+namespace plask { namespace optical { namespace effective {
 
 struct RootDigger {
 
@@ -85,6 +85,6 @@ struct RootDigger {
     static void readRootDiggerConfig(XMLReader& reader, Params& params);
 };
 
-}}} // namespace plask::solvers::effective
+}}} // namespace plask::optical::effective
 
 #endif // PLASK__OPTICAL_EFFECTIVE_ROOTDIGGER_H

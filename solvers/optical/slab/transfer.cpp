@@ -3,7 +3,7 @@
 #include "solver.h"
 #include "fortran.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 Transfer::Transfer(SlabBase* solver, Expansion& expansion):
     solver(solver),
@@ -205,4 +205,4 @@ cvector Transfer::getReflectedFieldVectorH(const cvector& incident, IncidentDire
     return getFieldVectorH(z, solver->getLayerFor(z));
 }
 
-}}} // namespace plask::solvers::slab
+}}} // namespace plask::optical::slab

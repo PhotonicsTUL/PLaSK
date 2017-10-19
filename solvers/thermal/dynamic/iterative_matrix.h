@@ -251,6 +251,6 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
 }
 
 
-}}} // namespace plask::solvers::thermal
+}}} // namespace plask::thermal::thermal
 
 #endif // PLASK__MODULE_THERMAL_ITERATIVE_MATRIX_H

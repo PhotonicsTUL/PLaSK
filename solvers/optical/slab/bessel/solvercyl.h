@@ -9,7 +9,7 @@
 #include "expansioncyl-infini.h"
 
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 /**
  * Reflection transformation solver in Cartesian 2D geometry.
@@ -297,6 +297,6 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
 
 
-}}} // # namespace plask::solvers::slab
+}}} // # namespace plask::optical::slab
 
 #endif // PLASK__SOLVER__SLAB_SOLVERCYL_H

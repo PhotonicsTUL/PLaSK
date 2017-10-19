@@ -6,7 +6,7 @@
 
 #define lensav(n) (2*n + int(log2(n)) + 6)
 
-namespace plask { namespace solvers { namespace slab { namespace FFT {
+namespace plask { namespace optical { namespace slab { namespace FFT {
 
 Forward1D::Forward1D(): wsave(nullptr) {}
 
@@ -412,7 +412,7 @@ Backward2D::~Backward2D() {
     aligned_free(wsave1);
 }
 
-}}}} // namespace plask::solvers::slab
+}}}} // namespace plask::optical::slab
 
 #endif // USE_FFTW
 

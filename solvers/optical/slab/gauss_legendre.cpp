@@ -4,7 +4,7 @@
 #include <boost/math/special_functions/legendre.hpp>
 using boost::math::legendre_p;
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 
 void gaussLegendre(size_t n, std::vector<double>& abscissae, DataVector<double>& weights)
@@ -30,4 +30,4 @@ void gaussLegendre(size_t n, std::vector<double>& abscissae, DataVector<double>&
     }
 }
 
-}}} // # namespace plask::solvers::slab
+}}} // # namespace plask::optical::slab

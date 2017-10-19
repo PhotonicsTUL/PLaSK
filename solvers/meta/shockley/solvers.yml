@@ -15,7 +15,8 @@
     help: >
       Geometry settings for all solvers.
     attrs:
-    - attr: thermal
+    - &geometry-2d-thermal
+      attr: thermal
       label: Thermal
       required: true
       type: Cartesian2D geometry
@@ -508,14 +509,14 @@
       unit: nm
       default: 0.02
       help: >
-        Step, by which the wavelength is sweep while searching for the approximate mode.
+        Step, by which the wavelength is swept while searching for the approximate mode.
     - attr: vlam
       label: Vertical wavelength
       type: float
       unit: nm
       help: >
-        '"Vertical wavelength" i.e. the wavelength what would be in the absence of lateral confinement;
-        setting this value helps to find models in very long resonators.'
+        "Vertical wavelength" i.e. the wavelength what would be in the absence of lateral confinement;
+        setting this value helps to find models in very long resonators.
     - attr: vat
       label: Vertical solution coord
       type: float
@@ -535,13 +536,13 @@
       type: int
       help: >
         Number of the voltage boundary condition to vary during the threshold search.
-#    - attr: quick
-#      label: Use quick method
-#      type: bool
-#      default: false
-#      help: >
-#        If this flag is set, the optical root finding is performed together with the threshold
-#        voltage search. It may increase performance in case of the long optical computations.
+    #- attr: quick
+    #  label: Use quick method
+    #  type: bool
+    #  default: false
+    #  help: >
+    #    If this flag is set, the optical root finding is performed together with the threshold
+    #    voltage search. It may increase performance in case of the long optical computations.
     - group: Voltage range
       unit: V
       attrs:
@@ -690,6 +691,16 @@
       choices: [ muller, broyden, brent ]
       help: >
         Root finding algorithm.
+    - attr: determinant
+      label: Determinant method
+      type: choice
+      choices: [ full, transfer ]
+      default: full
+      help: >
+        This parameter determines the method used to compute radial determinant.
+        If it is set to 'transfer', 2x2 transfer matrix is used to ensure field
+        continuity at the interfaces. For the 'full' value, one single matrix is
+        constructed for all the interfaces and its determinant is returned.
     - &tolx
       attr: tolx
       label: Tolerance on effective frequency
@@ -746,7 +757,8 @@
       help: >
         Initial range size (Muller method only).
 
-  - tag: optical-stripe-root
+  - &optical-stripe-root
+    tag: optical-stripe-root
     label: Parameters of the Optical Vertical Solution Finding
     help: >
       Parameters of root-finding algorithm for one stripe in optical solver.
@@ -754,7 +766,8 @@
     - *method
     - *tolx
     - *tolf-min
-    - attr: tolf-max
+    - &stripe-tolf-max
+      attr: tolf-max
       label: Required determinant value
       type: float
       default: 1.0e-05
@@ -796,6 +809,9 @@
   - outCurrentDensity
   - outHeat
   - outConductivity
+  - outLightMagnitude
+  - outLightE
+  - outRefractiveIndex
 
 ###########################################################################################
 
@@ -943,7 +959,7 @@
       unit: nm
       default: 0.05
       help: >
-        Step, by which the wavelength is sweep while searching for the approximate mode.
+        Step, by which the wavelength is swept while searching for the approximate mode.
 
   - *threshold-root
 
@@ -1099,6 +1115,221 @@
     - *alpha
     - *lambda
     - *initial-range
+
+  - *threshold-output
+
+  providers: *threshold-providers
+
+###########################################################################################
+
+- solver: ThresholdSearch2D
+  lib: shockley
+  category: meta
+  help: >
+    Solver for threshold search of semiconductor laser in 2D Cartesian geometry.
+
+    This solver performs thermo-electrical computations followed by
+    determination ot threshold current and optical analysis in order to
+    determine the threshold of a semiconductor laser. The search is
+    performed by ``scipy`` root finding algorithm in order to determine
+    the voltage and electric current ensuring no optical loss in the
+    laser cavity.
+
+    The optical computations are done with effective index method.
+
+  tags:
+  - tag: geometry
+    label: Geometry
+    help: >
+      Geometry settings for all solvers.
+    attrs:
+    - *geometry-2d-thermal
+    - &geometry-2d-electrical
+      attr: electrical
+      label: Electrical
+      required: true
+      type: Cartesian2D geometry
+      help: >
+        Geometry used by the electrical, diffusion, and gain solvers.
+    - &geometry-2d-optical
+      attr: optical
+      label: Optical
+      required: true
+      type: Cartesian2D geometry
+      help: >
+        Geometry used by the optical solver.
+
+  - tag: mesh
+    label: Mesh
+    help: >
+      Mesh settings for all solvers.
+    attrs:
+    - *mesh-2d-thermal
+    - *mesh-2d-electrical
+    - *mesh-2d-diffusion
+    - attr: optical
+      label: Optical
+      type: mesh
+      mesh types: [ Ordered ]
+      help: >
+        Mesh used by the optical solver.
+
+  - tag: optical
+    label: Optical Solver Configuration
+    help: >
+      Configuration of the optical solver
+    attrs:
+    - attr: polarization
+      label: Mode polarization
+      type: choice
+      choices: [ TE, TM ]
+      default: TE
+      help: >
+        Mode polarization.
+    - attr: mn
+      var: mn
+      label: Lateral mode number
+      type: int
+      default: 0
+      help: >
+        Lateral mode number
+    - attr: wavelength
+      label: Emission wavelength
+      required: true
+      type: float
+      unit: nm
+      help: >
+        Emission wavelength. The effective index is searched for this wavelenght.
+    - attr: dneff
+      var: dneff
+      label: Effective index step
+      type: float
+      default: 0.02
+      help: >
+        Step, by which the effective index is swept while searching for the approximate mode.
+    - attr: vneff
+      label: Vertical effective index
+      type: float
+      help: >
+        "Vertical effective index" i.e. the effective index what would be in the absence of lateral confinement;
+        setting this value helps to find models in very long resonators.
+    - attr: vat
+      label: Vertical solution coord
+      type: float
+      unit: µm
+      help: >
+        Horizontal position of at which the vertical part of the field is calculated.
+
+  - *threshold-root
+
+  - *voltage
+
+  - *temperature
+
+  - *heatflux
+
+  - *convection
+
+  - *radiation
+
+  - *junction
+
+  - *contacts
+
+  - *threshold-thermoelectric-loop
+
+  - *tmatrix
+
+  - *ematrix
+
+  - *diffusion
+
+  - *gain
+
+  - tag: optical-root
+    label: Parameters of the Optical Horizontal Root-Finding Algorithm
+    help: >
+      Parameters of the horizontal root-finding algorithm.
+    attrs:
+    - &method-2
+      attr: method
+      label: Root finding method
+      type: choice
+      default: muller
+      choices: [ muller, broyden, brent ]
+      help: >
+        Root finding algorithm.
+    - &tolx-2
+      attr: tolx
+      label: Tolerance on effective index
+      type: float
+      default: 1.0e-06
+      help: >
+        Maximum change of the effective frequency parameter which is allowed for convergent solution.
+    - &tolf-min-2
+      attr: tolf-min
+      label: Sufficient determinant value
+      type: float
+      default: 1.0e-07
+      help: >
+        Minimum value of the determinant sufficient to assume convergence.
+    - &tolf-max-2
+      attr: tolf-max
+      label: Required determinant value
+      type: float
+      default: 2.0e-05
+      help: >
+        Maximum value of the determinant required to assume convergence.
+    - &maxstep-2
+      attr: maxstep
+      label: Maximum Broyden iteration step
+      type: float
+      default: 0.1
+      help: >
+        Maximum step in one iteration of root finding. Significant for the Broyden's method only.
+    - &maxiter-2
+      attr: maxiter
+      label: Maximum number of iterations
+      type: int
+      default: 500
+      help: >
+        Maximum number of root finding iterations.
+    - &alpha-2
+      attr: alpha
+      label: Broyden decrease factor
+      type: float
+      default: 1.0e-07
+      help: >
+        Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).
+    - &lambda-2
+      attr: lambda
+      label: Minimum Broyden step decrease ratio
+      type: float
+      default: 1.0e-08
+      help: >
+        Minimum decrease ratio of one step (Broyden method only).
+    - &initial-range-2
+      attr: initial-range
+      label: Initial Muller range size
+      type: complex
+      default: 0.001
+      help: >
+        Initial range size (Muller method only).
+
+  - tag: opticaal-stripe-root
+    label: Parameters of the Optical Vertical Root-Finding Algorithm
+    help: >
+      Parameters of root-finding algorithm for one stripe.
+    attrs:
+    - *method-2
+    - *tolx-2
+    - *tolf-min-2
+    - *stripe-tolf-max
+    - *maxstep-2
+    - *maxiter-2
+    - *alpha-2
+    - *lambda-2
+    - *initial-range-2
 
   - *threshold-output
 

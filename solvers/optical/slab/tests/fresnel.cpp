@@ -6,7 +6,7 @@
 #include "../fourier/solver2d.h"
 #include "../fourier/solver2d.h"
 using namespace plask;
-using namespace plask::solvers::slab;
+using namespace plask::optical::slab;
 
 BOOST_AUTO_TEST_SUITE(fresneltest)
 

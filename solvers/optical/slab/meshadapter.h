@@ -7,7 +7,7 @@
 
 #include "matrices.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 
 /// Simple adapter that allows to process single level in the mesh
@@ -149,6 +149,6 @@ struct LevelsAdapterRectangular: public LevelsAdapter
 std::unique_ptr<LevelsAdapter> makeLevelsAdapter(const shared_ptr<const Mesh>& src);
 
 
-}}} // namespace plask::solvers::slab
+}}} // namespace plask::optical::slab
 
 #endif // PLASK__SOLVER_SLAB_MESHADAPTER_H

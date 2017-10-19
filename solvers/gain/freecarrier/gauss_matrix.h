@@ -30,8 +30,6 @@ struct DgbMatrix {
     const size_t size;              ///< Order of the matrix, i.e. number of columns or rows
     double* data;                   ///< Pointer to data
 
-    aligned_unique_ptr<int> ipiv;
-
     /**
      * Create matrix
      * \param rank size of the matrix

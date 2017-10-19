@@ -1,7 +1,7 @@
 #include "muller.h"
 using namespace std;
 
-namespace plask { namespace solvers { namespace effective {
+namespace plask { namespace optical { namespace effective {
 
 //**************************************************************************
 /// Search for a single mode starting from the given point: point
@@ -44,4 +44,4 @@ dcomplex RootMuller::find(dcomplex start) const
     throw ComputationError(solver.getId(), "Muller: {0}: maximum number of iterations reached", log_value.chart_name);
 }
 
-}}} // namespace plask::solvers::effective
+}}} // namespace plask::optical::effective

@@ -6,7 +6,7 @@
 #include "solver.h"
 
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 /**
  * Base class for all solvers using reflection matrix method.
@@ -81,6 +81,6 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
 };
 
 
-}}} // namespace plask::solvers::slab
+}}} // namespace plask::optical::slab
 
 #endif // PLASK__SOLVER_SLAB_REFLECTION_H

@@ -5,7 +5,7 @@
 
 #include "diagonalizer.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 using phys::Z0;
 
@@ -275,6 +275,6 @@ struct PLASK_SOLVER_API Transfer {
 };
 
 
-}}} // namespace plask::solvers::slab
+}}} // namespace plask::optical::slab
 
 #endif // PLASK__SLAB_TRANSFER_H

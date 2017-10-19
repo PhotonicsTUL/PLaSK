@@ -6,7 +6,7 @@
 F77SUB dpbtrf_(const char& uplo, const int& n, const int& kd, double* ab, const int& ldab, int& info);
 F77SUB dpbtrs_(const char& uplo, const int& n, const int& kd, const int& nrhs, double* ab, const int& ldab, double* b, const int& ldb, int& info);
 
-namespace plask { namespace solvers { namespace diffusion_cylindrical {
+namespace plask { namespace electrical { namespace diffusion_cylindrical {
 
 constexpr double inv_hc = 1.0e-9 / (phys::c * phys::h_J);
 using phys::Z0;

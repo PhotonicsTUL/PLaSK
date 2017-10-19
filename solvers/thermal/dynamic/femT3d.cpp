@@ -457,4 +457,4 @@ const LazyData<Tensor2<double>> FiniteElementMethodDynamicThermal3DSolver::getTh
 }
 
 
-}}} // namespace plask::solvers::thermal
+}}} // namespace plask::thermal::thermal

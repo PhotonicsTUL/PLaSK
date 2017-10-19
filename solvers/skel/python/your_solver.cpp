@@ -7,7 +7,7 @@ using namespace plask;
 using namespace plask::python;
 
 #include "../your_solver_class_header.hpp"
-using namespace plask::solvers::your_solver;
+using namespace plask::category::your_solver;
 
 /**
  * Initialization of your solver class to Python

@@ -644,4 +644,4 @@ template<> std::string FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylin
 template struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>;
 template struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylindrical>;
 
-}}} // namespace plask::solvers::thermal
+}}} // namespace plask::thermal::thermal

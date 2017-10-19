@@ -136,11 +136,11 @@ See also:
    Receciver class: :class:`plask.flow.RefractiveIndexReceiverCyl`
 """
 
-outElectricField = """\
+outLightE = """\
 Provider of the computed electric field [V/m].
 
 
-outElectricField(n=0, mesh, interpolation='default')
+outLightE(n=0, mesh, interpolation='default')
 
 :param int n: Value number.
 :param mesh mesh: Target mesh to get the field at.
@@ -154,16 +154,16 @@ testing its length.
 Example:
    Connect the provider to a receiver in some other solver:
 
-   >>> other_solver.inLightE = solver.outElectricField
+   >>> other_solver.inLightE = solver.outLightE
 
    Obtain the provided field:
 
-   >>> solver.outElectricField(0, mesh)
+   >>> solver.outLightE(0, mesh)
    <plask.Data at 0x1234567>
 
    Test the number of provided values:
 
-   >>> len(solver.outElectricField)
+   >>> len(solver.outLightE)
    3
 
 See also:
@@ -173,3 +173,37 @@ See also:
    Receciver class: :class:`plask.flow.LightEReceiver2D`
 """
 
+outNeff = """\
+Provider of the computed effective index [-].
+
+
+outNeff(n=0)
+
+:param int n: Value number.
+
+:return: Value of the effective index **[-]**.
+
+You may obtain the number of different values this provider can return by
+testing its length.
+
+Example:
+   Connect the provider to a receiver in some other solver:
+
+   >>> other_solver.inEffectiveIndex = solver.outNeff
+
+   Obtain the provided value:
+
+   >>> solver.outNeff(n=0)
+   1000
+
+   Test the number of provided values:
+
+   >>> len(solver.outNeff)
+   3
+
+See also:
+
+   Provider class: :class:`plask.flow.EffectiveIndexProvider`
+
+   Receciver class: :class:`plask.flow.EffectiveIndexReceiver`
+"""

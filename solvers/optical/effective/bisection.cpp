@@ -1,6 +1,6 @@
 #include "bisection.h"
 
-namespace plask { namespace solvers { namespace effective {
+namespace plask { namespace optical { namespace effective {
 
 #define CALL_FUN(result, re, im) \
     if (error) continue; \
@@ -216,4 +216,4 @@ std::vector<std::pair<dcomplex,dcomplex>> findZeros(const Solver* solver, const 
 }
 
 
-}}} // namespace plask::solvers::effective
+}}} // namespace plask::optical::effective

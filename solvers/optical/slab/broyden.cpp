@@ -1,7 +1,7 @@
 #include "broyden.h"
 using namespace std;
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 //**************************************************************************
 /// Search for a single mode starting from the given point: point
@@ -171,4 +171,4 @@ dcomplex RootBroyden::Broyden(dcomplex x)
     throw ComputationError(solver.getId(), "Broyden: maximum number of iterations reached");
 }
 
-}}} // namespace plask::solvers::slab
+}}} // namespace plask::optical::slab

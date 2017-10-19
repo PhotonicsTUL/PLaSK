@@ -1,6 +1,6 @@
 #include "brent.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 #define carg(x) realaxis? dcomplex(x, imag(start)) : dcomplex(real(start), x)
 #define fun(x) abs(val_function(carg(x)))
@@ -180,4 +180,4 @@ dcomplex RootBrent::find(dcomplex xstart)
     return xstart;
 }
 
-}}} // namespace plask::solvers::slab
+}}} // namespace plask::optical::slab

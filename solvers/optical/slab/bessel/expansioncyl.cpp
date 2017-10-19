@@ -12,7 +12,7 @@ using boost::math::legendre_p;
 
 #define SOLVER static_cast<BesselSolverCyl*>(solver)
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 ExpansionBessel::ExpansionBessel(BesselSolverCyl* solver): Expansion(solver), m(1),
                                                            initialized(false), m_changed(true)
@@ -473,4 +473,4 @@ double ExpansionBessel::integratePoyntingVert(const cvector& E, const cvector& H
 }
 
 
-}}} // # namespace plask::solvers::slab
+}}} // # namespace plask::optical::slab

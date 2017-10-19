@@ -2,7 +2,7 @@
 #include "fortran.h"
 
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 inline static double sign(double x) { return (x < 0.)? -1. : 1.; }
 
@@ -192,4 +192,4 @@ void gaussLaguerre(size_t n, std::vector<double>& abscissae, DataVector<double>&
     }
 }
 
-}}} // # namespace plask::solvers::slab
+}}} // # namespace plask::optical::slab

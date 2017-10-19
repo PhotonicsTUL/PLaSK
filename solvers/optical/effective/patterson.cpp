@@ -1,7 +1,7 @@
 #include "patterson.h"
 #include "patterson-data.h"
 
-namespace plask { namespace solvers { namespace effective {
+namespace plask { namespace optical { namespace effective {
 
 template <typename S, typename T>
 S patterson(const std::function<S(T)>& fun, T a, T b, double& err)
@@ -49,4 +49,4 @@ S patterson(const std::function<S(T)>& fun, T a, T b, double& err)
 
 template double patterson<double,double>(const std::function<double(double)>& fun, double a, double b, double& err);
 
-}}} // namespace plask::solvers::effective
+}}} // namespace plask::optical::effective

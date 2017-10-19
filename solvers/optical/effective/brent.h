@@ -3,7 +3,7 @@
 
 #include "rootdigger.h"
 
-namespace plask { namespace solvers { namespace effective {
+namespace plask { namespace optical { namespace effective {
 
 class RootBrent: public RootDigger {
 
@@ -28,5 +28,5 @@ class RootBrent: public RootDigger {
     dcomplex find(dcomplex start) const override;
 };
 
-}}} // namespace plask::solvers::effective
+}}} // namespace plask::optical::effective
 #endif // PLASK__OPTICAL_EFFECTIVE_BRENT_H

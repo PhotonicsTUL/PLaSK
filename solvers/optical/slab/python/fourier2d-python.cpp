@@ -2,7 +2,7 @@
 #include "slab-python.h"
 
 
-namespace plask { namespace solvers { namespace slab { namespace python {
+namespace plask { namespace optical { namespace slab { namespace python {
 
 inline static std::string polarization_str(Expansion::Component val) {
     AxisNames* axes = getCurrentAxes();
@@ -610,4 +610,4 @@ void export_FourierSolver2D()
     ;
 }
 
-}}}} // namespace plask::solvers::slab::python
+}}}} // namespace plask::optical::slab::python

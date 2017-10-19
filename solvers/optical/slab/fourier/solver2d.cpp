@@ -1,7 +1,7 @@
 #include "solver2d.h"
 #include "expansion2d.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 FourierSolver2D::FourierSolver2D(const std::string& name): SlabSolver<SolverOver<Geometry2DCartesian>>(name),
     beta(0.), ktran(0.),

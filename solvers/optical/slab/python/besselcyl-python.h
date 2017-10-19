@@ -3,12 +3,12 @@
 
 #include "../bessel/solvercyl.h"
 
-namespace plask { namespace solvers { namespace slab { namespace python {
+namespace plask { namespace optical { namespace slab { namespace python {
 
 void export_BesselSolverCyl();
 
 
-}}}} // # namespace plask::solvers::slab::python
+}}}} // # namespace plask::optical::slab::python
 
 #endif // PLASK__SOLVER__OPTICAL__SLAB_BESSELCYL_PYTHON_H
 

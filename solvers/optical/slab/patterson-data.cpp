@@ -1,6 +1,6 @@
 #include "patterson-data.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 const double patterson_points[] = {
     0.000000000000000,
@@ -792,4 +792,4 @@ const double patterson_weights[][256] = {
     }
 };
 
-}}} // namespace plask::solvers::effective
+}}} // namespace plask::optical::effective

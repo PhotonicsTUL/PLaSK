@@ -7,7 +7,7 @@ using namespace plask;
 using namespace plask::python;
 
 #include "../diffusion_1D/diffusion_cylindrical.h"
-using namespace plask::solvers::diffusion_cylindrical;
+using namespace plask::electrical::diffusion_cylindrical;
 
 template <typename GeometryT>
 shared_ptr<RegularMesh1D> DiffusionSolver_current_mesh(FiniteElementMethodDiffusion2DSolver<GeometryT>& self) {

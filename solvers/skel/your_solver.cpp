@@ -1,6 +1,6 @@
 #include "your_solver.h"
 
-namespace plask { namespace solvers { namespace your_solver {
+namespace plask { namespace category { namespace your_solver {
 
 YourSolver::YourSolver(const std::string& name=""): SolverWithMesh<ForExample_Geometry2DCartesian, ForExample_RectilinearMesh2D>(name),
     outSomeField(this, &YourSolver::getDelegated) // getDelegated will be called whether provider value is requested

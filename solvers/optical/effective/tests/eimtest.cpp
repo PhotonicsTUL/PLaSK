@@ -5,7 +5,7 @@
 #include <plask/plask.hpp>
 #include "../eim.h"
 using namespace plask;
-using namespace plask::solvers::effective;
+using namespace plask::optical::effective;
 
 BOOST_AUTO_TEST_SUITE(eimtest)
 

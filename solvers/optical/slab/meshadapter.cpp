@@ -1,6 +1,6 @@
 #include "meshadapter.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 template<int dim>
 size_t LevelsAdapterGeneric<dim>::GenericLevel::index(size_t i) const { return matching[i]; }
@@ -80,4 +80,4 @@ template struct LevelsAdapterGeneric<3>;
 template struct LevelsAdapterRectangular<2>;
 template struct LevelsAdapterRectangular<3>;
 
-}}} // namespace plask::solvers::slab
+}}} // namespace plask::optical::slab

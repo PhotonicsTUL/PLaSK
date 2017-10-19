@@ -404,7 +404,7 @@ class ThresholdSearchCyl(ThresholdSearch):
     outLoss = property(lambda self: self.optical.outLoss, doc=_doc.outLoss)
     outWavelength = property(lambda self: self.optical.outWavelength, doc=_doc.outWavelength)
     outRefractiveIndex = property(lambda self: self.optical.outRefractiveIndex, doc=_doc.outRefractiveIndex)
-    outElectricField = property(lambda self: self.optical.outElectricField, doc=_doc.outElectricField)
+    outLightE = property(lambda self: self.optical.outLightE, doc=_doc.outLightE)
 
     thermal = attribute(Thermal.__name__+"()")
     ":class:`thermal.static.StaticCyl` solver used for thermal calculations."
@@ -424,7 +424,7 @@ class ThresholdSearchCyl(ThresholdSearch):
     tfreq = 6.0
     """
     Number of electrical iterations per single thermal step.
-    
+
     As temperature tends to converge faster, it is reasonable to repeat thermal
     solution less frequently.
     """
@@ -432,14 +432,14 @@ class ThresholdSearchCyl(ThresholdSearch):
     vmin = None
     """
     Minimum voltage to search threshold for.
-    
+
     It should be below the threshold.
     """
 
     vmax = None
     """
     Maximum voltage to search threshold for.
-    
+
     It should be above the threshold.
     """
 
@@ -455,21 +455,21 @@ class ThresholdSearchCyl(ThresholdSearch):
     dlam = 0.02
     """
     Wavelength step.
-      
-    Step, by which the wavelength is sweep while searching for the approximate mode.
+
+    Step, by which the wavelength is swept while searching for the approximate mode.
     """
 
     lpm = 0
     """
     Angular mode number $m$.
-       
+
     0 for LP0x, 1 for LP1x, etc.
     """
 
     lpn = 1
     """
     Radial mode number $n$.
-       
+
     1 for LPx1, 2 for LPx2, etc.
     """
 
@@ -537,6 +537,8 @@ class ThresholdSearchCyl(ThresholdSearch):
             self.lpm = int(tag.get('m', self.lpm))
             self.lpn = int(tag.get('n', self.lpn))
         else:
+            if tag == 'optical-root':
+                self._read_attr(tag, 'determinant', self.optical, str)
             super(ThresholdSearchCyl, self)._parse_xpl(tag, manager)
 
     def _get_info(self):
@@ -591,7 +593,7 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
     outLoss = property(lambda self: self.optical.outLoss, doc=_doc.outLoss)
     outWavelength = property(lambda self: self.optical.outWavelength, doc=_doc.outWavelength)
     outRefractiveIndex = property(lambda self: self.optical.outRefractiveIndex, doc=_doc.outRefractiveIndex)
-    outElectricField = property(lambda self: self.optical.outElectricField, doc=_doc.outElectricField)
+    outLightE = property(lambda self: self.optical.outLightE, doc=_doc.outLightE)
 
     thermal = attribute(Thermal.__name__ + "()")
     ":class:`thermal.static.StaticCyl` solver used for thermal calculations."
@@ -643,7 +645,7 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
     """
     Wavelength step.
 
-    Step, by which the wavelength is sweep while searching for the approximate mode.
+    Step, by which the wavelength is swept while searching for the approximate mode.
     """
 
     hem = 1
@@ -663,7 +665,7 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
     lam = None
     """
     Initial wavelength for optical search.
-    
+
     If this value is set, the computations are started from this value. If this
     value is set, the radial mode number :attr:`hen` is ignored.
 
@@ -780,4 +782,176 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
         ]
 
 
-__all__ = 'ThresholdSearchCyl', 'ThresholdSearchBesselCyl'
+class ThresholdSearch2D(ThresholdSearch):
+    """
+    Solver for threshold search of semiconductor laser.
+
+    This solver performs thermo-electrical computations followed by
+    determination ot threshold current and optical analysis in order to
+    determine the threshold of a semiconductor laser. The search is
+    performed by ``scipy`` root finding algorithm in order to determine
+    the voltage and electric current ensuring no optical loss in the
+    laser cavity.
+
+    The computations can be executed using `compute` method, after which
+    the results may be save to the HDF5 file with `save` or presented visually
+    using ``plot_...`` methods. If ``save`` parameter of the :meth:`compute` method
+    is *True* the fields are saved automatically after the computations.
+    The file name is based on the name of the executed script with suffix denoting
+    either the launch time or the identifier of a batch job if a batch system
+    (like SLURM, OpenPBS, or SGE) is used.
+    """
+
+    _optarg = 'neff'
+
+    Thermal = thermal.static.Static2D
+    Electrical = electrical.shockley.Shockley2D
+    Diffusion = electrical.diffusion.Diffusion2D
+    Gain = gain.freecarrier.FreeCarrier2D
+
+    _OPTICAL_ROOTS = {'optical-root': 'root', 'optical-stripe-root': 'stripe_root'}
+
+    outTemperature = property(lambda self: self.thermal.outTemperature, doc=Thermal.outTemperature.__doc__)
+    outHeatFlux = property(lambda self: self.thermal.outHeatFlux, doc=Thermal.outHeatFlux.__doc__)
+
+    outThermalConductivity = property(lambda self: self.thermal.outThermalConductivity,
+                                      doc=Thermal.outThermalConductivity.__doc__)
+    outVoltage = property(lambda self: self.electrical.outVoltage, doc=Electrical.outVoltage.__doc__)
+    outCurrentDensity = property(lambda self: self.electrical.outCurrentDensity,
+                                 doc=Electrical.outCurrentDensity.__doc__)
+    outHeat = property(lambda self: self.electrical.outHeat, doc=Electrical.outHeat.__doc__)
+    outConductivity = property(lambda self: self.electrical.outConductivity, doc=Electrical.outConductivity.__doc__)
+    outCarriersConcentration = property(lambda self: self.diffusion.outCarriersConcentration,
+                                        doc=Diffusion.outCarriersConcentration.__doc__)
+    outGain = property(lambda self: self.gain.outGain, doc=Gain.outGain.__doc__)
+    outLightMagnitude = property(lambda self: self.optical.outLightMagnitude, doc=_doc.outLightMagnitude)
+    outLoss = property(lambda self: self.optical.outLoss, doc=_doc.outLoss)
+    outNeff = property(lambda self: self.optical.outNeff, doc=_doc.outNeff)
+    outRefractiveIndex = property(lambda self: self.optical.outRefractiveIndex, doc=_doc.outRefractiveIndex)
+    outLightE = property(lambda self: self.optical.outLightE, doc=_doc.outLightE)
+
+    thermal = attribute(Thermal.__name__+"()")
+    ":class:`thermal.static.StaticCyl` solver used for thermal calculations."
+
+    electrical = attribute(Electrical.__name__+"()")
+    ":class:`electrical.shockley.ShockleyCyl` solver used for electrical calculations."
+
+    diffusion = attribute(Diffusion.__name__+"()")
+    ":class:`electrical.diffusion.DiffusionCyl` solver used for electrical calculations."
+
+    gain = attribute(Gain.__name__+"()")
+    ":class:`gain.freecarrier.FreeCarrierCyl` solver used for gain calculations."
+
+    optical = attribute("EffectiveFrequencyCyl()")
+    ":class:`optical.effective.EffectiveFrequencyCyl` solver used for optical calculations."
+
+    tfreq = 6.0
+    """
+    Number of electrical iterations per single thermal step.
+
+    As temperature tends to converge faster, it is reasonable to repeat thermal
+    solution less frequently.
+    """
+
+    vmin = None
+    """
+    Minimum voltage to search threshold for.
+
+    It should be below the threshold.
+    """
+
+    vmax = None
+    """
+    Maximum voltage to search threshold for.
+
+    It should be above the threshold.
+    """
+
+    vtol = 1e-5
+    "Tolerance on voltage in the root search."
+
+    maxiter = 50
+    "Maximum number of root finding iterations."
+
+    wavelength = None
+    "Emission wavelength [nm]."
+
+    dneff = 0.02
+    """
+    Effective index step.
+
+    Step, by which the effective index is swept while searching for the approximate mode.
+    """
+
+    mn = 1
+    """
+    Lateral mode number $n$.
+    """
+
+    optical_resolution = (800, 600)
+    """
+    Number of points along the horizontal and vertical axes for the saved
+    and plotted optical field.
+    """
+
+    def __init__(self, name=''):
+        from optical.effective import EffectiveIndex2D
+        self.Optical = EffectiveIndex2D
+        super(ThresholdSearch2D, self).__init__(name)
+
+    def on_initialize(self):
+        super(ThresholdSearch2D, self).on_initialize()
+        points = plask.mesh.Rectangular2D.SimpleGenerator()(self.optical.geometry).get_midpoints()
+        self._maxneff = max(self.optical.geometry.get_material(point).Nr(self.lam).real for point in points)
+
+    def get_neff(self):
+        """
+        Get approximate effective index for optical computations.
+
+        This method returns approximate wavelength for optical computations.
+        By default if browses the wavelength range starting from :attr:`maxneff`,
+        decreasing it by :attr:`dneff` until lateral mode :attr:`mn` is found.
+
+        You can override this method to use custom mode approximation.
+
+        Example:
+             >>> solver = ThresholdSearch2D()
+             >>> solver.get_neff = lambda: 3.5
+             >>> solver.compute()
+        """
+
+        neff = self._maxneff
+        n = 0
+        prev = 0.
+        decr = False
+        while n < self.mn and neff.real > 0.:
+            curr = abs(self.optical.get_determinant(neff=neff))
+            if decr and curr > prev:
+                n += 1
+            decr = curr < prev
+            prev = curr
+            neff -= self.dneff
+        if n == self.mn:
+            return neff + 2. * self.dneff
+        raise ValueError("Mode approximation not found")
+
+    def _parse_xpl(self, tag, manager):
+        if tag == 'optical':
+            self._read_attr(tag, 'wavelength', self.optical, float)
+            self._read_attr(tag, 'polarization', self.optical, float)
+            self._read_attr(tag, 'vneff', self.optical, float)
+            self._read_attr(tag, 'vat', self.optical, float)
+            self.dneff = float(tag.get('dneff', self.dneff))
+            self.ln = int(tag.get('mn', self.lpm))
+        else:
+            if tag == 'optical-root':
+                self._read_attr(tag, 'determinant', self.optical, str)
+            super(ThresholdSearch2D, self)._parse_xpl(tag, manager)
+
+    def _get_info(self):
+        return super(ThresholdSearch2D, self)._get_info() + [
+            "Effective index: {:8.3f}".format(self.optical.modes[self.modeno].neff.real)
+        ]
+
+
+__all__ = 'ThresholdSearchCyl', 'ThresholdSearchBesselCyl', 'ThresholdSearch2D'

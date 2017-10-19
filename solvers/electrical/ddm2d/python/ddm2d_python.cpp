@@ -4,7 +4,7 @@ using namespace plask;
 using namespace plask::python;
 
 #include "../ddm2d.h"
-using namespace plask::solvers::drift_diffusion;
+using namespace plask::electrical::drift_diffusion;
 
 template <typename GeometryT>
 inline static void register_drift_diffusion_solver(const char* name, const char* geoname)

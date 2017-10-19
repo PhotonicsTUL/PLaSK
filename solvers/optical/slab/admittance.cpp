@@ -8,7 +8,7 @@
 #include "fortran.h"
 #include "meshadapter.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 AdmittanceTransfer::AdmittanceTransfer(SlabBase* solver, Expansion& expansion): Transfer(solver, expansion)
 {
@@ -562,4 +562,4 @@ cvector AdmittanceTransfer::getTransmissionVector(const cvector& incident, Incid
     return diagonalizer->TE(solver->stack[n]) * fields[n].E0;
 }
 
-}}} // namespace plask::solvers::slab
+}}} // namespace plask::optical::slab

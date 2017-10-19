@@ -7,7 +7,7 @@
 #include "reflection.h"
 #include "admittance.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 void SlabBase::initTransfer(Expansion& expansion, bool reflection) {
     switch (transfer_method) {

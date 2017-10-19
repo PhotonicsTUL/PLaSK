@@ -10,7 +10,7 @@
 #include <omp.h>
 #endif
 
-namespace plask { namespace  solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 Diagonalizer::Diagonalizer(Expansion* src) :
     src(src), diagonalized(src->solver->lcount, false), lcount(src->solver->lcount) {}
@@ -234,4 +234,4 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
     return true;
 }
 
-}}} // namespace plask::solvers::slab
+}}} // namespace plask::optical::slab

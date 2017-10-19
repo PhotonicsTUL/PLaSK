@@ -9,7 +9,7 @@
 #   include <fftw3.h>
 #endif
 
-namespace plask { namespace solvers { namespace slab { namespace FFT {
+namespace plask { namespace optical { namespace slab { namespace FFT {
 
 /**
  * Symmetry of the transform.
@@ -156,6 +156,6 @@ struct PLASK_SOLVER_API Backward2D {
 #endif
 };
 
-}}}} // namespace plask::solvers::slab::FFT
+}}}} // namespace plask::optical::slab::FFT
 
 #endif // PLASK__SOLVER_SLAB_FFT_H

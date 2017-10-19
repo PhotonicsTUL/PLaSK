@@ -1,6 +1,6 @@
 #include "matrices.h"
 
-namespace plask { namespace  solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 cmatrix invmult(cmatrix& A, cmatrix& B)
 {
@@ -123,4 +123,4 @@ int eigenv(cmatrix& A, cdiagonal& vals, cmatrix* rightv, cmatrix* leftv)
     return info;
 }
 
-}}} // namespace plask::solvers::slab;
+}}} // namespace plask::optical::slab;

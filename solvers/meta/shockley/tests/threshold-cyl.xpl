@@ -89,7 +89,8 @@
   <meta name="SOLVER" solver="ThresholdSearchCyl" lib="shockley">
     <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
     <mesh diffusion="diffusion" electrical="default" thermal="default"/>
-    <optical lam0="980." maxlam="981."/>
+    <optical dlam="0.005" lam0="980." maxlam="980."/>
+    <root bcond="0" vmax="1.8" vmin="1.5"/>
     <voltage>
       <condition value="1.4">
         <place side="bottom" object="p-contact"/>
@@ -101,7 +102,6 @@
     <temperature>
       <condition place="bottom" value="300."/>
     </temperature>
-    <root bcond="0" vmax="1.6" vmin="1.4"/>
     <junction beta0="11" js0="1"/>
     <diffusion accuracy="0.005" fem-method="parabolic"/>
     <gain lifetime="0.5" matrix-elem="10"/>
@@ -109,8 +109,10 @@
 </solvers>
 
 <script><![CDATA[
-# lams = linspace(975., 985., 101)
-# plot(lams, abs(SOLVER.optical_determinant(lams)))
+lams = linspace(975., 980., 501)
+plot(lams, abs(SOLVER.optical_determinant(lams)))
+xlabel("Wavelength [nm]")
+window_title("Determinant")
 
 threshold_voltage = SOLVER.compute()
 threshold_current = SOLVER.threshold_current

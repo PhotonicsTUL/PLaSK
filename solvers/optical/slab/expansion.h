@@ -7,7 +7,7 @@
 #include "matrices.h"
 #include "meshadapter.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 struct PLASK_SOLVER_API Expansion {
 

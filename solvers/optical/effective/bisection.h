@@ -3,7 +3,7 @@
 
 #include <plask/plask.hpp>
 
-namespace plask { namespace solvers { namespace effective {
+namespace plask { namespace optical { namespace effective {
 
 struct Contour {
 
@@ -77,6 +77,6 @@ struct Contour {
 std::vector<std::pair<dcomplex,dcomplex>> findZeros(const Solver* solver, const std::function<dcomplex(dcomplex)>& fun,
                                                     dcomplex corner0, dcomplex corner1, size_t resteps, size_t imsteps, dcomplex eps);
 
-}}} // namespace plask::solvers::effective
+}}} // namespace plask::optical::effective
 
 #endif // PLASK__OPTICAL_EFFECTIVE_BISECTION_H

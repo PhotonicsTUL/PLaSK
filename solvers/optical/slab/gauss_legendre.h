@@ -3,7 +3,7 @@
 
 #include <plask/plask.hpp>
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 /**
  * Compute ascissae and weights for Gauss-Legendre quadatures.
@@ -13,6 +13,6 @@ namespace plask { namespace solvers { namespace slab {
  */
 void gaussLegendre(size_t n, std::vector<double>& abscissae, DataVector<double>& weights);
 
-}}} // # namespace plask::solvers::slab
+}}} // # namespace plask::optical::slab
 
 #endif // PLASK__SOLVER__SLAB_GAUSS_LEGENDRE_H

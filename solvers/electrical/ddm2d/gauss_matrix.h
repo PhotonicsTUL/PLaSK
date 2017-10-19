@@ -12,7 +12,7 @@ F77SUB dgbtrf(const int& m, const int& n, const int& kl, const int& ku, double* 
 F77SUB dgbtrs(const char& trans, const int& n, const int& kl, const int& ku, const int& nrhs, double* ab, const int& ldab, int* ipiv, double* b, const int& ldb, int& info);
 
 
-namespace plask { namespace solvers { namespace drift_diffusion {
+namespace plask { namespace electrical { namespace drift_diffusion {
 
 /**
  * Oversimple symmetric band matrix structure. It only offers easy access to elements and nothing more.

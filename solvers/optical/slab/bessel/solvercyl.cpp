@@ -2,7 +2,7 @@
 
 #include "solvercyl.h"
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 
 BesselSolverCyl::BesselSolverCyl(const std::string& name):
@@ -268,4 +268,4 @@ cmatrix BesselSolverCyl::epsDp(size_t layer) {
 #endif
 
 
-}}} // # namespace plask::solvers::slab
+}}} // # namespace plask::optical::slab

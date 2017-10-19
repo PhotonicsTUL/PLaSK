@@ -7,7 +7,7 @@
  * Patterson quadrature for complex function along specified line
  */
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 extern const double patterson_points[];
 extern const double patterson_weights[][256];
@@ -25,6 +25,6 @@ template <typename S, typename T>
 S patterson(const std::function<S(T)>& fun, T a, T b, double& err, unsigned* order=nullptr);
 
 
-}}} // namespace plask::solvers::effective
+}}} // namespace plask::optical::effective
 
 #endif // PLASK__PATTERSON_H

@@ -11,7 +11,7 @@ using boost::math::legendre_p;
 
 #define SOLVER static_cast<BesselSolverCyl*>(solver)
 
-namespace plask { namespace solvers { namespace slab {
+namespace plask { namespace optical { namespace slab {
 
 ExpansionBesselFini::ExpansionBesselFini(BesselSolverCyl* solver): ExpansionBessel(solver)
 {
@@ -245,4 +245,4 @@ cmatrix ExpansionBesselFini::muDp() {
 }
 #endif
 
-}}} // # namespace plask::solvers::slab
+}}} // # namespace plask::optical::slab

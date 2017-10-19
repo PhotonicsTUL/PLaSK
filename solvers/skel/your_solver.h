@@ -7,7 +7,7 @@
 
 #include <plask/plask.hpp>
 
-namespace plask { namespace solvers { namespace your_solver {
+namespace plask { namespace ccategory { namespace your_solver {
 
 /**
  * This is Doxygen documentation of your solver.
