@@ -942,7 +942,7 @@ class ThresholdSearch2D(ThresholdSearch):
             self._read_attr(tag, 'vneff', self.optical, float)
             self._read_attr(tag, 'vat', self.optical, float)
             self.dneff = float(tag.get('dneff', self.dneff))
-            self.ln = int(tag.get('mn', self.lpm))
+            self.mn = int(tag.get('mn', self.mn))
         else:
             if tag == 'optical-root':
                 self._read_attr(tag, 'determinant', self.optical, str)
