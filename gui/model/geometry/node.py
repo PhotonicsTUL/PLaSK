@@ -451,12 +451,15 @@ class GNode(object):
         for index in model_path:
             real_indexes = node.model_to_real_index(index, model)
             if isinstance(real_indexes, Number): real_indexes = (real_indexes,)
-            for real_index in real_indexes:
-                try:
-                    object = object[real_index]
-                except TypeError:  # geometry manager has no child:
-                    object = object._roots[real_index]
-            node = node.children[index]
+            try:
+                for real_index in real_indexes:
+                    try:
+                        object = object[real_index]
+                    except TypeError:  # geometry manager has no child:
+                        object = object._roots[real_index]
+                node = node.children[index]
+            except IndexError:
+                return None, None
         return object, node
 
     def get_model_path(self, stop=None):
