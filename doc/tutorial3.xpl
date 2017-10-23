@@ -90,7 +90,7 @@
     <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
     <mesh diffusion="diffusion" electrical="default" optical="optical" thermal="default"/>
     <optical dlam="0.01" lam0="980." maxlam="980." vat="0"/>
-    <root bcond="0" vmax="1.55" vmin="1.50"/>
+    <root bcond="0" vmax="1.6" vmin="1.4"/>
     <voltage>
       <condition value="1.5">
         <place side="bottom" object="p-contact"/>
@@ -132,7 +132,6 @@ window_title("Light Intensity")
 new_aperture = 6.
 GEO.aperture.dr = new_aperture / 2.
 GEO.oxide.dr = (mesa - new_aperture) / 2.
-SOLVER.vmax = 1.6
 
 threshold_voltage = SOLVER.compute()
 threshold_current = SOLVER.threshold_current

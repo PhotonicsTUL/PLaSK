@@ -66,11 +66,13 @@ class GNLeafController(GNObjectController):
                                  u'Maximum number of the mesh steps in each direction the object is divided into '
                                  u'if it is non-uniform. (integer)'
                                  .format(self.node.tag_name(False)))
+        self.step_num.setPlaceholderText('10')
         self.step_dist = self.construct_line_edit('Minimum step size:', node_property_name='step_dist',
-                                                  display_property_name='minimum step size')
+                                                  display_property_name='minimum step size', unit=u'µm')
         self.step_dist.setToolTip(u'&lt;{} steps-num="" <b>steps-dist</b>="" ...&gt;<br/>'
                                   u'Minimum step size if the object is non-uniform.'
                                   .format(self.node.tag_name(False)))
+        self.step_dist.setPlaceholderText('0.005')
 
     def select_info(self, info):
         prop = getattr(info, 'property')
