@@ -538,7 +538,7 @@ class ThresholdSearchCyl(ThresholdSearch):
             self.lpn = int(tag.get('n', self.lpn))
         else:
             if tag == 'optical-root':
-                self._read_attr(tag, 'determinant', self.optical, str)
+                self._read_attr(tag, 'determinant', self.optical, str, 'determinant_mode')
             super(ThresholdSearchCyl, self)._parse_xpl(tag, manager)
 
     def _get_info(self):

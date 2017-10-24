@@ -376,7 +376,7 @@ BOOST_PYTHON_MODULE(effective)
 //                     "Flag indicating whether the solver uses asymptotic exponential field\n"
 //                     "in the outermost layer.")
         RW_PROPERTY(emission, getEmission, setEmission, u8"Emission direction.");
-        RW_FIELD(determinant,
+        solver.def_readwrite("determinant_mode", &EffectiveFrequencyCyl::determinant,
                  u8"Radial determinant mode.\n\n"
                  u8"This parameter determines the method used to compute radial determinant.\n"
                  u8"If it is set to 'transfer', 2x2 transfer matrix is used to ensure field\n"
@@ -490,6 +490,10 @@ BOOST_PYTHON_MODULE(effective)
             .def("__repr__", &EffectiveFrequencyCyl_Mode_repr)
         ;
 
+        py_enum<EffectiveFrequencyCyl::Determinant>()
+            .value("TRANSFER", EffectiveFrequencyCyl::DETERMINANT_TRANSFER)
+            .value("FULL", EffectiveFrequencyCyl::DETERMINANT_FULL)
+        ;
         py_enum<EffectiveFrequencyCyl::Emission>()
             .value("TOP", EffectiveFrequencyCyl::TOP)
             .value("BOTTOM", EffectiveFrequencyCyl::BOTTOM)
