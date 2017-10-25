@@ -31,6 +31,8 @@ LEVEL_DETAIL         = 8
 LEVEL_ERROR_DETAIL   = 9
 LEVEL_DEBUG          = 10
 
+LEVEL_ROLE = Qt.UserRole
+LINE_ROLE = Qt.UserRole + 1
 
 class OutputModel(QAbstractListModel):
 
@@ -39,18 +41,20 @@ class OutputModel(QAbstractListModel):
         self.lh = lh
         self.lines = []
 
-    def add_line(self, cat, text, link=None):
+    def add_line(self, level, text, link=None):
         ll = len(self.lines)
         self.beginInsertRows(QModelIndex(), ll, ll+1)
-        self.lines.append((cat, text, link))
+        self.lines.append((level, text, link))
         self.endInsertRows()
 
     def data(self, index, role=None):
+        if not index.isValid():
+            return
         row = index.row()
         if role == Qt.DisplayRole:
             return self.lines[row][1]
         if role == Qt.ForegroundRole:
-            cat = self.lines[row][0]
+            level = self.lines[row][0]
             color = [
                 'black',    # default
                 'red',      # critical error
@@ -63,8 +67,12 @@ class OutputModel(QAbstractListModel):
                 '#303030',  # detail
                 '#800000',  # error detail
                 'gray',     # debug
-            ][cat]
+            ][level]
             return QBrush(QColor(color))
+        if role == LEVEL_ROLE:
+            return self.lines[row][0]
+        if role == LINE_ROLE:
+            return self.lines[row][2]
         if role == Qt.SizeHintRole and self.lh is not None:
             return QSize(0, self.lh)
 
@@ -73,6 +81,22 @@ class OutputModel(QAbstractListModel):
 
     # def columnCount(self, parent=None):
     #     return 2
+
+
+class OutputListView(QListView):
+
+    def __init__(self, parent=None):
+        super(OutputListView, self).__init__(parent)
+        self.setMouseTracking(True)
+
+    def mouseMoveEvent(self, event):
+        super(OutputListView, self).mouseMoveEvent(event)
+        index = self.indexAt(event.pos())
+        line = self.model().data(index, LINE_ROLE)
+        if line is not None:
+            self.setCursor(Qt.PointingHandCursor)
+        else:
+            self.setCursor(Qt.ArrowCursor)
 
 
 class OutputFilter(QSortFilterProxyModel):
@@ -84,10 +108,10 @@ class OutputFilter(QSortFilterProxyModel):
 
     def filterAcceptsRow(self, row, parent):
         try:
-            cat = self.sourceModel().lines[row][0]
+            level = self.sourceModel().lines[row][0]
         except IndexError:
             return False
-        if cat != 0 and not self.window.levels[cat-1].isChecked():
+        if level != 0 and not self.window.levels[level-1].isChecked():
             return False
         return super(OutputFilter, self).filterAcceptsRow(row, parent)
 
@@ -107,7 +131,7 @@ class OutputWindow(QDockWidget):
         font = QFont()
         font.setStyleHint(QFont.TypeWriter)
         font.fromString(','.join(CONFIG['launcher_local/font']))
-        self.messages = QListView()
+        self.messages = OutputListView()
         self.messages.setFont(font)
         self.messages.setSelectionMode(QAbstractItemView.NoSelection)
         self.model = OutputModel(self.messages.fontMetrics().lineSpacing())
@@ -282,8 +306,7 @@ class OutputWindow(QDockWidget):
             self.messages.setFont(font)
 
     def line_clicked(self, index):
-        row = self.filter.mapToSource(index).row()
-        line = self.model.lines[row][2]
+        line = self.filter.data(index, LINE_ROLE)
         if line is not None:
             parent = self.parent()
             if parent:
@@ -301,7 +324,7 @@ class OutputWindow(QDockWidget):
             line = line.decode(self.main_window.document.coding)
         except UnicodeDecodeError:
             line = line.decode('utf-8')
-        cat = {'CRITICAL ERROR:': LEVEL_CRITICAL_ERROR,
+        level = {'CRITICAL ERROR:': LEVEL_CRITICAL_ERROR,
                'ERROR         :': LEVEL_ERROR,
                'WARNING       :': LEVEL_WARNING,
                'IMPORTANT     :': LEVEL_IMPORTANT,
@@ -318,7 +341,7 @@ class OutputWindow(QDockWidget):
                 lineno = int(match.groups()[1])
         try:
             self.mutex.lock()
-            self.newlines.append((cat, line, lineno))
+            self.newlines.append((level, line, lineno))
         finally:
             self.mutex.unlock()
 
