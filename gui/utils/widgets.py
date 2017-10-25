@@ -579,3 +579,17 @@ def fire_edit_end(widget=None):
     try: widget.focus_out_cb()
     except: pass
 
+
+class LineEditWithClear(QLineEdit):
+    def __init__(self, *args, **kwargs):
+        super(LineEditWithClear, self).__init__(*args, **kwargs)
+        clear_button = QToolButton(self)
+        clear_button.setFocusPolicy(Qt.NoFocus)
+        clear_button.setCursor(Qt.PointingHandCursor)
+        clear_button.setIcon(QIcon(QIcon.fromTheme("edit-clear")))
+        clear_button.setStyleSheet("background: transparent; border: none;")
+        clear_button.clicked.connect(self.clear)
+        layout = QHBoxLayout(self)
+        layout.addWidget(clear_button, 0, Qt.AlignRight)
+        layout.setSpacing(0)
+        layout.setContentsMargins(5, 5, 5, 5)

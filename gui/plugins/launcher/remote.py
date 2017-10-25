@@ -391,7 +391,7 @@ else:
                 sep = '\\\\'
                 fd = fd.replace('\\', '\\\\')
             self.link = re.compile(
-                '((?:{}{})?{}(?:(?:,|:)(?:&nbsp;XML)?&nbsp;line&nbsp;|:))(\\d+)(.*)'.format(fd, sep, fb))
+                '((?:{}{})?{}(?:(?:,|:)(?: XML)? line |:))(\\d+)(.*)'.format(fd, sep, fb))
 
             self.dock = dock
 

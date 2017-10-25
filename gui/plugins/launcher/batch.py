@@ -654,9 +654,9 @@ else:
         def update_widget(self, params):
             if self._widget is not None:
                 try: self.partition_combo.setCurrentIndex(self.partitions.index(params.get('partition')))
-                except ValueError: pass
+                except (ValueError, AttributeError): pass
                 try: self.qos_combo.setCurrentIndex(self.qos.index(params.get('qos')))
-                except ValueError: pass
+                except (ValueError, AttributeError): pass
 
         def get_params(self):
             params = {}

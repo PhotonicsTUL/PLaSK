@@ -825,7 +825,7 @@ def _parse_expiry(expiry):
 
 try:
     VERSION = plask.version
-except NameError:
+except (NameError, AttributeError):
     from .utils.files import which
     try:
         plask_exe = which('plask') or 'plask'

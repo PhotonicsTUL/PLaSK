@@ -11,12 +11,85 @@
 # GNU General Public License for more details.
 from time import strftime
 
-from ..qt.QtCore import Qt, QTimer, QMutex
-from ..qt.QtGui import QFont, QTextOption, QIcon, QTextCursor
-from ..qt.QtWidgets import QDockWidget, QTextBrowser, QToolBar, QAction, QMenu, QToolButton, QWidgetAction, \
-    QVBoxLayout, QWidget, QMessageBox
+from ..utils.widgets import LineEditWithClear
+
+from ..qt.QtCore import *
+from ..qt.QtGui import *
+from ..qt.QtWidgets import *
 
 from ..utils.config import CONFIG
+
+
+LEVEL_CRITICAL_ERROR = 1
+LEVEL_ERROR          = 2
+LEVEL_WARNING        = 3
+LEVEL_IMPORTANT      = 4
+LEVEL_INFO           = 5
+LEVEL_RESULT         = 6
+LEVEL_DATA           = 7
+LEVEL_DETAIL         = 8
+LEVEL_ERROR_DETAIL   = 9
+LEVEL_DEBUG          = 10
+
+
+class OutputModel(QAbstractListModel):
+
+    def __init__(self, lh):
+        super(OutputModel, self).__init__()
+        self.lh = lh
+        self.lines = []
+
+    def add_line(self, cat, text, link=None):
+        ll = len(self.lines)
+        self.beginInsertRows(QModelIndex(), ll, ll+1)
+        self.lines.append((cat, text, link))
+        self.endInsertRows()
+
+    def data(self, index, role=None):
+        row = index.row()
+        if role == Qt.DisplayRole:
+            return self.lines[row][1]
+        if role == Qt.ForegroundRole:
+            cat = self.lines[row][0]
+            color = [
+                'black',    # default
+                'red',      # critical error
+                'red',      # error
+                'brown',    # warning
+                'magenta',  # important
+                'blue',     # info
+                'green',    # result
+                '#006060',  # data
+                '#303030',  # detail
+                '#800000',  # error detail
+                'gray',     # debug
+            ][cat]
+            return QBrush(QColor(color))
+        if role == Qt.SizeHintRole and self.lh is not None:
+            return QSize(0, self.lh)
+
+    def rowCount(self, parent=None):
+        return len(self.lines)
+
+    # def columnCount(self, parent=None):
+    #     return 2
+
+
+class OutputFilter(QSortFilterProxyModel):
+
+    def __init__(self, window, model):
+        super(OutputFilter, self).__init__()
+        self.window = window
+        self.setSourceModel(model)
+
+    def filterAcceptsRow(self, row, parent):
+        try:
+            cat = self.sourceModel().lines[row][0]
+        except IndexError:
+            return False
+        if cat != 0 and not self.window.levels[cat-1].isChecked():
+            return False
+        return super(OutputFilter, self).filterAcceptsRow(row, parent)
 
 
 class OutputWindow(QDockWidget):
@@ -34,14 +107,16 @@ class OutputWindow(QDockWidget):
         font = QFont()
         font.setStyleHint(QFont.TypeWriter)
         font.fromString(','.join(CONFIG['launcher_local/font']))
-        self.messages = QTextBrowser()
-        self.messages.setWordWrapMode(QTextOption.NoWrap)
-        self.messages.setReadOnly(True)
-        self.messages.setAcceptRichText(True)
+        self.messages = QListView()
         self.messages.setFont(font)
+        self.messages.setSelectionMode(QAbstractItemView.NoSelection)
+        self.model = OutputModel(self.messages.fontMetrics().lineSpacing())
+        self.filter = OutputFilter(self, self.model)
+        self.filter.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.filter.setDynamicSortFilter(True)
+        self.messages.setModel(self.filter)
 
-        self.messages.anchorClicked.connect(self.url_clicked)
-        self.messages.setOpenLinks(False)
+        self.messages.clicked.connect(self.line_clicked)
 
         toolbar = QToolBar()
 
@@ -49,56 +124,56 @@ class OutputWindow(QDockWidget):
         self.action_error.setText("&Error")
         self.action_error.setCheckable(True)
         self.action_error.setChecked(launcher.error.isChecked())
-        self.action_error.triggered.connect(self.update_view)
+        self.action_error.triggered.connect(self.update_filter)
         self.action_error.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.action_error.setShortcut('1')
         self.action_warning = QAction(self)
         self.action_warning.setText("&Warning")
         self.action_warning.setCheckable(True)
         self.action_warning.setChecked(launcher.warning.isChecked())
-        self.action_warning.triggered.connect(self.update_view)
+        self.action_warning.triggered.connect(self.update_filter)
         self.action_warning.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.action_warning.setShortcut('2')
         self.action_important = QAction(self)
         self.action_important.setText("I&mportant")
         self.action_important.setCheckable(True)
         self.action_important.setChecked(launcher.important.isChecked())
-        self.action_important.triggered.connect(self.update_view)
+        self.action_important.triggered.connect(self.update_filter)
         self.action_important.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.action_important.setShortcut('3')
         self.action_info = QAction(self)
         self.action_info.setText("&Info")
         self.action_info.setCheckable(True)
         self.action_info.setChecked(launcher.info.isChecked())
-        self.action_info.triggered.connect(self.update_view)
+        self.action_info.triggered.connect(self.update_filter)
         self.action_info.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.action_info.setShortcut('4')
         self.action_result = QAction(self)
         self.action_result.setText("&Result")
         self.action_result.setCheckable(True)
         self.action_result.setChecked(launcher.result.isChecked())
-        self.action_result.triggered.connect(self.update_view)
+        self.action_result.triggered.connect(self.update_filter)
         self.action_result.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.action_result.setShortcut('5')
         self.action_data = QAction(self)
         self.action_data.setText("&Data")
         self.action_data.setCheckable(True)
         self.action_data.setChecked(launcher.data.isChecked())
-        self.action_data.triggered.connect(self.update_view)
+        self.action_data.triggered.connect(self.update_filter)
         self.action_data.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.action_data.setShortcut('6')
         self.action_detail = QAction(self)
         self.action_detail.setText("De&tail")
         self.action_detail.setCheckable(True)
         self.action_detail.setChecked(launcher.detail.isChecked())
-        self.action_detail.triggered.connect(self.update_view)
+        self.action_detail.triggered.connect(self.update_filter)
         self.action_detail.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.action_detail.setShortcut('7')
         self.action_debug = QAction(self)
         self.action_debug.setText("De&bug")
         self.action_debug.setCheckable(True)
         self.action_debug.setChecked(launcher.debug.isChecked())
-        self.action_debug.triggered.connect(self.update_view)
+        self.action_debug.triggered.connect(self.update_filter)
         self.action_debug.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.action_debug.setShortcut('8')
 
@@ -110,6 +185,19 @@ class OutputWindow(QDockWidget):
         self.addAction(self.action_data)
         self.addAction(self.action_detail)
         self.addAction(self.action_debug)
+
+        self.levels = (
+            self.action_error,
+            self.action_error,
+            self.action_warning,
+            self.action_important,
+            self.action_info,
+            self.action_result,
+            self.action_data,
+            self.action_detail,
+            self.action_error,
+            self.action_debug
+        )
 
         view_menu = QMenu("Show")
         view_menu.addAction(self.action_error)
@@ -138,6 +226,19 @@ class OutputWindow(QDockWidget):
         self.halt_action.triggered.connect(self.halt_thread)
         self.messages.addAction(self.halt_action)
         toolbar.addAction(self.halt_action)
+
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        toolbar.addWidget(spacer)
+
+        label = QLabel("&Find: ")
+        toolbar.addWidget(label)
+
+        self.search = LineEditWithClear()
+        self.search.setMaximumWidth(400)
+        label.setBuddy(self.search)
+        toolbar.addWidget(self.search)
+        self.search.textChanged.connect(self.filter_text)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(1, 1, 1, 1)
@@ -173,20 +274,26 @@ class OutputWindow(QDockWidget):
         self.mutex = QMutex()
         self.thread = None
 
+        self.newlines = []
+
     def reconfig(self):
         font = self.messages.font()
         if font.fromString(','.join(CONFIG['launcher_local/font'])):
             self.messages.setFont(font)
 
-    def url_clicked(self, url):
-        parent = self.parent()
-        if parent:
-            parent.goto_line(int(url.path()))
+    def line_clicked(self, index):
+        row = self.filter.mapToSource(index).row()
+        line = self.model.lines[row][2]
+        if line is not None:
+            parent = self.parent()
+            if parent:
+                parent.goto_line(line)
 
-    def update_view(self):
-        self.messages.clear()
-        self.printed_lines = 0
-        self.update_output()
+    def update_filter(self):
+        self.filter.invalidateFilter()
+
+    def filter_text(self, text):
+        self.filter.setFilterFixedString(text)
 
     def parse_line(self, line, link=None):
         if not line: return
@@ -194,58 +301,39 @@ class OutputWindow(QDockWidget):
             line = line.decode(self.main_window.document.coding)
         except UnicodeDecodeError:
             line = line.decode('utf-8')
-        cat = line[:15]
-        line = line.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-        if   cat == "CRITICAL ERROR:": color = "red    "
-        elif cat == "ERROR         :": color = "red    "
-        elif cat == "WARNING       :": color = "brown  "
-        elif cat == "IMPORTANT     :": color = "magenta"
-        elif cat == "INFO          :": color = "blue   "
-        elif cat == "RESULT        :": color = "green  "
-        elif cat == "DATA          :": color = "#006060"
-        elif cat == "DETAIL        :": color = "black  "
-        elif cat == "ERROR DETAIL  :": color = "#800000"
-        elif cat == "DEBUG         :": color = "gray   "
-        else: color = "black; font-weight:bold"
-        line = line.replace(' ', '&nbsp;')
+        cat = {'CRITICAL ERROR:': LEVEL_CRITICAL_ERROR,
+               'ERROR         :': LEVEL_ERROR,
+               'WARNING       :': LEVEL_WARNING,
+               'IMPORTANT     :': LEVEL_IMPORTANT,
+               'INFO          :': LEVEL_INFO,
+               'RESULT        :': LEVEL_RESULT,
+               'DATA          :': LEVEL_DATA,
+               'DETAIL        :': LEVEL_DETAIL,
+               'ERROR DETAIL  :': LEVEL_ERROR_DETAIL,
+               'DEBUG         :': LEVEL_DEBUG}.get(line[:15], 0)
+        lineno = None
         if link is not None:
-            line = link.sub(u'<a style="color: {}; text-decoration: none;" href="line:\\2">\\1\\2\\3</a>'.format(color),
-                            line)
+            match = link.search(line)
+            if match is not None:
+                lineno = int(match.groups()[1])
         try:
             self.mutex.lock()
-            self.lines.append((cat[:-1].strip(),
-                               u'<span style="color:{};">{}</span>'.format(color, line)))
+            self.newlines.append((cat, line, lineno))
         finally:
             self.mutex.unlock()
 
     def update_output(self):
-        move = self.messages.verticalScrollBar().value() == self.messages.verticalScrollBar().maximum()
         try:
             self.mutex.lock()
-            total_lines = len(self.lines)
-            lines = []
-            if self.printed_lines != total_lines:
-                for cat, line in self.lines[self.printed_lines:total_lines]:
-                    if 'ERROR' in cat and not self.action_error.isChecked(): continue
-                    if cat == 'WARNING' and not self.action_warning.isChecked(): continue
-                    if cat == 'IMPORTANT' and not self.action_important.isChecked(): continue
-                    if cat == 'INFO' and not self.action_info.isChecked(): continue
-                    if cat == 'RESULT' and not self.action_result.isChecked(): continue
-                    if cat == 'DATA' and not self.action_data.isChecked(): continue
-                    if cat == 'DETAIL' and not self.action_detail.isChecked(): continue
-                    if cat == 'DEBUG' and not self.action_debug.isChecked(): continue
-                    lines.append(line)
-                if lines:
-                    self.messages.append(u"<br/>\n".join(lines))
-                self.printed_lines = total_lines
-            else:
-                move = False
+            for data in self.newlines:
+                self.model.add_line(*data)
+            self.newlines = []
         finally:
             self.mutex.unlock()
+        #self.filter.invalidateFilter()
+        move = self.messages.verticalScrollBar().value() == self.messages.verticalScrollBar().maximum()
         if move:
-            hpos = self.messages.horizontalScrollBar().value()
-            self.messages.moveCursor(QTextCursor.End)
-            self.messages.horizontalScrollBar().setValue(hpos)
+            self.messages.scrollToBottom()
 
     def halt_thread(self):
         confirm = QMessageBox.question(self, "Halt Process",

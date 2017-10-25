@@ -107,10 +107,10 @@ class MaterialLineEdit(QLineEdit):
 
         self.materials_model = materials_model
 
-        # Create a clear button with icon
+        # Create a button with icon
         self.button = QToolButton(self)
         self.button.setIcon(QIcon.fromTheme('matplotlib'))
-        self.button.setCursor(Qt.ArrowCursor)
+        self.button.setCursor(Qt.PointingHandCursor)
         self.button.setStyleSheet("QToolButton { border: none; padding: 0px; }")
 
         # signals, clear lineEdit if btn pressed; change btn visibility on input
