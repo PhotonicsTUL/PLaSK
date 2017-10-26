@@ -69,7 +69,7 @@ class Attr(object):
         self.required = required
         self.help = help
         self.typ = typ
-        if default is None:self.default = ''
+        if default is None: self.default = ''
         elif isinstance(default, bool): self.default = 'yes' if default else 'no'
         else: self.default = str(default)
         self.conflicts = set()
@@ -89,7 +89,7 @@ class AttrChoice(Attr):
 class AttrBool(AttrChoice):
     def __init__(self, tag, name, label, required, help, typ, default=None):
         super(AttrBool, self).__init__(tag, name, label, required, help, typ,
-                                       ('yes', 'no'), ('true', 'false', '1', '0'), default)
+                                       ('yes', 'no'), ('true', 'false', '1', '0'), default=default)
 
 
 class AttrGeometry(Attr):

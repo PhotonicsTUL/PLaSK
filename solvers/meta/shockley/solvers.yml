@@ -590,6 +590,14 @@
     help: >
       Configuration of the self-consistent thermo-electric loop.
     attrs:
+    - attr: skip-thermal
+      label: Skip thermal computations
+      type: bool
+      default: false
+      var: skip_thermal
+      help: >
+        Skip thermal computations. The structure is assumed to have a constant temperature <i>inittemp</i>.
+        This can be used to look for the threshold under pulse laser operation.
     - *tfreq
     - *inittemp
     - *maxterr

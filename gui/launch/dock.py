@@ -36,9 +36,12 @@ LINE_ROLE = Qt.UserRole + 1
 
 class OutputModel(QAbstractListModel):
 
-    def __init__(self, lh):
+    def __init__(self, fm):
         super(OutputModel, self).__init__()
-        self.lh = lh
+        self.fm = fm
+        if fm is not None:
+            self.lh = fm.lineSpacing()
+            self.lw = fm.maxWidth()
         self.lines = []
 
     def add_line(self, level, text, link=None):
@@ -73,8 +76,8 @@ class OutputModel(QAbstractListModel):
             return self.lines[row][0]
         if role == LINE_ROLE:
             return self.lines[row][2]
-        if role == Qt.SizeHintRole and self.lh is not None:
-            return QSize(0, self.lh)
+        if role == Qt.SizeHintRole and self.fm is not None:
+            return QSize(self.fm.width(self.lines[row][1])+self.lw, self.lh)
 
     def rowCount(self, parent=None):
         return len(self.lines)
@@ -134,12 +137,11 @@ class OutputWindow(QDockWidget):
         self.messages = OutputListView()
         self.messages.setFont(font)
         self.messages.setSelectionMode(QAbstractItemView.NoSelection)
-        self.model = OutputModel(self.messages.fontMetrics().lineSpacing())
+        self.model = OutputModel(self.messages.fontMetrics())
         self.filter = OutputFilter(self, self.model)
         self.filter.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.filter.setDynamicSortFilter(True)
         self.messages.setModel(self.filter)
-
         self.messages.clicked.connect(self.line_clicked)
 
         toolbar = QToolBar()

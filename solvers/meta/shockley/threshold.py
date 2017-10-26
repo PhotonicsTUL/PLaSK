@@ -39,6 +39,7 @@ class ThresholdSearch(ThermoElectric):
     vtol = 1e-5
     quick = False
     maxiter = 50
+    skip_thermal = False
 
     def __init__(self, name):
         super(ThresholdSearch, self).__init__(name)
@@ -97,17 +98,22 @@ class ThresholdSearch(ThermoElectric):
                 if 'optical' in tag: self.optical.mesh = tag.getitem(manager.msh, 'optical')
                 if 'gain' in tag: self.gain.mesh = tag.getitem(manager.msh, 'gain')
             elif tag == 'loop':
+                self.skip_thermal = tag.get('skip-thermal', self.skip_thermal)
                 self._read_attr(tag, 'inittemp', self.gain, float, 'T0')
             super(ThresholdSearch, self)._parse_xpl(tag, manager)
 
     def on_initialize(self):
-        super(ThresholdSearch, self).on_initialize()
+        if not self.skip_thermal:
+            self.thermal.initialize()
+        self.electrical.initialize()
         self.diffusion.initialize()
         self.gain.initialize()
         self.optical.initialize()
 
     def on_invalidate(self):
-        super(ThresholdSearch, self).on_invalidate()
+        if not self.skip_thermal:
+            self.thermal.invalidate()
+        self.electrical.invalidate()
         self.diffusion.invalidate()
         self.optical.invalidate()
 
@@ -126,16 +132,19 @@ class ThresholdSearch(ThermoElectric):
         solver.
         """
         self.initialize()
-        if self._invalidate:
-            self.thermal.invalidate()
-            self.electrical.invalidate()
-            self.diffusion.invalidate()
-            self.gain.invalidate()
-        verr = 2. * self.electrical.maxerr
-        terr = 2. * self.thermal.maxerr
-        while terr > self.thermal.maxerr or verr > self.electrical.maxerr:
-            verr = self.electrical.compute(self.tfreq)
-            terr = self.thermal.compute(1)
+        if self.skip_thermal:
+            self.electrical.compute()
+        else:
+            if self._invalidate:
+                self.thermal.invalidate()
+                self.electrical.invalidate()
+                self.diffusion.invalidate()
+                self.gain.invalidate()
+            verr = 2. * self.electrical.maxerr
+            terr = 2. * self.thermal.maxerr
+            while terr > self.thermal.maxerr or verr > self.electrical.maxerr:
+                verr = self.electrical.compute(self.tfreq)
+                terr = self.thermal.compute(1)
         self.diffusion.compute_threshold()
 
     def step(self, volt):
@@ -232,7 +241,8 @@ class ThresholdSearch(ThermoElectric):
         """
 
         if invalidate:
-            self.thermal.invalidate()
+            if not skip_thermal:
+                self.thermal.invalidate()
             self.electrical.invalidate()
             self.diffusion.invalidate()
             self.optical.invalidate()
@@ -479,6 +489,14 @@ class ThresholdSearchCyl(ThresholdSearch):
     and plotted optical field.
     """
 
+    skip_thermal = False
+    """
+    Skip thermal computations.
+
+    The structure is assumed to have a constant temperature.
+    This can be used to look for the threshold under pulse laser operation.
+    """
+
     def __init__(self, name=''):
         from optical.effective import EffectiveFrequencyCyl
         self.Optical = EffectiveFrequencyCyl
@@ -677,6 +695,14 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
     """
     Number of points along the horizontal and vertical axes for the saved
     and plotted optical field.
+    """
+
+    skip_thermal = False
+    """
+    Skip thermal computations.
+
+    The structure is assumed to have a constant temperature.
+    This can be used to look for the threshold under pulse laser operation.
     """
 
     def __init__(self, name=''):
@@ -892,6 +918,14 @@ class ThresholdSearch2D(ThresholdSearch):
     """
     Number of points along the horizontal and vertical axes for the saved
     and plotted optical field.
+    """
+
+    skip_thermal = False
+    """
+    Skip thermal computations.
+
+    The structure is assumed to have a constant temperature.
+    This can be used to look for the threshold under pulse laser operation.
     """
 
     def __init__(self, name=''):

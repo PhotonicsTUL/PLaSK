@@ -10,6 +10,8 @@ try:
     from ruamel import yaml
 
 except ImportError:
+    import yaml
+
     def dict_representer(dumper, data):
         return dumper.represent_dict(data.iteritems())
 

@@ -226,14 +226,13 @@
   </thermal>
   <optical name="fourier2" solver="Fourier2D" lib="slab">
     <geometry ref="geo2d"/>
-    <mode symmetry="Etran"/>
   </optical>
   <gain name="gain2" solver="FreeCarrierCyl" lib="freecarrier">
     <geometry ref="GeoO"/>
-    <config T0="300" lifetime="{axa}" matrix-elem="10"/>
+    <config T0="300" matrix-elem="10"/>
   </gain>
   <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="shockley">
-    <geometry ref="GeoTE"/>
+    <geometry ref="GeoE"/>
     <mesh ref="default"/>
     <voltage>
       <condition value="2.0">
@@ -243,7 +242,7 @@
         <place side="top" object="n-contact"/>
       </condition>
     </voltage>
-    <matrix algorithm="dupa" itererr="2"/>
+    <matrix algorithm="cholesky" itererr="2"/>
     <junction beta0="{beta_def}" beta1="19.2" js0="{js_def}" js1="1.1"/>
   </electrical>
   <electrical name="DIFFUSION" solver="DiffusionCyl" lib="diffusion">
@@ -259,15 +258,7 @@
     <mesh ref="optical"/>
     <mode emission="bottom" lam0="980"/>
   </optical>
-  <optical name="fourier" solver="Fourier3D" lib="slab">
-    <geometry ref="geo3d2"/>
-    <expansion refine-long="8" refine-tran="8" size="12"/>
-    <pmls>
-      <long factor="23"/>
-      <tran factor="45"/>
-    </pmls>
-  </optical>
-  <filter for="Temperature" geometry="GeoTE" name="filtr"/>
+  <filter for="Temperature" geometry="GeoT" name="filtr"/>
   <optical name="efm" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="GeoO"/>
   </optical>
@@ -275,27 +266,14 @@
     <geometry ref="geo2d"/>
     <mesh ref="optical"/>
   </electrical>
-  <local name="test" solver="Test" lib="something">
-    <geometry ref="simple"/>
-  </local>
   <meta name="meta2" solver="ThermoElectric2D" lib="shockley">
     <geometry electrical="geo2d-copy" thermal="geo2d"/>
     <mesh electrical="default" thermal="default"/>
   </meta>
-  <meta name="meta3" solver="ThermoElectric3D" lib="shockley">
-    <geometry electrical="vcsel" thermal="vcsel"/>
-    <mesh electrical="sss" thermal="sss"/>
-    <voltage>
-      <condition place="bottom" value="1.0"/>
-    </voltage>
-  </meta>
-  <local name="ooo" solver="OneFile" lib="test">
-    <geometry ref="GeoE"/>
-    <mesh ref="default"/>
-  </local>
   <meta name="bessel" solver="ThresholdSearchBesselCyl" lib="shockley">
     <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
     <mesh diffusion="diffusion" electrical="default" thermal="default"/>
+    <root bcond="0"/>
   </meta>
 </solvers>
 
@@ -313,6 +291,12 @@
 
 <script><![CDATA[
 from __future__ import print_function
+
+print_log('result', """\
+Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \
+Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure \
+dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non \
+proident, sunt in culpa qui officia deserunt mollit anim id est laborum.""")
 
 import os
 import sys
@@ -348,7 +332,7 @@ print_log(LOG_RESULT, "ARGUMENTS")
 for arg in sys.argv[1:]:
     print_log(LOG_RESULT, arg)
 
-print ur"Python2 style"
+# print ur"Python2 style"
 
 print(mesa + 0, )
 
