@@ -330,9 +330,7 @@
   providers:
   - outLightMagnitude
   - outLightE
-  - outElectricField: LightE
   - outLightH
-  - outMagneticField: LightH
   - outRefractiveIndex
   - outNeff
 

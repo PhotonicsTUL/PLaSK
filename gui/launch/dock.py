@@ -64,7 +64,7 @@ class OutputModel(QAbstractListModel):
                 'blue',     # info
                 'green',    # result
                 '#006060',  # data
-                '#303030',  # detail
+                '#404040',  # detail
                 '#800000',  # error detail
                 'gray',     # debug
             ][level]
@@ -255,7 +255,7 @@ class OutputWindow(QDockWidget):
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         toolbar.addWidget(spacer)
 
-        label = QLabel("&Find: ")
+        label = QLabel("&Filter: ")
         toolbar.addWidget(label)
 
         self.search = LineEditWithClear()

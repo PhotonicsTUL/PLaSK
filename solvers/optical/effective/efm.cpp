@@ -228,11 +228,14 @@ void EffectiveFrequencyCyl::onInitialize()
 
 void EffectiveFrequencyCyl::onInvalidate()
 {
-    if (!modes.empty()) writelog(LOG_DETAIL, "Clearing computed modes");
-    modes.clear();
-    outWavelength.fireChanged();
-    outLoss.fireChanged();
-    outLightMagnitude.fireChanged();
+    if (!modes.empty()) {
+        writelog(LOG_DETAIL, "Clearing computed modes");
+        modes.clear();
+        outWavelength.fireChanged();
+        outLoss.fireChanged();
+        outLightMagnitude.fireChanged();
+        outLightE.fireChanged();
+    }
 }
 
 /********* Here are the computations *********/

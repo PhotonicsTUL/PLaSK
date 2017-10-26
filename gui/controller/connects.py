@@ -21,6 +21,8 @@ from ..model.solvers import SOLVERS
 
 class FlowDelegate(DefinesCompletionDelegate):
 
+    attribute = None
+
     def __init__(self, document, parent):
         super(FlowDelegate, self).__init__(document.defines.model, parent)
         self.solvers_model = document.solvers.model
@@ -54,16 +56,16 @@ class FlowDelegate(DefinesCompletionDelegate):
                 pass
             else:
                 if factory is not None:
-                    items.extend(u'{}.{}'.format(solver.name, f[0]) for f in getattr(factory, self.field))
+                    items.extend(u'{}.{}'.format(solver.name, a[0]) for a in getattr(factory, self.attribute))
         return items
 
 
 class ProvidersDelegate(FlowDelegate):
-    field = 'providers'
+    attribute = 'providers'
 
 
 class ReceiversDelegate(FlowDelegate):
-    field = 'receivers'
+    attribute = 'receivers'
 
 
 class ConnectsController(TableController):
@@ -72,6 +74,6 @@ class ConnectsController(TableController):
         if model is None: model = ConnectsModel()
         TableController.__init__(self, document, model)
         self.table.horizontalHeader().setStretchLastSection(False)
-        self.table.setItemDelegateForColumn(0, ProvidersDelegate(self.document, self.table))
-        self.table.setItemDelegateForColumn(1, ReceiversDelegate(self.document, self.table))
+        self.table.setItemDelegateForColumn(0, ReceiversDelegate(self.document, self.table))
+        self.table.setItemDelegateForColumn(1, ProvidersDelegate(self.document, self.table))
 

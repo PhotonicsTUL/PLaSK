@@ -65,14 +65,14 @@ class ConnectsModel(TableModel):
         return res
 
     def get(self, col, row):
-        if col == 0: return self.entries[row].output
-        if col == 1: return self.entries[row].input
+        if col == 0: return self.entries[row].input
+        if col == 1: return self.entries[row].output
         if col == 2: return self.entries[row].comment
         raise IndexError('column number for ConnectsModel should be 0, 1, or 2, but is %d' % col)
 
     def set(self, col, row, value):
-        if col == 0: self.entries[row].output = value
-        elif col == 1: self.entries[row].input = value
+        if   col == 0: self.entries[row].input = value
+        elif col == 1: self.entries[row].output = value
         elif col == 2: self.entries[row].comment = value
         else: raise IndexError('column number for ConnectsModel should be 0, 1, or 2, but is %d' % col)
 
@@ -86,16 +86,16 @@ class ConnectsModel(TableModel):
 
     def headerData(self, col, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            if col == 0: return 'Provider'
-            if col == 1: return 'Receiver'
+            if col == 0: return 'Receiver'
+            if col == 1: return 'Provider'
             if col == 2: return 'Comment'
         return None
 
     def create_info(self):
         res = super(ConnectsModel, self).create_info()
         for i, d in enumerate(self.entries):
-            if not d.output:
-                res.append(Info('Connection output is required [row: {}]'.format(i+1), Info.ERROR, rows=[i], cols=[0]))
             if not d.input:
-                res.append(Info('Connection input is required [row: {}]'.format(i+1), Info.ERROR, rows=[i], cols=[1]))
+                res.append(Info('Connection input is required [row: {}]'.format(i+1), Info.ERROR, rows=[i], cols=[0]))
+            if not d.output:
+                res.append(Info('Connection output is required [row: {}]'.format(i+1), Info.ERROR, rows=[i], cols=[1]))
         return res

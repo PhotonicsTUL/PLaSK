@@ -20,6 +20,7 @@
     <A>0.1 * T + 0.02 * (T-300)**2</A>
     <NR>3.6, 3.6, 3.4, 0.0</NR>
   </material>
+  <material name="InGaAsQW" base="In(0.2)GaAs"/>
   <material name="InGaAs_QW:Si" base="InGaAs:Si" alloy="yes">
     <nr>3.621</nr>
     <thermk>self.In</thermk>

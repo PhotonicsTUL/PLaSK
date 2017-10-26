@@ -33,9 +33,11 @@ except NameError:
     # 'unicode' is undefined, must be Python 3
     unicode = str
     basestring = (str, bytes)
+    strings = str,
 else:
     # 'unicode' exists, must be Python 2
     bytes = str
+    strings = str, unicode
 
 try:
     import plask
@@ -383,8 +385,10 @@ def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
                     BCond = BCONDS[mt]
                     schema.append(BCond(tag['bcond'], tag['label'], tag.get("group"), mt, ma, ga, values))
 
-            providers = [it for it in solver.get('providers', [])]
-            receivers = [it for it in solver.get('receivers', [])]
+            providers = [tuple(it.items())[0] if isinstance(it, dict) else (it, it[3:])
+                         for it in solver.get('providers', [])]
+            receivers = [tuple(it.items())[0] if isinstance(it, dict) else (it, it[2:])
+                         for it in solver.get('receivers', [])]
 
             if cat not in categories:
                 categories.append(cat)

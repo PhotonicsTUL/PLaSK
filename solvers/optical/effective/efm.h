@@ -269,7 +269,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     typename ProviderFor<LightMagnitude, Geometry2DCylindrical>::Delegate outLightMagnitude;
 
     /// Provider of optical field
-    typename ProviderFor<LightE, Geometry2DCartesian>::Delegate outLightE;
+    typename ProviderFor<LightE, Geometry2DCylindrical>::Delegate outLightE;
 
     /// Provider of refractive index
     typename ProviderFor<RefractiveIndex, Geometry2DCylindrical>::Delegate outRefractiveIndex;
@@ -513,6 +513,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
         outWavelength.fireChanged();
         outLoss.fireChanged();
         outLightMagnitude.fireChanged();
+        outLightE.fireChanged();
         return modes.size()-1;
     }
 

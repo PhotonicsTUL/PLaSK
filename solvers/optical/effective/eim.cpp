@@ -268,10 +268,13 @@ void EffectiveIndex2D::onInitialize()
 
 void EffectiveIndex2D::onInvalidate()
 {
-    if (!modes.empty()) writelog(LOG_DETAIL, "Clearing computed modes");
-    modes.clear();
-    outNeff.fireChanged();
-    outLightMagnitude.fireChanged();
+    if (!modes.empty()) {
+        writelog(LOG_DETAIL, "Clearing computed modes");
+        modes.clear();
+        outNeff.fireChanged();
+        outLightMagnitude.fireChanged();
+        outLightE.fireChanged();
+    }
     recompute_neffs = true;
 }
 

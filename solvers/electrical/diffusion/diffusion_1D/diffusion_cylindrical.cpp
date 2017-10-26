@@ -121,7 +121,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
             plask::DataVector<double> old_n = n_present;
             size_t nm = old_n.size()-1;
 
-            current_mesh.reset(current_mesh.first(), current_mesh.last(), new_size);    //this calls invalidate
+            current_mesh.reset(current_mesh.first(), current_mesh.last(), new_size);    // this calls invalidate
             T_on_the_mesh = inTemperature(mesh2, interpolation_method);      // data temperature vector provided by inTemperature reciever
             j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by inCurrentDensity reciever
 
@@ -264,7 +264,8 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                 {
                     // Compute E and F components for overthreshold computations
                     if (inWavelength.size() != inLightE.size())
-                    throw BadInput(this->getId(), "Number of modes in inWavelength and inLightMagnitude differ");
+                        throw BadInput(this->getId(), "Number of modes in inWavelength ({}) and inLightE ({}) differ",
+                                       inWavelength.size(), inLightE.size());
 
                     // Sum all modes
                     PM = DataVector<double>(mesh2->size(), 0.);
