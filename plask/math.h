@@ -226,7 +226,7 @@ struct PLASK_API IllFormatedComplex: public Exception {
 template <typename T>
 std::complex<T> parse_complex(std::string str_to_parse) {
     boost::trim(str_to_parse);
-    if (str_to_parse.length() && str_to_parse[0] == '(' && str_to_parse[str_to_parse.length()-1] == ')' &&
+    if (!str_to_parse.empty() && str_to_parse[0] == '(' && str_to_parse[str_to_parse.length()-1] == ')' &&
         str_to_parse.find(',') == std::string::npos)
         str_to_parse = str_to_parse.substr(1, str_to_parse.length()-2);
     std::istringstream to_parse(str_to_parse);
