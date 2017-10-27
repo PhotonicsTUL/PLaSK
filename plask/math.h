@@ -27,7 +27,8 @@ using std::ptrdiff_t;
 
 // Complex numbers library
 #ifdef PLASK_MATH_STD
-    using std::complex; using std::conj;
+    using std::complex;
+    using std::conj;
     using std::sqrt;
     using std::abs; using std::real; using std::imag;
     using std::log; using std::exp;
@@ -39,6 +40,10 @@ using std::ptrdiff_t;
     typedef complex<double> dcomplex;
     const dcomplex I(0.,1.);
 #endif // PLASK_MATH_STD
+
+inline double conj(long double x) { return x; }
+inline double conj(double x) { return x; }
+inline double conj(float x) { return x; }
 
 const double PI = M_PI;
 const double PI_DOUBLED = 6.28318530717958647692;
@@ -105,7 +110,7 @@ const T& clamp(const T& v, const T& min, const T& max) {
  * @return @c true only if beg <= v && v < end
  */
 template <typename T>
-const bool in_range(const T& v, const T& beg, const T& end) {
+bool in_range(const T& v, const T& beg, const T& end) {
     return beg <= v && v < end;
 }
 
@@ -269,7 +274,7 @@ extern template PLASK_API std::complex<double> parse_complex<double>(std::string
  *
  * It uses O(1) memory (stores 2 doubles) and all it's operation has O(1) time complexity.
  *
- * It use Kahan method
+ * It uses Kahan method
  * http://en.wikipedia.org/wiki/Kahan_summation_algorithm
  */
 class AccurateSum {
