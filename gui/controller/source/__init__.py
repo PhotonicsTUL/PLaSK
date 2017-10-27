@@ -170,6 +170,8 @@ class SourceWidget(QWidget):
         prev_button.setText("&Previous")
         prev_button.pressed.connect(self.find_prev)
 
+        self._replace_count = 0
+
         self.find_toolbar.addWidget(next_button)
         self.find_toolbar.addWidget(prev_button)
         replace_button = QPushButton(self)

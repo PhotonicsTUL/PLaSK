@@ -29,6 +29,59 @@ DataVector<const Tensor2<dcomplex>>::DataVector(const DataVector<const Vec<2,dco
     : DataVector(reinterpret_cast<const DataVector<const Tensor2<dcomplex>>&>(src)) {
 }
 
+
+template <typename T>
+inline static Tensor2<double> abs(const Tensor2<T>& x) {
+    return Tensor2<double>(abs(x.c00), abs(x.c11));
+}
+
+template <typename T>
+inline static Tensor3<double> abs(const Tensor3<T>& x) {
+    return Tensor3<double>(abs(x.c00), abs(x.c11), abs(x.c22), abs(x.c01));
+}
+
+
+template <typename T>
+inline static Vec<2,double> real(const Vec<2,T>& x) {
+    return Vec<2,double>(real(x.c0), real(x.c1));
+}
+
+template <typename T>
+inline static Vec<3,double> real(const Vec<3,T>& x) {
+    return Vec<3,double>(real(x.c0), real(x.c1), real(x.c2));
+}
+
+template <typename T>
+inline static Tensor2<double> real(const Tensor2<T>& x) {
+    return Tensor2<double>(real(x.c00), real(x.c11));
+}
+
+template <typename T>
+inline static Tensor3<double> real(const Tensor3<T>& x) {
+    return Tensor3<double>(real(x.c00), real(x.c11), real(x.c22), real(x.c01));
+}
+
+template <typename T>
+inline static Vec<2,double> imag(const Vec<2,T>& x) {
+    return Vec<2,double>(imag(x.c0), imag(x.c1));
+}
+
+template <typename T>
+inline static Vec<3,double> imag(const Vec<3,T>& x) {
+    return Vec<3,double>(imag(x.c0), imag(x.c1), imag(x.c2));
+}
+
+template <typename T>
+inline static Tensor2<double> imag(const Tensor2<T>& x) {
+    return Tensor2<double>(imag(x.c00), imag(x.c11));
+}
+
+template <typename T>
+inline static Tensor3<double> imag(const Tensor3<T>& x) {
+    return Tensor3<double>(imag(x.c00), imag(x.c11), imag(x.c22), imag(x.c01));
+}
+
+
 namespace python {
 
 static const char* DATA_DOCSTRING =
@@ -533,10 +586,28 @@ static PythonDataVector<T,dim> PythonDataVector__div__(const PythonDataVector<T,
 //     vec /= a;
 // }
 
-// template <typename T, int dim>
-// static PythonDataVector<T,dim> PythonDataVector__abs__(const PythonDataVector<T,dim>& vec) {
-//     return PythonDataVector<T,dim>(abs(vec), vec.mesh);
-// }
+
+template <typename T, int dim>
+static PythonDataVector<const decltype(abs(T())),dim> PythonDataVector__abs__(const PythonDataVector<T,dim>& vec) {
+    DataVector<decltype(abs(T()))> absvec(vec.size());
+    for (size_t i = 0; i != vec.size(); ++i) absvec[i] = abs(vec[i]);
+    return PythonDataVector<const decltype(abs(T())),dim>(std::move(absvec), vec.mesh);
+}
+
+template <typename T, int dim>
+static PythonDataVector<const decltype(real(T())),dim> PythonDataVector_real(const PythonDataVector<T,dim>& vec) {
+    DataVector<decltype(real(T()))> revec(vec.size());
+    for (size_t i = 0; i != vec.size(); ++i) revec[i] = real(vec[i]);
+    return PythonDataVector<const decltype(real(T())),dim>(std::move(revec), vec.mesh);
+}
+
+template <typename T, int dim>
+static PythonDataVector<const decltype(imag(T())),dim> PythonDataVector_imag(const PythonDataVector<T,dim>& vec) {
+    DataVector<decltype(imag(T()))> imvec(vec.size());
+    for (size_t i = 0; i != vec.size(); ++i) imvec[i] = imag(vec[i]);
+    return PythonDataVector<const decltype(imag(T())),dim>(std::move(imvec), vec.mesh);
+}
+
 
 template <typename T, int dim>
 static bool PythonDataVector__eq__(const PythonDataVector<T,dim>& vec1, const PythonDataVector<T,dim>& vec2) {
@@ -621,7 +692,9 @@ static inline typename std::enable_if<detail::isBasicData<T>::value>::type regis
         .def("__div__", &PythonDataVector__div__<const T,dim>)
         .def("__truediv__", &PythonDataVector__div__<const T,dim>)
         .def("__neg__", &PythonDataVector__neg__<const T,dim>)
-        // .def("__abs__", &PythonDataVector__abs__<const T,dim>)
+        .def("__abs__", &PythonDataVector__abs__<const T,dim>)
+        .add_property("real", &PythonDataVector_real<const T,dim>)
+        .add_property("imag", &PythonDataVector_imag<const T,dim>)
         // .def("__iadd__", &PythonDataVector__iadd__<const T,dim>)
         // .def("__isub__", &PythonDataVector__isub__<const T,dim>)
         // .def("__imul__", &PythonDataVector__imul__<const T,dim>)

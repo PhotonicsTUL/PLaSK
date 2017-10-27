@@ -43,6 +43,25 @@ except NameError:
                 return default
 
 
+class RpsmesFile(object):
+    """
+    Generator, which skips empty lines, strips the '\n' character, and splits line by tabs
+    """
+    def __init__(self, fname):
+        self.name = fname
+        self.ifile = open(fname)
+        self.line = 0
+
+    def __iter__(self):
+        for line in self.ifile:
+            self.line += 1
+            if line[-1] == "\n": line = line[:-1]
+            if line.strip(): yield line.split()
+
+    def raise_exception(self, exc, msg):
+        raise exc("{} in '{}' line {}: {}".format(exc.__name__, os.path.basename(self.name), self.line, msg))
+
+
 class UniqueId(object):
     """Generator of unique names"""
 
@@ -361,14 +380,8 @@ def read_dan(fname):
        On exit this function returns dictionary of custom materials and list of regions
     """
 
-    ifile = open(fname)
-
-    # Set-up generator, which skips empty lines, strips the '\n' character, and splits line by tabs
-    def Input(ifile):
-        for line in ifile:
-            if line[-1] == "\n": line = line[:-1]
-            if line.strip(): yield line.split()
-    input = Input(ifile)
+    rpsmes = RpsmesFile(fname)
+    input = iter(rpsmes)
 
     # Header
     name = next(input)[0]  # structure name (will be used for output file)
@@ -384,7 +397,8 @@ def read_dan(fname):
     pnjcond = None
 
     if setting >= 10:
-        raise NotImplementedError("3D structure nor temporal data not implemented yet ({})".format(setting))  # TODO
+        rpsmes.raise_exception(NotImplementedError,
+                              "3D structure nor temporal data not implemented yet ({})".format(setting))
 
     # Set up symmetry
     axes = ['xy', 'rz'][sym]
@@ -443,16 +457,17 @@ def read_dan(fname):
                 kappa[1] = 'self.base.thermk(T, {})[1]'.format(h1)
 
         # create custom material if necessary
-        if sigma_t not in ('n', 'p', 'j') or kappa_t not in ('n', 'p'):
+        force_manual = '_' in mat
+        if sigma_t not in ('n', 'p', 'j') or kappa_t not in ('n', 'p') or force_manual:
             material = Material(mat)
-            if sigma_t not in ('n', 'p'):
+            if sigma_t not in ('n', 'p') or force_manual:
                 if sigma_t == 'u':
                     material.sigma = [1e-16, 1e-16]
                 else:
                     material.sigma = sigma
             else:
                 material.base = parse_material_name(mat, sigma[0], dopant)
-            if kappa_t not in ('n', 'p'):
+            if kappa_t not in ('n', 'p') or force_manual:
                 material.kappa = kappa
             else:
                 material.base = parse_material_name(mat, kappa[0], dopant)
@@ -468,7 +483,7 @@ def read_dan(fname):
                 else:
                     suffix = ''
                 unique_material_name = UniqueId(mat+'_', suffix)
-                if sigma_t in ('n', 'p') or kappa_t in ('n', 'p'):
+                if (sigma_t in ('n', 'p') or kappa_t in ('n', 'p')) and not force_manual:
                     mat = unique_material_name()  # the given name is the one from the database
                 while mat in materials and materials[mat] != material:
                     mat = unique_material_name()
@@ -491,7 +506,7 @@ def read_dan(fname):
             r.name = unique_object_name()
             heats[r.name] = float(line[1])
         elif ht != -100:
-            raise ValueError("wrong heat source type")
+            rpsmes.raise_exception(ValueError, "wrong heat source type")
 
         # save to the list (TODO: make it more clever, using heuristic algorithms to construct stacks and shelves)
         regions.append(r)
@@ -515,7 +530,7 @@ def read_dan(fname):
             elif (y0 == y1):
                 bounds.append(dict(dir='horizontal', at=y0, start=x0, stop=x1, optional=opt, value=val, valname=vname))
             else:
-                raise ValueError("boundary condition line is neither horizontal nor vertical")
+                rpsmes.raise_exception(ValueError, "boundary condition line is neither horizontal nor vertical")
         return bounds
 
     boundaries = {
