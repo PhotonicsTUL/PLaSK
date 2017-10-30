@@ -49,20 +49,23 @@ class FieldWidget(QWidget):
             (None, None, None, None, None),
             ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False),
             (None, None, None, None, None),
-            ('Component:', 'Select vector component to plot', None, 'select_component', (('long', 'tran', 'vert'), 2)),
+            ('Component:', 'Select vector component to plot', None, 'select_component',
+             (('long', 'tran', 'vert', 'abs'), 2)),
         )
 
         def __init__(self, canvas, parent, controller=None, coordinates=True):
             super(FieldWidget.NavigationToolbar, self).__init__(canvas, parent, controller, coordinates)
             self._actions['select_component'].setVisible(False)
             self.comp = 2
+            self.mag = True
 
         def select_component(self, index):
             self.comp = index
             self.parent.update_plot(self.parent.plotted_field, self.parent.plotted_geometry, None, False)
 
-        def enable_component(self, visible):
+        def enable_component(self, visible, mag):
             self._actions['select_component'].setVisible(visible)
+            self.mag = mag
 
         def mouse_move(self, event):
             if not event.inaxes or not self._active:
@@ -95,10 +98,13 @@ class FieldWidget(QWidget):
                 self.set_message(s)
 
         def set_axes_names(self, names, idx):
-            with BlockQtSignals(self.widgets['select_component']):
-                self.widgets['select_component'].clear()
-                self.widgets['select_component'].addItems(names)
-                self.widgets['select_component'].setCurrentIndex(self.comp)
+            widget = self.widgets['select_component']
+            with BlockQtSignals(widget):
+                widget.clear()
+                widget.addItems(names)
+                if self.mag:
+                    widget.addItem('Magnitude')
+                widget.setCurrentIndex(min(self.comp, widget.count()-1))
             self._axes = tuple(names[i] for i in idx)
 
         def aspect(self):
@@ -156,7 +162,7 @@ class FieldWidget(QWidget):
             elif reset_zoom:
                 xlim = field.mesh.axis0[0], field.mesh.axis0[-1]
                 ylim = field.mesh.axis1[0], field.mesh.axis1[-1]
-            self.toolbar.enable_component(len(field.array.shape) > 2)
+            self.toolbar.enable_component(len(field.array.shape) > 2, field.array.shape[-1] != 4)
             axi = 1, 2
         elif isinstance(field.mesh, plask.mesh.Rectangular3D):
             axs = field.mesh.axis0, field.mesh.axis1, field.mesh.axis2
@@ -172,18 +178,22 @@ class FieldWidget(QWidget):
                 plane = '{}{}'.format(*axi)
             else:
                 raise ValueError("Field mesh must have one dimension equal to 1")
-            self.toolbar.enable_component(len(field.array.shape) > 3)
+            self.toolbar.enable_component(len(field.array.shape) > 3, field.array.shape[-1] != 4)
         else:
             raise TypeError("Unsupported mesh")
 
+        comp = self.toolbar.comp
+        if comp == 3:
+            if self.toolbar.mag: comp = 'abs'
+            else: comp = 2
         if self.is_profile:
             if self.cax is not None:
                 self.figure.clf()
                 self.axes = self.figure.add_subplot(111, adjustable='datalim')
                 self.cax = None
-            self.controller.plotted = plask.plot_profile(field, axes=self.axes, comp=self.toolbar.comp)
+            self.controller.plotted = plask.plot_profile(field, axes=self.axes, comp=comp)
         else:
-            self.controller.plotted = plask.plot_field(field, axes=self.axes, plane=plane, comp=self.toolbar.comp)
+            self.controller.plotted = plask.plot_field(field, axes=self.axes, plane=plane, comp=comp)
             self.axes.set_xlim(*xlim)
             self.axes.set_ylim(*ylim)
             if geometry is not None:

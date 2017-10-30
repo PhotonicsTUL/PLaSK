@@ -282,8 +282,10 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
         if len(data.shape) == 3:
             if comp is None:
                 raise TypeError("Specify {} component to plot".format('tensor' if field.dtype == tuple else 'vector'))
+            elif comp == 'abs' or comp == 'mag' or comp == 'magnitude':
+                data = sqrt(sum(data*conj(data), -1))
             else:
-                comp = _get_component(comp, data.shape[2])
+                comp = _get_component(comp, data.shape[-1])
                 data = data[:,:,comp]
         data = data.transpose()
     elif isinstance(field.mesh, plask.mesh.Rectangular3D):
@@ -306,8 +308,10 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
         if len(data.shape) == 4:
             if comp is None:
                 raise TypeError("Specify {} component to plot".format('tensor' if field.dtype == tuple else 'vector'))
+            elif comp == 'abs' or comp == 'mag' or comp == 'magnitude':
+                data = sqrt(sum(data*conj(data), -1))
             else:
-                comp = _get_component(comp, data.shape[3])
+                comp = _get_component(comp, data.shape[-1])
                 data = data[:,:,:,comp]
         if ax[0] < ax[1]:
             data = data.reshape((len(xaxis), len(yaxis))).transpose()
@@ -385,8 +389,10 @@ def plot_profile(field, comp=None, swap_axes=False, axes=None, figure=None, **kw
         if len(data.shape) == 3:
             if comp is None:
                 raise TypeError("Specify vector component to plot")
+            elif comp == 'abs' or comp == 'mag' or comp == 'magnitude':
+                data = sqrt(sum(data*conj(data), -1))
             else:
-                comp = _get_component(comp, data.shape[2])
+                comp = _get_component(comp, data.shape[-1])
                 data = data[:,:,comp]
     elif isinstance(field.mesh, plask.mesh.Rectangular3D):
         if len(field.mesh.axis0) != 1 and len(field.mesh.axis1) == 1 and len(field.mesh.axis2) == 1:
@@ -403,8 +409,10 @@ def plot_profile(field, comp=None, swap_axes=False, axes=None, figure=None, **kw
         if len(data.shape) == 4:
             if comp is None:
                 raise TypeError("Specify vector component to plot")
+            elif comp == 'abs' or comp == 'mag' or comp == 'magnitude':
+                data = sqrt(sum(data*conj(data), -1))
             else:
-                comp = _get_component(comp, data.shape[3])
+                comp = _get_component(comp, data.shape[-1])
                 data = data[:,:,:,comp]
     else:
         raise NotImplementedError("Mesh type not supported")

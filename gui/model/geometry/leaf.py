@@ -74,6 +74,8 @@ class GNLeaf(GNObject):
         return self.material_bottom == self.material_top
 
     def stub(self):
+        if self.name is not None and '{' not in self.name:
+            return '    {} = {}'.format(self.name.replace('-', '_'), self.python_type())
         return ''
 
     def create_info(self, res, names):

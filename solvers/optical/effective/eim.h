@@ -96,7 +96,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
 
         /// Return mode loss
         double loss() const {
-            return 2e7 * imag(neff * solver->k0);
+            return - 2e7 * imag(neff * solver->k0);
         }
     };
 

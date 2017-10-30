@@ -41,6 +41,9 @@ class GNObject(GNode):
         attr_to_xml(self, element, 'name', 'role', 'axes')
         if self.axes is not None: conf.axes = self.axes
 
+    def python_type(self):
+        return 'None'
+
     def stub(self):
         if self.name is None or '{' in self.name:
             res = ''

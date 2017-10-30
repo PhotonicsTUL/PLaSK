@@ -121,11 +121,15 @@ class GridsController(Controller):
 
     def update_geometries(self):
         if plask is not None:
-            dim = max(self._current_controller.model.dim, 2)
+            try:
+                dim = max(self._current_controller.model.dim, 2)
+            except AttributeError:
+                self.geometry_list.clear()
+                return
             if dim == 3:
                 self.mesh_preview.toolbar.enable_planes(('long','tran','vert'))
             else:
-                self.mesh_preview.toolbar.disable_planes(('long','tran','vert'))
+                self.mesh_preview.tooolbar.disable_planes(('long','tran','vert'))
             geoms = [''] + list(r.name for r in self.document.geometry.model.get_roots(dim=dim) if r.name is not None)
             geometry_list = self.mesh_preview.toolbar.widgets['select_geometry']
             with BlockQtSignals(geometry_list):

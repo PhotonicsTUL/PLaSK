@@ -1324,7 +1324,7 @@
       help: >
         Initial range size (Muller method only).
 
-  - tag: opticaal-stripe-root
+  - tag: optical-stripe-root
     label: Parameters of the Optical Vertical Root-Finding Algorithm
     help: >
       Parameters of root-finding algorithm for one stripe.

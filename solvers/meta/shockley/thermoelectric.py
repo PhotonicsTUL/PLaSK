@@ -248,7 +248,7 @@ class ThermoElectric(plask.Solver):
 
             mesh_alpha (float): Mesh opacity (1 — fully opaque, 0 – invisible).
 
-            kwargs: Keyword arguments passed to the plot function.
+            **kwargs: Keyword arguments passed to the plot function.
 
         See also:
             :func:`plask.plot_field` : Plot any field obtained from receivers
@@ -278,7 +278,7 @@ class ThermoElectric(plask.Solver):
 
             mesh_alpha (float): Mesh opacity (1 — fully opaque, 0 – invisible).
 
-            kwargs: Keyword arguments passed to the :func:`plask.plot_field`.
+            **kwargs: Keyword arguments passed to the :func:`plask.plot_field`.
 
         See also:
             :func:`plask.plot_field` : Plot any field obtained from receivers
@@ -301,7 +301,7 @@ class ThermoElectric(plask.Solver):
             at (float): Horizontal position of the axis at which the voltage
                         is plotted.
 
-            kwargs: Keyword arguments passed to the plot function.
+            **kwargs: Keyword arguments passed to the plot function.
         """
         if isinstance(self.electrical.geometry, plask.geometry.Cartesian3D):
             try:
@@ -335,7 +335,7 @@ class ThermoElectric(plask.Solver):
                                      in which case the same label is used for each
                                      junction. If omitted automatic label is generated.
 
-            kwargs: Keyword arguments passed to the plot function.
+            **kwargs: Keyword arguments passed to the plot function.
         """
         # A little magic to get junction position first
         points = self.electrical.mesh.get_midpoints()

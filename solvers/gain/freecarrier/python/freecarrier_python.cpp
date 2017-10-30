@@ -207,7 +207,7 @@ BOOST_PYTHON_MODULE(freecarrier)
                    u8"    point (vec): Point to get gain at.\n"
                    u8"    c0, c1 (float): Coordinates of the point to get gain at.\n\n"
                    u8"Returns:\n"
-                   u8"    :class:`XFermiCyl.Spectrum`: Spectrum object.\n");
+                   u8"    :class:`FreeCarrier2D.Spectrum`: Spectrum object.\n");
         solver.def("spectrum", FreeCarrierGetGainSpectrum2<Geometry2DCartesian>, (py::arg("c0"), "c1"), py::with_custodian_and_ward_postcall<0,1>());
 
         py::scope scope = solver;
@@ -285,7 +285,7 @@ BOOST_PYTHON_MODULE(freecarrier)
                    u8"    point (vec): Point to get gain at.\n"
                    u8"    c0, c1 (float): Coordinates of the point to get gain at.\n\n"
                    u8"Returns:\n"
-                   u8"    :class:`XFermiCyl.Spectrum`: Spectrum object.\n");
+                   u8"    :class:`FreeCarrierCyl.Spectrum`: Spectrum object.\n");
         solver.def("spectrum", FreeCarrierGetGainSpectrum2<Geometry2DCylindrical>, (py::arg("c0"), "c1"), py::with_custodian_and_ward_postcall<0,1>());
 
         py::scope scope = solver;

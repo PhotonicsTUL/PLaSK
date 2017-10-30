@@ -31,6 +31,7 @@ class ThresholdSearch(ThermoElectric):
     Gain = None
     Optical = None
     _optarg = 'lam'
+    _lam0 = 'lam0'
 
     tfreq = 6.0
     vmin = None
@@ -161,7 +162,7 @@ class ThresholdSearch(ThermoElectric):
         self.electrical.voltage_boundary[self.ivb].value = volt
         self.compute_thermoelectric()
         self.optical.invalidate()
-        optstart = self.get_lam()
+        optstart = getattr(self, 'get_'+self._optarg)()
         if self._optarg is None:
             self.modeno = self.optical.find_mode(optstart, **self._optargs())
         else:
@@ -196,12 +197,12 @@ class ThresholdSearch(ThermoElectric):
                         .format(volt, lam, det))
         return np.array([det.real, det.imag])
 
-    def optical_determinant(self, lam):
+    def get_optical_determinant(self, lam):
         """
         Function computing determinant of the optical solver.
 
         Args:
-             lam (float of array): Wavelength to compute the determinant for [V].
+             lam (float or array): Wavelength to compute the determinant for [nm].
 
         Returns:
             float or array: Optical determinant.
@@ -213,6 +214,21 @@ class ThresholdSearch(ThermoElectric):
             _optargs = self._optargs().copy()
             _optargs[self._optarg] = lam
             return self.optical.get_determinant(**_optargs)
+
+    def plot_optical_determinant(self, lams, **kwargs):
+        """
+        Function plotting determinant of the optical solver.
+
+        Args:
+            lams (array): Wavelengths to plot the determinant for [nm].
+
+            **kwargs: Keyword arguments passed to the plot function.
+        """
+        vals = self.get_optical_determinant(lams)
+        plask.plot(lams, abs(vals))
+        plask.yscale('log')
+        plask.xlabel("Wavelength [nm]")
+        plask.ylabel("Determinant [ar.u.]")
 
     def compute(self, save=True, invalidate=False):
         """
@@ -241,7 +257,7 @@ class ThresholdSearch(ThermoElectric):
         """
 
         if invalidate:
-            if not skip_thermal:
+            if not self.skip_thermal:
                 self.thermal.invalidate()
             self.electrical.invalidate()
             self.diffusion.invalidate()
@@ -333,7 +349,7 @@ class ThresholdSearch(ThermoElectric):
             value = self.diffusion.outCarriersConcentration(mesh)
             plask.save_field(value, h5file, group + '/Junction'+no+'CarriersConcentration')
         for no, mesh in levels:
-            value = self.gain.outGain(mesh, self.optical.lam0.real)
+            value = self.gain.outGain(mesh, getattr(self.optical, self._lam0).real)
             plask.save_field(value, h5file, group + '/Junction'+no+'Gain')
         obox = self.optical.geometry.bbox
         omesh = plask.mesh.Rectangular2D(plask.mesh.Regular(obox.left, obox.right, optical_resolution[0]),
@@ -358,7 +374,7 @@ class ThresholdSearch(ThermoElectric):
 
             geometry_alpha (float): Geometry opacity (1 — fully opaque, 0 – invisible).
 
-            kwargs: Keyword arguments passed to the plot function.
+            **kwargs: Keyword arguments passed to the plot function.
         """
         if resolution is None: resolution = self.optical_resolution
         box = self.optical.geometry.bbox
@@ -558,6 +574,40 @@ class ThresholdSearchCyl(ThresholdSearch):
             if tag == 'optical-root':
                 self._read_attr(tag, 'determinant', self.optical, str, 'determinant_mode')
             super(ThresholdSearchCyl, self)._parse_xpl(tag, manager)
+
+    def get_vert_optical_determinant(self, vlam):
+        """
+        Function computing ‘vertical determinant’ of the optical solver.
+
+        Args:
+             vlam (float or array): ‘Vertical wavelength’ to compute the vertical
+                                     determinant for [nm].
+
+        Returns:
+            float or array: Optical vertical determinant.
+        """
+        self.compute_thermoelectric()
+        if self._optarg is None:
+            return self.optical.get_determinant(vlam, **self._optargs())
+        else:
+            _optargs = self._optargs().copy()
+            _optargs[self._optarg] = vlam
+            return self.optical.get_determinant(**_optargs)
+
+    def plot_vert_optical_determinant(self, vlams, **kwargs):
+        """
+        Function plotting ‘vertical determinant’ of the optical solver.
+
+        Args:
+            vlams (array): ‘Vertical wavelengths’ to plot the determinant for [nm].
+
+            **kwargs: Keyword arguments passed to the plot function.
+        """
+        vals = self.get_vert_optical_determinant(vlams)
+        plask.plot(vlams, abs(vals))
+        plask.yscale('log')
+        plask.xlabel("Vertical Wavelength [nm]")
+        plask.ylabel("Determinant [ar.u.]")
 
     def _get_info(self):
         return super(ThresholdSearchCyl, self)._get_info() + [
@@ -829,6 +879,7 @@ class ThresholdSearch2D(ThresholdSearch):
     """
 
     _optarg = 'neff'
+    _lam0 = 'wavelength'
 
     Thermal = thermal.static.Static2D
     Electrical = electrical.shockley.Shockley2D
@@ -936,7 +987,8 @@ class ThresholdSearch2D(ThresholdSearch):
     def on_initialize(self):
         super(ThresholdSearch2D, self).on_initialize()
         points = plask.mesh.Rectangular2D.SimpleGenerator()(self.optical.geometry).get_midpoints()
-        self._maxneff = max(self.optical.geometry.get_material(point).Nr(self.lam).real for point in points)
+        self._maxneff = max(self.optical.geometry.get_material(point).Nr(self.optical.wavelength.real).real
+                            for point in points)
 
     def get_neff(self):
         """
@@ -959,7 +1011,7 @@ class ThresholdSearch2D(ThresholdSearch):
         prev = 0.
         decr = False
         while n < self.mn and neff.real > 0.:
-            curr = abs(self.optical.get_determinant(neff=neff))
+            curr = abs(self.optical.get_determinant(neff))
             if decr and curr > prev:
                 n += 1
             decr = curr < prev
@@ -981,6 +1033,74 @@ class ThresholdSearch2D(ThresholdSearch):
             if tag == 'optical-root':
                 self._read_attr(tag, 'determinant', self.optical, str)
             super(ThresholdSearch2D, self)._parse_xpl(tag, manager)
+
+    def get_optical_determinant(self, neff):
+        """
+        Function computing determinant of the optical solver.
+
+        Args:
+             neff (float or array): Effective index to compute the determinant for.
+
+        Returns:
+            float or array: Optical determinant.
+        """
+        self.compute_thermoelectric()
+        if self._optarg is None:
+            return self.optical.get_determinant(neff, **self._optargs())
+        else:
+            _optargs = self._optargs().copy()
+            _optargs[self._optarg] = neff
+            return self.optical.get_determinant(**_optargs)
+
+    def plot_optical_determinant(self, neffs, **kwargs):
+        """
+        Function plotting determinant of the optical solver.
+
+        Args:
+            neffs (array): Array of effective indices to plot the determinant for.
+
+            **kwargs: Keyword arguments passed to the plot function.
+        """
+        vals = self.get_optical_determinant(neffs)
+        plask.plot(neffs, abs(vals))
+        plask.yscale('log')
+        plask.xlabel("Effective Index")
+        plask.ylabel("Determinant [ar.u.]")
+
+    def get_vert_optical_determinant(self, vneff):
+        """
+        Function computing ‘vertical determinant’ of the optical solver.
+
+        Args:
+             vneff (float or array): Effective index to compute the vertical
+                                     determinant for.
+
+        Returns:
+            float or array: Optical determinant.
+        """
+        self.compute_thermoelectric()
+        if self._optarg is None:
+            return self.optical.get_determinant(vneff, **self._optargs())
+        else:
+            _optargs = self._optargs().copy()
+            _optargs[self._optarg] = vneff
+            return self.optical.get_determinant(**_optargs)
+
+    def plot_vert_optical_determinant(self, vneffs, **kwargs):
+        """
+        Function plotting ‘vertical determinant’ of the optical solver.
+
+        Args:
+            vneffs (array): Array of effective indices to plot the vertical
+                            determinant for.
+
+            **kwargs: Keyword arguments passed to the plot function.
+        """
+        vals = self.get_vert_optical_determinant(vneffs)
+        plask.plot(vneffs, abs(vals))
+        plask.yscale('log')
+        plask.xlabel("Vertical Effective Index")
+        plask.ylabel("Determinant [ar.u.]")
 
     def _get_info(self):
         return super(ThresholdSearch2D, self)._get_info() + [

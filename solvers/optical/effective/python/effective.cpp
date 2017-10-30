@@ -301,7 +301,7 @@ BOOST_PYTHON_MODULE(effective)
                    u8"Returns:\n"
                    u8"    complex or list of complex: Determinant at the vertical effective index\n"
                    u8"    *neff* or an array matching its size.",
-                   "neff");
+                   py::arg("neff"));
         solver.def("get_determinant", &EffectiveIndex2D_getDeterminant,
                    u8"Get modal determinant.\n\n"
                    u8"Args:\n"
@@ -310,7 +310,7 @@ BOOST_PYTHON_MODULE(effective)
                    u8"Returns:\n"
                    u8"    complex or list of complex: Determinant at the effective index *neff* or\n"
                    u8"    an array matching its size.",
-                   (py::arg("neff") , py::arg("polarization")=py::object()));
+                   py::arg("neff"));
         RW_PROPERTY(wavelength, getWavelength, setWavelength, "Current wavelength.");
         RECEIVER(inTemperature, "");
         RECEIVER(inGain, "");

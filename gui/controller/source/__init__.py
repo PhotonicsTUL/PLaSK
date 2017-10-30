@@ -513,7 +513,10 @@ class SourceEditController(Controller):
     def on_edit_exit(self):
         if not self.try_save_data_in_model():
             return False
-        self.source_widget.editor.modificationChanged.disconnect(self._modification_changed)
+        try:
+            self.source_widget.editor.modificationChanged.disconnect(self._modification_changed)
+        except RuntimeError:
+            pass
         #if hasattr(self.model, 'changed'): self.model.changed -= self.refresh_editor
         self.visible = False
         return True
