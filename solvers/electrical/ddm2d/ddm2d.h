@@ -96,6 +96,8 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     bool needPsi0;                             ///< Flag indicating if we need to compute initial potential;
 
+    bool strained;                  ///< Consider strain in QW?
+
     /// Initialize the solver
     virtual void onInitialize() override;
 
@@ -267,6 +269,97 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     /// Find band edges for claddings
     int findCladBE();
+
+    /// Structure containing information about each active region
+    struct ActiveRegionInfo {
+        shared_ptr<StackContainer<2>> layers;   ///< Stack containing all layers in the active region
+        Vec<2> origin;                          ///< Location of the active region stack origin
+
+        ActiveRegionInfo(Vec<2> origin): layers(plask::make_shared<StackContainer<2>>()), origin(origin) {}
+
+        /// Return number of layers in the active region with surrounding barriers
+        size_t size() const
+        {
+            return layers->getChildrenCount();
+        }
+
+        /// Return material of \p n-th layer
+        shared_ptr<Material> getLayerMaterial(size_t n) const
+        {
+            auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild().get());
+            if (auto m = block->singleMaterial()) return m;
+            throw plask::Exception("FreeCarrierGainSolver requires solid layers.");
+        }
+
+        /// Return translated bounding box of \p n-th layer
+        Box2D getLayerBox(size_t n) const
+        {
+            return static_cast<GeometryObjectD<2>*>(layers->getChildNo(n).get())->getBoundingBox() + origin;
+        }
+
+        /// Return \p true if given layer is quantum well
+        bool isQW(size_t n) const
+        {
+            return static_cast<Translation<2>*>(layers->getChildNo(n).get())->getChild()->hasRole("QW");
+        }
+
+        /// Return bounding box of the whole active region
+        Box2D getBoundingBox() const
+        {
+            return layers->getBoundingBox() + origin;
+        }
+
+        /// Return \p true if the point is in the active region
+        bool contains(const Vec<2>& point) const {
+            return getBoundingBox().contains(point);
+        }
+
+        /// Return \p true if given point is inside quantum well
+        bool inQW(const Vec<2>& point) const {
+            if (!contains(point)) return false;
+            assert(layers->getChildForHeight(point.c1-origin.c1));
+            return layers->getChildForHeight(point.c1-origin.c1)->getChild()->hasRole("QW");
+        }
+
+        double averageNr(double lam, double T, double conc=0.) const {
+            double nr = 0.;
+            for (size_t i = 0; i != materials.size(); ++i)
+                if (isQW(i)) nr += thicknesses[i] * materials[i]->Nr(lam, T, conc).real();
+            return nr / totalqw;
+        }
+
+        std::vector<shared_ptr<Material>> materials;///< All materials in the active region
+        std::vector<double> thicknesses;            ///< Thicknesses of the layers in the active region
+        std::vector<size_t> wells;                  ///< Division of the active region into separate quantum wells
+
+        double total;                               ///< Total active region thickness [µm]
+        double totalqw;                             ///< Total accepted quantum wells thickness [µm]
+        double bottom;                              ///< Bottom spacer thickness [µm]
+        double top;                                 ///< Top spacer thickness [µm]
+
+        enum ConsideredHoles: unsigned {
+            NO_HOLES = 0,
+            HEAVY_HOLES = 1,
+            LIGHT_HOLES = 2,
+            BOTH_HOLES = 3
+        } holes;                                    ///< Type of holes existing in the active region
+
+
+        /**
+         * Summarize active region, check for appropriateness and compute some values
+         * \param solver solver
+         */
+        void summarize(const DriftDiffusionModel2DSolver<Geometry2DType>* solver);
+    };
+
+    /// Substrate material
+    shared_ptr<Material> materialSubstrate;
+
+    /// List of active regions
+    std::vector<ActiveRegionInfo> regions;
+
+    /// Detect active regions.
+    void detectActiveRegions();
 
     /// Parameters used to calculate energy levels of electrons
     std::vector<double> CBel; /// vector with energy band diagram for electrons from CB (nm)
