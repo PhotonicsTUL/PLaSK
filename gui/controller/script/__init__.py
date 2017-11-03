@@ -27,13 +27,13 @@ from ...model.script import ScriptModel
 from ...utils.config import CONFIG, parse_highlight
 from ...utils.widgets import EDITOR_FONT
 from ...utils.texteditor import TextEditor
-from ...external.highlighter import SyntaxHighlighter, load_syntax
+from ...lib.highlighter import SyntaxHighlighter, load_syntax
 
 if sys.version_info >= (3, 0, 0):
-    from ...external.highlighter.python32 import syntax
+    from ...lib.highlighter.python32 import syntax
 else:
-    from ...external.highlighter.python27 import syntax
-from ...external.highlighter.plask import syntax as plask_syntax
+    from ...lib.highlighter.python27 import syntax
+from ...lib.highlighter.plask import syntax as plask_syntax
 
 
 syntax['formats'].update(plask_syntax['formats'])

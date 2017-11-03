@@ -1,0 +1,3 @@
+[submodule "gui/external/pysparkle"]
+	path = gui/external/pysparkle
+	url = https://github.com/macdems/pysparkle.git

@@ -16,8 +16,8 @@ from ...qt.QtCore import *
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *
 from ...qt import QtSignal
-from ...external.highlighter import SyntaxHighlighter, load_syntax
-from ...external.highlighter.python27 import syntax
+from ...lib.highlighter import SyntaxHighlighter, load_syntax
+from ...lib.highlighter.python27 import syntax
 from ..script import scheme
 from ...model.materials import MaterialsModel, material_html_help, parse_material_components, elements_re
 from ...utils.texteditor import TextEditor

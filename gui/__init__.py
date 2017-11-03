@@ -50,8 +50,11 @@ from .qt.QtWidgets import *
 from .qt.QtGui import *
 from .qt import QtSignal, QT_API
 
-sys.path.insert(2, os.path.join(__path__[0], 'external'))
+sys.path.insert(2, os.path.join(__path__[0], 'lib'))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'share', 'plask', 'stubs'))
+
+sys.path.insert(4, os.path.join(__path__[0], 'external', 'pysparkle'))
+
 
 # Set-up correct backend for matplotlib
 try:
@@ -69,7 +72,10 @@ from .utils.config import CONFIG, ConfigProxy, ConfigDialog
 from .utils.texteditor import update_textedit_colors
 from .utils.widgets import fire_edit_end, InfoListView
 
-from .external.pysparkle import PySparkle
+try:
+    from pysparkle import PySparkle
+except:
+    PySparkle = None
 
 try:
     import plask
@@ -646,13 +652,11 @@ class MainWindow(QMainWindow):
 
     def init_pysparkle(self):
         global pysparkle
-        if pysparkle is None:
+        if pysparkle is None and PySparkle is not None:
             if VERSION is not None:
                 pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", VERSION,
                                       config=ConfigProxy('updates'), shutdown=close_all_windows,
                                       frontend='qt5' if QT_API == 'PyQt5' else 'qt4')
-            else:
-                pysparkle = None
         if pysparkle is not None:
             action_check_update = QAction(QIcon.fromTheme('software-update-available'),
                                           "Check for &Updates Now...", self)

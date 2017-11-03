@@ -18,8 +18,8 @@ from ...utils.config import CONFIG, parse_highlight
 from ...utils.qsignals import BlockQtSignals
 from ...utils.texteditor import TextEditor
 from ...utils.widgets import EDITOR_FONT
-from ...external.highlighter import SyntaxHighlighter, load_syntax
-from ...external.highlighter.xml import syntax
+from ...lib.highlighter import SyntaxHighlighter, load_syntax
+from ...lib.highlighter.xml import syntax
 from .indenter import indent, unindent, autoindent
 
 SCHEME = {}

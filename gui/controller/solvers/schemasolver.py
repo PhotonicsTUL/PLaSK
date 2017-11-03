@@ -15,8 +15,8 @@ from ...qt.QtCore import *
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *
 from ..defines import get_defines_completer
-from ...external.highlighter import SyntaxHighlighter, load_syntax
-from ...external.highlighter.xml import syntax
+from ...lib.highlighter import SyntaxHighlighter, load_syntax
+from ...lib.highlighter.xml import syntax
 from ...utils.config import CONFIG
 from ...utils.str import empty_to_none
 from ...utils.texteditor import TextEditorWithCB
