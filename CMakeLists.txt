@@ -8,10 +8,6 @@ cmake_policy(SET CMP0017 OLD)       # ensure our CMake modules are loaded first
 
 project(plask)
 
-set(VERSION_MAJOR 0)            # MAJOR version (change to 1 on publication in Journal of Computer Physics)
-set(VERSION_MINOR 2)            # MINOR version (bump up by one on visible feature change)
-# set(VERSION_REVISION 1)       # REVISION number (leave undefined unless really needed, it's normally set to svn revision)
-
 # ---------- Common options --------------------------------------------
 
 if(MSVC)    # flags needed by Visual Studio:
@@ -71,18 +67,11 @@ set(PLASK_PATH "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask")
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-if (NOT DEFINED VERSION_REVISION)
-    execute_process(COMMAND svnversion -n WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE SVN_REVISION)
-    if(NOT ${SVN_REVISION} STREQUAL "")
-        string(REGEX REPLACE "[0-9]+:|[A-Za-z]+" "" SVN_REVISION ${SVN_REVISION})
-    endif()
-    if(NOT ${SVN_REVISION} STREQUAL "")
-        set(VERSION_REVISION "r${SVN_REVISION}")
-    else()
-        set(VERSION_REVISION 0)
-    endif()
+execute_process(COMMAND git show -s --pretty=format:%cd.%h --date=format:%Y.%m.%d WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                RESULT_VARIABLE git_version_ok OUTPUT_VARIABLE VERSION)
+if(NOT "${git_version_ok}" STREQUAL "0")
+  set(VERSION "unknown.version")
 endif()
-set(VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REVISION}")
 message(STATUS "PLaSK version ${VERSION}")
 
 # ---------- Configurable options --------------------------------------------

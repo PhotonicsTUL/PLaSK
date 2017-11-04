@@ -702,6 +702,4 @@ def vec(*args, **kwargs):
         5.0
     """
 
-version = '0.2.r4379'
-version_major = 0
-version_minor = 2
+version = 'plask_version'

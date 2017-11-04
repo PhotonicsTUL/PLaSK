@@ -618,8 +618,6 @@ BOOST_PYTHON_MODULE(_plask)
 
     // PLaSK version
     scope.attr("version") = PLASK_VERSION;
-    scope.attr("version_major") = PLASK_VERSION_MAJOR;
-    scope.attr("version_minor") = PLASK_VERSION_MINOR;
 
     // Set global namespace for materials
     plask::python::xml_globals = new py::dict();
