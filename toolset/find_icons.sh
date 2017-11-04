@@ -13,12 +13,12 @@ for icon in ${icons}; do
         iconfile=${guidir}/icons/hicolor/${size}x${size}/actions/${icon}.png
         if [ ! -f ${iconfile} ]; then
             cp /usr/share/icons/Tango/${size}x${size}/actions/${icon}.png ${iconfile} && \
-            svn add ${iconfile}
+            git add ${iconfile}
         fi
     done
     iconfile=${guidir}/icons/hicolor/scalable/actions/${icon}.svg
     if [ ! -f ${iconfile} ]; then
         cp /usr/share/icons/Tango/scalable/actions/${icon}.svg ${iconfile} && \
-        svn add ${iconfile}
+        git add ${iconfile}
     fi
 done

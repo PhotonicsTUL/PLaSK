@@ -654,7 +654,7 @@ class MainWindow(QMainWindow):
         global pysparkle
         if pysparkle is None and PySparkle is not None:
             if VERSION is not None:
-                pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", VERSION,
+                pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", VERSION[:10],
                                       config=ConfigProxy('updates'), shutdown=close_all_windows,
                                       frontend='qt5' if QT_API == 'PyQt5' else 'qt4')
         if pysparkle is not None:
@@ -681,7 +681,7 @@ class MainWindow(QMainWindow):
         """)
         msgbox.setTextFormat(Qt.RichText)
         if VERSION is not None:
-            details = u"Version <b>" + VERSION + u"</b> (GUI using {} framework)<br/>\n<br/>\n".format(QT_API)
+            details = u"Version <b>" + VERSION + u"</b><br/>(GUI using {} framework)<br/>\n<br/>\n".format(QT_API)
         else:
             details = ""
         user = LICENSE.get('user', '')

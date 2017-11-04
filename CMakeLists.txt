@@ -2,9 +2,6 @@
 
 cmake_minimum_required(VERSION 2.8)
 cmake_policy(SET CMP0017 OLD)       # ensure our CMake modules are loaded first
-#if(POLICY CMP0058)
-#    cmake_policy(SET CMP0058 OLD)   # for Ninja
-#endif()
 
 project(plask)
 
@@ -67,12 +64,14 @@ set(PLASK_PATH "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask")
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-execute_process(COMMAND git show -s --pretty=format:%cd.%h --date=format:%Y.%m.%d WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                RESULT_VARIABLE git_version_ok OUTPUT_VARIABLE VERSION)
-if(NOT "${git_version_ok}" STREQUAL "0")
-  set(VERSION "unknown.version")
+execute_process(COMMAND git show -s --pretty=format:%cd.%h --date=short WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                RESULT_VARIABLE git_version_ok OUTPUT_VARIABLE PLASK_VERSION)  # old git does not have --date=format
+if("${git_version_ok}" STREQUAL "0")
+    string(REPLACE "-" "." PLASK_VERSION "${PLASK_VERSION}")
+else()
+    string(TIMESTAMP PLASK_VERSION "%Y.%m.%d")
 endif()
-message(STATUS "PLaSK version ${VERSION}")
+message(STATUS "PLaSK version ${PLASK_VERSION}")
 
 # ---------- Configurable options --------------------------------------------
 
@@ -799,9 +798,7 @@ set(CPACK_PACKAGE_VENDOR "Photonics Group, Lodz University of Technology")
 set(CPACK_PACKAGE_DESCRIPTION_FILE  "${CMAKE_SOURCE_DIR}/ABOUT")
 file(READ ${CMAKE_SOURCE_DIR}/ABOUT CPACK_PACKAGE_DESCRIPTION)
 
-set(CPACK_PACKAGE_VERSION_MAJOR ${VERSION_MAJOR})
-set(CPACK_PACKAGE_VERSION_MINOR ${VERSION_MINOR})
-set(CPACK_PACKAGE_VERSION_PATCH ${VERSION_REVISION})
+string(SUBSTRING "${PLASK_VERSION}" 0 10 CPACK_PACKAGE_VERSION)
 
 set(CPACK_STRIP_FILES ON)
 
@@ -835,7 +832,7 @@ if(WIN32)
     set(CPACK_PACKAGE_INSTALL_REGISTRY_KEY "plask")
     set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
     set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/ABOUT")
-    set(CPACK_NSIS_DISPLAY_NAME "PLaSK ${VERSION}")
+    set(CPACK_NSIS_DISPLAY_NAME "PLaSK ${CPACK_PACKAGE_VERSION}")
     set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
     set(CPACK_NSIS_MODIFY_PATH ON)
     # File types association:

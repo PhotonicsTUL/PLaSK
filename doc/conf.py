@@ -68,7 +68,7 @@ copyright = u'2013, Lodz University of Technology'
 # built documents.
 #
 # The short X.Y version.
-version = "%s.%s" % (plask.version_major, plask.version_minor)
+version = plask.version[:10]
 # The full version, including alpha/beta/rc tags.
 release = plask.version
 
