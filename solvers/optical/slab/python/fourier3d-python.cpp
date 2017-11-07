@@ -238,6 +238,30 @@ struct FourierSolver3D_SymmetryLongTranWrapper {
 };
 
 
+py::object getLatticeVectors(const FourierSolver3D& self) {
+    if (self.hasCustomLattice()) {
+        Vec<3,double> vec0, vec1;
+        std::tie(vec0, vec1) = self.getCustomLattice();
+        return py::make_tuple(py::make_tuple(vec0.c0, vec0.c1), py::make_tuple(vec1.c0, vec1.c1));
+    } else {
+        return py::object();
+    }
+}
+
+void setLatticeVectors(FourierSolver3D& self, const py::object& value) {
+    if (value == py::object()) {
+        self.clearCustomLattice();
+    } else {
+        double x0 = py::extract<double>(value[0][0]),
+               y0 = py::extract<double>(value[0][1]), 
+               x1 = py::extract<double>(value[1][0]), 
+               y1 = py::extract<double>(value[1][1]);
+        self.setCustomLattice(x0, y0, x1, y1);
+    }
+}
+
+
+
 
 py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
     if (py::len(args) != 1)
@@ -526,6 +550,16 @@ void export_FourierSolver3D()
                        "Currently the fields are normalized only if this parameter is set to\n"
                        "``top`` or ``bottom``. Otherwise, it is ``undefined`` (default) and the fields\n"
                        "are not normalized.");
+    solver.add_property("lattice", getLatticeVectors, setLatticeVectors,
+                        "Custom lattice vectors.\n\n"
+                        "If this attribute is None, the computations are performed over the whole\n"
+                        "geometry (either periodic or with optional PMLs) closed in a rectangular box.\n"
+                        "Otherwise it can be two pairs of floats indicating components of the lateral\n"
+                        "lattice vectors. In such case, the geometry must be periodic and no symmetry\n"
+                        "must be set. It is the user's responsibility to ensure that the defined geometry\n"
+                        "matches the specified lattice.\n\n"
+                        "Example:\n"
+                        "    >>> solver.lattice = (1., 0.), (0.5, sqrt(3)/2)\n");
     solver.def("get_determinant", py::raw_function(FourierSolver3D_getDeterminant),
                 "Compute discontinuity matrix determinant.\n\n"
                 "Arguments can be given through keywords only.\n\n"

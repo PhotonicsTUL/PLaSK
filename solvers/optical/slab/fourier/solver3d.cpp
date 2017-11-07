@@ -8,6 +8,7 @@ FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<SolverOver
     klong(0.), ktran(0.),
     symmetry_long(Expansion::E_UNSPECIFIED), symmetry_tran(Expansion::E_UNSPECIFIED),
     dct(2),
+    custom_lattice(false),
     expansion(this),
     refine_long(16), refine_tran(16),
     oversampling_long(1.), oversampling_tran(1.)
@@ -154,6 +155,19 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             if (sym_long != "") setSymmetryLong(readSymmetry(this, reader, sym_long));
             if (sym_tran != "") setSymmetryTran(readSymmetry(this, reader, sym_tran));
             reader.requireTagEnd();
+        } else if (param == "lattice") {
+            double x0 = reader.requireAttribute<double>("long0"),
+                   y0 = reader.requireAttribute<double>("tran0");
+            double x1 = reader.requireAttribute<double>("long1"),
+                   y1 = reader.requireAttribute<double>("tran1");
+            if (x0 != 0. || y0 != 0. || x1 != 0. || y1 != 0.) {
+                custom_lattice = true;
+                vec0 = vec(x0, y0, 0.);
+                vec1 = vec(x1, y1, 0.);
+            } else {
+                custom_lattice = false;
+            }
+            reader.requireTagEnd();
         } else if (param == "root") {
             readRootDiggerConfig(reader);
         } else
@@ -243,8 +257,8 @@ cvector FourierSolver3D::getReflectedAmplitudes(Expansion::Component polarizatio
     double incident = ((polarization==Expansion::E_LONG)? kl : kt);
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
-    double bl = 2*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
+    double bl = 2*M_PI / (expansion.hi0-expansion.lo0) * (expansion.symmetric_long()? 0.5 : 1.0),
+           bt = 2*M_PI / (expansion.hi1-expansion.lo1) * (expansion.symmetric_tran()? 0.5 : 1.0);
 
     int ordl = getLongSize(), ordt = getTranSize();
     for (int t = expansion.symmetric_tran()? 0 : -ordt; t <= ordt; ++t) {
@@ -289,8 +303,8 @@ cvector FourierSolver3D::getTransmittedAmplitudes(Expansion::Component polarizat
     double incident = ((polarization==Expansion::E_LONG)? kl : kt);
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
-    double bl = 2*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
+    double bl = 2*M_PI / (expansion.hi0-expansion.lo0) * (expansion.symmetric_long()? 0.5 : 1.0),
+           bt = 2*M_PI / (expansion.hi1-expansion.lo1) * (expansion.symmetric_tran()? 0.5 : 1.0);
 
     int ordl = getLongSize(), ordt = getTranSize();
     for (int t = expansion.symmetric_tran()? 0 : -ordt; t <= ordt; ++t) {
@@ -357,8 +371,8 @@ double FourierSolver3D::getReflection(Expansion::Component polarization, Transfe
     double incident = ((polarization==Expansion::E_LONG)? kl : kt);
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
-    double bl = 2.*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2.*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
+    double bl = 2*M_PI / (expansion.hi0-expansion.lo0) * (expansion.symmetric_long()? 0.5 : 1.0),
+           bt = 2*M_PI / (expansion.hi1-expansion.lo1) * (expansion.symmetric_tran()? 0.5 : 1.0);
 
     double result = 0.;
 
@@ -409,8 +423,8 @@ double FourierSolver3D::getTransmission(Expansion::Component polarization, Trans
     double incident = ((polarization==Expansion::E_LONG)? kl : kt);
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
-    double bl = 2.*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2.*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
+    double bl = 2*M_PI / (expansion.hi0-expansion.lo0) * (expansion.symmetric_long()? 0.5 : 1.0),
+           bt = 2*M_PI / (expansion.hi1-expansion.lo1) * (expansion.symmetric_tran()? 0.5 : 1.0);
 
     double result = 0.;
 
