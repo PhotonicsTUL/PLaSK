@@ -14,10 +14,6 @@ import sys
 import plask  # TODO: make preview optional
 
 from ...qt.QtCore import *
-try:
-    from ...qt.QtCore import *
-except ImportError:
-    pass
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *
 from ...qt import QtSlot

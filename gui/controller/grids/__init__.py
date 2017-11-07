@@ -18,7 +18,6 @@ except ImportError:
 
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
-from ...qt.QtGui import *
 from .. import Controller, select_index_from_info
 from ...utils import getattr_by_path, setattr_by_path
 from ...utils.widgets import table_last_col_fill, table_edit_shortcut
@@ -129,7 +128,7 @@ class GridsController(Controller):
             if dim == 3:
                 self.mesh_preview.toolbar.enable_planes(('long','tran','vert'))
             else:
-                self.mesh_preview.tooolbar.disable_planes(('long','tran','vert'))
+                self.mesh_preview.toolbar.disable_planes(('long','tran','vert'))
             geoms = [''] + list(r.name for r in self.document.geometry.model.get_roots(dim=dim) if r.name is not None)
             geometry_list = self.mesh_preview.toolbar.widgets['select_geometry']
             with BlockQtSignals(geometry_list):

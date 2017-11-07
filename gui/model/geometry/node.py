@@ -458,7 +458,7 @@ class GNode(object):
                     except TypeError:  # geometry manager has no child:
                         object = object._roots[real_index]
                 node = node.children[index]
-            except IndexError:
+            except (IndexError, AttributeError):
                 return None, None
         return object, node
 

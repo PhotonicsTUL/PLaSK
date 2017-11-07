@@ -17,6 +17,8 @@ import re
 import subprocess
 import sys
 
+from PyQt4.QtGui import QLabel, QPalette
+
 from .dock import OutputWindow
 from ..qt.QtCore import *
 from ..qt.QtGui import *
@@ -109,8 +111,11 @@ class Launcher(object):
         layout.addLayout(dirlayout)
 
         layout.addWidget(QLabel("Visible Log levels:"))
-        loglevel = ["error", "warning", "important", "info", "result", "data", "detail", "debug"].index(
-            main_window.document.loglevel.lower())
+        try:
+            loglevel = ['error', 'warning', 'important', 'info', 'result', 'data', 'detail', 'debug'].index(
+                main_window.document.loglevel.lower())
+        except AttributeError:
+            loglevel = 'detail'
         self.error = QCheckBox("&Error")
         self.error.setChecked(loglevel >= 0)
         layout.addWidget(self.error)

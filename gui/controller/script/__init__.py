@@ -13,6 +13,8 @@
 import sys
 from copy import copy
 
+from PyQt4.QtGui import QComboBox
+
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *
@@ -309,7 +311,7 @@ class ScriptController(SourceEditController):
             source.toolbar.addWidget(spacer)
             source.toolbar.addWidget(QLabel("Log Level: "))
             self.loglevel = QComboBox()
-            levels = ["Error", "Warning", "Important", "Info", "Result", "Data", "Detail", "Debug"]
+            levels = ['Error', 'Warning', 'Important', 'Info', 'Result', 'Data', 'Detail', 'Debug']
             self.loglevel.addItems(levels)
             try:
                 self.loglevel.setCurrentIndex(levels.index(loglevel.title()))

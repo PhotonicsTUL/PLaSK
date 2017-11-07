@@ -563,8 +563,11 @@ else:
             layout.addLayout(dirlayout)
 
             layout.addWidget(QLabel("Visible Log levels:"))
-            loglevel = ["error", "warning", "important", "info", "result", "data", "detail", "debug"].index(
-                main_window.document.loglevel.lower())
+            try:
+                loglevel = ['error', 'warning', 'important', 'info', 'result', 'data', 'detail', 'debug'].index(
+                    main_window.document.loglevel.lower())
+            except AttributeError:
+                loglevel = 'detail'
             self.error = QCheckBox("&Error")
             self.error.setChecked(loglevel >= 0)
             layout.addWidget(self.error)

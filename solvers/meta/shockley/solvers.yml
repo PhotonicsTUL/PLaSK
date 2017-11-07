@@ -867,7 +867,7 @@
         var: hem
         label: <i>m</i> (angular)
         type: int
-        default: 0
+        default: 1
         help: >
           Angular mode number <i>m</i> (0 for LP0x, 1 for LP1x, etc.).
       - attr: n
