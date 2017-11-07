@@ -16,8 +16,6 @@ import sys
 import os
 import subprocess
 
-from PyQt4.QtGui import QComboBox, QLabel, QPalette
-
 try:
     from shlex import quote
 except ImportError:

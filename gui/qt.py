@@ -41,8 +41,7 @@ else:
 for QT_API in (QT_API, 'PySide', 'PyQt4', 'PyQt5'):
     if QT_API == 'PySide':
         try:
-            from PySide import QtCore
-            from PySide import QtGui
+            from PySide import QtCore, QtGui
         except ImportError:
             pass
         else:
@@ -70,8 +69,7 @@ for QT_API in (QT_API, 'PySide', 'PyQt4', 'PyQt5'):
                     sip.setapi(n, 2)
                 except:
                     pass
-            from PyQt4 import QtCore
-            from PyQt4 import QtGui
+            from PyQt4 import QtCore, QtGui
         except ImportError:
             pass
         else:

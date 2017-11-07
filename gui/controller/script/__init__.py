@@ -13,8 +13,6 @@
 import sys
 from copy import copy
 
-from PyQt4.QtGui import QComboBox
-
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *

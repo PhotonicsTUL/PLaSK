@@ -17,8 +17,6 @@ import re
 import subprocess
 import sys
 
-from PyQt4.QtGui import QLabel, QPalette
-
 from .dock import OutputWindow
 from ..qt.QtCore import *
 from ..qt.QtGui import *

@@ -18,6 +18,7 @@ except ImportError:
 
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
+from ...qt.QtGui import *
 from .. import Controller, select_index_from_info
 from ...utils import getattr_by_path, setattr_by_path
 from ...utils.widgets import table_last_col_fill, table_edit_shortcut
