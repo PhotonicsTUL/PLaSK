@@ -71,7 +71,16 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 
     // reset mesh to original value
     z = getZQWCoordinate();
-    if (!this->mesh) throw NoMeshException(this->getId());
+    if (!this->mesh) {
+        double left = INFINITY, right = -INFINITY;
+        for (const auto& box: detected_QW) {
+            if (box.left() < left) left = box.left();
+            if (box.right() > left) right = box.right();
+        }
+        size_t num = static_cast<size_t>(std::round((right - left) * 100)) + 1;
+        this->writelog(LOG_DETAIL, "Making default mesh with {} points", num);
+        this->setMesh(make_shared<RegularMesh1D>(left, right, num));
+    }
     mesh2->setAxis0(this->mesh);
     mesh2->setAxis1(plask::make_shared<plask::RegularAxis>(z, z, 1));
     if (current_mesh().size() % 2 == 0) current_mesh().reset(current_mesh().first(), current_mesh().last(), current_mesh().size()+1);

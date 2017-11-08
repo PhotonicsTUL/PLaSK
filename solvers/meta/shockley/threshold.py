@@ -95,7 +95,7 @@ class ThresholdSearch(ThermoElectric):
                 self.optical.geometry = self.diffusion.geometry = self.gain.geometry = \
                     tag.getitem(manager.geo, 'optical')
             elif tag == 'mesh':
-                self.diffusion.mesh = tag.getitem(manager.msh, 'diffusion')
+                if 'diffusion' in tag: self.diffusion.mesh = tag.getitem(manager.msh, 'diffusion')
                 if 'optical' in tag: self.optical.mesh = tag.getitem(manager.msh, 'optical')
                 if 'gain' in tag: self.gain.mesh = tag.getitem(manager.msh, 'gain')
             elif tag == 'loop':

@@ -453,7 +453,6 @@
     - &mesh-2d-diffusion
       attr: diffusion
       label: Diffusion
-      required: true
       type: mesh
       mesh types: [ Regular ]
       help: >

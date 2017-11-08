@@ -77,9 +77,6 @@
     </refinements>
     <warnings outside="no"/>
   </generator>
-  <mesh name="diffusion" type="regular">
-    <axis start="0" stop="{mesa}" num="2000"></axis>
-  </mesh>
   <generator method="divide" name="optical" type="ordered">
     <prediv by="10"/>
   </generator>
@@ -88,7 +85,7 @@
 <solvers>
   <meta name="SOLVER" solver="ThresholdSearchCyl" lib="shockley">
     <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
-    <mesh diffusion="diffusion" electrical="default" optical="optical" thermal="default"/>
+    <mesh electrical="default" optical="optical" thermal="default"/>
     <optical dlam="0.01" lam0="980." maxlam="980." vat="0"/>
     <root bcond="0" vmax="1.6" vmin="1.4"/>
     <voltage>

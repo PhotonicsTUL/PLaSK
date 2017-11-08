@@ -6,6 +6,7 @@
 
   geometry: Cartesian2D
   mesh: Regular
+  need mesh: false
 
   tags:
   - &config
