@@ -1,14 +1,13 @@
 # coding: utf8
 # Copyright (C) 2014 Photonics Group, Lodz University of Technology
 
+import numpy as np
+
 import electrical.diffusion
 import electrical.shockley
 import gain.freecarrier
-import thermal.static
-
 import plask
-
-import numpy as np
+import thermal.static
 
 try:
     import scipy
@@ -313,14 +312,7 @@ class ThresholdSearch(ThermoElectric):
         return self.threshold_voltage
 
     def _get_info(self):
-        try:
-            import __main__
-            defines = ["  {} = {}".format(key, __main__.DEF[key]) for key in __main__.__overrites__]
-        except (NameError, KeyError):
-            defines = []
-        if defines:
-            defines = ["Temporary defines:"] + defines
-        return defines + [
+        return self._get_defines_info() + [
             "Threshold voltage [V]:     {:8.3f}".format(self.threshold_voltage),
             "Threshold current [mA]:    {:8.3f}".format(self.threshold_current),
             "Maximum temperature [K]:   {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))

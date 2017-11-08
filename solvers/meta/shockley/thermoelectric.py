@@ -160,6 +160,11 @@ class ThermoElectric(plask.Solver):
             verr = self.electrical.compute(self.tfreq)
             terr = self.thermal.compute(1)
 
+        infolines = self._get_info()
+        plask.print_log('important', "Thermoelectric Computations Finished")
+        for line in infolines:
+            plask.print_log('important', "  " + line)
+
         if save:
             self.save(None if save is True else save)
 
@@ -384,6 +389,21 @@ class ThermoElectric(plask.Solver):
                               color=plask.rc.grid.color, alpha=plask.rc.grid.alpha)
         plask.window_title("Current Density")
 
+    def _get_defines_info(self):
+        try:
+            import __main__
+            defines = ["  {} = {}".format(key, __main__.DEF[key]) for key in __main__.__overrites__]
+        except (NameError, KeyError, AttributeError):
+            defines = []
+        if defines:
+            defines = ["Temporary defines:"] + defines
+        return defines
+
+    def _get_info(self):
+        return self._get_defines_info() + [
+            "Total current [mA]:        {:8.3f}".format(self.get_total_current()),
+            "Maximum temperature [K]:   {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
+        ]
 
 
 class ThermoElectric2D(ThermoElectric):
@@ -391,7 +411,7 @@ class ThermoElectric2D(ThermoElectric):
     Thermo-electric calculations solver without the optical part.
 
     This solver performs under-threshold thermo-electrical computations.
-    It computes electric current flow and tempereture distribution in a self-
+    It computes electric current flow and temperature distribution in a self-
     consistent loop until desired convergence is reached.
 
     The computations can be executed using `compute` method, after which
