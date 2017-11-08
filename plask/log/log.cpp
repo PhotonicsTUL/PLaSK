@@ -32,8 +32,8 @@ PLASK_API bool forcedLoglevel = false;
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     PLASK_API std::string host_name() {
-        DWORD size = 1024;
-        char name[size];
+        char name[1024];
+		DWORD size = sizeof(name);
         GetComputerNameEx(ComputerNameDnsHostname, name, &size);
         return std::string(name);
     }
