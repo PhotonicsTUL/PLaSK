@@ -1,6 +1,7 @@
 #include "gauss_legendre.h"
 #include "fortran.h"
 
+#include <memory>
 
 namespace plask { namespace optical { namespace slab {
 
@@ -168,7 +169,7 @@ inline static void imtqlx(int n, double d[], double e[], double z[])
 
 void gaussLaguerre(size_t n, std::vector<double>& abscissae, DataVector<double>& weights, double scale)
 {
-    double work[n-1];
+    std::unique_ptr<double[]> work(new double[n-1]);
 
     abscissae.resize(n);
     weights.reset(n);
@@ -181,7 +182,7 @@ void gaussLaguerre(size_t n, std::vector<double>& abscissae, DataVector<double>&
     std::fill(weights.begin(), weights.end(), 0.);
     weights[0] = 1.0;
 
-    imtqlx(n, &abscissae.front(), work, weights.data());
+    imtqlx(n, &abscissae.front(), work.get(), weights.data());
 
     double iscale = 1. / scale;
     for (size_t i = 0; i < n; ++i) {
