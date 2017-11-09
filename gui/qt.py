@@ -41,11 +41,10 @@ else:
 for QT_API in (QT_API, 'PySide', 'PyQt4', 'PyQt5'):
     if QT_API == 'PySide':
         try:
-            from PySide import QtCore, QtGui
+            from PySide import QtCore, QtGui, QtGui as QtWidgets
         except ImportError:
             pass
         else:
-            QtWidgets = QtGui
             QtSignal = QtCore.Signal
             QtSlot = QtCore.Slot
             break
@@ -69,11 +68,10 @@ for QT_API in (QT_API, 'PySide', 'PyQt4', 'PyQt5'):
                     sip.setapi(n, 2)
                 except:
                     pass
-            from PyQt4 import QtCore, QtGui
+            from PyQt4 import QtCore, QtGui, QtGui as QtWidgets
         except ImportError:
             pass
         else:
-            QtWidgets = QtGui
             QtSignal = QtCore.pyqtSignal
             QtSlot = QtCore.pyqtSlot
             break
