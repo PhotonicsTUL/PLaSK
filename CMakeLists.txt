@@ -19,7 +19,7 @@ if(MSVC)    # flags needed by Visual Studio:
     add_definitions(-DBOOST_ALL_DYN_LINK)   #MSVC+cmake require this to properly detect dynamic boost libraries
     add_definitions(-DXML_STATIC)           #We use static expat - TODO: this is needed only for libplask, static/dynamic should be detected
     add_definitions(-DFMT_HEADER_ONLY)  #don't compile cppformat, workaround many linker errors
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++11")
+    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++14")
 else(MSVC)
     if(MINGW)
         set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")

@@ -4,6 +4,7 @@
 #include <plask/geometry/container.h>
 #include <plask/geometry/path.h>
 #include <plask/mesh/mesh.h>
+#include <plask/utils/openmp.h>
 #include "../python_util/py_set.h"
 #include "../python_numpy.h"
 
@@ -227,7 +228,7 @@ PyObject* GeometryObjectIncludesPoints(const shared_ptr<GeometryObjectD<dim>>& s
     auto boxes = self->getObjectBoundingBoxes(obj, pth);
 
     #pragma omp parallel for
-    for (size_t i = 0; i < mesh.size(); ++i) {
+    for (plask::openmp_size_t i = 0; i < mesh.size(); ++i) {
         auto p = mesh[i];
         data[i] = 0;
         for (const auto& box: boxes) {
