@@ -101,7 +101,7 @@ class FieldWidget(QWidget):
             widget = self.widgets['select_component']
             with BlockQtSignals(widget):
                 widget.clear()
-                widget.addItems(names)
+                widget.addItems(tuple(names))
                 if self.mag:
                     widget.addItem('Magnitude')
                 widget.setCurrentIndex(min(self.comp, widget.count()-1))
