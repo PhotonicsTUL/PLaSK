@@ -173,7 +173,7 @@ class PythonMaterial: public Material, Overriden<Material>
     }
 
     template <typename R, typename F, typename... Args>
-    inline R call(const char* name, F f, const boost::optional<R>& cached, Args... args) const {
+    inline R call(const char* name, F f, const plask::optional<R>& cached, Args... args) const {
         if (cached) return *cached;
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
         if (overriden(name)) {
@@ -183,7 +183,7 @@ class PythonMaterial: public Material, Overriden<Material>
     }
 
     template <typename R, typename F, typename... Args>
-    inline R call_override(const char* name, F f, const boost::optional<R>& cached, Args... args) const {
+    inline R call_override(const char* name, F f, const plask::optional<R>& cached, Args... args) const {
         if (cached) return *cached;
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
         if (overriden(name)) {
@@ -759,7 +759,7 @@ namespace detail {
 
     template <typename... Args>
     void getPropertyInfo(py::dict& result, const MaterialInfo& minfo, MaterialInfo::PROPERTY_NAME prop, Args... args) {
-        if (boost::optional<plask::MaterialInfo::PropertyInfo> info = minfo.getPropertyInfo(prop)) {
+        if (plask::optional<plask::MaterialInfo::PropertyInfo> info = minfo.getPropertyInfo(prop)) {
             py::dict data;
             if (info->getSource() != "") data["source"] = info->getSource();
             if (info->getComment() != "") data["comment"] = info->getComment();
@@ -780,7 +780,7 @@ namespace detail {
 }
 
 py::dict getMaterialInfo(const std::string& name) {
-    boost::optional<MaterialInfo> minfo = MaterialInfo::DB::getDefault().get(name);
+    plask::optional<MaterialInfo> minfo = MaterialInfo::DB::getDefault().get(name);
     py::dict result;
     if (!minfo) return result;
     detail::getPropertyInfo(result, *minfo, MaterialInfo::kind);

@@ -573,9 +573,9 @@ template <typename MeshT, typename ConditionT>
 inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest, shared_ptr<Geometry> geometry) {
     while (reader.requireTagOrEnd("condition")) {
         Boundary<MeshT> boundary;
-        boost::optional<std::string> place = reader.getAttribute("place");
-        boost::optional<std::string> placename = reader.getAttribute("placename");
-        //boost::optional<ConditionT> value = reader.getAttribute<ConditionT>("value");
+        plask::optional<std::string> place = reader.getAttribute("place");
+        plask::optional<std::string> placename = reader.getAttribute("placename");
+        //plask::optional<ConditionT> value = reader.getAttribute<ConditionT>("value");
         ConditionT value;
         try {
             value = parseBoundaryValue<ConditionT>(reader);

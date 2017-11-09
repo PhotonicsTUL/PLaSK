@@ -442,7 +442,7 @@ shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLReader& reader, cons
             throw XMLDuplicatedElementException(std::string("<generator>"), reader.getNodeName());
         read.insert(reader.getNodeName());
         if (reader.getNodeName() == "prediv") {
-            boost::optional<size_t> into = reader.getAttribute<size_t>("by");
+            plask::optional<size_t> into = reader.getAttribute<size_t>("by");
             if (into) {
                 if (reader.hasAttribute("by0")) throw XMLConflictingAttributesException(reader, "by", "by0");
                 if (reader.hasAttribute("by1")) throw XMLConflictingAttributesException(reader, "by", "by1");
@@ -452,7 +452,7 @@ shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLReader& reader, cons
                 for (int i = 0; i < dim; ++i) result->pre_divisions[i] = reader.getAttribute<size_t>(format("by{0}", i), 1);
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "postdiv") {
-            boost::optional<size_t> into = reader.getAttribute<size_t>("by");
+            plask::optional<size_t> into = reader.getAttribute<size_t>("by");
             if (into) {
                 if (reader.hasAttribute("by0")) throw XMLConflictingAttributesException(reader, "by", "by0");
                 if (reader.hasAttribute("by1")) throw XMLConflictingAttributesException(reader, "by", "by1");
@@ -491,7 +491,7 @@ shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLReader& reader, cons
             throw XMLDuplicatedElementException(std::string("<generator>"), reader.getNodeName());
         read.insert(reader.getNodeName());
         if (reader.getNodeName() == "steps") {
-            boost::optional<double> small_op = reader.getAttribute<double>("small");	//dons't use small since some windows haders: #define small char
+            plask::optional<double> small_op = reader.getAttribute<double>("small");	//dons't use small since some windows haders: #define small char
             if (small_op) {
                 if (reader.hasAttribute("small0")) throw XMLConflictingAttributesException(reader, "small", "small0");
                 if (reader.hasAttribute("small1")) throw XMLConflictingAttributesException(reader, "small", "small1");
@@ -499,7 +499,7 @@ shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLReader& reader, cons
                 for (int i = 0; i < dim; ++i) result->finestep[i] = *small_op;
             } else
                 for (int i = 0; i < dim; ++i) result->finestep[i] = reader.getAttribute<double>(format("small{:d}", i), result->finestep[i]);
-            boost::optional<double> large = reader.getAttribute<double>("large");
+            plask::optional<double> large = reader.getAttribute<double>("large");
             if (large) {
                 if (reader.hasAttribute("large0")) throw XMLConflictingAttributesException(reader, "large", "large0");
                 if (reader.hasAttribute("large1")) throw XMLConflictingAttributesException(reader, "large", "large1");
@@ -507,7 +507,7 @@ shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLReader& reader, cons
                 for (int i = 0; i < dim; ++i) result->maxstep[i] = *large;
             } else
                 for (int i = 0; i < dim; ++i) result->maxstep[i] = reader.getAttribute<double>(format("large{:d}", i), result->maxstep[i]);
-            boost::optional<double> factor = reader.getAttribute<double>("factor");
+            plask::optional<double> factor = reader.getAttribute<double>("factor");
             if (factor) {
                 if (reader.hasAttribute("factor0")) throw XMLConflictingAttributesException(reader, "factor", "factor0");
                 if (reader.hasAttribute("factor1")) throw XMLConflictingAttributesException(reader, "factor", "factor1");

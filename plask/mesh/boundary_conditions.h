@@ -165,10 +165,10 @@ public:
         return i;
     }
 
-    boost::optional<ValueType> getValue(std::size_t mesh_index) const {
+    plask::optional<ValueType> getValue(std::size_t mesh_index) const {
         for (auto i: container)
-            if (i.place.contains(mesh_index)) return boost::optional<ValueType>(i.value);
-        return boost::optional<ValueType>();
+            if (i.place.contains(mesh_index)) return plask::optional<ValueType>(i.value);
+        return plask::optional<ValueType>();
     }
 };
 

@@ -81,10 +81,10 @@ MaterialInfo::PropertyInfo& MaterialInfo::operator()(PROPERTY_NAME property) {
     return propertyInfo[property];
 }
 
-boost::optional<MaterialInfo::PropertyInfo> MaterialInfo::getPropertyInfo(MaterialInfo::PROPERTY_NAME property) const
+plask::optional<MaterialInfo::PropertyInfo> MaterialInfo::getPropertyInfo(MaterialInfo::PROPERTY_NAME property) const
 {
     auto i = propertyInfo.find(property);
-    return i == propertyInfo.end() ? boost::optional<MaterialInfo::PropertyInfo>() : boost::optional<MaterialInfo::PropertyInfo>(i->second);
+    return i == propertyInfo.end() ? plask::optional<MaterialInfo::PropertyInfo>() : plask::optional<MaterialInfo::PropertyInfo>(i->second);
 }
 
 /*const MaterialInfo::PropertyInfo& MaterialInfo::operator()(PROPERTY_NAME property) const {
@@ -122,25 +122,25 @@ MaterialInfo & MaterialInfo::DB::add(const std::string& materialName) {
     return materialInfo[materialName];
 }
 
-boost::optional<MaterialInfo> MaterialInfo::DB::get(const std::string &materialName, bool with_inherited_info) const {
+plask::optional<MaterialInfo> MaterialInfo::DB::get(const std::string &materialName, bool with_inherited_info) const {
     auto this_mat_info = materialInfo.find(materialName);
     if (this_mat_info == materialInfo.end())
-        return parent ? parent->get(materialName, with_inherited_info) : boost::optional<MaterialInfo>();
+        return parent ? parent->get(materialName, with_inherited_info) : plask::optional<MaterialInfo>();
 
     if (!with_inherited_info || this_mat_info->second.parent.empty())
-        return boost::optional<MaterialInfo>(this_mat_info->second);
+        return plask::optional<MaterialInfo>(this_mat_info->second);
 
-    boost::optional<MaterialInfo> parent_info = get(this_mat_info->second.parent, true);
+    plask::optional<MaterialInfo> parent_info = get(this_mat_info->second.parent, true);
     if (!parent_info)
-        return boost::optional<MaterialInfo>(this_mat_info->second);
+        return plask::optional<MaterialInfo>(this_mat_info->second);
     parent_info->override(this_mat_info->second);
     return parent_info;
 }
 
-boost::optional<MaterialInfo::PropertyInfo> MaterialInfo::DB::get(const std::string &materialName, PROPERTY_NAME propertyName, bool with_inherited_info) const {
+plask::optional<MaterialInfo::PropertyInfo> MaterialInfo::DB::get(const std::string &materialName, PROPERTY_NAME propertyName, bool with_inherited_info) const {
     auto this_mat_info = materialInfo.find(materialName);
     if (this_mat_info == materialInfo.end())
-        return parent ? parent->get(materialName, propertyName, with_inherited_info) : boost::optional<MaterialInfo::PropertyInfo>();
+        return parent ? parent->get(materialName, propertyName, with_inherited_info) : plask::optional<MaterialInfo::PropertyInfo>();
 
     auto res = this_mat_info->second.getPropertyInfo(propertyName);
     return res || !with_inherited_info || this_mat_info->second.parent.empty() ? res : get(this_mat_info->second.parent, propertyName, true);

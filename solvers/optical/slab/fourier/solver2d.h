@@ -127,7 +127,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     PML pml;
 
     /// Mirror reflectivities
-    boost::optional<std::pair<double,double>> mirrors;
+    plask::optional<std::pair<double,double>> mirrors;
 
     /// Provider for computed effective index
     ProviderFor<EffectiveIndex>::Delegate outNeff;

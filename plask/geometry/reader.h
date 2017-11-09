@@ -239,7 +239,7 @@ class PLASK_API GeometryReader {
      * @param name name of given @p object (can be auto-generated: in form '#'+number)
      * @param object geometry object which should be available by given @p name
      */
-    void registerObjectName(const boost::optional<std::string>& name, shared_ptr<GeometryObject> object) {
+    void registerObjectName(const plask::optional<std::string>& name, shared_ptr<GeometryObject> object) {
         if (name) registerObjectName(*name, object);
     }
 
@@ -250,7 +250,7 @@ class PLASK_API GeometryReader {
      * @param name name of given @p object (can be auto-generated: in form '#'+number)
      * @param object geometry object which should be available by given @p name
      */
-    void registerObjectName(const boost::optional<const std::string>& name, shared_ptr<GeometryObject> object) {
+    void registerObjectName(const plask::optional<const std::string>& name, shared_ptr<GeometryObject> object) {
         if (name) registerObjectName(*name, object);
     }
 

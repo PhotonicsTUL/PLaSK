@@ -138,7 +138,7 @@ static void setBoundaries(const BoundaryConditionsWithMesh<RectangularMesh<3>,Co
                           const std::function<double(double,ConditionT,ConditionT,size_t,size_t,bool)>& K_function
                          )
 {
-    boost::optional<ConditionT> values[8];
+    plask::optional<ConditionT> values[8];
     for (int i = 0; i < 8; ++i) values[i] = boundary_conditions.getValue(idx[i]);
 
     constexpr int walls[6][4] = { {0,1,2,3}, {4,5,6,7}, {0,2,4,6}, {1,3,5,7}, {0,1,4,5}, {2,3,6,7} };

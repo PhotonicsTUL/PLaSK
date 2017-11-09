@@ -10,7 +10,7 @@ This file contains classes which stores meta-informations about materials.
 #include <vector>
 #include <utility>
 
-#include <boost/optional.hpp>
+#include "../optional.h"
 
 #include <plask/config.h>   // for PLASK_API
 
@@ -258,7 +258,7 @@ struct PLASK_API MaterialInfo {
      * @param property
      * @return info about the @p property of this
      */
-    boost::optional<PropertyInfo> getPropertyInfo(PROPERTY_NAME property) const;
+    plask::optional<PropertyInfo> getPropertyInfo(PROPERTY_NAME property) const;
 
     /// Iterator over properties
     typedef std::map<PROPERTY_NAME, PropertyInfo>::iterator iterator;
@@ -336,7 +336,7 @@ struct PLASK_API MaterialInfo {
          * @param with_inherited_info if true (default) returned object will consists also with information inherited from parent, grand-parent, etc. materials
          * @return meta-informations about material with name @p materialName, no value if meta-informations of requested material are not included in data-base
          */
-        boost::optional<MaterialInfo> get(const std::string& materialName, bool with_inherited_info = true) const;
+        plask::optional<MaterialInfo> get(const std::string& materialName, bool with_inherited_info = true) const;
 
         /**
          * Get meta-informations about material's property from database.
@@ -344,7 +344,7 @@ struct PLASK_API MaterialInfo {
          * @param with_inherited_info if true (default) returned object will consists also with information inherited from parent, grand-parent, etc. materials
          * @return meta-informations about material's property from database, no value if meta-informations of requested material are not included in data-base
          */
-        boost::optional<MaterialInfo::PropertyInfo> get(const std::string& materialName, PROPERTY_NAME propertyName, bool with_inherited_info = true) const;
+        plask::optional<MaterialInfo::PropertyInfo> get(const std::string& materialName, PROPERTY_NAME propertyName, bool with_inherited_info = true) const;
 
         /// iterator over materials' meta-informations
         typedef std::map<std::string, MaterialInfo>::iterator iterator;

@@ -56,8 +56,8 @@ namespace detail {
 
         auto aligner = new(storage) AlignerType;
 
-        *aligner = align::fromDictionary<directions...>([&](const std::string& name) -> boost::optional<double> {
-                                                            boost::optional<double> result;
+        *aligner = align::fromDictionary<directions...>([&](const std::string& name) -> plask::optional<double> {
+                                                            plask::optional<double> result;
                                                             auto found = map.find(name);
                                                             if (found != map.end()) {
                                                                 result.reset(found->second);
@@ -85,8 +85,8 @@ namespace detail {
 
         auto aligner = new(storage) AlignerType;
 
-        *aligner = align::fromDictionary([&](const std::string& name) -> boost::optional<double> {
-                                                            boost::optional<double> result;
+        *aligner = align::fromDictionary([&](const std::string& name) -> plask::optional<double> {
+                                                            plask::optional<double> result;
                                                             auto found = map.find(name);
                                                             if (found != map.end()) {
                                                                 result.reset(found->second);

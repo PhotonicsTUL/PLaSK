@@ -264,7 +264,7 @@ int main(int argc, const char *argv[])
 
     // Parse commnad line
     bool force_interactive = false;
-    boost::optional<plask::LogLevel> loglevel;
+    plask::optional<plask::LogLevel> loglevel;
     const char* command = nullptr;
     const char* runmodule = nullptr;
     const char* log_color = nullptr;
@@ -537,7 +537,7 @@ int main(int argc, const char *argv[])
                 plask::python::PythonManager::export_dict(omanager, globals);
 
                 // Set default axes if all loaded geometries share the same
-                boost::optional<plask::AxisNames> axes;
+                plask::optional<plask::AxisNames> axes;
                 for (const auto& geometry: manager->roots) {
                     if (!axes) axes.reset(geometry->axisNames);
                     else if (geometry->axisNames != *axes) {

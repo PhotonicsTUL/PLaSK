@@ -104,10 +104,10 @@ void LicenseVerifier::verify() {
 
     XMLReader r(std::unique_ptr<std::istringstream>(new std::istringstream(content, std::ios_base::binary)));
 
-    boost::optional<std::string> expiry;
+    plask::optional<std::string> expiry;
     if (!processLicense(r, nullptr,
                    [&] (XMLReader& src) {
-                        boost::optional<std::vector<mac_address_t>> macs;
+                        plask::optional<std::vector<mac_address_t>> macs;
                         if (src.getNodeName() == PLASK_LICENSE_EXPIRY_TAG_NAME) {
                             if (expiry) src.throwException("duplicated <" PLASK_LICENSE_EXPIRY_TAG_NAME "> tag in license file");
                             expiry = src.getTextContent();

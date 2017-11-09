@@ -92,7 +92,7 @@ namespace plask { namespace python {
 //      */
 //     template <typename T>
 //     inline T getAttribute(const std::string& name, const T& default_value) const {
-//         boost::optional<std::string> attr_str = getAttribute(name);
+//         plask::optional<std::string> attr_str = getAttribute(name);
 //         if (attr_str) {
 //             return parse<T>(*attr_str, name);
 //         } else
@@ -102,22 +102,22 @@ namespace plask { namespace python {
 //     /**
 //      * Get value of attribute with given @p name.
 //      * @param name name of attribute to get
-//      * @return boost::optional which represent value of attribute with given @p name or has no value if there is no attribute with given @p name
+//      * @return plask::optional which represent value of attribute with given @p name or has no value if there is no attribute with given @p name
 //      */
-//     boost::optional<std::string> getAttribute(const std::string& name) const;
+//     plask::optional<std::string> getAttribute(const std::string& name) const;
 //
 //     /**
 //      * Get value of attribute with given @p name.
 //      *
 //      * Throws exception if value of attribute given @p name can't be casted to required type T.
 //      * @param name name of attribute to get
-//      * @return boost::optional which represent value of attribute with given @p name or has no value if there is no attribute with given @p name
+//      * @return plask::optional which represent value of attribute with given @p name or has no value if there is no attribute with given @p name
 //      * @tparam T required type of value, boost::lexical_cast\<T> or registered parser will be used to obtain value of this type from string
 //      */
 //     template <typename T>
-//     inline boost::optional<T> getAttribute(const std::string& name) const {
-//         boost::optional<std::string> attr_str = getAttribute(name);
-//         if (!attr_str) return boost::optional<T>();
+//     inline plask::optional<T> getAttribute(const std::string& name) const {
+//         plask::optional<std::string> attr_str = getAttribute(name);
+//         if (!attr_str) return plask::optional<T>();
 //         return parse<T>(*attr_str, name);
 //     }
 //

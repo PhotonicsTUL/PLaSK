@@ -37,12 +37,12 @@ Manager::SetAxisNames::SetAxisNames(Manager &manager, const AxisNames* names)
 
 Manager::SetAxisNames::SetAxisNames(Manager &manager, XMLReader& source)
     : manager(manager), old(manager.axisNames) {
-    boost::optional<std::string> axis = source.getAttribute(XML_AXES_ATTR);
+    plask::optional<std::string> axis = source.getAttribute(XML_AXES_ATTR);
     if (axis) manager.axisNames = &AxisNames::axisNamesRegister.get(*axis);
 }
 
 bool Manager::tryLoadFromExternal(XMLReader& reader, MaterialsDB& materialsDB, const Manager::LoadFunCallbackT& load_from) {
-    boost::optional<std::string> from_attr = reader.getAttribute("external");
+    plask::optional<std::string> from_attr = reader.getAttribute("external");
     if (!from_attr) return false;
     load_from(*this, materialsDB, *from_attr, reader.getNodeName());
     return true;
@@ -222,7 +222,7 @@ void Manager::loadSolvers(XMLReader& reader) {
                 throw NamesConflictException("Solver", name);
             continue;
         }
-        boost::optional<std::string> lib = reader.getAttribute("lib");
+        plask::optional<std::string> lib = reader.getAttribute("lib");
         const std::string solver_name = reader.requireAttribute("solver");
         std::string category = reader.getNodeName();
         if (!lib) {

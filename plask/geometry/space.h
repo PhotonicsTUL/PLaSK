@@ -9,6 +9,7 @@
 
 #include <boost/signals2.hpp>
 #include "../utils/event.h"
+#include "../optional.h"
 
 namespace plask {
 
@@ -103,7 +104,7 @@ struct PLASK_API Geometry: public GeometryObject {
      * @param axesNames name of axes, use to create arguments for @p borderValuesGetter
      * @param materialsDB source of materials
      */
-    void setEdges(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames,
+    void setEdges(const std::function<plask::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames,
                     const MaterialsDB& materialsDB = MaterialsDB::getDefault());
 
     /**
@@ -631,9 +632,9 @@ public:
     //                                              const std::map<std::string, std::string>& edges=null_borders,
     //                                              const AxisNames& axesNames=AxisNames("lon","tran","up")) const {
     //     GeometryD<dim>* subspace = getSubspace(object, path, false);
-    //     subspace->setEdges( [&](const std::string& s) -> boost::optional<std::string> {
+    //     subspace->setEdges( [&](const std::string& s) -> plask::optional<std::string> {
     //         auto b = edges.find(s);
-    //         return (b != edges.end()) ? boost::optional<std::string>(b->second) : boost::optional<std::string>();
+    //         return (b != edges.end()) ? plask::optional<std::string>(b->second) : plask::optional<std::string>();
     //     }, axesNames);
     //     return subspace;
     // }

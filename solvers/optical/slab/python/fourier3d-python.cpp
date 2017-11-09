@@ -256,7 +256,7 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
     py::object array;
 
     dcomplex klong = self->getKlong(), ktran = self->getKtran();
-    boost::optional<dcomplex> wavelength, k0;
+    plask::optional<dcomplex> wavelength, k0;
 
     AxisNames* axes = getCurrentAxes();
     py::stl_input_iterator<std::string> begin(kwargs), end;
@@ -339,7 +339,7 @@ static size_t FourierSolver3D_setMode(py::tuple args, py::dict kwargs) {
         throw TypeError("set_mode() takes exactly one non-keyword argument ({0} given)", py::len(args));
     FourierSolver3D* self = py::extract<FourierSolver3D*>(args[0]);
 
-    boost::optional<dcomplex> wavelength, k0;
+    plask::optional<dcomplex> wavelength, k0;
     dcomplex klong = self->getKlong(), ktran = self->getKtran();
 
     AxisNames* axes = getCurrentAxes();

@@ -85,7 +85,7 @@ struct DataFrom3Dto2DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTypes
     /// Type of property value in output space
     typedef typename PropertyAtSpace<PropertyT, Geometry2DCartesian>::ValueType ValueType;
 
-    std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<2>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    std::function<plask::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<2>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         if (pointsCount > 1) {
             const double total_len = this->outputObj->getLength();
             const std::size_t point_count = this->pointsCount;
@@ -130,7 +130,7 @@ struct DataFrom3Dto2DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemplat
 
     typedef typename PropertyT::EnumType EnumType;
 
-    std::function<boost::optional<ValueType>(std::size_t index)> operator()(EnumType n, const shared_ptr<const MeshD<2>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    std::function<plask::optional<ValueType>(std::size_t index)> operator()(EnumType n, const shared_ptr<const MeshD<2>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         if (pointsCount > 1) {
             const double total_len = this->outputObj->getLength();
             const std::size_t point_count = this->pointsCount;
@@ -236,10 +236,10 @@ struct DataFrom2Dto3DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTypes
                 dataForRegion[region_index].reset(source.in(plask::make_shared<ReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), std::forward<ExtraArgs>(extra_args)..., method));
         }
 
-        boost::optional<ValueType> operator()(std::size_t index) {
+        plask::optional<ValueType> operator()(std::size_t index) {
             std::size_t region_index = source.findRegionIndex(dst_mesh->at(index));
             if (region_index == source.regions.size())
-                return boost::optional<ValueType>();
+                return plask::optional<ValueType>();
 
             /*if (dataForRegion[region_index].isNull())
                 dataForRegion[region_index].reset(source.in(plask::make_shared<ReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), extra_args, method));*/
@@ -249,7 +249,7 @@ struct DataFrom2Dto3DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTypes
 
     };
 
-    std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<3>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    std::function<plask::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<3>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         return LazySourceImpl(*this, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
     }
 
@@ -290,10 +290,10 @@ struct DataFrom2Dto3DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemplat
                 dataForRegion[region_index].reset(source.in(n, plask::make_shared<ReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), std::forward<ExtraArgs>(extra_args)..., method));
         }
 
-        boost::optional<ValueType> operator()(std::size_t index) {
+        plask::optional<ValueType> operator()(std::size_t index) {
             std::size_t region_index = source.findRegionIndex(dst_mesh->at(index));
             if (region_index == source.regions.size())
-                return boost::optional<ValueType>();
+                return plask::optional<ValueType>();
 
             /*if (dataForRegion[region_index].isNull())
                 dataForRegion[region_index].reset(source.in(plask::make_shared<ReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), extra_args, method));*/
@@ -303,7 +303,7 @@ struct DataFrom2Dto3DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemplat
 
     };
 
-    std::function<boost::optional<ValueType>(std::size_t index)> operator()(EnumType n, const shared_ptr<const MeshD<3>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    std::function<plask::optional<ValueType>(std::size_t index)> operator()(EnumType n, const shared_ptr<const MeshD<3>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         return LazySourceImpl(*this, n, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
     }
 

@@ -4,7 +4,7 @@
 #include <string>
 #include <limits>
 #include <boost/lexical_cast.hpp>
-#include <boost/optional.hpp>
+#include "../../optional.h"
 #include <boost/algorithm/string.hpp>
 #include <vector>
 #include <set>
@@ -234,9 +234,9 @@ class PLASK_API XMLReader {
          * Get attribute
          * \return optional set if the attribute was specified
          */
-        boost::optional<EnumT> get() {
-            boost::optional<std::string> value = reader.getAttribute(attr_name);
-            if (!value) return boost::optional<EnumT>();
+        plask::optional<EnumT> get() {
+            plask::optional<std::string> value = reader.getAttribute(attr_name);
+            if (!value) return plask::optional<EnumT>();
             return parse(*value);
         }
 
@@ -246,7 +246,7 @@ class PLASK_API XMLReader {
          * \return optional set if the attribute was specified
          */
         EnumT get(EnumT default_value) {
-            boost::optional<std::string> value = reader.getAttribute(attr_name);
+            plask::optional<std::string> value = reader.getAttribute(attr_name);
             if (!value) return default_value;
             return parse(*value);
         }
@@ -670,7 +670,7 @@ private:
      */
     template <typename T>
     inline T getAttribute(const std::string& name, const T& default_value) const {
-        boost::optional<std::string> attr_str = getAttribute(name);
+        plask::optional<std::string> attr_str = getAttribute(name);
         if (attr_str) {
             return parse<T>(*attr_str, name);
         } else
@@ -680,22 +680,22 @@ private:
     /**
      * Get value of attribute with given @p name.
      * @param name name of attribute to get
-     * @return boost::optional which represent value of attribute with given @p name or has no value if there is no attribute with given @p name
+     * @return plask::optional which represent value of attribute with given @p name or has no value if there is no attribute with given @p name
      */
-    boost::optional<std::string> getAttribute(const std::string& name) const;
+    plask::optional<std::string> getAttribute(const std::string& name) const;
 
     /**
      * Get value of attribute with given @p name.
      *
      * Throws exception if value of attribute given @p name can't be casted to required type T.
      * @param name name of attribute to get
-     * @return boost::optional which represent value of attribute with given @p name or has no value if there is no attribute with given @p name
+     * @return plask::optional which represent value of attribute with given @p name or has no value if there is no attribute with given @p name
      * @tparam T required type of value, boost::lexical_cast\<T> or registered parser will be used to obtain value of this type from string
      */
     template <typename T>
-    inline boost::optional<T> getAttribute(const std::string& name) const {
-        boost::optional<std::string> attr_str = getAttribute(name);
-        if (!attr_str) return boost::optional<T>();
+    inline plask::optional<T> getAttribute(const std::string& name) const {
+        plask::optional<std::string> attr_str = getAttribute(name);
+        if (!attr_str) return plask::optional<T>();
         return parse<T>(*attr_str, name);
     }
 

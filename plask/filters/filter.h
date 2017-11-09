@@ -30,7 +30,7 @@ struct FilterBaseImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTempl
     typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType ValueType;
     typedef DataSource<PropertyT, OutputSpaceType> DataSourceT;
     typedef std::unique_ptr<DataSourceT> DataSourceTPtr;
-    typedef std::function<boost::optional<ValueType>(std::size_t)> DataSourceF;
+    typedef std::function<plask::optional<ValueType>(std::size_t)> DataSourceF;
 
     struct FilterLazyDataImpl: public LazyDataImpl<ValueType> {
 
@@ -57,7 +57,7 @@ struct FilterBaseImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTempl
             for (std::size_t source_index = 0; source_index < innerSourcesData.size(); ++source_index) {
                 //if (!innerSourcesData[source_index])
                 //    innerSourcesData[source_index] = filter.innerSources[source_index]->operator()(dst_mesh, extra_args, method);
-                boost::optional<ValueType> v = innerSourcesData[source_index](point_index);
+                plask::optional<ValueType> v = innerSourcesData[source_index](point_index);
                 if (v) return *v;
             }
             //if (!outerSourceData) outerSourceData = filter.outerSource->operator()(dst_mesh, extra_args, method);
@@ -135,7 +135,7 @@ public:
         bool silent = outerSource && typeid(*outerSource) != typeid(ConstDataSource<PropertyT, OutputSpaceType>);
         for (std::size_t i = 0; i < result.size(); ++i) {
             // iterate over inner sources, if inner sources don't provide data, use outer source:
-            boost::optional<ValueT> innerVal;
+            plask::optional<ValueT> innerVal;
             for (const DataSourceTPtr& innerSource: innerSources) {
                 innerVal = innerSource->get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method);
                 if (innerVal) { silent = true; break; }
@@ -241,7 +241,7 @@ struct FilterBaseImpl< PropertyT, MULTI_FIELD_PROPERTY, OutputSpaceType, Variadi
     typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType ValueType;
     typedef DataSource<PropertyT, OutputSpaceType> DataSourceT;
     typedef std::unique_ptr<DataSourceT> DataSourceTPtr;
-    typedef std::function<boost::optional<ValueType>(std::size_t)> DataSourceF;
+    typedef std::function<plask::optional<ValueType>(std::size_t)> DataSourceF;
     typedef typename PropertyT::EnumType EnumType;
 
     struct FilterLazyDataImpl: public LazyDataImpl<ValueType> {
@@ -272,7 +272,7 @@ struct FilterBaseImpl< PropertyT, MULTI_FIELD_PROPERTY, OutputSpaceType, Variadi
             for (std::size_t source_index = 0; source_index < innerSourcesData.size(); ++source_index) {
                 //if (!innerSourcesData[source_index])
                 //    innerSourcesData[source_index] = filter.innerSources[source_index]->operator()(dst_mesh, extra_args, method);
-                boost::optional<ValueType> v = innerSourcesData[source_index](point_index);
+                plask::optional<ValueType> v = innerSourcesData[source_index](point_index);
                 if (v) return *v;
             }
             //if (!outerSourceData) outerSourceData = filter.outerSource->operator()(dst_mesh, extra_args, method);
@@ -358,7 +358,7 @@ public:
         bool silent = outerSource && typeid(*outerSource) != typeid(ConstDataSource<PropertyT, OutputSpaceType>);
         for (std::size_t i = 0; i < result.size(); ++i) {
             // iterate over inner sources, if inner sources don't provide data, use outer source:
-            boost::optional<ValueT> innerVal;
+            plask::optional<ValueT> innerVal;
             for (const DataSourceTPtr& innerSource: innerSources) {
                 innerVal = innerSource->get(dst_mesh[i], std::forward<ExtraArgs>(extra_args)..., method);
                 if (innerVal) { silent = true; break; }

@@ -26,7 +26,7 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
     py::object array;
     int m = self->getM();
 
-    boost::optional<dcomplex> k0;
+    plask::optional<dcomplex> k0;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam" || *i == "wavelength") {
@@ -84,7 +84,7 @@ static size_t BesselSolverCyl_setMode(py::tuple args, py::dict kwargs) {
 
     int m = self->getM();
 
-    boost::optional<dcomplex> k0, neff, ktran;
+    plask::optional<dcomplex> k0, neff, ktran;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam" || *i == "wavelength") {

@@ -75,11 +75,11 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
         return result;
     }
 
-    boost::optional<std::string> name = source.getAttribute(XML_NAME_ATTR);    // read name
+    plask::optional<std::string> name = source.getAttribute(XML_NAME_ATTR);    // read name
     if (name && !isAutoName(*name))
         BadId::throwIfBad("geometry object", *name, '-');
 
-    boost::optional<std::string> roles = source.getAttribute("role");    // read roles (tags)
+    plask::optional<std::string> roles = source.getAttribute("role");    // read roles (tags)
 
     auto max_points = source.getAttribute<unsigned long>(XML_MAX_POINTS_ATTR);
     auto min_ply = source.getAttribute<double>(XML_MIN_PLY_ATTR);
@@ -96,7 +96,7 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
             if (operation_name == "replace") {
                 shared_ptr<GeometryObject> op_from = requireObjectWithName(source.requireAttribute("object"));
                 shared_ptr<GeometryObject> to;
-                boost::optional<std::string> to_name = source.getAttribute("with");
+                plask::optional<std::string> to_name = source.getAttribute("with");
                 if (to_name) {
                     to = requireObjectWithName(*to_name);
                 } else {
@@ -112,12 +112,12 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
                 shared_ptr<Material> blockMaterial = getMaterial(source.requireAttribute("material"));
                 GeometryObject::ToBlockChanger* changer = new GeometryObject::ToBlockChanger(op_from, blockMaterial);
                 changers.append(changer);
-                boost::optional<std::string> block_name = source.getAttribute(XML_NAME_ATTR);    // read name
+                plask::optional<std::string> block_name = source.getAttribute(XML_NAME_ATTR);    // read name
                 if (block_name && !isAutoName(*block_name)) {
                     BadId::throwIfBad("block replacing object", *block_name, '-');
                     other_names.push_back(std::make_pair(*block_name, changer->to));
                 }
-                if (boost::optional<std::string> block_roles = source.getAttribute("role")) {  // if have some roles
+                if (plask::optional<std::string> block_roles = source.getAttribute("role")) {  // if have some roles
                     for (const std::string& c: splitEscIterator(*block_roles, ',')) changer->to->addRole(c);
                 }
                 source.requireTagEnd();
@@ -181,7 +181,7 @@ shared_ptr<GeometryObject> GeometryReader::readExactlyOneChild(bool required) {
 shared_ptr<Geometry> GeometryReader::readGeometry() {
     Manager::SetAxisNames axis_reader(*this);   // try set up new axis names, store old, and restore old on end of block
     std::string nodeName = source.getNodeName();
-    boost::optional<std::string> name = source.getAttribute(XML_NAME_ATTR);
+    plask::optional<std::string> name = source.getAttribute(XML_NAME_ATTR);
     if (name) {
         BadId::throwIfBad("geometry", *name, '-');
         if (manager.geometrics.find(*name) != manager.geometrics.end())
@@ -193,11 +193,11 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
 
     if (nodeName == "cartesian2d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
-        boost::optional<double> l = source.getAttribute<double>("length");
+        plask::optional<double> l = source.getAttribute<double>("length");
         shared_ptr<Geometry2DCartesian> cartesian2d = plask::make_shared<Geometry2DCartesian>();   // result with original type
         result = cartesian2d;
-        result->setEdges([&](const std::string& s) -> boost::optional<std::string> {
-                              auto val = source.getAttribute(s); return manager.draft? boost::optional<std::string>() : val;
+        result->setEdges([&](const std::string& s) -> plask::optional<std::string> {
+                              auto val = source.getAttribute(s); return manager.draft? plask::optional<std::string>() : val;
                            }, getAxisNames(), *materialsDB );
         if (l) {
             cartesian2d->setExtrusion(plask::make_shared<Extrusion>(readExactlyOneChild<GeometryObjectD<2>>(), *l));
@@ -217,8 +217,8 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     } else if (nodeName == "cylindrical" || nodeName == "cylindrical2d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
         result = plask::make_shared<Geometry2DCylindrical>();
-        result->setEdges([&](const std::string& s) -> boost::optional<std::string> {
-                              auto val = source.getAttribute(s); return manager.draft? boost::optional<std::string>() : val;
+        result->setEdges([&](const std::string& s) -> plask::optional<std::string> {
+                              auto val = source.getAttribute(s); return manager.draft? plask::optional<std::string>() : val;
                            }, getAxisNames(), *materialsDB );
         auto child = readExactlyOneChild<GeometryObject>();
         auto child_as_revolution = dynamic_pointer_cast<Revolution>(child);
@@ -234,8 +234,8 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     } else if (nodeName == "cartesian3d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
         result = plask::make_shared<Geometry3D>();
-        result->setEdges([&](const std::string& s) -> boost::optional<std::string> {
-                              auto val = source.getAttribute(s); return manager.draft? boost::optional<std::string>() : val;
+        result->setEdges([&](const std::string& s) -> plask::optional<std::string> {
+                              auto val = source.getAttribute(s); return manager.draft? plask::optional<std::string>() : val;
                            }, getAxisNames(), *materialsDB );
         static_pointer_cast<Geometry3D>(result)->setChildUnsafe(
             readExactlyOneChild<GeometryObjectD<3>>());

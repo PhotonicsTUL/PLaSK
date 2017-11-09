@@ -7,6 +7,9 @@
 // Math library to use
 #define PLASK_MATH_STD
 
+// optional library to use (c++17 std or boost)
+#cmakedefine PLASK_OPTIONAL_STD
+
 // Fortran name mangling
 #cmakedefine CMAKE_Fortran_COMPILER_WORKS
 #ifdef CMAKE_Fortran_COMPILER_WORKS

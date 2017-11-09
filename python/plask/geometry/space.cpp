@@ -118,13 +118,13 @@ PyObject* SpaceObjectIncludesPoints0(const S& self, const GeometryObject& obj, c
 
 static void _Space_setEdges(Geometry& self, py::dict edges, std::set<std::string>& parsed, const std::string& err_msg) {
    self.setEdges(
-        [&](const std::string& s)->boost::optional<std::string> {
+        [&](const std::string& s)->plask::optional<std::string> {
             std::string str = s;
             std::replace(str.begin(), str.end(), '-', '_');
             parsed.insert(str);
             return edges.has_key(str) ?
-                boost::optional<std::string>( (edges[str]==py::object()) ? std::string("null") : py::extract<std::string>(edges[str]) ) :
-                boost::optional<std::string>();
+                plask::optional<std::string>( (edges[str]==py::object()) ? std::string("null") : py::extract<std::string>(edges[str]) ) :
+                plask::optional<std::string>();
         },
     current_axes);
 

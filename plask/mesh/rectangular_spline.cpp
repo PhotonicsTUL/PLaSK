@@ -722,7 +722,11 @@ namespace spline {
         const size_t n0 = axis->size(),
                      n1 = axis->size() - 1;
 
+//#ifdef _MSC_VER
+        //std::unique_ptr<double[]>
+//#else
         double dl[n1], dd[n1+1], du[n1];
+//#endif
 
         std::unique_ptr<DataT[]> lastdata(new DataT[size1*size2]);
         {

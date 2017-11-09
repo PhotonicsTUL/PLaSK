@@ -116,7 +116,7 @@ static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs
     What what = WHAT_NOTHING;
     py::object array;
 
-    boost::optional<dcomplex> k0, neff, ktran;
+    plask::optional<dcomplex> k0, neff, ktran;
 
     AxisNames* axes = getCurrentAxes();
     py::stl_input_iterator<std::string> begin(kwargs), end;
@@ -199,7 +199,7 @@ static size_t FourierSolver2D_setMode(py::tuple args, py::dict kwargs) {
     auto* expansion = &self->expansion;
 
     AxisNames* axes = getCurrentAxes();
-    boost::optional<dcomplex> k0, neff, ktran;
+    plask::optional<dcomplex> k0, neff, ktran;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam" || *i == "wavelength") {

@@ -680,7 +680,7 @@ struct RegisterScaledProvider {
     template <typename F>
     void registerOperator(const char* name, F func) {
         py::scope scope;
-        boost::optional<py::object> old;
+        plask::optional<py::object> old;
         try { old.reset(scope.attr(name)); }
         catch (py::error_already_set) { PyErr_Clear(); }
         py::def(name, func, py::with_custodian_and_ward_postcall<0,1,

@@ -7,6 +7,8 @@ project(plask)
 
 # ---------- Common options --------------------------------------------
 
+#set (CMAKE_CXX_STANDARD 17)    #TODO std should be set this way
+
 if(MSVC)    # flags needed by Visual Studio:
     set(CMAKE_CXX_FLAGS "/bigobj ${CMAKE_CXX_FLAGS}")   # increase a number of sections in obj. file, required by plask
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251")   # disable many warning (all stl & boost tamplates) about wrong dll import/export, TODO subject for future investigation
@@ -17,13 +19,14 @@ if(MSVC)    # flags needed by Visual Studio:
     add_definitions(-DBOOST_ALL_DYN_LINK)   #MSVC+cmake require this to properly detect dynamic boost libraries
     add_definitions(-DXML_STATIC)           #We use static expat - TODO: this is needed only for libplask, static/dynamic should be detected
     add_definitions(-DFMT_HEADER_ONLY)  #don't compile cppformat, workaround many linker errors
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17")
 else(MSVC)
     if(MINGW)
         set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
     else()
         set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
     endif()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-narrowing -Wno-sign-compare -Wno-unknown-pragmas -Wno-ignored-qualifiers")   # -Wsuggest-override - older gcc does not support this
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-narrowing -Wno-sign-compare -Wno-unknown-pragmas -Wno-ignored-qualifiers")   # -Wsuggest-override - older gcc does not support this
 endif(MSVC)
 
 if(WIN32 AND "${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
@@ -97,6 +100,8 @@ endif()
 option(LICENSE_CHECK "Perform license check" OFF)
 
 option(PRINT_STACKTRACE_ON_EXCEPTION "Print stack-trace on stderr when plask::Exception is throwed (works only in debug mode)." ON)
+
+option(PLASK_OPTIONAL_STD "Use std optional (supported by C++17) instead of boost one." OFF)
 
 #TODO if disabled, plask should find and use external cppformat lib.
 #option(PLASK_EXPORTS_CPPFORMAT "Export cppformat symbols in libplask (affects only windows)" ON)
