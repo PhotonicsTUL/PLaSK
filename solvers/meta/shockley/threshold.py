@@ -55,6 +55,7 @@ class ThresholdSearch(ThermoElectric):
         self.threshold_voltage = None
         self.threshold_current = None
         self._invalidate = None
+        self.modeno = None
 
     def _parse_xpl(self, tag, manager):
         if tag == 'root':
@@ -346,10 +347,11 @@ class ThresholdSearch(ThermoElectric):
         obox = self.optical.geometry.bbox
         omesh = plask.mesh.Rectangular2D(plask.mesh.Regular(obox.left, obox.right, optical_resolution[0]),
                                          plask.mesh.Regular(obox.bottom, obox.top, optical_resolution[1]))
-        ofield = self.optical.outLightMagnitude(self.modeno, omesh)
-        plask.save_field(ofield, h5file, group + '/LightMagnitude')
-        nrfield = self.optical.outRefractiveIndex(omesh)
-        plask.save_field(nrfield, h5file, group + '/RefractiveIndex')
+        if self.modeno is not None:
+            ofield = self.optical.outLightMagnitude(self.modeno, omesh)
+            plask.save_field(ofield, h5file, group + '/LightMagnitude')
+            nrfield = self.optical.outRefractiveIndex(omesh)
+            plask.save_field(nrfield, h5file, group + '/RefractiveIndex')
         h5file.close()
         plask.print_log('info', "Fields saved to file '{}'".format(filename))
         return filename
