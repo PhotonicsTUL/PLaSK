@@ -16,7 +16,7 @@ if(MSVC)    # flags needed by Visual Studio:
     # _SCL_SECURE_NO_WARNINGS and D_CRT_SECURE_NO_WARNINGS hide many warnings which are coused by boost and cppforamt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
     add_definitions(-DBOOST_ALL_DYN_LINK)   #MSVC+cmake require this to properly detect dynamic boost libraries
     add_definitions(-DXML_STATIC)           #We use static expat - TODO: this is needed only for libplask, static/dynamic should be detected
-    add_definitions(-DFMT_HEADER_ONLY)  #don't compile cppformat, workaround many linker errors
+    add_definitions(-DFMT_HEADER_ONLY)  #don't compile fmt, workaround many linker errors
 else(MSVC)
     if(MINGW)
         set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
@@ -98,8 +98,8 @@ option(LICENSE_CHECK "Perform license check" OFF)
 
 option(PRINT_STACKTRACE_ON_EXCEPTION "Print stack-trace on stderr when plask::Exception is throwed (works only in debug mode)." ON)
 
-#TODO if disabled, plask should find and use external cppformat lib.
-#option(PLASK_EXPORTS_CPPFORMAT "Export cppformat symbols in libplask (affects only windows)" ON)
+#TODO if disabled, plask should find and use external fmt lib.
+#option(PLASK_EXPORTS_FMT "Export fmt symbols in libplask (affects only windows)" ON)
 
 option(INSTALL_DEV "Install headers to system locations" OFF)
 option(INSTALL_MATERIALS_DEV "Install headers for compuling materials" OFF)
@@ -304,9 +304,9 @@ endif()
 add_subdirectory(extlib/camos)
 add_subdirectory(extlib/fftpacx)
 
-# cppformat
+# fmt
 if (NOT MSVC)
-    list(APPEND plask_src extlib/cppformat/format.cc)
+    list(APPEND plask_src extlib/fmt/format.cc)
 endif (NOT MSVC)
 
 # ---------- PLaSK library --------------------------------------------
@@ -337,7 +337,7 @@ set_target_properties(libplask PROPERTIES OUTPUT_NAME plask COMPILE_FLAGS "-DPLA
 if(INSTALL_DEV)
     install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
     install(DIRECTORY solvers/providers DESTINATION include/plask COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
-    install(FILES extlib/cppformat/format.h DESTINATION include/cppformat COMPONENT dev)
+    install(FILES extlib/fmt/format.h DESTINATION include/fmt COMPONENT dev)
     install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
 endif()
 
