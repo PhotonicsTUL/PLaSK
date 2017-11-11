@@ -38,11 +38,14 @@ class OutputModel(QAbstractListModel):
 
     def __init__(self, fm):
         super(OutputModel, self).__init__()
+        self.update_font(fm)
+        self.lines = []
+
+    def update_font(self, fm):
         self.fm = fm
         if fm is not None:
             self.lh = fm.lineSpacing()
             self.lw = fm.maxWidth()
-        self.lines = []
 
     def add_line(self, level, text, link=None):
         ll = len(self.lines)
@@ -306,6 +309,8 @@ class OutputWindow(QDockWidget):
         font = self.messages.font()
         if font.fromString(','.join(CONFIG['launcher_local/font'])):
             self.messages.setFont(font)
+        self.model.update_font(self.messages.fontMetrics())
+        self.filter.invalidate()
 
     def line_clicked(self, index):
         line = self.filter.data(index, LINE_ROLE)
