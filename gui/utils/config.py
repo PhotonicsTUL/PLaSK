@@ -565,7 +565,6 @@ class ConfigDialog(QDialog):
         self.items = []
 
         for cat, tabs in CONFIG_WIDGETS.items():
-            # page = QToolBox()
             page = QTabWidget()
             stack.addWidget(page)
             categories.addItem(cat)
@@ -585,6 +584,44 @@ class ConfigDialog(QDialog):
                         widget = item[1](self)
                         self.items.append(widget)
                         tab_layout.addRow(item[0], widget)
+
+        from .. import PLUGINS
+        page = QTabWidget()
+        tab = QWidget()
+        tab_layout = QVBoxLayout()
+        tab.setLayout(tab_layout)
+        label = QLabel("Select active plugins. After making any changes here, you must restart PLaSK GUI.")
+        tab_layout.addWidget(label)
+        frame = QFrame()
+        frame.setFrameStyle(QFrame.Panel)
+        frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        frame.setBackgroundRole(QPalette.Base)
+        frame.setAutoFillBackground(True)
+        tab_layout.addWidget(frame)
+        page.addTab(tab, "Plugins")
+        frame_layout = QGridLayout()
+        frame_layout.setAlignment(Qt.AlignTop)
+        frame_layout.setHorizontalSpacing(8)
+        frame_layout.setVerticalSpacing(16)
+        frame.setLayout(frame_layout)
+        row = 0
+        for plugin, name, desc in PLUGINS:
+            entry = 'plugins/{}'.format(plugin)
+            if CONFIG[entry] is None: CONFIG[entry] = True
+            checkbox = ConfigDialog.CheckBox(entry, help=desc)
+            label = QLabel()
+            label.setTextFormat(Qt.RichText)
+            if desc is not None:
+                label.setText('{}<br/><span style="font-size: small">{}</span>'.format(name, desc))
+            else:
+                label.setText(name)
+            label.setBuddy(checkbox)
+            frame_layout.addWidget(checkbox, row, 0)
+            frame_layout.addWidget(label, row, 1)
+            self.items.append(checkbox)
+            row += 1
+        stack.addWidget(page)
+        categories.addItem("Plugins")
 
         categories.setFixedWidth(categories.sizeHintForColumn(0) + 4)
 

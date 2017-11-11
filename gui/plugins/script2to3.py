@@ -10,6 +10,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+# plugin: Convert Script to Python 3
+# description: Show a tool to convert current script to Python 3 for use with future/current versions of PLaSK.
+
 try:
     from lib2to3.refactor import RefactoringTool, get_fixers_from_package
 except ImportError:

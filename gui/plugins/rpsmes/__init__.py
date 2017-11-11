@@ -10,6 +10,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+# plugin: RPSMES Import/Export
+# description: Add an RPSMES format (thermoelectric and optical) import/export operations.
+
 from importlib import import_module
 
 import gui

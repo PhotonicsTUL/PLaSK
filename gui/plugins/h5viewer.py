@@ -11,6 +11,10 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+# plugin: HDF5 File Viewer
+# description: Viewer of the fields saved to HDF5 files with 'save_field' function.
+
+
 import sys
 import h5py
 

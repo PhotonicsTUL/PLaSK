@@ -9,8 +9,12 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+# coding: utf8
 
-# coding utf:8
+# plugin: Batch Laucher
+# description: Launcher allowing to submit computations to a remote batch system (SLURM or Torque). Requires Paramiko.
+
+
 from __future__ import print_function, unicode_literals
 
 import sys
