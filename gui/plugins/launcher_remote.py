@@ -12,7 +12,7 @@
 # coding: utf8
 
 # plugin: Remote Launcher
-# description: Launcher allowing to run computations on a remote machine through SSH. Requires Paramiko.
+# description: Launcher allowing to run computations on a remote machine through SSH.<br/>Requires Paramiko.
 
 from __future__ import print_function, unicode_literals
 

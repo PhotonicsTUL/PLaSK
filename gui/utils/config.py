@@ -585,30 +585,34 @@ class ConfigDialog(QDialog):
                         self.items.append(widget)
                         tab_layout.addRow(item[0], widget)
 
-        from .. import PLUGINS
         page = QTabWidget()
         tab = QWidget()
         tab_layout = QVBoxLayout()
         tab.setLayout(tab_layout)
         label = QLabel("Select active plugins. After making any changes here, you must restart PLaSK GUI.")
         tab_layout.addWidget(label)
-        frame = QFrame()
-        frame.setFrameStyle(QFrame.Panel)
+        # from .widgets import VerticalScrollArea
+        # frame = VerticalScrollArea()
+        frame = QScrollArea()
+        frame.setFrameStyle(QFrame.StyledPanel | QFrame.Sunken)
         frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         frame.setBackgroundRole(QPalette.Base)
         frame.setAutoFillBackground(True)
         tab_layout.addWidget(frame)
         page.addTab(tab, "Plugins")
-        frame_layout = QGridLayout()
-        frame_layout.setAlignment(Qt.AlignTop)
-        frame_layout.setHorizontalSpacing(8)
-        frame_layout.setVerticalSpacing(16)
-        frame.setLayout(frame_layout)
+        inframe = QWidget()
+        inframe_layout = QGridLayout()
+        inframe_layout.setAlignment(Qt.AlignTop)
+        inframe_layout.setHorizontalSpacing(8)
+        inframe_layout.setVerticalSpacing(16)
+        inframe.setLayout(inframe_layout)
         row = 0
+        from .. import PLUGINS
         for plugin, name, desc in PLUGINS:
             entry = 'plugins/{}'.format(plugin)
             if CONFIG[entry] is None: CONFIG[entry] = True
             checkbox = ConfigDialog.CheckBox(entry, help=desc)
+            checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
             label = QLabel()
             label.setTextFormat(Qt.RichText)
             if desc is not None:
@@ -616,10 +620,11 @@ class ConfigDialog(QDialog):
             else:
                 label.setText(name)
             label.setBuddy(checkbox)
-            frame_layout.addWidget(checkbox, row, 0)
-            frame_layout.addWidget(label, row, 1)
+            inframe_layout.addWidget(checkbox, row, 0)
+            inframe_layout.addWidget(label, row, 1)
             self.items.append(checkbox)
             row += 1
+        frame.setWidget(inframe)
         stack.addWidget(page)
         categories.addItem("Plugins")
 

@@ -12,7 +12,7 @@
 # coding: utf8
 
 # plugin: Batch Laucher
-# description: Launcher allowing to submit computations to a remote batch system (SLURM or Torque). Requires Paramiko.
+# description: Launcher allowing to submit computations to a remote batch system (SLURM or Torque).<br/>Requires Paramiko.
 
 
 from __future__ import print_function, unicode_literals
