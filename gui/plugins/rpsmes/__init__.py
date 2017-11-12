@@ -11,7 +11,7 @@
 # GNU General Public License for more details.
 
 # plugin: RPSMES Import/Export
-# description: Add an RPSMES format (thermoelectric and optical) import/export operations.
+# description: Add an import/export of RPSMES *.dan and *.efm files.
 
 from importlib import import_module
 
