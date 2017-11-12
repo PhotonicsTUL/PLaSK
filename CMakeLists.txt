@@ -13,10 +13,10 @@ if(MSVC)    # flags needed by Visual Studio:
     add_definitions(-D_USE_MATH_DEFINES -DNOMINMAX -D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS)
     # _D_USE_MATH_DEFINES gives M_PI, etc. in <cmath>, maybe it is better idea to define this just before including <cmath>
     # NOMINMAX prevents windows header from defining min, max macros, see http://stackoverflow.com/questions/1904635/warning-c4003-and-errors-c2589-and-c2059-on-x-stdnumeric-limitsintmax
-    # _SCL_SECURE_NO_WARNINGS and D_CRT_SECURE_NO_WARNINGS hide many warnings which are coused by boost and cppforamt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
-    add_definitions(-DBOOST_ALL_DYN_LINK)   #MSVC+cmake require this to properly detect dynamic boost libraries
-    add_definitions(-DXML_STATIC)           #We use static expat - TODO: this is needed only for libplask, static/dynamic should be detected
-    add_definitions(-DFMT_HEADER_ONLY)  #don't compile fmt, workaround many linker errors
+    # _SCL_SECURE_NO_WARNINGS and D_CRT_SECURE_NO_WARNINGS hide many warnings which are caused by boost and fmt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
+    add_definitions(-DBOOST_ALL_DYN_LINK)   # MSVC+cmake require this to properly detect dynamic boost libraries
+    add_definitions(-DXML_STATIC)           # We use static expat - TODO: this is needed only for libplask, static/dynamic should be detected
+    add_definitions(-DFMT_HEADER_ONLY)      # don't compile fmt, workaround many linker errors
 else(MSVC)
     if(MINGW)
         set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
@@ -99,7 +99,7 @@ option(LICENSE_CHECK "Perform license check" OFF)
 option(PRINT_STACKTRACE_ON_EXCEPTION "Print stack-trace on stderr when plask::Exception is throwed (works only in debug mode)." ON)
 
 #TODO if disabled, plask should find and use external fmt lib.
-#option(PLASK_EXPORTS_FMT "Export fmt symbols in libplask (affects only windows)" ON)
+option(PLASK_EXPORTS_FMT "Export fmt symbols in libplask (affects only windows)" ON)
 
 option(INSTALL_DEV "Install headers to system locations" OFF)
 option(INSTALL_MATERIALS_DEV "Install headers for compuling materials" OFF)
@@ -305,9 +305,9 @@ add_subdirectory(extlib/camos)
 add_subdirectory(extlib/fftpacx)
 
 # fmt
-if (NOT MSVC)
-    list(APPEND plask_src extlib/fmt/format.cc)
-endif (NOT MSVC)
+if(NOT MSVC AND PLASK_EXPORTS_FMT)
+    list(APPEND plask_src extlib/fmt/format.cc extlib/fmt/ostream.cc)
+endif()
 
 # ---------- PLaSK library --------------------------------------------
 
