@@ -356,7 +356,7 @@ inline void export_base(Class solver) {
     solver.def_readonly("outMagneticField", reinterpret_cast<ProviderFor<LightH, typename Solver::SpaceType> Solver::*>(&Solver::outLightH),
             "Alias for :attr:`outLightH`.");
     solver.add_provider("outElectricField", &Solver::outLightE, "This is an alias for :attr:`outLightE`.");
-    solver.add_provider("outMagnrticField", &Solver::outLightH, "This is an alias for :attr:`outLightH`.");
+    solver.add_provider("outMagneticField", &Solver::outLightH, "This is an alias for :attr:`outLightH`.");
     solver.def_readwrite("root", &Solver::root,
                          "Configuration of the root searching algorithm.\n\n"
                          ROOTDIGGER_ATTRS_DOC
