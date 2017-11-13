@@ -1,0 +1,106 @@
+# This is a YAML file for your solver specification. You must modify it accordingly to your
+# solver's configuration. For general information on YAML files, take a look at
+# https://learn.getgrav.org/advanced/yaml
+
+# If your library has more than one solver, make separate 'solver' element for each one of them:
+- solver: SimpleOptical
+  lib: simple_optical
+  category: skel
+  # This is a description of your solver that will appear in the user manual.
+  help: >
+    Example skeleton solver for writing your own <b>solvers.yml</b>.
+
+  # Specify geometry type of your solver here:
+  geometry: Geometry2DCylindrical
+  # Specify mesh type of your solver:
+  #mesh: YourMesh
+  # If the solves has no mesh, remove this tag.
+  # If the mesh is optional, uncomment the following line:
+  # need mesh: false
+
+  #  Specify each configuration tag:
+  tags:
+  - tag: configuration-tag                      # tag name
+    label: Configuration Tag                    # label shown in GUI
+    help: >                                     # description of your tag in the user manual
+      Documentation of your configuration tag. It can contain multiple lines
+      like this, so you cann put longer text here.
+    attrs:
+    # List configuration attributes:
+    - attr: tag-attr                            # attribute name
+      label: Tag attribute                      # label shown in GUI (make it short)
+      type: attribute type                      # attribute type
+      # Allowed attribute types are:
+      # - float
+      # - int
+      # - bool
+      # - choice
+      # - geometry object
+      # - geometry path
+      # - Carterian2D geometry
+      # - cylindrical geometry
+      # - Cartesian3D geometry
+      # - mesh
+      unit: unit                                # attribute unit
+      help: >                                   # description in the user manual
+        Pull all the configuration attributes like this.
+    - attr: other-attr
+      label: Other attribute
+      type: choice
+      choices:
+      # If the attribute type is 'choice', GUI will create an drop-down list with all the options,
+      # however, you must list the available choices here:
+      - First choice
+      - Second choice
+      - Third choice
+      help: >
+        Another configuration attribute.
+
+  - &tag-yaml-identifier    # this is YAML identifier on an element, so you can use it elsewhere
+    tag: another-configuration-tag
+    label: Different Configuration Tag
+    help: >
+      Another tag help.
+    attrs:
+    - attr: attribute
+      label: Some attribute
+      type: attribute type
+      unit: unit
+      help: >
+        Pull all the configuration attributes like this.
+
+  # This is boundary conditions read by your solver. You need only to specity the tag name
+  # in the 'bcond' field and the label.
+  - bcond: boundary_condition
+    label: Boundary Condition
+
+  - bcond: other_boundary_condtion
+    label: Another Boundary Condition
+    # Some documentation of boundary conditions is generated automatically.
+    # If it is not sufficient add additional description inside this tag.
+    help: >
+      Additional description of boundary condition in help.
+
+  providers:
+  # Here you specify all the solver providers.
+  - outProvider
+
+  receivers:
+  # Here you specify all the solver providers.
+  - inReceiver: QuantityIfNameDifferent
+
+  # Standard name of receiver/provider is inQuantity/outQuantity. Sometimes it can be different.
+  # In such case add the quantity name after the colon for a given provider/receiver, so GUI can
+  # offer proper connection options.
+
+
+
+# This is another solver defined in your file...
+- solver: AnotherSolver
+  lib: your_solver
+  category: skel
+
+  geometry: DifferentGeometry
+
+  tags:
+  - *tag-yaml-identifier    # This simply repeats the element marked with &tag-yaml-identifier.
