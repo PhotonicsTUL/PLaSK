@@ -16,6 +16,7 @@ import itertools
 import numpy
 from matplotlib.figure import Figure
 from matplotlib.widgets import Cursor
+from matplotlib.ticker import ScalarFormatter
 
 from ...qt import QT_API
 if QT_API == 'PyQt5':
@@ -102,6 +103,7 @@ class MaterialPlot(QWidget):
         self.figure.set_facecolor(self.palette().color(QPalette.Background).name())
         self.canvas.updateGeometry()
         self.axes = None
+        self.axes2 = None
 
         self.error = QTextEdit(self)
         self.error.setVisible(False)
@@ -378,11 +380,12 @@ class MaterialPlot(QWidget):
                 if cat == 1:
                     yield 'dc', val
                 else:
-                    yield str(k.text())[:-1], val
+                    yield str(k.text())[:-1].replace('&', ''), val
 
     def update_plot(self):
         self.figure.clear()
         self.axes = self.figure.add_subplot(111)
+        self.axes2 = None
         param = str(self.param.currentText())
 
         import warnings
@@ -406,7 +409,7 @@ class MaterialPlot(QWidget):
             other_args = dict(self._parse_other_args(self.arg_button, 2))
             other_elements = dict(self._parse_other_args(self.arg_button, 0))
             other_elements.update(dict(('dc', v) for k,v in self._parse_other_args(self.arg_button, 1)))
-            arg_name = 'dc' if plot_cat == 1 else str(self.arg_button.text())[:-1]
+            arg_name = 'dc' if plot_cat == 1 else str(self.arg_button.text())[:-1].replace('&', '')
             material_name = str(self.material.currentText())
             skip_model = False
             while True:  # loop for looking-up the base
@@ -444,9 +447,15 @@ class MaterialPlot(QWidget):
                     self.vals = lambda a: material.__getattribute__(param)(**dict(((arg_name, a),), **other_args))
                 else:
                     self.vals = lambda a: plask.material.db.get(material_name, **dict(((arg_name, a),),
-                                                                                      **other_elements)).\
+                                                                                      **other_elements)). \
                         __getattribute__(param)(**other_args)
-            self.axes.plot(plot_range, [self.vals(a) for a in plot_range])
+            vals = numpy.array([self.vals(a) for a in plot_range])
+            if vals.dtype == complex:
+                self.axes2 = self.axes.twinx()
+                self.axes.plot(plot_range, vals.real)
+                self.axes2.plot(plot_range, vals.imag, ls='--')
+            else:
+                self.axes.plot(plot_range, vals)
             self.parent().setWindowTitle("Material Parameter: {} @ {}".format(param, material_name))
         except Exception as err:
             if _DEBUG:
@@ -471,10 +480,16 @@ class MaterialPlot(QWidget):
                                                                  self.arg_button.unit)))
             self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
         self.axes.set_ylabel('[]')
+        if self.axes2 is not None:
+            self.axes2.set_ylabel('[]')
         self.figure.tight_layout(pad=0.2)
-        self.axes.set_ylabel(html_to_tex(MATERIALS_PROPERTES[param][0]).splitlines()[0]
-                        + ' [' +
-                        html_to_tex(MATERIALS_PROPERTES[param][1]) + ']')
+        label = html_to_tex(MATERIALS_PROPERTES[param][0]).splitlines()[0] +\
+                ' [' + html_to_tex(MATERIALS_PROPERTES[param][1]) + ']'
+        if self.axes2 is None:
+            self.axes.set_ylabel(label)
+        else:
+            self.axes.set_ylabel(label + " (real part, solid)")
+            self.axes2.set_ylabel(label + " (imaginary part, dashed)")
         self._cursor = Cursor(self.axes, horizOn=False, useblit=True, color='#888888', linewidth=1)
         self.update_scale()
         warnings.showwarning = old_showwarning
@@ -485,9 +500,16 @@ class MaterialPlot(QWidget):
             self.error.setFixedHeight(self.error.document().size().height())
 
     def update_scale(self):
+        fmtr = ScalarFormatter(useOffset=False)
         if self.axes is not None:
             self.axes.set_xscale('log' if self.logx_action.isChecked() else 'linear')
             self.axes.set_yscale('log' if self.logy_action.isChecked() else 'linear')
+            self.axes.get_xaxis().set_major_formatter(fmtr)
+            self.axes.get_yaxis().set_major_formatter(fmtr)
+        if self.axes2 is not None:
+            self.axes2.set_xscale('log' if self.logx_action.isChecked() else 'linear')
+            self.axes2.set_yscale('log' if self.logy_action.isChecked() else 'linear')
+            self.axes2.get_yaxis().set_major_formatter(fmtr)
         self.figure.tight_layout(pad=0.2)
         self.canvas.draw()
 
