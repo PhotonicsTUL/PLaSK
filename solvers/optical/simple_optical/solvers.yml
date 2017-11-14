@@ -3,9 +3,9 @@
 # https://learn.getgrav.org/advanced/yaml
 
 # If your library has more than one solver, make separate 'solver' element for each one of them:
-- solver: SimpleOptical
+- solver: SimpleOpticalCyl
   lib: simple_optical
-  category: skel
+  category: simple_optical
   # This is a description of your solver that will appear in the user manual.
   help: >
     Example skeleton solver for writing your own <b>solvers.yml</b>.
@@ -95,12 +95,12 @@
 
 
 
-# This is another solver defined in your file...
-- solver: AnotherSolver
-  lib: your_solver
-  category: skel
+## This is another solver defined in your file...
+#- solver: AnotherSolver
+  #lib: your_solver
+  #category: skel
 
-  geometry: DifferentGeometry
+  #geometry: DifferentGeometry
 
-  tags:
-  - *tag-yaml-identifier    # This simply repeats the element marked with &tag-yaml-identifier.
+  #tags:
+  #- *tag-yaml-identifier    # This simply repeats the element marked with &tag-yaml-identifier.

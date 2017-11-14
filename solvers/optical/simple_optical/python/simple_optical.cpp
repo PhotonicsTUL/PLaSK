@@ -16,7 +16,7 @@ using namespace plask::solvers::simple_optical;
 BOOST_PYTHON_MODULE(simple_optical)
 {
     if (!plask_import_array()) throw(py::error_already_set());
-    {CLASS(SimpleOptical, "SimpleOptical", "Short solver description.")
+    {CLASS(SimpleOptical, "SimpleOpticalCyl", "Short solver description.")
      METHOD(say_hello, say_hello, "This is demo function, which say hello");
       
         //METHOD(python_method_name, method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
