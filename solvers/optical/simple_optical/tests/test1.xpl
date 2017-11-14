@@ -17,6 +17,7 @@
 
 <script><![CDATA[
 prosty.say_hello()
+prosty.simpleVerticalSolver()
 print(prosty.geometry)
 
 ]]></script>
