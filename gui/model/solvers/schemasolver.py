@@ -358,11 +358,11 @@ def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
             else:
                 mesh_types = set()
 
-            for tag in _iter_tags(solver['tags']):
+            for tag in _iter_tags(solver.get('tags', [])):
                 if 'tag' in tag:
                     tn, tl = tag['tag'], tag['label']
                     attrs = AttrList()
-                    for attr in tag['attrs']:
+                    for attr in tag.get('attrs', []):
                         if 'attr' in attr:
                             attrs.append(read_attr(tn, attr))
                         elif 'group' in attr:
@@ -380,10 +380,11 @@ def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
                     if values is not None and not isinstance(values, list):
                         values = [values]
                     mt = tag.get('mesh type', mesh_type)
-                    ma = tag.get('mesh')
-                    ga = tag.get('geometry')
-                    BCond = BCONDS[mt]
-                    schema.append(BCond(tag['bcond'], tag['label'], tag.get("group"), mt, ma, ga, values))
+                    if mt is not None:
+                        ma = tag.get('mesh')
+                        ga = tag.get('geometry')
+                        BCond = BCONDS[mt]
+                        schema.append(BCond(tag['bcond'], tag['label'], tag.get("group"), mt, ma, ga, values))
 
             providers = [tuple(it.items())[0] if isinstance(it, dict) else (it, it[3:])
                          for it in solver.get('providers', [])]
