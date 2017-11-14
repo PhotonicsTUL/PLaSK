@@ -215,6 +215,73 @@ class ThresholdSearch(ThermoElectric):
             _optargs[self._optarg] = lam
             return self.optical.get_determinant(**_optargs)
 
+    def _plot_in_junction(self, func, axis, bounds, kwargs, label):
+        if axis is None: axis = self.optical.mesh
+        i = 0
+        for i, (lb, msh) in enumerate(self._get_levels(self.diffusion.geometry, axis, 'QW', 'QD', 'gain')):
+            values = np.array(func(msh))
+            if label is None:
+                lab = "Junction {:s}".format(lb)
+            elif isinstance(label, tuple) or isinstance(label, tuple):
+                lab = label[i]
+            else:
+                lab = label
+            plask.plot(msh.axis0, values, label=lab, **kwargs)
+        if i > 1:
+            plask.legend(loc='best')
+        plask.xlabel(u"${}$ [\xb5m]".format(plask.config.axes[-2]))
+        if bounds:
+            self._plot_hbounds(self.optical)
+
+    def plot_junction_concentration(self, bounds=True, interpolation='linear', label=None, **kwargs):
+        """
+        Plot carriers concentration at the active region.
+
+        Args:
+            bounds (bool): If *True* then the geometry objects boundaries are
+                           plotted.
+
+            interpolation (str): Interpolation used when retrieving current density.
+
+            label (str or sequence): Label for each junction. It can be a sequence of
+                                     consecutive labels for each junction, or a string
+                                     in which case the same label is used for each
+                                     junction. If omitted automatic label is generated.
+
+            **kwargs: Keyword arguments passed to the plot function.
+        """
+        self._plot_in_junction(lambda msh: self.diffusion.outCarriersConcentration(msh, interpolation),
+                               self.diffusion.mesh, bounds, kwargs, label)
+        plask.ylabel(u"Carriers Concentration [1/cm\xb3]")
+        plask.window_title("Carriers Concentration")
+
+    def plot_junction_gain(self, axis=None, bounds=True, interpolation='linear', label=None, **kwargs):
+        """
+        Plot gain at the active region.
+
+        Args:
+            axis (mesh or sequence): Points along horizontal axis to plot gain at.
+                                     Defaults to thr optical mesh.
+
+            bounds (bool): If *True* then the geometry objects boundaries are
+                           plotted.
+
+            interpolation (str): Interpolation used when retrieving current density.
+
+            label (str or sequence): Label for each junction. It can be a sequence of
+                                     consecutive labels for each junction, or a string
+                                     in which case the same label is used for each
+                                     junction. If omitted automatic label is generated.
+
+            **kwargs: Keyword arguments passed to the plot function.
+        """
+        lam = getattr(self.optical, self._lam0).real
+        if lam is None: lam = self.get_lam().real
+        self._plot_in_junction(lambda msh: self.gain.outGain(msh, lam, interpolation),
+                               axis, bounds, kwargs, label)
+        plask.ylabel(u"Gain [1/cm]")
+        plask.window_title("Gain Profile")
+
     def plot_optical_determinant(self, lams, **kwargs):
         """
         Function plotting determinant of the optical solver.
@@ -342,7 +409,9 @@ class ThresholdSearch(ThermoElectric):
             value = self.diffusion.outCarriersConcentration(mesh)
             plask.save_field(value, h5file, group + '/Junction'+no+'CarriersConcentration')
         for no, mesh in levels:
-            value = self.gain.outGain(mesh, getattr(self.optical, self._lam0).real)
+            lam = getattr(self.optical, self._lam0).real
+            if lam is None: lam = self.get_lam().real
+            value = self.gain.outGain(mesh, lam)
             plask.save_field(value, h5file, group + '/Junction'+no+'Gain')
         obox = self.optical.geometry.bbox
         omesh = plask.mesh.Rectangular2D(plask.mesh.Regular(obox.left, obox.right, optical_resolution[0]),
