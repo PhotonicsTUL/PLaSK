@@ -525,4 +525,7 @@ class GNFakeRoot(GNode):
         :param plask.Manager manager: manager which describes real geometry objects tree
         :return plask.GeometryObject: object that corresponds to self in real objects tree
         """
-        return self.get_object_by_model_path(manager, node.get_model_path(), self.model)[0]
+        try:
+            return self.get_object_by_model_path(manager, node.get_model_path(), self.model)[0]
+        except (IndexError, ValueError, TypeError):
+            return None

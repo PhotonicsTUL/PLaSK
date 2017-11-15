@@ -473,8 +473,12 @@ class GeometryModel(SectionModel, QAbstractItemModel):
 
     def index_for_node(self, node, column=0):
         if node is None or isinstance(node, GNFakeRoot): return QModelIndex()
-        c = node.parent.children if node.parent else self.roots
-        return self.createIndex(c.index(node), column, node)
+        try:
+            c = node.parent.children if node.parent else self.roots
+            index = self.createIndex(c.index(node), column, node)
+        except (ValueError, IndexError, TypeError):
+            return QModelIndex()
+        return index
 
     def insert_node(self, parent_node, child_node, pos=None, merge_with_next_remove=False):
         self.undo_stack.push(
