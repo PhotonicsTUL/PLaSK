@@ -515,7 +515,7 @@ class SourceEditController(Controller):
             return False
         try:
             self.source_widget.editor.modificationChanged.disconnect(self._modification_changed)
-        except RuntimeError:
+        except (RuntimeError, TypeError):
             pass
         #if hasattr(self.model, 'changed'): self.model.changed -= self.refresh_editor
         self.visible = False

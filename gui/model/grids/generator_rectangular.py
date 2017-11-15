@@ -14,6 +14,7 @@ from lxml.etree import Element, SubElement
 
 from ...qt.QtCore import *
 from ..table import TableModelEditMethods
+from ...utils.str import empty_to_none
 from ...utils.validators import can_be_float, can_be_bool, can_be_int
 from ...utils.xml import require_no_children, UnorderedTagReader, AttributeReader
 from . import Grid
@@ -106,7 +107,7 @@ class Refinements(TableModelEditMethods, QAbstractTableModel):
     def set(self, col, row, value):
         if not self.one and col == 0:
             value = AXIS_NAMES[self.generator.dim-1].index(value)
-        self.entries[row].set_attr_by_index(col+self.one, value)
+        self.entries[row].set_attr_by_index(col+self.one, empty_to_none(value))
 
     def flags(self, index):
         flags = super(Refinements, self).flags(index) | Qt.ItemIsSelectable | Qt.ItemIsEnabled
