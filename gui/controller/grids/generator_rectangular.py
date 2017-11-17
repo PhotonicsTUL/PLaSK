@@ -1,3 +1,4 @@
+# coding: utf8
 # Copyright (C) 2014 Photonics Group, Lodz University of Technology
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -15,11 +16,48 @@ from ..defines import DefinesCompletionDelegate, get_defines_completer
 from ...model.geometry.geometry import GNGeometryBase
 from ..table import table_with_manipulators
 from ...model.grids.generator_rectangular import RectangularDivideGenerator
-from ...model.grids.mesh_rectilinear import AXIS_NAMES
+from ...model.grids.mesh_rectangular import AXIS_NAMES
 from ...qt.QtWidgets import *
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
 from ...utils.widgets import ComboBoxDelegate, ComboBox
+
+
+class RectangularRegularGeneratorController(GridController):
+
+    def __init__(self, document, model):
+        super(RectangularRegularGeneratorController, self).__init__(document=document, model=model)
+
+        self.form = QGroupBox()
+        form_layout = QHBoxLayout()
+
+        self.defines = get_defines_completer(self.document.defines.model, self.form)
+
+
+        self.spacing = QLineEdit()
+        self.spacing.editingFinished.connect(lambda : self._change_attr('spacing', empty_to_none(self.spacing.text())))
+        self.spacing.setCompleter(self.defines)
+        self.spacing.setToolTip('&lt;spacing <b>every</b>=""&gt;<br/>'
+                               'Approximate single element size.')
+        spacing_label = QLabel("Spacing:")
+        unit_label = QLabel(u"µm")
+        form_layout.addWidget(spacing_label)
+        form_layout.addWidget(self.spacing)
+        form_layout.addWidget(unit_label)
+
+        self.form.setLayout(form_layout)
+
+    def fill_form(self):
+        super(RectangularRegularGeneratorController, self).fill_form()
+        self.spacing.setText(none_to_empty(self.grid_model.spacing))
+
+    def get_widget(self):
+        return self.form
+
+    def select_info(self, info):
+        super(RectangularRegularGeneratorController, self).select_info(info)
+        if info.property == 'spacing':
+            self.spacing.setFocus()
 
 
 class RectangularRefinedGeneratorController(GridController):
