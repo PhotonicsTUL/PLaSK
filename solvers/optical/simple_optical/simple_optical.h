@@ -2,7 +2,7 @@
 #define PLASK__SOLVER_SIMPLE_OPTICAL
 
 #include <plask/plask.hpp>
-#include "../solvers/optical/effective/rootdigger.h"
+#include "rootdigger.h"
 
 namespace plask { namespace solvers { namespace simple_optical {
 
@@ -44,7 +44,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      
      dcomplex vneff;
      
-     plask::optical::effective::RootDigger::Params stripe_root; 
+     plask::optical::simple_optical::RootDigger::Params stripe_root; 
      
      void loadConfiguration(XMLReader& reader, Manager& manager);
 

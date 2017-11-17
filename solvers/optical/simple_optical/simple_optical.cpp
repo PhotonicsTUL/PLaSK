@@ -42,13 +42,13 @@ void SimpleOptical::simpleVerticalSolver()
 	  writelog(LOG_DETAIL, "Computing effective index for vertical stripe {0} (polarization {1})", stripe-xbegin, (polarization==TE)?"TE":"TM");
   
     Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{0}]", stripe-xbegin), "neff", "det");
-    //auto rootdigger = plask::optical::effective::RootDigger::get(this, [&](const dcomplex& x){return this->detS1(x,nrCache[stripe]);}, log_stripe, stripe_root);
+    //auto rootdigger = plask::optical::simple_optical::RootDigger::get(this, [&](const dcomplex& x){return this->detS1(x,nrCache[stripe]);}, log_stripe, stripe_root);
     //if (vneff == 0.) {
-    //        dcomplex maxn = *std::max_element(nrCache[stripe].begin(), nrCache[stripe].end(),
-    //                                          [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
-    //        vneff = 0.999 * real(maxn);
-    //    }
-    writelog(LOG_DETAIL, "vneff = {0}", vneff);
+    //       dcomplex maxn = *std::max_element(nrCache[stripe].begin(), nrCache[stripe].end(),
+    //                                         [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
+    //       vneff = 0.999 * real(maxn);
+    //   }
+    //writelog(LOG_DETAIL, "vneff = {0}", vneff);
     //vneff = rootdigger->find(vneff);
   
   
