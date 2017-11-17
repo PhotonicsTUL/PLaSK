@@ -97,10 +97,7 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             reader.requireTagEnd();
         } else if (param == "interface") {
             if (reader.hasAttribute("index")) {
-                if (reader.hasAttribute("position")) throw XMLConflictingAttributesException(reader, "index", "position");
-                if (reader.hasAttribute("object")) throw XMLConflictingAttributesException(reader, "index", "object");
-                if (reader.hasAttribute("path")) throw XMLConflictingAttributesException(reader, "index", "path");
-                setInterface(reader.requireAttribute<size_t>("index"));
+                throw XMLException(reader, "Setting interface by layer index is not supported anymore (set it by object or position)");
             } else if (reader.hasAttribute("position")) {
                 if (reader.hasAttribute("object")) throw XMLConflictingAttributesException(reader, "index", "object");
                 if (reader.hasAttribute("path")) throw XMLConflictingAttributesException(reader, "index", "path");

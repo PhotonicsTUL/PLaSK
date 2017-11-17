@@ -98,7 +98,7 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
     {
         gamma = diagonalizer->Gamma(solver->stack[n]);
 
-        H = solver->vbounds[n] - solver->vbounds[n-1];
+        H = solver->vbounds->at(n) - solver->vbounds->at(n-1);
         get_y1(gamma, H, y1);
         get_y2(gamma, H, y2);
 
@@ -191,7 +191,7 @@ void AdmittanceTransfer::determineFields()
         {
             int curr = solver->stack[n];
 
-            double H = (n == 0 || n == count-1)? solver->vpml.dist : solver->vbounds[n] - solver->vbounds[n-1];
+            double H = (n == 0 || n == count-1)? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
             gamma = diagonalizer->Gamma(curr);
             get_y1(gamma, H, y1);
             get_y2(gamma, H, y2);
@@ -288,11 +288,11 @@ cvector AdmittanceTransfer::getFieldVectorE(double z, int n)
     cvector Ed = fields[n].Ed;
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
-    double d = (n == 0 || n == solver->vbounds.size())? solver->vpml.dist : solver->vbounds[n] - solver->vbounds[n-1];
+    double d = (n == 0 || n == solver->vbounds->size())? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
     if (n >= solver->interface) z = d - z;
     else if (n == 0) z += d;
 
-    if ((n == 0 || n == solver->vbounds.size()) && z < 0.)
+    if ((n == 0 || n == solver->vbounds->size()) && z < 0.)
         return cvector(diagonalizer->source()->matrixSize(), NAN);
 
     int N = gamma.size();
@@ -331,11 +331,11 @@ cvector AdmittanceTransfer::getFieldVectorH(double z, int n)
     cvector Hd = fields[n].Hd;
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
-    double d = (n == 0 || n == solver->vbounds.size())? solver->vpml.dist : solver->vbounds[n] - solver->vbounds[n-1];
+    double d = (n == 0 || n == solver->vbounds->size())? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
     if (n >= solver->interface) z = d - z;
     else if (n == 0) z += d;
 
-    if ((n == 0 || n == solver->vbounds.size()) && z < 0.)
+    if ((n == 0 || n == solver->vbounds->size()) && z < 0.)
         return cvector(diagonalizer->source()->matrixSize(), NAN);
 
     int N = gamma.size();
@@ -484,7 +484,7 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
     {
         int curr = solver->stack[n];
 
-        double H = (n == 0 || n == count-1)? solver->vpml.dist : solver->vbounds[n] - solver->vbounds[n-1];
+        double H = (n == 0 || n == count-1)? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
         gamma = diagonalizer->Gamma(curr);
         get_y1(gamma, H, y1);
 

@@ -57,7 +57,7 @@ static inline py::object arrayFromVec2D(cvector data, bool sep, int dim=1) {
 
 
 template <typename SolverT>
-static py::object Solver_getInterface(const SolverT& self) {
+static py::object Solver_getInterface(SolverT& self) {
     size_t interface = self.getInterface();
     if (interface == size_t(-1)) return py::object();
     else return py::object(interface);
@@ -65,8 +65,7 @@ static py::object Solver_getInterface(const SolverT& self) {
 
 template <typename SolverT>
 static void Solver_setInterface(SolverT& self, const py::object& value) {
-    if (value == py::object()) self.setInterface(-1);
-    else self.setInterface(py::extract<size_t>(value));
+    throw AttributeError("Setting interface by layer index is not supported anymore (set it by object or position)");
 }
 
 
@@ -364,7 +363,8 @@ inline void export_base(Class solver) {
     solver.add_property("temp_dist", &Solver::getTempDist, &Solver::setTempDist,
                         "Temperature probing step.\n\n"
                         "If :attr:`temp_diff` is not ``None``, the temperature is laterally probed\n"
-                        "in points approximately separated by this distance.");
+                        "in points approximately separated by this distance. This is also the minimum\n"
+                        "thickness of sublayers resulting from temperature-gradient division.\n");
     solver.template add_receiver<ReceiverFor<Temperature, typename Solver::SpaceType>, Solver>("inTemperature", &Solver::inTemperature, "");
     solver.template add_receiver<ReceiverFor<Gain, typename Solver::SpaceType>, Solver>("inGain", &Solver::inGain, "");
     solver.add_provider("outRefractiveIndex", &Solver::outRefractiveIndex, "");

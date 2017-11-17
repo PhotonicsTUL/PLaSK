@@ -889,12 +889,10 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
             self.hem = int(tag.get('m', self.hem))
             self.hen = int(tag.get('n', self.hen))
         elif tag == 'optical-interface':
-            attrs = {key: val for (key, val) in ((key, tag.get(key)) for key in ('index', 'position', 'object', 'path'))
+            attrs = {key: val for (key, val) in ((key, tag.get(key)) for key in ('position', 'object', 'path'))
                      if val is not None}
-            if len(attrs) > 1 and (len(attrs) > 2 or 'index' in attrs or 'position' in attrs):
+            if len(attrs) > 1 and (len(attrs) > 2 or 'position' in attrs):
                 raise plask.XMLError("{}: conflicting attributes '{}'".format(tag, "' and '".join(attrs.keys())))
-            if 'index' in attrs:
-                self.optical.interface = attrs['index']
             elif 'position' in attrs:
                 self.optical.set_interface(attrs['position'])
             elif 'object' in attrs:

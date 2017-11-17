@@ -88,7 +88,8 @@
       default: 0.05
       help: >
         Approximate lateral distance of the points in which the temperature is probed to decide about
-        the temperature difference in one layer.
+        the temperature difference in one layer. This is also the minimum thickness of sublayers resulting
+        from temperature-gradient division.
 
   - tag: mode
     label: Mode Properties
@@ -155,21 +156,11 @@
     help: >
       Matching interface position in the stack.
     attrs:
-    - attr: index
-      label: Layer index
-      type: int
-      conflicts:
-      - attr: position
-      - attr: object
-      - attr: path
-      help: >
-        Index of the layer, below which the interface is located.
     - attr: position
       label: Position
       type: float
       unit: µm
       conflicts:
-      - attr: index
       - attr: object
       - attr: path
       help: >
@@ -179,7 +170,6 @@
       label: Object name
       type: geometry object
       conflicts:
-      - attr: index
       - attr: position
       help: >
         Name of the geometry object below which the interface is located.
@@ -187,7 +177,6 @@
       label: Object path
       type: geometry path
       conflicts:
-      - attr: index
       - attr: position
       help: >
         Optional path name, specifying particular instance of the object given in the object attribute.
