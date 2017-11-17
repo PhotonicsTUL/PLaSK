@@ -92,6 +92,8 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             group_layers = reader.getAttribute<bool>("group-layers", group_layers);
             lam0 = reader.getAttribute<double>("lam0", NAN);
             always_recompute_gain = reader.getAttribute<bool>("update-gain", always_recompute_gain);
+            max_temp_diff = reader.getAttribute<double>("temp-diff", max_temp_diff);
+            temp_dist = reader.getAttribute<double>("temp-dist", max_temp_diff);
             reader.requireTagEnd();
         } else if (param == "interface") {
             if (reader.hasAttribute("index")) {

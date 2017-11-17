@@ -123,6 +123,12 @@ struct PLASK_SOLVER_API SlabBase {
     /// Can layers be automatically grouped
     bool group_layers;
 
+    /// Maximum temperature difference for grouped layers (NAN means ignore temperature)
+    double max_temp_diff;
+
+    /// Approxximate lateral distance between points for temperature investigation
+    double temp_dist;
+
   public:
 
     SlabBase():
@@ -132,7 +138,9 @@ struct PLASK_SOLVER_API SlabBase {
         lam0(NAN),
         k0(NAN),
         vpml(dcomplex(1.,-2.), 2.0, 10., 0),
-        recompute_integrals(true), always_recompute_gain(false), group_layers(true) {}
+        recompute_integrals(true), always_recompute_gain(false), group_layers(true),
+        max_temp_diff(NAN), temp_dist(0.05)
+    {}
 
     virtual ~SlabBase() {}
 
@@ -299,6 +307,26 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
     void setGroupLayers(bool value) {
         bool changed = group_layers != value;
         group_layers = value;
+        if (changed) this->invalidate();
+    }
+
+    /// Getter for max_temp_diff
+    double getMaxTempDiff() const { return max_temp_diff; }
+
+    /// Setter for max_temp_diff
+    void setMaxTempDiff(double value) {
+        bool changed = max_temp_diff != value;
+        max_temp_diff = value;
+        if (changed) this->invalidate();
+    }
+
+    /// Getter for temp_dist
+    double getTempDist() const { return temp_dist; }
+
+    /// Setter for temp_dist
+    void setTempDist(double value) {
+        bool changed = temp_dist != value;
+        temp_dist = value;
         if (changed) this->invalidate();
     }
 

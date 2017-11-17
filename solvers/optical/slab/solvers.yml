@@ -71,6 +71,24 @@
       default: true
       help: >
         Should similar layers be grouped for better performance.
+    - &temp-diff
+      attr: temp-diff
+      label: Maximum group <i>ΔT</i>
+      type: float
+      unit: K
+      help: >
+        Maximum temperature difference between the layers in one group. If a temperature in a single layer
+        varies vertically more than this value, the layer is split into two and put into separate groups.
+        If this is empty, temperature gradient is ignored in layers grouping.
+    - &temp-dist
+      attr: temp-dist
+      label: Temperature probing step
+      type: float
+      unit: µm
+      default: 0.05
+      help: >
+        Approximate lateral distance of the points in which the temperature is probed to decide about
+        the temperature difference in one layer.
 
   - tag: mode
     label: Mode Properties
@@ -446,6 +464,8 @@
     - *dct
     - *smooth
     - *group-layers
+    - *temp-diff
+    - *temp-dist
 
   - tag: mode
     label: Mode Properties
@@ -641,6 +661,8 @@
         a finite domain (geometry + PMLs). For infinite domain, the field is represented by its Hankel transform.
     - *size
     - *group-layers
+    - *temp-diff
+    - *temp-dist
     - attr: integrals-error
       label: Maximum integration error
       type: float

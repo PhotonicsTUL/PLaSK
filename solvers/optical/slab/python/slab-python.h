@@ -321,7 +321,18 @@ py::object Solver_computeTransmittivity(SolverT* self,
     }, wavelength);
 }
 
+template <typename SolverT>
+py::object get_max_temp_diff(SolverT* self) {
+    double value = self->getMaxTempDiff();
+    if (isnan(value) || isinf(value)) return py::object();
+    return py::object(value);
+}
 
+template <typename SolverT>
+void set_max_temp_diff(SolverT* self, py::object value) {
+    if (value == py::object()) self->setMaxTempDiff(NAN);
+    else self->setMaxTempDiff(py::extract<double>(value));
+}
 
 
 
@@ -345,6 +356,15 @@ inline void export_base(Class solver) {
     solver.add_property("group_layers", &Solver::getGroupLayers, &Solver::setGroupLayers,
                         "Layer grouping switch.\n\n"
                         "If this property is ``True``, similar layers are grouped for efficiency.");
+    solver.add_property("temp_diff", &get_max_temp_diff<Solver>, &set_max_temp_diff<Solver>,
+                        "Maximum temperature difference between the layers in one group.\n\n"
+                        "If a temperature in a single layer varies vertically more than this value,\n"
+                        "the layer is split into two and put into separate groups. If this is empty,\n"
+                        "temperature gradient is ignored in layers grouping.\n\n");
+    solver.add_property("temp_dist", &Solver::getTempDist, &Solver::setTempDist,
+                        "Temperature probing step.\n\n"
+                        "If :attr:`temp_diff` is not ``None``, the temperature is laterally probed\n"
+                        "in points approximately separated by this distance.");
     solver.template add_receiver<ReceiverFor<Temperature, typename Solver::SpaceType>, Solver>("inTemperature", &Solver::inTemperature, "");
     solver.template add_receiver<ReceiverFor<Gain, typename Solver::SpaceType>, Solver>("inGain", &Solver::inGain, "");
     solver.add_provider("outRefractiveIndex", &Solver::outRefractiveIndex, "");
