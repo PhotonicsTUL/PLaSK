@@ -171,4 +171,4 @@ dcomplex RootBroyden::Broyden(dcomplex x) const
     throw ComputationError(solver.getId(), "Broyden: maximum number of iterations reached");
 }
 
-}}} // namespace plask::optical::effective
+}}} // namespace plask::optical::simple_optical

@@ -1,5 +1,5 @@
-#ifndef PLASK__OPTICAL_EFFECTIVE_ROOTDIGGER_H
-#define PLASK__OPTICAL_EFFECTIVE_ROOTDIGGER_H
+#ifndef PLASK__OPTICAL_SIMPLE_OPTICAL_ROOTDIGGER_H
+#define PLASK__OPTICAL_SIMPLE_OPTICAL_ROOTDIGGER_H
 
 #include <functional>
 #include <plask/plask.hpp>
@@ -85,6 +85,6 @@ struct RootDigger {
     static void readRootDiggerConfig(XMLReader& reader, Params& params);
 };
 
-}}} // namespace plask::optical::effective
+}}} // namespace plask::optical::simple_optical
 
-#endif // PLASK__OPTICAL_EFFECTIVE_ROOTDIGGER_H
+#endif // PLASK__OPTICAL_SIMPLE_OPTICAL_ROOTDIGGER_H

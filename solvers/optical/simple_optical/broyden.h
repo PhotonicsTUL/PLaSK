@@ -1,5 +1,5 @@
-#ifndef PLASK__OPTICAL_EFFECTIVE_BROYDEN_H
-#define PLASK__OPTICAL_EFFECTIVE_BROYDEN_H
+#ifndef PLASK__OPTICAL_SIMPLE_OPTICAL_BROYDEN_H
+#define PLASK__OPTICAL_SIMPLE_OPTICAL_BROYDEN_H
 
 #include "rootdigger.h"
 
@@ -35,5 +35,5 @@ class RootBroyden: public RootDigger {
                dcomplex find(dcomplex start) const override;
 };
 
-}}} // namespace plask::optical::effective
-#endif // PLASK__OPTICAL_EFFECTIVE_BROYDEN_H
+}}} // namespace plask::simple_optical::effective
+#endif // PLASK__OPTICAL_SIMPLE_OPTICAL_BROYDEN_H

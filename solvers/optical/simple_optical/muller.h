@@ -1,5 +1,5 @@
-#ifndef PLASK__OPTICAL_EFFECTIVE_MULLER_H
-#define PLASK__OPTICAL_EFFECTIVE_MULLER_H
+#ifndef PLASK__OPTICAL_SIMPLE_OPTICAL_MULLER_H
+#define PLASK__OPTICAL_SIMPLE_OPTICAL_MULLER_H
 
 #include "rootdigger.h"
 
@@ -24,5 +24,5 @@ class RootMuller: public RootDigger {
     dcomplex find(dcomplex start) const override;
 };
 
-}}} // namespace plask::optical::effective
-#endif // PLASK__OPTICAL_EFFECTIVE_MULLER_H
+}}} // namespace plask::optical::simple_optical
+#endif // PLASK__OPTICAL_SIMPLE_OPTICAL_MULLER_H

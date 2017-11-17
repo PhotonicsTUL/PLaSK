@@ -44,4 +44,4 @@ dcomplex RootMuller::find(dcomplex start) const
     throw ComputationError(solver.getId(), "Muller: {0}: maximum number of iterations reached", log_value.chart_name);
 }
 
-}}} // namespace plask::optical::effective
+}}} // namespace plask::optical::simple_optical

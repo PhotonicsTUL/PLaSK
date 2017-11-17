@@ -1,5 +1,5 @@
-#ifndef PLASK__OPTICAL_EFFECTIVE_BRENT_H
-#define PLASK__OPTICAL_EFFECTIVE_BRENT_H
+#ifndef PLASK__OPTICAL_SIMPLE_OPTICAL_BRENT_H
+#define PLASK__OPTICAL_SIMPLE_OPTICAL_BRENT_H
 
 #include "rootdigger.h"
 
@@ -28,5 +28,5 @@ class RootBrent: public RootDigger {
     dcomplex find(dcomplex start) const override;
 };
 
-}}} // namespace plask::optical::effective
-#endif // PLASK__OPTICAL_EFFECTIVE_BRENT_H
+}}} // namespace plask::simple_optical::effective
+#endif // PLASK__OPTICAL_SIMPLE_OPTICAL_BRENT_H
