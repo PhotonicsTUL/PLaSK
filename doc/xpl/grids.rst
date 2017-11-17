@@ -53,11 +53,6 @@ Possible <mesh> contents for different types
 
             Comma-separated list of the mesh points along this axis.
 
-.. xml:tag:: <mesh type="rectilinear1d"> [rectilinear1d]
-
-   Deprecated alias to ordered :xml:tag:`<mesh> [ordered]`.
-
-
 
 .. xml:tag:: <mesh type="regular"> [regular]
 
@@ -104,10 +99,6 @@ Possible <mesh> contents for different types
 
          Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectangular2d mesh]`.
 
-.. xml:tag:: <mesh type="rectilinear2d"> [rectilinear2d]
-
-   Deprecated alias to :xml:tag:`<mesh> [rectangular2d]`.
-
 .. xml:tag:: <mesh type="regular2d"> [regular2d]
 
    Deprecated alias to :xml:tag:`<mesh> [rectangular2d]`.
@@ -143,10 +134,6 @@ Possible <mesh> contents for different types
          Specification of the vertical axis.
 
          Attributes and contents are in the same format as in :xml:tag:`<axis0> [in rectangular3d mesh]`.
-
-.. xml:tag:: <mesh type="rectilinear3d"> [rectilinear3d]
-
-   Deprecated alias to :xml:tag:`<mesh> [rectangular3d]`.
 
 .. xml:tag:: <mesh type="regular3d"> [regular3d]
 
@@ -204,18 +191,19 @@ Possible <generator> contents for different types and methods
          :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
          :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
 
-.. xml:tag:: <generator type="rectilinear1d" method="divide"> [rectilinear1d, divide]
 
-   Deprecated alias to :xml:tag:`<generator> [ordered, divide]`.
+.. xml:tag:: <generator type="ordered" method="regular"> [ordered, regular]
+
+   Generator creating the mesh with lines at transverse edges of all objects and fine regular division of each object with spacing approximately equal to the specified one.
+
+   .. xml:tag:: <spacing/> [in ordered, regular generator]
+
+      :attr every: Approximate single element size.
 
 
 .. xml:tag:: <generator type="ordered" method="simple"> [ordered, simple]
 
    Simple generator creating the rectangular mesh consisting of ordered axes with lines at the edges of bounding boxes of each object of the geometry. This generator has no configuration.
-
-.. xml:tag:: <generator type="rectilinear1d" method="simple"> [rectilinear1d, simple]
-
-   Deprecated alias to :xml:tag:`<generator> [ordered, simple]`.
 
 
 .. xml:tag:: <generator type="ordered" method="smooth"> [ordered, smooth]
@@ -273,12 +261,6 @@ Possible <generator> contents for different types and methods
 
          :attr all: enable (if ``yes``) or disable (if ``no``) gradual for all axes (boolean, ``yes`` by default)
 
-      .. xml:tag:: <no-gradual/> [in rectangular2d, divide generator]
-
-         Turn off smooth mesh step (i.e. the adjacent elements of the generated mesh may differ more than by the factor of two).
-
-         Deprecated alias to ``<gradual all="false"/>``.
-
       .. xml:tag:: <prediv/> [in rectangular2d, divide generator]
 
          Set number of the initial divisions of each geometry object.
@@ -325,18 +307,19 @@ Possible <generator> contents for different types and methods
          :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
          :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
 
-.. xml:tag:: <generator type="rectilinear2d" method="simple"> [rectilinear2d, divide]
 
-   Deprecated alias to :xml:tag:`<generator> [rectangular2d, divide]`.
+.. xml:tag:: <generator type="rectangular2d" method="regular"> [rectangular2d, regular]
+
+   Generator creating the mesh with lines at transverse edges of all objects and fine regular division of each object with spacing approximately equal to the specified one.
+
+   .. xml:tag:: <spacing/> [in rectangular2d, regular generator]
+
+      :attr every: Approximate single element size.
 
 
 .. xml:tag:: <generator type="rectangular2d" method="simple"> [rectangular2d, simple]
 
    Simple generator creating the rectangular mesh consisting of ordered axes with lines at the edges of bounding boxes of each object of the geometry. This generator has no configuration.
-
-.. xml:tag:: <generator type="rectilinear2d" method="simple"> [rectilinear2d, simple]
-
-   Deprecated alias to :xml:tag:`<generator> [rectangular2d, simple]`.
 
 
 .. xml:tag:: <generator type="rectangular2d" method="smooth"> [rectangular2d, smooth]
@@ -457,64 +440,19 @@ Possible <generator> contents for different types and methods
          :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
          :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
 
-.. xml:tag:: <generator type="rectilinear3d" method="divide"> [rectilinear3d, divide]
 
-   Deprecated alias to :xml:tag:`<generator> [rectangular3d, divide]`.
+.. xml:tag:: <generator type="rectangular3d" method="regular"> [rectangular3d, regular]
+
+   Generator creating the mesh with lines at transverse edges of all objects and fine regular division of each object with spacing approximately equal to the specified one.
+
+   .. xml:tag:: <spacing/> [in rectangular3d, regular generator]
+
+      :attr every: Approximate single element size.
 
 
 .. xml:tag:: <generator type="rectangular3d" method="simple"> [rectangular3d, simple]
 
    Simple generator creating the rectangular mesh consisting of ordered axes with lines at the edges of bounding boxes of each object of the geometry. This generator has no configuration.
-
-.. xml:tag:: <generator type="rectilinear3d" method="simple"> [rectilinear3d, simple]
-
-   Deprecated alias to :xml:tag:`<generator> [rectangular3d, simple]`.
-
-   .. xml:contents::
-
-      .. xml:tag:: <options/> [in rectangular2d, smooth generator]
-
-         :attr aspect: Maximum aspect ratio for the rectangular and cubic elements generated by this generator. If set the mesh elements are additionally divided to ensure their aspect not larger than this value. (float)
-
-      .. xml:tag:: <steps/> [in rectangular2d, smooth generator]
-
-         Parameters specifying element size.
-
-         :attr small: Maximum size of the smallest elements near objects edges.
-
-         :attr factor: Factor by which sizes of elements increase towards objects centers.
-
-      .. xml:tag:: <refinements> [in rectangular2d, smooth generator]
-
-         Specify list of additional refinements of the generated mesh.
-
-         .. xml:contents::
-
-            .. xml:tag:: <axis0/> [in rectangular2d, smooth generator]
-
-               Add refinement to the horizontal axis.
-
-               :attr required object: Name of the geometry object to add additional division to.
-               :attr path: Path name, specifying particular instance of the object given in the object attribute.
-               :attr at: If this attribute is present, a single refinement line is placed at the position specified in it (in the local object coordinates).
-               :attr by: If this attribute is present, multiple refinement lines are placed dividing the object into a specified number of equal parts.
-               :attr every: If this attribute is present, multiple refinement lines are places at distance from each other specified in the attribute value.
-
-               Exactly one of ``at``, ``by``, or ``every`` attribute must be present.
-
-            .. xml:tag:: <axis1/> [in rectangular3d, divide generator]
-
-               Add refinement to the transverse axis.
-
-               It has same attributes as :xml:tag:`<axis0/> [in rectangular3d, divide generator]`.
-
-      .. xml:tag:: <warnings/>
-
-         Control printing of the warnings.
-
-         :attr missing: Warn if any refinement references to non-existing object. Defaults to true. (boolean)
-         :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
-         :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
 
 
 .. xml:tag:: <generator type="rectangular3d" method="smooth"> [rectangular3d, smooth]

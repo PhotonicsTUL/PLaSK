@@ -1,3 +1,4 @@
+# coding: utf8
 # Copyright (C) 2014 Photonics Group, Lodz University of Technology
 #
 # This program is free software; you can redistribute it and/or modify it
@@ -113,6 +114,7 @@ class GridsController(Controller):
 
         self.model.changed.connect(self.on_model_change)
 
+        self.geometry_list = None
         self.selected_geometry = None
         self.plotted_geometry = None
         self.checked_plane = '12'
@@ -124,7 +126,8 @@ class GridsController(Controller):
             try:
                 dim = max(self._current_controller.model.dim, 2)
             except AttributeError:
-                self.geometry_list.clear()
+                if self.geometry_list is not None:
+                    self.geometry_list.clear()
                 return
             if dim == 3:
                 self.mesh_preview.toolbar.enable_planes(('long','tran','vert'))

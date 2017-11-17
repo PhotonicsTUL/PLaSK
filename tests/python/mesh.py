@@ -135,13 +135,13 @@ class OrderedMeshes(unittest.TestCase):
             </cartesian2d>
           </geometry>
           <grids>
-            <generator type="rectilinear2d" method="divide" name="refined">
+            <generator type="rectangular2d" method="divide" name="refined">
               <refinements>
                 <axis0 object="rect" by="5"/>
                 <axis1 object="rect" every="1."/>
               </refinements>
             </generator>
-            <generator type="rectilinear1d" method="divide" name="one">
+            <generator type="ordered" method="divide" name="one">
               <refinements>
                 <axis0 object="rect" by="2"/>
               </refinements>
