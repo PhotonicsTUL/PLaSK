@@ -109,8 +109,8 @@ shared_ptr<MeshD<3>> RectangularMesh3DSimpleGenerator::generate(const shared_ptr
 }
 
 
-
-inline static shared_ptr<OrderedAxis> refineAxis(const shared_ptr<MeshAxis>& axis, double spacing) {
+shared_ptr<OrderedAxis> refineAxis(const shared_ptr<MeshAxis>& axis, double spacing)
+{
     size_t total = 1;
     for (size_t i = 1; i < axis->size(); ++i) {
         total += size_t(max(round((axis->at(i) - axis->at(i-1)) / spacing), 1.));

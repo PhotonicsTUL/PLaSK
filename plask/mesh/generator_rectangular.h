@@ -29,6 +29,13 @@ PLASK_API shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<Geome
 PLASK_API shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry);
 
 /**
+ * Divide existing axis into finer mesh with points approximately spaced by \p spacing.
+ * \param spacing approximate distance between mesh points
+ * \return refined mesh
+ */
+PLASK_API shared_ptr<OrderedAxis> refineAxis(const shared_ptr<MeshAxis>& axis, double spacing);
+
+/**
  * Generator of basic 2D geometry grid
  */
 class PLASK_API OrderedMesh1DSimpleGenerator: public MeshGeneratorD<1> {
