@@ -220,13 +220,6 @@ void SlabSolver<BaseT>::setupLayers()
         vbounds->addOrderedPoints(refines.begin(), refines.end(), refines.size());
     }
 
-    struct LayerItem {
-        shared_ptr<Material> material;
-        std::set<std::string> roles;
-        bool operator==(const LayerItem& other) { return *material == *other.material && roles == other.roles; }
-        bool operator!=(const LayerItem& other) { return !(*this == other); }
-    };
-
     adapter.reset(vbounds->getMidpointsMesh());
 
     // Add layers below bottom boundary and above top one
@@ -240,6 +233,12 @@ void SlabSolver<BaseT>::setupLayers()
     stack.reserve(verts->size());
     lcount = 0;
 
+    struct LayerItem {
+        shared_ptr<Material> material;
+        std::set<std::string> roles;
+        bool operator==(const LayerItem& other) { return *material == *other.material && roles == other.roles; }
+        bool operator!=(const LayerItem& other) { return !(*this == other); }
+    };
     std::vector<std::vector<LayerItem>> layers;
 
     for (size_t v = 0; v != verts->size(); ++v) {
@@ -281,6 +280,70 @@ void SlabSolver<BaseT>::setupLayers()
 
     assert(vbounds->size() == stack.size()-1);
     assert(verts->size() == stack.size());
+
+    // Split groups with too large temperature gradient
+    // We are using CLINK naive algorithm for this purpose
+    if (inTemperature.hasProvider() && !isnan(max_temp_diff) && !isinf(max_temp_diff)) {
+        auto temp = inTemperature(adapter.mesh);
+        size_t nl = layers.size(),  // number of idependent layers to consider (stays fixed)
+               ll = layers.size();  // number of idependent layers in the stack (increases as new layers are added)
+        for (size_t l = 0; l != nl; ++l) {
+            std::vector<size_t> indices;
+            std::list<std::list<size_t>> groups;
+            typedef std::list<std::list<size_t>>::iterator ListIterator;
+            typedef std::list<size_t>::const_iterator ItemIterator;
+            for (size_t i = 0, j = 0; i != stack.size(); ++i) {
+                if (stack[i] == l) {
+                    indices.push_back(i);
+                    groups.emplace_back(std::list<size_t>({j++}));
+                }
+            }
+            size_t n = indices.size();
+            // Make distance matrix
+            double dists[n][n];
+            for (size_t i = 0; i != n; ++i) {
+                dists[i][i] = INFINITY; // the simplest way to avoid clustering with itself
+                for (size_t j = i+1; j != n; ++j) {
+                    double mdt = 0.;
+                    for (size_t k = 0; k != adapter.size(); ++k) {
+                        double dt = abs(temp[adapter.idx(k, indices[i])] - temp[adapter.idx(k, indices[j])]);
+                        if (dt > mdt) mdt = dt;
+                    }
+                    dists[i][j] = dists[j][i] = mdt;
+                }
+            }
+            // Go and merge groups with the smallest distances
+            while(true) {
+                double mdt = INFINITY;
+                ListIterator mg1, mg2;
+                for (ListIterator g1 = groups.begin(); g1 != groups.end(); ++g1) {
+                    ListIterator g2 = g1;
+                    for (++g2; g2 != groups.end(); ++g2) {
+                        double dt = 0.;
+                        for (ItemIterator i1 = g1->begin(); i1 != g1->end(); ++i1)
+                            for (ItemIterator i2 = g2->begin(); i2 != g2->end(); ++i2)
+                                dt = max(dists[*i1][*i2], dt);
+                        if (dt < mdt) {
+                            mg1 = g1;
+                            mg2 = g2;
+                            mdt = dt;
+                        }
+                    }
+                }
+                if (mdt > 0.66667 * max_temp_diff) break;
+                for (ItemIterator i2 = mg2->begin(); i2 != mg2->end(); ++i2)
+                    mg1->push_back(*i2);
+                groups.erase(mg2);
+            }
+            // Now update the stack
+            ListIterator g = groups.begin();
+            for (++g; g != groups.end(); ++g) {
+                for (ItemIterator i = g->begin(); i != g->end(); ++i)
+                    stack[indices[*i]] = ll;
+                ++ll;
+            }
+        }
+    }
 
     Solver::writelog(LOG_DETAIL, "Detected {0} {1}layers", lcount, group_layers? "distinct " : "");
 

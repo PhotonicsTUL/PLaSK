@@ -82,12 +82,25 @@ static void Solver_setLam0(SolverT& self, py::object value) {
 }
 
 template <typename SolverT>
-static py::tuple SlabSolver_getStack(const SolverT& self) {
+static py::tuple SlabSolver_getStack(SolverT& self) {
+    self.initCalculation();
     py::list result;
     for (auto i: self.getStack()) {
         result.append(i);
     }
     return py::tuple(result);
+}
+
+template <typename SolverT>
+static shared_ptr<OrderedAxis> SlabSolver_getLayerEdges(SolverT& self) {
+    self.initCalculation();
+    return make_shared<OrderedAxis>(*self.vbounds);
+}
+
+template <typename SolverT>
+static shared_ptr<OrderedAxis> SlabSolver_getLayerCenters(SolverT& self) {
+    self.initCalculation();
+    return make_shared<OrderedAxis>(*self.verts);
 }
 
 // template <typename SolverT>
@@ -351,6 +364,10 @@ inline void export_base(Class solver) {
                "    pos (float): Position, near which the interface will be located.", py::arg("pos"));
     solver.def_readwrite("smooth", &Solver::smooth, "Smoothing parameter for material boundaries (increases convergence).");
     solver.add_property("stack", &SlabSolver_getStack<Solver>, "Stack of distinct layers.");
+    solver.add_property("layer_edges", &SlabSolver_getLayerEdges<Solver>, "Vertical posiotions of egges of each layer.");
+    solver.add_property("layer_centers", &SlabSolver_getLayerCenters<Solver>,
+                        "Vertical posiotions of centers of each layer.\n\n"
+                        "At these positions materials and temperatures are probed.\n");
     // solver.add_property("layer_sets", &SlabSolver_getLayerSets<Solver>, "Vertical positions of layers in each layer set.");
     solver.add_property("group_layers", &Solver::getGroupLayers, &Solver::setGroupLayers,
                         "Layer grouping switch.\n\n"
