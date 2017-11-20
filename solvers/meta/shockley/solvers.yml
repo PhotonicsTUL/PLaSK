@@ -986,21 +986,11 @@
     help: >
       Matching interface position in the stack for optical solver.
     attrs:
-    - attr: index
-      label: Layer index
-      type: int
-      conflicts:
-      - attr: position
-      - attr: object
-      - attr: path
-      help: >
-        Index of the layer, below which the interface is located.
     - attr: position
       label: Position
       type: float
       unit: µm
       conflicts:
-      - attr: index
       - attr: object
       - attr: path
       help: >
@@ -1010,7 +1000,6 @@
       label: Object name
       type: geometry object
       conflicts:
-      - attr: index
       - attr: position
       help: >
         Name of the geometry object below which the interface is located.
@@ -1018,7 +1007,6 @@
       label: Object path
       type: geometry path
       conflicts:
-      - attr: index
       - attr: position
       help: >
         Optional path name, specifying particular instance of the object given in the object attribute.

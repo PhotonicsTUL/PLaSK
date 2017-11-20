@@ -80,7 +80,7 @@ struct PLASK_SOLVER_API SlabBase {
 #endif
 
     /// Layer boundaries
-    OrderedAxis vbounds;
+    shared_ptr<OrderedAxis> vbounds;
 
     /// Centers of layers
     shared_ptr<OrderedAxis> verts;
@@ -94,8 +94,11 @@ struct PLASK_SOLVER_API SlabBase {
     /// Organization of layers in the stack
     std::vector<std::size_t> stack;
 
-    /// Position of the matching interface
+    /// Index of the matching interface
     ptrdiff_t interface;
+
+    /// Approximate position of the matching interface
+    double interface_position;
 
     /// Reference wavelength used for getting material parameters [nm]
     double lam0;
@@ -123,16 +126,25 @@ struct PLASK_SOLVER_API SlabBase {
     /// Can layers be automatically grouped
     bool group_layers;
 
+    /// Maximum temperature difference for grouped layers (NAN means ignore temperature)
+    double max_temp_diff;
+
+    /// Approxximate lateral distance between points for temperature investigation
+    double temp_dist;
+
   public:
 
     SlabBase():
         emission(EMISSION_UNSPECIFIED),
         transfer_method(Transfer::METHOD_AUTO),
         interface(-1),
+        interface_position(NAN),
         lam0(NAN),
         k0(NAN),
         vpml(dcomplex(1.,-2.), 2.0, 10., 0),
-        recompute_integrals(true), always_recompute_gain(false), group_layers(true) {}
+        recompute_integrals(true), always_recompute_gain(false), group_layers(true),
+        max_temp_diff(NAN), temp_dist(0.05)
+    {}
 
     virtual ~SlabBase() {}
 
@@ -180,9 +192,9 @@ struct PLASK_SOLVER_API SlabBase {
      * \return layer number (in the stack)
      */
     size_t getLayerFor(double& h) const {
-        size_t n = std::upper_bound(vbounds.begin(), vbounds.end(), h) - vbounds.begin();
-        if (n == 0) h -= vbounds[0];
-        else h -= vbounds[n-1];
+        size_t n = std::upper_bound(vbounds->begin(), vbounds->end(), h) - vbounds->begin();
+        if (n == 0) h -= vbounds->at(0);
+        else h -= vbounds->at(n-1);
         return n;
     }
 
@@ -211,9 +223,6 @@ struct PLASK_SOLVER_API SlabBase {
 template <typename BaseT>
 class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
 
-    /// Compute layer boundaries
-    void setup_vbounds();
-
     /// Reset structure if input is changed
     void onInputChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
         this->clearModes();
@@ -239,7 +248,6 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
     void onGeometryChange(const Geometry::Event& evt) override {
         BaseT::onGeometryChange(evt);
         if (this->geometry) {
-            if (!vbounds.empty()) setup_vbounds(); // update layers
             if (evt.flags() == 0) {
                 auto objects = this->geometry->getObjectsWithRole("interface");
                 if (objects.size() > 1) {
@@ -249,11 +257,11 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
                 }
             }
         } else {
-            vbounds.clear();
+            vbounds->clear();
         }
     }
 
-    /// Detect layer sets and set them up
+    /// Compute layer boundaries and detect layer sets
     void setupLayers();
 
   public:
@@ -302,30 +310,35 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
         if (changed) this->invalidate();
     }
 
+    /// Getter for max_temp_diff
+    double getMaxTempDiff() const { return max_temp_diff; }
+
+    /// Setter for max_temp_diff
+    void setMaxTempDiff(double value) {
+        bool changed = max_temp_diff != value;
+        max_temp_diff = value;
+        if (changed) this->invalidate();
+    }
+
+    /// Getter for temp_dist
+    double getTempDist() const { return temp_dist; }
+
+    /// Setter for temp_dist
+    void setTempDist(double value) {
+        bool changed = temp_dist != value;
+        temp_dist = value;
+        if (changed) this->invalidate();
+    }
+
     std::string getId() const override { return Solver::getId(); }
 
     /**
      * Get the position of the matching interface.
      * \return index of the vertical mesh, where interface is set
      */
-    inline size_t getInterface() const { return interface; }
-
-    /**
-     * Set the position of the matching interface.
-     * \param index index of the vertical mesh, where interface is set
-     */
-    inline void setInterface(size_t index) {
-        if (index == size_t(-1)) {
-            Solver::writelog(LOG_DEBUG, "Clearing interface position");
-            interface = index;
-            this->invalidate();
-        }
-        if (vbounds.empty()) setup_vbounds();
-        if (index == 0 || index > vbounds.size())
-            throw BadInput(this->getId(), "Cannot set interface to {0} (min: 1, max: {1})", index, vbounds.size());
-        double pos = vbounds[index-1]; if (abs(pos) < OrderedAxis::MIN_DISTANCE) pos = 0.;
-        Solver::writelog(LOG_DEBUG, "Setting interface at position {:g} (mesh index: {:d})", pos, index);
-        interface = index;
+    inline size_t getInterface() {
+        this->initCalculation();
+        return interface;
     }
 
     /**
@@ -333,11 +346,10 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
      * \param pos vertical position close to the point where interface will be set
      */
     inline void setInterfaceAt(double pos) {
-        if (vbounds.empty()) setup_vbounds();
-        interface = std::lower_bound(vbounds.begin(), vbounds.end(), pos-0.5*OrderedAxis::MIN_DISTANCE) - vbounds.begin() + 1; // OrderedAxis::MIN_DISTANCE to compensate for truncation errors
-        if (interface > vbounds.size()) interface = vbounds.size();
-        pos = vbounds[interface-1]; if (abs(pos) < OrderedAxis::MIN_DISTANCE) pos = 0.;
-        Solver::writelog(LOG_DEBUG, "Setting interface at position {:g} (mesh index: {:d})", pos, interface);
+        if (pos != interface_position) {
+            this->invalidate();
+            interface_position = pos;
+        }
     }
 
     /**
@@ -346,13 +358,13 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
      * \param path path specifying object in the geometry
      */
     void setInterfaceOn(const shared_ptr<const GeometryObject>& object, const PathHints* path=nullptr) {
-        if (vbounds.empty()) setup_vbounds();
         auto boxes = this->geometry->getObjectBoundingBoxes(object, path);
         if (boxes.size() != 1) throw NotUniqueObjectException();
-        interface = std::lower_bound(vbounds.begin(), vbounds.end(), boxes[0].lower.vert()-0.5*OrderedAxis::MIN_DISTANCE) - vbounds.begin() + 1;
-        if (interface > vbounds.size()) interface = vbounds.size();
-        double pos = vbounds[interface-1]; if (abs(pos) < OrderedAxis::MIN_DISTANCE) pos = 0.;
-        Solver::writelog(LOG_DEBUG, "Setting interface at position {:g} (mesh index: {:d})", pos, interface);
+        if (interface_position != boxes[0].lower.vert()) {
+            this->invalidate();
+            interface_position = boxes[0].lower.vert();
+            Solver::writelog(LOG_DEBUG, "Setting interface at position {:g}", interface_position);
+        }
     }
 
     /**

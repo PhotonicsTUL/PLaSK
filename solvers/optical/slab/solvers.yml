@@ -71,6 +71,25 @@
       default: true
       help: >
         Should similar layers be grouped for better performance.
+    - &temp-diff
+      attr: temp-diff
+      label: Maximum group <i>ΔT</i>
+      type: float
+      unit: K
+      help: >
+        Maximum temperature difference between the layers in one group. If a temperature in a single layer
+        varies vertically more than this value, the layer is split into two and put into separate groups.
+        If this is empty, temperature gradient is ignored in layers grouping.
+    - &temp-dist
+      attr: temp-dist
+      label: Temperature probing step
+      type: float
+      unit: µm
+      default: 0.05
+      help: >
+        Approximate lateral distance of the points in which the temperature is probed to decide about
+        the temperature difference in one layer. This is also the minimum thickness of sublayers resulting
+        from temperature-gradient division.
 
   - tag: mode
     label: Mode Properties
@@ -137,21 +156,11 @@
     help: >
       Matching interface position in the stack.
     attrs:
-    - attr: index
-      label: Layer index
-      type: int
-      conflicts:
-      - attr: position
-      - attr: object
-      - attr: path
-      help: >
-        Index of the layer, below which the interface is located.
     - attr: position
       label: Position
       type: float
       unit: µm
       conflicts:
-      - attr: index
       - attr: object
       - attr: path
       help: >
@@ -161,7 +170,6 @@
       label: Object name
       type: geometry object
       conflicts:
-      - attr: index
       - attr: position
       help: >
         Name of the geometry object below which the interface is located.
@@ -169,7 +177,6 @@
       label: Object path
       type: geometry path
       conflicts:
-      - attr: index
       - attr: position
       help: >
         Optional path name, specifying particular instance of the object given in the object attribute.
@@ -446,6 +453,8 @@
     - *dct
     - *smooth
     - *group-layers
+    - *temp-diff
+    - *temp-dist
 
   - tag: mode
     label: Mode Properties
@@ -641,6 +650,8 @@
         a finite domain (geometry + PMLs). For infinite domain, the field is represented by its Hankel transform.
     - *size
     - *group-layers
+    - *temp-diff
+    - *temp-dist
     - attr: integrals-error
       label: Maximum integration error
       type: float

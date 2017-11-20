@@ -7,6 +7,9 @@
 
 namespace plask {
 
+/**
+ * Abstract class to derive all mesh axes from.
+ */
 class PLASK_API MeshAxis: public MeshD<1> {
 
 public:
@@ -52,6 +55,28 @@ protected:
     /// Throw exception if this mesh has less than two point.
     void beforeCalcMidpointMesh() const;
 };
+
+
+/**
+ * A trivial axis that contains only one point.
+ */
+struct OnePointAxis: MeshAxis {
+
+    double value;
+
+    /**
+     * Create the trivial axis.
+     * \param val value of the single point in the axis
+     */
+    OnePointAxis(double val): value(val) {}
+
+    std::size_t size() const override { return 1; }
+
+    double at(std::size_t) const override { return value; }
+
+    bool isIncreasing() const override { return true; }
+};
+
 
 }   // namespace plask
 

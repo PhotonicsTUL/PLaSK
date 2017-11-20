@@ -26,7 +26,7 @@ class Reflection3D_Test(unittest.TestCase):
         geom = geometry.Cartesian3D(align, back='periodic', front='periodic', left='periodic', right='periodic')
         self.solver = Fourier3D()
         self.solver.geometry = geom
-        self.solver.interface = 1
+        self.solver.set_interface(0.5)
         self.solver.wavelength = 1000.
         self.solver.smooth = 0.
         self.solver.size = 11, 11        # number of material coefficients in each direction 4*11+1 = 45
