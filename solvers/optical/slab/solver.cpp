@@ -280,13 +280,13 @@ void SlabSolver<BaseT>::setupLayers()
 
     assert(vbounds->size() == stack.size()-1);
     assert(verts->size() == stack.size());
+    assert(layers.size() == lcount);
 
     // Split groups with too large temperature gradient
     // We are using CLINK naive algorithm for this purpose
-    if (inTemperature.hasProvider() && !isnan(max_temp_diff) && !isinf(max_temp_diff)) {
+    if (group_layers && inTemperature.hasProvider() && !isnan(max_temp_diff) && !isinf(max_temp_diff)) {
         auto temp = inTemperature(adapter.mesh);
-        size_t nl = layers.size(),  // number of idependent layers to consider (stays fixed)
-               ll = layers.size();  // number of idependent layers in the stack (increases as new layers are added)
+        size_t nl = lcount;     // number of idependent layers to consider (stays fixed)
         for (size_t l = 0; l != nl; ++l) {
             std::vector<size_t> indices;
             std::list<std::list<size_t>> groups;
@@ -339,8 +339,8 @@ void SlabSolver<BaseT>::setupLayers()
             ListIterator g = groups.begin();
             for (++g; g != groups.end(); ++g) {
                 for (ItemIterator i = g->begin(); i != g->end(); ++i)
-                    stack[indices[*i]] = ll;
-                ++ll;
+                    stack[indices[*i]] = lcount;
+                ++lcount;
             }
         }
     }

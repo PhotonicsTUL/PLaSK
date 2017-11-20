@@ -66,7 +66,7 @@ class TempGradientTest(unittest.TestCase):
             for i,c in enumerate(stack[1:-1]):
                 axvspan(vaxis[i], vaxis[i+1], color=cmap(f*c), alpha=0.5)
             axvspan(vaxis[-1], 22., color=cmap(f*stack[-1]), alpha=0.5)
-            plot(centers, [302.] * len(centers), 'w.')
+            plot(centers, self.temp.interpolate(mesh.Rectangular2D([0.5], centers), 'linear'), 'r.')
             for v in vaxis:
                 axvline(v, color='k', lw=0.5)
             for t in temp:
