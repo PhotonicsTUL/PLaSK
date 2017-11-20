@@ -65,7 +65,7 @@ set(PLASK_PATH "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask")
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 execute_process(COMMAND git show -s --pretty=format:%cd.%h --date=short WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                RESULT_VARIABLE git_version_ok OUTPUT_VARIABLE PLASK_VERSION)  # old git does not have --date=format
+                RESULT_VARIABLE git_version_ok OUTPUT_VARIABLE PLASK_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)  # old git does not have --date=format
 if("${git_version_ok}" STREQUAL "0")
     string(REPLACE "-" "." PLASK_VERSION "${PLASK_VERSION}")
 else()
