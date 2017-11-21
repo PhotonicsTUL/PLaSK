@@ -211,6 +211,10 @@
   <generator method="smooth" name="sss" type="rectangular3d">
     <steps small0="0.005" small1="0.05" small2="0.05" factor="1.2"/>
   </generator>
+  <generator method="regular" name="reg" type="rectangular2d">
+    <spacing every="0.25"/>
+  </generator>
+  <generator method="simple" name="spl" type="rectangular2d"/>
 </grids>
 
 <solvers>
@@ -297,6 +301,10 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor i
 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure \
 dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non \
 proident, sunt in culpa qui officia deserunt mollit anim id est laborum.""")
+
+def p():
+    print 1
+    print(2); print 3
 
 import os
 import sys

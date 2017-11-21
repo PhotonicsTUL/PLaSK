@@ -7,6 +7,7 @@
 #include <plask/geometry/space.h>
 #include <plask/geometry/path.h>
 #include <plask/mesh/mesh.h>
+#include <plask/mesh/generator_rectangular.h>
 
 // see: http://stackoverflow.com/questions/19987448/is-there-an-easy-way-to-write-utf-8-octets-in-visual-studio
 #ifndef _MSC_VER
@@ -16,6 +17,12 @@
 namespace plask { namespace python {
 
 extern AxisNames current_axes;
+
+template <typename SpaceType>
+static shared_ptr<RectangularMesh<SpaceType::DIM>> get_grid(const shared_ptr<SpaceType>& self) {
+    return makeGeometryGrid(self->getChild());
+}
+
 
 std::string Geometry_getAxes(const Geometry& self) {
     return self.axisNames.str();
@@ -652,6 +659,11 @@ void register_calculation_spaces() {
         .def("object_contains", &SpaceObjectIncludesPoints0<Geometry2DCartesian>, (py::arg("object"), "mesh"))
 //         .def("get_subspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
 //              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and edges of the new space")
+        .def("get_grid", get_grid<Geometry2DCartesian>,
+             "Get rectangular grid for space.\n\n"
+             "Return rectangular mesh that has lines along the edges of all the geometry\n"
+             "objects. In some objects are non-rectangular or non-uniform, they are divided\n"
+             "according to their settings.")
     ;
 
     py::class_<Geometry2DCylindrical, shared_ptr<Geometry2DCylindrical>, py::bases<Geometry>>("Cylindrical2D",
@@ -878,6 +890,11 @@ void register_calculation_spaces() {
         .def("object_contains", &SpaceObjectIncludesPoints0<Geometry2DCylindrical>, (py::arg("object"), "mesh"))
 //         .def("get_subspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
 //              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and edges of the new space")
+        .def("get_grid", get_grid<Geometry2DCylindrical>,
+             "Get rectangular grid for space.\n\n"
+             "Return rectangular mesh that has lines along the edges of all the geometry\n"
+             "objects. In some objects are non-rectangular or non-uniform, they are divided\n"
+             "according to their settings.")
     ;
 
     py::class_<Geometry3D, shared_ptr<Geometry3D>, py::bases<Geometry>>("Cartesian3D",
@@ -1107,6 +1124,11 @@ void register_calculation_spaces() {
         .def("object_contains", &SpaceObjectIncludesPoints0<Geometry3D>, (py::arg("object"), "mesh"))
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry3D>, 2),
 //              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and edges of the new space")
+        .def("get_grid", get_grid<Geometry3D>,
+             "Get rectangular grid for space.\n\n"
+             "Return rectangular mesh that has lines along the edges of all the geometry\n"
+             "objects. In some objects are non-rectangular or non-uniform, they are divided\n"
+             "according to their settings.")
     ;
 
     py::implicitly_convertible<shared_ptr<GeometryD<2>>, shared_ptr<Geometry>>();

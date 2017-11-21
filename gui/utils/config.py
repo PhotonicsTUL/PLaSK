@@ -110,29 +110,31 @@ def _get_launchers():
     return [l.name for l in LAUNCHERS]
 
 
-def CheckBox(entry, help=None):
-    return lambda parent: ConfigDialog.CheckBox(entry, help=help, parent=parent)
+def CheckBox(entry, help=None, needs_restart=False):
+    return lambda parent: ConfigDialog.CheckBox(entry, help=help, parent=parent, needs_restart=needs_restart)
 
-def Combo(entry, options, help=None):
-    return lambda parent: ConfigDialog.Combo(entry, options, help=help, parent=parent)
+def Combo(entry, options, help=None, needs_restart=False):
+    return lambda parent: ConfigDialog.Combo(entry, options, help=help, parent=parent, needs_restart=needs_restart)
 
-def SpinBox(entry, min=None, max=None, help=None):
-    return lambda parent: ConfigDialog.SpinBox(entry, min=min, max=max, help=help, parent=parent)
+def SpinBox(entry, min=None, max=None, help=None, needs_restart=False):
+    return lambda parent: ConfigDialog.SpinBox(entry, min=min, max=max, help=help, parent=parent,
+                                               needs_restart=needs_restart)
 
-def FloatSpinBox(entry, step=None, min=None, max=None, help=None):
-    return lambda parent: ConfigDialog.FloatSpinBox(entry, step=step, min=min, max=max, help=help, parent=parent)
+def FloatSpinBox(entry, step=None, min=None, max=None, help=None, needs_restart=False):
+    return lambda parent: ConfigDialog.FloatSpinBox(entry, step=step, min=min, max=max, help=help, parent=parent,
+                                                    needs_restart=needs_restart)
 
-def Color(entry, help=None):
-    return lambda parent: ConfigDialog.Color(entry, help=help, parent=parent)
+def Color(entry, help=None, needs_restart=False):
+    return lambda parent: ConfigDialog.Color(entry, help=help, parent=parent, needs_restart=needs_restart)
 
-def Syntax(entry, help=None):
-    return lambda parent: ConfigDialog.Syntax(entry, help=help, parent=parent)
+def Syntax(entry, help=None, needs_restart=False):
+    return lambda parent: ConfigDialog.Syntax(entry, help=help, parent=parent, needs_restart=needs_restart)
 
-def Font(entry, help=None):
-    return lambda parent: ConfigDialog.Font(entry, help=help, parent=parent)
+def Font(entry, help=None, needs_restart=False):
+    return lambda parent: ConfigDialog.Font(entry, help=help, parent=parent, needs_restart=needs_restart)
 
-def Path(entry, title, mask, help=None):
-    return lambda parent: ConfigDialog.Path(entry, title, mask, help=help, parent=parent)
+def Path(entry, title, mask, help=None, needs_restart=False):
+    return lambda parent: ConfigDialog.Path(entry, title, mask, help=help, parent=parent, needs_restart=needs_restart)
 
 
 CONFIG_WIDGETS = OrderedDict([
@@ -147,7 +149,7 @@ CONFIG_WIDGETS = OrderedDict([
             ("Icons theme (requires restart)",
              Combo('main_window/icons_theme',
                    ['Tango', 'Breeze'] if os.name == 'nt' else ['system', 'Tango', 'Breeze'],
-                   "Main window icons theme.")),
+                   "Main window icons theme.", needs_restart=True)),
             ("Automatically check for updates",
              CheckBox('updates/automatic_check',
                       "If this option is checked, PLaSK will automatically check for a new version on startup.")),
@@ -382,16 +384,20 @@ class ConfigProxy(object):
 class ConfigDialog(QDialog):
 
     class CheckBox(QCheckBox):
-        def __init__(self, entry, parent=None, help=None):
+        def __init__(self, entry, parent=None, help=None, needs_restart=False):
             super(ConfigDialog.CheckBox, self).__init__(parent)
             self.entry = entry
             self.setChecked(bool(CONFIG[entry]))
             if help is not None: self.setWhatsThis(help)
+            self.needs_restart = needs_restart
+        @property
+        def changed(self):
+            return CONFIG[self.entry] != self.isChecked()
         def save(self):
             CONFIG[self.entry] = self.isChecked()
 
     class Combo(QComboBox):
-        def __init__(self, entry, options, parent=None, help=None):
+        def __init__(self, entry, options, parent=None, help=None, needs_restart=False):
             super(ConfigDialog.Combo, self).__init__(parent)
             self.entry = entry
             if callable(options):
@@ -404,22 +410,30 @@ class ConfigDialog(QDialog):
             self.setCurrentIndex(index)
             if help is not None:
                 self.setWhatsThis(help)
+            self.needs_restart = needs_restart
+        @property
+        def changed(self):
+            return CONFIG[self.entry] != self.currentText()
         def save(self):
             CONFIG[self.entry] = self.currentText()
 
     class SpinBox(QSpinBox):
-        def __init__(self, entry, parent=None, min=None, max=None, help=None):
+        def __init__(self, entry, parent=None, min=None, max=None, help=None, needs_restart=False):
             super(ConfigDialog.SpinBox, self).__init__(parent)
             self.entry = entry
             if min is not None: self.setMinimum(min)
             if max is not None: self.setMaximum(min)
             self.setValue(int(CONFIG[entry]))
             if help is not None: self.setWhatsThis(help)
+            self.needs_restart = needs_restart
+        @property
+        def changed(self):
+            return CONFIG[self.entry] != self.value()
         def save(self):
             CONFIG[self.entry] = self.value()
 
     class FloatSpinBox(QDoubleSpinBox):
-        def __init__(self, entry, parent=None, step=None, min=None, max=None, help=None):
+        def __init__(self, entry, parent=None, step=None, min=None, max=None, help=None, needs_restart=False):
             super(ConfigDialog.FloatSpinBox, self).__init__(parent)
             self.entry = entry
             if min is not None: self.setMinimum(min)
@@ -429,11 +443,15 @@ class ConfigDialog(QDialog):
                 self.setDecimals(int(ceil(-log10(step))))
             self.setValue(float(CONFIG[entry]))
             if help is not None: self.setWhatsThis(help)
+            self.needs_restart = needs_restart
+        @property
+        def changed(self):
+            return CONFIG[self.entry] != self.value()
         def save(self):
             CONFIG[self.entry] = self.value()
 
     class Color(QToolButton):
-        def __init__(self, entry, parent=None, help=None):
+        def __init__(self, entry, parent=None, help=None, needs_restart=False):
             super(ConfigDialog.Color, self).__init__(parent)
             self.entry = entry
             self._color = CONFIG[entry]
@@ -441,6 +459,7 @@ class ConfigDialog(QDialog):
             if help is not None: self.setWhatsThis(help)
             self.clicked.connect(self.on_press)
             self.setSizePolicy(QSizePolicy.Expanding, self.sizePolicy().verticalPolicy())
+            self.needs_restart = needs_restart
         def on_press(self):
             dlg = QColorDialog(self.parent())
             if self._color:
@@ -448,11 +467,14 @@ class ConfigDialog(QDialog):
             if dlg.exec_():
                 self._color = dlg.currentColor().name()
                 self.setStyleSheet(u"background-color: {};".format(self._color))
+        @property
+        def changed(self):
+            return CONFIG[self.entry] != self._color
         def save(self):
             CONFIG[self.entry] = self._color
 
     class Syntax(QWidget):
-        def __init__(self, entry, parent=None, help=None):
+        def __init__(self, entry, parent=None, help=None, needs_restart=False):
             super(ConfigDialog.Syntax, self).__init__(parent)
             self.entry = entry
             syntax = parse_highlight(CONFIG[entry])
@@ -475,6 +497,8 @@ class ConfigDialog(QDialog):
             self.italic.setChecked(syntax.get('italic', False))
             layout.addWidget(self.italic)
             if help is not None: self.setWhatsThis(help)
+            self.needs_restart = needs_restart
+            self.changed = False
         def on_color_press(self):
             if QApplication.keyboardModifiers() == Qt.CTRL:
                 self._color = None
@@ -486,6 +510,7 @@ class ConfigDialog(QDialog):
             if dlg.exec_():
                 self._color = dlg.currentColor().name()
                 self.color_button.setStyleSheet(u"background-color: {};".format(self._color))
+                self.changed = True
         def save(self):
             syntax = []
             if self._color is not None: syntax.append('color=' + self._color)
@@ -494,7 +519,7 @@ class ConfigDialog(QDialog):
             CONFIG[self.entry] = ', '.join(syntax)
 
     class Font(QPushButton):
-        def __init__(self, entry, parent=None, help=None):
+        def __init__(self, entry, parent=None, help=None, needs_restart=False):
             super(ConfigDialog.Font, self).__init__(parent)
             self.entry = entry
             self.current_font = QFont()
@@ -507,6 +532,7 @@ class ConfigDialog(QDialog):
                 self.setWhatsThis(help)
             self.clicked.connect(self.on_press)
             self.setSizePolicy(QSizePolicy.Expanding, self.sizePolicy().verticalPolicy())
+            self.needs_restart = needs_restart
         def on_press(self):
             dlg = QFontDialog(self.parent())
             dlg.setCurrentFont(self.current_font)
@@ -514,11 +540,14 @@ class ConfigDialog(QDialog):
                 self.current_font = dlg.selectedFont()
                 self.setText("{} {}".format(self.current_font.family(), self.current_font.pointSize()))
                 self.setFont(self.current_font)
+        @property
+        def changed(self):
+            return CONFIG[self.entry] != self.current_font.toString().split(',')
         def save(self):
             CONFIG[self.entry] = self.current_font.toString().split(',')
 
     class Path(QWidget):
-        def __init__(self, entry, title,  mask, parent=None, help=None):
+        def __init__(self, entry, title,  mask, parent=None, help=None, needs_restart=False):
             super(ConfigDialog.Path, self).__init__(parent)
             layout = QHBoxLayout()
             layout.setContentsMargins(0, 0, 0, 0)
@@ -538,6 +567,7 @@ class ConfigDialog(QDialog):
             self.mask = mask
             if help is not None:
                 self.setWhatsThis(help)
+            self.needs_restart = needs_restart
         def pushed(self):
             dirname = os.path.dirname(self.edit.text())
             if not dirname:
@@ -545,6 +575,9 @@ class ConfigDialog(QDialog):
             filename = QFileDialog.getOpenFileName(self, "Select {}".format(self.title), dirname, self.mask)
             if type(filename) == tuple: filename = filename[0]
             if filename: self.edit.setText(filename)
+        @property
+        def changed(self):
+            return CONFIG[self.entry] != self.edit.text()
         def save(self):
             CONFIG[self.entry] = self.edit.text()
 
@@ -565,7 +598,6 @@ class ConfigDialog(QDialog):
         self.items = []
 
         for cat, tabs in CONFIG_WIDGETS.items():
-            # page = QToolBox()
             page = QTabWidget()
             stack.addWidget(page)
             categories.addItem(cat)
@@ -586,6 +618,49 @@ class ConfigDialog(QDialog):
                         self.items.append(widget)
                         tab_layout.addRow(item[0], widget)
 
+        page = QTabWidget()
+        tab = QWidget()
+        tab_layout = QVBoxLayout()
+        tab.setLayout(tab_layout)
+        label = QLabel("Select active plugins. After making any changes here, you must restart PLaSK GUI.")
+        tab_layout.addWidget(label)
+        # from .widgets import VerticalScrollArea
+        # frame = VerticalScrollArea()
+        frame = QScrollArea()
+        frame.setFrameStyle(QFrame.StyledPanel | QFrame.Sunken)
+        frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        frame.setBackgroundRole(QPalette.Base)
+        frame.setAutoFillBackground(True)
+        tab_layout.addWidget(frame)
+        page.addTab(tab, "Plugins")
+        inframe = QWidget()
+        inframe_layout = QGridLayout()
+        inframe_layout.setAlignment(Qt.AlignTop)
+        inframe_layout.setHorizontalSpacing(8)
+        inframe_layout.setVerticalSpacing(16)
+        inframe.setLayout(inframe_layout)
+        row = 0
+        from .. import PLUGINS
+        for plugin, name, desc in PLUGINS:
+            entry = 'plugins/{}'.format(plugin)
+            if CONFIG[entry] is None: CONFIG[entry] = True
+            checkbox = ConfigDialog.CheckBox(entry, help=desc, needs_restart=True)
+            checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            label = QLabel()
+            label.setTextFormat(Qt.RichText)
+            if desc is not None:
+                label.setText('{}<br/><span style="font-size: small">{}</span>'.format(name, desc))
+            else:
+                label.setText(name)
+            label.setBuddy(checkbox)
+            inframe_layout.addWidget(checkbox, row, 0)
+            inframe_layout.addWidget(label, row, 1)
+            self.items.append(checkbox)
+            row += 1
+        frame.setWidget(inframe)
+        stack.addWidget(page)
+        categories.addItem("Plugins")
+
         categories.setFixedWidth(categories.sizeHintForColumn(0) + 4)
 
         buttons = QDialogButtonBox(
@@ -600,12 +675,21 @@ class ConfigDialog(QDialog):
         self.resize(800, 600)
 
     def apply(self):
+        need_restart = False
         for item in self.items:
+            if item.needs_restart and item.changed:
+                need_restart = True
             item.save()
         CONFIG.sync()
         from .widgets import EDITOR_FONT
         EDITOR_FONT.fromString(','.join(CONFIG['editor/font']))
         self.parent().config_changed.emit()
+        if need_restart:
+            QMessageBox.information(None,
+                                    "Restart Needed",
+                                    "Some of the settings you have changed require restart to take effect. "
+                                    "Save your work, close PLaSK and open it again.")
+
 
     def accept(self):
         self.apply()

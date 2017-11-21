@@ -365,6 +365,8 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                         if (solver->stack[k] == layer) { T += temperature[v]; nt++; }
                     T /= nt;
                     cell[j] = material->NR(lam, T);
+                    if (isnan(cell[j].c00) || isnan(cell[j].c11) || isnan(cell[j].c22) || isnan(cell[j].c01))
+                        throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K", material->name(), lam, T);
                     if (cell[j].c01 != 0.) {
                         if (symmetric_long() || symmetric_tran()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
                     }

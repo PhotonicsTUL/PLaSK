@@ -10,6 +10,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+# plugin: RPSMES Import/Export
+# description: Add an import/export of RPSMES *.dan and *.efm files.
+
 from importlib import import_module
 
 import gui

@@ -39,8 +39,8 @@ void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[end]);
 
-    double H = (end == 0 || end == solver->vbounds.size())?
-               0 : abs(solver->vbounds[end] - solver->vbounds[end-1]);
+    double H = (end == 0 || end == solver->vbounds->size())?
+               0 : abs(solver->vbounds->at(end) - solver->vbounds->at(end-1));
     for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
 
     mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P = phas * P * phas
@@ -128,7 +128,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
         assert(!P.isnan());
 
         if (n != start) {
-            double H = solver->vbounds[n] - solver->vbounds[n-1];
+            double H = solver->vbounds->at(n) - solver->vbounds->at(n-1);
             for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
             assert(!phas.isnan());
             mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P = phas * P * phas
@@ -272,7 +272,7 @@ void ReflectionTransfer::determineFields()
 
         gamma = diagonalizer->Gamma(curr);
 
-        double H = (start == 0 || start == count-1)? 0. : (solver->vbounds[start] - solver->vbounds[start-1]);
+        double H = (start == 0 || start == count-1)? 0. : (solver->vbounds->at(start) - solver->vbounds->at(start-1));
         for (int i = 0; i < N; i++)
             phas[i] = exp(-I*gamma[i]*H);
 
@@ -318,7 +318,7 @@ void ReflectionTransfer::determineFields()
             } else
                 for (int i = 0; i < N; i++) B2[i] = 2. * B1[i];
 
-            H = (n+inc == end)? 0 : (solver->vbounds[n+inc] - solver->vbounds[n+inc-1]);
+            H = (n+inc == end)? 0 : (solver->vbounds->at(n+inc) - solver->vbounds->at(n+inc-1));
             for (int i = 0; i < N; i++)
                 B2[i] *= 0.5 * exp(-I*gamma[i]*H);                                  // B2 := 1/2 * phas * B2
         }
@@ -436,7 +436,7 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
             for (int i = 0; i < N; i++) B2[i] = 2. * B1[i];
         }
 
-        H = (n+inc != end)? solver->vbounds[n+inc] - solver->vbounds[n+inc-1] : 0.;
+        H = (n+inc != end)? solver->vbounds->at(n+inc) - solver->vbounds->at(n+inc-1) : 0.;
         if (n+inc != end) {
             for (int i = 0; i < N; i++)
                 B2[i] *= 0.5 * exp(-I*gamma[i]*H);                                  // B2 := 1/2 * phas * B2
@@ -471,7 +471,7 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
         cvector& F2 = fields[n].F;
         cvector& B2 = fields[n].B;
         gamma = diagonalizer->Gamma(solver->stack[n]);
-        H = (n < count-1 && n > 0)? solver->vbounds[n] - solver->vbounds[n-1] : 0.;
+        H = (n < count-1 && n > 0)? solver->vbounds->at(n) - solver->vbounds->at(n-1) : 0.;
         for (int i = 0; i < N; i++) {
             dcomplex phas = exp(-I*gamma[i]*H);
             dcomplex t = B2[i] / phas;
@@ -496,8 +496,8 @@ cvector ReflectionTransfer::getFieldVectorE(double z, int n)
 
     if (n >= solver->interface) {
         z = - z;
-        if (n != 0 && n != solver->vbounds.size())
-            z += solver->vbounds[n] - solver->vbounds[n-1];
+        if (n != 0 && n != solver->vbounds->size())
+            z += solver->vbounds->at(n) - solver->vbounds->at(n-1);
     }
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
@@ -528,8 +528,8 @@ cvector ReflectionTransfer::getFieldVectorH(double z, int n)
 
     if (n >= solver->interface) {
         z = - z;
-        if (n != 0 && n != solver->vbounds.size())
-            z += solver->vbounds[n] - solver->vbounds[n-1];
+        if (n != 0 && n != solver->vbounds->size())
+            z += solver->vbounds->at(n) - solver->vbounds->at(n-1);
     }
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
@@ -547,7 +547,7 @@ cvector ReflectionTransfer::getFieldVectorH(double z, int n)
         H[i] = ef - eb;
     }
 
-    if (n == 0 || n == solver->vbounds.size()) {
+    if (n == 0 || n == solver->vbounds->size()) {
         // In the outer layers multiply H by -1 where necessary for propagating wave
         for (int i = 0; i < N; i++)
             if (real(gamma[i]) < -SMALL) H[i] = - H[i];

@@ -57,7 +57,7 @@ static inline py::object arrayFromVec2D(cvector data, bool sep, int dim=1) {
 
 
 template <typename SolverT>
-static py::object Solver_getInterface(const SolverT& self) {
+static py::object Solver_getInterface(SolverT& self) {
     size_t interface = self.getInterface();
     if (interface == size_t(-1)) return py::object();
     else return py::object(interface);
@@ -65,8 +65,7 @@ static py::object Solver_getInterface(const SolverT& self) {
 
 template <typename SolverT>
 static void Solver_setInterface(SolverT& self, const py::object& value) {
-    if (value == py::object()) self.setInterface(-1);
-    else self.setInterface(py::extract<size_t>(value));
+    throw AttributeError("Setting interface by layer index is not supported anymore (set it by object or position)");
 }
 
 
@@ -83,12 +82,25 @@ static void Solver_setLam0(SolverT& self, py::object value) {
 }
 
 template <typename SolverT>
-static py::tuple SlabSolver_getStack(const SolverT& self) {
+static py::tuple SlabSolver_getStack(SolverT& self) {
+    self.initCalculation();
     py::list result;
     for (auto i: self.getStack()) {
         result.append(i);
     }
     return py::tuple(result);
+}
+
+template <typename SolverT>
+static shared_ptr<OrderedAxis> SlabSolver_getLayerEdges(SolverT& self) {
+    self.initCalculation();
+    return make_shared<OrderedAxis>(*self.vbounds);
+}
+
+template <typename SolverT>
+static shared_ptr<OrderedAxis> SlabSolver_getLayerCenters(SolverT& self) {
+    self.initCalculation();
+    return make_shared<OrderedAxis>(*self.verts);
 }
 
 // template <typename SolverT>
@@ -321,7 +333,18 @@ py::object Solver_computeTransmittivity(SolverT* self,
     }, wavelength);
 }
 
+template <typename SolverT>
+py::object get_max_temp_diff(SolverT* self) {
+    double value = self->getMaxTempDiff();
+    if (isnan(value) || isinf(value)) return py::object();
+    return py::object(value);
+}
 
+template <typename SolverT>
+void set_max_temp_diff(SolverT* self, py::object value) {
+    if (value == py::object()) self->setMaxTempDiff(NAN);
+    else self->setMaxTempDiff(py::extract<double>(value));
+}
 
 
 
@@ -341,10 +364,24 @@ inline void export_base(Class solver) {
                "    pos (float): Position, near which the interface will be located.", py::arg("pos"));
     solver.def_readwrite("smooth", &Solver::smooth, "Smoothing parameter for material boundaries (increases convergence).");
     solver.add_property("stack", &SlabSolver_getStack<Solver>, "Stack of distinct layers.");
+    solver.add_property("layer_edges", &SlabSolver_getLayerEdges<Solver>, "Vertical posiotions of egges of each layer.");
+    solver.add_property("layer_centers", &SlabSolver_getLayerCenters<Solver>,
+                        "Vertical posiotions of centers of each layer.\n\n"
+                        "At these positions materials and temperatures are probed.\n");
     // solver.add_property("layer_sets", &SlabSolver_getLayerSets<Solver>, "Vertical positions of layers in each layer set.");
     solver.add_property("group_layers", &Solver::getGroupLayers, &Solver::setGroupLayers,
                         "Layer grouping switch.\n\n"
                         "If this property is ``True``, similar layers are grouped for efficiency.");
+    solver.add_property("temp_diff", &get_max_temp_diff<Solver>, &set_max_temp_diff<Solver>,
+                        "Maximum temperature difference between the layers in one group.\n\n"
+                        "If a temperature in a single layer varies vertically more than this value,\n"
+                        "the layer is split into two and put into separate groups. If this is empty,\n"
+                        "temperature gradient is ignored in layers grouping.\n\n");
+    solver.add_property("temp_dist", &Solver::getTempDist, &Solver::setTempDist,
+                        "Temperature probing step.\n\n"
+                        "If :attr:`temp_diff` is not ``None``, the temperature is laterally probed\n"
+                        "in points approximately separated by this distance. This is also the minimum\n"
+                        "thickness of sublayers resulting from temperature-gradient division.\n");
     solver.template add_receiver<ReceiverFor<Temperature, typename Solver::SpaceType>, Solver>("inTemperature", &Solver::inTemperature, "");
     solver.template add_receiver<ReceiverFor<Gain, typename Solver::SpaceType>, Solver>("inGain", &Solver::inGain, "");
     solver.add_provider("outRefractiveIndex", &Solver::outRefractiveIndex, "");
@@ -356,7 +393,7 @@ inline void export_base(Class solver) {
     solver.def_readonly("outMagneticField", reinterpret_cast<ProviderFor<LightH, typename Solver::SpaceType> Solver::*>(&Solver::outLightH),
             "Alias for :attr:`outLightH`.");
     solver.add_provider("outElectricField", &Solver::outLightE, "This is an alias for :attr:`outLightE`.");
-    solver.add_provider("outMagnrticField", &Solver::outLightH, "This is an alias for :attr:`outLightH`.");
+    solver.add_provider("outMagneticField", &Solver::outLightH, "This is an alias for :attr:`outLightH`.");
     solver.def_readwrite("root", &Solver::root,
                          "Configuration of the root searching algorithm.\n\n"
                          ROOTDIGGER_ATTRS_DOC

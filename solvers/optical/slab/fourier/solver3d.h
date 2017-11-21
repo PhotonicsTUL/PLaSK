@@ -7,6 +7,10 @@
 #include "../reflection.h"
 #include "expansion3d.h"
 
+#ifdef minor
+#   undef minor
+#endif
+
 namespace plask { namespace optical { namespace slab {
 
 /**

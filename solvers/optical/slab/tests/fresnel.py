@@ -89,7 +89,6 @@ class FresnelTest(unittest.TestCase):
         solver = Fourier2D()
         solver.geometry = geo
         solver.size = 3
-        solver.interface = 1
 
         solver.polarization = 'El'
         with Refl(solver, 'tran', 'El') as refl:
@@ -150,7 +149,6 @@ class FresnelTest(unittest.TestCase):
         solver = Fourier3D()
         solver.geometry = geo
         solver.size = 1,1
-        solver.interface = 1
 
         with Refl(solver, 'long', 'El') as refl:
             for a in angles:

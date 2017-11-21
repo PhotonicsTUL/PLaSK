@@ -15,11 +15,11 @@ if(MSVC)    # flags needed by Visual Studio:
     add_definitions(-D_USE_MATH_DEFINES -DNOMINMAX -D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS)
     # _D_USE_MATH_DEFINES gives M_PI, etc. in <cmath>, maybe it is better idea to define this just before including <cmath>
     # NOMINMAX prevents windows header from defining min, max macros, see http://stackoverflow.com/questions/1904635/warning-c4003-and-errors-c2589-and-c2059-on-x-stdnumeric-limitsintmax
-    # _SCL_SECURE_NO_WARNINGS and D_CRT_SECURE_NO_WARNINGS hide many warnings which are coused by boost and cppforamt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
-    add_definitions(-DBOOST_ALL_DYN_LINK)   #MSVC+cmake require this to properly detect dynamic boost libraries
-    add_definitions(-DXML_STATIC)           #We use static expat - TODO: this is needed only for libplask, static/dynamic should be detected
-    add_definitions(-DFMT_HEADER_ONLY)  #don't compile cppformat, workaround many linker errors
-    # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++14")
+    # _SCL_SECURE_NO_WARNINGS and D_CRT_SECURE_NO_WARNINGS hide many warnings which are caused by boost and fmt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
+    add_definitions(-DBOOST_ALL_DYN_LINK)   # MSVC+cmake require this to properly detect dynamic boost libraries
+    add_definitions(-DXML_STATIC)           # We use static expat - TODO: this is needed only for libplask, static/dynamic should be detected
+    add_definitions(-DFMT_HEADER_ONLY)      # don't compile fmt, workaround many linker errors
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++14")
 else(MSVC)
     if(MINGW)
         set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
@@ -68,7 +68,7 @@ set(PLASK_PATH "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask")
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 execute_process(COMMAND git show -s --pretty=format:%cd.%h --date=short WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                RESULT_VARIABLE git_version_ok OUTPUT_VARIABLE PLASK_VERSION)  # old git does not have --date=format
+                RESULT_VARIABLE git_version_ok OUTPUT_VARIABLE PLASK_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)  # old git does not have --date=format
 if("${git_version_ok}" STREQUAL "0")
     string(REPLACE "-" "." PLASK_VERSION "${PLASK_VERSION}")
 else()
@@ -103,8 +103,8 @@ option(PRINT_STACKTRACE_ON_EXCEPTION "Print stack-trace on stderr when plask::Ex
 
 option(PLASK_OPTIONAL_STD "Use std optional (supported by C++17) instead of boost one." OFF)
 
-#TODO if disabled, plask should find and use external cppformat lib.
-#option(PLASK_EXPORTS_CPPFORMAT "Export cppformat symbols in libplask (affects only windows)" ON)
+#TODO if disabled, plask should find and use external fmt lib.
+option(PLASK_EXPORTS_FMT "Export fmt symbols in libplask (affects only windows)" ON)
 
 option(INSTALL_DEV "Install headers to system locations" OFF)
 option(INSTALL_MATERIALS_DEV "Install headers for compuling materials" OFF)
@@ -316,10 +316,10 @@ endif()
 add_subdirectory(extlib/camos)
 add_subdirectory(extlib/fftpacx)
 
-# cppformat
-if (NOT MSVC)
-    list(APPEND plask_src extlib/cppformat/format.cc)
-endif (NOT MSVC)
+# fmt
+if(NOT MSVC AND PLASK_EXPORTS_FMT)
+    list(APPEND plask_src extlib/fmt/format.cc extlib/fmt/ostream.cc)
+endif()
 
 # ---------- PLaSK library --------------------------------------------
 
@@ -349,7 +349,7 @@ set_target_properties(libplask PROPERTIES OUTPUT_NAME plask COMPILE_FLAGS "-DPLA
 if(INSTALL_DEV)
     install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
     install(DIRECTORY solvers/providers DESTINATION include/plask COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
-    install(FILES extlib/cppformat/format.h DESTINATION include/cppformat COMPONENT dev)
+    install(FILES extlib/fmt/format.h DESTINATION include/fmt COMPONENT dev)
     install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
 endif()
 

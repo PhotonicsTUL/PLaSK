@@ -417,7 +417,7 @@ import plask
 import plask.optical.fd
 
 solver = plask.optical.fd.FiniteDifferences2D()
-solver.geometry = plask.geometry.Geometry2DCartesian(plask.geometry.Rectangle(2, 1, "GaN"))
+solver.geometry = plask.geometry.Cartesian2D(plask.geometry.Rectangle(2, 1, "GaN"))
 solver.mesh = plask.mesh.Rectangular2D(Regular(0,2,100), Regular(0,1,100))
 solver.inTemperature = 280
 solver.compute()

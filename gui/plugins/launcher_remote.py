@@ -9,8 +9,11 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+# coding: utf8
 
-# coding utf:8
+# plugin: Remote Launcher
+# description: Launcher allowing to run computations on a remote machine through SSH.<br/>Requires Paramiko.
+
 from __future__ import print_function, unicode_literals
 
 import sys

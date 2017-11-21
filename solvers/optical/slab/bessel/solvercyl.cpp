@@ -36,6 +36,8 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
             group_layers = reader.getAttribute<bool>("group-layers", group_layers);
             lam0 = reader.getAttribute<double>("lam0", NAN);
             always_recompute_gain = reader.getAttribute<bool>("update-gain", always_recompute_gain);
+            max_temp_diff = reader.getAttribute<double>("temp-diff", max_temp_diff);
+            temp_dist = reader.getAttribute<double>("temp-dist", max_temp_diff);
             integral_error = reader.getAttribute<double>("integrals-error", integral_error);
             max_integration_points = reader.getAttribute<size_t>("integrals-points", max_integration_points);
             kscale = reader.getAttribute<double>("k-scale", kscale);
@@ -60,10 +62,7 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
             reader.requireTagEnd();
         } else if (param == "interface") {
             if (reader.hasAttribute("index")) {
-                if (reader.hasAttribute("position")) throw XMLConflictingAttributesException(reader, "index", "position");
-                if (reader.hasAttribute("object")) throw XMLConflictingAttributesException(reader, "index", "object");
-                if (reader.hasAttribute("path")) throw XMLConflictingAttributesException(reader, "index", "path");
-                setInterface(reader.requireAttribute<size_t>("index"));
+                throw XMLException(reader, "Setting interface by layer index is not supported anymore (set it by object or position)");
             } else if (reader.hasAttribute("position")) {
                 if (reader.hasAttribute("object")) throw XMLConflictingAttributesException(reader, "index", "object");
                 if (reader.hasAttribute("path")) throw XMLConflictingAttributesException(reader, "index", "path");
