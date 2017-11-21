@@ -309,6 +309,7 @@ void Manager::load(XMLReader& reader, MaterialsDB& materialsDB,
                     .value("error", LOG_ERROR)
                     .value("error-detail", LOG_ERROR_DETAIL)
                     .value("warning", LOG_WARNING)
+                    .value("important", LOG_IMPORTANT)
                     .value("info", LOG_INFO)
                     .value("result", LOG_RESULT)
                     .value("data", LOG_DATA)
