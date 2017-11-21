@@ -57,7 +57,7 @@ def update_python_scheme():
         'syntax_define': parse_highlight(CONFIG['syntax/python_define']),
         'syntax_loaded': parse_highlight(CONFIG['syntax/python_loaded']),
         'syntax_pylab': parse_highlight(CONFIG['syntax/python_pylab']),
-        'syntax_obsolete': {'color': '#888888', 'underline': True, 'bold': True}
+        'syntax_obsolete': {'color': '#aaaaaa', 'bold': True, 'italic': True}
     }
 update_python_scheme()
 
