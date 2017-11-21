@@ -4,7 +4,7 @@
 #include <plask/plask.hpp>
 #include "rootdigger.h"
 
-namespace plask { namespace solvers { namespace simple_optical {
+namespace plask { namespace optical { namespace simple_optical {
 
 /**
  * This is Doxygen documentation of your solver.
@@ -42,8 +42,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
 	};
 	
      
-     dcomplex vneff;
-     
+	
      plask::optical::simple_optical::RootDigger::Params stripe_root; 
      
      void loadConfiguration(XMLReader& reader, Manager& manager);
@@ -53,11 +52,24 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      virtual void onInitialize() {
 	  if (!geometry) throw NoGeometryException(getId());
      }
-   
+     
+     /// \return current wavelength
+    dcomplex getWavelength() const { return 2e3*M_PI / k0; }
+
+    /**
+     * Set new wavelength
+     * \param wavelength new wavelength
+     */
+    void setWavelength(dcomplex wavelength) {
+        k0 = 2e3*M_PI / wavelength;
+        invalidate();
+    }
    
      void simpleVerticalSolver();
 
      void say_hello();
+     
+     dcomplex get_T_bb(const dcomplex& x, const std::vector< dcomplex >& NR);
    
 protected:
   friend struct RootDigger;
@@ -73,14 +85,16 @@ protected:
   
   shared_ptr<RectangularMesh<2>> mesh;   /// Mesh over which the calculations are performed
   
-  std::vector<std::vector<dcomplex,aligned_allocator<dcomplex>>> nrCache; /// Cached refractive indices
+  std::vector<std::vector<dcomplex>>nrCache; /// Cached refractive indices
   
-  dcomplex detS1(const dcomplex& x, const std::vector<dcomplex,aligned_allocator<dcomplex>>& NR, bool save=false);
+  dcomplex detS1(const dcomplex& x, const std::vector<dcomplex>& NR, bool save=false);
   
   std::vector<Field,aligned_allocator<Field>> yfields; /// Computed horizontal and vertical fields
   
   dcomplex k0;
   
+  std::vector<dcomplex> refractive_index;
+   
 };
   
 }}} // namespace

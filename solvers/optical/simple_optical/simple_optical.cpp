@@ -1,6 +1,6 @@
 #include "simple_optical.h"
 
-namespace plask { namespace solvers { namespace simple_optical {
+namespace plask { namespace optical { namespace simple_optical {
 
   
 
@@ -32,33 +32,35 @@ void SimpleOptical::say_hello()
 void SimpleOptical::simpleVerticalSolver()
 {
     shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
-    std::cout << "mesh: "; for (double p: *mesh->vert()) std::cout<< p << " "; std::cout << std::endl;
-  
-    size_t stripe = mesh->tran()->findIndex(stripex);
-    std::cout<<"stripe: "<<stripe << std::endl;
-  
-    if (stripe < xbegin) stripe = xbegin;
-	  else if (stripe >= xend) stripe = xend-1;
-	  writelog(LOG_DETAIL, "Computing effective index for vertical stripe {0} (polarization {1})", stripe-xbegin, (polarization==TE)?"TE":"TM");
-  
-    Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{0}]", stripe-xbegin), "neff", "det");
-    auto rootdigger = plask::optical::simple_optical::RootDigger::get(this, [&](const dcomplex& x){return this->detS1(x,nrCache[stripe]);}, log_stripe, stripe_root);
-    //if (vneff == 0.) {
-    //       dcomplex maxn = *std::max_element(nrCache[stripe].begin(), nrCache[stripe].end(),
-    //                                         [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
-    //       vneff = 0.999 * real(maxn);
-    //   }
-    //writelog(LOG_DETAIL, "vneff = {0}", vneff);
-    //vneff = rootdigger->find(vneff);
+    shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
+    
+    double Wavelength = 1300.0; // nm
+    k0 = 2e3*M_PI/Wavelength;
+    yend = 3;
+    ybegin = 0;
+    
+    double w = real(2e3*M_PI / k0);
+    double T = 300;
+    double freq = Wavelength/3e8;
+    for (double p: *points->vert())
+    { 
+      refractive_index.push_back( (geometry->getMaterial(vec(0.5, p))->Nr(1300, T)) );
+    }
+    
+    for (const dcomplex& i : refractive_index)
+      std::cout<<i<<std::endl;
+    
+    std::cout<< get_T_bb(freq, refractive_index) << std::endl;
   
   
 }
 
-dcomplex SimpleOptical::detS1(const dcomplex& x, const std::vector< dcomplex, aligned_allocator< dcomplex > >& NR, bool save)
+// x - frequency 
+dcomplex SimpleOptical::detS1(const dcomplex& x, const std::vector< dcomplex >& NR, bool save)
 {
     if (save) yfields[ybegin] = Field(0., 1.);
 
-    std::vector<dcomplex,aligned_allocator<dcomplex>> ky(yend);
+    std::vector<dcomplex> ky(yend);
     for (size_t i = ybegin; i < yend; ++i) {
         ky[i] = k0 * sqrt(NR[i]*NR[i] - x*x);
         if (imag(ky[i]) > 0.) ky[i] = -ky[i];
@@ -97,10 +99,47 @@ dcomplex SimpleOptical::detS1(const dcomplex& x, const std::vector< dcomplex, al
 #endif
     }
 
-    // return s1*s4 - s2*s3;
-
     return T.bb;    // F0 = 0    Bn = 0
 }
+
+dcomplex SimpleOptical::get_T_bb(const dcomplex& x, const std::vector< dcomplex >& NR)
+{
+  
+    std::vector<dcomplex> ky(yend);
+    for (size_t i = ybegin; i < yend; ++i) {
+        ky[i] = k0 * sqrt(NR[i]*NR[i] - x*x);
+        if (imag(ky[i]) > 0.) ky[i] = -ky[i];
+    }
+    
+    std::cout<<"ky:"<<std::endl;
+    for (const dcomplex& i : ky)
+      std::cout<<i<<std::endl;
+    
+   
+    Matrix T = Matrix::eye();
+    for (size_t i = ybegin; i < yend-1; ++i) {
+	std::cout<<"i = " << i << std::endl;
+        double d = 1;
+        //if (i != ybegin and ybegin != 0) 
+	//  d = mesh->axis1->at(i+1) - mesh->axis1->at(i);
+	// else d = 0.;
+        std::cout<<"d = " << d << std::endl;
+	dcomplex phas = exp(- I * ky[i] * d);
+        // Transfer through boundary
+        dcomplex f = (polarization==TM)? (NR[i+1]/NR[i]) : 1.;
+        dcomplex n = 0.5 * ky[i]/ky[i+1] * f*f;
+        Matrix T1 = Matrix( (0.5+n), (0.5-n),
+                            (0.5-n), (0.5+n) );
+        T1.ff *= phas; T1.fb /= phas;
+        T1.bf *= phas; T1.bb /= phas;
+        T = T1 * T;
+    }
+    
+   return T.bb;
+  
+}
+
+
   
 }}}
 

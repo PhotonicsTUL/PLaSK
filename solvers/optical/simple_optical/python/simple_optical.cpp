@@ -5,7 +5,7 @@ using namespace plask;
 using namespace plask::python;
 
 #include "../simple_optical.h"
-using namespace plask::solvers::simple_optical;
+using namespace plask::optical::simple_optical;
 
 /**
  * Initialization of your solver class to Python
@@ -19,9 +19,6 @@ BOOST_PYTHON_MODULE(simple_optical)
     {CLASS(SimpleOptical, "SimpleOpticalCyl", "Short solver description.")
      METHOD(say_hello, say_hello, "This is demo function, which say hello");
      METHOD(simpleVerticalSolver, simpleVerticalSolver, "This is method to calcurate field in 1D");
-      
-        //METHOD(python_method_name, method_name, "Short documentation", "name_or_argument_1", arg("name_of_argument_2")=default_value_of_arg_2, ...);
- //METHOD(say_hello, say_hello, "This is demo function, which say hello");
 	
     }
 
