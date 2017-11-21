@@ -40,8 +40,8 @@
 // License check
 #cmakedefine LICENSE_CHECK
 
-// Export cppformat symbols in libplask (affects only windows)
-// #cmakedefine PLASK_EXPORTS_CPPFORMAT
+// Export fmt symbols in libplask (affects only windows)
+// #cmakedefine PLASK_EXPORTS_FMT
 
 //
 // The following block is the standard way of creating macros which make exporting
@@ -58,14 +58,14 @@
         //#define PLASK_API_EXTERN_TEMPLATE_INSTANTION_CLASS(...) extern template class __VA_ARGS__ ;
         #define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(...)    // for structs which aren't PLASK_API
         #define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_CLASS(...)     // for classes which aren't PLASK_API
-      //#if defined(PLASK_EXPORTS_CPPFORMAT) && !defined(FMT_EXPORT)
+      //#if defined(PLASK_EXPORTS_FMT) && !defined(FMT_EXPORT)
       //  #define FMT_EXPORT
       //#endif
     #else
         #define PLASK_API __declspec(dllimport)
         #define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(...) extern template struct __declspec(dllimport) __VA_ARGS__ ; // for structs which aren't PLASK_API
         #define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_CLASS(...) extern template class __declspec(dllimport) __VA_ARGS__ ;   // for classes which aren't PLASK_API
-      //#if defined(PLASK_EXPORTS_CPPFORMAT) && !defined(FMT_SHARED)
+      //#if defined(PLASK_EXPORTS_FMT) && !defined(FMT_SHARED)
       //  #define FMT_SHARED
       //#endif
     #endif

@@ -108,6 +108,53 @@ shared_ptr<MeshD<3>> RectangularMesh3DSimpleGenerator::generate(const shared_ptr
     return mesh;
 }
 
+
+shared_ptr<OrderedAxis> refineAxis(const shared_ptr<MeshAxis>& axis, double spacing)
+{
+    size_t total = 1;
+    for (size_t i = 1; i < axis->size(); ++i) {
+        total += size_t(max(round((axis->at(i) - axis->at(i-1)) / spacing), 1.));
+    }
+    std::vector<double> points;
+    points.reserve(total);
+    for (size_t i = 1; i < axis->size(); ++i) {
+        double offset = axis->at(i-1);
+        double range = axis->at(i) - offset;
+        double steps = max(round(range / spacing), 1.);
+        double step = range / steps;
+        for (size_t j = 0, n = size_t(steps); j < n; ++j) {
+            points.push_back(offset + j * step);
+        }
+    }
+    points.push_back(axis->at(axis->size()-1));
+    assert(points.size() == total);
+    return shared_ptr<OrderedAxis>(new OrderedAxis(std::move(points)));
+}
+
+shared_ptr<MeshD<1>> OrderedMesh1DRegularGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
+{
+    auto mesh = refineAxis(makeGeometryGrid1D(geometry), spacing);
+    writelog(LOG_DETAIL, "mesh.Rectangular1D.RegularGenerator: Generating new mesh ({0})", mesh->size());
+    return mesh;
+}
+
+shared_ptr<MeshD<2>> RectangularMesh2DRegularGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
+{
+    auto mesh1 = makeGeometryGrid(geometry);
+    auto mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh1->axis0, spacing), refineAxis(mesh1->axis1, spacing));
+    writelog(LOG_DETAIL, "mesh.Rectangular2D.SimpleGenerator: Generating new mesh ({0}x{1})", mesh->axis0->size(), mesh->axis1->size());
+    return mesh;
+}
+
+shared_ptr<MeshD<3>> RectangularMesh3DRegularGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
+{
+    auto mesh1 = makeGeometryGrid(geometry);
+    auto mesh = make_shared<RectangularMesh<3>>(refineAxis(mesh1->axis0, spacing), refineAxis(mesh1->axis1, spacing), refineAxis(mesh1->axis2, spacing));
+    writelog(LOG_DETAIL, "mesh.Rectangular3D.SimpleGenerator: Generating new mesh ({0}x{1}x{2})", mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size());
+    return mesh;
+}
+
+
 template <int dim>
 std::pair<double, double> RectangularMeshRefinedGenerator<dim>::getMinMax(const shared_ptr<OrderedAxis> &axis)
 {

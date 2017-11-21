@@ -864,10 +864,20 @@ void register_mesh_rectangular()
 
         py::class_<OrderedMesh1DSimpleGenerator, shared_ptr<OrderedMesh1DSimpleGenerator>,
                    py::bases<MeshGeneratorD<1>>, boost::noncopyable>("SimpleGenerator",
-            u8"Generator of Rectilinear (1D) mesh with lines at transverse edges of all objects.\n\n"
+            u8"Generator of ordered 1D mesh with lines at transverse edges of all objects.\n\n"
             u8"SimpleGenerator()\n    create generator")
         ;
         py::implicitly_convertible<shared_ptr<OrderedMesh1DSimpleGenerator>, shared_ptr<const OrderedMesh1DSimpleGenerator>>();
+
+        py::class_<OrderedMesh1DRegularGenerator, shared_ptr<OrderedMesh1DRegularGenerator>,
+                   py::bases<MeshGeneratorD<1>>, boost::noncopyable>("RegularGenerator",
+            u8"Generator of ordered 1D mesh with lines at transverse edges of all objects\n"
+            u8"and fine regular division of each object with spacing approximately equal to\n"
+            "spacing\n\n"
+            u8"RegularGenerator(spacing)\n    create generator",
+            py::init<double>(py::arg("spacing")))
+        ;
+        py::implicitly_convertible<shared_ptr<OrderedMesh1DRegularGenerator>, shared_ptr<const OrderedMesh1DRegularGenerator>>();
 
         register_divide_generator<1>();
         register_smooth_generator<1>();
@@ -963,6 +973,16 @@ void register_mesh_rectangular()
         ;
         py::implicitly_convertible<shared_ptr<RectangularMesh2DSimpleGenerator>, shared_ptr<const RectangularMesh2DSimpleGenerator>>();
 
+        py::class_<RectangularMesh2DRegularGenerator, shared_ptr<RectangularMesh2DRegularGenerator>,
+                   py::bases<MeshGeneratorD<2>>, boost::noncopyable>("RegularGenerator",
+            u8"Generator of Rectilinear2D mesh with lines at transverse edges of all objects\n"
+            u8"and fine regular division of each object with spacing approximately equal to\n"
+            "spacing\n\n"
+            u8"RegularGenerator(spacing)\n    create generator",
+            py::init<double>(py::arg("spacing")))
+        ;
+        py::implicitly_convertible<shared_ptr<RectangularMesh2DRegularGenerator>, shared_ptr<const RectangularMesh2DRegularGenerator>>();
+
         register_divide_generator<2>();
         register_smooth_generator<2>();
     }
@@ -1039,6 +1059,16 @@ void register_mesh_rectangular()
             u8"SimpleGenerator()\n    create generator")
         ;
         py::implicitly_convertible<shared_ptr<RectangularMesh3DSimpleGenerator>, shared_ptr<const RectangularMesh3DSimpleGenerator>>();
+
+        py::class_<RectangularMesh3DRegularGenerator, shared_ptr<RectangularMesh3DRegularGenerator>,
+                   py::bases<MeshGeneratorD<3>>, boost::noncopyable>("RegularGenerator",
+            u8"Generator of Rectilinear3D mesh with lines at transverse edges of all objects\n"
+            u8"and fine regular division of each object with spacing approximately equal to\n"
+            "spacing\n\n"
+            u8"RegularGenerator(spacing)\n    create generator",
+            py::init<double>(py::arg("spacing")))
+        ;
+        py::implicitly_convertible<shared_ptr<RectangularMesh3DRegularGenerator>, shared_ptr<const RectangularMesh3DRegularGenerator>>();
 
         register_divide_generator<3>();
         register_smooth_generator<3>();

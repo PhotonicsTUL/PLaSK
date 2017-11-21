@@ -38,11 +38,14 @@ class OutputModel(QAbstractListModel):
 
     def __init__(self, fm):
         super(OutputModel, self).__init__()
+        self.update_font(fm)
+        self.lines = []
+
+    def update_font(self, fm):
         self.fm = fm
         if fm is not None:
             self.lh = fm.lineSpacing()
             self.lw = fm.maxWidth()
-        self.lines = []
 
     def add_line(self, level, text, link=None):
         ll = len(self.lines)
@@ -101,6 +104,19 @@ class OutputListView(QListView):
         else:
             self.setCursor(Qt.ArrowCursor)
 
+    def keyPressEvent(self, event):
+        if event == QKeySequence.Copy:
+            self.copy()
+            event.accept()
+        else:
+            super(OutputListView, self).keyPressEvent(event)
+
+    def copy(self):
+        rows = self.selectionModel().selectedRows()
+        rows.sort(key=lambda row: row.row())
+        lines = [self.model().data(row, Qt.DisplayRole) for row in rows]
+        QApplication.clipboard().setText('\n'.join(lines))
+
 
 class OutputFilter(QSortFilterProxyModel):
 
@@ -136,7 +152,7 @@ class OutputWindow(QDockWidget):
         font.fromString(','.join(CONFIG['launcher_local/font']))
         self.messages = OutputListView()
         self.messages.setFont(font)
-        self.messages.setSelectionMode(QAbstractItemView.NoSelection)
+        self.messages.setSelectionMode(QAbstractItemView.ContiguousSelection)
         self.model = OutputModel(self.messages.fontMetrics())
         self.filter = OutputFilter(self, self.model)
         self.filter.setFilterCaseSensitivity(Qt.CaseInsensitive)
@@ -306,6 +322,8 @@ class OutputWindow(QDockWidget):
         font = self.messages.font()
         if font.fromString(','.join(CONFIG['launcher_local/font'])):
             self.messages.setFont(font)
+        self.model.update_font(self.messages.fontMetrics())
+        self.filter.invalidate()
 
     def line_clicked(self, index):
         line = self.filter.data(index, LINE_ROLE)

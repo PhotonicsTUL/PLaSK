@@ -29,6 +29,13 @@ PLASK_API shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<Geome
 PLASK_API shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry);
 
 /**
+ * Divide existing axis into finer mesh with points approximately spaced by \p spacing.
+ * \param spacing approximate distance between mesh points
+ * \return refined mesh
+ */
+PLASK_API shared_ptr<OrderedAxis> refineAxis(const shared_ptr<MeshAxis>& axis, double spacing);
+
+/**
  * Generator of basic 2D geometry grid
  */
 class PLASK_API OrderedMesh1DSimpleGenerator: public MeshGeneratorD<1> {
@@ -68,6 +75,85 @@ class PLASK_API RectangularMesh2DSimpleGenerator: public MeshGeneratorD<2> {
 };
 
 /**
+ * Generator of basic 3D geometry grid
+ */
+struct PLASK_API RectangularMesh3DSimpleGenerator: public MeshGeneratorD<3> {
+
+public:
+
+    /**
+     * Create generator
+     */
+    RectangularMesh3DSimpleGenerator() {}
+
+    virtual shared_ptr<MeshD<3>> generate(const shared_ptr<GeometryObjectD<3>>& geometry) override;
+};
+
+
+
+/**
+ * Generator of basic 2D geometry grid with approximately equal spacing.
+ * This generator respects existing object boundaries.
+ */
+class PLASK_API OrderedMesh1DRegularGenerator: public MeshGeneratorD<1> {
+
+    /// Requested spacing
+    double spacing;
+
+  public:
+
+    /**
+     * Create generator
+     * \param extend_to_zero indicates whether there always must be a line at tran = 0
+     */
+    OrderedMesh1DRegularGenerator(double spacing): spacing(spacing) {}
+
+    virtual shared_ptr<MeshD<1>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
+};
+
+
+/**
+ * Generator of basic 2D geometry grid with approximately equal spacing.
+ * This generator respects existing object boundaries.
+ */
+class PLASK_API RectangularMesh2DRegularGenerator: public MeshGeneratorD<2> {
+
+    /// Requested spacing
+    double spacing;
+
+  public:
+
+    /**
+     * Create generator
+     * \param extend_to_zero indicates whether there always must be a line at tran = 0
+     */
+    RectangularMesh2DRegularGenerator(double spacing): spacing(spacing) {}
+
+    virtual shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
+};
+
+/**
+ * Generator of basic 3D geometry grid with approximately equal spacing.
+ * This generator respects existing object boundaries.
+ */
+struct PLASK_API RectangularMesh3DRegularGenerator: public MeshGeneratorD<3> {
+
+    /// Requested spacing
+    double spacing;
+
+  public:
+
+    /**
+     * Create generator
+     */
+    RectangularMesh3DRegularGenerator(double spacing): spacing(spacing) {}
+
+    virtual shared_ptr<MeshD<3>> generate(const shared_ptr<GeometryObjectD<3>>& geometry) override;
+};
+
+
+
+/**
  * Generator of 2D geometry grid using other generator for horizontal axis
  */
 class PLASK_API RectangularMesh2DFrom1DGenerator: public MeshGeneratorD<2> {
@@ -87,21 +173,6 @@ class PLASK_API RectangularMesh2DFrom1DGenerator: public MeshGeneratorD<2> {
 };
 
 
-
-/**
- * Generator of basic 3D geometry grid
- */
-struct PLASK_API RectangularMesh3DSimpleGenerator: public MeshGeneratorD<3> {
-
-public:
-
-    /**
-     * Create generator
-     */
-    RectangularMesh3DSimpleGenerator() {}
-
-    virtual shared_ptr<MeshD<3>> generate(const shared_ptr<GeometryObjectD<3>>& geometry) override;
-};
 
 /**
  * Dividing generator ensuring no rapid change of element size

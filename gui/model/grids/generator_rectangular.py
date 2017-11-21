@@ -14,10 +14,11 @@ from lxml.etree import Element, SubElement
 
 from ...qt.QtCore import *
 from ..table import TableModelEditMethods
+from ...utils.str import empty_to_none
 from ...utils.validators import can_be_float, can_be_bool, can_be_int
 from ...utils.xml import require_no_children, UnorderedTagReader, AttributeReader
 from . import Grid
-from .mesh_rectilinear import AXIS_NAMES
+from .mesh_rectangular import AXIS_NAMES
 
 
 class RefinementConf(object):
@@ -106,7 +107,7 @@ class Refinements(TableModelEditMethods, QAbstractTableModel):
     def set(self, col, row, value):
         if not self.one and col == 0:
             value = AXIS_NAMES[self.generator.dim-1].index(value)
-        self.entries[row].set_attr_by_index(col+self.one, value)
+        self.entries[row].set_attr_by_index(col+self.one, empty_to_none(value))
 
     def flags(self, index):
         flags = super(Refinements, self).flags(index) | Qt.ItemIsSelectable | Qt.ItemIsEnabled
@@ -147,6 +148,44 @@ class Refinements(TableModelEditMethods, QAbstractTableModel):
             if not can_be_float(entry.every, float_validator=lambda f: f >= 0):
                 self.generator._required(res, rows, parent_property, 'distance between lines in refinement',
                                          type='non-negative float', reinf_row=i, reinf_col=5)
+
+
+class RectangularRegularGenerator(Grid):
+
+    @staticmethod
+    def from_xml(grids_model, element):
+        e = RectangularRegularGenerator(grids_model, element.attrib['name'], element.attrib['type'])
+        e.set_xml_element(element)
+        return e
+
+    def __init__(self, grids_model, name, type, spacing=None):
+
+        super(RectangularRegularGenerator, self).__init__(grids_model, name, type, 'regular')
+        self.spacing = spacing
+
+    @property
+    def dim(self):
+        return 1 if self.type == 'ordered' else int(self.type[-2])
+
+    def get_xml_element(self):
+        res = super(RectangularRegularGenerator, self).get_xml_element()
+        if self.spacing is not None:
+            SubElement(res, "spacing", attrib={'every': self.spacing})
+        return res
+
+    def set_xml_element(self, element):
+        super(RectangularRegularGenerator, self).set_xml_element(element)
+        spacing = element.find('spacing')
+        if spacing is not None:
+            self.spacing = spacing.attrib.get('every')
+
+    def get_controller(self, document):
+        from ...controller.grids.generator_rectangular import RectangularRegularGeneratorController
+        return RectangularRegularGeneratorController(document=document, model=self)
+
+    def create_info(self, res, rows):
+        super(RectangularRegularGenerator, self).create_info(res, rows)
+        if not can_be_float(self.spacing): self._required(res, rows, 'spacing', type='float')
 
 
 class RectangularRefinedGenerator(Grid):

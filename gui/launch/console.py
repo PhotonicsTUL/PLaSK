@@ -124,7 +124,16 @@ class Launcher(object):
             command = ' '.join(quote(s) for s in ['/bin/sh', script, program, '-l{}'.format(loglevel)] + list(defs) +
                                ['--', filename] + list(args))
             term = CONFIG['launcher_console/terminal']
+            if not (os.access(term, os.X_OK) or
+                    any(os.access(os.path.join(pth, term), os.X_OK) for pth in os.environ["PATH"].split(os.pathsep))):
+                QMessageBox.critical(main_window, "Console Not Found",
+                                     "Cannot execute graphical console program '{}'.\n\n"
+                                     "Please select a correct one in the settings dialog\n"
+                                     "(General Settings > Launcher)."
+                                     .format(term), QMessageBox.Ok)
+                return
             subprocess.Popen([term, '-e', command], cwd=dirname, env=env)
+
         else:
             raise NotImplemented("Launching terminal in this system")
 

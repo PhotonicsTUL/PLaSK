@@ -907,6 +907,46 @@ error_file = None
 sys.excepthook = _handle_exception
 
 
+PLUGINS = []
+
+def load_plugins():
+    global PLUGINS
+
+    name_re = re.compile(r'^\s*#\s*plugin:\s*(.*)\s*$', re.IGNORECASE)
+    desc_re = re.compile(r'^\s*#\s*description:\s*(.*)\s*$', re.IGNORECASE)
+
+    if os.name == 'nt':
+        plugin_dirs = [os.path.join(os.environ.get('SYSTEMDRIVE', 'C:'), r'ProgramData\PLaSK\gui\plugins')]
+        if 'LOCALAPPDATA' in os.environ:
+            plugin_dirs.insert(0, os.path.join(os.environ['LOCALAPPDATA'], r"PLaSK\gui\plugins"))
+    else:
+        plugin_dirs = [os.path.expanduser("~/.local/lib/plask/gui/plugins"), "/etc/plask/gui/plugins"]
+    plugin_dirs.append(os.path.join(__path__[0], 'plugins'))
+
+    for loader, modname, ispkg in pkgutil.iter_modules(plugin_dirs):
+        name = desc = None
+        if ispkg:
+            fname = os.path.join(loader.find_module(modname).filename, '__init__.py')
+        else:
+            fname = loader.find_module(modname).filename
+        try:
+            for line in open(fname):
+                m = name_re.match(line)
+                if m is not None: name = m.group(1)
+                m = desc_re.match(line)
+                if m is not None: desc = m.group(1)
+                if name is not None and desc is not None: break
+        except:
+            pass
+        if name is not None:
+            PLUGINS.append((modname, name, desc))
+            try:
+                if CONFIG.get('plugins/{}'.format(modname), True):
+                    loader.find_module(modname).load_module(modname)
+            except:
+                pass
+
+
 def main():
     try:
         _debug_index = sys.argv.index('-debug')
@@ -940,18 +980,7 @@ def main():
     icons_path.insert(0, os.path.join(__path__[0], 'icons'))
     QIcon.setThemeSearchPaths(icons_path)
 
-    if os.name == 'nt':
-        plugin_dirs = [os.path.join(os.environ.get('SYSTEMDRIVE', 'C:'), r'ProgramData\PLaSK\gui\plugins')]
-        if 'LOCALAPPDATA' in os.environ:
-            plugin_dirs.insert(0, os.path.join(os.environ['LOCALAPPDATA'], r"PLaSK\gui\plugins"))
-    else:
-        plugin_dirs = [os.path.expanduser("~/.local/lib/plask/gui/plugins"), "/etc/plask/gui/plugins"]
-    plugin_dirs.append(os.path.join(__path__[0], 'plugins'))
-    for loader, modname, ispkg in pkgutil.walk_packages(plugin_dirs):
-        try:
-            loader.find_module(modname).load_module(modname)
-        except:
-            pass
+    load_plugins()
 
     if matplotlib:
         ft = QWidget().font()

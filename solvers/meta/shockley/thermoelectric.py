@@ -176,7 +176,7 @@ class ThermoElectric(plask.Solver):
 
     @staticmethod
     def _get_levels(geometry, mesh, *required):
-        if isinstance(mesh, plask.mesh.Mesh1D):
+        if isinstance(mesh, (plask.mesh.Mesh1D, plask.ndarray, list, tuple)):
             hor = mesh,
             Mesh = plask.mesh.Rectangular2D
         elif isinstance(mesh, plask.mesh.Rectangular2D):
@@ -323,6 +323,13 @@ class ThermoElectric(plask.Solver):
         plask.ylabel("Voltage [V]")
         plask.window_title("Voltage")
 
+    def _plot_hbounds(self, solver):
+        simplemesh = plask.mesh.Rectangular2D.SimpleGenerator()(solver.geometry.item)
+        for x in simplemesh.axis0:
+            plask.axvline(x,
+                          linestyle=plask.rc.grid.linestyle, linewidth=plask.rc.grid.linewidth,
+                          color=plask.rc.grid.color, alpha=plask.rc.grid.alpha)
+
     def plot_junction_current(self, refine=16, bounds=True, interpolation='linear', label=None, **kwargs):
         """
         Plot current density at the active region.
@@ -335,58 +342,37 @@ class ThermoElectric(plask.Solver):
 
             interpolation (str): Interpolation used when retrieving current density.
 
-            label (str or sequence): Label for each junction. It can be a sequence
+            label (str or sequence): Label for each junction. It can be a sequence of
                                      consecutive labels for each junction, or a string
                                      in which case the same label is used for each
                                      junction. If omitted automatic label is generated.
 
             **kwargs: Keyword arguments passed to the plot function.
         """
-        # A little magic to get junction position first
-        points = self.electrical.mesh.get_midpoints()
-        geom = self.electrical.geometry.item
-        yy = plask.unique(list(points.index1(i) for i,p in enumerate(points)
-                          if geom.has_role('junction', p) or geom.has_role('active', p)))
-        yy = [int(y) for y in yy]
-        if len(yy) == 0:
-            raise ValueError("no junction defined")
-        act = []
-        start = yy[0]
-        axis1 = self.electrical.mesh.axis1
-        for i, y in enumerate(yy):
-            if y > yy[i-1] + 1:
-                act.append(0.5 * (axis1[start] + axis1[yy[i-1] + 1]))
-                start = y
-        act.append(0.5 * (axis1[start] + axis1[yy[-1] + 1]))
-
         axis = plask.concatenate([
             plask.linspace(x, self.electrical.mesh.axis0[i+1], refine+1)
             for i,x in enumerate(list(self.electrical.mesh.axis0)[:-1])
         ])
+        points = plask.mesh.Rectangular2D(axis, self.electrical.mesh.axis1).get_midpoints()
 
-        for i, y in enumerate(act):
-            msh = plask.mesh.Rectangular2D(axis, plask.mesh.Ordered([y]))
+        i = 0
+        for i, (lb, msh) in enumerate(self._get_levels(self.electrical.geometry, points)):
             curr = self.electrical.outCurrentDensity(msh, interpolation).array[:,0,1]
             s = sum(curr)
             if label is None:
-                lab = "Junction {:d}".format(i + 1)
+                lab = "Junction {:s}".format(lb)
             elif isinstance(label, tuple) or isinstance(label, tuple):
                 lab = label[i]
             else:
                 lab = label
             plask.plot(msh.axis0, curr if s > 0 else -curr,
                        label=lab, **kwargs)
-        if len(act) > 1:
+        if i > 0:
             plask.legend(loc='best')
         plask.xlabel(u"${}$ [\xb5m]".format(plask.config.axes[-2]))
         plask.ylabel(u"Current Density [kA/cm\xb2]")
         if bounds:
-            simplemesh = plask.mesh.Rectangular2D.SimpleGenerator()\
-                (self.electrical.geometry.item)
-            for x in simplemesh.axis0:
-                plask.axvline(x,
-                              linestyle=plask.rc.grid.linestyle, linewidth=plask.rc.grid.linewidth,
-                              color=plask.rc.grid.color, alpha=plask.rc.grid.alpha)
+            self._plot_hbounds(self.electrical)
         plask.window_title("Current Density")
 
     def _get_defines_info(self):

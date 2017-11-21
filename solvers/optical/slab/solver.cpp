@@ -59,39 +59,179 @@ std::unique_ptr<RootDigger> SlabBase::getRootDigger(const RootDigger::function_t
 
 
 template <typename BaseT>
-void SlabSolver<BaseT>::setup_vbounds()
-{
-    if (!this->geometry) throw NoGeometryException(this->getId());
-    vbounds = std::move(*RectangularMesh2DSimpleGenerator().generate_t<RectangularMesh<2>>(this->geometry->getChild())->vert());
-    if (this->geometry->isSymmetric(Geometry::DIRECTION_VERT)) {
-        std::deque<double> zz;
-        for (double z: vbounds) zz.push_front(-z);
-        OrderedAxis::WarningOff nowarn(vbounds);
-        vbounds.addOrderedPoints(zz.begin(), zz.end(), zz.size());
+struct LateralMeshAdapter {
+    shared_ptr<RectangularMesh<2>> mesh;
+
+    LateralMeshAdapter(const BaseT* solver):
+        mesh(makeGeometryGrid(solver->getGeometry()->getChild())) {}
+
+    void resetMidpoints(const shared_ptr<MeshAxis>& vbounds) {
+        mesh = make_shared<RectangularMesh<2>>(mesh->axis0->getMidpointsMesh(),
+                                               vbounds, RectangularMesh<2>::ORDER_10);
     }
-}
+
+    void resetMidpoints(const shared_ptr<MeshAxis>& vbounds, double spacing) {
+        mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh->axis0, spacing)->getMidpointsMesh(),
+                                               vbounds, RectangularMesh<2>::ORDER_10);
+    }
+
+    void reset(const shared_ptr<MeshAxis>& verts) {
+        mesh = make_shared<RectangularMesh<2>>(mesh->axis0, verts, RectangularMesh<2>::ORDER_10);
+    }
+
+    shared_ptr<RectangularMesh<2>> makeMesh(const shared_ptr<MeshAxis>& verts) {
+        return make_shared<RectangularMesh<2>>(mesh->axis0, verts, RectangularMesh<2>::ORDER_10);
+    }
+
+    shared_ptr<OrderedAxis> vert() {
+        return dynamic_pointer_cast<OrderedAxis>(mesh->vert());
+    }
+
+    shared_ptr<RectangularMesh<2>> midmesh() const {
+        return make_shared<RectangularMesh<2>>(mesh->axis0, mesh->axis1->getMidpointsMesh());
+    }
+
+    size_t size() const { return mesh->axis0->size(); }
+
+    size_t idx(size_t i, size_t v) const {
+        return mesh->index(i, v);
+    }
+
+    Vec<2> at(size_t i, size_t v) const { return mesh->at(i, v); }
+
+    shared_ptr<RectangularMesh<2>> makeLine(size_t i, size_t v, double spacing) const {
+        shared_ptr<OrderedAxis> vaxis(new OrderedAxis({mesh->axis1->at(v-1), mesh->axis1->at(v)}));
+        vaxis = refineAxis(vaxis, spacing);
+        return make_shared<RectangularMesh<2>>(make_shared<OnePointAxis>(mesh->axis0->at(i)), vaxis);
+    }
+};
 
 template <>
-void SlabSolver<SolverOver<Geometry3D>>::setup_vbounds()
-{
-    if (!this->geometry) throw NoGeometryException(this->getId());
-    vbounds = std::move(*RectangularMesh3DSimpleGenerator().generate_t<RectangularMesh<3>>(this->geometry->getChild())->vert());
-    //TODO consider geometry objects non-uniform in vertical direction (step approximation)
-    if (this->geometry->isSymmetric(Geometry::DIRECTION_VERT)) {
-        std::deque<double> zz;
-        for (double z: vbounds) zz.push_front(-z);
-        vbounds.addOrderedPoints(zz.begin(), zz.end(), zz.size());
+struct LateralMeshAdapter<SolverOver<Geometry3D>> {
+  private:
+    size_t _size;
+
+  public:
+    shared_ptr<RectangularMesh<3>> mesh;
+
+    LateralMeshAdapter(const SolverOver<Geometry3D>* solver):
+        mesh(makeGeometryGrid(solver->getGeometry()->getChild())) {
+        _size = mesh->axis0->size() * mesh->axis1->size();
     }
-}
+
+    void resetMidpoints(const shared_ptr<MeshAxis>& vbounds) {
+        mesh = make_shared<RectangularMesh<3>>(mesh->axis0->getMidpointsMesh(),
+                                               mesh->axis1->getMidpointsMesh(),
+                                               vbounds, RectangularMesh<3>::ORDER_201);
+        _size = mesh->axis0->size() * mesh->axis1->size();
+    }
+
+    void resetMidpoints(const shared_ptr<MeshAxis>& vbounds, double spacing) {
+        mesh = make_shared<RectangularMesh<3>>(refineAxis(mesh->axis0, spacing)->getMidpointsMesh(),
+                                               refineAxis(mesh->axis1, spacing)->getMidpointsMesh(),
+                                               vbounds, RectangularMesh<3>::ORDER_201);
+        _size = mesh->axis0->size() * mesh->axis1->size();
+    }
+
+    void reset(const shared_ptr<MeshAxis>& verts) {
+        mesh = make_shared<RectangularMesh<3>>(mesh->axis0, mesh->axis1, verts, RectangularMesh<3>::ORDER_210);
+    }
+
+    shared_ptr<RectangularMesh<3>> makeMesh(const shared_ptr<MeshAxis>& verts) {
+        return make_shared<RectangularMesh<3>>(mesh->axis0, mesh->axis1, verts, RectangularMesh<3>::ORDER_210);
+    }
+
+    shared_ptr<OrderedAxis> vert() {
+        return dynamic_pointer_cast<OrderedAxis>(mesh->vert());
+    }
+
+    shared_ptr<RectangularMesh<3>> midmesh() const {
+        return make_shared<RectangularMesh<3>>(mesh->axis0, mesh->axis1, mesh->axis2->getMidpointsMesh());
+    }
+
+    size_t size() const { return _size; }
+
+    size_t idx(size_t i, size_t v) const {
+        return _size * v + i;
+    }
+
+    Vec<3> at(size_t i, size_t v) const {
+        return mesh->RectilinearMesh3D::at(idx(i, v));
+    }
+
+    shared_ptr<RectangularMesh<3>> makeLine(size_t i, size_t v, double spacing) const {
+        shared_ptr<OrderedAxis> vaxis(new OrderedAxis({mesh->axis2->at(v-1), mesh->axis2->at(v)}));
+        vaxis = refineAxis(vaxis, spacing);
+        return make_shared<RectangularMesh<3>>(make_shared<OnePointAxis>(mesh->axis0->at(mesh->index0(i))),
+                                               make_shared<OnePointAxis>(mesh->axis1->at(mesh->index1(i))),
+                                               vaxis);
+    }
+};
+
 
 template <typename BaseT>
 void SlabSolver<BaseT>::setupLayers()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
 
-    if (vbounds.empty()) setup_vbounds();
+    LateralMeshAdapter<BaseT> adapter(this);
 
-    auto points = make_rectangular_mesh(RectangularMesh2DSimpleGenerator().get<RectangularMesh<2>>(this->geometry->getChild())->getMidpointsMesh());
+    vbounds = adapter.vert();
+    if (this->geometry->isSymmetric(Geometry::DIRECTION_VERT)) {
+        std::deque<double> zz;
+        for (double z: *vbounds) zz.push_front(-z);
+        OrderedAxis::WarningOff nowarn(vbounds);
+        vbounds->addOrderedPoints(zz.begin(), zz.end(), zz.size());
+    }
+
+    if (inTemperature.hasProvider() && !isnan(temp_dist) && !isinf(temp_dist))
+        adapter.resetMidpoints(vbounds, temp_dist);
+    else if (this->geometry->isSymmetric(Geometry::DIRECTION_VERT))
+        adapter.resetMidpoints(vbounds);
+
+    // Divide layers with too large temperature gradient
+    if (inTemperature.hasProvider() && !isnan(temp_dist) && !isinf(temp_dist)) {
+        auto temp = inTemperature(adapter.mesh);
+        std::deque<double> refines;
+        for (size_t v = 1; v != vbounds->size(); ++v) {
+            double mdt = 0.;
+            size_t idt;
+            for (size_t i = 0; i != adapter.size(); ++i) {
+                double dt = abs(temp[adapter.idx(i, v)] - temp[adapter.idx(i, v-1)]);
+                if (dt > mdt) {
+                    mdt = dt;
+                    idt = i;
+                }
+            }
+            if (mdt > max_temp_diff) {
+                // We need to divide the layer.
+                auto line_mesh = adapter.makeLine(idt, v, temp_dist);
+                auto tmp = inTemperature(line_mesh);
+                auto line = line_mesh->vert();
+                size_t li = 0;
+                for (size_t i = 2; i != line->size(); ++i) {
+                    if (abs(tmp[i] - tmp[li]) > max_temp_diff) {
+                        li = i - 1;
+                        refines.push_back(line->at(li));
+                    }
+                }
+            }
+        }
+        vbounds->addOrderedPoints(refines.begin(), refines.end(), refines.size());
+    }
+
+    adapter.reset(vbounds->getMidpointsMesh());
+
+    // Add layers below bottom boundary and above top one
+    verts = dynamic_pointer_cast<OrderedAxis>(adapter.mesh->vert());
+    OrderedAxis::WarningOff nowarn(verts);
+    verts->addPoint(vbounds->at(0) - 2.*OrderedAxis::MIN_DISTANCE);
+    verts->addPoint(vbounds->at(vbounds->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
+
+    lgained.clear();
+    stack.clear();
+    stack.reserve(verts->size());
+    lcount = 0;
 
     struct LayerItem {
         shared_ptr<Material> material;
@@ -99,27 +239,15 @@ void SlabSolver<BaseT>::setupLayers()
         bool operator==(const LayerItem& other) { return *material == *other.material && roles == other.roles; }
         bool operator!=(const LayerItem& other) { return !(*this == other); }
     };
-
     std::vector<std::vector<LayerItem>> layers;
-
-    // Add layers below bottom boundary and above top one
-    verts = dynamic_pointer_cast<OrderedAxis>(points->vert());
-    OrderedAxis::WarningOff nowarn(verts);
-    verts->addPoint(vbounds[0] - 2.*OrderedAxis::MIN_DISTANCE);
-    verts->addPoint(vbounds[vbounds.size()-1] + 2.*OrderedAxis::MIN_DISTANCE);
-
-    lgained.clear();
-    stack.clear();
-    stack.reserve(verts->size());
-    lcount = 0;
 
     for (size_t v = 0; v != verts->size(); ++v) {
         bool gain = false;
         bool unique = !group_layers || layers.size() == 0;
 
-        std::vector<LayerItem> layer(points->axis0->size());
-        for (size_t i = 0; i != points->axis0->size(); ++i) {
-            Vec<2> p(points->axis0->at(i), verts->at(v));
+        std::vector<LayerItem> layer(adapter.size());
+        for (size_t i = 0; i != adapter.size(); ++i) {
+            auto p(adapter.at(i, v));
             layer[i].material = this->geometry->getMaterial(p);
             for (const std::string& role: this->geometry->getRolesAt(p)) {
                 if (role.substr(0,3) == "opt") layer[i].roles.insert(role);
@@ -150,83 +278,83 @@ void SlabSolver<BaseT>::setupLayers()
         }
     }
 
-    assert(vbounds.size() == stack.size()-1);
+    assert(vbounds->size() == stack.size()-1);
     assert(verts->size() == stack.size());
+    assert(layers.size() == lcount);
 
-    Solver::writelog(LOG_DETAIL, "Detected {0} {1}layers", lcount, group_layers? "distinct " : "");
-}
-
-template <>
-void SlabSolver<SolverOver<Geometry3D>>::setupLayers()
-{
-    if (vbounds.empty()) setup_vbounds();
-
-    auto points = make_rectangular_mesh(RectangularMesh3DSimpleGenerator().get<RectangularMesh<3>>(this->geometry->getChild())->getMidpointsMesh());
-
-    struct LayerItem {
-        shared_ptr<Material> material;
-        std::set<std::string> roles;
-        bool operator!=(const LayerItem& other) { return *material != *other.material || roles != other.roles; }
-    };
-
-    std::vector<std::vector<LayerItem>> layers;
-
-    // Add layers below bottom boundary and above top one
-    verts = dynamic_pointer_cast<OrderedAxis>(points->vert());
-    OrderedAxis::WarningOff nowarn(verts);
-    verts->addPoint(vbounds[0] - 2.*OrderedAxis::MIN_DISTANCE);
-    verts->addPoint(vbounds[vbounds.size()-1] + 2.*OrderedAxis::MIN_DISTANCE);
-
-    lgained.clear();
-    stack.clear();
-    stack.reserve(verts->size());
-    lcount = 0;
-
-    for (size_t v = 0; v != verts->size(); ++v) {
-        bool gain = false;
-        bool unique = !group_layers || layers.size() == 0;
-
-        std::vector<LayerItem> layer(points->axis0->size() * points->axis1->size());
-        for (size_t i = 0; i != points->axis1->size(); ++i) {
-            size_t offs = i * points->axis0->size();
-            for (size_t j = 0; j != points->axis0->size(); ++j) {
-                Vec<3> p(points->axis0->at(j), points->axis1->at(i), verts->at(v));
-                size_t n = offs + j;
-                layer[n].material = this->geometry->getMaterial(p);
-                for (const std::string& role: this->geometry->getRolesAt(p)) {
-                    if (role.substr(0,3) == "opt") layer[n].roles.insert(role);
-                    else if (role == "unique") { layer[n].roles.insert(role); unique = true; }
-                    else if (role == "QW" || role == "QD" || role == "gain") { layer[n].roles.insert(role); gain = true; }
+    // Split groups with too large temperature gradient
+    // We are using CLINK naive algorithm for this purpose
+    if (group_layers && inTemperature.hasProvider() && !isnan(max_temp_diff) && !isinf(max_temp_diff)) {
+        auto temp = inTemperature(adapter.mesh);
+        size_t nl = lcount;     // number of idependent layers to consider (stays fixed)
+        for (size_t l = 0; l != nl; ++l) {
+            std::vector<size_t> indices;
+            std::list<std::list<size_t>> groups;
+            typedef std::list<std::list<size_t>>::iterator ListIterator;
+            typedef std::list<size_t>::const_iterator ItemIterator;
+            for (size_t i = 0, j = 0; i != stack.size(); ++i) {
+                if (stack[i] == l) {
+                    indices.push_back(i);
+                    groups.emplace_back(std::list<size_t>({j++}));
                 }
             }
-        }
-
-        if (!unique) {
-            for (size_t l = 0; l != layers.size(); ++l) {
-                unique = false;
-                for (size_t i = 0; i != layers[l].size(); ++i) {
-                    if (layers[l][i] != layer[i]) {
-                        unique = true;
-                        break;
+            size_t n = indices.size();
+            // Make distance matrix
+            double dists[n][n];
+            for (size_t i = 0; i != n; ++i) {
+                dists[i][i] = INFINITY; // the simplest way to avoid clustering with itself
+                for (size_t j = i+1; j != n; ++j) {
+                    double mdt = 0.;
+                    for (size_t k = 0; k != adapter.size(); ++k) {
+                        double dt = abs(temp[adapter.idx(k, indices[i])] - temp[adapter.idx(k, indices[j])]);
+                        if (dt > mdt) mdt = dt;
+                    }
+                    dists[i][j] = dists[j][i] = mdt;
+                }
+            }
+            // Go and merge groups with the smallest distances
+            while(true) {
+                double mdt = INFINITY;
+                ListIterator mg1, mg2;
+                for (ListIterator g1 = groups.begin(); g1 != groups.end(); ++g1) {
+                    ListIterator g2 = g1;
+                    for (++g2; g2 != groups.end(); ++g2) {
+                        double dt = 0.;
+                        for (ItemIterator i1 = g1->begin(); i1 != g1->end(); ++i1)
+                            for (ItemIterator i2 = g2->begin(); i2 != g2->end(); ++i2)
+                                dt = max(dists[*i1][*i2], dt);
+                        if (dt < mdt) {
+                            mg1 = g1;
+                            mg2 = g2;
+                            mdt = dt;
+                        }
                     }
                 }
-                if (!unique) {
-                    stack.push_back(l);
-                    break;
-                }
+                if (mdt > 0.66667 * max_temp_diff) break;
+                for (ItemIterator i2 = mg2->begin(); i2 != mg2->end(); ++i2)
+                    mg1->push_back(*i2);
+                groups.erase(mg2);
             }
-        }
-        if (unique) {
-            layers.emplace_back(std::move(layer));
-            stack.push_back(lcount++);
-            lgained.push_back(gain);
+            // Now update the stack
+            ListIterator g = groups.begin();
+            for (++g; g != groups.end(); ++g) {
+                for (ItemIterator i = g->begin(); i != g->end(); ++i)
+                    stack[indices[*i]] = lcount;
+                ++lcount;
+            }
         }
     }
 
-    assert(vbounds.size() == stack.size()-1);
-    assert(verts->size() == stack.size());
-
     Solver::writelog(LOG_DETAIL, "Detected {0} {1}layers", lcount, group_layers? "distinct " : "");
+
+    if (!isnan(interface_position)) {
+        double pos = interface_position;
+        interface = std::lower_bound(vbounds->begin(), vbounds->end(), pos-0.5*OrderedAxis::MIN_DISTANCE) - vbounds->begin() + 1; // OrderedAxis::MIN_DISTANCE to compensate for truncation errors
+        if (interface > vbounds->size()) interface = vbounds->size();
+        pos = vbounds->at(interface-1); if (abs(pos) < OrderedAxis::MIN_DISTANCE) pos = 0.;
+        Solver::writelog(LOG_DEBUG, "Setting interface at layer {:d} (exact position {:g})", interface, pos);
+    } else
+        interface = -1;
 }
 
 

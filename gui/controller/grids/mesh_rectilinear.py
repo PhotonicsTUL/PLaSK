@@ -16,7 +16,7 @@ from ...qt.QtWidgets import *
 from ...utils import getattr_by_path
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
-from ...model.grids.mesh_rectilinear import AXIS_NAMES
+from ...model.grids.mesh_rectangular import AXIS_NAMES
 from ..defines import get_defines_completer
 from ...utils.widgets import ComboBox, TextEdit
 

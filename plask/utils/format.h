@@ -7,7 +7,8 @@ This file contains utils to format strings.
 
 //#include <plask/config.h>
 #include <boost/lexical_cast.hpp>
-#include <cppformat/format.h>
+#include <fmt/format.h>
+#include <fmt/ostream.h>
 
 namespace plask {
 

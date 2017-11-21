@@ -72,7 +72,7 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
         double T = 0., W = 0.;
         for (size_t k = 0, v = ri * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
             if (solver->stack[k] == layer) {
-                double w = (k == 0 || k == mesh->vert()->size()-1)? 1e-6 : solver->vbounds[k] - solver->vbounds[k-1];
+                double w = (k == 0 || k == mesh->vert()->size()-1)? 1e-6 : solver->vbounds->at(k) - solver->vbounds->at(k-1);
                 T += w * temperature[v]; W += w;
             }
         }

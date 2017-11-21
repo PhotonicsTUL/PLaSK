@@ -11,8 +11,8 @@
 # GNU General Public License for more details.
 
 from . import TreeFragmentGrid, GridWithoutConf
-from .mesh_rectilinear import RectangularMesh, RectangularMesh1D
-from .generator_rectangular import RectangularDivideGenerator, RectangularSmoothGenerator
+from .mesh_rectangular import RectangularMesh, RectangularMesh1D
+from .generator_rectangular import RectangularDivideGenerator, RectangularSmoothGenerator, RectangularRegularGenerator
 
 MESHES_TYPES = {
     'ordered': RectangularMesh1D.from_xml,
@@ -24,16 +24,19 @@ MESHES_TYPES = {
 GENERATORS_TYPES = {
     'ordered': {
             'divide': RectangularDivideGenerator.from_xml,
+            'regular': RectangularRegularGenerator.from_xml,
             'simple': GridWithoutConf.from_xml,
             'smooth': RectangularSmoothGenerator.from_xml,
     },
     'rectangular2d': {
             'divide': RectangularDivideGenerator.from_xml,
+            'regular': RectangularRegularGenerator.from_xml,
             'simple': GridWithoutConf.from_xml,
             'smooth': RectangularSmoothGenerator.from_xml,
     },
     'rectangular3d': {
             'divide': RectangularDivideGenerator.from_xml,
+            'regular': RectangularRegularGenerator.from_xml,
             'simple': GridWithoutConf.from_xml,
             'smooth': RectangularSmoothGenerator.from_xml,
     },
