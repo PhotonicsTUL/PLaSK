@@ -186,7 +186,7 @@ void SlabSolver<BaseT>::setupLayers()
 
     if (inTemperature.hasProvider() && !isnan(temp_dist) && !isinf(temp_dist))
         adapter.resetMidpoints(vbounds, temp_dist);
-    else if (this->geometry->isSymmetric(Geometry::DIRECTION_VERT))
+    else
         adapter.resetMidpoints(vbounds);
 
     // Divide layers with too large temperature gradient
