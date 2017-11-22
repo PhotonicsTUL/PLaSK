@@ -17,7 +17,6 @@ if(MSVC)    # flags needed by Visual Studio:
     # NOMINMAX prevents windows header from defining min, max macros, see http://stackoverflow.com/questions/1904635/warning-c4003-and-errors-c2589-and-c2059-on-x-stdnumeric-limitsintmax
     # _SCL_SECURE_NO_WARNINGS and D_CRT_SECURE_NO_WARNINGS hide many warnings which are caused by boost and fmt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
     add_definitions(-DBOOST_ALL_DYN_LINK)   # MSVC+cmake require this to properly detect dynamic boost libraries
-    add_definitions(-DXML_STATIC)           # We use static expat - TODO: this is needed only for libplask, static/dynamic should be detected
     add_definitions(-DFMT_HEADER_ONLY)      # don't compile fmt, workaround many linker errors
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++14")
 else(MSVC)
@@ -108,6 +107,12 @@ option(PLASK_EXPORTS_FMT "Export fmt symbols in libplask (affects only windows)"
 
 option(INSTALL_DEV "Install headers to system locations" OFF)
 option(INSTALL_MATERIALS_DEV "Install headers for compuling materials" OFF)
+
+option(XML_STATIC "If enabled, XML_STATIC symbol will be defined, which is required to use static expat build in Windows." OFF)
+if (XML_STATIC)
+    add_definitions(-DXML_STATIC)
+endif (XML_STATIC)
+
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     option(USE_GLIBCXX_PARALLEL "use the libstdc++ parallel mode (experimental in libstdc++v3)" OFF)
