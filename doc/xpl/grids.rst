@@ -314,7 +314,9 @@ Possible <generator> contents for different types and methods
 
    .. xml:tag:: <spacing/> [in rectangular2d, regular generator]
 
-      :attr every: Approximate single element size.
+      :attr every: Approximate single element size along all axes (this is mutaally exclusive with all other attributes).
+      :attr every0: Approximate single element size along horizontal axis.
+      :attr every1: Approximate single element size along vertical axis.
 
 
 .. xml:tag:: <generator type="rectangular2d" method="simple"> [rectangular2d, simple]
@@ -447,7 +449,10 @@ Possible <generator> contents for different types and methods
 
    .. xml:tag:: <spacing/> [in rectangular3d, regular generator]
 
-      :attr every: Approximate single element size.
+      :attr every: Approximate single element size along all axes (this is mutaally exclusive with all other attributes).
+      :attr every0: Approximate single element size along longitudinal axis.
+      :attr every1: Approximate single element size along transverse axis.
+      :attr every2: Approximate single element size along vertical axis.
 
 
 .. xml:tag:: <generator type="rectangular3d" method="simple"> [rectangular3d, simple]

@@ -104,7 +104,7 @@ class PLASK_API OrderedMesh1DRegularGenerator: public MeshGeneratorD<1> {
 
     /**
      * Create generator
-     * \param extend_to_zero indicates whether there always must be a line at tran = 0
+     * \param spacing approximate distance between mesh lines
      */
     OrderedMesh1DRegularGenerator(double spacing): spacing(spacing) {}
 
@@ -119,15 +119,22 @@ class PLASK_API OrderedMesh1DRegularGenerator: public MeshGeneratorD<1> {
 class PLASK_API RectangularMesh2DRegularGenerator: public MeshGeneratorD<2> {
 
     /// Requested spacing
-    double spacing;
+    double spacing0, spacing1;
 
   public:
 
     /**
      * Create generator
-     * \param extend_to_zero indicates whether there always must be a line at tran = 0
+     * \param spacing approximate distance between mesh lines
      */
-    RectangularMesh2DRegularGenerator(double spacing): spacing(spacing) {}
+    RectangularMesh2DRegularGenerator(double spacing): spacing0(spacing), spacing1(spacing) {}
+
+    /**
+     * Create generator
+     * \param spacing0 approximate distance between mesh lines for horizontal axis
+     * \param spacing1 approximate distance between mesh lines for vertical axis
+     */
+    RectangularMesh2DRegularGenerator(double spacing0, double spacing1): spacing0(spacing0), spacing1(spacing1) {}
 
     virtual shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
@@ -139,14 +146,24 @@ class PLASK_API RectangularMesh2DRegularGenerator: public MeshGeneratorD<2> {
 struct PLASK_API RectangularMesh3DRegularGenerator: public MeshGeneratorD<3> {
 
     /// Requested spacing
-    double spacing;
+    double spacing0, spacing1, spacing2;
 
   public:
 
     /**
      * Create generator
+     * \param spacing approximate distance between mesh lines
      */
-    RectangularMesh3DRegularGenerator(double spacing): spacing(spacing) {}
+    RectangularMesh3DRegularGenerator(double spacing): spacing0(spacing), spacing1(spacing), spacing2(spacing) {}
+
+    /**
+     * Create generator
+     * \param spacing0 approximate distance between mesh lines for longitudinal axis
+     * \param spacing1 approximate distance between mesh lines for transverse axis
+     * \param spacing2 approximate distance between mesh lines for vertical axis
+     */
+    RectangularMesh3DRegularGenerator(double spacing0, double spacing1, double spacing2):
+        spacing0(spacing0), spacing1(spacing1), spacing2(spacing2) {}
 
     virtual shared_ptr<MeshD<3>> generate(const shared_ptr<GeometryObjectD<3>>& geometry) override;
 };

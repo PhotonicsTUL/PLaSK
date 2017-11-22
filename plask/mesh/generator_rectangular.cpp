@@ -109,8 +109,9 @@ shared_ptr<MeshD<3>> RectangularMesh3DSimpleGenerator::generate(const shared_ptr
 }
 
 
-shared_ptr<OrderedAxis> refineAxis(const shared_ptr<MeshAxis>& axis, double spacing)
-{
+
+shared_ptr<OrderedAxis> refineAxis(const shared_ptr<MeshAxis>& axis, double spacing) {
+    if (spacing == 0. || isinf(spacing) || isnan(spacing)) return make_shared<OrderedAxis>(*axis);
     size_t total = 1;
     for (size_t i = 1; i < axis->size(); ++i) {
         total += size_t(max(round((axis->at(i) - axis->at(i-1)) / spacing), 1.));
@@ -141,16 +142,16 @@ shared_ptr<MeshD<1>> OrderedMesh1DRegularGenerator::generate(const shared_ptr<Ge
 shared_ptr<MeshD<2>> RectangularMesh2DRegularGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     auto mesh1 = makeGeometryGrid(geometry);
-    auto mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh1->axis0, spacing), refineAxis(mesh1->axis1, spacing));
-    writelog(LOG_DETAIL, "mesh.Rectangular2D.SimpleGenerator: Generating new mesh ({0}x{1})", mesh->axis0->size(), mesh->axis1->size());
+    auto mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh1->axis0, spacing0), refineAxis(mesh1->axis1, spacing1));
+    writelog(LOG_DETAIL, "mesh.Rectangular2D.RegularGenerator: Generating new mesh ({0}x{1})", mesh->axis0->size(), mesh->axis1->size());
     return mesh;
 }
 
 shared_ptr<MeshD<3>> RectangularMesh3DRegularGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
     auto mesh1 = makeGeometryGrid(geometry);
-    auto mesh = make_shared<RectangularMesh<3>>(refineAxis(mesh1->axis0, spacing), refineAxis(mesh1->axis1, spacing), refineAxis(mesh1->axis2, spacing));
-    writelog(LOG_DETAIL, "mesh.Rectangular3D.SimpleGenerator: Generating new mesh ({0}x{1}x{2})", mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size());
+    auto mesh = make_shared<RectangularMesh<3>>(refineAxis(mesh1->axis0, spacing0), refineAxis(mesh1->axis1, spacing1), refineAxis(mesh1->axis2, spacing2));
+    writelog(LOG_DETAIL, "mesh.Rectangular3D.RegularGenerator: Generating new mesh ({0}x{1}x{2})", mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size());
     return mesh;
 }
 
@@ -473,9 +474,72 @@ static shared_ptr<MeshGenerator> readTrivialGenerator(XMLReader& reader, const M
     return plask::make_shared<GeneratorT>();
 }
 
-static RegisterMeshGeneratorReader rectilinear_simplegenerator_reader  ("ordered.simple",   readTrivialGenerator<OrderedMesh1DSimpleGenerator>);
+static RegisterMeshGeneratorReader ordered_simplegenerator_reader  ("ordered.simple",   readTrivialGenerator<OrderedMesh1DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectangular2d_simplegenerator_reader("rectangular2d.simple", readTrivialGenerator<RectangularMesh2DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectangular3d_simplegenerator_reader("rectangular3d.simple", readTrivialGenerator<RectangularMesh3DSimpleGenerator>);
+
+
+static shared_ptr<MeshGenerator> readRegularGenerator1(XMLReader& reader, const Manager&)
+{
+    double spacing = INFINITY;
+    while (reader.requireTagOrEnd()) {
+        if (reader.getNodeName() == "spacing") {
+            spacing = reader.getAttribute<double>("every", spacing);
+            reader.requireTagEnd();
+        } else
+            throw XMLUnexpectedElementException(reader, "<spacing>");
+    }
+    return plask::make_shared<OrderedMesh1DRegularGenerator>(spacing);
+}
+
+static shared_ptr<MeshGenerator> readRegularGenerator2(XMLReader& reader, const Manager&)
+{
+    double spacing0 = INFINITY,
+           spacing1 = INFINITY;
+    while (reader.requireTagOrEnd()) {
+        if (reader.getNodeName() == "spacing") {
+            if (reader.hasAttribute("every")) {
+                if (reader.hasAttribute("every0")) throw XMLConflictingAttributesException(reader, "every", "every0");
+                if (reader.hasAttribute("every1")) throw XMLConflictingAttributesException(reader, "every", "every1");
+                spacing0 = spacing1 = reader.requireAttribute<double>("every");
+            } else {
+                spacing0 = reader.getAttribute<double>("every0", spacing0);
+                spacing1 = reader.getAttribute<double>("every1", spacing1);
+            }
+            reader.requireTagEnd();
+        } else
+            throw XMLUnexpectedElementException(reader, "<spacing>");
+    }
+    return plask::make_shared<RectangularMesh2DRegularGenerator>(spacing0, spacing1);
+}
+
+static shared_ptr<MeshGenerator> readRegularGenerator3(XMLReader& reader, const Manager&)
+{
+    double spacing0 = INFINITY,
+           spacing1 = INFINITY,
+           spacing2 = INFINITY;
+    while (reader.requireTagOrEnd()) {
+        if (reader.getNodeName() == "spacing") {
+            if (reader.hasAttribute("every")) {
+                if (reader.hasAttribute("every0")) throw XMLConflictingAttributesException(reader, "every", "every0");
+                if (reader.hasAttribute("every1")) throw XMLConflictingAttributesException(reader, "every", "every1");
+                if (reader.hasAttribute("every2")) throw XMLConflictingAttributesException(reader, "every", "every2");
+                spacing0 = spacing1 = reader.requireAttribute<double>("every");
+            } else {
+                spacing0 = reader.getAttribute<double>("every0", spacing0);
+                spacing1 = reader.getAttribute<double>("every1", spacing1);
+                spacing2 = reader.getAttribute<double>("every2", spacing2);
+            }
+            reader.requireTagEnd();
+        } else
+            throw XMLUnexpectedElementException(reader, "<spacing>");
+    }
+    return plask::make_shared<RectangularMesh3DRegularGenerator>(spacing0, spacing1, spacing2);
+}
+
+static RegisterMeshGeneratorReader ordered_regulargenerator_reader("ordered.regular", readRegularGenerator1);
+static RegisterMeshGeneratorReader rectangular2d_regulargenerator_reader("rectangular2d.regular", readRegularGenerator2);
+static RegisterMeshGeneratorReader rectangular3d_regulargenerator_reader("rectangular3d.regular", readRegularGenerator3);
 
 
 template <int dim>
@@ -522,7 +586,7 @@ template struct PLASK_API RectangularMeshDivideGenerator<1>;
 template struct PLASK_API RectangularMeshDivideGenerator<2>;
 template struct PLASK_API RectangularMeshDivideGenerator<3>;
 
-static RegisterMeshGeneratorReader rectilinear_dividinggenerator_reader  ("ordered.divide",   readRectangularDivideGenerator<1>);
+static RegisterMeshGeneratorReader ordered_dividinggenerator_reader("ordered.divide", readRectangularDivideGenerator<1>);
 static RegisterMeshGeneratorReader rectangular2d_dividinggenerator_reader("rectangular2d.divide", readRectangularDivideGenerator<2>);
 static RegisterMeshGeneratorReader rectangular3d_dividinggenerator_reader("rectangular3d.divide", readRectangularDivideGenerator<3>);
 
@@ -572,51 +636,13 @@ shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLReader& reader, cons
     return result;
 }
 
-static RegisterMeshGeneratorReader rectilinear_smoothgenerator_reader  ("ordered.smooth",   readRectangularSmoothGenerator<1>);
+static RegisterMeshGeneratorReader ordered_smoothgenerator_reader("ordered.smooth", readRectangularSmoothGenerator<1>);
 static RegisterMeshGeneratorReader rectangular2d_smoothgenerator_reader("rectangular2d.smooth", readRectangularSmoothGenerator<2>);
 static RegisterMeshGeneratorReader rectangular3d_smoothgenerator_reader("rectangular3d.smooth", readRectangularSmoothGenerator<3>);
 
 template struct PLASK_API RectangularMeshSmoothGenerator<1>;
 template struct PLASK_API RectangularMeshSmoothGenerator<2>;
 template struct PLASK_API RectangularMeshSmoothGenerator<3>;
-
-
-
-
-// OBSOLETE
-
-template <int dim>
-static shared_ptr<MeshGenerator> readRectangularDivideGenerator_obsolete(XMLReader& reader, const Manager& manager)
-{
-    if (reader.requireAttribute("type") == "rectilinear1d")
-        writelog(LOG_WARNING, "Type 'rectilinear1d' is obsolete, use 'ordered' instead");
-    else if (reader.requireAttribute("type") == "rectilinear2d")
-        writelog(LOG_WARNING, "Type 'rectilinear2d' is obsolete, use 'rectangular2d' instead");
-    else if (reader.requireAttribute("type") == "rectilinear3d")
-        writelog(LOG_WARNING, "Type 'rectilinear3d' is obsolete, use 'rectangular3d' instead");
-    return readRectangularDivideGenerator<dim>(reader, manager);
-}
-
-template <typename GeneratorT>
-static shared_ptr<MeshGenerator> readTrivialGenerator_obsolete(XMLReader& reader, const Manager&)
-{
-    if (reader.requireAttribute("type") == "rectilinear1d")
-        writelog(LOG_WARNING, "Type 'rectilinear1d' is obsolete, use 'ordered' instead");
-    else if (reader.requireAttribute("type") == "rectilinear2d")
-        writelog(LOG_WARNING, "Type 'rectilinear2d' is obsolete, use 'rectangular2d' instead");
-    else if (reader.requireAttribute("type") == "rectilinear3d")
-        writelog(LOG_WARNING, "Type 'rectilinear3d' is obsolete, use 'rectangular3d' instead");
-    reader.requireTagEnd();
-    return plask::make_shared<GeneratorT>();
-}
-
-static RegisterMeshGeneratorReader rectilinearmesh1d_simplegenerator_reader("rectilinear1d.simple", readTrivialGenerator_obsolete<OrderedMesh1DSimpleGenerator>);
-static RegisterMeshGeneratorReader rectilinearmesh2d_simplegenerator_reader("rectilinear2d.simple", readTrivialGenerator_obsolete<RectangularMesh2DSimpleGenerator>);
-static RegisterMeshGeneratorReader rectilinearmesh3d_simplegenerator_reader("rectilinear3d.simple", readTrivialGenerator_obsolete<RectangularMesh3DSimpleGenerator>);
-
-static RegisterMeshGeneratorReader rectilinearmesh1d_dividinggenerator_reader("rectilinear1d.divide", readRectangularDivideGenerator_obsolete<1>);
-static RegisterMeshGeneratorReader rectilinearmesh2d_dividinggenerator_reader("rectilinear2d.divide", readRectangularDivideGenerator_obsolete<2>);
-static RegisterMeshGeneratorReader rectilinearmesh3d_dividinggenerator_reader("rectilinear3d.divide", readRectangularDivideGenerator_obsolete<3>);
 
 
 } // namespace plask
