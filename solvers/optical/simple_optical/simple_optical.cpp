@@ -29,11 +29,23 @@ void SimpleOptical::say_hello()
     std::cout << "nr: "; for (double p: *points->vert()) std::cout << str(geometry->getMaterial(vec(0.5, p))->Nr(1300, 300)) << " "; std::cout << std::endl;
 }
 
+void SimpleOptical::onInitialize()
+{
+    if (!geometry) throw NoGeometryException(getId());
+    shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
+    axis = mesh->vert();
+    for (double p: *axis) std::cout<<p<< " "; 
+    
+    // Tutaj inicjuje Pan współczynniki załamania albo listę materiałów w kolejnych warstwach
+    // [...]
+}
+
 void SimpleOptical::simpleVerticalSolver()
 {
     shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
     shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
     
+    onInitialize();
     double Wavelength = 1300.0; // nm
     k0 = 2e3*M_PI/Wavelength;
     yend = 3;
@@ -116,13 +128,13 @@ dcomplex SimpleOptical::get_T_bb(const dcomplex& x, const std::vector< dcomplex 
       std::cout<<i<<std::endl;
     
    
+    double distance_between_layer[3] = {1.5, 1., 0.5};
+ 
     Matrix T = Matrix::eye();
     for (size_t i = ybegin; i < yend-1; ++i) {
 	std::cout<<"i = " << i << std::endl;
-        double d = 1;
-        //if (i != ybegin and ybegin != 0) 
-	//  d = mesh->axis1->at(i+1) - mesh->axis1->at(i);
-	// else d = 0.;
+        double d = 0;
+	d = distance_between_layer[i];
         std::cout<<"d = " << d << std::endl;
 	dcomplex phas = exp(- I * ky[i] * d);
         // Transfer through boundary

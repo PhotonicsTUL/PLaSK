@@ -49,18 +49,18 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
 
      virtual std::string getClassName() const { return "SimpleOptical"; }
    
-     virtual void onInitialize() {
-	  if (!geometry) throw NoGeometryException(getId());
-     }
+     void onInitialize() override;
+     
+     shared_ptr<MeshAxis> axis;   
      
      /// \return current wavelength
-    dcomplex getWavelength() const { return 2e3*M_PI / k0; }
+     dcomplex getWavelength() const { return 2e3*M_PI / k0; }
 
     /**
      * Set new wavelength
      * \param wavelength new wavelength
      */
-    void setWavelength(dcomplex wavelength) {
+     void setWavelength(dcomplex wavelength) {
         k0 = 2e3*M_PI / wavelength;
         invalidate();
     }
