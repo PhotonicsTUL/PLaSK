@@ -98,11 +98,11 @@ struct PLASK_API MaterialsDB {
      */
     struct PLASK_API MixedCompositionFactory {
 
-    protected:
+      protected:
 
         shared_ptr<const MaterialConstructor> constructor;
 
-    public:
+      public:
         /**
          * Construct MixedCompositionFactory for given material constructor and two compositions for this constructor.
          * @param constructor material constructor
@@ -132,7 +132,7 @@ struct PLASK_API MaterialsDB {
     //TODO cache: double -> constructed material
     struct PLASK_API MixedCompositionOnlyFactory: public MixedCompositionFactory {    //TODO nonlinear mixing with functor double [0.0, 1.0] -> double [0.0, 1.0]
 
-    protected:
+      protected:
 
         Material::Composition material1composition, material2composition;
 
@@ -145,7 +145,7 @@ struct PLASK_API MaterialsDB {
          */
         Material::Composition mixedComposition(double m1_weight) const;
 
-    public:
+      public:
         /**
          * Construct MixedCompositionFactory for given material constructor and two compositions for this constructor.
          * @param constructor material constructor
@@ -173,12 +173,12 @@ struct PLASK_API MaterialsDB {
      * Factory of complex material which construct it version with mixed version of two compositions and dopants.
      */
     struct PLASK_API MixedCompositionAndDopantFactory: public MixedCompositionOnlyFactory {
-    protected:
+      protected:
         Material::DopingAmountType dopAmountType;
 
         double m1DopAmount, m2DopAmount;
 
-    public:
+      public:
         /**
          * Construct MixedCompositionAndDopantFactory for given material constructor, two compositions and dopings amounts for this constructor.
          * @param constructor material constructor
@@ -212,14 +212,14 @@ struct PLASK_API MaterialsDB {
      * Factory of complex material which construct it version with mixed version of two dopants (for material with same compositions).
      */
     struct PLASK_API MixedDopantFactory: public MixedCompositionFactory {
-    protected:
+      protected:
         Material::DopingAmountType dopAmountType;
 
         double m1DopAmount, m2DopAmount;
 
         double shape;
 
-    public:
+      public:
         /**
          * Construct MixedDopantFactory for given material constructor of simple material, and doping amounts for this constructor.
          * @param constructor material constructor
@@ -241,6 +241,38 @@ struct PLASK_API MaterialsDB {
 
         virtual shared_ptr<Material> singleMaterial() const override {
             return m1DopAmount == m2DopAmount ? (*constructor)(Material::Composition(), dopAmountType, m1DopAmount) : shared_ptr<Material>();
+        }
+    };
+
+    /**
+     * Dummy mixed factory for use in draft mode
+     */
+    struct PLASK_API DummyMixedCompositionFactory: public MixedCompositionFactory {
+      protected:
+        std::string full_name;
+
+      public:
+        /**
+         * Construct MixedDopantFactory for given material constructor of simple material, and doping amounts for this constructor.
+         * @param constructor material constructor
+         * @param dopAmountType type of doping amounts, common for both materials
+         * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
+         * \param shape changing material shape exponent
+         */
+        DummyMixedCompositionFactory(const std::string& name1, const std::string& name2)
+            : MixedCompositionFactory(shared_ptr<const MaterialConstructor>()), full_name(name1 + "..." + name2) {}
+
+        /**
+         * Construct material.
+         * @param m1_weight weight of first composition and dopant
+         * @return constructed material
+         */
+        shared_ptr<Material> operator()(double m1_weight) const override {
+            return plask::make_shared<DummyMaterial>(full_name);
+        }
+
+        virtual shared_ptr<Material> singleMaterial() const override {
+            return plask::make_shared<DummyMaterial>(full_name);
         }
     };
 
