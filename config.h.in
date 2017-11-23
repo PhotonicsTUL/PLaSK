@@ -114,7 +114,7 @@
 #endif
 
 #ifndef PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_CLASS
-    #define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_CLASS(...) extern template struct __VA_ARGS__ ;
+    #define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_CLASS(...) extern template class __VA_ARGS__ ;
 #endif
 
 
