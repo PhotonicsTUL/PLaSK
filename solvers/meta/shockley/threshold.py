@@ -297,7 +297,7 @@ class ThresholdSearch(ThermoElectric):
         plask.xlabel("Wavelength [nm]")
         plask.ylabel("Determinant [ar.u.]")
 
-    def compute(self, save=True, invalidate=False):
+    def compute(self, save=True, invalidate=False, group='ThresholdSearch'):
         """
         Execute the algorithm.
 
@@ -312,8 +312,11 @@ class ThresholdSearch(ThermoElectric):
                 either the batch job id or the current time if no batch system
                 is used. The filename can be overridden by setting this parameter
                 as a string.
+
             invalidate (bool): If this flag is set, solvers are invalidated
                                in the beginning of the computations.
+
+            group (str): HDF5 group to save the data under.
 
         Returns:
             The voltage set to ``ivolt`` boundary condition for the threshold.
@@ -402,7 +405,7 @@ class ThresholdSearch(ThermoElectric):
                 for optical field.
         """
         if optical_resolution is None: optical_resolution = self.optical_resolution
-        h5file, group, filename = h5open(filename, group)
+        h5file, group, filename, close = h5open(filename, group)
         self._save_thermoelectric(h5file, group)
         levels = list(self._get_levels(self.diffusion.geometry, self.diffusion.mesh, 'QW', 'gain'))
         for no, mesh in levels:
@@ -421,7 +424,8 @@ class ThresholdSearch(ThermoElectric):
             plask.save_field(ofield, h5file, group + '/LightMagnitude')
             nrfield = self.optical.outRefractiveIndex(omesh)
             plask.save_field(nrfield, h5file, group + '/RefractiveIndex')
-        h5file.close()
+        if close:
+            h5file.close()
         plask.print_log('info', "Fields saved to file '{}'".format(filename))
         return filename
 

@@ -36,8 +36,10 @@ def h5open(filename, group):
     if type(filename) is h5py.File:
         h5file = filename
         filename = h5file.filename
+        close = False
     else:
         h5file = h5py.File(filename, 'a')
+        close = True
     orig_group = group; idx = 1
     while group in h5file:
         group = "{}-{}".format(orig_group, idx)
@@ -46,7 +48,7 @@ def h5open(filename, group):
         plask.print_log('warning',
                         "Group '{}' exists in HDF5 file '{}'. Saving to group '{}'" \
                         .format(orig_group, filename, group))
-    return h5file, group, filename
+    return h5file, group, filename, close
 
 
 class ThermoElectric(plask.Solver):
@@ -131,7 +133,7 @@ class ThermoElectric(plask.Solver):
         self.thermal.invalidate()
         self.electrical.invalidate()
 
-    def compute(self, save=True, invalidate=True):
+    def compute(self, save=True, invalidate=True, group='ThermoElectric'):
         """
         Run calculations.
 
@@ -145,8 +147,11 @@ class ThermoElectric(plask.Solver):
                 either the batch job id or the current time if no batch system
                 is used. The filename can be overridden by setting this parameter
                 as a string.
+
             invalidate (bool): If this flag is set, solvers are invalidated
                                in the beginning of the computations.
+
+            group (str): HDF5 group to save the data under.
         """
         if invalidate:
             self.thermal.invalidate()
@@ -166,7 +171,7 @@ class ThermoElectric(plask.Solver):
             plask.print_log('important', "  " + line)
 
         if save:
-            self.save(None if save is True else save)
+            self.save(None if save is True else save, group)
 
     def get_total_current(self, nact=0):
         """
@@ -232,9 +237,10 @@ class ThermoElectric(plask.Solver):
 
             group (str): HDF5 group to save the data under.
         """
-        h5file, group, filename = h5open(filename, group)
+        h5file, group, filename, close = h5open(filename, group)
         self._save_thermoelectric(h5file, group)
-        h5file.close()
+        if close:
+            h5file.close()
         plask.print_log('info', "Fields saved to file '{}'".format(filename))
         return filename
 
