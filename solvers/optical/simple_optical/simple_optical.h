@@ -42,25 +42,28 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
 	};
 	
      
-	
-     plask::optical::simple_optical::RootDigger::Params stripe_root; 
-     
      void loadConfiguration(XMLReader& reader, Manager& manager);
 
      virtual std::string getClassName() const { return "SimpleOptical"; }
    
      void onInitialize() override;
      
-     shared_ptr<MeshAxis> axis;   
+     shared_ptr<MeshAxis> axis_vertical;   
+     
+     shared_ptr<MeshAxis> axis_horizontal;
+     
+     shared_ptr<MeshAxis> axis_midpoints_vertical;
+     
+     shared_ptr<MeshAxis> axis_midpoints_horizontal;
      
      /// \return current wavelength
-     dcomplex getWavelength() const { return 2e3*M_PI / k0; }
+     double getWavelength() const { return 2e3*M_PI / k0; }
 
     /**
      * Set new wavelength
      * \param wavelength new wavelength
      */
-     void setWavelength(dcomplex wavelength) {
+     void setWavelength(double wavelength) {
         k0 = 2e3*M_PI / wavelength;
         invalidate();
     }
@@ -68,16 +71,19 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      void simpleVerticalSolver();
 
      void say_hello();
+    
+     dcomplex comput_T_bb(const dcomplex& x, const std::vector< dcomplex >& NR);
      
-     dcomplex get_T_bb(const dcomplex& x, const std::vector< dcomplex >& NR);
    
 protected:
   friend struct RootDigger;
   
+   /// Computed horizontal and vertical fields
+  std::vector<Field,aligned_allocator<Field>> yfields;
+    
   double stripex;             ///< Position of the main stripe
 
-  size_t xbegin,  ///< First element of horizontal mesh to consider
-         xend,    ///< Last element of horizontal mesh to consider
+  size_t x,	   ///< poitn, when program computed vertical fields
          ybegin,  ///< First element of vertical mesh to consider
          yend;    ///< Last element of vertical mesh to consider
          
@@ -85,16 +91,13 @@ protected:
   
   shared_ptr<RectangularMesh<2>> mesh;   /// Mesh over which the calculations are performed
   
-  std::vector<std::vector<dcomplex>>nrCache; /// Cached refractive indices
+  double k0;
   
-  dcomplex detS1(const dcomplex& x, const std::vector<dcomplex>& NR, bool save=false);
+  dcomplex t_bb;
   
-  std::vector<Field,aligned_allocator<Field>> yfields; /// Computed horizontal and vertical fields
+  std::vector<dcomplex> refractive_index_vec;
   
-  dcomplex k0;
-  
-  std::vector<dcomplex> refractive_index;
-   
+  void initialize_refractive_index_vec();
 };
   
 }}} // namespace
