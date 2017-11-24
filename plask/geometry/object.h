@@ -19,9 +19,9 @@ This file contains base class for geometries objects.
 #include "../utils/iterators.h"
 
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+/*#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   define BOOST_USE_WINDOWS_H
-#endif
+#endif*/
 #include <boost/signals2.hpp>
 #include "../utils/event.h"
 

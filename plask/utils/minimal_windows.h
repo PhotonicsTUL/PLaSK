@@ -23,6 +23,10 @@
     #define NOCOMM
 #endif
 
+/*#ifndef _WIN32_WINNT
+#   define _WIN32_WINNT 0x502
+#endif*/
+
 #include <windows.h>
 
 //#ifdef copysign
@@ -34,7 +38,7 @@
 #pragma pop_macro("WIN32_LEAN_AND_MEAN")
 #pragma pop_macro("NOCOMM")
 
-#define BOOST_USE_WINDOWS_H
+//#define BOOST_USE_WINDOWS_H   // this should be uncommented in case of conflicts of boost definitions with definitions in windows.h
 #endif
 
 #endif // __PLASK__MINIMAL_WINDOWS_H

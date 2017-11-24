@@ -300,16 +300,17 @@ void SlabSolver<BaseT>::setupLayers()
             }
             size_t n = indices.size();
             // Make distance matrix
-            double dists[n][n];
+            std::unique_ptr<double[]> dists(new double[n * n]);
+#define dists_at(a, b) dists[(a)*n+(b)] //TODO develop plask::UniquePtr2D<> and remove this macro
             for (size_t i = 0; i != n; ++i) {
-                dists[i][i] = INFINITY; // the simplest way to avoid clustering with itself
+                dists_at(i, i) = INFINITY; // the simplest way to avoid clustering with itself
                 for (size_t j = i+1; j != n; ++j) {
                     double mdt = 0.;
                     for (size_t k = 0; k != adapter.size(); ++k) {
                         double dt = abs(temp[adapter.idx(k, indices[i])] - temp[adapter.idx(k, indices[j])]);
                         if (dt > mdt) mdt = dt;
                     }
-                    dists[i][j] = dists[j][i] = mdt;
+                    dists_at(i, j) = dists_at(j, i) = mdt;
                 }
             }
             // Go and merge groups with the smallest distances
@@ -322,7 +323,7 @@ void SlabSolver<BaseT>::setupLayers()
                         double dt = 0.;
                         for (ItemIterator i1 = g1->begin(); i1 != g1->end(); ++i1)
                             for (ItemIterator i2 = g2->begin(); i2 != g2->end(); ++i2)
-                                dt = max(dists[*i1][*i2], dt);
+                                dt = max(dists_at(*i1, *i2), dt);
                         if (dt < mdt) {
                             mg1 = g1;
                             mg2 = g2;
