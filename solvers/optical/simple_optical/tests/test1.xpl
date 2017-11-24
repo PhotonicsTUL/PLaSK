@@ -17,9 +17,19 @@
 </solvers>
 
 <script><![CDATA[
-prosty.say_hello()
-prosty.simpleVerticalSolver()
-#print(prosty.geometry)
+plt.rcParams.update({'font.size': 28})
+
+wavelength = np.linspace(600, 1300, 701)
+t_bb = np.zeros(len(wavelength))
+for i in range(0, len(t_bb)):
+    prosty.simpleVerticalSolver(wavelength[i])
+    t_bb[i] = prosty.get_T_bb().real
+    print(t_bb[i])
+plt.plot(wavelength, t_bb, 'bo', markersize=15)
+plt.xlabel("wavelength [nm]")
+plt.ylabel("T bb")
+plt.show()
+
 
 ]]></script>
 

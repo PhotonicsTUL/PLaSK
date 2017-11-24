@@ -19,7 +19,8 @@ BOOST_PYTHON_MODULE(simple_optical)
     {CLASS(SimpleOptical, "SimpleOpticalCyl", "Short solver description.")
      METHOD(say_hello, say_hello, "This is demo function, which say hello");
      METHOD(simpleVerticalSolver, simpleVerticalSolver, "This is method to calcurate field in 1D");
-	
+     METHOD(get_T_bb, get_T_bb, "This method return T bb");
+     
     }
 
 }

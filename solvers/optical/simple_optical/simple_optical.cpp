@@ -43,7 +43,6 @@ void SimpleOptical::onInitialize()
     axis_midpoints_horizontal = midpoints->ee_x();
     ybegin = 0;
     yend = axis_vertical->size();
-    setWavelength(800);
     initialize_refractive_index_vec();
     std::cout<<"Wavelength: "<<getWavelength()<<std::endl;
 }
@@ -55,22 +54,16 @@ void SimpleOptical::initialize_refractive_index_vec()
   {
     refractive_index_vec.push_back((geometry->getMaterial(vec(0.5,  p))->Nr(getWavelength(), T)));
   }
-  
-  for (const dcomplex& i : refractive_index_vec)
-  {
-     std::cout<<i<<std::endl;
-  }
 }
 
-void SimpleOptical::simpleVerticalSolver()
+void SimpleOptical::simpleVerticalSolver(double wave_length)
 {
-   
+    setWavelength(wave_length);
     onInitialize();
     double c = 3e8;
     double freq = c/getWavelength();
      
-    comput_T_bb(freq, refractive_index_vec);
-    std::cout<< comput_T_bb(freq, refractive_index_vec) << std::endl;  
+    t_bb = comput_T_bb(freq, refractive_index_vec);  
   
 }
 
@@ -78,46 +71,40 @@ void SimpleOptical::simpleVerticalSolver()
 // x - frequency
 dcomplex SimpleOptical::comput_T_bb(const dcomplex& x, const std::vector< dcomplex >& NR)
 {
-  
     std::vector<dcomplex> ky(yend);
     for (size_t i = ybegin; i < yend; ++i) {
         ky[i] = k0 * sqrt(NR[i]*NR[i] - x*x);
         if (imag(ky[i]) > 0.) ky[i] = -ky[i];
     }
     
-         
-    std::cout<<"ky:"<<std::endl;
-    for (const dcomplex& i : ky) std::cout<<i<<std::endl;
-    
     std::vector<double> d;
     for (double p: *axis_vertical) d.push_back(p);
-    
-    
+        
     Matrix T = Matrix::eye();
     dcomplex h_i;
-    for (size_t i = ybegin; i < yend-1; ++i) {
-	 std::cout<<"i = " << i << std::endl;
-         std::cout<<"h_i = " << d[i+1]-d[i] << std::endl;
-	 h_i = d[i+1]-d[i];
-	 dcomplex phas = exp(- I * ky[i] * h_i*1e-6);
-	 std::cout<<"phas = " << phas << std::endl;
-	 std::cout<<"ky = " << ky[i] << std::endl;
-	 std::cout<<"-I*ky*h_i = " << -I*ky[i]*h_i*1e-6 << std::endl;
-	 //Transfer through boundary
-         dcomplex f = (polarization==TM)? (NR[i+1]/NR[i]) : 1.;
-         dcomplex n = 0.5 * ky[i]/ky[i+1] * f*f;
-         Matrix T1 = Matrix( (0.5+n), (0.5-n),
+    for (size_t i = ybegin; i < yend-1; ++i) { 
+	h_i = d[i+1]-d[i];
+	dcomplex phas = exp(- I * ky[i] * h_i*1e-6);
+	//Transfer through boundary
+        dcomplex f = (polarization==TM)? (NR[i+1]/NR[i]) : 1.;
+        dcomplex n = 0.5 * ky[i]/ky[i+1] * f*f;
+        Matrix T1 = Matrix( (0.5+n), (0.5-n),
                              (0.5-n), (0.5+n) );
-         T1.ff *= phas; T1.fb /= phas;
-         T1.bf *= phas; T1.bb /= phas;
-         T = T1 * T;
+        T1.ff *= phas; T1.fb /= phas;
+        T1.bf *= phas; T1.bb /= phas;
+        T = T1 * T;
      }
      
     return T.bb;
     
     return 0;
-  
+  }
+
+dcomplex SimpleOptical::get_T_bb()
+{
+  return t_bb;
 }
+
 
 
   

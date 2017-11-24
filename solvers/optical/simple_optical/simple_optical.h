@@ -68,11 +68,13 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
         invalidate();
     }
    
-     void simpleVerticalSolver();
+     void simpleVerticalSolver(double wave_length);
 
      void say_hello();
     
      dcomplex comput_T_bb(const dcomplex& x, const std::vector< dcomplex >& NR);
+     
+     dcomplex get_T_bb();
      
    
 protected:
