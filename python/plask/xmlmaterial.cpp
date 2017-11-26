@@ -95,8 +95,8 @@ class PythonEvalMaterial : public Material
 
     bool isEqual(const Material& other) const override {
         auto theother = static_cast<const PythonEvalMaterial&>(other);
-        return
-            cls == theother.cls && self.attr("__dict__") == theother.self.attr("__dict__");
+        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        return cls == theother.cls && self.attr("__dict__") == theother.self.attr("__dict__");
     }
 
     std::string name() const override { return cls->materialName; }
@@ -264,6 +264,7 @@ class PythonEvalMaterial : public Material
 
 inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
     auto material = plask::make_shared<PythonEvalMaterial>(self.lock(), base(composition, doping_amount_type, doping_amount));
+    OmpLockGuard<OmpNestLock> lock(python_omp_lock);
     material->self = py::object(shared_ptr<Material>(material));
     if (alloy) {
         for (auto item: Material::completeComposition(composition)) {
