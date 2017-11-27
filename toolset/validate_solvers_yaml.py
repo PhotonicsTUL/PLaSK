@@ -6,6 +6,12 @@ import jsonschema.exceptions
 
 from collections import OrderedDict
 
+def open_utf8(*args, **kwargs):
+    try:
+        return open(*args, encoding='utf-8', **kwargs)
+    except TypeError:
+        return open(*args, **kwargs)
+
 try:
     from ruamel import yaml
 
@@ -65,7 +71,7 @@ else:
         else:
             where = ""
         if line is not None:
-            lines = open(name).readlines()
+            lines = open_utf8(name).readlines()
             l0, l1 = max(line-BEFORE, 0), min(line+AFTER, len(lines))
             lines = lines[l0:l1]
             sys.stderr.write("Error in {} line {} [{}]:\n".format(name, line+1, where))
@@ -86,12 +92,12 @@ else:
 
 
 schema_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'doc', 'schema', 'solvers.yml')
-schema = yaml.load(open(schema_file))
+schema = yaml.load(open_utf8(schema_file))
 validator = jsonschema.validators.validator_for(schema)(schema)
 
 
 def validate(fname):
-    instance = yaml.load(open(fname), **kwargs)
+    instance = yaml.load(open_utf8(fname), **kwargs)
     error = jsonschema.exceptions.best_match(validator.iter_errors(instance))
     if error:
         print_error(error, fname, instance)

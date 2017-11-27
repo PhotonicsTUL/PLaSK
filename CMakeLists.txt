@@ -524,7 +524,7 @@ if(BUILD_PYTHON)
                     PATTERN *.pyo EXCLUDE
             )
             # This will make plaskgui work without install
-            execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ../../../gui ${PLASK_PATH}/gui)
+            execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/gui ${PLASK_PATH}/gui)
         endif()
 
         install(TARGETS plaskgui DESTINATION bin COMPONENT GUI)

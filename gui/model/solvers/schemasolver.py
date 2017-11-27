@@ -22,6 +22,7 @@ except ImportError:
 from ..info import Info
 from ...utils.xml import AttributeReader, print_interior
 from ...utils.validators import can_be_int, can_be_float, can_be_one_of, can_be_bool
+from ...utils.files import open_utf8
 from . import Solver, SOLVERS, CATEGORIES
 from .bconds import BCONDS, SchemaBoundaryConditions
 
@@ -331,7 +332,7 @@ def _iter_tags(tags):
 def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
     if yaml is None: return
 
-    for solver in yaml.load(open(filename)):
+    for solver in yaml.load(open_utf8(filename)):
         try:
             if not isinstance(solver, dict): continue
 
