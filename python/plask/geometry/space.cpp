@@ -149,16 +149,16 @@ static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple arg
     shared_ptr <Geometry2DCartesian> space;
 
     if (na == 3) {
-        if (kwargs.has_key("geometry")) throw TypeError("got multiple values for keyword argument 'geometry'");
-        if (kwargs.has_key("length")) throw TypeError("got multiple values for keyword argument 'length'");
+        if (kwargs.has_key("geometry")) throw TypeError(u8"got multiple values for keyword argument 'geometry'");
+        if (kwargs.has_key("length")) throw TypeError(u8"got multiple values for keyword argument 'length'");
         shared_ptr<GeometryObjectD<2>> object = py::extract<shared_ptr<GeometryObjectD<2>>>(args[1]);
         double length = py::extract<double>(args[2]);
         space = plask::make_shared<Geometry2DCartesian>(object, length);
     } else if (na == 2) {
-        if (kwargs.has_key("geometry")) throw TypeError("got multiple values for keyword argument 'geometry'");
+        if (kwargs.has_key("geometry")) throw TypeError(u8"got multiple values for keyword argument 'geometry'");
         try {
             shared_ptr<Extrusion> extrusion = py::extract<shared_ptr<Extrusion>>(args[1]);
-            if (kwargs.has_key("length")) throw TypeError("keyword argument 'length' not allowed if 'geometry' is of type Extrusion");
+            if (kwargs.has_key("length")) throw TypeError(u8"keyword argument 'length' not allowed if 'geometry' is of type Extrusion");
             space = plask::make_shared<Geometry2DCartesian>(extrusion);
         } catch (py::error_already_set) {
             PyErr_Clear();
@@ -167,7 +167,7 @@ static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple arg
                 object = py::extract<shared_ptr<GeometryObjectD<2>>>(args[1]);
             } catch (py::error_already_set) {
                 PyErr_Clear();
-                throw TypeError("'geometry' argument type must be either Extrusion or GeometryObject2D");
+                throw TypeError(u8"'geometry' argument type must be either Extrusion or GeometryObject2D");
             }
             double length = kwargs.has_key("length")? py::extract<double>(kwargs["length"]) : INFINITY;
             space = plask::make_shared<Geometry2DCartesian>(object, length);
@@ -175,7 +175,7 @@ static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple arg
     } else if (na == 1 && kwargs.has_key("geometry")) {
         try {
             shared_ptr<Extrusion> extrusion = py::extract<shared_ptr<Extrusion>>(kwargs["geometry"]);
-            if (kwargs.has_key("length")) throw TypeError("keyword argument 'length' not allowed if 'geometry' is of type Extrusion");
+            if (kwargs.has_key("length")) throw TypeError(u8"keyword argument 'length' not allowed if 'geometry' is of type Extrusion");
             space = plask::make_shared<Geometry2DCartesian>(extrusion);
         } catch (py::error_already_set) {
             PyErr_Clear();
@@ -184,20 +184,20 @@ static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple arg
                 object = py::extract<shared_ptr<GeometryObjectD<2>>>(kwargs["geometry"]);
             } catch (py::error_already_set) {
                 PyErr_Clear();
-                throw TypeError("'geometry' argument type must be either Extrusion or GeometryObject2D");
+                throw TypeError(u8"'geometry' argument type must be either Extrusion or GeometryObject2D");
             }
             double length = kwargs.has_key("length")? py::extract<double>(kwargs["length"]) : INFINITY;
             space = plask::make_shared<Geometry2DCartesian>(object, length);
         }
     } else {
-        throw TypeError("__init__() takes 2 or 3 non-keyword arguments ({0}) given", na);
+        throw TypeError(u8"__init__() takes 2 or 3 non-keyword arguments ({0}) given", na);
     }
 
     std::set<std::string> parsed_kwargs;
     parsed_kwargs.insert("geometry");
     parsed_kwargs.insert("length");
 
-    _Space_setEdges(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '{}'");
+    _Space_setEdges(*space, kwargs, parsed_kwargs, u8"__init__() got an unexpected keyword argument '{}'");
 
     space->axisNames = current_axes;
 
@@ -212,7 +212,7 @@ static shared_ptr<Geometry2DCylindrical> Geometry2DCylindrical__init__(py::tuple
 
     if (na == 2) geometry = args[1];
     else if (na == 1 && kwargs.has_key("geometry")) geometry = kwargs["geometry"];
-    else throw TypeError("__init__() takes 1 or 2 non-keyword arguments ({0} given)", na);
+    else throw TypeError(u8"__init__() takes 1 or 2 non-keyword arguments ({0} given)", na);
 
     try {
         shared_ptr<Revolution> revolution = py::extract<shared_ptr<Revolution>>(geometry);
@@ -224,7 +224,7 @@ static shared_ptr<Geometry2DCylindrical> Geometry2DCylindrical__init__(py::tuple
             object = py::extract<shared_ptr<GeometryObjectD<2>>>(geometry);
         } catch (py::error_already_set) {
             PyErr_Clear();
-            throw TypeError("'geometry' argument type must be either Extrusion or GeometryObject2D");
+            throw TypeError(u8"'geometry' argument type must be either Extrusion or GeometryObject2D");
         }
         space = plask::make_shared<Geometry2DCylindrical>(object);
     }
@@ -232,7 +232,7 @@ static shared_ptr<Geometry2DCylindrical> Geometry2DCylindrical__init__(py::tuple
     std::set<std::string> parsed_kwargs;
     parsed_kwargs.insert("geometry");
 
-    _Space_setEdges(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '{}'");
+    _Space_setEdges(*space, kwargs, parsed_kwargs, u8"__init__() got an unexpected keyword argument '{}'");
 
     space->axisNames = current_axes;
 
@@ -245,20 +245,20 @@ static shared_ptr<Geometry3D> Geometry3D__init__(py::tuple args, py::dict kwargs
     shared_ptr <Geometry3D> space;
 
     if (na == 2) {
-        if (kwargs.has_key("geometry")) throw TypeError("got multiple values for keyword argument 'geometry'");
+        if (kwargs.has_key("geometry")) throw TypeError(u8"got multiple values for keyword argument 'geometry'");
         shared_ptr<GeometryObjectD<3>> object = py::extract<shared_ptr<GeometryObjectD<3>>>(args[1]);
         space = plask::make_shared<Geometry3D>(object);
     } else if (na == 1 && kwargs.has_key("geometry")) {
         shared_ptr<GeometryObjectD<3>> object = py::extract<shared_ptr<GeometryObjectD<3>>>(kwargs["geometry"]);
         space = plask::make_shared<Geometry3D>(object);
     } else {
-        throw TypeError("__init__() exactly 2 non-keyword arguments ({0}) given", na);
+        throw TypeError(u8"__init__() exactly 2 non-keyword arguments ({0}) given", na);
     }
 
     std::set<std::string> parsed_kwargs;
     parsed_kwargs.insert("geometry");
 
-    _Space_setEdges(*space, kwargs, parsed_kwargs, "__init__() got an unexpected keyword argument '{}'");
+    _Space_setEdges(*space, kwargs, parsed_kwargs, u8"__init__() got an unexpected keyword argument '{}'");
 
     space->axisNames = current_axes;
 
@@ -272,12 +272,12 @@ static typename Primitive<S::DIM>::Box Space_childBoundingBox(const S& self) {
 
 static void Space_setEdges(Geometry& self, py::dict edges) {
     std::set<std::string> parsed;
-    _Space_setEdges(self, edges, parsed, "unexpected edge name '{}'");
+    _Space_setEdges(self, edges, parsed, u8"unexpected edge name '{}'");
 }
 
 struct EdgesProxy : public std::map<std::string, py::object> {
     void __setitem__(const std::string&, const py::object&) {
-        throw TypeError("Edges do not support item assignment");
+        throw TypeError(u8"Edges do not support item assignment");
     }
     std::string __repr__() const {
         std::string result;
@@ -660,10 +660,10 @@ void register_calculation_spaces() {
 //         .def("get_subspace", py::raw_function(&Space_getSubspace<Geometry2DCartesian>, 2),
 //              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and edges of the new space")
         .def("get_grid", get_grid<Geometry2DCartesian>,
-             "Get rectangular grid for space.\n\n"
-             "Return rectangular mesh that has lines along the edges of all the geometry\n"
-             "objects. In some objects are non-rectangular or non-uniform, they are divided\n"
-             "according to their settings.")
+             u8"Get rectangular grid for space.\n\n"
+             u8"Return rectangular mesh that has lines along the edges of all the geometry\n"
+             u8"objects. In some objects are non-rectangular or non-uniform, they are divided\n"
+             u8"according to their settings.")
     ;
 
     py::class_<Geometry2DCylindrical, shared_ptr<Geometry2DCylindrical>, py::bases<Geometry>>("Cylindrical2D",
@@ -684,15 +684,15 @@ void register_calculation_spaces() {
         py::no_init)
         .def("__init__", raw_constructor(Geometry2DCylindrical__init__, 1))
         .add_property("item", &Geometry2DCylindrical::getChild,
-                      ":class:`~plask.geometry.GeometryObject2D` at the root of the geometry tree."
+                      u8":class:`~plask.geometry.GeometryObject2D` at the root of the geometry tree."
                      )
         .add_property("revolution", &Geometry2DCylindrical::getRevolution,
-                      ":class:`~plask.geometry.Revolution` object at the very root of the tree."
+                      u8":class:`~plask.geometry.Revolution` object at the very root of the tree."
                      )
         .add_property("bbox", &Space_childBoundingBox<Geometry2DCylindrical>,
-                      "Minimal rectangle which contains all points of the geometry object.\n\n"
-                      "See also:\n"
-                      "    :class:`plask.geometry.Box2D`\n"
+                      u8"Minimal rectangle which contains all points of the geometry object.\n\n"
+                      u8"See also:\n"
+                      u8"    :class:`plask.geometry.Box2D`\n"
                      )
         .def_readwrite("default_material", &Geometry2DCylindrical::defaultMaterial,
                        u8"This material is returned by :meth:`~plask.geometry.Cylindrical2D.get_material`\n"
@@ -700,7 +700,7 @@ void register_calculation_spaces() {
                        u8"any object in the geometry tree.\n"
                       )
         .add_property("edges", &Geometry2DCylindrical_getEdges, &Space_setEdges,
-                      "Dictionary specifying the geometry edges.")
+                      u8"Dictionary specifying the geometry edges.")
         .def("get_material", &Geometry2DCylindrical::getMaterial, (py::arg("point")))
         .def("get_material", &Space_getMaterial<Geometry2DCylindrical>::call, (py::arg("c0"), "c1"),
              u8"Get material at the given point.\n\n"
@@ -891,10 +891,10 @@ void register_calculation_spaces() {
 //         .def("get_subspace", py::raw_function(&Space_getSubspace<Geometry2DCylindrical>, 2),
 //              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and edges of the new space")
         .def("get_grid", get_grid<Geometry2DCylindrical>,
-             "Get rectangular grid for space.\n\n"
-             "Return rectangular mesh that has lines along the edges of all the geometry\n"
-             "objects. In some objects are non-rectangular or non-uniform, they are divided\n"
-             "according to their settings.")
+             u8"Get rectangular grid for space.\n\n"
+             u8"Return rectangular mesh that has lines along the edges of all the geometry\n"
+             u8"objects. In some objects are non-rectangular or non-uniform, they are divided\n"
+             u8"according to their settings.")
     ;
 
     py::class_<Geometry3D, shared_ptr<Geometry3D>, py::bases<Geometry>>("Cartesian3D",
@@ -1125,10 +1125,10 @@ void register_calculation_spaces() {
 //         .def("getSubspace", py::raw_function(&Space_getSubspace<Geometry3D>, 2),
 //              u8"Return sub- or super-space originating from provided object.\nOptionally specify 'path' to the unique instance of this object and edges of the new space")
         .def("get_grid", get_grid<Geometry3D>,
-             "Get rectangular grid for space.\n\n"
-             "Return rectangular mesh that has lines along the edges of all the geometry\n"
-             "objects. In some objects are non-rectangular or non-uniform, they are divided\n"
-             "according to their settings.")
+             u8"Get rectangular grid for space.\n\n"
+             u8"Return rectangular mesh that has lines along the edges of all the geometry\n"
+             u8"objects. In some objects are non-rectangular or non-uniform, they are divided\n"
+             u8"according to their settings.")
     ;
 
     py::implicitly_convertible<shared_ptr<GeometryD<2>>, shared_ptr<Geometry>>();

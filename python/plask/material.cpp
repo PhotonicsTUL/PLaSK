@@ -40,7 +40,7 @@ namespace detail {
                 first = py::extract<double>(ofirst);
                 second = py::extract<double>(osecond);
             } else {
-                throw TypeError("float or sequence of exactly two floats required");
+                throw TypeError(u8"float or sequence of exactly two floats required");
             }
             new(storage) Tensor2<double>(first, second);
             data->convertible = storage;
@@ -73,7 +73,7 @@ namespace detail {
             if (py::len(seq) == 2) { idx[1] = 0; idx[2] = 1; idx[3] = -1; }
             else if (py::len(seq) == 3) { idx[3] = -1; }
             else if (py::len(seq) != 4)
-                throw TypeError("sequence of exactly 2, 3, or 4 complex required");
+                throw TypeError(u8"sequence of exactly 2, 3, or 4 complex required");
             for (int i = 0; i < 4; ++i) {
                 if (idx[i] != -1)  vals[i] = py::extract<dcomplex>(seq[idx[i]]);
                 else vals[i] = 0.;
@@ -166,9 +166,9 @@ class PythonMaterial: public Material, Overriden<Material>
             try {
                 cls_name = py::extract<std::string>(py::object(py::borrowed(self)).attr("__class__").attr("__name__"));
             } catch (py::error_already_set) {
-                throw TypeError("Cannot convert return value of method '{}' in unknown material class to correct type", name);
+                throw TypeError(u8"Cannot convert return value of method '{}' in unknown material class to correct type", name);
             }
-            throw TypeError("Cannot convert return value of method '{}' in material class '{}' to correct type", name, cls_name);
+            throw TypeError(u8"Cannot convert return value of method '{}' in material class '{}' to correct type", name, cls_name);
         }
     }
 
@@ -268,7 +268,7 @@ class PythonMaterial: public Material, Overriden<Material>
                     }
                     if (label != "_") result += "_" + label;
                 } else {
-                    writelog(LOG_WARNING, "Cannot determine composition for material {} (override '__str__' method, or specify 'composition' attribute)", result);
+                    writelog(LOG_WARNING, u8"Cannot determine composition for material {} (override '__str__' method, or specify 'composition' attribute)", result);
                 }
             }
             if (doping != "") {
@@ -283,7 +283,7 @@ class PythonMaterial: public Material, Overriden<Material>
                         result += " n=" + py::extract<std::string>(py::str(py::handle<>(cc)))();
                 } else {
                     PyErr_Clear();
-                    writelog(LOG_WARNING, "Cannot determine doping for material {} (override '__str__' method, or specify 'dc' or 'cc' attribute)", result);
+                    writelog(LOG_WARNING, u8"Cannot determine doping for material {} (override '__str__' method, or specify 'dc' or 'cc' attribute)", result);
                 }
             }
             return result;
@@ -475,7 +475,7 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
     py::object cobj;
     try {
         cobj = kwargs["dc"];
-        if (result.hasDoping()) throw ValueError("doping or carrier concentrations specified in both full name and argument");
+        if (result.hasDoping()) throw ValueError(u8"doping or carrier concentrations specified in both full name and argument");
         result.dopingAmountType = Material::DOPANT_CONCENTRATION;
         had_doping_key = true;
     } catch (py::error_already_set) {
@@ -483,8 +483,8 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
     }
     try {
         cobj = kwargs["cc"];
-        if (had_doping_key) throw ValueError("doping and carrier concentrations specified simultaneously");
-        if (result.hasDoping()) throw ValueError("doping or carrier concentrations specified in both full name and argument");
+        if (had_doping_key) throw ValueError(u8"doping and carrier concentrations specified simultaneously");
+        if (result.hasDoping()) throw ValueError(u8"doping or carrier concentrations specified in both full name and argument");
         result.dopingAmountType = Material::CARRIERS_CONCENTRATION;
         had_doping_key = true;
     } catch (py::error_already_set) {
@@ -492,12 +492,12 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
     }
     if (had_doping_key) {
         if (!result.hasDopantName())
-            throw ValueError("{} concentration given for undoped material",
+            throw ValueError(u8"{} concentration given for undoped material",
                              (result.dopingAmountType==Material::DOPANT_CONCENTRATION)?"doping":"carrier");
         result.dopingAmount = py::extract<double>(cobj);
     } else {
         if (result.hasDopantName() && !result.hasDoping())
-            throw ValueError("dopant specified, but neither doping nor carrier concentrations given correctly");
+            throw ValueError(u8"dopant specified, but neither doping nor carrier concentrations given correctly");
     }
 
     py::list keys = kwargs.keys();
@@ -505,7 +505,7 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
     // Test if kwargs contains only doping information
     if (py::len(keys) == int(had_doping_key)) return result;
 
-    if (!result.composition.empty()) throw ValueError("composition specified in both full name and arguments");
+    if (!result.composition.empty()) throw ValueError(u8"composition specified in both full name and arguments");
 
     // So, kwargs contains composition
     std::vector<std::string> objects = Material::parseObjectsNames(result.name);
@@ -514,7 +514,7 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
     for (int i = 0; i < py::len(keys); ++i) {
         std::string k = py::extract<std::string>(keys[i]);
         if (k != "dc" && k != "cc" && std::find(objects.begin(), objects.end(), k) == objects.end()) {
-            throw TypeError("'{}' not allowed in material {}", k, result.name);
+            throw TypeError(u8"'{}' not allowed in material {}", k, result.name);
         }
     }
     // make composition map
@@ -536,7 +536,7 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
     int len = py::len(args);
 
     if (len > 1) {
-        throw TypeError("__init__ takes exactly 1 non-keyword arguments ({:d} given)", len);
+        throw TypeError(u8"__init__ takes exactly 1 non-keyword arguments ({:d} given)", len);
     }
 
     py::object self(args[0]);
@@ -694,7 +694,7 @@ bool MaterialsDB_contains(const MaterialsDB& DB, const std::string& name) {
 shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
 
     if (py::len(args) != 2) {
-        throw ValueError("MaterialsDB.get(self, name, **kwargs) takes exactly two non-keyword arguments");
+        throw ValueError(u8"MaterialsDB.get(self, name, **kwargs) takes exactly two non-keyword arguments");
     }
 
     const MaterialsDB* DB = py::extract<MaterialsDB*>(args[0]);
@@ -722,7 +722,7 @@ py::dict Material__completeComposition(py::dict src, std::string name) {
         std::vector<std::string> objects = Material::parseObjectsNames(basename);
         for (auto c: comp) {
             if (std::find(objects.begin(), objects.end(), c.first) == objects.end()) {
-                throw TypeError("'{}' not allowed in material {}", c.first, name);
+                throw TypeError(u8"'{}' not allowed in material {}", c.first, name);
             }
         }
     }
@@ -842,75 +842,75 @@ void initMaterials() {
     ;
 
     py::class_<MaterialsDB, shared_ptr<MaterialsDB>/*, boost::noncopyable*/> materialsDB("MaterialsDB",
-        "Material database class\n\n"
-        "Many semiconductor materials used in photonics are defined here. We have made\n"
-        "a significant effort to ensure their physical properties to be the most precise\n"
-        "as the current state of the art. However, you can derive an abstract class\n"
-        ":class:`plask.Material` to create your own materials.\n"
+        u8"Material database class\n\n"
+        u8"Many semiconductor materials used in photonics are defined here. We have made\n"
+        u8"a significant effort to ensure their physical properties to be the most precise\n"
+        u8"as the current state of the art. However, you can derive an abstract class\n"
+        u8":class:`plask.Material` to create your own materials.\n"
         ); materialsDB
         .def("get_default", &MaterialsDB::getDefault, "Get default database.", py::return_value_policy<py::reference_existing_object>())
         .staticmethod("get_default")
         .def("load", &MaterialsDB::loadToDefault,
-             "Load materials from library ``lib`` to default database.\n\n"
-             "This method can be used to extend the database with custom materials provided\n"
-             "in a binary library.\n\n"
-             "Args:\n"
-             "    lib (str): Library name to load (without an extension).\n",
+             u8"Load materials from library ``lib`` to default database.\n\n"
+             u8"This method can be used to extend the database with custom materials provided\n"
+             u8"in a binary library.\n\n"
+             u8"Args:\n"
+             u8"    lib (str): Library name to load (without an extension).\n",
              py::arg("lib"))
         .staticmethod("load") // TODO make it non-static
         .def("load_all", &MaterialsDB::loadAllToDefault,
-             "Load all materials from specified directory to default database.\n\n"
-             "This method can be used to extend the database with custom materials provided\n"
-             "in binary libraries.\n\n"
-             "Args:\n"
-             "    dir (str): Directory name to load materials from.\n",
+             u8"Load all materials from specified directory to default database.\n\n"
+             u8"This method can be used to extend the database with custom materials provided\n"
+             u8"in binary libraries.\n\n"
+             u8"Args:\n"
+             u8"    dir (str): Directory name to load materials from.\n",
              py::arg("dir")=plaskMaterialsPath())
         .staticmethod("load_all") // TODO make it non-static
         .def("get", py::raw_function(&MaterialsDB_get),
-             "Get material of given name and doping.\n\n"
-             ":rtype: Material\n"
+             u8"Get material of given name and doping.\n\n"
+             u8":rtype: Material\n"
              )
         .def("__call__", py::raw_function(&MaterialsDB_get), ":rtype: Material\n")
         .add_property("all", &MaterialsDB_list, "List of all materials in the database.")
         .def("__iter__", &MaterialsDB_iter)
         .def("__contains__", &MaterialsDB_contains)
         .def("is_simple", &MaterialsDB::isSimple, py::arg("name"),
-             "Return ``True`` if the specified material is a simple one.\n\n"
-             "Args:\n"
-             "    name (str): material name without doping amount and composition.\n"
-             "                (e.g. 'GaAs:Si', 'AlGaAs')."
+             u8"Return ``True`` if the specified material is a simple one.\n\n"
+             u8"Args:\n"
+             u8"    name (str): material name without doping amount and composition.\n"
+             u8"                (e.g. 'GaAs:Si', 'AlGaAs')."
             )
         .def("info", &getMaterialInfo, py::arg("name"),
-             "Get information dictionary on built-in material.\n\n"
-             "Args:\n"
-             "    name (str): material name without doping amount and composition.\n"
-             "                (e.g. 'GaAs:Si', 'AlGaAs')."
+             u8"Get information dictionary on built-in material.\n\n"
+             u8"Args:\n"
+             u8"    name (str): material name without doping amount and composition.\n"
+             u8"                (e.g. 'GaAs:Si', 'AlGaAs')."
             )
         .staticmethod("info")
     ;
 
     // Common material interface
-    py::class_<Material, shared_ptr<Material>, boost::noncopyable> MaterialClass("Material", "Base class for all materials.", py::no_init);
+    py::class_<Material, shared_ptr<Material>, boost::noncopyable> MaterialClass("Material", u8"Base class for all materials.", py::no_init);
     MaterialClass
         .def("__init__", raw_constructor(&PythonMaterial::__init__))
 
         .def("complete_composition", &Material__completeComposition, (py::arg("composition"), py::arg("name")=""),
-             "Fix incomplete material composition basing on pattern.\n\n"
-             "Args:\n"
-             "    composition (dict): Dictionary with incomplete composition (i.e. the one\n"
-             "                        missing some elements).\n"
-             "    name (str): Material name.\n\n"
-             "Return:\n"
-             "    dict: Dictionary with completed composition.")
+             u8"Fix incomplete material composition basing on pattern.\n\n"
+             u8"Args:\n"
+             u8"    composition (dict): Dictionary with incomplete composition (i.e. the one\n"
+             u8"                        missing some elements).\n"
+             u8"    name (str): Material name.\n\n"
+             u8"Return:\n"
+             u8"    dict: Dictionary with completed composition.")
         .staticmethod("complete_composition")
 
-        .add_property("name", &Material::name, "Material name (without composition and doping amounts).")
+        .add_property("name", &Material::name, u8"Material name (without composition and doping amounts).")
 
-        .add_property("dopant_name", &Material::dopantName, "Dopant material name (part of name after ':', possibly empty).")
+        .add_property("dopant_name", &Material::dopantName, u8"Dopant material name (part of name after ':', possibly empty).")
 
-        .add_property("name_without_dopant", &Material::nameWithoutDopant, "Material name without dopant (without ':' and part of name after it).")
+        .add_property("name_without_dopant", &Material::nameWithoutDopant, u8"Material name without dopant (without ':' and part of name after it).")
 
-        .add_property("kind", &Material::kind, "Material kind.")
+        .add_property("kind", &Material::kind, u8"Material kind.")
 
         .def("__str__", &Material__str__)
 
@@ -921,284 +921,284 @@ void initMaterials() {
         .add_property("simple", &Material::isSimple)
 
         .def("lattC", &Material::lattC, (py::arg("T")=300., py::arg("x")="a"),
-             "Get lattice constant [A].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n"
-             "    x (char): lattice parameter [-].\n")
+             u8"Get lattice constant [A].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n"
+             u8"    x (char): lattice parameter [-].\n")
 
         .def("Eg", &Material::Eg, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
-             "Get energy gap Eg [eV].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n"
-             "    e (float): Lateral strain [-].\n"
-             "    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
+             u8"Get energy gap Eg [eV].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n"
+             u8"    e (float): Lateral strain [-].\n"
+             u8"    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
 
         .def("CB", &Material::CB, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
-             "Get conduction band level CB [eV].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n"
-             "    e (float): Lateral strain [-].\n"
-             "    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
+             u8"Get conduction band level CB [eV].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n"
+             u8"    e (float): Lateral strain [-].\n"
+             u8"    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
 
         .def("VB", &Material::VB, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*", py::arg("hole")='H'),
-             "Get valance band level VB [eV].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n"
-             "    e (float): Lateral strain [-].\n"
-             "    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n"
-             "    hole (char): Hole type ('H' or 'L').\n")
+             u8"Get valance band level VB [eV].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n"
+             u8"    e (float): Lateral strain [-].\n"
+             u8"    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n"
+             u8"    hole (char): Hole type ('H' or 'L').\n")
 
         .def("Dso", &Material::Dso, (py::arg("T")=300., py::arg("e")=0),
-             "Get split-off energy Dso [eV].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n"
-             "    e (float): Lateral strain [-].\n")
+             u8"Get split-off energy Dso [eV].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n"
+             u8"    e (float): Lateral strain [-].\n")
 
         .def("Mso", &Material::Mso, (py::arg("T")=300., py::arg("e")=0),
-             "Get split-off mass Mso [m₀].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n"
-             "    e (float): Lateral strain [-].\n")
+             u8"Get split-off mass Mso [m₀].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n"
+             u8"    e (float): Lateral strain [-].\n")
 
         .def("Me", &Material::Me, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
-             "Get electron effective mass Me [m₀].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n"
-             "    e (float): Lateral strain [-].\n"
-             "    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
+             u8"Get electron effective mass Me [m₀].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n"
+             u8"    e (float): Lateral strain [-].\n"
+             u8"    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
 
         .def("Mhh", &Material::Mhh, (py::arg("T")=300., py::arg("e")=0),
-             "Get heavy hole effective mass Mhh [m₀].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n"
-             "    e (float): Lateral strain [-].\n")
+             u8"Get heavy hole effective mass Mhh [m₀].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n"
+             u8"    e (float): Lateral strain [-].\n")
 
         .def("Mlh", &Material::Mlh, (py::arg("T")=300., py::arg("e")=0),
-             "Get light hole effective mass Mlh [m₀].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n"
-             "    e (float): Lateral strain [-].\n")
+             u8"Get light hole effective mass Mlh [m₀].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n"
+             u8"    e (float): Lateral strain [-].\n")
 
         .def("Mh", &Material::Mh, (py::arg("T")=300., py::arg("e")=0),
-             "Get hole effective mass Mh [m₀].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n"
-             "    e (float): Lateral strain [-].\n")
+             u8"Get hole effective mass Mh [m₀].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n"
+             u8"    e (float): Lateral strain [-].\n")
 
         .def("ac", &Material::ac, (py::arg("T")=300.),
-             "Get hydrostatic deformation potential for the conduction band ac [eV].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get hydrostatic deformation potential for the conduction band ac [eV].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("av", &Material::av, (py::arg("T")=300.),
-             "Get hydrostatic deformation potential for the valence band av [eV].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get hydrostatic deformation potential for the valence band av [eV].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("b", &Material::b, (py::arg("T")=300.),
-             "Get shear deformation potential b [eV].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get shear deformation potential b [eV].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("d", &Material::d, (py::arg("T")=300.),
-             "Get shear deformation potential d [eV].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get shear deformation potential d [eV].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("c11", &Material::c11, (py::arg("T")=300.),
-             "Get elastic constant c₁₁ [GPa].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get elastic constant c₁₁ [GPa].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("c12", &Material::c12, (py::arg("T")=300.),
-             "Get elastic constant c₁₂ [GPa].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get elastic constant c₁₂ [GPa].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("c13", &Material::c13, (py::arg("T")=300.),
-             "Get elastic constant c₁₃ [GPa].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get elastic constant c₁₃ [GPa].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("c33", &Material::c33, (py::arg("T")=300.),
-             "Get elastic constant c₃₃ [GPa].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get elastic constant c₃₃ [GPa].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("c44", &Material::c44, (py::arg("T")=300.),
-             "Get elastic constant c₄₄ [GPa].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get elastic constant c₄₄ [GPa].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("e13", &Material::c44, (py::arg("T")=300.),
-             "Get piezoelectric constant e₁₃ [C/m²].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get piezoelectric constant e₁₃ [C/m²].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("e15", &Material::c44, (py::arg("T")=300.),
-             "Get piezoelectric constant e₁₅ [C/m²].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get piezoelectric constant e₁₅ [C/m²].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("e33", &Material::c44, (py::arg("T")=300.),
-             "Get piezoelectric constant e₃₃ [C/m²].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get piezoelectric constant e₃₃ [C/m²].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("Psp", &Material::Psp, (py::arg("T")=300.),
-             "Get Spontaneous polarization P [C/m²].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get Spontaneous polarization P [C/m²].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("eps", &Material::eps, (py::arg("T")=300.),
-             "Get dielectric constant ε [-].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get dielectric constant ε [-].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("chi", &Material::chi, (py::arg("T")=300., py::arg("e")=0, py::arg("point")="*"),
-             "Get electron affinity Chi [eV].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n"
-             "    e (float): Lateral strain [-].\n"
-             "    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
+             u8"Get electron affinity Chi [eV].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n"
+             u8"    e (float): Lateral strain [-].\n"
+             u8"    point (char): Point in the Brillouin zone ('*' means minimum bandgap).\n")
 
         .def("Na", &Material::Na,
-                 "Get acceptor concentration Na [1/m³].\n\n"
-                 "Args:-\n")
+                 u8"Get acceptor concentration Na [1/m³].\n\n"
+                 u8"Args:-\n")
 
         .def("Nd", &Material::Nd,
-             "Get donor concentration Nd [1/m³].\n\n"
-             "Args:-\n")
+             u8"Get donor concentration Nd [1/m³].\n\n"
+             u8"Args:-\n")
 
         .def("Ni", &Material::Ni, (py::arg("T")=300.),
-             "Get intrinsic carrier concentration Ni [1/m³].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get intrinsic carrier concentration Ni [1/m³].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("Nf", &Material::Nf, (py::arg("T")=300.),
-             "Get free carrier concentration N [1/m³].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get free carrier concentration N [1/m³].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("EactD", &Material::EactD, (py::arg("T")=300.),
-             "Get donor ionisation energy EactD [eV].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get donor ionisation energy EactD [eV].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("EactA", &Material::EactA, (py::arg("T")=300.),
-             "Get acceptor ionisation energy EactA [eV].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get acceptor ionisation energy EactA [eV].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("mob", &Material::mob, (py::arg("T")=300.),
-             "Get majority carriers mobility [cm²/(V s)].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get majority carriers mobility [cm²/(V s)].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("mobe", &Material::mobe, (py::arg("T")=300.),
-             "Get electron mobility [cm²/(V s)].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get electron mobility [cm²/(V s)].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("mobh", &Material::mobh, (py::arg("T")=300.),
-             "Get hole mobility [cm²/(V s)].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get hole mobility [cm²/(V s)].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("cond", &Material::cond, (py::arg("T")=300.),
-             "Get electrical conductivity Sigma [S/m].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get electrical conductivity Sigma [S/m].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .add_property("condtype", &Material::condtype,
-             "Electrical conductivity type.")
+             u8"Electrical conductivity type.")
 
         .def("A", &Material::A, (py::arg("T")=300.),
-             "Get monomolecular recombination coefficient A [1/s].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get monomolecular recombination coefficient A [1/s].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("taue", &Material::taue, (py::arg("T")=300.),
-             "Get monomolecular electrons lifetime [ns].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get monomolecular electrons lifetime [ns].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("tauh", &Material::tauh, (py::arg("T")=300.),
-             "Get monomolecular holes lifetime [ns].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get monomolecular holes lifetime [ns].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("B", &Material::B, (py::arg("T")=300.),
-             "Get radiative recombination coefficient B [cm³/s].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get radiative recombination coefficient B [cm³/s].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("C", &Material::C, (py::arg("T")=300.),
-             "Get Auger recombination coefficient C [cm⁶/s].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get Auger recombination coefficient C [cm⁶/s].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("Ce", &Material::Ce, (py::arg("T")=300.),
-             "Get Auger recombination coefficient C [cm⁶/s] for electrons.\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get Auger recombination coefficient C [cm⁶/s] for electrons.\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("Ch", &Material::Ch, (py::arg("T")=300.),
-             "Get Auger recombination coefficient C [cm⁶/s] for holes.\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get Auger recombination coefficient C [cm⁶/s] for holes.\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("D", &Material::D, (py::arg("T")=300.),
-             "Get ambipolar diffusion coefficient D [cm²/s].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get ambipolar diffusion coefficient D [cm²/s].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("thermk", &Material::thermk, (py::arg("T")=300., py::arg("h")=INFINITY),
-             "Get thermal conductivity [W/(m K)].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n"
-             "    h (float): Layer thickness [µm] [-].\n")
+             u8"Get thermal conductivity [W/(m K)].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n"
+             u8"    h (float): Layer thickness [µm] [-].\n")
 
         .def("dens", &Material::dens, (py::arg("T")=300.),
-             "Get density [kg/m³].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get density [kg/m³].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("cp", &Material::cp, (py::arg("T")=300.),
-             "Get specific heat at constant pressure [J/(kg K)].\n\n"
-             "Args:\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get specific heat at constant pressure [J/(kg K)].\n\n"
+             u8"Args:\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("nr", &Material::nr, (py::arg("lam"), py::arg("T")=300., py::arg("n")=0.),
-             "Get refractive index nr [-].\n\n"
-             "Args:\n"
-             "    lam (float): Wavelength [nm].\n"
-             "    T (float): Temperature [K].\n"
-             "    n (float): Injected carriers concentration [1/cm³].\n")
+             u8"Get refractive index nr [-].\n\n"
+             u8"Args:\n"
+             u8"    lam (float): Wavelength [nm].\n"
+             u8"    T (float): Temperature [K].\n"
+             u8"    n (float): Injected carriers concentration [1/cm³].\n")
 
         .def("absp", &Material::absp, (py::arg("lam"), py::arg("T")=300.),
-             "Get absorption coefficient alpha [1/cm].\n\n"
-             "Args:\n"
-             "    lam (float): Wavelength [nm].\n"
-             "    T (float): Temperature [K].\n")
+             u8"Get absorption coefficient alpha [1/cm].\n\n"
+             u8"Args:\n"
+             u8"    lam (float): Wavelength [nm].\n"
+             u8"    T (float): Temperature [K].\n")
 
         .def("Nr", &Material::Nr, (py::arg("lam"), py::arg("T")=300., py::arg("n")=0.),
-             "Get complex refractive index Nr [-].\n\n"
-             "Args:\n"
-             "    lam (float): Wavelength [nm].\n"
-             "    T (float): Temperature [K].\n"
-             "    n (float): Injected carriers concentration [1/cm³].\n")
+             u8"Get complex refractive index Nr [-].\n\n"
+             u8"Args:\n"
+             u8"    lam (float): Wavelength [nm].\n"
+             u8"    T (float): Temperature [K].\n"
+             u8"    n (float): Injected carriers concentration [1/cm³].\n")
 
         .def("NR", &Material::NR, (py::arg("lam"), py::arg("T")=300., py::arg("n")=0.),
-             "Get complex refractive index tensor Nr [-].\n\n"
-             "Args:\n"
-             "    lam (float): Wavelength [nm].\n"
-             "    T (float): Temperature [K].\n"
-             "    n (float): Injected carriers concentration [1/cm³].\n\n"
-             ".. warning::\n"
-             "   This parameter is used only by solvers that can consider refractive index\n"
-             "   anisotropy properly. It is stronly advised to also define\n"
-             "   :meth:`~plask.material.Material.Nr`.\n")
+             u8"Get complex refractive index tensor Nr [-].\n\n"
+             u8"Args:\n"
+             u8"    lam (float): Wavelength [nm].\n"
+             u8"    T (float): Temperature [K].\n"
+             u8"    n (float): Injected carriers concentration [1/cm³].\n\n"
+             u8".. warning::\n"
+             u8"   This parameter is used only by solvers that can consider refractive index\n"
+             u8"   anisotropy properly. It is stronly advised to also define\n"
+             u8"   :meth:`~plask.material.Material.Nr`.\n")
     ;
 
     MaterialFromPythonString();
@@ -1233,11 +1233,11 @@ void initMaterials() {
 
     py::def("_register_material_simple", &registerSimpleMaterial,
             (py::arg("name"), "material", "base"),
-            "Register new simple material class to the database");
+            u8"Register new simple material class to the database");
 
     py::def("_register_material_complex", &registerComplexMaterial,
             (py::arg("name"), "material", "base"),
-            "Register new complex material class to the database");
+            u8"Register new complex material class to the database");
 
     // Material info
 }

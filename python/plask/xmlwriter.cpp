@@ -109,46 +109,46 @@ XplWriter* XmlWriter(const py::object& geo, const py::object& msh, const py::obj
 void register_xml_writer()
 {
     py::class_<XplWriter>("XplWriter",
-                          "XPL writer that can save existing geometries and meshes to the XPL.\n\n"
-                          "Objects of this class contain three dictionaries:\n"
-                          ":attr:`~plask.XplWriter.geometry` and :attr:`~plask.XplWriter.mesh`\n"
-                          "that should contain the geometries or meshes, which should be saved and\n"
-                          ":attr:`~plask.XplWriter.names` with other geometry objects that should be\n"
-                          "explicitly named in the resulting XPL. All these dictionaries must have strings\n"
-                          "as their keys and corresponding objects as values.\n\n"
-                          "Args:\n"
-                          "    geo (dict): Dictionary with geometries that should be saved to the file.\n"
-                          "    mesh (dict): Dictionary with meshes that should be saved to the file.\n"
-                          "    names (dict): Dictionary with names of the geometry objects that should be\n"
-                          "                  explicitly named in the file.\n\n"
-                          "The final XPL can be simply retrieved as a string (``str(writer)``) or saved to\n"
-                          "a file with the :meth:`~plask.XplWriter.saveto` method.\n\n"
-                          "Example:\n"
-                          "    Create an XML file with a simple geometry:\n\n"
-                          "    >>> rect = plask.geometry.Rectangle(2, 1, 'GaAs')\n"
-                          "    >>> geo = plask.geometry.Cartesian2D(rect)\n"
-                          "    >>> xml = plask.XplWriter({'geo': geo}, {}, {'rect': rect})\n"
-                          "    >>> print(xml)\n"
-                          "    <plask>\n"
-                          "      <geometry>\n"
-                          "        <cartesian2d name=\"geo\" axes=\"zxy\">\n"
-                          "          <extrusion length=\"inf\">\n"
-                          "            <block2d name=\"rect\" material=\"GaAs\" dx=\"2\" dy=\"1\"/>\n"
-                          "          </extrusion>\n"
-                          "        </cartesian2d>\n"
-                          "      </geometry>\n"
-                          "      <grids/>\n"
-                          "    </plask>\n",
+                          u8"XPL writer that can save existing geometries and meshes to the XPL.\n\n"
+                          u8"Objects of this class contain three dictionaries:\n"
+                          u8":attr:`~plask.XplWriter.geometry` and :attr:`~plask.XplWriter.mesh`\n"
+                          u8"that should contain the geometries or meshes, which should be saved and\n"
+                          u8":attr:`~plask.XplWriter.names` with other geometry objects that should be\n"
+                          u8"explicitly named in the resulting XPL. All these dictionaries must have strings\n"
+                          u8"as their keys and corresponding objects as values.\n\n"
+                          u8"Args:\n"
+                          u8"    geo (dict): Dictionary with geometries that should be saved to the file.\n"
+                          u8"    mesh (dict): Dictionary with meshes that should be saved to the file.\n"
+                          u8"    names (dict): Dictionary with names of the geometry objects that should be\n"
+                          u8"                  explicitly named in the file.\n\n"
+                          u8"The final XPL can be simply retrieved as a string (``str(writer)``) or saved to\n"
+                          u8"a file with the :meth:`~plask.XplWriter.saveto` method.\n\n"
+                          u8"Example:\n"
+                          u8"    Create an XML file with a simple geometry:\n\n"
+                          u8"    >>> rect = plask.geometry.Rectangle(2, 1, 'GaAs')\n"
+                          u8"    >>> geo = plask.geometry.Cartesian2D(rect)\n"
+                          u8"    >>> xml = plask.XplWriter({'geo': geo}, {}, {'rect': rect})\n"
+                          u8"    >>> print(xml)\n"
+                          u8"    <plask>\n"
+                          u8"      <geometry>\n"
+                          u8"        <cartesian2d name=\"geo\" axes=\"zxy\">\n"
+                          u8"          <extrusion length=\"inf\">\n"
+                          u8"            <block2d name=\"rect\" material=\"GaAs\" dx=\"2\" dy=\"1\"/>\n"
+                          u8"          </extrusion>\n"
+                          u8"        </cartesian2d>\n"
+                          u8"      </geometry>\n"
+                          u8"      <grids/>\n"
+                          u8"    </plask>\n",
         py::init<py::object,py::object,py::object>((py::arg("geo")=py::object(), py::arg("msh")=py::object(), py::arg("names")=py::object())))
         .def("__str__", &XplWriter::__str__)
         .def("saveto", &XplWriter::saveto, py::arg("target"),
-            "Save the resulting XPL to the file.\n\n"
-            "Args:\n"
-            "    target (string or file): A file name or an open file object to save to.\n")
+            u8"Save the resulting XPL to the file.\n\n"
+            u8"Args:\n"
+            u8"    target (string or file): A file name or an open file object to save to.\n")
         .def_readwrite("geometry", &XplWriter::geometry, "Dictionary with geometries that should be saved to the file.")
-        .def_readwrite("mesh", &XplWriter::mesh, "Dictionary with meshes that should be saved to the file.")
-        .def_readwrite("names", &XplWriter::names, "Dictionary with names of the geometry objects that should be explicitly named\n"
-                                                   "in the file.")
+        .def_readwrite("mesh", &XplWriter::mesh, u8"Dictionary with meshes that should be saved to the file.")
+        .def_readwrite("names", &XplWriter::names, u8"Dictionary with names of the geometry objects that should be explicitly named\n"
+                                                   u8"in the file.")
     ;
 
     py::def("XmlWriter", &XmlWriter, py::return_value_policy<py::manage_new_object>(),

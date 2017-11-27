@@ -49,7 +49,7 @@ inline void confirm_array(PyObject*& arr, py::object& self, py::object& dtype) {
     if(dtype != py::object() && PyArray_DescrConverter(dtype.ptr(), &descr.ref()) && descr->type_num != detail::typenum<T>()) {
         PyHandle<PyArrayObject> oarr = reinterpret_cast<PyArrayObject*>(arr);
         arr = PyArray_CastToType(oarr, descr, 1);
-        if (arr == nullptr) throw TypeError("cannot convert array to required dtype");
+        if (arr == nullptr) throw TypeError(u8"cannot convert array to required dtype");
     } else {
         py::incref(self.ptr());
         PyArray_SetBaseObject((PyArrayObject*)arr, self.ptr()); // Make sure the data vector stays alive as long as the array

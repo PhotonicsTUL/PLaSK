@@ -59,15 +59,15 @@ namespace detail {
         int n = self->getChildrenCount();
         if (n == 0) {
             if (self->isLeaf())
-                throw TypeError("{0} object has no items", py::extract<std::string>(
+                throw TypeError(u8"{0} object has no items", py::extract<std::string>(
                     PyObject_GetAttrString(PyObject_GetAttrString(oself, "__class__"), "__name__"))());
             else
-                throw IndexError("{0} object has no items", py::extract<std::string>(
+                throw IndexError(u8"{0} object has no items", py::extract<std::string>(
                     PyObject_GetAttrString(PyObject_GetAttrString(oself, "__class__"), "__name__"))());
         }
         if (i < 0) i = n + i;
         if (i < 0 || i >= n) {
-            throw IndexError("{0} index {1} out of range (0 <= index < {2})", py::extract<std::string>(
+            throw IndexError(u8"{0} index {1} out of range (0 <= index < {2})", py::extract<std::string>(
                 PyObject_GetAttrString(PyObject_GetAttrString(oself, "__class__"), "__name__"))(), i, n);
         }
         return self->getChildNo(i);
@@ -178,15 +178,15 @@ void register_geometry_path()
         .def("__init__", py::make_constructor(PathHints__init__<const GeometryObject::Subtree&>))
         .def("__repr__", &PathHints__repr__)
         .def("add", (void (PathHints::*)(const PathHints::Hint&))&PathHints::addHint, py::arg("hint"),
-             "Append hint to the path.\n\n"
-             "Args:\n"
-             "    hint (PathHint): Hint to add.")
+             u8"Append hint to the path.\n\n"
+             u8"Args:\n"
+             u8"    hint (PathHint): Hint to add.")
         .def(py::self += py::other<PathHints::Hint>())
         .def("__getitem__", (std::set<shared_ptr<GeometryObject>> (PathHints::*)(const GeometryObject& container) const)&PathHints::getChildren, py::arg("container"),
              u8"Get all items in a container present in the Hints.\n\n"
              u8"Args:\n"
              u8"    container (GeometryObject): Container to get items from.")
-        .def("cleanup",  &PathHints::cleanDeleted, "Remove all hints which refer to deleted objects.")
+        .def("cleanup",  &PathHints::cleanDeleted, u8"Remove all hints which refer to deleted objects.")
         .def(py::self == py::other<PathHints>())
         .def("__hash__", __hash__<PathHints>)
         // .def(py::self < py::other<PathHints>())

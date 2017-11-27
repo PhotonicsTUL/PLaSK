@@ -18,7 +18,7 @@ void register_geometry_changespace()
     ("GeometryObjectTransform2Dto3D", u8"Base class for all transformations which change 2D space to 3D.", py::no_init)
         .add_property("item",
                       (shared_ptr<typename GeometryObjectTransformSpace<3,2>::ChildType> (GeometryObjectTransformSpace<3,2>::*)()) &GeometryObjectTransformSpace<3,2>::getChild,
-                      &GeometryObjectTransformSpace<3,2>::setChild, "Transformed 2D object.")
+                      &GeometryObjectTransformSpace<3,2>::setChild, u8"Transformed 2D object.")
         .def("__contains__", &STransform__contains__<3,2>)
     ;
 
@@ -48,7 +48,7 @@ void register_geometry_changespace()
         u8"    **Note:** In the real-life situations, you can extrude any complicated 2D\n"
         u8"    object (e.g. a stack of a shelf).\n",
         py::init<shared_ptr<GeometryObjectD<2>>,double>((py::arg("item"), py::arg("length")=INFINITY)))
-        .add_property<>("length", &Extrusion::getLength, &Extrusion::setLength, "Length of the extrusion in the longitudinal direction.")
+        .add_property<>("length", &Extrusion::getLength, &Extrusion::setLength, u8"Length of the extrusion in the longitudinal direction.")
     ;
 
     py::class_<Revolution, shared_ptr<Revolution>, py::bases<GeometryObjectTransformSpace<3,2>>, boost::noncopyable>("Revolution",

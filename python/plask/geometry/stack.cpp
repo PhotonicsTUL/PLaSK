@@ -46,10 +46,10 @@ shared_ptr<StackContainer<dim>> Stack__init__(const py::tuple& args, py::dict kw
     double shift = 0.;
     if (py::len(args) > 1) {
         if (kwargs.has_key("shift"))
-            throw TypeError("__init__() got multiple values for keyword argument 'shift'");
+            throw TypeError(u8"__init__() got multiple values for keyword argument 'shift'");
         shift = py::extract<double>(args[1]);
         if (py::len(args) > 2)
-            throw TypeError("__init__() takes at most 2 non-keyword arguments ({0} given)", py::len(args));
+            throw TypeError(u8"__init__() takes at most 2 non-keyword arguments ({0} given)", py::len(args));
     } else if (kwargs.has_key("shift")) {
         shift = py::extract<double>(kwargs["shift"]);
         py::delitem(kwargs, py::str("shift"));
@@ -67,19 +67,19 @@ shared_ptr<MultiStackContainer<plask::StackContainer<dim>>> MultiStack__init__(c
     size_t repeat;
     if (py::len(args) > 1) {
         if (kwargs.has_key("repeat"))
-            throw TypeError("__init__() got multiple values for keyword argument 'repeat'");
+            throw TypeError(u8"__init__() got multiple values for keyword argument 'repeat'");
         repeat = py::extract<size_t>(args[1]);
     } else if (kwargs.has_key("repeat")) {
         repeat = py::extract<size_t>(kwargs["repeat"]);
         py::delitem(kwargs, py::str("repeat"));
     } else
-        throw TypeError("__init__() takes at least 2 arguments ({0} given)", py::len(args));
+        throw TypeError(u8"__init__() takes at least 2 arguments ({0} given)", py::len(args));
     if (py::len(args) > 2) {
         if (kwargs.has_key("shift"))
-            throw TypeError("__init__() got multiple values for keyword argument 'shift'");
+            throw TypeError(u8"__init__() got multiple values for keyword argument 'shift'");
         shift = py::extract<double>(args[2]);
         if (py::len(args) > 3)
-            throw TypeError("__init__() takes at most 3 non-keyword arguments ({0} given)", py::len(args));
+            throw TypeError(u8"__init__() takes at most 3 non-keyword arguments ({0} given)", py::len(args));
     } else if (kwargs.has_key("shift")) {
         shift = py::extract<double>(kwargs["shift"]);
         py::delitem(kwargs, py::str("shift"));

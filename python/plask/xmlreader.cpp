@@ -320,14 +320,14 @@ void register_xml_reader() {
     py::class_<XMLReader, XMLReader*, boost::noncopyable> xml("XplReader", py::no_init); xml
         .def("__iter__", &detail::XMLReader__iter__)
         .def("__eq__", &detail::XMLReader__eq__)
-        .add_property("name", &XMLReader::getNodeName, "Current tag name.")
-        .add_property("text", (std::string(XMLReader::*)())&XMLReader::requireTextInCurrentTag, "Text in the current tag.")
+        .add_property("name", &XMLReader::getNodeName, u8"Current tag name.")
+        .add_property("text", (std::string(XMLReader::*)())&XMLReader::requireTextInCurrentTag, u8"Text in the current tag.")
         .def("__getitem__", &detail::XMLReader__getitem__)
-        .def("get", detail::XMLReader_get, "Return tag attribute value or default if the attribute does not exist.",
+        .def("get", detail::XMLReader_get, u8"Return tag attribute value or default if the attribute does not exist.",
              (py::arg("key"), py::arg("default")=py::object()))
-        .def("getitem", detail::XMLReader_getitem, "Return tag attribute value as raw string or default if the attribute does not exist.",
+        .def("getitem", detail::XMLReader_getitem, u8"Return tag attribute value as raw string or default if the attribute does not exist.",
              (py::arg("key"), py::arg("default")=""))
-        .add_property("attrs", &detail::XMLReader_attribs, "List of all the tag attributes.")
+        .add_property("attrs", &detail::XMLReader_attribs, u8"List of all the tag attributes.")
         .def("__contains__", &XMLReader::hasAttribute)
         .def("__str__", detail::XMLReader__str__)
         .def("__repr__", detail::XMLReader__repr__)

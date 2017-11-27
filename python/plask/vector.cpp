@@ -143,7 +143,7 @@ struct Vec_iterator
 
     T next() {
         if (i >= dim) {
-            PyErr_SetString(PyExc_StopIteration, "No more components.");
+            PyErr_SetString(PyExc_StopIteration, u8"No more components.");
             boost::python::throw_error_already_set();
         }
         return (*vec)[i++];
@@ -165,7 +165,7 @@ template <int dim, typename T>  py::object vec__array__(py::object self, py::obj
     Vec<dim,T>* vec = py::extract<Vec<dim,T>*>(self);
     npy_intp dims[] = { dim };
     PyObject* arr = PyArray_SimpleNewFromData(1, dims, detail::typenum<T>(), (void*)vec->begin());
-    if (arr == nullptr) throw plask::CriticalException("cannot create array from vector");
+    if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from vector");
     confirm_array<T>(arr, self, dtype);
     return py::object(py::handle<>(arr));
 }
@@ -175,7 +175,7 @@ template <int dim, typename T>  py::object vec_list__array__(py::object self, py
     std::vector<Vec<dim,T>>* list = py::extract<std::vector<Vec<dim,T>>*>(self);
     npy_intp dims[] = { (npy_int)list->size(), dim };
     PyObject* arr = PyArray_SimpleNewFromData(2, dims, detail::typenum<T>(), (void*)((*list)[0].begin()));
-    if (arr == nullptr) throw plask::CriticalException("cannot create array from vector list");
+    if (arr == nullptr) throw plask::CriticalException(u8"cannot create array from vector list");
     confirm_array<T>(arr, self, dtype);
     return py::object(py::handle<>(arr));
 }
@@ -188,9 +188,9 @@ inline static int vec_attr_indx(const std::string& attr) {
     if (i < 0 || i >= dim) {
         if (attr == "x" || attr == "y" || attr == "z" || attr == "r" || attr == "phi" ||
             attr == "lon" || attr == "tran" || attr == "up")
-            throw AttributeError("vector attribute '{}' has no sense for {:d}D vector if config.axes = '{}'", attr, dim, current_axes.str());
+            throw AttributeError(u8"vector attribute '{}' has no sense for {:d}D vector if config.axes = '{}'", attr, dim, current_axes.str());
         else
-            throw AttributeError("'vec' object has no attribute '{}'", attr);
+            throw AttributeError(u8"'vec' object has no attribute '{}'", attr);
     }
     return i;
 }
@@ -261,25 +261,25 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
         .def("__mul__", dr)
         .def("dot", dc, py::arg("other"))
         .def("dot", dr, py::arg("other"),
-             "Dot product with another vector. It is equal to `self` * `other`, so the\n"
-             "`self` vector is conjugated.\n")
+             u8"Dot product with another vector. It is equal to `self` * `other`, so the\n"
+             u8"`self` vector is conjugated.\n")
         .def("conjugate", c,
-             "Conjugate of the vector. Alias for :meth:`conj`.\n")
+             u8"Conjugate of the vector. Alias for :meth:`conj`.\n")
         .def("conj", c,
-             "Conjugate of the vector. It can be called for real vectors, but then it\n"
-             "simply returns `self`\n")
+             u8"Conjugate of the vector. It can be called for real vectors, but then it\n"
+             u8"simply returns `self`\n")
         .def("abs2", (double (*)(const Vec<dim,T>&))&abs2<dim,T>,
-             "Squared magnitude of the vector. It is always a real number equal to\n"
-             "``v * v``.\n")
+             u8"Squared magnitude of the vector. It is always a real number equal to\n"
+             u8"``v * v``.\n")
         .def("abs", (double (*)(const Vec<dim,T>&))&abs<dim,T>,
-             "Magnitude of the vector. It is always a real number.\n")
+             u8"Magnitude of the vector. It is always a real number.\n")
         .def("__abs__", (double (*)(const Vec<dim,T>&))&abs<dim,T>)
         .def("copy", &copy_vec<dim,T>,
-             "Copy of the vector. Normally vectors behave like Python containers, and\n"
-             "assignement operation makes shallow copy only. Use this method if you want\n"
-             "to modify the copy without changing the source.\n")
+             u8"Copy of the vector. Normally vectors behave like Python containers, and\n"
+             u8"assignement operation makes shallow copy only. Use this method if you want\n"
+             u8"to modify the copy without changing the source.\n")
         .add_static_property("dtype", &vec_dtype<dim,T>,
-             "Type od the vector components. This is always either ``float`` or ``complex``.\n")
+             u8"Type od the vector components. This is always either ``float`` or ``complex``.\n")
         .def("__array__", &vec__array__<dim,T>, py::arg("dtype")=py::object())
     ;
     vec_class.attr("__module__") = "plask";
@@ -319,7 +319,7 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
             if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyFloat_Type)) force_double = true;
             else if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyComplex_Type)) force_complex = true;
             else {
-                throw TypeError("wrong dtype (can be only float or complex)");
+                throw TypeError(u8"wrong dtype (can be only float or complex)");
             }
         }
     }
@@ -337,7 +337,7 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
                 if (n == 2) comp[vec_attr_indx<2>(*key)] = val;
                 else if (n == 3) comp[vec_attr_indx<3>(*key)] = val;
             } catch (AttributeError) {
-                throw TypeError("wrong component name for {:d}D vector if config.axes = '{}'", n, current_axes.str());
+                throw TypeError(u8"wrong component name for {:d}D vector if config.axes = '{}'", n, current_axes.str());
             }
 
         }
@@ -345,7 +345,7 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
             params.append(comp[i]);
 
     } else if (nk > 0) {
-        throw TypeError("components must be provided entirely in a list or by names");
+        throw TypeError(u8"components must be provided entirely in a list or by names");
     } else {
         params = py::list(args);
     }
@@ -365,7 +365,7 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
         if (n == 2) return py::object(Vec<2,dcomplex>(py::extract<dcomplex>(params[0]), py::extract<dcomplex>(params[1])));
         return py::object(Vec<3,dcomplex>(py::extract<dcomplex>(params[0]), py::extract<dcomplex>(params[1]), py::extract<dcomplex>(params[2])));
     } catch (py::error_already_set) {
-        throw TypeError("wrong vector argument types");
+        throw TypeError(u8"wrong vector argument types");
     }}
 
     return py::object();
