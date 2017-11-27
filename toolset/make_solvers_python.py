@@ -87,7 +87,10 @@ def browse_tags(outer, docs, initializers, loaders):
             loaders[tag['bcond']] = ("self.{}_boundary.read_from_xpl(tag, manager)".format(tag['bcond']),)
 
 
-source = yaml.load(open(fname))
+try:
+	source = yaml.load(open(fname, encoding='utf-8'))
+except TypeError:
+	source = yaml.load(open(fname))
 
 docs = OrderedDict()
 initializers = []
