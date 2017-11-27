@@ -20,7 +20,7 @@ struct CMatrix_Python {
 
         PyObject* arr = PyArray_New(&PyArray_Type, 2, dims, NPY_CDOUBLE, strides,
                                     (void*)self.data(), 0, 0, NULL);
-        if (arr == nullptr) throw plask::CriticalException("Cannot create array from matrix");
+        if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from matrix");
         // Make sure the data vector stays alive as long as the array
         py::object oself {CMatrix_Python(self)};
         py::incref(oself.ptr());
@@ -40,7 +40,7 @@ struct CDiagonal_Python {
 
         PyObject* arr = PyArray_New(&PyArray_Type, 1, dims, NPY_CDOUBLE, strides,
                                     (void*)self.data(), 0, 0, NULL);
-        if (arr == nullptr) throw plask::CriticalException("Cannot create array from matrix");
+        if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from matrix");
         // Make sure the data vector stays alive as long as the array
         py::object oself {CDiagonal_Python(self)};
         py::incref(oself.ptr());
@@ -74,9 +74,9 @@ BOOST_PYTHON_MODULE(slab)
         .def("__init__", py::make_constructor(&PmlWrapper::__init__, py::default_call_policies(),
                                               (py::arg("factor"), "size", "dist", py::arg("shape")=2)))
         .add_property("factor", &PmlWrapper::get_factor, &PmlWrapper::set_factor, "PML scaling factor.")
-        .add_property("size", &PmlWrapper::get_size, &PmlWrapper::set_size, "PML size.")
-        .add_property("dist", &PmlWrapper::get_dist, &PmlWrapper::set_dist, "PML distance from the structure.")
-        .add_property("shape", &PmlWrapper::get_order, &PmlWrapper::set_order, "PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).")
+        .add_property("size", &PmlWrapper::get_size, &PmlWrapper::set_size, u8"PML size.")
+        .add_property("dist", &PmlWrapper::get_dist, &PmlWrapper::set_dist, u8"PML distance from the structure.")
+        .add_property("shape", &PmlWrapper::get_order, &PmlWrapper::set_order, u8"PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).")
         .def("__str__", &PmlWrapper::__str__)
         .def("__repr__", &PmlWrapper::__repr__)
     ;
@@ -98,16 +98,16 @@ BOOST_PYTHON_MODULE(slab)
         .value("BOTTOM", ReflectionTransfer::INCIDENCE_BOTTOM)
     ;
 
-    py::class_<RootDigger::Params, boost::noncopyable>("RootParams", "Configuration of the root finding algorithm.", py::no_init)
-        .def_readwrite("method", &RootDigger::Params::method, "Root finding method ('muller', 'broyden',  or 'brent')")
-        .def_readwrite("tolx", &RootDigger::Params::tolx, "Absolute tolerance on the argument.")
-        .def_readwrite("tolf_min", &RootDigger::Params::tolf_min, "Sufficient tolerance on the function value.")
-        .def_readwrite("tolf_max", &RootDigger::Params::tolf_max, "Required tolerance on the function value.")
-        .def_readwrite("maxiter", &RootDigger::Params::maxiter, "Maximum number of iterations.")
-        .def_readwrite("maxstep", &RootDigger::Params::maxstep, "Maximum step in one iteration (Broyden method only).")
-        .def_readwrite("alpha", &RootDigger::Params::maxstep, "Parameter ensuring sufficient decrease of determinant in each step\n(Broyden method only).")
-        .def_readwrite("lambd", &RootDigger::Params::maxstep, "Minimum decrease ratio of one step (Broyden method only).")
-        .def_readwrite("initial_range", &RootDigger::Params::initial_dist, "Initial range size (Muller and Brent methods only).")
+    py::class_<RootDigger::Params, boost::noncopyable>("RootParams", u8"Configuration of the root finding algorithm.", py::no_init)
+        .def_readwrite("method", &RootDigger::Params::method, u8"Root finding method ('muller', 'broyden',  or 'brent')")
+        .def_readwrite("tolx", &RootDigger::Params::tolx, u8"Absolute tolerance on the argument.")
+        .def_readwrite("tolf_min", &RootDigger::Params::tolf_min, u8"Sufficient tolerance on the function value.")
+        .def_readwrite("tolf_max", &RootDigger::Params::tolf_max, u8"Required tolerance on the function value.")
+        .def_readwrite("maxiter", &RootDigger::Params::maxiter, u8"Maximum number of iterations.")
+        .def_readwrite("maxstep", &RootDigger::Params::maxstep, u8"Maximum step in one iteration (Broyden method only).")
+        .def_readwrite("alpha", &RootDigger::Params::maxstep, u8"Parameter ensuring sufficient decrease of determinant in each step\n(Broyden method only).")
+        .def_readwrite("lambd", &RootDigger::Params::maxstep, u8"Minimum decrease ratio of one step (Broyden method only).")
+        .def_readwrite("initial_range", &RootDigger::Params::initial_dist, u8"Initial range size (Muller and Brent methods only).")
     ;
 
     export_FourierSolver2D();

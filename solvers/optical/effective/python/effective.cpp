@@ -64,7 +64,7 @@ static EffectiveIndex2D::Symmetry parseSymmetry(py::object symmetry) {
             else if (sym == -1) { return EffectiveIndex2D::SYMMETRY_NEGATIVE; }
             throw py::error_already_set();
         } catch (py::error_already_set) {
-            throw ValueError("Wrong symmetry specification.");
+            throw ValueError(u8"Wrong symmetry specification.");
         }
     }
 }
@@ -127,7 +127,7 @@ void EffectiveIndex2D_setMirrors(EffectiveIndex2D& self, py::object value) {
                 if (py::len(value) != 2) throw py::error_already_set();
                 self.mirrors.reset(std::make_pair<double,double>(double(py::extract<double>(value[0])), double(py::extract<double>(value[1]))));
             } catch (py::error_already_set) {
-                throw ValueError("None, float, or tuple of two floats required");
+                throw ValueError(u8"None, float, or tuple of two floats required");
             }
         }
     }
@@ -152,7 +152,7 @@ std::string EffectiveIndex2D_Mode_str(const EffectiveIndex2D::Mode& self) {
         case EffectiveIndex2D::SYMMETRY_NEGATIVE: sym = "negative"; break;
         default: sym = "none";
     }
-    return format("<neff: {:.3f}{:+.3g}j, symmetry: {}, power: {:.2g}mW>", real(self.neff), imag(self.neff), sym, self.power);
+    return format(u8"<neff: {:.3f}{:+.3g}j, symmetry: {}, power: {:.2g}mW>", real(self.neff), imag(self.neff), sym, self.power);
 }
 std::string EffectiveIndex2D_Mode_repr(const EffectiveIndex2D::Mode& self) {
     std::string sym;
@@ -161,7 +161,7 @@ std::string EffectiveIndex2D_Mode_repr(const EffectiveIndex2D::Mode& self) {
         case EffectiveIndex2D::SYMMETRY_NEGATIVE: sym = "'negative'"; break;
         default: sym = "None";
     }
-    return format("EffectiveIndex2D.Mode(neff={0}, symmetry={1}, power={2})", str(self.neff), sym, self.power);
+    return format(u8"EffectiveIndex2D.Mode(neff={0}, symmetry={1}, power={2})", str(self.neff), sym, self.power);
 }
 
 
@@ -202,10 +202,10 @@ void EffectiveFrequencyCyl_setStripeR(EffectiveFrequencyCyl& self, py::object r)
 }
 
 std::string EffectiveFrequencyCyl_Mode_str(const EffectiveFrequencyCyl::Mode& self) {
-    return format("<m: {:d}, lam: ({:.3f}{:+.3g}j)nm, power: {:.2g}mW>", self.m, real(self.lam), imag(self.lam), self.power);
+    return format(u8"<m: {:d}, lam: ({:.3f}{:+.3g}j)nm, power: {:.2g}mW>", self.m, real(self.lam), imag(self.lam), self.power);
 }
 std::string EffectiveFrequencyCyl_Mode_repr(const EffectiveFrequencyCyl::Mode& self) {
-    return format("EffectiveFrequencyCyl.Mode(m={0}, lam={1}, power={2})", self.m, str(self.lam), self.power);
+    return format(u8"EffectiveFrequencyCyl.Mode(m={0}, lam={1}, power={2})", self.m, str(self.lam), self.power);
 }
 
 template <typename Solver>
@@ -452,7 +452,7 @@ BOOST_PYTHON_MODULE(effective)
         PROVIDER(outLightE, "");
         solver.def_readonly("outElectricField",
                             reinterpret_cast<ProviderFor<LightE, Geometry2DCylindrical> EffectiveFrequencyCyl::*>(&EffectiveFrequencyCyl::outLightE),
-                            "Alias for :attr:`outLightE`.");
+                            u8"Alias for :attr:`outLightE`.");
         PROVIDER(outRefractiveIndex, "");
         PROVIDER(outHeat, "");
         RO_FIELD(modes,

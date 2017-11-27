@@ -87,66 +87,66 @@ BOOST_PYTHON_MODULE(static)
         .value("ITERATIVE", ALGORITHM_ITERATIVE)
     ;
 
-    Bc<Convection>("Convective boundary condition value.");
-    Bc<Radiation>("Radiative boundary condition value.");
+    Bc<Convection>(u8"Convective boundary condition value.");
+    Bc<Radiation>(u8"Radiative boundary condition value.");
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCartesian>, "Static2D",
-        "Finite element thermal solver for 2D Cartesian Geometry.")
-        METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
-        RO_PROPERTY(err, getErr, "Maximum estimated error");
+        u8"Finite element thermal solver for 2D Cartesian Geometry.")
+        METHOD(compute, compute, u8"Run thermal calculations", py::arg("loops")=0);
+        RO_PROPERTY(err, getErr, u8"Maximum estimated error");
         RECEIVER(inHeat, "");
         PROVIDER(outTemperature, "");
         PROVIDER(outHeatFlux, "");
         PROVIDER(outThermalConductivity, "");
-        BOUNDARY_CONDITIONS(temperature_boundary, "Boundary conditions for the constant temperature");
-        BOUNDARY_CONDITIONS(heatflux_boundary, "Boundary conditions for the constant heat flux");
-        BOUNDARY_CONDITIONS(convection_boundary, "Convective boundary conditions");
-        BOUNDARY_CONDITIONS(radiation_boundary, "Radiative boundary conditions");
-        RW_FIELD(inittemp, "Initial temperature");
-        RW_FIELD(maxerr, "Limit for the temperature updates");
-        solver.def_readwrite("algorithm", &__Class__::algorithm, "Chosen matrix factorization algorithm");
-        solver.def_readwrite("itererr", &__Class__::itererr, "Allowed residual iteration for iterative method");
-        solver.def_readwrite("iterlim", &__Class__::iterlim ,"Maximum number of iterations for iterative method");
-        solver.def_readwrite("logfreq", &__Class__::logfreq ,"Frequency of iteration progress reporting");
+        BOUNDARY_CONDITIONS(temperature_boundary, u8"Boundary conditions for the constant temperature");
+        BOUNDARY_CONDITIONS(heatflux_boundary, u8"Boundary conditions for the constant heat flux");
+        BOUNDARY_CONDITIONS(convection_boundary, u8"Convective boundary conditions");
+        BOUNDARY_CONDITIONS(radiation_boundary, u8"Radiative boundary conditions");
+        RW_FIELD(inittemp, u8"Initial temperature");
+        RW_FIELD(maxerr, u8"Limit for the temperature updates");
+        solver.def_readwrite("algorithm", &__Class__::algorithm, u8"Chosen matrix factorization algorithm");
+        solver.def_readwrite("itererr", &__Class__::itererr, u8"Allowed residual iteration for iterative method");
+        solver.def_readwrite("iterlim", &__Class__::iterlim, u8"Maximum number of iterations for iterative method");
+        solver.def_readwrite("logfreq", &__Class__::logfreq, u8"Frequency of iteration progress reporting");
     }
 
     {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "StaticCyl",
-        "Finite element thermal solver for 2D cylindrical Geometry.")
-        METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
-        RO_PROPERTY(err, getErr, "Maximum estimated error");
+        u8"Finite element thermal solver for 2D cylindrical Geometry.")
+        METHOD(compute, compute, u8"Run thermal calculations", py::arg("loops")=0);
+        RO_PROPERTY(err, getErr, u8"Maximum estimated error");
         RECEIVER(inHeat, "");
         PROVIDER(outTemperature, "");
         PROVIDER(outHeatFlux, "");
         PROVIDER(outThermalConductivity, "");
-        BOUNDARY_CONDITIONS(temperature_boundary, "Boundary conditions for the constant temperature");
-        BOUNDARY_CONDITIONS(heatflux_boundary, "Boundary conditions for the constant heat flux");
-        BOUNDARY_CONDITIONS(convection_boundary, "Convective boundary conditions");
-        BOUNDARY_CONDITIONS(radiation_boundary, "Radiative boundary conditions");
-        RW_FIELD(inittemp, "Initial temperature");
-        RW_FIELD(maxerr, "Limit for the temperature updates");
-        solver.def_readwrite("algorithm", &__Class__::algorithm, "Chosen matrix factorization algorithm");
-        solver.def_readwrite("itererr", &__Class__::itererr, "Allowed residual iteration for iterative method");
-        solver.def_readwrite("iterlim", &__Class__::iterlim ,"Maximum number of iterations for iterative method");
-        solver.def_readwrite("logfreq", &__Class__::logfreq ,"Frequency of iteration progress reporting");
+        BOUNDARY_CONDITIONS(temperature_boundary, u8"Boundary conditions for the constant temperature");
+        BOUNDARY_CONDITIONS(heatflux_boundary, u8"Boundary conditions for the constant heat flux");
+        BOUNDARY_CONDITIONS(convection_boundary, u8"Convective boundary conditions");
+        BOUNDARY_CONDITIONS(radiation_boundary, u8"Radiative boundary conditions");
+        RW_FIELD(inittemp, u8"Initial temperature");
+        RW_FIELD(maxerr, u8"Limit for the temperature updates");
+        solver.def_readwrite("algorithm", &__Class__::algorithm, u8"Chosen matrix factorization algorithm");
+        solver.def_readwrite("itererr", &__Class__::itererr, u8"Allowed residual iteration for iterative method");
+        solver.def_readwrite("iterlim", &__Class__::iterlim, u8"Maximum number of iterations for iterative method");
+        solver.def_readwrite("logfreq", &__Class__::logfreq, u8"Frequency of iteration progress reporting");
     }
 
-    {CLASS(FiniteElementMethodThermal3DSolver, "Static3D", "Finite element thermal solver for 3D Geometry.")
-        METHOD(compute, compute, "Run thermal calculations", py::arg("loops")=0);
-        RO_PROPERTY(err, getErr, "Maximum estimated error");
+    {CLASS(FiniteElementMethodThermal3DSolver, "Static3D", u8"Finite element thermal solver for 3D Geometry.")
+        METHOD(compute, compute, u8"Run thermal calculations", py::arg("loops")=0);
+        RO_PROPERTY(err, getErr, u8"Maximum estimated error");
         RECEIVER(inHeat, "");
         solver.setattr("inHeatDensity", solver.attr("inHeat"));
         PROVIDER(outTemperature, "");
         PROVIDER(outHeatFlux, "");
         PROVIDER(outThermalConductivity, "");
-        BOUNDARY_CONDITIONS(temperature_boundary, "Boundary conditions for the constant temperature");
-        BOUNDARY_CONDITIONS(heatflux_boundary, "Boundary conditions for the constant heat flux");
-        BOUNDARY_CONDITIONS(convection_boundary, "Convective boundary conditions");
-        BOUNDARY_CONDITIONS(radiation_boundary, "Radiative boundary conditions");
-        RW_FIELD(inittemp, "Initial temperature");
-        RW_FIELD(maxerr, "Limit for the temperature updates");
-        RW_PROPERTY(algorithm, getAlgorithm, setAlgorithm, "Chosen matrix factorization algorithm");
-        RW_FIELD(itererr, "Allowed residual iteration for iterative method");
-        RW_FIELD(iterlim, "Maximum number of iterations for iterative method");
-        RW_FIELD(logfreq, "Frequency of iteration progress reporting");
+        BOUNDARY_CONDITIONS(temperature_boundary, u8"Boundary conditions for the constant temperature");
+        BOUNDARY_CONDITIONS(heatflux_boundary, u8"Boundary conditions for the constant heat flux");
+        BOUNDARY_CONDITIONS(convection_boundary, u8"Convective boundary conditions");
+        BOUNDARY_CONDITIONS(radiation_boundary, u8"Radiative boundary conditions");
+        RW_FIELD(inittemp, u8"Initial temperature");
+        RW_FIELD(maxerr, u8"Limit for the temperature updates");
+        RW_PROPERTY(algorithm, getAlgorithm, setAlgorithm, u8"Chosen matrix factorization algorithm");
+        RW_FIELD(itererr, u8"Allowed residual iteration for iterative method");
+        RW_FIELD(iterlim, u8"Maximum number of iterations for iterative method");
+        RW_FIELD(logfreq, u8"Frequency of iteration progress reporting");
     }
 }
