@@ -132,6 +132,9 @@ struct PLASK_SOLVER_API SlabBase {
     /// Approxximate lateral distance between points for temperature investigation
     double temp_dist;
 
+    /// Minimum layer thickness for the purpose of temperature-based layers division
+    double temp_layer;
+
   public:
 
     SlabBase():
@@ -143,7 +146,7 @@ struct PLASK_SOLVER_API SlabBase {
         k0(NAN),
         vpml(dcomplex(1.,-2.), 2.0, 10., 0),
         recompute_integrals(true), always_recompute_gain(false), group_layers(true),
-        max_temp_diff(NAN), temp_dist(0.05)
+        max_temp_diff(NAN), temp_dist(0.5), temp_layer(0.05)
     {}
 
     virtual ~SlabBase() {}
@@ -327,6 +330,16 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
     void setTempDist(double value) {
         bool changed = temp_dist != value;
         temp_dist = value;
+        if (changed) this->invalidate();
+    }
+
+    /// Getter for temp_dist
+    double getTempLayer() const { return temp_layer; }
+
+    /// Setter for temp_dist
+    void setTempLayer(double value) {
+        bool changed = temp_layer != value;
+        temp_layer = value;
         if (changed) this->invalidate();
     }
 

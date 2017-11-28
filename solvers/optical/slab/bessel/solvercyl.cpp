@@ -37,7 +37,8 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
             lam0 = reader.getAttribute<double>("lam0", NAN);
             always_recompute_gain = reader.getAttribute<bool>("update-gain", always_recompute_gain);
             max_temp_diff = reader.getAttribute<double>("temp-diff", max_temp_diff);
-            temp_dist = reader.getAttribute<double>("temp-dist", max_temp_diff);
+            temp_dist = reader.getAttribute<double>("temp-dist", temp_dist);
+            temp_layer = reader.getAttribute<double>("temp-layer", temp_layer);
             integral_error = reader.getAttribute<double>("integrals-error", integral_error);
             max_integration_points = reader.getAttribute<size_t>("integrals-points", max_integration_points);
             kscale = reader.getAttribute<double>("k-scale", kscale);
