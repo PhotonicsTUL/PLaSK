@@ -57,7 +57,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      shared_ptr<MeshAxis> axis_midpoints_horizontal;
      
      /// \return current wavelength
-     double getWavelength() const { return 2e3*M_PI / k0; }
+     dcomplex getWavelength() const { return 2e3*M_PI / k0; }
 
     /**
      * Set new wavelength
@@ -76,6 +76,8 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      
      dcomplex get_T_bb();
      
+     void showMidpointsMesh();
+     
    
 protected:
   friend struct RootDigger;
@@ -93,7 +95,7 @@ protected:
   
   shared_ptr<RectangularMesh<2>> mesh;   /// Mesh over which the calculations are performed
   
-  double k0;
+  dcomplex k0;
   
   dcomplex t_bb;
   

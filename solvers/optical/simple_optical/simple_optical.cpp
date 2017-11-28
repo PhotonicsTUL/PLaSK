@@ -42,7 +42,7 @@ void SimpleOptical::onInitialize()
     axis_midpoints_vertical = midpoints->ee_y();
     axis_midpoints_horizontal = midpoints->ee_x();
     ybegin = 0;
-    yend = axis_vertical->size();
+    yend = mesh->axis1->size()+1;
     initialize_refractive_index_vec();
     std::cout<<"Wavelength: "<<getWavelength()<<std::endl;
 }
@@ -50,20 +50,34 @@ void SimpleOptical::onInitialize()
 void SimpleOptical::initialize_refractive_index_vec()
 {
   double T = 300; //temperature 300 K
+  double w = real(2e3*M_PI / k0);
   for(double p: *axis_midpoints_vertical) 
   {
-    refractive_index_vec.push_back((geometry->getMaterial(vec(0.5,  p))->Nr(getWavelength(), T)));
+    refractive_index_vec.push_back((geometry->getMaterial(vec(0.0,  p))->Nr(w, T)));
   }
+}
+
+void SimpleOptical::showMidpointsMesh()
+{
+  std::cout<<"Vertical: "<<std::endl;
+  for(double p: *axis_midpoints_vertical)
+  {
+    std::cout<<p<<" ";
+  }
+  std::cout<<std::endl;
+  std::cout<<"Horizontal: "<<std::endl;
+  for(double p: *axis_midpoints_horizontal)
+  {
+    std::cout<<p<<" ";
+  }
+  std::cout<<std::endl;
 }
 
 void SimpleOptical::simpleVerticalSolver(double wave_length)
 {
     setWavelength(wave_length);
     onInitialize();
-    double c = 3e8;
-    double freq = c/getWavelength();
-     
-    t_bb = comput_T_bb(freq, refractive_index_vec);  
+    t_bb = comput_T_bb(k0, refractive_index_vec);  
   
 }
 

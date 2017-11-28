@@ -25,7 +25,7 @@
       <rectangle material="Al(0.73)GaAs" dr="10" dz="0.0635"/>
       <rectangle material="GaAs" dr="10" dz="0.1376"/>
       <shelf>
-        <rectangle name="gain-region" role="gain" material="active" dr="4" dz="0.0050"/>
+        <rectangle name="gain-region" material="active" dr="4" dz="0.0050"/>
         <rectangle material="inactive" dr="6" dz="0.0050"/>
       </shelf>
       <rectangle material="GaAs" dr="10" dz="0.1376"/>
@@ -38,26 +38,20 @@
 </geometry>
 
 <solvers>
-  <optical solver="SimpleOpticalCyl" name="prosty">
+  <optical name="efm" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="main"/>
+    <mode lam0="980." vat="0."/>
   </optical>
 </solvers>
 
 <script><![CDATA[
 plt.rcParams.update({'font.size': 28})
 
-wavelength = np.linspace(900, 1200, 301)
-t_bb = np.zeros(len(wavelength))
-for i in range(0, len(t_bb)):
-    prosty.simpleVerticalSolver(wavelength[i])
-    t_bb[i] = prosty.get_T_bb().real
-    print(t_bb[i])
-plt.plot(wavelength, np.abs(t_bb), 'b-')
-plt.xlabel("wavelength [nm]")
-plt.ylabel("T bb")
+wavelength = np.linspace(700, 1300, 601)
+t_bb = efm.get_vert_determinant(wavelength)
+plt.plot(wavelength, t_bb, 'r-')
 plt.show()
 
-prosty.showMidpointsMesh()
 ]]></script>
 
 </plask>
