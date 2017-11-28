@@ -17,7 +17,7 @@ namespace plask {
  * @tparam T type of data served by the data vector
  */
 template <typename T>
-struct LazyDataImpl {
+struct PLASK_API LazyDataImpl {
 
     typedef T CellType;
 
@@ -144,7 +144,7 @@ struct LazyDataWithMeshImpl: public LazyDataImpl<T> {
  * Reading from LazyData object is thread-safty.
  */
 template <typename T>
-class LazyData {
+class PLASK_API LazyData {
 
     //TODO change back to unique_ptr when move to lambda capture (C++14) will be supported:
     //std::unique_ptr< const LazyDataImpl<T> > impl;
