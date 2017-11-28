@@ -17,7 +17,7 @@ namespace plask {
  * @tparam T type of data served by the data vector
  */
 template <typename T>
-struct PLASK_API LazyDataImpl {
+struct LazyDataImpl {
 
     typedef T CellType;
 
@@ -144,7 +144,7 @@ struct LazyDataWithMeshImpl: public LazyDataImpl<T> {
  * Reading from LazyData object is thread-safty.
  */
 template <typename T>
-class PLASK_API LazyData {
+class LazyData {
 
     //TODO change back to unique_ptr when move to lambda capture (C++14) will be supported:
     //std::unique_ptr< const LazyDataImpl<T> > impl;
@@ -374,6 +374,9 @@ std::ostream& operator<<(std::ostream& out, LazyData<T> const& to_print) {
     out << '['; return print_seq(out, to_print.begin(), to_print.end()) << ']';
 }
 
+
+#ifdef _MSC_VER // MSVC require this while MingW does not accept
+
 #define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(...) \
     PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_CLASS(LazyData<__VA_ARGS__>) ; \
     PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(LazyDataImpl<__VA_ARGS__>) ;
@@ -384,6 +387,8 @@ PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Vec<3, complex<double>>)
 PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Vec<3, double>)
 PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Vec<2, double>)
 PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(double)
+
+#endif
 
 }   // namespace plask
 
