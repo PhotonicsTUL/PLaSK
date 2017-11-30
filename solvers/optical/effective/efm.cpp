@@ -13,7 +13,7 @@ EffectiveFrequencyCyl::EffectiveFrequencyCyl(const std::string& name) :
     log_value(dataLog<dcomplex, dcomplex>("radial", "lam", "det")),
     emission(TOP),
     rstripe(-1),
-    determinant(DETERMINANT_FULL),
+    determinant(DETERMINANT_TRANSFER),
     perr(1e-3),
     k0(NAN),
     vlam(0.),
