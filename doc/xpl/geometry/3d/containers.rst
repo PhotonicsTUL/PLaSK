@@ -38,7 +38,7 @@ Containers 3D
 
          :ref:`Three-dimensional geometry object <sec-xpl-Geometry-objects-2D>`.
 
-      .. xml:tag:: <item> [in <container3d>]
+      .. xml:tag:: <item> [in container3d]
 
          :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
          :attr back: Longitudinal alignment specification: position of the back edge of the bounding box of the element. (float [µm])
@@ -106,7 +106,7 @@ Containers 3D
 
          :ref:`Three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
 
-      .. xml:tag:: <item> [in <stack3d>]
+      .. xml:tag:: <item> [in stack3d]
 
          Tag that allows to specify additional item attributes.
 
@@ -117,6 +117,6 @@ Containers 3D
 
              A single :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
 
-      .. xml:tag:: <zero/> [in <stack3d>]
+      .. xml:tag:: <zero/> [in stack3d]
 
          This tag can appear as a stack content only once. If present, it indicates the vertical position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
