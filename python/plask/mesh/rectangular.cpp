@@ -788,6 +788,23 @@ shared_ptr<RectangularMeshSmoothGenerator<dim>> RectangularMeshSmoothGenerator__
     return result;
 }
 
+static shared_ptr<RectangularMesh2DRegularGenerator> RectangularMesh2DRegularGenerator__init__1(double spacing) {
+    return make_shared<RectangularMesh2DRegularGenerator>(spacing);
+}
+
+static shared_ptr<RectangularMesh2DRegularGenerator> RectangularMesh2DRegularGenerator__init__2(double spacing0, double spacing1) {
+    return make_shared<RectangularMesh2DRegularGenerator>(spacing0, spacing1);
+}
+
+static shared_ptr<RectangularMesh3DRegularGenerator> RectangularMesh3DRegularGenerator__init__1(double spacing) {
+    return make_shared<RectangularMesh3DRegularGenerator>(spacing);
+}
+
+static shared_ptr<RectangularMesh3DRegularGenerator> RectangularMesh3DRegularGenerator__init__3(double spacing0, double spacing1, double spacing2) {
+    return make_shared<RectangularMesh3DRegularGenerator>(spacing0, spacing1, spacing2);
+}
+
+
 template <int dim>
 void register_smooth_generator() {
      py::class_<RectangularMeshSmoothGenerator<dim>, shared_ptr<RectangularMeshSmoothGenerator<dim>>,
@@ -837,6 +854,8 @@ void register_mesh_rectangular()
     py::class_<MeshAxis, shared_ptr<MeshAxis>, py::bases<MeshD<1>>, boost::noncopyable>
             ("Axis", u8"Base class for all 1D meshes (used as axes by 2D and 3D rectangular meshes).",
              py::no_init)
+            .def("get_midpoints", &MeshAxis::getMidpointsMesh, u8"Get new mesh with points in the middles of elements of this mesh")
+
     ;
 
     py::class_<OrderedAxis, shared_ptr<OrderedAxis>, py::bases<MeshAxis>> rectilinear1d("Ordered",
@@ -873,7 +892,7 @@ void register_mesh_rectangular()
                    py::bases<MeshGeneratorD<1>>, boost::noncopyable>("RegularGenerator",
             u8"Generator of ordered 1D mesh with lines at transverse edges of all objects\n"
             u8"and fine regular division of each object with spacing approximately equal to\n"
-            "spacing\n\n"
+            "specified spacing\n\n"
             u8"RegularGenerator(spacing)\n    create generator",
             py::init<double>(py::arg("spacing")))
         ;
@@ -937,7 +956,7 @@ void register_mesh_rectangular()
         .def("minor_index", &RectangularMesh<2>::minorIndex, u8"Return index in the minor axis of the point with given index", (py::arg("index")))
         .def("set_optimal_ordering", &RectangularMesh<2>::setOptimalIterationOrder, u8"Set the optimal ordering of the points in this mesh")
         .add_property("ordering", &RectangularMesh2D__getOrdering, &RectangularMesh2D__setOrdering, u8"Ordering of the points in this mesh")
-        .def("get_midpoints", &RectangularMesh<2>::getMidpointsMesh, u8"Get new mesh with points in the middles of objects described by this mesh")
+        .def("get_midpoints", &RectangularMesh<2>::getMidpointsMesh, u8"Get new mesh with points in the middles of elements of this mesh")
         .def("Left", &RectangularMesh<2>::getLeftBoundary, u8"Left edge of the mesh for setting boundary conditions").staticmethod("Left")
         .def("Right", &RectangularMesh<2>::getRightBoundary, u8"Right edge of the mesh for setting boundary conditions").staticmethod("Right")
         .def("Top", &RectangularMesh<2>::getTopBoundary, u8"Top edge of the mesh for setting boundary conditions").staticmethod("Top")
@@ -977,9 +996,15 @@ void register_mesh_rectangular()
                    py::bases<MeshGeneratorD<2>>, boost::noncopyable>("RegularGenerator",
             u8"Generator of Rectilinear2D mesh with lines at transverse edges of all objects\n"
             u8"and fine regular division of each object with spacing approximately equal to\n"
-            "spacing\n\n"
-            u8"RegularGenerator(spacing)\n    create generator",
-            py::init<double>(py::arg("spacing")))
+            "specified spacing\n\n"
+            u8"RegularGenerator(spacing)\n    create generator with equal spacing in all\n"
+            u8"                               directions\n\n"
+            u8"RegularGenerator(spacing0, spacing1)\n    create generator with equal\n"
+            u8"                                          spacing\n", py::no_init)
+            .def("__init__", py::make_constructor(RectangularMesh2DRegularGenerator__init__1, py::default_call_policies(),
+                                                  (py::arg("spacing"))))
+            .def("__init__", py::make_constructor(RectangularMesh2DRegularGenerator__init__2, py::default_call_policies(),
+                                                  (py::arg("spacing0"), py::arg("spacing1"))))
         ;
         py::implicitly_convertible<shared_ptr<RectangularMesh2DRegularGenerator>, shared_ptr<const RectangularMesh2DRegularGenerator>>();
 
@@ -1026,7 +1051,7 @@ void register_mesh_rectangular()
         .def("minor_index", &RectangularMesh<3>::minorIndex, u8"Return index in the minor axis of the point with given index", (py::arg("index")))
         .def("set_optimal_ordering", &RectangularMesh<3>::setOptimalIterationOrder, u8"Set the optimal ordering of the points in this mesh")
         .add_property("ordering", &RectangularMesh3D__getOrdering, &RectangularMesh3D__setOrdering, u8"Ordering of the points in this mesh")
-        .def("get_midpoints", &RectangularMesh<3>::getMidpointsMesh, u8"Get new mesh with points in the middles of objects described by this mesh")
+        .def("get_midpoints", &RectangularMesh<3>::getMidpointsMesh, u8"Get new mesh with points in the middles of of elements of this mesh")
         .def("Front", &RectangularMesh<3>::getFrontBoundary, u8"Front side of the mesh for setting boundary conditions").staticmethod("Front")
         .def("Back", &RectangularMesh<3>::getBackBoundary, u8"Back side of the mesh for setting boundary conditions").staticmethod("Back")
         .def("Left", &RectangularMesh<3>::getLeftBoundary, u8"Left side of the mesh for setting boundary conditions").staticmethod("Left")
@@ -1064,9 +1089,15 @@ void register_mesh_rectangular()
                    py::bases<MeshGeneratorD<3>>, boost::noncopyable>("RegularGenerator",
             u8"Generator of Rectilinear3D mesh with lines at transverse edges of all objects\n"
             u8"and fine regular division of each object with spacing approximately equal to\n"
-            "spacing\n\n"
-            u8"RegularGenerator(spacing)\n    create generator",
-            py::init<double>(py::arg("spacing")))
+            "specified spacing\n\n"
+            u8"RegularGenerator(spacing)\n    create generator with equal spacing in all\n"
+            u8"                               directions\n\n"
+            u8"RegularGenerator(spacing0, spacing1, spacing2)\n    create generator with equal\n"
+            u8"                                                    spacing\n", py::no_init)
+            .def("__init__", py::make_constructor(RectangularMesh3DRegularGenerator__init__1, py::default_call_policies(),
+                                                  (py::arg("spacing"))))
+            .def("__init__", py::make_constructor(RectangularMesh3DRegularGenerator__init__3, py::default_call_policies(),
+                                                  (py::arg("spacing0"), py::arg("spacing1"), py::arg("spacing2"))))
         ;
         py::implicitly_convertible<shared_ptr<RectangularMesh3DRegularGenerator>, shared_ptr<const RectangularMesh3DRegularGenerator>>();
 

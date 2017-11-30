@@ -212,7 +212,7 @@
     <steps small0="0.005" small1="0.05" small2="0.05" factor="1.2"/>
   </generator>
   <generator method="regular" name="reg" type="rectangular2d">
-    <spacing every="0.25"/>
+    <spacing every0="0.2"/>
   </generator>
   <generator method="simple" name="spl" type="rectangular2d"/>
 </grids>

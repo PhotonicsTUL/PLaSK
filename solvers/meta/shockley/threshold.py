@@ -261,7 +261,7 @@ class ThresholdSearch(ThermoElectric):
 
         Args:
             axis (mesh or sequence): Points along horizontal axis to plot gain at.
-                                     Defaults to thr optical mesh.
+                                     Defaults to the optical mesh.
 
             bounds (bool): If *True* then the geometry objects boundaries are
                            plotted.
@@ -297,7 +297,7 @@ class ThresholdSearch(ThermoElectric):
         plask.xlabel("Wavelength [nm]")
         plask.ylabel("Determinant [ar.u.]")
 
-    def compute(self, save=True, invalidate=False):
+    def compute(self, save=True, invalidate=False, group='ThresholdSearch'):
         """
         Execute the algorithm.
 
@@ -312,8 +312,11 @@ class ThresholdSearch(ThermoElectric):
                 either the batch job id or the current time if no batch system
                 is used. The filename can be overridden by setting this parameter
                 as a string.
+
             invalidate (bool): If this flag is set, solvers are invalidated
                                in the beginning of the computations.
+
+            group (str): HDF5 group to save the data under.
 
         Returns:
             The voltage set to ``ivolt`` boundary condition for the threshold.
@@ -402,7 +405,7 @@ class ThresholdSearch(ThermoElectric):
                 for optical field.
         """
         if optical_resolution is None: optical_resolution = self.optical_resolution
-        h5file, group, filename = h5open(filename, group)
+        h5file, group, filename, close = h5open(filename, group)
         self._save_thermoelectric(h5file, group)
         levels = list(self._get_levels(self.diffusion.geometry, self.diffusion.mesh, 'QW', 'gain'))
         for no, mesh in levels:
@@ -413,19 +416,25 @@ class ThresholdSearch(ThermoElectric):
             if lam is None: lam = self.get_lam().real
             value = self.gain.outGain(mesh, lam)
             plask.save_field(value, h5file, group + '/Junction'+no+'Gain')
-        obox = self.optical.geometry.bbox
-        omesh = plask.mesh.Rectangular2D(plask.mesh.Regular(obox.left, obox.right, optical_resolution[0]),
-                                         plask.mesh.Regular(obox.bottom, obox.top, optical_resolution[1]))
         if self.modeno is not None:
+            obox = self.optical.geometry.bbox
+            oaxis = plask.mesh.Regular(obox.left, obox.right, optical_resolution[0])
+            omesh = plask.mesh.Rectangular2D(oaxis,
+                                             plask.mesh.Regular(obox.bottom, obox.top, optical_resolution[1]))
             ofield = self.optical.outLightMagnitude(self.modeno, omesh)
-            plask.save_field(ofield, h5file, group + '/LightMagnitude')
+            plask.save_field(ofield/max(ofield), h5file, group + '/LightMagnitude')
             nrfield = self.optical.outRefractiveIndex(omesh)
             plask.save_field(nrfield, h5file, group + '/RefractiveIndex')
-        h5file.close()
+            rmesh = next(self._get_levels(self.optical.geometry, oaxis, 'QW', 'QD', 'gain'))[1]
+            orfield = self.optical.outLightMagnitude(self.modeno, rmesh)
+            plask.save_field(orfield/max(orfield), h5file, group + '/HorizontalLightMagnitude')
+
+        if close:
+            h5file.close()
         plask.print_log('info', "Fields saved to file '{}'".format(filename))
         return filename
 
-    def plot_optical_field(self, resolution=(800, 600), geometry_color='0.75', geometry_alpha=0.35, **kwargs):
+    def plot_optical_field(self, resolution=None, geometry_color='0.75', geometry_alpha=0.35, **kwargs):
         """
         Plot computed optical mode field at threshold.
 
@@ -447,6 +456,85 @@ class ThresholdSearch(ThermoElectric):
         plask.plot_field(field, **kwargs)
         plask.plot_geometry(self.optical.geometry, color=geometry_color, alpha=geometry_alpha)
         plask.gcf().canvas.set_window_title("Light Intensity")
+
+    def plot_optical_field_horizontal(self, resolution=None, bounds=True, interpolation='linear', **kwargs):
+        """
+        Plot horizontal distribution of the computed optical mode field at threshold.
+
+        Args:
+            resolution (int): Number of points in horizontal direction.
+
+            bounds (bool): If *True* then the geometry objects boundaries are
+                           plotted.
+
+            interpolation (str): Interpolation used when retrieving current density.
+
+            **kwargs: Keyword arguments passed to the plot function.
+        """
+        if resolution is None:
+            resolution = self.optical_resolution[0]
+        box = self.optical.geometry.bbox
+        raxis = plask.mesh.Regular(box.left, box.right, resolution)
+        rmesh = next(self._get_levels(self.optical.geometry, raxis, 'QW', 'QD', 'gain'))[1]
+        field = self.optical.outLightMagnitude(self.modeno, rmesh, interpolation)
+        color = kwargs.pop('color', None)
+        if color is None:
+            try:
+                color = plask.rcParams['axes.prop_cycle']
+            except KeyError:
+                color = plask.rcParams['axes.color_cycle'][1]
+            else:
+                color = color.by_key()['color'][1]
+        plask.plot_profile(field/max(field), color=color, **kwargs)
+        if bounds:
+            self._plot_hbounds(self.optical)
+        plask.ylabel("Light Intensity [arb.u.]")
+        plask.gcf().canvas.set_window_title("Radial Light Intensity")
+
+    def plot_optical_field_vertical(self, pos=0.01, offset=0.5, resolution=None, interpolation='linear', **kwargs):
+        """
+        Plot vertical distribution of the computed optical mode field at threshold and
+        refractive index profile.
+
+        Args:
+            resolution (int): Number of points in horizontal direction.
+
+            pos (float): Horizontal position to get the field at.
+
+            offset (float): Distance above and below geometry boundary to include into
+                            the plot.
+
+            interpolation (str): Interpolation used when retrieving current density.
+
+            **kwargs: Keyword arguments passed to the plot function.
+        """
+        if resolution is None:
+            resolution = self.optical_resolution[1]
+        box = self.optical.geometry.bbox
+        zaxis = plask.mesh.Regular(box.bottom-offset, box.top+offset, 10*resolution)
+        zmesh = plask.mesh.Rectangular2D([pos], zaxis)
+        try:
+            cc = plask.rcParams['axes.prop_cycle']
+        except KeyError:
+            cc = plask.rcParams['axes.color_cycle']
+        else:
+            cc = cc.by_key()['color']
+        color2 = cc[0]
+        color = kwargs.pop('color', None)
+        if color is None:
+            color = cc[1]
+        ax1 = plask.gca()
+        field = self.optical.outLightMagnitude(self.modeno, zmesh, interpolation)
+        plask.plot_profile(field/max(field), color=color, **kwargs)
+        plask.ylabel("Light Intensity [arb.u.]")
+        ax2 = plask.twinx()
+        plask.plot_profile(self.optical.outRefractiveIndex(zmesh).real, comp=0, color=color2)
+        plask.ylabel("Refractive Index")
+        ax1.set_zorder(ax2.get_zorder()+1)
+        ax1.patch.set_visible(False)
+        ax2.patch.set_visible(True)
+        plask.xlim(zmesh.axis1[0], zmesh.axis1[-1])
+        plask.gcf().canvas.set_window_title("Vertical Light Intensity")
 
 
 class ThresholdSearchCyl(ThresholdSearch):

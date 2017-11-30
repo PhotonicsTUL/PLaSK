@@ -54,9 +54,6 @@ class PythonEvalMaterial : public Material
     shared_ptr<PythonEvalMaterialConstructor> cls;
     shared_ptr<Material> base;
 
-    Material::DopingAmountType doping_amount_type;
-    double doping_amount;
-
     py::object self;
 
     friend struct PythonEvalMaterialConstructor;
@@ -87,9 +84,8 @@ class PythonEvalMaterial : public Material
 
   public:
 
-    PythonEvalMaterial(const shared_ptr<PythonEvalMaterialConstructor>& constructor, const shared_ptr<Material>& base,
-                       const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) :
-        cls(constructor), base(base), doping_amount_type(doping_amount_type), doping_amount(doping_amount) {}
+    PythonEvalMaterial(const shared_ptr<PythonEvalMaterialConstructor>& constructor, const shared_ptr<Material>& base) :
+        cls(constructor), base(base) {}
 
     // Here there are overridden methods from Material class
 
@@ -99,10 +95,8 @@ class PythonEvalMaterial : public Material
 
     bool isEqual(const Material& other) const override {
         auto theother = static_cast<const PythonEvalMaterial&>(other);
-        return
-            cls == theother.cls &&
-            doping_amount_type == theother.doping_amount_type &&
-            doping_amount == theother.doping_amount;
+        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+        return cls == theother.cls && self.attr("__dict__") == theother.self.attr("__dict__");
     }
 
     std::string name() const override { return cls->materialName; }
@@ -269,7 +263,8 @@ class PythonEvalMaterial : public Material
 };
 
 inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
-    auto material = plask::make_shared<PythonEvalMaterial>(self.lock(), base(composition, doping_amount_type, doping_amount), composition, doping_amount_type, doping_amount);
+    auto material = plask::make_shared<PythonEvalMaterial>(self.lock(), base(composition, doping_amount_type, doping_amount));
+    OmpLockGuard<OmpNestLock> lock(python_omp_lock);
     material->self = py::object(shared_ptr<Material>(material));
     if (alloy) {
         for (auto item: Material::completeComposition(composition)) {

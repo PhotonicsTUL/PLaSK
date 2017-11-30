@@ -85,11 +85,18 @@
       label: Temperature probing step
       type: float
       unit: µm
-      default: 0.05
+      default: 0.5
       help: >
         Approximate lateral distance of the points in which the temperature is probed to decide about
-        the temperature difference in one layer. This is also the minimum thickness of sublayers resulting
-        from temperature-gradient division.
+        the temperature difference in one layer.
+    - &temp-layer
+      attr: temp-dist
+      label: Minimum temperature layer width
+      type: float
+      unit: µm
+      default: 0.05
+      help: >
+        Minimum thickness of sublayers resulting from temperature-gradient division.
 
   - tag: mode
     label: Mode Properties
@@ -455,6 +462,7 @@
     - *group-layers
     - *temp-diff
     - *temp-dist
+    - *temp-layer
 
   - tag: mode
     label: Mode Properties
@@ -652,6 +660,7 @@
     - *group-layers
     - *temp-diff
     - *temp-dist
+    - *temp-layer
     - attr: integrals-error
       label: Maximum integration error
       type: float

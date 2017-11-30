@@ -225,13 +225,16 @@ class PythonMaterial: public Material, Overriden<Material>
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
         py::object cls = py::object(py::borrowed(self)).attr("__class__");
         py::object oname;
+        std::string name;
         try {
             oname = cls.attr("__dict__")["name"];
+            name = py::extract<std::string>(oname);
         } catch (py::error_already_set) {
             PyErr_Clear();
             oname = cls.attr("__name__");
+            name = py::extract<std::string>(oname);
         }
-        return py::extract<std::string>(oname);
+        return name;
     }
 
     std::string str() const override {
@@ -1235,7 +1238,7 @@ void initMaterials() {
             (py::arg("name"), "material", "base"),
             u8"Register new simple material class to the database");
 
-    py::def("_register_material_complex", &registerComplexMaterial,
+    py::def("_register_material_alloy", &registerComplexMaterial,
             (py::arg("name"), "material", "base"),
             u8"Register new complex material class to the database");
 

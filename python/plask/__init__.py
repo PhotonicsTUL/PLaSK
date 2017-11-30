@@ -94,7 +94,7 @@ del _simple
 
 class _alloy(object):
     """
-    Decorator for custom complex material (alloy) class.
+    Decorator for custom alloy material class.
 
     Args:
         base (str or material.Material): Base class specification.
@@ -109,7 +109,7 @@ class _alloy(object):
         self.base = base
     def __call__(self, cls):
         if 'name' not in cls.__dict__: cls.name = cls.__name__
-        material._register_material_complex(cls.name, cls, self.base)
+        material._register_material_alloy(cls.name, cls, self.base)
         return cls
 class _complex(_alloy):
     def __init__(self, base=None):

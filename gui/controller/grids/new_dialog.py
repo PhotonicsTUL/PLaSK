@@ -95,7 +95,7 @@ class NewGridDialog(QDialog):
         return construct_grid(
             grids_model,
             Grid.contruct_empty_xml_element(
-                xml_name(self.name_edit.text()),
+                self.name_edit.text(),
                 xml_name(self.type_edit.currentText()),
                 xml_name(self.method_edit.currentText()) if self.kind_generator.isChecked() else None
             )

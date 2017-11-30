@@ -28,11 +28,11 @@ size_t ExpansionBessel::matrixSize() const {
 void ExpansionBessel::init1()
 {
     // Initialize segments
-    if (!SOLVER->mesh) {
-        SOLVER->writelog(LOG_INFO, "Creating simple mesh");
-        SOLVER->setMesh(plask::make_shared<OrderedMesh1DSimpleGenerator>(true));
-    }
-    rbounds = OrderedAxis(*SOLVER->getMesh());
+    if (SOLVER->mesh)
+        rbounds = OrderedAxis(*SOLVER->getMesh());
+    else
+        rbounds = std::move(*makeGeometryGrid1D(SOLVER->getGeometry(), true));
+    rbounds.addPoint(0.);
     OrderedAxis::WarningOff nowarn_rbounds(rbounds);
     size_t nseg = rbounds.size() - 1;
     if (SOLVER->pml.dist > 0.) rbounds.addPoint(rbounds[nseg++] + SOLVER->pml.dist);

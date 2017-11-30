@@ -143,9 +143,9 @@ class PLASK_API GeometryReader {
      */
     shared_ptr<Material> getMaterial(const std::string& material_full_name) const;
 
-    shared_ptr<MaterialsDB::MixedCompositionFactory> getMixedCompositionFactory(const std::string& material1_full_name, const std::string& material2_full_name, double shape=1.) const {
-        return materialsDB->getFactory(material1_full_name, material2_full_name, shape);
-    }
+    shared_ptr<MaterialsDB::MixedCompositionFactory> getMixedCompositionFactory(const std::string& material1_full_name,
+                                                                                const std::string& material2_full_name,
+                                                                                double shape=1.) const;
 
     /**
      * Read material from XML source (from attribute with name XML_MATERIAL_ATTR).

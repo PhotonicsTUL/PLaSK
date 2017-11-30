@@ -23,6 +23,21 @@ shared_ptr<Material> GeometryReader::getMaterial(const std::string& material_ful
     }
 }
 
+shared_ptr<MaterialsDB::MixedCompositionFactory> GeometryReader::getMixedCompositionFactory(const std::string& material1_full_name,
+                                                                                            const std::string& material2_full_name,
+                                                                                            double shape) const {
+    try {
+        return materialsDB->getFactory(material1_full_name, material2_full_name, shape);
+    } catch (NoSuchMaterial&) {
+        if (manager.draft) return plask::make_shared<MaterialsDB::DummyMixedCompositionFactory>(material1_full_name, material2_full_name);
+        else throw;
+    } catch (MaterialParseException&) {
+        if (manager.draft) return plask::make_shared<MaterialsDB::DummyMixedCompositionFactory>(material1_full_name, material2_full_name);
+        else throw;
+    }
+}
+
+
 std::map<std::string, GeometryReader::object_read_f*>& GeometryReader::objectReaders() {
     static std::map<std::string, GeometryReader::object_read_f*> result;
     return result;
@@ -87,7 +102,7 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
     shared_ptr<GeometryObject> new_object;    // new object will be constructed
 
     std::deque<std::pair<std::string, shared_ptr<GeometryObject>>> other_names;
-    
+
     if (nodeName == "copy") {
         shared_ptr<GeometryObject> from = requireObjectWithName(source.requireAttribute("from"));
         GeometryObject::CompositeChanger changers;
