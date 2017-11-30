@@ -390,8 +390,10 @@ if(BUILD_PYTHON)
         add_custom_command(OUTPUT ${PLASK_PYTHON_PATH}/${py_file_base}
                            COMMAND ${CMAKE_COMMAND} ARGS -E copy ${py_file} ${PLASK_PYTHON_PATH}/${py_file_base}
                            DEPENDS ${py_file})
-        list(APPEND python_plask_pyc ${PLASK_PYTHON_PATH}/${py_file_base}c)
-        list(APPEND python_plask_pyo ${PLASK_PYTHON_PATH}/${py_file_base}o)
+        if(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
+            list(APPEND python_plask_pyc ${PLASK_PYTHON_PATH}/${py_file_base}c)
+            list(APPEND python_plask_pyo ${PLASK_PYTHON_PATH}/${py_file_base}o)
+        endif(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
     endforeach()
 
     add_custom_target(python-scripts ALL DEPENDS ${python_plask_py_copied})
@@ -399,8 +401,12 @@ if(BUILD_PYTHON)
     if(WIN32)
         add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PYTHON_PATH})
         add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PYTHON_PATH})
-        install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask COMPONENT core)
-        install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask COMPONENT core)
+        if(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
+            install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask COMPONENT core)
+            install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask COMPONENT core)
+        else()
+            install(DIRECTORY ${PLASK_PYTHON_PATH}/__pycache__ DESTINATION lib/plask/python/plask COMPONENT core)
+        endif()
     endif()
 
     include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
@@ -502,12 +508,16 @@ if(BUILD_PYTHON)
                                    COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/${gui_file} ${PLASK_PATH}/${gui_file}
                                    DEPENDS ${CMAKE_SOURCE_DIR}/${gui_file})
                 list(APPEND gui_files_copied ${PLASK_PATH}/${gui_file})
-                list(APPEND gui_files_pyc ${PLASK_PATH}/${gui_file}c)
-                list(APPEND gui_files_pyo ${PLASK_PATH}/${gui_file}o)
+                if(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
+                    list(APPEND gui_files_pyc ${PLASK_PATH}/${gui_file}c)
+                    list(APPEND gui_files_pyo ${PLASK_PATH}/${gui_file}o)
+                endif(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
             endforeach()
-            add_custom_command(OUTPUT ${gui_files_pyc} COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PATH}/gui DEPENDS ${gui_files_copied})
-            add_custom_command(OUTPUT ${gui_files_pyo}  COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PATH}/gui)
-            add_custom_target(gui-files ALL DEPENDS ${gui_files_pyc} ${gui_files_pyo})
+            if(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0) # TODO create dirs __pychache__ with .pyc/.pyo files with python3
+                add_custom_command(OUTPUT ${gui_files_pyc} COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PATH}/gui DEPENDS ${gui_files_copied})
+                add_custom_command(OUTPUT ${gui_files_pyo} COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PATH}/gui)
+                add_custom_target(gui-files ALL DEPENDS ${gui_files_pyc} ${gui_files_pyo})
+            endif(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
             install(DIRECTORY ${PLASK_PATH}/gui DESTINATION lib/plask COMPONENT GUI)
             install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI
                     PATTERN .* EXCLUDE
@@ -515,6 +525,7 @@ if(BUILD_PYTHON)
                     PATTERN *.py EXCLUDE
                     PATTERN *.pyc EXCLUDE
                     PATTERN *.pyo EXCLUDE
+                    PATTERN __pycache__ EXCLUDE # for python 3
             )
         else()
             install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI
@@ -522,6 +533,7 @@ if(BUILD_PYTHON)
                     PATTERN *.xpl EXCLUDE
                     PATTERN *.pyc EXCLUDE
                     PATTERN *.pyo EXCLUDE
+                    PATTERN __pycache__ EXCLUDE # for python 3
             )
             # This will make plaskgui work without install
             execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/gui ${PLASK_PATH}/gui)
