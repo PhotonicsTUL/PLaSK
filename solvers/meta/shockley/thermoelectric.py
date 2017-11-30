@@ -65,11 +65,14 @@ class ThermoElectric(plask.Solver):
 
         self.tfreq = 6
 
-    def _read_attr(self, tag, attr, solver, type, pyattr=None):
+    def _read_attr(self, tag, attr, solver, type=None, pyattr=None):
         if pyattr is None: pyattr = attr
         if attr in tag:
             try:
-                val = type(tag[attr])
+                if type is not None:
+                    val = type(tag[attr])
+                else:
+                    val = tag[attr]
             except ValueError:
                 raise plask.XMLError("{}: {} attribute {} has illegal value '{}'".format(
                     tag, type.__name__.title(), attr, tag[attr]))
@@ -105,10 +108,12 @@ class ThermoElectric(plask.Solver):
             self._read_attr(tag, 'maxterr', self.thermal, float, 'maxerr')
             self._read_attr(tag, 'maxcerr', self.electrical, float, 'maxerr')
         elif tag == 'tmatrix':
+            self._read_attr(tag, 'algorithm', self.thermal)
             self._read_attr(tag, 'itererr', self.thermal, float)
             self._read_attr(tag, 'iterlim', self.thermal, int)
             self._read_attr(tag, 'logfreq', self.thermal, int)
         elif tag == 'ematrix':
+            self._read_attr(tag, 'algorithm', self.thermal)
             self._read_attr(tag, 'itererr', self.electrical, float)
             self._read_attr(tag, 'iterlim', self.electrical, int)
             self._read_attr(tag, 'logfreq', self.electrical, int)

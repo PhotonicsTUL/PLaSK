@@ -261,7 +261,7 @@ class ThresholdSearch(ThermoElectric):
 
         Args:
             axis (mesh or sequence): Points along horizontal axis to plot gain at.
-                                     Defaults to thr optical mesh.
+                                     Defaults to the optical mesh.
 
             bounds (bool): If *True* then the geometry objects boundaries are
                            plotted.
