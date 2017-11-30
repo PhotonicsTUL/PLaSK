@@ -15,7 +15,7 @@ import os
 
 QT_API = os.environ.get('QT_API')
 if QT_API is not None:
-    QT_API = dict(pyqt='PyQt4', pyqt5='PyQt5', pyside='PySide').get(QT_API, 'PySide')
+    QT_API = dict(pyqt='PyQt4', pyqt5='PyQt5', pyside='PySide').get(QT_API, 'PyQt5')
     try:
         import matplotlib
     except ImportError:
@@ -30,7 +30,7 @@ else:
     try:
         import matplotlib
     except ImportError:
-        QT_API = 'PySide'
+        QT_API = 'PyQt5'
     else:
         if matplotlib.rcParams['backend'] == 'Qt5Agg':
             QT_API = 'PyQt5'
@@ -48,19 +48,7 @@ for QT_API in (QT_API, 'PySide', 'PyQt4', 'PyQt5'):
             QtSignal = QtCore.Signal
             QtSlot = QtCore.Slot
             break
-    elif QT_API == 'PyQt5':
-        try:
-            from PyQt5 import QtCore, QtWidgets, QtGui
-        except ImportError:
-            pass
-        else:
-            if os.name == 'nt':
-                QtWidgets.QApplication.addLibraryPath(os.path.join(sys.prefix, 'Library', 'plugins'))
-                QtWidgets.QApplication.addLibraryPath(os.path.join(os.path.dirname(QtCore.__file__), 'plugins'))
-            QtSignal = QtCore.pyqtSignal
-            QtSlot = QtCore.pyqtSlot
-            break
-    else:
+    elif QT_API == 'PyQt4':
         try:
             import sip
             for n in ("QString", "QVariant"):
@@ -72,6 +60,18 @@ for QT_API in (QT_API, 'PySide', 'PyQt4', 'PyQt5'):
         except ImportError:
             pass
         else:
+            QtSignal = QtCore.pyqtSignal
+            QtSlot = QtCore.pyqtSlot
+            break
+    else:
+        try:
+            from PyQt5 import QtCore, QtWidgets, QtGui
+        except ImportError:
+            pass
+        else:
+            if os.name == 'nt':
+                QtWidgets.QApplication.addLibraryPath(os.path.join(sys.prefix, 'Library', 'plugins'))
+                QtWidgets.QApplication.addLibraryPath(os.path.join(os.path.dirname(QtCore.__file__), 'plugins'))
             QtSignal = QtCore.pyqtSignal
             QtSlot = QtCore.pyqtSlot
             break
