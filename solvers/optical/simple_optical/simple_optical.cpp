@@ -42,7 +42,7 @@ void SimpleOptical::onInitialize()
     axis_midpoints_vertical = midpoints->ee_y();
     axis_midpoints_horizontal = midpoints->ee_x();
     ybegin = 0;
-    yend = mesh->axis1->size()+1;
+    yend = mesh->axis1->size();
     std::cout<<"yend = " << yend << std::endl;
     initialize_refractive_index_vec();
     std::cout<<"Wavelength: "<<getWavelength()<<std::endl;
@@ -135,9 +135,9 @@ dcomplex SimpleOptical::compute_transfer_matrix(const dcomplex& x, const std::ve
   for (size_t i = ybegin; i<yend-1; ++i)
   {
     
-    if (i != ybegin || ybegin != 0) d = edge_vert_layer_point[i] - edge_vert_layer_point[i-1]; 
-    else d = 0.;
-    //d = edge_vert_layer_point[i+1] - edge_vert_layer_point[i]; 
+    //if (i != ybegin || ybegin != 0) d = edge_vert_layer_point[i] - edge_vert_layer_point[i-1]; 
+    //else d = 0.;
+    d = edge_vert_layer_point[i+1] - edge_vert_layer_point[i]; 
     std::cout<<"i = "<<i<<std::endl;
     std::cout<<"x = " << x << std::endl;
     std::cout<<"d = " << d <<std::endl;
