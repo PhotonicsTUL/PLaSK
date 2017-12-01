@@ -47,11 +47,12 @@
 <script><![CDATA[
 plt.rcParams.update({'font.size': 28})
 
-wavelength = np.linspace(700, 1300, 601)
+wavelength = np.linspace(850, 1100, 601)
 t_bb = efm.get_vert_determinant(wavelength)
 plt.plot(wavelength, t_bb, 'r-')
 plt.show()
 
+print(t_bb)
 ]]></script>
 
 </plask>

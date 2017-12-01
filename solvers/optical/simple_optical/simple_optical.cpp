@@ -43,6 +43,7 @@ void SimpleOptical::onInitialize()
     axis_midpoints_horizontal = midpoints->ee_x();
     ybegin = 0;
     yend = mesh->axis1->size()+1;
+    std::cout<<"yend = " << yend << std::endl;
     initialize_refractive_index_vec();
     std::cout<<"Wavelength: "<<getWavelength()<<std::endl;
 }
@@ -75,19 +76,21 @@ void SimpleOptical::showMidpointsMesh()
 
 void SimpleOptical::simpleVerticalSolver(double wave_length)
 {
+    t_bb = 0;
     setWavelength(wave_length);
     onInitialize();
-    t_bb = comput_T_bb(k0, refractive_index_vec);  
+    //t_bb = comput_T_bb(k0, refractive_index_vec);  
+    t_bb = compute_transfer_matrix(k0, refractive_index_vec);
   
 }
 
 
-// x - frequency
+// x - frequency (k0)
 dcomplex SimpleOptical::comput_T_bb(const dcomplex& x, const std::vector< dcomplex >& NR)
 {
     std::vector<dcomplex> ky(yend);
     for (size_t i = ybegin; i < yend; ++i) {
-        ky[i] = k0 * sqrt(NR[i]*NR[i] - x*x);
+        ky[i] = x;
         if (imag(ky[i]) > 0.) ky[i] = -ky[i];
     }
     
@@ -110,7 +113,7 @@ dcomplex SimpleOptical::comput_T_bb(const dcomplex& x, const std::vector< dcompl
      }
      
     return T.bb;
-    
+   
     return 0;
   }
 
@@ -119,8 +122,44 @@ dcomplex SimpleOptical::get_T_bb()
   return t_bb;
 }
 
+dcomplex SimpleOptical::compute_transfer_matrix(const dcomplex& x, const std::vector<dcomplex> & NR)
+{
+  std::vector<double> edge_vert_layer_point;
+  for (double p: *axis_vertical) edge_vert_layer_point.push_back(p);
+  
+  Matrix phas_matrix;
+  Matrix boundary_matrix;
+  double d; //distance_between_layer
+  transfer_matrix = Matrix::eye();
+  dcomplex phas;
+  for (size_t i = ybegin; i<yend-1; ++i)
+  {
+    
+    if (i != ybegin || ybegin != 0) d = edge_vert_layer_point[i] - edge_vert_layer_point[i-1]; 
+    else d = 0.;
+    //d = edge_vert_layer_point[i+1] - edge_vert_layer_point[i]; 
+    std::cout<<"i = "<<i<<std::endl;
+    std::cout<<"x = " << x << std::endl;
+    std::cout<<"d = " << d <<std::endl;
+    std::cout<<"NR [i] " << NR[i] << std::endl;
+    phas_matrix = Matrix(exp(I*NR[i]*x*d), 0, 0, exp(-I*NR[i]*x*d));
+    //phas = exp(-I*NR[i]*x*d);
+    boundary_matrix = Matrix( 0.5+0.5*(NR[i]/NR[i+1]), 0.5-0.5*(NR[i]/NR[i+1]),
+			      0.5-0.5*(NR[i]/NR[i+1]), 0.5+0.5*(NR[i]/NR[i+1]) );
+  
+    //boundary_matrix.ff *= phas; boundary_matrix.fb /= phas;
+    //boundary_matrix.bf *= phas; boundary_matrix.bb /= phas;
+    //transfer_matrix = boundary_matrix*transfer_matrix; 
+    transfer_matrix = (boundary_matrix*phas_matrix)*transfer_matrix;
+    std::cout<<"T_bb = "<< transfer_matrix.bb << std::endl;    
+  }
+  return transfer_matrix.bb;
+}
 
-
+SimpleOptical::Matrix SimpleOptical::get_transfer_matrix()
+{
+  return transfer_matrix;
+}
   
 }}}
 

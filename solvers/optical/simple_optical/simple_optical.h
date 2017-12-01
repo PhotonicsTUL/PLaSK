@@ -25,7 +25,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
       };
      
      struct Matrix {
-          dcomplex ff, fb, bf, bb;
+         dcomplex ff, fb, bf, bb;
  	 Matrix() = default;
  	 Matrix(dcomplex t1, dcomplex t2, dcomplex t3, dcomplex t4): ff(t1), fb(t2), bf(t3), bb(t4) {}
  	 static Matrix eye() { return Matrix(1., 0., 0., 1.); }
@@ -75,6 +75,10 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      dcomplex comput_T_bb(const dcomplex& x, const std::vector< dcomplex >& NR);
      
      dcomplex get_T_bb();
+         
+     dcomplex compute_transfer_matrix(const dcomplex& k, const std::vector<dcomplex> & NR);
+     
+     Matrix get_transfer_matrix();
      
      void showMidpointsMesh();
      
@@ -98,6 +102,8 @@ protected:
   dcomplex k0;
   
   dcomplex t_bb;
+  
+  Matrix transfer_matrix;
   
   std::vector<dcomplex> refractive_index_vec;
   
