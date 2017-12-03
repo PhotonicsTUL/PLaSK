@@ -18,6 +18,7 @@ from ...qt.QtWidgets import *
 from ...qt.QtGui import *
 from ...utils.qsignals import BlockQtSignals
 from ...utils.qthread import BackgroundTask
+from ...utils.help import open_help
 from .completer import CompletionsController
 from ...model.script.completer import get_docstring, get_definitions
 from .brackets import get_selections as get_bracket_selections, update_brackets_colors
@@ -286,7 +287,15 @@ class ScriptController(SourceEditController):
             window.addDockWidget(Qt.RightDockWidgetArea, self.help_dock)
         self.help_dock.hide()
 
-        doc_action = QAction(QIcon.fromTheme('help-contextual'), 'Show &docstring', source)
+        source.toolbar.addSeparator()
+
+        help_action = QAction(QIcon.fromTheme('help-contents'), 'Open &Help', source)
+        help_action.setShortcut(Qt.CTRL + Qt.Key_F1)
+        help_action.triggered.connect(self.open_help)
+        source.editor.addAction(help_action)
+        source.toolbar.addAction(help_action)
+
+        doc_action = QAction(QIcon.fromTheme('help-contextual'), 'Show &Docstring', source)
         doc_action.setShortcut(Qt.SHIFT + Qt.Key_F1)
         doc_action.triggered.connect(self.show_docstring)
         source.editor.addAction(doc_action)
@@ -294,7 +303,6 @@ class ScriptController(SourceEditController):
         hide_doc_action.setShortcut(Qt.SHIFT + Qt.Key_Escape)
         hide_doc_action.triggered.connect(self.help_dock.hide)
         source.editor.addAction(hide_doc_action)
-        source.toolbar.addSeparator()
         source.toolbar.addAction(doc_action)
 
         self.document.window.closed.connect(self.save_state)
@@ -367,6 +375,9 @@ class ScriptController(SourceEditController):
 
     def on_edit_exit(self):
         return super(ScriptController, self).on_edit_exit()
+
+    def open_help(self):
+        open_help('api')
 
     def show_docstring(self):
         if CONFIG['workarounds/no_jedi']: return

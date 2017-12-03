@@ -67,7 +67,6 @@ class TableActions(object):
         return action
 
     def get(self, parent):
-
         self.add_action = TableActions.make_action('list-add', '&Add',
                                                     'Add new entry to the list', parent,
                                                     self.add_entry,

@@ -41,7 +41,7 @@ else:
 for QT_API in (QT_API, 'PySide', 'PyQt4', 'PyQt5'):
     if QT_API == 'PySide':
         try:
-            from PySide import QtCore, QtGui, QtGui as QtWidgets
+            from PySide import QtCore, QtGui, QtGui as QtWidgets, QtHelp
         except ImportError:
             pass
         else:
@@ -56,7 +56,7 @@ for QT_API in (QT_API, 'PySide', 'PyQt4', 'PyQt5'):
                     sip.setapi(n, 2)
                 except:
                     pass
-            from PyQt4 import QtCore, QtGui, QtGui as QtWidgets
+            from PyQt4 import QtCore, QtGui, QtGui as QtWidgets, QtHelp
         except ImportError:
             pass
         else:
@@ -65,7 +65,7 @@ for QT_API in (QT_API, 'PySide', 'PyQt4', 'PyQt5'):
             break
     else:
         try:
-            from PyQt5 import QtCore, QtWidgets, QtGui
+            from PyQt5 import QtCore, QtWidgets, QtGui, QtHelp
         except ImportError:
             pass
         else:
@@ -79,4 +79,5 @@ for QT_API in (QT_API, 'PySide', 'PyQt4', 'PyQt5'):
 sys.modules['gui.qt.QtCore'] = QtCore
 sys.modules['gui.qt.QtWidgets'] = QtWidgets
 sys.modules['gui.qt.QtGui'] = QtGui
-__all__ = ['QtCore', 'QtWidgets', 'QtGui', 'QT_API', 'QtSignal', 'QtSlot']
+sys.modules['gui.qt.QtHelp'] = QtHelp
+__all__ = ['QtCore', 'QtWidgets', 'QtGui', 'QtHelp', 'QT_API', 'QtSignal', 'QtSlot']

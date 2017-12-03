@@ -16,7 +16,6 @@ import os
 import re
 import subprocess
 import pkgutil
-import webbrowser
 import traceback
 import datetime
 from lxml import etree
@@ -71,6 +70,7 @@ from .controller.materials.plot import show_material_plot
 from .utils.config import CONFIG, ConfigProxy, ConfigDialog
 from .utils.texteditor import update_textedit_colors
 from .utils.widgets import fire_edit_end, InfoListView
+from .utils.help import open_help
 
 try:
     from pysparkle import PySparkle
@@ -253,7 +253,8 @@ class MainWindow(QMainWindow):
 
         help_action = QAction(QIcon.fromTheme('help-contents'), 'Open &Help...', self)
         help_action.setStatusTip('Open on-line help in a web browser')
-        help_action.triggered.connect(self.open_help)
+        help_action.triggered.connect(open_help)
+        self.help_window = None
 
         install_license_action = QAction('Install License...', self)
         install_license_action.setStatusTip('Install PLaSK license file into a proper location')
@@ -531,9 +532,6 @@ class MainWindow(QMainWindow):
             msgbox.setDefaultButton(QMessageBox.Yes)
             return msgbox.exec_() == QMessageBox.Yes
         return True
-
-    def open_help(self):
-        webbrowser.open("http://fizyka.p.lodz.pl/en/plask-user-guide/")
 
     def show_settings(self):
         dialog = ConfigDialog(self)
