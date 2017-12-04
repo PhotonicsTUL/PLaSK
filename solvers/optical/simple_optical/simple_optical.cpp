@@ -52,10 +52,20 @@ void SimpleOptical::initialize_refractive_index_vec()
 {
   double T = 300; //temperature 300 K
   double w = real(2e3*M_PI / k0);
+ 
+ 
   for(double p: *axis_midpoints_vertical) 
   {
-    refractive_index_vec.push_back((geometry->getMaterial(vec(0.0,  p))->Nr(w, T)));
+    refractive_index_vec.push_back(geometry->getMaterial(vec(0.0,  p))->Nr(w, T));
+    std::cout<<"Point :" << p << std::endl; 
+    std::cout<<"Material: " << geometry->getMaterial(vec(0.0, p))->name() << geometry->getMaterial(vec(0.0,  p))->Nr(w, T) << std::endl;
   }
+  for (dcomplex nr: refractive_index_vec)
+  {
+    std::cout<<"Nr = " << nr << std::endl;
+  }
+  
+  
 }
 
 void SimpleOptical::showMidpointsMesh()
@@ -81,41 +91,11 @@ void SimpleOptical::simpleVerticalSolver(double wave_length)
     onInitialize();
     //t_bb = comput_T_bb(k0, refractive_index_vec);  
     t_bb = compute_transfer_matrix(k0, refractive_index_vec);
+    refractive_index_vec.clear();
   
 }
 
 
-// x - frequency (k0)
-dcomplex SimpleOptical::comput_T_bb(const dcomplex& x, const std::vector< dcomplex >& NR)
-{
-    std::vector<dcomplex> ky(yend);
-    for (size_t i = ybegin; i < yend; ++i) {
-        ky[i] = x;
-        if (imag(ky[i]) > 0.) ky[i] = -ky[i];
-    }
-    
-    std::vector<double> d;
-    for (double p: *axis_vertical) d.push_back(p);
-        
-    Matrix T = Matrix::eye();
-    dcomplex h_i;
-    for (size_t i = ybegin; i < yend-1; ++i) { 
-	h_i = d[i+1]-d[i];
-	dcomplex phas = exp(- I * ky[i] * h_i*1e-6);
-	//Transfer through boundary
-        dcomplex f = (polarization==TM)? (NR[i+1]/NR[i]) : 1.;
-        dcomplex n = 0.5 * ky[i]/ky[i+1] * f*f;
-        Matrix T1 = Matrix( (0.5+n), (0.5-n),
-                             (0.5-n), (0.5+n) );
-        T1.ff *= phas; T1.fb /= phas;
-        T1.bf *= phas; T1.bb /= phas;
-        T = T1 * T;
-     }
-     
-    return T.bb;
-   
-    return 0;
-  }
 
 dcomplex SimpleOptical::get_T_bb()
 {
@@ -135,14 +115,14 @@ dcomplex SimpleOptical::compute_transfer_matrix(const dcomplex& x, const std::ve
   for (size_t i = ybegin; i<yend-1; ++i)
   {
     
-    //if (i != ybegin || ybegin != 0) d = edge_vert_layer_point[i] - edge_vert_layer_point[i-1]; 
-    //else d = 0.;
-    d = edge_vert_layer_point[i+1] - edge_vert_layer_point[i]; 
+    if (i != ybegin || ybegin != 0) d = edge_vert_layer_point[i] - edge_vert_layer_point[i-1]; 
+    else d = 0.;
     std::cout<<"i = "<<i<<std::endl;
     std::cout<<"x = " << x << std::endl;
     std::cout<<"d = " << d <<std::endl;
     std::cout<<"NR [i] " << NR[i] << std::endl;
     phas_matrix = Matrix(exp(I*NR[i]*x*d), 0, 0, exp(-I*NR[i]*x*d));
+    std::cout<<"exp = " << exp(I*NR[i]*x*d) << std::endl;
     //phas = exp(-I*NR[i]*x*d);
     boundary_matrix = Matrix( 0.5+0.5*(NR[i]/NR[i+1]), 0.5-0.5*(NR[i]/NR[i+1]),
 			      0.5-0.5*(NR[i]/NR[i+1]), 0.5+0.5*(NR[i]/NR[i+1]) );

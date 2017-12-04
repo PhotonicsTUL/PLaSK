@@ -37,6 +37,7 @@
   </cylindrical2d>
 </geometry>
 
+
 <solvers>
   <optical solver="SimpleOpticalCyl" name="prosty">
     <geometry ref="main"/>
@@ -47,7 +48,7 @@
 
 plt.rcParams.update({'font.size': 28})
 
-wavelength = np.linspace(850, 1100, 601)
+wavelength = np.linspace(800, 1400, 1000)
 t_bb = np.zeros(len(wavelength))
 for i in range(0, len(t_bb)):
     prosty.simpleVerticalSolver(wavelength[i])
