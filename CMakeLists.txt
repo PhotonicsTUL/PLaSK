@@ -44,7 +44,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
             set(no_strict_aliasing_flag "-fno-strict-aliasing")
         endif()
     endif()
-elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(no_strict_aliasing_flag "-fno-strict-aliasing")
 endif()
 
@@ -264,32 +264,38 @@ endif(DETECT_FORTRAN_NAME_MANGLING)
 
 ## ---------- Libraries for better stack printing ------------------------------
 
-if(PRINT_STACKTRACE_ON_EXCEPTION)
-if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    if(NOT MSVC)
-        add_definitions(-D_GLIBCXX_DEBUG)   # safe STL under linux, see https://gcc.gnu.org/onlinedocs/libstdc++/manual/debug_mode.html
-    endif(NOT MSVC)
-    if(WIN32)
-        add_subdirectory(extlib/PEparser)    # PE parser (for proper resolving some symbols in stack printing under windows mingw)
-        set(PRINT_STACKTRACE_LIBRARY "dbghelp" PEparser)
-    else()
-        find_package(DW)
-        if(DW_FOUND)
-            set(PRINT_STACKTRACE_LIBRARY ${DW_LIBRARIES})
-            include_directories(${DW_INCLUDE_DIRS})
-            set(BACKWARD_HAS_DW 1)
-        else()  # try find bfd library if dw is not found, see https://github.com/bombela/backward-cpp/blob/master/backward.cpp
-            find_package(BFD)
-            if(BFD_FOUND)
-                message(WARNING "PLaSK will be linked with GPLed libbfd.")  # https://sourceware.org/ml/binutils/2002-01/msg00581.html
-                set(PRINT_STACKTRACE_LIBRARY ${BFD_LIBRARY})
-                set(BACKWARD_HAS_BFD 1)
-            else()
-                set(PRINT_STACKTRACE_LIBRARY "")
-            endif()
-        endif()
-    endif()
+if(MSVC)  #TODO: Make it work...
+  set(PRINT_STACKTRACE_ON_EXCEPTION OFF)
 endif()
+
+if(PRINT_STACKTRACE_ON_EXCEPTION)
+	if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+		if(NOT MSVC)
+			add_definitions(-D_GLIBCXX_DEBUG)   # safe STL under linux, see https://gcc.gnu.org/onlinedocs/libstdc++/manual/debug_mode.html
+		endif(NOT MSVC)
+		if(WIN32)
+			if(NOT MSVC)
+				add_subdirectory(extlib/PEparser)    # PE parser (for proper resolving some symbols in stack printing under windows mingw)
+				set(PRINT_STACKTRACE_LIBRARY "dbghelp" PEparser)
+			endif(NOT MSVC)
+		else()
+			find_package(DW)
+			if(DW_FOUND)
+				set(PRINT_STACKTRACE_LIBRARY ${DW_LIBRARIES})
+				include_directories(${DW_INCLUDE_DIRS})
+				set(BACKWARD_HAS_DW 1)
+			else()  # try find bfd library if dw is not found, see https://github.com/bombela/backward-cpp/blob/master/backward.cpp
+				find_package(BFD)
+				if(BFD_FOUND)
+					message(WARNING "PLaSK will be linked with GPLed libbfd.")  # https://sourceware.org/ml/binutils/2002-01/msg00581.html
+					set(PRINT_STACKTRACE_LIBRARY ${BFD_LIBRARY})
+					set(BACKWARD_HAS_BFD 1)
+				else()
+					set(PRINT_STACKTRACE_LIBRARY "")
+				endif()
+			endif()
+		endif()
+	endif()
 endif()
 
 # ---------- Other external libraries -----------------------------------------
@@ -719,9 +725,9 @@ if(BUILD_TESTING)
     endif(CTEST_CONFIGURATION_TYPE)
 
     if (RUN_TESTS)
-        add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} ${CTEST_EXTRA_PARAMS} --output-on-failure --timeout 60 DEPENDS ${plask_test_depends} ${solvers_test_targets})  #-C ${CTEST_CONFIGURATION_TYPE}
+        add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} ${CTEST_EXTRA_PARAMS} --output-on-failure --timeout 120 DEPENDS ${plask_test_depends} ${solvers_test_targets})  #-C ${CTEST_CONFIGURATION_TYPE}
     else()
-        add_custom_target(tests ${CMAKE_CTEST_COMMAND} ${CTEST_EXTRA_PARAMS} --output-on-failure --timeout 60 DEPENDS ${plask_test_depends} ${solvers_test_targets})
+        add_custom_target(tests ${CMAKE_CTEST_COMMAND} ${CTEST_EXTRA_PARAMS} --output-on-failure --timeout 120 DEPENDS ${plask_test_depends} ${solvers_test_targets})
     endif()
 
 endif(BUILD_TESTING)
