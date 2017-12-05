@@ -105,6 +105,8 @@ protected:
   
   std::vector<dcomplex> refractive_index_vec;
   
+  std::vector<double> edge_vert_layer_point;
+  
   void initialize_refractive_index_vec();
 };
   

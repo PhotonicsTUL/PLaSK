@@ -44,6 +44,9 @@ void SimpleOptical::onInitialize()
     ybegin = 0;
     yend = mesh->axis1->size() + 1;
     std::cout<<"yend = " << yend << std::endl;
+    
+    for (double p: *axis_vertical) edge_vert_layer_point.push_back(p);
+    
     initialize_refractive_index_vec();
     std::cout<<"Wavelength: "<<getWavelength()<<std::endl;
 }
@@ -60,10 +63,9 @@ void SimpleOptical::initialize_refractive_index_vec()
     refractive_index_vec.push_back(geometry->getMaterial(vec(0.0,  p))->Nr(w, T));
     std::cout<<"Point :" << p << std::endl; 
     std::cout<<"Material: " << geometry->getMaterial(vec(0.0, p))->name() << geometry->getMaterial(vec(0.0,  p))->Nr(w, T) << std::endl;
-    last_element = p;
-    
   }
-  refractive_index_vec.push_back(geometry->getMaterial(vec(0.0,  last_element + 1e-3))->Nr(w, T));
+  last_element = edge_vert_layer_point.back();
+  refractive_index_vec.push_back(geometry->getMaterial(vec(0.0,  last_element+1e-3))->Nr(w, T));
   for (dcomplex nr: refractive_index_vec)
   {
     std::cout<<"Nr = " << nr << std::endl;
@@ -106,8 +108,6 @@ dcomplex SimpleOptical::get_T_bb()
 
 dcomplex SimpleOptical::compute_transfer_matrix(const dcomplex& x, const std::vector<dcomplex> & NR)
 {
-  std::vector<double> edge_vert_layer_point;
-  for (double p: *axis_vertical) edge_vert_layer_point.push_back(p);
   
   Matrix phas_matrix;
   Matrix boundary_matrix;
