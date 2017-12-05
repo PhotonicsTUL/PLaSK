@@ -868,7 +868,7 @@ def _handle_exception(exc_type, exc_value, exc_traceback):
     if exc_type == SystemExit:
         sys.exit(exc_value.code)
     else:
-        dat = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback)) + '\n'
+        dat = u''.join(traceback.format_exception(exc_type, exc_value, exc_traceback)) + '\n'
         if error_file is None:
             if _DEBUG:
                 msg = dat
@@ -885,8 +885,8 @@ def _handle_exception(exc_type, exc_value, exc_traceback):
                 error_file = os.path.join(CURRENT_DIR,
                                           time.strftime("plaskgui.%Y%m%d.%H%M%S.error.log",
                                                         time.localtime(time.time())))
-                msg += "\n\nError details saved to:\n{}".format(error_file)
-                msg += "\n\nFurther errors will not be reported (but they will be saved to the above file)."
+                msg += u"\n\nError details saved to:\n{}".format(error_file)
+                msg += u"\n\nFurther errors will not be reported (but they will be saved to the above file)."
             out = open(error_file, 'a')
         out.write(dat)
         out.flush()
@@ -895,7 +895,7 @@ def _handle_exception(exc_type, exc_value, exc_traceback):
             if os.name == 'nt':
                 import ctypes
                 MessageBox = ctypes.windll.user32.MessageBoxA
-                MessageBox(None, msg, "PLaSK GUI Error", 0x10)
+                MessageBox(None, msg.encode('utf-8'), u"PLaSK GUI Error".encode('utf-8'), 0x10)
             elif not _DEBUG:
                 try:
                     QMessageBox.critical(None, "PLaSK GUI Error", msg)

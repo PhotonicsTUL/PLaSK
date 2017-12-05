@@ -343,7 +343,10 @@ class OutputWindow(QDockWidget):
         try:
             line = line.decode(self.main_window.document.coding)
         except UnicodeDecodeError:
-            line = line.decode('utf-8')
+            try:
+                line = line.decode('utf-8')
+            except UnicodeDecodeError:
+                line = line.decode('cp1250')
         level = {'CRITICAL ERROR:': LEVEL_CRITICAL_ERROR,
                'ERROR         :': LEVEL_ERROR,
                'WARNING       :': LEVEL_WARNING,
