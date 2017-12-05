@@ -49,7 +49,7 @@ class ParsedName:
       return self.displ_name
 
    def ref_target(self):
-        """:return: reference to object: 'name' or 'name [context]' or none (if self.has_ref() is False)"""
+        """:return: reference to object: 'name' or 'name [context]' or None (if self.has_ref() is False)"""
         if not self.has_ref():
             return None
         if len(self.context) > 0:
@@ -57,7 +57,7 @@ class ParsedName:
         return self.name
 
    def has_ref(self):
-      """:return: true if object should has reference (context is not empty [])"""
+      """:return: true if object should have reference (context is not empty [])"""
       return self.context != '[]'
 
 def parse_tag(tagstr):

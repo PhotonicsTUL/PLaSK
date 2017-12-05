@@ -282,6 +282,26 @@ class ThresholdSearch(ThermoElectric):
         plask.ylabel(u"Gain [1/cm]")
         plask.window_title("Gain Profile")
 
+    def plot_gain_spectrum(self, lams, pos=0., junction=0, **kwargs):
+        """
+        Plot gain spectrum for specified junction.
+
+        Args:
+            lams (array of floats): Wavelengths for which the spectrum should be plotted.
+
+            pos (float): Lateral position fo the point in which the spectrum is plotted.
+
+            junction (int): Junction number to take gain from.
+
+            **kwargs: Keyword arguments passed to the plot function.
+        """
+        level = list(self._get_levels(self.diffusion.geometry, [pos]))[junction][1]
+        spectrum = self.gain.spectrum(level[0])
+        plask.plot(lams, spectrum(lams))
+        plask.xlabel(u"Wavelength [nm]")
+        plask.ylabel(u"Gain [1/cm]")
+        plask.window_title("Gain Spectrum")
+
     def plot_optical_determinant(self, lams, **kwargs):
         """
         Function plotting determinant of the optical solver.
@@ -407,13 +427,13 @@ class ThresholdSearch(ThermoElectric):
         if optical_resolution is None: optical_resolution = self.optical_resolution
         h5file, group, filename, close = h5open(filename, group)
         self._save_thermoelectric(h5file, group)
-        levels = list(self._get_levels(self.diffusion.geometry, self.diffusion.mesh, 'QW', 'gain'))
+        levels = list(self._get_levels(self.diffusion.geometry, self.diffusion.mesh, 'QW', 'QD', 'gain'))
         for no, mesh in levels:
             value = self.diffusion.outCarriersConcentration(mesh)
             plask.save_field(value, h5file, group + '/Junction'+no+'CarriersConcentration')
+        lam = getattr(self.optical, self._lam0).real
+        if lam is None: lam = self.get_lam().real
         for no, mesh in levels:
-            lam = getattr(self.optical, self._lam0).real
-            if lam is None: lam = self.get_lam().real
             value = self.gain.outGain(mesh, lam)
             plask.save_field(value, h5file, group + '/Junction'+no+'Gain')
         if self.modeno is not None:

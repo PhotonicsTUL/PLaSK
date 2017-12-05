@@ -226,7 +226,7 @@
       label: Determinant method
       type: choice
       choices: [ full, transfer ]
-      default: full
+      default: transfer
       help: >
         This parameter determines the method used to compute radial determinant.
         If it is set to 'transfer', 2x2 transfer matrix is used to ensure field

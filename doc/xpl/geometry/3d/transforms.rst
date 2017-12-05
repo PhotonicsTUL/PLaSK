@@ -112,9 +112,9 @@ Transforms always contain a single geometry object (possibly container) as their
 
    .. xml:contents::
 
-       :xml:tag:`segments  [in <lattice>]` tag followed by a :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
+       :xml:tag:`segments  [in lattice]` tag followed by a :ref:`three-dimensional geometry object <sec-xpl-Geometry-objects-3D>`.
 
-       .. xml:tag:: <segments> [in <lattice>]
+       .. xml:tag:: <segments> [in lattice]
 
           .. xml:contents::
 
@@ -143,7 +143,7 @@ Transforms always contain a single geometry object (possibly container) as their
       :scale: 100%
       :align: center
 
-      Points described by the :xml:tag:`segments  [in <lattice>]` tag with the following content: ``-2 -2; -2 3; 2 3; 2 -2 ^ -1 -1; -1 1; 1 1; 1 -1 ^ 1 4``, same as :ref:`in listing with example <lis-lattice>`. The first polygon (``-2 -2; -2 3; 2 3; 2 -2``) is the red rectangle. The second one (``-1 -1; -1 1; 1 1; 1 -1``) is green. Since the green polygin lies inside the red one, it is subtracted from it (XOR operation). Points lying at polygoin edges (both red and green rectangles) are always included in the final lattice. The last segment (``1 4``) comprises of only one point. It is also added to final figure (XOR operation).
+      Points described by the :xml:tag:`segments  [in lattice]` tag with the following content: ``-2 -2; -2 3; 2 3; 2 -2 ^ -1 -1; -1 1; 1 1; 1 -1 ^ 1 4``, same as :ref:`in listing with example <lis-lattice>`. The first polygon (``-2 -2; -2 3; 2 3; 2 -2``) is the red rectangle. The second one (``-1 -1; -1 1; 1 1; 1 -1``) is green. Since the green polygin lies inside the red one, it is subtracted from it (XOR operation). Points lying at polygoin edges (both red and green rectangles) are always included in the final lattice. The last segment (``1 4``) comprises of only one point. It is also added to final figure (XOR operation).
 
 
    .. _fig-lattice-final:
@@ -151,7 +151,7 @@ Transforms always contain a single geometry object (possibly container) as their
       :scale: 100%
       :align: center
 
-      Lattice described by :ref:`the example code <lis-lattice>`. Top view. Each ``(x,y)`` point described in the  :xml:tag:`segments  [in <lattice>]` tag (and showed in :ref:`the previous figure <fig-lattice-polygons>`) is combined with basis vectors ``a`` and ``b`` to obtain the location of the lattice contents instance.
+      Lattice described by :ref:`the example code <lis-lattice>`. Top view. Each ``(x,y)`` point described in the  :xml:tag:`segments  [in lattice]` tag (and showed in :ref:`the previous figure <fig-lattice-polygons>`) is combined with basis vectors ``a`` and ``b`` to obtain the location of the lattice contents instance.
 
 
 .. xml:tag:: <revolution>
