@@ -19,6 +19,10 @@ BOOST_PYTHON_MODULE(simple_optical)
     {CLASS(SimpleOptical, "SimpleOpticalCyl", "Short solver description.")
      METHOD(simpleVerticalSolver, simpleVerticalSolver, "This is method to calcurate field in 1D");
      METHOD(get_T_bb, get_T_bb, "This method return T bb");     
+     METHOD(get_eField, get_eField, "This method return electric field");
+     METHOD(get_bField, get_bField, "This method return magnetic field");
+     METHOD(get_z, get_z, "This method return z axis points");
+     METHOD(compute_electric_field_distribution, compute_electric_field_distribution, "This method compute electric field distribution");
     }
 
 }

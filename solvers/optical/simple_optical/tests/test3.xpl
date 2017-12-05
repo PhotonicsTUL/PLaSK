@@ -37,7 +37,6 @@
   </cylindrical2d>
 </geometry>
 
-
 <solvers>
   <optical solver="SimpleOpticalCyl" name="prosty">
     <geometry ref="main"/>
@@ -45,23 +44,45 @@
 </solvers>
 
 <script><![CDATA[
+from scipy import ndimage
 
 plt.rcParams.update({'font.size': 28})
 
-wavelength = np.linspace(900, 1100, 1000)
+wavelength = np.linspace(800, 1100, 1000)
 t_bb = np.zeros(len(wavelength), dtype=complex)
 for i in range(0, len(t_bb)):
     prosty.simpleVerticalSolver(wavelength[i])
     t_bb[i] = prosty.get_T_bb()
-    print(t_bb[i])
 plt.plot(wavelength, np.abs(t_bb), 'b-')
 plt.xlabel("wavelength [nm]")
 plt.ylabel("T bb")
 plt.yscale('log')
 plt.show()
 
-#prosty.simpleVerticalSolver(1300)
-#print(prosty.get_T_bb)
+z = prosty.get_z()
+eField = np.array(prosty.get_eField(), dtype=complex)
+
+plt.figure()
+prosty.compute_electric_field_distribution(980);
+electric_field = np.array(prosty.get_eField(), dtype=complex)
+z = prosty.get_z()
+plt.plot(z, (electric_field), 'r-', lw=2)
+plt.show()
+
+plt.figure()
+geo = prosty.geometry
+
+p = plot_geometry(geo, fill=True, alpha=0.8)
+
+p = p.twiny()
+p.plot(electric_field, z, 'r-', lw=2)
+p.set_xlabel("Electric field F")
+plt.ylim([-1, 10])
+
+
+
+plt.show()
+
 
 
 

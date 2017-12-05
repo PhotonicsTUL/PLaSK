@@ -47,7 +47,7 @@
 <script><![CDATA[
 plt.rcParams.update({'font.size': 28})
 
-wavelength = np.linspace(900, 1100, 1000)
+wavelength = np.linspace(800, 1100, 1000)
 t_bb = efm.get_vert_determinant(wavelength)
 plt.plot(wavelength, np.abs(t_bb), 'r-')
 plt.yscale('log')

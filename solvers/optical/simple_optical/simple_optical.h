@@ -73,7 +73,22 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      dcomplex get_T_bb();
          
      dcomplex compute_transfer_matrix(const dcomplex& k, const std::vector<dcomplex> & NR);
+     
+     /// Parameters for main rootdigger
+     RootDigger::Params root;
+
+     /// Parameters for sripe rootdigger
+     RootDigger::Params stripe_root;
+     
+     void compute_electric_field_distribution(double wave_length);
         
+     std::vector<dcomplex> compute_eField(const dcomplex& x, const std::vector<dcomplex> & NR);
+     
+     std::vector<dcomplex> get_eField();
+     std::vector<dcomplex> get_bField();
+     
+     std::vector<double> get_z();
+     
 protected:
   friend struct RootDigger;
   
@@ -98,9 +113,18 @@ protected:
   
   std::vector<dcomplex> refractive_index_vec;
   
+  dcomplex vneff; 
+  
   std::vector<double> edge_vert_layer_point;
   
+  std::vector<double> z;
+  
+  std::vector<dcomplex> eField;
+  
+  std::vector<dcomplex> bField;
+  
   void initialize_refractive_index_vec();
+  
 };
   
 }}} // namespace
