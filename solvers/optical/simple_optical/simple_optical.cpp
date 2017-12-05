@@ -42,7 +42,7 @@ void SimpleOptical::onInitialize()
     axis_midpoints_vertical = midpoints->ee_y();
     axis_midpoints_horizontal = midpoints->ee_x();
     ybegin = 0;
-    yend = mesh->axis1->size();
+    yend = mesh->axis1->size() + 1;
     std::cout<<"yend = " << yend << std::endl;
     initialize_refractive_index_vec();
     std::cout<<"Wavelength: "<<getWavelength()<<std::endl;
@@ -53,18 +53,21 @@ void SimpleOptical::initialize_refractive_index_vec()
   double T = 300; //temperature 300 K
   double w = real(2e3*M_PI / k0);
  
- 
+  refractive_index_vec.push_back(geometry->getMaterial(vec(0.0, -1e-3))->Nr(w, T));
+  double last_element = 0;
   for(double p: *axis_midpoints_vertical) 
   {
     refractive_index_vec.push_back(geometry->getMaterial(vec(0.0,  p))->Nr(w, T));
     std::cout<<"Point :" << p << std::endl; 
     std::cout<<"Material: " << geometry->getMaterial(vec(0.0, p))->name() << geometry->getMaterial(vec(0.0,  p))->Nr(w, T) << std::endl;
+    last_element = p;
+    
   }
+  refractive_index_vec.push_back(geometry->getMaterial(vec(0.0,  last_element + 1e-3))->Nr(w, T));
   for (dcomplex nr: refractive_index_vec)
   {
     std::cout<<"Nr = " << nr << std::endl;
   }
-  
   
 }
 
@@ -89,7 +92,6 @@ void SimpleOptical::simpleVerticalSolver(double wave_length)
     t_bb = 0;
     setWavelength(wave_length);
     onInitialize();
-    //t_bb = comput_T_bb(k0, refractive_index_vec);  
     t_bb = compute_transfer_matrix(k0, refractive_index_vec);
     refractive_index_vec.clear();
   
@@ -126,10 +128,6 @@ dcomplex SimpleOptical::compute_transfer_matrix(const dcomplex& x, const std::ve
     //phas = exp(-I*NR[i]*x*d);
     boundary_matrix = Matrix( 0.5+0.5*(NR[i]/NR[i+1]), 0.5-0.5*(NR[i]/NR[i+1]),
 			      0.5-0.5*(NR[i]/NR[i+1]), 0.5+0.5*(NR[i]/NR[i+1]) );
-  
-    //boundary_matrix.ff *= phas; boundary_matrix.fb /= phas;
-    //boundary_matrix.bf *= phas; boundary_matrix.bb /= phas;
-    //transfer_matrix = boundary_matrix*transfer_matrix; 
     transfer_matrix = (boundary_matrix*phas_matrix)*transfer_matrix;
     std::cout<<"T_bb = "<< transfer_matrix.bb << std::endl;    
   }

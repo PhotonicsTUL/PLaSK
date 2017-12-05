@@ -32,13 +32,13 @@
 
 plt.rcParams.update({'font.size': 28})
 
-wavelength = np.linspace(400, 600, 21)
-t_bb = np.zeros(len(wavelength))
+wavelength = np.linspace(800, 1400, 21)
+t_bb = np.zeros(len(wavelength), dtype=complex)
 for i in range(0, len(t_bb)):
     prosty.simpleVerticalSolver(wavelength[i])
-    t_bb[i] = prosty.get_T_bb().real
+    t_bb[i] = prosty.get_T_bb()
     print(t_bb[i])
-plt.plot(wavelength, (t_bb), 'b-')
+plt.plot(wavelength, np.abs(t_bb), 'b-')
 plt.xlabel("wavelength [nm]")
 plt.ylabel("T bb")
 plt.show()
