@@ -78,6 +78,8 @@ struct PLASK_API StackContainerBaseImpl: public GeometryObjectContainer<dim> {
 
     virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
 
+    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
+
     virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) override;
 
     virtual void removeAtUnsafe(std::size_t index) override;
