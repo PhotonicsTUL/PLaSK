@@ -69,18 +69,11 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
     }
    
      void simpleVerticalSolver(double wave_length);
-
-     void say_hello();
      
      dcomplex get_T_bb();
          
      dcomplex compute_transfer_matrix(const dcomplex& k, const std::vector<dcomplex> & NR);
-     
-     Matrix get_transfer_matrix();
-     
-     void showMidpointsMesh();
-     
-   
+        
 protected:
   friend struct RootDigger;
   
