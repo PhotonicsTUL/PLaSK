@@ -113,10 +113,10 @@ if(SPHINX_FOUND)
         DEPENDS ${rst_files} ${pdf_images} ${solvers_timestamp} conf.py
     )
 
-    add_custom_target(doc-pdf
-        COMMAND ${sphinx} -b pdf ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/pdf
-        DEPENDS ${rst_files} ${pdf_images} ${solvers_timestamp} conf.py
-    )
+#    add_custom_target(doc-pdf
+#        COMMAND ${sphinx} -b pdf ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/pdf
+#        DEPENDS ${rst_files} ${pdf_images} ${solvers_timestamp} conf.py
+#    )
 
     add_custom_target(doc-text
         COMMAND ${sphinx} -b text ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/text
