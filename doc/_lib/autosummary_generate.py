@@ -24,6 +24,7 @@ import re
 import sys
 import pydoc
 import optparse
+import codecs
 
 from jinja2 import FileSystemLoader, TemplateNotFound
 from jinja2.sandbox import SandboxedEnvironment
@@ -43,8 +44,11 @@ except ImportError:
 else:
     boost_class = type(Solver)
     from sphinx.ext.autodoc import AttributeDocumenter
-    AttributeDocumenter.method_types = \
-        AttributeDocumenter.method_types + (boost_class,)
+    try:
+        AttributeDocumenter.method_types = \
+            AttributeDocumenter.method_types + (boost_class,)
+    except AttributeError:
+        pass
 
 
 def main(argv=sys.argv):
@@ -124,7 +128,7 @@ def generate_autosummary_docs(sources, output_dir=None, suffix='.rst',
     new_files = []
 
     # write
-    for name, path, template_name in sorted(items):
+    for name, path, template_name in sorted(items, key=lambda it: tuple('' if i is None else i for i in it)):
         if path is None:
             # The corresponding autosummary:: directive did not have
             # a :toctree: option
@@ -253,7 +257,7 @@ def find_autosummary_in_files(filenames):
     """
     documented = []
     for filename in filenames:
-        f = open(filename, 'r')
+        f = codecs.open(filename, 'r', encoding='utf8', errors='ignore')
         lines = f.read().splitlines()
         documented.extend(find_autosummary_in_lines(lines, filename=filename))
         f.close()
