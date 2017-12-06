@@ -172,21 +172,18 @@ endif()
 if(BUILD_PYTHON)
     set(PLASK_PYTHON_PATH "${PLASK_PATH}/python/plask")
 
-    if(NOT "${PYTHON_VERSION}" STREQUAL "${previous_user_python_version}")
-        unset(PYTHON_INCLUDE_DIR CACHE)
-        unset(PYTHON_INCLUDE_PATH CACHE)
-        set(previous_user_python_version ${PYTHON_VERSION} CACHE INTERNAL "Python version previously chosen by the user (to detect change)")
+    if(NOT PYTHON_VERSION)
+        find_package(PythonInterp "3.4")
+        if(NOT PYTHONINTERP_FOUND)
+            find_package(PythonInterp "2.6" REQUIRED)
+        endif()
+    else()
+        find_package(PythonInterp ${PYTHON_VERSION} REQUIRED)
     endif()
 
-    find_package(PythonInterp ${PYTHON_VERSION} REQUIRED)
     find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
     find_package(numpy REQUIRED)
 
-    # Require Python >= 2.6
-    math(EXPR PYTHON_VERSION_NUM "100 * ${PYTHON_VERSION_MAJOR} + ${PYTHON_VERSION_MINOR}")
-    if(${PYTHON_VERSION_NUM} LESS 206)
-        message(FATAL_ERROR "Python 2.6 or newer required.")
-    endif()
 endif(BUILD_PYTHON)
 
 find_package(EXPAT REQUIRED)
