@@ -178,7 +178,7 @@ class ThresholdSearch(ThermoElectric):
         val = self.optical.modes[self.modeno].loss
         plask.print_log('result', "ThresholdSearch: V = {:.4f} V, loss = {:g} / cm".format(volt, val))
         if save:
-            self.save(None if save is True else save, 'ThresholdSearch/{:03}-{:.4f}V'.format(self._sn, volt))
+            self.save(None if save is True else save, 'ThresholdSearchStep/{:03}[{:.4f}V]'.format(self._sn, volt))
             self._sn += 1
         return val
 
@@ -480,7 +480,7 @@ class ThresholdSearch(ThermoElectric):
 
         if close:
             h5file.close()
-        plask.print_log('info', "Fields saved to file '{}'".format(filename))
+        plask.print_log('info', "Fields saved to file '{}' in group '{}'".format(filename, group))
         return filename
 
     def plot_optical_field(self, resolution=None, geometry_color='0.75', geometry_alpha=0.35, **kwargs):
