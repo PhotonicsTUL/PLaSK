@@ -29,9 +29,10 @@ import plask
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', #'sphinx.ext.mathjax',
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.mathjax',
               'sphinx.ext.autosummary', 'sphinx_domain_xml', 'sphinx_autodoc_cpp',
-              'rst2pdf.pdfbuilder']
+#             'rst2pdf.pdfbuilder'
+             ]
 
 
 # Use Napoleon if available for pretty docstrings formatting

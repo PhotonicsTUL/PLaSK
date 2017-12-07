@@ -47,7 +47,10 @@ if __name__ == '__main__':
     __name__ = os.path.basename(sys.argv[1])
     if '.' in __name__:
         __name__ = '.'.join(__name__.split('.')[:-1])
-    exec(compile(open(sys.argv[1]).read(), sys.argv[1], 'exec'), globals(), locals())
+    if sys.version_info.major == 2:
+        exec(compile(open(sys.argv[1]).read(), sys.argv[1], 'exec'), globals(), locals())
+    else:
+        exec(compile(open(sys.argv[1], encoding='utf8').read(), sys.argv[1], 'exec'), globals(), locals())
     tests = sys.argv[2:]
     if not tests:
         for m in dict(globals()).values():
@@ -70,4 +73,5 @@ if __name__ == '__main__':
 
     sys.exit(errors)
 
+#vim: filetype=python
 #kate: syntax Python;

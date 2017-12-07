@@ -519,7 +519,6 @@ class MainWindow(QMainWindow):
                 #msgbox.setDefaultButton(QMessageBox.Yes);
                 return msgbox.exec_() == QMessageBox.Yes
         errors = self.document.get_info(Info.ERROR)
-        sys.stdout.flush()
         if errors:
             msgbox = QMessageBox()
             msgbox.setText("Document contains some non-critical errors.\n\n"
