@@ -422,16 +422,16 @@ class ThresholdSearch(ThermoElectric):
 
     def _get_info(self):
         result = self._get_defines_info() + [
-            "Threshold voltage [V]:     {:8.3f}".format(self.threshold_voltage),
-            "Threshold current [mA]:    {:8.3f}".format(self.threshold_current),
-            "Maximum temperature [K]:   {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
+            "Threshold voltage [V]:         {:8.3f}".format(self.threshold_voltage),
+            "Threshold current [mA]:        {:8.3f}".format(self.threshold_current),
+            "Maximum temperature [K]:       {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
         ]
         if self._max_concentration is not None:
-            result.append("Max. concentration [1/cm3]:   {}"
-                          .format(', '.join('{:.3g}'.format(c) for c in self._max_concentration)))
+            result.append("Maximum concentration [1/cm3]:    {}"
+                          .format(', '.join('{:.3e}'.format(c) for c in self._max_concentration)))
         if self._max_gain is not None:
-            result.append("Maximum gain [1/cm]:       {}"
-                          .format(', '.join('{:.1f}'.format(g[0]) for g in self._max_gain)))
+            result.append("Maximum gain [1/cm]:          {}"
+                          .format(', '.join('{:9.3f}'.format(g[0]) for g in self._max_gain)))
         return result
 
     def save(self, filename=None, group='ThresholdSearch', optical_resolution=None):
@@ -811,7 +811,7 @@ class ThresholdSearchCyl(ThresholdSearch):
 
     def _get_info(self):
         return super(ThresholdSearchCyl, self)._get_info() + [
-            "LP{}{} mode wavelength [nm]: {:8.3f}".format(self.lpm, self.lpn, self.optical.modes[self.modeno].lam.real)
+            "LP{}{} mode wavelength [nm]:     {:8.3f}".format(self.lpm, self.lpn, self.optical.modes[self.modeno].lam.real)
         ]
 
 
@@ -1052,7 +1052,7 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
 
     def _get_info(self):
         return super(ThresholdSearchBesselCyl, self)._get_info() + [
-            "HE{}{} mode wavelength [nm]: {:8.3f}".format(self.hem, self.hen, self.optical.modes[self.modeno].lam.real)
+            "HE{}{} mode wavelength [nm]:     {:8.3f}".format(self.hem, self.hen, self.optical.modes[self.modeno].lam.real)
         ]
 
 
@@ -1302,7 +1302,7 @@ class ThresholdSearch2D(ThresholdSearch):
 
     def _get_info(self):
         return super(ThresholdSearch2D, self)._get_info() + [
-            "Effective index: {:8.3f}".format(self.optical.modes[self.modeno].neff.real)
+            "Effective index:     {:8.3f}".format(self.optical.modes[self.modeno].neff.real)
         ]
 
 

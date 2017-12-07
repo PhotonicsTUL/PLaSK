@@ -398,8 +398,8 @@ class ThermoElectric(plask.Solver):
 
     def _get_info(self):
         return self._get_defines_info() + [
-            "Total current [mA]:        {:8.3f}".format(self.get_total_current()),
-            "Maximum temperature [K]:   {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
+            "Total current [mA]:            {:8.3f}".format(self.get_total_current()),
+            "Maximum temperature [K]:       {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
         ]
 
 
