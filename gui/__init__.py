@@ -925,7 +925,9 @@ def load_plugins():
     for loader, modname, ispkg in pkgutil.iter_modules(plugin_dirs):
         name = desc = None
         if ispkg:
-            fname = os.path.join(loader.find_module(modname).get_filename(), '__init__.py')
+            fname = os.path.join(loader.find_module(modname).get_filename())
+            if not fname.endswith('__init__.py'):
+                fname = os.path.join(fname, '__init__.py')
         else:
             fname = loader.find_module(modname).get_filename()
         try:
