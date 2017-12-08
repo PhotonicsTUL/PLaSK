@@ -5,6 +5,7 @@ namespace plask { namespace optical { namespace simple_optical {
   
 
 SimpleOptical::SimpleOptical(const std::string& name):plask::SolverOver<plask::Geometry2DCylindrical>(name)
+  //,outLightE(this, &SimpleOptical::getElectricField)
 {
   stripe_root.method = RootDigger::ROOT_MULLER;
   stripe_root.tolx = 1.0e-6;
@@ -24,6 +25,7 @@ void SimpleOptical::loadConfiguration(XMLReader& reader, Manager& manager) {
 void SimpleOptical::onInitialize()
 {
     if (!geometry) throw NoGeometryException(getId());
+    // problem no work double wave = inWavelength();
     shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
     shared_ptr<RectangularMesh<2>> midpoints = mesh->getMidpointsMesh();
     
@@ -37,6 +39,10 @@ void SimpleOptical::onInitialize()
     for (double p: *axis_vertical) edge_vert_layer_point.push_back(p);
     
     initialize_refractive_index_vec();
+}
+
+void SimpleOptical::onInvalidate() {
+    z.clear();
 }
 
 void SimpleOptical::initialize_refractive_index_vec()
@@ -150,11 +156,23 @@ std::vector<dcomplex> SimpleOptical::compute_eField(const dcomplex& x, const std
     
     dcomplex F = transfer_matrix.fb; 
     eField.push_back(F);
-    z.push_back(edge_vert_layer_point[i]);
     transfer_matrix = (boundary_matrix*phas_matrix)*transfer_matrix;    
   }
   
+  z.push_back(0);
+  for(double p: *axis_midpoints_vertical) 
+  {
+    z.push_back(p);
+  }
+  
   return eField;
+}
+
+const LazyData<Vec<1,dcomplex>> SimpleOptical::getElectricField()
+{
+    this->writelog(LOG_DEBUG, "Getting optical electric field");
+    LazyData<Vec<1, dcomplex>> d;
+    return d;
 }
   
 }}}

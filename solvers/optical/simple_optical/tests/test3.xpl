@@ -66,6 +66,8 @@ plt.figure()
 prosty.compute_electric_field_distribution(980);
 electric_field = np.array(prosty.get_eField(), dtype=complex)
 z = prosty.get_z()
+
+
 plt.plot(z, (electric_field), 'r-', lw=2)
 plt.show()
 
@@ -75,10 +77,9 @@ geo = prosty.geometry
 p = plot_geometry(geo, fill=True, alpha=0.8)
 
 p = p.twiny()
-p.plot(electric_field, z, 'r-', lw=2)
+p.plot(np.abs(electric_field)**2, z, 'r-', lw=2)
 p.set_xlabel("Electric field F")
-plt.ylim([-1, 10])
-
+plt.ylim([4, 6])
 
 
 plt.show()

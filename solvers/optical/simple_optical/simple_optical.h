@@ -85,9 +85,21 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      std::vector<dcomplex> compute_eField(const dcomplex& x, const std::vector<dcomplex> & NR);
      
      std::vector<dcomplex> get_eField();
+     
      std::vector<dcomplex> get_bField();
      
      std::vector<double> get_z();
+     
+     virtual void onInvalidate();
+     
+     /// Provider of optical field
+     //typename ProviderFor<LightE, Geometry2DCylindrical>::Delegate outLightE;
+  
+     plask::ReceiverFor<plask::Wavelength> inWavelength;
+     
+     /// Method computing the distribution of the light electric field
+     const LazyData<Vec<1,dcomplex>> getElectricField();
+     
      
 protected:
   friend struct RootDigger;
