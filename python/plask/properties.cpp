@@ -45,37 +45,25 @@ PLASK_PYTHON_API const char* docstring_receiver =
     u8"   Provider of {2}: :class:`plask.flow.{0}Provider{1}`\n\n"
     u8"   Data filter for {2}: :class:`plask.flow.{0}Filter{1}`";
 
-PLASK_PYTHON_API const char* docstring_receiver_connect =
-    u8"Connect some provider to the receiver.\n\n"
+PLASK_PYTHON_API const char* docstring_receiver_attach =
+    u8"Attach some provider or constant value to the receiver.\n\n"
+
+    u8"Args:\n"
+    u8"    source: source provider or value.\n\n"
 
     u8"Example:\n"
-    u8"   >>> solver.in{0}.connect(other_solver.out{0})\n\n"
+    u8"   >>> solver.in{0}.attach(300.)\n"
+    u8"   >>> solver.in{0}(any_mesh)[0]\n"
+    u8"   300.\n"
+    u8"   >>> solver.in{0}(any_mesh)[-1]\n"
+    u8"   300.\n\n"
+    u8"   >>> solver.in{0}.attach(other_solver.out{0})\n\n"
 
     u8"Note:\n"
     u8"   You may achieve the same effect by using the asignmnent operator\n"
     u8"   if you put an exisiting provider at the right side of this operator:\n\n"
 
     u8"   >>> solver.in{0} = other_solver.out{0}\n";
-
-PLASK_PYTHON_API const char* docstring_receiver_assign =
-    u8"Assign constant value to the receiver.\n\n"
-
-    u8"The receiver will always serve this value to the solver regardless of the\n"
-    u8"spatial coordinates. Use for manually setting uniform fields (e.g. constant\n"
-    u8"temperature.\n\n"
-
-    u8"Example:\n"
-    u8"   >>> solver.in{0}.assign(300.)\n"
-    u8"   >>> solver.in{0}(any_mesh)[0]\n"
-    u8"   300.\n"
-    u8"   >>> solver.in{0}(any_mesh)[-1]\n"
-    u8"   300.\n\n"
-
-    u8"Note:\n"
-    u8"   You may achieve the same effect by using the asignmnent operator\n"
-    u8"   if you put a value at the right side of this operator:\n\n"
-
-    u8"   >>> solver.in{0} = 300.";
 
 template <PropertyType propertyType> PLASK_PYTHON_API const char* docstring_provider_impl();
 
