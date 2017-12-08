@@ -111,7 +111,7 @@ class Launcher(object):
             loglevel = ['error', 'warning', 'important', 'info', 'result', 'data', 'detail', 'debug'].index(
                 main_window.document.loglevel.lower())
         except AttributeError:
-            loglevel = 'detail'
+            loglevel = 6
         self.error = QCheckBox("&Error")
         self.error.setChecked(loglevel >= 0)
         layout.addWidget(self.error)
