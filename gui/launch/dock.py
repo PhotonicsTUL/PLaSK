@@ -348,15 +348,15 @@ class OutputWindow(QDockWidget):
             except UnicodeDecodeError:
                 line = line.decode('cp1250')
         level = {'CRITICAL ERROR:': LEVEL_CRITICAL_ERROR,
-               'ERROR         :': LEVEL_ERROR,
-               'WARNING       :': LEVEL_WARNING,
-               'IMPORTANT     :': LEVEL_IMPORTANT,
-               'INFO          :': LEVEL_INFO,
-               'RESULT        :': LEVEL_RESULT,
-               'DATA          :': LEVEL_DATA,
-               'DETAIL        :': LEVEL_DETAIL,
-               'ERROR DETAIL  :': LEVEL_ERROR_DETAIL,
-               'DEBUG         :': LEVEL_DEBUG}.get(line[:15], 0)
+                 'ERROR         :': LEVEL_ERROR,
+                 'WARNING       :': LEVEL_WARNING,
+                 'IMPORTANT     :': LEVEL_IMPORTANT,
+                 'INFO          :': LEVEL_INFO,
+                 'RESULT        :': LEVEL_RESULT,
+                 'DATA          :': LEVEL_DATA,
+                 'DETAIL        :': LEVEL_DETAIL,
+                 'ERROR DETAIL  :': LEVEL_ERROR_DETAIL,
+                 'DEBUG         :': LEVEL_DEBUG}.get(line[:15], 0)
         lineno = None
         if link is not None:
             match = link.search(line)

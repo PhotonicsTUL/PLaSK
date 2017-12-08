@@ -56,8 +56,6 @@ class ThresholdSearch(ThermoElectric):
         self.threshold_current = None
         self._invalidate = None
         self.modeno = None
-        self._max_concentration = None
-        self._max_gain = None
         self._sn = 0
 
     def _parse_xpl(self, tag, manager):
@@ -406,9 +404,6 @@ class ThresholdSearch(ThermoElectric):
         self.threshold_current = abs(self.electrical.get_total_current())
 
         infolines = self._get_info()
-        plask.print_log('important', "Threshold Search Finished")
-        for line in infolines:
-            plask.print_log('important', "  " + line)
 
         if save:
             filename = self.save(None if save is True else save)
@@ -418,6 +413,10 @@ class ThresholdSearch(ThermoElectric):
                 out.writelines(line + '\n' for line in infolines)
                 out.write("\n")
 
+        plask.print_log('important', "Threshold Search Finished")
+        for line in infolines:
+            plask.print_log('important', "  " + line)
+
         return self.threshold_voltage
 
     def _get_info(self):
@@ -426,12 +425,21 @@ class ThresholdSearch(ThermoElectric):
             "Threshold current [mA]:        {:8.3f}".format(self.threshold_current),
             "Maximum temperature [K]:       {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
         ]
-        if self._max_concentration is not None:
-            result.append("Maximum concentration [1/cm3]:    {}"
-                          .format(', '.join('{:.3e}'.format(c) for c in self._max_concentration)))
-        if self._max_gain is not None:
-            result.append("Maximum gain [1/cm]:          {}"
-                          .format(', '.join('{:9.3f}'.format(g[0]) for g in self._max_gain)))
+        levels = list(self._get_levels(self.diffusion.geometry, self.diffusion.mesh, 'QW', 'QD', 'gain'))
+        max_concentration = []
+        for no, mesh in levels:
+            value = self.diffusion.outCarriersConcentration(mesh)
+            max_concentration.append(max(value))
+        result.append("Maximum concentration [1/cm3]:    {}"
+                      .format(', '.join('{:.3e}'.format(c) for c in max_concentration)))
+        lam = getattr(self.optical, self._lam0).real
+        if lam is None: lam = self.get_lam().real
+        max_gain = []
+        for no, mesh in levels:
+            value = self.gain.outGain(mesh, lam)
+            max_gain.append(max(value))
+        result.append("Maximum gain [1/cm]:          {}"
+                      .format(', '.join('{:9.3f}'.format(g[0]) for g in max_gain)))
         return result
 
     def save(self, filename=None, group='ThresholdSearch', optical_resolution=None):
@@ -453,17 +461,13 @@ class ThresholdSearch(ThermoElectric):
         h5file, group, filename, close = h5open(filename, group)
         self._save_thermoelectric(h5file, group)
         levels = list(self._get_levels(self.diffusion.geometry, self.diffusion.mesh, 'QW', 'QD', 'gain'))
-        self._max_concentration = []
         for no, mesh in levels:
             value = self.diffusion.outCarriersConcentration(mesh)
-            self._max_concentration.append(max(value))
             plask.save_field(value, h5file, group + '/Junction'+no+'CarriersConcentration')
         lam = getattr(self.optical, self._lam0).real
         if lam is None: lam = self.get_lam().real
-        self._max_gain = []
         for no, mesh in levels:
             value = self.gain.outGain(mesh, lam)
-            self._max_gain.append(max(value))
             plask.save_field(value, h5file, group + '/Junction'+no+'Gain')
         if self.modeno is not None:
             obox = self.optical.geometry.bbox
