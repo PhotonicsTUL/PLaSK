@@ -533,6 +533,7 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
             } else {
                 try {
                     ReturnedType data = py::extract<ReturnedType>(this->function);
+                    if (n > 1) throw IndexError("Provider index out of range");
                     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
                     return dataInterpolate(data, const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh), method);
                 } catch (py::error_already_set) {
