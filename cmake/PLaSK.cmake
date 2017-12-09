@@ -132,7 +132,7 @@ macro(make_default)
             #message("plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}")
             add_custom_command(OUTPUT ${SOLVER_STUB}
                                COMMAND plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${SOLVER_MODULE}
-                               DEPENDS ${SOLVER_PYTHON_MODULE} ${CMAKE_SOURCE_DIR}/toolset/makestub.py
+                               DEPENDS ${SOLVER_PYTHON_MODULE} ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${PLASK_MATERIALS}
                                WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs
                               )
             install(FILES ${SOLVER_STUB} DESTINATION share/plask/stubs/${SOLVER_CATEGORY_NAME} COMPONENT gui)

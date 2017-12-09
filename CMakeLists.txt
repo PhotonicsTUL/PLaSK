@@ -462,7 +462,7 @@ if(BUILD_PYTHON)
         endif()
         add_custom_command(OUTPUT ${plask_stubs_files}
                            COMMAND plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_stubs_modules}
-                           DEPENDS plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${material_targets}
+                           DEPENDS plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${PLASK_MATERIALS}
                            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/python
                           )
         install(FILES ${plask_stubs_files} DESTINATION lib/plask/python/plask COMPONENT gui)
@@ -659,7 +659,7 @@ endif()
 # ----------===== Unit tests =====--------------------------------------------
 if(BUILD_TESTING)
 
-    set(plask_test_depends ${material_targets} solvers-packages) # we need materials for testing
+    set(plask_test_depends ${PLASK_MATERIALS} solvers-packages) # we need materials for testing
 
     enable_testing()
     if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
