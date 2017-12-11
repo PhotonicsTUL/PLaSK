@@ -133,7 +133,8 @@ class XPLDocument(object):
         self.window.set_changed(self.is_changed())
 
     def load_from_file(self, filename):
-        tree = etree.parse(filename, XML_parser)
+        infile = open(filename, 'rb')
+        tree = etree.parse(infile, XML_parser)
         self.loglevel = tree.getroot().attrib.get('loglevel', 'detail')
         with OrderedTagReader(tree.getroot()) as r:
             for i, name in enumerate(XPLDocument.SECTION_NAMES):
