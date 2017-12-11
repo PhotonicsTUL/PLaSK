@@ -749,16 +749,16 @@ class MainWindow(QMainWindow):
             email = data.find('email')
             if email is not None:
                 if name is None: LICENSE['user'] = email.text
-                else: LICENSE['user'] = (name + " <" + email.text + ">").encode('utf8')
+                else: LICENSE['user'] = (name + " <" + email.text + ">")
             institution = data.find('institution')
             if institution is not None:
-                LICENSE['institution'] = institution.text.encode('utf8')
-            else:
+                LICENSE['institution'] = institution.text
+            elif 'institution' in LICENSE:
                 del LICENSE['institution']
             expiry = data.find('expiry')
             if expiry is not None:
-                LICENSE['expiration'] = _parse_expiry(expiry.text.encode('utf8'))
-            else:
+                LICENSE['expiration'] = _parse_expiry(expiry.text)
+            elif 'expiration' in LICENSE:
                 del LICENSE['expiration']
             self.about()
 
