@@ -241,9 +241,9 @@ endif(DETECT_FORTRAN_NAME_MANGLING)
 
 ## ---------- Libraries for better stack printing ------------------------------
 
-if(MSVC)  #TODO: Make it work...
-  set(PRINT_STACKTRACE_ON_EXCEPTION OFF)
-endif()
+#if(MSVC)  #TODO: Make it work...
+#  set(PRINT_STACKTRACE_ON_EXCEPTION OFF)
+#endif()
 
 if(PRINT_STACKTRACE_ON_EXCEPTION)
 	if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
@@ -251,27 +251,29 @@ if(PRINT_STACKTRACE_ON_EXCEPTION)
 			add_definitions(-D_GLIBCXX_DEBUG)   # safe STL under linux, see https://gcc.gnu.org/onlinedocs/libstdc++/manual/debug_mode.html
 		endif(NOT MSVC)
 		if(WIN32)
-			if(NOT MSVC)
+			if(MSVC)
+				set(PRINT_STACKTRACE_LIBRARY "dbghelp")
+			else(MSVC)	#MinGW
 				add_subdirectory(extlib/PEparser)    # PE parser (for proper resolving some symbols in stack printing under windows mingw)
 				set(PRINT_STACKTRACE_LIBRARY "dbghelp" PEparser)
-			endif(NOT MSVC)
-		else()
+			endif(MSVC)
+		else(WIN32)	# non-Windows:
 			find_package(DW)
 			if(DW_FOUND)
 				set(PRINT_STACKTRACE_LIBRARY ${DW_LIBRARIES})
 				include_directories(${DW_INCLUDE_DIRS})
 				set(BACKWARD_HAS_DW 1)
-			else()  # try find bfd library if dw is not found, see https://github.com/bombela/backward-cpp/blob/master/backward.cpp
+			else(DW_FOUND)  # try find bfd library if dw is not found, see https://github.com/bombela/backward-cpp/blob/master/backward.cpp
 				find_package(BFD)
 				if(BFD_FOUND)
 					message(WARNING "PLaSK will be linked with GPLed libbfd.")  # https://sourceware.org/ml/binutils/2002-01/msg00581.html
 					set(PRINT_STACKTRACE_LIBRARY ${BFD_LIBRARY})
 					set(BACKWARD_HAS_BFD 1)
-				else()
+				else(BFD_FOUND)
 					set(PRINT_STACKTRACE_LIBRARY "")
-				endif()
-			endif()
-		endif()
+				endif(BFD_FOUND)
+			endif(DW_FOUND)
+		endif(WIN32)
 	endif()
 endif()
 
