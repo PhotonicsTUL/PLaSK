@@ -14,6 +14,14 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      
      SimpleOptical(const std::string& name="SimpleOptical");
      
+     /// Mode symmetry in horizontal axis
+     enum Symmetry {
+	  SYMMETRY_DEFAULT,
+	  SYMMETRY_POSITIVE,
+	  SYMMETRY_NEGATIVE,
+	  SYMMETRY_NONE
+      };
+    
      struct Field {
           dcomplex F, B;
  	  Field() = default;
@@ -40,7 +48,46 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
         TE,
         TM,
 	};
-	
+    
+     /// Details of the computed mode
+    struct Mode {
+        SimpleOptical* solver;       ///< Solver this mode belongs to
+        Symmetry symmetry;              ///< Horizontal symmetry of the modes
+        dcomplex neff;                  ///< Stored mode effective index
+        bool have_fields;               ///< Did we compute fields for current state?
+        std::vector<Field,aligned_allocator<Field>> xfields; ///< Computed horizontal fields
+        std::vector<double,aligned_allocator<double>> xweights; ///< Computed horizontal weights
+        double power;                   ///< Mode power [mW]
+
+        Mode(SimpleOptical* solver, Symmetry sym):
+            solver(solver), have_fields(false), xfields(solver->xend), xweights(solver->xend), power(1.) {
+            setSymmetry(sym);
+        }
+
+        void setSymmetry(Symmetry sym) {
+            if (solver->geometry->isSymmetric(Geometry::DIRECTION_TRAN)) {
+                if (sym == SYMMETRY_DEFAULT)
+                    sym = SYMMETRY_POSITIVE;
+                else if (sym == SYMMETRY_NONE)
+                    throw BadInput(solver->getId(), "For symmetric geometry specify positive or negative symmetry");
+            } else {
+                if (sym == SYMMETRY_DEFAULT)
+                    sym = SYMMETRY_NONE;
+                else if (sym != SYMMETRY_NONE)
+                    throw BadInput(solver->getId(), "For non-symmetric geometry no symmetry may be specified");
+            }
+            symmetry = sym;
+        }
+
+        bool operator==(const Mode& other) const {
+            return symmetry == other.symmetry && is_zero( neff - other.neff );
+        }
+
+        /// Return mode loss
+        double loss() const {
+            return - 2e7 * imag(neff * solver->k0);
+        }
+    };
      
      void loadConfiguration(XMLReader& reader, Manager& manager);
 
@@ -65,7 +112,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      */
      void setWavelength(double wavelength) {
         k0 = 2e3*M_PI / wavelength;
-        invalidate();
+        onInvalidate();
     }
    
      void simpleVerticalSolver(double wave_length);
@@ -92,13 +139,19 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      
      virtual void onInvalidate();
      
-     /// Provider of optical field
-     //typename ProviderFor<LightE, Geometry2DCylindrical>::Delegate outLightE;
-  
-     plask::ReceiverFor<plask::Wavelength> inWavelength;
+     /// Computed modes
+     std::vector<Mode> modes;
      
-     /// Method computing the distribution of the light electric field
-     const LazyData<Vec<1,dcomplex>> getElectricField();
+     /// Provider of optical field
+     typename ProviderFor<LightMagnitude, Geometry2DCylindrical>::Delegate outLightMagnitude;
+     
+     /// Method computing the distribution of light intensity
+     const LazyData<double> getLightMagnitude(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
+     
+     /// Return number of found modes
+     size_t nmodes() const {
+        return modes.size();
+     }
      
      
 protected:
@@ -110,7 +163,8 @@ protected:
   double stripex;             ///< Position of the main stripe
 
   size_t x,	   ///< poitn, when program computed vertical fields
-         ybegin,  ///< First element of vertical mesh to consider
+         xend,
+	 ybegin,  ///< First element of vertical mesh to consider
          yend;    ///< Last element of vertical mesh to consider
          
   Polarization polarization;  ///< Chosen light polarization

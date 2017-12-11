@@ -23,7 +23,7 @@ BOOST_PYTHON_MODULE(simple_optical)
      METHOD(get_bField, get_bField, "This method return magnetic field");
      METHOD(get_z, get_z, "This method return z axis points");
      METHOD(compute_electric_field_distribution, compute_electric_field_distribution, "This method compute electric field distribution");
-     RECEIVER(inWavelength, "Wavelength of the light");
+     PROVIDER(outLightMagnitude, "");
     }
 
 }

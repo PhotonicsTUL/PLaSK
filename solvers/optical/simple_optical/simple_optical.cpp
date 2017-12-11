@@ -5,8 +5,9 @@ namespace plask { namespace optical { namespace simple_optical {
   
 
 SimpleOptical::SimpleOptical(const std::string& name):plask::SolverOver<plask::Geometry2DCylindrical>(name)
-  //,outLightE(this, &SimpleOptical::getElectricField)
+  ,outLightMagnitude(this, &SimpleOptical::getLightMagnitude, &SimpleOptical::nmodes)
 {
+ 
   stripe_root.method = RootDigger::ROOT_MULLER;
   stripe_root.tolx = 1.0e-6;
   stripe_root.tolf_min = 1.0e-7;
@@ -72,7 +73,7 @@ void SimpleOptical::simpleVerticalSolver(double wave_length)
     Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{0}]", ybegin), "neff", "det");
      
  
- /*   auto rootdigger = RootDigger::get(this, [&](const dcomplex& x){return this->compute_transfer_matrix(k0, refractive_index_vec);}, log_stripe, stripe_root);
+    auto rootdigger = RootDigger::get(this, [&](const dcomplex& x){return this->compute_transfer_matrix(k0, refractive_index_vec);}, log_stripe, stripe_root);
   
     if (vneff == 0.) {
             dcomplex maxn = *std::max_element(refractive_index_vec.begin(), refractive_index_vec.end(),
@@ -81,7 +82,7 @@ void SimpleOptical::simpleVerticalSolver(double wave_length)
         }
     vneff = rootdigger->find(vneff);
     std::cout<<vneff<<std::endl;
-   */ 
+    
     refractive_index_vec.clear();  
 }
 
@@ -168,13 +169,10 @@ std::vector<dcomplex> SimpleOptical::compute_eField(const dcomplex& x, const std
   return eField;
 }
 
-const LazyData<Vec<1,dcomplex>> SimpleOptical::getElectricField()
+
+const LazyData<double> getLightMagnitude(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT)
 {
-    this->writelog(LOG_DEBUG, "Getting optical electric field");
-    LazyData<Vec<1, dcomplex>> d;
-    return d;
 }
-  
 }}}
 
 
