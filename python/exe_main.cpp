@@ -498,7 +498,7 @@ int system_main(int argc, const system_char *argv[])
                 }
                 if (!filetype) {
                     // check first char (should be '<' in XML)
-                    FILE* file = system_fopen(filename.c_str(), CSTR("r"));
+                    FILE* file = system_fopen(filename.c_str(), CSTR(r));
                     if (!file) throw std::invalid_argument("No such file: '" + filename + "'");
                     int c;
                     while ((c = std::getc(file))) {
@@ -508,7 +508,7 @@ int system_main(int argc, const system_char *argv[])
                     if (c == '<') filetype = FILE_XML;
                     else filetype = FILE_PY;
                 } else {
-                    FILE* file = std::fopen(filename.c_str(), "r");
+                    FILE* file = system_fopen(filename.c_str(), CSTR(r));
                     if (!file) throw std::invalid_argument("No such file: '" + filename + "'");
                     std::fclose(file);
                 }
@@ -522,7 +522,7 @@ int system_main(int argc, const system_char *argv[])
             if (filetype == FILE_XML) {
 
                 py::dict locals;
-                for (const char* def: defs) {
+                for (const system_char* def: defs) {
                     auto keyval = plask::splitString2(def, '=');
                     try {
                         locals[keyval.first] = (plask::python::py_eval(keyval.second,
@@ -587,7 +587,7 @@ int system_main(int argc, const system_char *argv[])
 #               if PY_VERSION_HEX >= 0x03000000
                     if (realfile) {
 #                       if PY_VERSION_HEX >= 0x03040000
-                            FILE* file = _Py_fopen(filename.c_str(), "r");
+                            FILE* file = system_Py_fopen(filename.c_str(), CSTR(r));
 #                       else
                             pyfile = PyUnicode_FromString(filename.c_str());
                             FILE* file = _Py_fopen(pyfile, "r");

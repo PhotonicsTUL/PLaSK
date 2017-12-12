@@ -16,7 +16,6 @@ std::pair<std::string, std::string> splitString2(const std::string& to_split, ch
     return p == std::string::npos ?
             std::pair<std::string, std::string>(to_split, "") :
             std::pair<std::string, std::string>(to_split.substr(0, p), to_split.substr(p+1));
-
 }
 
 std::string removedChars(const std::string& str, const std::string& chars_to_remove) {
