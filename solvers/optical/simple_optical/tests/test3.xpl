@@ -44,8 +44,6 @@
 </solvers>
 
 <script><![CDATA[
-from scipy import ndimage
-
 plt.rcParams.update({'font.size': 28})
 
 wavelength = np.linspace(800, 1100, 1000)
@@ -57,30 +55,20 @@ plt.plot(wavelength, np.abs(t_bb), 'b-')
 plt.xlabel("wavelength [nm]")
 plt.ylabel("T bb")
 plt.yscale('log')
-plt.show()
-
-z = prosty.get_z()
-eField = np.array(prosty.get_eField(), dtype=complex)
 
 plt.figure()
-prosty.compute_electric_field_distribution(980);
-electric_field = np.array(prosty.get_eField(), dtype=complex)
-z = prosty.get_z()
-
-
-plt.plot(z, (electric_field), 'r-', lw=2)
-plt.show()
+prosty.computeField(980)
+z = prosty.getZ()
+eField = np.array(prosty.getEz(), dtype=complex)
+plt.plot(z, eField, 'r-')
 
 plt.figure()
 geo = prosty.geometry
-
 p = plot_geometry(geo, fill=True, alpha=0.8)
-
 p = p.twiny()
-p.plot(np.abs(electric_field)**2, z, 'r-', lw=2)
+p.plot(np.abs(eField), z, 'r-', lw=2)
 p.set_xlabel("Electric field F")
-plt.ylim([4, 6])
-
+plt.ylim([-1, 11])
 
 plt.show()
 
