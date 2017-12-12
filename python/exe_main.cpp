@@ -33,6 +33,7 @@ namespace py = boost::python;
     constexpr auto system_Py_fopen = &_Py_wfopen;
     #define system_main wmain
 	#define CSTR(s) L ## #s
+	#define CCHAR(c) L ## c
 #else
     typedef char system_char;
     typedef std::string system_string;
@@ -103,7 +104,7 @@ static void from_import_all(const char* name, py::object& dest)
 
 //******************************************************************************
 // Initialize the binary modules and load the package from disk
-static py::object initPlask(int argc, const char* argv[])
+static py::object initPlask(int argc, const system_char* argv[])
 {
     // Initialize the plask module
     if (PyImport_AppendInittab("_plask", &PLASK_MODULE) != 0) throw plask::CriticalException("No _plask module");
@@ -126,8 +127,8 @@ static py::object initPlask(int argc, const char* argv[])
         try {
             path.insert(0, boost::filesystem::absolute(boost::filesystem::path(argv[0])).parent_path().string());
         } catch (std::runtime_error) { // can be thrown if there is wrong locale set
-            std::string file(argv[0]);
-            size_t pos = file.rfind(plask::FILE_PATH_SEPARATOR);
+            system_string file(argv[0]);
+            size_t pos = file.rfind(system_char(plask::FILE_PATH_SEPARATOR));
             if (pos == std::string::npos) pos = 0;
             path.insert(0, file.substr(0, pos));
         }
@@ -280,8 +281,8 @@ int system_main(int argc, const system_char *argv[])
     // Parse commnad line
     bool force_interactive = false;
     plask::optional<plask::LogLevel> loglevel;
-    const char* command = nullptr;
-    const char* runmodule = nullptr;
+    const system_char* command = nullptr;
+    const system_char* runmodule = nullptr;
     const char* log_color = nullptr;
     bool python_logger = true;
 
