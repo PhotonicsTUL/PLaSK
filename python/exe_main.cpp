@@ -25,6 +25,25 @@ namespace py = boost::python;
 #  include <windows.h>
 #endif
 
+// definitions which helps to use wide or narrow string encoding, depending on system/compiler:
+#ifdef _MSC_VER
+    typedef wchar_t system_char;
+    typedef std::wstring system_string;
+    constexpr auto system_fopen = &_wfopen;
+    constexpr auto system_Py_fopen = &_Py_wfopen;
+    #define system_main wmain
+	#define CSTR(s) L ## #s
+#else
+    typedef char system_char;
+    typedef std::string system_string;
+    constexpr auto system_fopen = &fopen;
+#if PY_VERSION_HEX >= 0x03000000
+    constexpr auto system_Py_fopen = &_Py_fopen;
+#endif
+    #define system_main main
+	#define CSTR(s) #s
+#endif
+
 //******************************************************************************
 #if PY_VERSION_HEX >= 0x03000000
     extern "C" PyObject* PyInit__plask(void);
@@ -235,11 +254,11 @@ void endPlask() {
 
 
 //******************************************************************************
-int main(int argc, const char *argv[])
+int system_main(int argc, const system_char *argv[])
 {
     //setlocale(LC_ALL,""); std::locale::global(std::locale(""));    // set default locale from env (C is used when program starts), boost filesystem will do the same
 
-    if (argc > 1 && std::string(argv[1]) == "-V") {
+    if (argc > 1 && system_string(argv[1]) == CSTR(-V)) {
         printf("PLaSK " PLASK_VERSION "\n");
 #       ifdef LICENSE_CHECK
             std::string user = plask::license_verifier.getUser(),
@@ -275,30 +294,30 @@ int main(int argc, const char *argv[])
     std::deque<const char*> defs;
 
     while (argc > 1) {
-        std::string arg = argv[1];
-        if (arg == "-i") {
+        system_string arg = argv[1];
+        if (arg == CSTR(-i)) {
             force_interactive = true;
             --argc; ++argv;
-        } else if (arg.substr(0,2) == "-l") {
-            const char* level = (arg.length() > 2)? argv[1]+2 : argv[2];
+        } else if (arg.substr(0,2) == CSTR(-l)) {
+            const system_char* level = (arg.length() > 2)? argv[1]+2 : argv[2];
             try {
                 loglevel.reset(plask::LogLevel(boost::lexical_cast<unsigned>(level)));
             } catch (boost::bad_lexical_cast) {
-                std::string ll = level; boost::to_lower(ll);
-                if (ll == "critical_error") loglevel.reset(plask::LOG_CRITICAL_ERROR);
-                if (ll == "critical") loglevel.reset(plask::LOG_CRITICAL_ERROR);
-                else if (ll == "error") loglevel.reset(plask::LOG_ERROR);
-                else if (ll == "error_detail") loglevel.reset(plask::LOG_ERROR_DETAIL);
-                else if (ll == "warning") loglevel.reset(plask::LOG_WARNING);
-                else if (ll == "important") loglevel.reset(plask::LOG_IMPORTANT);
-                else if (ll == "info") loglevel.reset(plask::LOG_INFO);
-                else if (ll == "result") loglevel.reset(plask::LOG_RESULT);
-                else if (ll == "data") loglevel.reset(plask::LOG_DATA);
-                else if (ll == "detail") loglevel.reset(plask::LOG_DETAIL);
-                else if (ll == "debug") loglevel.reset(plask::LOG_DEBUG);
-                else if (ll == "nopython" || ll == "nopy") { python_logger = false; }
-                else if (ll == "ansi") { log_color = "ansi"; }
-                else if (ll == "mono") { log_color = "none"; }
+				system_string ll = level; boost::to_lower(ll);
+                if (ll == CSTR(critical_error)) loglevel.reset(plask::LOG_CRITICAL_ERROR);
+                if (ll == CSTR(critical)) loglevel.reset(plask::LOG_CRITICAL_ERROR);
+                else if (ll == CSTR(error)) loglevel.reset(plask::LOG_ERROR);
+                else if (ll == CSTR(error_detail)) loglevel.reset(plask::LOG_ERROR_DETAIL);
+                else if (ll == CSTR(warning)) loglevel.reset(plask::LOG_WARNING);
+                else if (ll == CSTR(important)) loglevel.reset(plask::LOG_IMPORTANT);
+                else if (ll == CSTR(info)) loglevel.reset(plask::LOG_INFO);
+                else if (ll == CSTR(result)) loglevel.reset(plask::LOG_RESULT);
+                else if (ll == CSTR(data)) loglevel.reset(plask::LOG_DATA);
+                else if (ll == CSTR(detail)) loglevel.reset(plask::LOG_DETAIL);
+                else if (ll == CSTR(debug)) loglevel.reset(plask::LOG_DEBUG);
+                else if (ll == CSTR(nopython) || ll == CSTR(nopy)) { python_logger = false; }
+                else if (ll == CSTR(ansi)) { log_color = "ansi"; }
+                else if (ll == CSTR(mono)) { log_color = "none"; }
                 else {
                     fprintf(stderr, "Bad log level specified\n");
                     return 4;
@@ -307,12 +326,12 @@ int main(int argc, const char *argv[])
             if (loglevel) plask::forcedLoglevel = true;
             if (level == argv[2]) { argc -= 2; argv += 2; }
             else { --argc; ++argv; }
-        } else if (arg == "-c") {
+        } else if (arg == CSTR(-c)) {
             command = argv[2];
             argv[2] = "-c";
             --argc; ++argv;
             break;
-        } else if (arg == "-m") {
+        } else if (arg == CSTR(-m)) {
             runmodule = argv[2];
             argv[2] = "-m";
             --argc; ++argv;
