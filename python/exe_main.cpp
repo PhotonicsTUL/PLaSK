@@ -33,7 +33,6 @@ namespace py = boost::python;
     constexpr auto system_Py_fopen = &_Py_wfopen;
     #define system_main wmain
 	#define CSTR(s) L ## #s
-	#define CCHAR(c) L ## c
 #else
     typedef char system_char;
     typedef std::string system_string;
@@ -471,15 +470,15 @@ int system_main(int argc, const system_char *argv[])
             return exitcode;
         }
 
-        std::string filename = argv[1];
+        system_string filename = argv[1];
         try {
             bool realfile = true;
-            if (filename[0] == '-' && (filename.length() == 1 || filename[1] == ':')) {
+            if (filename[0] == system_char('-') && (filename.length() == 1 || filename[1] == system_char(':'))) {
                 realfile = false;
-                if (filename[1] == ':' && filename.length() > 2) {
+                if (filename[1] == system_char(':') && filename.length() > 2) {
                     filename = filename.substr(2);
                 } else {
-                    filename = "<stdin>";
+                    filename = CSTR(<stdin>);
                 }
                 py::object sys = py::import("sys");
                 sys.attr("argv")[0] = filename;
@@ -491,15 +490,15 @@ int system_main(int argc, const system_char *argv[])
                 if (!filetype) {
                     // check file extension
                     try {
-                        std::string ext = filename.substr(filename.length()-4);
-                        if (ext == ".xpl") filetype = FILE_XML;
-                        else if (ext == ".xml") filetype = FILE_XML;
-                        else if (ext.substr(1) == ".py") filetype = FILE_PY;
+                        system_string ext = filename.substr(filename.length()-4);
+                        if (ext == CSTR(.xpl)) filetype = FILE_XML;
+                        else if (ext == CSTR(.xml)) filetype = FILE_XML;
+                        else if (ext.substr(1) == CSTR(.py)) filetype = FILE_PY;
                     } catch (std::out_of_range) {}
                 }
                 if (!filetype) {
                     // check first char (should be '<' in XML)
-                    FILE* file = std::fopen(filename.c_str(), "r");
+                    FILE* file = system_fopen(filename.c_str(), CSTR("r"));
                     if (!file) throw std::invalid_argument("No such file: '" + filename + "'");
                     int c;
                     while ((c = std::getc(file))) {
