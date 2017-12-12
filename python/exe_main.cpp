@@ -291,7 +291,7 @@ int system_main(int argc, const system_char *argv[])
         FILE_PY
     } filetype = FILE_ANY;
 
-    std::deque<const char*> defs;
+    std::deque<const system_char*> defs;
 
     while (argc > 1) {
         system_string arg = argv[1];
@@ -328,15 +328,15 @@ int system_main(int argc, const system_char *argv[])
             else { --argc; ++argv; }
         } else if (arg == CSTR(-c)) {
             command = argv[2];
-            argv[2] = "-c";
+            argv[2] = CSTR(-c);
             --argc; ++argv;
             break;
         } else if (arg == CSTR(-m)) {
             runmodule = argv[2];
-            argv[2] = "-m";
+            argv[2] = CSTR(-m);
             --argc; ++argv;
             break;
-        } else if (arg == "-g") {
+        } else if (arg == CSTR(-g)) {
 #           if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
                 if (console_count == 1) { // we are the only ones using the console
                     HWND hwnd = GetConsoleWindow();
@@ -344,8 +344,8 @@ int system_main(int argc, const system_char *argv[])
                     console_count = 0;
                 }
 #           endif
-            argv[1] = "-u";
-        } else if (arg == "-u") {
+            argv[1] = CSTR(-u);
+        } else if (arg == CSTR(-u)) {
 #           if defined(MS_WINDOWS) || defined(__CYGWIN__)
                 _setmode(fileno(stderr), _O_BINARY);
                 _setmode(fileno(stdout), _O_BINARY);
@@ -357,24 +357,24 @@ int system_main(int argc, const system_char *argv[])
                 Py_UnbufferedStdioFlag = 1;
 #           endif
             --argc; ++argv;
-        } else if (arg == "-x") {
+        } else if (arg == CSTR(-x)) {
             if (filetype == FILE_PY)  {
                 fprintf(stderr, "You cannot specify both -x and -p\n");
                 return 4;
             }
             filetype = FILE_XML;
             --argc; ++argv;
-        } else if (arg == "-p") {
+        } else if (arg == CSTR(-p)) {
             if (filetype == FILE_XML)  {
                 fprintf(stderr, "You cannot specify both -x and -p\n");
                 return 4;
             }
             filetype = FILE_PY;
             --argc; ++argv;
-        } else if (arg.find('=') != std::string::npos) {
+        } else if (arg.find(system_char('=')) != std::string::npos) {
             defs.push_back(argv[1]);
             --argc; ++argv;
-        } else if (arg == "--") {
+        } else if (arg == CSTR(--)) {
             --argc; ++argv;
             break;
         } else break;
