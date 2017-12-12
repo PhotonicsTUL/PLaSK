@@ -3,8 +3,9 @@
 namespace plask { namespace optical { namespace simple_optical {
   
 SimpleOptical::SimpleOptical(const std::string& name):plask::SolverOver<plask::Geometry2DCylindrical>(name)
+  ,outLightMagnitude(this, &SimpleOptical::getLightMagnitude, &SimpleOptical::nmodes)
 {
-  stripe_root.method = RootDigger::ROOT_MULLER;
+  stripe_root.method = RootDigger::ROOT_BROYDEN;
   stripe_root.tolx = 1.0e-6;
   stripe_root.tolf_min = 1.0e-7;
   stripe_root.tolf_max = 1.0e-5;
@@ -40,7 +41,6 @@ void SimpleOptical::onInvalidate()
   zfields.clear();
 }
 
-
 void SimpleOptical::initialize_refractive_index_vec()
 {
   
@@ -57,37 +57,25 @@ void SimpleOptical::initialize_refractive_index_vec()
   refractive_index_vec.push_back(geometry->getMaterial(vec(0.0,  last_element+1e-3))->Nr(w, T));
 }
 
+void SimpleOptical::stageOne()
+{
+  
+}
+
 void SimpleOptical::simpleVerticalSolver(double wave_length)
 {
     t_bb = 0;
     setWavelength(wave_length);
     onInitialize();
     t_bb = compute_transfer_matrix(k0, refractive_index_vec);
-
-/*    Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{0}]", ybegin), "neff", "det");
-
-
-    auto rootdigger = RootDigger::get(this, [&](const dcomplex& x){return this->compute_transfer_matrix(k0, refractive_index_vec);}, log_stripe, stripe_root);
-
-  
-
-    if (vneff == 0.) {
-
-            dcomplex maxn = *std::max_element(refractive_index_vec.begin(), refractive_index_vec.end(),
-
-                                              [](const dcomplex& a, const dcomplex& b){return real(a) < real(b);} );
-
-            vneff = 0.999 * real(maxn);
-
-        }
-
-    vneff = rootdigger->find(vneff);
-
-    std::cout<<vneff<<std::endl;
-
-   */ 
-
-     refractive_index_vec.clear();
+//     Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{}]"), "", "");
+//      auto rootdigger = RootDigger::get(this, [&](const dcomplex& x){
+//        return this->compute_transfer_matrix(k0, refractive_index_vec);},
+//        log_stripe,
+//        stripe_root);
+     
+     
+    refractive_index_vec.clear();
 }
 
 dcomplex SimpleOptical::get_T_bb()
@@ -134,6 +122,10 @@ std::vector<dcomplex> SimpleOptical::getEz()
   return zfields;
 }
 
+const LazyData<double> SimpleOptical::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
+{
+}
+
 std::vector<dcomplex> SimpleOptical::computeEz(const dcomplex& x, const std::vector<dcomplex> & NR)
 {
   Matrix phas_matrix;
@@ -153,11 +145,13 @@ std::vector<dcomplex> SimpleOptical::computeEz(const dcomplex& x, const std::vec
     zfields.push_back(F+B);
     transfer_matrix = (boundary_matrix*phas_matrix)*transfer_matrix;        
   }  
+  
   z.push_back(0);
   for (double p: *axis_midpoints_vertical)
   {
     z.push_back(p);
   }
+  
   return zfields;
 }
 

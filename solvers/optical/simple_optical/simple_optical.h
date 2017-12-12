@@ -58,6 +58,10 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
       Mode(SimpleOptical* solver):
 	solver(solver), power(1.) {}
      };
+     
+     size_t nmodes() const {
+	return modes.size();
+    }
 
      void loadConfiguration(XMLReader& reader, Manager& manager);
 
@@ -98,6 +102,12 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      std::vector<dcomplex> computeEz(const dcomplex& x, const std::vector<dcomplex> & NR);
      std::vector<double> getZ();
      std::vector<dcomplex> getEz();
+     
+     typename ProviderFor<LightMagnitude, Geometry2DCylindrical>::Delegate outLightMagnitude;
+     const LazyData<double> getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod);
+     std::vector<Mode> modes;
+     void stageOne();
+     
 
 protected:
 
@@ -123,12 +133,13 @@ protected:
 
   std::vector<double> edge_vert_layer_point;
 
+  void initialize_refractive_index_vec();
+  
   std::vector<double> z;
 
   /// Computed vertical fields
   std::vector<dcomplex> zfields; 
 
-  void initialize_refractive_index_vec();
 
 };
 
