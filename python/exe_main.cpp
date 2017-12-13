@@ -27,16 +27,43 @@ namespace py = boost::python;
 
 // definitions which helps to use wide or narrow string encoding, depending on system/compiler:
 #ifdef _MSC_VER
+
+	static std::string to_utf8(const wchar_t* buffer, int len = -1) {
+		int nChars = ::WideCharToMultiByte(CP_UTF8, 0, buffer, len, 0, 0, 0, 0);
+		if (nChars == 0) return "";
+		std::string newbuffer;
+		newbuffer.resize(nChars);
+		::WideCharToMultiByte(CP_UTF8, 0, buffer, len, const_cast<char*>(newbuffer.data()), nChars, 0, 0);
+		return newbuffer;
+	}
+
+	inline std::string to_utf8(const std::wstring& str) {
+		return to_utf8(str.data(), (int)str.size());
+	}
+
     typedef wchar_t system_char;
     typedef std::wstring system_string;
     constexpr auto system_fopen = &_wfopen;
     constexpr auto system_Py_fopen = &_Py_wfopen;
+
+	static PyObject* system_Py_CompileString(const char *str, const system_char *filename, int start) {
+		PyObject* fname = PyUnicode_FromWideChar(filename, -1);
+		PyObject* result = Py_CompileStringObject(str, fname, start, 0, -1);
+		Py_DECREF(fname);
+		return result;
+	}
+
+	inline PyObject* system_Py_CompileString(const system_char *str, const system_char *filename, int start) {
+		return system_Py_CompileString(to_utf8(str).c_str(), filename, start);
+	}
+
     #define system_main wmain
 	#define CSTR(s) L ## #s
 #else
     typedef char system_char;
     typedef std::string system_string;
     constexpr auto system_fopen = &fopen;
+	constexpr auto system_Py_CompileString = &Py_CompileString;
 #if PY_VERSION_HEX >= 0x03000000
     constexpr auto system_Py_fopen = &_Py_fopen;
 #endif
@@ -413,7 +440,7 @@ int system_main(int argc, const system_char *argv[])
 
             PyObject* result = NULL;
 #           if PY_VERSION_HEX >= 0x03000000
-                PyObject* code = Py_CompileString(command, "-c", Py_file_input);
+                PyObject* code = system_Py_CompileString(command, CSTR(-c), Py_file_input);
                 if (code) result = PyEval_EvalCode(code, globals.ptr(), globals.ptr());
 #           else
                 PyCompilerFlags flags { CO_FUTURE_DIVISION };
@@ -564,7 +591,7 @@ int system_main(int argc, const system_char *argv[])
 
                 PyObject* result = NULL;
 #               if PY_VERSION_HEX >= 0x03000000
-                    PyObject* code = Py_CompileString(manager->script.c_str(), filename.c_str(), Py_file_input);
+                    PyObject* code = system_Py_CompileString(manager->script.c_str(), filename.c_str(), Py_file_input);
                     if (code)
                         result = PyEval_EvalCode(code, globals.ptr(), globals.ptr());
 #               else
