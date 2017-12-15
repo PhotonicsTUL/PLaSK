@@ -5,7 +5,7 @@ namespace plask { namespace optical { namespace simple_optical {
 SimpleOptical::SimpleOptical(const std::string& name):plask::SolverOver<plask::Geometry2DCylindrical>(name)
   ,outLightMagnitude(this, &SimpleOptical::getLightMagnitude, &SimpleOptical::nmodes)
 {
-  stripe_root.method = RootDigger::ROOT_BROYDEN;
+  stripe_root.method = RootDigger::ROOT_MULLER;
   stripe_root.tolx = 1.0e-6;
   stripe_root.tolf_min = 1.0e-7;
   stripe_root.tolf_max = 1.0e-5;
@@ -68,19 +68,28 @@ void SimpleOptical::simpleVerticalSolver(double wave_length)
     setWavelength(wave_length);
     onInitialize();
     t_bb = compute_transfer_matrix(k0, refractive_index_vec);
-//     Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{}]"), "", "");
-//      auto rootdigger = RootDigger::get(this, [&](const dcomplex& x){
-//        return this->compute_transfer_matrix(k0, refractive_index_vec);},
-//        log_stripe,
-//        stripe_root);
-     
-     
     refractive_index_vec.clear();
 }
 
 dcomplex SimpleOptical::get_T_bb()
 {
   return t_bb;
+}
+
+dcomplex SimpleOptical::findRoot(double guess)
+{
+    onInitialize();
+    Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format(""), "", "");
+    auto rootdigger = RootDigger::get(this, 
+				      [&](const dcomplex& x){
+				      return this->compute_transfer_matrix(x, refractive_index_vec);	
+				      },
+				      log_stripe,
+				      stripe_root);
+    vneff = rootdigger->find(guess);
+    std::cout<<"root wavelength: "<<(2e3*M_PI)/vneff<<std::endl;
+    refractive_index_vec.clear();
+    return vneff;
 }
 
 dcomplex SimpleOptical::compute_transfer_matrix(const dcomplex& x, const std::vector<dcomplex> & NR)

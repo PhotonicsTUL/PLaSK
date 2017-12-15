@@ -108,6 +108,8 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      std::vector<Mode> modes;
      void stageOne();
      
+     dcomplex findRoot(double guess);
+     
 
 protected:
 
