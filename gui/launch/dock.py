@@ -11,7 +11,7 @@
 # GNU General Public License for more details.
 from time import strftime
 
-from ..utils.widgets import LineEditWithClear
+from ..utils.widgets import LineEditWithClear, set_icon_size
 
 from ..qt.QtCore import *
 from ..qt.QtGui import *
@@ -161,6 +161,7 @@ class OutputWindow(QDockWidget):
         self.messages.clicked.connect(self.line_clicked)
 
         toolbar = QToolBar()
+        set_icon_size(toolbar)
 
         self.action_error = QAction(self)
         self.action_error.setText("&Error")

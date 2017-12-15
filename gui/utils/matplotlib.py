@@ -31,6 +31,8 @@ else:
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
 
+from ..utils.widgets import set_icon_size
+
 
 class Cursors(object):
     # this class is only used as a simple namespace
@@ -251,6 +253,7 @@ class PlotWidgetBase(QWidget):
         self.figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
         self.canvas.updateGeometry()
         self.toolbar = self.NavigationToolbar(self.canvas, self, controller)
+        set_icon_size(self.toolbar)
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.toolbar)
