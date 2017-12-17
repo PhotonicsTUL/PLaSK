@@ -398,7 +398,7 @@ class GeometryController(Controller):
         toolbar.addSeparator()
 
         more_button = QToolButton(toolbar)
-        more_button.setIcon(QIcon.fromTheme('menu-other'))
+        more_button.setIcon(QIcon.fromTheme('application-menu'))
         self.more_menu = QMenu(more_button)
         more_button.setMenu(self.more_menu)
         more_button.setPopupMode(QToolButton.InstantPopup)
