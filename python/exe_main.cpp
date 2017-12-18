@@ -58,11 +58,27 @@ namespace py = boost::python;
 		return system_Py_CompileString(system_to_utf8(str).c_str(), filename, start);
 	}
 
+	inline py::object system_str_to_pyobject(const system_char *str, int len = -1) {
+		return py::object(py::handle<>(PyUnicode_FromWideChar(str, len)));
+	}
+
+	inline py::object system_str_to_pyobject(const system_string& str) {
+		return system_str_to_pyobject(str.data(), str.size());
+	}
+
     #define system_main wmain
 	#define CSTR(s) L ## #s
 #else
 	#define system_to_utf8(s) s
 	#define system_to_utf8_cstr(cstr) cstr
+
+	inline py::object system_str_to_pyobject(const char *str) {
+		return py::str(str);
+	}
+
+	inline py::object system_str_to_pyobject(const system_string& str) {
+		return py::str(str);
+	}
 
     typedef char system_char;
     typedef std::string system_string;
@@ -176,7 +192,7 @@ static py::object initPlask(int argc, const system_char* argv[])
 #ifdef LICENSE_CHECK
     std::string user = plask::license_verifier.getUser();
     if (user != "") {
-        std::string  institution = plask::license_verifier.getInstitution(), expiration = plask::license_verifier.getExpiration();
+        std::string  institution = plask::license_verifier.getInstitution(), expiration = plask::license_verifier.getExpiration()utf8
         if (!institution.empty())
             plask::writelog(plask::LOG_INFO, "Licensed to {} {}{}", user, institution, (expiration != "")? " (until "+expiration+")" : "");
         else
@@ -190,7 +206,7 @@ static py::object initPlask(int argc, const system_char* argv[])
     if (argc > 0) {
         py::list sys_argv;
         for (int i = 0; i < argc; i++) {
-            sys_argv.append(system_to_utf8(argv[i]));
+            sys_argv.append(system_str_to_pyobject(argv[i]));
         }
         sys.attr("argv") = sys_argv;
     }
@@ -572,7 +588,7 @@ int system_main(int argc, const system_char *argv[])
                 py::object omanager(manager);
                 globals["__manager__"] = omanager;
                 if (realfile)
-                    plask::python::PythonManager_load(omanager, py::str(system_to_utf8(filename)), locals);	// TODO system_to_utf8 prawdopodonie niepotrzebne dla pybind i byæ mo¿e niepoprawne
+                    plask::python::PythonManager_load(omanager, system_str_to_pyobject(filename), locals);	// TODO system_to_utf8 prawdopodonie niepotrzebne dla pybind i byæ mo¿e niepoprawne
                 else {
                     py::object sys = py::import("sys");
                     plask::python::PythonManager_load(omanager, sys.attr("stdin"), locals);
