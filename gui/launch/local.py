@@ -60,7 +60,10 @@ class PlaskThread(QThread):
         self.main_window.closed.connect(self.kill_process)
 
     def __del__(self):
-        self.main_window.closed.disconnect(self.kill_process)
+        try:
+            self.main_window.closed.disconnect(self.kill_process)
+        except:
+            pass
 
     def run(self):
         while self.proc.poll() is None:
