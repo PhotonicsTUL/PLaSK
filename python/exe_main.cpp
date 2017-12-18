@@ -31,8 +31,7 @@ namespace py = boost::python;
 	static std::string system_to_utf8(const wchar_t* buffer, int len = -1) {
 		int nChars = ::WideCharToMultiByte(CP_UTF8, 0, buffer, len, 0, 0, 0, 0);
 		if (nChars == 0) return "";
-		std::string newbuffer;
-		newbuffer.resize(nChars);
+		std::string newbuffer(nChars-1, '\0');	// nChars includes space for null-terminator which will be added by std::string
 		::WideCharToMultiByte(CP_UTF8, 0, buffer, len, const_cast<char*>(newbuffer.data()), nChars, 0, 0);
 		return newbuffer;
 	}
@@ -191,7 +190,7 @@ static py::object initPlask(int argc, const system_char* argv[])
     if (argc > 0) {
         py::list sys_argv;
         for (int i = 0; i < argc; i++) {
-            sys_argv.append(argv[i]);
+            sys_argv.append(system_to_utf8(argv[i]));
         }
         sys.attr("argv") = sys_argv;
     }
@@ -573,7 +572,7 @@ int system_main(int argc, const system_char *argv[])
                 py::object omanager(manager);
                 globals["__manager__"] = omanager;
                 if (realfile)
-                    plask::python::PythonManager_load(omanager, py::str(filename), locals);
+                    plask::python::PythonManager_load(omanager, py::str(system_to_utf8(filename)), locals);	// TODO system_to_utf8 prawdopodonie niepotrzebne dla pybind i byæ mo¿e niepoprawne
                 else {
                     py::object sys = py::import("sys");
                     plask::python::PythonManager_load(omanager, sys.attr("stdin"), locals);
