@@ -71,19 +71,12 @@ namespace py = boost::python;
 #else
 	#define system_to_utf8(s) s
 	#define system_to_utf8_cstr(cstr) cstr
-
-	inline py::object system_str_to_pyobject(const char *str) {
-		return py::str(str);
-	}
-
-	inline py::object system_str_to_pyobject(const system_string& str) {
-		return py::str(str);
-	}
+    #define system_str_to_pyobject py::str
 
     typedef char system_char;
     typedef std::string system_string;
     constexpr auto system_fopen = &fopen;
-	constexpr auto system_Py_CompileString = &Py_CompileString;
+    #define system_Py_CompileString Py_CompileString
 #if PY_VERSION_HEX >= 0x03000000
     constexpr auto system_Py_fopen = &_Py_fopen;
 #endif
