@@ -26,7 +26,7 @@ def load_rectangular1d(src_group, name):
     mtype = data.attrs['type']
     try:
         mtype = mtype.decode('ascii')
-    except UnicodeDecodeError:
+    except (UnicodeDecodeError, AttributeError):
         pass
     mesh_type = plask.mesh.__dict__[mtype]
     if isinstance(data, h5py.Group):
@@ -173,7 +173,7 @@ def load_field(file, path=''):
         mtype = mesh.attrs['type']
         try:
             mtype = mtype.decode('ascii')
-        except UnicodeDecodeError:
+        except (UnicodeDecodeError, AttributeError):
             pass
     except KeyError:
         raise TypeError('Group {} is not a PLaSK field'.format(path))
