@@ -78,7 +78,7 @@ namespace py = boost::python;
     constexpr auto system_fopen = &fopen;
     #define system_Py_CompileString Py_CompileString
 #if PY_VERSION_HEX >= 0x03000000
-    constexpr auto system_Py_fopen = &_Py_fopen;
+    #define system_Py_fopen _Py_fopen
 #endif
     #define system_main main
 	#define CSTR(s) #s
