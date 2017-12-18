@@ -28,7 +28,7 @@ namespace py = boost::python;
 // definitions which helps to use wide or narrow string encoding, depending on system/compiler:
 #ifdef _MSC_VER
 
-	static std::string to_utf8(const wchar_t* buffer, int len = -1) {
+	static std::string system_to_utf8(const wchar_t* buffer, int len = -1) {
 		int nChars = ::WideCharToMultiByte(CP_UTF8, 0, buffer, len, 0, 0, 0, 0);
 		if (nChars == 0) return "";
 		std::string newbuffer;
@@ -37,9 +37,11 @@ namespace py = boost::python;
 		return newbuffer;
 	}
 
-	inline std::string to_utf8(const std::wstring& str) {
-		return to_utf8(str.data(), (int)str.size());
+	inline std::string system_to_utf8(const std::wstring& str) {
+		return system_to_utf8(str.data(), (int)str.size());
 	}
+
+	#define system_to_utf8_cstr(s) system_to_utf8(s).c_str()
 
     typedef wchar_t system_char;
     typedef std::wstring system_string;
@@ -54,12 +56,15 @@ namespace py = boost::python;
 	}
 
 	inline PyObject* system_Py_CompileString(const system_char *str, const system_char *filename, int start) {
-		return system_Py_CompileString(to_utf8(str).c_str(), filename, start);
+		return system_Py_CompileString(system_to_utf8(str).c_str(), filename, start);
 	}
 
     #define system_main wmain
 	#define CSTR(s) L ## #s
 #else
+	#define system_to_utf8(s) s
+	#define system_to_utf8_cstr(cstr) cstr
+
     typedef char system_char;
     typedef std::string system_string;
     constexpr auto system_fopen = &fopen;
@@ -318,7 +323,7 @@ int system_main(int argc, const system_char *argv[])
         FILE_PY
     } filetype = FILE_ANY;
 
-    std::deque<const system_char*> defs;
+    std::deque<std::string> defs;
 
     while (argc > 1) {
         system_string arg = argv[1];
@@ -399,7 +404,7 @@ int system_main(int argc, const system_char *argv[])
             filetype = FILE_PY;
             --argc; ++argv;
         } else if (arg.find(system_char('=')) != std::string::npos) {
-            defs.push_back(argv[1]);
+            defs.push_back(system_to_utf8(argv[1]));
             --argc; ++argv;
         } else if (arg == CSTR(--)) {
             --argc; ++argv;
@@ -526,7 +531,7 @@ int system_main(int argc, const system_char *argv[])
                 if (!filetype) {
                     // check first char (should be '<' in XML)
                     FILE* file = system_fopen(filename.c_str(), CSTR(r));
-                    if (!file) throw std::invalid_argument("No such file: '" + filename + "'");
+                    if (!file) throw std::invalid_argument("No such file: '" + system_to_utf8(filename) + "'");
                     int c;
                     while ((c = std::getc(file))) {
                         if (!std::isspace(c) || c == EOF) break;
@@ -536,7 +541,7 @@ int system_main(int argc, const system_char *argv[])
                     else filetype = FILE_PY;
                 } else {
                     FILE* file = system_fopen(filename.c_str(), CSTR(r));
-                    if (!file) throw std::invalid_argument("No such file: '" + filename + "'");
+                    if (!file) throw std::invalid_argument("No such file: '" + system_to_utf8(filename) + "'");
                     std::fclose(file);
                 }
                 assert(filetype);
@@ -549,7 +554,7 @@ int system_main(int argc, const system_char *argv[])
             if (filetype == FILE_XML) {
 
                 py::dict locals;
-                for (const system_char* def: defs) {
+                for (std::string& def: defs) {
                     auto keyval = plask::splitString2(def, '=');
                     try {
                         locals[keyval.first] = (plask::python::py_eval(keyval.second,
@@ -619,9 +624,10 @@ int system_main(int argc, const system_char *argv[])
                             pyfile = PyUnicode_FromString(filename.c_str());
                             FILE* file = _Py_fopen(pyfile, "r");
 #                       endif
-                        result = PyRun_FileEx(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr(), 1);
+						//TODO byæ mo¿e konwersja filename do UTF-8 nie jest w³aœciwa pod windowsami
+                        result = PyRun_FileEx(file, system_to_utf8(filename).c_str(), Py_file_input, globals.ptr(), globals.ptr(), 1);
                     } else {
-                        result = PyRun_File(stdin, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr());
+                        result = PyRun_File(stdin, system_to_utf8(filename).c_str(), Py_file_input, globals.ptr(), globals.ptr());
                     }
 #               else
                     // We want to set "from __future__ import division" flag
@@ -650,18 +656,18 @@ int system_main(int argc, const system_char *argv[])
         }
 #       ifndef PRINT_STACKTRACE_ON_EXCEPTION
             catch (plask::XMLException& err) {
-                plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}, {1}", filename, err.what());
+                plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}, {1}", system_to_utf8(filename), err.what());
                 endPlask();
                 return 2;
             }
             catch (plask::Exception& err) {
-                plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", filename, err.what());
+                plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", system_to_utf8(filename), err.what());
                 endPlask();
                 return 3;
             }
 #       endif
         catch (py::error_already_set) {
-            int exitcode = handlePythonException(filename.c_str());
+            int exitcode = handlePythonException(system_to_utf8(filename).c_str());
             endPlask();
             return exitcode;
         }
