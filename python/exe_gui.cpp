@@ -1,22 +1,4 @@
-#include <cmath>
-
-#include <cstdio>
-#include <vector>
-#include <string>
-#include <stack>
-
-#include <plask/version.h>
-#include <plask/exceptions.h>
-#include <plask/utils/system.h>
-#include <plask/log/log.h>
-#include <plask/python_globals.h>
-#include <plask/python_manager.h>
-#include <plask/utils/string.h>
-#include <plask/license/verify.h>
-
-#include <boost/python.hpp>
-#include <boost/python/stl_iterator.hpp>
-namespace py = boost::python;
+#include "exe_common.h"
 
 //******************************************************************************
 #if PY_VERSION_HEX >= 0x03000000
