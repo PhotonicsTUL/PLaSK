@@ -31,7 +31,7 @@ namespace py = boost::python;
 	static std::string system_to_utf8(const wchar_t* buffer, int len = -1) {
 		int nChars = ::WideCharToMultiByte(CP_UTF8, 0, buffer, len, 0, 0, 0, 0);
 		if (nChars == 0) return "";
-		std::string newbuffer(nChars-1, '\0');	// nChars includes space for null-terminator which will be added by std::string
+		std::string newbuffer(nChars, '\0');
 		::WideCharToMultiByte(CP_UTF8, 0, buffer, len, const_cast<char*>(newbuffer.data()), nChars, 0, 0);
 		return newbuffer;
 	}
