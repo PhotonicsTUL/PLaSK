@@ -28,7 +28,7 @@ void showError(const std::string& msg, const std::string& cap="Error");
 
 //******************************************************************************
 // Initialize the binary modules and load the package from disk
-static py::object initPlask(int argc, const char* argv[])
+static py::object initPlask(int argc, const system_char* const argv[])
 {
     // Initialize the plask module
     if (PyImport_AppendInittab("_plask", &PLASK_MODULE) != 0) throw plask::CriticalException("No _plask module");
@@ -52,8 +52,8 @@ static py::object initPlask(int argc, const char* argv[])
         try {
             path.insert(0, boost::filesystem::absolute(boost::filesystem::path(argv[0])).parent_path().string());
         } catch (std::runtime_error) { // can be thrown if there is wrong locale set
-            std::string file(argv[0]);
-            size_t pos = file.rfind(plask::FILE_PATH_SEPARATOR);
+			system_string file(argv[0]);
+            size_t pos = file.rfind(system_char(plask::FILE_PATH_SEPARATOR));
             if (pos == std::string::npos) pos = 0;
             path.insert(0, file.substr(0, pos));
         }
@@ -72,7 +72,7 @@ static py::object initPlask(int argc, const char* argv[])
     if (argc > 0) {
         py::list sys_argv;
         for (int i = 0; i < argc; i++) {
-            sys_argv.append(argv[i]);
+            sys_argv.append(system_str_to_pyobject(argv[i]));
         }
         sys.attr("argv") = sys_argv;
     }
@@ -84,7 +84,7 @@ static py::object initPlask(int argc, const char* argv[])
 }
 
 //******************************************************************************
-int handlePythonException(const char* scriptname=nullptr) {
+int handlePythonException(/*const char* scriptname=nullptr*/) {
     PyObject* value;
     PyObject* type;
     PyObject* original_traceback;
@@ -114,9 +114,6 @@ void endPlask() {
 
 //******************************************************************************
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-#include <plask/utils/minimal_windows.h>
-#include <boost/tokenizer.hpp>
-//#define BOOST_USE_WINDOWS_H
 
 void showError(const std::string& msg, const std::string& cap) {
     MessageBox(NULL, msg.c_str(), ("PLaSK - " + cap).c_str(), MB_OK | MB_ICONERROR);
@@ -124,14 +121,9 @@ void showError(const std::string& msg, const std::string& cap) {
 
 int WinMain(HINSTANCE, HINSTANCE, LPSTR cmdline, int)
 {
-    std::string command_line(cmdline);
-    boost::tokenizer<boost::escaped_list_separator<char>> tokenizer(command_line, boost::escaped_list_separator<char>('^', ' ', '"'));
-    std::deque<std::string> args(tokenizer.begin(), tokenizer.end());
-    args.push_front(plask::exePathAndName());
-    int argc = args.size();
-    std::vector<const char*> argv_vec(argc);
-    std::vector<const char*>::iterator dst = argv_vec.begin(); for(const auto& src: args) { *(dst++) = src.c_str(); }
-    const char** argv = argv_vec.data();
+	int argc;	// doc: https://msdn.microsoft.com/pl-pl/library/windows/desktop/bb776391(v=vs.85).aspx
+	LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+	std::unique_ptr<LPWSTR, decltype(&LocalFree)> callLocalFreeAtExit(argv, &LocalFree);
 #else
 
 void showError(const std::string& msg, const std::string& cap) {
@@ -171,7 +163,7 @@ int main(int argc, const char *argv[])
         endPlask();
         return 3;
     } catch (py::error_already_set) {
-        int exitcode = handlePythonException(argv[0]);
+        int exitcode = handlePythonException(/*argv[0]*/);
         endPlask();
         return exitcode;
     } catch (std::runtime_error& err) {
