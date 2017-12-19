@@ -68,7 +68,7 @@ void SimpleOptical::simpleVerticalSolver(double wave_length)
     setWavelength(wave_length);
     onInitialize();
     t_bb = compute_transfer_matrix(k0, refractive_index_vec);
-    refractive_index_vec.clear();
+    //refractive_index_vec.clear();
 }
 
 dcomplex SimpleOptical::get_T_bb()
@@ -76,24 +76,27 @@ dcomplex SimpleOptical::get_T_bb()
   return t_bb;
 }
 
-dcomplex SimpleOptical::findRoot(double guess)
+dcomplex SimpleOptical::findRoot(double k0)
 {
     onInitialize();
     Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format(""), "", "");
     auto rootdigger = RootDigger::get(this, 
-				      [&](const dcomplex& x){
-				      return this->compute_transfer_matrix(x, refractive_index_vec);	
+				      [&](const dcomplex& x ){
+					return this->compute_transfer_matrix( (2e3*M_PI)/x, refractive_index_vec);	
 				      },
 				      log_stripe,
 				      stripe_root);
-    vneff = rootdigger->find(guess);
-    std::cout<<"root wavelength: "<<(2e3*M_PI)/vneff<<std::endl;
+    vneff = rootdigger->find((2e3*M_PI)/k0);
+    std::cout<<"root wavelength: "<<vneff<<std::endl;
     refractive_index_vec.clear();
     return vneff;
 }
 
 dcomplex SimpleOptical::compute_transfer_matrix(const dcomplex& x, const std::vector<dcomplex> & NR)
 {
+  double w = real(2e3*M_PI / x);
+  setWavelength(w);
+  onInitialize();
   Matrix phas_matrix;
   Matrix boundary_matrix;
   double d; //distance_between_layer
@@ -110,6 +113,9 @@ dcomplex SimpleOptical::compute_transfer_matrix(const dcomplex& x, const std::ve
     dcomplex F = transfer_matrix.fb, B = transfer_matrix.bb;
     transfer_matrix = (boundary_matrix*phas_matrix)*transfer_matrix;    
   }
+  refractive_index_vec.clear();
+  std::cout<<"x = " << x << std::endl;
+  std::cout<<"T bb = " << transfer_matrix.bb<<std::endl;
   return transfer_matrix.bb;
 }
 
