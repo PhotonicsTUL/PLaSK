@@ -506,7 +506,7 @@ int system_main(int argc, const system_char *argv[])
                 py::object omanager(manager);
                 globals["__manager__"] = omanager;
                 if (realfile)
-                    plask::python::PythonManager_load(omanager, system_str_to_pyobject(filename), locals);	// TODO system_to_utf8 prawdopodonie niepotrzebne dla pybind i byæ mo¿e niepoprawne
+                    plask::python::PythonManager_load(omanager, system_str_to_pyobject(filename), locals);	// TODO system_to_utf8 is propably not needed with pybind and it can be not proper here
                 else {
                     py::object sys = py::import("sys");
                     plask::python::PythonManager_load(omanager, sys.attr("stdin"), locals);
@@ -557,7 +557,7 @@ int system_main(int argc, const system_char *argv[])
                             pyfile = PyUnicode_FromString(filename.c_str());
                             FILE* file = _Py_fopen(pyfile, "r");
 #                       endif
-						//TODO byæ mo¿e konwersja filename do UTF-8 nie jest w³aœciwa pod windowsami
+                        // TODO convrsion to UTF-8 might not be proper here, especially for windows
                         result = PyRun_FileEx(file, system_to_utf8(filename).c_str(), Py_file_input, globals.ptr(), globals.ptr(), 1);
                     } else {
                         result = PyRun_File(stdin, system_to_utf8(filename).c_str(), Py_file_input, globals.ptr(), globals.ptr());
