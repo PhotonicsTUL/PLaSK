@@ -120,12 +120,16 @@ void showError(const std::string& msg, const std::string& cap) {
 }
 
 // MingW need this (should be in windows.h)
-extern "C" __declspec(dllimport) LPWSTR * __stdcall CommandLineToArgvW(LPCWSTR lpCmdLine, int* pNumArgs);
+//extern "C" __declspec(dllimport) LPWSTR * __stdcall CommandLineToArgvW(LPCWSTR lpCmdLine, int* pNumArgs);
 
 int WinMain(HINSTANCE, HINSTANCE, LPSTR cmdline, int) {
 	int argc;	// doc: https://msdn.microsoft.com/pl-pl/library/windows/desktop/bb776391(v=vs.85).aspx
-	LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
-    std::unique_ptr<LPWSTR, decltype(&LocalFree)> callLocalFreeAtExit(argv, &LocalFree);
+#ifdef _MSC_VER
+	system_char** argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+#else
+	system_char** argv = CommandLineToArgvA(GetCommandLineA(), &argc);
+#endif
+    std::unique_ptr<system_char*, decltype(&LocalFree)> callLocalFreeAtExit(argv, &LocalFree);
 #else
 
 void showError(const std::string& msg, const std::string& cap) {
