@@ -110,7 +110,7 @@ static py::object initPlask(int argc, const system_char* argv[])
 #ifdef LICENSE_CHECK
     std::string user = plask::license_verifier.getUser();
     if (user != "") {
-        std::string  institution = plask::license_verifier.getInstitution(), expiration = plask::license_verifier.getExpiration()utf8
+        std::string  institution = plask::license_verifier.getInstitution(), expiration = plask::license_verifier.getExpiration();
         if (!institution.empty())
             plask::writelog(plask::LOG_INFO, "Licensed to {} {}{}", user, institution, (expiration != "")? " (until "+expiration+")" : "");
         else
