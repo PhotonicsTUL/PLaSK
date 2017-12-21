@@ -121,6 +121,9 @@ void showError(const std::string& msg, const std::string& cap) {
 
 // MingW need this (should be in windows.h)
 //extern "C" __declspec(dllimport) LPWSTR * __stdcall CommandLineToArgvW(LPCWSTR lpCmdLine, int* pNumArgs);
+#ifndef _MSC_VER
+extern "C" __declspec(dllimport) LPSTR * __stdcall CommandLineToArgvA(LPCSTR lpCmdLine, int* pNumArgs);
+#endif
 
 int WinMain(HINSTANCE, HINSTANCE, LPSTR cmdline, int) {
 	int argc;	// doc: https://msdn.microsoft.com/pl-pl/library/windows/desktop/bb776391(v=vs.85).aspx
