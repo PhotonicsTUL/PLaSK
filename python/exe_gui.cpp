@@ -119,18 +119,20 @@ void showError(const std::string& msg, const std::string& cap) {
     MessageBox(NULL, msg.c_str(), ("PLaSK - " + cap).c_str(), MB_OK | MB_ICONERROR);
 }
 
-int WinMain(HINSTANCE, HINSTANCE, LPSTR cmdline, int)
-{
+// MingW need this (should be in windows.h)
+extern "C" __declspec(dllimport) LPWSTR * __stdcall CommandLineToArgvW(LPCWSTR lpCmdLine, int* pNumArgs);
+
+int WinMain(HINSTANCE, HINSTANCE, LPSTR cmdline, int) {
 	int argc;	// doc: https://msdn.microsoft.com/pl-pl/library/windows/desktop/bb776391(v=vs.85).aspx
 	LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
-	std::unique_ptr<LPWSTR, decltype(&LocalFree)> callLocalFreeAtExit(argv, &LocalFree);
+    std::unique_ptr<LPWSTR, decltype(&LocalFree)> callLocalFreeAtExit(argv, &LocalFree);
 #else
 
 void showError(const std::string& msg, const std::string& cap) {
     plask::writelog(plask::LOG_CRITICAL_ERROR, cap + ": " + msg);
 }
 
-int main(int argc, const char *argv[])
+int system_main(int argc, const system_char *argv[])
 {
 #endif
     // Set the Python logger
