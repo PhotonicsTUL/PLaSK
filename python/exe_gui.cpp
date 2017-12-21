@@ -115,6 +115,10 @@ void endPlask() {
 //******************************************************************************
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 
+#ifndef _MSC_VER
+#include <boost/tokenizer.hpp>
+#endif
+
 void showError(const std::string& msg, const std::string& cap) {
     MessageBox(NULL, msg.c_str(), ("PLaSK - " + cap).c_str(), MB_OK | MB_ICONERROR);
 }
@@ -123,10 +127,23 @@ void showError(const std::string& msg, const std::string& cap) {
 //extern "C" __declspec(dllimport) LPWSTR * __stdcall CommandLineToArgvW(LPCWSTR lpCmdLine, int* pNumArgs);
 
 int WinMain(HINSTANCE, HINSTANCE, LPSTR cmdline, int) {
+
+#ifdef _MSC_VER
 	int argc;	// doc: https://msdn.microsoft.com/pl-pl/library/windows/desktop/bb776391(v=vs.85).aspx
 	system_char** argv = CommandLineToArgvW(GetCommandLineW(), &argc);
-    std::unique_ptr<system_char*, decltype(&LocalFree)> callLocalFreeAtExit(argv, &LocalFree);
-#else
+	std::unique_ptr<system_char*, decltype(&LocalFree)> callLocalFreeAtExit(argv, &LocalFree);
+#else	// MingW:
+	std::string command_line(cmdline);
+	boost::tokenizer<boost::escaped_list_separator<char>> tokenizer(command_line, boost::escaped_list_separator<char>('^', ' ', '"'));
+	std::deque<std::string> args(tokenizer.begin(), tokenizer.end());
+	args.push_front(plask::exePathAndName());
+	int argc = args.size();
+	std::vector<const char*> argv_vec(argc);
+	std::vector<const char*>::iterator dst = argv_vec.begin(); for (const auto& src : args) { *(dst++) = src.c_str(); }
+	const char** argv = argv_vec.data();
+#endif 
+
+#else	// non-windows:
 
 void showError(const std::string& msg, const std::string& cap) {
     plask::writelog(plask::LOG_CRITICAL_ERROR, cap + ": " + msg);
