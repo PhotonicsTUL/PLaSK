@@ -13,7 +13,9 @@
 #include <cxxabi.h> //abi::__cxa_demangle
 #endif
 
+#ifdef __MINGW32__
 #include "PEparser/symbols.hpp"
+#endif
 
 inline int backtrace(void **buffer, int size)
 {
@@ -93,13 +95,16 @@ inline void printStack(void)
     #else
        printf("%u: %p %s = 0x%zx\n", frames - i - 1, stack[i], symbol->Name, symbol->Address);
     #endif
-    } else {
+   }
+#ifdef __MINGW32__
+   else {
        const char* fun_name; const char* module_name;
        if (dbg::mingw_lookup(stack[i], fun_name, module_name)) {
             printf("%u: %p %s %s\n", frames - i - 1, stack[i], fun_name, module_name);
        } else
         printf("%u: %p UNKNOWN\n", frames - i - 1, stack[i]);
    }
+#endif
  }
  SymCleanup(hProcess);
 }

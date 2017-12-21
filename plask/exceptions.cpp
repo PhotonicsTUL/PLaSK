@@ -1,7 +1,6 @@
 #include "exceptions.h"
 
 #include <plask/config.h>
-//#undef PRINT_STACKTRACE_ON_EXCEPTION
 
 #ifdef PRINT_STACKTRACE_ON_EXCEPTION
 
@@ -62,7 +61,7 @@ struct PlaskWinRegisterSignalHandler {
     }
 } __plaskWinRegisterSignalHandler;
 
-#else       //other systems:
+#else       //non-windows systems:
 
 #include <backward.hpp>
 namespace backward {

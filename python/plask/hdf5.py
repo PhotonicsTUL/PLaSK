@@ -23,7 +23,12 @@ def save_rectangular1d(dest_group, name, mesh):
 
 def load_rectangular1d(src_group, name):
     data = src_group[name]
-    mesh_type = plask.mesh.__dict__[data.attrs['type']]
+    mtype = data.attrs['type']
+    try:
+        mtype = mtype.decode('ascii')
+    except (UnicodeDecodeError, AttributeError):
+        pass
+    mesh_type = plask.mesh.__dict__[mtype]
     if isinstance(data, h5py.Group):
         data = data['points']
     if mesh_type is plask.mesh.Regular:
@@ -166,10 +171,14 @@ def load_field(file, path=''):
             mesh = group['mesh']
             data = 'data'
         mtype = mesh.attrs['type']
+        try:
+            mtype = mtype.decode('ascii')
+        except (UnicodeDecodeError, AttributeError):
+            pass
     except KeyError:
         raise TypeError('Group {} is not a PLaSK field'.format(path))
-    if mtype in ('Rectilinear2D', 'Regular2D'): mtype = Rectangular2D
-    if mtype in ('Rectilinear3D', 'Regular3D'): mtype = Rectangular3D
+    if mtype in ('Rectilinear2D', 'Regular2D'): mtype = 'Rectangular2D'
+    elif mtype in ('Rectilinear3D', 'Regular3D'): mtype = 'Rectangular3D'
     mst = plask.mesh.__dict__[mtype]
 
     if mst in (plask.mesh.Regular, plask.mesh.Ordered):

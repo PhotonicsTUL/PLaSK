@@ -43,6 +43,7 @@ class PyDocument(object):
         self.solvers = None
         self.filename = None
         self.coding = 'utf-8'
+        self.loglevel = 'detail'
         self.set_changed(False)
         if filename: self.load_from_file(filename)
 
@@ -106,3 +107,6 @@ class PyDocument(object):
 
     def stubs(self):
         return ""
+
+    def set_loglevel(self, loglevel):
+        self.loglevel = loglevel

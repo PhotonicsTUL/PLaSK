@@ -90,7 +90,7 @@ void ExpansionPW2D::init()
 
     if (symmetric()) SOLVER->writelog(LOG_DETAIL, "Symmetry is {0}", (symmetry== E_TRAN)? "Etran" : "Elong");
 
-    matFFT = FFT::Forward1D(4, nM, symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE);
+    matFFT = FFT::Forward1D(4, int(nM), symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE);
 
     // Compute permeability coefficients
     if (periodic) {
@@ -123,10 +123,10 @@ void ExpansionPW2D::init()
                 }
                 work[i] += Tensor2<dcomplex>(sy, 1./sy);
             }
-            work[i] /= refine;
+            work[i] /= (double)refine;
         }
         // Compute FFT
-        FFT::Forward1D(2, nM, symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE)
+        FFT::Forward1D(2, int(nM), symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE)
             .execute(reinterpret_cast<dcomplex*>(work.data()));
         // Copy data to its final destination
         if (nN != nM) {
@@ -142,7 +142,7 @@ void ExpansionPW2D::init()
         if (SOLVER->smooth) {
             double bb4 = M_PI / L; bb4 *= bb4;   // (2π/L)² / 4
             for (size_t i = 0; i != nN; ++i) {
-                int k = i; if (!symmetric() && k > nN/2) k -= nN;
+                int k = int(i); if (!symmetric() && k > nN/2) k -= int(nN);
                 mag[i] *= exp(-SOLVER->smooth * bb4 * k * k);
             }
         }
@@ -333,7 +333,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         if (SOLVER->smooth) {
             double bb4 = M_PI / ((right-left) * (symmetric()? 2. : 1.)); bb4 *= bb4;   // (2π/L)² / 4
             for (size_t i = 0; i != nN; ++i) {
-                int k = i; if (!symmetric() && k > nN/2) k -= nN;
+                int k = int(i); if (!symmetric() && k > nN/2) k -= int(nN);
                 coeffs[layer][i] *= exp(-SOLVER->smooth * bb4 * k * k);
             }
         }
@@ -371,7 +371,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
     } else {
         DataVector<Tensor3<dcomplex>> params(symmetric()? nN : nN+1);
         std::copy(coeffs[l].begin(), coeffs[l].end(), params.begin());
-        FFT::Backward1D(4, nN, symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE)
+        FFT::Backward1D(4, int(nN), symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE)
             .execute(reinterpret_cast<dcomplex*>(params.data()));
         shared_ptr<RegularAxis> cmesh = plask::make_shared<RegularAxis>();
         if (symmetric()) {
@@ -405,7 +405,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
 
     dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
 
-    int order = SOLVER->getSize();
+    int order = int(SOLVER->getSize());
     dcomplex f = 1. / k0, k02 = k0*k0;
     double b = 2*M_PI / (right-left) * (symmetric()? 0.5 : 1.0);
 

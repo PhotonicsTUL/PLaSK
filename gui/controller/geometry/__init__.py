@@ -22,7 +22,7 @@ from ...model.geometry.types import geometry_types_geometries_core, gname
 from ...model.geometry.geometry import GNGeometryBase
 from ...model.info import Info
 from .. import Controller
-from ...utils.widgets import HTMLDelegate, VerticalScrollArea, create_undo_actions
+from ...utils.widgets import HTMLDelegate, VerticalScrollArea, create_undo_actions, set_icon_size
 
 try:
     from .plot_widget import PlotWidget
@@ -354,6 +354,7 @@ class GeometryController(Controller):
     def _construct_toolbar(self):
         toolbar = QToolBar()
         toolbar.setStyleSheet("QToolBar { border: 0px }")
+        set_icon_size(toolbar)
 
         create_undo_actions(toolbar, self.model, toolbar)
         toolbar.addSeparator()
@@ -397,7 +398,7 @@ class GeometryController(Controller):
         toolbar.addSeparator()
 
         more_button = QToolButton(toolbar)
-        more_button.setIcon(QIcon.fromTheme('menu-other'))
+        more_button.setIcon(QIcon.fromTheme('application-menu'))
         self.more_menu = QMenu(more_button)
         more_button.setMenu(self.more_menu)
         more_button.setPopupMode(QToolButton.InstantPopup)

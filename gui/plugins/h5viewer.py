@@ -30,6 +30,7 @@ from gui.qt.QtGui import *
 from gui.qt.QtWidgets import *
 from gui.utils.matplotlib import PlotWidgetBase, cursors
 from gui.utils.qsignals import BlockQtSignals
+from gui.utils.widgets import set_icon_size
 
 if QT_API == 'PyQt5':
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -135,6 +136,7 @@ class FieldWidget(QWidget):
         self.figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
         self.canvas.updateGeometry()
         self.toolbar = self.NavigationToolbar(self.canvas, self, controller)
+        set_icon_size(self.toolbar)
 
         vbox = QVBoxLayout()
         vbox.addWidget(self.toolbar)

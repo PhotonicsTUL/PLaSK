@@ -269,7 +269,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      */
     double sumAmplitutes(const cvector& amplitudes) {
         double result = 0.;
-        int N = getSize();
+        int N = int(getSize());
         if (expansion.separated()) {
             if (expansion.symmetric()) {
                 for (int i = 0; i <= N; ++i)

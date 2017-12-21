@@ -318,8 +318,9 @@ class MainWindow(QMainWindow):
         pal.setColor(QPalette.Button, QColor("#88aaff"))
         menu_button.setIcon(QIcon.fromTheme('plask-logo'))
         menu_button.setPalette(pal)
-        menu_button.setShortcut(QKeySequence(Qt.Key_F2))
         menu_button.setToolTip("Show operations menu (F2)")
+        menu_shortcut = QShortcut(QKeySequence(Qt.Key_F2), self)
+        menu_shortcut.activated.connect(menu_button.showMenu)
 
         menu_button.setMenu(self.menu)
         self.tabs.setCornerWidget(menu_button, Qt.TopLeftCorner)
@@ -788,6 +789,11 @@ class PlaskApplication(QApplication):
         self._opened_windows = []
         super(PlaskApplication, self).__init__(argv)
         self.setAttribute(Qt.AA_DontShowIconsInMenus, False)
+        try:
+            self.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+            self.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+        except AttributeError:
+            pass
 
     def commitData(self, session_manager):
         self._opened_windows = WINDOWS.copy()
