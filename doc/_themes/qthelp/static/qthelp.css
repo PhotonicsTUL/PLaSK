@@ -1,11 +1,3 @@
-/*
- * Sphinx stylesheet
- *
- * :copyright: Copyright 2007-2011 by the Sphinx team, see AUTHORS.
- * :license: BSD, see LICENSE for details.
- *
- */
-
 * {
   margin: 0px;
   padding: 0px;
@@ -13,23 +5,10 @@
 
 body {
   font-family: sans-serif;
+  font-size: 12pt;
   line-height: 1.4em;
   color: black;
   background-color: #ffffff;
-}
-
-
-/* Page layout */
-
-div.header, div.content, div.footer {
-  width: 70em;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-div.header-wrapper {
-  background: url(bgtop.png) top left repeat-x;
-  border-bottom: 3px solid #2e3436;
 }
 
 
@@ -63,17 +42,16 @@ a {
     margin-left: 1.5em;
 }
 
-div.sphinxbody h1,
-div.sphinxbody h2,
-div.sphinxbody h3,
-div.sphinxbody h4 {
-  font-weight: normal;
+h1,
+h2,
+h3,
+h4 {
+  font-weight: bold;
 }
 
-div.sphinxbody h1 {
+h1 {
     font-style: normal;
-    font-weight: 300;
-    border-bottom: 5px solid rgb(200, 200, 200);
+    font-weight: bold;
 }
 
 
@@ -83,13 +61,13 @@ a.headerlink {
   padding-left: .3em;
 }
 
-div.sphinxbody h1:hover > a.headerlink,
-div.sphinxbody h2:hover > a.headerlink,
-div.sphinxbody h3:hover > a.headerlink,
-div.sphinxbody h4:hover > a.headerlink,
-div.sphinxbody h5:hover > a.headerlink,
-div.sphinxbody h6:hover > a.headerlink,
-div.sphinxbody dt:hover > a.headerlink {
+h1:hover > a.headerlink,
+h2:hover > a.headerlink,
+h3:hover > a.headerlink,
+h4:hover > a.headerlink,
+h5:hover > a.headerlink,
+h6:hover > a.headerlink,
+dt:hover > a.headerlink {
   visibility: visible;
 }
 
@@ -141,14 +119,6 @@ div.header div.rel a {
   text-transform: uppercase;
 }
 
-p.logo {
-    float: right;
-}
-
-img.logo {
-    border: 0;
-}
-
 
 /* Content */
 div.content-wrapper {
@@ -157,81 +127,182 @@ div.content-wrapper {
   padding-bottom: 20px;
 }
 
-div.document {
-  width: 50em;
-  float: left;
-}
-
 div.body {
   padding-right: 2em;
   text-align: justify;
 }
 
-div.document h1 {
+h1 {
   line-height: 120%;
 }
 
-div.document ul {
+ul {
   margin: 0 1.5em;
   list-style-type: square;
 }
 
-div.document dd {
+dd {
   margin-left: 1.2em;
   margin-top: .4em;
   margin-bottom: 1em;
 }
 
-div.document .section {
+.section {
   margin-top: 1.7em;
 }
-div.document .section:first-child {
+.section:first-child {
   margin-top: 0px;
 }
 
-div.document div.highlight {
+div.highlight {
   padding: 3px;
   background-color: #eeeeec;
   border-top: 2px solid #dddddd;
   border-bottom: 2px solid #dddddd;
-  margin-top: .8em;
-  margin-bottom: .8em;
+  margin-top: .5em;
+  margin-bottom: 1.8em;
 }
 
-div.document h2 {
+h2 {
   margin-top: .7em;
 }
 
-div.document p {
-  margin-bottom: .5em;
+p {
+  margin-top: .5em;
+  margin-bottom: .25em;
 }
 
-div.document li.toctree-l1 {
-  margin-bottom: 1em;
+li.toctree-l1 {
+  margin-top: 0.35em;
 }
 
-div.document .descname {
+.descname {
   font-weight: bold;
 }
 
-div.document .docutils.literal {
-  background-color: #eeeeec;
+.docutils.literal {
   padding: 1px;
 }
 
-div.document .docutils.xref.literal {
+.docutils.xref.literal {
   background-color: transparent;
   padding: 0px;
 }
 
-div.document blockquote {
-  margin: 1em;
+blockquote {
+  margin-left: 1em;
 }
 
-div.document ol {
+ol {
   margin: 1.5em;
 }
 
+
+pre, kbd, samp, tt, code {
+    font-family: monospace;
+    font-size: 0.95em;
+}
+
+dl.xml-contents dt {
+    font-weight: bold;
+}
+
+dl.xml-contents dl {
+    margin-top: 1em;
+}
+
+dl.tag {
+    margin-top: 1.5em;
+}
+
+dl.tag>dt {
+    /* background-color: #ffe; */
+}
+
+dl.xml-contents, dl.tag table.field-list {
+    margin-top: 0.5em;   
+}
+
+th.field-name {
+    white-space: nowrap;
+    padding-right: 0.25em;
+}
+
+p.rubric {
+    font-weight: bold;
+}
+
+table.docutils {
+    border-style: none;
+    width: 100%;
+    margin-bottom: 0.5em;
+}
+
+table.docutils tr.row-odd {
+    background-color: #f6f6f6;
+}
+
+table.docutils td {
+    border-style: none;
+    border-width: 0;
+    padding: 0em 0.25em 0em 0.25em;
+}
+
+table.docutils td p {
+    margin-bottom: 0px;
+}
+
+/* Lines increasing legibility */
+
+dl.tag>dd {
+    margin-left: 0em;
+    padding-left: 1.2em;
+    margin-top: 0em;
+    padding-top: 0.4em;
+    border-left: solid 4px #eee;
+}
+
+dl.method, dl.attribute, dl.function {
+    padding-left: 4px;
+    border-top: solid 4px #eee;
+    border-left: solid 4px #eee;
+}
+
+dl.method dt, dl.attribute dt, dl.function dt {
+    margin-left: -4px;
+    padding-left: 4px;
+    text-align: left;
+    margin-top: 1.5em;
+}
+
+/* Other */
+
+p.topic-title.first {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+blockquote {
+    padding: 0px 20px;
+}
+
+em {
+    margin-right: 0.15em;
+}
+
+pre {
+    padding: 5px;
+}
+
+span.pre {
+    background-color: #ffffff;
+}
+
+h1 span.pre,
+a span.pre,
+tr span.pre {
+    background: none;
+}
 
 /* Sidebar */
 
@@ -270,29 +341,6 @@ div.sphinxsidebar h3 {
 }
 
 
-/* Footer */
-
-div.footer-wrapper {
-  background: url(bgfooter.png) top left repeat-x;
-  border-top: 4px solid #babdb6;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  min-height: 80px;
-}
-
-div.footer, div.footer a {
-  color: #888a85;
-}
-
-div.footer .right {
-  text-align: right;
-}
-
-div.footer .left {
-  text-transform: uppercase;
-}
-
-
 /* Styles copied from basic theme */
 
 img.align-left, .figure.align-left, object.align-left {
@@ -323,34 +371,6 @@ img.align-center, .figure.align-center, object.align-center {
 
 .align-right {
     text-align: right;
-}
-
-/* -- search page ----------------------------------------------------------- */
-
-ul.search {
-    margin: 10px 0 0 20px;
-    padding: 0;
-}
-
-ul.search li {
-    padding: 5px 0 5px 20px;
-    background-image: url(file.png);
-    background-repeat: no-repeat;
-    background-position: 0 7px;
-}
-
-ul.search li a {
-    font-weight: bold;
-}
-
-ul.search li div.context {
-    color: #888;
-    margin: 2px 0 0 30px;
-    text-align: left;
-}
-
-ul.keywordmatches li.goodmatch a {
-    font-weight: bold;
 }
 
 /* -- index page ------------------------------------------------------------ */
@@ -419,136 +439,6 @@ div.viewcode-block:target {
     border-bottom: 1px solid #ac9;
 }
 
-/* -- PLaSK customizations -------------------------------------------------- */
-
-body {
-    font-size: 11pt;
-}
-
-div.bodywrapper a, div.footer a {
-  text-decoration: none;
-}
-
-div.bodywrapper a:hover, div.footer a:hover {
-  text-decoration: underline;
-}
-
-pre, kbd, samp, tt {
-    /* monospace font size fix */
-    font-family: Monaco, Menlo, Consolas, monospace !important;
-    font-size: 0.95em;
-    /*
-    font-family: Source Code Pro !important;
-    font-size: 97%;
-    */
-}
-
-div.sphinxsidebar li.toctree-l4 a { margin-left: 3em; }
-div.sphinxsidebar li.toctree-l5 a { margin-left: 4em; }
-div.sphinxsidebar li.toctree-l6 a { margin-left: 5em; }
-div.sphinxsidebar li.toctree-l7 a { margin-left: 6em; }
-div.sphinxsidebar li.toctree-l8 a { margin-left: 7em; }
-
-div.document li.toctree-l1 ul {
-  margin-top: 0.5em;
-}
-
-div#plask-user-guide.section em {
-    font-style: normal;
-    margin-bottom: 1em;
-}
-
-div#plask-user-guide.section li {
-    margin-bottom: 1em;
-}
-
-dl.xml-contents dt {
-    font-weight: bold;
-}
-
-th.field-name {
-    white-space: nowrap;
-    padding-right: 0.25em;
-}
-
-p.rubric {
-    font-weight: bold;
-}
-
-table.docutils {
-    border-style: none;
-    width: 100%;
-    margin-bottom: 0.5em;
-}
-
-table.docutils tr.row-odd {
-    background-color: #f6f6f6;
-}
-
-table.docutils td {
-    border: none;
-    padding: 0em 0.25em 0em 0.25em;
-}
-
-table.docutils td p {
-    margin-bottom: 0px;
-}
-
-/* Lines increasing legibility */
-
-dl.tag>dd {
-    margin-left: 0em;
-    padding-left: 1.2em;
-    margin-top: 0em;
-    padding-top: 0.4em;
-    border-left: solid 4px #eee;
-}
-
-dl.method, dl.attribute, dl.function {
-    padding-left: 4px;
-    border-top: solid 4px #eee;
-    border-left: solid 4px #eee;
-}
-
-dl.method dt, dl.attribute dt, dl.function dt {
-    margin-left: -4px;
-    padding-left: 4px;
-    text-align: left;
-}
-
-/* Other */
-
-div.sphinxbody div.highlight {
-    padding: 0;
-}
-
-div.sphinxbody P.topic-title.first {
-    font-size: 1.2em;
-    font-weight: bold;
-}
-
-div.sphinxbody blockquote {
-    padding: 0px 20px;
-}
-
-div.sphinxbody em {
-    margin-right: 0.15em;
-}
-
-div.sphinxbody pre {
-    padding: 5px;
-}
-
-/*div.sphinxbody span.pre {
-    background-color: #F5F5F5;
-}*/
-
-div.sphinxbody h1 span.pre,
-div.sphinxbody a span.pre,
-div.sphinxbody tr span.pre {
-    background: none;
-}
-
 /* Index */
 
 div.genindex-jumpbox a { margin: 0px 1px; }
@@ -560,14 +450,6 @@ div.genindex-jumpbox a:last-child { margin-right: 0px; }
     overflow: hidden;
     text-overflow: ellipsis;
     position: relative;
-}
-
-.genindex div.entry:hover { 
-    overflow: visible;
-    background-color: white;
-    opacity: 1 !important; 
-    position: relative;
-    z-index: 1000;
 }
 
 .genindex div.subentry { 

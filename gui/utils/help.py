@@ -37,7 +37,7 @@ class HelpBrowser(QTextBrowser):
     def loadResource(self, typ, url):
         if typ < 4 and self.help_engine:
             if url.isRelative():
-                url = self.resolved(url)
+                url = self.source().resolved(url)
             return self.help_engine.fileData(url)
 
 
