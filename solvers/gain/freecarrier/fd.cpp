@@ -1,5 +1,5 @@
 #include <limits>
-#include <cmath>
+#include <plask/math.h>
 
 #include "fd.h"
 

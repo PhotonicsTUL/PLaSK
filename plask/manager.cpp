@@ -473,12 +473,12 @@ struct PositionValidator {
         std::sort(v2.begin(), v2.end());
         if (v1.size() == v2.size()) {
             return std::equal(v1.begin(), v1.end(), v2.begin(),
-                              [](const VectorType& x1, const VectorType& x2) { return isnan(x1) || isnan(x2) || x1.equal(x2, 1e-10); });
+                              [](const VectorType& x1, const VectorType& x2) { return isnan(x1) || isnan(x2) || x1.equal(x2, 1.1e-4); });
         }   // different sizes:
         auto v2_last_match_it = v2.begin(); // != v2.end() since v2 is not empty
         for (VectorType point: v1) {
             while (true) {
-                if (point.equal(*v2_last_match_it, 1e-10)) return true; //common point
+                if (point.equal(*v2_last_match_it, 1.1e-4)) return true; // common point
                 if (point < *v2_last_match_it) break;   // point is not included in v2, we are going to check next point from v1
                 ++v2_last_match_it;
                 if (v2_last_match_it == v2.end()) return false; // no common points found so far
@@ -507,7 +507,7 @@ struct PositionValidator {
         Set result;
         for (auto o: obj_to_check)
             if (!compare_vec(geom1->getObjectPositions(*o), geom2->getObjectPositions(*o))) {
-                //found problem, for obj geom_to_name[o]
+                // found problem, for obj geom_to_name[o]
                 result.push_back(o);
             }
         return result;

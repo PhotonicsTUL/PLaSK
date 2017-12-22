@@ -17,12 +17,14 @@
     :copyright: Copyright 2007-2011 by the Sphinx team, see AUTHORS.
     :license: BSD, see LICENSE for details.
 """
+from __future__ import print_function
 
 import os
 import re
 import sys
 import pydoc
 import optparse
+import codecs
 
 from jinja2 import FileSystemLoader, TemplateNotFound
 from jinja2.sandbox import SandboxedEnvironment
@@ -42,8 +44,11 @@ except ImportError:
 else:
     boost_class = type(Solver)
     from sphinx.ext.autodoc import AttributeDocumenter
-    AttributeDocumenter.method_types = \
-        AttributeDocumenter.method_types + (boost_class,)
+    try:
+        AttributeDocumenter.method_types = \
+            AttributeDocumenter.method_types + (boost_class,)
+    except AttributeError:
+        pass
 
 
 def main(argv=sys.argv):
@@ -77,10 +82,10 @@ def main(argv=sys.argv):
                               template_dir=options.templates)
 
 def _simple_info(msg):
-    print msg
+    print(msg)
 
 def _simple_warn(msg):
-    print >> sys.stderr, 'WARNING: ' + msg
+    print('WARNING: ' + msg, file=sys.stderr)
 
 # -- Generating output ---------------------------------------------------------
 
@@ -123,7 +128,7 @@ def generate_autosummary_docs(sources, output_dir=None, suffix='.rst',
     new_files = []
 
     # write
-    for name, path, template_name in sorted(items):
+    for name, path, template_name in sorted(items, key=lambda it: tuple('' if i is None else i for i in it)):
         if path is None:
             # The corresponding autosummary:: directive did not have
             # a :toctree: option
@@ -137,7 +142,7 @@ def generate_autosummary_docs(sources, output_dir=None, suffix='.rst',
                 name, obj, parent, mod_name = import_by_name(name)
             except ValueError:
                 name, obj, parent = import_by_name(name)
-        except ImportError, e:
+        except ImportError as e:
             warn('[autosummary] failed to import %r: %s' % (name, e))
             continue
 
@@ -252,7 +257,7 @@ def find_autosummary_in_files(filenames):
     """
     documented = []
     for filename in filenames:
-        f = open(filename, 'r')
+        f = codecs.open(filename, 'r', encoding='utf8', errors='ignore')
         lines = f.read().splitlines()
         documented.extend(find_autosummary_in_lines(lines, filename=filename))
         f.close()
@@ -272,8 +277,8 @@ def find_autosummary_in_docstring(name, module=None, filename=None):
         return find_autosummary_in_lines(lines, module=name, filename=filename)
     except AttributeError:
         pass
-    except ImportError, e:
-        print "Failed to import '%s': %s" % (name, e)
+    except ImportError as e:
+        print("Failed to import '%s': %s" % (name, e))
     return []
 
 def find_autosummary_in_lines(lines, module=None, filename=None):

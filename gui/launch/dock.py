@@ -11,7 +11,7 @@
 # GNU General Public License for more details.
 from time import strftime
 
-from ..utils.widgets import LineEditWithClear
+from ..utils.widgets import LineEditWithClear, set_icon_size
 
 from ..qt.QtCore import *
 from ..qt.QtGui import *
@@ -95,6 +95,21 @@ class OutputListView(QListView):
         super(OutputListView, self).__init__(parent)
         self.setMouseTracking(True)
 
+        self.context_menu = QMenu()
+        copy_action = QAction(QIcon.fromTheme('edit-copy'), "&Copy", self)
+        copy_action.setShortcut(QKeySequence.Copy)
+        copy_action.triggered.connect(self.copy)
+        self.context_menu.addAction(copy_action)
+        self.addAction(copy_action)
+        self.context_menu.addSeparator()
+        select_all_action = QAction("Select &All", self)
+        select_all_action.setShortcut(QKeySequence.SelectAll)
+        select_all_action.triggered.connect(self.selectAll)
+        self.context_menu.addAction(select_all_action)
+        clear_selection_action = QAction("Clea&r Selection", self)
+        clear_selection_action.triggered.connect(self.clearSelection)
+        self.context_menu.addAction(clear_selection_action)
+
     def mouseMoveEvent(self, event):
         super(OutputListView, self).mouseMoveEvent(event)
         index = self.indexAt(event.pos())
@@ -104,12 +119,8 @@ class OutputListView(QListView):
         else:
             self.setCursor(Qt.ArrowCursor)
 
-    def keyPressEvent(self, event):
-        if event == QKeySequence.Copy:
-            self.copy()
-            event.accept()
-        else:
-            super(OutputListView, self).keyPressEvent(event)
+    def contextMenuEvent(self, event):
+        self.context_menu.exec_(event.globalPos())
 
     def copy(self):
         rows = self.selectionModel().selectedRows()
@@ -161,6 +172,7 @@ class OutputWindow(QDockWidget):
         self.messages.clicked.connect(self.line_clicked)
 
         toolbar = QToolBar()
+        set_icon_size(toolbar)
 
         self.action_error = QAction(self)
         self.action_error.setText("&Error")
@@ -292,11 +304,26 @@ class OutputWindow(QDockWidget):
         widget.setLayout(layout)
         self.setWidget(widget)
 
-        close_action = QAction(self)
+        close_action = QAction("Clos&e", self)
         close_action.setShortcut('Ctrl+w')
         close_action.triggered.connect(self.close)
         close_action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.addAction(close_action)
+
+        before_action = self.messages.context_menu.actions()[0]
+        self.messages.context_menu.insertAction(before_action, self.action_error)
+        self.messages.context_menu.insertAction(before_action, self.action_warning)
+        self.messages.context_menu.insertAction(before_action, self.action_important)
+        self.messages.context_menu.insertAction(before_action, self.action_info)
+        self.messages.context_menu.insertAction(before_action, self.action_result)
+        self.messages.context_menu.insertAction(before_action, self.action_data)
+        self.messages.context_menu.insertAction(before_action, self.action_detail)
+        self.messages.context_menu.insertAction(before_action, self.action_debug)
+        self.messages.context_menu.insertSeparator(before_action)
+        self.messages.context_menu.insertAction(before_action, self.halt_action)
+        self.messages.context_menu.insertAction(before_action, close_action)
+        self.messages.context_menu.insertSeparator(before_action)
+
 
         self.lines = []
         self.printed_lines = 0
@@ -343,17 +370,20 @@ class OutputWindow(QDockWidget):
         try:
             line = line.decode(self.main_window.document.coding)
         except UnicodeDecodeError:
-            line = line.decode('utf-8')
+            try:
+                line = line.decode('utf-8')
+            except UnicodeDecodeError:
+                line = line.decode('cp1250')
         level = {'CRITICAL ERROR:': LEVEL_CRITICAL_ERROR,
-               'ERROR         :': LEVEL_ERROR,
-               'WARNING       :': LEVEL_WARNING,
-               'IMPORTANT     :': LEVEL_IMPORTANT,
-               'INFO          :': LEVEL_INFO,
-               'RESULT        :': LEVEL_RESULT,
-               'DATA          :': LEVEL_DATA,
-               'DETAIL        :': LEVEL_DETAIL,
-               'ERROR DETAIL  :': LEVEL_ERROR_DETAIL,
-               'DEBUG         :': LEVEL_DEBUG}.get(line[:15], 0)
+                 'ERROR         :': LEVEL_ERROR,
+                 'WARNING       :': LEVEL_WARNING,
+                 'IMPORTANT     :': LEVEL_IMPORTANT,
+                 'INFO          :': LEVEL_INFO,
+                 'RESULT        :': LEVEL_RESULT,
+                 'DATA          :': LEVEL_DATA,
+                 'DETAIL        :': LEVEL_DETAIL,
+                 'ERROR DETAIL  :': LEVEL_ERROR_DETAIL,
+                 'DEBUG         :': LEVEL_DEBUG}.get(line[:15], 0)
         lineno = None
         if link is not None:
             match = link.search(line)

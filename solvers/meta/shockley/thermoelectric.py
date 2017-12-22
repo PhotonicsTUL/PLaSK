@@ -40,14 +40,17 @@ def h5open(filename, group):
     else:
         h5file = h5py.File(filename, 'a')
         close = True
-    orig_group = group; idx = 1
+    group_parts = [g for g in group.split('/') if g]
+    orig_group = group = '/'.join(group_parts)
+    idx = 1
     while group in h5file:
-        group = "{}-{}".format(orig_group, idx)
+        group = '/'.join(["{}-{}".format(group_parts[0], idx)] + group_parts[1:])
         idx += 1
     if group is not orig_group:
         plask.print_log('warning',
-                        "Group '{}' exists in HDF5 file '{}'. Saving to group '{}'" \
+                        "Group '/{}' exists in HDF5 file '{}'. Saving to group '/{}'" \
                         .format(orig_group, filename, group))
+    group = '/' + group
     return h5file, group, filename, close
 
 
@@ -246,7 +249,7 @@ class ThermoElectric(plask.Solver):
         self._save_thermoelectric(h5file, group)
         if close:
             h5file.close()
-        plask.print_log('info', "Fields saved to file '{}'".format(filename))
+        plask.print_log('info', "Fields saved to file '{}' in group '{}'".format(filename, group))
         return filename
 
     def plot_temperature(self, geometry_color='0.75', mesh_color=None, geometry_alpha=0.35, mesh_alpha=0.15, **kwargs):
@@ -398,8 +401,8 @@ class ThermoElectric(plask.Solver):
 
     def _get_info(self):
         return self._get_defines_info() + [
-            "Total current [mA]:        {:8.3f}".format(self.get_total_current()),
-            "Maximum temperature [K]:   {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
+            "Total current [mA]:            {:8.3f}".format(self.get_total_current()),
+            "Maximum temperature [K]:       {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
         ]
 
 

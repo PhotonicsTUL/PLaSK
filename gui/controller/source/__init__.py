@@ -17,7 +17,7 @@ from .. import Controller
 from ...utils.config import CONFIG, parse_highlight
 from ...utils.qsignals import BlockQtSignals
 from ...utils.texteditor import TextEditor
-from ...utils.widgets import EDITOR_FONT
+from ...utils.widgets import EDITOR_FONT, set_icon_size
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
 from ...lib.highlighter.xml import syntax
 from .indenter import indent, unindent, autoindent
@@ -96,6 +96,7 @@ class SourceWidget(QWidget):
 
         self.toolbar = QToolBar(self)
         self.toolbar.setStyleSheet("QToolBar { border: 0px }")
+        set_icon_size(self.toolbar)
 
         self.add_action('&Undo', 'edit-undo', None, self.editor.undo)
         self.add_action('R&edo', 'edit-redo', None, self.editor.redo)

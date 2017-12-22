@@ -38,7 +38,7 @@ from ...xpldocument import FieldParser
 
 from ...controller.geometry.object import GNObjectController
 from ...utils.str import none_to_empty
-from ...utils.widgets import MultiLineEdit
+from ...utils.widgets import MultiLineEdit, set_icon_size
 from ...utils.config import CONFIG
 
 
@@ -296,6 +296,7 @@ class LatticeEditor(QDialog):
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setParent(self)
         self.toolbar = NavigationToolbar(self.canvas, self)
+        set_icon_size(self.toolbar)
         vbox.addWidget(self.toolbar)
         vbox.addWidget(self.canvas)
         #self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)

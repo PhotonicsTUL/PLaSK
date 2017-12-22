@@ -577,8 +577,7 @@ int main(int argc, const char *argv[])
                             pyfile = PyUnicode_FromString(filename.c_str());
                             FILE* file = _Py_fopen(pyfile, "r");
 #                       endif
-                        result = PyRun_File(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr());
-                        fclose(file);
+                        result = PyRun_FileEx(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr(), 1);
                     } else {
                         result = PyRun_File(stdin, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr());
                     }

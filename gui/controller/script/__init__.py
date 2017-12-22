@@ -13,6 +13,7 @@
 import sys
 from copy import copy
 
+from ...qt import QT_API
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *
@@ -76,7 +77,10 @@ class ScriptEditor(TextEditor):
         self.comment_action = QAction('Co&mment lines', self)
         self.uncomment_action = QAction('Uncomm&ent lines', self)
         self.comment_action.setShortcut(Qt.CTRL + Qt.Key_Slash)
-        self.uncomment_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Slash)
+        if QT_API == 'PySide':
+            self.uncomment_action.setShortcut(Qt.CTRL + Qt.Key_Question)
+        else:
+            self.uncomment_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Slash)
         self.comment_action.triggered.connect(self.block_comment)
         self.uncomment_action.triggered.connect(self.block_uncomment)
         self.addAction(self.comment_action)

@@ -30,6 +30,18 @@ EDITOR_FONT.setBold(False)
 EDITOR_FONT.fromString(','.join(CONFIG['editor/font']))
 
 
+def set_icon_size(widget):
+    setting = CONFIG['main_window/icons_size']
+    if setting == 'default': return
+    try:
+        size = {'small': 16, 'normal': 22, 'large': 32, 'huge': 48, 'enormous': 64}[setting]
+    except KeyError:
+        pass
+    else:
+        widget.setIconSize(QSize(size, size))
+
+
+
 def table_edit_shortcut(table, col, key):
     table.setEditTriggers(QAbstractItemView.SelectedClicked | QAbstractItemView.DoubleClicked)
     def operation():

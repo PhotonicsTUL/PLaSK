@@ -32,6 +32,7 @@ from ...qt.QtWidgets import *
 from ...model.materials import MATERIALS_PROPERTES, material_html_help, parse_material_components, MaterialsModel
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import html_to_tex
+from ...utils.widgets import set_icon_size
 
 try:
     import plask
@@ -73,11 +74,13 @@ class MaterialPlot(QWidget):
         )
         toolbar1 = QToolBar()
         toolbar1.setStyleSheet("QToolBar { border: 0px }")
+        set_icon_size(toolbar1)
         toolbar1.addWidget(QLabel("Material: "))
         toolbar1.addWidget(self.material)
         toolbar1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         toolbar2 = QToolBar()
         toolbar2.setStyleSheet("QToolBar { border: 0px }")
+        set_icon_size(toolbar2)
         toolbar2.addWidget(QLabel("Parameter: "))
         toolbar2.addWidget(self.param)
         toolbar2.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -468,7 +471,7 @@ class MaterialPlot(QWidget):
         else:
             self.error.clear()
             self.error.hide()
-            self.xn = self.arg_button.text()[:-1]
+            self.xn = self.arg_button.text()[:-1].replace('&', '')
             self.yn = param
             self.xu = self.arg_button.unit
             self.yu = MATERIALS_PROPERTES[param][1]

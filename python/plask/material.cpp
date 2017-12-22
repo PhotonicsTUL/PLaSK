@@ -753,7 +753,7 @@ namespace detail {
     inline bool getRanges(const MaterialInfo::PropertyInfo& info, py::dict& ranges, MaterialInfo::ARGUMENT_NAME arg, Args... args) {
         auto range = info.getArgumentRange(arg);
         if (!isnan(range.first) ||   !isnan(range.second)) {
-            ranges[MaterialInfo::ARGUMENT_NAME_STRING[unsigned(arg)]] = py::make_tuple(range.first, range.second);
+            ranges[MaterialInfo::ARGUMENT_NAME_STRING[size_t(arg)]] = py::make_tuple(range.first, range.second);
             getRanges(info, ranges, args...);
             return true;
         }
@@ -769,14 +769,14 @@ namespace detail {
             py::list links;
             for (const auto& link: info->getLinks()) {
                 if (link.comment == "")
-                    links.append(py::make_tuple(link.className, MaterialInfo::PROPERTY_NAME_STRING[unsigned(link.property)]));
+                    links.append(py::make_tuple(link.className, MaterialInfo::PROPERTY_NAME_STRING[size_t(link.property)]));
                 else
-                    links.append(py::make_tuple(link.className, MaterialInfo::PROPERTY_NAME_STRING[unsigned(link.property)], link.comment));
+                    links.append(py::make_tuple(link.className, MaterialInfo::PROPERTY_NAME_STRING[size_t(link.property)], link.comment));
             }
             if (links) data["seealso"] = links;
             py::dict ranges;
             if (getRanges(*info, ranges, MaterialInfo::doping, args...)) data["ranges"] = ranges;
-            result[MaterialInfo::PROPERTY_NAME_STRING[unsigned(prop)]] = data;
+            result[MaterialInfo::PROPERTY_NAME_STRING[size_t(prop)]] = data;
         }
     }
 

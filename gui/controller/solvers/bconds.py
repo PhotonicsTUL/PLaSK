@@ -241,7 +241,7 @@ class BoundaryConditionsDialog(QDialog):
 
         self.place_delegate.placeChanged.connect(self.update)
 
-        self.resize(800, 600)
+        self.resize(int(0.85 * controller.document.window.width()), int(0.85 * controller.document.window.height()))
 
         layout = QVBoxLayout()
         layout.setContentsMargins(2, 2, 2, 6)
@@ -386,7 +386,7 @@ class BoundaryConditionsDialog(QDialog):
 
         text = self.document.get_content(sections=('defines'))
         xml = self.schema.to_xml(self.model.entries)
-        xml = tostring(xml) if xml is not None else ''
+        xml = tostring(xml, encoding='utf8').decode('utf8') if xml is not None else ''
         if _DEBUG:
             print(xml)
         text = text[:-9] + """\

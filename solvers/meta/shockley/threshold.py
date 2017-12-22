@@ -56,6 +56,7 @@ class ThresholdSearch(ThermoElectric):
         self.threshold_current = None
         self._invalidate = None
         self.modeno = None
+        self._sn = 0
 
     def _parse_xpl(self, tag, manager):
         if tag == 'root':
@@ -148,12 +149,15 @@ class ThresholdSearch(ThermoElectric):
                 terr = self.thermal.compute(1)
         self.diffusion.compute_threshold()
 
-    def step(self, volt):
+    def step(self, volt, save=False):
         """
         Function performing one step of the threshold search.
 
         Args:
             volt (float): Voltage on a specified boundary condition [V].
+
+            save (bool): If `True` the computed fields are saved to the
+                HDF5 file after each computations step.
 
         Returns:
             float: Loss of a specified mode
@@ -171,6 +175,9 @@ class ThresholdSearch(ThermoElectric):
             self.modeno = self.optical.find_mode(**_optargs)
         val = self.optical.modes[self.modeno].loss
         plask.print_log('result', "ThresholdSearch: V = {:.4f} V, loss = {:g} / cm".format(volt, val))
+        if save:
+            self.save(None if save is True else save, 'ThresholdSearchStep/{:03}[{:.4f}V]'.format(self._sn, volt))
+            self._sn += 1
         return val
 
     def _quickstep(self, arg):
@@ -317,7 +324,7 @@ class ThresholdSearch(ThermoElectric):
         plask.xlabel("Wavelength [nm]")
         plask.ylabel("Determinant [ar.u.]")
 
-    def compute(self, save=True, invalidate=False, group='ThresholdSearch'):
+    def compute(self, save=True, invalidate=False, group='ThresholdSearch', stepsave=False):
         """
         Execute the algorithm.
 
@@ -338,6 +345,9 @@ class ThresholdSearch(ThermoElectric):
 
             group (str): HDF5 group to save the data under.
 
+            stepsave (bool): If `True` the computed fields are saved to the
+                HDF5 file after each computations step.
+
         Returns:
             The voltage set to ``ivolt`` boundary condition for the threshold.
             The threshold current can be then obtained by calling:
@@ -355,11 +365,17 @@ class ThresholdSearch(ThermoElectric):
         self._invalidate = invalidate
         self.initialize()
 
+        self._sn = 0
+        self._max_concentration = None
+        self._max_gain = None
+
         if (self.vmin is None) != (self.vmax is None):
             raise ValueError("Both 'vmin' and 'vmax' must be either None or a float")
         if self.vmin is None:
             volt = self.electrical.voltage_boundary[self.ivb].value
             if self.quick:
+                if stepsave:
+                    plask.print_log('warning', "Fields cannot be saved in each step if the quick method is used")
                 self.compute_thermoelectric()
                 lam = self.get_lam().real
                 self._quickscale = np.array([volt, lam])
@@ -376,21 +392,18 @@ class ThresholdSearch(ThermoElectric):
                     _optargs[self._optarg] = lam
                     self.modeno = self.optical.set_mode(**_optargs)
             else:
-                self.threshold_voltage = scipy.optimize.newton(self.step, volt,
+                self.threshold_voltage = scipy.optimize.newton(self.step, volt, args=(stepsave,),
                                                                tol=self.vtol/volt, maxiter=self.maxiter)
         else:
             if self.quick:
                 raise RuntimeError("Quick computation only allowed with a single starting point")
-            self.threshold_voltage = scipy.optimize.brentq(self.step, self.vmin, self.vmax,
+            self.threshold_voltage = scipy.optimize.brentq(self.step, self.vmin, self.vmax, args=(stepsave,),
                                                            xtol=self.vtol * 2. / (self.vmin+self.vmax),
                                                            maxiter=self.maxiter, disp=True)
 
         self.threshold_current = abs(self.electrical.get_total_current())
 
         infolines = self._get_info()
-        plask.print_log('important', "Threshold Search Finished")
-        for line in infolines:
-            plask.print_log('important', "  " + line)
 
         if save:
             filename = self.save(None if save is True else save)
@@ -400,14 +413,34 @@ class ThresholdSearch(ThermoElectric):
                 out.writelines(line + '\n' for line in infolines)
                 out.write("\n")
 
+        plask.print_log('important', "Threshold Search Finished")
+        for line in infolines:
+            plask.print_log('important', "  " + line)
+
         return self.threshold_voltage
 
     def _get_info(self):
-        return self._get_defines_info() + [
-            "Threshold voltage [V]:     {:8.3f}".format(self.threshold_voltage),
-            "Threshold current [mA]:    {:8.3f}".format(self.threshold_current),
-            "Maximum temperature [K]:   {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
+        result = self._get_defines_info() + [
+            "Threshold voltage [V]:         {:8.3f}".format(self.threshold_voltage),
+            "Threshold current [mA]:        {:8.3f}".format(self.threshold_current),
+            "Maximum temperature [K]:       {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
         ]
+        levels = list(self._get_levels(self.diffusion.geometry, self.diffusion.mesh, 'QW', 'QD', 'gain'))
+        max_concentration = []
+        for no, mesh in levels:
+            value = self.diffusion.outCarriersConcentration(mesh)
+            max_concentration.append(max(value))
+        result.append("Maximum concentration [1/cm3]:    {}"
+                      .format(', '.join('{:.3e}'.format(c) for c in max_concentration)))
+        lam = getattr(self.optical, self._lam0).real
+        if lam is None: lam = self.get_lam().real
+        max_gain = []
+        for no, mesh in levels:
+            value = self.gain.outGain(mesh, lam)
+            max_gain.append(max(value))
+        result.append("Maximum gain [1/cm]:          {}"
+                      .format(', '.join('{:9.3f}'.format(g[0]) for g in max_gain)))
+        return result
 
     def save(self, filename=None, group='ThresholdSearch', optical_resolution=None):
         """
@@ -451,7 +484,7 @@ class ThresholdSearch(ThermoElectric):
 
         if close:
             h5file.close()
-        plask.print_log('info', "Fields saved to file '{}'".format(filename))
+        plask.print_log('info', "Fields saved to file '{}' in group '{}'".format(filename, group))
         return filename
 
     def plot_optical_field(self, resolution=None, geometry_color='0.75', geometry_alpha=0.35, **kwargs):
@@ -782,7 +815,7 @@ class ThresholdSearchCyl(ThresholdSearch):
 
     def _get_info(self):
         return super(ThresholdSearchCyl, self)._get_info() + [
-            "LP{}{} mode wavelength [nm]: {:8.3f}".format(self.lpm, self.lpn, self.optical.modes[self.modeno].lam.real)
+            "LP{}{} mode wavelength [nm]:     {:8.3f}".format(self.lpm, self.lpn, self.optical.modes[self.modeno].lam.real)
         ]
 
 
@@ -1023,7 +1056,7 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
 
     def _get_info(self):
         return super(ThresholdSearchBesselCyl, self)._get_info() + [
-            "HE{}{} mode wavelength [nm]: {:8.3f}".format(self.hem, self.hen, self.optical.modes[self.modeno].lam.real)
+            "HE{}{} mode wavelength [nm]:     {:8.3f}".format(self.hem, self.hen, self.optical.modes[self.modeno].lam.real)
         ]
 
 
@@ -1273,7 +1306,7 @@ class ThresholdSearch2D(ThresholdSearch):
 
     def _get_info(self):
         return super(ThresholdSearch2D, self)._get_info() + [
-            "Effective index: {:8.3f}".format(self.optical.modes[self.modeno].neff.real)
+            "Effective index:     {:8.3f}".format(self.optical.modes[self.modeno].neff.real)
         ]
 
 

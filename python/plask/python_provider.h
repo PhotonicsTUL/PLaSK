@@ -101,7 +101,7 @@ struct PythonDataVector : public DataVector<T> {
 // ---------- Receiver ------------
 
 extern PLASK_PYTHON_API const char* docstring_receiver;
-extern PLASK_PYTHON_API const char* docstring_receiver_connect;
+extern PLASK_PYTHON_API const char* docstring_receiver_attach;
 extern PLASK_PYTHON_API const char* docstring_receiver_assign;
 
 template <typename ProviderT, PropertyType propertyType, typename ParamsT>
@@ -151,13 +151,7 @@ namespace detail {
                 format(docstring_receiver, property_name, suffix, ReceiverT::ProviderType::PropertyTag::NAME,
                 (space!="")? " in "+space+" geometry" : "", ReceiverT::ProviderType::PropertyTag::UNIT).c_str()
             ) {
-            receiver_class.def("connect", &connect,
-                               format(docstring_receiver_connect, property_name).c_str(),
-                               py::arg("provider"));
-            receiver_class.def("disconnect", &disconnect, u8"Disconnect any provider from the receiver.");
-            receiver_class.def("assign", &ReceiverT::template setConstValue<const typename ReceiverT::ValueType&>,
-                               format(docstring_receiver_assign, property_name).c_str(),
-                               py::arg("value"));
+            receiver_class.def("reset", &disconnect, u8"Disconnect any provider of value from the receiver.");
 #           if PY_VERSION_HEX >= 0x03000000
                 receiver_class.def("__bool__", &ReceiverT::hasProvider);
 #           else
@@ -185,6 +179,8 @@ namespace detail {
             receiver = value;
             return true;
         } catch (py::error_already_set) { PyErr_Clear(); }
+          catch (TypeError) { PyErr_Clear(); }
+          catch (ValueError) { PyErr_Clear(); }
         return false;
     }
 
@@ -197,6 +193,8 @@ namespace detail {
             receiver.setValues(begin, end);
             return true;
         } catch (py::error_already_set) { PyErr_Clear(); }
+          catch (TypeError) { PyErr_Clear(); }
+          catch (ValueError) { PyErr_Clear(); }
         return false;
     }
 
@@ -207,11 +205,13 @@ namespace detail {
         typedef typename ReceiverT::PropertyTag PropertyT;
         typedef typename ReceiverT::PropertyTag::ValueType ValueT;
 
+        typedef RegisterReceiverImpl<ReceiverT, SINGLE_VALUE_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...>> Class;
+
         static void setter(ReceiverT& self, const py::object& obj) {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
-            throw TypeError("You can only assign {0} provider, or value of type '{1}'",
+            throw TypeError("You can only attach {0} provider or value of type '{1}'",
                             type_name<typename ReceiverT::PropertyTag>(),
                             std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
         }
@@ -219,6 +219,9 @@ namespace detail {
         static ValueT __call__(ReceiverT& self, const ExtraParams&... params) { return self(params...); }
 
         RegisterReceiverImpl() {
+            this->receiver_class.def("attach", &Class::setter,
+                                     format(docstring_receiver_attach, this->property_name).c_str(),
+                                     py::arg("source"));
             this->receiver_class.def("__call__", &__call__, PropertyArgsSingleValue<PropertyT>::value(), "Get value from the connected provider");
         }
     };
@@ -236,13 +239,9 @@ namespace detail {
         static void setter(ReceiverT& self, const py::object& obj) {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
-            assign(self, obj);
-        }
-
-        static void assign(ReceiverT& self, const py::object& obj) {
             if (assignMultipleValues(self, obj)) return;
             if (assignValue(self, obj)) return;
-            throw TypeError(u8"You can only assign {0} provider, or sequence of values of type '{1}'",
+            throw TypeError(u8"You can only attach {0} provider or sequence of values of type '{1}'",
                             type_name<typename ReceiverT::PropertyTag>(),
                             std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
         }
@@ -252,10 +251,12 @@ namespace detail {
         static ValueT __call__0(ReceiverT& self, const ExtraParams&... params) { return self(EnumType(0), params...); }
 
         RegisterReceiverImpl() {
+            this->receiver_class.def("attach", &Class::setter,
+                                     format(docstring_receiver_attach, this->property_name).c_str(),
+                                     py::arg("source"));
             this->receiver_class.def("__call__", &__call__0, PropertyArgsSingleValue<PropertyT>::value(), u8"Get value from the connected provider");
             this->receiver_class.def("__call__", &__call__n, PropertyArgsMultiValue<PropertyT>::value(), u8"Get value from the connected provider");
             this->receiver_class.def("__len__", (size_t (ReceiverT::*)()const)&ReceiverT::size, u8"Get number of values from connected provider");
-            this->receiver_class.def("assign", &Class::assign, py::arg("values"));
         }
     };
 
@@ -271,13 +272,15 @@ namespace detail {
         typedef PythonDataVector<const ValueT, DIMS> DataT;
         typedef ProviderFor<PropertyT, typename ReceiverT::SpaceType> ProviderT;
 
+        typedef RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...>> Class;
+
         static void setter(ReceiverT& self, const py::object& obj) {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
             auto data = plask::make_shared<PythonProviderFor<ProviderT, PropertyT::propertyType, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
             if (assignProvider(self, py::object(data))) return;
-            throw TypeError(u8"You can only assign {0} provider, data, or constant of type '{1}'",
+            throw TypeError(u8"You can only attach {0} provider, data, or constant of type '{1}'",
                             type_name<typename ReceiverT::PropertyTag>(),
                             std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
         }
@@ -287,6 +290,9 @@ namespace detail {
         }
 
         RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>(), spaceName<typename ReceiverT::SpaceType>()) {
+            this->receiver_class.def("attach", &Class::setter,
+                                     format(docstring_receiver_attach, this->property_name).c_str(),
+                                     py::arg("source"));
             this->receiver_class.def("__call__", &__call__, PropertyArgsField<PropertyT>::value(), u8"Get value from the connected provider");
         }
 
@@ -316,15 +322,11 @@ namespace detail {
         static void setter(ReceiverT& self, const py::object& obj) {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
-            assign(self, obj);
-        }
-
-        static void assign(ReceiverT& self, const py::object& obj) {
             if (assignValue(self, obj)) return;
             if (assignMultipleValues(self, obj)) return;
             auto data = plask::make_shared<PythonProviderFor<ProviderT, PropertyT::propertyType, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
             if (assignProvider(self, py::object(data))) return;
-            throw TypeError(u8"You can only assign {0} provider, sequence of data, or constant of type '{1}'",
+            throw TypeError(u8"You can only attach {0} provider, data, sequence of data, or constant of type '{1}'",
                             type_name<typename ReceiverT::PropertyTag>(),
                             std::string(py::extract<std::string>(py::object(dtype<ValueT>()).attr("__name__"))));
         }
@@ -338,10 +340,12 @@ namespace detail {
         }
 
         RegisterReceiverImpl(): RegisterReceiverBase<ReceiverT>(spaceSuffix<typename ReceiverT::SpaceType>(), spaceName<typename ReceiverT::SpaceType>()) {
+            this->receiver_class.def("attach", &Class::setter,
+                                     format(docstring_receiver_attach, this->property_name).c_str(),
+                                     py::arg("source"));
             this->receiver_class.def("__call__", &__call__0, PropertyArgsField<PropertyT>::value(), u8"Get value from the connected provider");
             this->receiver_class.def("__call__", &__call__n, PropertyArgsMultiField<PropertyT>::value(), u8"Get value from the connected provider");
             this->receiver_class.def("__len__", (size_t (ReceiverT::*)()const)&ReceiverT::size, u8"Get number of values from connected provider");
-            this->receiver_class.def("assign", &Class::assign, py::arg("values"));
         }
 
       private:
@@ -527,6 +531,14 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
                 py::object result = this->function(n, omesh, params..., method);
                 return detail::parseProviderReturnedValue<typename ProviderT::ValueType, ProviderT::SpaceType::DIM>(result, omesh);
             } else {
+                try {
+                    ReturnedType data = py::extract<ReturnedType>(this->function);
+                    if (n > 1) throw IndexError("Provider index out of range");
+                    if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
+                    return dataInterpolate(data, const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh), method);
+                } catch (py::error_already_set) {
+                    PyErr_Clear();
+                }
                 ReturnedType data = py::extract<ReturnedType>(this->function[n]);
                 if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
                 return dataInterpolate(data, const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh), method);
@@ -541,6 +553,7 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
         }
     ), function(function) {
         if (PyCallable_Check(function.ptr())) return;
+        if (py::extract<ReturnedType>(function).check()) return;
         if (!PySequence_Check(function.ptr())) {
             throw TypeError(u8"'data' in custom Python provider must be a callable or a sequence of Data objects");
         }

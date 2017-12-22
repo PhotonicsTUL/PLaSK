@@ -174,7 +174,7 @@ class PLASK_API XMLReader {
       protected:
 
         XMLReader& reader;
-        const std::string& attr_name;
+        const std::string attr_name;
         bool case_insensitive;
 
         std::map<std::string, EnumT> values;

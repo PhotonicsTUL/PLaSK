@@ -1,5 +1,5 @@
 #include <limits>
-#include <cmath>
+#include <plask/math.h>
 
 #include "fd.h"
 
@@ -13,7 +13,7 @@ static double clenshaw(std::size_t n, const double* coeffs, double x, double lef
     double t  = (2.*x - left - right) / (right - left);
     double t2 = 2. * t;
 
-    for(int k = n-1; k >= 1; k--) {
+    for(std::size_t k = n-1; k >= 1; k--) {
         double b0 = coeffs[k] + t2 * b1 - b2;
         b2 = b1; b1 = b0;
     }

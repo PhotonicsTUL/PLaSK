@@ -6,9 +6,11 @@
   geometry: Cartesian2D
   mesh: Rectangular2D
   tags:
-  - bcond: voltage
+  - &voltage
+    bcond: voltage
     label: Voltage
-  - tag: loop
+  - &loop
+    tag: loop
     label: Configuration of the Self-Consistent Loop
     help: Configuration of the self-consistent loop.
     attrs:
@@ -118,7 +120,8 @@
       type: int
       default: 3
       help: Loops limit for the holes quasi-Fermi level.
-  - tag: matrix
+  - &matrix
+    tag: matrix
     label: Matrix Solver
     help: Configuration of the matrix solver.
     attrs:
@@ -146,6 +149,27 @@
       type: int
       default: 500
       help: Number of iterations after which the progress is logged.
+  providers:
+  - outPotential
+  - outQuasiFermiEnergyLevelForElectrons
+  - outQuasiFermiEnergyLevelForHoles
+  - outConductionBandEdge
+  - outValenceBandEdge
+  receivers:
+  - inTemperature
+  
+  
+- solver: DriftDiffusionCyl
+  lib: ddm2d
+  category: electrical
+  help: >
+    Finite element drift-diffusion electrical solver for 2D Cartesian geometry using finite-element method.
+  geometry: Cylindrical
+  mesh: Rectangular2D
+  tags:
+  - *voltage
+  - *loop
+  - *matrix
   providers:
   - outPotential
   - outQuasiFermiEnergyLevelForElectrons

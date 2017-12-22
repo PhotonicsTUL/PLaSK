@@ -298,7 +298,7 @@ void PythonManager::loadConnects(XMLReader& reader)
         }
 
         try {
-            receiver.attr("connect")(provider);
+            receiver.attr("attach")(provider);
         } catch (py::error_already_set) {
             throw XMLException(reader, format(u8"Cannot connect '{0}' to '{1}'.", outkey, inkey));
         }
