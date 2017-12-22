@@ -93,22 +93,22 @@ if(SPHINX_FOUND)
     add_custom_target(doc-qthelp
         COMMAND ${sphinx} -b qthelp ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/qthelp
         DEPENDS ${rst_files} ${svg_files} ${solvers_timestamp} conf.py
-        BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/qthelp/PLaSK.qhp ${CMAKE_CURRENT_BINARY_DIR}/qthelp/PLaSK.qhcp
+        BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhp ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhcp
     )
 
     if(QHELPGENERATOR AND QCOLLECTIONGENERATOR)
-        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qthelp/PLaSK.qch
-            COMMAND ${QHELPGENERATOR} ${CMAKE_CURRENT_BINARY_DIR}/qthelp/PLaSK.qhp -o ${CMAKE_CURRENT_BINARY_DIR}/qthelp/PLaSK.qch
-            DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/qthelp/PLaSK.qhp
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qch
+            COMMAND ${QHELPGENERATOR} ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhp -o ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qch
+            DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhp
         )
-        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qthelp/PLaSK.qhc
-            COMMAND ${QCOLLECTIONGENERATOR} ${CMAKE_CURRENT_BINARY_DIR}/qthelp/PLaSK.qhcp -o ${CMAKE_CURRENT_BINARY_DIR}/qthelp/PLaSK.qhc
-            DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/qthelp/PLaSK.qhcp ${CMAKE_CURRENT_BINARY_DIR}/qthelp/PLaSK.qch
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhc
+            COMMAND ${QCOLLECTIONGENERATOR} ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhcp -o ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhc
+            DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhcp ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qch
         )
         if(BUILD_QTHELP)
-            install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qthelp/PLaSK.qhc ${CMAKE_CURRENT_BINARY_DIR}/qthelp/PLaSK.qch
+            install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhc ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qch
                     DESTINATION share/doc/plask)
-            add_custom_target(qthelp ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/qthelp/PLaSK.qhc ${CMAKE_CURRENT_BINARY_DIR}/qthelp/PLaSK.qch)
+            add_custom_target(qthelp ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhc ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qch)
         endif()
     endif()
 

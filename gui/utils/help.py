@@ -23,8 +23,8 @@ from ..qt.QtHelp import *
 HELP_URL = 'http://fizyka.p.lodz.pl/en/plask-user-guide/'
 
 HELP_DIR = os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'share', 'doc', 'plask')
-HELP_FILE = os.path.join(HELP_DIR, 'PLaSK.qch')
-COLLECTION_FILE = os.path.join(HELP_DIR, 'PLaSK.qhc')
+HELP_FILE = os.path.join(HELP_DIR, 'plask.qch')
+COLLECTION_FILE = os.path.join(HELP_DIR, 'plask.qhc')
 
 HELP_WINDOW = None
 

@@ -158,7 +158,7 @@ html_theme_options = {
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+html_theme_path = ['_themes']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -224,6 +224,22 @@ html_show_sourcelink = False
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'plask'
+
+
+# -- Options for QtHelp output -------------------------------------------------
+
+# The theme to use for QtHelp.  See the documentation for
+# a list of builtin themes.
+qthelp_theme = 'qthelp'
+
+# Theme options are theme-specific and customize the look and feel of a theme
+# further.  For a list of options available for each theme, see the
+# documentation.
+qthelp_theme_options = {
+}
+
+# Output file base name for QtHelp help builder.
+qthelp_basename = 'plask'
 
 
 # -- Options for LaTeX output --------------------------------------------------
