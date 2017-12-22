@@ -162,10 +162,12 @@ def get_docstring(document, text, block, column):
                         doc = defs[0].docstring()
                 if _DEBUG:
                     d = defs[0]
-                    print('{}: [{}] {}'.format(d.name, d.type, d.description))
+                    print('{}: [{}] {} "{}..."'.format(d.name, d.type, d.description, doc[:8]))
                     sys.stdout.flush()
                 if doc:
                     return name, doc
+                else:
+                    return name, ''
         except:
             if _DEBUG:
                 import traceback

@@ -684,7 +684,7 @@ class ConfigDialog(QDialog):
             item.save()
         CONFIG.sync()
         from .widgets import EDITOR_FONT
-        EDITOR_FONT.fromString(','.join(CONFIG['editor/font']))
+        EDITOR_FONT.fromString(','.join(CONFIG['editor/font'][:-1])+',0')
         self.parent().config_changed.emit()
         if need_restart:
             QMessageBox.information(None,
