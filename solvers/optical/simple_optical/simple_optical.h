@@ -99,7 +99,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      RootDigger::Params stripe_root;
       
      void computeField(double wavelength);
-     std::vector<dcomplex> computeEz(const dcomplex& x, const std::vector<dcomplex> & NR);
+     std::vector<dcomplex> computeEz(const dcomplex& x, const std::vector<double> & dst_mesh);
      std::vector<double> getZ();
      std::vector<dcomplex> getEz();
      
@@ -142,6 +142,10 @@ protected:
   /// Computed vertical fields
   std::vector<dcomplex> zfields; 
 
+  
+  std::vector<FieldZ> electricField;
+
+  void print_vector(std::vector<double> vec);
 
 };
 

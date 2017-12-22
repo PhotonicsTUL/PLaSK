@@ -114,8 +114,8 @@ dcomplex SimpleOptical::compute_transfer_matrix(const dcomplex& x, const std::ve
     transfer_matrix = (boundary_matrix*phas_matrix)*transfer_matrix;    
   }
   refractive_index_vec.clear();
-  std::cout<<"x = " << x << std::endl;
-  std::cout<<"T bb = " << transfer_matrix.bb<<std::endl;
+  //std::cout<<"x = " << x << std::endl;
+  //std::cout<<"T bb = " << transfer_matrix.bb<<std::endl;
   return transfer_matrix.bb;
 }
 
@@ -123,7 +123,20 @@ void SimpleOptical::computeField(double wavelength)
 {
   setWavelength(wavelength);
   onInitialize();
-  computeEz(k0, refractive_index_vec);
+  
+  double start = 0;
+  double end = 8.50;
+  int num = 100;
+  std::vector<double> linspaced;
+  double delta = (end - start) / (num - 1);
+
+  for(int i=0; i < num-1; ++i)
+    {
+      linspaced.push_back(start + delta * i);
+    }
+  
+  print_vector(linspaced);
+  computeEz(k0, linspaced);
  
 }
 
@@ -141,31 +154,74 @@ const LazyData<double> SimpleOptical::getLightMagnitude(int num, const shared_pt
 {
 }
 
-std::vector<dcomplex> SimpleOptical::computeEz(const dcomplex& x, const std::vector<dcomplex> & NR)
+//only to test
+void SimpleOptical::print_vector(std::vector<double> vec)
 {
+  std::cout << "size: " << vec.size() << std::endl;
+  for (double d : vec)
+    std::cout << d << " ";
+  std::cout << std::endl;
+}
+
+std::vector<dcomplex> SimpleOptical::computeEz(const dcomplex& x, const std::vector<double> & dst_mesh)
+{
+  std::vector<dcomplex> NR;
+  std::vector<double> hi;
+  double T = 300; //temperature 300 K
+  double w = real(2e3*M_PI / k0);
+  
+  for(double p: dst_mesh) 
+  {
+    NR.push_back(geometry->getMaterial(vec(0.0,  p))->Nr(w, T));
+    //std::cout<<"p = " <<p<<std::endl;  
+    
+  }
+  
+ 
+  std::vector<double> verticalEdgeVec;
+  for (double p_edge: *axis_vertical) verticalEdgeVec.push_back(p_edge); 
+  
+  for (size_t i = 1; i < verticalEdgeVec.size(); ++i)
+    for (double p: dst_mesh) 
+       if (verticalEdgeVec[i-1] > p and (verticalEdgeVec[i+1]<p) )
+       {
+	 std::cout<<"p = " << p <<" "<<"edge = "<<verticalEdgeVec[i-1];
+	 hi.push_back(verticalEdgeVec[i-1]-p);
+	 std::cout<<std::endl;
+       }
+ 
+  
+  
+      
+  std::cout<<"hi size = " << hi.size() << std::endl;
+  for (double h: hi)
+  {
+    std::cout<<"hi = " << h << std::endl;
+  }
+  
+  
   Matrix phas_matrix;
   Matrix boundary_matrix;
-  double d; //distance_between_layer  
+    
   transfer_matrix = Matrix::eye();
   dcomplex phas;
-  for (size_t i = ybegin; i<yend-1; ++i)
+  for (size_t i = 1; i < verticalEdgeVec.size(); ++i)
   {
-    if (i != ybegin || ybegin != 0) d = edge_vert_layer_point[i] - edge_vert_layer_point[i-1]; 
-    else d = 0.;
-    phas_matrix = Matrix(exp(I*NR[i]*x*d), 0, 0, exp(-I*NR[i]*x*d));
+    
+    phas_matrix = Matrix(exp(I*NR[i]*x*hi[i]), 0, 0, exp(-I*NR[i]*x*hi[i]));
     boundary_matrix = Matrix( 0.5+0.5*(NR[i]/NR[i+1]), 0.5-0.5*(NR[i]/NR[i+1]),
                               0.5-0.5*(NR[i]/NR[i+1]), 0.5+0.5*(NR[i]/NR[i+1]) );
     dcomplex F = transfer_matrix.fb; 
     dcomplex B = transfer_matrix.bb;
     zfields.push_back(F+B);
     transfer_matrix = (boundary_matrix*phas_matrix)*transfer_matrix;        
-  }  
+   }  
   
-  z.push_back(0);
-  for (double p: *axis_midpoints_vertical)
-  {
-    z.push_back(p);
-  }
+  //z.push_back(0);
+  //for (double p: *axis_midpoints_vertical)
+  //{
+  //  z.push_back(p);
+  //}
   
   return zfields;
 }
