@@ -1,5 +1,5 @@
 #include "reader.h"
-#include "expat.h"
+#include <expat.h>
 
 #include "../../math.h"
 

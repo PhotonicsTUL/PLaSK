@@ -14,7 +14,7 @@
 from lxml import etree
 
 #TODO remove_comments set to False when all will be ready to support it
-XML_parser = etree.XMLParser(remove_blank_text=True, remove_comments=True, strip_cdata=False, encoding='utf8')
+XML_parser = etree.XMLParser(remove_blank_text=True, remove_comments=True, strip_cdata=False)
 
 
 def print_interior(element):

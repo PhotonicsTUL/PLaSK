@@ -391,7 +391,11 @@ class ScriptController(SourceEditController):
         col = cursor.positionInBlock()
         # QApplication.setOverrideCursor(Qt.BusyCursor)
         if CONFIG['workarounds/blocking_jedi']:
-            self.help_dock.show_help(get_docstring(self.document, self.source_widget.editor.toPlainText(), row, col))
+            result = get_docstring(self.document, self.source_widget.editor.toPlainText(), row, col)
+            if type(result) is tuple:
+                self.help_dock.show_help(*result)
+            else:
+                self.help_dock.show_help(result)
         else:
             task = BackgroundTask(lambda: get_docstring(self.document, self.source_widget.editor.toPlainText(),
                                                         row, col),
@@ -406,7 +410,7 @@ class HelpDock(QDockWidget):
         self.textarea = QTextEdit()
         self.textarea.setReadOnly(True)
         help_font = QFont(EDITOR_FONT)
-        help_font.fromString(','.join(CONFIG['editor/help_font']))
+        help_font.fromString(','.join(CONFIG['editor/help_font'][:-1])+',0')
         pal = self.textarea.palette()
         pal.setColor(QPalette.Base, QColor("#ffe"))
         self.textarea.setPalette(pal)
@@ -426,7 +430,7 @@ class HelpDock(QDockWidget):
 
     def reconfig(self):
         help_font = self.textarea.font()
-        help_font.fromString(','.join(CONFIG['editor/help_font']))
+        help_font.fromString(','.join(CONFIG['editor/help_font'][:-1])+',0')
         self.textarea.setFont(help_font)
         font_metrics = self.textarea.fontMetrics()
         self.textarea.setMinimumWidth(86 * font_metrics.width('a'))

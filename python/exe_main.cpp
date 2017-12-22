@@ -1,28 +1,12 @@
-#include <cmath>
-#include <cstdio>
-#include <vector>
-#include <string>
-#include <stack>
+#include "exe_common.h"
 
-#include <plask/version.h>
-#include <plask/exceptions.h>
-#include <plask/utils/system.h>
-#include <plask/log/log.h>
-#include <plask/python_globals.h>
-#include <plask/python_manager.h>
-#include <plask/utils/string.h>
 #include <plask/utils/system.h>
 #include <plask/config.h>
-#include <plask/license/verify.h>
-
-#include <boost/python.hpp>
-#include <boost/python/stl_iterator.hpp>
-namespace py = boost::python;
 
 #if defined(MS_WINDOWS) || defined(__CYGWIN__)
 #  include <io.h>
 #  include <fcntl.h>
-#  include <windows.h>
+//#  include <windows.h>	// in exe_common.h
 #endif
 
 //******************************************************************************
@@ -84,7 +68,7 @@ static void from_import_all(const char* name, py::object& dest)
 
 //******************************************************************************
 // Initialize the binary modules and load the package from disk
-static py::object initPlask(int argc, const char* argv[])
+static py::object initPlask(int argc, const system_char* argv[])
 {
     // Initialize the plask module
     if (PyImport_AppendInittab("_plask", &PLASK_MODULE) != 0) throw plask::CriticalException("No _plask module");
@@ -107,8 +91,8 @@ static py::object initPlask(int argc, const char* argv[])
         try {
             path.insert(0, boost::filesystem::absolute(boost::filesystem::path(argv[0])).parent_path().string());
         } catch (std::runtime_error) { // can be thrown if there is wrong locale set
-            std::string file(argv[0]);
-            size_t pos = file.rfind(plask::FILE_PATH_SEPARATOR);
+            system_string file(argv[0]);
+            size_t pos = file.rfind(system_char(plask::FILE_PATH_SEPARATOR));
             if (pos == std::string::npos) pos = 0;
             path.insert(0, file.substr(0, pos));
         }
@@ -140,7 +124,7 @@ static py::object initPlask(int argc, const char* argv[])
     if (argc > 0) {
         py::list sys_argv;
         for (int i = 0; i < argc; i++) {
-            sys_argv.append(argv[i]);
+            sys_argv.append(system_str_to_pyobject(argv[i]));
         }
         sys.attr("argv") = sys_argv;
     }
@@ -235,15 +219,11 @@ void endPlask() {
 
 
 //******************************************************************************
-int main(int argc, const char *argv[])
+int system_main(int argc, const system_char *argv[])
 {
     //setlocale(LC_ALL,""); std::locale::global(std::locale(""));    // set default locale from env (C is used when program starts), boost filesystem will do the same
 
-// #   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-//         SetConsoleOutputCP(CP_UTF8);
-// #   endif
-
-    if (argc > 1 && std::string(argv[1]) == "-V") {
+    if (argc > 1 && system_string(argv[1]) == CSTR(-V)) {
         printf("PLaSK " PLASK_VERSION "\n");
 #       ifdef LICENSE_CHECK
             std::string user = plask::license_verifier.getUser(),
@@ -265,8 +245,8 @@ int main(int argc, const char *argv[])
     // Parse commnad line
     bool force_interactive = false;
     plask::optional<plask::LogLevel> loglevel;
-    const char* command = nullptr;
-    const char* runmodule = nullptr;
+    const system_char* command = nullptr;
+    const system_char* runmodule = nullptr;
     const char* log_color = nullptr;
     bool python_logger = true;
 
@@ -276,33 +256,33 @@ int main(int argc, const char *argv[])
         FILE_PY
     } filetype = FILE_ANY;
 
-    std::deque<const char*> defs;
+    std::deque<std::string> defs;
 
     while (argc > 1) {
-        std::string arg = argv[1];
-        if (arg == "-i") {
+        system_string arg = argv[1];
+        if (arg == CSTR(-i)) {
             force_interactive = true;
             --argc; ++argv;
-        } else if (arg.substr(0,2) == "-l") {
-            const char* level = (arg.length() > 2)? argv[1]+2 : argv[2];
+        } else if (arg.substr(0,2) == CSTR(-l)) {
+            const system_char* level = (arg.length() > 2)? argv[1]+2 : argv[2];
             try {
                 loglevel.reset(plask::LogLevel(boost::lexical_cast<unsigned>(level)));
             } catch (boost::bad_lexical_cast) {
-                std::string ll = level; boost::to_lower(ll);
-                if (ll == "critical_error") loglevel.reset(plask::LOG_CRITICAL_ERROR);
-                if (ll == "critical") loglevel.reset(plask::LOG_CRITICAL_ERROR);
-                else if (ll == "error") loglevel.reset(plask::LOG_ERROR);
-                else if (ll == "error_detail") loglevel.reset(plask::LOG_ERROR_DETAIL);
-                else if (ll == "warning") loglevel.reset(plask::LOG_WARNING);
-                else if (ll == "important") loglevel.reset(plask::LOG_IMPORTANT);
-                else if (ll == "info") loglevel.reset(plask::LOG_INFO);
-                else if (ll == "result") loglevel.reset(plask::LOG_RESULT);
-                else if (ll == "data") loglevel.reset(plask::LOG_DATA);
-                else if (ll == "detail") loglevel.reset(plask::LOG_DETAIL);
-                else if (ll == "debug") loglevel.reset(plask::LOG_DEBUG);
-                else if (ll == "nopython" || ll == "nopy") { python_logger = false; }
-                else if (ll == "ansi") { log_color = "ansi"; }
-                else if (ll == "mono") { log_color = "none"; }
+				system_string ll = level; boost::to_lower(ll);
+                if (ll == CSTR(critical_error)) loglevel.reset(plask::LOG_CRITICAL_ERROR);
+                if (ll == CSTR(critical)) loglevel.reset(plask::LOG_CRITICAL_ERROR);
+                else if (ll == CSTR(error)) loglevel.reset(plask::LOG_ERROR);
+                else if (ll == CSTR(error_detail)) loglevel.reset(plask::LOG_ERROR_DETAIL);
+                else if (ll == CSTR(warning)) loglevel.reset(plask::LOG_WARNING);
+                else if (ll == CSTR(important)) loglevel.reset(plask::LOG_IMPORTANT);
+                else if (ll == CSTR(info)) loglevel.reset(plask::LOG_INFO);
+                else if (ll == CSTR(result)) loglevel.reset(plask::LOG_RESULT);
+                else if (ll == CSTR(data)) loglevel.reset(plask::LOG_DATA);
+                else if (ll == CSTR(detail)) loglevel.reset(plask::LOG_DETAIL);
+                else if (ll == CSTR(debug)) loglevel.reset(plask::LOG_DEBUG);
+                else if (ll == CSTR(nopython) || ll == CSTR(nopy)) { python_logger = false; }
+                else if (ll == CSTR(ansi)) { log_color = "ansi"; }
+                else if (ll == CSTR(mono)) { log_color = "none"; }
                 else {
                     fprintf(stderr, "Bad log level specified\n");
                     return 4;
@@ -311,17 +291,17 @@ int main(int argc, const char *argv[])
             if (loglevel) plask::forcedLoglevel = true;
             if (level == argv[2]) { argc -= 2; argv += 2; }
             else { --argc; ++argv; }
-        } else if (arg == "-c") {
+        } else if (arg == CSTR(-c)) {
             command = argv[2];
-            argv[2] = "-c";
+            argv[2] = CSTR(-c);
             --argc; ++argv;
             break;
-        } else if (arg == "-m") {
+        } else if (arg == CSTR(-m)) {
             runmodule = argv[2];
-            argv[2] = "-m";
+            argv[2] = CSTR(-m);
             --argc; ++argv;
             break;
-        } else if (arg == "-g") {
+        } else if (arg == CSTR(-g)) {
 #           if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
                 if (console_count == 1) { // we are the only ones using the console
                     HWND hwnd = GetConsoleWindow();
@@ -329,8 +309,8 @@ int main(int argc, const char *argv[])
                     console_count = 0;
                 }
 #           endif
-            argv[1] = "-u";
-        } else if (arg == "-u") {
+            argv[1] = CSTR(-u);
+        } else if (arg == CSTR(-u)) {
 #           if defined(MS_WINDOWS) || defined(__CYGWIN__)
                 _setmode(fileno(stderr), _O_BINARY);
                 _setmode(fileno(stdout), _O_BINARY);
@@ -342,24 +322,24 @@ int main(int argc, const char *argv[])
                 Py_UnbufferedStdioFlag = 1;
 #           endif
             --argc; ++argv;
-        } else if (arg == "-x") {
+        } else if (arg == CSTR(-x)) {
             if (filetype == FILE_PY)  {
                 fprintf(stderr, "You cannot specify both -x and -p\n");
                 return 4;
             }
             filetype = FILE_XML;
             --argc; ++argv;
-        } else if (arg == "-p") {
+        } else if (arg == CSTR(-p)) {
             if (filetype == FILE_XML)  {
                 fprintf(stderr, "You cannot specify both -x and -p\n");
                 return 4;
             }
             filetype = FILE_PY;
             --argc; ++argv;
-        } else if (arg.find('=') != std::string::npos) {
-            defs.push_back(argv[1]);
+        } else if (arg.find(system_char('=')) != std::string::npos) {
+            defs.push_back(system_to_utf8(argv[1]));
             --argc; ++argv;
-        } else if (arg == "--") {
+        } else if (arg == CSTR(--)) {
             --argc; ++argv;
             break;
         } else break;
@@ -398,7 +378,7 @@ int main(int argc, const char *argv[])
 
             PyObject* result = NULL;
 #           if PY_VERSION_HEX >= 0x03000000
-                PyObject* code = Py_CompileString(command, "-c", Py_file_input);
+                PyObject* code = system_Py_CompileString(command, CSTR(-c), Py_file_input);
                 if (code) result = PyEval_EvalCode(code, globals.ptr(), globals.ptr());
 #           else
                 PyCompilerFlags flags { CO_FUTURE_DIVISION };
@@ -455,15 +435,15 @@ int main(int argc, const char *argv[])
             return exitcode;
         }
 
-        std::string filename = argv[1];
+        system_string filename = argv[1];
         try {
             bool realfile = true;
-            if (filename[0] == '-' && (filename.length() == 1 || filename[1] == ':')) {
+            if (filename[0] == system_char('-') && (filename.length() == 1 || filename[1] == system_char(':'))) {
                 realfile = false;
-                if (filename[1] == ':' && filename.length() > 2) {
+                if (filename[1] == system_char(':') && filename.length() > 2) {
                     filename = filename.substr(2);
                 } else {
-                    filename = "<stdin>";
+                    filename = CSTR(<stdin>);
                 }
                 py::object sys = py::import("sys");
                 sys.attr("argv")[0] = filename;
@@ -475,16 +455,16 @@ int main(int argc, const char *argv[])
                 if (!filetype) {
                     // check file extension
                     try {
-                        std::string ext = filename.substr(filename.length()-4);
-                        if (ext == ".xpl") filetype = FILE_XML;
-                        else if (ext == ".xml") filetype = FILE_XML;
-                        else if (ext.substr(1) == ".py") filetype = FILE_PY;
+                        system_string ext = filename.substr(filename.length()-4);
+                        if (ext == CSTR(.xpl)) filetype = FILE_XML;
+                        else if (ext == CSTR(.xml)) filetype = FILE_XML;
+                        else if (ext.substr(1) == CSTR(.py)) filetype = FILE_PY;
                     } catch (std::out_of_range) {}
                 }
                 if (!filetype) {
                     // check first char (should be '<' in XML)
-                    FILE* file = std::fopen(filename.c_str(), "r");
-                    if (!file) throw std::invalid_argument("No such file: '" + filename + "'");
+                    FILE* file = system_fopen(filename.c_str(), CSTR(r));
+                    if (!file) throw std::invalid_argument("No such file: '" + system_to_utf8(filename) + "'");
                     int c;
                     while ((c = std::getc(file))) {
                         if (!std::isspace(c) || c == EOF) break;
@@ -493,8 +473,8 @@ int main(int argc, const char *argv[])
                     if (c == '<') filetype = FILE_XML;
                     else filetype = FILE_PY;
                 } else {
-                    FILE* file = std::fopen(filename.c_str(), "r");
-                    if (!file) throw std::invalid_argument("No such file: '" + filename + "'");
+                    FILE* file = system_fopen(filename.c_str(), CSTR(r));
+                    if (!file) throw std::invalid_argument("No such file: '" + system_to_utf8(filename) + "'");
                     std::fclose(file);
                 }
                 assert(filetype);
@@ -507,7 +487,7 @@ int main(int argc, const char *argv[])
             if (filetype == FILE_XML) {
 
                 py::dict locals;
-                for (const char* def: defs) {
+                for (std::string& def: defs) {
                     auto keyval = plask::splitString2(def, '=');
                     try {
                         locals[keyval.first] = (plask::python::py_eval(keyval.second,
@@ -526,7 +506,7 @@ int main(int argc, const char *argv[])
                 py::object omanager(manager);
                 globals["__manager__"] = omanager;
                 if (realfile)
-                    plask::python::PythonManager_load(omanager, py::str(filename), locals);
+                    plask::python::PythonManager_load(omanager, system_str_to_pyobject(filename), locals);	// TODO system_to_utf8 is propably not needed with pybind and it can be not proper here
                 else {
                     py::object sys = py::import("sys");
                     plask::python::PythonManager_load(omanager, sys.attr("stdin"), locals);
@@ -549,7 +529,7 @@ int main(int argc, const char *argv[])
 
                 PyObject* result = NULL;
 #               if PY_VERSION_HEX >= 0x03000000
-                    PyObject* code = Py_CompileString(manager->script.c_str(), filename.c_str(), Py_file_input);
+                    PyObject* code = system_Py_CompileString(manager->script.c_str(), filename.c_str(), Py_file_input);
                     if (code)
                         result = PyEval_EvalCode(code, globals.ptr(), globals.ptr());
 #               else
@@ -572,14 +552,15 @@ int main(int argc, const char *argv[])
 #               if PY_VERSION_HEX >= 0x03000000
                     if (realfile) {
 #                       if PY_VERSION_HEX >= 0x03040000
-                            FILE* file = _Py_fopen(filename.c_str(), "r");
+                            FILE* file = system_Py_fopen(filename.c_str(), CSTR(r));
 #                       else
                             pyfile = PyUnicode_FromString(filename.c_str());
                             FILE* file = _Py_fopen(pyfile, "r");
 #                       endif
-                        result = PyRun_FileEx(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr(), 1);
+                        // TODO convrsion to UTF-8 might not be proper here, especially for windows
+                        result = PyRun_FileEx(file, system_to_utf8(filename).c_str(), Py_file_input, globals.ptr(), globals.ptr(), 1);
                     } else {
-                        result = PyRun_File(stdin, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr());
+                        result = PyRun_File(stdin, system_to_utf8(filename).c_str(), Py_file_input, globals.ptr(), globals.ptr());
                     }
 #               else
                     // We want to set "from __future__ import division" flag
@@ -608,18 +589,18 @@ int main(int argc, const char *argv[])
         }
 #       ifndef PRINT_STACKTRACE_ON_EXCEPTION
             catch (plask::XMLException& err) {
-                plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}, {1}", filename, err.what());
+                plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}, {1}", system_to_utf8(filename), err.what());
                 endPlask();
                 return 2;
             }
             catch (plask::Exception& err) {
-                plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", filename, err.what());
+                plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", system_to_utf8(filename), err.what());
                 endPlask();
                 return 3;
             }
 #       endif
         catch (py::error_already_set) {
-            int exitcode = handlePythonException(filename.c_str());
+            int exitcode = handlePythonException(system_to_utf8(filename).c_str());
             endPlask();
             return exitcode;
         }

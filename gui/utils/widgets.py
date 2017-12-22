@@ -27,7 +27,7 @@ from ..utils.config import CONFIG
 
 EDITOR_FONT = QFont()
 EDITOR_FONT.setBold(False)
-EDITOR_FONT.fromString(','.join(CONFIG['editor/font']))
+EDITOR_FONT.fromString(','.join(CONFIG['editor/font'][:-1])+',0')
 
 
 def set_icon_size(widget):
