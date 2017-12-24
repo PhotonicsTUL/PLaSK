@@ -90,7 +90,7 @@ if(SPHINX_FOUND)
         DEPENDS ${rst_files} ${svg_files} ${solvers_timestamp} conf.py
     )
 
-    add_custom_target(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhp ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhcp
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhp ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhcp
         COMMAND ${sphinx} -b qthelp ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/qthelp
         DEPENDS ${rst_files} ${svg_files} ${solvers_timestamp} conf.py
     )
