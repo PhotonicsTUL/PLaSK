@@ -77,6 +77,11 @@ class HelpWindow(QSplitter):
         self.toolbar.addActions([home, self.prev, self.next])
         self.browser.historyChanged.connect(self.update_toolbar)
 
+        web = QAction(QIcon.fromTheme('globe'), "Open in Browser", self.toolbar)
+        web.triggered.connect(self.open_browser)
+        self.toolbar.addSeparator()
+        self.toolbar.addAction(web)
+
         self.setOrientation(Qt.Horizontal)
         tabs = QTabWidget(self)
         tabs.setMaximumWidth(480)
@@ -92,7 +97,8 @@ class HelpWindow(QSplitter):
             lambda: self.update_content_widget(self.browser.source()))
 
         self.namespace = self.help_engine.namespaceName(HELP_FILE)
-        self.browser.setSource(QUrl('qthelp://{}/doc/index.html'.format(self.namespace)))
+        self.prefix = 'qthelp://{}/doc/'.format(self.namespace)
+        self.browser.setSource(QUrl(self.prefix+'index.html'))
 
         self.resize(1200, 800)
 
@@ -111,7 +117,15 @@ class HelpWindow(QSplitter):
                 self.browser.setSource(links.constBegin().value())
 
     def show_page(self, page):
-        self.browser.setSource(QUrl('qthelp://{}/doc/{}.html'.format(self.namespace, page)))
+        self.browser.setSource(QUrl('{}{}.html'.format(self.prefix, page)))
+
+    def open_browser(self):
+        page = self.browser.source().path()[4:-5]
+        if page[-5:] == 'index': page = page[:-5]
+        if page:
+            webbrowser.open("{}{}/".format(HELP_URL, page))
+        else:
+            webbrowser.open("{}".format(HELP_URL))
 
 
 def open_help(page=None):
