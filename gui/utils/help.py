@@ -46,6 +46,7 @@ class HelpWindow(QSplitter):
     def __init__(self, parent=None):
         super(HelpWindow, self).__init__(parent)
         self.setWindowTitle("PLaSK Help")
+        self.setWindowIcon(QIcon.fromTheme('help-contents'))
 
         self.help_engine = QHelpEngine(COLLECTION_FILE, self)
 

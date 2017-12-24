@@ -199,7 +199,7 @@ ol {
 
 
 pre, kbd, samp, tt, code {
-    font-family: monospace;
+    font-family: Monaco, Menlo, Consolas, monospace;
     font-size: 0.95em;
 }
 
