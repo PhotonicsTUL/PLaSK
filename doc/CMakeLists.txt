@@ -62,17 +62,17 @@ if(SPHINX_FOUND)
 
     add_custom_target(doc-html ${auto_doc}
         COMMAND ${sphinx} -b html ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/html
-        DEPENDS ${rst_files} ${svg_files} ${solvers_timestamp} conf.py
+        DEPENDS ${rst_files} ${svg_files} ${solvers_timestamp} conf.py _themes/qthelp/theme.conf _themes/qthelp/static/qthelp.css
     )
 
     add_custom_target(doc-dirhtml
         COMMAND ${sphinx} -b dirhtml ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/dirhtml
-        DEPENDS ${rst_files} ${svg_files} ${solvers_timestamp} conf.py
+        DEPENDS ${rst_files} ${svg_files} ${solvers_timestamp} conf.py _themes/qthelp/theme.conf _themes/qthelp/static/qthelp.css
     )
 
     add_custom_target(doc-singlehtml
         COMMAND ${sphinx} -b singlehtml ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/singlehtml
-        DEPENDS ${rst_files} ${svg_files} ${solvers_timestamp} conf.py
+        DEPENDS ${rst_files} ${svg_files} ${solvers_timestamp} conf.py _themes/qthelp/theme.conf _themes/qthelp/static/qthelp.css
     )
 
     add_custom_target(doc-pickle
@@ -87,12 +87,12 @@ if(SPHINX_FOUND)
 
     add_custom_target(doc-htmlhelp
         COMMAND ${sphinx} -b htmlhelp ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/htmlhelp
-        DEPENDS ${rst_files} ${svg_files} ${solvers_timestamp} conf.py
+        DEPENDS ${rst_files} ${svg_files} ${solvers_timestamp} conf.py _themes/qthelp/theme.conf _themes/qthelp/static/qthelp.css
     )
 
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhp ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhcp
         COMMAND ${sphinx} -b qthelp ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/qthelp
-        DEPENDS ${rst_files} ${svg_files} ${solvers_timestamp} conf.py
+        DEPENDS ${rst_files} ${svg_files} ${solvers_timestamp} conf.py _themes/qthelp/theme.conf _themes/qthelp/static/qthelp.css
     )
     add_custom_target(doc-qthelp DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhp)
 
@@ -185,6 +185,7 @@ if(SPHINX_FOUND)
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_SOURCE_DIR}/api/plask
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_SOURCE_DIR}/api/solvers
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_SOURCE_DIR}/xpl/solvers
+        COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/solvers.timestamp
     )
 
 endif()

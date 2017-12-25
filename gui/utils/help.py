@@ -35,6 +35,9 @@ class HelpBrowser(QTextBrowser):
     def __init__(self, help_engine, parent=None):
         super(HelpBrowser, self).__init__(parent)
         self.help_engine = help_engine
+        font = self.font()
+        font.setPointSize(int(CONFIG['help/fontsize']))
+        self.setFont(font)
 
     def loadResource(self, typ, url):
         if typ < 4 and self.help_engine:
@@ -45,12 +48,17 @@ class HelpBrowser(QTextBrowser):
 
 class HelpWindow(QSplitter):
 
-    def __init__(self, parent=None):
+    def __init__(self, main_window, parent=None):
         super(HelpWindow, self).__init__(parent)
         self.setWindowTitle("PLaSK Help")
         self.setWindowIcon(QIcon.fromTheme('help-contents'))
 
         self.help_engine = QHelpEngine(COLLECTION_FILE, self)
+
+        try:
+            main_window.config_changed.connect(self.reconfig)
+        except AttributeError:
+            pass
 
         if not self.help_engine.setupData():
             self.help_engine = None
@@ -105,6 +113,11 @@ class HelpWindow(QSplitter):
 
         self.resize(1200, 800)
 
+    def reconfig(self):
+        font = self.browser.font()
+        font.setPointSize(int(CONFIG['help/fontsize']))
+        self.browser.setFont(font)
+
     def update_content_widget(self, url):
         content_widget = self.help_engine.contentWidget()
         return content_widget.setCurrentIndex(content_widget.indexOf(url))
@@ -131,11 +144,11 @@ class HelpWindow(QSplitter):
             webbrowser.open("{}".format(HELP_URL))
 
 
-def open_help(page=None):
+def open_help(page=None, main_window=None):
     if os.path.exists(COLLECTION_FILE) and not CONFIG['help/online']:
         global HELP_WINDOW
         if HELP_WINDOW is None:
-            HELP_WINDOW = HelpWindow()
+            HELP_WINDOW = HelpWindow(main_window)
         else:
             HELP_WINDOW.raise_()
         if page:

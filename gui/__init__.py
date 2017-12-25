@@ -253,8 +253,7 @@ class MainWindow(QMainWindow):
 
         help_action = QAction(QIcon.fromTheme('help-contents'), 'Open &Help...', self)
         help_action.setStatusTip('Open on-line help in a web browser')
-        help_action.triggered.connect(open_help)
-        self.help_window = None
+        help_action.triggered.connect(lambda: open_help(main_window=self))
 
         install_license_action = QAction('Install License...', self)
         install_license_action.setStatusTip('Install PLaSK license file into a proper location')

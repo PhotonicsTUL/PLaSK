@@ -381,7 +381,7 @@ class ScriptController(SourceEditController):
         return super(ScriptController, self).on_edit_exit()
 
     def open_help(self):
-        open_help('api')
+        open_help('api', self.document.window)
 
     def show_docstring(self):
         if CONFIG['workarounds/no_jedi']: return

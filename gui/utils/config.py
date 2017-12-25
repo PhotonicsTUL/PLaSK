@@ -49,6 +49,7 @@ DEFAULTS = {
     'main_window/icons_theme': 'system',
     'main_window/icons_size': 'default',
     'help/online': False,
+    'help/fontsize': 13,
     'updates/automatic_check': None,
     'editor/font': [_default_font_family, '11', '-1', '5', '50', '0', '0', '0', '0', '0'],
     'editor/help_font': [_default_font_family, '9', '-1', '5', '50', '0', '0', '0', '0', '0'],
@@ -145,9 +146,6 @@ CONFIG_WIDGETS = OrderedDict([
                       "It is recommended  this option on, to keep the backup of the "
                       "edited files in case the new one becomes corrupt or you accidentally "
                       "remove some important parts.")),
-            ("Show only online help",
-             CheckBox('help/online',
-                      "If this is checked ‘Show Help’ opens online help in an external browser window.")),
             ("Icons theme (requires restart)",
              Combo('main_window/icons_theme',
                    ['Tango', 'Breeze'] if os.name == 'nt' else ['system', 'Tango', 'Breeze'],
@@ -164,6 +162,14 @@ CONFIG_WIDGETS = OrderedDict([
          [
             ("Default launcher", Combo('launcher/default', _get_launchers, "Default launcher to select in new window")),
          ]),
+        ("Help", [
+            ("Show only online help",
+             CheckBox('help/online',
+                      "If this is checked ‘Show Help’ opens online help in an external browser window.")),
+            ("Help window font size",
+             SpinBox('help/fontsize', 1, 512,
+                      "Default font size in the help window.")),
+        ]),
     ])),
     ("Window Display", OrderedDict([
         ("Geometry View", [
@@ -428,7 +434,7 @@ class ConfigDialog(QDialog):
             super(ConfigDialog.SpinBox, self).__init__(parent)
             self.entry = entry
             if min is not None: self.setMinimum(min)
-            if max is not None: self.setMaximum(min)
+            if max is not None: self.setMaximum(max)
             self.setValue(int(CONFIG[entry]))
             if help is not None: self.setWhatsThis(help)
             self.needs_restart = needs_restart

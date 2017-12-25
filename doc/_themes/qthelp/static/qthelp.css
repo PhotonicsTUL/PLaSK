@@ -4,8 +4,7 @@
 }
 
 body {
-  font-family: sans-serif;
-  font-size: 12pt;
+  font-family: sans-serif, Calibri;
   line-height: 1.4em;
   color: black;
   background-color: #ffffff;
@@ -91,36 +90,8 @@ dt:target, .highlighted {
   background-color: #fbe54e;
 }
 
-/* Header */
-
-div.header {
-  padding-top: 10px;
-  padding-bottom: 10px;
-}
-
-div.header .headertitle {
-  font-family: "Georgia", serif;
-  font-weight: normal;
-  font-size: 180%;
-  letter-spacing: .08em;
-  margin-bottom: .8em;
-}
-
-div.header .headertitle a {
-  color: white;
-}
-
-div.header div.rel {
-  margin-top: 1em;
-}
-
-div.header div.rel a {
-  letter-spacing: .1em;
-  text-transform: uppercase;
-}
-
-
 /* Content */
+
 div.content-wrapper {
   background-color: white;
   padding-top: 20px;
@@ -199,8 +170,7 @@ ol {
 
 
 pre, kbd, samp, tt, code {
-    font-family: Monaco, Menlo, Consolas, monospace;
-    font-size: 0.95em;
+    font-family: monospace, Monaco, Menlo, Consolas;
 }
 
 dl.xml-contents dt {
@@ -230,6 +200,8 @@ th.field-name {
 
 p.rubric {
     font-weight: bold;
+    margin-top: 1.5em;
+    margin-bottom: 0em;
 }
 
 table.docutils {
