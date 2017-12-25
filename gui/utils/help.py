@@ -20,6 +20,8 @@ from ..qt.QtGui import *
 from ..qt.QtWidgets import *
 from ..qt.QtHelp import *
 
+from .config import CONFIG
+
 HELP_URL = 'http://fizyka.p.lodz.pl/en/plask-user-guide/'
 
 HELP_DIR = os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'share', 'doc', 'plask')
@@ -130,7 +132,7 @@ class HelpWindow(QSplitter):
 
 
 def open_help(page=None):
-    if os.path.exists(COLLECTION_FILE):
+    if os.path.exists(COLLECTION_FILE) and not CONFIG['help/online']:
         global HELP_WINDOW
         if HELP_WINDOW is None:
             HELP_WINDOW = HelpWindow()
