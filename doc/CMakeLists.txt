@@ -11,6 +11,12 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/_cmake)
 
 find_package(Sphinx)
+if(SPHINX_FOUND)
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sphinx" RESULT_VARIABLE sphinx_status ERROR_QUIET)
+    if(NOT sphinx_status EQUAL 0)
+        set(SPHINX_FOUND NOTFOUND)
+    endif()
+endif()
 
 set(SPHINX_PAPER "a4" CACHE STRING "Paper format for Sphinx documentation")
 set(SPHINX_OPTIONS "" CACHE STRING "Other Sphinx options")
