@@ -41,10 +41,13 @@ if (INKSCAPE)
     endforeach()
 endif()
 
+option(BUILD_QTHELP "Build and install QtHelp for GUI" ON)
+find_program(QHELPGENERATOR qhelpgenerator HINTS ${QT_PATH}/bin)
+find_program(QCOLLECTIONGENERATOR qcollectiongenerator HINTS ${QT_PATH}/bin)
+
 set(sphinx plask ${SPHINX_EXECUTABLE})
 
 if(SPHINX_FOUND)
-
     file(GLOB rst_files *.rst api/*.rst xpl/*.rst xpl/geometry/*.rst xpl/geometry/2d/*.rst xpl/geometry/3d/*.rst xpl/solvers/filters.rst xpl/solvers/boundary_conditions.rst)
 
     if(EXISTS ${CMAKE_SOURCE_DIR}/toolset/make_solvers_xpl_doc.py)
@@ -87,10 +90,28 @@ if(SPHINX_FOUND)
         DEPENDS ${rst_files} ${svg_files} ${solvers_timestamp} conf.py
     )
 
-    add_custom_target(doc-qthelp
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhp ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhcp
         COMMAND ${sphinx} -b qthelp ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/qthelp
         DEPENDS ${rst_files} ${svg_files} ${solvers_timestamp} conf.py
     )
+    add_custom_target(doc-qthelp DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhp)
+
+    if(QHELPGENERATOR AND QCOLLECTIONGENERATOR)
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qch
+            COMMAND ${QHELPGENERATOR} ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhp -o ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qch
+            DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhp
+        )
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhc
+            COMMAND ${QCOLLECTIONGENERATOR} ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhcp -o ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhc
+            DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhcp ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qch
+        )
+        if(BUILD_QTHELP)
+            install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhc ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qch
+                    DESTINATION share/doc/plask)
+            add_custom_target(qthelp ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhc ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qch)
+        endif()
+    endif()
+
 
     add_custom_target(doc-devhelp
         COMMAND ${sphinx} -b devhelp ${ALLSPHINXOPTS} ${CMAKE_CURRENT_BINARY_DIR}/devhelp
@@ -163,6 +184,7 @@ if(SPHINX_FOUND)
     add_custom_target(doc-clean
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_SOURCE_DIR}/api/plask
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_SOURCE_DIR}/api/solvers
+        COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_SOURCE_DIR}/xpl/solvers
     )
 
 endif()
