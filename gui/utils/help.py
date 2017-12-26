@@ -35,6 +35,8 @@ class HelpBrowser(QTextBrowser):
     def __init__(self, help_engine, parent=None):
         super(HelpBrowser, self).__init__(parent)
         self.help_engine = help_engine
+        self.setOpenLinks(False)
+        self.anchorClicked.connect(self.open_link)
         font = self.font()
         font.setPointSize(int(CONFIG['help/fontsize']))
         self.setFont(font)
@@ -45,6 +47,13 @@ class HelpBrowser(QTextBrowser):
                 url = self.source().resolved(url)
             return self.help_engine.fileData(url)
 
+    def open_link(self, url):
+        if url.isRelative():
+            url = self.source().resolved(url)
+        if url.scheme() == 'qthelp':
+            self.setSource(url)
+        else:
+            webbrowser.open(url.toString())
 
 class HelpWindow(QSplitter):
 
