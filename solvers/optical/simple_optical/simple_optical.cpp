@@ -127,7 +127,7 @@ void SimpleOptical::computeField(double wavelength)
   // create mesh for calcurate field, only for my test
   double start = 0;
   double end = 7.9;
-  int num = 1000;
+  int num = 500;
   std::vector<double> linspaced;
   double delta = (end - start) / (num - 1);
 
@@ -183,7 +183,7 @@ std::vector<dcomplex> SimpleOptical::computeEz(const dcomplex& x, const std::vec
   std::cout<<"\n";
   
  
-  z.push_back(0);
+  //z.push_back(0);
   for (size_t i = 0; i < verticalEdgeVec.size(); ++i)
   {
     for (double p: dst_mesh) 
@@ -206,31 +206,37 @@ std::vector<dcomplex> SimpleOptical::computeEz(const dcomplex& x, const std::vec
    
    
    Matrix phas_matrix;
-   Matrix boundary_matrix;  
+   //Matrix boundary_matrix;  
    transfer_matrix = Matrix::eye();
    dcomplex phas;
    
    
-   phas_matrix = Matrix(exp(I*NR[0]*x*0), 0, 0, exp(-I*NR[0]*x*0));
-   boundary_matrix = Matrix( 0, 1,
-                             1, 0 );
+//    phas_matrix = Matrix(exp(I*NR[0]*x*0), 0, 0, exp(-I*NR[0]*x*0));
+//    std::cout<<"exp = " << exp(I*NR[0]*x*0) << std::endl;
+//    boundary_matrix = Matrix( 0, 1,
+//                              1, 0 );
+//    
+//    dcomplex F = 1; 
+  // dcomplex B = 0;
+  // zfields.push_back(F+B);
+  // transfer_matrix = (boundary_matrix*phas_matrix)*transfer_matrix;  
    
-   dcomplex F = 1; 
-   dcomplex B = 0;
-   zfields.push_back(F+B);
-   transfer_matrix = (boundary_matrix*phas_matrix)*transfer_matrix;  
-   
+  
    for (size_t i = 0; i < hi.size(); ++i)
   {
     
-    phas_matrix = Matrix(exp(I*NR[i]*x*hi[i]), 0, 0, exp(-I*NR[i]*x*hi[i]));
-    boundary_matrix = Matrix( 0.5+0.5*(NR[i]/NR[i+1]), 0.5-0.5*(NR[i]/NR[i+1]),
+    //phas_matrix = Matrix(exp(I*NR[i]*x*hi[i]), 0, 0, exp(-I*NR[i]*x*hi[i]));
+    phas = exp(-I*NR[i]*x*hi[i]);
+    Matrix boundary_matrix = Matrix( 0.5+0.5*(NR[i]/NR[i+1]), 0.5-0.5*(NR[i]/NR[i+1]),
                               0.5-0.5*(NR[i]/NR[i+1]), 0.5+0.5*(NR[i]/NR[i+1]) );
-    dcomplex F = transfer_matrix.fb; 
+    
+    boundary_matrix.ff *= phas; boundary_matrix.fb /= phas;
+    boundary_matrix.bf *= phas; boundary_matrix.bb /= phas; 
+    transfer_matrix = boundary_matrix*transfer_matrix;        
+    dcomplex F = transfer_matrix.fb; // Assume  F0 = 0  B0 = 1
     dcomplex B = transfer_matrix.bb;
     zfields.push_back(F+B);
-    transfer_matrix = (boundary_matrix*phas_matrix)*transfer_matrix;        
-   }  
+  }  
   
   return zfields;
 }
