@@ -119,6 +119,18 @@ struct XMLPythonDataSource: public XMLReader::DataSource {
     virtual ~XMLPythonDataSource() {}
 };
 
+inline boost::filesystem::path pyobject_to_path(py::object src) {
+#if PY_VERSION_HEX >= 0x03000000
+    Py_ssize_t size;
+    wchar_t* str = PyUnicode_AsWideCharString(src.ptr(), &size);
+    std::wstring wstr(str, size);
+    PyMem_Free(str);
+    return wstr;
+#else
+    return std::string(py::extract<std::string>(src));
+#endif
+}
+
 /**
  * Load data from XML
  */
@@ -141,16 +153,18 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
 #endif
         str = py::extract<std::string>(src);
         if (str.find('<') == std::string::npos && str.find('>') == std::string::npos) { // str is not XML (a filename probably)
-            source.reset(new XMLReader::StreamDataSource(new std::ifstream(str)));
-            filename = str;
+            boost::filesystem::path filename_tmp = pyobject_to_path(src);
+            source.reset(new XMLReader::StreamDataSource(new std::ifstream(filename_tmp.string())));
+            filename = std::move(filename_tmp);
         } else
             source.reset(new XMLReader::StreamDataSource(new std::istringstream(str)));
     } catch (py::error_already_set) {
         PyErr_Clear();
         if (!PyObject_HasAttrString(src.ptr(),"read")) throw TypeError("argument is neither string nor a proper file-like object");
         try {
-            std::string name = py::extract<std::string>(src.attr("name"));
-            if (name[0] != '<') filename = name;
+            py::object name_attr = src.attr("name");
+            std::string name = py::extract<std::string>(name_attr);
+            if (name[0] != '<') filename = pyobject_to_path(name_attr);
         } catch(...) {
             PyErr_Clear();
         }

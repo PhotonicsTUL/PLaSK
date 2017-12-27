@@ -506,7 +506,7 @@ int system_main(int argc, const system_char *argv[])
                 py::object omanager(manager);
                 globals["__manager__"] = omanager;
                 if (realfile)
-                    plask::python::PythonManager_load(omanager, system_str_to_pyobject(filename), locals);	// TODO system_to_utf8 is propably not needed with pybind and it can be not proper here
+                    plask::python::PythonManager_load(omanager, system_str_to_pyobject(filename), locals);
                 else {
                     py::object sys = py::import("sys");
                     plask::python::PythonManager_load(omanager, sys.attr("stdin"), locals);
