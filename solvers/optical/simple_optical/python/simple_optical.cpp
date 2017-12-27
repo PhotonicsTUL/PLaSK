@@ -20,6 +20,7 @@ BOOST_PYTHON_MODULE(simple_optical)
      METHOD(findRoot, findRoot, "This is method to find wavelength of mode");
      PROVIDER(outLightMagnitude, "");
      METHOD(getLightMagnitude, getLightMagnitude, "This method return electric field");
+     METHOD(getNrCache, getNrCache, "This method return refractive index");
     }
 
 }

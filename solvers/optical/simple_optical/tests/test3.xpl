@@ -46,35 +46,52 @@
 <script><![CDATA[
 plt.rcParams.update({'font.size': 28})
 
-wavelength = np.linspace(800, 1100, 1000)
-t_bb = np.zeros(len(wavelength), dtype=complex)
-for i in range(0, len(t_bb)):
-    prosty.simpleVerticalSolver(wavelength[i])
-    t_bb[i] = prosty.get_T_bb()
-plt.plot(wavelength, np.abs(t_bb), 'b-')
-plt.xlabel("wavelength [nm]")
-plt.ylabel("T bb")
-plt.yscale('log')
+def get_k0(wavelength):
+    return (2e3*np.pi)/wavelength
 
-plt.figure()
-prosty.computeField(980)
+
+#wavelength = np.linspace(900, 1050, 100)
+#t_bb = np.zeros(len(wavelength), dtype=complex)
+#for i in range(0, len(t_bb)):
+#    prosty.simpleVerticalSolver(wavelength[i])
+#    t_bb[i] = prosty.get_T_bb()
+#plt.plot(wavelength, np.abs(t_bb), 'b-')
+#plt.xlabel("wavelength [nm]")
+#plt.ylabel("T bb")
+#plt.yscale('log')
+##plt.axhline(color='black')
+#w = np.linspace(900, 1050, 5)
+#for i in w:
+#    k = get_k0(i)
+#    prosty.findRoot(k)
+    
+#prosty.findRoot(6.45)
+fig, ax1 = plt.subplots()
+prosty.computeField(978)
 z = prosty.getZ()
 eField = np.array(prosty.getEz(), dtype=complex)
-plt.plot(z, eField, 'r-')
+nrCache = prosty.getNrCache()
+ax1.plot(z, np.abs((eField)), 'r-')
+ax1.set_ylabel("electric field", color="red")
+ax2 = ax1.twinx()
+ax2.plot(z, nrCache, 'b-')
+ax1.set_xlabel('z')
+ax2.set_ylabel("refractive index", color="blue")
 
 plt.figure()
 geo = prosty.geometry
 p = plot_geometry(geo, fill=True, alpha=0.8)
 p = p.twiny()
-p.plot(np.abs(eField), z, 'r-', lw=2)
+p.plot(np.abs(eField), z, 'r-')
 p.set_xlabel("Electric field F")
 plt.ylim([-1, 11])
 
 plt.show()
 
 
-
-
+#prosty.getLightMagnitude(2, [1,2,3])
+#m = plask.mesh.Generator2D.generate(prosty.geometry())
+#print(m)
 #print(prosty.geometry)
 
 

@@ -149,6 +149,10 @@ std::vector<dcomplex> SimpleOptical::getEz()
   return zfields;
 }
 
+std::vector<dcomplex> SimpleOptical::getNrCache()
+{
+  return nrCache;
+}
 const LazyData<double> SimpleOptical::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
 }
@@ -174,7 +178,9 @@ std::vector<dcomplex> SimpleOptical::computeEz(const dcomplex& x, const std::vec
     NR.push_back(geometry->getMaterial(vec(0.0,  p))->Nr(w, T));
     std::cout<<"p = " <<p<<std::endl;      
   }
-   
+  
+  nrCache = NR;
+  
   std::vector<double> verticalEdgeVec;
   for (double p_edge: *axis_vertical) verticalEdgeVec.push_back(p_edge); 
   

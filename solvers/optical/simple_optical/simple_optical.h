@@ -110,6 +110,8 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      
      dcomplex findRoot(double k0);
      
+      std::vector<dcomplex> getNrCache();
+     
 
 protected:
 
@@ -136,6 +138,8 @@ protected:
   std::vector<double> edge_vert_layer_point;
 
   void initialize_refractive_index_vec();
+  
+  std::vector<dcomplex> nrCache;
   
   std::vector<double> z;
 
