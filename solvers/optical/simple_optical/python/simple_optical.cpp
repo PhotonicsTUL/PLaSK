@@ -19,6 +19,7 @@ BOOST_PYTHON_MODULE(simple_optical)
      METHOD(getEz, getEz, "This method return Ez field");
      METHOD(findRoot, findRoot, "This is method to find wavelength of mode");
      PROVIDER(outLightMagnitude, "");
+     METHOD(getLightMagnitude, getLightMagnitude, "This method return electric field");
     }
 
 }
