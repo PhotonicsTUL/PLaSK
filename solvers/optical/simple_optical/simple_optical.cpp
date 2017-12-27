@@ -127,7 +127,7 @@ void SimpleOptical::computeField(double wavelength)
   // create mesh for calcurate field, only for my test
   double start = 0;
   double end = 7.9;
-  int num = 500;
+  int num = 450;
   std::vector<double> linspaced;
   double delta = (end - start) / (num - 1);
 
@@ -227,6 +227,7 @@ std::vector<dcomplex> SimpleOptical::computeEz(const dcomplex& x, const std::vec
     
     //phas_matrix = Matrix(exp(I*NR[i]*x*hi[i]), 0, 0, exp(-I*NR[i]*x*hi[i]));
     phas = exp(-I*NR[i]*x*hi[i]);
+    std::cout<<"phas = " << phas << std::endl;
     Matrix boundary_matrix = Matrix( 0.5+0.5*(NR[i]/NR[i+1]), 0.5-0.5*(NR[i]/NR[i+1]),
                               0.5-0.5*(NR[i]/NR[i+1]), 0.5+0.5*(NR[i]/NR[i+1]) );
     
@@ -235,7 +236,7 @@ std::vector<dcomplex> SimpleOptical::computeEz(const dcomplex& x, const std::vec
     transfer_matrix = boundary_matrix*transfer_matrix;        
     dcomplex F = transfer_matrix.fb; // Assume  F0 = 0  B0 = 1
     dcomplex B = transfer_matrix.bb;
-    zfields.push_back(F+B);
+    zfields.push_back(F);
   }  
   
   return zfields;
