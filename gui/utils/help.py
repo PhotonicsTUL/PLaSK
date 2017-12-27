@@ -21,6 +21,7 @@ from ..qt.QtWidgets import *
 from ..qt.QtHelp import *
 
 from .config import CONFIG
+from .widgets import set_icon_size
 
 HELP_URL = 'http://fizyka.p.lodz.pl/en/plask-user-guide/'
 
@@ -29,6 +30,7 @@ HELP_FILE = os.path.join(HELP_DIR, 'plask.qch')
 COLLECTION_FILE = os.path.join(HELP_DIR, 'plask.qhc')
 
 HELP_WINDOW = None
+
 
 class HelpBrowser(QTextBrowser):
 
@@ -55,6 +57,7 @@ class HelpBrowser(QTextBrowser):
         else:
             webbrowser.open(url.toString())
 
+
 class HelpWindow(QSplitter):
 
     def __init__(self, main_window, parent=None):
@@ -80,6 +83,7 @@ class HelpWindow(QSplitter):
         browser_area = QWidget()
         browser_layout = QVBoxLayout()
         self.toolbar = QToolBar()
+        set_icon_size(self.toolbar)
         self.browser = HelpBrowser(self.help_engine)
         browser_layout.setContentsMargins(0, 0, 0, 0)
         browser_layout.addWidget(self.toolbar)
@@ -120,7 +124,7 @@ class HelpWindow(QSplitter):
         self.prefix = 'qthelp://{}/doc/'.format(self.namespace)
         self.browser.setSource(QUrl(self.prefix+'index.html'))
 
-        self.resize(1200, 800)
+        self.resize(int(0.85 * main_window.width()), int(0.85 * main_window.height()))
 
     def reconfig(self):
         font = self.browser.font()
