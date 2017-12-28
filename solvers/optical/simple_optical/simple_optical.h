@@ -17,21 +17,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
 
     
      SimpleOptical(const std::string& name="SimpleOptical");
-
-     struct FieldZ {
-          dcomplex F, B;
-	  FieldZ() = default;
-
-          FieldZ(dcomplex f, dcomplex b): F(f), B(b) {}
-
-          FieldZ operator*(dcomplex a) const { return FieldZ(F*a, B*a); }
-          FieldZ operator/(dcomplex a) const { return FieldZ(F/a, B/a); }
-          FieldZ operator*=(dcomplex a) { F *= a; B *= a; return *this; }
-          FieldZ operator/=(dcomplex a) { F /= a; B /= a; return *this; }
-      };
-
      
-
      struct Matrix {
          dcomplex ff, fb, bf, bb;
          Matrix() = default;
@@ -43,7 +29,22 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
             return Matrix( ff*T.ff + fb*T.bf, ff*T.fb + fb*T.bb,
                            bf*T.ff + bb*T.bf, bf*T.fb + bb*T.bb);
          }
+       
       };
+     
+     struct FieldZ {
+          dcomplex F, B;
+	  FieldZ() = default;
+
+          FieldZ(dcomplex f, dcomplex b): F(f), B(b) {}
+
+          FieldZ operator*(dcomplex a) const { return FieldZ(F*a, B*a); }
+          FieldZ operator*(const Matrix m) {return FieldZ(m.ff*F+m.fb*B, m.bf*F+m.bb*B);}
+          FieldZ operator/(dcomplex a) const { return FieldZ(F/a, B/a); }
+          FieldZ operator*=(dcomplex a) { F *= a; B *= a; return *this; }
+          FieldZ operator/=(dcomplex a) { F /= a; B /= a; return *this; }
+     };
+      
 
      enum Polarization {
         TE,
@@ -110,7 +111,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      
      dcomplex findRoot(double k0);
      
-      std::vector<dcomplex> getNrCache();
+     std::vector<dcomplex> getNrCache();
      
 
 protected:
@@ -147,7 +148,7 @@ protected:
   std::vector<dcomplex> zfields; 
 
   
-  std::vector<FieldZ> electricField;
+  std::vector<FieldZ> vecE;
 
   void print_vector(std::vector<double> vec);
 
