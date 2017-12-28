@@ -128,7 +128,7 @@ dcomplex SimpleOptical::compute_transfer_matrix(const dcomplex& x, const std::ve
   return transfer_matrix.bb;
 }
 
-void SimpleOptical::computeField(double wavelength)
+void SimpleOptical::computeField(double wavelength, double s, double e, int n)
 {
   setWavelength(wavelength);
   onInitialize();
@@ -141,9 +141,9 @@ void SimpleOptical::computeField(double wavelength)
   }
   
   // create mesh for calcurate field, only for my test
-  double start = 0;
-  double end = 7.9;
-  int num = 1800;
+  double start = s;
+  double end = e;
+  int num = n;
   std::vector<double> linspace;
   double delta = (end - start) / (num - 1);
 

@@ -31,7 +31,7 @@ plt.rcParams.update({'font.size': 28})
 #plt.ylabel("T bb")
 #plt.show()
 
-prosty.computeField(978)
+prosty.computeField(978, 0, 2.9, 8)
 z = prosty.getZ()
 Ez = prosty.getEz()
 print("z=", z)

@@ -71,7 +71,7 @@ def get_k0(wavelength):
     
 #prosty.findRoot(6.45)
 fig, ax1 = plt.subplots()
-prosty.computeField(978)
+prosty.computeField(978, 0, 8, 1500)
 
 z = prosty.getZ()
 eField = np.array(prosty.getEz(), dtype=complex)
