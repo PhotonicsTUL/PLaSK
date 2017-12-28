@@ -688,7 +688,7 @@ using LowerBoundImpl = details::AlignerCustomImpl<dir, details::lowToCoordinate,
 template <Primitive<3>::Direction dir> inline Aligner<dir> lowerBoundZero() { return new LowerBoundImpl<dir>(0.0); }
 template <Primitive<3>::Direction dir1, Primitive<3>::Direction dir2> inline Aligner<dir1, dir2> lowerBoundZero() { return lowerBoundZero<dir1> & lowerBoundZero<dir2>; }
 
-typedef std::function<boost::optional<double>(const std::string& name)> Dictionary;
+typedef std::function<plask::optional<double>(const std::string& name)> Dictionary;
 
 namespace details {
     PLASK_API Aligner<Primitive<3>::DIRECTION_TRAN> transAlignerFromDictionary(Dictionary dic, const std::string& axis_name);
@@ -760,7 +760,7 @@ Aligner<direction> fromDictionary(Dictionary dictionary, const AxisNames& axis_n
 struct DictionaryFromXML {
     const XMLReader& reader;
     DictionaryFromXML(const XMLReader& reader): reader(reader) {}
-    boost::optional<double> operator()(const std::string& s) const { return reader.getAttribute<double>(s); }
+    plask::optional<double> operator()(const std::string& s) const { return reader.getAttribute<double>(s); }
 };
 
 template <Direction direction>

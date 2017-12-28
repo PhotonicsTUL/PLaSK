@@ -625,7 +625,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
         typedef ValueType ProvidedType;
 
         /// Provided value.
-        boost::optional<ProvidedType> value;
+        plask::optional<ProvidedType> value;
 
         /// Reset value to be uninitialized.
         void invalidate() { value.reset(); }
@@ -647,7 +647,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
         /// Construct value
         WithValue(ProvidedType&& value): value(value) {}
 
-        /// Create empty boost::optional value.
+        /// Create empty plask::optional value.
         WithValue() {}
 
         /**
@@ -663,7 +663,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
         /**
          * Get provided value.
          * @return provided value
-         * @throw NoValue if value is empty boost::optional
+         * @throw NoValue if value is empty plask::optional
          */
         ProvidedType operator()(_ExtraParams...) const override {
             ensureHasValue();
@@ -817,7 +817,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
         template <typename Iterator>
         explicit WithValue(const Iterator& begin, const Iterator& end): values(begin, end) {}
 
-        /// Create empty boost::optional value.
+        /// Create empty plask::optional value.
         WithValue() {}
 
         /**
@@ -859,7 +859,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
          * Get provided value.
          * \return provided value
          * \param n value index
-         * \throw NoValue if value is empty boost::optional
+         * \throw NoValue if value is empty plask::optional
          */
         ProvidedType operator()(EnumType n, _ExtraParams...) const override {
             ensureIndex(n);

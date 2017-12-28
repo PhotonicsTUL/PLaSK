@@ -6,7 +6,9 @@
 #include <vector>
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+#ifndef _WIN32_WINNT
 #   define _WIN32_WINNT 0x502
+#endif
 #   include <plask/utils/minimal_windows.h>
 //#   define BOOST_USE_WINDOWS_H
 #endif
@@ -286,10 +288,10 @@ static inline void parseKwargs(const std::string& fname, py::tuple& args, py::di
     try {
         detail::_parse_kwargs<0>(arglist, kwargs, names...);
     } catch (const std::string& name) {
-        throw TypeError("{0}() got multiple values for keyword argument '{1}'", fname, name);
+        throw TypeError(u8"{0}() got multiple values for keyword argument '{1}'", fname, name);
     }
     if (py::len(arglist) != sizeof...(names))
-        throw TypeError("{0}() takes exactly {1} non-keyword arguments ({2} given)", fname, sizeof...(names), py::len(arglist));
+        throw TypeError(u8"{0}() takes exactly {1} non-keyword arguments ({2} given)", fname, sizeof...(names), py::len(arglist));
     args = py::tuple(arglist);
 }
 

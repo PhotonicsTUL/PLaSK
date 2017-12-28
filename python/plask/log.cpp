@@ -258,10 +258,10 @@ void LoggingConfig::setLoggingDest(py::object dest) {
         else if (dest == sys.attr("stdout") || dst == "stdout" || dst == "sys.stdout")
             logger->dest = PythonSysLogger::DEST_STDOUT;
         else
-            throw ValueError("Logging output can only be sys.stderr or sys.stdout.");
+            throw ValueError(u8"Logging output can only be sys.stderr or sys.stdout.");
         return;
     }
-    throw TypeError("Setting output for current logging system does not make sense.");
+    throw TypeError(u8"Setting output for current logging system does not make sense.");
 }
 
 
@@ -270,10 +270,10 @@ py::object print_log(py::tuple args, py::dict kwargs) {
     if (py::len(kwargs) > (kw ? 1 : 0)) {
         py::stl_input_iterator<std::string> key(kwargs);
         if (*key == "level") ++key;
-        throw TypeError("print_log() got an unexpected keyword argument '{}'", std::string(*key));
+        throw TypeError(u8"print_log() got an unexpected keyword argument '{}'", std::string(*key));
     }
     if (!kw && py::len(args) < 1)
-        throw TypeError("print_log() takes at least 1 argument (0 given)");
+        throw TypeError(u8"print_log() takes at least 1 argument (0 given)");
     LogLevel level = py::extract<LogLevel>(kw ? kwargs["level"] : args[0]);
     py::stl_input_iterator<py::object> begin(args), end;
     if (!kw) ++begin;
@@ -304,36 +304,36 @@ void register_python_log()
     LOG_ENUM(DEBUG);
 
     py::detail::scope_setattr_doc("print_log", py::raw_function(print_log),
-            "print_log(level, *args)\n\n"
-            "Print log message into a specified log level.\n\n"
-            "Args:\n"
-            "    level (str): Log level to print the message to.\n"
-            "    args: Items to print. They are concatenated togeter and separated by space,\n"
-            "          similarly to the ``print`` function.\n"
+            u8"print_log(level, *args)\n\n"
+            u8"Print log message into a specified log level.\n\n"
+            u8"Args:\n"
+            u8"    level (str): Log level to print the message to.\n"
+            u8"    args: Items to print. They are concatenated togeter and separated by space,\n"
+            u8"          similarly to the ``print`` function.\n"
            );
 
     py::class_<LogOO>("DataLog2",
-        "Class used to log relations between two variables (argument and value)\n\n"
-        "DataLog2(prefix, arg_name, val_name)\n    Create log with specified prefix, name, and argument and value names\n",
+        u8"Class used to log relations between two variables (argument and value)\n\n"
+        u8"DataLog2(prefix, arg_name, val_name)\n    Create log with specified prefix, name, and argument and value names\n",
         py::init<std::string,std::string,std::string,std::string>((py::arg("prefix"), "name", "arg_name", "val_name")))
-        .def("__call__", &Data2DLog__call__, (py::arg("arg"), "val"), "Log value pair")
-        .def("count", &Data2DLog_count, (py::arg("arg"), "val"), "Log value pair and count successive logs")
-        .def("reset", &LogOO::resetCounter, "Reset logs counter")
+        .def("__call__", &Data2DLog__call__, (py::arg("arg"), "val"), u8"Log value pair")
+        .def("count", &Data2DLog_count, (py::arg("arg"), "val"), u8"Log value pair and count successive logs")
+        .def("reset", &LogOO::resetCounter, u8"Reset logs counter")
     ;
 
-    py::class_<LoggingConfig>("LoggingConfig", "Settings of the logging system", py::no_init)
-        .add_property("colors", &LoggingConfig::getLoggingColor, &LoggingConfig::setLoggingColor, "Output color type ('ansi'"
+    py::class_<LoggingConfig>("LoggingConfig", u8"Settings of the logging system", py::no_init)
+        .add_property("colors", &LoggingConfig::getLoggingColor, &LoggingConfig::setLoggingColor, u8"Output color type ('ansi'"
 #       if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-            ", windows,"
+            u8", windows,"
 #       endif
-        " or 'none').")
-        .add_property("output", &LoggingConfig::getLoggingDest, &LoggingConfig::setLoggingDest, "Output destination ('stderr' or 'stdout').")
-        .add_property("level", &LoggingConfig::getLogLevel, &LoggingConfig::setLogLevel, "Maximum log level.")
+        u8" or 'none').")
+        .add_property("output", &LoggingConfig::getLoggingDest, &LoggingConfig::setLoggingDest, u8"Output destination ('stderr' or 'stdout').")
+        .add_property("level", &LoggingConfig::getLogLevel, &LoggingConfig::setLogLevel, u8"Maximum log level.")
         .def("use_python", createPythonLogger,
-             "Use Python for log output.\n\n"
-             "By default PLaSK uses system calls for printing. This is more efficient,\n"
-             "but can make log not visible if PLaSK is used interactively. Call this method\n"
-             "to use Python sys.stderr or sys.stdout for log printing.\n")
+             u8"Use Python for log output.\n\n"
+             u8"By default PLaSK uses system calls for printing. This is more efficient,\n"
+             u8"but can make log not visible if PLaSK is used interactively. Call this method\n"
+             u8"to use Python sys.stderr or sys.stdout for log printing.\n")
         .staticmethod("use_python")
     ;
 }

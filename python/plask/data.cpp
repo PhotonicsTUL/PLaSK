@@ -85,65 +85,65 @@ inline static Tensor3<double> imag(const Tensor3<T>& x) {
 namespace python {
 
 static const char* DATA_DOCSTRING =
-    "Data returned by field providers.\n\n"
+    u8"Data returned by field providers.\n\n"
 
-    "This class is returned by field providers and receivers and cointains the values\n"
-    "of the computed field at specified mesh points. It can be passed to the field\n"
-    "plotting and saving functions or even feeded to some receivers. Also, if the\n"
-    "mesh is a rectangular one, the data can be converted into an multi-dimensional\n"\
-    "numpy array.\n\n"
+    u8"This class is returned by field providers and receivers and cointains the values\n"
+    u8"of the computed field at specified mesh points. It can be passed to the field\n"
+    u8"plotting and saving functions or even feeded to some receivers. Also, if the\n"
+    u8"mesh is a rectangular one, the data can be converted into an multi-dimensional\n"\
+    u8"numpy array.\n\n"
 
-    "You may access the data by indexing the :class:`~plask.Data` object, where the\n"
-    "index always corresponds to the index of the mesh point where the particular\n"
-    "value is specified. Hence, you may also iterate :class:`~plask.Data` objects as\n"
-    "normal Python sequences.\n\n"
+    u8"You may access the data by indexing the :class:`~plask.Data` object, where the\n"
+    u8"index always corresponds to the index of the mesh point where the particular\n"
+    u8"value is specified. Hence, you may also iterate :class:`~plask.Data` objects as\n"
+    u8"normal Python sequences.\n\n"
 
-    "You may construct the data object manually from a numpy array and a mesh.\n"
-    "The constructor always take two argumentsa as specified below:\n\n"
+    u8"You may construct the data object manually from a numpy array and a mesh.\n"
+    u8"The constructor always take two argumentsa as specified below:\n\n"
 
-    "Args:\n"
-    "    array: The array with a custom data.\n"
-    "        It must be either a one dimensional array with sequential data of the\n"
-    "        desired type corresponding to the sequential mesh points or (for the\n"
-    "        rectangular meshes) an array with the same shape as returned by the\n"
-    "        :attr:`array` attribute.\n"
-    "    mesh: The mesh specifying where the data points are located.\n"
-    "        The size of the mesh must be equal to the size of the provided array.\n"
-    "        Furthermore, when constructing the data from the structured array, the\n"
-    "        mesh ordering must match the data stride, so it is possible to avoid\n"
-    "        data copying (defaults for both are fine).\n"
-    "Returns:\n"
-    "    plask._Data: Data based on the specified mesh and array.\n\n"
+    u8"Args:\n"
+    u8"    array: The array with a custom data.\n"
+    u8"        It must be either a one dimensional array with sequential data of the\n"
+    u8"        desired type corresponding to the sequential mesh points or (for the\n"
+    u8"        rectangular meshes) an array with the same shape as returned by the\n"
+    u8"        :attr:`array` attribute.\n"
+    u8"    mesh: The mesh specifying where the data points are located.\n"
+    u8"        The size of the mesh must be equal to the size of the provided array.\n"
+    u8"        Furthermore, when constructing the data from the structured array, the\n"
+    u8"        mesh ordering must match the data stride, so it is possible to avoid\n"
+    u8"        data copying (defaults for both are fine).\n"
+    u8"Returns:\n"
+    u8"    plask._Data: Data based on the specified mesh and array.\n\n"
 
-    "Examples:\n"
-    "    To create the data from the flat sequential array:\n\n"
+    u8"Examples:\n"
+    u8"    To create the data from the flat sequential array:\n\n"
 
-    "    >>> msh = plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1, 2, 3]),\n"
-    "    ... plask.mesh.Rectilinear([10, 20]))\n"
-    "    >>> Data(array([1., 2., 3., 4., 5., 6.]), msh)\n"
-    "    <plask.Data at 0x4698938>\n\n"
+    u8"    >>> msh = plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1, 2, 3]),\n"
+    u8"    ... plask.mesh.Rectilinear([10, 20]))\n"
+    u8"    >>> Data(array([1., 2., 3., 4., 5., 6.]), msh)\n"
+    u8"    <plask.Data at 0x4698938>\n\n"
 
-    "    As the ``msh`` is a rectangular mesh, the data can be created from the\n"
-    "    structured array with the shape (3, 2), as the first and second mesh\n"
-    "    dimensions are 3 and 2, respectively:\n\n"
+    u8"    As the ``msh`` is a rectangular mesh, the data can be created from the\n"
+    u8"    structured array with the shape (3, 2), as the first and second mesh\n"
+    u8"    dimensions are 3 and 2, respectively:\n\n"
 
-    "    >>> dat = Data(array([[1., 2.], [3., 4.], [5., 6.]]), msh)\n"
-    "    >>> dat[0]\n"
-    "    1.0\n\n"
+    u8"    >>> dat = Data(array([[1., 2.], [3., 4.], [5., 6.]]), msh)\n"
+    u8"    >>> dat[0]\n"
+    u8"    1.0\n\n"
 
-    "    By adding one more dimension, you can create an array of vectors:\n\n"
+    u8"    By adding one more dimension, you can create an array of vectors:\n\n"
 
-    "    >>> d = Data(array([[[1.,0.], [2.,0.]], [[3.,0.], [4.,1.]],\n"
-    "    ...                 [[5.,1.], [6.,1.]]]), msh)\n"
-    "    >>> d.dtype\n"
-    "    plask.vec\n"
-    "    >>> d[1]\n"
-    "    plask.vec(2, 0)\n"
-    "    >>> d.array[:,:,0]    # retrieve first components of all the vectors\n"
-    "    array([[1., 2.], [3., 4.], [5., 6.]])\n\n"
+    u8"    >>> d = Data(array([[[1.,0.], [2.,0.]], [[3.,0.], [4.,1.]],\n"
+    u8"    ...                 [[5.,1.], [6.,1.]]]), msh)\n"
+    u8"    >>> d.dtype\n"
+    u8"    plask.vec\n"
+    u8"    >>> d[1]\n"
+    u8"    plask.vec(2, 0)\n"
+    u8"    >>> d.array[:,:,0]    # retrieve first components of all the vectors\n"
+    u8"    array([[1., 2.], [3., 4.], [5., 6.]])\n\n"
 
-    "Construction of the data objects is efficient i.e. no data is copied in the\n"
-    "memory from the provided array.\n";
+    u8"Construction of the data objects is efficient i.e. no data is copied in the\n"
+    u8"memory from the provided array.\n";
 
 
 /*
@@ -242,7 +242,7 @@ static const typename DataVector<T>::const_iterator PythonDataVector_end(const P
 template <typename T, int dim>
 static T PythonDataVector_getitem(const PythonDataVector<T,dim>& self, std::ptrdiff_t i) {
     if (i < 0) i += self.size();
-    if (i < 0 || std::size_t(i) >= self.size()) throw IndexError("index out of range");
+    if (i < 0 || std::size_t(i) >= self.size()) throw IndexError(u8"index out of range");
     return self[i];
 }
 
@@ -296,7 +296,7 @@ PythonDataVector__array__(py::object oself, py::object dtype=py::object()) {
 
     const PythonDataVector<T,dim>* self = py::extract<const PythonDataVector<T,dim>*>(oself);
 
-    if (self->mesh_changed) throw Exception("Cannot create array, mesh changed since data retrieval");
+    if (self->mesh_changed) throw Exception(u8"Cannot create array, mesh changed since data retrieval");
 
     const int nd = (detail::type_dim<T>() == 1)? 1 : 2;
 
@@ -304,7 +304,7 @@ PythonDataVector__array__(py::object oself, py::object dtype=py::object()) {
     npy_intp strides[] = { sizeof(T), sizeof(T) / detail::type_dim<T>() };
 
     PyObject* arr = PyArray_New(&PyArray_Type, nd, dims, detail::typenum<T>(), strides, (void*)self->data(), 0, 0, NULL);
-    if (arr == nullptr) throw plask::CriticalException("Cannot create array from data");
+    if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from data");
 
     confirm_array<T>(arr, oself, dtype);
 
@@ -315,9 +315,9 @@ template <typename T, int dim>
 static typename std::enable_if<!detail::isBasicData<T>::value, py::object>::type
 PythonDataVector__array__(const PythonDataVector<T,dim>& self, py::object dtype=py::object()) {
 
-    if (dtype != py::object()) throw ValueError("dtype for this data must not be specified");
+    if (dtype != py::object()) throw ValueError(u8"dtype for this data must not be specified");
 
-    if (self.mesh_changed) throw Exception("Cannot create array, mesh changed since data retrieval");
+    if (self.mesh_changed) throw Exception(u8"Cannot create array, mesh changed since data retrieval");
 
     return PythonDataVector_getslice(self, 0, self.size());
 }
@@ -342,7 +342,7 @@ PythonDataVector_ArrayImpl(const PythonDataVector<T,dim>* self) {
                                 0,
                                 0,
                                 NULL);
-    if (arr == nullptr) throw plask::CriticalException("Cannot create array from data");
+    if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from data");
     return arr;
 }
 
@@ -355,7 +355,7 @@ PythonDataVector_ArrayImpl(const PythonDataVector<T,dim>* self) {
     std::vector<npy_intp> dims = detail::mesh_dims(*mesh);
 
     PyObject* arr = PyArray_SimpleNew(dims.size(), &dims.front(), NPY_OBJECT);
-    if (arr == nullptr) throw plask::CriticalException("Cannot create array from data");
+    if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from data");
 
     PyObject** arr_data = static_cast<PyObject**>(PyArray_DATA((PyArrayObject*)arr));
     for (auto i = self->begin(); i < self->end(); ++i, ++arr_data)
@@ -368,12 +368,12 @@ template <typename T, int dim>
 static py::object PythonDataVector_Array(py::object oself) {
     const PythonDataVector<T,dim>* self = py::extract<const PythonDataVector<T,dim>*>(oself);
 
-    if (self->mesh_changed) throw Exception("Cannot create array, mesh changed since data retrieval");
+    if (self->mesh_changed) throw Exception(u8"Cannot create array, mesh changed since data retrieval");
 
     PyObject* arr = PythonDataVector_ArrayImpl<T, RectangularMesh<2>>(self);
     if (!arr) arr = PythonDataVector_ArrayImpl<T, RectangularMesh<3>>(self);
 
-    if (arr == nullptr) throw TypeError("Cannot create array for data on this mesh type (possible only for {0})",
+    if (arr == nullptr) throw TypeError(u8"Cannot create array for data on this mesh type (possible only for {0})",
                                         (dim == 2)? "mesh.RectangularMesh2D" : "mesh.RectangularMesh3D");
 
     py::incref(oself.ptr());
@@ -396,7 +396,7 @@ namespace detail {
         if (PyArray_NDIM(arr) == 1) {
             size = PyArray_DIMS(arr)[0] / type_dim<T>();
             if (PyArray_STRIDES(arr)[0] != sizeof(T)) {
-                writelog(LOG_DEBUG, "Copying numpy array to make is contiguous");
+                writelog(LOG_DEBUG, u8"Copying numpy array to make is contiguous");
                 npy_intp sizes[] = { PyArray_DIMS(arr)[0] };
                 npy_intp strides[] = { sizeof(T) };
                 newarr = py::handle<PyArrayObject>(
@@ -411,7 +411,7 @@ namespace detail {
                    PyArray_DIMS(arr)[0] == mesh->size() && PyArray_DIMS(arr)[1] == type_dim<T>()) {
             size = mesh->size();
             if (PyArray_STRIDES(arr)[0] != sizeof(T)) {
-                writelog(LOG_DEBUG, "Copying numpy array to make is contiguous");
+                writelog(LOG_DEBUG, u8"Copying numpy array to make is contiguous");
                 npy_intp sizes[] = { static_cast<npy_intp>(size), type_dim<T>() };
                 npy_intp strides[] = { sizeof(T), sizeof(T) / type_dim<T>() };
                 newarr = py::handle<PyArrayObject>(
@@ -424,18 +424,18 @@ namespace detail {
             }
         } else {
             auto rectangular = dynamic_pointer_cast<RectangularMesh<dim>>(mesh);
-            if (!rectangular) throw TypeError("For this mesh type only one-dimensional array is allowed");
+            if (!rectangular) throw TypeError(u8"For this mesh type only one-dimensional array is allowed");
             auto meshdims = mesh_dims(*rectangular);
             if (type_dim<T>() != 1) meshdims.push_back(type_dim<T>());
             size_t nd = meshdims.size();
-            if ((size_t)PyArray_NDIM(arr) != nd) throw ValueError("Provided array must have either 1 or {0} dimensions", dim);
+            if ((size_t)PyArray_NDIM(arr) != nd) throw ValueError(u8"Provided array must have either 1 or {0} dimensions", dim);
             for (size_t i = 0; i != nd; ++i)
                 if (meshdims[i] != PyArray_DIMS(arr)[i])
-                    throw ValueError("Dimension {0} for the array ({2}) does not match with the mesh ({1})", i, meshdims[i], PyArray_DIMS(arr)[i]);
+                    throw ValueError(u8"Dimension {0} for the array ({2}) does not match with the mesh ({1})", i, meshdims[i], PyArray_DIMS(arr)[i]);
             auto meshstrides = mesh_strides<T>(*rectangular, nd);
             for (size_t i = 0; i != nd; ++i) {
                 if (meshstrides[i] != PyArray_STRIDES(arr)[i]) {
-                    writelog(LOG_DEBUG, "Copying numpy array to match mesh strides");
+                    writelog(LOG_DEBUG, u8"Copying numpy array to match mesh strides");
                     newarr = py::handle<PyArrayObject>(
                         (PyArrayObject*)PyArray_New(&PyArray_Type, nd, meshdims.data(),
                                                     PyArray_TYPE(arr), meshstrides.data(),
@@ -449,7 +449,7 @@ namespace detail {
             size = mesh->size();
         }
 
-        if (size != mesh->size()) throw ValueError("Sizes of data ({0}) and mesh ({1}) do not match", size, mesh->size());
+        if (size != mesh->size()) throw ValueError(u8"Sizes of data ({0}) and mesh ({1}) do not match", size, mesh->size());
 
         auto result = plask::make_shared<PythonDataVector<const T,dim>>(
             DataVector<const T>((const T*)PyArray_DATA(arr), size, NumpyDataDeleter(arr)),
@@ -466,9 +466,9 @@ namespace detail {
         py::handle<PyArrayObject> newarr;
 
         if (PyArray_NDIM(arr) != 1) {
-            throw NotImplemented("Data from multi-dimensional array for this dtype");
+            throw NotImplemented(u8"Data from multi-dimensional array for this dtype");
         } else {
-            if (size != mesh->size()) throw ValueError("Sizes of data ({0}) and mesh ({1}) do not match", size, mesh->size());
+            if (size != mesh->size()) throw ValueError(u8"Sizes of data ({0}) and mesh ({1}) do not match", size, mesh->size());
             size = PyArray_DIMS(arr)[0];
             PyArrayIterObject* iter = (PyArrayIterObject*)PyArray_IterNew((PyObject*)arr);
             auto data = DataVector<T>(size);
@@ -505,7 +505,7 @@ namespace detail {
 } // namespace  detail
 
 PLASK_PYTHON_API py::object Data(PyObject* obj, py::object omesh) {
-    if (!PyArray_Check(obj)) throw TypeError("data needs to be array object");
+    if (!PyArray_Check(obj)) throw TypeError(u8"data needs to be array object");
     PyArrayObject* arr = (PyArrayObject*)obj;
 
     try {
@@ -514,7 +514,7 @@ PLASK_PYTHON_API py::object Data(PyObject* obj, py::object omesh) {
         switch (PyArray_TYPE(arr)) {
             case NPY_DOUBLE: return detail::makeDataVector<double,2>(arr, mesh);
             case NPY_CDOUBLE: return detail::makeDataVector<dcomplex,2>(arr, mesh);
-            default: throw TypeError("Array has wrong dtype (only float and complex allowed)");
+            default: throw TypeError(u8"Array has wrong dtype (only float and complex allowed)");
         }
 
     } catch (py::error_already_set) { PyErr_Clear(); try {
@@ -523,11 +523,11 @@ PLASK_PYTHON_API py::object Data(PyObject* obj, py::object omesh) {
         switch (PyArray_TYPE(arr)) {
             case NPY_DOUBLE: return detail::makeDataVector<double,3>(arr, mesh);
             case NPY_CDOUBLE: return detail::makeDataVector<dcomplex,3>(arr, mesh);
-            default: throw TypeError("Array has wrong dtype (only float and complex allowed)");
+            default: throw TypeError(u8"Array has wrong dtype (only float and complex allowed)");
         }
 
     } catch (py::error_already_set) {
-        throw TypeError("mesh must be a proper mesh object");
+        throw TypeError(u8"mesh must be a proper mesh object");
     }}
 
     return py::object();
@@ -536,14 +536,14 @@ PLASK_PYTHON_API py::object Data(PyObject* obj, py::object omesh) {
 template <typename T, int dim>
 static PythonDataVector<T,dim> PythonDataVector__add__(const PythonDataVector<T,dim>& vec1, const PythonDataVector<T,dim>& vec2) {
     if (vec1.mesh != vec2.mesh)
-        throw ValueError("You may only add data on the same mesh");
+        throw ValueError(u8"You may only add data on the same mesh");
     return PythonDataVector<T,dim>(vec1 + vec2, vec1.mesh);
 }
 
 template <typename T, int dim>
 static PythonDataVector<T,dim> PythonDataVector__sub__(const PythonDataVector<T,dim>& vec1, const PythonDataVector<T,dim>& vec2) {
     if (vec1.mesh != vec2.mesh)
-        throw ValueError("You may only subtract data on the same mesh");
+        throw ValueError(u8"You may only subtract data on the same mesh");
     return PythonDataVector<T,dim>(vec1 + vec2, vec1.mesh);
 }
 
@@ -624,10 +624,10 @@ static inline py::class_<PythonDataVector<const T,dim>, shared_ptr<PythonDataVec
     data("_Data", DATA_DOCSTRING, py::no_init);
     data
         .def_readonly("mesh", &PythonDataVector<const T,dim>::mesh,
-            "The mesh at which the data was obtained.\n\n"
+            u8"The mesh at which the data was obtained.\n\n"
 
-            "The sequential points of this mesh always correspond to the sequential points of\n"
-            "the data. This implies that ``len(data.mesh) == len(data)`` is always True.\n"
+            u8"The sequential points of this mesh always correspond to the sequential points of\n"
+            u8"the data. This implies that ``len(data.mesh) == len(data)`` is always True.\n"
          )
         .def("__len__", &PythonDataVector<const T,dim>::size)
         .def("__getitem__", &PythonDataVector_getitem<const T,dim>)
@@ -637,39 +637,39 @@ static inline py::class_<PythonDataVector<const T,dim>, shared_ptr<PythonDataVec
         .def("__array__", &PythonDataVector__array__<const T,dim>, py::arg("dtype")=py::object())
         .def("__eq__", &PythonDataVector__eq__<const T,dim>)
         .add_property("array", &PythonDataVector_Array<const T,dim>,
-            "Array formatted by the mesh.\n\n"
+            u8"Array formatted by the mesh.\n\n"
 
-            "This attribute is available only if the :attr:`mesh` is a rectangular one. It\n"
-            "contains the held data reshaped to match the shape of the mesh (i.e. the first\n"
-            "dimension is equal the size of the first mesh axis and so on). If the data type\n"
-            "is :class:`plask.vec` then the array has one additional dimention equal to 2 for\n"
-            "2D vectors and 3 for 3D vectors. The vector components are stored in this\n"
-            "dimention.\n\n"
+            u8"This attribute is available only if the :attr:`mesh` is a rectangular one. It\n"
+            u8"contains the held data reshaped to match the shape of the mesh (i.e. the first\n"
+            u8"dimension is equal the size of the first mesh axis and so on). If the data type\n"
+            u8"is :class:`plask.vec` then the array has one additional dimention equal to 2 for\n"
+            u8"2D vectors and 3 for 3D vectors. The vector components are stored in this\n"
+            u8"dimention.\n\n"
 
-            "Example:\n"
-            "    >>> msh = plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1, 2]),\n"
-            "    ... plask.mesh.Rectilinear([10, 20]))\n"
-            "    >>> dat = Data(array([[[1., 0.], [2., 0.]], [[3., 1.], [4., 1.]]]), msh)\n"
-            "    >>> dat.array[:,:,0]\n"
-            "    array([[1., 2.],\n"
-            "           [3., 4.]])\n\n"
+            u8"Example:\n"
+            u8"    >>> msh = plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1, 2]),\n"
+            u8"    ... plask.mesh.Rectilinear([10, 20]))\n"
+            u8"    >>> dat = Data(array([[[1., 0.], [2., 0.]], [[3., 1.], [4., 1.]]]), msh)\n"
+            u8"    >>> dat.array[:,:,0]\n"
+            u8"    array([[1., 2.],\n"
+            u8"           [3., 4.]])\n\n"
 
-            "Accessing this field is efficient, as only the numpy array view is created and\n"
-            "no data is copied in the memory.\n"
+            u8"Accessing this field is efficient, as only the numpy array view is created and\n"
+            u8"no data is copied in the memory.\n"
          )
         .def("interpolate", dataInterpolate<const T,dim>, (py::arg("mesh"), "interpolation", py::arg("geometry")=py::object()),
-            "Interpolate data to a different mesh.\n\n"
+            u8"Interpolate data to a different mesh.\n\n"
 
-            "This method interpolated data into a different mesh using specified\n"
-            "interpolation method. This is exactly the same interpolation that is\n"
-            "usually done by solvers in their providers.\n\n"
+            u8"This method interpolated data into a different mesh using specified\n"
+            u8"interpolation method. This is exactly the same interpolation that is\n"
+            u8"usually done by solvers in their providers.\n\n"
 
-            "Args:\n"
-            "    mesh: Mesh to interpolate into.\n"
-            "    interpolation: Requested interpolation method.\n"
-            "    geometry: Optional geometry, over which the interpolation is performed.\n"
-            "Returns:\n"
-            "    plask._Data: Interpolated data."
+            u8"Args:\n"
+            u8"    mesh: Mesh to interpolate into.\n"
+            u8"    interpolation: Requested interpolation method.\n"
+            u8"    geometry: Optional geometry, over which the interpolation is performed.\n"
+            u8"Returns:\n"
+            u8"    plask._Data: Interpolated data."
         )
         .add_static_property("dtype", &DataVector_dtype<const T,dim>, "Type of the held values.")
     ;
@@ -797,7 +797,7 @@ dataInterpolateImpl(const PythonDataVector<T,dim>& self, shared_ptr<MeshD<dim>> 
                     InterpolationMethod method, const InterpolationFlags& flags)
 {
     if (method != INTERPOLATION_NEAREST)
-        writelog(LOG_WARNING, "Using 'nearest' algorithm for interpolate(dtype={})", str(py::object(detail::dtype<T>())));
+        writelog(LOG_WARNING, u8"Using 'nearest' algorithm for interpolate(dtype={})", str(py::object(detail::dtype<T>())));
 
     if (auto src_mesh = dynamic_pointer_cast<RectangularMesh<dim>>(self.mesh))
         return PythonDataVector<T,dim>(INTERPOLATE_NEAREST(RectangularMesh), dst_mesh);
@@ -805,7 +805,7 @@ dataInterpolateImpl(const PythonDataVector<T,dim>& self, shared_ptr<MeshD<dim>> 
         return PythonDataVector<T,dim>(INTERPOLATE_NEAREST(MeshWrap), dst_mesh);
         // TODO add new mesh types here
 
-    throw NotImplemented(format("interpolate(source mesh type: {}, interpolation method: {})",
+    throw NotImplemented(format(u8"interpolate(source mesh type: {}, interpolation method: {})",
                                 typeid(*self.mesh).name(), interpolationMethodNames[method]));
 }
 
@@ -815,7 +815,7 @@ dataInterpolateImpl(const PythonDataVector<T,dim>& self, shared_ptr<MeshD<dim>> 
                     InterpolationMethod method, const InterpolationFlags& flags)
 {
 
-    if (self.mesh_changed) throw Exception("Cannot interpolate, mesh changed since data retrieval");
+    if (self.mesh_changed) throw Exception(u8"Cannot interpolate, mesh changed since data retrieval");
 
     if (auto src_mesh = dynamic_pointer_cast<RectangularMesh<dim>>(self.mesh))
         return PythonDataVector<T,dim>(interpolate(src_mesh, self, dst_mesh, method, flags), dst_mesh);
@@ -823,7 +823,7 @@ dataInterpolateImpl(const PythonDataVector<T,dim>& self, shared_ptr<MeshD<dim>> 
         return PythonDataVector<T,dim>(interpolate(src_mesh, self, dst_mesh, method, flags), dst_mesh);
     // TODO add new mesh types here
 
-    throw NotImplemented(format("interpolate(source mesh type: {}, interpolation method: {})",
+    throw NotImplemented(format(u8"interpolate(source mesh type: {}, interpolation method: {})",
                                 typeid(*self.mesh).name(), interpolationMethodNames[method]));
 }
 
@@ -844,7 +844,7 @@ PLASK_PYTHON_API PythonDataVector<T,dim> dataInterpolate(const PythonDataVector<
             flags = InterpolationFlags(geometry3d(),
                                        InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::POSITIVE);
         else
-            throw TypeError("'geometry' argument must be geometry.Geometry instance");
+            throw TypeError(u8"'geometry' argument must be geometry.Geometry instance");
     }
 
     return dataInterpolateImpl<T, dim>(self, dst_mesh, method, flags);

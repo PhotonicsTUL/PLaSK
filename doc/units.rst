@@ -17,7 +17,7 @@ Heat flux                                    W/m\ :sup:`2` (in 2D space), W/m\ :
 Light intensity                              W/m\ :sup:`2`
 Material gain                                1/cm
 \- over carriers concentration derivative    cm\ :sup:`2`
-Modal extinction                             1/cm
+Modal loss/gain                              1/cm
 Propagation constant                         1/µm
 Temperature                                  K
 ============================================ ===============================

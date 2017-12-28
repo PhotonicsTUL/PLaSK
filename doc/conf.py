@@ -29,9 +29,10 @@ import plask
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', #'sphinx.ext.mathjax',
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.mathjax',
               'sphinx.ext.autosummary', 'sphinx_domain_xml', 'sphinx_autodoc_cpp',
-              'rst2pdf.pdfbuilder']
+#             'rst2pdf.pdfbuilder'
+             ]
 
 
 # Use Napoleon if available for pretty docstrings formatting
@@ -146,18 +147,18 @@ sphinx.ext.autosummary.process_generate_options = process_generate_options
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'agogo'
+html_theme = 'qthelp'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
 html_theme_options = {
-    'linkcolor': '#7f1111',
-    'headerlinkcolor': '#fc573d'
+    #'linkcolor': '#7f1111',
+    #'headerlinkcolor': '#fc573d'
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
-#html_theme_path = []
+html_theme_path = ['_themes']
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
@@ -223,6 +224,22 @@ html_show_sourcelink = False
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'plask'
+
+
+# -- Options for QtHelp output -------------------------------------------------
+
+# The theme to use for QtHelp.  See the documentation for
+# a list of builtin themes.
+qthelp_theme = 'qthelp'
+
+# Theme options are theme-specific and customize the look and feel of a theme
+# further.  For a list of options available for each theme, see the
+# documentation.
+qthelp_theme_options = {
+}
+
+# Output file base name for QtHelp help builder.
+qthelp_basename = 'plask'
 
 
 # -- Options for LaTeX output --------------------------------------------------

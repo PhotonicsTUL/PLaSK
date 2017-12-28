@@ -25,7 +25,7 @@ Most solvers need to have boundary conditions specified in a some way. This is a
 
 .. toctree::
 
-   solvers/boundary_conditions
+   boundary_conditions
 
 The available solvers are as follows:
 
@@ -36,4 +36,4 @@ The available solvers are as follows:
    solvers/gain
    solvers/optical
    solvers/meta
-   solvers/filters
+   filters

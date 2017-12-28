@@ -67,7 +67,7 @@ struct DataFrom3DtoCyl2DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTy
     /// Type of property value in output space
     typedef typename PropertyAtSpace<PropertyT, Geometry2DCylindrical>::ValueType ValueType;
 
-    std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<2>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    std::function<plask::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<2>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         const std::size_t point_count = this->pointsCount;
         auto data = this->in(
                         plask::make_shared<PointsOnCircleMeshExtend>(dst_mesh, this->inTranslation, point_count),
@@ -103,7 +103,7 @@ struct DataFrom3DtoCyl2DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemp
 
     typedef typename PropertyT::EnumType EnumType;
 
-    std::function<boost::optional<ValueType>(std::size_t index)> operator()(EnumType n, const shared_ptr<const MeshD<2>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    std::function<plask::optional<ValueType>(std::size_t index)> operator()(EnumType n, const shared_ptr<const MeshD<2>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         const std::size_t point_count = this->pointsCount;
         auto data = this->in(n,
                         plask::make_shared<PointsOnCircleMeshExtend>(dst_mesh, this->inTranslation, point_count),
@@ -199,7 +199,7 @@ struct DataFromCyl2Dto3DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTy
                 dataForRegion[region_index].reset(source.in(plask::make_shared<CylReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), std::forward<ExtraArgs>(extra_args)..., method));
         }
 
-        boost::optional<ValueType> operator()(std::size_t index) {
+        plask::optional<ValueType> operator()(std::size_t index) {
             Vec<3, double> p = dst_mesh->at(index);
             std::size_t region_index = source.findRegionIndex(p,
                         [&](const Region& r) {
@@ -210,7 +210,7 @@ struct DataFromCyl2Dto3DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTy
                         }
             );
             if (region_index == source.regions.size())
-                return boost::optional<ValueType>();
+                return plask::optional<ValueType>();
 
             /*if (dataForRegion[region_index].isNull())
                 dataForRegion[region_index].reset(source.in(plask::make_shared<CylReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), extra_args, method));*/
@@ -227,7 +227,7 @@ struct DataFromCyl2Dto3DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTy
         r_sqr_end = std::abs(box.upper.rad_r()); r_sqr_end *= r_sqr_end;
     }
 
-    std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<3>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    std::function<plask::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<3>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         return LazySourceImpl(*this, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
     }
 
@@ -272,7 +272,7 @@ struct DataFromCyl2Dto3DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemp
                 dataForRegion[region_index].reset(source.in(n, plask::make_shared<CylReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), std::forward<ExtraArgs>(extra_args)..., method));
         }
 
-        boost::optional<ValueType> operator()(std::size_t index) {
+        plask::optional<ValueType> operator()(std::size_t index) {
             Vec<3, double> p = dst_mesh->at(index);
             std::size_t region_index = source.findRegionIndex(p,
                         [&](const Region& r) {
@@ -283,7 +283,7 @@ struct DataFromCyl2Dto3DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemp
                         }
             );
             if (region_index == source.regions.size())
-                return boost::optional<ValueType>();
+                return plask::optional<ValueType>();
 
             /*if (dataForRegion[region_index].isNull())
                 dataForRegion[region_index].reset(source.in(plask::make_shared<CylReductionTo2DMesh>(dst_mesh, source.regions[region_index].inTranslation), extra_args, method));*/
@@ -300,7 +300,7 @@ struct DataFromCyl2Dto3DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemp
         r_sqr_end = std::abs(box.upper.rad_r()); r_sqr_end *= r_sqr_end;
     }
 
-    std::function<boost::optional<ValueType>(std::size_t index)> operator()(EnumType n, const shared_ptr<const MeshD<3>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    std::function<plask::optional<ValueType>(std::size_t index)> operator()(EnumType n, const shared_ptr<const MeshD<3>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         return LazySourceImpl(*this, n, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
     }
 

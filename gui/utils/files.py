@@ -29,3 +29,10 @@ def which(program):
             if os.path.isfile(exe_file) and os.access(exe_file, os.X_OK):
                 return exe_file
     return None
+
+def open_utf8(*args, **kwargs):
+    try:
+        return open(*args, encoding='utf-8', **kwargs)
+    except TypeError:
+        return open(*args, **kwargs)
+

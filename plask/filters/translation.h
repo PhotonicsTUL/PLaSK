@@ -43,10 +43,10 @@ struct TranslatedInnerDataSourceImpl<PropertyT, FIELD_PROPERTY, SpaceType, Varia
                 dataForRegion[region_index].reset(source.in(translate(dst_mesh, - source.regions[region_index].inTranslation), std::forward<ExtraArgs>(extra_args)..., method));
         }
 
-        boost::optional<ValueType> operator()(std::size_t index) {
+        plask::optional<ValueType> operator()(std::size_t index) {
             std::size_t region_index = source.findRegionIndex(dst_mesh->at(index));
             if (region_index == source.regions.size())
-                return boost::optional<ValueType>();
+                return plask::optional<ValueType>();
 
             /*if (dataForRegion[region_index].isNull())
                 dataForRegion[region_index].reset(source.in(translate(dst_mesh, - source.regions[region_index].inTranslation), extra_args, method));*/
@@ -56,7 +56,7 @@ struct TranslatedInnerDataSourceImpl<PropertyT, FIELD_PROPERTY, SpaceType, Varia
 
     };
 
-    std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<SpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    std::function<plask::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<SpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         return LazySourceImpl(*this, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
     }
 
@@ -94,10 +94,10 @@ struct TranslatedInnerDataSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceType,
                 dataForRegion[region_index].reset(source.in(n, translate(dst_mesh, - source.regions[region_index].inTranslation), std::forward<ExtraArgs>(extra_args)..., method));
         }
 
-        boost::optional<ValueType> operator()(std::size_t index) {
+        plask::optional<ValueType> operator()(std::size_t index) {
             std::size_t region_index = source.findRegionIndex(dst_mesh->at(index));
             if (region_index == source.regions.size())
-                return boost::optional<ValueType>();
+                return plask::optional<ValueType>();
 
             /*if (dataForRegion[region_index].isNull())
                 dataForRegion[region_index].reset(source.in(translate(dst_mesh, - source.regions[region_index].inTranslation), extra_args, method));*/
@@ -107,7 +107,7 @@ struct TranslatedInnerDataSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceType,
 
     };
 
-    std::function<boost::optional<ValueType>(std::size_t index)> operator()(EnumType n, const shared_ptr<const MeshD<SpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    std::function<plask::optional<ValueType>(std::size_t index)> operator()(EnumType n, const shared_ptr<const MeshD<SpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         return LazySourceImpl(*this, n, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
     }
 
@@ -136,7 +136,7 @@ struct TranslatedOuterDataSourceImpl<PropertyT, FIELD_PROPERTY, SpaceType, Varia
     /// Type of property value in output space
     typedef typename PropertyAtSpace<PropertyT, SpaceType>::ValueType ValueType;
 
-    std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<SpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    std::function<plask::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<SpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         LazyData<ValueType> data = this->in(translate(dst_mesh, this->inTranslation), std::forward<ExtraArgs>(extra_args)..., method);
         return [=] (std::size_t index) { return data[index]; };
     }
@@ -151,7 +151,7 @@ struct TranslatedOuterDataSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceType,
     /// Type of property value in output space
     typedef typename PropertyAtSpace<PropertyT, SpaceType>::ValueType ValueType;
 
-    std::function<boost::optional<ValueType>(std::size_t index)> operator()(typename PropertyT::EnumType n, const shared_ptr<const MeshD<SpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
+    std::function<plask::optional<ValueType>(std::size_t index)> operator()(typename PropertyT::EnumType n, const shared_ptr<const MeshD<SpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         LazyData<ValueType> data = this->in(n, translate(dst_mesh, this->inTranslation), std::forward<ExtraArgs>(extra_args)..., method);
         return [=] (std::size_t index) { return data[index]; };
     }

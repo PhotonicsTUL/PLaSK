@@ -7,23 +7,23 @@ project(plask)
 
 # ---------- Common options --------------------------------------------
 
+#set (CMAKE_CXX_STANDARD 17)    #TODO std should be set this way
+
 if(MSVC)    # flags needed by Visual Studio:
     set(CMAKE_CXX_FLAGS "/bigobj ${CMAKE_CXX_FLAGS}")   # increase a number of sections in obj. file, required by plask
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251")   # disable many warning (all stl & boost tamplates) about wrong dll import/export, TODO subject for future investigation
-    add_definitions(-D_USE_MATH_DEFINES -DNOMINMAX -D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS)
-    # _D_USE_MATH_DEFINES gives M_PI, etc. in <cmath>, maybe it is better idea to define this just before including <cmath>
-    # NOMINMAX prevents windows header from defining min, max macros, see http://stackoverflow.com/questions/1904635/warning-c4003-and-errors-c2589-and-c2059-on-x-stdnumeric-limitsintmax
-    # _SCL_SECURE_NO_WARNINGS and D_CRT_SECURE_NO_WARNINGS hide many warnings which are caused by boost and fmt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4018")   # disable warning about signed/unsigned generated mainly by workaround for OpenMP 2 (which can use only signed types)
+    add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # hide many warnings which are caused by boost and fmt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
     add_definitions(-DBOOST_ALL_DYN_LINK)   # MSVC+cmake require this to properly detect dynamic boost libraries
-    add_definitions(-DXML_STATIC)           # We use static expat - TODO: this is needed only for libplask, static/dynamic should be detected
     add_definitions(-DFMT_HEADER_ONLY)      # don't compile fmt, workaround many linker errors
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++14")   # nothing is needed for C++11
 else(MSVC)
     if(MINGW)
         set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
     else()
         set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
     endif()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-narrowing -Wno-sign-compare -Wno-unknown-pragmas -Wno-ignored-qualifiers")   # -Wsuggest-override - older gcc does not support this
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-narrowing -Wno-sign-compare -Wno-unknown-pragmas -Wno-ignored-qualifiers")   # -Wsuggest-override - older gcc does not support this
 endif(MSVC)
 
 if(WIN32 AND "${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
@@ -42,7 +42,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
             set(no_strict_aliasing_flag "-fno-strict-aliasing")
         endif()
     endif()
-elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     set(no_strict_aliasing_flag "-fno-strict-aliasing")
 endif()
 
@@ -64,7 +64,7 @@ set(PLASK_PATH "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask")
 
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-execute_process(COMMAND git show -s --pretty=format:%cd.%h --date=short WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+execute_process(COMMAND git show -s --pretty=format:%ad.%h --date=short WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                 RESULT_VARIABLE git_version_ok OUTPUT_VARIABLE PLASK_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)  # old git does not have --date=format
 if("${git_version_ok}" STREQUAL "0")
     string(REPLACE "-" "." PLASK_VERSION "${PLASK_VERSION}")
@@ -98,11 +98,19 @@ option(LICENSE_CHECK "Perform license check" OFF)
 
 option(PRINT_STACKTRACE_ON_EXCEPTION "Print stack-trace on stderr when plask::Exception is throwed (works only in debug mode)." ON)
 
+option(PLASK_OPTIONAL_STD "Use std optional (supported by C++17) instead of boost one." OFF)
+
 #TODO if disabled, plask should find and use external fmt lib.
 option(PLASK_EXPORTS_FMT "Export fmt symbols in libplask (affects only windows)" ON)
 
 option(INSTALL_DEV "Install headers to system locations" OFF)
 option(INSTALL_MATERIALS_DEV "Install headers for compuling materials" OFF)
+
+option(XML_STATIC "If enabled, XML_STATIC symbol will be defined, which is required to use static expat build in Windows." OFF)
+if (XML_STATIC)
+    add_definitions(-DXML_STATIC)
+endif (XML_STATIC)
+
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     option(USE_GLIBCXX_PARALLEL "use the libstdc++ parallel mode (experimental in libstdc++v3)" OFF)
@@ -131,26 +139,6 @@ elseif(USE_PROFILER STREQUAL "google")
     message(STATUS "Using Google perftools profiler")
 endif()
 
-# ---------- NuGet paths ---------------------------------------------------
-
-if(NUGET_PACKAGES_PATH)
-    # TODO use the highest number not higher than compiler version intead of constants like "v110"
-    file(GLOB nuget_expat_includedir "${NUGET_PACKAGES_PATH}/expat*/build/native/include")
-    file(GLOB nuget_expat_libdir "${NUGET_PACKAGES_PATH}/expat*/build/native/lib/v110/x64/Release/static/utf8")
-    list(APPEND CMAKE_INCLUDE_PATH ${nuget_expat_includedir})
-    list(APPEND CMAKE_LIBRARY_PATH ${nuget_expat_libdir})
-    file(GLOB nuget_eigen_includedir "${NUGET_PACKAGES_PATH}/Eigen*/build/native/include")
-        list(APPEND CMAKE_INCLUDE_PATH ${nuget_eigen_includedir})
-    #file(GLOB nuget_blas_includedir "${NUGET_PACKAGES_PATH}/OpenBLAS*/lib/native/include")
-    #file(GLOB nuget_blas_libdir "${NUGET_PACKAGES_PATH}/OpenBLAS*/lib/native/lib/x64" "${NUGET_PACKAGES_PATH}/lib/native/bin/x64")
-    #list(APPEND CMAKE_INCLUDE_PATH ${nuget_blas_includedir})
-    #list(APPEND CMAKE_LIBRARY_PATH ${nuget_blas_libdir})
-    #file(GLOB nuget_boost_includedir "${NUGET_PACKAGES_PATH}/boost*/lib/native/include")
-    #list(APPEND CMAKE_INCLUDE_PATH ${nuget_boost_includedir})
-    #message("CMAKE_INCLUDE_PATH is: ${CMAKE_INCLUDE_PATH}")
-    #message("CMAKE_LIBRARY_PATH is: ${CMAKE_LIBRARY_PATH}")
-endif(NUGET_PACKAGES_PATH)
-
 # ---------- External libraries --------------------------------------------
 if(WIN32)
     get_filename_component(compliler_prefix_path ${CMAKE_CXX_COMPILER} PATH)
@@ -162,21 +150,18 @@ endif()
 if(BUILD_PYTHON)
     set(PLASK_PYTHON_PATH "${PLASK_PATH}/python/plask")
 
-    if(NOT "${PYTHON_VERSION}" STREQUAL "${previous_user_python_version}")
-        unset(PYTHON_INCLUDE_DIR CACHE)
-        unset(PYTHON_INCLUDE_PATH CACHE)
-        set(previous_user_python_version ${PYTHON_VERSION} CACHE INTERNAL "Python version previously chosen by the user (to detect change)")
+    if(NOT PYTHON_VERSION)
+        find_package(PythonInterp "3.4")
+        if(NOT PYTHONINTERP_FOUND)
+            find_package(PythonInterp "2.6" REQUIRED)
+        endif()
+    else()
+        find_package(PythonInterp ${PYTHON_VERSION} REQUIRED)
     endif()
 
-    find_package(PythonInterp ${PYTHON_VERSION} REQUIRED)
     find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
     find_package(numpy REQUIRED)
 
-    # Require Python >= 2.6
-    math(EXPR PYTHON_VERSION_NUM "100 * ${PYTHON_VERSION_MAJOR} + ${PYTHON_VERSION_MINOR}")
-    if(${PYTHON_VERSION_NUM} LESS 206)
-        message(FATAL_ERROR "Python 2.6 or newer required.")
-    endif()
 endif(BUILD_PYTHON)
 
 find_package(EXPAT REQUIRED)
@@ -203,7 +188,14 @@ if(BUILD_PYTHON)
         list(APPEND boost_components "python-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
         set(Boost_PYTHON_LIBRARIES ${Boost_PYTHON-PY${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}_LIBRARIES})
     else()
-        list(APPEND boost_components "python")
+        find_package(Boost QUIET COMPONENTS "python${PYTHON_VERSION_MAJOR}")
+        unset(Boost_LIBRARIES)
+        if(Boost_PYTHON${PYTHON_VERSION_MAJOR}_FOUND)
+            list(APPEND boost_components "python${PYTHON_VERSION_MAJOR}")
+            set(Boost_PYTHON_LIBRARIES ${Boost_PYTHON${PYTHON_VERSION_MAJOR}_LIBRARIES})
+        else()
+            list(APPEND boost_components "python")
+        endif()
     endif()
 endif()
 
@@ -226,9 +218,11 @@ if(USE_OMP OR USE_GLIBCXX_PARALLEL) # compile with OpenMP
         endif(USE_GLIBCXX_PARALLEL)
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
-        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
-        set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
+        if(NOT MSVC)    # TODO: czy na pewno trzeba podac flagi linkerowi, dokumentacja cmake nic o tym nie mowi
+            set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
+            set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
+            set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} ${OpenMP_CXX_FLAGS}")
+        endif()
     endif()
 endif()
 
@@ -247,32 +241,40 @@ endif(DETECT_FORTRAN_NAME_MANGLING)
 
 ## ---------- Libraries for better stack printing ------------------------------
 
+#if(MSVC)  #TODO: Make it work...
+#  set(PRINT_STACKTRACE_ON_EXCEPTION OFF)
+#endif()
+
 if(PRINT_STACKTRACE_ON_EXCEPTION)
-if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    if(NOT MSVC)
-        add_definitions(-D_GLIBCXX_DEBUG)   # safe STL under linux, see https://gcc.gnu.org/onlinedocs/libstdc++/manual/debug_mode.html
-    endif(NOT MSVC)
-    if(WIN32)
-        add_subdirectory(extlib/PEparser)    # PE parser (for proper resolving some symbols in stack printing under windows mingw)
-        set(PRINT_STACKTRACE_LIBRARY "dbghelp" PEparser)
-    else()
-        find_package(DW)
-        if(DW_FOUND)
-            set(PRINT_STACKTRACE_LIBRARY ${DW_LIBRARIES})
-            include_directories(${DW_INCLUDE_DIRS})
-            set(BACKWARD_HAS_DW 1)
-        else()  # try find bfd library if dw is not found, see https://github.com/bombela/backward-cpp/blob/master/backward.cpp
-            find_package(BFD)
-            if(BFD_FOUND)
-                message(WARNING "PLaSK will be linked with GPLed libbfd.")  # https://sourceware.org/ml/binutils/2002-01/msg00581.html
-                set(PRINT_STACKTRACE_LIBRARY ${BFD_LIBRARY})
-                set(BACKWARD_HAS_BFD 1)
-            else()
-                set(PRINT_STACKTRACE_LIBRARY "")
-            endif()
-        endif()
-    endif()
-endif()
+	if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+		if(NOT MSVC)
+			add_definitions(-D_GLIBCXX_DEBUG)   # safe STL under linux, see https://gcc.gnu.org/onlinedocs/libstdc++/manual/debug_mode.html
+		endif(NOT MSVC)
+		if(WIN32)
+			if(MSVC)
+				set(PRINT_STACKTRACE_LIBRARY "dbghelp")
+			else(MSVC)	#MinGW
+				add_subdirectory(extlib/PEparser)    # PE parser (for proper resolving some symbols in stack printing under windows mingw)
+				set(PRINT_STACKTRACE_LIBRARY "dbghelp" PEparser)
+			endif(MSVC)
+		else(WIN32)	# non-Windows:
+			find_package(DW)
+			if(DW_FOUND)
+				set(PRINT_STACKTRACE_LIBRARY ${DW_LIBRARIES})
+				include_directories(${DW_INCLUDE_DIRS})
+				set(BACKWARD_HAS_DW 1)
+			else(DW_FOUND)  # try find bfd library if dw is not found, see https://github.com/bombela/backward-cpp/blob/master/backward.cpp
+				find_package(BFD)
+				if(BFD_FOUND)
+					message(WARNING "PLaSK will be linked with GPLed libbfd.")  # https://sourceware.org/ml/binutils/2002-01/msg00581.html
+					set(PRINT_STACKTRACE_LIBRARY ${BFD_LIBRARY})
+					set(BACKWARD_HAS_BFD 1)
+				else(BFD_FOUND)
+					set(PRINT_STACKTRACE_LIBRARY "")
+				endif(BFD_FOUND)
+			endif(DW_FOUND)
+		endif(WIN32)
+	endif()
 endif()
 
 # ---------- Other external libraries -----------------------------------------
@@ -368,13 +370,21 @@ endif()
 if(BUILD_PYTHON)
 
     foreach(py_file ${python_plask_py})
-        get_filename_component(py_file_base ${py_file} NAME)
-        list(APPEND python_plask_py_copied ${PLASK_PYTHON_PATH}/${py_file_base})
-        add_custom_command(OUTPUT ${PLASK_PYTHON_PATH}/${py_file_base}
-                           COMMAND ${CMAKE_COMMAND} ARGS -E copy ${py_file} ${PLASK_PYTHON_PATH}/${py_file_base}
+        get_filename_component(py_file_name ${py_file} NAME)
+        list(APPEND python_plask_py_copied ${PLASK_PYTHON_PATH}/${py_file_name})
+        add_custom_command(OUTPUT ${PLASK_PYTHON_PATH}/${py_file_name}
+                           COMMAND ${CMAKE_COMMAND} ARGS -E copy ${py_file} ${PLASK_PYTHON_PATH}/${py_file_name}
                            DEPENDS ${py_file})
-        list(APPEND python_plask_pyc ${PLASK_PYTHON_PATH}/${py_file_base}c)
-        list(APPEND python_plask_pyo ${PLASK_PYTHON_PATH}/${py_file_base}o)
+        if(WIN32)
+            if(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
+                list(APPEND python_plask_pyc ${PLASK_PYTHON_PATH}/${py_file_name}c)
+                list(APPEND python_plask_pyo ${PLASK_PYTHON_PATH}/${py_file_name}o)
+            else()
+                get_filename_component(py_file_base ${py_file} NAME_WE)
+                list(APPEND python_plask_pyc ${PLASK_PYTHON_PATH}/__pycache__/${py_file_base}.cpython-${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.pyc)
+                list(APPEND python_plask_pyo ${PLASK_PYTHON_PATH}/__pycache__/${py_file_base}.cpython-${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.opt-1.pyc)
+            endif()
+        endif()
     endforeach()
 
     add_custom_target(python-scripts ALL DEPENDS ${python_plask_py_copied})
@@ -382,8 +392,13 @@ if(BUILD_PYTHON)
     if(WIN32)
         add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PYTHON_PATH})
         add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PYTHON_PATH})
-        install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask COMPONENT core)
-        install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask COMPONENT core)
+        if(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
+            install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask COMPONENT core)
+            install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask COMPONENT core)
+        else()
+            install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask/__pycache__ COMPONENT core)
+            install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask/__pycache__ COMPONENT core)
+        endif()
     endif()
 
     include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
@@ -449,7 +464,7 @@ if(BUILD_PYTHON)
         endif()
         add_custom_command(OUTPUT ${plask_stubs_files}
                            COMMAND plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_stubs_modules}
-                           DEPENDS plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${material_targets}
+                           DEPENDS plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${PLASK_MATERIALS}
                            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/python
                           )
         install(FILES ${plask_stubs_files} DESTINATION lib/plask/python/plask COMPONENT gui)
@@ -485,11 +500,18 @@ if(BUILD_PYTHON)
                                    COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_SOURCE_DIR}/${gui_file} ${PLASK_PATH}/${gui_file}
                                    DEPENDS ${CMAKE_SOURCE_DIR}/${gui_file})
                 list(APPEND gui_files_copied ${PLASK_PATH}/${gui_file})
-                list(APPEND gui_files_pyc ${PLASK_PATH}/${gui_file}c)
-                list(APPEND gui_files_pyo ${PLASK_PATH}/${gui_file}o)
+                if(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
+                    list(APPEND gui_files_pyc ${PLASK_PATH}/${gui_file}c)
+                    list(APPEND gui_files_pyo ${PLASK_PATH}/${gui_file}o)
+                else()
+                    get_filename_component(gui_file_base ${gui_file} NAME_WE)
+                    get_filename_component(gui_file_dir ${gui_file} DIRECTORY)
+                    list(APPEND gui_files_pyc ${PLASK_PATH}/${gui_file_dir}/__pycache__/${gui_file_base}.cpython-${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.pyc)
+                    list(APPEND gui_files_pyo ${PLASK_PATH}/${gui_file_dir}/__pycache__/${gui_file_base}.cpython-${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.opt-1.pyc)
+                endif()
             endforeach()
             add_custom_command(OUTPUT ${gui_files_pyc} COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PATH}/gui DEPENDS ${gui_files_copied})
-            add_custom_command(OUTPUT ${gui_files_pyo}  COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PATH}/gui)
+            add_custom_command(OUTPUT ${gui_files_pyo} COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PATH}/gui DEPENDS ${gui_files_copied})
             add_custom_target(gui-files ALL DEPENDS ${gui_files_pyc} ${gui_files_pyo})
             install(DIRECTORY ${PLASK_PATH}/gui DESTINATION lib/plask COMPONENT GUI)
             install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI
@@ -498,6 +520,7 @@ if(BUILD_PYTHON)
                     PATTERN *.py EXCLUDE
                     PATTERN *.pyc EXCLUDE
                     PATTERN *.pyo EXCLUDE
+                    PATTERN __pycache__ EXCLUDE # for python 3
             )
         else()
             install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI
@@ -505,9 +528,10 @@ if(BUILD_PYTHON)
                     PATTERN *.xpl EXCLUDE
                     PATTERN *.pyc EXCLUDE
                     PATTERN *.pyo EXCLUDE
+                    PATTERN __pycache__ EXCLUDE # for python 3
             )
             # This will make plaskgui work without install
-            execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ../../../gui ${PLASK_PATH}/gui)
+            execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/gui ${PLASK_PATH}/gui)
         endif()
 
         install(TARGETS plaskgui DESTINATION bin COMPONENT GUI)
@@ -637,7 +661,7 @@ endif()
 # ----------===== Unit tests =====--------------------------------------------
 if(BUILD_TESTING)
 
-    set(plask_test_depends ${material_targets} solvers-packages) # we need materials for testing
+    set(plask_test_depends ${PLASK_MATERIALS} solvers-packages) # we need materials for testing
 
     enable_testing()
     if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
@@ -690,9 +714,9 @@ if(BUILD_TESTING)
     endif(CTEST_CONFIGURATION_TYPE)
 
     if (RUN_TESTS)
-        add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} ${CTEST_EXTRA_PARAMS} --output-on-failure --timeout 60 DEPENDS ${plask_test_depends} ${solvers_test_targets})  #-C ${CTEST_CONFIGURATION_TYPE}
+        add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} ${CTEST_EXTRA_PARAMS} --output-on-failure --timeout 120 DEPENDS ${plask_test_depends} ${solvers_test_targets})  #-C ${CTEST_CONFIGURATION_TYPE}
     else()
-        add_custom_target(tests ${CMAKE_CTEST_COMMAND} ${CTEST_EXTRA_PARAMS} --output-on-failure --timeout 60 DEPENDS ${plask_test_depends} ${solvers_test_targets})
+        add_custom_target(tests ${CMAKE_CTEST_COMMAND} ${CTEST_EXTRA_PARAMS} --output-on-failure --timeout 120 DEPENDS ${plask_test_depends} ${solvers_test_targets})
     endif()
 
 endif(BUILD_TESTING)
@@ -841,7 +865,7 @@ if(WIN32)
     # Very ugly hack!
     set(CPACK_NSIS_COMPRESSOR "lzma
         !define MUI_STARTMENUPAGE_DEFAULTFOLDER \\\"PLaSK\\\"
-        !include ${CMAKE_SOURCE_DIR_WINDOWS}\\\\cmake\\\\fileassoc.nsh")
+        !include \\\"${CMAKE_SOURCE_DIR_WINDOWS}\\\\cmake\\\\fileassoc.nsh\\\"")
     set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
         !insertmacro APP_ASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\" \\\"PLaSK structure data\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe,1\\\" \\\"Open in PLaSK GUI\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe \\\$\\\\\\\"%1\\\$\\\\\\\"\\\"
         !insertmacro UPDATEFILEASSOC

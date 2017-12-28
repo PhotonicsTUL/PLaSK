@@ -18,12 +18,18 @@ data = []
 
 cls = None
 
+def open_utf8(*args, **kwargs):
+    try:
+        return open(*args, encoding='utf-8', **kwargs)
+    except TypeError:
+        return open(*args, **kwargs)
+
 # Find XML files with solvers configuration
 for dirname, _, files in os.walk(source):
     if 'solvers.yml' in files:
         library = os.path.basename(dirname)
         try:
-            source = yaml.load(open(os.path.join(dirname, 'solvers.yml')))
+            source = yaml.load(open_utf8(os.path.join(dirname, 'solvers.yml')))
         except:
             continue
 
@@ -36,7 +42,7 @@ for dirname, _, files in os.walk(source):
             dat = lib, cls
             data.append(dat)
 
-out = open(os.path.join(target, '__init__.py'), 'w')
+out = open_utf8(os.path.join(target, '__init__.py'), 'w')
 
 if cls is None:
     sys.exit(0)

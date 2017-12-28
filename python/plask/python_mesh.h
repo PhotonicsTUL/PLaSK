@@ -42,7 +42,7 @@ struct ExportBoundary {
             try {
                 result = py::extract<bool>(pyresult);
             } catch (py::error_already_set) {
-                throw TypeError("Boundary predicate did not return Boolean value");
+                throw TypeError(u8"Boundary predicate did not return Boolean value");
             }
             return result;
         }
@@ -84,7 +84,7 @@ struct ExportBoundary {
 
         py::class_<typename MeshType::Boundary, shared_ptr<typename MeshType::Boundary>>("Boundary",
             ("Generic boundary specification for "+name+" mesh").c_str(), py::no_init)
-            .def("__call__", &Boundary__call__, (py::arg("mesh"), "geometry"), "Get boundary instance for particular mesh",
+            .def("__call__", &Boundary__call__, (py::arg("mesh"), "geometry"), u8"Get boundary instance for particular mesh",
                  py::with_custodian_and_ward_postcall<0,1,
                  py::with_custodian_and_ward_postcall<0,2>>())
         ;

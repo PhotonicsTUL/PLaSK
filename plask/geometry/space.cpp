@@ -5,9 +5,9 @@
 
 namespace plask {
 
-void Geometry::setEdges(const std::function<boost::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames, const MaterialsDB &materialsDB)
+void Geometry::setEdges(const std::function<plask::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames, const MaterialsDB &materialsDB)
 {
-    boost::optional<std::string> v, v_lo, v_hi;
+    plask::optional<std::string> v, v_lo, v_hi;
     v = borderValuesGetter("edges");
     if (v) setAllEdges(*edge::Strategy::fromStrUnique(*v, materialsDB));
     v = borderValuesGetter("planar");

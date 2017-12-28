@@ -168,12 +168,12 @@ inline typename MeshType::Boundary getBoundaryForBoxes(GetBoxes getBoxes, GetBou
 template <typename Boundary, int DIM>
 inline Boundary parseBoundaryFromXML(XMLReader& boundary_desc, Manager& manager, Boundary (*getXBoundary)(),
                                      Boundary (*getXOfBoundary)(shared_ptr<const GeometryObject>, const PathHints*)) {
-    boost::optional<std::string> of = boundary_desc.getAttribute("object");
+    plask::optional<std::string> of = boundary_desc.getAttribute("object");
     if (!of) {
         boundary_desc.requireTagEnd();
         return getXBoundary();
     } else {
-        boost::optional<std::string> path_name = boundary_desc.getAttribute("path");
+        plask::optional<std::string> path_name = boundary_desc.getAttribute("path");
         boundary_desc.requireTagEnd();
         return getXOfBoundary(manager.requireGeometryObject(*of),
                               path_name ? &manager.requirePathHints(*path_name) : nullptr);

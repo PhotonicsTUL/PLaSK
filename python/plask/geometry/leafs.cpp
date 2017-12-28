@@ -13,7 +13,7 @@ extern AxisNames current_axes;
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, "GeometryObjectLeaf", "Base class for all "," leaves") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, GeometryObjectD<dim>)
        .add_property("material", &GeometryObjectLeaf<dim>::singleMaterial, &GeometryObjectLeaf<dim>::setMaterial,
-                     "material of the geometry object (or None if there is no single material for the object)")
+                     u8"material of the geometry object (or None if there is no single material for the object)")
        .add_property("representative_material", &GeometryObjectLeaf<dim>::getRepresentativeMaterial)
     ;
 }
@@ -116,7 +116,7 @@ static double Triangle__getattr__(const Triangle& self, const std::string& name)
         size_t axis = current_axes[name.substr(1)] - 1;
         if (axis < 2) return (name.front() == 'a') ? self.p0[axis] : self.p1[axis];
     }
-    throw AttributeError("'Triangle' object has no attribute '{0}'", name);
+    throw AttributeError(u8"'Triangle' object has no attribute '{0}'", name);
 }
 
 static void Triangle__setattr__(py::object self, const std::string& name, const py::object& value) {
@@ -248,7 +248,7 @@ void register_geometry_leafs()
         py::no_init
         )
         .def("__init__", py::make_constructor(&Circle_constructor<2>, py::default_call_policies(), (py::arg("radius"), "material")))
-        .add_property("radius", py::make_getter(&Circle<2>::radius), &Circle<2>::setRadius, "Radius of the circle.")
+        .add_property("radius", py::make_getter(&Circle<2>::radius), &Circle<2>::setRadius, u8"Radius of the circle.")
     ;
 
     py::class_<Circle<3>, shared_ptr<Circle<3>>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> ("Sphere",
@@ -260,7 +260,7 @@ void register_geometry_leafs()
         py::no_init
         )
         .def("__init__", py::make_constructor(&Circle_constructor<3>, py::default_call_policies(), (py::arg("radius"), "material")))
-        .add_property("radius", py::make_getter(&Circle<3>::radius), &Circle<3>::setRadius, "Radius of the circle.")
+        .add_property("radius", py::make_getter(&Circle<3>::radius), &Circle<3>::setRadius, u8"Radius of the circle.")
     ;
 
     py::class_<Cylinder, shared_ptr<Cylinder>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> ("Cylinder",
@@ -276,8 +276,8 @@ void register_geometry_leafs()
         py::no_init
         )
         .def("__init__", py::make_constructor(&Cylinder_constructor, py::default_call_policies(), (py::arg("radius"), "height", "material")))
-        .add_property("radius", py::make_getter(&Cylinder::radius), &Cylinder::setRadius, "Radius of the cylinder.")
-        .add_property("height", py::make_getter(&Cylinder::height), &Cylinder::setHeight, "Height of the cylinder.")
+        .add_property("radius", py::make_getter(&Cylinder::radius), &Cylinder::setRadius, u8"Radius of the cylinder.")
+        .add_property("height", py::make_getter(&Cylinder::height), &Cylinder::setHeight, u8"Height of the cylinder.")
     ;
 
 

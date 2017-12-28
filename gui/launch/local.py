@@ -30,11 +30,10 @@ class PlaskThread(QThread):
     def __init__(self, program, fname, dirname, dock, main_window, args, defs):
         super(PlaskThread, self).__init__()
         self.main_window = main_window
+        env = os.environ.copy()
         if CONFIG['workarounds/disable_omp']:
-            env = os.environ.copy()
             env['OMP_NUM_THREADS'] = '1'
-        else:
-            env = None
+        env['PYTHONIOENCODING'] = self.main_window.document.coding
         try:
             si = subprocess.STARTUPINFO()
             si.dwFlags = subprocess.STARTF_USESTDHANDLES | subprocess.STARTF_USESHOWWINDOW
@@ -47,7 +46,6 @@ class PlaskThread(QThread):
             self.proc = subprocess.Popen([program, '-ldebug', '-g'] + list(defs) + ['--', fname] + list(args),
                                          cwd=dirname, stdout=subprocess.PIPE, env=env, stderr=subprocess.STDOUT,
                                          bufsize=0, startupinfo=si)
-        sys.stdout.flush()
         fd, fb = (s.replace(' ', '&nbsp;') for s in os.path.split(fname))
         sep = os.path.sep
         if sep == '\\':
@@ -62,7 +60,10 @@ class PlaskThread(QThread):
         self.main_window.closed.connect(self.kill_process)
 
     def __del__(self):
-        self.main_window.closed.disconnect(self.kill_process)
+        try:
+            self.main_window.closed.disconnect(self.kill_process)
+        except:
+            pass
 
     def run(self):
         while self.proc.poll() is None:
@@ -113,7 +114,7 @@ class Launcher(object):
             loglevel = ['error', 'warning', 'important', 'info', 'result', 'data', 'detail', 'debug'].index(
                 main_window.document.loglevel.lower())
         except AttributeError:
-            loglevel = 'detail'
+            loglevel = 6
         self.error = QCheckBox("&Error")
         self.error.setChecked(loglevel >= 0)
         layout.addWidget(self.error)

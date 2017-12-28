@@ -14,7 +14,7 @@ from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
 from . import Controller, select_index_from_info
-from ..utils.widgets import table_edit_shortcut, table_last_col_fill, create_undo_actions
+from ..utils.widgets import table_edit_shortcut, table_last_col_fill, create_undo_actions, set_icon_size
 
 
 class TableActions(object):
@@ -67,7 +67,6 @@ class TableActions(object):
         return action
 
     def get(self, parent):
-
         self.add_action = TableActions.make_action('list-add', '&Add',
                                                     'Add new entry to the list', parent,
                                                     self.add_entry,
@@ -95,6 +94,7 @@ def table_and_manipulators(table, parent=None, model=None, title=None, add_undo_
     toolbar = QToolBar()
     if model is None: model = table.model()
     toolbar.setStyleSheet("QToolBar { border: 0px }")
+    set_icon_size(toolbar)
 
     if add_undo_action is None: add_undo_action = hasattr(model, 'undo_stack')
     if add_undo_action:
@@ -164,6 +164,7 @@ class TableController(Controller):
         layout = QVBoxLayout()
         toolbar = QToolBar(widget)
         toolbar.setStyleSheet("QToolBar { border: 0px }")
+        set_icon_size(toolbar)
         create_undo_actions(toolbar, self.model, widget)
         toolbar.addSeparator()
         actions = self.get_table_edit_actions()

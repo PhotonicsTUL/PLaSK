@@ -18,7 +18,7 @@ struct DataSourceImpl {
 //This class is simillar to field provider, but in each point it returns optional value
 template <typename PropertyT, typename OutputSpaceT, typename... ExtraArgs>
 class DataSourceImpl<PropertyT, FIELD_PROPERTY, OutputSpaceT, VariadicTemplateTypesHolder<ExtraArgs...>>
-//: public FieldProvider<boost::optional<typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType>, OutputSpaceType, ExtraArgs...>    //inharistance only for change signal, not neccessery
+//: public FieldProvider<plask::optional<typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType>, OutputSpaceType, ExtraArgs...>    //inharistance only for change signal, not neccessery
 {
 
     //shared_ptr<OutputSpaceType> destinationSpace;   //should be stored here? maybe only connection...
@@ -53,24 +53,24 @@ public:
      * @param method interpolation method to use
      * @return value in point @p, set only if this can provide data in given point @p p
      */
-   // virtual boost::optional<ValueType> get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+   // virtual plask::optional<ValueType> get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
    // virtual ValueT get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
-    //virtual LazyData<boost::optional<ValueType>> operator()(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+    //virtual LazyData<plask::optional<ValueType>> operator()(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
     virtual ~DataSourceImpl() {}
 
-    virtual std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+    virtual std::function<plask::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
-    inline std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, std::tuple<ExtraArgs...> extra_args, InterpolationMethod method) const {
+    inline std::function<plask::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, std::tuple<ExtraArgs...> extra_args, InterpolationMethod method) const {
         typedef std::tuple<ExtraArgs...> Tuple;
         return apply_tuple(dst_mesh, method, std::forward<Tuple>(extra_args), make_seq_indices<0, sizeof...(ExtraArgs)>{});
     }
 
 private:
     template <typename T,  template <std::size_t...> class I, std::size_t... Indices>
-    inline std::function<boost::optional<ValueType>(std::size_t index)> apply_tuple(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, InterpolationMethod method, T&& t, I<Indices...>) const {
+    inline std::function<plask::optional<ValueType>(std::size_t index)> apply_tuple(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, InterpolationMethod method, T&& t, I<Indices...>) const {
       return this->operator()(dst_mesh, std::get<Indices>(std::forward<T>(t))..., method);
     }
 
@@ -79,7 +79,7 @@ private:
 //This class is simillar to field provider, but in each point it returns optional value
 template <typename PropertyT, typename OutputSpaceT, typename... ExtraArgs>
 class DataSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, OutputSpaceT, VariadicTemplateTypesHolder<ExtraArgs...>>
-//: public FieldProvider<boost::optional<typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType>, OutputSpaceType, ExtraArgs...>    //inharistance only for change signal, not neccessery
+//: public FieldProvider<plask::optional<typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType>, OutputSpaceType, ExtraArgs...>    //inharistance only for change signal, not neccessery
 {
 
     //shared_ptr<OutputSpaceType> destinationSpace;   //should be stored here? maybe only connection...
@@ -115,26 +115,26 @@ public:
      * @param method interpolation method to use
      * @return value in point @p, set only if this can provide data in given point @p p
      */
-   // virtual boost::optional<ValueType> get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+   // virtual plask::optional<ValueType> get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
    // virtual ValueT get(const Vec<OutputSpaceType::DIM, double>& p, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
-    //virtual LazyData<boost::optional<ValueType>> operator()(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+    //virtual LazyData<plask::optional<ValueType>> operator()(const MeshD<OutputSpaceType::DIM>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
     virtual ~DataSourceImpl() {}
 
-    virtual std::function<boost::optional<ValueType>(std::size_t index)> operator()(EnumType num, const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
+    virtual std::function<plask::optional<ValueType>(std::size_t index)> operator()(EnumType num, const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
     virtual size_t size() const = 0;
     
-    inline std::function<boost::optional<ValueType>(std::size_t index)> operator()(EnumType num, const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, std::tuple<ExtraArgs...> extra_args, InterpolationMethod method) const {
+    inline std::function<plask::optional<ValueType>(std::size_t index)> operator()(EnumType num, const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, std::tuple<ExtraArgs...> extra_args, InterpolationMethod method) const {
         typedef std::tuple<ExtraArgs...> Tuple;
         return apply_tuple(dst_mesh, method, std::forward<Tuple>(extra_args), make_seq_indices<0, sizeof...(ExtraArgs)>{});
     }
 
 private:
     template <typename T,  template <std::size_t...> class I, std::size_t... Indices>
-    inline std::function<boost::optional<ValueType>(std::size_t index)> apply_tuple(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, InterpolationMethod method, T&& t, I<Indices...>) const {
+    inline std::function<plask::optional<ValueType>(std::size_t index)> apply_tuple(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, InterpolationMethod method, T&& t, I<Indices...>) const {
       return this->operator()(dst_mesh, std::get<Indices>(std::forward<T>(t))..., method);
     }
 
@@ -145,7 +145,7 @@ using DataSource = DataSourceImpl<PropertyT, PropertyT::propertyType, OutputSpac
 
 // Hold reference to data source and destination mesh, base for LazyDataImpl returned by most DataSources
 /*template <typename DataSourceType>
-struct DataSourceDataImpl: public LazyDataImpl<boost::optional<typename DataSourceType::ValueType>> {
+struct DataSourceDataImpl: public LazyDataImpl<plask::optional<typename DataSourceType::ValueType>> {
 
     const DataSourceType& data_src;
     const MeshD<DataSourceType::DIM>& dst_mesh;
@@ -163,7 +163,7 @@ protected:
     //in, out obj can't be hold by shared_ptr, due to memory leak (circular reference)
     const InputGeomObj* inputObj;
     const OutputGeomObj* outputObj;
-    boost::optional<PathHints> path;
+    plask::optional<PathHints> path;
     boost::signals2::connection geomConnectionIn;
     boost::signals2::connection geomConnectionOut;
 
@@ -197,7 +197,7 @@ public:
         if (path)
             this->path = *path;
         else
-            this->path = boost::optional<PathHints>();
+            this->path = plask::optional<PathHints>();
     }
 
     const PathHints* getPath() const {
@@ -338,7 +338,7 @@ public:
 
     ConstDataSourceImpl(const ValueType& value): value(value) {}
 
-    std::function<boost::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<OutputSpaceType::DIM>>&, ExtraArgs..., InterpolationMethod) const override {
+    std::function<plask::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<OutputSpaceType::DIM>>&, ExtraArgs..., InterpolationMethod) const override {
         return [=](std::size_t) { return value; };
     }
 
@@ -357,7 +357,7 @@ public:
 
     ConstDataSourceImpl(const ValueType& value): value(value) {}
 
-    std::function<boost::optional<ValueType>(std::size_t index)> operator()(typename PropertyT::EnumType, const shared_ptr<const MeshD<OutputSpaceType::DIM>>&, ExtraArgs..., InterpolationMethod) const override {
+    std::function<plask::optional<ValueType>(std::size_t index)> operator()(typename PropertyT::EnumType, const shared_ptr<const MeshD<OutputSpaceType::DIM>>&, ExtraArgs..., InterpolationMethod) const override {
         return [=](std::size_t) { return value; };
     }
 

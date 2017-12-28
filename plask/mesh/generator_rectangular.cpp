@@ -17,7 +17,7 @@ inline static void addPoints(OrderedAxis& dst, double lo, double up, bool single
     }
 }
 
-shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry, bool extend_to_zero)
+shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry, bool uniform)
 {
     auto mesh = plask::make_shared<OrderedAxis>();
     OrderedAxis::WarningOff warning_off(mesh);
@@ -27,23 +27,21 @@ shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>&
 
     for (std::size_t i = 0; i < boxes.size(); ++i)
         if (boxes[i].isValid()) {
-            addPoints(*mesh, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
+            addPoints(*mesh, boxes[i].lower.c0, boxes[i].upper.c0, uniform || leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
         }
-
-    if (extend_to_zero) mesh->addPoint(0.);
 
     return mesh;
 }
 
 shared_ptr<MeshD<1>> OrderedMesh1DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
-    auto mesh = makeGeometryGrid1D(geometry, extend_to_zero);
+    auto mesh = makeGeometryGrid1D(geometry);
     writelog(LOG_DETAIL, "mesh.Rectangular1D.SimpleGenerator: Generating new mesh ({0})", mesh->size());
     return mesh;
 }
 
 
-shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, bool extend_to_zero)
+shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, bool uniform0, bool uniform1)
 {
     shared_ptr<OrderedAxis> axis0(new OrderedAxis), axis1(new OrderedAxis);
     OrderedAxis::WarningOff warning_off0(axis0);
@@ -54,11 +52,9 @@ shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 
     for (std::size_t i = 0; i < boxes.size(); ++i)
         if (boxes[i].isValid()) {
-            addPoints(*axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
-            addPoints(*axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->isUniform(Primitive<3>::DIRECTION_VERT), leafs[i]->min_ply, leafs[i]->max_points);
+            addPoints(*axis0, boxes[i].lower.c0, boxes[i].upper.c0, uniform0 || leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
+            addPoints(*axis1, boxes[i].lower.c1, boxes[i].upper.c1, uniform1 || leafs[i]->isUniform(Primitive<3>::DIRECTION_VERT), leafs[i]->min_ply, leafs[i]->max_points);
         }
-
-    if (extend_to_zero) axis0->addPoint(0.);
 
     shared_ptr<RectangularMesh<2>> mesh = plask::make_shared<RectangularMesh<2>>(std::move(axis0), std::move(axis1));
     mesh->setOptimalIterationOrder();
@@ -67,7 +63,7 @@ shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 
 shared_ptr<MeshD<2>> RectangularMesh2DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
-    shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(geometry, extend_to_zero);
+    shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(geometry);
     writelog(LOG_DETAIL, "mesh.Rectangular2D.SimpleGenerator: Generating new mesh ({0}x{1})", mesh->axis0->size(), mesh->axis1->size());
     return mesh;
 }
@@ -79,7 +75,7 @@ shared_ptr<MeshD<2>> RectangularMesh2DFrom1DGenerator::generate(const shared_ptr
 }
 
 
-shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry)
+shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry, bool uniform0, bool uniform1, bool uniform2)
 {
     shared_ptr<OrderedAxis> axis0(new OrderedAxis), axis1(new OrderedAxis), axis2(new OrderedAxis);
     OrderedAxis::WarningOff warning_off0(axis0);
@@ -91,9 +87,9 @@ shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 
     for (std::size_t i = 0; i < boxes.size(); ++i)
         if (boxes[i].isValid()) {
-            addPoints(*axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isUniform(Primitive<3>::DIRECTION_LONG), leafs[i]->min_ply, leafs[i]->max_points);
-            addPoints(*axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
-            addPoints(*axis2, boxes[i].lower.c2, boxes[i].upper.c2, leafs[i]->isUniform(Primitive<3>::DIRECTION_VERT), leafs[i]->min_ply, leafs[i]->max_points);
+            addPoints(*axis0, boxes[i].lower.c0, boxes[i].upper.c0, uniform0 || leafs[i]->isUniform(Primitive<3>::DIRECTION_LONG), leafs[i]->min_ply, leafs[i]->max_points);
+            addPoints(*axis1, boxes[i].lower.c1, boxes[i].upper.c1, uniform1 || leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
+            addPoints(*axis2, boxes[i].lower.c2, boxes[i].upper.c2, uniform2 || leafs[i]->isUniform(Primitive<3>::DIRECTION_VERT), leafs[i]->min_ply, leafs[i]->max_points);
         }
 
     shared_ptr<RectangularMesh<3>> mesh = plask::make_shared<RectangularMesh<3>>(std::move(axis0), std::move(axis1), std::move(axis2));
@@ -109,8 +105,9 @@ shared_ptr<MeshD<3>> RectangularMesh3DSimpleGenerator::generate(const shared_ptr
 }
 
 
-shared_ptr<OrderedAxis> refineAxis(const shared_ptr<MeshAxis>& axis, double spacing)
-{
+
+shared_ptr<OrderedAxis> refineAxis(const shared_ptr<MeshAxis>& axis, double spacing) {
+    if (spacing == 0. || isinf(spacing) || isnan(spacing)) return make_shared<OrderedAxis>(*axis);
     size_t total = 1;
     for (size_t i = 1; i < axis->size(); ++i) {
         total += size_t(max(round((axis->at(i) - axis->at(i-1)) / spacing), 1.));
@@ -141,16 +138,16 @@ shared_ptr<MeshD<1>> OrderedMesh1DRegularGenerator::generate(const shared_ptr<Ge
 shared_ptr<MeshD<2>> RectangularMesh2DRegularGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     auto mesh1 = makeGeometryGrid(geometry);
-    auto mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh1->axis0, spacing), refineAxis(mesh1->axis1, spacing));
-    writelog(LOG_DETAIL, "mesh.Rectangular2D.SimpleGenerator: Generating new mesh ({0}x{1})", mesh->axis0->size(), mesh->axis1->size());
+    auto mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh1->axis0, spacing0), refineAxis(mesh1->axis1, spacing1));
+    writelog(LOG_DETAIL, "mesh.Rectangular2D.RegularGenerator: Generating new mesh ({0}x{1})", mesh->axis0->size(), mesh->axis1->size());
     return mesh;
 }
 
 shared_ptr<MeshD<3>> RectangularMesh3DRegularGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
     auto mesh1 = makeGeometryGrid(geometry);
-    auto mesh = make_shared<RectangularMesh<3>>(refineAxis(mesh1->axis0, spacing), refineAxis(mesh1->axis1, spacing), refineAxis(mesh1->axis2, spacing));
-    writelog(LOG_DETAIL, "mesh.Rectangular3D.SimpleGenerator: Generating new mesh ({0}x{1}x{2})", mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size());
+    auto mesh = make_shared<RectangularMesh<3>>(refineAxis(mesh1->axis0, spacing0), refineAxis(mesh1->axis1, spacing1), refineAxis(mesh1->axis2, spacing2));
+    writelog(LOG_DETAIL, "mesh.Rectangular3D.RegularGenerator: Generating new mesh ({0}x{1}x{2})", mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size());
     return mesh;
 }
 
@@ -473,9 +470,72 @@ static shared_ptr<MeshGenerator> readTrivialGenerator(XMLReader& reader, const M
     return plask::make_shared<GeneratorT>();
 }
 
-static RegisterMeshGeneratorReader rectilinear_simplegenerator_reader  ("ordered.simple",   readTrivialGenerator<OrderedMesh1DSimpleGenerator>);
+static RegisterMeshGeneratorReader ordered_simplegenerator_reader  ("ordered.simple",   readTrivialGenerator<OrderedMesh1DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectangular2d_simplegenerator_reader("rectangular2d.simple", readTrivialGenerator<RectangularMesh2DSimpleGenerator>);
 static RegisterMeshGeneratorReader rectangular3d_simplegenerator_reader("rectangular3d.simple", readTrivialGenerator<RectangularMesh3DSimpleGenerator>);
+
+
+static shared_ptr<MeshGenerator> readRegularGenerator1(XMLReader& reader, const Manager&)
+{
+    double spacing = INFINITY;
+    while (reader.requireTagOrEnd()) {
+        if (reader.getNodeName() == "spacing") {
+            spacing = reader.getAttribute<double>("every", spacing);
+            reader.requireTagEnd();
+        } else
+            throw XMLUnexpectedElementException(reader, "<spacing>");
+    }
+    return plask::make_shared<OrderedMesh1DRegularGenerator>(spacing);
+}
+
+static shared_ptr<MeshGenerator> readRegularGenerator2(XMLReader& reader, const Manager&)
+{
+    double spacing0 = INFINITY,
+           spacing1 = INFINITY;
+    while (reader.requireTagOrEnd()) {
+        if (reader.getNodeName() == "spacing") {
+            if (reader.hasAttribute("every")) {
+                if (reader.hasAttribute("every0")) throw XMLConflictingAttributesException(reader, "every", "every0");
+                if (reader.hasAttribute("every1")) throw XMLConflictingAttributesException(reader, "every", "every1");
+                spacing0 = spacing1 = reader.requireAttribute<double>("every");
+            } else {
+                spacing0 = reader.getAttribute<double>("every0", spacing0);
+                spacing1 = reader.getAttribute<double>("every1", spacing1);
+            }
+            reader.requireTagEnd();
+        } else
+            throw XMLUnexpectedElementException(reader, "<spacing>");
+    }
+    return plask::make_shared<RectangularMesh2DRegularGenerator>(spacing0, spacing1);
+}
+
+static shared_ptr<MeshGenerator> readRegularGenerator3(XMLReader& reader, const Manager&)
+{
+    double spacing0 = INFINITY,
+           spacing1 = INFINITY,
+           spacing2 = INFINITY;
+    while (reader.requireTagOrEnd()) {
+        if (reader.getNodeName() == "spacing") {
+            if (reader.hasAttribute("every")) {
+                if (reader.hasAttribute("every0")) throw XMLConflictingAttributesException(reader, "every", "every0");
+                if (reader.hasAttribute("every1")) throw XMLConflictingAttributesException(reader, "every", "every1");
+                if (reader.hasAttribute("every2")) throw XMLConflictingAttributesException(reader, "every", "every2");
+                spacing0 = spacing1 = reader.requireAttribute<double>("every");
+            } else {
+                spacing0 = reader.getAttribute<double>("every0", spacing0);
+                spacing1 = reader.getAttribute<double>("every1", spacing1);
+                spacing2 = reader.getAttribute<double>("every2", spacing2);
+            }
+            reader.requireTagEnd();
+        } else
+            throw XMLUnexpectedElementException(reader, "<spacing>");
+    }
+    return plask::make_shared<RectangularMesh3DRegularGenerator>(spacing0, spacing1, spacing2);
+}
+
+static RegisterMeshGeneratorReader ordered_regulargenerator_reader("ordered.regular", readRegularGenerator1);
+static RegisterMeshGeneratorReader rectangular2d_regulargenerator_reader("rectangular2d.regular", readRegularGenerator2);
+static RegisterMeshGeneratorReader rectangular3d_regulargenerator_reader("rectangular3d.regular", readRegularGenerator3);
 
 
 template <int dim>
@@ -489,7 +549,7 @@ shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLReader& reader, cons
             throw XMLDuplicatedElementException(std::string("<generator>"), reader.getNodeName());
         read.insert(reader.getNodeName());
         if (reader.getNodeName() == "prediv") {
-            boost::optional<size_t> into = reader.getAttribute<size_t>("by");
+            plask::optional<size_t> into = reader.getAttribute<size_t>("by");
             if (into) {
                 if (reader.hasAttribute("by0")) throw XMLConflictingAttributesException(reader, "by", "by0");
                 if (reader.hasAttribute("by1")) throw XMLConflictingAttributesException(reader, "by", "by1");
@@ -499,7 +559,7 @@ shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLReader& reader, cons
                 for (int i = 0; i < dim; ++i) result->pre_divisions[i] = reader.getAttribute<size_t>(format("by{0}", i), 1);
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "postdiv") {
-            boost::optional<size_t> into = reader.getAttribute<size_t>("by");
+            plask::optional<size_t> into = reader.getAttribute<size_t>("by");
             if (into) {
                 if (reader.hasAttribute("by0")) throw XMLConflictingAttributesException(reader, "by", "by0");
                 if (reader.hasAttribute("by1")) throw XMLConflictingAttributesException(reader, "by", "by1");
@@ -522,7 +582,7 @@ template struct PLASK_API RectangularMeshDivideGenerator<1>;
 template struct PLASK_API RectangularMeshDivideGenerator<2>;
 template struct PLASK_API RectangularMeshDivideGenerator<3>;
 
-static RegisterMeshGeneratorReader rectilinear_dividinggenerator_reader  ("ordered.divide",   readRectangularDivideGenerator<1>);
+static RegisterMeshGeneratorReader ordered_dividinggenerator_reader("ordered.divide", readRectangularDivideGenerator<1>);
 static RegisterMeshGeneratorReader rectangular2d_dividinggenerator_reader("rectangular2d.divide", readRectangularDivideGenerator<2>);
 static RegisterMeshGeneratorReader rectangular3d_dividinggenerator_reader("rectangular3d.divide", readRectangularDivideGenerator<3>);
 
@@ -538,7 +598,7 @@ shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLReader& reader, cons
             throw XMLDuplicatedElementException(std::string("<generator>"), reader.getNodeName());
         read.insert(reader.getNodeName());
         if (reader.getNodeName() == "steps") {
-            boost::optional<double> small_op = reader.getAttribute<double>("small");	//dons't use small since some windows haders: #define small char
+            plask::optional<double> small_op = reader.getAttribute<double>("small");	//dons't use small since some windows haders: #define small char
             if (small_op) {
                 if (reader.hasAttribute("small0")) throw XMLConflictingAttributesException(reader, "small", "small0");
                 if (reader.hasAttribute("small1")) throw XMLConflictingAttributesException(reader, "small", "small1");
@@ -546,7 +606,7 @@ shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLReader& reader, cons
                 for (int i = 0; i < dim; ++i) result->finestep[i] = *small_op;
             } else
                 for (int i = 0; i < dim; ++i) result->finestep[i] = reader.getAttribute<double>(format("small{:d}", i), result->finestep[i]);
-            boost::optional<double> large = reader.getAttribute<double>("large");
+            plask::optional<double> large = reader.getAttribute<double>("large");
             if (large) {
                 if (reader.hasAttribute("large0")) throw XMLConflictingAttributesException(reader, "large", "large0");
                 if (reader.hasAttribute("large1")) throw XMLConflictingAttributesException(reader, "large", "large1");
@@ -554,7 +614,7 @@ shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLReader& reader, cons
                 for (int i = 0; i < dim; ++i) result->maxstep[i] = *large;
             } else
                 for (int i = 0; i < dim; ++i) result->maxstep[i] = reader.getAttribute<double>(format("large{:d}", i), result->maxstep[i]);
-            boost::optional<double> factor = reader.getAttribute<double>("factor");
+            plask::optional<double> factor = reader.getAttribute<double>("factor");
             if (factor) {
                 if (reader.hasAttribute("factor0")) throw XMLConflictingAttributesException(reader, "factor", "factor0");
                 if (reader.hasAttribute("factor1")) throw XMLConflictingAttributesException(reader, "factor", "factor1");
@@ -572,51 +632,13 @@ shared_ptr<MeshGenerator> readRectangularSmoothGenerator(XMLReader& reader, cons
     return result;
 }
 
-static RegisterMeshGeneratorReader rectilinear_smoothgenerator_reader  ("ordered.smooth",   readRectangularSmoothGenerator<1>);
+static RegisterMeshGeneratorReader ordered_smoothgenerator_reader("ordered.smooth", readRectangularSmoothGenerator<1>);
 static RegisterMeshGeneratorReader rectangular2d_smoothgenerator_reader("rectangular2d.smooth", readRectangularSmoothGenerator<2>);
 static RegisterMeshGeneratorReader rectangular3d_smoothgenerator_reader("rectangular3d.smooth", readRectangularSmoothGenerator<3>);
 
 template struct PLASK_API RectangularMeshSmoothGenerator<1>;
 template struct PLASK_API RectangularMeshSmoothGenerator<2>;
 template struct PLASK_API RectangularMeshSmoothGenerator<3>;
-
-
-
-
-// OBSOLETE
-
-template <int dim>
-static shared_ptr<MeshGenerator> readRectangularDivideGenerator_obsolete(XMLReader& reader, const Manager& manager)
-{
-    if (reader.requireAttribute("type") == "rectilinear1d")
-        writelog(LOG_WARNING, "Type 'rectilinear1d' is obsolete, use 'ordered' instead");
-    else if (reader.requireAttribute("type") == "rectilinear2d")
-        writelog(LOG_WARNING, "Type 'rectilinear2d' is obsolete, use 'rectangular2d' instead");
-    else if (reader.requireAttribute("type") == "rectilinear3d")
-        writelog(LOG_WARNING, "Type 'rectilinear3d' is obsolete, use 'rectangular3d' instead");
-    return readRectangularDivideGenerator<dim>(reader, manager);
-}
-
-template <typename GeneratorT>
-static shared_ptr<MeshGenerator> readTrivialGenerator_obsolete(XMLReader& reader, const Manager&)
-{
-    if (reader.requireAttribute("type") == "rectilinear1d")
-        writelog(LOG_WARNING, "Type 'rectilinear1d' is obsolete, use 'ordered' instead");
-    else if (reader.requireAttribute("type") == "rectilinear2d")
-        writelog(LOG_WARNING, "Type 'rectilinear2d' is obsolete, use 'rectangular2d' instead");
-    else if (reader.requireAttribute("type") == "rectilinear3d")
-        writelog(LOG_WARNING, "Type 'rectilinear3d' is obsolete, use 'rectangular3d' instead");
-    reader.requireTagEnd();
-    return plask::make_shared<GeneratorT>();
-}
-
-static RegisterMeshGeneratorReader rectilinearmesh1d_simplegenerator_reader("rectilinear1d.simple", readTrivialGenerator_obsolete<OrderedMesh1DSimpleGenerator>);
-static RegisterMeshGeneratorReader rectilinearmesh2d_simplegenerator_reader("rectilinear2d.simple", readTrivialGenerator_obsolete<RectangularMesh2DSimpleGenerator>);
-static RegisterMeshGeneratorReader rectilinearmesh3d_simplegenerator_reader("rectilinear3d.simple", readTrivialGenerator_obsolete<RectangularMesh3DSimpleGenerator>);
-
-static RegisterMeshGeneratorReader rectilinearmesh1d_dividinggenerator_reader("rectilinear1d.divide", readRectangularDivideGenerator_obsolete<1>);
-static RegisterMeshGeneratorReader rectilinearmesh2d_dividinggenerator_reader("rectilinear2d.divide", readRectangularDivideGenerator_obsolete<2>);
-static RegisterMeshGeneratorReader rectilinearmesh3d_dividinggenerator_reader("rectilinear3d.divide", readRectangularDivideGenerator_obsolete<3>);
 
 
 } // namespace plask

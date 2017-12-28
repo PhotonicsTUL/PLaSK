@@ -11,7 +11,7 @@ PLaSK User Guide
 
 
 .. toctree::
-    :hidden:
+    :maxdepth: 1
 
     preface
     introduction
@@ -30,21 +30,3 @@ PLaSK User Guide
     glossary
     genindex
     licensing
-
-* :doc:`preface`
-* :doc:`introduction`
-* :doc:`tutorials`
-* :doc:`general`
-* :doc:`geometry`
-* :doc:`materials`
-* :doc:`meshes`
-* :doc:`solvers`
-* :doc:`results`
-* :doc:`gui`
-* :doc:`units`
-* :doc:`index-solvers`
-* :doc:`xpl`
-* :doc:`api`
-* :doc:`glossary`
-* :ref:`genindex`
-* :doc:`licensing`

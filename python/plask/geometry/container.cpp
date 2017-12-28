@@ -52,11 +52,11 @@ static void Container__delitem__(GeometryObjectContainer<dim>& self, py::object 
         self.remove(child);
         return;
     } catch (py::error_already_set) { PyErr_Clear(); }
-    throw TypeError("unrecognized object {} delete from container", std::string(py::extract<std::string>(py::str(item))));
+    throw TypeError(u8"unrecognized object {} delete from container", std::string(py::extract<std::string>(py::str(item))));
 }
 
 
-DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectContainer, "Container", "Base class for all "," containers.") {
+DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectContainer, "Container", u8"Base class for all ", u8" containers.") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectContainer, GeometryObjectD<dim>)
         .def("__contains__", &Container__contains__<dim>)
         .def("__getitem__", &GeometryObject__getitem__)

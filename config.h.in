@@ -7,6 +7,9 @@
 // Math library to use
 #define PLASK_MATH_STD
 
+// optional library to use (c++17 std or boost)
+#cmakedefine PLASK_OPTIONAL_STD
+
 // Fortran name mangling
 #cmakedefine CMAKE_Fortran_COMPILER_WORKS
 #ifdef CMAKE_Fortran_COMPILER_WORKS
@@ -111,7 +114,7 @@
 #endif
 
 #ifndef PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_CLASS
-    #define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_CLASS(...) extern template struct __VA_ARGS__ ;
+    #define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_CLASS(...) extern template class __VA_ARGS__ ;
 #endif
 
 

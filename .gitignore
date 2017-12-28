@@ -4,3 +4,5 @@ build*
 *.kdev4
 .kdev*
 .idea
+/.vs
+/CMakeSettings.json

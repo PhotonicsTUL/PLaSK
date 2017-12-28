@@ -4,6 +4,10 @@
 #include "data.h"
 #include "utils/openmp.h"
 
+#include "vector/tensor2.h"
+#include "vector/tensor3.h"
+#include "utils/iterators.h"
+
 namespace plask {
 
 /**
@@ -240,7 +244,7 @@ public:
     /// @return iterator referring to the past-the-end point in @c this
     const_iterator end() const { return const_iterator(this, size()); }
 
-    bool isNotNull() const { return impl; }
+    bool isNotNull() const { return bool(impl); }
 
     bool isNull() const { return !impl; }
 };
@@ -369,6 +373,22 @@ template<class T>
 std::ostream& operator<<(std::ostream& out, LazyData<T> const& to_print) {
     out << '['; return print_seq(out, to_print.begin(), to_print.end()) << ']';
 }
+
+
+#ifdef _MSC_VER // MSVC require this while MingW does not accept
+
+#define PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(...) \
+    PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_CLASS(LazyData<__VA_ARGS__>) ; \
+    PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(LazyDataImpl<__VA_ARGS__>) ;
+
+PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Tensor3< complex<double> >)
+PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Tensor2< double >)
+PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Vec<3, complex<double>>)
+PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Vec<3, double>)
+PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(Vec<2, double>)
+PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(double)
+
+#endif
 
 }   // namespace plask
 

@@ -380,8 +380,11 @@ inline void export_base(Class solver) {
     solver.add_property("temp_dist", &Solver::getTempDist, &Solver::setTempDist,
                         "Temperature probing step.\n\n"
                         "If :attr:`temp_diff` is not ``None``, the temperature is laterally probed\n"
-                        "in points approximately separated by this distance. This is also the minimum\n"
-                        "thickness of sublayers resulting from temperature-gradient division.\n");
+                        "in points approximately separated by this distance.\n");
+    solver.add_property("temp_layer", &Solver::getTempLayer, &Solver::setTempLayer,
+                        "Temperature probing step.\n\n"
+                        "If :attr:`temp_diff` is not ``None``, this is the minimum thickness of sublayers\n"
+                        "resulting from temperature-gradient division.\n");
     solver.template add_receiver<ReceiverFor<Temperature, typename Solver::SpaceType>, Solver>("inTemperature", &Solver::inTemperature, "");
     solver.template add_receiver<ReceiverFor<Gain, typename Solver::SpaceType>, Solver>("inGain", &Solver::inGain, "");
     solver.add_provider("outRefractiveIndex", &Solver::outRefractiveIndex, "");

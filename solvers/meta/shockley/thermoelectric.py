@@ -36,17 +36,22 @@ def h5open(filename, group):
     if type(filename) is h5py.File:
         h5file = filename
         filename = h5file.filename
+        close = False
     else:
         h5file = h5py.File(filename, 'a')
-    orig_group = group; idx = 1
+        close = True
+    group_parts = [g for g in group.split('/') if g]
+    orig_group = group = '/'.join(group_parts)
+    idx = 1
     while group in h5file:
-        group = "{}-{}".format(orig_group, idx)
+        group = '/'.join(["{}-{}".format(group_parts[0], idx)] + group_parts[1:])
         idx += 1
     if group is not orig_group:
         plask.print_log('warning',
-                        "Group '{}' exists in HDF5 file '{}'. Saving to group '{}'" \
+                        "Group '/{}' exists in HDF5 file '{}'. Saving to group '/{}'" \
                         .format(orig_group, filename, group))
-    return h5file, group, filename
+    group = '/' + group
+    return h5file, group, filename, close
 
 
 class ThermoElectric(plask.Solver):
@@ -63,11 +68,14 @@ class ThermoElectric(plask.Solver):
 
         self.tfreq = 6
 
-    def _read_attr(self, tag, attr, solver, type, pyattr=None):
+    def _read_attr(self, tag, attr, solver, type=None, pyattr=None):
         if pyattr is None: pyattr = attr
         if attr in tag:
             try:
-                val = type(tag[attr])
+                if type is not None:
+                    val = type(tag[attr])
+                else:
+                    val = tag[attr]
             except ValueError:
                 raise plask.XMLError("{}: {} attribute {} has illegal value '{}'".format(
                     tag, type.__name__.title(), attr, tag[attr]))
@@ -103,10 +111,12 @@ class ThermoElectric(plask.Solver):
             self._read_attr(tag, 'maxterr', self.thermal, float, 'maxerr')
             self._read_attr(tag, 'maxcerr', self.electrical, float, 'maxerr')
         elif tag == 'tmatrix':
+            self._read_attr(tag, 'algorithm', self.thermal)
             self._read_attr(tag, 'itererr', self.thermal, float)
             self._read_attr(tag, 'iterlim', self.thermal, int)
             self._read_attr(tag, 'logfreq', self.thermal, int)
         elif tag == 'ematrix':
+            self._read_attr(tag, 'algorithm', self.thermal)
             self._read_attr(tag, 'itererr', self.electrical, float)
             self._read_attr(tag, 'iterlim', self.electrical, int)
             self._read_attr(tag, 'logfreq', self.electrical, int)
@@ -131,7 +141,7 @@ class ThermoElectric(plask.Solver):
         self.thermal.invalidate()
         self.electrical.invalidate()
 
-    def compute(self, save=True, invalidate=True):
+    def compute(self, save=True, invalidate=True, group='ThermoElectric'):
         """
         Run calculations.
 
@@ -145,8 +155,11 @@ class ThermoElectric(plask.Solver):
                 either the batch job id or the current time if no batch system
                 is used. The filename can be overridden by setting this parameter
                 as a string.
+
             invalidate (bool): If this flag is set, solvers are invalidated
                                in the beginning of the computations.
+
+            group (str): HDF5 group to save the data under.
         """
         if invalidate:
             self.thermal.invalidate()
@@ -166,7 +179,7 @@ class ThermoElectric(plask.Solver):
             plask.print_log('important', "  " + line)
 
         if save:
-            self.save(None if save is True else save)
+            self.save(None if save is True else save, group)
 
     def get_total_current(self, nact=0):
         """
@@ -232,10 +245,11 @@ class ThermoElectric(plask.Solver):
 
             group (str): HDF5 group to save the data under.
         """
-        h5file, group, filename = h5open(filename, group)
+        h5file, group, filename, close = h5open(filename, group)
         self._save_thermoelectric(h5file, group)
-        h5file.close()
-        plask.print_log('info', "Fields saved to file '{}'".format(filename))
+        if close:
+            h5file.close()
+        plask.print_log('info', "Fields saved to file '{}' in group '{}'".format(filename, group))
         return filename
 
     def plot_temperature(self, geometry_color='0.75', mesh_color=None, geometry_alpha=0.35, mesh_alpha=0.15, **kwargs):
@@ -387,8 +401,8 @@ class ThermoElectric(plask.Solver):
 
     def _get_info(self):
         return self._get_defines_info() + [
-            "Total current [mA]:        {:8.3f}".format(self.get_total_current()),
-            "Maximum temperature [K]:   {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
+            "Total current [mA]:            {:8.3f}".format(self.get_total_current()),
+            "Maximum temperature [K]:       {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
         ]
 
 

@@ -280,7 +280,7 @@ def proceed(filename):
 
     outname = os.path.join(os.path.dirname(os.path.abspath(filename)), "solvers.yml")
     print("Writing {}".format(outname))
-    with open(outname, 'w') as out:
+    with open(outname, 'wb') as out:
         yaml.dump(data, out, encoding='utf-8', allow_unicode=True, width=102, default_flow_style=False,
                   Dumper=AnchorSafeDumper)
 

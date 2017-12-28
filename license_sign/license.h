@@ -37,7 +37,7 @@ inline static void readLicenseData(XMLReader& src, XMLWriter* dst,
  */
 inline static bool processLicense(XMLReader& src, XMLWriter* dst,
                                   std::function<void (XMLReader& src)> content_cb = [](XMLReader&){}) {
-    boost::optional<std::string> read_signature;
+    plask::optional<std::string> read_signature;
     std::string calculated_signature;
     std::string to_sign = "CxoAMhusG8KNnwuBELW432yR\n";
     std::deque<XMLElement> writtenPath;    //unused if dst is nullptr

@@ -9,24 +9,72 @@ namespace plask {
 
 /**
  * Generate grid along edges of bounding boxes of all geometry elements
- * \param geometry given geometry
+ * \param geometry given geometry object
+ * \param uniform treat objects as uniform
  * \return generated mesh
  */
-PLASK_API shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry, bool extend_to_zero=false);
+PLASK_API shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry,
+                                                     bool uniform = false);
+
+/**
+ * Generate grid along edges of bounding boxes of all geometry elements
+ * \param geometry given geometry object
+ * \param uniform0 treat objects along horizontal axis as uniform
+ * \param uniform1 treat objects along vertical axis as uniform
+ * \return generated mesh
+ */
+PLASK_API shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry,
+                                                          bool uniform0 = false, bool uniform1 = false);
+
+/**
+ * Generate grid along edges of bounding boxes of all geometry elements
+ * \param geometry given geometry object
+ * \param uniform0 treat objects along longitudinal axis as uniform
+ * \param uniform2 treat objects along transverse axis as uniform
+ * \param uniform1 treat objects along vertical axis as uniform
+ * \return generated mesh
+ */
+PLASK_API shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry,
+                                                          bool uniform0 = false, bool uniform1 = false, bool uniform2 = false);
 
 /**
  * Generate grid along edges of bounding boxes of all geometry elements
  * \param geometry given geometry
+ * \param uniform treat objects as uniform
  * \return generated mesh
  */
-PLASK_API shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, bool extend_to_zero=false);
+inline shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryD<2>>& geometry,
+                                                  bool uniform = false)
+{
+    return makeGeometryGrid1D(geometry->getChild(), uniform);
+}
 
 /**
  * Generate grid along edges of bounding boxes of all geometry elements
  * \param geometry given geometry
+ * \param uniform0 treat objects along horizontal axis as uniform
+ * \param uniform1 treat objects along vertical axis as uniform
  * \return generated mesh
  */
-PLASK_API shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry);
+inline shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryD<2>>& geometry,
+                                                       bool uniform0 = false, bool uniform1 = false)
+{
+    return makeGeometryGrid(geometry->getChild(), uniform0, uniform1);
+}
+
+/**
+ * Generate grid along edges of bounding boxes of all geometry elements
+ * \param geometry given geometry
+ * \param uniform0 treat objects along longitudinal axis as uniform
+ * \param uniform2 treat objects along transverse axis as uniform
+ * \param uniform1 treat objects along vertical axis as uniform
+ * \return generated mesh
+ */
+inline shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryD<3>>& geometry,
+                                                       bool uniform0 = false, bool uniform1 = false, bool uniform2 = false)
+{
+    return makeGeometryGrid(geometry->getChild(), uniform0, uniform1, uniform2);
+}
 
 /**
  * Divide existing axis into finer mesh with points approximately spaced by \p spacing.
@@ -40,16 +88,7 @@ PLASK_API shared_ptr<OrderedAxis> refineAxis(const shared_ptr<MeshAxis>& axis, d
  */
 class PLASK_API OrderedMesh1DSimpleGenerator: public MeshGeneratorD<1> {
 
-    /// Should we add line at horizontal zero
-    bool extend_to_zero;
-
   public:
-
-    /**
-     * Create generator
-     * \param extend_to_zero indicates whether there always must be a line at tran = 0
-     */
-    OrderedMesh1DSimpleGenerator(bool extend_to_zero=false): extend_to_zero(extend_to_zero) {}
 
     virtual shared_ptr<MeshD<1>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
@@ -60,16 +99,7 @@ class PLASK_API OrderedMesh1DSimpleGenerator: public MeshGeneratorD<1> {
  */
 class PLASK_API RectangularMesh2DSimpleGenerator: public MeshGeneratorD<2> {
 
-    /// Should we add line at horizontal zero
-    bool extend_to_zero;
-
   public:
-
-    /**
-     * Create generator
-     * \param extend_to_zero indicates whether there always must be a line at tran = 0
-     */
-    RectangularMesh2DSimpleGenerator(bool extend_to_zero=false): extend_to_zero(extend_to_zero) {}
 
     virtual shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
@@ -79,7 +109,7 @@ class PLASK_API RectangularMesh2DSimpleGenerator: public MeshGeneratorD<2> {
  */
 struct PLASK_API RectangularMesh3DSimpleGenerator: public MeshGeneratorD<3> {
 
-public:
+  public:
 
     /**
      * Create generator
@@ -104,7 +134,7 @@ class PLASK_API OrderedMesh1DRegularGenerator: public MeshGeneratorD<1> {
 
     /**
      * Create generator
-     * \param extend_to_zero indicates whether there always must be a line at tran = 0
+     * \param spacing approximate distance between mesh lines
      */
     OrderedMesh1DRegularGenerator(double spacing): spacing(spacing) {}
 
@@ -119,15 +149,22 @@ class PLASK_API OrderedMesh1DRegularGenerator: public MeshGeneratorD<1> {
 class PLASK_API RectangularMesh2DRegularGenerator: public MeshGeneratorD<2> {
 
     /// Requested spacing
-    double spacing;
+    double spacing0, spacing1;
 
   public:
 
     /**
      * Create generator
-     * \param extend_to_zero indicates whether there always must be a line at tran = 0
+     * \param spacing approximate distance between mesh lines
      */
-    RectangularMesh2DRegularGenerator(double spacing): spacing(spacing) {}
+    RectangularMesh2DRegularGenerator(double spacing): spacing0(spacing), spacing1(spacing) {}
+
+    /**
+     * Create generator
+     * \param spacing0 approximate distance between mesh lines for horizontal axis
+     * \param spacing1 approximate distance between mesh lines for vertical axis
+     */
+    RectangularMesh2DRegularGenerator(double spacing0, double spacing1): spacing0(spacing0), spacing1(spacing1) {}
 
     virtual shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
@@ -139,14 +176,24 @@ class PLASK_API RectangularMesh2DRegularGenerator: public MeshGeneratorD<2> {
 struct PLASK_API RectangularMesh3DRegularGenerator: public MeshGeneratorD<3> {
 
     /// Requested spacing
-    double spacing;
+    double spacing0, spacing1, spacing2;
 
   public:
 
     /**
      * Create generator
+     * \param spacing approximate distance between mesh lines
      */
-    RectangularMesh3DRegularGenerator(double spacing): spacing(spacing) {}
+    RectangularMesh3DRegularGenerator(double spacing): spacing0(spacing), spacing1(spacing), spacing2(spacing) {}
+
+    /**
+     * Create generator
+     * \param spacing0 approximate distance between mesh lines for longitudinal axis
+     * \param spacing1 approximate distance between mesh lines for transverse axis
+     * \param spacing2 approximate distance between mesh lines for vertical axis
+     */
+    RectangularMesh3DRegularGenerator(double spacing0, double spacing1, double spacing2):
+        spacing0(spacing0), spacing1(spacing1), spacing2(spacing2) {}
 
     virtual shared_ptr<MeshD<3>> generate(const shared_ptr<GeometryObjectD<3>>& geometry) override;
 };
@@ -164,7 +211,6 @@ class PLASK_API RectangularMesh2DFrom1DGenerator: public MeshGeneratorD<2> {
 
     /**
      * Create generator
-     * \param extend_to_zero indicates whether there always must be a line at tran = 0
      */
     RectangularMesh2DFrom1DGenerator(const shared_ptr<MeshGeneratorD<1>>& source):
         horizontal_generator(source) {}

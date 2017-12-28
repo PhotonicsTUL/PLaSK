@@ -1,6 +1,6 @@
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+/*#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   define BOOST_USE_WINDOWS_H
-#endif
+#endif*/
 
 #include "admittance.h"
 #include "solver.h"

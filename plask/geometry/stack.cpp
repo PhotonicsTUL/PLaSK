@@ -69,7 +69,7 @@ template <int dim, typename Primitive<dim>::Direction growingDirection>
 bool StackContainerBaseImpl<dim, growingDirection>::contains(const typename StackContainerBaseImpl<dim, growingDirection>::DVec &p) const {
     shared_ptr<TranslationT> sec_candidate;
     const shared_ptr<TranslationT> c = getChildForHeight(p[growingDirection], sec_candidate);
-    if (!c) {
+    if (c) {
         if (c->contains(p)) return true;
         if (sec_candidate) return sec_candidate->contains(p);
     }
@@ -85,6 +85,30 @@ shared_ptr<Material> StackContainerBaseImpl<dim, growingDirection>::getMaterial(
         if (sec_candidate) return sec_candidate->getMaterial(p);
     }
     return shared_ptr<Material>();
+}
+
+template<int dim, typename Primitive<dim>::Direction growingDirection>
+GeometryObject::Subtree StackContainerBaseImpl<dim, growingDirection>::getPathsAt(const typename StackContainerBaseImpl<dim, growingDirection>::DVec &point, bool all) const {
+    shared_ptr<TranslationT> sec_candidate;
+    const shared_ptr<TranslationT> c = getChildForHeight(point[growingDirection], sec_candidate);
+    GeometryObject::Subtree result;
+    if (c) {
+        GeometryObject::Subtree child_path = c->getPathsAt(point, all);
+        if (!child_path.empty()) {
+            result.children.push_back(std::move(child_path));
+            if (!all) { // one is enought
+                result.object = this->shared_from_this();
+                return result;
+            }
+        }
+        if (sec_candidate) {
+            child_path = sec_candidate->getPathsAt(point, all);
+            if (!child_path.empty()) result.children.push_back(std::move(child_path));
+        }
+        if (!result.children.empty())   // c or sec_candidate or both have given us some children
+            result.object = this->shared_from_this();
+    }
+    return result;
 }
 
 template <int dim, typename Primitive<dim>::Direction growingDirection>
@@ -542,8 +566,8 @@ template <typename UpperClass>
 GeometryObject::Subtree MultiStackContainer<UpperClass>::getPathsAt(const typename MultiStackContainer<UpperClass>::DVec &point, bool all) const {
     if (repeat_count == 0) return GeometryObject::Subtree();
     MultiStackContainer::DVec new_point = point;
-    reduceHeight(new_point[UpperClass::GROWING_DIR]);
-    return GeometryObjectContainer<UpperClass::DIM>::getPathsAt(new_point, all);
+    if (!reduceHeight(new_point[UpperClass::GROWING_DIR])) return GeometryObject::Subtree();
+    return UpperClass::getPathsAt(new_point, all);
 }
 
 template <typename UpperClass>
@@ -715,7 +739,7 @@ static shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) 
                 if (height_reader.tryReadZero(result)) return;
                 shared_ptr<Gap1D<2, Primitive<2>::DIRECTION_TRAN>> this_gap;
                 if (reader.source.getNodeName() == Gap1D<2, Primitive<2>::DIRECTION_TRAN>::NAME) {
-                    boost::optional<double> total_size_attr = reader.source.getAttribute<double>("total");
+                    plask::optional<double> total_size_attr = reader.source.getAttribute<double>("total");
                     if (total_size_attr) {  //total size provided?
                         if (total_size_gap)
                             throw XMLException(reader.source, "Total size has been already chosen.");

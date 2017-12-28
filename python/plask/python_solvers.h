@@ -48,15 +48,15 @@ namespace detail {
                     shared_ptr<MeshGeneratorD<SolverT::MeshType::DIM>> meshg = py::extract<shared_ptr<MeshGeneratorD<SolverT::MeshType::DIM>>>(omesh);
                     self.setMesh(meshg);
                 } catch (py::error_already_set) {
-                    throw TypeError("Cannot convert argument to proper mesh type.");
+                    throw TypeError(u8"Cannot convert argument to proper mesh type.");
                 }
             }
         }
 
         template <typename PySolver>
         static auto init(PySolver& solver) -> PySolver& {
-            solver.add_property("geometry", &SolverT::getGeometry, &SolverT::setGeometry, "Geometry provided to the solver");
-            solver.add_property("mesh", &SolverT::getMesh, &Solver_setMesh, "Mesh provided to the solver");
+            solver.add_property("geometry", &SolverT::getGeometry, &SolverT::setGeometry, u8"Geometry provided to the solver");
+            solver.add_property("mesh", &SolverT::getMesh, &Solver_setMesh, u8"Mesh provided to the solver");
             return solver;
         }
     };
@@ -64,145 +64,145 @@ namespace detail {
 } // namespace detail
 
 constexpr const char* docstring_attr_receiver() { return
-    "Receiver of the {2} required for computations [{3}].\n"
-    "{4}\n\n"
+    u8"Receiver of the {2} required for computations [{3}].\n"
+    u8"{4}\n\n"
 
-    "You will find usage details in the documentation of the receiver class\n"
-    ":class:`~plask.flow.{0}Receiver{1}`.\n\n"
+    u8"You will find usage details in the documentation of the receiver class\n"
+    u8":class:`~plask.flow.{0}Receiver{1}`.\n\n"
 
-    "Example:\n"
-    "   Connect the reveiver to a provider from some other solver:\n\n"
+    u8"Example:\n"
+    u8"   Connect the reveiver to a provider from some other solver:\n\n"
 
-    "   >>> solver.{5} = other_solver.out{0}\n\n"
+    u8"   >>> solver.{5} = other_solver.out{0}\n\n"
 
-    "See also:\n\n"
-    "   Receciver class: :class:`plask.flow.{0}Receiver{1}`\n\n"
-    "   Provider class: :class:`plask.flow.{0}Provider{1}`\n\n"
-    "   Data filter: :class:`plask.filter.{0}Filter{1}`\n";
+    u8"See also:\n\n"
+    u8"   Receciver class: :class:`plask.flow.{0}Receiver{1}`\n\n"
+    u8"   Provider class: :class:`plask.flow.{0}Provider{1}`\n\n"
+    u8"   Data filter: :class:`plask.filter.{0}Filter{1}`\n";
 }
 
 template <PropertyType propertyType> constexpr const char* docstring_attr_provider_impl();
 
 template <> constexpr const char* docstring_attr_provider_impl<SINGLE_VALUE_PROPERTY>() { return
-    "Provider of the computed {2} [{3}].\n"
-    "{4}\n\n"
+    u8"Provider of the computed {2} [{3}].\n"
+    u8"{4}\n\n"
 
-    "{7}({5})\n\n"
+    u8"{7}({5})\n\n"
 
-    "{6}\n"
+    u8"{6}\n"
 
-    ":return: Value of the {2} **[{3}]**.\n\n"
+    u8":return: Value of the {2} **[{3}]**.\n\n"
 
-    "Example:\n"
-    "   Connect the provider to a receiver in some other solver:\n\n"
+    u8"Example:\n"
+    u8"   Connect the provider to a receiver in some other solver:\n\n"
 
-    "   >>> other_solver.in{0} = solver.{7}%\n\n"
+    u8"   >>> other_solver.in{0} = solver.{7}%\n\n"
 
-    "   Obtain the provided value:\n\n"
+    u8"   Obtain the provided value:\n\n"
 
-    "   >>> solver.{7}({5})\n"
-    "   1000\n\n"
+    u8"   >>> solver.{7}({5})\n"
+    u8"   1000\n\n"
 
-    "See also:\n\n"
-    "   Provider class: :class:`plask.flow.{0}Provider{1}`\n\n"
-    "   Receciver class: :class:`plask.flow.{0}Receiver{1}`\n";
+    u8"See also:\n\n"
+    u8"   Provider class: :class:`plask.flow.{0}Provider{1}`\n\n"
+    u8"   Receciver class: :class:`plask.flow.{0}Receiver{1}`\n";
 }
 
 template <> constexpr const char* docstring_attr_provider_impl<MULTI_VALUE_PROPERTY>() { return
-    "Provider of the computed {2} [{3}].\n"
-    "{4}\n\n"
+    u8"Provider of the computed {2} [{3}].\n"
+    u8"{4}\n\n"
 
-    "{7}(n=0{5})\n\n"
+    u8"{7}(n=0{5})\n\n"
 
-    ":param int n: Value number.\n"
-    "{6}\n"
+    u8":param int n: Value number.\n"
+    u8"{6}\n"
 
-    ":return: Value of the {2} **[{3}]**.\n\n"
+    u8":return: Value of the {2} **[{3}]**.\n\n"
 
-    "You may obtain the number of different values this provider can return by\n"
-    "testing its length.\n\n"
+    u8"You may obtain the number of different values this provider can return by\n"
+    u8"testing its length.\n\n"
 
-    "Example:\n"
-    "   Connect the provider to a receiver in some other solver:\n\n"
+    u8"Example:\n"
+    u8"   Connect the provider to a receiver in some other solver:\n\n"
 
-    "   >>> other_solver.in{0} = solver.{7}\n\n"
+    u8"   >>> other_solver.in{0} = solver.{7}\n\n"
 
-    "   Obtain the provided value:\n\n"
+    u8"   Obtain the provided value:\n\n"
 
-    "   >>> solver.{7}(n=0{5})\n"
-    "   1000\n\n"
+    u8"   >>> solver.{7}(n=0{5})\n"
+    u8"   1000\n\n"
 
-    "   Test the number of provided values:\n\n"
+    u8"   Test the number of provided values:\n\n"
 
-    "   >>> len(solver.{7})\n"
-    "   3\n\n"
+    u8"   >>> len(solver.{7})\n"
+    u8"   3\n\n"
 
-    "See also:\n\n"
-    "   Provider class: :class:`plask.flow.{0}Provider{1}`\n\n"
-    "   Receciver class: :class:`plask.flow.{0}Receiver{1}`\n";
+    u8"See also:\n\n"
+    u8"   Provider class: :class:`plask.flow.{0}Provider{1}`\n\n"
+    u8"   Receciver class: :class:`plask.flow.{0}Receiver{1}`\n";
 }
 
 template <> constexpr const char* docstring_attr_provider_impl<FIELD_PROPERTY>() { return
-    "Provider of the computed {2} [{3}].\n"
-    "{4}\n\n"
+    u8"Provider of the computed {2} [{3}].\n"
+    u8"{4}\n\n"
 
-    "{7}(mesh{5}, interpolation='default')\n\n"
+    u8"{7}(mesh{5}, interpolation='default')\n\n"
 
-    ":param mesh mesh: Target mesh to get the field at.\n"
-    ":param str interpolation: Requested interpolation method.\n"
-    "{6}\n"
+    u8":param mesh mesh: Target mesh to get the field at.\n"
+    u8":param str interpolation: Requested interpolation method.\n"
+    u8"{6}\n"
 
-    ":return: Data with the {2} on the specified mesh **[{3}]**.\n\n"
+    u8":return: Data with the {2} on the specified mesh **[{3}]**.\n\n"
 
-    "Example:\n"
-    "   Connect the provider to a receiver in some other solver:\n\n"
+    u8"Example:\n"
+    u8"   Connect the provider to a receiver in some other solver:\n\n"
 
-    "   >>> other_solver.in{0} = solver.{7}\n\n"
+    u8"   >>> other_solver.in{0} = solver.{7}\n\n"
 
-    "   Obtain the provided field:\n\n"
+    u8"   Obtain the provided field:\n\n"
 
-    "   >>> solver.{7}(mesh{5})\n"
-    "   <plask.Data at 0x1234567>\n\n"
+    u8"   >>> solver.{7}(mesh{5})\n"
+    u8"   <plask.Data at 0x1234567>\n\n"
 
-    "See also:\n\n"
-    "   Provider class: :class:`plask.flow.{0}Provider{1}`\n\n"
-    "   Receciver class: :class:`plask.flow.{0}Receiver{1}`\n";
+    u8"See also:\n\n"
+    u8"   Provider class: :class:`plask.flow.{0}Provider{1}`\n\n"
+    u8"   Receciver class: :class:`plask.flow.{0}Receiver{1}`\n";
 }
 
 template <> constexpr const char* docstring_attr_provider_impl<MULTI_FIELD_PROPERTY>() { return
-    "Provider of the computed {2} [{3}].\n"
-    "{4}\n\n"
+    u8"Provider of the computed {2} [{3}].\n"
+    u8"{4}\n\n"
 
-    "{7}(n=0, mesh{5}, interpolation='default')\n\n"
+    u8"{7}(n=0, mesh{5}, interpolation='default')\n\n"
 
-    ":param int n: Value number.\n"
-    ":param mesh mesh: Target mesh to get the field at.\n"
-    ":param str interpolation: Requested interpolation method.\n"
-    "{6}\n"
+    u8":param int n: Value number.\n"
+    u8":param mesh mesh: Target mesh to get the field at.\n"
+    u8":param str interpolation: Requested interpolation method.\n"
+    u8"{6}\n"
 
-    ":return: Data with the {2} on the specified mesh **[{3}]**.\n\n"
+    u8":return: Data with the {2} on the specified mesh **[{3}]**.\n\n"
 
-    "You may obtain the number of different values this provider can return by\n"
-    "testing its length.\n\n"
+    u8"You may obtain the number of different values this provider can return by\n"
+    u8"testing its length.\n\n"
 
-    "Example:\n"
-    "   Connect the provider to a receiver in some other solver:\n\n"
+    u8"Example:\n"
+    u8"   Connect the provider to a receiver in some other solver:\n\n"
 
-    "   >>> other_solver.in{0} = solver.{7}\n\n"
+    u8"   >>> other_solver.in{0} = solver.{7}\n\n"
 
-    "   Obtain the provided field:\n\n"
+    u8"   Obtain the provided field:\n\n"
 
-    "   >>> solver.{7}(0, mesh{5})\n"
-    "   <plask.Data at 0x1234567>\n\n"
+    u8"   >>> solver.{7}(0, mesh{5})\n"
+    u8"   <plask.Data at 0x1234567>\n\n"
 
-    "   Test the number of provided values:\n\n"
+    u8"   Test the number of provided values:\n\n"
 
-    "   >>> len(solver.{7})\n"
-    "   3\n\n"
+    u8"   >>> len(solver.{7})\n"
+    u8"   3\n\n"
 
-    "See also:\n\n"
-    "   Provider class: :class:`plask.flow.{0}Provider{1}`\n\n"
-    "   Receciver class: :class:`plask.flow.{0}Receiver{1}`\n";
+    u8"See also:\n\n"
+    u8"   Provider class: :class:`plask.flow.{0}Provider{1}`\n\n"
+    u8"   Receciver class: :class:`plask.flow.{0}Receiver{1}`\n";
 }
 
 
@@ -307,29 +307,29 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
         detail::RegisterBoundaryConditions<MeshT, ValueT>();
 
         this->def_readonly(name, field, format(
-            "{0} \n\n"
+            u8"{0} \n\n"
 
-            "This field holds a list of boundary conditions for the solver. You may access\n"
-            "and alter is elements a normal Python list. Each element is a special class\n"
-            "that has two attributes:\n\n"
+            u8"This field holds a list of boundary conditions for the solver. You may access\n"
+            u8"and alter is elements a normal Python list. Each element is a special class\n"
+            u8"that has two attributes:\n\n"
 
-            "============= ==================================================================\n"
-            ":attr:`place` Boundary condition location{2}.\n"
-            ":attr:`value` Boundary condition value{3}.\n"
-            "============= ==================================================================\n\n"
+            u8"============= ==================================================================\n"
+            u8":attr:`place` Boundary condition location{2}.\n"
+            u8":attr:`value` Boundary condition value{3}.\n"
+            u8"============= ==================================================================\n\n"
 
-            "When you add new boundary condition, you may use two-argument ``append``, or\n"
-            "``prepend`` methods, or three-argument ``insert`` method, where you separately\n"
-            "specify the place and the value. See the below example for clarification.\n\n"
+            u8"When you add new boundary condition, you may use two-argument ``append``, or\n"
+            u8"``prepend`` methods, or three-argument ``insert`` method, where you separately\n"
+            u8"specify the place and the value. See the below example for clarification.\n\n"
 
-            "Example:\n"
-            "    >>> solver.{1}.clear()\n"
-            "    >>> solver.{1}.append(solver.mesh.Bottom(), some_value)\n"
-            "    >>> solver.{1}[0].value = different_value\n"
-            "    >>> solver.{1}.insert(0, solver.mesh.Top(), new_value)\n"
-            "    >>> solver.{1}[1].value == different_value\n"
-            "    True\n"
-            "{4}",
+            u8"Example:\n"
+            u8"    >>> solver.{1}.clear()\n"
+            u8"    >>> solver.{1}.append(solver.mesh.Bottom(), some_value)\n"
+            u8"    >>> solver.{1}[0].value = different_value\n"
+            u8"    >>> solver.{1}.insert(0, solver.mesh.Top(), new_value)\n"
+            u8"    >>> solver.{1}[1].value == different_value\n"
+            u8"    True\n"
+            u8"{4}",
             help, name, boundary_class, value_class, value_class_desc).c_str()
         );
         return *this;

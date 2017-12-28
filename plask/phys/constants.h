@@ -6,7 +6,7 @@
  * This file contains basic physical constants
  */
 
-#include <cmath>
+#include "../math.h"
 
 namespace plask {
 

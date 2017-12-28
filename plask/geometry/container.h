@@ -283,7 +283,7 @@ template <typename ChildParamF, typename WithoutChildParamF>
 inline void read_children(GeometryReader& reader, ChildParamF child_param_read, WithoutChildParamF without_child_param_read) {
     while (reader.source.requireTagOrEnd()) {
         if (reader.source.getNodeName() == "item") {
-            boost::optional<std::string> paths_str = reader.source.getAttribute("path");
+            plask::optional<std::string> paths_str = reader.source.getAttribute("path");
             PathHints::Hint hint = child_param_read();  // this calls readExactlyOneChild
             if (paths_str) {
                 auto paths = splitEscIterator(*paths_str, ',');

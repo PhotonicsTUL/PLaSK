@@ -8,7 +8,7 @@ using namespace plask::python;
 using namespace plask::electrical::shockley;
 
 static py::object outPotential(const py::object& self) {
-    throw TypeError("{}: 'outPotential' is reserved for drift-diffusion model; use 'outVoltage' instead",
+    throw TypeError(u8"{}: 'outPotential' is reserved for drift-diffusion model; use 'outVoltage' instead",
                     std::string(py::extract<std::string>(self.attr("id"))));
     return py::object();
 }
@@ -78,7 +78,7 @@ template <typename Class> py::object Shockley__getattr__(const Class& self, cons
         if (attr.substr(0,2) == "Vt") return py::object(self.getVt(boost::lexical_cast<size_t>(attr.substr(2))));
         if (attr.substr(0,2) == "js") return py::object(self.getJs(boost::lexical_cast<size_t>(attr.substr(2))));
     } catch (boost::bad_lexical_cast) {
-        throw AttributeError("{0} object has no attribute '{1}'", self.getClassName(), attr);
+        throw AttributeError(u8"{0} object has no attribute '{1}'", self.getClassName(), attr);
     }
     return py::object();
 }

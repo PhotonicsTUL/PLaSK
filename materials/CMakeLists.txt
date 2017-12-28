@@ -48,4 +48,4 @@ foreach(lib ${spurious_libs})
     file(REMOVE ${lib})
 endforeach()
 
-set(material_targets ${targets} PARENT_SCOPE)
+set(PLASK_MATERIALS ${targets} PARENT_SCOPE)

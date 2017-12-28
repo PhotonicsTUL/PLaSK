@@ -25,39 +25,49 @@ from ...utils.widgets import ComboBoxDelegate, ComboBox
 
 class RectangularRegularGeneratorController(GridController):
 
+    LABELS = (('',),
+              ('  horizontal:', '  vertical:'),
+              ('  longitudinal:', '  transverse:', '  vertical:'))
+
     def __init__(self, document, model):
         super(RectangularRegularGeneratorController, self).__init__(document=document, model=model)
 
         self.form = QGroupBox()
         form_layout = QHBoxLayout()
+        spacing_label = QLabel(u"Spacing [µm]:")
+        form_layout.addWidget(spacing_label)
 
         self.defines = get_defines_completer(self.document.defines.model, self.form)
 
-
-        self.spacing = QLineEdit()
-        self.spacing.editingFinished.connect(lambda : self._change_attr('spacing', empty_to_none(self.spacing.text())))
-        self.spacing.setCompleter(self.defines)
-        self.spacing.setToolTip('&lt;spacing <b>every</b>=""&gt;<br/>'
-                               'Approximate single element size.')
-        spacing_label = QLabel("Spacing:")
-        unit_label = QLabel(u"µm")
-        form_layout.addWidget(spacing_label)
-        form_layout.addWidget(self.spacing)
-        form_layout.addWidget(unit_label)
+        dim = model.dim
+        for i in range(dim):
+            label = QLabel(self.LABELS[dim-1][i])
+            form_layout.addWidget(label)
+            attr = 'spacing{}'.format(i)
+            edit = QLineEdit()
+            edit.editingFinished.connect(
+                lambda attr=attr: self._change_attr(attr, empty_to_none(getattr(self,attr).text()))
+            )
+            edit.setCompleter(self.defines)
+            edit.setToolTip('&lt;spacing <b>every{}</b>=""&gt;<br/>Approximate single element size.'
+                            .format('' if dim == 1 else str(i)))
+            form_layout.addWidget(edit)
+            setattr(self,attr, edit)
 
         self.form.setLayout(form_layout)
 
     def fill_form(self):
         super(RectangularRegularGeneratorController, self).fill_form()
-        self.spacing.setText(none_to_empty(self.grid_model.spacing))
+        for i in range(self.grid_model.dim):
+            attr = 'spacing{}'.format(i)
+            getattr(self,attr).setText(none_to_empty(getattr(self.grid_model,attr)))
 
     def get_widget(self):
         return self.form
 
     def select_info(self, info):
         super(RectangularRegularGeneratorController, self).select_info(info)
-        if info.property == 'spacing':
-            self.spacing.setFocus()
+        getattr(self, info.property).setFocus()
 
 
 class RectangularRefinedGeneratorController(GridController):

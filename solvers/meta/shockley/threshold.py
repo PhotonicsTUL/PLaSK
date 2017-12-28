@@ -56,6 +56,7 @@ class ThresholdSearch(ThermoElectric):
         self.threshold_current = None
         self._invalidate = None
         self.modeno = None
+        self._sn = 0
 
     def _parse_xpl(self, tag, manager):
         if tag == 'root':
@@ -148,12 +149,15 @@ class ThresholdSearch(ThermoElectric):
                 terr = self.thermal.compute(1)
         self.diffusion.compute_threshold()
 
-    def step(self, volt):
+    def step(self, volt, save=False):
         """
         Function performing one step of the threshold search.
 
         Args:
             volt (float): Voltage on a specified boundary condition [V].
+
+            save (bool): If `True` the computed fields are saved to the
+                HDF5 file after each computations step.
 
         Returns:
             float: Loss of a specified mode
@@ -171,6 +175,9 @@ class ThresholdSearch(ThermoElectric):
             self.modeno = self.optical.find_mode(**_optargs)
         val = self.optical.modes[self.modeno].loss
         plask.print_log('result', "ThresholdSearch: V = {:.4f} V, loss = {:g} / cm".format(volt, val))
+        if save:
+            self.save(None if save is True else save, 'ThresholdSearchStep/{:03}[{:.4f}V]'.format(self._sn, volt))
+            self._sn += 1
         return val
 
     def _quickstep(self, arg):
@@ -261,7 +268,7 @@ class ThresholdSearch(ThermoElectric):
 
         Args:
             axis (mesh or sequence): Points along horizontal axis to plot gain at.
-                                     Defaults to thr optical mesh.
+                                     Defaults to the optical mesh.
 
             bounds (bool): If *True* then the geometry objects boundaries are
                            plotted.
@@ -282,6 +289,26 @@ class ThresholdSearch(ThermoElectric):
         plask.ylabel(u"Gain [1/cm]")
         plask.window_title("Gain Profile")
 
+    def plot_gain_spectrum(self, lams, pos=0., junction=0, **kwargs):
+        """
+        Plot gain spectrum for specified junction.
+
+        Args:
+            lams (array of floats): Wavelengths for which the spectrum should be plotted.
+
+            pos (float): Lateral position fo the point in which the spectrum is plotted.
+
+            junction (int): Junction number to take gain from.
+
+            **kwargs: Keyword arguments passed to the plot function.
+        """
+        level = list(self._get_levels(self.diffusion.geometry, [pos]))[junction][1]
+        spectrum = self.gain.spectrum(level[0])
+        plask.plot(lams, spectrum(lams))
+        plask.xlabel(u"Wavelength [nm]")
+        plask.ylabel(u"Gain [1/cm]")
+        plask.window_title("Gain Spectrum")
+
     def plot_optical_determinant(self, lams, **kwargs):
         """
         Function plotting determinant of the optical solver.
@@ -297,7 +324,7 @@ class ThresholdSearch(ThermoElectric):
         plask.xlabel("Wavelength [nm]")
         plask.ylabel("Determinant [ar.u.]")
 
-    def compute(self, save=True, invalidate=False):
+    def compute(self, save=True, invalidate=False, group='ThresholdSearch', stepsave=False):
         """
         Execute the algorithm.
 
@@ -312,8 +339,14 @@ class ThresholdSearch(ThermoElectric):
                 either the batch job id or the current time if no batch system
                 is used. The filename can be overridden by setting this parameter
                 as a string.
+
             invalidate (bool): If this flag is set, solvers are invalidated
                                in the beginning of the computations.
+
+            group (str): HDF5 group to save the data under.
+
+            stepsave (bool): If `True` the computed fields are saved to the
+                HDF5 file after each computations step.
 
         Returns:
             The voltage set to ``ivolt`` boundary condition for the threshold.
@@ -332,11 +365,17 @@ class ThresholdSearch(ThermoElectric):
         self._invalidate = invalidate
         self.initialize()
 
+        self._sn = 0
+        self._max_concentration = None
+        self._max_gain = None
+
         if (self.vmin is None) != (self.vmax is None):
             raise ValueError("Both 'vmin' and 'vmax' must be either None or a float")
         if self.vmin is None:
             volt = self.electrical.voltage_boundary[self.ivb].value
             if self.quick:
+                if stepsave:
+                    plask.print_log('warning', "Fields cannot be saved in each step if the quick method is used")
                 self.compute_thermoelectric()
                 lam = self.get_lam().real
                 self._quickscale = np.array([volt, lam])
@@ -353,21 +392,18 @@ class ThresholdSearch(ThermoElectric):
                     _optargs[self._optarg] = lam
                     self.modeno = self.optical.set_mode(**_optargs)
             else:
-                self.threshold_voltage = scipy.optimize.newton(self.step, volt,
+                self.threshold_voltage = scipy.optimize.newton(self.step, volt, args=(stepsave,),
                                                                tol=self.vtol/volt, maxiter=self.maxiter)
         else:
             if self.quick:
                 raise RuntimeError("Quick computation only allowed with a single starting point")
-            self.threshold_voltage = scipy.optimize.brentq(self.step, self.vmin, self.vmax,
+            self.threshold_voltage = scipy.optimize.brentq(self.step, self.vmin, self.vmax, args=(stepsave,),
                                                            xtol=self.vtol * 2. / (self.vmin+self.vmax),
                                                            maxiter=self.maxiter, disp=True)
 
         self.threshold_current = abs(self.electrical.get_total_current())
 
         infolines = self._get_info()
-        plask.print_log('important', "Threshold Search Finished")
-        for line in infolines:
-            plask.print_log('important', "  " + line)
 
         if save:
             filename = self.save(None if save is True else save)
@@ -377,14 +413,34 @@ class ThresholdSearch(ThermoElectric):
                 out.writelines(line + '\n' for line in infolines)
                 out.write("\n")
 
+        plask.print_log('important', "Threshold Search Finished")
+        for line in infolines:
+            plask.print_log('important', "  " + line)
+
         return self.threshold_voltage
 
     def _get_info(self):
-        return self._get_defines_info() + [
-            "Threshold voltage [V]:     {:8.3f}".format(self.threshold_voltage),
-            "Threshold current [mA]:    {:8.3f}".format(self.threshold_current),
-            "Maximum temperature [K]:   {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
+        result = self._get_defines_info() + [
+            "Threshold voltage [V]:         {:8.3f}".format(self.threshold_voltage),
+            "Threshold current [mA]:        {:8.3f}".format(self.threshold_current),
+            "Maximum temperature [K]:       {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
         ]
+        levels = list(self._get_levels(self.diffusion.geometry, self.diffusion.mesh, 'QW', 'QD', 'gain'))
+        max_concentration = []
+        for no, mesh in levels:
+            value = self.diffusion.outCarriersConcentration(mesh)
+            max_concentration.append(max(value))
+        result.append("Maximum concentration [1/cm3]:    {}"
+                      .format(', '.join('{:.3e}'.format(c) for c in max_concentration)))
+        lam = getattr(self.optical, self._lam0).real
+        if lam is None: lam = self.get_lam().real
+        max_gain = []
+        for no, mesh in levels:
+            value = self.gain.outGain(mesh, lam)
+            max_gain.append(max(value))
+        result.append("Maximum gain [1/cm]:          {}"
+                      .format(', '.join('{:9.3f}'.format(g[0]) for g in max_gain)))
+        return result
 
     def save(self, filename=None, group='ThresholdSearch', optical_resolution=None):
         """
@@ -402,30 +458,36 @@ class ThresholdSearch(ThermoElectric):
                 for optical field.
         """
         if optical_resolution is None: optical_resolution = self.optical_resolution
-        h5file, group, filename = h5open(filename, group)
+        h5file, group, filename, close = h5open(filename, group)
         self._save_thermoelectric(h5file, group)
-        levels = list(self._get_levels(self.diffusion.geometry, self.diffusion.mesh, 'QW', 'gain'))
+        levels = list(self._get_levels(self.diffusion.geometry, self.diffusion.mesh, 'QW', 'QD', 'gain'))
         for no, mesh in levels:
             value = self.diffusion.outCarriersConcentration(mesh)
             plask.save_field(value, h5file, group + '/Junction'+no+'CarriersConcentration')
+        lam = getattr(self.optical, self._lam0).real
+        if lam is None: lam = self.get_lam().real
         for no, mesh in levels:
-            lam = getattr(self.optical, self._lam0).real
-            if lam is None: lam = self.get_lam().real
             value = self.gain.outGain(mesh, lam)
             plask.save_field(value, h5file, group + '/Junction'+no+'Gain')
-        obox = self.optical.geometry.bbox
-        omesh = plask.mesh.Rectangular2D(plask.mesh.Regular(obox.left, obox.right, optical_resolution[0]),
-                                         plask.mesh.Regular(obox.bottom, obox.top, optical_resolution[1]))
         if self.modeno is not None:
+            obox = self.optical.geometry.bbox
+            oaxis = plask.mesh.Regular(obox.left, obox.right, optical_resolution[0])
+            omesh = plask.mesh.Rectangular2D(oaxis,
+                                             plask.mesh.Regular(obox.bottom, obox.top, optical_resolution[1]))
             ofield = self.optical.outLightMagnitude(self.modeno, omesh)
-            plask.save_field(ofield, h5file, group + '/LightMagnitude')
+            plask.save_field(ofield/max(ofield), h5file, group + '/LightMagnitude')
             nrfield = self.optical.outRefractiveIndex(omesh)
             plask.save_field(nrfield, h5file, group + '/RefractiveIndex')
-        h5file.close()
-        plask.print_log('info', "Fields saved to file '{}'".format(filename))
+            rmesh = next(self._get_levels(self.optical.geometry, oaxis, 'QW', 'QD', 'gain'))[1]
+            orfield = self.optical.outLightMagnitude(self.modeno, rmesh)
+            plask.save_field(orfield/max(orfield), h5file, group + '/HorizontalLightMagnitude')
+
+        if close:
+            h5file.close()
+        plask.print_log('info', "Fields saved to file '{}' in group '{}'".format(filename, group))
         return filename
 
-    def plot_optical_field(self, resolution=(800, 600), geometry_color='0.75', geometry_alpha=0.35, **kwargs):
+    def plot_optical_field(self, resolution=None, geometry_color='0.75', geometry_alpha=0.35, **kwargs):
         """
         Plot computed optical mode field at threshold.
 
@@ -447,6 +509,85 @@ class ThresholdSearch(ThermoElectric):
         plask.plot_field(field, **kwargs)
         plask.plot_geometry(self.optical.geometry, color=geometry_color, alpha=geometry_alpha)
         plask.gcf().canvas.set_window_title("Light Intensity")
+
+    def plot_optical_field_horizontal(self, resolution=None, bounds=True, interpolation='linear', **kwargs):
+        """
+        Plot horizontal distribution of the computed optical mode field at threshold.
+
+        Args:
+            resolution (int): Number of points in horizontal direction.
+
+            bounds (bool): If *True* then the geometry objects boundaries are
+                           plotted.
+
+            interpolation (str): Interpolation used when retrieving current density.
+
+            **kwargs: Keyword arguments passed to the plot function.
+        """
+        if resolution is None:
+            resolution = self.optical_resolution[0]
+        box = self.optical.geometry.bbox
+        raxis = plask.mesh.Regular(box.left, box.right, resolution)
+        rmesh = next(self._get_levels(self.optical.geometry, raxis, 'QW', 'QD', 'gain'))[1]
+        field = self.optical.outLightMagnitude(self.modeno, rmesh, interpolation)
+        color = kwargs.pop('color', None)
+        if color is None:
+            try:
+                color = plask.rcParams['axes.prop_cycle']
+            except KeyError:
+                color = plask.rcParams['axes.color_cycle'][1]
+            else:
+                color = color.by_key()['color'][1]
+        plask.plot_profile(field/max(field), color=color, **kwargs)
+        if bounds:
+            self._plot_hbounds(self.optical)
+        plask.ylabel("Light Intensity [arb.u.]")
+        plask.gcf().canvas.set_window_title("Radial Light Intensity")
+
+    def plot_optical_field_vertical(self, pos=0.01, offset=0.5, resolution=None, interpolation='linear', **kwargs):
+        """
+        Plot vertical distribution of the computed optical mode field at threshold and
+        refractive index profile.
+
+        Args:
+            resolution (int): Number of points in horizontal direction.
+
+            pos (float): Horizontal position to get the field at.
+
+            offset (float): Distance above and below geometry boundary to include into
+                            the plot.
+
+            interpolation (str): Interpolation used when retrieving current density.
+
+            **kwargs: Keyword arguments passed to the plot function.
+        """
+        if resolution is None:
+            resolution = self.optical_resolution[1]
+        box = self.optical.geometry.bbox
+        zaxis = plask.mesh.Regular(box.bottom-offset, box.top+offset, 10*resolution)
+        zmesh = plask.mesh.Rectangular2D([pos], zaxis)
+        try:
+            cc = plask.rcParams['axes.prop_cycle']
+        except KeyError:
+            cc = plask.rcParams['axes.color_cycle']
+        else:
+            cc = cc.by_key()['color']
+        color2 = cc[0]
+        color = kwargs.pop('color', None)
+        if color is None:
+            color = cc[1]
+        ax1 = plask.gca()
+        field = self.optical.outLightMagnitude(self.modeno, zmesh, interpolation)
+        plask.plot_profile(field/max(field), color=color, **kwargs)
+        plask.ylabel("Light Intensity [arb.u.]")
+        ax2 = plask.twinx()
+        plask.plot_profile(self.optical.outRefractiveIndex(zmesh).real, comp=0, color=color2)
+        plask.ylabel("Refractive Index")
+        ax1.set_zorder(ax2.get_zorder()+1)
+        ax1.patch.set_visible(False)
+        ax2.patch.set_visible(True)
+        plask.xlim(zmesh.axis1[0], zmesh.axis1[-1])
+        plask.gcf().canvas.set_window_title("Vertical Light Intensity")
 
 
 class ThresholdSearchCyl(ThresholdSearch):
@@ -674,7 +815,7 @@ class ThresholdSearchCyl(ThresholdSearch):
 
     def _get_info(self):
         return super(ThresholdSearchCyl, self)._get_info() + [
-            "LP{}{} mode wavelength [nm]: {:8.3f}".format(self.lpm, self.lpn, self.optical.modes[self.modeno].lam.real)
+            "LP{}{} mode wavelength [nm]:     {:8.3f}".format(self.lpm, self.lpn, self.optical.modes[self.modeno].lam.real)
         ]
 
 
@@ -915,7 +1056,7 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
 
     def _get_info(self):
         return super(ThresholdSearchBesselCyl, self)._get_info() + [
-            "HE{}{} mode wavelength [nm]: {:8.3f}".format(self.hem, self.hen, self.optical.modes[self.modeno].lam.real)
+            "HE{}{} mode wavelength [nm]:     {:8.3f}".format(self.hem, self.hen, self.optical.modes[self.modeno].lam.real)
         ]
 
 
@@ -1165,7 +1306,7 @@ class ThresholdSearch2D(ThresholdSearch):
 
     def _get_info(self):
         return super(ThresholdSearch2D, self)._get_info() + [
-            "Effective index: {:8.3f}".format(self.optical.modes[self.modeno].neff.real)
+            "Effective index:     {:8.3f}".format(self.optical.modes[self.modeno].neff.real)
         ]
 
 

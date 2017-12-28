@@ -380,7 +380,7 @@ struct GainSpectrum {
     typedef typename FreeCarrierGainSolver<GeometryT>::ActiveRegionParams ActiveRegionParams;
 
     FreeCarrierGainSolver<GeometryT>* solver; ///< Source solver
-    boost::optional<Vec<2>> point;            ///< Point in which the gain is calculated
+    plask::optional<Vec<2>> point;            ///< Point in which the gain is calculated
 
     size_t reg;                         ///< Active region containg the point
     double temp;                        ///< Temperature

@@ -47,11 +47,12 @@ DEFAULTS = {
     'main_window/make_backup': True,
     'main_window/use_menu': False,
     'main_window/icons_theme': 'system',
+    'main_window/icons_size': 'default',
+    'help/online': False,
+    'help/fontsize': 13,
     'updates/automatic_check': None,
-    'editor/font': [_default_font_family, str(QFont().pointSize()),
-                    '-1', '5', '50', '0', '0', '0', '0', '0'],
-    'editor/help_font': [_default_font_family, str(QFont().pointSize()-2),
-                         '-1', '5', '50', '0', '0', '0', '0', '0'],
+    'editor/font': [_default_font_family, '11', '-1', '5', '50', '0', '0', '0', '0', '0'],
+    'editor/help_font': [_default_font_family, '9', '-1', '5', '50', '0', '0', '0', '0', '0'],
     'editor/current_line_color': '#ffffee',
     'editor/selection_color': '#ffffdd',
     'editor/match_color': '#ddffdd',
@@ -59,8 +60,7 @@ DEFAULTS = {
     'editor/matching_bracket_color': '#aaffaa',
     'editor/not_matching_bracket_color': '#ffaaaa',
     'launcher/defalt': 'Local Process',
-    'launcher_local/font': [_default_font_family, str(QFont().pointSize()-1),
-                            '-1', '5', '50', '0', '0', '0', '0', '0'],
+    'launcher_local/font': [_default_font_family, '10', '-1', '5', '50', '0', '0', '0', '0', '0'],
     'syntax/xml_comment': 'color=green, italic=true',
     'syntax/xml_tag': 'color=maroon, bold=true',
     'syntax/xml_attr': 'color=#888800',
@@ -143,13 +143,17 @@ CONFIG_WIDGETS = OrderedDict([
             ("Create backup files on save",
              CheckBox('main_window/make_backup',
                       "Create backup files on save. "
-                      "It is recommended to keep this option on, to keep the backup of the "
+                      "It is recommended  this option on, to keep the backup of the "
                       "edited files in case the new one becomes corrupt or you accidentally "
                       "remove some important parts.")),
             ("Icons theme (requires restart)",
              Combo('main_window/icons_theme',
                    ['Tango', 'Breeze'] if os.name == 'nt' else ['system', 'Tango', 'Breeze'],
                    "Main window icons theme.", needs_restart=True)),
+            ("Icons size (requires restart)",
+             Combo('main_window/icons_size',
+                   ['default', 'small', 'normal', 'large', 'huge', 'enormous'],
+                   "Main windows icons size.", needs_restart=True)),
             ("Automatically check for updates",
              CheckBox('updates/automatic_check',
                       "If this option is checked, PLaSK will automatically check for a new version on startup.")),
@@ -158,6 +162,14 @@ CONFIG_WIDGETS = OrderedDict([
          [
             ("Default launcher", Combo('launcher/default', _get_launchers, "Default launcher to select in new window")),
          ]),
+        ("Help", [
+            ("Show only online help",
+             CheckBox('help/online',
+                      "If this is checked ‘Show Help’ opens online help in an external browser window.")),
+            ("Help window font size",
+             SpinBox('help/fontsize', 1, 512,
+                      "Default font size in the help window.")),
+        ]),
     ])),
     ("Window Display", OrderedDict([
         ("Geometry View", [
@@ -422,7 +434,7 @@ class ConfigDialog(QDialog):
             super(ConfigDialog.SpinBox, self).__init__(parent)
             self.entry = entry
             if min is not None: self.setMinimum(min)
-            if max is not None: self.setMaximum(min)
+            if max is not None: self.setMaximum(max)
             self.setValue(int(CONFIG[entry]))
             if help is not None: self.setWhatsThis(help)
             self.needs_restart = needs_restart
@@ -682,7 +694,7 @@ class ConfigDialog(QDialog):
             item.save()
         CONFIG.sync()
         from .widgets import EDITOR_FONT
-        EDITOR_FONT.fromString(','.join(CONFIG['editor/font']))
+        EDITOR_FONT.fromString(','.join(CONFIG['editor/font'][:-1])+',0')
         self.parent().config_changed.emit()
         if need_restart:
             QMessageBox.information(None,

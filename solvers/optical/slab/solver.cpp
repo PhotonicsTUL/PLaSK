@@ -63,7 +63,7 @@ struct LateralMeshAdapter {
     shared_ptr<RectangularMesh<2>> mesh;
 
     LateralMeshAdapter(const BaseT* solver):
-        mesh(makeGeometryGrid(solver->getGeometry()->getChild())) {}
+        mesh(makeGeometryGrid(solver->getGeometry(), true)) {}
 
     void resetMidpoints(const shared_ptr<MeshAxis>& vbounds) {
         mesh = make_shared<RectangularMesh<2>>(mesh->axis0->getMidpointsMesh(),
@@ -115,7 +115,7 @@ struct LateralMeshAdapter<SolverOver<Geometry3D>> {
     shared_ptr<RectangularMesh<3>> mesh;
 
     LateralMeshAdapter(const SolverOver<Geometry3D>* solver):
-        mesh(makeGeometryGrid(solver->getGeometry()->getChild())) {
+        mesh(makeGeometryGrid(solver->getGeometry(), true, true)) {
         _size = mesh->axis0->size() * mesh->axis1->size();
     }
 
@@ -184,13 +184,19 @@ void SlabSolver<BaseT>::setupLayers()
         vbounds->addOrderedPoints(zz.begin(), zz.end(), zz.size());
     }
 
-    if (inTemperature.hasProvider() && !isnan(temp_dist) && !isinf(temp_dist))
+    if (inTemperature.hasProvider() &&
+        !isnan(max_temp_diff) && !isinf(max_temp_diff) &&
+        !isnan(temp_dist) && !isinf(temp_dist) &&
+        !isnan(temp_layer) && !isinf(temp_layer))
         adapter.resetMidpoints(vbounds, temp_dist);
-    else if (this->geometry->isSymmetric(Geometry::DIRECTION_VERT))
+    else
         adapter.resetMidpoints(vbounds);
 
     // Divide layers with too large temperature gradient
-    if (inTemperature.hasProvider() && !isnan(temp_dist) && !isinf(temp_dist)) {
+    if (inTemperature.hasProvider() &&
+        !isnan(max_temp_diff) && !isinf(max_temp_diff) &&
+        !isnan(temp_dist) && !isinf(temp_dist) &&
+        !isnan(temp_layer) && !isinf(temp_layer)) {
         auto temp = inTemperature(adapter.mesh);
         std::deque<double> refines;
         for (size_t v = 1; v != vbounds->size(); ++v) {
@@ -205,7 +211,7 @@ void SlabSolver<BaseT>::setupLayers()
             }
             if (mdt > max_temp_diff) {
                 // We need to divide the layer.
-                auto line_mesh = adapter.makeLine(idt, v, temp_dist);
+                auto line_mesh = adapter.makeLine(idt, v, temp_layer);
                 auto tmp = inTemperature(line_mesh);
                 auto line = line_mesh->vert();
                 size_t li = 0;
@@ -284,7 +290,10 @@ void SlabSolver<BaseT>::setupLayers()
 
     // Split groups with too large temperature gradient
     // We are using CLINK naive algorithm for this purpose
-    if (group_layers && inTemperature.hasProvider() && !isnan(max_temp_diff) && !isinf(max_temp_diff)) {
+    if (group_layers && inTemperature.hasProvider() &&
+        !isnan(max_temp_diff) && !isinf(max_temp_diff) &&
+        !isnan(temp_dist) && !isinf(temp_dist) &&
+        !isnan(temp_layer) && !isinf(temp_layer)) {
         auto temp = inTemperature(adapter.mesh);
         size_t nl = lcount;     // number of idependent layers to consider (stays fixed)
         for (size_t l = 0; l != nl; ++l) {
@@ -300,16 +309,17 @@ void SlabSolver<BaseT>::setupLayers()
             }
             size_t n = indices.size();
             // Make distance matrix
-            double dists[n][n];
+            std::unique_ptr<double[]> dists(new double[n * n]);
+#define dists_at(a, b) dists[(a)*n+(b)] //TODO develop plask::UniquePtr2D<> and remove this macro
             for (size_t i = 0; i != n; ++i) {
-                dists[i][i] = INFINITY; // the simplest way to avoid clustering with itself
+                dists_at(i, i) = INFINITY; // the simplest way to avoid clustering with itself
                 for (size_t j = i+1; j != n; ++j) {
                     double mdt = 0.;
                     for (size_t k = 0; k != adapter.size(); ++k) {
                         double dt = abs(temp[adapter.idx(k, indices[i])] - temp[adapter.idx(k, indices[j])]);
                         if (dt > mdt) mdt = dt;
                     }
-                    dists[i][j] = dists[j][i] = mdt;
+                    dists_at(i, j) = dists_at(j, i) = mdt;
                 }
             }
             // Go and merge groups with the smallest distances
@@ -322,7 +332,7 @@ void SlabSolver<BaseT>::setupLayers()
                         double dt = 0.;
                         for (ItemIterator i1 = g1->begin(); i1 != g1->end(); ++i1)
                             for (ItemIterator i2 = g2->begin(); i2 != g2->end(); ++i2)
-                                dt = max(dists[*i1][*i2], dt);
+                                dt = max(dists_at(*i1, *i2), dt);
                         if (dt < mdt) {
                             mg1 = g1;
                             mg2 = g2;
@@ -363,10 +373,11 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getRefractiveIndexProfile
                                         (const shared_ptr<const MeshD<BaseT::SpaceType::DIM>>& dst_mesh,
                                         InterpolationMethod interp)
 {
+    this->initCalculation();
     Expansion& expansion = getExpansion();
     setExpansionDefaults(false);
-    if (isnan(expansion.lam0) || always_recompute_gain) expansion.setK0(k0);
-    this->initCalculation();
+    if (isnan(expansion.lam0) || always_recompute_gain || isnan(expansion.k0))
+        expansion.setK0(isnan(k0)? 2e3*M_PI / lam0 : k0);
     initTransfer(expansion, false);
     computeIntegrals();
 

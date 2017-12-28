@@ -46,13 +46,13 @@ struct RegisterBoundaryConditions {
     static ConditionT& __getitem__(BoundaryConditionsT& self, int i) {
         //TODO special proxy class is needed to ensure safe memory management (if user gets an item and removes the original)
         if (i < 0) i = self.size() + i;
-        if (i < 0 || i >= self.size()) throw IndexError("boundary conditions index out of range");
+        if (i < 0 || i >= self.size()) throw IndexError(u8"boundary conditions index out of range");
         return self[i];
     }
 
     static void __setitem__1(BoundaryConditionsT& self, int i, py::tuple object) {
         if (i < 0) i = self.size() + i;
-        if (i < 0 || i >= self.size()) throw IndexError("boundary conditions index out of range");
+        if (i < 0 || i >= self.size()) throw IndexError(u8"boundary conditions index out of range");
         auto iter = self.getIteratorForIndex(i);
         try {
             if (py::len(object) != 2) throw py::error_already_set();
@@ -60,13 +60,13 @@ struct RegisterBoundaryConditions {
             ValueT value = py::extract<ValueT>(object[1]);
             *iter = ConditionT(boundary, value);
         } catch (py::error_already_set) {
-            throw TypeError("You can only assign a tuple (boundary, value)");
+            throw TypeError(u8"You can only assign a tuple (boundary, value)");
         }
     }
 
     static void __setitem__2(BoundaryConditionsT& self, int i, const ConditionT& value) {
         if (i < 0) i = self.size() + i;
-        if (i < 0 || i >= self.size()) throw IndexError("boundary conditions index out of range");
+        if (i < 0 || i >= self.size()) throw IndexError(u8"boundary conditions index out of range");
         auto iter = self.getIteratorForIndex(i);
         *iter = value;
     }
@@ -136,20 +136,20 @@ struct RegisterBoundaryConditions {
     {
         if (py::converter::registry::lookup(py::type_id<BoundaryConditionsT>()).m_class_object == nullptr) {
 
-            py::class_<BoundaryConditionsT, boost::noncopyable> bc("BoundaryConditions", "Set of boundary conditions."); bc
+            py::class_<BoundaryConditionsT, boost::noncopyable> bc("BoundaryConditions", u8"Set of boundary conditions."); bc
                 .def("__getitem__", &__getitem__, py::return_value_policy<py::reference_existing_object>())
                 .def("__setitem__", &__setitem__1)
                 .def("__setitem__", &__setitem__2)
                 .def("__delitem__", &__delitem__)
                 .def("__len__", &BoundaryConditionsT::size)
-                .def("append", &append, "Append new boundary condition to the list.", (py::arg("place"), "value"))
-                .def("prepend", &prepend, "Prepend new boundary condition to the list.", (py::arg("place"), "value"))
-                .def("insert", &insert, "Insert new boundary condition to the list at specified position.", (py::arg("index"), "place", "value"))
-                .def("clear", &BoundaryConditionsT::clear, "Clear all boundary conditions.")
+                .def("append", &append, u8"Append new boundary condition to the list.", (py::arg("place"), "value"))
+                .def("prepend", &prepend, u8"Prepend new boundary condition to the list.", (py::arg("place"), "value"))
+                .def("insert", &insert, u8"Insert new boundary condition to the list at specified position.", (py::arg("index"), "place", "value"))
+                .def("clear", &BoundaryConditionsT::clear, u8"Clear all boundary conditions.")
                 .def("__iter__", &__iter__)
                 .def("read_from_xpl", &read_from_xml, (py::arg("xml"), "manager"),
-                     "Read boundary conditions from active XPL reader.\n\n"
-                     "This should only be used in the overloaded :meth:`plask.Solver.load_xpl` method.\n")
+                     u8"Read boundary conditions from active XPL reader.\n\n"
+                     u8"This should only be used in the overloaded :meth:`plask.Solver.load_xpl` method.\n")
             ;
             if (delattr) py::delattr(py::scope(), "BoundaryConditions");
             py::scope scope1 = bc;
@@ -160,8 +160,8 @@ struct RegisterBoundaryConditions {
             ;
 
             py::class_<ConditionT> cd("BoundaryCondition", py::no_init); cd
-                .def_readwrite("place", &ConditionT::place, "Location of the boundary condition.")
-                .def_readwrite("value", &ConditionT::value, "Value of the boundary condition.")
+                .def_readwrite("place", &ConditionT::place, u8"Location of the boundary condition.")
+                .def_readwrite("value", &ConditionT::value, u8"Value of the boundary condition.")
                 .def("__iter__", &Condition__iter__/*, py::return_value_policy<py::manage_new_object>()*/)
                 .def("__repr__", &Condition__repr__)
             ;

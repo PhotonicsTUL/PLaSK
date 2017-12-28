@@ -1,5 +1,5 @@
 #include "reader.h"
-#include "expat.h"
+#include <expat.h>
 
 #include "../../math.h"
 
@@ -253,10 +253,10 @@ std::string XMLReader::getTextContent() const {
         return getCurrent().text;
 }
 
-boost::optional<std::string> XMLReader::getAttribute(const std::string& name) const {
+plask::optional<std::string> XMLReader::getAttribute(const std::string& name) const {
     auto res_it = this->getCurrent().attributes.find(name);
     if (res_it == this->getCurrent().attributes.end())
-        return boost::optional<std::string>();
+        return plask::optional<std::string>();
     const_cast<std::set<std::string>&>(read_attributes).insert(name);   //TODO should this be thread-safe?
     if (attributeFilter) {
         try {
@@ -271,7 +271,7 @@ boost::optional<std::string> XMLReader::getAttribute(const std::string& name) co
 }
 
 std::string XMLReader::requireAttribute(const std::string& attr_name) const {
-    boost::optional<std::string> result = getAttribute(attr_name);
+    plask::optional<std::string> result = getAttribute(attr_name);
     if (!result) throw XMLNoAttrException(*this, attr_name);
     return *result;
 }

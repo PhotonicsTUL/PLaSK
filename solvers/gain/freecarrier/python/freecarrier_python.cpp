@@ -74,7 +74,7 @@ static py::object FreeCarrier_getFermiLevels(FreeCarrierGainSolver<GeometryT>* s
 {
     double T = (To == py::object())? self->getT0() : py::extract<double>(To);
     if (reg < 0) reg = self->regions.size() + reg;
-    if (reg < 0 || reg >= self->regions.size()) throw IndexError("{}: Bad active region index", self->getId());
+    if (reg < 0 || reg >= self->regions.size()) throw IndexError(u8"{}: Bad active region index", self->getId());
     self->initCalculation();
     double Fc{NAN}, Fv{NAN};
     typename FreeCarrierGainSolver<GeometryT>::ActiveRegionParams params(self, self->params0[reg], T);
@@ -98,12 +98,12 @@ static py::object FreeCarrierGainSpectrum__call__(GainSpectrum<GeometryT>& self,
         PyArrayObject* inarr = (PyArrayObject*)PyArray_FROM_OT(wavelengths.ptr(), NPY_DOUBLE);
         if (inarr == NULL || PyArray_TYPE(inarr) != NPY_DOUBLE) {
             Py_XDECREF(inarr);
-            throw TypeError("{}: Wavelengths for spectrum must be a scalar float or one-dimensional array of floats",
+            throw TypeError(u8"{}: Wavelengths for spectrum must be a scalar float or one-dimensional array of floats",
                             self.solver->getId());
         }
         if(PyArray_NDIM(inarr) != 1) {
             Py_DECREF(inarr);
-            throw TypeError("{}: Wavelengths for spectrum must be a scalar float or one-dimensional array of floats",
+            throw TypeError(u8"{}: Wavelengths for spectrum must be a scalar float or one-dimensional array of floats",
                             self.solver->getId());
         }
 
@@ -112,7 +112,7 @@ static py::object FreeCarrierGainSpectrum__call__(GainSpectrum<GeometryT>& self,
         PyObject* outarr = PyArray_SimpleNew(2, dims, NPY_DOUBLE);
         if (outarr == nullptr) {
             Py_DECREF(inarr);
-            throw plask::CriticalException("Cannot create array for gain");
+            throw plask::CriticalException(u8"Cannot create array for gain");
         }
 
         double* indata = static_cast<double*>(PyArray_DATA(inarr));
@@ -260,7 +260,7 @@ BOOST_PYTHON_MODULE(freecarrier)
             u8"Returns:\n"
             u8"    tuple: Two-element tuple with quasi-Fermi levels for electrons and holes.\n"
         );
-        RW_PROPERTY(T0, getT0, setT0, "Reference temperature.\n\nIn this temperature levels estimates are computed.");
+        RW_PROPERTY(T0, getT0, setT0, u8"Reference temperature.\n\nIn this temperature levels estimates are computed.");
         RW_PROPERTY(matrix_element, getMatrixElem, setMatrixElem,
                     u8"Momentum matrix element.\n\n"
                     u8"Value of the squared matrix element in gain computations. If it is not set it\n"

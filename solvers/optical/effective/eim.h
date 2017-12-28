@@ -137,7 +137,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     dcomplex vneff;             ///< Vertical effective index of the main stripe
 
     /// Mirror reflectivities
-    boost::optional<std::pair<double,double>> mirrors;
+    plask::optional<std::pair<double,double>> mirrors;
 
     /// Parameters for main rootdigger
     RootDigger::Params root;

@@ -29,7 +29,7 @@ GeometryReader &GeometryObjectLeaf<dim>::readMaterial(GeometryReader &src) {
             src.source.throwException(format("'{}' attribute allowed only for layers with graded material", GeometryReader::XML_MATERIAL_GRADING_ATTR));
         if (src.materialsAreRequired) {
             this->setMaterialFast(src.getMaterial(src.source.requireAttribute(GeometryReader::XML_MATERIAL_ATTR)));
-        } else if (boost::optional<std::string> matstr = src.source.getAttribute(GeometryReader::XML_MATERIAL_ATTR))
+        } else if (plask::optional<std::string> matstr = src.source.getAttribute(GeometryReader::XML_MATERIAL_ATTR))
             this->setMaterialFast(src.getMaterial(*matstr));
     } else {
         if (!top_attr || !bottom_attr)

@@ -16,7 +16,6 @@ import os
 import re
 import subprocess
 import pkgutil
-import webbrowser
 import traceback
 import datetime
 from lxml import etree
@@ -71,6 +70,7 @@ from .controller.materials.plot import show_material_plot
 from .utils.config import CONFIG, ConfigProxy, ConfigDialog
 from .utils.texteditor import update_textedit_colors
 from .utils.widgets import fire_edit_end, InfoListView
+from .utils.help import open_help
 
 try:
     from pysparkle import PySparkle
@@ -253,7 +253,7 @@ class MainWindow(QMainWindow):
 
         help_action = QAction(QIcon.fromTheme('help-contents'), 'Open &Help...', self)
         help_action.setStatusTip('Open on-line help in a web browser')
-        help_action.triggered.connect(self.open_help)
+        help_action.triggered.connect(lambda: open_help(main_window=self))
 
         install_license_action = QAction('Install License...', self)
         install_license_action.setStatusTip('Install PLaSK license file into a proper location')
@@ -318,8 +318,9 @@ class MainWindow(QMainWindow):
         pal.setColor(QPalette.Button, QColor("#88aaff"))
         menu_button.setIcon(QIcon.fromTheme('plask-logo'))
         menu_button.setPalette(pal)
-        menu_button.setShortcut(QKeySequence(Qt.Key_F2))
         menu_button.setToolTip("Show operations menu (F2)")
+        menu_shortcut = QShortcut(QKeySequence(Qt.Key_F2), self)
+        menu_shortcut.activated.connect(menu_button.showMenu)
 
         menu_button.setMenu(self.menu)
         self.tabs.setCornerWidget(menu_button, Qt.TopLeftCorner)
@@ -519,7 +520,6 @@ class MainWindow(QMainWindow):
                 #msgbox.setDefaultButton(QMessageBox.Yes);
                 return msgbox.exec_() == QMessageBox.Yes
         errors = self.document.get_info(Info.ERROR)
-        sys.stdout.flush()
         if errors:
             msgbox = QMessageBox()
             msgbox.setText("Document contains some non-critical errors.\n\n"
@@ -531,9 +531,6 @@ class MainWindow(QMainWindow):
             msgbox.setDefaultButton(QMessageBox.Yes)
             return msgbox.exec_() == QMessageBox.Yes
         return True
-
-    def open_help(self):
-        webbrowser.open("http://fizyka.p.lodz.pl/en/plask-user-guide/")
 
     def show_settings(self):
         dialog = ConfigDialog(self)
@@ -750,16 +747,16 @@ class MainWindow(QMainWindow):
             email = data.find('email')
             if email is not None:
                 if name is None: LICENSE['user'] = email.text
-                else: LICENSE['user'] = (name + " <" + email.text + ">").encode('utf8')
+                else: LICENSE['user'] = (name + " <" + email.text + ">")
             institution = data.find('institution')
             if institution is not None:
-                LICENSE['institution'] = institution.text.encode('utf8')
-            else:
+                LICENSE['institution'] = institution.text
+            elif 'institution' in LICENSE:
                 del LICENSE['institution']
             expiry = data.find('expiry')
             if expiry is not None:
-                LICENSE['expiration'] = _parse_expiry(expiry.text.encode('utf8'))
-            else:
+                LICENSE['expiration'] = _parse_expiry(expiry.text)
+            elif 'expiration' in LICENSE:
                 del LICENSE['expiration']
             self.about()
 
@@ -789,6 +786,11 @@ class PlaskApplication(QApplication):
         self._opened_windows = []
         super(PlaskApplication, self).__init__(argv)
         self.setAttribute(Qt.AA_DontShowIconsInMenus, False)
+        try:
+            self.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+            self.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+        except AttributeError:
+            pass
 
     def commitData(self, session_manager):
         self._opened_windows = WINDOWS.copy()
@@ -868,7 +870,7 @@ def _handle_exception(exc_type, exc_value, exc_traceback):
     if exc_type == SystemExit:
         sys.exit(exc_value.code)
     else:
-        dat = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback)) + '\n'
+        dat = u''.join(traceback.format_exception(exc_type, exc_value, exc_traceback)) + '\n'
         if error_file is None:
             if _DEBUG:
                 msg = dat
@@ -885,8 +887,8 @@ def _handle_exception(exc_type, exc_value, exc_traceback):
                 error_file = os.path.join(CURRENT_DIR,
                                           time.strftime("plaskgui.%Y%m%d.%H%M%S.error.log",
                                                         time.localtime(time.time())))
-                msg += "\n\nError details saved to:\n{}".format(error_file)
-                msg += "\n\nFurther errors will not be reported (but they will be saved to the above file)."
+                msg += u"\n\nError details saved to:\n{}".format(error_file)
+                msg += u"\n\nFurther errors will not be reported (but they will be saved to the above file)."
             out = open(error_file, 'a')
         out.write(dat)
         out.flush()
@@ -895,7 +897,7 @@ def _handle_exception(exc_type, exc_value, exc_traceback):
             if os.name == 'nt':
                 import ctypes
                 MessageBox = ctypes.windll.user32.MessageBoxA
-                MessageBox(None, msg, "PLaSK GUI Error", 0x10)
+                MessageBox(None, msg.encode('utf-8'), u"PLaSK GUI Error".encode('utf-8'), 0x10)
             elif not _DEBUG:
                 try:
                     QMessageBox.critical(None, "PLaSK GUI Error", msg)
@@ -926,9 +928,11 @@ def load_plugins():
     for loader, modname, ispkg in pkgutil.iter_modules(plugin_dirs):
         name = desc = None
         if ispkg:
-            fname = os.path.join(loader.find_module(modname).filename, '__init__.py')
+            fname = os.path.join(loader.find_module(modname).get_filename())
+            if not fname.endswith('__init__.py'):
+                fname = os.path.join(fname, '__init__.py')
         else:
-            fname = loader.find_module(modname).filename
+            fname = loader.find_module(modname).get_filename()
         try:
             for line in open(fname):
                 m = name_re.match(line)

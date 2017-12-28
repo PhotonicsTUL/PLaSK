@@ -11,7 +11,7 @@ import plasktest as ptest
 
 class Material(unittest.TestCase):
 
-    @material.complex('AlGaAs')
+    @material.alloy('AlGaAs')
     class AlGaAs_fake(material.Material):
         def __init__(self, **kwargs):
             super(Material.AlGaAs_fake, self).__init__(**kwargs)
@@ -25,20 +25,20 @@ class Material(unittest.TestCase):
         def absp(self, lam, T):
             return 0.
 
-    @material.complex()
+    @material.alloy()
     class AlGaAsDp(material.Material):
         name = "AlGaAs:Dp"
         def __init__(self, *args, **kwargs):
             super(Material.AlGaAsDp, self).__init__()
             self.args = args,
             print(kwargs)
-            self.kwargs = kwargs
+            self.dc = kwargs.get('dc')
             self.composition = self.complete_composition(kwargs, self.name);
             print("Composition: %s" % self.composition)
         def __del__(self):
             ptest.print_ptr(self)
         def VB(self, T=300., e=0., point='G', hole='H'):
-            return self.kwargs['dc'] * T
+            return self.dc * T
         def CB(self, T=300., e=0., point='G'):
             return self.composition['Ga'] * T
         def NR(self, lam, T, n):
@@ -83,22 +83,26 @@ class Material(unittest.TestCase):
         with self.assertRaises(ValueError): material.db.get("Al(0.2)GaAs:Np=1e14")
 
         print(material.db.all)
-        m = material.db.get("Al(0.2)GaAs:Dp=3.0")
-        self.assertEqual( m.__class__, Material.AlGaAsDp )
-        self.assertEqual( m.name, "AlGaAs:Dp" )
-        self.assertEqual( m.VB(1.0), 3.0 )
-        self.assertAlmostEqual( m.CB(1.0), 0.8 )
-        self.assertEqual( ptest.NR(m), (3.5, 3.6, 3.7, 0.1) )
+        m1 = material.db.get("Al(0.2)GaAs:Dp=3.0")
+        self.assertEqual( m1.__class__, Material.AlGaAsDp )
+        self.assertEqual( m1.name, "AlGaAs:Dp" )
+        self.assertEqual( m1.VB(1.0), 3.0 )
+        self.assertAlmostEqual( m1.CB(1.0), 0.8 )
+        self.assertEqual( ptest.NR(m1), (3.5, 3.6, 3.7, 0.1) )
 
-        with(self.assertRaisesRegexp(TypeError, "'N' not allowed in material AlGaAs:Dp")): m = Material.AlGaAsDp(Al=0.2, N=0.9)
+        with(self.assertRaisesRegexp(TypeError, "'N' not allowed in material AlGaAs:Dp")):
+            mx = Material.AlGaAsDp(Al=0.2, N=0.9)
 
-        m = material.AlGaAs(Al=0.2, dop="Dp", dc=5.0)
-        self.assertEqual( m.name, "AlGaAs:Dp" )
-        self.assertEqual( m.VB(), 1500.0 )
+        m2 = material.AlGaAs(Al=0.2, dop="Dp", dc=5.0)
+        self.assertEqual( m2.name, "AlGaAs:Dp" )
+        self.assertEqual( m2.VB(), 1500.0 )
         correct = dict(Al=0.2, Ga=0.8, As=1.0)
         for k in correct:
-            self.assertAlmostEqual( m.composition[k], correct[k] )
-        del m
+            self.assertAlmostEqual( m2.composition[k], correct[k] )
+
+        self.assertEqual( m1, material.db.get("Al(0.2)GaAs:Dp=3.0") )
+        self.assertNotEqual( m1, m2 )
+
         self.assertEqual( ptest.material_name("Al(0.2)GaAs:Dp=3.0", material.db), "AlGaAs:Dp" )
         self.assertEqual( ptest.material_VB("Al(0.2)GaAs:Dp=3.0", material.db, 1.0), 3.0 )
 
@@ -239,10 +243,10 @@ class Material(unittest.TestCase):
         plask.loadxpl('''
           <plask>
             <materials>
-              <material name="AlGaAs_my" base="GaAs" complex="yes">
+              <material name="AlGaAs_my" base="GaAs" alloy="yes">
                 <thermk>10*self.Ga</thermk>
               </material>
-              <material name="AlGaAs:Si" base="AlGaAs:Si" complex="yes">
+              <material name="AlGaAs:Si" base="AlGaAs:Si" alloy="yes">
                 <thermk>2*self.Al</thermk>
               </material>
             </materials>
@@ -252,6 +256,10 @@ class Material(unittest.TestCase):
         algas = material.get('Al(0.2)GaAs:Si=1e18')
         self.assertEqual( algas.thermk(), (0.4, 0.4) )
         self.assertEqual( algas.cond(), cond )
+        algas0 = material.get('Al(0.2)GaAs:Si=1e18')
+        algas1 = material.get('Al(0.3)GaAs:Si=1e18')
+        self.assertEqual( algas, algas0 )
+        self.assertNotEqual( algas, algas1 )
 
 
 if __name__ == '__main__':

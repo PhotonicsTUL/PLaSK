@@ -4,7 +4,7 @@
 #include <plask/plask.hpp>
 #include <limits>
 
-#include <eigen3/Eigen/Eigen>
+#include <Eigen/Eigen>
 #include "fd.h"
 #include "block_matrix.h"
 #include "iterative_matrix.h"

@@ -4,8 +4,6 @@
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   include <plask/utils/minimal_windows.h>
-//#   include <windows.h>
-//#   define BOOST_USE_WINDOWS_H
 #else
 #   include <unistd.h>
 #endif
@@ -14,11 +12,11 @@
 #   include "../parallel.h"
 #endif
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+/*#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   include <Windows.h>
 #else
 #   include <unistd.h>
-#endif
+#endif*/
 
 namespace plask {
 
@@ -32,8 +30,8 @@ PLASK_API bool forcedLoglevel = false;
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
     PLASK_API std::string host_name() {
-        DWORD size = 1024;
-        char name[size];
+        char name[1024];
+		DWORD size = sizeof(name);
         GetComputerNameEx(ComputerNameDnsHostname, name, &size);
         return std::string(name);
     }

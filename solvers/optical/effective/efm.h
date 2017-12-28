@@ -310,7 +310,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      **/
     void setSimpleMesh() {
         writelog(LOG_INFO, "Creating simple mesh");
-        setMesh(plask::make_shared<RectangularMesh2DSimpleGenerator>(true)); // set generator forcing line at r = 0
+        setMesh(plask::make_shared<RectangularMesh2DSimpleGenerator>());
     }
 
     /**
@@ -321,7 +321,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     void setHorizontalMesh(shared_ptr<MeshAxis> meshx) {
         writelog(LOG_INFO, "Setting horizontal mesh");
         if (!geometry) throw NoChildException();
-        auto meshxy = RectangularMesh2DSimpleGenerator().generate_t<RectangularMesh<2>>(geometry->getChild());
+        auto meshxy = makeGeometryGrid(geometry->getChild());
         meshxy->setTran(meshx);
         setMesh(meshxy);
     }

@@ -15,7 +15,7 @@ import os
 
 QT_API = os.environ.get('QT_API')
 if QT_API is not None:
-    QT_API = dict(pyqt='PyQt4', pyqt5='PyQt5', pyside='PySide').get(QT_API, 'PySide')
+    QT_API = dict(pyqt='PyQt4', pyqt5='PyQt5', pyside='PySide').get(QT_API, 'PyQt5')
     try:
         import matplotlib
     except ImportError:
@@ -30,7 +30,7 @@ else:
     try:
         import matplotlib
     except ImportError:
-        QT_API = 'PySide'
+        QT_API = 'PyQt5'
     else:
         if matplotlib.rcParams['backend'] == 'Qt5Agg':
             QT_API = 'PyQt5'
@@ -41,16 +41,31 @@ else:
 for QT_API in (QT_API, 'PySide', 'PyQt4', 'PyQt5'):
     if QT_API == 'PySide':
         try:
-            from PySide import QtCore, QtGui, QtGui as QtWidgets
+            from PySide import QtCore, QtGui, QtGui as QtWidgets, QtHelp
         except ImportError:
             pass
         else:
             QtSignal = QtCore.Signal
             QtSlot = QtCore.Slot
             break
-    elif QT_API == 'PyQt5':
+    elif QT_API == 'PyQt4':
         try:
-            from PyQt5 import QtCore, QtWidgets, QtGui
+            import sip
+            for n in ("QString", "QVariant"):
+                try:
+                    sip.setapi(n, 2)
+                except:
+                    pass
+            from PyQt4 import QtCore, QtGui, QtGui as QtWidgets, QtHelp
+        except ImportError:
+            pass
+        else:
+            QtSignal = QtCore.pyqtSignal
+            QtSlot = QtCore.pyqtSlot
+            break
+    else:
+        try:
+            from PyQt5 import QtCore, QtWidgets, QtGui, QtHelp
         except ImportError:
             pass
         else:
@@ -60,23 +75,9 @@ for QT_API in (QT_API, 'PySide', 'PyQt4', 'PyQt5'):
             QtSignal = QtCore.pyqtSignal
             QtSlot = QtCore.pyqtSlot
             break
-    else:
-        try:
-            import sip
-            for n in ("QString", "QVariant"):
-                try:
-                    sip.setapi(n, 2)
-                except:
-                    pass
-            from PyQt4 import QtCore, QtGui, QtGui as QtWidgets
-        except ImportError:
-            pass
-        else:
-            QtSignal = QtCore.pyqtSignal
-            QtSlot = QtCore.pyqtSlot
-            break
 
 sys.modules['gui.qt.QtCore'] = QtCore
 sys.modules['gui.qt.QtWidgets'] = QtWidgets
 sys.modules['gui.qt.QtGui'] = QtGui
-__all__ = ['QtCore', 'QtWidgets', 'QtGui', 'QT_API', 'QtSignal', 'QtSlot']
+sys.modules['gui.qt.QtHelp'] = QtHelp
+__all__ = ['QtCore', 'QtWidgets', 'QtGui', 'QtHelp', 'QT_API', 'QtSignal', 'QtSlot']

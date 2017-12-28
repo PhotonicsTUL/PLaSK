@@ -19,9 +19,9 @@ This file contains base class for geometries objects.
 #include "../utils/iterators.h"
 
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+/*#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   define BOOST_USE_WINDOWS_H
-#endif
+#endif*/
 #include <boost/signals2.hpp>
 #include "../utils/event.h"
 
@@ -198,13 +198,13 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
         std::vector<Subtree> children;
 
         /**
-         * Construct subtree witch is empty or has only one node.
-         * @param object geometry object, or null pointer to construct empty Subtree
+         * Construct a subtree witch is empty or has only one node.
+         * @param object geometry object, or null pointer to construct an empty Subtree
          */
         Subtree(shared_ptr<const GeometryObject> object = shared_ptr<const GeometryObject>()): object(object) {}
 
         /**
-         * Construct subtree.
+         * Construct a subtree.
          * @param object geometry object
          * @param children some (but not necessary all) children of @p object
          */
@@ -1054,9 +1054,9 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
 
     /**
      * Find all paths to objects which lies at given @p point.
-     * @param point point in local coordinates
+     * @param point a point in local coordinates
      * @param all if true then return all paths if branches overlap the point
-     * @return all paths, last one is on top and overlies rest
+     * @return all paths, last one is on top and overlies the rest
      */
     virtual Subtree getPathsAt(const DVec& point, bool all=false) const = 0;
 

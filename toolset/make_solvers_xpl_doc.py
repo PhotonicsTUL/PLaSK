@@ -5,6 +5,8 @@ from __future__ import print_function
 import sys
 import os
 
+from codecs import open
+
 import yaml
 
 plaskdir = os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0])))
@@ -42,7 +44,7 @@ def make_rst(dirname):
     category = os.path.basename(os.path.dirname(dirname))
     library = os.path.basename(dirname)
 
-    source = yaml.load(open(os.path.join(dirname, 'solvers.yml')))
+    source = yaml.load(open(os.path.join(dirname, 'solvers.yml'), encoding='utf8'))
 
     for solver in source:
         if not isinstance(solver, dict): continue
@@ -56,10 +58,10 @@ def make_rst(dirname):
             os.makedirs(os.path.join(outdir, cat))
         except OSError:
             pass
-        outfile = open(os.path.join(outdir, cat, '{}.{}.rst'.format(lib, name)), 'w')
+        outfile = open(os.path.join(outdir, cat, '{}.{}.rst'.format(lib, name)), 'w', encoding='utf8')
 
         def out(*args, **kwargs):
-            print(*(a.encode('utf-8') for a in args), file=outfile, **kwargs)
+            print(*args, file=outfile, **kwargs)
 
         def out_text(text, level, par=False):
             if text is None: return
@@ -176,12 +178,13 @@ def make_rst(dirname):
 
         categories.setdefault(cat, []).append('{}.{}'.format(lib, name))
 
+
 for dirname, subdirs, files in os.walk(basedir):
     if 'solvers.yml' in files and not os.path.basename(dirname) == 'skel':
         make_rst(dirname)
 
 for cat in categories:
-    outfile = open(os.path.join(outdir, '{}.rst'.format(cat)), 'w')
+    outfile = open(os.path.join(outdir, '{}.rst'.format(cat)), 'w', encoding='utf8')
 
     def out(*args, **kwargs):
         print(*args, file=outfile, **kwargs)

@@ -92,7 +92,7 @@ namespace plask { namespace python {
 //      */
 //     template <typename T>
 //     inline T getAttribute(const std::string& name, const T& default_value) const {
-//         boost::optional<std::string> attr_str = getAttribute(name);
+//         plask::optional<std::string> attr_str = getAttribute(name);
 //         if (attr_str) {
 //             return parse<T>(*attr_str, name);
 //         } else
@@ -102,22 +102,22 @@ namespace plask { namespace python {
 //     /**
 //      * Get value of attribute with given @p name.
 //      * @param name name of attribute to get
-//      * @return boost::optional which represent value of attribute with given @p name or has no value if there is no attribute with given @p name
+//      * @return plask::optional which represent value of attribute with given @p name or has no value if there is no attribute with given @p name
 //      */
-//     boost::optional<std::string> getAttribute(const std::string& name) const;
+//     plask::optional<std::string> getAttribute(const std::string& name) const;
 //
 //     /**
 //      * Get value of attribute with given @p name.
 //      *
 //      * Throws exception if value of attribute given @p name can't be casted to required type T.
 //      * @param name name of attribute to get
-//      * @return boost::optional which represent value of attribute with given @p name or has no value if there is no attribute with given @p name
+//      * @return plask::optional which represent value of attribute with given @p name or has no value if there is no attribute with given @p name
 //      * @tparam T required type of value, boost::lexical_cast\<T> or registered parser will be used to obtain value of this type from string
 //      */
 //     template <typename T>
-//     inline boost::optional<T> getAttribute(const std::string& name) const {
-//         boost::optional<std::string> attr_str = getAttribute(name);
-//         if (!attr_str) return boost::optional<T>();
+//     inline plask::optional<T> getAttribute(const std::string& name) const {
+//         plask::optional<std::string> attr_str = getAttribute(name);
+//         if (!attr_str) return plask::optional<T>();
 //         return parse<T>(*attr_str, name);
 //     }
 //
@@ -320,14 +320,14 @@ void register_xml_reader() {
     py::class_<XMLReader, XMLReader*, boost::noncopyable> xml("XplReader", py::no_init); xml
         .def("__iter__", &detail::XMLReader__iter__)
         .def("__eq__", &detail::XMLReader__eq__)
-        .add_property("name", &XMLReader::getNodeName, "Current tag name.")
-        .add_property("text", (std::string(XMLReader::*)())&XMLReader::requireTextInCurrentTag, "Text in the current tag.")
+        .add_property("name", &XMLReader::getNodeName, u8"Current tag name.")
+        .add_property("text", (std::string(XMLReader::*)())&XMLReader::requireTextInCurrentTag, u8"Text in the current tag.")
         .def("__getitem__", &detail::XMLReader__getitem__)
-        .def("get", detail::XMLReader_get, "Return tag attribute value or default if the attribute does not exist.",
+        .def("get", detail::XMLReader_get, u8"Return tag attribute value or default if the attribute does not exist.",
              (py::arg("key"), py::arg("default")=py::object()))
-        .def("getitem", detail::XMLReader_getitem, "Return tag attribute value as raw string or default if the attribute does not exist.",
+        .def("getitem", detail::XMLReader_getitem, u8"Return tag attribute value as raw string or default if the attribute does not exist.",
              (py::arg("key"), py::arg("default")=""))
-        .add_property("attrs", &detail::XMLReader_attribs, "List of all the tag attributes.")
+        .add_property("attrs", &detail::XMLReader_attribs, u8"List of all the tag attributes.")
         .def("__contains__", &XMLReader::hasAttribute)
         .def("__str__", detail::XMLReader__str__)
         .def("__repr__", detail::XMLReader__repr__)

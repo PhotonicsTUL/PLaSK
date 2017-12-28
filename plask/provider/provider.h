@@ -153,7 +153,7 @@ assert(sr(3.0) == 6.0); // test the received value
 #include <vector>
 #include <functional>   // std::function
 #include <type_traits>  // std::is_same
-#include <boost/optional.hpp>
+#include "../optional.h"
 #include <boost/signals2.hpp>
 
 
@@ -382,11 +382,11 @@ public:
      * @return value from provider or empty optional if value couldn't be got
      */
     template<typename ...Args> auto
-    optional(const Args&... params) const -> boost::optional<decltype((*provider)(params...))> {
+    optional(const Args&... params) const -> plask::optional<decltype((*provider)(params...))> {
         try {
-            return boost::optional<decltype((*provider)(params...))>(this->operator()(params...));
+            return plask::optional<decltype((*provider)(params...))>(this->operator()(params...));
         } catch (std::exception&) {
-            return boost::optional<decltype((*provider)(params...))>();
+            return plask::optional<decltype((*provider)(params...))>();
         }
     }
 

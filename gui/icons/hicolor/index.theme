@@ -3,7 +3,7 @@ Name=Tango
 Comment=Icon theme from Tango Desktop Project
 Hidden=true
 
-Directories=16x16,24x24,32x32,64x64
+Directories=16x16,24x24,32x32,64x64,scalable
 
 [16x16/actions]
 Size=16

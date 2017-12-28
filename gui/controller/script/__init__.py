@@ -13,11 +13,13 @@
 import sys
 from copy import copy
 
+from ...qt import QT_API
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *
 from ...utils.qsignals import BlockQtSignals
 from ...utils.qthread import BackgroundTask
+from ...utils.help import open_help
 from .completer import CompletionsController
 from ...model.script.completer import get_docstring, get_definitions
 from .brackets import get_selections as get_bracket_selections, update_brackets_colors
@@ -57,7 +59,7 @@ def update_python_scheme():
         'syntax_define': parse_highlight(CONFIG['syntax/python_define']),
         'syntax_loaded': parse_highlight(CONFIG['syntax/python_loaded']),
         'syntax_pylab': parse_highlight(CONFIG['syntax/python_pylab']),
-        'syntax_obsolete': {'color': '#888888', 'underline': True, 'bold': True}
+        'syntax_obsolete': {'color': '#aaaaaa', 'bold': True, 'italic': True}
     }
 update_python_scheme()
 
@@ -75,7 +77,10 @@ class ScriptEditor(TextEditor):
         self.comment_action = QAction('Co&mment lines', self)
         self.uncomment_action = QAction('Uncomm&ent lines', self)
         self.comment_action.setShortcut(Qt.CTRL + Qt.Key_Slash)
-        self.uncomment_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Slash)
+        if QT_API == 'PySide':
+            self.uncomment_action.setShortcut(Qt.CTRL + Qt.Key_Question)
+        else:
+            self.uncomment_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Slash)
         self.comment_action.triggered.connect(self.block_comment)
         self.uncomment_action.triggered.connect(self.block_uncomment)
         self.addAction(self.comment_action)
@@ -286,7 +291,15 @@ class ScriptController(SourceEditController):
             window.addDockWidget(Qt.RightDockWidgetArea, self.help_dock)
         self.help_dock.hide()
 
-        doc_action = QAction(QIcon.fromTheme('help-contextual'), 'Show &docstring', source)
+        source.toolbar.addSeparator()
+
+        help_action = QAction(QIcon.fromTheme('help-contents'), 'Open &Help', source)
+        help_action.setShortcut(Qt.CTRL + Qt.Key_F1)
+        help_action.triggered.connect(self.open_help)
+        source.editor.addAction(help_action)
+        source.toolbar.addAction(help_action)
+
+        doc_action = QAction(QIcon.fromTheme('help-contextual'), 'Show &Docstring', source)
         doc_action.setShortcut(Qt.SHIFT + Qt.Key_F1)
         doc_action.triggered.connect(self.show_docstring)
         source.editor.addAction(doc_action)
@@ -294,7 +307,6 @@ class ScriptController(SourceEditController):
         hide_doc_action.setShortcut(Qt.SHIFT + Qt.Key_Escape)
         hide_doc_action.triggered.connect(self.help_dock.hide)
         source.editor.addAction(hide_doc_action)
-        source.toolbar.addSeparator()
         source.toolbar.addAction(doc_action)
 
         self.document.window.closed.connect(self.save_state)
@@ -368,6 +380,9 @@ class ScriptController(SourceEditController):
     def on_edit_exit(self):
         return super(ScriptController, self).on_edit_exit()
 
+    def open_help(self):
+        open_help('api', self.document.window)
+
     def show_docstring(self):
         if CONFIG['workarounds/no_jedi']: return
         cursor = self.source_widget.editor.textCursor()
@@ -376,7 +391,11 @@ class ScriptController(SourceEditController):
         col = cursor.positionInBlock()
         # QApplication.setOverrideCursor(Qt.BusyCursor)
         if CONFIG['workarounds/blocking_jedi']:
-            self.help_dock.show_help(get_docstring(self.document, self.source_widget.editor.toPlainText(), row, col))
+            result = get_docstring(self.document, self.source_widget.editor.toPlainText(), row, col)
+            if type(result) is tuple:
+                self.help_dock.show_help(*result)
+            else:
+                self.help_dock.show_help(result)
         else:
             task = BackgroundTask(lambda: get_docstring(self.document, self.source_widget.editor.toPlainText(),
                                                         row, col),
@@ -391,7 +410,7 @@ class HelpDock(QDockWidget):
         self.textarea = QTextEdit()
         self.textarea.setReadOnly(True)
         help_font = QFont(EDITOR_FONT)
-        help_font.fromString(','.join(CONFIG['editor/help_font']))
+        help_font.fromString(','.join(CONFIG['editor/help_font'][:-1])+',0')
         pal = self.textarea.palette()
         pal.setColor(QPalette.Base, QColor("#ffe"))
         self.textarea.setPalette(pal)
@@ -411,7 +430,7 @@ class HelpDock(QDockWidget):
 
     def reconfig(self):
         help_font = self.textarea.font()
-        help_font.fromString(','.join(CONFIG['editor/help_font']))
+        help_font.fromString(','.join(CONFIG['editor/help_font'][:-1])+',0')
         self.textarea.setFont(help_font)
         font_metrics = self.textarea.fontMetrics()
         self.textarea.setMinimumWidth(86 * font_metrics.width('a'))

@@ -127,7 +127,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     PML pml;
 
     /// Mirror reflectivities
-    boost::optional<std::pair<double,double>> mirrors;
+    plask::optional<std::pair<double,double>> mirrors;
 
     /// Provider for computed effective index
     ProviderFor<EffectiveIndex>::Delegate outNeff;
@@ -269,7 +269,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      */
     double sumAmplitutes(const cvector& amplitudes) {
         double result = 0.;
-        int N = getSize();
+        int N = int(getSize());
         if (expansion.separated()) {
             if (expansion.symmetric()) {
                 for (int i = 0; i <= N; ++i)

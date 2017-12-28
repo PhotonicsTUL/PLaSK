@@ -116,83 +116,83 @@ inline static void register_config()
 {
     py::class_<Config> config_class("config",
 
-        "Global PLaSK configuration.\n\n"
+        u8"Global PLaSK configuration.\n\n"
 
-        "This class has only one instance and it contains global configuration options.\n"
-        "The attributes of this class are config parameters that can be set using the\n"
-        "``config`` object.\n\n"
+        u8"This class has only one instance and it contains global configuration options.\n"
+        u8"The attributes of this class are config parameters that can be set using the\n"
+        u8"``config`` object.\n\n"
 
-        "Example:\n"
-        "    >>> config.axes = 'xy'\n"
-        "    >>> config.log.level = 'debug'\n"
-        "    >>> print config\n"
-        "    axes:        zxy\n"
-        "    log.colors:  ansi\n"
-        "    log.level:   DEBUG\n"
-        "    log.output:  stdout\n"
+        u8"Example:\n"
+        u8"    >>> config.axes = 'xy'\n"
+        u8"    >>> config.log.level = 'debug'\n"
+        u8"    >>> print config\n"
+        u8"    axes:        zxy\n"
+        u8"    log.colors:  ansi\n"
+        u8"    log.level:   DEBUG\n"
+        u8"    log.output:  stdout\n"
 
         , py::no_init);
     config_class
         .def("__str__", &Config::__str__)
         .def("__repr__", &Config::__repr__)
         .add_property("axes", &Config::axes_name, &Config::set_axes,
-                      "String representing axis names.\n\n"
+                      u8"String representing axis names.\n\n"
 
-                      "The accepted values are listed below. Each row shows different aliases for\n"
-                      "the same axes:\n\n"
+                      u8"The accepted values are listed below. Each row shows different aliases for\n"
+                      u8"the same axes:\n\n"
 
-                      "================ ================ ================\n"
-                      "`xyz`            `yz`             `z_up`\n"
-                      "`zxy`            `xy`             `y_up`\n"
-                      "`prz`            `rz`             `rad`\n"
-                      "`ltv`                             `abs`\n"
-                      "`long,tran,vert`                  `absolute`\n"
-                      "================ ================ ================\n\n"
+                      u8"================ ================ ================\n"
+                      u8"`xyz`            `yz`             `z_up`\n"
+                      u8"`zxy`            `xy`             `y_up`\n"
+                      u8"`prz`            `rz`             `rad`\n"
+                      u8"`ltv`                             `abs`\n"
+                      u8"`long,tran,vert`                  `absolute`\n"
+                      u8"================ ================ ================\n\n"
 
-                      "The choice of the axes should depend on your structure. In Cartesian coordinates\n"
-                      "you probably prefer `xyz` or `zxy`. In cylindrical ones the most natural choice\n"
-                      "is `prz`. However, it is important to realize that any names can be chosen in\n"
-                      "any geometry and they are fully independent from it.\n"
+                      u8"The choice of the axes should depend on your structure. In Cartesian coordinates\n"
+                      u8"you probably prefer `xyz` or `zxy`. In cylindrical ones the most natural choice\n"
+                      u8"is `prz`. However, it is important to realize that any names can be chosen in\n"
+                      u8"any geometry and they are fully independent from it.\n"
                      )
         .add_property("log", &getLoggingConfig,
-                      "Settings of the logging system.\n\n"
+                      u8"Settings of the logging system.\n\n"
 
-                      "This setting has several subattributes listed below:\n\n"
+                      u8"This setting has several subattributes listed below:\n\n"
 
-                      "**color**\n"
-                      "        System used for coloring the log messages depending on their level.\n"
-                      "        This parameter can have on of the following values:\n\n"
+                      u8"**color**\n"
+                      u8"        System used for coloring the log messages depending on their level.\n"
+                      u8"        This parameter can have on of the following values:\n\n"
 
-                      "        :ansi:    Use ANSI codes for coloring. Works best in UNIX-like systems\n"
-                      "                  (Linux, OSX) or with GUI launchers.\n"
-                      "        :windows: Use Windows API for coloring. Available only on Windows.\n"
-                      "        :none:    Do not perform coloring at all. Recommended when redirecting\n"
-                      "                  output to a file.\n\n"
+                      u8"        :ansi:    Use ANSI codes for coloring. Works best in UNIX-like systems\n"
+                      u8"                  (Linux, OSX) or with GUI launchers.\n"
+                      u8"        :windows: Use Windows API for coloring. Available only on Windows.\n"
+                      u8"        :none:    Do not perform coloring at all. Recommended when redirecting\n"
+                      u8"                  output to a file.\n\n"
 
-                      "        On its start PLaSK tries to automatically determine the best value for\n"
-                      "        this option, so usually you will not need to change it.\n\n"
+                      u8"        On its start PLaSK tries to automatically determine the best value for\n"
+                      u8"        this option, so usually you will not need to change it.\n\n"
 
-                      "**level**\n"
-                      "        Maximum logging level. It can be one of:\n\n"
+                      u8"**level**\n"
+                      u8"        Maximum logging level. It can be one of:\n\n"
 
-                      "        :CRITICAL_ERROR: Critical errors that result in program interruption.\n"
-                      "        :ERROR:          Minor errors that do not break the whole program flow.\n"
-                      "        :ERROR_DETAIL:   Details of the errors with more information on them.\n"
-                      "        :WARNING:        Important warnings that you should investigate.\n"
-                      "        :INFO:           General information of the executed operations.\n"
-                      "        :RESULT:         Some intermediate computations results.\n"
-                      "        :DATA:           Some data used for tracking the computations.\n"
-                      "        :DETAIL:         Details of computations processes.\n"
-                      "        :DEBUG:          Additional information useful for debugging PLaSK.\n\n"
+                      u8"        :CRITICAL_ERROR: Critical errors that result in program interruption.\n"
+                      u8"        :ERROR:          Minor errors that do not break the whole program flow.\n"
+                      u8"        :ERROR_DETAIL:   Details of the errors with more information on them.\n"
+                      u8"        :WARNING:        Important warnings that you should investigate.\n"
+                      u8"        :INFO:           General information of the executed operations.\n"
+                      u8"        :RESULT:         Some intermediate computations results.\n"
+                      u8"        :DATA:           Some data used for tracking the computations.\n"
+                      u8"        :DETAIL:         Details of computations processes.\n"
+                      u8"        :DEBUG:          Additional information useful for debugging PLaSK.\n\n"
 
-                      "        Setting any of the above levels will instruct PLaSK to print only\n"
-                      "        information of the specified level and above. It is recommended to\n"
-                      "        always set the logging level at least to 'WARNING'. This setting is\n"
-                      "        ignored when the plask option :option:`-l` is specified.\n\n"
+                      u8"        Setting any of the above levels will instruct PLaSK to print only\n"
+                      u8"        information of the specified level and above. It is recommended to\n"
+                      u8"        always set the logging level at least to 'WARNING'. This setting is\n"
+                      u8"        ignored when the plask option :option:`-l` is specified.\n\n"
 
-                      "**output**\n"
-                      "        Stream to which the log messages are printed. Can be either **stderr**\n"
-                      "        (which is the default) or **stdout** (turned on for interactive mode).\n"
+                      u8"**output**\n"
+                      u8"        Stream to which the log messages are printed. Can be either **stderr**\n"
+                      u8"        (which is the default) or **stdout** (turned on for interactive mode).\n"
                      );
     py::scope().attr("config") = Config();
 }
@@ -252,21 +252,21 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
             if (funcname == "<module>" && (traceback == original_traceback || (second_is_script && traceback == original_traceback->tb_next)))
                 funcname = "<script>";
             if (traceback->tb_next)
-                plask::writelog(plask::LOG_ERROR_DETAIL, "{0}, line {1}, function '{2}' calling:", filename, lineno, funcname);
+                plask::writelog(plask::LOG_ERROR_DETAIL, u8"{0}, line {1}, function '{2}' calling:", filename, lineno, funcname);
             else {
                 if ((PyObject*)type == PyExc_IndentationError || (PyObject*)type == PyExc_SyntaxError) {
-                    plask::writelog(plask::LOG_ERROR_DETAIL, "{0}, line {1}, function '{2}' calling:", filename, lineno, funcname);
+                    plask::writelog(plask::LOG_ERROR_DETAIL, u8"{0}, line {1}, function '{2}' calling:", filename, lineno, funcname);
                     std::string form = message;
                     std::size_t f = form.find(" (") + 2, l = form.rfind(", line ") + 7;
                     std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
                     try {
                         int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
-                        printMultiLineLog(plask::LOG_CRITICAL_ERROR, "{0}, line {1}: {2}: {3}", file, lineno, error_name, msg);
+                        printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}, line {1}: {2}: {3}", file, lineno, error_name, msg);
                     } catch (boost::bad_lexical_cast) {
-                        printMultiLineLog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", error_name, message);
+                        printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}: {1}", error_name, message);
                     }
                 } else
-                    printMultiLineLog(plask::LOG_CRITICAL_ERROR, "{0}, line {1}, function '{2}': {3}: {4}", filename, lineno, funcname, error_name, message);
+                    printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}, line {1}, function '{2}': {3}: {4}", filename, lineno, funcname, error_name, message);
             }
             traceback = traceback->tb_next;
         }
@@ -277,12 +277,12 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
                 std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
                 try {
                     int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
-                    printMultiLineLog(plask::LOG_CRITICAL_ERROR, "{0}, line {1}: {2}: {3}", file, lineno, error_name, msg);
+                    printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}, line {1}: {2}: {3}", file, lineno, error_name, msg);
                 } catch (boost::bad_lexical_cast) {
-                    printMultiLineLog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", error_name, message);
+                    printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}: {1}", error_name, message);
                 }
         } else
-            printMultiLineLog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", error_name, message);
+            printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}: {1}", error_name, message);
     }
     return 1;
 }
@@ -460,116 +460,116 @@ BOOST_PYTHON_MODULE(_plask)
     // Solvers
     py::class_<plask::Solver, plask::shared_ptr<plask::Solver>, boost::noncopyable>
     solver("Solver",
-           "Base class for all solvers.\n\n"
+           u8"Base class for all solvers.\n\n"
 
-           "Solver(name='')\n\n"
+           u8"Solver(name='')\n\n"
 
-           "Args:\n"
-           "    name: Solver name for its identification in logs.\n"
+           u8"Args:\n"
+           u8"    name: Solver name for its identification in logs.\n"
 
-           "You should inherit this class if you are creating custom Python solvers\n"
-           "in Python, which can read its configuration from the XPL file. Then you need to\n"
-           "override the :meth:`load_xml` method, which reads the configuration. If you\n"
-           "override :meth:`on_initialize` of :meth:`on_invalidate` methods, they will be\n"
-           "called once on the solver initialization/invalidation.\n\n"
+           u8"You should inherit this class if you are creating custom Python solvers\n"
+           u8"in Python, which can read its configuration from the XPL file. Then you need to\n"
+           u8"override the :meth:`load_xml` method, which reads the configuration. If you\n"
+           u8"override :meth:`on_initialize` of :meth:`on_invalidate` methods, they will be\n"
+           u8"called once on the solver initialization/invalidation.\n\n"
 
-           "Example:\n"
-           "  .. code-block:: python\n\n"
+           u8"Example:\n"
+           u8"  .. code-block:: python\n\n"
 
-           "     class MySolver(Solver):\n\n"
+           u8"     class MySolver(Solver):\n\n"
 
-           "         def __init__(self, name=''):\n"
-           "             super(MySolver, self).__init__(name)\n"
-           "             self.param = 0.\n"
-           "             self.geometry = None\n"
-           "             self.mesh = None\n"
-           "             self.workspace = None\n"
-           "             self.bc = plask.mesh.Rectangular2D.BoundaryConditions()\n\n"
+           u8"         def __init__(self, name=''):\n"
+           u8"             super(MySolver, self).__init__(name)\n"
+           u8"             self.param = 0.\n"
+           u8"             self.geometry = None\n"
+           u8"             self.mesh = None\n"
+           u8"             self.workspace = None\n"
+           u8"             self.bc = plask.mesh.Rectangular2D.BoundaryConditions()\n\n"
 
-           "         def load_xpl(self, xpl, manager):\n"
-           "             for tag in xpl:\n"
-           "                 if tag == 'config':\n"
-           "                     self.param = tag.get('param', self.param)\n"
-           "                 elif tag == 'geometry':\n"
-           "                     self.geometry = tag.getitem(manager.geo, 'ref')\n"
-           "                 elif tag == 'mesh':\n"
-           "                     self.mesh = tag.getitem(manager.msh, 'ref')\n"
-           "                 elif tag == 'boundary':\n"
-           "                     self.bc.read_from_xpl(tag, manager)\n\n"
+           u8"         def load_xpl(self, xpl, manager):\n"
+           u8"             for tag in xpl:\n"
+           u8"                 if tag == 'config':\n"
+           u8"                     self.param = tag.get('param', self.param)\n"
+           u8"                 elif tag == 'geometry':\n"
+           u8"                     self.geometry = tag.getitem(manager.geo, 'ref')\n"
+           u8"                 elif tag == 'mesh':\n"
+           u8"                     self.mesh = tag.getitem(manager.msh, 'ref')\n"
+           u8"                 elif tag == 'boundary':\n"
+           u8"                     self.bc.read_from_xpl(tag, manager)\n\n"
 
-           "         def on_initialize(self):\n"
-           "             self.workspace = zeros(1000.)\n\n"
+           u8"         def on_initialize(self):\n"
+           u8"             self.workspace = zeros(1000.)\n\n"
 
-           "         def on_invalidate(self):\n"
-           "             self.workspace = None\n\n"
+           u8"         def on_invalidate(self):\n"
+           u8"             self.workspace = None\n\n"
 
-           "         def run_computations(self):\n"
-           "             pass\n\n"
+           u8"         def run_computations(self):\n"
+           u8"             pass\n\n"
 
-           "To make your solver visible in GUI, you must write the ``solvers.yml`` file\n"
-           "and put it in the same directory as your data file.\n\n"
-           "Example:\n"
-           "  .. code-block:: yaml\n\n"
-           "     - solver: MySolver\n"
-           "       lib: mymodule\n"
-           "       category: local\n"
-           "       geometry: Cartesian2D\n"
-           "       mesh: Rectangular2D\n"
-           "       tags:\n"
-           "       - tag: config\n"
-           "         label: Solver Configuration\n"
-           "         help: Configuration of the effective model of p-n junction.\n"
-           "         attrs:\n"
-           "         - attr: param\n"
-           "           label: Parameter\n"
-           "           type: float\n"
-           "           unit: V\n"
-           "           help: Some voltage parameter.\n"
-           "       - bcond: boundary\n"
-           "         label: Something\n", py::no_init);
+           u8"To make your solver visible in GUI, you must write the ``solvers.yml`` file\n"
+           u8"and put it in the same directory as your data file.\n\n"
+           u8"Example:\n"
+           u8"  .. code-block:: yaml\n\n"
+           u8"     - solver: MySolver\n"
+           u8"       lib: mymodule\n"
+           u8"       category: local\n"
+           u8"       geometry: Cartesian2D\n"
+           u8"       mesh: Rectangular2D\n"
+           u8"       tags:\n"
+           u8"       - tag: config\n"
+           u8"         label: Solver Configuration\n"
+           u8"         help: Configuration of the effective model of p-n junction.\n"
+           u8"         attrs:\n"
+           u8"         - attr: param\n"
+           u8"           label: Parameter\n"
+           u8"           type: float\n"
+           u8"           unit: V\n"
+           u8"           help: Some voltage parameter.\n"
+           u8"       - bcond: boundary\n"
+           u8"         label: Something\n", py::no_init);
     solver
         .def("__init__", raw_constructor(&SolverWrap::init))
         .add_property("id", &plask::Solver::getId,
-                      "Id of the solver object. (read only)\n\n"
-                      "Example:\n"
-                      "    >>> mysolver.id\n"
-                      "    mysolver:category.type")
+                      u8"Id of the solver object. (read only)\n\n"
+                      u8"Example:\n"
+                      u8"    >>> mysolver.id\n"
+                      u8"    mysolver:category.type")
         .add_property("initialized", &plask::Solver::isInitialized,
-                      "True if the solver has been initialized. (read only)\n\n"
-                      "Solvers usually get initialized at the beginning of the computations.\n"
-                      "You can clean the initialization state and free the memory by calling\n"
-                      "the :meth:`invalidate` method.")
+                      u8"True if the solver has been initialized. (read only)\n\n"
+                      u8"Solvers usually get initialized at the beginning of the computations.\n"
+                      u8"You can clean the initialization state and free the memory by calling\n"
+                      u8"the :meth:`invalidate` method.")
         .def("initialize", &plask::Solver::initCalculation,
-             "Initialize solver.\n\n"
-             "This method manually initialized the solver and sets :attr:`initialized` to\n"
-             "*True*. Normally calling it is not necessary, as each solver automatically\n"
-             "initializes itself when needed.\n\n"
-             "Returns:\n"
-             "    bool: solver :attr:`initialized` state prior to this method call.")
+             u8"Initialize solver.\n\n"
+             u8"This method manually initialized the solver and sets :attr:`initialized` to\n"
+             u8"*True*. Normally calling it is not necessary, as each solver automatically\n"
+             u8"initializes itself when needed.\n\n"
+             u8"Returns:\n"
+             u8"    bool: solver :attr:`initialized` state prior to this method call.")
         .def("invalidate", &plask::Solver::invalidate,
-             "Set the solver back to uninitialized state.\n\n"
-             "This method frees the memory allocated by the solver and sets\n"
-             ":attr:`initialized` to *False*.")
+             u8"Set the solver back to uninitialized state.\n\n"
+             u8"This method frees the memory allocated by the solver and sets\n"
+             u8":attr:`initialized` to *False*.")
         .def("load_xpl", &plask::Solver::loadConfiguration, (py::arg("xpl"), "manager"),
-             "Load configuration from XPL reader.\n\n"
-             "This method should be overriden in custom Python solvers.\n\n"
-             "Example:\n"
-             "  .. code-block:: python\n\n"
-             "     def load_xpl(self, xpl, manager):\n"
-             "         for tag in xpl:\n"
-             "             if tag == 'config':\n"
-             "                 self.a = tag['a']\n"
-             "                 self.b = tag.get('b', 0)\n"
-             "                 if 'c' in tag:\n"
-             "                     self.c = tag['c']\n"
-             "             if tag == 'combined':\n"
-             "                 for subtag in tag:\n"
-             "                     if subtag == 'withtext':\n"
-             "                         self.data = subtag.attrs\n"
-             "                         # Text must be read last\n"
-             "                         self.text = subtag.text\n"
-             "             elif tag == 'geometry':\n"
-             "                 self.geometry = tag.getitem(manager.geo, 'ref')\n")
+             u8"Load configuration from XPL reader.\n\n"
+             u8"This method should be overriden in custom Python solvers.\n\n"
+             u8"Example:\n"
+             u8"  .. code-block:: python\n\n"
+             u8"     def load_xpl(self, xpl, manager):\n"
+             u8"         for tag in xpl:\n"
+             u8"             if tag == 'config':\n"
+             u8"                 self.a = tag['a']\n"
+             u8"                 self.b = tag.get('b', 0)\n"
+             u8"                 if 'c' in tag:\n"
+             u8"                     self.c = tag['c']\n"
+             u8"             if tag == 'combined':\n"
+             u8"                 for subtag in tag:\n"
+             u8"                     if subtag == 'withtext':\n"
+             u8"                         self.data = subtag.attrs\n"
+             u8"                         # Text must be read last\n"
+             u8"                         self.text = subtag.text\n"
+             u8"             elif tag == 'geometry':\n"
+             u8"                 self.geometry = tag.getitem(manager.geo, 'ref')\n")
     ;
     solver.attr("__module__") = "plask";
 
@@ -597,16 +597,16 @@ BOOST_PYTHON_MODULE(_plask)
     register_exception<plask::python::StopIteration>(PyExc_StopIteration);
     register_exception<plask::python::IOError>(PyExc_IOError);
 
-    PyObject* xml_error = PyErr_NewExceptionWithDoc((char*)"plask.XMLError", (char*)"Error in XML file.", NULL, NULL);
+    PyObject* xml_error = PyErr_NewExceptionWithDoc((char*)"plask.XMLError", (char*)u8"Error in XML file.", NULL, NULL);
     register_exception<plask::XMLException>(xml_error);
     py::scope().attr("XMLError") = py::handle<>(py::incref(xml_error));
 
-    PyObject* computation_error = PyErr_NewExceptionWithDoc((char*)"plask.ComputationError", (char*)"Computational error in some PLaSK solver.",
+    PyObject* computation_error = PyErr_NewExceptionWithDoc((char*)"plask.ComputationError", (char*)u8"Computational error in some PLaSK solver.",
                                                             PyExc_ArithmeticError, NULL);
     register_exception<plask::ComputationError>(computation_error);
     py::scope().attr("ComputationError") = py::handle<>(py::incref(computation_error));
 
-    py::def("_print_exception", &printPythonException, "Print exception information to PLaSK logging system",
+    py::def("_print_exception", &printPythonException, u8"Print exception information to PLaSK logging system",
             (py::arg("exc_type"), "exc_value", "exc_traceback", py::arg("scriptname")="", py::arg("second_is_script")=false));
 
 #   ifdef PRINT_STACKTRACE_ON_EXCEPTION

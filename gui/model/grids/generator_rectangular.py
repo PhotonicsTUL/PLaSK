@@ -158,10 +158,12 @@ class RectangularRegularGenerator(Grid):
         e.set_xml_element(element)
         return e
 
-    def __init__(self, grids_model, name, type, spacing=None):
+    def __init__(self, grids_model, name, type):
 
         super(RectangularRegularGenerator, self).__init__(grids_model, name, type, 'regular')
-        self.spacing = spacing
+        self.spacing0 = None
+        self.spacing1 = None
+        self.spacing2 = None
 
     @property
     def dim(self):
@@ -169,15 +171,32 @@ class RectangularRegularGenerator(Grid):
 
     def get_xml_element(self):
         res = super(RectangularRegularGenerator, self).get_xml_element()
-        if self.spacing is not None:
-            SubElement(res, "spacing", attrib={'every': self.spacing})
+        dim = self.dim
+        if dim == 1:
+            if self.spacing0 is not None:
+                attrs = {'every': self.spacing0}
+            else:
+                attrs = {}
+        else:
+            attrs = {}
+            for i in range(dim):
+                attr = getattr(self,'spacing{}'.format(i))
+                if attr is not None:
+                    attrs['every{}'.format(i)] = attr
+        if attrs:
+            SubElement(res, "spacing", attrib=attrs)
         return res
 
     def set_xml_element(self, element):
         super(RectangularRegularGenerator, self).set_xml_element(element)
         spacing = element.find('spacing')
         if spacing is not None:
-            self.spacing = spacing.attrib.get('every')
+            dim = self.dim
+            if dim == 1:
+                self.spacing0 = spacing.attrib.get('every')
+            else:
+                for i in range(dim):
+                    setattr(self,'spacing{}'.format(i), spacing.attrib.get('every{}'.format(i)))
 
     def get_controller(self, document):
         from ...controller.grids.generator_rectangular import RectangularRegularGeneratorController
@@ -185,8 +204,10 @@ class RectangularRegularGenerator(Grid):
 
     def create_info(self, res, rows):
         super(RectangularRegularGenerator, self).create_info(res, rows)
-        if not can_be_float(self.spacing): self._required(res, rows, 'spacing', type='float')
-
+        dim = self.dim
+        for i in range(dim):
+            if not can_be_float(getattr(self, 'spacing{}'.format(i))):
+                self._required(res, rows, 'spacing{}'.format(i), type='float')
 
 class RectangularRefinedGenerator(Grid):
 

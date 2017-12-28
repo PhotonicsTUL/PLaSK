@@ -22,6 +22,9 @@ include(PLaSK)
 find_package(LAPACK)
 set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 
+find_package(Eigen3)
+set(SOLVER_INCLUDE_DIRECTORIES ${EIGEN3_INCLUDE_DIR})
+
 
 # Uncomment and edit the line below if you need some special include directories.
 # If you use external libraries, you can use the variables returned by find_package.
