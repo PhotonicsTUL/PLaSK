@@ -143,7 +143,7 @@ void SimpleOptical::computeField(double wavelength)
   // create mesh for calcurate field, only for my test
   double start = 0;
   double end = 7.9;
-  int num = 800;
+  int num = 1800;
   std::vector<double> linspace;
   double delta = (end - start) / (num - 1);
 
@@ -221,9 +221,9 @@ std::vector<dcomplex> SimpleOptical::computeEz(const dcomplex& x, const std::vec
       {
 	z.push_back(p);
 	hi.push_back(p - verticalEdgeVec[i]);	
-	B.push_back(vecE[i].B);
-	std::cout<<"add B = "<<vecE[i+1].B<<std::endl;
-	F.push_back(vecE[i].F);	
+	B.push_back(vecE[i+1].B);
+	//std::cout<<"add B = "<<vecE[i+1].B<<std::endl;
+	F.push_back(vecE[i+1].F);	
       }
 	
     }
@@ -239,7 +239,7 @@ std::vector<dcomplex> SimpleOptical::computeEz(const dcomplex& x, const std::vec
    dcomplex Ez;
    for (size_t i = 0; i < hi.size(); ++i)
    {
-      std::cout<<"hi = "<<hi[i]<<" F = "<<vecE[i+1].F<<" B = "<<vecE[i+1].B<<std::endl;
+      std::cout<<"hi = "<<hi[i]<<" F = "<<F[i]<<" B = "<<B[i]<<std::endl;
       Ez = F[i]*exp(-I*NR[i]*x*hi[i]) + B[i]*exp(I*NR[i]*x*hi[i]); 
       zfields.push_back(Ez);
    }
