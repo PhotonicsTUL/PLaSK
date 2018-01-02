@@ -237,7 +237,7 @@ class PLASK_API XMLReader {
         plask::optional<EnumT> get() {
             plask::optional<std::string> value = reader.getAttribute(attr_name);
             if (!value) return plask::optional<EnumT>();
-            return parse(*value);
+            return parse(std::move(*value));
         }
 
         /**
@@ -248,7 +248,7 @@ class PLASK_API XMLReader {
         EnumT get(EnumT default_value) {
             plask::optional<std::string> value = reader.getAttribute(attr_name);
             if (!value) return default_value;
-            return parse(*value);
+            return parse(std::move(*value));
         }
 
     };
