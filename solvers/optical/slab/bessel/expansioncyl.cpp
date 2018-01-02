@@ -31,7 +31,7 @@ void ExpansionBessel::init1()
     if (SOLVER->mesh)
         rbounds = OrderedAxis(*SOLVER->getMesh());
     else
-        rbounds = std::move(*makeGeometryGrid1D(SOLVER->getGeometry(), true));
+        rbounds = std::move(*makeGeometryGrid1D(SOLVER->getGeometry()));
     rbounds.addPoint(0.);
     OrderedAxis::WarningOff nowarn_rbounds(rbounds);
     size_t nseg = rbounds.size() - 1;

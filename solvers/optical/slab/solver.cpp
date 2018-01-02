@@ -63,7 +63,7 @@ struct LateralMeshAdapter {
     shared_ptr<RectangularMesh<2>> mesh;
 
     LateralMeshAdapter(const BaseT* solver):
-        mesh(makeGeometryGrid(solver->getGeometry(), true)) {}
+        mesh(makeGeometryGrid(solver->getGeometry())) {}
 
     void resetMidpoints(const shared_ptr<MeshAxis>& vbounds) {
         mesh = make_shared<RectangularMesh<2>>(mesh->axis0->getMidpointsMesh(),
@@ -115,7 +115,7 @@ struct LateralMeshAdapter<SolverOver<Geometry3D>> {
     shared_ptr<RectangularMesh<3>> mesh;
 
     LateralMeshAdapter(const SolverOver<Geometry3D>* solver):
-        mesh(makeGeometryGrid(solver->getGeometry(), true, true)) {
+        mesh(makeGeometryGrid(solver->getGeometry())) {
         _size = mesh->axis0->size() * mesh->axis1->size();
     }
 
