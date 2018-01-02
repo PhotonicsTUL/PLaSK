@@ -76,7 +76,7 @@ dcomplex SimpleOptical::get_T_bb()
   return t_bb;
 }
 
-dcomplex SimpleOptical::findMode(double lambda)
+size_t SimpleOptical::findMode(double lambda, int m)
 {
     k0 = 2e3*M_PI/lambda;
     writelog(LOG_INFO, "Searching for the mode starting from wavelength = {0}", str(lambda));
@@ -89,10 +89,11 @@ dcomplex SimpleOptical::findMode(double lambda)
 				      },
 				      log_stripe,
 				      stripe_root);
-    mode = rootdigger->find((2e3*M_PI)/k0);
-    std::cout<<"root wavelength: "<<mode<<std::endl;
+    Mode mode(this, m);
+    mode.lam = rootdigger->find((2e3*M_PI)/k0);
+    std::cout<<"root wavelength: "<<mode.lam<<std::endl;
     refractive_index_vec.clear();
-    return mode;
+    return insertMode(mode);
 }
 
 dcomplex SimpleOptical::compute_transfer_matrix(const dcomplex& x, const std::vector<dcomplex> & NR)

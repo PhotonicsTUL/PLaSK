@@ -53,16 +53,31 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
       
     struct Mode {
       SimpleOptical* solver; ///< Solver this mode belongs to Simple Optical
-      dcomplex neff;         ///< Stored mode effective index 
+      int m;		     ///< Number of mode
+      dcomplex lam;         ///< Stored wavelength 
       double power;          ///< Mode power [mW];
       
-      Mode(SimpleOptical* solver):
-	solver(solver), power(1.) {}
+      Mode(SimpleOptical* solver, int m=0):
+	solver(solver), m(m), power(1.) {}
+     
+     
+     bool operator==(const Mode& other) const {
+            return m == other.m && is_zero(lam - other.lam);
+     }
+     
      };
      
      size_t nmodes() const {
 	return modes.size();
-    }
+     }
+     
+     /// Insert mode to the list or return the index of the exiting one
+     size_t insertMode(const Mode& mode) {
+        for (size_t i = 0; i != modes.size(); ++i)
+        if (modes[i] == mode) return i;
+        modes.push_back(mode);
+        return modes.size()-1;
+     }
 
      void loadConfiguration(XMLReader& reader, Manager& manager);
 
@@ -109,7 +124,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      std::vector<Mode> modes;
      void stageOne();
      
-     dcomplex findMode(double lambda);
+     size_t findMode(double lambda, int m=0);
      
      std::vector<dcomplex> getNrCache();
      

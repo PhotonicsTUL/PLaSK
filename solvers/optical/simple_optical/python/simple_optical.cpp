@@ -17,7 +17,7 @@ BOOST_PYTHON_MODULE(simple_optical)
      METHOD(computeField, computeField, "This method calcurate field");
      METHOD(getZ, getZ, "This method return z axis points");
      METHOD(getEz, getEz, "This method return Ez field");
-     METHOD(findMode, findMode, "This is method to find wavelength of mode");
+     METHOD(findMode, findMode, "This is method to find wavelength of mode", (arg("lam"), arg("m")=0));
      PROVIDER(outLightMagnitude, "");
      METHOD(getLightMagnitude, getLightMagnitude, "This method return electric field");
      METHOD(getNrCache, getNrCache, "This method return refractive index");
