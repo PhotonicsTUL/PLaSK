@@ -60,7 +60,7 @@ class PyObjMime(QMimeData):
                 pdata = pickle.dumps(data)
             except:
                 # We still can use self.data locally, but when fake_root is used this does not work
-                self.setData(self.MIMETYPE, "")
+                self.setData(self.MIMETYPE, b'')
                 return
             self.setData(self.MIMETYPE, pickle.dumps(data.__class__) + pdata)
 
