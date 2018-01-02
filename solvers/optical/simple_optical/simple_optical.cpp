@@ -76,8 +76,11 @@ dcomplex SimpleOptical::get_T_bb()
   return t_bb;
 }
 
-dcomplex SimpleOptical::findRoot(double k0)
+dcomplex SimpleOptical::findMode(double lambda)
 {
+    k0 = 2e3*M_PI/lambda;
+    writelog(LOG_INFO, "Searching for the mode starting from wavelength = {0}", str(lambda));
+    if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
     onInitialize();
     Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format(""), "", "");
     auto rootdigger = RootDigger::get(this, 
@@ -86,10 +89,10 @@ dcomplex SimpleOptical::findRoot(double k0)
 				      },
 				      log_stripe,
 				      stripe_root);
-    vneff = rootdigger->find((2e3*M_PI)/k0);
-    std::cout<<"root wavelength: "<<vneff<<std::endl;
+    mode = rootdigger->find((2e3*M_PI)/k0);
+    std::cout<<"root wavelength: "<<mode<<std::endl;
     refractive_index_vec.clear();
-    return vneff;
+    return mode;
 }
 
 dcomplex SimpleOptical::compute_transfer_matrix(const dcomplex& x, const std::vector<dcomplex> & NR)
@@ -135,7 +138,7 @@ void SimpleOptical::computeField(double wavelength, double s, double e, int n)
   vecE.clear();
   compute_transfer_matrix(k0, refractive_index_vec);
   
-  for (FieldZ E : vecE )
+  for (FieldZ E : vecE)
   {	
     std::cout<<"E.F = "<<E.F<<"  E.B = "<<E.B<<std::endl;
   }
@@ -169,8 +172,15 @@ std::vector<dcomplex> SimpleOptical::getNrCache()
 {
   return nrCache;
 }
-const LazyData<double> SimpleOptical::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
+const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
+  for (auto v: *dst_mesh) {
+    double z = v.c1;
+  }
+  DataVector<double> d;
+  d.fill(1);
+  d.fill(3);
+  return d;
 }
 
 //only for test
@@ -219,15 +229,15 @@ std::vector<dcomplex> SimpleOptical::computeEz(const dcomplex& x, const std::vec
     {
       if (verticalEdgeVec[i] <= p and verticalEdgeVec[i+1] > p)
       {
-	z.push_back(p);
-	hi.push_back(p - verticalEdgeVec[i]);	
-	B.push_back(vecE[i+1].B);
-	//std::cout<<"add B = "<<vecE[i+1].B<<std::endl;
-	F.push_back(vecE[i+1].F);	
+        z.push_back(p);
+        hi.push_back(p - verticalEdgeVec[i]);        
+        B.push_back(vecE[i+1].B);
+        //std::cout<<"add B = "<<vecE[i+1].B<<std::endl;
+        F.push_back(vecE[i+1].F);        
       }
-	
     }
   }
+
   
    std::cout<<"z size = " << z.size() << std::endl;     
    std::cout<<"hi size = " << hi.size() << std::endl;
@@ -248,6 +258,7 @@ std::vector<dcomplex> SimpleOptical::computeEz(const dcomplex& x, const std::vec
   
   return zfields;
 }
+
 
 
 }}}
