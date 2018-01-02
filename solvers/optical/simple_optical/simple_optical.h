@@ -128,6 +128,8 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      
      std::vector<dcomplex> getNrCache();
      
+     double getField(double x);
+     
 
 protected:
 
@@ -149,7 +151,7 @@ protected:
 
   std::vector<dcomplex> refractive_index_vec;
 
-  dcomplex mode; 
+  //Mode mode; 
 
   std::vector<double> edge_vert_layer_point;
 

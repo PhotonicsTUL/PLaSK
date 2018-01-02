@@ -175,15 +175,32 @@ std::vector<dcomplex> SimpleOptical::getNrCache()
 }
 const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
+  setWavelength(978);
+  onInitialize();
+  vecE.clear();
+  compute_transfer_matrix(k0, refractive_index_vec);
+  
+  std::vector<double> arrayZ;
+  
+  std::cout<<"Mesh: " << std::endl;
   for (auto v: *dst_mesh) {
     double z = v.c1;
+    arrayZ.push_back(z);
   }
-  DataVector<double> d;
-  d.fill(1);
-  d.fill(3);
-  return d;
+  std::cout<<"\n";
+  DataVector<double> results(arrayZ.size());
+  results[0] = 5;
+  results[1] = 6;
+  DataVector<double> eField = DataVector<double> {arrayZ[0]};
+  
+  
+  return results;
 }
 
+double SimpleOptical::getField(double x)
+{
+  return x;
+}
 //only for test
 void SimpleOptical::print_vector(std::vector<double> vec)
 {
