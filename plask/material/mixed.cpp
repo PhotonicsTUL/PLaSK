@@ -183,7 +183,7 @@ Tensor2<double> MixedMaterial::thermk(double T, double h) const {
 }
 
 double MixedMaterial::VB(double T, double e, char point, char hole) const  {
-    return avg([&](const Material& m) { return m.VB(T, e, point); });
+    return avg([&](const Material& m) { return m.VB(T, e, point, hole); });
 }
 
 

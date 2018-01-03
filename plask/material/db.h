@@ -119,7 +119,7 @@ struct PLASK_API MaterialsDB {
         virtual shared_ptr<Material> operator()(double m1_weight) const = 0;
 
         /**
-         * Get material only if it this factory represents solid material (if operator(double m1_weight) is independent from m1_weight).
+         * Get material only if this factory represents solid material (if operator(double m1_weight) is independent from m1_weight).
          * @return material or nullptr if it is not solid
          */
         virtual shared_ptr<Material> singleMaterial() const = 0;
