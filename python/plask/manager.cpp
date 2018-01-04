@@ -210,6 +210,7 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
 void PythonManager::loadDefines(XMLReader& reader)
 {
     std::set<std::string> parsed;
+    parsed.insert("self");
     while (reader.requireTagOrEnd()) {
         if (reader.getNodeName() != "define") throw XMLUnexpectedElementException(reader, "<define>");
         std::string name = reader.requireAttribute("name");
@@ -226,11 +227,18 @@ void PythonManager::loadDefines(XMLReader& reader)
                 PyErr_Clear();
                 defs[name] = value;
             }
-        }
-        else if (parsed.find(name) != parsed.end())
+        } else if (parsed.find(name) != parsed.end())
             throw XMLDuplicatedElementException(reader, format("Definition of '{0}'", name));
         parsed.insert(name);
         reader.requireTagEnd();
+    }
+    for (py::stl_input_iterator<std::string> key(defs), keys_end; key != keys_end; ++key) {
+        try {
+            if (parsed.find(*key) == parsed.end())
+                writelog(LOG_WARNING, "Value '{}' is not defined in the XPL file", *key);
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+        }
     }
 }
 

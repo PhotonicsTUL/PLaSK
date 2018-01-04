@@ -489,6 +489,8 @@ int system_main(int argc, const system_char *argv[])
                 py::dict locals;
                 for (std::string& def: defs) {
                     auto keyval = plask::splitString2(def, '=');
+                    if (keyval.first == "self")
+                        throw plask::python::ValueError("Definition name 'self' is reserved");
                     try {
                         locals[keyval.first] = (plask::python::py_eval(keyval.second,
                                                                        *plask::python::xml_globals, locals));

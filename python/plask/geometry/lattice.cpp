@@ -64,7 +64,6 @@ static void lattice_set_segments(Lattice& self, const py::object& value) {
                 throw TypeError("Each vertex in lattice segment must have exactly two integer coordinates");
             py::stl_input_iterator<int> coord_it(*points_it);
             segment.emplace_back(*(coord_it++), *(coord_it++));
-            
         }
         segments.push_back(std::move(segment));
     }
@@ -109,5 +108,5 @@ void register_geometry_container_lattice()
         ;
 }
 
-    
+
 }}
