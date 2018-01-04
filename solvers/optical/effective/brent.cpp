@@ -1,5 +1,4 @@
 #include "brent.h"
-using namespace std;
 
 namespace plask { namespace optical { namespace effective {
 
@@ -47,7 +46,7 @@ double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis) const
         writelog(LOG_DETAIL, "Extending search range to lower values");
         for (; i < params.maxiter; ++i) {
             u = a - G * (x - a);
-            b = x; fv = fx;
+            b = x; // fv = fx;
             x = a; fx = fw;
             a = u; fw = fun(a);
             log_value.count(a, fw);
@@ -61,7 +60,7 @@ double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis) const
         writelog(LOG_DETAIL, "Extending search range to higher values");
         for (; i < params.maxiter; ++i) {
             u = b + G * (b - x);
-            a = x; fw = fx;
+            a = x; // fw = fx;
             x = b; fx = fv;
             b = u; fv = fun(b);
             log_value.count(carg(b), fv);
