@@ -62,6 +62,16 @@ struct MaterialCache {
     plask::optional<double> Psp;
 };
 
+/**
+ * Material with another one as base
+ */
+struct MaterialWithBase: public Material {
+    shared_ptr<Material> base;
+
+    MaterialWithBase() = default;
+    MaterialWithBase(const shared_ptr<Material>& base): base(base) {}
+    MaterialWithBase(Material* base): base(base) {}
+};
 
 }} // namespace plask::python
 

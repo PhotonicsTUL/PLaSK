@@ -149,10 +149,8 @@ struct MaterialFromPythonString {
  * Wrapper for Material class.
  * For all virtual functions it calls Python derivatives
  */
-class PythonMaterial: public Material, Overriden<Material>
+class PythonMaterial: public MaterialWithBase, Overriden<Material>
 {
-    shared_ptr<Material> base;
-
     static std::map<PyObject*, std::unique_ptr<MaterialCache>> cacheMap;
     MaterialCache* cache;
 
@@ -193,8 +191,8 @@ class PythonMaterial: public Material, Overriden<Material>
     }
 
   public:
-    PythonMaterial(): base(new EmptyMaterial) {}
-    PythonMaterial(shared_ptr<Material> base): base(base) {
+    PythonMaterial(): MaterialWithBase(new EmptyMaterial) {}
+    PythonMaterial(shared_ptr<Material> base): MaterialWithBase(base) {
         if (!base) base = shared_ptr<Material>(new EmptyMaterial);
     }
 
@@ -579,10 +577,7 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
         self.attr("composition") = pycomposition;
     }
 
-
     ptr->self = self.ptr();  // key line !!!
-
-    self.attr("base") = ptr->base;
 
     // Update cache
     auto found = cacheMap.find(cls.ptr());
@@ -664,6 +659,12 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
         CHECK_CACHE(double, Psp, "Psp", 300.)
     }
     return ptr;
+}
+
+py::object Material_base(const Material* self) {
+    const MaterialWithBase* material = dynamic_cast<const MaterialWithBase*>(self);
+    if (material) return py::object(material->base);
+    else return py::object();
 }
 
 /**
@@ -844,7 +845,7 @@ void initMaterials() {
         "Materials and material database.\n\n"
     ;
 
-    py::class_<MaterialsDB, shared_ptr<MaterialsDB>/*, boost::noncopyable*/> materialsDB("MaterialsDB",
+    py::class_<MaterialsDB, shared_ptr<MaterialsDB>, boost::noncopyable> materialsDB("MaterialsDB",
         u8"Material database class\n\n"
         u8"Many semiconductor materials used in photonics are defined here. We have made\n"
         u8"a significant effort to ensure their physical properties to be the most precise\n"
@@ -914,6 +915,8 @@ void initMaterials() {
         .add_property("name_without_dopant", &Material::nameWithoutDopant, u8"Material name without dopant (without ':' and part of name after it).")
 
         .add_property("kind", &Material::kind, u8"Material kind.")
+
+        .add_property("base", &Material_base, u8"Base material.\n\nThis a base material specified for Python and XPL custom materials.")
 
         .def("__str__", &Material__str__)
 
