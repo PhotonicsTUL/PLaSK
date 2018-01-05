@@ -175,7 +175,7 @@ std::vector<dcomplex> SimpleOptical::getNrCache()
 }
 const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
-  setWavelength(978.7);
+  setWavelength(real(modes[num].lam));
   onInitialize();
   vecE.clear();
   compute_transfer_matrix(k0, refractive_index_vec);
