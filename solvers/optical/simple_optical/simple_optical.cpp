@@ -175,24 +175,65 @@ std::vector<dcomplex> SimpleOptical::getNrCache()
 }
 const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
-  setWavelength(978);
+  setWavelength(978.7);
   onInitialize();
   vecE.clear();
   compute_transfer_matrix(k0, refractive_index_vec);
   
-  std::vector<double> arrayZ;
-  
-  std::cout<<"Mesh: " << std::endl;
+  std::vector<double> arrayZ;  
   for (auto v: *dst_mesh) {
     double z = v.c1;
     arrayZ.push_back(z);
   }
-  std::cout<<"\n";
+ 
   DataVector<double> results(arrayZ.size());
-  results[0] = 5;
-  results[1] = 6;
-  DataVector<double> eField = DataVector<double> {arrayZ[0]};
+  std::vector<dcomplex> NR;
+  std::vector<double> verticalEdgeVec;
+  std::vector<double> hi;
+  std::vector<dcomplex> B;
+  std::vector<dcomplex> F;
+  double T = 300; //temperature 300 K
+  double w = real(2e3*M_PI / x);
   
+ 
+  for(auto p: arrayZ) // TO DO maybe use dst mesh direct 
+  {
+    NR.push_back(geometry->getMaterial(vec(0.0,  p))->Nr(w, T));      
+  }
+   
+  for (double p_edge: *axis_vertical) verticalEdgeVec.push_back(p_edge); 
+  
+  std::cout<<"edge size = " << verticalEdgeVec.size()<<std::endl;
+  for (size_t i = 0; i < verticalEdgeVec.size()-1; ++i)
+  {
+    for (double p: arrayZ) 
+    {
+
+      if (verticalEdgeVec[i] <= p and verticalEdgeVec[i+1] > p)
+      {
+	std::cout<<p<<std::endl;
+        z.push_back(p);
+        hi.push_back(p - verticalEdgeVec[i]);        
+        B.push_back(vecE[i+1].B);
+        //std::cout<<"add B = "<<vecE[i+1].B<<std::endl;
+        F.push_back(vecE[i+1].F);        
+      }
+    }
+   }
+  
+   zfields.clear();
+  
+   dcomplex Ez;
+   std::cout<<"hi size = "<<hi.size()-1 << std::endl;
+   for (size_t i = 0; i < hi.size(); ++i)
+   {
+      std::cout<<"hi = "<<hi[i]<<" F = "<<F[i]<<" B = "<<B[i]<<std::endl;
+      Ez = F[i]*exp(-I*NR[i]*k0*hi[i]) + B[i]*exp(I*NR[i]*k0*hi[i]); 
+      zfields.push_back(Ez);
+      results[i] = real(Ez + conj(Ez));
+   }
+  
+  z = arrayZ;
   
   return results;
 }
