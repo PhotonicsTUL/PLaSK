@@ -4,6 +4,7 @@ namespace plask { namespace optical { namespace simple_optical {
   
 SimpleOptical::SimpleOptical(const std::string& name):plask::SolverOver<plask::Geometry2DCylindrical>(name)
   ,outLightMagnitude(this, &SimpleOptical::getLightMagnitude, &SimpleOptical::nmodes)
+  ,outRefractiveIndex(this, &SimpleOptical::getRefractiveIndex)
 {
   stripe_root.method = RootDigger::ROOT_MULLER;
   stripe_root.tolx = 1.0e-6;
@@ -124,6 +125,22 @@ std::vector<dcomplex> SimpleOptical::getNrCache()
 std::vector<double> SimpleOptical::getZ()
 {
   return z;
+}
+
+const LazyData<Tensor3<dcomplex>> SimpleOptical::getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod)
+{
+  this->writelog(LOG_DEBUG, "Getting refractive indices");
+  dcomplex lam0 = 2e3*M_PI / k0;
+  InterpolationFlags flags(geometry);
+  return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
+        [this, dst_mesh, flags, lam0](size_t j) -> Tensor3<dcomplex> {
+            //auto point = flags.wrap(dst_mesh->at(j));
+            //size_t ir = this->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= this->rsize) ir = this->rsize-1;
+            //size_t iz = this->mesh->axis1->findIndex(point.c1); if (iz < this->zbegin) iz = this->zbegin; else if (iz >= zsize) iz = this->zsize-1;
+          nrCache.push_back(2);  
+	  return Tensor3<dcomplex>(this->nrCache[0]);
+        }
+    );
 }
 
 const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)

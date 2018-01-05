@@ -110,7 +110,12 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      
      typename ProviderFor<LightMagnitude, Geometry2DCylindrical>::Delegate outLightMagnitude;
      
+     /// Provider of refractive index
+     typename ProviderFor<RefractiveIndex, Geometry2DCylindrical>::Delegate outRefractiveIndex;
+     
      const DataVector<double> getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod);
+     
+     const LazyData<Tensor3<dcomplex>> getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod);
      
      std::vector<Mode> modes;
      
