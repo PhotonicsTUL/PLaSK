@@ -50,56 +50,66 @@ def get_k0(wavelength):
     return (2e3*np.pi)/wavelength
 
 
-wavelength = np.linspace(900, 1050, 100)
-t_bb = np.zeros(len(wavelength), dtype=complex)
-for i in range(0, len(t_bb)):
-    prosty.simpleVerticalSolver(wavelength[i])
-    t_bb[i] = prosty.get_T_bb()
-plt.plot(wavelength, np.abs(t_bb), 'b-')
-plt.xlabel("wavelength [nm]")
-plt.ylabel("T bb")
-plt.yscale('log')
-plt.axhline(color='black')
-plt.ylim([10e-1, 10e3])
-#print(t_bb)
-#Ez = prosty.getEz()
-#print(Ez)
-#w = np.linspace(900, 1050, 5)
-#for i in w:
-#    k = get_k0(i)
-#    prosty.findRoot(k)
-    
-#prosty.findRoot(6.45)
-fig, ax1 = plt.subplots()
-prosty.computeField(978.7, 0, 8, 500)
+#wavelength = np.linspace(900, 1050, 100)
+#t_bb = np.zeros(len(wavelength), dtype=complex)
+#for i in range(0, len(t_bb)):
+#    prosty.simpleVerticalSolver(wavelength[i])
+#    t_bb[i] = prosty.get_T_bb()
+#plt.plot(wavelength, np.abs(t_bb), 'b-')
+#plt.xlabel("wavelength [nm]")
+#plt.ylabel("T bb")
+#plt.yscale('log')
+#plt.axhline(color='black')
+#plt.ylim([10e-1, 10e3])
+##print(t_bb)
 
-z = prosty.getZ()
-eField = np.array(prosty.getEz(), dtype=complex)
-nrCache = prosty.getNrCache()
-print(len(z))
-print(len(eField))
-ax1.plot(z, np.abs((eField)), 'r-')
-ax1.set_ylabel("electric field", color="red")
+    
+#fig, ax1 = plt.subplots()
+#prosty.computeField(978.7, 0, 8, 500)
+
+#z = prosty.getZ()
+#eField = np.array(prosty.getEz(), dtype=complex)
+#nrCache = prosty.getNrCache()
+#print(len(z))
+#print(len(eField))
+#ax1.plot(z, np.abs((eField)), 'r-')
+#ax1.set_ylabel("electric field", color="red")
+#ax2 = ax1.twinx()
+#ax2.plot(z, nrCache, 'b-')
+#ax1.set_xlabel('z')
+#ax2.set_ylabel("refractive index", color="blue")
+
+#plt.figure()
+#geo = prosty.geometry
+#p = plot_geometry(geo, fill=True, alpha=0.99)
+#p = p.twiny()
+#p.plot(np.abs(eField), z, 'b-', lw=1.5)
+#p.set_xlabel("Electric field F")
+#plt.ylim([-1, 11])
+
+fig, ax1 = plt.subplots()
+mode_number = prosty.findMode(981) 
+Z = np.linspace(0, 8, 1500)
+E = prosty.outLightMagnitude(mode_number, mesh.Rectangular2D([0], Z ) )
+Ez = E.array[0]
+ax1.plot(Z, np.abs(Ez), 'r-')
+ax1.set_ylabel("Light Magnitude $E$", color="red")
 ax2 = ax1.twinx()
+nrCache = prosty.getNrCache()
+z = prosty.getZ()
 ax2.plot(z, nrCache, 'b-')
-ax1.set_xlabel('z')
+ax2.set_xlabel("z")
 ax2.set_ylabel("refractive index", color="blue")
 
 plt.figure()
-geo = prosty.geometry
-p = plot_geometry(geo, fill=True, alpha=0.99)
-p = p.twiny()
-p.plot(np.abs(eField), z, 'b-', lw=1.5)
-p.set_xlabel("Electric field F")
-plt.ylim([-1, 11])
+wavelength = np.linspace(800, 1100, 500)
+t_bb = []
+for w in wavelength:
+  t_bb.append(prosty.get_vert_determinant(w))
 
+plt.plot(wavelength, np.abs(t_bb), 'r-')
+plt.yscale('log')
 
-plt.figure()
-mode_number = prosty.findMode(981) 
-Z = np.linspace(0,8, 500)
-E = prosty.outLightMagnitude(mode_number, mesh.Rectangular2D( [0], Z ) )
-Ez = E.array[0]
-plt.plot(Z, np.abs(Ez), 'r-')
 
 plt.show()
 

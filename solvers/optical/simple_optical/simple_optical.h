@@ -98,7 +98,8 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
         invalidate();
      }
      
-     dcomplex get_T_bb();
+     dcomplex getVertDeterminant(double wavelength);
+     
      dcomplex computeTransferMatrix(const dcomplex& k, const std::vector<dcomplex> & NR);
 
      /// Parameters for main rootdigger
@@ -117,7 +118,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      
      std::vector<dcomplex> getNrCache();
      
-     double getField(double x);
+     std::vector<double> getZ();
      
 
 protected:
@@ -132,26 +133,14 @@ protected:
   
   dcomplex k0;
 
-  dcomplex t_bb;
+  std::vector<double> edgeVertLayerPoint;
 
-  Matrix transfer_matrix;
-
-  std::vector<dcomplex> refractive_index_vec;
-
-  //Mode mode; 
-
-  std::vector<double> edge_vert_layer_point;
-
-  void initialize_refractive_index_vec();
+  void initializeRefractiveIndexVec();
   
-  std::vector<dcomplex> nrCache;
+  std::vector<double> z; // Vector to hold point if refractive index
   
-  std::vector<double> z;
-
-  /// Computed vertical fields
-  std::vector<dcomplex> zfields; 
-
-  
+  std::vector<dcomplex> nrCache; // Vector to hold refractive index
+    
   std::vector<FieldZ> vecE;
 
 
