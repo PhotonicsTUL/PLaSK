@@ -46,19 +46,14 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      };
       
 
-     enum Polarization {
-        TE,
-        TM,
-      };
       
     struct Mode {
       SimpleOptical* solver; ///< Solver this mode belongs to Simple Optical
       int m;		     ///< Number of mode
       dcomplex lam;         ///< Stored wavelength 
-      double power;          ///< Mode power [mW];
       
       Mode(SimpleOptical* solver, int m=0):
-	solver(solver), m(m), power(1.) {}
+	solver(solver), m(m) {}
      
      
      bool operator==(const Mode& other) const {
@@ -102,27 +97,21 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
         k0 = 2e3*M_PI / wavelength;
         invalidate();
      }
-
-     void simpleVerticalSolver(double wave_length);
      
      dcomplex get_T_bb();
-     dcomplex compute_transfer_matrix(const dcomplex& k, const std::vector<dcomplex> & NR);
+     dcomplex computeTransferMatrix(const dcomplex& k, const std::vector<dcomplex> & NR);
 
      /// Parameters for main rootdigger
      RootDigger::Params root;
 
      /// Parameters for sripe rootdigger
-     RootDigger::Params stripe_root;
-      
-     void computeField(double wavelength, double s, double e, int n);
-     std::vector<dcomplex> computeEz(const dcomplex& x, const std::vector<double> & dst_mesh);
-     std::vector<double> getZ();
-     std::vector<dcomplex> getEz();
+     RootDigger::Params stripe_root;     
      
      typename ProviderFor<LightMagnitude, Geometry2DCylindrical>::Delegate outLightMagnitude;
+     
      const DataVector<double> getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod);
+     
      std::vector<Mode> modes;
-     void stageOne();
      
      size_t findMode(double lambda, int m=0);
      
@@ -138,8 +127,6 @@ protected:
   size_t x,           ///< poitn, when program computed vertical fields
          ybegin,  ///< First element of vertical mesh to consider
          yend;    ///< Last element of vertical mesh to consider
-
-  Polarization polarization;  ///< Chosen light polarization
 
   shared_ptr<RectangularMesh<2>> mesh;   /// Mesh over which the calculations are performed
   
@@ -167,7 +154,6 @@ protected:
   
   std::vector<FieldZ> vecE;
 
-  void print_vector(std::vector<double> vec);
 
 };
 
