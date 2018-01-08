@@ -559,7 +559,7 @@ cvector AdmittanceTransfer::getTransmissionVector(const cvector& incident, Incid
 {
     determineReflectedFields(incident, side);
     size_t n = (side == INCIDENCE_BOTTOM)? solver->stack.size()-1 : 0;
-    return diagonalizer->TE(solver->stack[n]) * fields[n].E0;
+    return fields[n].E0;
 }
 
 }}} // namespace plask::optical::slab

@@ -367,23 +367,43 @@ static py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, d
     return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
 }
 
-static py::object FourierSolver2D_reflectedCoefficients(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
+static py::object FourierSolver2D_reflectedCoefficients1(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection side) {
     if (self.initCalculation()) {
         self.setExpansionDefaults(false);
         self.expansion.setK0(2e3*M_PI/lam);
     } else
         self.expansion.setK0(2e3*M_PI/lam);
-    auto data = self.getReflectedCoefficients(polarization, incidence);
+    auto data = self.getReflectedCoefficients(polarization, side);
     return arrayFromVec2D<NPY_CDOUBLE>(data, self.separated(), 2);
 }
 
-static py::object FourierSolver2D_transmittedCoefficients(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
+static py::object FourierSolver2D_transmittedCoefficients1(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection side) {
     if (self.initCalculation()) {
         self.setExpansionDefaults(false);
         self.expansion.setK0(2e3*M_PI/lam);
     } else
         self.expansion.setK0(2e3*M_PI/lam);
-    auto data = self.getTransmittedCoefficients(polarization, incidence);
+    auto data = self.getTransmittedCoefficients(polarization, side);
+    return arrayFromVec2D<NPY_CDOUBLE>(data, self.separated(), 2);
+}
+
+static py::object FourierSolver2D_reflectedCoefficients2(FourierSolver2D& self, double lam, size_t idx, Transfer::IncidentDirection side) {
+    if (self.initCalculation()) {
+        self.setExpansionDefaults(false);
+        self.expansion.setK0(2e3*M_PI/lam);
+    } else
+        self.expansion.setK0(2e3*M_PI/lam);
+    auto data = self.getReflectedCoefficients(idx, side);
+    return arrayFromVec2D<NPY_CDOUBLE>(data, self.separated(), 2);
+}
+
+static py::object FourierSolver2D_transmittedCoefficients2(FourierSolver2D& self, double lam, size_t idx, Transfer::IncidentDirection side) {
+    if (self.initCalculation()) {
+        self.setExpansionDefaults(false);
+        self.expansion.setK0(2e3*M_PI/lam);
+    } else
+        self.expansion.setK0(2e3*M_PI/lam);
+    auto data = self.getTransmittedCoefficients(idx, side);
     return arrayFromVec2D<NPY_CDOUBLE>(data, self.separated(), 2);
 }
 
@@ -519,26 +539,32 @@ void export_FourierSolver2D()
                 u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                 u8"        present.\n"
                 , (py::arg("lam"), "polarization", "side"));
-    solver.def("compute_reflected_coefficients", &FourierSolver2D_reflectedCoefficients,
+    solver.def("compute_reflected_coefficients", &FourierSolver2D_reflectedCoefficients1, (py::arg("lam"), "polarization", "side"));
+    solver.def("compute_reflected_coefficients", &FourierSolver2D_reflectedCoefficients2,
                 u8"Compute Fourier coefficients of the reflected field [-].\n\n"
                 u8"Args:\n"
                 u8"    lam (float): Incident light wavelength.\n"
                 u8"    polarization: Specification of the incident light polarization.\n"
                 u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
                 u8"        name of the non-vanishing electric field component.\n"
+                u8"    idx (int): Index of the input-side layer eigenfield to set as the incident\n"
+                u8"        field.\n"
                 u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                 u8"        present.\n"
-                , (py::arg("lam"), "polarization", "side"));
-    solver.def("compute_transmitted_coefficients", &FourierSolver2D_transmittedCoefficients,
+                , (py::arg("lam"), "idx", "side"));
+    solver.def("compute_transmitted_coefficients", &FourierSolver2D_transmittedCoefficients1, (py::arg("lam"), "polarization", "side"));
+    solver.def("compute_transmitted_coefficients", &FourierSolver2D_transmittedCoefficients2,
                 u8"Compute Fourier coefficients of the reflected field [-].\n\n"
                 u8"Args:\n"
                 u8"    lam (float): Incident light wavelength.\n"
                 u8"    polarization: Specification of the incident light polarization.\n"
                 u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
                 u8"        name of the non-vanishing electric field component.\n"
+                u8"    idx (int): Index of the input-side layer eigenfield to set as the incident\n"
+                u8"        field.\n"
                 u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                 u8"        present.\n"
-                , (py::arg("lam"), "polarization", "side"));
+                , (py::arg("lam"), "idx", "side"));
     solver.add_property("mirrors", FourierSolver2D_getMirrors, FourierSolver2D_setMirrors,
                 u8"Mirror reflectivities. If None then they are automatically estimated from the\n"
                 u8"Fresnel equations.");

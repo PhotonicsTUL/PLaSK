@@ -386,7 +386,7 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
     int curr = solver->stack[start];
     double H;
 
-    fields[start].B = diagonalizer->invTE(curr) * incident; // diagonalized incident E-field
+    fields[start].B = incident; // diagonalized incident E-field
     fields[start].F = cvector(N);
 
     for (int n = start; n != end; n += inc)
