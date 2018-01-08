@@ -67,7 +67,6 @@ class GratingTest(unittest.TestCase):
         self.assertAlmostEqual( r_tm[0], 99.097, 2 )
         self.assertAlmostEqual( r_tm[1], 26.911, 2 )
 
-  
 if __name__ == '__main__':
     import __main__
     __main__.GratingTest = GratingTest

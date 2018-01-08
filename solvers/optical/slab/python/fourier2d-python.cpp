@@ -13,6 +13,44 @@ inline static std::string polarization_str(Expansion::Component val) {
     }
 }
 
+struct EigenmodesFourier2D: Eigenmodes {
+    FourierSolver2D& solver;
+    size_t layer;
+
+    EigenmodesFourier2D(FourierSolver2D& solver, size_t layer): Eigenmodes(solver, layer), solver(solver), layer(layer) {}
+
+    static shared_ptr<EigenmodesFourier2D> init(FourierSolver2D& solver, double z) {
+        return make_shared<EigenmodesFourier2D>(solver, solver.stack[solver.getLayerFor(z)]);
+    }
+
+  protected:
+    std::string getSolverId() const override {
+        return solver.getId();
+    }
+
+    py::object array(const dcomplex* data, size_t N) const {
+        int dim = 2, strid = 2;
+        if (solver.separated()) strid = dim = 1;
+        npy_intp dims[] = { N / strid, strid };
+        npy_intp strides[] = { strid * sizeof(dcomplex), sizeof(dcomplex) };
+        PyObject* arr = PyArray_New(&PyArray_Type, dim, dims, NPY_CDOUBLE, strides, (void*)data, 0, 0, NULL);
+        if (arr == nullptr) throw plask::CriticalException("Cannot create array");
+        return py::object(py::handle<>(arr));
+    }
+
+  public:
+    py::object getCoefficientsE(int n) const {
+        return array(TE.data() + TE.rows()*index(n), TE.rows());
+    }
+
+    py::object getCoefficientsH(int n) const {
+        return array(TH.data() + TH.rows()*index(n), TH.rows());
+    }
+
+};
+
+
+
 template <>
 py::object Solver_computeReflectivity<FourierSolver2D>(FourierSolver2D* self,
                                                        py::object wavelength,
@@ -542,6 +580,15 @@ void export_FourierSolver2D()
                u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
                u8":rtype: numpy.ndarray\n"
               );
+    solver.def("layer_eigenmodes", &EigenmodesFourier2D::init, py::arg("level"),
+               u8"Get eignemodes for a layer at specified level.\n\n"
+               u8"This is a low-level function to access diagonalized eigenmodes for a specific\n"
+               u8"layer. Please refer to the detailed solver description for the interpretation\n"
+               u8"of the returned values.\n\n"
+               u8"Args:\n"
+               u8"    level (float): Vertical level at which the coefficients are computed.\n",
+               py::with_custodian_and_ward_postcall<0,1>()
+              );
     py::scope scope = solver;
 
     register_vector_of<FourierSolver2D::Mode>("Modes");
@@ -607,6 +654,23 @@ void export_FourierSolver2D()
              u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
              u8":rtype: numpy.ndarray\n"
             )
+    ;
+
+    py::class_<EigenmodesFourier2D, shared_ptr<EigenmodesFourier2D>, boost::noncopyable>("Eigenmodes",
+        u8"Layer eignemodes proxy\n\n"
+        u8"This is an advanced class allowing to extract eignemodes in each layer.\n", py::no_init)
+        .def("__len__", &EigenmodesFourier2D::size)
+        .def("__getitem__", &EigenmodesFourier2D::Gamma)
+        .def("coefficientsE", &EigenmodesFourier2D::getCoefficientsE, py::arg("n"),
+            u8"Get electric field coefficients for the n-th eigenmode.\n\n"
+            u8"Args:\n"
+            u8"    n (int): Eigenmode number."
+        )
+        .def("coefficientsH", &EigenmodesFourier2D::getCoefficientsH, py::arg("n"),
+            u8"Get magnetic field coefficients for the n-th eigenmode.\n\n"
+            u8"Args:\n"
+            u8"    n (int): Eigenmode number."
+        )
     ;
 }
 

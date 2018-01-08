@@ -110,6 +110,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
   public:
 
+    dcomplex getBeta() const { return beta; }
     void setBeta(dcomplex b) {
         if (b != beta) {
             beta = b;
@@ -117,6 +118,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
         }
     }
 
+    dcomplex getKtran() const { return ktran; }
     void setKtran(dcomplex k) {
         if (k != ktran) {
             ktran = k;
@@ -124,6 +126,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
         }
     }
 
+    Component getSymmetry() const { return symmetry; }
     void setSymmetry(Component sym) {
         if (sym != symmetry) {
             symmetry = sym;
@@ -131,6 +134,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
         }
     }
 
+    Component getPolarization() const { return polarization; }
     void setPolarization(Component pol);
 
     /// Get \f$ \varepsilon_{zz} \f$

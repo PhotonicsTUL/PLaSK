@@ -129,6 +129,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
   public:
 
+    dcomplex getKlong() const { return klong; }
     void setKlong(dcomplex k) {
         if (k != klong) {
             klong = k;
@@ -136,6 +137,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
         }
     }
 
+    dcomplex getKtran() const { return ktran; }
     void setKtran(dcomplex k) {
         if (k != ktran) {
             ktran = k;
@@ -143,6 +145,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
         }
     }
 
+    Component getSymmetryLong() const { return symmetry_long; }
     void setSymmetryLong(Component sym) {
         if (sym != symmetry_long) {
             symmetry_long = sym;
@@ -150,6 +153,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
         }
     }
 
+    Component getSymmetryTran() const { return symmetry_tran; }
     void setSymmetryTran(Component sym) {
         if (sym != symmetry_tran) {
             symmetry_tran = sym;

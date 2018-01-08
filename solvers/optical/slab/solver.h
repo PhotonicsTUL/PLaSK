@@ -65,19 +65,13 @@ struct PLASK_SOLVER_API SlabBase {
         reader.requireTagEnd();
     }
 
-#ifndef NDEBUG
   public:
-#endif
 
     /// Transfer method object (AdmittanceTransfer or ReflectionTransfer)
     std::unique_ptr<Transfer> transfer;
 
     /// Initialize transfer class
     void initTransfer(Expansion& expansion, bool reflection);
-
-#ifdef NDEBUG
-  public:
-#endif
 
     /// Layer boundaries
     shared_ptr<OrderedAxis> vbounds;
@@ -216,8 +210,9 @@ struct PLASK_SOLVER_API SlabBase {
 
     /** Set expansion parameters from default values
      * \param with_k0 Change k0
+     * \returns \c true if anything was changed
      */
-    virtual void setExpansionDefaults(bool with_k0=true) = 0;
+    virtual bool setExpansionDefaults(bool with_k0=true) = 0;
 };
 
 /**

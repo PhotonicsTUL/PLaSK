@@ -107,13 +107,17 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         modes.clear();
     }
 
-    void setExpansionDefaults(bool with_k0=true) override {
-        expansion.setLam0(getLam0());
-        if (with_k0) expansion.setK0(getK0());
-        expansion.setBeta(getBeta());
-        expansion.setKtran(getKtran());
-        expansion.setSymmetry(getSymmetry());
-        expansion.setPolarization(getPolarization());
+    bool setExpansionDefaults(bool with_k0=true) override {
+        bool changed = false;
+        if (expansion.getLam0() != getLam0()) { changed = true; expansion.setLam0(getLam0()); }
+        if (with_k0) {
+            if (expansion.getK0() != getK0()) { changed = true; expansion.setK0(getK0()); }
+        }
+        if (expansion.getBeta() != getBeta()) { changed = true; expansion.setBeta(getBeta()); }
+        if (expansion.getKtran() != getKtran()) { changed = true; expansion.setKtran(getKtran()); }
+        if (expansion.getSymmetry() != getSymmetry()) { changed = true; expansion.setSymmetry(getSymmetry()); }
+        if (expansion.getPolarization() != getPolarization()) { changed = true; expansion.setPolarization(getPolarization()); }
+        return changed;
     }
 
     /// Mesh multiplier for finer computation of the refractive indices

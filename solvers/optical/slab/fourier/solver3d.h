@@ -114,13 +114,17 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         modes.clear();
     }
 
-    void setExpansionDefaults(bool with_k0=true) override {
-        expansion.setLam0(getLam0());
-        if (with_k0) expansion.setK0(getK0());
-        expansion.setKlong(getKlong());
-        expansion.setKtran(getKtran());
-        expansion.setSymmetryLong(getSymmetryLong());
-        expansion.setSymmetryTran(getSymmetryTran());
+    bool setExpansionDefaults(bool with_k0=true) override {
+        bool changed;
+        if (expansion.getLam0() != getLam0()) { changed = true; expansion.setLam0(getLam0()); }
+        if (with_k0) {
+            if (expansion.getK0() != getK0()) { changed = true; expansion.setK0(getK0()); }
+        }
+        if (expansion.getKlong() != getKlong()) { changed = true; expansion.setKlong(getKlong()); }
+        if (expansion.getKtran() != getKtran()) { changed = true; expansion.setKtran(getKtran()); }
+        if (expansion.getSymmetryLong() != getSymmetryLong()) { changed = true; expansion.setSymmetryLong(getSymmetryLong()); }
+        if (expansion.getSymmetryTran() != getSymmetryTran()) { changed = true; expansion.setSymmetryTran(getSymmetryTran()); }
+        return changed;
     }
 
     /// Mesh multiplier for finer computation of the refractive indices in the longitudinal direction

@@ -108,12 +108,14 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         modes.clear();
     }
 
-    void setExpansionDefaults(bool with_k0=true) override {
-        expansion->setLam0(getLam0());
+    bool setExpansionDefaults(bool with_k0=true) override {
+        bool changed = false;
+        if (expansion->getLam0() != getLam0()) { changed = true; expansion->setLam0(getLam0()); }
         if (with_k0) {
-            expansion->setK0(getK0());
-            expansion->setM(getM());
+            if (expansion->getK0() != getK0()) { changed = true; expansion->setK0(getK0()); }
         }
+        if (expansion->getM() != getM()) { changed = true; expansion->setM(getM()); }
+        return changed;
     }
 
     /// Expected integration estimate error

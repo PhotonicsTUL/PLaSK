@@ -288,19 +288,47 @@ py::tuple Solver_getDiagonalized(Solver& self, size_t layer) {
             TH = self.transfer->diagonalizer->TH(layer);
     return py::make_tuple(py::object(gamma), py::object(TE), py::object(TH));
 }
-
-template <typename Solver>
-py::tuple Solver_getTMatrixes(Solver& self, size_t layer) {
-    self.initCalculation();
-    if (!self.transfer) {
-        self.initTransfer(self.getExpansion(), false);
-        self.transfer->initDiagonalization();
-        self.transfer->diagonalizer->diagonalizeLayer(layer);
-    } else if (!self.transfer->diagonalizer->isDiagonalized(layer)) {
-        self.transfer->diagonalizer->diagonalizeLayer(layer);
-    }
-}
 #endif
+
+struct Eigenmodes {
+    cdiagonal gamma;
+    cmatrix TE, TH;
+
+    template <typename Solver>
+    Eigenmodes(Solver& solver, size_t layer) {
+        bool changed = solver.initCalculation() || solver.setExpansionDefaults(true);
+        if (!solver.transfer) {
+            solver.initTransfer(solver.getExpansion(), false);
+        }
+        if (changed) {
+            solver.transfer->initDiagonalization();
+            solver.transfer->diagonalizer->diagonalizeLayer(layer);
+        } else if (!solver.transfer->diagonalizer->isDiagonalized(layer))
+            solver.transfer->diagonalizer->diagonalizeLayer(layer);
+        gamma = solver.transfer->diagonalizer->Gamma(layer);
+        TE = solver.transfer->diagonalizer->TE(layer),
+        TH = solver.transfer->diagonalizer->TH(layer);
+    }
+
+    size_t size() const {
+        return gamma.size();
+    }
+
+  protected:
+    virtual std::string getSolverId() const = 0;
+
+    size_t index(int n) const {
+        int N = gamma.size();
+        if (n < 0) n += N;
+        if (n < 0 || n >= N) throw IndexError("{}: Bad eigenmode number", getSolverId());
+        return size_t(n);
+    }
+
+  public:
+    dcomplex Gamma(int n) const {
+        return gamma[index(n)];
+    }
+};
 
 
 template <typename SolverT>
