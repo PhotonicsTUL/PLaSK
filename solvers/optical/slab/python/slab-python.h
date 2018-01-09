@@ -290,7 +290,11 @@ py::tuple Solver_getDiagonalized(Solver& self, size_t layer) {
 }
 #endif
 
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+struct __declspec(dllexport) Eigenmodes {
+#else
 struct Eigenmodes {
+#endif
     cdiagonal gamma;
     cmatrix TE, TH;
 

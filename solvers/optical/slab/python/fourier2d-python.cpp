@@ -13,7 +13,11 @@ inline static std::string polarization_str(Expansion::Component val) {
     }
 }
 
-struct EigenmodesFourier2D: Eigenmodes {
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+struct __declspec(dllexport) EigenmodesFourier2D: Eigenmodes {
+#else
+struct PLASK_SOLVER_API EigenmodesFourier2D: Eigenmodes {
+#endif
     FourierSolver2D& solver;
     size_t layer;
 

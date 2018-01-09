@@ -16,7 +16,11 @@ static inline py::object arrayFromVec3D(cvector data, size_t minor, int dim) {
     return py::object(py::handle<>(arr));
 }
 
-struct EigenmodesFourier3D: Eigenmodes {
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+struct __declspec(dllexport) EigenmodesFourier3D: Eigenmodes {
+#else
+struct PLASK_SOLVER_API EigenmodesFourier3D: Eigenmodes {
+#endif
     FourierSolver3D& solver;
     size_t layer;
 
