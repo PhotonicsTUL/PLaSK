@@ -299,6 +299,7 @@ struct Eigenmodes {
         bool changed = solver.initCalculation() || solver.setExpansionDefaults(true);
         if (!solver.transfer) {
             solver.initTransfer(solver.getExpansion(), false);
+            changed = true;
         }
         if (changed) {
             solver.transfer->initDiagonalization();

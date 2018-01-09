@@ -17,10 +17,22 @@ struct EigenmodesFourier2D: Eigenmodes {
     FourierSolver2D& solver;
     size_t layer;
 
-    EigenmodesFourier2D(FourierSolver2D& solver, size_t layer): Eigenmodes(solver, layer), solver(solver), layer(layer) {}
+
+    typename ProviderFor<LightMagnitude,Geometry2DCartesian>::Delegate outLightMagnitude;
+//     typename ProviderFor<LightE,Geometry2DCartesian>::Delegate outLightE;
+//     typename ProviderFor<LightH,Geometry2DCartesian>::Delegate outLightH;
+
+    EigenmodesFourier2D(FourierSolver2D& solver, size_t layer): Eigenmodes(solver, layer), solver(solver), layer(layer),
+        outLightMagnitude(this, &EigenmodesFourier2D::getLightMagnitude, &EigenmodesFourier2D::size)
+    {}
 
     static shared_ptr<EigenmodesFourier2D> init(FourierSolver2D& solver, double z) {
+        solver.initCalculation();
         return make_shared<EigenmodesFourier2D>(solver, solver.stack[solver.getLayerFor(z)]);
+    }
+
+    size_t size() const {
+        return gamma.size();
     }
 
   protected:
@@ -36,6 +48,23 @@ struct EigenmodesFourier2D: Eigenmodes {
         PyObject* arr = PyArray_New(&PyArray_Type, dim, dims, NPY_CDOUBLE, strides, (void*)data, 0, 0, NULL);
         if (arr == nullptr) throw plask::CriticalException("Cannot create array");
         return py::object(py::handle<>(arr));
+    }
+
+    LazyData<double> getLightMagnitude(size_t n, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) {
+        cvector E(TE.data() + TE.rows()*index(n), TE.rows());
+        cvector H(TH.data() + TH.rows()*index(n), TH.rows());
+        solver.transfer->diagonalizer->source()->initField(Expansion::FIELD_E, method);
+        DataVector<double> destination(dst_mesh->size());
+        auto levels = makeLevelsAdapter(dst_mesh);
+        while (auto level = levels->yield()) {
+            //TODO warn if z is outside of the layer
+            //double z = level->vpos();
+            //size_t n = solver->getLayerFor(z);
+            auto dest = solver.transfer->diagonalizer->source()->getField(layer, level, E, H);
+            for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] =  abs2(dest[i]);
+        }
+        solver.transfer->diagonalizer->source()->cleanupField();
+        return destination;
     }
 
   public:
@@ -696,6 +725,10 @@ void export_FourierSolver2D()
             u8"Get magnetic field coefficients for the n-th eigenmode.\n\n"
             u8"Args:\n"
             u8"    n (int): Eigenmode number."
+        )
+        .def_readonly("outLightMagnitude", reinterpret_cast<ProviderFor<LightMagnitude,Geometry2DCartesian> EigenmodesFourier2D::*>
+                                            (&EigenmodesFourier2D::outLightMagnitude),
+            format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", "2D", u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude").c_str()
         )
     ;
 }
