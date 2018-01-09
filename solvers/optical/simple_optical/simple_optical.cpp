@@ -91,7 +91,6 @@ dcomplex SimpleOptical::computeTransferMatrix(const dcomplex& x, const std::vect
   
   FieldZ field(0,1);
   vecE.push_back(field);
-  
   for (size_t i = ybegin; i<yend-1; ++i)
   {
     if (i != ybegin || ybegin != 0) d = edgeVertLayerPoint[i] - edgeVertLayerPoint[i-1]; 
@@ -100,12 +99,10 @@ dcomplex SimpleOptical::computeTransferMatrix(const dcomplex& x, const std::vect
     phas_matrix = Matrix(exp(I*NR[i]*x*d), 0, 0, exp(-I*NR[i]*x*d));
     boundary_matrix = Matrix( 0.5+0.5*(NR[i]/NR[i+1]), 0.5-0.5*(NR[i]/NR[i+1]),
                               0.5-0.5*(NR[i]/NR[i+1]), 0.5+0.5*(NR[i]/NR[i+1]) );
-    transfer_matrix = (boundary_matrix*phas_matrix)*transfer_matrix;    
-    
+    transfer_matrix = (boundary_matrix*phas_matrix)*transfer_matrix;       
     FieldZ Ei = vecE[i]*(boundary_matrix*phas_matrix);
     vecE.push_back(Ei);    
-  }
-    
+  }   
   nrCache.clear();
   return transfer_matrix.bb;
 }
@@ -117,16 +114,6 @@ dcomplex SimpleOptical::getVertDeterminant(double wavelength)
   return computeTransferMatrix(k0, nrCache);
 }
 
-std::vector<dcomplex> SimpleOptical::getNrCache()
-{
-  return nrCache;
-}
-
-std::vector<double> SimpleOptical::getZ()
-{
-  return z;
-}
-
 const LazyData<Tensor3<dcomplex>> SimpleOptical::getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod)
 {
   this->writelog(LOG_DEBUG, "Getting refractive indices");
@@ -134,11 +121,8 @@ const LazyData<Tensor3<dcomplex>> SimpleOptical::getRefractiveIndex(const shared
   InterpolationFlags flags(geometry);
   return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
         [this, dst_mesh, flags, lam0](size_t j) -> Tensor3<dcomplex> {
-            //auto point = flags.wrap(dst_mesh->at(j));
-            //size_t ir = this->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= this->rsize) ir = this->rsize-1;
-            //size_t iz = this->mesh->axis1->findIndex(point.c1); if (iz < this->zbegin) iz = this->zbegin; else if (iz >= zsize) iz = this->zsize-1;
-          nrCache.push_back(2);  
-	  return Tensor3<dcomplex>(this->nrCache[0]);
+            auto point = flags.wrap(dst_mesh->at(j));
+	    return geometry->getMaterial(vec(0.0, dst_mesh->at(j)[1]))->Nr(real(lam0), 300) ;
         }
     );
 }
@@ -166,8 +150,7 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
   double T = 300; //temperature 300 K
   double w = real(2e3*M_PI / x);
   
- 
-  for(auto p: arrayZ) // TO DO maybe use dst mesh direct 
+  for(auto p: arrayZ) 
   {
     NR.push_back(geometry->getMaterial(vec(0.0,  p))->Nr(w, T));      
   }
@@ -188,14 +171,23 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
       }
     }
    }
-  
+   
+   for(double p: arrayZ) // propagation wave after escape from structure 
+   {
+      if (p > verticalEdgeVec.back())
+      {
+	hi.push_back(p-verticalEdgeVec.back());
+	B.push_back(vecE.back().B);
+	F.push_back(vecE.back().F);
+      }
+   } 
+   
    dcomplex Ez;
    for (size_t i = 0; i < hi.size(); ++i)
    {
       Ez = F[i]*exp(-I*NR[i]*k0*hi[i]) + B[i]*exp(I*NR[i]*k0*hi[i]); 
       results[i] = real(Ez + conj(Ez));
    }
-   nrCache = NR;
    
    return results;
 }

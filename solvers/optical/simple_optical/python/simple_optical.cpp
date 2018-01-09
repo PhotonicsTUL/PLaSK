@@ -17,8 +17,6 @@ BOOST_PYTHON_MODULE(simple_optical)
      PROVIDER(outLightMagnitude, "");
      PROVIDER(outRefractiveIndex, "");
      METHOD(getLightMagnitude, getLightMagnitude, "This method return electric field");
-     METHOD(getNrCache, getNrCache, "This method return refractive index");
-     METHOD(getZ, getZ, "This method return vertical point of refractive index");
     }
 
 }

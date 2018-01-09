@@ -21,7 +21,6 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      struct Matrix {
          dcomplex ff, fb, bf, bb;
          Matrix() = default;
-
          Matrix(dcomplex t1, dcomplex t2, dcomplex t3, dcomplex t4): ff(t1), fb(t2), bf(t3), bb(t4) {}
          static Matrix eye() { return Matrix(1., 0., 0., 1.); }
          static Matrix diag(dcomplex f, dcomplex b) {return Matrix(f,0.,0.,b); }
@@ -35,9 +34,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      struct FieldZ {
           dcomplex F, B;
 	  FieldZ() = default;
-
           FieldZ(dcomplex f, dcomplex b): F(f), B(b) {}
-
           FieldZ operator*(dcomplex a) const { return FieldZ(F*a, B*a); }
           FieldZ operator*(const Matrix m) {return FieldZ(m.ff*F+m.fb*B, m.bf*F+m.bb*B);}
           FieldZ operator/(dcomplex a) const { return FieldZ(F/a, B/a); }
@@ -54,8 +51,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
       
       Mode(SimpleOptical* solver, int m=0):
 	solver(solver), m(m) {}
-     
-     
+          
      bool operator==(const Mode& other) const {
             return m == other.m && is_zero(lam - other.lam);
      }
@@ -121,10 +117,6 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      
      size_t findMode(double lambda, int m=0);
      
-     std::vector<dcomplex> getNrCache();
-     
-     std::vector<double> getZ();
-     
 
 protected:
 
@@ -147,7 +139,6 @@ protected:
   std::vector<dcomplex> nrCache; // Vector to hold refractive index
     
   std::vector<FieldZ> vecE;
-
 
 };
 
