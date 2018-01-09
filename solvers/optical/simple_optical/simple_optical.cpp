@@ -37,7 +37,6 @@ void SimpleOptical::onInitialize()
 
 void SimpleOptical::onInvalidate()
 {
- z.clear();
  nrCache.clear();
  vecE.clear();
 }
@@ -164,7 +163,6 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
 
       if (verticalEdgeVec[i] <= p and verticalEdgeVec[i+1] > p)
       {
-        z.push_back(p);
         hi.push_back(p - verticalEdgeVec[i]);        
         B.push_back(vecE[i+1].B);
         F.push_back(vecE[i+1].F);        

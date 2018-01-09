@@ -134,8 +134,6 @@ protected:
 
   void initializeRefractiveIndexVec();
   
-  std::vector<double> z; // Vector to hold point if refractive index
-  
   std::vector<dcomplex> nrCache; // Vector to hold refractive index
     
   std::vector<FieldZ> vecE;
