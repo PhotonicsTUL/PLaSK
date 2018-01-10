@@ -63,14 +63,14 @@ void ExpansionBesselFini::init2()
         // Compute analytically for constant section using first and second Lommel's integrals
         double r0 = rbounds[pmlseg];
         double rr = r0*r0;
-        for (int i = 0; i < N; ++i) {
+        for (std::size_t i = 0; i < N; ++i) {
             double g = kpts[i] * ib; double gr = g*r0; double gg = g*g;
             double Jmg = cyl_bessel_j(m-1, gr), Jpg = cyl_bessel_j(m+1, gr), Jg = cyl_bessel_j(m, gr),
                    Jm2g = cyl_bessel_j(m-2, gr), Jp2g = cyl_bessel_j(m+2, gr);
             mu_integrals.Vmm(i,i) = mu_integrals.Tmm(i,i) = 0.5 * rr * (Jmg*Jmg - Jg*Jm2g);
             mu_integrals.Vpp(i,i) = mu_integrals.Tpp(i,i) = 0.5 * rr * (Jpg*Jpg - Jg*Jp2g);
             mu_integrals.Tmp(i,i) = mu_integrals.Tpm(i,i) = mu_integrals.Dm(i,i) = mu_integrals.Dp(i,i) = 0.;
-            for (int j = i+1; j < N; ++j) {
+            for (std::size_t j = i+1; j < N; ++j) {
                 double k = kpts[j] * ib; double kr = k*r0; double kk = k*k;
                 double Jmk = cyl_bessel_j(m-1, kr), Jpk = cyl_bessel_j(m+1, kr), Jk = cyl_bessel_j(m, kr);
                     mu_integrals.Vmm(i,j) = mu_integrals.Tmm(i,j) = r0 / (gg - kk) * (g * Jg * Jmk - k * Jk * Jmg);
@@ -90,11 +90,11 @@ void ExpansionBesselFini::init2()
 
             imu *= w; mua *= w; dmu *= w; imu1 *= w;
 
-            for (int i = 0; i < N; ++i) {
+            for (std::size_t i = 0; i < N; ++i) {
                 double g = kpts[i] * ib; double gr = g*r;
                 double Jmg = cyl_bessel_j(m-1, gr), Jpg = cyl_bessel_j(m+1, gr), Jg = cyl_bessel_j(m, gr),
                        Jm2g = cyl_bessel_j(m-2, gr), Jp2g = cyl_bessel_j(m+2, gr);
-                for (int j = i; j < N; ++j) {
+                for (std::size_t j = i; j < N; ++j) {
                     double k = kpts[j] * ib; double kr = k*r;
                     double Jmk = cyl_bessel_j(m-1, kr), Jpk = cyl_bessel_j(m+1, kr), Jk = cyl_bessel_j(m, kr);
                     mu_integrals.Vmm(i,j) += r * Jmg * imu * Jmk;
@@ -115,7 +115,7 @@ void ExpansionBesselFini::init2()
         }
     } else {
         mu_integrals.zero();
-        for (int i = 0; i < N; ++i) {
+        for (std::size_t i = 0; i < N; ++i) {
             double eta = cyl_bessel_j(m+1, kpts[i]) * rbounds[rbounds.size()-1]; eta = 0.5 * eta*eta;;
             mu_integrals.Vmm(i,i) = mu_integrals.Vpp(i,i) = mu_integrals.Tmm(i,i) = mu_integrals.Tpp(i,i) = eta;
         }

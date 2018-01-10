@@ -163,25 +163,29 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     /// Get \f$ \varepsilon_{xx} \f$
     dcomplex epsxx(size_t lay, int l, int t) {
-        if (l < 0) l += nNl; if (t < 0) t += nNt;
+        if (l < 0) l += nNl;
+        if (t < 0) t += nNt;
         return coeffs[lay][nNl * t + l].c00;
     }
 
     /// Get \f$ \varepsilon_{yy} \f$
     dcomplex epsyy(size_t lay, int l, int t) {
-        if (l < 0) l += nNl; if (t < 0) t += nNt;
+        if (l < 0) l += nNl;
+        if (t < 0) t += nNt;
         return coeffs[lay][nNl * t + l].c11;
     }
 
     /// Get \f$ \varepsilon_{zz}^{-1} \f$
     dcomplex iepszz(size_t lay, int l, int t) {
-        if (l < 0) l += nNl; if (t < 0) t += nNt;
+        if (l < 0) l += nNl;
+        if (t < 0) t += nNt;
         return coeffs[lay][nNl * t + l].c22;
     }
 
     /// Get \f$ \varepsilon_{xy} \f$
     dcomplex epsxy(size_t lay, int l, int t) {
-        if (l < 0) l += nNl; if (t < 0) t += nNt;
+        if (l < 0) l += nNl;
+        if (t < 0) t += nNt;
         return coeffs[lay][nNl * t + l].c01;
     }
 

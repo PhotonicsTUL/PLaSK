@@ -43,7 +43,7 @@ py::object Container_move(py::tuple args, py::dict kwargs) {
     try {
         int i = py::extract<int>(args[1]);
         if (i < 0) i += int(self->getChildrenCount());
-        if (i < 0 || i >= self->getChildrenCount()) {
+        if (i < 0 || std::size_t(i) >= self->getChildrenCount()) {
             throw IndexError("{0} index {1} out of range (0 <= index < {2})",
                 std::string(py::extract<std::string>(args[0].attr("__class__").attr("__name__"))), i, self->getChildrenCount());
         }

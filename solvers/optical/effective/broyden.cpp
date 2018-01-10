@@ -25,7 +25,8 @@ void RootBroyden::fdjac(dcomplex x, dcomplex F, dcomplex& Jr, dcomplex& Ji) cons
 {
     double xr0 = real(x), xi0 = imag(x);
     double hr = EPS*abs(xr0), hi = EPS*abs(xi0);
-    if (hr == 0.0) hr = EPS; if (hi == 0.0) hi = EPS;
+    if (hr == 0.0) hr = EPS;
+    if (hi == 0.0) hi = EPS;
 
     double xr1 = xr0 + hr, xi1 = xi0 + hi;
     hr = xr1 - xr0; hi = xi1 - xi0;             // trick to reduce finite precision error

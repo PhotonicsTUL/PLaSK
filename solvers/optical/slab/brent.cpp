@@ -10,7 +10,7 @@ double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis, int& coun
     const double C = 0.5 * (3. - sqrt(5.));
     const double G = 2. / (sqrt(5.) - 1.);
 
-    unsigned i = 0;
+    int i = 0;
     double x, dist;
 
     if (realaxis) {

@@ -196,7 +196,7 @@ void ReflectionTransfer::storeP(size_t n) {
         if (memP.size() != solver->stack.size()) {
             // Allocate the storage for admittance matrices
             memP.resize(solver->stack.size());
-            for (int i = 0; i < solver->stack.size(); i++) memP[i] = cmatrix(N,N);
+            for (std::size_t i = 0; i < solver->stack.size(); i++) memP[i] = cmatrix(N,N);
         }
         memcpy(memP[n].data(), P.data(), N*N*sizeof(dcomplex));
     }
@@ -253,7 +253,7 @@ void ReflectionTransfer::determineFields()
 
     cvector temp(wrk, N);
 
-    for (int pass = 0; pass < 1 || (pass < 2 && solver->interface != count); pass++)
+    for (int pass = 0; pass < 1 || (pass < 2 && solver->interface != std::ptrdiff_t(count)); pass++)
     {
         // each pass for below and above the interface
 
@@ -272,7 +272,7 @@ void ReflectionTransfer::determineFields()
 
         gamma = diagonalizer->Gamma(curr);
 
-        double H = (start == 0 || start == count-1)? 0. : (solver->vbounds->at(start) - solver->vbounds->at(start-1));
+        double H = (start == 0 || start == int(count)-1)? 0. : (solver->vbounds->at(start) - solver->vbounds->at(start-1));
         for (int i = 0; i < N; i++)
             phas[i] = exp(-I*gamma[i]*H);
 
@@ -365,8 +365,8 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
     // Obtain the physical fields at the last layer
     allP = true;
 
-    ptrdiff_t start, end;
-    ptrdiff_t inc;
+    std::ptrdiff_t start, end;
+    std::ptrdiff_t inc;
     switch (side)
     {
         case INCIDENCE_TOP:    start = count-1; end = 0;       inc = -1; break;
@@ -453,7 +453,7 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
     fields[end].F = cvector(N, 0.);
 
     // In the outer layers replace F and B where necessary for consistent gamma handling
-    for (int n = 0; n < count; n += count-1) {
+    for (std::size_t n = 0; n < count; n += count-1) {
         gamma = diagonalizer->Gamma(solver->stack[n]);
         for (int i = 0; i < N; i++) {
             if (real(gamma[i]) < -SMALL)
@@ -471,7 +471,7 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
         cvector& F2 = fields[n].F;
         cvector& B2 = fields[n].B;
         gamma = diagonalizer->Gamma(solver->stack[n]);
-        H = (n < count-1 && n > 0)? solver->vbounds->at(n) - solver->vbounds->at(n-1) : 0.;
+        H = (n < std::ptrdiff_t(count)-1 && n > 0)? solver->vbounds->at(n) - solver->vbounds->at(n-1) : 0.;
         for (int i = 0; i < N; i++) {
             dcomplex phas = exp(-I*gamma[i]*H);
             dcomplex t = B2[i] / phas;
@@ -490,13 +490,14 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
 cvector ReflectionTransfer::getFieldVectorE(double z, int n)
 {
     assert(fields_determined != DETERMINED_NOTHING);
+    assert(n >= 0);
 
     cvector& FF = fields[n].F;
     cvector& BB = fields[n].B;
 
     if (n >= solver->interface) {
         z = - z;
-        if (n != 0 && n != solver->vbounds->size())
+        if (n != 0 && std::size_t(n) != solver->vbounds->size())
             z += solver->vbounds->at(n) - solver->vbounds->at(n-1);
     }
 
@@ -522,13 +523,14 @@ cvector ReflectionTransfer::getFieldVectorE(double z, int n)
 cvector ReflectionTransfer::getFieldVectorH(double z, int n)
 {
     assert(fields_determined != DETERMINED_NOTHING);
+    assert(n >= 0);
 
     cvector& FF = fields[n].F;
     cvector& BB = fields[n].B;
 
     if (n >= solver->interface) {
         z = - z;
-        if (n != 0 && n != solver->vbounds->size())
+        if (n != 0 && std::size_t(n) != solver->vbounds->size())
             z += solver->vbounds->at(n) - solver->vbounds->at(n-1);
     }
 
@@ -547,7 +549,7 @@ cvector ReflectionTransfer::getFieldVectorH(double z, int n)
         H[i] = ef - eb;
     }
 
-    if (n == 0 || n == solver->vbounds->size()) {
+    if (n == 0 || std::size_t(n) == solver->vbounds->size()) {
         // In the outer layers multiply H by -1 where necessary for propagating wave
         for (int i = 0; i < N; i++)
             if (real(gamma[i]) < -SMALL) H[i] = - H[i];

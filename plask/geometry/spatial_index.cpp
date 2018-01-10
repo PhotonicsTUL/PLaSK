@@ -182,7 +182,7 @@ void calcOptimalSplitOffset(const std::vector< GeometryObjectBBox<DIMS> >& input
         while (i_lo+1 < inputSortedByLo.size() && inputSortedByLo[i_lo+1].boundingBox.lower[inputDir] == offset)
             ++i_lo;   //can has more obj. with this lo coordinate
         //now: obj. from [0, i_lo) will be added to lo set
-        if (i_lo > max_allowed_size)
+        if (int(i_lo) > max_allowed_size)
             return; //too much obj in lo, i_lo will be increased so we can return
         while (i_hi < inputSortedByHi.size() && inputSortedByHi[i_hi].boundingBox.upper[inputDir] < offset)
             ++i_hi;

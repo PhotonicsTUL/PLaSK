@@ -184,11 +184,11 @@ namespace detail {
                 return wind;
             }
             auto contours = contour.divide(reps, ieps);
-            size_t w1 = (*this)(contours.first);
-            size_t w2 = (*this)(contours.second);
-            if (w1 + w2 < wind)
+            std::size_t w1 = (*this)(contours.first);
+            std::size_t w2 = (*this)(contours.second);
+            if (int(w1 + w2) < wind)
                 contour.solver->writelog(LOG_WARNING, "Lost zero between {0} and {1}", str(dcomplex(contour.re0, contour.im0)), str(dcomplex(contour.re1, contour.im1)));
-            else if (w1 + w2 > wind)
+            else if (int(w1 + w2) > wind)
                 contour.solver->writelog(LOG_WARNING, "New zero between {0} and {1}", str(dcomplex(contour.re0, contour.im0)), str(dcomplex(contour.re1, contour.im1)));
             return wind;
         }

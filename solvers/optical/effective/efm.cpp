@@ -386,8 +386,8 @@ void EffectiveFrequencyCyl::stageOne()
             veffs[rstripe] = freqv(rootdigger->find(start));
             // Compute veffs and neffs for other stripes
             computeStripeNNg(rstripe, true);
-            for (size_t i = 0; i < rsize; ++i)
-                if (i != rstripe) computeStripeNNg(i);
+            for (std::size_t i = 0; i < rsize; ++i)
+                if (i != std::size_t(rstripe)) computeStripeNNg(i);
         }
         assert(zintegrals.size() == zsize);
 
@@ -844,7 +844,7 @@ struct EffectiveFrequencyCyl::FieldDataEfficient: public FieldDataBase<FieldT>
         #pragma omp parallel
         {
             #pragma omp for nowait
-            for (int idr = 0; idr < rect_mesh->axis0->size(); ++idr) {	//idr can't be size_t since MSVC does not support omp newer than 2
+            for (std::size_t idr = 0; idr < rect_mesh->axis0->size(); ++idr) {	//idr can't be size_t since MSVC does not support omp newer than 2
                 if (error) continue;
                 double r = rect_mesh->axis0->at(idr);
                 if (r < 0.) r = -r;
@@ -858,7 +858,7 @@ struct EffectiveFrequencyCyl::FieldDataEfficient: public FieldDataBase<FieldT>
 
             if (!error) {
                 #pragma omp for
-                for (int idz = 0; idz < rect_mesh->axis1->size(); ++idz) {	//idz can't be size_t since MSVC does not support omp newer than 2
+                for (std::size_t idz = 0; idz < rect_mesh->axis1->size(); ++idz) {	//idz can't be size_t since MSVC does not support omp newer than 2
                     double z = rect_mesh->axis1->at(idz);
                     size_t iz = solver->mesh->axis1->findIndex(z);
                     if (iz >= solver->zsize) iz = solver->zsize-1;
@@ -910,7 +910,7 @@ struct EffectiveFrequencyCyl::FieldDataEfficient: public FieldDataBase<FieldT>
     }
 };
 
-const LazyData<double> EffectiveFrequencyCyl::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
+const LazyData<double> EffectiveFrequencyCyl::getLightMagnitude(std::size_t num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
     this->writelog(LOG_DEBUG, "Getting light magnitude");
 
@@ -939,7 +939,7 @@ const LazyData<double> EffectiveFrequencyCyl::getLightMagnitude(int num, const s
         return LazyData<double>(new FieldDataInefficient<double>(this, num, dst_mesh, stripe));
 }
 
-const LazyData<Vec<3,dcomplex>> EffectiveFrequencyCyl::getElectricField(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
+const LazyData<Vec<3,dcomplex>> EffectiveFrequencyCyl::getElectricField(std::size_t num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
     this->writelog(LOG_DEBUG, "Getting light electric field");
 

@@ -273,7 +273,8 @@ struct SegmentsIterator {
 
     Vec<2, int> first, second;
 
-    int seg_nr, point_nr;
+    std::size_t seg_nr;
+    std::ptrdiff_t point_nr;
 
     /**
      * Construct iterator. After first next() call iterator will point to the first point.
@@ -289,7 +290,7 @@ struct SegmentsIterator {
     bool next() {
         if (seg_nr == segments.size()) return false;
         ++point_nr;
-        if (point_nr == segments[seg_nr].size()) {  //end of segment?
+        if (point_nr == std::ptrdiff_t(segments[seg_nr].size())) {  //end of segment?
             point_nr = 0;   //go to next segment
             do {
                 ++seg_nr;

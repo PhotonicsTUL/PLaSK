@@ -445,7 +445,7 @@ struct PythonLazyDataImpl: public LazyDataImpl<T> {
     PythonLazyDataImpl(const py::object& object, size_t len): object(object), len(len)
     {
         if (PyObject_HasAttrString(object.ptr(), "__len__")) {
-            if (py::len(object) != len)
+            if (py::len(object) != py::ssize_t(len))
                 throw ValueError(u8"Sizes of data ({}) and mesh ({}) do not match",  py::len(object), len);
         }
     }
@@ -773,7 +773,7 @@ namespace detail {
         static ValueT __call__n(ProviderT& self, int num, const ExtraParams&... params) {
             int n(num);
             if (n < 0) num = int(EnumType(self.size() + n));
-            if (n < 0 || n >= self.size())
+            if (n < 0 || std::size_t(n) >= self.size())
                 throw NoValue(format("{0} [{1}]", self.name(), num).c_str());
             return self(num, params...);
         }
@@ -825,7 +825,7 @@ namespace detail {
             if (!mesh) throw TypeError(u8"You must provide proper mesh to {0} provider", self.name());
             int n = int(num);
             if (n < 0) num = EnumType(self.size() + n);
-            if (n < 0 || n >= self.size())
+            if (n < 0 || std::size_t(n) >= self.size())
                 throw NoValue(format("{0} [{1}]", self.name(), num).c_str());
             return PythonDataVector<const ValueT,DIMS>(self(num, mesh, params..., method), mesh);
         }

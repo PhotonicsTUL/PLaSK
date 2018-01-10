@@ -216,7 +216,7 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
 
     unsigned getM() const { return m; }
     void setM(unsigned n) {
-        if (n != m) {
+        if (int(n) != m) {
             write_debug("{0}: m changed from {1} to {2}", solver->getId(), m, n);
             m = n;
             solver->recompute_integrals = true;

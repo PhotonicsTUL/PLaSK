@@ -408,7 +408,7 @@ namespace detail {
                 arr = newarr.get();
             }
         } else if (type_dim<T>() != 1 && PyArray_NDIM(arr) == 2 &&
-                   PyArray_DIMS(arr)[0] == mesh->size() && PyArray_DIMS(arr)[1] == type_dim<T>()) {
+                   std::size_t(PyArray_DIMS(arr)[0]) == mesh->size() && PyArray_DIMS(arr)[1] == type_dim<T>()) {
             size = mesh->size();
             if (PyArray_STRIDES(arr)[0] != sizeof(T)) {
                 writelog(LOG_DEBUG, u8"Copying numpy array to make is contiguous");
@@ -490,7 +490,7 @@ namespace detail {
             if (last_dim == 2 * mesh->size()) return makeDataVectorImpl<Vec<2,T>, dim>(arr, mesh);
             else if (last_dim == 3 * mesh->size()) return makeDataVectorImpl<Vec<3,T>, dim>(arr, mesh);
             else if (last_dim == 4 * mesh->size()) return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
-        } else if (ndim == 2 && PyArray_DIMS(arr)[0] == mesh->size()) {
+        } else if (ndim == 2 && std::size_t(PyArray_DIMS(arr)[0]) == mesh->size()) {
             if (last_dim == 2) return makeDataVectorImpl<Vec<2,T>, dim>(arr, mesh);
             else if (last_dim == 3) return makeDataVectorImpl<Vec<3,T>, dim>(arr, mesh);
             else if (last_dim == 4) return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);

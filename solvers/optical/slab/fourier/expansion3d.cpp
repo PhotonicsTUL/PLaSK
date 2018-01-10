@@ -28,7 +28,8 @@ void ExpansionPW3D::init()
     right = geometry->getChild()->getBoundingBox().upper[1];
 
     size_t refl = SOLVER->refine_long, reft = SOLVER->refine_tran, Ml, Mt;
-    if (refl == 0) refl = 1;  if (reft == 0) reft = 1;
+    if (refl == 0) refl = 1;
+    if (reft == 0) reft = 1;
 
     if (symmetry_long != E_UNSPECIFIED && !geometry->isSymmetric(Geometry3D::DIRECTION_LONG))
             throw BadInput(solver->getId(), "Longitudinal symmetry not allowed for asymmetric structure");
@@ -187,8 +188,8 @@ void ExpansionPW3D::init()
         // Smooth coefficients
         if (SOLVER->smooth) {
             double bb4 = M_PI / Ll; bb4 *= bb4;   // (2π/L)² / 4
-            for (size_t i = 0; i != nNl; ++i) {
-                int k = i; if (!symmetric_long() && k > nNl/2) k -= nNl;
+            for (std::size_t i = 0; i != nNl; ++i) {
+                int k = i; if (!symmetric_long() && k > int(nNl/2)) k -= nNl;
                 mag_long[i] *= exp(-SOLVER->smooth * bb4 * k * k);
             }
         }
@@ -238,8 +239,8 @@ void ExpansionPW3D::init()
         // Smooth coefficients
         if (SOLVER->smooth) {
             double bb4 = M_PI / Lt; bb4 *= bb4;   // (2π/L)² / 4
-            for (size_t i = 0; i != nNt; ++i) {
-                int k = i; if (!symmetric_tran() && k > nNt/2) k -= nNt;
+            for (std::size_t i = 0; i != nNt; ++i) {
+                int k = i; if (!symmetric_tran() && k > int(nNt/2)) k -= nNt;
                 mag_tran[i] *= exp(-SOLVER->smooth * bb4 * k * k);
             }
         }
@@ -277,7 +278,7 @@ void ExpansionPW3D::prepareIntegrals(double lam, double glam) {
     }
 }
 
-void ExpansionPW3D::cleanupIntegrals(double lam, double glam) {
+void ExpansionPW3D::cleanupIntegrals(double, double) {
     temperature.reset();
     gain.reset();
 }
@@ -480,10 +481,10 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
         if (SOLVER->smooth) {
             double bb4l = M_PI / ((front-back) * (symmetric_long()? 2 : 1)); bb4l *= bb4l; // (2π/Ll)² / 4
             double bb4t = M_PI / ((right-left) * (symmetric_tran()? 2 : 1)); bb4t *= bb4t; // (2π/Lt)² / 4
-            for (size_t it = 0; it != nNt; ++it) {
-                int kt = it; if (!symmetric_tran() && kt > nNt/2) kt -= nNt;
-                for (size_t il = 0; il != nNl; ++il) {
-                    int kl = il; if (!symmetric_long() && kl > nNl/2) kl -= nNl;
+            for (std::size_t it = 0; it != nNt; ++it) {
+                int kt = it; if (!symmetric_tran() && kt > int(nNt/2)) kt -= nNt;
+                for (std::size_t il = 0; il != nNl; ++il) {
+                    int kl = il; if (!symmetric_long() && kl > int(nNl/2)) kl -= nNl;
                     coeffs[layer][nNl*it+il] *= exp(-SOLVER->smooth * (bb4l * kl*kl + bb4t * kt*kt));
                 }
             }

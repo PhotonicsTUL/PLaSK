@@ -178,7 +178,7 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
     // Calculate r = b - Ax and initial error.
     matrix.multiply(x, r.get());
 
-    for (int j = 0; j < n; ++j) r[j] = b[j] - r[j];
+    for (std::size_t j = 0; j < n; ++j) r[j] = b[j] - r[j];
     err = ddot(n, r.get(), 1, r.get(), 1) / bnorm2;
     if (err < eps2) {
         return 0;
@@ -202,7 +202,7 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
             bkden = bknum;
 
             // Calculate p = z + bk*p
-            for (int j = 0; j < n; ++j)
+            for (std::size_t j = 0; j < n; ++j)
                 p[j] = fma(bk, p[j], z[j]);
         }
         // Calculate z = Ap, akden = (p,Ap) and ak.

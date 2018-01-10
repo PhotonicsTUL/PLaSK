@@ -269,7 +269,7 @@ namespace detail
         py::object oname(name);
         if (kwargs.has_key(oname))
         {
-            if (i < py::len(arglist)) {
+            if (i < std::size_t(py::len(arglist))) {
                 throw name;
             } else {
                 arglist.append(kwargs[oname]);

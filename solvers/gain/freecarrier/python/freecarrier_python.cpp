@@ -74,7 +74,7 @@ static py::object FreeCarrier_getFermiLevels(FreeCarrierGainSolver<GeometryT>* s
 {
     double T = (To == py::object())? self->getT0() : py::extract<double>(To);
     if (reg < 0) reg = self->regions.size() + reg;
-    if (reg < 0 || reg >= self->regions.size()) throw IndexError(u8"{}: Bad active region index", self->getId());
+    if (reg < 0 || std::size_t(reg) >= self->regions.size()) throw IndexError(u8"{}: Bad active region index", self->getId());
     self->initCalculation();
     double Fc{NAN}, Fv{NAN};
     typename FreeCarrierGainSolver<GeometryT>::ActiveRegionParams params(self, self->params0[reg], T);

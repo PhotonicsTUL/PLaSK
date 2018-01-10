@@ -165,7 +165,7 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
 void FourierSolver3D::onInitialize()
 {
     this->setupLayers();
-    if (this->interface == size_t(-1))
+    if (this->interface == -1)
         Solver::writelog(LOG_DETAIL, "Initializing Fourier3D solver ({0} layers in the stack)",
                                      this->stack.size());
     else

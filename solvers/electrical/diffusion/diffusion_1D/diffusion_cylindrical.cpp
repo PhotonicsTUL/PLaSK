@@ -217,7 +217,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
         {
             double T = 0.0;
 
-            for (int i = 0; i < current_mesh().size(); i++)
+            for (std::size_t i = 0; i < current_mesh().size(); i++)
             {
 
                 T = T_on_the_mesh[i];
@@ -351,7 +351,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
             if (fem_method == FEM_LINEAR)  // 02.10.2012 Marcin Gebski
             {
                 _convergence = true;
-                for (int i = 0; i < current_mesh().size(); i++)
+                for (std::size_t i = 0; i < current_mesh().size(); i++)
                 {
                     L = leftSide(i);
                     R = rightSide(i);
@@ -370,7 +370,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                 // double max_error_R = 0.0;
 
                 _convergence = true;
-                for (int i = 0; i < (current_mesh().size() - 1)/2 ; i++)
+                for (std::size_t i = 0; std::ptrdiff_t(i) < (std::ptrdiff_t(current_mesh().size()) - 1)/2 ; i++)
                 {
                     L = leftSide(2*i + 1);
                     R = rightSide(2*i + 1);
@@ -434,7 +434,7 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
         double j2 = 0.0;
 
         auto& current_mesh = this->current_mesh();
-        for (int i = 0; i < current_mesh.size() - 1; i++) // loop over all elements
+        for (std::ptrdiff_t i = 0; i < std::ptrdiff_t(current_mesh.size()) - 1; i++) // loop over all elements
         {
             r1 = current_mesh[i]*1e-4;
             r2 = current_mesh[i+1]*1e-4;
@@ -469,7 +469,7 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
         double p3e = 0.0;
 
         auto& current_mesh = this->current_mesh();
-        for (int i = 0; i < (current_mesh.size() - 1)/2; i++) // loop over all elements
+        for (std::ptrdiff_t i = 0; i < (std::ptrdiff_t(current_mesh.size()) - 1)/2; i++) // loop over all elements
         {
             r1 = current_mesh[2*i]*1e-4;
             r3 = current_mesh[2*i + 2]*1e-4;
@@ -531,7 +531,7 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
         double j2 = 0.0;
 
         auto& current_mesh = this->current_mesh();
-        for (int i = 0; i < current_mesh.size() - 1; i++) // loop over all elements
+        for (std::ptrdiff_t i = 0; i < std::ptrdiff_t(current_mesh.size()) - 1; i++) // loop over all elements
         {
             r1 = current_mesh[i]*1e-4;
             r2 = current_mesh[i+1]*1e-4;
@@ -568,7 +568,7 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
         double p3e = 0.0;
 
         auto& current_mesh = this->current_mesh();
-        for (int i = 0; i < (current_mesh.size() - 1)/2; i++) // loop over all elements
+        for (std::ptrdiff_t i = 0; i < (std::ptrdiff_t(current_mesh.size()) - 1)/2; i++) // loop over all elements
         {
             r1 = current_mesh[2*i]*1e-4;
             r3 = current_mesh[2*i + 2]*1e-4;
@@ -704,7 +704,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
         dr = (current_mesh.last() - current_mesh.first())*1e-4/(double)current_mesh.size();
         double n_right = 0, n_left = 0, n_central = 0;  // n values for derivative: right-side, left-side, central
 
-        if ( (i > 0) && (i <  current_mesh.size() - 1) )     // middle of the range
+        if ( (i > 0) && (i <  int(current_mesh.size()) - 1) )     // middle of the range
         {
             n_right = n_present[i+1];
             n_left = n_present[i-1];
@@ -797,13 +797,13 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
     double left = 0., right = 0.;
     bool foundQW = false;
     bool had_active = false, after_active = false;
-    for (int r = 0; r < points->axis1->size(); ++r)
+    for (std::size_t r = 0; r < points->axis1->size(); ++r)
     {
         bool inQW = false;
         bool active_row = false;
-        for (int c = 0; c < points->axis0->size(); ++c)
+        for (std::size_t c = 0; c < points->axis0->size(); ++c)
         {
-            auto point = points->at(c,r);
+            auto point = points->at(c, r);
             auto tags = this->geometry->getRolesAt(point);
             bool QW = tags.find("QW") != tags.end() || tags.find("QD") != tags.end();
             bool active = false;
@@ -901,7 +901,7 @@ template<typename Geometry2DType> std::vector<double> FiniteElementMethodDiffusi
 template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::determineQwWidth()
 {
     global_QW_width = 0.;
-    for (int i = 0; i< detected_QW.size(); i++)
+    for (std::size_t i = 0; i < detected_QW.size(); i++)
     {
         global_QW_width += ( this->detected_QW[i].upper[1] - this->detected_QW[i].lower[1] );
     }
@@ -914,13 +914,13 @@ plask::DataVector<const Tensor2<double>> FiniteElementMethodDiffusion2DSolver<Ge
 {
     plask::DataVector<Tensor2<double>> Li(current_mesh().size());
 
-    for (int i = 0; i < current_mesh().size(); ++i)
+    for (std::size_t i = 0; i < current_mesh().size(); ++i)
     {
         Tensor2<double> current_Li(0., 0.);
 
-        for (int j = 0; j < detected_QW.size(); ++j)
+        for (std::size_t j = 0; j < detected_QW.size(); ++j)
         {
-            int k = mesh_Li.index(i,j);
+            int k = mesh_Li.index(i, j);
             current_Li += Tensor2<double>(real(Le[k].c0*conj(Le[k].c0) + Le[k].c1*conj(Le[k].c1)),
                                           real(Le[k].c2*conj(Le[k].c2)));
         }

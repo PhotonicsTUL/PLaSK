@@ -31,7 +31,7 @@ cvector invmult(cmatrix& A, cvector& B)
         throw ComputationError("invmult", "Cannot invert rectangular matrix");
     int N = A.rows();
     // Check if can multiply
-    if (B.size() != N)
+    if (B.size() != std::size_t(N))
         throw ComputationError("invmult", "Cannot multiply matrix by vector because of the dimensions mismatch");
     // Needed variables
     int* ipiv = new int[N];
