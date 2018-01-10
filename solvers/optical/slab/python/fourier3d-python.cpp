@@ -16,39 +16,14 @@ static inline py::object arrayFromVec3D(cvector data, size_t minor, int dim) {
     return py::object(py::handle<>(arr));
 }
 
-struct EigenmodesFourier3D: Eigenmodes {
-    FourierSolver3D& solver;
-    size_t layer;
-
-    EigenmodesFourier3D(FourierSolver3D& solver, size_t layer): Eigenmodes(solver, layer), solver(solver), layer(layer) {}
-
-    static shared_ptr<EigenmodesFourier3D> init(FourierSolver3D& solver, double z) {
-        return make_shared<EigenmodesFourier3D>(solver, solver.stack[solver.getLayerFor(z)]);
-    }
-
-  protected:
-    std::string getSolverId() const override {
-        return solver.getId();
-    }
-
-    py::object array(const dcomplex* data, size_t N) const {
-        npy_intp dims[] = { N/(2*solver.minor()), solver.minor(), 2 };
-        npy_intp strides[] = { 2*solver.minor()*sizeof(dcomplex), 2*sizeof(dcomplex), sizeof(dcomplex) };
-        PyObject* arr = PyArray_New(&PyArray_Type, 3, dims, NPY_CDOUBLE, strides, (void*)data, 0, 0, NULL);
-        if (arr == nullptr) throw plask::CriticalException("Cannot create array");
-        return py::object(py::handle<>(arr));
-    }
-
-  public:
-    py::object getCoefficientsE(int n) const {
-        return array(TE.data() + TE.rows()*index(n), TE.rows());
-    }
-
-    py::object getCoefficientsH(int n) const {
-        return array(TH.data() + TH.rows()*index(n), TH.rows());
-    }
-
-};
+template <>
+py::object Eigenmodes<FourierSolver3D>::array(const dcomplex* data, size_t N) const {
+    npy_intp dims[] = { N/(2*solver.minor()), solver.minor(), 2 };
+    npy_intp strides[] = { 2*solver.minor()*sizeof(dcomplex), 2*sizeof(dcomplex), sizeof(dcomplex) };
+    PyObject* arr = PyArray_New(&PyArray_Type, 3, dims, NPY_CDOUBLE, strides, (void*)data, 0, 0, NULL);
+    if (arr == nullptr) throw plask::CriticalException("Cannot create array");
+    return py::object(py::handle<>(arr));
+}
 
 
 py::object FourierSolver3D_Mode__getattr__(const FourierSolver3D::Mode& mode, const std::string name) {
@@ -709,7 +684,7 @@ void export_FourierSolver3D()
                u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
                u8":rtype: numpy.ndarray\n"
               );
-    solver.def("layer_eigenmodes", &EigenmodesFourier3D::init, py::arg("level"),
+    solver.def("layer_eigenmodes", &Eigenmodes<FourierSolver3D>::init, py::arg("level"),
                u8"Get eignemodes for a layer at specified level.\n\n"
                u8"This is a low-level function to access diagonalized eigenmodes for a specific\n"
                u8"layer. Please refer to the detailed solver description for the interpretation\n"
@@ -783,21 +758,25 @@ void export_FourierSolver3D()
             )
     ;
 
-    py::class_<EigenmodesFourier3D, shared_ptr<EigenmodesFourier3D>, boost::noncopyable>("Eigenmodes",
+    py::class_<Eigenmodes<FourierSolver3D>, shared_ptr<Eigenmodes<FourierSolver3D>>, boost::noncopyable>("Eigenmodes",
         u8"Layer eignemodes proxy\n\n"
         u8"This is an advanced class allowing to extract eignemodes in each layer.\n", py::no_init)
-        .def("__len__", &EigenmodesFourier3D::size)
-        .def("__getitem__", &EigenmodesFourier3D::Gamma)
-        .def("coefficientsE", &EigenmodesFourier3D::getCoefficientsE, py::arg("n"),
+        .def("__len__", &Eigenmodes<FourierSolver3D>::size)
+        .def("__getitem__", &Eigenmodes<FourierSolver3D>::Gamma)
+        .def("coefficientsE", &Eigenmodes<FourierSolver3D>::getCoefficientsE, py::arg("n"),
             u8"Get electric field coefficients for the n-th eigenmode.\n\n"
             u8"Args:\n"
             u8"    n (int): Eigenmode number."
         )
-        .def("coefficientsH", &EigenmodesFourier3D::getCoefficientsH, py::arg("n"),
+        .def("coefficientsH", &Eigenmodes<FourierSolver3D>::getCoefficientsH, py::arg("n"),
             u8"Get magnetic field coefficients for the n-th eigenmode.\n\n"
             u8"Args:\n"
             u8"    n (int): Eigenmode number."
         )
+	.def_readonly("outLightMagnitude",
+                      reinterpret_cast<ProviderFor<LightMagnitude, Geometry3D> Eigenmodes<FourierSolver3D>::*> (&Eigenmodes<FourierSolver3D>::outLightMagnitude),
+                      format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", "3D", u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude").c_str()
+                     )
     ;
 
     py_enum<FourierSolver3D::Emission>()
