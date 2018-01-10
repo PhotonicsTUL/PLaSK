@@ -844,7 +844,7 @@ struct EffectiveFrequencyCyl::FieldDataEfficient: public FieldDataBase<FieldT>
         #pragma omp parallel
         {
             #pragma omp for nowait
-            for (std::size_t idr = 0; idr < rect_mesh->axis0->size(); ++idr) {	//idr can't be size_t since MSVC does not support omp newer than 2
+            for (int idr = 0; idr < int(rect_mesh->axis0->size()); ++idr) {	// idr can't be size_t since MSVC does not support omp newer than 2
                 if (error) continue;
                 double r = rect_mesh->axis0->at(idr);
                 if (r < 0.) r = -r;
@@ -858,7 +858,7 @@ struct EffectiveFrequencyCyl::FieldDataEfficient: public FieldDataBase<FieldT>
 
             if (!error) {
                 #pragma omp for
-                for (std::size_t idz = 0; idz < rect_mesh->axis1->size(); ++idz) {	//idz can't be size_t since MSVC does not support omp newer than 2
+                for (int idz = 0; idz < int(rect_mesh->axis1->size()); ++idz) {	// idz can't be size_t since MSVC does not support omp newer than 2
                     double z = rect_mesh->axis1->at(idz);
                     size_t iz = solver->mesh->axis1->findIndex(z);
                     if (iz >= solver->zsize) iz = solver->zsize-1;
