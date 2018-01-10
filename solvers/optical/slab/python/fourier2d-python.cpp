@@ -4,6 +4,18 @@
 
 namespace plask { namespace optical { namespace slab { namespace python {
 
+template <>
+py::object Eigenmodes<FourierSolver2D>::array(const dcomplex* data, size_t N) const {
+    int dim = 2, strid = 2;
+    if (solver.separated()) strid = dim = 1;
+    npy_intp dims[] = { N / strid, strid };
+    npy_intp strides[] = { strid * sizeof(dcomplex), sizeof(dcomplex) };
+    PyObject* arr = PyArray_New(&PyArray_Type, dim, dims, NPY_CDOUBLE, strides, (void*)data, 0, 0, NULL);
+    if (arr == nullptr) throw plask::CriticalException("Cannot create array");
+    return py::object(py::handle<>(arr));
+}
+
+
 inline static std::string polarization_str(Expansion::Component val) {
     AxisNames* axes = getCurrentAxes();
     switch (val) {
@@ -12,76 +24,6 @@ inline static std::string polarization_str(Expansion::Component val) {
         default: return "none";
     }
 }
-
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-struct __declspec(dllexport) EigenmodesFourier2D: Eigenmodes {
-#else
-struct PLASK_SOLVER_API EigenmodesFourier2D: Eigenmodes {
-#endif
-    FourierSolver2D& solver;
-    size_t layer;
-
-
-    typename ProviderFor<LightMagnitude,Geometry2DCartesian>::Delegate outLightMagnitude;
-//     typename ProviderFor<LightE,Geometry2DCartesian>::Delegate outLightE;
-//     typename ProviderFor<LightH,Geometry2DCartesian>::Delegate outLightH;
-
-    EigenmodesFourier2D(FourierSolver2D& solver, size_t layer): Eigenmodes(solver, layer), solver(solver), layer(layer),
-        outLightMagnitude(this, &EigenmodesFourier2D::getLightMagnitude, &EigenmodesFourier2D::size)
-    {}
-
-    static shared_ptr<EigenmodesFourier2D> init(FourierSolver2D& solver, double z) {
-        solver.initCalculation();
-        return make_shared<EigenmodesFourier2D>(solver, solver.stack[solver.getLayerFor(z)]);
-    }
-
-    size_t size() const {
-        return gamma.size();
-    }
-
-  protected:
-    std::string getSolverId() const override {
-        return solver.getId();
-    }
-
-    py::object array(const dcomplex* data, size_t N) const {
-        int dim = 2, strid = 2;
-        if (solver.separated()) strid = dim = 1;
-        npy_intp dims[] = { N / strid, strid };
-        npy_intp strides[] = { strid * sizeof(dcomplex), sizeof(dcomplex) };
-        PyObject* arr = PyArray_New(&PyArray_Type, dim, dims, NPY_CDOUBLE, strides, (void*)data, 0, 0, NULL);
-        if (arr == nullptr) throw plask::CriticalException("Cannot create array");
-        return py::object(py::handle<>(arr));
-    }
-
-    LazyData<double> getLightMagnitude(size_t n, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) {
-        cvector E(TE.data() + TE.rows()*index(n), TE.rows());
-        cvector H(TH.data() + TH.rows()*index(n), TH.rows());
-        solver.transfer->diagonalizer->source()->initField(Expansion::FIELD_E, method);
-        DataVector<double> destination(dst_mesh->size());
-        auto levels = makeLevelsAdapter(dst_mesh);
-        while (auto level = levels->yield()) {
-            //TODO warn if z is outside of the layer
-            //double z = level->vpos();
-            //size_t n = solver->getLayerFor(z);
-            auto dest = solver.transfer->diagonalizer->source()->getField(layer, level, E, H);
-            for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] =  abs2(dest[i]);
-        }
-        solver.transfer->diagonalizer->source()->cleanupField();
-        return destination;
-    }
-
-  public:
-    py::object getCoefficientsE(int n) const {
-        return array(TE.data() + TE.rows()*index(n), TE.rows());
-    }
-
-    py::object getCoefficientsH(int n) const {
-        return array(TH.data() + TH.rows()*index(n), TH.rows());
-    }
-
-};
-
 
 
 template <>
@@ -639,7 +581,7 @@ void export_FourierSolver2D()
                u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
                u8":rtype: numpy.ndarray\n"
               );
-    solver.def("layer_eigenmodes", &EigenmodesFourier2D::init, py::arg("level"),
+    solver.def("layer_eigenmodes", &Eigenmodes<FourierSolver2D>::init, py::arg("level"),
                u8"Get eignemodes for a layer at specified level.\n\n"
                u8"This is a low-level function to access diagonalized eigenmodes for a specific\n"
                u8"layer. Please refer to the detailed solver description for the interpretation\n"
@@ -715,24 +657,24 @@ void export_FourierSolver2D()
             )
     ;
 
-    py::class_<EigenmodesFourier2D, shared_ptr<EigenmodesFourier2D>, boost::noncopyable>("Eigenmodes",
+    py::class_<Eigenmodes<FourierSolver2D>, shared_ptr<Eigenmodes<FourierSolver2D>>, boost::noncopyable>("Eigenmodes",
         u8"Layer eignemodes proxy\n\n"
         u8"This is an advanced class allowing to extract eignemodes in each layer.\n", py::no_init)
-        .def("__len__", &EigenmodesFourier2D::size)
-        .def("__getitem__", &EigenmodesFourier2D::Gamma)
-        .def("coefficientsE", &EigenmodesFourier2D::getCoefficientsE, py::arg("n"),
+        .def("__len__", &Eigenmodes<FourierSolver2D>::size)
+        .def("__getitem__", &Eigenmodes<FourierSolver2D>::Gamma)
+        .def("coefficientsE", &Eigenmodes<FourierSolver2D>::getCoefficientsE, py::arg("n"),
             u8"Get electric field coefficients for the n-th eigenmode.\n\n"
             u8"Args:\n"
             u8"    n (int): Eigenmode number."
         )
-        .def("coefficientsH", &EigenmodesFourier2D::getCoefficientsH, py::arg("n"),
+        .def("coefficientsH", &Eigenmodes<FourierSolver2D>::getCoefficientsH, py::arg("n"),
             u8"Get magnetic field coefficients for the n-th eigenmode.\n\n"
             u8"Args:\n"
             u8"    n (int): Eigenmode number."
         )
-        .def_readonly("outLightMagnitude", reinterpret_cast<ProviderFor<LightMagnitude,Geometry2DCartesian> EigenmodesFourier2D::*>
-                                            (&EigenmodesFourier2D::outLightMagnitude),
-            format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", "2D", u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude").c_str()
+        .def_readonly("outLightMagnitude",
+                      reinterpret_cast<ProviderFor<LightMagnitude,Geometry2DCartesian> Eigenmodes<FourierSolver2D>::*> (&Eigenmodes<FourierSolver2D>::outLightMagnitude),
+                      format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", "2D", u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude").c_str()
         )
     ;
 }

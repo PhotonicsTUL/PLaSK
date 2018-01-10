@@ -290,16 +290,21 @@ py::tuple Solver_getDiagonalized(Solver& self, size_t layer) {
 }
 #endif
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-struct __declspec(dllexport) Eigenmodes {
-#else
+template <typename SolverT>
 struct Eigenmodes {
-#endif
     cdiagonal gamma;
     cmatrix TE, TH;
 
-    template <typename Solver>
-    Eigenmodes(Solver& solver, size_t layer) {
+    SolverT& solver;
+    size_t layer;
+
+    typename ProviderFor<LightMagnitude, typename SolverT::SpaceType>::Delegate outLightMagnitude;
+    //     typename ProviderFor<LightE,typename SolverT::SpaceType>::Delegate outLightE;
+    //     typename ProviderFor<LightH,typename SolverT::SpaceType>::Delegate outLightH;
+
+
+    Eigenmodes(SolverT& solver, size_t layer): solver(solver), layer(layer),
+		outLightMagnitude(this, &Eigenmodes::getLightMagnitude, &Eigenmodes::size) {
         bool changed = solver.initCalculation() || solver.setExpansionDefaults(true);
         if (!solver.transfer) {
             solver.initTransfer(solver.getExpansion(), false);
@@ -315,23 +320,52 @@ struct Eigenmodes {
         TH = solver.transfer->diagonalizer->TH(layer);
     }
 
+    static shared_ptr<Eigenmodes<SolverT>> init(SolverT& solver, double z) {
+	    return make_shared<Eigenmodes<SolverT>>(solver, solver.stack[solver.getLayerFor(z)]);
+    }
+
     size_t size() const {
         return gamma.size();
     }
 
   protected:
-    virtual std::string getSolverId() const = 0;
-
     size_t index(int n) const {
         int N = gamma.size();
         if (n < 0) n += N;
-        if (n < 0 || n >= N) throw IndexError("{}: Bad eigenmode number", getSolverId());
+        if (n < 0 || n >= N) throw IndexError("{}: Bad eigenmode number", solver.getId());
         return size_t(n);
+    }
+
+    py::object array(const dcomplex* data, size_t N) const;
+
+    LazyData<double> getLightMagnitude(size_t n, shared_ptr<const MeshD<SolverT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) {
+	    cvector E(TE.data() + TE.rows()*index(n), TE.rows());
+	    cvector H(TH.data() + TH.rows()*index(n), TH.rows());
+	    solver.transfer->diagonalizer->source()->initField(Expansion::FIELD_E, method);
+	    DataVector<double> destination(dst_mesh->size());
+	    auto levels = makeLevelsAdapter(dst_mesh);
+	    while (auto level = levels->yield()) {
+		    //TODO warn if z is outside of the layer
+		    //double z = level->vpos();
+		    //size_t n = solver->getLayerFor(z);
+		    auto dest = solver.transfer->diagonalizer->source()->getField(layer, level, E, H);
+		    for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = abs2(dest[i]);
+	    }
+	    solver.transfer->diagonalizer->source()->cleanupField();
+	    return destination;
     }
 
   public:
     dcomplex Gamma(int n) const {
         return gamma[index(n)];
+    }
+
+    py::object getCoefficientsE(int n) const {
+	    return array(TE.data() + TE.rows()*index(n), TE.rows());
+    }
+
+    py::object getCoefficientsH(int n) const {
+	    return array(TH.data() + TH.rows()*index(n), TH.rows());
     }
 };
 

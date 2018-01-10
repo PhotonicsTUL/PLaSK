@@ -11,7 +11,7 @@ namespace plask { namespace optical { namespace slab {
 
 
 /// Simple adapter that allows to process single level in the mesh
-struct LevelsAdapter
+struct PLASK_SOLVER_API LevelsAdapter
 {
     struct Level {
         /**
@@ -43,7 +43,7 @@ struct LevelsAdapter
 
 /// Generic implementation of the level adapter
 template <int dim>
-struct LevelsAdapterGeneric: public LevelsAdapter
+struct PLASK_SOLVER_API LevelsAdapterGeneric: public LevelsAdapter
 {
     struct GenericLevel;
 
@@ -100,7 +100,7 @@ struct LevelsAdapterGeneric: public LevelsAdapter
 
 /// More efficient Rectangular implementation of the level adapter
 template <int dim>
-struct LevelsAdapterRectangular: public LevelsAdapter
+struct PLASK_SOLVER_API LevelsAdapterRectangular: public LevelsAdapter
 {
     struct RectangularLevel;
 
@@ -146,7 +146,7 @@ struct LevelsAdapterRectangular: public LevelsAdapter
  * Adapter factory. Choose the best class based on the mesh type
  * \param src source mesh
  */
-std::unique_ptr<LevelsAdapter> makeLevelsAdapter(const shared_ptr<const Mesh>& src);
+std::unique_ptr<LevelsAdapter> PLASK_SOLVER_API makeLevelsAdapter(const shared_ptr<const Mesh>& src);
 
 
 }}} // namespace plask::optical::slab
