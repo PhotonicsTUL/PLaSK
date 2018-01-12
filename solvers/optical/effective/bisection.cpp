@@ -26,19 +26,19 @@ Contour::Contour(const Solver* solver, const std::function<dcomplex(dcomplex)>& 
     #pragma omp parallel
     {
         #pragma omp for nowait
-        for (size_t i = 0; i < ren; ++i) {
+        for (int i = 0; i < int(ren); ++i) {
             CALL_FUN(bottom[i], re0+i*dr, im0)
         }
         #pragma omp for nowait
-        for (size_t i = 0; i < imn; ++i) {
+        for (int i = 0; i < int(imn); ++i) {
             CALL_FUN(right[i], re1, im0+i*di)
         }
         #pragma omp for nowait
-        for (size_t i = 1; i <= ren; ++i) {
+        for (int i = 1; i <= int(ren); ++i) {
             CALL_FUN(top[i], re0+i*dr, im1)
         }
         #pragma omp for
-        for (size_t i = 1; i <= imn; ++i) {
+        for (int i = 1; i <= int(imn); ++i) {
             CALL_FUN(left[i], re0, im0+i*di)
         }
     }
