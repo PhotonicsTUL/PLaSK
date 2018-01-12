@@ -88,7 +88,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
 
     std::exception_ptr error;
 
-    #pragma parallel omp for schedule(dynamic,1)
+    #pragma omp for schedule(dynamic,1)
     for (int l = 0; l < diagonalizer->lcount; ++l) {
         try {
             if (!error) diagonalizer->diagonalizeLayer(l);

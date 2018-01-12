@@ -25,19 +25,19 @@ Contour::Contour(const Solver* solver, const std::function<dcomplex(dcomplex)>& 
     std::exception_ptr error;
     #pragma omp parallel
     {
-        #pragma for nowait
+        #pragma omp for nowait
         for (size_t i = 0; i < ren; ++i) {
             CALL_FUN(bottom[i], re0+i*dr, im0)
         }
-        #pragma for nowait
+        #pragma omp for nowait
         for (size_t i = 0; i < imn; ++i) {
             CALL_FUN(right[i], re1, im0+i*di)
         }
-        #pragma for nowait
+        #pragma omp for nowait
         for (size_t i = 1; i <= ren; ++i) {
             CALL_FUN(top[i], re0+i*dr, im1)
         }
-        #pragma for
+        #pragma omp for
         for (size_t i = 1; i <= imn; ++i) {
             CALL_FUN(left[i], re0, im0+i*di)
         }
