@@ -222,7 +222,7 @@ py::object GeometryObject_deepCopy(const py::object& oself, py::object omemo) {
 
 template <int dim>
 PyObject* GeometryObjectIncludesPoints(const shared_ptr<GeometryObjectD<dim>>& self, const GeometryObject& obj, const PathHints* pth, const MeshD<dim>& mesh) {
-    npy_intp dims[1] = {mesh.size()};
+    npy_intp dims[1] = { npy_intp(mesh.size()) };
     PyObject* array = PyArray_SimpleNew(1, dims, NPY_BOOL);
     char* data = static_cast<char*>(PyArray_DATA(reinterpret_cast<PyArrayObject*>(array)));
 

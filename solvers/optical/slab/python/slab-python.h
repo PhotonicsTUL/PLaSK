@@ -45,8 +45,8 @@ template <NPY_TYPES type>
 static inline py::object arrayFromVec2D(cvector data, bool sep, int dim=1) {
     int strid = 2;
     if (sep) strid = dim = 1;
-    npy_intp dims[] = { data.size() / strid, strid };
-    npy_intp strides[] = { strid * sizeof(dcomplex), sizeof(dcomplex) };
+    npy_intp dims[] = { npy_intp(data.size() / strid), npy_intp(strid) };
+    npy_intp strides[] = { npy_intp(strid * sizeof(dcomplex)), npy_intp(sizeof(dcomplex)) };
     PyObject* arr = PyArray_New(&PyArray_Type, dim, dims, type, strides, (void*)data.data(), 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException("Cannot create array from field coefficients");
     PythonDataVector<const dcomplex,2> wrap(data);
@@ -64,7 +64,7 @@ static py::object Solver_getInterface(SolverT& self) {
 }
 
 template <typename SolverT>
-static void Solver_setInterface(SolverT& self, const py::object& value) {
+static void Solver_setInterface(SolverT& /*self*/, const py::object& /*value*/) {
     throw AttributeError("Setting interface by layer index is not supported anymore (set it by object or position)");
 }
 
@@ -215,7 +215,7 @@ struct WrappedType {
     typedef T Wrapper;
     typedef T Extracted;
     typedef py::default_call_policies CallPolicy;
-    template <typename S> static Wrapper make(S* solver, T* item) { return *item; }
+    template <typename S> static Wrapper make(S* /*solver*/, T* item) { return *item; }
 };
 
 template <>

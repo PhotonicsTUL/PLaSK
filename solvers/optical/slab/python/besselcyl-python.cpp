@@ -8,7 +8,7 @@ namespace plask { namespace optical { namespace slab { namespace python {
 template <>
 py::object Eigenmodes<BesselSolverCyl>::array(const dcomplex* data, size_t N) const {
     const int dim = 2, strid = 2;
-    npy_intp dims[] = { N / strid, strid };
+    npy_intp dims[] = { npy_intp(N / strid), npy_intp(strid) };
     npy_intp strides[] = { strid * sizeof(dcomplex), sizeof(dcomplex) };
     PyObject* arr = PyArray_New(&PyArray_Type, dim, dims, NPY_CDOUBLE, strides, (void*)data, 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException("Cannot create array");

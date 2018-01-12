@@ -8,8 +8,8 @@ template <>
 py::object Eigenmodes<FourierSolver2D>::array(const dcomplex* data, size_t N) const {
     int dim = 2, strid = 2;
     if (solver.separated()) strid = dim = 1;
-    npy_intp dims[] = { N / strid, strid };
-    npy_intp strides[] = { strid * sizeof(dcomplex), sizeof(dcomplex) };
+    npy_intp dims[] = { npy_intp(N / strid), npy_intp(strid) };
+    npy_intp strides[] = { npy_intp(strid * sizeof(dcomplex)), npy_intp(sizeof(dcomplex)) };
     PyObject* arr = PyArray_New(&PyArray_Type, dim, dims, NPY_CDOUBLE, strides, (void*)data, 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException("Cannot create array");
     return py::object(py::handle<>(arr));

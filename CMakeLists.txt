@@ -23,7 +23,8 @@ else(MSVC)
     else()
         set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
     endif()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-narrowing -Wno-unknown-pragmas -Wno-ignored-qualifiers")   # -Wsuggest-override - older gcc does not support this
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unknown-pragmas -Wno-ignored-qualifiers -Wno-int-in-bool-context")   # -Wsuggest-override - older gcc does not support this
+    # int-in-bool-context zostało wyłączone ze względu na nagłówki biblioteki eigen które je pokazują w dużej liczbie
 endif(MSVC)
 
 if(WIN32 AND "${CMAKE_SIZEOF_VOID_P}" EQUAL "8")

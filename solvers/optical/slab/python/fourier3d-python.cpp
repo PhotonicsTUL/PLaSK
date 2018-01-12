@@ -6,8 +6,8 @@ namespace plask { namespace optical { namespace slab { namespace python {
 
 template <NPY_TYPES type>
 static inline py::object arrayFromVec3D(cvector data, size_t minor, int dim) {
-    npy_intp dims[] = { data.size()/(2*minor), minor, 2 };
-    npy_intp strides[] = { 2*minor*sizeof(dcomplex), 2*sizeof(dcomplex), sizeof(dcomplex) };
+    npy_intp dims[] = { npy_intp(data.size()/(2*minor)), npy_intp(minor), 2 };
+    npy_intp strides[] = { npy_intp(2*minor*sizeof(dcomplex)), npy_intp(2*sizeof(dcomplex)), npy_intp(sizeof(dcomplex)) };
     PyObject* arr = PyArray_New(&PyArray_Type, dim, dims, type, strides, (void*)data.data(), 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from field coefficients");
     PythonDataVector<const dcomplex,3> wrap(data);
@@ -18,8 +18,8 @@ static inline py::object arrayFromVec3D(cvector data, size_t minor, int dim) {
 
 template <>
 py::object Eigenmodes<FourierSolver3D>::array(const dcomplex* data, size_t N) const {
-    npy_intp dims[] = { N/(2*solver.minor()), solver.minor(), 2 };
-    npy_intp strides[] = { 2*solver.minor()*sizeof(dcomplex), 2*sizeof(dcomplex), sizeof(dcomplex) };
+    npy_intp dims[] = { npy_intp(N/(2*solver.minor())), npy_intp(solver.minor()), 2 };
+    npy_intp strides[] = { npy_intp(2*solver.minor()*sizeof(dcomplex)), npy_intp(2*sizeof(dcomplex)), npy_intp(sizeof(dcomplex)) };
     PyObject* arr = PyArray_New(&PyArray_Type, 3, dims, NPY_CDOUBLE, strides, (void*)data, 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException("Cannot create array");
     return py::object(py::handle<>(arr));

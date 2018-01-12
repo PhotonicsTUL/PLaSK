@@ -1395,6 +1395,7 @@ const LazyData <double> DriftDiffusionModel2DSolver<Geometry2DType>::getFermiLev
         return interpolate(this->mesh, dvnFp, dst_mesh, method, this->geometry); // here the quasi-Fermi hole level is rescalled (*mEx)
     }
     assert(0);
+    std::abort();   // to silent warning in gcc/clang release build
 }
 
 
@@ -1470,6 +1471,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getBandEdg
         return interpolate(this->mesh, dvnEv, dst_mesh, method, this->geometry); // here the valence band edge is rescalled (*mEx)
     }
     assert(0);
+    std::abort();   // to silent warning in gcc/clang release build
 }
 
 

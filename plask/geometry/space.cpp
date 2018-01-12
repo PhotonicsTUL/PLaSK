@@ -369,6 +369,7 @@ const edge::Strategy &Geometry3D::getEdge(Direction direction, bool higher) cons
 #ifdef _MSC_VER
 	__assume(0);
 #endif
+    std::abort();   // to silent warning in gcc/clang release build
 }
 
 Geometry3D::Geometry3D(shared_ptr<GeometryObjectD<3> > child)
