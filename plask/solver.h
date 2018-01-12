@@ -714,7 +714,7 @@ class SolverOver: public Solver {
      * It just calls invalidate(); but subclasses can customize it.
      * @param evt information about geometry changes
      */
-    virtual void onGeometryChange(const Geometry::Event& evt) {
+    virtual void onGeometryChange(const Geometry::Event&) {
         this->invalidate();
     }
 

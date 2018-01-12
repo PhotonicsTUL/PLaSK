@@ -23,7 +23,7 @@ else(MSVC)
     else()
         set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
     endif()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-int-in-bool-context")   # -Wsuggest-override - older gcc does not support this
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-int-in-bool-context")   # TODO add -Wextra
     # int-in-bool-context zostało wyłączone ze względu na nagłówki biblioteki eigen które je pokazują w dużej liczbie
 endif(MSVC)
 
