@@ -171,21 +171,21 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     }
 
     template <typename R, typename F, typename... Args>
-    inline R call(const char* name, F f, const plask::optional<R>& cached, Args... args) const {
+    inline R call(const char* name, F f, const plask::optional<R>& cached, Args&&... args) const {
         if (cached) return *cached;
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
         if (overriden(name)) {
-            return call_method<R>(name, args...);
+            return call_method<R>(name, std::forward<Args>(args)...);
         }
-        return ((*base).*f)(args...);
+        return ((*base).*f)(std::forward<Args>(args)...);
     }
 
-    template <typename R, typename F, typename... Args>
-    inline R call_override(const char* name, F f, const plask::optional<R>& cached, Args... args) const {
+    template <typename R, typename... Args>
+    inline R call_override(const char* name, const plask::optional<R>& cached, Args&&... args) const {
         if (cached) return *cached;
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
         if (overriden(name)) {
-            return call_method<R>(name, args...);
+            return call_method<R>(name, std::forward<Args>(args)...);
         }
         throw MaterialMethodNotImplemented(this->name(), name);
     }
@@ -320,10 +320,10 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     double lattC(double T, char x) const override { return call<double>("lattC", &Material::lattC, cache->lattC, T, x); }
     double Eg(double T, double e, char point) const override { return call<double>("Eg", &Material::Eg, cache->Eg, T, e, point); }
     double CB(double T, double e, char point) const override {
-        try { return call_override<double>("CB", &Material::CB, cache->CB, T, e, point); }
-        catch (NotImplemented) {
+        try { return call_override<double>("CB", cache->CB, T, e, point); }
+        catch (NotImplemented&) {
             try { return VB(T, e, point, 'H') + Eg(T, e, point); }
-            catch (NotImplemented) { return base->CB(T, e, point); }
+            catch (NotImplemented&) { return base->CB(T, e, point); }
         }
     }
     double VB(double T, double e, char point, char hole) const override { return call<double>("VB", &Material::VB, cache->VB, T, e, point, hole); }
@@ -354,10 +354,10 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     double B(double T) const override { return call<double>("B", &Material::B, cache->B, T); }
     double C(double T) const override { return call<double>("C", &Material::C, cache->C, T); }
     double D(double T) const override {
-        try { return call_override<double>("D", &Material::D, cache->D, T); }
-        catch (NotImplemented) {
+        try { return call_override<double>("D", cache->D, T); }
+        catch (NotImplemented&) {
             try { return mob(T).c00 * T * 8.6173423e-5; }   // D = µ kB T / e
-            catch (NotImplemented) { return base->D(T); }
+            catch (NotImplemented&) { return base->D(T); }
         }
     }
     Tensor2<double> thermk(double T, double t) const override { return call<Tensor2<double>>("thermk", &Material::thermk, cache->thermk, T, t); }
@@ -366,16 +366,16 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     double nr(double lam, double T, double n) const override { return call<double>("nr", &Material::nr, cache->nr, lam, T, n); }
     double absp(double lam, double T) const override { return call<double>("absp", &Material::absp, cache->absp, lam, T); }
     dcomplex Nr(double lam, double T, double n) const override {
-        try { return call_override<dcomplex>("Nr", &Material::Nr, cache->Nr, lam, T, n); }
-        catch (NotImplemented) {
+        try { return call_override<dcomplex>("Nr", cache->Nr, lam, T, n); }
+        catch (NotImplemented&) {
             try { return dcomplex(                     call<double>("nr", &Material::nr, cache->nr, lam, T, n),
                                   -7.95774715459e-09 * call<double>("absp", &Material::absp, cache->absp, lam,T) * lam
                                  ); }
-            catch (NotImplemented) { return base->Nr(lam, T, n); }
+            catch (NotImplemented&) { return base->Nr(lam, T, n); }
         }
     }
     Tensor3<dcomplex> NR(double lam, double T, double n) const override {
-        try { return call_override<Tensor3<dcomplex>>("NR", &Material::NR, cache->NR, lam, T, n); }
+        try { return call_override<Tensor3<dcomplex>>("NR", cache->NR, lam, T, n); }
         catch (NotImplemented) {
             try { dcomplex nr = Nr(lam, T, n); return Tensor3<dcomplex>(nr, nr, nr, 0.); }
             catch (NotImplemented) { return base->NR(lam, T, n); }

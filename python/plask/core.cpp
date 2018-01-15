@@ -214,7 +214,7 @@ static void printMultiLineLog(plask::LogLevel level, const std::string& msg, Arg
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 __declspec(dllexport)
 #endif
-int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* scriptname=nullptr, bool second_is_script=false) {
+int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* /*scriptname*/=nullptr, bool second_is_script=false) {
     PyTypeObject* type = (PyTypeObject*)otype;
     PyTracebackObject* original_traceback = (PyTracebackObject*)otraceback;
 

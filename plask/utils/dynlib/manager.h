@@ -87,10 +87,10 @@ public:
      * Close given library if it is in default set.
      * @param to_close library to close
      */
-    static const void defaultClose(const DynamicLibrary& to_close) { defaultSet().close(to_close); }
+    static void defaultClose(const DynamicLibrary& to_close) { defaultSet().close(to_close); }
 
     /// Close all libraries holded in default set.
-    static const void defaultCloseAll() { defaultSet().closeAll(); }
+    static void defaultCloseAll() { defaultSet().closeAll(); }
 
 };
 

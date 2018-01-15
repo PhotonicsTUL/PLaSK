@@ -153,7 +153,7 @@ void Manager::loadMaterialLib(XMLReader& reader, MaterialsDB& materialsDB) {
 }
 
 
-void Manager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB)
+void Manager::loadMaterial(XMLReader& reader, MaterialsDB& /*materialsDB*/)
 {
     writelog(LOG_ERROR, "Loading XML material from C++ not implemented (ignoring material {})", reader.getAttribute<std::string>("name", "unknown"));
     reader.gotoEndOfCurrentTag();

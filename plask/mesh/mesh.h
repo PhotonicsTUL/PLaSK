@@ -60,7 +60,6 @@ struct OnePoint3DMesh: public plask::MeshD<3> {
                .attr("c0", point.c0)
                .attr("c1", point.c1)
                .attr("c2", point.c2);   // store this point coordinates in attributes of the tag <point>
-        ;
     }
 
 };
@@ -77,7 +76,7 @@ static shared_ptr<Mesh> readOnePoint3DMesh(plask::XMLReader& reader) {
     return plask::make_shared<OnePoint3DMesh>(plask::Vec<3,double>(c0, c1, c2));
 }
 
-// Declare global variable of type RegisterMeshReader in order to the reader:
+// Declare global variable of type RegisterMeshReader in order to register the reader:
 //   the first argument must be the same string which has been written into 'type' attribute in OnePoint3DMesh::writeXML() method,
 //   the second one is the address of your reading function,
 //   variable name does not matter.
@@ -269,13 +268,13 @@ struct PLASK_API MeshD: public Mesh {
      * Initialize this to be the same as @p to_copy but don't copy any changes observer.
      * @param to_copy object to copy
      */
-    MeshD(const MeshD& to_copy) {}
+    MeshD(const MeshD& /*to_copy*/) {}
 
     /**
      * Set this to be the same as @p to_copy but doesn't changed changes observer.
      * @param to_copy object to copy
      */
-    MeshD& operator=(const MeshD& to_copy) { return *this; }
+    MeshD& operator=(const MeshD& /*to_copy*/) { return *this; }
 
     MeshD() {}
 

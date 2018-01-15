@@ -830,7 +830,7 @@ protected:
      * Throw exception with information that method with name @p method_name is not implemented for this material.
      * @param method_name name of method which is not implemented
      */
-    void throwNotImplemented(const std::string& method_name) const;
+    [[noreturn]] void throwNotImplemented(const std::string& method_name) const;
 };
 
 

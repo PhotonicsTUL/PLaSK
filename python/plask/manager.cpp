@@ -329,7 +329,7 @@ void PythonManager::loadConnects(XMLReader& reader)
     }
 }
 
-void PythonManager::loadMaterialModule(XMLReader& reader, MaterialsDB& materialsDB) {
+void PythonManager::loadMaterialModule(XMLReader& reader, MaterialsDB& /*materialsDB*/) {
     std::string name = reader.requireAttribute("name");
     try {
         if (name != "") py::import(py::str(name));
