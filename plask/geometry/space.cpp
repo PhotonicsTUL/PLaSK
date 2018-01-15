@@ -284,14 +284,14 @@ void Geometry2DCylindrical::setEdges(Direction direction, const edge::Strategy& 
 }
 
 void Geometry2DCylindrical::setEdges(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) {
-    ensureBoundDirIsProper(direction, false);
-    ensureBoundDirIsProper(direction, true);
+    ensureBoundDirIsProper(direction/*, false*/);
+    //ensureBoundDirIsProper(direction, true);
     bottomup.setStrategies(border_lo, border_hi);   //bottomup is only one valid proper bound for lo and hi
     fireChanged(Event::EVENT_EDGES);
 }
 
 void Geometry2DCylindrical::setEdge(Direction direction, bool higher, const edge::Strategy& border_to_set) {
-    ensureBoundDirIsProper(direction, higher);
+    ensureBoundDirIsProper(direction/*, higher*/);
     if (direction == DIRECTION_TRAN) {
         try {
             innerouter.set(higher, dynamic_cast<const edge::UniversalStrategy&>(border_to_set));
@@ -304,7 +304,7 @@ void Geometry2DCylindrical::setEdge(Direction direction, bool higher, const edge
 }
 
 const edge::Strategy& Geometry2DCylindrical::getEdge(Direction direction, bool higher) const {
-    ensureBoundDirIsProper(direction, higher);
+    ensureBoundDirIsProper(direction/*, higher*/);
     return (direction == DIRECTION_TRAN) ? innerouter.get(higher) : bottomup.get(higher);
 }
 

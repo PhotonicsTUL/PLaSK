@@ -42,13 +42,17 @@ struct PLASK_API Geometry: public GeometryObject {
      * Initialize this to be the same as @p to_copy but doesn't have any changes observer.
      * @param to_copy object to copy
      */
-    Geometry(const Geometry& to_copy): defaultMaterial(to_copy.defaultMaterial) {}
+    Geometry(const Geometry& to_copy): GeometryObject(to_copy), defaultMaterial(to_copy.defaultMaterial) {}
 
     /**
      * Set this to be the same as @p to_copy but doesn't changed changes observer.
      * @param to_copy object to copy
      */
-    Geometry& operator=(const Geometry& to_copy) { defaultMaterial = to_copy.defaultMaterial; return *this; }
+    Geometry& operator=(const Geometry& to_copy) {
+        GeometryObject::operator=(to_copy);
+        defaultMaterial = to_copy.defaultMaterial;
+        return *this;
+    }
 
     /// Inform observators that this is being deleted.
     virtual ~Geometry() { fireChanged(Event::EVENT_DELETE); }
@@ -835,7 +839,7 @@ class PLASK_API Geometry2DCylindrical: public GeometryD<2> {
     edge::StrategyPairHolder<Primitive<2>::DIRECTION_TRAN, edge::UniversalStrategy> innerouter;
     edge::StrategyPairHolder<Primitive<2>::DIRECTION_VERT> bottomup;
 
-    static void ensureBoundDirIsProper(Direction direction, bool hi) {
+    static void ensureBoundDirIsProper(Direction direction/*, bool hi*/) {
         Primitive<3>::ensureIsValid2DDirection(direction);
     }
 

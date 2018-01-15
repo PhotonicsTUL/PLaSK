@@ -106,6 +106,7 @@ inline void aligned_free(void *ptr)
 **/
 inline void* aligned_realloc(void *ptr, std::size_t new_size, std::size_t old_size=0)
 {
+    (void) old_size;    // don't warn about unused old_size
     void *result;
 #if PLASK_MALLOC_ALIGNED
     result = std::realloc(ptr,new_size);
