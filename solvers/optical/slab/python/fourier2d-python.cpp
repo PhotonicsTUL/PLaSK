@@ -591,6 +591,7 @@ void export_FourierSolver2D()
                py::with_custodian_and_ward_postcall<0,1>()
               );
     py::scope scope = solver;
+    (void) scope;   // don't warn about unused variable scope
 
     register_vector_of<FourierSolver2D::Mode>("Modes");
     py::class_<FourierSolver2D::Mode>("Mode", u8"Detailed information about the mode.", py::no_init)

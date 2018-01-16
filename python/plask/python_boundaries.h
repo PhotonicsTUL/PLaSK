@@ -153,6 +153,7 @@ struct RegisterBoundaryConditions {
             ;
             if (delattr) py::delattr(py::scope(), "BoundaryConditions");
             py::scope scope1 = bc;
+            (void) scope1;   // don't warn about unused variable scope1
 
             py::class_<Iter>("Iterator", py::no_init)
                 .def(NEXT, &Iter::next, py::return_value_policy<py::reference_existing_object>())
@@ -167,6 +168,7 @@ struct RegisterBoundaryConditions {
             ;
 
             py::scope scope2 = cd;
+            (void) scope2;   // don't warn about unused variable scope2
             py::class_<ConditionIter>("Iterator", py::no_init)
                 .def(NEXT, &ConditionIter::next)
                 .def("__iter__", pass_through)

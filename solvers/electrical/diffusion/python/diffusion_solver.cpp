@@ -49,6 +49,7 @@ BOOST_PYTHON_MODULE(diffusion)
 //         BOUNDARY_CONDITIONS(boundary_conditions_name, "Short documentation"); // boundary conditions
 
         py::scope scope = solver;
+        (void) scope;   // don't warn about unused variable scope
 
         py_enum<__Class__::FemMethod>()
             .value("LINEAR", __Class__::FEM_LINEAR)
@@ -88,6 +89,7 @@ BOOST_PYTHON_MODULE(diffusion)
 //         BOUNDARY_CONDITIONS(boundary_conditions_name, "Short documentation"); // boundary conditions
 
         py::scope scope = solver;
+        (void) scope;   // don't warn about unused variable scope
 
         py_enum<__Class__::FemMethod>()
             .value("LINEAR", __Class__::FEM_LINEAR)

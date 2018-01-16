@@ -458,12 +458,12 @@ private:
      * - place name must be unique for all places in XML, and must be given before any placeref which refer to it;
      * - condition value must be in format required by parseBoundaryValue for given type (in most cases it is just one attribute: value).
      * @param reader source of XML data
-     * @param geometry (optional) geometry used by solver which reads boundary conditions
      * @param dest place to append read conditions
      */
     //TODO moves to modules reader (with names map)
+    //@param geometry (optional) geometry used by solver which reads boundary conditions
     template <typename MeshT, typename ConditionT>
-    void readBoundaryConditions(XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest, shared_ptr<Geometry> geometry = shared_ptr<Geometry>());
+    void readBoundaryConditions(XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest/*, shared_ptr<Geometry> geometry = shared_ptr<Geometry>()*/);
 
     /**
      * Load XML content.
@@ -570,7 +570,7 @@ inline ConditionT parseBoundaryValue(const XMLReader& tag_with_value) {
 }
 
 template <typename MeshT, typename ConditionT>
-inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest, shared_ptr<Geometry> geometry) {
+inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest) {
     while (reader.requireTagOrEnd("condition")) {
         Boundary<MeshT> boundary;
         plask::optional<std::string> place = reader.getAttribute("place");

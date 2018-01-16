@@ -333,6 +333,7 @@ BOOST_PYTHON_MODULE(effective)
                  u8":rtype: Mode\n");
 
         py::scope scope = solver;
+        (void) scope;   // don't warn about unused variable scope
 
         register_vector_of<EffectiveIndex2D::Mode>("Modes");
 
@@ -472,6 +473,7 @@ BOOST_PYTHON_MODULE(effective)
                             u8"the stripes.\n");
 
         py::scope scope = solver;
+        (void) scope;   // don't warn about unused variable scope
 
         register_vector_of<EffectiveFrequencyCyl::Mode>("Modes");
 

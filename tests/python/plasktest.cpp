@@ -297,6 +297,7 @@ BOOST_PYTHON_MODULE(plasktest)
         py::object module { py::handle<>(py::borrowed(PyImport_AddModule("plasktest.solvers"))) };
         py::scope().attr("solvers") = module;
         py::scope scope = module;
+        (void) scope;   // don't warn about unused variable scope
 
         plask::python::ExportSolver<InOutSolver>("InOut", py::init<std::string>())
             .add_receiver("inWavelength", &InOutSolver::inWavelength, "Input Wavelength")

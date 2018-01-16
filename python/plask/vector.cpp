@@ -200,7 +200,7 @@ struct VecAttr {
     typedef Vec<dim, T> V;
     static T get(const V& self, const std::string& attr) { return self[vec_attr_indx<dim>(attr)]; }
 //     static void set(V& self, const std::string& attr, T val) { self[vec_attr_indx<dim>(attr)] = val; }
-    static void set(V& self, const std::string& attr, T val) { throw TypeError("vector attribute '{}' cannot be changed", attr); }
+    static void set(V& /*self*/, const std::string& attr, T /*val*/) { throw TypeError("vector attribute '{}' cannot be changed", attr); }
 };
 
 template <int dim, typename T>

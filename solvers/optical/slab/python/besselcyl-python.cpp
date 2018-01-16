@@ -319,6 +319,7 @@ void export_BesselSolverCyl()
 #endif
 
     py::scope scope = solver;
+    (void) scope;   // don't warn about unused variable scope
 
     register_vector_of<BesselSolverCyl::Mode>("Modes");
     py::class_<BesselSolverCyl::Mode>("Mode", u8"Detailed information about the mode.", py::no_init)

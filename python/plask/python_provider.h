@@ -602,6 +602,7 @@ struct RegisterCombinedProvider {
 
     RegisterCombinedProvider(const std::string& name)  {
         py::scope scope = flow_module;
+        (void) scope;   // don't warn about unused variable scope
         Class pyclass(name.c_str(), (std::string(
             u8"Combined provider for ") + CombinedProviderT::NAME + u8".\n\n"
             u8"This provider holds a sum of the other providers, so the provided field\n"
@@ -630,6 +631,7 @@ struct RegisterCombinedProvider {
         )));
         if (!cls) throw CriticalException(u8"No registered provider for {0}", py::type_id<typename CombinedProviderT::BaseType>().name());
         py::scope cls_scope = py::object(cls);
+        (void) cls_scope;   // don't warn about unused variable cls_scope
         py::def("__add__", &add, py::with_custodian_and_ward_postcall<0,1,
                                  py::with_custodian_and_ward_postcall<0,2,
                                  py::return_value_policy<py::manage_new_object>>>());
@@ -855,6 +857,7 @@ template <typename ReceiverT>
 inline void registerReceiver() {
     if (py::converter::registry::lookup(py::type_id<ReceiverT>()).m_class_object == nullptr) {
         py::scope scope = flow_module;
+        (void) scope;   // don't warn about unused variable scope
         detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, typename ReceiverT::PropertyTag::ExtraParams>();
     }
 }
@@ -863,6 +866,7 @@ template <typename ProviderT>
 void registerProvider() {
     if (py::converter::registry::lookup(py::type_id<ProviderT>()).m_class_object == nullptr) {
         py::scope scope = flow_module;
+        (void) scope;   // don't warn about unused variable scope
         detail::RegisterProviderImpl<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>();
     }
 }

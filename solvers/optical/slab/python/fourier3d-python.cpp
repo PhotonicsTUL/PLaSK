@@ -699,6 +699,7 @@ void export_FourierSolver3D()
     //                     u8"Regular mesh with points in which material is sampled along transverse direction.");
     RO_FIELD(modes, "Computed modes.");
     py::scope scope = solver;
+    (void) scope;   // don't warn about unused variable scope
 
     register_vector_of<FourierSolver3D::Mode>("Modes");
     py::class_<FourierSolver3D::Mode>("Mode", u8"Detailed information about the mode.", py::no_init)

@@ -564,6 +564,7 @@ static void register_manager_dict(const std::string name) {
     py::delattr(py::scope(), (name+"Dict").c_str());
 
     py::scope scope = c;
+    (void) scope;   // don't warn about unused variable scope
 
     py::class_<detail::dict_iterator<T>>("Iterator", py::no_init)
         .def("__iter__", &detail::dict_iterator<T>::__iter__, py::return_self<>())
@@ -666,6 +667,7 @@ void register_manager() {
     register_manager_dict<shared_ptr<Solver>>("Solvers");
 
     py::scope scope(manager);
+    (void) scope;   // don't warn about unused variable scope
     py::class_<ManagerRoots>("_Roots", py::no_init)
         .def("__getitem__", &ManagerRoots::getitem)
         .def("__len__", &ManagerRoots::len)

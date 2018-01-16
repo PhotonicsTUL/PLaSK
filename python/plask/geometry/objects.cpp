@@ -750,6 +750,7 @@ void register_geometry_object()
     ;
 
     {py::scope scope = geometry_object;
+    (void) scope;   // don't warn about unused variable scope
     py::class_<GeometryObjectSteps>("_Steps", py::no_init)
         .add_property("dist", &GeometryObjectSteps::get_ply, &GeometryObjectSteps::set_ply,
                       "Minimum step size.")

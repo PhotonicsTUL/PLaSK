@@ -13,34 +13,7 @@ extern PLASK_PYTHON_API py::object flow_module;
 
 namespace detail {
 
-    static inline void filterin_parse_key(const py::object& key, shared_ptr<GeometryObject>& geom, PathHints*& path, int& points) {
-        py::object object;
-        path = nullptr;
-        points = 10;
-        if (PyTuple_Check(key.ptr())) {
-            if (py::len(key) < 2 || py::len(key) > 3) throw KeyError(py::extract<std::string>(py::str(key)));
-            object = key[0];
-            if (py::len(key) == 3) {
-                path = py::extract<PathHints*>(key[1]);
-                points = py::extract<int>(key[2]);
-            } else {
-                try {
-                    path = py::extract<PathHints*>(key[1]);
-                } catch (py::error_already_set) {
-                    PyErr_Clear();
-                    try {
-                        points = py::extract<int>(key[1]);
-                    } catch (py::error_already_set) {
-                        throw KeyError(py::extract<std::string>(py::str(key)));
-                    }
-                }
-            }
-            if (points < 0) throw KeyError(py::extract<std::string>(py::str(key)));
-        } else {
-            object = key;
-        }
-        geom = py::extract<shared_ptr<GeometryObject>>(object);
-    }
+    void filterin_parse_key(const py::object& key, shared_ptr<GeometryObject>& geom, PathHints*& path, int& points);
 
     struct FilterinGetitemResult {
         template <typename ReceiverT>
@@ -59,7 +32,7 @@ namespace detail {
 
     struct FilterinSetitemResult {
         template <typename ReceiverT>
-        static inline PyObject* call(const py::object& self, ReceiverT& receiver, const py::object& value) {
+        static inline PyObject* call(const py::object& /*self*/, ReceiverT& receiver, const py::object& value) {
             typedef detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, typename  ReceiverT::PropertyTag::ExtraParams> RegisterT;
             RegisterT::setter(receiver, value);
             return py::incref(Py_None);
@@ -156,6 +129,7 @@ namespace detail {
     registerFilterImpl(const char* suffix)
     {
         py::scope scope = flow_module;
+        (void) scope;   // don't warn about unused variable scope
 
         py::class_<Filter<PropertyT,GeometryT>, shared_ptr<Filter<PropertyT,GeometryT>>, py::bases<Solver>, boost::noncopyable>
         filter_class((type_name<PropertyT>()+"Filter"+suffix).c_str(),
