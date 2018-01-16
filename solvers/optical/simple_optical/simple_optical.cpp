@@ -184,7 +184,7 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
    for (size_t i = 0; i < hi.size(); ++i)
    {
       Ez = F[i]*exp(-I*NR[i]*k0*hi[i]) + B[i]*exp(I*NR[i]*k0*hi[i]); 
-      results[i] = real(Ez + conj(Ez));
+      results[i] = real(Ez*conj(Ez));
    }
    
    return results;

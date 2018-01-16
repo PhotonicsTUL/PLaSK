@@ -50,7 +50,7 @@ plt.rcParams.update({'font.size': 28})
 
 #fig, ax1 = plt.subplots()
 mode_number = prosty.findMode(981) 
-Z = np.linspace(0, 11, 25000)
+Z = np.linspace(0, 11, 35000)
 E = prosty.outLightMagnitude(mode_number, mesh.Rectangular2D([0], Z))
 E = E.array[0]
 #print(E)
@@ -59,10 +59,13 @@ neff = prosty.outRefractiveIndex( mesh.Rectangular2D([0], Z ))
 fig, ax1 = plt.subplots()
 ax1.plot(Z, np.abs(E), 'r-')
 ax1.set_ylabel("Light Magnitude $E$", color="red")
+ax1.set_yscale('log')
 ax2 = ax1.twinx()
 ax2.plot(Z, neff, 'b-')
 ax2.set_ylabel("refractive index", color="blue")
-#ax2.set_ylim([3, 3.7])
+print(neff.array[0,0,:])
+
+ax2.set_ylim([0.9, 3.7])
 
 plt.show()
 
