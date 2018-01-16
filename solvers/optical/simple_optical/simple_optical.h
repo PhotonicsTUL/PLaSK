@@ -9,7 +9,7 @@
 namespace plask { namespace optical { namespace simple_optical {
 
 /**
- * Solver performing calculations in 1D Cylindrical space by solve Helmholtz equation
+ * Solver performing calculations in 2D Cylindrical geometry by solve Helmholtz equation
  */
 
 struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> {

@@ -46,14 +46,14 @@ void SimpleOptical::initializeRefractiveIndexVec()
   nrCache.clear();
   double T = 300; //temperature 300 K
   double w = real(2e3*M_PI / k0);
-  nrCache.push_back(geometry->getMaterial(vec(0.0, -1e-3))->Nr(w, T));
+  nrCache.push_back(geometry->getMaterial(vec(double(x), -1e-3))->Nr(w, T));
   for(double p: *axis_midpoints_vertical) 
   {
-    nrCache.push_back(geometry->getMaterial(vec(0.0,  p))->Nr(w, T));
+    nrCache.push_back(geometry->getMaterial(vec(double(x),  p))->Nr(w, T));
   }
   double last_element = 0;
   last_element = edgeVertLayerPoint.back();
-  nrCache.push_back(geometry->getMaterial(vec(0.0,  last_element+1e-3))->Nr(w, T));
+  nrCache.push_back(geometry->getMaterial(vec(double(x),  last_element+1e-3))->Nr(w, T));
 }
 
 
@@ -121,7 +121,7 @@ const LazyData<Tensor3<dcomplex>> SimpleOptical::getRefractiveIndex(const shared
   return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
         [this, dst_mesh, flags, lam0](size_t j) -> Tensor3<dcomplex> {
             auto point = flags.wrap(dst_mesh->at(j));
-	    return geometry->getMaterial(vec(0.0, dst_mesh->at(j)[1]))->Nr(real(lam0), 300) ;
+	    return geometry->getMaterial(vec(double(x), dst_mesh->at(j)[1]))->Nr(real(lam0), 300) ;
         }
     );
 }
@@ -151,7 +151,7 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
   
   for(auto p: arrayZ) 
   {
-    NR.push_back(geometry->getMaterial(vec(0.0,  p))->Nr(w, T));      
+    NR.push_back(geometry->getMaterial(vec(double(x),  p))->Nr(w, T));      
   }
    
   for (double p_edge: *axis_vertical) verticalEdgeVec.push_back(p_edge); 
