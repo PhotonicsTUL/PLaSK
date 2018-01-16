@@ -9,8 +9,7 @@
 namespace plask { namespace optical { namespace simple_optical {
 
 /**
- * This is Doxygen documentation of your solver.
- * Write a brief description of it.
+ * Solver performing calculations in 1D Cylindrical space by solve Helmholtz equation
  */
 
 struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> {
@@ -122,7 +121,7 @@ protected:
 
   friend struct RootDigger;
 
-  size_t x,           ///< poitn, when program computed vertical fields
+  size_t x=0,           ///< point, when program computed vertical fields
          ybegin,  ///< First element of vertical mesh to consider
          yend;    ///< Last element of vertical mesh to consider
 

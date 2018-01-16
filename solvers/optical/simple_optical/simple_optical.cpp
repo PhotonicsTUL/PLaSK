@@ -147,7 +147,7 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
   std::vector<dcomplex> B;
   std::vector<dcomplex> F;
   double T = 300; //temperature 300 K
-  double w = real(2e3*M_PI / x);
+  double w = real(2e3*M_PI / k0);
   
   for(auto p: arrayZ) 
   {
