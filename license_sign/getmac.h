@@ -51,11 +51,9 @@ inline std::vector<mac_address_t> getMacs() {
 #else   // Linux code
 //TODO, MACOS: http://oroboro.com/unique-machine-fingerprint/
 
-#include <sys/ioctl.h>
+#include <ifaddrs.h>
 #include <net/if.h>
-#include <unistd.h>
-#include <netinet/in.h>
-#include <string.h>
+#include <netpacket/packet.h>
 
 namespace plask {
 
@@ -63,40 +61,20 @@ inline std::vector<mac_address_t> getMacs() {
     std::vector<mac_address_t> result;
 
     //Code comes from:
-    //http://stackoverflow.com/questions/1779715/how-to-get-mac-address-of-your-machine-using-a-c-program
+    //http://stackoverflow.com/questicons/1779715/how-to-get-mac-address-of-your-machine-using-a-c-program
     //http://stackoverflow.com/questions/16858782/how-to-obtain-almost-unique-system-identifier-in-a-cross-platform-way
-    struct ifreq ifr;
-    struct ifconf ifc;
-    char buf[256 * sizeof(struct ifreq)];
+    ifaddrs* ifaddr = nullptr;
 
-    int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
-    //if (sock == -1) { /handle error };
-
-    ifc.ifc_len = sizeof(buf);
-    ifc.ifc_buf = buf;
-    if (ioctl(sock, SIOCGIFCONF, &ifc) == -1) {
-        //handle error
-        close( sock );
-        return result;
+    if (getifaddrs(&ifaddr) != -1) {
+         for (ifaddrs* ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
+             if (ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_PACKET && !(ifa->ifa_flags & IFF_LOOPBACK)) {
+                  struct sockaddr_ll *s = (struct sockaddr_ll*)ifa->ifa_addr;
+                  result.emplace_back();
+                  memcpy(result.back().data(), s->sll_addr+s->sll_halen-6, 6);
+             }
+         }
+         freeifaddrs(ifaddr);
     }
-
-    struct ifreq* it = ifc.ifc_req;
-    const struct ifreq* const end = it + (ifc.ifc_len / sizeof(struct ifreq));
-
-    for (; it != end; ++it) {
-        strcpy(ifr.ifr_name, it->ifr_name);
-        if (ioctl(sock, SIOCGIFFLAGS, &ifr) == 0) {
-            if (! (ifr.ifr_flags & IFF_LOOPBACK)) { // don't count loopback
-                if (ioctl(sock, SIOCGIFHWADDR, &ifr) == 0) {
-                    result.emplace_back();
-                    memcpy(result.back().data(), ifr.ifr_hwaddr.sa_data, 6);
-                }
-            }
-        }
-       // else {  handle error } - just skip
-    }
-    close( sock );
-
     return result;
 }
 

@@ -862,7 +862,7 @@ else:
     except (AttributeError, NameError):
         LICENSE = dict(user='', date='')
 if 'systemid' not in LICENSE or not LICENSE['systemid']:
-    LICENSE['systemid'] = "{:X}".format(getnode())
+    LICENSE['systemid'] = "{:X}".format(getnode())[-12:]
 
 
 def _handle_exception(exc_type, exc_value, exc_traceback):

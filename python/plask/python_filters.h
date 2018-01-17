@@ -13,7 +13,7 @@ extern PLASK_PYTHON_API py::object flow_module;
 
 namespace detail {
 
-    void filterin_parse_key(const py::object& key, shared_ptr<GeometryObject>& geom, PathHints*& path, int& points);
+    void PLASK_PYTHON_API filterin_parse_key(const py::object& key, shared_ptr<GeometryObject>& geom, PathHints*& path, int& points);
 
     struct FilterinGetitemResult {
         template <typename ReceiverT>
