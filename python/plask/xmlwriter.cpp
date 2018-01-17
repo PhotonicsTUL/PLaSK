@@ -20,7 +20,7 @@ struct XplWriter
     struct PythonWriteXMLCallback: public GeometryObject::WriteXMLCallback {
         XplWriter* writer;
         PythonWriteXMLCallback(XplWriter* writer): writer(writer) {}
-        std::string getName(const GeometryObject& object, AxisNames& axesNames) const override {
+        std::string getName(const GeometryObject& object, AxisNames& /*axesNames*/) const override {
             py::stl_input_iterator<std::string> end;
             for (auto name = py::stl_input_iterator<std::string>(writer->geometry); name != end; ++name)
                 if ((const Geometry*)py::extract<Geometry*>(writer->geometry[*name]) == &object) return *name;

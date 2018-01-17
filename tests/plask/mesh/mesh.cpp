@@ -21,6 +21,7 @@ BOOST_AUTO_TEST_CASE(Mesh) {
         }
 
         plask::Vec<3, double> at(std::size_t index) const override {
+            BOOST_CHECK_EQUAL(index, 0);
             return point;
         }
 

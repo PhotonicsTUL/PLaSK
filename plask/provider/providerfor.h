@@ -1035,10 +1035,10 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
 
         /**
          * This method is called when mesh was changed.
-         * It's just call invalidate()
+         * It just calls invalidate().
          * @param evt information about mesh changes
          */
-        void onMeshChange(const Mesh::Event& evt) {
+        void onMeshChange(const Mesh::Event& /*evt*/) {
             this->invalidate();
         }
 

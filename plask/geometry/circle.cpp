@@ -43,7 +43,7 @@ void Circle<dim>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNa
 }
 
 template <int dim>
-bool Circle<dim>::isUniform(plask::Primitive<3>::Direction direction) const {
+bool Circle<dim>::isUniform(plask::Primitive<3>::Direction /*direction*/) const {
     return false;
 }
 

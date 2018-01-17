@@ -45,7 +45,7 @@ MI_PROPERTY(GaN, nr,
             MIArgumentRange(MaterialInfo::lam, 300, 580),
             MIComment("no temperature dependence")
             )
-double GaN::nr(double lam, double T, double n) const {
+double GaN::nr(double lam, double T, double /*n*/) const {
     double tE = phys::h_eVc1e9 / lam - (Eg(T) - Eg(300.)), nR;
 
     if (1.000 < tE && tE <= 2.138) nR = 0.013914*tE*tE*tE*tE - 0.096422*tE*tE*tE + 0.27318*tE*tE - 0.27725*tE + 2.3535;  // lambda: 580nm - 1240nm
@@ -62,7 +62,7 @@ double GaN::nr(double lam, double T, double n) const {
 MI_PROPERTY(GaN, lattC,
             MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III–V and II–VI Semiconductors, Wiley 2009")
             )
-double GaN::lattC(double T, char x) const {
+double GaN::lattC(double /*T*/, char x) const {
     double tLattC(0.);
     if (x == 'a') tLattC = 3.1896;
     else if (x == 'c') tLattC = 5.1855;
@@ -72,7 +72,7 @@ double GaN::lattC(double T, char x) const {
 MI_PROPERTY(GaN, Eg,
             MISource("Vurgaftman et al. in Piprek 2007 Nitride Semicondcuctor Devices")
             )
-double GaN::Eg(double T, double e, char point) const {
+double GaN::Eg(double T, double /*e*/, char point) const {
     if (point == 'G' || point == '*') return phys::Varshni(3.510, 0.914e-3, 825., T);
     else return NAN;
 }
@@ -81,7 +81,7 @@ double GaN::Eg(double T, double e, char point) const {
     return 0.;
 }*/
 
-double GaN::Dso(double T, double e) const {
+double GaN::Dso(double /*T*/, double /*e*/) const {
     return 0.017;
 }
 
@@ -89,7 +89,7 @@ MI_PROPERTY(GaN, Me,
             MISource("Adachi WILEY 2009"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> GaN::Me(double T, double e, char point) const {
+Tensor2<double> GaN::Me(double /*T*/, double /*e*/, char point) const {
     Tensor2<double> tMe(0.,0.);
     if (point == 'G' || point == '*') {
         tMe.c00 = 0.22;
@@ -101,7 +101,7 @@ Tensor2<double> GaN::Me(double T, double e, char point) const {
 MI_PROPERTY(GaN, Mhh,
             MISeeClass<GaN>(MaterialInfo::Me)
             )
-Tensor2<double> GaN::Mhh(double T, double e) const {
+Tensor2<double> GaN::Mhh(double /*T*/, double /*e*/) const {
     Tensor2<double> tMhh(0.,0.);
     tMhh.c00 = 1.67;
     tMhh.c11 = 1.64;
@@ -111,17 +111,14 @@ Tensor2<double> GaN::Mhh(double T, double e) const {
 MI_PROPERTY(GaN, Mlh,
             MISeeClass<GaN>(MaterialInfo::Me)
             )
-Tensor2<double> GaN::Mlh(double T, double e) const {
-    Tensor2<double> tMlh(0.,0.);
-    tMlh.c00 = 1.67;
-    tMlh.c11 = 0.15;
-    return tMlh;
+Tensor2<double> GaN::Mlh(double /*T*/, double /*e*/) const {
+    return Tensor2<double>(1.67, 0.15);
 }
 
 MI_PROPERTY(GaN, CB,
             MISource("-")
            )
-double GaN::CB(double T, double e, char point) const {
+double GaN::CB(double T, double /*e*/, char point) const {
     double tCB( VB(T,0.,point, 'H') + Eg(T,0.,point) );
     return tCB;
     /*if (!e) return tCB;
@@ -132,7 +129,7 @@ MI_PROPERTY(GaN, VB,
             MISource("-"),
             MIComment("no temperature dependence")
            )
-double GaN::VB(double T, double e, char point, char hole) const {
+double GaN::VB(double /*T*/, double e, char /*point*/, char /*hole*/) const {
     double tVB(0.80);
     if (e) {
         /*double DEhy = 2.*av(T)*(1.-c12(T)/c11(T))*e;
@@ -146,11 +143,11 @@ double GaN::VB(double T, double e, char point, char hole) const {
 
 Material::ConductivityType GaN::condtype() const { return Material::CONDUCTIVITY_I; }
 
-bool GaN::isEqual(const Material &other) const {
+bool GaN::isEqual(const Material &/*other*/) const {
     return true;
 }
 
-Tensor2<double> GaN_bulk::thermk(double T, double t) const {
+Tensor2<double> GaN_bulk::thermk(double T, double /*t*/) const {
     return GaN::thermk(T, INFINITY);
 }
 

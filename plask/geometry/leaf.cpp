@@ -65,7 +65,7 @@ void GeometryObjectLeaf<dim>::getBoundingBoxesToVec(const GeometryObject::Predic
 }
 
 template <int dim>
-void GeometryObjectLeaf<dim>::getObjectsToVec(const GeometryObject::Predicate &predicate, std::vector<shared_ptr<const GeometryObject> > &dest, const PathHints *path) const {
+void GeometryObjectLeaf<dim>::getObjectsToVec(const GeometryObject::Predicate &predicate, std::vector<shared_ptr<const GeometryObject> > &dest, const PathHints */*path*/) const {
     if (predicate(*this)) dest.push_back(this->shared_from_this());
 }
 
