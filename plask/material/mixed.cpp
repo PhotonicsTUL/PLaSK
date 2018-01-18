@@ -74,7 +74,7 @@ double MixedMaterial::dens(double T) const {
 }
 
 double MixedMaterial::Dso(double T, double e) const {
-    return avg([&](const Material& m) { return m.Dso(T); });
+    return avg([&](const Material& m) { return m.Dso(T, e); });
 }
 
 double MixedMaterial::EactA(double T) const {
@@ -145,7 +145,7 @@ Tensor2<double> MixedMaterial::mob(double T) const {
 }
 
 double MixedMaterial::Mso(double T, double e) const {
-    return avg([&](const Material& m) { return m.Mso(T); });
+    return avg([&](const Material& m) { return m.Mso(T, e); });
 }
 
 double MixedMaterial::Nf(double T) const {

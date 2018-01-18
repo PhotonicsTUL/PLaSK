@@ -286,6 +286,7 @@ shared_ptr<OrderedAxis> RectangularMeshDivideGenerator<dim>::processAxis(shared_
 {
     assert(bool(axis));
     OrderedAxis::WarningOff warning_off(axis);
+    (void) warning_off; // don't warn about unused variable warning_off
 
     if (pre_divisions[dir] == 0) pre_divisions[dir] = 1;
     if (post_divisions[dir] == 0) post_divisions[dir] = 1;

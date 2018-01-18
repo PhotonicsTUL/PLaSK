@@ -24,15 +24,15 @@ struct GeometryObjectBBox {
 template <int DIMS>
 struct EmptyLeafCacheNode: public SpatialIndexNode<DIMS> {
 
-    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const override {
+    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& /*p*/) const override {
         return shared_ptr<Material>();
     }
 
-    virtual bool contains(const Vec<DIMS>& p) const override {
+    virtual bool contains(const Vec<DIMS>& /*p*/) const override {
         return false;
     }
 
-    GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> caller, const Vec<DIMS> &point, bool all) const override {
+    GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> /*caller*/, const Vec<DIMS> &/*point*/, bool /*all*/) const override {
         return GeometryObject::Subtree();
     }
 };

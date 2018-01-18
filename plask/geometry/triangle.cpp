@@ -58,7 +58,7 @@ void Triangle::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames
                     .attr("b" + axes.getNameForVert(), p1.vert());
 }
 
-bool Triangle::isUniform(Primitive<3>::Direction direction) const {
+bool Triangle::isUniform(Primitive<3>::Direction /*direction*/) const {
     return false;
 }
 
