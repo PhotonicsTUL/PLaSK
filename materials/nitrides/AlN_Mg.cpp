@@ -19,11 +19,11 @@ AlN_Mg::AlN_Mg(DopingAmountType Type, double Val) {
     NA = 2e19;
 }
 
-Tensor2<double> AlN_Mg::mob(double T) const {
+Tensor2<double> AlN_Mg::mob(double /*T*/) const {
     return Tensor2<double>(mob_RT, mob_RT);
 }
 
-double AlN_Mg::Nf(double T) const {
+double AlN_Mg::Nf(double /*T*/) const {
     return Nf_RT;
 }
 
@@ -39,7 +39,7 @@ MI_PROPERTY(AlN_Mg, cond,
             MIArgumentRange(MaterialInfo::T, 300, 900)
             )
 Tensor2<double> AlN_Mg::cond(double T) const {
-    double tCond = 3e-5*pow((T/300.),9.75);
+    const double tCond = 3e-5*pow((T/300.),9.75);
     return (Tensor2<double>(tCond, tCond)); //TODO was Tensor2<double>(tCondt, tCond) - compilation error
 }
 
@@ -48,7 +48,7 @@ Material::ConductivityType AlN_Mg::condtype() const { return Material::CONDUCTIV
 MI_PROPERTY(AlN_Mg, absp,
             MISeeClass<AlN>(MaterialInfo::absp)
             )
-double AlN_Mg::absp(double lam, double T) const {
+double AlN_Mg::absp(double lam, double /*T*/) const {
     double a = phys::h_eVc1e9/lam - 6.28,
            b = NA/1e18;
     return ( (19000+200*b)*exp(a/(0.019+0.0001*b)) + (330+30*b)*exp(a/(0.07+0.0008*b)) );

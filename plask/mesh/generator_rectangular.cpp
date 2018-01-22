@@ -282,7 +282,7 @@ RectangularMeshRefinedGenerator<3>::generate(const boost::shared_ptr<plask::Geom
 
 
 template <int dim>
-shared_ptr<OrderedAxis> RectangularMeshDivideGenerator<dim>::processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir)
+shared_ptr<OrderedAxis> RectangularMeshDivideGenerator<dim>::processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& /*geometry*/, size_t dir)
 {
     assert(bool(axis));
     OrderedAxis::WarningOff warning_off(axis);
@@ -366,7 +366,7 @@ RectangularMeshSmoothGenerator<3>::RectangularMeshSmoothGenerator():
 
 
 template <int dim>
-shared_ptr<OrderedAxis> RectangularMeshSmoothGenerator<dim>::processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir)
+shared_ptr<OrderedAxis> RectangularMeshSmoothGenerator<dim>::processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& /*geometry*/, size_t dir)
 {
     OrderedAxis::WarningOff warning_off(axis);
 

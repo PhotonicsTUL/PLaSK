@@ -16,19 +16,21 @@ namespace plask {
 template <int dim>
 struct PLASK_API Flip: public GeometryObjectTransform<dim> {
 
+    typedef GeometryObjectTransform<dim> BaseClass;
+
     static const char* NAME;
 
     virtual std::string getTypeName() const override;
 
-    typedef typename GeometryObjectTransform<dim>::ChildType ChildType;
+    typedef typename BaseClass::ChildType ChildType;
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
-    typedef typename GeometryObjectTransform<dim>::DVec DVec;
+    typedef typename BaseClass::DVec DVec;
 
     /// Box type in space on this, rectangle in space with dim number of dimensions.
-    typedef typename GeometryObjectTransform<dim>::Box Box;
+    typedef typename BaseClass::Box Box;
 
-    using GeometryObjectTransform<dim>::getChild;
+    using BaseClass::getChild;
 
     /**
      * Constructor.
@@ -36,7 +38,7 @@ struct PLASK_API Flip: public GeometryObjectTransform<dim> {
      * @param child child geometry object, object to reflect
      */
     explicit Flip(typename Primitive<dim>::Direction flipDir, shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >())
-        : GeometryObjectTransform<dim>(child), flipDir(flipDir) {}
+        : BaseClass(child), flipDir(flipDir) {}
 
     /// 2D or 3D axis number
     typename Primitive<dim>::Direction flipDir;
@@ -88,26 +90,28 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(Flip<3>)
 template <int dim>
 struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
 
+    typedef GeometryObjectTransform<dim> BaseClass;
+
     static const char* NAME;
 
     virtual std::string getTypeName() const override;
 
-    typedef typename GeometryObjectTransform<dim>::ChildType ChildType;
+    typedef typename BaseClass::ChildType ChildType;
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
-    typedef typename GeometryObjectTransform<dim>::DVec DVec;
+    typedef typename BaseClass::DVec DVec;
 
     /// Box type in space on this, rectangle in space with dim number of dimensions.
-    typedef typename GeometryObjectTransform<dim>::Box Box;
+    typedef typename BaseClass::Box Box;
 
-    using GeometryObjectTransform<dim>::getChild;
+    using BaseClass::getChild;
 
     /**
      * @param flipDir
      * @param child child geometry object, object to reflect
      */
     explicit Mirror(typename Primitive<dim>::Direction flipDir, shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >())
-        : GeometryObjectTransform<dim>(child), flipDir(flipDir) {}
+        : BaseClass(child), flipDir(flipDir) {}
 
     /// 2D or 3D axis number
     typename Primitive<dim>::Direction flipDir;

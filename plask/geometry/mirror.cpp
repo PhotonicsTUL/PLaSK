@@ -58,6 +58,7 @@ shared_ptr<GeometryObject> Flip<dim>::shallowCopy() const {
 
 template <int dim>
 void Flip<dim>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+    BaseClass::writeXMLAttr(dest_xml_object, axes);
     dest_xml_object.attr("axis", axes[direction3D(flipDir)]);
 }
 
@@ -183,6 +184,7 @@ shared_ptr<GeometryObject> Mirror<dim>::shallowCopy() const {
 
 template <int dim>
 void Mirror<dim>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+    BaseClass::writeXMLAttr(dest_xml_object, axes);
     dest_xml_object.attr("axis", axes[direction3D(flipDir)]);
 }
 

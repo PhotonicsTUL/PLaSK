@@ -34,7 +34,7 @@ MI_PROPERTY(GaInAs_Zn, mob,
             MISource("TODO"),
             MISource("based on Zn-doped GaInAs")
             )
-Tensor2<double> GaInAs_Zn::mob(double T) const {
+Tensor2<double> GaInAs_Zn::mob(double /*T*/) const {
     return ( Tensor2<double>(mob_RT, mob_RT) );
 }
 
@@ -42,7 +42,7 @@ MI_PROPERTY(GaInAs_Zn, Nf,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-double GaInAs_Zn::Nf(double T) const {
+double GaInAs_Zn::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
@@ -65,7 +65,7 @@ MI_PROPERTY(GaInAs_Zn, absp,
             MISource("fit to ..."), // TODO
             MIComment("no temperature dependence")
             )
-double GaInAs_Zn::absp(double lam, double T) const {
+double GaInAs_Zn::absp(double lam, double /*T*/) const {
     double tAbsp(0.);
     if ((lam > 1200.) && (lam < 1400.)) // only for 1300 nm TODO
         tAbsp = 60500. * pow(Nf_RT/1e18+23.3, -0.54);

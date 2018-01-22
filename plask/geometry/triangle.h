@@ -15,11 +15,13 @@ namespace plask {
  */
 struct PLASK_API Triangle: public GeometryObjectLeaf<2> {
 
+    typedef GeometryObjectLeaf<2> BaseClass;
+
     ///Vector of doubles type in space on this, vector in space with dim number of dimensions.
-    typedef typename GeometryObjectLeaf<2>::DVec DVec;
+    typedef typename BaseClass::DVec DVec;
 
     ///Rectangle type in space on this, rectangle in space with dim number of dimensions.
-    typedef typename GeometryObjectLeaf<2>::Box Box;
+    typedef typename BaseClass::Box Box;
 
     static const char* NAME;
 

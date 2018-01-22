@@ -73,7 +73,7 @@ RectangularMesh<2>::RectangularMesh(shared_ptr<MeshAxis> axis0, shared_ptr<MeshA
     setChangeSignal(this->axis1);
 }
 
-RectangularMesh<2>::RectangularMesh(const RectangularMesh<2> &src): axis0(src.axis0), axis1(src.axis1), elements(this) {    //clone()??
+RectangularMesh<2>::RectangularMesh(const RectangularMesh<2> &src): MeshD<2>(src), axis0(src.axis0), axis1(src.axis1), elements(this) {    //clone()??
     setIterationOrder(src.getIterationOrder());
     setChangeSignal(this->axis0);
     setChangeSignal(this->axis1);

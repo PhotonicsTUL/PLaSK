@@ -50,6 +50,7 @@ GeometryObject::Subtree Extrusion::getPathsAt(const DVec& point, bool all) const
 }
 
 void Extrusion::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
+    BaseClass::writeXMLAttr(dest_xml_object, axes);
     dest_xml_object.attr("length", length);
 }
 

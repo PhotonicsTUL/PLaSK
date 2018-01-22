@@ -47,7 +47,7 @@ MI_PROPERTY(Au, nr,
             MIComment("TODO"),
             MIArgumentRange(MaterialInfo::lam, 700, 10000)
 			)
-double Au::nr(double lam, double T, double n) const {
+double Au::nr(double lam, double /*T*/, double /*n*/) const {
     double ulam = lam*1e-3;
     return ( 0.113018*pow(ulam,1.96113) + 0.185598*ulam );
 }

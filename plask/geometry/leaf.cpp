@@ -157,6 +157,7 @@ shared_ptr<GeometryObject> read_block3D(GeometryReader& reader) {
 
 template <>
 void Block<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+    GeometryObjectLeaf<2>::writeXMLAttr(dest_xml_object, axes);
     materialProvider->writeXML(dest_xml_object, axes)
                     .attr("d"+axes.getNameForTran(), size.tran())
                     .attr("d"+axes.getNameForVert(), size.vert());
@@ -164,6 +165,7 @@ void Block<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames
 
 template <>
 void Block<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+    GeometryObjectLeaf<3>::writeXMLAttr(dest_xml_object, axes);
     materialProvider->writeXML(dest_xml_object, axes)
                     .attr("d"+axes.getNameForLong(), size.lon())
                     .attr("d"+axes.getNameForTran(), size.tran())

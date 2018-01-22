@@ -28,6 +28,7 @@ bool Cylinder::contains(const Cylinder::DVec &p) const {
 }
 
 void Cylinder::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
+    GeometryObjectLeaf<3>::writeXMLAttr(dest_xml_object, axes);
     materialProvider->writeXML(dest_xml_object, axes)
             .attr("radius", radius).attr("height", height);
 }

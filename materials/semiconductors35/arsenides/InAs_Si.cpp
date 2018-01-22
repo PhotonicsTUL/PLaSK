@@ -29,7 +29,7 @@ MI_PROPERTY(InAs_Si, Nf,
             MIComment("Nf(ND) assumed, TODO: find exp. data"),
             MIComment("no temperature dependence")
             )
-double InAs_Si::Nf(double T) const {
+double InAs_Si::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 

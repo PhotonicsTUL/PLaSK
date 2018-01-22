@@ -39,6 +39,7 @@ bool Circle<dim>::contains(const typename Circle<dim>::DVec &p) const {
 
 template <int dim>
 void Circle<dim>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
+    GeometryObjectLeaf<dim>::writeXMLAttr(dest_xml_object, axes);
     this->materialProvider->writeXML(dest_xml_object, axes).attr("radius", this->radius);
 }
 

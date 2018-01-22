@@ -88,6 +88,7 @@ std::set<std::string> GeometryD<dim>::getRolesAt(const typename GeometryD<dim>::
 
 template <>
 void GeometryD<2>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
+    Geometry::writeXMLAttr(dest_xml_object, axes);
     dest_xml_object.attr("axes", axes.str());
     this->storeEdgeInXML(dest_xml_object, DIRECTION_TRAN, false);
     this->storeEdgeInXML(dest_xml_object, DIRECTION_TRAN, true);
@@ -97,6 +98,7 @@ void GeometryD<2>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisN
 
 template <>
 void GeometryD<3>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
+    Geometry::writeXMLAttr(dest_xml_object, axes);
     dest_xml_object.attr("axes", axes.str());
     for (int dir = 0; dir < 3; ++dir) {
         this->storeEdgeInXML(dest_xml_object, plask::Geometry::Direction(dir), false);

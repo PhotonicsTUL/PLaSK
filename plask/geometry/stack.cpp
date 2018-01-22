@@ -153,7 +153,8 @@ void StackContainerBaseImpl<dim, growingDirection>::rebuildStackHeights(std::siz
 
 
 template <int dim, typename Primitive<dim>::Direction growingDirection>
-void StackContainerBaseImpl<dim, growingDirection>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &) const {
+void StackContainerBaseImpl<dim, growingDirection>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames & axes) const {
+    BaseClass::writeXMLAttr(dest_xml_object, axes);
     dest_xml_object.attr(baseH_attr, getBaseHeight());
 }
 
@@ -436,7 +437,8 @@ shared_ptr<GeometryObject> ShelfContainer2D::changedVersionForChildren(std::vect
     return result;
 }
 
-void ShelfContainer2D::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &) const {
+void ShelfContainer2D::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames& axes) const {
+    BaseClass::writeXMLAttr(dest_xml_object, axes);
     dest_xml_object.attr(require_equal_heights_attr, false);
 }
 

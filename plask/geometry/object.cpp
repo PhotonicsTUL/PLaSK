@@ -180,7 +180,7 @@ void GeometryObject::ensureCanHasAsParent(const GeometryObject& potential_parent
 }
 
 void GeometryObject::writeXMLAttr(XMLWriter::Element& /*dest_xml_object*/, const AxisNames& /*axes*/) const {
-    //do nothing
+    // do nothing
 }
 
 void GeometryObject::writeXMLChildren(XMLWriter::Element &dest_xml_object, GeometryObject::WriteXMLCallback &write_cb, const AxisNames &axes) const {
