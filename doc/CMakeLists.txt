@@ -47,7 +47,7 @@ if (INKSCAPE)
     endforeach()
 endif()
 
-option(BUILD_QTHELP "Build and install QtHelp for GUI" ON)
+option(BUILD_QTHELP "Build and install QtHelp for GUI" OFF)
 find_program(QHELPGENERATOR qhelpgenerator HINTS ${QT_PATH}/bin)
 find_program(QCOLLECTIONGENERATOR qcollectiongenerator HINTS ${QT_PATH}/bin)
 
@@ -193,6 +193,8 @@ if(SPHINX_FOUND)
         COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_CURRENT_SOURCE_DIR}/xpl/solvers
         COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/solvers.timestamp
     )
-
 endif()
 
+if(BUILD_QTHELP AND NOT (SPHINX_FOUND AND QHELPGENERATOR AND QCOLLECTIONGENERATOR))
+    message(WARNING "BUILD_QTHELP option set but no Sphinx or Qt help tools found. Skipping...")
+endif()
