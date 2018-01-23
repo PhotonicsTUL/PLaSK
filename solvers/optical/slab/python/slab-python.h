@@ -303,9 +303,10 @@ struct Eigenmodes {
     //     typename ProviderFor<LightH,typename SolverT::SpaceType>::Delegate outLightH;
 
 
-    Eigenmodes(SolverT& solver, size_t layer): solver(solver), layer(layer),
+    Eigenmodes(SolverT& solver, double z): solver(solver),
 		outLightMagnitude(this, &Eigenmodes::getLightMagnitude, &Eigenmodes::size) {
         bool changed = solver.initCalculation() || solver.setExpansionDefaults(true);
+        layer = solver.stack[solver.getLayerFor(z)];
         if (!solver.transfer) {
             solver.initTransfer(solver.getExpansion(), false);
             changed = true;
@@ -321,7 +322,7 @@ struct Eigenmodes {
     }
 
     static shared_ptr<Eigenmodes<SolverT>> init(SolverT& solver, double z) {
-	    return make_shared<Eigenmodes<SolverT>>(solver, solver.stack[solver.getLayerFor(z)]);
+	    return make_shared<Eigenmodes<SolverT>>(solver, z);
     }
 
     size_t size() const {
