@@ -60,9 +60,9 @@ Material::ConductivityType AlN_Si::condtype() const { return Material::CONDUCTIV
 MI_PROPERTY(AlN_Si, absp,
             MISeeClass<AlN>(MaterialInfo::absp)
             )
-double AlN_Si::absp(double lam, double T) const {
-    double a = phys::h_eVc1e9/lam - 6.28,
-           b = ND/1e18;
+double AlN_Si::absp(double lam, double /*T*/) const {
+    const double a = phys::h_eVc1e9/lam - 6.28,
+                 b = ND/1e18;
     return ( (19000+400*b)*exp(a/(0.019+0.001*b)) + (330+200*b)*exp(a/(0.07+0.016*b)) );
 }
 

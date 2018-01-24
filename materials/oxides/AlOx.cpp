@@ -12,7 +12,7 @@ MI_PROPERTY(AlOx, cond,
             MISource("A. Inoue et al., Journal of Materials Science 22 (1987) 2063-2068"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> AlOx::cond(double T) const {
+Tensor2<double> AlOx::cond(double /*T*/) const {
     return ( Tensor2<double>(1e-7, 1e-7) );
 }
 
@@ -20,7 +20,7 @@ MI_PROPERTY(AlOx, thermk,
             MISource("M. Le Du et al., Electronics Letters 42 (2006) 65-66"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> AlOx::thermk(double T, double h) const {
+Tensor2<double> AlOx::thermk(double /*T*/, double /*h*/) const {
     return ( Tensor2<double>(0.7, 0.7) );
 }
 
@@ -28,11 +28,11 @@ MI_PROPERTY(AlOx, absp,
             MISource(""),
             MIComment("TODO")
             )
-double AlOx::absp(double lam, double T) const {
+double AlOx::absp(double /*lam*/, double /*T*/) const {
     return ( 0. );
 }
 
-bool AlOx::isEqual(const Material &other) const {
+bool AlOx::isEqual(const Material &/*other*/) const {
     return true;
 }
 
@@ -42,7 +42,7 @@ MI_PROPERTY(AlOx, nr,
             MIComment("no temperature dependence"),
             MIArgumentRange(MaterialInfo::lam, 400, 1600)
 			)
-double AlOx::nr(double lam, double T, double n) const {
+double AlOx::nr(double lam, double /*T*/, double /*n*/) const {
     return ( 0.30985*exp(-lam/236.7)+1.52829 );
 }
 

@@ -267,7 +267,7 @@ MI_PROPERTY(GaInAsSb, nr,
             MISource("T.S. Moss, Phys. Stat. Sol. B 131 (1985) 415-427"),
             MIComment("for strained and unstrained GaInAsSb on GaSb, nr(Eg) is calculated from: nr^4 * Eg = 95 meV")
             )
-double GaInAsSb::nr(double lam, double T, double n) const {
+double GaInAsSb::nr(double /*lam*/, double T, double /*n*/) const {
     double a0 = mGaSb.lattC(T,'a'); // typical substrate when GaInAsSb QW
     double e = a0/lattC(T,'a') - 1.;
     return pow(95./Eg(T,e,'G'),0.25);
@@ -277,7 +277,7 @@ double GaInAsSb::nr(double lam, double T, double n) const {
 MI_PROPERTY(GaInAsSb, absp,
             MIComment("TODO")
             )
-double GaInAsSb::absp(double lam, double T) const {
+double GaInAsSb::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for GaInAsSb");
 }
 

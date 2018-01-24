@@ -32,9 +32,9 @@ struct MyMaterial : public plask::Material {
 
     virtual Material::Kind kind() const override { return Material::NONE; }
 
-    virtual double VB(double T, double e, char P, char h) const override { return 0.5*T; }
+    virtual double VB(double T, double /*e*/, char /*P*/, char /*h*/) const override { return 0.5*T; }
 
-    virtual double chi(double T, double e, char P) const override { std::cerr << "MyMaterial: " << P << "\n"; return 1.0; }
+    virtual double chi(double /*T*/, double /*e*/, char P) const override { std::cerr << "MyMaterial: " << P << "\n"; return 1.0; }
 
 };
 

@@ -20,7 +20,7 @@ Tensor2<double> InN::thermk(double T, double) const {
 MI_PROPERTY(InN, lattC,
             MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III–V and II–VI Semiconductors, Wiley 2009")
             )
-double InN::lattC(double T, char x) const {
+double InN::lattC(double /*T*/, char x) const {
     double tLattC(0.);
     if (x == 'a') tLattC = 3.548;
     else if (x == 'c') tLattC = 5.760;
@@ -30,7 +30,7 @@ double InN::lattC(double T, char x) const {
 MI_PROPERTY(InN, Eg,
             MISource("Vurgaftman et al. in Piprek 2007 Nitride Semicondcuctor Devices")
             )
-double InN::Eg(double T, double e, char point) const {
+double InN::Eg(double T, double /*e*/, char point) const {
     double tEg(0.);
     if (point == 'G' || point == '*') tEg = phys::Varshni(0.69,0.414e-3,154.,T);
     return (tEg);
@@ -40,7 +40,7 @@ double InN::Eg(double T, double e, char point) const {
     return 0.848;
 }*/
 
-double InN::Dso(double T, double e) const {
+double InN::Dso(double /*T*/, double /*e*/) const {
     return 0.005;
 }
 
@@ -49,7 +49,7 @@ MI_PROPERTY(InN, Me,
             MISource("Adachi WILEY 2009"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> InN::Me(double T, double e, char point) const {
+Tensor2<double> InN::Me(double /*T*/, double /*e*/, char point) const {
     Tensor2<double> tMe(0.,0.);
     if (point == 'G' || point == '*') {
         tMe.c00 = 0.039;
@@ -61,21 +61,15 @@ Tensor2<double> InN::Me(double T, double e, char point) const {
 MI_PROPERTY(InN, Mhh,
             MISeeClass<InN>(MaterialInfo::Me)
             )
-Tensor2<double> InN::Mhh(double T, double e) const {
-    Tensor2<double> tMhh(0.,0.);
-    tMhh.c00 = 1.54;
-    tMhh.c11 = 1.41;
-    return (tMhh);
+Tensor2<double> InN::Mhh(double /*T*/, double /*e*/) const {
+    return Tensor2<double>(1.54, 1.41);
 }
 
 MI_PROPERTY(InN, Mlh,
             MISeeClass<InN>(MaterialInfo::Me)
             )
-Tensor2<double> InN::Mlh(double T, double e) const {
-    Tensor2<double> tMlh(0.,0.);
-    tMlh.c00 = 1.54;
-    tMlh.c11 = 0.10;
-    return (tMlh);
+Tensor2<double> InN::Mlh(double /*T*/, double /*e*/) const {
+    return Tensor2<double>(1.54, 0.10);
 }
 
 // commented out since no return leads to UB - Piotr Beling [25.02.2016]
@@ -92,7 +86,7 @@ MI_PROPERTY(InN, VB,
             MISource("-"),
             MIComment("no temperature dependence")
            )
-double InN::VB(double T, double e, char point, char hole) const {
+double InN::VB(double /*T*/, double e, char /*point*/, char /*hole*/) const {
     double tVB(1.85);
     if (e) {
         /*double DEhy = 2.*av(T)*(1.-c12(T)/c11(T))*e;
@@ -106,7 +100,7 @@ double InN::VB(double T, double e, char point, char hole) const {
 
 Material::ConductivityType InN::condtype() const { return Material::CONDUCTIVITY_I; }
 
-bool InN::isEqual(const Material &other) const {
+bool InN::isEqual(const Material &/*other*/) const {
     return true;
 }
 

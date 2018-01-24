@@ -39,7 +39,7 @@ double InGaN::absp(double lam, double T) const {
 MI_PROPERTY(InGaN, nr,
             MIComment("shift of the nR for GaN")
             )
-double InGaN::nr(double lam, double T, double n) const {
+double InGaN::nr(double lam, double T, double /*n*/) const {
     double dEg = Eg(T,0.,'G') - mGaN.Eg(300.,0.,'G'),
            Eold = phys::h_eVc1e9 / lam,
            Enew = Eold - dEg;
@@ -107,7 +107,7 @@ Tensor2<double> InGaN::Mlh(double T, double e) const {
 MI_PROPERTY(InGaN, CB,
             MISource("-")
             )
-double InGaN::CB(double T, double e, char point) const {
+double InGaN::CB(double T, double /*e*/, char point) const {
     double tCB( VB(T,0.,point,'H') + Eg(T,0.,point) );
     /*if (!e) return ( tCB );
     else return ( tCB + 2.*ac(T)*(1.-c12(T)/c11(T))*e );*/
@@ -119,7 +119,7 @@ MI_PROPERTY(InGaN, VB,
             MISource("-"),
             MIComment("-")
             )
-double InGaN::VB(double T, double e, char point, char hole) const {
+double InGaN::VB(double T, double /*e*/, char point, char hole) const {
     double tVB( In*mInN.VB(T,0.,point,hole) + Ga*mGaN.VB(T,0.,point,hole) /*- In * Ga * 1.4*/ );
     return tVB;
     /*if (!e) return tVB;

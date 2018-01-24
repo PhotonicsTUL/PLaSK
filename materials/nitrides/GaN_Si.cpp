@@ -120,7 +120,7 @@ double GaN_Si::nr(double lam, double T, double n) const {
 }
 
 
-Tensor2<double> GaN_Si_bulk::thermk(double T, double t) const {
+Tensor2<double> GaN_Si_bulk::thermk(double T, double /*t*/) const {
     return GaN_Si::thermk(T, INFINITY);
 }
 

@@ -29,7 +29,7 @@ MI_PROPERTY(GaAs_Zn, Nf,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-double GaAs_Zn::Nf(double T) const {
+double GaAs_Zn::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
@@ -52,7 +52,7 @@ MI_PROPERTY(GaAs_Zn, absp,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-double GaAs_Zn::absp(double lam, double T) const {
+double GaAs_Zn::absp(double lam, double /*T*/) const {
     double tAbsp(0.);
     if ((lam > 1200.) && (lam < 1400.)) // only for 1300 nm TODO
         tAbsp = 9. * pow(Nf_RT/1e18, 1.33);

@@ -232,14 +232,14 @@ Material::ConductivityType AlGaSb::condtype() const { return Material::CONDUCTIV
 MI_PROPERTY(AlGaSb, nr,
             MIComment("TODO")
             )
-double AlGaSb::nr(double lam, double T, double n) const {
+double AlGaSb::nr(double /*lam*/, double /*T*/, double /*n*/) const {
     throw NotImplemented("nr for AlGaSb");
 }
 
 MI_PROPERTY(AlGaSb, absp,
             MIComment("TODO")
             )
-double AlGaSb::absp(double lam, double T) const {
+double AlGaSb::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for AlGaSb");
 }
 

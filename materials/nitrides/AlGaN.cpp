@@ -39,7 +39,7 @@ double AlGaN::absp(double lam, double T) const {
 MI_PROPERTY(AlGaN, nr,
             MIComment("shift of the nR for GaN")
             )
-double AlGaN::nr(double lam, double T, double n) const {
+double AlGaN::nr(double lam, double T, double /*n*/) const {
     double dEg = Eg(T,0.,'G') - mGaN.Eg(300.,0.,'G'),
            Eold = phys::h_eVc1e9 / lam,
            Enew = Eold - dEg;
@@ -69,7 +69,7 @@ double AlGaN::Eg(double T, double e, char point) const {
     return (tEg);
 }
 
-double AlGaN::VB(double T, double e, char point, char hole) const {
+double AlGaN::VB(double T, double e, char point, char /*hole*/) const {
     return 0.3 * (mGaN.Eg(T,e,point) - Eg(T,e,point));
 }
 

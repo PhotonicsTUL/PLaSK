@@ -598,28 +598,27 @@ public:
 
 private:
 
+    //      * @param dopant_name name of dopant (if any), use for error messages
     /**
      * Get material constructor object.
      * @param dbKey key in database (format: name[_label] or normalized_composition[_label])
      * @param composition objects composition, empty composition for simple materials, used for error checking and mesages
-     * @param dopant_name name of dopant (if any), use for error messages
      * @param allow_complex_without_composition if true complex material can be obtained if composition is empty (if false exception will be throwed in such situation when dbKey is not simple material)
      */
-    shared_ptr<const MaterialConstructor> getConstructor(const std::string& dbKey, const Material::Composition& composition, const std::string& dopant_name = "", bool allow_complex_without_composition = false) const;
+    shared_ptr<const MaterialConstructor> getConstructor(const std::string& dbKey, const Material::Composition& composition, bool allow_complex_without_composition = false) const;
 
+    //      * @param dopant_name name of dopant (if any)
     /**
      * Create material object.
      * @param dbKey key in database
      * @param composition objects composition, empty composition for simple materials
-     * @param dopant_name name of dopant (if any)
      * @param doping_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
      * @param doping_amount amount of dopant, is ignored if @p doping_amount_type is @c NO_DOPANT
      * @return constructed material
      * @throw NoSuchMaterial if there is no material with key @p dbKey in database
      * @see @ref Material::completeComposition
      */
-    shared_ptr<Material> get(const std::string& dbKey, const Material::Composition& composition,
-                             const std::string& dopant_name = "", Material::DopingAmountType doping_amount_type = Material::NO_DOPING,
+    shared_ptr<Material> get(const std::string& dbKey, const Material::Composition& composition, Material::DopingAmountType doping_amount_type = Material::NO_DOPING,
                              double doping_amount = 0.0) const;
 
 };

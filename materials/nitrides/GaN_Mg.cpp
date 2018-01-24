@@ -88,7 +88,7 @@ bool GaN_Mg::isEqual(const Material &other) const {
 }
 
 
-Tensor2<double> GaN_Mg_bulk::thermk(double T, double t) const {
+Tensor2<double> GaN_Mg_bulk::thermk(double T, double /*t*/) const {
     return GaN_Mg::thermk(T, INFINITY);
 }
 
