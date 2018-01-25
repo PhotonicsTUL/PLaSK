@@ -234,7 +234,7 @@ MI_PROPERTY(AlAsSb, nr,
             MISource("C. Alibert et al., Journal of Applied Physics 69 (1991) 3208-3211"),
             MIArgumentRange(MaterialInfo::lam, 500, 7000) // TODO
             )
-double AlAsSb::nr(double lam, double T, double n) const {
+double AlAsSb::nr(double lam, double T, double /*n*/) const {
     double tE = phys::h_eVc1e9/lam; // lam -> E
     double tE0 = 3.2;
     double tEd = 28.;
@@ -253,7 +253,7 @@ double AlAsSb::nr(double lam, double T, double n) const {
 MI_PROPERTY(AlAsSb, absp,
             MIComment("TODO")
             )
-double AlAsSb::absp(double lam, double T) const {
+double AlAsSb::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for AlAsSb");
 }
 

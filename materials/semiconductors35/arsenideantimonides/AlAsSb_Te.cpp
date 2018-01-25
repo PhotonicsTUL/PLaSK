@@ -46,7 +46,7 @@ MI_PROPERTY(AlAsSb_Te, Nf,
             MISource("-"),
             MIComment("TODO")
             )
-double AlAsSb_Te::Nf(double T) const {
+double AlAsSb_Te::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
@@ -66,7 +66,7 @@ MI_PROPERTY(AlAsSb_Te, nr,
             MIArgumentRange(MaterialInfo::lam, 500, 7000),
             MIComment("TODO")
             )
-double AlAsSb_Te::nr(double lam, double T, double n) const {
+double AlAsSb_Te::nr(double lam, double T, double /*n*/) const {
     double tE = phys::h_eVc1e9/lam; // lam -> E
     double tE0 = 3.2;
     double tEd = 28.;

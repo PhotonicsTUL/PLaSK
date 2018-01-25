@@ -37,7 +37,7 @@ MI_PROPERTY(AlNzb, Dso,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double AlNzb::Dso(double T, double e) const {
+double AlNzb::Dso(double /*T*/, double /*e*/) const {
     return 0.019;
 }
 
@@ -70,18 +70,16 @@ MI_PROPERTY(AlNzb, Mhh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
             MIComment("no temperature dependence")
            )
-Tensor2<double> AlNzb::Mhh(double T, double e) const {
-    Tensor2<double> tMhh(1.15, 1.15); // [001]
-    return tMhh;
+Tensor2<double> AlNzb::Mhh(double /*T*/, double /*e*/) const {
+    return Tensor2<double>(1.15, 1.15); // [001]
 }
 
 MI_PROPERTY(AlNzb, Mlh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
             MIComment("no temperature dependence")
            )
-Tensor2<double> AlNzb::Mlh(double T, double e) const {
-    Tensor2<double> tMlh(0.39, 0.39);
-    return tMlh;
+Tensor2<double> AlNzb::Mlh(double /*T*/, double /*e*/) const {
+    return Tensor2<double>(0.39, 0.39);
 }
 
 MI_PROPERTY(AlNzb, Mh,
@@ -109,7 +107,7 @@ MI_PROPERTY(AlNzb, VB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double AlNzb::VB(double T, double e, char point, char hole) const {
+double AlNzb::VB(double T, double e, char /*point*/, char hole) const {
     double tVB(-3.44);
     if (e) {
         double DEhy = 2.*av(T)*(1.-c12(T)/c11(T))*e;
@@ -125,7 +123,7 @@ MI_PROPERTY(AlNzb, ac,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double AlNzb::ac(double T) const {
+double AlNzb::ac(double /*T*/) const {
     return -4.5;
 }
 
@@ -133,7 +131,7 @@ MI_PROPERTY(AlNzb, av,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double AlNzb::av(double T) const {
+double AlNzb::av(double /*T*/) const {
     return -4.9;
 }
 
@@ -141,7 +139,7 @@ MI_PROPERTY(AlNzb, b,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double AlNzb::b(double T) const {
+double AlNzb::b(double /*T*/) const {
     return -1.7;
 }
 
@@ -149,7 +147,7 @@ MI_PROPERTY(AlNzb, d,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double AlNzb::d(double T) const {
+double AlNzb::d(double /*T*/) const {
     return -5.5;
 }
 
@@ -157,7 +155,7 @@ MI_PROPERTY(AlNzb, c11,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double AlNzb::c11(double T) const {
+double AlNzb::c11(double /*T*/) const {
     return 304.;
 }
 
@@ -165,7 +163,7 @@ MI_PROPERTY(AlNzb, c12,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double AlNzb::c12(double T) const {
+double AlNzb::c12(double /*T*/) const {
     return 160.;
 }
 
@@ -173,7 +171,7 @@ MI_PROPERTY(AlNzb, c44,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double AlNzb::c44(double T) const {
+double AlNzb::c44(double /*T*/) const {
     return 193.;
 }
 
@@ -181,11 +179,11 @@ MI_PROPERTY(AlNzb, dens,
             MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
             MIComment("no temperature dependence")
             )
-double AlNzb::dens(double T) const { return 3.24e3; }
+double AlNzb::dens(double /*T*/) const { return 3.24e3; }
 
 std::string AlNzb::name() const { return NAME; }
 
-bool AlNzb::isEqual(const Material &other) const {
+bool AlNzb::isEqual(const Material &/*other*/) const {
     return true;
 }
 

@@ -234,14 +234,14 @@ Material::ConductivityType InPSb::condtype() const { return Material::CONDUCTIVI
 MI_PROPERTY(InPSb, nr,
             MIComment("TODO")
             )
-double InPSb::nr(double lam, double T, double n) const {
+double InPSb::nr(double /*lam*/, double /*T*/, double /*n*/) const {
     throw NotImplemented("nr for InPSb");
 }
 
 MI_PROPERTY(InPSb, absp,
             MIComment("TODO")
             )
-double InPSb::absp(double lam, double T) const {
+double InPSb::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for InPSb");
 }
 

@@ -304,7 +304,7 @@ MI_PROPERTY(AlGaInAsSb, nr,
             MISource("C. Alibert et al., Journal of Applied Physics 69 (1991) 3208-3211"),
             MIComment("the same formula as for AlGaAsSb")
             )
-double AlGaInAsSb::nr(double lam, double T, double n) const {
+double AlGaInAsSb::nr(double lam, double T, double /*n*/) const {
     double tE = phys::h_eVc1e9/lam; // lam -> E
     double tE0 = 1.89*Ga+3.2*Al-0.36*Al*Ga;
     double tEd = 24.5*Ga+28.*Al-4.4*Al*Ga;
@@ -321,7 +321,7 @@ double AlGaInAsSb::nr(double lam, double T, double n) const {
 MI_PROPERTY(AlGaInAsSb, absp,
             MIComment("TODO")
             )
-double AlGaInAsSb::absp(double lam, double T) const {
+double AlGaInAsSb::absp(double /*lam*/, double /*T*/) const {
         throw NotImplemented("absp for AlGaInAsSb");
 }
 
