@@ -38,7 +38,7 @@ public:
      * @param mesh mesh to check
      * @return @c true only if this operator been recently called with given @p mesh and this @p mesh has not been changed since that time.
      */
-    const bool operator()(const Mesh* mesh) {
+    bool operator()(const Mesh* mesh) {
         if (this->mesh == mesh)
             return true;
         else {
@@ -52,7 +52,7 @@ public:
      * @param mesh mesh to check
      * @return @c true only if this operator been recently called with given @p mesh and this @p mesh has not been changed since that time.
      */
-    const bool operator()(shared_ptr<const Mesh> mesh) {
+    bool operator()(shared_ptr<const Mesh> mesh) {
         return this->operator()(mesh.get());
     }
 

@@ -63,7 +63,7 @@ struct LateralMeshAdapter {
     shared_ptr<RectangularMesh<2>> mesh;
 
     LateralMeshAdapter(const BaseT* solver):
-        mesh(makeGeometryGrid(solver->getGeometry(), true)) {}
+        mesh(makeGeometryGrid(solver->getGeometry())) {}
 
     void resetMidpoints(const shared_ptr<MeshAxis>& vbounds) {
         mesh = make_shared<RectangularMesh<2>>(mesh->axis0->getMidpointsMesh(),
@@ -115,7 +115,7 @@ struct LateralMeshAdapter<SolverOver<Geometry3D>> {
     shared_ptr<RectangularMesh<3>> mesh;
 
     LateralMeshAdapter(const SolverOver<Geometry3D>* solver):
-        mesh(makeGeometryGrid(solver->getGeometry(), true, true)) {
+        mesh(makeGeometryGrid(solver->getGeometry())) {
         _size = mesh->axis0->size() * mesh->axis1->size();
     }
 
@@ -360,7 +360,7 @@ void SlabSolver<BaseT>::setupLayers()
     if (!isnan(interface_position)) {
         double pos = interface_position;
         interface = std::lower_bound(vbounds->begin(), vbounds->end(), pos-0.5*OrderedAxis::MIN_DISTANCE) - vbounds->begin() + 1; // OrderedAxis::MIN_DISTANCE to compensate for truncation errors
-        if (interface > vbounds->size()) interface = vbounds->size();
+        if (std::size_t(interface) > vbounds->size()) interface = vbounds->size();
         pos = vbounds->at(interface-1); if (abs(pos) < OrderedAxis::MIN_DISTANCE) pos = 0.;
         Solver::writelog(LOG_DEBUG, "Setting interface at layer {:d} (exact position {:g})", interface, pos);
     } else

@@ -32,9 +32,9 @@ struct MyMaterial : public plask::Material {
 
     virtual Material::Kind kind() const override { return Material::NONE; }
 
-    virtual double VB(double T, double e, char P, char h) const override { return 0.5*T; }
+    virtual double VB(double T, double /*e*/, char /*P*/, char /*h*/) const override { return 0.5*T; }
 
-    virtual double chi(double T, double e, char P) const override { std::cerr << "MyMaterial: " << P << "\n"; return 1.0; }
+    virtual double chi(double /*T*/, double /*e*/, char P) const override { std::cerr << "MyMaterial: " << P << "\n"; return 1.0; }
 
 };
 
@@ -297,6 +297,7 @@ BOOST_PYTHON_MODULE(plasktest)
         py::object module { py::handle<>(py::borrowed(PyImport_AddModule("plasktest.solvers"))) };
         py::scope().attr("solvers") = module;
         py::scope scope = module;
+        (void) scope;   // don't warn about unused variable scope
 
         plask::python::ExportSolver<InOutSolver>("InOut", py::init<std::string>())
             .add_receiver("inWavelength", &InOutSolver::inWavelength, "Input Wavelength")

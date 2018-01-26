@@ -23,7 +23,7 @@ MI_PROPERTY(Au, thermk,
             MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
-Tensor2<double> Au::thermk(double T, double t) const {
+Tensor2<double> Au::thermk(double T, double /*t*/) const {
     double tCondT = -0.064*(T-300.)+317.1;
     return ( Tensor2<double>(tCondT, tCondT) );
 }
@@ -33,12 +33,12 @@ MI_PROPERTY(Au, absp,
             MIComment("TODO"),
             MIArgumentRange(MaterialInfo::lam, 490, 10000)
             )
-double Au::absp(double lam, double T) const {
+double Au::absp(double lam, double /*T*/) const {
     double ulam = lam*1e-3;
     return ( -39949.7*pow(ulam,-3.07546) - 113.313*ulam*ulam - 4530.42*ulam + 816908 );
 }
 
-bool Au::isEqual(const Material &other) const {
+bool Au::isEqual(const Material &/*other*/) const {
     return true;
 }
 
@@ -47,7 +47,7 @@ MI_PROPERTY(Au, nr,
             MIComment("TODO"),
             MIArgumentRange(MaterialInfo::lam, 700, 10000)
 			)
-double Au::nr(double lam, double T, double n) const {
+double Au::nr(double lam, double /*T*/, double /*n*/) const {
     double ulam = lam*1e-3;
     return ( 0.113018*pow(ulam,1.96113) + 0.185598*ulam );
 }

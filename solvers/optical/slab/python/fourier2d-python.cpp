@@ -4,6 +4,18 @@
 
 namespace plask { namespace optical { namespace slab { namespace python {
 
+template <>
+py::object Eigenmodes<FourierSolver2D>::array(const dcomplex* data, size_t N) const {
+    int dim = 2, strid = 2;
+    if (solver.separated()) strid = dim = 1;
+    npy_intp dims[] = { npy_intp(N / strid), npy_intp(strid) };
+    npy_intp strides[] = { npy_intp(strid * sizeof(dcomplex)), npy_intp(sizeof(dcomplex)) };
+    PyObject* arr = PyArray_New(&PyArray_Type, dim, dims, NPY_CDOUBLE, strides, (void*)data, 0, 0, NULL);
+    if (arr == nullptr) throw plask::CriticalException("Cannot create array");
+    return py::object(py::handle<>(arr));
+}
+
+
 inline static std::string polarization_str(Expansion::Component val) {
     AxisNames* axes = getCurrentAxes();
     switch (val) {
@@ -12,6 +24,7 @@ inline static std::string polarization_str(Expansion::Component val) {
         default: return "none";
     }
 }
+
 
 template <>
 py::object Solver_computeReflectivity<FourierSolver2D>(FourierSolver2D* self,
@@ -329,35 +342,55 @@ static py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, d
     return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
 }
 
-static py::object FourierSolver2D_reflectedCoefficients(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
+static py::object FourierSolver2D_reflectedCoefficients1(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection side) {
     if (self.initCalculation()) {
         self.setExpansionDefaults(false);
         self.expansion.setK0(2e3*M_PI/lam);
     } else
         self.expansion.setK0(2e3*M_PI/lam);
-    auto data = self.getReflectedCoefficients(polarization, incidence);
+    auto data = self.getReflectedCoefficients(polarization, side);
     return arrayFromVec2D<NPY_CDOUBLE>(data, self.separated(), 2);
 }
 
-static py::object FourierSolver2D_transmittedCoefficients(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
+static py::object FourierSolver2D_transmittedCoefficients1(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection side) {
     if (self.initCalculation()) {
         self.setExpansionDefaults(false);
         self.expansion.setK0(2e3*M_PI/lam);
     } else
         self.expansion.setK0(2e3*M_PI/lam);
-    auto data = self.getTransmittedCoefficients(polarization, incidence);
+    auto data = self.getTransmittedCoefficients(polarization, side);
+    return arrayFromVec2D<NPY_CDOUBLE>(data, self.separated(), 2);
+}
+
+static py::object FourierSolver2D_reflectedCoefficients2(FourierSolver2D& self, double lam, size_t idx, Transfer::IncidentDirection side) {
+    if (self.initCalculation()) {
+        self.setExpansionDefaults(false);
+        self.expansion.setK0(2e3*M_PI/lam);
+    } else
+        self.expansion.setK0(2e3*M_PI/lam);
+    auto data = self.getReflectedCoefficients(idx, side);
+    return arrayFromVec2D<NPY_CDOUBLE>(data, self.separated(), 2);
+}
+
+static py::object FourierSolver2D_transmittedCoefficients2(FourierSolver2D& self, double lam, size_t idx, Transfer::IncidentDirection side) {
+    if (self.initCalculation()) {
+        self.setExpansionDefaults(false);
+        self.expansion.setK0(2e3*M_PI/lam);
+    } else
+        self.expansion.setK0(2e3*M_PI/lam);
+    auto data = self.getTransmittedCoefficients(idx, side);
     return arrayFromVec2D<NPY_CDOUBLE>(data, self.separated(), 2);
 }
 
 static py::object FourierSolver2D_getFieldVectorE(FourierSolver2D& self, int num, double z) {
     if (num < 0) num = self.modes.size() + num;
-    if (num >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
+    if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorE(num, z), self.separated(), 2);
 }
 
 static py::object FourierSolver2D_getFieldVectorH(FourierSolver2D& self, int num, double z) {
     if (num < 0) num = self.modes.size() + num;
-    if (num >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
+    if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), self.separated(), 2);
 }
 
@@ -481,26 +514,32 @@ void export_FourierSolver2D()
                 u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                 u8"        present.\n"
                 , (py::arg("lam"), "polarization", "side"));
-    solver.def("compute_reflected_coefficients", &FourierSolver2D_reflectedCoefficients,
+    solver.def("compute_reflected_coefficients", &FourierSolver2D_reflectedCoefficients1, (py::arg("lam"), "polarization", "side"));
+    solver.def("compute_reflected_coefficients", &FourierSolver2D_reflectedCoefficients2,
                 u8"Compute Fourier coefficients of the reflected field [-].\n\n"
                 u8"Args:\n"
                 u8"    lam (float): Incident light wavelength.\n"
                 u8"    polarization: Specification of the incident light polarization.\n"
                 u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
                 u8"        name of the non-vanishing electric field component.\n"
+                u8"    idx (int): Index of the input-side layer eigenfield to set as the incident\n"
+                u8"        field.\n"
                 u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                 u8"        present.\n"
-                , (py::arg("lam"), "polarization", "side"));
-    solver.def("compute_transmitted_coefficients", &FourierSolver2D_transmittedCoefficients,
+                , (py::arg("lam"), "idx", "side"));
+    solver.def("compute_transmitted_coefficients", &FourierSolver2D_transmittedCoefficients1, (py::arg("lam"), "polarization", "side"));
+    solver.def("compute_transmitted_coefficients", &FourierSolver2D_transmittedCoefficients2,
                 u8"Compute Fourier coefficients of the reflected field [-].\n\n"
                 u8"Args:\n"
                 u8"    lam (float): Incident light wavelength.\n"
                 u8"    polarization: Specification of the incident light polarization.\n"
                 u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
                 u8"        name of the non-vanishing electric field component.\n"
+                u8"    idx (int): Index of the input-side layer eigenfield to set as the incident\n"
+                u8"        field.\n"
                 u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                 u8"        present.\n"
-                , (py::arg("lam"), "polarization", "side"));
+                , (py::arg("lam"), "idx", "side"));
     solver.add_property("mirrors", FourierSolver2D_getMirrors, FourierSolver2D_setMirrors,
                 u8"Mirror reflectivities. If None then they are automatically estimated from the\n"
                 u8"Fresnel equations.");
@@ -542,7 +581,17 @@ void export_FourierSolver2D()
                u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
                u8":rtype: numpy.ndarray\n"
               );
+    solver.def("layer_eigenmodes", &Eigenmodes<FourierSolver2D>::init, py::arg("level"),
+               u8"Get eignemodes for a layer at specified level.\n\n"
+               u8"This is a low-level function to access diagonalized eigenmodes for a specific\n"
+               u8"layer. Please refer to the detailed solver description for the interpretation\n"
+               u8"of the returned values.\n\n"
+               u8"Args:\n"
+               u8"    level (float): Vertical level at which the coefficients are computed.\n",
+               py::with_custodian_and_ward_postcall<0,1>()
+              );
     py::scope scope = solver;
+    (void) scope;   // don't warn about unused variable scope
 
     register_vector_of<FourierSolver2D::Mode>("Modes");
     py::class_<FourierSolver2D::Mode>("Mode", u8"Detailed information about the mode.", py::no_init)
@@ -607,6 +656,27 @@ void export_FourierSolver2D()
              u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
              u8":rtype: numpy.ndarray\n"
             )
+    ;
+
+    py::class_<Eigenmodes<FourierSolver2D>, shared_ptr<Eigenmodes<FourierSolver2D>>, boost::noncopyable>("Eigenmodes",
+        u8"Layer eignemodes proxy\n\n"
+        u8"This is an advanced class allowing to extract eignemodes in each layer.\n", py::no_init)
+        .def("__len__", &Eigenmodes<FourierSolver2D>::size)
+        .def("__getitem__", &Eigenmodes<FourierSolver2D>::Gamma)
+        .def("coefficientsE", &Eigenmodes<FourierSolver2D>::getCoefficientsE, py::arg("n"),
+            u8"Get electric field coefficients for the n-th eigenmode.\n\n"
+            u8"Args:\n"
+            u8"    n (int): Eigenmode number."
+        )
+        .def("coefficientsH", &Eigenmodes<FourierSolver2D>::getCoefficientsH, py::arg("n"),
+            u8"Get magnetic field coefficients for the n-th eigenmode.\n\n"
+            u8"Args:\n"
+            u8"    n (int): Eigenmode number."
+        )
+        .def_readonly("outLightMagnitude",
+                      reinterpret_cast<ProviderFor<LightMagnitude,Geometry2DCartesian> Eigenmodes<FourierSolver2D>::*> (&Eigenmodes<FourierSolver2D>::outLightMagnitude),
+                      format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", "2D", u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude").c_str()
+        )
     ;
 }
 

@@ -15,20 +15,22 @@ namespace plask {
 template <int dim>
 struct PLASK_API ArrangeContainer: public GeometryObjectTransform<dim>
 {
+    typedef GeometryObjectTransform<dim> BaseClass;
+
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
-    typedef typename GeometryObjectTransform<dim>::DVec DVec;
+    typedef typename BaseClass::DVec DVec;
 
     /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
-    typedef typename GeometryObjectTransform<dim>::Box Box;
+    typedef typename BaseClass::Box Box;
 
     /// Type of this child.
-    typedef typename GeometryObjectTransform<dim>::ChildType ChildType;
+    typedef typename BaseClass::ChildType ChildType;
 
-    using GeometryObjectTransform<dim>::getChild;
+    using BaseClass::getChild;
 
   protected:
 
-    using GeometryObjectTransform<dim>::_child;
+    using BaseClass::_child;
 
     /// Translation vector for each repetition
     DVec translation;

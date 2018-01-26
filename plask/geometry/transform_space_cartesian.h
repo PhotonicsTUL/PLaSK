@@ -11,16 +11,18 @@ namespace plask {
  */
 class PLASK_API Extrusion: public GeometryObjectTransformSpace<3, 2> {
 
+    typedef GeometryObjectTransformSpace<3, 2> BaseClass;
+
     double length;
 
   public:
 
-    typedef GeometryObjectTransformSpace<3, 2>::ChildType ChildType;
+    typedef BaseClass::ChildType ChildType;
 
     // Size of the calculation space.
     // spaceSize;
 
-    explicit Extrusion(shared_ptr<ChildType> child, double length): GeometryObjectTransformSpace<3,2>(child), length(length) {}
+    explicit Extrusion(shared_ptr<ChildType> child, double length): BaseClass(child), length(length) {}
 
     explicit Extrusion(double length = 0.0/*,  spaceSize*/): length(length)/*, spaceSize(spaceSize)*/ {}
 

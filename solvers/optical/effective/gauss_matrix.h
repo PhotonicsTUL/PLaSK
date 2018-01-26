@@ -94,9 +94,9 @@ struct ZgbMatrix {
         assert(info >= 0);
 
         dcomplex det = 1.;
-        for (int i = 0; i < size; ++i) {
+        for (std::size_t i = 0; i < size; ++i) {
             det *= data[LD*i + 4];
-            if (ipiv[i] != i+1) det = -det;
+            if (ipiv[i] != int(i+1)) det = -det;
         }
         return det;
     }

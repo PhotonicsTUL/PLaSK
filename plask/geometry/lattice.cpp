@@ -196,6 +196,7 @@ typename ArrangeContainer<dim>::Box ArrangeContainer<dim>::fromChildCoords(const
 
 template <>
 void ArrangeContainer<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+    BaseClass::writeXMLAttr(dest_xml_object, axes);
     if (translation.tran() != 0.) dest_xml_object.attr("d"+axes.getNameForTran(), translation.tran());
     if (translation.vert() != 0.) dest_xml_object.attr("d"+axes.getNameForVert(), translation.vert());
     dest_xml_object.attr("count", repeat_count);
@@ -204,6 +205,7 @@ void ArrangeContainer<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, cons
 
 template <>
 void ArrangeContainer<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+    BaseClass::writeXMLAttr(dest_xml_object, axes);
     if (translation.lon() != 0.) dest_xml_object.attr("d"+axes.getNameForLong(), translation.lon());
     if (translation.tran() != 0.) dest_xml_object.attr("d"+axes.getNameForTran(), translation.tran());
     if (translation.vert() != 0.) dest_xml_object.attr("d"+axes.getNameForVert(), translation.vert());
@@ -273,7 +275,8 @@ struct SegmentsIterator {
 
     Vec<2, int> first, second;
 
-    int seg_nr, point_nr;
+    std::size_t seg_nr;
+    std::ptrdiff_t point_nr;
 
     /**
      * Construct iterator. After first next() call iterator will point to the first point.
@@ -289,7 +292,7 @@ struct SegmentsIterator {
     bool next() {
         if (seg_nr == segments.size()) return false;
         ++point_nr;
-        if (point_nr == segments[seg_nr].size()) {  //end of segment?
+        if (point_nr == std::ptrdiff_t(segments[seg_nr].size())) {  //end of segment?
             point_nr = 0;   //go to next segment
             do {
                 ++seg_nr;
@@ -411,6 +414,7 @@ void Lattice::refillContainer()
 
 
 void Lattice::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
+    GeometryObjectTransform<3>::writeXMLAttr(dest_xml_object, axes);
     if (vec0.lon() != 0.)  dest_xml_object.attr("a"+axes.getNameForLong(), vec0.lon());
     if (vec0.tran() != 0.) dest_xml_object.attr("a"+axes.getNameForTran(), vec0.tran());
     if (vec0.vert() != 0.) dest_xml_object.attr("a"+axes.getNameForVert(), vec0.vert());

@@ -6,3 +6,4 @@ build*
 .idea
 /.vs
 /CMakeSettings.json
+__pycache__

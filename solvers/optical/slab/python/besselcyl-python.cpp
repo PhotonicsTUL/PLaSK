@@ -5,6 +5,16 @@
 
 namespace plask { namespace optical { namespace slab { namespace python {
 
+template <>
+py::object Eigenmodes<BesselSolverCyl>::array(const dcomplex* data, size_t N) const {
+    const int dim = 2, strid = 2;
+    npy_intp dims[] = { npy_intp(N / strid), npy_intp(strid) };
+    npy_intp strides[] = { strid * sizeof(dcomplex), sizeof(dcomplex) };
+    PyObject* arr = PyArray_New(&PyArray_Type, dim, dims, NPY_CDOUBLE, strides, (void*)data, 0, 0, NULL);
+    if (arr == nullptr) throw plask::CriticalException("Cannot create array");
+    return py::object(py::handle<>(arr));
+}
+
 std::string BesselSolverCyl_Mode_str(const BesselSolverCyl::Mode& self) {
     return format(u8"<m: {:d}, lam: {}nm, power: {:.2g}mW>", self.m, str(2e3*M_PI/self.k0, u8"({:.3f}{:+.3g}j)"), self.power);
 }
@@ -110,13 +120,13 @@ static size_t BesselSolverCyl_setMode(py::tuple args, py::dict kwargs) {
 
 static py::object BesselSolverCyl_getFieldVectorE(BesselSolverCyl& self, int num, double z) {
     if (num < 0) num = self.modes.size() + num;
-    if (num >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
+    if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorE(num, z), false, 2);
 }
 
 static py::object BesselSolverCyl_getFieldVectorH(BesselSolverCyl& self, int num, double z) {
     if (num < 0) num = self.modes.size() + num;
-    if (num >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
+    if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), false, 2);
 }
 
@@ -216,7 +226,7 @@ void export_BesselSolverCyl()
                u8"    level (float): Vertical lever at which the coefficients are computed.\n\n"
                u8":rtype: numpy.ndarray\n"
               );
-//     solver.def("compute_reflectivity", &FourierSolver_computeReflectivity<FourierSolver2D>,
+//     solver.def("compute_reflectivity", &FourierSolver_computeReflectivity<BesselSolverCyl>,
 //                u8"Compute reflection coefficient on the perpendicular incidence [%].\n\n"
 //                u8"Args:\n"
 //                u8"    lam (float or array of floats): Incident light wavelength.\n"
@@ -226,7 +236,7 @@ void export_BesselSolverCyl()
 //                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
 //                u8"        present.\n"
 //                , (py::arg("lam"), "polarization", "side");
-//     solver.def("compute_transmittivity", &FourierSolver_computeTransmittivity<FourierSolver2D>,
+//     solver.def("compute_transmittivity", &FourierSolver_computeTransmittivity<BesselSolverCyl>,
 //                u8"Compute transmission coefficient on the perpendicular incidence [%].\n\n"
 //                u8"Args:\n"
 //                u8"    lam (float or array of floats): Incident light wavelength.\n"
@@ -236,7 +246,7 @@ void export_BesselSolverCyl()
 //                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
 //                u8"        present.\n"
 //                , (py::arg("lam"), "polarization", "side"));
-//     solver.def("compute_reflected_orders", &FourierSolver2D_reflectedAmplitudes,
+//     solver.def("compute_reflected_orders", &BesselSolverCyl_reflectedAmplitudes,
 //                u8"Compute Fourier coefficients of the reflected field on the perpendicular incidence [-].\n\n"
 //                u8"Args:\n"
 //                u8"    lam (float): Incident light wavelength.\n"
@@ -246,7 +256,7 @@ void export_BesselSolverCyl()
 //                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
 //                u8"        present.\n"
 //                , (py::arg("lam"), "polarization", "side"));
-//     solver.def("compute_transmitted_orders", &FourierSolver2D_transmittedAmplitudes,
+//     solver.def("compute_transmitted_orders", &BesselSolverCyl_transmittedAmplitudes,
 //                u8"Compute Fourier coefficients of the reflected field on the perpendicular incidence [-].\n\n"
 //                u8"Args:\n"
 //                u8"    lam (float): Incident light wavelength.\n"
@@ -262,7 +272,7 @@ void export_BesselSolverCyl()
                         PML_ATTRS_DOC
                        );
     RO_FIELD(modes, "Computed modes.");
-//     solver.def("reflected", &FourierSolver_getReflected<FourierSolver2D>, py::with_custodian_and_ward_postcall<0,1>(),
+//     solver.def("reflected", &FourierSolver_getReflected<BesselSolverCyl>, py::with_custodian_and_ward_postcall<0,1>(),
 //                u8"Access to the reflected field.\n\n"
 //                u8"Args:\n"
 //                u8"    lam (float): Incident light wavelength.\n"
@@ -278,6 +288,16 @@ void export_BesselSolverCyl()
     solver.add_property("wavelength", &SlabBase::getWavelength, &Solver_setWavelength<__Class__>, "Wavelength of the light [nm].");
     solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, "Normalized frequency of the light [1/µm].");
     solver.add_property("m", &__Class__::getM, &__Class__::setM, "Angular dependence parameter.");
+
+	solver.def("layer_eigenmodes", &Eigenmodes<BesselSolverCyl>::init, py::arg("level"),
+		u8"Get eignemodes for a layer at specified level.\n\n"
+		u8"This is a low-level function to access diagonalized eigenmodes for a specific\n"
+		u8"layer. Please refer to the detailed solver description for the interpretation\n"
+		u8"of the returned values.\n\n"
+		u8"Args:\n"
+		u8"    level (float): Vertical level at which the coefficients are computed.\n",
+		py::with_custodian_and_ward_postcall<0, 1>()
+	);
 
     METHOD(epsVmm, epsVmm, u8"J_{m-1}(gr) \\varepsilon^{-1} J_{m-1}(kr) r dr", "layer");
     METHOD(epsVpp, epsVpp, u8"J_{m+1}(gr) \\varepsilon^{-1} J_{m+1}(kr) r dr", "layer");
@@ -299,6 +319,7 @@ void export_BesselSolverCyl()
 #endif
 
     py::scope scope = solver;
+    (void) scope;   // don't warn about unused variable scope
 
     register_vector_of<BesselSolverCyl::Mode>("Modes");
     py::class_<BesselSolverCyl::Mode>("Mode", u8"Detailed information about the mode.", py::no_init)
@@ -310,6 +331,27 @@ void export_BesselSolverCyl()
         .def_readwrite("power", &BesselSolverCyl::Mode::power, u8"Total power emitted into the mode.")
         .def("__str__", &BesselSolverCyl_Mode_str)
         .def("__repr__", &BesselSolverCyl_Mode_repr)
+    ;
+
+    py::class_<Eigenmodes<BesselSolverCyl>, shared_ptr<Eigenmodes<BesselSolverCyl>>, boost::noncopyable>("Eigenmodes",
+	    u8"Layer eignemodes proxy\n\n"
+	    u8"This is an advanced class allowing to extract eignemodes in each layer.\n", py::no_init)
+	    .def("__len__", &Eigenmodes<BesselSolverCyl>::size)
+	    .def("__getitem__", &Eigenmodes<BesselSolverCyl>::Gamma)
+	    .def("coefficientsE", &Eigenmodes<BesselSolverCyl>::getCoefficientsE, py::arg("n"),
+		    u8"Get electric field coefficients for the n-th eigenmode.\n\n"
+		    u8"Args:\n"
+		    u8"    n (int): Eigenmode number."
+	    )
+	    .def("coefficientsH", &Eigenmodes<BesselSolverCyl>::getCoefficientsH, py::arg("n"),
+		    u8"Get magnetic field coefficients for the n-th eigenmode.\n\n"
+		    u8"Args:\n"
+		    u8"    n (int): Eigenmode number."
+	    )
+	    .def_readonly("outLightMagnitude",
+                          reinterpret_cast<ProviderFor<LightMagnitude, Geometry2DCartesian> Eigenmodes<BesselSolverCyl>::*> (&Eigenmodes<BesselSolverCyl>::outLightMagnitude),
+	                  format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", "Cyl", u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude").c_str()
+	    )
     ;
 }
 

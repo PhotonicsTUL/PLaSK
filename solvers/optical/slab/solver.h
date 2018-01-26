@@ -65,19 +65,13 @@ struct PLASK_SOLVER_API SlabBase {
         reader.requireTagEnd();
     }
 
-#ifndef NDEBUG
   public:
-#endif
 
     /// Transfer method object (AdmittanceTransfer or ReflectionTransfer)
     std::unique_ptr<Transfer> transfer;
 
     /// Initialize transfer class
     void initTransfer(Expansion& expansion, bool reflection);
-
-#ifdef NDEBUG
-  public:
-#endif
 
     /// Layer boundaries
     shared_ptr<OrderedAxis> vbounds;
@@ -95,7 +89,7 @@ struct PLASK_SOLVER_API SlabBase {
     std::vector<std::size_t> stack;
 
     /// Index of the matching interface
-    ptrdiff_t interface;
+    std::ptrdiff_t interface;
 
     /// Approximate position of the matching interface
     double interface_position;
@@ -216,8 +210,9 @@ struct PLASK_SOLVER_API SlabBase {
 
     /** Set expansion parameters from default values
      * \param with_k0 Change k0
+     * \returns \c true if anything was changed
      */
-    virtual void setExpansionDefaults(bool with_k0=true) = 0;
+    virtual bool setExpansionDefaults(bool with_k0=true) = 0;
 };
 
 /**
@@ -391,9 +386,9 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
 
     /// Throw exception if the interface position is unsuitable for eigenmode computations
     void ensureInterface() {
-        if (interface == size_t(-1))
+        if (interface == -1)
             throw BadInput(this->getId(), "No interface position set");
-        if (interface == 0 || interface >= stack.size())
+        if (interface == 0 || interface >= std::ptrdiff_t(stack.size()))
             throw BadInput(this->getId(), "Wrong interface position {0} (min: 1, max: {1})", interface, stack.size()-1);
     }
 

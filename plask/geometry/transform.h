@@ -253,19 +253,21 @@ struct GeometryObjectTransformSpace: public GeometryObjectTransform<this_dim, Ch
 template <int dim>
 struct PLASK_API Translation: public GeometryObjectTransform<dim> {
 
+    typedef GeometryObjectTransform<dim> BaseClass;
+
     static const char* NAME;
 
     virtual std::string getTypeName() const override;
 
-    typedef typename GeometryObjectTransform<dim>::ChildType ChildType;
+    typedef typename BaseClass::ChildType ChildType;
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
-    typedef typename GeometryObjectTransform<dim>::DVec DVec;
+    typedef typename BaseClass::DVec DVec;
 
     /// Box type in space on this, rectangle in space with dim number of dimensions.
-    typedef typename GeometryObjectTransform<dim>::Box Box;
+    typedef typename BaseClass::Box Box;
 
-    using GeometryObjectTransform<dim>::getChild;
+    using BaseClass::getChild;
 
     /**
      * Translation vector.
@@ -279,10 +281,10 @@ struct PLASK_API Translation: public GeometryObjectTransform<dim> {
      * @param translation translation
      */
     explicit Translation(shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >(), const DVec& translation = Primitive<dim>::ZERO_VEC)
-        : GeometryObjectTransform<dim>(child), translation(translation) {}
+        : BaseClass(child), translation(translation) {}
 
     explicit Translation(GeometryObjectD<dim>& child, const DVec& translation = Primitive<dim>::ZERO_VEC)
-        : GeometryObjectTransform<dim>(child), translation(translation) {}
+        : BaseClass(child), translation(translation) {}
 
     /**
      * Construct new translation which:

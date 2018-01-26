@@ -20,7 +20,7 @@ namespace plask { namespace electrical { namespace drift_diffusion {
  * \param M carrier effective mass
  * \param T temperature
  */
-static inline const double Neff(Tensor2<double> M, double T) {
+static inline double Neff(Tensor2<double> M, double T) {
     constexpr double fact = phys::me * phys::kB_eV / (2.*M_PI * phys::hb_eV * phys::hb_J);
     double m = pow(M.c00 * M.c00 * M.c11, 0.3333333333333333);
     return 2e-6 * pow(fact * m * T, 1.5);
@@ -30,7 +30,7 @@ static inline const double Neff(Tensor2<double> M, double T) {
  * \param M carrier effective mass
  * \param T temperature
  */
-static inline const double Ni(double Nc, double Nv, double Eg, double T) {
+static inline double Ni(double Nc, double Nv, double Eg, double T) {
     return sqrt(Nc*Nv) * exp(-Eg/(2*phys::kB_eV*T));
 }
 
@@ -733,7 +733,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& 
     if (calctype == CALC_PSI0) {
         err = 0.;
         double normDel = maxDelPsi0 / mEx;
-        for (int i = 0; i < this->mesh->size(); ++i) {
+        for (std::size_t i = 0; i < this->mesh->size(); ++i) {
             corr[i] = clamp(corr[i], -normDel, normDel);
             err = std::max(err, std::abs(corr[i]));
             dvnPsi0[i] += corr[i];
@@ -743,7 +743,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& 
     else if (calctype == CALC_PSI) {
         err = 0.;
         double normDel = maxDelPsi / mEx;
-        for (int i = 0; i < this->mesh->size(); ++i) {
+        for (std::size_t i = 0; i < this->mesh->size(); ++i) {
             corr[i] = clamp(corr[i], -normDel, normDel);
             err = std::max(err, std::abs(corr[i]));
             dvnPsi[i] += corr[i];
@@ -753,7 +753,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& 
     else if (calctype == CALC_FN) {
         err = 0.;
         //double normDel = maxDelFn / mEx;
-        for (int i = 0; i < this->mesh->size(); ++i) {
+        for (std::size_t i = 0; i < this->mesh->size(); ++i) {
             dvnFnEta[i] += corr[i];
             err = std::max(err, std::abs(corr[i]/dvnFnEta[i]));
         }
@@ -762,7 +762,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& 
     else if (calctype == CALC_FP) {
         err = 0.;
         //double normDel = maxDelFp / mEx;
-        for (int i = 0; i < this->mesh->size(); ++i) {
+        for (std::size_t i = 0; i < this->mesh->size(); ++i) {
             dvnFpKsi[i] += corr[i];
             err = std::max(err, std::abs(corr[i]/dvnFpKsi[i]));
         }
@@ -928,7 +928,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findPsiI(double iEc0, double
     double tPsiUpd = 1e30, // normalised potential update
             tTmpA, tTmpB; // temporary data
 
-    int tL = 0; // loop counter
+    std::size_t tL = 0; // loop counter
     while ((std::abs(tPsiUpd) > (maxerrPsiI)/mEx) && (tL < loopsPsiI)) {
         tTmpA = (tNtotb-tNtota) / (tPsi0b-tPsi0a);
         tTmpB = tNtota - tTmpA*tPsi0a;
@@ -1395,6 +1395,7 @@ const LazyData <double> DriftDiffusionModel2DSolver<Geometry2DType>::getFermiLev
         return interpolate(this->mesh, dvnFp, dst_mesh, method, this->geometry); // here the quasi-Fermi hole level is rescalled (*mEx)
     }
     assert(0);
+    std::abort();   // to silent warning in gcc/clang release build
 }
 
 
@@ -1470,6 +1471,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getBandEdg
         return interpolate(this->mesh, dvnEv, dst_mesh, method, this->geometry); // here the valence band edge is rescalled (*mEx)
     }
     assert(0);
+    std::abort();   // to silent warning in gcc/clang release build
 }
 
 

@@ -165,7 +165,7 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
 void FourierSolver3D::onInitialize()
 {
     this->setupLayers();
-    if (this->interface == size_t(-1))
+    if (this->interface == -1)
         Solver::writelog(LOG_DETAIL, "Initializing Fourier3D solver ({0} layers in the stack)",
                                      this->stack.size());
     else
@@ -224,18 +224,18 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
 
 
 cvector FourierSolver3D::getReflectedAmplitudes(Expansion::Component polarization,
-                                                Transfer::IncidentDirection incidence)
+                                                Transfer::IncidentDirection side)
 {
     double kt = real(ktran), kl = real(klong);
 
     size_t idx;
-    cvector reflected = getReflectedCoefficients(polarization, incidence, &idx).claim();
+    cvector reflected = getReflectedCoefficients(polarization, side, &idx).claim();
 
-    size_t n = (incidence == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
+    size_t n = (side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
     size_t l = stack[n];
     if (!expansion.diagonalQE(l))
         writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute reflection coefficients",
-                              (incidence == Transfer::INCIDENCE_BOTTOM)? "Bottom" : "Top");
+                              (side == Transfer::INCIDENCE_BOTTOM)? "Bottom" : "Top");
 
     auto gamma = transfer->diagonalizer->Gamma(l);
     dcomplex igamma0 = 1. / gamma[idx];
@@ -265,22 +265,22 @@ cvector FourierSolver3D::getReflectedAmplitudes(Expansion::Component polarizatio
 }
 
 cvector FourierSolver3D::getTransmittedAmplitudes(Expansion::Component polarization,
-                                                  Transfer::IncidentDirection incidence)
+                                                  Transfer::IncidentDirection side)
 {
     double kt = real(ktran), kl = real(klong);
 
     size_t idx;
-    cvector transmitted = getTransmittedCoefficients(polarization, incidence, &idx).claim();
+    cvector transmitted = getTransmittedCoefficients(polarization, side, &idx).claim();
 
-    size_t ni = (incidence == Transfer::INCIDENCE_TOP)? stack.size()-1 : 0;
+    size_t ni = (side == Transfer::INCIDENCE_TOP)? stack.size()-1 : 0;
     size_t nt = stack.size()-1-ni;
     size_t li = stack[ni], lt = stack[nt];
     if (!expansion.diagonalQE(lt))
         Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute transmission coefficients",
-                                      (incidence == Transfer::INCIDENCE_TOP)? "Bottom" : "Top");
+                                      (side == Transfer::INCIDENCE_TOP)? "Bottom" : "Top");
     if (!expansion.diagonalQE(li))
         Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute transmission coefficients",
-                                     (incidence == Transfer::INCIDENCE_TOP)? "Top" : "Bottom");
+                                     (side == Transfer::INCIDENCE_TOP)? "Top" : "Bottom");
 
     // we multiply all fields by gt / gi
     auto gamma = transfer->diagonalizer->Gamma(lt);
@@ -311,7 +311,7 @@ cvector FourierSolver3D::getTransmittedAmplitudes(Expansion::Component polarizat
 
 
 cvector FourierSolver3D::getReflectedCoefficients(Expansion::Component polarization,
-                                                  Transfer::IncidentDirection incidence,
+                                                  Transfer::IncidentDirection side,
                                                   size_t* savidx)
 {
     initCalculation();
@@ -320,12 +320,12 @@ cvector FourierSolver3D::getReflectedCoefficients(Expansion::Component polarizat
     if (!expansion.periodic_long || !expansion.periodic_tran)
         throw NotImplemented(getId(), "Reflection coefficients can be computed only for periodic geometries");
 
-    return transfer->getReflectionVector(incidentVector(polarization, savidx), incidence);
+    return transfer->getReflectionVector(incidentVector(polarization, savidx), side);
 }
 
 
 cvector FourierSolver3D::getTransmittedCoefficients(Expansion::Component polarization,
-                                                    Transfer::IncidentDirection incidence,
+                                                    Transfer::IncidentDirection side,
                                                     size_t* savidx)
 {
     initCalculation();
@@ -334,22 +334,45 @@ cvector FourierSolver3D::getTransmittedCoefficients(Expansion::Component polariz
     if (!expansion.periodic_long || !expansion.periodic_tran)
         throw NotImplemented(getId(), "Transmission coefficients can be computed only for periodic geometries");
 
-    return transfer->getTransmissionVector(incidentVector(polarization, savidx), incidence);
+    return transfer->getTransmissionVector(incidentVector(polarization, savidx), side);
 }
 
 
-double FourierSolver3D::getReflection(Expansion::Component polarization, Transfer::IncidentDirection incidence)
+cvector FourierSolver3D::getReflectedCoefficients(size_t idx, Transfer::IncidentDirection side)
+{
+    cvector incident(expansion.matrixSize(), 0.);
+    incident[idx] = 1.;
+
+    initCalculation();
+    if (!transfer) initTransfer(expansion, true);
+
+    return transfer->getReflectionVector(incident, side);
+}
+
+cvector FourierSolver3D::getTransmittedCoefficients(size_t idx, Transfer::IncidentDirection side)
+{
+    cvector incident(expansion.matrixSize(), 0.);
+    incident[idx] = 1.;
+
+    initCalculation();
+    if (!transfer) initTransfer(expansion, true);
+
+    return transfer->getTransmissionVector(incident, side);
+}
+
+
+double FourierSolver3D::getReflection(Expansion::Component polarization, Transfer::IncidentDirection side)
 {
     double kt = real(ktran), kl = real(klong);
 
     size_t idx;
-    cvector reflected = getReflectedCoefficients(polarization, incidence, &idx);
+    cvector reflected = getReflectedCoefficients(polarization, side, &idx);
 
-    size_t n = (incidence == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
+    size_t n = (side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
     size_t l = stack[n];
     if (!expansion.diagonalQE(l))
         writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute reflection coefficients",
-                              (incidence == Transfer::INCIDENCE_BOTTOM)? "Bottom" : "Top");
+                              (side == Transfer::INCIDENCE_BOTTOM)? "Bottom" : "Top");
 
     auto gamma = transfer->diagonalizer->Gamma(l);
     dcomplex igamma0 = 1. / gamma[idx];
@@ -385,22 +408,22 @@ double FourierSolver3D::getReflection(Expansion::Component polarization, Transfe
 }
 
 
-double FourierSolver3D::getTransmission(Expansion::Component polarization, Transfer::IncidentDirection incidence)
+double FourierSolver3D::getTransmission(Expansion::Component polarization, Transfer::IncidentDirection side)
 {
     double kt = real(ktran), kl = real(klong);
 
     size_t idx;
-    cvector transmitted = getTransmittedCoefficients(polarization, incidence, &idx);
+    cvector transmitted = getTransmittedCoefficients(polarization, side, &idx);
 
-    size_t ni = (incidence == Transfer::INCIDENCE_TOP)? stack.size()-1 : 0;
+    size_t ni = (side == Transfer::INCIDENCE_TOP)? stack.size()-1 : 0;
     size_t nt = stack.size()-1-ni;
     size_t li = stack[ni], lt = stack[nt];
     if (!expansion.diagonalQE(lt))
         Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute transmission coefficients",
-                                      (incidence == Transfer::INCIDENCE_TOP)? "Bottom" : "Top");
+                                      (side == Transfer::INCIDENCE_TOP)? "Bottom" : "Top");
     if (!expansion.diagonalQE(li))
         Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute transmission coefficients",
-                                     (incidence == Transfer::INCIDENCE_TOP)? "Top" : "Bottom");
+                                     (side == Transfer::INCIDENCE_TOP)? "Top" : "Bottom");
 
     // we multiply all fields by gt / gi
     auto gamma = transfer->diagonalizer->Gamma(lt);

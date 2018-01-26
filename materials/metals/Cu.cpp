@@ -23,7 +23,7 @@ MI_PROPERTY(Cu, thermk,
             MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
-Tensor2<double> Cu::thermk(double T, double t) const {
+Tensor2<double> Cu::thermk(double T, double /*t*/) const {
     double tCondT = 400.8*pow((300./T),0.073);
     return ( Tensor2<double>(tCondT, tCondT) );
 }
@@ -32,11 +32,11 @@ MI_PROPERTY(Cu, absp,
             MISource(""),
             MIComment("TODO")
             )
-double Cu::absp(double lam, double T) const {
+double Cu::absp(double /*lam*/, double /*T*/) const {
     return ( 1e3 );
 }
 
-bool Cu::isEqual(const Material &other) const {
+bool Cu::isEqual(const Material &/*other*/) const {
     return true;
 }
 
@@ -44,7 +44,7 @@ MI_PROPERTY(Cu, nr,
             MISource(""),
             MIComment("TODO")
 			)
-double Cu::nr(double lam, double T, double n) const {
+double Cu::nr(double /*lam*/, double /*T*/, double /*n*/) const {
     return ( 1. );
 }
 

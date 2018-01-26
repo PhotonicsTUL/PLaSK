@@ -12,8 +12,8 @@ MI_PROPERTY(In, cond,
             MISource("www.thinfilm.com"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> In::cond(double T) const {
-    double tCond = 1.392e7;
+Tensor2<double> In::cond(double /*T*/) const {
+    const double tCond = 1.392e7;
     return ( Tensor2<double>(tCond, tCond) );
 }
 
@@ -21,8 +21,8 @@ MI_PROPERTY(In, thermk,
             MISource("www.lakeshore.com"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> In::thermk(double T, double t) const {
-    double tCondT = 84.;
+Tensor2<double> In::thermk(double /*T*/, double /*t*/) const {
+    const double tCondT = 84.;
     return ( Tensor2<double>(tCondT, tCondT) );
 }
 
@@ -30,11 +30,11 @@ MI_PROPERTY(In, absp,
             MISource(""),
             MIComment("TODO")
             )
-double In::absp(double lam, double T) const {
+double In::absp(double /*lam*/, double /*T*/) const {
     return ( 1e3 );
 }
 
-bool In::isEqual(const Material &other) const {
+bool In::isEqual(const Material &/*other*/) const {
     return true;
 }
 
@@ -42,7 +42,7 @@ MI_PROPERTY(In, nr,
             MISource(""),
             MIComment("TODO")
 			)
-double In::nr(double lam, double T, double n) const {
+double In::nr(double /*lam*/, double /*T*/, double /*n*/) const {
     return ( 1. );
 }
 

@@ -557,13 +557,14 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * Initialize this to be the same as @p to_copy but doesn't have any changes observer.
      * @param to_copy object to copy
      */
-    GeometryObject(const GeometryObject& to_copy): max_points(to_copy.max_points), min_ply(to_copy.min_ply) {}
+    GeometryObject(const GeometryObject& to_copy): enable_shared_from_this<GeometryObject>(to_copy), max_points(to_copy.max_points), min_ply(to_copy.min_ply) {}
 
     /**
      * Set this to be the same as @p to_copy but doesn't change changes observer.
      * @param to_copy object to copy
      */
     GeometryObject& operator=(const GeometryObject& to_copy) {
+        enable_shared_from_this<GeometryObject>::operator=(to_copy);
         max_points = to_copy.max_points;
         min_ply = to_copy.min_ply;
         return *this;
@@ -668,7 +669,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * @param direction direction
      * @return @c true only if object is solid in its bouding-box in given @p direction
      */
-    virtual bool isUniform(Primitive<3>::Direction direction) const { return false; }
+    virtual bool isUniform(Primitive<3>::Direction /*direction*/) const { return false; }
 
     /**
      * Check if this object belongs to class (has tag) with name @p role_name.

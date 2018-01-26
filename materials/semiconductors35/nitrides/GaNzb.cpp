@@ -37,7 +37,7 @@ MI_PROPERTY(GaNzb, Dso,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double GaNzb::Dso(double T, double e) const {
+double GaNzb::Dso(double /*T*/, double /*e*/) const {
     return 0.017;
 }
 
@@ -70,18 +70,16 @@ MI_PROPERTY(GaNzb, Mhh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
             MIComment("no temperature dependence")
            )
-Tensor2<double> GaNzb::Mhh(double T, double e) const {
-    Tensor2<double> tMhh(0.83, 0.83); // [001]
-    return tMhh;
+Tensor2<double> GaNzb::Mhh(double /*T*/, double /*e*/) const {
+    return Tensor2<double>(0.83, 0.83); // [001]
 }
 
 MI_PROPERTY(GaNzb, Mlh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
             MIComment("no temperature dependence")
            )
-Tensor2<double> GaNzb::Mlh(double T, double e) const {
-    Tensor2<double> tMlh(0.22, 0.22);
-    return tMlh;
+Tensor2<double> GaNzb::Mlh(double /*T*/, double /*e*/) const {
+    return Tensor2<double>(0.22, 0.22);
 }
 
 MI_PROPERTY(GaNzb, Mh,
@@ -109,7 +107,7 @@ MI_PROPERTY(GaNzb, VB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double GaNzb::VB(double T, double e, char point, char hole) const {
+double GaNzb::VB(double T, double e, char /*point*/, char hole) const {
     double tVB(-2.64);
     if (e) {
         double DEhy = 2.*av(T)*(1.-c12(T)/c11(T))*e;
@@ -125,7 +123,7 @@ MI_PROPERTY(GaNzb, ac,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double GaNzb::ac(double T) const {
+double GaNzb::ac(double /*T*/) const {
     return -6.71;
 }
 
@@ -133,7 +131,7 @@ MI_PROPERTY(GaNzb, av,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double GaNzb::av(double T) const {
+double GaNzb::av(double /*T*/) const {
     return 0.69;
 }
 
@@ -141,7 +139,7 @@ MI_PROPERTY(GaNzb, b,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double GaNzb::b(double T) const {
+double GaNzb::b(double /*T*/) const {
     return -2.0;
 }
 
@@ -149,7 +147,7 @@ MI_PROPERTY(GaNzb, d,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double GaNzb::d(double T) const {
+double GaNzb::d(double /*T*/) const {
     return -3.7;
 }
 
@@ -157,7 +155,7 @@ MI_PROPERTY(GaNzb, c11,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double GaNzb::c11(double T) const {
+double GaNzb::c11(double /*T*/) const {
     return 293.;
 }
 
@@ -165,7 +163,7 @@ MI_PROPERTY(GaNzb, c12,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double GaNzb::c12(double T) const {
+double GaNzb::c12(double /*T*/) const {
     return 159.;
 }
 
@@ -173,7 +171,7 @@ MI_PROPERTY(GaNzb, c44,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MIComment("no temperature dependence")
            )
-double GaNzb::c44(double T) const {
+double GaNzb::c44(double /*T*/) const {
     return 155.;
 }
 
@@ -181,11 +179,11 @@ MI_PROPERTY(GaNzb, dens,
             MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
             MIComment("no temperature dependence")
             )
-double GaNzb::dens(double T) const { return 6.02e3; }
+double GaNzb::dens(double /*T*/) const { return 6.02e3; }
 
 std::string GaNzb::name() const { return NAME; }
 
-bool GaNzb::isEqual(const Material &other) const {
+bool GaNzb::isEqual(const Material &/*other*/) const {
     return true;
 }
 

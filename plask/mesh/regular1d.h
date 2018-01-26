@@ -101,7 +101,7 @@ class PLASK_API RegularAxis: public MeshAxis {
      * @param index index of point, from 0 to size()-1
      * @return point with given @p index
      */
-    const double operator[](std::size_t index) const { return lo + index * _step; }
+    double operator[](std::size_t index) const { return lo + index * _step; }
 
     virtual double at(std::size_t index) const override { return lo + index * _step; }
 

@@ -12,7 +12,7 @@ MI_PROPERTY(aSi, cond,
             MISource("A.S. Diamond, Handbook of Imaging Materials, p. 630"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> aSi::cond(double T) const {
+Tensor2<double> aSi::cond(double /*T*/) const {
     return ( Tensor2<double>(0.1, 0.1) );
 }
 
@@ -21,7 +21,7 @@ MI_PROPERTY(aSi, thermk,
             MIComment("fit from: Lukasz Piskorski, unpublished"),
             MIArgumentRange(MaterialInfo::T, 77, 400)
             )
-Tensor2<double> aSi::thermk(double T, double h) const {
+Tensor2<double> aSi::thermk(double T, double /*h*/) const {
     double tK;
     if (T<=400.) tK = 20.48*pow(T/300.,0.824) + 1.1*pow(T/300.,2.) - 18.9*(T/300.) - 1.07;
     else tK = 2.52148e-4*T + 1.5431908;
@@ -35,7 +35,7 @@ MI_PROPERTY(aSi, nr,
             MIArgumentRange(MaterialInfo::lam, 2200, 3900),
             MIComment("fit by Lukasz Piskorski")
             )
-double aSi::nr(double lam, double T, double n) const {
+double aSi::nr(double lam, double T, double /*n*/) const {
     double tE = phys::h_eVc1e9/lam; // lam -> E
     double nR300K = 0.144+3.308/(1.-0.0437*tE*tE); // 1e-3: nm-> um
     return ( nR300K + 2.2e-5*(T-300.) ); // assumed (see: dnRdT for SiO2)
@@ -53,7 +53,7 @@ double aSi::absp(double lam, double T) const {
     return ( tAbs_RT + tAbs_RT*1e-3*(T-300.) );
 }
 
-bool aSi::isEqual(const Material &other) const {
+bool aSi::isEqual(const Material &/*other*/) const {
     return true;
 }
 

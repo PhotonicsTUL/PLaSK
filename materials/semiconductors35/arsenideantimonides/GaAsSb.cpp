@@ -236,14 +236,14 @@ Material::ConductivityType GaAsSb::condtype() const { return Material::CONDUCTIV
 MI_PROPERTY(GaAsSb, nr,
             MIComment("TODO")
             )
-double GaAsSb::nr(double lam, double T, double n) const {
+double GaAsSb::nr(double /*lam*/, double /*T*/, double /*n*/) const {
     throw NotImplemented("nr for GaAsSb");
 }
 
 MI_PROPERTY(GaAsSb, absp,
             MIComment("TODO")
             )
-double GaAsSb::absp(double lam, double T) const {
+double GaAsSb::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for GaAsSb");
 }
 

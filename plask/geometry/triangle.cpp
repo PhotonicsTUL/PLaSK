@@ -14,11 +14,11 @@ std::string Triangle::getTypeName() const {
 }
 
 Triangle::Triangle(const Triangle::DVec &p0, const Triangle::DVec &p1, const shared_ptr<Material> &material)
-    : GeometryObjectLeaf<2>(material), p0(p0), p1(p1)
+    : BaseClass(material), p0(p0), p1(p1)
 {}
 
 Triangle::Triangle(const Triangle::DVec &p0, const Triangle::DVec &p1, shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom)
-    : GeometryObjectLeaf<2>(materialTopBottom), p0(p0), p1(p1)
+    : BaseClass(materialTopBottom), p0(p0), p1(p1)
 {}
 
 Box2D Triangle::getBoundingBox() const {
@@ -49,8 +49,8 @@ bool Triangle::contains(const Triangle::DVec &p) const {
     return (b1 == b2) && (b2 == (sign(p, Primitive<2>::ZERO_VEC, p0) < 0.0));
 }
 
-void Triangle::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const
-{
+void Triangle::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
+    BaseClass::writeXMLAttr(dest_xml_object, axes);
     materialProvider->writeXML(dest_xml_object, axes)
                     .attr("a" + axes.getNameForTran(), p0.tran())
                     .attr("a" + axes.getNameForVert(), p0.vert())
@@ -58,7 +58,7 @@ void Triangle::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames
                     .attr("b" + axes.getNameForVert(), p1.vert());
 }
 
-bool Triangle::isUniform(Primitive<3>::Direction direction) const {
+bool Triangle::isUniform(Primitive<3>::Direction /*direction*/) const {
     return false;
 }
 

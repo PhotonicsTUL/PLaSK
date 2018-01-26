@@ -49,10 +49,9 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
     bool isSimple() const override { return !alloy; }
 };
 
-class PythonEvalMaterial : public Material
+class PythonEvalMaterial: public MaterialWithBase
 {
     shared_ptr<PythonEvalMaterialConstructor> cls;
-    shared_ptr<Material> base;
 
     py::object self;
 
@@ -85,7 +84,14 @@ class PythonEvalMaterial : public Material
   public:
 
     PythonEvalMaterial(const shared_ptr<PythonEvalMaterialConstructor>& constructor, const shared_ptr<Material>& base) :
-        cls(constructor), base(base) {}
+        MaterialWithBase(base), cls(constructor)
+    {
+        // This is an ugly hack using aliasing shared_ptr constructor. However, this is the only way to make a Python
+        // object out of an existing normal pointer. Luckily there is very little chance anyone will ever store this,
+        // as this object is accessible only to expression specified in <materials> section. The downside is that
+        // if anyone uses some trick to store it and `this` gets deleted, there is no way to prevent the crash...
+        self = py::object(shared_ptr<Material>(shared_ptr<Material>(), this));
+    }
 
     // Here there are overridden methods from Material class
 
@@ -96,7 +102,9 @@ class PythonEvalMaterial : public Material
     bool isEqual(const Material& other) const override {
         auto theother = static_cast<const PythonEvalMaterial&>(other);
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-        return cls == theother.cls && self.attr("__dict__") == theother.self.attr("__dict__");
+        return cls == theother.cls &&
+               bool(base) == bool(theother.base) && (!base || base->str() == theother.base->str()) &&
+               self.attr("__dict__") == theother.self.attr("__dict__");
     }
 
     std::string name() const override { return cls->materialName; }
@@ -265,13 +273,11 @@ class PythonEvalMaterial : public Material
 inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
     auto material = plask::make_shared<PythonEvalMaterial>(self.lock(), base(composition, doping_amount_type, doping_amount));
     OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-    material->self = py::object(shared_ptr<Material>(material));
     if (alloy) {
         for (auto item: Material::completeComposition(composition)) {
             material->self.attr(item.first.c_str()) = item.second;
         }
     }
-    material->self.attr("base") = py::object(material->base);
     if (doping_amount_type == Material::DOPANT_CONCENTRATION) material->self.attr("dc") = doping_amount;
     else if (doping_amount_type == Material::CARRIERS_CONCENTRATION) material->self.attr("cc") = doping_amount;
     return material;

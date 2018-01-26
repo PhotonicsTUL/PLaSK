@@ -408,7 +408,7 @@ namespace detail {
                 arr = newarr.get();
             }
         } else if (type_dim<T>() != 1 && PyArray_NDIM(arr) == 2 &&
-                   PyArray_DIMS(arr)[0] == mesh->size() && PyArray_DIMS(arr)[1] == type_dim<T>()) {
+                   std::size_t(PyArray_DIMS(arr)[0]) == mesh->size() && PyArray_DIMS(arr)[1] == type_dim<T>()) {
             size = mesh->size();
             if (PyArray_STRIDES(arr)[0] != sizeof(T)) {
                 writelog(LOG_DEBUG, u8"Copying numpy array to make is contiguous");
@@ -490,7 +490,7 @@ namespace detail {
             if (last_dim == 2 * mesh->size()) return makeDataVectorImpl<Vec<2,T>, dim>(arr, mesh);
             else if (last_dim == 3 * mesh->size()) return makeDataVectorImpl<Vec<3,T>, dim>(arr, mesh);
             else if (last_dim == 4 * mesh->size()) return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
-        } else if (ndim == 2 && PyArray_DIMS(arr)[0] == mesh->size()) {
+        } else if (ndim == 2 && std::size_t(PyArray_DIMS(arr)[0]) == mesh->size()) {
             if (last_dim == 2) return makeDataVectorImpl<Vec<2,T>, dim>(arr, mesh);
             else if (last_dim == 3) return makeDataVectorImpl<Vec<3,T>, dim>(arr, mesh);
             else if (last_dim == 4) return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
@@ -756,7 +756,7 @@ struct __InterpolateMeta__<python::MeshWrap<dim>, SrcT, DstT, 0>
 {
     inline static LazyData<typename std::remove_const<DstT>::type> interpolate(
             const shared_ptr<const python::MeshWrap<dim>>& src_mesh, const DataVector<const SrcT>& src_vec,
-            const shared_ptr<const MeshD<dim>>& dst_mesh, InterpolationMethod method, const InterpolationFlags& flags) {
+            const shared_ptr<const MeshD<dim>>& dst_mesh, InterpolationMethod method, const InterpolationFlags& /*flags*/) {
         OmpLockGuard<OmpNestLock> lock(python::python_omp_lock);
         typedef python::PythonDataVector<const DstT, dim> ReturnedType;
         boost::python::object omesh(const_pointer_cast<MeshD<dim>>(dst_mesh));
@@ -837,13 +837,13 @@ PLASK_PYTHON_API PythonDataVector<T,dim> dataInterpolate(const PythonDataVector<
     if (geometry != py::object()) {
         py::extract<shared_ptr<const GeometryD<2>>> geometry2d(geometry);
         py::extract<shared_ptr<const GeometryD<3>>> geometry3d(geometry);
-        if (geometry2d.check())
+        if (geometry2d.check()) {
             flags = InterpolationFlags(geometry2d(),
                                        InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::POSITIVE);
-        else if (geometry3d.check())
+        } else if (geometry3d.check()) {
             flags = InterpolationFlags(geometry3d(),
                                        InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::POSITIVE);
-        else
+        } else
             throw TypeError(u8"'geometry' argument must be geometry.Geometry instance");
     }
 

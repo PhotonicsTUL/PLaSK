@@ -82,13 +82,13 @@ bool Material::isSimple() const {
     return isSimpleMaterialName(str());
 }
 
-double Material::A(double T) const { throwNotImplemented("A(double T)"); return 0; }
+double Material::A(double /*T*/) const { throwNotImplemented("A(double T)"); }
 
-double Material::absp(double lam, double T) const { return 0.; }
+double Material::absp(double /*lam*/, double /*T*/) const { return 0.; }
 
-double Material::B(double T) const { throwNotImplemented("B(double T)"); return 0; }
+double Material::B(double /*T*/) const { throwNotImplemented("B(double T)"); }
 
-double Material::C(double T) const { throwNotImplemented("C(double T)"); return 0; }
+double Material::C(double /*T*/) const { throwNotImplemented("C(double T)"); }
 
 double Material::CB(double T, double e, char point) const {
     if (e == 0.)
@@ -97,9 +97,9 @@ double Material::CB(double T, double e, char point) const {
         return max(VB(T, e, point, 'H'), VB(T, e, point, 'L')) + Eg(T, e, point);
 }
 
-double Material::chi(double T, double e, char point) const { throwNotImplemented("chi(double T, double e, char point)"); return 0; }
+double Material::chi(double /*T*/, double /*e*/, char /*point*/) const { throwNotImplemented("chi(double T, double e, char point)"); }
 
-Tensor2<double> Material::cond(double T) const { throwNotImplemented("cond(double T)"); return 0.; }
+Tensor2<double> Material::cond(double /*T*/) const { throwNotImplemented("cond(double T)"); }
 
 Material::ConductivityType Material::condtype() const { return CONDUCTIVITY_UNDETERMINED; }
 
@@ -107,49 +107,49 @@ double Material::D(double T) const {
     // Use Einstein relation here
     double mu;
     try { mu = mob(T).c00; }
-    catch(plask::NotImplemented) { throwNotImplemented("D(double T)"); }
+    catch(plask::NotImplemented&) { throwNotImplemented("D(double T)"); }
     return mu * T * 8.6173423e-5;  // D = µ kB T / e
 }
 
-double Material::dens(double T) const { throwNotImplemented("dens(double T)"); return 0; }
+double Material::dens(double /*T*/) const { throwNotImplemented("dens(double T)"); }
 
-double Material::Dso(double T, double e) const { throwNotImplemented("Dso(double T, double e)"); return 0; }
+double Material::Dso(double /*T*/, double /*e*/) const { throwNotImplemented("Dso(double T, double e)"); }
 
-double Material::EactA(double T) const { throwNotImplemented("EactA(double T)"); return 0; }
-double Material::EactD(double T) const { throwNotImplemented("EactD(double T)"); return 0; }
+double Material::EactA(double /*T*/) const { throwNotImplemented("EactA(double T)"); }
+double Material::EactD(double /*T*/) const { throwNotImplemented("EactD(double T)"); }
 
-double Material::Eg(double T, double e, char point) const { throwNotImplemented("Eg(double T, double e, char point)"); return 0; }
+double Material::Eg(double /*T*/, double /*e*/, char /*point*/) const { throwNotImplemented("Eg(double T, double e, char point)"); }
 
-double Material::eps(double T) const { throwNotImplemented("eps(double T)"); return 0; }
+double Material::eps(double /*T*/) const { throwNotImplemented("eps(double T)"); }
 
-double Material::lattC(double T, char x) const { throwNotImplemented("lattC(double T, char x)"); return 0; }
+double Material::lattC(double /*T*/, char /*x*/) const { throwNotImplemented("lattC(double T, char x)"); }
 
-Tensor2<double> Material::Me(double T, double e, char point) const { throwNotImplemented("Me(double T, double e, char point)"); return 0.; }
-Tensor2<double> Material::Mh(double T, double e) const { throwNotImplemented("Mh(double T, double e)"); return 0.; }
-Tensor2<double> Material::Mhh(double T, double e) const { throwNotImplemented("Mhh(double T, double e)"); return 0.; }
-Tensor2<double> Material::Mlh(double T, double e) const { throwNotImplemented("Mlh(double T, double e)"); return 0.; }
+Tensor2<double> Material::Me(double /*T*/, double /*e*/, char /*point*/) const { throwNotImplemented("Me(double T, double e, char point)"); }
+Tensor2<double> Material::Mh(double /*T*/, double /*e*/) const { throwNotImplemented("Mh(double T, double e)"); }
+Tensor2<double> Material::Mhh(double /*T*/, double /*e*/) const { throwNotImplemented("Mhh(double T, double e)"); }
+Tensor2<double> Material::Mlh(double /*T*/, double /*e*/) const { throwNotImplemented("Mlh(double T, double e)"); }
 
-double Material::ac(double T) const { throwNotImplemented("ac(double T)"); return 0; }
-double Material::av(double T) const { throwNotImplemented("av(double T)"); return 0; }
-double Material::b(double T) const { throwNotImplemented("b(double T)"); return 0; }
-double Material::d(double T) const { throwNotImplemented("d(double T)"); return 0; }
-double Material::c11(double T) const { throwNotImplemented("c11(double T)"); return 0; }
-double Material::c12(double T) const { throwNotImplemented("c12(double T)"); return 0; }
-double Material::c44(double T) const { throwNotImplemented("c44(double T)"); return 0; }
+double Material::ac(double /*T*/) const { throwNotImplemented("ac(double T)"); }
+double Material::av(double /*T*/) const { throwNotImplemented("av(double T)"); }
+double Material::b(double /*T*/) const { throwNotImplemented("b(double T)"); }
+double Material::d(double /*T*/) const { throwNotImplemented("d(double T)"); }
+double Material::c11(double /*T*/) const { throwNotImplemented("c11(double T)"); }
+double Material::c12(double /*T*/) const { throwNotImplemented("c12(double T)"); }
+double Material::c44(double /*T*/) const { throwNotImplemented("c44(double T)"); }
 
-Tensor2<double> Material::mob(double T) const { throwNotImplemented("mob(double T)"); return 0.; }
+Tensor2<double> Material::mob(double /*T*/) const { throwNotImplemented("mob(double T)"); }
 
-double Material::Mso(double T, double e) const { throwNotImplemented("Mso(double T, double e)"); return 0; }
+double Material::Mso(double /*T*/, double /*e*/) const { throwNotImplemented("Mso(double T, double e)"); }
 
-double Material::Nf(double T) const { throwNotImplemented("Nf(double T)"); return 0; }
+double Material::Nf(double /*T*/) const { throwNotImplemented("Nf(double T)"); }
 
-double Material::Ni(double T) const { throwNotImplemented("Ni(double T)"); return 0; }
+double Material::Ni(double /*T*/) const { throwNotImplemented("Ni(double T)"); }
 
-double Material::nr(double lam, double T, double n) const { throwNotImplemented("nr(double lam, double T, double n)"); return 0; }
+double Material::nr(double /*lam*/, double /*T*/, double /*n*/) const { throwNotImplemented("nr(double lam, double T, double n)"); }
 
-dcomplex Material::Nr(double lam, double T, double n) const { return dcomplex(nr(lam,T), -7.95774715459e-09*absp(lam,T)*lam); }
+dcomplex Material::Nr(double lam, double T, double /*n*/) const { return dcomplex(nr(lam,T), -7.95774715459e-09*absp(lam,T)*lam); }
 
-Tensor3<dcomplex> Material::NR(double lam, double T, double n) const {
+Tensor3<dcomplex> Material::NR(double lam, double T, double /*n*/) const {
     return Nr(lam, T);
 }
 
@@ -157,47 +157,47 @@ bool Material::operator ==(const Material &other) const {
     return typeid(*this) == typeid(other) && this->isEqual(other);
 }
 
-double Material::cp(double T) const { throwNotImplemented("cp(double T)"); return 0; }
+double Material::cp(double /*T*/) const { throwNotImplemented("cp(double T)"); }
 
-Tensor2<double> Material::thermk(double T, double h) const { throwNotImplemented("thermk(double T)"); return 0.; }
+Tensor2<double> Material::thermk(double /*T*/, double /*h*/) const { throwNotImplemented("thermk(double T, double h)"); }
 
-double Material::VB(double T, double e, char point, char hole) const { throwNotImplemented("VB(double T, double e, char point, char hole)"); return 0; }
-
-
-Tensor2<double> Material::mobe(double T) const { throwNotImplemented("mobe(double T)"); return 0; }
-
-Tensor2<double> Material::mobh(double T) const { throwNotImplemented("mobh(double T)"); return 0; }
-
-double Material::taue(double T) const { throwNotImplemented("taue(double T)"); return 0; }
-
-double Material::tauh(double T) const { throwNotImplemented("tauh(double T)"); return 0; }
-
-double Material::Ce(double T) const { throwNotImplemented("Ce(double T)"); return 0; }
-
-double Material::Ch(double T) const { throwNotImplemented("Ch(double T)"); return 0; }
-
-double Material::e13(double T) const { throwNotImplemented("e13(double T)"); return 0; }
-
-double Material::e15(double T) const { throwNotImplemented("e15(double T)"); return 0; }
-
-double Material::e33(double T) const { throwNotImplemented("e33(double T)"); return 0; }
-
-double Material::c13(double T) const { throwNotImplemented("c13(double T)"); return 0; }
-
-double Material::c33(double T) const { throwNotImplemented("c33(double T)"); return 0; }
-
-double Material::Psp(double T) const { throwNotImplemented("Psp(double T)"); return 0; }
-
-double Material::Na() const { throwNotImplemented("Na()"); return 0; }
-
-double Material::Nd() const { throwNotImplemented("Nd()"); return 0; }
+double Material::VB(double /*T*/, double /*e*/, char /*point*/, char /*hole*/) const { throwNotImplemented("VB(double T, double e, char point, char hole)"); }
 
 
+Tensor2<double> Material::mobe(double /*T*/) const { throwNotImplemented("mobe(double T)"); }
+
+Tensor2<double> Material::mobh(double /*T*/) const { throwNotImplemented("mobh(double T)"); }
+
+double Material::taue(double /*T*/) const { throwNotImplemented("taue(double T)"); }
+
+double Material::tauh(double /*T*/) const { throwNotImplemented("tauh(double T)"); }
+
+double Material::Ce(double /*T*/) const { throwNotImplemented("Ce(double T)"); }
+
+double Material::Ch(double /*T*/) const { throwNotImplemented("Ch(double T)"); }
+
+double Material::e13(double /*T*/) const { throwNotImplemented("e13(double T)"); }
+
+double Material::e15(double /*T*/) const { throwNotImplemented("e15(double T)"); }
+
+double Material::e33(double /*T*/) const { throwNotImplemented("e33(double T)"); }
+
+double Material::c13(double /*T*/) const { throwNotImplemented("c13(double T)"); }
+
+double Material::c33(double /*T*/) const { throwNotImplemented("c33(double T)"); }
+
+double Material::Psp(double /*T*/) const { throwNotImplemented("Psp(double T)"); }
+
+double Material::Na() const { throwNotImplemented("Na()"); }
+
+double Material::Nd() const { throwNotImplemented("Nd()"); }
 
 
 
 
-void Material::throwNotImplemented(const std::string& method_name) const {
+
+
+[[noreturn]] void Material::throwNotImplemented(const std::string& method_name) const {
     throw MaterialMethodNotImplemented(name(), method_name);
 }
 
@@ -390,7 +390,7 @@ static MaterialsDB::Register<LiquidCrystal> materialDB_register_LiquidCrystal;
 
 //------------ Metals -------------------------
 
-double Metal::eps(double T) const {
+double Metal::eps(double /*T*/) const {
     return 1.;
 }
 

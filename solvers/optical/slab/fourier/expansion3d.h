@@ -129,6 +129,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
   public:
 
+    dcomplex getKlong() const { return klong; }
     void setKlong(dcomplex k) {
         if (k != klong) {
             klong = k;
@@ -136,6 +137,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
         }
     }
 
+    dcomplex getKtran() const { return ktran; }
     void setKtran(dcomplex k) {
         if (k != ktran) {
             ktran = k;
@@ -143,6 +145,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
         }
     }
 
+    Component getSymmetryLong() const { return symmetry_long; }
     void setSymmetryLong(Component sym) {
         if (sym != symmetry_long) {
             symmetry_long = sym;
@@ -150,6 +153,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
         }
     }
 
+    Component getSymmetryTran() const { return symmetry_tran; }
     void setSymmetryTran(Component sym) {
         if (sym != symmetry_tran) {
             symmetry_tran = sym;
@@ -159,25 +163,29 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     /// Get \f$ \varepsilon_{xx} \f$
     dcomplex epsxx(size_t lay, int l, int t) {
-        if (l < 0) l += nNl; if (t < 0) t += nNt;
+        if (l < 0) l += nNl;
+        if (t < 0) t += nNt;
         return coeffs[lay][nNl * t + l].c00;
     }
 
     /// Get \f$ \varepsilon_{yy} \f$
     dcomplex epsyy(size_t lay, int l, int t) {
-        if (l < 0) l += nNl; if (t < 0) t += nNt;
+        if (l < 0) l += nNl;
+        if (t < 0) t += nNt;
         return coeffs[lay][nNl * t + l].c11;
     }
 
     /// Get \f$ \varepsilon_{zz}^{-1} \f$
     dcomplex iepszz(size_t lay, int l, int t) {
-        if (l < 0) l += nNl; if (t < 0) t += nNt;
+        if (l < 0) l += nNl;
+        if (t < 0) t += nNt;
         return coeffs[lay][nNl * t + l].c22;
     }
 
     /// Get \f$ \varepsilon_{xy} \f$
     dcomplex epsxy(size_t lay, int l, int t) {
-        if (l < 0) l += nNl; if (t < 0) t += nNt;
+        if (l < 0) l += nNl;
+        if (t < 0) t += nNt;
         return coeffs[lay][nNl * t + l].c01;
     }
 

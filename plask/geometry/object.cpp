@@ -39,7 +39,7 @@ GeometryObject::ToBlockChanger::ToBlockChanger(shared_ptr<const GeometryObject> 
     to = changeToBlock(material, from, translation);
 }
 
-bool GeometryObject::DeleteChanger::apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation) const {
+bool GeometryObject::DeleteChanger::apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* /*translation*/) const {
     if (to_change != toDel) return false;
     to_change = shared_ptr<GeometryObject>();
     return true;
@@ -89,7 +89,7 @@ XMLWriter::Element GeometryObject::WriteXMLCallback::makeTag(XMLElement &parent_
     return tag;
 }
 
-XMLElement GeometryObject::WriteXMLCallback::makeChildTag(XMLElement& container_tag, const GeometryObject& container, std::size_t index_of_child_in_parent) const {
+XMLElement GeometryObject::WriteXMLCallback::makeChildTag(XMLElement& container_tag, const GeometryObject& /*container*/, std::size_t /*index_of_child_in_parent*/) const {
     XMLElement tag(container_tag, "item");
     //TODO get paths
     return tag;
@@ -179,8 +179,8 @@ void GeometryObject::ensureCanHasAsParent(const GeometryObject& potential_parent
         throw CyclicReferenceException();
 }
 
-void GeometryObject::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
-    //do nothing
+void GeometryObject::writeXMLAttr(XMLWriter::Element& /*dest_xml_object*/, const AxisNames& /*axes*/) const {
+    // do nothing
 }
 
 void GeometryObject::writeXMLChildren(XMLWriter::Element &dest_xml_object, GeometryObject::WriteXMLCallback &write_cb, const AxisNames &axes) const {

@@ -25,14 +25,14 @@ GaAs_C::GaAs_C(DopingAmountType Type, double Val) {
 MI_PROPERTY(GaAs_C, EactA,
             MISource("R. Heilman et al., Semicond. Sci. Technol. 5 (1990) 1040-1045")
             )
-double GaAs_C::EactA(double T) const {
+double GaAs_C::EactA(double /*T*/) const {
     return 26.7e-3;
 }
 
 MI_PROPERTY(GaAs_C, EactD,
             MIComment("this parameter will be removed")
             )
-double GaAs_C::EactD(double T) const {
+double GaAs_C::EactD(double /*T*/) const {
     return 0.;
 }
 
@@ -49,7 +49,7 @@ MI_PROPERTY(GaAs_C, Nf,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-double GaAs_C::Nf(double T) const {
+double GaAs_C::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 

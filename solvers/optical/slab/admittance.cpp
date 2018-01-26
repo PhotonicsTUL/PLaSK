@@ -137,7 +137,7 @@ void AdmittanceTransfer::storeY(size_t n)
         if (memY.size() != solver->stack.size()) {
             // Allocate the storage for admittance matrices
             memY.resize(solver->stack.size());
-            for (int i = 0; i < solver->stack.size(); i++) memY[i] = cmatrix(N,N);
+            for (std::size_t i = 0; i < solver->stack.size(); i++) memY[i] = cmatrix(N,N);
         }
         memcpy(memY[n].data(), Y.data(), N*N*sizeof(dcomplex));
     }
@@ -173,7 +173,7 @@ void AdmittanceTransfer::determineFields()
     // Declare temporary matrix on 'wrk' array
     cmatrix work(N, N, wrk);
 
-    for (int pass = 0; pass < 1 || (pass < 2 && solver->interface != count); pass++)
+    for (int pass = 0; pass < 1 || (pass < 2 && solver->interface != std::ptrdiff_t(count)); pass++)
     {
         // each pass for below and above the interface
 
@@ -191,7 +191,7 @@ void AdmittanceTransfer::determineFields()
         {
             int curr = solver->stack[n];
 
-            double H = (n == 0 || n == count-1)? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
+            double H = (n == 0 || n == std::ptrdiff_t(count)-1)? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
             gamma = diagonalizer->Gamma(curr);
             get_y1(gamma, H, y1);
             get_y2(gamma, H, y2);
@@ -284,15 +284,17 @@ void AdmittanceTransfer::determineFields()
 
 cvector AdmittanceTransfer::getFieldVectorE(double z, int n)
 {
+    assert(n >= 0);
+
     cvector E0 = fields[n].E0;
     cvector Ed = fields[n].Ed;
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
-    double d = (n == 0 || n == solver->vbounds->size())? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
+    double d = (n == 0 || std::size_t(n) == solver->vbounds->size())? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
     if (n >= solver->interface) z = d - z;
     else if (n == 0) z += d;
 
-    if ((n == 0 || n == solver->vbounds->size()) && z < 0.)
+    if ((n == 0 || std::size_t(n) == solver->vbounds->size()) && z < 0.)
         return cvector(diagonalizer->source()->matrixSize(), NAN);
 
     int N = gamma.size();
@@ -327,15 +329,17 @@ cvector AdmittanceTransfer::getFieldVectorE(double z, int n)
 
 cvector AdmittanceTransfer::getFieldVectorH(double z, int n)
 {
+    assert(n >= 0);
+
     cvector H0 = fields[n].H0;
     cvector Hd = fields[n].Hd;
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
-    double d = (n == 0 || n == solver->vbounds->size())? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
+    double d = (n == 0 || std::size_t(n) == solver->vbounds->size())? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
     if (n >= solver->interface) z = d - z;
     else if (n == 0) z += d;
 
-    if ((n == 0 || n == solver->vbounds->size()) && z < 0.)
+    if ((n == 0 || std::size_t(n) == solver->vbounds->size()) && z < 0.)
         return cvector(diagonalizer->source()->matrixSize(), NAN);
 
     int N = gamma.size();
@@ -387,8 +391,8 @@ cvector AdmittanceTransfer::getReflectionVector(const cvector& incident, Inciden
             break;
     }
 
-    int N = diagonalizer->matrixSize();
-    int NN = N * N;
+    std::size_t N = diagonalizer->matrixSize();
+    std::size_t NN = N * N;
     cmatrix work(N, N, wrk);  // we have Y, temp and work
 
     // Transfer to the outermost layer:
@@ -401,7 +405,7 @@ cvector AdmittanceTransfer::getReflectionVector(const cvector& incident, Inciden
 
     std::copy_n(Y.data(), NN, temp.data());                                             // temp = Y
     // Use Jacobi preconditioner for temp
-    for (size_t i = 0; i != N; ++i) {
+    for (std::size_t i = 0; i != N; ++i) {
         temp(i,i) -= 1.;                                                                // temp = Y - I
         dcomplex f = 1. / temp(i,i);
         wrk[i] = f;
@@ -409,9 +413,9 @@ cvector AdmittanceTransfer::getReflectionVector(const cvector& incident, Inciden
             temp(i,j) *= f;
     }
     cvector reflected(N);
-    for (size_t i = 0; i != N; ++i) reflected[i] = wrk[i] * incident[i];
+    for (std::size_t i = 0; i != N; ++i) reflected[i] = wrk[i] * incident[i];
     invmult(temp, reflected);
-    for (size_t i = 0; i != N; ++i)
+    for (std::size_t i = 0; i != N; ++i)
         reflected[i] = - 2. * reflected[i] - incident[i];                               // R = - 2 [Y-I]¯¹ P - P
     return reflected;
 }
@@ -484,7 +488,7 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
     {
         int curr = solver->stack[n];
 
-        double H = (n == 0 || n == count-1)? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
+        double H = (n == 0 || n == int(count)-1)? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
         gamma = diagonalizer->Gamma(curr);
         get_y1(gamma, H, y1);
 
@@ -559,7 +563,7 @@ cvector AdmittanceTransfer::getTransmissionVector(const cvector& incident, Incid
 {
     determineReflectedFields(incident, side);
     size_t n = (side == INCIDENCE_BOTTOM)? solver->stack.size()-1 : 0;
-    return diagonalizer->TE(solver->stack[n]) * fields[n].E0;
+    return fields[n].E0;
 }
 
 }}} // namespace plask::optical::slab

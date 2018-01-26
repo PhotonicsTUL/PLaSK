@@ -25,20 +25,20 @@ Contour::Contour(const Solver* solver, const std::function<dcomplex(dcomplex)>& 
     std::exception_ptr error;
     #pragma omp parallel
     {
-        #pragma for nowait
-        for (size_t i = 0; i < ren; ++i) {
+        #pragma omp for nowait
+        for (int i = 0; i < int(ren); ++i) {
             CALL_FUN(bottom[i], re0+i*dr, im0)
         }
-        #pragma for nowait
-        for (size_t i = 0; i < imn; ++i) {
+        #pragma omp for nowait
+        for (int i = 0; i < int(imn); ++i) {
             CALL_FUN(right[i], re1, im0+i*di)
         }
-        #pragma for nowait
-        for (size_t i = 1; i <= ren; ++i) {
+        #pragma omp for nowait
+        for (int i = 1; i <= int(ren); ++i) {
             CALL_FUN(top[i], re0+i*dr, im1)
         }
-        #pragma for
-        for (size_t i = 1; i <= imn; ++i) {
+        #pragma omp for
+        for (int i = 1; i <= int(imn); ++i) {
             CALL_FUN(left[i], re0, im0+i*di)
         }
     }
@@ -184,11 +184,11 @@ namespace detail {
                 return wind;
             }
             auto contours = contour.divide(reps, ieps);
-            size_t w1 = (*this)(contours.first);
-            size_t w2 = (*this)(contours.second);
-            if (w1 + w2 < wind)
+            std::size_t w1 = (*this)(contours.first);
+            std::size_t w2 = (*this)(contours.second);
+            if (int(w1 + w2) < wind)
                 contour.solver->writelog(LOG_WARNING, "Lost zero between {0} and {1}", str(dcomplex(contour.re0, contour.im0)), str(dcomplex(contour.re1, contour.im1)));
-            else if (w1 + w2 > wind)
+            else if (int(w1 + w2) > wind)
                 contour.solver->writelog(LOG_WARNING, "New zero between {0} and {1}", str(dcomplex(contour.re0, contour.im0)), str(dcomplex(contour.re1, contour.im1)));
             return wind;
         }

@@ -37,14 +37,14 @@ AlGaAs_Si::AlGaAs_Si(const Material::Composition& Comp, DopingAmountType Type, d
 MI_PROPERTY(AlGaAs_Si, EactA,
             MIComment("this parameter will be removed")
             )
-double AlGaAs_Si::EactA(double T) const {
+double AlGaAs_Si::EactA(double /*T*/) const {
     return 0.;
 }
 
 MI_PROPERTY(AlGaAs_Si, EactD,
             MISource("L. Piskorski, PhD thesis (2010)")
             )
-double AlGaAs_Si::EactD(double T) const {
+double AlGaAs_Si::EactD(double /*T*/) const {
     return 1e-3; // TODO add correct value
 }
 
@@ -61,7 +61,7 @@ MI_PROPERTY(AlGaAs_Si, Nf,
             MISource("based on 2 papers 1982, 1984 about Si-doped AlGaAs"),
             MIComment("no temperature dependence")
             )
-double AlGaAs_Si::Nf(double T) const {
+double AlGaAs_Si::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 

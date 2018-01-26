@@ -106,11 +106,12 @@ shared_ptr<GeometryObject> GeometryObject__getitem__(py::object oself, int i) {
 
 struct GeometryObjectIter {
     shared_ptr<GeometryObject> parent;
-    int i;
+    std::ptrdiff_t i;
 
     GeometryObjectIter(const shared_ptr<GeometryObject>& parent): parent(parent), i(-1) {}
     shared_ptr<GeometryObject> next() {
-        ++i; if (i == parent->getChildrenCount()) throw StopIteration("");
+        ++i;
+        if (i == std::ptrdiff_t(parent->getChildrenCount())) throw StopIteration("");
         return parent->getChildNo(i);
     }
 
@@ -221,7 +222,7 @@ py::object GeometryObject_deepCopy(const py::object& oself, py::object omemo) {
 
 template <int dim>
 PyObject* GeometryObjectIncludesPoints(const shared_ptr<GeometryObjectD<dim>>& self, const GeometryObject& obj, const PathHints* pth, const MeshD<dim>& mesh) {
-    npy_intp dims[1] = {mesh.size()};
+    npy_intp dims[1] = { npy_intp(mesh.size()) };
     PyObject* array = PyArray_SimpleNew(1, dims, NPY_BOOL);
     char* data = static_cast<char*>(PyArray_DATA(reinterpret_cast<PyArrayObject*>(array)));
 
@@ -749,6 +750,7 @@ void register_geometry_object()
     ;
 
     {py::scope scope = geometry_object;
+    (void) scope;   // don't warn about unused variable scope
     py::class_<GeometryObjectSteps>("_Steps", py::no_init)
         .add_property("dist", &GeometryObjectSteps::get_ply, &GeometryObjectSteps::set_ply,
                       "Minimum step size.")

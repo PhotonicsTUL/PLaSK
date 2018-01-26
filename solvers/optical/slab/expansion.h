@@ -61,6 +61,8 @@ struct PLASK_SOLVER_API Expansion {
 
   public:
 
+    /// Get lam0
+    double getLam0() const { return lam0; }
     /// Set lam0
     void setLam0(double lam) {
         if (lam != lam0 && !(isnan(lam0) && isnan(lam))) {
@@ -78,6 +80,8 @@ struct PLASK_SOLVER_API Expansion {
         }
     }
 
+    /// Get current k0
+    dcomplex getK0() const { return k0; }
     /// Set current k0
     void setK0(dcomplex k) {
         if (k != k0) {

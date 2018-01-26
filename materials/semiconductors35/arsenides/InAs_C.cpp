@@ -19,14 +19,14 @@ InAs_C::InAs_C(DopingAmountType Type, double Val) {
 MI_PROPERTY(InAs_C, mob,
             MIComment("TODO")
             )
-Tensor2<double> InAs_C::mob(double T) const {
+Tensor2<double> InAs_C::mob(double /*T*/) const {
     return ( Tensor2<double>(mob_RT,mob_RT) );
 }
 
 MI_PROPERTY(InAs_C, Nf,
             MIComment("TODO")
             )
-double InAs_C::Nf(double T) const {
+double InAs_C::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 

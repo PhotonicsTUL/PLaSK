@@ -38,7 +38,7 @@ Tensor2<double> AlAs_C::mob(double T) const {
 MI_PROPERTY(AlAs_C, Nf,
             MIComment("TODO")
             )
-double AlAs_C::Nf(double T) const {
+double AlAs_C::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 

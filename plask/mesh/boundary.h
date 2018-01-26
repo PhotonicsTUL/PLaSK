@@ -247,7 +247,7 @@ struct PLASK_API EmptyBoundaryImpl: public BoundaryLogicImpl {
 
         virtual void increment() override {}
 
-        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const override {
+        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& /*other*/) const override {
             return true;
         }
 
@@ -257,7 +257,7 @@ struct PLASK_API EmptyBoundaryImpl: public BoundaryLogicImpl {
 
     };
 
-    virtual bool contains(std::size_t mesh_index) const override { return false; }
+    virtual bool contains(std::size_t /*mesh_index*/) const override { return false; }
 
     virtual typename BoundaryLogicImpl::const_iterator begin() const override {
         return typename BoundaryLogicImpl::Iterator(new IteratorImpl);

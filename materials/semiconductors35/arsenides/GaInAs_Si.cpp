@@ -34,7 +34,7 @@ MI_PROPERTY(GaInAs_Si, mob,
             MISource("TODO"),
             MISource("based on Si-doped GaInAs")
             )
-Tensor2<double> GaInAs_Si::mob(double T) const {
+Tensor2<double> GaInAs_Si::mob(double /*T*/) const {
     return ( Tensor2<double>(mob_RT, mob_RT) );
 }
 
@@ -42,7 +42,7 @@ MI_PROPERTY(GaInAs_Si, Nf,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-double GaInAs_Si::Nf(double T) const {
+double GaInAs_Si::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 

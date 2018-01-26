@@ -29,11 +29,11 @@ SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
         Te1[i] = cmatrix(N, N);
     }
     #ifdef OPENMP_FOUND
-        int nthr = min(omp_get_max_threads(), lcount);
+        int nthr = std::min(omp_get_max_threads(), lcount);
         tmpmx = new cmatrix[nthr];
         tmplx = new omp_lock_t[nthr];
         writelog(LOG_DEBUG, "{}: Creating {:d} temporary matri{} for diagonalizer", src->solver->getId(), nthr, (nthr==1)?"x":"ces");
-        for (size_t i = 0; i != nthr; ++i) {
+        for (int i = 0; i != nthr; ++i) {
             tmpmx[i] = cmatrix(N, N);
             omp_init_lock(tmplx+i);
         }
@@ -47,8 +47,8 @@ SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
 SimpleDiagonalizer::~SimpleDiagonalizer()
 {
     #ifdef OPENMP_FOUND
-        int nthr = min(omp_get_max_threads(), lcount);
-        for (size_t i = 0; i != nthr; ++i) {
+        int nthr = std::min(omp_get_max_threads(), lcount);
+        for (int i = 0; i != nthr; ++i) {
             omp_destroy_lock(tmplx+i);
         }
         delete[] tmplx;
@@ -79,7 +79,7 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
 
     #ifdef OPENMP_FOUND
         int nthr = min(omp_get_max_threads(), lcount);
-        size_t mn;
+        int mn;
         for (mn = 0; mn != nthr; ++mn)
             if (omp_test_lock(tmplx+mn)) break;
         assert(mn != nthr);

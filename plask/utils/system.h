@@ -29,7 +29,7 @@ PLASK_API std::string exePathAndName();
 PLASK_API std::string exePath();
 
 /**
- * Get enviroment verible PLASK_PREFIX_PATH (should be without rearmost '/' or '\\') or, if it is not set, path one step above the current program executable file.
+ * Get enviroment variable PLASK_PREFIX_PATH (should be without rearmost '/' or '\\') or, if it is not set, path one step above the current program executable file.
  * @return path one step above from program executable
  */
 PLASK_API std::string prefixPath();

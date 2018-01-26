@@ -10,7 +10,7 @@ double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis, int& coun
     const double C = 0.5 * (3. - sqrt(5.));
     const double G = 2. / (sqrt(5.) - 1.);
 
-    unsigned i = 0;
+    int i = 0;
     double x, dist;
 
     if (realaxis) {
@@ -46,7 +46,7 @@ double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis, int& coun
         writelog(LOG_DETAIL, "Extending search range to lower values");
         for (; i < params.maxiter; ++i) {
             u = a - G * (x - a);
-            b = x; fv = fx;
+            b = x; // fv = fx;
             x = a; fx = fw;
             a = u; fw = fun(a);
             counter++;
@@ -61,7 +61,7 @@ double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis, int& coun
         writelog(LOG_DETAIL, "Extending search range to higher values");
         for (; i < params.maxiter; ++i) {
             u = b + G * (b - x);
-            a = x; fw = fx;
+            a = x; // fw = fx;
             x = b; fx = fv;
             b = u; fv = fun(b);
             counter++;

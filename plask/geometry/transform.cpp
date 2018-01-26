@@ -81,12 +81,14 @@ shared_ptr<const GeometryObject> Translation<dim>::changedVersion(const Geometry
 
 template <>
 void Translation<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+    BaseClass::writeXMLAttr(dest_xml_object, axes);
     if (translation.tran() != 0.0) dest_xml_object.attr(axes.getNameForTran(), translation.tran());
     if (translation.vert() != 0.0) dest_xml_object.attr(axes.getNameForVert(), translation.vert());
 }
 
 template <>
 void Translation<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
+    BaseClass::writeXMLAttr(dest_xml_object, axes);
     if (translation.lon() != 0.0) dest_xml_object.attr(axes.getNameForLong(), translation.lon());
     if (translation.tran() != 0.0) dest_xml_object.attr(axes.getNameForTran(), translation.tran());
     if (translation.vert() != 0.0) dest_xml_object.attr(axes.getNameForVert(), translation.vert());

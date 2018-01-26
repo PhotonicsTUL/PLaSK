@@ -31,14 +31,14 @@ AlGaAs_C::AlGaAs_C(const Material::Composition& Comp, DopingAmountType Type, dou
 MI_PROPERTY(AlGaAs_C, EactA,
             MISource("R. Heilman et al., Semicond. Sci. Technol. 5 (1990) 1040-1045")
             )
-double AlGaAs_C::EactA(double T) const {
+double AlGaAs_C::EactA(double /*T*/) const {
     return 26.7e-3; // TODO add correct value
 }
 
 MI_PROPERTY(AlGaAs_C, EactD,
             MIComment("this parameter will be removed")
             )
-double AlGaAs_C::EactD(double T) const {
+double AlGaAs_C::EactD(double /*T*/) const {
     return 0.;
 }
 
@@ -55,7 +55,7 @@ MI_PROPERTY(AlGaAs_C, Nf,
             MISource("based on 3 papers 1991-2004 about C-doped AlGaAs"),
             MIComment("no temperature dependence")
             )
-double AlGaAs_C::Nf(double T) const {
+double AlGaAs_C::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 

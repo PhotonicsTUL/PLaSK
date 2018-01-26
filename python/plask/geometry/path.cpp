@@ -44,7 +44,7 @@ namespace detail {
             return obj;
         }
 
-        static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+        static void construct(PyObject* /*obj*/, boost::python::converter::rvalue_from_python_stage1_data* data) {
             // Grab pointer to memory into which to construct the new PathHints
             void* storage = ((boost::python::converter::rvalue_from_python_storage<PathHints>*)data)->storage.bytes;
             new(storage) PathHints;

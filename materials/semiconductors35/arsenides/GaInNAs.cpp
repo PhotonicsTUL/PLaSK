@@ -260,14 +260,14 @@ Material::ConductivityType GaInNAs::condtype() const { return Material::CONDUCTI
 MI_PROPERTY(GaInNAs, nr,
             MIComment("TODO")
             )
-double GaInNAs::nr(double lam, double T, double n) const {
+double GaInNAs::nr(double /*lam*/, double /*T*/, double /*n*/) const {
     throw NotImplemented("nr for GaInNAs");
 }
 
 MI_PROPERTY(GaInNAs, absp,
             MIComment("TODO")
             )
-double GaInNAs::absp(double lam, double T) const {
+double GaInNAs::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for GaInNAs");
 }
 

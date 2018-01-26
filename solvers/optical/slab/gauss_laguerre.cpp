@@ -169,7 +169,7 @@ inline static void imtqlx(int n, double d[], double e[], double z[])
 
 void gaussLaguerre(size_t n, std::vector<double>& abscissae, DataVector<double>& weights, double scale)
 {
-    std::unique_ptr<double[]> work(new double[n-1]);
+    std::unique_ptr<double[]> work(new double[n]);
 
     abscissae.resize(n);
     weights.reset(n);

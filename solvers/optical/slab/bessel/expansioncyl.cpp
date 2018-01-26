@@ -31,7 +31,7 @@ void ExpansionBessel::init1()
     if (SOLVER->mesh)
         rbounds = OrderedAxis(*SOLVER->getMesh());
     else
-        rbounds = std::move(*makeGeometryGrid1D(SOLVER->getGeometry(), true));
+        rbounds = std::move(*makeGeometryGrid1D(SOLVER->getGeometry()));
     rbounds.addPoint(0.);
     OrderedAxis::WarningOff nowarn_rbounds(rbounds);
     size_t nseg = rbounds.size() - 1;
@@ -270,11 +270,11 @@ std::pair<dcomplex, dcomplex> ExpansionBessel::integrateLayer(size_t layer, doub
 
         epsa *= w; deps *= w; ieps *= w;
 
-        for (int i = 0; i < N; ++i) {
+        for (std::size_t i = 0; i < N; ++i) {
             double g = kpts[i] * ib; double gr = g*r;
             double Jmg = cyl_bessel_j(m-1, gr), Jpg = cyl_bessel_j(m+1, gr), Jg = cyl_bessel_j(m, gr),
                    Jm2g = cyl_bessel_j(m-2, gr), Jp2g = cyl_bessel_j(m+2, gr);
-            for (int j = i; j < N; ++j) {
+            for (std::size_t j = i; j < N; ++j) {
                 double k = kpts[j] * ib; double kr = k*r;
                 double Jmk = cyl_bessel_j(m-1, kr), Jpk = cyl_bessel_j(m+1, kr), Jk = cyl_bessel_j(m, kr);
                 integrals.Vmm(i,j) += r * Jmg * ieps * Jmk;
@@ -298,7 +298,7 @@ std::pair<dcomplex, dcomplex> ExpansionBessel::integrateLayer(size_t layer, doub
         SOLVER->writelog(LOG_DETAIL, "Layer {0} is uniform", layer);
         integrals.zero();
         if (finite) {
-            for (int i = 0; i < N; ++i) {
+            for (std::size_t i = 0; i < N; ++i) {
                 double eta = cyl_bessel_j(m+1, kpts[i]) * rbounds[rbounds.size()-1]; eta = 0.5 * eta*eta;;
                 integrals.Vmm(i,i) = integrals.Vpp(i,i) = eta * ieps0;
                 integrals.Tmm(i,i) = integrals.Tpp(i,i) = eta * epsa0;

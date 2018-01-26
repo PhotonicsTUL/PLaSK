@@ -316,8 +316,7 @@ std::string XMLReader::requireTextInCurrentTag() {
     return t;
 }
 
-bool XMLReader::gotoNextOnLevel(std::size_t required_level, NodeType required_type)
-{
+bool XMLReader::gotoNextOnLevel(std::size_t required_level, NodeType required_type) {
     ignoreAllAttributes();
     while (next()) {
         if (getLevel() == required_level && getNodeType() == required_type)

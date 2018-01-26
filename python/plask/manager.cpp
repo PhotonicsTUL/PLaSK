@@ -210,6 +210,7 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
 void PythonManager::loadDefines(XMLReader& reader)
 {
     std::set<std::string> parsed;
+    parsed.insert("self");
     while (reader.requireTagOrEnd()) {
         if (reader.getNodeName() != "define") throw XMLUnexpectedElementException(reader, "<define>");
         std::string name = reader.requireAttribute("name");
@@ -226,11 +227,18 @@ void PythonManager::loadDefines(XMLReader& reader)
                 PyErr_Clear();
                 defs[name] = value;
             }
-        }
-        else if (parsed.find(name) != parsed.end())
+        } else if (parsed.find(name) != parsed.end())
             throw XMLDuplicatedElementException(reader, format("Definition of '{0}'", name));
         parsed.insert(name);
         reader.requireTagEnd();
+    }
+    for (py::stl_input_iterator<std::string> key(defs), keys_end; key != keys_end; ++key) {
+        try {
+            if (parsed.find(*key) == parsed.end())
+                writelog(LOG_WARNING, "Value '{}' is not defined in the XPL file", *key);
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+        }
     }
 }
 
@@ -321,7 +329,7 @@ void PythonManager::loadConnects(XMLReader& reader)
     }
 }
 
-void PythonManager::loadMaterialModule(XMLReader& reader, MaterialsDB& materialsDB) {
+void PythonManager::loadMaterialModule(XMLReader& reader, MaterialsDB& /*materialsDB*/) {
     std::string name = reader.requireAttribute("name");
     try {
         if (name != "") py::import(py::str(name));
@@ -556,6 +564,7 @@ static void register_manager_dict(const std::string name) {
     py::delattr(py::scope(), (name+"Dict").c_str());
 
     py::scope scope = c;
+    (void) scope;   // don't warn about unused variable scope
 
     py::class_<detail::dict_iterator<T>>("Iterator", py::no_init)
         .def("__iter__", &detail::dict_iterator<T>::__iter__, py::return_self<>())
@@ -568,7 +577,7 @@ struct ManagerRoots {
     ManagerRoots(const Manager& manager): manager(manager) {}
     shared_ptr<Geometry> getitem(int i) const {
         if (i < 0) i += manager.roots.size();
-        if (i < 0 || i >= manager.roots.size()) throw IndexError(u8"geometry roots index out of range");
+        if (i < 0 || std::size_t(i) >= manager.roots.size()) throw IndexError(u8"geometry roots index out of range");
         return manager.roots[i];
     }
     size_t len() const { return manager.roots.size(); }
@@ -658,6 +667,7 @@ void register_manager() {
     register_manager_dict<shared_ptr<Solver>>("Solvers");
 
     py::scope scope(manager);
+    (void) scope;   // don't warn about unused variable scope
     py::class_<ManagerRoots>("_Roots", py::no_init)
         .def("__getitem__", &ManagerRoots::getitem)
         .def("__len__", &ManagerRoots::len)

@@ -334,6 +334,7 @@ void register_xml_reader() {
     ;
 
     py::scope scope(xml);
+    (void) scope;   // don't warn about unused variable scope
 
     py::class_<detail::XMLIterator>("_Iterator", py::no_init)
         .def(NEXT, &detail::XMLIterator::next, py::return_value_policy<py::reference_existing_object>())

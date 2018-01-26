@@ -10,70 +10,52 @@ namespace plask {
 /**
  * Generate grid along edges of bounding boxes of all geometry elements
  * \param geometry given geometry object
- * \param uniform treat objects as uniform
  * \return generated mesh
  */
-PLASK_API shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry,
-                                                     bool uniform = false);
+PLASK_API shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry);
 
 /**
  * Generate grid along edges of bounding boxes of all geometry elements
  * \param geometry given geometry object
- * \param uniform0 treat objects along horizontal axis as uniform
- * \param uniform1 treat objects along vertical axis as uniform
  * \return generated mesh
  */
-PLASK_API shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry,
-                                                          bool uniform0 = false, bool uniform1 = false);
+PLASK_API shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry);
 
 /**
  * Generate grid along edges of bounding boxes of all geometry elements
  * \param geometry given geometry object
- * \param uniform0 treat objects along longitudinal axis as uniform
- * \param uniform2 treat objects along transverse axis as uniform
- * \param uniform1 treat objects along vertical axis as uniform
  * \return generated mesh
  */
-PLASK_API shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry,
-                                                          bool uniform0 = false, bool uniform1 = false, bool uniform2 = false);
+PLASK_API shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry);
 
 /**
  * Generate grid along edges of bounding boxes of all geometry elements
  * \param geometry given geometry
- * \param uniform treat objects as uniform
  * \return generated mesh
  */
-inline shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryD<2>>& geometry,
-                                                  bool uniform = false)
+inline shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryD<2>>& geometry)
 {
-    return makeGeometryGrid1D(geometry->getChild(), uniform);
+    return makeGeometryGrid1D(geometry->getChild());
 }
 
 /**
  * Generate grid along edges of bounding boxes of all geometry elements
  * \param geometry given geometry
- * \param uniform0 treat objects along horizontal axis as uniform
- * \param uniform1 treat objects along vertical axis as uniform
  * \return generated mesh
  */
-inline shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryD<2>>& geometry,
-                                                       bool uniform0 = false, bool uniform1 = false)
+inline shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryD<2>>& geometry)
 {
-    return makeGeometryGrid(geometry->getChild(), uniform0, uniform1);
+    return makeGeometryGrid(geometry->getChild());
 }
 
 /**
  * Generate grid along edges of bounding boxes of all geometry elements
  * \param geometry given geometry
- * \param uniform0 treat objects along longitudinal axis as uniform
- * \param uniform2 treat objects along transverse axis as uniform
- * \param uniform1 treat objects along vertical axis as uniform
  * \return generated mesh
  */
-inline shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryD<3>>& geometry,
-                                                       bool uniform0 = false, bool uniform1 = false, bool uniform2 = false)
+inline shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryD<3>>& geometry)
 {
-    return makeGeometryGrid(geometry->getChild(), uniform0, uniform1, uniform2);
+    return makeGeometryGrid(geometry->getChild());
 }
 
 /**

@@ -262,14 +262,14 @@ inline AxisNames* getCurrentAxes() {
 namespace detail
 {
     template <size_t i>
-    static inline void _parse_kwargs(py::list& arglist, py::dict& kwargs) {}
+    static inline void _parse_kwargs(py::list& /*arglist*/, py::dict& /*kwargs*/) {}
 
     template <size_t i, typename... Names>
     static inline void _parse_kwargs(py::list& arglist, py::dict& kwargs, const std::string& name, const Names&... names) {
         py::object oname(name);
         if (kwargs.has_key(oname))
         {
-            if (i < py::len(arglist)) {
+            if (i < std::size_t(py::len(arglist))) {
                 throw name;
             } else {
                 arglist.append(kwargs[oname]);

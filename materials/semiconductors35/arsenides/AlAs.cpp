@@ -37,7 +37,7 @@ MI_PROPERTY(AlAs, Dso,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
            )
-double AlAs::Dso(double T, double e) const {
+double AlAs::Dso(double /*T*/, double /*e*/) const {
     return 0.28;
 }
 
@@ -75,16 +75,15 @@ MI_PROPERTY(AlAs, Mhh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
             MIComment("no temperature dependence")
            )
-Tensor2<double> AlAs::Mhh(double T, double e) const {
-    Tensor2<double> tMhh(0.51, 0.51); // [001]
-    return tMhh;
+Tensor2<double> AlAs::Mhh(double /*T*/, double /*e*/) const {
+    return Tensor2<double>(0.51, 0.51);
 }
 
 MI_PROPERTY(AlAs, Mlh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
             MIComment("no temperature dependence")
            )
-Tensor2<double> AlAs::Mlh(double T, double e) const {
+Tensor2<double> AlAs::Mlh(double /*T*/, double /*e*/) const {
     Tensor2<double> tMlh(0.18, 0.18);
     return tMlh;
 }
@@ -114,7 +113,7 @@ MI_PROPERTY(AlAs, VB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
            )
-double AlAs::VB(double T, double e, char point, char hole) const {
+double AlAs::VB(double T, double e, char /*point*/, char hole) const {
     double tVB(-1.33);
     if (e) {
         double DEhy = 2.*av(T)*(1.-c12(T)/c11(T))*e;
@@ -130,7 +129,7 @@ MI_PROPERTY(AlAs, ac,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
            )
-double AlAs::ac(double T) const {
+double AlAs::ac(double /*T*/) const {
     return -5.64;
 }
 
@@ -138,7 +137,7 @@ MI_PROPERTY(AlAs, av,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
            )
-double AlAs::av(double T) const {
+double AlAs::av(double /*T*/) const {
     return 2.47;
 }
 
@@ -146,7 +145,7 @@ MI_PROPERTY(AlAs, b,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
            )
-double AlAs::b(double T) const {
+double AlAs::b(double /*T*/) const {
     return -2.3;
 }
 
@@ -154,7 +153,7 @@ MI_PROPERTY(AlAs, d,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
            )
-double AlAs::d(double T) const {
+double AlAs::d(double /*T*/) const {
     return -3.4;
 }
 
@@ -162,7 +161,7 @@ MI_PROPERTY(AlAs, c11,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
            )
-double AlAs::c11(double T) const {
+double AlAs::c11(double /*T*/) const {
     return 125.0;
 }
 
@@ -170,7 +169,7 @@ MI_PROPERTY(AlAs, c12,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
            )
-double AlAs::c12(double T) const {
+double AlAs::c12(double /*T*/) const {
     return 53.4;
 }
 
@@ -178,7 +177,7 @@ MI_PROPERTY(AlAs, c44,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MIComment("no temperature dependence")
            )
-double AlAs::c44(double T) const {
+double AlAs::c44(double /*T*/) const {
     return 54.2;
 }
 
@@ -186,7 +185,7 @@ MI_PROPERTY(AlAs, thermk,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
             MISource("S. Adachi, Properties of Aluminium Gallium Arsenide, INSPEC (1993) p.48") // temperature dependence
            )
-Tensor2<double> AlAs::thermk(double T, double t) const {
+Tensor2<double> AlAs::thermk(double T, double /*t*/) const {
     double tk = 91. * pow((300./T),1.375);
     return(Tensor2<double>(tk, tk));
 }
@@ -195,13 +194,13 @@ MI_PROPERTY(AlAs, dens,
             MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
             MIComment("no temperature dependence")
             )
-double AlAs::dens(double T) const { return 3.73016e3; }
+double AlAs::dens(double /*T*/) const { return 3.73016e3; }
 
 MI_PROPERTY(AlAs, cp,
             MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52"),
             MIComment("no temperature dependence")
             )
-double AlAs::cp(double T) const { return 0.424e3; }
+double AlAs::cp(double /*T*/) const { return 0.424e3; }
 
 Material::ConductivityType AlAs::condtype() const { return Material::CONDUCTIVITY_I; }
 
@@ -211,7 +210,7 @@ MI_PROPERTY(AlAs, nr,
             MISource("S. Gehrsitz, J. Appl. Phys. 87 (2000) 7825-7837; "),
             MIComment("fit by Leszek Frasunkiewicz")
            )
-double AlAs::nr(double lam, double T, double n) const {
+double AlAs::nr(double lam, double T, double /*n*/) const {
     double Al = 1.;
     double A = -0.4490233379*Al + 3.25759049;
     double B = 29.22871618*pow(Al,(-2.35349122*pow(Al,8.844978824)));
@@ -252,13 +251,13 @@ double AlAs::absp(double lam, double T) const {
 MI_PROPERTY(AlAs, eps,
             MISource("http://www.iue.tuwien.ac.at/phd/quay/node27.html")
            )
-double AlAs::eps(double T) const {
+double AlAs::eps(double /*T*/) const {
     return 10.1;
 }
 
 std::string AlAs::name() const { return NAME; }
 
-bool AlAs::isEqual(const Material &other) const {
+bool AlAs::isEqual(const Material &/*other*/) const {
     return true;
 }
 

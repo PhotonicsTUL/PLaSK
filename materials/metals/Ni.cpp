@@ -23,7 +23,7 @@ MI_PROPERTY(Ni, thermk,
             MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
-Tensor2<double> Ni::thermk(double T, double t) const {
+Tensor2<double> Ni::thermk(double T, double /*t*/) const {
     double tCondT = 90.3*pow((300./T),0.423);
     return ( Tensor2<double>(tCondT, tCondT) );
 }
@@ -32,11 +32,11 @@ MI_PROPERTY(Ni, absp,
             MISource(""),
             MIComment("TODO")
             )
-double Ni::absp(double lam, double T) const {
+double Ni::absp(double /*lam*/, double /*T*/) const {
     return ( 1e3 );
 }
 
-bool Ni::isEqual(const Material &other) const {
+bool Ni::isEqual(const Material &/*other*/) const {
     return true;
 }
 
@@ -44,7 +44,7 @@ MI_PROPERTY(Ni, nr,
             MISource(""),
             MIComment("TODO")
 			)
-double Ni::nr(double lam, double T, double n) const {
+double Ni::nr(double /*lam*/, double /*T*/, double /*n*/) const {
     return ( 1. );
 }
 

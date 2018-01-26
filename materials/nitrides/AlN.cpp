@@ -12,7 +12,7 @@ MI_PROPERTY(AlN, thermk,
             MISource("G. A. Slack, J. Phys. Chem. Sol. 48 (1987) 641"),
             MISource("Bondokov R T, J. Crystal Growth 310 (2008) 4020"),
             MISource("M. Kuc, R.P. Sarzala and W. Nakwaski, Materials Science and Engineering B, 178 (2013) 1395-1402"))
-Tensor2<double> AlN::thermk(double T, double t) const {
+Tensor2<double> AlN::thermk(double T, double /*t*/) const {
     double tCondT = 270.*pow((T/300.),-1.25);
     return(Tensor2<double>(tCondT,tCondT));
  }
@@ -32,7 +32,7 @@ MI_PROPERTY(AlN, nr,
             MIArgumentRange(MaterialInfo::lam, 225, 1240),
             MIComment("no temperature dependence")
             )
-double AlN::nr(double lam, double T, double n) const {
+double AlN::nr(double lam, double /*T*/, double /*n*/) const {
     double a = phys::h_eVc1e9/lam;
     return ( 0.0034417*pow(a,3) - 0.0172622*pow(a,2) + 0.0594128*a + 1.92953 );
 }
@@ -40,7 +40,7 @@ double AlN::nr(double lam, double T, double n) const {
 MI_PROPERTY(AlN, lattC,
             MISource("S. Adachi et al., Properties of Semiconductor Alloys: Group-IV, III–V and II–VI Semiconductors, Wiley 2009")
             )
-double AlN::lattC(double T, char x) const {
+double AlN::lattC(double /*T*/, char x) const {
     double tLattC(0.);
     if (x == 'a') tLattC = 3.112;
     else if (x == 'c') tLattC = 4.982;
@@ -50,17 +50,17 @@ double AlN::lattC(double T, char x) const {
 MI_PROPERTY(AlN, Eg,
             MISource("Vurgaftman et al. in Piprek 2007 Nitride Semicondcuctor Devices")
             )
-double AlN::Eg(double T, double e, char point) const {
+double AlN::Eg(double T, double /*e*/, char point) const {
     double tEg(0.);
     if (point == 'G' || point == '*') tEg = phys::Varshni(6.10,2.63e-3,2082.,T);
     return (tEg);
 }
 
-double AlN::VB(double T, double e, char point, char hole) const {
+double AlN::VB(double /*T*/, double /*e*/, char /*point*/, char /*hole*/) const {
     return -0.769;
 }
 
-double AlN::Dso(double T, double e) const {
+double AlN::Dso(double /*T*/, double /*e*/) const {
     return 0.036;
 }
 
@@ -68,7 +68,7 @@ MI_PROPERTY(AlN, Me,
             MISource("Adachi WILEY 2009"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> AlN::Me(double T, double e, char point) const {
+Tensor2<double> AlN::Me(double /*T*/, double /*e*/, char point) const {
     Tensor2<double> tMe(0.,0.);
     if (point == 'G' || point == '*') {
         tMe.c00 = 0.30;
@@ -80,26 +80,20 @@ Tensor2<double> AlN::Me(double T, double e, char point) const {
 MI_PROPERTY(AlN, Mhh,
             MISeeClass<AlN>(MaterialInfo::Me)
             )
-Tensor2<double> AlN::Mhh(double T, double e) const {
-    Tensor2<double> tMhh(0.,0.);
-    tMhh.c00 = 2.56;
-    tMhh.c11 = 4.17;
-    return (tMhh);
+Tensor2<double> AlN::Mhh(double /*T*/, double /*e*/) const {
+    return Tensor2<double>(2.56, 4.17);
 }
 
 MI_PROPERTY(AlN, Mlh,
             MISeeClass<AlN>(MaterialInfo::Me)
             )
-Tensor2<double> AlN::Mlh(double T, double e) const {
-    Tensor2<double> tMlh(0.,0.);
-    tMlh.c00 = 2.56;
-    tMlh.c11 = 0.27;
-    return (tMlh);
+Tensor2<double> AlN::Mlh(double /*T*/, double /*e*/) const {
+    return Tensor2<double>(2.56, 0.27);
 }
 
 Material::ConductivityType AlN::condtype() const { return Material::CONDUCTIVITY_I; }
 
-bool AlN::isEqual(const Material &other) const {
+bool AlN::isEqual(const Material &/*other*/) const {
     return true;
 }
 

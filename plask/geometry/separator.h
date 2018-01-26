@@ -97,8 +97,10 @@ struct Gap1D: public GeometryObjectSeparator<dim> {
 
     static_assert(direction < dim, "direction must be from 0 to dim-1");
 
-    typedef typename GeometryObjectSeparator<dim>::DVec DVec;
-    typedef typename GeometryObjectSeparator<dim>::Box Box;
+    typedef GeometryObjectSeparator<dim> BaseClass;
+
+    typedef typename BaseClass::DVec DVec;
+    typedef typename BaseClass::Box Box;
 
     static constexpr const char* NAME = "gap";              ///< name of gap type, used as XML tag name when write to XML
     static constexpr const char* XML_SIZE_ATTR = "size";    ///< name of size attribute in XML
@@ -129,7 +131,8 @@ struct Gap1D: public GeometryObjectSeparator<dim> {
         this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }
 
-    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames&) const override {
+    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override {
+        BaseClass::writeXMLAttr(dest_xml_object, axes);
         dest_xml_object.attr(XML_SIZE_ATTR, size);
     }
 

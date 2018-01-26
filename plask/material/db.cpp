@@ -177,7 +177,7 @@ bool MaterialsDB::ProxyMaterialConstructor::isSimple() const {
 }
 
 
-shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const std::string& db_Key, const Material::Composition& composition, const std::string& dopant_name, bool allow_complex_without_composition) const {
+shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const std::string& db_Key, const Material::Composition& composition, bool allow_complex_without_composition) const {
     auto it = constructors.find(db_Key);
     if (it == constructors.end()) {
         if (composition.empty()) {
@@ -199,21 +199,21 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
     return it->second;
 }
 
-shared_ptr<Material> MaterialsDB::get(const std::string& db_Key, const Material::Composition& composition, const std::string& dopant_name, Material::DopingAmountType doping_amount_type, double doping_amount) const {
-    return (*getConstructor(db_Key, composition, dopant_name))(composition, doping_amount_type, doping_amount);
+shared_ptr<Material> MaterialsDB::get(const std::string& db_Key, const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
+    return (*getConstructor(db_Key, composition))(composition, doping_amount_type, doping_amount);
 }
 
 shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const Material::Composition& composition, const std::string& label, const std::string& dopant_name) const {
-    return getConstructor(complexDbKey(composition, label, dopant_name), composition, dopant_name);
+    return getConstructor(complexDbKey(composition, label, dopant_name), composition);
 }
 
 shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const Material::Parameters &material, bool allow_complex_without_composition) const
 {
-    return getConstructor(dbKey(material), material.composition, material.dopantName, allow_complex_without_composition);
+    return getConstructor(dbKey(material), material.composition, allow_complex_without_composition);
 }
 
 shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, const std::string& label, const std::string& dopant_name, Material::DopingAmountType doping_amount_type, double doping_amount) const {
-    return get(complexDbKey(composition, label, dopant_name), composition, dopant_name, doping_amount_type, doping_amount);
+    return get(complexDbKey(composition, label, dopant_name), composition, doping_amount_type, doping_amount);
 }
 
 /*shared_ptr<Material> MaterialsDB::get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition,

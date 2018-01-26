@@ -247,7 +247,7 @@ struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
         return nullptr;
     }
 
-    const std::size_t findRegionIndex(const OutVec& p) const {
+    std::size_t findRegionIndex(const OutVec& p) const {
         for (std::size_t i = 0; i < regions.size(); ++i)
             if (regions[i].inGeomBB.contains(p)) return i;
         return regions.size();
@@ -265,7 +265,7 @@ struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
     }
 
     template <typename Predicate>
-    const std::size_t findRegionIndex(const OutVec& p, Predicate pred) const {
+    std::size_t findRegionIndex(const OutVec& p, Predicate pred) const {
         for (std::size_t i = 0; i < regions.size(); ++i)
             if (regions[i].inGeomBB.contains(p) && pred(regions[i])) return i;
         return regions.size();

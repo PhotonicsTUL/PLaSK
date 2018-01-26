@@ -104,7 +104,7 @@ RectilinearMesh3D::RectilinearMesh3D(shared_ptr<MeshAxis> mesh0, shared_ptr<Mesh
     setChangeSignal(this->axis2);
 }
 
-RectilinearMesh3D::RectilinearMesh3D(const RectilinearMesh3D &src): axis0(src.axis0), axis1(src.axis1), axis2(src.axis2), elements(this) {    //->clone()
+RectilinearMesh3D::RectilinearMesh3D(const RectilinearMesh3D &src): MeshD<3>(src), axis0(src.axis0), axis1(src.axis1), axis2(src.axis2), elements(this) {    //->clone()
     setIterationOrder(src.getIterationOrder());
     setChangeSignal(this->axis0);
     setChangeSignal(this->axis1);

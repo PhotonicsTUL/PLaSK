@@ -144,14 +144,14 @@ LazyData<Vec<3,dcomplex>> Transfer::computeFieldE(double power, const shared_ptr
     diagonalizer->source()->initField(Expansion::FIELD_E, method);
     while (auto level = levels->yield()) {
         double z = level->vpos();
-        size_t n = solver->getLayerFor(z);
+        std::size_t n = solver->getLayerFor(z);
         if (!reflected) {
             if (n == 0 && z < -zlim) z = -zlim;
             else if (n == solver->stack.size()-1 && z > zlim) z = zlim;
         }
         cvector E = getFieldVectorE(z, n);
         cvector H = getFieldVectorH(z, n);
-        if (n >= solver->interface) for (auto& h: H) h = -h;
+        if (std::ptrdiff_t(n) >= solver->interface) for (auto& h: H) h = -h;
         size_t layer = solver->stack[n];
         auto dest = fact * diagonalizer->source()->getField(layer, level, E, H);
         for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
@@ -176,7 +176,7 @@ LazyData<Vec<3,dcomplex>> Transfer::computeFieldH(double power, const shared_ptr
         }
         cvector E = getFieldVectorE(z, n);
         cvector H = getFieldVectorH(z, n);
-        if (n >= solver->interface) for (auto& h: H) h = -h;
+        if (std::ptrdiff_t(n) >= solver->interface) for (auto& h: H) h = -h;
         size_t layer = solver->stack[n];
         auto dest = fact * diagonalizer->source()->getField(layer, level, E, H);
         for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];

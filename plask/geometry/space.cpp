@@ -88,6 +88,7 @@ std::set<std::string> GeometryD<dim>::getRolesAt(const typename GeometryD<dim>::
 
 template <>
 void GeometryD<2>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
+    Geometry::writeXMLAttr(dest_xml_object, axes);
     dest_xml_object.attr("axes", axes.str());
     this->storeEdgeInXML(dest_xml_object, DIRECTION_TRAN, false);
     this->storeEdgeInXML(dest_xml_object, DIRECTION_TRAN, true);
@@ -97,6 +98,7 @@ void GeometryD<2>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisN
 
 template <>
 void GeometryD<3>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
+    Geometry::writeXMLAttr(dest_xml_object, axes);
     dest_xml_object.attr("axes", axes.str());
     for (int dir = 0; dir < 3; ++dir) {
         this->storeEdgeInXML(dest_xml_object, plask::Geometry::Direction(dir), false);
@@ -284,14 +286,14 @@ void Geometry2DCylindrical::setEdges(Direction direction, const edge::Strategy& 
 }
 
 void Geometry2DCylindrical::setEdges(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) {
-    ensureBoundDirIsProper(direction, false);
-    ensureBoundDirIsProper(direction, true);
+    ensureBoundDirIsProper(direction/*, false*/);
+    //ensureBoundDirIsProper(direction, true);
     bottomup.setStrategies(border_lo, border_hi);   //bottomup is only one valid proper bound for lo and hi
     fireChanged(Event::EVENT_EDGES);
 }
 
 void Geometry2DCylindrical::setEdge(Direction direction, bool higher, const edge::Strategy& border_to_set) {
-    ensureBoundDirIsProper(direction, higher);
+    ensureBoundDirIsProper(direction/*, higher*/);
     if (direction == DIRECTION_TRAN) {
         try {
             innerouter.set(higher, dynamic_cast<const edge::UniversalStrategy&>(border_to_set));
@@ -304,7 +306,7 @@ void Geometry2DCylindrical::setEdge(Direction direction, bool higher, const edge
 }
 
 const edge::Strategy& Geometry2DCylindrical::getEdge(Direction direction, bool higher) const {
-    ensureBoundDirIsProper(direction, higher);
+    ensureBoundDirIsProper(direction/*, higher*/);
     return (direction == DIRECTION_TRAN) ? innerouter.get(higher) : bottomup.get(higher);
 }
 
@@ -369,6 +371,7 @@ const edge::Strategy &Geometry3D::getEdge(Direction direction, bool higher) cons
 #ifdef _MSC_VER
 	__assume(0);
 #endif
+    std::abort();   // to silent warning in gcc/clang release build
 }
 
 Geometry3D::Geometry3D(shared_ptr<GeometryObjectD<3> > child)

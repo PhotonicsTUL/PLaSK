@@ -191,7 +191,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
 
     /**
      * Stripe number to use for vertical computations.
-     * -1 means to ompute all stripes as in the proper EFM
+     * -1 means to compute all stripes as in the proper EFM
      */
     int rstripe;
 
@@ -208,7 +208,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     /// Set stripe for computations
     void setStripe(int stripe) {
         if (!mesh) setSimpleMesh();
-        if (stripe < 0 || stripe >= mesh->axis0->size())
+        if (stripe < 0 || std::size_t(stripe) >= mesh->axis0->size())
             throw BadInput(getId(), "Wrong stripe number specified");
         rstripe = stripe;
         invalidate();
@@ -546,10 +546,10 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     struct HeatDataImpl;
 
     /// Method computing the distribution of light intensity
-    const LazyData<double> getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);
+    const LazyData<double> getLightMagnitude(std::size_t num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Method computing the distribution of the light electric field
-    const LazyData<Vec<3,dcomplex>> getElectricField(int num, const shared_ptr<const plask::MeshD<2>>& dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
+    const LazyData<Vec<3,dcomplex>> getElectricField(std::size_t num, const shared_ptr<const plask::MeshD<2>>& dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get used refractive index
     const LazyData<Tensor3<dcomplex>> getRefractiveIndex(const shared_ptr<const MeshD<2> >& dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);

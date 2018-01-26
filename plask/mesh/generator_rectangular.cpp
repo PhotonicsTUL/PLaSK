@@ -17,7 +17,7 @@ inline static void addPoints(OrderedAxis& dst, double lo, double up, bool single
     }
 }
 
-shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry, bool uniform)
+shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     auto mesh = plask::make_shared<OrderedAxis>();
     OrderedAxis::WarningOff warning_off(mesh);
@@ -27,7 +27,7 @@ shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>&
 
     for (std::size_t i = 0; i < boxes.size(); ++i)
         if (boxes[i].isValid()) {
-            addPoints(*mesh, boxes[i].lower.c0, boxes[i].upper.c0, uniform || leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
+            addPoints(*mesh, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
         }
 
     return mesh;
@@ -41,7 +41,7 @@ shared_ptr<MeshD<1>> OrderedMesh1DSimpleGenerator::generate(const shared_ptr<Geo
 }
 
 
-shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, bool uniform0, bool uniform1)
+shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     shared_ptr<OrderedAxis> axis0(new OrderedAxis), axis1(new OrderedAxis);
     OrderedAxis::WarningOff warning_off0(axis0);
@@ -52,8 +52,8 @@ shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 
     for (std::size_t i = 0; i < boxes.size(); ++i)
         if (boxes[i].isValid()) {
-            addPoints(*axis0, boxes[i].lower.c0, boxes[i].upper.c0, uniform0 || leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
-            addPoints(*axis1, boxes[i].lower.c1, boxes[i].upper.c1, uniform1 || leafs[i]->isUniform(Primitive<3>::DIRECTION_VERT), leafs[i]->min_ply, leafs[i]->max_points);
+            addPoints(*axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
+            addPoints(*axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->isUniform(Primitive<3>::DIRECTION_VERT), leafs[i]->min_ply, leafs[i]->max_points);
         }
 
     shared_ptr<RectangularMesh<2>> mesh = plask::make_shared<RectangularMesh<2>>(std::move(axis0), std::move(axis1));
@@ -75,7 +75,7 @@ shared_ptr<MeshD<2>> RectangularMesh2DFrom1DGenerator::generate(const shared_ptr
 }
 
 
-shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry, bool uniform0, bool uniform1, bool uniform2)
+shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
     shared_ptr<OrderedAxis> axis0(new OrderedAxis), axis1(new OrderedAxis), axis2(new OrderedAxis);
     OrderedAxis::WarningOff warning_off0(axis0);
@@ -87,9 +87,9 @@ shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 
     for (std::size_t i = 0; i < boxes.size(); ++i)
         if (boxes[i].isValid()) {
-            addPoints(*axis0, boxes[i].lower.c0, boxes[i].upper.c0, uniform0 || leafs[i]->isUniform(Primitive<3>::DIRECTION_LONG), leafs[i]->min_ply, leafs[i]->max_points);
-            addPoints(*axis1, boxes[i].lower.c1, boxes[i].upper.c1, uniform1 || leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
-            addPoints(*axis2, boxes[i].lower.c2, boxes[i].upper.c2, uniform2 || leafs[i]->isUniform(Primitive<3>::DIRECTION_VERT), leafs[i]->min_ply, leafs[i]->max_points);
+            addPoints(*axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isUniform(Primitive<3>::DIRECTION_LONG), leafs[i]->min_ply, leafs[i]->max_points);
+            addPoints(*axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
+            addPoints(*axis2, boxes[i].lower.c2, boxes[i].upper.c2, leafs[i]->isUniform(Primitive<3>::DIRECTION_VERT), leafs[i]->min_ply, leafs[i]->max_points);
         }
 
     shared_ptr<RectangularMesh<3>> mesh = plask::make_shared<RectangularMesh<3>>(std::move(axis0), std::move(axis1), std::move(axis2));
@@ -282,10 +282,11 @@ RectangularMeshRefinedGenerator<3>::generate(const boost::shared_ptr<plask::Geom
 
 
 template <int dim>
-shared_ptr<OrderedAxis> RectangularMeshDivideGenerator<dim>::processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir)
+shared_ptr<OrderedAxis> RectangularMeshDivideGenerator<dim>::processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& /*geometry*/, size_t dir)
 {
     assert(bool(axis));
     OrderedAxis::WarningOff warning_off(axis);
+    (void) warning_off; // don't warn about unused variable warning_off
 
     if (pre_divisions[dir] == 0) pre_divisions[dir] = 1;
     if (post_divisions[dir] == 0) post_divisions[dir] = 1;
@@ -365,7 +366,7 @@ RectangularMeshSmoothGenerator<3>::RectangularMeshSmoothGenerator():
 
 
 template <int dim>
-shared_ptr<OrderedAxis> RectangularMeshSmoothGenerator<dim>::processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir)
+shared_ptr<OrderedAxis> RectangularMeshSmoothGenerator<dim>::processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& /*geometry*/, size_t dir)
 {
     OrderedAxis::WarningOff warning_off(axis);
 

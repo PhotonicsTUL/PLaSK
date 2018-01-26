@@ -16,7 +16,7 @@ struct CMatrix_Python {
 
     static PyObject* convert(const cmatrix& self) {
         npy_intp dims[2] = { self.rows(), self.cols() };
-        npy_intp strides[2] = { sizeof(dcomplex), self.rows() * sizeof(dcomplex) };
+        npy_intp strides[2] = { sizeof(dcomplex), npy_intp(self.rows() * sizeof(dcomplex)) };
 
         PyObject* arr = PyArray_New(&PyArray_Type, 2, dims, NPY_CDOUBLE, strides,
                                     (void*)self.data(), 0, 0, NULL);

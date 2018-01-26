@@ -48,7 +48,7 @@ struct plask::InterpolationAlgorithm<MyMeshType, SrcT, DstT, plask::INTERPOLATIO
     }
 };
 @endcode
-Note that above code is template and must be placed in header file.
+Note that above code is template and must be placed in a header file.
 
 The next example, shows how to implement algorithm for a particular data type.
 To implement the interpolation version for the 'double' type, you should write:
@@ -294,7 +294,7 @@ template <typename SrcMeshT, typename SrcT, typename DstT>
 struct InterpolationAlgorithm<SrcMeshT, SrcT, DstT, INTERPOLATION_DEFAULT>
 {
     static LazyData<DstT> interpolate(const shared_ptr<const SrcMeshT>&, const DataVector<const SrcT>&,
-                                      const shared_ptr<const MeshD<SrcMeshT::DIM>>&, const InterpolationFlags& flags) {
+                                      const shared_ptr<const MeshD<SrcMeshT::DIM>>&, const InterpolationFlags& /*flags*/) {
         throw CriticalException("interpolate(...) called for INTERPOLATION_DEFAULT method. Contact solver author to fix this issue."
 #ifndef NDEBUG
                                 "\n\nINFO FOR SOLVER AUTHOR: To avoid this error use 'getInterpolationMethod<YOUR_DEFAULT_METHOD>(interpolation_method) in C++ code of the provider in your solver.\n"

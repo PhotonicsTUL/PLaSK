@@ -141,8 +141,8 @@ void ExpansionPW2D::init()
         // Smooth coefficients
         if (SOLVER->smooth) {
             double bb4 = M_PI / L; bb4 *= bb4;   // (2π/L)² / 4
-            for (size_t i = 0; i != nN; ++i) {
-                int k = int(i); if (!symmetric() && k > nN/2) k -= int(nN);
+            for (std::size_t i = 0; i != nN; ++i) {
+                int k = int(i); if (!symmetric() && k > int(nN/2)) k -= int(nN);
                 mag[i] *= exp(-SOLVER->smooth * bb4 * k * k);
             }
         }
@@ -174,7 +174,7 @@ void ExpansionPW2D::prepareIntegrals(double lam, double glam) {
     }
 }
 
-void ExpansionPW2D::cleanupIntegrals(double lam, double glam) {
+void ExpansionPW2D::cleanupIntegrals(double, double) {
     temperature.reset();
     gain.reset();
 }
@@ -333,7 +333,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         if (SOLVER->smooth) {
             double bb4 = M_PI / ((right-left) * (symmetric()? 2. : 1.)); bb4 *= bb4;   // (2π/L)² / 4
             for (size_t i = 0; i != nN; ++i) {
-                int k = int(i); if (!symmetric() && k > nN/2) k -= int(nN);
+                int k = int(i); if (!symmetric() && k > int(nN/2)) k -= int(nN);
                 coeffs[layer][i] *= exp(-SOLVER->smooth * bb4 * k * k);
             }
         }
@@ -360,7 +360,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
         } else {
             return LazyData<Tensor3<dcomplex>>(dest_mesh->size(), [this,l,dest_mesh](size_t i)->Tensor3<dcomplex>{
                 Tensor3<dcomplex> eps = coeffs[l][0];
-                for (int k = 1; k != nN; ++k) {
+                for (std::size_t k = 1; k != nN; ++k) {
                     eps += 2. * coeffs[l][k] * cos(M_PI * k * dest_mesh->at(i).c0 / (right-left));
                 }
                 eps.c22 = 1. / eps.c22;

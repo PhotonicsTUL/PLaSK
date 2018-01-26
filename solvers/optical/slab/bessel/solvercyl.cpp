@@ -114,7 +114,7 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
 void BesselSolverCyl::onInitialize()
 {
     this->setupLayers();
-    if (this->interface == size_t(-1))
+    if (this->interface == -1)
         Solver::writelog(LOG_DETAIL, "Initializing BesselCyl solver ({0} layers in the stack)",
                                      this->stack.size());
     else

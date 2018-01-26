@@ -16,24 +16,26 @@ namespace plask {
 template <int dim, typename Primitive<dim>::Direction growingDirection = Primitive<dim>::DIRECTION_VERT>
 struct PLASK_API StackContainerBaseImpl: public GeometryObjectContainer<dim> {
 
+    typedef GeometryObjectContainer<dim> BaseClass;
+
     static constexpr typename Primitive<dim>::Direction GROWING_DIR = growingDirection;
 
     /// Vector of doubles type in space on this, vector in space with dim number of dimensions.
-    typedef typename GeometryObjectContainer<dim>::DVec DVec;
+    typedef typename BaseClass::DVec DVec;
 
     /// Rectangle type in space on this, rectangle in space with dim number of dimensions.
-    typedef typename GeometryObjectContainer<dim>::Box Box;
+    typedef typename BaseClass::Box Box;
 
     /// Type of this child.
-    typedef typename GeometryObjectContainer<dim>::ChildType ChildType;
+    typedef typename BaseClass::ChildType ChildType;
 
     /// Type of translation geometry element in space of this.
-    typedef typename GeometryObjectContainer<dim>::TranslationT TranslationT;
+    typedef typename BaseClass::TranslationT TranslationT;
 
     /// Type of the vector holding container children
-    typedef typename GeometryObjectContainer<dim>::TranslationVector TranslationVector;
+    typedef typename BaseClass::TranslationVector TranslationVector;
 
-    using GeometryObjectContainer<dim>::children;
+    using BaseClass::children;
 
     /**
      * @param baseHeight height where should start first object
@@ -164,11 +166,13 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(StackContainerBaseImpl<2, Primitive<2>::DIRECTI
  */
 struct PLASK_API ShelfContainer2D: public StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> {
 
+    typedef StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN> BaseClass;
+
     /// Type of this child.
-    typedef typename StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>::ChildType ChildType;
+    typedef typename BaseClass::ChildType ChildType;
 
     /// Type of translation geometry elment in space of this.
-    typedef typename StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>::TranslationT TranslationT;
+    typedef typename BaseClass::TranslationT TranslationT;
 
 private:
     /// Gap which is update to make all shelf to have given, total width
@@ -177,7 +181,7 @@ private:
 
 public:
 
-    ShelfContainer2D(double baseH = 0.0): StackContainerBaseImpl<2, Primitive<2>::DIRECTION_TRAN>(baseH) {}
+    ShelfContainer2D(double baseH = 0.0): BaseClass(baseH) {}
 
     static const char* NAME;
 

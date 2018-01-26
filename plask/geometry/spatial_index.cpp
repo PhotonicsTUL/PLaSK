@@ -24,15 +24,15 @@ struct GeometryObjectBBox {
 template <int DIMS>
 struct EmptyLeafCacheNode: public SpatialIndexNode<DIMS> {
 
-    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const override {
+    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& /*p*/) const override {
         return shared_ptr<Material>();
     }
 
-    virtual bool contains(const Vec<DIMS>& p) const override {
+    virtual bool contains(const Vec<DIMS>& /*p*/) const override {
         return false;
     }
 
-    GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> caller, const Vec<DIMS> &point, bool all) const override {
+    GeometryObject::Subtree getPathsAt(shared_ptr<const GeometryObject> /*caller*/, const Vec<DIMS> &/*point*/, bool /*all*/) const override {
         return GeometryObject::Subtree();
     }
 };
@@ -182,7 +182,7 @@ void calcOptimalSplitOffset(const std::vector< GeometryObjectBBox<DIMS> >& input
         while (i_lo+1 < inputSortedByLo.size() && inputSortedByLo[i_lo+1].boundingBox.lower[inputDir] == offset)
             ++i_lo;   //can has more obj. with this lo coordinate
         //now: obj. from [0, i_lo) will be added to lo set
-        if (i_lo > max_allowed_size)
+        if (int(i_lo) > max_allowed_size)
             return; //too much obj in lo, i_lo will be increased so we can return
         while (i_hi < inputSortedByHi.size() && inputSortedByHi[i_hi].boundingBox.upper[inputDir] < offset)
             ++i_hi;

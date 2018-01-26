@@ -33,7 +33,7 @@ namespace sha1
     namespace // local
     {
         // Rotate an integer value to left.
-        static inline const unsigned int rol(const unsigned int value,
+        static inline unsigned int rol(const unsigned int value,
                 const unsigned int steps)
         {
             return ((value << steps) | (value >> (32 - steps)));
@@ -114,7 +114,7 @@ namespace sha1
      @param bytelength the number of bytes to hash from the src pointer.
      @param hash should point to a buffer of at least 20 bytes of size for storing the sha1 result in.
     */
-    static inline void calc(const void* src, const int bytelength, unsigned char* hash)
+    inline void calc(const void* src, const int bytelength, unsigned char* hash)
     {
         // Init the result array.
         unsigned int result[5] = { 0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0 };

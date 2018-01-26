@@ -9,11 +9,6 @@
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/generator_rectangular.h>
 
-// see: http://stackoverflow.com/questions/19987448/is-there-an-easy-way-to-write-utf-8-octets-in-visual-studio
-#ifndef _MSC_VER
-    #pragma execution_character_set("utf-8")
-#endif
-
 namespace plask { namespace python {
 
 extern AxisNames current_axes;

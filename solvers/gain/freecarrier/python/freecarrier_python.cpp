@@ -74,7 +74,7 @@ static py::object FreeCarrier_getFermiLevels(FreeCarrierGainSolver<GeometryT>* s
 {
     double T = (To == py::object())? self->getT0() : py::extract<double>(To);
     if (reg < 0) reg = self->regions.size() + reg;
-    if (reg < 0 || reg >= self->regions.size()) throw IndexError(u8"{}: Bad active region index", self->getId());
+    if (reg < 0 || std::size_t(reg) >= self->regions.size()) throw IndexError(u8"{}: Bad active region index", self->getId());
     self->initCalculation();
     double Fc{NAN}, Fv{NAN};
     typename FreeCarrierGainSolver<GeometryT>::ActiveRegionParams params(self, self->params0[reg], T);
@@ -211,6 +211,7 @@ BOOST_PYTHON_MODULE(freecarrier)
         solver.def("spectrum", FreeCarrierGetGainSpectrum2<Geometry2DCartesian>, (py::arg("c0"), "c1"), py::with_custodian_and_ward_postcall<0,1>());
 
         py::scope scope = solver;
+        (void) scope;   // don't warn about unused variable scope
         py::class_<GainSpectrum<Geometry2DCartesian>,plask::shared_ptr<GainSpectrum<Geometry2DCartesian>>, boost::noncopyable>("Spectrum",
             u8"Gain spectrum object. You can call it like a function to get gains for different vavelengths.",
             py::no_init)
@@ -289,6 +290,7 @@ BOOST_PYTHON_MODULE(freecarrier)
         solver.def("spectrum", FreeCarrierGetGainSpectrum2<Geometry2DCylindrical>, (py::arg("c0"), "c1"), py::with_custodian_and_ward_postcall<0,1>());
 
         py::scope scope = solver;
+        (void) scope;   // don't warn about unused variable scope
         py::class_<GainSpectrum<Geometry2DCylindrical>,plask::shared_ptr<GainSpectrum<Geometry2DCylindrical>>, boost::noncopyable>("Spectrum",
             u8"Gain spectrum object. You can call it like a function to get gains for different vavelengths.",
             py::no_init)

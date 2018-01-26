@@ -46,13 +46,13 @@ struct RegisterBoundaryConditions {
     static ConditionT& __getitem__(BoundaryConditionsT& self, int i) {
         //TODO special proxy class is needed to ensure safe memory management (if user gets an item and removes the original)
         if (i < 0) i = self.size() + i;
-        if (i < 0 || i >= self.size()) throw IndexError(u8"boundary conditions index out of range");
+        if (i < 0 || std::size_t(i) >= self.size()) throw IndexError(u8"boundary conditions index out of range");
         return self[i];
     }
 
     static void __setitem__1(BoundaryConditionsT& self, int i, py::tuple object) {
         if (i < 0) i = self.size() + i;
-        if (i < 0 || i >= self.size()) throw IndexError(u8"boundary conditions index out of range");
+        if (i < 0 || std::size_t(i) >= self.size()) throw IndexError(u8"boundary conditions index out of range");
         auto iter = self.getIteratorForIndex(i);
         try {
             if (py::len(object) != 2) throw py::error_already_set();
@@ -66,7 +66,7 @@ struct RegisterBoundaryConditions {
 
     static void __setitem__2(BoundaryConditionsT& self, int i, const ConditionT& value) {
         if (i < 0) i = self.size() + i;
-        if (i < 0 || i >= self.size()) throw IndexError(u8"boundary conditions index out of range");
+        if (i < 0 || std::size_t(i) >= self.size()) throw IndexError(u8"boundary conditions index out of range");
         auto iter = self.getIteratorForIndex(i);
         *iter = value;
     }
@@ -96,11 +96,11 @@ struct RegisterBoundaryConditions {
 
     struct Iter {
         BoundaryConditionsT& obj;
-        ptrdiff_t i;
+        std::ptrdiff_t i;
         Iter(BoundaryConditionsT& obj): obj(obj), i(-1) {}
         ConditionT& next() {
             ++i;
-            if (i == obj.size()) throw StopIteration("");
+            if (i == std::ptrdiff_t(obj.size())) throw StopIteration("");
             return obj[i];
         }
     };
@@ -153,6 +153,7 @@ struct RegisterBoundaryConditions {
             ;
             if (delattr) py::delattr(py::scope(), "BoundaryConditions");
             py::scope scope1 = bc;
+            (void) scope1;   // don't warn about unused variable scope1
 
             py::class_<Iter>("Iterator", py::no_init)
                 .def(NEXT, &Iter::next, py::return_value_policy<py::reference_existing_object>())
@@ -167,6 +168,7 @@ struct RegisterBoundaryConditions {
             ;
 
             py::scope scope2 = cd;
+            (void) scope2;   // don't warn about unused variable scope2
             py::class_<ConditionIter>("Iterator", py::no_init)
                 .def(NEXT, &ConditionIter::next)
                 .def("__iter__", pass_through)

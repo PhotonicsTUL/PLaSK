@@ -84,13 +84,13 @@ static std::string OrderedAxis__repr__(const OrderedAxis& self) {
 
 static double OrderedAxis__getitem__(const OrderedAxis& self, int i) {
     if (i < 0) i = self.size() + i;
-    if (i < 0 || i >= self.size()) throw IndexError("axis/mesh index out of range");
+    if (i < 0 || std::size_t(i) >= self.size()) throw IndexError("axis/mesh index out of range");
     return self[i];
 }
 
 static void OrderedAxis__delitem__(OrderedAxis& self, int i) {
     if (i < 0) i = self.size() + i;
-    if (i < 0 || i >= self.size()) throw IndexError("axis/mesh index out of range");
+    if (i < 0 || std::size_t(i) >= self.size()) throw IndexError("axis/mesh index out of range");
     self.removePoint(i);
 }
 
@@ -154,7 +154,7 @@ static std::string RegularAxis__repr__(const RegularAxis& self) {
 
 static double RegularAxis__getitem__(const RegularAxis& self, int i) {
     if (i < 0) i = self.size() + i;
-    if (i < 0 || i >= self.size()) throw IndexError("axis/mesh index out of range");
+    if (i < 0 || std::size_t(i) >= self.size()) throw IndexError("axis/mesh index out of range");
     return self[i];
 }
 
@@ -215,7 +215,7 @@ static Vec<2,double> RectangularMesh2D__getitem__(const RectangularMesh<2>& self
     try {
         int indx = py::extract<int>(index);
         if (indx < 0) indx = self.size() + indx;
-        if (indx < 0 || indx >= self.size()) throw IndexError("mesh index out of range");
+        if (indx < 0 || std::size_t(indx) >= self.size()) throw IndexError("mesh index out of range");
         return self[indx];
     } catch (py::error_already_set) {
         PyErr_Clear();
@@ -280,7 +280,7 @@ Vec<3,double> RectangularMesh3D__getitem__(const MeshT& self, py::object index) 
     try {
         int indx = py::extract<int>(index);
         if (indx < 0) indx = self.size() + indx;
-        if (indx < 0 || indx >= self.size()) throw IndexError("mesh index out of range");
+        if (indx < 0 || std::size_t(indx) >= self.size()) throw IndexError("mesh index out of range");
         return self[indx];
     } catch (py::error_already_set) {
         PyErr_Clear();
@@ -370,7 +370,8 @@ namespace detail {
             return plask::make_shared<Iter>(*this);
         }
 
-        static void register_proxy(py::scope scope) {
+        // even if unused, scope argument is important as it sets python scope
+        static void register_proxy(py::scope /*scope*/) {
             py::class_<ThisT, shared_ptr<ThisT>, boost::noncopyable> cls("_Proxy", py::no_init); cls
                 .def("__getitem__", &ThisT::__getitem__)
                 .def("__setitem__", &ThisT::__setitem__)
@@ -384,6 +385,7 @@ namespace detail {
             py::delattr(py::scope(), "_Proxy");
 
             py::scope scope2 = cls;
+            (void) scope2;   // don't warn about unused variable scope2
             py::class_<Iter, shared_ptr<Iter>, boost::noncopyable>("Iterator", py::no_init)
                 .def(NEXT, &Iter::next)
                 .def("__iter__", pass_through)
@@ -880,6 +882,7 @@ void register_mesh_rectangular()
 
     {
         py::scope scope = rectilinear1d;
+        (void) scope;   // don't warn about unused variable scope
 
         py::class_<OrderedMesh1DSimpleGenerator, shared_ptr<OrderedMesh1DSimpleGenerator>,
                    py::bases<MeshGeneratorD<1>>, boost::noncopyable>("SimpleGenerator",
@@ -984,6 +987,7 @@ void register_mesh_rectangular()
 
     {
         py::scope scope = rectangular2D;
+        (void) scope;   // don't warn about unused variable scope
 
         py::class_<RectangularMesh2DSimpleGenerator, shared_ptr<RectangularMesh2DSimpleGenerator>,
                    py::bases<MeshGeneratorD<2>>, boost::noncopyable>("SimpleGenerator",
@@ -1077,6 +1081,7 @@ void register_mesh_rectangular()
 
     {
         py::scope scope = rectangular3D;
+        (void) scope;   // don't warn about unused variable scope
 
         py::class_<RectangularMesh3DSimpleGenerator, shared_ptr<RectangularMesh3DSimpleGenerator>,
                    py::bases<MeshGeneratorD<3>>, boost::noncopyable>("SimpleGenerator",

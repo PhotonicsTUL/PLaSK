@@ -280,7 +280,7 @@ struct PositionAlignerImpl: public AlignerImpl<direction> {
 
     PositionAlignerImpl(double translation): AlignerImpl<direction>(translation) {}
 
-    virtual double getAlign(double low, double hi) const override {
+    virtual double getAlign(double /*low*/, double /*hi*/) const override {
         return this->coordinate;
     }
 
@@ -616,8 +616,8 @@ inline Aligner<> operator&(const Aligner<Primitive<3>::Direction(2)>& dir2aligne
 namespace details {
 
 typedef double alignStrategy(double lo, double hi, double coordinate);
-inline double lowToCoordinate(double lo, double hi, double coordinate) { return coordinate -lo; }
-inline double hiToCoordinate(double lo, double hi, double coordinate) { return coordinate -hi; }
+inline double lowToCoordinate(double lo, double /*hi*/, double coordinate) { return coordinate -lo; }
+inline double hiToCoordinate(double /*lo*/, double hi, double coordinate) { return coordinate -hi; }
 inline double centerToCoordinate(double lo, double hi, double coordinate) { return coordinate -(lo+hi)/2.0; }
 
 struct LEFT { static constexpr const char* value = "left"; };
@@ -645,7 +645,7 @@ struct AlignerCustomImpl: public AlignerImpl<direction> {
 
     virtual void print(std::ostream& out) const override { out << "align " << name_tag::value << " to " << this->coordinate; }
 
-    virtual std::string key(const AxisNames& axis_names) const override { return name_tag::value; }
+    virtual std::string key(const AxisNames& /*axis_names*/) const override { return name_tag::value; }
 };
 
 }   // namespace details

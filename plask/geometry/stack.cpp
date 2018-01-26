@@ -153,7 +153,8 @@ void StackContainerBaseImpl<dim, growingDirection>::rebuildStackHeights(std::siz
 
 
 template <int dim, typename Primitive<dim>::Direction growingDirection>
-void StackContainerBaseImpl<dim, growingDirection>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &) const {
+void StackContainerBaseImpl<dim, growingDirection>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames & axes) const {
+    BaseClass::writeXMLAttr(dest_xml_object, axes);
     dest_xml_object.attr(baseH_attr, getBaseHeight());
 }
 
@@ -337,7 +338,7 @@ shared_ptr<GeometryObject> StackContainer<dim>::deepCopy(std::map<const Geometry
 
 
 template <int dim>
-shared_ptr<GeometryObject> StackContainer<dim>::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
+shared_ptr<GeometryObject> StackContainer<dim>::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* /*recomended_translation*/) const {
     shared_ptr<StackContainer<dim> > result = plask::make_shared< StackContainer<dim> >(this->getBaseHeight());
     result->default_aligner = default_aligner;
     for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
@@ -427,7 +428,7 @@ shared_ptr<GeometryObject> ShelfContainer2D::deepCopy(std::map<const GeometryObj
 }
 
 
-shared_ptr<GeometryObject> ShelfContainer2D::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const {
+shared_ptr<GeometryObject> ShelfContainer2D::changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* /*recomended_translation*/) const {
     shared_ptr<ShelfContainer2D> result = plask::make_shared<ShelfContainer2D>(this->getBaseHeight());
     result->resizableGap = resizableGap;
     for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
@@ -436,7 +437,8 @@ shared_ptr<GeometryObject> ShelfContainer2D::changedVersionForChildren(std::vect
     return result;
 }
 
-void ShelfContainer2D::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &) const {
+void ShelfContainer2D::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames& axes) const {
+    BaseClass::writeXMLAttr(dest_xml_object, axes);
     dest_xml_object.attr(require_equal_heights_attr, false);
 }
 
@@ -616,7 +618,8 @@ static inline void addChild(StackContainerT& result, const StackContainerT& src,
     result.addUnsafe(children_after_change[child_no].first, src.getAlignerAt(child_no));
 }
 
-static inline void addChild(MultiStackContainer<ShelfContainer2D>& result, const MultiStackContainer<ShelfContainer2D>& src, std::size_t child_no, typename std::vector<std::pair<shared_ptr<typename ShelfContainer2D::ChildType>, Vec<3, double>>>& children_after_change) {
+// it has to overload generic version above, but it is for shelf and so doesn't use aligners
+static inline void addChild(MultiStackContainer<ShelfContainer2D>& result, const MultiStackContainer<ShelfContainer2D>& /*src*/, std::size_t child_no, typename std::vector<std::pair<shared_ptr<typename ShelfContainer2D::ChildType>, Vec<3, double>>>& children_after_change) {
     result.addUnsafe(children_after_change[child_no].first);
 }
 
@@ -625,7 +628,8 @@ static inline void addChild(StackContainerT& result, const StackContainerT& src,
     result.addUnsafe(static_pointer_cast<typename StackContainerT::ChildType>(child), src.getAlignerAt(child_no));
 }
 
-static inline void addChild(MultiStackContainer<ShelfContainer2D>& result, const MultiStackContainer<ShelfContainer2D>& src, const shared_ptr<GeometryObject>& child, std::size_t child_no) {
+// it has to overload generic version above, but it is for shelf and so doesn't use aligners
+static inline void addChild(MultiStackContainer<ShelfContainer2D>& result, const MultiStackContainer<ShelfContainer2D>& /*src*/, const shared_ptr<GeometryObject>& child, std::size_t /*child_no*/) {
     result.addUnsafe(static_pointer_cast<MultiStackContainer<ShelfContainer2D>::ChildType>(child));
 }
 
@@ -654,7 +658,7 @@ shared_ptr<GeometryObject> MultiStackContainer<UpperClass>::deepCopy(std::map<co
 template <typename UpperClass>
 shared_ptr<GeometryObject> MultiStackContainer<UpperClass>::changedVersionForChildren(
                   std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change,
-                  Vec<3, double>* recomended_translation) const {
+                  Vec<3, double>* /*recomended_translation*/) const {
     shared_ptr<MultiStackContainer<UpperClass>> result = plask::make_shared<MultiStackContainer<UpperClass>>(this->repeat_count, this->getBaseHeight());
     for (std::size_t child_no = 0; child_no < children.size(); ++child_no)
         if (children_after_change[child_no].first)

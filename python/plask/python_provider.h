@@ -95,7 +95,7 @@ struct PythonDataVector : public DataVector<T> {
         if (mesh) mesh->changedDisconnectMethod(this, &PythonDataVector<T,dim>::onMeshChanged);
     }
 
-    void onMeshChanged(const typename MeshD<dim>::Event& event) { mesh_changed = true; }
+    void onMeshChanged(const typename MeshD<dim>::Event& /*event*/) { mesh_changed = true; }
 };
 
 // ---------- Receiver ------------
@@ -445,7 +445,7 @@ struct PythonLazyDataImpl: public LazyDataImpl<T> {
     PythonLazyDataImpl(const py::object& object, size_t len): object(object), len(len)
     {
         if (PyObject_HasAttrString(object.ptr(), "__len__")) {
-            if (py::len(object) != len)
+            if (py::len(object) != py::ssize_t(len))
                 throw ValueError(u8"Sizes of data ({}) and mesh ({}) do not match",  py::len(object), len);
         }
     }
@@ -602,6 +602,7 @@ struct RegisterCombinedProvider {
 
     RegisterCombinedProvider(const std::string& name)  {
         py::scope scope = flow_module;
+        (void) scope;   // don't warn about unused variable scope
         Class pyclass(name.c_str(), (std::string(
             u8"Combined provider for ") + CombinedProviderT::NAME + u8".\n\n"
             u8"This provider holds a sum of the other providers, so the provided field\n"
@@ -630,6 +631,7 @@ struct RegisterCombinedProvider {
         )));
         if (!cls) throw CriticalException(u8"No registered provider for {0}", py::type_id<typename CombinedProviderT::BaseType>().name());
         py::scope cls_scope = py::object(cls);
+        (void) cls_scope;   // don't warn about unused variable cls_scope
         py::def("__add__", &add, py::with_custodian_and_ward_postcall<0,1,
                                  py::with_custodian_and_ward_postcall<0,2,
                                  py::return_value_policy<py::manage_new_object>>>());
@@ -773,7 +775,7 @@ namespace detail {
         static ValueT __call__n(ProviderT& self, int num, const ExtraParams&... params) {
             int n(num);
             if (n < 0) num = int(EnumType(self.size() + n));
-            if (n < 0 || n >= self.size())
+            if (n < 0 || std::size_t(n) >= self.size())
                 throw NoValue(format("{0} [{1}]", self.name(), num).c_str());
             return self(num, params...);
         }
@@ -825,7 +827,7 @@ namespace detail {
             if (!mesh) throw TypeError(u8"You must provide proper mesh to {0} provider", self.name());
             int n = int(num);
             if (n < 0) num = EnumType(self.size() + n);
-            if (n < 0 || n >= self.size())
+            if (n < 0 || std::size_t(n) >= self.size())
                 throw NoValue(format("{0} [{1}]", self.name(), num).c_str());
             return PythonDataVector<const ValueT,DIMS>(self(num, mesh, params..., method), mesh);
         }
@@ -855,6 +857,7 @@ template <typename ReceiverT>
 inline void registerReceiver() {
     if (py::converter::registry::lookup(py::type_id<ReceiverT>()).m_class_object == nullptr) {
         py::scope scope = flow_module;
+        (void) scope;   // don't warn about unused variable scope
         detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, typename ReceiverT::PropertyTag::ExtraParams>();
     }
 }
@@ -863,6 +866,7 @@ template <typename ProviderT>
 void registerProvider() {
     if (py::converter::registry::lookup(py::type_id<ProviderT>()).m_class_object == nullptr) {
         py::scope scope = flow_module;
+        (void) scope;   // don't warn about unused variable scope
         detail::RegisterProviderImpl<ProviderT, ProviderT::PropertyTag::propertyType, typename ProviderT::PropertyTag::ExtraParams>();
     }
 }

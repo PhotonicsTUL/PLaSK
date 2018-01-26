@@ -236,7 +236,7 @@ MI_PROPERTY(AlGaAs, nr,
             //MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence
             MIComment("fit by Leszek Frasunkiewicz")
             )
-double AlGaAs::nr(double lam, double T, double n) const {
+double AlGaAs::nr(double lam, double T, double /*n*/) const {
     double A = -0.4490233379*Al + 3.25759049;
     double B = 29.22871618*pow(Al,(-2.35349122*pow(Al,8.844978824)));
     double C = -304.7269552*Al*Al*Al + 335.1918592*Al*Al + 194.6726344*Al - 559.6098207;
