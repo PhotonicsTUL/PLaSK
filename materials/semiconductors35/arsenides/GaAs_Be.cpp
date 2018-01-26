@@ -11,8 +11,14 @@ std::string GaAs_Be::name() const { return NAME; }
 std::string GaAs_Be::str() const { return StringBuilder("GaAs").dopant("Be", NA); }
 
 GaAs_Be::GaAs_Be(DopingAmountType Type, double Val) {
-    Nf_RT = Val; // TODO (add source)
-    NA = Val; // TODO (add source)
+	if (Type == CARRIERS_CONCENTRATION) {
+		Nf_RT = Val; // TODO (add source)
+		NA = Val; // TODO (add source)
+	}
+	else {
+		Nf_RT = Val; // TODO (add source)
+		NA = Val; // TODO (add source)
+	}
     mob_RT = 840./(1+pow((Nf_RT/1e16),0.28));
 }
 

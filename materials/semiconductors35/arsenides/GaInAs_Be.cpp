@@ -14,8 +14,14 @@ MI_PARENT(GaInAs_Be, GaInAs)
 
 GaInAs_Be::GaInAs_Be(const Material::Composition& Comp, DopingAmountType Type, double Val): GaInAs(Comp)/*, mGaAs_Be(Type,Val), mInAs_Be(Type,Val)*/
 {
-    Nf_RT = Val; // TODO
-    NA = Val; // TODO
+	if (Type == CARRIERS_CONCENTRATION) {
+		Nf_RT = Val; // TODO (add source)
+		NA = Val; // TODO (add source)
+	}
+	else {
+		Nf_RT = Val; // TODO (add source)
+		NA = Val; // TODO (add source)
+	}
     if (In == 0.53)
         mob_RT = 120./(1+pow((Nf_RT/2e19),0.39));
     else

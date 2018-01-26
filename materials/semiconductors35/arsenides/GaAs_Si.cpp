@@ -11,8 +11,14 @@ std::string GaAs_Si::name() const { return NAME; }
 std::string GaAs_Si::str() const { return StringBuilder("GaAs").dopant("Si", ND); }
 
 GaAs_Si::GaAs_Si(DopingAmountType Type, double Val) {
-    Nf_RT = Val;
-    ND = Val;
+	if (Type == CARRIERS_CONCENTRATION)	{
+		Nf_RT = Val;
+		ND = Val;
+	}
+	else {
+		Nf_RT = Val;
+		ND = Val;
+	}
     mob_RT = 6600./(1+pow((Nf_RT/5e17),0.53));
 }
 
