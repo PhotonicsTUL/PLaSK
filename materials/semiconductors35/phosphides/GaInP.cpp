@@ -206,7 +206,7 @@ MI_PROPERTY(GaInP, A,
             MISource("L. Piskorski, Analiza numeryczna polprzewodnikowego lasera zlaczowego typu VCSEL emitujacego promieniowanie o dlugości fali dostosowanej do systemow telekomunikacyjnych bazujacych na swiatlowodach plastikowych (in Polish), MSc thesis, 2006"),
             MIComment("no temperature dependence")
             )
-double GaInP::A(double T) const {
+double GaInP::A(double /*T*/) const {
     return ( 1e8 );
 }
 
@@ -221,7 +221,7 @@ MI_PROPERTY(GaInP, C,
             MISource("W. W. Chow et al., IEEE Journal of Selected Topics in Quantum Electronics 1 (1995) 649-653"),
             MIComment("no temperature dependence")
             )
-double GaInP::C(double T) const {
+double GaInP::C(double /*T*/) const {
     return ( 3.5e-30 );
 }
 
@@ -267,14 +267,14 @@ Material::ConductivityType GaInP::condtype() const { return Material::CONDUCTIVI
 MI_PROPERTY(GaInP, nr,
             MIComment("TODO")
             )
-double GaInP::nr(double lam, double T, double n) const {
+double GaInP::nr(double /*lam*/, double /*T*/, double /*n*/) const {
     throw NotImplemented("nr for GaInP");
 }
 
 MI_PROPERTY(GaInP, absp,
             MIComment("TODO")
             )
-double GaInP::absp(double lam, double T) const {
+double GaInP::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for GaInP");
 }
 

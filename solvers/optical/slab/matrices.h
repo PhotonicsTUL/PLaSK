@@ -259,7 +259,7 @@ inline cmatrix operator*(const cmatrix& A, const cmatrix& B) {
 inline cvector operator*(const cmatrix& A, const cvector& v) {
     int n = A.cols(), m = A.rows();
     // if (n != v.size()) throw ComputationError("mult_matrix_by_vector", "A.cols != v.size");
-    assert(n == v.size());
+    assert(std::size_t(n) == v.size());
     cvector dst(m);
     zgemv('n', m, n, 1., A.data(), m, v.data(), 1, 0., dst.data(), 1);
     return dst;
@@ -329,8 +329,8 @@ inline void mult_matrix_by_vector(const cmatrix& A, const const_cvector& v, cvec
         n = A.cols();
     // if (n != v.size()) throw ComputationError("mult_matrix_by_vector", "A.cols != v.size");
     // if (m != dst.size()) throw ComputationError("mult_matrix_by_vector", "A.rows != dst.size");
-    assert(n == v.size());
-    assert(m == dst.size());
+    assert(std::size_t(n) == v.size());
+    assert(std::size_t(m) == dst.size());
     zgemv('n', m, n, 1., A.data(), m, v.data(), 1, 0., dst.data(), 1);
 }
 
@@ -352,8 +352,8 @@ inline void add_mult_matrix_by_vector(const cmatrix& A, const cvector& v, cvecto
         n = A.cols();
     // if (n != v.size()) throw ComputationError("add_mult_matrix_by_vector", "A.cols != v.size");
     // if (m != dst.size()) throw ComputationError("add_mult_matrix_by_vector", "A.rows != dst.size");
-    assert(n == v.size());
-    assert(m == dst.size());
+    assert(std::size_t(n) == v.size());
+    assert(std::size_t(m) == dst.size());
     zgemv('n', m, n, 1., A.data(), m, v.data(), 1, 1., dst.data(), 1);
 }
 

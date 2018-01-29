@@ -20,7 +20,7 @@ MI_PROPERTY(InP_Be, mob,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> InP_Be::mob(double T) const {
+Tensor2<double> InP_Be::mob(double /*T*/) const {
     return ( Tensor2<double>(mob_RT,mob_RT) );
 }
 
@@ -28,7 +28,7 @@ MI_PROPERTY(InP_Be, Nf,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-double InP_Be::Nf(double T) const {
+double InP_Be::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
@@ -39,7 +39,7 @@ double InP_Be::Dop() const {
 MI_PROPERTY(InP_Be, cond,
 			MIComment("no temperature dependence")
             )
-Tensor2<double> InP_Be::cond(double T) const {
+Tensor2<double> InP_Be::cond(double /*T*/) const {
     double tCond = phys::qe * Nf_RT*1e6 * mob_RT*1e-4;
     return (Tensor2<double>(tCond, tCond));
 }
@@ -50,7 +50,7 @@ MI_PROPERTY(InP_Be, absp,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-double InP_Be::absp(double lam, double T) const {
+double InP_Be::absp(double lam, double /*T*/) const {
     double tAbsp(0.);
     if ((lam > 1200.) && (lam < 1400.)) // only for 1300 nm TODO
         tAbsp = 23. * pow(Nf_RT/1e18, 0.7);
