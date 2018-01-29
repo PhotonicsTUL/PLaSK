@@ -414,8 +414,8 @@ void SlabSolver<BaseT>::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
     this->initCalculation();
     computeIntegrals();
     size_t N = this->getExpansion().matrixSize();
-    if (RE.cols() != N || RE.rows() != N) RE = cmatrix(N, N);
-    if (RH.cols() != N || RH.rows() != N) RH = cmatrix(N, N);
+    if (std::size_t(RE.cols()) != N || std::size_t(RE.rows()) != N) RE = cmatrix(N, N);
+    if (std::size_t(RH.cols()) != N || std::size_t(RH.rows()) != N) RH = cmatrix(N, N);
     this->getExpansion().getMatrices(layer, RE, RH);
 }
 #endif
