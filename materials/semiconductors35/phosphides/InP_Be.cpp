@@ -10,7 +10,7 @@ std::string InP_Be::name() const { return NAME; }
 
 std::string InP_Be::str() const { return StringBuilder("InP").dopant("Be", NA); }
 
-InP_Be::InP_Be(DopingAmountType Type, double Val) {
+InP_Be::InP_Be(DopingAmountType /*Type*/, double Val) {
     Nf_RT = Val; // TODO (it is not from publication)
     NA = Val; // TODO (it is not from publication)
     mob_RT = 140./(1+pow((Nf_RT/1e18),0.50));
