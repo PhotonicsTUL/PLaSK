@@ -44,12 +44,12 @@ struct PLASK_SOLVER_API Expansion {
     /**
      * Method called before layer integrals are computed
      */
-    virtual void prepareIntegrals(double lam, double glam) {}
+    virtual void prepareIntegrals(double /*lam*/, double /*glam*/) {}
 
     /**
      * Method called after layer integrals are computed
      */
-    virtual void cleanupIntegrals(double lam, double glam) {}
+    virtual void cleanupIntegrals(double /*lam*/, double /*glam*/) {}
 
     /**
      * Compute itegrals for RE and RH matrices
@@ -151,7 +151,7 @@ struct PLASK_SOLVER_API Expansion {
      * \param l layer number
      * \return \c true if the i-th matrix is diagonal
      */
-    virtual bool diagonalQE(size_t l) const { return false; }
+    virtual bool diagonalQE(size_t /*l*/) const { return false; }
 
     /**
      * Return size of the expansion matrix (equal to the number of expansion coefficients)

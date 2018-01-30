@@ -707,7 +707,7 @@ const LazyData<double> FiniteElementMethodElectrical3DSolver::getHeatDensity(sha
 }
 
 
-const LazyData<Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConductivity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) {
+const LazyData<Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConductivity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod /*method*/) {
     initCalculation();
     this->writelog(LOG_DEBUG, "Getting conductivities");
     loadConductivity();

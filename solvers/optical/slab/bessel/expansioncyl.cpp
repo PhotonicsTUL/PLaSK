@@ -473,7 +473,7 @@ LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialNR(size_t layer,
 }
 
 
-double ExpansionBessel::integratePoyntingVert(const cvector& E, const cvector& H)
+double ExpansionBessel::integratePoyntingVert(const cvector& /*E*/, const cvector& /*H*/)
 {
     return 1.;
 }

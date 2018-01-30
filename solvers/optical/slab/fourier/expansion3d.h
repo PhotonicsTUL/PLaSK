@@ -193,13 +193,13 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     dcomplex epsyx(size_t lay, int l, int t) { return conj(epsxy(lay, l, t)); }
 
     /// Get \f$ \mu_{xx} \f$
-    dcomplex muxx(size_t lay, int l, int t) { return mag_long[(l>=0)?l:l+nNl].c11 * mag_tran[(t>=0)?t:t+nNt].c00; }
+    dcomplex muxx(size_t /*lay*/, int l, int t) { return mag_long[(l>=0)?l:l+nNl].c11 * mag_tran[(t>=0)?t:t+nNt].c00; }
 
     /// Get \f$ \mu_{yy} \f$
-    dcomplex muyy(size_t lay, int l, int t) { return mag_long[(l>=0)?l:l+nNl].c00 * mag_tran[(t>=0)?t:t+nNt].c11; }
+    dcomplex muyy(size_t /*lay*/, int l, int t) { return mag_long[(l>=0)?l:l+nNl].c00 * mag_tran[(t>=0)?t:t+nNt].c11; }
 
     /// Get \f$ \mu_{zz}^{-1} \f$
-    dcomplex imuzz(size_t lay, int l, int t) { return mag_long[(l>=0)?l:l+nNl].c11 * mag_tran[(t>=0)?t:t+nNt].c11; }
+    dcomplex imuzz(size_t /*lay*/, int l, int t) { return mag_long[(l>=0)?l:l+nNl].c11 * mag_tran[(t>=0)?t:t+nNt].c11; }
 
     /// Get \f$ E_x \f$ index
     size_t iEx(int l, int t) {
