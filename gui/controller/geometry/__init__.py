@@ -295,7 +295,10 @@ class GeometryController(Controller):
             except ValueError:
                 return False
             if tree_element != self.plotted_tree_element:
-                self.geometry_view.toolbar._views.clear()
+                try:
+                    self.geometry_view.toolbar._nav_stack.clear()
+                except AttributeError:
+                    self.geometry_view.toolbar._views.clear()
             self.geometry_view.update_plot(plotted_object, set_limits=set_limits, plane=self.checked_plane)
         except Exception as e:
             self.model.info_message("Could not update geometry view: {}".format(str(e)), Info.WARNING)
