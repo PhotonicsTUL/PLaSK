@@ -554,7 +554,7 @@ Tensor2<double> FiniteElementMethodThermal3DSolver::ThermalConductivityData::at(
 }
 std::size_t FiniteElementMethodThermal3DSolver::ThermalConductivityData::size() const { return dest_mesh->size(); }
 
-const LazyData<Tensor2<double>> FiniteElementMethodThermal3DSolver::getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
+const LazyData<Tensor2<double>> FiniteElementMethodThermal3DSolver::getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod /*method*/) {
     this->initCalculation();
     this->writelog(LOG_DEBUG, "Getting thermal conductivities");
     return LazyData<Tensor2<double>>(new FiniteElementMethodThermal3DSolver::ThermalConductivityData(this, dst_mesh));
