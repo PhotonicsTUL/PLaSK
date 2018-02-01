@@ -895,7 +895,7 @@ void register_mesh_rectangular()
                    py::bases<MeshGeneratorD<1>>, boost::noncopyable>("RegularGenerator",
             u8"Generator of ordered 1D mesh with lines at transverse edges of all objects\n"
             u8"and fine regular division of each object with spacing approximately equal to\n"
-            "specified spacing\n\n"
+            u8"specified spacing\n\n"
             u8"RegularGenerator(spacing)\n    create generator",
             py::init<double>(py::arg("spacing")))
         ;
@@ -1000,11 +1000,11 @@ void register_mesh_rectangular()
                    py::bases<MeshGeneratorD<2>>, boost::noncopyable>("RegularGenerator",
             u8"Generator of Rectilinear2D mesh with lines at transverse edges of all objects\n"
             u8"and fine regular division of each object with spacing approximately equal to\n"
-            "specified spacing\n\n"
-            u8"RegularGenerator(spacing)\n    create generator with equal spacing in all\n"
-            u8"                               directions\n\n"
-            u8"RegularGenerator(spacing0, spacing1)\n    create generator with equal\n"
-            u8"                                          spacing\n", py::no_init)
+            u8"specified spacing.\n\n"
+            u8"RegularGenerator(spacing)\n"
+            u8"    create generator with equal spacing in all directions\n\n"
+            u8"RegularGenerator(spacing0, spacing1)\n"
+            u8"    create generator with equal spacing\n", py::no_init)
             .def("__init__", py::make_constructor(RectangularMesh2DRegularGenerator__init__1, py::default_call_policies(),
                                                   (py::arg("spacing"))))
             .def("__init__", py::make_constructor(RectangularMesh2DRegularGenerator__init__2, py::default_call_policies(),
@@ -1094,11 +1094,11 @@ void register_mesh_rectangular()
                    py::bases<MeshGeneratorD<3>>, boost::noncopyable>("RegularGenerator",
             u8"Generator of Rectilinear3D mesh with lines at transverse edges of all objects\n"
             u8"and fine regular division of each object with spacing approximately equal to\n"
-            "specified spacing\n\n"
-            u8"RegularGenerator(spacing)\n    create generator with equal spacing in all\n"
-            u8"                               directions\n\n"
-            u8"RegularGenerator(spacing0, spacing1, spacing2)\n    create generator with equal\n"
-            u8"                                                    spacing\n", py::no_init)
+            u8"specified spacing\n\n"
+            u8"RegularGenerator(spacing)\n"
+            u8"    create generator with equal spacing in all directions\n\n"
+            u8"RegularGenerator(spacing0, spacing1, spacing2)\n"
+            u8"    create generator with equal spacing\n", py::no_init)
             .def("__init__", py::make_constructor(RectangularMesh3DRegularGenerator__init__1, py::default_call_policies(),
                                                   (py::arg("spacing"))))
             .def("__init__", py::make_constructor(RectangularMesh3DRegularGenerator__init__3, py::default_call_policies(),

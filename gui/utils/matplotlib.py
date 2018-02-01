@@ -282,9 +282,9 @@ class PlotWidgetBase(QWidget):
 
     def zoom_bbox(self, box, margin=0.1):
         try:
-            stack = self._nav_stack
+            stack = self.toolbar._nav_stack
         except AttributeError:
-            stack = self._views
+            stack = self.toolbar._views
         if stack.empty():
             self.toolbar.push_current()
         ax = plane_to_axes(self.plane, 2 if isinstance(box, plask.geometry.Box2D) else 3)
