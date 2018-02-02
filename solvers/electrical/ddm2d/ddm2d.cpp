@@ -841,7 +841,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
             double normEd = material->EactD(T) / mEx;
             double normEa = material->EactA(T) / mEx;
             double normT = T / mTx;
-            int loop = 0.;
+            int loop = 0;
             cache[key] = epsi = findPsiI(normEc0, normEv0, normNc, normNv, normNd, normNa, normEd, normEa, 1., 1., normT, loop);
         }
 
