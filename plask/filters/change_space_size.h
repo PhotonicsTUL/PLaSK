@@ -25,12 +25,12 @@ class PLASK_API CartesianMesh2DTo3DExtend: public MeshD<3> {
 public:
 
     CartesianMesh2DTo3DExtend(const shared_ptr<const MeshD<2>>& sourceMesh, const Vec<3, double>& translation, double longBegin, double lonSize, std::size_t pointsCount)
-        : sourceMesh(sourceMesh), translation(translation), stepSize(lonSize / (pointsCount-1)), pointsCount(pointsCount) {
+        : sourceMesh(sourceMesh), translation(translation), stepSize(lonSize / double(pointsCount-1)), pointsCount(pointsCount) {
         this->translation.lon() += longBegin;
     }
 
     virtual Vec<3, double> at(std::size_t index) const override {
-        return translation + vec(sourceMesh->at(index / pointsCount), stepSize * index);
+        return translation + vec(sourceMesh->at(index / pointsCount), stepSize * double(index));
     }
 
     virtual std::size_t size() const override {

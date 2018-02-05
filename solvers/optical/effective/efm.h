@@ -227,7 +227,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     void setStripeR(double r=0.) {
         if (!mesh) setSimpleMesh();
         if (r < 0) throw BadInput(getId(), "Radial position cannot be negative");
-        rstripe = std::lower_bound(mesh->axis0->begin()+1, mesh->axis0->end(), r) - mesh->axis0->begin() - 1;
+        rstripe = int(std::lower_bound(mesh->axis0->begin()+1, mesh->axis0->end(), r) - mesh->axis0->begin() - 1);
         invalidate();
     }
 

@@ -13,7 +13,7 @@ RegularAxis &RegularAxis::operator=(const RegularAxis &src) {
 
 void RegularAxis::reset(double first, double last, std::size_t points_count) {
     lo = first;
-    _step = (last - first) / ((points_count>1)?(points_count-1):1.);
+    _step = (last - first) / ((points_count>1)?double(points_count-1):1.);
     bool resized = this->points_count != points_count;
     this->points_count = points_count;
     if (resized) fireResized(); else fireChanged();

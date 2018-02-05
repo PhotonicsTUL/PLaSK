@@ -95,9 +95,9 @@ using std::ptrdiff_t;
     const dcomplex I(0.,1.);
 #endif // PLASK_MATH_STD
 
-inline double conj(long double x) { return x; }
+inline long double conj(long double x) { return x; }
 inline double conj(double x) { return x; }
-inline double conj(float x) { return x; }
+inline float conj(float x) { return x; }
 
 const double PI = M_PI;
 const double PI_DOUBLED = 6.28318530717958647692;

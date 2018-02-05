@@ -88,7 +88,7 @@ static shared_ptr<Circle<dim>> Circle_constructor(double radius, const py::objec
 
 // Access to attributes
 template <size_t dim>
-static double Block__getattr__(const Block<dim>& self, const std::string& name) {
+static double Block__getattr__(const Block<int(dim)>& self, const std::string& name) {
     if (name[0] == 'd') {
         size_t axis = current_axes[name.substr(1)] + dim-3;
         if (axis < dim) return self.size[axis];
@@ -101,7 +101,7 @@ static void Block__setattr__(py::object self, const std::string& name, const py:
     if (name[0] == 'd') {
         size_t axis = current_axes[name.substr(1)] + dim-3;
         if (axis < dim) {
-            Block<dim>* block = py::extract<Block<dim>*>(self);
+            Block<int(dim)>* block = py::extract<Block<int(dim)>*>(self);
             auto dims = block->size;
             dims[axis] = py::extract<double>(value);
             block->setSize(dims);

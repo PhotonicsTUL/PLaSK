@@ -28,7 +28,7 @@ template <int dim>
 static void Container__delitem__(GeometryObjectContainer<dim>& self, py::object item) {
     try {
         int i = py::extract<int>(item);
-        if (i < 0) i = self.getRealChildrenCount() + i;
+        if (i < 0) i += int(self.getRealChildrenCount());
         self.removeAt(i);
         return;
     } catch (py::error_already_set) { PyErr_Clear(); }
@@ -76,21 +76,23 @@ static PathHints::Hint TranslationContainer3_add
     return self.add(el, Vec<3>(c0, c1, c2));
 }
 
-static PathHints::Hint TranslationContainer2_insert
-    (TranslationContainer<2>& self, int pos, shared_ptr<typename TranslationContainer<2>::ChildType> el, double c0, double c1) {
-    if (pos < 0) pos += self.getRealChildrenCount() + 1;
+static PathHints::Hint TranslationContainer2_insert(TranslationContainer<2>& self, int pos,
+                                                    shared_ptr<typename TranslationContainer<2>::ChildType> el, double c0, double c1)
+{
+    if (pos < 0) pos += int(self.getRealChildrenCount()) + 1;
     return self.insert(pos, el, Vec<2>(c0, c1));
 }
 
-static PathHints::Hint TranslationContainer3_insert
-    (TranslationContainer<3>& self, int pos, shared_ptr<typename TranslationContainer<3>::ChildType> el, double c0, double c1, double c2) {
-    if (pos < 0) pos += self.getRealChildrenCount() + 1;
+static PathHints::Hint TranslationContainer3_insert(TranslationContainer<3>& self, int pos,
+                                                    shared_ptr<typename TranslationContainer<3>::ChildType> el, double c0, double c1, double c2)
+{
+    if (pos < 0) pos += int(self.getRealChildrenCount()) + 1;
     return self.insert(pos, el, Vec<3>(c0, c1, c2));
 }
 
 template <int dim>
 PathHints::Hint TranslationContainer_insert_vec(TranslationContainer<dim>& self, int pos, shared_ptr<typename TranslationContainer<dim>::ChildType> item, const Vec<dim>& vec) {
-    if (pos < 0) pos += self.getRealChildrenCount() + 1;
+    if (pos < 0) pos += int(self.getRealChildrenCount()) + 1;
     return self.insert(pos, item, vec);
 }
 
@@ -110,7 +112,7 @@ PathHints::Hint TranslationContainer_insert(py::tuple args, py::dict kwargs) {
     parseKwargs("insert", args, kwargs, "self", "index", "item");
     ContainerT* self = py::extract<ContainerT*>(args[0]);
     int pos = py::extract<int>(args[1]);
-    if (pos < 0) pos += self->getRealChildrenCount() + 1;
+    if (pos < 0) pos += int(self->getRealChildrenCount()) + 1;
     shared_ptr<typename ContainerT::ChildType> child = py::extract<shared_ptr<typename ContainerT::ChildType>>(args[2]);
     if (py::len(kwargs) == 0)
         return self->insert(pos, child);

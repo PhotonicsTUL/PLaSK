@@ -51,7 +51,7 @@ class PLASK_API RegularAxis: public MeshAxis {
      * @param points_count number of points in mesh
      */
     RegularAxis(double first, double last, std::size_t points_count):
-        lo(first), _step( (last - first) / ((points_count>1)?(points_count-1):1.) ),
+        lo(first), _step( (last - first) / ((points_count>1)?double(points_count-1):1.) ),
         points_count(points_count) {}
 
     /// Assign a new mesh. This operation preserves the \a owner.
@@ -73,7 +73,7 @@ class PLASK_API RegularAxis: public MeshAxis {
     /**
      * @return coordinate of the last point in the mesh
      */
-    double last() const { return lo + _step * (points_count-1); }
+    double last() const { return lo + _step * double(points_count-1); }
 
     /**
      * @return distance between two neighboring points in the mesh
@@ -101,9 +101,9 @@ class PLASK_API RegularAxis: public MeshAxis {
      * @param index index of point, from 0 to size()-1
      * @return point with given @p index
      */
-    double operator[](std::size_t index) const { return lo + index * _step; }
+    double operator[](std::size_t index) const { return lo + double(index) * _step; }
 
-    virtual double at(std::size_t index) const override { return lo + index * _step; }
+    virtual double at(std::size_t index) const override { return lo + double(index) * _step; }
 
     /**
      * Remove all points from mesh.

@@ -94,8 +94,8 @@ bool OrderedAxis::addPoint(double new_node_cord, double min_dist) {
 void OrderedAxis::addPointsLinear(double first, double last, std::size_t points_count) {
     if (points_count == 0) return;
     --points_count;
-    double len = last - first;
-    auto get_el = [&](std::size_t i) { return first + i * len / points_count; };
+    const double len = last - first;
+    auto get_el = [&](std::size_t i) { return first + double(i) * len / double(points_count); };
     addOrderedPoints(makeFunctorIndexedIterator(get_el, 0), makeFunctorIndexedIterator(get_el, points_count+1), points_count+1);
     fireResized();
 }

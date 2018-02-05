@@ -28,12 +28,12 @@ struct PLASK_API PointsOnCircleMeshExtend: public MeshD<3> {
 public:
 
     PointsOnCircleMeshExtend(const shared_ptr<const MeshD<2>>& sourceMesh, const Vec<3, double>& translation, std::size_t pointsCount)
-        : sourceMesh(sourceMesh), translation(translation), slice(PI_DOUBLED / pointsCount), pointsCount(pointsCount) {
+        : sourceMesh(sourceMesh), translation(translation), slice(PI_DOUBLED / double(pointsCount)), pointsCount(pointsCount) {
     }
 
     virtual Vec<3, double> at(std::size_t index) const override {
         Vec<2, double> p = sourceMesh->at(index / pointsCount);
-        const double angle = slice * (index % pointsCount);
+        const double angle = slice * double(index % pointsCount);
         return Vec<3, double>(
                     this->translation.lon()  +  p.rad_r() * cos(angle),
                     this->translation.tran() +  p.rad_r() * sin(angle),

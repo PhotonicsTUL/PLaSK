@@ -18,9 +18,9 @@ F77SUB zgbtrf(const int& m, const int& n, const int& kl, const int& ku, dcomplex
 #define zgbtrs F77_GLOBAL(zgbtrs,ZGBTRS)
 F77SUB zgbtrs(const char& trans, const int& n, const int& kl, const int& ku, const int& nrhs, dcomplex* ab, const int& ldab, int* ipiv, dcomplex* b, const int& ldb, int& info);
 
-#define LD 7
-
 namespace plask { namespace optical { namespace effective {
+
+constexpr const int LD = 7;
 
 /**
  * Oversimple symmetric band matrix structure. It only offers easy access to elements and nothing more.
@@ -73,7 +73,7 @@ struct ZgbMatrix {
      * \param result multiplication result
      */
     void mult(const DataVector<const dcomplex>& vector, DataVector<dcomplex>& result) {
-        zgbmv('N', size, size, 2, 2, 1., data, LD, vector.data(), 1, 0., result.data(), 1);
+        zgbmv('N', int(size), int(size), 2, 2, 1., data, LD, vector.data(), 1, 0., result.data(), 1);
     }
 
     /**
@@ -82,7 +82,7 @@ struct ZgbMatrix {
      * \param result multiplication result
      */
     void addmult(const DataVector<const dcomplex>& vector, DataVector<dcomplex>& result) {
-        zgbmv('N', size, size, 2, 2, 1., data, LD, vector.data(), 1, 1., result.data(), 1);
+        zgbmv('N', int(size), int(size), 2, 2, 1., data, LD, vector.data(), 1, 1., result.data(), 1);
     }
 
     /// Compute matrix determinant
@@ -90,7 +90,7 @@ struct ZgbMatrix {
         int info = 0;
         aligned_unique_ptr<int> upiv(aligned_malloc<int>(size));
         int* ipiv = upiv.get();
-        zgbtrf(size, size, 2, 2, data, LD, ipiv, info);
+        zgbtrf(int(size), int(size), 2, 2, data, LD, ipiv, info);
         assert(info >= 0);
 
         dcomplex det = 1.;
