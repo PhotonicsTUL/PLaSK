@@ -534,7 +534,7 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
 
 shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
 {
-    int len = py::len(args);
+    auto len = py::len(args);
 
     if (len > 1) {
         throw TypeError(u8"__init__ takes exactly 1 non-keyword arguments ({:d} given)", len);

@@ -9,6 +9,8 @@
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/generator_rectangular.h>
 
+#include <limits>
+
 namespace plask { namespace python {
 
 extern AxisNames current_axes;
@@ -164,7 +166,7 @@ static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple arg
                 PyErr_Clear();
                 throw TypeError(u8"'geometry' argument type must be either Extrusion or GeometryObject2D");
             }
-            double length = kwargs.has_key("length")? py::extract<double>(kwargs["length"]) : INFINITY;
+            double length = kwargs.has_key("length")? py::extract<double>(kwargs["length"]) : std::numeric_limits<double>::infinity();
             space = plask::make_shared<Geometry2DCartesian>(object, length);
         }
     } else if (na == 1 && kwargs.has_key("geometry")) {
@@ -181,7 +183,7 @@ static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple arg
                 PyErr_Clear();
                 throw TypeError(u8"'geometry' argument type must be either Extrusion or GeometryObject2D");
             }
-            double length = kwargs.has_key("length")? py::extract<double>(kwargs["length"]) : INFINITY;
+            double length = kwargs.has_key("length")? py::extract<double>(kwargs["length"]) : std::numeric_limits<double>::infinity();
             space = plask::make_shared<Geometry2DCartesian>(object, length);
         }
     } else {

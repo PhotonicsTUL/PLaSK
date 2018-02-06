@@ -334,7 +334,7 @@ PythonDataVector_ArrayImpl(const PythonDataVector<T,dim>* self) {
     if (detail::type_dim<T>() != 1) dims.push_back(detail::type_dim<T>());
 
     PyObject* arr = PyArray_New(&PyArray_Type,
-                                dims.size(),
+                                int(dims.size()),
                                 & dims.front(),
                                 detail::typenum<T>(),
                                 & detail::mesh_strides<T>(*mesh, dims.size()).front(),
@@ -354,7 +354,7 @@ PythonDataVector_ArrayImpl(const PythonDataVector<T,dim>* self) {
 
     std::vector<npy_intp> dims = detail::mesh_dims(*mesh);
 
-    PyObject* arr = PyArray_SimpleNew(dims.size(), &dims.front(), NPY_OBJECT);
+    PyObject* arr = PyArray_SimpleNew(int(dims.size()), &dims.front(), NPY_OBJECT);
     if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from data");
 
     PyObject** arr_data = static_cast<PyObject**>(PyArray_DATA((PyArrayObject*)arr));
@@ -427,17 +427,17 @@ namespace detail {
             if (!rectangular) throw TypeError(u8"For this mesh type only one-dimensional array is allowed");
             auto meshdims = mesh_dims(*rectangular);
             if (type_dim<T>() != 1) meshdims.push_back(type_dim<T>());
-            size_t nd = meshdims.size();
-            if ((size_t)PyArray_NDIM(arr) != nd) throw ValueError(u8"Provided array must have either 1 or {0} dimensions", dim);
-            for (size_t i = 0; i != nd; ++i)
+            std::size_t nd = meshdims.size();
+            if ((std::size_t)PyArray_NDIM(arr) != nd) throw ValueError(u8"Provided array must have either 1 or {0} dimensions", dim);
+            for (std::size_t i = 0; i != nd; ++i)
                 if (meshdims[i] != PyArray_DIMS(arr)[i])
                     throw ValueError(u8"Dimension {0} for the array ({2}) does not match with the mesh ({1})", i, meshdims[i], PyArray_DIMS(arr)[i]);
             auto meshstrides = mesh_strides<T>(*rectangular, nd);
-            for (size_t i = 0; i != nd; ++i) {
+            for (std::size_t i = 0; i != nd; ++i) {
                 if (meshstrides[i] != PyArray_STRIDES(arr)[i]) {
                     writelog(LOG_DEBUG, u8"Copying numpy array to match mesh strides");
                     newarr = py::handle<PyArrayObject>(
-                        (PyArrayObject*)PyArray_New(&PyArray_Type, nd, meshdims.data(),
+                        (PyArrayObject*)PyArray_New(&PyArray_Type, int(nd), meshdims.data(),
                                                     PyArray_TYPE(arr), meshstrides.data(),
                                                     nullptr, 0, 0, nullptr)
                     );

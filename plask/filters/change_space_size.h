@@ -134,7 +134,7 @@ struct DataFrom3Dto2DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemplat
         if (pointsCount > 1) {
             const double total_len = this->outputObj->getLength();
             const std::size_t point_count = this->pointsCount;
-            const double d = total_len / point_count;   // first step at d/2, last at total_len - d
+            const double d = total_len / double(point_count);   // first step at d/2, last at total_len - d
             auto data = this->in(n,
                         plask::make_shared<CartesianMesh2DTo3DExtend>(dst_mesh, this->inTranslation, d * 0.5, total_len - d, point_count),
                         std::forward<ExtraArgs>(extra_args)..., method);

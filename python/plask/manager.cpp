@@ -576,7 +576,7 @@ struct ManagerRoots {
     const Manager& manager;
     ManagerRoots(const Manager& manager): manager(manager) {}
     shared_ptr<Geometry> getitem(int i) const {
-        if (i < 0) i += manager.roots.size();
+        if (i < 0) i += int(manager.roots.size());
         if (i < 0 || std::size_t(i) >= manager.roots.size()) throw IndexError(u8"geometry roots index out of range");
         return manager.roots[i];
     }

@@ -83,13 +83,13 @@ static std::string OrderedAxis__repr__(const OrderedAxis& self) {
 }
 
 static double OrderedAxis__getitem__(const OrderedAxis& self, int i) {
-    if (i < 0) i = self.size() + i;
+    if (i < 0) i += int(self.size());
     if (i < 0 || std::size_t(i) >= self.size()) throw IndexError("axis/mesh index out of range");
     return self[i];
 }
 
 static void OrderedAxis__delitem__(OrderedAxis& self, int i) {
-    if (i < 0) i = self.size() + i;
+    if (i < 0) i += int(self.size());
     if (i < 0 || std::size_t(i) >= self.size()) throw IndexError("axis/mesh index out of range");
     self.removePoint(i);
 }
@@ -153,7 +153,7 @@ static std::string RegularAxis__repr__(const RegularAxis& self) {
 }
 
 static double RegularAxis__getitem__(const RegularAxis& self, int i) {
-    if (i < 0) i = self.size() + i;
+    if (i < 0) i += int(self.size());
     if (i < 0 || std::size_t(i) >= self.size()) throw IndexError("axis/mesh index out of range");
     return self[i];
 }
@@ -214,7 +214,7 @@ static shared_ptr<RectangularMesh<2>> RectangularMesh2D__init__axes(py::object a
 static Vec<2,double> RectangularMesh2D__getitem__(const RectangularMesh<2>& self, py::object index) {
     try {
         int indx = py::extract<int>(index);
-        if (indx < 0) indx = self.size() + indx;
+        if (indx < 0) indx += int(self.size());
         if (indx < 0 || std::size_t(indx) >= self.size()) throw IndexError("mesh index out of range");
         return self[indx];
     } catch (py::error_already_set) {
