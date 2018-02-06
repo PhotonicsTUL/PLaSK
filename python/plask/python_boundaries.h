@@ -45,13 +45,13 @@ struct RegisterBoundaryConditions {
 
     static ConditionT& __getitem__(BoundaryConditionsT& self, int i) {
         //TODO special proxy class is needed to ensure safe memory management (if user gets an item and removes the original)
-        if (i < 0) i = self.size() + i;
+        if (i < 0) i += int(self.size());
         if (i < 0 || std::size_t(i) >= self.size()) throw IndexError(u8"boundary conditions index out of range");
         return self[i];
     }
 
     static void __setitem__1(BoundaryConditionsT& self, int i, py::tuple object) {
-        if (i < 0) i = self.size() + i;
+        if (i < 0) i += int(self.size());
         if (i < 0 || std::size_t(i) >= self.size()) throw IndexError(u8"boundary conditions index out of range");
         auto iter = self.getIteratorForIndex(i);
         try {
@@ -65,14 +65,14 @@ struct RegisterBoundaryConditions {
     }
 
     static void __setitem__2(BoundaryConditionsT& self, int i, const ConditionT& value) {
-        if (i < 0) i = self.size() + i;
+        if (i < 0) i += int(self.size());
         if (i < 0 || std::size_t(i) >= self.size()) throw IndexError(u8"boundary conditions index out of range");
         auto iter = self.getIteratorForIndex(i);
         *iter = value;
     }
 
     static void __delitem__(BoundaryConditionsT& self, int i) {
-        if (i < 0) i = self.size() + i;
+        if (i < 0) i += int(self.size());
         self.erase(size_t(i));
     }
 
@@ -85,7 +85,7 @@ struct RegisterBoundaryConditions {
     }
 
     static void insert(BoundaryConditionsT& self, int i, const typename MeshT::Boundary& boundary, ValueT value) {
-        if (i < 0) i = self.size() + i;
+        if (i < 0) i += int(self.size());
         if (i < 0 || i >= (int)self.size()) OutOfBoundsException("BoundaryConditions[]", "index");
         self.insert(i, ConditionT(boundary, value));
     }

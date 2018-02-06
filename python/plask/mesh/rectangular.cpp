@@ -595,56 +595,56 @@ namespace detail {
 
 template <int dim>
 void RectangularMeshRefinedGenerator_addRefinement1(RectangularMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, const PathHints& path, double position) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), path, position);
 }
 
 template <int dim>
 void RectangularMeshRefinedGenerator_addRefinement2(RectangularMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, double position) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), position);
 }
 
 template <int dim>
 void RectangularMeshRefinedGenerator_addRefinement3(RectangularMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObject::Subtree subtree, double position) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), subtree, position);
 }
 
 template <int dim>
 void RectangularMeshRefinedGenerator_addRefinement4(RectangularMeshDivideGenerator<dim>& self, const std::string& axis, Path path, double position) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), path, position);
 }
 
 template <int dim>
 void RectangularMeshRefinedGenerator_removeRefinement1(RectangularMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, const PathHints& path, double position) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), path, position);
 }
 
 template <int dim>
 void RectangularMeshRefinedGenerator_removeRefinement2(RectangularMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, double position) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), position);
 }
 
 template <int dim>
 void RectangularMeshRefinedGenerator_removeRefinement3(RectangularMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObject::Subtree subtree, double position) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), subtree, position);
 }
 
 template <int dim>
 void RectangularMeshRefinedGenerator_removeRefinement4(RectangularMeshDivideGenerator<dim>& self, const std::string& axis, Path path, double position) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), path, position);
 }
