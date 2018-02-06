@@ -13,10 +13,11 @@ namespace plask { namespace optical { namespace simple_optical {
  */
 
 struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> {
+//MD: to powinno być szablonem — wtedy łatwo można zrobić solver dla każdej geometrii
 
-    
      SimpleOptical(const std::string& name="SimpleOptical");
-     
+     //MD: Domyślna wartość argumentu `name` powinna być pusta ("")
+
      struct Matrix {
          dcomplex ff, fb, bf, bb;
          Matrix() = default;
@@ -27,9 +28,9 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
             return Matrix( ff*T.ff + fb*T.bf, ff*T.fb + fb*T.bb,
                            bf*T.ff + bb*T.bf, bf*T.fb + bb*T.bb);
          }
-       
+
       };
-     
+
      struct FieldZ {
           dcomplex F, B;
 	  FieldZ() = default;
@@ -40,27 +41,28 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
           FieldZ operator*=(dcomplex a) { F *= a; B *= a; return *this; }
           FieldZ operator/=(dcomplex a) { F /= a; B /= a; return *this; }
      };
-      
 
-      
+
+
     struct Mode {
       SimpleOptical* solver; ///< Solver this mode belongs to Simple Optical
       int m;		     ///< Number of mode
-      dcomplex lam;         ///< Stored wavelength 
-      
+      //MD: To `m` nie ma sensu. W EFM był to rząd rozwiązania azymuntalnego, ale tutaj takie nie istnieje.
+      dcomplex lam;          ///< Stored wavelength
+
       Mode(SimpleOptical* solver, int m=0):
 	solver(solver), m(m) {}
-          
+
      bool operator==(const Mode& other) const {
             return m == other.m && is_zero(lam - other.lam);
      }
-     
+
      };
-     
+
      size_t nmodes() const {
 	return modes.size();
      }
-     
+
      /// Insert mode to the list or return the index of the exiting one
      size_t insertMode(const Mode& mode) {
         for (size_t i = 0; i != modes.size(); ++i)
@@ -69,14 +71,15 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
         return modes.size()-1;
      }
 
-     void loadConfiguration(XMLReader& reader, Manager& manager);
+     void loadConfiguration(XMLReader& reader, Manager& manager); //MD: dodać `override`
 
-     virtual std::string getClassName() const { return "SimpleOptical"; }
- 
+     virtual std::string getClassName() const { return "SimpleOptical"; } //MD: dodać `override`
+     //MD: Brakuje przyrostka oznaczającego geometrię, na której działa solver (Cyl dla geometrii cylindrycznej)
+
      void onInitialize() override;
      void onInvalidate() override;
 
-     shared_ptr<MeshAxis> axis_vertical;   
+     shared_ptr<MeshAxis> axis_vertical;
      shared_ptr<MeshAxis> axis_horizontal;
      shared_ptr<MeshAxis> axis_midpoints_vertical;
      shared_ptr<MeshAxis> axis_midpoints_horizontal;
@@ -90,56 +93,59 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      */
      void setWavelength(double wavelength) {
         k0 = 2e3*M_PI / wavelength;
-        invalidate();
+        invalidate(); //MD: na pewno chce Pan wszystko czyścić gdy zmieni się długość fali? Może wystarczy uzunąć skeszowane współczynniki załamania?
      }
-     
+
      dcomplex getVertDeterminant(double wavelength);
-     
+
      dcomplex computeTransferMatrix(const dcomplex& k, const std::vector<dcomplex> & NR);
 
      /// Parameters for main rootdigger
      RootDigger::Params root;
 
      /// Parameters for sripe rootdigger
-     RootDigger::Params stripe_root;     
-     
+     RootDigger::Params stripe_root;
+
      typename ProviderFor<LightMagnitude, Geometry2DCylindrical>::Delegate outLightMagnitude;
-     
+
      /// Provider of refractive index
      typename ProviderFor<RefractiveIndex, Geometry2DCylindrical>::Delegate outRefractiveIndex;
-     
+
      const DataVector<double> getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod);
-     
+     //MD: ta funkcja powinna być protected
+
      const LazyData<Tensor3<dcomplex>> getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod);
-     
+     //MD: ta funkcja powinna być protected
+
      std::vector<Mode> modes;
-     
+
      size_t findMode(double lambda, int m=0);
-     
+     //MD: w Pana przypadku parametr `m` nie ma sensu
+
 
 protected:
 
   friend struct RootDigger;
 
-  size_t x=0,           ///< point, when program computed vertical fields
+  size_t x = 0,   ///< point, when program computed vertical fields
          ybegin,  ///< First element of vertical mesh to consider
          yend;    ///< Last element of vertical mesh to consider
 
   shared_ptr<RectangularMesh<2>> mesh;   /// Mesh over which the calculations are performed
-  
+
   dcomplex k0;
 
   std::vector<double> edgeVertLayerPoint;
 
   void initializeRefractiveIndexVec();
-  
+
   std::vector<dcomplex> nrCache; // Vector to hold refractive index
-    
+
   std::vector<FieldZ> vecE;
 
 };
 
-  
+
 
 }}} // namespace
 
