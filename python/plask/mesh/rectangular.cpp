@@ -667,7 +667,7 @@ void RectangularMeshRefinedGenerator_removeRefinements3(RectangularMeshDivideGen
 
 template <int dim>
 py::dict RectangularMeshRefinedGenerator_listRefinements(const RectangularMeshDivideGenerator<dim>& self, const std::string& axis) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     py::dict refinements;
     for (auto refinement: self.getRefinements(typename Primitive<DIM>::Direction(i))) {

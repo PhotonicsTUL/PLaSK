@@ -105,8 +105,8 @@ struct Vec<2,T> {
     template <typename InputIteratorType>
     static inline Vec<2,T> fromIterator(InputIteratorType inputIt) {
         Vec<2,T> result;
-        result.c0 = *inputIt;
-        result.c1 = *++inputIt;
+        result.c0 = T(*inputIt);
+        result.c1 = T(*++inputIt);
         return result;
     }
 

@@ -89,7 +89,7 @@ struct DataFrom3Dto2DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTypes
         if (pointsCount > 1) {
             const double total_len = this->outputObj->getLength();
             const std::size_t point_count = this->pointsCount;
-            const double d = total_len / point_count;   // first step at d/2, last at total_len - d
+            const double d = total_len / double(point_count);   // first step at d/2, last at total_len - d
             auto data = this->in(
                         plask::make_shared<CartesianMesh2DTo3DExtend>(dst_mesh, this->inTranslation, d * 0.5, total_len - d, point_count),
                         std::forward<ExtraArgs>(extra_args)..., method);
@@ -101,9 +101,16 @@ struct DataFrom3Dto2DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTypes
 #pragma warning(push)
 #pragma warning(disable: 4244) // possible loss of data: point_count is often converted from size_t to dobule here, and this is ok
 #endif
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
                 return PropertyT::value3Dto2D(sum / point_count);
 #ifdef _MSC_VER
 #pragma warning(pop)
+#endif
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
 #endif
             };
         } else {
@@ -146,9 +153,16 @@ struct DataFrom3Dto2DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemplat
 #pragma warning(push)
 #pragma warning(disable: 4244) // possible loss of data: point_count is often converted from size_t to dobule here, and this is ok
 #endif
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
                 return PropertyT::value3Dto2D(sum / point_count);
 #ifdef _MSC_VER
 #pragma warning(pop)
+#endif
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
 #endif
             };
         } else {
