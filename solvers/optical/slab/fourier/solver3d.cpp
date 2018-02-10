@@ -215,7 +215,7 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
             expansion.setK0(this->k0);
             expansion.setKlong(klong);
             transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-            root = getRootDigger([this](const dcomplex& x) { expansion.klong = x; return transfer->determinant(); }, "ktran");
+            root = getRootDigger([this](const dcomplex& x) { expansion.ktran = x; return transfer->determinant(); }, "ktran");
             break;
     }
     root->find(start);
