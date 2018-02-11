@@ -309,6 +309,9 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.""")
 import os
 import sys
 
+csys = 1
+cmap = 2
+
 print_log('info', "START")
 
 print_log('data', os.environ.get('DISPLAY'))
