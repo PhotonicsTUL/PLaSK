@@ -76,8 +76,11 @@ int Contour::crossings(const DataVector<dcomplex>& line, double r0, double i0, d
     return wind;
 }
 
-
+#ifdef NDEBUG
+std::pair<Contour,Contour> Contour::divide(double /*reps*/, double ieps) const
+#else
 std::pair<Contour,Contour> Contour::divide(double reps, double ieps) const
+#endif
 {
     Contour contoura(solver, fun), contourb(solver, fun);
 

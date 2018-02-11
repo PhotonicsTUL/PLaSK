@@ -126,16 +126,21 @@ public:
     virtual std::function<plask::optional<ValueType>(std::size_t index)> operator()(EnumType num, const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const = 0;
 
     virtual size_t size() const = 0;
-    
+
     inline std::function<plask::optional<ValueType>(std::size_t index)> operator()(EnumType num, const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, std::tuple<ExtraArgs...> extra_args, InterpolationMethod method) const {
         typedef std::tuple<ExtraArgs...> Tuple;
-        return apply_tuple(dst_mesh, method, std::forward<Tuple>(extra_args), make_seq_indices<0, sizeof...(ExtraArgs)>{});
+        return apply_tuple(num, dst_mesh, method, std::forward<Tuple>(extra_args), make_seq_indices<0, sizeof...(ExtraArgs)>{});
     }
 
 private:
     template <typename T,  template <std::size_t...> class I, std::size_t... Indices>
     inline std::function<plask::optional<ValueType>(std::size_t index)> apply_tuple(const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, InterpolationMethod method, T&& t, I<Indices...>) const {
       return this->operator()(dst_mesh, std::get<Indices>(std::forward<T>(t))..., method);
+    }
+
+    template <typename T,  template <std::size_t...> class I, std::size_t... Indices>
+    inline std::function<plask::optional<ValueType>(std::size_t index)> apply_tuple(EnumType num, const shared_ptr<const MeshD<OutputSpaceType::DIM>>& dst_mesh, InterpolationMethod method, T&& t, I<Indices...>) const {
+      return this->operator()(num, dst_mesh, std::get<Indices>(std::forward<T>(t))..., method);
     }
 
 };

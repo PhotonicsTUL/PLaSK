@@ -923,7 +923,7 @@ struct FreeCarrierGainSolver<GeometryT>::DgdnData: public FreeCarrierGainSolver<
     template <typename... Args>
     DgdnData(Args... args): InterpolatedData(args...) {}
 
-    DataVector<Tensor2<double>> getValues(double wavelength, InterpolationMethod interp, size_t reg,
+    DataVector<Tensor2<double>> getValues(double wavelength, InterpolationMethod /*interp*/, size_t reg,
                                           const AveragedData& concs, const AveragedData& temps) override
     {
         double hw = phys::h_eVc1e9 / wavelength;

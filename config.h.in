@@ -145,5 +145,12 @@
 #endif
 
 
+#ifdef DOXYGEN
+    #define UNUSED(arg) arg
+#else
+    #define UNUSED(arg)
+#endif
+
+
 #endif // PLASK__CONFIG_H
 // kate: syntax c++;

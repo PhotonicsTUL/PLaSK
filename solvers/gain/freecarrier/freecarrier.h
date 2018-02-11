@@ -138,8 +138,8 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
         ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionInfo& region, bool quiet=false, double mt=0.):
             ActiveRegionParams(solver, region, solver->T0, quiet, mt) {}
 
-        explicit ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionParams& ref, double T, bool quiet=false):
-            ActiveRegionParams(solver, ref.region, T, true, ref.Mt) {
+        explicit ActiveRegionParams(const FreeCarrierGainSolver* solver, const ActiveRegionParams& ref, double T, bool quiet=true):
+            ActiveRegionParams(solver, ref.region, T, quiet, ref.Mt) {
                 nhh = ref.nhh;
                 nlh = ref.nlh;
                 for (size_t which = 0; which < 3; ++which) {

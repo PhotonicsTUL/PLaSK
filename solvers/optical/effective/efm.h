@@ -388,7 +388,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     }
 
     /**
-     * Set particular value of the effective index, e.g. to one of the values returned by findModes.
+     * Set particular value of the effective wavelength, e.g. to one of the values returned by findModes.
      * If it is not proper mode, exception is throw.
      * \param clambda complex wavelength of the mode
      * \return index of the set mode
@@ -396,7 +396,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     size_t setMode(dcomplex clambda, int m=0);
 
     /**
-     * Set particular value of the effective index, e.g. to one of the values returned by findModes.
+     * Set particular value of the effective wavelength, e.g. to one of the values returned by findModes.
      * If it is not proper mode, exception is throw.
      * \param lambda wavelength of the mode
      * \param loss modal loss (as returned by outLoss)
@@ -404,7 +404,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      * \return index of the set mode
      */
     inline size_t setMode(double lambda, double loss, int m=0) {
-        return setMode(dcomplex(lambda, -lambda*lambda / (4e7*M_PI) * loss));
+        return setMode(dcomplex(lambda, -lambda*lambda / (4e7*M_PI) * loss), m);
     }
 
     /// Clear computed modes

@@ -447,7 +447,7 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
         for (auto bound: boundaries) if (!bound.empty()) return false;
         return true;
     }
-    
+
     std::size_t size() const override {
         std::size_t s = 0;
         for (auto bound: boundaries) s += bound.size();
@@ -554,8 +554,8 @@ public:
  */
 template <typename MeshType>
 inline typename MeshType::Boundary makeEmptyBoundary() {
-    return typename MeshType::Boundary( 
-        [](const MeshType&, const shared_ptr<const GeometryD<MeshType::DIM>>&) { return new EmptyBoundaryImpl(); } 
+    return typename MeshType::Boundary(
+        [](const MeshType&, const shared_ptr<const GeometryD<MeshType::DIM>>&) { return new EmptyBoundaryImpl(); }
     );
 }
 
@@ -587,12 +587,12 @@ struct Manager;
  * template <> inline Boundary<MyMeshType> parseBoundary<MyMeshType>(const std::string& boundary_desc) { ... }
  * @endcode
  * are responsible to parse boundary from string for this mesh type.
- * @param boundary_desc boundary description, depends from type of mesh
+ * @param boundary_desc boundary description, depends on type of mesh
  * @param manager geometry manager
  * @return parsed boundary or Boundary<MeshType>() if can't parse given string
  */
 template <typename MeshType>
-inline Boundary<MeshType> parseBoundary(const std::string& boundary_desc, Manager& manager) { return Boundary<MeshType>(); }
+inline Boundary<MeshType> parseBoundary(const std::string& UNUSED(boundary_desc), Manager& UNUSED(manager)) { return Boundary<MeshType>(); }
 
 
 /**
@@ -605,12 +605,12 @@ inline Boundary<MeshType> parseBoundary(const std::string& boundary_desc, Manage
  * template <> inline Boundary<MyMeshType> parseBoundary<MyMeshType>(XMLReader& boundary_desc) { ... }
  * @endcode
  * are responsible to parse boundary from XML for this mesh type.
- * @param boundary_desc boundary description, depends from type of mesh
+ * @param boundary_desc boundary description, depends on type of mesh
  * @param manager geometry manager
  * @return parsed boundary or Boundary<MeshType>() if can't parse given tag
  */
 template <typename MeshType>
-inline Boundary<MeshType> parseBoundary(XMLReader& boundary_desc, Manager& manager) { return Boundary<MeshType>(); }
+inline Boundary<MeshType> parseBoundary(XMLReader& UNUSED(boundary_desc), Manager& UNUSED(manager)) { return Boundary<MeshType>(); }
 
 }   // namespace plask
 
