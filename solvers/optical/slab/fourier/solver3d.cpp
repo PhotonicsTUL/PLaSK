@@ -17,27 +17,10 @@ FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<SolverOver
     smooth = 0.00025;
 }
 
-static inline PML readPML(XMLReader& reader) {
-    PML pml;
-    pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
-    pml.size = reader.getAttribute<double>("size", pml.size);
-    pml.dist = reader.getAttribute<double>("dist", pml.dist);
-    if (reader.hasAttribute("order")) { //TODO Remove in the future
-        writelog(LOG_WARNING, "XML line {:d} in <pml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
-        pml.order = reader.requireAttribute<double>("order");
-    }
-    pml.order = reader.getAttribute<double>("shape", pml.order);
-    return pml;
-}
-
 static inline void updatePML(PML& pml, XMLReader& reader) {
     pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
     pml.size = reader.getAttribute<double>("size", pml.size);
     pml.dist = reader.getAttribute<double>("dist", pml.dist);
-    if (reader.hasAttribute("order")) { //TODO Remove in the future
-        writelog(LOG_WARNING, "XML line {:d} in <pml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
-        pml.order = reader.requireAttribute<double>("order");
-    }
     pml.order = reader.getAttribute<double>("shape", pml.order);
 }
 
@@ -129,7 +112,8 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
                 .get(transfer_method);
             reader.requireTagEnd();
         } else if (param == "pmls") {
-            pml_long = pml_tran = readPML(reader);
+            updatePML(pml_long, reader);
+            updatePML(pml_tran, reader);
             while (reader.requireTagOrEnd()) {
                 std::string node = reader.getNodeName();
                 if (node == "long") {
