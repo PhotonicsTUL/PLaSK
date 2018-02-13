@@ -5,6 +5,7 @@
 
 #include "../plask/exceptions.h"
 #include "../plask/utils/xml.h"
+#include "../plask/utils/warnings.h"
 
 #include "sha1.h"
 

@@ -6,6 +6,7 @@
 
 #include <boost/iterator/transform_iterator.hpp>
 #include "../utils/system.h"
+#include "../utils/warnings.h"
 
 namespace plask {
 

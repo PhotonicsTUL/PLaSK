@@ -144,13 +144,5 @@
     #define PLASK_PYTHON_API_EXTERN_TEMPLATE_CLASS(...) extern template class __VA_ARGS__ ;
 #endif
 
-
-#ifdef DOXYGEN
-    #define PLASK_UNUSED(arg) arg
-#else
-    #define PLASK_UNUSED(arg)
-#endif
-
-
 #endif // PLASK__CONFIG_H
 // kate: syntax c++;

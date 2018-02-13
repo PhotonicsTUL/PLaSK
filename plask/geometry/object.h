@@ -27,6 +27,7 @@ This file contains base class for geometries objects.
 
 #include "../axes.h"
 #include "../utils/xml/writer.h"
+#include "../utils/warnings.h"
 
 /// Value for expected suffix for names of 2D objects types, see GeometryReader::expectedSuffix.
 #define PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D "2d"
