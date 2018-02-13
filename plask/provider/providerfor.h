@@ -1038,7 +1038,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
          * It just calls invalidate().
          * @param evt information about mesh changes
          */
-        void onMeshChange(const Mesh::Event& /*evt*/) {
+        void onMeshChange(const Mesh::Event& PLASK_UNUSED(evt)) {
             this->invalidate();
         }
 
@@ -1279,7 +1279,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          * It's just call invalidate()
          * @param evt information about mesh changes
          */
-        void onMeshChange(const Mesh::Event& /*evt*/) {
+        void onMeshChange(const Mesh::Event& PLASK_UNUSED(evt)) {
             this->invalidate();
         }
 

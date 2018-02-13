@@ -95,7 +95,7 @@ struct PythonDataVector : public DataVector<T> {
         if (mesh) mesh->changedDisconnectMethod(this, &PythonDataVector<T,dim>::onMeshChanged);
     }
 
-    void onMeshChanged(const typename MeshD<dim>::Event& /*event*/) { mesh_changed = true; }
+    void onMeshChanged(const typename MeshD<dim>::Event& PLASK_UNUSED(event)) { mesh_changed = true; }
 };
 
 // ---------- Receiver ------------

@@ -36,7 +36,7 @@ class GeometryReader;
 struct PLASK_API Manager {
 
     /// Throw exception with information that loading from external sources is not supported or disallowed.
-    static void disallowExternalSources(Manager& /*manager*/, const MaterialsDB& /*materialsDB*/, const std::string& url, const std::string& section) {
+    static void disallowExternalSources(Manager& PLASK_UNUSED(manager), const MaterialsDB& PLASK_UNUSED(materialsDB), const std::string& url, const std::string& section) {
         throw Exception("Can't load section \"{0}\" from \"{1}\". Loading from external sources is not supported or disallowed.", section, url); }
 
     /// Allow to support reading some sections from other files.

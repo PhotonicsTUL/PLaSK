@@ -268,13 +268,13 @@ struct PLASK_API MeshD: public Mesh {
      * Initialize this to be the same as @p to_copy but don't copy any changes observer.
      * @param to_copy object to copy
      */
-    MeshD(const MeshD& /*to_copy*/) {}
+    MeshD(const MeshD& PLASK_UNUSED(to_copy)) {}
 
     /**
      * Set this to be the same as @p to_copy but doesn't changed changes observer.
      * @param to_copy object to copy
      */
-    MeshD& operator=(const MeshD& /*to_copy*/) { return *this; }
+    MeshD& operator=(const MeshD& PLASK_UNUSED(to_copy)) { return *this; }
 
     MeshD() {}
 

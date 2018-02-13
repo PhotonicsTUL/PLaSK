@@ -28,7 +28,7 @@ struct ScaledProviderBase: public DstProviderT {
         /// True if the source should be deleted by this
     bool priv;
 
-    void onChange(Provider& /*which*/, bool isDeleted) {
+    void onChange(Provider& PLASK_UNUSED(which), bool isDeleted) {
         if (isDeleted) {
             source = nullptr;
         }

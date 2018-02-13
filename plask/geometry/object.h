@@ -673,7 +673,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * @param direction direction
      * @return @c true only if object is solid in its bouding-box in given @p direction
      */
-    virtual bool isUniform(Primitive<3>::Direction /*direction*/) const { return false; }
+    virtual bool isUniform(Primitive<3>::Direction PLASK_UNUSED(direction)) const { return false; }
 
     /**
      * Check if this object belongs to class (has tag) with name @p role_name.

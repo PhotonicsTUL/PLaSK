@@ -32,7 +32,7 @@ namespace detail {
 
     struct FilterinSetitemResult {
         template <typename ReceiverT>
-        static inline PyObject* call(const py::object& /*self*/, ReceiverT& receiver, const py::object& value) {
+        static inline PyObject* call(const py::object& PLASK_UNUSED(self), ReceiverT& receiver, const py::object& value) {
             typedef detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, typename  ReceiverT::PropertyTag::ExtraParams> RegisterT;
             RegisterT::setter(receiver, value);
             return py::incref(Py_None);

@@ -247,7 +247,7 @@ struct PLASK_API EmptyBoundaryImpl: public BoundaryLogicImpl {
 
         virtual void increment() override {}
 
-        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& /*other*/) const override {
+        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& PLASK_UNUSED(other)) const override {
             return true;
         }
 
@@ -257,7 +257,7 @@ struct PLASK_API EmptyBoundaryImpl: public BoundaryLogicImpl {
 
     };
 
-    virtual bool contains(std::size_t /*mesh_index*/) const override { return false; }
+    virtual bool contains(std::size_t PLASK_UNUSED(mesh_index)) const override { return false; }
 
     virtual typename BoundaryLogicImpl::const_iterator begin() const override {
         return typename BoundaryLogicImpl::Iterator(new IteratorImpl);
@@ -592,7 +592,7 @@ struct Manager;
  * @return parsed boundary or Boundary<MeshType>() if can't parse given string
  */
 template <typename MeshType>
-inline Boundary<MeshType> parseBoundary(const std::string& UNUSED(boundary_desc), Manager& UNUSED(manager)) { return Boundary<MeshType>(); }
+inline Boundary<MeshType> parseBoundary(const std::string& PLASK_UNUSED(boundary_desc), Manager& PLASK_UNUSED(manager)) { return Boundary<MeshType>(); }
 
 
 /**
@@ -610,7 +610,7 @@ inline Boundary<MeshType> parseBoundary(const std::string& UNUSED(boundary_desc)
  * @return parsed boundary or Boundary<MeshType>() if can't parse given tag
  */
 template <typename MeshType>
-inline Boundary<MeshType> parseBoundary(XMLReader& UNUSED(boundary_desc), Manager& UNUSED(manager)) { return Boundary<MeshType>(); }
+inline Boundary<MeshType> parseBoundary(XMLReader& PLASK_UNUSED(boundary_desc), Manager& PLASK_UNUSED(manager)) { return Boundary<MeshType>(); }
 
 }   // namespace plask
 

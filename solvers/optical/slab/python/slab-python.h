@@ -11,6 +11,8 @@ using namespace plask::python;
 #include "../matrices.h"
 #include "../expansion.h"
 
+#include <plask/config.h>
+
 #if defined(_WIN32) && defined(interface)
 #   undef interface
 #endif
@@ -64,7 +66,7 @@ static py::object Solver_getInterface(SolverT& self) {
 }
 
 template <typename SolverT>
-static void Solver_setInterface(SolverT& /*self*/, const py::object& /*value*/) {
+static void Solver_setInterface(SolverT& PLASK_UNUSED(self), const py::object& PLASK_UNUSED(value)) {
     throw AttributeError("Setting interface by layer index is not supported anymore (set it by object or position)");
 }
 

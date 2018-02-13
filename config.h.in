@@ -146,9 +146,9 @@
 
 
 #ifdef DOXYGEN
-    #define UNUSED(arg) arg
+    #define PLASK_UNUSED(arg) arg
 #else
-    #define UNUSED(arg)
+    #define PLASK_UNUSED(arg)
 #endif
 
 
