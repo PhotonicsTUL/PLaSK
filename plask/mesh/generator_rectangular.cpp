@@ -12,7 +12,7 @@ inline static void addPoints(OrderedAxis& dst, double lo, double up, bool single
         const double ply = abs(up - lo);
         const unsigned points = (min_ply != 0.)? std::min(unsigned(std::ceil(ply / abs(min_ply))), max_points) : max_points;
         for (long i = long(points) - 1; i > 0; --i) {
-            dst.addPoint(lo + i * ply / points, 0.5*ply/points);
+            dst.addPoint(lo + double(i) * ply / double(points), 0.5 * ply / double(points));
         }
     }
 }
@@ -21,6 +21,7 @@ shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>&
 {
     auto mesh = plask::make_shared<OrderedAxis>();
     OrderedAxis::WarningOff warning_off(mesh);
+    (void) warning_off; // don't warn about unused varible warning_off
 
     std::vector<Box2D> boxes = geometry->getLeafsBoundingBoxes();
     std::vector<shared_ptr<const GeometryObject>> leafs = geometry->getLeafs();
@@ -380,7 +381,7 @@ shared_ptr<OrderedAxis> RectangularMeshSmoothGenerator<dim>::processAxis(shared_
         if (factor[dir] == 1.) {
             double m = ceil(width / finestep[dir]);
             double d = width / m;
-            for (size_t i = 1, n = size_t(m); i < n; ++i) points.push_back(x + i*d);
+            for (size_t i = 1, n = size_t(m); i < n; ++i) points.push_back(x + double(i)*d);
             continue;
         }
         double logf = log(factor[dir]);
@@ -398,7 +399,7 @@ shared_ptr<OrderedAxis> RectangularMeshSmoothGenerator<dim>::processAxis(shared_
         } else {
             lin = 2;
         }
-        double s = finestep[dir] * 0.5*width / (end+0.5*lin*last);
+        double s = finestep[dir] * 0.5*width / (end+0.5*double(lin)*last);
         double dx = 0.;
         for (size_t i = 0; i < n; ++i) {
             dx += s; s *= factor[dir];

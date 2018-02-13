@@ -14,6 +14,7 @@ This file contains implementation of vector in 2D space.
 #include <cassert>
 
 #include "../utils/metaprog.h"   // for is_callable
+#include "../utils/warnings.h"
 
 namespace plask {
 
@@ -240,7 +241,9 @@ struct Vec<2,T> {
      */
     template <typename OtherT>
     constexpr auto operator*(const OtherT scale) const -> Vec<2,decltype(c0*scale)> {
+PLASK_NO_CONVERSION_WARNING_BEGIN
         return Vec<2,decltype(c0*scale)>(c0 * scale, c1 * scale);
+PLASK_NO_WARNING_END
     }
 
     /**

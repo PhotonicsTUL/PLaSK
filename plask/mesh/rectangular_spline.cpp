@@ -530,12 +530,12 @@ namespace hyman {
 
     template <typename DataT>
     static void computeDiffs(DataT* diffs, int ax, const shared_ptr<MeshAxis>& axis,
-                             const DataT* data, size_t stride, const InterpolationFlags& flags)
+                             const DataT* data, std::size_t stride, const InterpolationFlags& flags)
     {
-        const size_t n1 = axis->size() - 1;
+        const std::size_t n1 = axis->size() - 1;
 
-        for (size_t i = 1; i != n1; ++i) {
-            const int idx = stride * i;
+        for (std::size_t i = 1; i != n1; ++i) {
+            const std::size_t idx = stride * i;
             const double da = axis->at(i) - axis->at(i-1),
                          db = axis->at(i+1) - axis->at(i);
             const DataT sa = (data[idx] - data[idx-stride]) / da,
