@@ -111,7 +111,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
         if (junction_conductivity.size() != 1) {
             double condy = 0.;
             for (auto cond: junction_conductivity) condy += cond;
-            junction_conductivity.reset(1, condy / junction_conductivity.size());
+            junction_conductivity.reset(1, condy / double(junction_conductivity.size()));
         }
         return;
     }
@@ -173,7 +173,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
     if (junction_conductivity.size() != condsize) {
         double condy = 0.;
         for (auto cond: junction_conductivity) condy += cond;
-        junction_conductivity.reset(max(condsize, size_t(1)), condy / junction_conductivity.size());
+        junction_conductivity.reset(max(condsize, size_t(1)), condy / double(junction_conductivity.size()));
     }
 }
 
@@ -529,7 +529,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(DgbMatri
     A.mirror();
 
     // Factorize matrix
-    dgbtrf(int(A.size), int(A.size), int(A.kd), int(A.kd), A.data, A.ld+1, ipiv.get(), info);
+    dgbtrf(int(A.size), int(A.size), int(A.kd), int(A.kd), A.data, int(A.ld+1), ipiv.get(), info);
     if (info < 0) {
         throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
     } else if (info > 0) {
@@ -537,7 +537,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(DgbMatri
     }
 
     // Find solutions
-    dgbtrs('N', int(A.size), int(A.kd), int(A.kd), 1, A.data, A.ld+1, ipiv.get(), B.data(), B.size(), info);
+    dgbtrs('N', int(A.size), int(A.kd), int(A.kd), 1, A.data, int(A.ld+1), ipiv.get(), B.data(), int(B.size()), info);
     if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions

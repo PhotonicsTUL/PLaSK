@@ -105,7 +105,7 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
         if (junction_conductivity.size() != 1) {
             double condy = 0.;
             for (auto cond: junction_conductivity) condy += cond;
-            junction_conductivity.reset(1, condy / junction_conductivity.size());
+            junction_conductivity.reset(1, condy / double(junction_conductivity.size()));
         }
         return;
     }
@@ -188,7 +188,7 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
     if (junction_conductivity.size() != condsize) {
         double condy = 0.;
         for (auto cond: junction_conductivity) condy += cond;
-        junction_conductivity.reset(condsize, condy / junction_conductivity.size());
+        junction_conductivity.reset(condsize, condy / double(junction_conductivity.size()));
     }
 }
 
@@ -522,7 +522,7 @@ void FiniteElementMethodElectrical3DSolver::solveMatrix(DpbMatrix& A, DataVector
         throw ComputationError(getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
 
     // Find solutions
-    dpbtrs(UPLO, int(A.size), int(A.kd), 1, A.data, int(A.ld)+1, B.data(), B.size(), info);
+    dpbtrs(UPLO, int(A.size), int(A.kd), 1, A.data, int(A.ld)+1, B.data(), int(B.size()), info);
     if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", getId(), -info);
 
     // now A contains factorized matrix and B the solutions
@@ -538,7 +538,7 @@ void FiniteElementMethodElectrical3DSolver::solveMatrix(DgbMatrix& A, DataVector
     A.mirror();
 
     // Factorize matrix
-    dgbtrf(int(A.size), int(A.size), int(A.kd), int(A.kd), A.data, int(A.ld)+1, ipiv.get(), info);
+    dgbtrf(int(A.size), int(A.size), int(A.kd), int(A.kd), A.data, int(A.ld+1), ipiv.get(), info);
     if (info < 0) {
         throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
     } else if (info > 0) {
@@ -546,7 +546,7 @@ void FiniteElementMethodElectrical3DSolver::solveMatrix(DgbMatrix& A, DataVector
     }
 
     // Find solutions
-    dgbtrs('N', int(A.size), int(A.kd), int(A.kd), 1, A.data, A.ld+1, ipiv.get(), B.data(), B.size(), info);
+    dgbtrs('N', int(A.size), int(A.kd), int(A.kd), 1, A.data, int(A.ld+1), ipiv.get(), B.data(), int(B.size()), info);
     if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions

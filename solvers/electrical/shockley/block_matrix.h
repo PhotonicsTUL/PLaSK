@@ -102,7 +102,7 @@ struct DpbMatrix {
      * \param result multiplication result
      */
     void mult(const DataVector<const double>& vector, DataVector<double>& result) {
-        dsbmv(UPLO, size, kd, 1.0, data, ld+1, vector.data(), 1, 0.0, result.data(), 1);
+        dsbmv(UPLO, int(size), int(kd), 1.0, data, int(ld)+1, vector.data(), 1, 0.0, result.data(), 1);
     }
 
     /**
@@ -111,7 +111,7 @@ struct DpbMatrix {
      * \param result multiplication result
      */
     void addmult(const DataVector<const double>& vector, DataVector<double>& result) {
-        dsbmv(UPLO, size, kd, 1.0, data, ld+1, vector.data(), 1, 1.0, result.data(), 1);
+        dsbmv(UPLO, int(size), int(kd), 1.0, data, int(ld)+1, vector.data(), 1, 1.0, result.data(), 1);
     }
 };
 

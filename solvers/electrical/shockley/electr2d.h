@@ -32,7 +32,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
         Active(size_t tot, size_t l, size_t r, size_t b, size_t t, double h): left(l), right(r), bottom(b), top(t), offset(tot-l), height(h) {}
     };
 
-    int size;                   ///< Number of columns in the main matrix
+    std::size_t size;           ///< Number of columns in the main matrix
 
     std::vector<double> js;     ///< p-n junction parameter [A/m^2]
     std::vector<double> beta;   ///< p-n junction parameter [1/V]
