@@ -7,7 +7,10 @@
 #include "python_numpy.h"
 #include "python_util/raw_constructor.h"
 #include <frameobject.h> // for Python traceback
+#include <plask/utils/warnings.h>
+PLASK_NO_UNUSED_VARIABLE_WARNING_BEGIN
 #include <datetime.h>
+PLASK_NO_WARNING_END
 
 #include <plask/version.h>
 #include <plask/exceptions.h>

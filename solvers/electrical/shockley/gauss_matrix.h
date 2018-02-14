@@ -105,7 +105,7 @@ struct DgbMatrix {
      */
     void mult(const DataVector<const double>& vector, DataVector<double>& result) {
         mirror();
-        dgbmv('N', size, size, kd, kd, 1.0, data, ld+1, vector.data(), 1, 0.0, result.data(), 1);
+        dgbmv('N', int(size), int(size), int(kd), int(kd), 1.0, data, int(ld)+1, vector.data(), 1, 0.0, result.data(), 1);
     }
 
     /**
@@ -115,7 +115,7 @@ struct DgbMatrix {
      */
     void addmult(const DataVector<const double>& vector, DataVector<double>& result) {
         mirror();
-        dgbmv('N', size, size, kd, kd, 1.0, data, ld+1, vector.data(), 1, 1.0, result.data(), 1);
+        dgbmv('N', int(size), int(size), int(kd), int(kd), 1.0, data, int(ld)+1, vector.data(), 1, 1.0, result.data(), 1);
     }
 };
 

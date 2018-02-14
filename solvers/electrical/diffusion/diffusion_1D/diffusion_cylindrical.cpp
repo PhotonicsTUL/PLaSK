@@ -434,7 +434,7 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
         double j2 = 0.0;
 
         auto& current_mesh = this->current_mesh();
-        for (std::ptrdiff_t i = 0; i < std::ptrdiff_t(current_mesh.size()) - 1; i++) // loop over all elements
+        for (int i = 0; i < int(current_mesh.size()) - 1; i++) // loop over all elements
         {
             r1 = current_mesh[i]*1e-4;
             r2 = current_mesh[i+1]*1e-4;
@@ -469,7 +469,7 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
         double p3e = 0.0;
 
         auto& current_mesh = this->current_mesh();
-        for (std::ptrdiff_t i = 0; i < (std::ptrdiff_t(current_mesh.size()) - 1)/2; i++) // loop over all elements
+        for (int i = 0; i < (int(current_mesh.size()) - 1)/2; i++) // loop over all elements
         {
             r1 = current_mesh[2*i]*1e-4;
             r3 = current_mesh[2*i + 2]*1e-4;
@@ -531,7 +531,7 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
         double j2 = 0.0;
 
         auto& current_mesh = this->current_mesh();
-        for (std::ptrdiff_t i = 0; i < std::ptrdiff_t(current_mesh.size()) - 1; i++) // loop over all elements
+        for (int i = 0; i < int(current_mesh.size()) - 1; i++) // loop over all elements
         {
             r1 = current_mesh[i]*1e-4;
             r2 = current_mesh[i+1]*1e-4;
@@ -568,7 +568,7 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
         double p3e = 0.0;
 
         auto& current_mesh = this->current_mesh();
-        for (std::ptrdiff_t i = 0; i < (std::ptrdiff_t(current_mesh.size()) - 1)/2; i++) // loop over all elements
+        for (int i = 0; i < (int(current_mesh.size()) - 1)/2; i++) // loop over all elements
         {
             r1 = current_mesh[2*i]*1e-4;
             r3 = current_mesh[2*i + 2]*1e-4;
@@ -861,39 +861,32 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
 template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getZQWCoordinate()
 {
     double coordinate = 0.0;
-    int no_QW = detected_QW.size();
-    int no_Box = 0;
-
-    if ((no_QW%2 == 0) && (no_QW > 0))
-    {
+    std::size_t no_QW = detected_QW.size();
+    if (no_QW == 0)
+        throw Exception("No quantum wells defined");
+    // here no_QW > 0:
+    std::size_t no_Box;
+    if (no_QW%2 == 0) {
         no_Box = no_QW/2 -1;
         coordinate = (detected_QW[no_Box].lower[1] + detected_QW[no_Box].upper[1]) / 2.0;
     }
-    else if ((no_QW%2 == 1) && (no_QW > 0))
-    {
+    else {
         no_Box = (no_QW - 1)/2;
         coordinate = (detected_QW[no_Box].lower[1] + detected_QW[no_Box].upper[1]) / 2.0;
     }
-    else
-        throw Exception("No quantum wells defined");
-
     return coordinate;
 }
 
 template<typename Geometry2DType> std::vector<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getZQWCoordinates()
 {
-    int no_QW = detected_QW.size();
+    std::size_t no_QW = detected_QW.size();
+    if (no_QW == 0)
+        throw Exception("No quantum wells defined");
+
     std::vector<double> coordinates(no_QW);
 
-    if (no_QW > 0)
-    {
-        for (int i=0; i<no_QW; i++)
-        {
-            coordinates[i] = (detected_QW[i].lower[1] + detected_QW[i].upper[1]) / 2.0;
-        }
-    }
-    else
-        throw Exception("No quantum wells defined");
+    for (std::size_t i = 0; i < no_QW; i++)
+        coordinates[i] = (detected_QW[i].lower[1] + detected_QW[i].upper[1]) / 2.0;
 
     return coordinates;
 }
@@ -920,11 +913,11 @@ plask::DataVector<const Tensor2<double>> FiniteElementMethodDiffusion2DSolver<Ge
 
         for (std::size_t j = 0; j < detected_QW.size(); ++j)
         {
-            int k = mesh_Li.index(i, j);
+            std::size_t k = mesh_Li.index(i, j);
             current_Li += Tensor2<double>(real(Le[k].c0*conj(Le[k].c0) + Le[k].c1*conj(Le[k].c1)),
                                           real(Le[k].c2*conj(Le[k].c2)));
         }
-        Li[i] = current_Li / detected_QW.size() * (0.5 / Z0);
+        Li[i] = current_Li / double(detected_QW.size()) * (0.5 / Z0);
     }
     return Li;
 }

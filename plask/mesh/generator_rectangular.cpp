@@ -5,12 +5,12 @@
 
 namespace plask {
 
-inline static void addPoints(OrderedAxis& dst, double lo, double up, bool singleMaterial, double min_ply, unsigned max_points) {
+inline static void addPoints(OrderedAxis& dst, double lo, double up, bool singleMaterial, double min_ply, std::size_t max_points) {
     dst.addPoint(lo);
     dst.addPoint(up);
     if (!singleMaterial) {
         const double ply = abs(up - lo);
-        const unsigned points = (min_ply != 0.)? std::min(unsigned(std::ceil(ply / abs(min_ply))), max_points) : max_points;
+        const std::size_t points = (min_ply != 0.)? std::min(std::size_t(std::ceil(ply / abs(min_ply))), max_points) : max_points;
         for (long i = long(points) - 1; i > 0; --i) {
             dst.addPoint(lo + double(i) * ply / double(points), 0.5 * ply / double(points));
         }
@@ -116,12 +116,12 @@ shared_ptr<OrderedAxis> refineAxis(const shared_ptr<MeshAxis>& axis, double spac
     std::vector<double> points;
     points.reserve(total);
     for (size_t i = 1; i < axis->size(); ++i) {
-        double offset = axis->at(i-1);
-        double range = axis->at(i) - offset;
-        double steps = max(round(range / spacing), 1.);
-        double step = range / steps;
-        for (size_t j = 0, n = size_t(steps); j < n; ++j) {
-            points.push_back(offset + j * step);
+        const double offset = axis->at(i-1);
+        const double range = axis->at(i) - offset;
+        const double steps = std::max(round(range / spacing), 1.);
+        const double step = range / steps;
+        for (size_t j = 0, n = std::size_t(steps); j < n; ++j) {
+            points.push_back(offset + double(j) * step);
         }
     }
     points.push_back(axis->at(axis->size()-1));
@@ -299,7 +299,7 @@ shared_ptr<OrderedAxis> RectangularMeshDivideGenerator<dim>::processAxis(shared_
     std::vector<double> points; points.reserve((pre_divisions[dir]-1)*(result.size()-1));
     for (auto i = result.begin()+1; i!= result.end(); ++i) {
         double w = *i - x;
-        for (size_t j = 1; j != pre_divisions[dir]; ++j) points.push_back(x + w*j/pre_divisions[dir]);
+        for (size_t j = 1; j != pre_divisions[dir]; ++j) points.push_back(x + w*double(j)/double(pre_divisions[dir]));
         x = *i;
     }
     result.addOrderedPoints(points.begin(), points.end());
@@ -343,7 +343,7 @@ shared_ptr<OrderedAxis> RectangularMeshDivideGenerator<dim>::processAxis(shared_
     points.clear(); points.reserve((post_divisions[dir]-1)*(result.size()-1));
     for (auto i = result.begin()+1; i!= result.end(); ++i) {
         double w = *i - x;
-        for (size_t j = 1; j != post_divisions[dir]; ++j) points.push_back(x + w*j/post_divisions[dir]);
+        for (size_t j = 1; j != post_divisions[dir]; ++j) points.push_back(x + w*double(j)/double(post_divisions[dir]));
         x = *i;
     }
 
@@ -435,9 +435,11 @@ void RectangularMeshRefinedGenerator<dim>::fromXML(XMLReader& reader, const Mana
                 if (dim == 2) throw XMLUnexpectedElementException(reader, "<axis0> or <axis1>");
                 if (dim == 3) throw XMLUnexpectedElementException(reader, "<axis0>, <axis1>, or <axis2>");
             }
+PLASK_NO_CONVERSION_WARNING_BEGIN
             auto direction = (reader.getNodeName() == "axis0")? typename Primitive<RectangularMeshRefinedGenerator<dim>::DIM>::Direction(0) :
                              (reader.getNodeName() == "axis1")? typename Primitive<RectangularMeshRefinedGenerator<dim>::DIM>::Direction(1) :
                                                                 typename Primitive<RectangularMeshRefinedGenerator<dim>::DIM>::Direction(2);
+PLASK_NO_WARNING_END
             weak_ptr<GeometryObjectD<RectangularMeshRefinedGenerator<dim>::DIM>> object
                 = manager.requireGeometryObject<GeometryObjectD<RectangularMeshRefinedGenerator<dim>::DIM>>(reader.requireAttribute("object"));
             PathHints path; if (auto pathattr = reader.getAttribute("path")) path = manager.requirePathHints(*pathattr);

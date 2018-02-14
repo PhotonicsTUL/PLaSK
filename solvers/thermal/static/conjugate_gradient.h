@@ -42,7 +42,7 @@ struct DCGError: public std::exception {
  * \throw DCGError
  */
 template <typename Matrix, typename Preconditioner>
-int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b, double& err,
+std::size_t solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b, double& err,
              size_t itmax=10000, double eps=1e-8, size_t logfreq=500, const std::string& log_prefix="",
              void(Matrix::*updatea)(double*)=&Matrix::noUpdate)
 {
