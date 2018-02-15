@@ -89,17 +89,17 @@ def get_k0(wavelength):
 
 fig, ax1 = plt.subplots()
 mode_number = prosty.findMode(981) 
-Z = np.linspace(0, 8, 1500)
+Z = np.linspace(0, 12, 1500)
 E = prosty.outLightMagnitude(mode_number, mesh.Rectangular2D([0], Z ) )
 Ez = E.array[0]
 ax1.plot(Z, np.abs(Ez), 'r-')
 ax1.set_ylabel("Light Magnitude $E$", color="red")
-ax2 = ax1.twinx()
-nrCache = prosty.getNrCache()
-z = prosty.getZ()
-ax2.plot(z, nrCache, 'b-')
-ax2.set_xlabel("z")
-ax2.set_ylabel("refractive index", color="blue")
+#ax2 = ax1.twinx()
+#nrCache = prosty.getNrCache()
+#z = prosty.getZ()
+#ax2.plot(z, nrCache, 'b-')
+#ax2.set_xlabel("z")
+#ax2.set_ylabel("refractive index", color="blue")
 
 plt.figure()
 wavelength = np.linspace(800, 1100, 500)
@@ -113,7 +113,7 @@ plt.yscale('log')
 
 plt.show()
 
-
+#print(prosty.outRefractiveIndex(mesh.Rectangular2D([0], Z)))
 
 ]]></script>
 

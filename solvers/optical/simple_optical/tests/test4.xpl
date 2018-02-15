@@ -44,6 +44,8 @@ geo = prosty.geometry
 p = plot_geometry(geo, fill=True, alpha=0.8)
 plt.ylim([0,3])
 plt.show()
+m = mesh.Rectangular2D([0], [1,2,3])
+
 ]]></script>
 
 </plask>

@@ -7,6 +7,31 @@ using namespace plask::python;
 #include "../simple_optical.h"
 using namespace plask::optical::simple_optical;
 
+#define ROOTDIGGER_ATTRS_DOC \
+    u8".. rubric:: Attributes:\n\n" \
+    u8".. autosummary::\n\n" \
+    u8"   ~optical.effective.RootParams.alpha\n" \
+    u8"   ~optical.effective.RootParams.lambd\n" \
+    u8"   ~optical.effective.RootParams.initial_range\n" \
+    u8"   ~optical.effective.RootParams.maxiter\n" \
+    u8"   ~optical.effective.RootParams.maxstep\n" \
+    u8"   ~optical.effective.RootParams.method\n" \
+    u8"   ~optical.effective.RootParams.tolf_max\n" \
+    u8"   ~optical.effective.RootParams.tolf_min\n" \
+    u8"   ~optical.effective.RootParams.tolx\n\n" \
+    u8":rtype: RootParams\n"
+    
+#define SEARCH_ARGS_DOC \
+    u8"    start (complex): Start of the search range (0 means automatic).\n" \
+    u8"    end (complex): End of the search range (0 means automatic).\n" \
+    u8"    resteps (integer): Number of steps on the real axis during the search.\n" \
+    u8"    imsteps (integer): Number of steps on the imaginary axis during the search.\n" \
+    u8"    eps (complex): required precision of the search.\n" \
+
+static py::object SimpleOptical_getDeterminant(SimpleOptical& self, py::object val)
+{
+   return UFUNC<dcomplex>([&](dcomplex x){return self.getVertDeterminant(x);}, val);
+}
 
 BOOST_PYTHON_MODULE(simple_optical)
 {
@@ -18,14 +43,15 @@ BOOST_PYTHON_MODULE(simple_optical)
 
     {CLASS(SimpleOptical, "SimpleOpticalCyl", "Short solver description.")
      METHOD(findMode, findMode, "This is method to find wavelength of mode", (arg("lam"), arg("m")=0));
-     METHOD(get_vert_determinant, getVertDeterminant, "Get vertical modal determinant for debuging purposes", (arg("wavelength")) );
-     //MD: proszę użyć UFUNC (przykład w funkcji `EffectiveIndex2D_getDeterminant` w pliku solvers/optical/effective/python/effective.cpp
+     RO_FIELD(stripe_root,
+                 u8"Configuration of the root searching algorithm for vertical component of the mode\n"
+                 u8"in a single stripe.\n\n"
+                 ROOTDIGGER_ATTRS_DOC
+                );
+     solver.def("get_vert_determinant", &SimpleOptical_getDeterminant, "Get vertical modal determinant for debuging purposes", (arg("wavelength")) );
      PROVIDER(outLightMagnitude, "");
      PROVIDER(outRefractiveIndex, "");
-     METHOD(getLightMagnitude, getLightMagnitude, "This method return electric field");
-     //MD: metoda `getLightMagnitude` nie powinna być eksportowana do Pythona — jest ona wykorzystywana tylko przez provider
-
-     //MD: brakuje atrybutów konfiguracji solvera: parametrów rootdiggera oraz współrzędnej poziomej `x`
+     //RECEIVER(horizontal_point, "Horizontal point when solver perform calcurations");
     }
 
 }
