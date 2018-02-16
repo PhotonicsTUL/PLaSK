@@ -113,6 +113,18 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      
      size_t findMode(double lambda, int m=0);
      //MD: w Pana przypadku parametr `m` nie ma sensu
+     
+     /// \return position of the main stripe
+    double getStripeX() const { return stripex; }
+
+    /**
+     * Set position of the main stripe
+     * \param x horizontal position of the main stripe
+     */
+    void setStripeX(double x) {
+        stripex = x;
+        invalidate();
+    }
 
 
 protected:
@@ -138,6 +150,10 @@ protected:
   const DataVector<double> getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod);
      
   const LazyData<Tensor3<dcomplex>> getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod);
+  
+  double stripex;             ///< Position of the main stripe
+  
+  void onInvalidate();
 
 };
 

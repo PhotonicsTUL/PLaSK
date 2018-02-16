@@ -51,7 +51,7 @@ BOOST_PYTHON_MODULE(simple_optical)
      solver.def("get_vert_determinant", &SimpleOptical_getDeterminant, "Get vertical modal determinant for debuging purposes", (arg("wavelength")) );
      PROVIDER(outLightMagnitude, "");
      PROVIDER(outRefractiveIndex, "");
-     //RECEIVER(horizontal_point, "Horizontal point when solver perform calcurations");
+     RW_PROPERTY(vat, getStripeX, setStripeX, u8"Horizontal position of the main stripe (with dominant mode).");
     }
 
 }

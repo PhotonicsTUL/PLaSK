@@ -5,6 +5,7 @@ namespace plask { namespace optical { namespace simple_optical {
 SimpleOptical::SimpleOptical(const std::string& name):plask::SolverOver<plask::Geometry2DCylindrical>(name)
   ,outLightMagnitude(this, &SimpleOptical::getLightMagnitude, &SimpleOptical::nmodes)
   ,outRefractiveIndex(this, &SimpleOptical::getRefractiveIndex)
+  ,stripex(0)
 {
   stripe_root.method = RootDigger::ROOT_MULLER;
   stripe_root.tolx = 1.0e-6;
@@ -25,6 +26,16 @@ void SimpleOptical::loadConfiguration(XMLReader& reader, Manager& manager) {
     }    
 }
 
+void SimpleOptical::onInvalidate()
+{
+    if (!modes.empty()) {
+        writelog(LOG_DETAIL, "Clearing computed modes");
+        modes.clear();
+        outLightMagnitude.fireChanged();
+        outRefractiveIndex.fireChanged();
+    }
+}
+
 void SimpleOptical::onInitialize()
 {
 
@@ -40,11 +51,6 @@ void SimpleOptical::onInitialize()
     for (double p: *axis_vertical) edgeVertLayerPoint.push_back(p);  
 }
 
-void SimpleOptical::onInvalidate()
-{
- nrCache.clear();
- vecE.clear();
-}
 
 void SimpleOptical::initializeRefractiveIndexVec()
 {
