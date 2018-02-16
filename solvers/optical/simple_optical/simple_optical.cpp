@@ -56,7 +56,7 @@ void SimpleOptical::onInitialize()
 
 void SimpleOptical::initializeRefractiveIndexVec()
 {
-  nrCache.clear();
+   nrCache.clear();
   double T = 300; //temperature 300 K
   double w = real(2e3*M_PI / k0);
   nrCache.push_back(geometry->getMaterial(vec(double(stripex), -1e-3))->Nr(w, T));
@@ -91,31 +91,30 @@ size_t SimpleOptical::findMode(double lambda, int m)
 
 dcomplex SimpleOptical::computeTransferMatrix(const dcomplex& x, const std::vector<dcomplex> & NR)
 {
-  double w = real(2e3*M_PI / x);
-  setWavelength(w);
-  onInitialize();
-  initializeRefractiveIndexVec();
-  Matrix phas_matrix;
-  Matrix boundary_matrix;
-  double d; //distance_between_layer
-  Matrix transfer_matrix = Matrix::eye();
-  dcomplex phas;
+    double w = real(2e3*M_PI / x);
+    setWavelength(w);
+    initCalculation();
+    initializeRefractiveIndexVec();
+    Matrix phas_matrix;
+    Matrix boundary_matrix;
+    double d; //distance_between_layer
+    Matrix transfer_matrix = Matrix::eye();
+    dcomplex phas;
   
-  FieldZ field(0,1);
-  vecE.push_back(field);
-  for (size_t i = ybegin; i<yend-1; ++i)
-  {
-    if (i != ybegin || ybegin != 0) d = edgeVertLayerPoint[i] - edgeVertLayerPoint[i-1]; 
-    else d = 0.;
-    
+    FieldZ field(0,1);
+    vecE.push_back(field);
+    for (size_t i = ybegin; i<yend-1; ++i)
+    {
+        if (i != ybegin || ybegin != 0) d = edgeVertLayerPoint[i] - edgeVertLayerPoint[i-1]; 
+        else d = 0.;
     phas_matrix = Matrix(exp(I*NR[i]*x*d), 0, 0, exp(-I*NR[i]*x*d));
     boundary_matrix = Matrix( 0.5+0.5*(NR[i]/NR[i+1]), 0.5-0.5*(NR[i]/NR[i+1]),
                               0.5-0.5*(NR[i]/NR[i+1]), 0.5+0.5*(NR[i]/NR[i+1]) );
     transfer_matrix = (boundary_matrix*phas_matrix)*transfer_matrix;       
     FieldZ Ei = vecE[i]*(boundary_matrix*phas_matrix);
-    vecE.push_back(Ei);    
-  }   
-  return transfer_matrix.bb;
+    vecE.push_back(Ei);}   
+ 
+    return transfer_matrix.bb;
 }
 
 void SimpleOptical::updateCache()
@@ -124,12 +123,9 @@ void SimpleOptical::updateCache()
 
     if (fresh) {
         // we need to update something
-        std::cout<<"Init Calcuration !!!!" << std::endl; 
+        std::cout<<"Init Calcuration !!!!" << std::endl; // Only for test !!!!!!!!
         onInvalidate();
-        onInitialize();
-        }
-
-        
+        onInitialize();}
 }
 
 dcomplex SimpleOptical::getVertDeterminant(dcomplex wavelength)
@@ -196,21 +192,27 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
     }
    }
    
+   hi.push_back(0);
+   B.push_back(0);
+   F.push_back(vecE.back().F);
+   
    for(double p: arrayZ) // propagation wave after escape from structure 
    {
-      if (p > verticalEdgeVec.back())
-      {
-	hi.push_back(p-verticalEdgeVec.back());
-	B.push_back(vecE.back().B);
-	F.push_back(vecE.back().F);
-      }
+   if (p > verticalEdgeVec.back())
+   {
+       
+    hi.push_back(p-verticalEdgeVec.back());    
+    B.push_back(0);
+    F.push_back(vecE.back().F);
+    }
    } 
-   
    dcomplex Ez;
    for (size_t i = 0; i < hi.size(); ++i)
    {
       Ez = F[i]*exp(-I*NR[i]*k0*hi[i]) + B[i]*exp(I*NR[i]*k0*hi[i]); 
       results[i] = real(Ez*conj(Ez));
+      //writelog(LOG_INFO, "F  = {0}, B = {1}", str(F[i]), str(B[i]) );
+      std::cout<<"B[i]="<<B[i]<<"   hi[i]="<<hi[i]<<"F[i]= "<<F[i]<<std::endl;
    }
    
    return results;
