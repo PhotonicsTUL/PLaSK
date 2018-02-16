@@ -93,6 +93,40 @@
     - *alpha
     - *lambda
     - *initial-range
+    
+  - tag: mode
+    label: Mode Properties
+    help: >
+      Mode properties.
+    attrs:
+    - attr: lam0
+      label: Approximate wavelength
+      type: float
+      unit: nm
+      help: >
+        Approximate wavelength, around which the solution is searched. The refractive and group idexes
+        are computed for this wavelength
+    - attr: emission
+      label: Direction of emission
+      type: choice
+      default: top
+      choices: [ top, bottom ]
+      help: >
+        Direction of the useful light emission. Necessary for the over-threshold model to correctly
+        compute the output power.
+    - attr: vlam
+      label: Vertical wavelength
+      type: float
+      unit: nm
+      help: >
+        '"Vertical wavelength" i.e. the wavelength what would be in the absence of lateral confinement;
+        setting this value helps to find models in very long resonators.'
+    - attr: vat
+      label: Vertical solution coord
+      type: float
+      unit: µm
+      help: >
+        Horizontal position of at which the vertical part of the field is calculated.
 
   # This is boundary conditions read by your solver. You need only to specity the tag name
   # in the 'bcond' field and the label.
@@ -112,7 +146,7 @@
 
   receivers:
   # Here you specify all the solver providers.
-  - inReceiver: QuantityIfNameDifferent
+  #- inReceiver: QuantityIfNameDifferent
 
   # Standard name of receiver/provider is inQuantity/outQuantity. Sometimes it can be different.
   # In such case add the quantity name after the colon for a given provider/receiver, so GUI can

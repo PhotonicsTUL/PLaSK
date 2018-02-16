@@ -40,7 +40,7 @@
 <solvers>
   <optical solver="SimpleOpticalCyl" name="prosty">
     <geometry ref="main"/>
-    <root method="broyden"/>
+    <root method="broyden" tolx="1e-08"/>
   </optical>
 </solvers>
 
@@ -51,11 +51,11 @@ plt.rcParams.update({'font.size': 28})
 
 #fig, ax1 = plt.subplots()
 mode_number = prosty.findMode(981) 
+#prosty.vat = 0
 Z = np.linspace(0, 11, 15000)
 E = prosty.outLightMagnitude(mode_number, mesh.Rectangular2D([0], Z))
 
 neff = prosty.outRefractiveIndex( mesh.Rectangular2D([0], Z ))
-
 
 fig, ax1 = plt.subplots()
 ax1.plot(Z, np.abs(E), 'r-')

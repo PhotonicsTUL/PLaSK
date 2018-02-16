@@ -131,13 +131,14 @@ protected:
 
   friend struct RootDigger;
 
-  size_t x=0,           ///< point, when program computed vertical fields
-         ybegin,  ///< First element of vertical mesh to consider
+  size_t ybegin,  ///< First element of vertical mesh to consider
          yend;    ///< Last element of vertical mesh to consider
 
   shared_ptr<RectangularMesh<2>> mesh;   /// Mesh over which the calculations are performed
   
   dcomplex k0;
+  
+  double lam0; /// wavelength to start rootdigger 
 
   std::vector<double> edgeVertLayerPoint;
 
@@ -154,6 +155,8 @@ protected:
   double stripex;             ///< Position of the main stripe
   
   void onInvalidate();
+  
+  void updateCache();
 
 };
 

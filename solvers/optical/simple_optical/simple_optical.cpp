@@ -18,11 +18,13 @@ void SimpleOptical::loadConfiguration(XMLReader& reader, Manager& manager) {
     // Load a configuration parameter from XML.
     while (reader.requireTagOrEnd()) {
         std::string param = reader.getNodeName();
-        if (param == "root") {
-            RootDigger::readRootDiggerConfig(reader, stripe_root);
-        } else {     
-            parseStandardConfiguration(reader, manager, "<geometry> or <root>");
-        }
+        if (param == "mode") {
+            stripex = reader.getAttribute<double>("vat", stripex);    
+            stripex = reader.getAttribute<double>("lam0", stripex);
+        } else if (param == "root") {
+            RootDigger::readRootDiggerConfig(reader, stripe_root); }
+        else {     
+            parseStandardConfiguration(reader, manager, "<geometry> or <root> or <mode>");}
     }    
 }
 
@@ -57,14 +59,14 @@ void SimpleOptical::initializeRefractiveIndexVec()
   nrCache.clear();
   double T = 300; //temperature 300 K
   double w = real(2e3*M_PI / k0);
-  nrCache.push_back(geometry->getMaterial(vec(double(x), -1e-3))->Nr(w, T));
+  nrCache.push_back(geometry->getMaterial(vec(double(stripex), -1e-3))->Nr(w, T));
   for(double p: *axis_midpoints_vertical) 
   {
-    nrCache.push_back(geometry->getMaterial(vec(double(x),  p))->Nr(w, T));
+    nrCache.push_back(geometry->getMaterial(vec(double(stripex),  p))->Nr(w, T));
   }
   double last_element = 0;
   last_element = edgeVertLayerPoint.back();
-  nrCache.push_back(geometry->getMaterial(vec(double(x),  last_element+1e-3))->Nr(w, T));
+  nrCache.push_back(geometry->getMaterial(vec(double(stripex),  last_element+1e-3))->Nr(w, T));
 }
 
 
@@ -113,14 +115,27 @@ dcomplex SimpleOptical::computeTransferMatrix(const dcomplex& x, const std::vect
     FieldZ Ei = vecE[i]*(boundary_matrix*phas_matrix);
     vecE.push_back(Ei);    
   }   
-  nrCache.clear();
   return transfer_matrix.bb;
+}
+
+void SimpleOptical::updateCache()
+{
+    bool fresh = initCalculation();
+
+    if (fresh) {
+        // we need to update something
+        std::cout<<"Init Calcuration !!!!" << std::endl; 
+        onInvalidate();
+        onInitialize();
+        }
+
+        
 }
 
 dcomplex SimpleOptical::getVertDeterminant(dcomplex wavelength)
 {
+  updateCache();
   setWavelength(real(wavelength));
-  initializeRefractiveIndexVec();
   return computeTransferMatrix(k0, nrCache);
 }
 
@@ -132,7 +147,7 @@ const LazyData<Tensor3<dcomplex>> SimpleOptical::getRefractiveIndex(const shared
   return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
         [this, dst_mesh, flags, lam0](size_t j) -> Tensor3<dcomplex> {
             auto point = flags.wrap(dst_mesh->at(j));
-	    return geometry->getMaterial(vec(double(x), dst_mesh->at(j)[1]))->Nr(real(lam0), 300) ;
+	    return geometry->getMaterial(vec(double(stripex), dst_mesh->at(j)[1]))->Nr(real(lam0), 300) ;
         }
     );
 }
@@ -140,7 +155,7 @@ const LazyData<Tensor3<dcomplex>> SimpleOptical::getRefractiveIndex(const shared
 const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
   setWavelength(real(modes[num].lam));  
-  onInitialize();
+  initCalculation();
   vecE.clear();
   computeTransferMatrix(k0, nrCache);
   
@@ -161,7 +176,7 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
   
   for(auto p: arrayZ) 
   {
-    NR.push_back(geometry->getMaterial(vec(double(x),  p))->Nr(w, T));      
+    NR.push_back(geometry->getMaterial(vec(double(stripex),  p))->Nr(w, T));      
   }
   //MD: dlaczego nie korzysta Pan z `nrCache`?
 
