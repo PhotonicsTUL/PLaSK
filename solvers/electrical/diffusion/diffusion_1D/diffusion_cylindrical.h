@@ -121,12 +121,12 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public SolverWithMe
 //        double Enprog(size_t i, double T, double n0);   // E dla rozkladu nadprogowego
 //        double Fnprog(size_t i, double T, double n0);	// F dla rozkladu nadprogowego
 
-        double leftSide(int i);		// lewa strona rownania dla rozkladu poczatkowego
+        double leftSide(std::size_t i);		// lewa strona rownania dla rozkladu poczatkowego
 //        double leftSideInitial(size_t i, double T, double n);		// lewa strona rownania dla rozkladu poczatkowego
 //        double leftSideThreshold(size_t i, double T, double n);		// lewa strona rownania dla rozkladu progowego
 //        double Lnprog(size_t i, double T, double n);	// lewa strona rownania dla rozkladu nadprogowego
-        double rightSide(int i);         // prawa strona rownania dla rozkladu poczatkowego i progowego
-        double nSecondDeriv(int i);                          // druga pochodna n po r
+        double rightSide(std::size_t i);         // prawa strona rownania dla rozkladu poczatkowego i progowego
+        double nSecondDeriv(std::size_t i);                          // druga pochodna n po r
 
         bool MatrixFEM();
         void determineQwWidth();

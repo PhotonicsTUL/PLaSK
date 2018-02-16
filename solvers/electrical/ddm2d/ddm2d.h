@@ -4,7 +4,9 @@
 #include <plask/plask.hpp>
 #include <limits>
 
+PLASK_NO_CONVERSION_WARNING_BEGIN
 #include <Eigen/Eigen>
+PLASK_NO_WARNING_END
 #include "fd.h"
 #include "block_matrix.h"
 #include "iterative_matrix.h"
@@ -48,7 +50,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
   protected:
 
-    int size;                   ///< Number of columns in the main matrix
+    std::size_t size;                   ///< Number of columns in the main matrix
 
     // scalling parameters
     double mTx;    ///< ambient temperature (K)
@@ -154,7 +156,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     }
 
     /// Find initial potential
-    double findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFnEta, double iFpKsi, double iT, int& loop) const;
+    double findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFnEta, double iFpKsi, double iT, std::size_t& loop) const;
 
     /**
     * Calculate electron concentration.

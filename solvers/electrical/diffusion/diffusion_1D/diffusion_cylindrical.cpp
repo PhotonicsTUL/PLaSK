@@ -693,7 +693,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 }
 
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::nSecondDeriv(int i)
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::nSecondDeriv(std::size_t i)
 {
     double n_second_deriv = 0.0;     // second derivative with respect to r
     double dr = 0.0;
@@ -704,7 +704,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
         dr = (current_mesh.last() - current_mesh.first())*1e-4/(double)current_mesh.size();
         double n_right = 0, n_left = 0, n_central = 0;  // n values for derivative: right-side, left-side, central
 
-        if ( (i > 0) && (i <  int(current_mesh.size()) - 1) )     // middle of the range
+        if ( (i > 0) && (i + 1 <  current_mesh.size()) )     // middle of the range
         {
             n_right = n_present[i+1];
             n_left = n_present[i-1];
@@ -749,7 +749,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 }
 
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::leftSide(int i)
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::leftSide(std::size_t i)
 {
     double T = T_on_the_mesh[i];
     double n = n_present[i];
@@ -779,7 +779,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
     return int_val;
 }
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::rightSide(int i)
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::rightSide(std::size_t i)
 {
     return -abs(j_on_the_mesh[i][1])*1e+3/(plask::phys::qe*global_QW_width);
 }

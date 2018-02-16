@@ -105,5 +105,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 
 #include "utils/openmp.h"
 
+#include "utils/warnings.h"
+
 
 #endif // PLASK__PLASK_HPP

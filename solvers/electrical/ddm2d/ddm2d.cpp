@@ -841,7 +841,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
             double normEd = material->EactD(T) / mEx;
             double normEa = material->EactA(T) / mEx;
             double normT = T / mTx;
-            int loop = 0;
+            std::size_t loop = 0;
             cache[key] = epsi = findPsiI(normEc0, normEv0, normNc, normNv, normNd, normNa, normEd, normEa, 1., 1., normT, loop);
         }
 
@@ -871,7 +871,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
 }
 
 template <typename Geometry2DType>
-double DriftDiffusionModel2DSolver<Geometry2DType>::findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFnEta, double iFpKsi, double iT, int& loop) const
+double DriftDiffusionModel2DSolver<Geometry2DType>::findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFnEta, double iFpKsi, double iT, std::size_t &loop) const
 {
     double tPsi0(0.), // calculated normalized initial potential
     tPsi0a = (-15.) / mEx, // normalized edge of the initial range
@@ -1217,14 +1217,14 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, Data
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
     // Factorize matrix
-    dpbtrf(UPLO, A.size, A.kd, A.data, A.ld+1, info);
+    dpbtrf(UPLO, int(A.size), int(A.kd), A.data, int(A.ld+1), info);
     if (info < 0)
         throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", this->getId(), -info);
     else if (info > 0)
         throw ComputationError(this->getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
 
     // Find solutions
-    dpbtrs(UPLO, A.size, A.kd, 1, A.data, A.ld+1, B.data(), B.size(), info);
+    dpbtrs(UPLO, int(A.size), int(A.kd), 1, A.data, int(A.ld+1), B.data(), int(B.size()), info);
     if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
@@ -1240,7 +1240,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, Data
     A.mirror();
 
     // Factorize matrix
-    dgbtrf(A.size, A.size, A.kd, A.kd, A.data, A.ld+1, ipiv.get(), info);
+    dgbtrf(int(A.size), int(A.size), int(A.kd), int(A.kd), A.data, int(A.ld+1), ipiv.get(), info);
     if (info < 0) {
         throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
     } else if (info > 0) {
@@ -1248,7 +1248,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, Data
     }
 
     // Find solutions
-    dgbtrs('N', A.size, A.kd, A.kd, 1, A.data, A.ld+1, ipiv.get(), B.data(), B.size(), info);
+    dgbtrs('N', int(A.size), int(A.kd), int(A.kd), 1, A.data, int(A.ld+1), ipiv.get(), B.data(), int(B.size()), info);
     if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
@@ -1608,9 +1608,9 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::setMeshActive(double _z1, doubl
     this->writelog(LOG_INFO, "Number of nodes: {0}", nz);
 
     z.clear();
-    for (int i(0); i<nz; ++i) /// filling the vector
+    for (int i = 0; i < nz; ++i) /// filling the vector
         z.push_back(_z1+i*dz); /// unit: nm
-    nz = z.size(); /// z-mesh size
+    nz = int(z.size()); /// z-mesh size
 
     ne = nz - 1;
     this->writelog(LOG_INFO, "Number of elements: {0}", ne);
@@ -1764,7 +1764,7 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::findCBelLev()
         this->writelog(LOG_INFO, "Finding energy levels and wave functions for electrons..");
         Eigen::ComplexEigenSolver<Eigen::MatrixXcd> ces;
         ces.compute(Hc);
-        int nEigVal = ces.eigenvalues().rows();
+        auto nEigVal = ces.eigenvalues().rows();
         this->writelog(LOG_INFO, "number of eigenvalues (Hc): {0}", nEigVal);
         if (nEigVal<1)
             return 1; /// no energy levels for electrons
