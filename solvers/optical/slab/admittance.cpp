@@ -12,7 +12,7 @@ namespace plask { namespace optical { namespace slab {
 
 AdmittanceTransfer::AdmittanceTransfer(SlabBase* solver, Expansion& expansion): Transfer(solver, expansion)
 {
-    writelog(LOG_DETAIL, "Initializing Admittance Transfer");
+    writelog(LOG_DETAIL, "{}: Initializing Admittance Transfer", solver->getId());
     // Reserve space for matrix multiplications...
     int N = diagonalizer->matrixSize();
     Y = cmatrix(N,N);
