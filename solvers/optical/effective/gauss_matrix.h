@@ -104,7 +104,5 @@ struct ZgbMatrix {
 
 }}} // # namespace plask::gain::freecarrier
 
-#undef LD
-
 #endif // PLASK__SOLVER__OPTICAL_EFFECTIVE_GAUSS_MATRIX_H
 

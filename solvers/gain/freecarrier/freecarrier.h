@@ -164,7 +164,7 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
             for (size_t i = 0; i < U[which].size(); ++i) {
                 delta += U[which][i] - ref.U[which][i];
             }
-            return delta / U[which].size();
+            return delta / double(U[which].size());
         }
     };
 

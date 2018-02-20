@@ -633,7 +633,7 @@ double EffectiveIndex2D::getTotalAbsorption(Mode& mode)
 }
 
 
-double EffectiveIndex2D::getTotalAbsorption(size_t num)
+double EffectiveIndex2D::getTotalAbsorption(std::size_t num)
 {
     if (modes.size() <= num) throw NoValue("absorption");
 
@@ -699,11 +699,11 @@ template <typename FieldT>
 struct EffectiveIndex2D::FieldDataBase: public LazyDataImpl<FieldT>
 {
     EffectiveIndex2D* solver;
-    int num;
+    std::size_t num;
     std::vector<dcomplex,aligned_allocator<dcomplex>> kx, ky;
-    size_t stripe;
+    std::size_t stripe;
 
-    FieldDataBase(EffectiveIndex2D* solver, int num):
+    FieldDataBase(EffectiveIndex2D* solver, std::size_t num):
         solver(solver), num(num), kx(solver->xend), ky(solver->yend),
         stripe(solver->mesh->tran()->findIndex(solver->stripex))
     {
@@ -764,7 +764,7 @@ struct EffectiveIndex2D::FieldDataInefficient: public EffectiveIndex2D::FieldDat
 {
     shared_ptr<const MeshD<2>> dst_mesh;
 
-    FieldDataInefficient(EffectiveIndex2D* solver, int num, const shared_ptr<const MeshD<2>>& dst_mesh):
+    FieldDataInefficient(EffectiveIndex2D* solver, std::size_t num, const shared_ptr<const MeshD<2>>& dst_mesh):
         FieldDataBase<FieldT>(solver, num), dst_mesh(dst_mesh) {}
 
     size_t size() const override { return dst_mesh->size(); }
@@ -806,7 +806,7 @@ struct EffectiveIndex2D::FieldDataEfficient: public EffectiveIndex2D::FieldDataB
 
     size_t size() const override { return rect_mesh->size(); }
 
-    FieldDataEfficient(EffectiveIndex2D* solver, int num, const shared_ptr<const RectangularMesh<2>>& rect_mesh):
+    FieldDataEfficient(EffectiveIndex2D* solver, std::size_t num, const shared_ptr<const RectangularMesh<2>>& rect_mesh):
         FieldDataBase<FieldT>(solver, num), rect_mesh(rect_mesh), valx(rect_mesh->tran()->size()), valy(rect_mesh->vert()->size())
     {
         #pragma omp parallel
@@ -876,7 +876,7 @@ struct EffectiveIndex2D::FieldDataEfficient: public EffectiveIndex2D::FieldDataB
     }
 };
 
-const LazyData<double> EffectiveIndex2D::getLightMagnitude(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod)
+const LazyData<double> EffectiveIndex2D::getLightMagnitude(std::size_t num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod)
 {
     this->writelog(LOG_DEBUG, "Getting light intensity");
 
@@ -886,7 +886,7 @@ const LazyData<double> EffectiveIndex2D::getLightMagnitude(int num, shared_ptr<c
         return LazyData<double>(new FieldDataInefficient<double>(this, num, dst_mesh));
 }
 
-const LazyData<Vec<3,dcomplex>> EffectiveIndex2D::getElectricField(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod)
+const LazyData<Vec<3,dcomplex>> EffectiveIndex2D::getElectricField(std::size_t num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod)
 {
     this->writelog(LOG_DEBUG, "Getting optical electric field");
 
@@ -921,7 +921,7 @@ struct EffectiveIndex2D::HeatDataImpl: public LazyDataImpl<double>
     HeatDataImpl(EffectiveIndex2D* solver, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method):
         solver(solver), dest_mesh(dst_mesh), flags(solver->geometry), EE(solver->modes.size()), lam0(2e3*M_PI / solver->k0)
     {
-        for (size_t m = 0; m != solver->modes.size(); ++m)
+        for (std::size_t m = 0; m != solver->modes.size(); ++m)
             EE[m] = solver->getLightMagnitude(m, dst_mesh, method);
     }
 

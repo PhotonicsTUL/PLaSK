@@ -756,9 +756,9 @@ template <typename FieldT>
 struct EffectiveFrequencyCyl::FieldDataBase: public LazyDataImpl<FieldT>
 {
     EffectiveFrequencyCyl* solver;
-    int num;
+    std::size_t num;
 
-    FieldDataBase(EffectiveFrequencyCyl* solver, int num);
+    FieldDataBase(EffectiveFrequencyCyl* solver, std::size_t num);
 
   protected:
     inline FieldT value(dcomplex val) const;
@@ -766,7 +766,7 @@ struct EffectiveFrequencyCyl::FieldDataBase: public LazyDataImpl<FieldT>
 };
 
 template <>
-EffectiveFrequencyCyl::FieldDataBase<double>::FieldDataBase(EffectiveFrequencyCyl* solver, int num):
+EffectiveFrequencyCyl::FieldDataBase<double>::FieldDataBase(EffectiveFrequencyCyl* solver, std::size_t num):
     solver(solver), num(num), scale(1e-3 * solver->modes[num].power)
 {}
 
@@ -776,7 +776,7 @@ double EffectiveFrequencyCyl::FieldDataBase<double>::value(dcomplex val) const {
 }
 
 template <>
-EffectiveFrequencyCyl::FieldDataBase<Vec<3,dcomplex>>::FieldDataBase(EffectiveFrequencyCyl* solver, int num):
+EffectiveFrequencyCyl::FieldDataBase<Vec<3,dcomplex>>::FieldDataBase(EffectiveFrequencyCyl* solver, std::size_t num):
     solver(solver), num(num), scale(sqrt(2e-3 * phys::Z0 * solver->modes[num].power))
     // <M> = ½ E conj(E) / Z0
 {}
@@ -793,7 +793,7 @@ struct EffectiveFrequencyCyl::FieldDataInefficient: public FieldDataBase<FieldT>
     shared_ptr<const MeshD<2>> dst_mesh;
     size_t stripe;
 
-    FieldDataInefficient(EffectiveFrequencyCyl* solver, int num,
+    FieldDataInefficient(EffectiveFrequencyCyl* solver, std::size_t num,
                          const shared_ptr<const MeshD<2>>& dst_mesh,
                          size_t stripe):
         FieldDataBase<FieldT>(solver, num),
@@ -831,7 +831,7 @@ struct EffectiveFrequencyCyl::FieldDataEfficient: public FieldDataBase<FieldT>
     shared_ptr<const RectangularMesh<2>> rect_mesh;
     std::vector<dcomplex> valr, valz;
 
-    FieldDataEfficient(EffectiveFrequencyCyl* solver, int num,
+    FieldDataEfficient(EffectiveFrequencyCyl* solver, std::size_t num,
                        const shared_ptr<const RectangularMesh<2>>& rect_mesh,
                        size_t stripe):
         FieldDataBase<FieldT>(solver, num),

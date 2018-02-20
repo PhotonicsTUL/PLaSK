@@ -506,14 +506,14 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& 
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
     // Factorize matrix
-    dpbtrf(UPLO, A.size, A.kd, A.data, A.ld+1, info);
+    dpbtrf(UPLO, int(A.size), int(A.kd), A.data, int(A.ld+1), info);
     if (info < 0)
         throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", this->getId(), -info);
     else if (info > 0)
         throw ComputationError(this->getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
 
     // Find solutions
-    dpbtrs(UPLO, A.size, A.kd, 1, A.data, A.ld+1, B.data(), B.size(), info);
+    dpbtrs(UPLO, int(A.size), int(A.kd), 1, A.data, int(A.ld+1), B.data(), int(B.size()), info);
     if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
@@ -529,7 +529,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& 
     A.mirror();
 
     // Factorize matrix
-    dgbtrf(A.size, A.size, A.kd, A.kd, A.data, A.ld+1, ipiv.get(), info);
+    dgbtrf(int(A.size), int(A.size), int(A.kd), int(A.kd), A.data, int(A.ld+1), ipiv.get(), info);
     if (info < 0) {
         throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
     } else if (info > 0) {
@@ -537,7 +537,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& 
     }
 
     // Find solutions
-    dgbtrs('N', A.size, A.kd, A.kd, 1, A.data, A.ld+1, ipiv.get(), B.data(), B.size(), info);
+    dgbtrs('N', int(A.size), int(A.kd), int(A.kd), 1, A.data, int(A.ld+1), ipiv.get(), B.data(), int(B.size()), info);
     if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions

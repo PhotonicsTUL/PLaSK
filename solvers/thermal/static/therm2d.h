@@ -18,7 +18,7 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver: public SolverWithMes
 
   protected:
 
-    int size;         ///< Number of columns in the main matrix
+    std::size_t size;         ///< Number of columns in the main matrix
 
     int loopno;         ///< Number of completed loops
     double maxT;        ///< Maximum temperature recorded
