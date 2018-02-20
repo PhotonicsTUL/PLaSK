@@ -137,6 +137,7 @@ It's now time to define the solvers. PLaSK offers so called meta-solvers, which 
      <geometry electrical="GeoE" thermal="GeoT" optical="GeoO"/>
      <mesh electrical="default" thermal="default" diffusion="diffusion" optical="optical"/>
      <optical lam0="980." vat="0"/>
+     <root bcond="0" vmin="1.4" vmax="1.6"/>
      <voltage>
        <condition value="1.5" object="p-contact"/>
        </condition>
@@ -147,15 +148,13 @@ It's now time to define the solvers. PLaSK offers so called meta-solvers, which 
      <temperature>
        <condition place="bottom" value="300."/>
      </temperature>
-     <root bcond="0" vmin="1.4" vmax="1.6"/>
      <junction beta0="11" js0="1"/>
      <diffusion accuracy="0.005" fem-method="parabolic"/>
      <gain lifetime="0.5" matrix-elem="10"/>
+     <optical-root determinant="full"/>
    </meta>
 
-The important parameters here are ``lam0`` in the ``<optical>`` tag, which tells that the optical computations will be looking for a mode near 980 nm, and ``bcond`` in the ``<root>`` tag informing the solver that we want to modify the value applied at the first voltage boundary condition (currently set to 1.5 V) during the threshold search. Attributes ``vmin`` and ``vmax`` in the ``<root>`` tag indicate threshold voltage search range boundaries.
-
-.. ``<optical-root>`` tag specifies settings for the optical mode finder: we set its method to *broyden* which is slower than the default, but usually more safe.
+The important parameters here are ``lam0`` in the ``<optical>`` tag, which tells that the optical computations will be looking for a mode near 980 nm, and ``bcond`` in the ``<root>`` tag informing the solver that we want to modify the value applied at the first voltage boundary condition (currently set to 1.5 V) during the threshold search. Attributes ``vmin`` and ``vmax`` in the ``<root>`` tag indicate threshold voltage search range boundaries. ``<optical-root>`` tag specifies settings for the optical mode finder: we set the method of finding determinant to *full* which is slower than the default, but in some situations converges better.
 
 ---------------------------------------------------------------------------
 

@@ -102,6 +102,7 @@
     <junction beta0="11" js0="1"/>
     <diffusion accuracy="0.005" fem-method="parabolic"/>
     <gain lifetime="0.5" matrix-elem="10"/>
+    <optical-root determinant="full"/>
   </meta>
 </solvers>
 
