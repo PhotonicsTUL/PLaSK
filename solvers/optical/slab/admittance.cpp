@@ -206,7 +206,7 @@ void AdmittanceTransfer::determineFields()
             mult_matrix_by_vector(work, fields[n].Ed, fields[n].E0);
 
             // E0[n] = - inv(y2) * E0[0]
-            for (int i = 0; i < N; i++) {
+            for (size_t i = 0; i < N; i++) {
                 if (abs(y2[i]) < SMALL)         // Actually we cannot really compute E0 in this case.
                     fields[n].E0[i] = 0.;       // So let's cheat a little, as the field cannot
                 else                            // increase to the boundaries.
