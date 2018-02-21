@@ -18,8 +18,8 @@ from ...utils.str import none_to_empty
 
 
 AXES = {
-    2: ('', 'y,z', 'x,y', 'r,z', 't,v', 'tran,vert'),
-    3: ('', 'x,y,z', 'z,x,y', 'p,r,z', 'l,t,v', 'long,tran,vert')
+    2: ('', 'y,z', 'x,y', 'z,x', 'r,z', 't,v', 'tran,vert'),
+    3: ('', 'x,y,z', 'z,x,y', 'y,z,x', 'p,r,z', 'l,t,v', 'long,tran,vert')
 }
 
 

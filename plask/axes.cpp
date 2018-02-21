@@ -14,8 +14,9 @@ const AxisNames& AxisNames::Register::get(const std::string &name) const {
 AxisNames::Register AxisNames::axisNamesRegister =
         //c0, c1, c2, axis names:
         AxisNames::Register
-        ("x", "y", "z", "yz", "se", "z_up")
-        ("z", "x", "y", "xy", "ee", "y_up")
+        ("x", "y", "z", "yz", "z_up")
+        ("z", "x", "y", "xy", "y_up")
+        ("y", "z", "x", "zx", "x_up")
         ("p", "r", "z", "rz", "rad")
         ("l", "t", "v", "abs")
         ("long", "tran", "vert", "absolute");
