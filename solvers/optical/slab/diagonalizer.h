@@ -34,7 +34,7 @@ class Diagonalizer
     std::vector<bool> diagonalized;     ///< True if the given layer was diagonalized
 
   public:
-    const int lcount;                   // number of layers
+    const std::size_t lcount;                   // number of layers
 
     Diagonalizer(Expansion* src);
 

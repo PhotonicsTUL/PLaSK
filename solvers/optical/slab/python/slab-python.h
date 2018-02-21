@@ -333,7 +333,7 @@ struct Eigenmodes {
 
   protected:
     size_t index(int n) const {
-        int N = gamma.size();
+        int N = int(gamma.size());
         if (n < 0) n += N;
         if (n < 0 || n >= N) throw IndexError("{}: Bad eigenmode number", solver.getId());
         return size_t(n);

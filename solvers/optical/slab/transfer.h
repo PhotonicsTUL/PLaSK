@@ -47,7 +47,7 @@ struct PLASK_SOLVER_API Transfer {
 
     dcomplex* evals;                            ///< Found eigenvalues of matrix M
     double* rwrk;                               ///< Temporary space
-    int lwrk;                                   ///< Temporary space
+    std::size_t lwrk;                           ///< Temporary space
     dcomplex* wrk;                              ///< Temporary space
 
     /// Solver containing this transfer

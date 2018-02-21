@@ -11,15 +11,15 @@ Transfer::Transfer(SlabBase* solver, Expansion& expansion):
     fields_determined(DETERMINED_NOTHING)
 {
     // Reserve space for matrix multiplications...
-    int N0 = diagonalizer->source()->matrixSize();
-    int N = diagonalizer->matrixSize();
+    const std::size_t N0 = diagonalizer->source()->matrixSize();
+    const std::size_t N = diagonalizer->matrixSize();
     M = cmatrix(N0, N0);
     temp = cmatrix(N,N);
 
     // ...and eigenvalues determination
     evals = aligned_new_array<dcomplex>(N0);
     rwrk = aligned_new_array<double>(2*N0);
-    lwrk = max(2, N0*N0);
+    lwrk = max(std::size_t(2), N0*N0);
     wrk = aligned_new_array<dcomplex>(lwrk);
 
     // Nothing found so far
@@ -53,25 +53,25 @@ dcomplex Transfer::determinant()
     // Obtain admittance
     getFinalMatrix();
 
-    int N = M.rows();
+    const std::size_t N = M.rows();
 
     // This is probably expensive but necessary check to avoid hangs
-    int NN = N*N;
-    for (int i = 0; i < NN; i++) {
+    const std::size_t NN = N*N;
+    for (std::size_t i = 0; i < NN; i++) {
         if (isnan(real(M[i])) || isnan(imag(M[i])))
             throw ComputationError(solver->getId(), "NaN in discontinuity matrix");
     }
 
     // Find the eigenvalues of M using LAPACK
     int info;
-    zgeev('N', 'N', N, M.data(), N, evals, nullptr, 1, nullptr, 1, wrk, lwrk, rwrk, info);
+    zgeev('N', 'N', int(N), M.data(), int(N), evals, nullptr, 1, nullptr, 1, wrk, int(lwrk), rwrk, info);
     if (info != 0) throw ComputationError(solver->getId(), "eigenvalue determination failed");
 
     //TODO add some consideration for degenerate modes
     // Find the smallest eigenvalue
     dcomplex result;
     double min_mag = 1e32;
-    for (int i = 0; i < N; i++) {
+    for (std::size_t i = 0; i < N; i++) {
         dcomplex val = evals[i];
         double mag = abs2(val);
         if (mag < min_mag) { min_mag = mag; result = val; }
@@ -91,7 +91,7 @@ dcomplex Transfer::determinant()
 
 const_cvector Transfer::getInterfaceVector()
 {
-    int N = M.rows();
+    const std::size_t N = M.rows();
 
     // Check if the necessary memory is already allocated
     if (interface_field_matrix.rows() != N) {
@@ -112,13 +112,13 @@ const_cvector Transfer::getInterfaceVector()
 
         // Find the eigenvalues of M using LAPACK
         int info;
-        zgeev('N', 'V', N, M.data(), N, evals, nullptr, 1, interface_field_matrix.data(), N, wrk, lwrk, rwrk, info);
+        zgeev('N', 'V', int(N), M.data(), int(N), evals, nullptr, 1, interface_field_matrix.data(), int(N), wrk, int(lwrk), rwrk, info);
         if (info != 0) throw ComputationError(solver->getId(), "Interface field: zgeev failed");
 
         // Find the number of the smallest eigenvalue
         double min_mag = 1e32;
-        int n;
-        for (int i = 0; i < N; i++) {
+        std::size_t n;
+        for (std::size_t i = 0; i < N; i++) {
             double mag = abs2(evals[i]);
             if (mag < min_mag) { min_mag = mag; n = i; }
         }
@@ -144,7 +144,7 @@ LazyData<Vec<3,dcomplex>> Transfer::computeFieldE(double power, const shared_ptr
     diagonalizer->source()->initField(Expansion::FIELD_E, method);
     while (auto level = levels->yield()) {
         double z = level->vpos();
-        std::size_t n = solver->getLayerFor(z);
+        const std::size_t n = solver->getLayerFor(z);
         if (!reflected) {
             if (n == 0 && z < -zlim) z = -zlim;
             else if (n == solver->stack.size()-1 && z > zlim) z = zlim;

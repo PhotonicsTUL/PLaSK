@@ -23,7 +23,7 @@ AdmittanceTransfer::AdmittanceTransfer(SlabBase* solver, Expansion& expansion): 
 void AdmittanceTransfer::getFinalMatrix()
 {
     int N = diagonalizer->matrixSize();
-    int N0 = diagonalizer->source()->matrixSize();
+    int N0 = int(diagonalizer->source()->matrixSize());
     size_t count = solver->stack.size();
 
     // M = TH(interface) * Y(interface-1) * invTE(interface);
@@ -39,9 +39,9 @@ void AdmittanceTransfer::getFinalMatrix()
 }
 
 
-void AdmittanceTransfer::findAdmittance(int start, int end)
+void AdmittanceTransfer::findAdmittance(std::ptrdiff_t start, std::ptrdiff_t end)
 {
-    const int inc = (start < end) ? 1 : -1;
+    const std::ptrdiff_t inc = (start < end) ? 1 : -1;
 
     int N = diagonalizer->matrixSize();
     int NN = N*N;
@@ -52,7 +52,7 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
     std::exception_ptr error;
 
     #pragma omp parallel for schedule(dynamic,1)
-    for (int l = 0; l < diagonalizer->lcount; ++l) {
+    for (int l = 0; l < int(diagonalizer->lcount); ++l) {
         try {
             if (!error) diagonalizer->diagonalizeLayer(l);
         } catch(...) {
@@ -94,7 +94,7 @@ void AdmittanceTransfer::findAdmittance(int start, int end)
     // Declare temporary matrixH) on 'wrk' array
     cmatrix work(N, N, wrk);
 
-    for (int n = start+inc; n != end; n += inc)
+    for (std::ptrdiff_t n = start+inc; n != end; n += inc)
     {
         gamma = diagonalizer->Gamma(solver->stack[n]);
 
@@ -150,11 +150,11 @@ void AdmittanceTransfer::determineFields()
 
     writelog(LOG_DETAIL, solver->getId() + ": Determining optical fields");
 
-    int N = diagonalizer->matrixSize();
-    int N0 = diagonalizer->source()->matrixSize();
+    const std::size_t N = diagonalizer->matrixSize();
+    const std::size_t N0 = diagonalizer->source()->matrixSize();
     size_t count = solver->stack.size();
 
-    int NN = N*N;
+    const std::size_t NN = N*N;
 
     // Assign all the required space
     cdiagonal gamma, y1(N), y2(N);
@@ -198,8 +198,8 @@ void AdmittanceTransfer::determineFields()
 
             // work = Y[n] + y1
             cmatrix Y = getY(n);
-            for (int i = 0; i < NN; i++) work[i] = Y[i];
-            for (int i = 0; i < N; i++) work (i,i) += y1[i];
+            for (std::size_t i = 0; i < NN; i++) work[i] = Y[i];
+            for (std::size_t i = 0; i < N; i++) work (i,i) += y1[i];
 
             // E0[n] = work * Ed[n]
             fields[n].E0 = cvector(N);
@@ -297,10 +297,10 @@ cvector AdmittanceTransfer::getFieldVectorE(double z, int n)
     if ((n == 0 || std::size_t(n) == solver->vbounds->size()) && z < 0.)
         return cvector(diagonalizer->source()->matrixSize(), NAN);
 
-    int N = gamma.size();
+    const std::size_t N = gamma.size();
     cvector E(N);
 
-    for (int i = 0; i < N; i++) {
+    for (std::size_t i = 0; i < N; i++) {
         dcomplex g = gamma[i];
         //E[i] = (sin(g*(d-z)) * E0[i] + sin(g*z) * Ed[i]) / sin(g*d);
 
@@ -530,7 +530,7 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
         fields[n].Hd = Y * fields[n].Ed;
 
         if (n != start-inc) {
-            int next = solver->stack[n+inc];
+            std::size_t next = solver->stack[n+inc];
             // H0[n+inc] = invTH[n+inc] * TH[n] * Hd[n]
             fields[n+inc].H0 = cvector(N);
             mult_matrix_by_vector(diagonalizer->TH(curr), fields[n].Hd, tv);

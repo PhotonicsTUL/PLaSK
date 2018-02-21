@@ -747,7 +747,7 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<DT>
             }
             mesh = plask::make_shared<const RectangularMesh<2>>(const_pointer_cast<MeshAxis>(haxis),
                                                                 vaxis, RectangularMesh<2>::ORDER_01);
-            factor = 1. / vaxis->size();
+            factor = 1. / double(vaxis->size());
         }
         size_t size() const { return mesh->axis0->size(); }
         double operator[](size_t i) const {

@@ -571,7 +571,7 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
 
     dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
 
-    int order = SOLVER->getSize();
+    const int order = int(SOLVER->getSize());
     double b = 2*M_PI / (right-left) * (symmetric()? 0.5 : 1.0);
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
@@ -740,7 +740,7 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
             fft_x.execute(&(field.data()->tran()));
             fft_yz.execute(&(field.data()->lon()));
             fft_yz.execute(&(field.data()->vert()));
-            double dx = 0.5 * (right-left) / N;
+            double dx = 0.5 * (right-left) / double(N);
             auto src_mesh = plask::make_shared<RectangularMesh<2>>(plask::make_shared<RegularAxis>(left+dx, right-dx, field.size()), plask::make_shared<RegularAxis>(vpos, vpos, 1));
             return interpolate(src_mesh, field, dest_mesh, field_interpolation,
                                InterpolationFlags(SOLVER->getGeometry(),
@@ -767,7 +767,7 @@ double ExpansionPW2D::integratePoyntingVert(const cvector& E, const cvector& H)
 {
     double P = 0.;
 
-    int ord = SOLVER->getSize();
+    const int ord = int(SOLVER->getSize());
 
     if (separated()) {
         if (symmetric()) {
