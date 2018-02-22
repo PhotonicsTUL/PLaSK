@@ -315,7 +315,7 @@ void FiniteElementMethodDynamicThermal3DSolver::prepareMatrix(DpbMatrix& A)
     int info = 0;
 
     // Factorize matrix TODO bez tego
-    dpbtrf(UPLO, A.size, A.kd, A.data, A.ld+1, info);
+    dpbtrf(UPLO, int(A.size), int(A.kd), A.data, int(A.ld+1), info);
     if (info < 0)
         throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", this->getId(), -info);
     else if (info > 0)
@@ -329,7 +329,7 @@ void FiniteElementMethodDynamicThermal3DSolver::solveMatrix(DpbMatrix& A, DataVe
     int info = 0;
 
     // Find solutions
-    dpbtrs(UPLO, A.size, A.kd, 1, A.data, A.ld+1, B.data(), B.size(), info);
+    dpbtrs(UPLO, int(A.size), int(A.kd), 1, A.data, int(A.ld+1), B.data(), int(B.size()), info);
     if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", this->getId(), -info);
 
     // now B contains solutions
@@ -343,7 +343,7 @@ void FiniteElementMethodDynamicThermal3DSolver::prepareMatrix(DgbMatrix& A)
     A.mirror();
 
     // Factorize matrix
-    dgbtrf(A.size, A.size, A.kd, A.kd, A.data, A.ld+1, A.ipiv.get(), info);
+    dgbtrf(int(A.size), int(A.size), int(A.kd), int(A.kd), A.data, int(A.ld+1), A.ipiv.get(), info);
     if (info < 0) {
         throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
     } else if (info > 0) {
@@ -358,7 +358,7 @@ void FiniteElementMethodDynamicThermal3DSolver::solveMatrix(DgbMatrix& A, DataVe
     int info = 0;
 
     // Find solutions
-    dgbtrs('N', A.size, A.kd, A.kd, 1, A.data, A.ld+1, A.ipiv.get(), B.data(), B.size(), info);
+    dgbtrs('N', int(A.size), int(A.kd), int(A.kd), 1, A.data, int(A.ld+1), A.ipiv.get(), B.data(), int(B.size()), info);
     if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions

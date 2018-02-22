@@ -119,13 +119,13 @@ static size_t BesselSolverCyl_setMode(py::tuple args, py::dict kwargs) {
 }
 
 static py::object BesselSolverCyl_getFieldVectorE(BesselSolverCyl& self, int num, double z) {
-    if (num < 0) num = self.modes.size() + num;
+    if (num < 0) num += int(self.modes.size());
     if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorE(num, z), false, 2);
 }
 
 static py::object BesselSolverCyl_getFieldVectorH(BesselSolverCyl& self, int num, double z) {
-    if (num < 0) num = self.modes.size() + num;
+    if (num < 0) num += int(self.modes.size());
     if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), false, 2);
 }

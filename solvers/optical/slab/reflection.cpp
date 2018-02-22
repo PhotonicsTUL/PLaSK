@@ -30,9 +30,9 @@ ReflectionTransfer::~ReflectionTransfer() {
 void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
 {
     // Get matrices sizes
-    int N0 = diagonalizer->source()->matrixSize();
-    int N = diagonalizer->matrixSize(); // <= N0
-    int NN = N*N;
+    const std::size_t N0 = diagonalizer->source()->matrixSize();
+    const std::size_t N = diagonalizer->matrixSize(); // <= N0
+    const std::size_t NN = N*N;
     cmatrix work(N, N0, wrk);    // matrix object for the workspace
 
     findReflection(start, end, false);
@@ -41,28 +41,28 @@ void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
 
     double H = (end == 0 || end == solver->vbounds->size())?
                0 : abs(solver->vbounds->at(end) - solver->vbounds->at(end-1));
-    for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
+    for (std::size_t i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
 
     mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P = phas * P * phas
     memcpy(temp.data(), P.data(), NN*sizeof(dcomplex));                         // temp = P
 
     // temp = [ phas*P*phas - I ] [ phas*P*phas + I ]^{-1}
-    for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1;                // P = P + I
-    for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) temp[ii] -= 1;             // temp = temp - I
+    for (std::size_t i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1;        // P = P + I
+    for (std::size_t i = 0, ii = 0; i < N; i++, ii += (N+1)) temp[ii] -= 1;     // temp = temp - I
     int info;
-    zgetrf(N, N, P.data(), N, ipiv, info);                                      // P = LU(P)
-    ztrsm('R', 'U', 'N', 'N', N, N, 1., P.data(), N, temp.data(), N);           // temp = temp * U^{-1}
-    ztrsm('R', 'L', 'N', 'U', N, N, 1., P.data(), N, temp.data(), N);           // temp = temp * L^{-1}
+    zgetrf(int(N), int(N), P.data(), int(N), ipiv, info);                       // P = LU(P)
+    ztrsm('R', 'U', 'N', 'N', int(N), int(N), 1., P.data(), int(N), temp.data(), int(N));  // temp = temp * U^{-1}
+    ztrsm('R', 'L', 'N', 'U', int(N), int(N), 1., P.data(), int(N), temp.data(), int(N));  // temp = temp * L^{-1}
     // reorder columns (there is no such function in LAPACK)
-    for (int j = N-1; j >=0 ; j--) {
+    for (std::ptrdiff_t j = N-1; j >=0; j--) {
         int jp = ipiv[j]-1;
-        for (int i = 0; i < N; i++) std::swap(temp(i,j), temp(i,jp));
+        for (std::size_t i = 0; i < N; i++) std::swap(temp(i,j), temp(i,jp));
     }
 
     // M for the half of the structure
     mult_matrix_by_matrix(temp, diagonalizer->invTE(solver->stack[end]), work); // work = temp * invTE[end]
-    zgemm('N','N', N0, N0, N, mfac, diagonalizer->TH(solver->stack[end]).data(), N0,
-          wrk, N, add?1.:0., M.data(), N0);                                     // M = mfac * TH[end] * work
+    zgemm('N','N', int(N0), int(N0), int(N), mfac, diagonalizer->TH(solver->stack[end]).data(), int(N0),
+          wrk, int(N), add?1.:0., M.data(), int(N0));                           // M = mfac * TH[end] * work
 }
 
 

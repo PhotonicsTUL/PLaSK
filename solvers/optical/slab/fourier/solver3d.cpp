@@ -230,7 +230,7 @@ cvector FourierSolver3D::getReflectedAmplitudes(Expansion::Component polarizatio
     double bl = 2*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
            bt = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
 
-    int ordl = getLongSize(), ordt = getTranSize();
+    int ordl = int(getLongSize()), ordt = int(getTranSize());
     for (int t = expansion.symmetric_tran()? 0 : -ordt; t <= ordt; ++t) {
         for (int l = expansion.symmetric_long()? 0 : -ordl; l <= ordl; ++l) {
             size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);
@@ -276,7 +276,7 @@ cvector FourierSolver3D::getTransmittedAmplitudes(Expansion::Component polarizat
     double bl = 2*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
            bt = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
 
-    int ordl = getLongSize(), ordt = getTranSize();
+    int ordl = int(getLongSize()), ordt = int(getTranSize());
     for (int t = expansion.symmetric_tran()? 0 : -ordt; t <= ordt; ++t) {
         for (int l = expansion.symmetric_long()? 0 : -ordl; l <= ordl; ++l) {
             size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);
@@ -369,7 +369,7 @@ double FourierSolver3D::getReflection(Expansion::Component polarization, Transfe
 
     double result = 0.;
 
-    int ordl = getLongSize(), ordt = getTranSize();
+    int ordl = int(getLongSize()), ordt = int(getTranSize());
     for (int t = -ordt; t <= ordt; ++t) {
         for (int l = -ordl; l <= ordl; ++l) {
             size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);
@@ -421,7 +421,7 @@ double FourierSolver3D::getTransmission(Expansion::Component polarization, Trans
 
     double result = 0.;
 
-    int ordl = getLongSize(), ordt = getTranSize();
+    int ordl = int(getLongSize()), ordt = int(getTranSize());
     for (int t = -ordt; t <= ordt; ++t) {
         for (int l = -ordl; l <= ordl; ++l) {
             size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);

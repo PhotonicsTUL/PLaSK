@@ -58,7 +58,7 @@ SimpleDiagonalizer::~SimpleDiagonalizer()
     #endif
 }
 
-int SimpleDiagonalizer::matrixSize() const
+std::size_t SimpleDiagonalizer::matrixSize() const
 {
     return src->matrixSize();
 }

@@ -68,7 +68,7 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
      * Get the Y matrix for n-th layer
      * \param n layer number
      */
-    const cmatrix& getY(int n) {
+    const cmatrix& getY(std::size_t n) {
         if (memY.size() == solver->stack.size() && needAllY)
             return memY[n];
         else

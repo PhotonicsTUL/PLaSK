@@ -73,7 +73,7 @@ void ExpansionBessel::init3() {
 
     k /= rbounds[rbounds.size()-1];
 
-    double max_error = SOLVER->integral_error * expected / nseg;
+    double max_error = SOLVER->integral_error * expected / double(nseg);
     double error = 0.;
 
     std::deque<std::vector<double>> abscissae_cache;

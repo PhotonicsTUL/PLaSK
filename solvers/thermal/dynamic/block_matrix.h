@@ -4,8 +4,6 @@
 #include <cstddef>
 #include <plask/plask.hpp>
 
-#define UPLO 'L'
-
 // BLAS routine to multiply matrix by vector
 #define dsbmv F77_GLOBAL(dsbmv,DSBMV)
 F77SUB dsbmv(const char& uplo, const int& n, const int& k, const double& alpha, const double* a, const int& lda,
@@ -20,6 +18,8 @@ F77SUB dpbtrs(const char& uplo, const int& n, const int& kd, const int& nrhs, do
 
 
 namespace plask { namespace thermal { namespace dynamic {
+
+constexpr char UPLO = 'L';
 
 /**
  * Oversimple symmetric band matrix structure. It only offers easy access to elements and nothing more.
@@ -102,7 +102,7 @@ struct DpbMatrix {
      * \param result multiplication result
      */
     void mult(const DataVector<const double>& vector, DataVector<double>& result) {
-        dsbmv(UPLO, size, kd, 1.0, data, ld+1, vector.data(), 1, 0.0, result.data(), 1);
+        dsbmv(UPLO, int(size), int(kd), 1.0, data, int(ld+1), vector.data(), 1, 0.0, result.data(), 1);
     }
 
     /**
@@ -111,7 +111,7 @@ struct DpbMatrix {
      * \param result multiplication result
      */
     void addmult(const DataVector<const double>& vector, DataVector<double>& result) {
-        dsbmv(UPLO, size, kd, 1.0, data, ld+1, vector.data(), 1, 1.0, result.data(), 1);
+        dsbmv(UPLO, int(size), int(kd), 1.0, data, int(ld+1), vector.data(), 1, 1.0, result.data(), 1);
     }
 };
 

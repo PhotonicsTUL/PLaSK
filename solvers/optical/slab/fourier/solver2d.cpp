@@ -235,7 +235,7 @@ cvector FourierSolver2D::getReflectedAmplitudes(Expansion::Component polarizatio
 
     if (!expansion.separated()) {
         double b = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric()? 0.5 : 1.0);
-        int N = getSize() + 1;
+        int N = int(getSize() + 1);
         for (int n = expansion.symmetric()? 0 : 1-N; n != N; ++n) {
             size_t iz = expansion.iEz(n), ix = expansion.iEx(n);
             //assert(abs(gamma[ix] - gamma[iz]) < 1e3*SMALL);
@@ -294,7 +294,7 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
     if (!expansion.separated()) {
         double b = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric()? 0.5 : 1.0);
-        int N = getSize() + 1;
+        int N = int(getSize() + 1);
         for (int n = expansion.symmetric()? 0 : 1-N; n != N; ++n) {
             size_t iz = expansion.iEz(n), ix = expansion.iEx(n);
             //assert(abs(gamma[ix] - gamma[iz]) < 1e3*SMALL);
