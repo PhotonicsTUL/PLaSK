@@ -28,7 +28,8 @@ This file contains portable utils to manage (mainly disable for a given fragment
     PLASK_PRAGMA(warning(push))   \
     PLASK_PRAGMA(warning(disable: 4244))
 
-#define PLASK_NO_UNUSED_VARIABLE_WARNING_BEGIN
+#define PLASK_NO_UNUSED_VARIABLE_WARNING_BEGIN \
+    PLASK_PRAGMA(warning(push))
     // TODO może C4101 ?
 
 #define PLASK_NO_WARNING_END \
