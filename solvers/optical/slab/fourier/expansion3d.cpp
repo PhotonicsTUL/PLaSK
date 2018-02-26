@@ -74,22 +74,22 @@ void ExpansionPW3D::init()
         Ll = front - back;
         Nl = 2 * SOLVER->getLongSize() + 1;
         nNl = 4 * SOLVER->getLongSize() + 1;
-        nMl = size_t(round(SOLVER->oversampling_long * nNl));
+        nMl = size_t(round(SOLVER->oversampling_long * double(nNl)));
         Ml = refl * nMl;
-        double dx = 0.5 * Ll * (refl-1) / Ml;
-        long_mesh = RegularAxis(back-dx, front-dx-Ll/Ml, Ml);
+        double dx = 0.5 * Ll * double(refl-1) / double(Ml);
+        long_mesh = RegularAxis(back-dx, front-dx-Ll/double(Ml), Ml);
     } else {
         Ll = 2 * front;
         Nl = SOLVER->getLongSize() + 1;
         nNl = 2 * SOLVER->getLongSize() + 1;
-        nMl = size_t(round(SOLVER->oversampling_long * nNl));
+        nMl = size_t(round(SOLVER->oversampling_long * double(nNl)));
         Ml = refl * nMl;
         if (SOLVER->dct2()) {
-            double dx = 0.25 * Ll / Ml;
+            double dx = 0.25 * Ll / double(Ml);
             long_mesh = RegularAxis(dx, front-dx, Ml);
         } else {
             size_t nNa = 4 * SOLVER->getLongSize() + 1;
-            double dx = 0.5 * Ll * (refl-1) / (refl*nNa);
+            double dx = 0.5 * Ll * double(refl-1) / double(refl*nNa);
             long_mesh = RegularAxis(-dx, front+dx, Ml);
         }
     }                                                           // N = 3  nN = 5  refine = 5  M = 25
@@ -688,7 +688,7 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
 
     const dcomplex kx = klong, ky = ktran;
 
-    int ordl = SOLVER->getLongSize(), ordt = SOLVER->getTranSize();
+    int ordl = int(SOLVER->getLongSize()), ordt = int(SOLVER->getTranSize());
 
     double bl = 2*M_PI / (front-back) * (symmetric_long()? 0.5 : 1.0),
            bt = 2*M_PI / (right-left) * (symmetric_tran()? 0.5 : 1.0);
@@ -908,7 +908,7 @@ double ExpansionPW3D::integratePoyntingVert(const cvector& E, const cvector& H)
 {
     double P = 0.;
 
-    int ordl = SOLVER->getLongSize(), ordt = SOLVER->getTranSize();
+    int ordl = int(SOLVER->getLongSize()), ordt = int(SOLVER->getTranSize());
 
     for (int iy = -ordt; iy <= ordt; ++iy) {
         for (int ix = -ordl; ix <= ordl; ++ix) {

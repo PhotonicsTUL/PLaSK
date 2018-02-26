@@ -383,13 +383,13 @@ static py::object FourierSolver2D_transmittedCoefficients2(FourierSolver2D& self
 }
 
 static py::object FourierSolver2D_getFieldVectorE(FourierSolver2D& self, int num, double z) {
-    if (num < 0) num = self.modes.size() + num;
+    if (num < 0) num += int(self.modes.size());
     if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorE(num, z), self.separated(), 2);
 }
 
 static py::object FourierSolver2D_getFieldVectorH(FourierSolver2D& self, int num, double z) {
-    if (num < 0) num = self.modes.size() + num;
+    if (num < 0) num += int(self.modes.size());
     if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), self.separated(), 2);
 }

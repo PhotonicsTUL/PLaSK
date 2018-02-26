@@ -29,7 +29,9 @@ void ExpansionBesselFini::computeBesselZeros()
     }
     if (n < N) {
         SOLVER->writelog(LOG_DEBUG, "Computing Bessel function J_({:d}) zeros {:d} to {:d}", m, n+1, N);
+PLASK_NO_CONVERSION_WARNING_BEGIN
         cyl_bessel_j_zero(double(m), n+1, N-n, kpts.begin()+n);
+PLASK_NO_WARNING_END
     }
     // #ifndef NDEBUG
     //     for (size_t i = 0; i != N; ++i) {

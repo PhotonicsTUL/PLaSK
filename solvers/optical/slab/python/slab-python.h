@@ -341,7 +341,7 @@ struct Eigenmodes {
 
     py::object array(const dcomplex* data, size_t N) const;
 
-    LazyData<double> getLightMagnitude(size_t n, shared_ptr<const MeshD<SolverT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) {
+    LazyData<double> getLightMagnitude(std::size_t n, shared_ptr<const MeshD<SolverT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) {
 	    cvector E(TE.data() + TE.rows()*index(n), TE.rows());
 	    cvector H(TH.data() + TH.rows()*index(n), TH.rows());
 	    solver.transfer->diagonalizer->source()->initField(Expansion::FIELD_E, method);
