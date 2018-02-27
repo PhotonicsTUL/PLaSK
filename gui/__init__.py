@@ -91,29 +91,31 @@ if CURRENT_DIR is None:
     CURRENT_DIR = os.getcwd()
 
 
-RECENT = CONFIG['session/recent_files']
-if RECENT is None:
-    RECENT = []
-elif type(RECENT) is not list:
-    RECENT = [RECENT]
+def load_recent_files():
+    CONFIG.sync()
+    recent = CONFIG['session/recent_files']
+    if recent is None:
+        recent = []
+    elif type(recent) is not list:
+        recent = [recent]
+    return recent[-10:]
 
 
 def update_recent_files(filename):
-    global RECENT, CURRENT_DIR
+    global CURRENT_DIR
     filename = filename.replace('/', os.path.sep)
     CURRENT_DIR = os.path.dirname(filename)
     CONFIG['session/recent_dir'] = CURRENT_DIR
+    recent = load_recent_files()
     try:
-        RECENT.remove(filename)
+        recent.remove(filename)
     except ValueError:
         pass
     if os.path.isfile(filename):
-        RECENT.append(filename)
-    RECENT = RECENT[-10:]
-    CONFIG['session/recent_files'] = RECENT
+        recent = recent[-9:]
+        recent.append(filename)
+    CONFIG['session/recent_files'] = recent
     CONFIG.sync()
-    for window in WINDOWS:
-        window.update_recent_list()
 
 
 def close_all_windows():
@@ -266,7 +268,7 @@ class MainWindow(QMainWindow):
 
         self.recent_menu = QMenu('Open &Recent')
         self.recent_menu.setIcon(QIcon.fromTheme('document-open-recent'))
-        self.update_recent_list()
+        self.recent_menu.aboutToShow.connect(self.update_recent_menu)
 
         self.menu = QMenu('&PLaSK')
 
@@ -389,12 +391,12 @@ class MainWindow(QMainWindow):
         if self.current_tab_index == -1: return None
         return self.document.controller_by_index(self.current_tab_index)
 
-    def update_recent_list(self):
+    def update_recent_menu(self):
         self.recent_menu.clear()
         class Func(object):
             def __init__(s, f): s.f = f
             def __call__(s): return self.open(s.f)
-        for i,f in enumerate(reversed(RECENT)):
+        for i,f in enumerate(reversed(load_recent_files())):
             action = QAction(f, self)
             action.triggered.connect(Func(f))
             # action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_0 + (i+1)%10))
