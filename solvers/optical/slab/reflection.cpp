@@ -192,7 +192,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
 
 void ReflectionTransfer::storeP(size_t n) {
     if (allP) {
-        int N = diagonalizer->matrixSize();
+        const std::size_t N = diagonalizer->matrixSize();
         if (memP.size() != solver->stack.size()) {
             // Allocate the storage for admittance matrices
             memP.resize(solver->stack.size());
@@ -236,9 +236,9 @@ void ReflectionTransfer::determineFields()
 
     writelog(LOG_DETAIL, solver->getId() + ": Determining optical fields");
 
-    int N = diagonalizer->matrixSize();
-    int N0 = diagonalizer->source()->matrixSize();
-    int NN = N*N;
+    const std::size_t N = diagonalizer->matrixSize();
+    const std::size_t N0 = diagonalizer->source()->matrixSize();
+    const std::size_t NN = N*N;
 
     cdiagonal gamma;
 
@@ -253,7 +253,7 @@ void ReflectionTransfer::determineFields()
 
     cvector temp(wrk, N);
 
-    for (int pass = 0; pass < 1 || (pass < 2 && solver->interface != std::ptrdiff_t(count)); pass++)
+    for (unsigned pass = 0; pass < 1 || (pass < 2 && solver->interface != std::ptrdiff_t(count)); pass++)
     {
         // each pass for below and above the interface
 
@@ -268,22 +268,22 @@ void ReflectionTransfer::determineFields()
         fields[start].B = cvector(N);
 
         // compute B-field for the layer next to the interface
-        int curr = solver->stack[start];
+        std::size_t curr = solver->stack[start];
 
         gamma = diagonalizer->Gamma(curr);
 
         double H = (start == 0 || start == int(count)-1)? 0. : (solver->vbounds->at(start) - solver->vbounds->at(start-1));
-        for (int i = 0; i < N; i++)
+        for (std::size_t i = 0; i < N; i++)
             phas[i] = exp(-I*gamma[i]*H);
 
         // P = phas*P*phas + I
         memcpy(P.data(), memP[start].data(), NN*sizeof(dcomplex));
         mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P := phas * P * phas
-        for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;               // P := P + I
+        for (std::size_t i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;       // P := P + I
 
         mult_matrix_by_vector(diagonalizer->invTE(curr), E, fields[start].B);       // B := invTE * E
         invmult(P, fields[start].B);                                                // B := inv(P) * B
-        for (int i = 0; i < N; i++) fields[start].B[i] *= phas[i];                  // B := phas * B
+        for (std::size_t i = 0; i < N; i++) fields[start].B[i] *= phas[i];          // B := phas * B
 
         for (int n = start; n != end; n += inc)
         {
@@ -302,24 +302,24 @@ void ReflectionTransfer::determineFields()
             cvector& B2 = fields[n+inc].B;
 
             curr = solver->stack[n];
-            int next = solver->stack[n+inc];
+            std::size_t next = solver->stack[n+inc];
 
             gamma = diagonalizer->Gamma(next);
 
             if (next != curr) {
-                for (int i = 0; i < N; i++) F2[i] = F1[i] - B1[i];                  // F2 := F1 - B1
+                for (std::size_t i = 0; i < N; i++) F2[i] = F1[i] - B1[i];          // F2 := F1 - B1
                 mult_matrix_by_vector(diagonalizer->TH(curr), F2, temp);            // temp := TH * F2
                 mult_matrix_by_vector(diagonalizer->invTH(next), temp, B2);         // B2 := invTH * temp
 
-                for (int i = 0; i < N; i++) F2[i] = F1[i] + B1[i];                  // F2 := F1 + B1
+                for (std::size_t i = 0; i < N; i++) F2[i] = F1[i] + B1[i];          // F2 := F1 + B1
                 mult_matrix_by_vector(diagonalizer->TE(curr), F2, temp);            // temp := TE * F2
-                zgemm('N','N', N, 1, N0, 1., diagonalizer->invTE(next).data(), N,
-                      temp.data(), N0, -1., B2.data(), N);                          // B2 := invTE * temp - B2
+                zgemm('N','N', int(N), 1, int(N0), 1., diagonalizer->invTE(next).data(), int(N),
+                      temp.data(), int(N0), -1., B2.data(), int(N));                // B2 := invTE * temp - B2
             } else
-                for (int i = 0; i < N; i++) B2[i] = 2. * B1[i];
+                for (std::size_t i = 0; i < N; i++) B2[i] = 2. * B1[i];
 
             H = (n+inc == end)? 0 : (solver->vbounds->at(n+inc) - solver->vbounds->at(n+inc-1));
-            for (int i = 0; i < N; i++)
+            for (std::size_t i = 0; i < N; i++)
                 B2[i] *= 0.5 * exp(-I*gamma[i]*H);                                  // B2 := 1/2 * phas * B2
         }
 
