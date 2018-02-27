@@ -208,37 +208,40 @@ class MainWindow(QMainWindow):
 
         new_action = QAction(QIcon.fromTheme('document-new'), '&New', self)
         new_action.setShortcut(QKeySequence.New)
-        new_action.setStatusTip('New XPL file')
+        new_action.setStatusTip('Create a new XPL file')
         new_action.triggered.connect(lambda: self.new(XPLDocument))
 
         newpy_action = QAction(QIcon.fromTheme('document-new'), 'New &Python', self)
-        newpy_action.setStatusTip('New Python file')
+        newpy_action.setStatusTip('Create a new Python file')
         newpy_action.triggered.connect(lambda: self.new(PyDocument))
 
         open_action = QAction(QIcon.fromTheme('document-open'), '&Open...', self)
         open_action.setShortcut(QKeySequence.Open)
-        open_action.setStatusTip('Open XPL file')
+        open_action.setStatusTip('Open an existing file')
         open_action.triggered.connect(self.open)
 
         save_action = QAction(QIcon.fromTheme('document-save'), '&Save', self)
         save_action.setShortcut(QKeySequence.Save)
-        save_action.setStatusTip('Save XPL file')
+        save_action.setStatusTip('Save the file to disk')
         save_action.triggered.connect(self.save)
 
         saveas_action = QAction(QIcon.fromTheme('document-save-as'), 'Save &As...', self)
         saveas_action.setShortcut(QKeySequence.SaveAs)
-        saveas_action.setStatusTip('Save XPL file, ask for namploe of file')
+        saveas_action.setStatusTip('Save the file to disk asking for a new name')
         saveas_action.triggered.connect(self.save_as)
 
-        launch_action = QAction(QIcon.fromTheme('media-playback-start', QIcon(':/media-playback-start.png')),
-                                '&Launch...', self)
+        reload_action = QAction(QIcon.fromTheme('view-refresh'), '&Reload', self)
+        reload_action.setStatusTip('Reload the current file from disk')
+        reload_action.triggered.connect(self.reload)
+
+        launch_action = QAction(QIcon.fromTheme('media-playback-start'), '&Launch...', self)
         launch_action.setShortcut('F5')
-        launch_action.setStatusTip('Launch current file in PLaSK')
+        launch_action.setStatusTip('Launch the current file in PLaSK')
         launch_action.triggered.connect(lambda: launch_plask(self))
 
         goto_action = QAction(QIcon.fromTheme('go-jump'), '&Go to Line...', self)
         goto_action.setShortcut(Qt.CTRL + Qt.Key_L)
-        goto_action.setStatusTip('Go to specified line')
+        goto_action.setStatusTip('Go to the specified line')
         goto_action.triggered.connect(self.on_goto_line)
 
         plot_material_action = QAction(QIcon.fromTheme('matplotlib'), 'Examine &Material Parameters...', self)
@@ -266,7 +269,7 @@ class MainWindow(QMainWindow):
         exit_action.setStatusTip('Exit application')
         exit_action.triggered.connect(self.close)
 
-        self.recent_menu = QMenu('Open &Recent')
+        self.recent_menu = QMenu('Open R&ecent')
         self.recent_menu.setIcon(QIcon.fromTheme('document-open-recent'))
         self.recent_menu.aboutToShow.connect(self.update_recent_menu)
 
@@ -278,6 +281,7 @@ class MainWindow(QMainWindow):
         self.menu.addMenu(self.recent_menu)
         self.menu.addAction(save_action)
         self.menu.addAction(saveas_action)
+        self.menu.addAction(reload_action)
         self.menu.addSeparator()
         self.menu.addAction(goto_action)
         self.menu.addAction(self.showsource_action)
@@ -402,24 +406,24 @@ class MainWindow(QMainWindow):
             # action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_0 + (i+1)%10))
             self.recent_menu.addAction(action)
 
-    def _try_load_from_file(self, filename):
+    def _try_load_from_file(self, filename, tab=None):
         update_recent_files(os.path.abspath(filename))
         document = PyDocument(self) if filename.endswith('.py') else XPLDocument(self)
         try:
             document.load_from_file(filename)
         except Exception as e:
             if _DEBUG: raise e
-            QMessageBox.critical(self, 'Error while loading XPL from file.',
-                                       'Error while loading XPL from file "{}":\n{}'.format(filename, str(e)))
+            QMessageBox.critical(self, 'File load error',
+                                       'Error while loading file "{}":\n{}'.format(filename, str(e)))
             return False
         else:
             self.document = document
-            self.setup_model()
+            self.setup_model(tab)
             self.set_changed(False)
             os.chdir(os.path.dirname(os.path.abspath(filename)))
             return True
 
-    def setup_model(self):
+    def setup_model(self, tab=None):
         self.tabs.clear()
         for m in self.document.SECTION_NAMES:
             self.tabs.addTab(self.document.controller_by_name(m).get_widget(), self.SECTION_TITLES[m])
@@ -429,7 +433,8 @@ class MainWindow(QMainWindow):
         if isinstance(self.document, PyDocument):
             self.tab_change(0)
         else:
-            self.tabs.setCurrentIndex(2)
+            if tab is None: tab = 2
+            self.tabs.setCurrentIndex(tab)
 
     def new(self, Document=XPLDocument):
         new_window = MainWindow(Document=Document)
@@ -438,7 +443,6 @@ class MainWindow(QMainWindow):
         WINDOWS.add(new_window)
 
     def open(self, filename=None):
-
         if not filename:
             filename = QFileDialog.getOpenFileName(self, "Open File", CURRENT_DIR,
                                                          "PLaSK file (*.xpl *.py);;"
@@ -447,22 +451,39 @@ class MainWindow(QMainWindow):
             if type(filename) == tuple: filename = filename[0]
             if not filename:
                 return
-        remove_self = self.document.filename is None and not self.isWindowModified()
-        new_window = MainWindow(filename)
-        try:
-            if new_window.document.filename is not None:
-                new_window.resize(self.size())
-                WINDOWS.add(new_window)
-                if remove_self:
-                    self.close()
-                else:
+        if self.document.filename is None and not self.isWindowModified():
+            self.document.controller_by_index(self.current_tab_index).on_edit_exit()
+            self.current_tab_index = -1
+            self._try_load_from_file(filename)
+            self.current_section_enter()
+        else:
+            new_window = MainWindow(filename)
+            try:
+                if new_window.document.filename is not None:
+                    new_window.resize(self.size())
+                    WINDOWS.add(new_window)
                     new_window.move(self.x() + 24, self.y() + 24)
-            else:
+                else:
+                    new_window.setWindowModified(False)
+                    new_window.close()
+            except AttributeError:
                 new_window.setWindowModified(False)
                 new_window.close()
-        except AttributeError:
-            new_window.setWindowModified(False)
-            new_window.close()
+
+    def reload(self):
+        if self.document.filename is None:
+            return
+        if self.isWindowModified():
+            confirm = QMessageBox.question(self, "Unsaved Changes",
+                                           "File has unsaved changes. Do you want to discard them and reload the file?",
+                                           QMessageBox.Yes | QMessageBox.No,  QMessageBox.No)
+            if confirm == QMessageBox.No:
+                return
+        current_tab_index = self.current_tab_index
+        self.document.controller_by_index(current_tab_index).on_edit_exit()
+        self.current_tab_index = -1
+        if not self._try_load_from_file(self.document.filename, current_tab_index):
+            self.setWindowModified(True)
 
     def _save_document(self, filename):
         fire_edit_end()

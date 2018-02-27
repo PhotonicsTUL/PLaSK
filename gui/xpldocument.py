@@ -64,7 +64,6 @@ class XPLDocument(object):
             self.geometry = SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2]))
         self.grids = GUIAndSourceController(GridsController(self))
         self.script = ScriptController(self)
-        #self.solvers = SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[4]))
         self.solvers = GUIAndSourceController(SolversController(self))
         self.connects = GUIAndSourceController(ConnectsController(self))
         self.loglevel = 'detail'
@@ -91,13 +90,13 @@ class XPLDocument(object):
             ModelTest(self.model_by_name('geometry'))
         # self.tree = etree()
 
-        # self.undo_group = QUndoGroup()    #does we need this?
+        # self.undo_group = QUndoGroup()    # do we need this?
         # for c in self.controllers:
         #     self.undo_group.addStack(c.model.undo_stack)
 
     coding = 'utf-8'
 
-    def update_window_changed(self, ignored_clean_flag=None):   #ignored_clean_flag enable this to connect with cleanChanged signal
+    def update_window_changed(self, ignored_clean_flag=None):   # ignored_clean_flag enable this to connect with cleanChanged signal
         self.window.set_changed(not self.is_clean())
 
     def on_model_change(self, model, *args, **kwargs):
