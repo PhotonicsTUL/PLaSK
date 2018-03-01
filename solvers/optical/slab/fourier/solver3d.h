@@ -501,7 +501,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     void applyMode(const Mode& mode) {
         writelog(LOG_DEBUG, "Current mode <lam: {}nm, klong: {}/um, ktran: {}/um, symmetry: ({},{})>",
-                 str(2e3*M_PI/mode.k0, "({:.3f}{:+.3g}j)", "{:.3f}"),
+                 str(2e3*PI/mode.k0, "({:.3f}{:+.3g}j)", "{:.3f}"),
                  str(mode.klong, "({:.3f}{:+.3g}j)", "{:.3f}"),
                  str(mode.ktran, "({:.3f}{:+.3g}j)", "{:.3f}"),
                  (mode.symmetry_long == Expansion::E_LONG)? "El" : (mode.symmetry_long == Expansion::E_TRAN)? "Et" : "none",
@@ -553,19 +553,19 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
         LazyData<Vec<3,dcomplex>> getElectricField(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
             if (!parent->initCalculation()) parent->setExpansionDefaults(false);
-            parent->expansion.setK0(2e3*M_PI / wavelength);
+            parent->expansion.setK0(2e3*PI / wavelength);
             return parent->getReflectedFieldE(polarization, side, dst_mesh, method);
         }
 
         LazyData<Vec<3,dcomplex>> getMagneticField(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
             if (!parent->initCalculation()) parent->setExpansionDefaults(false);
-            parent->expansion.setK0(2e3*M_PI / wavelength);
+            parent->expansion.setK0(2e3*PI / wavelength);
             return parent->getReflectedFieldH(polarization, side, dst_mesh, method);
         }
 
         LazyData<double> getLightMagnitude(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
             if (!parent->initCalculation()) parent->setExpansionDefaults(false);
-            parent->expansion.setK0(2e3*M_PI / wavelength);
+            parent->expansion.setK0(2e3*PI / wavelength);
             return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method);
         }
 

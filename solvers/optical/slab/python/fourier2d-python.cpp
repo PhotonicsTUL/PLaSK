@@ -51,7 +51,7 @@ py::object Solver_computeReflectivity<FourierSolver2D>(FourierSolver2D* self,
     } else if (!self->initCalculation())
         self->setExpansionDefaults(false);
     return UFUNC<double>([=](double lam)->double {
-        self->expansion.setK0(2e3*M_PI/lam);
+        self->expansion.setK0(2e3*PI/lam);
         return 100. * self->getReflection(polarization, incidence);
     }, wavelength);
 }
@@ -81,7 +81,7 @@ py::object Solver_computeTransmittivity<FourierSolver2D>(FourierSolver2D* self,
     } else if (!self->initCalculation())
         self->setExpansionDefaults(false);
     return UFUNC<double>([=](double lam)->double {
-        self->expansion.setK0(2e3*M_PI/lam);
+        self->expansion.setK0(2e3*PI/lam);
         return 100. * self->getTransmission(polarization, incidence);
     }, wavelength);
 }
@@ -141,7 +141,7 @@ static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs
                 if (what) throw TypeError(u8"Only one key may be an array");
                 what = WHAT_WAVELENGTH; array = kwargs[*i];
             } else
-                k0.reset(2e3*M_PI / py::extract<dcomplex>(kwargs[*i])());
+                k0.reset(2e3*PI / py::extract<dcomplex>(kwargs[*i])());
         } else if (*i == "k0") {
             if (what == WHAT_WAVELENGTH || k0)
                 throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");
@@ -183,7 +183,7 @@ static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs
             return py::object(self->getDeterminant());
         case WHAT_WAVELENGTH:
             return UFUNC<dcomplex>(
-                [self, neff](dcomplex x) -> dcomplex { self->expansion.setK0(2e3*M_PI/x); if (neff) self->expansion.setBeta(*neff * self->expansion.k0); return self->getDeterminant(); },
+                [self, neff](dcomplex x) -> dcomplex { self->expansion.setK0(2e3*PI/x); if (neff) self->expansion.setBeta(*neff * self->expansion.k0); return self->getDeterminant(); },
                 array
             );
         case WHAT_K0:
@@ -217,7 +217,7 @@ static size_t FourierSolver2D_setMode(py::tuple args, py::dict kwargs) {
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam" || *i == "wavelength") {
             if (k0) throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");
-            k0.reset(2e3*M_PI / py::extract<dcomplex>(kwargs[*i])());
+            k0.reset(2e3*PI / py::extract<dcomplex>(kwargs[*i])());
         } else if (*i == "k0") {
             if (k0) throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");
             k0.reset(py::extract<dcomplex>(kwargs[*i]));
@@ -296,7 +296,7 @@ static std::string FourierSolver2D_Mode_str(const FourierSolver2D::Mode& self) {
         default: sym = "none";
     }
     return format(u8"<lam: {:.2f}nm, neff: {}, ktran: {}/um, polarization: {}, symmetry: {}, power: {:.2g} mW>",
-                  real(2e3*M_PI / self.k0),
+                  real(2e3*PI / self.k0),
                   str(self.beta/self.k0, "{:.3f}{:+.3g}j"),
                   str(self.ktran, "({:.3g}{:+.3g}j)", "{:.3g}"),
                   pol,
@@ -319,15 +319,15 @@ static std::string FourierSolver2D_Mode_repr(const FourierSolver2D::Mode& self) 
         default: sym = "None";
     }
     return format(u8"Fourier2D.Mode(lam={0}, neff={1}, ktran={2}, polarization={3}, symmetry={4}, power={5})",
-                  str(2e3*M_PI/self.k0), str(self.beta/self.k0), str(self.ktran), pol, sym, self.power);
+                  str(2e3*PI/self.k0), str(self.beta/self.k0), str(self.ktran), pol, sym, self.power);
 }
 
 static py::object FourierSolver2D_reflectedAmplitudes(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
     if (self.initCalculation()) {
         self.setExpansionDefaults(false);
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     } else
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     auto data = self.getReflectedAmplitudes(polarization, incidence);
     return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
 }
@@ -335,9 +335,9 @@ static py::object FourierSolver2D_reflectedAmplitudes(FourierSolver2D& self, dou
 static py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
     if (self.initCalculation()) {
         self.setExpansionDefaults(false);
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     } else
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     auto data = self.getTransmittedAmplitudes(polarization, incidence);
     return arrayFromVec2D<NPY_DOUBLE>(data, self.separated());
 }
@@ -345,9 +345,9 @@ static py::object FourierSolver2D_transmittedAmplitudes(FourierSolver2D& self, d
 static py::object FourierSolver2D_reflectedCoefficients1(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection side) {
     if (self.initCalculation()) {
         self.setExpansionDefaults(false);
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     } else
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     auto data = self.getReflectedCoefficients(polarization, side);
     return arrayFromVec2D<NPY_CDOUBLE>(data, self.separated(), 2);
 }
@@ -355,9 +355,9 @@ static py::object FourierSolver2D_reflectedCoefficients1(FourierSolver2D& self, 
 static py::object FourierSolver2D_transmittedCoefficients1(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection side) {
     if (self.initCalculation()) {
         self.setExpansionDefaults(false);
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     } else
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     auto data = self.getTransmittedCoefficients(polarization, side);
     return arrayFromVec2D<NPY_CDOUBLE>(data, self.separated(), 2);
 }
@@ -365,9 +365,9 @@ static py::object FourierSolver2D_transmittedCoefficients1(FourierSolver2D& self
 static py::object FourierSolver2D_reflectedCoefficients2(FourierSolver2D& self, double lam, size_t idx, Transfer::IncidentDirection side) {
     if (self.initCalculation()) {
         self.setExpansionDefaults(false);
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     } else
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     auto data = self.getReflectedCoefficients(idx, side);
     return arrayFromVec2D<NPY_CDOUBLE>(data, self.separated(), 2);
 }
@@ -375,9 +375,9 @@ static py::object FourierSolver2D_reflectedCoefficients2(FourierSolver2D& self, 
 static py::object FourierSolver2D_transmittedCoefficients2(FourierSolver2D& self, double lam, size_t idx, Transfer::IncidentDirection side) {
     if (self.initCalculation()) {
         self.setExpansionDefaults(false);
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     } else
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     auto data = self.getTransmittedCoefficients(idx, side);
     return arrayFromVec2D<NPY_CDOUBLE>(data, self.separated(), 2);
 }

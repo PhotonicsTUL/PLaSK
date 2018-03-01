@@ -130,7 +130,7 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
                                 .value("top", EMISSION_TOP)
                                 .value("bottom", EMISSION_BOTTOM)
                        .get(emission);
-            k0 = 2e3*M_PI / reader.getAttribute<dcomplex>("wavelength", 2e3*M_PI / k0);
+            k0 = 2e3*PI / reader.getAttribute<dcomplex>("wavelength", 2e3*PI / k0);
             ktran = reader.getAttribute<dcomplex>("k-tran", ktran);
             klong = reader.getAttribute<dcomplex>("k-long", klong);
             std::string sym_tran, sym_long;
@@ -182,7 +182,7 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
         case FourierSolver3D::WHAT_WAVELENGTH:
             expansion.setKlong(klong);
             expansion.setKtran(ktran);
-            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); }, "lam");
+            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*PI/x); return transfer->determinant(); }, "lam");
             break;
         case FourierSolver3D::WHAT_K0:
             expansion.setKlong(klong);
@@ -227,8 +227,8 @@ cvector FourierSolver3D::getReflectedAmplitudes(Expansion::Component polarizatio
     double incident = ((polarization==Expansion::E_LONG)? kl : kt);
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
-    double bl = 2*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
+    double bl = 2*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
+           bt = 2*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
 
     int ordl = int(getLongSize()), ordt = int(getTranSize());
     for (int t = expansion.symmetric_tran()? 0 : -ordt; t <= ordt; ++t) {
@@ -273,8 +273,8 @@ cvector FourierSolver3D::getTransmittedAmplitudes(Expansion::Component polarizat
     double incident = ((polarization==Expansion::E_LONG)? kl : kt);
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
-    double bl = 2*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
+    double bl = 2*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
+           bt = 2*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
 
     int ordl = int(getLongSize()), ordt = int(getTranSize());
     for (int t = expansion.symmetric_tran()? 0 : -ordt; t <= ordt; ++t) {
@@ -364,8 +364,8 @@ double FourierSolver3D::getReflection(Expansion::Component polarization, Transfe
     double incident = ((polarization==Expansion::E_LONG)? kl : kt);
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
-    double bl = 2.*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2.*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
+    double bl = 2.*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
+           bt = 2.*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
 
     double result = 0.;
 
@@ -416,8 +416,8 @@ double FourierSolver3D::getTransmission(Expansion::Component polarization, Trans
     double incident = ((polarization==Expansion::E_LONG)? kl : kt);
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
-    double bl = 2.*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2.*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
+    double bl = 2.*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
+           bt = 2.*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
 
     double result = 0.;
 

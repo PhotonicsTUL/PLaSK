@@ -94,7 +94,7 @@ struct PLASK_SOLVER_API Expansion {
 
     /// Compute all expansion coefficients
     void computeIntegrals() {
-        double lambda = real(2e3*M_PI/k0);
+        double lambda = real(2e3*PI/k0);
         if (solver->recompute_integrals) {
             double lam;
             if (!isnan(lam0)) {

@@ -545,12 +545,12 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
 
             K = 4*K/((r2-r1)*(r2-r1));
 
-            k11e = M_PI*(r2-r1)/4*(( K+E)*(r1+r2) + E*(3*r1-r2)/3);
-            k12e = M_PI*(r2-r1)/4*((-K+E)*(r1+r2) - E*(  r1+r2)/3);
-            k22e = M_PI*(r2-r1)/4*(( K+E)*(r1+r2) + E*(3*r2-r1)/3);
+            k11e = plask::PI*(r2-r1)/4*(( K+E)*(r1+r2) + E*(3*r1-r2)/3);
+            k12e = plask::PI*(r2-r1)/4*((-K+E)*(r1+r2) - E*(  r1+r2)/3);
+            k22e = plask::PI*(r2-r1)/4*(( K+E)*(r1+r2) + E*(3*r2-r1)/3);
 
-            p1e  = M_PI*(r2-r1)*(F/3*(2*r1+r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j1*r1+j1*r2+j2*r1+r2*j2));
-            p2e  = M_PI*(r2-r1)*(F/3*(r1+2*r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j2*r2+j1*r2+j2*r1+r1*j1));
+            p1e  = plask::PI*(r2-r1)*(F/3*(2*r1+r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j1*r1+j1*r2+j2*r1+r2*j2));
+            p2e  = plask::PI*(r2-r1)*(F/3*(r1+2*r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j2*r2+j1*r2+j2*r1+r1*j1));
 
             A_matrix[2*i + 1] += k11e;
             A_matrix[2*i + 2] += k12e;
@@ -578,7 +578,7 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
             E = this->E(2*i + 1);
 
 
-            double Cnst = M_PI*(r3-r1)/30;
+            double Cnst = plask::PI*(r3-r1)/30;
 
             k11e = Cnst*(10*K*(11*r1+3*r3)/((r3-r1)*(r3-r1)) + E*(7*r1+r3));
             k12e = Cnst*(-40*K*(3*r1+r3)/((r3-r1)*(r3-r1)) + 4*E*r1);            // = k21e

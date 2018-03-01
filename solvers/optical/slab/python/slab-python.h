@@ -259,7 +259,7 @@ static void Solver_setPML(Solver* self, const PmlWrapper& value) {
 
 template <typename Mode>
 static dcomplex getModeWavelength(const Mode& mode) {
-    return 2e3 * M_PI / mode.k0;
+    return 2e3 * PI / mode.k0;
 }
 
 template <typename Mode>
@@ -383,7 +383,7 @@ py::object Solver_computeReflectivity(SolverT* self,
     if (!self->initCalculation())
         self->setExpansionDefaults(false);
     return UFUNC<double>([=](double lam)->double {
-        self->expansion.setK0(2e3*M_PI/lam);
+        self->expansion.setK0(2e3*PI/lam);
         return 100. * self->getReflection(polarization, incidence);
     }, wavelength);
 }
@@ -398,7 +398,7 @@ py::object Solver_computeTransmittivity(SolverT* self,
     if (!self->initCalculation())
         self->setExpansionDefaults(false);
     return UFUNC<double>([=](double lam)->double {
-        self->expansion.setK0(2e3*M_PI/lam);
+        self->expansion.setK0(2e3*PI/lam);
         return 100. * self->getTransmission(polarization, incidence);
     }, wavelength);
 }

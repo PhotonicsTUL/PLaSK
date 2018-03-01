@@ -21,7 +21,7 @@ namespace plask { namespace electrical { namespace drift_diffusion {
  * \param T temperature
  */
 static inline double Neff(Tensor2<double> M, double T) {
-    constexpr double fact = phys::me * phys::kB_eV / (2.*M_PI * phys::hb_eV * phys::hb_J);
+    constexpr double fact = phys::me * phys::kB_eV / (2.*plask::PI * phys::hb_eV * phys::hb_J);
     double m = pow(M.c00 * M.c00 * M.c11, 0.3333333333333333);
     return 2e-6 * pow(fact * m * T, 1.5);
 }
@@ -328,7 +328,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
     auto iMeshN = this->mesh;
     auto temperaturesN = inTemperature(iMeshN);
 
-//TODO    2e-6*pow((Me(T,e,point).c00*plask::phys::me*plask::phys::kB_eV*300.)/(2.*M_PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
+//TODO    2e-6*pow((Me(T,e,point).c00*plask::phys::me*plask::phys::kB_eV*300.)/(2.*PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
 
     std::fill_n(A.data, A.size*(A.ld+1), 0.); // zero the matrix
     B.fill(0.);
@@ -1343,7 +1343,7 @@ template <> double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::integrate
             result += currentsN[element.getIndex()].c1 * (rout*rout - rin*rin) + currentsP[element.getIndex()].c1 * (rout*rout - rin*rin);
         }
     }
-    return result * M_PI * 0.01; // kA/cm² µm² -->  mA
+    return result * plask::PI * 0.01; // kA/cm² µm² -->  mA
 }
 
 
@@ -2129,7 +2129,7 @@ double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getTotalEnergy() {
         W += width * height * midpoint.rad_r() * w;
     }
     //TODO add outsides of computational area
-    return 2.*M_PI * 0.5e-18 * phys::epsilon0 * W; // 1e-18 µm³ -> m³
+    return 2.*PI * 0.5e-18 * phys::epsilon0 * W; // 1e-18 µm³ -> m³
 }
 
 
@@ -2168,7 +2168,7 @@ double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getTotalHeat() {
         double r = e.getMidpoint().rad_r();
         W += width * height * r * heats[e.getIndex()];
     }
-    return 2e-15*M_PI * W; // 1e-15 µm³ -> m³, W -> mW
+    return 2e-15*PI * W; // 1e-15 µm³ -> m³, W -> mW
 }*/
 
 

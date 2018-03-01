@@ -42,7 +42,7 @@ double ITO::absp(double lam, double /*T*/) const {
 
     const double k = a6*pow(lam,6) + a5*pow(lam,5) + a4*pow(lam,4) + a3*pow(lam,3) + a2*lam*lam + a1*lam + a0; // lam in nm
 
-    return (4. * M_PI * k / (lam*1e-7)); // result in 1/cm
+    return (4. * plask::PI * k / (lam*1e-7)); // result in 1/cm
 }
 
 bool ITO::isEqual(const Material &/*other*/) const {

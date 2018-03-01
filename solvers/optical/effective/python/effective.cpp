@@ -102,11 +102,11 @@ static py::object EffectiveFrequencyCyl_getVertDeterminant(EffectiveFrequencyCyl
 }
 
 dcomplex EffectiveFrequencyCyl_getLambda0(const EffectiveFrequencyCyl& self) {
-    return 2e3*M_PI / self.k0;
+    return 2e3*PI / self.k0;
 }
 
 void EffectiveFrequencyCyl_setLambda0(EffectiveFrequencyCyl& self, dcomplex lambda0) {
-    self.k0 = 2e3*M_PI / lambda0;
+    self.k0 = 2e3*PI / lambda0;
 }
 
 py::object EffectiveIndex2D_getMirrors(const EffectiveIndex2D& self) {
@@ -170,7 +170,7 @@ static size_t EffectiveFrequencyCyl_findMode(EffectiveFrequencyCyl& self, py::ob
 }
 
 double EffectiveFrequencyCyl_Mode_ModalLoss(const EffectiveFrequencyCyl::Mode& mode) {
-    return imag(2e4 * 2e3*M_PI / mode.lam);
+    return imag(2e4 * 2e3*PI / mode.lam);
 }
 
 template <typename SolverT>

@@ -79,7 +79,7 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public SolverWithMe
 
         shared_ptr<RectangularMesh<2>> mesh2;         ///< Computational mesh
 
-        static constexpr double hk = phys::h_J/M_PI;      // stala plancka/2pi
+        static constexpr double hk = phys::h_J/plask::PI;      // stala plancka/2pi
 
         shared_ptr<Material> QW_material;
 
@@ -166,7 +166,7 @@ double FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::jacobian(doubl
 
 template <> inline
 double FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::jacobian(double r) {
-    return 2*M_PI * r;
-} // 2*M_PI from integral over full angle,
+    return 2*plask::PI * r;
+} // 2*PI from integral over full angle,
 
 }}} //namespace electrical::diffusion_cylindrical

@@ -377,7 +377,7 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getRefractiveIndexProfile
     Expansion& expansion = getExpansion();
     setExpansionDefaults(false);
     if (isnan(expansion.lam0) || always_recompute_gain || isnan(expansion.k0))
-        expansion.setK0(isnan(k0)? 2e3*M_PI / lam0 : k0);
+        expansion.setK0(isnan(k0)? 2e3*PI / lam0 : k0);
     initTransfer(expansion, false);
     computeIntegrals();
 

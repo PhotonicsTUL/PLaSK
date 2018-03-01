@@ -448,7 +448,7 @@ void FreeCarrierGainSolver<GeometryType>::estimateWellLevels(WhichLevel which, A
             if (ub > umax) { umax = ub; M = m; }
         }
         if (i != start && i != stop) {
-            double no = 1e-6 / M_PI * params.region.thicknesses[i] * sqrt(2. * phys::me / (phys::hb_eV*phys::hb_J) * m.c11);
+            double no = 1e-6 / PI * params.region.thicknesses[i] * sqrt(2. * phys::me / (phys::hb_eV*phys::hb_J) * m.c11);
             num = max(no, num);
         }
     }
@@ -514,7 +514,7 @@ void FreeCarrierGainSolver<GeometryType>::estimateAboveLevels(WhichLevel which, 
 
     if (umax <= umin) return;
 
-    double num = 2. * ceil(1e-6 / M_PI * params.region.total * sqrt(2. * (umax-umin) * phys::me / (phys::hb_eV*phys::hb_J) * M.c11));
+    double num = 2. * ceil(1e-6 / PI * params.region.total * sqrt(2. * (umax-umin) * phys::me / (phys::hb_eV*phys::hb_J) * M.c11));
     umin += 0.5 * levelsep;
     umax -= 0.5 * levelsep;
     double step = (umax-umin) / num;
@@ -595,7 +595,7 @@ double FreeCarrierGainSolver<GeometryT>::getN(double F, double T, const ActiveRe
 {
     size_t n = params.levels[EL].size();
     const double kT = phys::kB_eV * T;
-    constexpr double fact = phys::me * phys::kB_eV / (2.*M_PI * phys::hb_eV * phys::hb_J); // 1/µm (1e6) -> 1/cm³ (1e-6)
+    constexpr double fact = phys::me * phys::kB_eV / (2.*PI * phys::hb_eV * phys::hb_J); // 1/µm (1e6) -> 1/cm³ (1e-6)
 
     double N = 2e-6 * pow(fact * T * params.sideM(EL).c00, 1.5) * fermiDiracHalf((F-params.sideU(EL))/kT);
 
@@ -612,7 +612,7 @@ double FreeCarrierGainSolver<GeometryT>::getP(double F, double T, const ActiveRe
 {
     size_t nh = params.levels[HH].size(), nl = params.levels[LH].size();
     const double kT = phys::kB_eV * T;
-    constexpr double fact = phys::me * phys::kB_eV / (2.*M_PI * phys::hb_eV * phys::hb_J); // 1/µm (1e6) -> 1/cm³ (1e-6)
+    constexpr double fact = phys::me * phys::kB_eV / (2.*PI * phys::hb_eV * phys::hb_J); // 1/µm (1e6) -> 1/cm³ (1e-6)
 
     // Get parameters for outer layers
     double N = 2e-6 * (pow(fact * T * params.sideM(HH).c00, 1.5) * fermiDiracHalf((params.sideU(HH)-F)/kT) +
@@ -716,7 +716,7 @@ Tensor2<double> FreeCarrierGainSolver<GeometryT>::getGain(double hw, double Fc, 
         // L(t) = b / (π (t²+b²)),
         g += getGain0(hw+t, Fc, Fv, T, nr, params) / (t*t + b*b);
     }
-    g *= b * dt / M_PI;
+    g *= b * dt / PI;
 
     return g;
 }

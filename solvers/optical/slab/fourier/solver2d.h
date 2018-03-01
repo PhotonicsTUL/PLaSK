@@ -500,7 +500,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     double getMirrorLosses(double n) {
         double L = geometry->getExtrusion()->getLength();
         if (isinf(L)) return 0.;
-        const double lambda = real(2e3*M_PI / k0);
+        const double lambda = real(2e3*PI / k0);
         double R1, R2;
         if (mirrors) {
             std::tie(R1,R2) = *mirrors;
@@ -515,7 +515,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
     void applyMode(const Mode& mode) {
         writelog(LOG_DEBUG, "Current mode <lam: {:.2f}nm, neff: {}, ktran: {}/um, polarization: {}, symmetry: {}>",
-                 real(2e3*M_PI/mode.k0),
+                 real(2e3*PI/mode.k0),
                  str(mode.beta/mode.k0, "{:.3f}{:+.3g}j"),
                  str(mode.ktran, "({:.3g}{:+.3g}j)", "{:.3g}"),
                  (mode.polarization == Expansion::E_LONG)? "El" : (mode.polarization == Expansion::E_TRAN)? "Et" : "none",
@@ -585,7 +585,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
         LazyData<Vec<3,dcomplex>> getElectricField(size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
             if (!parent->initCalculation()) parent->setExpansionDefaults(false);
-            parent->expansion.setK0(2e3*M_PI / wavelength);
+            parent->expansion.setK0(2e3*PI / wavelength);
             if (parent->expansion.separated())
                 parent->expansion.setPolarization(polarization);
             return parent->getReflectedFieldE(polarization, side, dst_mesh, method);
@@ -593,7 +593,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
         LazyData<Vec<3,dcomplex>> getMagneticField(size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
             if (!parent->initCalculation()) parent->setExpansionDefaults(false);
-            parent->expansion.setK0(2e3*M_PI / wavelength);
+            parent->expansion.setK0(2e3*PI / wavelength);
             if (parent->expansion.separated())
                 parent->expansion.setPolarization(polarization);
             return parent->getReflectedFieldH(polarization, side, dst_mesh, method);
@@ -601,7 +601,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
         LazyData<double> getLightMagnitude(size_t, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
             if (!parent->initCalculation()) parent->setExpansionDefaults(false);
-            parent->expansion.setK0(2e3*M_PI / wavelength);
+            parent->expansion.setK0(2e3*PI / wavelength);
             if (parent->expansion.separated())
                 parent->expansion.setPolarization(polarization);
             return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method);

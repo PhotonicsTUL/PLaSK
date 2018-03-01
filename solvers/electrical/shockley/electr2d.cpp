@@ -643,7 +643,7 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::
             result += currents[element.getIndex()].c1 * (rout*rout - rin*rin);
         }
     }
-    return result * M_PI * 0.01; // kA/cm² µm² -->  mA
+    return result * plask::PI * 0.01; // kA/cm² µm² -->  mA
 }
 
 
@@ -763,7 +763,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getTotalEne
         W += width * height * midpoint.rad_r() * w;
     }
     //TODO add outsides of computational area
-    return 2.*M_PI * 0.5e-18 * phys::epsilon0 * W; // 1e-18 µm³ -> m³
+    return 2.*plask::PI * 0.5e-18 * phys::epsilon0 * W; // 1e-18 µm³ -> m³
 }
 
 
@@ -802,7 +802,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getTotalHea
         double r = e.getMidpoint().rad_r();
         W += width * height * r * heats[e.getIndex()];
     }
-    return 2e-15*M_PI * W; // 1e-15 µm³ -> m³, W -> mW
+    return 2e-15*plask::PI * W; // 1e-15 µm³ -> m³, W -> mW
 }
 
 

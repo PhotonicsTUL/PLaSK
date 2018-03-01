@@ -187,7 +187,7 @@ void ExpansionPW3D::init()
         }
         // Smooth coefficients
         if (SOLVER->smooth) {
-            double bb4 = M_PI / Ll; bb4 *= bb4;   // (2π/L)² / 4
+            double bb4 = PI / Ll; bb4 *= bb4;   // (2π/L)² / 4
             for (std::size_t i = 0; i != nNl; ++i) {
                 int k = i; if (!symmetric_long() && k > int(nNl/2)) k -= int(nNl);
                 mag_long[i] *= exp(-SOLVER->smooth * bb4 * k * k);
@@ -238,7 +238,7 @@ void ExpansionPW3D::init()
         }
         // Smooth coefficients
         if (SOLVER->smooth) {
-            double bb4 = M_PI / Lt; bb4 *= bb4;   // (2π/L)² / 4
+            double bb4 = PI / Lt; bb4 *= bb4;   // (2π/L)² / 4
             for (std::size_t i = 0; i != nNt; ++i) {
                 int k = i; if (!symmetric_tran() && k > int(nNt/2)) k -= int(nNt);
                 mag_tran[i] *= exp(-SOLVER->smooth * bb4 * k * k);
@@ -377,7 +377,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                             Tensor2<double> g = 0.; int ng = 0;
                             for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->vert()->size(); ++v, ++k)
                                 if (solver->stack[k] == layer) { g += gain[v]; ng++; }
-                            Tensor2<double> ni = glam * g/ng * (0.25e-7/M_PI);
+                            Tensor2<double> ni = glam * g/ng * (0.25e-7/PI);
                             cell[j].c00.imag(ni.c00);
                             cell[j].c11.imag(ni.c00);
                             cell[j].c22.imag(ni.c11);
@@ -479,8 +479,8 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
         }
         // Smooth coefficients
         if (SOLVER->smooth) {
-            double bb4l = M_PI / ((front-back) * (symmetric_long()? 2 : 1)); bb4l *= bb4l; // (2π/Ll)² / 4
-            double bb4t = M_PI / ((right-left) * (symmetric_tran()? 2 : 1)); bb4t *= bb4t; // (2π/Lt)² / 4
+            double bb4l = PI / ((front-back) * (symmetric_long()? 2 : 1)); bb4l *= bb4l; // (2π/Ll)² / 4
+            double bb4t = PI / ((right-left) * (symmetric_tran()? 2 : 1)); bb4t *= bb4t; // (2π/Lt)² / 4
             for (std::size_t it = 0; it != nNt; ++it) {
                 int kt = it; if (!symmetric_tran() && kt > int(nNt/2)) kt -= int(nNt);
                 for (std::size_t il = 0; il != nNl; ++il) {
@@ -510,7 +510,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
                 const double phast = kt * (dest_mesh->at(i).c1-left) / Lt;
                 for (int kl = -nl; kl <= nl; ++kl) {
                     size_t l = (kl >= 0)? kl : (symmetric_long())? -kl : kl + nNl;
-                    eps += coeffs[lay][nNl*t+l] * exp(2*M_PI * I * (kl*(dest_mesh->at(i).c0-back) / Ll + phast));
+                    eps += coeffs[lay][nNl*t+l] * exp(2*PI * I * (kl*(dest_mesh->at(i).c0-back) / Ll + phast));
                 }
             }
             eps.c22 = 1. / eps.c22;
@@ -590,8 +590,8 @@ void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
 
     assert(!isnan(k0.real()) && !isnan(k0.imag()));
 
-    double Gx = 2.*M_PI / (front-back) * (symx ? 0.5 : 1.),
-           Gy = 2.*M_PI / (right-left) * (symy ? 0.5 : 1.);
+    double Gx = 2.*PI / (front-back) * (symx ? 0.5 : 1.),
+           Gy = 2.*PI / (right-left) * (symy ? 0.5 : 1.);
 
     dcomplex ik0 = 1./k0;
 
@@ -690,8 +690,8 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
 
     int ordl = int(SOLVER->getLongSize()), ordt = int(SOLVER->getTranSize());
 
-    double bl = 2*M_PI / (front-back) * (symmetric_long()? 0.5 : 1.0),
-           bt = 2*M_PI / (right-left) * (symmetric_tran()? 0.5 : 1.0);
+    double bl = 2*PI / (front-back) * (symmetric_long()? 0.5 : 1.0),
+           bt = 2*PI / (right-left) * (symmetric_tran()? 0.5 : 1.0);
 
     assert(dynamic_pointer_cast<const MeshD<3>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<3>>(level->mesh());
@@ -771,7 +771,7 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
         DataVector<Vec<3,dcomplex>> result(dest_mesh->size());
         double Ll = (symmetric_long()? 2. : 1.) * (front - back),
                Lt = (symmetric_tran()? 2. : 1.) * (right - left);
-        dcomplex bl = 2.*M_PI * I / Ll, bt = 2.*M_PI * I / Lt;
+        dcomplex bl = 2.*PI * I / Ll, bt = 2.*PI * I / Lt;
         dcomplex ikx = I * kx, iky = I * ky;
         result.reset(dest_mesh->size(), Vec<3,dcomplex>(0.,0.,0.));
         for (int it = -ordt; it <= ordt; ++it) {

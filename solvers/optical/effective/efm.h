@@ -135,18 +135,18 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
 
         /// Return mode loss
         double loss() const {
-            return imag(4e7*M_PI / lam);
+            return imag(4e7*PI / lam);
         }
     };
 
     /// Convert wavelength to the frequency parameter
     dcomplex freqv(dcomplex lam) {
-        return 2. - 4e3*M_PI / lam / k0;
+        return 2. - 4e3*PI / lam / k0;
     }
 
     /// Convert frequency parameter to the wavelength
     dcomplex lambda(dcomplex freq) {
-        return 2e3*M_PI / (k0 * (1. - freq/2.));
+        return 2e3*PI / (k0 * (1. - freq/2.));
     }
 
   protected:
@@ -404,7 +404,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      * \return index of the set mode
      */
     inline size_t setMode(double lambda, double loss, int m=0) {
-        return setMode(dcomplex(lambda, -lambda*lambda / (4e7*M_PI) * loss), m);
+        return setMode(dcomplex(lambda, -lambda*lambda / (4e7*PI) * loss), m);
     }
 
     /// Clear computed modes
@@ -537,7 +537,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      */
     double getModalLoss(size_t n) {
         if (n >= modes.size()) throw NoValue(ModalLoss::NAME);
-        return imag(4e7*M_PI / modes[n].lam);  // 2e4  2/µm -> 2/cm
+        return imag(4e7*PI / modes[n].lam);  // 2e4  2/µm -> 2/cm
     }
 
     template <typename T> struct FieldDataBase;

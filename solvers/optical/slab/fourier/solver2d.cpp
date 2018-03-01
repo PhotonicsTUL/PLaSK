@@ -86,7 +86,7 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
                                 .value("top", EMISSION_TOP)
                                 .value("bottom", EMISSION_BOTTOM)
                        .get(emission);
-            k0 = 2e3*M_PI / reader.getAttribute<dcomplex>("wavelength", 2e3*M_PI / k0);
+            k0 = 2e3*PI / reader.getAttribute<dcomplex>("wavelength", 2e3*PI / k0);
             ktran = reader.getAttribute<dcomplex>("k-tran", ktran);
             beta = reader.getAttribute<dcomplex>("k-long", beta);
             if (reader.hasAttribute("symmetry")) {
@@ -173,7 +173,7 @@ size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
         case FourierSolver2D::WHAT_WAVELENGTH:
             expansion.setBeta(beta);
             expansion.setKtran(ktran);
-            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); }, "lam");
+            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*PI/x); return transfer->determinant(); }, "lam");
             break;
         case FourierSolver2D::WHAT_K0:
             expansion.setBeta(beta);
@@ -234,7 +234,7 @@ cvector FourierSolver2D::getReflectedAmplitudes(Expansion::Component polarizatio
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
     if (!expansion.separated()) {
-        double b = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric()? 0.5 : 1.0);
+        double b = 2*PI / (expansion.right-expansion.left) * (expansion.symmetric()? 0.5 : 1.0);
         int N = int(getSize() + 1);
         for (int n = expansion.symmetric()? 0 : 1-N; n != N; ++n) {
             size_t iz = expansion.iEz(n), ix = expansion.iEx(n);
@@ -293,7 +293,7 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
     double incident = ((polarization==Expansion::E_LONG)? kl : kt);
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
     if (!expansion.separated()) {
-        double b = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric()? 0.5 : 1.0);
+        double b = 2*PI / (expansion.right-expansion.left) * (expansion.symmetric()? 0.5 : 1.0);
         int N = int(getSize() + 1);
         for (int n = expansion.symmetric()? 0 : 1-N; n != N; ++n) {
             size_t iz = expansion.iEz(n), ix = expansion.iEx(n);
