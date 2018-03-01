@@ -407,7 +407,7 @@ def loss_on_voltage(voltage):
               'V = {:.3f}V, I = {:.3f}mA, lam = {:.2f}nm, loss = {}/cm'
               .format(voltage[0], ELECTRICAL.get_total_current(), OPTICAL.outWavelength(mode_number), mode_loss))
     return mode_loss
-                
+
 OPTICAL.lam0 = 981.5
 OPTICAL.vat = 0
 

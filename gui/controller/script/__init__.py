@@ -12,6 +12,7 @@
 
 import sys
 from copy import copy
+from math import inf
 
 from ...qt import QT_API
 from ...qt.QtCore import *
@@ -105,8 +106,19 @@ class ScriptEditor(TextEditor):
         end = cursor.selectionEnd()
         cursor.setPosition(start)
         cursor.movePosition(QTextCursor.StartOfBlock)
-        if cursor.position() == end: end += 1
+        start = cursor.position()
+        if start == end: end += 1
+        document = self.document()
+        margin = inf
         while cursor.position() < end:
+            while document.characterAt(cursor.position()) in (' ', '\t'):
+                if not cursor.movePosition(QTextCursor.NextCharacter): break
+            margin = min(cursor.positionInBlock(), margin)
+            if not cursor.movePosition(QTextCursor.NextBlock):
+                break
+        cursor.setPosition(start)
+        while cursor.position() < end:
+            cursor.movePosition(QTextCursor.NextCharacter, QTextCursor.MoveAnchor, margin)
             cursor.insertText("# ")
             end += 2
             if not cursor.movePosition(QTextCursor.NextBlock):
