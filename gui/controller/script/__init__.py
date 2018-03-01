@@ -357,8 +357,8 @@ class ScriptController(SourceEditController):
             CONFIG.sync()
 
     def on_edit_enter(self):
-        self.rehighlight()
         super(ScriptController, self).on_edit_enter()
+        self.rehighlight()
 
     def rehighlight(self):
         current_syntax = {'formats': syntax['formats'],
