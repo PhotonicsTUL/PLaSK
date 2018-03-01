@@ -8,6 +8,8 @@
 #include "fortran.h"
 #include "meshadapter.h"
 
+#include <plask/utils/openmp.h>
+
 namespace plask { namespace optical { namespace slab {
 
 ReflectionTransfer::ReflectionTransfer(SlabBase* solver, Expansion& expansion): Transfer(solver, expansion)
@@ -75,9 +77,9 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
 
     const int inc = (start < end) ? 1 : -1;
 
-    int N0 = diagonalizer->source()->matrixSize();
-    int N = diagonalizer->matrixSize();
-    int NN = N*N;
+    const std::size_t N0 = diagonalizer->source()->matrixSize();
+    const std::size_t N = diagonalizer->matrixSize();
+    const std::size_t NN = N*N;
 
     cmatrix work(N, N0, wrk);    // matrix object for the workspace
 
@@ -89,7 +91,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
     std::exception_ptr error;
 
     #pragma omp for schedule(dynamic,1)
-    for (int l = 0; l < diagonalizer->lcount; ++l) {
+    for (openmp_size_t l = 0; l < openmp_size_t(diagonalizer->lcount); ++l) {
         try {
             if (!error) diagonalizer->diagonalizeLayer(l);
         } catch(...) {
@@ -107,14 +109,14 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
         gamma = diagonalizer->Gamma(solver->stack[start]);
         // Aply PML
         // F(0) + B(0) = 0 ==> P(0) = -I
-        for (int i = 0; i < N; i++) {
+        for (std::size_t i = 0; i < N; i++) {
             dcomplex g = gamma[i] * solver->vpml.factor;
             P(i,i) = - exp(-2. * I * g * solver->vpml.size);                // P = phas * (-I) * phas
         }
         assert(!P.isnan());
 
         // Shift matrix by `pmldist`
-        for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*solver->vpml.dist);
+        for (std::size_t i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*solver->vpml.dist);
         assert(!phas.isnan());
         mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas); // P = phas * P * phas
     }
@@ -129,7 +131,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
 
         if (n != start) {
             double H = solver->vbounds->at(n) - solver->vbounds->at(n-1);
-            for (int i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
+            for (std::size_t i = 0; i < N; i++) phas[i] = exp(-I*gamma[i]*H);
             assert(!phas.isnan());
             mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P = phas * P * phas
         }
@@ -139,7 +141,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
             // temp = invTE(n+1)*TE(n) * [ phas*P*phas + I ]
             assert(!diagonalizer->TE(solver->stack[n]).isnan());
             assert(!diagonalizer->invTE(solver->stack[n]).isnan());
-            for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;               // P = P + I
+            for (std::size_t i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;               // P = P + I
             if (solver->stack[n] != solver->stack[n+inc]) {
                 mult_matrix_by_matrix(diagonalizer->TE(solver->stack[n]), P, work);     // work = TE[n] * P
                 mult_matrix_by_matrix(diagonalizer->invTE(solver->stack[n+inc]), work, temp);// temp = invTE[n+1] * work (= A)
@@ -150,13 +152,13 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
             // P = invTH(n+1)*TH(n) * [ phas*P*phas - I ]
             assert(!diagonalizer->TH(solver->stack[n]).isnan());
             assert(!diagonalizer->invTH(solver->stack[n+inc]).isnan());
-            for (int i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] -= 2.;               // P = P - I
+            for (std::size_t i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] -= 2.;               // P = P - I
 
             // multiply rows of P by -1 where necessary for properly outgoing wave
             if (emitting && n == start) {
-                for (int i = 0; i < N; i++)
+                for (std::size_t i = 0; i < N; i++)
                     if (real(gamma[i]) < -SMALL)
-                        for(int j = 0; j < N; j++) P(i,j) = -P(i,j);
+                        for(std::size_t j = 0; j < N; j++) P(i,j) = -P(i,j);
             }
 
             if (solver->stack[n] != solver->stack[n+inc]) {
@@ -165,7 +167,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
             }
 
             // temp := temp-P, P := temp+P
-            for (int i = 0; i < NN; i++) {
+            for (std::size_t i = 0; i < NN; i++) {
                 dcomplex e = temp[i], h = P[i];
                 temp[i] = e - h;
                 P[i] = e + h;
@@ -173,16 +175,16 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
 
             // P = P * inv(temp)
             int info;
-            zgetrf(N, N, temp.data(), N, ipiv, info);                                   // temp = LU(temp)
+            zgetrf(int(N), int(N), temp.data(), int(N), ipiv, info);                                   // temp = LU(temp)
             if (info > 0) throw ComputationError(solver->getId(), "findReflection: Matrix [e(n) - h(n)] is singular");
             assert(info == 0);
-            ztrsm('R', 'U', 'N', 'N', N, N, 1., temp.data(), N, P.data(), N);           // P = P * U^{-1}
-            ztrsm('R', 'L', 'N', 'U', N, N, 1., temp.data(), N, P.data(), N);           // P = P * L^{-1}
+            ztrsm('R', 'U', 'N', 'N', int(N), int(N), 1., temp.data(), int(N), P.data(), int(N));    // P = P * U^{-1}
+            ztrsm('R', 'L', 'N', 'U', int(N), int(N), 1., temp.data(), int(N), P.data(), int(N));           // P = P * L^{-1}
             if (P.isnan()) throw ComputationError(solver->getId(), "findReflection: NaN in reflection matrix");
             // reorder columns (there is no such function in LAPACK)
-            for (int j = N-1; j >= 0; j--) {
+            for (std::ptrdiff_t j = N-1; j >= 0; j--) {
                 int jp = ipiv[j]-1;
-                for (int i = 0; i < N; i++) std::swap(P(i,j), P(i,jp));
+                for (std::size_t i = 0; i < N; i++) std::swap(P(i,j), P(i,jp));
             }
         }
         storeP(n+inc);
@@ -378,18 +380,18 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
     findReflection(end, start, true);
 
     // Temporary and initial data
-    int N = diagonalizer->matrixSize();
-    int N0 = diagonalizer->source()->matrixSize();
+    const std::size_t N = diagonalizer->matrixSize();
+    const std::size_t N0 = diagonalizer->source()->matrixSize();
     cvector temp(wrk, N);
     cdiagonal gamma;
 
-    int curr = solver->stack[start];
+    std::size_t curr = solver->stack[start];
     double H;
 
     fields[start].B = incident; // diagonalized incident E-field
     fields[start].F = cvector(N);
 
-    for (int n = start; n != end; n += inc)
+    for (std::ptrdiff_t n = start; n != end; n += inc)
     {
         // F-field for the current layer
         mult_matrix_by_vector(memP[n], fields[n].B, fields[n].F);
@@ -406,42 +408,42 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
         cvector& B2 = fields[n+inc].B;
 
         curr = solver->stack[n];
-        int next = solver->stack[n+inc];
+        const std::size_t next = solver->stack[n+inc];
 
         gamma = diagonalizer->Gamma(next);
 
         if (next != curr || n+inc == end) {
             if (next != curr) {
-                for (int i = 0; i < N; i++) F2[i] = F1[i] - B1[i];                  // F2 := F1 - B1
+                for (std::size_t i = 0; i < N; i++) F2[i] = F1[i] - B1[i];                  // F2 := F1 - B1
                 mult_matrix_by_vector(diagonalizer->TH(curr), F2, temp);            // temp := TH * F2
                 mult_matrix_by_vector(diagonalizer->invTH(next), temp, B2);         // B2 := invTH * temp
             } else {
-                for (int i = 0; i < N; i++) B2[i] = F1[i] - B1[i];                  // B2 := F1 - B1
+                for (std::size_t i = 0; i < N; i++) B2[i] = F1[i] - B1[i];                  // B2 := F1 - B1
             }
             // multiply rows of invTH by -1 where necessary for the outer layer
             if (n+inc == end) {
-                for (int i = 0; i < N; i++)
+                for (std::size_t i = 0; i < N; i++)
                     if (real(gamma[i]) < -SMALL) B2[i] = -B2[i];
             }
 
-            for (int i = 0; i < N; i++) F2[i] = F1[i] + B1[i];                      // F2 := F1 + B1
+            for (std::size_t i = 0; i < N; i++) F2[i] = F1[i] + B1[i];                      // F2 := F1 + B1
             if (next != curr || n+inc == end) {
                 mult_matrix_by_vector(diagonalizer->TE(curr), F2, temp);            // temp := TE * F2
-                zgemm('N','N', N, 1, N0, 1., diagonalizer->invTE(next).data(), N,
-                      temp.data(), N0, -1., B2.data(), N);                          // B2 := invTE * temp - B2
+                zgemm('N','N', int(N), 1, int(N0), 1., diagonalizer->invTE(next).data(), int(N),
+                      temp.data(), int(N0), -1., B2.data(), int(N));                // B2 := invTE * temp - B2
             } else {
-                for (int i = 0; i < N; i++) B2[i] = F2[i] - B2[i];                  // B2 := F2 - B2
+                for (std::size_t i = 0; i < N; i++) B2[i] = F2[i] - B2[i];                  // B2 := F2 - B2
             }
         } else {
-            for (int i = 0; i < N; i++) B2[i] = 2. * B1[i];
+            for (std::size_t i = 0; i < N; i++) B2[i] = 2. * B1[i];
         }
 
         H = (n+inc != end)? solver->vbounds->at(n+inc) - solver->vbounds->at(n+inc-1) : 0.;
         if (n+inc != end) {
-            for (int i = 0; i < N; i++)
+            for (std::size_t i = 0; i < N; i++)
                 B2[i] *= 0.5 * exp(-I*gamma[i]*H);                                  // B2 := 1/2 * phas * B2
         } else {
-            for (int i = 0; i < N; i++) {
+            for (std::size_t i = 0; i < N; i++) {
                 dcomplex g = gamma[i];
                 if (real(g) < -SMALL) g = -g;
                 B2[i] *= 0.5 * exp(-I*g*H);                                         // B2 := 1/2 * phas * B2
@@ -455,7 +457,7 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
     // In the outer layers replace F and B where necessary for consistent gamma handling
     for (std::size_t n = 0; n < count; n += count-1) {
         gamma = diagonalizer->Gamma(solver->stack[n]);
-        for (int i = 0; i < N; i++) {
+        for (std::size_t i = 0; i < N; i++) {
             if (real(gamma[i]) < -SMALL)
                 std::swap(fields[n].F, fields[n].B);
         }
@@ -467,12 +469,12 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
         case INCIDENCE_TOP:    start = max(solver->interface, ptrdiff_t(0)); end = count; break;
         case INCIDENCE_BOTTOM: start = 0; end = min(solver->interface, ptrdiff_t(count)); break;
     }
-    for (int n = start; n < end; n++) {
+    for (std::ptrdiff_t n = start; n < end; n++) {
         cvector& F2 = fields[n].F;
         cvector& B2 = fields[n].B;
         gamma = diagonalizer->Gamma(solver->stack[n]);
         H = (n < std::ptrdiff_t(count)-1 && n > 0)? solver->vbounds->at(n) - solver->vbounds->at(n-1) : 0.;
-        for (int i = 0; i < N; i++) {
+        for (std::size_t i = 0; i < N; i++) {
             dcomplex phas = exp(-I*gamma[i]*H);
             dcomplex t = B2[i] / phas;
             if (isnan(t) && B2[i] == 0.) t = 0.;
@@ -503,10 +505,10 @@ cvector ReflectionTransfer::getFieldVectorE(double z, int n)
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
 
-    int N = gamma.size();
+    const std::size_t N = gamma.size();
     cvector E(N);
 
-    for (int i = 0; i < N; i++) {
+    for (std::size_t i = 0; i < N; i++) {
         dcomplex phi = - I * gamma[i] * z;
         dcomplex ef = FF[i] * exp(phi), eb = BB[i] * exp(-phi);
         if (isnan(ef) && FF[i] == 0.) ef = 0.;
@@ -536,10 +538,10 @@ cvector ReflectionTransfer::getFieldVectorH(double z, int n)
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
 
-    int N = gamma.size();
+    const std::size_t N = gamma.size();
     cvector H(N);
 
-    for (int i = 0; i < N; i++) {
+    for (std::size_t i = 0; i < N; i++) {
         dcomplex phi = - I * gamma[i] * z;
         dcomplex ef = FF[i] * exp(phi), eb = BB[i] * exp(-phi);
         if (isnan(ef) && FF[i] == 0.) ef = 0.;
@@ -551,7 +553,7 @@ cvector ReflectionTransfer::getFieldVectorH(double z, int n)
 
     if (n == 0 || std::size_t(n) == solver->vbounds->size()) {
         // In the outer layers multiply H by -1 where necessary for propagating wave
-        for (int i = 0; i < N; i++)
+        for (std::size_t i = 0; i < N; i++)
             if (real(gamma[i]) < -SMALL) H[i] = - H[i];
     }
 
