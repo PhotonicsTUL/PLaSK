@@ -89,7 +89,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      * Set new wavelength
      * \param wavelength new wavelength
      */
-     void setWavelength(double wavelength) {
+     void setWavelength(dcomplex wavelength) {
         k0 = 2e3*M_PI / wavelength;
         nrCache.clear();
         //invalidate(); //MD: na pewno chce Pan wszystko czyścić gdy zmieni się długość fali? Może wystarczy uzunąć skeszowane współczynniki załamania?

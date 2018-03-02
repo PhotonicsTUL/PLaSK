@@ -60,6 +60,7 @@ void SimpleOptical::onInitialize()
 
 void SimpleOptical::initializeRefractiveIndexVec()
 {
+    std::cout<<"Call inialize NR !!!!!!!!!!!!!!!!!!" << std::endl;
     nrCache.clear();
     double T = 300; //temperature 300 K
     double w = real(2e3*M_PI / k0);
@@ -91,12 +92,14 @@ size_t SimpleOptical::findMode(double lambda, int m)
 
 dcomplex SimpleOptical::computeTransferMatrix(const dcomplex& x, const std::vector<dcomplex> & NR)
 {
-    double w = real(2e3*M_PI / x);
+    std::cout<<"computeTransferMatrix call" << std::endl;
+    
+    dcomplex w = 2e3*M_PI / x;
     setWavelength(w);
-    initCalculation();
-    //initializeRefractiveIndexVec();
-    Matrix phas_matrix;
-    Matrix boundary_matrix;
+    std::cout<<"Wavelenght = " << w << std::endl;
+    std::cout<<"k0 = " << k0 << std::endl;
+    Matrix phas_matrix(0,0,0,0);
+    Matrix boundary_matrix(0,0,0,0);
     double d; //distance_between_layer
     Matrix transfer_matrix = Matrix::eye();
     dcomplex phas;
@@ -109,14 +112,15 @@ dcomplex SimpleOptical::computeTransferMatrix(const dcomplex& x, const std::vect
     {
     if (i != ybegin || ybegin != 0) d = edgeVertLayerPoint[i] - edgeVertLayerPoint[i-1]; 
     else d = 0.;
-    std::cout<<"edge layer point = " << edgeVertLayerPoint[i] << " Nr = " << NR[i] << std::endl;
+    std::cout<<"edge layer point = " << edgeVertLayerPoint[i] << " Nr[i] = " << NR[i] << " Nr[i+1] = " << NR[i+1] <<std::endl;
     phas_matrix = Matrix(exp(I*NR[i]*x*d), 0, 0, exp(-I*NR[i]*x*d));
     boundary_matrix = Matrix( 0.5+0.5*(NR[i]/NR[i+1]), 0.5-0.5*(NR[i]/NR[i+1]),
                               0.5-0.5*(NR[i]/NR[i+1]), 0.5+0.5*(NR[i]/NR[i+1]) );
     transfer_matrix = (boundary_matrix*phas_matrix)*transfer_matrix;       
     FieldZ Ei = vecE[i]*(boundary_matrix*phas_matrix);
     vecE.push_back(Ei);
-    std::cout<<"B[i]="<<vecE[i].B<<"   F[i]= "<<vecE[i].F<<std::endl;
+    std::cout<<"B[i]="<<vecE[i].B<<"   F[i]= "<<vecE[i].F<<" \t ";
+    std::cout<<"B[i+1]="<<vecE[i+1].B<<"   F[i+1]= "<<vecE[i+1].F<<std::endl;
     }   
     std::cout<<"Vec back = " << vecE.back().B << std::endl;
     return transfer_matrix.bb;
@@ -129,14 +133,13 @@ void SimpleOptical::updateCache()
     if (fresh) {
         // we need to update something
         std::cout<<"Init Calcuration !!!!" << std::endl; // Only for test !!!!!!!!
-        onInvalidate();
         onInitialize();}
 }
 
 dcomplex SimpleOptical::getVertDeterminant(dcomplex wavelength)
 {
   updateCache();
-  setWavelength(real(wavelength));
+  setWavelength(wavelength);
   return computeTransferMatrix(k0, nrCache);
 }
 
@@ -155,14 +158,14 @@ const LazyData<Tensor3<dcomplex>> SimpleOptical::getRefractiveIndex(const shared
 
 const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
-    setWavelength(real(modes[num].lam)); 
-    std::cout<<"Wavelenght = " << real(modes[num].lam) << std::endl;
-    initCalculation();
+    std::cout<<"Get Light Magnitude call " << std::endl;
+    setWavelength((modes[num].lam)); 
+    std::cout<<"Wavelenght = " << modes[num].lam << std::endl;
+    std::cout<<"k0 = " << k0 << std::endl;
     vecE.clear();
     std::cout<<"Vec E size = " << vecE.size() << std::endl;
-    k0 = 2e3*M_PI / (real(modes[num].lam));
-    nrCache.clear();
-    initializeRefractiveIndexVec();
+    k0 = 2e3*M_PI / modes[num].lam;
+   
     computeTransferMatrix(k0, nrCache);
     std::cout<<"k0 = " << k0 << std::endl;
     std::vector<double> arrayZ;  
@@ -205,7 +208,6 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
       }
     }
     }
-     //hi.push_back(0);
     
     std::cout<<"Wave Escape !!!!!!!!!" << std::endl;
     for(double p: arrayZ) // propagation wave after escape from structure 
@@ -213,7 +215,6 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
     if (p > verticalEdgeVec.back())
     {   
     hi.push_back(p-verticalEdgeVec.back());    
-    //B.push_back(vecE.back().B);
     B.push_back(vecE.back().B);
     F.push_back(vecE.back().F);
     std::cout<<"B[i]="<<vecE.back().B<<"   F[i]= "<<vecE.back().F<<std::endl;
@@ -227,7 +228,7 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
        results[i] = real(Ez*conj(Ez));
        
        //writelog(LOG_INFO, "F  = {0}, B = {1}", str(F[i]), str(B[i]) );
-       std::cout<<"B[i]="<<B[i]<<"   hi[i]="<<hi[i]<<"   F[i]= "<<F[i]<<" results = " << results[i] <<std::endl;
+       //std::cout<<"B[i]="<<B[i]<<"   hi[i]="<<hi[i]<<"   F[i]= "<<F[i]<<" results = " << results[i] <<std::endl;
     }   
     return results;
 }
