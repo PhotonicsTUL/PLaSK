@@ -68,14 +68,14 @@ void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
 }
 
 
-void ReflectionTransfer::findReflection(int start, int end, bool emitting)
+void ReflectionTransfer::findReflection(std::size_t start, std::size_t end, bool emitting)
 {
     // Should be called from 0 to interface-1
     // and from count-1 to interface
 
     write_debug("{}: searching for reflection for layers {:d} to {:d}", solver->getId(), start, end);
 
-    const int inc = (start < end) ? 1 : -1;
+    const std::ptrdiff_t inc = (start < end) ? 1 : -1;
 
     const std::size_t N0 = diagonalizer->source()->matrixSize();
     const std::size_t N = diagonalizer->matrixSize();
@@ -123,7 +123,7 @@ void ReflectionTransfer::findReflection(int start, int end, bool emitting)
 
     storeP(start);
 
-    for (int n = start; n != end; n += inc) {
+    for (std::size_t n = start; n != end; n += inc) {
         gamma = diagonalizer->Gamma(solver->stack[n]);
         assert(!gamma.isnan());
 
@@ -207,7 +207,7 @@ void ReflectionTransfer::storeP(size_t n) {
 
 cvector ReflectionTransfer::getReflectionVector(const cvector& incident, IncidentDirection side)
 {
-    int last, first;
+    std::size_t last, first;
 
     initDiagonalization();
     switch (side) {
@@ -259,7 +259,8 @@ void ReflectionTransfer::determineFields()
     {
         // each pass for below and above the interface
 
-        int start, end, inc;
+        std::size_t start, end;
+        std::ptrdiff_t inc;
         switch (pass)
         {
             case 0: start = solver->interface-1; end = 0;       inc = -1; break;
@@ -274,7 +275,7 @@ void ReflectionTransfer::determineFields()
 
         gamma = diagonalizer->Gamma(curr);
 
-        double H = (start == 0 || start == int(count)-1)? 0. : (solver->vbounds->at(start) - solver->vbounds->at(start-1));
+        double H = (start == 0 || start == count-1)? 0. : (solver->vbounds->at(start) - solver->vbounds->at(start-1));
         for (std::size_t i = 0; i < N; i++)
             phas[i] = exp(-I*gamma[i]*H);
 
@@ -287,7 +288,7 @@ void ReflectionTransfer::determineFields()
         invmult(P, fields[start].B);                                                // B := inv(P) * B
         for (std::size_t i = 0; i < N; i++) fields[start].B[i] *= phas[i];          // B := phas * B
 
-        for (int n = start; n != end; n += inc)
+        for (std::size_t n = start; n != end; n += inc)
         {
             // F-field for the current layer
             mult_matrix_by_vector(memP[n], fields[n].B, fields[n].F);
@@ -367,7 +368,7 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
     // Obtain the physical fields at the last layer
     allP = true;
 
-    std::ptrdiff_t start, end;
+    std::size_t start, end;
     std::ptrdiff_t inc;
     switch (side)
     {
@@ -391,7 +392,7 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
     fields[start].B = incident; // diagonalized incident E-field
     fields[start].F = cvector(N);
 
-    for (std::ptrdiff_t n = start; n != end; n += inc)
+    for (std::size_t n = start; n != end; n += inc)
     {
         // F-field for the current layer
         mult_matrix_by_vector(memP[n], fields[n].B, fields[n].F);
@@ -469,11 +470,11 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
         case INCIDENCE_TOP:    start = max(solver->interface, ptrdiff_t(0)); end = count; break;
         case INCIDENCE_BOTTOM: start = 0; end = min(solver->interface, ptrdiff_t(count)); break;
     }
-    for (std::ptrdiff_t n = start; n < end; n++) {
+    for (std::size_t n = start; n < end; n++) {
         cvector& F2 = fields[n].F;
         cvector& B2 = fields[n].B;
         gamma = diagonalizer->Gamma(solver->stack[n]);
-        H = (n < std::ptrdiff_t(count)-1 && n > 0)? solver->vbounds->at(n) - solver->vbounds->at(n-1) : 0.;
+        H = (n < count-1 && n > 0)? solver->vbounds->at(n) - solver->vbounds->at(n-1) : 0.;
         for (std::size_t i = 0; i < N; i++) {
             dcomplex phas = exp(-I*gamma[i]*H);
             dcomplex t = B2[i] / phas;

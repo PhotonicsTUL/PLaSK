@@ -71,7 +71,7 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
      * \param end last layer (reflection matrix is computed for this layer)
      * \param emitting should the reflection matrix in the first layer be 0?
      */
-    void findReflection(int start, int end, bool emitting);
+    void findReflection(std::size_t start, std::size_t end, bool emitting);
 
     /**
      * Store P matrix if we want it for field computation
