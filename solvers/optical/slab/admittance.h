@@ -46,9 +46,9 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
 
     void determineReflectedFields(const cvector& incident, IncidentDirection side) override;
 
-    cvector getFieldVectorE(double z, int n) override;
+    cvector getFieldVectorE(double z, std::size_t n) override;
 
-    cvector getFieldVectorH(double z, int n) override;
+    cvector getFieldVectorH(double z, std::size_t n) override;
 
 
     /**

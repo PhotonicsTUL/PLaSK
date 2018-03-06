@@ -475,13 +475,13 @@ static py::object FourierSolver3D_transmittedCoefficients2(FourierSolver3D& self
 static py::object FourierSolver3D_getFieldVectorE(FourierSolver3D& self, int num, double z) {
     if (num < 0) num += int(self.modes.size());
     if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
-    return arrayFromVec3D<NPY_CDOUBLE>(self.getFieldVectorE(num, z), self.minor(), 3);
+    return arrayFromVec3D<NPY_CDOUBLE>(self.getFieldVectorE(std::size_t(num), z), self.minor(), 3);
 }
 
 static py::object FourierSolver3D_getFieldVectorH(FourierSolver3D& self, int num, double z) {
     if (num < 0) num += int(self.modes.size());
     if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
-    return arrayFromVec3D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), self.minor(), 3);
+    return arrayFromVec3D<NPY_CDOUBLE>(self.getFieldVectorH(std::size_t(num), z), self.minor(), 3);
 }
 
 static py::object FourierSolver3D_getReflectedFieldVectorE(FourierSolver3D::Reflected& self, double z) {

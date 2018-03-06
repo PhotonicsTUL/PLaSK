@@ -114,7 +114,7 @@ struct PLASK_SOLVER_API Transfer {
      * \param n layer number
      * \return electric field coefficients
      */
-    virtual cvector getFieldVectorE(double z, int n) = 0;
+    virtual cvector getFieldVectorE(double z, std::size_t n) = 0;
 
     /**
      * Compute magnetic field coefficients for given \a z
@@ -122,7 +122,7 @@ struct PLASK_SOLVER_API Transfer {
      * \param n layer number
      * \return magnetic field coefficients
      */
-    virtual cvector getFieldVectorH(double z, int n) = 0;
+    virtual cvector getFieldVectorH(double z, std::size_t n) = 0;
 
     /**
      * Get current expansion coefficients at the matching interface

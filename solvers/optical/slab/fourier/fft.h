@@ -38,7 +38,7 @@ struct PLASK_SOLVER_API Forward1D {
      * \param symmetry symmetry of the transform
      * \param strid data stride (defaults to \c lot)
      */
-    Forward1D(int lot, int n, Symmetry symmetry, int strid=0);
+    Forward1D(std::size_t lot, std::size_t n, Symmetry symmetry, int strid=0);
     ~Forward1D();
     /** Execute transform
      * \param data data to execute FFT
@@ -71,7 +71,7 @@ struct PLASK_SOLVER_API Forward2D {
      * \param strid data stride (defaults to \c lot)
      * \param ld leading dimension (defaults to \c n1)
      */
-    Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid=0, int ld=0);
+    Forward2D(std::size_t lot, std::size_t n1, std::size_t n2, Symmetry symmetry1, Symmetry symmetry2, int strid=0, int ld=0);
     ~Forward2D();
     /** Execute transform
      * \param data data to execute FFT
@@ -103,7 +103,7 @@ struct PLASK_SOLVER_API Backward1D {
      * \param symmetry symmetry of the transform
      * \param strid data stride (defaults to \c lot)
      */
-    Backward1D(int lot, int n, Symmetry symmetry, int strid=0);
+    Backward1D(std::size_t lot, std::size_t n, Symmetry symmetry, int strid=0);
     ~Backward1D();
     /** Execute transform
      * \param data data to execute FFT
@@ -136,7 +136,7 @@ struct PLASK_SOLVER_API Backward2D {
      * \param strid data stride (defaults to \c lot)
      * \param ld major row stride (defaults to \c n1)
      */
-    Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid=0, int ld=0);
+    Backward2D(std::size_t lot, std::size_t n1, std::size_t n2, Symmetry symmetry1, Symmetry symmetry2, int strid=0, int ld=0);
     ~Backward2D();
     /// Execute transform
     void execute();

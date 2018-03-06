@@ -61,24 +61,24 @@ void ExpansionPW2D::init()
         L = right - left;                                   //  ^ ^ ^ ^ ^
         N = 2 * SOLVER->getSize() + 1;                      // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
         nN = 4 * SOLVER->getSize() + 1;
-        nM = size_t(round(SOLVER->oversampling * nN));      // N = 3  nN = 5  refine = 4  M = 20
-        M = refine * nM;                                    // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
-        double dx = 0.5 * L * (refine-1) / M;               //  ^ ^ ^ ^
-        xmesh = plask::make_shared<RegularAxis>(                   // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
-                                         left-dx, right-dx-L/M, M);
+        nM = size_t(round(SOLVER->oversampling * double(nN)));  // N = 3  nN = 5  refine = 4  M = 20
+        M = refine * nM;                                        // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
+        double dx = 0.5 * L * double(refine-1) / double(M);     //  ^ ^ ^ ^
+        xmesh = plask::make_shared<RegularAxis>(                // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+                               left-dx, right-dx-L/double(M), M);
     } else {
         L = 2. * right;
         N = SOLVER->getSize() + 1;
         nN = 2 * SOLVER->getSize() + 1;
-        nM = size_t(round(SOLVER->oversampling * nN));
+        nM = size_t(round(SOLVER->oversampling * double(nN)));
         M = refine * nM;                                    // N = 3  nN = 5  refine = 4  M = 20
         if (SOLVER->dct2()) {                               // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
-            double dx = 0.25 * L / M;                       //  ^ ^ ^ ^
-            xmesh = plask::make_shared<RegularAxis>(               // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
-                                             dx, right - dx, M);
+            double dx = 0.25 * L / double(M);               //  ^ ^ ^ ^
+            xmesh = plask::make_shared<RegularAxis>(        // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+                               dx, right - dx, M);
         } else {
             size_t nNa = 4 * SOLVER->getSize() + 1;
-            double dx = 0.5 * L * (refine-1) / (refine*nNa);
+            double dx = 0.5 * L * double(refine-1) / double(refine*nNa);
             xmesh = plask::make_shared<RegularAxis>(-dx, right+dx, M);
         }
     }
@@ -202,7 +202,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         if (isnan(glam)) glam = lam;
     }
 
-    double factor = 1. / refine;
+    double factor = 1. / double(refine);
     double maty;
     for (size_t i = 0; i != solver->stack.size(); ++i) {
         if (solver->stack[i] == layer) {
@@ -361,7 +361,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
             return LazyData<Tensor3<dcomplex>>(dest_mesh->size(), [this,l,dest_mesh](size_t i)->Tensor3<dcomplex>{
                 Tensor3<dcomplex> eps = coeffs[l][0];
                 for (std::size_t k = 1; k != nN; ++k) {
-                    eps += 2. * coeffs[l][k] * cos(PI * k * dest_mesh->at(i).c0 / (right-left));
+                    eps += 2. * coeffs[l][k] * cos(PI * double(k) * dest_mesh->at(i).c0 / (right-left));
                 }
                 eps.c22 = 1. / eps.c22;
                 eps.sqrt_inplace();
@@ -376,7 +376,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
         shared_ptr<RegularAxis> cmesh = plask::make_shared<RegularAxis>();
         if (symmetric()) {
             if (SOLVER->dct2()) {
-                double dx = 0.5 * right / nN;
+                double dx = 0.5 * right / double(nN);
                 cmesh->reset(dx, right-dx, nN);
             } else {
                 cmesh->reset(0., right, nN);

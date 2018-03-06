@@ -490,17 +490,16 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
 }
 
 
-cvector ReflectionTransfer::getFieldVectorE(double z, int n)
+cvector ReflectionTransfer::getFieldVectorE(double z, std::size_t n)
 {
     assert(fields_determined != DETERMINED_NOTHING);
-    assert(n >= 0);
 
     cvector& FF = fields[n].F;
     cvector& BB = fields[n].B;
 
-    if (n >= solver->interface) {
+    if (std::ptrdiff_t(n) >= solver->interface) {
         z = - z;
-        if (n != 0 && std::size_t(n) != solver->vbounds->size())
+        if (n != 0 && n != solver->vbounds->size())
             z += solver->vbounds->at(n) - solver->vbounds->at(n-1);
     }
 
@@ -523,17 +522,16 @@ cvector ReflectionTransfer::getFieldVectorE(double z, int n)
 }
 
 
-cvector ReflectionTransfer::getFieldVectorH(double z, int n)
+cvector ReflectionTransfer::getFieldVectorH(double z, std::size_t n)
 {
     assert(fields_determined != DETERMINED_NOTHING);
-    assert(n >= 0);
 
     cvector& FF = fields[n].F;
     cvector& BB = fields[n].B;
 
-    if (n >= solver->interface) {
+    if (std::ptrdiff_t(n) >= solver->interface) {
         z = - z;
-        if (n != 0 && std::size_t(n) != solver->vbounds->size())
+        if (n != 0 && n != solver->vbounds->size())
             z += solver->vbounds->at(n) - solver->vbounds->at(n-1);
     }
 
