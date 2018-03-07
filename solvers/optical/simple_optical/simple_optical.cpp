@@ -69,7 +69,6 @@ size_t SimpleOptical::findMode(double lambda, int m)
     writelog(LOG_INFO, "Searching for the mode starting from wavelength = {0}", str(lambda));
     if (isnan(k0.real())) throw BadInput(getId(), "No reference wavelength `lam0` specified");
     onInitialize();
-    initializeRefractiveIndexVec();
     Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format(""), "", "");
     auto rootdigger = RootDigger::get(this, 
 				      [&](const dcomplex& x ){
@@ -94,7 +93,6 @@ dcomplex SimpleOptical::computeTransferMatrix(const dcomplex& x, const std::vect
     vecE.clear();
     FieldZ field(0,1);
     vecE.push_back(field);
-    
     for (size_t i = ybegin; i<yend-1; ++i)
     {
     if (i != ybegin || ybegin != 0) d = edgeVertLayerPoint[i] - edgeVertLayerPoint[i-1]; 
@@ -104,14 +102,15 @@ dcomplex SimpleOptical::computeTransferMatrix(const dcomplex& x, const std::vect
                               0.5-0.5*(NR[i]/NR[i+1]), 0.5+0.5*(NR[i]/NR[i+1]) );
     transfer_matrix = (boundary_matrix*phas_matrix)*transfer_matrix;       
     FieldZ Ei = vecE[i]*(boundary_matrix*phas_matrix);
-    vecE.push_back(Ei);}   
+    vecE.push_back(Ei);}  
+ 
     return transfer_matrix.bb;
 }
 
 void SimpleOptical::updateCache()
 {
     bool fresh = initCalculation();
-
+    
     if (fresh) {
         // we need to update something
         onInitialize();}
@@ -140,12 +139,9 @@ const LazyData<Tensor3<dcomplex>> SimpleOptical::getRefractiveIndex(const shared
 
 const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
-    std::cout<<"Stripex = " << stripex << std::endl;
     setWavelength((modes[num].lam)); 
-    vecE.clear();
     k0 = 2e3*M_PI / modes[num].lam;
     
-    computeTransferMatrix(k0, nrCache);
     std::vector<double> arrayZ;  
     for (auto v: *dst_mesh) {double z = v.c1;
                              arrayZ.push_back(z);}
@@ -158,7 +154,7 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
     std::vector<dcomplex> F;
     double T = 300; //temperature 300 K
     double w = real(2e3*M_PI / k0);
-  
+    std::cout<<"VecE size = " << vecE.size() << std::endl;
     for(auto p: arrayZ) NR.push_back(geometry->getMaterial(vec(double(stripex),  p))->Nr(w, T));
     //MD: dlaczego nie korzysta Pan z `nrCache`?
      
