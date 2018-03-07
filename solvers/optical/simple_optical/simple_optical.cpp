@@ -65,7 +65,7 @@ void SimpleOptical::initializeRefractiveIndexVec()
     double T = 300; //temperature 300 K
     double w = real(2e3*M_PI / k0);
     //nrCache.push_back(geometry->getMaterial(vec(double(stripex), double(0)))->Nr(w, T));
-    nrCache.push_back(geometry->getMaterial(vec(double(stripex),  edgeVertLayerPoint.back()))->Nr(w, T)); // brzydkie rozwiazanie
+    nrCache.push_back(geometry->getMaterial(vec(double(stripex),  0.0))->Nr(w, T)); // brzydkie rozwiazanie
     for(double p: *axis_midpoints_vertical) {
     nrCache.push_back(geometry->getMaterial(vec(double(stripex),  p))->Nr(w, T));}
     nrCache.push_back(geometry->getMaterial(vec(double(stripex),  edgeVertLayerPoint.back()))->Nr(w, T));
@@ -140,6 +140,7 @@ dcomplex SimpleOptical::getVertDeterminant(dcomplex wavelength)
 {
   updateCache();
   setWavelength(wavelength);
+  initializeRefractiveIndexVec();
   return computeTransferMatrix(k0, nrCache);
 }
 
@@ -165,7 +166,7 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
     vecE.clear();
     std::cout<<"Vec E size = " << vecE.size() << std::endl;
     k0 = 2e3*M_PI / modes[num].lam;
-   
+    
     computeTransferMatrix(k0, nrCache);
     std::cout<<"k0 = " << k0 << std::endl;
     std::vector<double> arrayZ;  
@@ -182,18 +183,21 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
     double T = 300; //temperature 300 K
     double w = real(2e3*M_PI / k0);
   
-    for(auto p: arrayZ) 
-    {
-      NR.push_back(geometry->getMaterial(vec(double(stripex),  p))->Nr(w, T));      
-    }
+    for(auto p: arrayZ) NR.push_back(geometry->getMaterial(vec(double(stripex),  p))->Nr(w, T));
     //MD: dlaczego nie korzysta Pan z `nrCache`?
      
     
-    
-    
-    
     for (double p_edge: *axis_vertical) verticalEdgeVec.push_back(p_edge);
     std::cout<<"Vec E size = " << vecE.size() << std::endl;
+    
+    for (double p : arrayZ) 
+      if (p<0)
+      {
+      hi.push_back(-p);
+      B.push_back(vecE[0].B);
+      F.push_back(vecE[0].F);
+      }
+    
     for (size_t i = 0; i < verticalEdgeVec.size()-1; ++i)
     {
      for (double p: arrayZ) 
@@ -222,6 +226,10 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
     
     
     dcomplex Ez;
+    std::cout<<"F size = "<<F.size()<<std::endl;
+    std::cout<<"B size = "<<F.size()<<std::endl;
+    std::cout<<"hi size = "<<hi.size()<<std::endl;
+    std::cout<<"Nr size = "<<NR.size()<<std::endl;
     for (size_t i = 0; i < hi.size(); ++i)
     {
        Ez = F[i]*exp(-I*NR[i]*k0*hi[i]) + B[i]*exp(I*NR[i]*k0*hi[i]); 
