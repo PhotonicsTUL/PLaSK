@@ -413,7 +413,7 @@ namespace detail {
             if (PyArray_STRIDES(arr)[0] != sizeof(T)) {
                 writelog(LOG_DEBUG, u8"Copying numpy array to make is contiguous");
                 npy_intp sizes[] = { static_cast<npy_intp>(size), type_dim<T>() };
-                npy_intp strides[] = { sizeof(T), sizeof(T) / type_dim<T>() };
+                npy_intp strides[] = { static_cast<npy_intp>(sizeof(T)), static_cast<npy_intp>(sizeof(T) / type_dim<T>()) };
                 newarr = py::handle<PyArrayObject>(
                     (PyArrayObject*)PyArray_New(&PyArray_Type, 2, sizes,
                                                 PyArray_TYPE(arr), strides,

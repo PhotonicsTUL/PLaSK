@@ -57,7 +57,7 @@ inline py::object system_str_to_pyobject(const system_char *str, int len = -1) {
 }
 
 inline py::object system_str_to_pyobject(const system_string& str) {
-	return system_str_to_pyobject(str.data(), str.size());
+	return system_str_to_pyobject(str.data(), int(str.size()));
 }
 
 #define system_main wmain
