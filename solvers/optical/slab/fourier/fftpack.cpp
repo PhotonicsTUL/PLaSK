@@ -26,8 +26,8 @@ Forward1D& Forward1D::operator=(Forward1D&& old) {
     return *this;
 }
 
-Forward1D::Forward1D(std::size_t lot, std::size_t n, Symmetry symmetry, int strid):
-    lot(int(lot)), n(int(n)), strid(strid?strid:int(lot)), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
+Forward1D::Forward1D(std::size_t lot, std::size_t n, Symmetry symmetry, std::size_t strid):
+    lot(int(lot)), n(int(n)), strid(int(strid?strid:lot)), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
     try {
         int ier;
         switch (symmetry) {
@@ -98,8 +98,8 @@ Backward1D& Backward1D::operator=(Backward1D&& old) {
     return *this;
 }
 
-Backward1D::Backward1D(std::size_t lot, std::size_t n, Symmetry symmetry, int strid):
-    lot(int(lot)), n(int(n)), strid(strid?strid:int(lot)), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
+Backward1D::Backward1D(std::size_t lot, std::size_t n, Symmetry symmetry, std::size_t strid):
+    lot(int(lot)), n(int(n)), strid(int(strid?strid:lot)), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
     try {
         int ier;
         switch (symmetry) {
@@ -174,8 +174,8 @@ Forward2D& Forward2D::operator=(Forward2D&& old) {
     return *this;
 }
 
-Forward2D::Forward2D(std::size_t lot, std::size_t n1, std::size_t n2, Symmetry symmetry1, Symmetry symmetry2, int strid, int ld):
-    lot(int(lot)), n1(int(n1)), n2(int(n2)), strid1(strid?strid:int(lot)), strid2((strid?strid:int(lot))*(ld?ld:int(n1))), symmetry1(symmetry1), symmetry2(symmetry2),
+Forward2D::Forward2D(std::size_t lot, std::size_t n1, std::size_t n2, Symmetry symmetry1, Symmetry symmetry2, std::size_t strid, std::size_t ld):
+    lot(int(lot)), n1(int(n1)), n2(int(n2)), strid1(int(strid?strid:lot)), strid2(int((strid?strid:lot)*(ld?ld:n1))), symmetry1(symmetry1), symmetry2(symmetry2),
     wsave1(aligned_malloc<double>(lensav(n1))) {
     if (n1 == n2 && symmetry1 == symmetry2) wsave2 = wsave1;
     else wsave2 = aligned_malloc<double>(lensav(n2));
@@ -294,8 +294,8 @@ Backward2D& Backward2D::operator=(Backward2D&& old) {
     return *this;
 }
 
-Backward2D::Backward2D(std::size_t lot, std::size_t n1, std::size_t n2, Symmetry symmetry1, Symmetry symmetry2, int strid, int ld):
-    lot(int(lot)), n1(int(n1)), n2(int(n2)), strid1(strid?strid:int(lot)), strid2((strid?strid:int(lot))*(ld?ld:int(n1))), symmetry1(symmetry1), symmetry2(symmetry2),
+Backward2D::Backward2D(std::size_t lot, std::size_t n1, std::size_t n2, Symmetry symmetry1, Symmetry symmetry2, std::size_t strid, std::size_t ld):
+    lot(int(lot)), n1(int(n1)), n2(int(n2)), strid1(int(strid?strid:lot)), strid2(int((strid?strid:lot)*(ld?ld:n1))), symmetry1(symmetry1), symmetry2(symmetry2),
     wsave1(aligned_malloc<double>(lensav(n1))) {
     if (n1 == n2 && symmetry1 == symmetry2) wsave2 = wsave1;
     else wsave2 = aligned_malloc<double>(lensav(n2));
