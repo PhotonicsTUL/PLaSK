@@ -15,10 +15,10 @@ namespace plask { namespace optical { namespace simple_optical {
 struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> {
 //MD: to powinno być szablonem — wtedy łatwo można zrobić solver dla każdej geometrii
 
-     SimpleOptical(const std::string& name="SimpleOptical");
+    SimpleOptical(const std::string& name="SimpleOptical");
      //MD: Domyślna wartość argumentu `name` powinna być pusta ("")
 
-     struct Matrix {
+    struct Matrix {
          dcomplex ff, fb, bf, bb;
          Matrix() = default;
          Matrix(dcomplex t1, dcomplex t2, dcomplex t3, dcomplex t4): ff(t1), fb(t2), bf(t3), bb(t4) {}
@@ -26,9 +26,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
          static Matrix diag(dcomplex f, dcomplex b) {return Matrix(f,0.,0.,b); }
          Matrix operator*(const Matrix& T) {
             return Matrix( ff*T.ff + fb*T.bf, ff*T.fb + fb*T.bb,
-                           bf*T.ff + bb*T.bf, bf*T.fb + bb*T.bb);
-         }
-       
+                           bf*T.ff + bb*T.bf, bf*T.fb + bb*T.bb);}
       };
      
      struct FieldZ {
@@ -91,8 +89,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      */
      void setWavelength(dcomplex wavelength) {
         k0 = 2e3*M_PI / wavelength;
-        nrCache.clear();
-        //invalidate(); //MD: na pewno chce Pan wszystko czyścić gdy zmieni się długość fali? Może wystarczy uzunąć skeszowane współczynniki załamania?
+        invalidate(); //MD: na pewno chce Pan wszystko czyścić gdy zmieni się długość fali? Może wystarczy uzunąć skeszowane współczynniki załamania?
      }
      
      dcomplex getVertDeterminant(dcomplex wavelength);
@@ -155,7 +152,8 @@ protected:
   
   double stripex;             ///< Position of the main stripe
   
-  void onInvalidate();
+    /// Invalidate the data
+    virtual void onInvalidate() override;
   
   void updateCache();
 
