@@ -53,9 +53,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
           
      bool operator==(const Mode& other) const {
             return m == other.m && is_zero(lam - other.lam);
-     }
-     
-     };
+     }};
      
      size_t nmodes() const {
 	return modes.size();

@@ -84,8 +84,6 @@ size_t SimpleOptical::findMode(double lambda, int m)
 
 dcomplex SimpleOptical::computeTransferMatrix(const dcomplex& x, const std::vector<dcomplex> & NR)
 {   
-    onInitialize();
-    initializeRefractiveIndexVec();
     dcomplex w = 2e3*M_PI / x;
     setWavelength(w);
     Matrix phas_matrix(0,0,0,0);
@@ -122,8 +120,8 @@ void SimpleOptical::updateCache()
 dcomplex SimpleOptical::getVertDeterminant(dcomplex wavelength)
 {
     setWavelength(wavelength);
-    //updateCache();
-    //initializeRefractiveIndexVec();
+    updateCache();
+    initializeRefractiveIndexVec();
     return computeTransferMatrix(k0, nrCache);
 }
 
