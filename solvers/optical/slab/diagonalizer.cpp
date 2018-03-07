@@ -168,8 +168,8 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
 
             // Find the inverse of Te in the classical way (maybe to be optimized in future)
             // TODO: eigenvectors should be built by hand based on Schur vectors
-            memcpy(Th[layer].data(), Te[layer].data(), NN*sizeof(dcomplex));
-            memset(Te1[layer].data(), 0., NN*sizeof(dcomplex));
+            std::copy_n(Te[layer].data(), NN, Th[layer].data());
+            std::fill_n(Te1[layer].data(), NN, 0.);
             for (std::size_t i = 0; i < NN; i += (N+1))
                 Te1[layer][i] = 1.;
             invmult(Th[layer], Te1[layer]);
