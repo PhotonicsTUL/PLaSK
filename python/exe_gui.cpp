@@ -19,7 +19,7 @@
 
 namespace plask { namespace python {
 
-    int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* scriptname=nullptr, bool second_is_script=false);
+    int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* scriptname=nullptr, bool second_is_script=false, int scriptline=0);
 
     void createPythonLogger();
 }}
@@ -141,7 +141,7 @@ int WinMain(HINSTANCE, HINSTANCE, LPSTR cmdline, int) {
 	std::vector<const char*> argv_vec(argc);
 	std::vector<const char*>::iterator dst = argv_vec.begin(); for (const auto& src : args) { *(dst++) = src.c_str(); }
 	const char** argv = argv_vec.data();
-#endif 
+#endif
 
 #else	// non-windows:
 

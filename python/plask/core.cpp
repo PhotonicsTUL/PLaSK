@@ -217,7 +217,7 @@ static void printMultiLineLog(plask::LogLevel level, const std::string& msg, Arg
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 __declspec(dllexport)
 #endif
-int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* /*scriptname*/=nullptr, bool second_is_script=false) {
+int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* /*scriptname*/=nullptr, bool second_is_script=false, int scriptline=0) {
     PyTypeObject* type = (PyTypeObject*)otype;
     PyTracebackObject* original_traceback = (PyTracebackObject*)otraceback;
 
@@ -249,7 +249,7 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
     if (original_traceback) {
         PyTracebackObject* traceback = original_traceback;
         while (traceback) {
-            int lineno = traceback->tb_lineno;
+            int lineno = traceback->tb_lineno + scriptline;
             std::string filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
             std::string funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
             if (funcname == "<module>" && (traceback == original_traceback || (second_is_script && traceback == original_traceback->tb_next)))
@@ -263,7 +263,7 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
                     std::size_t f = form.find(" (") + 2, l = form.rfind(", line ") + 7;
                     std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
                     try {
-                        int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
+                        int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1)) + scriptline;
                         printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}, line {1}: {2}: {3}", file, lineno, error_name, msg);
                     } catch (boost::bad_lexical_cast) {
                         printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}: {1}", error_name, message);
@@ -610,7 +610,7 @@ BOOST_PYTHON_MODULE(_plask)
     py::scope().attr("ComputationError") = py::handle<>(py::incref(computation_error));
 
     py::def("_print_exception", &printPythonException, u8"Print exception information to PLaSK logging system",
-            (py::arg("exc_type"), "exc_value", "exc_traceback", py::arg("scriptname")="", py::arg("second_is_script")=false));
+            (py::arg("exc_type"), "exc_value", "exc_traceback", py::arg("scriptname")="", py::arg("second_is_script")=false, py::arg("scriptline")=0));
 
 #   ifdef PRINT_STACKTRACE_ON_EXCEPTION
         py::def("_print_stack", &printStack, "Print C stack (for debug purposes_");

@@ -275,7 +275,7 @@ def runxpl(source, vars={}):
         exec(code, env)
     except Exception as exc:
         ety, eva, etb = sys.exc_info()
-        _plask._print_exception(ety, eva, etb, env['__manager__'].script_first_line, filename, True)
+        _plask._print_exception(ety, eva, etb, filename, True, env['__manager__']._scriptline)
 
 
 ## ##  ## ##
