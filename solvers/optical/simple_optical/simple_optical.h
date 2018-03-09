@@ -15,7 +15,7 @@ namespace plask { namespace optical { namespace simple_optical {
 struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> {
 //MD: to powinno być szablonem — wtedy łatwo można zrobić solver dla każdej geometrii
 
-    SimpleOptical(const std::string& name="SimpleOptical");
+    SimpleOptical(const std::string& name="");
      //MD: Domyślna wartość argumentu `name` powinna być pusta ("")
 
     struct Matrix {
@@ -44,28 +44,21 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
       
     struct Mode {
       SimpleOptical* solver; ///< Solver this mode belongs to Simple Optical
-      int m;		     ///< Number of mode
-      //MD: To `m` nie ma sensu. W EFM był to rząd rozwiązania azymuntalnego, ale tutaj takie nie istnieje.
       dcomplex lam;          ///< Stored wavelength
 
-      Mode(SimpleOptical* solver, int m=0):
-	solver(solver), m(m) {}
-          
-     bool operator==(const Mode& other) const {
-            return m == other.m && is_zero(lam - other.lam);
-     }};
-     
-     size_t nmodes() const {
+      Mode(SimpleOptical* solver):
+	solver(solver) {}
+    };
+    
+    size_t nmodes() const {
 	return modes.size();
-     }
-     
+    }
+    
      /// Insert mode to the list or return the index of the exiting one
      size_t insertMode(const Mode& mode) {
-        for (size_t i = 0; i != modes.size(); ++i)
-        if (modes[i] == mode) return i;
         modes.push_back(mode);
         return modes.size()-1;
-     }
+    }
 
      void loadConfiguration(XMLReader& reader, Manager& manager) override;
 
@@ -107,8 +100,7 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
           
      std::vector<Mode> modes;
      
-     size_t findMode(double lambda, int m=0);
-     //MD: w Pana przypadku parametr `m` nie ma sensu
+     size_t findMode(double lambda);
      
      /// \return position of the main stripe
     double getStripeX() const { return stripex; }

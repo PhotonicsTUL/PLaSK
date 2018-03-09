@@ -63,7 +63,7 @@ void SimpleOptical::initializeRefractiveIndexVec()
     nrCache.push_back(geometry->getMaterial(vec(double(stripex),  edgeVertLayerPoint.back()))->Nr(w, T));
 }
 
-size_t SimpleOptical::findMode(double lambda, int m)
+size_t SimpleOptical::findMode(double lambda)
 {
     k0 = 2e3*M_PI/lambda;
     writelog(LOG_INFO, "Searching for the mode starting from wavelength = {0}", str(lambda));
@@ -76,7 +76,7 @@ size_t SimpleOptical::findMode(double lambda, int m)
 				      },
 				      log_stripe,
 				      stripe_root);
-    Mode mode(this, m);
+    Mode mode(this);
     mode.lam = rootdigger->find((2e3*M_PI)/k0);
     return insertMode(mode);
 }
