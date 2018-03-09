@@ -267,7 +267,7 @@ struct PLASK_API MeshD: public Mesh {
      */
     MeshD(const MeshD& PLASK_UNUSED(to_copy)) {}
 
-    MeshD() = default;
+    MeshD() {}
 
     /**
      * Set this to be the same as @p to_copy but doesn't changed changes observer.
