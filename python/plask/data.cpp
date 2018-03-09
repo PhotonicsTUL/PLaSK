@@ -301,7 +301,7 @@ PythonDataVector__array__(py::object oself, py::object dtype=py::object()) {
     const int nd = (detail::type_dim<T>() == 1)? 1 : 2;
 
     npy_intp dims[] = { static_cast<npy_intp>(self->mesh->size()), detail::type_dim<T>() };
-    npy_intp strides[] = { sizeof(T), sizeof(T) / detail::type_dim<T>() };
+    npy_intp strides[] = { static_cast<npy_intp>(sizeof(T)), static_cast<npy_intp>(sizeof(T) / detail::type_dim<T>()) };
 
     PyObject* arr = PyArray_New(&PyArray_Type, nd, dims, detail::typenum<T>(), strides, (void*)self->data(), 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from data");

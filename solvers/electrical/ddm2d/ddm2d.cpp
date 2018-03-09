@@ -2175,7 +2175,9 @@ double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getTotalHeat() {
 template < > std::string DriftDiffusionModel2DSolver<Geometry2DCartesian>::getClassName() const { return "ddm2d.DriftDiffusion2D"; }
 template < > std::string DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getClassName() const { return "ddm2d.DriftDiffusionCyl"; }
 
+PLASK_NO_CONVERSION_WARNING_BEGIN
 template struct PLASK_SOLVER_API DriftDiffusionModel2DSolver<Geometry2DCartesian>;
 template struct PLASK_SOLVER_API DriftDiffusionModel2DSolver<Geometry2DCylindrical>;
+PLASK_NO_WARNING_END
 
 }}} // namespace plask::electrical::thermal

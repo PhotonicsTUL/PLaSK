@@ -4,9 +4,7 @@
 #include <plask/plask.hpp>
 #include <limits>
 
-PLASK_NO_CONVERSION_WARNING_BEGIN
 #include <Eigen/Eigen>
-PLASK_NO_WARNING_END
 #include "fd.h"
 #include "block_matrix.h"
 #include "iterative_matrix.h"
