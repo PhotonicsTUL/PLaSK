@@ -16,7 +16,6 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
 //MD: to powinno być szablonem — wtedy łatwo można zrobić solver dla każdej geometrii
 
     SimpleOptical(const std::string& name="");
-     //MD: Domyślna wartość argumentu `name` powinna być pusta ("")
 
     struct Matrix {
          dcomplex ff, fb, bf, bb;
@@ -117,39 +116,36 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
 
 protected:
 
-  friend struct RootDigger;
+    friend struct RootDigger;
 
-  size_t ybegin,  ///< First element of vertical mesh to consider
-         yend;    ///< Last element of vertical mesh to consider
+    size_t ybegin,  ///< First element of vertical mesh to consider
+           yend;    ///< Last element of vertical mesh to consider
 
-  shared_ptr<RectangularMesh<2>> mesh;   /// Mesh over which the calculations are performed
+    shared_ptr<RectangularMesh<2>> mesh;   /// Mesh over which the calculations are performed
   
-  dcomplex k0;
+    dcomplex k0;
   
-  double lam0; /// wavelength to start rootdigger 
+    double lam0; /// wavelength to start rootdigger 
 
-  std::vector<double> edgeVertLayerPoint;
+    std::vector<double> edgeVertLayerPoint;
 
-  void initializeRefractiveIndexVec();
+    void initializeRefractiveIndexVec();
   
-  std::vector<dcomplex> nrCache; // Vector to hold refractive index
+    std::vector<dcomplex> nrCache; // Vector to hold refractive index
     
-  std::vector<FieldZ> vecE;
+    std::vector<FieldZ> vecE;
   
-  const DataVector<double> getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod);
+    const DataVector<double> getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod);
      
-  const LazyData<Tensor3<dcomplex>> getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod);
+    const LazyData<Tensor3<dcomplex>> getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod);
   
-  double stripex;             ///< Position of the main stripe
+    double stripex;             ///< Position of the main stripe
   
     /// Invalidate the data
     virtual void onInvalidate() override;
   
-  void updateCache();
-
+    void updateCache();
 };
-
-  
 
 }}} // namespace
 

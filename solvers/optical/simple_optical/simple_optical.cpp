@@ -47,10 +47,8 @@ void SimpleOptical::onInitialize()
     for (double p: *axis_vertical) edgeVertLayerPoint.push_back(p);  
     double last_element = edgeVertLayerPoint.back();
     edgeVertLayerPoint.push_back(last_element+1e-3);
-    initializeRefractiveIndexVec();
-    
+    initializeRefractiveIndexVec();    
 }
-
 
 void SimpleOptical::initializeRefractiveIndexVec()
 {
@@ -71,11 +69,10 @@ size_t SimpleOptical::findMode(double lambda)
     onInitialize();
     Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format(""), "", "");
     auto rootdigger = RootDigger::get(this, 
-				      [&](const dcomplex& x ){
-					return this->computeTransferMatrix( (2e3*M_PI)/x, nrCache);	
-				      },
-				      log_stripe,
-				      stripe_root);
+                        [&](const dcomplex& x ){
+			return this->computeTransferMatrix( (2e3*M_PI)/x, nrCache);},
+			log_stripe,
+                        stripe_root);
     Mode mode(this);
     mode.lam = rootdigger->find((2e3*M_PI)/k0);
     return insertMode(mode);
@@ -126,14 +123,13 @@ dcomplex SimpleOptical::getVertDeterminant(dcomplex wavelength)
 
 const LazyData<Tensor3<dcomplex>> SimpleOptical::getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod)
 {
-  this->writelog(LOG_DEBUG, "Getting refractive indices");
-  dcomplex lam0 = 2e3*M_PI / k0;
-  InterpolationFlags flags(geometry);
-  return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
-        [this, dst_mesh, flags, lam0](size_t j) -> Tensor3<dcomplex> {
-            auto point = flags.wrap(dst_mesh->at(j));
-	    return geometry->getMaterial(vec(double(stripex), dst_mesh->at(j)[1]))->Nr(real(lam0), 300) ;
-        }
+    this->writelog(LOG_DEBUG, "Getting refractive indices");
+    dcomplex lam0 = 2e3*M_PI / k0;
+    InterpolationFlags flags(geometry);
+    return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
+          [this, dst_mesh, flags, lam0](size_t j) -> Tensor3<dcomplex> {
+           auto point = flags.wrap(dst_mesh->at(j));
+	   return geometry->getMaterial(vec(double(stripex), dst_mesh->at(j)[1]))->Nr(real(lam0), 300);}
     );
 }
 
@@ -154,10 +150,8 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
     std::vector<dcomplex> F;
     double T = 300; //temperature 300 K
     double w = real(2e3*M_PI / k0);
-    std::cout<<"VecE size = " << vecE.size() << std::endl;
     for(auto p: arrayZ) NR.push_back(geometry->getMaterial(vec(double(stripex),  p))->Nr(w, T));
     //MD: dlaczego nie korzysta Pan z `nrCache`?
-     
     
     for (double p_edge: *axis_vertical) verticalEdgeVec.push_back(p_edge);
     
@@ -173,8 +167,9 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
       if (verticalEdgeVec[i] <= p and verticalEdgeVec[i+1] > p)
       {hi.push_back(p - verticalEdgeVec[i]);        
        B.push_back(vecE[i+1].B);
-       F.push_back(vecE[i+1].F);}
-    }}
+       F.push_back(vecE[i+1].F);}}
+        
+    }
     
     for(double p: arrayZ) // propagation wave after escape from structure 
     {
@@ -182,8 +177,8 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
         {   
         hi.push_back(p-verticalEdgeVec.back());    
         B.push_back(vecE.back().B);
-        F.push_back(vecE.back().F);
-    }} 
+        F.push_back(vecE.back().F);}    
+    } 
     
     dcomplex Ez;
     for (size_t i = 0; i < hi.size(); ++i)
@@ -193,9 +188,6 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
     }   
     return results;
 }
-
-
-
 
 }}}
 
