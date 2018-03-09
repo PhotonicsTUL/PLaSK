@@ -16,7 +16,7 @@ void SimpleOptical::loadConfiguration(XMLReader& reader, Manager& manager) {
             stripex = reader.getAttribute<double>("vat", stripex);    
             stripex = reader.getAttribute<double>("lam0", stripex);
         } else if (param == "root") {
-            RootDigger::readRootDiggerConfig(reader, stripe_root); }
+            RootDigger::readRootDiggerConfig(reader, root); }
         else {     
             parseStandardConfiguration(reader, manager, "<geometry> or <root> or <mode>");}
     }    
@@ -34,7 +34,6 @@ void SimpleOptical::onInvalidate()
 
 void SimpleOptical::onInitialize()
 {
-
     if (!geometry) throw NoGeometryException(getId());
     shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
     shared_ptr<RectangularMesh<2>> midpoints = mesh->getMidpointsMesh();
@@ -54,11 +53,14 @@ void SimpleOptical::initializeRefractiveIndexVec()
 {
     nrCache.clear();
     double T = 300; //temperature 300 K
-    double w = real(2e3*M_PI / k0);
-    nrCache.push_back(geometry->getMaterial(vec(double(stripex),  0.0))->Nr(w, T));
+    double wavelength = real(2e3*M_PI / k0);
+    
+    nrCache.push_back(geometry->getMaterial(vec(double(stripex),  0.0))->Nr(wavelength, T));
+    
     for(double p: *axis_midpoints_vertical) {
-    nrCache.push_back(geometry->getMaterial(vec(double(stripex),  p))->Nr(w, T));}
-    nrCache.push_back(geometry->getMaterial(vec(double(stripex),  edgeVertLayerPoint.back()))->Nr(w, T));
+    nrCache.push_back(geometry->getMaterial(vec(double(stripex),  p))->Nr(wavelength, T));}
+    
+    nrCache.push_back(geometry->getMaterial(vec(double(stripex),  edgeVertLayerPoint.back()))->Nr(wavelength, T));
 }
 
 size_t SimpleOptical::findMode(double lambda)
@@ -72,7 +74,7 @@ size_t SimpleOptical::findMode(double lambda)
                         [&](const dcomplex& x ){
 			return this->computeTransferMatrix( (2e3*M_PI)/x, nrCache);},
 			log_stripe,
-                        stripe_root);
+                        root);
     Mode mode(this);
     mode.lam = rootdigger->find((2e3*M_PI)/k0);
     return insertMode(mode);
@@ -136,12 +138,9 @@ const LazyData<Tensor3<dcomplex>> SimpleOptical::getRefractiveIndex(const shared
 const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
     setWavelength((modes[num].lam)); 
-    k0 = 2e3*M_PI / modes[num].lam;
-    
     std::vector<double> arrayZ;  
     for (auto v: *dst_mesh) {double z = v.c1;
                              arrayZ.push_back(z);}
- 
     DataVector<double> results(arrayZ.size());
     std::vector<dcomplex> NR;
     std::vector<double> verticalEdgeVec;
@@ -149,9 +148,9 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
     std::vector<dcomplex> B;
     std::vector<dcomplex> F;
     double T = 300; //temperature 300 K
-    double w = real(2e3*M_PI / k0);
-    for(auto p: arrayZ) NR.push_back(geometry->getMaterial(vec(double(stripex),  p))->Nr(w, T));
-    //MD: dlaczego nie korzysta Pan z `nrCache`?
+    double wavelength = real(getWavelength());
+    for(auto p: arrayZ) NR.push_back(geometry->getMaterial(vec(double(stripex),  p))->Nr(wavelength, T));
+    //MD: dlaczego nie korzysta Pan z `nrCache`? PG: Rozwiążanie jakie tutaj proponuje wymaga brania współczynników w każdym punkcie siatki.
     
     for (double p_edge: *axis_vertical) verticalEdgeVec.push_back(p_edge);
     
@@ -162,13 +161,13 @@ const DataVector<double> SimpleOptical::getLightMagnitude(int num, const shared_
     
     for (size_t i = 0; i < verticalEdgeVec.size()-1; ++i)
     {
-     for (double p: arrayZ) 
-     {
-      if (verticalEdgeVec[i] <= p and verticalEdgeVec[i+1] > p)
-      {hi.push_back(p - verticalEdgeVec[i]);        
-       B.push_back(vecE[i+1].B);
-       F.push_back(vecE[i+1].F);}}
-        
+        for (double p: arrayZ) 
+        {
+            if (verticalEdgeVec[i] <= p and verticalEdgeVec[i+1] > p){
+                hi.push_back(p - verticalEdgeVec[i]);        
+                B.push_back(vecE[i+1].B);
+                F.push_back(vecE[i+1].F);}
+        }       
     }
     
     for(double p: arrayZ) // propagation wave after escape from structure 

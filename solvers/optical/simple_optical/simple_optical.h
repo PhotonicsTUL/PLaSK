@@ -86,11 +86,8 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
      
      dcomplex computeTransferMatrix(const dcomplex& k, const std::vector<dcomplex> & NR);
 
-     /// Parameters for main rootdigger
+     /// Parameters for rootdigger
      RootDigger::Params root;
-
-     /// Parameters for sripe rootdigger
-     RootDigger::Params stripe_root;     
      
      typename ProviderFor<LightMagnitude, Geometry2DCylindrical>::Delegate outLightMagnitude;
      
