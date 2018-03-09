@@ -15,7 +15,7 @@ import os
 
 QT_API = os.environ.get('QT_API')
 if QT_API is not None:
-    QT_API = dict(pyqt='PyQt4', pyqt5='PyQt5', pyside='PySide').get(QT_API, 'PyQt5')
+    QT_API = dict(pyqt='PyQt4', pyqt4='PyQt4', pyqt5='PyQt5', pyside='PySide').get(QT_API, 'PyQt5')
     try:
         import matplotlib
     except ImportError:

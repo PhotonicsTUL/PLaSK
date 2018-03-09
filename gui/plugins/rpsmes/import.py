@@ -606,21 +606,7 @@ if qt:
                 msgbox.setIcon(QMessageBox.Critical)
                 msgbox.exec_()
             else:
-                new_window = gui.MainWindow(oname)
-                try:
-                    if new_window.document.filename is not None:
-                        new_window.resize(parent.size())
-                        gui.WINDOWS.add(new_window)
-                        if remove_self:
-                            parent.close()
-                        else:
-                            new_window.move(parent.x() + 24, parent.y() + 24)
-                    else:
-                        new_window.setWindowModified(False)
-                        new_window.close()
-                except AttributeError:
-                    new_window.setWindowModified(False)
-                    new_window.close()
+                parent.load_file(oname)
 
     def import_dan_operation(parent):
         action = QAction(QIcon.fromTheme('document-open'),

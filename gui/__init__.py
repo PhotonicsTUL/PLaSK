@@ -451,6 +451,9 @@ class MainWindow(QMainWindow):
             if type(filename) == tuple: filename = filename[0]
             if not filename:
                 return
+        self.load_file(filename)
+
+    def load_file(self, filename):
         if self.document.filename is None and not self.isWindowModified():
             self.document.controller_by_index(self.current_tab_index).on_edit_exit()
             self.current_tab_index = -1
@@ -803,48 +806,6 @@ class GotoDialog(QDialog):
         self.setLayout(vbox)
 
 
-class PlaskApplication(QApplication):
-
-    def __init__(self, argv):
-        self._opened_windows = []
-        super(PlaskApplication, self).__init__(argv)
-        self.setAttribute(Qt.AA_DontShowIconsInMenus, False)
-        try:
-            self.setAttribute(Qt.AA_EnableHighDpiScaling, True)
-            self.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
-        except AttributeError:
-            pass
-
-    def commitData(self, session_manager):
-        self._opened_windows = WINDOWS.copy()
-        super(PlaskApplication, self).commitData(session_manager)
-
-    def saveState(self, session_manager):
-        files = []
-        for window in self._opened_windows:
-            if window.document.filename is not None:
-                files.append(window.document.filename)
-        if files:
-            CONFIG['session/saved_' + session_manager.sessionKey()] = files
-            CONFIG.sync()
-
-    def restoreState(self):
-        key = 'session/saved_' + self.sessionKey()
-        files = CONFIG[key]
-        del CONFIG[key]
-        ok = False
-        if files:
-            if type(files) is not list: files = [files]
-            for file in files:
-                try:
-                    WINDOWS.add(MainWindow(file))
-                except:
-                    pass
-                else:
-                    ok = True
-        return ok
-
-
 def _parse_expiry(expiry):
     match = re.match('(\d+).(\d+).(\d+)', expiry)
     if match is not None:
@@ -974,6 +935,38 @@ def load_plugins():
                 pass
 
 
+class Session(object):
+    def __init__(self):
+        self.opened_files = []
+
+    def commit(self, session_manager):
+        self.opened_files = [window.document.filename for window in WINDOWS]
+
+    def save(self, session_manager):
+        self.opened_files.extend(window.document.filename for window in WINDOWS)  # if some windows are still open
+        if self.opened_files:
+            CONFIG['session/saved_' + session_manager.sessionKey()] = self.opened_files
+            CONFIG.sync()
+            self.opened_files = []
+
+    @staticmethod
+    def restore():
+        key = 'session/saved_' + APPLICATION.sessionKey()
+        files = CONFIG[key]
+        del CONFIG[key]
+        ok = False
+        if files:
+            if type(files) is not list: files = [files]
+            for file in files:
+                try:
+                    WINDOWS.add(MainWindow(file))
+                except:
+                    pass
+                else:
+                    ok = True
+        return ok
+
+
 def main():
     try:
         _debug_index = sys.argv.index('-debug')
@@ -987,10 +980,16 @@ def main():
     if _DEBUG:
         sys.stderr.write("PLaSK GUI, version {}.\nUsing {} API.\n".format(VERSION, QT_API))
 
-    global APPLICATION, pysparkle
+    global APPLICATION, SESSION, pysparkle
 
-    APPLICATION = PlaskApplication(sys.argv)
+    APPLICATION = QApplication(sys.argv)
     APPLICATION.setApplicationName("PLaSK")
+    APPLICATION.setAttribute(Qt.AA_DontShowIconsInMenus, False)
+    try:
+        APPLICATION.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+        APPLICATION.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+    except AttributeError:
+        pass
     sys.argv = APPLICATION.arguments()
 
     pysparkle = None
@@ -1024,8 +1023,9 @@ def main():
             # 'mathtext.sf': ft.family()
         })
 
+    SESSION = Session()
     if APPLICATION.isSessionRestored():
-        if not APPLICATION.restoreState():
+        if not SESSION.restore():
             WINDOWS.add(MainWindow())
     else:
         if len(sys.argv) > 1:
@@ -1034,6 +1034,8 @@ def main():
         else:
             WINDOWS.add(MainWindow())
 
+    APPLICATION.commitDataRequest.connect(SESSION.commit)
+    APPLICATION.saveStateRequest.connect(SESSION.save)
     exit_code = APPLICATION.exec_()
 
     sys.exit(exit_code)
