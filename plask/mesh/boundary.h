@@ -129,7 +129,7 @@ struct PLASK_API BoundaryLogicImpl {
      * Default implementation just use std::distance(begin(), end()) which iterates over all indexes and can be slow, so this is often reimplemented in subclasses.
      * \return number of points in this boundary
      */
-    virtual std::size_t size() const { return std::distance(begin(), end()); }
+    virtual std::size_t size() const { return std::size_t(std::distance(begin(), end())); }
 
 };
 

@@ -64,7 +64,7 @@ static std::string Translation__str__(const Translation<dim>& self) {
         PyErr_Clear();
         out << GeometryObject__repr__(self.getChild());
     }
-    out << ", plask.vec("; for (int i = 0; i < dim; ++i) out << pyformat(self.translation[i]) << (i!=dim-1 ? "," : ")");
+    out << ", plask.vec("; for (size_t i = 0; i < dim; ++i) out << pyformat(self.translation[i]) << (i!=dim-1 ? "," : ")");
     out << ")";
     return out.str();
 }

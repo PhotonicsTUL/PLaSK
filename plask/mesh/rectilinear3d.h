@@ -503,16 +503,16 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
      * Get number of elements (for FEM method) in the third direction.
      * @return number of elements in this mesh in the third direction (axis2 direction).
      */
-    std::size_t getElementsCount2() const {
-        return std::max(int(axis2->size())-1, 0);
+    size_t getElementsCount2() const {
+        return size_t(std::max(int(axis2->size())-1, 0));
     }
 
     /**
      * Get number of elements (for FEM method).
      * @return number of elements in this mesh
      */
-    std::size_t getElementsCount() const {
-        return std::max(int(axis0->size())-1, 0) * std::max(int(axis1->size())-1, 0) * std::max(int(axis2->size())-1, 0);
+    size_t getElementsCount() const {
+        return size_t(std::max(int(axis0->size())-1, 0) * std::max(int(axis1->size())-1, 0) * std::max(int(axis2->size())-1, 0));
     }
 
     /**
@@ -742,7 +742,7 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
                                         data_lll, data_hll, data_hhl, data_lhl, data_llh, data_hlh, data_hhh, data_lhh,
                                         p.c0, p.c1, p.c2));
     }
-    
+
     /**
      * Calculate (using nearest neighbor interpolation) value of data in point using data in points describe by this mesh.
      * @param data values of data in points describe by this mesh
