@@ -165,15 +165,32 @@ void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
 
     PyFrameObject* frame = PyEval_GetFrame();
     std::string pyinfo;
+
     if (frame) {
-        std::string filename = PyString_AsString(frame->f_code->co_filename);
-#       if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-            size_t idx = filename.rfind("\\");
-#       else
-            size_t idx = filename.rfind("/");
-#       endif
-        if (idx != std::string::npos) filename = filename.substr(idx+1);
-        pyinfo = format("{1}:{0} : ", PyFrame_GetLineNumber(frame), filename);
+        static std::string lib_path;
+        if (lib_path.empty()) lib_path = plaskLibPath();
+
+        PyFrameObject* top_frame = frame;
+        while(top_frame->f_back) top_frame = top_frame->f_back;
+        std::string top_filename = PyString_AsString(top_frame->f_code->co_filename);
+
+        if (top_filename.compare(0, lib_path.length(), lib_path) == 0) frame = nullptr;
+
+        while (frame) {
+            std::string filename = PyString_AsString(frame->f_code->co_filename);
+            if (filename != top_filename) {
+                frame = frame->f_back;
+                continue;
+            }
+#           if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+                size_t idx = filename.rfind("\\");
+#           else
+                size_t idx = filename.rfind("/");
+#           endif
+            if (idx != std::string::npos) filename = filename.substr(idx+1);
+            pyinfo = format("{1}:{0} : ", PyFrame_GetLineNumber(frame), filename);
+            break;
+        }
     }
 
     if (color == COLOR_ANSI) {
