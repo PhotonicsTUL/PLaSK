@@ -172,13 +172,12 @@ void PythonSysLogger::writelog(LogLevel level, const std::string& msg) {
 
         PyFrameObject* top_frame = frame;
         while(top_frame->f_back) top_frame = top_frame->f_back;
-        std::string top_filename = PyString_AsString(top_frame->f_code->co_filename);
+        std::string filename = PyString_AsString(top_frame->f_code->co_filename);
 
-        if (top_filename.compare(0, lib_path.length(), lib_path) == 0) frame = nullptr;
+        if (filename.compare(0, lib_path.length(), lib_path) == 0) frame = nullptr;
 
         while (frame) {
-            std::string filename = PyString_AsString(frame->f_code->co_filename);
-            if (filename != top_filename) {
+            if (filename != PyString_AsString(frame->f_code->co_filename)) {
                 frame = frame->f_back;
                 continue;
             }
