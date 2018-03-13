@@ -10,7 +10,7 @@ This file contains some utils usefull with mesh classes.
 namespace plask {
 
 /**
- * Object of this class alows to check if mesh is the same mesh which has been used recently.
+ * Object of this class alows for checking if a given mesh is the same mesh which has been used recently.
  */
 struct PLASK_API SameMeshChecker {
 
@@ -34,9 +34,9 @@ private:
 public:
 
     /**
-     * Check if this operator been recently called with given @p mesh and this @p mesh has not been changed since that time.
+     * Check if this operator has been recently called with given @p mesh and this @p mesh has not been changed since that time.
      * @param mesh mesh to check
-     * @return @c true only if this operator been recently called with given @p mesh and this @p mesh has not been changed since that time.
+     * @return @c true only if this operator has been recently called with given @p mesh and this @p mesh has not been changed since that time.
      */
     bool operator()(const Mesh* mesh) {
         if (this->mesh == mesh)
@@ -48,9 +48,9 @@ public:
     }
 
     /**
-     * Check if this operator been recently called with given @p mesh and this @p mesh has not been changed since that time.
+     * Check if this operator has been recently called with given @p mesh and this @p mesh has not been changed since that time.
      * @param mesh mesh to check
-     * @return @c true only if this operator been recently called with given @p mesh and this @p mesh has not been changed since that time.
+     * @return @c true only if this operator has been recently called with given @p mesh and this @p mesh has not been changed since that time.
      */
     bool operator()(shared_ptr<const Mesh> mesh) {
         return this->operator()(mesh.get());
