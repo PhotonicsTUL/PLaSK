@@ -1,0 +1,65 @@
+#include <boost/test/unit_test.hpp>
+
+#include <plask/utils/numbers_set.h>
+
+typedef plask::CompressedSetOfNumbers<std::size_t> Set;
+
+void check_2_567_9(const Set& set) {
+    BOOST_CHECK_EQUAL(set.segmentsCount(), 3);
+    BOOST_CHECK(!set.empty());
+    BOOST_CHECK_EQUAL(set.size(), 5);
+    BOOST_CHECK_EQUAL(set.at(0), 2);
+    BOOST_CHECK_EQUAL(set[0], 2);
+    BOOST_CHECK_EQUAL(set.at(1), 5);
+    BOOST_CHECK_EQUAL(set.at(2), 6);
+    BOOST_CHECK_EQUAL(set.at(3), 7);
+    BOOST_CHECK_EQUAL(set.at(4), 9);
+    BOOST_CHECK_EQUAL(set[4], 9);
+    BOOST_CHECK_THROW(set.at(5), plask::OutOfBoundsException);
+    BOOST_CHECK_EQUAL(set.indexOf(0), Set::NOT_INCLUDED);
+    BOOST_CHECK_EQUAL(set.indexOf(1), Set::NOT_INCLUDED);
+    BOOST_CHECK_EQUAL(set.indexOf(2), 0);
+    BOOST_CHECK_EQUAL(set.indexOf(3), Set::NOT_INCLUDED);
+    BOOST_CHECK_EQUAL(set.indexOf(4), Set::NOT_INCLUDED);
+    BOOST_CHECK_EQUAL(set.indexOf(5), 1);
+    BOOST_CHECK_EQUAL(set.indexOf(6), 2);
+    BOOST_CHECK_EQUAL(set.indexOf(7), 3);
+    BOOST_CHECK_EQUAL(set.indexOf(8), Set::NOT_INCLUDED);
+    BOOST_CHECK_EQUAL(set.indexOf(9), 4);
+    BOOST_CHECK_EQUAL(set.indexOf(10), Set::NOT_INCLUDED);
+}
+
+BOOST_AUTO_TEST_SUITE(numbers_set) // MUST be the same as the file name
+
+BOOST_AUTO_TEST_CASE(empty) {
+    Set set;
+    BOOST_CHECK_EQUAL(set.segmentsCount(), 0);
+    BOOST_CHECK(set.empty());
+    BOOST_CHECK_EQUAL(set.size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(push_back) {
+    Set set;    // construct set: 2, 5, 6, 7, 9:
+    set.push_back(2);
+    set.push_back(5);
+    set.push_back(6);
+    set.push_back(7);
+    set.push_back(9);
+    check_2_567_9(set);
+}
+
+BOOST_AUTO_TEST_CASE(insert) {
+    Set set;
+    set.insert(7);
+    BOOST_CHECK_EQUAL(set.segmentsCount(), 1);
+    set.insert(2);
+    BOOST_CHECK_EQUAL(set.segmentsCount(), 2);
+    set.insert(5);
+    BOOST_CHECK_EQUAL(set.segmentsCount(), 3);
+    set.insert(9);
+    BOOST_CHECK_EQUAL(set.segmentsCount(), 4);
+    set.insert(6);
+    check_2_567_9(set);
+}
+
+BOOST_AUTO_TEST_SUITE_END()

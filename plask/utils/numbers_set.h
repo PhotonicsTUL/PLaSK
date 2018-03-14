@@ -22,9 +22,9 @@ class CompressedSetOfNumbers {
 
         number_t indexEnd;      ///< accumulated count of segments length, up to this and including this = index-1 of numberEnd-1 in the set = first index in the next segment
 
-        bool operator<(const number_t index) const { return this->indexEnd < index; }
+        static bool compareByIndexEnd(number_t i, const Segment& seg) { return i < seg.indexEnd; }
 
-        static bool lessNumberEnd(const Segment& seg, number_t n) { return seg.numberEnd < n; }
+        static bool compareByNumberEnd(number_t n, const Segment& seg) { return n < seg.numberEnd; }
 
         Segment(number_t numberEnd, number_t indexEnd): numberEnd(numberEnd), indexEnd(indexEnd) {}
 
@@ -45,7 +45,7 @@ class CompressedSetOfNumbers {
      * @param it iterator to segment
      * @return first index in the segment @c *it
      */
-    static number_t firstIndex(std::vector<Segment>::const_iterator it) {
+    number_t firstIndex(typename std::vector<Segment>::const_iterator it) const {
         return (it == segments.begin()) ? 0 : (it-1)->indexEnd;
     }
 
@@ -58,6 +58,14 @@ public:
      * @return number of numbers included in the set
      */
     std::size_t size() const { return segments.empty() ? 0 : segments.back().indexEnd; }
+
+    /**
+     * Get number of segments, which is usable only for informative purposes and tests.
+     *
+     * Time complexity: constant.
+     * @return number of segments
+     */
+    std::size_t segmentsCount() const { return segments.size(); }
 
     /**
      * Check if the set is empty.
@@ -75,7 +83,7 @@ public:
      * @return number at @p index
      */
     number_t operator[](std::size_t index) const {
-        auto seg_it = std::upper_bound(segments.begin(), segments.end(), index);
+        auto seg_it = std::upper_bound(segments.begin(), segments.end(), index, Segment::compareByIndexEnd);
         // here: index < seg_it->indexEnd
         assert(seg_it != segments.end());   // true for valid index
         return seg_it->numberEnd - seg_it->indexEnd + index;    // must be non-negative as numberEnd >= indexEnd
@@ -89,14 +97,14 @@ public:
      * @return number at @p index
      */
     number_t at(std::size_t index) const {
-        auto seg_it = std::upper_bound(segments.begin(), segments.end(), index);
+        auto seg_it = std::upper_bound(segments.begin(), segments.end(), index, Segment::compareByIndexEnd);
         if (seg_it == segments.end()) throw OutOfBoundsException("CompressedSetOfNumbers::at", "index", index, 0, this->size());
         // here: index < seg_it->indexEnd
         return seg_it->numberEnd + index - seg_it->indexEnd;
     }
 
     /// Constant returned by indexOf method for numbers not included in the set.
-    constexpr std::size_t NOT_INCLUDED = std::numeric_limits<std::size_t>::max();
+    enum:std::size_t { NOT_INCLUDED = std::numeric_limits<std::size_t>::max() };
 
     /**
      * Get index of a given @p number in the set.
@@ -106,7 +114,7 @@ public:
      * @return either index of @p number in the set or @c NOT_INCLUDED if it is not included
      */
     std::size_t indexOf(number_t number) const {
-        auto seg_it = std::upper_bound(segments.begin(), segments.end(), number, Segment::lessNumberEnd);
+        auto seg_it = std::upper_bound(segments.begin(), segments.end(), number, Segment::compareByNumberEnd);
         if (seg_it == segments.end()) return NOT_INCLUDED;  // number is too large
         // here: number < seg_it->numberEnd
         std::ptrdiff_t index = std::ptrdiff_t(seg_it->indexEnd) + std::ptrdiff_t(number) - std::ptrdiff_t(seg_it->numberEnd);
@@ -137,12 +145,12 @@ public:
      * @param number number to insert
      */
     void insert(number_t number) {
-        auto seg_it = std::upper_bound(segments.begin(), segments.end(), number, Segment::lessNumberEnd);
+        auto seg_it = std::upper_bound(segments.begin(), segments.end(), number, Segment::compareByNumberEnd);
         if (seg_it == segments.end()) { // number is larger than all numbers in the set
             push_back(number);
         } else {    // here: number < seg_it->numberEnd:
             if (seg_it == segments.begin()) {
-                const number_t firstNumber = seg_it->lastNumber - seg_it->indexEnd;
+                const number_t firstNumber = seg_it->numberEnd - seg_it->indexEnd;
                 if (number >= firstNumber) return;  // already included
                 // here: 0 <= number < firstNumber and we will insert number with new index
                 for (auto it = seg_it; it != segments.end(); ++it) ++(it->indexEnd);
@@ -150,21 +158,21 @@ public:
                 segments.emplace(seg_it, number+1, 1);  // we can't enlarge first segment, so we need new one
             } else {
                 auto prev_it = seg_it - 1;
-                const number_t firstNumber = seg_it->lastNumber + prev_it->indexEnd - seg_it->indexEnd;
+                const number_t firstNumber = seg_it->numberEnd + prev_it->indexEnd - seg_it->indexEnd;
                 if (number >= firstNumber) return;  // already included
                 // we will insert number with new index
                 for (auto it = seg_it; it != segments.end(); ++it) ++(it->indexEnd);
                 if (number+1 == firstNumber) {          // segment pointed by seg_it has been enlarged by new first element
-                    if (prev_it->lastNumber == number)  // if there was one element gap, and now it is no gap after the previous segment
+                    if (prev_it->numberEnd == number)  // if there was one element gap, and now it is no gap after the previous segment
                         segments.erase(prev_it);        // we have to remove the previous segment
                     return;
                 }
                 // here: we can't enlarge seg_it segment
-                if (prev_it->lastNumber == number) {    // we can append new element to the end of the previous segment (there is still a gap after it, number+1 is in the gap)
+                if (prev_it->numberEnd == number) {    // we can append new element to the end of the previous segment (there is still a gap after it, number+1 is in the gap)
                     ++(prev_it->numberEnd);
                     ++(prev_it->indexEnd);
                 } else      // we have to insert new segment
-                    segments.emplace(seg_it, number+1, prev_it->lastIndex+1);
+                    segments.emplace(seg_it, number+1, prev_it->indexEnd+1);
             }
         }
 
