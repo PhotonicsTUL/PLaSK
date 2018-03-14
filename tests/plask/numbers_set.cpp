@@ -4,7 +4,7 @@
 
 typedef plask::CompressedSetOfNumbers<std::size_t> Set;
 
-void check_2_567_9(const Set& set) {
+void check_2_567_9(const Set& set) {    // test if the set is a proper set of numbers {2, 5, 6, 7, 9}
     BOOST_CHECK_EQUAL(set.segmentsCount(), 3);
     BOOST_CHECK(!set.empty());
     BOOST_CHECK_EQUAL(set.size(), 5);
@@ -36,10 +36,16 @@ BOOST_AUTO_TEST_CASE(empty) {
     BOOST_CHECK_EQUAL(set.segmentsCount(), 0);
     BOOST_CHECK(set.empty());
     BOOST_CHECK_EQUAL(set.size(), 0);
+    set.push_back(0);
+    BOOST_CHECK(!set.empty());
+    BOOST_CHECK_EQUAL(set.size(), 1);
+    set.clear();
+    BOOST_CHECK(set.empty());
+    BOOST_CHECK_EQUAL(set.size(), 0);
 }
 
 BOOST_AUTO_TEST_CASE(push_back) {
-    Set set;    // construct set: 2, 5, 6, 7, 9:
+    Set set;
     set.push_back(2);
     set.push_back(5);
     set.push_back(6);
@@ -48,7 +54,7 @@ BOOST_AUTO_TEST_CASE(push_back) {
     check_2_567_9(set);
 }
 
-BOOST_AUTO_TEST_CASE(insert) {
+BOOST_AUTO_TEST_CASE(insert1) {
     Set set;
     set.insert(7);
     BOOST_CHECK_EQUAL(set.segmentsCount(), 1);
@@ -59,6 +65,20 @@ BOOST_AUTO_TEST_CASE(insert) {
     set.insert(9);
     BOOST_CHECK_EQUAL(set.segmentsCount(), 4);
     set.insert(6);
+    check_2_567_9(set);
+}
+
+BOOST_AUTO_TEST_CASE(insert2) {
+    Set set;
+    set.insert(6);
+    BOOST_CHECK_EQUAL(set.segmentsCount(), 1);
+    set.insert(5);
+    BOOST_CHECK_EQUAL(set.segmentsCount(), 1);
+    set.insert(7);
+    BOOST_CHECK_EQUAL(set.segmentsCount(), 1);
+    set.insert(2);
+    BOOST_CHECK_EQUAL(set.segmentsCount(), 2);
+    set.insert(9);
     check_2_567_9(set);
 }
 

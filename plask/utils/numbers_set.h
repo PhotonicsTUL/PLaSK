@@ -60,6 +60,26 @@ public:
     std::size_t size() const { return segments.empty() ? 0 : segments.back().indexEnd; }
 
     /**
+     * Requests the vector of segments to reduce its capacity to fit its size.
+     *
+     * The request is non-binding, and the container implementation is free to optimize otherwise and leave the vector with a capacity greater than its size.
+     */
+    void shrink_to_fit() { segments.shrink_to_fit(); }
+
+    /**
+     * Requests that the vector of segments capacity be at least enough to contain @p n elements.
+     *
+     * If @p n is greater than the current vector capacity, the function causes the container to reallocate its storage increasing its capacity to @p n (or greater).
+     * In all other cases, the function call does not cause a reallocation and the vector capacity is not affected.
+     *
+     * @param n minimum capacity for the vector of segments
+     */
+    void reserve(std::size_t n) { segments.reserve(n); }
+
+    /// Removes all numbers from the set, leaving it empty.
+    void clear() { segments.clear(); }
+
+    /**
      * Get number of segments, which is usable only for informative purposes and tests.
      *
      * Time complexity: constant.
