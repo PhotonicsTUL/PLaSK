@@ -60,7 +60,7 @@ geometry:
   material_colors: 
     AlAs: '#a9ac00'
     AlN: '#019ce3'
-    AlOx: '#fdf6e3'
+    AlOx: '#657b83'
     AlP: '#7a8cdf'
     AlSb: '#3ec8b4'
     Au: '#b58900'
@@ -77,8 +77,8 @@ geometry:
     InSb: '#2e946d'
     Pt: '#a08b4f'
     Si: '#dc322f'
-    SiO2: '#eee8d5'
+    SiO2: '#93a1a1'
     aSi: '#dc322f'
-    aSiO2: '#eee8d5'
+    aSiO2: '#93a1a1'
 mesh:
   mesh_color: '#859900'
