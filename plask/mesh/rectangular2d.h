@@ -574,7 +574,7 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     }
 
     /**
-     * Calculate index of minor axis using given mesh index.
+     * Calculate index of major axis using given mesh index.
      * @param mesh_index this mesh index, from 0 to size()-1
      * @return index of major axis, from 0 to majorAxis.size()-1
      */
