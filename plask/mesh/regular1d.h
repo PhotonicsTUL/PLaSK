@@ -118,8 +118,8 @@ class PLASK_API RegularAxis: public MeshAxis {
      * Find index where @p to_find point could be inserted.
      * @param to_find point to find
      * @return First index where to_find could be inserted.
-     *         Refer to value equal to @p to_find only if @p to_find is already in mesh, in other case it refer to value bigger than to_find.
-     *         Can be equal to size() if to_find is higher than all points in mesh.
+     *         Refer to value equal to @p to_find only if @p to_find is already in mesh, in other case it refer to value larger than to_find.
+     *         Can be equal to size() if to_find is larger than all points in mesh.
      */
     std::size_t findIndex(double to_find) const override {
         return clamp(int(std::ceil((to_find - lo) / _step)), 0, int(points_count));

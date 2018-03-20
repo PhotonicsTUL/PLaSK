@@ -9,7 +9,6 @@ This file contains rectangular mesh for 2D space.
 
 #include "mesh.h"
 #include "boundary.h"
-#include "interpolation.h"
 #include "../utils/interpolation.h"
 #include "../geometry/object.h"
 #include "../geometry/space.h"
@@ -26,7 +25,7 @@ namespace details {
 
 /**
  * Helper used by getLeftOfBoundary, etc.
- * @param[out] line index of point in @p axis which lies in bound [@p box_lower, @p box_upper] and is nearest to @p box_lower,
+ * @param[out] line index of point in @p axis which lies in bound [@p box_lower, @p box_upper] and is the nearest to @p box_lower,
  *  undefined if @c false was returned
  * @param[in] axis axis, 1D mesh
  * @param[in] box_lower, box_upper position of lower and upper box edges
@@ -655,112 +654,16 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
         -> typename std::remove_reference<decltype(data[0])>::type
     {
         auto p = flags.wrap(point);
-        size_t index0 = std::upper_bound(axis0->begin(), axis0->end(), p.c0).index;
-        size_t index1 = std::upper_bound(axis1->begin(), axis1->end(), p.c1).index;
 
-        size_t index0_1;
+        size_t index0, index0_1;
         double left, right;
-        bool invert_left = false, invert_right = false;
-        if (index0 == 0) {
-            if (flags.symmetric(0)) {
-                index0_1 = 0;
-                left = axis0->at(0);
-                if (left > 0.) {
-                    left = - left;
-                    invert_left = true;
-                } else if (flags.periodic(0)) {
-                    left = 2. * flags.low(0) - left;
-                    invert_left = true;
-                } else {
-                    left -= 1.;
-                }
-            } else if (flags.periodic(0)) {
-                index0_1 = axis0->size() - 1;
-                left = axis0->at(index0_1) - flags.high(0) + flags.low(0);
-            } else {
-                index0_1 = 0;
-                left = axis0->at(0) - 1.;
-            }
-        } else {
-            index0_1 = index0 - 1;
-            left = axis0->at(index0_1);
-        }
-        if (index0 == axis0->size()) {
-            if (flags.symmetric(0)) {
-                --index0;
-                right = axis0->at(index0);
-                if (right < 0.) {
-                    right = - right;
-                    invert_right = true;
-                } else if (flags.periodic(0)) {
-                    left = 2. * flags.high(0) - right;
-                    invert_right = true;
-                } else {
-                    right += 1.;
-                }
-            } else if (flags.periodic(0)) {
-                index0 = 0;
-                right = axis0->at(0) + flags.high(0) - flags.low(0);
-                if (right == left) right += 1e-6;
-            } else {
-                --index0;
-                right = axis0->at(index0) + 1.;
-            }
-        } else {
-            right = axis0->at(index0);
-        }
+        bool invert_left, invert_right;
+        prepareLinearInterpolationForAxis(*axis0, flags, p.c0, 0, index0, index0_1, left, right, invert_left, invert_right);
 
-        size_t index1_1;
+        size_t index1, index1_1;
         double bottom, top;
-        bool invert_top = false, invert_bottom = false;
-        if (index1 == 0) {
-            if (flags.symmetric(1)) {
-                index1_1 = 0;
-                bottom = axis1->at(0);
-                if (bottom > 0.) {
-                    bottom = - bottom;
-                    invert_bottom = true;
-                } else if (flags.periodic(1)) {
-                    bottom = 2. * flags.low(1) - bottom;
-                    invert_bottom = true;
-                } else {
-                    bottom -= 1.;
-                }
-            } else if (flags.periodic(1)) {
-                index1_1 = axis1->size() - 1;
-                bottom = axis1->at(index1_1) - flags.high(1) + flags.low(1);
-            } else {
-                index1_1 = 0;
-                bottom = axis1->at(0) - 1.;
-            }
-        } else {
-            index1_1 = index1 - 1;
-            bottom = axis1->at(index1_1);
-        }
-        if (index1 == axis1->size()) {
-            if (flags.symmetric(1)) {
-                --index1;
-                top = axis1->at(index1);
-                if (top < 0.) {
-                    top = - top;
-                    invert_top = true;
-                } else if (flags.periodic(1)) {
-                    top = 2. * flags.high(1) - top;
-                    invert_top = true;
-                } else {
-                    top += 1.;
-                }
-            } else if (flags.periodic(1)) {
-                index1 = 0;
-                top = axis1->at(0) + flags.high(1) - flags.low(1);
-                if (top == bottom) top += 1e-6;
-            } else {
-                --index1;
-                top = axis1->at(index1) + 1.;
-            }
-        } else {
-            top = axis1->at(index1);
-        }
+        bool invert_bottom, invert_top;
+        prepareLinearInterpolationForAxis(*axis1, flags, p.c1, 1, index1, index1_1, bottom, top, invert_bottom, invert_top);
 
         typename std::remove_const<typename std::remove_reference<decltype(data[0])>::type>::type
             data_lb = data[index(index0_1, index1_1)],

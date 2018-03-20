@@ -267,7 +267,6 @@ public:
     }
 };
 
-
 /**
  * Specialization of this class are used for interpolation and can depend on source mesh type,
  * data type and the interpolation method.

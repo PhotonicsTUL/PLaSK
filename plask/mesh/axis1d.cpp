@@ -95,4 +95,58 @@ void MeshAxis::beforeCalcMidpointMesh() const {
         throw BadMesh("getMidpointsMesh", "at least two points are required");
 }
 
+
+void prepareLinearInterpolationForAxis(MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index, std::size_t& index_1, double& lo, double& hi, bool& invert_lo, bool& invert_hi) {
+    index = std::upper_bound(axis.begin(), axis.end(), wrapped_point_coord).index;
+    invert_lo = false; invert_hi = false;
+    if (index == 0) {
+        if (flags.symmetric(axis_nr)) {
+            index_1 = 0;
+            lo = axis.at(0);
+            if (lo > 0.) {
+                lo = - lo;
+                invert_lo = true;
+            } else if (flags.periodic(axis_nr)) {
+                lo = 2. * flags.low(axis_nr) - lo;
+                invert_lo = true;
+            } else {
+                lo -= 1.;
+            }
+        } else if (flags.periodic(axis_nr)) {
+            index_1 = axis.size() - 1;
+            lo = axis.at(index_1) - flags.high(axis_nr) + flags.low(axis_nr);
+        } else {
+            index_1 = 0;
+            lo = axis.at(0) - 1.;
+        }
+    } else {
+        index_1 = index - 1;
+        lo = axis.at(index_1);
+    }
+    if (index == axis.size()) {
+        if (flags.symmetric(axis_nr)) {
+            --index;
+            hi = axis.at(index);
+            if (hi < 0.) {
+                hi = - hi;
+                invert_hi = true;
+            } else if (flags.periodic(axis_nr)) {
+                lo = 2. * flags.high(axis_nr) - hi;
+                invert_hi = true;
+            } else {
+                hi += 1.;
+            }
+        } else if (flags.periodic(axis_nr)) {
+            index = 0;
+            hi = axis.at(0) + flags.high(axis_nr) - flags.low(axis_nr);
+            if (hi == lo) hi += 1e-6;
+        } else {
+            --index;
+            hi = axis.at(index) + 1.;
+        }
+    } else {
+        hi = axis.at(index);
+    }
+}
+
 }   // namespace plask
