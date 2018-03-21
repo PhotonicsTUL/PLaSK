@@ -609,6 +609,9 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
     auto interpolateNearestNeighbor(const RandomAccessContainer& data, Vec<3> point, const InterpolationFlags& flags) const
         -> typename std::remove_reference<decltype(data[0])>::type {
         auto p = flags.wrap(point);
+        /*prepareNearestNeighborInterpolationForAxis(*axis0, flags, p.c0, 0);
+        prepareNearestNeighborInterpolationForAxis(*axis1, flags, p.c1, 1);
+        prepareNearestNeighborInterpolationForAxis(*axis2, flags, p.c2, 2);*/
         if (flags.periodic(0)) {
             if (p.c0 < axis0->at(0)) {
                 if (axis0->at(0) - p.c0 > p.c0 - flags.low(0) + flags.high(0) - axis0->at(axis0->size()-1)) p.c0 = axis0->at(axis0->size()-1);

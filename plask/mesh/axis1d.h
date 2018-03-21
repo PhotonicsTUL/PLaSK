@@ -58,19 +58,28 @@ protected:
 };
 
 /**
- * TODO doc - this is code by M. Dems copied from interpolation methods
- * @param axis
- * @param flags
- * @param wrapped_point_coord
- * @param axis_nr
- * @param index
- * @param index_1
- * @param lo
- * @param hi
- * @param invert_lo
- * @param invert_hi
+ * TODO doc - this is code by M. Dems copied from interpolation methods of rectngular meshes
+ * @param[in] axis
+ * @param[in] flags
+ * @param[in,out] wrapped_point_coord
+ * @param[in] axis_nr
  */
-void prepareLinearInterpolationForAxis(MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index, std::size_t& index_1, double& lo, double& hi, bool& invert_lo, bool& invert_hi);
+void prepareNearestNeighborInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double& wrapped_point_coord, int axis_nr);
+
+/**
+ * TODO doc - this is code by M. Dems copied from interpolation methods of rectngular meshes
+ * @param[in] axis
+ * @param[in] flags
+ * @param[in] wrapped_point_coord
+ * @param[in] axis_nr
+ * @param[out] index
+ * @param[out] index_1
+ * @param[out] lo
+ * @param[out] hi
+ * @param[out] invert_lo
+ * @param[out] invert_hi
+ */
+void prepareLinearInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index, std::size_t& index_1, double& lo, double& hi, bool& invert_lo, bool& invert_hi);
 
 
 

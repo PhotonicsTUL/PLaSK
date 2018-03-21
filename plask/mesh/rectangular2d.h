@@ -688,20 +688,8 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     auto interpolateNearestNeighbor(const RandomAccessContainer& data, const Vec<2>& point, const InterpolationFlags& flags) const
         -> typename std::remove_reference<decltype(data[0])>::type {
         auto p = flags.wrap(point);
-        if (flags.periodic(0) && !flags.symmetric(0)) {
-            if (p.c0 < axis0->at(0)) {
-                if (axis0->at(0) - p.c0 > p.c0 - flags.low(0) + flags.high(0) - axis0->at(axis0->size()-1)) p.c0 = axis0->at(axis0->size()-1);
-            } else if (p.c0 > axis0->at(axis0->size()-1)) {
-                if (p.c0 - axis0->at(axis0->size()-1) > flags.high(0) - p.c0 + axis0->at(0) - flags.low(0)) p.c0 = axis0->at(0);
-            }
-        }
-        if (flags.periodic(1) && !flags.symmetric(1)) {
-            if (p.c1 < axis1->at(0)) {
-                if (axis1->at(0) - p.c1 > p.c1 - flags.low(1) + flags.high(1) - axis1->at(axis1->size()-1)) p.c1 = axis1->at(axis1->size()-1);
-            } else if (p.c1 > axis1->at(axis1->size()-1)) {
-                if (p.c1 - axis1->at(axis1->size()-1) > flags.high(1) - p.c1 + axis1->at(0) - flags.low(1)) p.c1 = axis1->at(0);
-            }
-        }
+        prepareNearestNeighborInterpolationForAxis(*axis0, flags, p.c0, 0);
+        prepareNearestNeighborInterpolationForAxis(*axis1, flags, p.c1, 1);
         return flags.postprocess(point, data[this->index(axis0->findNearestIndex(p.c0), axis1->findNearestIndex(p.c1))]);
     }
 

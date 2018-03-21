@@ -115,7 +115,7 @@ public:
      * @return point with given axis0 and axis1 indexes
      */
     inline Vec<2,double> operator()(std::size_t axis0_index, std::size_t axis1_index) const {
-        return rectangularMesh->operator()(index0, index1);
+        return rectangularMesh->operator()(axis0_index, axis1_index);
     }
 
 
