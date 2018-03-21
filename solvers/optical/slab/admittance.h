@@ -46,9 +46,9 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
 
     void determineReflectedFields(const cvector& incident, IncidentDirection side) override;
 
-    cvector getFieldVectorE(double z, int n) override;
+    cvector getFieldVectorE(double z, std::size_t n) override;
 
-    cvector getFieldVectorH(double z, int n) override;
+    cvector getFieldVectorH(double z, std::size_t n) override;
 
 
     /**
@@ -56,7 +56,7 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
      * \param start starting layer
      * \param end last layer (reflection matrix is computed for this layer)
      */
-    void findAdmittance(int start, int end);
+    void findAdmittance(std::ptrdiff_t start, std::ptrdiff_t end);
 
     /**
      * Store the Y matrix for the layer prepared before
@@ -68,7 +68,7 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
      * Get the Y matrix for n-th layer
      * \param n layer number
      */
-    const cmatrix& getY(int n) {
+    const cmatrix& getY(std::size_t n) {
         if (memY.size() == solver->stack.size() && needAllY)
             return memY[n];
         else
@@ -77,9 +77,9 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
 
     /// Determine the y1 efficiently
     inline void get_y1(const cdiagonal& gamma, double d, cdiagonal& y1) const {
-        int N = gamma.size();
+        const std::size_t N = gamma.size();
         assert(y1.size() == N);
-        for (int i = 0; i < N; i++) {
+        for (std::size_t i = 0; i < N; i++) {
             dcomplex t = tanh(I*gamma[i]*d);
             if (isinf(real(t)) || isinf(imag(t))) y1[i] = 0.;
             else if (abs(t) < SMALL)
@@ -91,9 +91,9 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
 
     /// Determine the y2 efficiently
     inline void get_y2(const cdiagonal& gamma, double d, cdiagonal& y2) const {
-        int N = gamma.size();
+        const std::size_t N = gamma.size();
         assert(y2.size() == N);
-        for (int i = 0; i < N; i++) {
+        for (std::size_t i = 0; i < N; i++) {
             dcomplex s = sinh(I*gamma[i]*d);
             if (isinf(real(s)) || isinf(imag(s))) y2[i] = 0.;
             else if (abs(s) < SMALL)

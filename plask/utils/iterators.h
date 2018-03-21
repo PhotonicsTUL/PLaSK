@@ -281,10 +281,10 @@ struct IndexedIterator: public boost::iterator_facade< IndexedIterator<Container
 
     void decrement() { --index; }
 
-    void advance(std::ptrdiff_t to_add) { index += to_add; }
+    void advance(std::ptrdiff_t to_add) { index = size_t(index + to_add); }
 
     template <typename OtherT>
-    std::ptrdiff_t distance_to(OtherT z) const { return z.index - index; }
+    std::ptrdiff_t distance_to(OtherT z) const { return std::ptrdiff_t(z.index) - std::ptrdiff_t(index); }
 
     Reference dereference() const { return (*container)[index]; }
 

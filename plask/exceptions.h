@@ -164,7 +164,7 @@ struct PLASK_API NoProvider: public Exception {
 };
 
 struct PLASK_API NoValue: public Exception {
-    NoValue(const char* provider_name): Exception("{0} cannot be provided now", [](std::string s)->std::string{s[0]=std::toupper(s[0]);return s;}(provider_name) ) {}
+    NoValue(const char* provider_name): Exception("{0} cannot be provided now", [](std::string s)->std::string{s[0]=char(std::toupper(s[0]));return s;}(provider_name) ) {}
 };
 
 

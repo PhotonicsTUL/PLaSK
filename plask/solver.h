@@ -810,7 +810,7 @@ private:
      * It just calls invalidate(); but subclasses can customize it.
      * @param evt information about mesh changes
      */
-    virtual void onMeshChange(const typename MeshT::Event& /*evt*/) {
+    virtual void onMeshChange(const typename MeshT::Event& PLASK_UNUSED(evt)) {
         this->invalidate();
     }
 
@@ -821,7 +821,7 @@ private:
      * Typically, you should call SolverWithMesh::onGeometryChange(const Geometry::Event&) when you overwrite this method.
      * @param evt information about geometry changes
      */
-    virtual void onGeometryChange(const Geometry::Event& /*evt*/) override {
+    virtual void onGeometryChange(const Geometry::Event& PLASK_UNUSED(evt)) override {
         this->invalidate();
         this->regenerateMesh();
     }

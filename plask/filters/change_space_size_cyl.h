@@ -28,12 +28,12 @@ struct PLASK_API PointsOnCircleMeshExtend: public MeshD<3> {
 public:
 
     PointsOnCircleMeshExtend(const shared_ptr<const MeshD<2>>& sourceMesh, const Vec<3, double>& translation, std::size_t pointsCount)
-        : sourceMesh(sourceMesh), translation(translation), slice(PI_DOUBLED / pointsCount), pointsCount(pointsCount) {
+        : sourceMesh(sourceMesh), translation(translation), slice(PI_DOUBLED / double(pointsCount)), pointsCount(pointsCount) {
     }
 
     virtual Vec<3, double> at(std::size_t index) const override {
         Vec<2, double> p = sourceMesh->at(index / pointsCount);
-        const double angle = slice * (index % pointsCount);
+        const double angle = slice * double(index % pointsCount);
         return Vec<3, double>(
                     this->translation.lon()  +  p.rad_r() * cos(angle),
                     this->translation.tran() +  p.rad_r() * sin(angle),
@@ -76,14 +76,9 @@ struct DataFrom3DtoCyl2DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTy
             index *= point_count;
             auto sum = data[index];
             for (std::size_t i = 1; i < point_count; ++i) sum += data[index+i];
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable: 4244) // possible loss of data: point_count is often converted from size_t to dobule here, and this is ok
-#endif
+PLASK_NO_CONVERSION_WARNING_BEGIN
             return PropertyT::value3Dto2D(sum / point_count);
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
+PLASK_NO_WARNING_END
 		};
     }
 };
@@ -112,14 +107,9 @@ struct DataFrom3DtoCyl2DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemp
             index *= point_count;
             auto sum = data[index];
             for (std::size_t i = 1; i < point_count; ++i) sum += data[index+i];
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable: 4244) // possible loss of data: point_count is often converted from size_t to dobule here, and this is ok
-#endif
+PLASK_NO_CONVERSION_WARNING_BEGIN
             return PropertyT::value3Dto2D(sum / point_count);
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
+PLASK_NO_WARNING_END
         };
     }
 

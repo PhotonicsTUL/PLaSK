@@ -280,7 +280,7 @@ struct PositionAlignerImpl: public AlignerImpl<direction> {
 
     PositionAlignerImpl(double translation): AlignerImpl<direction>(translation) {}
 
-    virtual double getAlign(double /*low*/, double /*hi*/) const override {
+    virtual double getAlign(double PLASK_UNUSED(low), double PLASK_UNUSED(hi)) const override {
         return this->coordinate;
     }
 

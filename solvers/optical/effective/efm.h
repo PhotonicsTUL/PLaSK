@@ -135,18 +135,18 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
 
         /// Return mode loss
         double loss() const {
-            return imag(4e7*M_PI / lam);
+            return imag(4e7*PI / lam);
         }
     };
 
     /// Convert wavelength to the frequency parameter
     dcomplex freqv(dcomplex lam) {
-        return 2. - 4e3*M_PI / lam / k0;
+        return 2. - 4e3*PI / lam / k0;
     }
 
     /// Convert frequency parameter to the wavelength
     dcomplex lambda(dcomplex freq) {
-        return 2e3*M_PI / (k0 * (1. - freq/2.));
+        return 2e3*PI / (k0 * (1. - freq/2.));
     }
 
   protected:
@@ -227,7 +227,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     void setStripeR(double r=0.) {
         if (!mesh) setSimpleMesh();
         if (r < 0) throw BadInput(getId(), "Radial position cannot be negative");
-        rstripe = std::lower_bound(mesh->axis0->begin()+1, mesh->axis0->end(), r) - mesh->axis0->begin() - 1;
+        rstripe = int(std::lower_bound(mesh->axis0->begin()+1, mesh->axis0->end(), r) - mesh->axis0->begin() - 1);
         invalidate();
     }
 
@@ -388,7 +388,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     }
 
     /**
-     * Set particular value of the effective index, e.g. to one of the values returned by findModes.
+     * Set particular value of the effective wavelength, e.g. to one of the values returned by findModes.
      * If it is not proper mode, exception is throw.
      * \param clambda complex wavelength of the mode
      * \return index of the set mode
@@ -396,7 +396,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     size_t setMode(dcomplex clambda, int m=0);
 
     /**
-     * Set particular value of the effective index, e.g. to one of the values returned by findModes.
+     * Set particular value of the effective wavelength, e.g. to one of the values returned by findModes.
      * If it is not proper mode, exception is throw.
      * \param lambda wavelength of the mode
      * \param loss modal loss (as returned by outLoss)
@@ -404,7 +404,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      * \return index of the set mode
      */
     inline size_t setMode(double lambda, double loss, int m=0) {
-        return setMode(dcomplex(lambda, -lambda*lambda / (4e7*M_PI) * loss));
+        return setMode(dcomplex(lambda, -lambda*lambda / (4e7*PI) * loss), m);
     }
 
     /// Clear computed modes
@@ -537,7 +537,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      */
     double getModalLoss(size_t n) {
         if (n >= modes.size()) throw NoValue(ModalLoss::NAME);
-        return imag(4e7*M_PI / modes[n].lam);  // 2e4  2/µm -> 2/cm
+        return imag(4e7*PI / modes[n].lam);  // 2e4  2/µm -> 2/cm
     }
 
     template <typename T> struct FieldDataBase;

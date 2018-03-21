@@ -10,6 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 import sys
+from time import sleep
 
 import plask  # TODO: make preview optional
 
@@ -295,7 +296,10 @@ class GeometryController(Controller):
             except ValueError:
                 return False
             if tree_element != self.plotted_tree_element:
-                self.geometry_view.toolbar._views.clear()
+                try:
+                    self.geometry_view.toolbar._nav_stack.clear()
+                except AttributeError:
+                    self.geometry_view.toolbar._views.clear()
             self.geometry_view.update_plot(plotted_object, set_limits=set_limits, plane=self.checked_plane)
         except Exception as e:
             self.model.info_message("Could not update geometry view: {}".format(str(e)), Info.WARNING)
@@ -485,6 +489,7 @@ class GeometryController(Controller):
             widget = self._current_controller.get_widget()
             self.parent_for_editor_widget.setWidget(widget)
             widget.update()
+            str(self.vertical_splitter)  # mysteriously without this the splitter is moved to zero position on reload
             split = max(self.vertical_splitter.height() - widget.height() - 12, 256)
             self.parent_for_editor_widget.resize(QSize(0, 0))  # make sure resizeEvent will be triggered
             self.vertical_splitter.moveSplitter(split, 1)  # it will resize parent_for_editor_widget back

@@ -68,7 +68,7 @@ class TreeFragmentModel(InfoSource):
         """
         super(TreeFragmentModel, self).__init__(info_cb)
         self.changed = Signal()
-        self.tree_parent = parent   #parent is not good name, due to its commonly using in Qt!
+        self.tree_parent = parent   # parent is not good name, due to its common use in Qt!
 
     def fire_changed(self, refresh_info=True, *args, **kwargs):
         """

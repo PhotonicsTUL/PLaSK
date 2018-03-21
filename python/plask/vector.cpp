@@ -304,7 +304,7 @@ inline static py::class_<Vec<dim,T>> register_vector_class(std::string name="vec
 // Python constructor
 static py::object new_vector(py::tuple args, py::dict kwargs)
 {
-    int n = py::len(args), nk = py::len(kwargs);
+    auto n = py::len(args), nk = py::len(kwargs);
 
     py::list params;
 

@@ -153,13 +153,13 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     dcomplex epsxz(size_t l, int i) { return conj(coeffs[l][(i>=0)?i:i+nN].c01); }
 
     /// Get \f$ \mu_{zz} \f$
-    dcomplex muzz(size_t l, int i) { return mag[(i>=0)?i:i+nN].c00; }
+    dcomplex muzz(size_t PLASK_UNUSED(l), int i) { return mag[(i>=0)?i:i+nN].c00; }
 
     /// Get \f$ \mu_{xx} \f$
-    dcomplex muxx(size_t l, int i) { return mag[(i>=0)?i:i+nN].c11; }
+    dcomplex muxx(size_t PLASK_UNUSED(l), int i) { return mag[(i>=0)?i:i+nN].c11; }
 
     /// Get \f$ \mu_{yy}^{-1} \f$
-    dcomplex imuyy(size_t l, int i) { return mag[(i>=0)?i:i+nN].c11; }
+    dcomplex imuyy(size_t PLASK_UNUSED(l), int i) { return mag[(i>=0)?i:i+nN].c11; }
 
     /// Get \f$ E_x \f$ index
     size_t iEx(int i) { return 2 * ((i>=0)?i:i+N); }

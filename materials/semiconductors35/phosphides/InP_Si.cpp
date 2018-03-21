@@ -10,7 +10,7 @@ std::string InP_Si::name() const { return NAME; }
 
 std::string InP_Si::str() const { return StringBuilder("InP").dopant("Si", ND); }
 
-InP_Si::InP_Si(DopingAmountType Type, double Val) {
+InP_Si::InP_Si(DopingAmountType /*Type*/, double Val) {
     Nf_RT = Val;
     ND = Val;
     mob_RT = 3900./(1+pow((Nf_RT/1e18),0.51));
@@ -20,7 +20,7 @@ MI_PROPERTY(InP_Si, mob,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> InP_Si::mob(double T) const {
+Tensor2<double> InP_Si::mob(double /*T*/) const {
     return ( Tensor2<double>(mob_RT,mob_RT) );
 }
 
@@ -28,7 +28,7 @@ MI_PROPERTY(InP_Si, Nf,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-double InP_Si::Nf(double T) const {
+double InP_Si::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
@@ -50,7 +50,7 @@ MI_PROPERTY(InP_Si, absp,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-double InP_Si::absp(double lam, double T) const {
+double InP_Si::absp(double lam, double /*T*/) const {
     double tAbsp(0.);
     if ((lam > 1200.) && (lam < 1400.)) // only for 1300 nm TODO
         tAbsp = 1.6 * pow(Nf_RT/1e18, 0.94);

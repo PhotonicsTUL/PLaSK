@@ -245,14 +245,14 @@ Material::ConductivityType AlGaInP::condtype() const { return Material::CONDUCTI
 MI_PROPERTY(AlGaInP, nr,
             MIComment("TODO")
             )
-double AlGaInP::nr(double lam, double T, double n) const {
+double AlGaInP::nr(double /*lam*/, double /*T*/, double /*n*/) const {
     throw NotImplemented("nr for AlGaInP");
 }
 
 MI_PROPERTY(AlGaInP, absp,
             MIComment("TODO")
             )
-double AlGaInP::absp(double lam, double T) const {
+double AlGaInP::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for AlGaInP");
 }
 

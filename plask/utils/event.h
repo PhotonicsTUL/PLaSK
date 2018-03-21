@@ -13,16 +13,18 @@ namespace plask {
  * It contains flags field which describes additional event properties.
  * Subclasses of subclasses of this can also contains additional information about specific type of event.
  */
-template <typename SourceType, typename FlagsType = unsigned char>
+template <typename SourceType, typename _FlagsType = unsigned char>
 class EventWithSourceAndFlags {
 
     /// Source of event.
     SourceType* _source;
 
     /// Event flags (which describes event properties).
-    FlagsType _flags;
+    _FlagsType _flags;
 
 public:
+
+    typedef _FlagsType FlagsType;
 
     /**
      * Get source of event.

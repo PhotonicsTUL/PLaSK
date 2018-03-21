@@ -243,17 +243,24 @@ class NavigationToolbar(NavigationToolbar2QT):
             self.set_message(s)
 
     def clear_history(self):
-        self._views.clear()
-        self._positions.clear()
+        try:
+            self._nav_stack.clear()
+        except AttributeError:
+            self._views.clear()
+            self._positions.clear()
 
     def set_history_buttons(self):
-        if len(self._views) <= 1:
+        try:
+            stack = self._nav_stack
+        except AttributeError:
+            stack = self._views
+        if len(stack) <= 1:
             self._actions['back'].setEnabled(False)
             self._actions['forward'].setEnabled(False)
-        elif self._views._pos == 0:
+        elif stack._pos == 0:
             self._actions['back'].setEnabled(False)
             self._actions['forward'].setEnabled(True)
-        elif self._views._pos == len(self._views)-1:
+        elif stack._pos == len(stack)-1:
             self._actions['back'].setEnabled(True)
             self._actions['forward'].setEnabled(False)
         else:

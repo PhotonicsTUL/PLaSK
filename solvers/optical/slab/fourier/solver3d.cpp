@@ -17,27 +17,10 @@ FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<SolverOver
     smooth = 0.00025;
 }
 
-static inline PML readPML(XMLReader& reader) {
-    PML pml;
-    pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
-    pml.size = reader.getAttribute<double>("size", pml.size);
-    pml.dist = reader.getAttribute<double>("dist", pml.dist);
-    if (reader.hasAttribute("order")) { //TODO Remove in the future
-        writelog(LOG_WARNING, "XML line {:d} in <pml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
-        pml.order = reader.requireAttribute<double>("order");
-    }
-    pml.order = reader.getAttribute<double>("shape", pml.order);
-    return pml;
-}
-
 static inline void updatePML(PML& pml, XMLReader& reader) {
     pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
     pml.size = reader.getAttribute<double>("size", pml.size);
     pml.dist = reader.getAttribute<double>("dist", pml.dist);
-    if (reader.hasAttribute("order")) { //TODO Remove in the future
-        writelog(LOG_WARNING, "XML line {:d} in <pml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
-        pml.order = reader.requireAttribute<double>("order");
-    }
     pml.order = reader.getAttribute<double>("shape", pml.order);
 }
 
@@ -129,7 +112,8 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
                 .get(transfer_method);
             reader.requireTagEnd();
         } else if (param == "pmls") {
-            pml_long = pml_tran = readPML(reader);
+            updatePML(pml_long, reader);
+            updatePML(pml_tran, reader);
             while (reader.requireTagOrEnd()) {
                 std::string node = reader.getNodeName();
                 if (node == "long") {
@@ -146,7 +130,7 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
                                 .value("top", EMISSION_TOP)
                                 .value("bottom", EMISSION_BOTTOM)
                        .get(emission);
-            k0 = 2e3*M_PI / reader.getAttribute<dcomplex>("wavelength", 2e3*M_PI / k0);
+            k0 = 2e3*PI / reader.getAttribute<dcomplex>("wavelength", 2e3*PI / k0);
             ktran = reader.getAttribute<dcomplex>("k-tran", ktran);
             klong = reader.getAttribute<dcomplex>("k-long", klong);
             std::string sym_tran, sym_long;
@@ -198,7 +182,7 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
         case FourierSolver3D::WHAT_WAVELENGTH:
             expansion.setKlong(klong);
             expansion.setKtran(ktran);
-            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*M_PI/x); return transfer->determinant(); }, "lam");
+            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*PI/x); return transfer->determinant(); }, "lam");
             break;
         case FourierSolver3D::WHAT_K0:
             expansion.setKlong(klong);
@@ -215,7 +199,7 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
             expansion.setK0(this->k0);
             expansion.setKlong(klong);
             transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-            root = getRootDigger([this](const dcomplex& x) { expansion.klong = x; return transfer->determinant(); }, "ktran");
+            root = getRootDigger([this](const dcomplex& x) { expansion.ktran = x; return transfer->determinant(); }, "ktran");
             break;
     }
     root->find(start);
@@ -243,10 +227,10 @@ cvector FourierSolver3D::getReflectedAmplitudes(Expansion::Component polarizatio
     double incident = ((polarization==Expansion::E_LONG)? kl : kt);
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
-    double bl = 2*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
+    double bl = 2*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
+           bt = 2*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
 
-    int ordl = getLongSize(), ordt = getTranSize();
+    int ordl = int(getLongSize()), ordt = int(getTranSize());
     for (int t = expansion.symmetric_tran()? 0 : -ordt; t <= ordt; ++t) {
         for (int l = expansion.symmetric_long()? 0 : -ordl; l <= ordl; ++l) {
             size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);
@@ -289,10 +273,10 @@ cvector FourierSolver3D::getTransmittedAmplitudes(Expansion::Component polarizat
     double incident = ((polarization==Expansion::E_LONG)? kl : kt);
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
-    double bl = 2*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
+    double bl = 2*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
+           bt = 2*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
 
-    int ordl = getLongSize(), ordt = getTranSize();
+    int ordl = int(getLongSize()), ordt = int(getTranSize());
     for (int t = expansion.symmetric_tran()? 0 : -ordt; t <= ordt; ++t) {
         for (int l = expansion.symmetric_long()? 0 : -ordl; l <= ordl; ++l) {
             size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);
@@ -380,12 +364,12 @@ double FourierSolver3D::getReflection(Expansion::Component polarization, Transfe
     double incident = ((polarization==Expansion::E_LONG)? kl : kt);
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
-    double bl = 2.*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2.*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
+    double bl = 2.*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
+           bt = 2.*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
 
     double result = 0.;
 
-    int ordl = getLongSize(), ordt = getTranSize();
+    int ordl = int(getLongSize()), ordt = int(getTranSize());
     for (int t = -ordt; t <= ordt; ++t) {
         for (int l = -ordl; l <= ordl; ++l) {
             size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);
@@ -432,12 +416,12 @@ double FourierSolver3D::getTransmission(Expansion::Component polarization, Trans
     double incident = ((polarization==Expansion::E_LONG)? kl : kt);
     incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
-    double bl = 2.*M_PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2.*M_PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
+    double bl = 2.*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
+           bt = 2.*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
 
     double result = 0.;
 
-    int ordl = getLongSize(), ordt = getTranSize();
+    int ordl = int(getLongSize()), ordt = int(getTranSize());
     for (int t = -ordt; t <= ordt; ++t) {
         for (int l = -ordl; l <= ordl; ++l) {
             size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);

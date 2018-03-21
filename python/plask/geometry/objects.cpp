@@ -89,15 +89,15 @@ template <> struct MethodsD<3> {
 
 shared_ptr<GeometryObject> GeometryObject__getitem__(py::object oself, int i) {
     GeometryObject* self = py::extract<GeometryObject*>(oself);
-    int n = self->getChildrenCount();
+    const std::size_t n = self->getChildrenCount();
     if (n == 0) {
         if (self->isLeaf())
             throw TypeError(u8"{0} object has no items", std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))));
         else
             throw IndexError(u8"{0} object has no items", std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))));
     }
-    if (i < 0) i = n + i;
-    if (i < 0 || i >= n) {
+    if (i < 0) i += int(n);
+    if (i < 0 || std::size_t(i) >= n) {
         throw IndexError("{0} index {1} out of range (0 <= index < {2})",
             std::string(py::extract<std::string>(oself.attr("__class__").attr("__name__"))), i, n);
     }
@@ -671,8 +671,8 @@ struct GeometryObjectSteps {
     double get_ply() const { return obj->min_ply; }
     void set_ply(double val) { obj->setMinPly(abs(val)); }
 
-    unsigned get_max_points() const { return obj->max_points; }
-    void set_max_points(unsigned val) { obj->setMaxPoints(val); }
+    unsigned long get_max_points() const { return obj->max_points; }
+    void set_max_points(unsigned long val) { obj->setMaxPoints(val); }
 
     std::string str() { return format("<dist={0}, num={1}>", obj->min_ply, obj->max_points);  }
 

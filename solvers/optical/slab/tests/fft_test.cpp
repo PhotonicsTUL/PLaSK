@@ -21,7 +21,7 @@ std::string normalize_test_case_name(const_string name) {
     BOOST_REQUIRE_EQUAL(distance(a, ae), distance(b, end(bb))); \
     double total_error = 0.;\
     for(; a != ae; ++a, ++b) total_error += abs2(*a - *b); \
-    BOOST_CHECK_SMALL(total_error, distance(begin(aa), ae) * tolerance); \
+    BOOST_CHECK_SMALL(total_error, double(distance(begin(aa), ae)) * tolerance); \
 }
 
 #include "../fourier/fft.h"

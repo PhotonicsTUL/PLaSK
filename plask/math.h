@@ -18,62 +18,89 @@
 #   include <complex>
 #endif // PLASK_MATH_STD
 
-// some compilers, but potentially not all, defines this in cmath (as non-standard extension)
-// (numbers are copy/pasted from gcc's math.h):
-#ifndef M_PI
-#   define M_PI 3.14159265358979323846  /* pi */
-#endif
-
-#ifndef M_E
-#   define M_E		2.7182818284590452354	/* e */
-#endif
-
-#ifndef M_LOG2E
-#   define M_LOG2E	1.4426950408889634074	/* log_2 e */
-#endif
-
-#ifndef M_LOG10E
-#   define M_LOG10E 0.43429448190325182765	/* log_10 e */
-#endif
-
-#ifndef M_LN2
-#   define M_LN2	0.69314718055994530942	/* log_e 2 */
-#endif
-
-#ifndef M_LN10
-#   define M_LN10	2.30258509299404568402	/* log_e 10 */
-#endif
-
-#ifndef M_PI_2
-#   define M_PI_2	1.57079632679489661923	/* pi/2 */
-#endif
-
-#ifndef M_PI_4
-#   define M_PI_4	0.78539816339744830962	/* pi/4 */
-#endif
-
-#ifndef M_1_PI
-#   define M_1_PI	0.31830988618379067154	/* 1/pi */
-#endif
-
-#ifndef M_2_PI
-#   define M_2_PI	0.63661977236758134308	/* 2/pi */
-#endif
-
-#ifndef M_2_SQRTPI
-#   define M_2_SQRTPI   1.12837916709551257390	/* 2/sqrt(pi) */
-#endif
-
-#ifndef M_SQRT2
-#   define M_SQRT2  1.41421356237309504880	/* sqrt(2) */
-#endif
-
-#ifndef M_SQRT1_2
-#   define M_SQRT1_2	0.70710678118654752440	/* 1/sqrt(2) */
-#endif
-
-
 namespace plask {
+
+// std. libraries of some compilers, but potentially not all, defines this in cmath (as non-standard extension),
+// for other compilers, numbers are copy/pasted from gcc's math.h:
+#ifdef M_PI     /* pi */
+    constexpr double PI = M_PI;
+#else
+    constexpr double PI = 3.14159265358979323846;
+#endif
+
+#ifdef M_E      /* e */
+    constexpr double E = M_E;
+#else
+    constexpr double E = 2.7182818284590452354;
+#endif
+
+#ifdef M_LOG2E  /* log_2 e */
+    constexpr double LOG2E = M_LOG2E;
+#else
+    constexpr double LOG2E = 1.4426950408889634074;
+#endif
+
+#ifdef M_LOG10E /* log_10 e */
+    constexpr double LOG10E = M_LOG10E;
+#else
+    constexpr double LOG10E = 0.43429448190325182765;
+#endif
+
+#ifdef M_LN2 /* log_e 2 */
+    constexpr double LN2 = M_LN2;
+#else
+    constexpr double LN2 = 0.69314718055994530942;
+#endif
+
+#ifdef M_LN10 /* log_e 10 */
+    constexpr double LN10 = M_LN10;
+#else
+    constexpr double LN10 = 2.30258509299404568402;
+#endif
+
+#ifdef M_PI_2 /* pi/2 */
+    constexpr double PI_2 = M_PI_2;
+#else
+    constexpr double PI_2 = 1.57079632679489661923;
+#endif
+
+#ifdef M_PI_4 /* pi/4 */
+    constexpr double PI_4 = M_PI_4;
+#else
+    constexpr double PI_4 = 0.78539816339744830962;
+#endif
+
+#ifdef M_1_PI /* 1/pi */
+    constexpr double _1_PI = M_1_PI;
+#else
+    constexpr double _1_PI = 0.31830988618379067154;
+#endif
+
+#ifdef M_2_PI /* 2/pi */
+    constexpr double _2_PI = M_2_PI;
+#else
+    constexpr double _2_PI = 0.63661977236758134308;
+#endif
+
+#ifdef M_2_SQRTPI /* 2/sqrt(pi) */
+    constexpr double _2_SQRTPI = M_2_SQRTPI;
+#else
+    constexpr double _2_SQRTPI = 1.12837916709551257390;
+#endif
+
+#ifdef M_SQRT2 /* sqrt(2) */
+    constexpr double SQRT2 = M_SQRT2;
+#else
+    constexpr double SQRT2 = 1.41421356237309504880;
+#endif
+
+#ifdef M_SQRT1_2 /* 1/sqrt(2) */
+    constexpr double SQRT1_2 = M_SQRT1_2;
+#else
+    constexpr double SQRT1_2 = 0.70710678118654752440;
+#endif
+
+constexpr double PI_DOUBLED = 6.28318530717958647692;
 
 // size_t is preferred for array indexing
 using std::size_t;
@@ -95,12 +122,9 @@ using std::ptrdiff_t;
     const dcomplex I(0.,1.);
 #endif // PLASK_MATH_STD
 
-inline double conj(long double x) { return x; }
+inline long double conj(long double x) { return x; }
 inline double conj(double x) { return x; }
-inline double conj(float x) { return x; }
-
-const double PI = M_PI;
-const double PI_DOUBLED = 6.28318530717958647692;
+inline float conj(float x) { return x; }
 
 // Limits for comparing approximate numbers with zero
 constexpr double SMALL = std::numeric_limits<double>::epsilon(); ///< The numeric precision limit

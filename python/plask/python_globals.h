@@ -262,7 +262,7 @@ inline AxisNames* getCurrentAxes() {
 namespace detail
 {
     template <size_t i>
-    static inline void _parse_kwargs(py::list& /*arglist*/, py::dict& /*kwargs*/) {}
+    static inline void _parse_kwargs(py::list& PLASK_UNUSED(arglist), py::dict& PLASK_UNUSED(kwargs)) {}
 
     template <size_t i, typename... Names>
     static inline void _parse_kwargs(py::list& arglist, py::dict& kwargs, const std::string& name, const Names&... names) {

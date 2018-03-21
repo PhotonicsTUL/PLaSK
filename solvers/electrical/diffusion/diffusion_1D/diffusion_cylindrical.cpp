@@ -434,7 +434,7 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
         double j2 = 0.0;
 
         auto& current_mesh = this->current_mesh();
-        for (std::ptrdiff_t i = 0; i < std::ptrdiff_t(current_mesh.size()) - 1; i++) // loop over all elements
+        for (int i = 0; i < int(current_mesh.size()) - 1; i++) // loop over all elements
         {
             r1 = current_mesh[i]*1e-4;
             r2 = current_mesh[i+1]*1e-4;
@@ -469,7 +469,7 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
         double p3e = 0.0;
 
         auto& current_mesh = this->current_mesh();
-        for (std::ptrdiff_t i = 0; i < (std::ptrdiff_t(current_mesh.size()) - 1)/2; i++) // loop over all elements
+        for (int i = 0; i < (int(current_mesh.size()) - 1)/2; i++) // loop over all elements
         {
             r1 = current_mesh[2*i]*1e-4;
             r3 = current_mesh[2*i + 2]*1e-4;
@@ -531,7 +531,7 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
         double j2 = 0.0;
 
         auto& current_mesh = this->current_mesh();
-        for (std::ptrdiff_t i = 0; i < std::ptrdiff_t(current_mesh.size()) - 1; i++) // loop over all elements
+        for (int i = 0; i < int(current_mesh.size()) - 1; i++) // loop over all elements
         {
             r1 = current_mesh[i]*1e-4;
             r2 = current_mesh[i+1]*1e-4;
@@ -545,12 +545,12 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
 
             K = 4*K/((r2-r1)*(r2-r1));
 
-            k11e = M_PI*(r2-r1)/4*(( K+E)*(r1+r2) + E*(3*r1-r2)/3);
-            k12e = M_PI*(r2-r1)/4*((-K+E)*(r1+r2) - E*(  r1+r2)/3);
-            k22e = M_PI*(r2-r1)/4*(( K+E)*(r1+r2) + E*(3*r2-r1)/3);
+            k11e = plask::PI*(r2-r1)/4*(( K+E)*(r1+r2) + E*(3*r1-r2)/3);
+            k12e = plask::PI*(r2-r1)/4*((-K+E)*(r1+r2) - E*(  r1+r2)/3);
+            k22e = plask::PI*(r2-r1)/4*(( K+E)*(r1+r2) + E*(3*r2-r1)/3);
 
-            p1e  = M_PI*(r2-r1)*(F/3*(2*r1+r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j1*r1+j1*r2+j2*r1+r2*j2));
-            p2e  = M_PI*(r2-r1)*(F/3*(r1+2*r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j2*r2+j1*r2+j2*r1+r1*j1));
+            p1e  = plask::PI*(r2-r1)*(F/3*(2*r1+r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j1*r1+j1*r2+j2*r1+r2*j2));
+            p2e  = plask::PI*(r2-r1)*(F/3*(r1+2*r2) + (1/(6*plask::phys::qe*global_QW_width))*(3*j2*r2+j1*r2+j2*r1+r1*j1));
 
             A_matrix[2*i + 1] += k11e;
             A_matrix[2*i + 2] += k12e;
@@ -568,7 +568,7 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
         double p3e = 0.0;
 
         auto& current_mesh = this->current_mesh();
-        for (std::ptrdiff_t i = 0; i < (std::ptrdiff_t(current_mesh.size()) - 1)/2; i++) // loop over all elements
+        for (int i = 0; i < (int(current_mesh.size()) - 1)/2; i++) // loop over all elements
         {
             r1 = current_mesh[2*i]*1e-4;
             r3 = current_mesh[2*i + 2]*1e-4;
@@ -578,7 +578,7 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
             E = this->E(2*i + 1);
 
 
-            double Cnst = M_PI*(r3-r1)/30;
+            double Cnst = plask::PI*(r3-r1)/30;
 
             k11e = Cnst*(10*K*(11*r1+3*r3)/((r3-r1)*(r3-r1)) + E*(7*r1+r3));
             k12e = Cnst*(-40*K*(3*r1+r3)/((r3-r1)*(r3-r1)) + 4*E*r1);            // = k21e
@@ -693,7 +693,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 }
 
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::nSecondDeriv(int i)
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::nSecondDeriv(std::size_t i)
 {
     double n_second_deriv = 0.0;     // second derivative with respect to r
     double dr = 0.0;
@@ -704,7 +704,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
         dr = (current_mesh.last() - current_mesh.first())*1e-4/(double)current_mesh.size();
         double n_right = 0, n_left = 0, n_central = 0;  // n values for derivative: right-side, left-side, central
 
-        if ( (i > 0) && (i <  int(current_mesh.size()) - 1) )     // middle of the range
+        if ( (i > 0) && (i + 1 <  current_mesh.size()) )     // middle of the range
         {
             n_right = n_present[i+1];
             n_left = n_present[i-1];
@@ -749,7 +749,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 }
 
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::leftSide(int i)
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::leftSide(std::size_t i)
 {
     double T = T_on_the_mesh[i];
     double n = n_present[i];
@@ -779,7 +779,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
     return int_val;
 }
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::rightSide(int i)
+template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::rightSide(std::size_t i)
 {
     return -abs(j_on_the_mesh[i][1])*1e+3/(plask::phys::qe*global_QW_width);
 }
@@ -861,39 +861,32 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
 template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getZQWCoordinate()
 {
     double coordinate = 0.0;
-    int no_QW = detected_QW.size();
-    int no_Box = 0;
-
-    if ((no_QW%2 == 0) && (no_QW > 0))
-    {
+    std::size_t no_QW = detected_QW.size();
+    if (no_QW == 0)
+        throw Exception("No quantum wells defined");
+    // here no_QW > 0:
+    std::size_t no_Box;
+    if (no_QW%2 == 0) {
         no_Box = no_QW/2 -1;
         coordinate = (detected_QW[no_Box].lower[1] + detected_QW[no_Box].upper[1]) / 2.0;
     }
-    else if ((no_QW%2 == 1) && (no_QW > 0))
-    {
+    else {
         no_Box = (no_QW - 1)/2;
         coordinate = (detected_QW[no_Box].lower[1] + detected_QW[no_Box].upper[1]) / 2.0;
     }
-    else
-        throw Exception("No quantum wells defined");
-
     return coordinate;
 }
 
 template<typename Geometry2DType> std::vector<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getZQWCoordinates()
 {
-    int no_QW = detected_QW.size();
+    std::size_t no_QW = detected_QW.size();
+    if (no_QW == 0)
+        throw Exception("No quantum wells defined");
+
     std::vector<double> coordinates(no_QW);
 
-    if (no_QW > 0)
-    {
-        for (int i=0; i<no_QW; i++)
-        {
-            coordinates[i] = (detected_QW[i].lower[1] + detected_QW[i].upper[1]) / 2.0;
-        }
-    }
-    else
-        throw Exception("No quantum wells defined");
+    for (std::size_t i = 0; i < no_QW; i++)
+        coordinates[i] = (detected_QW[i].lower[1] + detected_QW[i].upper[1]) / 2.0;
 
     return coordinates;
 }
@@ -920,11 +913,11 @@ plask::DataVector<const Tensor2<double>> FiniteElementMethodDiffusion2DSolver<Ge
 
         for (std::size_t j = 0; j < detected_QW.size(); ++j)
         {
-            int k = mesh_Li.index(i, j);
+            std::size_t k = mesh_Li.index(i, j);
             current_Li += Tensor2<double>(real(Le[k].c0*conj(Le[k].c0) + Le[k].c1*conj(Le[k].c1)),
                                           real(Le[k].c2*conj(Le[k].c2)));
         }
-        Li[i] = current_Li / detected_QW.size() * (0.5 / Z0);
+        Li[i] = current_Li / double(detected_QW.size()) * (0.5 / Z0);
     }
     return Li;
 }

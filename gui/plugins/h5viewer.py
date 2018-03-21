@@ -31,6 +31,7 @@ from gui.qt.QtWidgets import *
 from gui.utils.matplotlib import PlotWidgetBase, cursors
 from gui.utils.qsignals import BlockQtSignals
 from gui.utils.widgets import set_icon_size
+from gui.xpldocument import XPLDocument
 
 if QT_API == 'PyQt5':
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -284,6 +285,8 @@ class ResultsWindow(QMainWindow):
         self.showMaximized()
 
     def update_geometries(self):
+        if not isinstance(self.document, XPLDocument):
+            return False
         self.manager = plask.Manager(draft=True)
         self.geometries2d = [g.name for g in self.document.geometry.model.get_roots(2)]
         self.geometries3d = [g.name for g in self.document.geometry.model.get_roots(3)]

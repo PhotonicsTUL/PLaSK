@@ -111,7 +111,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
         if (junction_conductivity.size() != 1) {
             double condy = 0.;
             for (auto cond: junction_conductivity) condy += cond;
-            junction_conductivity.reset(1, condy / junction_conductivity.size());
+            junction_conductivity.reset(1, condy / double(junction_conductivity.size()));
         }
         return;
     }
@@ -173,7 +173,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
     if (junction_conductivity.size() != condsize) {
         double condy = 0.;
         for (auto cond: junction_conductivity) condy += cond;
-        junction_conductivity.reset(max(condsize, size_t(1)), condy / junction_conductivity.size());
+        junction_conductivity.reset(max(condsize, size_t(1)), condy / double(junction_conductivity.size()));
     }
 }
 
@@ -506,14 +506,14 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(DpbMatri
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
     // Factorize matrix
-    dpbtrf(UPLO, A.size, A.kd, A.data, A.ld+1, info);
+    dpbtrf(UPLO, int(A.size), int(A.kd), A.data, int(A.ld)+1, info);
     if (info < 0)
         throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", this->getId(), -info);
     else if (info > 0)
         throw ComputationError(this->getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
 
     // Find solutions
-    dpbtrs(UPLO, A.size, A.kd, 1, A.data, A.ld+1, B.data(), B.size(), info);
+    dpbtrs(UPLO, int(A.size), int(A.kd), 1, A.data, int(A.ld)+1, B.data(), int(B.size()), info);
     if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
@@ -529,7 +529,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(DgbMatri
     A.mirror();
 
     // Factorize matrix
-    dgbtrf(A.size, A.size, A.kd, A.kd, A.data, A.ld+1, ipiv.get(), info);
+    dgbtrf(int(A.size), int(A.size), int(A.kd), int(A.kd), A.data, int(A.ld+1), ipiv.get(), info);
     if (info < 0) {
         throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
     } else if (info > 0) {
@@ -537,7 +537,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(DgbMatri
     }
 
     // Find solutions
-    dgbtrs('N', A.size, A.kd, A.kd, 1, A.data, A.ld+1, ipiv.get(), B.data(), B.size(), info);
+    dgbtrs('N', int(A.size), int(A.kd), int(A.kd), 1, A.data, int(A.ld+1), ipiv.get(), B.data(), int(B.size()), info);
     if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
@@ -553,7 +553,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::solveMatrix(SparseBa
     DataVector<double> x = potentials.copy(); // We use previous potentials as initial solution
     double err;
     try {
-        int iter = solveDCG(A, precond, x.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
+        std::size_t iter = solveDCG(A, precond, x.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
         this->writelog(LOG_DETAIL, "Conjugate gradient converged after {0} iterations.", iter);
     } catch (DCGError exc) {
         throw ComputationError(this->getId(), "Conjugate gradient failed:, {0}", exc.what());
@@ -643,7 +643,7 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::
             result += currents[element.getIndex()].c1 * (rout*rout - rin*rin);
         }
     }
-    return result * M_PI * 0.01; // kA/cm² µm² -->  mA
+    return result * plask::PI * 0.01; // kA/cm² µm² -->  mA
 }
 
 
@@ -763,7 +763,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getTotalEne
         W += width * height * midpoint.rad_r() * w;
     }
     //TODO add outsides of computational area
-    return 2.*M_PI * 0.5e-18 * phys::epsilon0 * W; // 1e-18 µm³ -> m³
+    return 2.*plask::PI * 0.5e-18 * phys::epsilon0 * W; // 1e-18 µm³ -> m³
 }
 
 
@@ -802,7 +802,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getTotalHea
         double r = e.getMidpoint().rad_r();
         W += width * height * r * heats[e.getIndex()];
     }
-    return 2e-15*M_PI * W; // 1e-15 µm³ -> m³, W -> mW
+    return 2e-15*plask::PI * W; // 1e-15 µm³ -> m³, W -> mW
 }
 
 

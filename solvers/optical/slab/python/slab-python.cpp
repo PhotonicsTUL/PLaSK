@@ -15,7 +15,7 @@ struct CMatrix_Python {
     CMatrix_Python(const CMatrix_Python& src): data(src.data) {}
 
     static PyObject* convert(const cmatrix& self) {
-        npy_intp dims[2] = { self.rows(), self.cols() };
+        npy_intp dims[2] = { static_cast<npy_intp>(self.rows()), static_cast<npy_intp>(self.cols()) };
         npy_intp strides[2] = { sizeof(dcomplex), npy_intp(self.rows() * sizeof(dcomplex)) };
 
         PyObject* arr = PyArray_New(&PyArray_Type, 2, dims, NPY_CDOUBLE, strides,
@@ -35,8 +35,8 @@ struct CDiagonal_Python {
     CDiagonal_Python(const CDiagonal_Python& src): data(src.data) {}
 
     static PyObject* convert(const cdiagonal& self) {
-        npy_intp dims[1] = {self.size()};
-        npy_intp strides[1] = {sizeof(dcomplex)};
+        npy_intp dims[1] = { static_cast<npy_intp>(self.size()) };
+        npy_intp strides[1] = { sizeof(dcomplex) };
 
         PyObject* arr = PyArray_New(&PyArray_Type, 1, dims, NPY_CDOUBLE, strides,
                                     (void*)self.data(), 0, 0, NULL);

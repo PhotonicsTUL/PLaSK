@@ -163,29 +163,29 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     /// Get \f$ \varepsilon_{xx} \f$
     dcomplex epsxx(size_t lay, int l, int t) {
-        if (l < 0) l += nNl;
-        if (t < 0) t += nNt;
+        if (l < 0) l += int(nNl);
+        if (t < 0) t += int(nNt);
         return coeffs[lay][nNl * t + l].c00;
     }
 
     /// Get \f$ \varepsilon_{yy} \f$
     dcomplex epsyy(size_t lay, int l, int t) {
-        if (l < 0) l += nNl;
-        if (t < 0) t += nNt;
+        if (l < 0) l += int(nNl);
+        if (t < 0) t += int(nNt);
         return coeffs[lay][nNl * t + l].c11;
     }
 
     /// Get \f$ \varepsilon_{zz}^{-1} \f$
     dcomplex iepszz(size_t lay, int l, int t) {
-        if (l < 0) l += nNl;
-        if (t < 0) t += nNt;
+        if (l < 0) l += int(nNl);
+        if (t < 0) t += int(nNt);
         return coeffs[lay][nNl * t + l].c22;
     }
 
     /// Get \f$ \varepsilon_{xy} \f$
     dcomplex epsxy(size_t lay, int l, int t) {
-        if (l < 0) l += nNl;
-        if (t < 0) t += nNt;
+        if (l < 0) l += int(nNl);
+        if (t < 0) t += int(nNt);
         return coeffs[lay][nNl * t + l].c01;
     }
 
@@ -193,47 +193,44 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     dcomplex epsyx(size_t lay, int l, int t) { return conj(epsxy(lay, l, t)); }
 
     /// Get \f$ \mu_{xx} \f$
-    dcomplex muxx(size_t lay, int l, int t) { return mag_long[(l>=0)?l:l+nNl].c11 * mag_tran[(t>=0)?t:t+nNt].c00; }
+    dcomplex muxx(size_t PLASK_UNUSED(lay), int l, int t) { return mag_long[(l>=0)?l:l+nNl].c11 * mag_tran[(t>=0)?t:t+nNt].c00; }
 
     /// Get \f$ \mu_{yy} \f$
-    dcomplex muyy(size_t lay, int l, int t) { return mag_long[(l>=0)?l:l+nNl].c00 * mag_tran[(t>=0)?t:t+nNt].c11; }
+    dcomplex muyy(size_t PLASK_UNUSED(lay), int l, int t) { return mag_long[(l>=0)?l:l+nNl].c00 * mag_tran[(t>=0)?t:t+nNt].c11; }
 
     /// Get \f$ \mu_{zz}^{-1} \f$
-    dcomplex imuzz(size_t lay, int l, int t) { return mag_long[(l>=0)?l:l+nNl].c11 * mag_tran[(t>=0)?t:t+nNt].c11; }
+    dcomplex imuzz(size_t PLASK_UNUSED(lay), int l, int t) { return mag_long[(l>=0)?l:l+nNl].c11 * mag_tran[(t>=0)?t:t+nNt].c11; }
 
+	private:
+	void normalize_l_t_sym(int& l, int& t) {
+		if (l < 0) { if (symmetric_long()) l = -l; else l += int(Nl); }
+		if (t < 0) { if (symmetric_tran()) t = -t; else t += int(Nt); }
+		assert(0 <= l && std::size_t(l) < Nl);
+		assert(0 <= t && std::size_t(t) < Nt);
+	}
+
+	public:
     /// Get \f$ E_x \f$ index
     size_t iEx(int l, int t) {
-        if (l < 0) { if (symmetric_long()) l = -l; else l += Nl; }
-        if (t < 0) { if (symmetric_tran()) t = -t; else t += Nt; }
-        assert(0 <= l && l < Nl);
-        assert(0 <= t && t < Nt);
+		normalize_l_t_sym(l, t);
         return 2 * (Nl*t + l);
     }
 
     /// Get \f$ E_y \f$ index
     size_t iEy(int l, int t) {
-        if (l < 0) { if (symmetric_long()) l = -l; else l += Nl; }
-        if (t < 0) { if (symmetric_tran()) t = -t; else t += Nt; }
-        assert(0 <= l && l < Nl);
-        assert(0 <= t && t < Nt);
+		normalize_l_t_sym(l, t);
         return 2 * (Nl*t + l) + 1;
     }
 
     /// Get \f$ H_x \f$ index
     size_t iHx(int l, int t) {
-        if (l < 0) { if (symmetric_long()) l = -l; else l += Nl; }
-        if (t < 0) { if (symmetric_tran()) t = -t; else t += Nt; }
-        assert(0 <= l && l < Nl);
-        assert(0 <= t && t < Nt);
+		normalize_l_t_sym(l, t);
         return 2 * (Nl*t + l) + 1;
     }
 
     /// Get \f$ H_y \f$ index
     size_t iHy(int l, int t) {
-        if (l < 0) { if (symmetric_long()) l = -l; else l += Nl; }
-        if (t < 0) { if (symmetric_tran()) t = -t; else t += Nt; }
-        assert(0 <= l && l < Nl);
-        assert(0 <= t && t < Nt);
+		normalize_l_t_sym(l, t);
         return 2 * (Nl*t + l);
     }
 };

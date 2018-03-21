@@ -6,6 +6,7 @@
 
 #include <boost/iterator/transform_iterator.hpp>
 #include "../utils/system.h"
+#include "../utils/warnings.h"
 
 namespace plask {
 
@@ -267,7 +268,7 @@ struct PLASK_API MaterialsDB {
          * @param m1_weight weight of first composition and dopant
          * @return constructed material
          */
-        shared_ptr<Material> operator()(double /*m1_weight*/) const override {
+        shared_ptr<Material> operator()(double PLASK_UNUSED(m1_weight)) const override {
             return plask::make_shared<DummyMaterial>(full_name);
         }
 

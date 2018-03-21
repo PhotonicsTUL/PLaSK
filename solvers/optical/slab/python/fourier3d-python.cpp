@@ -53,7 +53,7 @@ std::string FourierSolver3D_Mode_symmetry(const FourierSolver3D::Mode& self) {
 
 std::string FourierSolver3D_Mode_str(const FourierSolver3D::Mode& self) {
     return format(u8"<lam: {}nm, klong: {}/um, ktran: {}/um, symmetry: ({}), power: {:.2g}mW>",
-                  str(2e3*M_PI/self.k0, u8"({:.3f}{:+.3g}j)", "{:.3f}"),
+                  str(2e3*PI/self.k0, u8"({:.3f}{:+.3g}j)", "{:.3f}"),
                   str(self.klong, u8"{:.3f}{:+.3g}j", "{:.3f}"),
                   str(self.ktran, u8"{:.3f}{:+.3g}j", "{:.3f}"),
                   FourierSolver3D_Mode_symmetry(self),
@@ -62,7 +62,7 @@ std::string FourierSolver3D_Mode_str(const FourierSolver3D::Mode& self) {
 }
 std::string FourierSolver3D_Mode_repr(const FourierSolver3D::Mode& self) {
     return format(u8"Fourier3D.Mode(lam={0}, klong={1}, ktran={2}, symmetry=({3}), power={4})",
-                  str(2e3*M_PI/self.k0),
+                  str(2e3*PI/self.k0),
                   str(self.klong),
                   str(self.ktran),
                   FourierSolver3D_Mode_symmetry(self),
@@ -304,7 +304,7 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
 
     if (wavelength) {
         if (k0) throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");
-        expansion->setK0(2e3*M_PI / (*wavelength));
+        expansion->setK0(2e3*PI / (*wavelength));
     } else if (k0)
         expansion->setK0(*k0);
     else
@@ -321,7 +321,7 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
             return py::object(self->getDeterminant());
         case WHAT_WAVELENGTH:
             return UFUNC<dcomplex>(
-                [self](dcomplex x) -> dcomplex { self->expansion.setK0(2e3*M_PI/x); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->expansion.setK0(2e3*PI/x); return self->getDeterminant(); },
                 array
             );
         case WHAT_K0:
@@ -370,7 +370,7 @@ static size_t FourierSolver3D_setMode(py::tuple args, py::dict kwargs) {
 
     if (wavelength) {
         if (k0) throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");
-        self->expansion.setK0(2e3*M_PI / (*wavelength));
+        self->expansion.setK0(2e3*PI / (*wavelength));
     } else if (k0)
         self->expansion.setK0(*k0);
     else
@@ -414,9 +414,9 @@ size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
 static py::object FourierSolver3D_reflectedAmplitudes(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
     if (!self.initCalculation()) {
         self.setExpansionDefaults(false);
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     } else
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     auto data = self.getReflectedAmplitudes(polarization, incidence);
     return arrayFromVec3D<NPY_DOUBLE>(data, self.minor(), 2);
 }
@@ -424,9 +424,9 @@ static py::object FourierSolver3D_reflectedAmplitudes(FourierSolver3D& self, dou
 static py::object FourierSolver3D_transmittedAmplitudes(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
     if (!self.initCalculation()) {
         self.setExpansionDefaults(false);
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     } else
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     auto data = self.getTransmittedAmplitudes(polarization, incidence);
     return arrayFromVec3D<NPY_DOUBLE>(data, self.minor(), 2);
 }
@@ -434,19 +434,19 @@ static py::object FourierSolver3D_transmittedAmplitudes(FourierSolver3D& self, d
 static py::object FourierSolver3D_reflectedCoefficients1(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
     if (!self.initCalculation()) {
         self.setExpansionDefaults(false);
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     } else
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     auto data = self.getReflectedCoefficients(polarization, incidence);
     return arrayFromVec3D<NPY_CDOUBLE>(data, self.minor(), 3);
 }
 
 static py::object FourierSolver3D_transmittedCoefficients1(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
     if (!self.initCalculation()) {
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
         self.setExpansionDefaults(false);
     } else
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     auto data = self.getTransmittedCoefficients(polarization, incidence);
     return arrayFromVec3D<NPY_CDOUBLE>(data, self.minor(), 3);
 }
@@ -454,34 +454,34 @@ static py::object FourierSolver3D_transmittedCoefficients1(FourierSolver3D& self
 static py::object FourierSolver3D_reflectedCoefficients2(FourierSolver3D& self, double lam, size_t idx, Transfer::IncidentDirection incidence) {
     if (!self.initCalculation()) {
         self.setExpansionDefaults(false);
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     } else
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     auto data = self.getReflectedCoefficients(idx, incidence);
     return arrayFromVec3D<NPY_CDOUBLE>(data, self.minor(), 3);
 }
 
 static py::object FourierSolver3D_transmittedCoefficients2(FourierSolver3D& self, double lam, size_t idx, Transfer::IncidentDirection incidence) {
     if (!self.initCalculation()) {
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
         self.setExpansionDefaults(false);
     } else
-        self.expansion.setK0(2e3*M_PI/lam);
+        self.expansion.setK0(2e3*PI/lam);
     auto data = self.getTransmittedCoefficients(idx, incidence);
     return arrayFromVec3D<NPY_CDOUBLE>(data, self.minor(), 3);
 }
 
 
 static py::object FourierSolver3D_getFieldVectorE(FourierSolver3D& self, int num, double z) {
-    if (num < 0) num = self.modes.size() + num;
+    if (num < 0) num += int(self.modes.size());
     if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
-    return arrayFromVec3D<NPY_CDOUBLE>(self.getFieldVectorE(num, z), self.minor(), 3);
+    return arrayFromVec3D<NPY_CDOUBLE>(self.getFieldVectorE(std::size_t(num), z), self.minor(), 3);
 }
 
 static py::object FourierSolver3D_getFieldVectorH(FourierSolver3D& self, int num, double z) {
-    if (num < 0) num = self.modes.size() + num;
+    if (num < 0) num += int(self.modes.size());
     if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
-    return arrayFromVec3D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), self.minor(), 3);
+    return arrayFromVec3D<NPY_CDOUBLE>(self.getFieldVectorH(std::size_t(num), z), self.minor(), 3);
 }
 
 static py::object FourierSolver3D_getReflectedFieldVectorE(FourierSolver3D::Reflected& self, double z) {

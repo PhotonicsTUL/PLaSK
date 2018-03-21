@@ -91,29 +91,31 @@ if CURRENT_DIR is None:
     CURRENT_DIR = os.getcwd()
 
 
-RECENT = CONFIG['session/recent_files']
-if RECENT is None:
-    RECENT = []
-elif type(RECENT) is not list:
-    RECENT = [RECENT]
+def load_recent_files():
+    CONFIG.sync()
+    recent = CONFIG['session/recent_files']
+    if recent is None:
+        recent = []
+    elif type(recent) is not list:
+        recent = [recent]
+    return recent[-10:]
 
 
 def update_recent_files(filename):
-    global RECENT, CURRENT_DIR
+    global CURRENT_DIR
     filename = filename.replace('/', os.path.sep)
     CURRENT_DIR = os.path.dirname(filename)
     CONFIG['session/recent_dir'] = CURRENT_DIR
+    recent = load_recent_files()
     try:
-        RECENT.remove(filename)
+        recent.remove(filename)
     except ValueError:
         pass
     if os.path.isfile(filename):
-        RECENT.append(filename)
-    RECENT = RECENT[-10:]
-    CONFIG['session/recent_files'] = RECENT
+        recent = recent[-9:]
+        recent.append(filename)
+    CONFIG['session/recent_files'] = recent
     CONFIG.sync()
-    for window in WINDOWS:
-        window.update_recent_list()
 
 
 def close_all_windows():
@@ -206,37 +208,40 @@ class MainWindow(QMainWindow):
 
         new_action = QAction(QIcon.fromTheme('document-new'), '&New', self)
         new_action.setShortcut(QKeySequence.New)
-        new_action.setStatusTip('New XPL file')
+        new_action.setStatusTip('Create a new XPL file')
         new_action.triggered.connect(lambda: self.new(XPLDocument))
 
         newpy_action = QAction(QIcon.fromTheme('document-new'), 'New &Python', self)
-        newpy_action.setStatusTip('New Python file')
+        newpy_action.setStatusTip('Create a new Python file')
         newpy_action.triggered.connect(lambda: self.new(PyDocument))
 
         open_action = QAction(QIcon.fromTheme('document-open'), '&Open...', self)
         open_action.setShortcut(QKeySequence.Open)
-        open_action.setStatusTip('Open XPL file')
+        open_action.setStatusTip('Open an existing file')
         open_action.triggered.connect(self.open)
 
         save_action = QAction(QIcon.fromTheme('document-save'), '&Save', self)
         save_action.setShortcut(QKeySequence.Save)
-        save_action.setStatusTip('Save XPL file')
+        save_action.setStatusTip('Save the file to disk')
         save_action.triggered.connect(self.save)
 
         saveas_action = QAction(QIcon.fromTheme('document-save-as'), 'Save &As...', self)
         saveas_action.setShortcut(QKeySequence.SaveAs)
-        saveas_action.setStatusTip('Save XPL file, ask for namploe of file')
+        saveas_action.setStatusTip('Save the file to disk asking for a new name')
         saveas_action.triggered.connect(self.save_as)
 
-        launch_action = QAction(QIcon.fromTheme('media-playback-start', QIcon(':/media-playback-start.png')),
-                                '&Launch...', self)
+        reload_action = QAction(QIcon.fromTheme('view-refresh'), '&Reload', self)
+        reload_action.setStatusTip('Reload the current file from disk')
+        reload_action.triggered.connect(self.reload)
+
+        launch_action = QAction(QIcon.fromTheme('media-playback-start'), '&Launch...', self)
         launch_action.setShortcut('F5')
-        launch_action.setStatusTip('Launch current file in PLaSK')
+        launch_action.setStatusTip('Launch the current file in PLaSK')
         launch_action.triggered.connect(lambda: launch_plask(self))
 
         goto_action = QAction(QIcon.fromTheme('go-jump'), '&Go to Line...', self)
         goto_action.setShortcut(Qt.CTRL + Qt.Key_L)
-        goto_action.setStatusTip('Go to specified line')
+        goto_action.setStatusTip('Go to the specified line')
         goto_action.triggered.connect(self.on_goto_line)
 
         plot_material_action = QAction(QIcon.fromTheme('matplotlib'), 'Examine &Material Parameters...', self)
@@ -264,9 +269,9 @@ class MainWindow(QMainWindow):
         exit_action.setStatusTip('Exit application')
         exit_action.triggered.connect(self.close)
 
-        self.recent_menu = QMenu('Open &Recent')
+        self.recent_menu = QMenu('Open R&ecent')
         self.recent_menu.setIcon(QIcon.fromTheme('document-open-recent'))
-        self.update_recent_list()
+        self.recent_menu.aboutToShow.connect(self.update_recent_menu)
 
         self.menu = QMenu('&PLaSK')
 
@@ -276,6 +281,7 @@ class MainWindow(QMainWindow):
         self.menu.addMenu(self.recent_menu)
         self.menu.addAction(save_action)
         self.menu.addAction(saveas_action)
+        self.menu.addAction(reload_action)
         self.menu.addSeparator()
         self.menu.addAction(goto_action)
         self.menu.addAction(self.showsource_action)
@@ -389,35 +395,35 @@ class MainWindow(QMainWindow):
         if self.current_tab_index == -1: return None
         return self.document.controller_by_index(self.current_tab_index)
 
-    def update_recent_list(self):
+    def update_recent_menu(self):
         self.recent_menu.clear()
         class Func(object):
             def __init__(s, f): s.f = f
             def __call__(s): return self.open(s.f)
-        for i,f in enumerate(reversed(RECENT)):
+        for i,f in enumerate(reversed(load_recent_files())):
             action = QAction(f, self)
             action.triggered.connect(Func(f))
             # action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_0 + (i+1)%10))
             self.recent_menu.addAction(action)
 
-    def _try_load_from_file(self, filename):
+    def _try_load_from_file(self, filename, tab=None):
         update_recent_files(os.path.abspath(filename))
         document = PyDocument(self) if filename.endswith('.py') else XPLDocument(self)
         try:
             document.load_from_file(filename)
         except Exception as e:
             if _DEBUG: raise e
-            QMessageBox.critical(self, 'Error while loading XPL from file.',
-                                       'Error while loading XPL from file "{}":\n{}'.format(filename, str(e)))
+            QMessageBox.critical(self, 'File load error',
+                                       'Error while loading file "{}":\n{}'.format(filename, str(e)))
             return False
         else:
             self.document = document
-            self.setup_model()
+            self.setup_model(tab)
             self.set_changed(False)
             os.chdir(os.path.dirname(os.path.abspath(filename)))
             return True
 
-    def setup_model(self):
+    def setup_model(self, tab=None):
         self.tabs.clear()
         for m in self.document.SECTION_NAMES:
             self.tabs.addTab(self.document.controller_by_name(m).get_widget(), self.SECTION_TITLES[m])
@@ -427,7 +433,8 @@ class MainWindow(QMainWindow):
         if isinstance(self.document, PyDocument):
             self.tab_change(0)
         else:
-            self.tabs.setCurrentIndex(2)
+            if tab is None: tab = 2
+            self.tabs.setCurrentIndex(tab)
 
     def new(self, Document=XPLDocument):
         new_window = MainWindow(Document=Document)
@@ -436,7 +443,6 @@ class MainWindow(QMainWindow):
         WINDOWS.add(new_window)
 
     def open(self, filename=None):
-
         if not filename:
             filename = QFileDialog.getOpenFileName(self, "Open File", CURRENT_DIR,
                                                          "PLaSK file (*.xpl *.py);;"
@@ -445,22 +451,42 @@ class MainWindow(QMainWindow):
             if type(filename) == tuple: filename = filename[0]
             if not filename:
                 return
-        remove_self = self.document.filename is None and not self.isWindowModified()
-        new_window = MainWindow(filename)
-        try:
-            if new_window.document.filename is not None:
-                new_window.resize(self.size())
-                WINDOWS.add(new_window)
-                if remove_self:
-                    self.close()
-                else:
+        self.load_file(filename)
+
+    def load_file(self, filename):
+        if self.document.filename is None and not self.isWindowModified():
+            self.document.controller_by_index(self.current_tab_index).on_edit_exit()
+            self.current_tab_index = -1
+            self._try_load_from_file(filename)
+            self.current_section_enter()
+        else:
+            new_window = MainWindow(filename)
+            try:
+                if new_window.document.filename is not None:
+                    new_window.resize(self.size())
+                    WINDOWS.add(new_window)
                     new_window.move(self.x() + 24, self.y() + 24)
-            else:
+                else:
+                    new_window.setWindowModified(False)
+                    new_window.close()
+            except AttributeError:
                 new_window.setWindowModified(False)
                 new_window.close()
-        except AttributeError:
-            new_window.setWindowModified(False)
-            new_window.close()
+
+    def reload(self):
+        if self.document.filename is None:
+            return
+        if self.isWindowModified():
+            confirm = QMessageBox.question(self, "Unsaved Changes",
+                                           "File has unsaved changes. Do you want to discard them and reload the file?",
+                                           QMessageBox.Yes | QMessageBox.No,  QMessageBox.No)
+            if confirm == QMessageBox.No:
+                return
+        current_tab_index = self.current_tab_index
+        self.document.controller_by_index(current_tab_index).on_edit_exit()
+        self.current_tab_index = -1
+        if not self._try_load_from_file(self.document.filename, current_tab_index):
+            self.setWindowModified(True)
 
     def _save_document(self, filename):
         fire_edit_end()
@@ -780,48 +806,6 @@ class GotoDialog(QDialog):
         self.setLayout(vbox)
 
 
-class PlaskApplication(QApplication):
-
-    def __init__(self, argv):
-        self._opened_windows = []
-        super(PlaskApplication, self).__init__(argv)
-        self.setAttribute(Qt.AA_DontShowIconsInMenus, False)
-        try:
-            self.setAttribute(Qt.AA_EnableHighDpiScaling, True)
-            self.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
-        except AttributeError:
-            pass
-
-    def commitData(self, session_manager):
-        self._opened_windows = WINDOWS.copy()
-        super(PlaskApplication, self).commitData(session_manager)
-
-    def saveState(self, session_manager):
-        files = []
-        for window in self._opened_windows:
-            if window.document.filename is not None:
-                files.append(window.document.filename)
-        if files:
-            CONFIG['session/saved_' + session_manager.sessionKey()] = files
-            CONFIG.sync()
-
-    def restoreState(self):
-        key = 'session/saved_' + self.sessionKey()
-        files = CONFIG[key]
-        del CONFIG[key]
-        ok = False
-        if files:
-            if type(files) is not list: files = [files]
-            for file in files:
-                try:
-                    WINDOWS.add(MainWindow(file))
-                except:
-                    pass
-                else:
-                    ok = True
-        return ok
-
-
 def _parse_expiry(expiry):
     match = re.match('(\d+).(\d+).(\d+)', expiry)
     if match is not None:
@@ -951,6 +935,38 @@ def load_plugins():
                 pass
 
 
+class Session(object):
+    def __init__(self):
+        self.opened_files = []
+
+    def commit(self, session_manager):
+        self.opened_files = [window.document.filename for window in WINDOWS]
+
+    def save(self, session_manager):
+        self.opened_files.extend(window.document.filename for window in WINDOWS)  # if some windows are still open
+        if self.opened_files:
+            CONFIG['session/saved_' + session_manager.sessionKey()] = self.opened_files
+            CONFIG.sync()
+            self.opened_files = []
+
+    @staticmethod
+    def restore():
+        key = 'session/saved_' + APPLICATION.sessionKey()
+        files = CONFIG[key]
+        del CONFIG[key]
+        ok = False
+        if files:
+            if type(files) is not list: files = [files]
+            for file in files:
+                try:
+                    WINDOWS.add(MainWindow(file))
+                except:
+                    pass
+                else:
+                    ok = True
+        return ok
+
+
 def main():
     try:
         _debug_index = sys.argv.index('-debug')
@@ -964,10 +980,16 @@ def main():
     if _DEBUG:
         sys.stderr.write("PLaSK GUI, version {}.\nUsing {} API.\n".format(VERSION, QT_API))
 
-    global APPLICATION, pysparkle
+    global APPLICATION, SESSION, pysparkle
 
-    APPLICATION = PlaskApplication(sys.argv)
+    APPLICATION = QApplication(sys.argv)
     APPLICATION.setApplicationName("PLaSK")
+    APPLICATION.setAttribute(Qt.AA_DontShowIconsInMenus, False)
+    try:
+        APPLICATION.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+        APPLICATION.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+    except AttributeError:
+        pass
     sys.argv = APPLICATION.arguments()
 
     pysparkle = None
@@ -1001,8 +1023,9 @@ def main():
             # 'mathtext.sf': ft.family()
         })
 
+    SESSION = Session()
     if APPLICATION.isSessionRestored():
-        if not APPLICATION.restoreState():
+        if not SESSION.restore():
             WINDOWS.add(MainWindow())
     else:
         if len(sys.argv) > 1:
@@ -1011,6 +1034,8 @@ def main():
         else:
             WINDOWS.add(MainWindow())
 
+    APPLICATION.commitDataRequest.connect(SESSION.commit)
+    APPLICATION.saveStateRequest.connect(SESSION.save)
     exit_code = APPLICATION.exec_()
 
     sys.exit(exit_code)

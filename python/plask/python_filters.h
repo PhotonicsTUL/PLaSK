@@ -13,7 +13,7 @@ extern PLASK_PYTHON_API py::object flow_module;
 
 namespace detail {
 
-    void PLASK_PYTHON_API filterin_parse_key(const py::object& key, shared_ptr<GeometryObject>& geom, PathHints*& path, int& points);
+    void PLASK_PYTHON_API filterin_parse_key(const py::object& key, shared_ptr<GeometryObject>& geom, PathHints*& path, size_t& points);
 
     struct FilterinGetitemResult {
         template <typename ReceiverT>
@@ -32,7 +32,7 @@ namespace detail {
 
     struct FilterinSetitemResult {
         template <typename ReceiverT>
-        static inline PyObject* call(const py::object& /*self*/, ReceiverT& receiver, const py::object& value) {
+        static inline PyObject* call(const py::object& PLASK_UNUSED(self), ReceiverT& receiver, const py::object& value) {
             typedef detail::RegisterReceiverImpl<ReceiverT, ReceiverT::PropertyTag::propertyType, typename  ReceiverT::PropertyTag::ExtraParams> RegisterT;
             RegisterT::setter(receiver, value);
             return py::incref(Py_None);
@@ -47,7 +47,7 @@ namespace detail {
             Filter<PropertyT,Geometry2DCartesian>* filter = py::extract<Filter<PropertyT,Geometry2DCartesian>*>(self);
             shared_ptr<GeometryObject> geom;
             PathHints* path;
-            int points;
+            size_t points;
             filterin_parse_key(key, geom, path, points);
 
             if (auto geomd = dynamic_pointer_cast<GeometryObjectD<2>>(geom))
@@ -71,7 +71,7 @@ namespace detail {
             Filter<PropertyT,Geometry2DCylindrical>* filter = py::extract<Filter<PropertyT,Geometry2DCylindrical>*>(self);
             shared_ptr<GeometryObject> geom;
             PathHints* path;
-            int points;
+            size_t points;
             filterin_parse_key(key, geom, path, points);
 
             if (auto geomd = dynamic_pointer_cast<GeometryObjectD<2>>(geom))
@@ -96,7 +96,7 @@ namespace detail {
             Filter<PropertyT,Geometry3D>* filter = py::extract<Filter<PropertyT,Geometry3D>*>(self);
             shared_ptr<GeometryObject> geom;
             PathHints* path;
-            int points;
+            size_t points;
             filterin_parse_key(key, geom, path, points);
 
             if (auto geomd = dynamic_pointer_cast<Extrusion>(geom))

@@ -166,7 +166,7 @@ void XMLReader::swap(XMLReader &to_swap)
 bool XMLReader::next() {
     if (!states.empty()) {
         if (getNodeType() == NODE_ELEMENT) {
-            if (check_if_all_attributes_were_read && (std::size_t(getAttributeCount()) != read_attributes.size())) {
+            if (check_if_all_attributes_were_read && (getAttributeCount() != read_attributes.size())) {
                 std::string attr;
                 for (const std::pair<const std::string, std::string>& a: getCurrent().attributes)
                     if (read_attributes.find(a.first) == read_attributes.end()) {
@@ -257,7 +257,7 @@ plask::optional<std::string> XMLReader::getAttribute(const std::string& name) co
     auto res_it = this->getCurrent().attributes.find(name);
     if (res_it == this->getCurrent().attributes.end())
         return plask::optional<std::string>();
-    const_cast<std::set<std::string>&>(read_attributes).insert(name);   //TODO should this be thread-safe?
+    read_attributes.insert(name);   //TODO should this be thread-safe?
     if (attributeFilter) {
         try {
             return attributeFilter(res_it->second);

@@ -10,7 +10,7 @@ std::string GaAs_Zn::name() const { return NAME; }
 
 std::string GaAs_Zn::str() const { return StringBuilder("GaAs").dopant("Zn", NA); }
 
-GaAs_Zn::GaAs_Zn(DopingAmountType Type, double Val) {
+GaAs_Zn::GaAs_Zn(DopingAmountType /*Type*/, double Val) {
     Nf_RT = Val; // TODO (it is not from publication)
     NA = Val; // TODO (it is not from publication)
     mob_RT = 480./(1+pow((Nf_RT/4e17),0.47)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)

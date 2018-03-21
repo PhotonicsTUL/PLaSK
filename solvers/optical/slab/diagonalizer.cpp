@@ -19,9 +19,9 @@ Diagonalizer::Diagonalizer(Expansion* src) :
 SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
     Diagonalizer(g),  gamma(lcount), Te(lcount), Th(lcount), Te1(lcount), Th1(lcount)
 {
-    int N = src->matrixSize();         // Size of each matrix
+    const std::size_t N = src->matrixSize();         // Size of each matrix
 
-    for (int i = 0; i < lcount; i++) {
+    for (std::size_t i = 0; i < lcount; i++) {
         gamma[i] = cdiagonal(N);
         Th[i] = cmatrix(N, N);
         Th1[i] = cmatrix(N, N);
@@ -29,7 +29,7 @@ SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
         Te1[i] = cmatrix(N, N);
     }
     #ifdef OPENMP_FOUND
-        int nthr = std::min(omp_get_max_threads(), lcount);
+        int nthr = std::min(omp_get_max_threads(), int(lcount));
         tmpmx = new cmatrix[nthr];
         tmplx = new omp_lock_t[nthr];
         writelog(LOG_DEBUG, "{}: Creating {:d} temporary matri{} for diagonalizer", src->solver->getId(), nthr, (nthr==1)?"x":"ces");
@@ -47,7 +47,7 @@ SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
 SimpleDiagonalizer::~SimpleDiagonalizer()
 {
     #ifdef OPENMP_FOUND
-        int nthr = std::min(omp_get_max_threads(), lcount);
+        int nthr = std::min(omp_get_max_threads(), int(lcount));
         for (int i = 0; i != nthr; ++i) {
             omp_destroy_lock(tmplx+i);
         }
@@ -58,14 +58,14 @@ SimpleDiagonalizer::~SimpleDiagonalizer()
     #endif
 }
 
-int SimpleDiagonalizer::matrixSize() const
+std::size_t SimpleDiagonalizer::matrixSize() const
 {
     return src->matrixSize();
 }
 
 void SimpleDiagonalizer::initDiagonalization()
 {
-    for (int layer = 0; layer < lcount; layer++)
+    for (std::size_t layer = 0; layer < lcount; layer++)
         diagonalized[layer] = false;
 }
 
@@ -74,11 +74,11 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
 {
     if (diagonalized[layer]) return false;
 
-    int N = src->matrixSize();         // Size of each matrix
-    int NN = N*N;
+    const std::size_t N = src->matrixSize();         // Size of each matrix
+    const std::size_t NN = N*N;
 
     #ifdef OPENMP_FOUND
-        int nthr = min(omp_get_max_threads(), lcount);
+        int nthr = std::min(omp_get_max_threads(), int(lcount));
         int mn;
         for (mn = 0; mn != nthr; ++mn)
             if (omp_test_lock(tmplx+mn)) break;
@@ -97,7 +97,7 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         src->getMatrices(layer, RE, RH);
 
         // Ugly hack to avoid singularities
-        for (int i = 0; i != N; ++i) {
+        for (std::size_t i = 0; i != N; ++i) {
             if (RE(i,i) == 0.) RE(i,i) = SMALL;
             if (RH(i,i) == 0.) RH(i,i) = SMALL;
         }
@@ -120,9 +120,9 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             // We are lucky - the QH matrix is diagonal so we can make it fast and easy
 
             // So we compute the diagonal elements of QH = RE*RH
-            for (int ie = 0, ih = 0; ie < N; ie++, ih += N) {
+            for (std::size_t ie = 0, ih = 0; ie < N; ie++, ih += N) {
                 gamma[layer][ie] = 0;
-                for (int jh = 0, je = 0; jh < N; jh++, je += N)
+                for (std::size_t jh = 0, je = 0; jh < N; jh++, je += N)
                     gamma[layer][ie] += RH[ie+je] * RE[ih+jh];
             }
 
@@ -133,7 +133,7 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             // Eigenvector matrix is simply a unity matrix
             std::fill_n(Te[layer].data(), N*N, 0.);
             std::fill_n(Te1[layer].data(), N*N, 0.);
-            for (int i = 0; i < N; i++) {
+            for (std::size_t i = 0; i < N; i++) {
                 Te[layer](i,i) = Te1[layer](i,i) = 1.;
             }
 
@@ -157,27 +157,27 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             if (N < 2) {
                 dcomplex lwork[4];
                 double rwork[2];
-                zgeev('N', 'V', N, QE.data(), N, gamma[layer].data(), nullptr, N, Te[layer].data(), N,
+                zgeev('N', 'V', int(N), QE.data(), int(N), gamma[layer].data(), nullptr, int(N), Te[layer].data(), int(N),
                       lwork, 2, rwork, info);
             } else {
                 // We use Th as work and Te1 as rwork (as N >= 2, their sizes are ok)
-                zgeev('N', 'V', N, QE.data(), N, gamma[layer].data(), nullptr, N, Te[layer].data(), N,
-                      Th[layer].data(), NN, reinterpret_cast<double*>(Te1[layer].data()), info);
+                zgeev('N', 'V', int(N), QE.data(), int(N), gamma[layer].data(), nullptr, int(N), Te[layer].data(), int(N),
+                      Th[layer].data(), int(NN), reinterpret_cast<double*>(Te1[layer].data()), info);
             }
             if (info != 0) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: Could not compute {0}-th eignevalue of QE", info);
 
             // Find the inverse of Te in the classical way (maybe to be optimized in future)
             // TODO: eigenvectors should be built by hand based on Schur vectors
-            memcpy(Th[layer].data(), Te[layer].data(), NN*sizeof(dcomplex));
-            memset(Te1[layer].data(), 0., NN*sizeof(dcomplex));
-            for (int i = 0; i < NN; i += (N+1))
+            std::copy_n(Te[layer].data(), NN, Th[layer].data());
+            std::fill_n(Te1[layer].data(), NN, 0.);
+            for (std::size_t i = 0; i < NN; i += (N+1))
                 Te1[layer][i] = 1.;
             invmult(Th[layer], Te1[layer]);
         }
 
         // Make Gamma of Gamma^2
         cdiagonal& gam = gamma[layer];
-        for (int j = 0; j < N; j++) {
+        for (std::size_t j = 0; j < N; j++) {
             dcomplex g = sqrt(gam[j]);
             if (g == 0.) g = SMALL; // Ugly hack to avoid singularity!
             if (real(g) < -SMALL) g = -g;
@@ -188,9 +188,9 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         // So now there is the time to find TH = Re * Te * Gamma^(-1)
         mult_matrix_by_matrix(RE, Te[layer], Th[layer]);
         dcomplex* th = Th[layer].data();
-        for (int j = 0; j < N; j++) {
+        for (std::size_t j = 0; j < N; j++) {
             dcomplex g = 1. / gam[j];
-            for (int i = 0; i < N; i++) *(th+i) *= g;
+            for (std::size_t i = 0; i < N; i++) *(th+i) *= g;
             th += N;
         }
         assert(!Th[layer].isnan());
@@ -198,21 +198,21 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         // Compute the Th1[layer] = Gamma[layer] * Te1[layer] * inv(RE)
         // we use the LU factorization of the RE matrix for this purpose and then solve Th1^T = inv(RE)^T * Te1^T * Gamma^T
         // the QE array is used as a temporary storage
-        for (int i = 0; i < N; i++)
-            for (int j = 0; j < N; j++)
+        for (std::size_t i = 0; i < N; i++)
+            for (std::size_t j = 0; j < N; j++)
                 QE(i,j) = Te1[layer](j,i);
         // LU factorization of RE
         int ierr;
         std::unique_ptr<int[]> ipiv(new int[N]);
-        zgetrf(N, N, RE.data(), N, ipiv.get(), ierr);
+        zgetrf(int(N), int(N), RE.data(), int(N), ipiv.get(), ierr);
         if (ierr != 0) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: RE matrix singular");
         // the QE will contain inv(RE)^T * Te1^T
-        zgetrs('t', N, N, RE.data(), N, ipiv.get(), QE.data(), N, ierr);
+        zgetrs('t', int(N), int(N), RE.data(), int(N), ipiv.get(), QE.data(), int(N), ierr);
         if (ierr != 0) throw ComputationError(src->solver->getId(), "SimpleDiagonalizer: Could not compute inv(RE)");
         // compute QE^T and store it in Th1
-        for (int j = 0; j < N; j++) {
+        for (std::size_t j = 0; j < N; j++) {
             dcomplex g = gam[j];
-            for (int i = 0; i < N; i++)
+            for (std::size_t i = 0; i < N; i++)
                 Th1[layer](j,i) = QE(i,j) * g;
         }
         assert(!Th1[layer].isnan());

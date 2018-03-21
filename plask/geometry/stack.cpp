@@ -593,7 +593,7 @@ shared_ptr<GeometryObject> MultiStackContainer<UpperClass>::getChildNo(std::size
     if (child_no >= getChildrenCount()) throw OutOfBoundsException("getChildNo", "child_no", child_no, 0, getChildrenCount()-1);
     if (child_no < children.size()) return children[child_no];
     auto result = children[child_no % children.size()]->copyShallow();
-    result->translation[UpperClass::GROWING_DIR] += (child_no / children.size()) * (stackHeights.back() - stackHeights.front());
+    result->translation[UpperClass::GROWING_DIR] += double(child_no / children.size()) * (stackHeights.back() - stackHeights.front());
     return result;
 }
 

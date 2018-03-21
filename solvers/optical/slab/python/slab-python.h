@@ -11,6 +11,8 @@ using namespace plask::python;
 #include "../matrices.h"
 #include "../expansion.h"
 
+#include <plask/config.h>
+
 #if defined(_WIN32) && defined(interface)
 #   undef interface
 #endif
@@ -64,7 +66,7 @@ static py::object Solver_getInterface(SolverT& self) {
 }
 
 template <typename SolverT>
-static void Solver_setInterface(SolverT& /*self*/, const py::object& /*value*/) {
+static void Solver_setInterface(SolverT& PLASK_UNUSED(self), const py::object& PLASK_UNUSED(value)) {
     throw AttributeError("Setting interface by layer index is not supported anymore (set it by object or position)");
 }
 
@@ -257,7 +259,7 @@ static void Solver_setPML(Solver* self, const PmlWrapper& value) {
 
 template <typename Mode>
 static dcomplex getModeWavelength(const Mode& mode) {
-    return 2e3 * M_PI / mode.k0;
+    return 2e3 * PI / mode.k0;
 }
 
 template <typename Mode>
@@ -331,7 +333,7 @@ struct Eigenmodes {
 
   protected:
     size_t index(int n) const {
-        int N = gamma.size();
+        int N = int(gamma.size());
         if (n < 0) n += N;
         if (n < 0 || n >= N) throw IndexError("{}: Bad eigenmode number", solver.getId());
         return size_t(n);
@@ -339,9 +341,9 @@ struct Eigenmodes {
 
     py::object array(const dcomplex* data, size_t N) const;
 
-    LazyData<double> getLightMagnitude(size_t n, shared_ptr<const MeshD<SolverT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) {
-	    cvector E(TE.data() + TE.rows()*index(n), TE.rows());
-	    cvector H(TH.data() + TH.rows()*index(n), TH.rows());
+    LazyData<double> getLightMagnitude(std::size_t n, shared_ptr<const MeshD<SolverT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) {
+        cvector E(TE.data() + TE.rows()*index(int(n)), TE.rows());
+        cvector H(TH.data() + TH.rows()*index(int(n)), TH.rows());
 	    solver.transfer->diagonalizer->source()->initField(Expansion::FIELD_E, method);
 	    DataVector<double> destination(dst_mesh->size());
 	    auto levels = makeLevelsAdapter(dst_mesh);
@@ -381,7 +383,7 @@ py::object Solver_computeReflectivity(SolverT* self,
     if (!self->initCalculation())
         self->setExpansionDefaults(false);
     return UFUNC<double>([=](double lam)->double {
-        self->expansion.setK0(2e3*M_PI/lam);
+        self->expansion.setK0(2e3*PI/lam);
         return 100. * self->getReflection(polarization, incidence);
     }, wavelength);
 }
@@ -396,7 +398,7 @@ py::object Solver_computeTransmittivity(SolverT* self,
     if (!self->initCalculation())
         self->setExpansionDefaults(false);
     return UFUNC<double>([=](double lam)->double {
-        self->expansion.setK0(2e3*M_PI/lam);
+        self->expansion.setK0(2e3*PI/lam);
         return 100. * self->getTransmission(polarization, incidence);
     }, wavelength);
 }

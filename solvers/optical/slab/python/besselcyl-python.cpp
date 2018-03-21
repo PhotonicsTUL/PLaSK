@@ -16,10 +16,10 @@ py::object Eigenmodes<BesselSolverCyl>::array(const dcomplex* data, size_t N) co
 }
 
 std::string BesselSolverCyl_Mode_str(const BesselSolverCyl::Mode& self) {
-    return format(u8"<m: {:d}, lam: {}nm, power: {:.2g}mW>", self.m, str(2e3*M_PI/self.k0, u8"({:.3f}{:+.3g}j)"), self.power);
+    return format(u8"<m: {:d}, lam: {}nm, power: {:.2g}mW>", self.m, str(2e3*PI/self.k0, u8"({:.3f}{:+.3g}j)"), self.power);
 }
 std::string BesselSolverCyl_Mode_repr(const BesselSolverCyl::Mode& self) {
-    return format(u8"BesselCyl.Mode(m={:d}, lam={}, power={:g})", self.m, str(2e3*M_PI/self.k0), self.power);
+    return format(u8"BesselCyl.Mode(m={:d}, lam={}, power={:g})", self.m, str(2e3*PI/self.k0), self.power);
 }
 
 py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
@@ -46,7 +46,7 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
                 if (what) throw TypeError(u8"Only one key may be an array");
                 what = WHAT_WAVELENGTH; array = kwargs[*i];
             } else
-                k0.reset(2e3*M_PI / py::extract<dcomplex>(kwargs[*i])());
+                k0.reset(2e3*PI / py::extract<dcomplex>(kwargs[*i])());
         } else if (*i == "kNumpyDataDeleter0") {
             if (what == WHAT_WAVELENGTH || k0)
                 throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");
@@ -75,7 +75,7 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
             return py::object(self->getDeterminant());
         case WHAT_WAVELENGTH:
             return UFUNC<dcomplex>(
-                [self](dcomplex x) -> dcomplex { self->expansion->setK0(2e3*M_PI / x); return self->getDeterminant(); },
+                [self](dcomplex x) -> dcomplex { self->expansion->setK0(2e3*PI / x); return self->getDeterminant(); },
                 array
             );
         case WHAT_K0:
@@ -99,7 +99,7 @@ static size_t BesselSolverCyl_setMode(py::tuple args, py::dict kwargs) {
     for (auto i = begin; i != end; ++i) {
         if (*i == "lam" || *i == "wavelength") {
             if (k0) throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");
-            k0.reset(2e3*M_PI / py::extract<dcomplex>(kwargs[*i])());
+            k0.reset(2e3*PI / py::extract<dcomplex>(kwargs[*i])());
         } else if (*i == "k0") {
             if (k0) throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");
             k0.reset(py::extract<dcomplex>(kwargs[*i]));
@@ -119,13 +119,13 @@ static size_t BesselSolverCyl_setMode(py::tuple args, py::dict kwargs) {
 }
 
 static py::object BesselSolverCyl_getFieldVectorE(BesselSolverCyl& self, int num, double z) {
-    if (num < 0) num = self.modes.size() + num;
+    if (num < 0) num += int(self.modes.size());
     if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorE(num, z), false, 2);
 }
 
 static py::object BesselSolverCyl_getFieldVectorH(BesselSolverCyl& self, int num, double z) {
-    if (num < 0) num = self.modes.size() + num;
+    if (num < 0) num += int(self.modes.size());
     if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), false, 2);
 }

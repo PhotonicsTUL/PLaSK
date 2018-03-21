@@ -21,7 +21,7 @@ namespace plask { namespace electrical { namespace drift_diffusion {
  * \param T temperature
  */
 static inline double Neff(Tensor2<double> M, double T) {
-    constexpr double fact = phys::me * phys::kB_eV / (2.*M_PI * phys::hb_eV * phys::hb_J);
+    constexpr double fact = phys::me * phys::kB_eV / (2.*plask::PI * phys::hb_eV * phys::hb_J);
     double m = pow(M.c00 * M.c00 * M.c11, 0.3333333333333333);
     return 2e-6 * pow(fact * m * T, 1.5);
 }
@@ -328,7 +328,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
     auto iMeshN = this->mesh;
     auto temperaturesN = inTemperature(iMeshN);
 
-//TODO    2e-6*pow((Me(T,e,point).c00*plask::phys::me*plask::phys::kB_eV*300.)/(2.*M_PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
+//TODO    2e-6*pow((Me(T,e,point).c00*plask::phys::me*plask::phys::kB_eV*300.)/(2.*PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
 
     std::fill_n(A.data, A.size*(A.ld+1), 0.); // zero the matrix
     B.fill(0.);
@@ -841,7 +841,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
             double normEd = material->EactD(T) / mEx;
             double normEa = material->EactA(T) / mEx;
             double normT = T / mTx;
-            int loop = 0.;
+            std::size_t loop = 0;
             cache[key] = epsi = findPsiI(normEc0, normEv0, normNc, normNv, normNd, normNa, normEd, normEa, 1., 1., normT, loop);
         }
 
@@ -871,7 +871,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
 }
 
 template <typename Geometry2DType>
-double DriftDiffusionModel2DSolver<Geometry2DType>::findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFnEta, double iFpKsi, double iT, int& loop) const
+double DriftDiffusionModel2DSolver<Geometry2DType>::findPsiI(double iEc0, double iEv0, double iNc, double iNv, double iNd, double iNa, double iEd, double iEa, double iFnEta, double iFpKsi, double iT, std::size_t &loop) const
 {
     double tPsi0(0.), // calculated normalized initial potential
     tPsi0a = (-15.) / mEx, // normalized edge of the initial range
@@ -1217,14 +1217,14 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, Data
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
     // Factorize matrix
-    dpbtrf(UPLO, A.size, A.kd, A.data, A.ld+1, info);
+    dpbtrf(UPLO, int(A.size), int(A.kd), A.data, int(A.ld+1), info);
     if (info < 0)
         throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", this->getId(), -info);
     else if (info > 0)
         throw ComputationError(this->getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
 
     // Find solutions
-    dpbtrs(UPLO, A.size, A.kd, 1, A.data, A.ld+1, B.data(), B.size(), info);
+    dpbtrs(UPLO, int(A.size), int(A.kd), 1, A.data, int(A.ld+1), B.data(), int(B.size()), info);
     if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
@@ -1240,7 +1240,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, Data
     A.mirror();
 
     // Factorize matrix
-    dgbtrf(A.size, A.size, A.kd, A.kd, A.data, A.ld+1, ipiv.get(), info);
+    dgbtrf(int(A.size), int(A.size), int(A.kd), int(A.kd), A.data, int(A.ld+1), ipiv.get(), info);
     if (info < 0) {
         throw CriticalException("{0}: Argument {1} of dgbtrf has illegal value", this->getId(), -info);
     } else if (info > 0) {
@@ -1248,7 +1248,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, Data
     }
 
     // Find solutions
-    dgbtrs('N', A.size, A.kd, A.kd, 1, A.data, A.ld+1, ipiv.get(), B.data(), B.size(), info);
+    dgbtrs('N', int(A.size), int(A.kd), int(A.kd), 1, A.data, int(A.ld+1), ipiv.get(), B.data(), int(B.size()), info);
     if (info < 0) throw CriticalException("{0}: Argument {1} of dgbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
@@ -1265,7 +1265,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix& 
     DataVector < double> x(B.size(), 0.); // We use 0 as initial solution for corrections // LP_09.2015
     double err;
     try {
-        int iter = solveDCG(ioA, precond, x.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
+        std::size_t iter = solveDCG(ioA, precond, x.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
         this->writelog(LOG_DETAIL, "Conjugate gradient converged after {0} iterations.", iter);
     } catch (DCGError exc) {
         throw ComputationError(this->getId(), "Conjugate gradient failed:, {0}", exc.what());
@@ -1343,7 +1343,7 @@ template <> double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::integrate
             result += currentsN[element.getIndex()].c1 * (rout*rout - rin*rin) + currentsP[element.getIndex()].c1 * (rout*rout - rin*rin);
         }
     }
-    return result * M_PI * 0.01; // kA/cm² µm² -->  mA
+    return result * plask::PI * 0.01; // kA/cm² µm² -->  mA
 }
 
 
@@ -1608,9 +1608,9 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::setMeshActive(double _z1, doubl
     this->writelog(LOG_INFO, "Number of nodes: {0}", nz);
 
     z.clear();
-    for (int i(0); i<nz; ++i) /// filling the vector
+    for (int i = 0; i < nz; ++i) /// filling the vector
         z.push_back(_z1+i*dz); /// unit: nm
-    nz = z.size(); /// z-mesh size
+    nz = int(z.size()); /// z-mesh size
 
     ne = nz - 1;
     this->writelog(LOG_INFO, "Number of elements: {0}", ne);
@@ -1764,7 +1764,7 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::findCBelLev()
         this->writelog(LOG_INFO, "Finding energy levels and wave functions for electrons..");
         Eigen::ComplexEigenSolver<Eigen::MatrixXcd> ces;
         ces.compute(Hc);
-        int nEigVal = ces.eigenvalues().rows();
+        auto nEigVal = ces.eigenvalues().rows();
         this->writelog(LOG_INFO, "number of eigenvalues (Hc): {0}", nEigVal);
         if (nEigVal<1)
             return 1; /// no energy levels for electrons
@@ -2129,7 +2129,7 @@ double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getTotalEnergy() {
         W += width * height * midpoint.rad_r() * w;
     }
     //TODO add outsides of computational area
-    return 2.*M_PI * 0.5e-18 * phys::epsilon0 * W; // 1e-18 µm³ -> m³
+    return 2.*PI * 0.5e-18 * phys::epsilon0 * W; // 1e-18 µm³ -> m³
 }
 
 
@@ -2168,14 +2168,16 @@ double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getTotalHeat() {
         double r = e.getMidpoint().rad_r();
         W += width * height * r * heats[e.getIndex()];
     }
-    return 2e-15*M_PI * W; // 1e-15 µm³ -> m³, W -> mW
+    return 2e-15*PI * W; // 1e-15 µm³ -> m³, W -> mW
 }*/
 
 
 template < > std::string DriftDiffusionModel2DSolver<Geometry2DCartesian>::getClassName() const { return "ddm2d.DriftDiffusion2D"; }
 template < > std::string DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getClassName() const { return "ddm2d.DriftDiffusionCyl"; }
 
+PLASK_NO_CONVERSION_WARNING_BEGIN
 template struct PLASK_SOLVER_API DriftDiffusionModel2DSolver<Geometry2DCartesian>;
 template struct PLASK_SOLVER_API DriftDiffusionModel2DSolver<Geometry2DCylindrical>;
+PLASK_NO_WARNING_END
 
 }}} // namespace plask::electrical::thermal

@@ -95,7 +95,7 @@ struct PythonDataVector : public DataVector<T> {
         if (mesh) mesh->changedDisconnectMethod(this, &PythonDataVector<T,dim>::onMeshChanged);
     }
 
-    void onMeshChanged(const typename MeshD<dim>::Event& /*event*/) { mesh_changed = true; }
+    void onMeshChanged(const typename MeshD<dim>::Event& PLASK_UNUSED(event)) { mesh_changed = true; }
 };
 
 // ---------- Receiver ------------
@@ -738,11 +738,12 @@ namespace detail {
         static shared_ptr<PythonProviderType> __get__(const shared_ptr<PythonProviderType>& self, PyObject* instance, PyObject* owner) {
             PyObject* func = self->function.ptr();
             if (!PyCallable_Check(func) || (PyMethod_Check(func) && PyMethod_Self(func))) return self;
-#           if PY_VERSION_HEX >= 0x03000000
-                PyObject* bound_method = PyMethod_New(func, instance);
-#           else
-                PyObject* bound_method = PyMethod_New(func, instance, owner);
-#           endif
+#if PY_VERSION_HEX >= 0x03000000
+            (void) owner;   // don't warn that owner parameter is unused
+            PyObject* bound_method = PyMethod_New(func, instance);
+#else
+            PyObject* bound_method = PyMethod_New(func, instance, owner);
+#endif
             return PythonProviderFor__init__<ProviderT>(py::object(py::handle<>(bound_method)));
         }
     };

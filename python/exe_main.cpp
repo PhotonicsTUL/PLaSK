@@ -32,7 +32,7 @@ py::object globals;
 
 namespace plask { namespace python {
 
-    PLASK_PYTHON_API int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* scriptname=nullptr, bool second_is_script=false);
+    PLASK_PYTHON_API int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* scriptname=nullptr, bool second_is_script=false, int scriptline=0);
 
     PLASK_PYTHON_API std::string getPythonExceptionMessage();
 

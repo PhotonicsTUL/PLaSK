@@ -726,7 +726,7 @@ template <typename T>
 template <typename U>
 void Buffer<T>::append(const U *begin, const U *end) {
   FMT_ASSERT(end >= begin, "negative value");
-  std::size_t new_size = size_ + (end - begin);
+  std::size_t new_size = size_ + std::size_t(end - begin);
   if (new_size > capacity_)
     grow(new_size);
   std::uninitialized_copy(begin, end,

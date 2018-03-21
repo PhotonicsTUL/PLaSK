@@ -377,7 +377,7 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getRefractiveIndexProfile
     Expansion& expansion = getExpansion();
     setExpansionDefaults(false);
     if (isnan(expansion.lam0) || always_recompute_gain || isnan(expansion.k0))
-        expansion.setK0(isnan(k0)? 2e3*M_PI / lam0 : k0);
+        expansion.setK0(isnan(k0)? 2e3*PI / lam0 : k0);
     initTransfer(expansion, false);
     computeIntegrals();
 
@@ -414,8 +414,8 @@ void SlabSolver<BaseT>::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
     this->initCalculation();
     computeIntegrals();
     size_t N = this->getExpansion().matrixSize();
-    if (RE.cols() != N || RE.rows() != N) RE = cmatrix(N, N);
-    if (RH.cols() != N || RH.rows() != N) RH = cmatrix(N, N);
+    if (std::size_t(RE.cols()) != N || std::size_t(RE.rows()) != N) RE = cmatrix(N, N);
+    if (std::size_t(RH.cols()) != N || std::size_t(RH.rows()) != N) RH = cmatrix(N, N);
     this->getExpansion().getMatrices(layer, RE, RH);
 }
 #endif

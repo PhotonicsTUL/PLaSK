@@ -142,7 +142,7 @@ struct PrecondJacobi {
  * \throw DCGError
  */
 template <typename Matrix, typename Preconditioner>
-int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b, double& err,
+std::size_t solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b, double& err,
              size_t itmax=10000, double eps=1e-8, size_t logfreq=500, const std::string& log_prefix="",
              void(Matrix::*updatea)(double*)=&Matrix::noUpdate)
 {
@@ -157,7 +157,7 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
     double toobig; // when error estimate gets this big we signal divergence!
 
     // Calculate norm of right hand size and squared tolerance.
-    double bnorm2 = ddot(n, b, 1, b, 1);
+    double bnorm2 = ddot(int(n), b, 1, b, 1);
     double eps2 = eps * eps;
 
     if (bnorm2 == 0.) {
@@ -179,7 +179,7 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
     matrix.multiply(x, r.get());
 
     for (std::size_t j = 0; j < n; ++j) r[j] = b[j] - r[j];
-    err = ddot(n, r.get(), 1, r.get(), 1) / bnorm2;
+    err = ddot(int(n), r.get(), 1, r.get(), 1) / bnorm2;
     if (err < eps2) {
         return 0;
     }
@@ -194,10 +194,10 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
         // Calculate bknum = (z,Mz) and p = z (first iteration).
         if(i == 0) {
             std::copy_n(z.get(), n, p.get());
-            bknum = bkden = ddot(n, z.get(), 1, r.get(), 1);
+            bknum = bkden = ddot(int(n), z.get(), 1, r.get(), 1);
         } else {
             // Calculate bknum = (z, r), bkden and bk.
-            bknum = ddot(n, z.get(), 1, r.get(), 1);
+            bknum = ddot(int(n), z.get(), 1, r.get(), 1);
             bk    = bknum / bkden;
             bkden = bknum;
 
@@ -208,13 +208,13 @@ int solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, double* b,
         // Calculate z = Ap, akden = (p,Ap) and ak.
         matrix.multiply(p.get(), z.get());
 
-        akden = ddot(n, p.get(), 1, z.get(), 1);
+        akden = ddot(int(n), p.get(), 1, z.get(), 1);
         ak    = bknum / akden;
 
         // Update x and r. Calculate error.
-        daxpy(n,  ak, p.get(), 1, x, 1);
-        daxpy(n, -ak, z.get(), 1, r.get(), 1);
-        err = ddot(n, r.get(), 1, r.get(), 1) / bnorm2;
+        daxpy(int(n),  ak, p.get(), 1, x, 1);
+        daxpy(int(n), -ak, z.get(), 1, r.get(), 1);
+        err = ddot(int(n), r.get(), 1, r.get(), 1) / bnorm2;
         if(err < eps2) {
             return i+1;
         }

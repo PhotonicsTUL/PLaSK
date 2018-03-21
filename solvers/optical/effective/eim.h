@@ -210,14 +210,14 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     }
 
     /// \return current wavelength
-    dcomplex getWavelength() const { return 2e3*M_PI / k0; }
+    dcomplex getWavelength() const { return 2e3*PI / k0; }
 
     /**
      * Set new wavelength
      * \param wavelength new wavelength
      */
     void setWavelength(dcomplex wavelength) {
-        k0 = 2e3*M_PI / wavelength;
+        k0 = 2e3*PI / wavelength;
         invalidate();
     }
 
@@ -347,7 +347,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     double getMirrorLosses(dcomplex n) {
         double L = geometry->getExtrusion()->getLength();
         if (isinf(L)) return 0.;
-        const double lambda = real(2e3*M_PI / k0);
+        const double lambda = real(2e3*PI / k0);
         double R1, R2;
         if (mirrors) {
             std::tie(R1,R2) = *mirrors;
@@ -357,7 +357,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
             R1 = abs((n-n1) / (n+n1));
             R2 = abs((n-n2) / (n+n2));
         }
-        return lambda * std::log(R1*R2) / (4e3 * M_PI * L);
+        return lambda * std::log(R1*R2) / (4e3 * PI * L);
     }
 
     /**
@@ -430,10 +430,10 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     struct HeatDataImpl;
 
     /// Method computing the distribution of light intensity
-    const LazyData<double> getLightMagnitude(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
+    const LazyData<double> getLightMagnitude(std::size_t num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Method computing the distribution of the light electric field
-    const LazyData<Vec<3,dcomplex>> getElectricField(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
+    const LazyData<Vec<3,dcomplex>> getElectricField(std::size_t num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod=INTERPOLATION_DEFAULT);
 
     /// Get used refractive index
     const LazyData<Tensor3<dcomplex>> getRefractiveIndex(shared_ptr<const MeshD<2> > dst_mesh, InterpolationMethod=INTERPOLATION_DEFAULT);

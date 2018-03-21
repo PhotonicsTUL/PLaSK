@@ -17,7 +17,7 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal3DSolver: public Solver
 
   protected:
 
-    int size;         ///< Number of columns in the main matrix
+    std::size_t size;   ///< Number of columns in the main matrix
     double maxT;        ///< Maximum temperature recorded
 
     DataVector<double> temperatures;           ///< Computed temperatures

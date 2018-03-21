@@ -52,9 +52,9 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
 
     void determineReflectedFields(const cvector& incident, IncidentDirection side) override;
 
-    cvector getFieldVectorE(double z, int n) override;
+    cvector getFieldVectorE(double z, std::size_t n) override;
 
-    cvector getFieldVectorH(double z, int n) override;
+    cvector getFieldVectorH(double z, std::size_t n) override;
 
     /**
      * Get admittance (A) and discontinuity (M) matrices for half of the structure
@@ -71,7 +71,7 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
      * \param end last layer (reflection matrix is computed for this layer)
      * \param emitting should the reflection matrix in the first layer be 0?
      */
-    void findReflection(int start, int end, bool emitting);
+    void findReflection(std::size_t start, std::size_t end, bool emitting);
 
     /**
      * Store P matrix if we want it for field computation

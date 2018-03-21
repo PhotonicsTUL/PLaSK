@@ -26,17 +26,17 @@ Forward1D& Forward1D::operator=(Forward1D&& old) {
     return *this;
 }
 
-Forward1D::Forward1D(int lot, int n, Symmetry symmetry, int strid):
-    lot(lot), n(n), strid(strid?strid:lot), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
+Forward1D::Forward1D(std::size_t lot, std::size_t n, Symmetry symmetry, std::size_t strid):
+    lot(int(lot)), n(int(n)), strid(int(strid?strid:lot)), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
     try {
         int ier;
         switch (symmetry) {
             case (SYMMETRY_NONE):
-                cfftmi_(n, wsave, lensav(n), ier); return;
+                cfftmi_(this->n, wsave, lensav(this->n), ier); return;
             case (SYMMETRY_EVEN_2):
-                cosqmi_(n, wsave, lensav(n), ier); return;
+                cosqmi_(this->n, wsave, lensav(this->n), ier); return;
             case (SYMMETRY_EVEN_1):
-                costmi_(n, wsave, lensav(n), ier); return;
+                costmi_(this->n, wsave, lensav(this->n), ier); return;
             default:
                 throw NotImplemented("forward FFT for odd symmetry");
         }
@@ -98,19 +98,19 @@ Backward1D& Backward1D::operator=(Backward1D&& old) {
     return *this;
 }
 
-Backward1D::Backward1D(int lot, int n, Symmetry symmetry, int strid):
-    lot(lot), n(n), strid(strid?strid:lot), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
+Backward1D::Backward1D(std::size_t lot, std::size_t n, Symmetry symmetry, std::size_t strid):
+    lot(int(lot)), n(int(n)), strid(int(strid?strid:lot)), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
     try {
         int ier;
         switch (symmetry) {
             case SYMMETRY_NONE:
-                cfftmi_(n, wsave, lensav(n), ier); return;
+                cfftmi_(this->n, wsave, lensav(this->n), ier); return;
             case SYMMETRY_EVEN_2:
-                cosqmi_(n, wsave, lensav(n), ier); return;
+                cosqmi_(this->n, wsave, lensav(this->n), ier); return;
             case SYMMETRY_ODD_2:
-                sinqmi_(n, wsave, lensav(n), ier); return;
+                sinqmi_(this->n, wsave, lensav(this->n), ier); return;
             case (SYMMETRY_EVEN_1):
-                costmi_(n, wsave, lensav(n), ier); return;
+                costmi_(this->n, wsave, lensav(this->n), ier); return;
             case (SYMMETRY_ODD_1):
                  throw NotImplemented("backward FFT type 1 for odd symmetry");
         }
@@ -174,8 +174,8 @@ Forward2D& Forward2D::operator=(Forward2D&& old) {
     return *this;
 }
 
-Forward2D::Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid, int ld):
-    lot(lot), n1(n1), n2(n2), strid1(strid?strid:lot), strid2((strid?strid:lot)*(ld?ld:n1)), symmetry1(symmetry1), symmetry2(symmetry2),
+Forward2D::Forward2D(std::size_t lot, std::size_t n1, std::size_t n2, Symmetry symmetry1, Symmetry symmetry2, std::size_t strid, std::size_t ld):
+    lot(int(lot)), n1(int(n1)), n2(int(n2)), strid1(int(strid?strid:lot)), strid2(int((strid?strid:lot)*(ld?ld:n1))), symmetry1(symmetry1), symmetry2(symmetry2),
     wsave1(aligned_malloc<double>(lensav(n1))) {
     if (n1 == n2 && symmetry1 == symmetry2) wsave2 = wsave1;
     else wsave2 = aligned_malloc<double>(lensav(n2));
@@ -183,22 +183,22 @@ Forward2D::Forward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symme
         int ier;
         switch (symmetry1) {
             case SYMMETRY_NONE:
-                cfftmi_(n1, wsave1, lensav(n1), ier); break;
+                cfftmi_(this->n1, wsave1, lensav(this->n1), ier); break;
             case SYMMETRY_EVEN_2:
-                cosqmi_(n1, wsave1, lensav(n1), ier); break;
+                cosqmi_(this->n1, wsave1, lensav(this->n1), ier); break;
             case (SYMMETRY_EVEN_1):
-                costmi_(n1, wsave1, lensav(n1), ier); break;
+                costmi_(this->n1, wsave1, lensav(this->n1), ier); break;
             default:
                 throw NotImplemented("forward FFT for odd symmetry");
         }
         if (wsave1 != wsave2) {
             switch (symmetry2) {
                 case SYMMETRY_NONE:
-                    cfftmi_(n2, wsave2, lensav(n2), ier); break;
+                    cfftmi_(this->n2, wsave2, lensav(this->n2), ier); break;
                 case SYMMETRY_EVEN_2:
-                    cosqmi_(n2, wsave2, lensav(n2), ier); break;
+                    cosqmi_(this->n2, wsave2, lensav(this->n2), ier); break;
                 case (SYMMETRY_EVEN_1):
-                    costmi_(n2, wsave2, lensav(n2), ier); break;
+                    costmi_(this->n2, wsave2, lensav(this->n2), ier); break;
                 default:
                     throw NotImplemented("forward FFT for odd symmetry");
             }
@@ -294,8 +294,8 @@ Backward2D& Backward2D::operator=(Backward2D&& old) {
     return *this;
 }
 
-Backward2D::Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry symmetry2, int strid, int ld):
-    lot(lot), n1(n1), n2(n2), strid1(strid?strid:lot), strid2((strid?strid:lot)*(ld?ld:n1)), symmetry1(symmetry1), symmetry2(symmetry2),
+Backward2D::Backward2D(std::size_t lot, std::size_t n1, std::size_t n2, Symmetry symmetry1, Symmetry symmetry2, std::size_t strid, std::size_t ld):
+    lot(int(lot)), n1(int(n1)), n2(int(n2)), strid1(int(strid?strid:lot)), strid2(int((strid?strid:lot)*(ld?ld:n1))), symmetry1(symmetry1), symmetry2(symmetry2),
     wsave1(aligned_malloc<double>(lensav(n1))) {
     if (n1 == n2 && symmetry1 == symmetry2) wsave2 = wsave1;
     else wsave2 = aligned_malloc<double>(lensav(n2));
@@ -303,26 +303,26 @@ Backward2D::Backward2D(int lot, int n1, int n2, Symmetry symmetry1, Symmetry sym
         int ier;
         switch (symmetry1) {
             case SYMMETRY_NONE:
-                cfftmi_(n1, wsave1, lensav(n1), ier); break;
+                cfftmi_(this->n1, wsave1, lensav(this->n1), ier); break;
             case SYMMETRY_EVEN_2:
-                cosqmi_(n1, wsave1, lensav(n1), ier); break;
+                cosqmi_(this->n1, wsave1, lensav(this->n1), ier); break;
             case SYMMETRY_ODD_2:
-                sinqmi_(n1, wsave1, lensav(n1), ier); break;
+                sinqmi_(this->n1, wsave1, lensav(this->n1), ier); break;
             case (SYMMETRY_EVEN_1):
-                costmi_(n1, wsave1, lensav(n1), ier); break;
+                costmi_(this->n1, wsave1, lensav(this->n1), ier); break;
             case (SYMMETRY_ODD_1):
                  throw NotImplemented("backward FFT type 1 for odd symmetry");
         }
         if (wsave1 != wsave2) {
             switch (symmetry2) {
                 case SYMMETRY_NONE:
-                    cfftmi_(n2, wsave2, lensav(n2), ier); break;
+                    cfftmi_(this->n2, wsave2, lensav(this->n2), ier); break;
                 case SYMMETRY_EVEN_2:
-                    cosqmi_(n2, wsave2, lensav(n2), ier); break;
+                    cosqmi_(this->n2, wsave2, lensav(this->n2), ier); break;
                 case SYMMETRY_ODD_2:
-                    sinqmi_(n2, wsave2, lensav(n2), ier); break;
+                    sinqmi_(this->n2, wsave2, lensav(this->n2), ier); break;
                 case (SYMMETRY_EVEN_1):
-                    costmi_(n2, wsave2, lensav(n2), ier); break;
+                    costmi_(this->n2, wsave2, lensav(this->n2), ier); break;
                 case (SYMMETRY_ODD_1):
                  throw NotImplemented("backward FFT type 1 for odd symmetry");
             }

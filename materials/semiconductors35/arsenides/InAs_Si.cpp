@@ -10,7 +10,7 @@ std::string InAs_Si::name() const { return NAME; }
 
 std::string InAs_Si::str() const { return StringBuilder("InAs").dopant("Si", ND); }
 
-InAs_Si::InAs_Si(DopingAmountType Type, double Val) {
+InAs_Si::InAs_Si(DopingAmountType /*Type*/, double Val) {
     Nf_RT = Val; //TODO
     ND = Val; //TODO
     mob_RT = 15000./(1.+pow((Nf_RT/1e18),0.81)); // 1e-4: cm^2/(V*s) -> m^2/(V*s);

@@ -200,7 +200,7 @@ struct PLASK_API Mesh: public Printable, MeshBase {
     /// @return number of points in mesh
     virtual std::size_t size() const = 0;
 
-    /// @return @c true only if mesh is empty
+    /// @return @c true only if mesh is empty (there are no points in mesh)
     virtual bool empty() const { return size() == 0; }
 
     /**
@@ -229,9 +229,6 @@ struct PLASK_API MeshD: public Mesh {
 
     /// Number of dimensions
     enum { DIM = dimension };
-
-    ///@return true only if there are no points in mesh
-    bool empty() const override { return size() == 0; }
 
     /// Type of vector representing coordinates in local space
     typedef typename Primitive<DIM>::DVec LocalCoords;
@@ -262,21 +259,21 @@ struct PLASK_API MeshD: public Mesh {
     const_iterator begin() const { return const_iterator(this, 0); }
 
     /// @return iterator referring to the past-the-end point in this mesh
-    const_iterator end() const { return const_iterator(this, size()); }
+    const_iterator end() const { return const_iterator(this, this->size()); }
 
     /**
      * Initialize this to be the same as @p to_copy but don't copy any changes observer.
      * @param to_copy object to copy
      */
-    MeshD(const MeshD& /*to_copy*/) {}
+    MeshD(const MeshD& PLASK_UNUSED(to_copy)) {}
+
+    MeshD() {}
 
     /**
      * Set this to be the same as @p to_copy but doesn't changed changes observer.
      * @param to_copy object to copy
      */
-    MeshD& operator=(const MeshD& /*to_copy*/) { return *this; }
-
-    MeshD() {}
+    MeshD& operator=(const MeshD& PLASK_UNUSED(to_copy)) { return *this; }
 
     /**
      * Check if this mesh and @p to_compare represent the same sequence of points (have exactly the same points in the same order).

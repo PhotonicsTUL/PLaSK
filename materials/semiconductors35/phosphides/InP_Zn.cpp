@@ -26,7 +26,7 @@ MI_PROPERTY(InP_Zn, mob,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-Tensor2<double> InP_Zn::mob(double T) const {
+Tensor2<double> InP_Zn::mob(double /*T*/) const {
     return ( Tensor2<double>(mob_RT,mob_RT) );
 }
 
@@ -34,7 +34,7 @@ MI_PROPERTY(InP_Zn, Nf,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-double InP_Zn::Nf(double T) const {
+double InP_Zn::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
@@ -45,7 +45,7 @@ double InP_Zn::Dop() const {
 MI_PROPERTY(InP_Zn, cond,
 			MIComment("no temperature dependence")
             )
-Tensor2<double> InP_Zn::cond(double T) const {
+Tensor2<double> InP_Zn::cond(double /*T*/) const {
     double tCond = phys::qe * Nf_RT*1e6 * mob_RT*1e-4;
     return (Tensor2<double>(tCond, tCond));
 }
@@ -56,7 +56,7 @@ MI_PROPERTY(InP_Zn, absp,
             MISource("TODO"),
             MIComment("no temperature dependence")
             )
-double InP_Zn::absp(double lam, double T) const {
+double InP_Zn::absp(double lam, double /*T*/) const {
     double tAbsp(0.);
     if ((lam > 1200.) && (lam < 1400.)) // only for 1300 nm TODO
         tAbsp = 23. * pow(Nf_RT/1e18, 0.7);

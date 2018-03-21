@@ -49,7 +49,7 @@ void EffectiveFrequencyCyl::loadConfiguration(XMLReader& reader, Manager& manage
             auto ak0 = reader.getAttribute<double>("k0");
             if (alam0) {
                 if (ak0) throw XMLConflictingAttributesException(reader, "k0", "lam0");
-                k0 = 2e3*M_PI / *alam0;
+                k0 = 2e3*PI / *alam0;
             } else if (ak0) k0 = *ak0;
             emission = reader.enumAttribute<Emission>("emission").value("top", TOP).value("bottom", BOTTOM).get(emission);
             vlam = reader.getAttribute<double>("vlam", real(vlam));
@@ -258,7 +258,7 @@ void EffectiveFrequencyCyl::updateCache()
 
         old_k0 = k0;
 
-        double lam = real(2e3*M_PI / k0);
+        double lam = real(2e3*PI / k0);
 
         writelog(LOG_DEBUG, "Updating refractive indices cache");
 
@@ -307,8 +307,8 @@ void EffectiveFrequencyCyl::updateCache()
                     double gs = (gain2[idx].c00 - gain1[idx].c00) * i2h;
                     double nr = real(material->Nr(lam, T));
                     double ng = real(nr - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * i2h);
-                    nrCache[ir][iz] = dcomplex(nr, (0.25e-7/M_PI) * lam * g);
-                    ngCache[ir][iz] = dcomplex(ng, isnan(gs)? 0. : - (0.25e-7/M_PI) * lam*lam * gs);
+                    nrCache[ir][iz] = dcomplex(nr, (0.25e-7/PI) * lam * g);
+                    ngCache[ir][iz] = dcomplex(ng, isnan(gs)? 0. : - (0.25e-7/PI) * lam*lam * gs);
                 }
             }
             if (zbegin != 0) {
@@ -352,8 +352,8 @@ void EffectiveFrequencyCyl::stageOne()
                         nng[i] = same_nr * same_ng;
                     } else {
                         Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{}]", i), "vlam", "det");
-                        auto rootdigger = RootDigger::get(this, [&](const dcomplex& x){return this->detS1(2. - 4e3*M_PI / x / k0, nrCache[i], ngCache[i]);}, log_stripe, stripe_root);
-                        dcomplex start = (vlam == 0.)? 2e3*M_PI / k0 : vlam;
+                        auto rootdigger = RootDigger::get(this, [&](const dcomplex& x){return this->detS1(2. - 4e3*PI / x / k0, nrCache[i], ngCache[i]);}, log_stripe, stripe_root);
+                        dcomplex start = (vlam == 0.)? 2e3*PI / k0 : vlam;
                         veffs[i] = freqv(rootdigger->find(start));
                         computeStripeNNg(i, i==main_stripe);
                     }
@@ -377,12 +377,12 @@ void EffectiveFrequencyCyl::stageOne()
             Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{}]", rstripe), "vlam", "det");
             auto rootdigger = RootDigger::get(this,
                                   [&](const dcomplex& x){
-                                      return this->detS1(2. - 4e3*M_PI / x / k0, nrCache[rstripe], ngCache[rstripe]);
+                                      return this->detS1(2. - 4e3*PI / x / k0, nrCache[rstripe], ngCache[rstripe]);
                                   },
                                   log_stripe,
                                   stripe_root
                                  );
-            dcomplex start = (vlam == 0.)? 2e3*M_PI / k0 : vlam;
+            dcomplex start = (vlam == 0.)? 2e3*PI / k0 : vlam;
             veffs[rstripe] = freqv(rootdigger->find(start));
             // Compute veffs and neffs for other stripes
             computeStripeNNg(rstripe, true);
@@ -402,7 +402,7 @@ void EffectiveFrequencyCyl::stageOne()
 
         double rmin=INFINITY, rmax=-INFINITY, imin=INFINITY, imax=-INFINITY;
         for (auto v: veffs) {
-            dcomplex lam = 2e3*M_PI / (k0 * (1. - v/2.));
+            dcomplex lam = 2e3*PI / (k0 * (1. - v/2.));
             if (real(lam) < rmin) rmin = real(lam);
             if (real(lam) > rmax) rmax = real(lam);
             if (imag(lam) < imin) imin = imag(lam);
@@ -586,7 +586,7 @@ double EffectiveFrequencyCyl::integrateBessel(Mode& mode)
     }
     //TODO consider m <> 0
     double f = 1e12 / sum; for (double& w: mode.rweights) w *= f;
-    return 2.*M_PI * sum;
+    return 2.*PI * sum;
 }
 
 void EffectiveFrequencyCyl::computeBessel(size_t i, dcomplex v, const Mode& mode,
@@ -682,7 +682,7 @@ double EffectiveFrequencyCyl::getTotalAbsorption(Mode& mode)
     }
 
     double result = 0.;
-    dcomplex lam0 = 2e3*M_PI / k0;
+    dcomplex lam0 = 2e3*PI / k0;
 
     for (size_t ir = 0; ir < rsize; ++ir) {
         for (size_t iz = zbegin+1; iz < zsize-1; ++iz) {
@@ -692,7 +692,7 @@ double EffectiveFrequencyCyl::getTotalAbsorption(Mode& mode)
             // double err = 1e-6, erz = 1e-6;
             // double rstart = mesh->axis0[ir];
             // double rend = (ir != rsize-1)? mesh->axis0[ir+1] : 3.0 * mesh->axis0[ir];
-            // result += absp * 2.*M_PI *
+            // result += absp * 2.*PI *
             //     patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, rstart,  rend, err) *
             //     patterson<double>([&](double z){
             //         size_t stripe = getMainStripe();
@@ -704,7 +704,7 @@ double EffectiveFrequencyCyl::getTotalAbsorption(Mode& mode)
             //     }, mesh->axis1[iz-1], mesh->axis1[iz], erz);
         }
     }
-    result *= 2e-9 * M_PI / real(mode.lam) * mode.power; // 1e-9: µm³ / nm -> m², 2: ½ is already hidden in mode.power
+    result *= 2e-9 * PI / real(mode.lam) * mode.power; // 1e-9: µm³ / nm -> m², 2: ½ is already hidden in mode.power
     return result;
 }
 
@@ -726,7 +726,7 @@ double EffectiveFrequencyCyl::getGainIntegral(Mode& mode)
     }
 
     double result = 0.;
-    dcomplex lam0 = 2e3*M_PI / k0;
+    dcomplex lam0 = 2e3*PI / k0;
 
     auto midmesh = mesh->getMidpointsMesh();
 
@@ -740,7 +740,7 @@ double EffectiveFrequencyCyl::getGainIntegral(Mode& mode)
             }
         }
     }
-    result *= 2e-9 * M_PI / real(mode.lam) * mode.power; // 1e-9: µm³ / nm -> m², 2: ½ is already hidden in mode.power
+    result *= 2e-9 * PI / real(mode.lam) * mode.power; // 1e-9: µm³ / nm -> m², 2: ½ is already hidden in mode.power
     return -result;
 }
 
@@ -756,9 +756,9 @@ template <typename FieldT>
 struct EffectiveFrequencyCyl::FieldDataBase: public LazyDataImpl<FieldT>
 {
     EffectiveFrequencyCyl* solver;
-    int num;
+    std::size_t num;
 
-    FieldDataBase(EffectiveFrequencyCyl* solver, int num);
+    FieldDataBase(EffectiveFrequencyCyl* solver, std::size_t num);
 
   protected:
     inline FieldT value(dcomplex val) const;
@@ -766,7 +766,7 @@ struct EffectiveFrequencyCyl::FieldDataBase: public LazyDataImpl<FieldT>
 };
 
 template <>
-EffectiveFrequencyCyl::FieldDataBase<double>::FieldDataBase(EffectiveFrequencyCyl* solver, int num):
+EffectiveFrequencyCyl::FieldDataBase<double>::FieldDataBase(EffectiveFrequencyCyl* solver, std::size_t num):
     solver(solver), num(num), scale(1e-3 * solver->modes[num].power)
 {}
 
@@ -776,7 +776,7 @@ double EffectiveFrequencyCyl::FieldDataBase<double>::value(dcomplex val) const {
 }
 
 template <>
-EffectiveFrequencyCyl::FieldDataBase<Vec<3,dcomplex>>::FieldDataBase(EffectiveFrequencyCyl* solver, int num):
+EffectiveFrequencyCyl::FieldDataBase<Vec<3,dcomplex>>::FieldDataBase(EffectiveFrequencyCyl* solver, std::size_t num):
     solver(solver), num(num), scale(sqrt(2e-3 * phys::Z0 * solver->modes[num].power))
     // <M> = ½ E conj(E) / Z0
 {}
@@ -793,7 +793,7 @@ struct EffectiveFrequencyCyl::FieldDataInefficient: public FieldDataBase<FieldT>
     shared_ptr<const MeshD<2>> dst_mesh;
     size_t stripe;
 
-    FieldDataInefficient(EffectiveFrequencyCyl* solver, int num,
+    FieldDataInefficient(EffectiveFrequencyCyl* solver, std::size_t num,
                          const shared_ptr<const MeshD<2>>& dst_mesh,
                          size_t stripe):
         FieldDataBase<FieldT>(solver, num),
@@ -831,7 +831,7 @@ struct EffectiveFrequencyCyl::FieldDataEfficient: public FieldDataBase<FieldT>
     shared_ptr<const RectangularMesh<2>> rect_mesh;
     std::vector<dcomplex> valr, valz;
 
-    FieldDataEfficient(EffectiveFrequencyCyl* solver, int num,
+    FieldDataEfficient(EffectiveFrequencyCyl* solver, std::size_t num,
                        const shared_ptr<const RectangularMesh<2>>& rect_mesh,
                        size_t stripe):
         FieldDataBase<FieldT>(solver, num),
@@ -971,7 +971,7 @@ const LazyData<Vec<3,dcomplex>> EffectiveFrequencyCyl::getElectricField(std::siz
 const LazyData<Tensor3<dcomplex>> EffectiveFrequencyCyl::getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod)
 {
     this->writelog(LOG_DEBUG, "Getting refractive indices");
-    dcomplex lam0 = 2e3*M_PI / k0;
+    dcomplex lam0 = 2e3*PI / k0;
     updateCache();
     InterpolationFlags flags(geometry);
     return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
@@ -994,7 +994,7 @@ struct EffectiveFrequencyCyl::HeatDataImpl: public LazyDataImpl<double>
     dcomplex lam0;
 
     HeatDataImpl(EffectiveFrequencyCyl* solver, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method):
-        solver(solver), dest_mesh(dst_mesh), flags(solver->geometry), EE(solver->modes.size()), lam0(2e3*M_PI / solver->k0)
+        solver(solver), dest_mesh(dst_mesh), flags(solver->geometry), EE(solver->modes.size()), lam0(2e3*PI / solver->k0)
     {
         for (size_t m = 0; m != solver->modes.size(); ++m)
             EE[m] = solver->getLightMagnitude(m, dst_mesh, method);
@@ -1010,7 +1010,7 @@ struct EffectiveFrequencyCyl::HeatDataImpl: public LazyDataImpl<double>
         for (size_t m = 0; m != solver->modes.size(); ++m) { // we sum heats from all modes
             dcomplex n = solver->nrCache[ir][iz] + solver->ngCache[ir][iz] * (1. - solver->modes[m].lam/lam0);
             double absp = - 2. * real(n) * imag(n);
-            result += 2e9*M_PI / real(solver->modes[m].lam) * absp * EE[m][j]; // 1e9: 1/nm -> 1/m
+            result += 2e9*PI / real(solver->modes[m].lam) * absp * EE[m][j]; // 1e9: 1/nm -> 1/m
         }
         return result;
     }

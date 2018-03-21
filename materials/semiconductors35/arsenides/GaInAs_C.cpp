@@ -12,7 +12,7 @@ std::string GaInAs_C::str() const { return StringBuilder("In", In)("Ga")("As").d
 
 MI_PARENT(GaInAs_C, GaInAs)
 
-GaInAs_C::GaInAs_C(const Material::Composition& Comp, DopingAmountType Type, double Val): GaInAs(Comp)/*, mGaAs_C(Type,Val), mInAs_C(Type,Val)*/
+GaInAs_C::GaInAs_C(const Material::Composition& Comp, DopingAmountType /*Type*/, double Val): GaInAs(Comp)/*, mGaAs_C(Type,Val), mInAs_C(Type,Val)*/
 {
     Nf_RT = Val; // TODO
     NA = Val; // TODO

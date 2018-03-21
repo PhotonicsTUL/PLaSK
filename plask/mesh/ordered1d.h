@@ -78,7 +78,7 @@ public:
      *         Refer to value equal to @p to_find only if @p to_find is already in mesh, in other case it refer to value bigger than to_find.
      *         Can be equal to size() if to_find is higher than all points in mesh.
      */
-    std::size_t findIndex(double to_find) const override { return find(to_find) - begin(); }
+    std::size_t findIndex(double to_find) const override { return std::size_t(find(to_find) - begin()); }
 
     /**
      * Find position nearest to @p to_find.

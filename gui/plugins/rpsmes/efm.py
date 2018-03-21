@@ -212,10 +212,8 @@ if qt:
     def import_efm(parent):
         """Convert .efm file to .xpl, save it to disk and open in PLaSK"""
 
-        remove_self = parent.document.filename is None and not parent.isWindowModified()
-
         iname = QFileDialog.getOpenFileName(parent, "Import EFM file", gui.CURRENT_DIR,
-                                                  "EFM file (*.efm)")
+                                            "EFM file (*.efm)")
         if type(iname) == tuple:
             iname = iname[0]
         if not iname:
@@ -257,21 +255,7 @@ if qt:
                 msgbox.setIcon(QMessageBox.Critical)
                 msgbox.exec_()
             else:
-                new_window = gui.MainWindow(oname)
-                try:
-                    if new_window.document.filename is not None:
-                        new_window.resize(parent.size())
-                        gui.WINDOWS.add(new_window)
-                        if remove_self:
-                            parent.close()
-                        else:
-                            new_window.move(parent.x() + 24, parent.y() + 24)
-                    else:
-                        new_window.setWindowModified(False)
-                        new_window.close()
-                except AttributeError:
-                    new_window.setWindowModified(False)
-                    new_window.close()
+                parent.load_file(oname)
 
     def import_efm_operation(parent):
         action = QAction(QIcon.fromTheme('document-open'),

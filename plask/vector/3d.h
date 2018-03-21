@@ -13,6 +13,7 @@ This file contains implementation of vector in 3D space.
 #include "common.h"
 
 #include "../utils/metaprog.h"   // for is_callable
+#include "../utils/warnings.h"
 
 namespace plask {
 
@@ -127,9 +128,9 @@ struct Vec<3,T> {
     template <typename InputIteratorType>
     static inline Vec<3,T> fromIterator(InputIteratorType inputIt) {
         Vec<3,T> result;
-        result.c0 = *inputIt;
-        result.c1 = *++inputIt;
-        result.c2 = *++inputIt;
+        result.c0 = T(*inputIt);
+        result.c1 = T(*++inputIt);
+        result.c2 = T(*++inputIt);
         return result;
     }
 
@@ -266,7 +267,9 @@ struct Vec<3,T> {
      */
     template <typename OtherT>
     constexpr auto operator*(const OtherT scale) const -> Vec<3,decltype(c0*scale)> {
+PLASK_NO_CONVERSION_WARNING_BEGIN
         return Vec<3,decltype(c0*scale)>(c0 * scale, c1 * scale, c2 * scale);
+PLASK_NO_WARNING_END
     }
 
     /**

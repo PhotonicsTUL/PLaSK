@@ -272,7 +272,10 @@ class GridsController(Controller):
             else:
                 mesh = None
             if model != self.plotted_model:
-                self.clear = self.mesh_preview.toolbar._views.clear()
+                try:
+                    self.clear = self.mesh_preview.toolbar._nav_stack.clear()
+                except AttributeError:
+                    self.clear = self.mesh_preview.toolbar._views.clear()
             self.mesh_preview.update_plot(mesh, self.plotted_geometry, set_limits=set_limits,
                                           plane=self.checked_plane)
         except Exception as e:

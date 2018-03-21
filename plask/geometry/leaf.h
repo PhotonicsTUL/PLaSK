@@ -58,7 +58,7 @@ protected:
 
         SolidMaterial(shared_ptr<Material> material): material(material) {}
 
-        virtual shared_ptr<Material> getMaterial(const GeometryObjectLeaf<dim>& /*thisObj*/, const DVec& /*p*/) const override {
+        virtual shared_ptr<Material> getMaterial(const GeometryObjectLeaf<dim>& PLASK_UNUSED(thisObj), const DVec& PLASK_UNUSED(p)) const override {
             return material;
         }
 
@@ -74,7 +74,7 @@ protected:
             return material;
         }
 
-        virtual bool isUniform(Primitive<3>::Direction /*direction*/) const override { return true; }
+        virtual bool isUniform(Primitive<3>::Direction PLASK_UNUSED(direction)) const override { return true; }
 
         virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const override;
     };

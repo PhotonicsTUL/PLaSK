@@ -5,6 +5,7 @@
 
 #include "../plask/exceptions.h"
 #include "../plask/utils/xml.h"
+#include "../plask/utils/warnings.h"
 
 #include "sha1.h"
 
@@ -18,7 +19,7 @@ namespace plask {
  * @param src source license XML
  * @param content_cb callback called for each content node (with @p src argument), do nothing by default
  */
-inline static void readLicenseData(XMLReader& src, XMLWriter* /*dst*/,
+inline static void readLicenseData(XMLReader& src, XMLWriter* PLASK_UNUSED(dst),
                                    std::function<void (XMLReader& src)> content_cb = [](XMLReader&){}) {
     while (src.next())
         if (src.getNodeType() == XMLReader::NODE_TEXT) content_cb(src);

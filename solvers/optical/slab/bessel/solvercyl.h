@@ -182,7 +182,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
      */
     double getWavelength(size_t n) {
         if (n >= modes.size()) throw NoValue(Wavelength::NAME);
-        return (2e3*M_PI / modes[n].k0).real();
+        return (2e3*PI / modes[n].k0).real();
     }
 
     Expansion& getExpansion() override { return *expansion; }
@@ -235,7 +235,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     size_t nummodes() const override { return modes.size(); }
 
     void applyMode(const Mode& mode) {
-        writelog(LOG_DEBUG, "Current mode <m: {:d}, lam: {}nm>", mode.m, str(2e3*M_PI/mode.k0, "({:.3f}{:+.3g}j)"));
+        writelog(LOG_DEBUG, "Current mode <m: {:d}, lam: {}nm>", mode.m, str(2e3*PI/mode.k0, "({:.3f}{:+.3g}j)"));
         expansion->setLam0(mode.lam0);
         expansion->setK0(mode.k0);
         expansion->setM(mode.m);

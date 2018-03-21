@@ -3,6 +3,7 @@
 
 #include "base.h"
 #include "../mesh/basic.h"
+#include "../utils/warnings.h"
 
 namespace plask {
 
@@ -25,12 +26,12 @@ class PLASK_API CartesianMesh2DTo3DExtend: public MeshD<3> {
 public:
 
     CartesianMesh2DTo3DExtend(const shared_ptr<const MeshD<2>>& sourceMesh, const Vec<3, double>& translation, double longBegin, double lonSize, std::size_t pointsCount)
-        : sourceMesh(sourceMesh), translation(translation), stepSize(lonSize / (pointsCount-1)), pointsCount(pointsCount) {
+        : sourceMesh(sourceMesh), translation(translation), stepSize(lonSize / double(pointsCount-1)), pointsCount(pointsCount) {
         this->translation.lon() += longBegin;
     }
 
     virtual Vec<3, double> at(std::size_t index) const override {
-        return translation + vec(sourceMesh->at(index / pointsCount), stepSize * index);
+        return translation + vec(sourceMesh->at(index / pointsCount), stepSize * double(index));
     }
 
     virtual std::size_t size() const override {
@@ -89,7 +90,7 @@ struct DataFrom3Dto2DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTypes
         if (pointsCount > 1) {
             const double total_len = this->outputObj->getLength();
             const std::size_t point_count = this->pointsCount;
-            const double d = total_len / point_count;   // first step at d/2, last at total_len - d
+            const double d = total_len / double(point_count);   // first step at d/2, last at total_len - d
             auto data = this->in(
                         plask::make_shared<CartesianMesh2DTo3DExtend>(dst_mesh, this->inTranslation, d * 0.5, total_len - d, point_count),
                         std::forward<ExtraArgs>(extra_args)..., method);
@@ -97,14 +98,9 @@ struct DataFrom3Dto2DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTypes
                 index *= point_count;
                 auto sum = data[index];
                 for (std::size_t i = 1; i < point_count; ++i) sum += data[index+i];
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable: 4244) // possible loss of data: point_count is often converted from size_t to dobule here, and this is ok
-#endif
+PLASK_NO_CONVERSION_WARNING_BEGIN
                 return PropertyT::value3Dto2D(sum / point_count);
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
+PLASK_NO_WARNING_END
             };
         } else {
             auto data = this->in(
@@ -134,7 +130,7 @@ struct DataFrom3Dto2DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemplat
         if (pointsCount > 1) {
             const double total_len = this->outputObj->getLength();
             const std::size_t point_count = this->pointsCount;
-            const double d = total_len / point_count;   // first step at d/2, last at total_len - d
+            const double d = total_len / double(point_count);   // first step at d/2, last at total_len - d
             auto data = this->in(n,
                         plask::make_shared<CartesianMesh2DTo3DExtend>(dst_mesh, this->inTranslation, d * 0.5, total_len - d, point_count),
                         std::forward<ExtraArgs>(extra_args)..., method);
@@ -142,14 +138,9 @@ struct DataFrom3Dto2DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemplat
                 index *= point_count;
                 auto sum = data[index];
                 for (std::size_t i = 1; i < point_count; ++i) sum += data[index+i];
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable: 4244) // possible loss of data: point_count is often converted from size_t to dobule here, and this is ok
-#endif
+PLASK_NO_CONVERSION_WARNING_BEGIN
                 return PropertyT::value3Dto2D(sum / point_count);
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
+PLASK_NO_WARNING_END
             };
         } else {
             auto data = this->in(n, 

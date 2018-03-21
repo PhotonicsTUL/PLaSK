@@ -222,17 +222,24 @@ class PlotWidgetBase(QWidget):
                 self.set_message(self.mode)
 
         def clear_history(self):
-            self._views.clear()
-            self._positions.clear()
+            try:
+                self._nav_stack.clear()
+            except AttributeError:
+                self._views.clear()
+                self._positions.clear()
 
         def set_history_buttons(self):
-            if len(self._views) <= 1:
+            try:
+                stack = self._nav_stack
+            except AttributeError:
+                stack = self._views
+            if len(stack) <= 1:
                 self._actions['back'].setEnabled(False)
                 self._actions['forward'].setEnabled(False)
-            elif self._views._pos == 0:
+            elif stack._pos == 0:
                 self._actions['back'].setEnabled(False)
                 self._actions['forward'].setEnabled(True)
-            elif self._views._pos == len(self._views)-1:
+            elif stack._pos == len(stack)-1:
                 self._actions['back'].setEnabled(True)
                 self._actions['forward'].setEnabled(False)
             else:
@@ -274,7 +281,11 @@ class PlotWidgetBase(QWidget):
         self.setLayout(vbox)
 
     def zoom_bbox(self, box, margin=0.1):
-        if self.toolbar._views.empty():
+        try:
+            stack = self.toolbar._nav_stack
+        except AttributeError:
+            stack = self.toolbar._views
+        if stack.empty():
             self.toolbar.push_current()
         ax = plane_to_axes(self.plane, 2 if isinstance(box, plask.geometry.Box2D) else 3)
         m = (box.upper[ax[0]] - box.lower[ax[0]]) * margin

@@ -16,7 +16,7 @@ EffectiveIndex2D::EffectiveIndex2D(const std::string& name) :
     outLightE(this, &EffectiveIndex2D::getElectricField, &EffectiveIndex2D::nmodes),
     outRefractiveIndex(this, &EffectiveIndex2D::getRefractiveIndex),
     outHeat(this, &EffectiveIndex2D::getHeat),
-    k0(2e3*M_PI/980) {
+    k0(2e3*PI/980) {
     inTemperature = 300.;
     inGain = NAN;
     root.tolx = 1.0e-6;
@@ -44,7 +44,7 @@ void EffectiveIndex2D::loadConfiguration(XMLReader& reader, Manager& manager) {
                 else if (*pol == "TM") polarization = TM;
                 else throw BadInput(getId(), "Wrong polarization specification '{0}' in XML", *pol);
             }
-            k0 = 2e3*M_PI / reader.getAttribute<double>("wavelength",  real(2e3*M_PI / k0));
+            k0 = 2e3*PI / reader.getAttribute<double>("wavelength",  real(2e3*PI / k0));
             stripex = reader.getAttribute<double>("vat", stripex);
             vneff = reader.getAttribute<dcomplex>("vneff", vneff);
             emission = reader.enumAttribute<Emission>("emission").value("front", FRONT).value("back", BACK).get(emission);
@@ -297,7 +297,7 @@ void EffectiveIndex2D::updateCache()
         if (!modes.empty()) writelog(LOG_DETAIL, "Clearing computed modes");
         modes.clear();
 
-        double w = real(2e3*M_PI / k0);
+        double w = real(2e3*PI / k0);
 
         shared_ptr<OrderedAxis> axis0, axis1;
         {
@@ -339,7 +339,7 @@ void EffectiveIndex2D::updateCache()
                     }
                     double g = (polarization==TM)? gain[idx].c11 : gain[idx].c00;
                     nrCache[ix][iy] = dcomplex(real(geometry->getMaterial(point)->Nr(w, T)),
-                                               w * g * (0.25e-7/M_PI));
+                                               w * g * (0.25e-7/PI));
                 }
             }
         }
@@ -590,7 +590,7 @@ void EffectiveIndex2D::normalizeFields(Mode& mode, const std::vector<dcomplex,al
     if (mirrors) {
         std::tie(R1,R2) = *mirrors;
     } else {
-        const double lambda = real(2e3*M_PI / k0);
+        const double lambda = real(2e3*PI / k0);
         const double n = real(mode.neff);
         const double n1 = real(geometry->getFrontMaterial()->Nr(lambda, 300.)),
                      n2 = real(geometry->getBackMaterial()->Nr(lambda, 300.));
@@ -633,7 +633,7 @@ double EffectiveIndex2D::getTotalAbsorption(Mode& mode)
 }
 
 
-double EffectiveIndex2D::getTotalAbsorption(size_t num)
+double EffectiveIndex2D::getTotalAbsorption(std::size_t num)
 {
     if (modes.size() <= num) throw NoValue("absorption");
 
@@ -699,11 +699,11 @@ template <typename FieldT>
 struct EffectiveIndex2D::FieldDataBase: public LazyDataImpl<FieldT>
 {
     EffectiveIndex2D* solver;
-    int num;
+    std::size_t num;
     std::vector<dcomplex,aligned_allocator<dcomplex>> kx, ky;
-    size_t stripe;
+    std::size_t stripe;
 
-    FieldDataBase(EffectiveIndex2D* solver, int num):
+    FieldDataBase(EffectiveIndex2D* solver, std::size_t num):
         solver(solver), num(num), kx(solver->xend), ky(solver->yend),
         stripe(solver->mesh->tran()->findIndex(solver->stripex))
     {
@@ -764,7 +764,7 @@ struct EffectiveIndex2D::FieldDataInefficient: public EffectiveIndex2D::FieldDat
 {
     shared_ptr<const MeshD<2>> dst_mesh;
 
-    FieldDataInefficient(EffectiveIndex2D* solver, int num, const shared_ptr<const MeshD<2>>& dst_mesh):
+    FieldDataInefficient(EffectiveIndex2D* solver, std::size_t num, const shared_ptr<const MeshD<2>>& dst_mesh):
         FieldDataBase<FieldT>(solver, num), dst_mesh(dst_mesh) {}
 
     size_t size() const override { return dst_mesh->size(); }
@@ -806,7 +806,7 @@ struct EffectiveIndex2D::FieldDataEfficient: public EffectiveIndex2D::FieldDataB
 
     size_t size() const override { return rect_mesh->size(); }
 
-    FieldDataEfficient(EffectiveIndex2D* solver, int num, const shared_ptr<const RectangularMesh<2>>& rect_mesh):
+    FieldDataEfficient(EffectiveIndex2D* solver, std::size_t num, const shared_ptr<const RectangularMesh<2>>& rect_mesh):
         FieldDataBase<FieldT>(solver, num), rect_mesh(rect_mesh), valx(rect_mesh->tran()->size()), valy(rect_mesh->vert()->size())
     {
         #pragma omp parallel
@@ -876,7 +876,7 @@ struct EffectiveIndex2D::FieldDataEfficient: public EffectiveIndex2D::FieldDataB
     }
 };
 
-const LazyData<double> EffectiveIndex2D::getLightMagnitude(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod)
+const LazyData<double> EffectiveIndex2D::getLightMagnitude(std::size_t num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod)
 {
     this->writelog(LOG_DEBUG, "Getting light intensity");
 
@@ -886,7 +886,7 @@ const LazyData<double> EffectiveIndex2D::getLightMagnitude(int num, shared_ptr<c
         return LazyData<double>(new FieldDataInefficient<double>(this, num, dst_mesh));
 }
 
-const LazyData<Vec<3,dcomplex>> EffectiveIndex2D::getElectricField(int num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod)
+const LazyData<Vec<3,dcomplex>> EffectiveIndex2D::getElectricField(std::size_t num, shared_ptr<const plask::MeshD<2>> dst_mesh, plask::InterpolationMethod)
 {
     this->writelog(LOG_DEBUG, "Getting optical electric field");
 
@@ -919,9 +919,9 @@ struct EffectiveIndex2D::HeatDataImpl: public LazyDataImpl<double>
     dcomplex lam0;
 
     HeatDataImpl(EffectiveIndex2D* solver, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method):
-        solver(solver), dest_mesh(dst_mesh), flags(solver->geometry), EE(solver->modes.size()), lam0(2e3*M_PI / solver->k0)
+        solver(solver), dest_mesh(dst_mesh), flags(solver->geometry), EE(solver->modes.size()), lam0(2e3*PI / solver->k0)
     {
-        for (size_t m = 0; m != solver->modes.size(); ++m)
+        for (std::size_t m = 0; m != solver->modes.size(); ++m)
             EE[m] = solver->getLightMagnitude(m, dst_mesh, method);
     }
 

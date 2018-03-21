@@ -297,7 +297,7 @@ public:
         providerConnection.disconnect();
         if (_hasPrivateProvider) delete this->provider;
         if (provider) providerConnection = provider->changed.connect(
-                    [&](Provider& /*which*/, bool isDeleted) {
+                    [&](Provider& PLASK_UNUSED(which), bool isDeleted) {
                         if (isDeleted) {
                             providerConnection.disconnect();    //TODO do we need this line?
                             this->provider = 0;

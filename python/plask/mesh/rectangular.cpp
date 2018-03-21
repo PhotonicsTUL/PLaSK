@@ -83,13 +83,13 @@ static std::string OrderedAxis__repr__(const OrderedAxis& self) {
 }
 
 static double OrderedAxis__getitem__(const OrderedAxis& self, int i) {
-    if (i < 0) i = self.size() + i;
+    if (i < 0) i += int(self.size());
     if (i < 0 || std::size_t(i) >= self.size()) throw IndexError("axis/mesh index out of range");
     return self[i];
 }
 
 static void OrderedAxis__delitem__(OrderedAxis& self, int i) {
-    if (i < 0) i = self.size() + i;
+    if (i < 0) i += int(self.size());
     if (i < 0 || std::size_t(i) >= self.size()) throw IndexError("axis/mesh index out of range");
     self.removePoint(i);
 }
@@ -153,7 +153,7 @@ static std::string RegularAxis__repr__(const RegularAxis& self) {
 }
 
 static double RegularAxis__getitem__(const RegularAxis& self, int i) {
-    if (i < 0) i = self.size() + i;
+    if (i < 0) i += int(self.size());
     if (i < 0 || std::size_t(i) >= self.size()) throw IndexError("axis/mesh index out of range");
     return self[i];
 }
@@ -214,19 +214,19 @@ static shared_ptr<RectangularMesh<2>> RectangularMesh2D__init__axes(py::object a
 static Vec<2,double> RectangularMesh2D__getitem__(const RectangularMesh<2>& self, py::object index) {
     try {
         int indx = py::extract<int>(index);
-        if (indx < 0) indx = self.size() + indx;
+        if (indx < 0) indx += int(self.size());
         if (indx < 0 || std::size_t(indx) >= self.size()) throw IndexError("mesh index out of range");
         return self[indx];
     } catch (py::error_already_set) {
         PyErr_Clear();
     }
     int index0 = py::extract<int>(index[0]);
-    if (index0 < 0) index0 = self.axis0->size() - index0;
+    if (index0 < 0) index0 += int(self.axis0->size());
     if (index0 < 0 || index0 >= int(self.axis0->size())) {
         throw IndexError("first mesh index ({0}) out of range (0<=index<{1})", index0, self.axis0->size());
     }
     int index1 = py::extract<int>(index[1]);
-    if (index1 < 0) index1 = self.axis1->size() - index1;
+    if (index1 < 0) index1 += int(self.axis1->size());
     if (index1 < 0 || index1 >= int(self.axis1->size())) {
         throw IndexError("second mesh index ({0}) out of range (0<=index<{1})", index1, self.axis1->size());
     }
@@ -279,24 +279,24 @@ template <typename MeshT>
 Vec<3,double> RectangularMesh3D__getitem__(const MeshT& self, py::object index) {
     try {
         int indx = py::extract<int>(index);
-        if (indx < 0) indx = self.size() + indx;
+        if (indx < 0) indx += int(self.size());
         if (indx < 0 || std::size_t(indx) >= self.size()) throw IndexError("mesh index out of range");
         return self[indx];
     } catch (py::error_already_set) {
         PyErr_Clear();
     }
     int index0 = py::extract<int>(index[0]);
-    if (index0 < 0) index0 = self.axis0->size() - index0;
+    if (index0 < 0) index0 += int(self.axis0->size());
     if (index0 < 0 || index0 >= int(self.axis0->size())) {
         throw IndexError("first mesh index ({0}) out of range (0<=index<{1})", index0, self.axis0->size());
     }
     int index1 = py::extract<int>(index[1]);
-    if (index1 < 0) index1 = self.axis1->size() - index1;
+    if (index1 < 0) index1 += int(self.axis1->size());
     if (index1 < 0 || index1 >= int(self.axis1->size())) {
         throw IndexError("second mesh index ({0}) out of range (0<=index<{1})", index1, self.axis1->size());
     }
     int index2 = py::extract<int>(index[2]);
-    if (index2 < 0) index2 = self.axis2->size() - index2;
+    if (index2 < 0) index2 = int(self.axis2->size());
     if (index2 < 0 || index2 >= int(self.axis2->size())) {
         throw IndexError("third mesh index ({0}) out of range (0<=index<{1})", index2, self.axis2->size());
     }
@@ -595,56 +595,56 @@ namespace detail {
 
 template <int dim>
 void RectangularMeshRefinedGenerator_addRefinement1(RectangularMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, const PathHints& path, double position) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), path, position);
 }
 
 template <int dim>
 void RectangularMeshRefinedGenerator_addRefinement2(RectangularMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, double position) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), position);
 }
 
 template <int dim>
 void RectangularMeshRefinedGenerator_addRefinement3(RectangularMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObject::Subtree subtree, double position) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), subtree, position);
 }
 
 template <int dim>
 void RectangularMeshRefinedGenerator_addRefinement4(RectangularMeshDivideGenerator<dim>& self, const std::string& axis, Path path, double position) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.addRefinement(typename Primitive<DIM>::Direction(i), path, position);
 }
 
 template <int dim>
 void RectangularMeshRefinedGenerator_removeRefinement1(RectangularMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, const PathHints& path, double position) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), path, position);
 }
 
 template <int dim>
 void RectangularMeshRefinedGenerator_removeRefinement2(RectangularMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObjectD<DIM>& object, double position) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), dynamic_pointer_cast<GeometryObjectD<DIM>>(object.shared_from_this()), position);
 }
 
 template <int dim>
 void RectangularMeshRefinedGenerator_removeRefinement3(RectangularMeshDivideGenerator<dim>& self, const std::string& axis, GeometryObject::Subtree subtree, double position) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), subtree, position);
 }
 
 template <int dim>
 void RectangularMeshRefinedGenerator_removeRefinement4(RectangularMeshDivideGenerator<dim>& self, const std::string& axis, Path path, double position) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     self.removeRefinement(typename Primitive<DIM>::Direction(i), path, position);
 }
@@ -667,7 +667,7 @@ void RectangularMeshRefinedGenerator_removeRefinements3(RectangularMeshDivideGen
 
 template <int dim>
 py::dict RectangularMeshRefinedGenerator_listRefinements(const RectangularMeshDivideGenerator<dim>& self, const std::string& axis) {
-    int i = current_axes[axis] - 3 + DIM;
+    int i = int(current_axes[axis]) - 3 + DIM;
     if (i < 0 || i > 1) throw ValueError("Bad axis name {0}.", axis);
     py::dict refinements;
     for (auto refinement: self.getRefinements(typename Primitive<DIM>::Direction(i))) {
@@ -895,7 +895,7 @@ void register_mesh_rectangular()
                    py::bases<MeshGeneratorD<1>>, boost::noncopyable>("RegularGenerator",
             u8"Generator of ordered 1D mesh with lines at transverse edges of all objects\n"
             u8"and fine regular division of each object with spacing approximately equal to\n"
-            "specified spacing\n\n"
+            u8"specified spacing\n\n"
             u8"RegularGenerator(spacing)\n    create generator",
             py::init<double>(py::arg("spacing")))
         ;
@@ -1000,11 +1000,11 @@ void register_mesh_rectangular()
                    py::bases<MeshGeneratorD<2>>, boost::noncopyable>("RegularGenerator",
             u8"Generator of Rectilinear2D mesh with lines at transverse edges of all objects\n"
             u8"and fine regular division of each object with spacing approximately equal to\n"
-            "specified spacing\n\n"
-            u8"RegularGenerator(spacing)\n    create generator with equal spacing in all\n"
-            u8"                               directions\n\n"
-            u8"RegularGenerator(spacing0, spacing1)\n    create generator with equal\n"
-            u8"                                          spacing\n", py::no_init)
+            u8"specified spacing.\n\n"
+            u8"RegularGenerator(spacing)\n"
+            u8"    create generator with equal spacing in all directions\n\n"
+            u8"RegularGenerator(spacing0, spacing1)\n"
+            u8"    create generator with equal spacing\n", py::no_init)
             .def("__init__", py::make_constructor(RectangularMesh2DRegularGenerator__init__1, py::default_call_policies(),
                                                   (py::arg("spacing"))))
             .def("__init__", py::make_constructor(RectangularMesh2DRegularGenerator__init__2, py::default_call_policies(),
@@ -1094,11 +1094,11 @@ void register_mesh_rectangular()
                    py::bases<MeshGeneratorD<3>>, boost::noncopyable>("RegularGenerator",
             u8"Generator of Rectilinear3D mesh with lines at transverse edges of all objects\n"
             u8"and fine regular division of each object with spacing approximately equal to\n"
-            "specified spacing\n\n"
-            u8"RegularGenerator(spacing)\n    create generator with equal spacing in all\n"
-            u8"                               directions\n\n"
-            u8"RegularGenerator(spacing0, spacing1, spacing2)\n    create generator with equal\n"
-            u8"                                                    spacing\n", py::no_init)
+            u8"specified spacing\n\n"
+            u8"RegularGenerator(spacing)\n"
+            u8"    create generator with equal spacing in all directions\n\n"
+            u8"RegularGenerator(spacing0, spacing1, spacing2)\n"
+            u8"    create generator with equal spacing\n", py::no_init)
             .def("__init__", py::make_constructor(RectangularMesh3DRegularGenerator__init__1, py::default_call_policies(),
                                                   (py::arg("spacing"))))
             .def("__init__", py::make_constructor(RectangularMesh3DRegularGenerator__init__3, py::default_call_policies(),

@@ -61,24 +61,24 @@ void ExpansionPW2D::init()
         L = right - left;                                   //  ^ ^ ^ ^ ^
         N = 2 * SOLVER->getSize() + 1;                      // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
         nN = 4 * SOLVER->getSize() + 1;
-        nM = size_t(round(SOLVER->oversampling * nN));      // N = 3  nN = 5  refine = 4  M = 20
-        M = refine * nM;                                    // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
-        double dx = 0.5 * L * (refine-1) / M;               //  ^ ^ ^ ^
-        xmesh = plask::make_shared<RegularAxis>(                   // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
-                                         left-dx, right-dx-L/M, M);
+        nM = size_t(round(SOLVER->oversampling * double(nN)));  // N = 3  nN = 5  refine = 4  M = 20
+        M = refine * nM;                                        // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
+        double dx = 0.5 * L * double(refine-1) / double(M);     //  ^ ^ ^ ^
+        xmesh = plask::make_shared<RegularAxis>(                // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+                               left-dx, right-dx-L/double(M), M);
     } else {
         L = 2. * right;
         N = SOLVER->getSize() + 1;
         nN = 2 * SOLVER->getSize() + 1;
-        nM = size_t(round(SOLVER->oversampling * nN));
+        nM = size_t(round(SOLVER->oversampling * double(nN)));
         M = refine * nM;                                    // N = 3  nN = 5  refine = 4  M = 20
         if (SOLVER->dct2()) {                               // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
-            double dx = 0.25 * L / M;                       //  ^ ^ ^ ^
-            xmesh = plask::make_shared<RegularAxis>(               // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
-                                             dx, right - dx, M);
+            double dx = 0.25 * L / double(M);               //  ^ ^ ^ ^
+            xmesh = plask::make_shared<RegularAxis>(        // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+                               dx, right - dx, M);
         } else {
             size_t nNa = 4 * SOLVER->getSize() + 1;
-            double dx = 0.5 * L * (refine-1) / (refine*nNa);
+            double dx = 0.5 * L * double(refine-1) / double(refine*nNa);
             xmesh = plask::make_shared<RegularAxis>(-dx, right+dx, M);
         }
     }
@@ -140,7 +140,7 @@ void ExpansionPW2D::init()
         }
         // Smooth coefficients
         if (SOLVER->smooth) {
-            double bb4 = M_PI / L; bb4 *= bb4;   // (2π/L)² / 4
+            double bb4 = PI / L; bb4 *= bb4;   // (2π/L)² / 4
             for (std::size_t i = 0; i != nN; ++i) {
                 int k = int(i); if (!symmetric() && k > int(nN/2)) k -= int(nN);
                 mag[i] *= exp(-SOLVER->smooth * bb4 * k * k);
@@ -202,7 +202,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         if (isnan(glam)) glam = lam;
     }
 
-    double factor = 1. / refine;
+    double factor = 1. / double(refine);
     double maty;
     for (size_t i = 0; i != solver->stack.size(); ++i) {
         if (solver->stack[i] == layer) {
@@ -270,7 +270,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                             g += w * gain[v]; W += w;
                         }
                     }
-                    Tensor2<double> ni = glam * g/W * (0.25e-7/M_PI);
+                    Tensor2<double> ni = glam * g/W * (0.25e-7/PI);
                     nr.c00.imag(ni.c00); nr.c11.imag(ni.c00); nr.c22.imag(ni.c11); nr.c01.imag(0.);
                 }
             }
@@ -331,7 +331,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         }
         // Smooth coefficients
         if (SOLVER->smooth) {
-            double bb4 = M_PI / ((right-left) * (symmetric()? 2. : 1.)); bb4 *= bb4;   // (2π/L)² / 4
+            double bb4 = PI / ((right-left) * (symmetric()? 2. : 1.)); bb4 *= bb4;   // (2π/L)² / 4
             for (size_t i = 0; i != nN; ++i) {
                 int k = int(i); if (!symmetric() && k > int(nN/2)) k -= int(nN);
                 coeffs[layer][i] *= exp(-SOLVER->smooth * bb4 * k * k);
@@ -351,7 +351,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
                 Tensor3<dcomplex> eps(0.);
                 for (int k = -int(nN)/2, end = int(nN+1)/2; k != end; ++k) {
                     size_t j = (k>=0)? k : k + nN;
-                    eps += coeffs[l][j] * exp(2*M_PI * k * I * (dest_mesh->at(i).c0-left) / (right-left));
+                    eps += coeffs[l][j] * exp(2*PI * k * I * (dest_mesh->at(i).c0-left) / (right-left));
                 }
                 eps.c22 = 1. / eps.c22;
                 eps.sqrt_inplace();
@@ -361,7 +361,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
             return LazyData<Tensor3<dcomplex>>(dest_mesh->size(), [this,l,dest_mesh](size_t i)->Tensor3<dcomplex>{
                 Tensor3<dcomplex> eps = coeffs[l][0];
                 for (std::size_t k = 1; k != nN; ++k) {
-                    eps += 2. * coeffs[l][k] * cos(M_PI * k * dest_mesh->at(i).c0 / (right-left));
+                    eps += 2. * coeffs[l][k] * cos(PI * double(k) * dest_mesh->at(i).c0 / (right-left));
                 }
                 eps.c22 = 1. / eps.c22;
                 eps.sqrt_inplace();
@@ -376,7 +376,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
         shared_ptr<RegularAxis> cmesh = plask::make_shared<RegularAxis>();
         if (symmetric()) {
             if (SOLVER->dct2()) {
-                double dx = 0.5 * right / nN;
+                double dx = 0.5 * right / double(nN);
                 cmesh->reset(dx, right-dx, nN);
             } else {
                 cmesh->reset(0., right, nN);
@@ -407,7 +407,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
 
     int order = int(SOLVER->getSize());
     dcomplex f = 1. / k0, k02 = k0*k0;
-    double b = 2*M_PI / (right-left) * (symmetric()? 0.5 : 1.0);
+    double b = 2*PI / (right-left) * (symmetric()? 0.5 : 1.0);
 
     // Ez represents -Ez
 
@@ -571,8 +571,8 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
 
     dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
 
-    int order = SOLVER->getSize();
-    double b = 2*M_PI / (right-left) * (symmetric()? 0.5 : 1.0);
+    const int order = int(SOLVER->getSize());
+    double b = 2*PI / (right-left) * (symmetric()? 0.5 : 1.0);
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
     double vpos = level->vpos();
@@ -700,7 +700,7 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
         DataVector<Vec<3,dcomplex>> result(dest_mesh->size());
         double L = right - left;
         if (!symmetric()) {
-            dcomplex B = 2*M_PI * I / L;
+            dcomplex B = 2*PI * I / L;
             dcomplex ikx = I * ktran;
             result.reset(dest_mesh->size(), Vec<3,dcomplex>(0.,0.,0.));
             for (int k = -order; k <= order; ++k) {
@@ -713,7 +713,7 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                 }
             }
         } else {
-            double B = M_PI / L;
+            double B = PI / L;
             result.reset(dest_mesh->size());
             for (size_t i = 0; i != dest_mesh->size(); ++i) {
                 result[i] = field[0];
@@ -740,7 +740,7 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
             fft_x.execute(&(field.data()->tran()));
             fft_yz.execute(&(field.data()->lon()));
             fft_yz.execute(&(field.data()->vert()));
-            double dx = 0.5 * (right-left) / N;
+            double dx = 0.5 * (right-left) / double(N);
             auto src_mesh = plask::make_shared<RectangularMesh<2>>(plask::make_shared<RegularAxis>(left+dx, right-dx, field.size()), plask::make_shared<RegularAxis>(vpos, vpos, 1));
             return interpolate(src_mesh, field, dest_mesh, field_interpolation,
                                InterpolationFlags(SOLVER->getGeometry(),
@@ -767,7 +767,7 @@ double ExpansionPW2D::integratePoyntingVert(const cvector& E, const cvector& H)
 {
     double P = 0.;
 
-    int ord = SOLVER->getSize();
+    const int ord = int(SOLVER->getSize());
 
     if (separated()) {
         if (symmetric()) {

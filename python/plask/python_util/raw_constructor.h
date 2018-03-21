@@ -41,7 +41,7 @@ boost::python::object raw_constructor(F f, std::size_t min_args = 0)
         boost::python::objects::py_function(
             detail::raw_constructor_dispatcher<F>(f)
           , boost::mpl::vector2<void, boost::python::object>()
-          , min_args+1
+          , int(min_args+1)
           , (std::numeric_limits<unsigned>::max)()
         )
     );

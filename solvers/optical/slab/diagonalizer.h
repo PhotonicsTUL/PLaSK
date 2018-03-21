@@ -34,14 +34,14 @@ class Diagonalizer
     std::vector<bool> diagonalized;     ///< True if the given layer was diagonalized
 
   public:
-    const int lcount;                   // number of layers
+    const std::size_t lcount;                   // number of layers
 
     Diagonalizer(Expansion* src);
 
     virtual ~Diagonalizer() {}
 
     /// Return the overall matrix size
-    virtual int matrixSize() const = 0;
+    virtual std::size_t matrixSize() const = 0;
 
     /// Return the reference to the source object
     inline const Expansion* source() const { return src; }
@@ -103,7 +103,7 @@ class SimpleDiagonalizer : public Diagonalizer
     SimpleDiagonalizer(Expansion* g);
     ~SimpleDiagonalizer();
 
-    int matrixSize() const override;
+    std::size_t matrixSize() const override;
 
     void initDiagonalization() override;
 

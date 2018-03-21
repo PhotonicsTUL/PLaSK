@@ -2,8 +2,9 @@
 #define PLASK__AXIS1D_H
 
 #include "mesh.h"
+#include "interpolation.h"
 
-#include "memory"
+#include <memory>
 
 namespace plask {
 
@@ -26,8 +27,8 @@ public:
      * Find index where @p to_find point could be inserted.
      * @param to_find point to find
      * @return First index where to_find could be inserted.
-     *         Refer to value equal to @p to_find only if @p to_find is already in mesh, in other case it refer to value bigger than to_find.
-     *         Can be equal to size() if to_find is higher than all points in mesh.
+     *         Refer to value equal to @p to_find only if @p to_find is already in mesh, in other case it refer to value larger than to_find.
+     *         Can be equal to size() if to_find is larger than all points in mesh.
      */
     virtual std::size_t findIndex(double to_find) const;
 
@@ -55,6 +56,22 @@ protected:
     /// Throw exception if this mesh has less than two point.
     void beforeCalcMidpointMesh() const;
 };
+
+/**
+ * TODO doc - this is code by M. Dems copied from interpolation methods
+ * @param axis
+ * @param flags
+ * @param wrapped_point_coord
+ * @param axis_nr
+ * @param index
+ * @param index_1
+ * @param lo
+ * @param hi
+ * @param invert_lo
+ * @param invert_hi
+ */
+void prepareLinearInterpolationForAxis(MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index, std::size_t& index_1, double& lo, double& hi, bool& invert_lo, bool& invert_hi);
+
 
 
 /**

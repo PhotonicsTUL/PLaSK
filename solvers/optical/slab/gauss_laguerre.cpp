@@ -175,14 +175,14 @@ void gaussLaguerre(size_t n, std::vector<double>& abscissae, DataVector<double>&
     weights.reset(n);
 
     for (size_t i = 0; i != n; ++i) {
-        abscissae[i] = 2. * i + 1.;
-        work[i] = i + 1.;
+        abscissae[i] = double(2 * i + 1);
+        work[i] = double(i + 1);
     }
 
     std::fill(weights.begin(), weights.end(), 0.);
     weights[0] = 1.0;
 
-    imtqlx(n, &abscissae.front(), work.get(), weights.data());
+    imtqlx(int(n), &abscissae.front(), work.get(), weights.data());
 
     double iscale = 1. / scale;
     for (size_t i = 0; i < n; ++i) {

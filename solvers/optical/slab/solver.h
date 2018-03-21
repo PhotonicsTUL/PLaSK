@@ -153,7 +153,7 @@ struct PLASK_SOLVER_API SlabBase {
     void setLam0(double lam) {
         lam0 = lam;
         if (!isnan(lam) && (isnan(real(k0)) || isnan(imag(k0))))
-            k0 = 2e3*M_PI / lam;
+            k0 = 2e3*PI / lam;
     }
     /// Clear lam0
     void clearLam0() {
@@ -170,11 +170,11 @@ struct PLASK_SOLVER_API SlabBase {
     }
 
     /// Get current wavelength
-    dcomplex getWavelength() const { return 2e3*M_PI / k0; }
+    dcomplex getWavelength() const { return 2e3*PI / k0; }
 
     /// Set current wavelength
     void setWavelength(dcomplex lambda) {
-        k0 = 2e3*M_PI / lambda;
+        k0 = 2e3*PI / lambda;
     }
 
     /// Reset determined fields

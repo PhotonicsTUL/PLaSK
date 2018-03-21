@@ -35,7 +35,7 @@ void ExpansionBesselInfini::init2()
         case BesselSolverCyl::WAVEVECTORS_UNIFORM:
             kpts.resize(N);
             kdelts.reset(N, SOLVER->kscale * ib);
-            for (size_t i = 0; i != N; ++i) kpts[i] = (0.5 + i) * SOLVER->kscale;
+            for (size_t i = 0; i != N; ++i) kpts[i] = (0.5 + double(i)) * SOLVER->kscale;
             break;
         // case BesselSolverCyl::WAVEVECTORS_LEGENDRE:
         //     gaussLegendre(N, kpts, kdelts);

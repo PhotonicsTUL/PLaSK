@@ -15,17 +15,17 @@ void gaussLegendre(size_t n, std::vector<double>& abscissae, DataVector<double>&
     weights.reset(n);
 
     for (size_t i = 1; i != n; ++i)
-        weights[i-1] = 0.5 / std::sqrt(1. - 0.25/(i*i));
+        weights[i-1] = 0.5 / std::sqrt(1. - 0.25/double(i*i));
 
-    dsterf(n, &abscissae.front(), weights.data(), info);
+    dsterf(int(n), &abscissae.front(), weights.data(), info);
     if (info < 0) throw CriticalException("Gauss-Legendre abscissae: Argument {:d} of DSTERF has bad value", -info);
     if (info > 0) throw ComputationError("Gauss-Legendre abscissae", "Could not converge in {:d}-th element", info);
 
-    double nn = n*n;
+    double nn = double(n*n);
     auto x = abscissae.begin();
     auto w = weights.begin();
     for (; x != abscissae.end(); ++x, ++w) {
-        double P = legendre_p(n-1, *x);
+        double P = legendre_p(int(n-1), *x);
         *w = 2. * (1. - (*x)*(*x)) / (nn * P*P);
     }
 }

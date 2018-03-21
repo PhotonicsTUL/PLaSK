@@ -73,7 +73,7 @@ void ExpansionBessel::init3() {
 
     k /= rbounds[rbounds.size()-1];
 
-    double max_error = SOLVER->integral_error * expected / nseg;
+    double max_error = SOLVER->integral_error * expected / double(nseg);
     double error = 0.;
 
     std::deque<std::vector<double>> abscissae_cache;
@@ -240,7 +240,7 @@ std::pair<dcomplex, dcomplex> ExpansionBessel::integrateLayer(size_t layer, doub
                         g += w * gain[v]; W += w;
                     }
                 }
-                Tensor2<double> ni = glam * g/W * (0.25e-7/M_PI);
+                Tensor2<double> ni = glam * g/W * (0.25e-7/PI);
                 eps.c00.imag(ni.c00); eps.c11.imag(ni.c00); eps.c22.imag(ni.c11);
             }
         }
@@ -473,7 +473,7 @@ LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialNR(size_t layer,
 }
 
 
-double ExpansionBessel::integratePoyntingVert(const cvector& E, const cvector& H)
+double ExpansionBessel::integratePoyntingVert(const cvector& /*E*/, const cvector& /*H*/)
 {
     return 1.;
 }

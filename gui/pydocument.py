@@ -36,6 +36,7 @@ class PyDocument(object):
         self.script = ScriptController(self)
         self.script.model.changed.connect(self.on_model_change)
         self.script.model.line_in_file = 0
+        self.script.model.undo_stack.cleanChanged.connect(self.set_changed)
         self.controllers = (self.script,)
         self.materials = _Dummy()
         self.materials.model = None

@@ -51,7 +51,7 @@ namespace detail {
         static std::string repr(const setT& self) {
             std::stringstream out;
             out << "set([";
-            int i = self.size()-1;
+            int i = int(self.size())-1;
             if (i == -1) out << "])";
             else
                 for(auto item = self.begin(); item != self.end(); ++item, --i) {
@@ -63,7 +63,7 @@ namespace detail {
         static std::string str(const setT& self) {
             std::stringstream out;
             out << "{ ";
-            int i = self.size()-1;
+            int i = int(self.size())-1;
             if (i == -1) out << "}";
             else
                 for(auto item = self.begin(); item != self.end(); ++item, --i) {

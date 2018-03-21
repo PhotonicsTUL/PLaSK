@@ -19,8 +19,8 @@ Contour::Contour(const Solver* solver, const std::function<dcomplex(dcomplex)>& 
     top.reset(ren+1);
     left.reset(imn+1);
 
-    double dr = (re1 - re0) / ren;
-    double di = (im1 - im0) / imn;
+    double dr = (re1 - re0) / double(ren);
+    double di = (im1 - im0) / double(imn);
 
     std::exception_ptr error;
     #pragma omp parallel
@@ -53,8 +53,8 @@ Contour::Contour(const Solver* solver, const std::function<dcomplex(dcomplex)>& 
 namespace detail {
     // Inform that there is zero very close to the boundary
     static void contourLogZero(size_t i, size_t n, const Solver* solver, double r0, double i0, double r1, double i1) {
-        double f = (2.*i-1.) / (2.*n-2.);
-        double re = r0 + f*(r1-r0), im = i0 + f*(i1-i0);
+        const double f = double(2*std::ptrdiff_t(i)-1) / double(2*std::ptrdiff_t(n)-2);
+        const double re = r0 + f*(r1-r0), im = i0 + f*(i1-i0);
         solver->writelog(LOG_WARNING, "Zero at contour in {0} (possibly not counted)", str(dcomplex(re,im)));
     }
 }
@@ -76,8 +76,11 @@ int Contour::crossings(const DataVector<dcomplex>& line, double r0, double i0, d
     return wind;
 }
 
-
+#ifdef NDEBUG
+std::pair<Contour,Contour> Contour::divide(double /*reps*/, double ieps) const
+#else
 std::pair<Contour,Contour> Contour::divide(double reps, double ieps) const
+#endif
 {
     Contour contoura(solver, fun), contourb(solver, fun);
 
@@ -93,14 +96,14 @@ std::pair<Contour,Contour> Contour::divide(double reps, double ieps) const
         size_t imn = right.size() - 1;
         DataVector<dcomplex> middle(imn+1);
         middle[0] = bottom[n]; middle[imn] = top[n];
-        double di = (im1 - im0) / imn;
+        double di = (im1 - im0) / double(imn);
 
         std::exception_ptr error;
         #pragma omp parallel for
         for (plask::openmp_size_t i = 1; i < imn; ++i) {
             if (error) continue;
             try {
-                middle[i] = fun(dcomplex(re, im0+i*di));
+                middle[i] = fun(dcomplex(re, im0+double(i)*di));
             } catch (...) {
                 error = std::current_exception();
             }
@@ -137,14 +140,14 @@ std::pair<Contour,Contour> Contour::divide(double reps, double ieps) const
         } else {
             size_t n = (right.size()-1) / 2; // no less than 1
             middle[0] = left[n]; middle[ren] = right[n];
-            double dr = (re1 - re0) / ren;
+            double dr = (re1 - re0) / double(ren);
 
             std::exception_ptr error;
             #pragma omp parallel for
             for (plask::openmp_size_t i = 1; i < ren; ++i) {
                 if (error) continue;
                 try {
-                    middle[i] = fun(dcomplex(re0+i*dr, im));
+                    middle[i] = fun(dcomplex(re0+double(i)*dr, im));
                 } catch (...) {
                     error = std::current_exception();
                 }

@@ -56,7 +56,7 @@ namespace detail {
 
     shared_ptr<GeometryObject> getItem(PyObject* oself, int i) {
         GeometryObject* self = py::extract<GeometryObject*>(oself);
-        int n = self->getChildrenCount();
+        const std::size_t n = self->getChildrenCount();
         if (n == 0) {
             if (self->isLeaf())
                 throw TypeError(u8"{0} object has no items", py::extract<std::string>(
@@ -65,8 +65,8 @@ namespace detail {
                 throw IndexError(u8"{0} object has no items", py::extract<std::string>(
                     PyObject_GetAttrString(PyObject_GetAttrString(oself, "__class__"), "__name__"))());
         }
-        if (i < 0) i = n + i;
-        if (i < 0 || i >= n) {
+        if (i < 0) i += int(n);
+        if (i < 0 || std::size_t(i) >= n) {
             throw IndexError(u8"{0} index {1} out of range (0 <= index < {2})", py::extract<std::string>(
                 PyObject_GetAttrString(PyObject_GetAttrString(oself, "__class__"), "__name__"))(), i, n);
         }

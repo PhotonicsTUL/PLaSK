@@ -97,9 +97,9 @@ inline std::string macToString(const mac_address_t& mac, bool colons=false) {
 }
 
 inline unsigned char fromHex(char c, const std::string& mac_str) {
-    if ('0' <= c && c <= '9') return c - '0';
-    if ('A' <= c && c <= 'F') return c - 'A' + 10;
-    if ('a' <= c && c <= 'f') return c - 'a' + 10;
+    if ('0' <= c && c <= '9') return (unsigned char)(c - '0');
+    if ('A' <= c && c <= 'F') return (unsigned char)(c - 'A' + 10);
+    if ('a' <= c && c <= 'f') return (unsigned char)(c - 'a' + 10);
     throw std::invalid_argument("\"" + mac_str + "\" is not well-formated mac address. It includes invalid character where hex digit is expected.");
 }
 
@@ -114,7 +114,7 @@ inline mac_address_t macFromString(const std::string& mac_str) {
         res[parsed] = fromHex(c, mac_str);
         ++i;
         if (i == mac_str.size()) throw std::invalid_argument("\"" + mac_str + "\" is not well-formated mac address (unexpected end).");
-        res[parsed] = (res[parsed] << 4) | fromHex(mac_str[i], mac_str);
+        res[parsed] = (unsigned char)((res[parsed] << 4) | fromHex(mac_str[i], mac_str));
         ++parsed;
     }
     if (parsed != 6) throw std::invalid_argument("\"" + mac_str + "\" is not well-formated mac address (unexpected end).");

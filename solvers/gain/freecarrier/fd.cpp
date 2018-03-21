@@ -13,7 +13,7 @@ static double clenshaw(std::size_t n, const double* coeffs, double x, double lef
     double t  = (2.*x - left - right) / (right - left);
     double t2 = 2. * t;
 
-    for(int k = n-1; k >= 1; k--) {
+    for(std::ptrdiff_t k = n-1; k >= 1; k--) {
         double b0 = coeffs[k] + t2 * b1 - b2;
         b2 = b1; b1 = b0;
     }
@@ -137,7 +137,7 @@ static const double fd_half_coeffs_10_30[] = {
 
 static const double eta_table[] = {
     0.50000000000000000000000000000, // eta(0)
-    M_LN2,                           // eta(1)
+    plask::LN2,                      // eta(1)
     0.82246703342411321823620758332,
     0.90154267736969571404980362113,
     0.94703282949724591757650323447,
