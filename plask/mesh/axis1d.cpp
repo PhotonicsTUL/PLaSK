@@ -99,7 +99,7 @@ void MeshAxis::beforeCalcMidpointMesh() const {
         throw BadMesh("getMidpointsMesh", "at least two points are required");
 }
 
-void prepareNearestNeighborInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double& wrapped_point_coord, int axis_nr) {
+PLASK_API void prepareNearestNeighborInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double& wrapped_point_coord, int axis_nr) {
     if (flags.periodic(axis_nr) && !flags.symmetric(axis_nr)) {
         if (wrapped_point_coord < axis.at(0)) {
             if (axis.at(0) - wrapped_point_coord > wrapped_point_coord - flags.low(axis_nr) + flags.high(axis_nr) - axis.at(axis.size()-1)) wrapped_point_coord = axis.at(axis.size()-1);
@@ -109,7 +109,7 @@ void prepareNearestNeighborInterpolationForAxis(const MeshAxis& axis, const Inte
     }
 }
 
-void prepareLinearInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index, std::size_t& index_1, double& lo, double& hi, bool& invert_lo, bool& invert_hi) {
+PLASK_API void prepareLinearInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index, std::size_t& index_1, double& lo, double& hi, bool& invert_lo, bool& invert_hi) {
     index = axis.findUpIndex(wrapped_point_coord);
     invert_lo = false; invert_hi = false;
     if (index == 0) {

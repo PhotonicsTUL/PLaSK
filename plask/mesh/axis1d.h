@@ -72,7 +72,7 @@ protected:
  * @param[in,out] wrapped_point_coord
  * @param[in] axis_nr
  */
-void prepareNearestNeighborInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double& wrapped_point_coord, int axis_nr);
+PLASK_API void prepareNearestNeighborInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double& wrapped_point_coord, int axis_nr);
 
 /**
  * TODO doc - this is code by M. Dems copied from interpolation methods of rectngular meshes
@@ -87,7 +87,7 @@ void prepareNearestNeighborInterpolationForAxis(const MeshAxis& axis, const Inte
  * @param[out] invert_lo
  * @param[out] invert_hi
  */
-void prepareLinearInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index, std::size_t& index_1, double& lo, double& hi, bool& invert_lo, bool& invert_hi);
+PLASK_API void prepareLinearInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index, std::size_t& index_1, double& lo, double& hi, bool& invert_lo, bool& invert_hi);
 
 
 
