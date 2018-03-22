@@ -436,9 +436,9 @@ ThermalConductivityData::ThermalConductivityData(const FiniteElementMethodDynami
 }
 Tensor2<double> FiniteElementMethodDynamicThermal3DSolver::ThermalConductivityData::at(std::size_t i) const {
     auto point = flags.wrap(dest_mesh->at(i));
-    size_t x = std::upper_bound(solver->mesh->axis0->begin(), solver->mesh->axis0->end(), point[0]) - solver->mesh->axis0->begin();
-    size_t y = std::upper_bound(solver->mesh->axis1->begin(), solver->mesh->axis1->end(), point[1]) - solver->mesh->axis1->begin();
-    size_t z = std::upper_bound(solver->mesh->axis2->begin(), solver->mesh->axis2->end(), point[2]) - solver->mesh->axis2->begin();
+    std::size_t x = solver->mesh->axis0->findUpIndex(point[0]),
+                y = solver->mesh->axis1->findUpIndex(point[1]),
+                z = solver->mesh->axis2->findUpIndex(point[2]);
     if (x == 0 || y == 0 || z == 0 || x == solver->mesh->axis0->size() || y == solver->mesh->axis1->size() || z == solver->mesh->axis2->size())
         return Tensor2<double>(NAN);
     else {

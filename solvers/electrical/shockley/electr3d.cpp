@@ -715,9 +715,9 @@ const LazyData<Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConduc
     return LazyData<Tensor2<double>>(dest_mesh->size(),
         [this, dest_mesh, flags](size_t i) -> Tensor2<double> {
             auto point = flags.wrap(dest_mesh->at(i));
-            size_t x = std::upper_bound(this->mesh->axis0->begin(), this->mesh->axis0->end(), point[0]) - this->mesh->axis0->begin();
-            size_t y = std::upper_bound(this->mesh->axis1->begin(), this->mesh->axis1->end(), point[1]) - this->mesh->axis1->begin();
-            size_t z = std::upper_bound(this->mesh->axis2->begin(), this->mesh->axis2->end(), point[2]) - this->mesh->axis2->begin();
+            size_t x = this->mesh->axis0->findUpIndex(point[0]),
+                   y = this->mesh->axis1->findUpIndex(point[1]),
+                   z = this->mesh->axis2->findUpIndex(point[2]);
             if (x == 0 || y == 0 || z == 0 || x == this->mesh->axis0->size() || y == this->mesh->axis1->size() || z == this->mesh->axis2->size())
                 return Tensor2<double>(NAN);
             else

@@ -651,8 +651,8 @@ ThermalConductivityData::ThermalConductivityData(const FiniteElementMethodTherma
 template<typename Geometry2DType> Tensor2<double> FiniteElementMethodThermal2DSolver<Geometry2DType>::
 ThermalConductivityData::at(std::size_t i) const {
     auto point = flags.wrap(dest_mesh->at(i));
-    size_t x = std::upper_bound(solver->mesh->axis0->begin(), solver->mesh->axis0->end(), point[0]) - solver->mesh->axis0->begin();
-    size_t y = std::upper_bound(solver->mesh->axis1->begin(), solver->mesh->axis1->end(), point[1]) - solver->mesh->axis1->begin();
+    std::size_t x = solver->mesh->axis0->findUpIndex(point[0]),
+                y = solver->mesh->axis1->findUpIndex(point[1]);
     if (x == 0 || y == 0 || x == solver->mesh->axis0->size() || y == solver->mesh->axis1->size())
         return Tensor2<double>(NAN);
     else {

@@ -43,7 +43,11 @@ void OrderedAxis::writeXML(XMLElement &object) const {
 OrderedAxis::native_const_iterator OrderedAxis::find(double to_find) const {
     return std::lower_bound(points.begin(), points.end(), to_find);
 }
-//
+
+OrderedAxis::native_const_iterator OrderedAxis::findUp(double to_find) const {
+    return std::upper_bound(points.begin(), points.end(), to_find);
+}
+
 OrderedAxis::native_const_iterator OrderedAxis::findNearest(double to_find) const {
     return find_nearest_binary(points.begin(), points.end(), to_find);
 }

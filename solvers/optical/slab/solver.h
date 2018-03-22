@@ -189,7 +189,7 @@ struct PLASK_SOLVER_API SlabBase {
      * \return layer number (in the stack)
      */
     size_t getLayerFor(double& h) const {
-        size_t n = std::upper_bound(vbounds->begin(), vbounds->end(), h) - vbounds->begin();
+        size_t n = vbounds->findUpIndex(h);
         if (n == 0) h -= vbounds->at(0);
         else h -= vbounds->at(n-1);
         return n;

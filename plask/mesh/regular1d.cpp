@@ -19,6 +19,16 @@ void RegularAxis::reset(double first, double last, std::size_t points_count) {
     if (resized) fireResized(); else fireChanged();
 }
 
+std::size_t RegularAxis::findUpIndex(double to_find) const {
+    const double index_before_cail = (to_find - lo) / _step;
+    if (index_before_cail < 0.0) return 0;
+    const double index_after_ceil = std::ceil(index_before_cail);
+    std::size_t index = std::size_t(index_after_ceil);
+    if (index_before_cail == index_after_ceil) ++index;
+    if (index > points_count) return points_count;
+    return index;
+}
+
 void RegularAxis::writeXML(XMLElement &object) const {
     object.attr("type", "regular").attr("start", first()).attr("stop", last()).attr("num", size());
 }

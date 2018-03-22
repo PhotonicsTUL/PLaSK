@@ -211,6 +211,11 @@ public:
         else return hi[axis];
     }
 
+    /**
+     * @param ax axes number
+     * @param x coordinate
+     * @return wrapped version of @p x
+     */
     double wrap(int ax, double x) const {
         double d = hi[ax] - lo[ax];
         if (periodic(ax)) {

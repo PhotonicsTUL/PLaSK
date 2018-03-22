@@ -28,9 +28,17 @@ public:
      * @param to_find point to find
      * @return First index where to_find could be inserted.
      *         Refer to value equal to @p to_find only if @p to_find is already in mesh, in other case it refer to value larger than to_find.
-     *         Can be equal to size() if to_find is larger than all points in mesh.
+     *         Can be equal to size() if @p to_find is larger than all points in mesh.
      */
     virtual std::size_t findIndex(double to_find) const;
+
+    /**
+     * Find the lowest index for which coordinate is larger than @p to_find.
+     * @param to_find point to find
+     * @return First index with coordinate larger than @p to_find.
+     *         Can be equal to size() if @p to_find is larger than all points in mesh or equals to the last point.
+     */
+    virtual std::size_t findUpIndex(double to_find) const;
 
     /**
      * Find index nearest to @p to_find.

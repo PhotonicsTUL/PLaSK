@@ -78,6 +78,10 @@ std::size_t MeshAxis::findIndex(double to_find) const {
     return std::lower_bound(begin(), end(), to_find).index;
 }
 
+std::size_t MeshAxis::findUpIndex(double to_find) const {
+    return std::upper_bound(begin(), end(), to_find).index;
+}
+
 std::size_t MeshAxis::findNearestIndex(double to_find) const {
     return find_nearest_binary(begin(), end(), to_find).index;
 }
@@ -106,7 +110,7 @@ void prepareNearestNeighborInterpolationForAxis(const MeshAxis& axis, const Inte
 }
 
 void prepareLinearInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index, std::size_t& index_1, double& lo, double& hi, bool& invert_lo, bool& invert_hi) {
-    index = std::upper_bound(axis.begin(), axis.end(), wrapped_point_coord).index;
+    index = axis.findUpIndex(wrapped_point_coord);
     invert_lo = false; invert_hi = false;
     if (index == 0) {
         if (flags.symmetric(axis_nr)) {

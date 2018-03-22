@@ -114,15 +114,8 @@ class PLASK_API RegularAxis: public MeshAxis {
         fireResized();
     }
 
-    /**
-     * Find index where @p to_find point could be inserted.
-     * @param to_find point to find
-     * @return First index where to_find could be inserted.
-     *         Refer to value equal to @p to_find only if @p to_find is already in mesh, in other case it refer to value larger than to_find.
-     *         Can be equal to size() if to_find is larger than all points in mesh.
-     */
     std::size_t findIndex(double to_find) const override {
-        return clamp(int(std::ceil((to_find - lo) / _step)), 0, int(points_count));
+        return clamp(std::ptrdiff_t(std::ceil((to_find - lo) / _step)), std::ptrdiff_t(0), std::ptrdiff_t(points_count));
     }
 
     /**
@@ -135,6 +128,18 @@ class PLASK_API RegularAxis: public MeshAxis {
      */
     native_const_iterator find(double to_find) const {
         return begin() + findIndex(to_find);
+    }
+
+    std::size_t findUpIndex(double to_find) const override;
+
+    /**
+     * Find the lowest position for with a coordinate larger than @p to_find.
+     * @param to_find point to find
+     * @return The first position with coordinate larger than @p to_find.
+     *         It equals to end() if @p to_find is larger than all points in mesh or equals to the last point.
+     */
+    native_const_iterator findUp(double to_find) const {
+        return begin() + findUpIndex(to_find);
     }
 
     /**

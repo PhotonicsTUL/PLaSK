@@ -18,8 +18,8 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 {
     Vec<2> p = this->flags.wrap(this->dst_mesh->at(index));
 
-    size_t i0 = std::upper_bound(this->src_mesh->axis0->begin(), this->src_mesh->axis0->end(), p.c0).index,
-           i1 = std::upper_bound(this->src_mesh->axis1->begin(), this->src_mesh->axis1->end(), p.c1).index;
+    std::size_t i0 = this->src_mesh->axis0->findUpIndex(p.c0),
+                i1 = this->src_mesh->axis1->findUpIndex(p.c1);
 
     size_t i0_1;
     double left, right;
@@ -193,9 +193,9 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 {
     Vec<3> p = this->flags.wrap(this->dst_mesh->at(index));
 
-    size_t i0 = std::upper_bound(this->src_mesh->axis0->begin(), this->src_mesh->axis0->end(), p.c0).index,
-           i1 = std::upper_bound(this->src_mesh->axis1->begin(), this->src_mesh->axis1->end(), p.c1).index,
-           i2 = std::upper_bound(this->src_mesh->axis2->begin(), this->src_mesh->axis2->end(), p.c2).index;
+    std::size_t i0 = this->src_mesh->axis0->findUpIndex(p.c0),
+                i1 = this->src_mesh->axis1->findUpIndex(p.c1),
+                i2 = this->src_mesh->axis2->findUpIndex(p.c2);
 
     size_t i0_1;
     double back, front;
