@@ -4,6 +4,8 @@
 #include <vector>
 #include <algorithm>
 #include <limits>
+#include <boost/iterator/iterator_facade.hpp>
+
 #include "../exceptions.h"
 
 namespace plask {
@@ -50,6 +52,100 @@ class CompressedSetOfNumbers {
     }
 
 public:
+
+    /**
+     * SelfClass must have set() method which returns const CompressedSetOfNumbers<number_t>&.
+     */
+    template <typename SelfClass>
+    class ConstIteratorFacade: public boost::iterator_facade<ConstIteratorFacade<SelfClass>, number_t, boost::random_access_traversal_tag, number_t> {
+
+        typedef typename std::vector<Segment>::const_iterator ConstSegmentIterator;
+
+        /// Current segment (which includes current index). It is stored in order to speed up dereference operation.
+        ConstSegmentIterator segmentIterator;
+
+        /// Current index.
+        std::size_t index;
+
+        /// Construct uninitialized iterator. Don't use it before initialization (which can be done by calling of setIndex method).
+        ConstIteratorFacade() {}
+
+        ConstIteratorFacade(std::size_t index, ConstSegmentIterator segmentIterator): segmentIterator(segmentIterator), index(index) {}
+
+        ConstIteratorFacade(std::size_t index) { setIndex(index); }
+
+        /**
+         * Get current iterator position (index).
+         * @return current iterator position (index)
+         */
+        std::size_t getIndex() const { return index; }
+
+        void setIndex(std::size_t index) {
+            this->index = index;
+            segmentIterator = std::upper_bound(_set().segments.begin(), _set().segments.end(), index, Segment::compareByIndexEnd);
+        }
+
+        private: //--- methods used by boost::iterator_facade: ---
+
+        friend class boost::iterator_core_access;
+        template <class> friend struct IteratorFacade;
+
+        CompressedSetOfNumbers<number_t>& _set() {
+            static_cast<SelfClass*>(this)->set();
+        }
+
+        const CompressedSetOfNumbers<number_t>& _set() const {
+            static_cast<const SelfClass*>(this)->set();
+        }
+
+        template <typename OtherT>
+        bool equal(const OtherT& other) const {
+            return index == other.index;
+        }
+
+        void increment() {
+            ++index;
+            if (index == segmentIterator->indexEnd) ++segmentIterator;
+        }
+
+        void decrement() {
+            --index;
+            if (index < _set().firstIndex(segmentIterator)) --segmentIterator;
+        }
+
+        void advance(std::ptrdiff_t to_add) {
+            setIndex(index + to_add);
+        }
+
+        template <typename OtherT>
+        std::ptrdiff_t distance_to(OtherT z) const { return std::ptrdiff_t(z.index) - std::ptrdiff_t(index); }
+
+        number_t dereference() const {
+            return segmentIterator->numberEnd - segmentIterator->indexEnd + index;
+        }
+
+    };
+
+    class const_iterator: public ConstIteratorFacade<const_iterator> {
+
+        const CompressedSetOfNumbers* _set;
+
+    public:
+
+        template <typename... CtorArgs>
+        explicit const_iterator(const CompressedSetOfNumbers* set, CtorArgs&&... ctorArgs)
+            : _set(&set), ConstIteratorFacade<const_iterator>(std::forward<CtorArgs>(ctorArgs)...) {}
+
+        const CompressedSetOfNumbers<number_t>& set() const { return *_set; }
+
+    };
+
+    typedef const_iterator iterator;   // we don't support non-const iterators
+
+    const_iterator begin() const { return const_iterator(*this, 0, segments.begin()); }
+    const_iterator end() const { return const_iterator(*this, size(), segments.end()); }
+
+
 
     /**
      * Get number of items (numbers) included in the set.

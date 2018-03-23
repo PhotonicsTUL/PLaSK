@@ -22,9 +22,11 @@ public:
 
     using typename MeshD<DIM>::LocalCoords;
 
-    typedef typename RectangularMesh<DIM>::Element FullRectElement;
+    typedef std::function<bool(const typename RectangularMesh<DIM>::Element&)> Predicate;
 
-    typedef std::function<bool(const FullRectElement&)> Predicate;
+    struct Element {
+
+    };
 
     RectangularFilteredMesh(const RectangularMesh<DIM>* rectangularMesh, const Predicate& predicate)
         : rectangularMesh(rectangularMesh)
