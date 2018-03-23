@@ -655,21 +655,21 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     {
         auto p = flags.wrap(point);
 
-        size_t index0, index0_1;
+        size_t index0_lo, index0_hi;
         double left, right;
         bool invert_left, invert_right;
-        prepareLinearInterpolationForAxis(*axis0, flags, p.c0, 0, index0, index0_1, left, right, invert_left, invert_right);
+        prepareInterpolationForAxis(*axis0, flags, p.c0, 0, index0_lo, index0_hi, left, right, invert_left, invert_right);
 
-        size_t index1, index1_1;
+        size_t index1_lo, index1_hi;
         double bottom, top;
         bool invert_bottom, invert_top;
-        prepareLinearInterpolationForAxis(*axis1, flags, p.c1, 1, index1, index1_1, bottom, top, invert_bottom, invert_top);
+        prepareInterpolationForAxis(*axis1, flags, p.c1, 1, index1_lo, index1_hi, bottom, top, invert_bottom, invert_top);
 
         typename std::remove_const<typename std::remove_reference<decltype(data[0])>::type>::type
-            data_lb = data[index(index0_1, index1_1)],
-            data_rb = data[index(index0,   index1_1)],
-            data_rt = data[index(index0,   index1  )],
-            data_lt = data[index(index0_1, index1  )];
+            data_lb = data[index(index0_lo, index1_lo)],
+            data_rb = data[index(index0_hi, index1_lo)],
+            data_rt = data[index(index0_hi, index1_hi)],
+            data_lt = data[index(index0_lo, index1_hi)];
         if (invert_left)   { data_lb = flags.reflect(0, data_lb); data_lt = flags.reflect(0, data_lt); }
         if (invert_right)  { data_rb = flags.reflect(0, data_rb); data_rt = flags.reflect(0, data_rt); }
         if (invert_top)    { data_lt = flags.reflect(1, data_lt); data_rt = flags.reflect(1, data_rt); }

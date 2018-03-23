@@ -560,31 +560,31 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
     {
         auto p = flags.wrap(point);
 
-        size_t index0, index0_1;
+        size_t index0_lo, index0_hi;
         double back, front;
         bool invert_back, invert_front;
-        prepareLinearInterpolationForAxis(*axis0, flags, p.c0, 0, index0, index0_1, back, front, invert_back, invert_front);
+        prepareInterpolationForAxis(*axis0, flags, p.c0, 0, index0_lo, index0_hi, back, front, invert_back, invert_front);
 
-        size_t index1, index1_1;
+        size_t index1_lo, index1_hi;
         double left, right;
         bool invert_left, invert_right;
-        prepareLinearInterpolationForAxis(*axis1, flags, p.c1, 1, index1, index1_1, left, right, invert_left, invert_right);
+        prepareInterpolationForAxis(*axis1, flags, p.c1, 1, index1_lo, index1_hi, left, right, invert_left, invert_right);
 
-        size_t index2, index2_1;
+        size_t index2_lo, index2_hi;
         double bottom, top;
         bool invert_bottom, invert_top;
-        prepareLinearInterpolationForAxis(*axis2, flags, p.c2, 2, index2, index2_1, bottom, top, invert_bottom, invert_top);
+        prepareInterpolationForAxis(*axis2, flags, p.c2, 2, index2_lo, index2_hi, bottom, top, invert_bottom, invert_top);
 
         // all indexes are in bounds
         typename std::remove_const<typename std::remove_reference<decltype(data[0])>::type>::type
-            data_lll = data[index(index0_1, index1_1, index2_1)],
-            data_hll = data[index(index0,   index1_1, index2_1)],
-            data_hhl = data[index(index0,   index1  , index2_1)],
-            data_lhl = data[index(index0_1, index1  , index2_1)],
-            data_llh = data[index(index0_1, index1_1, index2)],
-            data_hlh = data[index(index0,   index1_1, index2)],
-            data_hhh = data[index(index0,   index1  , index2)],
-            data_lhh = data[index(index0_1, index1  , index2)];
+            data_lll = data[index(index0_lo, index1_lo, index2_lo)],
+            data_hll = data[index(index0_hi, index1_lo, index2_lo)],
+            data_hhl = data[index(index0_hi, index1_hi, index2_lo)],
+            data_lhl = data[index(index0_lo, index1_hi, index2_lo)],
+            data_llh = data[index(index0_lo, index1_lo, index2_hi)],
+            data_hlh = data[index(index0_hi, index1_lo, index2_hi)],
+            data_hhh = data[index(index0_hi, index1_hi, index2_hi)],
+            data_lhh = data[index(index0_lo, index1_hi, index2_hi)];
 
         if (invert_back)   { data_lll = flags.reflect(0, data_lll); data_llh = flags.reflect(0, data_llh); data_lhl = flags.reflect(0, data_lhl); data_lhh = flags.reflect(0, data_lhh); }
         if (invert_front)  { data_hll = flags.reflect(0, data_hll); data_llh = flags.reflect(0, data_hlh); data_lhl = flags.reflect(0, data_hhl); data_lhh = flags.reflect(0, data_hhh); }
