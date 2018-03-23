@@ -76,6 +76,8 @@ PLASK_API void prepareNearestNeighborInterpolationForAxis(const MeshAxis& axis, 
 
 /**
  * TODO doc - this is code by M. Dems copied from interpolation methods of rectngular meshes
+ *
+ * This function is used by linear and spline interpolations of rectangular meshes.
  * @param[in] axis
  * @param[in] flags
  * @param[in] wrapped_point_coord
@@ -87,7 +89,7 @@ PLASK_API void prepareNearestNeighborInterpolationForAxis(const MeshAxis& axis, 
  * @param[out] invert_lo
  * @param[out] invert_hi
  */
-PLASK_API void prepareLinearInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index, std::size_t& index_1, double& lo, double& hi, bool& invert_lo, bool& invert_hi);
+PLASK_API void prepareInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index, std::size_t& index_1, double& lo, double& hi, bool& invert_lo, bool& invert_hi);
 
 
 

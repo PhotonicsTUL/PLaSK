@@ -109,7 +109,7 @@ PLASK_API void prepareNearestNeighborInterpolationForAxis(const MeshAxis& axis, 
     }
 }
 
-PLASK_API void prepareLinearInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index, std::size_t& index_1, double& lo, double& hi, bool& invert_lo, bool& invert_hi) {
+PLASK_API void prepareInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index, std::size_t& index_1, double& lo, double& hi, bool& invert_lo, bool& invert_hi) {
     index = axis.findUpIndex(wrapped_point_coord);
     invert_lo = false; invert_hi = false;
     if (index == 0) {

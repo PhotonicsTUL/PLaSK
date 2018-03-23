@@ -563,17 +563,17 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
         size_t index0, index0_1;
         double back, front;
         bool invert_back, invert_front;
-        prepareLinearInterpolationForAxis(*axis0, flags, p.c0, 0, index0, index0_1, back, front, invert_back, invert_front);
+        prepareInterpolationForAxis(*axis0, flags, p.c0, 0, index0, index0_1, back, front, invert_back, invert_front);
 
         size_t index1, index1_1;
         double left, right;
         bool invert_left, invert_right;
-        prepareLinearInterpolationForAxis(*axis1, flags, p.c1, 1, index1, index1_1, left, right, invert_left, invert_right);
+        prepareInterpolationForAxis(*axis1, flags, p.c1, 1, index1, index1_1, left, right, invert_left, invert_right);
 
         size_t index2, index2_1;
         double bottom, top;
         bool invert_bottom, invert_top;
-        prepareLinearInterpolationForAxis(*axis2, flags, p.c2, 2, index2, index2_1, bottom, top, invert_bottom, invert_top);
+        prepareInterpolationForAxis(*axis2, flags, p.c2, 2, index2, index2_1, bottom, top, invert_bottom, invert_top);
 
         // all indexes are in bounds
         typename std::remove_const<typename std::remove_reference<decltype(data[0])>::type>::type

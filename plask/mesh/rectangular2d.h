@@ -658,12 +658,12 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
         size_t index0, index0_1;
         double left, right;
         bool invert_left, invert_right;
-        prepareLinearInterpolationForAxis(*axis0, flags, p.c0, 0, index0, index0_1, left, right, invert_left, invert_right);
+        prepareInterpolationForAxis(*axis0, flags, p.c0, 0, index0, index0_1, left, right, invert_left, invert_right);
 
         size_t index1, index1_1;
         double bottom, top;
         bool invert_bottom, invert_top;
-        prepareLinearInterpolationForAxis(*axis1, flags, p.c1, 1, index1, index1_1, bottom, top, invert_bottom, invert_top);
+        prepareInterpolationForAxis(*axis1, flags, p.c1, 1, index1, index1_1, bottom, top, invert_bottom, invert_top);
 
         typename std::remove_const<typename std::remove_reference<decltype(data[0])>::type>::type
             data_lb = data[index(index0_1, index1_1)],

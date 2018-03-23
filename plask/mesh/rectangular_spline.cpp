@@ -18,112 +18,15 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 {
     Vec<2> p = this->flags.wrap(this->dst_mesh->at(index));
 
-    std::size_t i0 = this->src_mesh->axis0->findUpIndex(p.c0),
-                i1 = this->src_mesh->axis1->findUpIndex(p.c1);
-
-    size_t i0_1;
+    size_t i0, i0_1;
     double left, right;
-    bool invert_left = false, invert_right = false;
-    if (i0 == 0) {
-        if (this->flags.symmetric(0)) {
-            i0_1 = 0;
-            left = this->src_mesh->axis0->at(0);
-            if (left > 0.) {
-                left = - left;
-                invert_left = true;
-            } else if (this->flags.periodic(0)) {
-                left = 2. * this->flags.low(0) - left;
-                invert_left = true;
-            } else {
-                left -= 1.;
-            }
-        } else if (this->flags.periodic(0)) {
-            i0_1 = this->src_mesh->axis0->size() - 1;
-            left = this->src_mesh->axis0->at(i0_1) - this->flags.high(0) + this->flags.low(0);
-        } else {
-            i0_1 = 0;
-            left = this->src_mesh->axis0->at(0) - 1.;
-        }
-    } else {
-        i0_1 = i0 - 1;
-        left = this->src_mesh->axis0->at(i0_1);
-    }
-    if (i0 == this->src_mesh->axis0->size()) {
-        if (this->flags.symmetric(0)) {
-            --i0;
-            right = this->src_mesh->axis0->at(i0);
-            if (right < 0.) {
-                right = - right;
-                invert_right = true;
-            } else if (this->flags.periodic(0)) {
-                left = 2. * this->flags.high(0) - right;
-                invert_right = true;
-            } else {
-                right += 1.;
-            }
-        } else if (this->flags.periodic(0)) {
-            i0 = 0;
-            right = this->src_mesh->axis0->at(0) + this->flags.high(0) - this->flags.low(0);
-            if (right == left) right += 1e-6;
-        } else {
-            --i0;
-            right = this->src_mesh->axis0->at(i0) + 1.;
-        }
-    } else {
-        right = this->src_mesh->axis0->at(i0);
-    }
+    bool invert_left, invert_right;
+    prepareInterpolationForAxis(*this->src_mesh->axis0, this->flags, p.c0, 0, i0, i0_1, left, right, invert_left, invert_right);
 
-    size_t i1_1;
+    size_t i1, i1_1;
     double bottom, top;
-    bool invert_top = false, invert_bottom = false;
-    if (i1 == 0) {
-        if (this->flags.symmetric(1)) {
-            i1_1 = 0;
-            bottom = this->src_mesh->axis1->at(0);
-            if (bottom > 0.) {
-                bottom = - bottom;
-                invert_bottom = true;
-            } else if (this->flags.periodic(1)) {
-                bottom = 2. * this->flags.low(1) - bottom;
-                invert_bottom = true;
-            } else {
-                bottom -= 1.;
-            }
-        } else if (this->flags.periodic(1)) {
-            i1_1 = this->src_mesh->axis1->size() - 1;
-            bottom = this->src_mesh->axis1->at(i1_1) - this->flags.high(1) + this->flags.low(1);
-        } else {
-            i1_1 = 0;
-            bottom = this->src_mesh->axis1->at(0) - 1.;
-        }
-    } else {
-        i1_1 = i1 - 1;
-        bottom = this->src_mesh->axis1->at(i1_1);
-    }
-    if (i1 == this->src_mesh->axis1->size()) {
-        if (this->flags.symmetric(1)) {
-            --i1;
-            top = this->src_mesh->axis1->at(i1);
-            if (top < 0.) {
-                top = - top;
-                invert_top = true;
-            } else if (this->flags.periodic(1)) {
-                top = 2. * this->flags.high(1) - top;
-                invert_top = true;
-            } else {
-                top += 1.;
-            }
-        } else if (this->flags.periodic(1)) {
-            i1 = 0;
-            top = this->src_mesh->axis1->at(0) + this->flags.high(1) - this->flags.low(1);
-            if (top == bottom) top += 1e-6;
-        } else {
-            --i1;
-            top = this->src_mesh->axis1->at(i1) + 1.;
-        }
-    } else {
-        top = this->src_mesh->axis1->at(i1);
-    }
+    bool invert_bottom, invert_top;
+    prepareInterpolationForAxis(*this->src_mesh->axis1, this->flags, p.c1, 1, i1, i1_1, bottom, top, invert_bottom, invert_top);
 
     double d0 = right - left,
            d1 = top - bottom;
@@ -140,10 +43,10 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
            gb = ((x1 - 2.) * x1 + 1.) * x1 * d1,
            gt = (x1 - 1.) * x1 * x1 * d1;
 
-    int ilb = int(this->src_mesh->index(i0_1, i1_1)),
-        ilt = int(this->src_mesh->index(i0_1, i1)),
-        irb = int(this->src_mesh->index(i0, i1_1)),
-        irt = int(this->src_mesh->index(i0, i1));
+    std::size_t ilb = this->src_mesh->index(i0_1, i1_1),
+                ilt = this->src_mesh->index(i0_1, i1),
+                irb = this->src_mesh->index(i0, i1_1),
+                irt = this->src_mesh->index(i0, i1);
 
     SrcT diff0lb = diff0[ilb],
          diff0lt = diff0[ilt],
@@ -193,174 +96,29 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 {
     Vec<3> p = this->flags.wrap(this->dst_mesh->at(index));
 
-    std::size_t i0 = this->src_mesh->axis0->findUpIndex(p.c0),
-                i1 = this->src_mesh->axis1->findUpIndex(p.c1),
-                i2 = this->src_mesh->axis2->findUpIndex(p.c2);
-
-    size_t i0_1;
+    size_t i0, i0_1;
     double back, front;
-    bool invert_back = false, invert_front = false;
-    if (i0 == 0) {
-        if (this->flags.symmetric(0)) {
-            i0_1 = 0;
-            back = this->src_mesh->axis0->at(0);
-            if (back > 0.) {
-                back = - back;
-                invert_back = true;
-            } else if (this->flags.periodic(0)) {
-                back = 2. * this->flags.low(0) - back;
-                invert_back = true;
-            } else {
-                back -= 1.;
-            }
-        } else if (this->flags.periodic(0)) {
-            i0_1 = this->src_mesh->axis0->size() - 1;
-            back = this->src_mesh->axis0->at(i0_1) - this->flags.high(0) + this->flags.low(0);
-        } else {
-            i0_1 = 0;
-            back = this->src_mesh->axis0->at(0) - 1.;
-        }
-    } else {
-        i0_1 = i0 - 1;
-        back = this->src_mesh->axis0->at(i0_1);
-    }
-    if (i0 == this->src_mesh->axis0->size()) {
-        if (this->flags.symmetric(0)) {
-            --i0;
-            front = this->src_mesh->axis0->at(i0);
-            if (front < 0.) {
-                front = - front;
-                invert_front = true;
-            } else if (this->flags.periodic(0)) {
-                back = 2. * this->flags.high(0) - front;
-                invert_front = true;
-            } else {
-                front += 1.;
-            }
-        } else if (this->flags.periodic(0)) {
-            i0 = 0;
-            front = this->src_mesh->axis0->at(0) + this->flags.high(0) - this->flags.low(0);
-            if (front == back) front += 1e-6;
-        } else {
-            --i0;
-            front = this->src_mesh->axis0->at(i0) + 1.;
-        }
-    } else {
-        front = this->src_mesh->axis0->at(i0);
-    }
+    bool invert_back, invert_front;
+    prepareInterpolationForAxis(*this->src_mesh->axis0, this->flags, p.c0, 0, i0, i0_1, back, front, invert_back, invert_front);
 
-    size_t i1_1;
+    size_t i1, i1_1;
     double left, right;
-    bool invert_left = false, invert_right = false;
-    if (i1 == 0) {
-        if (this->flags.symmetric(1)) {
-            i1_1 = 0;
-            left = this->src_mesh->axis1->at(0);
-            if (left > 0.) {
-                left = - left;
-                invert_left = true;
-            } else if (this->flags.periodic(1)) {
-                left = 2. * this->flags.low(1) - left;
-                invert_left = true;
-            } else {
-                left -= 1.;
-            }
-        } else if (this->flags.periodic(1)) {
-            i1_1 = this->src_mesh->axis1->size() - 1;
-            left = this->src_mesh->axis1->at(i1_1) - this->flags.high(1) + this->flags.low(1);
-        } else {
-            i1_1 = 0;
-            left = this->src_mesh->axis1->at(0) - 1.;
-        }
-    } else {
-        i1_1 = i1 - 1;
-        left = this->src_mesh->axis1->at(i1_1);
-    }
-    if (i1 == this->src_mesh->axis1->size()) {
-        if (this->flags.symmetric(1)) {
-            --i1;
-            right = this->src_mesh->axis1->at(i1);
-            if (right < 0.) {
-                right = - right;
-                invert_right = true;
-            } else if (this->flags.periodic(1)) {
-                left = 2. * this->flags.high(1) - right;
-                invert_right = true;
-            } else {
-                right += 1.;
-            }
-        } else if (this->flags.periodic(1)) {
-            i1 = 0;
-            right = this->src_mesh->axis1->at(0) + this->flags.high(1) - this->flags.low(1);
-            if (right == left) right += 1e-6;
-        } else {
-            --i1;
-            right = this->src_mesh->axis1->at(i1) + 1.;
-        }
-    } else {
-        right = this->src_mesh->axis1->at(i1);
-    }
+    bool invert_left, invert_right;
+    prepareInterpolationForAxis(*this->src_mesh->axis1, this->flags, p.c1, 1, i1, i1_1, left, right, invert_left, invert_right);
 
-    size_t i2_1;
+    size_t i2, i2_1;
     double bottom, top;
-    bool invert_top = false, invert_bottom = false;
-    if (i2 == 0) {
-        if (this->flags.symmetric(2)) {
-            i2_1 = 0;
-            bottom = this->src_mesh->axis2->at(0);
-            if (bottom > 0.) {
-                bottom = - bottom;
-                invert_bottom = true;
-            } else if (this->flags.periodic(2)) {
-                bottom = 2. * this->flags.low(2) - bottom;
-                invert_bottom = true;
-            } else {
-                bottom -= 1.;
-            }
-        } else if (this->flags.periodic(2)) {
-            i2_1 = this->src_mesh->axis2->size() - 1;
-            bottom = this->src_mesh->axis2->at(i2_1) - this->flags.high(2) + this->flags.low(2);
-        } else {
-            i2_1 = 0;
-            bottom = this->src_mesh->axis2->at(0) - 1.;
-        }
-    } else {
-        i2_1 = i2-1;
-        bottom = this->src_mesh->axis2->at(i2_1);
-    }
-    if (i2 == this->src_mesh->axis2->size()) {
-        if (this->flags.symmetric(2)) {
-            --i2;
-            top = this->src_mesh->axis2->at(i2);
-            if (top < 0.) {
-                top = - top;
-                invert_top = true;
-            } else if (this->flags.periodic(2)) {
-                top = 2. * this->flags.high(2) - top;
-                invert_top = true;
-            } else {
-                top += 1.;
-            }
-        } else if (this->flags.periodic(2)) {
-            i2 = 0;
-            top = this->src_mesh->axis2->at(0) + this->flags.high(2) - this->flags.low(2);
-            if (top == bottom) top += 1e-6;
-        } else {
-            --i2;
-            top = this->src_mesh->axis2->at(i2) + 1.;
-        }
-    } else {
-        top = this->src_mesh->axis2->at(i2);
-    }
+    bool invert_bottom, invert_top;
+    prepareInterpolationForAxis(*this->src_mesh->axis2, this->flags, p.c2, 2, i2, i2_1, bottom, top, invert_bottom, invert_top);
 
-    int illl = int(this->src_mesh->index(i0_1, i1_1, i2_1)),
-        illh = int(this->src_mesh->index(i0_1, i1_1, i2)),
-        ilhl = int(this->src_mesh->index(i0_1, i1, i2_1)),
-        ilhh = int(this->src_mesh->index(i0_1, i1, i2)),
-        ihll = int(this->src_mesh->index(i0, i1_1, i2_1)),
-        ihlh = int(this->src_mesh->index(i0, i1_1, i2)),
-        ihhl = int(this->src_mesh->index(i0, i1, i2_1)),
-        ihhh = int(this->src_mesh->index(i0, i1, i2));
+    std::size_t illl = this->src_mesh->index(i0_1, i1_1, i2_1),
+                illh = this->src_mesh->index(i0_1, i1_1, i2),
+                ilhl = this->src_mesh->index(i0_1, i1, i2_1),
+                ilhh = this->src_mesh->index(i0_1, i1, i2),
+                ihll = this->src_mesh->index(i0, i1_1, i2_1),
+                ihlh = this->src_mesh->index(i0, i1_1, i2),
+                ihhl = this->src_mesh->index(i0, i1, i2_1),
+                ihhh = this->src_mesh->index(i0, i1, i2);
 
     double d0 = front - back,
            d1 = right - left,
