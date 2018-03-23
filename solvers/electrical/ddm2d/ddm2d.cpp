@@ -246,8 +246,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInvalidate() {
     currentsN.reset();
     currentsP.reset();
     heats.reset();
-    regions.clear();
-    materialSubstrate.reset();
+    //regions.clear();
+    //materialSubstrate.reset();
 }
 
 
@@ -1863,9 +1863,50 @@ int DriftDiffusionModel2DSolver<Geometry2DType>::findCladBE()
 template <typename GeometryType>
 void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
 {
-    regions.clear();
+	this->writelog(LOG_INFO, "Detecting active region..");
+	
+	regions.clear();
 
-    shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
+	shared_ptr< MeshAxis > axis_vert = this->mesh->vert();
+	shared_ptr< MeshAxis > axis_tran = this->mesh->tran();
+	double r_at_0 = 0.5 * (axis_tran->at(0) + axis_tran->at(1));
+	
+	shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
+	//size_t ileft = 0, iright = points->axis0->size();
+	bool in_active = false;
+
+	bool added_bottom_cladding = false;
+	bool added_top_cladding = false;
+
+	std::vector<double> vz;
+	vz.clear();
+
+	for (int i(0); i < axis_vert->size(); ++i)
+	{
+		this->writelog(LOG_INFO, "axis_vert[{0}]: {1}", i, axis_vert->at(i));
+	}
+	for (int i(0); i < axis_vert->size()-1; ++i)
+	{
+		double zA = axis_vert->at(i); /// z bottom
+		double zB = axis_vert->at(i+1); /// z top
+		double z_avg = 0.5*(zA + zB);
+		Vec<2, double> point;
+		point[0] = r_at_0;
+		point[1] = z_avg;
+
+		std::string role_ = "-";
+		auto tags = this->geometry->getRolesAt(point);
+
+		if (tags.find("substrate") != tags.end())
+			this->writelog(LOG_INFO, "axis_vert_mid[{0}] {1}, substrate", i, z_avg);
+		
+		if (tags.find("active") != tags.end())
+			this->writelog(LOG_INFO, "axis_vert_mid[{0}] {1}, active", i, z_avg);
+	}
+	
+	this->writelog(LOG_INFO, "Done.");
+	
+	/*shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
     shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
 
     size_t ileft = 0, iright = points->axis0->size();
@@ -1884,7 +1925,7 @@ void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
             auto point = points->at(c,r);
             auto tags = this->geometry->getRolesAt(point);
             bool active = false; for (const auto& tag: tags) if (tag.substr(0,6) == "active") { active = true; break; }
-            bool QW = tags.find("QW") != tags.end()/* || tags.find("QD") != tags.end()*/;
+            bool QW = tags.find("QW") != tags.end()// || tags.find("QD") != tags.end();
             bool substrate = tags.find("substrate") != tags.end();
 
             if (substrate) {
@@ -1925,16 +1966,16 @@ void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
                         iright = c;
 
                         // add layer below active region (cladding) LUKASZ
-                        /*auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
-                        for (size_t cc = ileft; cc < iright; ++cc)
-                            if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
-                                throw Exception("{0}: Material below quantum well not uniform.", this->getId());
-                        auto& region = regions.back();
-                        double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
-                        double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
-                        region.origin += Vec<2>(0., -h);
-                        this->writelog(LOG_DETAIL, "Adding bottom cladding; h = {0}",h);
-                        region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));*/
+                        //auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
+                        //for (size_t cc = ileft; cc < iright; ++cc)
+                        //    if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
+                        //        throw Exception("{0}: Material below quantum well not uniform.", this->getId());
+                        //auto& region = regions.back();
+                        //double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
+                        //double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
+                        //region.origin += Vec<2>(0., -h);
+                        //this->writelog(LOG_DETAIL, "Adding bottom cladding; h = {0}",h);
+                        //region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
                     } else
                         throw Exception("{0}: Right edge of the active region not aligned.", this->getId());
                 }
@@ -2003,7 +2044,7 @@ void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
 
     if (strained && !materialSubstrate)
         throw BadInput(this->getId(), "Strained quantum wells requested but no layer with substrate role set");
-
+	*/
     this->writelog(LOG_DETAIL, "Found {0} active region{1}", regions.size(), (regions.size()==1)?"":"s");
     for (auto& region: regions) region.summarize(this);
 }
