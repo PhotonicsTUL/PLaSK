@@ -54,10 +54,15 @@ class CompressedSetOfNumbers {
 public:
 
     /**
-     * SelfClass must have set() method which returns const CompressedSetOfNumbers<number_t>&.
+     * Facade which help to develop iterators over CompressedSetOfNumbers.
+     *
+     * Finall iterator (Derived) can iterate over numbers in set or other classes, and should (directly or indirectly) hold reference to the set.
+     *
+     * Derived must have set() method which returns <code>const CompressedSetOfNumbers<number_t>&</code>.
+     * It may also have dereference() method which returnce @c Reference.
      */
-    template <typename SelfClass>
-    class ConstIteratorFacade: public boost::iterator_facade<ConstIteratorFacade<SelfClass>, number_t, boost::random_access_traversal_tag, number_t> {
+    template <typename Derived, class Value = number_t, class Reference = number_t>
+    class ConstIteratorFacade: public boost::iterator_facade<Derived, Value, boost::random_access_traversal_tag, Reference> {
 
         typedef typename std::vector<Segment>::const_iterator ConstSegmentIterator;
 
@@ -85,17 +90,17 @@ public:
             segmentIterator = std::upper_bound(_set().segments.begin(), _set().segments.end(), index, Segment::compareByIndexEnd);
         }
 
+        number_t getNumber() const {
+            return segmentIterator->numberEnd - segmentIterator->indexEnd + index;
+        }
+
         private: //--- methods used by boost::iterator_facade: ---
 
         friend class boost::iterator_core_access;
-        template <class> friend struct IteratorFacade;
-
-        CompressedSetOfNumbers<number_t>& _set() {
-            static_cast<SelfClass*>(this)->set();
-        }
+        template <class, class, class> friend struct IteratorFacade;
 
         const CompressedSetOfNumbers<number_t>& _set() const {
-            static_cast<const SelfClass*>(this)->set();
+            static_cast<const Derived*>(this)->set();
         }
 
         template <typename OtherT>
@@ -120,8 +125,8 @@ public:
         template <typename OtherT>
         std::ptrdiff_t distance_to(OtherT z) const { return std::ptrdiff_t(z.index) - std::ptrdiff_t(index); }
 
-        number_t dereference() const {
-            return segmentIterator->numberEnd - segmentIterator->indexEnd + index;
+        number_t dereference() const {  // can be overrwritten by Derived class
+            return getNumber();
         }
 
     };
