@@ -1871,7 +1871,7 @@ void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
 	shared_ptr< MeshAxis > axis_tran = this->mesh->tran();
 	double r_at_0 = 0.5 * (axis_tran->at(0) + axis_tran->at(1));
 	
-	shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
+    shared_ptr<RectangularMesh<2>> points = this->mesh->getMidpointsMesh();
 	//size_t ileft = 0, iright = points->axis0->size();
 	bool in_active = false;
 
@@ -1881,11 +1881,11 @@ void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
 	std::vector<double> vz;
 	vz.clear();
 
-	for (int i(0); i < axis_vert->size(); ++i)
+    for (std::size_t i = 0; i < axis_vert->size(); ++i)
 	{
 		this->writelog(LOG_INFO, "axis_vert[{0}]: {1}", i, axis_vert->at(i));
 	}
-	for (int i(0); i < axis_vert->size()-1; ++i)
+    for (std::size_t i = 0; i < axis_vert->size()-1; ++i)
 	{
 		double zA = axis_vert->at(i); /// z bottom
 		double zB = axis_vert->at(i+1); /// z top
