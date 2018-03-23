@@ -82,14 +82,14 @@ PLASK_API void prepareNearestNeighborInterpolationForAxis(const MeshAxis& axis, 
  * @param[in] flags
  * @param[in] wrapped_point_coord
  * @param[in] axis_nr
- * @param[out] index
- * @param[out] index_1
+ * @param[out] index_lo
+ * @param[out] index_hi
  * @param[out] lo
  * @param[out] hi
  * @param[out] invert_lo
  * @param[out] invert_hi
  */
-PLASK_API void prepareInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index, std::size_t& index_1, double& lo, double& hi, bool& invert_lo, bool& invert_hi);
+PLASK_API void prepareInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index_lo, std::size_t& index_hi, double& lo, double& hi, bool& invert_lo, bool& invert_hi);
 
 
 

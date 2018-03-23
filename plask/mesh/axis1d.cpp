@@ -109,12 +109,12 @@ PLASK_API void prepareNearestNeighborInterpolationForAxis(const MeshAxis& axis, 
     }
 }
 
-PLASK_API void prepareInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index, std::size_t& index_1, double& lo, double& hi, bool& invert_lo, bool& invert_hi) {
-    index = axis.findUpIndex(wrapped_point_coord);
+PLASK_API void prepareInterpolationForAxis(const MeshAxis& axis, const InterpolationFlags& flags, double wrapped_point_coord, int axis_nr, std::size_t& index_lo, std::size_t& index_hi, double& lo, double& hi, bool& invert_lo, bool& invert_hi) {
+    index_hi = axis.findUpIndex(wrapped_point_coord);
     invert_lo = false; invert_hi = false;
-    if (index == 0) {
+    if (index_hi == 0) {
         if (flags.symmetric(axis_nr)) {
-            index_1 = 0;
+            index_lo = 0;
             lo = axis.at(0);
             if (lo > 0.) {
                 lo = - lo;
@@ -126,20 +126,20 @@ PLASK_API void prepareInterpolationForAxis(const MeshAxis& axis, const Interpola
                 lo -= 1.;
             }
         } else if (flags.periodic(axis_nr)) {
-            index_1 = axis.size() - 1;
-            lo = axis.at(index_1) - flags.high(axis_nr) + flags.low(axis_nr);
+            index_lo = axis.size() - 1;
+            lo = axis.at(index_lo) - flags.high(axis_nr) + flags.low(axis_nr);
         } else {
-            index_1 = 0;
+            index_lo = 0;
             lo = axis.at(0) - 1.;
         }
     } else {
-        index_1 = index - 1;
-        lo = axis.at(index_1);
+        index_lo = index_hi - 1;
+        lo = axis.at(index_lo);
     }
-    if (index == axis.size()) {
+    if (index_hi == axis.size()) {
         if (flags.symmetric(axis_nr)) {
-            --index;
-            hi = axis.at(index);
+            --index_hi;
+            hi = axis.at(index_hi);
             if (hi < 0.) {
                 hi = - hi;
                 invert_hi = true;
@@ -150,15 +150,15 @@ PLASK_API void prepareInterpolationForAxis(const MeshAxis& axis, const Interpola
                 hi += 1.;
             }
         } else if (flags.periodic(axis_nr)) {
-            index = 0;
+            index_hi = 0;
             hi = axis.at(0) + flags.high(axis_nr) - flags.low(axis_nr);
             if (hi == lo) hi += 1e-6;
         } else {
-            --index;
-            hi = axis.at(index) + 1.;
+            --index_hi;
+            hi = axis.at(index_hi) + 1.;
         }
     } else {
-        hi = axis.at(index);
+        hi = axis.at(index_hi);
     }
 }
 

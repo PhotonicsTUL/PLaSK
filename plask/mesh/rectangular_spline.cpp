@@ -18,15 +18,15 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 {
     Vec<2> p = this->flags.wrap(this->dst_mesh->at(index));
 
-    size_t i0, i0_1;
+    size_t i0_lo, i0_hi;
     double left, right;
     bool invert_left, invert_right;
-    prepareInterpolationForAxis(*this->src_mesh->axis0, this->flags, p.c0, 0, i0, i0_1, left, right, invert_left, invert_right);
+    prepareInterpolationForAxis(*this->src_mesh->axis0, this->flags, p.c0, 0, i0_lo, i0_hi, left, right, invert_left, invert_right);
 
-    size_t i1, i1_1;
+    size_t i1_lo, i1_hi;
     double bottom, top;
     bool invert_bottom, invert_top;
-    prepareInterpolationForAxis(*this->src_mesh->axis1, this->flags, p.c1, 1, i1, i1_1, bottom, top, invert_bottom, invert_top);
+    prepareInterpolationForAxis(*this->src_mesh->axis1, this->flags, p.c1, 1, i1_lo, i1_hi, bottom, top, invert_bottom, invert_top);
 
     double d0 = right - left,
            d1 = top - bottom;
@@ -43,10 +43,10 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
            gb = ((x1 - 2.) * x1 + 1.) * x1 * d1,
            gt = (x1 - 1.) * x1 * x1 * d1;
 
-    std::size_t ilb = this->src_mesh->index(i0_1, i1_1),
-                ilt = this->src_mesh->index(i0_1, i1),
-                irb = this->src_mesh->index(i0, i1_1),
-                irt = this->src_mesh->index(i0, i1);
+    std::size_t ilb = this->src_mesh->index(i0_lo, i1_lo),
+                ilt = this->src_mesh->index(i0_lo, i1_hi),
+                irb = this->src_mesh->index(i0_hi, i1_lo),
+                irt = this->src_mesh->index(i0_hi, i1_hi);
 
     SrcT diff0lb = diff0[ilb],
          diff0lt = diff0[ilt],
@@ -96,29 +96,29 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 {
     Vec<3> p = this->flags.wrap(this->dst_mesh->at(index));
 
-    size_t i0, i0_1;
+    size_t i0_lo, i0_hi;
     double back, front;
     bool invert_back, invert_front;
-    prepareInterpolationForAxis(*this->src_mesh->axis0, this->flags, p.c0, 0, i0, i0_1, back, front, invert_back, invert_front);
+    prepareInterpolationForAxis(*this->src_mesh->axis0, this->flags, p.c0, 0, i0_lo, i0_hi, back, front, invert_back, invert_front);
 
-    size_t i1, i1_1;
+    size_t i1_lo, i1_hi;
     double left, right;
     bool invert_left, invert_right;
-    prepareInterpolationForAxis(*this->src_mesh->axis1, this->flags, p.c1, 1, i1, i1_1, left, right, invert_left, invert_right);
+    prepareInterpolationForAxis(*this->src_mesh->axis1, this->flags, p.c1, 1, i1_lo, i1_hi, left, right, invert_left, invert_right);
 
-    size_t i2, i2_1;
+    size_t i2_lo, i2_hi;
     double bottom, top;
     bool invert_bottom, invert_top;
-    prepareInterpolationForAxis(*this->src_mesh->axis2, this->flags, p.c2, 2, i2, i2_1, bottom, top, invert_bottom, invert_top);
+    prepareInterpolationForAxis(*this->src_mesh->axis2, this->flags, p.c2, 2, i2_lo, i2_hi, bottom, top, invert_bottom, invert_top);
 
-    std::size_t illl = this->src_mesh->index(i0_1, i1_1, i2_1),
-                illh = this->src_mesh->index(i0_1, i1_1, i2),
-                ilhl = this->src_mesh->index(i0_1, i1, i2_1),
-                ilhh = this->src_mesh->index(i0_1, i1, i2),
-                ihll = this->src_mesh->index(i0, i1_1, i2_1),
-                ihlh = this->src_mesh->index(i0, i1_1, i2),
-                ihhl = this->src_mesh->index(i0, i1, i2_1),
-                ihhh = this->src_mesh->index(i0, i1, i2);
+    std::size_t illl = this->src_mesh->index(i0_lo, i1_lo, i2_lo),
+                illh = this->src_mesh->index(i0_lo, i1_lo, i2_hi),
+                ilhl = this->src_mesh->index(i0_lo, i1_hi, i2_lo),
+                ilhh = this->src_mesh->index(i0_lo, i1_hi, i2_hi),
+                ihll = this->src_mesh->index(i0_hi, i1_lo, i2_lo),
+                ihlh = this->src_mesh->index(i0_hi, i1_lo, i2_hi),
+                ihhl = this->src_mesh->index(i0_hi, i1_hi, i2_lo),
+                ihhh = this->src_mesh->index(i0_hi, i1_hi, i2_hi);
 
     double d0 = front - back,
            d1 = right - left,
