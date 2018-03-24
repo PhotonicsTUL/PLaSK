@@ -992,43 +992,77 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::compute(unsigned loops) {
 
 template <typename Geometry2DType>
 double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
-    setSomeParams();
+	this->writelog(LOG_INFO, "Finding energy levels..");
+	
+	
+	hh2m = 0.5 * phys::hb_eV * phys::hb_J * 1e9 * 1e9 / phys::me; /// hb*hb/(2m), unit: eV*nm*nm, 10^9 is introduced to change m into nm
+	//T = 300.; /// temperature in [K]
+	Eupshift = 20.; /// bands have to be up-shifted - we want only positive values of energy levels; unit: eV
 
-    double z1 = 0.; /// unit: nm
-    double z2 = 30.; /// unit: nm
-    double dz = 1.; /// unit: nm
+	bool potentialWell_el = false; /// true when electrons (el) are confined
+	bool potentialWell_hh = false; /// true when heavy holes (hh) are confined
+	bool potentialWell_lh = false; /// true when light holes (lh) are confined
+	
+	potentialWell_el = checkWell("el");
 
-    std::vector<double> CBel;
-    CBel.clear();
-    for (int i(0); i<31; ++i)
-    {
-        if ((i>=13)&&(i<=18))
-            CBel.push_back(-1.0);
-        else
-            CBel.push_back(0.);
-    }
+    //double z1 = 0.; /// unit: nm
+    //double z2 = 30.; /// unit: nm
+    //double dz = 1.; /// unit: nm
 
-    std::vector<double> CBelM;
-    CBelM.clear();
-    for (int i(0); i<30; ++i)
-    {
-        CBelM.push_back(0.050);
-    }
+    //std::vector<double> CBel;
+    //CBel.clear();
+    //for (int i(0); i<31; ++i)
+    //{
+    //    if ((i>=13)&&(i<=18))
+    //        CBel.push_back(-1.0);
+    //    else
+    //        CBel.push_back(0.);
+    //}
 
-    setMeshActive(z1, z2, dz);
-    setCBel(CBel);
-    setCBelM(CBelM);
-    int info = findCBelLev();
+    //std::vector<double> CBelM;
+    //CBelM.clear();
+    //for (int i(0); i<30; ++i)
+    //{
+    //    CBelM.push_back(0.050);
+    //}
 
-    if (info == 1)
-    {
-        this->writelog(LOG_ERROR, "Number of energy levels of electrons is equal to 0.");
-        return 0;
-    }
+    ////setMeshActive(z1, z2, dz);
+    //setCBel(CBel);
+    //setCBelM(CBelM);
+    //int info = findCBelLev();
+
+    //if (info == 1)
+    //{
+    //    this->writelog(LOG_ERROR, "Number of energy levels of electrons is equal to 0.");
+    //    return 0;
+    //}
+	this->writelog(LOG_INFO, "Done.");
 
     return 0;
 }
 
+template <typename Geometry2DType>
+bool DriftDiffusionModel2DSolver<Geometry2DType>::checkWell(std::string _carrier) {
+	if (_carrier == "el") /// electrons
+	{
+		this->writelog(LOG_DETAIL, "Checking the confinement for electrons..");
+		std::vector<double> CBel; /// vector with energy band diagram for electrons from CB [eV]
+		CBel.clear();
+		double CBelMin = -1e6;
+		double CBelMax = 1e6;
+		for (size_t i = 0; i < ne; ++i)
+		{
+			double z_avg = 0.5*(z[i+1] + z[i+2]);
+			Vec<2, double> point;
+			point[0] = r_at_0;
+			point[1] = z_avg;
+			
+			shared_ptr<Material> material = this->geometry->getMaterial(point);
+			this->writelog(LOG_DETAIL, "element: {0}, material: {1}", i+1, material->name());
+		}
+		this->writelog(LOG_DETAIL, "Done.");
+	}
+}
 
 template <typename Geometry2DType>
 template <typename MatrixT>
@@ -1586,39 +1620,38 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDen
     );
 }
 
-template <typename Geometry2DType>
-int DriftDiffusionModel2DSolver<Geometry2DType>::setSomeParams()
-{
-    hhm = phys::hb_eV * phys::hb_J * 1e9 * 1e9 / phys::me; /// hb*hb/m, unit: eV*nm*nm, 10^9 is introduced to change m into nm
-    hh2m = 0.5 * hhm; /// hb*hb/(2m), unit: eV*nm*nm
-    //T = 300.; /// temperature; unit: K
-    Eupshift = 20.; /// bands have to be up-shifted - we want only positive values of energy levels; unit: eV
-    //test = false;
-    return 0;
-}
+//template <typename Geometry2DType>
+//int DriftDiffusionModel2DSolver<Geometry2DType>::setSomeParams()
+//{
+//    hh2m = 0.5 * phys::hb_eV * phys::hb_J * 1e9 * 1e9 / phys::me; /// hb*hb/(2m), unit: eV*nm*nm, 10^9 is introduced to change m into nm
+//    //T = 300.; /// temperature; unit: K
+//    Eupshift = 20.; /// bands have to be up-shifted - we want only positive values of energy levels; unit: eV
+//    //test = false;
+//    return 0;
+//}
 
-template <typename Geometry2DType>
-int DriftDiffusionModel2DSolver<Geometry2DType>::setMeshActive(double _z1, double _z2, double _dz)
-{
-    this->writelog(LOG_INFO, "Setting mesh..");
-
-    dz = _dz; /// step - distance between mesh-nodes (nm)
-
-    nz = static_cast<int>((_z2-_z1+1e-6*dz)/dz)+1; /// z-mesh size
-    this->writelog(LOG_INFO, "Number of nodes: {0}", nz);
-
-    z.clear();
-    for (int i = 0; i < nz; ++i) /// filling the vector
-        z.push_back(_z1+i*dz); /// unit: nm
-    nz = int(z.size()); /// z-mesh size
-
-    ne = nz - 1;
-    this->writelog(LOG_INFO, "Number of elements: {0}", ne);
-
-    this->writelog(LOG_INFO, "Done.");
-
-    return 0;
-}
+//template <typename Geometry2DType>
+//int DriftDiffusionModel2DSolver<Geometry2DType>::setMeshActive(double _z1, double _z2, double _dz)
+//{
+//    this->writelog(LOG_INFO, "Setting mesh..");
+//
+//    dz = _dz; /// step - distance between mesh-nodes (nm)
+//
+//    nz = static_cast<int>((_z2-_z1+1e-6*dz)/dz)+1; /// z-mesh size
+//    this->writelog(LOG_INFO, "Number of nodes: {0}", nz);
+//
+//    z.clear();
+//    for (int i = 0; i < nz; ++i) /// filling the vector
+//        z.push_back(_z1+i*dz); /// unit: nm
+//    nz = int(z.size()); /// z-mesh size
+//
+//    ne = nz - 1;
+//    this->writelog(LOG_INFO, "Number of elements: {0}", ne);
+//
+//    this->writelog(LOG_INFO, "Done.");
+//
+//    return 0;
+//}
 
 template <typename Geometry2DType>
 int DriftDiffusionModel2DSolver<Geometry2DType>::setCBel(std::vector<double> _CBel)
@@ -1869,22 +1902,19 @@ void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
 
 	shared_ptr< MeshAxis > axis_vert = this->mesh->vert();
 	shared_ptr< MeshAxis > axis_tran = this->mesh->tran();
-	double r_at_0 = 0.5 * (axis_tran->at(0) + axis_tran->at(1));
+	r_at_0 = 0.5 * (axis_tran->at(0) + axis_tran->at(1));
 	
     shared_ptr<RectangularMesh<2>> points = this->mesh->getMidpointsMesh();
-	//size_t ileft = 0, iright = points->axis0->size();
-	bool in_active = false;
+	bool found_substrate = false;
+	bool found_active = false;
 
-	bool added_bottom_cladding = false;
-	bool added_top_cladding = false;
+	double z1(-1.), z2(-1.); /// min. and max. z for kp method [um]
+	double zSub(-1.); /// z for substrate [um]
 
-	std::vector<double> vz;
-	vz.clear();
-
-    for (std::size_t i = 0; i < axis_vert->size(); ++i)
-	{
-		this->writelog(LOG_INFO, "axis_vert[{0}]: {1}", i, axis_vert->at(i));
-	}
+    //for (std::size_t i = 0; i < axis_vert->size(); ++i) // TEST
+	//{
+	//	this->writelog(LOG_INFO, "axis_vert[{0}]: {1}", i, axis_vert->at(i));
+	//}
     for (std::size_t i = 0; i < axis_vert->size()-1; ++i)
 	{
 		double zA = axis_vert->at(i); /// z bottom
@@ -1898,22 +1928,53 @@ void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
 		auto tags = this->geometry->getRolesAt(point);
 
 		if (tags.find("substrate") != tags.end())
+		{
 			this->writelog(LOG_INFO, "axis_vert_mid[{0}] {1}, substrate", i, z_avg);
-		
+			if (!found_substrate) /// first time in substrate
+			{
+				zSub = z_avg;
+			}		
+			found_substrate = true;
+		}
 		if (tags.find("active") != tags.end())
+		{
+			//in_active = true;			
 			this->writelog(LOG_INFO, "axis_vert_mid[{0}] {1}, active", i, z_avg);
+			if (!found_active) /// first time in active
+			{
+				z1 = zA;
+				z2 = zB;
+			}
+			else
+			{
+				if (z1 > zA)
+					z1 = zA;
+				if (z2 < zB)
+					z2 = zB;
+			}
+			found_active = true;
+		}
 	}
 	
+	this->writelog(LOG_INFO, "active region is from z={0} to z={1}", z1, z2); /// in [um]
+	this->writelog(LOG_INFO, "active region width: {0} nm", (z2-z1)*1e3); /// [um] -> [nm]
+
+	z.clear();
+	z.push_back(0.); /// so here z[0] = 0, but later the z.size will be stored here
+	dz = 0.1e-3; /// in [um] default: 0.1 nm
+	nz = static_cast<int> ((z2 - z1 + 1e-6) / dz) + 1;
+	this->writelog(LOG_INFO, "no of nodes for kp method: {0}", nz);
+	z.push_back(z1 - dz); /// bottom cladding
+	for (std::size_t i = 0; i < nz; ++i)
+		z.push_back(z1 + i*dz);
+	z.push_back(z2 + dz); /// top cladding
+	nz = z[0] = nz + 2;
+	ne = nz - 1;
+	this->writelog(LOG_INFO, "no of nodes for kp method: {0}", nz);
+
 	this->writelog(LOG_INFO, "Done.");
 	
-	/*shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
-    shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
-
-    size_t ileft = 0, iright = points->axis0->size();
-    bool in_active = false;
-
-    bool added_bottom_cladding = false;
-    bool added_top_cladding = false;
+	/*shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
 
     for (size_t r = 0; r < points->axis1->size(); ++r) {
         bool had_active = false; // indicates if we had active region in this layer
@@ -1922,29 +1983,9 @@ void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
 
         for (size_t c = 0; c < points->axis0->size(); ++c)
         { // In the (possible) active region
-            auto point = points->at(c,r);
-            auto tags = this->geometry->getRolesAt(point);
-            bool active = false; for (const auto& tag: tags) if (tag.substr(0,6) == "active") { active = true; break; }
-            bool QW = tags.find("QW") != tags.end()// || tags.find("QD") != tags.end();
-            bool substrate = tags.find("substrate") != tags.end();
 
-            if (substrate) {
-                if (!materialSubstrate)
-                    materialSubstrate = this->geometry->getMaterial(point);
-                else if (*materialSubstrate != *this->geometry->getMaterial(point))
-                    throw Exception("{0}: Non-uniform substrate layer.", this->getId());
-            }
 
-            if (QW && !active)
-                throw Exception("{0}: All marked quantum wells must belong to marked active region.", this->getId());
-
-            if (c < ileft) {
-                if (active)
-                    throw Exception("{0}: Left edge of the active region not aligned.", this->getId());
-            } else if (c >= iright) {
-                if (active)
-                    throw Exception("{0}: Right edge of the active region not aligned.", this->getId());
-            } else {
+            else {
                 // Here we are inside potential active region
                 if (active) {
                     if (!had_active) {
