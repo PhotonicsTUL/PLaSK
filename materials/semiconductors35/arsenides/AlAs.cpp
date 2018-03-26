@@ -100,6 +100,30 @@ Tensor2<double> AlAs::Mh(double T, double e) const {
     return ( tMh );
 }
 
+MI_PROPERTY(AlAs, y1,
+	MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) chapter 7"),
+	MIComment("no temperature dependence")
+)
+double AlAs::y1() const {
+	return 3.76;
+}
+
+MI_PROPERTY(AlAs, y2,
+	MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) chapter 7"),
+	MIComment("no temperature dependence")
+)
+double AlAs::y2() const {
+	return 0.90;
+}
+
+MI_PROPERTY(AlAs, y3,
+	MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) chapter 7"),
+	MIComment("no temperature dependence")
+)
+double AlAs::y3() const {
+	return 1.42;
+}
+
 MI_PROPERTY(AlAs, CB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
            )

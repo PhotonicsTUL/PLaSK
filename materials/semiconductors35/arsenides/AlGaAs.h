@@ -28,6 +28,9 @@ struct AlGaAs: public Semiconductor {
     Tensor2<double> Mhh(double T, double e) const override;
     Tensor2<double> Mlh(double T, double e) const override;
     Tensor2<double> Mh(double T, double e) const override;
+	double y1() const override;
+	double y2() const override;
+	double y3() const override;
     double CB(double T, double e, char point) const override;
     double VB(double T, double e, char point, char hole) const override;
     double ac(double T) const override;

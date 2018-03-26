@@ -25,6 +25,9 @@ struct AlAs: public Semiconductor {
     virtual Tensor2<double> Mhh(double T, double e) const override;
     virtual Tensor2<double> Mlh(double T, double e) const override;
     virtual Tensor2<double> Mh(double T, double e) const override;
+	double y1() const override;
+	double y2() const override;
+	double y3() const override;
     virtual double CB(double T, double e, char point) const override;
     virtual double VB(double T, double e, char point, char hole) const override;
     virtual double ac(double T) const override;

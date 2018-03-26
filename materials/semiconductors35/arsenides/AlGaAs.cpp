@@ -109,6 +109,33 @@ Tensor2<double> AlGaAs::Mh(double T, double e) const {
     return ( tMh );
 }
 
+MI_PROPERTY(AlGaAs, y1,
+	MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) chapter 7; "),
+	MISource("linear interpolation: AlAs, GaAs"),
+	MIComment("no temperature dependence")
+)
+double AlGaAs::y1() const {
+	return (Al*mAlAs.y1() + Ga * mGaAs.y1());
+}
+
+MI_PROPERTY(AlGaAs, y2,
+	MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) chapter 7; "),
+	MISource("linear interpolation: AlAs, GaAs"),
+	MIComment("no temperature dependence")
+)
+double AlGaAs::y2() const {
+	return (Al*mAlAs.y2() + Ga * mGaAs.y2());
+}
+
+MI_PROPERTY(AlGaAs, y3,
+	MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) chapter 7; "),
+	MISource("linear interpolation: AlAs, GaAs"),
+	MIComment("no temperature dependence")
+)
+double AlGaAs::y3() const {
+	return (Al*mAlAs.y3() + Ga * mGaAs.y3());
+}
+
 MI_PROPERTY(AlGaAs, CB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875")
             )
