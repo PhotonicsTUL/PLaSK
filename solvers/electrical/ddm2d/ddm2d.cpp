@@ -1812,6 +1812,20 @@ void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
 	z.push_back(z2 + dz); /// top cladding
 	ne = nz - 1;
 
+	auto vaxis = plask::make_shared<OrderedAxis>();
+	auto haxis = plask::make_shared<OrderedAxis>();
+	this->writelog(LOG_INFO, "vaxis size: {0}", vaxis->size());
+	this->writelog(LOG_INFO, "haxis size: {0}", haxis->size());
+	OrderedAxis::WarningOff vaxiswoff(vaxis);
+	OrderedAxis::WarningOff haxiswoff(haxis);
+	for (std::size_t i = 0; i != nz+2; ++i)
+	{
+		vaxis->addPoint(z[i]);
+	}
+	haxis->addPoint(r_at_0);
+
+	meshActive = plask::make_shared<const RectangularMesh<2>>(haxis, vaxis, RectangularMesh<2>::ORDER_01);
+	
 	this->writelog(LOG_INFO, "Done.");
 	
 	/*shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();

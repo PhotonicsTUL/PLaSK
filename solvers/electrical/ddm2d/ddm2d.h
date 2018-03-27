@@ -342,8 +342,11 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     /// List of active regions
     std::vector<ActiveRegionInfo> regions;
 
-    /// Detect active regions.
+    /// Detect active regions
     void detectActiveRegions();
+
+	/// Separate mesh for active region
+	shared_ptr<const RectangularMesh<2>> meshActive;
 
     /// Parameters used to calculate energy levels and carrier concentration in active
 	double r_at_0; /// r at laser axis /// [um]
