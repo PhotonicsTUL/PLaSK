@@ -297,6 +297,12 @@ auto operator*(const OtherT scale, const Tensor3<T>& tensor) -> decltype(tensor*
 template <typename T>
 inline Tensor3<T> conj(const Tensor3<T>& v) { return Tensor3<T>(conj(v.c00), conj(v.c11), conj(v.c22), conj(v.c01)); }
 
+/// Specialization of NaNforImpl which add support for 3D tensors.
+template <typename T>
+struct NaNforImpl<Tensor3<T>> {
+    static constexpr Tensor3<T> get() { return Tensor3<T>(NaNfor<T>()); }
+};
+
 /*
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Tensor3<double>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Tensor3< std::complex<double> >)

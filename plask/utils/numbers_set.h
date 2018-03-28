@@ -244,6 +244,15 @@ public:
     }
 
     /**
+     * Check if given @p number is included in the set.
+     * @param number item to find
+     * @return @c true only if the set includes the @p number
+     */
+    bool includes(number_t number) const {
+        return indexOf(number) != NOT_INCLUDED;
+    }
+
+    /**
      * Quickly append number to the end of the set.
      *
      * Time complexity: amortized constant.

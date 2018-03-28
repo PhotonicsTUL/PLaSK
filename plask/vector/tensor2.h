@@ -206,6 +206,12 @@ auto operator*(const OtherT scale, const Tensor2<T>& tensor) -> decltype(tensor*
 template <typename T>
 inline Tensor2<T> conj(const Tensor2<T>& v) { return Tensor2<T>(conj(v.c00), conj(v.c11)); }
 
+/// Specialization of NaNforImpl which add support for 2D tensors.
+template <typename T>
+struct NaNforImpl<Tensor2<T>> {
+    static constexpr Tensor2<T> get() { return Tensor2<T>(NaNfor<T>()); }
+};
+
 /*
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Tensor2<double>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Tensor2< std::complex<double> >)

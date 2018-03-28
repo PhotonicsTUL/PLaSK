@@ -1,5 +1,5 @@
-﻿#ifndef PLASK__NUMBERS_H
-#define PLASK__NUMBERS_H
+﻿#ifndef PLASK__MATH_H
+#define PLASK__MATH_H
 
 #include <plask/config.h>
 
@@ -101,6 +101,29 @@ namespace plask {
 #endif
 
 constexpr double PI_DOUBLED = 6.28318530717958647692;
+
+/// This template is used by NaNfor function and have to be specialized to support new types (other than type supported by std::numeric_limits).
+template <typename T>
+struct NaNforImpl {
+    static constexpr T get() { return std::numeric_limits<T>::quiet_NaN(); }
+};
+
+/**
+ * Construct NaN or its counterpart with given type @p T.
+ * @return NaN or its counterpart
+ */
+template <typename T> inline constexpr
+typename std::remove_cv<typename std::remove_reference<T>::type>::type NaNfor() {
+    return NaNforImpl<typename std::remove_cv<typename std::remove_reference<T>::type>::type>::get();
+}
+
+/// Specialization of NaNforImpl which adds support for complex numbers.
+template <typename T>
+struct NaNforImpl<std::complex<T>> {
+    static constexpr std::complex<T> get() { return std::complex<T>(NaNfor<T>(), NaNfor<T>()); }
+};
+
+
 
 // size_t is preferred for array indexing
 using std::size_t;
@@ -380,4 +403,4 @@ public:
 
 } // namespace plask
 
-#endif // PLASK__NUMBERS_H
+#endif // PLASK__MATH_H

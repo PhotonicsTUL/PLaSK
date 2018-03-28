@@ -545,7 +545,7 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     bool empty() const override { return axis0->empty() || axis1->empty(); }
 
     /**
-     * Calculate this mesh index using indexes of axis0 and axis1->
+     * Calculate this mesh index using indexes of axis0 and axis1.
      * @param axis0_index index of axis0, from 0 to axis0->size()-1
      * @param axis1_index index of axis1, from 0 to axis1->size()-1
      * @return this mesh index, from 0 to size()-1
@@ -721,7 +721,7 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     }
 
     /**
-     * Conver mesh index of bottom left element corner to this element index.
+     * Convert mesh index of bottom left element corner to this element index.
      * @param mesh_index_of_el_bottom_left mesh index
      * @return index of element, from 0 to getElementsCount()-1
      */
@@ -730,7 +730,17 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     }
 
     /**
-     * Conver element index to mesh index of bottom left element corner.
+     * Convert mesh indexes of bottom and left element corner to this element index.
+     * @param axis0_index index of axis0 (left), from 0 to axis0->size()-1
+     * @param axis1_index index of axis1 (bottom), from 0 to axis1->size()-1
+     * @return index of element, from 0 to getElementsCount()-1
+     */
+    std::size_t getElementIndexFromLowIndex(std::size_t axis0_index, std::size_t axis1_index) const {
+        return getElementIndexFromLowIndex(index(axis0_index, axis1_index));
+    }
+
+    /**
+     * Convert element index to mesh index of bottom left element corner.
      * @param element_index index of element, from 0 to getElementsCount()-1
      * @return mesh index
      */

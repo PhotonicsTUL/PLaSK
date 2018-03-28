@@ -14,9 +14,13 @@ class RectangularFilteredMesh: public MeshD<DIM> {
 
     const RectangularMesh<DIM>* rectangularMesh;    // TODO jaki wskaźnik? może kopia?
 
-    CompressedSetOfNumbers<std::uint32_t> nodes;
+    typedef CompressedSetOfNumbers<std::uint32_t> Set;
 
-    CompressedSetOfNumbers<std::uint32_t> elements;
+    /// numbers of rectangularMesh indexes which are in the corners of the elements enabled
+    Set nodes;
+
+    /// numbers of enabled elements
+    Set elements;
 
 public:
 
@@ -55,7 +59,7 @@ public:
     enum:std::size_t { NOT_INCLUDED = RectangularMesh<DIM>::NOT_INCLUDED };
 
     /**
-     * Calculate this mesh index using indexes of axis0 and axis1->
+     * Calculate this mesh index using indexes of axis0 and axis1.
      * @param axis0_index index of axis0, from 0 to axis0->size()-1
      * @param axis1_index index of axis1, from 0 to axis1->size()-1
      * @return this mesh index, from 0 to size()-1, or NOT_INCLUDED
@@ -118,6 +122,89 @@ public:
      */
     inline Vec<2,double> operator()(std::size_t axis0_index, std::size_t axis1_index) const {
         return rectangularMesh->operator()(axis0_index, axis1_index);
+    }
+
+private:
+    bool canBeIncluded(const Vec<2>& point) {
+        return
+            rectangularMesh->axis0->at(0) <= point[0] && point[0] <= rectangularMesh->axis0->at[rectangularMesh->axis0->size()-1] &&
+            rectangularMesh->axis1->at(0) <= point[1] && point[1] <= rectangularMesh->axis1->at[rectangularMesh-> axis1->size()-1];
+    }
+
+    static void findIndexes(const MeshAxis& axis, double wrapped_point_coord, std::size_t& index_lo, std::size_t& index_hi) {
+        index_hi = axis.findUpIndex(wrapped_point_coord);
+        if (index_hi+1 == axis.size()) --index_hi;    // p.c0 == axis0->at(axis0->size()-1)
+        assert(index_hi > 0);
+        index_lo = index_hi - 1;
+    }
+
+    bool prepareInterpolation(const Vec<2>& point, Vec<2>& wrapped_point, std::size_t& index0_lo, std::size_t& index0_hi, std::size_t& index1_lo, std::size_t& index1_hi, std::size_t& rectmesh_index_lo, const InterpolationFlags& flags) {
+        wrapped_point = flags.wrap(point);
+
+        if (!canBeIncluded(wrapped_point)) return false;
+
+        findIndexes(*rectangularMesh->axis0, wrapped_point.c0, index0_lo, index0_hi);
+        findIndexes(*rectangularMesh->axis1, wrapped_point.c1, index1_lo, index1_hi);
+
+        rectmesh_index_lo = rectangularMesh->index(index0_lo, index1_lo);
+        return elements.includes(rectangularMesh->getElementIndexFromLowIndex(rectmesh_index_lo));
+    }
+
+public:
+    /**
+     * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.
+     * @param data values of data in points describe by this mesh
+     * @param point point in which value should be calculate
+     * @return interpolated value in point @p point
+     */
+    template <typename RandomAccessContainer>
+    auto interpolateLinear(const RandomAccessContainer& data, const Vec<2>& point, const InterpolationFlags& flags) const
+        -> typename std::remove_reference<decltype(data[0])>::type
+    {
+        Vec<2> wrapped_point;
+        std::size_t index0_lo, index0_hi, index1_lo, index1_hi, rectmesh_index_lo;
+
+        if (!prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, rectmesh_index_lo, flags))
+            return NaNfor<decltype(data[0])>();
+
+        return flags.postprocess(point,
+                                 interpolation::bilinear(
+                                     rectangularMesh->axis0->at(index0_lo), rectangularMesh->axis0->at(index0_hi),
+                                     rectangularMesh->axis1->at(index1_lo), rectangularMesh->axis1->at(index1_hi),
+                                     data[nodes.indexOf(rectmesh_index_lo)],
+                                     data[index(index0_hi, index1_lo)],
+                                     data[index(index0_hi, index1_hi)],
+                                     data[index(index0_lo, index1_hi)],
+                                     wrapped_point.c0, wrapped_point.c1));
+    }
+
+private:
+    static std::size_t nearest(double p, const MeshAxis& axis, std::size_t index_lo, std::size_t index_hi) {
+        return p - axis.at(index_lo) <= axis.at(index_hi) - p ? index_lo : index_hi;
+    }
+
+public:
+    /**
+     * Calculate (using nearest neighbor interpolation) value of data in point using data in points described by this mesh.
+     * @param data values of data in points describe by this mesh
+     * @param point point in which value should be calculate
+     * @return interpolated value in point @p point
+     */
+    template <typename RandomAccessContainer>
+    auto interpolateNearestNeighbor(const RandomAccessContainer& data, const Vec<2>& point, const InterpolationFlags& flags) const
+        -> typename std::remove_reference<decltype(data[0])>::type
+    {
+        Vec<2> wrapped_point;
+        std::size_t index0_lo, index0_hi, index1_lo, index1_hi, rectmesh_index_lo;
+
+        if (!prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, rectmesh_index_lo, flags))
+            return NaNfor<decltype(data[0])>();
+
+        return flags.postprocess(point,
+                                 data[this->index(
+                                     nearest(wrapped_point.c0, *rectangularMesh->axis0, index0_lo, index0_hi),
+                                     nearest(wrapped_point.c1, *rectangularMesh->axis1, index1_lo, index1_hi)
+                                 )]);
     }
 
 

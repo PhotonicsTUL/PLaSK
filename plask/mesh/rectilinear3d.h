@@ -538,6 +538,15 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
     }
 
     /**
+     * Convert indexes of mesh axes of lower (along all axes) element corner to index of this element.
+     * @param axis0_index, axis1_index, axis2_index indexes of corner
+     * @return index of element, from 0 to getElementsCount()-1
+     */
+    std::size_t getElementIndexFromLowIndex(std::size_t axis0_index, std::size_t axis1_index, std::size_t axis2_index) const {
+        return getElementIndexFromLowIndex(index(axis0_index, axis1_index, axis2_index));
+    }
+
+    /**
      * Convert element index to mesh indexes of bottom left element corner.
      * @param element_index index of element, from 0 to getElementsCount()-1
      * @return axis 0, axis 1 and axis 2 indexes of mesh,
