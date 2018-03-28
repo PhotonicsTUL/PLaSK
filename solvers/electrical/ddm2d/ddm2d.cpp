@@ -89,7 +89,8 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     loopsFp(3),
     itererr(1e-8),
     iterlim(10000),
-    logfreq(500)
+    logfreq(500),
+	T(300.) // TODO T=300 for kp method tests
 {
     onInvalidate();
     inTemperature = 300.;
@@ -959,7 +960,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findPsiI(double iEc0, double
         }
         else { // found initial normalized potential
             loop = tL;
-            //this->writelog(LOG_DETBUG, "{0} loops done. Calculated energy level corresponding to the initial potential: {1} eV", tL, (tPsi0)*mEx); // TEST
+            //this->writelog(LOG_DEBUG, "{0} loops done. Calculated energy level corresponding to the initial potential: {1} eV", tL, (tPsi0)*mEx); // TEST
             return tPsi0;
         }
 
@@ -992,43 +993,191 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::compute(unsigned loops) {
 
 template <typename Geometry2DType>
 double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
-    setSomeParams();
+	this->writelog(LOG_INFO, "Finding energy levels..");
+	
+	hh2m = 0.5 * phys::hb_eV * phys::hb_J * 1e9 * 1e9 / phys::me; /// hb*hb/(2m), unit: eV*nm*nm, 10^9 is introduced to change m into nm
+	Eupshift = 20.; /// bands have to be up-shifted - we want only positive values of energy levels; unit: [eV]
 
-    double z1 = 0.; /// unit: nm
-    double z2 = 30.; /// unit: nm
-    double dz = 1.; /// unit: nm
+	double kx = 0., ky = 0.; /// TODO
 
-    std::vector<double> CBel;
-    CBel.clear();
-    for (int i(0); i<31; ++i)
-    {
-        if ((i>=13)&&(i<=18))
-            CBel.push_back(-1.0);
-        else
-            CBel.push_back(0.);
-    }
+	bool potentialWell_el = false; /// true when electrons (el) are confined
+	bool potentialWell_hh = false; /// true when heavy holes (hh) are confined
+	bool potentialWell_lh = false; /// true when light holes (lh) are confined
+	
+	potentialWell_el = checkWell("el");
 
-    std::vector<double> CBelM;
-    CBelM.clear();
-    for (int i(0); i<30; ++i)
-    {
-        CBelM.push_back(0.050);
-    }
+	if (potentialWell_el)
+	{
+		double dzdz1 = 1. / (dz*dz*1e6); /// 1/(dz*dz), unit: [1/nm^2]
+		double dz1 = 1. / (dz*1e3); /// 1/(dz), unit: [1/nm]
 
-    setMeshActive(z1, z2, dz);
-    setCBel(CBel);
-    setCBelM(CBelM);
-    int info = findCBelLev();
+		this->writelog(LOG_DETAIL, "Creating matrix for electrons..\n");
 
-    if (info == 1)
-    {
-        this->writelog(LOG_ERROR, "Number of energy levels of electrons is equal to 0.");
-        return 0;
-    }
+		int K = 1; /// the order of the small matrix for central-node for CB
+		int N = nz * K; /// the order of the matrix for CB
+
+		this->writelog(LOG_DETAIL, "\tsize of the matrix for CB: {0} x {1}", N, N);
+
+		Eigen::MatrixXcd Hc(N, N); /// N - Hc size
+		/// setting Hc = zeros
+		std::complex<double> Hc_zero(0., 0.);
+		for (size_t i=1; i <= N; ++i)
+			for (size_t j=1; j <= N; ++j)
+				Hc(i-1, j-1) = Hc_zero;
+
+		for (size_t i=1; i <= nz; ++i) /// nz - number of nodes
+		{
+			Vec<2, double> point_LE; /// centre of the left element
+			point_LE[0] = r_at_0;
+			point_LE[1] = 0.5 * (z[i-1] + z[i]);
+
+			Vec<2, double> point_RI; /// centre of the right element
+			point_RI[0] = r_at_0;
+			point_RI[1] = 0.5 * (z[i] + z[i+1]);
+			
+			shared_ptr<Material> m_LE = this->geometry->getMaterial(point_LE);
+			shared_ptr<Material> m_RI = this->geometry->getMaterial(point_RI);
+
+			//this->writelog(LOG_DETAIL, "creating Hc matrix, central node: {0}, materials: {1} and {2}", i, m_le->name(), m_ri->name());
+						
+			std::complex<double> Hc_11_LE(0., 0.), Hc_11_CE(0., 0.), Hc_11_RI(0., 0.); /// left/central/right 1x1 local matrix
+			{
+				double y0_LE = 1. / m_LE->Me(T).c00; // TODO or sth else than c00?
+				double y0_RI = 1. / m_RI->Me(T).c00; // TODO or sth else than c00?
+				double y0_CE = 0.5 * (y0_LE + y0_RI);
+
+				/// 11
+				double beta_11_LE = - y0_LE * hh2m;
+				double beta_11_RI = - y0_RI * hh2m;
+				double alpha_11_CE = y0_CE * hh2m * (kx * kx + ky * ky);
+				double Ec0_11_CE = CBel[i] + Eupshift; // TODO CBel[i] must be CB from elem + Psi fo elem and then calc average for node
+				double v_11_CE = Ec0_11_CE;
+				double s_11_CE = 0.;
+				/*if (strain) // TODO
+				{
+					double s_11_LE = 2. * vE[e_LE].ac() * (1. - vE[e_LE].c12() / vE[e_LE].c11()) * vE[e_LE].gEps(); /// [001]
+					double s_11_RI = 2. * vE[e_RI].ac() * (1. - vE[e_RI].c12() / vE[e_RI].c11()) * vE[e_RI].gEps(); /// [001]
+					s_11_CE = 0.5 * (s_11_LE + s_11_RI);
+				}*/
+
+				if (i>1)
+				{
+					Hc_11_LE.real(beta_11_LE * dzdz1); /// Re - real part., Im - imag part.
+					Hc(i - 1, i - 2) = Hc_11_LE;
+					//this->writelog(LOG_DETAIL, "Hc_11_LE: {0}", Hc_11_LE());
+				}
+				{
+					Hc_11_CE.real(alpha_11_CE - beta_11_LE * dzdz1 - beta_11_RI * dzdz1 + v_11_CE + s_11_CE);
+					Hc(i - 1, i - 1) = Hc_11_CE;
+					//this->writelog(LOG_DETAIL, "Hc_11_CE: {0}", Hc_11_CE());
+				}
+				if (i<nz)
+				{
+					Hc_11_RI.real(beta_11_RI * dzdz1);
+					Hc(i - 1, i) = Hc_11_RI;
+					//this->writelog(LOG_DETAIL, "Hc_11_RI: {0}", Hc_11_RI());
+				}
+			}
+		}
+		this->writelog(LOG_INFO, "Done.");
+
+		this->writelog(LOG_INFO, "Finding energy levels and wave functions for electrons..");
+		Eigen::ComplexEigenSolver<Eigen::MatrixXcd> ces;
+		ces.compute(Hc);
+		int nEigVal = ces.eigenvalues().rows();
+		this->writelog(LOG_INFO, "number of eigenvalues (Hc): {0}", nEigVal);
+		if (nEigVal<1)
+			return 1; /// no energy levels for electrons
+		this->writelog(LOG_INFO, "Done.");
+
+		{
+			this->writelog(LOG_INFO, "Analyzing the solutions..");
+			lev_el.clear(); /// lev_el - vector with energy levels for electrons
+			n_lev_el = 0; /// n_lev_el - number of energy levels of electrons
+			for (size_t i = 1; i < nEigVal; ++i)
+			{
+				if ((ces.eigenvalues()[i].real() - Eupshift > CBelMin) && (ces.eigenvalues()[i].real() - Eupshift < CBelMax))
+				{
+					std::vector<double> sum(K, 0.); /// we have to find out if this level corresponds to el
+					for (size_t j = 1; j < nz*1; j += 1) /// "1" in both cases because only el are considered here
+					{
+						sum[0] += (pow(ces.eigenvectors().col(i)[j].real(), 2.) + pow(ces.eigenvectors().col(i)[j].imag(), 2.));
+					}
+					std::string carrier;
+					if (sum[0])
+					{
+						carrier = "el";
+						lev_el.push_back(ces.eigenvalues()[i].real() - Eupshift);
+						n_lev_el++;
+					}
+				}
+			}
+			this->writelog(LOG_INFO, "Done.");
+
+			this->writelog(LOG_INFO, "Sorting electron energy levels..");
+			std::sort(lev_el.begin(), lev_el.end()); /// sorting electron energy levels
+			for (size_t i = 0; i < n_lev_el; ++i)
+			{
+				this->writelog(LOG_INFO, "energy level for electron {0}: {1} eV", i, lev_el[i]);
+			}
+			this->writelog(LOG_INFO, "Done.");
+		}
+
+		Hc.resize(0, 0);
+
+		// TODO: hh and lh
+	}
+
+	this->writelog(LOG_INFO, "Done.");
 
     return 0;
 }
 
+template <typename Geometry2DType>
+bool DriftDiffusionModel2DSolver<Geometry2DType>::checkWell(std::string _carrier) {
+	if (_carrier == "el") /// electrons
+	{
+		this->writelog(LOG_DETAIL, "Checking the confinement for electrons..");
+		CBel.clear();
+		for (size_t i = 0; i < ne+2; ++i) /// ne+2 because cladding elements also
+		{
+			double z_avg = 0.5*(z[i] + z[i+1]);
+			Vec<2, double> point;
+			point[0] = r_at_0;
+			point[1] = z_avg;
+
+			//this->writelog(LOG_INFO, "position of element {0}: {1} um, {2} um", i, r_at_0, z_avg);
+			
+			shared_ptr<Material> material = this->geometry->getMaterial(point);
+			//this->writelog(LOG_DETAIL, "material found");
+			//this->writelog(LOG_DETAIL, "element {0}: {1}", i, material->name());
+		}
+		/// filling CBel vector /// TODO
+		for (size_t i = 0; i < nz+2; ++i)
+			CBel.push_back(5.0);
+		for (size_t i = 60; i < 140; ++i)
+			CBel[i] = 4.5;
+		/// finding min. and max. for CB
+		CBelMin = 1e6; 
+		CBelMax = -1e6;
+		for (size_t i = 0; i < nz+2; ++i) 
+		{
+			if (CBel[i] < CBelMin)
+				CBelMin = CBel[i];
+			if (CBel[i] > CBelMax)
+				CBelMax = CBel[i];
+		}
+		/// max. CB at boundary
+		CBel[0] = CBelMax; 
+		CBel[nz+1] = CBelMax;
+		//for (size_t i = 0; i < nz+2; ++i) /// TEST
+		//	this->writelog(LOG_DETAIL, "node {0}: CBel = {1} eV", i, CBel[i]);
+
+		this->writelog(LOG_INFO, "Done.");
+	}
+
+	return true; /// TODO
+}
 
 template <typename Geometry2DType>
 template <typename MatrixT>
@@ -1586,280 +1735,6 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDen
     );
 }
 
-template <typename Geometry2DType>
-int DriftDiffusionModel2DSolver<Geometry2DType>::setSomeParams()
-{
-    hhm = phys::hb_eV * phys::hb_J * 1e9 * 1e9 / phys::me; /// hb*hb/m, unit: eV*nm*nm, 10^9 is introduced to change m into nm
-    hh2m = 0.5 * hhm; /// hb*hb/(2m), unit: eV*nm*nm
-    //T = 300.; /// temperature; unit: K
-    Eupshift = 20.; /// bands have to be up-shifted - we want only positive values of energy levels; unit: eV
-    //test = false;
-    return 0;
-}
-
-template <typename Geometry2DType>
-int DriftDiffusionModel2DSolver<Geometry2DType>::setMeshActive(double _z1, double _z2, double _dz)
-{
-    this->writelog(LOG_INFO, "Setting mesh..");
-
-    dz = _dz; /// step - distance between mesh-nodes (nm)
-
-    nz = static_cast<int>((_z2-_z1+1e-6*dz)/dz)+1; /// z-mesh size
-    this->writelog(LOG_INFO, "Number of nodes: {0}", nz);
-
-    z.clear();
-    for (int i = 0; i < nz; ++i) /// filling the vector
-        z.push_back(_z1+i*dz); /// unit: nm
-    nz = int(z.size()); /// z-mesh size
-
-    ne = nz - 1;
-    this->writelog(LOG_INFO, "Number of elements: {0}", ne);
-
-    this->writelog(LOG_INFO, "Done.");
-
-    return 0;
-}
-
-template <typename Geometry2DType>
-int DriftDiffusionModel2DSolver<Geometry2DType>::setCBel(std::vector<double> _CBel)
-{
-    this->writelog(LOG_INFO, "Setting energy band (CB: el)..");
-
-    CBel.clear();
-    for (int i(0); i<nz; ++i) /// filling the vector
-        CBel.push_back(_CBel[i]); /// unit: nm
-
-    this->writelog(LOG_INFO, "Done.");
-
-    return 0;
-}
-
-template <typename Geometry2DType>
-int DriftDiffusionModel2DSolver<Geometry2DType>::setCBelM(std::vector<double> _CBelM)
-{
-    this->writelog(LOG_INFO, "Setting masses (CB: el)..");
-
-    CBelM.clear();
-    for (int i(0); i<ne; ++i) /// filling the vector
-        CBelM.push_back(_CBelM[i]); /// unit: m0
-
-    this->writelog(LOG_INFO, "Done.");
-
-    return 0;
-}
-
-template <typename Geometry2DType>
-int DriftDiffusionModel2DSolver<Geometry2DType>::findCBelLev()
-{
-    n_lev_el = 0; /// number of energy levels of electrons
-
-    findCladBE(); /// find band eges for claddings
-
-    double dzdz1 = 1./(dz*dz); /// 1/(dz*dz), unit: 1/nm^2
-    ///double dz1 = 1./(dz); /// 1/(dz), unit: 1/nm
-
-    /// CB: el
-    {
-
-        // TEST
-        {
-            const int n = 4;
-            Eigen::MatrixXcd a(n, n);
-            typedef std::complex<double> C;
-            a <<
-            C(-3.97, -5.04), C(-4.11, 3.70), C(-0.34, 1.01), C(1.29, -0.86),
-            C(0.34, -1.50), C(1.52, -0.43), C(1.88, -5.38), C(3.36, 0.65),
-            C(3.31, -3.85), C(2.50, 3.45), C(0.88, -1.08), C(0.64, -1.48),
-            C(-1.10, 0.82), C(1.81, -1.59), C(3.25, 1.33), C(1.57, -3.44);
-            Eigen::ComplexEigenSolver<Eigen::MatrixXcd> ces;
-            ces.compute(a);
-            std::cout << "The eigenvalues of a are:" << std::endl << ces.eigenvalues() << std::endl;
-            std::cout << "The eigenvectors of a are:" << std::endl << ces.eigenvectors() << std::endl;
-
-            std::cout << "Vec[0]: " << ces.eigenvalues()[0].real() << std::endl;
-            std::cout << "Vec[2]: " << ces.eigenvalues()[2].real() << std::endl;
-
-            std::cout << "Val[00]: " << ces.eigenvectors().col(0)[0].real() << std::endl;
-            std::cout << "Val[23]: " << ces.eigenvectors().col(2)[3].real() << std::endl;
-        }
-
-
-
-        this->writelog(LOG_INFO, "Creating matrix for electrons..\n");
-
-        int K(1), /// the order of the small matrix for central-node for CB
-            N(nz*K); /// the order of the matrix for CB
-
-
-        this->writelog(LOG_INFO, "\tsize of the matrix for CB: {0} x {1}", N, N);
-
-        Eigen::MatrixXcd Hc(N, N);
-
-        for (int i(1); i<=nz; ++i) /// nz - number of nodes
-        {
-            std::complex<double> Hc_le(0.,0.);
-            for (int j(1); j<=nz; ++j) /// nz - number of nodes
-            {
-                Hc_le.real(0.);
-                Hc_le.imag(0.);
-                Hc(i-1, j-1) = Hc_le;
-            }
-        }
-
-        for (int i(1); i<=nz; ++i) /// nz - number of nodes
-        {
-            std::complex<double> Hc_le_11(0.,0.), Hc_ce_11(0.,0.), Hc_ri_11(0.,0.); /// left/central/right 1x1 local matrix
-            {
-                int e_le = 0; /// left element number
-                int e_ri = 0; /// right element number
-
-                if (i==1)
-                {
-                    e_ri = 0; /// first element (counting from 0)
-                    e_le = 0; /// first element (counting from 0)
-                }
-                else if (i==nz)
-                {
-                    e_le = ne-1; /// last element (counting from 0)
-                    e_ri = ne-1; /// last element (counting from 0)
-                }
-                else
-                {
-                    e_le = i-2;
-                    e_ri = i-1;
-                }
-
-                double yc_le = 1. / CBelM[e_le];
-                double yc_ri = 1. / CBelM[e_ri];
-                //double yc_ce = 0.5 * (yc_le + yc_ri);
-
-                if (i>1)
-                {
-                    double pA_le_Re = - yc_le * hh2m * dzdz1; /// Re - real part., Im - imag part.
-                    Hc_le_11.real(pA_le_Re);
-                    Hc(i-1, i-2) = Hc_le_11;
-                    //if (test)
-                        std::cout << "Hc [" << i << ", le]: " << Hc_le_11 << "\n";
-                }
-                {
-                    double pA_ce_Re = hh2m * (yc_le + yc_ri) * dzdz1;
-                    double V = 0.5 * (CBel[e_le] + CBel[e_ri]) + Eupshift;
-                    Hc_ce_11.real(pA_ce_Re + V);
-                    Hc(i-1, i-1) = Hc_ce_11;
-                    //if (test)
-                        std::cout << "Hc [" << i << ", ce]: " << Hc_ce_11 << "\n";
-                }
-                if (i<nz)
-                {
-                    double pA_ri_Re = - yc_ri * hh2m * dzdz1;
-                    Hc_ri_11.real(pA_ri_Re);
-                    Hc(i-1, i) = Hc_ri_11;
-                    //if (test)
-                        std::cout << "Hc [" << i << ", ri]: " << Hc_ri_11 << "\n";
-                }
-            }
-        }
-        this->writelog(LOG_INFO, "Done");
-
-        this->writelog(LOG_INFO, "Finding energy levels and wave functions for electrons..");
-        Eigen::ComplexEigenSolver<Eigen::MatrixXcd> ces;
-        ces.compute(Hc);
-        auto nEigVal = ces.eigenvalues().rows();
-        this->writelog(LOG_INFO, "number of eigenvalues (Hc): {0}", nEigVal);
-        if (nEigVal<1)
-            return 1; /// no energy levels for electrons
-        std::cout << "The eigenvalues of Hc are:" << std::endl << ces.eigenvalues() << std::endl; /// TEST
-        //std::cout << "The eigenvectors of Hc are:" << std::endl << ces.eigenvectors() << std::endl; /// TEST
-        this->writelog(LOG_INFO, "Done");
-
-        this->writelog(LOG_INFO, "Extracting energy levels and wave functions for electrons..");
-        int el_sol(0); /// number of solutions for electrons which were found
-        for (int i(0); i<nz; ++i) /// finding the lowest energy levels
-        {
-            double el_lev = ces.eigenvalues()[i].real();
-            if ((el_lev > Ec_min) && (el_lev < Ec_max))
-            {
-                this->writelog(LOG_INFO, "\tenergy level for electrons no {0} was found: {1}", i, (el_lev - Eupshift));
-                ++el_sol; /// one more solution found
-            }
-            else
-                break;
-        }
-        this->writelog(LOG_INFO, "Done");
-
-        std::ofstream f;
-
-        {
-            this->writelog(LOG_INFO, "Saving energy levels for electrons to file..");
-            lev_el.clear();
-            f.open("results/el_levels.txt");
-            for (int i(0); i<el_sol; ++i)
-            {
-                f << i << "\t";
-                lev_el.push_back(ces.eigenvalues()[i].real());
-                n_lev_el++;
-                f << std::fixed << std::setprecision(10) << lev_el[i] - Eupshift << "\n";
-            }
-            f.close();
-
-            this->writelog(LOG_INFO, "Done");
-        }
-
-        {
-            this->writelog(LOG_INFO, "Saving wave functions for electrons to file..");
-            f.open("results/el_functions.txt");
-            for (int i(0); i<nz; ++i)
-            {
-                f << i << "\t";
-                for (int j(0); j<el_sol; ++j)
-                    f << std::fixed << std::setprecision(10) << ces.eigenvectors().col(j)[i].real() << "\t";
-                f << "\n";
-            }
-            f.close();
-
-            this->writelog(LOG_INFO, "Done");
-        }
-
-        Hc.resize(0,0);
-
-
-
-
-    }
-
-    return 0;
-}
-
-template <typename Geometry2DType>
-int DriftDiffusionModel2DSolver<Geometry2DType>::findCladBE()
-{
-    this->writelog(LOG_INFO, "Find band edges for claddings..");
-
-    Ec_min = 1e6;
-    Ec_max = -1e6;
-//    Ev_min = 1e6; /// conduction/valence bands for claddings (the same for both); unit: eV;
-//    Ev_max = -1e6;
-
-    for (int i=0; i<ne; ++i)
-    {
-        double tEc0 = CBel[i];
-        if (tEc0 < Ec_min)
-            Ec_min = tEc0;
-        if (tEc0 > Ec_max)
-            Ec_max = tEc0;
-    }
-
-    Ec_min += Eupshift; /// "+ Eupshift" to go away from 0 (we want only positive values for energy levels)
-    Ec_max += Eupshift;
-
-    this->writelog(LOG_INFO, "\tEc_min: {0} eV", Ec_min - Eupshift);
-    this->writelog(LOG_INFO, "\tEc_max: {0} eV", Ec_max - Eupshift);
-
-    this->writelog(LOG_INFO, "Done");
-
-    return 0;
-}
-
 template <typename GeometryType>
 void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
 {
@@ -1869,22 +1744,19 @@ void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
 
 	shared_ptr< MeshAxis > axis_vert = this->mesh->vert();
 	shared_ptr< MeshAxis > axis_tran = this->mesh->tran();
-	double r_at_0 = 0.5 * (axis_tran->at(0) + axis_tran->at(1));
+	r_at_0 = 0.5 * (axis_tran->at(0) + axis_tran->at(1));
 	
     shared_ptr<RectangularMesh<2>> points = this->mesh->getMidpointsMesh();
-	//size_t ileft = 0, iright = points->axis0->size();
-	bool in_active = false;
+	bool found_substrate = false;
+	bool found_active = false;
 
-	bool added_bottom_cladding = false;
-	bool added_top_cladding = false;
+	double z1(-1.), z2(-1.); /// min. and max. z for kp method [um]
+	double zSub(-1.); /// z for substrate [um]
 
-	std::vector<double> vz;
-	vz.clear();
-
-    for (std::size_t i = 0; i < axis_vert->size(); ++i)
-	{
-		this->writelog(LOG_INFO, "axis_vert[{0}]: {1}", i, axis_vert->at(i));
-	}
+    //for (std::size_t i = 0; i < axis_vert->size(); ++i) // TEST
+	//{
+	//	this->writelog(LOG_INFO, "axis_vert[{0}]: {1}", i, axis_vert->at(i));
+	//}
     for (std::size_t i = 0; i < axis_vert->size()-1; ++i)
 	{
 		double zA = axis_vert->at(i); /// z bottom
@@ -1898,22 +1770,65 @@ void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
 		auto tags = this->geometry->getRolesAt(point);
 
 		if (tags.find("substrate") != tags.end())
-			this->writelog(LOG_INFO, "axis_vert_mid[{0}] {1}, substrate", i, z_avg);
-		
+		{
+			//this->writelog(LOG_INFO, "axis_vert_mid[{0}] {1}, substrate", i, z_avg);
+			if (!found_substrate) /// first time in substrate
+			{
+				zSub = z_avg;
+			}		
+			found_substrate = true;
+		}
 		if (tags.find("active") != tags.end())
-			this->writelog(LOG_INFO, "axis_vert_mid[{0}] {1}, active", i, z_avg);
+		{
+			//in_active = true;			
+			//this->writelog(LOG_INFO, "axis_vert_mid[{0}] {1}, active", i, z_avg);
+			if (!found_active) /// first time in active
+			{
+				z1 = zA;
+				z2 = zB;
+			}
+			else
+			{
+				if (z1 > zA)
+					z1 = zA;
+				if (z2 < zB)
+					z2 = zB;
+			}
+			found_active = true;
+		}
 	}
+	
+	this->writelog(LOG_INFO, "active region is from z={0} to z={1}", z1, z2); /// in [um]
+	this->writelog(LOG_INFO, "active region thickness: {0} nm", (z2-z1)*1e3); /// [um] -> [nm]
+
+	z.clear();
+	//z.push_back(0.); /// so here z[0] = 0, but later the z.size will be stored here
+	dz = 0.1e-3; /// in [um], default value: 0.1 nm
+	nz = static_cast<int> ((z2 - z1 + 1e-6) / dz) + 1;
+	this->writelog(LOG_INFO, "no of nodes for kp method: {0}", nz);
+	z.push_back(z1 - dz); /// bottom cladding, left edge of the element is set here: z[0]
+	for (std::size_t i = 0; i < nz; ++i)
+		z.push_back(z1 + i*dz);
+	z.push_back(z2 + dz); /// top cladding
+	ne = nz - 1;
+
+	auto vaxis = plask::make_shared<OrderedAxis>();
+	auto haxis = plask::make_shared<OrderedAxis>();
+	this->writelog(LOG_INFO, "vaxis size: {0}", vaxis->size());
+	this->writelog(LOG_INFO, "haxis size: {0}", haxis->size());
+	OrderedAxis::WarningOff vaxiswoff(vaxis);
+	OrderedAxis::WarningOff haxiswoff(haxis);
+	for (std::size_t i = 0; i != nz+2; ++i)
+	{
+		vaxis->addPoint(z[i]);
+	}
+	haxis->addPoint(r_at_0);
+
+	meshActive = plask::make_shared<const RectangularMesh<2>>(haxis, vaxis, RectangularMesh<2>::ORDER_01);
 	
 	this->writelog(LOG_INFO, "Done.");
 	
-	/*shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
-    shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
-
-    size_t ileft = 0, iright = points->axis0->size();
-    bool in_active = false;
-
-    bool added_bottom_cladding = false;
-    bool added_top_cladding = false;
+	/*shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
 
     for (size_t r = 0; r < points->axis1->size(); ++r) {
         bool had_active = false; // indicates if we had active region in this layer
@@ -1922,29 +1837,9 @@ void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
 
         for (size_t c = 0; c < points->axis0->size(); ++c)
         { // In the (possible) active region
-            auto point = points->at(c,r);
-            auto tags = this->geometry->getRolesAt(point);
-            bool active = false; for (const auto& tag: tags) if (tag.substr(0,6) == "active") { active = true; break; }
-            bool QW = tags.find("QW") != tags.end()// || tags.find("QD") != tags.end();
-            bool substrate = tags.find("substrate") != tags.end();
 
-            if (substrate) {
-                if (!materialSubstrate)
-                    materialSubstrate = this->geometry->getMaterial(point);
-                else if (*materialSubstrate != *this->geometry->getMaterial(point))
-                    throw Exception("{0}: Non-uniform substrate layer.", this->getId());
-            }
 
-            if (QW && !active)
-                throw Exception("{0}: All marked quantum wells must belong to marked active region.", this->getId());
-
-            if (c < ileft) {
-                if (active)
-                    throw Exception("{0}: Left edge of the active region not aligned.", this->getId());
-            } else if (c >= iright) {
-                if (active)
-                    throw Exception("{0}: Right edge of the active region not aligned.", this->getId());
-            } else {
+            else {
                 // Here we are inside potential active region
                 if (active) {
                     if (!had_active) {

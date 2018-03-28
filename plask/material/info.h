@@ -35,6 +35,9 @@ struct PLASK_API MaterialInfo {
         Mhh,        ///< heavy-hole effective mass
         Mlh,        ///< light-hole effective mass
         Mh,         ///< hole effective mass
+		y1,         ///< Luttinger parameter 1
+		y2,         ///< Luttinger parameter 2
+		y3,         ///< Luttinger parameter 3
         ac,         ///< hydrostatic deformation potential for the conduction band
         av,         ///< hydrostatic deformation potential for the valence band
         b,          ///< shear deformation potential

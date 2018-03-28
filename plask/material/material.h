@@ -483,6 +483,24 @@ struct PLASK_API Material {
      */
     virtual Tensor2<double> Mh(double T, double e=0.) const;
 
+	/**
+	* Get Luttinger parameter y1 [-].
+	* @return Luttinger parameter y1 [-]
+	*/
+	virtual double y1() const;
+
+	/**
+	* Get Luttinger parameter y2 [-].
+	* @return Luttinger parameter y2 [-]
+	*/
+	virtual double y2() const;
+
+	/**
+	* Get Luttinger parameter y3 [-].
+	* @return Luttinger parameter y3 [-]
+	*/
+	virtual double y3() const;
+
     /**
      * Get hydrostatic deformation potential for the conduction band ac [eV].
      * @param T temperature [K]

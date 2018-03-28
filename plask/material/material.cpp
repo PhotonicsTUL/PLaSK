@@ -129,6 +129,10 @@ Tensor2<double> Material::Mh(double /*T*/, double /*e*/) const { throwNotImpleme
 Tensor2<double> Material::Mhh(double /*T*/, double /*e*/) const { throwNotImplemented("Mhh(double T, double e)"); }
 Tensor2<double> Material::Mlh(double /*T*/, double /*e*/) const { throwNotImplemented("Mlh(double T, double e)"); }
 
+double Material::y1() const { throwNotImplemented("y1()"); }
+double Material::y2() const { throwNotImplemented("y2()"); }
+double Material::y3() const { throwNotImplemented("y3()"); }
+
 double Material::ac(double /*T*/) const { throwNotImplemented("ac(double T)"); }
 double Material::av(double /*T*/) const { throwNotImplemented("av(double T)"); }
 double Material::b(double /*T*/) const { throwNotImplemented("b(double T)"); }
