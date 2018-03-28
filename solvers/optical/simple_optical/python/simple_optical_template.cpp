@@ -13,7 +13,7 @@ BOOST_PYTHON_MODULE(simple_optical_template)
     if (!plask_import_array()) throw(py::error_already_set());
 
 
-    {CLASS(SimpleOpticalTemplate<Geometry2DCylindrical>, "SimpleOpticalCyl", "Solver performing calculations in 2D Cylindrical geometry by solve Helmholtz equation.")
+    {CLASS(SimpleOpticalTemplate<Geometry2DCylindrical>, "SimpleOpticalCyl2D", "Solver performing calculations in 2D Cylindrical geometry by solve Helmholtz equation.")
       
     }
 }
