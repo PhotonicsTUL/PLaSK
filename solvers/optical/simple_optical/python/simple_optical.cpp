@@ -41,7 +41,7 @@ BOOST_PYTHON_MODULE(simple_optical)
     //MD: Klasy solverów w Pythonie muszą mieć końcówkę Cyl, 2D lub 3D — w zależności od tego na jakiej geometrii liczą
     //MD: W zasadzie powinny być dwie, a nawet trzy — dla każdej geometrii osobno (na poziomie C++ można użyć szablonów, by nie pisać tego samego wiele razy)
     //PG: Więc użyć szablonów?
-    {CLASS(SimpleOptical, "SimpleOpticalCyl", "Short solver description.")
+    {CLASS(SimpleOptical, "SimpleOpticalCyl", "Solver performing calculations in 2D Cylindrical geometry by solve Helmholtz equation.")
      METHOD(findMode, findMode, "This is method to find wavelength of mode", (arg("lam")));
      RO_FIELD(root,
                  u8"Configuration of the root searching algorithm for vertical component of the mode\n"
