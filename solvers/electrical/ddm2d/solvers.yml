@@ -149,6 +149,25 @@
       type: int
       default: 500
       help: Number of iterations after which the progress is logged.
+  - &config
+    tag: config
+    label: Gain Parameters
+    help: Some important gain parameters.
+    attrs:
+    - attr: strained
+      label: Strained
+      type: bool
+      default: false
+      help: Boolean attribute indicating if the solver should consider strain in the active region. If set
+        to <i>yes</i> then there must a layer with the role "<i>substrate</i>" in the geometry. The strain
+        is computed by comparing the atomic lattice constants of the substrate and the quantum wells.
+    - attr: T0
+      label: Reference temperature
+      type: float
+      unit: K
+      default: 300
+      help: Reference temperature. This is the temperature used for initial computation of the energy levels.
+
   providers:
   - outPotential
   - outQuasiFermiEnergyLevelForElectrons
