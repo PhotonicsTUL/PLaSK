@@ -346,27 +346,27 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     void detectActiveRegions();
 
 	/// Separate mesh for active region
-	shared_ptr<const RectangularMesh<2>> meshActive;
+	shared_ptr<RectangularMesh<2>> meshAct;
+
+	/// Mid-points for active region
+	shared_ptr<RectangularMesh<2>> meshActMid;
 
     /// Parameters used to calculate energy levels and carrier concentration in active
-	double r_at_0; /// r at laser axis /// [um]
-	double zSub; /// z for substrate /// [um]
+	double zSub; /// vertical coord. for substrate /// [um]
 	std::vector<double> z; /// vector with mesh-node positions along z-axis [um]
     double dz; /// step - distance between mesh-nodes [um]
-    int nz; /// z-mesh size (number of nodes - we do not count the first and the last cladding nodes) 
+    int nn; /// z-mesh size (number of nodes - we do not count the first and the last cladding nodes) 
     int ne; /// z-mesh size (number of elements - we do not count cladding elements here)
     double hh2m; /// hb*hb/(2m), unit: [eV*nm*nm]
 	
 	std::vector<double> CBel; /// vector with energy band diagram for electrons from CB (nm)
     std::vector<double> CBelLev; /// energy levels of electrons from CB
     
-    //double hhm; /// hb*hb/m, unit: eV*nm*nm
-
     std::vector<double> lev_el; /// energy levels of electrons
     int n_lev_el; /// number of energy levels of electrons
     double CBelMin, CBelMax; /// min./max. conduction bands edges for claddings (the same for both claddings); unit: eV
     double T; /// temperature; unit: K
-    double Eupshift; /// bands have to be up-shifted - we want only positive values of energy levels; unit: eV
+    double Eshift; /// bands have to be up-shifted - we want only positive values of energy levels; unit: eV
 
   public:
 

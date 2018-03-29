@@ -996,7 +996,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 	this->writelog(LOG_INFO, "Finding energy levels..");
 	
 	hh2m = 0.5 * phys::hb_eV * phys::hb_J * 1e9 * 1e9 / phys::me; /// hb*hb/(2m), unit: eV*nm*nm, 10^9 is introduced to change m into nm
-	Eupshift = 20.; /// bands have to be up-shifted - we want only positive values of energy levels; unit: [eV]
+	Eshift = 20.; /// bands have to be up-shifted - we want only positive values of energy levels; unit: [eV]
 
 	double kx = 0., ky = 0.; /// TODO
 
@@ -1014,26 +1014,26 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 		this->writelog(LOG_DETAIL, "Creating matrix for electrons..\n");
 
 		int K = 1; /// the order of the small matrix for central-node for CB
-		int N = nz * K; /// the order of the matrix for CB
+		int N = nn * K; /// the order of the matrix for CB
 
 		this->writelog(LOG_DETAIL, "\tsize of the matrix for CB: {0} x {1}", N, N);
 
 		Eigen::MatrixXcd Hc(N, N); /// N - Hc size
 		/// setting Hc = zeros
 		std::complex<double> Hc_zero(0., 0.);
-		for (size_t i=1; i <= N; ++i)
+		for (size_t i=1; i<=N; ++i)
 			for (size_t j=1; j <= N; ++j)
 				Hc(i-1, j-1) = Hc_zero;
 
-		for (size_t i=1; i <= nz; ++i) /// nz - number of nodes
+		for (size_t i=1; i<=nn; ++i) /// nn - number of nodes
 		{
 			Vec<2, double> point_LE; /// centre of the left element
-			point_LE[0] = r_at_0;
-			point_LE[1] = 0.5 * (z[i-1] + z[i]);
+			point_LE[0] = meshActMid->axis0->at(0); // TODO not only for 0
+			point_LE[1] = meshActMid->axis1->at(i-1);
 
 			Vec<2, double> point_RI; /// centre of the right element
-			point_RI[0] = r_at_0;
-			point_RI[1] = 0.5 * (z[i] + z[i+1]);
+			point_RI[0] = meshActMid->axis0->at(0); // TODO not only for 0
+			point_RI[1] = meshActMid->axis1->at(i);
 			
 			shared_ptr<Material> m_LE = this->geometry->getMaterial(point_LE);
 			shared_ptr<Material> m_RI = this->geometry->getMaterial(point_RI);
@@ -1050,7 +1050,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 				double beta_11_LE = - y0_LE * hh2m;
 				double beta_11_RI = - y0_RI * hh2m;
 				double alpha_11_CE = y0_CE * hh2m * (kx * kx + ky * ky);
-				double Ec0_11_CE = CBel[i] + Eupshift; // TODO CBel[i] must be CB from elem + Psi fo elem and then calc average for node
+				double Ec0_11_CE = CBel[i] + Eshift; // TODO CBel[i] must be CB from elem + Psi fo elem and then calc average for node
 				double v_11_CE = Ec0_11_CE;
 				double s_11_CE = 0.;
 				/*if (strain) // TODO
@@ -1071,7 +1071,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 					Hc(i - 1, i - 1) = Hc_11_CE;
 					//this->writelog(LOG_DETAIL, "Hc_11_CE: {0}", Hc_11_CE());
 				}
-				if (i<nz)
+				if (i<nn)
 				{
 					Hc_11_RI.real(beta_11_RI * dzdz1);
 					Hc(i - 1, i) = Hc_11_RI;
@@ -1096,10 +1096,10 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 			n_lev_el = 0; /// n_lev_el - number of energy levels of electrons
 			for (size_t i = 1; i < nEigVal; ++i)
 			{
-				if ((ces.eigenvalues()[i].real() - Eupshift > CBelMin) && (ces.eigenvalues()[i].real() - Eupshift < CBelMax))
+				if ((ces.eigenvalues()[i].real() - Eshift > CBelMin) && (ces.eigenvalues()[i].real() - Eshift < CBelMax))
 				{
 					std::vector<double> sum(K, 0.); /// we have to find out if this level corresponds to el
-					for (size_t j = 1; j < nz*1; j += 1) /// "1" in both cases because only el are considered here
+					for (size_t j = 1; j < nn*1; j += 1) /// "1" in both cases because only el are considered here
 					{
 						sum[0] += (pow(ces.eigenvectors().col(i)[j].real(), 2.) + pow(ces.eigenvectors().col(i)[j].imag(), 2.));
 					}
@@ -1107,7 +1107,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 					if (sum[0])
 					{
 						carrier = "el";
-						lev_el.push_back(ces.eigenvalues()[i].real() - Eupshift);
+						lev_el.push_back(ces.eigenvalues()[i].real() - Eshift);
 						n_lev_el++;
 					}
 				}
@@ -1141,26 +1141,35 @@ bool DriftDiffusionModel2DSolver<Geometry2DType>::checkWell(std::string _carrier
 		CBel.clear();
 		for (size_t i = 0; i < ne+2; ++i) /// ne+2 because cladding elements also
 		{
-			double z_avg = 0.5*(z[i] + z[i+1]);
-			Vec<2, double> point;
-			point[0] = r_at_0;
-			point[1] = z_avg;
+			//double z_avg = 0.5*(z[i] + z[i+1]);
+			Vec<2, double> point = meshActMid->at(0,i);
+			//point[0] = meshActMid->axis0->at(0); // TODO tu musi byc jakis element haxis dla danego obszaru
+			//point[1] = meshActMid->axis1->at(i);
 
 			//this->writelog(LOG_INFO, "position of element {0}: {1} um, {2} um", i, r_at_0, z_avg);
 			
 			shared_ptr<Material> material = this->geometry->getMaterial(point);
 			//this->writelog(LOG_DETAIL, "material found");
 			//this->writelog(LOG_DETAIL, "element {0}: {1}", i, material->name());
+
+			//CBel.push_back(material->CB(T, 0., '*') - getPotentials(meshActMid->at(0,i)) * mEx);
 		}
 		/// filling CBel vector /// TODO
-		for (size_t i = 0; i < nz+2; ++i)
+		//for (size_t i = 0; i < nn + 2; ++i)
+		//{
+		//	CBel.push_back(material->CB(T, 0., '*') - dvnPsi[..] * mEx);
+		//}
+		
+		
+		
+		for (size_t i = 0; i < nn+2; ++i)
 			CBel.push_back(5.0);
 		for (size_t i = 60; i < 140; ++i)
 			CBel[i] = 4.5;
 		/// finding min. and max. for CB
 		CBelMin = 1e6; 
 		CBelMax = -1e6;
-		for (size_t i = 0; i < nz+2; ++i) 
+		for (size_t i = 0; i < nn+2; ++i) 
 		{
 			if (CBel[i] < CBelMin)
 				CBelMin = CBel[i];
@@ -1169,7 +1178,7 @@ bool DriftDiffusionModel2DSolver<Geometry2DType>::checkWell(std::string _carrier
 		}
 		/// max. CB at boundary
 		CBel[0] = CBelMax; 
-		CBel[nz+1] = CBelMax;
+		CBel[nn+1] = CBelMax;
 		//for (size_t i = 0; i < nz+2; ++i) /// TEST
 		//	this->writelog(LOG_DETAIL, "node {0}: CBel = {1} eV", i, CBel[i]);
 
@@ -1742,11 +1751,11 @@ void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
 	
 	regions.clear();
 
-	shared_ptr< MeshAxis > axis_vert = this->mesh->vert();
-	shared_ptr< MeshAxis > axis_tran = this->mesh->tran();
-	r_at_0 = 0.5 * (axis_tran->at(0) + axis_tran->at(1));
+	shared_ptr< MeshAxis > axis_vert = this->mesh->vert(); /// for the whole structure
+	shared_ptr< MeshAxis > axis_tran = this->mesh->tran(); /// for the whole structure
+	double r_at_0 = 0.5 * (axis_tran->at(0) + axis_tran->at(1)); // TODO
 	
-    shared_ptr<RectangularMesh<2>> points = this->mesh->getMidpointsMesh();
+    shared_ptr<RectangularMesh<2>> meshMid = this->mesh->getMidpointsMesh();
 	bool found_substrate = false;
 	bool found_active = false;
 
@@ -1798,19 +1807,19 @@ void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
 		}
 	}
 	
-	this->writelog(LOG_INFO, "active region is from z={0} to z={1}", z1, z2); /// in [um]
+	this->writelog(LOG_INFO, "active region is from z = {0} um to z = {1} um", z1, z2); /// in [um]
 	this->writelog(LOG_INFO, "active region thickness: {0} nm", (z2-z1)*1e3); /// [um] -> [nm]
 
 	z.clear();
 	//z.push_back(0.); /// so here z[0] = 0, but later the z.size will be stored here
 	dz = 0.1e-3; /// in [um], default value: 0.1 nm
-	nz = static_cast<int> ((z2 - z1 + 1e-6) / dz) + 1;
-	this->writelog(LOG_INFO, "no of nodes for kp method: {0}", nz);
+	nn = static_cast<int> ((z2 - z1 + 1e-6) / dz) + 1;
+	this->writelog(LOG_INFO, "no of nodes for kp method: {0}", nn);
 	z.push_back(z1 - dz); /// bottom cladding, left edge of the element is set here: z[0]
-	for (std::size_t i = 0; i < nz; ++i)
+	for (std::size_t i = 0; i < nn; ++i)
 		z.push_back(z1 + i*dz);
 	z.push_back(z2 + dz); /// top cladding
-	ne = nz - 1;
+	ne = nn - 1;
 
 	auto vaxis = plask::make_shared<OrderedAxis>();
 	auto haxis = plask::make_shared<OrderedAxis>();
@@ -1818,14 +1827,23 @@ void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
 	this->writelog(LOG_INFO, "haxis size: {0}", haxis->size());
 	OrderedAxis::WarningOff vaxiswoff(vaxis);
 	OrderedAxis::WarningOff haxiswoff(haxis);
-	for (std::size_t i = 0; i != nz+2; ++i)
+	for (std::size_t i = 0; i != nn+2; ++i)
 	{
 		vaxis->addPoint(z[i]);
 	}
-	haxis->addPoint(r_at_0);
+	haxis->addPoint(1e-4); // TODO - tu musza byc wartosci z haxis dla danego obszaru czynnego
+	haxis->addPoint(2e-4);
+	haxis->addPoint(3e-4);
 
-	meshActive = plask::make_shared<const RectangularMesh<2>>(haxis, vaxis, RectangularMesh<2>::ORDER_01);
+	this->writelog(LOG_INFO, "vaxis size: {0}", vaxis->size());
+	this->writelog(LOG_INFO, "haxis size: {0}", haxis->size());
+
+	meshAct = plask::make_shared<RectangularMesh<2>>(haxis, vaxis, RectangularMesh<2>::ORDER_01);
+	meshActMid = meshAct->getMidpointsMesh(); // LUKI TODO
 	
+	this->writelog(LOG_INFO, "MeshAct 0 1: {0} {1} {2}", meshAct->at(0,0), meshAct->at(0,1), meshAct->at(0,2));
+	this->writelog(LOG_INFO, "MeshAct 0 1: {0} {1} {2}", meshAct->axis1->at(0), meshAct->axis1->at(1), meshAct->axis1->at(2));
+
 	this->writelog(LOG_INFO, "Done.");
 	
 	/*shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
