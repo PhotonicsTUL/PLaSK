@@ -10,7 +10,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 import sys
-from time import sleep
 
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
@@ -21,17 +20,13 @@ from ...model.geometry.types import geometry_types_geometries_core, gname
 from ...model.geometry.geometry import GNGeometryBase
 from ...model.info import Info
 from .. import Controller
+from ...utils import get_manager
 from ...utils.widgets import HTMLDelegate, VerticalScrollArea, create_undo_actions, set_icon_size
 
 try:
     import plask
 except ImportError:
     pass  # TODO: make preview optional
-# else:
-#     def wl(mat, lam, T=300.):
-#         return lam / 1000.
-#
-#     plask.phys.wl = plask.wl = plask._plask.__xml__globals['wl'] = wl
 
 
 
@@ -298,7 +293,7 @@ class GeometryController(Controller):
         QMetaObject.invokeMethod(self.tree, 'update_current_index', Qt.QueuedConnection)
 
     def plot_element(self, tree_element, set_limits):
-        manager = plask.Manager(draft=True)
+        manager = get_manager()
         try:
             manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry')))
             try:

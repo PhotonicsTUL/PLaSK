@@ -691,6 +691,10 @@ bool MaterialsDB_contains(const MaterialsDB& DB, const std::string& name) {
     return false;
 }
 
+shared_ptr<MaterialsDB> MaterialsDB_copy(const MaterialsDB& DB) {
+    return make_shared<MaterialsDB>(DB);
+}
+
 
 /**
  * Create material basing on its name and additional parameters
@@ -846,7 +850,7 @@ void initMaterials() {
     ;
 
     py::class_<MaterialsDB, shared_ptr<MaterialsDB>, boost::noncopyable> materialsDB("MaterialsDB",
-        u8"Material database class\n\n"
+        u8"Material database clMaterialsDB_copyass\n\n"
         u8"Many semiconductor materials used in photonics are defined here. We have made\n"
         u8"a significant effort to ensure their physical properties to be the most precise\n"
         u8"as the current state of the art. However, you can derive an abstract class\n"
@@ -891,6 +895,7 @@ void initMaterials() {
              u8"                (e.g. 'GaAs:Si', 'AlGaAs')."
             )
         .staticmethod("info")
+        .def("__copy__", &MaterialsDB_copy)
     ;
 
     // Common material interface

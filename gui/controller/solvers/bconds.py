@@ -12,13 +12,13 @@
 from collections import OrderedDict
 import sys
 
-from gui import QtSignal
 from lxml.etree import tostring
 
 from ...qt.QtCore import *
 from ...qt.QtGui import *
 from ...qt.QtWidgets import *
 from ...qt import QtSignal
+from ...utils import get_manager
 from ...utils.config import CONFIG
 from ...utils.str import none_to_empty, empty_to_none
 from ...utils.widgets import HTMLDelegate, ComboBox, table_edit_shortcut
@@ -271,9 +271,9 @@ class BoundaryConditionsDialog(QDialog):
                                 controller.model.data[schema.geometry_attr['tag']][schema.geometry_attr['attr']]
             except KeyError:
                 geometry_name = None
-            self.manager = plask.Manager(draft=True)
+            self.manager = get_manager()
             try:
-                self.manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry', 'grids')))
+                self.manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))
             except Exception as err:
                 self.preview = None
                 self.info.setText(str(err))

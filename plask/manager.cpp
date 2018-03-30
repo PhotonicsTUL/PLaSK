@@ -145,7 +145,7 @@ void Manager::loadGeometry(GeometryReader& greader) {
 void Manager::loadMaterialLib(XMLReader& reader, MaterialsDB& materialsDB) {
     std::string name = reader.requireAttribute("name");
     try {
-        if (name != "") materialsDB.loadToDefault(name);
+        if (name != "" && &materialsDB == &materialsDB.getDefault()) materialsDB.loadToDefault(name);
     } catch (Exception& err) {
         if(!draft) throw XMLException(reader, err.what());
     }

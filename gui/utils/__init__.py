@@ -11,7 +11,7 @@
 # GNU General Public License for more details.
 
 from bisect import bisect_left
-
+from copy import copy
 
 try:
     unicode = unicode
@@ -22,6 +22,12 @@ except NameError:
 else:
     # 'unicode' exists, must be Python 2
     bytes = str
+
+
+try:
+    import plask
+except ImportError:
+    plask = None
 
 
 def sorted_index(sorted_list, x):
@@ -96,3 +102,17 @@ def setattr_by_path(obj, name, value):
 def require_str_first_attr_path_component(path):
     while not isinstance(path, basestring): path = path[0]
     return path
+
+
+def get_manager():
+    if plask is None: return
+    materials = copy(plask.material.db)
+    manager = plask.Manager(materials, draft=True)
+    if 'wl' not in manager.defs:
+        def wl(mat, lam, T=300.):
+            try: nr = materials.get(mat).Nr(lam, T).real
+            except: nr = 1.
+            return 1e-3 * lam / nr
+        plask._plask.__xml__globals['wl'] = wl
+        plask._plask.__xml__globals['phys'].__dict__['wl'] = wl
+    return manager

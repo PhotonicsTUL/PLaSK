@@ -189,15 +189,17 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
 
     reader.setFilter(PythonXMLFilter(manager));
 
+    MaterialsDB& materials = manager->materialsDB? *manager->materialsDB.get() : MaterialsDB::getDefault();
+
     try {
         if (filter == py::object()) {
-            manager->load(reader, MaterialsDB::getDefault(), Manager::ExternalSourcesFromFile(filename));
+            manager->load(reader, materials, Manager::ExternalSourcesFromFile(filename));
         } else {
             py::list sections = py::list(filter);
             auto filterfun = [sections](const std::string& section) -> bool {
                 return py::extract<bool>(sections.contains(section));
             };
-            manager->load(reader, MaterialsDB::getDefault(), Manager::ExternalSourcesFromFile(filename), filterfun);
+            manager->load(reader, materials, Manager::ExternalSourcesFromFile(filename), filterfun);
         }
     } catch (...) {
         py::delitem(manager->defs, py::str("self"));
@@ -331,10 +333,19 @@ void PythonManager::loadConnects(XMLReader& reader)
     }
 }
 
-void PythonManager::loadMaterialModule(XMLReader& reader, MaterialsDB& /*materialsDB*/) {
+void PythonManager::loadMaterialModule(XMLReader& reader, MaterialsDB& materialsDB) {
     std::string name = reader.requireAttribute("name");
     try {
-        if (name != "") py::import(py::str(name));
+        if (name != "" && &materialsDB == &materialsDB.getDefault()) {
+            py::str modname(name);
+            bool reload = PyDict_Contains(PyImport_GetModuleDict(), modname.ptr());
+            py::object module = py::import(modname);
+            if (reload) {
+                PyObject* reloaded = PyImport_ReloadModule(module.ptr());
+                if (!reloaded) throw py::error_already_set();
+                Py_DECREF(reloaded);
+            }
+        }
     } catch (py::error_already_set) {
         std::string msg = getPythonExceptionMessage();
         PyErr_Clear();
@@ -629,7 +640,7 @@ void register_manager() {
         u8"    draft (bool): If *True* then partially incomplete XML is accepted\n"
         u8"                  (e.g. non-existent materials are allowed).\n",
 
-        py::init<MaterialsDB*, bool>((py::arg("materials")=py::object(), py::arg("draft")=false)))
+        py::init<const shared_ptr<MaterialsDB>, bool>((py::arg("materials")=py::object(), py::arg("draft")=false)))
         .def("load", &PythonManager_load,
              u8"Load data from source.\n\n"
              u8"Args:\n"
