@@ -464,12 +464,14 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
         }
      }
 
-    // Replace F and B above the interface for consistency in getFieldVectorE and getFieldVectorH
+    // Replace F and B at one side of the interface for consistency in getFieldVectorE and getFieldVectorH
+    size_t interface = size_t(max(solver->interface, ptrdiff_t(0)));
     switch (side)
     {
-        case INCIDENCE_TOP:    start = max(solver->interface, ptrdiff_t(0)); end = count; break;
-        case INCIDENCE_BOTTOM: start = 0; end = min(solver->interface, ptrdiff_t(count)); break;
+        case INCIDENCE_TOP:    start = interface; end = count; break;
+        case INCIDENCE_BOTTOM: start = 0; end = min(interface, count); break;
     }
+    // start = size_t(max(solver->interface, ptrdiff_t(0))); end = count;
     for (std::size_t n = start; n < end; n++) {
         cvector& F2 = fields[n].F;
         cvector& B2 = fields[n].B;
