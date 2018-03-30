@@ -273,7 +273,7 @@ class BoundaryConditionsDialog(QDialog):
                 geometry_name = None
             self.manager = plask.Manager(draft=True)
             try:
-                self.manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))
+                self.manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry', 'grids')))
             except Exception as err:
                 self.preview = None
                 self.info.setText(str(err))

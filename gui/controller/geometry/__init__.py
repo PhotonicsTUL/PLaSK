@@ -12,8 +12,6 @@
 import sys
 from time import sleep
 
-import plask  # TODO: make preview optional
-
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *
@@ -24,6 +22,18 @@ from ...model.geometry.geometry import GNGeometryBase
 from ...model.info import Info
 from .. import Controller
 from ...utils.widgets import HTMLDelegate, VerticalScrollArea, create_undo_actions, set_icon_size
+
+try:
+    import plask
+except ImportError:
+    pass  # TODO: make preview optional
+# else:
+#     def wl(mat, lam, T=300.):
+#         return lam / 1000.
+#
+#     plask.phys.wl = plask.wl = plask._plask.__xml__globals['wl'] = wl
+
+
 
 try:
     from .plot_widget import PlotWidget
@@ -290,7 +300,7 @@ class GeometryController(Controller):
     def plot_element(self, tree_element, set_limits):
         manager = plask.Manager(draft=True)
         try:
-            manager.load(self.document.get_content(sections=('defines', 'geometry')))
+            manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry')))
             try:
                 plotted_object = self.model.fake_root.get_corresponding_object(tree_element, manager)
             except ValueError:

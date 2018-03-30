@@ -84,7 +84,7 @@ def wl(mat, lam, T=300.):
     Returns:
         float: Real length of the one wavelength in the material [µm].
     """
-    return 1e-3 * lam / _material.get(mat).nr(lam, T)
+    return 1e-3 * lam / _material.get(mat).Nr(lam, T).real
 
 
 def eV2nm(eV):

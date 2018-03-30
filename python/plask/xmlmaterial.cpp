@@ -284,138 +284,145 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
 }
 
 void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
-    std::string material_name = reader.requireAttribute("name");
-    std::string base_name = reader.requireAttribute("base");
-    bool alloy = reader.getAttribute<bool>("alloy", false);
+    try {
+        std::string material_name = reader.requireAttribute("name");
+        std::string base_name = reader.requireAttribute("base");
+        bool alloy = reader.getAttribute<bool>("alloy", false);
 
-    //TODO Remove soon
-    if (reader.hasAttribute("complex")) {
-        if (reader.hasAttribute("alloy")) throw XMLException(reader, "Obsolete 'complex' attribute now allowed if 'alloy' is specified");
-        alloy = reader.getAttribute<bool>("complex", false);
-        writelog(LOG_WARNING, "XML line {} in <material>: attribute 'complex' is obsolete, use 'alloy' instead", reader.getLineNr());
-    }
-
-    shared_ptr<PythonEvalMaterialConstructor> constructor = plask::make_shared<PythonEvalMaterialConstructor>(materialsDB, material_name, base_name, alloy);
-    constructor->self = constructor;
-
-    auto trim = [](const char* s) -> const char* {
-        for(; *s != 0 && std::isspace(*s); ++s)
-        ;
-        return s;
-    };
-
-#   if PY_VERSION_HEX >= 0x03000000
-#       define COMPILE_PYTHON_MATERIAL_FUNCTION2(funcname, func) \
-        else if (reader.getNodeName() == funcname) { \
-            constructor->func = (PyCodeObject*)Py_CompileString(trim(reader.requireTextInCurrentTag().c_str()), funcname, Py_eval_input); \
-            if (constructor->func == nullptr) \
-                throw XMLException(format("XML line {0} in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
-            try { \
-                py::dict locals; \
-                constructor->cache.func.reset( \
-                    py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
-                        py::handle<>(PyEval_EvalCode(constructor->func.ptr_cast<PyObject>(), xml_globals->ptr(), locals.ptr())).get() \
-                    ) \
-                ); \
-                writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '{0}'", material_name); \
-            } catch (py::error_already_set) { \
-                PyErr_Clear(); \
-            } \
+        //TODO Remove soon
+        if (reader.hasAttribute("complex")) {
+            if (reader.hasAttribute("alloy")) throw XMLException(reader, "Obsolete 'complex' attribute now allowed if 'alloy' is specified");
+            alloy = reader.getAttribute<bool>("complex", false);
+            writelog(LOG_WARNING, "XML line {} in <material>: attribute 'complex' is obsolete, use 'alloy' instead", reader.getLineNr());
         }
-#   else
-        PyCompilerFlags flags { CO_FUTURE_DIVISION };
-#       define COMPILE_PYTHON_MATERIAL_FUNCTION2(funcname, func) \
-        else if (reader.getNodeName() == funcname) { \
-            constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireTextInCurrentTag().c_str()), funcname, Py_eval_input, &flags); \
-            if (constructor->func == nullptr) \
-                throw XMLException(format("XML line {0} in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
-            try { \
-                py::dict locals; \
-                constructor->cache.func.reset( \
-                    py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
-                        py::handle<>(PyEval_EvalCode(constructor->func, xml_globals->ptr(), locals.ptr())).get() \
-                    ) \
-                ); \
-                writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '{0}'", material_name); \
-            } catch (py::error_already_set) { \
-                PyErr_Clear(); \
-            } \
+
+        shared_ptr<PythonEvalMaterialConstructor> constructor = plask::make_shared<PythonEvalMaterialConstructor>(materialsDB, material_name, base_name, alloy);
+        constructor->self = constructor;
+
+        auto trim = [](const char* s) -> const char* {
+            for(; *s != 0 && std::isspace(*s); ++s)
+            ;
+            return s;
+        };
+
+    #   if PY_VERSION_HEX >= 0x03000000
+    #       define COMPILE_PYTHON_MATERIAL_FUNCTION2(funcname, func) \
+            else if (reader.getNodeName() == funcname) { \
+                constructor->func = (PyCodeObject*)Py_CompileString(trim(reader.requireTextInCurrentTag().c_str()), funcname, Py_eval_input); \
+                if (constructor->func == nullptr) \
+                    throw XMLException(format("XML line {0} in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
+                try { \
+                    py::dict locals; \
+                    constructor->cache.func.reset( \
+                        py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
+                            py::handle<>(PyEval_EvalCode(constructor->func.ptr_cast<PyObject>(), xml_globals->ptr(), locals.ptr())).get() \
+                        ) \
+                    ); \
+                    writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '{0}'", material_name); \
+                } catch (py::error_already_set) { \
+                    PyErr_Clear(); \
+                } \
+            }
+    #   else
+            PyCompilerFlags flags { CO_FUTURE_DIVISION };
+    #       define COMPILE_PYTHON_MATERIAL_FUNCTION2(funcname, func) \
+            else if (reader.getNodeName() == funcname) { \
+                constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireTextInCurrentTag().c_str()), funcname, Py_eval_input, &flags); \
+                if (constructor->func == nullptr) \
+                    throw XMLException(format("XML line {0} in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
+                try { \
+                    py::dict locals; \
+                    constructor->cache.func.reset( \
+                        py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
+                            py::handle<>(PyEval_EvalCode(constructor->func, xml_globals->ptr(), locals.ptr())).get() \
+                        ) \
+                    ); \
+                    writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '{0}'", material_name); \
+                } catch (py::error_already_set) { \
+                    PyErr_Clear(); \
+                } \
+            }
+    #   endif
+
+    #   define COMPILE_PYTHON_MATERIAL_FUNCTION(func) COMPILE_PYTHON_MATERIAL_FUNCTION2(BOOST_PP_STRINGIZE(func), func)
+
+        while (reader.requireTagOrEnd()) {
+            if (reader.getNodeName() == "condtype") {
+                auto condname = reader.requireTextInCurrentTag();
+                Material::ConductivityType condtype = (condname == "n" || condname == "N")? Material::CONDUCTIVITY_N :
+                                (condname == "i" || condname == "I")? Material::CONDUCTIVITY_I :
+                                (condname == "p" || condname == "P")? Material::CONDUCTIVITY_P :
+                                (condname == "other" || condname == "OTHER")? Material::CONDUCTIVITY_OTHER :
+                                 Material::CONDUCTIVITY_UNDETERMINED;
+                if (condtype == Material::CONDUCTIVITY_UNDETERMINED)
+                    throw XMLException(format("XML line {0} in <{1}>", reader.getLineNr(), "condtype"), "Material parameter syntax error, condtype must be given as one of: n, i, p, other (or: N, I, P, OTHER)");
+                constructor->condtype = condtype;
+            } //else if
+            COMPILE_PYTHON_MATERIAL_FUNCTION(lattC)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(Eg)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(CB)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(VB)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(Dso)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(Mso)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(Me)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(Mhh)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(Mlh)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(Mh)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(ac)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(av)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(b)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(d)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(c11)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(c12)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(c44)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(eps)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(chi)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(Na)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(Nd)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(Ni)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(Nf)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(EactD)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(EactA)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(mob)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(cond)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(A)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(B)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(C)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(D)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(thermk)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(dens)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(cp)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(nr)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(absp)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(Nr)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(NR)
+
+            COMPILE_PYTHON_MATERIAL_FUNCTION(mobe)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(mobh)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(taue)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(tauh)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(Ce)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(Ch)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(e13)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(e15)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(e33)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(c13)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(c33)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(Psp)
+
+            else throw XMLUnexpectedElementException(reader, "material parameter tag");
         }
-#   endif
 
-#   define COMPILE_PYTHON_MATERIAL_FUNCTION(func) COMPILE_PYTHON_MATERIAL_FUNCTION2(BOOST_PP_STRINGIZE(func), func)
-
-    while (reader.requireTagOrEnd()) {
-        if (reader.getNodeName() == "condtype") {
-            auto condname = reader.requireTextInCurrentTag();
-            Material::ConductivityType condtype = (condname == "n" || condname == "N")? Material::CONDUCTIVITY_N :
-                            (condname == "i" || condname == "I")? Material::CONDUCTIVITY_I :
-                            (condname == "p" || condname == "P")? Material::CONDUCTIVITY_P :
-                            (condname == "other" || condname == "OTHER")? Material::CONDUCTIVITY_OTHER :
-                             Material::CONDUCTIVITY_UNDETERMINED;
-            if (condtype == Material::CONDUCTIVITY_UNDETERMINED)
-                throw XMLException(format("XML line {0} in <{1}>", reader.getLineNr(), "condtype"), "Material parameter syntax error, condtype must be given as one of: n, i, p, other (or: N, I, P, OTHER)");
-            constructor->condtype = condtype;
-        } //else if
-        COMPILE_PYTHON_MATERIAL_FUNCTION(lattC)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Eg)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(CB)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(VB)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Dso)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Mso)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Me)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Mhh)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Mlh)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Mh)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(ac)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(av)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(b)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(d)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(c11)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(c12)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(c44)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(eps)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(chi)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Na)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Nd)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Ni)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Nf)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(EactD)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(EactA)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(mob)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(cond)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(A)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(B)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(C)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(D)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(thermk)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(dens)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(cp)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(nr)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(absp)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Nr)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(NR)
-
-        COMPILE_PYTHON_MATERIAL_FUNCTION(mobe)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(mobh)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(taue)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(tauh)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Ce)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Ch)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(e13)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(e15)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(e33)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(c13)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(c33)
-        COMPILE_PYTHON_MATERIAL_FUNCTION(Psp)
-
-        else throw XMLUnexpectedElementException(reader, "material parameter tag");
+        if (alloy)
+            materialsDB.addComplex(constructor);
+        else
+            materialsDB.addSimple(constructor);
+    } catch (py::error_already_set) {
+        if (draft) PyErr_Clear();
+        else throw;
+    } catch (...) {
+        if (!draft) throw;
     }
-
-    if (alloy)
-        materialsDB.addComplex(constructor);
-    else
-        materialsDB.addSimple(constructor);
 }
 
 }} // namespace plask::python

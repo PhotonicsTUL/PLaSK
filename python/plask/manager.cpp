@@ -19,6 +19,8 @@
 
 namespace plask { namespace python {
 
+PLASK_PYTHON_API std::string getPythonExceptionMessage();
+
 extern PLASK_PYTHON_API py::dict* xml_globals;
 
 class PythonXMLFilter {
@@ -333,8 +335,12 @@ void PythonManager::loadMaterialModule(XMLReader& reader, MaterialsDB& /*materia
     std::string name = reader.requireAttribute("name");
     try {
         if (name != "") py::import(py::str(name));
+    } catch (py::error_already_set) {
+        std::string msg = getPythonExceptionMessage();
+        PyErr_Clear();
+        if(!draft) throw XMLException(reader, msg);
     } catch (Exception& err) {
-        throw XMLException(reader, err.what());
+        if(!draft) throw XMLException(reader, err.what());
     }
     reader.requireTagEnd();
 }

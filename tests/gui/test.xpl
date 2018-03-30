@@ -32,6 +32,9 @@
   <material name="name" base="semiconductor"/>
   <module name="mats"/>
   <material name="GaAs2:Si" base="GaAs:Si"/>
+  <material name="mat" base="semiconductor">
+    <nr>5</nr>
+  </material>
 </materials>
 
 <geometry>
@@ -177,6 +180,9 @@
   <cylindrical2d name="GeoO" axes="r,z" outer="extend" bottom="GaAs" top="air">
     <again ref="VCSEL"/>
   </cylindrical2d>
+  <cartesian2d name="main" axes="x,y">
+    <rectangle material="mat" dx="1" dy="{wl('mat', 1000)}"/>
+  </cartesian2d>
 </geometry>
 
 <grids>
