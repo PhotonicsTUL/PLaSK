@@ -29,11 +29,29 @@ protected:
     /// numbers of enabled elements
     Set elements;
 
+    /**
+     * Used by interpolation.
+     * @param axis
+     * @param wrapped_point_coord
+     * @param index_lo
+     * @param index_hi
+     */
     static void findIndexes(const MeshAxis& axis, double wrapped_point_coord, std::size_t& index_lo, std::size_t& index_hi) {
         index_hi = axis.findUpIndex(wrapped_point_coord);
         if (index_hi+1 == axis.size()) --index_hi;    // p.c0 == axis0->at(axis0->size()-1)
         assert(index_hi > 0);
         index_lo = index_hi - 1;
+    }
+
+    /**
+     * Used by nearest neighbor interpolation.
+     * @param p point coordinate such that axis.at(index_lo) <= p <= axis.at(index_hi)
+     * @param axis
+     * @param index_lo, index_hi indexes
+     * @return either @p index_lo or @p index_hi, index which minimize |p - axis.at(index)|
+     */
+    static std::size_t nearest(double p, const MeshAxis& axis, std::size_t index_lo, std::size_t index_hi) {
+        return p - axis.at(index_lo) <= axis.at(index_hi) - p ? index_lo : index_hi;
     }
 
 public:
@@ -225,12 +243,6 @@ public:
                                      wrapped_point.c0, wrapped_point.c1));
     }
 
-private:
-    static std::size_t nearest(double p, const MeshAxis& axis, std::size_t index_lo, std::size_t index_hi) {
-        return p - axis.at(index_lo) <= axis.at(index_hi) - p ? index_lo : index_hi;
-    }
-
-public:
     /**
      * Calculate (using nearest neighbor interpolation) value of data in point using data in points described by this mesh.
      * @param data values of data in points describe by this mesh
