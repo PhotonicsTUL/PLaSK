@@ -61,7 +61,7 @@ public:
      * Derived must have set() method which returns <code>const CompressedSetOfNumbers<number_t>&</code>.
      * It may also have dereference() method which returnce @c Reference.
      */
-    template <typename Derived, class Value = number_t, class Reference = number_t>
+    template <typename Derived, class Value = number_t, class Reference = Value>
     class ConstIteratorFacade: public boost::iterator_facade<Derived, Value, boost::random_access_traversal_tag, Reference> {
 
         typedef typename std::vector<Segment>::const_iterator ConstSegmentIterator;

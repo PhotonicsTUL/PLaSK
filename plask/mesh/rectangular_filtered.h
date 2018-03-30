@@ -9,10 +9,17 @@
 
 namespace plask {
 
-template <int DIM>  // TODO this code is mostly for 2D only
-class RectangularFilteredMesh: public MeshD<DIM> {
+/**
+ * Common base class for RectangularFilteredMesh 2D and 3D.
+ *
+ * Do not use directly.
+ */
+template <int DIM>
+class RectangularFilteredMeshBase: public MeshD<DIM> {
 
-    const RectangularMesh<DIM>* rectangularMesh;    // TODO jaki wskaźnik? może kopia?
+protected:
+
+    const RectangularMesh<DIM>* rectangularMesh;
 
     typedef CompressedSetOfNumbers<std::uint32_t> Set;
 
@@ -22,31 +29,55 @@ class RectangularFilteredMesh: public MeshD<DIM> {
     /// numbers of enabled elements
     Set elements;
 
+    static void findIndexes(const MeshAxis& axis, double wrapped_point_coord, std::size_t& index_lo, std::size_t& index_hi) {
+        index_hi = axis.findUpIndex(wrapped_point_coord);
+        if (index_hi+1 == axis.size()) --index_hi;    // p.c0 == axis0->at(axis0->size()-1)
+        assert(index_hi > 0);
+        index_lo = index_hi - 1;
+    }
+
 public:
 
     using typename MeshD<DIM>::LocalCoords;
 
-    typedef std::function<bool(const typename RectangularMesh<DIM>::Element&)> Predicate;
+    /// Returned by some methods to signalize that element or node (with given index(es)) is not included in the mesh.
+    enum:std::size_t { NOT_INCLUDED = Set::NOT_INCLUDED };
 
-    struct Element {
+    RectangularFilteredMeshBase(const RectangularMesh<DIM>* rectangularMesh)
+        : rectangularMesh(rectangularMesh) {}
 
+    /**
+     * Iterator over nodes coordinates.
+     *
+     * Iterator of this type is faster than IndexedIterator used by parent class,
+     * as it has constant time dereference operation while at method has logarithmic time complexity.
+     *
+     * One can use:
+     * - getIndex() method of the iterator to get index of the node,
+     * - getNumber() method of the iterator to get index of the node in the wrapped mesh.
+     */
+    class const_iterator: public Set::ConstIteratorFacade<const_iterator, LocalCoords> {
+
+        const RectangularFilteredMeshBase* mesh;
+
+        LocalCoords dereference() const {
+            return mesh->at(this->getNumber());
+        }
+
+    public:
+
+        template <typename... CtorArgs>
+        explicit const_iterator(const RectangularFilteredMeshBase* mesh, CtorArgs&&... ctorArgs)
+            : mesh(&mesh), Set::ConstIteratorFacade<const_iterator, LocalCoords>(std::forward<CtorArgs>(ctorArgs)...) {}
+
+        const Set& set() const { return mesh->nodes; }
     };
 
-    RectangularFilteredMesh(const RectangularMesh<DIM>* rectangularMesh, const Predicate& predicate)
-        : rectangularMesh(rectangularMesh)
-    {
-        for (auto el_it = rectangularMesh->elements.begin(); el_it != rectangularMesh->elements.end(); ++el_it)
-            if (predicate(*el_it)) {
-                // TODO wersja 3D
-                elements.push_back(el_it.index);
-                nodes.insert(el_it->getLoLoIndex());
-                nodes.insert(el_it->getLoUpIndex());
-                nodes.insert(el_it->getUpLoIndex());
-                nodes.push_back(el_it->getUpUpIndex());
-            }
-        nodes.shrink_to_fit();
-        elements.shrink_to_fit();
-    }
+    /// Iterator over nodes coordinates. The same as const_iterator, since non-const iterators are not supported.
+    typedef const_iterator iterator;
+
+    const_iterator begin() const { return const_iterator(*this, 0, nodes.segments.begin()); }
+    const_iterator end() const { return const_iterator(*this, size(), nodes.segments.end()); }
 
     LocalCoords at(std::size_t index) const override {
         return rectangularMesh->at(nodes.at(index));
@@ -55,18 +86,6 @@ public:
     std::size_t size() const override { return nodes.size(); }
 
     bool empty() const override { return nodes.empty(); }
-
-    enum:std::size_t { NOT_INCLUDED = RectangularMesh<DIM>::NOT_INCLUDED };
-
-    /**
-     * Calculate this mesh index using indexes of axis0 and axis1.
-     * @param axis0_index index of axis0, from 0 to axis0->size()-1
-     * @param axis1_index index of axis1, from 0 to axis1->size()-1
-     * @return this mesh index, from 0 to size()-1, or NOT_INCLUDED
-     */
-    inline std::size_t index(std::size_t axis0_index, std::size_t axis1_index) const {
-        return nodes.indexOf(rectangularMesh->index(axis0_index, axis1_index));
-    }
 
     /**
      * Calculate index of axis0 using this mesh index.
@@ -104,6 +123,41 @@ public:
         return rectangularMesh->minorIndex(nodes.at(mesh_index));
     }
 
+};
+
+struct RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2> {
+
+    typedef std::function<bool(const typename RectangularMesh<2>::Element&)> Predicate;
+
+    struct Element {
+        // TODO
+    };
+
+    RectangularFilteredMesh2D(const RectangularMesh<2>* rectangularMesh, const Predicate& predicate)
+        : RectangularFilteredMeshBase(rectangularMesh)
+    {
+        for (auto el_it = rectangularMesh->elements.begin(); el_it != rectangularMesh->elements.end(); ++el_it)
+            if (predicate(*el_it)) {
+                elements.push_back(el_it.index);
+                nodes.insert(el_it->getLoLoIndex());
+                nodes.insert(el_it->getLoUpIndex());
+                nodes.insert(el_it->getUpLoIndex());
+                nodes.push_back(el_it->getUpUpIndex());
+            }
+        nodes.shrink_to_fit();
+        elements.shrink_to_fit();
+    }
+
+    /**
+     * Calculate this mesh index using indexes of axis0 and axis1.
+     * @param axis0_index index of axis0, from 0 to axis0->size()-1
+     * @param axis1_index index of axis1, from 0 to axis1->size()-1
+     * @return this mesh index, from 0 to size()-1, or NOT_INCLUDED
+     */
+    inline std::size_t index(std::size_t axis0_index, std::size_t axis1_index) const {
+        return nodes.indexOf(rectangularMesh->index(axis0_index, axis1_index));
+    }
+
     /**
      * Get point with given mesh indices.
      * @param index0 index of point in axis0
@@ -125,20 +179,13 @@ public:
     }
 
 private:
-    bool canBeIncluded(const Vec<2>& point) {
+    bool canBeIncluded(const Vec<2>& point) const {
         return
-            rectangularMesh->axis0->at(0) <= point[0] && point[0] <= rectangularMesh->axis0->at[rectangularMesh->axis0->size()-1] &&
-            rectangularMesh->axis1->at(0) <= point[1] && point[1] <= rectangularMesh->axis1->at[rectangularMesh-> axis1->size()-1];
+            rectangularMesh->axis0->at(0) <= point[0] && point[0] <= rectangularMesh->axis0->at(rectangularMesh->axis0->size()-1) &&
+            rectangularMesh->axis1->at(0) <= point[1] && point[1] <= rectangularMesh->axis1->at(rectangularMesh->axis1->size()-1);
     }
 
-    static void findIndexes(const MeshAxis& axis, double wrapped_point_coord, std::size_t& index_lo, std::size_t& index_hi) {
-        index_hi = axis.findUpIndex(wrapped_point_coord);
-        if (index_hi+1 == axis.size()) --index_hi;    // p.c0 == axis0->at(axis0->size()-1)
-        assert(index_hi > 0);
-        index_lo = index_hi - 1;
-    }
-
-    bool prepareInterpolation(const Vec<2>& point, Vec<2>& wrapped_point, std::size_t& index0_lo, std::size_t& index0_hi, std::size_t& index1_lo, std::size_t& index1_hi, std::size_t& rectmesh_index_lo, const InterpolationFlags& flags) {
+    bool prepareInterpolation(const Vec<2>& point, Vec<2>& wrapped_point, std::size_t& index0_lo, std::size_t& index0_hi, std::size_t& index1_lo, std::size_t& index1_hi, std::size_t& rectmesh_index_lo, const InterpolationFlags& flags) const {
         wrapped_point = flags.wrap(point);
 
         if (!canBeIncluded(wrapped_point)) return false;
