@@ -1,0 +1,19 @@
+# This is a YAML file for your solver specification. You must modify it accordingly to your
+# solver's configuration. For general information on YAML files, take a look at
+# https://learn.getgrav.org/advanced/yaml
+
+# If your library has more than one solver, make separate 'solver' element for each one of them:
+- solver: SimpleOpticalCyl2D
+  lib: simple_optical_template
+  category: optical
+  help: >
+    Scalar optical solver based on solve Helmholtz equation.
+
+  geometry: Geometry2DCylindrical
+  need mesh: false
+  
+  providers:
+   - outLightMagnitude
+
+
+

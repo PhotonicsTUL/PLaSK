@@ -35,15 +35,11 @@ const DataVector<double> SimpleOpticalTemplate<Geometry2DType>::getLightMagnitud
     
 }
 
-
-
-
-
 template<typename Geometry2DType> void SimpleOpticalTemplate<Geometry2DType>::onInvalidate() {
     nrCache.clear();
 }
 
-template<> std::string SimpleOpticalTemplate<Geometry2DCylindrical>::getClassName() const { return "simple_optical_template.SimpleOpticalCyl2D"; }
+template<> std::string SimpleOpticalTemplate<Geometry2DCylindrical>::getClassName() const { return "SimpleOpticalCyl2D"; }
   
 template struct PLASK_SOLVER_API SimpleOpticalTemplate<Geometry2DCylindrical>;
 
