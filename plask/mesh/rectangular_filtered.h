@@ -11,7 +11,7 @@ struct RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2> {
 
     class Element {
 
-        RectangularFilteredMesh2D& filteredMesh;
+        const RectangularFilteredMesh2D& filteredMesh;
 
         //std::uint32_t elementNumber;    ///< index of element in oryginal mesh
         std::size_t index0, index1; // probably this form allows to do most operation fastest in average, low indexes of element corner or just element indexes
@@ -19,7 +19,32 @@ struct RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2> {
         const RectangularMesh<2>& rectangularMesh() const { return *filteredMesh.rectangularMesh; }
 
     public:
-        // TODO
+
+        Element(const RectangularFilteredMesh2D& filteredMesh, std::size_t elementIndexOfFullMesh)
+            : filteredMesh(filteredMesh)
+        {
+            const std::size_t v = rectangularMesh().getElementMeshLowIndex(elementIndexOfFullMesh);
+            index0 = rectangularMesh().index0(v);
+            index1 = rectangularMesh().index1(v);
+        }
+
+        /// \return tran index of the element
+        inline std::size_t getIndex0() const { return index0; }
+
+        /// \return vert index of the element
+        inline std::size_t getIndex1() const { return index1; }
+
+        /// \return tran index of the left edge of the element
+        inline std::size_t getLowerIndex0() const { return index0; }
+
+        /// \return vert index of the bottom edge of the element
+        inline std::size_t getLowerIndex1() const { return index1; }
+
+        /// \return tran coordinate of the left edge of the element
+        inline double getLower0() const { return rectangularMesh().axis0->at(index0); }
+
+        /// \return vert coordinate of the bottom edge of the element
+        inline double getLower1() const { return rectangularMesh().axis1->at(index1); }
     };
 
     RectangularFilteredMesh2D(const RectangularMesh<2>* rectangularMesh, const Predicate& predicate)
