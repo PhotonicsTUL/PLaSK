@@ -17,7 +17,6 @@ from ...qt.QtGui import *
 from ..defines import get_defines_completer
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
 from ...lib.highlighter.xml import syntax
-from ...utils.config import CONFIG
 from ...utils.str import empty_to_none
 from ...utils.texteditor import TextEditorWithCB
 from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, ComboBox, MultiLineEdit
@@ -52,9 +51,9 @@ def set_attr_list(model, group, attr, values):
     for k in list(data.keys()):
         if k[:skip] == attr and k[-1].isdigit(): del data[k]
 
-    for i,value in enumerate(values):
+    for i, value in enumerate(values):
         if value != '':
-            data[attr+str(i)] = value
+            data[attr + str(i)] = value
 
 
 def set_conflict(widget, conflict):
@@ -80,11 +79,13 @@ class SolverWidget(VerticalScrollArea):
 
     def _change_attr(self, group, name, value, attr=None):
         node = self.controller.solver_model
+
         def set_solver_attr(value):
             if name is None:
                 node.data[group] = value
             else:
                 node.data[group][name] = value
+
         model = self.controller.section_model
         old_value = node.data[group] if name is None else node.data[group][name]
         value = empty_to_none(value)
@@ -96,8 +97,10 @@ class SolverWidget(VerticalScrollArea):
 
     def _change_multi_attr(self, group, name, values, attr=None):
         node = self.controller.solver_model
+
         def set_solver_attr(vals):
             set_attr_list(node, group, name, vals)
+
         model = self.controller.section_model
         old_values = get_attr_list(node, group, name)
         if values != old_values:
@@ -108,8 +111,10 @@ class SolverWidget(VerticalScrollArea):
 
     def _change_node_field(self, field_name, value):
         node = self.controller.solver_model
+
         def set_solver_field(value):
             setattr(node, field_name, value)
+
         model = self.controller.section_model
         old_value = getattr(node, field_name)
         value = empty_to_none(value)
@@ -120,9 +125,11 @@ class SolverWidget(VerticalScrollArea):
 
     def _change_boundary_condition(self, schema, data):
         node = self.controller.solver_model
+
         def set_value(value):
             node.data[schema.name] = value
             self.controls[schema.name].setText("     View / Edit  ({})".format(len(value)))
+
         model = self.controller.section_model
         old_data = node.data[schema.name]
         if data != old_data:
@@ -148,7 +155,7 @@ class SolverWidget(VerticalScrollArea):
             edit.setEditable(True)
             edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name:
                                          self._change_attr(group, name, edit.currentText()))
-            edit.setCompleter(defines)
+            edit.setCompleter(get_defines_completer(defines, edit))
             if attr.default is not None:
                 edit.lineEdit().setPlaceholderText(attr.default)
         else:
@@ -226,10 +233,10 @@ class SolverWidget(VerticalScrollArea):
             self.geometry.setEditable(True)
             self.geometry.editingFinished.connect(
                 lambda w=self.geometry: self._change_node_field('geometry', w.currentText()))
-            self.geometry.setCompleter(defines)
+            self.geometry.setCompleter(get_defines_completer(defines, self.geometry))
             self.geometry.setToolTip(u'&lt;<b>geometry ref</b>=""&gt;<br/>'
                                      u'Name of the existing geometry for use by this solver.')
-            #TODO add some graphical thumbnail
+            # TODO add some graphical thumbnail
             self._add_row("Geometry", self.geometry, rows)
         else:
             self.geometry = None
@@ -238,11 +245,11 @@ class SolverWidget(VerticalScrollArea):
             self.mesh = ComboBox()
             self.mesh.setEditable(True)
             self.mesh.editingFinished.connect(lambda w=self.mesh: self._change_node_field('mesh', w.currentText()))
-            self.mesh.setCompleter(defines)
+            self.mesh.setCompleter(get_defines_completer(defines, self.geometry))
             self.mesh.setToolTip(u'&lt;<b>mesh ref</b>=""&gt;<br/>'
                                  u'Name of the existing {} mesh for use by this solver.'
                                  .format(' or '.join(controller.model.mesh_types)))
-            #TODO add some graphical thumbnail
+            # TODO add some graphical thumbnail
             self._add_row("Mesh", self.mesh, rows)
         else:
             self.mesh = None
@@ -285,14 +292,14 @@ class SolverWidget(VerticalScrollArea):
             else:
                 edit = TextEditorWithCB(parent=parent, line_numbers=False)
                 font = QFont(EDITOR_FONT)
-                font.setPointSize(font.pointSize()-1)
+                font.setPointSize(font.pointSize() - 1)
                 edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, SCHEME),
                                                      default_font=font)
                 edit.setToolTip(u'&lt;<b>{0}</b>&gt;...&lt;/<b>{0}</b>&gt;<br/>{1}'.format(gname, schema.label))
                 self.controls[group] = edit
                 rows.append(edit)
                 self.form_layout.addRow(edit)
-                #edit.textChanged.connect(self.controller.fire_changed)
+                # edit.textChanged.connect(self.controller.fire_changed)
                 edit.focus_out_cb = lambda edit=edit, group=group: self._change_attr(group, None, edit.toPlainText())
 
         main.setLayout(self.form_layout)
@@ -309,6 +316,12 @@ class SolverWidget(VerticalScrollArea):
                              if m.name and m.type == mesh_type)
         return grids
 
+    @staticmethod
+    def _set_items(edit, strings):
+        edit.clear()
+        edit.addItems([''] + strings)
+        edit.completer().model().strings = strings
+
     def load_data(self):
         model = self.controller.model
         if self.geometry is not None:
@@ -320,8 +333,7 @@ class SolverWidget(VerticalScrollArea):
                 except AttributeError:
                     pass
                 else:
-                    self.geometry.clear()
-                    self.geometry.addItems([''] + geometries)
+                    self._set_items(self.geometry, geometries)
                 self.geometry.setCurrentIndex(self.geometry.findText(model.geometry))
                 self.geometry.setEditText(model.geometry)
         if self.mesh is not None:
@@ -332,8 +344,7 @@ class SolverWidget(VerticalScrollArea):
                     pass
                 else:
                     if self.mesh is not None:
-                        self.mesh.clear()
-                        self.mesh.addItems([''] + grids)
+                        self._set_items(self.mesh, grids)
                 self.mesh.setCurrentIndex(self.mesh.findText(model.mesh))
                 self.mesh.setEditText(model.mesh)
         for edit in self.controls.values():
@@ -352,29 +363,25 @@ class SolverWidget(VerticalScrollArea):
                             value = model.data[group][attr]
                             if isinstance(item, AttrGeometry):
                                 try:
-                                    edit.clear()
-                                    geometries = [g.name for g in getattr(self.controller.document.geometry.model,
-                                                                          "roots_" + item.type)
-                                                  if g.name]
-                                    edit.addItems([''] + geometries)
+                                    self._set_items(edit,
+                                                    [g.name for g in getattr(self.controller.document.geometry.model,
+                                                                             "roots_" + item.type)
+                                                     if g.name])
                                 except AttributeError:
                                     pass
                             elif isinstance(item, AttrGeometryObject):
                                 try:
-                                    edit.clear()
-                                    edit.addItems([''] + list(self.controller.document.geometry.model.names()))
+                                    self._set_items(edit, list(self.controller.document.geometry.model.names()))
                                 except AttributeError:
                                     pass
                             elif isinstance(item, AttrGeometryPath):
                                 try:
-                                    edit.clear()
-                                    edit.addItems([''] + list(self.controller.document.geometry.model.paths()))
+                                    self._set_items(edit, list(self.controller.document.geometry.model.paths()))
                                 except AttributeError:
                                     pass
                             elif isinstance(item, AttrMesh):
                                 try:
-                                    edit.clear()
-                                    edit.addItems([''] + list(self._get_grids(item.types)))
+                                    self._set_items(edit, list(self._get_grids(item.types)))
                                 except AttributeError:
                                     pass
                             if type(edit) in (ComboBox, QComboBox):
@@ -395,7 +402,7 @@ class SolverWidget(VerticalScrollArea):
                 with BlockQtSignals(edit):
                     edit.setPlainText(model.data[group])
 
-    def edit_boundary_conditions(self,  schema):
+    def edit_boundary_conditions(self, schema):
         data = deepcopy(self.controller.model.data[schema.name])
         dialog = BoundaryConditionsDialog(self.controller, schema, data)
         result = dialog.exec_()
@@ -409,6 +416,7 @@ class SchemaSolverController(Controller):
         :param document:
         :param model: model of solver to configure TODO should be section model?
     """
+
     def __init__(self, document, model):
         super(SchemaSolverController, self).__init__(document, model)
         try:
@@ -450,4 +458,3 @@ class SchemaSolverController(Controller):
             self.widget.mesh.setFocus()
         elif isinstance(info.what, tuple) and info.what in self.widget.controls:
             self.widget.controls[info.what].setFocus()
-
