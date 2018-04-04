@@ -39,8 +39,10 @@ template<typename Geometry2DType> void SimpleOpticalTemplate<Geometry2DType>::on
     nrCache.clear();
 }
 
-template<> std::string SimpleOpticalTemplate<Geometry2DCylindrical>::getClassName() const { return "SimpleOpticalCyl2D"; }
-  
+template<> std::string SimpleOpticalTemplate<Geometry2DCylindrical>::getClassName() const { return "optical.SimpleOpticalCyl2D"; }
+template<> std::string SimpleOpticalTemplate<Geometry2DCartesian>::getClassName() const { return "optical.SimpleOpticalCar2D"; }
+
 template struct PLASK_SOLVER_API SimpleOpticalTemplate<Geometry2DCylindrical>;
+template struct PLASK_SOLVER_API SimpleOpticalTemplate<Geometry2DCartesian>;
 
 }}}

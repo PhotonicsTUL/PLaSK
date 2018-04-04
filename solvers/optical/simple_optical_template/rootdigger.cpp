@@ -3,7 +3,7 @@
 #include "broyden.h"
 #include "brent.h"
 
-namespace plask { namespace optical { namespace simple_optical {
+namespace plask { namespace optical { namespace simple_optical_template {
 
 std::unique_ptr<RootDigger> RootDigger::get(Solver* solver, const function_type& func, Data2DLog<dcomplex,dcomplex>& detlog, const Params& params) {
     typedef std::unique_ptr<RootDigger> Res;
@@ -31,4 +31,4 @@ void RootDigger::readRootDiggerConfig(XMLReader& reader, Params& params) {
     reader.requireTagEnd();
 }
 
-}}} // namespace plask::optical::simple_optical
+}}} 

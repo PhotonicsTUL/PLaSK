@@ -13,6 +13,7 @@ struct PLASK_SOLVER_API SimpleOpticalTemplate: public SolverOver<Geometry2DType>
 {
         
     SimpleOpticalTemplate(const std::string& name="");
+    //~SimpleOpticalTemplate();
     
     struct Matrix {
          dcomplex ff, fb, bf, bb;

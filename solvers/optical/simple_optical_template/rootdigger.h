@@ -1,10 +1,10 @@
-#ifndef PLASK__OPTICAL_SIMPLE_OPTICAL_ROOTDIGGER_H
-#define PLASK__OPTICAL_SIMPLE_OPTICAL_ROOTDIGGER_H
+#ifndef PLASK__OPTICAL_SIMPLE_OPTICAL_TEMPLATE_ROOTDIGGER_H
+#define PLASK__OPTICAL_SIMPLE_OPTICAL_TEMPLATE_ROOTDIGGER_H
 
 #include <functional>
 #include <plask/plask.hpp>
 
-namespace plask { namespace optical { namespace simple_optical {
+namespace plask { namespace optical { namespace simple_optical_template {
 
 struct RootDigger {
 
@@ -85,6 +85,6 @@ struct RootDigger {
     static void readRootDiggerConfig(XMLReader& reader, Params& params);
 };
 
-}}} // namespace plask::optical::simple_optical
+}}} 
 
-#endif // PLASK__OPTICAL_SIMPLE_OPTICAL_ROOTDIGGER_H
+#endif 
