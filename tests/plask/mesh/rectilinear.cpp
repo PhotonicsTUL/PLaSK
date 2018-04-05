@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(elements) {
     auto mesh = generator.get<plask::RectangularMesh<2>>(stack);
 
     size_t n = 0;
-    for (auto elem = mesh->elements.begin(); elem != mesh->elements.end(); ++elem, ++n) {
+    for (auto elem = mesh->elements().begin(); elem != mesh->elements().end(); ++elem, ++n) {
         BOOST_CHECK_EQUAL(elem->getIndex(), n);
         BOOST_CHECK_EQUAL(elem->getLoLoIndex(), 2*n);
         BOOST_CHECK_EQUAL(elem->getUpLoIndex(), 2*n+1);

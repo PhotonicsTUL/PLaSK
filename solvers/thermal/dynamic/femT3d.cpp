@@ -68,9 +68,9 @@ void FiniteElementMethodDynamicThermal3DSolver::onInitialize() {
     size = this->mesh->size();
     temperatures.reset(size, inittemp);
 
-    thickness.reset(this->mesh->elements.size(), NAN);
+    thickness.reset(this->mesh->getElementsCount(), NAN);
     // Set stiffness matrix and load vector
-    for (auto elem: this->mesh->elements)
+    for (auto elem: this->mesh->elements())
     {
         if (!isnan(thickness[elem.getIndex()])) continue;
         auto material = this->geometry->getMaterial(elem.getMidpoint());
@@ -78,7 +78,7 @@ void FiniteElementMethodDynamicThermal3DSolver::onInitialize() {
         size_t row = elem.getIndex2();
         size_t itop = row+1, ibottom = row;
         for (size_t r = row; r > 0; r--) {
-            auto e = this->mesh->elements(elem.getIndex0(), elem.getIndex1(), r-1);
+            auto e = this->mesh->element(elem.getIndex0(), elem.getIndex1(), r-1);
             auto m = this->geometry->getMaterial(e.getMidpoint());
             if (m == material) {                            //TODO ignore doping
                 bottom = e.getLower2();
@@ -87,7 +87,7 @@ void FiniteElementMethodDynamicThermal3DSolver::onInitialize() {
             else break;
         }
         for (size_t r = elem.getIndex1()+1; r < this->mesh->axis1->size()-1; r++) {
-            auto e = this->mesh->elements(elem.getIndex0(), elem.getIndex1(), r);
+            auto e = this->mesh->element(elem.getIndex0(), elem.getIndex1(), r);
             auto m = this->geometry->getMaterial(e.getMidpoint());
             if (m == material) {                            //TODO ignore doping
                 top = e.getUpper2();
@@ -97,7 +97,7 @@ void FiniteElementMethodDynamicThermal3DSolver::onInitialize() {
         }
         double h = top - bottom;
         for (size_t r = ibottom; r != itop; ++r)
-            thickness[this->mesh->elements(elem.getIndex0(), elem.getIndex1(), r).getIndex()] = h;
+            thickness[this->mesh->element(elem.getIndex0(), elem.getIndex1(), r).getIndex()] = h;
     }
 }
 
@@ -123,7 +123,7 @@ void FiniteElementMethodDynamicThermal3DSolver::setMatrix(MatrixT& A, MatrixT& B
     F.fill(0.);
 
     // Set stiffness matrix and load vector
-    for (auto elem: this->mesh->elements)
+    for (auto elem: this->mesh->elements())
     {
         // nodes numbers for the current element
         size_t idx[8];
@@ -368,9 +368,9 @@ void FiniteElementMethodDynamicThermal3DSolver::saveHeatFluxes()
 {
     this->writelog(LOG_DETAIL, "Computing heat fluxes");
 
-    mHeatFluxes.reset(this->mesh->elements.size());
+    mHeatFluxes.reset(this->mesh->getElementsCount());
 
-    for (auto el: this->mesh->elements)
+    for (auto el: this->mesh->elements())
     {
         Vec<3,double> midpoint = el.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
@@ -432,7 +432,7 @@ ThermalConductivityData::ThermalConductivityData(const FiniteElementMethodDynami
     solver(solver), dest_mesh(dst_mesh), flags(solver->geometry)
 {
     if (solver->temperatures) temps = interpolate(solver->mesh, solver->temperatures, solver->mesh->getMidpointsMesh(), INTERPOLATION_LINEAR);
-    else temps = LazyData<double>(solver->mesh->elements.size(), solver->inittemp);
+    else temps = LazyData<double>(solver->mesh->getElementsCount(), solver->inittemp);
 }
 Tensor2<double> FiniteElementMethodDynamicThermal3DSolver::ThermalConductivityData::at(std::size_t i) const {
     auto point = flags.wrap(dest_mesh->at(i));
@@ -442,7 +442,7 @@ Tensor2<double> FiniteElementMethodDynamicThermal3DSolver::ThermalConductivityDa
     if (x == 0 || y == 0 || z == 0 || x == solver->mesh->axis0->size() || y == solver->mesh->axis1->size() || z == solver->mesh->axis2->size())
         return Tensor2<double>(NAN);
     else {
-        auto elem = solver->mesh->elements(x-1, y-1, z-1);
+        auto elem = solver->mesh->element(x-1, y-1, z-1);
         auto material = solver->geometry->getMaterial(elem.getMidpoint());
         size_t idx = elem.getIndex();
         return material->thermk(temps[idx], solver->thickness[idx]);

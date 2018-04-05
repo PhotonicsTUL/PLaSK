@@ -198,8 +198,8 @@ void FiniteElementMethodElectrical3DSolver::onInitialize() {
     if (!mesh) throw NoMeshException(getId());
     loopno = 0;
     potential.reset(mesh->size(), 0.);
-    current.reset(this->mesh->elements.size(), vec(0.,0.,0.));
-    conds.reset(this->mesh->elements.size());
+    current.reset(this->mesh->getElementsCount(), vec(0.,0.,0.));
+    conds.reset(this->mesh->getElementsCount());
     if (junction_conductivity.size() == 1) {
         size_t condsize = 0;
         for (const auto& act: active) condsize += (act.right-act.left)*act.ld;
@@ -223,7 +223,7 @@ void FiniteElementMethodElectrical3DSolver::loadConductivity()
     auto midmesh = (this->mesh)->getMidpointsMesh();
     auto temperature = inTemperature(midmesh);
 
-    for (auto e: this->mesh->elements)
+    for (auto e: this->mesh->elements())
     {
         size_t i = e.getIndex();
         Vec<3,double> midpoint = e.getMidpoint();
@@ -250,7 +250,7 @@ void FiniteElementMethodElectrical3DSolver::saveConductivity()
         for (size_t t = act.left; t != act.right; ++t) {
             size_t offset = act.offset + act.ld * t;
             for (size_t l = act.back; l != act.front; ++l)
-                junction_conductivity[offset + l] = conds[this->mesh->elements(l, t, v).getIndex()].c11;
+                junction_conductivity[offset + l] = conds[this->mesh->element(l, t, v).getIndex()].c11;
         }
     }
 }
@@ -264,7 +264,7 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
 
     // Update junction conductivities
     if (loopno != 0) {
-        for (auto elem: mesh->elements) {
+        for (auto elem: mesh->elements()) {
             if (size_t nact = isActive(elem)) {
                 size_t index = elem.getIndex(), lll = elem.getLoLoLoIndex(), uuu = elem.getUpUpUpIndex();
                 size_t back = mesh->index0(lll),
@@ -291,7 +291,7 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
     B.fill(0.);
 
     // Set stiffness matrix and load vector
-    for (auto elem: mesh->elements) {
+    for (auto elem: mesh->elements()) {
 
         size_t index = elem.getIndex();
 
@@ -446,7 +446,7 @@ double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
 
         err = 0.;
         double mcur = 0.;
-        for (auto el: mesh->elements) {
+        for (auto el: mesh->elements()) {
             size_t i = el.getIndex();
             size_t lll = el.getLoLoLoIndex();
             size_t llu = el.getLoLoUpIndex();
@@ -578,10 +578,10 @@ void FiniteElementMethodElectrical3DSolver::saveHeatDensity()
 {
     this->writelog(LOG_DETAIL, "Computing heat densities");
 
-    heat.reset(mesh->elements.size());
+    heat.reset(mesh->getElementsCount());
 
     if (heatmet == HEAT_JOULES) {
-        for (auto el: mesh->elements) {
+        for (auto el: mesh->elements()) {
             size_t i = el.getIndex();
             size_t lll = el.getLoLoLoIndex();
             size_t llu = el.getLoLoUpIndex();
@@ -608,7 +608,7 @@ void FiniteElementMethodElectrical3DSolver::saveHeatDensity()
             }
         }
     } else {
-        for (auto el: mesh->elements) {
+        for (auto el: mesh->elements()) {
             size_t i = el.getIndex();
             size_t lll = el.getLoLoLoIndex();
             size_t llu = el.getLoLoUpIndex();
@@ -650,7 +650,7 @@ double FiniteElementMethodElectrical3DSolver::integrateCurrent(size_t vindex, bo
     double result = 0.;
     for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
         for (size_t j = 0; j < mesh->axis1->size()-1; ++j) {
-            auto element = mesh->elements(i, j, vindex);
+            auto element = mesh->element(i, j, vindex);
             if (!onlyactive || isActive(element.getMidpoint()))
                 result += current[element.getIndex()].c2 * element.getSize0() * element.getSize1();
         }
@@ -721,7 +721,7 @@ const LazyData<Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConduc
             if (x == 0 || y == 0 || z == 0 || x == this->mesh->axis0->size() || y == this->mesh->axis1->size() || z == this->mesh->axis2->size())
                 return Tensor2<double>(NAN);
             else
-                return conds[this->mesh->elements(x-1, y-1, z-1).getIndex()];
+                return conds[this->mesh->element(x-1, y-1, z-1).getIndex()];
         }
     );
 }
@@ -729,7 +729,7 @@ const LazyData<Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConduc
 double FiniteElementMethodElectrical3DSolver::getTotalEnergy() {
     double W = 0.;
     auto T = inTemperature(this->mesh->getMidpointsMesh());
-    for (auto el: this->mesh->elements) {
+    for (auto el: this->mesh->elements()) {
             size_t lll = el.getLoLoLoIndex();
             size_t llu = el.getLoLoUpIndex();
             size_t lul = el.getLoUpLoIndex();
@@ -773,7 +773,7 @@ double FiniteElementMethodElectrical3DSolver::getCapacitance() {
 double FiniteElementMethodElectrical3DSolver::getTotalHeat() {
     double W = 0.;
     if (!heat) saveHeatDensity(); // we will compute heats only if they are needed
-    for (auto el: this->mesh->elements) {
+    for (auto el: this->mesh->elements()) {
         double d0 = el.getUpper0() - el.getLower0();
         double d1 = el.getUpper1() - el.getLower1();
         double d2 = el.getUpper2() - el.getLower2();

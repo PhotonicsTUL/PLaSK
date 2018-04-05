@@ -77,9 +77,9 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::onInitialize() {
     size = this->mesh->size();
     temperatures.reset(size, inittemp);
 
-    thickness.reset(this->mesh->elements.size(), NAN);
+    thickness.reset(this->mesh->getElementsCount(), NAN);
     // Set stiffness matrix and load vector
-    for (auto elem: this->mesh->elements)
+    for (auto elem: this->mesh->elements())
     {
         if (!isnan(thickness[elem.getIndex()])) continue;
         auto material = this->geometry->getMaterial(elem.getMidpoint());
@@ -88,7 +88,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::onInitialize() {
         size_t itop = row+1, ibottom = row;
         size_t c = elem.getIndex0();
         for (size_t r = row; r > 0; r--) {
-            auto e = this->mesh->elements(c, r-1);
+            auto e = this->mesh->element(c, r-1);
             auto m = this->geometry->getMaterial(e.getMidpoint());
             if (m == material) {                            //TODO ignore doping
                 bottom = e.getLower1();
@@ -96,7 +96,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::onInitialize() {
             } else break;
         }
         for (size_t r = elem.getIndex1()+1; r < this->mesh->axis1->size()-1; r++) {
-            auto e = this->mesh->elements(c, r);
+            auto e = this->mesh->element(c, r);
             auto m = this->geometry->getMaterial(e.getMidpoint());
             if (m == material) {                            //TODO ignore doping
                 top = e.getUpper1();
@@ -105,7 +105,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::onInitialize() {
         }
         double h = top - bottom;
         for (size_t r = ibottom; r != itop; ++r)
-            thickness[this->mesh->elements(c, r).getIndex()] = h;
+            thickness[this->mesh->element(c, r).getIndex()] = h;
     }
 }
 
@@ -186,7 +186,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(MatrixT&
     B.fill(0.);
 
     // Set stiffness matrix and load vector
-    for (auto elem: this->mesh->elements)
+    for (auto elem: this->mesh->elements())
     {
         // nodes numbers for the current element
         size_t loleftno = elem.getLoLoIndex();
@@ -311,7 +311,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(Matrix
     B.fill(0.);
 
     // Set stiffness matrix and load vector
-    for (auto elem: this->mesh->elements)
+    for (auto elem: this->mesh->elements())
     {
         // nodes numbers for the current element
         size_t loleftno = elem.getLoLoIndex();
@@ -586,9 +586,9 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::saveHeatFluxes()
 {
     this->writelog(LOG_DETAIL, "Computing heat fluxes");
 
-    mHeatFluxes.reset(this->mesh->elements.size());
+    mHeatFluxes.reset(this->mesh->getElementsCount());
 
-    for (auto e: this->mesh->elements)
+    for (auto e: this->mesh->elements())
     {
         Vec<2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
@@ -645,7 +645,7 @@ ThermalConductivityData::ThermalConductivityData(const FiniteElementMethodTherma
     solver(solver), dest_mesh(dst_mesh), flags(solver->geometry)
 {
     if (solver->temperatures) temps = interpolate(solver->mesh, solver->temperatures, solver->mesh->getMidpointsMesh(), INTERPOLATION_LINEAR);
-    else temps = LazyData<double>(solver->mesh->elements.size(), solver->inittemp);
+    else temps = LazyData<double>(solver->mesh->getElementsCount(), solver->inittemp);
 }
 
 template<typename Geometry2DType> Tensor2<double> FiniteElementMethodThermal2DSolver<Geometry2DType>::
@@ -656,7 +656,7 @@ ThermalConductivityData::at(std::size_t i) const {
     if (x == 0 || y == 0 || x == solver->mesh->axis0->size() || y == solver->mesh->axis1->size())
         return Tensor2<double>(NAN);
     else {
-        auto elem = solver->mesh->elements(x-1, y-1);
+        auto elem = solver->mesh->element(x-1, y-1);
         auto material = solver->geometry->getMaterial(elem.getMidpoint());
         size_t idx = elem.getIndex();
         return material->thermk(temps[idx], solver->thickness[idx]);

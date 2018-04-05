@@ -186,8 +186,8 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::onInitialize()
     loopno = 0;
     size = this->mesh->size();
     potentials.reset(size, 0.);
-    currents.reset(this->mesh->elements.size(), vec(0.,0.));
-    conds.reset(this->mesh->elements.size());
+    currents.reset(this->mesh->getElementsCount(), vec(0.,0.));
+    conds.reset(this->mesh->getElementsCount());
     if (junction_conductivity.size() == 1) {
         size_t condsize = 0;
         for (const auto& act: active) condsize += act.right - act.left;
@@ -293,7 +293,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A
 
     // Update junction conductivities
     if (loopno != 0) {
-        for (auto e: this->mesh->elements) {
+        for (auto e: this->mesh->elements()) {
             if (size_t nact = isActive(e)) {
                 size_t i = e.getIndex();
                 size_t left = this->mesh->index0(e.getLoLoIndex());
@@ -313,7 +313,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A
     B.fill(0.);
 
     // Set stiffness matrix and load vector
-    for (auto e: this->mesh->elements) {
+    for (auto e: this->mesh->elements()) {
 
         size_t i = e.getIndex();
 
@@ -379,7 +379,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConductivities()
     auto midmesh = (this->mesh)->getMidpointsMesh();
     auto temperature = inTemperature(midmesh);
 
-    for (auto e: this->mesh->elements)
+    for (auto e: this->mesh->elements())
     {
         size_t i = e.getIndex();
         Vec<2,double> midpoint = e.getMidpoint();
@@ -404,7 +404,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveConductivities()
     for (size_t n = 0; n < active.size(); ++n) {
         const auto& act = active[n];
         for (size_t i = act.left, r = (act.top + act.bottom)/2; i != act.right; ++i)
-            junction_conductivity[act.offset + i] = conds[this->mesh->elements(i,r).getIndex()].c11;
+            junction_conductivity[act.offset + i] = conds[this->mesh->element(i,r).getIndex()].c11;
     }
 }
 
@@ -457,7 +457,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
 
         err = 0.;
         double mcur = 0.;
-        for (auto el: this->mesh->elements) {
+        for (auto el: this->mesh->elements()) {
             size_t i = el.getIndex();
             size_t loleftno = el.getLoLoIndex();
             size_t lorghtno = el.getUpLoIndex();
@@ -570,10 +570,10 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveHeatDensities()
 {
     this->writelog(LOG_DETAIL, "Computing heat densities");
 
-    heats.reset(this->mesh->elements.size());
+    heats.reset(this->mesh->getElementsCount());
 
     if (heatmet == HEAT_JOULES) {
-        for (auto e: this->mesh->elements) {
+        for (auto e: this->mesh->elements()) {
             size_t i = e.getIndex();
             size_t loleftno = e.getLoLoIndex();
             size_t lorghtno = e.getUpLoIndex();
@@ -591,7 +591,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveHeatDensities()
             }
         }
     } else {
-        for (auto e: this->mesh->elements) {
+        for (auto e: this->mesh->elements()) {
             size_t i = e.getIndex();
             size_t loleftno = e.getLoLoIndex();
             size_t lorghtno = e.getUpLoIndex();
@@ -622,7 +622,7 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::in
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
-        auto element = mesh->elements(i, vindex);
+        auto element = mesh->element(i, vindex);
         if (!onlyactive || isActive(element.getMidpoint()))
             result += currents[element.getIndex()].c1 * element.getSize0();
     }
@@ -637,7 +637,7 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
-        auto element = mesh->elements(i, vindex);
+        auto element = mesh->element(i, vindex);
         if (!onlyactive || isActive(element.getMidpoint())) {
             double rin = element.getLower0(), rout = element.getUpper0();
             result += currents[element.getIndex()].c1 * (rout*rout - rin*rin);
@@ -715,7 +715,7 @@ const LazyData<Tensor2<double>> FiniteElementMethodElectrical2DSolver<Geometry2D
             if (x == 0 || y == 0 || x == this->mesh->axis0->size() || y == this->mesh->axis1->size())
                 return Tensor2<double>(NAN);
             else
-                return this->conds[this->mesh->elements(x-1, y-1).getIndex()];
+                return this->conds[this->mesh->element(x-1, y-1).getIndex()];
         }
     ));
 }
@@ -725,7 +725,7 @@ template <>
 double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getTotalEnergy() {
     double W = 0.;
     auto T = inTemperature(this->mesh->getMidpointsMesh());
-    for (auto e: this->mesh->elements) {
+    for (auto e: this->mesh->elements()) {
         size_t ll = e.getLoLoIndex();
         size_t lu = e.getUpLoIndex();
         size_t ul = e.getLoUpIndex();
@@ -747,7 +747,7 @@ template <>
 double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getTotalEnergy() {
     double W = 0.;
     auto T = inTemperature(this->mesh->getMidpointsMesh());
-    for (auto e: this->mesh->elements) {
+    for (auto e: this->mesh->elements()) {
         size_t ll = e.getLoLoIndex();
         size_t lu = e.getUpLoIndex();
         size_t ul = e.getLoUpIndex();
@@ -784,7 +784,7 @@ template <>
 double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getTotalHeat() {
     double W = 0.;
     if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
-    for (auto e: this->mesh->elements) {
+    for (auto e: this->mesh->elements()) {
         double width = e.getUpper0() - e.getLower0();
         double height = e.getUpper1() - e.getLower1();
         W += width * height * heats[e.getIndex()];
@@ -796,7 +796,7 @@ template <>
 double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getTotalHeat() {
     double W = 0.;
     if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
-    for (auto e: this->mesh->elements) {
+    for (auto e: this->mesh->elements()) {
         double width = e.getUpper0() - e.getLower0();
         double height = e.getUpper1() - e.getLower1();
         double r = e.getMidpoint().rad_r();

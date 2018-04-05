@@ -282,7 +282,7 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
         inline Vec<2, double> getMidpoint() const { return mesh.getElementMidpoint(index0, index1); }
 
         /// @return index of this element
-        inline std::size_t getIndex() const { return mesh.getElementIndexFromLowIndex(getLoLoIndex()); }
+        inline std::size_t getIndex() const { return mesh.getElementIndexFromLowIndexes(getLowerIndex0(), getLowerIndex1()); }
 
         /// \return this element as rectangular box
         inline Box2D toBox() const { return mesh.getElementBox(index0, index1); }
@@ -371,7 +371,25 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     const shared_ptr<MeshAxis> axis1;
 
     /// Accessor to FEM-like elements.
-    const Elements elements;
+    Elements elements() const { return Elements(this); }
+    Elements getElements() const { return elements(); }
+
+    Element element(std::size_t i0, std::size_t i1) const { return Element(*this, i0, i1); }
+    Element getElement(std::size_t i0, std::size_t i1) const { return element(i0, i1); }
+
+    /**
+     * Get an element with a given index @p i.
+     * @param i index of the element
+     * @return the element
+     */
+    Element element(std::size_t i) const { return Element(*this, i); }
+
+    /**
+     * Get an element with a given index @p i.
+     * @param i index of the element
+     * @return the element
+     */
+    Element getElement(std::size_t i) const { return element(i); }
 
     /**
      * Iteration orders:
@@ -707,8 +725,6 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
      */
     std::size_t getElementsCount1() const {
         return (axis1->size() != 0)? axis1->size() : 0;
-
-
     }
 
     /**
@@ -721,26 +737,26 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     }
 
     /**
-     * Convert mesh index of bottom left element corner to this element index.
+     * Convert mesh index of bottom left element corner to index of this element.
      * @param mesh_index_of_el_bottom_left mesh index
-     * @return index of element, from 0 to getElementsCount()-1
+     * @return index of the element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndex(std::size_t mesh_index_of_el_bottom_left) const {
         return mesh_index_of_el_bottom_left - mesh_index_of_el_bottom_left / (*minor_axis)->size();
     }
 
     /**
-     * Convert mesh indexes of bottom and left element corner to this element index.
-     * @param axis0_index index of axis0 (left), from 0 to axis0->size()-1
-     * @param axis1_index index of axis1 (bottom), from 0 to axis1->size()-1
-     * @return index of element, from 0 to getElementsCount()-1
+     * Convert mesh indexes of a bottom-left corner of an element to the index of this element.
+     * @param axis0_index index of the corner along the axis0 (left), from 0 to axis0->size()-1
+     * @param axis1_index index of the corner along the axis1 (bottom), from 0 to axis1->size()-1
+     * @return index of the element, from 0 to getElementsCount()-1
      */
-    std::size_t getElementIndexFromLowIndex(std::size_t axis0_index, std::size_t axis1_index) const {
+    std::size_t getElementIndexFromLowIndexes(std::size_t axis0_index, std::size_t axis1_index) const {
         return getElementIndexFromLowIndex(index(axis0_index, axis1_index));
     }
 
     /**
-     * Convert element index to mesh index of bottom left element corner.
+     * Convert element index to mesh index of bottom-left element corner.
      * @param element_index index of element, from 0 to getElementsCount()-1
      * @return mesh index
      */
@@ -749,10 +765,10 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     }
 
     /**
-     * Convert element index to mesh indexes of bottom left element corner.
-     * @param element_index index of element, from 0 to getElementsCount()-1
+     * Convert an element index to mesh indexes of bottom-left corner of the element.
+     * @param element_index index of the element, from 0 to getElementsCount()-1
      * @return axis 0 and axis 1 indexes of mesh,
-     * you can easy calculate rest indexes of element corner adding 1 to returned coordinates
+     * you can easy calculate rest indexes of element corner by adding 1 to returned coordinates
      */
     Vec<2, std::size_t> getElementMeshLowIndexes(std::size_t element_index) const {
         std::size_t bl_index = getElementMeshLowIndex(element_index);
@@ -760,18 +776,18 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     }
 
     /**
-     * Get area of given element.
-     * @param index0, index1 axis 0 and axis 1 indexes of element
-     * @return area of elements with given index
+     * Get an area of a given element.
+     * @param index0, index1 axis 0 and axis 1 indexes of the element
+     * @return the area of the element with given indexes
      */
     double getElementArea(std::size_t index0, std::size_t index1) const {
         return (axis0->at(index0+1) - axis0->at(index0)) * (axis1->at(index1+1) - axis1->at(index1));
     }
 
     /**
-     * Get area of given element.
-     * @param element_index index of element
-     * @return area of elements with given index
+     * Get an area of a given element.
+     * @param element_index index of the element
+     * @return the area of the element with given index
      */
     double getElementArea(std::size_t element_index) const {
         std::size_t bl_index = getElementMeshLowIndex(element_index);
@@ -802,9 +818,9 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     }
 
     /**
-     * Get point in center of Elements.
-     * @param element_index index of Elements
-     * @return point in center of element with given index
+     * Get point in the center of an element.
+     * @param element_index index of the element
+     * @return point in the center of the element
      */
     Vec<2, double> getElementMidpoint(std::size_t element_index) const {
         std::size_t bl_index = getElementMeshLowIndex(element_index);
@@ -821,9 +837,9 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     }
 
     /**
-     * Get element as rectangle.
-     * @param element_index index of element
-     * @return box of elements with given index
+     * Get an element as a rectangle.
+     * @param element_index index of the element
+     * @return the element as a rectangle (box)
      */
     Box2D getElementBox(std::size_t element_index) const {
         std::size_t bl_index = getElementMeshLowIndex(element_index);

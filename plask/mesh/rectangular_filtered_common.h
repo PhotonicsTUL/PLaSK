@@ -141,6 +141,99 @@ public:
         return rectangularMesh->minorIndex(nodes.at(mesh_index));
     }
 
+    /**
+     * Get number of elements (for FEM method) in the first direction.
+     * @return number of elements in the full rectangular mesh in the first direction (axis0 direction).
+     */
+    std::size_t getElementsCount0() const {
+        return rectangularMesh->getElementsCount0();
+    }
+
+    /**
+     * Get number of elements (for FEM method) in the second direction.
+     * @return number of elements in the full rectangular mesh in the second direction (axis1 direction).
+     */
+    std::size_t getElementsCount1() const {
+        return rectangularMesh->getElementsCount1();
+    }
+
+    /**
+     * Get number of elements (for FEM method).
+     * @return number of elements in this mesh
+     */
+    std::size_t getElementsCount() const {
+        return elements.size();
+    }
+
+    /**
+     * Convert mesh index of bottom left element corner to index of this element.
+     * @param mesh_index_of_el_bottom_left mesh index
+     * @return index of the element, from 0 to getElementsCount()-1
+     */
+    std::size_t getElementIndexFromLowIndex(std::size_t mesh_index_of_el_bottom_left) const {
+        return elements.indexOf(rectangularMesh->getElementIndexFromLowIndex(nodes.at(mesh_index_of_el_bottom_left)));
+    }
+
+    /**
+     * Convert element index to mesh index of bottom-left element corner.
+     * @param element_index index of element, from 0 to getElementsCount()-1
+     * @return mesh index
+     */
+    std::size_t getElementMeshLowIndex(std::size_t element_index) const {
+        return nodes.indexOf(rectangularMesh.getElementMeshLowIndex(elements.at(element_index)));
+    }
+
+    /**
+     * Convert an element index to mesh indexes of bottom-left corner of the element.
+     * @param element_index index of the element, from 0 to getElementsCount()-1
+     * @return axis 0 and axis 1 indexes of mesh,
+     * you can easy calculate rest indexes of element corner by adding 1 to returned coordinates
+     */
+    Vec<DIM, std::size_t> getElementMeshLowIndexes(std::size_t element_index) const {
+        return rectangularMesh->getElementMeshLowIndexes(elements.at(element_index));
+    }
+
+    /**
+     * Get an area of a given element.
+     * @param element_index index of the element
+     * @return the area of the element with given index
+     */
+    double getElementArea(std::size_t element_index) const {
+        return rectangularMesh->getElementArea(elements.at(element_index));
+    }
+
+    /**
+     * Get first coordinate of point in the center of an elements.
+     * @param index0 index of the element (axis0 index)
+     * @return first coordinate of the point in the center of the element
+     */
+    double getElementMidpoint0(std::size_t index0) const { return rectangularMesh->getElementMidpoint0(index0); }
+
+    /**
+     * Get second coordinate of point in the center of an elements.
+     * @param index1 index of the element (axis1 index)
+     * @return second coordinate of the point in the center of the element
+     */
+    double getElementMidpoint1(std::size_t index1) const { return rectangularMesh->getElementMidpoint1(index1); }
+
+    /**
+     * Get point in the center of an element.
+     * @param element_index index of Elements
+     * @return point in center of element with given index
+     */
+    Vec<2, double> getElementMidpoint(std::size_t element_index) const {
+        return rectangularMesh->getElementMidpoint(elements.at(element_index));
+    }
+
+    /**
+     * Get an element as a rectangle.
+     * @param element_index index of the element
+     * @return the element as a rectangle (box)
+     */
+    Box2D getElementBox(std::size_t element_index) const {
+        return rectangularMesh->getElementBox(elements.at(element_index));
+    }
+
 };
 
 }   // namespace plask

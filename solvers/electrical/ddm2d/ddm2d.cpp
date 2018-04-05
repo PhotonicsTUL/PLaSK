@@ -218,14 +218,14 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInitialize()
     dvnFnEta.reset(size, 1.);
     dvnFpKsi.reset(size, 1.);
 
-    dvePsi.reset(this->mesh->elements.size());
-    dveFnEta.reset(this->mesh->elements.size(), 1.);
-    dveFpKsi.reset(this->mesh->elements.size(), 1.);
-    dveN.reset(this->mesh->elements.size());
-    dveP.reset(this->mesh->elements.size());
+    dvePsi.reset(this->mesh->getElementsCount());
+    dveFnEta.reset(this->mesh->getElementsCount(), 1.);
+    dveFpKsi.reset(this->mesh->getElementsCount(), 1.);
+    dveN.reset(this->mesh->getElementsCount());
+    dveP.reset(this->mesh->getElementsCount());
 
-    currentsN.reset(this->mesh->elements.size());
-    currentsP.reset(this->mesh->elements.size());
+    currentsN.reset(this->mesh->getElementsCount());
+    currentsP.reset(this->mesh->getElementsCount());
 
     needPsi0 = true;
 
@@ -335,7 +335,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
     B.fill(0.);
 
     // Set stiffness matrix and load vector
-    for (auto e: this->mesh->elements) {
+    for (auto e: this->mesh->elements()) {
 
         size_t i = e.getIndex();
 
@@ -614,7 +614,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 template <typename Geometry2DType>
 void DriftDiffusionModel2DSolver<Geometry2DType>::savePsi()
 {
-    for (auto el: this->mesh->elements) {
+    for (auto el: this->mesh->elements()) {
         size_t i = el.getIndex();
         size_t loleftno = el.getLoLoIndex();
         size_t lorghtno = el.getUpLoIndex();
@@ -629,7 +629,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::savePsi()
 template <typename Geometry2DType>
 void DriftDiffusionModel2DSolver<Geometry2DType>::saveFnEta()
 {
-    for (auto el: this->mesh->elements) {
+    for (auto el: this->mesh->elements()) {
         size_t i = el.getIndex();
         size_t loleftno = el.getLoLoIndex();
         size_t lorghtno = el.getUpLoIndex();
@@ -644,7 +644,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveFnEta()
 template <typename Geometry2DType>
 void DriftDiffusionModel2DSolver<Geometry2DType>::saveFpKsi()
 {
-    for (auto el: this->mesh->elements) {
+    for (auto el: this->mesh->elements()) {
         size_t i = el.getIndex();
         size_t loleftno = el.getLoLoIndex();
         size_t lorghtno = el.getUpLoIndex();
@@ -666,7 +666,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
     auto iMeshE = (this->mesh)->getMidpointsMesh();
     auto temperaturesE = inTemperature(iMeshE);
 
-    for (auto e: this->mesh->elements)
+    for (auto e: this->mesh->elements())
     {
         size_t i = e.getIndex();
         Vec < 2,double> midpoint = e.getMidpoint();
@@ -696,7 +696,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
     auto iMeshE = (this->mesh)->getMidpointsMesh();
     auto temperaturesE = inTemperature(iMeshE);
 
-    for (auto e: this->mesh->elements)
+    for (auto e: this->mesh->elements())
     {
         size_t i = e.getIndex();
         Vec<2,double> midpoint = e.getMidpoint();
@@ -809,7 +809,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
     auto iMeshE = (this->mesh)->getMidpointsMesh();
     auto temperaturesE = inTemperature(iMeshE);
 
-    for (auto el: this->mesh->elements) {
+    for (auto el: this->mesh->elements()) {
         size_t i = el.getIndex();
         // point and material in the middle of the element
         Vec < 2,double> midpoint = el.getMidpoint();
@@ -1300,7 +1300,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
     }
 
     // calculate electron and hole currents (jn and jp)
-    for (auto el: this->mesh->elements) { // PROBLEM
+    for (auto el: this->mesh->elements()) { // PROBLEM
         size_t i = el.getIndex();
         size_t loleftno = el.getLoLoIndex();
         size_t lorghtno = el.getUpLoIndex();
@@ -1430,13 +1430,13 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
 {
     this->writelog(LOG_DETAIL, "Computing heat densities");
 
-    heats.reset(this->mesh->elements.size());
+    heats.reset(this->mesh->getElementsCount());
 
     auto iMesh = (this->mesh)->getMidpointsMesh();
     auto temperatures = inTemperature(iMesh);
 
     /*if (heatmet == HEAT_JOULES)*/ {
-        for (auto e: this->mesh->elements) {
+        for (auto e: this->mesh->elements()) {
             size_t i = e.getIndex();
             size_t loleftno = e.getLoLoIndex();
             size_t lorghtno = e.getUpLoIndex();
@@ -1471,7 +1471,7 @@ template <> double DriftDiffusionModel2DSolver<Geometry2DCartesian>::integrateCu
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
-        auto element = mesh->elements(i, vindex);
+        auto element = mesh->element(i, vindex);
         if (!onlyactive || isActive(element.getMidpoint()))
             result += currentsN[element.getIndex()].c1 * element.getSize0() + currentsP[element.getIndex()].c1 * element.getSize0();
     }
@@ -1486,7 +1486,7 @@ template <> double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::integrate
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
-        auto element = mesh->elements(i, vindex);
+        auto element = mesh->element(i, vindex);
         if (!onlyactive || isActive(element.getMidpoint())) {
             double rin = element.getLower0(), rout = element.getUpper0();
             result += currentsN[element.getIndex()].c1 * (rout*rout - rin*rin) + currentsP[element.getIndex()].c1 * (rout*rout - rin*rin);
@@ -1564,7 +1564,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getBandEdg
         //double T(300.); // TODO
         double T;
 
-        for (auto e: this->mesh->elements) {
+        for (auto e: this->mesh->elements()) {
             size_t i = e.getIndex();
             size_t loleftno = e.getLoLoIndex();
             size_t lorghtno = e.getUpLoIndex();
@@ -1597,7 +1597,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getBandEdg
         //double T(300.); // TODO
         double T;
 
-        for (auto e: this->mesh->elements) {
+        for (auto e: this->mesh->elements()) {
             size_t i = e.getIndex();
             size_t loleftno = e.getLoLoIndex();
             size_t lorghtno = e.getUpLoIndex();
@@ -1669,7 +1669,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getCarrier
             if (!dveN) throw NoValue("Electron concentration");
             this->writelog(LOG_DEBUG, "Getting electron concentration");
 
-            for (auto e: this->mesh->elements) {
+            for (auto e: this->mesh->elements()) {
                 size_t i = e.getIndex();
                 size_t loleftno = e.getLoLoIndex();
                 size_t lorghtno = e.getUpLoIndex();
@@ -1693,7 +1693,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getCarrier
             if (!dveP) throw NoValue("Hole concentration");
             this->writelog(LOG_DEBUG, "Getting hole concentration");
 
-            for (auto e: this->mesh->elements) {
+            for (auto e: this->mesh->elements()) {
                 size_t i = e.getIndex();
                 size_t loleftno = e.getLoLoIndex();
                 size_t lorghtno = e.getUpLoIndex();

@@ -244,7 +244,25 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
     const shared_ptr<MeshAxis> axis2;
 
     /// Accessor to FEM-like elements.
-    const Elements elements;
+    Elements elements() const { return Elements(this); }
+    Elements getElements() const { return elements(); }
+
+    Element element(std::size_t i0, std::size_t i1, std::size_t i2) const { return Element(*this, i0, i1, i2); }
+    Element getElement(std::size_t i0, std::size_t i1, std::size_t i2) const { return element(i0, i1, i2); }
+
+    /**
+     * Get an element with a given index @p i.
+     * @param i index of the element
+     * @return the element
+     */
+    Element element(std::size_t i) const { return Element(*this, i); }
+
+    /**
+     * Get an element with a given index @p i.
+     * @param i index of the element
+     * @return the element
+     */
+    Element getElement(std::size_t i) const { return element(i); }
 
     /**
      * Iteration orders:
