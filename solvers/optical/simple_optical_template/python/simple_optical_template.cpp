@@ -14,6 +14,6 @@ BOOST_PYTHON_MODULE(simple_optical_template)
 
 
     {CLASS(SimpleOpticalTemplate<Geometry2DCylindrical>, "SimpleOpticalCyl2D", "Solver performing calculations in 2D Cylindrical geometry by solve Helmholtz equation.")
-      
+      METHOD(findMode, findMode, py::arg("lam"));
     }
 }

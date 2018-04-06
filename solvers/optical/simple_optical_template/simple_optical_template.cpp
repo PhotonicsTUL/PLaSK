@@ -27,7 +27,25 @@ void SimpleOpticalTemplate<Geometry2DType>::loadConfiguration(XMLReader &reader,
         }    
 }
 
+template<typename Geometry2DType>
+void SimpleOpticalTemplate<Geometry2DType>::onInitialize()
+{
+    if (!this->geometry) throw NoGeometryException(this->getId());
+    shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
+    shared_ptr<RectangularMesh<2>> midpoints = mesh->getMidpointsMesh();
+    for (auto p : *midpoints)
+    {
+        std::cout<<p<<std::endl;
+    }
 
+}
+
+template<typename Geometry2DType>
+void SimpleOpticalTemplate<Geometry2DType>::findMode(double lambda)
+{
+    std::cout<<lambda<<std::endl;
+    onInitialize();
+}
 
 template<typename Geometry2DType>
 const DataVector<double> SimpleOpticalTemplate<Geometry2DType>::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)

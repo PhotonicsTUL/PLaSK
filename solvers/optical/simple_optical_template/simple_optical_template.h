@@ -59,6 +59,8 @@ struct PLASK_SOLVER_API SimpleOpticalTemplate: public SolverOver<Geometry2DType>
       
     virtual void loadConfiguration(XMLReader&, Manager&) override;
     
+    virtual void onInitialize() override;
+    
     virtual std::string getClassName() const override;
     
     shared_ptr<MeshAxis> axis_vertical;   
@@ -73,10 +75,12 @@ struct PLASK_SOLVER_API SimpleOpticalTemplate: public SolverOver<Geometry2DType>
      * Set new wavelength
      * \param wavelength new wavelength
      */
-     void setWavelength(dcomplex wavelength) {
+    void setWavelength(dcomplex wavelength) {
         k0 = 2e3*M_PI / wavelength;
         nrCache.clear();
-     }
+    }
+     
+    void findMode(double lambda);
      
     dcomplex getVertDeterminant(dcomplex wavelength);
     
