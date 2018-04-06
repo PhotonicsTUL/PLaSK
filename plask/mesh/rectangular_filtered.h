@@ -13,14 +13,22 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
 
         const RectangularFilteredMesh2D& filteredMesh;
 
-        std::size_t elementIndex;
-
         //std::uint32_t elementNumber;    ///< index of element in oryginal mesh
         std::size_t index0, index1; // probably this form allows to do most operation fastest in average, low indexes of element corner or just element indexes
+
+        /// Index of element. If it equals to UNKONOWN_ELEMENT_INDEX, it will be calculated on-demand from index0 and index1.
+        mutable std::size_t elementIndex;
 
         const RectangularMesh<2>& rectangularMesh() const { return *filteredMesh.rectangularMesh; }
 
     public:
+
+        enum: std::size_t { UNKONOWN_ELEMENT_INDEX = std::numeric_limits<std::size_t>::max() };
+
+        Element(const RectangularFilteredMesh2D& filteredMesh, std::size_t elementIndex, std::size_t index0, std::size_t index1)
+            : filteredMesh(filteredMesh), index0(index0), index1(index1), elementIndex(elementIndex)
+        {
+        }
 
         Element(const RectangularFilteredMesh2D& filteredMesh, std::size_t elementIndex, std::size_t elementIndexOfFullMesh)
             : filteredMesh(filteredMesh), elementIndex(elementIndex)
@@ -29,6 +37,10 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
             index0 = rectangularMesh().index0(v);
             index1 = rectangularMesh().index1(v);
         }
+
+        Element(const RectangularFilteredMesh2D& filteredMesh, std::size_t elementIndex)
+            : Element(filteredMesh, elementIndex, filteredMesh.elementsSet.at(elementIndex))
+        {}
 
         /// \return tran index of the element
         inline std::size_t getIndex0() const { return index0; }
@@ -73,8 +85,11 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
         inline Vec<2, double> getMidpoint() const { return filteredMesh.getElementMidpoint(index0, index1); }
 
         /// @return index of this element
-        inline std::size_t getIndex() const { return elementIndex; }
-        //filteredMesh.getElementIndexFromLowIndexes(getLowerIndex0(), getLowerIndex1()) is also fine and makes elementIndex useless, but it is slower
+        inline std::size_t getIndex() const {
+            if (elementIndex == UNKONOWN_ELEMENT_INDEX)
+                elementIndex = filteredMesh.getElementIndexFromLowIndexes(getLowerIndex0(), getLowerIndex1());
+            return elementIndex;
+        }
 
         /// \return this element as rectangular box
         inline Box2D toBox() const { return filteredMesh.getElementBox(index0, index1); }
@@ -111,26 +126,48 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
 
     };  // class Element
 
+    struct Elements: ElementsBase<RectangularFilteredMesh2D> {
+
+        explicit Elements(const RectangularFilteredMesh2D& mesh): ElementsBase(mesh) {}
+
+        Element operator()(std::size_t i0, std::size_t i1) const { return Element(*filteredMesh, Element::UNKONOWN_ELEMENT_INDEX, i0, i1); }
+
+    };
+
     RectangularFilteredMesh2D(const RectangularMesh<2>* rectangularMesh, const Predicate& predicate)
         : RectangularFilteredMeshBase(rectangularMesh)
     {
         for (auto el_it = rectangularMesh->elements().begin(); el_it != rectangularMesh->elements().end(); ++el_it)
             if (predicate(*el_it)) {
-                elements.push_back(el_it.index);
-                nodes.insert(el_it->getLoLoIndex());
-                nodes.insert(el_it->getLoUpIndex());
-                nodes.insert(el_it->getUpLoIndex());
-                nodes.push_back(el_it->getUpUpIndex());
+                elementsSet.push_back(el_it.index);
+                nodesSet.insert(el_it->getLoLoIndex());
+                nodesSet.insert(el_it->getLoUpIndex());
+                nodesSet.insert(el_it->getUpLoIndex());
+                nodesSet.push_back(el_it->getUpUpIndex());
             }
-        nodes.shrink_to_fit();
-        elements.shrink_to_fit();
+        nodesSet.shrink_to_fit();
+        elementsSet.shrink_to_fit();
     }
 
-    //Elements elements() const { return Elements(this); }
-    //Elements getElements() const { return elements(); }
+    Elements elements() const { return Elements(*this); }
+    Elements getElements() const { return elements(); }
 
-    //Element element(std::size_t i0, std::size_t i1) const { return Element(*this, i0, i1); }
-    //Element getElement(std::size_t i0, std::size_t i1) const { return element(i0, i1); }
+    Element element(std::size_t i0, std::size_t i1) const { return Element(*this, Element::UNKONOWN_ELEMENT_INDEX, i0, i1); }
+    Element getElement(std::size_t i0, std::size_t i1) const { return element(i0, i1); }
+
+    /**
+     * Get an element with a given index @p i.
+     * @param i index of the element
+     * @return the element
+     */
+    Element element(std::size_t i) const { return Element(*this, i); }
+
+    /**
+     * Get an element with a given index @p i.
+     * @param i index of the element
+     * @return the element
+     */
+    Element getElement(std::size_t i) const { return element(i); }
 
     /**
      * Get an element with a given index @p i.
@@ -153,7 +190,7 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
      * @return this mesh index, from 0 to size()-1, or NOT_INCLUDED
      */
     inline std::size_t index(std::size_t axis0_index, std::size_t axis1_index) const {
-        return nodes.indexOf(rectangularMesh->index(axis0_index, axis1_index));
+        return nodesSet.indexOf(rectangularMesh->index(axis0_index, axis1_index));
     }
 
     /**
@@ -192,7 +229,7 @@ private:
         findIndexes(*rectangularMesh->axis1, wrapped_point.c1, index1_lo, index1_hi);
 
         rectmesh_index_lo = rectangularMesh->index(index0_lo, index1_lo);
-        return elements.includes(rectangularMesh->getElementIndexFromLowIndex(rectmesh_index_lo));
+        return elementsSet.includes(rectangularMesh->getElementIndexFromLowIndex(rectmesh_index_lo));
     }
 
 public:
@@ -216,7 +253,7 @@ public:
                                  interpolation::bilinear(
                                      rectangularMesh->axis0->at(index0_lo), rectangularMesh->axis0->at(index0_hi),
                                      rectangularMesh->axis1->at(index1_lo), rectangularMesh->axis1->at(index1_hi),
-                                     data[nodes.indexOf(rectmesh_index_lo)],
+                                     data[nodesSet.indexOf(rectmesh_index_lo)],
                                      data[index(index0_hi, index1_lo)],
                                      data[index(index0_hi, index1_hi)],
                                      data[index(index0_lo, index1_hi)],
@@ -253,7 +290,7 @@ public:
      * @return index of the element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndexes(std::size_t axis0_index, std::size_t axis1_index) const {
-        return elements.indexOf(rectangularMesh->getElementIndexFromLowIndexes(axis0_index, axis1_index));
+        return elementsSet.indexOf(rectangularMesh->getElementIndexFromLowIndexes(axis0_index, axis1_index));
     }
 
     /**
