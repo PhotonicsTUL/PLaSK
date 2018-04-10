@@ -80,11 +80,14 @@ struct PLASK_SOLVER_API SimpleOpticalTemplate: public SolverOver<Geometry2DType>
         nrCache.clear();
     }
      
-    void findMode(double lambda);
+    size_t findMode(double lambda);
      
     dcomplex getVertDeterminant(dcomplex wavelength);
     
     typename ProviderFor<LightMagnitude, Geometry2DType>::Delegate outLightMagnitude;
+    
+    /// Parameters for rootdigger
+    RootDigger::Params root;
     
 protected:
 
@@ -102,6 +105,8 @@ protected:
     std::vector<double> edgeVertLayerPoint;
 
     void initializeRefractiveIndexVec();
+    
+    dcomplex computeTransferMatrix(const dcomplex& x, const std::vector<dcomplex>& NR);
   
     std::vector<dcomplex> nrCache; // Vector to hold refractive index
     
