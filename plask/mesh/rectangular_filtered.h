@@ -170,20 +170,6 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
     Element getElement(std::size_t i) const { return element(i); }
 
     /**
-     * Get an element with a given index @p i.
-     * @param i index of the element
-     * @return the element
-     */
-    //Element element(std::size_t i) const { return Element(*this, i); }
-
-    /**
-     * Get an element with a given index @p i.
-     * @param i index of the element
-     * @return the element
-     */
-    //Element getElement(std::size_t i) const { return element(i); }
-
-    /**
      * Calculate this mesh index using indexes of axis0 and axis1.
      * @param axis0_index index of axis0, from 0 to axis0->size()-1
      * @param axis1_index index of axis1, from 0 to axis1->size()-1
