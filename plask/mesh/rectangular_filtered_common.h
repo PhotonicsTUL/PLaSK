@@ -241,7 +241,7 @@ public:
      * @return mesh index
      */
     std::size_t getElementMeshLowIndex(std::size_t element_index) const {
-        return nodesSet.indexOf(rectangularMesh.getElementMeshLowIndex(elementsSet.at(element_index)));
+        return nodesSet.indexOf(rectangularMesh->getElementMeshLowIndex(elementsSet.at(element_index)));
     }
 
     /**
