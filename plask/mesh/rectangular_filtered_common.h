@@ -137,6 +137,8 @@ public:
      */
     class PLASK_API const_iterator: public Set::ConstIteratorFacade<const_iterator, LocalCoords> {
 
+        friend class boost::iterator_core_access;
+
         const RectangularFilteredMeshBase* mesh;
 
         LocalCoords dereference() const {

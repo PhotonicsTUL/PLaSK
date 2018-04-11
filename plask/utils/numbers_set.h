@@ -95,7 +95,6 @@ struct CompressedSetOfNumbers {
         private: //--- methods used by boost::iterator_facade: ---
 
         friend class boost::iterator_core_access;
-        template <class, class, class> friend struct IteratorFacade;
 
         const CompressedSetOfNumbers<number_t>& _set() const {
             static_cast<const Derived*>(this)->set();
