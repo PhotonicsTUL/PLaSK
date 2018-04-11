@@ -291,7 +291,7 @@ public:
      * @param element_index index of the element
      * @return the element as a rectangle (box)
      */
-    Box2D getElementBox(std::size_t element_index) const {
+    typename Primitive<DIM>::Box getElementBox(std::size_t element_index) const {
         return rectangularMesh->getElementBox(elementsSet.at(element_index));
     }
 
