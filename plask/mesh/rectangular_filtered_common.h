@@ -282,7 +282,7 @@ public:
      * @param element_index index of Elements
      * @return point in center of element with given index
      */
-    Vec<2, double> getElementMidpoint(std::size_t element_index) const {
+    Vec<DIM, double> getElementMidpoint(std::size_t element_index) const {
         return rectangularMesh->getElementMidpoint(elementsSet.at(element_index));
     }
 
