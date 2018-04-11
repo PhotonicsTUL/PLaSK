@@ -16,7 +16,7 @@ namespace plask {
  * Set is stored as a sorted vector of segments, each represents a sequence of successive numbers.
  */
 template <typename number_t = std::size_t>
-class CompressedSetOfNumbers {
+struct CompressedSetOfNumbers {
 
     struct Segment {
 
@@ -50,8 +50,6 @@ class CompressedSetOfNumbers {
     number_t firstIndex(typename std::vector<Segment>::const_iterator it) const {
         return (it == segments.begin()) ? 0 : (it-1)->indexEnd;
     }
-
-public:
 
     /**
      * Facade which help to develop iterators over CompressedSetOfNumbers.
