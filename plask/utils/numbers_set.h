@@ -136,7 +136,7 @@ struct CompressedSetOfNumbers {
 
         template <typename... CtorArgs>
         explicit const_iterator(const CompressedSetOfNumbers& set, CtorArgs&&... ctorArgs)
-            : _set(&set), ConstIteratorFacade<const_iterator>(std::forward<CtorArgs>(ctorArgs)...) {}
+            : ConstIteratorFacade<const_iterator>(std::forward<CtorArgs>(ctorArgs)...), _set(&set) {}
 
         const CompressedSetOfNumbers<number_t>& set() const { return *_set; }
 

@@ -149,7 +149,7 @@ public:
 
         template <typename... CtorArgs>
         explicit const_iterator(const RectangularFilteredMeshBase& mesh, CtorArgs&&... ctorArgs)
-            : mesh(&mesh), Set::ConstIteratorFacade<const_iterator, LocalCoords>(std::forward<CtorArgs>(ctorArgs)...) {}
+            : Set::ConstIteratorFacade<const_iterator, LocalCoords>(std::forward<CtorArgs>(ctorArgs)...), mesh(&mesh) {}
 
         const Set& set() const { return mesh->nodesSet; }
     };
