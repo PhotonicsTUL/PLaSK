@@ -21,7 +21,8 @@ protected:
 
     const RectangularMesh<DIM>* rectangularMesh;
 
-    typedef CompressedSetOfNumbers<std::uint32_t> Set;
+    //typedef CompressedSetOfNumbers<std::uint32_t> Set;
+    typedef CompressedSetOfNumbers<std::size_t> Set;
 
     /// numbers of rectangularMesh indexes which are in the corners of the elements enabled
     Set nodesSet;
