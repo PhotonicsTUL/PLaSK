@@ -13,12 +13,14 @@
   <define name="h_end" value="24"/>
   <define name="f" value="0"/>
   <define name="lineto" value="200."/>
+  <define name="tt" value="30"/>
 </defines>
 
 <materials>
   <material name="test" base="semiconductor">
     <A>0.1 * T + 0.02 * (T-300)**2</A>
     <NR>3.6, 3.6, 3.4, 0.0</NR>
+    <thermk>10.+ 0.001 * T**2</thermk>
   </material>
   <material name="InGaAsQW" base="In(0.2)GaAs"/>
   <material name="InGaAs_QW:Si" base="InGaAs:Si" alloy="yes">
@@ -32,6 +34,14 @@
   <material name="name" base="semiconductor"/>
   <module name="mats"/>
   <material name="GaAs2:Si" base="GaAs:Si"/>
+  <material name="mat" base="semiconductor">
+    <nr>5</nr>
+  </material>
+  <material name="a" base="semiconductor">
+    <thermk>100 + T/{tt}</thermk>
+  </material>
+  <material name="b" base="a"/>
+  <material name="GaAs" base="GaAs"/>
 </materials>
 
 <geometry>
@@ -177,6 +187,9 @@
   <cylindrical2d name="GeoO" axes="r,z" outer="extend" bottom="GaAs" top="air">
     <again ref="VCSEL"/>
   </cylindrical2d>
+  <cartesian2d name="main" axes="x,y">
+    <rectangle material="mat" dx="1" dy="{wl('mat', 1000)}"/>
+  </cartesian2d>
 </geometry>
 
 <grids>
@@ -296,6 +309,8 @@
 <script><![CDATA[
 from __future__ import print_function
 
+print(material.get('b').thermk(300))
+
 print_log('result', """\
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. \
 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure \
@@ -343,7 +358,7 @@ print_log(LOG_RESULT, "ARGUMENTS")
 for arg in sys.argv[1:]:
     print_log(LOG_RESULT, arg)
 
-print ur"Python2 style"
+# print ur"Python2 style"
 
 print(mesa + 0, )
 

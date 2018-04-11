@@ -10,9 +10,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 import sys
-from time import sleep
-
-import plask  # TODO: make preview optional
 
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
@@ -23,7 +20,15 @@ from ...model.geometry.types import geometry_types_geometries_core, gname
 from ...model.geometry.geometry import GNGeometryBase
 from ...model.info import Info
 from .. import Controller
+from ...utils import get_manager
 from ...utils.widgets import HTMLDelegate, VerticalScrollArea, create_undo_actions, set_icon_size
+
+try:
+    import plask
+except ImportError:
+    pass  # TODO: make preview optional
+
+
 
 try:
     from .plot_widget import PlotWidget
@@ -288,9 +293,9 @@ class GeometryController(Controller):
         QMetaObject.invokeMethod(self.tree, 'update_current_index', Qt.QueuedConnection)
 
     def plot_element(self, tree_element, set_limits):
-        manager = plask.Manager(draft=True)
+        manager = get_manager()
         try:
-            manager.load(self.document.get_content(sections=('defines', 'geometry')))
+            manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry')))
             try:
                 plotted_object = self.model.fake_root.get_corresponding_object(tree_element, manager)
             except ValueError:

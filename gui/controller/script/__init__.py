@@ -12,7 +12,7 @@
 
 import sys
 from copy import copy
-from math import inf
+from numpy import inf
 
 from ...qt import QT_API
 from ...qt.QtCore import *

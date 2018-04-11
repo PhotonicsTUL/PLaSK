@@ -102,10 +102,11 @@ class ComponentsPopup(QFrame):
 
 class MaterialLineEdit(QLineEdit):
 
-    def __init__(self, parent, materials_model):
+    def __init__(self, parent, materials_model, defines_model=None):
         super(MaterialLineEdit, self).__init__(parent)
 
         self.materials_model = materials_model
+        self.defines_model = defines_model
 
         # Create a button with icon
         self.button = QToolButton(self)
@@ -127,7 +128,7 @@ class MaterialLineEdit(QLineEdit):
         self.button.move(self.rect().right() - frw - sz.width(), (self.rect().bottom() + 1 - sz.height()) / 2)
 
     def show_material(self):
-        show_material_plot(self, self.materials_model, self.text())
+        show_material_plot(self, self.materials_model, self.defines_model, self.text())
 
 
 class MaterialsComboBox(QComboBox):
@@ -144,7 +145,7 @@ class MaterialsComboBox(QComboBox):
         """
         super(MaterialsComboBox, self).__init__(parent)
         if materials_model is not None:
-            line_edit = MaterialLineEdit(self, materials_model)
+            line_edit = MaterialLineEdit(self, materials_model, defines_model)
             self.setLineEdit(line_edit)
         else:
             line_edit = self.lineEdit()
@@ -211,13 +212,14 @@ class MaterialsComboBox(QComboBox):
 
 class MaterialNameDelegate(QStyledItemDelegate):
 
-    def __init__(self, model, parent):
+    def __init__(self, model, defines, parent):
         super(MaterialNameDelegate, self).__init__(parent)
         self.model = model
+        self.defines = defines
 
     def createEditor(self, parent, option, index):
         if not isinstance(self.model.entries[index.row()], MaterialsModel.External):
-            ed = MaterialLineEdit(parent, self.model)
+            ed = MaterialLineEdit(parent, self.model, self.defines)
         else:
             ed = QLineEdit(parent)
         return ed
@@ -323,7 +325,7 @@ class MaterialsController(Controller):
         self.materials_table = QTableView()
         self.materials_table.setModel(self.model)
         #self.model.modelReset.connect(lambda : self.materials_table.clearSelection())  #TODO why does not work?
-        self.materials_table.setItemDelegateForColumn(0, MaterialNameDelegate(self.model,
+        self.materials_table.setItemDelegateForColumn(0, MaterialNameDelegate(self.model, self.document.defines.model,
                                                                               self.materials_table))
         self.materials_table.setItemDelegateForColumn(1, MaterialBaseDelegate(self.document.defines.model,
                                                                               self.model,

@@ -53,6 +53,9 @@ class DefinesCompleterModel(QAbstractTableModel):
         self.strings = [] if strings is None else strings
         self.defines = model
 
+    def get_file_xml_element(self):
+        return self.defines.get_file_xml_element()
+
     def data(self, index, role=Qt.EditRole):
         col = index.column()
         if role == Qt.DisplayRole or role == Qt.EditRole:

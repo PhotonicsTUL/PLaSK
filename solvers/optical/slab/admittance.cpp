@@ -541,11 +541,14 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
         // However in some cases this can make the magnetic field discontinous
     }
 
-    // Finally revert fields at one side of the interface
-    switch (side) {
-        case INCIDENCE_TOP:    start = max(solver->interface, ptrdiff_t(0)); end = count; break;
-        case INCIDENCE_BOTTOM: start = 0; end = min(solver->interface, ptrdiff_t(count)); break;
+    // Replace F and B at one side of the interface for consistency in getFieldVectorE and getFieldVectorH
+    size_t interface = size_t(max(solver->interface, ptrdiff_t(0)));
+    switch (side)
+    {
+        case INCIDENCE_TOP:    start = interface; end = count; break;
+        case INCIDENCE_BOTTOM: start = 0; end = min(interface, count); break;
     }
+    // start = size_t(max(solver->interface, ptrdiff_t(0))); end = count;
     for (ptrdiff_t n = start; n < end; ++n) {
         std::swap(fields[n].E0, fields[n].Ed);
         std::swap(fields[n].H0, fields[n].Hd);

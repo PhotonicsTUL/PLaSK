@@ -13,7 +13,10 @@
 
 import sys
 import itertools
+from copy import copy
+
 import numpy
+from lxml import etree
 from matplotlib.figure import Figure
 from matplotlib.widgets import Cursor
 from matplotlib.ticker import ScalarFormatter
@@ -35,6 +38,16 @@ from ...utils.str import html_to_tex
 from ...utils.widgets import set_icon_size
 
 try:
+    unicode = unicode
+except NameError:
+    # 'unicode' is undefined, must be Python 3
+    unicode = str
+    basestring = (str, bytes)
+else:
+    # 'unicode' exists, must be Python 2
+    bytes = str
+
+try:
     import plask
 except ImportError:
     plask = None
@@ -54,10 +67,11 @@ CURRENT_ARG = 'T'
 
 class MaterialPlot(QWidget):
 
-    def __init__(self, model=None, parent=None, init_material=None):
+    def __init__(self, model=None, defines=None, parent=None, init_material=None):
         super(MaterialPlot, self).__init__(parent)
 
         self.model = model
+        self.defines = defines
 
         self.material = QComboBox()
         self.material.setEditable(False)
@@ -189,7 +203,23 @@ class MaterialPlot(QWidget):
         if self.info.isVisible():
             self.info.setMaximumHeight(self.info.document().size().height())
         if self.axes is not None:
-            self.figure.tight_layout(pad=0.2)
+            try:
+                self.figure.tight_layout(pad=0.2)
+            except:
+                pass
+
+    def _get_xpl_content(self):
+        data = '<plask loglevel="error">\n\n'
+        for m in (self.defines, self.model):
+            try:
+                element = m.get_file_xml_element()
+            except:
+                pass
+            else:
+                if len(element) or element.text:
+                    data += etree.tostring(element, encoding='unicode', pretty_print=True) + '\n'
+        data += '</plask>\n'
+        return data
 
     def update_materials(self, *args, **kwargs):
         text = self.material.currentText()
@@ -216,6 +246,9 @@ class MaterialPlot(QWidget):
                             pass
                         finally:
                             sys.path = sys.path[1:]
+            self.materialdb = copy(plask.material.db)
+            self.manager = plask.Manager(self.materialdb, draft=True)
+            self.manager.load(self._get_xpl_content())
             material_blacklist = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor', 'air']
             material_list.extend(sorted((mat for mat in plask.material.db
                                          if mat not in material_list and mat not in material_blacklist),
@@ -407,51 +440,52 @@ class MaterialPlot(QWidget):
             except ValueError:
                 raise ValueError("Wrong ranges '{}' - '{}'"
                                  .format(*(v.text() for v in self.arguments[self.arg_button][:2])))
-            plot_range = plask.linspace(start, end, 1001)
+            plot_range = numpy.linspace(start, end, 1001)
             plot_cat = self.arguments[self.arg_button][3]
             other_args = dict(self._parse_other_args(self.arg_button, 2))
             other_elements = dict(self._parse_other_args(self.arg_button, 0))
             other_elements.update(dict(('dc', v) for k,v in self._parse_other_args(self.arg_button, 1)))
             arg_name = 'dc' if plot_cat == 1 else str(self.arg_button.text())[:-1].replace('&', '')
             material_name = str(self.material.currentText())
-            skip_model = False
-            while True:  # loop for looking-up the base
-                if skip_model or self.model is None:
-                    break
-                material = [e for e in self.model.entries if e.name == material_name]
-                if material:
-                    skip_model = True  # prevents infinite loop if material in the model has similarly named base in DB
-                    material = material[0]
-                    mprop = [p for p in material.properties if p[0] == param]
-                    if mprop:
-                        expr = mprop[0][1]
-                        code = compile(expr, '', 'eval')
-                        class Material(object): pass
-                        mat = Material()
-                        for k, v in other_elements.items():
-                            setattr(mat, k, v)
-                        other_args['self'] = mat
-                        if plot_cat == 2:
-                            self.vals = lambda a: eval(code, numpy.__dict__, dict(((arg_name, a),), **other_args))
-                        else:
-                            def f(a):
-                                setattr(mat, arg_name, a)
-                                return eval(code, numpy.__dict__, dict((), **other_args))
-                            self.vals = f
-                        break
-                    else:
-                        material_name = material.base  # and we repeat the loop
-                        material = None
-                else:
-                    break
-            if not material:
+            if plask is not None:
                 if plot_cat == 2:
-                    material = plask.material.db.get(material_name, **other_elements)
+                    material = self.materialdb.get(material_name, **other_elements)
                     self.vals = lambda a: material.__getattribute__(param)(**dict(((arg_name, a),), **other_args))
                 else:
-                    self.vals = lambda a: plask.material.db.get(material_name, **dict(((arg_name, a),),
-                                                                                      **other_elements)). \
+                    self.vals = lambda a: self.materialdb.get(material_name, **dict(((arg_name, a),), **other_elements)).\
                         __getattribute__(param)(**other_args)
+            else:
+                model_materials = set()
+                material = None
+                if self.model is not None:
+                    while material_name not in model_materials:  # loop for looking-up the base
+                        material = [e for e in self.model.entries if e.name == material_name]
+                        if material:
+                            model_materials.add(material_name)
+                            material = material[0]
+                            mprop = [p for p in material.properties if p[0] == param]
+                            if mprop:
+                                expr = mprop[0][1]
+                                code = compile(expr, '', 'eval')
+                                class Material(object): pass
+                                mat = Material()
+                                for k, v in other_elements.items():
+                                    setattr(mat, k, v)
+                                other_args['self'] = mat
+                                if plot_cat == 2:
+                                    self.vals = lambda a: eval(code, numpy.__dict__,
+                                                               dict(((arg_name, a),), **other_args))
+                                else:
+                                    def f(a):
+                                        setattr(mat, arg_name, a)
+                                        return eval(code, numpy.__dict__, dict((), **other_args))
+                                    self.vals = f
+                                break
+                            else:
+                                material_name = material.base  # and we repeat the loop
+                                material = None
+                        else:
+                            break
             vals = numpy.array([self.vals(a) for a in plot_range])
             if vals.dtype == complex:
                 self.axes2 = self.axes.twinx()
@@ -482,25 +516,25 @@ class MaterialPlot(QWidget):
                                                                  self.arg_button.descr[1:],
                                                                  self.arg_button.unit)))
             self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
-        self.axes.set_ylabel('[]')
-        if self.axes2 is not None:
-            self.axes2.set_ylabel('[]')
-        self.figure.tight_layout(pad=0.2)
-        label = html_to_tex(MATERIALS_PROPERTES[param][0]).splitlines()[0] +\
-                ' [' + html_to_tex(MATERIALS_PROPERTES[param][1]) + ']'
-        if self.axes2 is None:
-            self.axes.set_ylabel(label)
-        else:
-            self.axes.set_ylabel(label + " (real part, solid)")
-            self.axes2.set_ylabel(label + " (imaginary part, dashed)")
-        self._cursor = Cursor(self.axes, horizOn=False, useblit=True, color='#888888', linewidth=1)
-        self.update_scale()
-        warnings.showwarning = old_showwarning
-        if warns:
-            # if self.error.text(): self.error.append("\n")
-            self.error.append("\n".join(warns))
-            self.error.show()
-            self.error.setFixedHeight(self.error.document().size().height())
+            self.axes.set_ylabel('[]')
+            if self.axes2 is not None:
+                self.axes2.set_ylabel('[]')
+            self.figure.tight_layout(pad=0.2)
+            label = html_to_tex(MATERIALS_PROPERTES[param][0]).splitlines()[0] +\
+                    ' [' + html_to_tex(MATERIALS_PROPERTES[param][1]) + ']'
+            if self.axes2 is None:
+                self.axes.set_ylabel(label)
+            else:
+                self.axes.set_ylabel(label + " (real part, solid)")
+                self.axes2.set_ylabel(label + " (imaginary part, dashed)")
+            self._cursor = Cursor(self.axes, horizOn=False, useblit=True, color='#888888', linewidth=1)
+            self.update_scale()
+            warnings.showwarning = old_showwarning
+            if warns:
+                # if self.error.text(): self.error.append("\n")
+                self.error.append("\n".join(warns))
+                self.error.show()
+                self.error.setFixedHeight(self.error.document().size().height())
 
     def update_scale(self):
         fmtr = ScalarFormatter(useOffset=False)
@@ -532,7 +566,7 @@ class MaterialPlot(QWidget):
         self.label.setText("{self.xn} = {x:.5g}{xu}    {self.yn} = {y}{yu}".format(**locals()))
 
 
-def show_material_plot(parent, model, init_material=None):
+def show_material_plot(parent, model, defines, init_material=None):
     # plot_window = QDockWidget("Parameter Plot", self.document.window)
     # plot_window.setFeatures(QDockWidget.AllDockWidgetFeatures)
     # plot_window.setFloating(True)
@@ -540,5 +574,5 @@ def show_material_plot(parent, model, init_material=None):
     # self.document.window.addDockWidget(Qt.BottomDockWidgetArea, plot_window)
     plot_window = QMainWindow(parent)
     plot_window.setWindowTitle("Material Parameter")
-    plot_window.setCentralWidget(MaterialPlot(model, init_material=init_material))
+    plot_window.setCentralWidget(MaterialPlot(model, defines, init_material=init_material))
     plot_window.show()

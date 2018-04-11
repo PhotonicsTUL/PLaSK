@@ -246,7 +246,8 @@ class MainWindow(QMainWindow):
 
         plot_material_action = QAction(QIcon.fromTheme('matplotlib'), 'Examine &Material Parameters...', self)
         plot_material_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_M)
-        plot_material_action.triggered.connect(lambda: show_material_plot(self, self.document.materials.model))
+        plot_material_action.triggered.connect(lambda: show_material_plot(self, self.document.materials.model,
+                                                                          self.document.defines.model))
 
         settings_action = QAction(QIcon.fromTheme('document-properties'), 'GUI Se&ttings...', self)
         settings_action.setStatusTip('Change some GUI settings')

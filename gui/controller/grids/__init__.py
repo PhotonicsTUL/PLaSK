@@ -28,6 +28,7 @@ from ..table import table_and_manipulators
 from ...utils.qundo import UndoCommandWithSetter
 from ...model.grids import GridsModel, construct_grid
 from ...model.info import Info
+from ...utils import get_manager
 from ...utils.xml import XML_parser
 
 try:
@@ -245,9 +246,9 @@ class GridsController(Controller):
         if plask is None: return
         if model is not None:
             model.geometry_name = self.mesh_preview.toolbar.widgets['select_geometry'].currentText()
-        manager = plask.Manager(draft=True)
+        manager = get_manager()
         try:
-            manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))
+            manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry', 'grids')))
             try:
                 self.selected_geometry = str(self.mesh_preview.toolbar.widgets['select_geometry'].currentText())
                 if self.selected_geometry:

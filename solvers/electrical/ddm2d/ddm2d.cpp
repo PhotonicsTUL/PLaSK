@@ -90,7 +90,8 @@ DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const s
     itererr(1e-8),
     iterlim(10000),
     logfreq(500),
-	T(300.) // TODO T=300 for kp method tests
+	T(300.), // TODO T=300 for kp method tests
+	T0(300.)
 {
     onInvalidate();
     inTemperature = 300.;
@@ -145,7 +146,13 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::loadConfiguration(XMLReader &s
             iterlim = source.getAttribute<size_t>("iterlim", iterlim);
             logfreq = source.getAttribute<size_t>("logfreq", logfreq);
             source.requireTagEnd();
-        } else
+        } else if (param == "config") {
+			T0 = source.getAttribute<double>("T0", T0);
+			strained = source.getAttribute<bool>("strained", strained);
+			//             quick_levels = reader.getAttribute<bool>("quick-levels", quick_levels);
+			source.requireTagEnd();
+		}
+		else
             this->parseStandardConfiguration(source, manager);
     }
 }
@@ -211,6 +218,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInitialize()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
+	detectActiveRegions();
 
     size = this->mesh->size();
 
@@ -228,8 +236,6 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInitialize()
     currentsP.reset(this->mesh->getElementsCount());
 
     needPsi0 = true;
-
-    detectActiveRegions();
 }
 
 
@@ -247,8 +253,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInvalidate() {
     currentsN.reset();
     currentsP.reset();
     heats.reset();
-    //regions.clear();
-    //materialSubstrate.reset();
+    regions.clear();
+    materialSubstrate.reset();
 }
 
 
@@ -996,7 +1002,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 	this->writelog(LOG_INFO, "Finding energy levels..");
 	
 	hh2m = 0.5 * phys::hb_eV * phys::hb_J * 1e9 * 1e9 / phys::me; /// hb*hb/(2m), unit: eV*nm*nm, 10^9 is introduced to change m into nm
-	Eupshift = 20.; /// bands have to be up-shifted - we want only positive values of energy levels; unit: [eV]
+	Eshift = 20.; /// bands have to be up-shifted - we want only positive values of energy levels; unit: [eV]
 
 	double kx = 0., ky = 0.; /// TODO
 
@@ -1014,29 +1020,32 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 		this->writelog(LOG_DETAIL, "Creating matrix for electrons..\n");
 
 		int K = 1; /// the order of the small matrix for central-node for CB
-		int N = nz * K; /// the order of the matrix for CB
+		int N = nn * K; /// the order of the matrix for CB
 
 		this->writelog(LOG_DETAIL, "\tsize of the matrix for CB: {0} x {1}", N, N);
 
 		Eigen::MatrixXcd Hc(N, N); /// N - Hc size
 		/// setting Hc = zeros
 		std::complex<double> Hc_zero(0., 0.);
-		for (size_t i=1; i <= N; ++i)
+		for (size_t i=1; i<=N; ++i)
 			for (size_t j=1; j <= N; ++j)
 				Hc(i-1, j-1) = Hc_zero;
 
-		for (size_t i=1; i <= nz; ++i) /// nz - number of nodes
+		for (size_t i=1; i<=nn; ++i) /// nn - number of nodes
 		{
 			Vec<2, double> point_LE; /// centre of the left element
-			point_LE[0] = r_at_0;
-			point_LE[1] = 0.5 * (z[i-1] + z[i]);
+			point_LE[0] = meshActMid->axis0->at(0); // TODO not only for 0
+			point_LE[1] = meshActMid->axis1->at(i-1);
 
 			Vec<2, double> point_RI; /// centre of the right element
-			point_RI[0] = r_at_0;
-			point_RI[1] = 0.5 * (z[i] + z[i+1]);
+			point_RI[0] = meshActMid->axis0->at(0); // TODO not only for 0
+			point_RI[1] = meshActMid->axis1->at(i);
 			
 			shared_ptr<Material> m_LE = this->geometry->getMaterial(point_LE);
 			shared_ptr<Material> m_RI = this->geometry->getMaterial(point_RI);
+
+			double CBel = 0.5 * (m_LE->CB(T, 0.,'*') + m_RI->CB(T, 0., '*')) - (getPotentials(meshAct, INTERPOLATION_LINEAR)).at(i);
+			this->writelog(LOG_DETAIL, "\tCBel for kp, node: {0}, CBel: {1}", i, CBel);
 
 			//this->writelog(LOG_DETAIL, "creating Hc matrix, central node: {0}, materials: {1} and {2}", i, m_le->name(), m_ri->name());
 						
@@ -1050,7 +1059,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 				double beta_11_LE = - y0_LE * hh2m;
 				double beta_11_RI = - y0_RI * hh2m;
 				double alpha_11_CE = y0_CE * hh2m * (kx * kx + ky * ky);
-				double Ec0_11_CE = CBel[i] + Eupshift; // TODO CBel[i] must be CB from elem + Psi fo elem and then calc average for node
+				double Ec0_11_CE = CBel + Eshift; // TODO CBel[i] must be CB from elem + Psi fo elem and then calc average for node
 				double v_11_CE = Ec0_11_CE;
 				double s_11_CE = 0.;
 				/*if (strain) // TODO
@@ -1071,7 +1080,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 					Hc(i - 1, i - 1) = Hc_11_CE;
 					//this->writelog(LOG_DETAIL, "Hc_11_CE: {0}", Hc_11_CE());
 				}
-				if (i<nz)
+				if (i<nn)
 				{
 					Hc_11_RI.real(beta_11_RI * dzdz1);
 					Hc(i - 1, i) = Hc_11_RI;
@@ -1096,10 +1105,10 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 			n_lev_el = 0; /// n_lev_el - number of energy levels of electrons
 			for (size_t i = 1; i < nEigVal; ++i)
 			{
-				if ((ces.eigenvalues()[i].real() - Eupshift > CBelMin) && (ces.eigenvalues()[i].real() - Eupshift < CBelMax))
+				if ((ces.eigenvalues()[i].real() - Eshift > CBelMin) && (ces.eigenvalues()[i].real() - Eshift < CBelMax))
 				{
 					std::vector<double> sum(K, 0.); /// we have to find out if this level corresponds to el
-					for (size_t j = 1; j < nz*1; j += 1) /// "1" in both cases because only el are considered here
+					for (size_t j = 1; j < nn*1; j += 1) /// "1" in both cases because only el are considered here
 					{
 						sum[0] += (pow(ces.eigenvectors().col(i)[j].real(), 2.) + pow(ces.eigenvectors().col(i)[j].imag(), 2.));
 					}
@@ -1107,7 +1116,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 					if (sum[0])
 					{
 						carrier = "el";
-						lev_el.push_back(ces.eigenvalues()[i].real() - Eupshift);
+						lev_el.push_back(ces.eigenvalues()[i].real() - Eshift);
 						n_lev_el++;
 					}
 				}
@@ -1137,30 +1146,40 @@ template <typename Geometry2DType>
 bool DriftDiffusionModel2DSolver<Geometry2DType>::checkWell(std::string _carrier) {
 	if (_carrier == "el") /// electrons
 	{
+		std::vector<double> CBel;
 		this->writelog(LOG_DETAIL, "Checking the confinement for electrons..");
 		CBel.clear();
 		for (size_t i = 0; i < ne+2; ++i) /// ne+2 because cladding elements also
 		{
-			double z_avg = 0.5*(z[i] + z[i+1]);
-			Vec<2, double> point;
-			point[0] = r_at_0;
-			point[1] = z_avg;
+			//double z_avg = 0.5*(z[i] + z[i+1]);
+			Vec<2, double> point = meshActMid->at(0,i);
+			//point[0] = meshActMid->axis0->at(0); // TODO tu musi byc jakis element haxis dla danego obszaru
+			//point[1] = meshActMid->axis1->at(i);
 
 			//this->writelog(LOG_INFO, "position of element {0}: {1} um, {2} um", i, r_at_0, z_avg);
 			
 			shared_ptr<Material> material = this->geometry->getMaterial(point);
 			//this->writelog(LOG_DETAIL, "material found");
 			//this->writelog(LOG_DETAIL, "element {0}: {1}", i, material->name());
+
+			//CBel.push_back(material->CB(T, 0., '*') - getPotentials(meshActMid->at(0,i)) * mEx);
 		}
 		/// filling CBel vector /// TODO
-		for (size_t i = 0; i < nz+2; ++i)
+		//for (size_t i = 0; i < nn + 2; ++i)
+		//{
+		//	CBel.push_back(material->CB(T, 0., '*') - dvnPsi[..] * mEx);
+		//}
+		
+		
+		
+		for (size_t i = 0; i < nn+2; ++i)
 			CBel.push_back(5.0);
 		for (size_t i = 60; i < 140; ++i)
 			CBel[i] = 4.5;
 		/// finding min. and max. for CB
 		CBelMin = 1e6; 
 		CBelMax = -1e6;
-		for (size_t i = 0; i < nz+2; ++i) 
+		for (size_t i = 0; i < nn+2; ++i) 
 		{
 			if (CBel[i] < CBelMin)
 				CBelMin = CBel[i];
@@ -1169,7 +1188,7 @@ bool DriftDiffusionModel2DSolver<Geometry2DType>::checkWell(std::string _carrier
 		}
 		/// max. CB at boundary
 		CBel[0] = CBelMax; 
-		CBel[nz+1] = CBelMax;
+		CBel[nn+1] = CBelMax;
 		//for (size_t i = 0; i < nz+2; ++i) /// TEST
 		//	this->writelog(LOG_DETAIL, "node {0}: CBel = {1} eV", i, CBel[i]);
 
@@ -1735,272 +1754,456 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDen
     );
 }
 
-template <typename GeometryType>
-void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
+
+template <typename Geometry2DType> /// COPIED FROM FREECARRIER!
+void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 {
-	this->writelog(LOG_INFO, "Detecting active region..");
-	
 	regions.clear();
 
-	shared_ptr< MeshAxis > axis_vert = this->mesh->vert();
-	shared_ptr< MeshAxis > axis_tran = this->mesh->tran();
-	r_at_0 = 0.5 * (axis_tran->at(0) + axis_tran->at(1));
-	
-    shared_ptr<RectangularMesh<2>> points = this->mesh->getMidpointsMesh();
-	bool found_substrate = false;
-	bool found_active = false;
+	shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
+	shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
 
-	double z1(-1.), z2(-1.); /// min. and max. z for kp method [um]
-	double zSub(-1.); /// z for substrate [um]
+	size_t ileft = 0, iright = points->axis0->size();
+	bool in_active = false;
 
-    //for (std::size_t i = 0; i < axis_vert->size(); ++i) // TEST
-	//{
-	//	this->writelog(LOG_INFO, "axis_vert[{0}]: {1}", i, axis_vert->at(i));
-	//}
-    for (std::size_t i = 0; i < axis_vert->size()-1; ++i)
-	{
-		double zA = axis_vert->at(i); /// z bottom
-		double zB = axis_vert->at(i+1); /// z top
-		double z_avg = 0.5*(zA + zB);
-		Vec<2, double> point;
-		point[0] = r_at_0;
-		point[1] = z_avg;
+	bool added_bottom_cladding = false;
+	bool added_top_cladding = false;
 
-		std::string role_ = "-";
-		auto tags = this->geometry->getRolesAt(point);
+	for (size_t r = 0; r < points->axis1->size(); ++r) {
+		bool had_active = false; // indicates if we had active region in this layer
+		shared_ptr<Material> layer_material;
+		bool layer_QW = false;
 
-		if (tags.find("substrate") != tags.end())
-		{
-			//this->writelog(LOG_INFO, "axis_vert_mid[{0}] {1}, substrate", i, z_avg);
-			if (!found_substrate) /// first time in substrate
-			{
-				zSub = z_avg;
-			}		
-			found_substrate = true;
+		for (size_t c = 0; c < points->axis0->size(); ++c)
+		{ // In the (possible) active region
+			auto point = points->at(c, r);
+			auto tags = this->geometry->getRolesAt(point);
+			bool active = false; for (const auto& tag : tags) if (tag.substr(0, 6) == "active") { active = true; break; }
+			bool QW = tags.find("QW") != tags.end()/* || tags.find("QD") != tags.end()*/;
+			bool substrate = tags.find("substrate") != tags.end();
+
+			if (substrate) {
+				if (!materialSubstrate)
+					materialSubstrate = this->geometry->getMaterial(point);
+				else if (*materialSubstrate != *this->geometry->getMaterial(point))
+					throw Exception("{0}: Non-uniform substrate layer.", this->getId());
+			}
+
+			if (QW && !active)
+				throw Exception("{0}: All marked quantum wells must belong to marked active region.", this->getId());
+
+			if (c < ileft) {
+				if (active)
+					throw Exception("{0}: Left edge of the active region not aligned.", this->getId());
+			}
+			else if (c >= iright) {
+				if (active)
+					throw Exception("{0}: Right edge of the active region not aligned.", this->getId());
+			}
+			else {
+				// Here we are inside potential active region
+				if (active) {
+					if (!had_active) {
+						if (!in_active)
+						{ // active region is starting set-up new region info
+							regions.emplace_back(mesh->at(c, r));
+							ileft = c;
+						}
+						layer_material = this->geometry->getMaterial(point);
+						layer_QW = QW;
+					}
+					else {
+						if (*layer_material != *this->geometry->getMaterial(point))
+							throw Exception("{0}: Non-uniform active region layer.", this->getId());
+						if (layer_QW != QW)
+							throw Exception("{0}: Quantum-well role of the active region layer not consistent.", this->getId());
+					}
+				}
+				else if (had_active) {
+					if (!in_active) {
+						iright = c;
+
+						// add layer below active region (cladding) LUKASZ
+						/*auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
+						for (size_t cc = ileft; cc < iright; ++cc)
+						if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
+						throw Exception("{0}: Material below quantum well not uniform.", this->getId());
+						auto& region = regions.back();
+						double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
+						double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
+						region.origin += Vec<2>(0., -h);
+						this->writelog(LOG_DETAIL, "Adding bottom cladding; h = {0}",h);
+						region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));*/
+					}
+					else
+						throw Exception("{0}: Right edge of the active region not aligned.", this->getId());
+				}
+				had_active |= active;
+			}
 		}
-		if (tags.find("active") != tags.end())
-		{
-			//in_active = true;			
-			//this->writelog(LOG_INFO, "axis_vert_mid[{0}] {1}, active", i, z_avg);
-			if (!found_active) /// first time in active
-			{
-				z1 = zA;
-				z2 = zB;
+		in_active = had_active;
+
+		// Now fill-in the layer info
+		ActiveRegionInfo* region = regions.empty() ? nullptr : &regions.back();
+		if (region) {
+			if (!added_bottom_cladding) {
+				if (r == 0)
+					throw Exception("{0}: Active region cannot start from the edge of the structure.", this->getId());
+				// add layer below active region (cladding) LUKASZ
+				auto bottom_material = this->geometry->getMaterial(points->at(ileft, r - 1));
+				for (size_t cc = ileft; cc < iright; ++cc)
+					if (*this->geometry->getMaterial(points->at(cc, r - 1)) != *bottom_material)
+						throw Exception("{0}: Material below active region not uniform.", this->getId());
+				auto& region = regions.back();
+				double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
+				double h = mesh->axis1->at(r) - mesh->axis1->at(r - 1);
+				region.origin += Vec<2>(0., -h);
+				//this->writelog(LOG_DETAIL, "Adding bottom cladding; h = {0}",h);
+				region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
+				region.bottom = h;
+				added_bottom_cladding = true;
 			}
-			else
-			{
-				if (z1 > zA)
-					z1 = zA;
-				if (z2 < zB)
-					z2 = zB;
+
+			double h = mesh->axis1->at(r + 1) - mesh->axis1->at(r);
+			double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
+			if (in_active) {
+				size_t n = region->layers->getChildrenCount();
+				shared_ptr<Block<2>> last;
+				if (n > 0) last = static_pointer_cast<Block<2>>(static_pointer_cast<Translation<2>>(region->layers->getChildNo(n - 1))->getChild());
+				assert(!last || last->size.c0 == w);
+				if (last && layer_material == last->getRepresentativeMaterial() && layer_QW == region->isQW(region->size() - 1)) {
+					//TODO check if usage of getRepresentativeMaterial is fine here (was material)
+					last->setSize(w, last->size.c1 + h);
+				}
+				else {
+					auto layer = plask::make_shared<Block<2>>(Vec<2>(w, h), layer_material);
+					if (layer_QW) layer->addRole("QW");
+					region->layers->push_back(layer);
+				}
 			}
-			found_active = true;
+			else {
+				if (!added_top_cladding) {
+
+					// add layer above active region (top cladding)
+					auto top_material = this->geometry->getMaterial(points->at(ileft, r));
+					for (size_t cc = ileft; cc < iright; ++cc)
+						if (*this->geometry->getMaterial(points->at(cc, r)) != *top_material)
+							throw Exception("{0}: Material above quantum well not uniform.", this->getId());
+					region->layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), top_material));
+					//this->writelog(LOG_DETAIL, "Adding top cladding; h = {0}",h);
+
+					ileft = 0;
+					iright = points->axis0->size();
+					region->top = h;
+					added_top_cladding = true;
+				}
+			}
 		}
 	}
-	
-	this->writelog(LOG_INFO, "active region is from z={0} to z={1}", z1, z2); /// in [um]
-	this->writelog(LOG_INFO, "active region thickness: {0} nm", (z2-z1)*1e3); /// [um] -> [nm]
+	if (!regions.empty() && regions.back().isQW(regions.back().size() - 1))
+		throw Exception("{0}: Quantum-well cannot be located at the edge of the structure.", this->getId());
 
-	z.clear();
-	//z.push_back(0.); /// so here z[0] = 0, but later the z.size will be stored here
-	dz = 0.1e-3; /// in [um], default value: 0.1 nm
-	nz = static_cast<int> ((z2 - z1 + 1e-6) / dz) + 1;
-	this->writelog(LOG_INFO, "no of nodes for kp method: {0}", nz);
-	z.push_back(z1 - dz); /// bottom cladding, left edge of the element is set here: z[0]
-	for (std::size_t i = 0; i < nz; ++i)
-		z.push_back(z1 + i*dz);
-	z.push_back(z2 + dz); /// top cladding
-	ne = nz - 1;
+	if (strained && !materialSubstrate)
+		throw BadInput(this->getId(), "Strained quantum wells requested but no layer with substrate role set");
 
-	auto vaxis = plask::make_shared<OrderedAxis>();
-	auto haxis = plask::make_shared<OrderedAxis>();
-	this->writelog(LOG_INFO, "vaxis size: {0}", vaxis->size());
-	this->writelog(LOG_INFO, "haxis size: {0}", haxis->size());
-	OrderedAxis::WarningOff vaxiswoff(vaxis);
-	OrderedAxis::WarningOff haxiswoff(haxis);
-	for (std::size_t i = 0; i != nz+2; ++i)
-	{
-		vaxis->addPoint(z[i]);
-	}
-	haxis->addPoint(r_at_0);
-
-	meshActive = plask::make_shared<const RectangularMesh<2>>(haxis, vaxis, RectangularMesh<2>::ORDER_01);
-	
-	this->writelog(LOG_INFO, "Done.");
-	
-	/*shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
-
-    for (size_t r = 0; r < points->axis1->size(); ++r) {
-        bool had_active = false; // indicates if we had active region in this layer
-        shared_ptr<Material> layer_material;
-        bool layer_QW = false;
-
-        for (size_t c = 0; c < points->axis0->size(); ++c)
-        { // In the (possible) active region
-
-
-            else {
-                // Here we are inside potential active region
-                if (active) {
-                    if (!had_active) {
-                        if (!in_active)
-                        { // active region is starting set-up new region info
-                            regions.emplace_back(mesh->at(c,r));
-                            ileft = c;
-                        }
-                        layer_material = this->geometry->getMaterial(point);
-                        layer_QW = QW;
-                    } else {
-                        if (*layer_material != *this->geometry->getMaterial(point))
-                            throw Exception("{0}: Non-uniform active region layer.", this->getId());
-                        if (layer_QW != QW)
-                            throw Exception("{0}: Quantum-well role of the active region layer not consistent.", this->getId());
-                    }
-                } else if (had_active) {
-                    if (!in_active) {
-                        iright = c;
-
-                        // add layer below active region (cladding) LUKASZ
-                        //auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
-                        //for (size_t cc = ileft; cc < iright; ++cc)
-                        //    if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
-                        //        throw Exception("{0}: Material below quantum well not uniform.", this->getId());
-                        //auto& region = regions.back();
-                        //double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
-                        //double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
-                        //region.origin += Vec<2>(0., -h);
-                        //this->writelog(LOG_DETAIL, "Adding bottom cladding; h = {0}",h);
-                        //region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
-                    } else
-                        throw Exception("{0}: Right edge of the active region not aligned.", this->getId());
-                }
-                had_active |= active;
-            }
-        }
-        in_active = had_active;
-
-        // Now fill-in the layer info
-        ActiveRegionInfo* region = regions.empty()? nullptr : &regions.back();
-        if (region) {
-            if (!added_bottom_cladding) {
-                if (r == 0)
-                    throw Exception("{0}: Active region cannot start from the edge of the structure.", this->getId());
-                // add layer below active region (cladding) LUKASZ
-                auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
-                for (size_t cc = ileft; cc < iright; ++cc)
-                    if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
-                        throw Exception("{0}: Material below active region not uniform.", this->getId());
-                auto& region = regions.back();
-                double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
-                double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
-                region.origin += Vec<2>(0., -h);
-                //this->writelog(LOG_DETAIL, "Adding bottom cladding; h = {0}",h);
-                region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
-                region.bottom = h;
-                added_bottom_cladding = true;
-            }
-
-            double h = mesh->axis1->at(r+1) - mesh->axis1->at(r);
-            double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
-            if (in_active) {
-                size_t n = region->layers->getChildrenCount();
-                shared_ptr<Block<2>> last;
-                if (n > 0) last = static_pointer_cast<Block<2>>(static_pointer_cast<Translation<2>>(region->layers->getChildNo(n-1))->getChild());
-                assert(!last || last->size.c0 == w);
-                if (last && layer_material == last->getRepresentativeMaterial() && layer_QW == region->isQW(region->size()-1)) {
-                    //TODO check if usage of getRepresentativeMaterial is fine here (was material)
-                    last->setSize(w, last->size.c1 + h);
-                } else {
-                    auto layer = plask::make_shared<Block<2>>(Vec<2>(w,h), layer_material);
-                    if (layer_QW) layer->addRole("QW");
-                    region->layers->push_back(layer);
-                }
-            } else {
-                if (!added_top_cladding) {
-
-                    // add layer above active region (top cladding)
-                    auto top_material = this->geometry->getMaterial(points->at(ileft,r));
-                    for (size_t cc = ileft; cc < iright; ++cc)
-                        if (*this->geometry->getMaterial(points->at(cc,r)) != *top_material)
-                            throw Exception("{0}: Material above quantum well not uniform.", this->getId());
-                    region->layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w,h), top_material));
-                    //this->writelog(LOG_DETAIL, "Adding top cladding; h = {0}",h);
-
-                    ileft = 0;
-                    iright = points->axis0->size();
-                    region->top = h;
-                    added_top_cladding = true;
-                }
-            }
-        }
-    }
-    if (!regions.empty() && regions.back().isQW(regions.back().size()-1))
-        throw Exception("{0}: Quantum-well cannot be located at the edge of the structure.", this->getId());
-
-    if (strained && !materialSubstrate)
-        throw BadInput(this->getId(), "Strained quantum wells requested but no layer with substrate role set");
-	*/
-    this->writelog(LOG_DETAIL, "Found {0} active region{1}", regions.size(), (regions.size()==1)?"":"s");
-    for (auto& region: regions) region.summarize(this);
+	this->writelog(LOG_DETAIL, "Found {0} active region{1}", regions.size(), (regions.size() == 1) ? "" : "s");
+	for (auto& region : regions) region.summarize(this);
 }
 
-template <typename GeometryType>
-void DriftDiffusionModel2DSolver<GeometryType>::ActiveRegionInfo::summarize(const DriftDiffusionModel2DSolver<GeometryType>* solver)
+
+
+
+
+
+
+
+
+
+
+
+//template <typename GeometryType>
+//void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
+//{
+//	this->writelog(LOG_INFO, "Detecting active regions..");
+//	
+//	regions.clear();
+//
+//	shared_ptr< MeshAxis > axis_vert = this->mesh->vert(); /// for the whole structure
+//	shared_ptr< MeshAxis > axis_tran = this->mesh->tran(); /// for the whole structure
+//	double r_at_0 = 0.5 * (axis_tran->at(0) + axis_tran->at(1)); // TODO
+//	
+//    shared_ptr<RectangularMesh<2>> meshMid = this->mesh->getMidpointsMesh();
+//	bool found_substrate = false;
+//	bool found_active = false;
+//
+//	double z1(-1.), z2(-1.); /// min. and max. z for kp method [um]
+//	double zSub(-1.); /// z for substrate [um]
+//
+//    //for (std::size_t i = 0; i < axis_vert->size(); ++i) // TEST
+//	//{
+//	//	this->writelog(LOG_INFO, "axis_vert[{0}]: {1}", i, axis_vert->at(i));
+//	//}
+//    for (std::size_t i = 0; i < axis_vert->size()-1; ++i)
+//	{
+//		double zA = axis_vert->at(i); /// z bottom
+//		double zB = axis_vert->at(i+1); /// z top
+//		double z_avg = 0.5*(zA + zB);
+//		Vec<2, double> point;
+//		point[0] = r_at_0;
+//		point[1] = z_avg;
+//
+//		std::string role_ = "-";
+//		auto tags = this->geometry->getRolesAt(point);
+//
+//		if (tags.find("substrate") != tags.end())
+//		{
+//			//this->writelog(LOG_INFO, "axis_vert_mid[{0}] {1}, substrate", i, z_avg);
+//			if (!found_substrate) /// first time in substrate
+//			{
+//				zSub = z_avg;
+//			}		
+//			found_substrate = true;
+//		}
+//		if (tags.find("active") != tags.end())
+//		{
+//			//in_active = true;			
+//			//this->writelog(LOG_INFO, "axis_vert_mid[{0}] {1}, active", i, z_avg);
+//			if (!found_active) /// first time in active
+//			{
+//				z1 = zA;
+//				z2 = zB;
+//			}
+//			else
+//			{
+//				if (z1 > zA)
+//					z1 = zA;
+//				if (z2 < zB)
+//					z2 = zB;
+//			}
+//			found_active = true;
+//		}
+//	}
+//	
+//	this->writelog(LOG_INFO, "active region is from z = {0} um to z = {1} um", z1, z2); /// in [um]
+//	this->writelog(LOG_INFO, "active region thickness: {0} nm", (z2-z1)*1e3); /// [um] -> [nm]
+//
+//	z.clear();
+//	//z.push_back(0.); /// so here z[0] = 0, but later the z.size will be stored here
+//	dz = 0.1e-3; /// in [um], default value: 0.1 nm
+//	nn = static_cast<int> ((z2 - z1 + 1e-6) / dz) + 1;
+//	this->writelog(LOG_INFO, "no of nodes for kp method: {0}", nn);
+//	z.push_back(z1 - dz); /// bottom cladding, left edge of the element is set here: z[0]
+//	for (std::size_t i = 0; i < nn; ++i)
+//		z.push_back(z1 + i*dz);
+//	z.push_back(z2 + dz); /// top cladding
+//	ne = nn - 1;
+//
+//	auto vaxis = plask::make_shared<OrderedAxis>();
+//	auto haxis = plask::make_shared<OrderedAxis>();
+//	this->writelog(LOG_INFO, "vaxis size: {0}", vaxis->size());
+//	this->writelog(LOG_INFO, "haxis size: {0}", haxis->size());
+//	OrderedAxis::WarningOff vaxiswoff(vaxis);
+//	OrderedAxis::WarningOff haxiswoff(haxis);
+//	for (std::size_t i = 0; i != nn+2; ++i)
+//	{
+//		vaxis->addPoint(z[i]);
+//	}
+//	haxis->addPoint(1e-4); // TODO - tu musza byc wartosci z haxis dla danego obszaru czynnego
+//	haxis->addPoint(2e-4);
+//	haxis->addPoint(3e-4);
+//
+//	this->writelog(LOG_INFO, "vaxis size: {0}", vaxis->size());
+//	this->writelog(LOG_INFO, "haxis size: {0}", haxis->size());
+//
+//	meshAct = plask::make_shared<RectangularMesh<2>>(haxis, vaxis, RectangularMesh<2>::ORDER_01);
+//	meshActMid = meshAct->getMidpointsMesh(); // LUKI TODO
+//	
+//	this->writelog(LOG_INFO, "MeshAct 0 1: {0} {1} {2}", meshAct->at(0,0), meshAct->at(0,1), meshAct->at(0,2));
+//	this->writelog(LOG_INFO, "MeshAct 0 1: {0} {1} {2}", meshAct->axis1->at(0), meshAct->axis1->at(1), meshAct->axis1->at(2));
+//
+//	this->writelog(LOG_INFO, "Done.");
+//	
+//	/*shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
+//
+//    for (size_t r = 0; r < points->axis1->size(); ++r) {
+//        bool had_active = false; // indicates if we had active region in this layer
+//        shared_ptr<Material> layer_material;
+//        bool layer_QW = false;
+//
+//        for (size_t c = 0; c < points->axis0->size(); ++c)
+//        { // In the (possible) active region
+//
+//
+//            else {
+//                // Here we are inside potential active region
+//                if (active) {
+//                    if (!had_active) {
+//                        if (!in_active)
+//                        { // active region is starting set-up new region info
+//                            regions.emplace_back(mesh->at(c,r));
+//                            ileft = c;
+//                        }
+//                        layer_material = this->geometry->getMaterial(point);
+//                        layer_QW = QW;
+//                    } else {
+//                        if (*layer_material != *this->geometry->getMaterial(point))
+//                            throw Exception("{0}: Non-uniform active region layer.", this->getId());
+//                        if (layer_QW != QW)
+//                            throw Exception("{0}: Quantum-well role of the active region layer not consistent.", this->getId());
+//                    }
+//                } else if (had_active) {
+//                    if (!in_active) {
+//                        iright = c;
+//
+//                        // add layer below active region (cladding) LUKASZ
+//                        //auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
+//                        //for (size_t cc = ileft; cc < iright; ++cc)
+//                        //    if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
+//                        //        throw Exception("{0}: Material below quantum well not uniform.", this->getId());
+//                        //auto& region = regions.back();
+//                        //double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
+//                        //double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
+//                        //region.origin += Vec<2>(0., -h);
+//                        //this->writelog(LOG_DETAIL, "Adding bottom cladding; h = {0}",h);
+//                        //region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
+//                    } else
+//                        throw Exception("{0}: Right edge of the active region not aligned.", this->getId());
+//                }
+//                had_active |= active;
+//            }
+//        }
+//        in_active = had_active;
+//
+//        // Now fill-in the layer info
+//        ActiveRegionInfo* region = regions.empty()? nullptr : &regions.back();
+//        if (region) {
+//            if (!added_bottom_cladding) {
+//                if (r == 0)
+//                    throw Exception("{0}: Active region cannot start from the edge of the structure.", this->getId());
+//                // add layer below active region (cladding) LUKASZ
+//                auto bottom_material = this->geometry->getMaterial(points->at(ileft,r-1));
+//                for (size_t cc = ileft; cc < iright; ++cc)
+//                    if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
+//                        throw Exception("{0}: Material below active region not uniform.", this->getId());
+//                auto& region = regions.back();
+//                double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
+//                double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
+//                region.origin += Vec<2>(0., -h);
+//                //this->writelog(LOG_DETAIL, "Adding bottom cladding; h = {0}",h);
+//                region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
+//                region.bottom = h;
+//                added_bottom_cladding = true;
+//            }
+//
+//            double h = mesh->axis1->at(r+1) - mesh->axis1->at(r);
+//            double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
+//            if (in_active) {
+//                size_t n = region->layers->getChildrenCount();
+//                shared_ptr<Block<2>> last;
+//                if (n > 0) last = static_pointer_cast<Block<2>>(static_pointer_cast<Translation<2>>(region->layers->getChildNo(n-1))->getChild());
+//                assert(!last || last->size.c0 == w);
+//                if (last && layer_material == last->getRepresentativeMaterial() && layer_QW == region->isQW(region->size()-1)) {
+//                    //TODO check if usage of getRepresentativeMaterial is fine here (was material)
+//                    last->setSize(w, last->size.c1 + h);
+//                } else {
+//                    auto layer = plask::make_shared<Block<2>>(Vec<2>(w,h), layer_material);
+//                    if (layer_QW) layer->addRole("QW");
+//                    region->layers->push_back(layer);
+//                }
+//            } else {
+//                if (!added_top_cladding) {
+//
+//                    // add layer above active region (top cladding)
+//                    auto top_material = this->geometry->getMaterial(points->at(ileft,r));
+//                    for (size_t cc = ileft; cc < iright; ++cc)
+//                        if (*this->geometry->getMaterial(points->at(cc,r)) != *top_material)
+//                            throw Exception("{0}: Material above quantum well not uniform.", this->getId());
+//                    region->layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w,h), top_material));
+//                    //this->writelog(LOG_DETAIL, "Adding top cladding; h = {0}",h);
+//
+//                    ileft = 0;
+//                    iright = points->axis0->size();
+//                    region->top = h;
+//                    added_top_cladding = true;
+//                }
+//            }
+//        }
+//    }
+//    if (!regions.empty() && regions.back().isQW(regions.back().size()-1))
+//        throw Exception("{0}: Quantum-well cannot be located at the edge of the structure.", this->getId());
+//
+//    if (strained && !materialSubstrate)
+//        throw BadInput(this->getId(), "Strained quantum wells requested but no layer with substrate role set");
+//	*/
+//    this->writelog(LOG_DETAIL, "Found {0} active region{1}", regions.size(), (regions.size()==1)?"":"s");
+//    for (auto& region: regions) region.summarize(this);
+//}
+
+
+template <typename Geometry2DType> /// COPIED FROM FREECARRIER!
+void DriftDiffusionModel2DSolver<Geometry2DType>::ActiveRegionInfo::summarize(const DriftDiffusionModel2DSolver<Geometry2DType>* solver)
 {
-    holes = BOTH_HOLES;
-    auto bbox = layers->getBoundingBox();
-    total = bbox.upper[1] - bbox.lower[1] - bottom - top;
-    materials.clear(); materials.reserve(layers->children.size());
-    thicknesses.clear(); thicknesses.reserve(layers->children.size());
-    for (const auto& layer: layers->children) {
-        auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layer.get())->getChild().get());
-        auto material = block->singleMaterial();
-        if (!material) throw plask::Exception("{}: Active region can consist only of solid layers", solver->getId());
-        auto bbox = static_cast<GeometryObjectD<2>*>(layer.get())->getBoundingBox();
-        double thck = bbox.upper[1] - bbox.lower[1];
-        materials.push_back(material);
-        thicknesses.push_back(thck);
-    }
-    /*double substra = solver->strained? solver->materialSubstrate->lattC(solver->T0, 'a') : 0.;
-    if (materials.size() > 2) {
-        Material* material = materials[0].get();
-        double e;
-        if (solver->strained) { double latt = material->lattC(solver->T0, 'a'); e = (substra - latt) / latt; } else e = 0.;
-        double el0 = material->CB(solver->T0, e, 'G'),
-                hh0 = material->VB(solver->T0, e, 'G',  'H'),
-                lh0 = material->VB(solver->T0, e, 'G',  'L');
-        material = materials[1].get();
-        if (solver->strained) { double latt = material->lattC(solver->T0, 'a'); e = (substra - latt) / latt; } else e = 0.;
-        double el1 = material->CB(solver->T0, e, 'G'),
-                hh1 = material->VB(solver->T0, e, 'G',  'H'),
-                lh1 = material->VB(solver->T0, e, 'G',  'L');
-        for (size_t i = 2; i < materials.size(); ++i) {
-            material = materials[i].get();
-            if (solver->strained) { double latt = material->lattC(solver->T0, 'a'); e = (substra - latt) / latt; } else e = 0.;
-            double el2 = material->CB(solver->T0, e, 'G');
-            double hh2 = material->VB(solver->T0, e, 'G',  'H');
-            double lh2 = material->VB(solver->T0, e, 'G',  'L');
-            if ((el0 < el1 && el1 > el2) || (hh0 > hh1 && hh1 < hh2) || (lh0 > lh1 && lh1 < lh2)) {
-                if (i != 2 && i != materials.size()-1) {
-                    bool eb = (el0 < el1 && el1 > el2);
-                    if (eb != (hh0 > hh1 && hh1 < hh2)) holes = ConsideredHoles(holes & ~HEAVY_HOLES);
-                    if (eb != (lh0 > lh1 && lh1 < lh2)) holes = ConsideredHoles(holes & ~LIGHT_HOLES);
-                }
-                if (holes == NO_HOLES)
-                    throw Exception("{0}: Quantum wells in conduction band do not coincide with wells is valence band", solver->getId());
-                if ((el0 < el1 && el1 > el2) || (hh0 > hh1 && hh1 < hh2 && holes & HEAVY_HOLES) || (lh0 > lh1 && lh1 < lh2 && holes & LIGHT_HOLES))
-                    wells.push_back(i-1);
-            } else if (i == 2) wells.push_back(0);
-            if (el2 != el1) { el0 = el1; el1 = el2; }
-            if (hh2 != hh1) { hh0 = hh1; hh1 = hh2; }
-            if (lh2 != lh1) { lh0 = lh1; lh1 = lh2; }
-        }
-    }*/ // TODO LUKASZ 2017
-    if (wells.back() < materials.size()-2) wells.push_back(materials.size()-1);
-    totalqw = 0.;
-    for (size_t i = 0; i < thicknesses.size(); ++i)
-        if (isQW(i)) totalqw += thicknesses[i];
+	holes = BOTH_HOLES;
+	auto bbox = layers->getBoundingBox();
+	total = bbox.upper[1] - bbox.lower[1] - bottom - top;
+	solver->writelog(LOG_DETAIL, "coordinates | bbox.upper: {0} um, bbox.lower: {1} um, bottom: {2} um, top: {3} um, total: {4} um", bbox.upper[1], bbox.lower[1], bottom, top, total);
+	materials.clear(); materials.reserve(layers->children.size());
+	thicknesses.clear(); thicknesses.reserve(layers->children.size());
+	for (const auto& layer : layers->children) {
+		auto block = static_cast<Block<2>*>(static_cast<Translation<2>*>(layer.get())->getChild().get());
+		auto material = block->singleMaterial();
+		if (!material) throw plask::Exception("{}: Active region can consist only of solid layers", solver->getId());
+		auto bbox = static_cast<GeometryObjectD<2>*>(layer.get())->getBoundingBox();
+		double thck = bbox.upper[1] - bbox.lower[1];
+		solver->writelog(LOG_DETAIL, "layer | material: {0}, thickness: {1} um", material->name(), thck);
+		materials.push_back(material);
+		thicknesses.push_back(thck);
+	}
+	/*double substra = solver->strained ? solver->materialSubstrate->lattC(solver->T0, 'a') : 0.; // TODO moze cos z tego wziac???
+	if (materials.size() > 2) {
+		Material* material = materials[0].get();
+		double e;
+		if (solver->strained) { double latt = material->lattC(solver->T0, 'a'); e = (substra - latt) / latt; }
+		else e = 0.;
+		double el0 = material->CB(solver->T0, e, 'G'),
+			hh0 = material->VB(solver->T0, e, 'G', 'H'),
+			lh0 = material->VB(solver->T0, e, 'G', 'L');
+		material = materials[1].get();
+		if (solver->strained) { double latt = material->lattC(solver->T0, 'a'); e = (substra - latt) / latt; }
+		else e = 0.;
+		double el1 = material->CB(solver->T0, e, 'G'),
+			hh1 = material->VB(solver->T0, e, 'G', 'H'),
+			lh1 = material->VB(solver->T0, e, 'G', 'L');
+		for (size_t i = 2; i < materials.size(); ++i) {
+			material = materials[i].get();
+			if (solver->strained) { double latt = material->lattC(solver->T0, 'a'); e = (substra - latt) / latt; }
+			else e = 0.;
+			double el2 = material->CB(solver->T0, e, 'G');
+			double hh2 = material->VB(solver->T0, e, 'G', 'H');
+			double lh2 = material->VB(solver->T0, e, 'G', 'L');
+			if ((el0 < el1 && el1 > el2) || (hh0 > hh1 && hh1 < hh2) || (lh0 > lh1 && lh1 < lh2)) {
+				if (i != 2 && i != materials.size() - 1) {
+					bool eb = (el0 < el1 && el1 > el2);
+					if (eb != (hh0 > hh1 && hh1 < hh2)) holes = ConsideredHoles(holes & ~HEAVY_HOLES);
+					if (eb != (lh0 > lh1 && lh1 < lh2)) holes = ConsideredHoles(holes & ~LIGHT_HOLES);
+				}
+				if (holes == NO_HOLES)
+					throw Exception("{0}: Quantum wells in conduction band do not coincide with wells is valence band", solver->getId());
+				if ((el0 < el1 && el1 > el2) || (hh0 > hh1 && hh1 < hh2 && holes & HEAVY_HOLES) || (lh0 > lh1 && lh1 < lh2 && holes & LIGHT_HOLES))
+					wells.push_back(i - 1);
+			}
+			else if (i == 2) wells.push_back(0);
+			if (el2 != el1) { el0 = el1; el1 = el2; }
+			if (hh2 != hh1) { hh0 = hh1; hh1 = hh2; }
+			if (lh2 != lh1) { lh0 = lh1; lh1 = lh2; }
+		}
+	}
+	if (wells.back() < materials.size() - 2) wells.push_back(materials.size() - 1);
+	totalqw = 0.;
+	for (size_t i = 0; i < thicknesses.size(); ++i)
+		if (isQW(i)) totalqw += thicknesses[i];*/
 }
+
 
 /*
 template <typename Geometry2DType>
