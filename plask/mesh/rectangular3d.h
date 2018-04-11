@@ -106,6 +106,7 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
      */
     void writeXML(XMLElement& object) const override;
 
+    using RectilinearMesh3D::at;    // MSVC needs this
 
     /**
      * Get point with given mesh indices.
