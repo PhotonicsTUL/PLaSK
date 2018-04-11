@@ -27,6 +27,16 @@ void check_2_567_9(const Set& set) {    // test if the set is a proper set of nu
     BOOST_CHECK_EQUAL(set.indexOf(8), Set::NOT_INCLUDED);
     BOOST_CHECK_EQUAL(set.indexOf(9), 4);
     BOOST_CHECK_EQUAL(set.indexOf(10), Set::NOT_INCLUDED);
+    auto it = set.begin();  // iterator test
+    BOOST_CHECK(it != set.end());
+    BOOST_CHECK_EQUAL(*it++, 2);
+    BOOST_CHECK(it != set.end());
+    BOOST_CHECK_EQUAL(*it++, 5);
+    BOOST_CHECK_EQUAL(*it++, 6);
+    BOOST_CHECK_EQUAL(*it++, 7);
+    BOOST_CHECK(it != set.end());
+    BOOST_CHECK_EQUAL(*it++, 9);
+    BOOST_CHECK(it == set.end());
 }
 
 BOOST_AUTO_TEST_SUITE(numbers_set) // MUST be the same as the file name

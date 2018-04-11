@@ -62,7 +62,7 @@ public:
      * It may also have dereference() method which returnce @c Reference.
      */
     template <typename Derived, class Value = number_t, class Reference = Value>
-    class ConstIteratorFacade: public boost::iterator_facade<Derived, Value, boost::random_access_traversal_tag, Reference> {
+    struct ConstIteratorFacade: public boost::iterator_facade<Derived, Value, boost::random_access_traversal_tag, Reference> {
 
         typedef typename std::vector<Segment>::const_iterator ConstSegmentIterator;
 
@@ -138,7 +138,7 @@ public:
     public:
 
         template <typename... CtorArgs>
-        explicit const_iterator(const CompressedSetOfNumbers* set, CtorArgs&&... ctorArgs)
+        explicit const_iterator(const CompressedSetOfNumbers& set, CtorArgs&&... ctorArgs)
             : _set(&set), ConstIteratorFacade<const_iterator>(std::forward<CtorArgs>(ctorArgs)...) {}
 
         const CompressedSetOfNumbers<number_t>& set() const { return *_set; }
