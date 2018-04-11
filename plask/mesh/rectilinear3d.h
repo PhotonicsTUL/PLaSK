@@ -194,7 +194,9 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
      */
     struct PLASK_API Elements {
 
-        typedef IndexedIterator<const Elements, Element> const_iterator;
+        static inline Element deref(const RectilinearMesh3D& mesh, std::size_t index) { return mesh.getElement(index); }
+    public:
+        typedef IndexedIterator<const RectilinearMesh3D, Element, deref> const_iterator;
         typedef const_iterator iterator;
 
         /// Mesh which elements will be accessable by this.
@@ -227,10 +229,10 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
         std::size_t size() const { return mesh->getElementsCount(); }
 
         /// @return iterator referring to the first element
-        const_iterator begin() const { return const_iterator(this, 0); }
+        const_iterator begin() const { return const_iterator(mesh, 0); }
 
         /// @return iterator referring to the past-the-end element
-        const_iterator end() const { return const_iterator(this, size()); }
+        const_iterator end() const { return const_iterator(mesh, size()); }
 
     };
 

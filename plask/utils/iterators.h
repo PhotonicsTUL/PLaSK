@@ -205,18 +205,21 @@ struct PolymorphicForwardIteratorWithIndex: public PolymorphicForwardIterator<Im
 };
 
 
+template <typename ContainerType, typename Reference>
+inline Reference dereferenceByIndexOperator(ContainerType& container, std::size_t index) { return container[index]; }
+
 /**
  * Template to create iterators for containers which have operator[].
  * @tparam ContainerType type of container (can be const or non-const)
  * @tparam Reference iterator reference type, should be the same type which return container operator[]
  * In most cases it can be auto-deduced from ContainerType, but only if ContainerType is fully defined and known.
- * @tparam Value iterator value type, should be the same type which return container operator[] but without reference
+ * @tparam dereference_f function which perform dereference on container, by default calls operator[]
  *
  * Example:
  * @code
  * struct MyIntContainer {
  *   //Typdefes for iterator types:
- *   //(note that second template parameter can't be auto-deduced becose MyIntContainer is not already fully defined)
+ *   //(note that second template parameter can't be auto-deduced because MyIntContainer is not fully defined yet)
  *   typedef IndexedIterator<MyRandomAccessContainer, int&> iterator;
  *   typedef IndexedIterator<const MyRandomAccessContainer, const int&> const_iterator;
  *
@@ -241,10 +244,9 @@ struct PolymorphicForwardIteratorWithIndex: public PolymorphicForwardIterator<Im
  */
 template <
     typename ContainerType,
-   // typename Reference = decltype((((ContainerType*)0)->*(&ContainerType::operator[]))(0)),
     typename Reference = decltype(std::declval<ContainerType>()[0]),
-    typename Value = typename std::remove_reference<Reference>::type>
-struct IndexedIterator: public boost::iterator_facade< IndexedIterator<ContainerType, Value, Reference>, Value, boost::random_access_traversal_tag, Reference > {
+    Reference (*dereference_f)(ContainerType& container, std::size_t index) = dereferenceByIndexOperator<ContainerType, Reference>>
+struct IndexedIterator: public boost::iterator_facade< IndexedIterator<ContainerType, Reference, dereference_f>, typename std::remove_reference<Reference>::type, boost::random_access_traversal_tag, Reference > {
 
     /// Pointer to container over which we iterate.
     ContainerType* container;
@@ -270,7 +272,6 @@ struct IndexedIterator: public boost::iterator_facade< IndexedIterator<Container
 
     private: //--- methods used by boost::iterator_facade: ---
     friend class boost::iterator_core_access;
-    template <class, class, class> friend struct IndexedIterator;
 
     template <typename OtherT>
     bool equal(const OtherT& other) const {
@@ -286,7 +287,7 @@ struct IndexedIterator: public boost::iterator_facade< IndexedIterator<Container
     template <typename OtherT>
     std::ptrdiff_t distance_to(OtherT z) const { return std::ptrdiff_t(z.index) - std::ptrdiff_t(index); }
 
-    Reference dereference() const { return (*container)[index]; }
+    Reference dereference() const { return dereference_f(*container, index); }
 
 };
 
@@ -294,7 +295,7 @@ struct IndexedIterator: public boost::iterator_facade< IndexedIterator<Container
  * Get IndexedIterator for given container.
  * @param c container
  * @param index initial iterator position
- * @return iterator over container @a c with position @a index
+ * @return iterator over container @a c which points to the position @a index
  * @see @ref IndexedIterator
  */
 template <typename ContainerType>
@@ -309,7 +310,6 @@ inline IndexedIterator<ContainerType> makeIndexedIterator(ContainerType* c, std:
  * @tparam Value iterator value type, should be the same type which return container operator[] but without reference
  */
 template <typename FunctorType,
-    //typename Reference = decltype((((FunctorType*)0)->*(&FunctorType::operator()))(0)),
     typename Reference = decltype(std::declval<FunctorType>()(0)),
     typename Value = typename std::remove_reference<Reference>::type>
 struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIterator<FunctorType, Value, Reference>, Value, boost::random_access_traversal_tag, Reference > {
@@ -335,7 +335,7 @@ struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIter
 
     private: //--- methods used by boost::iterator_facade: ---
     friend class boost::iterator_core_access;
-    template <class, class, class> friend struct IndexedIterator;
+    template <class, class, class> friend struct FunctorIndexedIterator;
 
     template <typename OtherT>
     bool equal(const OtherT& other) const {
