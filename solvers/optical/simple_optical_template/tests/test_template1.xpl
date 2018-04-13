@@ -42,9 +42,10 @@
     <geometry ref="main"/>
   </optical>
 </solvers>
-
 <script><![CDATA[
-
+prosty.findMode(980)
+Z = np.linspace(-2, 18.6, 5000)
+neff = prosty.outRefractiveIndex( mesh.Rectangular2D([0], Z ))
 
 
 ]]></script>
