@@ -204,7 +204,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
     /// Set new mode symmetry
     void setSymmetry(Expansion::Component sym) {
-        if (geometry && !geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
+        if (symmetry != Expansion::E_UNSPECIFIED && geometry && !geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
             throw BadInput(getId(), "Symmetry not allowed for asymmetric structure");
         if ((symmetry == Expansion::E_UNSPECIFIED) != (sym == Expansion::E_UNSPECIFIED))
             invalidate();

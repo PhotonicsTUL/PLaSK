@@ -933,7 +933,10 @@ def load_plugins():
                 if CONFIG.get('plugins/{}'.format(modname), True):
                     loader.find_module(modname).load_module(modname)
             except:
-                pass
+                if _DEBUG:
+                    import traceback as tb
+                    tb.print_exc()
+
 
 
 class Session(object):

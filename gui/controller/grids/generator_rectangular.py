@@ -144,7 +144,7 @@ class RectangularRefinedGeneratorController(GridController):
         self.refinements = QTableView()
         self.refinements.setModel(model.refinements)
         one = int(self.model.dim == 1)
-        if one:
+        if not one:
             self.refinements.setItemDelegateForColumn(0, ComboBoxDelegate(AXIS_NAMES[self.model.dim-1],
                                                                           self.refinements, editable=False))
         def object_names():
