@@ -97,7 +97,7 @@ struct CompressedSetOfNumbers {
         friend class boost::iterator_core_access;
 
         const CompressedSetOfNumbers<number_t>& _set() const {
-            static_cast<const Derived*>(this)->set();
+            return static_cast<const Derived*>(this)->set();
         }
 
         template <typename OtherT>
