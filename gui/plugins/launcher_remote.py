@@ -20,9 +20,6 @@ import sys
 import os
 import re
 
-import platform
-system = platform.uname()[0]
-
 from gui.qt.QtCore import *
 from gui.qt.QtGui import *
 from gui.qt.QtWidgets import *
@@ -34,6 +31,9 @@ try:
     import cPickle as pickle
 except ImportError:
     import pickle
+
+import platform
+system = platform.uname()[0]
 
 try:
     import paramiko
@@ -221,7 +221,7 @@ else:
             kwargs = dict(config)
             if 'dirs' in kwargs:
                 try:
-                    kwargs['dirs'] = pickle.loads(CONFIG.get('dirs', b'N.').encode('iso-8859-1'))
+                    kwargs['dirs'] = pickle.loads(CONFIG.get('dirs', b'N.').encode('iso-8859-1'), encoding='utf8')
                 except (pickle.PickleError, EOFError):
                     del kwargs['dirs']
                 CONFIG.sync()
