@@ -86,8 +86,26 @@ struct PLASK_SOLVER_API SimpleOpticalTemplate: public SolverOver<Geometry2DType>
     
     typename ProviderFor<LightMagnitude, Geometry2DType>::Delegate outLightMagnitude;
     
+    typename ProviderFor<RefractiveIndex, Geometry2DType>::Delegate outRefractiveIndex;
+    
     /// Parameters for rootdigger
     RootDigger::Params root;
+    
+    double getStripeX() const { return stripex; }
+
+    /**
+
+     * Set position of the main stripe
+
+     * \param x horizontal position of the main stripe
+
+     */
+
+    void setStripeX(double x) {
+        stripex = x;
+        onInvalidate();
+    }
+
     
 protected:
 

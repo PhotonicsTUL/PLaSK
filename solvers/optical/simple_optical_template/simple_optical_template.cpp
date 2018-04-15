@@ -7,10 +7,9 @@ template<typename Geometry2DType>
 SimpleOpticalTemplate<Geometry2DType>::SimpleOpticalTemplate(const std::string& name):
     SolverOver<Geometry2DType>(name), 
     stripex(0),
-    outLightMagnitude(this, &SimpleOpticalTemplate<Geometry2DType>::getLightMagnitude, &SimpleOpticalTemplate<Geometry2DType>::nmodes)
-{
-    std::cout<<"Construktor " << std::endl;
-}
+    outLightMagnitude(this, &SimpleOpticalTemplate<Geometry2DType>::getLightMagnitude, &SimpleOpticalTemplate<Geometry2DType>::nmodes),
+    outRefractiveIndex(this, &SimpleOpticalTemplate<Geometry2DType>::getRefractiveIndex)
+{}
 
 template<typename Geometry2DType>
 void SimpleOpticalTemplate<Geometry2DType>::loadConfiguration(XMLReader &reader, Manager &manager)
@@ -57,10 +56,17 @@ void SimpleOpticalTemplate<Geometry2DType>::initializeRefractiveIndexVec()
 }
 
 template<typename Geometry2DType>
-size_t SimpleOpticalTemplate<Geometry2DType>::findMode(double lambda)
+void SimpleOpticalTemplate<Geometry2DType>::updateCache()
 {
-    std::cout<<lambda<<std::endl;
-    
+    bool fresh = this->initCalculation();
+    if (fresh) {
+        // we need to update something
+        onInitialize();}    
+}
+
+template<typename Geometry2DType>
+size_t SimpleOpticalTemplate<Geometry2DType>::findMode(double lambda)
+{  
     k0 = 2e3*M_PI/lambda;
     writelog(LOG_INFO, "Searching for the mode starting from wavelength = {0}", str(lambda));
     if (isnan(k0.real())) throw BadInput(this->getId(), "No reference wavelength `lam0` specified");
@@ -75,6 +81,15 @@ size_t SimpleOpticalTemplate<Geometry2DType>::findMode(double lambda)
     mode.lam = rootdigger->find((2e3*M_PI)/k0);
     return insertMode(mode);
 
+}
+
+template<typename Geometry2DType>
+dcomplex SimpleOpticalTemplate<Geometry2DType>::getVertDeterminant(dcomplex wavelength)
+{
+    setWavelength(wavelength);
+    updateCache();
+    initializeRefractiveIndexVec();
+    return computeTransferMatrix(k0, nrCache);
 }
 
 template<typename Geometry2DType>
@@ -107,11 +122,78 @@ dcomplex SimpleOpticalTemplate<Geometry2DType>::computeTransferMatrix(const dcom
 template<typename Geometry2DType>
 const DataVector<double> SimpleOpticalTemplate<Geometry2DType>::getLightMagnitude(int num, const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod)
 {
+    setWavelength((modes[num].lam)); 
+    std::vector<double> arrayZ;  
+    for (auto v: *dst_mesh) {double z = v.c1;
+                             arrayZ.push_back(z);}
+
+    DataVector<double> results(arrayZ.size());
+    std::vector<dcomplex> NR;
+    std::vector<double> verticalEdgeVec;
+    std::vector<double> hi;
+    std::vector<dcomplex> B;
+    std::vector<dcomplex> F;
+
+    double T = 300; //temperature 300 K
+    double wavelength = real(getWavelength());
+
+    for(auto p: arrayZ) NR.push_back(this->geometry->getMaterial(vec(double(stripex),  p))->Nr(wavelength, T));
+
+    for (double p_edge: *axis_vertical) verticalEdgeVec.push_back(p_edge);
+
+    for (double p : arrayZ) 
+      if (p<0){hi.push_back(-p);
+               B.push_back(vecE[0].B);
+               F.push_back(vecE[0].F);}
     
+    for (size_t i = 0; i < verticalEdgeVec.size()-1; ++i)
+    {
+        for (double p: arrayZ) 
+        {
+            if (verticalEdgeVec[i] <= p and verticalEdgeVec[i+1] > p){
+                hi.push_back(p - verticalEdgeVec[i]);        
+                B.push_back(vecE[i+1].B);
+                F.push_back(vecE[i+1].F);}
+        }       
+    }
+
+    for(double p: arrayZ) // propagation wave after escape from structure 
+    {
+        if (p > verticalEdgeVec.back())
+        {   
+        hi.push_back(p-verticalEdgeVec.back());    
+        B.push_back(vecE.back().B);
+        F.push_back(vecE.back().F);}    
+    } 
+
+    dcomplex Ez;
+
+    for (size_t i = 0; i < hi.size(); ++i)
+    {
+       Ez = F[i]*exp(-I*NR[i]*k0*hi[i]) + B[i]*exp(I*NR[i]*k0*hi[i]); 
+       results[i] = real(Ez*conj(Ez));
+    }   
+    return results;
+}
+
+template<typename Geometry2DType>
+const LazyData<Tensor3<dcomplex>> SimpleOpticalTemplate<Geometry2DType>::getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod)
+{
+    this->writelog(LOG_DEBUG, "Getting refractive indices");
+    dcomplex lam0 = 2e3*M_PI / k0;
+    InterpolationFlags flags(this->geometry);
+    return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
+          [this, dst_mesh, flags, lam0](size_t j) -> Tensor3<dcomplex> {
+           auto point = flags.wrap(dst_mesh->at(j));
+           return this->geometry->getMaterial(vec(double(stripex), dst_mesh->at(j)[1]))->Nr(real(lam0), 300);}
+    );
+
 }
 
 template<typename Geometry2DType> void SimpleOpticalTemplate<Geometry2DType>::onInvalidate() {
     nrCache.clear();
+    outLightMagnitude.fireChanged();
+    outRefractiveIndex.fireChanged();
 }
 
 template<> std::string SimpleOpticalTemplate<Geometry2DCylindrical>::getClassName() const { return "optical.SimpleOpticalCyl2D"; }
