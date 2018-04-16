@@ -1,21 +1,21 @@
-# This is a YAML file for your solver specification. You must modify it accordingly to your
-# solver's configuration. For general information on YAML files, take a look at
-# https://learn.getgrav.org/advanced/yaml
-
-# If your library has more than one solver, make separate 'solver' element for each one of them:
-- solver: SimpleOpticalCyl
+- solver: SimpleOpticalCyl2D
   lib: simple_optical
-  category: simple_optical
+  category: optical
   help: >
     Scalar optical solver based on solve Helmholtz equation.
 
   geometry: Geometry2DCylindrical
   need mesh: false
-
-  - tag: root
+  
+  providers:
+   - outLightMagnitude
+   - outRefractiveIndex
+       
+  tags: 
+    tag: root
     label: Parameters of the Root-Finding Algorithm
     help: >
-      Parameters of the global root-finding algorithm.
+       Parameters of the global root-finding algorithm.
     attrs:
     - attr: method
       label: Root finding method
@@ -23,134 +23,166 @@
       default: muller
       choices: [ muller, broyden, brent ]
       help: >
-        Root finding algorithm (Muller's method or Broyden's method).
+         Root finding algorithm (Muller's method or Broyden's method).
     - attr: tolx
       label: Tolerance on argument
       type: float
       default: 1.0e-06
       help: >
-        Maximum change of the argument which is allowed for convergent solution.
+          Maximum change of the argument which is allowed for convergent solution. 
     - attr: tolf-min
       label: Sufficient determinant value
       type: float
       default: 1.0e-07
       help: >
-        Minimum value of the determinant sufficient to assume convergence.
+         Minimum value of the determinant sufficient to assume convergence.
     - attr: tolf-max
       label: Required determinant value
       type: float
       default: 1.0e-05
       help: >
-        Maximum value of the determinant required to assume convergence.
+         Maximum value of the determinant required to assume convergence.
     - attr: maxstep
       label: Maximum Broyden iteration step
       type: float
       default: 0.1
       help: >
-        Maximum step in one iteration of root finding. Significant for the Broyden  method only.
+         Maximum step in one iteration of root finding. Significant for the Broyden method only.
     - attr: maxiter
       label: Maximum number of iterations
       type: int
       default: 500
       help: >
-        Maximum number of root finding iterations.
+         Maximum number of root finding iterations.
     - attr: alpha
       label: Broyden decrease factor
       type: float
       default: 1.0e-07
       help: >
-        Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).
+         Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).
     - attr: lambda
       label: Minimum Broyden step decrease ratio
       type: float
       default: 1.0e-08
       help: >
-        Minimum decrease ratio of one step (Broyden method only).
+         Minimum decrease ratio of one step (Broyden method only).
     - attr: initial-range
       label: Initial Muller range size
       type: complex
       default: 0.001
       help: >
-        Initial range size (Muller method only).
-
-  - tag: stripe-root
-    label: Parameters of the Vertical Root-Finding Algorithm
-    help: >
-      Parameters of root-finding algorithm for one stripe.
-    attrs:
-    - *method
-    - *tolx
-    - *tolf-min
-    - &stripe-tolf-max
-      attr: tolf-max
-      label: Required determinant value
-      type: float
-      default: 1.0e-05
-      help: >
-        Maximum value of the determinant required to assume convergence.
-    - *maxstep
-    - *maxiter
-    - *alpha
-    - *lambda
-    - *initial-range
-    
-  - tag: mode
+         Initial range size (Muller method only).  
+  
+    tag: mode
     label: Mode Properties
     help: >
-      Mode properties.
+         Mode properties.
     attrs:
     - attr: lam0
       label: Approximate wavelength
       type: float
       unit: nm
       help: >
-        Approximate wavelength, around which the solution is searched. The refractive and group idexes
-        are computed for this wavelength
-    - attr: emission
-      label: Direction of emission
-      type: choice
-      default: top
-      choices: [ top, bottom ]
-      help: >
-        Direction of the useful light emission. Necessary for the over-threshold model to correctly
-        compute the output power.
-    - attr: vlam
-      label: Vertical wavelength
-      type: float
-      unit: nm
-      help: >
-        '"Vertical wavelength" i.e. the wavelength what would be in the absence of lateral confinement;
-        setting this value helps to find models in very long resonators.'
+         Approximate wavelength, around which the solution is searched. The refractive and group idexes
+         are computed for this wavelength
     - attr: vat
       label: Vertical solution coord
       type: float
       unit: µm
       help: >
-        Horizontal position of at which the vertical part of the field is calculated.
+          Horizontal position of at which the vertical part of the field is calculated.     
 
-  # This is boundary conditions read by your solver. You need only to specity the tag name
-  # in the 'bcond' field and the label.
-  - bcond: boundary_condition
-    label: Boundary Condition
-
-  - bcond: other_boundary_condtion
-    label: Another Boundary Condition
-    # Some documentation of boundary conditions is generated automatically.
-    # If it is not sufficient add additional description inside this tag.
-    help: >
-      Additional description of boundary condition in help.
-
+- solver: SimpleOpticalCar2D
+  lib: simple_optical
+  category: optical
+  help: >
+    Scalar optical solver baser on solve Helmholtz equation for Cartesian 2D geometry
+    
+  geometry: Geometry2DCartesian
+           
+  need mesh: false
+  
   providers:
-  - outLightMagnitude
-  - outRefractiveIndex;
+   - outLightMagnitude
+   - outRefractiveIndex
 
-  receivers:
-  # Here you specify all the solver providers.
-  #- inReceiver: QuantityIfNameDifferent
-
-  # Standard name of receiver/provider is inQuantity/outQuantity. Sometimes it can be different.
-  # In such case add the quantity name after the colon for a given provider/receiver, so GUI can
-  # offer proper connection options.
-
-
-
+  tags: 
+    tag: root
+    label: Parameters of the Root-Finding Algorithm
+    help: >
+       Parameters of the global root-finding algorithm.
+    attrs:
+    - attr: method
+      label: Root finding method
+      type: choice
+      default: muller
+      choices: [ muller, broyden, brent ]
+      help: >
+         Root finding algorithm (Muller's method or Broyden's method).
+    - attr: tolx
+      label: Tolerance on argument
+      type: float
+      default: 1.0e-06
+      help: >
+          Maximum change of the argument which is allowed for convergent solution. 
+    - attr: tolf-min
+      label: Sufficient determinant value
+      type: float
+      default: 1.0e-07
+      help: >
+         Minimum value of the determinant sufficient to assume convergence.
+    - attr: tolf-max
+      label: Required determinant value
+      type: float
+      default: 1.0e-05
+      help: >
+         Maximum value of the determinant required to assume convergence.
+    - attr: maxstep
+      label: Maximum Broyden iteration step
+      type: float
+      default: 0.1
+      help: >
+         Maximum step in one iteration of root finding. Significant for the Broyden method only.
+    - attr: maxiter
+      label: Maximum number of iterations
+      type: int
+      default: 500
+      help: >
+         Maximum number of root finding iterations.
+    - attr: alpha
+      label: Broyden decrease factor
+      type: float
+      default: 1.0e-07
+      help: >
+         Parameter ensuring sufficient decrease of determinant in each step (Broyden method only).
+    - attr: lambda
+      label: Minimum Broyden step decrease ratio
+      type: float
+      default: 1.0e-08
+      help: >
+         Minimum decrease ratio of one step (Broyden method only).
+    - attr: initial-range
+      label: Initial Muller range size
+      type: complex
+      default: 0.001
+      help: >
+         Initial range size (Muller method only).  
+  
+    tag: mode
+    label: Mode Properties
+    help: >
+         Mode properties.
+    attrs:
+    - attr: lam0
+      label: Approximate wavelength
+      type: float
+      unit: nm
+      help: >
+         Approximate wavelength, around which the solution is searched. The refractive and group idexes
+         are computed for this wavelength
+    - attr: vat
+      label: Vertical solution coord
+      type: float
+      unit: µm
+      help: >
+          Horizontal position of at which the vertical part of the field is calculated.

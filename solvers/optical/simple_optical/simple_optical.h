@@ -6,17 +6,17 @@
 
 #include "rootdigger.h"
 
+
 namespace plask { namespace optical { namespace simple_optical {
-
 /**
- * Solver performing calculations in 2D Cylindrical geometry by solve Helmholtz equation
+ * Solver performing calculations in 2D Cartesian or Cylindrical space by solve Helmholtz equation
  */
-
-struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> {
-//MD: to powinno być szablonem — wtedy łatwo można zrobić solver dla każdej geometrii
-
+template<typename Geometry2DType>
+struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DType>
+{
+        
     SimpleOptical(const std::string& name="");
-
+    
     struct Matrix {
          dcomplex ff, fb, bf, bb;
          Matrix() = default;
@@ -28,9 +28,9 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
                            bf*T.ff + bb*T.bf, bf*T.fb + bb*T.bb);}
       };
      
-     struct FieldZ {
+    struct FieldZ {
           dcomplex F, B;
-	  FieldZ() = default;
+          FieldZ() = default;
           FieldZ(dcomplex f, dcomplex b): F(f), B(b) {}
           FieldZ operator*(dcomplex a) const { return FieldZ(F*a, B*a); }
           FieldZ operator*(const Matrix m) {return FieldZ(m.ff*F+m.fb*B, m.bf*F+m.bb*B);}
@@ -38,79 +38,77 @@ struct PLASK_SOLVER_API SimpleOptical: public SolverOver<Geometry2DCylindrical> 
           FieldZ operator*=(dcomplex a) { F *= a; B *= a; return *this; }
           FieldZ operator/=(dcomplex a) { F /= a; B /= a; return *this; }
      };
-      
-
-      
+     
     struct Mode {
       SimpleOptical* solver; ///< Solver this mode belongs to Simple Optical
       dcomplex lam;          ///< Stored wavelength
 
-      Mode(SimpleOptical* solver):
-	solver(solver) {}
+    Mode(SimpleOptical* solver):
+        solver(solver) {}
     };
     
     size_t nmodes() const {
-	return modes.size();
+        return modes.size();
     }
     
      /// Insert mode to the list or return the index of the exiting one
-     size_t insertMode(const Mode& mode) {
+    size_t insertMode(const Mode& mode) {
         modes.push_back(mode);
         return modes.size()-1;
     }
-
-     void loadConfiguration(XMLReader& reader, Manager& manager) override;
-
-     virtual std::string getClassName() const override  {return "SimpleOpticalCyl";} 
- 
-     void onInitialize() override;
-
-     shared_ptr<MeshAxis> axis_vertical;   
-     shared_ptr<MeshAxis> axis_horizontal;
-     shared_ptr<MeshAxis> axis_midpoints_vertical;
-     shared_ptr<MeshAxis> axis_midpoints_horizontal;
+    
+    std::vector<Mode> modes;
+      
+    virtual void loadConfiguration(XMLReader&, Manager&) override;
+    
+    virtual void onInitialize() override;
+    
+    virtual std::string getClassName() const override;
+    
+    shared_ptr<MeshAxis> axis_vertical;   
+    shared_ptr<MeshAxis> axis_horizontal;
+    shared_ptr<MeshAxis> axis_midpoints_vertical;
+    shared_ptr<MeshAxis> axis_midpoints_horizontal;
 
      /// \return current wavelength
-     dcomplex getWavelength() const { return 2e3*M_PI / k0; }
+    dcomplex getWavelength() const { return 2e3*M_PI / k0; }
 
     /**
      * Set new wavelength
      * \param wavelength new wavelength
      */
-     void setWavelength(dcomplex wavelength) {
+    void setWavelength(dcomplex wavelength) {
         k0 = 2e3*M_PI / wavelength;
         nrCache.clear();
-     }
+    }
      
-     dcomplex getVertDeterminant(dcomplex wavelength);
+    size_t findMode(double lambda);
      
-     dcomplex computeTransferMatrix(const dcomplex& k, const std::vector<dcomplex> & NR);
-
-     /// Parameters for rootdigger
-     RootDigger::Params root;
-     
-     typename ProviderFor<LightMagnitude, Geometry2DCylindrical>::Delegate outLightMagnitude;
-     
-     /// Provider of refractive index
-     typename ProviderFor<RefractiveIndex, Geometry2DCylindrical>::Delegate outRefractiveIndex;
-          
-     std::vector<Mode> modes;
-     
-     size_t findMode(double lambda);
-     
-     /// \return position of the main stripe
+    dcomplex getVertDeterminant(dcomplex wavelength);
+    
+    typename ProviderFor<LightMagnitude, Geometry2DType>::Delegate outLightMagnitude;
+    
+    typename ProviderFor<RefractiveIndex, Geometry2DType>::Delegate outRefractiveIndex;
+    
+    /// Parameters for rootdigger
+    RootDigger::Params root;
+    
     double getStripeX() const { return stripex; }
 
     /**
+
      * Set position of the main stripe
+
      * \param x horizontal position of the main stripe
+
      */
+
     void setStripeX(double x) {
         stripex = x;
-        invalidate();
+        onInvalidate();
     }
 
-
+    
 protected:
 
     friend struct RootDigger;
@@ -127,6 +125,8 @@ protected:
     std::vector<double> edgeVertLayerPoint;
 
     void initializeRefractiveIndexVec();
+    
+    dcomplex computeTransferMatrix(const dcomplex& x, const std::vector<dcomplex>& NR);
   
     std::vector<dcomplex> nrCache; // Vector to hold refractive index
     
@@ -137,13 +137,13 @@ protected:
     const LazyData<Tensor3<dcomplex>> getRefractiveIndex(const shared_ptr<const MeshD<2>> &dst_mesh, InterpolationMethod);
   
     double stripex;             ///< Position of the main stripe
-  
+ 
     /// Invalidate the data
     virtual void onInvalidate() override;
   
     void updateCache();
+
 };
 
-}}} // namespace
-
+}}}
 #endif

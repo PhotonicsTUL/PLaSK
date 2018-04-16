@@ -20,6 +20,7 @@ using namespace plask::optical::simple_optical;
     u8"   ~optical.simple_optical.RootParams.tolf_min\n" \
     u8"   ~optical.simple_optical.RootParams.tolx\n\n" \
     u8":rtype: RootParams\n"
+
     
 #define SEARCH_ARGS_DOC \
     u8"    start (complex): Start of the search range (0 means automatic).\n" \
@@ -28,30 +29,42 @@ using namespace plask::optical::simple_optical;
     u8"    imsteps (integer): Number of steps on the imaginary axis during the search.\n" \
     u8"    eps (complex): required precision of the search.\n" \
 
-static py::object SimpleOptical_getDeterminant(SimpleOptical& self, py::object val)
+
+template<typename Geometry2DType>
+static py::object SimpleOptical_getDeterminant(SimpleOptical<Geometry2DType>& self, py::object val)
 {
    return UFUNC<dcomplex>([&](dcomplex x){return self.getVertDeterminant(x);}, val);
 }
+
 
 BOOST_PYTHON_MODULE(simple_optical)
 {
     if (!plask_import_array()) throw(py::error_already_set());
 
 
-    //MD: Klasy solverów w Pythonie muszą mieć końcówkę Cyl, 2D lub 3D — w zależności od tego na jakiej geometrii liczą
-    //MD: W zasadzie powinny być dwie, a nawet trzy — dla każdej geometrii osobno (na poziomie C++ można użyć szablonów, by nie pisać tego samego wiele razy)
-    //PG: Więc użyć szablonów?
-    {CLASS(SimpleOptical, "SimpleOpticalCyl", "Solver performing calculations in 2D Cylindrical geometry by solve Helmholtz equation.")
-     METHOD(findMode, findMode, "This is method to find wavelength of mode", (arg("lam")));
-     RO_FIELD(root,
-                 u8"Configuration of the root searching algorithm for vertical component of the mode\n"
-                 u8"in a single stripe.\n\n"
-                 ROOTDIGGER_ATTRS_DOC
-                );
-     solver.def("get_vert_determinant", &SimpleOptical_getDeterminant, "Get vertical modal determinant for debuging purposes", (arg("wavelength")) );
-     PROVIDER(outLightMagnitude, "");
-     PROVIDER(outRefractiveIndex, "");
-     RW_PROPERTY(vat, getStripeX, setStripeX, u8"Horizontal position of the main stripe (with dominant mode).");
+    {CLASS(SimpleOptical<Geometry2DCylindrical>, "SimpleOpticalCyl2D", "Solver performing calculations in 2D Cylindrical geometry by solve Helmholtz equation.")
+      METHOD(findMode, findMode, py::arg("lam"));
+      PROVIDER(outRefractiveIndex, "");
+      PROVIDER(outLightMagnitude, "");
+      RO_FIELD(root,
+               u8"Configuration of the root searching algorithm for vertical component of the mode\n"
+               u8"in a single stripe.\n\n"
+               ROOTDIGGER_ATTRS_DOC
+              );
+      solver.def("get_vert_dteterminant", &SimpleOptical_getDeterminant<Geometry2DCylindrical>, "Get vertical modal determinant for debuging purposes", (arg("wavelength")));
+      RW_PROPERTY(vat, getStripeX, setStripeX, u8"Horizontal position of the main stripe (with dominant mode).");          
+    }
+    
+    {CLASS(SimpleOptical<Geometry2DCartesian>, "SimpleOpticalCar2D", "Solver performing calculations in 2D Cylindrical geometry by solve Helmholtz equation.")
+      METHOD(findMode, findMode, py::arg("lam"));
+      PROVIDER(outRefractiveIndex, "");
+      PROVIDER(outLightMagnitude, "");
+      RO_FIELD(root,
+               u8"Configuration of the root searching algorithm for vertical component of the mode\n"
+               u8"in a single stripe.\n\n"
+               ROOTDIGGER_ATTRS_DOC
+              );
+      solver.def("get_vert_dteterminant", &SimpleOptical_getDeterminant<Geometry2DCartesian>, "Get vertical modal determinant for debuging purposes", (arg("wavelength")));
     }
     
     py::class_<RootDigger::Params, boost::noncopyable>("RootParams", u8"Configuration of the root finding algorithm.", py::no_init)
