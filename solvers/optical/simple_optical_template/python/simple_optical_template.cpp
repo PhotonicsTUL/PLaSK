@@ -64,7 +64,7 @@ BOOST_PYTHON_MODULE(simple_optical_template)
                u8"in a single stripe.\n\n"
                ROOTDIGGER_ATTRS_DOC
               );
-      solver.def("get_vert_dteterminant", &SimpleOpticalTemplate_getDeterminant<Geometry2DCylindrical>, "Get vertical modal determinant for debuging purposes", (arg("wavelength")));
+      solver.def("get_vert_dteterminant", &SimpleOpticalTemplate_getDeterminant<Geometry2DCartesian>, "Get vertical modal determinant for debuging purposes", (arg("wavelength")));
     }
     
     py::class_<RootDigger::Params, boost::noncopyable>("RootParams", u8"Configuration of the root finding algorithm.", py::no_init)

@@ -20,7 +20,8 @@ void SimpleOpticalTemplate<Geometry2DType>::loadConfiguration(XMLReader &reader,
         if (param == "mode") {
             stripex = reader.getAttribute<double>("vat", stripex);    
             stripex = reader.getAttribute<double>("lam0", stripex);
-        }
+        } else if (param == "root") {
+            RootDigger::readRootDiggerConfig(reader, root); }
         else {     
             this->parseStandardConfiguration(reader, manager, "<geometry> or <root> or <mode>");}
         }    
