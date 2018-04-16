@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+find $RPM_INSTALL_PREFIX/lib/plask -type f -name "*.pyc" -delete
+exit 0

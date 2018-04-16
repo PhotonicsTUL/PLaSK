@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+/usr/bin/python3 -m compileall $RPM_INSTALL_PREFIX/lib/plask
+/sbin/ldconfig
