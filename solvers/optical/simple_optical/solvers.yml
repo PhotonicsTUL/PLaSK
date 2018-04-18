@@ -1,10 +1,10 @@
-- solver: SimpleOpticalCyl2D
+- solver: SimpleOpticalCyl
   lib: simple_optical
   category: optical
   help: >
-    Scalar optical solver based on solve Helmholtz equation.
+    Scalar optical solver base on solve Helmholtz equation.
 
-  geometry: Geometry2DCylindrical
+  geometry: Cylindrical
   need mesh: false
   
   providers:
@@ -93,13 +93,13 @@
       help: >
           Horizontal position of at which the vertical part of the field is calculated.     
 
-- solver: SimpleOpticalCar2D
+- solver: SimpleOptical2D
   lib: simple_optical
   category: optical
   help: >
-    Scalar optical solver baser on solve Helmholtz equation for Cartesian 2D geometry
+    Scalar optical solver base on solve Helmholtz equation for Cartesian 2D geometry
     
-  geometry: Geometry2DCartesian
+  geometry: Cartesian2D
            
   need mesh: false
   
