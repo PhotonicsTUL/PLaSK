@@ -81,7 +81,7 @@ protected:
         public:
 
             template <typename... CtorArgs>
-            explicit const_iterator(const FilteredMeshType* filteredMesh, CtorArgs&&... ctorArgs)
+            explicit const_iterator(const FilteredMeshType& filteredMesh, CtorArgs&&... ctorArgs)
                 : filteredMesh(&filteredMesh), Set::ConstIteratorFacade<const_iterator, Element>(std::forward<CtorArgs>(ctorArgs)...) {}
 
             const Set& set() const { return filteredMesh->elementsSet; }
@@ -101,10 +101,10 @@ protected:
         std::size_t size() const { return filteredMesh->getElementsCount(); }
 
         /// @return iterator referring to the first element
-        const_iterator begin() const { return const_iterator(this, 0, filteredMesh->elementsSet.segments.begin()); }
+        const_iterator begin() const { return const_iterator(*filteredMesh, 0, filteredMesh->elementsSet.segments.begin()); }
 
         /// @return iterator referring to the past-the-end element
-        const_iterator end() const { return const_iterator(this, size(), filteredMesh->elementsSet.segments.end()); }
+        const_iterator end() const { return const_iterator(*filteredMesh, size(), filteredMesh->elementsSet.segments.end()); }
 
         /**
          * Get @p i-th element.
