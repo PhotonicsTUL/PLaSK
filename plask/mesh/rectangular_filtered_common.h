@@ -142,7 +142,7 @@ public:
         const RectangularFilteredMeshBase* mesh;
 
         LocalCoords dereference() const {
-            return mesh->at(this->getNumber());
+            return mesh->rectangularMesh->at(this->getNumber());
         }
 
     public:
