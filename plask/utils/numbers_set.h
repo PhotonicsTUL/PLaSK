@@ -216,7 +216,7 @@ struct CompressedSetOfNumbers {
      */
     number_t at(std::size_t index) const {
         auto seg_it = std::upper_bound(segments.begin(), segments.end(), index, Segment::compareByIndexEnd);
-        if (seg_it == segments.end()) throw OutOfBoundsException("CompressedSetOfNumbers::at", "index", index, 0, this->size());
+        if (seg_it == segments.end()) throw OutOfBoundsException("CompressedSetOfNumbers::at", "index", index, 0, this->size()-1);
         // here: index < seg_it->indexEnd
         return seg_it->numberEnd + index - seg_it->indexEnd;
     }

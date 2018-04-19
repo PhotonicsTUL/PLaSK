@@ -507,7 +507,8 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
      * @return number of elements in this mesh in the first direction (axis0 direction).
      */
     std::size_t getElementsCount0() const {
-        return std::max(int(axis0->size())-1, 0);
+        const std::size_t s = axis0->size();
+        return (s != 0)? s-1 : 0;
     }
 
     /**
@@ -515,7 +516,8 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
      * @return number of elements in this mesh in the second direction (axis1 direction).
      */
     std::size_t getElementsCount1() const {
-        return std::max(int(axis1->size())-1, 0);
+        const std::size_t s = axis1->size();
+        return (s != 0)? s-1 : 0;
     }
 
     /**
@@ -523,7 +525,8 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
      * @return number of elements in this mesh in the third direction (axis2 direction).
      */
     size_t getElementsCount2() const {
-        return size_t(std::max(int(axis2->size())-1, 0));
+        const std::size_t s = axis2->size();
+        return (s != 0)? s-1 : 0;
     }
 
     /**

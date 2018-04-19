@@ -28,7 +28,7 @@ class Matrix {
             std::atomic_thread_fence(std::memory_order_acquire);
             delete gc;
             aligned_delete_array(r*c, data_);
-            write_debug("freeing matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, r*c*sizeof(T)/1048576., (void*)data_);
+            write_debug("freeing matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
         }
     }
 
@@ -41,11 +41,11 @@ class Matrix {
     Matrix() : gc(nullptr) {}
 
     Matrix(std::size_t m, std::size_t n) : r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new std::atomic<int>(1)) {
-        write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, r*c*sizeof(T)/1048576., (void*)data_);
+        write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
     }
 
     Matrix(std::size_t m, std::size_t n, T val) : r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new std::atomic<int>(1)) {
-        write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, r*c*sizeof(T)/1048576., (void*)data_);
+        write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
         std::fill_n(data_, m*n, val);
     }
 
@@ -61,7 +61,7 @@ class Matrix {
     }
 
     Matrix(const MatrixDiagonal<T>& M): r(M.size()), c(M.size()), data_(aligned_new_array<T>(M.size()*M.size())), gc(new std::atomic<int>(1))  {
-        write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p} (from diagonal)", r, c, r*c*sizeof(T)/1048576., (void*)data_);
+        write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p} (from diagonal)", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
         std::fill_n(data_, r*c, 0);
         for (int j = 0, n = 0; j < r; j++, n += c+1) data_[n] = M[j];
     }
@@ -148,7 +148,7 @@ class MatrixDiagonal {
             std::atomic_thread_fence(std::memory_order_acquire);
             delete gc;
             aligned_delete_array(siz, data_);
-            write_debug("freeing diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
+            write_debug("freeing diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, double(siz*sizeof(T))/1048576., (void*)data_);
         }
     }
 
@@ -161,11 +161,11 @@ class MatrixDiagonal {
     MatrixDiagonal() : gc(nullptr) {}
 
     MatrixDiagonal(std::size_t n) : siz(n), data_(aligned_new_array<T>(n)), gc(new std::atomic<int>(1)) {
-        write_debug("allocating diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
+        write_debug("allocating diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, double(siz*sizeof(T))/1048576., (void*)data_);
     }
 
     MatrixDiagonal(std::size_t n, T val) : siz(n), data_(aligned_new_array<T>(n)), gc(new std::atomic<int>(1)) {
-        write_debug("allocating and filling diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, siz*sizeof(T)/1048576., (void*)data_);
+        write_debug("allocating and filling diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, double(siz*sizeof(T))/1048576., (void*)data_);
         std::fill_n(data_, n, val);
     }
 

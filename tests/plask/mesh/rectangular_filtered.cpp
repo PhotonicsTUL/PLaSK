@@ -17,11 +17,21 @@ void checkNodeIterator(const plask::RectangularFilteredMesh2D& filteredMesh,
 // TODO more parameters to test
 void checkElementIterator(const plask::RectangularFilteredMesh2D& filteredMesh,
                           plask::RectangularFilteredMesh2D::Elements::const_iterator& it,
-                          std::size_t index, std::size_t number)
+                          std::size_t index, std::size_t number,
+                          std::size_t index0, std::size_t index1)
 {
     BOOST_REQUIRE(it != filteredMesh.elements().end());
     BOOST_CHECK_EQUAL(it.getIndex(), index);
+    BOOST_CHECK_EQUAL(it->getIndex(), index);
     BOOST_CHECK_EQUAL(it.getNumber(), number);
+
+    BOOST_CHECK_EQUAL(it->getIndex0(), index0);
+    BOOST_CHECK_EQUAL(it->getLowerIndex0(), index0);
+    BOOST_CHECK_EQUAL(it->getUpperIndex0(), index0+1);
+    BOOST_CHECK_EQUAL(it->getIndex1(), index1);
+    BOOST_CHECK_EQUAL(it->getLowerIndex1(), index1);
+    BOOST_CHECK_EQUAL(it->getUpperIndex1(), index1+1);
+
     ++it;
 }
 
@@ -39,6 +49,8 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
     );
     BOOST_REQUIRE_EQUAL(filteredMesh.size(), 2 + 4 + 4 + 2);
     BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount(), 1 + 3 + 1);
+    BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount0(), 3);
+    BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount1(), 3);
 
     {   // iterator test:
         plask::RectangularFilteredMesh2D::const_iterator it = filteredMesh.begin();
@@ -65,17 +77,28 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
     {   // element iterator test:
         plask::RectangularFilteredMesh2D::Elements::const_iterator it = filteredMesh.elements().begin();
 
-        checkElementIterator(filteredMesh, it,   0,  1);
+        checkElementIterator(filteredMesh, it,   0,  1,   0, 1);
 
-        checkElementIterator(filteredMesh, it,   1,  3);
-        checkElementIterator(filteredMesh, it,   2,  4);
-        checkElementIterator(filteredMesh, it,   3,  5);
+        checkElementIterator(filteredMesh, it,   1,  3,   1, 0);
+        checkElementIterator(filteredMesh, it,   2,  4,   1, 1);
+        checkElementIterator(filteredMesh, it,   3,  5,   1, 2);
 
-        checkElementIterator(filteredMesh, it,   4,  7);
+        checkElementIterator(filteredMesh, it,   4,  7,   2, 1);
 
         BOOST_CHECK(it == filteredMesh.elements().end());
     }
 
+    BOOST_CHECK_EQUAL(filteredMesh.getElementIndexFromLowIndex(0), 0);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementIndexFromLowIndex(2), 1);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementIndexFromLowIndex(3), 2);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementIndexFromLowIndex(4), 3);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementIndexFromLowIndex(7), 4);
+
+    BOOST_CHECK_EQUAL(filteredMesh.getElementMeshLowIndex(0), 0);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementMeshLowIndex(1), 2);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementMeshLowIndex(2), 3);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementMeshLowIndex(3), 4);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementMeshLowIndex(4), 7);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

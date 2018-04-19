@@ -75,14 +75,16 @@ protected:
             const FilteredMeshType* filteredMesh;
 
             Element dereference() const {
-                return Element(filteredMesh, this->getIndex(), this->getNumber());
+                return Element(*filteredMesh, this->getIndex(), this->getNumber());
             }
+
+            friend class boost::iterator_core_access;
 
         public:
 
             template <typename... CtorArgs>
             explicit const_iterator(const FilteredMeshType& filteredMesh, CtorArgs&&... ctorArgs)
-                : filteredMesh(&filteredMesh), Set::ConstIteratorFacade<const_iterator, Element>(std::forward<CtorArgs>(ctorArgs)...) {}
+                : Set::ConstIteratorFacade<const_iterator, Element>(std::forward<CtorArgs>(ctorArgs)...), filteredMesh(&filteredMesh) {}
 
             const Set& set() const { return filteredMesh->elementsSet; }
         };

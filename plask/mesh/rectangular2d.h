@@ -718,7 +718,8 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
      * @return number of elements in this mesh in the first direction (axis0 direction).
      */
     std::size_t getElementsCount0() const {
-        return (axis0->size() != 0)? axis0->size() : 0;
+        const std::size_t s = axis0->size();
+        return (s != 0)? s-1 : 0;
     }
 
     /**
@@ -726,7 +727,8 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
      * @return number of elements in this mesh in the second direction (axis1 direction).
      */
     std::size_t getElementsCount1() const {
-        return (axis1->size() != 0)? axis1->size() : 0;
+        const std::size_t s = axis1->size();
+        return (s != 0)? s-1 : 0;
     }
 
     /**
