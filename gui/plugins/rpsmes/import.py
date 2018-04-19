@@ -129,7 +129,7 @@ class Region(object):
         self.a1 = axes[1]
         self.repeat = 0
         self.name = None
-        self.roles = []
+        self.roles = set()
 
     def write(self, output):
         w = '{:.4f}'.format(self.x1 - self.x0)
@@ -499,12 +499,14 @@ def read_dan(fname):
         line = next(input)
         ht = int(line[0])
         if sigma_t == 'j':
-            r.roles.append('active')
+            r.roles.add('active')
         if ht == 0:
-            r.roles.append('noheat')
+            r.roles.add('noheat')
         elif ht == -1:
             r.name = unique_object_name()
             heats[r.name] = float(line[1])
+        elif ht == -200:
+            r.roles.add('active')
         elif ht != -100:
             rpsmes.raise_exception(ValueError, "wrong heat source type")
 
