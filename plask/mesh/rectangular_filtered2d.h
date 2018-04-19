@@ -19,7 +19,7 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
         /// Index of element. If it equals to UNKONOWN_ELEMENT_INDEX, it will be calculated on-demand from index0 and index1.
         mutable std::size_t elementIndex;
 
-        const RectangularMesh<2>& rectangularMesh() const { return *filteredMesh.rectangularMesh; }
+        const RectangularMesh<2>& rectangularMesh() const { return filteredMesh.rectangularMesh; }
 
     public:
 
@@ -134,10 +134,10 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
 
     };
 
-    RectangularFilteredMesh2D(const RectangularMesh<2>* rectangularMesh, const Predicate& predicate)
+    RectangularFilteredMesh2D(const RectangularMesh<2>& rectangularMesh, const Predicate& predicate)
         : RectangularFilteredMeshBase(rectangularMesh)
     {
-        for (auto el_it = rectangularMesh->elements().begin(); el_it != rectangularMesh->elements().end(); ++el_it)
+        for (auto el_it = rectangularMesh.elements().begin(); el_it != rectangularMesh.elements().end(); ++el_it)
             if (predicate(*el_it)) {
                 elementsSet.push_back(el_it.index);
                 nodesSet.insert(el_it->getLoLoIndex());
@@ -176,7 +176,7 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
      * @return this mesh index, from 0 to size()-1, or NOT_INCLUDED
      */
     inline std::size_t index(std::size_t axis0_index, std::size_t axis1_index) const {
-        return nodesSet.indexOf(rectangularMesh->index(axis0_index, axis1_index));
+        return nodesSet.indexOf(rectangularMesh.index(axis0_index, axis1_index));
     }
 
     /**
@@ -186,7 +186,7 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
      * @return point with given @p index
      */
     inline Vec<2, double> at(std::size_t index0, std::size_t index1) const {
-        return rectangularMesh->at(index0, index1);
+        return rectangularMesh.at(index0, index1);
     }
 
     /**
@@ -196,14 +196,14 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
      * @return point with given axis0 and axis1 indexes
      */
     inline Vec<2,double> operator()(std::size_t axis0_index, std::size_t axis1_index) const {
-        return rectangularMesh->operator()(axis0_index, axis1_index);
+        return rectangularMesh.operator()(axis0_index, axis1_index);
     }
 
 private:
     bool canBeIncluded(const Vec<2>& point) const {
         return
-            rectangularMesh->axis0->at(0) <= point[0] && point[0] <= rectangularMesh->axis0->at(rectangularMesh->axis0->size()-1) &&
-            rectangularMesh->axis1->at(0) <= point[1] && point[1] <= rectangularMesh->axis1->at(rectangularMesh->axis1->size()-1);
+            rectangularMesh.axis0->at(0) <= point[0] && point[0] <= rectangularMesh.axis0->at(rectangularMesh.axis0->size()-1) &&
+            rectangularMesh.axis1->at(0) <= point[1] && point[1] <= rectangularMesh.axis1->at(rectangularMesh.axis1->size()-1);
     }
 
     bool prepareInterpolation(const Vec<2>& point, Vec<2>& wrapped_point, std::size_t& index0_lo, std::size_t& index0_hi, std::size_t& index1_lo, std::size_t& index1_hi, std::size_t& rectmesh_index_lo, const InterpolationFlags& flags) const;
@@ -227,8 +227,8 @@ public:
 
         return flags.postprocess(point,
                                  interpolation::bilinear(
-                                     rectangularMesh->axis0->at(index0_lo), rectangularMesh->axis0->at(index0_hi),
-                                     rectangularMesh->axis1->at(index1_lo), rectangularMesh->axis1->at(index1_hi),
+                                     rectangularMesh.axis0->at(index0_lo), rectangularMesh.axis0->at(index0_hi),
+                                     rectangularMesh.axis1->at(index1_lo), rectangularMesh.axis1->at(index1_hi),
                                      data[nodesSet.indexOf(rectmesh_index_lo)],
                                      data[index(index0_hi, index1_lo)],
                                      data[index(index0_hi, index1_hi)],
@@ -254,8 +254,8 @@ public:
 
         return flags.postprocess(point,
                                  data[this->index(
-                                     nearest(wrapped_point.c0, *rectangularMesh->axis0, index0_lo, index0_hi),
-                                     nearest(wrapped_point.c1, *rectangularMesh->axis1, index1_lo, index1_hi)
+                                     nearest(wrapped_point.c0, *rectangularMesh.axis0, index0_lo, index0_hi),
+                                     nearest(wrapped_point.c1, *rectangularMesh.axis1, index1_lo, index1_hi)
                                  )]);
     }
 
@@ -266,7 +266,7 @@ public:
      * @return index of the element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndexes(std::size_t axis0_index, std::size_t axis1_index) const {
-        return elementsSet.indexOf(rectangularMesh->getElementIndexFromLowIndexes(axis0_index, axis1_index));
+        return elementsSet.indexOf(rectangularMesh.getElementIndexFromLowIndexes(axis0_index, axis1_index));
     }
 
     /**
@@ -275,7 +275,7 @@ public:
      * @return the area of the element with given indexes
      */
     double getElementArea(std::size_t index0, std::size_t index1) const {
-        return rectangularMesh->getElementArea(index0, index1);
+        return rectangularMesh.getElementArea(index0, index1);
     }
 
     /**
@@ -284,7 +284,7 @@ public:
      * @return point in center of element with given index
      */
     Vec<2, double> getElementMidpoint(std::size_t index0, std::size_t index1) const {
-        return rectangularMesh->getElementMidpoint(index0, index1);
+        return rectangularMesh.getElementMidpoint(index0, index1);
     }
 
     /**
@@ -293,10 +293,27 @@ public:
      * @return box of elements with given index
      */
     Box2D getElementBox(std::size_t index0, std::size_t index1) const {
-        return rectangularMesh->getElementBox(index0, index1);
+        return rectangularMesh.getElementBox(index0, index1);
     }
 
+};
 
+template <typename SrcT, typename DstT>
+struct InterpolationAlgorithm<RectangularFilteredMesh2D, SrcT, DstT, INTERPOLATION_LINEAR> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularFilteredMesh2D>& src_mesh, const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<2>>& dst_mesh, const InterpolationFlags& flags) {
+        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        return new LinearInterpolatedLazyDataImpl< DstT, RectangularFilteredMesh2D, SrcT >(src_mesh, src_vec, dst_mesh, flags);
+    }
+};
+
+template <typename SrcT, typename DstT>
+struct InterpolationAlgorithm<RectangularFilteredMesh2D, SrcT, DstT, INTERPOLATION_NEAREST> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularFilteredMesh2D>& src_mesh, const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<2>>& dst_mesh, const InterpolationFlags& flags) {
+        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        return new NearestNeighborInterpolatedLazyDataImpl< DstT, RectangularFilteredMesh2D, SrcT >(src_mesh, src_vec, dst_mesh, flags);
+    }
 };
 
 }   // namespace plask

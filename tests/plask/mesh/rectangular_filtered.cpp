@@ -40,9 +40,8 @@ BOOST_AUTO_TEST_SUITE(rectangular_filtered) // MUST be the same as the file name
 BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
     auto axis0 = plask::make_shared<plask::OrderedAxis>(std::initializer_list<double>{1.0, 2.0, 5.0, 10.0});
     auto axis1 = plask::make_shared<plask::RegularAxis>(3.0, 6.0, 4);
-    plask::RectangularMesh<2> fullMesh(axis0, axis1);   // 4x4 nodes, 3x3 elements
     plask::RectangularFilteredMesh2D filteredMesh(
-                &fullMesh,
+                plask::RectangularMesh<2>(axis0, axis1),    // 4x4 nodes, 3x3 elements
                 [] (const plask::RectangularMesh<2>::Element& e) {
                     return e.getIndex0() == 1 || e.getIndex1() == 1;    // everything in the middle (index 1) column and row
                 }

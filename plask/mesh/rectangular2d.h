@@ -439,8 +439,12 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
      */
     RectangularMesh(shared_ptr<MeshAxis> axis0, shared_ptr<MeshAxis> axis1, IterationOrder iterationOrder = ORDER_01);
 
-    /// Copy constructor
-    RectangularMesh(const RectangularMesh<2>& src);
+    /**
+     * Copy constructor.
+     * @param src mesh to copy
+     * @param clone_axes whether axes of the @p src should be cloned (if true) or shared (if false; default)
+     */
+    RectangularMesh(const RectangularMesh<2>& src, bool clone_axes = false);
 
     ~RectangularMesh();
 

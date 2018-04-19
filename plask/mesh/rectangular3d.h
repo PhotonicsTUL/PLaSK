@@ -43,8 +43,12 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
      */
     RectangularMesh(shared_ptr<MeshAxis> mesh0, shared_ptr<MeshAxis> mesh1, shared_ptr<MeshAxis> mesh2, IterationOrder iterationOrder = ORDER_012);
 
-    /// Copy constructor
-    RectangularMesh(const RectangularMesh<3>& src);
+    /**
+     * Copy constructor.
+     * @param src mesh to copy
+     * @param clone_axes whether axes of the @p src should be cloned (if true) or shared (if false; default)
+     */
+    RectangularMesh(const RectangularMesh<3>& src, bool clone_axes = false);
 
     /**
      * Get first coordinate of points in this mesh.

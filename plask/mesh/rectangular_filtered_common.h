@@ -19,7 +19,7 @@ class RectangularFilteredMeshBase: public MeshD<DIM> {
 
 protected:
 
-    const RectangularMesh<DIM>* rectangularMesh;
+    const RectangularMesh<DIM> rectangularMesh;
 
     //typedef CompressedSetOfNumbers<std::uint32_t> Set;
     typedef CompressedSetOfNumbers<std::size_t> Set;
@@ -124,8 +124,13 @@ public:
     /// Returned by some methods to signalize that element or node (with given index(es)) is not included in the mesh.
     enum:std::size_t { NOT_INCLUDED = Set::NOT_INCLUDED };
 
-    RectangularFilteredMeshBase(const RectangularMesh<DIM>* rectangularMesh)
-        : rectangularMesh(rectangularMesh) {}
+    /**
+     * Construct a mesh by wrap of a given @p rectangularMesh.
+     * @param rectangularMesh mesh to wrap (it is copied by the constructor)
+     * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if true) or shared (if false; default)
+     */
+    RectangularFilteredMeshBase(const RectangularMesh<DIM>& rectangularMesh, bool clone_axes = false)
+        : rectangularMesh(rectangularMesh, clone_axes) {}
 
     /**
      * Iterator over nodes coordinates.
@@ -144,7 +149,7 @@ public:
         const RectangularFilteredMeshBase* mesh;
 
         LocalCoords dereference() const {
-            return mesh->rectangularMesh->at(this->getNumber());
+            return mesh->rectangularMesh.at(this->getNumber());
         }
 
     public:
@@ -163,7 +168,7 @@ public:
     const_iterator end() const { return const_iterator(*this, size(), nodesSet.segments.end()); }
 
     LocalCoords at(std::size_t index) const override {
-        return rectangularMesh->at(nodesSet.at(index));
+        return rectangularMesh.at(nodesSet.at(index));
     }
 
     std::size_t size() const override { return nodesSet.size(); }
@@ -176,7 +181,7 @@ public:
      * @return index of axis0, from 0 to axis0->size()-1
      */
     inline std::size_t index0(std::size_t mesh_index) const {
-        return rectangularMesh->index0(nodesSet.at(mesh_index));
+        return rectangularMesh.index0(nodesSet.at(mesh_index));
     }
 
     /**
@@ -185,7 +190,7 @@ public:
      * @return index of axis0, from 0 to axis0->size()-1
      */
     inline std::size_t index1(std::size_t mesh_index) const {
-        return rectangularMesh->index1(nodesSet.at(mesh_index));
+        return rectangularMesh.index1(nodesSet.at(mesh_index));
     }
 
     /**
@@ -194,7 +199,7 @@ public:
      * @return index of major axis, from 0 to majorAxis.size()-1
      */
     inline std::size_t majorIndex(std::size_t mesh_index) const {
-        return rectangularMesh->majorIndex(nodesSet.at(mesh_index));
+        return rectangularMesh.majorIndex(nodesSet.at(mesh_index));
     }
 
     /**
@@ -203,7 +208,7 @@ public:
      * @return index of major axis, from 0 to majorAxis.size()-1
      */
     inline std::size_t minorIndex(std::size_t mesh_index) const {
-        return rectangularMesh->minorIndex(nodesSet.at(mesh_index));
+        return rectangularMesh.minorIndex(nodesSet.at(mesh_index));
     }
 
     /**
@@ -211,7 +216,7 @@ public:
      * @return number of elements in the full rectangular mesh in the first direction (axis0 direction).
      */
     std::size_t getElementsCount0() const {
-        return rectangularMesh->getElementsCount0();
+        return rectangularMesh.getElementsCount0();
     }
 
     /**
@@ -219,7 +224,7 @@ public:
      * @return number of elements in the full rectangular mesh in the second direction (axis1 direction).
      */
     std::size_t getElementsCount1() const {
-        return rectangularMesh->getElementsCount1();
+        return rectangularMesh.getElementsCount1();
     }
 
     /**
@@ -236,7 +241,7 @@ public:
      * @return index of the element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndex(std::size_t mesh_index_of_el_bottom_left) const {
-        return elementsSet.indexOf(rectangularMesh->getElementIndexFromLowIndex(nodesSet.at(mesh_index_of_el_bottom_left)));
+        return elementsSet.indexOf(rectangularMesh.getElementIndexFromLowIndex(nodesSet.at(mesh_index_of_el_bottom_left)));
     }
 
     /**
@@ -245,7 +250,7 @@ public:
      * @return mesh index
      */
     std::size_t getElementMeshLowIndex(std::size_t element_index) const {
-        return nodesSet.indexOf(rectangularMesh->getElementMeshLowIndex(elementsSet.at(element_index)));
+        return nodesSet.indexOf(rectangularMesh.getElementMeshLowIndex(elementsSet.at(element_index)));
     }
 
     /**
@@ -255,7 +260,7 @@ public:
      * you can easy calculate rest indexes of element corner by adding 1 to returned coordinates
      */
     Vec<DIM, std::size_t> getElementMeshLowIndexes(std::size_t element_index) const {
-        return rectangularMesh->getElementMeshLowIndexes(elementsSet.at(element_index));
+        return rectangularMesh.getElementMeshLowIndexes(elementsSet.at(element_index));
     }
 
     /**
@@ -264,7 +269,7 @@ public:
      * @return the area of the element with given index
      */
     double getElementArea(std::size_t element_index) const {
-        return rectangularMesh->getElementArea(elementsSet.at(element_index));
+        return rectangularMesh.getElementArea(elementsSet.at(element_index));
     }
 
     /**
@@ -272,14 +277,14 @@ public:
      * @param index0 index of the element (axis0 index)
      * @return first coordinate of the point in the center of the element
      */
-    double getElementMidpoint0(std::size_t index0) const { return rectangularMesh->getElementMidpoint0(index0); }
+    double getElementMidpoint0(std::size_t index0) const { return rectangularMesh.getElementMidpoint0(index0); }
 
     /**
      * Get second coordinate of point in the center of an elements.
      * @param index1 index of the element (axis1 index)
      * @return second coordinate of the point in the center of the element
      */
-    double getElementMidpoint1(std::size_t index1) const { return rectangularMesh->getElementMidpoint1(index1); }
+    double getElementMidpoint1(std::size_t index1) const { return rectangularMesh.getElementMidpoint1(index1); }
 
     /**
      * Get point in the center of an element.
@@ -287,7 +292,7 @@ public:
      * @return point in center of element with given index
      */
     Vec<DIM, double> getElementMidpoint(std::size_t element_index) const {
-        return rectangularMesh->getElementMidpoint(elementsSet.at(element_index));
+        return rectangularMesh.getElementMidpoint(elementsSet.at(element_index));
     }
 
     /**
@@ -296,7 +301,7 @@ public:
      * @return the element as a rectangle (box)
      */
     typename Primitive<DIM>::Box getElementBox(std::size_t element_index) const {
-        return rectangularMesh->getElementBox(elementsSet.at(element_index));
+        return rectangularMesh.getElementBox(elementsSet.at(element_index));
     }
 
 };

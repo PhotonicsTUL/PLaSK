@@ -15,7 +15,7 @@ RectangularMesh<3>::RectangularMesh(IterationOrder iterationOrder): RectilinearM
 RectangularMesh<3>::RectangularMesh(shared_ptr<MeshAxis> mesh0, shared_ptr<MeshAxis> mesh1, shared_ptr<MeshAxis> mesh2, IterationOrder iterationOrder):
     RectilinearMesh3D(std::move(mesh0), std::move(mesh1), std::move(mesh2), iterationOrder) {}
 
-RectangularMesh<3>::RectangularMesh(const RectangularMesh<3>& src): RectilinearMesh3D(src) {}
+RectangularMesh<3>::RectangularMesh(const RectangularMesh<3>& src, bool clone_axes): RectilinearMesh3D(src, clone_axes) {}
 
 void RectangularMesh<3>::writeXML(XMLElement& object) const {
     object.attr("type", "rectangular3d");
