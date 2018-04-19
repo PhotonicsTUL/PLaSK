@@ -506,7 +506,7 @@ else:
                 else:
                     run = self.runn or self.RUNN
                     fname2 = self.tmpfile(fname, params['array'] is not None)
-                command_line = "{run}{cmd} -{ft} -l{ll}{lc} {defs} {fname} {args}".format(
+                command_line = "{run}{cmd} -u -{ft} -l{ll}{lc} {defs} {fname} {args}".format(
                     run=(run+' ') if run else '',
                     cmd=command,
                     fname=fname2,
