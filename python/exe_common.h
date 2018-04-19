@@ -63,7 +63,7 @@ inline py::object system_str_to_pyobject(const system_string& str) {
 #define system_main wmain
 #define CSTR(s) L ## #s
 
-#else	// ------------- non-Windows (we ssume that system_string is std::string, and all strings are UTF-8) -------------
+#else	// ------------- non-Windows (we assume that system_string is std::string, and all strings are UTF-8) -------------
 
 #define system_to_utf8(s) s
 #define system_to_utf8_cstr(cstr) cstr

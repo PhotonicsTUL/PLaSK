@@ -107,7 +107,16 @@ struct XMLPythonDataSource: public XMLReader::DataSource {
         size_t read = 0, len;
         do {
             py::object readobj = file.attr("read")(buf_size-read);
-            const char* data = py::extract<const char*>(readobj);
+#           if PY_VERSION_HEX >= 0x03000000
+                const char* data;
+                if (PyBytes_Check(readobj.ptr())) {
+                    data = PyBytes_AS_STRING(readobj.ptr());
+                } else {
+                    data = py::extract<const char*>(readobj);
+                }
+#           else
+                const char* data = py::extract<const char*>(readobj);
+#           endif
             len = strlen(data);
             if (len > buf_size-read) throw CriticalException("Too much data read");
             std::copy_n(data, len, buff);

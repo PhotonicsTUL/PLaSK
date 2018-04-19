@@ -511,7 +511,11 @@ int system_main(int argc, const system_char *argv[])
                     plask::python::PythonManager_load(omanager, system_str_to_pyobject(filename), locals);
                 else {
                     py::object sys = py::import("sys");
-                    plask::python::PythonManager_load(omanager, sys.attr("stdin"), locals);
+#                   if PY_VERSION_HEX >= 0x03000000
+                        plask::python::PythonManager_load(omanager, sys.attr("stdin").attr("buffer"), locals);
+#                   else
+                        plask::python::PythonManager_load(omanager, sys.attr("stdin"), locals);
+#                   endif
                 }
                 if (manager->scriptline)
                     manager->script = "#coding: utf8\n" + std::string(manager->scriptline-1, '\n') + manager->script;
@@ -559,7 +563,7 @@ int system_main(int argc, const system_char *argv[])
                             pyfile = PyUnicode_FromString(filename.c_str());
                             FILE* file = _Py_fopen(pyfile, "r");
 #                       endif
-                        // TODO convrsion to UTF-8 might not be proper here, especially for windows
+                        // TODO conversion to UTF-8 might not be proper here, especially for windows
                         result = PyRun_FileEx(file, system_to_utf8(filename).c_str(), Py_file_input, globals.ptr(), globals.ptr(), 1);
                     } else {
                         result = PyRun_File(stdin, system_to_utf8(filename).c_str(), Py_file_input, globals.ptr(), globals.ptr());
