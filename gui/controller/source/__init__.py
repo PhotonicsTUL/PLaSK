@@ -113,6 +113,7 @@ class SourceWidget(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.toolbar)
         layout.addWidget(self.editor)
+        layout.addWidget(self.message_toolbar)
         layout.addWidget(self.find_toolbar)
         layout.addWidget(self.replace_toolbar)
 
@@ -124,8 +125,12 @@ class SourceWidget(QWidget):
     def make_find_replace_widget(self):
         self.find_toolbar = QToolBar(self)
         self.replace_toolbar = QToolBar(self)
+        self.message_toolbar = QToolBar(self)
         self.find_toolbar.setStyleSheet("QToolBar { border: 0px }")
         self.replace_toolbar.setStyleSheet("QToolBar { border: 0px }")
+        # self.message_toolbar.setStyleSheet("QToolBar { border: 0px }")
+        self.message_toolbar.setStyleSheet("QToolBar { border: 1px solid palette(dark);"
+                                           "           background-color: #ffffcc; color: black; }")
         find_label = QLabel()
         find_label.setText("Search: ")
         find_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
@@ -141,6 +146,9 @@ class SourceWidget(QWidget):
         self.replace_edit = QLineEdit()
         self.replace_toolbar.addWidget(replace_label)
         self.replace_toolbar.addWidget(self.replace_edit)
+
+        self.replace_message = QLabel()
+        self.message_toolbar.addWidget(self.replace_message)
 
         self.find_matchcase = QAction('&Match Case', self.find_edit)
         self.find_matchcase.setCheckable(True)
@@ -190,6 +198,7 @@ class SourceWidget(QWidget):
         self.replace_toolbar.addWidget(replace_all_button)
         self.find_toolbar.hide()
         self.replace_toolbar.hide()
+        self.message_toolbar.hide()
         self._add_shortcut(QKeySequence(Qt.Key_Escape), self.hide_toolbars)
         self._add_shortcut(QKeySequence.FindNext, self.find_next, alt=QKeySequence(Qt.Key_F3))
         self._add_shortcut(QKeySequence.FindPrevious, self.find_prev, alt=Qt.SHIFT+Qt.Key_F3)
@@ -263,6 +272,7 @@ class SourceWidget(QWidget):
     def hide_toolbars(self):
         self.find_toolbar.hide()
         self.replace_toolbar.hide()
+        self.message_toolbar.hide()
         self.clear_matches()
         self.editor.setFocus()
 
@@ -341,7 +351,7 @@ class SourceWidget(QWidget):
 
     def trigger_regex(self):
         if self.find_toolbar.isVisible():
-            self. find_type()
+            self.find_type()
 
     def _replace_regexp(self, cursor):
         block = cursor.block()
@@ -365,7 +375,12 @@ class SourceWidget(QWidget):
         result += text[s:]
         return result
 
-    def replace_next(self, rewind=True, theend=None):
+    def replace_next(self):
+        self.message_toolbar.hide()
+        self.clear_matches()
+        self._replace_next()
+
+    def _replace_next(self, rewind=True, theend=None):
         if theend is None and self.find_selection.isChecked():
             cursor = self.editor.textCursor()
             if cursor.hasSelection():
@@ -403,6 +418,7 @@ class SourceWidget(QWidget):
         return True
 
     def replace_all(self):
+        self.message_toolbar.hide()
         self._replaced_selections = []
         cursor = self.editor.textCursor()
         if self.find_selection.isChecked() and cursor.hasSelection():
@@ -417,7 +433,7 @@ class SourceWidget(QWidget):
                 cursor.movePosition(QTextCursor.Start)
             self.editor.setTextCursor(cursor)
             doclen = self.editor.document().characterCount()
-            while self.replace_next(rewind=False, theend=end):
+            while self._replace_next(rewind=False, theend=end):
                 if end is not None:
                     newlen = self.editor.document().characterCount()
                     end += newlen - doclen
@@ -428,9 +444,12 @@ class SourceWidget(QWidget):
                 self.editor.setTextCursor(cursor)
         finally:
             cursor.endEditBlock()
-            QToolTip.showText(self.replace_edit.mapToGlobal(QPoint(0, -32)),
-                                    "{} replacement{} made".format(self._replace_count,
-                                                                   's' if self._replace_count != 1 else ''))
+            # QToolTip.showText(self.replace_edit.mapToGlobal(QPoint(0, -32)),
+            #                         "{} replacement{} made".format(self._replace_count,
+            #                                                        's' if self._replace_count != 1 else ''))
+            self.replace_message.setText("{} replacement{} made".format(self._replace_count,
+                                                                        's' if self._replace_count != 1 else ''))
+            self.message_toolbar.show()
 
 
 class SourceEditController(Controller):
