@@ -24,11 +24,15 @@ protected:
     //typedef CompressedSetOfNumbers<std::uint32_t> Set;
     typedef CompressedSetOfNumbers<std::size_t> Set;
 
-    /// numbers of rectangularMesh indexes which are in the corners of the elements enabled
+    /// Numbers of rectangularMesh indexes which are in the corners of the elements enabled.
     Set nodesSet;
 
-    /// numbers of enabled elements
+    /// Numbers of enabled elements.
     Set elementsSet;
+
+    /// The lowest and the largest index in use, for each direction.
+    struct { std::size_t lo, up; } boundaryIndex[DIM];
+
 
     /**
      * Used by interpolation.
@@ -130,7 +134,12 @@ public:
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if true) or shared (if false; default)
      */
     RectangularFilteredMeshBase(const RectangularMesh<DIM>& rectangularMesh, bool clone_axes = false)
-        : rectangularMesh(rectangularMesh, clone_axes) {}
+        : rectangularMesh(rectangularMesh, clone_axes) {
+        for (int d = 0; d < DIM; ++d) { // prepare for finding indexes by subclass constructor:
+            boundaryIndex[d].lo = this->rectangularMesh.axis[d]->size()-1;
+            boundaryIndex[d].up = 0;
+        }
+    }
 
     /**
      * Iterator over nodes coordinates.

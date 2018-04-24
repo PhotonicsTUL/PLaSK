@@ -143,7 +143,11 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
                 nodesSet.insert(el_it->getLoLoIndex());
                 nodesSet.insert(el_it->getLoUpIndex());
                 nodesSet.insert(el_it->getUpLoIndex());
-                nodesSet.push_back(el_it->getUpUpIndex());
+                nodesSet.push_back(el_it->getUpUpIndex());  //TODO is this safe for 10 axis?
+                if (el_it->getLowerIndex0() < boundaryIndex[0].lo) boundaryIndex[0].lo = el_it->getLowerIndex0();
+                if (el_it->getUpperIndex0() > boundaryIndex[0].up) boundaryIndex[0].up = el_it->getUpperIndex0();
+                if (el_it->getLowerIndex1() < boundaryIndex[1].lo) boundaryIndex[1].lo = el_it->getLowerIndex1();
+                if (el_it->getUpperIndex1() > boundaryIndex[1].up) boundaryIndex[1].up = el_it->getUpperIndex1();
             }
         nodesSet.shrink_to_fit();
         elementsSet.shrink_to_fit();
@@ -295,6 +299,9 @@ public:
     Box2D getElementBox(std::size_t index0, std::size_t index1) const {
         return rectangularMesh.getElementBox(index0, index1);
     }
+
+    // TODO zaimplementować boundaries, wystarczy iterować po indeksach pełnej siatki i pomijać te, które nie są zawarte w nodesSet
+    // boundaryIndex można znaleźć indeksy skrajnych punktów
 
 };
 
