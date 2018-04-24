@@ -112,7 +112,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
         dcomplex rField(double r) const {
             double Jr, Ji, Hr, Hi;
             long nz, ierr;
-            size_t ir = solver->mesh->axis0->findIndex(r); if (ir > 0) --ir; if (ir >= solver->veffs.size()) ir = solver->veffs.size()-1;
+            size_t ir = solver->mesh->axis[0]->findIndex(r); if (ir > 0) --ir; if (ir >= solver->veffs.size()) ir = solver->veffs.size()-1;
             dcomplex x = r * solver->k0 * sqrt(solver->nng[ir] * (solver->veffs[ir] - solver->freqv(lam)));
             if (real(x) < 0.) x = -x;
             if (imag(x) > SMALL) x = -x;
@@ -208,7 +208,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     /// Set stripe for computations
     void setStripe(int stripe) {
         if (!mesh) setSimpleMesh();
-        if (stripe < 0 || std::size_t(stripe) >= mesh->axis0->size())
+        if (stripe < 0 || std::size_t(stripe) >= mesh->axis[0]->size())
             throw BadInput(getId(), "Wrong stripe number specified");
         rstripe = stripe;
         invalidate();
@@ -217,7 +217,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     /// Get position of the main stripe
     double getStripeR() const {
         if (rstripe == -1 || !mesh) return NAN;
-        return mesh->axis0->at(rstripe);
+        return mesh->axis[0]->at(rstripe);
     }
 
     /**
@@ -227,7 +227,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     void setStripeR(double r=0.) {
         if (!mesh) setSimpleMesh();
         if (r < 0) throw BadInput(getId(), "Radial position cannot be negative");
-        rstripe = int(std::lower_bound(mesh->axis0->begin()+1, mesh->axis0->end(), r) - mesh->axis0->begin() - 1);
+        rstripe = int(std::lower_bound(mesh->axis[0]->begin()+1, mesh->axis[0]->end(), r) - mesh->axis[0]->begin() - 1);
         invalidate();
     }
 

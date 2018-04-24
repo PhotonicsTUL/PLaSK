@@ -54,55 +54,55 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
      * Get first coordinate of points in this mesh.
      * @return axis0
      */
-    const shared_ptr<MeshAxis>& lon() const { return axis0; }
+    const shared_ptr<MeshAxis>& lon() const { return axis[0]; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return axis1
      */
-    const shared_ptr<MeshAxis>& tran() const { return axis1; }
+    const shared_ptr<MeshAxis>& tran() const { return axis[1]; }
 
     /**
      * Get third coordinate of points in this mesh.
      * @return axis2
      */
-    const shared_ptr<MeshAxis>& vert() const { return axis2; }
+    const shared_ptr<MeshAxis>& vert() const { return axis[2]; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return axis0
      */
-    const shared_ptr<MeshAxis>& ee_z() const { return axis0; }
+    const shared_ptr<MeshAxis>& ee_z() const { return axis[0]; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return axis1
      */
-    const shared_ptr<MeshAxis>& ee_x() const { return axis1; }
+    const shared_ptr<MeshAxis>& ee_x() const { return axis[1]; }
 
     /**
      * Get third coordinate of points in this mesh.
      * @return axis2
      */
-    const shared_ptr<MeshAxis>& ee_y() const { return axis2; }
+    const shared_ptr<MeshAxis>& ee_y() const { return axis[2]; }
 
     /**
      * Get first coordinate of points in this mesh.
      * @return axis0
      */
-    const shared_ptr<MeshAxis>& rad_r() const { return axis0; }
+    const shared_ptr<MeshAxis>& rad_r() const { return axis[0]; }
 
     /**
      * Get second coordinate of points in this mesh.
      * @return axis1
      */
-    const shared_ptr<MeshAxis>& rad_phi() const { return axis1; }
+    const shared_ptr<MeshAxis>& rad_phi() const { return axis[1]; }
 
     /**
      * Get thirs coordinate of points in this mesh.
      * @return axis2
      */
-    const shared_ptr<MeshAxis>& rad_z() const { return axis2; }
+    const shared_ptr<MeshAxis>& rad_z() const { return axis[2]; }
 
     /**
      * Write mesh to XML
@@ -120,7 +120,7 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
      * @return point with given @p index
      */
     Vec<3, double> at(std::size_t index0, std::size_t index1, std::size_t index2) const override {
-        return Vec<3, double>(axis0->at(index0), axis1->at(index1), axis2->at(index2));
+        return Vec<3, double>(axis[0]->at(index0), axis[1]->at(index1), axis[2]->at(index2));
     }
 
     /**
@@ -135,7 +135,7 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
      * @return area of elements with given index
      */
     double getElementArea(std::size_t index0, std::size_t index1, std::size_t index2) const {
-        return (axis0->at(index0+1) - axis0->at(index0)) * (axis1->at(index1+1) - axis1->at(index1)) * (axis2->at(index2+1) - axis2->at(index2));
+        return (axis[0]->at(index0+1) - axis[0]->at(index0)) * (axis[1]->at(index1+1) - axis[1]->at(index1)) * (axis[2]->at(index2+1) - axis[2]->at(index2));
     }
 
     /**
@@ -173,7 +173,7 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
      * @return box of elements with given index
      */
     Box3D getElementBox(std::size_t index0, std::size_t index1, std::size_t index2) const {
-        return Box3D(axis0->at(index0), axis1->at(index1), axis2->at(index2), axis0->at(index0+1), axis1->at(index1+1), axis2->at(index2+1));
+        return Box3D(axis[0]->at(index0), axis[1]->at(index1), axis[2]->at(index2), axis[0]->at(index0+1), axis[1]->at(index1+1), axis[2]->at(index2+1));
     }
 
     /**
@@ -271,15 +271,15 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
         }
 
         Iterator begin() const override {
-            return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, 0, 0, this->mesh.axis1->size(), 0));
+            return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, 0, 0, this->mesh.axis[1]->size(), 0));
         }
 
         Iterator end() const override {
-            return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, 0, 0, this->mesh.axis1->size(), this->mesh.axis2->size()));
+            return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, 0, 0, this->mesh.axis[1]->size(), this->mesh.axis[2]->size()));
         }
 
         std::size_t size() const override {
-            return this->mesh.axis1->size() * this->mesh.axis2->size();
+            return this->mesh.axis[1]->size() * this->mesh.axis[2]->size();
         }
     };
 
@@ -332,15 +332,15 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
         }
 
         Iterator begin() const override {
-            return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, 0, 0, this->mesh.axis0->size(), 0));
+            return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, 0, 0, this->mesh.axis[0]->size(), 0));
         }
 
         Iterator end() const override {
-            return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, 0, 0, this->mesh.axis0->size(), this->mesh.axis2->size()));
+            return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, 0, 0, this->mesh.axis[0]->size(), this->mesh.axis[2]->size()));
         }
 
         std::size_t size() const override {
-            return this->mesh.axis0->size() * this->mesh.axis2->size();
+            return this->mesh.axis[0]->size() * this->mesh.axis[2]->size();
         }
     };
 
@@ -394,15 +394,15 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
         }
 
         Iterator begin() const override {
-            return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, 0, 0, this->mesh.axis0->size(), 0));
+            return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, 0, 0, this->mesh.axis[0]->size(), 0));
         }
 
         Iterator end() const override {
-            return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, 0, 0, this->mesh.axis0->size(), this->mesh.axis1->size()));
+            return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, 0, 0, this->mesh.axis[0]->size(), this->mesh.axis[1]->size()));
         }
 
         std::size_t size() const override {
-            return this->mesh.axis0->size() * this->mesh.axis1->size();
+            return this->mesh.axis[0]->size() * this->mesh.axis[1]->size();
         }
     };
 
@@ -454,17 +454,17 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
     }
 
     /**
-     * Get boundary which shows one plane in mesh, which has 0 coordinate equals to axis0[axis0->size()-1] (front of mesh).
+     * Get boundary which shows one plane in mesh, which has 0 coordinate equals to axis0[axis[0]->size()-1] (front of mesh).
      * @return boundary which show plane in mesh
      */
     static Boundary getFrontBoundary() {
         return Boundary( [](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) {
-            return new FixedIndex0Boundary(mesh, mesh.axis0->size()-1);
+            return new FixedIndex0Boundary(mesh, mesh.axis[0]->size()-1);
         } );
     }
 
     /**
-     * Get boundary which shows one plane in mesh, which has 0 coordinate equals to @p line_nr_axis0->
+     * Get boundary which shows one plane in mesh, which has 0 coordinate equals to @p line_nr_axis[0]->
      * @param line_nr_axis0 index of axis0 mesh
      * @return boundary which show plane in mesh
      */
@@ -485,17 +485,17 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
     }
 
     /**
-     * Get boundary which shows one plane in mesh, which has 1 coordinate equals to axis1[axis1->size()-1] (right of mesh).
+     * Get boundary which shows one plane in mesh, which has 1 coordinate equals to axis1[axis[1]->size()-1] (right of mesh).
      * @return boundary which show plane in mesh
      */
     static Boundary getRightBoundary() {
         return Boundary( [](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) {
-            return new FixedIndex1Boundary(mesh, mesh.axis1->size()-1);
+            return new FixedIndex1Boundary(mesh, mesh.axis[1]->size()-1);
         } );
     }
 
     /**
-     * Get boundary which shows one plane in mesh, which has 1 coordinate equals to @p line_nr_axis1->
+     * Get boundary which shows one plane in mesh, which has 1 coordinate equals to @p line_nr_axis[1]->
      * @param line_nr_axis1 index of axis1 mesh
      * @return boundary which show plane in mesh
      */
@@ -516,17 +516,17 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
     }
 
     /**
-     * Get boundary which shows one plane in mesh, which has 2nd coordinate equals to axis2[axis2->size()-1] (top of mesh).
+     * Get boundary which shows one plane in mesh, which has 2nd coordinate equals to axis2[axis[2]->size()-1] (top of mesh).
      * @return boundary which show plane in mesh
      */
     static Boundary getTopBoundary() {
         return Boundary( [](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) {
-            return new FixedIndex2Boundary(mesh, mesh.axis2->size()-1);
+            return new FixedIndex2Boundary(mesh, mesh.axis[2]->size()-1);
         } );
     }
 
     /**
-     * Get boundary which shows one plane in mesh, which has 2 coordinate equals to @p line_nr_axis2->
+     * Get boundary which shows one plane in mesh, which has 2 coordinate equals to @p line_nr_axis[2]->
      * @param line_nr_axis2 index of axis2 mesh
      * @return boundary which show plane in mesh
      */
@@ -545,9 +545,9 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
         if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
         return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd1, endInd1, begInd2, endInd2;
-            if (details::getLineLo(line, *mesh.axis0, box.lower.c0, box.upper.c0) &&
-                details::getIndexesInBounds(begInd1, endInd1, *mesh.axis1, box.lower.c1, box.upper.c1) &&
-                details::getIndexesInBounds(begInd2, endInd2, *mesh.axis2, box.lower.c2, box.upper.c2))
+            if (details::getLineLo(line, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd1, endInd1, *mesh.axis[1], box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd2, endInd2, *mesh.axis[2], box.lower.c2, box.upper.c2))
                 return new FixedIndex0BoundaryInRange(mesh, line, begInd1, endInd1, begInd2, endInd2);
             else
                 return new EmptyBoundaryImpl();
@@ -563,9 +563,9 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
         if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
         return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd1, endInd1, begInd2, endInd2;
-            if (details::getLineHi(line, *mesh.axis0, box.lower.c0, box.upper.c0) &&
-                details::getIndexesInBounds(begInd1, endInd1, *mesh.axis1, box.lower.c1, box.upper.c1) &&
-                details::getIndexesInBounds(begInd2, endInd2, *mesh.axis2, box.lower.c2, box.upper.c2))
+            if (details::getLineHi(line, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd1, endInd1, *mesh.axis[1], box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd2, endInd2, *mesh.axis[2], box.lower.c2, box.upper.c2))
                 return new FixedIndex0BoundaryInRange(mesh, line, begInd1, endInd1, begInd2, endInd2);
             else
                 return new EmptyBoundaryImpl();
@@ -581,9 +581,9 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
         if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
         return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd0, endInd0, begInd2, endInd2;
-            if (details::getLineLo(line, *mesh.axis1, box.lower.c1, box.upper.c1) &&
-                details::getIndexesInBounds(begInd0, endInd0, *mesh.axis0, box.lower.c0, box.upper.c0) &&
-                details::getIndexesInBounds(begInd2, endInd2, *mesh.axis2, box.lower.c2, box.upper.c2))
+            if (details::getLineLo(line, *mesh.axis[1], box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd0, endInd0, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd2, endInd2, *mesh.axis[2], box.lower.c2, box.upper.c2))
                 return new FixedIndex1BoundaryInRange(mesh, line, begInd0, endInd0, begInd2, endInd2);
             else
                 return new EmptyBoundaryImpl();
@@ -599,9 +599,9 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
         if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
         return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd0, endInd0, begInd2, endInd2;
-            if (details::getLineHi(line, *mesh.axis1, box.lower.c1, box.upper.c1) &&
-                details::getIndexesInBounds(begInd0, endInd0, *mesh.axis0, box.lower.c0, box.upper.c0) &&
-                details::getIndexesInBounds(begInd2, endInd2, *mesh.axis2, box.lower.c2, box.upper.c2))
+            if (details::getLineHi(line, *mesh.axis[1], box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd0, endInd0, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd2, endInd2, *mesh.axis[2], box.lower.c2, box.upper.c2))
                 return new FixedIndex1BoundaryInRange(mesh, line, begInd0, endInd0, begInd2, endInd2);
             else
                 return new EmptyBoundaryImpl();
@@ -617,9 +617,9 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
         if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
         return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd0, endInd0, begInd1, endInd1;
-            if (details::getLineLo(line, *mesh.axis2, box.lower.c2, box.upper.c2) &&
-                details::getIndexesInBounds(begInd0, endInd0, *mesh.axis0, box.lower.c0, box.upper.c0) &&
-                details::getIndexesInBounds(begInd1, endInd1, *mesh.axis1, box.lower.c1, box.upper.c1))
+            if (details::getLineLo(line, *mesh.axis[2], box.lower.c2, box.upper.c2) &&
+                details::getIndexesInBounds(begInd0, endInd0, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd1, endInd1, *mesh.axis[1], box.lower.c1, box.upper.c1))
                 return new FixedIndex2BoundaryInRange(mesh, line, begInd0, endInd0, begInd1, endInd1);
             else
                 return new EmptyBoundaryImpl();
@@ -635,9 +635,9 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
         if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
         return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
             std::size_t line, begInd0, endInd0, begInd1, endInd1;
-            if (details::getLineHi(line, *mesh.axis2, box.lower.c2, box.upper.c2) &&
-                details::getIndexesInBounds(begInd0, endInd0, *mesh.axis0, box.lower.c0, box.upper.c0) &&
-                details::getIndexesInBounds(begInd1, endInd1, *mesh.axis1, box.lower.c1, box.upper.c1))
+            if (details::getLineHi(line, *mesh.axis[2], box.lower.c2, box.upper.c2) &&
+                details::getIndexesInBounds(begInd0, endInd0, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd1, endInd1, *mesh.axis[1], box.lower.c1, box.upper.c1))
                 return new FixedIndex2BoundaryInRange(mesh, line, begInd0, endInd0, begInd1, endInd1);
             else
                 return new EmptyBoundaryImpl();
@@ -827,7 +827,7 @@ template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<RectangularMesh<3>, SrcT, DstT, INTERPOLATION_LINEAR> {
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<3>>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
-        if (src_mesh->axis0->size() == 0 || src_mesh->axis1->size() == 0 || src_mesh->axis2->size() == 0)
+        if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0 || src_mesh->axis[2]->size() == 0)
             throw BadMesh("interpolate", "Source mesh empty");
         return new LinearInterpolatedLazyDataImpl<DstT, RectilinearMesh3D, SrcT>(src_mesh, src_vec, dst_mesh, flags);
     }
@@ -837,7 +837,7 @@ template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<RectangularMesh<3>, SrcT, DstT, INTERPOLATION_NEAREST> {
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<3>>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
-        if (src_mesh->axis0->size() == 0 || src_mesh->axis1->size() == 0 || src_mesh->axis2->size() == 0)
+        if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0 || src_mesh->axis[2]->size() == 0)
             throw BadMesh("interpolate", "Source mesh empty");
         return new NearestNeighborInterpolatedLazyDataImpl<DstT, RectilinearMesh3D, SrcT>(src_mesh, src_vec, dst_mesh, flags);
     }

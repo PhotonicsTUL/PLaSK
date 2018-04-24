@@ -172,11 +172,11 @@ size_t DriftDiffusionModel2DSolver<Geometry2DType>::getActiveRegionMeshIndex(siz
     size_t actlo, acthi, lon = 0, hin = 0;
 
     shared_ptr<RectangularMesh<2>> points = this->mesh->getMidpointsMesh();
-    size_t ileft = 0, iright = points->axis0->size();
+    size_t ileft = 0, iright = points->axis[0]->size();
     bool in_active = false;
-    for (size_t r = 0; r < points->axis1->size(); ++r) {
+    for (size_t r = 0; r < points->axis[1]->size(); ++r) {
         bool had_active = false;
-        for (size_t c = 0; c < points->axis0->size(); ++c) { // In the (possible) active region
+        for (size_t c = 0; c < points->axis[0]->size(); ++c) { // In the (possible) active region
             auto point = points->at(c,r);
             bool active = isActive(point);
             if (c >= ileft && c <= iright) {
@@ -205,7 +205,7 @@ size_t DriftDiffusionModel2DSolver<Geometry2DType>::getActiveRegionMeshIndex(siz
     }
     // Test if the active region has finished
     if (lon != hin) {
-        acthi = points->axis1->size();
+        acthi = points->axis[1]->size();
         if(hin++ == actnum) return (actlo + acthi) / 2;
     }
     throw BadInput(this->getId(), "Wrong active region number {}", actnum);
@@ -1034,12 +1034,12 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 		for (size_t i=1; i<=nn; ++i) /// nn - number of nodes
 		{
 			Vec<2, double> point_LE; /// centre of the left element
-			point_LE[0] = meshActMid->axis0->at(0); // TODO not only for 0
-			point_LE[1] = meshActMid->axis1->at(i-1);
+            point_LE[0] = meshActMid->axis[0]->at(0); // TODO not only for 0
+            point_LE[1] = meshActMid->axis[1]->at(i-1);
 
 			Vec<2, double> point_RI; /// centre of the right element
-			point_RI[0] = meshActMid->axis0->at(0); // TODO not only for 0
-			point_RI[1] = meshActMid->axis1->at(i);
+            point_RI[0] = meshActMid->axis[0]->at(0); // TODO not only for 0
+            point_RI[1] = meshActMid->axis[1]->at(i);
 			
 			shared_ptr<Material> m_LE = this->geometry->getMaterial(point_LE);
 			shared_ptr<Material> m_RI = this->geometry->getMaterial(point_RI);
@@ -1153,8 +1153,8 @@ bool DriftDiffusionModel2DSolver<Geometry2DType>::checkWell(std::string _carrier
 		{
 			//double z_avg = 0.5*(z[i] + z[i+1]);
 			Vec<2, double> point = meshActMid->at(0,i);
-			//point[0] = meshActMid->axis0->at(0); // TODO tu musi byc jakis element haxis dla danego obszaru
-			//point[1] = meshActMid->axis1->at(i);
+            //point[0] = meshActMid->axis[0]->at(0); // TODO tu musi byc jakis element haxis dla danego obszaru
+            //point[1] = meshActMid->axis[1]->at(i);
 
 			//this->writelog(LOG_INFO, "position of element {0}: {1} um, {2} um", i, r_at_0, z_avg);
 			
@@ -1489,7 +1489,7 @@ template <> double DriftDiffusionModel2DSolver<Geometry2DCartesian>::integrateCu
     if (!dvnPsi) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
-    for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
+    for (size_t i = 0; i < mesh->axis[0]->size()-1; ++i) {
         auto element = mesh->element(i, vindex);
         if (!onlyactive || isActive(element.getMidpoint()))
             result += currentsN[element.getIndex()].c1 * element.getSize0() + currentsP[element.getIndex()].c1 * element.getSize0();
@@ -1504,7 +1504,7 @@ template <> double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::integrate
     if (!dvnPsi) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
-    for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
+    for (size_t i = 0; i < mesh->axis[0]->size()-1; ++i) {
         auto element = mesh->element(i, vindex);
         if (!onlyactive || isActive(element.getMidpoint())) {
             double rin = element.getLower0(), rout = element.getUpper0();
@@ -1763,18 +1763,18 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 	shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
 	shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
 
-	size_t ileft = 0, iright = points->axis0->size();
+    size_t ileft = 0, iright = points->axis[0]->size();
 	bool in_active = false;
 
 	bool added_bottom_cladding = false;
 	bool added_top_cladding = false;
 
-	for (size_t r = 0; r < points->axis1->size(); ++r) {
+    for (size_t r = 0; r < points->axis[1]->size(); ++r) {
 		bool had_active = false; // indicates if we had active region in this layer
 		shared_ptr<Material> layer_material;
 		bool layer_QW = false;
 
-		for (size_t c = 0; c < points->axis0->size(); ++c)
+        for (size_t c = 0; c < points->axis[0]->size(); ++c)
 		{ // In the (possible) active region
 			auto point = points->at(c, r);
 			auto tags = this->geometry->getRolesAt(point);
@@ -1829,8 +1829,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 						if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
 						throw Exception("{0}: Material below quantum well not uniform.", this->getId());
 						auto& region = regions.back();
-						double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
-						double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
+                        double w = mesh->axis[0]->at(iright) - mesh->axis[0]->at(ileft);
+                        double h = mesh->axis[1]->at(r) - mesh->axis[1]->at(r-1);
 						region.origin += Vec<2>(0., -h);
 						this->writelog(LOG_DETAIL, "Adding bottom cladding; h = {0}",h);
 						region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));*/
@@ -1855,8 +1855,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 					if (*this->geometry->getMaterial(points->at(cc, r - 1)) != *bottom_material)
 						throw Exception("{0}: Material below active region not uniform.", this->getId());
 				auto& region = regions.back();
-				double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
-				double h = mesh->axis1->at(r) - mesh->axis1->at(r - 1);
+                double w = mesh->axis[0]->at(iright) - mesh->axis[0]->at(ileft);
+                double h = mesh->axis[1]->at(r) - mesh->axis[1]->at(r - 1);
 				region.origin += Vec<2>(0., -h);
 				//this->writelog(LOG_DETAIL, "Adding bottom cladding; h = {0}",h);
 				region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
@@ -1864,8 +1864,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 				added_bottom_cladding = true;
 			}
 
-			double h = mesh->axis1->at(r + 1) - mesh->axis1->at(r);
-			double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
+            double h = mesh->axis[1]->at(r + 1) - mesh->axis[1]->at(r);
+            double w = mesh->axis[0]->at(iright) - mesh->axis[0]->at(ileft);
 			if (in_active) {
 				size_t n = region->layers->getChildrenCount();
 				shared_ptr<Block<2>> last;
@@ -1893,7 +1893,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 					//this->writelog(LOG_DETAIL, "Adding top cladding; h = {0}",h);
 
 					ileft = 0;
-					iright = points->axis0->size();
+                    iright = points->axis[0]->size();
 					region->top = h;
 					added_top_cladding = true;
 				}
@@ -2019,18 +2019,18 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 //	meshActMid = meshAct->getMidpointsMesh(); // LUKI TODO
 //	
 //	this->writelog(LOG_INFO, "MeshAct 0 1: {0} {1} {2}", meshAct->at(0,0), meshAct->at(0,1), meshAct->at(0,2));
-//	this->writelog(LOG_INFO, "MeshAct 0 1: {0} {1} {2}", meshAct->axis1->at(0), meshAct->axis1->at(1), meshAct->axis1->at(2));
+//	this->writelog(LOG_INFO, "MeshAct 0 1: {0} {1} {2}", meshAct->axis[1]->at(0), meshAct->axis[1]->at(1), meshAct->axis[1]->at(2));
 //
 //	this->writelog(LOG_INFO, "Done.");
 //	
 //	/*shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
 //
-//    for (size_t r = 0; r < points->axis1->size(); ++r) {
+//    for (size_t r = 0; r < points->axis[1]->size(); ++r) {
 //        bool had_active = false; // indicates if we had active region in this layer
 //        shared_ptr<Material> layer_material;
 //        bool layer_QW = false;
 //
-//        for (size_t c = 0; c < points->axis0->size(); ++c)
+//        for (size_t c = 0; c < points->axis[0]->size(); ++c)
 //        { // In the (possible) active region
 //
 //
@@ -2061,8 +2061,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 //                        //    if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
 //                        //        throw Exception("{0}: Material below quantum well not uniform.", this->getId());
 //                        //auto& region = regions.back();
-//                        //double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
-//                        //double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
+//                        //double w = mesh->axis[0]->at(iright) - mesh->axis[0]->at(ileft);
+//                        //double h = mesh->axis[1]->at(r) - mesh->axis[1]->at(r-1);
 //                        //region.origin += Vec<2>(0., -h);
 //                        //this->writelog(LOG_DETAIL, "Adding bottom cladding; h = {0}",h);
 //                        //region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
@@ -2086,8 +2086,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 //                    if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
 //                        throw Exception("{0}: Material below active region not uniform.", this->getId());
 //                auto& region = regions.back();
-//                double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
-//                double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
+//                double w = mesh->axis[0]->at(iright) - mesh->axis[0]->at(ileft);
+//                double h = mesh->axis[1]->at(r) - mesh->axis[1]->at(r-1);
 //                region.origin += Vec<2>(0., -h);
 //                //this->writelog(LOG_DETAIL, "Adding bottom cladding; h = {0}",h);
 //                region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
@@ -2095,8 +2095,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 //                added_bottom_cladding = true;
 //            }
 //
-//            double h = mesh->axis1->at(r+1) - mesh->axis1->at(r);
-//            double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
+//            double h = mesh->axis[1]->at(r+1) - mesh->axis[1]->at(r);
+//            double w = mesh->axis[0]->at(iright) - mesh->axis[0]->at(ileft);
 //            if (in_active) {
 //                size_t n = region->layers->getChildrenCount();
 //                shared_ptr<Block<2>> last;
@@ -2122,7 +2122,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 //                    //this->writelog(LOG_DETAIL, "Adding top cladding; h = {0}",h);
 //
 //                    ileft = 0;
-//                    iright = points->axis0->size();
+//                    iright = points->axis[0]->size();
 //                    region->top = h;
 //                    added_top_cladding = true;
 //                }
@@ -2215,9 +2215,9 @@ const LazyData < Tensor2<double>> DriftDiffusionModel2DSolver<Geometry2DType>::g
     return LazyData < Tensor2<double>>(new LazyDataDelegateImpl < Tensor2<double>>(dest_mesh->size(),
         [this, dest_mesh, flags](size_t i) -> Tensor2 < double> {
             auto point = flags.wrap(dest_mesh->at(i));
-            size_t x = this->mesh->axis0->findUpIndex(point[0]),
-                   y = this->mesh->axis1->findUpIndex(point[1]);
-            if (x == 0 || y == 0 || x == this->mesh->axis0->size() || y == this->mesh->axis1->size())
+            size_t x = this->mesh->axis[0]->findUpIndex(point[0]),
+                   y = this->mesh->axis[1]->findUpIndex(point[1]);
+            if (x == 0 || y == 0 || x == this->mesh->axis[0]->size() || y == this->mesh->axis[1]->size())
                 return Tensor2<double>(NAN);
             else
                 return this->conds[this->mesh->elements(x-1, y-1).getIndex()];

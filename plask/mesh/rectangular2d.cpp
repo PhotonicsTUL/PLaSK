@@ -6,23 +6,23 @@
 namespace plask {
 
 static std::size_t normal_index(const RectangularMesh<2>* mesh, std::size_t index0, std::size_t index1) {
-    return index0 + mesh->axis0->size() * index1;
+    return index0 + mesh->axis[0]->size() * index1;
 }
 static std::size_t normal_index0(const RectangularMesh<2>* mesh, std::size_t mesh_index) {
-    return mesh_index % mesh->axis0->size();
+    return mesh_index % mesh->axis[0]->size();
 }
 static std::size_t normal_index1(const RectangularMesh<2>* mesh, std::size_t mesh_index) {
-    return mesh_index / mesh->axis0->size();
+    return mesh_index / mesh->axis[0]->size();
 }
 
 static std::size_t transposed_index(const RectangularMesh<2>* mesh, std::size_t index0, std::size_t index1) {
-    return mesh->axis1->size() * index0 + index1;
+    return mesh->axis[1]->size() * index0 + index1;
 }
 static std::size_t transposed_index0(const RectangularMesh<2>* mesh, std::size_t mesh_index) {
-    return mesh_index / mesh->axis1->size();
+    return mesh_index / mesh->axis[1]->size();
 }
 static std::size_t transposed_index1(const RectangularMesh<2>* mesh, std::size_t mesh_index) {
-    return mesh_index % mesh->axis1->size();
+    return mesh_index % mesh->axis[1]->size();
 }
 
 void RectangularMesh<2>::setIterationOrder(IterationOrder iterationOrder) {
@@ -30,14 +30,14 @@ void RectangularMesh<2>::setIterationOrder(IterationOrder iterationOrder) {
         index_f = transposed_index;
         index0_f = transposed_index0;
         index1_f = transposed_index1;
-        minor_axis = &axis1;
-        major_axis = &axis0;
+        minor_axis = &axis[1];
+        major_axis = &axis[0];
     } else {
         index_f = normal_index;
         index0_f = normal_index0;
         index1_f = normal_index1;
-        minor_axis = &axis0;
-        major_axis = &axis1;
+        minor_axis = &axis[0];
+        major_axis = &axis[1];
     }
     this->fireChanged();
 }
@@ -60,42 +60,42 @@ void RectangularMesh<2>::onAxisChanged(Mesh::Event &e) {
 }
 
 RectangularMesh<2>::RectangularMesh(IterationOrder iterationOrder)
-    : axis0(plask::make_shared<OrderedAxis>()), axis1(plask::make_shared<OrderedAxis>()) {
+    : axis{ plask::make_shared<OrderedAxis>(), plask::make_shared<OrderedAxis>() } {
     setIterationOrder(iterationOrder);
-    setChangeSignal(this->axis0);
-    setChangeSignal(this->axis1);
+    setChangeSignal(this->axis[0]);
+    setChangeSignal(this->axis[1]);
 }
 
 RectangularMesh<2>::RectangularMesh(shared_ptr<MeshAxis> axis0, shared_ptr<MeshAxis> axis1, IterationOrder iterationOrder)
-    : axis0(std::move(axis0)), axis1(std::move(axis1)) {
+    : axis{std::move(axis0), std::move(axis1)} {
     setIterationOrder(iterationOrder);
-    setChangeSignal(this->axis0);
-    setChangeSignal(this->axis1);
+    setChangeSignal(this->axis[0]);
+    setChangeSignal(this->axis[1]);
 }
 
 RectangularMesh<2>::RectangularMesh(const RectangularMesh<2> &src, bool clone_axes):
     MeshD<2>(src),
-    axis0(clone_axes ? src.axis0->clone() : src.axis0),
-    axis1(clone_axes ? src.axis1->clone() : src.axis1)
+    axis {clone_axes ? src.axis[0]->clone() : src.axis[0],
+          clone_axes ? src.axis[1]->clone() : src.axis[1]}
 {
     setIterationOrder(src.getIterationOrder());
-    setChangeSignal(this->axis0);
-    setChangeSignal(this->axis1);
+    setChangeSignal(this->axis[0]);
+    setChangeSignal(this->axis[1]);
 }
 
 RectangularMesh<2>::~RectangularMesh() {
-    unsetChangeSignal(this->axis0);
-    unsetChangeSignal(this->axis1);
+    unsetChangeSignal(this->axis[0]);
+    unsetChangeSignal(this->axis[1]);
 }
 
 shared_ptr<RectangularMesh<2> > RectangularMesh<2>::getMidpointsMesh() {
-    return plask::make_shared<RectangularMesh<2>>(axis0->getMidpointsMesh(), axis1->getMidpointsMesh(), getIterationOrder());
+    return plask::make_shared<RectangularMesh<2>>(axis[0]->getMidpointsMesh(), axis[1]->getMidpointsMesh(), getIterationOrder());
 }
 
 void RectangularMesh<2>::writeXML(XMLElement& object) const {
     object.attr("type", "rectangular2d");
-    { auto a = object.addTag("axis0"); axis0->writeXML(a); }
-    { auto a = object.addTag("axis1"); axis1->writeXML(a); }
+    { auto a = object.addTag("axis0"); axis[0]->writeXML(a); }
+    { auto a = object.addTag("axis1"); axis[1]->writeXML(a); }
 }
 
 RectangularMesh<2>::Boundary RectangularMesh<2>::getBoundary(const std::string &boundary_desc) {
@@ -136,7 +136,7 @@ RectangularMesh<2>::Boundary RectangularMesh<2>::getBoundary(XMLReader &boundary
 }
 
 shared_ptr<RectangularMesh<2> > make_rectangular_mesh(const RectangularMesh<2> &to_copy) {
-   return plask::make_shared<RectangularMesh<2>>(plask::make_shared<OrderedAxis>(*to_copy.axis0), plask::make_shared<OrderedAxis>(*to_copy.axis1), to_copy.getIterationOrder());
+   return plask::make_shared<RectangularMesh<2>>(plask::make_shared<OrderedAxis>(*to_copy.axis[0]), plask::make_shared<OrderedAxis>(*to_copy.axis[1]), to_copy.getIterationOrder());
 }
 
 static shared_ptr<Mesh> readRectangularMesh2D(XMLReader& reader) {

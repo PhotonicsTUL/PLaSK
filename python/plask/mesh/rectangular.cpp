@@ -221,14 +221,14 @@ static Vec<2,double> RectangularMesh2D__getitem__(const RectangularMesh<2>& self
         PyErr_Clear();
     }
     int index0 = py::extract<int>(index[0]);
-    if (index0 < 0) index0 += int(self.axis0->size());
-    if (index0 < 0 || index0 >= int(self.axis0->size())) {
-        throw IndexError("first mesh index ({0}) out of range (0<=index<{1})", index0, self.axis0->size());
+    if (index0 < 0) index0 += int(self.axis[0]->size());
+    if (index0 < 0 || index0 >= int(self.axis[0]->size())) {
+        throw IndexError("first mesh index ({0}) out of range (0<=index<{1})", index0, self.axis[0]->size());
     }
     int index1 = py::extract<int>(index[1]);
-    if (index1 < 0) index1 += int(self.axis1->size());
-    if (index1 < 0 || index1 >= int(self.axis1->size())) {
-        throw IndexError("second mesh index ({0}) out of range (0<=index<{1})", index1, self.axis1->size());
+    if (index1 < 0) index1 += int(self.axis[1]->size());
+    if (index1 < 0 || index1 >= int(self.axis[1]->size())) {
+        throw IndexError("second mesh index ({0}) out of range (0<=index<{1})", index1, self.axis[1]->size());
     }
     return self(index0, index1);
 }
@@ -286,19 +286,19 @@ Vec<3,double> RectangularMesh3D__getitem__(const MeshT& self, py::object index) 
         PyErr_Clear();
     }
     int index0 = py::extract<int>(index[0]);
-    if (index0 < 0) index0 += int(self.axis0->size());
-    if (index0 < 0 || index0 >= int(self.axis0->size())) {
-        throw IndexError("first mesh index ({0}) out of range (0<=index<{1})", index0, self.axis0->size());
+    if (index0 < 0) index0 += int(self.axis[0]->size());
+    if (index0 < 0 || index0 >= int(self.axis[0]->size())) {
+        throw IndexError("first mesh index ({0}) out of range (0<=index<{1})", index0, self.axis[0]->size());
     }
     int index1 = py::extract<int>(index[1]);
-    if (index1 < 0) index1 += int(self.axis1->size());
-    if (index1 < 0 || index1 >= int(self.axis1->size())) {
-        throw IndexError("second mesh index ({0}) out of range (0<=index<{1})", index1, self.axis1->size());
+    if (index1 < 0) index1 += int(self.axis[1]->size());
+    if (index1 < 0 || index1 >= int(self.axis[1]->size())) {
+        throw IndexError("second mesh index ({0}) out of range (0<=index<{1})", index1, self.axis[1]->size());
     }
     int index2 = py::extract<int>(index[2]);
-    if (index2 < 0) index2 = int(self.axis2->size());
-    if (index2 < 0 || index2 >= int(self.axis2->size())) {
-        throw IndexError("third mesh index ({0}) out of range (0<=index<{1})", index2, self.axis2->size());
+    if (index2 < 0) index2 = int(self.axis[2]->size());
+    if (index2 < 0 || index2 >= int(self.axis[2]->size())) {
+        throw IndexError("third mesh index ({0}) out of range (0<=index<{1})", index2, self.axis[2]->size());
     }
     return self(index0, index1, index2);
 }

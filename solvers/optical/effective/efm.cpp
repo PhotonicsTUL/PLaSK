@@ -199,18 +199,18 @@ void EffectiveFrequencyCyl::onInitialize()
     if (!mesh) setSimpleMesh();
 
     // Assign space for refractive indices cache and stripe effective indices
-    rsize = mesh->axis0->size();
-    zsize = mesh->axis1->size() + 1;
+    rsize = mesh->axis[0]->size();
+    zsize = mesh->axis[1]->size() + 1;
     zbegin = 0;
 
     if (geometry->isExtended(Geometry::DIRECTION_VERT, false) &&
-        abs(mesh->axis1->at(0) - geometry->getChild()->getBoundingBox().lower.c1) < SMALL)
+        abs(mesh->axis[1]->at(0) - geometry->getChild()->getBoundingBox().lower.c1) < SMALL)
         zbegin = 1;
     if (geometry->isExtended(Geometry::DIRECTION_TRAN, true) &&
-        abs(mesh->axis0->at(mesh->axis0->size()-1) - geometry->getChild()->getBoundingBox().upper.c0) < SMALL)
+        abs(mesh->axis[0]->at(mesh->axis[0]->size()-1) - geometry->getChild()->getBoundingBox().upper.c0) < SMALL)
         --rsize;
     if (geometry->isExtended(Geometry::DIRECTION_VERT, true) &&
-        abs(mesh->axis1->at(mesh->axis1->size()-1) - geometry->getChild()->getBoundingBox().upper.c1) < SMALL)
+        abs(mesh->axis[1]->at(mesh->axis[1]->size()-1) - geometry->getChild()->getBoundingBox().upper.c1) < SMALL)
         --zsize;
 
     nrCache.assign(rsize, std::vector<dcomplex,aligned_allocator<dcomplex>>(zsize));
@@ -248,10 +248,10 @@ void EffectiveFrequencyCyl::updateCache()
         // we need to update something
 
         // Some additional checks
-        for (auto x: *mesh->axis0) {
+        for (auto x: *mesh->axis[0]) {
             if (x < 0.) throw BadMesh(getId(), "for cylindrical geometry no radial points can be negative");
         }
-        if (abs(mesh->axis0->at(0)) > SMALL) throw BadMesh(getId(), "radial mesh must start from zero");
+        if (abs(mesh->axis[0]->at(0)) > SMALL) throw BadMesh(getId(), "radial mesh must start from zero");
 
         if (!modes.empty()) writelog(LOG_DETAIL, "Clearing computed modes");
         modes.clear();
@@ -269,15 +269,15 @@ void EffectiveFrequencyCyl::updateCache()
         shared_ptr<OrderedAxis> axis0, axis1;
         {
             shared_ptr<RectangularMesh<2>> midmesh = mesh->getMidpointsMesh();
-            axis0 = plask::make_shared<OrderedAxis>(*midmesh->axis0);
-            axis1 = plask::make_shared<OrderedAxis>(*midmesh->axis1);
+            axis0 = plask::make_shared<OrderedAxis>(*midmesh->axis[0]);
+            axis1 = plask::make_shared<OrderedAxis>(*midmesh->axis[1]);
         }
         if (rsize == axis0->size())
-            axis0->addPoint(mesh->axis0->at(axis0->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
+            axis0->addPoint(mesh->axis[0]->at(axis0->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
         if (zbegin == 0)
-            axis1->addPoint(mesh->axis1->at(0) - 2.*OrderedAxis::MIN_DISTANCE);
-        if (zsize == mesh->axis1->size()+1)
-            axis1->addPoint(mesh->axis1->at(mesh->axis1->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
+            axis1->addPoint(mesh->axis[1]->at(0) - 2.*OrderedAxis::MIN_DISTANCE);
+        if (zsize == mesh->axis[1]->size()+1)
+            axis1->addPoint(mesh->axis[1]->at(mesh->axis[1]->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
 
         auto midmesh = plask::make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
         auto temp = inTemperature(midmesh);
@@ -428,7 +428,7 @@ dcomplex EffectiveFrequencyCyl::detS1(const dcomplex& v, const std::vector<dcomp
     //
     // dcomplex phas = 1.;
     // if (zbegin != 0)
-    //     phas = exp(I * kz[zbegin] * (mesh->axis1->at(zbegin)-mesh->axis1->at(zbegin-1)));
+    //     phas = exp(I * kz[zbegin] * (mesh->axis[1]->at(zbegin)-mesh->axis[1]->at(zbegin-1)));
     //
     // for (size_t i = zbegin+1; i < zsize; ++i) {
     //     // Compute shift inside one layer
@@ -446,8 +446,8 @@ dcomplex EffectiveFrequencyCyl::detS1(const dcomplex& v, const std::vector<dcomp
     //     s3  = (p*s3-m) * chi;
     //     s4 *= chi;
     //     // Compute phase shift for the next step
-    //     if (i != mesh->axis1->size())
-    //         phas = exp(I * kz[i] * (mesh->axis1->at(i)-mesh->axis1->at(i-1)));
+    //     if (i != mesh->axis[1]->size())
+    //         phas = exp(I * kz[i] * (mesh->axis[1]->at(i)-mesh->axis[1]->at(i-1)));
     //
     //     // Compute fields
     //     if (saveto) {
@@ -463,7 +463,7 @@ dcomplex EffectiveFrequencyCyl::detS1(const dcomplex& v, const std::vector<dcomp
     MatrixZ T = MatrixZ::eye();
     for (size_t i = zbegin; i < zsize-1; ++i) {
         double d;
-        if (i != zbegin || zbegin != 0) d = mesh->axis1->at(i) - mesh->axis1->at(i-1);
+        if (i != zbegin || zbegin != 0) d = mesh->axis[1]->at(i) - mesh->axis[1]->at(i-1);
         else d = 0.;
         dcomplex phas = exp(- I * kz[i] * d);
         // Transfer through boundary
@@ -531,7 +531,7 @@ void EffectiveFrequencyCyl::computeStripeNNg(size_t stripe, bool save_integrals)
     }
 
     for (size_t i = zbegin+1; i < zsize-1; ++i) {
-        double d = mesh->axis1->at(i) - mesh->axis1->at(i-1);
+        double d = mesh->axis[1]->at(i) - mesh->axis[1]->at(i-1);
         double weight = 0.;
         dcomplex kz = k0 * sqrt(nrCache[stripe0][i]*nrCache[stripe0][i] - veff * nrCache[stripe0][i]*ngCache[stripe0][i]);
         if (real(kz) < 0.) kz = -kz;
@@ -577,8 +577,8 @@ double EffectiveFrequencyCyl::integrateBessel(Mode& mode)
 {
     double sum = 0;
     for (size_t i = 0; i != rsize; ++i) {
-        double start = mesh->axis0->at(i);
-        double end = (i != rsize-1)? mesh->axis0->at(i+1) : 3.0 * mesh->axis0->at(mesh->axis0->size()-1);
+        double start = mesh->axis[0]->at(i);
+        double end = (i != rsize-1)? mesh->axis[0]->at(i+1) : 3.0 * mesh->axis[0]->at(mesh->axis[0]->size()-1);
         double err = perr;
         mode.rweights[i] = patterson<double,double>([this,&mode](double r){return r * abs2(mode.rField(r));}, start, end, err);
         //TODO use exponential asymptotic approximation to compute weight in the last stripe
@@ -592,7 +592,7 @@ double EffectiveFrequencyCyl::integrateBessel(Mode& mode)
 void EffectiveFrequencyCyl::computeBessel(size_t i, dcomplex v, const Mode& mode,
                                           dcomplex* J1, dcomplex* H1, dcomplex* J2, dcomplex* H2)
 {
-    double r = mesh->axis0->at(i);
+    double r = mesh->axis[0]->at(i);
     dcomplex x1 = r * k0 * sqrt(nng[i-1] * (veffs[i-1]-v));
     if (real(x1) < 0.) x1 = -x1;
     if (imag(x1) > SMALL) x1 = -x1;
@@ -690,18 +690,18 @@ double EffectiveFrequencyCyl::getTotalAbsorption(Mode& mode)
             double absp = - 2. * real(n) * imag(n);
             result += absp * mode.rweights[ir] * zintegrals[iz]; // [dV] = µm³
             // double err = 1e-6, erz = 1e-6;
-            // double rstart = mesh->axis0[ir];
-            // double rend = (ir != rsize-1)? mesh->axis0[ir+1] : 3.0 * mesh->axis0[ir];
+            // double rstart = mesh->axis[0][ir];
+            // double rend = (ir != rsize-1)? mesh->axis[0][ir+1] : 3.0 * mesh->axis[0][ir];
             // result += absp * 2.*PI *
             //     patterson<double>([this,&mode](double r){return r * abs2(mode.rField(r));}, rstart,  rend, err) *
             //     patterson<double>([&](double z){
             //         size_t stripe = getMainStripe();
             //         dcomplex kz = k0 * sqrt(nrCache[stripe][iz]*nrCache[stripe][iz] - veffs[stripe] * nrCache[stripe][iz]*ngCache[stripe][iz]);
             //         if (real(kz) < 0.) kz = -kz;
-            //         z -= mesh->axis1[iz];
+            //         z -= mesh->axis[1][iz];
             //         dcomplex phasz = exp(- I * kz * z);
             //         return abs2(zfields[iz].F * phasz + zfields[iz].B / phasz);
-            //     }, mesh->axis1[iz-1], mesh->axis1[iz], erz);
+            //     }, mesh->axis[1][iz-1], mesh->axis[1][iz], erz);
         }
     }
     result *= 2e-9 * PI / real(mode.lam) * mode.power; // 1e-9: µm³ / nm -> m², 2: ½ is already hidden in mode.power
@@ -811,13 +811,13 @@ struct EffectiveFrequencyCyl::FieldDataInefficient: public FieldDataBase<FieldT>
 
         dcomplex val = this->solver->modes[this->num].rField(r);
 
-        size_t iz = this->solver->mesh->axis1->findIndex(z);
+        size_t iz = this->solver->mesh->axis[1]->findIndex(z);
         if (iz >= this->solver->zsize) iz = this->solver->zsize-1;
         else if (iz < this->solver->zbegin) iz = this->solver->zbegin;
         dcomplex kz = this->solver->k0 * sqrt(this->solver->nrCache[stripe][iz]*this->solver->nrCache[stripe][iz]
                                               - this->solver->veffs[stripe] * this->solver->nrCache[stripe][iz]*this->solver->ngCache[stripe][iz]);
         if (real(kz) < 0.) kz = -kz;
-        z -= this->solver->mesh->axis1->at(max(int(iz)-1, 0));
+        z -= this->solver->mesh->axis[1]->at(max(int(iz)-1, 0));
         dcomplex phasz = exp(- I * kz * z);
         val *= this->solver->zfields[iz].F * phasz + this->solver->zfields[iz].B / phasz;
 
@@ -836,17 +836,17 @@ struct EffectiveFrequencyCyl::FieldDataEfficient: public FieldDataBase<FieldT>
                        size_t stripe):
         FieldDataBase<FieldT>(solver, num),
         rect_mesh(rect_mesh),
-        valr(rect_mesh->axis0->size()),
-        valz(rect_mesh->axis1->size())
+        valr(rect_mesh->axis[0]->size()),
+        valz(rect_mesh->axis[1]->size())
     {
         std::exception_ptr error; // needed to handle exceptions from OMP loop
 
         #pragma omp parallel
         {
             #pragma omp for nowait
-            for (int idr = 0; idr < int(rect_mesh->axis0->size()); ++idr) {	// idr can't be size_t since MSVC does not support omp newer than 2
+            for (int idr = 0; idr < int(rect_mesh->axis[0]->size()); ++idr) {	// idr can't be size_t since MSVC does not support omp newer than 2
                 if (error) continue;
-                double r = rect_mesh->axis0->at(idr);
+                double r = rect_mesh->axis[0]->at(idr);
                 if (r < 0.) r = -r;
                 try {
                     valr[idr] = solver->modes[num].rField(r);
@@ -858,15 +858,15 @@ struct EffectiveFrequencyCyl::FieldDataEfficient: public FieldDataBase<FieldT>
 
             if (!error) {
                 #pragma omp for
-                for (int idz = 0; idz < int(rect_mesh->axis1->size()); ++idz) {	// idz can't be size_t since MSVC does not support omp newer than 2
-                    double z = rect_mesh->axis1->at(idz);
-                    size_t iz = solver->mesh->axis1->findIndex(z);
+                for (int idz = 0; idz < int(rect_mesh->axis[1]->size()); ++idz) {	// idz can't be size_t since MSVC does not support omp newer than 2
+                    double z = rect_mesh->axis[1]->at(idz);
+                    size_t iz = solver->mesh->axis[1]->findIndex(z);
                     if (iz >= solver->zsize) iz = solver->zsize-1;
                     else if (iz < solver->zbegin) iz = solver->zbegin;
                     dcomplex kz = solver->k0 * sqrt(solver->nrCache[stripe][iz]*solver->nrCache[stripe][iz]
                                                   - solver->veffs[stripe] * solver->nrCache[stripe][iz]*solver->ngCache[stripe][iz]);
                     if (real(kz) < 0.) kz = -kz;
-                    z -= solver->mesh->axis1->at(max(int(iz)-1, 0));
+                    z -= solver->mesh->axis[1]->at(max(int(iz)-1, 0));
                     dcomplex phasz = exp(- I * kz * z);
                     valz[idz] = solver->zfields[iz].F * phasz + solver->zfields[iz].B / phasz;
                 }
@@ -889,18 +889,18 @@ struct EffectiveFrequencyCyl::FieldDataEfficient: public FieldDataBase<FieldT>
 
         if (rect_mesh->getIterationOrder() == RectangularMesh<2>::ORDER_10) {
             #pragma omp parallel for
-            for (plask::openmp_size_t i1 = 0; i1 < rect_mesh->axis1->size(); ++i1) {
-                FieldT* data = results.data() + i1 * rect_mesh->axis0->size();
-                for (size_t i0 = 0; i0 < rect_mesh->axis0->size(); ++i0) {
+            for (plask::openmp_size_t i1 = 0; i1 < rect_mesh->axis[1]->size(); ++i1) {
+                FieldT* data = results.data() + i1 * rect_mesh->axis[0]->size();
+                for (size_t i0 = 0; i0 < rect_mesh->axis[0]->size(); ++i0) {
                     dcomplex f = valr[i0] * valz[i1];
                     data[i0] = this->value(f);
                 }
             }
         } else {
             #pragma omp parallel for
-            for (plask::openmp_size_t i0 = 0; i0 < rect_mesh->axis0->size(); ++i0) {
-                FieldT* data = results.data() + i0 * rect_mesh->axis1->size();
-                for (size_t i1 = 0; i1 < rect_mesh->axis1->size(); ++i1) {
+            for (plask::openmp_size_t i0 = 0; i0 < rect_mesh->axis[0]->size(); ++i0) {
+                FieldT* data = results.data() + i0 * rect_mesh->axis[1]->size();
+                for (size_t i1 = 0; i1 < rect_mesh->axis[1]->size(); ++i1) {
                     dcomplex f = valr[i0] * valz[i1];
                     data[i1] = this->value(f);
                 }
@@ -977,8 +977,8 @@ const LazyData<Tensor3<dcomplex>> EffectiveFrequencyCyl::getRefractiveIndex(cons
     return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
         [this, dst_mesh, flags, lam0](size_t j) -> Tensor3<dcomplex> {
             auto point = flags.wrap(dst_mesh->at(j));
-            size_t ir = this->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= this->rsize) ir = this->rsize-1;
-            size_t iz = this->mesh->axis1->findIndex(point.c1); if (iz < this->zbegin) iz = this->zbegin; else if (iz >= zsize) iz = this->zsize-1;
+            size_t ir = this->mesh->axis[0]->findIndex(point.c0); if (ir != 0) --ir; if (ir >= this->rsize) ir = this->rsize-1;
+            size_t iz = this->mesh->axis[1]->findIndex(point.c1); if (iz < this->zbegin) iz = this->zbegin; else if (iz >= zsize) iz = this->zsize-1;
             return Tensor3<dcomplex>(this->nrCache[ir][iz]/* + this->ngCache[ir][iz] * (1. - lam/lam0)*/);
         }
     );
@@ -1005,8 +1005,8 @@ struct EffectiveFrequencyCyl::HeatDataImpl: public LazyDataImpl<double>
     double at(size_t j) const override {
         double result = 0.;
         auto point = flags.wrap(dest_mesh->at(j));
-        size_t ir = solver->mesh->axis0->findIndex(point.c0); if (ir != 0) --ir; if (ir >= solver->rsize) ir = solver->rsize-1;
-        size_t iz = solver->mesh->axis1->findIndex(point.c1); if (iz < solver->zbegin) iz = solver->zbegin; else if (iz >= solver->zsize) iz = solver->zsize-1;
+        size_t ir = solver->mesh->axis[0]->findIndex(point.c0); if (ir != 0) --ir; if (ir >= solver->rsize) ir = solver->rsize-1;
+        size_t iz = solver->mesh->axis[1]->findIndex(point.c1); if (iz < solver->zbegin) iz = solver->zbegin; else if (iz >= solver->zsize) iz = solver->zsize-1;
         for (size_t m = 0; m != solver->modes.size(); ++m) { // we sum heats from all modes
             dcomplex n = solver->nrCache[ir][iz] + solver->ngCache[ir][iz] * (1. - solver->modes[m].lam/lam0);
             double absp = - 2. * real(n) * imag(n);

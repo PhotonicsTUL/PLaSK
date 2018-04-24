@@ -240,20 +240,20 @@ void EffectiveIndex2D::onInitialize()
 
     xbegin = 0;
     ybegin = 0;
-    xend = mesh->axis0->size() + 1;
-    yend = mesh->axis1->size() + 1;
+    xend = mesh->axis[0]->size() + 1;
+    yend = mesh->axis[1]->size() + 1;
 
     if (geometry->isExtended(Geometry::DIRECTION_TRAN, false) &&
-        abs(mesh->axis0->at(0) - geometry->getChild()->getBoundingBox().lower.c0) < SMALL)
+        abs(mesh->axis[0]->at(0) - geometry->getChild()->getBoundingBox().lower.c0) < SMALL)
         xbegin = 1;
     if (geometry->isExtended(Geometry::DIRECTION_VERT, false) &&
-        abs(mesh->axis1->at(0) - geometry->getChild()->getBoundingBox().lower.c1) < SMALL)
+        abs(mesh->axis[1]->at(0) - geometry->getChild()->getBoundingBox().lower.c1) < SMALL)
         ybegin = 1;
     if (geometry->isExtended(Geometry::DIRECTION_TRAN, true) &&
-        abs(mesh->axis0->at(mesh->axis0->size()-1) - geometry->getChild()->getBoundingBox().upper.c0) < SMALL)
+        abs(mesh->axis[0]->at(mesh->axis[0]->size()-1) - geometry->getChild()->getBoundingBox().upper.c0) < SMALL)
         --xend;
     if (geometry->isExtended(Geometry::DIRECTION_VERT, true) &&
-        abs(mesh->axis1->at(mesh->axis1->size()-1) - geometry->getChild()->getBoundingBox().upper.c1) < SMALL)
+        abs(mesh->axis[1]->at(mesh->axis[1]->size()-1) - geometry->getChild()->getBoundingBox().upper.c1) < SMALL)
         --yend;
 
     // Assign space for refractive indices cache and stripe effective indices
@@ -290,8 +290,8 @@ void EffectiveIndex2D::updateCache()
 
         if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) {
             if (fresh) // Make sure we have only positive points
-                for (auto x: *mesh->axis0) if (x < 0.) throw BadMesh(getId(), "for symmetric geometry no horizontal points can be negative");
-            if (mesh->axis0->at(0) == 0.) xbegin = 1;
+                for (auto x: *mesh->axis[0]) if (x < 0.) throw BadMesh(getId(), "for symmetric geometry no horizontal points can be negative");
+            if (mesh->axis[0]->at(0) == 0.) xbegin = 1;
         }
 
         if (!modes.empty()) writelog(LOG_DETAIL, "Clearing computed modes");
@@ -302,20 +302,20 @@ void EffectiveIndex2D::updateCache()
         shared_ptr<OrderedAxis> axis0, axis1;
         {
             shared_ptr<RectangularMesh<2>> midmesh = mesh->getMidpointsMesh();
-            axis0 = plask::make_shared<OrderedAxis>(*midmesh->axis0);
-            axis1 = plask::make_shared<OrderedAxis>(*midmesh->axis1);
+            axis0 = plask::make_shared<OrderedAxis>(*midmesh->axis[0]);
+            axis1 = plask::make_shared<OrderedAxis>(*midmesh->axis[1]);
         }
 
         if (xbegin == 0) {
-            if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) axis0->addPoint(0.5 * mesh->axis0->at(0));
-            else axis0->addPoint(mesh->axis0->at(0) - 2.*OrderedAxis::MIN_DISTANCE);
+            if (geometry->isSymmetric(Geometry::DIRECTION_TRAN)) axis0->addPoint(0.5 * mesh->axis[0]->at(0));
+            else axis0->addPoint(mesh->axis[0]->at(0) - 2.*OrderedAxis::MIN_DISTANCE);
         }
-        if (xend == mesh->axis0->size()+1)
-            axis0->addPoint(mesh->axis0->at(mesh->axis0->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
+        if (xend == mesh->axis[0]->size()+1)
+            axis0->addPoint(mesh->axis[0]->at(mesh->axis[0]->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
         if (ybegin == 0)
-            axis1->addPoint(mesh->axis1->at(0) - 2.*OrderedAxis::MIN_DISTANCE);
-        if (yend == mesh->axis1->size()+1)
-            axis1->addPoint(mesh->axis1->at(mesh->axis1->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
+            axis1->addPoint(mesh->axis[1]->at(0) - 2.*OrderedAxis::MIN_DISTANCE);
+        if (yend == mesh->axis[1]->size()+1)
+            axis1->addPoint(mesh->axis[1]->at(mesh->axis[1]->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
 
         writelog(LOG_DEBUG, "Updating refractive indices cache");
         auto midmesh = plask::make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
@@ -418,7 +418,7 @@ dcomplex EffectiveIndex2D::detS1(const plask::dcomplex& x, const std::vector<dco
     //
     // dcomplex phas = 1.;
     // if (ybegin != 0)
-    //     phas = exp(I * ky[ybegin] * (mesh->axis1->at(ybegin)-mesh->axis1->at(ybegin-1)));
+    //     phas = exp(I * ky[ybegin] * (mesh->axis[1]->at(ybegin)-mesh->axis[1]->at(ybegin-1)));
     //
     // for (size_t i = ybegin+1; i < yend; ++i) {
     //     // Compute shift inside one layer
@@ -437,8 +437,8 @@ dcomplex EffectiveIndex2D::detS1(const plask::dcomplex& x, const std::vector<dco
     //     s3  = (p*s3-m) * chi;
     //     s4 *= chi;
     //     // Compute phase shift for the next step
-    //     if (i != mesh->axis1->size())
-    //         phas = exp(I * ky[i] * (mesh->axis1->at(i)-mesh->axis1->at(i-1)));
+    //     if (i != mesh->axis[1]->size())
+    //         phas = exp(I * ky[i] * (mesh->axis[1]->at(i)-mesh->axis[1]->at(i-1)));
     //
     //     // Compute fields
     //     if (save) {
@@ -454,7 +454,7 @@ dcomplex EffectiveIndex2D::detS1(const plask::dcomplex& x, const std::vector<dco
     Matrix T = Matrix::eye();
     for (size_t i = ybegin; i < yend-1; ++i) {
         double d;
-        if (i != ybegin || ybegin != 0) d = mesh->axis1->at(i) - mesh->axis1->at(i-1);
+        if (i != ybegin || ybegin != 0) d = mesh->axis[1]->at(i) - mesh->axis[1]->at(i-1);
         else d = 0.;
         dcomplex phas = exp(- I * ky[i] * d);
         // Transfer through boundary
@@ -507,7 +507,7 @@ void EffectiveIndex2D::computeWeights(size_t stripe)
     double sum = yweights[ybegin] + yweights[yend-1];
 
     for (size_t i = ybegin+1; i < yend-1; ++i) {
-        double d = mesh->axis1->at(i)-mesh->axis1->at(i-1);
+        double d = mesh->axis[1]->at(i)-mesh->axis[1]->at(i-1);
         dcomplex ky = k0 * sqrt(nrCache[stripe][i]*nrCache[stripe][i] - vneff*vneff); if (imag(ky) > 0.) ky = -ky;
         dcomplex w_ff, w_bb, w_fb, w_bf;
         if (d != 0.) {
@@ -560,7 +560,7 @@ void EffectiveIndex2D::normalizeFields(Mode& mode, const std::vector<dcomplex,al
     }
 
     for (size_t i = start; i < xend-1; ++i) {
-        double d = mesh->axis0->at(i) - ((i == 0)? 0. : mesh->axis0->at(i-1));
+        double d = mesh->axis[0]->at(i) - ((i == 0)? 0. : mesh->axis[0]->at(i-1));
         dcomplex w_ff, w_bb, w_fb, w_bf;
         if (d != 0.) {
             if (abs(imag(kx[i])) > SMALL) {
@@ -657,8 +657,8 @@ dcomplex EffectiveIndex2D::detS(const dcomplex& x, EffectiveIndex2D::Mode& mode,
     Matrix T = Matrix::eye();
     for (size_t i = xbegin; i < xend-1; ++i) {
         double d;
-        if (i != xbegin) d = mesh->axis0->at(i) - mesh->axis0->at(i-1);
-        else if (mode.symmetry != SYMMETRY_NONE) d = mesh->axis0->at(i);     // we have symmetry, so beginning of the transfer matrix is at the axis
+        if (i != xbegin) d = mesh->axis[0]->at(i) - mesh->axis[0]->at(i-1);
+        else if (mode.symmetry != SYMMETRY_NONE) d = mesh->axis[0]->at(i);     // we have symmetry, so beginning of the transfer matrix is at the axis
         else d = 0.;
         dcomplex phas = exp(- I * kx[i] * d);
         // Transfer through boundary
@@ -855,18 +855,18 @@ struct EffectiveIndex2D::FieldDataEfficient: public EffectiveIndex2D::FieldDataB
         DataVector<FieldT> results(rect_mesh->size());
         if (rect_mesh->getIterationOrder() == RectangularMesh<2>::ORDER_10) {
             #pragma omp parallel for
-            for (plask::openmp_size_t i1 = 0; i1 < rect_mesh->axis1->size(); ++i1) {
-                FieldT* data = results.data() + i1 * rect_mesh->axis0->size();
-                for (size_t i0 = 0; i0 < rect_mesh->axis0->size(); ++i0) {
+            for (plask::openmp_size_t i1 = 0; i1 < rect_mesh->axis[1]->size(); ++i1) {
+                FieldT* data = results.data() + i1 * rect_mesh->axis[0]->size();
+                for (size_t i0 = 0; i0 < rect_mesh->axis[0]->size(); ++i0) {
                     dcomplex f = valx[i0] * valy[i1];
                     data[i0] = this->value(f);
                 }
             }
         } else {
             #pragma omp parallel for
-            for (plask::openmp_size_t i0 = 0; i0 < rect_mesh->axis0->size(); ++i0) {
-                FieldT* data = results.data() + i0 * rect_mesh->axis1->size();
-                for (size_t i1 = 0; i1 < rect_mesh->axis1->size(); ++i1) {
+            for (plask::openmp_size_t i0 = 0; i0 < rect_mesh->axis[0]->size(); ++i0) {
+                FieldT* data = results.data() + i0 * rect_mesh->axis[1]->size();
+                for (size_t i1 = 0; i1 < rect_mesh->axis[1]->size(); ++i1) {
                     dcomplex f = valx[i0] * valy[i1];
                     data[i1] = this->value(f);
                 }
@@ -903,8 +903,8 @@ const LazyData<Tensor3<dcomplex>> EffectiveIndex2D::getRefractiveIndex(shared_pt
     return LazyData<Tensor3<dcomplex>>(dst_mesh->size(),
         [this, dst_mesh, flags](size_t i) -> Tensor3<dcomplex> {
             auto point = flags.wrap(dst_mesh->at(i));
-            size_t ix = this->mesh->axis0->findIndex(point.c0); if (ix < this->xbegin) ix = this->xbegin;
-            size_t iy = this->mesh->axis1->findIndex(point.c1);
+            size_t ix = this->mesh->axis[0]->findIndex(point.c0); if (ix < this->xbegin) ix = this->xbegin;
+            size_t iy = this->mesh->axis[1]->findIndex(point.c1);
             return Tensor3<dcomplex>(this->nrCache[ix][iy]);
         });
 }
@@ -930,8 +930,8 @@ struct EffectiveIndex2D::HeatDataImpl: public LazyDataImpl<double>
     double at(size_t j) const override {
         double result = 0.;
         auto point = flags.wrap(dest_mesh->at(j));
-        size_t ix = solver->mesh->axis0->findIndex(point.c0); if (ix < solver->xbegin) ix = solver->xbegin;
-        size_t iy = solver->mesh->axis1->findIndex(point.c1);
+        size_t ix = solver->mesh->axis[0]->findIndex(point.c0); if (ix < solver->xbegin) ix = solver->xbegin;
+        size_t iy = solver->mesh->axis[1]->findIndex(point.c1);
         for (size_t m = 0; m != solver->modes.size(); ++m) { // we sum heats from all modes
             result += EE[m][j]; // 1e9: 1/nm -> 1/m
         }

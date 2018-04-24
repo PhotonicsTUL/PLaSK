@@ -182,7 +182,7 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
      * @return point with given @p index
      */
     Vec<3, double> at(std::size_t index0, std::size_t index1, std::size_t index2) const override {
-        return fromMeshCoords(axis0->at(index0), axis1->at(index1), axis2->at(index2));
+        return fromMeshCoords(axis[0]->at(index0), axis[1]->at(index1), axis[2]->at(index2));
     }
 
     /**
@@ -206,7 +206,7 @@ template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<EquilateralMesh3D, SrcT, DstT, INTERPOLATION_LINEAR> {
     static LazyData<DstT> interpolate(const shared_ptr<const EquilateralMesh3D>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
-        if (src_mesh->axis0->size() == 0 || src_mesh->axis1->size() == 0 || src_mesh->axis2->size() == 0)
+        if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0 || src_mesh->axis[2]->size() == 0)
             throw BadMesh("interpolate", "Source mesh empty");
         return new LinearInterpolatedLazyDataImpl<DstT, RectilinearMesh3D, SrcT>
             (src_mesh, src_vec, EquilateralMesh3D::Transformed(src_mesh, dst_mesh), flags);
@@ -217,7 +217,7 @@ template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<EquilateralMesh3D, SrcT, DstT, INTERPOLATION_NEAREST> {
     static LazyData<DstT> interpolate(const shared_ptr<const EquilateralMesh3D>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
-        if (src_mesh->axis0->size() == 0 || src_mesh->axis1->size() == 0 || src_mesh->axis2->size() == 0)
+        if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0 || src_mesh->axis[2]->size() == 0)
             throw BadMesh("interpolate", "Source mesh empty");
         return new NearestNeighborInterpolatedLazyDataImpl<DstT, RectilinearMesh3D, SrcT>
             (src_mesh, src_vec, EquilateralMesh3D::Transformed(src_mesh, dst_mesh), flags);

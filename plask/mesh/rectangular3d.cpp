@@ -7,7 +7,7 @@ namespace plask {
 
 
 shared_ptr<RectangularMesh<3> > RectangularMesh<3>::getMidpointsMesh() {
-    return plask::make_shared<RectangularMesh<3>>(axis0->getMidpointsMesh(), axis1->getMidpointsMesh(), axis2->getMidpointsMesh(), getIterationOrder());
+    return plask::make_shared<RectangularMesh<3>>(axis[0]->getMidpointsMesh(), axis[1]->getMidpointsMesh(), axis[2]->getMidpointsMesh(), getIterationOrder());
 }
 
 RectangularMesh<3>::RectangularMesh(IterationOrder iterationOrder): RectilinearMesh3D(iterationOrder) {}
@@ -19,9 +19,9 @@ RectangularMesh<3>::RectangularMesh(const RectangularMesh<3>& src, bool clone_ax
 
 void RectangularMesh<3>::writeXML(XMLElement& object) const {
     object.attr("type", "rectangular3d");
-    { auto a = object.addTag("axis0"); axis0->writeXML(a); }
-    { auto a = object.addTag("axis1"); axis1->writeXML(a); }
-    { auto a = object.addTag("axis2"); axis2->writeXML(a); }
+    { auto a = object.addTag("axis0"); axis[0]->writeXML(a); }
+    { auto a = object.addTag("axis1"); axis[1]->writeXML(a); }
+    { auto a = object.addTag("axis2"); axis[2]->writeXML(a); }
 }
 
 RectangularMesh<3>::Boundary RectangularMesh<3>::getBoundary(const std::string &boundary_desc) {
@@ -69,7 +69,12 @@ RectangularMesh<3>::Boundary RectangularMesh<3>::getBoundary(plask::XMLReader &b
 }
 
 shared_ptr<RectangularMesh<3> > make_rectangular_mesh(const RectangularMesh<3> &to_copy) {
-   return plask::make_shared<RectangularMesh<3>>(plask::make_shared<OrderedAxis>(*to_copy.axis0), plask::make_shared<OrderedAxis>(*to_copy.axis1), plask::make_shared<OrderedAxis>(*to_copy.axis2), to_copy.getIterationOrder());
+    return plask::make_shared<RectangularMesh<3>>(
+        plask::make_shared<OrderedAxis>(*to_copy.axis[0]),
+        plask::make_shared<OrderedAxis>(*to_copy.axis[1]),
+        plask::make_shared<OrderedAxis>(*to_copy.axis[2]),
+        to_copy.getIterationOrder()
+    );
 }
 
 static shared_ptr<Mesh> readRectangularMesh3D(XMLReader& reader) {

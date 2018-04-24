@@ -115,11 +115,11 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
     std::map<size_t, Active::Region> regions;
     size_t nreg = 0;
 
-    for (size_t lon = 0; lon < points->axis0->size(); ++lon) {
-        for (size_t tra = 0; tra < points->axis1->size(); ++tra) {
+    for (size_t lon = 0; lon < points->axis[0]->size(); ++lon) {
+        for (size_t tra = 0; tra < points->axis[1]->size(); ++tra) {
             size_t num = 0;
             size_t start = 0;
-            for (size_t ver = 0; ver < points->axis2->size(); ++ver) {
+            for (size_t ver = 0; ver < points->axis[2]->size(); ++ver) {
                 auto point = points->at(lon, tra, ver);
                 size_t cur = isActive(point);
                 if (cur != num) {
@@ -157,10 +157,10 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
             if (num) {  // summarize current region
                 auto found = regions.find(num);
                 if (found == regions.end()) {  // `current` is a new region
-                    regions[num] = Active::Region(start, points->axis2->size(), lon, tra);
+                    regions[num] = Active::Region(start, points->axis[2]->size(), lon, tra);
                 } else {
                     Active::Region& region = found->second;
-                    if (start != region.bottom || points->axis2->size() != region.top)
+                    if (start != region.bottom || points->axis[2]->size() != region.top)
                         throw Exception("{0}: Junction {1} does not have top and bottom edges at constant heights", this->getId(), num-1);
                     if (tra < region.left) region.left = tra;
                     if (tra >= region.right) region.right = tra+1;
@@ -177,7 +177,7 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
     for (auto& ireg: regions) {
         size_t num = ireg.first - 1;
         Active::Region& reg = ireg.second;
-        double height = this->mesh->axis2->at(reg.top) - this->mesh->axis2->at(reg.bottom);
+        double height = this->mesh->axis[2]->at(reg.top) - this->mesh->axis[2]->at(reg.bottom);
         active[num] = Active(condsize, reg, height);
         condsize += (reg.right-reg.left) * (reg.front-reg.back);
         this->writelog(LOG_DETAIL, "Detected junction {0} thickness = {1}nm", num, 1e3*height);
@@ -648,8 +648,8 @@ double FiniteElementMethodElectrical3DSolver::integrateCurrent(size_t vindex, bo
     if (!potential) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
-    for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
-        for (size_t j = 0; j < mesh->axis1->size()-1; ++j) {
+    for (size_t i = 0; i < mesh->axis[0]->size()-1; ++i) {
+        for (size_t j = 0; j < mesh->axis[1]->size()-1; ++j) {
             auto element = mesh->element(i, j, vindex);
             if (!onlyactive || isActive(element.getMidpoint()))
                 result += current[element.getIndex()].c2 * element.getSize0() * element.getSize1();
@@ -715,10 +715,10 @@ const LazyData<Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConduc
     return LazyData<Tensor2<double>>(dest_mesh->size(),
         [this, dest_mesh, flags](size_t i) -> Tensor2<double> {
             auto point = flags.wrap(dest_mesh->at(i));
-            size_t x = this->mesh->axis0->findUpIndex(point[0]),
-                   y = this->mesh->axis1->findUpIndex(point[1]),
-                   z = this->mesh->axis2->findUpIndex(point[2]);
-            if (x == 0 || y == 0 || z == 0 || x == this->mesh->axis0->size() || y == this->mesh->axis1->size() || z == this->mesh->axis2->size())
+            size_t x = this->mesh->axis[0]->findUpIndex(point[0]),
+                   y = this->mesh->axis[1]->findUpIndex(point[1]),
+                   z = this->mesh->axis[2]->findUpIndex(point[2]);
+            if (x == 0 || y == 0 || z == 0 || x == this->mesh->axis[0]->size() || y == this->mesh->axis[1]->size() || z == this->mesh->axis[2]->size())
                 return Tensor2<double>(NAN);
             else
                 return conds[this->mesh->element(x-1, y-1, z-1).getIndex()];

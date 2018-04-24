@@ -55,10 +55,10 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
         inline std::size_t getLowerIndex1() const { return index1; }
 
         /// \return tran coordinate of the left edge of the element
-        inline double getLower0() const { return rectangularMesh().axis0->at(index0); }
+        inline double getLower0() const { return rectangularMesh().axis[0]->at(index0); }
 
         /// \return vert coordinate of the bottom edge of the element
-        inline double getLower1() const { return rectangularMesh().axis1->at(index1); }
+        inline double getLower1() const { return rectangularMesh().axis[1]->at(index1); }
 
         /// \return tran index of the right edge of the element
         inline std::size_t getUpperIndex0() const { return index0+1; }
@@ -67,10 +67,10 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
         inline std::size_t getUpperIndex1() const { return index1+1; }
 
         /// \return tran coordinate of the right edge of the element
-        inline double getUpper0() const { return rectangularMesh().axis0->at(getUpperIndex0()); }
+        inline double getUpper0() const { return rectangularMesh().axis[0]->at(getUpperIndex0()); }
 
         /// \return vert coordinate of the top edge of the element
-        inline double getUpper1() const { return rectangularMesh().axis1->at(getUpperIndex1()); }
+        inline double getUpper1() const { return rectangularMesh().axis[1]->at(getUpperIndex1()); }
 
         /// \return size of the element in the tran direction
         inline double getSize0() const { return getUpper0() - getLower0(); }
@@ -171,8 +171,8 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
 
     /**
      * Calculate this mesh index using indexes of axis0 and axis1.
-     * @param axis0_index index of axis0, from 0 to axis0->size()-1
-     * @param axis1_index index of axis1, from 0 to axis1->size()-1
+     * @param axis0_index index of axis0, from 0 to axis[0]->size()-1
+     * @param axis1_index index of axis1, from 0 to axis[1]->size()-1
      * @return this mesh index, from 0 to size()-1, or NOT_INCLUDED
      */
     inline std::size_t index(std::size_t axis0_index, std::size_t axis1_index) const {
@@ -191,8 +191,8 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
 
     /**
      * Get point with given x and y indexes.
-     * @param axis0_index index of axis0, from 0 to axis0->size()-1
-     * @param axis1_index index of axis1, from 0 to axis1->size()-1
+     * @param axis0_index index of axis0, from 0 to axis[0]->size()-1
+     * @param axis1_index index of axis1, from 0 to axis[1]->size()-1
      * @return point with given axis0 and axis1 indexes
      */
     inline Vec<2,double> operator()(std::size_t axis0_index, std::size_t axis1_index) const {
@@ -202,8 +202,8 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
 private:
     bool canBeIncluded(const Vec<2>& point) const {
         return
-            rectangularMesh.axis0->at(0) <= point[0] && point[0] <= rectangularMesh.axis0->at(rectangularMesh.axis0->size()-1) &&
-            rectangularMesh.axis1->at(0) <= point[1] && point[1] <= rectangularMesh.axis1->at(rectangularMesh.axis1->size()-1);
+            rectangularMesh.axis[0]->at(0) <= point[0] && point[0] <= rectangularMesh.axis[0]->at(rectangularMesh.axis[0]->size()-1) &&
+            rectangularMesh.axis[1]->at(0) <= point[1] && point[1] <= rectangularMesh.axis[1]->at(rectangularMesh.axis[1]->size()-1);
     }
 
     bool prepareInterpolation(const Vec<2>& point, Vec<2>& wrapped_point, std::size_t& index0_lo, std::size_t& index0_hi, std::size_t& index1_lo, std::size_t& index1_hi, std::size_t& rectmesh_index_lo, const InterpolationFlags& flags) const;
@@ -227,8 +227,8 @@ public:
 
         return flags.postprocess(point,
                                  interpolation::bilinear(
-                                     rectangularMesh.axis0->at(index0_lo), rectangularMesh.axis0->at(index0_hi),
-                                     rectangularMesh.axis1->at(index1_lo), rectangularMesh.axis1->at(index1_hi),
+                                     rectangularMesh.axis[0]->at(index0_lo), rectangularMesh.axis[0]->at(index0_hi),
+                                     rectangularMesh.axis[1]->at(index1_lo), rectangularMesh.axis[1]->at(index1_hi),
                                      data[nodesSet.indexOf(rectmesh_index_lo)],
                                      data[index(index0_hi, index1_lo)],
                                      data[index(index0_hi, index1_hi)],
@@ -254,15 +254,15 @@ public:
 
         return flags.postprocess(point,
                                  data[this->index(
-                                     nearest(wrapped_point.c0, *rectangularMesh.axis0, index0_lo, index0_hi),
-                                     nearest(wrapped_point.c1, *rectangularMesh.axis1, index1_lo, index1_hi)
+                                     nearest(wrapped_point.c0, *rectangularMesh.axis[0], index0_lo, index0_hi),
+                                     nearest(wrapped_point.c1, *rectangularMesh.axis[1], index1_lo, index1_hi)
                                  )]);
     }
 
     /**
      * Convert mesh indexes of a bottom-left corner of an element to the index of this element.
-     * @param axis0_index index of the corner along the axis0 (left), from 0 to axis0->size()-1
-     * @param axis1_index index of the corner along the axis1 (bottom), from 0 to axis1->size()-1
+     * @param axis0_index index of the corner along the axis0 (left), from 0 to axis[0]->size()-1
+     * @param axis1_index index of the corner along the axis1 (bottom), from 0 to axis[1]->size()-1
      * @return index of the element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndexes(std::size_t axis0_index, std::size_t axis1_index) const {

@@ -66,21 +66,21 @@ struct LateralMeshAdapter {
         mesh(makeGeometryGrid(solver->getGeometry())) {}
 
     void resetMidpoints(const shared_ptr<MeshAxis>& vbounds) {
-        mesh = make_shared<RectangularMesh<2>>(mesh->axis0->getMidpointsMesh(),
+        mesh = make_shared<RectangularMesh<2>>(mesh->axis[0]->getMidpointsMesh(),
                                                vbounds, RectangularMesh<2>::ORDER_10);
     }
 
     void resetMidpoints(const shared_ptr<MeshAxis>& vbounds, double spacing) {
-        mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh->axis0, spacing)->getMidpointsMesh(),
+        mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh->axis[0], spacing)->getMidpointsMesh(),
                                                vbounds, RectangularMesh<2>::ORDER_10);
     }
 
     void reset(const shared_ptr<MeshAxis>& verts) {
-        mesh = make_shared<RectangularMesh<2>>(mesh->axis0, verts, RectangularMesh<2>::ORDER_10);
+        mesh = make_shared<RectangularMesh<2>>(mesh->axis[0], verts, RectangularMesh<2>::ORDER_10);
     }
 
     shared_ptr<RectangularMesh<2>> makeMesh(const shared_ptr<MeshAxis>& verts) {
-        return make_shared<RectangularMesh<2>>(mesh->axis0, verts, RectangularMesh<2>::ORDER_10);
+        return make_shared<RectangularMesh<2>>(mesh->axis[0], verts, RectangularMesh<2>::ORDER_10);
     }
 
     shared_ptr<OrderedAxis> vert() {
@@ -88,10 +88,10 @@ struct LateralMeshAdapter {
     }
 
     shared_ptr<RectangularMesh<2>> midmesh() const {
-        return make_shared<RectangularMesh<2>>(mesh->axis0, mesh->axis1->getMidpointsMesh());
+        return make_shared<RectangularMesh<2>>(mesh->axis[0], mesh->axis[1]->getMidpointsMesh());
     }
 
-    size_t size() const { return mesh->axis0->size(); }
+    size_t size() const { return mesh->axis[0]->size(); }
 
     size_t idx(size_t i, size_t v) const {
         return mesh->index(i, v);
@@ -100,9 +100,9 @@ struct LateralMeshAdapter {
     Vec<2> at(size_t i, size_t v) const { return mesh->at(i, v); }
 
     shared_ptr<RectangularMesh<2>> makeLine(size_t i, size_t v, double spacing) const {
-        shared_ptr<OrderedAxis> vaxis(new OrderedAxis({mesh->axis1->at(v-1), mesh->axis1->at(v)}));
+        shared_ptr<OrderedAxis> vaxis(new OrderedAxis({mesh->axis[1]->at(v-1), mesh->axis[1]->at(v)}));
         vaxis = refineAxis(vaxis, spacing);
-        return make_shared<RectangularMesh<2>>(make_shared<OnePointAxis>(mesh->axis0->at(i)), vaxis);
+        return make_shared<RectangularMesh<2>>(make_shared<OnePointAxis>(mesh->axis[0]->at(i)), vaxis);
     }
 };
 
@@ -116,29 +116,29 @@ struct LateralMeshAdapter<SolverOver<Geometry3D>> {
 
     LateralMeshAdapter(const SolverOver<Geometry3D>* solver):
         mesh(makeGeometryGrid(solver->getGeometry())) {
-        _size = mesh->axis0->size() * mesh->axis1->size();
+        _size = mesh->axis[0]->size() * mesh->axis[1]->size();
     }
 
     void resetMidpoints(const shared_ptr<MeshAxis>& vbounds) {
-        mesh = make_shared<RectangularMesh<3>>(mesh->axis0->getMidpointsMesh(),
-                                               mesh->axis1->getMidpointsMesh(),
+        mesh = make_shared<RectangularMesh<3>>(mesh->axis[0]->getMidpointsMesh(),
+                                               mesh->axis[1]->getMidpointsMesh(),
                                                vbounds, RectangularMesh<3>::ORDER_201);
-        _size = mesh->axis0->size() * mesh->axis1->size();
+        _size = mesh->axis[0]->size() * mesh->axis[1]->size();
     }
 
     void resetMidpoints(const shared_ptr<MeshAxis>& vbounds, double spacing) {
-        mesh = make_shared<RectangularMesh<3>>(refineAxis(mesh->axis0, spacing)->getMidpointsMesh(),
-                                               refineAxis(mesh->axis1, spacing)->getMidpointsMesh(),
+        mesh = make_shared<RectangularMesh<3>>(refineAxis(mesh->axis[0], spacing)->getMidpointsMesh(),
+                                               refineAxis(mesh->axis[1], spacing)->getMidpointsMesh(),
                                                vbounds, RectangularMesh<3>::ORDER_201);
-        _size = mesh->axis0->size() * mesh->axis1->size();
+        _size = mesh->axis[0]->size() * mesh->axis[1]->size();
     }
 
     void reset(const shared_ptr<MeshAxis>& verts) {
-        mesh = make_shared<RectangularMesh<3>>(mesh->axis0, mesh->axis1, verts, RectangularMesh<3>::ORDER_210);
+        mesh = make_shared<RectangularMesh<3>>(mesh->axis[0], mesh->axis[1], verts, RectangularMesh<3>::ORDER_210);
     }
 
     shared_ptr<RectangularMesh<3>> makeMesh(const shared_ptr<MeshAxis>& verts) {
-        return make_shared<RectangularMesh<3>>(mesh->axis0, mesh->axis1, verts, RectangularMesh<3>::ORDER_210);
+        return make_shared<RectangularMesh<3>>(mesh->axis[0], mesh->axis[1], verts, RectangularMesh<3>::ORDER_210);
     }
 
     shared_ptr<OrderedAxis> vert() {
@@ -146,7 +146,7 @@ struct LateralMeshAdapter<SolverOver<Geometry3D>> {
     }
 
     shared_ptr<RectangularMesh<3>> midmesh() const {
-        return make_shared<RectangularMesh<3>>(mesh->axis0, mesh->axis1, mesh->axis2->getMidpointsMesh());
+        return make_shared<RectangularMesh<3>>(mesh->axis[0], mesh->axis[1], mesh->axis[2]->getMidpointsMesh());
     }
 
     size_t size() const { return _size; }
@@ -160,10 +160,10 @@ struct LateralMeshAdapter<SolverOver<Geometry3D>> {
     }
 
     shared_ptr<RectangularMesh<3>> makeLine(size_t i, size_t v, double spacing) const {
-        shared_ptr<OrderedAxis> vaxis(new OrderedAxis({mesh->axis2->at(v-1), mesh->axis2->at(v)}));
+        shared_ptr<OrderedAxis> vaxis(new OrderedAxis({mesh->axis[2]->at(v-1), mesh->axis[2]->at(v)}));
         vaxis = refineAxis(vaxis, spacing);
-        return make_shared<RectangularMesh<3>>(make_shared<OnePointAxis>(mesh->axis0->at(mesh->index0(i))),
-                                               make_shared<OnePointAxis>(mesh->axis1->at(mesh->index1(i))),
+        return make_shared<RectangularMesh<3>>(make_shared<OnePointAxis>(mesh->axis[0]->at(mesh->index0(i))),
+                                               make_shared<OnePointAxis>(mesh->axis[1]->at(mesh->index1(i))),
                                                vaxis);
     }
 };

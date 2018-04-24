@@ -66,8 +66,8 @@ BOOST_AUTO_TEST_CASE(from_geometry_2) {
     stack->push_back(rect3, plask::align::center(0.0));
 
     auto mesh = plask::RectangularMesh2DSimpleGenerator().generate_t<plask::RectangularMesh<2>>(stack);
-    BOOST_CHECK_EQUAL(*mesh->axis0, plask::OrderedAxis({-2., -1., 1., 2.}));
-    BOOST_CHECK_EQUAL(*mesh->axis1, plask::OrderedAxis({0., 3., 8., 10.}));
+    BOOST_CHECK_EQUAL(*mesh->axis[0], plask::OrderedAxis({-2., -1., 1., 2.}));
+    BOOST_CHECK_EQUAL(*mesh->axis[1], plask::OrderedAxis({0., 3., 8., 10.}));
 }
 
 BOOST_AUTO_TEST_CASE(from_geometry_3) {
@@ -81,9 +81,9 @@ BOOST_AUTO_TEST_CASE(from_geometry_3) {
     stack->push_back(cub3, plask::align::lonCenter(0.0) & plask::align::tranCenter(0.0));
 
     auto mesh = plask::RectangularMesh3DSimpleGenerator().generate_t<plask::RectangularMesh<3>>(stack);
-    BOOST_CHECK_EQUAL(*mesh->axis0, plask::OrderedAxis({-2., -1., 1., 2.}));
-    BOOST_CHECK_EQUAL(*mesh->axis1, plask::OrderedAxis({-1., 1.}));
-    BOOST_CHECK_EQUAL(*mesh->axis2, plask::OrderedAxis({0., 3., 8., 10.}));
+    BOOST_CHECK_EQUAL(*mesh->axis[0], plask::OrderedAxis({-2., -1., 1., 2.}));
+    BOOST_CHECK_EQUAL(*mesh->axis[1], plask::OrderedAxis({-1., 1.}));
+    BOOST_CHECK_EQUAL(*mesh->axis[2], plask::OrderedAxis({0., 3., 8., 10.}));
 }
 
 BOOST_AUTO_TEST_CASE(middle2) {
@@ -95,8 +95,8 @@ BOOST_AUTO_TEST_CASE(middle2) {
     axis1->addPointsLinear(2., 6.0, 3);
 
     auto middles = mesh.getMidpointsMesh();
-    BOOST_CHECK_EQUAL(*middles->axis0, plask::OrderedAxis({1., 3.}));
-    BOOST_CHECK_EQUAL(*middles->axis1, plask::OrderedAxis({3., 5.}));
+    BOOST_CHECK_EQUAL(*middles->axis[0], plask::OrderedAxis({1., 3.}));
+    BOOST_CHECK_EQUAL(*middles->axis[1], plask::OrderedAxis({3., 5.}));
 }
 
 BOOST_AUTO_TEST_CASE(boundary) {
@@ -134,13 +134,13 @@ BOOST_AUTO_TEST_CASE(generator) {
     stack->push_back(plask::make_shared<plask::Rectangle>(plask::Vec<2>(1., 8.), plask::shared_ptr<plask::Material>()));
 
     auto mesh = generator.get<plask::RectangularMesh<2>>(stack);
-    BOOST_CHECK_EQUAL(mesh->axis1->at(0),  0.);
-    BOOST_CHECK_EQUAL(mesh->axis1->at(1),  2.);
-    BOOST_CHECK_EQUAL(mesh->axis1->at(2),  4.);
-    BOOST_CHECK_EQUAL(mesh->axis1->at(3),  5.);
-    BOOST_CHECK_EQUAL(mesh->axis1->at(4),  7.);
-    BOOST_CHECK_EQUAL(mesh->axis1->at(5),  9.);
-    BOOST_CHECK_EQUAL(mesh->axis1->at(6),  13.);
+    BOOST_CHECK_EQUAL(mesh->axis[1]->at(0),  0.);
+    BOOST_CHECK_EQUAL(mesh->axis[1]->at(1),  2.);
+    BOOST_CHECK_EQUAL(mesh->axis[1]->at(2),  4.);
+    BOOST_CHECK_EQUAL(mesh->axis[1]->at(3),  5.);
+    BOOST_CHECK_EQUAL(mesh->axis[1]->at(4),  7.);
+    BOOST_CHECK_EQUAL(mesh->axis[1]->at(5),  9.);
+    BOOST_CHECK_EQUAL(mesh->axis[1]->at(6),  13.);
 }
 
 BOOST_AUTO_TEST_CASE(elements) {

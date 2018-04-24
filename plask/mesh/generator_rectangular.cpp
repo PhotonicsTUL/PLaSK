@@ -65,14 +65,14 @@ shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 shared_ptr<MeshD<2>> RectangularMesh2DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(geometry);
-    writelog(LOG_DETAIL, "mesh.Rectangular2D.SimpleGenerator: Generating new mesh ({0}x{1})", mesh->axis0->size(), mesh->axis1->size());
+    writelog(LOG_DETAIL, "mesh.Rectangular2D.SimpleGenerator: Generating new mesh ({0}x{1})", mesh->axis[0]->size(), mesh->axis[1]->size());
     return mesh;
 }
 
 
 shared_ptr<MeshD<2>> RectangularMesh2DFrom1DGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
-    return plask::make_shared<RectangularMesh<2>>(horizontal_generator->get<MeshAxis>(geometry), makeGeometryGrid(geometry)->axis1);
+    return plask::make_shared<RectangularMesh<2>>(horizontal_generator->get<MeshAxis>(geometry), makeGeometryGrid(geometry)->axis[1]);
 }
 
 
@@ -101,7 +101,7 @@ shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 shared_ptr<MeshD<3>> RectangularMesh3DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
     auto mesh = makeGeometryGrid(geometry);
-    writelog(LOG_DETAIL, "mesh.Rectangular3D.SimpleGenerator: Generating new mesh ({0}x{1}x{2})", mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size());
+    writelog(LOG_DETAIL, "mesh.Rectangular3D.SimpleGenerator: Generating new mesh ({0}x{1}x{2})", mesh->axis[0]->size(), mesh->axis[1]->size(), mesh->axis[2]->size());
     return mesh;
 }
 
@@ -139,16 +139,16 @@ shared_ptr<MeshD<1>> OrderedMesh1DRegularGenerator::generate(const shared_ptr<Ge
 shared_ptr<MeshD<2>> RectangularMesh2DRegularGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
     auto mesh1 = makeGeometryGrid(geometry);
-    auto mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh1->axis0, spacing0), refineAxis(mesh1->axis1, spacing1));
-    writelog(LOG_DETAIL, "mesh.Rectangular2D.RegularGenerator: Generating new mesh ({0}x{1})", mesh->axis0->size(), mesh->axis1->size());
+    auto mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh1->axis[0], spacing0), refineAxis(mesh1->axis[1], spacing1));
+    writelog(LOG_DETAIL, "mesh.Rectangular2D.RegularGenerator: Generating new mesh ({0}x{1})", mesh->axis[0]->size(), mesh->axis[1]->size());
     return mesh;
 }
 
 shared_ptr<MeshD<3>> RectangularMesh3DRegularGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
     auto mesh1 = makeGeometryGrid(geometry);
-    auto mesh = make_shared<RectangularMesh<3>>(refineAxis(mesh1->axis0, spacing0), refineAxis(mesh1->axis1, spacing1), refineAxis(mesh1->axis2, spacing2));
-    writelog(LOG_DETAIL, "mesh.Rectangular3D.RegularGenerator: Generating new mesh ({0}x{1}x{2})", mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size());
+    auto mesh = make_shared<RectangularMesh<3>>(refineAxis(mesh1->axis[0], spacing0), refineAxis(mesh1->axis[1], spacing1), refineAxis(mesh1->axis[2], spacing2));
+    writelog(LOG_DETAIL, "mesh.Rectangular3D.RegularGenerator: Generating new mesh ({0}x{1}x{2})", mesh->axis[0]->size(), mesh->axis[1]->size(), mesh->axis[2]->size());
     return mesh;
 }
 
@@ -228,8 +228,8 @@ template <> shared_ptr<MeshD<2>>
 RectangularMeshRefinedGenerator<2>::generate(const boost::shared_ptr<plask::GeometryObjectD<2>>& geometry)
 {
     auto mesh = makeGeometryGrid(geometry);
-    auto axis0 = dynamic_pointer_cast<OrderedAxis>(mesh->axis0),
-         axis1 = dynamic_pointer_cast<OrderedAxis>(mesh->axis1);
+    auto axis0 = dynamic_pointer_cast<OrderedAxis>(mesh->axis[0]),
+         axis1 = dynamic_pointer_cast<OrderedAxis>(mesh->axis[1]);
     getAxis(axis0, geometry, 0);
     getAxis(axis1, geometry, 1);
 
@@ -245,7 +245,7 @@ RectangularMeshRefinedGenerator<2>::generate(const boost::shared_ptr<plask::Geom
 
     mesh->setOptimalIterationOrder();
     writelog(LOG_DETAIL, "mesh.Rectangular2D::{}: Generating new mesh ({:d}x{:d}, max. aspect {:.0f}:1)", name(),
-             mesh->axis0->size(), mesh->axis1->size(), max(asp0, asp1));
+             mesh->axis[0]->size(), mesh->axis[1]->size(), max(asp0, asp1));
     return mesh;
 }
 
@@ -253,9 +253,9 @@ template <> shared_ptr<MeshD<3>>
 RectangularMeshRefinedGenerator<3>::generate(const boost::shared_ptr<plask::GeometryObjectD<3>>& geometry)
 {
     auto mesh = makeGeometryGrid(geometry);
-    auto axis0 = dynamic_pointer_cast<OrderedAxis>(mesh->axis0),
-         axis1 = dynamic_pointer_cast<OrderedAxis>(mesh->axis1),
-         axis2 = dynamic_pointer_cast<OrderedAxis>(mesh->axis2);
+    auto axis0 = dynamic_pointer_cast<OrderedAxis>(mesh->axis[0]),
+         axis1 = dynamic_pointer_cast<OrderedAxis>(mesh->axis[1]),
+         axis2 = dynamic_pointer_cast<OrderedAxis>(mesh->axis[2]);
     getAxis(axis0, geometry, 0);
     getAxis(axis1, geometry, 1);
     getAxis(axis2, geometry, 2);
@@ -277,7 +277,7 @@ RectangularMeshRefinedGenerator<3>::generate(const boost::shared_ptr<plask::Geom
 
     mesh->setOptimalIterationOrder();
     writelog(LOG_DETAIL, "mesh.Rectangular3D::{}: Generating new mesh ({:d}x{:d}x{:d}, max. aspect {:.0f}:1)", name(),
-                          mesh->axis0->size(), mesh->axis1->size(), mesh->axis2->size(), max(asp0, max(asp1, asp2)));
+                          mesh->axis[0]->size(), mesh->axis[1]->size(), mesh->axis[2]->size(), max(asp0, max(asp1, asp2)));
     return mesh;
 }
 

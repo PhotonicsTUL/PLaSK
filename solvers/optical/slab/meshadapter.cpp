@@ -10,21 +10,21 @@ double LevelsAdapterGeneric<dim>::GenericLevel::vpos() const { return vert; }
 
 
 template<> shared_ptr<LevelsAdapter::Level> LevelsAdapterRectangular<2>::yield()  {
-    if (idx == src->axis1->size()) return shared_ptr<typename LevelsAdapter::Level>();
+    if (idx == src->axis[1]->size()) return shared_ptr<typename LevelsAdapter::Level>();
     return plask::make_shared<LevelsAdapterRectangular<2>::RectangularLevel>(src, idx++);
 }
 
 template<> shared_ptr<LevelsAdapter::Level> LevelsAdapterRectangular<3>::yield()  {
-    if (idx == src->axis2->size()) return shared_ptr<typename LevelsAdapter::Level>();
+    if (idx == src->axis[2]->size()) return shared_ptr<typename LevelsAdapter::Level>();
     return plask::make_shared<LevelsAdapterRectangular<3>::RectangularLevel>(src, idx++);
 }
 
 template<> std::size_t LevelsAdapterRectangular<2>::RectangularLevel::size() const {
-    return src->axis0->size();
+    return src->axis[0]->size();
 }
 
 template<> std::size_t LevelsAdapterRectangular<2>::Mesh::size() const {
-    return level->src->axis0->size();
+    return level->src->axis[0]->size();
 }
 
 template<> plask::Vec<2> LevelsAdapterRectangular<2>::Mesh::at(std::size_t i) const {
@@ -36,27 +36,27 @@ template<> size_t LevelsAdapterRectangular<2>::RectangularLevel::index(size_t i)
 }
 
 template<> double LevelsAdapterRectangular<2>::RectangularLevel::vpos() const {
-    return src->axis1->at(vert);
+    return src->axis[1]->at(vert);
 }
 
 template<> std::size_t LevelsAdapterRectangular<3>::RectangularLevel::size() const {
-    return src->axis0->size() * src->axis1->size();
+    return src->axis[0]->size() * src->axis[1]->size();
 }
 
 template<> std::size_t LevelsAdapterRectangular<3>::Mesh::size() const {
-    return level->src->axis0->size() * level->src->axis1->size();
+    return level->src->axis[0]->size() * level->src->axis[1]->size();
 }
 
 template<> plask::Vec<3> LevelsAdapterRectangular<3>::Mesh::at(std::size_t i) const {
-    return level->src->at(i % level->src->axis0->size(), i / level->src->axis0->size(), level->vert);
+    return level->src->at(i % level->src->axis[0]->size(), i / level->src->axis[0]->size(), level->vert);
 }
 
 template<> size_t LevelsAdapterRectangular<3>::RectangularLevel::index(size_t i) const {
-    return src->index(i % src->axis0->size(), i / src->axis0->size(), vert);
+    return src->index(i % src->axis[0]->size(), i / src->axis[0]->size(), vert);
 }
 
 template<> double LevelsAdapterRectangular<3>::RectangularLevel::vpos() const {
-    return src->axis2->at(vert);
+    return src->axis[2]->at(vert);
 }
 
 

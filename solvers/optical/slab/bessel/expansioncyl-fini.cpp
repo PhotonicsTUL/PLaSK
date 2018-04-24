@@ -52,7 +52,7 @@ void ExpansionBesselFini::init2()
 
     init3();
 
-    auto raxis = mesh->axis0;
+    auto raxis = mesh->axis[0];
 
     // Compute integrals for permeability
     size_t N = SOLVER->size;

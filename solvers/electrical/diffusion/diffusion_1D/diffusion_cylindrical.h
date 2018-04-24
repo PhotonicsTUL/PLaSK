@@ -63,12 +63,12 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public SolverWithMe
 
         shared_ptr<MeshAxis> current_mesh_ptr()
         {
-            return mesh2->axis0;
+            return mesh2->axis[0];
         }
 
         RegularAxis& current_mesh()
         {
-            return *static_cast<RegularAxis*>(mesh2->axis0.get());
+            return *static_cast<RegularAxis*>(mesh2->axis[0].get());
         }
 
         double burning_integral(void);  // całka strat nadprogu

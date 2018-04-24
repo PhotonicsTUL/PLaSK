@@ -21,12 +21,12 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
     size_t i0_lo, i0_hi;
     double left, right;
     bool invert_left, invert_right;
-    prepareInterpolationForAxis(*this->src_mesh->axis0, this->flags, p.c0, 0, i0_lo, i0_hi, left, right, invert_left, invert_right);
+    prepareInterpolationForAxis(*this->src_mesh->axis[0], this->flags, p.c0, 0, i0_lo, i0_hi, left, right, invert_left, invert_right);
 
     size_t i1_lo, i1_hi;
     double bottom, top;
     bool invert_bottom, invert_top;
-    prepareInterpolationForAxis(*this->src_mesh->axis1, this->flags, p.c1, 1, i1_lo, i1_hi, bottom, top, invert_bottom, invert_top);
+    prepareInterpolationForAxis(*this->src_mesh->axis[1], this->flags, p.c1, 1, i1_lo, i1_hi, bottom, top, invert_bottom, invert_top);
 
     double d0 = right - left,
            d1 = top - bottom;
@@ -99,17 +99,17 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
     size_t i0_lo, i0_hi;
     double back, front;
     bool invert_back, invert_front;
-    prepareInterpolationForAxis(*this->src_mesh->axis0, this->flags, p.c0, 0, i0_lo, i0_hi, back, front, invert_back, invert_front);
+    prepareInterpolationForAxis(*this->src_mesh->axis[0], this->flags, p.c0, 0, i0_lo, i0_hi, back, front, invert_back, invert_front);
 
     size_t i1_lo, i1_hi;
     double left, right;
     bool invert_left, invert_right;
-    prepareInterpolationForAxis(*this->src_mesh->axis1, this->flags, p.c1, 1, i1_lo, i1_hi, left, right, invert_left, invert_right);
+    prepareInterpolationForAxis(*this->src_mesh->axis[1], this->flags, p.c1, 1, i1_lo, i1_hi, left, right, invert_left, invert_right);
 
     size_t i2_lo, i2_hi;
     double bottom, top;
     bool invert_bottom, invert_top;
-    prepareInterpolationForAxis(*this->src_mesh->axis2, this->flags, p.c2, 2, i2_lo, i2_hi, bottom, top, invert_bottom, invert_top);
+    prepareInterpolationForAxis(*this->src_mesh->axis[2], this->flags, p.c2, 2, i2_lo, i2_hi, bottom, top, invert_bottom, invert_top);
 
     std::size_t illl = this->src_mesh->index(i0_lo, i1_lo, i2_lo),
                 illh = this->src_mesh->index(i0_lo, i1_lo, i2_hi),
@@ -370,7 +370,7 @@ HymanSplineRect2DLazyDataImpl<DstT, SrcT>::HymanSplineRect2DLazyDataImpl(const s
                                                                          const InterpolationFlags& flags):
     SplineRect2DLazyDataImpl<DstT, SrcT>(src_mesh, src_vec, dst_mesh, flags)
 {
-    const int n0 = int(src_mesh->axis0->size()), n1 = int(src_mesh->axis1->size());
+    const int n0 = int(src_mesh->axis[0]->size()), n1 = int(src_mesh->axis[1]->size());
 
     if (n0 == 0 || n1 == 0)
         throw BadMesh("interpolate", "Source mesh empty");
@@ -379,13 +379,13 @@ HymanSplineRect2DLazyDataImpl<DstT, SrcT>::HymanSplineRect2DLazyDataImpl(const s
            stride1 = src_mesh->index(0, 1);
 
     if (n0 > 1)
-        for (size_t i1 = 0, i = 0; i1 < src_mesh->axis1->size(); ++i1, i += stride1)
-            hyman::computeDiffs<SrcT>(this->diff0.data()+i, 0, src_mesh->axis0, src_vec.data()+i, stride0, flags);
+        for (size_t i1 = 0, i = 0; i1 < src_mesh->axis[1]->size(); ++i1, i += stride1)
+            hyman::computeDiffs<SrcT>(this->diff0.data()+i, 0, src_mesh->axis[0], src_vec.data()+i, stride0, flags);
     else
         std::fill(this->diff0.begin(), this->diff0.end(), 0. * SrcT());
     if (n1 > 1)
-        for (size_t i0 = 0, i = 0; i0 < src_mesh->axis0->size(); ++i0, i += stride0)
-            hyman::computeDiffs<SrcT>(this->diff1.data()+i, 1, src_mesh->axis1, src_vec.data()+i, stride1, flags);
+        for (size_t i0 = 0, i = 0; i0 < src_mesh->axis[0]->size(); ++i0, i += stride0)
+            hyman::computeDiffs<SrcT>(this->diff1.data()+i, 1, src_mesh->axis[1], src_vec.data()+i, stride1, flags);
     else
         std::fill(this->diff1.begin(), this->diff1.end(), 0. * SrcT());
 }
@@ -399,17 +399,17 @@ HymanSplineRect3DLazyDataImpl<DstT, SrcT>::HymanSplineRect3DLazyDataImpl(const s
                                                                          const InterpolationFlags& flags):
     SplineRect3DLazyDataImpl<DstT, SrcT>(src_mesh, src_vec, dst_mesh, flags)
 {
-    const int n0 = int(src_mesh->axis0->size()), n1 = int(src_mesh->axis1->size()), n2 = int(src_mesh->axis2->size());
+    const int n0 = int(src_mesh->axis[0]->size()), n1 = int(src_mesh->axis[1]->size()), n2 = int(src_mesh->axis[2]->size());
 
     if (n0 == 0 || n1 == 0 || n2 == 0)
         throw BadMesh("interpolate", "Source mesh empty");
 
     if (n0 > 1) {
         size_t stride0 = src_mesh->index(1, 0, 0);
-        for (size_t i2 = 0; i2 < src_mesh->axis2->size(); ++i2) {
-            for (size_t i1 = 0; i1 < src_mesh->axis1->size(); ++i1) {
+        for (size_t i2 = 0; i2 < src_mesh->axis[2]->size(); ++i2) {
+            for (size_t i1 = 0; i1 < src_mesh->axis[1]->size(); ++i1) {
                 size_t offset = src_mesh->index(0, i1, i2);
-                hyman::computeDiffs<SrcT>(this->diff0.data()+offset, 0, src_mesh->axis0, src_vec.data()+offset, stride0, flags);
+                hyman::computeDiffs<SrcT>(this->diff0.data()+offset, 0, src_mesh->axis[0], src_vec.data()+offset, stride0, flags);
             }
         }
     } else
@@ -417,10 +417,10 @@ HymanSplineRect3DLazyDataImpl<DstT, SrcT>::HymanSplineRect3DLazyDataImpl(const s
 
     if (n1 > 1) {
         size_t stride1 = src_mesh->index(0, 1, 0);
-        for (size_t i2 = 0; i2 < src_mesh->axis2->size(); ++i2) {
-            for (size_t i0 = 0; i0 < src_mesh->axis0->size(); ++i0) {
+        for (size_t i2 = 0; i2 < src_mesh->axis[2]->size(); ++i2) {
+            for (size_t i0 = 0; i0 < src_mesh->axis[0]->size(); ++i0) {
                 size_t offset = src_mesh->index(i0, 0, i2);
-                hyman::computeDiffs<SrcT>(this->diff1.data()+offset, 1, src_mesh->axis1, src_vec.data()+offset, stride1, flags);
+                hyman::computeDiffs<SrcT>(this->diff1.data()+offset, 1, src_mesh->axis[1], src_vec.data()+offset, stride1, flags);
             }
         }
     } else
@@ -428,10 +428,10 @@ HymanSplineRect3DLazyDataImpl<DstT, SrcT>::HymanSplineRect3DLazyDataImpl(const s
 
     if (n2 > 1) {
         size_t stride2 = src_mesh->index(0, 0, 1);
-        for (size_t i1 = 0; i1 < src_mesh->axis1->size(); ++i1) {
-            for (size_t i0 = 0; i0 < src_mesh->axis0->size(); ++i0) {
+        for (size_t i1 = 0; i1 < src_mesh->axis[1]->size(); ++i1) {
+            for (size_t i0 = 0; i0 < src_mesh->axis[0]->size(); ++i0) {
                 size_t offset = src_mesh->index(i0, i1, 0);
-                hyman::computeDiffs<SrcT>(this->diff2.data()+offset, 2, src_mesh->axis2, src_vec.data()+offset, stride2, flags);
+                hyman::computeDiffs<SrcT>(this->diff2.data()+offset, 2, src_mesh->axis[2], src_vec.data()+offset, stride2, flags);
             }
         }
     } else
@@ -477,8 +477,8 @@ namespace spline {
     static void computeDiffs(DataT* data, size_t stride, size_t stride1, size_t size1, size_t stride2, size_t size2,
                       int ax, const shared_ptr<MeshAxis>& axis, const InterpolationFlags& flags)
     {
-        const size_t n0 = axis->size(),
-                     n1 = axis->size() - 1;
+        const size_t n0 = axis->size();
+        const size_t n1 = n0 - 1;
 
 		std::unique_ptr<double[]>
 			dl(new double[n1]),
@@ -621,7 +621,7 @@ SmoothSplineRect2DLazyDataImpl<DstT, SrcT>::SmoothSplineRect2DLazyDataImpl(const
                                                                            const InterpolationFlags& flags):
     SplineRect2DLazyDataImpl<DstT, SrcT>(src_mesh, src_vec, dst_mesh, flags)
 {
-    const size_t n0 = int(src_mesh->axis0->size()), n1 = int(src_mesh->axis1->size());
+    const size_t n0 = int(src_mesh->axis[0]->size()), n1 = int(src_mesh->axis[1]->size());
 
     if (n0 == 0 || n1 == 0)
         throw BadMesh("interpolate", "Source mesh empty");
@@ -633,13 +633,13 @@ SmoothSplineRect2DLazyDataImpl<DstT, SrcT>::SmoothSplineRect2DLazyDataImpl(const
 
     if (n0 > 1) {
         std::copy(src_vec.begin(), src_vec.end(), this->diff0.begin());
-        spline::computeDiffs<SrcT>(this->diff0.data(), stride0, stride1, src_mesh->axis1->size(), 0, 1, 0, src_mesh->axis0, flags);
+        spline::computeDiffs<SrcT>(this->diff0.data(), stride0, stride1, src_mesh->axis[1]->size(), 0, 1, 0, src_mesh->axis[0], flags);
     } else {
         std::fill(this->diff0.begin(), this->diff0.end(), 0. * SrcT());
     }
     if (n1 > 1) {
         std::copy(src_vec.begin(), src_vec.end(), this->diff1.begin());
-        spline::computeDiffs<SrcT>(this->diff1.data(), stride1, stride0, src_mesh->axis0->size(), 0, 1, 1, src_mesh->axis1, flags);
+        spline::computeDiffs<SrcT>(this->diff1.data(), stride1, stride0, src_mesh->axis[0]->size(), 0, 1, 1, src_mesh->axis[1], flags);
     } else {
         std::fill(this->diff1.begin(), this->diff1.end(), 0. * SrcT());
     }
@@ -653,7 +653,7 @@ SmoothSplineRect3DLazyDataImpl<DstT, SrcT>::SmoothSplineRect3DLazyDataImpl(const
                                                                            const InterpolationFlags& flags):
     SplineRect3DLazyDataImpl<DstT, SrcT>(src_mesh, src_vec, dst_mesh, flags)
 {
-    const size_t n0 = int(src_mesh->axis0->size()), n1 = int(src_mesh->axis1->size()), n2 = int(src_mesh->axis2->size());
+    const size_t n0 = int(src_mesh->axis[0]->size()), n1 = int(src_mesh->axis[1]->size()), n2 = int(src_mesh->axis[2]->size());
 
     if (n0 == 0 || n1 == 0)
         throw BadMesh("interpolate", "Source mesh empty");
@@ -667,24 +667,24 @@ SmoothSplineRect3DLazyDataImpl<DstT, SrcT>::SmoothSplineRect3DLazyDataImpl(const
     if (n0 > 1) {
         std::copy(src_vec.begin(), src_vec.end(), this->diff0.begin());
         spline::computeDiffs<SrcT>(this->diff0.data(), stride0,
-                                   stride1, src_mesh->axis1->size(), stride2, src_mesh->axis2->size(),
-                                   0, src_mesh->axis0, flags);
+                                   stride1, src_mesh->axis[1]->size(), stride2, src_mesh->axis[2]->size(),
+                                   0, src_mesh->axis[0], flags);
     } else {
         std::fill(this->diff0.begin(), this->diff0.end(), 0. * SrcT());
     }
     if (n1 > 1) {
         std::copy(src_vec.begin(), src_vec.end(), this->diff1.begin());
         spline::computeDiffs<SrcT>(this->diff1.data(), stride1,
-                                   stride0, src_mesh->axis0->size(), stride2, src_mesh->axis2->size(),
-                                   1, src_mesh->axis1, flags);
+                                   stride0, src_mesh->axis[0]->size(), stride2, src_mesh->axis[2]->size(),
+                                   1, src_mesh->axis[1], flags);
     } else {
         std::fill(this->diff1.begin(), this->diff1.end(), 0. * SrcT());
     }
     if (n2 > 1) {
         std::copy(src_vec.begin(), src_vec.end(), this->diff2.begin());
         spline::computeDiffs<SrcT>(this->diff2.data(), stride2,
-                                   stride0, src_mesh->axis0->size(), stride1, src_mesh->axis1->size(),
-                                   2, src_mesh->axis2, flags);
+                                   stride0, src_mesh->axis[0]->size(), stride1, src_mesh->axis[1]->size(),
+                                   2, src_mesh->axis[2], flags);
     } else {
         std::fill(this->diff2.begin(), this->diff2.end(), 0. * SrcT());
     }

@@ -797,11 +797,11 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
     double left = 0., right = 0.;
     bool foundQW = false;
     bool had_active = false, after_active = false;
-    for (std::size_t r = 0; r < points->axis1->size(); ++r)
+    for (std::size_t r = 0; r < points->axis[1]->size(); ++r)
     {
         bool inQW = false;
         bool active_row = false;
-        for (std::size_t c = 0; c < points->axis0->size(); ++c)
+        for (std::size_t c = 0; c < points->axis[0]->size(); ++c)
         {
             auto point = points->at(c, r);
             auto tags = this->geometry->getRolesAt(point);
@@ -814,7 +814,7 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
             {
                 if (foundQW)
                 {
-                    if (left != grid->axis0->at(c))
+                    if (left != grid->axis[0]->at(c))
                         throw Exception("{0}: Left edge of quantum wells not vertically aligned.", this->getId());
                     if (*this->geometry->getMaterial(point) != *QW_material)
                         throw Exception("{0}: Quantum wells of multiple materials not supported.", this->getId());
@@ -823,15 +823,15 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
                 {
                     QW_material = this->geometry->getMaterial(point);
                 }
-                left = grid->axis0->at(c);
+                left = grid->axis[0]->at(c);
                 inQW = true;
             }
             if (!QW && inQW)        // QW end
             {
-                if (foundQW && right != grid->axis0->at(c))
+                if (foundQW && right != grid->axis[0]->at(c))
                     throw Exception("{0}: Right edge of quantum wells not vertically aligned.", this->getId());
-                right = grid->axis0->at(c);
-                results.push_back(Box2D(left, grid->axis1->at(r), right, grid->axis1->at(r+1)));
+                right = grid->axis[0]->at(c);
+                results.push_back(Box2D(left, grid->axis[1]->at(r), right, grid->axis[1]->at(r+1)));
                 foundQW = true;
                 inQW = false;
             }
@@ -842,10 +842,10 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
         }
         if (inQW)
         { // handle situation when QW spans to the end of the structure
-            if (foundQW && right != grid->axis0->at(points->axis0->size()))
+            if (foundQW && right != grid->axis[0]->at(points->axis[0]->size()))
                 throw Exception("{0}: Right edge of quantum wells not vertically aligned.", this->getId());
-            right = grid->axis0->at(points->axis0->size());
-            results.push_back(Box2D(left, grid->axis1->at(r), right, grid->axis1->at(r+1)));
+            right = grid->axis[0]->at(points->axis[0]->size());
+            results.push_back(Box2D(left, grid->axis[1]->at(r), right, grid->axis[1]->at(r+1)));
             foundQW = true;
             inQW = false;
         }

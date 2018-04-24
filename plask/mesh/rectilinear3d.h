@@ -93,13 +93,13 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
         inline std::size_t getLowerIndex2() const { return index2; }
 
         /// \return long coordinate of the left edge of the element
-        inline double getLower0() const { return mesh.axis0->at(index0); }
+        inline double getLower0() const { return mesh.axis[0]->at(index0); }
 
         /// \return tran coordinate of the left edge of the element
-        inline double getLower1() const { return mesh.axis1->at(index1); }
+        inline double getLower1() const { return mesh.axis[1]->at(index1); }
 
         /// \return vert coordinate of the bottom edge of the element
-        inline double getLower2() const { return mesh.axis2->at(index2); }
+        inline double getLower2() const { return mesh.axis[2]->at(index2); }
 
         /// \return long index of the right edge of the element
         inline std::size_t getUpperIndex0() const { return index0+1; }
@@ -111,13 +111,13 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
         inline std::size_t getUpperIndex2() const { return index2+1; }
 
         /// \return long coordinate of the right edge of the element
-        inline double getUpper0() const { return mesh.axis0->at(getUpperIndex0()); }
+        inline double getUpper0() const { return mesh.axis[0]->at(getUpperIndex0()); }
 
         /// \return tran coordinate of the right edge of the element
-        inline double getUpper1() const { return mesh.axis1->at(getUpperIndex1()); }
+        inline double getUpper1() const { return mesh.axis[1]->at(getUpperIndex1()); }
 
         /// \return vert coordinate of the top edge of the element
-         inline double getUpper2() const { return mesh.axis2->at(getUpperIndex2()); }
+         inline double getUpper2() const { return mesh.axis[2]->at(getUpperIndex2()); }
 
         /// \return size of the element in the long direction
         inline double getSize0() const { return getUpper0() - getLower0(); }
@@ -236,14 +236,8 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
 
     };
 
-    /// First coordinate of points in this mesh.
-    const shared_ptr<MeshAxis> axis0;
-
-    /// Second coordinate of points in this mesh.
-    const shared_ptr<MeshAxis> axis1;
-
-    /// Third coordinate of points in this mesh.
-    const shared_ptr<MeshAxis> axis2;
+    /// First, second and third coordinates of points in this mesh.
+    const shared_ptr<MeshAxis> axis[3];
 
     /// Accessor to FEM-like elements.
     Elements elements() const { return Elements(this); }
@@ -318,27 +312,25 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
 
     ~RectilinearMesh3D();
 
-    const shared_ptr<MeshAxis> getAxis0() const { return axis0; }
+    const shared_ptr<MeshAxis> getAxis0() const { return axis[0]; }
 
-    void setAxis0(shared_ptr<MeshAxis> a0) { setAxis(this->axis0, a0);  }
+    void setAxis0(shared_ptr<MeshAxis> a0) { setAxis(this->axis[0], a0);  }
 
-    const shared_ptr<MeshAxis> getAxis1() const { return axis1; }
+    const shared_ptr<MeshAxis> getAxis1() const { return axis[1]; }
 
-    void setAxis1(shared_ptr<MeshAxis> a1) { setAxis(this->axis1, a1); }
+    void setAxis1(shared_ptr<MeshAxis> a1) { setAxis(this->axis[1], a1); }
 
-    const shared_ptr<MeshAxis> getAxis2() const { return axis2; }
+    const shared_ptr<MeshAxis> getAxis2() const { return axis[2]; }
 
-    void setAxis2(shared_ptr<MeshAxis> a2) { setAxis(this->axis2, a2); }
+    void setAxis2(shared_ptr<MeshAxis> a2) { setAxis(this->axis[2], a2); }
 
     /**
      * Get numbered axis
      * \param n number of axis
      */
-    const shared_ptr<MeshAxis>& axis(size_t n) const {
-        if (n == 0) return axis0;
-        else if (n == 1) return axis1;
-        else if (n != 2) throw Exception("Bad axis number");
-        return axis2;
+    const shared_ptr<MeshAxis>& getAxis(size_t n) const {
+        if (n >= 3) throw Exception("Bad axis number");
+        return axis[n];
     }
 
     /// \return major (changing slowest) axis
@@ -362,17 +354,17 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
       * @return @c true only if this mesh and @p to_compare represents the same set of points regardless of iteration order
       */
     bool operator==(const RectilinearMesh3D& to_compare) const {
-        return *axis0 == *to_compare.axis0 && *axis1 == *to_compare.axis1 && *axis2 == *to_compare.axis2;
+        return *axis[0] == *to_compare.axis[0] && *axis[1] == *to_compare.axis[1] && *axis[2] == *to_compare.axis[2];
     }
 
     /**
      * Get number of points in the mesh.
      * @return number of points in the mesh
      */
-    std::size_t size() const override { return axis0->size() * axis1->size() * axis2->size(); }
+    std::size_t size() const override { return axis[0]->size() * axis[1]->size() * axis[2]->size(); }
 
     /// @return true only if there are no points in mesh
-    bool empty() const override { return axis0->empty() || axis1->empty() || axis2->empty(); }
+    bool empty() const override { return axis[0]->empty() || axis[1]->empty() || axis[2]->empty(); }
 
     /**
      * Get point with given mesh indices.
@@ -418,21 +410,21 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
      * @param index0 index of Elements (axis0 index)
      * @return first coordinate of point point in center of Elements with given index
      */
-    double getElementMidpoint0(std::size_t index0) const { return 0.5 * (axis0->at(index0) + axis0->at(index0+1)); }
+    double getElementMidpoint0(std::size_t index0) const { return 0.5 * (axis[0]->at(index0) + axis[0]->at(index0+1)); }
 
     /**
      * Get second coordinate of point in center of Elements.
      * @param index1 index of Elements (axis1 index)
      * @return second coordinate of point point in center of Elements with given index
      */
-    double getElementMidpoint1(std::size_t index1) const { return 0.5 * (axis1->at(index1) + axis1->at(index1+1)); }
+    double getElementMidpoint1(std::size_t index1) const { return 0.5 * (axis[1]->at(index1) + axis[1]->at(index1+1)); }
 
     /**
      * Get second coordinate of point in center of Elements.
      * @param index2 index of Elements (axis2 index)
      * @return second coordinate of point point in center of Elements with given index
      */
-    double getElementMidpoint2(std::size_t index2) const { return 0.5 * (axis2->at(index2) + axis2->at(index2+1)); }
+    double getElementMidpoint2(std::size_t index2) const { return 0.5 * (axis[2]->at(index2) + axis[2]->at(index2+1)); }
 
     /**
      * Get point in center of Elements.
@@ -511,7 +503,7 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
      * @return number of elements in this mesh in the first direction (axis0 direction).
      */
     std::size_t getElementsCount0() const {
-        const std::size_t s = axis0->size();
+        const std::size_t s = axis[0]->size();
         return (s != 0)? s-1 : 0;
     }
 
@@ -520,7 +512,7 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
      * @return number of elements in this mesh in the second direction (axis1 direction).
      */
     std::size_t getElementsCount1() const {
-        const std::size_t s = axis1->size();
+        const std::size_t s = axis[1]->size();
         return (s != 0)? s-1 : 0;
     }
 
@@ -529,7 +521,7 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
      * @return number of elements in this mesh in the third direction (axis2 direction).
      */
     size_t getElementsCount2() const {
-        const std::size_t s = axis2->size();
+        const std::size_t s = axis[2]->size();
         return (s != 0)? s-1 : 0;
     }
 
@@ -538,7 +530,7 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
      * @return number of elements in this mesh
      */
     size_t getElementsCount() const {
-        return size_t(std::max(int(axis0->size())-1, 0) * std::max(int(axis1->size())-1, 0) * std::max(int(axis2->size())-1, 0));
+        return size_t(std::max(int(axis[0]->size())-1, 0) * std::max(int(axis[1]->size())-1, 0) * std::max(int(axis[2]->size())-1, 0));
     }
 
     /**
@@ -599,17 +591,17 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
         size_t index0_lo, index0_hi;
         double back, front;
         bool invert_back, invert_front;
-        prepareInterpolationForAxis(*axis0, flags, p.c0, 0, index0_lo, index0_hi, back, front, invert_back, invert_front);
+        prepareInterpolationForAxis(*axis[0], flags, p.c0, 0, index0_lo, index0_hi, back, front, invert_back, invert_front);
 
         size_t index1_lo, index1_hi;
         double left, right;
         bool invert_left, invert_right;
-        prepareInterpolationForAxis(*axis1, flags, p.c1, 1, index1_lo, index1_hi, left, right, invert_left, invert_right);
+        prepareInterpolationForAxis(*axis[1], flags, p.c1, 1, index1_lo, index1_hi, left, right, invert_left, invert_right);
 
         size_t index2_lo, index2_hi;
         double bottom, top;
         bool invert_bottom, invert_top;
-        prepareInterpolationForAxis(*axis2, flags, p.c2, 2, index2_lo, index2_hi, bottom, top, invert_bottom, invert_top);
+        prepareInterpolationForAxis(*axis[2], flags, p.c2, 2, index2_lo, index2_hi, bottom, top, invert_bottom, invert_top);
 
         // all indexes are in bounds
         typename std::remove_const<typename std::remove_reference<decltype(data[0])>::type>::type
@@ -645,10 +637,10 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
     auto interpolateNearestNeighbor(const RandomAccessContainer& data, Vec<3> point, const InterpolationFlags& flags) const
         -> typename std::remove_reference<decltype(data[0])>::type {
         auto p = flags.wrap(point);
-        prepareNearestNeighborInterpolationForAxis(*axis0, flags, p.c0, 0);
-        prepareNearestNeighborInterpolationForAxis(*axis1, flags, p.c1, 1);
-        prepareNearestNeighborInterpolationForAxis(*axis2, flags, p.c2, 2);
-        return flags.postprocess(point, data[this->index(axis0->findNearestIndex(p.c0), axis1->findNearestIndex(p.c1), axis2->findNearestIndex(p.c2))]);
+        prepareNearestNeighborInterpolationForAxis(*axis[0], flags, p.c0, 0);
+        prepareNearestNeighborInterpolationForAxis(*axis[1], flags, p.c1, 1);
+        prepareNearestNeighborInterpolationForAxis(*axis[2], flags, p.c2, 2);
+        return flags.postprocess(point, data[this->index(axis[0]->findNearestIndex(p.c0), axis[1]->findNearestIndex(p.c1), axis[2]->findNearestIndex(p.c2))]);
     }
 };
 

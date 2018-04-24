@@ -189,8 +189,8 @@ namespace detail {
     template <> constexpr inline npy_intp type_dim<const Tensor3<dcomplex>>() { return 4; }
 
 
-    inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<2>& mesh) { return { npy_intp(mesh.axis0->size()), npy_intp(mesh.axis1->size()) }; }
-    inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<3>& mesh) { return { npy_intp(mesh.axis0->size()), npy_intp(mesh.axis1->size()), npy_intp(mesh.axis2->size()) }; }
+    inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<2>& mesh) { return { npy_intp(mesh.axis[0]->size()), npy_intp(mesh.axis[1]->size()) }; }
+    inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<3>& mesh) { return { npy_intp(mesh.axis[0]->size()), npy_intp(mesh.axis[1]->size()), npy_intp(mesh.axis[2]->size()) }; }
 
     template <typename T>
     inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<2>& mesh, size_t nd) {
@@ -198,9 +198,9 @@ namespace detail {
         strides.back() = sizeof(T) / type_dim<T>();
         if (mesh.getIterationOrder() == RectangularMesh<2>::ORDER_10) {
             strides[0] = sizeof(T);
-            strides[1] = mesh.axis0->size() * sizeof(T);
+            strides[1] = mesh.axis[0]->size() * sizeof(T);
         } else {
-            strides[0] = mesh.axis1->size() * sizeof(T);
+            strides[0] = mesh.axis[1]->size() * sizeof(T);
             strides[1] = sizeof(T);
         }
         return strides;
@@ -208,8 +208,8 @@ namespace detail {
 
     #define ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(MeshT, first, second, third) \
         case MeshT::ORDER_##first##second##third: \
-            strides[first] = mesh.axis##second->size() * mesh.axis##third->size() * sizeof(T); \
-            strides[second] = mesh.axis##third->size() * sizeof(T); \
+            strides[first] = mesh.axis[second]->size() * mesh.axis[third]->size() * sizeof(T); \
+            strides[second] = mesh.axis[third]->size() * sizeof(T); \
             strides[third] = sizeof(T); \
             break;
 

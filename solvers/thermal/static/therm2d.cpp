@@ -95,7 +95,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::onInitialize() {
                 ibottom = r-1;
             } else break;
         }
-        for (size_t r = elem.getIndex1()+1; r < this->mesh->axis1->size()-1; r++) {
+        for (size_t r = elem.getIndex1()+1; r < this->mesh->axis[1]->size()-1; r++) {
             auto e = this->mesh->element(c, r);
             auto m = this->geometry->getMaterial(e.getMidpoint());
             if (m == material) {                            //TODO ignore doping
@@ -651,9 +651,9 @@ ThermalConductivityData::ThermalConductivityData(const FiniteElementMethodTherma
 template<typename Geometry2DType> Tensor2<double> FiniteElementMethodThermal2DSolver<Geometry2DType>::
 ThermalConductivityData::at(std::size_t i) const {
     auto point = flags.wrap(dest_mesh->at(i));
-    std::size_t x = solver->mesh->axis0->findUpIndex(point[0]),
-                y = solver->mesh->axis1->findUpIndex(point[1]);
-    if (x == 0 || y == 0 || x == solver->mesh->axis0->size() || y == solver->mesh->axis1->size())
+    std::size_t x = solver->mesh->axis[0]->findUpIndex(point[0]),
+                y = solver->mesh->axis[1]->findUpIndex(point[1]);
+    if (x == 0 || y == 0 || x == solver->mesh->axis[0]->size() || y == solver->mesh->axis[1]->size())
         return Tensor2<double>(NAN);
     else {
         auto elem = solver->mesh->element(x-1, y-1);

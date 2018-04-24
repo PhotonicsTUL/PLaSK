@@ -120,10 +120,10 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
 
     std::vector<typename Active::Region> regions;
 
-    for (size_t r = 0; r < points->axis1->size(); ++r) {
+    for (size_t r = 0; r < points->axis[1]->size(); ++r) {
         size_t prev = 0;
         shared_ptr<Material> material;
-        for (size_t c = 0; c < points->axis0->size(); ++c) { // In the (possible) active region
+        for (size_t c = 0; c < points->axis[0]->size(); ++c) { // In the (possible) active region
             auto point = points->at(c,r);
             size_t num = isActive(point);
 
@@ -155,7 +155,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
             prev = num;
         }
         if (prev) // junction reached the edge
-            regions[prev-1].rowr = regions[prev-1].right = points->axis0->size();
+            regions[prev-1].rowr = regions[prev-1].right = points->axis[0]->size();
     }
 
     size_t condsize = 0;
@@ -164,7 +164,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
     size_t i = 0;
     for (auto& reg: regions) {
         if (reg.bottom == size_t(-1)) reg.bottom = reg.top = 0;
-        active.emplace_back(condsize, reg.left, reg.right, reg.bottom, reg.top, this->mesh->axis1->at(reg.top) - this->mesh->axis1->at(reg.bottom));
+        active.emplace_back(condsize, reg.left, reg.right, reg.bottom, reg.top, this->mesh->axis[1]->at(reg.top) - this->mesh->axis[1]->at(reg.bottom));
         condsize += reg.right - reg.left;
         this->writelog(LOG_DETAIL, "Detected junction {0} thickness = {1}nm", i++, 1e3 * active.back().height);
         this->writelog(LOG_DEBUG, "Junction {0} span: [{1},{3}]-[{2},{4}]", i-1, reg.left, reg.right, reg.bottom, reg.top);
@@ -621,7 +621,7 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::in
     if (!potentials) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
-    for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
+    for (size_t i = 0; i < mesh->axis[0]->size()-1; ++i) {
         auto element = mesh->element(i, vindex);
         if (!onlyactive || isActive(element.getMidpoint()))
             result += currents[element.getIndex()].c1 * element.getSize0();
@@ -636,7 +636,7 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::
     if (!potentials) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
-    for (size_t i = 0; i < mesh->axis0->size()-1; ++i) {
+    for (size_t i = 0; i < mesh->axis[0]->size()-1; ++i) {
         auto element = mesh->element(i, vindex);
         if (!onlyactive || isActive(element.getMidpoint())) {
             double rin = element.getLower0(), rout = element.getUpper0();
@@ -710,9 +710,9 @@ const LazyData<Tensor2<double>> FiniteElementMethodElectrical2DSolver<Geometry2D
     return LazyData<Tensor2<double>>(new LazyDataDelegateImpl<Tensor2<double>>(dest_mesh->size(),
         [this, dest_mesh, flags](size_t i) -> Tensor2<double> {
             auto point = flags.wrap(dest_mesh->at(i));
-            size_t x = this->mesh->axis0->findUpIndex(point[0]),
-                   y = this->mesh->axis1->findUpIndex(point[1]);
-            if (x == 0 || y == 0 || x == this->mesh->axis0->size() || y == this->mesh->axis1->size())
+            size_t x = this->mesh->axis[0]->findUpIndex(point[0]),
+                   y = this->mesh->axis[1]->findUpIndex(point[1]);
+            if (x == 0 || y == 0 || x == this->mesh->axis[0]->size() || y == this->mesh->axis[1]->size())
                 return Tensor2<double>(NAN);
             else
                 return this->conds[this->mesh->element(x-1, y-1).getIndex()];

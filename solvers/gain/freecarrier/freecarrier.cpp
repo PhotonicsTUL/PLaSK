@@ -98,18 +98,18 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
     shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
     shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
 
-    size_t ileft = 0, iright = points->axis0->size();
+    size_t ileft = 0, iright = points->axis[0]->size();
     bool in_active = false;
 
     bool added_bottom_cladding = false;
     bool added_top_cladding = false;
 
-    for (size_t r = 0; r < points->axis1->size(); ++r) {
+    for (size_t r = 0; r < points->axis[1]->size(); ++r) {
         bool had_active = false; // indicates if we had active region in this layer
         shared_ptr<Material> layer_material;
         bool layer_QW = false;
 
-        for (size_t c = 0; c < points->axis0->size(); ++c)
+        for (size_t c = 0; c < points->axis[0]->size(); ++c)
         { // In the (possible) active region
             auto point = points->at(c,r);
             auto tags = this->geometry->getRolesAt(point);
@@ -160,8 +160,8 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
                             if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
                                 throw Exception("{0}: Material below quantum well not uniform.", this->getId());
                         auto& region = regions.back();
-                        double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
-                        double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
+                        double w = mesh->axis[0]->at(iright) - mesh->axis[0]->at(ileft);
+                        double h = mesh->axis[1]->at(r) - mesh->axis[1]->at(r-1);
                         region.origin += Vec<2>(0., -h);
                         this->writelog(LOG_DETAIL, "Adding bottom cladding; h = {0}",h);
                         region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));*/
@@ -185,8 +185,8 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
                     if (*this->geometry->getMaterial(points->at(cc,r-1)) != *bottom_material)
                         throw Exception("{0}: Material below active region not uniform.", this->getId());
                 auto& region = regions.back();
-                double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
-                double h = mesh->axis1->at(r) - mesh->axis1->at(r-1);
+                double w = mesh->axis[0]->at(iright) - mesh->axis[0]->at(ileft);
+                double h = mesh->axis[1]->at(r) - mesh->axis[1]->at(r-1);
                 region.origin += Vec<2>(0., -h);
                 //this->writelog(LOG_DETAIL, "Adding bottom cladding; h = {0}",h);
                 region.layers->push_back(plask::make_shared<Block<2>>(Vec<2>(w, h), bottom_material));
@@ -194,8 +194,8 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
                 added_bottom_cladding = true;
             }
 
-            double h = mesh->axis1->at(r+1) - mesh->axis1->at(r);
-            double w = mesh->axis0->at(iright) - mesh->axis0->at(ileft);
+            double h = mesh->axis[1]->at(r+1) - mesh->axis[1]->at(r);
+            double w = mesh->axis[0]->at(iright) - mesh->axis[0]->at(ileft);
             if (in_active) {
                 size_t n = region->layers->getChildrenCount();
                 shared_ptr<Block<2>> last;
@@ -221,7 +221,7 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
                     //this->writelog(LOG_DETAIL, "Adding top cladding; h = {0}",h);
 
                     ileft = 0;
-                    iright = points->axis0->size();
+                    iright = points->axis[0]->size();
                     region->top = h;
                     added_top_cladding = true;
                 }
@@ -333,11 +333,11 @@ FreeCarrierGainSolver<GeometryType>::ActiveRegionParams::ActiveRegionParams(cons
         if (!quiet) solver->writelog(LOG_DETAIL, "Band edges taken from inBandEdges receiver");
         shared_ptr<Translation<2>> shifted(new Translation<2>(region.layers, region.origin));
         auto mesh = makeGeometryGrid(shifted)->getMidpointsMesh();
-        assert(mesh->size() == mesh->axis1->size());
+        assert(mesh->size() == mesh->axis[1]->size());
         auto CB = solver->inBandEdges(BandEdges::CONDUCTION, mesh);
         auto VB_H = solver->inBandEdges(BandEdges::VALENCE_HEAVY, mesh);
         auto VB_L = solver->inBandEdges(BandEdges::VALENCE_LIGHT, mesh);
-        for (size_t i = 0; i != mesh->axis1->size(); ++i) {
+        for (size_t i = 0; i != mesh->axis[1]->size(); ++i) {
             auto material = region.materials[i];
             OmpLockGuard<OmpNestLock> lockq = material->lock();
             double e; if (solver->strained) { double latt = material->lattC(T, 'a'); e = (substra - latt) / latt; } else e = 0.;
@@ -749,10 +749,10 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<DT>
                                                                 vaxis, RectangularMesh<2>::ORDER_01);
             factor = 1. / double(vaxis->size());
         }
-        size_t size() const { return mesh->axis0->size(); }
+        size_t size() const { return mesh->axis[0]->size(); }
         double operator[](size_t i) const {
             double val = 0.;
-            for (size_t j = 0; j != mesh->axis1->size(); ++j) {
+            for (size_t j = 0; j != mesh->axis[1]->size(); ++j) {
                 double v = data[mesh->index(i,j)];
                 if (isnan(v))
                     throw ComputationError(solver->getId(), "Wrong {0} ({1}) at {2}", name, v, mesh->at(i,j));
@@ -794,7 +794,7 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<DT>
         if (solver->mesh) {
             setupFromAxis(solver->mesh);
         } else if (auto rect_mesh = dynamic_pointer_cast<const RectangularMesh<2>>(dst_mesh)) {
-            setupFromAxis(rect_mesh->axis0);
+            setupFromAxis(rect_mesh->axis[0]);
         } else {
             regpoints.reserve(solver->regions.size());
             InterpolationFlags flags(solver->geometry);
