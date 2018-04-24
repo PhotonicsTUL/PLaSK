@@ -18,6 +18,8 @@ import subprocess
 import pkgutil
 import traceback
 import datetime
+
+from PyQt5 import QtGui
 from lxml import etree
 from uuid import getnode
 
@@ -372,7 +374,23 @@ class MainWindow(QMainWindow):
             screen = desktop.availableGeometry(self)
             self.resize(screen.width() * 0.8, screen.height() * 0.9)
 
+        self.setAcceptDrops(True)
+
         self.show()
+
+    def dragEnterEvent(self, event):
+        mime_data = event.mimeData()
+        if mime_data.hasUrls():
+            for url in mime_data.urls():
+                if url.isLocalFile() or url.isRelative():
+                    event.acceptProposedAction()
+
+    def dropEvent(self, event):
+        for url in event.mimeData().urls():
+            if url.isLocalFile():
+                self.load_file(url.toLocalFile())
+            elif url.isRelative():
+                self.load_file(url.path())
 
     def showEvent(self, event):
         super(MainWindow, self).showEvent(event)

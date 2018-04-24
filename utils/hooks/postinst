@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+
+/sbin/ldconfig
+
+if [ "$1" = configure ]; then
+    /usr/bin/python3 -m compileall /usr/lib/plask
+
+    if which update-binfmts >/dev/null 2>&1; then
+        update-binfmts --import plask
+    fi
+fi
+

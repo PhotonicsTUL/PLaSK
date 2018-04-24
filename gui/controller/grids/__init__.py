@@ -247,6 +247,7 @@ class GridsController(Controller):
         if model is not None:
             model.geometry_name = self.mesh_preview.toolbar.widgets['select_geometry'].currentText()
         manager = get_manager()
+
         try:
             manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry', 'grids')))
             try:
@@ -309,10 +310,10 @@ class GridsController(Controller):
     def generate_mesh(self):
         from ... import _DEBUG
         if plask is None: return
-        manager = plask.Manager(draft=True)
+        manager = get_manager()
         try:
-            manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))
-            mesh = manager.msg[self._current_controller.model.name](self.plotted_geometry)
+            manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry', 'grids')))
+            mesh = manager.msh[self._current_controller.model.name](manager.geo[self.selected_geometry])
             name = self._current_controller.model.name + '-' + self.selected_geometry
             xml = plask.XmlWriter({}, {name: mesh}, {})
             if _DEBUG:

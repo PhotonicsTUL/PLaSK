@@ -171,7 +171,7 @@ class ScriptEditor(TextEditor):
                 self.completer.popup().hide()
 
         if key in (Qt.Key_Tab, Qt.Key_Backtab) or \
-                                key == Qt.Key_Backspace and modifiers != (Qt.ControlModifier | Qt.ShiftModifier):
+                key == Qt.Key_Backspace and modifiers != (Qt.ControlModifier | Qt.ShiftModifier):
             cursor = self.textCursor()
             if cursor.hasSelection():
                 if key == Qt.Key_Tab:

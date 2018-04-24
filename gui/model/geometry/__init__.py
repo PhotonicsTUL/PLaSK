@@ -447,22 +447,24 @@ class GeometryModel(SectionModel, QAbstractItemModel):
 
     def canDropMimeData(self, mime_data, action, row, column, parentIndex):
         """TODO this is optional but why qt doesn't call this??"""
-        #return super(GeometryModel, self).canDropMimeData(mime_data, action, row, column, parentIndex)
-        if action in (Qt.MoveAction, Qt.CopyAction):
-            moved_obj = mime_data.itemInstance()
-            parent = parentIndex.internalPointer()
-            if parent is None:
-                from .geometry import GNGeometryBase
-                return isinstance(moved_obj, GNGeometryBase)
-            else:
-                return moved_obj not in parent.path_to_root and parent.accept_as_child(moved_obj)
-        if action == Qt.LinkAction:
-            linked_obj = mime_data.itemInstance()
-            parent = parentIndex.internalPointer()
-            if parent is None or linked_obj.name is None:
-                return False
-            from .again_copy import GNAgain
-            return parent.accept_as_child(GNAgain())  # and linked_obj.name in self.names_before(parent)
+        try:
+            if action in (Qt.MoveAction, Qt.CopyAction):
+                moved_obj = mime_data.itemInstance()
+                parent = parentIndex.internalPointer()
+                if parent is None:
+                    from .geometry import GNGeometryBase
+                    return isinstance(moved_obj, GNGeometryBase)
+                else:
+                    return moved_obj not in parent.path_to_root and parent.accept_as_child(moved_obj)
+            if action == Qt.LinkAction:
+                linked_obj = mime_data.itemInstance()
+                parent = parentIndex.internalPointer()
+                if parent is None or linked_obj.name is None:
+                    return False
+                from .again_copy import GNAgain
+                return parent.accept_as_child(GNAgain())  # and linked_obj.name in self.names_before(parent)
+        except:
+            pass
         return False
 
     #def moveRow(sourceParent, sourceRow, destinationParent, destinationChild):

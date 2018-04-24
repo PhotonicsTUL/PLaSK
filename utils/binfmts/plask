@@ -1,0 +1,3 @@
+package plask
+interpreter /usr/bin/plask
+magic \x3cplask\x20

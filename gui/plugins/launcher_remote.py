@@ -377,7 +377,7 @@ else:
 
             command = account.program or 'plask'
 
-            self.command_line = "cd {dir}; {cmd} -{ft} -ldebug {defs} -:{fname} {args}".format(
+            self.command_line = "cd {dir}; {cmd} -u -{ft} -ldebug {defs} -:{fname} {args}".format(
                 dir=quote(workdir),
                 cmd=command,
                 fname=fname,
