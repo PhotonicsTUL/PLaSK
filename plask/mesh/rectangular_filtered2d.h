@@ -126,13 +126,15 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
 
     };  // class Element
 
+
     struct Elements: ElementsBase<RectangularFilteredMesh2D> {
 
         explicit Elements(const RectangularFilteredMesh2D& mesh): ElementsBase(mesh) {}
 
         Element operator()(std::size_t i0, std::size_t i1) const { return Element(*filteredMesh, Element::UNKONOWN_ELEMENT_INDEX, i0, i1); }
 
-    };
+    };  // struct Elements
+
 
     RectangularFilteredMesh2D(const RectangularMesh<2>& rectangularMesh, const Predicate& predicate)
         : RectangularFilteredMeshBase(rectangularMesh)
@@ -182,6 +184,8 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
     inline std::size_t index(std::size_t axis0_index, std::size_t axis1_index) const {
         return nodesSet.indexOf(rectangularMesh.index(axis0_index, axis1_index));
     }
+
+    using RectangularFilteredMeshBase<DIM>::index;
 
     /**
      * Get point with given mesh indices.
@@ -299,9 +303,6 @@ public:
     Box2D getElementBox(std::size_t index0, std::size_t index1) const {
         return rectangularMesh.getElementBox(index0, index1);
     }
-
-    // TODO zaimplementować boundaries, wystarczy iterować po indeksach pełnej siatki i pomijać te, które nie są zawarte w nodesSet
-    // boundaryIndex można znaleźć indeksy skrajnych punktów
 
 };
 

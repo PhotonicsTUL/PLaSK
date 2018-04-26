@@ -6,6 +6,7 @@ This file contains rectilinear mesh for 3D space.
 */
 
 #include <type_traits>
+#include <array>
 
 #include "mesh.h"
 #include "axis1d.h"
@@ -442,6 +443,15 @@ class PLASK_API RectilinearMesh3D: public MeshD<3> {
      */
     std::size_t index(std::size_t c0_index, std::size_t c1_index, std::size_t c2_index) const {
         return index_f(this, c0_index, c1_index, c2_index);
+    }
+
+    /**
+     * Calculate this mesh index using indexes of axis[0], axis[1] and axis[2].
+     * @param indexes index of axis[0], axis[1] and axis[2]
+     * @return this mesh index, from 0 to size()-1
+     */
+    inline std::size_t index(const std::array<std::size_t, 3>& indexes) const {
+        return index(indexes[0], indexes[1], indexes[2]);
     }
 
     /**

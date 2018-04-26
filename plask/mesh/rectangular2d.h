@@ -6,6 +6,7 @@ This file contains rectangular mesh for 2D space.
 */
 
 #include <iterator>
+#include <array>
 
 #include "mesh.h"
 #include "boundary.h"
@@ -565,13 +566,22 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     bool empty() const override { return axis[0]->empty() || axis[1]->empty(); }
 
     /**
-     * Calculate this mesh index using indexes of axis0 and axis1.
-     * @param axis0_index index of axis0, from 0 to axis[0]->size()-1
-     * @param axis1_index index of axis1, from 0 to axis[1]->size()-1
+     * Calculate this mesh index using indexes of axis[0] and axis[1].
+     * @param axis0_index index of axis[0], from 0 to axis[0]->size()-1
+     * @param axis1_index index of axis[1], from 0 to axis[1]->size()-1
      * @return this mesh index, from 0 to size()-1
      */
     inline std::size_t index(std::size_t axis0_index, std::size_t axis1_index) const {
         return index_f(this, axis0_index, axis1_index);
+    }
+
+    /**
+     * Calculate this mesh index using indexes of axis[0] and axis[1].
+     * @param indexes index of axis[0] and axis[1]
+     * @return this mesh index, from 0 to size()-1
+     */
+    inline std::size_t index(const std::array<std::size_t, 2>& indexes) const {
+        return index(indexes[0], indexes[1]);
     }
 
     /**

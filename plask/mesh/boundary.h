@@ -274,6 +274,7 @@ struct PLASK_API EmptyBoundaryImpl: public BoundaryLogicImpl {
     virtual bool empty() const override { return true; }
 };
 
+// TODO może wykluczyć MeshType jako parametr szablonu i dodać w zamian DIM (używać MeshD)?
 /**
  * Instance of this class represents some conditions which allow to choose a subset of points (strictly: indexes of points) from mesh.
  * This mesh must be a specific type @p MeshType.

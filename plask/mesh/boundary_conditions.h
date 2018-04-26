@@ -14,7 +14,7 @@ struct BoundaryCondition {
     typedef ValueT ValueType;  ///< type which describe boundary condition
     typedef typename MeshType::Boundary Boundary;   ///< Boundary type for mesh of type MeshType
 
-    Boundary place;          ///< Boundary
+    Boundary place;     ///< Boundary
     ValueType value;    ///< Condition
 
     /**

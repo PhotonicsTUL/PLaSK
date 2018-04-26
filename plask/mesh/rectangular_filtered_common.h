@@ -185,6 +185,15 @@ public:
     bool empty() const override { return nodesSet.empty(); }
 
     /**
+     * Calculate this mesh index using indexes of axis[0] and axis[1].
+     * @param indexes index of axis[0] and axis[1]
+     * @return this mesh index, from 0 to size()-1, or NOT_INCLUDED
+     */
+    inline std::size_t index(const std::array<std::size_t, 2>& indexes) const {
+        return nodesSet.indexOf(rectangularMesh.index(indexes[0], indexes[1]));
+    }
+
+    /**
      * Calculate index of axis0 using this mesh index.
      * @param mesh_index this mesh index, from 0 to size()-1
      * @return index of axis0, from 0 to axis0->size()-1
@@ -312,6 +321,83 @@ public:
     typename Primitive<DIM>::Box getElementBox(std::size_t element_index) const {
         return rectangularMesh.getElementBox(elementsSet.at(element_index));
     }
+
+protected:  // boundaries code:
+
+    // Common code for: left, right, bottom, top boundries:
+    template <int CHANGE_DIR>
+    struct BoundaryIteratorImpl: public BoundaryLogicImpl::IteratorImpl {
+
+        const RectangularFilteredMeshBase<DIM> &mesh;
+
+        /// current indexes
+        std::array<std::size_t, DIM> index;
+
+        /// past the last index of change direction
+        std::size_t endIndex;
+
+        BoundaryIteratorImpl(const RectangularFilteredMeshBase<DIM>& mesh, std::array<std::size_t, DIM> index, std::size_t endIndex)
+            : mesh(mesh), index(index), endIndex(endIndex)
+        {
+            // go to the first index existed in order to make dereference possible:
+            while (index[CHANGE_DIR] < endIndex && mesh.index(index) == NOT_INCLUDED)
+                ++index[CHANGE_DIR];
+        }
+
+        void increment() override {
+            do {
+                ++index[CHANGE_DIR];
+            } while (index[CHANGE_DIR] < endIndex && mesh.index(index) == NOT_INCLUDED);
+        }
+
+        bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const override {
+            const BoundaryIteratorImpl& o = static_cast<const BoundaryIteratorImpl&>(other);
+            return index == o.index && endIndex == o.endIndex;
+        }
+
+        std::size_t dereference() const override {
+            return mesh.index(index);
+        }
+
+        typename BoundaryLogicImpl::IteratorImpl* clone() const override {
+            return new BoundaryIteratorImpl<CHANGE_DIR>(*this);
+        }
+
+    };
+
+    template <int CHANGE_DIR>
+    struct Boundary: public BoundaryWithMeshLogicImpl<RectangularFilteredMeshBase<DIM>> {
+
+        typedef typename BoundaryLogicImpl::Iterator<CHANGE_DIR> Iterator;
+
+        /// first index
+        std::array<std::size_t, DIM> index;
+
+        /// past the last index of change direction
+        std::size_t endIndex;
+
+        Boundary(const RectangularFilteredMeshBase<DIM>& mesh, std::array<std::size_t, DIM> index, std::size_t endIndex)
+            : BoundaryWithMeshLogicImpl<RectangularFilteredMeshBase<DIM>>(mesh), index(index), endIndex(endIndex) {}
+
+        bool contains(std::size_t mesh_index) const override {
+            //TODO convert mesh_index -> indexes, check if indexes (!=CHANGE_DIR) are the same as in index, and indexes[CHANGE_DIR] is in range [index[CHANGE_DIR], endIndex)
+            //const std::size_t originalIndex = mesh.nodesSet.at(mesh_index);
+            //return this->mesh.index0(mesh_index) == line && in_range(this->mesh.index1(mesh_index), beginInLineIndex, endInLineIndex);
+        }
+
+        Iterator begin() const override {
+            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR>(this->mesh, index, endIndex));
+        }
+
+        Iterator end() const override {
+            std::array<std::size_t, DIM> index_end = index;
+            index_end[CHANGE_DIR] = endIndex;
+            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR>(this->mesh, index_end, endIndex));
+        }
+    };
+
+    // TODO zaimplementować boundaries, wystarczy iterować po indeksach pełnej siatki i pomijać te, które nie są zawarte w nodesSet
+    // boundaryIndex można znaleźć indeksy skrajnych punktów
 
 };
 
