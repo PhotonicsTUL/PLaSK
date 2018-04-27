@@ -382,15 +382,15 @@ class MainWindow(QMainWindow):
         mime_data = event.mimeData()
         if mime_data.hasUrls():
             for url in mime_data.urls():
-                if url.isLocalFile() or url.isRelative():
+                if url.isLocalFile():
                     event.acceptProposedAction()
 
     def dropEvent(self, event):
         for url in event.mimeData().urls():
             if url.isLocalFile():
-                self.load_file(url.toLocalFile())
-            elif url.isRelative():
-                self.load_file(url.path())
+                if self.load_file(url.toLocalFile()):
+                    event.acceptProposedAction()
+
 
     def showEvent(self, event):
         super(MainWindow, self).showEvent(event)
