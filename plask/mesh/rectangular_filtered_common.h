@@ -395,7 +395,7 @@ protected:  // boundaries code:
                     if (mesh_indexes[i] < index[i] || mesh_indexes[i] >= endIndex) return false;
                 } else
                     if (mesh_indexes[i] != index[i]) return false;
-            return this->mesh.index(mesh_index) != NOT_INCLUDED;
+            return true;
         }
 
         const_iterator begin() const override {
