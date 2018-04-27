@@ -368,7 +368,7 @@ protected:  // boundaries code:
     template <int CHANGE_DIR>
     struct Boundary: public BoundaryWithMeshLogicImpl<RectangularFilteredMeshBase<DIM>> {
 
-        typedef typename BoundaryLogicImpl::Iterator<CHANGE_DIR> Iterator;
+        typedef BoundaryIteratorImpl<CHANGE_DIR> Iterator;
 
         /// first index
         std::array<std::size_t, DIM> index;
@@ -386,13 +386,13 @@ protected:  // boundaries code:
         }
 
         Iterator begin() const override {
-            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR>(this->mesh, index, endIndex));
+            return Iterator(new Iterator(this->mesh, index, endIndex));
         }
 
         Iterator end() const override {
             std::array<std::size_t, DIM> index_end = index;
             index_end[CHANGE_DIR] = endIndex;
-            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR>(this->mesh, index_end, endIndex));
+            return Iterator(new Iterator(this->mesh, index_end, endIndex));
         }
     };
 
