@@ -6,7 +6,6 @@ This file contains rectangular mesh for 2D space.
 */
 
 #include <iterator>
-#include <array>
 
 #include "mesh.h"
 #include "boundary.h"
@@ -580,7 +579,7 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
      * @param indexes index of axis[0] and axis[1]
      * @return this mesh index, from 0 to size()-1
      */
-    inline std::size_t index(const std::array<std::size_t, 2>& indexes) const {
+    inline std::size_t index(const Vec<2, std::size_t>& indexes) const {
         return index(indexes[0], indexes[1]);
     }
 
@@ -600,6 +599,15 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
      */
     inline std::size_t index1(std::size_t mesh_index) const {
         return index1_f(this, mesh_index);
+    }
+
+    /**
+     * Calculate indexes of axes.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return index of axis[0], axis[1], and axis[2]
+     */
+    inline Vec<2, std::size_t> indexes(std::size_t mesh_index) const {
+        return Vec<2, std::size_t>(index0(mesh_index), index1(mesh_index));
     }
 
     /**

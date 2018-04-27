@@ -189,7 +189,7 @@ public:
      * @param indexes index of axis[0] and axis[1]
      * @return this mesh index, from 0 to size()-1, or NOT_INCLUDED
      */
-    inline std::size_t index(const std::array<std::size_t, 2>& indexes) const {
+    inline std::size_t index(const Vec<DIM, std::size_t>& indexes) const {
         return nodesSet.indexOf(rectangularMesh.index(indexes[0], indexes[1]));
     }
 
@@ -209,6 +209,15 @@ public:
      */
     inline std::size_t index1(std::size_t mesh_index) const {
         return rectangularMesh.index1(nodesSet.at(mesh_index));
+    }
+
+    /**
+     * Calculate indexes of axes.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return indexes of axes
+     */
+    inline Vec<DIM, std::size_t> indexes(std::size_t mesh_index) const {
+        return rectangularMesh.indexes(nodesSet.at(mesh_index));
     }
 
     /**
@@ -331,12 +340,12 @@ protected:  // boundaries code:
         const RectangularFilteredMeshBase<DIM> &mesh;
 
         /// current indexes
-        std::array<std::size_t, DIM> index;
+        Vec<DIM, std::size_t> index;
 
         /// past the last index of change direction
         std::size_t endIndex;
 
-        BoundaryIteratorImpl(const RectangularFilteredMeshBase<DIM>& mesh, std::array<std::size_t, DIM> index, std::size_t endIndex)
+        BoundaryIteratorImpl(const RectangularFilteredMeshBase<DIM>& mesh, Vec<DIM, std::size_t> index, std::size_t endIndex)
             : mesh(mesh), index(index), endIndex(endIndex)
         {
             // go to the first index existed in order to make dereference possible:
@@ -366,33 +375,37 @@ protected:  // boundaries code:
     };
 
     template <int CHANGE_DIR>
-    struct Boundary: public BoundaryWithMeshLogicImpl<RectangularFilteredMeshBase<DIM>> {
+    struct BoundaryLogicImpl: public BoundaryWithMeshLogicImpl<RectangularFilteredMeshBase<DIM>> {
 
-        typedef BoundaryIteratorImpl<CHANGE_DIR> Iterator;
+        using typename BoundaryWithMeshLogicImpl<RectangularFilteredMeshBase<DIM>>::const_iterator;
 
         /// first index
-        std::array<std::size_t, DIM> index;
+        Vec<DIM, std::size_t> index;
 
         /// past the last index of change direction
         std::size_t endIndex;
 
-        Boundary(const RectangularFilteredMeshBase<DIM>& mesh, std::array<std::size_t, DIM> index, std::size_t endIndex)
+        BoundaryLogicImpl(const RectangularFilteredMeshBase<DIM>& mesh, Vec<DIM, std::size_t> index, std::size_t endIndex)
             : BoundaryWithMeshLogicImpl<RectangularFilteredMeshBase<DIM>>(mesh), index(index), endIndex(endIndex) {}
 
         bool contains(std::size_t mesh_index) const override {
-            //TODO convert mesh_index -> indexes, check if indexes (!=CHANGE_DIR) are the same as in index, and indexes[CHANGE_DIR] is in range [index[CHANGE_DIR], endIndex)
-            //const std::size_t originalIndex = mesh.nodesSet.at(mesh_index);
-            //return this->mesh.index0(mesh_index) == line && in_range(this->mesh.index1(mesh_index), beginInLineIndex, endInLineIndex);
+            Vec<DIM, std::size_t> mesh_indexes = this->mesh.indexes(mesh_index);
+            for (int i = 0; i < DIM; ++i)
+                if (i == CHANGE_DIR) {
+                    if (mesh_indexes[i] < index[i] || mesh_indexes[i] >= endIndex) return false;
+                } else
+                    if (mesh_indexes[i] != index[i]) return false;
+            return this->mesh.index(mesh_index) != NOT_INCLUDED;
         }
 
-        Iterator begin() const override {
-            return Iterator(new Iterator(this->mesh, index, endIndex));
+        const_iterator begin() const override {
+            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR>(this->mesh, index, endIndex));
         }
 
-        Iterator end() const override {
-            std::array<std::size_t, DIM> index_end = index;
+        const_iterator end() const override {
+            Vec<DIM, std::size_t> index_end = index;
             index_end[CHANGE_DIR] = endIndex;
-            return Iterator(new Iterator(this->mesh, index_end, endIndex));
+            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR>(this->mesh, index_end, endIndex));
         }
     };
 
