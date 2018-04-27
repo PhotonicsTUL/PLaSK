@@ -190,7 +190,7 @@ public:
      * @return this mesh index, from 0 to size()-1, or NOT_INCLUDED
      */
     inline std::size_t index(const Vec<DIM, std::size_t>& indexes) const {
-        return nodesSet.indexOf(rectangularMesh.index(indexes[0], indexes[1]));
+        return nodesSet.indexOf(rectangularMesh.index(indexes));
     }
 
     /**
