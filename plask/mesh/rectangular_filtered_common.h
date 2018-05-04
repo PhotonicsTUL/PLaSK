@@ -359,7 +359,7 @@ protected:  // boundaries code:
             } while (index[CHANGE_DIR] < endIndex && mesh.index(index) == NOT_INCLUDED);
         }
 
-        bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const override {
+        bool equal(const BoundaryNodeSetImpl::IteratorImpl& other) const override {
             const BoundaryIteratorImpl& o = static_cast<const BoundaryIteratorImpl&>(other);
             return index == o.index && endIndex == o.endIndex;
         }
@@ -368,14 +368,14 @@ protected:  // boundaries code:
             return mesh.index(index);
         }
 
-        typename BoundaryLogicImpl::IteratorImpl* clone() const override {
+        typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
             return new BoundaryIteratorImpl<CHANGE_DIR>(*this);
         }
 
     };
 
     template <int CHANGE_DIR>
-    struct BoundaryLogicImpl: public BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<DIM>> {
+    struct BoundaryNodeSetImpl: public BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<DIM>> {
 
         using typename BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<DIM>>::const_iterator;
 
