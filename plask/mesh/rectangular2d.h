@@ -117,7 +117,7 @@ inline bool getIndexesInBoundsExt(std::size_t& begInd, std::size_t& endInd, cons
 template <typename MeshType, typename GetBoxes, typename GetBoundaryForBox>
 inline typename MeshType::Boundary getBoundaryForBoxes(GetBoxes getBoxes, GetBoundaryForBox getBoundaryForBox) {
     return typename MeshType::Boundary(
-        [=](const MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) -> BoundaryWithMesh {
+        [=](const MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) -> BoundaryNodeSet {
             std::vector<typename MeshType::Boundary> boundaries;
             std::vector<typename MeshType::Boundary::WithMesh> boundaries_with_meshes;
             auto boxes = getBoxes(geometry); // probably std::vector<BoxdirD>
@@ -871,7 +871,7 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
   private:
 
     // Common code for: left, right, bottom, top boundries:
-    struct BoundaryIteratorImpl: public BoundaryLogicImpl::IteratorImpl {
+    struct BoundaryIteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
 
         const RectangularMesh &mesh;
 
@@ -883,7 +883,7 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
 
         virtual void increment() override { ++index; }
 
-        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const override {
+        virtual bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& other) const override {
             return index == static_cast<const BoundaryIteratorImpl&>(other).index;
         }
 
@@ -896,7 +896,7 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
 
         virtual std::size_t dereference() const override { return this->mesh.index(this->line, this->index); }
 
-        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const override {
+        virtual typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
             return new VerticalIteratorImpl(*this);
         }
     };
@@ -908,18 +908,18 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
 
         virtual std::size_t dereference() const override { return this->mesh.index(this->index, this->line); }
 
-        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const override {
+        virtual typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
             return new HorizontalIteratorImpl(*this);
         }
     };
 
-    struct VerticalBoundary: public BoundaryWithMeshLogicImpl<RectangularMesh<2>> {
+    struct VerticalBoundary: public BoundaryNodeSetWithMeshImpl<RectangularMesh<2>> {
 
-        typedef typename BoundaryLogicImpl::Iterator Iterator;
+        typedef typename BoundaryNodeSetImpl::Iterator Iterator;
 
         std::size_t line;
 
-        VerticalBoundary(const RectangularMesh<2>& mesh, std::size_t line_axis0): BoundaryWithMeshLogicImpl<RectangularMesh<2>>(mesh), line(line_axis0) {}
+        VerticalBoundary(const RectangularMesh<2>& mesh, std::size_t line_axis0): BoundaryNodeSetWithMeshImpl<RectangularMesh<2>>(mesh), line(line_axis0) {}
 
         //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
@@ -941,14 +941,14 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
     };
 
 
-    struct VerticalBoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<2>> {
+    struct VerticalBoundaryInRange: public BoundaryNodeSetWithMeshImpl<RectangularMesh<2>> {
 
-        typedef typename BoundaryLogicImpl::Iterator Iterator;
+        typedef typename BoundaryNodeSetImpl::Iterator Iterator;
 
         std::size_t line, beginInLineIndex, endInLineIndex;
 
         VerticalBoundaryInRange(const RectangularMesh<2>& mesh, std::size_t line_axis0, std::size_t beginInLineIndex, std::size_t endInLineIndex)
-            : BoundaryWithMeshLogicImpl<RectangularMesh<2>>(mesh), line(line_axis0), beginInLineIndex(beginInLineIndex), endInLineIndex(endInLineIndex) {}
+            : BoundaryNodeSetWithMeshImpl<RectangularMesh<2>>(mesh), line(line_axis0), beginInLineIndex(beginInLineIndex), endInLineIndex(endInLineIndex) {}
 
         //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
@@ -969,13 +969,13 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
         }
     };
 
-    struct HorizontalBoundary: public BoundaryWithMeshLogicImpl<RectangularMesh<2>> {
+    struct HorizontalBoundary: public BoundaryNodeSetWithMeshImpl<RectangularMesh<2>> {
 
-        typedef typename BoundaryLogicImpl::Iterator Iterator;
+        typedef typename BoundaryNodeSetImpl::Iterator Iterator;
 
         std::size_t line;
 
-        HorizontalBoundary(const RectangularMesh<2>& mesh, std::size_t line_axis1): BoundaryWithMeshLogicImpl<RectangularMesh<2>>(mesh), line(line_axis1) {}
+        HorizontalBoundary(const RectangularMesh<2>& mesh, std::size_t line_axis1): BoundaryNodeSetWithMeshImpl<RectangularMesh<2>>(mesh), line(line_axis1) {}
 
         //virtual TopBoundary* clone() const { return new TopBoundary(); }
 
@@ -996,14 +996,14 @@ class PLASK_API RectangularMesh<2>: public MeshD<2> {
         }
     };
 
-    struct HorizontalBoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<2>> {
+    struct HorizontalBoundaryInRange: public BoundaryNodeSetWithMeshImpl<RectangularMesh<2>> {
 
-        typedef typename BoundaryLogicImpl::Iterator Iterator;
+        typedef typename BoundaryNodeSetImpl::Iterator Iterator;
 
         std::size_t line, beginInLineIndex, endInLineIndex;
 
         HorizontalBoundaryInRange(const RectangularMesh<2>& mesh, std::size_t line_axis1, std::size_t beginInLineIndex, std::size_t endInLineIndex)
-            : BoundaryWithMeshLogicImpl<RectangularMesh<2>>(mesh), line(line_axis1), beginInLineIndex(beginInLineIndex), endInLineIndex(endInLineIndex) {}
+            : BoundaryNodeSetWithMeshImpl<RectangularMesh<2>>(mesh), line(line_axis1), beginInLineIndex(beginInLineIndex), endInLineIndex(endInLineIndex) {}
         //virtual TopBoundary* clone() const { return new TopBoundary(); }
 
         bool contains(std::size_t mesh_index) const override {
@@ -1082,7 +1082,7 @@ public:
      * @return boundary which show one vertical (from bottom to top) segment in mesh
      */
     static Boundary getVerticalBoundaryNear(double axis0_coord, double from, double to) {
-        return Boundary( [axis0_coord, from, to](const RectangularMesh<2>& mesh, const shared_ptr<const GeometryD<2>>&) -> BoundaryLogicImpl* {
+        return Boundary( [axis0_coord, from, to](const RectangularMesh<2>& mesh, const shared_ptr<const GeometryD<2>>&) -> BoundaryNodeSetImpl* {
             std::size_t begInd, endInd;
             if (!details::getIndexesInBoundsExt(begInd, endInd, *mesh.axis[1], from, to))
                 return new EmptyBoundaryImpl();
@@ -1117,7 +1117,7 @@ public:
      */
     static Boundary getLeftOfBoundary(const Box2D& box) {
         if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<2>>();
-        return Boundary( [=](const RectangularMesh<2>& mesh, const shared_ptr<const GeometryD<2>>&) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<2>& mesh, const shared_ptr<const GeometryD<2>>&) -> BoundaryNodeSetImpl* {
             std::size_t line, begInd, endInd;
             if (details::getLineLo(line, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
                 details::getIndexesInBounds(begInd, endInd, *mesh.axis[1], box.lower.c1, box.upper.c1))
@@ -1134,7 +1134,7 @@ public:
      */
     static Boundary getRightOfBoundary(const Box2D& box) {
         if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<2>>();
-        return Boundary( [=](const RectangularMesh<2>& mesh, const shared_ptr<const GeometryD<2>>&) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<2>& mesh, const shared_ptr<const GeometryD<2>>&) -> BoundaryNodeSetImpl* {
             std::size_t line, begInd, endInd;
             if (details::getLineHi(line, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
                 details::getIndexesInBounds(begInd, endInd, *mesh.axis[1], box.lower.c1, box.upper.c1))
@@ -1151,7 +1151,7 @@ public:
      */
     static Boundary getBottomOfBoundary(const Box2D& box) {
         if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<2>>();
-        return Boundary( [=](const RectangularMesh<2>& mesh, const shared_ptr<const GeometryD<2>>&) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<2>& mesh, const shared_ptr<const GeometryD<2>>&) -> BoundaryNodeSetImpl* {
             std::size_t line, begInd, endInd;
             if (details::getLineLo(line, *mesh.axis[1], box.lower.c1, box.upper.c1) &&
                 details::getIndexesInBounds(begInd, endInd, *mesh.axis[0], box.lower.c0, box.upper.c0))
@@ -1168,7 +1168,7 @@ public:
      */
     static Boundary getTopOfBoundary(const Box2D& box) {
         if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<2>>();
-        return Boundary( [=](const RectangularMesh<2>& mesh, const shared_ptr<const GeometryD<2>>&) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<2>& mesh, const shared_ptr<const GeometryD<2>>&) -> BoundaryNodeSetImpl* {
             std::size_t line, begInd, endInd;
             if (details::getLineHi(line, *mesh.axis[1], box.lower.c1, box.upper.c1) &&
                 details::getIndexesInBounds(begInd, endInd, *mesh.axis[0], box.lower.c0, box.upper.c0))
@@ -1359,7 +1359,7 @@ public:
      * @return boundary which show one horizontal (from left to right) line in mesh
      */
     static Boundary getHorizontalBoundaryNear(double axis1_coord, double from, double to) {
-        return Boundary( [axis1_coord, from, to](const RectangularMesh<2>& mesh, const shared_ptr<const GeometryD<2>>&) -> BoundaryLogicImpl* {
+        return Boundary( [axis1_coord, from, to](const RectangularMesh<2>& mesh, const shared_ptr<const GeometryD<2>>&) -> BoundaryNodeSetImpl* {
             std::size_t begInd, endInd;
             if (!details::getIndexesInBoundsExt(begInd, endInd, *mesh.axis[0], from, to))
                 return new EmptyBoundaryImpl();

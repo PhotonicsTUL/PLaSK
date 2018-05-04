@@ -335,7 +335,7 @@ protected:  // boundaries code:
 
     // Common code for: left, right, bottom, top boundries:
     template <int CHANGE_DIR>
-    struct BoundaryIteratorImpl: public BoundaryLogicImpl::IteratorImpl {
+    struct BoundaryIteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
 
         const RectangularFilteredMeshBase<DIM> &mesh;
 
@@ -375,9 +375,9 @@ protected:  // boundaries code:
     };
 
     template <int CHANGE_DIR>
-    struct BoundaryLogicImpl: public BoundaryWithMeshLogicImpl<RectangularFilteredMeshBase<DIM>> {
+    struct BoundaryLogicImpl: public BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<DIM>> {
 
-        using typename BoundaryWithMeshLogicImpl<RectangularFilteredMeshBase<DIM>>::const_iterator;
+        using typename BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<DIM>>::const_iterator;
 
         /// first index
         Vec<DIM, std::size_t> index;
@@ -385,8 +385,8 @@ protected:  // boundaries code:
         /// past the last index of change direction
         std::size_t endIndex;
 
-        BoundaryLogicImpl(const RectangularFilteredMeshBase<DIM>& mesh, Vec<DIM, std::size_t> index, std::size_t endIndex)
-            : BoundaryWithMeshLogicImpl<RectangularFilteredMeshBase<DIM>>(mesh), index(index), endIndex(endIndex) {}
+        BoundaryNodeSetImpl(const RectangularFilteredMeshBase<DIM>& mesh, Vec<DIM, std::size_t> index, std::size_t endIndex)
+            : BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<DIM>>(mesh), index(index), endIndex(endIndex) {}
 
         bool contains(std::size_t mesh_index) const override {
             Vec<DIM, std::size_t> mesh_indexes = this->mesh.indexes(mesh_index);

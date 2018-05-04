@@ -84,7 +84,7 @@ namespace plask {
  * Base class for boundaries logic. Reperesnt polymorphic set of mesh indexes.
  * @see @ref boundaries
  */
-struct PLASK_API BoundaryLogicImpl {
+struct PLASK_API BoundaryNodeSetImpl {
 
     /// Base class for boundary iterator implementation.
     typedef PolymorphicForwardIteratorImpl<std::size_t, std::size_t> IteratorImpl;
@@ -96,7 +96,7 @@ struct PLASK_API BoundaryLogicImpl {
     typedef Iterator const_iterator;
     typedef const_iterator iterator;
 
-    virtual ~BoundaryLogicImpl() {}
+    virtual ~BoundaryNodeSetImpl() {}
 
     /**
      * Check if boundary contains point with given index.
@@ -139,13 +139,13 @@ struct PLASK_API BoundaryLogicImpl {
  * @ref boundaries
  */
 template <typename MeshType>
-struct BoundaryWithMeshLogicImpl: public BoundaryLogicImpl {
+struct BoundaryNodeSetWithMeshImpl: public BoundaryNodeSetImpl {
 
     /// iterator over indexes of mesh
-    typedef typename BoundaryLogicImpl::const_iterator const_iterator;
+    typedef typename BoundaryNodeSetImpl::const_iterator const_iterator;
 
     /// iterator over indexes of mesh
-    typedef typename BoundaryLogicImpl::iterator iterator;
+    typedef typename BoundaryNodeSetImpl::iterator iterator;
 
     /// Held mesh.
     const MeshType& mesh;
@@ -154,7 +154,7 @@ struct BoundaryWithMeshLogicImpl: public BoundaryLogicImpl {
      * Construct object which holds reference to given @p mesh.
      * @param mesh mesh to hold
      */
-    BoundaryWithMeshLogicImpl(const MeshType& mesh)
+    BoundaryNodeSetWithMeshImpl(const MeshType& mesh)
         : mesh(mesh) {}
 
     /**
@@ -162,14 +162,14 @@ struct BoundaryWithMeshLogicImpl: public BoundaryLogicImpl {
      *
      * Should not be used directly, but can save some work when implementing own BoundaryImpl and Iterator.
      */
-    struct IteratorWithMeshImpl: public BoundaryLogicImpl::IteratorImpl {
+    struct IteratorWithMeshImpl: public BoundaryNodeSetImpl::IteratorImpl {
 
-        const BoundaryWithMeshLogicImpl<MeshType>& boundaryWithMesh;
+        const BoundaryNodeSetWithMeshImpl<MeshType>& boundaryWithMesh;
 
-        const BoundaryWithMeshLogicImpl<MeshType>& getBoundary() const { return boundaryWithMesh; }
+        const BoundaryNodeSetWithMeshImpl<MeshType>& getBoundary() const { return boundaryWithMesh; }
         const MeshType& getMesh() const { return boundaryWithMesh.mesh; }
 
-        IteratorWithMeshImpl(const BoundaryWithMeshLogicImpl<MeshType>& boundaryImpl)
+        IteratorWithMeshImpl(const BoundaryNodeSetWithMeshImpl<MeshType>& boundaryImpl)
             : boundaryWithMesh(boundaryImpl) {}
     };
 
@@ -178,18 +178,18 @@ struct BoundaryWithMeshLogicImpl: public BoundaryLogicImpl {
 /**
  * Holds BoundaryLogicImpl and delegate all calls to it.
  */
-struct PLASK_API BoundaryWithMesh: public HolderRef< const BoundaryLogicImpl > {
+struct PLASK_API BoundaryNodeSet: public HolderRef< const BoundaryNodeSetImpl > {
 
-    typedef typename BoundaryLogicImpl::const_iterator const_iterator;
-    typedef typename BoundaryLogicImpl::iterator iterator;
+    typedef typename BoundaryNodeSetImpl::const_iterator const_iterator;
+    typedef typename BoundaryNodeSetImpl::iterator iterator;
 
     /**
      * Construct a boundary which holds given boundary logic.
      * @param to_hold pointer to object which describe boundary logic
      */
-    BoundaryWithMesh(const BoundaryLogicImpl* to_hold = nullptr): HolderRef< const BoundaryLogicImpl >(to_hold) {}
+    BoundaryNodeSet(const BoundaryNodeSetImpl* to_hold = nullptr): HolderRef< const BoundaryNodeSetImpl >(to_hold) {}
 
-    virtual ~BoundaryWithMesh() {}
+    virtual ~BoundaryNodeSet() {}
 
     /**
      * Check if boundary contains point with given index.
@@ -237,9 +237,9 @@ struct PLASK_API BoundaryWithMesh: public HolderRef< const BoundaryLogicImpl > {
  *
  * This boundary represents empty index set.
  */
-struct PLASK_API EmptyBoundaryImpl: public BoundaryLogicImpl {
+struct PLASK_API EmptyBoundaryImpl: public BoundaryNodeSetImpl {
 
-    struct IteratorImpl: public BoundaryLogicImpl::IteratorImpl {
+    struct IteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
 
         virtual std::size_t dereference() const override {
             throw Exception("Dereference of empty boundary iterator.");
@@ -247,11 +247,11 @@ struct PLASK_API EmptyBoundaryImpl: public BoundaryLogicImpl {
 
         virtual void increment() override {}
 
-        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& PLASK_UNUSED(other)) const override {
+        virtual bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& PLASK_UNUSED(other)) const override {
             return true;
         }
 
-        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const override {
+        virtual typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
             return new IteratorImpl;
         }
 
@@ -259,12 +259,12 @@ struct PLASK_API EmptyBoundaryImpl: public BoundaryLogicImpl {
 
     virtual bool contains(std::size_t PLASK_UNUSED(mesh_index)) const override { return false; }
 
-    virtual typename BoundaryLogicImpl::const_iterator begin() const override {
-        return typename BoundaryLogicImpl::Iterator(new IteratorImpl);
+    virtual typename BoundaryNodeSetImpl::const_iterator begin() const override {
+        return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl);
     }
 
-    virtual typename BoundaryLogicImpl::const_iterator end() const override {
-        return typename BoundaryLogicImpl::Iterator(new IteratorImpl);
+    virtual typename BoundaryNodeSetImpl::const_iterator end() const override {
+        return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl);
     }
 
     std::size_t size() const override {
@@ -279,14 +279,14 @@ struct PLASK_API EmptyBoundaryImpl: public BoundaryLogicImpl {
  * Instance of this class represents some conditions which allow to choose a subset of points (strictly: indexes of points) from mesh.
  * This mesh must be a specific type @p MeshType.
  *
- * In fact Boundary is factory of Boundary::WithMesh which is a holder which contains pointer to abstract class @c BoundaryImpl\<MeshType\> which implements boundary logic.
+ * In fact Boundary is factory of BoundaryNodeSet which holds a pointer to abstract class @c BoundaryNodeSetImpl.
  * @tparam MeshType type of mesh
  * @ref boundaries
  */
 template <typename MeshType>
 struct Boundary {
 
-    typedef BoundaryWithMesh WithMesh;
+    typedef BoundaryNodeSet WithMesh;
 
 protected:
     std::function<WithMesh(const MeshType&, const shared_ptr<const GeometryD<MeshType::DIM>>&)> create;
@@ -366,12 +366,12 @@ public:
  * This logic holds a list of boundaries and represent a set of indexes which is a sum of sets from this boundaries.
  */
 template <typename MeshType>
-struct SumBoundaryImpl: public BoundaryLogicImpl {
+struct SumBoundaryImpl: public BoundaryNodeSetImpl {
 
     typedef std::vector< typename Boundary<MeshType>::WithMesh > BoundariesVec;
     BoundariesVec boundaries;
 
-    struct IteratorImpl: public BoundaryLogicImpl::IteratorImpl {
+    struct IteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
 
         typename BoundariesVec::const_iterator current_boundary;
         typename BoundariesVec::const_iterator current_boundary_end;
@@ -399,7 +399,7 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
             : current_boundary(current_boundary_end), current_boundary_end(current_boundary_end)
         {}
 
-        bool equal(const typename BoundaryLogicImpl::IteratorImpl &other) const override {
+        bool equal(const typename BoundaryNodeSetImpl::IteratorImpl &other) const override {
             const IteratorImpl& o = static_cast<const IteratorImpl&>(other);
             if (current_boundary != o.current_boundary) return false;   // other outer-loop boundaries
             //same outer-loop boundaries:
@@ -434,14 +434,14 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
         return false;
     }
 
-    typename BoundaryLogicImpl::Iterator begin() const override {
+    typename BoundaryNodeSetImpl::Iterator begin() const override {
         if (boundaries.empty()) // boundaries.begin() == boundaries.end()
-            return typename BoundaryLogicImpl::Iterator(new IteratorImpl(boundaries.end()));
-        return typename BoundaryLogicImpl::Iterator(new IteratorImpl(boundaries.begin(), boundaries.end()));
+            return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl(boundaries.end()));
+        return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl(boundaries.begin(), boundaries.end()));
     }
 
-    typename BoundaryLogicImpl::Iterator end() const override {
-        return typename BoundaryLogicImpl::Iterator(new IteratorImpl(boundaries.end()));
+    typename BoundaryNodeSetImpl::Iterator end() const override {
+        return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl(boundaries.end()));
     }
 
     bool empty() const override {
@@ -468,9 +468,9 @@ struct SumBoundaryImpl: public BoundaryLogicImpl {
  * @ref boundaries
  */
 template <typename MeshType, typename Predicate>
-struct PredicateBoundaryImpl: public BoundaryWithMeshLogicImpl<MeshType> {
+struct PredicateBoundaryImpl: public BoundaryNodeSetWithMeshImpl<MeshType> {
 
-    struct PredicateIteratorImpl: public BoundaryWithMeshLogicImpl<MeshType>::IteratorWithMeshImpl {
+    struct PredicateIteratorImpl: public BoundaryNodeSetWithMeshImpl<MeshType>::IteratorWithMeshImpl {
 
        typedef decltype(std::begin(std::declval<MeshType>())) MeshBeginIterator;
        typedef decltype(std::end(std::declval<MeshType>())) MeshEndIterator;
@@ -478,8 +478,8 @@ struct PredicateBoundaryImpl: public BoundaryWithMeshLogicImpl<MeshType> {
        MeshBeginIterator meshIterator;
        MeshEndIterator meshIteratorEnd;
 
-       PredicateIteratorImpl(const BoundaryWithMeshLogicImpl<MeshType>& boundary, MeshBeginIterator meshIterator):
-            BoundaryWithMeshLogicImpl<MeshType>::IteratorWithMeshImpl(boundary),
+       PredicateIteratorImpl(const BoundaryNodeSetWithMeshImpl<MeshType>& boundary, MeshBeginIterator meshIterator):
+            BoundaryNodeSetWithMeshImpl<MeshType>::IteratorWithMeshImpl(boundary),
             meshIterator(meshIterator),
             meshIteratorEnd(std::end(boundary.mesh)) {
            while (this->meshIterator != meshIteratorEnd && !check_predicate())
@@ -504,11 +504,11 @@ struct PredicateBoundaryImpl: public BoundaryWithMeshLogicImpl<MeshType> {
             } while (meshIterator != meshIteratorEnd && !check_predicate());
         }
 
-        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const override {
+        virtual bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& other) const override {
             return meshIterator == static_cast<const PredicateIteratorImpl&>(other).meshIterator;
         }
 
-        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const override {
+        virtual typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
             return new PredicateIteratorImpl(*this);
         }
 
@@ -523,7 +523,7 @@ struct PredicateBoundaryImpl: public BoundaryWithMeshLogicImpl<MeshType> {
      * @param predicate predicate which check if given point is in boundary
      */
     PredicateBoundaryImpl(const MeshType& mesh, Predicate predicate):
-        BoundaryWithMeshLogicImpl<MeshType>(mesh), predicate(predicate) {}
+        BoundaryNodeSetWithMeshImpl<MeshType>(mesh), predicate(predicate) {}
 
     //virtual PredicateBoundary<MeshType, Predicate>* clone() const { return new PredicateBoundary<MeshType, Predicate>(predicate); }
 
@@ -538,12 +538,12 @@ public:
         return this->check_predicate(mesh_index);
     }
 
-    typename BoundaryLogicImpl::Iterator begin() const override {
-        return typename BoundaryLogicImpl::Iterator(new PredicateIteratorImpl(*this, std::begin(this->mesh)));
+    typename BoundaryNodeSetImpl::Iterator begin() const override {
+        return typename BoundaryNodeSetImpl::Iterator(new PredicateIteratorImpl(*this, std::begin(this->mesh)));
     }
 
-    typename BoundaryLogicImpl::Iterator end() const override {
-        return typename BoundaryLogicImpl::Iterator(new PredicateIteratorImpl(*this, std::end(this->mesh)));
+    typename BoundaryNodeSetImpl::Iterator end() const override {
+        return typename BoundaryNodeSetImpl::Iterator(new PredicateIteratorImpl(*this, std::end(this->mesh)));
     }
 
 };

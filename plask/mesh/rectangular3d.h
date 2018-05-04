@@ -189,7 +189,7 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
   private:
 
     // Common code for: left, right, bottom, top, front, back boundaries:
-    struct BoundaryIteratorImpl: public BoundaryLogicImpl::IteratorImpl {
+    struct BoundaryIteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
 
         const RectangularMesh &mesh;
 
@@ -213,7 +213,7 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
             }
         }
 
-        virtual bool equal(const typename BoundaryLogicImpl::IteratorImpl& other) const override {
+        virtual bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& other) const override {
             return index_f == static_cast<const BoundaryIteratorImpl&>(other).index_f && index_s == static_cast<const BoundaryIteratorImpl&>(other).index_s;
         }
 
@@ -227,7 +227,7 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
 
         virtual std::size_t dereference() const override { return this->mesh.index(this->level, this->index_f, this->index_s); }
 
-        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const override {
+        virtual typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
             return new FixedIndex0IteratorImpl(*this);
         }
     };
@@ -240,7 +240,7 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
 
         virtual std::size_t dereference() const override { return this->mesh.index(this->index_f, this->level, this->index_s); }
 
-        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const override {
+        virtual typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
             return new FixedIndex1IteratorImpl(*this);
         }
     };
@@ -253,18 +253,18 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
 
         virtual std::size_t dereference() const override { return this->mesh.index(this->index_f, this->index_s, this->level); }
 
-        virtual typename BoundaryLogicImpl::IteratorImpl* clone() const override {
+        virtual typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
             return new FixedIndex2IteratorImpl(*this);
         }
     };
 
-    struct FixedIndex0Boundary: public BoundaryWithMeshLogicImpl<RectangularMesh<3>> {
+    struct FixedIndex0Boundary: public BoundaryNodeSetWithMeshImpl<RectangularMesh<3>> {
 
-        typedef typename BoundaryLogicImpl::Iterator Iterator;
+        typedef typename BoundaryNodeSetImpl::Iterator Iterator;
 
         std::size_t level_axis0;
 
-        FixedIndex0Boundary(const RectangularMesh<3>& mesh, std::size_t level_axis0): BoundaryWithMeshLogicImpl<RectangularMesh<3>>(mesh), level_axis0(level_axis0) {}
+        FixedIndex0Boundary(const RectangularMesh<3>& mesh, std::size_t level_axis0): BoundaryNodeSetWithMeshImpl<RectangularMesh<3>>(mesh), level_axis0(level_axis0) {}
 
         bool contains(std::size_t mesh_index) const override {
             return this->mesh.index0(mesh_index) == level_axis0;
@@ -283,14 +283,14 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
         }
     };
 
-    struct FixedIndex0BoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<3>> {
+    struct FixedIndex0BoundaryInRange: public BoundaryNodeSetWithMeshImpl<RectangularMesh<3>> {
 
-        typedef typename BoundaryLogicImpl::Iterator Iterator;
+        typedef typename BoundaryNodeSetImpl::Iterator Iterator;
 
         std::size_t level_axis0, beginAxis1, endAxis1, beginAxis2, endAxis2;
 
         FixedIndex0BoundaryInRange(const RectangularMesh<3>& mesh, std::size_t level_axis0, std::size_t beginAxis1, std::size_t endAxis1, std::size_t beginAxis2, std::size_t endAxis2)
-            : BoundaryWithMeshLogicImpl<RectangularMesh<3>>(mesh), level_axis0(level_axis0),
+            : BoundaryNodeSetWithMeshImpl<RectangularMesh<3>>(mesh), level_axis0(level_axis0),
               beginAxis1(beginAxis1), endAxis1(endAxis1), beginAxis2(beginAxis2), endAxis2(endAxis2)
               {}
 
@@ -317,13 +317,13 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
         }
     };
 
-    struct FixedIndex1Boundary: public BoundaryWithMeshLogicImpl<RectangularMesh<3>> {
+    struct FixedIndex1Boundary: public BoundaryNodeSetWithMeshImpl<RectangularMesh<3>> {
 
-        typedef typename BoundaryLogicImpl::Iterator Iterator;
+        typedef typename BoundaryNodeSetImpl::Iterator Iterator;
 
         std::size_t level_axis1;
 
-        FixedIndex1Boundary(const RectangularMesh<3>& mesh, std::size_t level_axis1): BoundaryWithMeshLogicImpl<RectangularMesh<3>>(mesh), level_axis1(level_axis1) {}
+        FixedIndex1Boundary(const RectangularMesh<3>& mesh, std::size_t level_axis1): BoundaryNodeSetWithMeshImpl<RectangularMesh<3>>(mesh), level_axis1(level_axis1) {}
 
         //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
@@ -344,14 +344,14 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
         }
     };
 
-    struct FixedIndex1BoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<3>> {
+    struct FixedIndex1BoundaryInRange: public BoundaryNodeSetWithMeshImpl<RectangularMesh<3>> {
 
-        typedef typename BoundaryLogicImpl::Iterator Iterator;
+        typedef typename BoundaryNodeSetImpl::Iterator Iterator;
 
         std::size_t level_axis1, beginAxis0, endAxis0, beginAxis2, endAxis2;
 
         FixedIndex1BoundaryInRange(const RectangularMesh<3>& mesh, std::size_t level_axis1, std::size_t beginAxis0, std::size_t endAxis0, std::size_t beginAxis2, std::size_t endAxis2)
-            : BoundaryWithMeshLogicImpl<RectangularMesh<3>>(mesh), level_axis1(level_axis1),
+            : BoundaryNodeSetWithMeshImpl<RectangularMesh<3>>(mesh), level_axis1(level_axis1),
               beginAxis0(beginAxis0), endAxis0(endAxis0), beginAxis2(beginAxis2), endAxis2(endAxis2)
               {}
 
@@ -379,13 +379,13 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
     };
 
 
-    struct FixedIndex2Boundary: public BoundaryWithMeshLogicImpl<RectangularMesh<3>> {
+    struct FixedIndex2Boundary: public BoundaryNodeSetWithMeshImpl<RectangularMesh<3>> {
 
-        typedef typename BoundaryLogicImpl::Iterator Iterator;
+        typedef typename BoundaryNodeSetImpl::Iterator Iterator;
 
         std::size_t level_axis2;
 
-        FixedIndex2Boundary(const RectangularMesh<3>& mesh, std::size_t level_axis2): BoundaryWithMeshLogicImpl<RectangularMesh<3>>(mesh), level_axis2(level_axis2) {}
+        FixedIndex2Boundary(const RectangularMesh<3>& mesh, std::size_t level_axis2): BoundaryNodeSetWithMeshImpl<RectangularMesh<3>>(mesh), level_axis2(level_axis2) {}
 
         //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
 
@@ -406,14 +406,14 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
         }
     };
 
-    struct FixedIndex2BoundaryInRange: public BoundaryWithMeshLogicImpl<RectangularMesh<3>> {
+    struct FixedIndex2BoundaryInRange: public BoundaryNodeSetWithMeshImpl<RectangularMesh<3>> {
 
-        typedef typename BoundaryLogicImpl::Iterator Iterator;
+        typedef typename BoundaryNodeSetImpl::Iterator Iterator;
 
         std::size_t level_axis2, beginAxis0, endAxis0, beginAxis1, endAxis1;
 
         FixedIndex2BoundaryInRange(const RectangularMesh<3>& mesh, std::size_t level_axis2, std::size_t beginAxis0, std::size_t endAxis0, std::size_t beginAxis1, std::size_t endAxis1)
-            : BoundaryWithMeshLogicImpl<RectangularMesh<3>>(mesh), level_axis2(level_axis2),
+            : BoundaryNodeSetWithMeshImpl<RectangularMesh<3>>(mesh), level_axis2(level_axis2),
               beginAxis0(beginAxis0), endAxis0(endAxis0), beginAxis1(beginAxis1), endAxis1(endAxis1)
               {
             }
@@ -543,7 +543,7 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
      */
     static Boundary getBackOfBoundary(const Box3D& box) {
         if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
-        return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryNodeSetImpl* {
             std::size_t line, begInd1, endInd1, begInd2, endInd2;
             if (details::getLineLo(line, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
                 details::getIndexesInBounds(begInd1, endInd1, *mesh.axis[1], box.lower.c1, box.upper.c1) &&
@@ -561,7 +561,7 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
      */
     static Boundary getFrontOfBoundary(const Box3D& box) {
         if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
-        return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryNodeSetImpl* {
             std::size_t line, begInd1, endInd1, begInd2, endInd2;
             if (details::getLineHi(line, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
                 details::getIndexesInBounds(begInd1, endInd1, *mesh.axis[1], box.lower.c1, box.upper.c1) &&
@@ -579,7 +579,7 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
      */
     static Boundary getLeftOfBoundary(const Box3D& box) {
         if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
-        return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryNodeSetImpl* {
             std::size_t line, begInd0, endInd0, begInd2, endInd2;
             if (details::getLineLo(line, *mesh.axis[1], box.lower.c1, box.upper.c1) &&
                 details::getIndexesInBounds(begInd0, endInd0, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
@@ -597,7 +597,7 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
      */
     static Boundary getRightOfBoundary(const Box3D& box) {
         if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
-        return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryNodeSetImpl* {
             std::size_t line, begInd0, endInd0, begInd2, endInd2;
             if (details::getLineHi(line, *mesh.axis[1], box.lower.c1, box.upper.c1) &&
                 details::getIndexesInBounds(begInd0, endInd0, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
@@ -615,7 +615,7 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
      */
     static Boundary getBottomOfBoundary(const Box3D& box) {
         if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
-        return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryNodeSetImpl* {
             std::size_t line, begInd0, endInd0, begInd1, endInd1;
             if (details::getLineLo(line, *mesh.axis[2], box.lower.c2, box.upper.c2) &&
                 details::getIndexesInBounds(begInd0, endInd0, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
@@ -633,7 +633,7 @@ class PLASK_API RectangularMesh<3>: public RectilinearMesh3D {
      */
     static Boundary getTopOfBoundary(const Box3D& box) {
         if (!box.isValid()) return makeEmptyBoundary<RectangularMesh<3>>();
-        return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryLogicImpl* {
+        return Boundary( [=](const RectangularMesh<3>& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryNodeSetImpl* {
             std::size_t line, begInd0, endInd0, begInd1, endInd1;
             if (details::getLineHi(line, *mesh.axis[2], box.lower.c2, box.upper.c2) &&
                 details::getIndexesInBounds(begInd0, endInd0, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
