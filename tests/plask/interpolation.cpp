@@ -2,7 +2,7 @@
 
 #include <plask/mesh/interpolation.h>
 #include <plask/mesh/mesh.h>
-#include <plask/mesh/rectangular2d.h>
+#include <plask/mesh/rectangular.h>
 #include <plask/mesh/ordered1d.h>
 #include <plask/mesh/rectangular_spline.h>
 

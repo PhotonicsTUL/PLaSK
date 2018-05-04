@@ -10,6 +10,14 @@
 
 namespace plask {
 
+template <int DIM>
+using RectangularMesh =
+    typename std::conditional<
+        DIM == 2,
+        RectangularMesh2D,
+        typename std::conditional<DIM == 3, RectangularMesh3D, void>::type
+    >::type;
+
 template <int dim>
 struct Rectangular_t {
     typedef RectangularMesh<dim> Rectangular;

@@ -297,9 +297,6 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(MeshD<1>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(MeshD<2>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(MeshD<3>)
 
-/** Base template for rectangular mesh of any dimension */
-template <int dim> class RectangularMesh {};
-
 /** Base class for every mesh generator */
 class PLASK_API MeshGenerator: public MeshBase {
   public:

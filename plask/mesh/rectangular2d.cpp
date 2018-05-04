@@ -5,27 +5,27 @@
 
 namespace plask {
 
-static std::size_t normal_index(const RectangularMesh<2>* mesh, std::size_t index0, std::size_t index1) {
+static std::size_t normal_index(const RectangularMesh2D* mesh, std::size_t index0, std::size_t index1) {
     return index0 + mesh->axis[0]->size() * index1;
 }
-static std::size_t normal_index0(const RectangularMesh<2>* mesh, std::size_t mesh_index) {
+static std::size_t normal_index0(const RectangularMesh2D* mesh, std::size_t mesh_index) {
     return mesh_index % mesh->axis[0]->size();
 }
-static std::size_t normal_index1(const RectangularMesh<2>* mesh, std::size_t mesh_index) {
+static std::size_t normal_index1(const RectangularMesh2D* mesh, std::size_t mesh_index) {
     return mesh_index / mesh->axis[0]->size();
 }
 
-static std::size_t transposed_index(const RectangularMesh<2>* mesh, std::size_t index0, std::size_t index1) {
+static std::size_t transposed_index(const RectangularMesh2D* mesh, std::size_t index0, std::size_t index1) {
     return mesh->axis[1]->size() * index0 + index1;
 }
-static std::size_t transposed_index0(const RectangularMesh<2>* mesh, std::size_t mesh_index) {
+static std::size_t transposed_index0(const RectangularMesh2D* mesh, std::size_t mesh_index) {
     return mesh_index / mesh->axis[1]->size();
 }
-static std::size_t transposed_index1(const RectangularMesh<2>* mesh, std::size_t mesh_index) {
+static std::size_t transposed_index1(const RectangularMesh2D* mesh, std::size_t mesh_index) {
     return mesh_index % mesh->axis[1]->size();
 }
 
-void RectangularMesh<2>::setIterationOrder(IterationOrder iterationOrder) {
+void RectangularMesh2D::setIterationOrder(IterationOrder iterationOrder) {
     if (iterationOrder == ORDER_01) {
         index_f = transposed_index;
         index0_f = transposed_index0;
@@ -42,11 +42,11 @@ void RectangularMesh<2>::setIterationOrder(IterationOrder iterationOrder) {
     this->fireChanged();
 }
 
-typename RectangularMesh<2>::IterationOrder RectangularMesh<2>::getIterationOrder() const {
+typename RectangularMesh2D::IterationOrder RectangularMesh2D::getIterationOrder() const {
     return (index_f == &transposed_index)? ORDER_01 : ORDER_10;
 }
 
-void RectangularMesh<2>::setAxis(const shared_ptr<MeshAxis> &axis, shared_ptr<MeshAxis> new_val) {
+void RectangularMesh2D::setAxis(const shared_ptr<MeshAxis> &axis, shared_ptr<MeshAxis> new_val) {
     if (axis == new_val) return;
     unsetChangeSignal(axis);
     const_cast<shared_ptr<MeshAxis>&>(axis) = new_val;
@@ -54,26 +54,26 @@ void RectangularMesh<2>::setAxis(const shared_ptr<MeshAxis> &axis, shared_ptr<Me
     fireResized();
 }
 
-void RectangularMesh<2>::onAxisChanged(Mesh::Event &e) {
+void RectangularMesh2D::onAxisChanged(Mesh::Event &e) {
     assert(!e.isDelete());
     this->fireChanged(e.flags());
 }
 
-RectangularMesh<2>::RectangularMesh(IterationOrder iterationOrder)
+RectangularMesh2D::RectangularMesh2D(IterationOrder iterationOrder)
     : axis{ plask::make_shared<OrderedAxis>(), plask::make_shared<OrderedAxis>() } {
     setIterationOrder(iterationOrder);
     setChangeSignal(this->axis[0]);
     setChangeSignal(this->axis[1]);
 }
 
-RectangularMesh<2>::RectangularMesh(shared_ptr<MeshAxis> axis0, shared_ptr<MeshAxis> axis1, IterationOrder iterationOrder)
+RectangularMesh2D::RectangularMesh2D(shared_ptr<MeshAxis> axis0, shared_ptr<MeshAxis> axis1, IterationOrder iterationOrder)
     : axis{std::move(axis0), std::move(axis1)} {
     setIterationOrder(iterationOrder);
     setChangeSignal(this->axis[0]);
     setChangeSignal(this->axis[1]);
 }
 
-RectangularMesh<2>::RectangularMesh(const RectangularMesh<2> &src, bool clone_axes):
+RectangularMesh2D::RectangularMesh2D(const RectangularMesh2D &src, bool clone_axes):
     MeshD<2>(src),
     axis {clone_axes ? src.axis[0]->clone() : src.axis[0],
           clone_axes ? src.axis[1]->clone() : src.axis[1]}
@@ -83,22 +83,22 @@ RectangularMesh<2>::RectangularMesh(const RectangularMesh<2> &src, bool clone_ax
     setChangeSignal(this->axis[1]);
 }
 
-RectangularMesh<2>::~RectangularMesh() {
+RectangularMesh2D::~RectangularMesh2D() {
     unsetChangeSignal(this->axis[0]);
     unsetChangeSignal(this->axis[1]);
 }
 
-shared_ptr<RectangularMesh<2> > RectangularMesh<2>::getMidpointsMesh() {
-    return plask::make_shared<RectangularMesh<2>>(axis[0]->getMidpointsMesh(), axis[1]->getMidpointsMesh(), getIterationOrder());
+shared_ptr<RectangularMesh2D > RectangularMesh2D::getMidpointsMesh() {
+    return plask::make_shared<RectangularMesh2D>(axis[0]->getMidpointsMesh(), axis[1]->getMidpointsMesh(), getIterationOrder());
 }
 
-void RectangularMesh<2>::writeXML(XMLElement& object) const {
+void RectangularMesh2D::writeXML(XMLElement& object) const {
     object.attr("type", "rectangular2d");
     { auto a = object.addTag("axis0"); axis[0]->writeXML(a); }
     { auto a = object.addTag("axis1"); axis[1]->writeXML(a); }
 }
 
-RectangularMesh<2>::Boundary RectangularMesh<2>::getBoundary(const std::string &boundary_desc) {
+RectangularMesh2D::Boundary RectangularMesh2D::getBoundary(const std::string &boundary_desc) {
     if (boundary_desc == "bottom") return getBottomBoundary();
     if (boundary_desc == "left") return getLeftBoundary();
     if (boundary_desc == "right") return getRightBoundary();
@@ -106,7 +106,7 @@ RectangularMesh<2>::Boundary RectangularMesh<2>::getBoundary(const std::string &
     return Boundary();
 }
 
-RectangularMesh<2>::Boundary RectangularMesh<2>::getBoundary(XMLReader &boundary_desc, Manager &manager) {
+RectangularMesh2D::Boundary RectangularMesh2D::getBoundary(XMLReader &boundary_desc, Manager &manager) {
     auto side = boundary_desc.getAttribute("side");
     auto line = boundary_desc.getAttribute("line");
     if (side && line) {
@@ -135,8 +135,8 @@ RectangularMesh<2>::Boundary RectangularMesh<2>::getBoundary(XMLReader &boundary
     return Boundary();
 }
 
-shared_ptr<RectangularMesh<2> > make_rectangular_mesh(const RectangularMesh<2> &to_copy) {
-   return plask::make_shared<RectangularMesh<2>>(plask::make_shared<OrderedAxis>(*to_copy.axis[0]), plask::make_shared<OrderedAxis>(*to_copy.axis[1]), to_copy.getIterationOrder());
+shared_ptr<RectangularMesh2D > make_rectangular_mesh(const RectangularMesh2D &to_copy) {
+   return plask::make_shared<RectangularMesh2D>(plask::make_shared<OrderedAxis>(*to_copy.axis[0]), plask::make_shared<OrderedAxis>(*to_copy.axis[1]), to_copy.getIterationOrder());
 }
 
 static shared_ptr<Mesh> readRectangularMesh2D(XMLReader& reader) {
@@ -158,7 +158,7 @@ static shared_ptr<Mesh> readRectangularMesh2D(XMLReader& reader) {
         }
     }
     reader.requireTagEnd();
-    return plask::make_shared<RectangularMesh<2>>(std::move(axis[0]), std::move(axis[1]));
+    return plask::make_shared<RectangularMesh2D>(std::move(axis[0]), std::move(axis[1]));
 }
 
 static RegisterMeshReader rectangular2d_reader("rectangular2d", readRectangularMesh2D);
@@ -170,8 +170,6 @@ static shared_ptr<Mesh> readRectangularMesh2D_obsolete(XMLReader& reader) {
 }
 static RegisterMeshReader regularmesh2d_reader("regular2d", readRectangularMesh2D_obsolete);
 static RegisterMeshReader rectilinear2d_reader("rectilinear2d", readRectangularMesh2D_obsolete);
-
-template class PLASK_API RectangularMesh<2>;
 
 } // namespace plask
 

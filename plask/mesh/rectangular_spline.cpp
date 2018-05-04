@@ -6,11 +6,11 @@ namespace plask {
 
 
 template <typename DstT, typename SrcT>
-SplineRect2DLazyDataImpl<DstT, SrcT>::SplineRect2DLazyDataImpl(const shared_ptr<const RectangularMesh<2>>& src_mesh,
+SplineRect2DLazyDataImpl<DstT, SrcT>::SplineRect2DLazyDataImpl(const shared_ptr<const RectangularMesh2D>& src_mesh,
                                                                        const DataVector<const SrcT>& src_vec,
                                                                        const shared_ptr<const MeshD<2>>& dst_mesh,
                                                                        const InterpolationFlags& flags):
-    InterpolatedLazyDataImpl<DstT, RectangularMesh<2>, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
+    InterpolatedLazyDataImpl<DstT, RectangularMesh2D, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
     diff0(src_mesh->size()), diff1(src_mesh->size()) {}
 
 template <typename DstT, typename SrcT>
@@ -364,7 +364,7 @@ namespace hyman {
 
 
 template <typename DstT, typename SrcT>
-HymanSplineRect2DLazyDataImpl<DstT, SrcT>::HymanSplineRect2DLazyDataImpl(const shared_ptr<const RectangularMesh<2>>& src_mesh,
+HymanSplineRect2DLazyDataImpl<DstT, SrcT>::HymanSplineRect2DLazyDataImpl(const shared_ptr<const RectangularMesh2D>& src_mesh,
                                                                          const DataVector<const SrcT>& src_vec,
                                                                          const shared_ptr<const MeshD<2>>& dst_mesh,
                                                                          const InterpolationFlags& flags):
@@ -615,7 +615,7 @@ namespace spline {
 
 
 template <typename DstT, typename SrcT>
-SmoothSplineRect2DLazyDataImpl<DstT, SrcT>::SmoothSplineRect2DLazyDataImpl(const shared_ptr<const RectangularMesh<2>>& src_mesh,
+SmoothSplineRect2DLazyDataImpl<DstT, SrcT>::SmoothSplineRect2DLazyDataImpl(const shared_ptr<const RectangularMesh2D>& src_mesh,
                                                                            const DataVector<const SrcT>& src_vec,
                                                                            const shared_ptr<const MeshD<2>>& dst_mesh,
                                                                            const InterpolationFlags& flags):

@@ -11,11 +11,11 @@
 namespace plask {
 
 template <typename DstT, typename SrcT>
-struct SplineRect2DLazyDataImpl: public InterpolatedLazyDataImpl<DstT, RectangularMesh<2>, const SrcT>
+struct SplineRect2DLazyDataImpl: public InterpolatedLazyDataImpl<DstT, RectangularMesh2D, const SrcT>
 {
     DataVector<SrcT> diff0, diff1;
 
-    SplineRect2DLazyDataImpl(const shared_ptr<const RectangularMesh<2>>& src_mesh,
+    SplineRect2DLazyDataImpl(const shared_ptr<const RectangularMesh2D>& src_mesh,
                              const DataVector<const SrcT>& src_vec,
                              const shared_ptr<const MeshD<2>>& dst_mesh,
                              const InterpolationFlags& flags);
@@ -40,15 +40,15 @@ struct SplineRect3DLazyDataImpl: public InterpolatedLazyDataImpl<DstT, Rectiline
 template <typename DstT, typename SrcT>
 struct PLASK_API HymanSplineRect2DLazyDataImpl: public SplineRect2DLazyDataImpl<DstT, SrcT>
 {
-    HymanSplineRect2DLazyDataImpl(const shared_ptr<const RectangularMesh<2>>& src_mesh,
+    HymanSplineRect2DLazyDataImpl(const shared_ptr<const RectangularMesh2D>& src_mesh,
                                   const DataVector<const SrcT>& src_vec,
                                   const shared_ptr<const MeshD<2>>& dst_mesh,
                                   const InterpolationFlags& flags);
 };
 
 template <typename SrcT, typename DstT>
-struct InterpolationAlgorithm<RectangularMesh<2>, SrcT, DstT, INTERPOLATION_SPLINE> {
-    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<2>>& src_mesh,
+struct InterpolationAlgorithm<RectangularMesh2D, SrcT, DstT, INTERPOLATION_SPLINE> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh2D>& src_mesh,
                                       const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<2>>& dst_mesh,
                                       const InterpolationFlags& flags) {
@@ -71,8 +71,8 @@ struct PLASK_API HymanSplineRect3DLazyDataImpl: public SplineRect3DLazyDataImpl<
 };
 
 template <typename SrcT, typename DstT>
-struct InterpolationAlgorithm<RectangularMesh<3>, SrcT, DstT, INTERPOLATION_SPLINE> {
-    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<3>>& src_mesh,
+struct InterpolationAlgorithm<RectangularMesh3D, SrcT, DstT, INTERPOLATION_SPLINE> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh3D>& src_mesh,
                                       const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh,
                                       const InterpolationFlags& flags) {
@@ -102,15 +102,15 @@ struct InterpolationAlgorithm<EquilateralMesh3D, SrcT, DstT, INTERPOLATION_SPLIN
 template <typename DstT, typename SrcT>
 struct PLASK_API SmoothSplineRect2DLazyDataImpl: public SplineRect2DLazyDataImpl<DstT, SrcT>
 {
-    SmoothSplineRect2DLazyDataImpl(const shared_ptr<const RectangularMesh<2>>& src_mesh,
+    SmoothSplineRect2DLazyDataImpl(const shared_ptr<const RectangularMesh2D>& src_mesh,
                                    const DataVector<const SrcT>& src_vec,
                                    const shared_ptr<const MeshD<2>>& dst_mesh,
                                    const InterpolationFlags& flags);
 };
 
 template <typename SrcT, typename DstT>
-struct InterpolationAlgorithm<RectangularMesh<2>, SrcT, DstT, INTERPOLATION_SMOOTH_SPLINE> {
-    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<2>>& src_mesh,
+struct InterpolationAlgorithm<RectangularMesh2D, SrcT, DstT, INTERPOLATION_SMOOTH_SPLINE> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh2D>& src_mesh,
                                       const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<2>>& dst_mesh,
                                       const InterpolationFlags& flags) {
@@ -132,8 +132,8 @@ struct PLASK_API SmoothSplineRect3DLazyDataImpl: public SplineRect3DLazyDataImpl
 };
 
 template <typename SrcT, typename DstT>
-struct InterpolationAlgorithm<RectangularMesh<3>, SrcT, DstT, INTERPOLATION_SMOOTH_SPLINE> {
-    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh<3>>& src_mesh,
+struct InterpolationAlgorithm<RectangularMesh3D, SrcT, DstT, INTERPOLATION_SMOOTH_SPLINE> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh3D>& src_mesh,
                                       const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh,
                                       const InterpolationFlags& flags) {
