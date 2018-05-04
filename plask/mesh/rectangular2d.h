@@ -119,11 +119,11 @@ inline typename MeshType::Boundary getBoundaryForBoxes(GetBoxes getBoxes, GetBou
     return typename MeshType::Boundary(
         [=](const MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) -> BoundaryNodeSet {
             std::vector<typename MeshType::Boundary> boundaries;
-            std::vector<typename MeshType::Boundary::WithMesh> boundaries_with_meshes;
+            std::vector<BoundaryNodeSet> boundaries_with_meshes;
             auto boxes = getBoxes(geometry); // probably std::vector<BoxdirD>
             for (auto& box: boxes) {
                 typename MeshType::Boundary boundary = getBoundaryForBox(box);
-                typename MeshType::Boundary::WithMesh boundary_with_mesh = boundary(mesh, geometry);
+                BoundaryNodeSet boundary_with_mesh = boundary(mesh, geometry);
                 if (!boundary_with_mesh.empty()) {
                     boundaries.push_back(std::move(boundary));
                     boundaries_with_meshes.push_back(std::move(boundary_with_mesh));

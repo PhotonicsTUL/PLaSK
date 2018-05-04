@@ -286,17 +286,15 @@ struct PLASK_API EmptyBoundaryImpl: public BoundaryNodeSetImpl {
 template <typename MeshType>
 struct Boundary {
 
-    typedef BoundaryNodeSet WithMesh;
-
 protected:
-    std::function<WithMesh(const MeshType&, const shared_ptr<const GeometryD<MeshType::DIM>>&)> create;
+    std::function<BoundaryNodeSet(const MeshType&, const shared_ptr<const GeometryD<MeshType::DIM>>&)> create;
 
 public:
 
     //template <typename... T>
     //Boundary(T&&... args): create(std::forward<T>(args)...) {}
 
-    Boundary(std::function<WithMesh(const MeshType&, const shared_ptr<const GeometryD<MeshType::DIM>>&)> create_fun): create(create_fun) {}
+    Boundary(std::function<BoundaryNodeSet(const MeshType&, const shared_ptr<const GeometryD<MeshType::DIM>>&)> create_fun): create(create_fun) {}
 
     Boundary() {}
 
@@ -308,7 +306,7 @@ public:
      * @param mesh mesh
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
-    WithMesh operator()(const MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
+    BoundaryNodeSet operator()(const MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
         if (isNull()) return new EmptyBoundaryImpl();
         return this->create(mesh, geometry);
     }
@@ -318,7 +316,7 @@ public:
      * @param mesh mesh
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
-    WithMesh operator()(const shared_ptr<const MeshType>& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
+    BoundaryNodeSet operator()(const shared_ptr<const MeshType>& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
         if (isNull()) return new EmptyBoundaryImpl();
         return this->create(*mesh, geometry);
     }
@@ -328,7 +326,7 @@ public:
      * @param mesh mesh
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
-    WithMesh get(const MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
+    BoundaryNodeSet get(const MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
         if (isNull()) return new EmptyBoundaryImpl();
         return this->create(mesh, geometry);
     }
@@ -338,7 +336,7 @@ public:
      * @param mesh mesh
      * @return wrapper for @c this boundary and given @p mesh, it is valid only to time when both @p mesh and @c this are valid (not deleted)
      */
-    WithMesh get(const shared_ptr<const MeshType>& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
+    BoundaryNodeSet get(const shared_ptr<const MeshType>& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
         if (isNull()) return new EmptyBoundaryImpl();
         return this->create(*mesh, geometry);
     }
@@ -368,15 +366,15 @@ public:
 template <typename MeshType>
 struct SumBoundaryImpl: public BoundaryNodeSetImpl {
 
-    typedef std::vector< typename Boundary<MeshType>::WithMesh > BoundariesVec;
+    typedef std::vector< BoundaryNodeSet > BoundariesVec;
     BoundariesVec boundaries;
 
     struct IteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
 
-        typename BoundariesVec::const_iterator current_boundary;
-        typename BoundariesVec::const_iterator current_boundary_end;
-        typename Boundary<MeshType>::WithMesh::const_iterator in_boundary;
-        typename Boundary<MeshType>::WithMesh::const_iterator in_boundary_end;
+        BoundariesVec::const_iterator current_boundary;
+        BoundariesVec::const_iterator current_boundary_end;
+        BoundaryNodeSet::const_iterator in_boundary;
+        BoundaryNodeSet::const_iterator in_boundary_end;
 
         // Skip empty or finished boundaries and advance to the next one
         void fixCurrentBoundary() {
@@ -455,9 +453,9 @@ struct SumBoundaryImpl: public BoundaryNodeSetImpl {
         return s;
     }
 
-    void push_back(const typename Boundary<MeshType>::WithMesh& to_append) { boundaries.push_back(to_append); }
+    void push_back(const BoundaryNodeSet& to_append) { boundaries.push_back(to_append); }
 
-    void push_back(typename Boundary<MeshType>::WithMesh&& to_append) { boundaries.push_back(to_append); }
+    void push_back(BoundaryNodeSet&& to_append) { boundaries.push_back(std::move(to_append)); }
 
 };
 

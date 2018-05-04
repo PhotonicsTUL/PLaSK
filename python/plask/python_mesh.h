@@ -60,7 +60,7 @@ struct ExportBoundary {
 
     };
 
-    static typename MeshType::Boundary::WithMesh Boundary__call__(
+    static BoundaryNodeSet Boundary__call__(
         const typename MeshType::Boundary& self, const MeshType& mesh, shared_ptr<const GeometryD<MeshType::DIM>> geometry
     ) {
         return self(mesh, geometry);
@@ -72,12 +72,12 @@ struct ExportBoundary {
 
         std::string name = py::extract<std::string>(mesh_class.attr("__name__"));
 
-        if (py::converter::registry::lookup(py::type_id<typename MeshType::Boundary::WithMesh>()).m_class_object == nullptr) {
-            py::class_<typename MeshType::Boundary::WithMesh, shared_ptr<typename MeshType::Boundary::WithMesh>>("BoundaryInstance",
+        if (py::converter::registry::lookup(py::type_id<BoundaryNodeSet>()).m_class_object == nullptr) {
+            py::class_<BoundaryNodeSet, shared_ptr<BoundaryNodeSet>>("BoundaryInstance",
                 ("Boundary specification for particular "+name+" mesh object").c_str(), py::no_init)
-                .def("__contains__", &MeshType::Boundary::WithMesh::contains)
-                .def("__iter__", py::range(&MeshType::Boundary::WithMesh::begin, &MeshType::Boundary::WithMesh::end))
-                .def("__len__", &MeshType::Boundary::WithMesh::size)
+                .def("__contains__", &BoundaryNodeSet::contains)
+                .def("__iter__", py::range(&BoundaryNodeSet::begin, &BoundaryNodeSet::end))
+                .def("__len__", &BoundaryNodeSet::size)
             ;
             py::delattr(scope, "BoundaryInstance");
         }

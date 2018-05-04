@@ -44,9 +44,9 @@ template <typename MeshT, typename ValueT>
 struct BoundaryConditionWithMesh {
     typedef MeshT MeshType;    ///< type of mesh
     typedef ValueT ValueType;  ///< type which describe boundary condition
-    typedef typename MeshType::Boundary::WithMesh Boundary;   ///< Boundary type for mesh of type MeshType
+    typedef BoundaryNodeSet Boundary;   ///< Boundary type for mesh of type MeshType
 
-    Boundary place;          ///< Boundary with mesh
+    Boundary place;     ///< Boundary with mesh
     ValueType value;    ///< Condition
 
     /**
