@@ -39,15 +39,14 @@ struct BoundaryCondition {
 };
 
 
-/// One boundary-condition pair with mesh.
+/// One boundary-condition pair concretized for a given mesh.
 template <typename MeshT, typename ValueT>
 struct BoundaryConditionWithMesh {
     typedef MeshT MeshType;    ///< type of mesh
     typedef ValueT ValueType;  ///< type which describe boundary condition
-    typedef BoundaryNodeSet Boundary;   ///< Boundary type for mesh of type MeshType
 
-    Boundary place;     ///< Boundary with mesh
-    ValueType value;    ///< Condition
+    BoundaryNodeSet place;     ///< Set of mesh indexes.
+    ValueType value;           ///< Condition value.
 
     /**
      * Construct boundary-condition pair.
@@ -55,7 +54,7 @@ struct BoundaryConditionWithMesh {
      * @param value_args arguments for condition constructor, can be just one argument of ValueType to use copy/move-constructor
      */
     template <typename... ConditionArgumentsTypes>
-    BoundaryConditionWithMesh(const Boundary& place, ConditionArgumentsTypes&&... value_args)
+    BoundaryConditionWithMesh(const BoundaryNodeSet& place, ConditionArgumentsTypes&&... value_args)
         : place(place),
           value(std::forward<ConditionArgumentsTypes>(value_args)...) {}
 
@@ -65,8 +64,8 @@ struct BoundaryConditionWithMesh {
      * @param value_args arguments for condition constructor, can be just one argument of ValueType to use copy/move-constructor
      */
     template <typename... ConditionArgumentsTypes>
-    BoundaryConditionWithMesh(Boundary&& place, ConditionArgumentsTypes&&... value_args)
-        : place(std::forward<Boundary>(place)),
+    BoundaryConditionWithMesh(BoundaryNodeSet&& place, ConditionArgumentsTypes&&... value_args)
+        : place(std::move(place)),
           value(std::forward<ConditionArgumentsTypes>(value_args)...) {}
 };
 
