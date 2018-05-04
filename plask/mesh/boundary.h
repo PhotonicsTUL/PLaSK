@@ -15,10 +15,10 @@ Boundaries are typically used by solvers to show points for boundaries condition
 @section boundaries_use How to use boundaries?
 Boundaries are specific for given type of mesh.
 Class MeshType::Boundary (which in most cases is same as @ref plask::Boundary "Boundary\<MeshType\>") stores boundary for mesh of type @c MeshType.
-It has @c get method which return @ref plask::Boundary::WithMesh "MeshType::Boundary::WithMesh" instance for mesh given as parameter.
-@ref plask::Boundary::WithMesh "MeshType::Boundary::WithMesh" represent a set of points (indexes of points in given mesh) and allow for:
-- checking if it contains point with given index (@ref plask::Boundary::WithMesh::contains "contains" method),
-- iterate over represented indexes (has @ref plask::Boundary::WithMesh::begin "begin" and @ref plask::Boundary::WithMesh::end "end" methods).
+It has @c get method which return @ref BoundaryNodeSet "BoundaryNodeSet" instance for mesh given as parameter.
+@ref BoundaryNodeSet "BoundaryNodeSet" represent a set of points (indexes of points in given mesh) and allow for:
+- checking if it contains point with given index (@ref BoundaryNodeSet::contains "contains" method),
+- iterate over represented indexes (has @ref BoundaryNodeSet::begin "begin" and @ref BoundaryNodeSet::end "end" methods).
 
 Typically, you should call @c MeshType static methods to obtain value for @ref plask::Boundary "Boundary\<MeshType\>".
 
@@ -35,7 +35,7 @@ boundary = RectilinearMesh2D::getLeftBoundary();
 RectilinearMesh2D mesh;
 //... (add some points to mesh)
 
-Boundary<RectilinearMesh2D>::WithMesh bwm = boundary.get(mesh); // or boundary(mesh);
+BoundaryNodeSet bwm = boundary.get(mesh); // or boundary(mesh);
 // bwm represent set of points indexes which lies on left boundary of mesh
 
 std::cout << "Does point with index 0 lies on left boundary? Answer: " << bwm.contains(0) << std::endl;
@@ -57,12 +57,12 @@ User of solver can call this fields methods to @ref plask::BoundaryConditions::a
 See also @ref solvers_writing_details.
 
 @section boundaries_impl Boundaries implementations.
-Instance of @ref plask::Boundary::WithMesh "Boundary\<MeshType\>::WithMesh" in fact is only a holder which contains pointer to abstract class @ref plask::BoundaryLogicImpl.
-It points to subclass of @ref plask::BoundaryLogicImpl which implements all boundary logic (all calls of @ref plask::Boundary::WithMesh "Boundary\<MeshType\>::WithMesh" methods are delegete to it).
+Instance of @ref BoundaryNodeSet "BoundaryNodeSet" in fact is only a holder which contains pointer to abstract class @ref plask::BoundaryNodeSetImpl.
+It points to subclass of @ref plask::BoundaryNodeSetImpl which implements all boundary logic (all calls of @ref plask::BoundaryNodeSet "BoundaryNodeSet" methods are delegete to it).
 
-So, writing new boundary for given type of mesh @c MeshType is writing subclass of @ref plask::BoundaryLogicImpl.
+So, writing new boundary for given type of mesh @c MeshType is writing subclass of @ref plask::BoundaryNodeSetImpl.
 
-PLaSK contains some universal @ref plask::BoundaryLogicImpl "BoundaryLogicImpl\<MeshType\>" implementation:
+PLaSK contains some universal @ref plask::BoundaryNodeSetImpl "BoundaryNodeSet" implementations:
 - @ref plask::EmptyBoundaryImpl is implementation which represents empty set of indexes,
     You can construct boundary which use this logic using @ref plask::makeEmptyBoundary function,
 - @ref plask::PredicateBoundaryImpl "PredicateBoundaryImpl\<MeshType, Predicate\>" is implementation which holds and uses predicate (given in constructor) to check which points lies on boundary,
