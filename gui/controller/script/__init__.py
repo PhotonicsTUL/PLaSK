@@ -51,6 +51,7 @@ def update_python_scheme():
         'syntax_builtin': parse_highlight(CONFIG['syntax/python_builtin']),
         'syntax_keyword': parse_highlight(CONFIG['syntax/python_keyword']),
         'syntax_number': parse_highlight(CONFIG['syntax/python_number']),
+        'syntax_decorator': parse_highlight(CONFIG['syntax/python_decorator']),
         'syntax_member': parse_highlight(CONFIG['syntax/python_member']),
         'syntax_plask': parse_highlight(CONFIG['syntax/python_plask']),
         'syntax_provider': parse_highlight(CONFIG['syntax/python_provider']),
