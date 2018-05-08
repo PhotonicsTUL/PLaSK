@@ -23,7 +23,7 @@ namespace plask {
  * - axis1 (alternative names: up(), ee_y(), rad_z())
  * Represent all points (x, y) such that x is in axis0 and y is in axis1.
  */
-class PLASK_API RectangularMesh2D: public MeshD<2> {
+class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
 
     typedef std::size_t index_ft(const RectangularMesh2D* mesh, std::size_t axis0_index, std::size_t axis1_index);
     typedef std::size_t index01_ft(const RectangularMesh2D* mesh, std::size_t mesh_index);
@@ -195,9 +195,6 @@ class PLASK_API RectangularMesh2D: public MeshD<2> {
         const_iterator end() const { return const_iterator(mesh, size()); }
 
     };
-
-    /// Boundary type.
-    typedef plask::Boundary<RectangularMesh2D> Boundary;
 
     /// First and second coordinates of points in this mesh.
     const shared_ptr<MeshAxis> axis[2];
@@ -874,38 +871,16 @@ public:
         return Boundary(new PredicateBoundaryImpl<RectangularMesh2D, Predicate>(predicate));
     }
 
-    /**
-     * Get boundary which show one vertical (from bottom to top) line in mesh.
-     * @param line_nr_axis0 number of vertical line, axis 0 index of mesh
-     * @return boundary which show one vertical (from bottom to top) line in mesh
-     */
-    static Boundary getVerticalBoundaryAtLine(std::size_t line_nr_axis0) {
-        return Boundary( [line_nr_axis0](const RectangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
-            return new VerticalBoundary(mesh, line_nr_axis0);
-        } );
+    BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const override {
+        return new VerticalBoundary(*this, line_nr_axis0);
     }
 
-    /**
-     * Get boundary which show range in vertical (from bottom to top) line in mesh.
-     * @param line_nr_axis0 number of vertical line, axis 0 index of mesh
-     * @param indexBegin, indexEnd ends of [indexBegin, indexEnd) range in line
-     * @return boundary which show range in vertical (from bottom to top) line in mesh.
-     */
-    static Boundary getVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) {
-        return Boundary( [=](const RectangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
-            return new VerticalBoundaryInRange(mesh, line_nr_axis0, indexBegin, indexEnd);
-        } );
+    BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) const override {
+        return new VerticalBoundaryInRange(*this, line_nr_axis0, indexBegin, indexEnd);
     }
 
-    /**
-     * Get boundary which show one vertical (from bottom to top) line in mesh which lies nearest given coordinate.
-     * @param axis0_coord axis 0 coordinate
-     * @return boundary which show one vertical (from bottom to top) line in mesh
-     */
-    static Boundary getVerticalBoundaryNear(double axis0_coord) {
-        return Boundary( [axis0_coord](const RectangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
-            return new VerticalBoundary(mesh, mesh.axis[0]->findNearestIndex(axis0_coord));
-        } );
+    BoundaryNodeSet getVerticalBoundaryNear(double axis0_coord) const override {
+        return new VerticalBoundary(*this, mesh.axis[0]->findNearestIndex(axis0_coord));
     }
 
     /**
