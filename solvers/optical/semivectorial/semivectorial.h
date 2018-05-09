@@ -16,6 +16,28 @@ struct PLASK_SOLVER_API SemiVectorial: public SolverOver<Geometry2DType>
         
     SemiVectorial(const std::string& name="");
     
+    struct Matrix {
+         dcomplex ff, fb, bf, bb;
+         Matrix() = default;
+         Matrix(dcomplex t1, dcomplex t2, dcomplex t3, dcomplex t4): ff(t1), fb(t2), bf(t3), bb(t4) {}
+         static Matrix eye() { return Matrix(1., 0., 0., 1.); }
+         static Matrix diag(dcomplex f, dcomplex b) {return Matrix(f,0.,0.,b); }
+         Matrix operator*(const Matrix& T) {
+            return Matrix( ff*T.ff + fb*T.bf, ff*T.fb + fb*T.bb,
+                           bf*T.ff + bb*T.bf, bf*T.fb + bb*T.bb);}
+      };
+     
+    struct FieldZ {
+          dcomplex F, B;
+          FieldZ() = default;
+          FieldZ(dcomplex f, dcomplex b): F(f), B(b) {}
+          FieldZ operator*(dcomplex a) const { return FieldZ(F*a, B*a); }
+          FieldZ operator*(const Matrix m) {return FieldZ(m.ff*F+m.fb*B, m.bf*F+m.bb*B);}
+          FieldZ operator/(dcomplex a) const { return FieldZ(F/a, B/a); }
+          FieldZ operator*=(dcomplex a) { F *= a; B *= a; return *this; }
+          FieldZ operator/=(dcomplex a) { F /= a; B /= a; return *this; }
+     };
+    
     virtual void loadConfiguration(XMLReader&, Manager&) override;
     
     virtual void onInitialize() override;
@@ -39,6 +61,14 @@ protected:
     double stripex;  
     
     dcomplex k0;
+    
+    void initializeRefractiveIndexVec();
+    
+    dcomplex computeTransferMatrix(const dcomplex& x, const std::vector<dcomplex>& NR);
+  
+    std::vector<dcomplex> nrCache; // Vector to hold refractive index
+    
+    std::vector<FieldZ> vecE;
   
     double lam0; /// wavelength to start rootdigger 
 

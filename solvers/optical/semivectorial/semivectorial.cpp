@@ -44,10 +44,21 @@ void SemiVectorial<Geometry2DType>::onInitialize()
     for (double p: *axis_vertical)
     {
         edgeVertLayerPoint.push_back(p);  
-        std::cout<<"p = "<< p << std::endl;
     }
     double last_element = edgeVertLayerPoint.back();
     edgeVertLayerPoint.push_back(last_element+1e-3);    
+    initializeRefractiveIndexVec();
+}
+
+template<typename Geometry2DType>
+void SemiVectorial<Geometry2DType>::initializeRefractiveIndexVec()
+{
+    nrCache.clear();
+    double T = 300; //temperature 300 K
+    double wavelength = real(2e3*M_PI / k0);
+    nrCache.push_back(this->geometry->getMaterial(vec(double(stripex),  0.0))->Nr(wavelength, T));
+    for(double p: *axis_midpoints_vertical) { nrCache.push_back(this->geometry->getMaterial(vec(double(stripex),  p))->Nr(wavelength, T));}
+    nrCache.push_back(this->geometry->getMaterial(vec(double(stripex),  edgeVertLayerPoint.back()))->Nr(wavelength, T));
 }
 
 template<> std::string SemiVectorial<Geometry2DCylindrical>::getClassName() const { return "optical.SemiVectorialCyl"; }
