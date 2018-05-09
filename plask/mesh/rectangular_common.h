@@ -682,6 +682,12 @@ struct RectangularMeshBase2D: public MeshD<2> {
 
 };
 
+template <>
+inline RectangularMeshBase2D::Boundary parseBoundary<RectangularMeshBase2D>(const std::string& boundary_desc, plask::Manager&) { return RectangularMeshBase2D::getBoundary(boundary_desc); }
+
+template <>
+inline RectangularMeshBase2D::Boundary parseBoundary<RectangularMeshBase2D>(XMLReader& boundary_desc, Manager& env) { return RectangularMeshBase2D::getBoundary(boundary_desc, env); }
+
 }   // namespace plask
 
 #endif // PLASK__MESH__RECTANGULAR_COMMON_H
