@@ -1,0 +1,22 @@
+- solver: SemiVectorialCyl
+  lib: semivectorial
+  category: optical
+  help: >
+    Solver performing calculations in Cylindrical space by use semivectorial method based on effective index
+
+  geometry: Cylindrical
+  need mesh: false
+  
+
+
+- solver: SemiVectorial2D
+  lib: semivectorial
+  category: optical
+  help: >
+    Solver performing calculations in 2D Cartesian space by use semivectorial method based on effective index
+    
+  geometry: Cartesian2D
+           
+  need mesh: false
+  
+  
