@@ -29,7 +29,7 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public Solver
     /// Set stiffness matrix + load vector
     template <typename MatrixT>
     void setMatrix(MatrixT& A, MatrixT& B, DataVector<double>& F,
-                   const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& btemperature
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature
                   );
 
     /// Update stored temperatures and calculate corrections
@@ -59,7 +59,7 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public Solver
   public:
 
     // Boundary conditions
-    BoundaryConditions<RectangularMesh<2>,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
+    BoundaryConditions<RectangularMesh<2>::Boundary,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
 
     typename ProviderFor<Temperature, Geometry2DType>::Delegate outTemperature;
 

@@ -283,8 +283,10 @@ struct PLASK_API EmptyBoundaryImpl: public BoundaryNodeSetImpl {
  * @tparam MeshType type of mesh
  * @ref boundaries
  */
-template <typename MeshType>
+template <typename MeshT>
 struct Boundary {
+
+    typedef MeshT MeshType;
 
 protected:
     std::function<BoundaryNodeSet(const MeshType&, const shared_ptr<const GeometryD<MeshType::DIM>>&)> create;
@@ -461,12 +463,14 @@ struct SumBoundaryImpl: public BoundaryNodeSetImpl {
 
 /**
  * Boundary logic implementation which represents set of indexes which fulfill predicate.
- * @tparam MeshType type of mesh
+ * @tparam MeshT type of mesh
  * @tparam predicate functor which check if given point is in boundary
  * @ref boundaries
  */
-template <typename MeshType, typename Predicate>
-struct PredicateBoundaryImpl: public BoundaryNodeSetWithMeshImpl<MeshType> {
+template <typename MeshT, typename Predicate>
+struct PredicateBoundaryImpl: public BoundaryNodeSetWithMeshImpl<typename MeshT::Boundary::MeshType> {
+
+    typedef typename MeshT::Boundary::MeshType MeshType;
 
     struct PredicateIteratorImpl: public BoundaryNodeSetWithMeshImpl<MeshType>::IteratorWithMeshImpl {
 
@@ -570,7 +574,7 @@ inline typename MeshType::Boundary makeEmptyBoundary() {
  */
 template <typename MeshType, typename Predicate>
 inline typename MeshType::Boundary makePredicateBoundary(Predicate predicate) {
-    return typename MeshType::Boundary( [=](const MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>&) {
+    return typename MeshType::Boundary( [=](const typename MeshType::Boundary::MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>&) {
         return new PredicateBoundaryImpl<MeshType, Predicate>(mesh, predicate);
     } );
 }
@@ -579,19 +583,19 @@ struct Manager;
 
 
 /**
- * Parse boundary from string.
+ * Parse boundary of given type from string.
  *
- * For given mesh type (MyMeshType) specialization of this function:
+ * Specialization of this function:
  * @code
- * template <> inline Boundary<MyMeshType> parseBoundary<MyMeshType>(const std::string& boundary_desc) { ... }
+ * template <> inline BoundaryType parseBoundary<BoundaryType>(const std::string& boundary_desc) { ... }
  * @endcode
- * are responsible to parse boundary from string for this mesh type.
- * @param boundary_desc boundary description, depends on type of mesh
+ * are responsible to parse boundary of type @c BoundaryType from string.
+ * @param boundary_desc boundary description, depends on type of boundary (which generaly depends on mesh type)
  * @param manager geometry manager
- * @return parsed boundary or Boundary<MeshType>() if can't parse given string
+ * @return parsed boundary or Boundary() if can't parse given string
  */
-template <typename MeshType>
-inline Boundary<MeshType> parseBoundary(const std::string& PLASK_UNUSED(boundary_desc), Manager& PLASK_UNUSED(manager)) { return Boundary<MeshType>(); }
+template <typename Boundary>
+inline Boundary parseBoundary(const std::string& PLASK_UNUSED(boundary_desc), Manager& PLASK_UNUSED(manager)) { return Boundary(); }
 
 
 /**
@@ -599,17 +603,17 @@ inline Boundary<MeshType> parseBoundary(const std::string& PLASK_UNUSED(boundary
  *
  * It starts from tag which beginning is pointed by reader and (in case of successful parse) move reader to end of this tag.
  *
- * For given mesh type (MyMeshType) specialization of this function:
+ * For given boundary type (Boundary) specialization of this function:
  * @code
- * template <> inline Boundary<MyMeshType> parseBoundary<MyMeshType>(XMLReader& boundary_desc) { ... }
+ * template <> inline Boundary parseBoundary<Boundary>(XMLReader& boundary_desc) { ... }
  * @endcode
- * are responsible to parse boundary from XML for this mesh type.
+ * are responsible to parse boundary from XML for this boundary type (which generaly depends on mesh type).
  * @param boundary_desc boundary description, depends on type of mesh
  * @param manager geometry manager
- * @return parsed boundary or Boundary<MeshType>() if can't parse given tag
+ * @return parsed boundary or Boundary() if can't parse given tag
  */
-template <typename MeshType>
-inline Boundary<MeshType> parseBoundary(XMLReader& PLASK_UNUSED(boundary_desc), Manager& PLASK_UNUSED(manager)) { return Boundary<MeshType>(); }
+template <typename Boundary>
+inline Boundary parseBoundary(XMLReader& PLASK_UNUSED(boundary_desc), Manager& PLASK_UNUSED(manager)) { return Boundary(); }
 
 }   // namespace plask
 

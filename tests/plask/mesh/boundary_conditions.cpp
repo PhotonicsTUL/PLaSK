@@ -9,7 +9,7 @@
 BOOST_AUTO_TEST_SUITE(boundary_conditions) // MUST be the same as the file name
 
 BOOST_AUTO_TEST_CASE(boundary_conditions_rect_simple) {
-    plask::BoundaryConditions<plask::RectangularMesh<2>, double> conditions;
+    plask::BoundaryConditions<plask::RectangularMesh<2>::Boundary, double> conditions;
     BOOST_CHECK(conditions.empty());
     conditions.add(plask::RectangularMesh<2>::getLeftBoundary(), 1.0);
     conditions.add(plask::RectangularMesh<2>::getRightBoundary(), 2.0);
@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(boundary_conditions_rect_simple) {
 }
 
 BOOST_AUTO_TEST_CASE(boundary_conditions_rect_custom) {
-    plask::BoundaryConditions<plask::RectangularMesh<2>, double> conditions;
+    plask::BoundaryConditions<plask::RectangularMesh<2>::Boundary, double> conditions;
     plask::MaterialsDB materialsDB;
     initDumbMaterialDb(materialsDB);
     plask::Manager manager;
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(boundary_conditions_rect_custom) {
 }
 
 BOOST_AUTO_TEST_CASE(boundary_conditions_from_XML) {
-    plask::BoundaryConditions<plask::RectangularMesh<2>, double> conditions;
+    plask::BoundaryConditions<plask::RectangularMesh<2>::Boundary, double> conditions;
     plask::Manager manager;
     std::string xml_content = "<cond><condition place=\"bottom\" value=\"123\"/><condition place=\"left\" value=\"234\"/></cond>";
     plask::XMLReader reader(std::unique_ptr<std::istream>(new std::stringstream(xml_content)));

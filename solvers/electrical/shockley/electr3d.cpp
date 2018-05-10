@@ -258,7 +258,7 @@ void FiniteElementMethodElectrical3DSolver::saveConductivity()
 
 template <typename MatrixT>
 void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<double>& B,
-                   const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& bvoltage)
+                   const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& bvoltage)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
 
@@ -361,7 +361,7 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
 
 template <typename MatrixT>
 void FiniteElementMethodElectrical3DSolver::applyBC(MatrixT& A, DataVector<double>& B,
-                                                    const BoundaryConditionsWithMesh<RectangularMesh<3>, double> &bvoltage) {
+                                                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary, double> &bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
         for (auto r: cond.place) {
@@ -383,7 +383,7 @@ void FiniteElementMethodElectrical3DSolver::applyBC(MatrixT& A, DataVector<doubl
 
 template <>
 void FiniteElementMethodElectrical3DSolver::applyBC<SparseBandMatrix3D>(SparseBandMatrix3D& A, DataVector<double>& B,
-                                                                   const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& bvoltage) {
+                                                                   const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
         for (auto r: cond.place) {

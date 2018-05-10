@@ -223,7 +223,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     /// Add corrections to datavectors
     template <CalcType calctype>
-    double addCorr(DataVector<double>& corr, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& vconst);
+    double addCorr(DataVector<double>& corr, const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& vconst);
 
 
     /// Create 2D-vector with calculated heat densities
@@ -239,9 +239,9 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     void solveMatrix(SparseBandMatrix& A, DataVector<double>& B);
 
     template <typename MatrixT>
-    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage);
+    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bvoltage);
 
-    void applyBC(SparseBandMatrix& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage);
+    void applyBC(SparseBandMatrix& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bvoltage);
 
     /// Save locate stiffness matrix to global one
     inline void addCurvature(double& k44, double& k33, double& k22, double& k11,
@@ -250,7 +250,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
 
     /// Set stiffness matrix + load vector
     template <CalcType calctype, typename MatrixT>
-    void setMatrix(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage);
+    void setMatrix(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bvoltage);
 
     /// Perform computations for particular matrix type
     template <typename MatrixT>
@@ -375,7 +375,7 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     double maxerr;              ///< Maximum relative current density correction accepted as convergence
 
     /// Boundary condition
-    BoundaryConditions<RectangularMesh<2>,double> voltage_boundary;
+    BoundaryConditions<RectangularMesh<2>::Boundary,double> voltage_boundary;
 
     typename ProviderFor<Potential, Geometry2DType>::Delegate outPotential;
 

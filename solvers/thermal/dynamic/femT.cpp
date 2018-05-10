@@ -114,7 +114,7 @@ template<typename Geometry2DType> void FiniteElementMethodDynamicThermal2DSolver
 template<> template<typename MatrixT>
 void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::setMatrix(
         MatrixT& A, MatrixT& B, DataVector<double>& F,
-        const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& btemperature)
+        const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
 
@@ -264,7 +264,7 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::setMatrix(
 template<> template<typename MatrixT>
 void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylindrical>::setMatrix(
         MatrixT& A, MatrixT& B, DataVector<double>& F,
-        const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& btemperature)
+        const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
 

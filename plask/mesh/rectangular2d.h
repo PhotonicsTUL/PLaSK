@@ -866,11 +866,6 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
 public:
     // boundaries:
 
-    template <typename Predicate>
-    static Boundary getBoundary(Predicate predicate) {
-        return Boundary(new PredicateBoundaryImpl<RectangularMesh2D, Predicate>(predicate));
-    }
-
     BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const override {
         return new VerticalBoundary(*this, line_nr_axis0);
     }

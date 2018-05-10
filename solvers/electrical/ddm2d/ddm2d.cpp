@@ -261,7 +261,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::onInvalidate() {
 template <typename Geometry2DType>
 template <typename MatrixT> // add deltaPsi = 0 on p- and n-contacts
 void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(MatrixT& A, DataVector<double>& B,
-                                                          const BoundaryConditionsWithMesh<RectangularMesh<2>,double> & bvoltage) {
+                                                          const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double> & bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
         for (auto r: cond.place) {
@@ -277,7 +277,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(MatrixT& A, DataVector
 
 template <typename Geometry2DType> // add deltaPsi = 0 on p- and n-contacts
 void DriftDiffusionModel2DSolver<Geometry2DType>::applyBC(SparseBandMatrix& A, DataVector<double>& B,
-                                                          const BoundaryConditionsWithMesh<RectangularMesh<2>,double> &bvoltage) {
+                                                          const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double> &bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
         for (auto r: cond.place) {
@@ -326,7 +326,7 @@ inline void DriftDiffusionModel2DSolver<Geometry2DCylindrical>::addCurvature(dou
 template <typename Geometry2DType>
 template <CalcType calctype, typename MatrixT>
 void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVector<double>& B,
-                                                            const BoundaryConditionsWithMesh<RectangularMesh<2>,double> &bvoltage)
+                                                            const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double> &bvoltage)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
 
@@ -725,7 +725,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
 
 template <typename Geometry2DType>
 template <CalcType calctype>
-double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& corr, const BoundaryConditionsWithMesh <RectangularMesh<2>,double>& vconst)
+double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& corr, const BoundaryConditionsWithMesh <RectangularMesh<2>::Boundary,double>& vconst)
 {  
     //this->writelog(LOG_DEBUG, "Adding corrections");
 

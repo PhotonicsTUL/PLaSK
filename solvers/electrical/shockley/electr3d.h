@@ -63,11 +63,11 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
      * \param bvoltage boundary conditions: constant voltage
      **/
     template <typename MatrixT>
-    void setMatrix(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& bvoltage);
+    void setMatrix(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& bvoltage);
 
     /// Apply boundary conditions of the first kind
     template <typename MatrixT>
-    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& bvoltage);
+    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& bvoltage);
 
     /// Load conductivities
     void loadConductivity();
@@ -151,7 +151,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
     size_t logfreq;             ///< Frequency of iteration progress reporting
 
     // Boundary conditions
-    BoundaryConditions<RectangularMesh<3>, double> voltage_boundary;      ///< Boundary condition of constant voltage [K]
+    BoundaryConditions<RectangularMesh<3>::Boundary, double> voltage_boundary;      ///< Boundary condition of constant voltage [K]
 
     typename ProviderFor<Voltage,Geometry3D>::Delegate outVoltage;
 

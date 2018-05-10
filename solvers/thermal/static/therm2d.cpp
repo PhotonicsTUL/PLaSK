@@ -132,7 +132,7 @@ enum BoundarySide { LEFT, RIGHT, TOP, BOTTOM };
     * \param Kmn_function function returning stiffness matrix off-diagonal component
     */
 template <typename ConditionT>
-static void setBoundaries(const BoundaryConditionsWithMesh<RectangularMesh<2>,ConditionT>& boundary_conditions,
+static void setBoundaries(const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,ConditionT>& boundary_conditions,
                           size_t i1, size_t i2, size_t i3, size_t i4, double width, double height,
                           double& F1, double& F2, double& F3, double& F4,
                           double& K11, double& K22, double& K33, double& K44,
@@ -171,10 +171,10 @@ static void setBoundaries(const BoundaryConditionsWithMesh<RectangularMesh<2>,Co
 
 template<> template<typename MatrixT>
 void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(MatrixT& A, DataVector<double>& B,
-                   const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& btemperature,
-                   const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bheatflux,
-                   const BoundaryConditionsWithMesh<RectangularMesh<2>,Convection>& bconvection,
-                   const BoundaryConditionsWithMesh<RectangularMesh<2>,Radiation>& bradiation
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature,
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bheatflux,
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,Convection>& bconvection,
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,Radiation>& bradiation
                   )
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
@@ -296,10 +296,10 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(MatrixT&
 
 template<> template<typename MatrixT>
 void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(MatrixT& A, DataVector<double>& B,
-                   const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& btemperature,
-                   const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bheatflux,
-                   const BoundaryConditionsWithMesh<RectangularMesh<2>,Convection>& bconvection,
-                   const BoundaryConditionsWithMesh<RectangularMesh<2>,Radiation>& bradiation
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature,
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bheatflux,
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,Convection>& bconvection,
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,Radiation>& bradiation
                   )
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);

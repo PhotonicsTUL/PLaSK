@@ -33,10 +33,10 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver: public SolverWithMes
     /// Set stiffness matrix + load vector
     template <typename MatrixT>
     void setMatrix(MatrixT& A, DataVector<double>& B,
-                   const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& btemperature,
-                   const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bheatflux,
-                   const BoundaryConditionsWithMesh<RectangularMesh<2>,Convection>& bconvection,
-                   const BoundaryConditionsWithMesh<RectangularMesh<2>,Radiation>& bradiation
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature,
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bheatflux,
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,Convection>& bconvection,
+                   const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,Radiation>& bradiation
                   );
 
     /// Update stored temperatures and calculate corrections
@@ -63,10 +63,10 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver: public SolverWithMes
   public:
 
     // Boundary conditions
-    BoundaryConditions<RectangularMesh<2>,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
-    BoundaryConditions<RectangularMesh<2>,double> heatflux_boundary;         ///< Boundary condition of constant heat flux [W/m^2]
-    BoundaryConditions<RectangularMesh<2>,Convection> convection_boundary;   ///< Boundary condition of convection
-    BoundaryConditions<RectangularMesh<2>,Radiation> radiation_boundary;     ///< Boundary condition of radiation
+    BoundaryConditions<RectangularMesh<2>::Boundary,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
+    BoundaryConditions<RectangularMesh<2>::Boundary,double> heatflux_boundary;         ///< Boundary condition of constant heat flux [W/m^2]
+    BoundaryConditions<RectangularMesh<2>::Boundary,Convection> convection_boundary;   ///< Boundary condition of convection
+    BoundaryConditions<RectangularMesh<2>::Boundary,Radiation> radiation_boundary;     ///< Boundary condition of radiation
 
     typename ProviderFor<Temperature, Geometry2DType>::Delegate outTemperature;
 
@@ -121,7 +121,7 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver: public SolverWithMes
     const LazyData<Tensor2<double>> getThermalConductivity(const shared_ptr<const MeshD<2>>& dest_mesh, InterpolationMethod method);
 
     template <typename MatrixT>
-    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage) {
+    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bvoltage) {
         // boundary conditions of the first kind
         for (auto cond: bvoltage) {
             for (auto r: cond.place) {
@@ -141,7 +141,7 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver: public SolverWithMes
         }
     }
 
-    void applyBC(SparseBandMatrix2D& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage) {
+    void applyBC(SparseBandMatrix2D& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bvoltage) {
         // boundary conditions of the first kind
         for (auto cond: bvoltage) {
             for (auto r: cond.place) {

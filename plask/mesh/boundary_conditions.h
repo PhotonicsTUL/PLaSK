@@ -8,11 +8,11 @@
 namespace plask {
 
 /// One boundary-condition pair.
-template <typename MeshT, typename ValueT>
+template <typename BoundaryT, typename ValueT>
 struct BoundaryCondition {
-    typedef MeshT MeshType;    ///< type of mesh
+    typedef BoundaryT Boundary;   ///< Boundary type for mesh of type MeshType
+    typedef typename Boundary::MeshType MeshType;    ///< type of mesh
     typedef ValueT ValueType;  ///< type which describe boundary condition
-    typedef typename MeshType::Boundary Boundary;   ///< Boundary type for mesh of type MeshType
 
     Boundary place;     ///< Boundary
     ValueType value;    ///< Condition
@@ -40,9 +40,10 @@ struct BoundaryCondition {
 
 
 /// One boundary-condition pair concretized for a given mesh.
-template <typename MeshT, typename ValueT>
+template <typename BoundaryT, typename ValueT>
 struct BoundaryConditionWithMesh {
-    typedef MeshT MeshType;    ///< type of mesh
+    typedef BoundaryT Boundary;   ///< Boundary type for mesh of type MeshType
+    typedef typename Boundary::MeshType MeshType;    ///< type of mesh
     typedef ValueT ValueType;  ///< type which describe boundary condition
 
     BoundaryNodeSet place;     ///< Set of mesh indexes.
@@ -69,27 +70,28 @@ struct BoundaryConditionWithMesh {
           value(std::forward<ConditionArgumentsTypes>(value_args)...) {}
 };
 
-template <typename MeshT, typename ValueT> struct BoundaryConditions;
+template <typename BoundaryT, typename ValueT> struct BoundaryConditions;
 
 /**
  * Set of boundary conditions instances for given mesh type and boundary condition description type.
- * @tparam MeshT type of mesh
+ * @tparam BoundaryT type of boundary
  * @tparam ValueT type which describe boundary condition
  * @ref boundaries
  */
-template <typename MeshT, typename ValueT>
+template <typename BoundaryT, typename ValueT>
 struct BoundaryConditionsWithMesh
 {
-    typedef MeshT MeshType;    ///< type of mesh
+    typedef BoundaryT Boundary;
+    typedef typename Boundary::MeshType MeshType;    ///< type of mesh
     typedef ValueT ValueType;  ///< type which describes boundary condition
 
     /// One boundary-condition pair.
-    typedef BoundaryConditionWithMesh<MeshType, ValueType> Element;
+    typedef BoundaryConditionWithMesh<Boundary, ValueType> Element;
 
 private:
     typedef std::vector<Element> elements_container_t;
     elements_container_t container;
-    friend struct BoundaryConditions<MeshType,ValueType>;
+    friend struct BoundaryConditions<BoundaryT,ValueType>;
 
 public:
     typedef typename elements_container_t::iterator iterator;
@@ -174,19 +176,19 @@ public:
 
 /**
  * Set of boundary conditions for given mesh type and boundary condition description type.
- * @tparam MeshT type of mesh
+ * @tparam BoundaryT type of boundary
  * @tparam ValueT type which describe boundary condition
  * @ref boundaries
  */
-template <typename MeshT, typename ValueT>
+template <typename BoundaryT, typename ValueT>
 struct BoundaryConditions
 {
-    typedef MeshT MeshType;    ///< type of mesh
+    typedef BoundaryT Boundary;   ///< Boundary type for a mesh of type MeshType
+    typedef typename Boundary::MeshType MeshType;    ///< type of mesh
     typedef ValueT ValueType;  ///< type which describes boundary condition
-    typedef typename MeshType::Boundary Boundary;   ///< Boundary type for a mesh of type MeshType
 
     /// One boundary-condition pair.
-    typedef BoundaryCondition<MeshType, ValueType> Element;
+    typedef BoundaryCondition<Boundary, ValueType> Element;
 
 private:
     typedef std::list<Element> elements_container_t;    // std::list to not invalidate iterators on add/erase
@@ -386,50 +388,50 @@ public:
     }
 
     /**
-     * Get BoundaryConditionsWithMesh<MeshType,ValueType>
+     * Get BoundaryConditionsWithMesh<Boundary,ValueType>
      * @param mesh mesh
      */
-    BoundaryConditionsWithMesh<MeshType,ValueType> get(const MeshType& mesh,
+    BoundaryConditionsWithMesh<Boundary,ValueType> get(const typename Boundary::MeshType& mesh,
                                                        const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
-        BoundaryConditionsWithMesh<MeshType,ValueType> impl;
+        BoundaryConditionsWithMesh<Boundary,ValueType> impl;
         impl.container.reserve(container.size());
         for (auto& el: container) {
             auto place = el.place(mesh, geometry);
             if (place.empty())
                 writelog(LOG_WARNING, "Boundary condition with value {} contains no points for given mesh", el.value);
             impl.container.push_back(
-                BoundaryConditionWithMesh<MeshType,ValueType>(place, el.value)
+                BoundaryConditionWithMesh<Boundary,ValueType>(place, el.value)
             );
         }
         return impl;
     }
 
     /**
-     * Get BoundaryConditionsWithMesh<MeshType,ValueType>
+     * Get BoundaryConditionsWithMesh<Boundary,ValueType>
      * @param mesh mesh
      * @param geometry geometry at which the boundary conditions are defines
      */
-    BoundaryConditionsWithMesh<MeshType,ValueType> get(const shared_ptr<const MeshType>& mesh,
+    BoundaryConditionsWithMesh<Boundary,ValueType> get(const shared_ptr<const typename Boundary::MeshType>& mesh,
                                                        const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
         return get(*mesh, geometry);
     }
 
     /**
-     * Get BoundaryConditionsWithMesh<MeshType,ValueType>
+     * Get BoundaryConditionsWithMesh<Boundary,ValueType>
      * @param mesh mesh
      * @param geometry geometry at which the boundary conditions are defines
      */
-    BoundaryConditionsWithMesh<MeshType,ValueType> operator()(const MeshType& mesh,
+    BoundaryConditionsWithMesh<Boundary,ValueType> operator()(const MeshType& mesh,
                                                               const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
         return get(mesh, geometry);
     }
 
     /**
-     * Get BoundaryConditionsWithMesh<MeshType,ValueType>
+     * Get BoundaryConditionsWithMesh<Boundary,ValueType>
      * @param mesh mesh
      * @param geometry geometry at which the boundary conditions are defines
      */
-    BoundaryConditionsWithMesh<MeshType,ValueType> operator()(const shared_ptr<const MeshType>& mesh,
+    BoundaryConditionsWithMesh<Boundary,ValueType> operator()(const shared_ptr<const MeshType>& mesh,
                                                               const shared_ptr<const GeometryD<MeshType::DIM>>& geometry) const {
         return get(*mesh, geometry);
     }

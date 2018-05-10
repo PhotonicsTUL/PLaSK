@@ -282,11 +282,11 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
         return *this;
     }
 
-    template <typename MeshT, typename ValueT>
-    ExportSolver& add_boundary_conditions(const char* name, BoundaryConditions<MeshT,ValueT> Class::* field, const char* help) {
+    template <typename Boundary, typename ValueT>
+    ExportSolver& add_boundary_conditions(const char* name, BoundaryConditions<Boundary,ValueT> Class::* field, const char* help) {
 
         std::string boundary_class;
-        if (PyTypeObject* mesh = py::converter::registry::lookup(py::type_id<MeshT>()).m_class_object) {
+        if (PyTypeObject* mesh = py::converter::registry::lookup(py::type_id<typename Boundary::MeshType>()).m_class_object) {
             std::string nam = py::extract<std::string>(PyObject_GetAttrString((PyObject*)mesh, "__name__"));
             std::string mod = py::extract<std::string>(PyObject_GetAttrString((PyObject*)mesh, "__module__"));
             boundary_class = " (:class:`" + mod + "." + nam + ".Boundary`)";
@@ -304,7 +304,7 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
             value_class_desc = "";
         }
 
-        detail::RegisterBoundaryConditions<MeshT, ValueT>();
+        detail::RegisterBoundaryConditions<Boundary, ValueT>();
 
         this->def_readonly(name, field, format(
             u8"{0} \n\n"

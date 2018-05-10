@@ -27,8 +27,10 @@ struct MeshWrap: public MeshD<dim>, Overriden<MeshD<dim>> {
 };
 
 /// Generic declaration of boundary class for a specific mesh type
-template <typename MeshType>
+template <typename Boundary>
 struct ExportBoundary {
+
+    typedef typename Boundary::MeshType MeshType;
 
     struct PythonPredicate {
 
@@ -52,16 +54,16 @@ struct ExportBoundary {
             return nullptr;
         }
         static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
-            void* storage = ((boost::python::converter::rvalue_from_python_storage<typename MeshType::Boundary>*)data)->storage.bytes;
+            void* storage = ((boost::python::converter::rvalue_from_python_storage<Boundary>*)data)->storage.bytes;
             PythonPredicate predicate(obj);
-            new (storage) typename MeshType::Boundary { makePredicateBoundary<MeshType>(predicate) };
+            new (storage) Boundary { makePredicateBoundary<MeshType>(predicate) };
             data->convertible = storage;
         }
 
     };
 
     static BoundaryNodeSet Boundary__call__(
-        const typename MeshType::Boundary& self, const MeshType& mesh, shared_ptr<const GeometryD<MeshType::DIM>> geometry
+        const Boundary& self, const MeshType& mesh, shared_ptr<const GeometryD<MeshType::DIM>> geometry
     ) {
         return self(mesh, geometry);
     }
@@ -82,16 +84,16 @@ struct ExportBoundary {
             py::delattr(scope, "BoundaryInstance");
         }
 
-        py::class_<typename MeshType::Boundary, shared_ptr<typename MeshType::Boundary>>("Boundary",
+        py::class_<Boundary, shared_ptr<Boundary>>("Boundary",
             ("Generic boundary specification for "+name+" mesh").c_str(), py::no_init)
             .def("__call__", &Boundary__call__, (py::arg("mesh"), "geometry"), u8"Get boundary instance for particular mesh",
                  py::with_custodian_and_ward_postcall<0,1,
                  py::with_custodian_and_ward_postcall<0,2>>())
         ;
 
-        detail::RegisterBoundaryConditions<MeshType, py::object>(false);
+        detail::RegisterBoundaryConditions<Boundary, py::object>(false);
 
-        boost::python::converter::registry::push_back(&PythonPredicate::convertible, &PythonPredicate::construct, boost::python::type_id<typename MeshType::Boundary>());
+        boost::python::converter::registry::push_back(&PythonPredicate::convertible, &PythonPredicate::construct, boost::python::type_id<Boundary>());
     }
 };
 

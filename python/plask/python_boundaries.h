@@ -37,11 +37,11 @@ namespace python {
 
 namespace detail {
 
-template <typename MeshT, typename ValueT>
+template <typename Boundary, typename ValueT>
 struct RegisterBoundaryConditions {
 
-    typedef BoundaryConditions<MeshT, ValueT> BoundaryConditionsT;
-    typedef BoundaryCondition<MeshT, ValueT> ConditionT;
+    typedef BoundaryConditions<Boundary, ValueT> BoundaryConditionsT;
+    typedef BoundaryCondition<Boundary, ValueT> ConditionT;
 
     static ConditionT& __getitem__(BoundaryConditionsT& self, int i) {
         //TODO special proxy class is needed to ensure safe memory management (if user gets an item and removes the original)
@@ -56,7 +56,7 @@ struct RegisterBoundaryConditions {
         auto iter = self.getIteratorForIndex(i);
         try {
             if (py::len(object) != 2) throw py::error_already_set();
-            typename MeshT::Boundary boundary = py::extract<typename MeshT::Boundary>(object[0]);
+            Boundary boundary = py::extract<Boundary>(object[0]);
             ValueT value = py::extract<ValueT>(object[1]);
             *iter = ConditionT(boundary, value);
         } catch (py::error_already_set) {
@@ -76,22 +76,22 @@ struct RegisterBoundaryConditions {
         self.erase(size_t(i));
     }
 
-    static void append(BoundaryConditionsT& self, const typename MeshT::Boundary& boundary, ValueT value) {
+    static void append(BoundaryConditionsT& self, const Boundary& boundary, ValueT value) {
         self.add(ConditionT(boundary, value));
     }
 
-    static void prepend(BoundaryConditionsT& self, const typename MeshT::Boundary& boundary, ValueT value) {
+    static void prepend(BoundaryConditionsT& self, const Boundary& boundary, ValueT value) {
         self.insert(0, ConditionT(boundary, value));
     }
 
-    static void insert(BoundaryConditionsT& self, int i, const typename MeshT::Boundary& boundary, ValueT value) {
+    static void insert(BoundaryConditionsT& self, int i, const Boundary& boundary, ValueT value) {
         if (i < 0) i += int(self.size());
         if (i < 0 || i >= (int)self.size()) OutOfBoundsException("BoundaryConditions[]", "index");
         self.insert(i, ConditionT(boundary, value));
     }
 
     static void read_from_xml(BoundaryConditionsT& self, XMLReader& reader, Manager& manager) {
-        manager.readBoundaryConditions<MeshT, ValueT>(reader, self);
+        manager.readBoundaryConditions<Boundary, ValueT>(reader, self);
     }
 
     struct Iter {

@@ -928,8 +928,36 @@ void register_mesh_rectangular()
     py::implicitly_convertible<RegularAxis, OrderedAxis>();
     py::implicitly_convertible<shared_ptr<RegularAxis>, shared_ptr<const RegularAxis>>();
 
+    py::class_<RectangularMeshBase2D, shared_ptr<RectangularMeshBase2D>, py::bases<MeshD<2>>, boost::noncopyable> rectangularBase2D("RectangularBase2D",
+        u8"Base class for 2D rectangular meshes."
+        u8"Do not use it directly.",
+        py::no_init);
+    rectangularBase2D
+        .def("Left", &RectangularMesh<2>::getLeftBoundary, u8"Left edge of the mesh for setting boundary conditions").staticmethod("Left")
+        .def("Right", &RectangularMesh<2>::getRightBoundary, u8"Right edge of the mesh for setting boundary conditions").staticmethod("Right")
+        .def("Top", &RectangularMesh<2>::getTopBoundary, u8"Top edge of the mesh for setting boundary conditions").staticmethod("Top")
+        .def("Bottom", &RectangularMesh<2>::getBottomBoundary, u8"Bottom edge of the mesh for setting boundary conditions").staticmethod("Bottom")
+        .def("LeftOf", (RectangularMesh<2>::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectangularMesh<2>::getLeftOfBoundary,
+             u8"Boundary left of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("LeftOf")
+        .def("RightOf", (RectangularMesh<2>::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectangularMesh<2>::getRightOfBoundary,
+             u8"Boundary right of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("RightOf")
+        .def("TopOf", (RectangularMesh<2>::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectangularMesh<2>::getTopOfBoundary,
+             u8"Boundary top of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("TopOf")
+        .def("BottomOf", (RectangularMesh<2>::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectangularMesh<2>::getBottomOfBoundary,
+             u8"Boundary bottom of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("BottomOf")
+        .def("Horizontal", (RectangularMesh<2>::Boundary(*)(double,double,double))&RectangularMesh<2>::getHorizontalBoundaryNear,
+             u8"Boundary at horizontal line", (py::arg("at"), "start", "stop"))
+        .def("Horizontal", (RectangularMesh<2>::Boundary(*)(double))&RectangularMesh<2>::getHorizontalBoundaryNear,
+             u8"Boundary at horizontal line", py::arg("at")).staticmethod("Horizontal")
+        .def("Vertical", (RectangularMesh<2>::Boundary(*)(double,double,double))&RectangularMesh<2>::getVerticalBoundaryNear,
+             u8"Boundary at vertical line", (py::arg("at"), "start", "stop"))
+        .def("Vertical", (RectangularMesh<2>::Boundary(*)(double))&RectangularMesh<2>::getVerticalBoundaryNear,
+             u8"Boundary at vertical line", py::arg("at")).staticmethod("Vertical")
+    ;
+    ExportBoundary<RectangularMeshBase2D::Boundary> { rectangularBase2D };
+    py::implicitly_convertible<shared_ptr<RectangularMeshBase2D>, shared_ptr<const RectangularMeshBase2D>>();
 
-    py::class_<RectangularMesh<2>, shared_ptr<RectangularMesh<2>>, py::bases<MeshD<2>>> rectangular2D("Rectangular2D",
+    py::class_<RectangularMesh<2>, shared_ptr<RectangularMesh<2>>, py::bases<RectangularMeshBase2D>> rectangular2D("Rectangular2D",
         u8"Two-dimensional mesh\n\n"
         u8"Rectangular2D(ordering='01')\n    create empty mesh\n\n"
         u8"Rectangular2D(axis0, axis1, ordering='01')\n    create mesh with axes supplied as sequences of numbers\n\n"
@@ -960,31 +988,9 @@ void register_mesh_rectangular()
         .def("set_optimal_ordering", &RectangularMesh<2>::setOptimalIterationOrder, u8"Set the optimal ordering of the points in this mesh")
         .add_property("ordering", &RectangularMesh2D__getOrdering, &RectangularMesh2D__setOrdering, u8"Ordering of the points in this mesh")
         .def("get_midpoints", &RectangularMesh<2>::getMidpointsMesh, u8"Get new mesh with points in the middles of elements of this mesh")
-        .def("Left", &RectangularMesh<2>::getLeftBoundary, u8"Left edge of the mesh for setting boundary conditions").staticmethod("Left")
-        .def("Right", &RectangularMesh<2>::getRightBoundary, u8"Right edge of the mesh for setting boundary conditions").staticmethod("Right")
-        .def("Top", &RectangularMesh<2>::getTopBoundary, u8"Top edge of the mesh for setting boundary conditions").staticmethod("Top")
-        .def("Bottom", &RectangularMesh<2>::getBottomBoundary, u8"Bottom edge of the mesh for setting boundary conditions").staticmethod("Bottom")
-        .def("LeftOf", (RectangularMesh<2>::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectangularMesh<2>::getLeftOfBoundary,
-             u8"Boundary left of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("LeftOf")
-        .def("RightOf", (RectangularMesh<2>::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectangularMesh<2>::getRightOfBoundary,
-             u8"Boundary right of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("RightOf")
-        .def("TopOf", (RectangularMesh<2>::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectangularMesh<2>::getTopOfBoundary,
-             u8"Boundary top of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("TopOf")
-        .def("BottomOf", (RectangularMesh<2>::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&RectangularMesh<2>::getBottomOfBoundary,
-             u8"Boundary bottom of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("BottomOf")
-        .def("Horizontal", (RectangularMesh<2>::Boundary(*)(double,double,double))&RectangularMesh<2>::getHorizontalBoundaryNear,
-             u8"Boundary at horizontal line", (py::arg("at"), "start", "stop"))
-        .def("Horizontal", (RectangularMesh<2>::Boundary(*)(double))&RectangularMesh<2>::getHorizontalBoundaryNear,
-             u8"Boundary at horizontal line", py::arg("at")).staticmethod("Horizontal")
-        .def("Vertical", (RectangularMesh<2>::Boundary(*)(double,double,double))&RectangularMesh<2>::getVerticalBoundaryNear,
-             u8"Boundary at vertical line", (py::arg("at"), "start", "stop"))
-        .def("Vertical", (RectangularMesh<2>::Boundary(*)(double))&RectangularMesh<2>::getVerticalBoundaryNear,
-             u8"Boundary at vertical line", py::arg("at")).staticmethod("Vertical")
         .def(py::self == py::self)
     ;
-    ExportBoundary<RectangularMesh<2>> { rectangular2D };
     py::implicitly_convertible<shared_ptr<RectangularMesh<2>>, shared_ptr<const RectangularMesh<2>>>();
-
     {
         py::scope scope = rectangular2D;
         (void) scope;   // don't warn about unused variable scope
@@ -1076,7 +1082,7 @@ void register_mesh_rectangular()
              u8"Boundary bottom of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("BottomOf")
         .def(py::self == py::self)
     ;
-    ExportBoundary<RectangularMesh<3>> { rectangular3D };
+    ExportBoundary<RectangularMesh<3>::Boundary> { rectangular3D };
     py::implicitly_convertible<shared_ptr<RectangularMesh<3>>, shared_ptr<const RectangularMesh<3>>>();
 
     {

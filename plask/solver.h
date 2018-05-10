@@ -133,7 +133,7 @@ Hence, we declare the following \link providers providers, receivers\endlink and
 
     plask::ProviderFor<plask::LightMagnitude, plask::Geometry2DCartesian>::Delegate outLightMagnitude;
 
-    plask::BoundaryConditions<plask::RectilinearMesh2D, double> boundaryConditionsOnField;
+    plask::BoundaryConditions<plask::RectilinearMesh2D::Boundary, double> boundaryConditionsOnField;
 \endcode
 
 In the code above, we have declared two receivers (by convention in PLaSK, names of every receiver in all solvers should begin with
@@ -689,9 +689,9 @@ class SolverOver: public Solver {
      * \param reader current XML reader
      * \param dest BoundaryConditions variable which will store the boundary conditions
      */
-    template <typename MeshT, typename ConditionT>
-    void readBoundaryConditions(Manager& manager, XMLReader& reader, BoundaryConditions<MeshT, ConditionT>& dest) {
-        manager.readBoundaryConditions<MeshT, ConditionT>(reader, dest);
+    template <typename Boundary, typename ConditionT>
+    void readBoundaryConditions(Manager& manager, XMLReader& reader, BoundaryConditions<Boundary, ConditionT>& dest) {
+        manager.readBoundaryConditions<Boundary, ConditionT>(reader, dest);
     }
 
   public:

@@ -96,13 +96,13 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     }
 
     template <typename MatrixT>
-    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage);
+    void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bvoltage);
 
-    void applyBC(SparseBandMatrix2D& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2> ,double>& bvoltage);
+    void applyBC(SparseBandMatrix2D& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bvoltage);
 
     /// Set stiffness matrix + load vector
     template <typename MatrixT>
-    void setMatrix(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>,double>& bvoltage);
+    void setMatrix(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bvoltage);
 
     /// Perform computations for particular matrix type
     template <typename MatrixT>
@@ -141,7 +141,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     HeatMethod heatmet;         ///< Method of heat computation
 
     /// Boundary condition
-    BoundaryConditions<RectangularMesh<2>,double> voltage_boundary;
+    BoundaryConditions<RectangularMesh<2>::Boundary,double> voltage_boundary;
 
     typename ProviderFor<Voltage,Geometry2DType>::Delegate outVoltage;
 

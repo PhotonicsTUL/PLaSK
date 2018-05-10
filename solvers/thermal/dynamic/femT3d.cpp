@@ -111,7 +111,7 @@ void FiniteElementMethodDynamicThermal3DSolver::onInvalidate() {
 
 template<typename MatrixT>
 void FiniteElementMethodDynamicThermal3DSolver::setMatrix(MatrixT& A, MatrixT& B, DataVector<double>& F,
-        const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& btemperature)
+        const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
 

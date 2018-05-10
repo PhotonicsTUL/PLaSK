@@ -29,7 +29,7 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal3DSolver: public Solver
     /// Set stiffness matrix + load vector
     template <typename MatrixT>
     void setMatrix(MatrixT& A, MatrixT& B, DataVector<double>& F,
-                   const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& btemperature
+                   const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature
                   );
 
     /// Create 3D-vector with calculated heat fluxes
@@ -56,7 +56,7 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal3DSolver: public Solver
   public:
 
     // Boundary conditions
-    BoundaryConditions<RectangularMesh<3>,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
+    BoundaryConditions<RectangularMesh<3>::Boundary,double> temperature_boundary;      ///< Boundary condition of constant temperature [K]
 
     typename ProviderFor<Temperature, Geometry3D>::Delegate outTemperature;
 

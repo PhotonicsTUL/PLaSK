@@ -132,7 +132,7 @@ void FiniteElementMethodThermal3DSolver::setAlgorithm(Algorithm alg) {
     * \param K_function function returning stiffness matrix component
     */
 template <typename ConditionT>
-static void setBoundaries(const BoundaryConditionsWithMesh<RectangularMesh<3>,ConditionT>& boundary_conditions,
+static void setBoundaries(const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,ConditionT>& boundary_conditions,
                           const size_t (&idx)[8], double dx, double dy, double dz, double (&F)[8], double (&K)[8][8],
                           const std::function<double(double,ConditionT,size_t)>& F_function,
                           const std::function<double(double,ConditionT,ConditionT,size_t,size_t,bool)>& K_function
@@ -163,10 +163,10 @@ static void setBoundaries(const BoundaryConditionsWithMesh<RectangularMesh<3>,Co
 
 template <typename MatrixT>
 void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double>& B,
-                   const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& btemperature,
-                   const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& bheatflux,
-                   const BoundaryConditionsWithMesh<RectangularMesh<3>,Convection>& bconvection,
-                   const BoundaryConditionsWithMesh<RectangularMesh<3>,Radiation>& bradiation
+                   const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature,
+                   const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& bheatflux,
+                   const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,Convection>& bconvection,
+                   const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,Radiation>& bradiation
                   )
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
@@ -275,7 +275,7 @@ void FiniteElementMethodThermal3DSolver::setMatrix(MatrixT& A, DataVector<double
 
 template <typename MatrixT>
 void FiniteElementMethodThermal3DSolver::applyBC(MatrixT& A, DataVector<double>& B,
-                                                 const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& btemperature) {
+                                                 const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature) {
     // boundary conditions of the first kind
     for (auto cond: btemperature) {
         for (auto r: cond.place) {
@@ -297,7 +297,7 @@ void FiniteElementMethodThermal3DSolver::applyBC(MatrixT& A, DataVector<double>&
 
 template <>
 void FiniteElementMethodThermal3DSolver::applyBC<SparseBandMatrix3D>(SparseBandMatrix3D& A, DataVector<double>& B,
-                                                                   const BoundaryConditionsWithMesh<RectangularMesh<3>,double>& btemperature) {
+                                                                   const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature) {
     // boundary conditions of the first kind
     for (auto cond: btemperature) {
         for (auto r: cond.place) {

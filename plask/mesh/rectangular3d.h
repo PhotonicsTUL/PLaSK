@@ -853,10 +853,10 @@ PLASK_API shared_ptr<RectangularMesh3D > make_rectangular_mesh(const Rectangular
 inline shared_ptr<RectangularMesh3D> make_rectangular_mesh(shared_ptr<const RectangularMesh3D> to_copy) { return make_rectangular_mesh(*to_copy); }
 
 template <>
-inline Boundary<RectangularMesh3D> parseBoundary<RectangularMesh3D>(const std::string& boundary_desc, plask::Manager&) { return RectangularMesh3D::getBoundary(boundary_desc); }
+inline RectangularMesh3D::Boundary parseBoundary<RectangularMesh3D::Boundary>(const std::string& boundary_desc, plask::Manager&) { return RectangularMesh3D::getBoundary(boundary_desc); }
 
 template <>
-inline Boundary<RectangularMesh3D> parseBoundary<RectangularMesh3D>(XMLReader& boundary_desc, Manager& env) { return RectangularMesh3D::getBoundary(boundary_desc, env); }
+inline RectangularMesh3D::Boundary parseBoundary<RectangularMesh3D::Boundary>(XMLReader& boundary_desc, Manager& env) { return RectangularMesh3D::getBoundary(boundary_desc, env); }
 
 }   // namespace plask
 
