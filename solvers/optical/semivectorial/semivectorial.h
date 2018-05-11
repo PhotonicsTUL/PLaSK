@@ -4,7 +4,7 @@
 
 #include <plask/plask.hpp>
 
-
+#include "rootdigger.h"
 
 namespace plask { namespace optical { namespace semivectorial {
 /**
@@ -37,6 +37,31 @@ struct PLASK_SOLVER_API SemiVectorial: public SolverOver<Geometry2DType>
           FieldZ operator*=(dcomplex a) { F *= a; B *= a; return *this; }
           FieldZ operator/=(dcomplex a) { F /= a; B /= a; return *this; }
      };
+     
+    struct Mode {
+      SemiVectorial* solver; ///< Solver this mode belongs to Simple Optical
+      dcomplex lam;          ///< Stored wavelength
+
+    Mode(SemiVectorial* solver):
+        solver(solver) {}
+    };
+    
+    size_t nmodes() const {
+        return modes.size();
+    }
+    
+     /// Insert mode to the list or return the index of the exiting one
+    size_t insertMode(const Mode& mode) {
+        modes.push_back(mode);
+        return modes.size()-1;
+    }
+    
+    std::vector<Mode> modes; 
+    
+    void setWavelength(dcomplex wavelength) {
+        k0 = 2e3*M_PI / wavelength;
+        nrCache.clear();
+    }
     
     virtual void loadConfiguration(XMLReader&, Manager&) override;
     
@@ -51,7 +76,14 @@ struct PLASK_SOLVER_API SemiVectorial: public SolverOver<Geometry2DType>
     
     void refractive_index(double x);
     
+    /// Parameters for rootdigger
+    RootDigger::Params root;
+    
+    size_t findMode(double lambda);
+    
 protected:
+    
+    friend struct RootDigger;
 
     size_t ybegin,  ///< First element of vertical mesh to consider
            yend;    ///< Last element of vertical mesh to consider
