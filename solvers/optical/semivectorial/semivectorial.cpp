@@ -23,9 +23,16 @@ void SemiVectorial<Geometry2DType>::loadConfiguration(XMLReader &reader, Manager
 }
 
 template<typename Geometry2DType>
-void SemiVectorial<Geometry2DType>::refractive_index(double x)
+void SemiVectorial<Geometry2DType>::refractive_index(int num)
 {
     for (FieldZ p : vecE) std::cout<< p.F << " ";
+    for (double p: edgeVertLayerPoint) std::cout<<p<<" ";
+    std::cout<<"Size VecE = "<<vecE.size() << std::endl;
+    std::cout<<"Edge size = " << edgeVertLayerPoint.size() << std::endl;
+    std::cout<<"NR size = " << nrCache.size() << std::endl;
+    
+    setWavelength((modes[num].lam)); 
+    std::cout<<k0 << std::endl;
 }
 
 template<typename Geometry2DType>
@@ -85,6 +92,7 @@ dcomplex SemiVectorial<Geometry2DType>::computeTransferMatrix(const dcomplex& x,
 {
     dcomplex w = 2e3*M_PI / x;
     setWavelength(w);
+    onInitialize();
     Matrix phas_matrix(0,0,0,0);
     Matrix boundary_matrix(0,0,0,0);
     double d; //distance_between_layer

@@ -74,7 +74,7 @@ struct PLASK_SOLVER_API SemiVectorial: public SolverOver<Geometry2DType>
     shared_ptr<MeshAxis> axis_midpoints_vertical;
     shared_ptr<MeshAxis> axis_midpoints_horizontal;
     
-    void refractive_index(double x);
+    void refractive_index(int num);
     
     /// Parameters for rootdigger
     RootDigger::Params root;
