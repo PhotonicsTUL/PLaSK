@@ -616,11 +616,11 @@ void export_FourierSolver2D()
         , py::no_init)
         .def_readonly("outLightE", reinterpret_cast<ProviderFor<LightE,Geometry2DCartesian> FourierSolver2D::Reflected::*>
                                             (&FourierSolver2D::Reflected::outLightE),
-            format(docstring_attr_provider<LightE>(), "LightE", "2D", u8"electric field", u8"V/m", "", "", "", "outLightE").c_str()
+            format(docstring_attr_provider<LightE>(), "LightE", "2D", u8"electric field", u8"V/m", "", "", "", "outLightE", "n=0", ":param int n: Mode number.").c_str()
         )
         .def_readonly("outLightH", reinterpret_cast<ProviderFor<LightH,Geometry2DCartesian> FourierSolver2D::Reflected::*>
                                             (&FourierSolver2D::Reflected::outLightH),
-            format(docstring_attr_provider<LightH>(), "LightH", "2D", u8"magnetic field", u8"A/m", "", "", "", "outLightH").c_str()
+            format(docstring_attr_provider<LightH>(), "LightH", "2D", u8"magnetic field", u8"A/m", "", "", "", "outLightH", "n=0", ":param int n: Mode number.").c_str()
         )
         .def_readonly("outElectricField", reinterpret_cast<ProviderFor<LightE,Geometry2DCartesian> FourierSolver2D::Reflected::*>
                                             (&FourierSolver2D::Reflected::outLightE),
@@ -628,7 +628,7 @@ void export_FourierSolver2D()
         )
         .def_readonly("outLightH", reinterpret_cast<ProviderFor<LightH,Geometry2DCartesian> FourierSolver2D::Reflected::*>
                                             (&FourierSolver2D::Reflected::outLightH),
-            format(docstring_attr_provider<LightH>(), "LightH", "2D", u8"magnetic field", u8"A/m", "", "", "", "outLightH").c_str()
+            format(docstring_attr_provider<LightH>(), "LightH", "2D", u8"magnetic field", u8"A/m", "", "", "", "outLightH", "n=0", ":param int n: Mode number.").c_str()
         )
         .def_readonly("outMagneticField", reinterpret_cast<ProviderFor<LightH,Geometry2DCartesian> FourierSolver2D::Reflected::*>
                                             (&FourierSolver2D::Reflected::outLightH),
@@ -636,7 +636,7 @@ void export_FourierSolver2D()
         )
         .def_readonly("outLightMagnitude", reinterpret_cast<ProviderFor<LightMagnitude,Geometry2DCartesian> FourierSolver2D::Reflected::*>
                                             (&FourierSolver2D::Reflected::outLightMagnitude),
-            format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", "2D", u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude").c_str()
+            format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", "2D", u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude", "n=0", ":param int n: Mode number.").c_str()
         )
         .def("get_electric_coefficients", FourierSolver2D_getReflectedFieldVectorE, py::arg("level"),
              u8"Get Fourier expansion coefficients for the electric field.\n\n"
@@ -675,7 +675,7 @@ void export_FourierSolver2D()
         )
         .def_readonly("outLightMagnitude",
                       reinterpret_cast<ProviderFor<LightMagnitude,Geometry2DCartesian> Eigenmodes<FourierSolver2D>::*> (&Eigenmodes<FourierSolver2D>::outLightMagnitude),
-                      format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", "2D", u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude").c_str()
+                      format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", "2D", u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude", "n=0", ":param int n: Mode number.").c_str()
         )
     ;
 }

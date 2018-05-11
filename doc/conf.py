@@ -147,7 +147,12 @@ sphinx.ext.autosummary.process_generate_options = process_generate_options
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'qthelp'
+if 'epub' in sys.argv:
+    html_theme = 'epub'
+elif 'qthelp' in sys.argv:
+    html_theme = 'qthelp'
+else:
+    html_theme = 'agogo'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

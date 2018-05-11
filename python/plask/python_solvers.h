@@ -249,7 +249,9 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
                    addhelp,                                                                     // {4} Gain in the active region.
                    docstrig_property_optional_args<typename ProviderT::PropertyTag>(),          // {5} wavelength
                    docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>(),     // {6} :param: wavelength
-                   name                                                                         // {7} inGain
+                   name,                                                                        // {7} inGain
+                   docstring_provider_multi_param<typename ProviderT::PropertyTag>(),           // {8} deriv=''
+                   docstring_provider_multi_param_desc<typename ProviderT::PropertyTag>()       // {9} :param str deriv
                   ).c_str()
         );
         return *this;

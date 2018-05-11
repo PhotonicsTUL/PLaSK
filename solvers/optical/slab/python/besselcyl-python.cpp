@@ -350,7 +350,7 @@ void export_BesselSolverCyl()
 	    )
 	    .def_readonly("outLightMagnitude",
                           reinterpret_cast<ProviderFor<LightMagnitude, Geometry2DCartesian> Eigenmodes<BesselSolverCyl>::*> (&Eigenmodes<BesselSolverCyl>::outLightMagnitude),
-	                  format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", "Cyl", u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude").c_str()
+	                  format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", "Cyl", u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude", "n=0", ":param int n: Mode number.").c_str()
 	    )
     ;
 }

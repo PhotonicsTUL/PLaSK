@@ -121,9 +121,9 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_VALUE_PRO
     u8"To obtain the value from the provider simply call it. The call signature\n"
     u8"is as follows:\n\n"
 
-    u8".. method:: solver.out{0}(n=0{4})\n\n"
+    u8".. method:: solver.out{0}({7}{4})\n\n"
 
-    u8"   :param int n: Value number.\n"
+    u8"   {8}\n"
     u8"   {5}\n"
 
     u8"   :return: Value of the {2} **[{6}]**.\n\n"
@@ -207,9 +207,9 @@ template <> PLASK_PYTHON_API const char* docstring_provider_impl<MULTI_FIELD_PRO
     u8"To obtain the value from the provider simply call it. The call signature\n"
     u8"is as follows:\n\n"
 
-    u8".. method:: solver.out{0}(n=0, mesh{4}, interpolation='default')\n\n"
+    u8".. method:: solver.out{0}({7}, mesh{4}, interpolation='default')\n\n"
 
-    u8"   :param int n: Value number.\n"
+    u8"   {8}\n"
     u8"   :param mesh mesh: Target mesh to get the field at.\n"
     u8"   :param str interpolation: Requested interpolation method.\n"
     u8"   {5}\n"

@@ -44,11 +44,6 @@ namespace plask { namespace python {
         return docstring_provider_impl<PropertyTag::propertyType>();
     }
 
-    template <typename PropertyTag>
-    static constexpr const char* docstring_provider_call_multi_param() {
-        return u8":param int n: Value number.\n";
-    }
-
 }} // namespace plask::python
 
 #include "python_property_desc.h"
@@ -720,11 +715,13 @@ namespace detail {
             py::class_<PythonProviderType, shared_ptr<PythonProviderType>, py::bases<ProviderT>, boost::noncopyable>((
                 property_name + "Provider" + suffix).c_str(),
                 format(docstring_provider<typename ProviderT::PropertyTag>(),
-                        property_name, suffix, ProviderT::PropertyTag::NAME,
-                        (space!="")? " in "+space+" geometry" : "",
-                        docstrig_property_optional_args<typename ProviderT::PropertyTag>(),
-                        docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>(),
-                        ProviderT::PropertyTag::UNIT
+                        property_name, suffix, ProviderT::PropertyTag::NAME,                    // {0} Gain, {1} 2D, {2} Gain
+                        (space!="")? " in "+space+" geometry" : "",                             // {3} Cartesian2D
+                        docstrig_property_optional_args<typename ProviderT::PropertyTag>(),     // {4} wavelength  material gain
+                        docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>(),// {5} :param: wavelength
+                        ProviderT::PropertyTag::UNIT,                                           // {6} 1/cm
+                        docstring_provider_multi_param<typename ProviderT::PropertyTag>(),      // {7} deriv=''
+                        docstring_provider_multi_param_desc<typename ProviderT::PropertyTag>()  // {8} :param str deriv
                         ).c_str(),
                 py::no_init)
                 .def("__init__", py::make_constructor(PythonProviderFor__init__<ProviderT>, py::default_call_policies(), py::args("data")))
@@ -760,7 +757,8 @@ namespace detail {
         RegisterProviderImpl() {
             this->provider_class.def("__call__", &__call__, PropertyArgsSingleValue<PropertyT>::value(),
                                      format("Get value from the provider.\n\n{}",
-                                        docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>())
+                                        docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>()
+                                    )
                                      .c_str()
                                     );
         }
@@ -785,7 +783,7 @@ namespace detail {
             this->provider_class.def("__call__", &__call__0, PropertyArgsSingleValue<PropertyT>::value());
             this->provider_class.def("__call__", &__call__n, PropertyArgsMultiValue<PropertyT>::value(),
                                      format(u8"Get value from the provider.\n\n{}{}",
-                                        docstring_provider_call_multi_param<typename ProviderT::PropertyTag>(),
+                                        docstring_provider_multi_param_desc<typename ProviderT::PropertyTag>(),
                                         docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>())
                                      .c_str()
                                     );
@@ -844,7 +842,7 @@ namespace detail {
                                             u8":param mesh mesh: Target mesh to get the field at.\n"
                                             u8":param str interpolation: Requested interpolation method.\n"
                                             u8"{}",
-                                        docstring_provider_call_multi_param<typename ProviderT::PropertyTag>(),
+                                        docstring_provider_multi_param_desc<typename ProviderT::PropertyTag>(),
                                         docstrig_property_optional_args_desc<typename ProviderT::PropertyTag>())
                                      .c_str()
                                     );
