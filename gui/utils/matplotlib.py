@@ -302,11 +302,11 @@ class PlotWidgetBase(QWidget):
         self.figure.set_tight_layout(0)
 
     def plot_updater(self, set_limits, plane='12'):
+        xlim, ylim = self.axes.get_xlim(), self.axes.set_ylim()
         # self.figure.clear()
         self.axes.cla()
         self.selectors = []
         self.axes.minorticks_on()
-        xlim, ylim = self.axes.get_xlim(), self.axes.set_ylim()
         self.axes.grid(which='major', ls='-', lw=1, alpha=0.4, color='0.5')
         self.axes.grid(which='minor', ls='-', lw=1, alpha=0.1, color='0.5')
         self.axes.axhline(0., ls='-', color='k', alpha=0.4, zorder=3)
