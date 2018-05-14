@@ -46,17 +46,29 @@ class ThresholdSearch(ThermoElectric):
         self.diffusion = self.Diffusion(name)
         self.gain = self.Gain(name)
         self.optical = self.Optical(name)
+        self.__reconnect()
+        self.threshold_voltage = None
+        self.threshold_current = None
+        self._invalidate = None
+        self.modeno = None
+        self._sn = 0
+
+    def __reconnect(self):
         self.diffusion.inTemperature = self.thermal.outTemperature
         self.diffusion.inCurrentDensity = self.electrical.outCurrentDensity
         self.gain.inTemperature = self.thermal.outTemperature
         self.gain.inCarriersConcentration = self.diffusion.outCarriersConcentration
         self.optical.inTemperature = self.thermal.outTemperature
         self.optical.inGain = self.gain.outGain
-        self.threshold_voltage = None
-        self.threshold_current = None
-        self._invalidate = None
-        self.modeno = None
-        self._sn = 0
+
+    def reconnect(self):
+        """
+        Reconnect all internal solvers.
+
+        This method should be called if some of the internal solvers were changed manually.
+        """
+        super(ThresholdSearch, self).reconnect()
+        self.__reconnect()
 
     def _parse_xpl(self, tag, manager):
         if tag == 'root':
@@ -960,8 +972,8 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
     """
 
     def __init__(self, name=''):
-        import optical.slab
-        self.Optical = optical.slab.BesselCyl
+        from optical.slab import BesselCyl
+        self.Optical = BesselCyl
         super(ThresholdSearchBesselCyl, self).__init__(name)
         self.maxlam = None
 

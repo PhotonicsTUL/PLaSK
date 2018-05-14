@@ -63,10 +63,21 @@ class ThermoElectric(plask.Solver):
         super(ThermoElectric, self).__init__(name)
         self.thermal = self.Thermal(name)
         self.electrical = self.Electrical(name)
+        self.__reconnect()
+
+        self.tfreq = 6
+
+    def __reconnect(self):
         self.electrical.inTemperature = self.thermal.outTemperature
         self.thermal.inHeat = self.electrical.outHeat
 
-        self.tfreq = 6
+    def reconnect(self):
+        """
+        Reconnect all internal solvers.
+
+        This method should be called if some of the internal solvers were changed manually.
+        """
+        self.__reconnect()
 
     def _read_attr(self, tag, attr, solver, type=None, pyattr=None):
         if pyattr is None: pyattr = attr
