@@ -173,6 +173,8 @@ struct RectangularMeshBase2D: public MeshD<2> {
     /// Boundary type.
     typedef plask::Boundary<RectangularMeshBase2D> Boundary;
 
+    // ---------- This fragment is copy/pasted to RectangularMeshBase3D ----------
+
     template <typename Predicate>
     static Boundary getBoundary(Predicate predicate) {
         return Boundary(new PredicateBoundaryImpl<RectangularMeshBase2D, Predicate>(predicate));
@@ -183,9 +185,7 @@ struct RectangularMeshBase2D: public MeshD<2> {
      * @param line_nr_axis0 number of vertical line, axis 0 index of mesh
      * @return node set which includes one vertical (from bottom to top) line in mesh
      */
-    virtual BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t PLASK_UNUSED(line_nr_axis0)) const {
-        throw NotImplemented("createVerticalBoundaryAtLine(line_nr_axis0)");
-    }
+    virtual BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const;
 
     /**
      * Get boundary which show one vertical (from bottom to top) line in mesh.
@@ -204,9 +204,7 @@ struct RectangularMeshBase2D: public MeshD<2> {
      * @param indexBegin, indexEnd ends of [indexBegin, indexEnd) range in line
      * @return node set which includes range in vertical (from bottom to top) line in mesh.
      */
-    virtual BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t PLASK_UNUSED(line_nr_axis0), std::size_t PLASK_UNUSED(indexBegin), std::size_t PLASK_UNUSED(indexEnd)) const {
-        throw NotImplemented("createVerticalBoundaryAtLine(line_nr_axis0, indexBegin, indexEnd)");
-    }
+    virtual BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) const;
 
     /**
      * Get boundary which show range in vertical (from bottom to top) line in mesh.
@@ -225,9 +223,7 @@ struct RectangularMeshBase2D: public MeshD<2> {
      * @param axis0_coord axis 0 coordinate
      * @return node set which includes one vertical (from bottom to top) line in mesh
      */
-    virtual BoundaryNodeSet createVerticalBoundaryNear(double PLASK_UNUSED(axis0_coord)) const {
-        throw NotImplemented("createVerticalBoundaryNear(axis0_coord)");
-    }
+    virtual BoundaryNodeSet createVerticalBoundaryNear(double axis0_coord) const;
 
     /**
      * Get boundary which show one vertical (from bottom to top) line in mesh which lies nearest given coordinate.
@@ -246,9 +242,7 @@ struct RectangularMeshBase2D: public MeshD<2> {
      * @param from, to ends of line segment, [from, to] range of axis 1 coordinates
      * @return node set which includes one vertical (from bottom to top) segment in mesh
      */
-    virtual BoundaryNodeSet createVerticalBoundaryNear(double PLASK_UNUSED(axis0_coord), double PLASK_UNUSED(from), double PLASK_UNUSED(to)) const {
-        throw NotImplemented("createVerticalBoundaryNear(axis0_coord, from, to)");
-    }
+    virtual BoundaryNodeSet createVerticalBoundaryNear(double axis0_coord, double from, double to) const;
 
     /**
      * Get boundary which show one vertical (from bottom to top) segment in mesh which lies nearest given coordinate and has ends in given range
@@ -266,9 +260,7 @@ struct RectangularMeshBase2D: public MeshD<2> {
      * Create a node set which includes one vertical, left (from bottom to top) line in mesh.
      * @return node set which includes left line in mesh
      */
-    virtual BoundaryNodeSet createLeftBoundary() const {
-        throw NotImplemented("createLeftBoundary()");
-    }
+    virtual BoundaryNodeSet createLeftBoundary() const;
 
     /**
      * Get boundary which show one vertical, left (from bottom to top) line in mesh.
@@ -284,9 +276,7 @@ struct RectangularMeshBase2D: public MeshD<2> {
      * Create a node set which includes one vertical, right (from bottom to top) line in mesh.
      * @return node set which includes right line in mesh
      */
-    virtual BoundaryNodeSet createRightBoundary() const {
-        throw NotImplemented("createRightBoundary()");
-    }
+    virtual BoundaryNodeSet createRightBoundary() const;
 
 
     /**
@@ -304,9 +294,7 @@ struct RectangularMeshBase2D: public MeshD<2> {
      * @param box box in which boundary should lie
      * @return node set which lies on left edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
-    virtual BoundaryNodeSet createLeftOfBoundary(const Box2D& PLASK_UNUSED(box)) const {
-        throw NotImplemented("createLeftOfBoundary(box)");
-    }
+    virtual BoundaryNodeSet createLeftOfBoundary(const Box2D& box) const;
 
     /**
      * Get boundary which lies on left edge of the @p box (at mesh line nearest left edge and inside the box).
@@ -325,9 +313,7 @@ struct RectangularMeshBase2D: public MeshD<2> {
      * @param box box in which boundary should lie
      * @return node set which lies on right edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
-    virtual BoundaryNodeSet createRightOfBoundary(const Box2D& PLASK_UNUSED(box)) const {
-        throw NotImplemented("createRightOfBoundary(box)");
-    }
+    virtual BoundaryNodeSet createRightOfBoundary(const Box2D& box) const;
 
     /**
      * Get boundary which lies on right edge of the @p box (at mesh line nearest right edge and inside the box).
@@ -346,9 +332,7 @@ struct RectangularMeshBase2D: public MeshD<2> {
      * @param box box in which boundary should lie
      * @return node set which lies on bottom edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
-    virtual BoundaryNodeSet createBottomOfBoundary(const Box2D& PLASK_UNUSED(box)) const {
-        throw NotImplemented("createBottomOfBoundary(box)");
-    }
+    virtual BoundaryNodeSet createBottomOfBoundary(const Box2D& box) const;
 
     /**
      * Get boundary which lies on bottom edge of the @p box (at mesh line nearest bottom edge and inside the box).
@@ -367,9 +351,7 @@ struct RectangularMeshBase2D: public MeshD<2> {
      * @param box box in which boundary should lie
      * @return node set which lies on top edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
-    virtual BoundaryNodeSet createTopOfBoundary(const Box2D& PLASK_UNUSED(box)) const {
-        throw NotImplemented("createTopOfBoundary(box)");
-    }
+    virtual BoundaryNodeSet createTopOfBoundary(const Box2D& box) const;
 
     /**
      * Get boundary which lies on top edge of the @p box (at mesh line nearest top edge and inside the box).
@@ -528,9 +510,7 @@ struct RectangularMeshBase2D: public MeshD<2> {
      * @param line_nr_axis1 number of horizontal line, index of axis1 mesh
      * @return node set which includes one horizontal (from left to right) line in mesh
      */
-    virtual BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t PLASK_UNUSED(line_nr_axis1)) const {
-        throw NotImplemented("createHorizontalBoundaryAtLine(line_nr_axis1)");
-    }
+    virtual BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1) const;
 
     /**
      * Get boundary which shows one horizontal (from left to right) line in mesh.
@@ -549,9 +529,7 @@ struct RectangularMeshBase2D: public MeshD<2> {
      * @param indexBegin, indexEnd ends of [indexBegin, indexEnd) range in line
      * @return node set which includes range in horizontal (from left to right) line in mesh.
      */
-    virtual BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t PLASK_UNUSED(line_nr_axis1), std::size_t PLASK_UNUSED(indexBegin), std::size_t PLASK_UNUSED(indexEnd)) const {
-        throw NotImplemented("createHorizontalBoundaryAtLine(line_nr_axis1, indexBegin, indexEnd)");
-    }
+    virtual BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) const;
 
     /**
      * Get boundary which shows range in horizontal (from left to right) line in mesh.
@@ -570,9 +548,7 @@ struct RectangularMeshBase2D: public MeshD<2> {
      * @param axis1_coord axis 1 coordinate
      * @return boundary which includes one horizontal (from left to right) line in mesh
      */
-    virtual BoundaryNodeSet createHorizontalBoundaryNear(double PLASK_UNUSED(axis1_coord)) const {
-        throw NotImplemented("createHorizontalBoundaryNear(axis1_coord)");
-    }
+    virtual BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord) const;
 
     /**
      * Get boundary which shows one horizontal (from left to right) line in mesh which lies nearest given coordinate.
@@ -591,9 +567,7 @@ struct RectangularMeshBase2D: public MeshD<2> {
      * @param from, to ends of line segment, [from, to] range of axis 0 coordinates
      * @return node set which includes one horizontal (from left to right) line in mesh
      */
-    virtual BoundaryNodeSet createHorizontalBoundaryNear(double PLASK_UNUSED(axis1_coord), double PLASK_UNUSED(from), double PLASK_UNUSED(to)) const {
-        throw NotImplemented("createHorizontalBoundaryNear(axis1_coord, from, to)");
-    }
+    virtual BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord, double from, double to) const;
 
     /**
      * Get boundary which show one horizontal (from left to right) segment in mesh which lies nearest given coordinate and has ends in given range.
@@ -611,9 +585,7 @@ struct RectangularMeshBase2D: public MeshD<2> {
      * Create node set which includes one horizontal, top (from left to right) line in mesh.
      * @return node set which includes top line in mesh
      */
-    virtual BoundaryNodeSet createTopBoundary() const {
-        throw NotImplemented("createTopBoundary()");
-    }
+    virtual BoundaryNodeSet createTopBoundary() const;
 
     /**
      * Get boundary which shows one horizontal, top (from left to right) line in mesh.
@@ -629,9 +601,7 @@ struct RectangularMeshBase2D: public MeshD<2> {
      * Create node set which includes one horizontal, bottom (from left to right) line in mesh.
      * @return node set which includes bottom line in mesh
      */
-    virtual BoundaryNodeSet createBottomBoundary() const {
-        throw NotImplemented("createBottomBoundary()");
-    }
+    virtual BoundaryNodeSet createBottomBoundary() const;
 
     /**
      * Get boundary which shows one horizontal, bottom (from left to right) line in mesh.
@@ -643,42 +613,11 @@ struct RectangularMeshBase2D: public MeshD<2> {
         } );
     }
 
-    static Boundary getBoundary(const std::string &boundary_desc) {
-        if (boundary_desc == "bottom") return getBottomBoundary();
-        if (boundary_desc == "left") return getLeftBoundary();
-        if (boundary_desc == "right") return getRightBoundary();
-        if (boundary_desc == "top") return getTopBoundary();
-        return Boundary();
-    }
+    static Boundary getBoundary(const std::string &boundary_desc);
 
-    static Boundary getBoundary(XMLReader &boundary_desc, Manager &manager) {
-        auto side = boundary_desc.getAttribute("side");
-        auto line = boundary_desc.getAttribute("line");
-        if (side && line) {
-            throw XMLConflictingAttributesException(boundary_desc, "side", "line");
-        } else if (side) {
-            if (*side == "bottom")
-                return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, manager, &getBottomBoundary, &getBottomOfBoundary);
-            if (*side == "left")
-                return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, manager, &getLeftBoundary, &getLeftOfBoundary);
-            if (*side == "right")
-                return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, manager, &getRightBoundary, &getRightOfBoundary);
-            if (*side == "top")
-                return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, manager, &getTopBoundary, &getTopOfBoundary);
-            throw XMLBadAttrException(boundary_desc, "side", *side);
-        } else if (line) {
-            double at = boundary_desc.requireAttribute<double>("at"),
-                    start = boundary_desc.requireAttribute<double>("start"),
-                    stop = boundary_desc.requireAttribute<double>("stop");
-            boundary_desc.requireTagEnd();
-            if (*line == "vertical")
-                return getVerticalBoundaryNear(at, start, stop);
-            if (*line == "horizontal")
-                return getHorizontalBoundaryNear(at, start, stop);
-            throw XMLBadAttrException(boundary_desc, "line", *line);
-        }
-        return Boundary();
-    }
+    static Boundary getBoundary(XMLReader &boundary_desc, Manager &manager);
+
+    // ---------- End of the fragment which is copy/pasted to RectangularMeshBase3D ----------
 
 };
 
@@ -687,6 +626,18 @@ inline RectangularMeshBase2D::Boundary parseBoundary<RectangularMeshBase2D::Boun
 
 template <>
 inline RectangularMeshBase2D::Boundary parseBoundary<RectangularMeshBase2D::Boundary>(XMLReader& boundary_desc, Manager& env) { return RectangularMeshBase2D::getBoundary(boundary_desc, env); }
+
+struct RectangularMeshBase3D: public MeshD<3> {
+    //TODO
+};
+
+template <int DIM>
+using RectangularMeshBase =
+    typename std::conditional<
+        DIM == 2,
+        RectangularMeshBase2D,
+        typename std::conditional<DIM == 3, RectangularMeshBase3D, void>::type
+    >::type;
 
 }   // namespace plask
 
