@@ -15,30 +15,34 @@ import os
 
 QT_API = os.environ.get('QT_API')
 if QT_API is not None:
-    QT_API = dict(pyqt='PyQt4', pyqt4='PyQt4', pyqt5='PyQt5', pyside='PySide').get(QT_API, 'PyQt5')
-    try:
-        import matplotlib
-    except ImportError:
-        pass
+    QT_API = dict(pyqt='PyQt4', pyqt4='PyQt4', pyqt5='PyQt5', pyside='PySide').get(QT_API)
+    if QT_API is None:
+        import warnings
+        warnings.warn("Ignoring unknown QT_API environmental variable!")
     else:
-        if QT_API == 'PyQt5':
-            matplotlib.use('Qt5Agg')
+        try:
+            import matplotlib
+        except ImportError:
+            pass
         else:
-            matplotlib.rcParams['backend.qt4'] = QT_API
-            matplotlib.use('Qt4Agg')
-else:
+            if QT_API == 'PyQt5':
+                matplotlib.use('Qt5Agg')
+            else:
+                matplotlib.rcParams['backend.qt4'] = QT_API
+                matplotlib.use('Qt4Agg')
+if QT_API is None:
     try:
         import matplotlib
     except ImportError:
         QT_API = 'PyQt5'
     else:
-        if matplotlib.rcParams['backend'] == 'Qt5Agg':
-            QT_API = 'PyQt5'
-        else:
-            matplotlib.use('Qt4Agg')
+        if matplotlib.rcParams['backend'] == 'Qt4Agg':
             QT_API = matplotlib.rcParams['backend.qt4']
+        else:
+            matplotlib.use('Qt5Agg')
+            QT_API = 'PyQt5'
 
-for QT_API in (QT_API, 'PySide', 'PyQt4', 'PyQt5'):
+for QT_API in (QT_API, 'PyQt5', 'PySide', 'PyQt4'):
     if QT_API == 'PySide':
         try:
             from PySide import QtCore, QtGui, QtGui as QtWidgets, QtHelp
@@ -63,18 +67,20 @@ for QT_API in (QT_API, 'PySide', 'PyQt4', 'PyQt5'):
             QtSignal = QtCore.pyqtSignal
             QtSlot = QtCore.pyqtSlot
             break
-    else:
+    else:  # QT_API == 'PyQt5'
         try:
             from PyQt5 import QtCore, QtWidgets, QtGui, QtHelp
         except ImportError:
             pass
         else:
+            QT_API = 'PyQt5'
             if os.name == 'nt':
                 QtWidgets.QApplication.addLibraryPath(os.path.join(sys.prefix, 'Library', 'plugins'))
                 QtWidgets.QApplication.addLibraryPath(os.path.join(os.path.dirname(QtCore.__file__), 'plugins'))
             QtSignal = QtCore.pyqtSignal
             QtSlot = QtCore.pyqtSlot
             break
+
 
 sys.modules['gui.qt.QtCore'] = QtCore
 sys.modules['gui.qt.QtWidgets'] = QtWidgets
