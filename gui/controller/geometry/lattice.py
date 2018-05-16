@@ -398,7 +398,7 @@ class LatticeEditor(QDialog):
             self.axes.draw_artist(line)
         self.background = self.canvas.copy_from_bbox(self.axes.bbox)
         self.axes.draw_artist(self.mark)
-        self.canvas.blit(self.axes.bbox)
+        # self.canvas.blit(self.axes.bbox)
 
     def _draw_current(self, x, y):
         if self.current is None: return
