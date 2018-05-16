@@ -304,6 +304,179 @@ public:
         return rectangularMesh.getElementBox(index0, index1);
     }
 
+protected:  // boundaries code:
+
+    // Common code for: left, right, bottom, top boundries:
+    template <int CHANGE_DIR>
+    struct BoundaryIteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
+
+        const RectangularFilteredMeshBase<DIM> &mesh;
+
+        /// current indexes
+        Vec<2, std::size_t> index;
+
+        /// past the last index of change direction
+        std::size_t endIndex;
+
+        BoundaryIteratorImpl(const RectangularFilteredMeshBase<DIM>& mesh, Vec<DIM, std::size_t> index, std::size_t endIndex)
+            : mesh(mesh), index(index), endIndex(endIndex)
+        {
+            // go to the first index existed in order to make dereference possible:
+            while (index[CHANGE_DIR] < endIndex && mesh.index(index) == NOT_INCLUDED)
+                ++index[CHANGE_DIR];
+        }
+
+        void increment() override {
+            do {
+                ++index[CHANGE_DIR];
+            } while (index[CHANGE_DIR] < endIndex && mesh.index(index) == NOT_INCLUDED);
+        }
+
+        bool equal(const BoundaryNodeSetImpl::IteratorImpl& other) const override {
+            const BoundaryIteratorImpl& o = static_cast<const BoundaryIteratorImpl&>(other);
+            return index == o.index && endIndex == o.endIndex;
+        }
+
+        std::size_t dereference() const override {
+            return mesh.index(index);
+        }
+
+        typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
+            return new BoundaryIteratorImpl<CHANGE_DIR>(*this);
+        }
+
+    };
+
+    template <int CHANGE_DIR>
+    struct BoundaryNodeSetImpl: public BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<2>> {
+
+        using typename BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<2>>::const_iterator;
+
+        /// first index
+        Vec<2, std::size_t> index;
+
+        /// past the last index of change direction
+        std::size_t endIndex;
+
+        BoundaryNodeSetImpl(const RectangularFilteredMeshBase<DIM>& mesh, Vec<2, std::size_t> index, std::size_t endIndex)
+            : BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<2>>(mesh), index(index), endIndex(endIndex) {}
+
+        BoundaryNodeSetImpl(const RectangularFilteredMeshBase<DIM>& mesh, std::size_t index0, std::size_t index1, std::size_t endIndex)
+            : BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<2>>(mesh), index(index0, index1), endIndex(endIndex) {}
+
+        bool contains(std::size_t mesh_index) const override {
+            Vec<2, std::size_t> mesh_indexes = this->mesh.indexes(mesh_index);
+            for (int i = 0; i < DIM; ++i)
+                if (i == CHANGE_DIR) {
+                    if (mesh_indexes[i] < index[i] || mesh_indexes[i] >= endIndex) return false;
+                } else
+                    if (mesh_indexes[i] != index[i]) return false;
+            return true;
+        }
+
+        const_iterator begin() const override {
+            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR>(this->mesh, index, endIndex));
+        }
+
+        const_iterator end() const override {
+            Vec<2, std::size_t> index_end = index;
+            index_end[CHANGE_DIR] = endIndex;
+            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR>(this->mesh, index_end, endIndex));
+        }
+    };
+
+public:     // boundaries:
+
+    BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const override {
+        return createVerticalBoundaryAtLine(line_nr_axis0, 0, rectangularMesh.axis[1]->size());
+    }
+
+    BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) const override {
+        return new BoundaryNodeSetImpl<1>(*this, line_nr_axis0, indexBegin, indexEnd);
+    }
+
+    BoundaryNodeSet createVerticalBoundaryNear(double axis0_coord) const override {
+        return createVerticalBoundaryAtLine(rectangularMesh.axis[0]->findNearestIndex(axis0_coord));
+    }
+
+    BoundaryNodeSet createVerticalBoundaryNear(double axis0_coord, double from, double to) const override {
+        std::size_t begInd, endInd;
+        if (!details::getIndexesInBoundsExt(begInd, endInd, *rectangularMesh.axis[1], from, to))
+            return new EmptyBoundaryImpl();
+        return createVerticalBoundaryAtLine(rectangularMesh.axis[0]->findNearestIndex(axis0_coord), begInd, endInd);
+    }
+
+    BoundaryNodeSet createLeftBoundary() const override {
+        return createVerticalBoundaryAtLine(boundaryIndex[0].lo);
+    }
+
+    BoundaryNodeSet createRightBoundary() const override {
+        return createVerticalBoundaryAtLine(boundaryIndex[0].up);
+    }
+
+    BoundaryNodeSet createLeftOfBoundary(const Box2D& box) const override {
+        std::size_t line, begInd, endInd;
+        if (details::getLineLo(line, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0) &&
+            details::getIndexesInBounds(begInd, endInd, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1))
+            return createVerticalBoundaryAtLine(line, begInd, endInd);
+        else
+            return new EmptyBoundaryImpl();
+    }
+
+   BoundaryNodeSet createRightOfBoundary(const Box2D& box) const override {
+        std::size_t line, begInd, endInd;
+        if (details::getLineHi(line, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0) &&
+            details::getIndexesInBounds(begInd, endInd, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1))
+            return createVerticalBoundaryAtLine(line, begInd, endInd);
+        else
+            return new EmptyBoundaryImpl();
+    }
+
+    BoundaryNodeSet createBottomOfBoundary(const Box2D& box) const override {
+        std::size_t line, begInd, endInd;
+        if (details::getLineLo(line, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1) &&
+            details::getIndexesInBounds(begInd, endInd, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0))
+            return createHorizontalBoundaryAtLine(line, begInd, endInd);
+        else
+            return new EmptyBoundaryImpl();
+    }
+
+    BoundaryNodeSet createTopOfBoundary(const Box2D& box) const override {
+       std::size_t line, begInd, endInd;
+       if (details::getLineHi(line, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1) &&
+           details::getIndexesInBounds(begInd, endInd, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0))
+           return createHorizontalBoundaryAtLine(line, begInd, endInd);
+       else
+           return new EmptyBoundaryImpl();
+    }
+
+    BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1) const override {
+        return createHorizontalBoundaryAtLine(line_nr_axis1, 0, rectangularMesh.axis[0]->size());
+    }
+
+    BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) const override {
+        return new BoundaryNodeSetImpl<0>(*this, line_nr_axis1, indexBegin, indexEnd);
+    }
+
+    BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord) const override {
+        return createHorizontalBoundaryAtLine(rectangularMesh.axis[1]->findNearestIndex(axis1_coord));
+    }
+
+    BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord, double from, double to) const override {
+        std::size_t begInd, endInd;
+        if (!details::getIndexesInBoundsExt(begInd, endInd, *rectangularMesh.axis[0], from, to))
+            return new EmptyBoundaryImpl();
+        return createHorizontalBoundaryAtLine(rectangularMesh.axis[1]->findNearestIndex(axis1_coord), begInd, endInd);
+    }
+
+    BoundaryNodeSet createTopBoundary() const override {
+        return createHorizontalBoundaryAtLine(boundaryIndex[1].up);
+    }
+
+    BoundaryNodeSet createBottomBoundary() const override {
+        return createHorizontalBoundaryAtLine(boundaryIndex[1].lo);
+    }
+
 };
 
 template <typename SrcT, typename DstT>

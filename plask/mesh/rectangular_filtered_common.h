@@ -15,7 +15,7 @@ namespace plask {
  * Do not use directly.
  */
 template <int DIM>
-class RectangularFilteredMeshBase: public MeshD<DIM> {
+class RectangularFilteredMeshBase: public RectangularMeshBase<DIM> {
 
 protected:
 
@@ -330,87 +330,6 @@ public:
     typename Primitive<DIM>::Box getElementBox(std::size_t element_index) const {
         return rectangularMesh.getElementBox(elementsSet.at(element_index));
     }
-
-protected:  // boundaries code:
-
-    // Common code for: left, right, bottom, top boundries:
-    template <int CHANGE_DIR>
-    struct BoundaryIteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
-
-        const RectangularFilteredMeshBase<DIM> &mesh;
-
-        /// current indexes
-        Vec<DIM, std::size_t> index;
-
-        /// past the last index of change direction
-        std::size_t endIndex;
-
-        BoundaryIteratorImpl(const RectangularFilteredMeshBase<DIM>& mesh, Vec<DIM, std::size_t> index, std::size_t endIndex)
-            : mesh(mesh), index(index), endIndex(endIndex)
-        {
-            // go to the first index existed in order to make dereference possible:
-            while (index[CHANGE_DIR] < endIndex && mesh.index(index) == NOT_INCLUDED)
-                ++index[CHANGE_DIR];
-        }
-
-        void increment() override {
-            do {
-                ++index[CHANGE_DIR];
-            } while (index[CHANGE_DIR] < endIndex && mesh.index(index) == NOT_INCLUDED);
-        }
-
-        bool equal(const BoundaryNodeSetImpl::IteratorImpl& other) const override {
-            const BoundaryIteratorImpl& o = static_cast<const BoundaryIteratorImpl&>(other);
-            return index == o.index && endIndex == o.endIndex;
-        }
-
-        std::size_t dereference() const override {
-            return mesh.index(index);
-        }
-
-        typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
-            return new BoundaryIteratorImpl<CHANGE_DIR>(*this);
-        }
-
-    };
-
-    template <int CHANGE_DIR>
-    struct BoundaryNodeSetImpl: public BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<DIM>> {
-
-        using typename BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<DIM>>::const_iterator;
-
-        /// first index
-        Vec<DIM, std::size_t> index;
-
-        /// past the last index of change direction
-        std::size_t endIndex;
-
-        BoundaryNodeSetImpl(const RectangularFilteredMeshBase<DIM>& mesh, Vec<DIM, std::size_t> index, std::size_t endIndex)
-            : BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<DIM>>(mesh), index(index), endIndex(endIndex) {}
-
-        bool contains(std::size_t mesh_index) const override {
-            Vec<DIM, std::size_t> mesh_indexes = this->mesh.indexes(mesh_index);
-            for (int i = 0; i < DIM; ++i)
-                if (i == CHANGE_DIR) {
-                    if (mesh_indexes[i] < index[i] || mesh_indexes[i] >= endIndex) return false;
-                } else
-                    if (mesh_indexes[i] != index[i]) return false;
-            return true;
-        }
-
-        const_iterator begin() const override {
-            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR>(this->mesh, index, endIndex));
-        }
-
-        const_iterator end() const override {
-            Vec<DIM, std::size_t> index_end = index;
-            index_end[CHANGE_DIR] = endIndex;
-            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR>(this->mesh, index_end, endIndex));
-        }
-    };
-
-    // TODO zaimplementować boundaries, wystarczy iterować po indeksach pełnej siatki i pomijać te, które nie są zawarte w nodesSet
-    // boundaryIndex można znaleźć indeksy skrajnych punktów
 
 };
 

@@ -863,8 +863,7 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
         }
     };*/
 
-public:
-    // boundaries:
+public:     // boundaries:
 
     BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const override {
         return new VerticalBoundary(*this, line_nr_axis0);
