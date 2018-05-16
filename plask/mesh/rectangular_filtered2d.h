@@ -186,6 +186,7 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
     }
 
     using RectangularFilteredMeshBase<DIM>::index;
+    using RectangularFilteredMeshBase<DIM>::at;
 
     /**
      * Get point with given mesh indices.
@@ -455,7 +456,7 @@ public:     // boundaries:
     }
 
     BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) const override {
-        return new BoundaryNodeSetImpl<0>(*this, line_nr_axis1, indexBegin, indexEnd);
+        return new BoundaryNodeSetImpl<0>(*this, indexBegin, line_nr_axis1, indexEnd);
     }
 
     BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord) const override {
