@@ -25,14 +25,21 @@ void SemiVectorial<Geometry2DType>::loadConfiguration(XMLReader &reader, Manager
 template<typename Geometry2DType>
 void SemiVectorial<Geometry2DType>::refractive_index(int num)
 {
-    for (FieldZ p : vecE) std::cout<< p.F << " ";
-    for (double p: edgeVertLayerPoint) std::cout<<p<<" ";
-    std::cout<<"Size VecE = "<<vecE.size() << std::endl;
-    std::cout<<"Edge size = " << edgeVertLayerPoint.size() << std::endl;
-    std::cout<<"NR size = " << nrCache.size() << std::endl;
     
     setWavelength((modes[num].lam)); 
-    std::cout<<k0 << std::endl;
+    initializeRefractiveIndexVec();
+    dcomplex n_2 = 0;
+    for (int i = 0; i < edgeVertLayerPoint.size()-1; ++i)
+    {
+        dcomplex F = vecE[i].F;
+        dcomplex B = vecE[i].B;
+        double a = edgeVertLayerPoint[i];
+        double b = edgeVertLayerPoint[i+1];
+        dcomplex n = nrCache[i];
+        n_2 += n*n*( (F*F*b)-(F*F*a) - ((I*F*B)/(2*k0*n))*(exp(2*I*n*k0*b)-exp(2*I*n*k0*a)) + 
+            ((I*F*B)/(2*k0*n))*(exp(-2*I*n*k0*b)-exp(-2*I*n*k0*a))+ (B*B*b - B*B*a));
+    }
+    std::cout<<"n^2 = " << n_2 << std::endl; 
 }
 
 template<typename Geometry2DType>
@@ -92,7 +99,6 @@ dcomplex SemiVectorial<Geometry2DType>::computeTransferMatrix(const dcomplex& x,
 {
     dcomplex w = 2e3*M_PI / x;
     setWavelength(w);
-    onInitialize();
     Matrix phas_matrix(0,0,0,0);
     Matrix boundary_matrix(0,0,0,0);
     double d; //distance_between_layer
@@ -114,6 +120,7 @@ dcomplex SemiVectorial<Geometry2DType>::computeTransferMatrix(const dcomplex& x,
 
     return transfer_matrix.bb;
 }
+
 
 template<> std::string SemiVectorial<Geometry2DCylindrical>::getClassName() const { return "optical.SemiVectorialCyl"; }
 template<> std::string SemiVectorial<Geometry2DCartesian>::getClassName() const { return "optical.SemiVectorial2D"; }

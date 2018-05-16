@@ -19,6 +19,7 @@ BOOST_PYTHON_MODULE(semivectorial)
     }
     
     {CLASS(SemiVectorial<Geometry2DCartesian>, "SemiVectorial2D", "Solver semivectorial")
+         METHOD(refractive_index, refractive_index, py::arg("lam"));
          METHOD(findMode, findMode, py::arg("lam"));
     }
     
