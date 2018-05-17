@@ -38,7 +38,7 @@ void checkElementIterator(const plask::RectangularFilteredMesh2D& filteredMesh,
 BOOST_AUTO_TEST_SUITE(rectangular_filtered) // MUST be the same as the file name
 
 BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
-    auto axis0 = plask::make_shared<plask::OrderedAxis>(std::initializer_list<double>{1.0, 2.0, 5.0, 10.0});
+    auto axis0 = plask::make_shared<plask::OrderedAxis>(std::initializer_list<double>{1.0, 2.0, 5.0, 10.0, 18.0});
     auto axis1 = plask::make_shared<plask::RegularAxis>(3.0, 6.0, 4);
     plask::RectangularFilteredMesh2D filteredMesh(
                 plask::RectangularMesh<2>(axis0, axis1),    // 4x4 nodes, 3x3 elements
@@ -46,9 +46,9 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
                     return e.getIndex0() == 1 || e.getIndex1() == 1;    // everything in the middle (index 1) column and row
                 }
     );
-    BOOST_REQUIRE_EQUAL(filteredMesh.size(), 2 + 4 + 4 + 2);
-    BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount(), 1 + 3 + 1);
-    BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount0(), 3);
+    BOOST_REQUIRE_EQUAL(filteredMesh.size(), 2 + 5 + 5 + 2);
+    BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount(), 1 + 4 + 1);
+    BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount0(), 4);
     BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount1(), 3);
 
     {   // iterator test:
@@ -70,6 +70,9 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
         checkNodeIterator(filteredMesh, it,   10, 13,  10.0, 4.0);
         checkNodeIterator(filteredMesh, it,   11, 14,  10.0, 5.0);
 
+        checkNodeIterator(filteredMesh, it,   12, 17,  18.0, 4.0);
+        checkNodeIterator(filteredMesh, it,   13, 18,  18.0, 5.0);
+
         BOOST_CHECK(it == filteredMesh.end());
     }
 
@@ -83,21 +86,24 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
         checkElementIterator(filteredMesh, it,   3,  5,   1, 2);
 
         checkElementIterator(filteredMesh, it,   4,  7,   2, 1);
+        checkElementIterator(filteredMesh, it,   5, 10,   3, 1);
 
         BOOST_CHECK(it == filteredMesh.elements().end());
     }
 
-    BOOST_CHECK_EQUAL(filteredMesh.getElementIndexFromLowIndex(0), 0);
-    BOOST_CHECK_EQUAL(filteredMesh.getElementIndexFromLowIndex(2), 1);
-    BOOST_CHECK_EQUAL(filteredMesh.getElementIndexFromLowIndex(3), 2);
-    BOOST_CHECK_EQUAL(filteredMesh.getElementIndexFromLowIndex(4), 3);
-    BOOST_CHECK_EQUAL(filteredMesh.getElementIndexFromLowIndex(7), 4);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementIndexFromLowIndex(0),  0);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementIndexFromLowIndex(2),  1);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementIndexFromLowIndex(3),  2);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementIndexFromLowIndex(4),  3);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementIndexFromLowIndex(7),  4);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementIndexFromLowIndex(10), 5);
 
-    BOOST_CHECK_EQUAL(filteredMesh.getElementMeshLowIndex(0), 0);
-    BOOST_CHECK_EQUAL(filteredMesh.getElementMeshLowIndex(1), 2);
-    BOOST_CHECK_EQUAL(filteredMesh.getElementMeshLowIndex(2), 3);
-    BOOST_CHECK_EQUAL(filteredMesh.getElementMeshLowIndex(3), 4);
-    BOOST_CHECK_EQUAL(filteredMesh.getElementMeshLowIndex(4), 7);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementMeshLowIndex(0),  0);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementMeshLowIndex(1),  2);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementMeshLowIndex(2),  3);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementMeshLowIndex(3),  4);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementMeshLowIndex(4),  7);
+    BOOST_CHECK_EQUAL(filteredMesh.getElementMeshLowIndex(5), 10);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
