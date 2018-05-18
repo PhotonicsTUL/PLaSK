@@ -323,8 +323,8 @@ protected:  // boundaries code:
             : mesh(mesh), index(index), endIndex(endIndex)
         {
             // go to the first index existed in order to make dereference possible:
-            while (index[CHANGE_DIR] < endIndex && mesh.index(index) == NOT_INCLUDED)
-                ++index[CHANGE_DIR];
+            while (this->index[CHANGE_DIR] < this->endIndex && mesh.index(this->index) == NOT_INCLUDED)
+                ++this->index[CHANGE_DIR];
         }
 
         void increment() override {
@@ -366,8 +366,9 @@ protected:  // boundaries code:
             : BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<2>>(mesh), index(index0, index1), endIndex(endIndex) {}
 
         bool contains(std::size_t mesh_index) const override {
+            if (mesh_index >= this->mesh.size()) return false;
             Vec<2, std::size_t> mesh_indexes = this->mesh.indexes(mesh_index);
-            for (int i = 0; i < DIM; ++i)
+            for (int i = 0; i < 2; ++i)
                 if (i == CHANGE_DIR) {
                     if (mesh_indexes[i] < index[i] || mesh_indexes[i] >= endIndex) return false;
                 } else
