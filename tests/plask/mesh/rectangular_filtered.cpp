@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
     auto axis0 = plask::make_shared<plask::OrderedAxis>(std::initializer_list<double>{1.0, 2.0, 5.0, 10.0, 18.0});
     auto axis1 = plask::make_shared<plask::RegularAxis>(3.0, 6.0, 4);
     plask::RectangularFilteredMesh2D filteredMesh(
-                plask::RectangularMesh<2>(axis0, axis1),    // 4x4 nodes, 3x3 elements
+                plask::RectangularMesh<2>(axis0, axis1),    // 5x4 nodes, 4x3 elements
                 [] (const plask::RectangularMesh<2>::Element& e) {
                     return e.getIndex0() == 1 || e.getIndex1() == 1;    // everything in the middle (index 1) column and row
                 }
@@ -76,6 +76,16 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
         BOOST_CHECK(it == filteredMesh.end());
     }
 
+    /*
+     *     0     1     2     3     4
+     * 0-- |0---2|4---6|8--- |12-- |16
+     *     |   0 |[1 3]|   6 |   9 |
+     * 1--0|1---3|5---7|9--10|13-12|17
+     *     |[0 1]|[2 4]|[4 7]|[5 10]
+     * 2--1|2---4|6---8|10-11|14-13|18
+     *     |   2 |[3 5]|   8 |   11|
+     * 3-- |3---5|7---9|11-- |15-- |19
+     */
     {   // element iterator test:
         plask::RectangularFilteredMesh2D::Elements::const_iterator it = filteredMesh.elements().begin();
 
