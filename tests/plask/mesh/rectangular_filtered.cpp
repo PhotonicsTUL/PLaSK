@@ -87,15 +87,16 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
         BOOST_CHECK(it == filteredMesh.end());
     }
 
-    /*
+    /*            bottom
      *     0     1     2     3      4
      * 0   |0---2|4---6|8--- |12--- |16
      *     |   0 | 1*3 |   6 |    9 |
      * 1  0|1---3|5---7|9--10|13--13|17
-     *     | 0*1 | 2*4 | 4*7 | 5*10 |
+     *left | 0*1 | 2*4 | 4*7 | 5*10 |    right
      * 2  1|2---4|6---8|10-11|14--14|18
      *     |   2 | 3*5 |   8 | 6*11 |
      * 3   |3---5|7---9|11-12|15--15|19
+     *            top
      */
     {   // element iterator test:
         plask::RectangularFilteredMesh2D::Elements::const_iterator it = filteredMesh.elements().begin();
@@ -131,8 +132,9 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
 
     checkBoundary(filteredMesh.createLeftBoundary(), {0, 1});
     checkBoundary(filteredMesh.createRightBoundary(), {13, 14, 15});
-    checkBoundary(filteredMesh.createTopBoundary(), {4, 8});
-    checkBoundary(filteredMesh.createBottomBoundary(), {5, 9, 12, 15});
+    checkBoundary(filteredMesh.createBottomBoundary(), {2, 6});
+    checkBoundary(filteredMesh.createTopBoundary(), {5, 9, 12, 15});
+
 
 }
 
