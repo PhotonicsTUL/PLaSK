@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(boundary) {
     BOOST_CHECK_EQUAL(indxs[1], 3);
     BOOST_CHECK_EQUAL(indxs[2], 6);
 
-    auto only_index_24 = plask::makePredicateBoundary<plask::RectangularMesh<2>>(
+    auto only_index_24 = plask::makePredicateBoundary<plask::RectangularMesh<2>::Boundary>(
                 [](const plask::RectangularMeshBase2D& /*mesh*/, std::size_t index) -> bool { return index == 2 || index == 4; }
     );
     std::size_t expected[2] = { 2, 4 };

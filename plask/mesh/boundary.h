@@ -565,17 +565,17 @@ inline typename MeshType::Boundary makeEmptyBoundary() {
 
 /**
  * Helper to create boundary which represents set of indexes which fulfill given @p predicate.
- * Use: makePredicateBoundary\<MeshType>(predicate);
+ * Use: makePredicateBoundary\<MeshType::Boundary>(predicate);
  * @param predicate functor which check if given point is in boundary
  * @return boundary which represents set of indexes which fulfill @p predicate
- * @tparam MeshType type of mesh for which boundary should be returned
+ * @tparam Boundary type of boundary which should be returned
  * @tparam Predicate predicate which check if given point is in boundary, predicate has the following arguments:
  * - MeshType mesh (mesh and index in mesh), std::size_t index
  */
-template <typename MeshType, typename Predicate>
-inline typename MeshType::Boundary makePredicateBoundary(Predicate predicate) {
-    return typename MeshType::Boundary( [=](const typename MeshType::Boundary::MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>&) {
-        return new PredicateBoundaryImpl<MeshType, Predicate>(mesh, predicate);
+template <typename Boundary, typename Predicate>
+inline Boundary makePredicateBoundary(Predicate predicate) {
+    return Boundary( [=](const typename Boundary::MeshType& mesh, const shared_ptr<const GeometryD<Boundary::MeshType::DIM>>&) {
+        return new PredicateBoundaryImpl<typename Boundary::MeshType, Predicate>(mesh, predicate);
     } );
 }
 

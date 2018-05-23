@@ -39,7 +39,7 @@ struct ExportBoundary {
         PythonPredicate(PyObject* obj) : pyfun(py::object(py::handle<>(py::incref(obj)))) {}
 
         bool operator()(const MeshType& mesh, std::size_t indx) const {
-            py::object pyresult = pyfun(mesh, indx);
+            py::object pyresult = pyfun(boost::ref(mesh), indx);
             bool result;
             try {
                 result = py::extract<bool>(pyresult);
@@ -56,7 +56,7 @@ struct ExportBoundary {
         static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
             void* storage = ((boost::python::converter::rvalue_from_python_storage<Boundary>*)data)->storage.bytes;
             PythonPredicate predicate(obj);
-            new (storage) Boundary { makePredicateBoundary<MeshType>(predicate) };
+            new (storage) Boundary { makePredicateBoundary<Boundary>(predicate) };
             data->convertible = storage;
         }
 

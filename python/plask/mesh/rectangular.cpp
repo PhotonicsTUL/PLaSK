@@ -991,6 +991,8 @@ void register_mesh_rectangular()
         .def(py::self == py::self)
     ;
     py::implicitly_convertible<shared_ptr<RectangularMesh<2>>, shared_ptr<const RectangularMesh<2>>>();
+    //py::implicitly_convertible<shared_ptr<RectangularMesh<2>>, shared_ptr<RectangularMeshBase2D>>();
+    //py::implicitly_convertible<shared_ptr<RectangularMesh<2>>, shared_ptr<const RectangularMeshBase2D>>();
     {
         py::scope scope = rectangular2D;
         (void) scope;   // don't warn about unused variable scope
