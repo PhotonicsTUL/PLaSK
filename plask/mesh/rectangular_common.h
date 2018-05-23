@@ -627,7 +627,7 @@ inline RectangularMeshBase2D::Boundary parseBoundary<RectangularMeshBase2D::Boun
 template <>
 inline RectangularMeshBase2D::Boundary parseBoundary<RectangularMeshBase2D::Boundary>(XMLReader& boundary_desc, Manager& env) { return RectangularMeshBase2D::getBoundary(boundary_desc, env); }
 
-struct RectangularMeshBase3D: public MeshD<3> {
+struct PLASK_API RectangularMeshBase3D: public MeshD<3> {
     //TODO
 };
 
