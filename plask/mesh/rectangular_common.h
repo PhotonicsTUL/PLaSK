@@ -168,7 +168,7 @@ inline Boundary parseBoundaryFromXML(XMLReader& boundary_desc, Manager& manager,
 
 }   // namespace details
 
-struct RectangularMeshBase2D: public MeshD<2> {
+struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
 
     /// Boundary type.
     typedef plask::Boundary<RectangularMeshBase2D> Boundary;
