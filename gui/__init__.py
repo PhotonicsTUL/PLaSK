@@ -19,7 +19,6 @@ import pkgutil
 import traceback
 import datetime
 
-from PyQt5 import QtGui
 from lxml import etree
 from uuid import getnode
 

@@ -928,8 +928,8 @@ if(UNIX)
 
     install(FILES "${CMAKE_SOURCE_DIR}/utils/binfmts/plask" DESTINATION "share/binfmts")
 
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; v=${Boost_VERSION}; sys.stdout.write('.'.join(str(s) for s in [v//100000,v//100%1000,v//10%10]))"
-                    OUTPUT_VARIABLE boostver)
+    # execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sys; v=${Boost_VERSION}; sys.stdout.write('.'.join(str(s) for s in (v//100000,v//100%1000,v%100)))" OUTPUT_VARIABLE boostver)
+    set(boostver "${Boost_MAJOR_VERSION}.${Boost_MINOR_VERSION}.${Boost_SUBMINOR_VERSION}")
 
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Maciej Dems <maciej.dems@p.lodz.pl>")
     set(CPACK_DEBIAN_PACKAGE_SECTION "Science")

@@ -5,6 +5,23 @@
 
 .. autoclass:: {{ fullname }}
 
+{%- block classes %}
+{%- if classes and classes != ['dtype'] %}
+
+Subclasses
+----------
+
+.. autosummary::
+   :nosignatures:
+   :toctree: {{ objname }}
+   :template: class.rst
+{% for item in classes %}
+   ~{{ module }}.{{ objname }}.{{ item }}
+{%- endfor %}
+
+{%- endif %}
+{%- endblock %}
+
 {%- block methods %}
 {%- if methods %}
 

@@ -184,15 +184,18 @@ LazyData<Vec<3,dcomplex>> Transfer::computeFieldH(double power, const shared_ptr
     diagonalizer->source()->cleanupField();
     return destination;
 }
-
 cvector Transfer::getFieldVectorE(double z) {
     determineFields();
-    return getFieldVectorE(z, solver->getLayerFor(z));
+    const std::size_t n = solver->getLayerFor(z);
+    return getFieldVectorE(z, n);
 }
 
 cvector Transfer::getFieldVectorH(double z) {
     determineFields();
-    return getFieldVectorH(z, solver->getLayerFor(z));
+    const std::size_t n = solver->getLayerFor(z);
+    cvector H = getFieldVectorH(z, n);
+    if (std::ptrdiff_t(n) >= solver->interface) for (auto& h: H) h = -h;
+    return H;
 }
 
 cvector Transfer::getReflectedFieldVectorE(const cvector& incident, IncidentDirection side, double z) {
