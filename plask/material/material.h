@@ -53,14 +53,14 @@ struct PLASK_API Material {
     };
 
     /// Material kind
-    enum Kind {
-        NONE,           ///< no material or air
-        SEMICONDUCTOR,  ///< semiconductor
-        OXIDE,          ///< oxide
-        DIELECTRIC,     ///< other dielectric
-        METAL,          ///< metal
-        LIQUID_CRYSTAL, ///< liquid crystal
-        MIXED           ///< artificial mix of several materials with averaged properties
+    enum Kind: unsigned char {
+        NONE = (1<<0),           ///< no material or air
+        SEMICONDUCTOR = (1<<1),  ///< semiconductor
+        OXIDE = (1<<2),          ///< oxide
+        DIELECTRIC = (1<<3),     ///< other dielectric
+        METAL = (1<<4),          ///< metal
+        LIQUID_CRYSTAL = (1<<5), ///< liquid crystal
+        MIXED = (1<<6)           ///< artificial mix of several materials with averaged properties
     };
 
     /// Material conductivity type.

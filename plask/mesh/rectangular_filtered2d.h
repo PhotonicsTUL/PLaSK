@@ -7,7 +7,7 @@ namespace plask {
 
 struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2> {
 
-    typedef std::function<bool(const typename RectangularMesh<2>::Element&)> Predicate;
+    typedef std::function<bool(const RectangularMesh2D::Element&)> Predicate;
 
     class PLASK_API Element {
 
@@ -135,11 +135,16 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
 
     };  // struct Elements
 
-
-    RectangularFilteredMesh2D(const RectangularMesh<2>& rectangularMesh, const Predicate& predicate)
-        : RectangularFilteredMeshBase(rectangularMesh)
+    /**
+     * Construct filtered mesh with elements of rectangularMesh chosen by a @p predicate.
+     * @param rectangularMesh input mesh, before filtering
+     * @param predicate predicate which returns either @c true for accepting element or @c false for rejecting it
+     * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
+     */
+    RectangularFilteredMesh2D(const RectangularMesh<2>& rectangularMesh, const Predicate& predicate, bool clone_axes = false)
+        : RectangularFilteredMeshBase(rectangularMesh, clone_axes)
     {
-        for (auto el_it = rectangularMesh.elements().begin(); el_it != rectangularMesh.elements().end(); ++el_it)
+        for (auto el_it = this->rectangularMesh.elements().begin(); el_it != this->rectangularMesh.elements().end(); ++el_it)
             if (predicate(*el_it)) {
                 elementsSet.push_back(el_it.index);
                 nodesSet.insert(el_it->getLoLoIndex());
@@ -153,6 +158,32 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
             }
         nodesSet.shrink_to_fit();
         elementsSet.shrink_to_fit();
+    }
+
+    /**
+     * Construct filtered mesh with all elements of @c rectangularMesh which have required materials in the midpoints.
+     * @param rectangularMesh input mesh, before filtering
+     * @param geom geometry to get materials from
+     * @param materialPredicate predicate which returns either @c true for accepting material or @c false for rejecting it
+     * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
+     */
+    RectangularFilteredMesh2D(const RectangularMesh<2>& rectangularMesh, const GeometryObjectD<2>& geom, const std::function<bool(shared_ptr<const Material>)> materialPredicate)
+        : RectangularFilteredMesh2D(rectangularMesh, [&](const RectangularMesh2D::Element& el) { return materialPredicate(geom.getMaterial(el.getMidpoint())); })
+    {
+    }
+
+    /**
+     * Construct filtered mesh with all elements of @c rectangularMesh which have required kinds of materials (in the midpoints).
+     * @param rectangularMesh input mesh, before filtering
+     * @param geom geometry to get materials from
+     * @param materialKinds one or more kinds of material encoded with bit @c or operation, e.g. @c DIELECTRIC|METAL
+     * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
+     */
+    RectangularFilteredMesh2D(const RectangularMesh<2>& rectangularMesh, const GeometryObjectD<2>& geom, unsigned char materialKinds, bool clone_axes = false)
+        : RectangularFilteredMesh2D(rectangularMesh,
+                                    [&](const RectangularMesh2D::Element& el) { return (geom.getMaterialOrAir(el.getMidpoint())->kind() & materialKinds) != 0; },
+                                    clone_axes)
+    {
     }
 
     Elements elements() const { return Elements(*this); }
