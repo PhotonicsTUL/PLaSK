@@ -2,6 +2,18 @@
 
 #include <plask/mesh/rectangular_filtered.h>
 
+plask::RectangularFilteredMesh2D constructMesh(plask::RectangularMesh2D::IterationOrder iter_order = plask::RectangularMesh2D::ORDER_01) {
+    auto axis0 = plask::make_shared<plask::OrderedAxis>(std::initializer_list<double>{1.0, 2.0, 5.0, 10.0, 18.0});
+    auto axis1 = plask::make_shared<plask::RegularAxis>(3.0, 6.0, 4);
+    return plask::RectangularFilteredMesh2D(
+                plask::RectangularMesh2D(axis0, axis1, iter_order),    // 5x4 nodes, 4x3 elements
+                [] (const plask::RectangularMesh<2>::Element& e) {
+                    return e.getIndex0() == 1 || e.getIndex1() == 1 ||
+                          (e.getIndex0() == 3 && e.getIndex1() == 2);
+                }
+    );
+}
+
 void checkNodeIterator(const plask::RectangularFilteredMesh2D& filteredMesh,
                        plask::RectangularFilteredMesh2D::const_iterator& it,
                        std::size_t index, std::size_t number,
@@ -46,15 +58,7 @@ void checkBoundary(const plask::BoundaryNodeSet& b, std::vector<std::size_t> exp
 BOOST_AUTO_TEST_SUITE(rectangular_filtered) // MUST be the same as the file name
 
 BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
-    auto axis0 = plask::make_shared<plask::OrderedAxis>(std::initializer_list<double>{1.0, 2.0, 5.0, 10.0, 18.0});
-    auto axis1 = plask::make_shared<plask::RegularAxis>(3.0, 6.0, 4);
-    plask::RectangularFilteredMesh2D filteredMesh(
-                plask::RectangularMesh<2>(axis0, axis1),    // 5x4 nodes, 4x3 elements
-                [] (const plask::RectangularMesh<2>::Element& e) {
-                    return e.getIndex0() == 1 || e.getIndex1() == 1 ||
-                          (e.getIndex0() == 3 && e.getIndex1() == 2);
-                }
-    );
+    plask::RectangularFilteredMesh2D filteredMesh = constructMesh();
     BOOST_REQUIRE_EQUAL(filteredMesh.size(), 2 + 5 + 5 + 4);
     BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount(), 1 + 4 + 2);
     BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount0(), 4);
@@ -134,8 +138,14 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
     checkBoundary(filteredMesh.createRightBoundary(), {13, 14, 15});
     checkBoundary(filteredMesh.createBottomBoundary(), {2, 6});
     checkBoundary(filteredMesh.createTopBoundary(), {5, 9, 12, 15});
+}
 
-
+BOOST_AUTO_TEST_CASE(rectangular_filtered_2D_order10) {
+    plask::RectangularFilteredMesh2D filteredMesh = constructMesh(plask::RectangularMesh2D::ORDER_10);
+    BOOST_REQUIRE_EQUAL(filteredMesh.size(), 2 + 5 + 5 + 4);
+    BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount(), 1 + 4 + 2);
+    BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount0(), 4);
+    BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount1(), 3);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
