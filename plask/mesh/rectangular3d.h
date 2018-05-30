@@ -443,379 +443,131 @@ class PLASK_API RectangularMesh3D: public RectilinearMesh3D {
 
 
     public:
-    /**
-     * Get boundary which shows one plane in mesh, which has 0 coordinate equals to axis0[0] (back of mesh).
-     * @return boundary which show plane in mesh
-     */
-    static Boundary getBackBoundary() {
-        return Boundary( [](const RectangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) {
-            return new FixedIndex0Boundary(mesh, 0);
-        } );
+
+    BoundaryNodeSet createIndex0BoundaryAtLine(std::size_t line_nr_axis0) const override {
+        return new FixedIndex0Boundary(*this, line_nr_axis0);
     }
 
-    /**
-     * Get boundary which shows one plane in mesh, which has 0 coordinate equals to axis0[axis[0]->size()-1] (front of mesh).
-     * @return boundary which show plane in mesh
-     */
-    static Boundary getFrontBoundary() {
-        return Boundary( [](const RectangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) {
-            return new FixedIndex0Boundary(mesh, mesh.axis[0]->size()-1);
-        } );
+    BoundaryNodeSet createBackBoundary() const override {
+        return createIndex0BoundaryAtLine(0);
     }
 
-    /**
-     * Get boundary which shows one plane in mesh, which has 0 coordinate equals to @p line_nr_axis[0]->
-     * @param line_nr_axis0 index of axis0 mesh
-     * @return boundary which show plane in mesh
-     */
-    static Boundary getIndex0BoundaryAtLine(std::size_t line_nr_axis0) {
-        return Boundary( [line_nr_axis0](const RectangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) {
-            return new FixedIndex0Boundary(mesh, line_nr_axis0);
-        } );
+    BoundaryNodeSet createFrontBoundary() const override {
+        return createIndex0BoundaryAtLine(axis[0]->size()-1);
     }
 
-    /**
-     * Get boundary which shows one plane in mesh, which has 1 coordinate equals to axis1[0] (left of mesh).
-     * @return boundary which show plane in mesh
-     */
-    static Boundary getLeftBoundary() {
-        return Boundary( [](const RectangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) {
-            return new FixedIndex1Boundary(mesh, 0);
-        } );
+    BoundaryNodeSet createIndex1BoundaryAtLine(std::size_t line_nr_axis1) const override {
+        return new FixedIndex1Boundary(*this, line_nr_axis1);
     }
 
-    /**
-     * Get boundary which shows one plane in mesh, which has 1 coordinate equals to axis1[axis[1]->size()-1] (right of mesh).
-     * @return boundary which show plane in mesh
-     */
-    static Boundary getRightBoundary() {
-        return Boundary( [](const RectangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) {
-            return new FixedIndex1Boundary(mesh, mesh.axis[1]->size()-1);
-        } );
+    BoundaryNodeSet createLeftBoundary() const override {
+        return createIndex1BoundaryAtLine(0);
     }
 
-    /**
-     * Get boundary which shows one plane in mesh, which has 1 coordinate equals to @p line_nr_axis[1]->
-     * @param line_nr_axis1 index of axis1 mesh
-     * @return boundary which show plane in mesh
-     */
-    static Boundary getIndex1BoundaryAtLine(std::size_t line_nr_axis1) {
-        return Boundary( [line_nr_axis1](const RectangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) {
-            return new FixedIndex1Boundary(mesh, line_nr_axis1);
-        } );
+    BoundaryNodeSet createRightBoundary() const override {
+        return createIndex1BoundaryAtLine(axis[1]->size()-1);
     }
 
-    /**
-     * Get boundary which shows one plane in mesh, which has 2 coordinate equals to axis2[0] (bottom of mesh).
-     * @return boundary which show plane in mesh
-     */
-    static Boundary getBottomBoundary() {
-        return Boundary( [](const RectangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) {
-            return new FixedIndex2Boundary(mesh, 0);
-        } );
+    BoundaryNodeSet createIndex2BoundaryAtLine(std::size_t line_nr_axis2) const override {
+        return new FixedIndex2Boundary(*this, line_nr_axis2);
     }
 
-    /**
-     * Get boundary which shows one plane in mesh, which has 2nd coordinate equals to axis2[axis[2]->size()-1] (top of mesh).
-     * @return boundary which show plane in mesh
-     */
-    static Boundary getTopBoundary() {
-        return Boundary( [](const RectangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) {
-            return new FixedIndex2Boundary(mesh, mesh.axis[2]->size()-1);
-        } );
+    BoundaryNodeSet createBottomBoundary() const override {
+        return createIndex2BoundaryAtLine(0);
     }
 
-    /**
-     * Get boundary which shows one plane in mesh, which has 2 coordinate equals to @p line_nr_axis[2]->
-     * @param line_nr_axis2 index of axis2 mesh
-     * @return boundary which show plane in mesh
-     */
-    static Boundary getIndex2BoundaryAtLine(std::size_t line_nr_axis2) {
-        return Boundary( [line_nr_axis2](const RectangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) {
-            return new FixedIndex2Boundary(mesh, line_nr_axis2);
-        } );
+    BoundaryNodeSet createTopBoundary() const override {
+        return createIndex2BoundaryAtLine(axis[2]->size()-1);
     }
 
-    /**
-     * GGet boundary which has fixed index at axis 0 direction and lies on back of the @p box (at nearest lines inside the box).
-     * @param box box in which boundary should lie
-     * @return boundary which has fixed index at axis 0 direction and lies on lower face of the @p box
-     */
-    static Boundary getBackOfBoundary(const Box3D& box) {
-        if (!box.isValid()) return makeEmptyBoundary<RectangularMesh3D>();
-        return Boundary( [=](const RectangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryNodeSetImpl* {
+    BoundaryNodeSet createIndex0BoundaryAtLine(std::size_t line_nr_axis0,
+                                               std::size_t index1Begin, std::size_t index1End,
+                                               std::size_t index2Begin, std::size_t index2End) const override
+    {
+        if (index1Begin < index1End && index2Begin < index2End)
+            return new FixedIndex0BoundaryInRange(*this, line_nr_axis0, index1Begin, index1End, index2Begin, index2End);
+        else
+            return new EmptyBoundaryImpl();
+    }
+
+    BoundaryNodeSet createBackOfBoundary(const Box3D& box) const override {
+        std::size_t line, begInd1, endInd1, begInd2, endInd2;
+        if (details::getLineLo(line, *axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd1, endInd1, *axis[1], box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd2, endInd2, *axis[2], box.lower.c2, box.upper.c2))
+                return new FixedIndex0BoundaryInRange(*this, line, begInd1, endInd1, begInd2, endInd2);
+        else
+                return new EmptyBoundaryImpl();
+    }
+
+    BoundaryNodeSet createFrontOfBoundary(const Box3D& box) const override {
             std::size_t line, begInd1, endInd1, begInd2, endInd2;
-            if (details::getLineLo(line, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
-                details::getIndexesInBounds(begInd1, endInd1, *mesh.axis[1], box.lower.c1, box.upper.c1) &&
-                details::getIndexesInBounds(begInd2, endInd2, *mesh.axis[2], box.lower.c2, box.upper.c2))
-                return new FixedIndex0BoundaryInRange(mesh, line, begInd1, endInd1, begInd2, endInd2);
+            if (details::getLineHi(line, *axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd1, endInd1, *axis[1], box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd2, endInd2, *axis[2], box.lower.c2, box.upper.c2))
+                return new FixedIndex0BoundaryInRange(*this, line, begInd1, endInd1, begInd2, endInd2);
             else
                 return new EmptyBoundaryImpl();
-        } );
     }
 
-    /**
-     * Get boundary which has fixed index at axis 0 direction and lies on front of the @p box (at nearest lines inside the box).
-     * @param box box in which boundary should lie
-     * @return boundary which has fixed index at axis 0 direction and lies on higher face of the @p box
-     */
-    static Boundary getFrontOfBoundary(const Box3D& box) {
-        if (!box.isValid()) return makeEmptyBoundary<RectangularMesh3D>();
-        return Boundary( [=](const RectangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryNodeSetImpl* {
-            std::size_t line, begInd1, endInd1, begInd2, endInd2;
-            if (details::getLineHi(line, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
-                details::getIndexesInBounds(begInd1, endInd1, *mesh.axis[1], box.lower.c1, box.upper.c1) &&
-                details::getIndexesInBounds(begInd2, endInd2, *mesh.axis[2], box.lower.c2, box.upper.c2))
-                return new FixedIndex0BoundaryInRange(mesh, line, begInd1, endInd1, begInd2, endInd2);
-            else
-                return new EmptyBoundaryImpl();
-        } );
+    BoundaryNodeSet createIndex1BoundaryAtLine(std::size_t line_nr_axis1,
+                                               std::size_t index0Begin, std::size_t index0End,
+                                               std::size_t index2Begin, std::size_t index2End) const override
+    {
+        if (index0Begin < index0End && index2Begin < index2End)
+            return new FixedIndex1BoundaryInRange(*this, line_nr_axis1, index0Begin, index0End, index2Begin, index2End);
+        else
+            return new EmptyBoundaryImpl();
     }
 
-    /**
-     * Get boundary which has fixed index at axis 1 direction and lies on left of the @p box (at nearest lines inside the box).
-     * @param box box in which boundary should lie
-     * @return boundary which has fixed index at axis 1 direction and lies on lower face of the @p box
-     */
-    static Boundary getLeftOfBoundary(const Box3D& box) {
-        if (!box.isValid()) return makeEmptyBoundary<RectangularMesh3D>();
-        return Boundary( [=](const RectangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryNodeSetImpl* {
+    BoundaryNodeSet createLeftOfBoundary(const Box3D& box) const override {
             std::size_t line, begInd0, endInd0, begInd2, endInd2;
-            if (details::getLineLo(line, *mesh.axis[1], box.lower.c1, box.upper.c1) &&
-                details::getIndexesInBounds(begInd0, endInd0, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
-                details::getIndexesInBounds(begInd2, endInd2, *mesh.axis[2], box.lower.c2, box.upper.c2))
-                return new FixedIndex1BoundaryInRange(mesh, line, begInd0, endInd0, begInd2, endInd2);
+            if (details::getLineLo(line, *axis[1], box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd0, endInd0, *axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd2, endInd2, *axis[2], box.lower.c2, box.upper.c2))
+                return new FixedIndex1BoundaryInRange(*this, line, begInd0, endInd0, begInd2, endInd2);
             else
                 return new EmptyBoundaryImpl();
-        } );
     }
 
-    /**
-     * Get boundary which has fixed index at axis 1 direction and lies on right of the @p box (at nearest lines inside the box).
-     * @param box box in which boundary should lie
-     * @return boundary which has fixed index at axis 1 direction and lies on higher face of the @p box
-     */
-    static Boundary getRightOfBoundary(const Box3D& box) {
-        if (!box.isValid()) return makeEmptyBoundary<RectangularMesh3D>();
-        return Boundary( [=](const RectangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryNodeSetImpl* {
+    BoundaryNodeSet createRightOfBoundary(const Box3D& box) const override {
             std::size_t line, begInd0, endInd0, begInd2, endInd2;
-            if (details::getLineHi(line, *mesh.axis[1], box.lower.c1, box.upper.c1) &&
-                details::getIndexesInBounds(begInd0, endInd0, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
-                details::getIndexesInBounds(begInd2, endInd2, *mesh.axis[2], box.lower.c2, box.upper.c2))
-                return new FixedIndex1BoundaryInRange(mesh, line, begInd0, endInd0, begInd2, endInd2);
+            if (details::getLineHi(line, *axis[1], box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd0, endInd0, *axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd2, endInd2, *axis[2], box.lower.c2, box.upper.c2))
+                return new FixedIndex1BoundaryInRange(*this, line, begInd0, endInd0, begInd2, endInd2);
             else
                 return new EmptyBoundaryImpl();
-        } );
     }
 
-    /**
-     * Get boundary which has fixed index at axis 1 direction and lies on bottom of the @p box (at nearest lines inside the box).
-     * @param box box in which boundary should lie
-     * @return boundary which has fixed index at axis 1 direction and lies on lower face of the @p box
-     */
-    static Boundary getBottomOfBoundary(const Box3D& box) {
-        if (!box.isValid()) return makeEmptyBoundary<RectangularMesh3D>();
-        return Boundary( [=](const RectangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryNodeSetImpl* {
+    BoundaryNodeSet createIndex2BoundaryAtLine(std::size_t line_nr_axis2,
+                                               std::size_t index0Begin, std::size_t index0End,
+                                               std::size_t index1Begin, std::size_t index1End) const override
+    {
+        if (index0Begin < index0End && index1Begin < index1End)
+            return new FixedIndex2BoundaryInRange(*this, line_nr_axis2, index0Begin, index0End, index1Begin, index1End);
+        else
+            return new EmptyBoundaryImpl();
+    }
+
+    BoundaryNodeSet createBottomOfBoundary(const Box3D& box) const override {
             std::size_t line, begInd0, endInd0, begInd1, endInd1;
-            if (details::getLineLo(line, *mesh.axis[2], box.lower.c2, box.upper.c2) &&
-                details::getIndexesInBounds(begInd0, endInd0, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
-                details::getIndexesInBounds(begInd1, endInd1, *mesh.axis[1], box.lower.c1, box.upper.c1))
-                return new FixedIndex2BoundaryInRange(mesh, line, begInd0, endInd0, begInd1, endInd1);
+            if (details::getLineLo(line, *axis[2], box.lower.c2, box.upper.c2) &&
+                details::getIndexesInBounds(begInd0, endInd0, *axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd1, endInd1, *axis[1], box.lower.c1, box.upper.c1))
+                return new FixedIndex2BoundaryInRange(*this, line, begInd0, endInd0, begInd1, endInd1);
             else
                 return new EmptyBoundaryImpl();
-        } );
     }
 
-    /**
-     * Get boundary which has fixed index at axis 2 direction and lies on top of the @p box (at nearest lines inside the box).
-     * @param box box in which boundary should lie
-     * @return boundary which has fixed index at axis 2 direction and lies on higher face of the @p box
-     */
-    static Boundary getTopOfBoundary(const Box3D& box) {
-        if (!box.isValid()) return makeEmptyBoundary<RectangularMesh3D>();
-        return Boundary( [=](const RectangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) -> BoundaryNodeSetImpl* {
+    BoundaryNodeSet createTopOfBoundary(const Box3D& box) const override {
             std::size_t line, begInd0, endInd0, begInd1, endInd1;
-            if (details::getLineHi(line, *mesh.axis[2], box.lower.c2, box.upper.c2) &&
-                details::getIndexesInBounds(begInd0, endInd0, *mesh.axis[0], box.lower.c0, box.upper.c0) &&
-                details::getIndexesInBounds(begInd1, endInd1, *mesh.axis[1], box.lower.c1, box.upper.c1))
-                return new FixedIndex2BoundaryInRange(mesh, line, begInd0, endInd0, begInd1, endInd1);
+            if (details::getLineHi(line, *axis[2], box.lower.c2, box.upper.c2) &&
+                details::getIndexesInBounds(begInd0, endInd0, *axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd1, endInd1, *axis[1], box.lower.c1, box.upper.c1))
+                return new FixedIndex2BoundaryInRange(*this, line, begInd0, endInd0, begInd1, endInd1);
             else
                 return new EmptyBoundaryImpl();
-        } );
-    }
-
-    /**
-     * Get boundary which lies on back faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geometry
-     * @param path hints specifying particular instances of the geometry object
-     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
-     */
-    static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return details::getBoundaryForBoxes< RectangularMesh3D >(
-            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
-            [](const Box3D& box) { return RectangularMesh3D::getBackOfBoundary(box); }
-        );
-    }
-
-    /**
-     * Get boundary which lies on back faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geometry
-     * @param path (optional) hints specifying particular instances of the geometry object
-     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
-     */
-    static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-        if (path) return getBackOfBoundary(object, *path);
-        return details::getBoundaryForBoxes< RectangularMesh3D >(
-            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
-            [](const Box3D& box) { return RectangularMesh3D::getBackOfBoundary(box); }
-        );
-    }
-
-    /**
-     * Get boundary which lies on front faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geometry
-     * @param path hints specifying particular instances of the geometry object
-     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
-     */
-    static Boundary getFrontOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return details::getBoundaryForBoxes< RectangularMesh3D >(
-            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
-            [](const Box3D& box) { return RectangularMesh3D::getFrontOfBoundary(box); }
-        );
-    }
-
-    /**
-     * Get boundary which lies on front faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geometry
-     * @param path (optional) hints specifying particular instances of the geometry object
-     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
-     */
-    static Boundary getFrontOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-        if (path) return getFrontOfBoundary(object, *path);
-        return details::getBoundaryForBoxes< RectangularMesh3D >(
-            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
-            [](const Box3D& box) { return RectangularMesh3D::getFrontOfBoundary(box); }
-        );
-    }
-
-    /**
-     * Get boundary which lies on left faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geometry
-     * @param path hints specifying particular instances of the geometry object
-     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
-     */
-    static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return details::getBoundaryForBoxes< RectangularMesh3D >(
-            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
-            [](const Box3D& box) { return RectangularMesh3D::getLeftOfBoundary(box); }
-        );
-    }
-
-    /**
-     * Get boundary which lies on left faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geometry
-     * @param path (optional) hints specifying particular instances of the geometry object
-     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
-     */
-    static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-        if (path) return getLeftOfBoundary(object, *path);
-        return details::getBoundaryForBoxes< RectangularMesh3D >(
-            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
-            [](const Box3D& box) { return RectangularMesh3D::getLeftOfBoundary(box); }
-        );
-    }
-
-    /**
-     * Get boundary which lies on right faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geometry
-     * @param path hints specifying particular instances of the geometry object
-     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
-     */
-    static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return details::getBoundaryForBoxes< RectangularMesh3D >(
-            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
-            [](const Box3D& box) { return RectangularMesh3D::getRightOfBoundary(box); }
-        );
-    }
-
-    /**
-     * Get boundary which lies on right faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geometry
-     * @param path (optional) hints specifying particular instances of the geometry object
-     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
-     */
-    static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-        if (path) return getRightOfBoundary(object, *path);
-        return details::getBoundaryForBoxes< RectangularMesh3D >(
-            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
-            [](const Box3D& box) { return RectangularMesh3D::getRightOfBoundary(box); }
-        );
-    }
-
-    /**
-     * Get boundary which lies on bottom faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geometry
-     * @param path hints specifying particular instances of the geometry object
-     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
-     */
-    static Boundary getBottomOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return details::getBoundaryForBoxes< RectangularMesh3D >(
-            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
-            [](const Box3D& box) { return RectangularMesh3D::getBottomOfBoundary(box); }
-        );
-    }
-
-    /**
-     * Get boundary which lies on bottom faces of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geometry
-     * @param path (optional) hints specifying particular instances of the geometry object
-     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
-     */
-    static Boundary getBottomOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-        if (path) return getBottomOfBoundary(object, *path);
-        return details::getBoundaryForBoxes< RectangularMesh3D >(
-            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
-            [](const Box3D& box) { return RectangularMesh3D::getBottomOfBoundary(box); }
-        );
-    }
-
-    /**
-     * Get boundary which lies on top faces (higher faces with fixed axis 2 coordinate) of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geometry
-     * @param path hints specifying particular instances of the geometry object
-     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
-     */
-    static Boundary getTopOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
-        return details::getBoundaryForBoxes< RectangularMesh3D >(
-            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
-            [](const Box3D& box) { return RectangularMesh3D::getTopOfBoundary(box); }
-        );
-    }
-
-    /**
-     * Get boundary which lies on top faces (higher faces with fixed axis 2 coordinate) of bounding-boxes of @p object (in @p geometry coordinates).
-     * @param geometry geometry, needs to define coordinates, geometry which is used with using mesh
-     * @param object object included in @p geometry
-     * @param path (optional) hints specifying particular instances of the geometry object
-     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
-     */
-    static Boundary getTopOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path = nullptr) {
-        if (path) return getTopOfBoundary(object, *path);
-        return details::getBoundaryForBoxes< RectangularMesh3D >(
-            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
-            [](const Box3D& box) { return RectangularMesh3D::getTopOfBoundary(box); }
-        );
     }
 };
 

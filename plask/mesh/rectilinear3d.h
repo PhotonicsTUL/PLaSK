@@ -7,7 +7,7 @@ This file contains rectilinear mesh for 3D space.
 
 #include <type_traits>
 
-#include "mesh.h"
+#include "rectangular_common.h"
 #include "axis1d.h"
 #include "../utils/interpolation.h"
 
@@ -23,7 +23,7 @@ namespace plask {
  * - axis2
  * Represent all points (c0, c1, c2) such that c0 is in axis0, c1 is in axis1, c2 is in axis2.
  */
-class PLASK_API RectilinearMesh3D: public MeshD<3> {
+class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
 
     typedef std::size_t index_ft(const RectilinearMesh3D* mesh, std::size_t c0_index, std::size_t c1_index, std::size_t c2_index);
     typedef std::size_t index012_ft(const RectilinearMesh3D* mesh, std::size_t mesh_index);
