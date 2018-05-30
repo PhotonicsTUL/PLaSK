@@ -342,7 +342,7 @@ protected:  // boundaries code:
     template <int CHANGE_DIR>
     struct BoundaryIteratorImpl: public plask::BoundaryNodeSetImpl::IteratorImpl {
 
-        const RectangularFilteredMeshBase<DIM> &mesh;
+        const RectangularFilteredMeshBase<2> &mesh;
 
         /// current indexes
         Vec<2, std::size_t> index;
@@ -350,7 +350,7 @@ protected:  // boundaries code:
         /// past the last index of change direction
         std::size_t endIndex;
 
-        BoundaryIteratorImpl(const RectangularFilteredMeshBase<DIM>& mesh, Vec<DIM, std::size_t> index, std::size_t endIndex)
+        BoundaryIteratorImpl(const RectangularFilteredMeshBase<2>& mesh, Vec<2, std::size_t> index, std::size_t endIndex)
             : mesh(mesh), index(index), endIndex(endIndex)
         {
             // go to the first index existed in order to make dereference possible:
@@ -365,8 +365,7 @@ protected:  // boundaries code:
         }
 
         bool equal(const plask::BoundaryNodeSetImpl::IteratorImpl& other) const override {
-            const BoundaryIteratorImpl& o = static_cast<const BoundaryIteratorImpl&>(other);
-            return index == o.index && endIndex == o.endIndex;
+            return index == static_cast<const BoundaryIteratorImpl&>(other).index;
         }
 
         std::size_t dereference() const override {

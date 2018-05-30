@@ -817,10 +817,6 @@ class PLASK_API RectangularMesh3D: public RectilinearMesh3D {
             [](const Box3D& box) { return RectangularMesh3D::getTopOfBoundary(box); }
         );
     }
-
-    static Boundary getBoundary(const std::string& boundary_desc);
-
-    static Boundary getBoundary(plask::XMLReader& boundary_desc, plask::Manager& manager);
 };
 
 template <typename SrcT, typename DstT>
@@ -851,12 +847,6 @@ struct InterpolationAlgorithm<RectangularMesh3D, SrcT, DstT, INTERPOLATION_NEARE
  */
 PLASK_API shared_ptr<RectangularMesh3D > make_rectangular_mesh(const RectangularMesh3D &to_copy);
 inline shared_ptr<RectangularMesh3D> make_rectangular_mesh(shared_ptr<const RectangularMesh3D> to_copy) { return make_rectangular_mesh(*to_copy); }
-
-template <>
-inline RectangularMesh3D::Boundary parseBoundary<RectangularMesh3D::Boundary>(const std::string& boundary_desc, plask::Manager&) { return RectangularMesh3D::getBoundary(boundary_desc); }
-
-template <>
-inline RectangularMesh3D::Boundary parseBoundary<RectangularMesh3D::Boundary>(XMLReader& boundary_desc, Manager& env) { return RectangularMesh3D::getBoundary(boundary_desc, env); }
 
 }   // namespace plask
 

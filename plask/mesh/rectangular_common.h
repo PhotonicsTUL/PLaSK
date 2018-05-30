@@ -173,8 +173,6 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
     /// Boundary type.
     typedef plask::Boundary<RectangularMeshBase2D> Boundary;
 
-    // ---------- This fragment is copy/pasted to RectangularMeshBase3D ----------
-
     template <typename Predicate>
     static Boundary getBoundary(Predicate predicate) {
         return Boundary(new PredicateBoundaryImpl<RectangularMeshBase2D, Predicate>(predicate));
@@ -185,7 +183,7 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
      * @param line_nr_axis0 number of vertical line, axis 0 index of mesh
      * @return node set which includes one vertical (from bottom to top) line in mesh
      */
-    virtual BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const;
+    virtual BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const = 0;
 
     /**
      * Get boundary which show one vertical (from bottom to top) line in mesh.
@@ -204,7 +202,7 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
      * @param indexBegin, indexEnd ends of [indexBegin, indexEnd) range in line
      * @return node set which includes range in vertical (from bottom to top) line in mesh.
      */
-    virtual BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) const;
+    virtual BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) const = 0;
 
     /**
      * Get boundary which show range in vertical (from bottom to top) line in mesh.
@@ -223,7 +221,7 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
      * @param axis0_coord axis 0 coordinate
      * @return node set which includes one vertical (from bottom to top) line in mesh
      */
-    virtual BoundaryNodeSet createVerticalBoundaryNear(double axis0_coord) const;
+    virtual BoundaryNodeSet createVerticalBoundaryNear(double axis0_coord) const = 0;
 
     /**
      * Get boundary which show one vertical (from bottom to top) line in mesh which lies nearest given coordinate.
@@ -242,7 +240,7 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
      * @param from, to ends of line segment, [from, to] range of axis 1 coordinates
      * @return node set which includes one vertical (from bottom to top) segment in mesh
      */
-    virtual BoundaryNodeSet createVerticalBoundaryNear(double axis0_coord, double from, double to) const;
+    virtual BoundaryNodeSet createVerticalBoundaryNear(double axis0_coord, double from, double to) const = 0;
 
     /**
      * Get boundary which show one vertical (from bottom to top) segment in mesh which lies nearest given coordinate and has ends in given range
@@ -260,7 +258,7 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
      * Create a node set which includes one vertical, left (from bottom to top) line in mesh.
      * @return node set which includes left line in mesh
      */
-    virtual BoundaryNodeSet createLeftBoundary() const;
+    virtual BoundaryNodeSet createLeftBoundary() const = 0;
 
     /**
      * Get boundary which show one vertical, left (from bottom to top) line in mesh.
@@ -276,7 +274,7 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
      * Create a node set which includes one vertical, right (from bottom to top) line in mesh.
      * @return node set which includes right line in mesh
      */
-    virtual BoundaryNodeSet createRightBoundary() const;
+    virtual BoundaryNodeSet createRightBoundary() const = 0;
 
 
     /**
@@ -294,7 +292,7 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
      * @param box box in which boundary should lie
      * @return node set which lies on left edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
-    virtual BoundaryNodeSet createLeftOfBoundary(const Box2D& box) const;
+    virtual BoundaryNodeSet createLeftOfBoundary(const Box2D& box) const = 0;
 
     /**
      * Get boundary which lies on left edge of the @p box (at mesh line nearest left edge and inside the box).
@@ -313,7 +311,7 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
      * @param box box in which boundary should lie
      * @return node set which lies on right edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
-    virtual BoundaryNodeSet createRightOfBoundary(const Box2D& box) const;
+    virtual BoundaryNodeSet createRightOfBoundary(const Box2D& box) const = 0;
 
     /**
      * Get boundary which lies on right edge of the @p box (at mesh line nearest right edge and inside the box).
@@ -332,7 +330,7 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
      * @param box box in which boundary should lie
      * @return node set which lies on bottom edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
-    virtual BoundaryNodeSet createBottomOfBoundary(const Box2D& box) const;
+    virtual BoundaryNodeSet createBottomOfBoundary(const Box2D& box) const = 0;
 
     /**
      * Get boundary which lies on bottom edge of the @p box (at mesh line nearest bottom edge and inside the box).
@@ -351,7 +349,7 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
      * @param box box in which boundary should lie
      * @return node set which lies on top edge of the @p box or empty boundary if there are no mesh indexes which lies inside the @p box
      */
-    virtual BoundaryNodeSet createTopOfBoundary(const Box2D& box) const;
+    virtual BoundaryNodeSet createTopOfBoundary(const Box2D& box) const = 0;
 
     /**
      * Get boundary which lies on top edge of the @p box (at mesh line nearest top edge and inside the box).
@@ -510,7 +508,7 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
      * @param line_nr_axis1 number of horizontal line, index of axis1 mesh
      * @return node set which includes one horizontal (from left to right) line in mesh
      */
-    virtual BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1) const;
+    virtual BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1) const = 0;
 
     /**
      * Get boundary which shows one horizontal (from left to right) line in mesh.
@@ -529,7 +527,7 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
      * @param indexBegin, indexEnd ends of [indexBegin, indexEnd) range in line
      * @return node set which includes range in horizontal (from left to right) line in mesh.
      */
-    virtual BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) const;
+    virtual BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) const = 0;
 
     /**
      * Get boundary which shows range in horizontal (from left to right) line in mesh.
@@ -548,7 +546,7 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
      * @param axis1_coord axis 1 coordinate
      * @return boundary which includes one horizontal (from left to right) line in mesh
      */
-    virtual BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord) const;
+    virtual BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord) const = 0;
 
     /**
      * Get boundary which shows one horizontal (from left to right) line in mesh which lies nearest given coordinate.
@@ -567,7 +565,7 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
      * @param from, to ends of line segment, [from, to] range of axis 0 coordinates
      * @return node set which includes one horizontal (from left to right) line in mesh
      */
-    virtual BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord, double from, double to) const;
+    virtual BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord, double from, double to) const = 0;
 
     /**
      * Get boundary which show one horizontal (from left to right) segment in mesh which lies nearest given coordinate and has ends in given range.
@@ -585,7 +583,7 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
      * Create node set which includes one horizontal, top (from left to right) line in mesh.
      * @return node set which includes top line in mesh
      */
-    virtual BoundaryNodeSet createTopBoundary() const;
+    virtual BoundaryNodeSet createTopBoundary() const = 0;
 
     /**
      * Get boundary which shows one horizontal, top (from left to right) line in mesh.
@@ -601,7 +599,7 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
      * Create node set which includes one horizontal, bottom (from left to right) line in mesh.
      * @return node set which includes bottom line in mesh
      */
-    virtual BoundaryNodeSet createBottomBoundary() const;
+    virtual BoundaryNodeSet createBottomBoundary() const = 0;
 
     /**
      * Get boundary which shows one horizontal, bottom (from left to right) line in mesh.
@@ -617,8 +615,6 @@ struct PLASK_API RectangularMeshBase2D: public MeshD<2> {
 
     static Boundary getBoundary(XMLReader &boundary_desc, Manager &manager);
 
-    // ---------- End of the fragment which is copy/pasted to RectangularMeshBase3D ----------
-
 };
 
 template <>
@@ -628,8 +624,594 @@ template <>
 inline RectangularMeshBase2D::Boundary parseBoundary<RectangularMeshBase2D::Boundary>(XMLReader& boundary_desc, Manager& env) { return RectangularMeshBase2D::getBoundary(boundary_desc, env); }
 
 struct PLASK_API RectangularMeshBase3D: public MeshD<3> {
-    //TODO
+
+    /// Boundary type.
+    typedef plask::Boundary<RectangularMeshBase3D> Boundary;
+
+    template <typename Predicate>
+    static Boundary getBoundary(Predicate predicate) {
+        return Boundary(new PredicateBoundaryImpl<RectangularMeshBase3D, Predicate>(predicate));
+    }
+
+    /**
+     * Create a node set which includes one plane in mesh, which has 0 coordinate equals to @p line_nr_axis0.
+     * @param line_nr_axis0 index of axis[0] mesh
+     * @return node set which includes the plane in mesh
+     */
+    virtual BoundaryNodeSet createIndex0BoundaryAtLine(std::size_t line_nr_axis0) const = 0;
+
+    /**
+     * Get boundary which shows one plane in mesh, which has 0 coordinate equals to @p line_nr_axis0
+     * @param line_nr_axis0 index of axis[0] mesh
+     * @return boundary which shows plane in mesh
+     */
+    static Boundary getIndex0BoundaryAtLine(std::size_t line_nr_axis0) {
+        return Boundary( [line_nr_axis0](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createIndex0BoundaryAtLine(line_nr_axis0);
+        } );
+    }
+
+    /**
+     * Create a node set which includes a rectangle in plane of mesh, which has 0 coordinate equals to @p line_nr_axis0.
+     * @param line_nr_axis0 index of axis[0] mesh
+     * @param index1Begin, index1End, index2Begin, index2End indexes which showes rectangle [index1Begin, index1End) x [index2Begin, index2End)
+     * @return node set which includes the plane in mesh
+     */
+    virtual BoundaryNodeSet createIndex0BoundaryAtLine(std::size_t line_nr_axis0,
+                                                         std::size_t index1Begin, std::size_t index1End,
+                                                         std::size_t index2Begin, std::size_t index2End
+                                                         ) const = 0;
+
+    /**
+     * Get boundary which shows a rectangle in plane of mesh, which has 0 coordinate equals to @p line_nr_axis0.
+     * @param line_nr_axis0 index of axis[0] mesh
+     * @param index1Begin, index1End, index2Begin, index2End indexes which showes rectangle [index1Begin, index1End) x [index2Begin, index2End)
+     * @return boundary which shows the plane in mesh
+     */
+    static Boundary getIndex0BoundaryAtLine(std::size_t line_nr_axis0,
+                                            std::size_t index1Begin, std::size_t index1End,
+                                            std::size_t index2Begin, std::size_t index2End) {
+        return Boundary( [=](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createIndex0BoundaryAtLine(line_nr_axis0, index1Begin, index1End, index2Begin, index2End);
+        } );
+    }
+
+    /**
+     * Create a node set which includes one plane in mesh, which has 1 coordinate equals to @p line_nr_axis1.
+     * @param line_nr_axis0 index of axis[1] mesh
+     * @return node set which includes the plane in mesh
+     */
+    virtual BoundaryNodeSet createIndex1BoundaryAtLine(std::size_t line_nr_axis1) const = 0;
+
+    /**
+     * Get boundary which shows one plane in mesh, which has 1 coordinate equals to @p line_nr_axis1
+     * @param line_nr_axis1 index of axis[1] mesh
+     * @return boundary which shows plane in mesh
+     */
+    static Boundary getIndex1BoundaryAtLine(std::size_t line_nr_axis1) {
+        return Boundary( [line_nr_axis1](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createIndex1BoundaryAtLine(line_nr_axis1);
+        } );
+    }
+
+    /**
+     * Create a node set which includes a rectangle in plane of mesh, which has 0 coordinate equals to @p line_nr_axis1.
+     * @param line_nr_axis1 index of axis[1] mesh
+     * @param index0Begin, index0End, index2Begin, index2End indexes which showes rectangle [index0Begin, index0End) x [index2Begin, index2End)
+     * @return node set which includes includes the plane in mesh
+     */
+    virtual BoundaryNodeSet createIndex1BoundaryAtLine(std::size_t line_nr_axis1,
+                                                         std::size_t index0Begin, std::size_t index0End,
+                                                         std::size_t index2Begin, std::size_t index2End
+                                                         ) const = 0;
+
+    /**
+     * Get boundary which shows a rectangle in plane of mesh, which has 1 coordinate equals to @p line_nr_axis1.
+     * @param line_nr_axis0 index of axis[1] mesh
+     * @param index0Begin, index0End, index2Begin, index2End indexes which showes rectangle [index0Begin, index0End) x [index2Begin, index2End)
+     * @return boundary which shows the plane in mesh
+     */
+    static Boundary getIndex1BoundaryAtLine(std::size_t line_nr_axis1,
+                                            std::size_t index0Begin, std::size_t index0End,
+                                            std::size_t index2Begin, std::size_t index2End) {
+        return Boundary( [=](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createIndex1BoundaryAtLine(line_nr_axis1, index0Begin, index0End, index2Begin, index2End);
+        } );
+    }
+
+    /**
+     * Create a node set which includes one plane in mesh, which has 2 coordinate equals to @p line_nr_axis2.
+     * @param line_nr_axis2 index of axis[2] mesh
+     * @return node set which includes the plane in mesh
+     */
+    virtual BoundaryNodeSet createIndex2BoundaryAtLine(std::size_t line_nr_axis2) const = 0;
+
+    /**
+     * Get boundary which shows one plane in mesh, which has 2 coordinate equals to @p line_nr_axis2
+     * @param line_nr_axis2 index of axis[2] mesh
+     * @return boundary which shows plane in mesh
+     */
+    static Boundary getIndex2BoundaryAtLine(std::size_t line_nr_axis2) {
+        return Boundary( [line_nr_axis2](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createIndex2BoundaryAtLine(line_nr_axis2);
+        } );
+    }
+
+    /**
+     * Create a node set which includes a rectangle in plane of mesh, which has 2 coordinate equals to @p line_nr_axis2.
+     * @param line_nr_axis2 index of axis[2] mesh
+     * @param index0Begin, index0End, index1Begin, index1End indexes which showes rectangle [index0Begin, index0End) x [index1Begin, index1End)
+     * @return node set which includes includes the plane in mesh
+     */
+    virtual BoundaryNodeSet createIndex2BoundaryAtLine(std::size_t line_nr_axis2,
+                                                         std::size_t index0Begin, std::size_t index0End,
+                                                         std::size_t index1Begin, std::size_t index1End
+                                                         ) const = 0;
+
+    /**
+     * Get boundary which shows a rectangle in plane of mesh, which has 2 coordinate equals to @p line_nr_axis2.
+     * @param line_nr_axis2 index of axis[2] mesh
+     * @param index0Begin, index0End, index1Begin, index1End indexes which showes rectangle [index0Begin, index0End) x [index1Begin, index1End)
+     * @return boundary which shows the plane in mesh
+     */
+    static Boundary getIndex2BoundaryAtLine(std::size_t line_nr_axis2,
+                                            std::size_t index0Begin, std::size_t index0End,
+                                            std::size_t index1Begin, std::size_t index1End) {
+        return Boundary( [=](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createIndex2BoundaryAtLine(line_nr_axis2, index0Begin, index0End, index1Begin, index1End);
+        } );
+    }
+
+    /**
+     * Create a node set which includes a whole back plane (face) of mesh.
+     * @return node set which includes a whole back plane (face) of mesh.
+     */
+    virtual BoundaryNodeSet createBackBoundary() const = 0;
+
+    /**
+     * Get boundary which show a whole back plane (face) of mesh.
+     * @return boundary which shows a whole back plane (face) of mesh.
+     */
+    static Boundary getBackBoundary() {
+        return Boundary( [](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createBackBoundary();
+        } );
+    }
+
+    /**
+     * Create a node set which has fixed index at axis 0 direction and lies on back of the @p box (at nearest plane inside the box).
+     * @param box box in which boundary should lie
+     * @return node set which includes a back face of the @p box
+     */
+    virtual BoundaryNodeSet createBackOfBoundary(const Box3D& box) const = 0;
+
+    /**
+     * Get a boundary which has fixed index at axis 0 direction and lies on back of the @p box (at nearest plane inside the box).
+     * @param box box in which boundary should lie
+     * @return boundary which includes a back face of the @p box
+     */
+    static Boundary getBackOfBoundary(const Box3D& box) {
+        if (!box.isValid()) return makeEmptyBoundary<RectangularMeshBase3D>();
+        return Boundary( [=](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createBackOfBoundary(box);
+        } );
+    }
+
+    /**
+     * Create a node set which includes a whole front plane (face) of mesh.
+     * @return node set which includes a whole front plane (face) of mesh.
+     */
+    virtual BoundaryNodeSet createFrontBoundary() const = 0;
+
+    /**
+     * Get boundary which show a whole front plane (face) of mesh.
+     * @return boundary which shows a whole front plane (face) of mesh
+     */
+    static Boundary getFrontBoundary() {
+        return Boundary( [](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createFrontBoundary();
+        } );
+    }
+
+    /**
+     * Create a node set which has fixed index at axis 0 direction and lies on front of the @p box (at nearest plane inside the box).
+     * @param box box in which boundary should lie
+     * @return node set which includes a front face of the @p box
+     */
+    virtual BoundaryNodeSet createFrontOfBoundary(const Box3D& box) const = 0;
+
+    /**
+     * Get a boundary which has fixed index at axis 0 direction and lies on front of the @p box (at nearest plane inside the box).
+     * @param box box in which boundary should lie
+     * @return boundary which includes a front face of the @p box
+     */
+    static Boundary getFrontOfBoundary(const Box3D& box) {
+        if (!box.isValid()) return makeEmptyBoundary<RectangularMeshBase3D>();
+        return Boundary( [=](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createFrontOfBoundary(box);
+        } );
+    }
+
+    /**
+     * Create a node set which includes a whole left plane (face) of mesh.
+     * @return node set which includes a whole left plane (face) of mesh.
+     */
+    virtual BoundaryNodeSet createLeftBoundary() const = 0;
+
+    /**
+     * Get boundary which show a whole left plane (face) of mesh.
+     * @return boundary which shows a whole left plane (face) of mesh
+     */
+    static Boundary getLeftBoundary() {
+        return Boundary( [](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createLeftBoundary();
+        } );
+    }
+
+    /**
+     * Create a node set which has fixed index at axis 1 direction and lies on left face of the @p box (at nearest plane inside the box).
+     * @param box box in which boundary should lie
+     * @return node set which includes a left face of the @p box
+     */
+    virtual BoundaryNodeSet createLeftOfBoundary(const Box3D& box) const = 0;
+
+    /**
+     * Get a boundary which has fixed index at axis 1 direction and lies on left face of the @p box (at nearest plane inside the box).
+     * @param box box in which boundary should lie
+     * @return boundary which includes a left face of the @p box
+     */
+    static Boundary getLeftOfBoundary(const Box3D& box) {
+        if (!box.isValid()) return makeEmptyBoundary<RectangularMeshBase3D>();
+        return Boundary( [=](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createLeftOfBoundary(box);
+        } );
+    }
+
+    /**
+     * Create a node set which includes a whole right plane (face) of mesh.
+     * @return node set which includes a whole right plane (face) of mesh.
+     */
+    virtual BoundaryNodeSet createRightBoundary() const = 0;
+
+
+    /**
+     * Get boundary which show a whole right plane (face) of mesh.
+     * @return boundary which shows a whole right plane (face) of mesh
+     */
+    static Boundary getRightBoundary() {
+        return Boundary( [](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createRightBoundary();
+        } );
+    }
+
+    /**
+     * Create a node set which has fixed index at axis 1 direction and lies on right face of the @p box (at nearest plane inside the box).
+     * @param box box in which boundary should lie
+     * @return node set which includes a right face of the @p box
+     */
+    virtual BoundaryNodeSet createRightOfBoundary(const Box3D& box) const = 0;
+
+    /**
+     * Get a boundary which has fixed index at axis 1 direction and lies on right face of the @p box (at nearest plane inside the box).
+     * @param box box in which boundary should lie
+     * @return boundary which includes a right face of the @p box
+     */
+    static Boundary getRightOfBoundary(const Box3D& box) {
+        if (!box.isValid()) return makeEmptyBoundary<RectangularMeshBase3D>();
+        return Boundary( [=](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createLeftOfBoundary(box);
+        } );
+    }
+
+    /**
+     * Create a node set which shows a whole top plane (face) of mesh.
+     * @return node set which shows a whole top plane (face) of mesh
+     */
+    virtual BoundaryNodeSet createTopBoundary() const = 0;
+
+    /**
+     * Get boundary which show a whole top plane (face) of mesh.
+     * @return boundary which shows a whole top plane (face) of mesh
+     */
+    static Boundary getTopBoundary() {
+        return Boundary( [](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createTopBoundary();
+        } );
+    }
+
+    /**
+     * Create a node set which has fixed index at axis 2 direction and lies on top face of the @p box (at nearest plane inside the box).
+     * @param box box in which boundary should lie
+     * @return node set which includes a top face of the @p box
+     */
+    virtual BoundaryNodeSet createTopOfBoundary(const Box3D& box) const = 0;
+
+    /**
+     * Get a boundary which has fixed index at axis 2 direction and lies on top face of the @p box (at nearest plane inside the box).
+     * @param box box in which boundary should lie
+     * @return boundary which includes a top face of the @p box
+     */
+    static Boundary getTopOfBoundary(const Box3D& box) {
+        if (!box.isValid()) return makeEmptyBoundary<RectangularMeshBase3D>();
+        return Boundary( [=](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createTopOfBoundary(box);
+        } );
+    }
+
+    /**
+     * Create a node set which shows a whole bottom plane (face) of mesh.
+     * @return node set which shows a whole bottom plane (face) of mesh
+     */
+    virtual BoundaryNodeSet createBottomBoundary() const = 0;
+
+    /**
+     * Get boundary which show a whole bottom plane (face) of mesh.
+     * @return boundary which shows a whole bottom plane (face) of mesh
+     */
+    static Boundary getBottomBoundary() {
+        return Boundary( [](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createBottomBoundary();
+        } );
+    }
+
+    /**
+     * Create a node set which has fixed index at axis 2 direction and lies on bottom face of the @p box (at nearest plane inside the box).
+     * @param box box in which boundary should lie
+     * @return node set which includes a bottom face of the @p box
+     */
+    virtual BoundaryNodeSet createBottomOfBoundary(const Box3D& box) const = 0;
+
+    /**
+     * Get a boundary which has fixed index at axis 2 direction and lies on top bottom of the @p box (at nearest plane inside the box).
+     * @param box box in which boundary should lie
+     * @return boundary which includes a bottom face of the @p box
+     */
+    static Boundary getBottomOfBoundary(const Box3D& box) {
+        if (!box.isValid()) return makeEmptyBoundary<RectangularMeshBase3D>();
+        return Boundary( [=](const RectangularMeshBase3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+            return mesh.createBottomOfBoundary(box);
+        } );
+    }
+
+    /**
+     * Get boundary which lies on left faces of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @param path hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
+        return details::getBoundaryForBoxes< RectangularMeshBase3D >(
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
+            [](const Box3D& box) { return RectangularMeshBase3D::getLeftOfBoundary(box); }
+        );
+    }
+
+    /**
+     * Get boundary which lies on left faces of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @param path hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path) {
+        return path ? getLeftOfBoundary(object, *path) : getLeftOfBoundary(object);
+    }
+
+    /**
+     * Get boundary which lies on left faces of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object) {
+        return details::getBoundaryForBoxes< RectangularMeshBase3D >(
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
+            [](const Box3D& box) { return RectangularMeshBase3D::getLeftOfBoundary(box); }
+        );
+    }
+
+    /**
+     * Get boundary which lies on right faces of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @param path hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
+        return details::getBoundaryForBoxes< RectangularMeshBase3D >(
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
+            [](const Box3D& box) { return RectangularMeshBase3D::getRightOfBoundary(box); }
+        );
+    }
+
+    /**
+     * Get boundary which lies on right faces of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @param path hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path) {
+        return path ? getRightOfBoundary(object, *path) : getRightOfBoundary(object);
+    }
+
+    /**
+     * Get boundary which lies on right faces of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object) {
+        return details::getBoundaryForBoxes< RectangularMeshBase3D >(
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
+            [](const Box3D& box) { return RectangularMeshBase3D::getRightOfBoundary(box); }
+        );
+    }
+
+    /**
+     * Get boundary which lies on bottom faces of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @param path hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getBottomOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
+        return details::getBoundaryForBoxes< RectangularMeshBase3D >(
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
+            [](const Box3D& box) { return RectangularMeshBase3D::getBottomOfBoundary(box); }
+        );
+    }
+
+    /**
+     * Get boundary which lies on bottom faces of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @param path hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getBottomOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path) {
+        return path ? getBottomOfBoundary(object, *path) : getBottomOfBoundary(object);
+    }
+
+    /**
+     * Get boundary which lies on bottom faces of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getBottomOfBoundary(shared_ptr<const GeometryObject> object) {
+        return details::getBoundaryForBoxes< RectangularMeshBase3D >(
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
+            [](const Box3D& box) { return RectangularMeshBase3D::getBottomOfBoundary(box); }
+        );
+    }
+
+    /**
+     * Get boundary which lies on top faces of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @param path hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getTopOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
+        return details::getBoundaryForBoxes< RectangularMeshBase3D >(
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
+            [](const Box3D& box) { return RectangularMeshBase3D::getTopOfBoundary(box); }
+        );
+    }
+
+    /**
+     * Get boundary which lies on top faces of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getTopOfBoundary(shared_ptr<const GeometryObject> object) {
+        return details::getBoundaryForBoxes< RectangularMeshBase3D >(
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
+            [](const Box3D& box) { return RectangularMeshBase3D::getTopOfBoundary(box); }
+        );
+    }
+
+    /**
+     * Get boundary which lies on top faces of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @param path hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getTopOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path) {
+        return path ? getTopOfBoundary(object, *path) : getTopOfBoundary(object);
+    }
+
+    /**
+     * Get boundary which lies on back faces of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @param path hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
+        return details::getBoundaryForBoxes< RectangularMeshBase3D >(
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
+            [](const Box3D& box) { return RectangularMeshBase3D::getBackOfBoundary(box); }
+        );
+    }
+
+    /**
+     * Get boundary which lies on back faces of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object) {
+        return details::getBoundaryForBoxes< RectangularMeshBase3D >(
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
+            [](const Box3D& box) { return RectangularMeshBase3D::getBackOfBoundary(box); }
+        );
+    }
+
+    /**
+     * Get boundary which lies on back of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @param path hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path) {
+        return path ? getBackOfBoundary(object, *path) : getBackOfBoundary(object);
+    }
+
+    /**
+     * Get boundary which lies on front faces of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @param path hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getFrontOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path) {
+        return details::getBoundaryForBoxes< RectangularMeshBase3D >(
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object, path); },
+            [](const Box3D& box) { return RectangularMeshBase3D::getFrontOfBoundary(box); }
+        );
+    }
+
+    /**
+     * Get boundary which lies on front faces of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getFrontOfBoundary(shared_ptr<const GeometryObject> object) {
+        return details::getBoundaryForBoxes< RectangularMeshBase3D >(
+            [=](const shared_ptr<const GeometryD<3>>& geometry) { return geometry->getObjectBoundingBoxes(object); },
+            [](const Box3D& box) { return RectangularMeshBase3D::getFrontOfBoundary(box); }
+        );
+    }
+
+    /**
+     * Get boundary which lies on front of bounding-boxes of @p objects (in @p geometry coordinates).
+     * @param geometry geometry, needs to define coordinates, geometry which is used with the mesh
+     * @param object object included in @p geometry
+     * @param path hints specifying particular instances of the geometry object
+     * @return boundary which represents sum of boundaries on faces of @p object's bounding-boxes
+     */
+    static Boundary getFrontOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path) {
+        return path ? getFrontOfBoundary(object, *path) : getFrontOfBoundary(object);
+    }
+
+    static Boundary getBoundary(const std::string &boundary_desc);
+
+    static Boundary getBoundary(XMLReader &boundary_desc, Manager &manager);
 };
+
+template <>
+inline RectangularMeshBase3D::Boundary parseBoundary<RectangularMeshBase3D::Boundary>(const std::string& boundary_desc, plask::Manager&) { return RectangularMeshBase3D::getBoundary(boundary_desc); }
+
+template <>
+inline RectangularMeshBase3D::Boundary parseBoundary<RectangularMeshBase3D::Boundary>(XMLReader& boundary_desc, Manager& env) { return RectangularMeshBase3D::getBoundary(boundary_desc, env); }
+
 
 template <int DIM>
 using RectangularMeshBase =
