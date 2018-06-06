@@ -24,9 +24,6 @@ class PLASK_API RectangularMesh3D: public RectilinearMesh3D {
 
   public:
 
-    /// Boundary type.
-    typedef ::plask::Boundary<RectangularMesh3D> Boundary;
-
     /**
      * Construct mesh which has all axes of type OrderedAxis and all are empty.
      * @param iterationOrder iteration order

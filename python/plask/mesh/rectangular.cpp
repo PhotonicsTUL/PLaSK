@@ -1093,7 +1093,6 @@ void register_mesh_rectangular()
         .def("get_midpoints", &RectangularMesh<3>::getMidpointsMesh, u8"Get new mesh with points in the middles of of elements of this mesh")
         .def(py::self == py::self)
     ;
-    ExportBoundary<RectangularMesh<3>::Boundary> { rectangular3D };
     py::implicitly_convertible<shared_ptr<RectangularMesh<3>>, shared_ptr<const RectangularMesh<3>>>();
 
     {
