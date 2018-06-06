@@ -28,17 +28,32 @@ void SemiVectorial<Geometry2DType>::refractive_index(int num)
     
     setWavelength((modes[num].lam)); 
     initializeRefractiveIndexVec();
+    //onInitialize();
     dcomplex n_2 = 0;
-    for (int i = 0; i < edgeVertLayerPoint.size()-1; ++i)
+    dcomplex sum_w_i = 0;
+    dcomplex sum_n_2_w_i = 0;
+    for (int i = 1; i < edgeVertLayerPoint.size()-1; ++i)
     {
         dcomplex F = vecE[i].F;
         dcomplex B = vecE[i].B;
+        std::cout<<"F = "<<F<<" B = "<<B<<std::endl;
+        
         double a = edgeVertLayerPoint[i];
         double b = edgeVertLayerPoint[i+1];
+        std::cout<<"a = "<<a<<" b = "<<b<<std::endl;
+        std::cout<<"B*B = " << B*B << std::endl;
+        
         dcomplex n = nrCache[i];
-        n_2 += n*n*( (F*F*b)-(F*F*a) - ((I*F*B)/(2*k0*n))*(exp(2*I*n*k0*b)-exp(2*I*n*k0*a)) + 
-            ((I*F*B)/(2*k0*n))*(exp(-2*I*n*k0*b)-exp(-2*I*n*k0*a))+ (B*B*b - B*B*a));
+        dcomplex w_i = ( ((F*F)*b)-(F*F*a) - ((I*F*B)/(2*k0*n))*(exp(2*I*n*k0*b)-exp(2*I*n*k0*a)) + 
+            ((I*F*B)/(2*k0*n))*(exp(-2*I*n*k0*b)-exp(-2*I*n*k0*a)) + (B*B)*(b-a));
+        sum_n_2_w_i += n*n*w_i;
+        sum_w_i += w_i; 
+        
+        std::cout<<"w_i = " << w_i <<std::endl;
     }
+    n_2 = sum_n_2_w_i/sum_w_i;
+    std::cout<<"sum n^2 * w_i = " << sum_n_2_w_i << std::endl;
+    std::cout<<"sum w_i = " << sum_w_i << std::endl;
     std::cout<<"n^2 = " << n_2 << std::endl; 
 }
 

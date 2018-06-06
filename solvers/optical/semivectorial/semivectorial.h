@@ -5,6 +5,7 @@
 #include <plask/plask.hpp>
 
 #include "rootdigger.h"
+#include "expansion.h"
 
 namespace plask { namespace optical { namespace semivectorial {
 /**
@@ -109,6 +110,6 @@ protected:
     
 };
 
-#endif
-
 }}}
+
+#endif // PLASK__SOLVER_SEMIVECTORIAL
