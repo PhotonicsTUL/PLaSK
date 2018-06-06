@@ -102,7 +102,7 @@ RectilinearMesh3D::RectilinearMesh3D(shared_ptr<MeshAxis> mesh0, shared_ptr<Mesh
 }
 
 RectilinearMesh3D::RectilinearMesh3D(const RectilinearMesh3D &src, bool clone_axes)
-: MeshD<3>(src),
+: RectangularMeshBase3D(src),
   axis{clone_axes ? src.axis[0]->clone() : src.axis[0],
        clone_axes ? src.axis[1]->clone() : src.axis[1],
        clone_axes ? src.axis[2]->clone() : src.axis[2]}
