@@ -147,6 +147,22 @@ protected:
     BoundaryNodeSet createFrontBoundary() const override {
         return createIndex0BoundaryAtLine(boundaryIndex[0].up);
     }
+
+    BoundaryNodeSet createLeftBoundary() const override {
+        return createIndex1BoundaryAtLine(boundaryIndex[1].lo);
+    }
+
+    BoundaryNodeSet createRightBoundary() const override {
+        return createIndex1BoundaryAtLine(boundaryIndex[1].up);
+    }
+
+    BoundaryNodeSet createBottomBoundary() const override {
+        return createIndex2BoundaryAtLine(boundaryIndex[2].lo);
+    }
+
+    BoundaryNodeSet createTopBoundary() const override {
+        return createIndex2BoundaryAtLine(boundaryIndex[2].up);
+    }
 };
 
 }   // namespace plask

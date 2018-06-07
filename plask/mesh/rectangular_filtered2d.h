@@ -420,7 +420,7 @@ protected:  // boundaries code:
 public:     // boundaries:
 
     BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const override {
-        return createVerticalBoundaryAtLine(line_nr_axis0, boundaryIndex[1].lo, boundaryIndex[1].lo);
+        return createVerticalBoundaryAtLine(line_nr_axis0, boundaryIndex[1].lo, boundaryIndex[1].up);
     }
 
     BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) const override {
@@ -483,7 +483,7 @@ public:     // boundaries:
     }
 
     BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1) const override {
-        return createHorizontalBoundaryAtLine(line_nr_axis1, boundaryIndex[0].lo, boundaryIndex[0].lo);
+        return createHorizontalBoundaryAtLine(line_nr_axis1, boundaryIndex[0].lo, boundaryIndex[0].up);
     }
 
     BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) const override {
