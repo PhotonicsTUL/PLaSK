@@ -389,10 +389,10 @@ protected:  // boundaries code:
         /// past the last index of change direction
         std::size_t endIndex;
 
-        BoundaryNodeSetImpl(const RectangularFilteredMeshBase<DIM>& mesh, Vec<2, std::size_t> index, std::size_t endIndex)
+        BoundaryNodeSetImpl(const RectangularFilteredMeshBase<2>& mesh, Vec<2, std::size_t> index, std::size_t endIndex)
             : BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<2>>(mesh), index(index), endIndex(endIndex) {}
 
-        BoundaryNodeSetImpl(const RectangularFilteredMeshBase<DIM>& mesh, std::size_t index0, std::size_t index1, std::size_t endIndex)
+        BoundaryNodeSetImpl(const RectangularFilteredMeshBase<2>& mesh, std::size_t index0, std::size_t index1, std::size_t endIndex)
             : BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<2>>(mesh), index(index0, index1), endIndex(endIndex) {}
 
         bool contains(std::size_t mesh_index) const override {
@@ -420,7 +420,7 @@ protected:  // boundaries code:
 public:     // boundaries:
 
     BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const override {
-        return createVerticalBoundaryAtLine(line_nr_axis0, 0, rectangularMesh.axis[1]->size());
+        return createVerticalBoundaryAtLine(line_nr_axis0, boundaryIndex[1].lo, boundaryIndex[1].lo);
     }
 
     BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) const override {
@@ -483,7 +483,7 @@ public:     // boundaries:
     }
 
     BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1) const override {
-        return createHorizontalBoundaryAtLine(line_nr_axis1, 0, rectangularMesh.axis[0]->size());
+        return createHorizontalBoundaryAtLine(line_nr_axis1, boundaryIndex[0].lo, boundaryIndex[0].lo);
     }
 
     BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) const override {
