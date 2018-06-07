@@ -113,7 +113,7 @@ protected:
     }
 
     BoundaryNodeSet createIndex0BoundaryAtLine(std::size_t line_nr_axis0) const override {
-        return createIndex0BoundaryAtLine(line_nr_axis0, boundaryIndex[1].lo, boundaryIndex[1].up, boundaryIndex[2].lo, boundaryIndex[2].up);
+        return createIndex0BoundaryAtLine(line_nr_axis0, boundaryIndex[1].lo, boundaryIndex[1].up+1, boundaryIndex[2].lo, boundaryIndex[2].up+1);
     }
 
     BoundaryNodeSet createIndex1BoundaryAtLine(std::size_t line_nr_axis1,
@@ -125,7 +125,7 @@ protected:
     }
 
     BoundaryNodeSet createIndex1BoundaryAtLine(std::size_t line_nr_axis1) const override {
-        return createIndex1BoundaryAtLine(line_nr_axis1, boundaryIndex[0].lo, boundaryIndex[0].up, boundaryIndex[2].lo, boundaryIndex[2].up);
+        return createIndex1BoundaryAtLine(line_nr_axis1, boundaryIndex[0].lo, boundaryIndex[0].up+1, boundaryIndex[2].lo, boundaryIndex[2].up+1);
     }
 
     BoundaryNodeSet createIndex2BoundaryAtLine(std::size_t line_nr_axis2,
@@ -137,7 +137,7 @@ protected:
     }
 
     BoundaryNodeSet createIndex2BoundaryAtLine(std::size_t line_nr_axis2) const override {
-        return createIndex2BoundaryAtLine(line_nr_axis2, boundaryIndex[0].lo, boundaryIndex[0].up, boundaryIndex[1].lo, boundaryIndex[1].up);
+        return createIndex2BoundaryAtLine(line_nr_axis2, boundaryIndex[0].lo, boundaryIndex[0].up+1, boundaryIndex[1].lo, boundaryIndex[1].up+1);
     }
 
     BoundaryNodeSet createBackBoundary() const override {

@@ -150,7 +150,7 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
                 nodesSet.insert(el_it->getLoLoIndex());
                 nodesSet.insert(el_it->getLoUpIndex());
                 nodesSet.insert(el_it->getUpLoIndex());
-                nodesSet.push_back(el_it->getUpUpIndex());  //TODO is this safe for 10 axis?
+                nodesSet.push_back(el_it->getUpUpIndex());  //this is safe also for 10 axis order
                 if (el_it->getLowerIndex0() < boundaryIndex[0].lo) boundaryIndex[0].lo = el_it->getLowerIndex0();
                 if (el_it->getUpperIndex0() > boundaryIndex[0].up) boundaryIndex[0].up = el_it->getUpperIndex0();
                 if (el_it->getLowerIndex1() < boundaryIndex[1].lo) boundaryIndex[1].lo = el_it->getLowerIndex1();
@@ -420,7 +420,7 @@ protected:  // boundaries code:
 public:     // boundaries:
 
     BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const override {
-        return createVerticalBoundaryAtLine(line_nr_axis0, boundaryIndex[1].lo, boundaryIndex[1].up);
+        return createVerticalBoundaryAtLine(line_nr_axis0, boundaryIndex[1].lo, boundaryIndex[1].up+1);
     }
 
     BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) const override {
@@ -483,7 +483,7 @@ public:     // boundaries:
     }
 
     BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1) const override {
-        return createHorizontalBoundaryAtLine(line_nr_axis1, boundaryIndex[0].lo, boundaryIndex[0].up);
+        return createHorizontalBoundaryAtLine(line_nr_axis1, boundaryIndex[0].lo, boundaryIndex[0].up+1);
     }
 
     BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) const override {
