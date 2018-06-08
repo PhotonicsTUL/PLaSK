@@ -102,7 +102,7 @@ protected:
         }
     };
 
-    public:     // boundaries:
+public:     // boundaries:
 
     BoundaryNodeSet createIndex0BoundaryAtLine(std::size_t line_nr_axis0,
                                                              std::size_t index1Begin, std::size_t index1End,
@@ -162,6 +162,66 @@ protected:
 
     BoundaryNodeSet createTopBoundary() const override {
         return createIndex2BoundaryAtLine(boundaryIndex[2].up);
+    }
+
+    BoundaryNodeSet createBackOfBoundary(const Box3D& box) const override {
+        std::size_t line, begInd1, endInd1, begInd2, endInd2;
+        if (details::getLineLo(line, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd1, endInd1, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd2, endInd2, *rectangularMesh.axis[2], box.lower.c2, box.upper.c2))
+                return createIndex0BoundaryAtLine(line, begInd1, endInd1, begInd2, endInd2);
+        else
+                return new EmptyBoundaryImpl();
+    }
+
+    BoundaryNodeSet createFrontOfBoundary(const Box3D& box) const override {
+            std::size_t line, begInd1, endInd1, begInd2, endInd2;
+            if (details::getLineHi(line, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd1, endInd1, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd2, endInd2, *rectangularMesh.axis[2], box.lower.c2, box.upper.c2))
+                return createIndex0BoundaryAtLine(line, begInd1, endInd1, begInd2, endInd2);
+            else
+                return new EmptyBoundaryImpl();
+    }
+
+    BoundaryNodeSet createLeftOfBoundary(const Box3D& box) const override {
+            std::size_t line, begInd0, endInd0, begInd2, endInd2;
+            if (details::getLineLo(line, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd0, endInd0, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd2, endInd2, *rectangularMesh.axis[2], box.lower.c2, box.upper.c2))
+                return createIndex1BoundaryAtLine(line, begInd0, endInd0, begInd2, endInd2);
+            else
+                return new EmptyBoundaryImpl();
+    }
+
+    BoundaryNodeSet createRightOfBoundary(const Box3D& box) const override {
+            std::size_t line, begInd0, endInd0, begInd2, endInd2;
+            if (details::getLineHi(line, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1) &&
+                details::getIndexesInBounds(begInd0, endInd0, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd2, endInd2, *rectangularMesh.axis[2], box.lower.c2, box.upper.c2))
+                return createIndex1BoundaryAtLine(line, begInd0, endInd0, begInd2, endInd2);
+            else
+                return new EmptyBoundaryImpl();
+    }
+
+    BoundaryNodeSet createBottomOfBoundary(const Box3D& box) const override {
+            std::size_t line, begInd0, endInd0, begInd1, endInd1;
+            if (details::getLineLo(line, *rectangularMesh.axis[2], box.lower.c2, box.upper.c2) &&
+                details::getIndexesInBounds(begInd0, endInd0, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd1, endInd1, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1))
+                return createIndex2BoundaryAtLine(line, begInd0, endInd0, begInd1, endInd1);
+            else
+                return new EmptyBoundaryImpl();
+    }
+
+    BoundaryNodeSet createTopOfBoundary(const Box3D& box) const override {
+            std::size_t line, begInd0, endInd0, begInd1, endInd1;
+            if (details::getLineHi(line, *rectangularMesh.axis[2], box.lower.c2, box.upper.c2) &&
+                details::getIndexesInBounds(begInd0, endInd0, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0) &&
+                details::getIndexesInBounds(begInd1, endInd1, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1))
+                return createIndex2BoundaryAtLine(line, begInd0, endInd0, begInd1, endInd1);
+            else
+                return new EmptyBoundaryImpl();
     }
 };
 
