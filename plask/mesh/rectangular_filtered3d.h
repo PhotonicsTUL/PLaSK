@@ -6,7 +6,440 @@
 namespace plask {
 
 struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3> {
-    // TODO
+
+
+    /**
+     * Calculate index of axis2 using this mesh index.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return index of axis2, from 0 to axis2->size()-1
+     */
+    inline std::size_t index2(std::size_t mesh_index) const {   // method missing in the base as it is specific for 3D
+        return rectangularMesh.index2(nodesSet.at(mesh_index));
+    }
+
+    /**
+     * Calculate index of middle axis using given mesh index.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return index of major axis, from 0 to middleIndex.size()-1
+     */
+    inline std::size_t middleIndex(std::size_t mesh_index) const {   // method missing in the base as it is specific for 3D
+        return rectangularMesh.middleIndex(nodesSet.at(mesh_index));
+    }
+
+    /**
+     * Get number of elements (for FEM method) in the third direction.
+     * @return number of elements in the full rectangular mesh in the third direction (axis2 direction).
+     */
+    std::size_t getElementsCount2() const {  // method missing in the base as it is specific for 3D
+        return rectangularMesh.getElementsCount2();
+    }
+
+    /**
+     * Get third coordinate of point in the center of an elements.
+     * @param index2 index of the element (axis2 index)
+     * @return third coordinate of the point in the center of the element
+     */
+    double getElementMidpoint2(std::size_t index2) const {   // method missing in the base as it is specific for 3D
+        return rectangularMesh.getElementMidpoint2(index2);
+    }
+
+    typedef std::function<bool(const RectangularMesh3D::Element&)> Predicate;
+
+    class PLASK_API Element {
+
+        const RectangularFilteredMesh3D& filteredMesh;
+
+        //std::uint32_t elementNumber;    ///< index of element in oryginal mesh
+        std::size_t index0, index1, index2; // probably this form allows to do most operation fastest in average, low indexes of element corner or just element indexes
+
+        /// Index of element. If it equals to UNKONOWN_ELEMENT_INDEX, it will be calculated on-demand from index0 and index1.
+        mutable std::size_t elementIndex;
+
+        const RectangularMesh<3>& rectangularMesh() const { return filteredMesh.rectangularMesh; }
+
+    public:
+
+        enum: std::size_t { UNKONOWN_ELEMENT_INDEX = std::numeric_limits<std::size_t>::max() };
+
+        Element(const RectangularFilteredMesh3D& filteredMesh, std::size_t elementIndex, std::size_t index0, std::size_t index1, std::size_t index2)
+            : filteredMesh(filteredMesh), index0(index0), index1(index1), index2(index2), elementIndex(elementIndex)
+        {
+        }
+
+        Element(const RectangularFilteredMesh3D& filteredMesh, std::size_t elementIndex, std::size_t elementIndexOfFullMesh)
+            : filteredMesh(filteredMesh), elementIndex(elementIndex)
+        {
+            const std::size_t v = rectangularMesh().getElementMeshLowIndex(elementIndexOfFullMesh);
+            index0 = rectangularMesh().index0(v);
+            index1 = rectangularMesh().index1(v);
+            index2 = rectangularMesh().index2(v);
+        }
+
+        Element(const RectangularFilteredMesh3D& filteredMesh, std::size_t elementIndex)
+            : Element(filteredMesh, elementIndex, filteredMesh.elementsSet.at(elementIndex))
+        {}
+
+
+        /// \return long index of the element
+        inline std::size_t getIndex0() const { return index0; }
+
+        /// \return tran index of the element
+        inline std::size_t getIndex1() const { return index1; }
+
+        /// \return vert index of the element
+        inline std::size_t getIndex2() const { return index2; }
+
+        /// \return long index of the back edge of the element
+        inline std::size_t getLowerIndex0() const { return index0; }
+
+        /// \return tran index of the left edge of the element
+        inline std::size_t getLowerIndex1() const { return index1; }
+
+        /// \return vert index of the bottom edge of the element
+        inline std::size_t getLowerIndex2() const { return index2; }
+
+        /// \return long coordinate of the back edge of the element
+        inline double getLower0() const { return rectangularMesh().axis[0]->at(index0); }
+
+        /// \return tran coordinate of the left edge of the element
+        inline double getLower1() const { return rectangularMesh().axis[1]->at(index1); }
+
+        /// \return vert coordinate of the bottom edge of the element
+        inline double getLower2() const { return rectangularMesh().axis[2]->at(index2); }
+
+        /// \return long index of the front edge of the element
+        inline std::size_t getUpperIndex0() const { return index0+1; }
+
+        /// \return tran index of the right edge of the element
+        inline std::size_t getUpperIndex1() const { return index1+1; }
+
+        /// \return vert index of the top edge of the element
+        inline std::size_t getUpperIndex2() const { return index2+1; }
+
+        /// \return long coordinate of the front edge of the element
+        inline double getUpper0() const { return rectangularMesh().axis[0]->at(getUpperIndex0()); }
+
+        /// \return tran coordinate of the right edge of the element
+        inline double getUpper1() const { return rectangularMesh().axis[1]->at(getUpperIndex1()); }
+
+        /// \return vert coordinate of the top edge of the element
+        inline double getUpper2() const { return rectangularMesh().axis[2]->at(getUpperIndex2()); }
+
+        /// \return size of the element in the long direction
+        inline double getSize0() const { return getUpper0() - getLower0(); }
+
+        /// \return size of the element in the tran direction
+        inline double getSize1() const { return getUpper1() - getLower1(); }
+
+        /// \return size of the element in the vert direction
+        inline double getSize2() const { return getUpper2() - getLower2(); }
+
+        /// \return vector indicating size of the element
+        inline Vec<3, double> getSize() const { return getUpUpUp() - getLoLoLo(); }
+
+        /// \return position of the middle of the element
+        inline Vec<3, double> getMidpoint() const { return filteredMesh.getElementMidpoint(index0, index1, index2); }
+
+        /// @return index of this element
+        inline std::size_t getIndex() const {
+            if (elementIndex == UNKONOWN_ELEMENT_INDEX)
+                elementIndex = filteredMesh.getElementIndexFromLowIndexes(getLowerIndex0(), getLowerIndex1(), getLowerIndex2());
+            return elementIndex;
+        }
+
+        /// \return this element as rectangular box
+        inline Box3D toBox() const { return filteredMesh.getElementBox(index0, index1, index2); }
+
+        /// \return total area of this element
+        inline double getVolume() const { return getSize0() * getSize1() * getSize2(); }
+
+        /// \return total area of this element
+        inline double getArea() const { return getVolume(); }
+
+        /// \return index of the lower left back corner of this element
+        inline std::size_t getLoLoLoIndex() const { return filteredMesh.index(getLowerIndex0(), getLowerIndex1(), getLowerIndex2()); }
+
+        /// \return index of the lower left front corner of this element
+        inline std::size_t getUpLoLoIndex() const { return filteredMesh.index(getUpperIndex0(), getLowerIndex1(), getLowerIndex2()); }
+
+        /// \return index of the lower right back corner of this element
+        inline std::size_t getLoUpLoIndex() const { return filteredMesh.index(getLowerIndex0(), getUpperIndex1(), getLowerIndex2()); }
+
+        /// \return index of the lower right front corner of this element
+        inline std::size_t getUpUpLoIndex() const { return filteredMesh.index(getUpperIndex0(), getUpperIndex1(), getLowerIndex2()); }
+
+        /// \return index of the upper left back corner of this element
+        inline std::size_t getLoLoUpIndex() const { return filteredMesh.index(getLowerIndex0(), getLowerIndex1(), getUpperIndex2()); }
+
+        /// \return index of the upper left front corner of this element
+        inline std::size_t getUpLoUpIndex() const { return filteredMesh.index(getUpperIndex0(), getLowerIndex1(), getUpperIndex2()); }
+
+        /// \return index of the upper right back corner of this element
+        inline std::size_t getLoUpUpIndex() const { return filteredMesh.index(getLowerIndex0(), getUpperIndex1(), getUpperIndex2()); }
+
+        /// \return index of the upper right front corner of this element
+        inline std::size_t getUpUpUpIndex() const { return filteredMesh.index(getUpperIndex0(), getUpperIndex1(), getUpperIndex2()); }
+
+        /// \return position of the lower left back corner of this element
+        inline Vec<3, double> getLoLoLo() const { return filteredMesh(getLowerIndex0(), getLowerIndex1(), getLowerIndex2()); }
+
+        /// \return position of the lower left front corner of this element
+        inline Vec<3, double> getUpLoLo() const { return filteredMesh(getUpperIndex0(), getLowerIndex1(), getLowerIndex2()); }
+
+        /// \return position of the lower right back corner of this element
+        inline Vec<3, double> getLoUpLo() const { return filteredMesh(getLowerIndex0(), getUpperIndex1(), getLowerIndex2()); }
+
+        /// \return position of the lower right front corner of this element
+        inline Vec<3, double> getUpUpLo() const { return filteredMesh(getUpperIndex0(), getUpperIndex1(), getLowerIndex2()); }
+
+        /// \return position of the upper left back corner of this element
+        inline Vec<3, double> getLoLoUp() const { return filteredMesh(getLowerIndex0(), getLowerIndex1(), getUpperIndex2()); }
+
+        /// \return position of the upper left front corner of this element
+        inline Vec<3, double> getUpLoUp() const { return filteredMesh(getUpperIndex0(), getLowerIndex1(), getUpperIndex2()); }
+
+        /// \return position of the upper right back corner of this element
+        inline Vec<3, double> getLoUpUp() const { return filteredMesh(getLowerIndex0(), getUpperIndex1(), getUpperIndex2()); }
+
+        /// \return position of the upper right front corner of this element
+        inline Vec<3, double> getUpUpUp() const { return filteredMesh(getUpperIndex0(), getUpperIndex1(), getUpperIndex2()); }
+
+    };  // class Element
+
+    struct PLASK_API Elements: ElementsBase<RectangularFilteredMesh3D> {
+
+        explicit Elements(const RectangularFilteredMesh3D& mesh): ElementsBase(mesh) {}
+
+        Element operator()(std::size_t i0, std::size_t i1, std::size_t i2) const { return Element(*filteredMesh, Element::UNKONOWN_ELEMENT_INDEX, i0, i1, i2); }
+
+    };  // struct Elements
+
+    /**
+     * Construct filtered mesh with elements of rectangularMesh chosen by a @p predicate.
+     * @param rectangularMesh input mesh, before filtering
+     * @param predicate predicate which returns either @c true for accepting element or @c false for rejecting it
+     * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
+     */
+    RectangularFilteredMesh3D(const RectangularMesh<3>& rectangularMesh, const Predicate& predicate, bool clone_axes = false)
+        : RectangularFilteredMeshBase(rectangularMesh, clone_axes)
+    {
+        for (auto el_it = this->rectangularMesh.elements().begin(); el_it != this->rectangularMesh.elements().end(); ++el_it)
+            if (predicate(*el_it)) {
+                elementsSet.push_back(el_it.index);
+                nodesSet.insert(el_it->getLoLoLoIndex());
+
+                nodesSet.insert(el_it->getUpLoLoIndex());
+                nodesSet.insert(el_it->getLoUpLoIndex());
+                nodesSet.insert(el_it->getLoLoUpIndex());
+
+                nodesSet.insert(el_it->getLoUpUpIndex());
+                nodesSet.insert(el_it->getUpLoUpIndex());
+                nodesSet.insert(el_it->getUpUpLoIndex());
+
+                nodesSet.push_back(el_it->getUpUpUpIndex());
+                if (el_it->getLowerIndex0() < boundaryIndex[0].lo) boundaryIndex[0].lo = el_it->getLowerIndex0();
+                if (el_it->getUpperIndex0() > boundaryIndex[0].up) boundaryIndex[0].up = el_it->getUpperIndex0();
+                if (el_it->getLowerIndex1() < boundaryIndex[1].lo) boundaryIndex[1].lo = el_it->getLowerIndex1();
+                if (el_it->getUpperIndex1() > boundaryIndex[1].up) boundaryIndex[1].up = el_it->getUpperIndex1();
+                if (el_it->getLowerIndex2() < boundaryIndex[2].lo) boundaryIndex[2].lo = el_it->getLowerIndex2();
+                if (el_it->getUpperIndex2() > boundaryIndex[2].up) boundaryIndex[2].up = el_it->getUpperIndex2();
+            }
+        nodesSet.shrink_to_fit();
+        elementsSet.shrink_to_fit();
+    }
+
+    /**
+     * Construct filtered mesh with all elements of @c rectangularMesh which have required materials in the midpoints.
+     * @param rectangularMesh input mesh, before filtering
+     * @param geom geometry to get materials from
+     * @param materialPredicate predicate which returns either @c true for accepting material or @c false for rejecting it
+     * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
+     */
+    RectangularFilteredMesh3D(const RectangularMesh<3>& rectangularMesh, const GeometryObjectD<3>& geom, const std::function<bool(shared_ptr<const Material>)> materialPredicate)
+        : RectangularFilteredMesh3D(rectangularMesh, [&](const RectangularMesh3D::Element& el) { return materialPredicate(geom.getMaterial(el.getMidpoint())); })
+    {
+    }
+
+    /**
+     * Construct filtered mesh with all elements of @c rectangularMesh which have required kinds of materials (in the midpoints).
+     * @param rectangularMesh input mesh, before filtering
+     * @param geom geometry to get materials from
+     * @param materialKinds one or more kinds of material encoded with bit @c or operation, e.g. @c DIELECTRIC|METAL
+     * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
+     */
+    RectangularFilteredMesh3D(const RectangularMesh<3>& rectangularMesh, const GeometryObjectD<3>& geom, unsigned char materialKinds, bool clone_axes = false)
+        : RectangularFilteredMesh3D(rectangularMesh,
+                                    [&](const RectangularMesh3D::Element& el) { return (geom.getMaterialOrAir(el.getMidpoint())->kind() & materialKinds) != 0; },
+                                    clone_axes)
+    {
+    }
+
+    Elements elements() const { return Elements(*this); }
+    Elements getElements() const { return elements(); }
+
+    Element element(std::size_t i0, std::size_t i1, std::size_t i2) const { return Element(*this, Element::UNKONOWN_ELEMENT_INDEX, i0, i1, i2); }
+    Element getElement(std::size_t i0, std::size_t i1, std::size_t i2) const { return element(i0, i1, i2); }
+
+    /**
+     * Get an element with a given index @p i.
+     * @param i index of the element
+     * @return the element
+     */
+    Element element(std::size_t i) const { return Element(*this, i); }
+
+    /**
+     * Get an element with a given index @p i.
+     * @param i index of the element
+     * @return the element
+     */
+    Element getElement(std::size_t i) const { return element(i); }
+
+    /**
+     * Calculate this mesh index using indexes of axis0 and axis1.
+     * @param axis0_index index of axis0, from 0 to axis[0]->size()-1
+     * @param axis1_index index of axis1, from 0 to axis[1]->size()-1
+     * @param axis2_index index of axis2, from 0 to axis[2]->size()-1
+     * @return this mesh index, from 0 to size()-1, or NOT_INCLUDED
+     */
+    inline std::size_t index(std::size_t axis0_index, std::size_t axis1_index, std::size_t axis2_index) const {
+        return nodesSet.indexOf(rectangularMesh.index(axis0_index, axis1_index, axis2_index));
+    }
+
+    using RectangularFilteredMeshBase<3>::index;
+    using RectangularFilteredMeshBase<3>::at;
+
+    /**
+     * Get point with given mesh indices.
+     * @param index0 index of point in axis[0]
+     * @param index1 index of point in axis[1]
+     * @param index2 index of point in axis[2]
+     * @return point with given @p index
+     */
+    inline Vec<3, double> at(std::size_t index0, std::size_t index1, std::size_t index2) const {
+        return rectangularMesh.at(index0, index1, index2);
+    }
+
+    /**
+     * Get point with given x and y indexes.
+     * @param axis0_index index of axis[0], from 0 to axis[0]->size()-1
+     * @param axis1_index index of axis[1], from 0 to axis[1]->size()-1
+     * @param axis1_index index of axis[2], from 0 to axis[2]->size()-1
+     * @return point with given axis0 and axis1 indexes
+     */
+    inline Vec<3, double> operator()(std::size_t axis0_index, std::size_t axis1_index, std::size_t axis2_index) const {
+        return rectangularMesh.operator()(axis0_index, axis1_index, axis2_index);
+    }
+
+private:
+    bool canBeIncluded(const Vec<3>& point) const {
+        return
+            rectangularMesh.axis[0]->at(0) <= point[0] && point[0] <= rectangularMesh.axis[0]->at(rectangularMesh.axis[0]->size()-1) &&
+            rectangularMesh.axis[1]->at(0) <= point[1] && point[1] <= rectangularMesh.axis[1]->at(rectangularMesh.axis[1]->size()-1) &&
+            rectangularMesh.axis[2]->at(0) <= point[2] && point[2] <= rectangularMesh.axis[2]->at(rectangularMesh.axis[2]->size()-1);
+    }
+
+    bool prepareInterpolation(const Vec<3>& point, Vec<3>& wrapped_point,
+                              std::size_t& index0_lo, std::size_t& index0_hi,
+                              std::size_t& index1_lo, std::size_t& index1_hi,
+                              std::size_t& index2_lo, std::size_t& index2_hi,
+                              std::size_t& rectmesh_index_lo, const InterpolationFlags& flags) const;
+
+public:
+    /**
+     * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.
+     * @param data values of data in points describe by this mesh
+     * @param point point in which value should be calculate
+     * @return interpolated value in point @p point
+     */
+    template <typename RandomAccessContainer>
+    auto interpolateLinear(const RandomAccessContainer& data, const Vec<3>& point, const InterpolationFlags& flags) const
+        -> typename std::remove_reference<decltype(data[0])>::type
+    {
+        Vec<3> wrapped_point;
+        std::size_t index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi, rectmesh_index_lo;
+
+        if (!prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi, rectmesh_index_lo, flags))
+            return NaNfor<decltype(data[0])>();
+
+        return flags.postprocess(point,
+                                 interpolation::trilinear(
+                                     rectangularMesh.axis[0]->at(index0_lo), rectangularMesh.axis[0]->at(index0_hi),
+                                     rectangularMesh.axis[1]->at(index1_lo), rectangularMesh.axis[1]->at(index1_hi),
+                                     rectangularMesh.axis[2]->at(index1_lo), rectangularMesh.axis[2]->at(index1_hi),
+                                     data[nodesSet.indexOf(rectmesh_index_lo)],
+                                     data[index(index0_lo, index1_lo, index2_lo)],
+                                     data[index(index0_hi, index1_lo, index2_lo)],
+                                     data[index(index0_hi, index1_hi, index2_lo)],
+                                     data[index(index0_lo, index1_hi, index2_lo)],
+                                     data[index(index0_lo, index1_lo, index2_hi)],
+                                     data[index(index0_hi, index1_lo, index2_hi)],
+                                     data[index(index0_hi, index1_hi, index2_hi)],
+                                     data[index(index0_lo, index1_hi, index2_hi)],
+                                     wrapped_point.c0, wrapped_point.c1, wrapped_point.c2));
+    }
+
+    /**
+     * Calculate (using nearest neighbor interpolation) value of data in point using data in points described by this mesh.
+     * @param data values of data in points describe by this mesh
+     * @param point point in which value should be calculate
+     * @return interpolated value in point @p point
+     */
+    template <typename RandomAccessContainer>
+    auto interpolateNearestNeighbor(const RandomAccessContainer& data, const Vec<3>& point, const InterpolationFlags& flags) const
+        -> typename std::remove_reference<decltype(data[0])>::type
+    {
+        Vec<3> wrapped_point;
+        std::size_t index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi, rectmesh_index_lo;
+
+        if (!prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi, rectmesh_index_lo, flags))
+            return NaNfor<decltype(data[0])>();
+
+        return flags.postprocess(point,
+                                 data[this->index(
+                                     nearest(wrapped_point.c0, *rectangularMesh.axis[0], index0_lo, index0_hi),
+                                     nearest(wrapped_point.c1, *rectangularMesh.axis[1], index1_lo, index1_hi),
+                                     nearest(wrapped_point.c2, *rectangularMesh.axis[2], index2_lo, index2_hi)
+                                 )]);
+    }
+
+    /**
+     * Convert mesh indexes of a back-left-bottom corner of an element to the index of this element.
+     * @param axis0_index index of the corner along the axis[0] (back), from 0 to axis[0]->size()-1
+     * @param axis1_index index of the corner along the axis[1] (left), from 0 to axis[1]->size()-1
+     * @param axis2_index index of the corner along the axis[2] (bottom), from 0 to axis[2]->size()-1
+     * @return index of the element, from 0 to getElementsCount()-1
+     */
+    std::size_t getElementIndexFromLowIndexes(std::size_t axis0_index, std::size_t axis1_index, std::size_t axis2_index) const {
+        return elementsSet.indexOf(rectangularMesh.getElementIndexFromLowIndexes(axis0_index, axis1_index, axis2_index));
+    }
+
+    /**
+     * Get an area of a given element.
+     * @param index0, index1, index2 axes 0, 1 and 1 indexes of the element
+     * @return the area of the element with given indexes
+     */
+    double getElementArea(std::size_t index0, std::size_t index1, std::size_t index2) const {
+        return rectangularMesh.getElementArea(index0, index1, index2);
+    }
+
+    /**
+     * Get point in center of Elements.
+     * @param index0, index1, index2 index of Elements
+     * @return point in center of element with given index
+     */
+    Vec<3, double> getElementMidpoint(std::size_t index0, std::size_t index1, std::size_t index2) const {
+        return rectangularMesh.getElementMidpoint(index0, index1, index2);
+    }
+
+    /**
+     * Get element as rectangle.
+     * @param index0, index1, index2 index of Elements
+     * @return box of elements with given index
+     */
+    Box3D getElementBox(std::size_t index0, std::size_t index1, std::size_t index2) const {
+        return rectangularMesh.getElementBox(index0, index1, index2);
+    }
+
 
 protected:
 

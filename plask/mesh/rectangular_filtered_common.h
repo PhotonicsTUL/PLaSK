@@ -203,9 +203,9 @@ public:
     }
 
     /**
-     * Calculate index of axis0 using this mesh index.
+     * Calculate index of axis1 using this mesh index.
      * @param mesh_index this mesh index, from 0 to size()-1
-     * @return index of axis0, from 0 to axis0->size()-1
+     * @return index of axis1, from 0 to axis1->size()-1
      */
     inline std::size_t index1(std::size_t mesh_index) const {
         return rectangularMesh.index1(nodesSet.at(mesh_index));

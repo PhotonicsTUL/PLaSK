@@ -83,7 +83,7 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
         /// \return vert index of the element
         inline std::size_t getIndex2() const { return index2; }
 
-        /// \return long index of the left edge of the element
+        /// \return long index of the back edge of the element
         inline std::size_t getLowerIndex0() const { return index0; }
 
         /// \return tran index of the left edge of the element
@@ -92,7 +92,7 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
         /// \return vert index of the bottom edge of the element
         inline std::size_t getLowerIndex2() const { return index2; }
 
-        /// \return long coordinate of the left edge of the element
+        /// \return long coordinate of the back edge of the element
         inline double getLower0() const { return mesh.axis[0]->at(index0); }
 
         /// \return tran coordinate of the left edge of the element
@@ -101,7 +101,7 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
         /// \return vert coordinate of the bottom edge of the element
         inline double getLower2() const { return mesh.axis[2]->at(index2); }
 
-        /// \return long index of the right edge of the element
+        /// \return long index of the front edge of the element
         inline std::size_t getUpperIndex0() const { return index0+1; }
 
         /// \return tran index of the right edge of the element
@@ -110,7 +110,7 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
         /// \return vert index of the top edge of the element
         inline std::size_t getUpperIndex2() const { return index2+1; }
 
-        /// \return long coordinate of the right edge of the element
+        /// \return long coordinate of the front edge of the element
         inline double getUpper0() const { return mesh.axis[0]->at(getUpperIndex0()); }
 
         /// \return tran coordinate of the right edge of the element
@@ -561,6 +561,15 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
         const std::size_t elements_per_level = minor_size_minus_1 * ((*medium_axis)->size()-1);
         return element_index + (element_index / elements_per_level) * ((*medium_axis)->size() + minor_size_minus_1)
                             + (element_index % elements_per_level) / minor_size_minus_1;
+    }
+
+    /**
+     * Convert mesh indexes of a bottom-left corner of an element to the index of this element.
+     * @param axis0_index, axis1_index, axis2_index indexs of the lower corner along the axis[0, 1 and 2]
+     * @return index of the element, from 0 to getElementsCount()-1
+     */
+    std::size_t getElementIndexFromLowIndexes(std::size_t axis0_index, std::size_t axis1_index, std::size_t axis2_index) const {
+        return getElementIndexFromLowIndex(index(axis0_index, axis1_index, axis2_index));
     }
 
     /**

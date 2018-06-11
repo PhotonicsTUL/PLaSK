@@ -127,7 +127,7 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
     };  // class Element
 
 
-    struct Elements: ElementsBase<RectangularFilteredMesh2D> {
+    struct PLASK_API Elements: ElementsBase<RectangularFilteredMesh2D> {
 
         explicit Elements(const RectangularFilteredMesh2D& mesh): ElementsBase(mesh) {}
 
@@ -216,13 +216,13 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
         return nodesSet.indexOf(rectangularMesh.index(axis0_index, axis1_index));
     }
 
-    using RectangularFilteredMeshBase<DIM>::index;
-    using RectangularFilteredMeshBase<DIM>::at;
+    using RectangularFilteredMeshBase<2>::index;
+    using RectangularFilteredMeshBase<2>::at;
 
     /**
      * Get point with given mesh indices.
-     * @param index0 index of point in axis0
-     * @param index1 index of point in axis1
+     * @param index0 index of point in axis[0]
+     * @param index1 index of point in axis[1]
      * @return point with given @p index
      */
     inline Vec<2, double> at(std::size_t index0, std::size_t index1) const {
@@ -231,8 +231,8 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
 
     /**
      * Get point with given x and y indexes.
-     * @param axis0_index index of axis0, from 0 to axis[0]->size()-1
-     * @param axis1_index index of axis1, from 0 to axis[1]->size()-1
+     * @param axis0_index index of axis[0], from 0 to axis[0]->size()-1
+     * @param axis1_index index of axis[1], from 0 to axis[1]->size()-1
      * @return point with given axis0 and axis1 indexes
      */
     inline Vec<2,double> operator()(std::size_t axis0_index, std::size_t axis1_index) const {
