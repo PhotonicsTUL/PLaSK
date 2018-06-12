@@ -5,6 +5,13 @@
 
 namespace plask {
 
+/**
+ * Rectangular mesh which uses (and indexes) only chosen elements and all nodes in their corners.
+ *
+ * Objects of this class can be constructed from instences of full rectangular mesh (RectangularFilteredMesh2D)
+ * and they can use the same boundary conditions (BoundaryConditions instance for full mesh accepts also objets of this class).
+ * Interpolation methods return NaN-s for all elements which have not been chosen.
+ */
 struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2> {
 
     typedef std::function<bool(const RectangularMesh2D::Element&)> Predicate;
@@ -137,31 +144,16 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
 
     /**
      * Construct filtered mesh with elements of rectangularMesh chosen by a @p predicate.
+     * Preserve order of elements and nodes of @p rectangularMesh.
      * @param rectangularMesh input mesh, before filtering
      * @param predicate predicate which returns either @c true for accepting element or @c false for rejecting it
-     * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
+     * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared with @p rectangularMesh (if @c false; default)
      */
-    RectangularFilteredMesh2D(const RectangularMesh<2>& rectangularMesh, const Predicate& predicate, bool clone_axes = false)
-        : RectangularFilteredMeshBase(rectangularMesh, clone_axes)
-    {
-        for (auto el_it = this->rectangularMesh.elements().begin(); el_it != this->rectangularMesh.elements().end(); ++el_it)
-            if (predicate(*el_it)) {
-                elementsSet.push_back(el_it.index);
-                nodesSet.insert(el_it->getLoLoIndex());
-                nodesSet.insert(el_it->getLoUpIndex());
-                nodesSet.insert(el_it->getUpLoIndex());
-                nodesSet.push_back(el_it->getUpUpIndex());  //this is safe also for 10 axis order
-                if (el_it->getLowerIndex0() < boundaryIndex[0].lo) boundaryIndex[0].lo = el_it->getLowerIndex0();
-                if (el_it->getUpperIndex0() > boundaryIndex[0].up) boundaryIndex[0].up = el_it->getUpperIndex0();
-                if (el_it->getLowerIndex1() < boundaryIndex[1].lo) boundaryIndex[1].lo = el_it->getLowerIndex1();
-                if (el_it->getUpperIndex1() > boundaryIndex[1].up) boundaryIndex[1].up = el_it->getUpperIndex1();
-            }
-        nodesSet.shrink_to_fit();
-        elementsSet.shrink_to_fit();
-    }
+    RectangularFilteredMesh2D(const RectangularMesh<2>& rectangularMesh, const Predicate& predicate, bool clone_axes = false);
 
     /**
      * Construct filtered mesh with all elements of @c rectangularMesh which have required materials in the midpoints.
+     * Preserve order of elements and nodes of @p rectangularMesh.
      * @param rectangularMesh input mesh, before filtering
      * @param geom geometry to get materials from
      * @param materialPredicate predicate which returns either @c true for accepting material or @c false for rejecting it
@@ -174,6 +166,7 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
 
     /**
      * Construct filtered mesh with all elements of @c rectangularMesh which have required kinds of materials (in the midpoints).
+     * Preserve order of elements and nodes of @p rectangularMesh.
      * @param rectangularMesh input mesh, before filtering
      * @param geom geometry to get materials from
      * @param materialKinds one or more kinds of material encoded with bit @c or operation, e.g. @c DIELECTRIC|METAL
@@ -419,95 +412,37 @@ protected:  // boundaries code:
 
 public:     // boundaries:
 
-    BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const override {
-        return createVerticalBoundaryAtLine(line_nr_axis0, boundaryIndex[1].lo, boundaryIndex[1].up+1);
-    }
+    BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const override;
 
-    BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) const override {
-        return new BoundaryNodeSetImpl<1>(*this, line_nr_axis0, indexBegin, indexEnd);
-    }
+    BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) const override;
 
-    BoundaryNodeSet createVerticalBoundaryNear(double axis0_coord) const override {
-        return createVerticalBoundaryAtLine(rectangularMesh.axis[0]->findNearestIndex(axis0_coord));
-    }
+    BoundaryNodeSet createVerticalBoundaryNear(double axis0_coord) const override;
 
-    BoundaryNodeSet createVerticalBoundaryNear(double axis0_coord, double from, double to) const override {
-        std::size_t begInd, endInd;
-        if (!details::getIndexesInBoundsExt(begInd, endInd, *rectangularMesh.axis[1], from, to))
-            return new EmptyBoundaryImpl();
-        return createVerticalBoundaryAtLine(rectangularMesh.axis[0]->findNearestIndex(axis0_coord), begInd, endInd);
-    }
+    BoundaryNodeSet createVerticalBoundaryNear(double axis0_coord, double from, double to) const override;
 
-    BoundaryNodeSet createLeftBoundary() const override {
-        return createVerticalBoundaryAtLine(boundaryIndex[0].lo);
-    }
+    BoundaryNodeSet createLeftBoundary() const override;
 
-    BoundaryNodeSet createRightBoundary() const override {
-        return createVerticalBoundaryAtLine(boundaryIndex[0].up);
-    }
+    BoundaryNodeSet createRightBoundary() const override;
 
-    BoundaryNodeSet createLeftOfBoundary(const Box2D& box) const override {
-        std::size_t line, begInd, endInd;
-        if (details::getLineLo(line, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0) &&
-            details::getIndexesInBounds(begInd, endInd, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1))
-            return createVerticalBoundaryAtLine(line, begInd, endInd);
-        else
-            return new EmptyBoundaryImpl();
-    }
+    BoundaryNodeSet createLeftOfBoundary(const Box2D& box) const override;
 
-   BoundaryNodeSet createRightOfBoundary(const Box2D& box) const override {
-        std::size_t line, begInd, endInd;
-        if (details::getLineHi(line, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0) &&
-            details::getIndexesInBounds(begInd, endInd, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1))
-            return createVerticalBoundaryAtLine(line, begInd, endInd);
-        else
-            return new EmptyBoundaryImpl();
-    }
+    BoundaryNodeSet createRightOfBoundary(const Box2D& box) const override;
 
-    BoundaryNodeSet createBottomOfBoundary(const Box2D& box) const override {
-        std::size_t line, begInd, endInd;
-        if (details::getLineLo(line, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1) &&
-            details::getIndexesInBounds(begInd, endInd, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0))
-            return createHorizontalBoundaryAtLine(line, begInd, endInd);
-        else
-            return new EmptyBoundaryImpl();
-    }
+    BoundaryNodeSet createBottomOfBoundary(const Box2D& box) const override;
 
-    BoundaryNodeSet createTopOfBoundary(const Box2D& box) const override {
-       std::size_t line, begInd, endInd;
-       if (details::getLineHi(line, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1) &&
-           details::getIndexesInBounds(begInd, endInd, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0))
-           return createHorizontalBoundaryAtLine(line, begInd, endInd);
-       else
-           return new EmptyBoundaryImpl();
-    }
+    BoundaryNodeSet createTopOfBoundary(const Box2D& box) const override;
 
-    BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1) const override {
-        return createHorizontalBoundaryAtLine(line_nr_axis1, boundaryIndex[0].lo, boundaryIndex[0].up+1);
-    }
+    BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1) const override;
 
-    BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) const override {
-        return new BoundaryNodeSetImpl<0>(*this, indexBegin, line_nr_axis1, indexEnd);
-    }
+    BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) const override;
 
-    BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord) const override {
-        return createHorizontalBoundaryAtLine(rectangularMesh.axis[1]->findNearestIndex(axis1_coord));
-    }
+    BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord) const override;
 
-    BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord, double from, double to) const override {
-        std::size_t begInd, endInd;
-        if (!details::getIndexesInBoundsExt(begInd, endInd, *rectangularMesh.axis[0], from, to))
-            return new EmptyBoundaryImpl();
-        return createHorizontalBoundaryAtLine(rectangularMesh.axis[1]->findNearestIndex(axis1_coord), begInd, endInd);
-    }
+    BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord, double from, double to) const override;
 
-    BoundaryNodeSet createTopBoundary() const override {
-        return createHorizontalBoundaryAtLine(boundaryIndex[1].up);
-    }
+    BoundaryNodeSet createTopBoundary() const override;
 
-    BoundaryNodeSet createBottomBoundary() const override {
-        return createHorizontalBoundaryAtLine(boundaryIndex[1].lo);
-    }
+    BoundaryNodeSet createBottomBoundary() const override;
 
 };
 

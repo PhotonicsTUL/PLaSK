@@ -865,95 +865,37 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
 
 public:     // boundaries:
 
-    BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const override {
-        return new VerticalBoundary(*this, line_nr_axis0);
-    }
+    BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const override;
 
-    BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) const override {
-        return new VerticalBoundaryInRange(*this, line_nr_axis0, indexBegin, indexEnd);
-    }
+    BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) const override;
 
-    BoundaryNodeSet createVerticalBoundaryNear(double axis0_coord) const override {
-        return new VerticalBoundary(*this, axis[0]->findNearestIndex(axis0_coord));
-    }
+    BoundaryNodeSet createVerticalBoundaryNear(double axis0_coord) const override;
 
-    BoundaryNodeSet createVerticalBoundaryNear(double axis0_coord, double from, double to) const override {
-        std::size_t begInd, endInd;
-        if (!details::getIndexesInBoundsExt(begInd, endInd, *axis[1], from, to))
-            return new EmptyBoundaryImpl();
-        return new VerticalBoundaryInRange(*this, axis[0]->findNearestIndex(axis0_coord), begInd, endInd);
-    }
+    BoundaryNodeSet createVerticalBoundaryNear(double axis0_coord, double from, double to) const override;
 
-    BoundaryNodeSet createLeftBoundary() const override {
-        return new VerticalBoundary(*this, 0);
-    }
+    BoundaryNodeSet createLeftBoundary() const override;
 
-    BoundaryNodeSet createRightBoundary() const override {
-        return new VerticalBoundary(*this, axis[0]->size()-1);
-    }
+    BoundaryNodeSet createRightBoundary() const override;
 
-    BoundaryNodeSet createLeftOfBoundary(const Box2D& box) const override {
-        std::size_t line, begInd, endInd;
-        if (details::getLineLo(line, *axis[0], box.lower.c0, box.upper.c0) &&
-            details::getIndexesInBounds(begInd, endInd, *axis[1], box.lower.c1, box.upper.c1))
-            return new VerticalBoundaryInRange(*this, line, begInd, endInd);
-        else
-            return new EmptyBoundaryImpl();
-    }
+    BoundaryNodeSet createLeftOfBoundary(const Box2D& box) const override;
 
-   BoundaryNodeSet createRightOfBoundary(const Box2D& box) const override {
-        std::size_t line, begInd, endInd;
-        if (details::getLineHi(line, *axis[0], box.lower.c0, box.upper.c0) &&
-            details::getIndexesInBounds(begInd, endInd, *axis[1], box.lower.c1, box.upper.c1))
-            return new VerticalBoundaryInRange(*this, line, begInd, endInd);
-        else
-            return new EmptyBoundaryImpl();
-    }
+    BoundaryNodeSet createRightOfBoundary(const Box2D& box) const override;
 
-    BoundaryNodeSet createBottomOfBoundary(const Box2D& box) const override {
-        std::size_t line, begInd, endInd;
-        if (details::getLineLo(line, *axis[1], box.lower.c1, box.upper.c1) &&
-            details::getIndexesInBounds(begInd, endInd, *axis[0], box.lower.c0, box.upper.c0))
-            return new HorizontalBoundaryInRange(*this, line, begInd, endInd);
-        else
-            return new EmptyBoundaryImpl();
-    }
+    BoundaryNodeSet createBottomOfBoundary(const Box2D& box) const override;
 
-    BoundaryNodeSet createTopOfBoundary(const Box2D& box) const override {
-       std::size_t line, begInd, endInd;
-       if (details::getLineHi(line, *axis[1], box.lower.c1, box.upper.c1) &&
-           details::getIndexesInBounds(begInd, endInd, *axis[0], box.lower.c0, box.upper.c0))
-           return new HorizontalBoundaryInRange(*this, line, begInd, endInd);
-       else
-           return new EmptyBoundaryImpl();
-    }
+    BoundaryNodeSet createTopOfBoundary(const Box2D& box) const override;
 
-    BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1) const override {
-        return new HorizontalBoundary(*this, line_nr_axis1);
-    }
+    BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1) const override;
 
-    BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) const override {
-        return new HorizontalBoundaryInRange(*this, line_nr_axis1, indexBegin, indexEnd);
-    }
+    BoundaryNodeSet createHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) const override;
 
-    BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord) const override {
-        return new HorizontalBoundary(*this, axis[1]->findNearestIndex(axis1_coord));
-    }
+    BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord) const override;
 
-    BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord, double from, double to) const override {
-        std::size_t begInd, endInd;
-        if (!details::getIndexesInBoundsExt(begInd, endInd, *axis[0], from, to))
-            return new EmptyBoundaryImpl();
-        return new HorizontalBoundaryInRange(*this, axis[1]->findNearestIndex(axis1_coord), begInd, endInd);
-    }
+    BoundaryNodeSet createHorizontalBoundaryNear(double axis1_coord, double from, double to) const override;
 
-    BoundaryNodeSet createTopBoundary() const override {
-        return new HorizontalBoundary(*this, axis[1]->size()-1);
-    }
+    BoundaryNodeSet createTopBoundary() const override;
 
-    BoundaryNodeSet createBottomBoundary() const override {
-        return new HorizontalBoundary(*this, 0);
-    }
+    BoundaryNodeSet createBottomBoundary() const override;
 };
 
 

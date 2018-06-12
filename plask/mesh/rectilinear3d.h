@@ -928,131 +928,47 @@ private:
 
   public:
 
-  BoundaryNodeSet createIndex0BoundaryAtLine(std::size_t line_nr_axis0) const override {
-      return new FixedIndex0Boundary(*this, line_nr_axis0);
-  }
+  BoundaryNodeSet createIndex0BoundaryAtLine(std::size_t line_nr_axis0) const override;
 
-  BoundaryNodeSet createBackBoundary() const override {
-      return createIndex0BoundaryAtLine(0);
-  }
+  BoundaryNodeSet createBackBoundary() const override;
 
-  BoundaryNodeSet createFrontBoundary() const override {
-      return createIndex0BoundaryAtLine(axis[0]->size()-1);
-  }
+  BoundaryNodeSet createFrontBoundary() const override;
 
-  BoundaryNodeSet createIndex1BoundaryAtLine(std::size_t line_nr_axis1) const override {
-      return new FixedIndex1Boundary(*this, line_nr_axis1);
-  }
+  BoundaryNodeSet createIndex1BoundaryAtLine(std::size_t line_nr_axis1) const override;
 
-  BoundaryNodeSet createLeftBoundary() const override {
-      return createIndex1BoundaryAtLine(0);
-  }
+  BoundaryNodeSet createLeftBoundary() const override;
 
-  BoundaryNodeSet createRightBoundary() const override {
-      return createIndex1BoundaryAtLine(axis[1]->size()-1);
-  }
+  BoundaryNodeSet createRightBoundary() const override;
 
-  BoundaryNodeSet createIndex2BoundaryAtLine(std::size_t line_nr_axis2) const override {
-      return new FixedIndex2Boundary(*this, line_nr_axis2);
-  }
+  BoundaryNodeSet createIndex2BoundaryAtLine(std::size_t line_nr_axis2) const override;
 
-  BoundaryNodeSet createBottomBoundary() const override {
-      return createIndex2BoundaryAtLine(0);
-  }
+  BoundaryNodeSet createBottomBoundary() const override;
 
-  BoundaryNodeSet createTopBoundary() const override {
-      return createIndex2BoundaryAtLine(axis[2]->size()-1);
-  }
+  BoundaryNodeSet createTopBoundary() const override;
 
   BoundaryNodeSet createIndex0BoundaryAtLine(std::size_t line_nr_axis0,
                                              std::size_t index1Begin, std::size_t index1End,
-                                             std::size_t index2Begin, std::size_t index2End) const override
-  {
-      if (index1Begin < index1End && index2Begin < index2End)
-          return new FixedIndex0BoundaryInRange(*this, line_nr_axis0, index1Begin, index1End, index2Begin, index2End);
-      else
-          return new EmptyBoundaryImpl();
-  }
+                                             std::size_t index2Begin, std::size_t index2End) const override;
 
-  BoundaryNodeSet createBackOfBoundary(const Box3D& box) const override {
-      std::size_t line, begInd1, endInd1, begInd2, endInd2;
-      if (details::getLineLo(line, *axis[0], box.lower.c0, box.upper.c0) &&
-              details::getIndexesInBounds(begInd1, endInd1, *axis[1], box.lower.c1, box.upper.c1) &&
-              details::getIndexesInBounds(begInd2, endInd2, *axis[2], box.lower.c2, box.upper.c2))
-              return new FixedIndex0BoundaryInRange(*this, line, begInd1, endInd1, begInd2, endInd2);
-      else
-              return new EmptyBoundaryImpl();
-  }
+  BoundaryNodeSet createBackOfBoundary(const Box3D& box) const override;
 
-  BoundaryNodeSet createFrontOfBoundary(const Box3D& box) const override {
-          std::size_t line, begInd1, endInd1, begInd2, endInd2;
-          if (details::getLineHi(line, *axis[0], box.lower.c0, box.upper.c0) &&
-              details::getIndexesInBounds(begInd1, endInd1, *axis[1], box.lower.c1, box.upper.c1) &&
-              details::getIndexesInBounds(begInd2, endInd2, *axis[2], box.lower.c2, box.upper.c2))
-              return new FixedIndex0BoundaryInRange(*this, line, begInd1, endInd1, begInd2, endInd2);
-          else
-              return new EmptyBoundaryImpl();
-  }
+  BoundaryNodeSet createFrontOfBoundary(const Box3D& box) const override;
 
   BoundaryNodeSet createIndex1BoundaryAtLine(std::size_t line_nr_axis1,
                                              std::size_t index0Begin, std::size_t index0End,
-                                             std::size_t index2Begin, std::size_t index2End) const override
-  {
-      if (index0Begin < index0End && index2Begin < index2End)
-          return new FixedIndex1BoundaryInRange(*this, line_nr_axis1, index0Begin, index0End, index2Begin, index2End);
-      else
-          return new EmptyBoundaryImpl();
-  }
+                                             std::size_t index2Begin, std::size_t index2End) const override;
 
-  BoundaryNodeSet createLeftOfBoundary(const Box3D& box) const override {
-          std::size_t line, begInd0, endInd0, begInd2, endInd2;
-          if (details::getLineLo(line, *axis[1], box.lower.c1, box.upper.c1) &&
-              details::getIndexesInBounds(begInd0, endInd0, *axis[0], box.lower.c0, box.upper.c0) &&
-              details::getIndexesInBounds(begInd2, endInd2, *axis[2], box.lower.c2, box.upper.c2))
-              return new FixedIndex1BoundaryInRange(*this, line, begInd0, endInd0, begInd2, endInd2);
-          else
-              return new EmptyBoundaryImpl();
-  }
+  BoundaryNodeSet createLeftOfBoundary(const Box3D& box) const override;
 
-  BoundaryNodeSet createRightOfBoundary(const Box3D& box) const override {
-          std::size_t line, begInd0, endInd0, begInd2, endInd2;
-          if (details::getLineHi(line, *axis[1], box.lower.c1, box.upper.c1) &&
-              details::getIndexesInBounds(begInd0, endInd0, *axis[0], box.lower.c0, box.upper.c0) &&
-              details::getIndexesInBounds(begInd2, endInd2, *axis[2], box.lower.c2, box.upper.c2))
-              return new FixedIndex1BoundaryInRange(*this, line, begInd0, endInd0, begInd2, endInd2);
-          else
-              return new EmptyBoundaryImpl();
-  }
+  BoundaryNodeSet createRightOfBoundary(const Box3D& box) const override;
 
   BoundaryNodeSet createIndex2BoundaryAtLine(std::size_t line_nr_axis2,
                                              std::size_t index0Begin, std::size_t index0End,
-                                             std::size_t index1Begin, std::size_t index1End) const override
-  {
-      if (index0Begin < index0End && index1Begin < index1End)
-          return new FixedIndex2BoundaryInRange(*this, line_nr_axis2, index0Begin, index0End, index1Begin, index1End);
-      else
-          return new EmptyBoundaryImpl();
-  }
+                                             std::size_t index1Begin, std::size_t index1End) const override;
 
-  BoundaryNodeSet createBottomOfBoundary(const Box3D& box) const override {
-          std::size_t line, begInd0, endInd0, begInd1, endInd1;
-          if (details::getLineLo(line, *axis[2], box.lower.c2, box.upper.c2) &&
-              details::getIndexesInBounds(begInd0, endInd0, *axis[0], box.lower.c0, box.upper.c0) &&
-              details::getIndexesInBounds(begInd1, endInd1, *axis[1], box.lower.c1, box.upper.c1))
-              return new FixedIndex2BoundaryInRange(*this, line, begInd0, endInd0, begInd1, endInd1);
-          else
-              return new EmptyBoundaryImpl();
-  }
+  BoundaryNodeSet createBottomOfBoundary(const Box3D& box) const override;
 
-  BoundaryNodeSet createTopOfBoundary(const Box3D& box) const override {
-          std::size_t line, begInd0, endInd0, begInd1, endInd1;
-          if (details::getLineHi(line, *axis[2], box.lower.c2, box.upper.c2) &&
-              details::getIndexesInBounds(begInd0, endInd0, *axis[0], box.lower.c0, box.upper.c0) &&
-              details::getIndexesInBounds(begInd1, endInd1, *axis[1], box.lower.c1, box.upper.c1))
-              return new FixedIndex2BoundaryInRange(*this, line, begInd0, endInd0, begInd1, endInd1);
-          else
-              return new EmptyBoundaryImpl();
-  }
+  BoundaryNodeSet createTopOfBoundary(const Box3D& box) const override;
 };
 
 

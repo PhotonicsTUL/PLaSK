@@ -92,6 +92,96 @@ shared_ptr<RectangularMesh2D > RectangularMesh2D::getMidpointsMesh() {
     return plask::make_shared<RectangularMesh2D>(axis[0]->getMidpointsMesh(), axis[1]->getMidpointsMesh(), getIterationOrder());
 }
 
+BoundaryNodeSet RectangularMesh2D::createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const {
+    return new VerticalBoundary(*this, line_nr_axis0);
+}
+
+BoundaryNodeSet RectangularMesh2D::createVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) const {
+    return new VerticalBoundaryInRange(*this, line_nr_axis0, indexBegin, indexEnd);
+}
+
+BoundaryNodeSet RectangularMesh2D::createVerticalBoundaryNear(double axis0_coord) const {
+    return new VerticalBoundary(*this, axis[0]->findNearestIndex(axis0_coord));
+}
+
+BoundaryNodeSet RectangularMesh2D::createVerticalBoundaryNear(double axis0_coord, double from, double to) const {
+    std::size_t begInd, endInd;
+    if (!details::getIndexesInBoundsExt(begInd, endInd, *axis[1], from, to))
+        return new EmptyBoundaryImpl();
+    return new VerticalBoundaryInRange(*this, axis[0]->findNearestIndex(axis0_coord), begInd, endInd);
+}
+
+BoundaryNodeSet RectangularMesh2D::createLeftBoundary() const {
+    return new VerticalBoundary(*this, 0);
+}
+
+BoundaryNodeSet RectangularMesh2D::createRightBoundary() const {
+    return new VerticalBoundary(*this, axis[0]->size()-1);
+}
+
+BoundaryNodeSet RectangularMesh2D::createLeftOfBoundary(const Box2D &box) const {
+    std::size_t line, begInd, endInd;
+    if (details::getLineLo(line, *axis[0], box.lower.c0, box.upper.c0) &&
+            details::getIndexesInBounds(begInd, endInd, *axis[1], box.lower.c1, box.upper.c1))
+        return new VerticalBoundaryInRange(*this, line, begInd, endInd);
+    else
+        return new EmptyBoundaryImpl();
+}
+
+BoundaryNodeSet RectangularMesh2D::createRightOfBoundary(const Box2D &box) const {
+    std::size_t line, begInd, endInd;
+    if (details::getLineHi(line, *axis[0], box.lower.c0, box.upper.c0) &&
+            details::getIndexesInBounds(begInd, endInd, *axis[1], box.lower.c1, box.upper.c1))
+        return new VerticalBoundaryInRange(*this, line, begInd, endInd);
+    else
+        return new EmptyBoundaryImpl();
+}
+
+BoundaryNodeSet RectangularMesh2D::createBottomOfBoundary(const Box2D &box) const {
+    std::size_t line, begInd, endInd;
+    if (details::getLineLo(line, *axis[1], box.lower.c1, box.upper.c1) &&
+            details::getIndexesInBounds(begInd, endInd, *axis[0], box.lower.c0, box.upper.c0))
+        return new HorizontalBoundaryInRange(*this, line, begInd, endInd);
+    else
+        return new EmptyBoundaryImpl();
+}
+
+BoundaryNodeSet RectangularMesh2D::createTopOfBoundary(const Box2D &box) const {
+    std::size_t line, begInd, endInd;
+    if (details::getLineHi(line, *axis[1], box.lower.c1, box.upper.c1) &&
+            details::getIndexesInBounds(begInd, endInd, *axis[0], box.lower.c0, box.upper.c0))
+        return new HorizontalBoundaryInRange(*this, line, begInd, endInd);
+    else
+        return new EmptyBoundaryImpl();
+}
+
+BoundaryNodeSet RectangularMesh2D::createHorizontalBoundaryAtLine(std::size_t line_nr_axis1) const {
+    return new HorizontalBoundary(*this, line_nr_axis1);
+}
+
+BoundaryNodeSet RectangularMesh2D::createHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) const {
+    return new HorizontalBoundaryInRange(*this, line_nr_axis1, indexBegin, indexEnd);
+}
+
+BoundaryNodeSet RectangularMesh2D::createHorizontalBoundaryNear(double axis1_coord) const {
+    return new HorizontalBoundary(*this, axis[1]->findNearestIndex(axis1_coord));
+}
+
+BoundaryNodeSet RectangularMesh2D::createHorizontalBoundaryNear(double axis1_coord, double from, double to) const {
+    std::size_t begInd, endInd;
+    if (!details::getIndexesInBoundsExt(begInd, endInd, *axis[0], from, to))
+        return new EmptyBoundaryImpl();
+    return new HorizontalBoundaryInRange(*this, axis[1]->findNearestIndex(axis1_coord), begInd, endInd);
+}
+
+BoundaryNodeSet RectangularMesh2D::createTopBoundary() const {
+    return new HorizontalBoundary(*this, axis[1]->size()-1);
+}
+
+BoundaryNodeSet RectangularMesh2D::createBottomBoundary() const {
+    return new HorizontalBoundary(*this, 0);
+}
+
 void RectangularMesh2D::writeXML(XMLElement& object) const {
     object.attr("type", "rectangular2d");
     { auto a = object.addTag("axis0"); axis[0]->writeXML(a); }
@@ -99,7 +189,7 @@ void RectangularMesh2D::writeXML(XMLElement& object) const {
 }
 
 shared_ptr<RectangularMesh2D > make_rectangular_mesh(const RectangularMesh2D &to_copy) {
-   return plask::make_shared<RectangularMesh2D>(plask::make_shared<OrderedAxis>(*to_copy.axis[0]), plask::make_shared<OrderedAxis>(*to_copy.axis[1]), to_copy.getIterationOrder());
+    return plask::make_shared<RectangularMesh2D>(plask::make_shared<OrderedAxis>(*to_copy.axis[0]), plask::make_shared<OrderedAxis>(*to_copy.axis[1]), to_copy.getIterationOrder());
 }
 
 static shared_ptr<Mesh> readRectangularMesh2D(XMLReader& reader) {
