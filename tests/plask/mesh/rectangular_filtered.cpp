@@ -140,18 +140,30 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
     checkBoundary(filteredMesh.createBottomBoundary(), {2, 6});
     checkBoundary(filteredMesh.createTopBoundary(), {5, 9, 12, 15});
 
-    plask::DataVector<double> src_data = {
-        1, 1,           // 1.0
-        2, 2, 2, 2,     // 2.0
-        3, 3, 3, 3,     // 5.0
-        4, 4, 4,        // 10.0
-        5, 5, 5};       // 18.0
+    {
+        plask::DataVector<double> src_data = {
+            1, 1,           // 1.0
+            2, 2, 2, 2,     // 2.0
+            3, 3, 3, 3,     // 5.0
+            4, 4, 4,        // 10.0
+            5, 5, 5};       // 18.0
 
-    BOOST_CHECK(std::isnan(filteredMesh.interpolateNearestNeighbor(src_data, plask::vec(1.0, 1.0), plask::InterpolationFlags())));
-    BOOST_CHECK_EQUAL(filteredMesh.interpolateNearestNeighbor(src_data, plask::vec(1.8, 4.5), plask::InterpolationFlags()), 2.0);
-    BOOST_CHECK_EQUAL(filteredMesh.interpolateLinear(src_data, plask::vec(1.5, 4.5), plask::InterpolationFlags()), 1.5);
+        BOOST_CHECK(std::isnan(filteredMesh.interpolateNearestNeighbor(src_data, plask::vec(1.0, 1.0), plask::InterpolationFlags())));
+        BOOST_CHECK_EQUAL(filteredMesh.interpolateNearestNeighbor(src_data, plask::vec(1.8, 4.5), plask::InterpolationFlags()), 2.0);
+        BOOST_CHECK_EQUAL(filteredMesh.interpolateLinear(src_data, plask::vec(1.5, 4.5), plask::InterpolationFlags()), 1.5);
+    }
 
-
+    {
+        plask::DataVector<plask::Vec<2, double>> src_data = {
+            plask::vec(1.0, 1.0), plask::vec(1.0, 1.0),           // 1.0
+            plask::vec(2.0, 2.0), plask::vec(2.0, 2.0), plask::vec(2.0, 2.0), plask::vec(2.0, 2.0),     // 2.0
+            plask::vec(3.0, 3.0), plask::vec(3.0, 3.0), plask::vec(3.0, 3.0), plask::vec(3.0, 3.0),     // 5.0
+            plask::vec(4.0, 4.0), plask::vec(4.0, 4.0), plask::vec(4.0, 4.0),        // 10.0
+            plask::vec(5.0, 5.0), plask::vec(5.0, 5.0), plask::vec(5.0, 5.0)};       // 18.0
+        BOOST_CHECK(plask::isnan(filteredMesh.interpolateNearestNeighbor(src_data, plask::vec(1.0, 1.0), plask::InterpolationFlags())));
+        BOOST_CHECK_EQUAL(filteredMesh.interpolateNearestNeighbor(src_data, plask::vec(1.8, 4.5), plask::InterpolationFlags()), plask::vec(2.0, 2.0));
+        BOOST_CHECK_EQUAL(filteredMesh.interpolateLinear(src_data, plask::vec(1.5, 4.5), plask::InterpolationFlags()), plask::vec(1.5, 1.5));
+    }
 }
 
 BOOST_AUTO_TEST_CASE(rectangular_filtered_2D_order10) {
