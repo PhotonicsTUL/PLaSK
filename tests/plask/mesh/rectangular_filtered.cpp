@@ -93,14 +93,15 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
 
     /*            bottom
      *     0     1     2     3      4
-     * 0   |0---2|4---6|8--- |12--- |16
+     * 0   |0---2|4---6|8--- |12--- |16            3
      *     |   0 | 1*3 |   6 |    9 |
-     * 1  0|1---3|5---7|9--10|13--13|17
+     * 1  0|1---3|5---7|9--10|13--13|17            4
      *left | 0*1 | 2*4 | 4*7 | 5*10 |    right
-     * 2  1|2---4|6---8|10-11|14--14|18
+     * 2  1|2---4|6---8|10-11|14--14|18            5
      *     |   2 | 3*5 |   8 | 6*11 |
-     * 3   |3---5|7---9|11-12|15--15|19
+     * 3   |3---5|7---9|11-12|15--15|19            6
      *            top
+     *     1     2     5    10     18
      */
     {   // element iterator test:
         plask::RectangularFilteredMesh2D::Elements::const_iterator it = filteredMesh.elements().begin();
@@ -138,6 +139,19 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
     checkBoundary(filteredMesh.createRightBoundary(), {13, 14, 15});
     checkBoundary(filteredMesh.createBottomBoundary(), {2, 6});
     checkBoundary(filteredMesh.createTopBoundary(), {5, 9, 12, 15});
+
+    plask::DataVector<double> src_data = {
+        1, 1,           // 1.0
+        2, 2, 2, 2,     // 2.0
+        3, 3, 3, 3,     // 5.0
+        4, 4, 4,        // 10.0
+        5, 5, 5};       // 18.0
+
+    BOOST_CHECK(std::isnan(filteredMesh.interpolateNearestNeighbor(src_data, plask::vec(1.0, 1.0), plask::InterpolationFlags())));
+    BOOST_CHECK_EQUAL(filteredMesh.interpolateNearestNeighbor(src_data, plask::vec(1.8, 4.5), plask::InterpolationFlags()), 2.0);
+    BOOST_CHECK_EQUAL(filteredMesh.interpolateLinear(src_data, plask::vec(1.5, 4.5), plask::InterpolationFlags()), 1.5);
+
+
 }
 
 BOOST_AUTO_TEST_CASE(rectangular_filtered_2D_order10) {
