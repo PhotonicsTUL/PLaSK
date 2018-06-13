@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_3D) {
     BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount1(), 3);
     BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount2(), 3);
 
-    {   // iterator test:   //TODO check if test is fine
+    {   // iterator test:
         plask::RectangularFilteredMesh3D::const_iterator it = filteredMesh.begin();
 
         checkNodeIterator(filteredMesh, it,    0,  0,  plask::vec(1.0, 2.0, 3.0));
