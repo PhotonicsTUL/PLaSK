@@ -14,15 +14,16 @@ plask::RectangularFilteredMesh2D constructMesh(plask::RectangularMesh2D::Iterati
     );
 }
 
-void checkNodeIterator(const plask::RectangularFilteredMesh2D& filteredMesh,
-                       plask::RectangularFilteredMesh2D::const_iterator& it,
+template <int DIM>
+void checkNodeIterator(const plask::RectangularFilteredMesh<DIM>& filteredMesh,
+                       typename plask::RectangularFilteredMesh<DIM>::const_iterator& it,
                        std::size_t index, std::size_t number,
-                       double x, double y)
+                       plask::Vec<DIM, double> coords)
 {
     BOOST_REQUIRE(it != filteredMesh.end());
     BOOST_CHECK_EQUAL(it.getIndex(), index);
     BOOST_CHECK_EQUAL(it.getNumber(), number);
-    BOOST_CHECK_EQUAL(*it, plask::vec(x, y));
+    BOOST_CHECK_EQUAL(*it, coords);
     ++it;
 }
 
@@ -67,26 +68,26 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
     {   // iterator test:
         plask::RectangularFilteredMesh2D::const_iterator it = filteredMesh.begin();
 
-        checkNodeIterator(filteredMesh, it,    0,  1,   1.0, 4.0);
-        checkNodeIterator(filteredMesh, it,    1,  2,   1.0, 5.0);
+        checkNodeIterator(filteredMesh, it,    0,  1,  plask::vec( 1.0, 4.0));
+        checkNodeIterator(filteredMesh, it,    1,  2,  plask::vec( 1.0, 5.0));
 
-        checkNodeIterator(filteredMesh, it,    2,  4,   2.0, 3.0);
-        checkNodeIterator(filteredMesh, it,    3,  5,   2.0, 4.0);
-        checkNodeIterator(filteredMesh, it,    4,  6,   2.0, 5.0);
-        checkNodeIterator(filteredMesh, it,    5,  7,   2.0, 6.0);
+        checkNodeIterator(filteredMesh, it,    2,  4,  plask::vec( 2.0, 3.0));
+        checkNodeIterator(filteredMesh, it,    3,  5,  plask::vec( 2.0, 4.0));
+        checkNodeIterator(filteredMesh, it,    4,  6,  plask::vec( 2.0, 5.0));
+        checkNodeIterator(filteredMesh, it,    5,  7,  plask::vec( 2.0, 6.0));
 
-        checkNodeIterator(filteredMesh, it,    6,  8,   5.0, 3.0);
-        checkNodeIterator(filteredMesh, it,    7,  9,   5.0, 4.0);
-        checkNodeIterator(filteredMesh, it,    8, 10,   5.0, 5.0);
-        checkNodeIterator(filteredMesh, it,    9, 11,   5.0, 6.0);
+        checkNodeIterator(filteredMesh, it,    6,  8,  plask::vec( 5.0, 3.0));
+        checkNodeIterator(filteredMesh, it,    7,  9,  plask::vec( 5.0, 4.0));
+        checkNodeIterator(filteredMesh, it,    8, 10,  plask::vec( 5.0, 5.0));
+        checkNodeIterator(filteredMesh, it,    9, 11,  plask::vec( 5.0, 6.0));
 
-        checkNodeIterator(filteredMesh, it,   10, 13,  10.0, 4.0);
-        checkNodeIterator(filteredMesh, it,   11, 14,  10.0, 5.0);
-        checkNodeIterator(filteredMesh, it,   12, 15,  10.0, 6.0);
+        checkNodeIterator(filteredMesh, it,   10, 13,  plask::vec(10.0, 4.0));
+        checkNodeIterator(filteredMesh, it,   11, 14,  plask::vec(10.0, 5.0));
+        checkNodeIterator(filteredMesh, it,   12, 15,  plask::vec(10.0, 6.0));
 
-        checkNodeIterator(filteredMesh, it,   13, 17,  18.0, 4.0);
-        checkNodeIterator(filteredMesh, it,   14, 18,  18.0, 5.0);
-        checkNodeIterator(filteredMesh, it,   15, 19,  18.0, 6.0);
+        checkNodeIterator(filteredMesh, it,   13, 17,  plask::vec(18.0, 4.0));
+        checkNodeIterator(filteredMesh, it,   14, 18,  plask::vec(18.0, 5.0));
+        checkNodeIterator(filteredMesh, it,   15, 19,  plask::vec(18.0, 6.0));
 
         BOOST_CHECK(it == filteredMesh.end());
     }
@@ -172,6 +173,58 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D_order10) {
     BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount(), 1 + 4 + 2);
     BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount0(), 4);
     BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount1(), 3);
+}
+
+BOOST_AUTO_TEST_CASE(rectangular_filtered_3D) {
+    plask::RectangularFilteredMesh3D filteredMesh(
+                plask::RectangularMesh3D(
+                    plask::make_shared<plask::RegularAxis>(1.0, 4.0, 4),
+                    plask::make_shared<plask::RegularAxis>(2.0, 5.0, 4),
+                    plask::make_shared<plask::RegularAxis>(3.0, 6.0, 4)),
+                [] (const plask::RectangularMesh3D::Element& e) {
+                    const std::size_t i0 = e.getIndex0(), i1 = e.getIndex1(), i2 = e.getIndex2();
+                    return (i0 == 1 && i1 == 1 && i2 == 1) ||
+                           (i0 == 0 && i1 == 1 && i2 == 1) ||
+                           (i0 == 0 && i1 == 0 && i2 == 0);
+                }
+    );
+    BOOST_REQUIRE_EQUAL(filteredMesh.size(), 18);
+    BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount(), 3);
+    BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount0(), 3);
+    BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount1(), 3);
+    BOOST_REQUIRE_EQUAL(filteredMesh.getElementsCount2(), 3);
+
+    {   // iterator test:   //TODO check if test is fine
+        plask::RectangularFilteredMesh3D::const_iterator it = filteredMesh.begin();
+
+        checkNodeIterator(filteredMesh, it,    0,  0,  plask::vec(1.0, 2.0, 3.0));
+        checkNodeIterator(filteredMesh, it,    1,  1,  plask::vec(1.0, 2.0, 4.0));
+
+        checkNodeIterator(filteredMesh, it,    2,  4,  plask::vec(1.0, 3.0, 3.0));
+        checkNodeIterator(filteredMesh, it,    3,  5,  plask::vec(1.0, 3.0, 4.0));
+        checkNodeIterator(filteredMesh, it,    4,  6,  plask::vec(1.0, 3.0, 5.0));
+
+        checkNodeIterator(filteredMesh, it,    5,  9,  plask::vec(1.0, 4.0, 4.0));
+        checkNodeIterator(filteredMesh, it,    6, 10,  plask::vec(1.0, 4.0, 5.0));
+
+        checkNodeIterator(filteredMesh, it,    7, 16,  plask::vec(2.0, 2.0, 3.0));
+        checkNodeIterator(filteredMesh, it,    8, 17,  plask::vec(2.0, 2.0, 4.0));
+
+        checkNodeIterator(filteredMesh, it,    9, 20,  plask::vec(2.0, 3.0, 3.0));
+        checkNodeIterator(filteredMesh, it,   10, 21,  plask::vec(2.0, 3.0, 4.0));
+        checkNodeIterator(filteredMesh, it,   11, 22,  plask::vec(2.0, 3.0, 5.0));
+
+        checkNodeIterator(filteredMesh, it,   12, 25,  plask::vec(2.0, 4.0, 4.0));
+        checkNodeIterator(filteredMesh, it,   13, 26,  plask::vec(2.0, 4.0, 5.0));
+
+        checkNodeIterator(filteredMesh, it,   14, 37,  plask::vec(3.0, 3.0, 4.0));
+        checkNodeIterator(filteredMesh, it,   15, 38,  plask::vec(3.0, 3.0, 5.0));
+
+        checkNodeIterator(filteredMesh, it,   16, 41,  plask::vec(3.0, 4.0, 4.0));
+        checkNodeIterator(filteredMesh, it,   17, 42,  plask::vec(3.0, 4.0, 5.0));
+
+        BOOST_CHECK(it == filteredMesh.end());
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
