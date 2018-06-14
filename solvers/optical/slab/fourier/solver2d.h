@@ -263,7 +263,8 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         }
         if (savidx) *savidx = idx;
         cvector incident(expansion.matrixSize(), 0.);
-        incident[idx] = (polarization == Expansion::E_TRAN)? 1. : -1.;
+        // incident[idx] = (polarization == Expansion::E_TRAN)? 1. : -1.;
+        incident[idx] = 1.;
         return incident;
     }
 
