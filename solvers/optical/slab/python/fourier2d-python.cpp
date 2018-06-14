@@ -362,6 +362,16 @@ static py::object FourierSolver2D_transmittedCoefficients1(FourierSolver2D& self
     return arrayFromVec2D<NPY_CDOUBLE>(data, self.separated(), 2);
 }
 
+static py::object FourierSolver2D_incidentCoefficients(FourierSolver2D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection) {
+    if (self.initCalculation()) {
+        self.setExpansionDefaults(false);
+        self.expansion.setK0(2e3*PI/lam);
+    } else
+        self.expansion.setK0(2e3*PI/lam);
+    auto data = self.incidentVector(polarization);
+    return arrayFromVec2D<NPY_CDOUBLE>(data, self.separated(), 2);
+}
+
 static py::object FourierSolver2D_reflectedCoefficients2(FourierSolver2D& self, double lam, size_t idx, Transfer::IncidentDirection side) {
     if (self.initCalculation()) {
         self.setExpansionDefaults(false);
@@ -537,6 +547,18 @@ void export_FourierSolver2D()
                 u8"        name of the non-vanishing electric field component.\n"
                 u8"    idx (int): Index of the input-side layer eigenfield to set as the incident\n"
                 u8"        field.\n"
+                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+                u8"        present.\n"
+                , (py::arg("lam"), "idx", "side"));
+    solver.def("get_incident_coefficients", &FourierSolver2D_incidentCoefficients,
+                u8"Get Fourier coefficients of the incident field on the perpendicular incidence [-].\n"
+                u8"These coefficients are used in :meth:`compute_reflected_coefficients` and\n"
+                u8":meth:`compute_transmitted_coefficients`.\n\n"
+                u8"Args:\n"
+                u8"    lam (float): Incident light wavelength.\n"
+                u8"    polarization: Specification of the incident light polarization.\n"
+                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
+                u8"        name of the non-vanishing electric field component.\n"
                 u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                 u8"        present.\n"
                 , (py::arg("lam"), "idx", "side"));

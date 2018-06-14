@@ -272,8 +272,6 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     /// Return minor field coefficients dimension
     size_t minor() const { return expansion.Nl; }
 
-  private:
-
     /**
      * Get incident field vector for given polarization.
      * \param polarization polarization of the perpendicularly incident light
@@ -293,8 +291,6 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         incident[idx] = 1.;
         return incident;
     }
-
-  public:
 
     /**
      * Get amplitudes of reflected diffraction orders
