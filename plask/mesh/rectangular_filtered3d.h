@@ -427,7 +427,7 @@ public:
 protected:
 
     // Common code for: left, right, bottom, top boundries:
-    template <int CHANGE_DIR_FASTER, int CHANGE_DIR_SLOWER>
+    template <int CHANGE_DIR_SLOWER, int CHANGE_DIR_FASTER>
     struct BoundaryIteratorImpl: public plask::BoundaryNodeSetImpl::IteratorImpl {
 
         const RectangularFilteredMeshBase<3> &mesh;
@@ -448,7 +448,7 @@ protected:
             }
         }
     public:
-        BoundaryIteratorImpl(const RectangularFilteredMeshBase<3>& mesh, Vec<3, std::size_t> index, std::size_t indexFasterEnd, std::size_t indexSlowerEnd)
+        BoundaryIteratorImpl(const RectangularFilteredMeshBase<3>& mesh, Vec<3, std::size_t> index, std::size_t indexSlowerEnd, std::size_t indexFasterEnd)
             : mesh(mesh), index(index), indexFasterBegin(index[CHANGE_DIR_FASTER]), indexFasterEnd(indexFasterEnd), indexSlowerEnd(indexSlowerEnd)
         {
             // go to the first index existed in order to make dereference possible:
@@ -471,12 +471,12 @@ protected:
         }
 
         typename plask::BoundaryNodeSetImpl::IteratorImpl* clone() const override {
-            return new BoundaryIteratorImpl<CHANGE_DIR_FASTER, CHANGE_DIR_SLOWER>(*this);
+            return new BoundaryIteratorImpl<CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER>(*this);
         }
 
     };
 
-    template <int CHANGE_DIR_FASTER, int CHANGE_DIR_SLOWER>
+    template <int CHANGE_DIR_SLOWER, int CHANGE_DIR_FASTER>
     struct BoundaryNodeSetImpl: public BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<3>> {
 
         using typename BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<3>>::const_iterator;
@@ -487,10 +487,10 @@ protected:
         /// past the last index of change directions
         std::size_t indexFasterEnd, indexSlowerEnd;
 
-        BoundaryNodeSetImpl(const RectangularFilteredMeshBase<DIM>& mesh, Vec<3, std::size_t> index, std::size_t indexFasterEnd, std::size_t indexSlowerEnd)
+        BoundaryNodeSetImpl(const RectangularFilteredMeshBase<DIM>& mesh, Vec<3, std::size_t> index, std::size_t indexSlowerEnd, std::size_t indexFasterEnd)
             : BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<3>>(mesh), index(index), indexFasterEnd(indexFasterEnd), indexSlowerEnd(indexSlowerEnd) {}
 
-        BoundaryNodeSetImpl(const RectangularFilteredMeshBase<DIM>& mesh, std::size_t index0, std::size_t index1, std::size_t index2, std::size_t indexFasterEnd, std::size_t indexSlowerEnd)
+        BoundaryNodeSetImpl(const RectangularFilteredMeshBase<DIM>& mesh, std::size_t index0, std::size_t index1, std::size_t index2, std::size_t indexSlowerEnd, std::size_t indexFasterEnd)
             : BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<3>>(mesh), index(index0, index1, index2), indexFasterEnd(indexFasterEnd), indexSlowerEnd(indexSlowerEnd) {}
 
         bool contains(std::size_t mesh_index) const override {
@@ -507,14 +507,13 @@ protected:
         }
 
         const_iterator begin() const override {
-            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR_FASTER, CHANGE_DIR_SLOWER>(this->mesh, index, indexFasterEnd, indexSlowerEnd));
+            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER>(this->mesh, index, indexSlowerEnd, indexFasterEnd));
         }
 
         const_iterator end() const override {
             Vec<3, std::size_t> index_end = index;
-            index_end[CHANGE_DIR_FASTER] = indexFasterEnd;
             index_end[CHANGE_DIR_SLOWER] = indexSlowerEnd;
-            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR_FASTER, CHANGE_DIR_SLOWER>(this->mesh, index_end, indexFasterEnd, indexSlowerEnd));
+            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER>(this->mesh, index_end, indexSlowerEnd, indexFasterEnd));
         }
     };
 

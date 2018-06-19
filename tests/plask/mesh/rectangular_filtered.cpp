@@ -53,7 +53,7 @@ void checkBoundary(const plask::BoundaryNodeSet& b, std::vector<std::size_t> exp
     BOOST_CHECK_EQUAL_COLLECTIONS(b.begin(), b.end(), expected.begin(), expected.end());
     for (auto el: expected)
         BOOST_CHECK(b.contains(el));
-    BOOST_CHECK(!b.contains(expected.back()+1));
+    BOOST_CHECK(!b.contains(expected.empty() ? 0 : expected.back()+1));
 }
 
 BOOST_AUTO_TEST_SUITE(rectangular_filtered) // MUST be the same as the file name
@@ -225,6 +225,13 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_3D) {
 
         BOOST_CHECK(it == filteredMesh.end());
     }
+
+    checkBoundary(filteredMesh.createBackBoundary(), { 0, 1, 2, 3, 4, 5, 6 });
+    checkBoundary(filteredMesh.createFrontBoundary(), { 14, 15, 16, 17 });
+    checkBoundary(filteredMesh.createLeftBoundary(), { 0, 1, 7, 8 });
+    checkBoundary(filteredMesh.createRightBoundary(), { 5, 6, 12, 13, 16, 17 });
+    checkBoundary(filteredMesh.createBottomBoundary(), { 0, 2, 7, 9 });
+    checkBoundary(filteredMesh.createTopBoundary(), { 4, 6, 11, 13, 15, 17 });
 }
 
 BOOST_AUTO_TEST_SUITE_END()

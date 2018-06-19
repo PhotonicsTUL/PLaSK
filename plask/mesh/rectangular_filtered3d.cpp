@@ -49,7 +49,7 @@ bool RectangularFilteredMesh3D::prepareInterpolation(const Vec<3> &point, Vec<3>
 
 BoundaryNodeSet RectangularFilteredMesh3D::createIndex0BoundaryAtLine(std::size_t line_nr_axis0, std::size_t index1Begin, std::size_t index1End, std::size_t index2Begin, std::size_t index2End) const
 {
-    return new BoundaryNodeSetImpl<1, 2>(*this, line_nr_axis0, index1Begin, index1End, index2Begin, index2End);
+    return new BoundaryNodeSetImpl<1, 2>(*this, line_nr_axis0, index1Begin, index2Begin, index1End, index2End);
 }
 
 BoundaryNodeSet RectangularFilteredMesh3D::createIndex0BoundaryAtLine(std::size_t line_nr_axis0) const {
@@ -58,7 +58,7 @@ BoundaryNodeSet RectangularFilteredMesh3D::createIndex0BoundaryAtLine(std::size_
 
 BoundaryNodeSet RectangularFilteredMesh3D::createIndex1BoundaryAtLine(std::size_t line_nr_axis1, std::size_t index0Begin, std::size_t index0End, std::size_t index2Begin, std::size_t index2End) const
 {
-    return new BoundaryNodeSetImpl<0, 2>(*this, line_nr_axis1, index0Begin, index0End, index2Begin, index2End);
+    return new BoundaryNodeSetImpl<0, 2>(*this, index0Begin, line_nr_axis1, index2Begin, index0End, index2End);
 }
 
 BoundaryNodeSet RectangularFilteredMesh3D::createIndex1BoundaryAtLine(std::size_t line_nr_axis1) const {
@@ -67,7 +67,7 @@ BoundaryNodeSet RectangularFilteredMesh3D::createIndex1BoundaryAtLine(std::size_
 
 BoundaryNodeSet RectangularFilteredMesh3D::createIndex2BoundaryAtLine(std::size_t line_nr_axis2, std::size_t index0Begin, std::size_t index0End, std::size_t index1Begin, std::size_t index1End) const
 {
-    return new BoundaryNodeSetImpl<0, 1>(*this, line_nr_axis2, index0Begin, index0End, index1Begin, index1End);
+    return new BoundaryNodeSetImpl<0, 1>(*this, index0Begin, index1Begin, line_nr_axis2, index0End, index1End);
 }
 
 BoundaryNodeSet RectangularFilteredMesh3D::createIndex2BoundaryAtLine(std::size_t line_nr_axis2) const {
