@@ -9,13 +9,15 @@ project(plask)
 
 #set (CMAKE_CXX_STANDARD 17)    #TODO std should be set this way
 
+option(SHOW_EXTENDED_WARNINGS "Show some additional warnings." ON)
+
 if(MSVC)    # flags needed by Visual Studio:
     set(CMAKE_CXX_FLAGS "/bigobj ${CMAKE_CXX_FLAGS}")   # increase a number of sections in obj. file, required by plask
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4251")   # disable many warning (all stl & boost tamplates) about wrong dll import/export, TODO subject for future investigation
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4018")   # disable warning about signed/unsigned generated mainly by workaround for OpenMP 2 (which can use only signed types)
     add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # hide many warnings which are caused by boost and fmt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
     add_definitions(-DBOOST_ALL_DYN_LINK)   # MSVC+cmake require this to properly detect dynamic boost libraries
-    add_definitions(-DFMT_HEADER_ONLY)      # don't compile fmt, workaround many linker errors
+    add_definitions(-DFMT_HEADER_ONLY)      # don't compile fmt, workaround for many linker errors
     #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++14")   # nothing is needed for C++11
 else(MSVC)
     if(MINGW)
@@ -23,11 +25,13 @@ else(MSVC)
     else()
         set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
     endif()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion") # -Wconversion is enabled since it gives many same warnings as MSVC compiler
-    if(CMAKE_COMPILER_IS_GNUCXX)
-         # int-in-bool-context zostało wyłączone ze względu na nagłówki biblioteki eigen które je pokazują w dużej liczbie
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-int-in-bool-context")
-    endif(CMAKE_COMPILER_IS_GNUCXX)
+    if(SHOW_EXTENDED_WARNINGS)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion") # -Wconversion is enabled since it gives many same warnings as MSVC compiler
+        if(CMAKE_COMPILER_IS_GNUCXX)
+            # int-in-bool-context was turned off because of eigen, which show them massively
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-int-in-bool-context")
+        endif()
+    endif()
 endif(MSVC)
 
 if(WIN32 AND "${CMAKE_SIZEOF_VOID_P}" EQUAL "8")

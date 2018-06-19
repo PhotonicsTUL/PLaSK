@@ -241,8 +241,6 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
     // RegularAxis getMesh() const { return *expansion.mesh->tran(); }
 
-  private:
-
     /**
      * Get incident field vector for given polarization.
      * \param polarization polarization of the perpendicularly incident light
@@ -263,9 +261,12 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         }
         if (savidx) *savidx = idx;
         cvector incident(expansion.matrixSize(), 0.);
-        incident[idx] = (polarization == Expansion::E_TRAN)? 1. : -1.;
+        // incident[idx] = (polarization == Expansion::E_TRAN)? 1. : -1.;
+        incident[idx] = 1.;
         return incident;
     }
+
+  private:
 
     /**
      * Compute sum of amplitudes for reflection/transmission coefficient
