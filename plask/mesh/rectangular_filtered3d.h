@@ -247,7 +247,9 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * Preserve order of elements and nodes of @p rectangularMesh.
      * @param rectangularMesh input mesh, before filtering
      * @param geom geometry to get materials from
-     * @param materialKinds one or more kinds of material encoded with bit @c or operation, e.g. @c DIELECTRIC|METAL
+     * @param materialKinds one or more kinds of material encoded with bit @c or operation,
+     *        e.g. @c DIELECTRIC|METAL for selecting all dielectrics and metals,
+     *        or @c ~(DIELECTRIC|METAL) for selecting everything else
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
      */
     RectangularFilteredMesh3D(const RectangularMesh<3>& rectangularMesh, const GeometryObjectD<3>& geom, unsigned char materialKinds, bool clone_axes = false)
