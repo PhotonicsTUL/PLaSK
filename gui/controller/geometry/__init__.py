@@ -302,7 +302,7 @@ class GeometryController(Controller):
                 manager.geo.clear()
                 manager.pth.clear()
                 manager._roots.clear()
-                self.plotted_object = None:
+                self.plotted_object = None
             manager.load(self.document.get_content(sections=('geometry',)))
             self.manager = manager
             try:

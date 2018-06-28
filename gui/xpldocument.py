@@ -37,7 +37,7 @@ from .controller.defines import DefinesController
 if plask is not None:
     from .controller.geometry import GeometryController
 from .controller.script import ScriptController
-from .controller.multi import GUIAndSourceController
+from .controller.multi import GUIAndSourceController, GeometryGUIAndSourceController
 from .controller.solvers import SolversController
 from .controller.connects import ConnectsController
 from .controller import materials
@@ -59,7 +59,7 @@ class XPLDocument(object):
         self.materials = GUIAndSourceController(materials.MaterialsController(self))
         from . import _DEBUG
         if plask is not None:
-            self.geometry = GUIAndSourceController(GeometryController(self))
+            self.geometry = GeometryGUIAndSourceController(GeometryController(self))
         else:
             self.geometry = SourceEditController(self, SectionModelTreeBased(XPLDocument.SECTION_NAMES[2]))
         self.grids = GUIAndSourceController(GridsController(self))

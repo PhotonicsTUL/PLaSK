@@ -15,6 +15,8 @@ from ..qt.QtWidgets import *
 from ..utils.widgets import fire_edit_end
 from . import Controller
 from .source import SourceEditController
+from .geometry.source import GeometrySourceController
+
 
 class MultiEditorController(Controller):
     """
@@ -105,3 +107,12 @@ class GUIAndSourceController(MultiEditorController):
 
     def get_source_widget(self):
         return self.controllers[1].get_source_widget()
+
+
+class GeometryGUIAndSourceController(GUIAndSourceController):
+
+    def __init__(self, controller):
+        source = GeometrySourceController(controller.document, controller.model)
+        MultiEditorController.__init__(self, controller, source)
+        self.gui = controller
+        self.source = source
