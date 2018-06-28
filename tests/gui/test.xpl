@@ -89,8 +89,12 @@
   <cartesian2d name="simple">
     <stack>
       <again ref="blok2"/>
-      <rectangle name="one" material="Al(0.73)GaAs:C=2e+18" dtran="1" dvert="1"/>
-      <rectangle material="Al(0.73)GaN:Si=1e18" dtran="1" dvert="1"/>
+      <stack repeat="3">
+        <rectangle material="Al(0.9)GaAs" dtran="1" dvert="0.3"/>
+        <rectangle material="Al(0.9)GaN" dtran="1" dvert="0.2"/>
+      </stack>
+      <rectangle name="one" material="Al(0.73)GaAs:C=2e+18" dtran="1" dvert="1.0"/>
+      <rectangle material="Al(0.73)GaN:Si=1e18" dtran="1" dvert="1.0"/>
     </stack>
   </cartesian2d>
   <cartesian3d name="l3cavity">

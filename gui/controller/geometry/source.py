@@ -118,23 +118,27 @@ class GeometrySourceController(SourceEditController):
         if not self.geometry_view.isVisible(): return
         current_line = self.source.editor.textCursor().blockNumber()
         if current_line != self.last_line:
-            if self._elements is None:
-                self._elements = [e for e in etree.fromstring(
-                    "<plask><geometry>\n" + self.source.editor.toPlainText() + "\n</geometry></plask>")[0]][1:]
-            line_numbers = [e.sourceline - 2 for e in self._elements]
-            index = bisect(line_numbers, current_line)
-            try:
-                axes = axes_as_list(self._elements[index].attrib.get('axes'))
-                if self._elements[index].tag.lower() == 'cartesian3d':
-                    self.geometry_view.toolbar.enable_planes(axes)
-                else:
-                    self.geometry_view.toolbar.disable_planes(axes)
-            except IndexError:
-                pass
             self.last_line = current_line
-            if index != self.last_index:
-                self._index = index
-                self.timer.start()
+            try:
+                if self._elements is None:
+                    self._elements = [e for e in etree.fromstring(
+                        "<plask><geometry>\n" + self.source.editor.toPlainText() + "\n</geometry></plask>")[0]]
+                line_numbers = [e.sourceline-2 for e in self._elements[1:]]
+                index = bisect(line_numbers, current_line)
+                try:
+                    axes = axes_as_list(self._elements[index].attrib.get('axes'))
+                    if self._elements[index].tag.lower() == 'cartesian3d':
+                        self.geometry_view.toolbar.enable_planes(axes)
+                    else:
+                        self.geometry_view.toolbar.disable_planes(axes)
+                except IndexError:
+                    pass
+            except:
+                pass
+            else:
+                if index != self.last_index:
+                    self._index = index
+                    self.timer.start()
 
     def text_changed(self):
         if not self.geometry_view.isVisible(): return
@@ -160,8 +164,10 @@ class GeometrySourceController(SourceEditController):
             text = "<plask><geometry>\n" + self.source.editor.toPlainText() + "\n</geometry></plask>"
             manager.load("\n"*(self.model.line_in_file-1) + text)
             self.manager = manager
+            if self._elements is None:
+                self._elements = [e for e in etree.fromstring(text)[0]]
             if self._index is None:
-                line_numbers = [e.sourceline-2 for e in etree.fromstring(text)[0]][1:]
+                line_numbers = [e.sourceline-2 for e in self._elements[1:]]
                 current_line = self.source.editor.textCursor().blockNumber()
                 index = bisect(line_numbers, current_line)
             else:
@@ -185,4 +191,5 @@ class GeometrySourceController(SourceEditController):
             self.plot_current_element(self._index != self.last_index)
 
     def plot(self):
+        self.timer.stop()
         self.plot_current_element(True)
