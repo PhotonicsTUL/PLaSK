@@ -293,9 +293,18 @@ class GeometryController(Controller):
         QMetaObject.invokeMethod(self.tree, 'update_current_index', Qt.QueuedConnection)
 
     def plot_element(self, tree_element, set_limits):
-        manager = get_manager()
         try:
-            manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry')))
+            if self.manager is None:
+                manager = get_manager()
+                manager.load(self.document.get_content(sections=('defines', 'materials')))
+            else:
+                manager = self.manager
+                manager.geo.clear()
+                manager.pth.clear()
+                manager._roots.clear()
+                self.plotted_object = None:
+            manager.load(self.document.get_content(sections=('geometry',)))
+            self.manager = manager
             try:
                 plotted_object = self.model.fake_root.get_corresponding_object(tree_element, manager)
             except ValueError:
@@ -317,7 +326,6 @@ class GeometryController(Controller):
                 sys.stderr.flush()
             return False
         else:
-            self.manager = manager
             self.plotted_tree_element = tree_element
             self.plotted_object = plotted_object
             if tree_element.dim == 3:
@@ -542,8 +550,7 @@ class GeometryController(Controller):
 
     def zoom_to_current(self):
         if self.plotted_object is not None:
-            obj = self.model.fake_root.get_corresponding_object(self._current_index.internalPointer(),
-                                                                self.manager)
+            obj = self.model.fake_root.get_corresponding_object(self._current_index.internalPointer(), self.manager)
             bboxes = self.plotted_object.get_object_bboxes(obj)
             if not bboxes: return
             box = bboxes[0]
@@ -592,6 +599,7 @@ class GeometryController(Controller):
         self.tree.setFocus()
 
     def on_edit_exit(self):
+        self.manager = None
         if self._current_controller is not None:
             self._last_index = self._current_index
             self.tree.selectionModel().clear()

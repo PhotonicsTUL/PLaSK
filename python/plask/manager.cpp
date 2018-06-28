@@ -193,7 +193,7 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
 #   endif
     if (vars.has_key("self"))
         throw ValueError("Definition name 'self' is reserved");
-    manager->defs = vars.copy();
+    manager->defs.update(vars.copy());
     manager->defs["self"] = self;
 
     reader.setFilter(PythonXMLFilter(manager));
@@ -599,15 +599,16 @@ static void register_manager_dict(const std::string name) {
 }
 
 struct ManagerRoots {
-    const Manager& manager;
-    ManagerRoots(const Manager& manager): manager(manager) {}
+    Manager& manager;
+    ManagerRoots(Manager& manager): manager(manager) {}
     shared_ptr<Geometry> getitem(int i) const {
         if (i < 0) i += int(manager.roots.size());
         if (i < 0 || std::size_t(i) >= manager.roots.size()) throw IndexError(u8"geometry roots index out of range");
         return manager.roots[i];
     }
     size_t len() const { return manager.roots.size(); }
-    static ManagerRoots init(const PythonManager& manager) { return ManagerRoots(manager); }
+    static ManagerRoots init(PythonManager& manager) { return ManagerRoots(manager); }
+    void clear() { manager.roots.clear(); }
 };
 
 void register_manager() {
@@ -697,6 +698,7 @@ void register_manager() {
     py::class_<ManagerRoots>("_Roots", py::no_init)
         .def("__getitem__", &ManagerRoots::getitem)
         .def("__len__", &ManagerRoots::len)
+        .def("clear",  &ManagerRoots::clear)
     ;
 }
 

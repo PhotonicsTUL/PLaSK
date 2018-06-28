@@ -59,6 +59,8 @@ class GridsController(Controller):
         self._last_index = None
         self._current_controller = None
 
+        self.manager = None
+
         self.splitter = QSplitter()
 
         self.grids_table = QTableView()
@@ -246,10 +248,15 @@ class GridsController(Controller):
         if plask is None: return
         if model is not None:
             model.geometry_name = self.mesh_preview.toolbar.widgets['select_geometry'].currentText()
-        manager = get_manager()
-
         try:
-            manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry', 'grids')))
+            if self.manager is None:
+                manager = get_manager()
+                manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry')))
+            else:
+                manager = self.manager
+                manager.msh.clear()
+            manager.load(self.document.get_content(sections=('grids',)))
+            self.manager = manager
             try:
                 self.selected_geometry = str(self.mesh_preview.toolbar.widgets['select_geometry'].currentText())
                 if self.selected_geometry:
@@ -291,7 +298,6 @@ class GridsController(Controller):
                 traceback.print_exc()
             return False
         else:
-            self.manager = manager
             self.plotted_model = model
             self.plotted_mesh = mesh
             # if mesh.dim == 3:
@@ -310,9 +316,15 @@ class GridsController(Controller):
     def generate_mesh(self):
         from ... import _DEBUG
         if plask is None: return
-        manager = get_manager()
         try:
-            manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry', 'grids')))
+            if self.manager is None:
+                manager = get_manager()
+                manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry')))
+            else:
+                manager = self.manager
+                manager.msh.clear()
+            manager.load(self.document.get_content(sections=('grids',)))
+            self.manager = manager
             mesh = manager.msh[self._current_controller.model.name](manager.geo[self.selected_geometry])
             name = self._current_controller.model.name + '-' + self.selected_geometry
             xml = plask.XmlWriter({}, {name: mesh}, {})
@@ -386,6 +398,7 @@ class GridController(Controller):
         self.fill_form()
 
     def on_edit_exit(self):
+        self.manager = None
         self.section_model.changed.disconnect(self._fill_form_cb)
         return super(GridController, self).on_edit_exit()
 
