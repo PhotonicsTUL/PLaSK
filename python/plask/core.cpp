@@ -402,6 +402,19 @@ struct SolverWrap: public Solver, Overriden<Solver> {
 };
 
 
+/// Custom wrapper for XMLError
+template <>
+void register_exception<plask::XMLException>(PyObject* py_exc) {
+    py::register_exception_translator<plask::XMLException>( [=](const plask::XMLException& err) {
+        py::object excType(py::handle<>(py::borrowed(py_exc)));
+        py::object exc = excType(err.what());
+        if (err.line == -1) exc.attr("line") = py::object();
+        else exc.attr("line") = err.line;
+        PyErr_SetObject(py_exc, exc.ptr());
+    } );
+}
+
+
 }} // namespace plask::python
 
 

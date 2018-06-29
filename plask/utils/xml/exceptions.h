@@ -33,6 +33,8 @@ struct PLASK_API XMLWriterException: public std::runtime_error {
  */
 struct PLASK_API XMLException: public std::runtime_error {
 
+    const int line;
+
     /**
      * @param reader current reader
      * @param msg error message
@@ -42,13 +44,15 @@ struct PLASK_API XMLException: public std::runtime_error {
     /**
      * @param where indication where the error appeared
      * @param msg error message
+     * @param line line in which the error occured
      */
-    XMLException(const std::string& where, const std::string& msg);
+    XMLException(const std::string& where, const std::string& msg, int line = -1);
 
     /**
      * @param msg error message
+     * @param line line in which the error occured
      */
-    XMLException(const std::string& msg);
+    XMLException(const std::string& msg, int line = -1);
 
 };
 

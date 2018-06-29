@@ -462,6 +462,7 @@ class SourceEditController(Controller):
         self.source_widget = None
         self.document.window.config_changed.connect(self.reconfig)
         self.highlighter = None
+        self._clean_state = False
 
     def create_source_widget(self, parent):
         source = SourceWidget(parent, XMLEditor, line_numbers=self.line_numbers)
@@ -516,8 +517,7 @@ class SourceEditController(Controller):
             self.get_source_widget().editor.document().setModified(False)
 
     def _modification_changed(self, changed):
-        if changed:
-            self.document.set_changed()
+            self.document.set_changed(changed)
 
     def on_edit_enter(self):
         self.visible = True
@@ -526,7 +526,7 @@ class SourceEditController(Controller):
         except AttributeError: pass
         try: self.model.changed += self.refresh_editor
         except AttributeError: pass
-        #self._clean_state = self.model.undo_stack.isClean()
+        self.source_widget.editor.document().setModified(self.document.is_changed())
         self.source_widget.editor.modificationChanged.connect(self._modification_changed)
 
     # When the editor is turned off, the model should be updated
