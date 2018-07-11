@@ -52,6 +52,9 @@ class PyDocument(object):
         """Slot called by model 'changed' signals when user edits any section model"""
         self.set_changed(True)
 
+    def is_changed(self):
+        return self.window.isWindowModified()
+
     def set_changed(self, changed=True):
         self.window.set_changed(changed)
 
