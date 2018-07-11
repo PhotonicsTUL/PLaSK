@@ -35,6 +35,8 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
      */
     ExpansionBessel(BesselSolverCyl* solver);
 
+    virtual ~ExpansionBessel() {}
+
     /// Init expansion
     void init1();
 

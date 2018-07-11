@@ -37,6 +37,8 @@ struct PLASK_SOLVER_API LevelsAdapter
         virtual shared_ptr<const Mesh> mesh() const = 0;
     };
 
+    virtual ~LevelsAdapter() {}
+
     virtual shared_ptr<Level> yield() = 0;
 };
 

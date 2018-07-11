@@ -62,6 +62,8 @@ struct RootDigger {
         params(pars)
     {};
 
+    virtual ~RootDigger() {}
+
     /**
      * Search for a single zero starting from the given point
      * \param start initial point to start search from
