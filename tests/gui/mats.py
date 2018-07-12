@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# coding: utf-8
+# log level: data
+
 from plask import material
 from plask import print_log
 

@@ -17,8 +17,10 @@ from .qt.QtWidgets import *
 from .controller.script import ScriptController
 from .utils.config import CONFIG
 
-coding_re_s = re.compile("(?:\\s*#[^\\n]*\\n)?\\s*#[^\\n]*coding[=:]\\s*([-\\w.]+)")
-coding_re_b = re.compile(b"(?:\\s*#[^\\n]*\\n)?\\s*#[^\\n]*coding[=:]\\s*([-\\w.]+)")
+coding_re_s = re.compile("(?:\\s*#[^\\n]*\\n)*\\s*#[^\\n]*coding[=:]\\s*([-\\w.]+)")
+coding_re_b = re.compile(b"(?:\\s*#[^\\n]*\\n)*\\s*#[^\\n]*coding[=:]\\s*([-\\w.]+)")
+
+loglevel_re_b = re.compile(b"(?:\\s*#[^\\n]*\\n)*\\s*#[^\\n]*log[_\\- ]?level[=:]\\s*([-\\w.]+)")
 
 
 class _Dummy(object):
@@ -65,6 +67,9 @@ class PyDocument(object):
             coding = m.group(1).decode('ascii')
         else:
             coding = 'utf8'
+        m = loglevel_re_b.match(data)
+        if m:
+            self.loglevel = m.group(1).decode('ascii')
         self.script.model.set_text(data.decode(coding))
         self.filename = filename
         self.set_changed(False)
