@@ -153,46 +153,52 @@ class GeometrySourceController(SourceEditController):
     def plot_current_element(self, set_limits=False):
         if not self.geometry_view.isVisible(): return
         try:
-            if self.manager is None:
-                manager = get_manager()
-                manager.load(self.document.get_content(sections=('defines', 'materials')))
+            QApplication.setOverrideCursor(Qt.WaitCursor)
+            QApplication.processEvents()
+            try:
+                if self.manager is None:
+                    manager = get_manager()
+                    manager.load(self.document.get_content(sections=('defines', 'materials')))
+                else:
+                    manager = self.manager
+                    manager.geo.clear()
+                    manager.pth.clear()
+                    manager._roots.clear()
+                text = "<plask><geometry>\n" + self.source.editor.toPlainText() + "\n</geometry></plask>"
+                manager.load("\n"*(self.model.line_in_file-1) + text)
+                self.manager = manager
+                if self._elements is None:
+                    self._elements = [e for e in etree.fromstring(text)[0]]
+                if self._index is None:
+                    line_numbers = [e.sourceline-2 for e in self._elements[1:]]
+                    current_line = self.source.editor.textCursor().blockNumber()
+                    index = bisect(line_numbers, current_line)
+                else:
+                    index = self._index
+                self.plotted_object = manager._roots[index]
+                self.geometry_view.update_plot(self.plotted_object, set_limits=set_limits, plane=self.checked_plane)
+                self.last_index = index
+            except plask.XMLError as e:
+                self.model.info_message("Could not update geometry preview: {}".format(str(e)), Info.WARNING, line=e.line)
+                from ... import _DEBUG
+                if _DEBUG:
+                    import traceback
+                    traceback.print_exc()
+                    sys.stderr.flush()
+                return False
+            except Exception as e:
+                self.model.info_message("Could not update geometry preview: {}".format(str(e)), Info.WARNING)
+                from ... import _DEBUG
+                if _DEBUG:
+                    import traceback
+                    traceback.print_exc()
+                    sys.stderr.flush()
+                return False
             else:
-                manager = self.manager
-                manager.geo.clear()
-                manager.pth.clear()
-                manager._roots.clear()
-            text = "<plask><geometry>\n" + self.source.editor.toPlainText() + "\n</geometry></plask>"
-            manager.load("\n"*(self.model.line_in_file-1) + text)
-            self.manager = manager
-            if self._elements is None:
-                self._elements = [e for e in etree.fromstring(text)[0]]
-            if self._index is None:
-                line_numbers = [e.sourceline-2 for e in self._elements[1:]]
-                current_line = self.source.editor.textCursor().blockNumber()
-                index = bisect(line_numbers, current_line)
-            else:
-                index = self._index
-            self.plotted_object = manager._roots[index]
-            self.geometry_view.update_plot(self.plotted_object, set_limits=set_limits, plane=self.checked_plane)
-            self.last_index = index
-        except plask.XMLError as e:
-            self.model.info_message("Could not update geometry preview: {}".format(str(e)), Info.WARNING, line=e.line)
-            from ... import _DEBUG
-            if _DEBUG:
-                import traceback
-                traceback.print_exc()
-                sys.stderr.flush()
-            return False
-        except Exception as e:
-            self.model.info_message("Could not update geometry preview: {}".format(str(e)), Info.WARNING)
-            from ... import _DEBUG
-            if _DEBUG:
-                import traceback
-                traceback.print_exc()
-                sys.stderr.flush()
-            return False
-        else:
-            self.model.info_message()
+                self.model.info_message()
+        finally:
+            QApplication.restoreOverrideCursor()
+            QApplication.processEvents()
 
     def update_preview(self):
         if self.geometry_view.isVisible() and self.plot_auto_refresh:
