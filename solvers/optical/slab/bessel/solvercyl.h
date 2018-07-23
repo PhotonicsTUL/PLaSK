@@ -128,10 +128,10 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     PML pml;
 
     /// Provider for computed resonant wavelength
-    typename ProviderFor<Wavelength>::Delegate outWavelength;
+    typename ProviderFor<ModeWavelength>::Delegate outWavelength;
 
     /// Provider for computed modal extinction
-    typename ProviderFor<ModalLoss>::Delegate outLoss;
+    typename ProviderFor<ModeLoss>::Delegate outLoss;
 
     BesselSolverCyl(const std::string& name="");
 
@@ -181,7 +181,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
      * \param n mode number
      */
     double getWavelength(size_t n) {
-        if (n >= modes.size()) throw NoValue(Wavelength::NAME);
+        if (n >= modes.size()) throw NoValue(ModeWavelength::NAME);
         return (2e3*PI / modes[n].k0).real();
     }
 
@@ -246,7 +246,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
      * \param n mode number
      */
     double getModalLoss(size_t n) {
-        if (n >= modes.size()) throw NoValue(ModalLoss::NAME);
+        if (n >= modes.size()) throw NoValue(ModeLoss::NAME);
         return 2e4 * modes[n].k0.imag();  // 2e4  2/µm -> 2/cm
     }
 

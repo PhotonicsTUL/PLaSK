@@ -277,13 +277,13 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
     typename ProviderFor<RefractiveIndex, typename BaseT::SpaceType>::Delegate outRefractiveIndex;
 
     /// Provider of the optical field intensity
-    typename ProviderFor<LightMagnitude, typename BaseT::SpaceType>::Delegate outLightMagnitude;
+    typename ProviderFor<ModeLightMagnitude, typename BaseT::SpaceType>::Delegate outLightMagnitude;
 
     /// Provider of the optical electric field
-    typename ProviderFor<LightE, typename BaseT::SpaceType>::Delegate outLightE;
+    typename ProviderFor<ModeLightE, typename BaseT::SpaceType>::Delegate outLightE;
 
     /// Provider of the optical magnetic field
-    typename ProviderFor<LightH, typename BaseT::SpaceType>::Delegate outLightH;
+    typename ProviderFor<ModeLightH, typename BaseT::SpaceType>::Delegate outLightH;
 
     SlabSolver(const std::string& name="");
 

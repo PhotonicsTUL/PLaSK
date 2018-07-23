@@ -140,9 +140,9 @@ struct SimpleSolver : plask::Solver {
 
     plask::ReceiverFor<plask::Temperature, plask::Geometry2DCartesian> inTemperature;
 
-    plask::ReceiverFor<plask::LightMagnitude, plask::Geometry2DCartesian> inIntensity;
+    plask::ReceiverFor<plask::ModeLightMagnitude, plask::Geometry2DCartesian> inIntensity;
 
-    plask::ProviderFor<plask::LightMagnitude, plask::Geometry2DCartesian>::WithValue<plask::RectangularMesh<2>> outLightMagnitude;
+    plask::ProviderFor<plask::ModeLightMagnitude, plask::Geometry2DCartesian>::WithValue<plask::RectangularMesh<2>> outLightMagnitude;
 
     plask::ReceiverFor<VectorialField, plask::Geometry2DCartesian> inVectors;
 
@@ -171,8 +171,8 @@ struct InOutSolver : plask::Solver {
 
     virtual std::string getClassName() const override { return "InOut"; }
 
-    plask::ReceiverFor<plask::Wavelength> inWavelength;
-    plask::ProviderFor<plask::Wavelength>::WithValue outWavelength;
+    plask::ReceiverFor<plask::ModeWavelength> inWavelength;
+    plask::ProviderFor<plask::ModeWavelength>::WithValue outWavelength;
 
     InOutSolver(const std::string& name="") : Solver(name) {
         inWavelength = 2.;
@@ -228,7 +228,7 @@ struct MeshTest {
 py::tuple mesh2d_at(const plask::MeshD<2>& msh, size_t i) {
     auto p = msh[i];
     return py::make_tuple(p[0], p[1]);
-}    
+}
 
 //// Geometry /////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -254,7 +254,7 @@ py::dict extractPathHints(const plask::PathHints& hints) {
 BOOST_PYTHON_MODULE(plasktest)
 {
     plask::python::registerProperty<VectorialField>();
-    
+
     py::def("get_vecs", &getVecs);
 
     py::def("add_my_material", &addMyMaterial);
@@ -315,9 +315,9 @@ BOOST_PYTHON_MODULE(plasktest)
         .def_readonly("regular3d", &MeshTest::regular3d)
         .add_property("regular3d_changed", &MeshTest::regular3d_changed)
     ;
-    
+
     py::def("mesh2d_at", mesh2d_at);
-    
+
     py::def("extractPathHint", extractPathHint);
     py::def("extractPathHints", extractPathHints);
 }

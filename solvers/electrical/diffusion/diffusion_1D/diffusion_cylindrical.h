@@ -20,8 +20,8 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public SolverWithMe
         ReceiverFor<CurrentDensity, Geometry2DType> inCurrentDensity;
         ReceiverFor<Temperature, Geometry2DType> inTemperature;
         ReceiverFor<Gain, Geometry2DType> inGain;
-        ReceiverFor<Wavelength> inWavelength;
-        ReceiverFor<LightE, Geometry2DType> inLightE;
+        ReceiverFor<ModeWavelength> inWavelength;
+        ReceiverFor<ModeLightE, Geometry2DType> inLightE;
 
         typename ProviderFor<CarriersConcentration, Geometry2DType>::Delegate outCarriersConcentration;
 

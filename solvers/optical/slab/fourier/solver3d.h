@@ -491,7 +491,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
      * \param n mode number
      */
     dcomplex getEffectiveIndex(size_t n) {
-        if (n >= modes.size()) throw NoValue(EffectiveIndex::NAME);
+        if (n >= modes.size()) throw NoValue(ModeEffectiveIndex::NAME);
         return modes[n].klong / modes[n].k0;
     }
 
@@ -544,22 +544,19 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         /// Provider of the optical field intensity
         typename ProviderFor<LightMagnitude,Geometry3D>::Delegate outLightMagnitude;
 
-        /// Return one as the number of the modes
-        static size_t size() { return 1; }
-
-        LazyData<Vec<3,dcomplex>> getElectricField(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
+        LazyData<Vec<3,dcomplex>> getElectricField(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
             if (!parent->initCalculation()) parent->setExpansionDefaults(false);
             parent->expansion.setK0(2e3*PI / wavelength);
             return parent->getReflectedFieldE(polarization, side, dst_mesh, method);
         }
 
-        LazyData<Vec<3,dcomplex>> getMagneticField(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
+        LazyData<Vec<3,dcomplex>> getMagneticField(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
             if (!parent->initCalculation()) parent->setExpansionDefaults(false);
             parent->expansion.setK0(2e3*PI / wavelength);
             return parent->getReflectedFieldH(polarization, side, dst_mesh, method);
         }
 
-        LazyData<double> getLightMagnitude(size_t, const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
+        LazyData<double> getLightMagnitude(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
             if (!parent->initCalculation()) parent->setExpansionDefaults(false);
             parent->expansion.setK0(2e3*PI / wavelength);
             return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method);
@@ -573,9 +570,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
          */
         Reflected(FourierSolver3D* parent, double wavelength, Expansion::Component polarization, Transfer::IncidentDirection side):
             parent(parent), polarization(polarization), side(side), wavelength(wavelength),
-            outLightE(this, &FourierSolver3D::Reflected::getElectricField, size),
-            outLightH(this, &FourierSolver3D::Reflected::getMagneticField, size),
-            outLightMagnitude(this, &FourierSolver3D::Reflected::getLightMagnitude, size)
+            outLightE(this, &FourierSolver3D::Reflected::getElectricField),
+            outLightH(this, &FourierSolver3D::Reflected::getMagneticField),
+            outLightMagnitude(this, &FourierSolver3D::Reflected::getLightMagnitude)
         {}
      };
 };

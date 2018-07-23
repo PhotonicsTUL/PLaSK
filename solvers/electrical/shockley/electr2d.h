@@ -153,7 +153,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
 
     ReceiverFor<Temperature,Geometry2DType> inTemperature;
 
-    ReceiverFor<Wavelength> inWavelength; /// wavelength (for heat generation in the active region) [nm]
+    ReceiverFor<ModeWavelength> inWavelength; /// wavelength (for heat generation in the active region) [nm]
 
     Algorithm algorithm;    ///< Factorization algorithm to use
 

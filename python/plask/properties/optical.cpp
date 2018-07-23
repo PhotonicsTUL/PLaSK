@@ -13,16 +13,18 @@ namespace plask { namespace python {
 void register_standard_properties_optical()
 {
     registerProperty<LightMagnitude>();
-    RegisterScaledProvider<ScaledFieldProvider<LightMagnitude,LightMagnitude,Geometry2DCartesian>>("ScaledLightMagnitude");
-    //TODO RegisterCombinedProvider<LightMagnitudeSumProvider<Geometry2DCartesian>>("SumOfLightMagnitude");
-
     registerProperty<LightE>();
     registerProperty<LightH>();
 
-    registerProperty<Wavelength>();
-    registerProperty<ModalLoss>();
-    registerProperty<PropagationConstant>();
-    registerProperty<EffectiveIndex>();
+    registerProperty<ModeLightMagnitude>();
+    //TODO RegisterCombinedProvider<LightMagnitudeSumProvider<Geometry2DCartesian>>("SumOfLightMagnitude");
+    registerProperty<ModeLightE>();
+    registerProperty<ModeLightH>();
+
+    registerProperty<ModeWavelength>();
+    registerProperty<ModeLoss>();
+    registerProperty<ModePropagationConstant>();
+    registerProperty<ModeEffectiveIndex>();
 }
 
 }} // namespace plask::python

@@ -28,7 +28,7 @@ else(MSVC)
     if(SHOW_EXTENDED_WARNINGS)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wconversion") # -Wconversion is enabled since it gives many same warnings as MSVC compiler
         if(CMAKE_COMPILER_IS_GNUCXX)
-            # int-in-bool-context was turned off because of eigen, which show them massively
+            # int-in-bool-context was turned off because of eigen, which shows them massively
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-int-in-bool-context")
         endif()
     endif()

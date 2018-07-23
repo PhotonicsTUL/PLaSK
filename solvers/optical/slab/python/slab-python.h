@@ -300,13 +300,13 @@ struct Eigenmodes {
     SolverT& solver;
     size_t layer;
 
-    typename ProviderFor<LightMagnitude, typename SolverT::SpaceType>::Delegate outLightMagnitude;
-    //     typename ProviderFor<LightE,typename SolverT::SpaceType>::Delegate outLightE;
-    //     typename ProviderFor<LightH,typename SolverT::SpaceType>::Delegate outLightH;
+    typename ProviderFor<ModeLightMagnitude, typename SolverT::SpaceType>::Delegate outLightMagnitude;
+    //     typename ProviderFor<ModeLightE,typename SolverT::SpaceType>::Delegate outLightE;
+    //     typename ProviderFor<ModeLightH,typename SolverT::SpaceType>::Delegate outLightH;
 
 
     Eigenmodes(SolverT& solver, double z): solver(solver),
-		outLightMagnitude(this, &Eigenmodes::getLightMagnitude, &Eigenmodes::size) {
+               outLightMagnitude(this, &Eigenmodes::getLightMagnitude, &Eigenmodes::size) {
         bool changed = solver.initCalculation() || solver.setExpansionDefaults(true);
         layer = solver.stack[solver.getLayerFor(z)];
         if (!solver.transfer) {
@@ -460,11 +460,11 @@ inline void export_base(Class solver) {
     solver.add_provider("outRefractiveIndex", &Solver::outRefractiveIndex, "");
     solver.add_provider("outLightMagnitude", &Solver::outLightMagnitude, "");
     solver.add_provider("outLightE", &Solver::outLightE, "");
-    solver.def_readonly("outElectricField", reinterpret_cast<ProviderFor<LightE, typename Solver::SpaceType> Solver::*>(&Solver::outLightE),
-            "Alias for :attr:`outLightE`.");
     solver.add_provider("outLightH", &Solver::outLightH, "");
-    solver.def_readonly("outMagneticField", reinterpret_cast<ProviderFor<LightH, typename Solver::SpaceType> Solver::*>(&Solver::outLightH),
-            "Alias for :attr:`outLightH`.");
+    // solver.def_readonly("outElectricField", reinterpret_cast<ProviderFor<ModeLightE, typename Solver::SpaceType> Solver::*>(&Solver::outLightE),
+    //         "Alias for :attr:`outLightE`.");
+    // solver.def_readonly("outMagneticField", reinterpret_cast<ProviderFor<ModeLightH, typename Solver::SpaceType> Solver::*>(&Solver::outLightH),
+    //         "Alias for :attr:`outLightH`.");
     solver.add_provider("outElectricField", &Solver::outLightE, "This is an alias for :attr:`outLightE`.");
     solver.add_provider("outMagneticField", &Solver::outLightH, "This is an alias for :attr:`outLightH`.");
     solver.def_readwrite("root", &Solver::root,

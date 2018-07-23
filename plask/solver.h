@@ -242,8 +242,8 @@ of your providers, to notify the connected receivers about the change. Here is t
           // [...] perform your calculations
 
           outNeff = new_computed_effective_index;
-          outNeff.fireChanged();            // inform others we computed new effective index
-          outLightMagnitude.fireChanged();       // we will also be providing new light intensity
+          outNeff.fireChanged();                 // inform others that we have computed a new effective index
+          outLightMagnitude.fireChanged();       // we will also be providing a new light intensity
       }
 \endcode
 

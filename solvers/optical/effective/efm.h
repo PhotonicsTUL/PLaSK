@@ -260,16 +260,16 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     ReceiverFor<Gain, Geometry2DCylindrical> inGain;
 
     /// Provider for computed resonant wavelength
-    typename ProviderFor<Wavelength>::Delegate outWavelength;
+    typename ProviderFor<ModeWavelength>::Delegate outWavelength;
 
     /// Provider for computed modal extinction
-    typename ProviderFor<ModalLoss>::Delegate outLoss;
+    typename ProviderFor<ModeLoss>::Delegate outLoss;
 
     /// Provider of optical field
-    typename ProviderFor<LightMagnitude, Geometry2DCylindrical>::Delegate outLightMagnitude;
+    typename ProviderFor<ModeLightMagnitude, Geometry2DCylindrical>::Delegate outLightMagnitude;
 
     /// Provider of optical field
-    typename ProviderFor<LightE, Geometry2DCylindrical>::Delegate outLightE;
+    typename ProviderFor<ModeLightE, Geometry2DCylindrical>::Delegate outLightE;
 
     /// Provider of refractive index
     typename ProviderFor<RefractiveIndex, Geometry2DCylindrical>::Delegate outRefractiveIndex;
@@ -527,7 +527,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      * \param n mode number
      */
     double getWavelength(size_t n) {
-        if (n >= modes.size()) throw NoValue(Wavelength::NAME);
+        if (n >= modes.size()) throw NoValue(ModeWavelength::NAME);
         return real(modes[n].lam);
     }
 
@@ -536,7 +536,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
      * \param n mode number
      */
     double getModalLoss(size_t n) {
-        if (n >= modes.size()) throw NoValue(ModalLoss::NAME);
+        if (n >= modes.size()) throw NoValue(ModeLoss::NAME);
         return imag(4e7*PI / modes[n].lam);  // 2e4  2/µm -> 2/cm
     }
 

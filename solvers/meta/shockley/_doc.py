@@ -7,7 +7,7 @@ Provider of the computed optical field magnitude [W/m²].
 
 outLightMagnitude(n=0, mesh, interpolation='default')
 
-:param int n: Value number.
+:param int n: Computed mode number.
 :param mesh mesh: Target mesh to get the field at.
 :param str interpolation: Requested interpolation method.
 
@@ -79,7 +79,7 @@ Provider of the computed wavelength [nm].
 
 outWavelength(n=0)
 
-:param int n: Value number.
+:param int n: Computed mode number.
 
 :return: Value of the wavelength **[nm]**.
 

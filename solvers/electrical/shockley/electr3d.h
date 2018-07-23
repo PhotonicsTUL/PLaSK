@@ -163,7 +163,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
 
     ReceiverFor<Temperature,Geometry3D> inTemperature;
 
-    ReceiverFor<Wavelength> inWavelength; /// wavelength (for heat generation in the active region) [nm]
+    ReceiverFor<ModeWavelength> inWavelength; /// wavelength (for heat generation in the active region) [nm]
 
 
     FiniteElementMethodElectrical3DSolver(const std::string& name="");

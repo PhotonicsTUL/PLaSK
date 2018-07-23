@@ -155,13 +155,13 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     ReceiverFor<Gain, Geometry2DCartesian> inGain;
 
     /// Provider for computed effective index
-    typename ProviderFor<EffectiveIndex>::Delegate outNeff;
+    typename ProviderFor<ModeEffectiveIndex>::Delegate outNeff;
 
     /// Provider of optical field
-    typename ProviderFor<LightMagnitude, Geometry2DCartesian>::Delegate outLightMagnitude;
+    typename ProviderFor<ModeLightMagnitude, Geometry2DCartesian>::Delegate outLightMagnitude;
 
     /// Provider of optical field
-    typename ProviderFor<LightE, Geometry2DCartesian>::Delegate outLightE;
+    typename ProviderFor<ModeLightE, Geometry2DCartesian>::Delegate outLightE;
 
     /// Provider for refractive index
     typename ProviderFor<RefractiveIndex, Geometry2DCartesian>::Delegate outRefractiveIndex;
@@ -420,7 +420,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      * \param n mode number
      */
     dcomplex getEffectiveIndex(size_t n) {
-        if (n >= modes.size()) throw NoValue(EffectiveIndex::NAME);
+        if (n >= modes.size()) throw NoValue(ModeEffectiveIndex::NAME);
         return modes[n].neff;
     }
 

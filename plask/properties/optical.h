@@ -19,33 +19,54 @@ struct PLASK_API RefractiveIndex: FieldProperty<Tensor3<dcomplex>> {
 
 /**
  * Profile of the optical field 1/2 E × conj(E) / Z0 [W/m²].
- *
- * Additional integer parameter is mode number.
  */
-struct PLASK_API LightMagnitude: public MultiFieldProperty<double> {
+struct PLASK_API LightMagnitude: public FieldProperty<double> {
+    static constexpr const char* NAME = "optical field magnitude";
+    static constexpr const char* UNIT = "W/m²";
+};
+
+
+/**
+ * Profile of the optical electric field [V/m].
+ */
+struct PLASK_API LightE: public FieldProperty<Vec<3,dcomplex>> {
+    static constexpr const char* NAME = "electric field";
+    static constexpr const char* UNIT = "V/m";
+};
+
+
+/**
+ * Profile of the optical magnetic field [A/m].
+ */
+struct PLASK_API LightH: public FieldProperty<Vec<3,dcomplex>> {
+    static constexpr const char* NAME = "magnetic field";
+    static constexpr const char* UNIT = "A/m";
+};
+
+
+/**
+ * Profile of the optical field 1/2 E × conj(E) / Z0 [W/m²].
+ *
+ * Multimode version. Additional integer parameter is the mode number.
+ */
+struct PLASK_API ModeLightMagnitude: public MultiFieldProperty<double> {
     static constexpr const char* NAME = "optical field magnitude";
     static constexpr const char* UNIT = "W/m²";
 };
 
 /**
- * Provider which scales intensity profile to get light intensity
- */
-template <typename SpaceT>
-struct LightMagnitudeProvider: public ScaledFieldProvider<LightMagnitude, LightMagnitude, SpaceT> {};
-
-/**
  * Provider which sums light intensities from one or more sources.
  */
 template <typename SpaceT>
-struct LightMagnitudeSumProvider: public FieldSumProvider<LightMagnitude, SpaceT> {};
+struct LightMagnitudeSumProvider: public FieldSumProvider<ModeLightMagnitude, SpaceT> {};
 
 
 /**
  * Profile of the optical electric field [V/m].
  *
- * Additional integer parameter is mode number.
+ * Multimode version. Additional integer parameter is the mode number.
  */
-struct PLASK_API LightE: public MultiFieldProperty<Vec<3,dcomplex>> {
+struct PLASK_API ModeLightE: public MultiFieldProperty<Vec<3,dcomplex>> {
     static constexpr const char* NAME = "electric field";
     static constexpr const char* UNIT = "V/m";
 };
@@ -54,9 +75,9 @@ struct PLASK_API LightE: public MultiFieldProperty<Vec<3,dcomplex>> {
 /**
  * Profile of the optical magnetic field [A/m].
  *
- * Additional integer parameter is mode number.
+ * Multimode version. Additional integer parameter is the mode number.
  */
-struct PLASK_API LightH: public MultiFieldProperty<Vec<3,dcomplex>> {
+struct PLASK_API ModeLightH: public MultiFieldProperty<Vec<3,dcomplex>> {
     static constexpr const char* NAME = "magnetic field";
     static constexpr const char* UNIT = "A/m";
 };
@@ -68,9 +89,9 @@ struct PLASK_API LightH: public MultiFieldProperty<Vec<3,dcomplex>> {
  * It is a complex number, so it can contain information about both the wavelength and losses.
  * Its imaginary part is defined as \f$ \Im(\lambda)=-\frac{\Re(\lambda)^2}{2\pi c}\Im(\omega) \f$.
  *
- * Additional integer parameter is mode number.
+ * Additional integer parameter is the mode number.
  */
-struct PLASK_API Wavelength: public MultiValueProperty<double> {
+struct PLASK_API ModeWavelength: public MultiValueProperty<double> {
     static constexpr const char* NAME = "wavelength";
     static constexpr const char* UNIT = "nm";
 };
@@ -78,9 +99,9 @@ struct PLASK_API Wavelength: public MultiValueProperty<double> {
 /**
  * Modal loss [1/cm].
  *
- * Additional integer parameter is mode number.
+ * Additional integer parameter is the mode number.
  */
-struct PLASK_API ModalLoss: public MultiValueProperty<double> {
+struct PLASK_API ModeLoss: public MultiValueProperty<double> {
     static constexpr const char* NAME = "modal extinction";
     static constexpr const char* UNIT = "1/cm";
 };
@@ -90,9 +111,9 @@ struct PLASK_API ModalLoss: public MultiValueProperty<double> {
  *
  * It is a complex number, so it can contain information about both the propagation and losses.
  *
- * Additional integer parameter is mode number.
+ * Additional integer parameter is the mode number.
  */
-struct PLASK_API PropagationConstant: public MultiValueProperty<dcomplex> {
+struct PLASK_API ModePropagationConstant: public MultiValueProperty<dcomplex> {
     static constexpr const char* NAME = "propagation constant";
     static constexpr const char* UNIT = "1/µm";
 };
@@ -102,9 +123,9 @@ struct PLASK_API PropagationConstant: public MultiValueProperty<dcomplex> {
  *
  * It is a complex number, so it can contain information about both the propagation and losses.
  *
- * Additional integer parameter is mode number.
+ * Additional integer parameter is the mode number.
  */
-struct PLASK_API EffectiveIndex: public MultiValueProperty<dcomplex> {
+struct PLASK_API ModeEffectiveIndex: public MultiValueProperty<dcomplex> {
     static constexpr const char* NAME = "effective index";
     static constexpr const char* UNIT = "-";
 };
