@@ -245,7 +245,6 @@ cvector FourierSolver3D::getReflectedAmplitudes(Expansion::Component polarizatio
     }
 
     return reflected;
-
 }
 
 cvector FourierSolver3D::getTransmittedAmplitudes(Expansion::Component polarization,

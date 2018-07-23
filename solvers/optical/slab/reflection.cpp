@@ -225,7 +225,7 @@ cvector ReflectionTransfer::getTransmissionVector(const cvector& incident, Incid
 {
     determineReflectedFields(incident, side);
     ptrdiff_t n = (side == INCIDENCE_BOTTOM)? solver->stack.size()-1 : 0;
-    return diagonalizer->TE(solver->stack[n]) *
+    return
         (((side == INCIDENCE_BOTTOM && n < solver->interface) ||
          (side == INCIDENCE_TOP && n >= solver->interface))?
          fields[n].F : fields[n].B);

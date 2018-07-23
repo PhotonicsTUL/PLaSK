@@ -52,6 +52,7 @@
 <script><![CDATA[
 import unittest
 
+
 class GratingTest(unittest.TestCase):
 
     def testComputations(self):
@@ -66,6 +67,7 @@ class GratingTest(unittest.TestCase):
         r_tm = solver.compute_reflectivity(l_tm, 'Et', 'top')
         self.assertAlmostEqual( r_tm[0], 99.097, 2 )
         self.assertAlmostEqual( r_tm[1], 26.911, 2 )
+
 
 if __name__ == '__main__':
     import __main__
