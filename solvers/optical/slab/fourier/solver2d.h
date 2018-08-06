@@ -272,26 +272,26 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      * Compute sum of amplitudes for reflection/transmission coefficient
      * \param amplitudes amplitudes to sum
      */
-    double sumAmplitutes(const cvector& amplitudes) {
+    double sumAmplitutes(const dvector& amplitudes) {
         double result = 0.;
         int N = int(getSize());
         if (expansion.separated()) {
             if (expansion.symmetric()) {
                 for (int i = 0; i <= N; ++i)
-                    result += real(amplitudes[expansion.iE(i)]);
-                result = 2.*result - real(amplitudes[expansion.iE(0)]);
+                    result += amplitudes[expansion.iE(i)];
+                result = 2.*result - amplitudes[expansion.iE(0)];
             } else {
                 for (int i = -N; i <= N; ++i)
-                    result += real(amplitudes[expansion.iE(i)]);
+                    result += amplitudes[expansion.iE(i)];
             }
         } else {
             if (expansion.symmetric()) {
                 for (int i = 0; i <= N; ++i)
-                    result += real(amplitudes[expansion.iEx(i)]);
-                result = 2.*result - real(amplitudes[expansion.iEx(0)]);
+                    result += amplitudes[expansion.iEx(i)];
+                result = 2.*result - amplitudes[expansion.iEx(0)];
             } else {
                 for (int i = -N; i <= N; ++i) {
-                    result += real(amplitudes[expansion.iEx(i)]);
+                    result += amplitudes[expansion.iEx(i)];
                 }
             }
         }
@@ -302,113 +302,106 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
     /**
      * Get amplitudes of reflected diffraction orders
-     * \param polarization polarization of the perpendicularly incident light
+     * \param incident incident field vector
      * \param side incidence side
      */
-    cvector getReflectedAmplitudes(Expansion::Component polarization, Transfer::IncidentDirection side);
+    dvector getReflectedAmplitudes(const cvector& incident, Transfer::IncidentDirection side);
 
     /**
      * Get amplitudes of transmitted diffraction orders
-     * \param polarization polarization of the perpendicularly incident light
+     * \param incident incident field vector
      * \param side incidence side
      */
-    cvector getTransmittedAmplitudes(Expansion::Component polarization, Transfer::IncidentDirection side);
+    dvector getTransmittedAmplitudes(const cvector& incident, Transfer::IncidentDirection side);
 
     /**
      * Get coefficients of reflected diffraction orders
-     * \param polarization polarization of the perpendicularly incident light
+     * \param incident incident field vector
      * \param side incidence side
-     * \param savidx pointer to which optionally save nonzero incident index
      */
-    cvector getReflectedCoefficients(Expansion::Component polarization, Transfer::IncidentDirection side, size_t* savidx=nullptr);
+    cvector getReflectedCoefficients(const cvector& incident, Transfer::IncidentDirection side);
 
     /**
      * Get coefficients of transmitted diffraction orders
-     * \param polarization polarization of the perpendicularly incident light
-     * \param side incidence side
-     * \param savidx pointer to which optionally save nonzero incident index
-     */
-    cvector getTransmittedCoefficients(Expansion::Component polarization, Transfer::IncidentDirection side, size_t* savidx=nullptr);
-
-    /**
-     * Get coefficients of reflected diffraction orders
-     * \param idx index of edge-layer eigenfunction
+     * \param incident incident field vector
      * \param side incidence side
      */
-    cvector getReflectedCoefficients(size_t idx, Transfer::IncidentDirection side);
-
-    /**
-     * Get coefficients of transmitted diffraction orders
-     * \param idx index of edge-layer eigenfunction
-     * \param side incidence side
-     */
-    cvector getTransmittedCoefficients(size_t idx, Transfer::IncidentDirection side);
+    cvector getTransmittedCoefficients(const cvector& incident, Transfer::IncidentDirection side);
 
 
     /**
-     * Get reflection coeffiCoefficientscient
-     * \param polarization polarization of the perpendicularly incident light
+     * Get reflection coefficient
+     * \param incident incident field vector
      * \param side incidence side
      */
-    double getReflection(Expansion::Component polarization, Transfer::IncidentDirection side) {
-        return sumAmplitutes(getReflectedAmplitudes(polarization, side));
+    double getReflection(const cvector& incident, Transfer::IncidentDirection side) {
+        return sumAmplitutes(getReflectedAmplitudes(incident, side));
     }
 
     /**
      * Get reflection coefficient
-     * \param polarization polarization of the perpendicularly incident light
+     * \param incident incident field vector
      * \param side incidence side
      */
-    double getTransmission(Expansion::Component polarization, Transfer::IncidentDirection side) {
-        return sumAmplitutes(getTransmittedAmplitudes(polarization, side));
+    double getTransmission(const cvector& incident, Transfer::IncidentDirection side) {
+        return sumAmplitutes(getTransmittedAmplitudes(incident, side));
     }
 
     /**
      * Get electric field at the given mesh for reflected light.
-     * \param polarization incident field polarization
-     * \param incident incidence direction
+     * \param incident incident field vector
+     * \param side incidence direction
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    LazyData<Vec<3,dcomplex>> getReflectedFieldE(Expansion::Component polarization,
+    LazyData<Vec<3,dcomplex>> getScatteredFieldE(const cvector& incident,
                                                  Transfer::IncidentDirection side,
                                                  shared_ptr<const MeshD<2>> dst_mesh,
                                                  InterpolationMethod method) {
-        assert(initialized);
+        if (!initCalculation()) setExpansionDefaults();
+        // expansion.setK0(2e3*PI / wavelength);
+        if (expansion.separated())
+            expansion.setPolarization(polarization);
         if (!transfer) initTransfer(expansion, true);
-        return transfer->getReflectedFieldE(incidentVector(polarization), side, dst_mesh, method);
+        return transfer->getScatteredFieldE(incident, side, dst_mesh, method);
     }
 
     /**
      * Get magnetic field at the given mesh for reflected light.
-     * \param polarization incident field polarization
+     * \param incident incident field vector
      * \param side incidence direction
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    LazyData<Vec<3,dcomplex>> getReflectedFieldH(Expansion::Component polarization,
+    LazyData<Vec<3,dcomplex>> getScatteredFieldH(const cvector& incident,
                                                  Transfer::IncidentDirection side,
                                                  shared_ptr<const MeshD<2>> dst_mesh,
                                                  InterpolationMethod method) {
-        assert(initialized);
+        if (!initCalculation()) setExpansionDefaults();
+        // expansion.setK0(2e3*PI / wavelength);
+        if (expansion.separated())
+            expansion.setPolarization(polarization);
         if (!transfer) initTransfer(expansion, true);
-        return transfer->getReflectedFieldH(incidentVector(polarization), side, dst_mesh, method);
+        return transfer->getScatteredFieldH(incident, side, dst_mesh, method);
     }
 
     /**
      * Get light intensity for reflected light.
-     * \param polarization incident field polarization
+     * \param incident incident field vector
      * \param side incidence direction
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    LazyData<double> getReflectedFieldMagnitude(Expansion::Component polarization,
+    LazyData<double> getScatteredFieldMagnitude(const cvector& incident,
                                                 Transfer::IncidentDirection side,
                                                 shared_ptr<const MeshD<2>> dst_mesh,
                                                 InterpolationMethod method) {
-        assert(initialized);
+        if (!initCalculation()) setExpansionDefaults();
+        // expansion.setK0(2e3*PI / wavelength);
+        if (expansion.separated())
+            expansion.setPolarization(polarization);
         if (!transfer) initTransfer(expansion, true);
-        return transfer->getReflectedFieldMagnitude(incidentVector(polarization), side, dst_mesh, method);
+        return transfer->getScatteredFieldMagnitude(incident, side, dst_mesh, method);
     }
 
     /**
@@ -440,10 +433,10 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      * \param z position within the layer
      * \return electric field coefficients
      */
-    cvector getReflectedFieldVectorE(Expansion::Component polarization, Transfer::IncidentDirection side, double z) {
+    cvector getScatteredFieldVectorE(Expansion::Component polarization, Transfer::IncidentDirection side, double z) {
         initCalculation();
         if (!transfer) initTransfer(expansion, true);
-        return transfer->getReflectedFieldVectorE(incidentVector(polarization), side, z);
+        return transfer->getScatteredFieldVectorE(incidentVector(polarization), side, z);
     }
 
     /**
@@ -453,10 +446,10 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      * \param z position within the layer
      * \return magnetic field coefficients
      */
-    cvector getReflectedFieldVectorH(Expansion::Component polarization, Transfer::IncidentDirection side, double z) {
+    cvector getScatteredFieldVectorH(Expansion::Component polarization, Transfer::IncidentDirection side, double z) {
         initCalculation();
         if (!transfer) initTransfer(expansion, true);
-        return transfer->getReflectedFieldVectorH(incidentVector(polarization), side, z);
+        return transfer->getScatteredFieldVectorH(incidentVector(polarization), side, z);
     }
 
     /// Check if the current parameters correspond to some mode and insert it
@@ -556,68 +549,6 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      * \param method interpolation method
      */
     LazyData<double> getMagnitude(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
-
-  public:
-
-    /**
-     * Proxy class for accessing reflected fields
-     */
-    struct Reflected {
-
-        FourierSolver2D* parent;
-
-        Expansion::Component polarization;
-
-        Transfer::IncidentDirection side;
-
-        double wavelength;
-
-        /// Provider of the optical electric field
-        typename ProviderFor<LightE,Geometry2DCartesian>::Delegate outLightE;
-
-        /// Provider of the optical magnetic field
-        typename ProviderFor<LightH,Geometry2DCartesian>::Delegate outLightH;
-
-        /// Provider of the optical field intensity
-        typename ProviderFor<LightMagnitude,Geometry2DCartesian>::Delegate outLightMagnitude;
-
-        LazyData<Vec<3,dcomplex>> getElectricField(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
-            if (!parent->initCalculation()) parent->setExpansionDefaults(false);
-            parent->expansion.setK0(2e3*PI / wavelength);
-            if (parent->expansion.separated())
-                parent->expansion.setPolarization(polarization);
-            return parent->getReflectedFieldE(polarization, side, dst_mesh, method);
-        }
-
-        LazyData<Vec<3,dcomplex>> getMagneticField(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
-            if (!parent->initCalculation()) parent->setExpansionDefaults(false);
-            parent->expansion.setK0(2e3*PI / wavelength);
-            if (parent->expansion.separated())
-                parent->expansion.setPolarization(polarization);
-            return parent->getReflectedFieldH(polarization, side, dst_mesh, method);
-        }
-
-        LazyData<double> getLightMagnitude(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod method) {
-            if (!parent->initCalculation()) parent->setExpansionDefaults(false);
-            parent->expansion.setK0(2e3*PI / wavelength);
-            if (parent->expansion.separated())
-                parent->expansion.setPolarization(polarization);
-            return parent->getReflectedFieldMagnitude(polarization, side, dst_mesh, method);
-        }
-
-        /**
-         * Construct proxy.
-         * \param wavelength incident light wavelength
-         * \param polarization polarization of the perpendicularly incident light
-         * \param side incidence side
-         */
-        Reflected(FourierSolver2D* parent, double wavelength, Expansion::Component polarization, Transfer::IncidentDirection side):
-            parent(parent), polarization(polarization), side(side), wavelength(wavelength),
-            outLightE(this, &FourierSolver2D::Reflected::getElectricField),
-            outLightH(this, &FourierSolver2D::Reflected::getMagneticField),
-            outLightMagnitude(this, &FourierSolver2D::Reflected::getLightMagnitude)
-        {}
-    };
 };
 
 

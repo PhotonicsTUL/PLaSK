@@ -763,7 +763,7 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
 }
 
 
-double ExpansionPW2D::integratePoyntingVert(const cvector& E, const cvector& H)
+double ExpansionPW2D::integratePoyntingVert(const cvector& E, const cvector& H, dcomplex se, dcomplex sh)
 {
     double P = 0.;
 
@@ -772,23 +772,23 @@ double ExpansionPW2D::integratePoyntingVert(const cvector& E, const cvector& H)
     if (separated()) {
         if (symmetric()) {
             for (int i = 0; i <= ord; ++i) {
-                P += real(E[iE(i)] * conj(H[iH(i)]));
+                P += real(se*E[iE(i)] * conj(sh*H[iH(i)]));
             }
-            P = 2. * P - real(E[iE(0)] * conj(H[iH(0)]));
+            P = 2. * P - real(se*E[iE(0)] * conj(sh*H[iH(0)]));
         } else {
             for (int i = -ord; i <= ord; ++i) {
-                P += real(E[iE(i)] * conj(H[iH(i)]));
+                P += real(se*E[iE(i)] * conj(sh*H[iH(i)]));
             }
         }
     } else {
         if (symmetric()) {
             for (int i = 0; i <= ord; ++i) {
-                P -= real(E[iEz(i)] * conj(H[iHx(i)]) + E[iEx(i)] * conj(H[iHz(i)]));
+                P -= real(se*E[iEz(i)] * conj(sh*H[iHx(i)]) + se*E[iEx(i)] * conj(sh*H[iHz(i)]));
             }
-            P = 2. * P + real(E[iEz(0)] * conj(H[iHx(0)]) + E[iEx(0)] * conj(H[iHz(0)]));
+            P = 2. * P + real(se*E[iEz(0)] * conj(sh*H[iHx(0)]) + se*E[iEx(0)] * conj(sh*H[iHz(0)]));
         } else {
             for (int i = -ord; i <= ord; ++i) {
-                P -= real(E[iEz(i)] * conj(H[iHx(i)]) + E[iEx(i)] * conj(H[iHz(i)]));
+                P -= real(se*E[iEz(i)] * conj(sh*H[iHx(i)]) + se*E[iEx(i)] * conj(sh*H[iHz(i)]));
             }
         }
     }

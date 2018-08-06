@@ -207,13 +207,14 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
 }
 
 
-cvector FourierSolver3D::getReflectedAmplitudes(Expansion::Component polarization,
-                                                Transfer::IncidentDirection side)
+dvector FourierSolver3D::getReflectedAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
 {
+    size_t idx = 0;
+
     double kt = real(ktran), kl = real(klong);
 
-    size_t idx;
-    cvector reflected = getReflectedCoefficients(polarization, side, &idx).claim();
+    cvector reflected = getReflectedCoefficients(incident, side);
+    dvector result(reflected.size());
 
     size_t n = (side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
     size_t l = stack[n];
@@ -224,8 +225,8 @@ cvector FourierSolver3D::getReflectedAmplitudes(Expansion::Component polarizatio
     auto gamma = transfer->diagonalizer->Gamma(l);
     dcomplex igamma0 = 1. / gamma[idx];
 
-    double incident = ((polarization==Expansion::E_LONG)? kl : kt);
-    incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
+    //double inc = ((polarization==Expansion::E_LONG)? kl : kt);
+    //inc = 1. / (1. + inc*inc * real(igamma0*conj(igamma0)));
 
     double bl = 2*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
            bt = 2*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
@@ -239,21 +240,22 @@ cvector FourierSolver3D::getReflectedAmplitudes(Expansion::Component polarizatio
             dcomplex Ex = reflected[ix], Ey = reflected[iy];
             dcomplex S = (gamma[ix]*gamma[ix]+gx*gx) * Ex*conj(Ex) + (gamma[iy]*gamma[iy]+gy*gy) * Ey*conj(Ey) +
                          gx * gy * (Ex*conj(Ey) + conj(Ex)*Ey);
-            reflected[ix] = incident * real(igamma0 / (0.5*(gamma[ix]+gamma[iy])) * S);
-            reflected[iy] = 0.;
+            result[ix] = /*inc */ real(igamma0 / (0.5*(gamma[ix]+gamma[iy])) * S);
+            result[iy] = 0.;
         }
     }
 
-    return reflected;
+    return result;
 }
 
-cvector FourierSolver3D::getTransmittedAmplitudes(Expansion::Component polarization,
-                                                  Transfer::IncidentDirection side)
+dvector FourierSolver3D::getTransmittedAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
 {
+    size_t idx = 0;
+
     double kt = real(ktran), kl = real(klong);
 
-    size_t idx;
-    cvector transmitted = getTransmittedCoefficients(polarization, side, &idx).claim();
+    cvector transmitted = getTransmittedCoefficients(incident, side);
+    dvector result(transmitted.size());
 
     size_t ni = (side == Transfer::INCIDENCE_TOP)? stack.size()-1 : 0;
     size_t nt = stack.size()-1-ni;
@@ -269,8 +271,8 @@ cvector FourierSolver3D::getTransmittedAmplitudes(Expansion::Component polarizat
     auto gamma = transfer->diagonalizer->Gamma(lt);
     dcomplex igamma0 = 1. / transfer->diagonalizer->Gamma(li)[idx];
 
-    double incident = ((polarization==Expansion::E_LONG)? kl : kt);
-    incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
+    //double inc = ((polarization==Expansion::E_LONG)? kl : kt);
+    //inc = 1. / (1. + inc*inc * real(igamma0*conj(igamma0)));
 
     double bl = 2*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
            bt = 2*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
@@ -284,59 +286,25 @@ cvector FourierSolver3D::getTransmittedAmplitudes(Expansion::Component polarizat
             dcomplex Ex = transmitted[ix], Ey = transmitted[iy];
             dcomplex S = (gamma[ix]*gamma[ix]+gx*gx) * Ex*conj(Ex) + (gamma[iy]*gamma[iy]+gy*gy) * Ey*conj(Ey) +
                          gx * gy * (Ex*conj(Ey) + conj(Ex)*Ey);
-            transmitted[ix] = incident * real(igamma0 / (0.5*(gamma[ix]+gamma[iy])) * S);
-            transmitted[iy] = 0.;
+            result[ix] = /*inc */ real(igamma0 / (0.5*(gamma[ix]+gamma[iy])) * S);
+            result[iy] = 0.;
         }
     }
 
-    return transmitted;
+    return result;
 }
 
 
-cvector FourierSolver3D::getReflectedCoefficients(Expansion::Component polarization,
-                                                  Transfer::IncidentDirection side,
-                                                  size_t* savidx)
+cvector FourierSolver3D::getReflectedCoefficients(const cvector& incident, Transfer::IncidentDirection side)
 {
-    initCalculation();
-    if (!transfer) initTransfer(expansion, true);
-
-    if (!expansion.periodic_long || !expansion.periodic_tran)
-        throw NotImplemented(getId(), "Reflection coefficients can be computed only for periodic geometries");
-
-    return transfer->getReflectionVector(incidentVector(polarization, savidx), side);
-}
-
-
-cvector FourierSolver3D::getTransmittedCoefficients(Expansion::Component polarization,
-                                                    Transfer::IncidentDirection side,
-                                                    size_t* savidx)
-{
-    initCalculation();
-    if (!transfer) initTransfer(expansion, true);
-
-    if (!expansion.periodic_long || !expansion.periodic_tran)
-        throw NotImplemented(getId(), "Transmission coefficients can be computed only for periodic geometries");
-
-    return transfer->getTransmissionVector(incidentVector(polarization, savidx), side);
-}
-
-
-cvector FourierSolver3D::getReflectedCoefficients(size_t idx, Transfer::IncidentDirection side)
-{
-    cvector incident(expansion.matrixSize(), 0.);
-    incident[idx] = 1.;
-
     initCalculation();
     if (!transfer) initTransfer(expansion, true);
 
     return transfer->getReflectionVector(incident, side);
 }
 
-cvector FourierSolver3D::getTransmittedCoefficients(size_t idx, Transfer::IncidentDirection side)
+cvector FourierSolver3D::getTransmittedCoefficients(const cvector& incident, Transfer::IncidentDirection side)
 {
-    cvector incident(expansion.matrixSize(), 0.);
-    incident[idx] = 1.;
-
     initCalculation();
     if (!transfer) initTransfer(expansion, true);
 
@@ -344,12 +312,12 @@ cvector FourierSolver3D::getTransmittedCoefficients(size_t idx, Transfer::Incide
 }
 
 
-double FourierSolver3D::getReflection(Expansion::Component polarization, Transfer::IncidentDirection side)
+double FourierSolver3D::getReflection(const cvector& incident, Transfer::IncidentDirection side)
 {
     double kt = real(ktran), kl = real(klong);
 
-    size_t idx;
-    cvector reflected = getReflectedCoefficients(polarization, side, &idx);
+    size_t idx = 0;
+    cvector reflected = getReflectedCoefficients(incident, side);
 
     size_t n = (side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
     size_t l = stack[n];
@@ -360,8 +328,8 @@ double FourierSolver3D::getReflection(Expansion::Component polarization, Transfe
     auto gamma = transfer->diagonalizer->Gamma(l);
     dcomplex igamma0 = 1. / gamma[idx];
 
-    double incident = ((polarization==Expansion::E_LONG)? kl : kt);
-    incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
+    //double incident = ((polarization==Expansion::E_LONG)? kl : kt);
+    //incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
     double bl = 2.*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
            bt = 2.*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
@@ -383,7 +351,7 @@ double FourierSolver3D::getReflection(Expansion::Component polarization, Transfe
             }
             dcomplex S = (gamma[ix]*gamma[ix]+gx*gx) * Ex*conj(Ex) + (gamma[iy]*gamma[iy]+gy*gy) * Ey*conj(Ey) +
                          gx * gy * (Ex*conj(Ey) + conj(Ex)*Ey);
-            result += incident * real(igamma0 / (0.5*(gamma[ix]+gamma[iy])) * S);
+            result += /*incident */ real(igamma0 / (0.5*(gamma[ix]+gamma[iy])) * S);
         }
     }
 
@@ -391,12 +359,12 @@ double FourierSolver3D::getReflection(Expansion::Component polarization, Transfe
 }
 
 
-double FourierSolver3D::getTransmission(Expansion::Component polarization, Transfer::IncidentDirection side)
+double FourierSolver3D::getTransmission(const cvector& incident, Transfer::IncidentDirection side)
 {
     double kt = real(ktran), kl = real(klong);
 
-    size_t idx;
-    cvector transmitted = getTransmittedCoefficients(polarization, side, &idx);
+    size_t idx = 0;
+    cvector transmitted = getTransmittedCoefficients(incident, side);
 
     size_t ni = (side == Transfer::INCIDENCE_TOP)? stack.size()-1 : 0;
     size_t nt = stack.size()-1-ni;
@@ -412,8 +380,8 @@ double FourierSolver3D::getTransmission(Expansion::Component polarization, Trans
     auto gamma = transfer->diagonalizer->Gamma(lt);
     dcomplex igamma0 = 1. / transfer->diagonalizer->Gamma(li)[idx];
 
-    double incident = ((polarization==Expansion::E_LONG)? kl : kt);
-    incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
+    //double incident = ((polarization==Expansion::E_LONG)? kl : kt);
+    //incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
 
     double bl = 2.*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
            bt = 2.*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
@@ -435,12 +403,14 @@ double FourierSolver3D::getTransmission(Expansion::Component polarization, Trans
             }
             dcomplex S = (gamma[ix]*gamma[ix]+gx*gx) * Ex*conj(Ex) + (gamma[iy]*gamma[iy]+gy*gy) * Ey*conj(Ey) +
                          gx * gy * (Ex*conj(Ey) + conj(Ex)*Ey);
-            result += incident * real(igamma0 / (0.5*(gamma[ix]+gamma[iy])) * S);
+            result += /*incident */ real(igamma0 / (0.5*(gamma[ix]+gamma[iy])) * S);
         }
     }
 
     return result;
 }
+
+
 
 
 LazyData<Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)

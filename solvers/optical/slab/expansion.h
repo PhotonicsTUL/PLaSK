@@ -191,9 +191,26 @@ struct PLASK_SOLVER_API Expansion {
      * Compute vertical component of the Poynting vector for specified fields
      * \param E electric field coefficients vector
      * \param H magnetic field coefficients vector
+     * \param se scaling factor for electric field
+     * \param sh scaling factor for magnetic field
      * \return integrated Poynting vector i.e. the total vertically emitted energy
      */
-    virtual double integratePoyntingVert(const cvector& E, const cvector& H) = 0;
+    virtual double integratePoyntingVert(const cvector& E, const cvector& H, dcomplex se=1., dcomplex sh=1.) = 0;
+
+    /**
+     * Compute vertical component of the Poynting vector for fields specified as matrix column
+     * \param n column number
+     * \param TE electric field coefficients matrix
+     * \param TH magnetic field coefficients matrix
+     * \param se scaling factor for electric field
+     * \param sh scaling factor for magnetic field
+     * \return integrated Poynting vector i.e. the total vertically emitted energy
+     */
+    double integratePoyntingVert(size_t n, const cmatrix& TE, const cmatrix& TH, dcomplex se=1., dcomplex sh=1.) {
+        const cvector E(const_cast<dcomplex*>(TE.data()) + n*TE.rows(), TE.rows()),
+                      H(const_cast<dcomplex*>(TH.data()) + n*TH.rows(), TH.rows());
+        return integratePoyntingVert(E, H, se, sh);
+    }
 
   protected:
 

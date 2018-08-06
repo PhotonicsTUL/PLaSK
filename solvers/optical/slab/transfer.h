@@ -203,7 +203,7 @@ struct PLASK_SOLVER_API Transfer {
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    LazyData<Vec<3,dcomplex>> getReflectedFieldE(const cvector& incident, IncidentDirection side,
+    LazyData<Vec<3,dcomplex>> getScatteredFieldE(const cvector& incident, IncidentDirection side,
                                                  const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
         return computeFieldE(1e3 * Z0, dst_mesh, method, true);
@@ -216,7 +216,7 @@ struct PLASK_SOLVER_API Transfer {
      * \param dst_mesh target mesh
      * \param method interpolation method
      */
-    LazyData<Vec<3,dcomplex>> getReflectedFieldH(const cvector& incident, IncidentDirection side,
+    LazyData<Vec<3,dcomplex>> getScatteredFieldH(const cvector& incident, IncidentDirection side,
                                                  const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
         return computeFieldH(1e3 * Z0, dst_mesh, method, true);
@@ -229,7 +229,7 @@ struct PLASK_SOLVER_API Transfer {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    LazyData<double> getReflectedFieldMagnitude(const cvector& incident, IncidentDirection side,
+    LazyData<double> getScatteredFieldMagnitude(const cvector& incident, IncidentDirection side,
                                                 const shared_ptr<const Mesh>& dst_mesh, InterpolationMethod method) {
         determineReflectedFields(incident, side);
         return computeFieldMagnitude(1e3 * Z0, dst_mesh, method, true);
@@ -256,7 +256,7 @@ struct PLASK_SOLVER_API Transfer {
      * \param z position within the layer
      * \return electric field coefficients
      */
-    cvector getReflectedFieldVectorE(const cvector& incident, IncidentDirection side, double z);
+    cvector getScatteredFieldVectorE(const cvector& incident, IncidentDirection side, double z);
 
     /**
      * Compute magnetic field coefficients for given \a z
@@ -265,7 +265,7 @@ struct PLASK_SOLVER_API Transfer {
      * \param z position within the layer
      * \return magnetic field coefficients
      */
-    cvector getReflectedFieldVectorH(const cvector& incident, IncidentDirection side, double z);
+    cvector getScatteredFieldVectorH(const cvector& incident, IncidentDirection side, double z);
 };
 
 

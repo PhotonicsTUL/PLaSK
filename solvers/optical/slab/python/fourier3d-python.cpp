@@ -411,76 +411,6 @@ size_t FourierSolver3D_findMode(py::tuple args, py::dict kwargs) {
     return self->findMode(what, value);
 }
 
-static py::object FourierSolver3D_reflectedAmplitudes(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
-    if (!self.initCalculation()) {
-        self.setExpansionDefaults(false);
-        self.expansion.setK0(2e3*PI/lam);
-    } else
-        self.expansion.setK0(2e3*PI/lam);
-    auto data = self.getReflectedAmplitudes(polarization, incidence);
-    return arrayFromVec3D<NPY_DOUBLE>(data, self.minor(), 2);
-}
-
-static py::object FourierSolver3D_transmittedAmplitudes(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
-    if (!self.initCalculation()) {
-        self.setExpansionDefaults(false);
-        self.expansion.setK0(2e3*PI/lam);
-    } else
-        self.expansion.setK0(2e3*PI/lam);
-    auto data = self.getTransmittedAmplitudes(polarization, incidence);
-    return arrayFromVec3D<NPY_DOUBLE>(data, self.minor(), 2);
-}
-
-static py::object FourierSolver3D_reflectedCoefficients1(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
-    if (!self.initCalculation()) {
-        self.setExpansionDefaults(false);
-        self.expansion.setK0(2e3*PI/lam);
-    } else
-        self.expansion.setK0(2e3*PI/lam);
-    auto data = self.getReflectedCoefficients(polarization, incidence);
-    return arrayFromVec3D<NPY_CDOUBLE>(data, self.minor(), 3);
-}
-
-static py::object FourierSolver3D_transmittedCoefficients1(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection incidence) {
-    if (!self.initCalculation()) {
-        self.expansion.setK0(2e3*PI/lam);
-        self.setExpansionDefaults(false);
-    } else
-        self.expansion.setK0(2e3*PI/lam);
-    auto data = self.getTransmittedCoefficients(polarization, incidence);
-    return arrayFromVec3D<NPY_CDOUBLE>(data, self.minor(), 3);
-}
-
-static py::object FourierSolver3D_incidentCoefficients(FourierSolver3D& self, double lam, Expansion::Component polarization, Transfer::IncidentDirection) {
-    if (!self.initCalculation()) {
-        self.expansion.setK0(2e3*PI/lam);
-        self.setExpansionDefaults(false);
-    } else
-        self.expansion.setK0(2e3*PI/lam);
-    auto data = self.incidentVector(polarization);
-    return arrayFromVec3D<NPY_CDOUBLE>(data, self.minor(), 3);
-}
-
-static py::object FourierSolver3D_reflectedCoefficients2(FourierSolver3D& self, double lam, size_t idx, Transfer::IncidentDirection incidence) {
-    if (!self.initCalculation()) {
-        self.setExpansionDefaults(false);
-        self.expansion.setK0(2e3*PI/lam);
-    } else
-        self.expansion.setK0(2e3*PI/lam);
-    auto data = self.getReflectedCoefficients(idx, incidence);
-    return arrayFromVec3D<NPY_CDOUBLE>(data, self.minor(), 3);
-}
-
-static py::object FourierSolver3D_transmittedCoefficients2(FourierSolver3D& self, double lam, size_t idx, Transfer::IncidentDirection incidence) {
-    if (!self.initCalculation()) {
-        self.expansion.setK0(2e3*PI/lam);
-        self.setExpansionDefaults(false);
-    } else
-        self.expansion.setK0(2e3*PI/lam);
-    auto data = self.getTransmittedCoefficients(idx, incidence);
-    return arrayFromVec3D<NPY_CDOUBLE>(data, self.minor(), 3);
-}
-
 
 static py::object FourierSolver3D_getFieldVectorE(FourierSolver3D& self, int num, double z) {
     if (num < 0) num += int(self.modes.size());
@@ -492,14 +422,6 @@ static py::object FourierSolver3D_getFieldVectorH(FourierSolver3D& self, int num
     if (num < 0) num += int(self.modes.size());
     if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
     return arrayFromVec3D<NPY_CDOUBLE>(self.getFieldVectorH(std::size_t(num), z), self.minor(), 3);
-}
-
-static py::object FourierSolver3D_getReflectedFieldVectorE(FourierSolver3D::Reflected& self, double z) {
-    return arrayFromVec3D<NPY_CDOUBLE>(self.parent->getReflectedFieldVectorE(self.polarization, self.side, z), self.parent->minor(), 3);
-}
-
-static py::object FourierSolver3D_getReflectedFieldVectorH(FourierSolver3D::Reflected& self, double z) {
-    return arrayFromVec3D<NPY_CDOUBLE>(self.parent->getReflectedFieldVectorH(self.polarization, self.side, z), self.parent->minor(), 3);
 }
 
 
@@ -614,78 +536,17 @@ void export_FourierSolver3D()
             u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
             u8"        present.\n"
             , (py::arg("lam"), "polarization", "side"));
-    solver.def("reflected", FourierSolver_getReflected<FourierSolver3D>, py::with_custodian_and_ward_postcall<0,1>(),
+    solver.def("scattering", Scattering<FourierSolver3D>::get, py::with_custodian_and_ward_postcall<0,1>(),
                u8"Access to the reflected field.\n\n"
                u8"Args:\n"
-               u8"    lam (float): Incident light wavelength.\n"
                u8"    polarization: Specification of the incident light polarization.\n"
                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
                u8"        of the non-vanishing electric field component.\n"
                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                u8"        present.\n\n"
-               u8":rtype: Fourier3D.Reflected\n"
-               , (py::arg("lam"), "polarization", "side")
+               u8":rtype: Fourier2D.Reflected\n"
+               , (py::arg("polarization"), "side")
               );
-    solver.def("compute_reflected_orders", &FourierSolver3D_reflectedAmplitudes,
-                u8"Compute amplitudes of all the Fourier coefficients (diffraction orders)\n"
-                u8"of the reflected field [-].\n\n"
-                u8"Args:\n"
-                u8"    lam (float): Incident light wavelength.\n"
-                u8"    polarization: Specification of the incident light polarization.\n"
-                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-                u8"        name of the non-vanishing electric field component.\n"
-                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-                u8"        present.\n"
-                , (py::arg("lam"), "polarization", "side"));
-    solver.def("compute_transmitted_orders", &FourierSolver3D_transmittedAmplitudes,
-                u8"Compute amplitudes of all the Fourier coefficients (diffraction orders)\n"
-                u8"of the transmited field [-].\n\n"
-                u8"Args:\n"
-                u8"    lam (float): Incident light wavelength.\n"
-                u8"    polarization: Specification of the incident light polarization.\n"
-                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-                u8"        name of the non-vanishing electric field component.\n"
-                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-                u8"        present.\n"
-                , (py::arg("lam"), "polarization", "side"));
-    solver.def("compute_reflected_coefficients", &FourierSolver3D_reflectedCoefficients1, (py::arg("lam"), "polarization", "side"));
-    solver.def("compute_reflected_coefficients", &FourierSolver3D_reflectedCoefficients2,
-                u8"Compute Fourier coefficients of the reflected field on the perpendicular incidence [-].\n\n"
-                u8"Args:\n"
-                u8"    lam (float): Incident light wavelength.\n"
-                u8"    polarization: Specification of the incident light polarization.\n"
-                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-                u8"        name of the non-vanishing electric field component.\n"
-                u8"    idx (int): Index of the input-side layer eigenfield to set as the incident\n"
-                u8"        field.\n"
-                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-                u8"        present.\n"
-                , (py::arg("lam"), "idx", "side"));
-    solver.def("compute_transmitted_coefficients", &FourierSolver3D_transmittedCoefficients1, (py::arg("lam"), "polarization", "side"));
-    solver.def("compute_transmitted_coefficients", &FourierSolver3D_transmittedCoefficients2,
-                u8"Compute Fourier coefficients of the reflected field on the perpendicular incidence [-].\n\n"
-                u8"Args:\n"
-                u8"    lam (float): Incident light wavelength.\n"
-                u8"    polarization: Specification of the incident light polarization.\n"
-                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-                u8"        name of the non-vanishing electric field component.\n"
-                u8"    idx (int): Index of the input-side layer eigenfield to set as the incident\n"
-                u8"        field.\n"
-                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-                u8"        present.\n"
-                , (py::arg("lam"), "idx", "side"));
-    solver.def("get_incident_coefficients", &FourierSolver3D_incidentCoefficients,
-                u8"Get Fourier coefficients of the incident field on the perpendicular incidence [-].\n"
-                u8"These coefficients are used in :meth:`compute_reflected_coefficients` and\n"
-                u8":meth:`compute_transmitted_coefficients`.\n\n"
-                u8"Args:\n"
-                u8"    lam (float): Incident light wavelength.\n"
-                u8"    polarization: Specification of the incident light polarization.\n"
-                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-                u8"        name of the non-vanishing electric field component.\n"
-                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-                u8"        present.\n"
-                , (py::arg("lam"), "idx", "side"));
     solver.def("get_electric_coefficients", FourierSolver3D_getFieldVectorE, (py::arg("num"), "level"),
                u8"Get Fourier expansion coefficients for the electric field.\n\n"
                u8"This is a low-level function returning :math:`E_l` and/or :math:`E_t` Fourier\n"
@@ -715,10 +576,6 @@ void export_FourierSolver3D()
                u8"    level (float): Vertical level at which the coefficients are computed.\n",
                py::with_custodian_and_ward_postcall<0,1>()
               );
-    // solver.add_property("material_mesh_long", &__Class__::getLongMesh,
-    //                     u8"Regular mesh with points in which material is sampled along longitudinal direction.");
-    // solver.add_property("material_mesh_tran", &__Class__::getTranMesh,
-    //                     u8"Regular mesh with points in which material is sampled along transverse direction.");
     RO_FIELD(modes, "Computed modes.");
     py::scope scope = solver;
     (void) scope;   // don't warn about unused variable scope
@@ -737,76 +594,8 @@ void export_FourierSolver3D()
         .def("__getattr__", &FourierSolver3D_Mode__getattr__)
     ;
 
-
-    py::class_<FourierSolver3D::Reflected, shared_ptr<FourierSolver3D::Reflected>, boost::noncopyable>("Reflected",
-        u8"Reflected mode proxy.\n\n"
-        u8"This class contains providers for the optical field for a reflected field"
-        u8"under the normal incidence.\n"
-        , py::no_init)
-        .def_readonly("outLightE", reinterpret_cast<ProviderFor<LightE,Geometry3D> FourierSolver3D::Reflected::*>
-                                            (&FourierSolver3D::Reflected::outLightE),
-            format(docstring_attr_provider<LightE>(), "LightE", "3D", u8"electric field", u8"V/m", "", "", "", "outLightE", "n=0", ":param int n: Mode number.").c_str()
-        )
-        .def_readonly("outElectricField",
-                      reinterpret_cast<ProviderFor<LightE,Geometry3D> FourierSolver3D::Reflected::*> (&FourierSolver3D::Reflected::outLightE),
-                      "Alias for :attr:`outLightE`.")
-        .def_readonly("outLightH", reinterpret_cast<ProviderFor<LightH,Geometry3D> FourierSolver3D::Reflected::*>
-                                            (&FourierSolver3D::Reflected::outLightH),
-            format(docstring_attr_provider<LightH>(), "LightH", "3D", u8"magnetic field", u8"A/m", "", "", "", "outLightH", "n=0", ":param int n: Mode number.").c_str()
-        )
-        .def_readonly("outMagneticField",
-                      reinterpret_cast<ProviderFor<LightH,Geometry3D> FourierSolver3D::Reflected::*> (&FourierSolver3D::Reflected::outLightH),
-                      u8"Alias for :attr:`outLightH`.")
-        .def_readonly("outLightMagnitude", reinterpret_cast<ProviderFor<LightMagnitude,Geometry3D> FourierSolver3D::Reflected::*>
-                                            (&FourierSolver3D::Reflected::outLightMagnitude),
-            format(docstring_attr_provider<LightMagnitude>(), u8"LightMagnitude", "3D", u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude", "n=0", ":param int n: Mode number.").c_str()
-        )
-        .def("get_electric_coefficients", FourierSolver3D_getReflectedFieldVectorE, py::arg("level"),
-             u8"Get Fourier expansion coefficients for the electric field.\n\n"
-             u8"This is a low-level function returning :math:`E_l` and/or :math:`E_t` Fourier\n"
-             u8"expansion coefficients. Please refer to the detailed solver description for their\n"
-             u8"interpretation.\n\n"
-             u8"Args:\n"
-             u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
-             u8":rtype: numpy.ndarray\n"
-            )
-        .def("get_magnetic_coefficients", FourierSolver3D_getReflectedFieldVectorH, py::arg("level"),
-             u8"Get Fourier expansion coefficients for the magnegtic field.\n\n"
-             u8"This is a low-level function returning :math:`H_l` and/or :math:`H_t` Fourier\n"
-             u8"expansion coefficients. Please refer to the detailed solver description for their\n"
-             u8"interpretation.\n\n"
-             u8"Args:\n"
-             u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
-             u8":rtype: numpy.ndarray\n"
-            )
-    ;
-
-    py::class_<Eigenmodes<FourierSolver3D>, shared_ptr<Eigenmodes<FourierSolver3D>>, boost::noncopyable>("Eigenmodes",
-        u8"Layer eignemodes proxy\n\n"
-        u8"This is an advanced class allowing to extract eignemodes in each layer.\n", py::no_init)
-        .def("__len__", &Eigenmodes<FourierSolver3D>::size)
-        .def("__getitem__", &Eigenmodes<FourierSolver3D>::Gamma)
-        .def("coefficientsE", &Eigenmodes<FourierSolver3D>::getCoefficientsE, py::arg("n"),
-            u8"Get electric field coefficients for the n-th eigenmode.\n\n"
-            u8"Args:\n"
-            u8"    n (int): Eigenmode number."
-        )
-        .def("coefficientsH", &Eigenmodes<FourierSolver3D>::getCoefficientsH, py::arg("n"),
-            u8"Get magnetic field coefficients for the n-th eigenmode.\n\n"
-            u8"Args:\n"
-            u8"    n (int): Eigenmode number."
-        )
-	.def_readonly("outLightMagnitude",
-                      reinterpret_cast<ProviderFor<LightMagnitude, Geometry3D> Eigenmodes<FourierSolver3D>::*> (&Eigenmodes<FourierSolver3D>::outLightMagnitude),
-                      format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", "3D", u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude", "n=0", ":param int n: Mode number.").c_str()
-                     )
-    ;
-
-    py_enum<FourierSolver3D::Emission>()
-        .value("UNDEFINED", FourierSolver3D::EMISSION_UNSPECIFIED)
-        .value("TOP", FourierSolver3D::EMISSION_TOP)
-        .value("BOTTOM", FourierSolver3D::EMISSION_BOTTOM)
-    ;
+    Scattering<FourierSolver3D>::registerClass("3D");
+    Eigenmodes<FourierSolver3D>::registerClass("3D");
 
     FourierSolver3D_LongTranWrapper<size_t>::register_("Sizes");
     FourierSolver3D_LongTranWrapper<double>::register_("Oversampling");

@@ -310,7 +310,7 @@ void SlabSolver<BaseT>::setupLayers()
             size_t n = indices.size();
             // Make distance matrix
             std::unique_ptr<double[]> dists(new double[n * n]);
-#define dists_at(a, b) dists[(a)*n+(b)] //TODO develop plask::UniquePtr2D<> and remove this macro
+#           define dists_at(a, b) dists[(a)*n+(b)] //TODO develop plask::UniquePtr2D<> and remove this macro
             for (size_t i = 0; i != n; ++i) {
                 dists_at(i, i) = INFINITY; // the simplest way to avoid clustering with itself
                 for (size_t j = i+1; j != n; ++j) {

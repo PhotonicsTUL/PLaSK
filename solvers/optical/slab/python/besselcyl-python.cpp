@@ -333,26 +333,7 @@ void export_BesselSolverCyl()
         .def("__repr__", &BesselSolverCyl_Mode_repr)
     ;
 
-    py::class_<Eigenmodes<BesselSolverCyl>, shared_ptr<Eigenmodes<BesselSolverCyl>>, boost::noncopyable>("Eigenmodes",
-	    u8"Layer eignemodes proxy\n\n"
-	    u8"This is an advanced class allowing to extract eignemodes in each layer.\n", py::no_init)
-	    .def("__len__", &Eigenmodes<BesselSolverCyl>::size)
-	    .def("__getitem__", &Eigenmodes<BesselSolverCyl>::Gamma)
-	    .def("coefficientsE", &Eigenmodes<BesselSolverCyl>::getCoefficientsE, py::arg("n"),
-		    u8"Get electric field coefficients for the n-th eigenmode.\n\n"
-		    u8"Args:\n"
-		    u8"    n (int): Eigenmode number."
-	    )
-	    .def("coefficientsH", &Eigenmodes<BesselSolverCyl>::getCoefficientsH, py::arg("n"),
-		    u8"Get magnetic field coefficients for the n-th eigenmode.\n\n"
-		    u8"Args:\n"
-		    u8"    n (int): Eigenmode number."
-	    )
-	    .def_readonly("outLightMagnitude",
-                          reinterpret_cast<ProviderFor<LightMagnitude, Geometry2DCartesian> Eigenmodes<BesselSolverCyl>::*> (&Eigenmodes<BesselSolverCyl>::outLightMagnitude),
-	                  format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", "Cyl", u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude", "n=0", ":param int n: Mode number.").c_str()
-	    )
-    ;
+    Eigenmodes<BesselSolverCyl>::registerClass("Cyl");
 }
 
 }}}} // namespace plask::optical::slab::python

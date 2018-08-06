@@ -204,24 +204,17 @@ size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
 }
 
 
-cvector FourierSolver2D::getReflectedAmplitudes(Expansion::Component polarization,
-                                                Transfer::IncidentDirection side)
+dvector FourierSolver2D::getReflectedAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
 {
-    size_t idx;
+    size_t idx = 0;
 
     double kt = real(expansion.ktran), kl = real(expansion.beta);
 
-    if (!expansion.initialized && expansion.beta == 0.) expansion.polarization = polarization;
-    initCalculation();
-    if (!transfer) initTransfer(expansion, true);
-
-    if (!expansion.periodic)
-        throw NotImplemented(getId(), "Reflection coefficient can be computed only for periodic geometries");
+    cvector reflected = transfer->getReflectionVector(incident, side);
+    dvector result(reflected.size());
 
     size_t n = (side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
     size_t l = stack[n];
-
-    cvector reflected = transfer->getReflectionVector(incidentVector(polarization, &idx), side).claim();
 
     if (!expansion.diagonalQE(l))
         Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute reflection coefficient",
@@ -230,8 +223,8 @@ cvector FourierSolver2D::getReflectedAmplitudes(Expansion::Component polarizatio
     auto gamma = transfer->diagonalizer->Gamma(l);
     dcomplex gamma0 = gamma[idx];
     dcomplex igamma0 = 1. / gamma0;
-    double incident = ((polarization==Expansion::E_LONG)? kl : kt);
-    incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
+    //double inc = ((polarization==Expansion::E_LONG)? kl : kt);
+    //inc = 1. / (1. + inc*inc * real(igamma0*conj(igamma0)));
 
     if (!expansion.separated()) {
         double b = 2*PI / (expansion.right-expansion.left) * (expansion.symmetric()? 0.5 : 1.0);
@@ -243,42 +236,35 @@ cvector FourierSolver2D::getReflectedAmplitudes(Expansion::Component polarizatio
             dcomplex Ez = reflected[iz], Ex = reflected[ix];
             dcomplex S = (gamma[iz]*gamma[iz]+kl*kl) * Ez*conj(Ez) + (gamma[ix]*gamma[ix]+g*g) * Ex*conj(Ex) -
                          kl * g * (Ez*conj(Ex) + conj(Ez)*Ex);
-            reflected[ix] = incident * real(igamma0 / (0.5*(gamma[ix]+gamma[iz])) * S);
-            reflected[iz] = 0.;
+            result[ix] = /*inc */ real(igamma0 / (0.5*(gamma[ix]+gamma[iz])) * S);
+            result[iz] = 0.;
         }
     } else {
         if (expansion.polarization == Expansion::E_LONG) {
             for (size_t i = 0; i != expansion.matrixSize(); ++i)
-                reflected[i] = reflected[i]*conj(reflected[i]) * igamma0 * gamma[i];
+                result[i] = real(reflected[i]*conj(reflected[i]) * igamma0 * gamma[i]);
         } else {
             for (size_t i = 0; i != expansion.matrixSize(); ++i)
-                reflected[i] = incident * reflected[i]*conj(reflected[i]) * (gamma0*gamma0+kt*kt) / gamma[i] * igamma0;
+                result[i] = /*inc */ real(reflected[i]*conj(reflected[i]) * (gamma0*gamma0+kt*kt) / gamma[i] * igamma0);
         }
     }
 
-    return reflected;
+    return result;
 }
 
 
-cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarization,
-                                                  Transfer::IncidentDirection side)
+dvector FourierSolver2D::getTransmittedAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
 {
-    size_t idx;
+    size_t idx = 0;
 
     double kt = real(ktran), kl = real(beta);
 
-    if (!expansion.initialized && beta == 0.) expansion.polarization = polarization;
-    initCalculation();
-    if (!transfer) initTransfer(expansion, true);
-
-    if (!expansion.periodic)
-        throw NotImplemented(getId(), "Transmission coefficient can be computed only for periodic geometries");
+    cvector transmitted = transfer->getTransmissionVector(incident, side);
+    dvector result(transmitted.size());
 
     size_t ni = (side == Transfer::INCIDENCE_TOP)? stack.size()-1 : 0;
     size_t nt = stack.size()-1-ni;
     size_t li = stack[ni], lt = stack[nt];
-
-    cvector transmitted = transfer->getTransmissionVector(incidentVector(polarization, &idx), side).claim();
 
     if (!expansion.diagonalQE(lt))
         Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute transmission coefficient",
@@ -290,8 +276,8 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
     auto gamma = transfer->diagonalizer->Gamma(lt);
     dcomplex gamma0 = gamma[idx];
     dcomplex igamma0 = 1. / transfer->diagonalizer->Gamma(li)[idx];
-    double incident = ((polarization==Expansion::E_LONG)? kl : kt);
-    incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
+    //double inc = ((polarization==Expansion::E_LONG)? kl : kt);
+    //inc = 1. / (1. + inc*inc * real(igamma0*conj(igamma0)));
     if (!expansion.separated()) {
         double b = 2*PI / (expansion.right-expansion.left) * (expansion.symmetric()? 0.5 : 1.0);
         int N = int(getSize() + 1);
@@ -302,73 +288,40 @@ cvector FourierSolver2D::getTransmittedAmplitudes(Expansion::Component polarizat
             dcomplex Ez = transmitted[iz], Ex = transmitted[ix];
             dcomplex S = (gamma[iz]*gamma[iz]+kl*kl) * Ez*conj(Ez) + (gamma[ix]*gamma[ix]+g*g) * Ex*conj(Ex) -
                          kl * g * (Ez*conj(Ex) + conj(Ez)*Ex);
-            transmitted[ix] = incident * real(igamma0 / (0.5*(gamma[ix]+gamma[iz])) * S);
-            transmitted[iz] = 0.;
+            result[ix] = /*inc */ real(igamma0 / (0.5*(gamma[ix]+gamma[iz])) * S);
+            result[iz] = 0.;
         }
     } else {
         if (expansion.polarization == Expansion::E_LONG) {
             for (size_t i = 0; i != expansion.matrixSize(); ++i)
-                transmitted[i] = transmitted[i] * conj(transmitted[i]) * igamma0 * gamma[i];
+                result[i] = real(transmitted[i] * conj(transmitted[i]) * igamma0 * gamma[i]);
         } else {
             for (size_t i = 0; i != expansion.matrixSize(); ++i)
-                transmitted[i] = incident * transmitted[i] * conj(transmitted[i]) *  (gamma0*gamma0+kt*kt) / gamma[i] * igamma0;
+                result[i] = /*inc */ real(transmitted[i] * conj(transmitted[i]) *  (gamma0*gamma0+kt*kt) / gamma[i] * igamma0);
         }
     }
 
-    return transmitted;
+    return result;
 }
 
 
-cvector FourierSolver2D::getReflectedCoefficients(Expansion::Component polarization,
-                                                  Transfer::IncidentDirection side,
-                                                  size_t* savidx)
+cvector FourierSolver2D::getReflectedCoefficients(const cvector& incident, Transfer::IncidentDirection side)
 {
-    if (!expansion.initialized && expansion.beta == 0.) expansion.polarization = polarization;
-    initCalculation();
-    if (!transfer) initTransfer(expansion, true);
-
-    if (!expansion.periodic)
-        throw NotImplemented(getId(), "Reflection coefficients can be computed only for periodic geometries");
-
-    return transfer->getReflectionVector(incidentVector(polarization, savidx), side);
-}
-
-cvector FourierSolver2D::getTransmittedCoefficients(Expansion::Component polarization,
-                                                    Transfer::IncidentDirection side,
-                                                    size_t* savidx)
-{
-    if (!expansion.initialized && beta == 0.) expansion.polarization = polarization;
-    initCalculation();
-    if (!transfer) initTransfer(expansion, true);
-
-    if (!expansion.periodic)
-        throw NotImplemented(getId(), "Transmission coefficients can be computed only for periodic geometries");
-
-    return transfer->getTransmissionVector(incidentVector(polarization, savidx), side);
-}
-
-
-cvector FourierSolver2D::getReflectedCoefficients(size_t idx, Transfer::IncidentDirection side)
-{
-    cvector incident(expansion.matrixSize(), 0.);
-    incident[idx] = 1.;
-
     initCalculation();
     if (!transfer) initTransfer(expansion, true);
 
     return transfer->getReflectionVector(incident, side);
 }
 
-cvector FourierSolver2D::getTransmittedCoefficients(size_t idx, Transfer::IncidentDirection side)
+cvector FourierSolver2D::getTransmittedCoefficients(const cvector& incident, Transfer::IncidentDirection side)
 {
-    cvector incident(expansion.matrixSize(), 0.);
-    incident[idx] = 1.;
-
     initCalculation();
     if (!transfer) initTransfer(expansion, true);
 
     return transfer->getTransmissionVector(incident, side);
 }
+
+
 
 
 LazyData<Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
