@@ -201,36 +201,36 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     /// Get \f$ \mu_{zz}^{-1} \f$
     dcomplex imuzz(size_t PLASK_UNUSED(lay), int l, int t) { return mag_long[(l>=0)?l:l+nNl].c11 * mag_tran[(t>=0)?t:t+nNt].c11; }
 
-	private:
-	void normalize_l_t_sym(int& l, int& t) {
-		if (l < 0) { if (symmetric_long()) l = -l; else l += int(Nl); }
-		if (t < 0) { if (symmetric_tran()) t = -t; else t += int(Nt); }
-		assert(0 <= l && std::size_t(l) < Nl);
-		assert(0 <= t && std::size_t(t) < Nt);
-	}
+  private:
+    void normalize_l_t_sym(int& l, int& t) {
+        if (l < 0) { if (symmetric_long()) l = -l; else l += int(Nl); }
+        if (t < 0) { if (symmetric_tran()) t = -t; else t += int(Nt); }
+        assert(0 <= l && std::size_t(l) < Nl);
+        assert(0 <= t && std::size_t(t) < Nt);
+    }
 
-	public:
+  public:
     /// Get \f$ E_x \f$ index
     size_t iEx(int l, int t) {
-		normalize_l_t_sym(l, t);
+        normalize_l_t_sym(l, t);
         return 2 * (Nl*t + l);
     }
 
     /// Get \f$ E_y \f$ index
     size_t iEy(int l, int t) {
-		normalize_l_t_sym(l, t);
+        normalize_l_t_sym(l, t);
         return 2 * (Nl*t + l) + 1;
     }
 
     /// Get \f$ H_x \f$ index
     size_t iHx(int l, int t) {
-		normalize_l_t_sym(l, t);
+        normalize_l_t_sym(l, t);
         return 2 * (Nl*t + l) + 1;
     }
 
     /// Get \f$ H_y \f$ index
     size_t iHy(int l, int t) {
-		normalize_l_t_sym(l, t);
+        normalize_l_t_sym(l, t);
         return 2 * (Nl*t + l);
     }
 };

@@ -361,10 +361,14 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
             for (size_t t = tbegin, j = 0; t != tend; ++t) {
                 for (size_t l = lbegin; l != lend; ++l, ++j) {
                     auto material = geometry->getMaterial(vec(long_mesh->at(l), tran_mesh->at(t), matv));
-                    double T = 0.; int nt = 0;
-                    for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->vert()->size(); ++v, ++k)
-                        if (solver->stack[k] == layer) { T += temperature[v]; nt++; }
-                    T /= nt;
+                    double T = 0., W = 0.;
+                    for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->vert()->size(); ++v, ++k) {
+                        if (solver->stack[k] == layer) {
+                            double w = (k == 0 || k == mesh->vert()->size()-1)? 1e-6 : solver->vbounds->at(k) - solver->vbounds->at(k-1);
+                            T += w * temperature[v]; W += w;
+                        }
+                    }
+                    T /= W;
                     cell[j] = material->NR(lam, T);
                     if (isnan(cell[j].c00) || isnan(cell[j].c11) || isnan(cell[j].c22) || isnan(cell[j].c01))
                         throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K", material->name(), lam, T);
@@ -374,10 +378,14 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                     if (gain_connected && solver->lgained[layer]) {
                         auto roles = geometry->getRolesAt(vec(long_mesh->at(l), tran_mesh->at(t), matv));
                         if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-                            Tensor2<double> g = 0.; int ng = 0;
-                            for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->vert()->size(); ++v, ++k)
-                                if (solver->stack[k] == layer) { g += gain[v]; ng++; }
-                            Tensor2<double> ni = glam * g/ng * (0.25e-7/PI);
+                            Tensor2<double> g = 0.; W = 0.;
+                            for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->vert()->size(); ++v, ++k) {
+                                if (solver->stack[k] == layer) {
+                                    double w = (k == 0 || k == mesh->vert()->size()-1)? 1e-6 : solver->vbounds->at(k) - solver->vbounds->at(k-1);
+                                    g += w * gain[v]; W += w;
+                                }
+                            }
+                            Tensor2<double> ni = glam * g/W * (0.25e-7/PI);
                             cell[j].c00.imag(ni.c00);
                             cell[j].c11.imag(ni.c00);
                             cell[j].c22.imag(ni.c11);
