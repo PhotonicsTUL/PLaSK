@@ -30,7 +30,7 @@ template <>
 py::object Solver_computeReflectivity<FourierSolver2D>(FourierSolver2D* self,
                                                        py::object wavelength,
                                                        Expansion::Component polarization,
-                                                       Transfer::IncidentDirection incidence
+                                                       Transfer::IncidentDirection side
                                                       )
 {
     if (self->getBeta() == 0. && (!self->expansion.initialized || self->expansion.separated())) {
@@ -50,9 +50,10 @@ py::object Solver_computeReflectivity<FourierSolver2D>(FourierSolver2D* self,
         }
     } else if (!self->initCalculation())
         self->setExpansionDefaults(false);
+    cvector incident = self->incidentVector(polarization);
     return UFUNC<double>([=](double lam)->double {
         self->expansion.setK0(2e3*PI/lam);
-        return 100. * self->getReflection(self->incidentVector(polarization), incidence);
+        return 100. * self->getReflection(incident, side);
     }, wavelength);
 }
 
@@ -60,7 +61,7 @@ template <>
 py::object Solver_computeTransmittivity<FourierSolver2D>(FourierSolver2D* self,
                                                          py::object wavelength,
                                                          Expansion::Component polarization,
-                                                         Transfer::IncidentDirection incidence
+                                                         Transfer::IncidentDirection side
                                                         )
 {
     if (self->getBeta() == 0. && (!self->expansion.initialized || self->expansion.separated())) {
@@ -80,9 +81,10 @@ py::object Solver_computeTransmittivity<FourierSolver2D>(FourierSolver2D* self,
         }
     } else if (!self->initCalculation())
         self->setExpansionDefaults(false);
+    cvector incident = self->incidentVector(polarization);
     return UFUNC<double>([=](double lam)->double {
         self->expansion.setK0(2e3*PI/lam);
-        return 100. * self->getTransmission(self->incidentVector(polarization), incidence);
+        return 100. * self->getTransmission(incident, side);
     }, wavelength);
 }
 

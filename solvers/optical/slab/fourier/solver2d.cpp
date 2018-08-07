@@ -210,7 +210,7 @@ dvector FourierSolver2D::getReflectedAmplitudes(const cvector& incident, Transfe
 
     double kt = real(expansion.ktran), kl = real(expansion.beta);
 
-    cvector reflected = transfer->getReflectionVector(incident, side);
+    cvector reflected = getReflectedCoefficients(incident, side);
     dvector result(reflected.size());
 
     size_t n = (side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
@@ -259,7 +259,7 @@ dvector FourierSolver2D::getTransmittedAmplitudes(const cvector& incident, Trans
 
     double kt = real(ktran), kl = real(beta);
 
-    cvector transmitted = transfer->getTransmissionVector(incident, side);
+    cvector transmitted = getTransmittedCoefficients(incident, side);
     dvector result(transmitted.size());
 
     size_t ni = (side == Transfer::INCIDENCE_TOP)? stack.size()-1 : 0;
