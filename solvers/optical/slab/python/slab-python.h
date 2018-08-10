@@ -364,11 +364,11 @@ struct Scattering {
         Transmitted(Scattering* parent): parent(parent) {}
         py::object get_coefficients() {
             if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
-            return arrayFromVec<NPY_CDOUBLE>(parent->solver->getReflectedCoefficients(parent->incident, parent->side));
+            return arrayFromVec<NPY_CDOUBLE>(parent->solver->getTransmittedCoefficients(parent->incident, parent->side));
         }
         py::object get_fluxes() {
             if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
-            return arrayFromVec<NPY_DOUBLE>(parent->solver->getReflectedAmplitudes(parent->incident, parent->side));
+            return arrayFromVec<NPY_DOUBLE>(parent->solver->getTransmittedAmplitudes(parent->incident, parent->side));
         }
     };
     Transmitted get_transmitted() { return Transmitted(this); }

@@ -248,6 +248,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      * \return incident field vector
      */
     cvector incidentVector(Expansion::Component polarization, size_t* savidx=nullptr) {
+        if (!initCalculation()) setExpansionDefaults(false);
         size_t idx;
         if (polarization == Expansion::E_UNSPECIFIED)
             throw BadInput(getId(), "Unspecified incident polarization for reflectivity computation");
