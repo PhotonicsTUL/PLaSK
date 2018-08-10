@@ -421,6 +421,36 @@ void SlabBase::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
 
 
 
+dvector SlabBase::getIncidentAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
+{
+    initCalculation();
+    if (!transfer) initTransfer(getExpansion(), true);
+
+    dvector result(incident.size());
+
+    size_t n = (side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
+    size_t l = stack[n];
+
+    size_t N = transfer->diagonalizer->matrixSize();
+
+    Expansion& expansion = getExpansion();
+
+    double input_flux = 0.;
+    for (size_t i = 0; i != N; ++i) {
+        double P = real(incident[i] * conj(incident[i]));
+        if (P != 0.) {
+            result[i] = P * expansion.getModeFlux(i, transfer->diagonalizer->TE(l), transfer->diagonalizer->TH(l));
+            input_flux += result[i];
+        } else
+            result[i] = 0.;
+    }
+
+    result /= input_flux;
+
+    return result;
+}
+
+
 dvector SlabBase::getReflectedAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
 {
     cvector reflected = getReflectedCoefficients(incident, side);

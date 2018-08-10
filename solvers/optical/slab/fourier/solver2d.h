@@ -266,38 +266,6 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         return incident;
     }
 
-    // private:
-    //
-    // /**
-    //     * Compute sum of amplitudes for reflection/transmission coefficient
-    //     * \param amplitudes amplitudes to sum
-    //     */
-    // double sumAmplitutes(const dvector& amplitudes) {
-    //     double result = 0.;
-    //     int N = int(getSize());
-    //     if (expansion.separated()) {
-    //         if (expansion.symmetric()) {
-    //             for (int i = 0; i <= N; ++i)
-    //                 result += amplitudes[expansion.iE(i)];
-    //             result = 2.*result - amplitudes[expansion.iE(0)];
-    //         } else {
-    //             for (int i = -N; i <= N; ++i)
-    //                 result += amplitudes[expansion.iE(i)];
-    //         }
-    //     } else {
-    //         if (expansion.symmetric()) {
-    //             for (int i = 0; i <= N; ++i)
-    //                 result += amplitudes[expansion.iEx(i)];
-    //             result = 2.*result - amplitudes[expansion.iEx(0)];
-    //         } else {
-    //             for (int i = -N; i <= N; ++i) {
-    //                 result += amplitudes[expansion.iEx(i)];
-    //             }
-    //         }
-    //     }
-    //     return result;
-    // }
-
   public:
 
     /**
@@ -379,31 +347,33 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         return transfer->getFieldVectorH(z);
     }
 
-    /**
-     * Compute electric field coefficients for given \a z
-     * \param polarization incident field polarization
-     * \param side incidence direction
-     * \param z position within the layer
-     * \return electric field coefficients
-     */
-    cvector getScatteredFieldVectorE(Expansion::Component polarization, Transfer::IncidentDirection side, double z) {
-        Solver::initCalculation();
-        if (!transfer) initTransfer(expansion, true);
-        return transfer->getScatteredFieldVectorE(incidentVector(polarization), side, z);
-    }
-
-    /**
-     * Compute magnetic field coefficients for given \a z
-     * \param polarization incident field polarization
-     * \param side incidence direction
-     * \param z position within the layer
-     * \return magnetic field coefficients
-     */
-    cvector getScatteredFieldVectorH(Expansion::Component polarization, Transfer::IncidentDirection side, double z) {
-        Solver::initCalculation();
-        if (!transfer) initTransfer(expansion, true);
-        return transfer->getScatteredFieldVectorH(incidentVector(polarization), side, z);
-    }
+//     /**
+//      * Compute scattered electric field coefficients for given \a z
+//      * \param polarization incident field polarization
+//      * \param side incidence direction
+//      * \param z position within the layer
+//      * \return electric field coefficients
+//      */
+//     cvector getScatteredFieldVectorE(Expansion::Component polarization, Transfer::IncidentDirection side, double z) {
+//         if (!Solver::initCalculation())
+//             setExpansionDefaults();
+//         if (!transfer) initTransfer(expansion, true);
+//         return transfer->getScatteredFieldVectorE(incidentVector(polarization), side, z);
+//     }
+//
+//     /**
+//      * Compute scattered magnetic field coefficients for given \a z
+//      * \param polarization incident field polarization
+//      * \param side incidence direction
+//      * \param z position within the layer
+//      * \return magnetic field coefficients
+//      */
+//     cvector getScatteredFieldVectorH(Expansion::Component polarization, Transfer::IncidentDirection side, double z) {
+//         if (!Solver::initCalculation())
+//             setExpansionDefaults();
+//         if (!transfer) initTransfer(expansion, true);
+//         return transfer->getScatteredFieldVectorH(incidentVector(polarization), side, z);
+//     }
 
     /// Check if the current parameters correspond to some mode and insert it
     size_t setMode() {

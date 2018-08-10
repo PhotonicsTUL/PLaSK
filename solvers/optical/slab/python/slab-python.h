@@ -2,6 +2,7 @@
 #define PLASK__SOLVER__OPTICAL__SLAB_PYTHON_H
 
 #include <cmath>
+#include <cstring>
 #include <plask/python.hpp>
 #include <plask/python_util/ufunc.h>
 #include <boost/python/raw_function.hpp>
@@ -129,9 +130,15 @@ static shared_ptr<OrderedAxis> SlabSolver_getLayerCenters(SolverT& self) {
 
 struct PythonComponentConventer {
 
-    // Determine if obj can be converted into an Aligner
+    // Determine if obj can be converted into component
     static void* convertible(PyObject* obj) {
-        if (PyString_Check(obj) || obj == Py_None) return obj;
+        if (obj == Py_None) return obj;
+        if (!PyString_Check(obj)) return nullptr;
+        const char* repr = PyString_AsString(obj);
+        if (!strcmp(repr, "none") || !strcmp(repr, "NONE") || !strcmp(repr, "None") ||
+            ((repr[0] == 'E' || repr[0] == 'H') &&
+             (repr[1] == 'l' || repr[1] == 't' || repr[1] == 'x' || repr[1] == 'y' || repr[1] == 'z' || repr[1] == 'r' || repr[1] == 'p')))
+            return obj;
         return nullptr;
     }
 
@@ -340,14 +347,11 @@ struct Scattering {
 
     struct Reflected {
         Scattering* parent;
-
         Reflected(Scattering* parent): parent(parent) {}
-
         py::object get_coefficients() {
             if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
             return arrayFromVec<NPY_CDOUBLE>(parent->solver->getReflectedCoefficients(parent->incident, parent->side));
         }
-
         py::object get_fluxes() {
             if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
             return arrayFromVec<NPY_DOUBLE>(parent->solver->getReflectedAmplitudes(parent->incident, parent->side));
@@ -357,14 +361,11 @@ struct Scattering {
 
     struct Transmitted {
         Scattering* parent;
-
         Transmitted(Scattering* parent): parent(parent) {}
-
         py::object get_coefficients() {
             if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
             return arrayFromVec<NPY_CDOUBLE>(parent->solver->getReflectedCoefficients(parent->incident, parent->side));
         }
-
         py::object get_fluxes() {
             if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
             return arrayFromVec<NPY_DOUBLE>(parent->solver->getReflectedAmplitudes(parent->incident, parent->side));
@@ -372,10 +373,18 @@ struct Scattering {
     };
     Transmitted get_transmitted() { return Transmitted(this); }
 
-//     struct Incident {
-//         Scattering* parent;
-//
-//     };
+    struct Incident {
+        Scattering* parent;
+        Incident(Scattering* parent): parent(parent) {}
+        py::object get_coefficients() {
+            return arrayFromVec<NPY_CDOUBLE>(parent->incident);
+        }
+        py::object get_fluxes() {
+            if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
+            return arrayFromVec<NPY_DOUBLE>(parent->solver->getIncidentAmplitudes(parent->incident, parent->side));
+        }
+    };
+    Incident get_incident() { return Incident(this); }
 
 
     LazyData<Vec<3,dcomplex>> getLightE(const shared_ptr<const MeshD<SolverT::SpaceType::DIM>>& dst_mesh, InterpolationMethod method) {
@@ -399,7 +408,7 @@ struct Scattering {
      * \param polarization polarization of the perpendicularly incident light
      * \param side incidence side
      */
-    Scattering(SolverT* solver, Expansion::Component polarization, Transfer::IncidentDirection side):
+    Scattering(SolverT* solver, Transfer::IncidentDirection side, Expansion::Component polarization):
         solver(solver), incident(solver->incidentVector(polarization)), side(side),
         outLightE(this, &Scattering::getLightE),
         outLightH(this, &Scattering::getLightH),
@@ -407,17 +416,16 @@ struct Scattering {
     }
 
     static shared_ptr<Scattering<SolverT>> get(SolverT* parent,
-                                                        Expansion::Component polarization,
-                                                        Transfer::IncidentDirection side) {
-        return make_shared<Scattering<SolverT>>(parent, polarization, side);
+                                                        Transfer::IncidentDirection side,
+                                                        Expansion::Component polarization) {
+        return make_shared<Scattering<SolverT>>(parent, side, polarization);
     }
 
 
-    static void registerClass(const char* suffix) {
+    static py::class_<Scattering<SolverT>, shared_ptr<Scattering<SolverT>>, boost::noncopyable> registerClass(const char* suffix) {
         py::class_<Scattering<SolverT>, shared_ptr<Scattering<SolverT>>, boost::noncopyable> cls("Scattering",
             u8"Reflected mode proxy.\n\n"
-            u8"This class contains providers for the optical field for a reflected field"
-            u8"under the normal incidence.\n"
+            u8"This class contains providers for the scattered field under incidence.\n"
             , py::no_init); cls
             .def_readonly("outLightE", reinterpret_cast<ProviderFor<LightE, typename SolverT::SpaceType> Scattering<SolverT>::*>
                                                 (&Scattering<SolverT>::outLightE),
@@ -433,7 +441,7 @@ struct Scattering {
 
             .add_property("reflected", py::make_function(&Scattering<SolverT>::get_reflected, py::with_custodian_and_ward_postcall<0,1>()), u8"Reflected field details.")
             .add_property("transmitted", py::make_function(&Scattering<SolverT>::get_transmitted, py::with_custodian_and_ward_postcall<0,1>()), u8"Transmitted field details.")
-//             .add_property("incident", py::make_function(&Scattering<SolverT>::get_incident, py::with_custodian_and_ward_postcall<0,1>()), u8"Incident field details.")
+            .add_property("incident", py::make_function(&Scattering<SolverT>::get_incident, py::with_custodian_and_ward_postcall<0,1>()), u8"Incident field details.")
         ;
 
         py::scope scope(cls);
@@ -444,83 +452,14 @@ struct Scattering {
         ;
 
         py::class_<Scattering<SolverT>::Transmitted>("Transmitted", py::no_init)
-            .add_property("coeffs", &Scattering<SolverT>::Transmitted::get_coefficients, "Raw reflection ceofficients for modes.")
-            .add_property("fluxes", &Scattering<SolverT>::Transmitted::get_fluxes, "Perpendicular fluxes for reflected modes.")
+            .add_property("coeffs", &Scattering<SolverT>::Transmitted::get_coefficients, "Raw transmission ceofficients for modes.")
+            .add_property("fluxes", &Scattering<SolverT>::Transmitted::get_fluxes, "Perpendicular fluxes for transmitted modes.")
         ;
 
-//             solver.def("compute_reflected_orders", &FourierSolver2D_reflectedAmplitudes,
-//                         u8"Compute amplitudes of all the Fourier coefficients (diffraction orders)\n"
-//                         u8"of the reflected field [-].\n\n"
-//                         u8"Args:\n"
-//                         u8"    lam (float): Incident light wavelength.\n"
-//                         u8"    polarization: Specification of the incident light polarization.\n"
-//                         u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-//                         u8"        name of the non-vanishing electric field component.\n"
-//                         u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-//                         u8"        present.\n"
-//                         , (py::arg("lam"), "polarization", "side"));
-//             solver.def("compute_transmitted_orders", &FourierSolver2D_transmittedAmplitudes,
-//                         u8"Compute amplitudes of all the Fourier coefficients (diffraction orders)\n"
-//                         u8"of the transmited field [-].\n\n"
-//                         u8"Args:\n"
-//                         u8"    lam (float): Incident light wavelength.\n"
-//                         u8"    polarization: Specification of the incident light polarization.\n"
-//                         u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-//                         u8"        name of the non-vanishing electric field component.\n"
-//                         u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-//                         u8"        present.\n"
-//                         , (py::arg("lam"), "polarization", "side"));
-//             solver.def("compute_reflected_coefficients", &FourierSolver2D_reflectedCoefficients1, (py::arg("lam"), "polarization", "side"));
-//             solver.def("compute_reflected_coefficients", &FourierSolver2D_reflectedCoefficients2,
-//                         u8"Compute Fourier coefficients of the reflected field [-].\n\n"
-//                         u8"Args:\n"
-//                         u8"    lam (float): Incident light wavelength.\n"
-//                         u8"    polarization: Specification of the incident light polarization.\n"
-//                         u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-//                         u8"        name of the non-vanishing electric field component.\n"
-//                         u8"    idx (int): Index of the input-side layer eigenfield to set as the incident\n"
-//                         u8"        field.\n"
-//                         u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-//                         u8"        present.\n"
-//                         , (py::arg("lam"), "idx", "side"));
-//             solver.def("compute_transmitted_coefficients", &FourierSolver2D_transmittedCoefficients1, (py::arg("lam"), "polarization", "side"));
-//             solver.def("compute_transmitted_coefficients", &FourierSolver2D_transmittedCoefficients2,
-//                         u8"Compute Fourier coefficients of the reflected field [-].\n\n"
-//                         u8"Args:\n"
-//                         u8"    lam (float): Incident light wavelength.\n"
-//                         u8"    polarization: Specification of the incident light polarization.\n"
-//                         u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-//                         u8"        name of the non-vanishing electric field component.\n"
-//                         u8"    idx (int): Index of the input-side layer eigenfield to set as the incident\n"
-//                         u8"        field.\n"
-//                         u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-//                         u8"        present.\n"
-//                         , (py::arg("lam"), "idx", "side"));
-//             solver.def("get_incident_coefficients", &FourierSolver2D_incidentCoefficients,
-//                         u8"Get Fourier coefficients of the incident field on the perpendicular incidence [-].\n"
-//                         u8"These coefficients are used in :meth:`compute_reflected_coefficients` and\n"
-//                         u8":meth:`compute_transmitted_coefficients`.\n\n"
-//                         u8"Args:\n"
-//                         u8"    lam (float): Incident light wavelength.\n"
-//                         u8"    polarization: Specification of the incident light polarization.\n"
-//                         u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-//                         u8"        name of the non-vanishing electric field component.\n"
-//                         u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-//                         u8"        present.\n"
-//                         , (py::arg("lam"), "idx", "side"));
-//                 .def_readonly("outLightE", reinterpret_cast<ProviderFor<LightE,Geometry2DCartesian> Scattering::Reflected::*>
-//                                                     (&Scattering::Reflected::outLightE),
-//                     format(docstring_attr_provider<LightE>(), "LightE", suffix, u8"electric field", u8"V/m", "", "", "", "outLightE", "n=0", ":param int n: Mode number.").c_str()
-//                 )
-//                 .def_readonly("outLightH", reinterpret_cast<ProviderFor<LightH,Geometry2DCartesian> Scattering::Reflected::*>
-//                                                     (&Scattering::Reflected::outLightH),
-//                     format(docstring_attr_provider<LightH>(), "LightH", suffix, u8"magnetic field", u8"A/m", "", "", "", "outLightH", "n=0", ":param int n: Mode number.").c_str()
-//                 )
-//                 .def_readonly("outLightMagnitude", reinterpret_cast<ProviderFor<LightMagnitude,Geometry2DCartesian> Scattering::Reflected::*>
-//                                                     (&Scattering::Reflected::outLightMagnitude),
-//                     format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", suffix, u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude", "n=0", ":param int n: Mode number.").c_str()
-//                 )
-
+        py::class_<Scattering<SolverT>::Incident>("Incident", py::no_init)
+            .add_property("coeffs", &Scattering<SolverT>::Incident::get_coefficients, "Raw incident ceofficients for modes.")
+            .add_property("fluxes", &Scattering<SolverT>::Incident::get_fluxes, "Perpendicular fluxes for incident modes.")
+        ;
 //             .def("get_electric_coefficients", FourierSolver2D_getReflectedFieldVectorE, py::arg("level"),
 //                 u8"Get Fourier expansion coefficients for the electric field.\n\n"
 //                 u8"This is a low-level function returning :math:`E_l` and/or :math:`E_t` Fourier\n"
@@ -540,7 +479,7 @@ struct Scattering {
 //                 u8":rtype: numpy.ndarray\n"
 //                 )
 //         ;
-//
+        return cls;
     }
 };
 
@@ -655,8 +594,8 @@ struct Eigenmodes {
 template <typename SolverT>
 py::object Solver_computeReflectivity(SolverT* self,
                                       py::object wavelength,
-                                      Expansion::Component polarization,
-                                      Transfer::IncidentDirection side
+                                      Transfer::IncidentDirection side,
+                                      Expansion::Component polarization
                                      )
 {
     if (!self->Solver::initCalculation())
@@ -671,8 +610,8 @@ py::object Solver_computeReflectivity(SolverT* self,
 template <typename SolverT>
 py::object Solver_computeTransmittivity(SolverT* self,
                                         py::object wavelength,
-                                        Expansion::Component polarization,
-                                        Transfer::IncidentDirection side
+                                        Transfer::IncidentDirection side,
+                                        Expansion::Component polarization
                                        )
 {
     if (!self->Solver::initCalculation())
@@ -784,6 +723,31 @@ inline void export_base(Class solver) {
 #endif
 }
 
+
+
+//TODO remove in the future
+template <typename SolverT>
+py::object Solver_computeReflectivityOld(SolverT* self,
+                                         py::object wavelength,
+                                         Expansion::Component polarization,
+                                         Transfer::IncidentDirection side
+                                        ) {
+    self->writelog(LOG_WARNING, "Method 'compute_reflectivity(lam, polarization, side)' is obsolete. "
+                                "Please change to 'compute_reflectivity(lam, side, polarization)'");
+    return Solver_computeReflectivity<SolverT>(self, wavelength, side, polarization);
+}
+
+//TODO remove in the future
+template <typename SolverT>
+py::object Solver_computeTransmittivityOld(SolverT* self,
+                                         py::object wavelength,
+                                         Expansion::Component polarization,
+                                         Transfer::IncidentDirection side
+                                        ) {
+    self->writelog(LOG_WARNING, "Method 'compute_transmittivity(lam, polarization, side)' is obsolete. "
+                                "Please change to 'compute_transmittivity(lam, side, polarization)'");
+    return Solver_computeTransmittivity<SolverT>(self, wavelength, side, polarization);
+}
 
 }}}} // # namespace plask::optical::slab::python
 

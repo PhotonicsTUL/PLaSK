@@ -29,8 +29,8 @@ inline static std::string polarization_str(Expansion::Component val) {
 template <>
 py::object Solver_computeReflectivity<FourierSolver2D>(FourierSolver2D* self,
                                                        py::object wavelength,
-                                                       Expansion::Component polarization,
-                                                       Transfer::IncidentDirection side
+                                                       Transfer::IncidentDirection side,
+                                                       Expansion::Component polarization
                                                       )
 {
     if (self->getBeta() == 0. && (!self->expansion.initialized || self->expansion.separated())) {
@@ -60,8 +60,8 @@ py::object Solver_computeReflectivity<FourierSolver2D>(FourierSolver2D* self,
 template <>
 py::object Solver_computeTransmittivity<FourierSolver2D>(FourierSolver2D* self,
                                                          py::object wavelength,
-                                                         Expansion::Component polarization,
-                                                         Transfer::IncidentDirection side
+                                                         Transfer::IncidentDirection side,
+                                                         Expansion::Component polarization
                                                         )
 {
     if (self->getBeta() == 0. && (!self->expansion.initialized || self->expansion.separated())) {
@@ -414,26 +414,28 @@ void export_FourierSolver2D()
                 u8"    k0 (complex): Normalized frequency.\n"
                 u8"    neff (complex): Longitudinal effective index.\n"
                 u8"    ktran (complex): Transverse wavevector.\n");
+    solver.def("compute_reflectivity", &Solver_computeReflectivityOld<FourierSolver2D>, (py::arg("lam"), "side", "polarization"));      //TODO remove in a future
+    solver.def("compute_transmittivity", &Solver_computeTransmittivityOld<FourierSolver2D>, (py::arg("lam"), "side", "polarization"));  //TODO remove in a future
     solver.def("compute_reflectivity", &Solver_computeReflectivity<FourierSolver2D>,
-                u8"Compute reflection coefficient on the perpendicular incidence [%].\n\n"
-                u8"Args:\n"
-                u8"    lam (float or array of floats): Incident light wavelength.\n"
-                u8"    polarization: Specification of the incident light polarization.\n"
-                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-                u8"        name of the non-vanishing electric field component.\n"
-                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-                u8"        present.\n"
-                , (py::arg("lam"), "polarization", "side"));
+            u8"Compute reflection coefficient on the perpendicular incidence [%].\n\n"
+            u8"Args:\n"
+            u8"    lam (float or array of floats): Incident light wavelength.\n"
+            u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+            u8"        present.\n"
+            u8"    polarization: Specification of the incident light polarization.\n"
+            u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
+            u8"        name of the non-vanishing electric field component.\n"
+            , (py::arg("lam"), "side", "polarization"));
     solver.def("compute_transmittivity", &Solver_computeTransmittivity<FourierSolver2D>,
-                u8"Compute transmission coefficient on the perpendicular incidence [%].\n\n"
-                u8"Args:\n"
-                u8"    lam (float or array of floats): Incident light wavelength.\n"
-                u8"    polarization: Specification of the incident light polarization.\n"
-                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
-                u8"        of the non-vanishing electric field component.\n"
-                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-                u8"        present.\n"
-                , (py::arg("lam"), "polarization", "side"));
+            u8"Compute transmission coefficient on the perpendicular incidence [%].\n\n"
+            u8"Args:\n"
+            u8"    lam (float or array of floats): Incident light wavelength.\n"
+            u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+            u8"        present.\n"
+            u8"    polarization: Specification of the incident light polarization.\n"
+            u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+            u8"        of the non-vanishing electric field component.\n"
+            , (py::arg("lam"), "side", "polarization"));
     solver.add_property("mirrors", FourierSolver2D_getMirrors, FourierSolver2D_setMirrors,
                 u8"Mirror reflectivities. If None then they are automatically estimated from the\n"
                 u8"Fresnel equations.");
@@ -446,13 +448,13 @@ void export_FourierSolver2D()
     solver.def("scattering", Scattering<FourierSolver2D>::get, py::with_custodian_and_ward_postcall<0,1>(),
                u8"Access to the reflected field.\n\n"
                u8"Args:\n"
+               u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+               u8"        present.\n"
                u8"    polarization: Specification of the incident light polarization.\n"
                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
-               u8"        of the non-vanishing electric field component.\n"
-               u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-               u8"        present.\n\n"
-               u8":rtype: Fourier2D.Reflected\n"
-               , (py::arg("polarization"), "side")
+               u8"        of the non-vanishing electric field component.\n\n"
+               u8":rtype: Fourier2D.Scattering\n"
+               , (py::arg("side"), "polarization")
               );
     solver.def("get_electric_coefficients", FourierSolver2D_getFieldVectorE, (py::arg("num"), "level"),
                u8"Get Fourier expansion coefficients for the electric field.\n\n"

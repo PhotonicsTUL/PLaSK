@@ -229,6 +229,13 @@ struct PLASK_SOLVER_API SlabBase {
     virtual Expansion& getExpansion() = 0;
 
     /**
+     * Get amplitudes of incident diffraction orders
+     * \param incident incident field vector
+     * \param side incidence side
+     */
+    dvector getIncidentAmplitudes(const cvector& incident, Transfer::IncidentDirection side);
+
+    /**
      * Get amplitudes of reflected diffraction orders
      * \param incident incident field vector
      * \param side incidence side
