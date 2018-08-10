@@ -293,48 +293,6 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     }
 
     /**
-     * Get amplitudes of reflected diffraction orders
-     * \param incident incident field vector
-     * \param side incidence side
-     */
-    dvector getReflectedAmplitudes(const cvector& incident, Transfer::IncidentDirection side);
-
-    /**
-     * Get amplitudes of transmitted diffraction orders
-     * \param incident incident field vector
-     * \param side incidence side
-     */
-    dvector getTransmittedAmplitudes(const cvector& incident, Transfer::IncidentDirection side);
-
-    /**
-     * Get coefficients of reflected diffraction orders
-     * \param incident incident field vector
-     * \param side incidence side
-     */
-    cvector getReflectedCoefficients(const cvector& incident, Transfer::IncidentDirection side);
-
-    /**
-     * Get coefficients of transmitted diffraction orders
-     * \param incident incident field vector
-     * \param side incidence side
-     */
-    cvector getTransmittedCoefficients(const cvector& incident, Transfer::IncidentDirection side);
-
-    /**
-     * Get reflection coefficient
-     * \param incident incident field vector
-     * \param side incidence side
-     */
-    double getReflection(const cvector& incident, Transfer::IncidentDirection side);
-
-    /**
-     * Get reflection coefficient
-     * \param incident incident field vector
-     * \param side incidence side
-     */
-    double getTransmission(const cvector& incident, Transfer::IncidentDirection side);
-
-    /**
      * Get electric field at the given mesh for reflected light.
      * \param incident incident field vector
      * \param side incidence direction
@@ -345,7 +303,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
                                                  Transfer::IncidentDirection side,
                                                  const shared_ptr<const MeshD<3>>& dst_mesh,
                                                  InterpolationMethod method) {
-        if (!initCalculation()) setExpansionDefaults(false);
+        if (!Solver::initCalculation()) setExpansionDefaults(false);
         if (!transfer) initTransfer(expansion, true);
         return transfer->getScatteredFieldE(incident, side, dst_mesh, method);
     }
@@ -361,7 +319,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
                                                  Transfer::IncidentDirection side,
                                                  const shared_ptr<const MeshD<3>>& dst_mesh,
                                                  InterpolationMethod method) {
-        if (!initCalculation()) setExpansionDefaults(false);
+        if (!Solver::initCalculation()) setExpansionDefaults(false);
         if (!transfer) initTransfer(expansion, true);
         return transfer->getScatteredFieldH(incident, side, dst_mesh, method);
     }
@@ -377,7 +335,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
                                                 Transfer::IncidentDirection side,
                                                 const shared_ptr<const MeshD<3>>& dst_mesh,
                                                 InterpolationMethod method) {
-        if (!initCalculation()) setExpansionDefaults(false);
+        if (!Solver::initCalculation()) setExpansionDefaults(false);
         if (!transfer) initTransfer(expansion, true);
         return transfer->getScatteredFieldMagnitude(incident, side, dst_mesh, method);
     }
@@ -412,7 +370,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
      * \return electric field coefficients
      */
     cvector getScatteredFieldVectorE(Expansion::Component polarization, Transfer::IncidentDirection side, double z) {
-        initCalculation();
+        Solver::initCalculation();
         if (!transfer) initTransfer(expansion, true);
         expansion.setLam0(lam0);
         expansion.setK0(k0);
@@ -431,7 +389,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
      * \return magnetic field coefficients
      */
     cvector getScatteredFieldVectorH(Expansion::Component polarization, Transfer::IncidentDirection side, double z) {
-        initCalculation();
+        Solver::initCalculation();
         if (!transfer) initTransfer(expansion, true);
         return transfer->getScatteredFieldVectorH(incidentVector(polarization), side, z);
     }

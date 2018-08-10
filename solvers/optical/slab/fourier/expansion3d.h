@@ -88,7 +88,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
                                               InterpolationMethod interp) override;
 
-    double integratePoyntingVert(const cvector& E, const cvector& H, dcomplex se=1., dcomplex sh=1.) override;
+    double integratePoyntingVert(const cvector& E, const cvector& H) override;
 
   private:
 

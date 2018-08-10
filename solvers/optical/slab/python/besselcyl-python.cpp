@@ -63,7 +63,7 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
             throw TypeError(u8"get_determinant() got unexpected keyword argument '{0}'", *i);
     }
 
-    self->initCalculation();
+    self->Solver::initCalculation();
     auto* expansion = self->expansion.get();
 
     if (k0) expansion->setK0(*k0);
@@ -109,7 +109,7 @@ static size_t BesselSolverCyl_setMode(py::tuple args, py::dict kwargs) {
             throw TypeError(u8"set_mode() got unexpected keyword argument '{0}'", *i);
     }
 
-    self->initCalculation();
+    self->Solver::initCalculation();
     auto* expansion = self->expansion.get();
 
     if (k0) expansion->setK0(*k0); else expansion->setK0(self->getK0());

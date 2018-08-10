@@ -266,86 +266,39 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         return incident;
     }
 
-  private:
-
-    /**
-     * Compute sum of amplitudes for reflection/transmission coefficient
-     * \param amplitudes amplitudes to sum
-     */
-    double sumAmplitutes(const dvector& amplitudes) {
-        double result = 0.;
-        int N = int(getSize());
-        if (expansion.separated()) {
-            if (expansion.symmetric()) {
-                for (int i = 0; i <= N; ++i)
-                    result += amplitudes[expansion.iE(i)];
-                result = 2.*result - amplitudes[expansion.iE(0)];
-            } else {
-                for (int i = -N; i <= N; ++i)
-                    result += amplitudes[expansion.iE(i)];
-            }
-        } else {
-            if (expansion.symmetric()) {
-                for (int i = 0; i <= N; ++i)
-                    result += amplitudes[expansion.iEx(i)];
-                result = 2.*result - amplitudes[expansion.iEx(0)];
-            } else {
-                for (int i = -N; i <= N; ++i) {
-                    result += amplitudes[expansion.iEx(i)];
-                }
-            }
-        }
-        return result;
-    }
+    // private:
+    //
+    // /**
+    //     * Compute sum of amplitudes for reflection/transmission coefficient
+    //     * \param amplitudes amplitudes to sum
+    //     */
+    // double sumAmplitutes(const dvector& amplitudes) {
+    //     double result = 0.;
+    //     int N = int(getSize());
+    //     if (expansion.separated()) {
+    //         if (expansion.symmetric()) {
+    //             for (int i = 0; i <= N; ++i)
+    //                 result += amplitudes[expansion.iE(i)];
+    //             result = 2.*result - amplitudes[expansion.iE(0)];
+    //         } else {
+    //             for (int i = -N; i <= N; ++i)
+    //                 result += amplitudes[expansion.iE(i)];
+    //         }
+    //     } else {
+    //         if (expansion.symmetric()) {
+    //             for (int i = 0; i <= N; ++i)
+    //                 result += amplitudes[expansion.iEx(i)];
+    //             result = 2.*result - amplitudes[expansion.iEx(0)];
+    //         } else {
+    //             for (int i = -N; i <= N; ++i) {
+    //                 result += amplitudes[expansion.iEx(i)];
+    //             }
+    //         }
+    //     }
+    //     return result;
+    // }
 
   public:
-
-    /**
-     * Get amplitudes of reflected diffraction orders
-     * \param incident incident field vector
-     * \param side incidence side
-     */
-    dvector getReflectedAmplitudes(const cvector& incident, Transfer::IncidentDirection side);
-
-    /**
-     * Get amplitudes of transmitted diffraction orders
-     * \param incident incident field vector
-     * \param side incidence side
-     */
-    dvector getTransmittedAmplitudes(const cvector& incident, Transfer::IncidentDirection side);
-
-    /**
-     * Get coefficients of reflected diffraction orders
-     * \param incident incident field vector
-     * \param side incidence side
-     */
-    cvector getReflectedCoefficients(const cvector& incident, Transfer::IncidentDirection side);
-
-    /**
-     * Get coefficients of transmitted diffraction orders
-     * \param incident incident field vector
-     * \param side incidence side
-     */
-    cvector getTransmittedCoefficients(const cvector& incident, Transfer::IncidentDirection side);
-
-
-    /**
-     * Get reflection coefficient
-     * \param incident incident field vector
-     * \param side incidence side
-     */
-    double getReflection(const cvector& incident, Transfer::IncidentDirection side) {
-        return sumAmplitutes(getReflectedAmplitudes(incident, side));
-    }
-
-    /**
-     * Get reflection coefficient
-     * \param incident incident field vector
-     * \param side incidence side
-     */
-    double getTransmission(const cvector& incident, Transfer::IncidentDirection side) {
-        return sumAmplitutes(getTransmittedAmplitudes(incident, side));
-    }
 
     /**
      * Get electric field at the given mesh for reflected light.
@@ -358,7 +311,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                                                  Transfer::IncidentDirection side,
                                                  shared_ptr<const MeshD<2>> dst_mesh,
                                                  InterpolationMethod method) {
-        if (!initCalculation()) setExpansionDefaults();
+        if (!Solver::initCalculation()) setExpansionDefaults();
         // expansion.setK0(2e3*PI / wavelength);
         if (expansion.separated())
             expansion.setPolarization(polarization);
@@ -377,7 +330,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                                                  Transfer::IncidentDirection side,
                                                  shared_ptr<const MeshD<2>> dst_mesh,
                                                  InterpolationMethod method) {
-        if (!initCalculation()) setExpansionDefaults();
+        if (!Solver::initCalculation()) setExpansionDefaults();
         // expansion.setK0(2e3*PI / wavelength);
         if (expansion.separated())
             expansion.setPolarization(polarization);
@@ -396,7 +349,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
                                                 Transfer::IncidentDirection side,
                                                 shared_ptr<const MeshD<2>> dst_mesh,
                                                 InterpolationMethod method) {
-        if (!initCalculation()) setExpansionDefaults();
+        if (!Solver::initCalculation()) setExpansionDefaults();
         // expansion.setK0(2e3*PI / wavelength);
         if (expansion.separated())
             expansion.setPolarization(polarization);
@@ -434,7 +387,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      * \return electric field coefficients
      */
     cvector getScatteredFieldVectorE(Expansion::Component polarization, Transfer::IncidentDirection side, double z) {
-        initCalculation();
+        Solver::initCalculation();
         if (!transfer) initTransfer(expansion, true);
         return transfer->getScatteredFieldVectorE(incidentVector(polarization), side, z);
     }
@@ -447,7 +400,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      * \return magnetic field coefficients
      */
     cvector getScatteredFieldVectorH(Expansion::Component polarization, Transfer::IncidentDirection side, double z) {
-        initCalculation();
+        Solver::initCalculation();
         if (!transfer) initTransfer(expansion, true);
         return transfer->getScatteredFieldVectorH(incidentVector(polarization), side, z);
     }

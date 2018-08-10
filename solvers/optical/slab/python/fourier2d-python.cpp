@@ -40,7 +40,7 @@ py::object Solver_computeReflectivity<FourierSolver2D>(FourierSolver2D* self,
                                polarization_str(polarization));
                 self->setPolarization(polarization);
             }
-            self->initCalculation();
+            self->Solver::initCalculation();
         } else {
             self->expansion.setLam0(self->getLam0());
             self->expansion.setBeta(self->getBeta());
@@ -48,7 +48,7 @@ py::object Solver_computeReflectivity<FourierSolver2D>(FourierSolver2D* self,
             self->expansion.setSymmetry(self->getSymmetry());
             self->expansion.setPolarization(polarization);
         }
-    } else if (!self->initCalculation())
+    } else if (!self->Solver::initCalculation())
         self->setExpansionDefaults(false);
     cvector incident = self->incidentVector(polarization);
     return UFUNC<double>([=](double lam)->double {
@@ -71,7 +71,7 @@ py::object Solver_computeTransmittivity<FourierSolver2D>(FourierSolver2D* self,
                                polarization_str(polarization));
                 self->setPolarization(polarization);
             }
-            self->initCalculation();
+            self->Solver::initCalculation();
         } else {
             self->expansion.setLam0(self->getLam0());
             self->expansion.setBeta(self->getBeta());
@@ -79,7 +79,7 @@ py::object Solver_computeTransmittivity<FourierSolver2D>(FourierSolver2D* self,
             self->expansion.setSymmetry(self->getSymmetry());
             self->expansion.setPolarization(polarization);
         }
-    } else if (!self->initCalculation())
+    } else if (!self->Solver::initCalculation())
         self->setExpansionDefaults(false);
     cvector incident = self->incidentVector(polarization);
     return UFUNC<double>([=](double lam)->double {
@@ -170,7 +170,7 @@ static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs
             throw TypeError(u8"get_determinant() got unexpected keyword argument '{0}'", *i);
     }
 
-    self->initCalculation();
+    self->Solver::initCalculation();
 
     if (k0) expansion->setK0(*k0); else expansion->setK0(self->getK0());
     if (neff) { if (what != WHAT_WAVELENGTH && what != WHAT_K0) expansion->setBeta(*neff * expansion->k0); }
@@ -231,7 +231,7 @@ static size_t FourierSolver2D_setMode(py::tuple args, py::dict kwargs) {
             throw TypeError(u8"set_mode() got unexpected keyword argument '{0}'", *i);
     }
 
-    self->initCalculation();
+    self->Solver::initCalculation();
 
     if (k0) expansion->setK0(*k0); else expansion->setK0(self->getK0());
     if (neff) expansion->setBeta(*neff * expansion->k0); else expansion->setBeta(self->getK0());

@@ -45,7 +45,7 @@ namespace plask { namespace optical { namespace slab { namespace python {
 
 template <NPY_TYPES type, typename T>
 inline static py::object arrayFromVec(const DataVector<T>& data) {
-    npy_intp dims[] = { 1 };
+    npy_intp dims[] = { npy_intp(data.size()) };
     npy_intp strides[] = { npy_intp(sizeof(T)) };
     PyObject* arr = PyArray_New(&PyArray_Type, 1, dims, type, strides, (void*)data.data(), 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from field coefficients");
@@ -98,7 +98,7 @@ static void Solver_setLam0(SolverT& self, py::object value) {
 
 template <typename SolverT>
 static py::tuple SlabSolver_getStack(SolverT& self) {
-    self.initCalculation();
+    self.Solver::initCalculation();
     py::list result;
     for (auto i: self.getStack()) {
         result.append(i);
@@ -108,13 +108,13 @@ static py::tuple SlabSolver_getStack(SolverT& self) {
 
 template <typename SolverT>
 static shared_ptr<OrderedAxis> SlabSolver_getLayerEdges(SolverT& self) {
-    self.initCalculation();
+    self.Solver::initCalculation();
     return make_shared<OrderedAxis>(*self.vbounds);
 }
 
 template <typename SolverT>
 static shared_ptr<OrderedAxis> SlabSolver_getLayerCenters(SolverT& self) {
-    self.initCalculation();
+    self.Solver::initCalculation();
     return make_shared<OrderedAxis>(*self.verts);
 }
 
@@ -290,7 +290,7 @@ py::tuple Solver_getMatrices(Solver& self, size_t layer) {
 
 template <typename Solver>
 py::tuple Solver_getDiagonalized(Solver& self, size_t layer) {
-    self.initCalculation();
+    self.Solver::initCalculation();
     if (!self.transfer) {
         self.initTransfer(self.getExpansion(), false);
         self.transfer->initDiagonalization();
@@ -329,10 +329,12 @@ struct Scattering {
 
 
     double reflectivity() {
+        if (!solver->initCalculation()) solver->setExpansionDefaults();
         return solver->getReflection(incident, side);
     }
 
     double transmittivity() {
+        if (!solver->initCalculation()) solver->setExpansionDefaults();
         return solver->getTransmission(incident, side);
     }
 
@@ -342,10 +344,12 @@ struct Scattering {
         Reflected(Scattering* parent): parent(parent) {}
 
         py::object get_coefficients() {
+            if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
             return arrayFromVec<NPY_CDOUBLE>(parent->solver->getReflectedCoefficients(parent->incident, parent->side));
         }
 
         py::object get_fluxes() {
+            if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
             return arrayFromVec<NPY_DOUBLE>(parent->solver->getReflectedAmplitudes(parent->incident, parent->side));
         }
     };
@@ -357,10 +361,12 @@ struct Scattering {
         Transmitted(Scattering* parent): parent(parent) {}
 
         py::object get_coefficients() {
+            if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
             return arrayFromVec<NPY_CDOUBLE>(parent->solver->getReflectedCoefficients(parent->incident, parent->side));
         }
 
         py::object get_fluxes() {
+            if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
             return arrayFromVec<NPY_DOUBLE>(parent->solver->getReflectedAmplitudes(parent->incident, parent->side));
         }
     };
@@ -373,14 +379,17 @@ struct Scattering {
 
 
     LazyData<Vec<3,dcomplex>> getLightE(const shared_ptr<const MeshD<SolverT::SpaceType::DIM>>& dst_mesh, InterpolationMethod method) {
+        if (!solver->initCalculation()) solver->setExpansionDefaults();
         return solver->getScatteredFieldE(incident, side, dst_mesh, method);
     }
 
     LazyData<Vec<3,dcomplex>> getLightH(const shared_ptr<const MeshD<SolverT::SpaceType::DIM>>& dst_mesh, InterpolationMethod method) {
+        if (!solver->initCalculation()) solver->setExpansionDefaults();
         return solver->getScatteredFieldH(incident, side, dst_mesh, method);
     }
 
     LazyData<double> getLightMagnitude(const shared_ptr<const MeshD<SolverT::SpaceType::DIM>>& dst_mesh, InterpolationMethod method) {
+        if (!solver->initCalculation()) solver->setExpansionDefaults();
         return solver->getScatteredFieldMagnitude(incident, side, dst_mesh, method);
     }
 
@@ -429,12 +438,12 @@ struct Scattering {
 
         py::scope scope(cls);
 
-        py::class_<Scattering<SolverT>::Reflected, boost::noncopyable>("Reflected", py::no_init)
+        py::class_<Scattering<SolverT>::Reflected>("Reflected", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Reflected::get_coefficients, "Raw reflection ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Reflected::get_fluxes, "Perpendicular fluxes for reflected modes.")
         ;
 
-        py::class_<Scattering<SolverT>::Transmitted, boost::noncopyable>("Transmitted", py::no_init)
+        py::class_<Scattering<SolverT>::Transmitted>("Transmitted", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Transmitted::get_coefficients, "Raw reflection ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Transmitted::get_fluxes, "Perpendicular fluxes for reflected modes.")
         ;
@@ -553,7 +562,7 @@ struct Eigenmodes {
 
     Eigenmodes(SolverT& solver, double z): solver(solver),
                outLightMagnitude(this, &Eigenmodes::getLightMagnitude, &Eigenmodes::size) {
-        bool changed = solver.initCalculation() || solver.setExpansionDefaults(true);
+        bool changed = solver.Solver::initCalculation() || solver.setExpansionDefaults(true);
         layer = solver.stack[solver.getLayerFor(z)];
         if (!solver.transfer) {
             solver.initTransfer(solver.getExpansion(), false);
@@ -650,7 +659,7 @@ py::object Solver_computeReflectivity(SolverT* self,
                                       Transfer::IncidentDirection side
                                      )
 {
-    if (!self->initCalculation())
+    if (!self->Solver::initCalculation())
         self->setExpansionDefaults(false);
     cvector incident(self->incidentVector(polarization));
     return UFUNC<double>([=](double lam)->double {
@@ -666,7 +675,7 @@ py::object Solver_computeTransmittivity(SolverT* self,
                                         Transfer::IncidentDirection side
                                        )
 {
-    if (!self->initCalculation())
+    if (!self->Solver::initCalculation())
         self->setExpansionDefaults(false);
     cvector incident(self->incidentVector(polarization));
     return UFUNC<double>([=](double lam)->double {

@@ -300,7 +300,7 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
             throw TypeError(u8"get_determinant() got unexpected keyword argument '{0}'", *i);
     }
 
-    self->initCalculation();
+    self->Solver::initCalculation();
 
     if (wavelength) {
         if (k0) throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");
@@ -366,7 +366,7 @@ static size_t FourierSolver3D_setMode(py::tuple args, py::dict kwargs) {
             throw TypeError(u8"set_mode() got unexpected keyword argument '{0}'", *i);
     }
 
-    self->initCalculation();
+    self->Solver::initCalculation();
 
     if (wavelength) {
         if (k0) throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");

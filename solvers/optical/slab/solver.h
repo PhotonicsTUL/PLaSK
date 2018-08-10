@@ -198,6 +198,9 @@ struct PLASK_SOLVER_API SlabBase {
     /// Get solver id
     virtual std::string getId() const = 0;
 
+    /// Init calculations
+    virtual bool initCalculation() = 0;
+
     /// Get stack
     /// \return layers stack
     const std::vector<std::size_t>& getStack() const { return stack; }
@@ -213,6 +216,72 @@ struct PLASK_SOLVER_API SlabBase {
      * \returns \c true if anything was changed
      */
     virtual bool setExpansionDefaults(bool with_k0=true) = 0;
+
+    /// Throw exception if the interface position is unsuitable for eigenmode computations
+    void ensureInterface() {
+        if (interface == -1)
+            throw BadInput(this->getId(), "No interface position set");
+        if (interface == 0 || interface >= std::ptrdiff_t(stack.size()))
+            throw BadInput(this->getId(), "Wrong interface position {0} (min: 1, max: {1})", interface, stack.size()-1);
+    }
+
+    /// Get solver expansion
+    virtual Expansion& getExpansion() = 0;
+
+    /**
+     * Get amplitudes of reflected diffraction orders
+     * \param incident incident field vector
+     * \param side incidence side
+     */
+    dvector getReflectedAmplitudes(const cvector& incident, Transfer::IncidentDirection side);
+
+    /**
+     * Get amplitudes of transmitted diffraction orders
+     * \param incident incident field vector
+     * \param side incidence side
+     */
+    dvector getTransmittedAmplitudes(const cvector& incident, Transfer::IncidentDirection side);
+
+    /**
+     * Get coefficients of reflected diffraction orders
+     * \param incident incident field vector
+     * \param side incidence side
+     */
+    cvector getReflectedCoefficients(const cvector& incident, Transfer::IncidentDirection side);
+
+    /**
+     * Get coefficients of transmitted diffraction orders
+     * \param incident incident field vector
+     * \param side incidence side
+     */
+    cvector getTransmittedCoefficients(const cvector& incident, Transfer::IncidentDirection side);
+
+
+    /**
+     * Get reflection coefficient
+     * \param incident incident field vector
+     * \param side incidence side
+     */
+    double getReflection(const cvector& incident, Transfer::IncidentDirection side) {
+        double R = 0.;
+        for (double r: getReflectedAmplitudes(incident, side)) R += r;
+        return R;
+    }
+
+    /**
+     * Get reflection coefficient
+     * \param incident incident field vector
+     * \param side incidence side
+     */
+    double getTransmission(const cvector& incident, Transfer::IncidentDirection side) {
+        double T = 0.;
+        for (double t: getTransmittedAmplitudes(incident, side)) T += t;
+        return T;
+    }
+
+#ifndef NDEBUG
+    void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH);
+#endif
 };
 
 /**
@@ -340,12 +409,14 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
 
     std::string getId() const override { return Solver::getId(); }
 
+    bool initCalculation() override { return Solver::initCalculation(); }
+
     /**
      * Get the position of the matching interface.
      * \return index of the vertical mesh, where interface is set
      */
     inline size_t getInterface() {
-        this->initCalculation();
+        Solver::initCalculation();
         return interface;
     }
 
@@ -384,28 +455,13 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
         setInterfaceOn(object, &path);
     }
 
-    /// Throw exception if the interface position is unsuitable for eigenmode computations
-    void ensureInterface() {
-        if (interface == -1)
-            throw BadInput(this->getId(), "No interface position set");
-        if (interface == 0 || interface >= std::ptrdiff_t(stack.size()))
-            throw BadInput(this->getId(), "Wrong interface position {0} (min: 1, max: {1})", interface, stack.size()-1);
-    }
-
     /// Get discontinuity matrix determinant for the current parameters
     dcomplex getDeterminant() {
-        this->initCalculation();
+        initCalculation();
         ensureInterface();
         if (!transfer) initTransfer(getExpansion(), false);
         return transfer->determinant();
     }
-
-    /// Get solver expansion
-    virtual Expansion& getExpansion() = 0;
-
-#ifndef NDEBUG
-    void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH);
-#endif
 
   protected:
 
@@ -413,6 +469,7 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
      * Return number of determined modes
      */
     virtual size_t nummodes() const = 0;
+
 
     /**
      * Get refractive index after expansion

@@ -389,7 +389,7 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
     std::size_t curr = solver->stack[start];
     double H;
 
-    fields[start].B = incident; // diagonalized incident E-field
+    fields[start].B = incident.copy(); // diagonalized incident E-field
     fields[start].F = cvector(N);
 
     for (std::size_t n = start; n != end; n += inc)

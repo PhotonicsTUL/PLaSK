@@ -912,7 +912,7 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
 }
 
 
-double ExpansionPW3D::integratePoyntingVert(const cvector& E, const cvector& H, dcomplex se, dcomplex sh)
+double ExpansionPW3D::integratePoyntingVert(const cvector& E, const cvector& H)
 {
     double P = 0.;
 
@@ -920,7 +920,7 @@ double ExpansionPW3D::integratePoyntingVert(const cvector& E, const cvector& H, 
 
     for (int iy = -ordt; iy <= ordt; ++iy) {
         for (int ix = -ordl; ix <= ordl; ++ix) {
-            P += real(se*E[iEx(ix,iy)] * conj(sh*H[iHy(ix,iy)]) - se*E[iEy(ix,iy)] * conj(sh*H[iHx(ix,iy)]));
+            P += real(E[iEx(ix,iy)] * conj(H[iHy(ix,iy)]) - E[iEy(ix,iy)] * conj(H[iHx(ix,iy)]));
         }
     }
 
