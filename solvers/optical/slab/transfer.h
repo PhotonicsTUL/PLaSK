@@ -50,8 +50,9 @@ struct PLASK_SOLVER_API Transfer {
     std::size_t lwrk;                           ///< Temporary space
     dcomplex* wrk;                              ///< Temporary space
 
-    /// Solver containing this transfer
-    SlabBase* solver;
+    cvector incident_vector;                    ///< Incident vector, for which the fields are determined
+
+    SlabBase* solver;                           ///< Solver containing this transfer
 
   public:
 
