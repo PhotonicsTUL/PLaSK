@@ -133,10 +133,16 @@ class GNLeafController(GNObjectController):
 class GNBlockController(GNLeafController):
 
     def construct_form(self):
-        self.construct_group('{} Settings'.format('Rectangle' if self.node.dim == 2 else 'Cuboid'))
+        if self.node.dim == 2:
+            name = 'Rectangle'
+            field_names = 'width', 'height'
+        else:
+            name = 'Cuboid'
+            field_names = 'depth', 'width', 'height'
+        self.construct_group('{} Settings'.format(name))
         def setter(n, v): n.size = v
-        self.size = self.construct_point_controllers(row_name='Size:', change_cb=lambda point:
-            self._set_node_by_setter_undoable(setter, list(point), self.node.size, 'change block size')
+        self.size = self.construct_point_controllers(row_name='Size', field_names=field_names, change_cb=lambda point:
+            self._set_node_by_setter_undoable(setter, list(point), self.node.size, 'change block size'),
         )
         super(GNBlockController, self).construct_form()
 

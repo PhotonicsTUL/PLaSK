@@ -1,4 +1,8 @@
+#define PY_ARRAY_UNIQUE_SYMBOL PLASK_ARRAY_API
+#define NO_IMPORT_ARRAY
+
 #include "../python_globals.h"
+#include "../python_numpy.h"
 #include <boost/python/stl_iterator.hpp>
 #include <boost/python/suite/indexing/map_indexing_suite.hpp>
 
@@ -105,17 +109,34 @@ static bool objectIncludes0_3D(const Geometry3D& self, const GeometryObject& obj
     return self.objectIncludes(object, Vec<3,double>(c0, c1, c2));
 }
 
-template <int dim>
-PyObject* GeometryObjectIncludesPoints(const shared_ptr<GeometryObjectD<dim>>& self, const GeometryObject& obj, const PathHints* pth, const MeshD<dim>& mesh);
 
 template <typename S>
 PyObject* SpaceObjectIncludesPoints(const S& self, const GeometryObject& obj, const PathHints* pth, const MeshD<S::DIM>& mesh) {
-    return GeometryObjectIncludesPoints(self.getChild(), obj, pth, mesh);
+    npy_intp dims[1] = { npy_intp(mesh.size()) };
+    PyObject* array = PyArray_SimpleNew(1, dims, NPY_BOOL);
+    char* data = static_cast<char*>(PyArray_DATA(reinterpret_cast<PyArrayObject*>(array)));
+
+    auto boxes = self.getObjectBoundingBoxes(obj, pth);
+
+    #pragma omp parallel for
+    for (plask::openmp_size_t i = 0; i < mesh.size(); ++i) {
+        auto p = self.wrapEdges(mesh[i]);
+        data[i] = 0;
+        for (const auto& box: boxes) {
+            if (box.contains(p) && self.getChild()->objectIncludes(obj, pth, p)) {
+                data[i] = 1;
+                break;
+            }
+        }
+    }
+
+    return array;
+
 }
 
 template <typename S>
 PyObject* SpaceObjectIncludesPoints0(const S& self, const GeometryObject& obj, const MeshD<S::DIM>& mesh) {
-    return GeometryObjectIncludesPoints(self.getChild(), obj, nullptr, mesh);
+    return SpaceObjectIncludesPoints(self, obj, nullptr, mesh);
 }
 
 

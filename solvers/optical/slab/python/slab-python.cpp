@@ -1,3 +1,5 @@
+#define PY_ARRAY_UNIQUE_SYMBOL PLASK_OPTICAL_SLAB_ARRAY_API
+
 #include "slab-python.h"
 using namespace plask;
 using namespace plask::python;

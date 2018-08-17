@@ -34,21 +34,19 @@ class GNGeometryController(GNObjectController):
         # self._current_form = grid_layout
         self.edges = []
         alignment = QFormLayout().labelAlignment()
-        tran = self.node.dim - 2
         row = 0
         for lo, hi in self.node.get_alternative_direction_names():
-            off = 0 if row == tran else 2
             label = QLabel("{}:".format(lo.title()))
-            grid_layout.addWidget(label, row, off, alignment)
+            grid_layout.addWidget(label, row, 0, alignment)
             label = QLabel("{}:".format(hi.title()))
-            grid_layout.addWidget(label, row, 2-off, alignment)
+            grid_layout.addWidget(label, row, 2, alignment)
             res = tuple(self.construct_material_combo_box(items=['', 'mirror', 'periodic', 'extend'],
                                                           change_cb=self._borders_to_model_undoable)
                         for _ in range(0, 2))
             for r in res:
                 r.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            grid_layout.addWidget(res[0], row, off+1)
-            grid_layout.addWidget(res[1], row, 3-off)
+            grid_layout.addWidget(res[0], row, 1)
+            grid_layout.addWidget(res[1], row, 3)
             self.edges.append(res)
             row += 1
         super(GNGeometryController, self).construct_form(roles=False)

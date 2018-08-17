@@ -147,7 +147,7 @@ struct PLASK_API Geometry: public GeometryObject {
         return getEdge(direction, higher).type() == edge::Strategy::EXTEND;
     }
 
-    virtual Type getType() const override { return TYPE_GEOMETRY; }
+    Type getType() const override { return TYPE_GEOMETRY; }
 
     /**
      * Get 3D object held by this geometry (which has type Extrusion or Revolution for 2D geometries).
@@ -231,7 +231,7 @@ class PLASK_API GeometryD: public Geometry {
 
 public:
 
-    virtual int getDimensionsCount() const override;
+    int getDimensionsCount() const override;
 
     /**
      * Get material in point @p p of child space.
@@ -488,7 +488,7 @@ public:
      * @return all paths, starting from child of this, last one is on top and overlies rest
      */
     GeometryObject::Subtree getPathsAt(const CoordsType& point, bool all=false) const {
-        return getChild()->getPathsAt(point, all);
+        return getChild()->getPathsAt(wrapEdges(point), all);
     }
 
     /**
@@ -497,7 +497,7 @@ public:
      * @param[out] translation optional, if non-null, recommended translation of this after change will be stored
      * @return pointer to this (if nothing was change) or copy of this with some changes in subtree
      */
-    virtual shared_ptr<const GeometryObject> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const override {
+    shared_ptr<const GeometryObject> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const override {
         return getChild()->changedVersion(changer, translation);
     }
 
@@ -525,7 +525,7 @@ public:
      * \return resulted object or empty pointer
      */
     inline shared_ptr<const GeometryObject> getMatchingAt(const CoordsType& point, const Predicate& predicate, const PathHints* path=0) {
-        return getChild()->getMatchingAt(point, predicate, path);
+        return getChild()->getMatchingAt(wrapEdges(point), predicate, path);
     }
 
     /**
@@ -536,7 +536,7 @@ public:
      * \return resulted object or empty pointer
      */
     inline shared_ptr<const GeometryObject> getMatchingAt(const CoordsType& point, const Predicate& predicate, const PathHints& path) {
-        return getChild()->getMatchingAt(point, predicate, path);
+        return getChild()->getMatchingAt(wrapEdges(point), predicate, path);
     }
 
     /**
@@ -547,7 +547,7 @@ public:
      * \return true only if this geometry contains the point @a point
      */
     inline bool objectIncludes(const GeometryObject& object, const PathHints* path, const CoordsType& point) const {
-        return getChild()->objectIncludes(object, path, point);
+        return getChild()->objectIncludes(object, path, wrapEdges(point));
     }
 
     /**
@@ -558,7 +558,7 @@ public:
      * \return true only if this geometry contains the point @a point
      */
     inline bool objectIncludes(const GeometryObject& object, const PathHints& path, const CoordsType& point) const {
-        return getChild()->objectIncludes(object, path, point);
+        return getChild()->objectIncludes(object, path, wrapEdges(point));
     }
 
     /**
@@ -568,7 +568,7 @@ public:
      * \return true only if this geometry contains the point @a point
      */
     inline bool objectIncludes(const GeometryObject& object, const CoordsType& point) const {
-        return getChild()->objectIncludes(object, point);
+        return getChild()->objectIncludes(object, wrapEdges(point));
     }
 
     /**
@@ -581,7 +581,7 @@ public:
      *          @c nullptr if there is not such object
      */
     inline shared_ptr<const GeometryObject> hasRoleAt(const std::string& role_name, const CoordsType& point, const plask::PathHints* path = 0) const {
-        return getChild()->hasRoleAt(role_name, point, path);
+        return getChild()->hasRoleAt(role_name, wrapEdges(point), path);
     }
 
     /**
@@ -594,7 +594,7 @@ public:
      *          nullptr if there is not such object
      */
     shared_ptr<const GeometryObject> hasRoleAt(const std::string& role_name, const CoordsType& point, const plask::PathHints& path) const {
-        return getChild()->hasRoleAt(role_name, point, path);
+        return getChild()->hasRoleAt(role_name, wrapEdges(point), path);
     }
 
     /**
@@ -613,7 +613,7 @@ public:
      */
     std::set<std::string> getRolesAt(const CoordsType& point, const plask::PathHints& path) const;
 
-    virtual void setPlanarEdges(const edge::Strategy& border_to_set) override;
+    void setPlanarEdges(const edge::Strategy& border_to_set) override;
 
     // /*
     //  * Get the sub/super-space of this one (automatically detected)
@@ -643,8 +643,11 @@ public:
     //     return subspace;
     // }
 
-    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
+    /// Wrap point to canonical position respecting edge settings (mirror, extend and periodic)
+    /// \param p point to wrap
+    virtual CoordsType wrapEdges(CoordsType p) const = 0;
 
+    void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 };
 
 template <> inline
@@ -682,7 +685,7 @@ public:
 
     static constexpr const char* NAME = "cartesian" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D;
 
-    virtual std::string getTypeName() const override { return NAME; }
+    std::string getTypeName() const override { return NAME; }
 
     /**
      * Set strategy for the left edge.
@@ -786,13 +789,13 @@ public:
      * Get child of extrusion object used by this geometry.
      * @return child geometry
      */
-    virtual shared_ptr< GeometryObjectD<2> > getChild() const override;
+    shared_ptr<GeometryObjectD<2>> getChild() const override;
 
-    virtual shared_ptr< GeometryObjectD<2> > getChildUnsafe() const override;
+    shared_ptr<GeometryObjectD<2>> getChildUnsafe() const override;
 
     void removeAtUnsafe(std::size_t) override { extrusion->setChildUnsafe(shared_ptr< GeometryObjectD<2> >()); }
 
-    virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const override;
+    shared_ptr<Material> getMaterial(const Vec<2, double>& p) const override;
 
     /**
      * Get extrusion object included in this geometry.
@@ -804,7 +807,7 @@ public:
      * Get extrusion object included in this geometry.
      * @return extrusion object included in this geometry
      */
-    virtual shared_ptr< GeometryObjectD<3> > getObject3D() const override { return extrusion; }
+    shared_ptr< GeometryObjectD<3> > getObject3D() const override { return extrusion; }
 
     /**
      * Set new extrusion object for this geometry and inform observers about changing of geometry.
@@ -820,11 +823,13 @@ public:
 //         return (Geometry2DCartesian*)GeometryD<2>::getSubspace(object, path, edges, axesNames);
 //     }
 
+    CoordsType wrapEdges(CoordsType p) const override;
+
     shared_ptr<GeometryObject> shallowCopy() const override;
 
     shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
 
-    virtual void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const override;
+    void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const override;
 
 };
 
@@ -847,7 +852,7 @@ public:
 
     static constexpr const char* NAME = "cylindrical";
 
-    virtual std::string getTypeName() const override { return NAME; }
+    std::string getTypeName() const override { return NAME; }
 
     /**
      * Set strategy for inner edge.
@@ -915,13 +920,13 @@ public:
      * Get child of revolution object used by this geometry.
      * @return child geometry
      */
-    virtual shared_ptr< GeometryObjectD<2> > getChild() const override;
+    shared_ptr< GeometryObjectD<2> > getChild() const override;
 
-    virtual shared_ptr< GeometryObjectD<2> > getChildUnsafe() const override;
+    shared_ptr< GeometryObjectD<2> > getChildUnsafe() const override;
 
     void removeAtUnsafe(std::size_t) override { revolution->setChildUnsafe(shared_ptr< GeometryObjectD<2> >()); }
 
-    virtual shared_ptr<Material> getMaterial(const Vec<2, double>& p) const override;
+    shared_ptr<Material> getMaterial(const Vec<2, double>& p) const override;
 
     /**
      * Get revolution object included in this geometry.
@@ -933,7 +938,7 @@ public:
      * Get revolution object included in this geometry.
      * @return revolution object included in this geometry
      */
-    virtual shared_ptr< GeometryObjectD<3> > getObject3D() const override { return revolution; }
+    shared_ptr< GeometryObjectD<3> > getObject3D() const override { return revolution; }
 
     /**
      * Set new revolution object for this geometry and inform observers about changing of geometry.
@@ -957,10 +962,12 @@ public:
 
     const edge::Strategy& getEdge(Direction direction, bool higher) const override;
 
-    virtual bool isSymmetric(Direction direction) const override {
+    bool isSymmetric(Direction direction) const override {
         if (direction == DIRECTION_TRAN) return true;
         return getEdge(direction, false).type() == edge::Strategy::MIRROR || getEdge(direction, true).type() == edge::Strategy::MIRROR;
     }
+
+    CoordsType wrapEdges(CoordsType p) const override;
 
     shared_ptr<GeometryObject> shallowCopy() const override;
 
@@ -970,7 +977,7 @@ public:
 
   protected:
 
-    virtual const char* alternativeDirectionName(std::size_t ax, std::size_t orient) const override {
+    const char* alternativeDirectionName(std::size_t ax, std::size_t orient) const override {
         const char* directions[3][2] = { {"cw", "ccw"}, {"inner", "outer"}, {"bottom", "top"} };
         return directions[ax][orient];
     }
@@ -992,7 +999,7 @@ public:
 
     static constexpr const char* NAME = "cartesian" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D;
 
-    virtual std::string getTypeName() const override { return NAME; }
+    std::string getTypeName() const override { return NAME; }
 
     /**
      * Set strategy for the left edge.
@@ -1072,9 +1079,9 @@ public:
      * Get child object used by this geometry.
      * @return child object
      */
-    virtual shared_ptr< GeometryObjectD<3> > getChild() const override;
+    shared_ptr<GeometryObjectD<3>> getChild() const override;
 
-    virtual shared_ptr< GeometryObjectD<3> > getChildUnsafe() const override;
+    shared_ptr<GeometryObjectD<3>> getChildUnsafe() const override;
 
     /**
      * Set new child.
@@ -1108,9 +1115,11 @@ public:
      * Get child object used by this geometry.
      * @return child object
      */
-    virtual shared_ptr< GeometryObjectD<3> > getObject3D() const override;
+    shared_ptr< GeometryObjectD<3> > getObject3D() const override;
 
-    virtual shared_ptr<Material> getMaterial(const Vec<3, double>& p) const override;
+    shared_ptr<Material> getMaterial(const Vec<3, double>& p) const override;
+
+    CoordsType wrapEdges(CoordsType p) const override;
 
     shared_ptr<GeometryObject> shallowCopy() const override;
 

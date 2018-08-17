@@ -78,10 +78,12 @@ namespace detail {
 /*
  * Import numpy (needs to be called in every cpp, which uses arrays)
  */
-static inline bool plask_import_array() {
-    import_array1(false);
-    return true;
-}
+#ifndef NO_IMPORT_ARRAY
+    static inline bool plask_import_array() {
+        import_array1(false);
+        return true;
+    }
+#endif
 
 }} // namespace plask::python
 

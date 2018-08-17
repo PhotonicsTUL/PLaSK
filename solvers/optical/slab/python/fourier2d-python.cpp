@@ -1,3 +1,6 @@
+#define PY_ARRAY_UNIQUE_SYMBOL PLASK_OPTICAL_SLAB_ARRAY_API
+#define NO_IMPORT_ARRAY
+
 #include "fourier2d-python.h"
 #include "slab-python.h"
 
@@ -348,8 +351,6 @@ static py::object FourierSolver2D_getFieldVectorH(FourierSolver2D& self, int num
 
 void export_FourierSolver2D()
 {
-    plask_import_array();
-
     CLASS(FourierSolver2D, "Fourier2D",
         u8"Optical Solver using Fourier expansion in 2D.\n\n"
         u8"It calculates optical modes and optical field distribution using Fourier slab method\n"

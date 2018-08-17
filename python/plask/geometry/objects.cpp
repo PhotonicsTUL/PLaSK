@@ -1,3 +1,6 @@
+#define PY_ARRAY_UNIQUE_SYMBOL PLASK_ARRAY_API
+#define NO_IMPORT_ARRAY
+
 #include "geometry.h"
 #include <plask/geometry/transform.h>
 #include <plask/geometry/leaf.h>
@@ -685,8 +688,6 @@ struct GeometryObjectSteps {
 
 void register_geometry_object()
 {
-    plask_import_array();
-
     export_set<std::string>("string_set");
     py::delattr(py::scope(), "string_set");
 

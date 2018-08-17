@@ -1,3 +1,6 @@
+#define PY_ARRAY_UNIQUE_SYMBOL PLASK_OPTICAL_SLAB_ARRAY_API
+#define NO_IMPORT_ARRAY
+
 #include "fourier3d-python.h"
 #include "slab-python.h"
 
@@ -428,8 +431,6 @@ static py::object FourierSolver3D_getFieldVectorH(FourierSolver3D& self, int num
 
 void export_FourierSolver3D()
 {
-    plask_import_array();
-
     CLASS(FourierSolver3D, "Fourier3D",
         u8"Optical Solver using Fourier expansion in 3D.\n\n"
         u8"It calculates optical modes and optical field distribution using Fourier slab method\n"
@@ -579,6 +580,7 @@ void export_FourierSolver3D()
                py::with_custodian_and_ward_postcall<0,1>()
               );
     RO_FIELD(modes, "Computed modes.");
+
     py::scope scope = solver;
     (void) scope;   // don't warn about unused variable scope
 

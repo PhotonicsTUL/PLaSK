@@ -103,7 +103,7 @@ class GNTranslationController(GNObjectController):
     def construct_form(self):
         self.construct_group('Translation Settings')
         def setter(n, v): n.vector = v
-        self.vector = self.construct_point_controllers(row_name='Vector:', change_cb=lambda point:
+        self.vector = self.construct_point_controllers(row_name='Vector', change_cb=lambda point:
             self._set_node_by_setter_undoable(setter, list(point), self.node.vector, 'change translation vector')
         )
         super(GNTranslationController, self).construct_form()
@@ -119,7 +119,7 @@ class GNArrangeController(GNObjectController):
     def construct_form(self):
         self.construct_group('Arrange Settings')
         def setter(n, v): n.step = v
-        self.step = self.construct_point_controllers(row_name='Step:', change_cb=lambda point:
+        self.step = self.construct_point_controllers(row_name='Step', change_cb=lambda point:
             self._set_node_by_setter_undoable(setter, list(point), self.node.step, 'change step in arrange')
         )
         self.count = self.construct_line_edit('Count:', node_property_name='count')

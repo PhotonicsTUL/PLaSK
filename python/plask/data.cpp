@@ -1,3 +1,6 @@
+#define PY_ARRAY_UNIQUE_SYMBOL PLASK_ARRAY_API
+#define NO_IMPORT_ARRAY
+
 #include "python_globals.h"
 #include "python_provider.h"
 #include "python_numpy.h"
@@ -738,10 +741,8 @@ static inline void register_data_vectors_d() {
     py::implicitly_convertible<PythonDataVector<const Vec<3,dcomplex>, dim>, PythonDataVector<const Tensor3<dcomplex>, dim>>();
 }
 
-void register_data_vectors() {
-    // Initialize numpy
-    if (!plask_import_array()) throw(py::error_already_set());
-
+void register_data_vectors()
+{
     register_data_vectors_d<2>();
     register_data_vectors_d<3>();
 

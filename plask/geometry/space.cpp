@@ -78,12 +78,12 @@ shared_ptr<Material> GeometryD<dim>::getMaterial(const Vec<dim, double> &p) cons
 
 template <int dim>
 std::set<std::string> GeometryD<dim>::getRolesAt(const typename GeometryD<dim>::CoordsType &point, const PathHints *path) const {
-    return getChild()->getRolesAt(point, path);
+    return getChild()->getRolesAt(wrapEdges(point), path);
 }
 
 template <int dim>
 std::set<std::string> GeometryD<dim>::getRolesAt(const typename GeometryD<dim>::CoordsType &point, const PathHints &path) const {
-    return getChild()->getRolesAt(point, &path);
+    return getChild()->getRolesAt(wrapEdges(point), &path);
 }
 
 template <>
@@ -143,6 +143,13 @@ shared_ptr<Material> Geometry2DCartesian::getMaterial(const Vec<2, double> &p) c
     if (material) return material;
 
     return getMaterialOrDefault(r);
+}
+
+GeometryD<2>::CoordsType Geometry2DCartesian::wrapEdges(GeometryD<2>::CoordsType p) const {
+    shared_ptr<Material> ignored;
+    bottomup.apply(cachedBoundingBox, p, ignored);
+    leftright.apply(cachedBoundingBox, p, ignored);
+    return p;
 }
 
 void Geometry2DCartesian::setExtrusion(shared_ptr<Extrusion> extrusion) {
@@ -243,7 +250,7 @@ shared_ptr< GeometryObjectD<2> > Geometry2DCylindrical::getChild() const {
     return child;
 }
 
-shared_ptr< GeometryObjectD<2> > Geometry2DCylindrical::getChildUnsafe() const {
+shared_ptr<GeometryObjectD<2>> Geometry2DCylindrical::getChildUnsafe() const {
     return revolution->getChild();
 }
 
@@ -260,6 +267,13 @@ shared_ptr<Material> Geometry2DCylindrical::getMaterial(const Vec<2, double> &p)
     if (material) return material;
 
     return getMaterialOrDefault(r);
+}
+
+GeometryD<2>::CoordsType Geometry2DCylindrical::wrapEdges(GeometryD<2>::CoordsType p) const {
+    shared_ptr<Material> ignored;
+    bottomup.apply(cachedBoundingBox, p, ignored);
+    innerouter.apply(cachedBoundingBox, p, ignored);
+    return p;
 }
 
 void Geometry2DCylindrical::setRevolution(shared_ptr<Revolution> revolution) {
@@ -407,6 +421,15 @@ shared_ptr<Material> Geometry3D::getMaterial(const Vec<3, double> &p) const {
 
     return getMaterialOrDefault(r);
 }
+
+GeometryD<3>::CoordsType Geometry3D::wrapEdges(GeometryD<3>::CoordsType p) const {
+    shared_ptr<Material> ignored;
+    bottomup.apply(cachedBoundingBox, p, ignored);
+    leftright.apply(cachedBoundingBox, p, ignored);
+    backfront.apply(cachedBoundingBox, p, ignored);
+    return p;
+}
+
 
 shared_ptr<GeometryObject> Geometry3D::shallowCopy() const {
     shared_ptr<Geometry3D> result = make_shared<Geometry3D>(this->child);
