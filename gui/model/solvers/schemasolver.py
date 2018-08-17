@@ -282,12 +282,12 @@ class SchemaSolverFactory(object):
         return result
 
 
-def read_attr(tn, attr, au=None):
+def read_attr(tn, attr):
     an = attr['attr']
     al = attr['label']
     ah = attr['help'].strip()
     at = attr.get('type', '')
-    au = attr.get('unit', au)
+    au = attr.get('unit')
     ad = attr.get('default')
     ar = attr.get('required', False)
     if au is not None:
@@ -373,7 +373,7 @@ def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
                                 gl += u' [{}]'.format(gu)
                             group = AttrGroup(gl)
                             for a in attr.get('attrs', []):
-                                group.append(read_attr(tn, a, gu))
+                                group.append(read_attr(tn, a))
                             attrs.append(group)
                     schema.append(SchemaTag(tn, tl, attrs))
                 elif 'bcond' in tag:

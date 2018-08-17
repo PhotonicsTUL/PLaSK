@@ -77,9 +77,9 @@ class GNLatticeController(GNObjectController):
     def construct_form(self):
         self.construct_group('Lattice Vectors')
         self.construct_group('Lattice Vectors')
-        self.vectors = (self.construct_point_controllers(row_name='First:',
+        self.vectors = (self.construct_point_controllers(row_name='First',
                                                          change_cb=lambda vec: self._on_point_set(0, vec)),
-                        self.construct_point_controllers(row_name='Second:',
+                        self.construct_point_controllers(row_name='Second',
                                                          change_cb=lambda vec: self._on_point_set(1, vec)))
         self.construct_group('Lattice Boundaries')
         self.segments = self.construct_lattice_edit(node_property_name='segments',

@@ -264,16 +264,24 @@ class GNodeController(Controller):
         if row_name: self._get_current_form().addRow(row_name, group)
         return hbox, group
 
-    def construct_point_controllers(self, row_name=None, dim=None, change_cb=None):
+    def construct_point_controllers(self, row_name=None, dim=None, field_names=None, change_cb=None):
         """
         :param row_name:
         :param int dim: number of dims. (self.node.dim by default)
+        :param field_names: names of the field to display
         :param change_cb: callable to which point as tuple will be given as argument
         :return:
         """
         if dim is None: dim = self.node.dim
+        if field_names is None:
+            field_names = ('transverse', 'vertical') if dim == 2 else ('longitudinal', 'transverse', 'vertical')
+        fields_help = u'(' + u' × '.join(field_names) + u')'
+        if row_name:
+            row_name += u' ' + fields_help + u':'
         hbox, group = self._construct_hbox(row_name)
         res = tuple(self.construct_line_edit() for _ in range(0, dim))
+        if not row_name:
+            hbox.addWidget(QLabel(fields_help + u' '))
         for i in range(0, dim):
             hbox.addWidget(res[i])
             hbox.addWidget(QLabel(u'µm' + ('' if i == dim-1 else u'  × ')))
