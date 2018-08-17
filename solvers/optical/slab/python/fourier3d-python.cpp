@@ -1,3 +1,6 @@
+#define PY_ARRAY_UNIQUE_SYMBOL PLASK_OPTICAL_SLAB_ARRAY_API
+#define NO_IMPORT_ARRAY
+
 #include "fourier3d-python.h"
 #include "slab-python.h"
 
@@ -506,8 +509,6 @@ static py::object FourierSolver3D_getReflectedFieldVectorH(FourierSolver3D::Refl
 
 void export_FourierSolver3D()
 {
-    plask_import_array();
-
     CLASS(FourierSolver3D, "Fourier3D",
         u8"Optical Solver using Fourier expansion in 3D.\n\n"
         u8"It calculates optical modes and optical field distribution using Fourier slab method\n"
@@ -720,6 +721,7 @@ void export_FourierSolver3D()
     // solver.add_property("material_mesh_tran", &__Class__::getTranMesh,
     //                     u8"Regular mesh with points in which material is sampled along transverse direction.");
     RO_FIELD(modes, "Computed modes.");
+
     py::scope scope = solver;
     (void) scope;   // don't warn about unused variable scope
 

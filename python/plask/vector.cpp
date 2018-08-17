@@ -1,5 +1,8 @@
 #include <sstream>
 
+#define PY_ARRAY_UNIQUE_SYMBOL PLASK_ARRAY_API
+#define NO_IMPORT_ARRAY
+
 #include <plask/vec.h>
 #include <plask/exceptions.h>
 #include <plask/config.h>
@@ -471,9 +474,6 @@ const static char* __doc__ =
 
 void register_vectors()
 {
-    // Initialize numpy
-    if (!plask_import_array()) throw(py::error_already_set());
-
     //py::to_python_converter<Vec<1,double>, detail::Vec1_to_Python<double>>();
 
     register_vector_class<2,double>("vec");

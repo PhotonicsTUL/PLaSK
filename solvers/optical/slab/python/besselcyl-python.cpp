@@ -1,3 +1,6 @@
+#define PY_ARRAY_UNIQUE_SYMBOL PLASK_OPTICAL_SLAB_ARRAY_API
+#define NO_IMPORT_ARRAY
+
 #include <plask/python_numpy.h>
 
 #include "besselcyl-python.h"
@@ -133,8 +136,6 @@ static py::object BesselSolverCyl_getFieldVectorH(BesselSolverCyl& self, int num
 
 void export_BesselSolverCyl()
 {
-    plask_import_array();
-
     py_enum<typename BesselSolverCyl::BesselDomain>()
         .value("FINITE", BesselSolverCyl::DOMAIN_FINITE)
         .value("INFINITE", BesselSolverCyl::DOMAIN_INFINITE)

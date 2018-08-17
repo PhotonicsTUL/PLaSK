@@ -1,3 +1,6 @@
+#define PY_ARRAY_UNIQUE_SYMBOL PLASK_ARRAY_API
+#define NO_IMPORT_ARRAY
+
 #include "../python_globals.h"
 #include "../python_numpy.h"
 #include "../python_mesh.h"
@@ -850,9 +853,6 @@ void register_smooth_generator() {
 
 void register_mesh_rectangular()
 {
-    // Initialize numpy
-    if (!plask_import_array()) throw(py::error_already_set());
-
     py::class_<MeshAxis, shared_ptr<MeshAxis>, py::bases<MeshD<1>>, boost::noncopyable>
             ("Axis", u8"Base class for all 1D meshes (used as axes by 2D and 3D rectangular meshes).",
              py::no_init)

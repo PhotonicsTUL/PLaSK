@@ -2,6 +2,8 @@
 
 #include <boost/algorithm/string.hpp>
 
+#define PY_ARRAY_UNIQUE_SYMBOL PLASK_ARRAY_API
+
 #include "python_globals.h"
 #include "python_manager.h"
 #include "python_numpy.h"
