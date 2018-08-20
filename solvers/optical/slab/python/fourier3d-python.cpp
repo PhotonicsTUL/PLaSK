@@ -517,10 +517,10 @@ void export_FourierSolver3D()
                 u8"    k0 (complex): Normalized frequency.\n"
                 u8"    klong (complex): Longitudinal wavevector.\n"
                 u8"    ktran (complex): Transverse wavevector.\n");
-    solver.def("compute_reflectivity", &Solver_computeReflectivityOld<FourierSolver3D>, (py::arg("lam"), "side", "polarization"));      //TODO remove in a future
-    solver.def("compute_transmittivity", &Solver_computeTransmittivityOld<FourierSolver3D>, (py::arg("lam"), "side", "polarization"));  //TODO remove in a future
+    solver.def("compute_reflectivity", &Solver_computeReflectivityOld<FourierSolver3D>, (py::arg("lam"), "side", "polarization"));      //TODO remove in the future
+    solver.def("compute_transmittivity", &Solver_computeTransmittivityOld<FourierSolver3D>, (py::arg("lam"), "side", "polarization"));  //TODO remove in the future
     solver.def("compute_reflectivity", &Solver_computeReflectivity<FourierSolver3D>,
-            u8"Compute reflection coefficient on the perpendicular incidence [%].\n\n"
+            u8"Compute reflection coefficient on planar incidence [%].\n\n"
             u8"Args:\n"
             u8"    lam (float or array of floats): Incident light wavelength.\n"
             u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
@@ -530,7 +530,7 @@ void export_FourierSolver3D()
             u8"        name of the non-vanishing electric field component.\n"
             , (py::arg("lam"), "side", "polarization"));
     solver.def("compute_transmittivity", &Solver_computeTransmittivity<FourierSolver3D>,
-            u8"Compute transmission coefficient on the perpendicular incidence [%].\n\n"
+            u8"Compute transmission coefficient on planar incidence [%].\n\n"
             u8"Args:\n"
             u8"    lam (float or array of floats): Incident light wavelength.\n"
             u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"

@@ -345,6 +345,16 @@ struct Scattering {
         return solver->getTransmission(incident, side);
     }
 
+    double reflectivity100() {
+        if (!solver->initCalculation()) solver->setExpansionDefaults();
+        return 100. * solver->getReflection(incident, side);
+    }
+
+    double transmittivity100() {
+        if (!solver->initCalculation()) solver->setExpansionDefaults();
+        return 100. * solver->getTransmission(incident, side);
+    }
+
     struct Reflected {
         Scattering* parent;
         Reflected(Scattering* parent): parent(parent) {}
@@ -425,7 +435,7 @@ struct Scattering {
     static py::class_<Scattering<SolverT>, shared_ptr<Scattering<SolverT>>, boost::noncopyable> registerClass(const char* suffix) {
         py::class_<Scattering<SolverT>, shared_ptr<Scattering<SolverT>>, boost::noncopyable> cls("Scattering",
             u8"Reflected mode proxy.\n\n"
-            u8"This class contains providers for the scattered field under incidence.\n"
+            u8"This class contains providers for the scattered field.\n"
             , py::no_init); cls
             .def_readonly("outLightE", reinterpret_cast<ProviderFor<LightE, typename SolverT::SpaceType> Scattering<SolverT>::*>
                                                 (&Scattering<SolverT>::outLightE),
@@ -436,8 +446,11 @@ struct Scattering {
             .def_readonly("outLightMagnitude", reinterpret_cast<ProviderFor<LightMagnitude, typename SolverT::SpaceType> Scattering<SolverT>::*>
                                                 (&Scattering<SolverT>::outLightMagnitude),
                 format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", suffix, u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude").c_str() )
-            .add_property("reflectivity", &Scattering<SolverT>::reflectivity, u8"Total reflection coefficient [%].")
-            .add_property("transmittivity", &Scattering<SolverT>::transmittivity, u8"Total transmission coefficient [%].")
+
+            .add_property("R", &Scattering<SolverT>::reflectivity, u8"Total reflection coefficient [-].")
+            .add_property("T", &Scattering<SolverT>::transmittivity, u8"Total transmission coefficient [-].")
+            .add_property("reflectivity", &Scattering<SolverT>::reflectivity100, u8"Total reflection coefficient [%].\n\nThis differs from :attr:`Scattering.R` by unit.\n")
+            .add_property("transmittivity", &Scattering<SolverT>::transmittivity100, u8"Total transmission coefficient [%].\n\nThis differs from :attr:`Scattering.T` by unit.\n")
 
             .add_property("reflected", py::make_function(&Scattering<SolverT>::get_reflected, py::with_custodian_and_ward_postcall<0,1>()), u8"Reflected field details.")
             .add_property("transmitted", py::make_function(&Scattering<SolverT>::get_transmitted, py::with_custodian_and_ward_postcall<0,1>()), u8"Transmitted field details.")
