@@ -565,6 +565,9 @@ struct Eigenmodes {
         return array(TH.data() + TH.rows()*index(n), TH.rows());
     }
 
+    double getFlux(int n) const {
+        return abs(solver.getExpansion().getModeFlux(n, TE, TH));
+    }
 
     static void registerClass(const char* suffix) {
         py::class_<Eigenmodes, shared_ptr<Eigenmodes>, boost::noncopyable>("Eigenmodes",
@@ -573,15 +576,22 @@ struct Eigenmodes {
             .def("__len__", &Eigenmodes::size)
             .def("__getitem__", &Eigenmodes::Gamma)
             .def("coefficientsE", &Eigenmodes::getCoefficientsE, py::arg("n"),
-                u8"Get electric field coefficients for the n-th eigenmode.\n\n"
-                u8"Args:\n"
-                u8"    n (int): Eigenmode number."
+                 u8"Get electric field coefficients for the n-th eigenmode.\n\n"
+                 u8"Args:\n"
+                 u8"    n (int): Eigenmode number.\n"
             )
             .def("coefficientsH", &Eigenmodes::getCoefficientsH, py::arg("n"),
-                u8"Get magnetic field coefficients for the n-th eigenmode.\n\n"
-                u8"Args:\n"
-                u8"    n (int): Eigenmode number."
+                 u8"Get magnetic field coefficients for the n-th eigenmode.\n\n"
+                 u8"Args:\n"
+                 u8"    n (int): Eigenmode number.\n"
             )
+            .def("flux", &Eigenmodes::getFlux, py::arg("n"),
+                 u8"Get vertical flux for the n-th eigenmode.\n\n"
+                 u8"This is equal to the vertical component of the Pointing vector integrated over\n"
+                 u8"the numerical domain.\n\n"
+                 u8"Args:\n"
+                 u8"    n (int): Eigenmode number.\n"
+             )
             .def_readonly("outLightMagnitude",
                         reinterpret_cast<ProviderFor<LightMagnitude, typename SolverT::SpaceType> Eigenmodes::*> (&Eigenmodes::outLightMagnitude),
                         format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", suffix, u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude", "n=0", ":param int n: Mode number.").c_str()
