@@ -196,8 +196,9 @@ else:
 
         @staticmethod
         def load_old(data):
-            #      1         2         3         4        5     6         7         8
+            #      1         2         3         4        5        6        7         8
             # 'userhost', 'system', 'queues', 'color', 'program', 'bp', 'port', 'compress'
+            if len(data) == 7: data.append(22)
             return SYSTEMS[data[2]](data[0], data[1], data[7], data[5], False, True, data[6], '', data[3])
 
         @staticmethod
