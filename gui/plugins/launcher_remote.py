@@ -316,6 +316,8 @@ else:
                 buttons.rejected.connect(self.reject)
                 layout.addRow(buttons)
 
+                layout.setSizeConstraint(QLayout.SetFixedSize)
+
                 self.host_edit.setFocus()
 
             def _set_rows_visibility(self, widgets, state, layout=None):
@@ -430,7 +432,6 @@ else:
                 self.transport.lock.release()
 
         def run(self):
-
             self.transport = self.ssh.get_transport()
             self.transport.set_keepalive(1)
             self.session = self.transport.open_session()
@@ -476,20 +477,24 @@ else:
                             counterpart.close()
                         finally:
                             self.transport.lock.release()
-            self.receive(data)
+            self.receive(data, True)
 
-        def receive(self, data):
+        def receive(self, data, finish=False):
             while self.session.recv_ready():
                 data += self.session.recv(4096)
                 if data:
                     lines = data.splitlines()
-                    if data[-1] != b'\n':
+                    if data[-1] != 10:  # b'\n'
                         data = lines[-1]
                         del lines[-1]
                     else:
                         data = b''
                     for line in lines:
                         self.dock.parse_line(line, self.link)
+            if finish:
+                for line in data.splitlines():
+                    self.dock.parse_line(line, self.link)
+                data = b''
             return data
 
         def kill_process(self):
