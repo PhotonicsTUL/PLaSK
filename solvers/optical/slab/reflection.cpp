@@ -4,6 +4,7 @@
 
 #include "reflection.h"
 #include "solver.h"
+#include "diagonalizer.h"
 #include "expansion.h"
 #include "fortran.h"
 #include "meshadapter.h"

@@ -1,4 +1,5 @@
 #include "transfer.h"
+#include "diagonalizer.h"
 #include "expansion.h"
 #include "solver.h"
 #include "fortran.h"

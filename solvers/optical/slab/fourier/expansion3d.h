@@ -90,6 +90,8 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     double integratePoyntingVert(const cvector& E, const cvector& H) override;
 
+    void getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmatrix& RE, const cdiagonal& gamma) override;
+
   private:
 
     DataVector<Vec<3,dcomplex>> field;

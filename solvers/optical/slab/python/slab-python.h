@@ -11,6 +11,7 @@ using namespace plask::python;
 
 #include "../matrices.h"
 #include "../expansion.h"
+#include "../diagonalizer.h"
 
 #include <plask/config.h>
 
@@ -459,17 +460,17 @@ struct Scattering {
 
         py::scope scope(cls);
 
-        py::class_<Scattering<SolverT>::Reflected>("Reflected", py::no_init)
+        py::class_<Scattering<SolverT>::Reflected>("Reflected", "Reflected field details", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Reflected::get_coefficients, "Raw reflection ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Reflected::get_fluxes, "Perpendicular fluxes for reflected modes.")
         ;
 
-        py::class_<Scattering<SolverT>::Transmitted>("Transmitted", py::no_init)
+        py::class_<Scattering<SolverT>::Transmitted>("Transmitted", "Transmitted field details", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Transmitted::get_coefficients, "Raw transmission ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Transmitted::get_fluxes, "Perpendicular fluxes for transmitted modes.")
         ;
 
-        py::class_<Scattering<SolverT>::Incident>("Incident", py::no_init)
+        py::class_<Scattering<SolverT>::Incident>("Incident", "Incident field details", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Incident::get_coefficients, "Raw incident ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Incident::get_fluxes, "Perpendicular fluxes for incident modes.")
         ;

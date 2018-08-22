@@ -13,10 +13,9 @@
 #include <plask/plask.hpp>
 
 #include "matrices.h"
+#include "expansion.h"
 
 namespace plask { namespace optical { namespace slab {
-
-struct Expansion;
 
 /**
  * Base for the class determining and holding the necessary matrices
@@ -98,6 +97,19 @@ class SimpleDiagonalizer : public Diagonalizer
     #ifdef OPENMP_FOUND
         omp_lock_t* tmplx;                 ///< Locks of allocated temporary matrices
     #endif
+
+    /// Make Gamma of Gamma^2
+    /// \param gam gamma^2 matrix to root
+    void sqrtGamma(cdiagonal& gam) {
+        const size_t N = src->matrixSize();
+        for (std::size_t j = 0; j < N; j++) {
+            dcomplex g = sqrt(gam[j]);
+            if (g == 0.) g = SMALL; // Ugly hack to avoid singularity!
+            if (real(g) < -SMALL) g = -g;
+            if (imag(g) > SMALL) g = -g;
+            gam[j] = g;
+        }
+    }
 
   public:
     SimpleDiagonalizer(Expansion* g);

@@ -177,6 +177,15 @@ struct PLASK_SOLVER_API Expansion {
                                                       const shared_ptr<const typename LevelsAdapter::Level> &level,
                                                       InterpolationMethod interp) = 0;
     /**
+     * Get eigenvectors with some physical meaing when the layer is diagonal
+     * \param[out] Te Resulting Te matrix
+     * \param[out] Te1 Resulting Te^1 matrix
+     * \param RE RE matrix for the layer
+     * \param gamma2 gamma matrix for the layer
+     */
+    virtual void getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmatrix& RE, const cdiagonal& gamma);
+
+    /**
      * Prepare for computatiations of the fields
      * \param field which field is computed
      * \param method interpolation method

@@ -3,13 +3,15 @@
 
 #include <plask/solver.h>
 
-#include "diagonalizer.h"
+#include "matrices.h"
 
 namespace plask { namespace optical { namespace slab {
 
 using phys::Z0;
 
 struct SlabBase;
+struct Expansion;
+struct Diagonalizer;
 
 /**
  * Base class for Admittance and Reflection transfers.
