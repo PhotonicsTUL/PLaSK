@@ -1,5 +1,6 @@
 #include "solver3d.h"
 #include "expansion3d.h"
+#include "../diagonalizer.h"
 
 namespace plask { namespace optical { namespace slab {
 
@@ -233,6 +234,39 @@ LazyData<double> FourierSolver3D::getMagnitude(size_t num, shared_ptr<const Mesh
     assert(transfer);
     applyMode(modes[num]);
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
+}
+
+
+cvector FourierSolver3D::incidentVector(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam) {
+    bool changed = Solver::initCalculation() || setExpansionDefaults(isnan(lam));
+    if (!isnan(lam)) {
+        dcomplex k0 = 2e3*M_PI / lam;
+        if (!is_zero(k0 - expansion.getK0())) {
+            expansion.setK0(k0);
+            changed = true;
+        }
+    }
+    size_t layer = stack[(side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1];
+    if (!transfer) {
+        initTransfer(expansion, true);
+        changed = true;
+    }
+    if (changed) {
+        transfer->initDiagonalization();
+        transfer->diagonalizer->diagonalizeLayer(layer);
+    } else if (!transfer->diagonalizer->isDiagonalized(layer))
+        transfer->diagonalizer->diagonalizeLayer(layer);
+
+    if (polarization == ExpansionPW3D::E_UNSPECIFIED)
+        throw BadInput(getId(), "Unspecified incident polarization for reflectivity computation");
+    if (expansion.symmetry_long == Expansion::Component(3-polarization))
+        throw BadInput(getId(), "Current longitudinal symmetry is inconsistent with the specified incident polarization");
+    if (expansion.symmetry_tran == Expansion::Component(3-polarization))
+        throw BadInput(getId(), "Current transverse symmetry is inconsistent with the specified incident polarization");
+    size_t idx = (polarization == ExpansionPW3D::E_LONG)? expansion.iEx(0,0) : expansion.iEy(0,0);
+    cvector incident(expansion.matrixSize(), 0.);
+    incident[idx] = 1.;
+    return transfer->diagonalizer->invTE(layer) * incident;
 }
 
 }}} // namespace

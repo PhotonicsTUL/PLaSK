@@ -243,29 +243,12 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
     /**
      * Get incident field vector for given polarization.
+     * \param side incidence side
      * \param polarization polarization of the perpendicularly incident light
-     * \param savidx pointer to which optionally save nonzero incident index
+     * \param lam wavelength
      * \return incident field vector
      */
-    cvector incidentVector(Expansion::Component polarization, size_t* savidx=nullptr) {
-        if (!initCalculation()) setExpansionDefaults(false);
-        size_t idx;
-        if (polarization == Expansion::E_UNSPECIFIED)
-            throw BadInput(getId(), "Unspecified incident polarization for reflectivity computation");
-        if (expansion.symmetric() && expansion.symmetry != polarization)
-            throw BadInput(getId(), "Current symmetry is inconsistent with the specified incident polarization");
-        if (expansion.separated()) {
-            expansion.polarization = polarization;
-            idx = expansion.iE(0);
-        } else {
-            idx = (polarization == Expansion::E_TRAN)? expansion.iEx(0) : expansion.iEz(0);
-        }
-        if (savidx) *savidx = idx;
-        cvector incident(expansion.matrixSize(), 0.);
-        // incident[idx] = (polarization == Expansion::E_TRAN)? 1. : -1.;
-        incident[idx] = 1.;
-        return incident;
-    }
+    cvector incidentVector(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam=NAN);
 
   public:
 

@@ -274,23 +274,12 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     /**
      * Get incident field vector for given polarization.
+     * \param side incidence side
      * \param polarization polarization of the perpendicularly incident light
-     * \param savidx pointer to which optionally save nonzero incident index
+     * \param lam wavelength
      * \return incident field vector
      */
-    cvector incidentVector(Expansion::Component polarization, size_t* savidx=nullptr) {
-        if (polarization == ExpansionPW3D::E_UNSPECIFIED)
-            throw BadInput(getId(), "Unspecified incident polarization for reflectivity computation");
-        if (expansion.symmetry_long == Expansion::Component(3-polarization))
-            throw BadInput(getId(), "Current longitudinal symmetry is inconsistent with the specified incident polarization");
-        if (expansion.symmetry_tran == Expansion::Component(3-polarization))
-            throw BadInput(getId(), "Current transverse symmetry is inconsistent with the specified incident polarization");
-        size_t idx = (polarization == ExpansionPW3D::E_LONG)? expansion.iEx(0,0) : expansion.iEy(0,0);
-        if (savidx) *savidx = idx;
-        cvector incident(expansion.matrixSize(), 0.);
-        incident[idx] = 1.;
-        return incident;
-    }
+    cvector incidentVector(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam=NAN);
 
     /**
      * Get electric field at the given mesh for reflected light.

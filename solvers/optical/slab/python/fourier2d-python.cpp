@@ -53,9 +53,10 @@ py::object Solver_computeReflectivity<FourierSolver2D>(FourierSolver2D* self,
         }
     } else if (!self->Solver::initCalculation())
         self->setExpansionDefaults(false);
-    cvector incident = self->incidentVector(polarization);
     return UFUNC<double>([=](double lam)->double {
-        self->expansion.setK0(2e3*PI/lam);
+        double k0 = 2e3*PI/lam;
+        cvector incident = self->incidentVector(side, polarization, k0);
+        self->expansion.setK0(k0);
         return 100. * self->getReflection(incident, side);
     }, wavelength);
 }
@@ -84,9 +85,10 @@ py::object Solver_computeTransmittivity<FourierSolver2D>(FourierSolver2D* self,
         }
     } else if (!self->Solver::initCalculation())
         self->setExpansionDefaults(false);
-    cvector incident = self->incidentVector(polarization);
     return UFUNC<double>([=](double lam)->double {
-        self->expansion.setK0(2e3*PI/lam);
+        double k0 = 2e3*PI/lam;
+        cvector incident = self->incidentVector(side, polarization, k0);
+        self->expansion.setK0(k0);
         return 100. * self->getTransmission(incident, side);
     }, wavelength);
 }

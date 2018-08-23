@@ -420,7 +420,7 @@ struct Scattering {
      * \param side incidence side
      */
     Scattering(SolverT* solver, Transfer::IncidentDirection side, Expansion::Component polarization):
-        solver(solver), incident(solver->incidentVector(polarization)), side(side),
+        solver(solver), incident(solver->incidentVector(side, polarization)), side(side),
         outLightE(this, &Scattering::getLightE),
         outLightH(this, &Scattering::getLightH),
         outLightMagnitude(this, &Scattering::getLightMagnitude) {
@@ -624,9 +624,10 @@ py::object Solver_computeReflectivity(SolverT* self,
 {
     if (!self->Solver::initCalculation())
         self->setExpansionDefaults(false);
-    cvector incident(self->incidentVector(polarization));
     return UFUNC<double>([=](double lam)->double {
-        self->expansion.setK0(2e3*PI/lam);
+        double k0 = 2e3*PI/lam;
+        cvector incident = self->incidentVector(side, polarization, k0);
+        self->expansion.setK0(k0);
         return 100. * self->getReflection(incident, side);
     }, wavelength);
 }
@@ -640,9 +641,10 @@ py::object Solver_computeTransmittivity(SolverT* self,
 {
     if (!self->Solver::initCalculation())
         self->setExpansionDefaults(false);
-    cvector incident(self->incidentVector(polarization));
     return UFUNC<double>([=](double lam)->double {
-        self->expansion.setK0(2e3*PI/lam);
+        double k0 = 2e3*PI/lam;
+        cvector incident = self->incidentVector(side, polarization, k0);
+        self->expansion.setK0(k0);
         return 100. * self->getTransmission(incident, side);
     }, wavelength);
 }

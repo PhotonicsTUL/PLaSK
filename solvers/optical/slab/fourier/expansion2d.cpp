@@ -818,7 +818,7 @@ void ExpansionPW2D::getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmat
         }
     } else {
         // Ensure that for the same gamma E*H [2x2] is diagonal
-        assert(nc % 2 == 1);
+        assert(nc % 2 == 0);
         size_t n = nc / 2;
         for (std::size_t i = 0; i < n; i++) {
             // Compute Te1 = sqrt(RE)
