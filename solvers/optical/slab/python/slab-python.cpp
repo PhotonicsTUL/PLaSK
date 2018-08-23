@@ -100,6 +100,14 @@ BOOST_PYTHON_MODULE(slab)
         .value("BOTTOM", ReflectionTransfer::INCIDENCE_BOTTOM)
     ;
 
+    py_enum<SlabBase::Emission>()
+        .value("UNDEFINED", SlabBase::EMISSION_UNSPECIFIED)
+        .value("TOP", SlabBase::EMISSION_TOP)
+        .value("BOTTOM", SlabBase::EMISSION_BOTTOM)
+        .value("FRONT", SlabBase::EMISSION_FRONT)
+        .value("BACK", SlabBase::EMISSION_BACK)
+    ;
+
     py::class_<RootDigger::Params, boost::noncopyable>("RootParams", u8"Configuration of the root finding algorithm.", py::no_init)
         .def_readwrite("method", &RootDigger::Params::method, u8"Root finding method ('muller', 'broyden',  or 'brent')")
         .def_readwrite("tolx", &RootDigger::Params::tolx, u8"Absolute tolerance on the argument.")

@@ -1,4 +1,5 @@
 #include "solver.h"
+#include "diagonalizer.h"
 #include "expansion.h"
 #include "meshadapter.h"
 #include "muller.h"
@@ -310,7 +311,7 @@ void SlabSolver<BaseT>::setupLayers()
             size_t n = indices.size();
             // Make distance matrix
             std::unique_ptr<double[]> dists(new double[n * n]);
-#define dists_at(a, b) dists[(a)*n+(b)] //TODO develop plask::UniquePtr2D<> and remove this macro
+#           define dists_at(a, b) dists[(a)*n+(b)] //TODO develop plask::UniquePtr2D<> and remove this macro
             for (size_t i = 0; i != n; ++i) {
                 dists_at(i, i) = INFINITY; // the simplest way to avoid clustering with itself
                 for (size_t j = i+1; j != n; ++j) {
@@ -373,7 +374,7 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getRefractiveIndexProfile
                                         (const shared_ptr<const MeshD<BaseT::SpaceType::DIM>>& dst_mesh,
                                         InterpolationMethod interp)
 {
-    this->initCalculation();
+    Solver::initCalculation();
     Expansion& expansion = getExpansion();
     setExpansionDefaults(false);
     if (isnan(expansion.lam0) || always_recompute_gain || isnan(expansion.k0))
@@ -409,9 +410,8 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getRefractiveIndexProfile
 }
 
 #ifndef NDEBUG
-template <typename BaseT>
-void SlabSolver<BaseT>::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
-    this->initCalculation();
+void SlabBase::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
+    initCalculation();
     computeIntegrals();
     size_t N = this->getExpansion().matrixSize();
     if (std::size_t(RE.cols()) != N || std::size_t(RE.rows()) != N) RE = cmatrix(N, N);
@@ -419,6 +419,121 @@ void SlabSolver<BaseT>::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
     this->getExpansion().getMatrices(layer, RE, RH);
 }
 #endif
+
+
+
+dvector SlabBase::getIncidentAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
+{
+    initCalculation();
+    if (!transfer) initTransfer(getExpansion(), true);
+
+    dvector result(incident.size());
+
+    size_t n = (side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
+    size_t l = stack[n];
+
+    size_t N = transfer->diagonalizer->matrixSize();
+
+    Expansion& expansion = getExpansion();
+
+    double input_flux = 0.;
+    for (size_t i = 0; i != N; ++i) {
+        double P = real(incident[i] * conj(incident[i]));
+        if (P != 0.) {
+            result[i] = P * expansion.getModeFlux(i, transfer->diagonalizer->TE(l), transfer->diagonalizer->TH(l));
+            input_flux += result[i];
+        } else
+            result[i] = 0.;
+    }
+
+    result /= input_flux;
+
+    return result;
+}
+
+
+dvector SlabBase::getReflectedAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
+{
+    cvector reflected = getReflectedCoefficients(incident, side);
+    dvector result(reflected.size());
+
+    size_t n = (side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
+    size_t l = stack[n];
+
+    size_t N = transfer->diagonalizer->matrixSize();
+
+    Expansion& expansion = getExpansion();
+
+    double input_flux = 0.;
+    for (size_t i = 0; i != N; ++i) {
+        double P = real(incident[i] * conj(incident[i]));
+        if (P != 0.)
+            input_flux += P * expansion.getModeFlux(i, transfer->diagonalizer->TE(l), transfer->diagonalizer->TH(l));
+    }
+
+    for (size_t i = 0; i != N; ++i) {
+        double R = real(reflected[i] * conj(reflected[i]));
+        if (R != 0.)
+            result[i] = R * expansion.getModeFlux(i, transfer->diagonalizer->TE(l), transfer->diagonalizer->TH(l)) / input_flux;
+        else
+            result[i] = 0.;
+    }
+
+    return result;
+}
+
+
+dvector SlabBase::getTransmittedAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
+{
+    cvector transmitted = getTransmittedCoefficients(incident, side);
+    dvector result(transmitted.size());
+
+    size_t ni = (side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
+    size_t li = stack[ni];
+
+    size_t nt = stack.size()-1 - ni;    // opposite side than ni
+    size_t lt = stack[nt];
+
+    size_t N = transfer->diagonalizer->matrixSize();
+
+    Expansion& expansion = getExpansion();
+
+    double input_flux = 0.;
+    for (size_t i = 0; i != N; ++i) {
+        double P = real(incident[i] * conj(incident[i]));
+        if (P != 0.)
+            input_flux += P * expansion.getModeFlux(i, transfer->diagonalizer->TE(li), transfer->diagonalizer->TH(li));
+    }
+
+    for (size_t i = 0; i != N; ++i) {
+        double T = real(transmitted[i] * conj(transmitted[i]));
+        if (T != 0.)
+            result[i] = T * expansion.getModeFlux(i, transfer->diagonalizer->TE(lt), transfer->diagonalizer->TH(lt)) / input_flux;
+        else
+            result[i] = 0.;
+    }
+
+    return result;
+}
+
+
+cvector SlabBase::getReflectedCoefficients(const cvector& incident, Transfer::IncidentDirection side)
+{
+    initCalculation();
+    if (!transfer) initTransfer(getExpansion(), true);
+
+    return transfer->getReflectionVector(incident, side);
+}
+
+cvector SlabBase::getTransmittedCoefficients(const cvector& incident, Transfer::IncidentDirection side)
+{
+    initCalculation();
+    if (!transfer) initTransfer(getExpansion(), true);
+
+    return transfer->getTransmissionVector(incident, side);
+}
+
+
 
 template class PLASK_SOLVER_API SlabSolver<SolverOver<Geometry2DCartesian>>;
 template class PLASK_SOLVER_API SlabSolver<SolverWithMesh<Geometry2DCylindrical, OrderedAxis>>;

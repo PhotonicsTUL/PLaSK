@@ -4,6 +4,7 @@
 
 #include "reflection.h"
 #include "solver.h"
+#include "diagonalizer.h"
 #include "expansion.h"
 #include "fortran.h"
 #include "meshadapter.h"
@@ -357,7 +358,8 @@ void ReflectionTransfer::determineFields()
 
 void ReflectionTransfer::determineReflectedFields(const cvector& incident, IncidentDirection side)
 {
-    if (fields_determined == DETERMINED_REFLECTED) return;
+    if (fields_determined == DETERMINED_REFLECTED && incident == incident_vector) return;
+    incident_vector = incident.copy();
 
     writelog(LOG_DETAIL, solver->getId() + ": Determining reflected optical fields");
 
@@ -389,7 +391,7 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
     std::size_t curr = solver->stack[start];
     double H;
 
-    fields[start].B = incident; // diagonalized incident E-field
+    fields[start].B = incident.copy(); // diagonalized incident E-field
     fields[start].F = cvector(N);
 
     for (std::size_t n = start; n != end; n += inc)

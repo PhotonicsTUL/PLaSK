@@ -4,6 +4,7 @@
 
 #include "admittance.h"
 #include "solver.h"
+#include "diagonalizer.h"
 #include "expansion.h"
 #include "fortran.h"
 #include "meshadapter.h"
@@ -419,7 +420,8 @@ cvector AdmittanceTransfer::getReflectionVector(const cvector& incident, Inciden
 
 void AdmittanceTransfer::determineReflectedFields(const cvector& incident, IncidentDirection side)
 {
-    if (fields_determined == DETERMINED_REFLECTED) return;
+    if (fields_determined == DETERMINED_REFLECTED && incident == incident_vector) return;
+    incident_vector = incident.copy();
 
     writelog(LOG_DETAIL, solver->getId() + ": Determining reflected optical fields");
 

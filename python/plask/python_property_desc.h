@@ -51,6 +51,19 @@ template <> inline const char* docstring_provider_multi_param_desc<CarriersConce
 }
 
 
+template <> inline const char* docstring_provider_multi_param_desc<ModeLightMagnitude>() {
+    return u8":param int n: Mode number.\n";
+}
+
+template <> inline const char* docstring_provider_multi_param_desc<ModeLightE>() {
+    return u8":param int n: Mode number.\n";
+}
+
+template <> inline const char* docstring_provider_multi_param_desc<ModeLightH>() {
+    return u8":param int n: Mode number.\n";
+}
+
+
 }} // namespace plask
 
 #endif // PLASK__PYTHON_PROPERTY_DESC_H

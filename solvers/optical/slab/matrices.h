@@ -242,6 +242,7 @@ typedef Matrix<dcomplex> cmatrix;
 
 // Column vector and diagonal matrix
 typedef DataVector<dcomplex> cvector;
+typedef DataVector<double> dvector;
 typedef DataVector<const dcomplex> const_cvector;
 typedef MatrixDiagonal<dcomplex> cdiagonal;
 

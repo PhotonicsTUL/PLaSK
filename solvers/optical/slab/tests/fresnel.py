@@ -27,8 +27,8 @@ class Refl(object):
 
     def __call__(self, a):
         setattr(self.solver, 'k'+self.direction, 2*pi * sin(a*pi/180.))
-        return self.solver.compute_reflectivity(1000., self.polarization, 'top'), \
-               self.solver.compute_transmittivity(1000., self.polarization, 'top')
+        return self.solver.compute_reflectivity(1000., 'top', self.polarization), \
+               self.solver.compute_transmittivity(1000., 'top', self.polarization)
 
     def __enter__(self):
         return self

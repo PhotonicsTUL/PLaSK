@@ -801,4 +801,39 @@ double ExpansionPW2D::integratePoyntingVert(const cvector& E, const cvector& H)
 }
 
 
+void ExpansionPW2D::getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmatrix& RE, const cdiagonal& gamma)
+{
+    size_t nr = Te.rows(), nc = Te.cols();
+    std::fill_n(Te.data(), nr*nc, 0.);
+    std::fill_n(Te1.data(), nr*nc, 0.);
+
+    if (polarization == E_LONG) {
+        for (std::size_t i = 0; i < nc; i++) {
+            Te(i,i) = Te1(i,i) = 1.;
+        }
+    } else if (polarization == E_TRAN) {
+        for (size_t i = 0; i < nc; i++) {
+            Te(i,i) = gamma[i] / RE(i,i);
+            Te1(i,i) = 1. / Te(i,i);
+        }
+    } else {
+        // Ensure that for the same gamma E*H [2x2] is diagonal
+        assert(nc % 2 == 0);
+        size_t n = nc / 2;
+        for (std::size_t i = 0; i < n; i++) {
+            // Compute Te1 = sqrt(RE)
+            // https://en.wikipedia.org/wiki/Square_root_of_a_2_by_2_matrix
+            dcomplex a = RE(2*i, 2*i), b = RE(2*i, 2*i+1), c = RE(2*i+1, 2*i), d = RE(2*i+1, 2*i+1);
+            dcomplex s = sqrt(a*d - b*c);
+            dcomplex t = 1. / sqrt(a+d + 2.*s);
+            Te1(2*i, 2*i) = a = t * (a+s); Te1(2*i, 2*i+1) = b = t * b;
+            Te1(2*i+1, 2*i) = c = t * c; Te1(2*i+1, 2*i+1) = d = t * (d+s);
+            // Invert Te1
+            s = 1. / (a*d - b*c);
+            Te(2*i, 2*i) = s * d; Te(2*i, 2*i+1) = - s * b;
+            Te(2*i+1, 2*i) = - s * c; Te(2*i+1, 2*i+1) = s * a;
+        }
+    }
+}
+
 }}} // namespace plask

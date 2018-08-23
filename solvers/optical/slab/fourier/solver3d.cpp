@@ -1,5 +1,6 @@
 #include "solver3d.h"
 #include "expansion3d.h"
+#include "../diagonalizer.h"
 
 namespace plask { namespace optical { namespace slab {
 
@@ -174,7 +175,7 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
     expansion.setSymmetryLong(symmetry_long);
     expansion.setSymmetryTran(symmetry_tran);
     expansion.setLam0(this->lam0);
-    initCalculation();
+    Solver::initCalculation();
     ensureInterface();
     if (!transfer) initTransfer(expansion, false);
     std::unique_ptr<RootDigger> root;
@@ -207,240 +208,6 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
 }
 
 
-cvector FourierSolver3D::getReflectedAmplitudes(Expansion::Component polarization,
-                                                Transfer::IncidentDirection side)
-{
-    double kt = real(ktran), kl = real(klong);
-
-    size_t idx;
-    cvector reflected = getReflectedCoefficients(polarization, side, &idx).claim();
-
-    size_t n = (side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
-    size_t l = stack[n];
-    if (!expansion.diagonalQE(l))
-        writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute reflection coefficients",
-                              (side == Transfer::INCIDENCE_BOTTOM)? "Bottom" : "Top");
-
-    auto gamma = transfer->diagonalizer->Gamma(l);
-    dcomplex igamma0 = 1. / gamma[idx];
-
-    double incident = ((polarization==Expansion::E_LONG)? kl : kt);
-    incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
-
-    double bl = 2*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
-
-    int ordl = int(getLongSize()), ordt = int(getTranSize());
-    for (int t = expansion.symmetric_tran()? 0 : -ordt; t <= ordt; ++t) {
-        for (int l = expansion.symmetric_long()? 0 : -ordl; l <= ordl; ++l) {
-            size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);
-            //assert(abs(gamma[ix] - gamma[iy]) < 1e3*SMALL);
-            double gx = l*bl-kl, gy = t*bt-kt;
-            dcomplex Ex = reflected[ix], Ey = reflected[iy];
-            dcomplex S = (gamma[ix]*gamma[ix]+gx*gx) * Ex*conj(Ex) + (gamma[iy]*gamma[iy]+gy*gy) * Ey*conj(Ey) +
-                         gx * gy * (Ex*conj(Ey) + conj(Ex)*Ey);
-            reflected[ix] = incident * real(igamma0 / (0.5*(gamma[ix]+gamma[iy])) * S);
-            reflected[iy] = 0.;
-        }
-    }
-
-    return reflected;
-}
-
-cvector FourierSolver3D::getTransmittedAmplitudes(Expansion::Component polarization,
-                                                  Transfer::IncidentDirection side)
-{
-    double kt = real(ktran), kl = real(klong);
-
-    size_t idx;
-    cvector transmitted = getTransmittedCoefficients(polarization, side, &idx).claim();
-
-    size_t ni = (side == Transfer::INCIDENCE_TOP)? stack.size()-1 : 0;
-    size_t nt = stack.size()-1-ni;
-    size_t li = stack[ni], lt = stack[nt];
-    if (!expansion.diagonalQE(lt))
-        Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute transmission coefficients",
-                                      (side == Transfer::INCIDENCE_TOP)? "Bottom" : "Top");
-    if (!expansion.diagonalQE(li))
-        Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute transmission coefficients",
-                                     (side == Transfer::INCIDENCE_TOP)? "Top" : "Bottom");
-
-    // we multiply all fields by gt / gi
-    auto gamma = transfer->diagonalizer->Gamma(lt);
-    dcomplex igamma0 = 1. / transfer->diagonalizer->Gamma(li)[idx];
-
-    double incident = ((polarization==Expansion::E_LONG)? kl : kt);
-    incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
-
-    double bl = 2*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
-
-    int ordl = int(getLongSize()), ordt = int(getTranSize());
-    for (int t = expansion.symmetric_tran()? 0 : -ordt; t <= ordt; ++t) {
-        for (int l = expansion.symmetric_long()? 0 : -ordl; l <= ordl; ++l) {
-            size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);
-            //assert(abs(gamma[ix] - gamma[iy]) < 1e3*SMALL);
-            double gx = l*bl-kl, gy = t*bt-kt;
-            dcomplex Ex = transmitted[ix], Ey = transmitted[iy];
-            dcomplex S = (gamma[ix]*gamma[ix]+gx*gx) * Ex*conj(Ex) + (gamma[iy]*gamma[iy]+gy*gy) * Ey*conj(Ey) +
-                         gx * gy * (Ex*conj(Ey) + conj(Ex)*Ey);
-            transmitted[ix] = incident * real(igamma0 / (0.5*(gamma[ix]+gamma[iy])) * S);
-            transmitted[iy] = 0.;
-        }
-    }
-
-    return transmitted;
-}
-
-
-cvector FourierSolver3D::getReflectedCoefficients(Expansion::Component polarization,
-                                                  Transfer::IncidentDirection side,
-                                                  size_t* savidx)
-{
-    initCalculation();
-    if (!transfer) initTransfer(expansion, true);
-
-    if (!expansion.periodic_long || !expansion.periodic_tran)
-        throw NotImplemented(getId(), "Reflection coefficients can be computed only for periodic geometries");
-
-    return transfer->getReflectionVector(incidentVector(polarization, savidx), side);
-}
-
-
-cvector FourierSolver3D::getTransmittedCoefficients(Expansion::Component polarization,
-                                                    Transfer::IncidentDirection side,
-                                                    size_t* savidx)
-{
-    initCalculation();
-    if (!transfer) initTransfer(expansion, true);
-
-    if (!expansion.periodic_long || !expansion.periodic_tran)
-        throw NotImplemented(getId(), "Transmission coefficients can be computed only for periodic geometries");
-
-    return transfer->getTransmissionVector(incidentVector(polarization, savidx), side);
-}
-
-
-cvector FourierSolver3D::getReflectedCoefficients(size_t idx, Transfer::IncidentDirection side)
-{
-    cvector incident(expansion.matrixSize(), 0.);
-    incident[idx] = 1.;
-
-    initCalculation();
-    if (!transfer) initTransfer(expansion, true);
-
-    return transfer->getReflectionVector(incident, side);
-}
-
-cvector FourierSolver3D::getTransmittedCoefficients(size_t idx, Transfer::IncidentDirection side)
-{
-    cvector incident(expansion.matrixSize(), 0.);
-    incident[idx] = 1.;
-
-    initCalculation();
-    if (!transfer) initTransfer(expansion, true);
-
-    return transfer->getTransmissionVector(incident, side);
-}
-
-
-double FourierSolver3D::getReflection(Expansion::Component polarization, Transfer::IncidentDirection side)
-{
-    double kt = real(ktran), kl = real(klong);
-
-    size_t idx;
-    cvector reflected = getReflectedCoefficients(polarization, side, &idx);
-
-    size_t n = (side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1;
-    size_t l = stack[n];
-    if (!expansion.diagonalQE(l))
-        writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute reflection coefficients",
-                              (side == Transfer::INCIDENCE_BOTTOM)? "Bottom" : "Top");
-
-    auto gamma = transfer->diagonalizer->Gamma(l);
-    dcomplex igamma0 = 1. / gamma[idx];
-
-    double incident = ((polarization==Expansion::E_LONG)? kl : kt);
-    incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
-
-    double bl = 2.*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2.*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
-
-    double result = 0.;
-
-    int ordl = int(getLongSize()), ordt = int(getTranSize());
-    for (int t = -ordt; t <= ordt; ++t) {
-        for (int l = -ordl; l <= ordl; ++l) {
-            size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);
-            //assert(abs(gamma[ix] - gamma[iy]) < 1e3*SMALL);
-            double gx = l*bl-kl, gy = t*bt-kt;
-            dcomplex Ex = reflected[ix], Ey = reflected[iy];
-            if (expansion.symmetric_long() && l < 0) {
-                if (expansion.symmetry_long == Expansion::E_LONG) Ey = -Ey; else Ex = -Ex;
-            }
-            if (expansion.symmetric_tran() && t < 0) {
-                if (expansion.symmetry_tran == Expansion::E_LONG) Ey = -Ey; else Ex = -Ex;
-            }
-            dcomplex S = (gamma[ix]*gamma[ix]+gx*gx) * Ex*conj(Ex) + (gamma[iy]*gamma[iy]+gy*gy) * Ey*conj(Ey) +
-                         gx * gy * (Ex*conj(Ey) + conj(Ex)*Ey);
-            result += incident * real(igamma0 / (0.5*(gamma[ix]+gamma[iy])) * S);
-        }
-    }
-
-    return result;
-}
-
-
-double FourierSolver3D::getTransmission(Expansion::Component polarization, Transfer::IncidentDirection side)
-{
-    double kt = real(ktran), kl = real(klong);
-
-    size_t idx;
-    cvector transmitted = getTransmittedCoefficients(polarization, side, &idx);
-
-    size_t ni = (side == Transfer::INCIDENCE_TOP)? stack.size()-1 : 0;
-    size_t nt = stack.size()-1-ni;
-    size_t li = stack[ni], lt = stack[nt];
-    if (!expansion.diagonalQE(lt))
-        Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute transmission coefficients",
-                                      (side == Transfer::INCIDENCE_TOP)? "Bottom" : "Top");
-    if (!expansion.diagonalQE(li))
-        Solver::writelog(LOG_WARNING, "{0} layer should be uniform to reliably compute transmission coefficients",
-                                     (side == Transfer::INCIDENCE_TOP)? "Top" : "Bottom");
-
-    // we multiply all fields by gt / gi
-    auto gamma = transfer->diagonalizer->Gamma(lt);
-    dcomplex igamma0 = 1. / transfer->diagonalizer->Gamma(li)[idx];
-
-    double incident = ((polarization==Expansion::E_LONG)? kl : kt);
-    incident = 1. / (1. + incident*incident * real(igamma0*conj(igamma0)));
-
-    double bl = 2.*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
-           bt = 2.*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
-
-    double result = 0.;
-
-    int ordl = int(getLongSize()), ordt = int(getTranSize());
-    for (int t = -ordt; t <= ordt; ++t) {
-        for (int l = -ordl; l <= ordl; ++l) {
-            size_t ix = expansion.iEx(l,t), iy = expansion.iEy(l,t);
-            //assert(abs(gamma[ix] - gamma[iy]) < 1e3*SMALL);
-            double gx = l*bl-kl, gy = t*bt-kt;
-            dcomplex Ex = transmitted[ix], Ey = transmitted[iy];
-            if (expansion.symmetric_long() && l < 0) {
-                if (expansion.symmetry_long == Expansion::E_LONG) Ey = -Ey; else Ex = -Ex;
-            }
-            if (expansion.symmetric_tran() && t < 0) {
-                if (expansion.symmetry_tran == Expansion::E_LONG) Ey = -Ey; else Ex = -Ex;
-            }
-            dcomplex S = (gamma[ix]*gamma[ix]+gx*gx) * Ex*conj(Ex) + (gamma[iy]*gamma[iy]+gy*gy) * Ey*conj(Ey) +
-                         gx * gy * (Ex*conj(Ey) + conj(Ex)*Ey);
-            result += incident * real(igamma0 / (0.5*(gamma[ix]+gamma[iy])) * S);
-        }
-    }
-
-    return result;
-}
 
 
 LazyData<Vec<3,dcomplex>> FourierSolver3D::getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method)
@@ -467,6 +234,39 @@ LazyData<double> FourierSolver3D::getMagnitude(size_t num, shared_ptr<const Mesh
     assert(transfer);
     applyMode(modes[num]);
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
+}
+
+
+cvector FourierSolver3D::incidentVector(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam) {
+    bool changed = Solver::initCalculation() || setExpansionDefaults(isnan(lam));
+    if (!isnan(lam)) {
+        dcomplex k0 = 2e3*M_PI / lam;
+        if (!is_zero(k0 - expansion.getK0())) {
+            expansion.setK0(k0);
+            changed = true;
+        }
+    }
+    size_t layer = stack[(side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1];
+    if (!transfer) {
+        initTransfer(expansion, true);
+        changed = true;
+    }
+    if (changed) {
+        transfer->initDiagonalization();
+        transfer->diagonalizer->diagonalizeLayer(layer);
+    } else if (!transfer->diagonalizer->isDiagonalized(layer))
+        transfer->diagonalizer->diagonalizeLayer(layer);
+
+    if (polarization == ExpansionPW3D::E_UNSPECIFIED)
+        throw BadInput(getId(), "Unspecified incident polarization for reflectivity computation");
+    if (expansion.symmetry_long == Expansion::Component(3-polarization))
+        throw BadInput(getId(), "Current longitudinal symmetry is inconsistent with the specified incident polarization");
+    if (expansion.symmetry_tran == Expansion::Component(3-polarization))
+        throw BadInput(getId(), "Current transverse symmetry is inconsistent with the specified incident polarization");
+    size_t idx = (polarization == ExpansionPW3D::E_LONG)? expansion.iEx(0,0) : expansion.iEy(0,0);
+    cvector incident(expansion.matrixSize(), 0.);
+    incident[idx] = 1.;
+    return transfer->diagonalizer->invTE(layer) * incident;
 }
 
 }}} // namespace

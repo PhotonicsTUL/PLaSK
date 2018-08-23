@@ -1,4 +1,5 @@
 #include "transfer.h"
+#include "diagonalizer.h"
 #include "expansion.h"
 #include "solver.h"
 #include "fortran.h"
@@ -198,12 +199,12 @@ cvector Transfer::getFieldVectorH(double z) {
     return H;
 }
 
-cvector Transfer::getReflectedFieldVectorE(const cvector& incident, IncidentDirection side, double z) {
+cvector Transfer::getScatteredFieldVectorE(const cvector& incident, IncidentDirection side, double z) {
     determineReflectedFields(incident, side);
     return getFieldVectorE(z, solver->getLayerFor(z));
 }
 
-cvector Transfer::getReflectedFieldVectorH(const cvector& incident, IncidentDirection side, double z) {
+cvector Transfer::getScatteredFieldVectorH(const cvector& incident, IncidentDirection side, double z) {
     determineReflectedFields(incident, side);
     return getFieldVectorH(z, solver->getLayerFor(z));
 }

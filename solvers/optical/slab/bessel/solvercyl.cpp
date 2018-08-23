@@ -146,7 +146,7 @@ void BesselSolverCyl::onInvalidate()
 
 size_t BesselSolverCyl::findMode(dcomplex start, int m)
 {
-    initCalculation();
+    Solver::initCalculation();
     ensureInterface();
     expansion->setLam0(this->lam0);
     expansion->setM(m);
@@ -185,83 +185,83 @@ LazyData<double> BesselSolverCyl::getMagnitude(size_t num, shared_ptr<const Mesh
 
 #ifndef NDEBUG
 cmatrix BesselSolverCyl::epsVmm(size_t layer) {
-    initCalculation();
+    Solver::initCalculation();
     computeIntegrals();
     return expansion->epsVmm(layer);
 }
 cmatrix BesselSolverCyl::epsVpp(size_t layer) {
-    initCalculation();
+    Solver::initCalculation();
     computeIntegrals();
     return expansion->epsVpp(layer);
 }
 cmatrix BesselSolverCyl::epsTmm(size_t layer) {
-    initCalculation();
+    Solver::initCalculation();
     computeIntegrals();
     return expansion->epsTmm(layer);
 }
 cmatrix BesselSolverCyl::epsTpp(size_t layer) {
-    initCalculation();
+    Solver::initCalculation();
     computeIntegrals();
     return expansion->epsTpp(layer);
 }
 cmatrix BesselSolverCyl::epsTmp(size_t layer) {
-    initCalculation();
+    Solver::initCalculation();
     computeIntegrals();
     return expansion->epsTmp(layer);
 }
 cmatrix BesselSolverCyl::epsTpm(size_t layer) {
-    initCalculation();
+    Solver::initCalculation();
     computeIntegrals();
     return expansion->epsTpm(layer);
 }
 cmatrix BesselSolverCyl::epsDm(size_t layer) {
-    initCalculation();
+    Solver::initCalculation();
     computeIntegrals();
     return expansion->epsDm(layer);
 }
 cmatrix BesselSolverCyl::epsDp(size_t layer) {
-    initCalculation();
+    Solver::initCalculation();
     computeIntegrals();
     return expansion->epsDp(layer);
 }
 
 // cmatrix BesselSolverCyl::muVmm() {
-//     initCalculation();
+//     Solver::initCalculation();
 //     computeIntegrals();
 //     return expansion->muVmm();
 // }
 // cmatrix BesselSolverCyl::muVpp() {
-//     initCalculation();
+//     Solver::initCalculation();
 //     computeIntegrals();
 //     return expansion->muVpp();
 // }
 // cmatrix BesselSolverCyl::muTmm() {
-//     initCalculation();
+//     Solver::initCalculation();
 //     computeIntegrals();
 //     return expansion->muTmm();
 // }
 // cmatrix BesselSolverCyl::muTpp() {
-//     initCalculation();
+//     Solver::initCalculation();
 //     computeIntegrals();
 //     return expansion->muTpp();
 // }
 // cmatrix BesselSolverCyl::muTmp() {
-//     initCalculation();
+//     Solver::initCalculation();
 //     computeIntegrals();
 //     return expansion->muTmp();
 // }
 // cmatrix BesselSolverCyl::muTpm() {
-//     initCalculation();
+//     Solver::initCalculation();
 //     computeIntegrals();
 //     return expansion->muTpm();
 // }
 // cmatrix BesselSolverCyl::muDm() {
-//     initCalculation();
+//     Solver::initCalculation();
 //     computeIntegrals();
 //     return expansion->muDm();
 // }
 // cmatrix BesselSolverCyl::muDp() {
-//     initCalculation();
+//     Solver::initCalculation();
 //     computeIntegrals();
 //     return expansion->muDp();
 // }

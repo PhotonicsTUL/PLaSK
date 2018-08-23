@@ -177,6 +177,15 @@ struct PLASK_SOLVER_API Expansion {
                                                       const shared_ptr<const typename LevelsAdapter::Level> &level,
                                                       InterpolationMethod interp) = 0;
     /**
+     * Get eigenvectors with some physical meaing when the layer is diagonal
+     * \param[out] Te Resulting Te matrix
+     * \param[out] Te1 Resulting Te^1 matrix
+     * \param RE RE matrix for the layer
+     * \param gamma2 gamma matrix for the layer
+     */
+    virtual void getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmatrix& RE, const cdiagonal& gamma);
+
+    /**
      * Prepare for computatiations of the fields
      * \param field which field is computed
      * \param method interpolation method
@@ -194,6 +203,19 @@ struct PLASK_SOLVER_API Expansion {
      * \return integrated Poynting vector i.e. the total vertically emitted energy
      */
     virtual double integratePoyntingVert(const cvector& E, const cvector& H) = 0;
+
+    /**
+     * Compute vertical component of the Poynting vector for fields specified as matrix column
+     * \param n column number
+     * \param TE electric field coefficients matrix
+     * \param TH magnetic field coefficients matrix
+     * \return integrated Poynting vector i.e. the total vertically emitted energy
+     */
+    inline double getModeFlux(size_t n, const cmatrix& TE, const cmatrix& TH) {
+        const cvector E(const_cast<dcomplex*>(TE.data()) + n*TE.rows(), TE.rows()),
+                      H(const_cast<dcomplex*>(TH.data()) + n*TH.rows(), TH.rows());
+        return integratePoyntingVert(E, H);
+    }
 
   protected:
 

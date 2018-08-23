@@ -56,15 +56,16 @@ import unittest
 class GratingTest(unittest.TestCase):
 
     def testComputations(self):
+        solver.initialize()
         l_te = array([1500., 1600.])
         solver.lam0 = 1500.
-        r_te = solver.compute_reflectivity(l_te, 'El', 'top')
+        r_te = solver.compute_reflectivity(l_te, 'top', 'El')
         self.assertAlmostEqual( r_te[0], 99.934, 2 )
         self.assertAlmostEqual( r_te[1], 98.878, 2 )
 
         l_tm = array([1298., 1344.])
         solver.lam0 = 1500.
-        r_tm = solver.compute_reflectivity(l_tm, 'Et', 'top')
+        r_tm = solver.compute_reflectivity(l_tm, 'top', 'Et')
         self.assertAlmostEqual( r_tm[0], 99.097, 2 )
         self.assertAlmostEqual( r_tm[1], 26.911, 2 )
 
