@@ -119,7 +119,7 @@ if(SPHINX_FOUND)
         )
         if(BUILD_QTHELP)
             install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhc ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qch
-                    DESTINATION share/doc/plask)
+                    DESTINATION share/doc/plask COMPONENT doc)
             add_custom_target(qthelp ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qhc ${CMAKE_CURRENT_BINARY_DIR}/qthelp/plask.qch)
         endif()
     endif()
