@@ -26,9 +26,9 @@ class ThresholdSearch(ThermoElectric):
 
     _OPTICAL_ROOTS = {}
 
-    Diffusion = None
-    Gain = None
-    Optical = None
+    _Diffusion = None
+    _Gain = None
+    _Optical = None
     _optarg = 'lam'
     _lam0 = 'lam0'
 
@@ -43,9 +43,9 @@ class ThresholdSearch(ThermoElectric):
 
     def __init__(self, name):
         super(ThresholdSearch, self).__init__(name)
-        self.diffusion = self.Diffusion(name)
-        self.gain = self.Gain(name)
-        self.optical = self.Optical(name)
+        self.diffusion = self._Diffusion(name)
+        self.gain = self._Gain(name)
+        self.optical = self._Optical(name)
         self.__reconnect()
         self.threshold_voltage = None
         self.threshold_current = None
@@ -622,42 +622,42 @@ class ThresholdSearchCyl(ThresholdSearch):
     (like SLURM, OpenPBS, or SGE) is used.
     """
 
-    Thermal = thermal.static.StaticCyl
-    Electrical = electrical.shockley.ShockleyCyl
-    Diffusion = electrical.diffusion.DiffusionCyl
-    Gain = gain.freecarrier.FreeCarrierCyl
+    _Thermal = thermal.static.StaticCyl
+    _Electrical = electrical.shockley.ShockleyCyl
+    _Diffusion = electrical.diffusion.DiffusionCyl
+    _Gain = gain.freecarrier.FreeCarrierCyl
 
     _OPTICAL_ROOTS = {'optical-root': 'root', 'optical-stripe-root': 'stripe_root'}
 
-    outTemperature = property(lambda self: self.thermal.outTemperature, doc=Thermal.outTemperature.__doc__)
-    outHeatFlux = property(lambda self: self.thermal.outHeatFlux, doc=Thermal.outHeatFlux.__doc__)
+    outTemperature = property(lambda self: self.thermal.outTemperature, doc=_Thermal.outTemperature.__doc__)
+    outHeatFlux = property(lambda self: self.thermal.outHeatFlux, doc=_Thermal.outHeatFlux.__doc__)
 
     outThermalConductivity = property(lambda self: self.thermal.outThermalConductivity,
-                                      doc=Thermal.outThermalConductivity.__doc__)
-    outVoltage = property(lambda self: self.electrical.outVoltage, doc=Electrical.outVoltage.__doc__)
+                                      doc=_Thermal.outThermalConductivity.__doc__)
+    outVoltage = property(lambda self: self.electrical.outVoltage, doc=_Electrical.outVoltage.__doc__)
     outCurrentDensity = property(lambda self: self.electrical.outCurrentDensity,
-                                 doc=Electrical.outCurrentDensity.__doc__)
-    outHeat = property(lambda self: self.electrical.outHeat, doc=Electrical.outHeat.__doc__)
-    outConductivity = property(lambda self: self.electrical.outConductivity, doc=Electrical.outConductivity.__doc__)
+                                 doc=_Electrical.outCurrentDensity.__doc__)
+    outHeat = property(lambda self: self.electrical.outHeat, doc=_Electrical.outHeat.__doc__)
+    outConductivity = property(lambda self: self.electrical.outConductivity, doc=_Electrical.outConductivity.__doc__)
     outCarriersConcentration = property(lambda self: self.diffusion.outCarriersConcentration,
-                                        doc=Diffusion.outCarriersConcentration.__doc__)
-    outGain = property(lambda self: self.gain.outGain, doc=Gain.outGain.__doc__)
+                                        doc=_Diffusion.outCarriersConcentration.__doc__)
+    outGain = property(lambda self: self.gain.outGain, doc=_Gain.outGain.__doc__)
     outLightMagnitude = property(lambda self: self.optical.outLightMagnitude, doc=_doc.outLightMagnitude)
     outLoss = property(lambda self: self.optical.outLoss, doc=_doc.outLoss)
     outWavelength = property(lambda self: self.optical.outWavelength, doc=_doc.outWavelength)
     outRefractiveIndex = property(lambda self: self.optical.outRefractiveIndex, doc=_doc.outRefractiveIndex)
     outLightE = property(lambda self: self.optical.outLightE, doc=_doc.outLightE)
 
-    thermal = attribute(Thermal.__name__+"()")
+    thermal = attribute(_Thermal.__name__+"()")
     ":class:`thermal.static.StaticCyl` solver used for thermal calculations."
 
-    electrical = attribute(Electrical.__name__+"()")
+    electrical = attribute(_Electrical.__name__+"()")
     ":class:`electrical.shockley.ShockleyCyl` solver used for electrical calculations."
 
-    diffusion = attribute(Diffusion.__name__+"()")
+    diffusion = attribute(_Diffusion.__name__+"()")
     ":class:`electrical.diffusion.DiffusionCyl` solver used for electrical calculations."
 
-    gain = attribute(Gain.__name__+"()")
+    gain = attribute(_Gain.__name__+"()")
     ":class:`gain.freecarrier.FreeCarrierCyl` solver used for gain calculations."
 
     optical = attribute("EffectiveFrequencyCyl()")
@@ -731,7 +731,7 @@ class ThresholdSearchCyl(ThresholdSearch):
 
     def __init__(self, name=''):
         from optical.effective import EffectiveFrequencyCyl
-        self.Optical = EffectiveFrequencyCyl
+        self._Optical = EffectiveFrequencyCyl
         super(ThresholdSearchCyl, self).__init__(name)
         self.maxlam = None
 
@@ -853,42 +853,42 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
     (like SLURM, OpenPBS, or SGE) is used.
     """
 
-    Thermal = thermal.static.StaticCyl
-    Electrical = electrical.shockley.ShockleyCyl
-    Diffusion = electrical.diffusion.DiffusionCyl
-    Gain = gain.freecarrier.FreeCarrierCyl
+    _Thermal = thermal.static.StaticCyl
+    _Electrical = electrical.shockley.ShockleyCyl
+    _Diffusion = electrical.diffusion.DiffusionCyl
+    _Gain = gain.freecarrier.FreeCarrierCyl
 
     _OPTICAL_ROOTS = {'optical-root': 'root'}
 
-    outTemperature = property(lambda self: self.thermal.outTemperature, doc=Thermal.outTemperature.__doc__)
-    outHeatFlux = property(lambda self: self.thermal.outHeatFlux, doc=Thermal.outHeatFlux.__doc__)
+    outTemperature = property(lambda self: self.thermal.outTemperature, doc=_Thermal.outTemperature.__doc__)
+    outHeatFlux = property(lambda self: self.thermal.outHeatFlux, doc=_Thermal.outHeatFlux.__doc__)
 
     outThermalConductivity = property(lambda self: self.thermal.outThermalConductivity,
-                                      doc=Thermal.outThermalConductivity.__doc__)
-    outVoltage = property(lambda self: self.electrical.outVoltage, doc=Electrical.outVoltage.__doc__)
+                                      doc=_Thermal.outThermalConductivity.__doc__)
+    outVoltage = property(lambda self: self.electrical.outVoltage, doc=_Electrical.outVoltage.__doc__)
     outCurrentDensity = property(lambda self: self.electrical.outCurrentDensity,
-                                 doc=Electrical.outCurrentDensity.__doc__)
-    outHeat = property(lambda self: self.electrical.outHeat, doc=Electrical.outHeat.__doc__)
-    outConductivity = property(lambda self: self.electrical.outConductivity, doc=Electrical.outConductivity.__doc__)
+                                 doc=_Electrical.outCurrentDensity.__doc__)
+    outHeat = property(lambda self: self.electrical.outHeat, doc=_Electrical.outHeat.__doc__)
+    outConductivity = property(lambda self: self.electrical.outConductivity, doc=_Electrical.outConductivity.__doc__)
     outCarriersConcentration = property(lambda self: self.diffusion.outCarriersConcentration,
-                                        doc=Diffusion.outCarriersConcentration.__doc__)
-    outGain = property(lambda self: self.gain.outGain, doc=Gain.outGain.__doc__)
+                                        doc=_Diffusion.outCarriersConcentration.__doc__)
+    outGain = property(lambda self: self.gain.outGain, doc=_Gain.outGain.__doc__)
     outLightMagnitude = property(lambda self: self.optical.outLightMagnitude, doc=_doc.outLightMagnitude)
     outLoss = property(lambda self: self.optical.outLoss, doc=_doc.outLoss)
     outWavelength = property(lambda self: self.optical.outWavelength, doc=_doc.outWavelength)
     outRefractiveIndex = property(lambda self: self.optical.outRefractiveIndex, doc=_doc.outRefractiveIndex)
     outLightE = property(lambda self: self.optical.outLightE, doc=_doc.outLightE)
 
-    thermal = attribute(Thermal.__name__ + "()")
+    thermal = attribute(_Thermal.__name__ + "()")
     ":class:`thermal.static.StaticCyl` solver used for thermal calculations."
 
-    electrical = attribute(Electrical.__name__ + "()")
+    electrical = attribute(_Electrical.__name__ + "()")
     ":class:`electrical.shockley.ShockleyCyl` solver used for electrical calculations."
 
-    diffusion = attribute(Diffusion.__name__ + "()")
+    diffusion = attribute(_Diffusion.__name__ + "()")
     ":class:`electrical.diffusion.DiffusionCyl` solver used for electrical calculations."
 
-    gain = attribute(Gain.__name__ + "()")
+    gain = attribute(_Gain.__name__ + "()")
     ":class:`gain.freecarrier.FreeCarrierCyl` solver used for gain calculations."
 
     optical = attribute("BesselCyl()")
@@ -973,7 +973,7 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
 
     def __init__(self, name=''):
         from optical.slab import BesselCyl
-        self.Optical = BesselCyl
+        self._Optical = BesselCyl
         super(ThresholdSearchBesselCyl, self).__init__(name)
         self.maxlam = None
 
@@ -1095,42 +1095,42 @@ class ThresholdSearch2D(ThresholdSearch):
     _optarg = 'neff'
     _lam0 = 'wavelength'
 
-    Thermal = thermal.static.Static2D
-    Electrical = electrical.shockley.Shockley2D
-    Diffusion = electrical.diffusion.Diffusion2D
-    Gain = gain.freecarrier.FreeCarrier2D
+    _Thermal = thermal.static.Static2D
+    _Electrical = electrical.shockley.Shockley2D
+    _Diffusion = electrical.diffusion.Diffusion2D
+    _Gain = gain.freecarrier.FreeCarrier2D
 
     _OPTICAL_ROOTS = {'optical-root': 'root', 'optical-stripe-root': 'stripe_root'}
 
-    outTemperature = property(lambda self: self.thermal.outTemperature, doc=Thermal.outTemperature.__doc__)
-    outHeatFlux = property(lambda self: self.thermal.outHeatFlux, doc=Thermal.outHeatFlux.__doc__)
+    outTemperature = property(lambda self: self.thermal.outTemperature, doc=_Thermal.outTemperature.__doc__)
+    outHeatFlux = property(lambda self: self.thermal.outHeatFlux, doc=_Thermal.outHeatFlux.__doc__)
 
     outThermalConductivity = property(lambda self: self.thermal.outThermalConductivity,
-                                      doc=Thermal.outThermalConductivity.__doc__)
-    outVoltage = property(lambda self: self.electrical.outVoltage, doc=Electrical.outVoltage.__doc__)
+                                      doc=_Thermal.outThermalConductivity.__doc__)
+    outVoltage = property(lambda self: self.electrical.outVoltage, doc=_Electrical.outVoltage.__doc__)
     outCurrentDensity = property(lambda self: self.electrical.outCurrentDensity,
-                                 doc=Electrical.outCurrentDensity.__doc__)
-    outHeat = property(lambda self: self.electrical.outHeat, doc=Electrical.outHeat.__doc__)
-    outConductivity = property(lambda self: self.electrical.outConductivity, doc=Electrical.outConductivity.__doc__)
+                                 doc=_Electrical.outCurrentDensity.__doc__)
+    outHeat = property(lambda self: self.electrical.outHeat, doc=_Electrical.outHeat.__doc__)
+    outConductivity = property(lambda self: self.electrical.outConductivity, doc=_Electrical.outConductivity.__doc__)
     outCarriersConcentration = property(lambda self: self.diffusion.outCarriersConcentration,
-                                        doc=Diffusion.outCarriersConcentration.__doc__)
-    outGain = property(lambda self: self.gain.outGain, doc=Gain.outGain.__doc__)
+                                        doc=_Diffusion.outCarriersConcentration.__doc__)
+    outGain = property(lambda self: self.gain.outGain, doc=_Gain.outGain.__doc__)
     outLightMagnitude = property(lambda self: self.optical.outLightMagnitude, doc=_doc.outLightMagnitude)
     outLoss = property(lambda self: self.optical.outLoss, doc=_doc.outLoss)
     outNeff = property(lambda self: self.optical.outNeff, doc=_doc.outNeff)
     outRefractiveIndex = property(lambda self: self.optical.outRefractiveIndex, doc=_doc.outRefractiveIndex)
     outLightE = property(lambda self: self.optical.outLightE, doc=_doc.outLightE)
 
-    thermal = attribute(Thermal.__name__+"()")
+    thermal = attribute(_Thermal.__name__+"()")
     ":class:`thermal.static.StaticCyl` solver used for thermal calculations."
 
-    electrical = attribute(Electrical.__name__+"()")
+    electrical = attribute(_Electrical.__name__+"()")
     ":class:`electrical.shockley.ShockleyCyl` solver used for electrical calculations."
 
-    diffusion = attribute(Diffusion.__name__+"()")
+    diffusion = attribute(_Diffusion.__name__+"()")
     ":class:`electrical.diffusion.DiffusionCyl` solver used for electrical calculations."
 
-    gain = attribute(Gain.__name__+"()")
+    gain = attribute(_Gain.__name__+"()")
     ":class:`gain.freecarrier.FreeCarrierCyl` solver used for gain calculations."
 
     optical = attribute("EffectiveFrequencyCyl()")
@@ -1195,7 +1195,7 @@ class ThresholdSearch2D(ThresholdSearch):
 
     def __init__(self, name=''):
         from optical.effective import EffectiveIndex2D
-        self.Optical = EffectiveIndex2D
+        self._Optical = EffectiveIndex2D
         super(ThresholdSearch2D, self).__init__(name)
 
     def on_initialize(self):

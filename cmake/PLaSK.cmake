@@ -169,7 +169,7 @@ macro(make_pure_python)
                            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${file})
         install(FILES ${file} DESTINATION lib/plask/solvers/${SOLVER_DIR} COMPONENT solvers)
     endforeach()
-    add_custom_target(${SOLVER_LIBRARY} ALL DEPENDS ${python_targets} ${SOLVER_DEPENDS})
+    add_custom_target(${SOLVER_LIBRARY}-python ALL DEPENDS ${python_targets} ${SOLVER_DEPENDS})
     add_custom_target(validate-${SOLVER_LIBRARY}-yml COMMAND ${CMAKE_SOURCE_DIR}/toolset/validate_solvers_yaml.py ${CMAKE_CURRENT_SOURCE_DIR}/solvers.yml)
 
     if(BUILD_GUI)
@@ -181,11 +181,11 @@ macro(make_pure_python)
                             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs
                             )
         install(FILES ${SOLVER_STUB} DESTINATION share/plask/stubs/${SOLVER_CATEGORY_NAME} COMPONENT gui)
-        add_custom_target(${SOLVER_LIBRARY}-stub ALL DEPENDS ${SOLVER_LIBRARY} ${SOLVER_PYTHON_MODULE} ${SOLVER_STUB})
+        add_custom_target(${SOLVER_LIBRARY}-stub ALL DEPENDS ${SOLVER_LIBRARY}-python ${SOLVER_PYTHON_MODULE} ${SOLVER_STUB})
     endif()
 
     if(BUILD_TESTING)
-        add_custom_target(${SOLVER_LIBRARY}-test DEPENDS ${SOLVER_LIBRARY} ${SOLVER_TEST_DEPENDS})
+        add_custom_target(${SOLVER_LIBRARY}-test DEPENDS ${SOLVER_LIBRARY}-python ${SOLVER_TEST_DEPENDS})
     endif()
 
 endmacro()

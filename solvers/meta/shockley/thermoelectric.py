@@ -56,13 +56,13 @@ def h5open(filename, group):
 
 class ThermoElectric(plask.Solver):
 
-    Thermal = None
-    Electrical = None
+    _Thermal = None
+    _Electrical = None
 
     def __init__(self, name):
         super(ThermoElectric, self).__init__(name)
-        self.thermal = self.Thermal(name)
-        self.electrical = self.Electrical(name)
+        self.thermal = self._Thermal(name)
+        self.electrical = self._Electrical(name)
         self.__reconnect()
 
         self.tfreq = 6
@@ -434,36 +434,36 @@ class ThermoElectric2D(ThermoElectric):
     (like SLURM, OpenPBS, or SGE) is used.
     """
 
-    Thermal = thermal.static.Static2D
-    Electrical = electrical.shockley.Shockley2D
+    _Thermal = thermal.static.Static2D
+    _Electrical = electrical.shockley.Shockley2D
 
     outTemperature = property(lambda self: self.thermal.outTemperature,
-                              doc=Thermal.outTemperature.__doc__)
+                              doc=_Thermal.outTemperature.__doc__)
 
     outHeatFlux = property(lambda self: self.thermal.outHeatFlux,
-                           doc=Thermal.outHeatFlux.__doc__)
+                           doc=_Thermal.outHeatFlux.__doc__)
 
     outThermalConductivity = property(lambda self: self.thermal.outThermalConductivity,
-                                      doc=Thermal.outThermalConductivity.__doc__)
+                                      doc=_Thermal.outThermalConductivity.__doc__)
 
     outVoltage = property(lambda self: self.electrical.outVoltage,
-                          doc=Electrical.outVoltage.__doc__)
+                          doc=_Electrical.outVoltage.__doc__)
 
     outCurrentDensity = property(lambda self: self.electrical.outCurrentDensity,
-                                 doc=Electrical.outCurrentDensity.__doc__)
+                                 doc=_Electrical.outCurrentDensity.__doc__)
 
     outHeat = property(lambda self: self.electrical.outHeat,
-                       doc=Electrical.outHeat.__doc__)
+                       doc=_Electrical.outHeat.__doc__)
 
     outConductivity = property(lambda self: self.electrical.outConductivity,
-                               doc=Electrical.outConductivity.__doc__)
+                               doc=_Electrical.outConductivity.__doc__)
 
-    thermal = attribute(Thermal.__name__+"()")
+    thermal = attribute(_Thermal.__name__+"()")
     """
     :class:`thermal.static.Static2D` solver used for thermal calculations.
     """
 
-    electrical = attribute(Electrical.__name__+"()")
+    electrical = attribute(_Electrical.__name__+"()")
     """
     :class:`electrical.shockley.Shockley2D` solver used for electrical calculations.
     """
@@ -471,7 +471,7 @@ class ThermoElectric2D(ThermoElectric):
     tfreq = 6.0
     """
     Number of electrical iterations per single thermal step.
-    
+
     As temperature tends to converge faster, it is reasonable to repeat thermal
     solution less frequently.
     """
@@ -494,36 +494,36 @@ class ThermoElectricCyl(ThermoElectric):
     (like SLURM, OpenPBS, or SGE) is used.
     """
 
-    Thermal = thermal.static.StaticCyl
-    Electrical = electrical.shockley.ShockleyCyl
+    _Thermal = thermal.static.StaticCyl
+    _Electrical = electrical.shockley.ShockleyCyl
 
     outTemperature = property(lambda self: self.thermal.outTemperature,
-                              doc=Thermal.outTemperature.__doc__)
+                              doc=_Thermal.outTemperature.__doc__)
 
     outHeatFlux = property(lambda self: self.thermal.outHeatFlux,
-                           doc=Thermal.outHeatFlux.__doc__)
+                           doc=_Thermal.outHeatFlux.__doc__)
 
     outThermalConductivity = property(lambda self: self.thermal.outThermalConductivity,
-                                      doc=Thermal.outThermalConductivity.__doc__)
+                                      doc=_Thermal.outThermalConductivity.__doc__)
 
     outVoltage = property(lambda self: self.electrical.outVoltage,
-                          doc=Electrical.outVoltage.__doc__)
+                          doc=_Electrical.outVoltage.__doc__)
 
     outCurrentDensity = property(lambda self: self.electrical.outCurrentDensity,
-                                 doc=Electrical.outCurrentDensity.__doc__)
+                                 doc=_Electrical.outCurrentDensity.__doc__)
 
     outHeat = property(lambda self: self.electrical.outHeat,
-                       doc=Electrical.outHeat.__doc__)
+                       doc=_Electrical.outHeat.__doc__)
 
     outConductivity = property(lambda self: self.electrical.outConductivity,
-                               doc=Electrical.outConductivity.__doc__)
+                               doc=_Electrical.outConductivity.__doc__)
 
-    thermal = attribute(Thermal.__name__+"()")
+    thermal = attribute(_Thermal.__name__+"()")
     """
     :class:`thermal.static.Static2D` solver used for thermal calculations.
     """
 
-    electrical = attribute(Electrical.__name__+"()")
+    electrical = attribute(_Electrical.__name__+"()")
     """
     :class:`electrical.shockley.Shockley2D` solver used for electrical calculations.
     """
@@ -531,7 +531,7 @@ class ThermoElectricCyl(ThermoElectric):
     tfreq = 6.0
     """
     Number of electrical iterations per single thermal step.
-    
+
     As temperature tends to converge faster, it is reasonable to repeat thermal
     solution less frequently.
     """
@@ -554,36 +554,36 @@ class ThermoElectric3D(ThermoElectric):
     (like SLURM, OpenPBS, or SGE) is used.
     """
 
-    Thermal = thermal.static.Static3D
-    Electrical = electrical.shockley.Shockley3D
+    _Thermal = thermal.static.Static3D
+    _Electrical = electrical.shockley.Shockley3D
 
     outTemperature = property(lambda self: self.thermal.outTemperature,
-                              doc=Thermal.outTemperature.__doc__)
+                              doc=_Thermal.outTemperature.__doc__)
 
     outHeatFlux = property(lambda self: self.thermal.outHeatFlux,
-                           doc=Thermal.outHeatFlux.__doc__)
+                           doc=_Thermal.outHeatFlux.__doc__)
 
     outThermalConductivity = property(lambda self: self.thermal.outThermalConductivity,
-                                      doc=Thermal.outThermalConductivity.__doc__)
+                                      doc=_Thermal.outThermalConductivity.__doc__)
 
     outVoltage = property(lambda self: self.electrical.outVoltage,
-                          doc=Electrical.outVoltage.__doc__)
+                          doc=_Electrical.outVoltage.__doc__)
 
     outCurrentDensity = property(lambda self: self.electrical.outCurrentDensity,
-                                 doc=Electrical.outCurrentDensity.__doc__)
+                                 doc=_Electrical.outCurrentDensity.__doc__)
 
     outHeat = property(lambda self: self.electrical.outHeat,
-                       doc=Electrical.outHeat.__doc__)
+                       doc=_Electrical.outHeat.__doc__)
 
     outConductivity = property(lambda self: self.electrical.outConductivity,
-                               doc=Electrical.outConductivity.__doc__)
+                               doc=_Electrical.outConductivity.__doc__)
 
-    thermal = attribute(Thermal.__name__+"()")
+    thermal = attribute(_Thermal.__name__+"()")
     """
     :class:`thermal.static.Static3D` solver used for thermal calculations.
     """
 
-    electrical = attribute(Electrical.__name__+"()")
+    electrical = attribute(_Electrical.__name__+"()")
     """
     :class:`electrical.shockley.Shockley3D` solver used for electrical calculations.
     """
@@ -591,7 +591,7 @@ class ThermoElectric3D(ThermoElectric):
     tfreq = 6.0
     """
     Number of electrical iterations per single thermal step.
-    
+
     As temperature tends to converge faster, it is reasonable to repeat thermal
     solution less frequently.
     """
