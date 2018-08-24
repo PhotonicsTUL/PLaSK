@@ -529,8 +529,8 @@ if(BUILD_PYTHON)
             add_custom_command(OUTPUT ${gui_files_pyc} COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PATH}/gui DEPENDS ${gui_files_copied})
             add_custom_command(OUTPUT ${gui_files_pyo} COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PATH}/gui DEPENDS ${gui_files_copied})
             add_custom_target(gui-files ALL DEPENDS ${gui_files_pyc} ${gui_files_pyo})
-            install(DIRECTORY ${PLASK_PATH}/gui DESTINATION lib/plask COMPONENT GUI)
-            install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI
+            install(DIRECTORY ${PLASK_PATH}/gui DESTINATION lib/plask COMPONENT gui)
+            install(DIRECTORY gui DESTINATION lib/plask COMPONENT gui
                     PATTERN .* EXCLUDE
                     PATTERN *.xpl EXCLUDE
                     PATTERN *.py EXCLUDE
@@ -539,7 +539,7 @@ if(BUILD_PYTHON)
                     PATTERN __pycache__ EXCLUDE # for python 3
             )
         else()
-            install(DIRECTORY gui DESTINATION lib/plask COMPONENT GUI
+            install(DIRECTORY gui DESTINATION lib/plask COMPONENT gui
                     PATTERN .* EXCLUDE
                     PATTERN *.xpl EXCLUDE
                     PATTERN *.pyc EXCLUDE
@@ -550,27 +550,27 @@ if(BUILD_PYTHON)
             execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/gui ${PLASK_PATH}/gui)
         endif()
 
-        install(TARGETS plaskgui DESTINATION bin COMPONENT GUI)
+        install(TARGETS plaskgui DESTINATION bin COMPONENT gui)
 
         if(UNIX)
-            install(FILES utils/application-x-plask.xml DESTINATION share/mime/packages COMPONENT GUI)
-            install(FILES utils/plaskgui.desktop DESTINATION share/applications COMPONENT GUI)
+            install(FILES utils/application-x-plask.xml DESTINATION share/mime/packages COMPONENT gui)
+            install(FILES utils/plaskgui.desktop DESTINATION share/applications COMPONENT gui)
             foreach(s 16 24 32 48)
                 install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/${s}x${s}/apps/plask.png
                         DESTINATION share/icons/hicolor/${s}x${s}/apps COMPONENT core)
                 install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/${s}x${s}/apps/plaskgui.png
-                        DESTINATION share/icons/hicolor/${s}x${s}/apps COMPONENT GUI)
+                        DESTINATION share/icons/hicolor/${s}x${s}/apps COMPONENT gui)
                 install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/${s}x${s}/mimetypes/application-x-plask.png
-                        DESTINATION share/icons/hicolor/${s}x${s}/mimetypes COMPONENT GUI)
+                        DESTINATION share/icons/hicolor/${s}x${s}/mimetypes COMPONENT gui)
             endforeach()
             install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/16x16/mimetypes/application-x-plask.png
-                    DESTINATION share/icons/hicolor/16x16/mimetypes COMPONENT GUI)
+                    DESTINATION share/icons/hicolor/16x16/mimetypes COMPONENT gui)
             install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/scalable/apps/plask.svg
-                    DESTINATION share/icons/hicolor/scalable/apps COMPONENT GUI)
+                    DESTINATION share/icons/hicolor/scalable/apps COMPONENT gui)
             install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/scalable/apps/plaskgui.svg
-                    DESTINATION share/icons/hicolor/scalable/apps COMPONENT GUI)
+                    DESTINATION share/icons/hicolor/scalable/apps COMPONENT gui)
             install(FILES ${CMAKE_SOURCE_DIR}/gui/icons/hicolor/scalable/mimetypes/application-x-plask.svg
-                    DESTINATION share/icons/hicolor/scalable/mimetypes COMPONENT GUI)
+                    DESTINATION share/icons/hicolor/scalable/mimetypes COMPONENT gui)
         endif()
 
         file(GLOB_RECURSE gui_pyc ${CMAKE_SOURCE_DIR}/gui/*.pyc)
@@ -846,8 +846,8 @@ string(SUBSTRING "${PLASK_VERSION}" 0 10 CPACK_PACKAGE_VERSION)
 
 set(CPACK_STRIP_FILES ON)
 
-#set(CPACK_COMPONENTS_ALL "core;solvers;GUI;utils;doc;dev")
-set(CPACK_COMPONENTS_ALL "core;solvers;GUI;doc;dev")
+#set(CPACK_COMPONENTS_ALL "core;solvers;gui;utils;doc;dev")
+set(CPACK_COMPONENTS_ALL "core;solvers;gui;doc;dev")
 set(CPACK_COMPONENT_CORE_DISPLAY_NAME "PLaSK core")
 set(CPACK_COMPONENT_CORE_REQUIRED ON)
 set(CPACK_COMPONENT_DOC_DISPLAY_NAME "User Manual and Examples")
