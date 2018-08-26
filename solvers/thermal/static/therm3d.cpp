@@ -443,7 +443,7 @@ void FiniteElementMethodThermal3DSolver::solveMatrix(SparseBandMatrix3D& A, Data
     try {
         std::size_t iter = solveDCG(A, precond, X.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
         this->writelog(LOG_DETAIL, "Conjugate gradient converged after {0} iterations.", iter);
-    } catch (DCGError err) {
+    } catch (DCGError& err) {
         throw ComputationError(this->getId(), "Conjugate gradient failed:, {0}", err.what());
     }
 

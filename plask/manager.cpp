@@ -302,7 +302,7 @@ void Manager::load(XMLReader& reader, MaterialsDB& materialsDB,
         if (logattr && !forcedLoglevel) {
             try {
                 maxLoglevel = LogLevel(boost::lexical_cast<unsigned>(*logattr));
-            } catch (boost::bad_lexical_cast) {
+            } catch (boost::bad_lexical_cast&) {
                 maxLoglevel = reader.enumAttribute<LogLevel>("loglevel")
                     .value("critical-error", LOG_CRITICAL_ERROR)
                     .value("critical", LOG_CRITICAL_ERROR)

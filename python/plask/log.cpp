@@ -268,7 +268,7 @@ void LoggingConfig::setLoggingDest(py::object dest) {
         py::object sys = py::import("sys");
         std::string dst;
         try { dst = py::extract<std::string>(dest); }
-        catch (py::error_already_set) { PyErr_Clear(); }
+        catch (py::error_already_set&) { PyErr_Clear(); }
         if (dest == sys.attr("stderr") || dst == "stderr" || dst == "sys.stderr")
             logger->dest = PythonSysLogger::DEST_STDERR;
         else if (dest == sys.attr("stdout") || dst == "stdout" || dst == "sys.stdout")

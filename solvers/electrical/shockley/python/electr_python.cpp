@@ -77,7 +77,7 @@ template <typename Class> py::object Shockley__getattr__(const Class& self, cons
         if (attr.substr(0,4) == "beta") return py::object(self.getBeta(boost::lexical_cast<size_t>(attr.substr(4))));
         if (attr.substr(0,2) == "Vt") return py::object(self.getVt(boost::lexical_cast<size_t>(attr.substr(2))));
         if (attr.substr(0,2) == "js") return py::object(self.getJs(boost::lexical_cast<size_t>(attr.substr(2))));
-    } catch (boost::bad_lexical_cast) {
+    } catch (boost::bad_lexical_cast&) {
         throw AttributeError(u8"{0} object has no attribute '{1}'", self.getClassName(), attr);
     }
     return py::object();
@@ -91,7 +91,7 @@ template <typename Class> void Shockley__setattr__(const py::object& oself, cons
         if (attr.substr(0,4) == "beta") { self.setBeta(boost::lexical_cast<size_t>(attr.substr(4)), py::extract<double>(value)); return; }
         if (attr.substr(0,2) == "Vt") { self.setVt(boost::lexical_cast<size_t>(attr.substr(2)), py::extract<double>(value)); return; }
         if (attr.substr(0,2) == "js") { self.setJs(boost::lexical_cast<size_t>(attr.substr(2)), py::extract<double>(value)); return; }
-    } catch (boost::bad_lexical_cast) {}
+    } catch (boost::bad_lexical_cast&) {}
 
     oself.attr("__class__").attr("__base__").attr("__setattr__")(oself, attr, value);
 }

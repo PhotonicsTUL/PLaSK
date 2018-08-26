@@ -31,27 +31,27 @@ static void Container__delitem__(GeometryObjectContainer<dim>& self, py::object 
         if (i < 0) i += int(self.getRealChildrenCount());
         self.removeAt(i);
         return;
-    } catch (py::error_already_set) { PyErr_Clear(); }
+    } catch (py::error_already_set&) { PyErr_Clear(); }
     try {
         PathHints::Hint* hint = py::extract<PathHints::Hint*>(item);
         self.remove(PathHints(*hint));
         return;
-    } catch (py::error_already_set) { PyErr_Clear(); }
+    } catch (py::error_already_set&) { PyErr_Clear(); }
     try {
         PathHints* hints = py::extract<PathHints*>(item);
         self.remove(*hints);
         return;
-    } catch (py::error_already_set) { PyErr_Clear(); }
+    } catch (py::error_already_set&) { PyErr_Clear(); }
     try {
         shared_ptr<typename GeometryObjectContainer<dim>::TranslationT> child = py::extract<shared_ptr<typename GeometryObjectContainer<dim>::TranslationT>>(item);
         self.removeT(child);
         return;
-    } catch (py::error_already_set) { PyErr_Clear(); }
+    } catch (py::error_already_set&) { PyErr_Clear(); }
     try {
         shared_ptr<typename GeometryObjectContainer<dim>::ChildType> child = py::extract<shared_ptr<typename GeometryObjectContainer<dim>::ChildType>>(item);
         self.remove(child);
         return;
-    } catch (py::error_already_set) { PyErr_Clear(); }
+    } catch (py::error_already_set&) { PyErr_Clear(); }
     throw TypeError(u8"unrecognized object {} delete from container", std::string(py::extract<std::string>(py::str(item))));
 }
 

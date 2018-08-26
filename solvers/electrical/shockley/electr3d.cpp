@@ -72,13 +72,13 @@ void FiniteElementMethodElectrical3DSolver::loadConfiguration(XMLReader &source,
                 if (attr.first.substr(0,4) == "beta") {
                     size_t no;
                     try { no = boost::lexical_cast<size_t>(attr.first.substr(4)); }
-                    catch (boost::bad_lexical_cast) { throw XMLUnexpectedAttrException(source, attr.first); }
+                    catch (boost::bad_lexical_cast&) { throw XMLUnexpectedAttrException(source, attr.first); }
                     setBeta(no, source.requireAttribute<double>(attr.first));
                 }
                 else if (attr.first.substr(0,2) == "js") {
                     size_t no;
                     try { no = boost::lexical_cast<size_t>(attr.first.substr(2)); }
-                    catch (boost::bad_lexical_cast) { throw XMLUnexpectedAttrException(source, attr.first); }
+                    catch (boost::bad_lexical_cast&) { throw XMLUnexpectedAttrException(source, attr.first); }
                     setJs(no, source.requireAttribute<double>(attr.first));
                 }
                 else
@@ -564,7 +564,7 @@ void FiniteElementMethodElectrical3DSolver::solveMatrix(SparseBandMatrix3D& A, D
     try {
         std::size_t iter = solveDCG(A, precond, X.data(), B.data(), err, iterlim, itererr, logfreq, getId());
         this->writelog(LOG_DETAIL, "Conjugate gradient converged after {0} iterations.", iter);
-    } catch (DCGError err) {
+    } catch (DCGError& err) {
         throw ComputationError(getId(), "Conjugate gradient failed: {0}", err.what());
     }
 

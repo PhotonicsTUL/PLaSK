@@ -59,7 +59,7 @@ bool XMLReader::readSome() {
     if (XML_Parse(parser, buff, read, !has_more) == XML_STATUS_ERROR) {
         auto error_code = XML_GetErrorCode(parser);
         if (error_code != XML_ERROR_FINISHED) {
-            unsigned line = XML_GetCurrentLineNumber(parser);
+            auto line = XML_GetCurrentLineNumber(parser);
             throw XMLException("XML line " +
                                boost::lexical_cast<std::string>(line) + ": parse error: "
                                + XML_ErrorString(error_code), int(line));

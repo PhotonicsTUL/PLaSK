@@ -141,7 +141,7 @@ MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const std::strin
     } else {
         try {
             material = db.get(name);
-        } catch (plask::MaterialParseException) {
+        } catch (plask::MaterialParseException&) {
             Material::Parameters p(name, true);
             constructor = db.getConstructor(p, true);
             composition = p.composition;

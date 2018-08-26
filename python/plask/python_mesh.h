@@ -43,7 +43,7 @@ struct ExportBoundary {
             bool result;
             try {
                 result = py::extract<bool>(pyresult);
-            } catch (py::error_already_set) {
+            } catch (py::error_already_set&) {
                 throw TypeError(u8"Boundary predicate did not return Boolean value");
             }
             return result;

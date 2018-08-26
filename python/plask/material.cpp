@@ -159,11 +159,11 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
         py::object result = py::call_method<py::object>(self, name, args...);
         try {
             return py::extract<R>(result);
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             std::string cls_name;
             try {
                 cls_name = py::extract<std::string>(py::object(py::borrowed(self)).attr("__class__").attr("__name__"));
-            } catch (py::error_already_set) {
+            } catch (py::error_already_set&) {
                 throw TypeError(u8"Cannot convert return value of method '{}' in unknown material class to correct type", name);
             }
             throw TypeError(u8"Cannot convert return value of method '{}' in material class '{}' to correct type", name, cls_name);
@@ -227,7 +227,7 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
         try {
             oname = cls.attr("__dict__")["name"];
             name = py::extract<std::string>(oname);
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             PyErr_Clear();
             oname = cls.attr("__name__");
             name = py::extract<std::string>(oname);
@@ -247,7 +247,7 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
             bool simple;
             try {
                 simple = py::extract<bool>(cls.attr("simple"));
-            } catch (py::error_already_set) {
+            } catch (py::error_already_set&) {
                 PyErr_Clear();
                 simple = true;
             }
@@ -263,7 +263,7 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
                         try {
                             double x = py::extract<double>(composition[el]);
                             if (!isnan(x)) result += format("({})", x);
-                        } catch (py::error_already_set) {
+                        } catch (py::error_already_set&) {
                             PyErr_Clear();
                         }
                     }
@@ -297,7 +297,7 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
         py::object octype;
         try {
             octype = cls.attr("__dict__")["condtype"];
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             PyErr_Clear();
             return base->condtype();
         }
@@ -310,7 +310,7 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
         py::object okind;
         try {
             okind = cls.attr("__dict__")["kind"];
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             PyErr_Clear();
             return base->kind();
         }
@@ -376,9 +376,9 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     }
     Tensor3<dcomplex> NR(double lam, double T, double n) const override {
         try { return call_override<Tensor3<dcomplex>>("NR", cache->NR, lam, T, n); }
-        catch (NotImplemented) {
+        catch (NotImplemented&) {
             try { dcomplex nr = Nr(lam, T, n); return Tensor3<dcomplex>(nr, nr, nr, 0.); }
-            catch (NotImplemented) { return base->NR(lam, T, n); }
+            catch (NotImplemented&) { return base->NR(lam, T, n); }
         }
     }
 
@@ -479,7 +479,7 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
         if (result.hasDoping()) throw ValueError(u8"doping or carrier concentrations specified in both full name and argument");
         result.dopingAmountType = Material::DOPANT_CONCENTRATION;
         had_doping_key = true;
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         PyErr_Clear();
     }
     try {
@@ -488,7 +488,7 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
         if (result.hasDoping()) throw ValueError(u8"doping or carrier concentrations specified in both full name and argument");
         result.dopingAmountType = Material::CARRIERS_CONCENTRATION;
         had_doping_key = true;
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         PyErr_Clear();
     }
     if (had_doping_key) {
@@ -523,7 +523,7 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
         py::object v;
         try {
             v = kwargs[e];
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             PyErr_Clear();
         }
         result.composition[e] = (v != none) ? py::extract<double>(v): std::numeric_limits<double>::quiet_NaN();
@@ -594,14 +594,14 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
                 try { \
                     cache->fun.reset(py::extract<Type>(self.attr(name)())); \
                     writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '{}'", cls_name); \
-                } catch (py::error_already_set) { \
+                } catch (py::error_already_set&) { \
                     PyErr_Clear(); \
                 } \
             } else if (!PyMethod_Check(py::object(self.attr(name)).ptr())) { \
                 try { \
                     cache->fun.reset(py::extract<Type>(self.attr(name))); \
                     writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '{}'", cls_name); \
-                } catch (py::error_already_set) { \
+                } catch (py::error_already_set&) { \
                     throw TypeError("Cannot convert static parameter '" name "' in material class '{}' to correct type", cls_name); \
                 } \
             } \

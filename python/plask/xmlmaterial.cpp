@@ -70,7 +70,7 @@ class PythonEvalMaterial: public MaterialWithBase
     inline RETURN call(PyCodeObject *fun, const py::dict& locals, const char* funname) const {
         try {
             return py::extract<RETURN>(py::handle<>(py_eval(fun, locals)).get());
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             PyObject *ptype, *pvalue, *ptraceback;
             PyErr_Fetch(&ptype, &pvalue, &ptraceback);
             Py_XDECREF(ptraceback);
@@ -319,7 +319,7 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
                         ) \
                     ); \
                     writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '{0}'", material_name); \
-                } catch (py::error_already_set) { \
+                } catch (py::error_already_set&) { \
                     PyErr_Clear(); \
                 } \
             }
@@ -417,7 +417,7 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
             materialsDB.addComplex(constructor);
         else
             materialsDB.addSimple(constructor);
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         if (draft) PyErr_Clear();
         else throw;
     } catch (...) {

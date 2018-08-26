@@ -58,7 +58,7 @@ void EffectiveFrequencyCyl::loadConfiguration(XMLReader& reader, Manager& manage
                 if (str == "all" || str == "none") rstripe = -1;
                 else
                     try { setStripeR(boost::lexical_cast<double>(str)); }
-                    catch (boost::bad_lexical_cast) { throw XMLBadAttrException(reader, "vat", str); }
+                    catch (boost::bad_lexical_cast&) { throw XMLBadAttrException(reader, "vat", str); }
             }
             asymptotic = reader.getAttribute<bool>("asymptotic", asymptotic);
             reader.requireTagEnd();
@@ -162,7 +162,7 @@ std::vector<size_t> EffectiveFrequencyCyl::findModes(dcomplex lambda1, dcomplex 
             dcomplex z;
             try {
                 z = refine->find(0.5*(zz.first+zz.second));
-            } catch (ComputationError) {
+            } catch (ComputationError&) {
                 continue;
             }
             mode.lam = z;

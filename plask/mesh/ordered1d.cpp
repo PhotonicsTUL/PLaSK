@@ -133,7 +133,7 @@ shared_ptr<OrderedMesh1D> readRectilinearMeshAxis(XMLReader& reader) {
              try {
                  double val = boost::lexical_cast<double>(point);
                  result->addPoint(val);
-             } catch (boost::bad_lexical_cast) {
+             } catch (boost::bad_lexical_cast&) {
                  throw XMLException(reader, format("Value '{0}' cannot be converted to float", point));
              }
          }

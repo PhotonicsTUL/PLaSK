@@ -124,7 +124,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
                 no = 1;
             else {
                 try { no = boost::lexical_cast<size_t>(role.substr(l)) + 1; }
-                catch (boost::bad_lexical_cast) { throw BadInput(this->getId(), "Bad junction number in role '{0}'", role); }
+                catch (boost::bad_lexical_cast&) { throw BadInput(this->getId(), "Bad junction number in role '{0}'", role); }
             }
         }
         return no;

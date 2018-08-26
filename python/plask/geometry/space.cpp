@@ -178,12 +178,12 @@ static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple arg
             shared_ptr<Extrusion> extrusion = py::extract<shared_ptr<Extrusion>>(args[1]);
             if (kwargs.has_key("length")) throw TypeError(u8"keyword argument 'length' not allowed if 'geometry' is of type Extrusion");
             space = plask::make_shared<Geometry2DCartesian>(extrusion);
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             PyErr_Clear();
             shared_ptr<GeometryObjectD<2>> object;
             try {
                 object = py::extract<shared_ptr<GeometryObjectD<2>>>(args[1]);
-            } catch (py::error_already_set) {
+            } catch (py::error_already_set&) {
                 PyErr_Clear();
                 throw TypeError(u8"'geometry' argument type must be either Extrusion or GeometryObject2D");
             }
@@ -195,12 +195,12 @@ static shared_ptr<Geometry2DCartesian> Geometry2DCartesian__init__(py::tuple arg
             shared_ptr<Extrusion> extrusion = py::extract<shared_ptr<Extrusion>>(kwargs["geometry"]);
             if (kwargs.has_key("length")) throw TypeError(u8"keyword argument 'length' not allowed if 'geometry' is of type Extrusion");
             space = plask::make_shared<Geometry2DCartesian>(extrusion);
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             PyErr_Clear();
             shared_ptr<GeometryObjectD<2>> object;
             try {
                 object = py::extract<shared_ptr<GeometryObjectD<2>>>(kwargs["geometry"]);
-            } catch (py::error_already_set) {
+            } catch (py::error_already_set&) {
                 PyErr_Clear();
                 throw TypeError(u8"'geometry' argument type must be either Extrusion or GeometryObject2D");
             }
@@ -235,12 +235,12 @@ static shared_ptr<Geometry2DCylindrical> Geometry2DCylindrical__init__(py::tuple
     try {
         shared_ptr<Revolution> revolution = py::extract<shared_ptr<Revolution>>(geometry);
         space = plask::make_shared<Geometry2DCylindrical>(revolution);
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         PyErr_Clear();
         shared_ptr<GeometryObjectD<2>> object;
         try {
             object = py::extract<shared_ptr<GeometryObjectD<2>>>(geometry);
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             PyErr_Clear();
             throw TypeError(u8"'geometry' argument type must be either Extrusion or GeometryObject2D");
         }

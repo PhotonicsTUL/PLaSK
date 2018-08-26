@@ -55,7 +55,7 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
                     try {
                         double val = boost::lexical_cast<double>(val);
                         klist.push_back(val);
-                    } catch (boost::bad_lexical_cast) {
+                    } catch (boost::bad_lexical_cast&) {
                         throw XMLException(reader, format("Value '{0}' cannot be converted to float", val));
                     }
                 }

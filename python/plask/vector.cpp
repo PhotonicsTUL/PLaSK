@@ -75,7 +75,7 @@ namespace detail {
                     new(storage) Vec<dim,T>(Vec<dim,T>::fromIterator(begin));
                 }
                 data->convertible = storage;
-            } catch (py::error_already_set) {
+            } catch (py::error_already_set&) {
                 throw TypeError("Must provide either plask.vector or a sequence of length {0} of proper dtype", dim);
             }
         }
@@ -339,7 +339,7 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
             try {
                 if (n == 2) comp[vec_attr_indx<2>(*key)] = val;
                 else if (n == 3) comp[vec_attr_indx<3>(*key)] = val;
-            } catch (AttributeError) {
+            } catch (AttributeError&) {
                 throw TypeError(u8"wrong component name for {:d}D vector if config.axes = '{}'", n, current_axes.str());
             }
 
@@ -363,11 +363,11 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
         if (force_complex) { PyErr_SetNone(PyExc_TypeError); throw py::error_already_set(); }
         if (n == 2) return py::object(Vec<2,double>(py::extract<double>(params[0]), py::extract<double>(params[1])));
         return py::object(Vec<3,double>(py::extract<double>(params[0]), py::extract<double>(params[1]), py::extract<double>(params[2])));
-    } catch (py::error_already_set) { PyErr_Clear(); try {
+    } catch (py::error_already_set&) { PyErr_Clear(); try {
         if (force_double) { PyErr_SetNone(PyExc_TypeError); throw py::error_already_set(); }
         if (n == 2) return py::object(Vec<2,dcomplex>(py::extract<dcomplex>(params[0]), py::extract<dcomplex>(params[1])));
         return py::object(Vec<3,dcomplex>(py::extract<dcomplex>(params[0]), py::extract<dcomplex>(params[1]), py::extract<dcomplex>(params[2])));
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         throw TypeError(u8"wrong vector argument types");
     }}
 

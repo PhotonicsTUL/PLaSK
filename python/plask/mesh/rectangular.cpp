@@ -220,7 +220,7 @@ static Vec<2,double> RectangularMesh2D__getitem__(const RectangularMesh<2>& self
         if (indx < 0) indx += int(self.size());
         if (indx < 0 || std::size_t(indx) >= self.size()) throw IndexError("mesh index out of range");
         return self[indx];
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         PyErr_Clear();
     }
     int index0 = py::extract<int>(index[0]);
@@ -285,7 +285,7 @@ Vec<3,double> RectangularMesh3D__getitem__(const MeshT& self, py::object index) 
         if (indx < 0) indx += int(self.size());
         if (indx < 0 || std::size_t(indx) >= self.size()) throw IndexError("mesh index out of range");
         return self[indx];
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         PyErr_Clear();
     }
     int index0 = py::extract<int>(index[0]);

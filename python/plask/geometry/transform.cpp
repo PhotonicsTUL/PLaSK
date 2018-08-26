@@ -60,7 +60,7 @@ static std::string Translation__str__(const Translation<dim>& self) {
     try {
         std::string str = py::extract<std::string>(py::object(self.getChild()).attr("__repr__")());
         out << str;
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         PyErr_Clear();
         out << GeometryObject__repr__(self.getChild());
     }
@@ -112,7 +112,7 @@ void setFlipDir(Cls& self, py::object val) {
     try {
         size_t no = current_axes[py::extract<std::string>(val)] + Cls::DIM - 3;
         self.flipDir = typename Primitive<Cls::DIM>::Direction(no);
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         PyErr_Clear();
         size_t no = py::extract<size_t>(val);
         if (no >= Cls::DIM) throw ValueError("Wrong axis number.");

@@ -48,7 +48,7 @@ py::object Container_move(py::tuple args, py::dict kwargs) {
                 std::string(py::extract<std::string>(args[0].attr("__class__").attr("__name__"))), i, self->getChildrenCount());
         }
         self->move(i, aligner);
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         PyErr_Clear();
         PathHints path = py::extract<PathHints>(args[1]);
         auto children = path.getTranslationChildren<ContainerT::DIM>(*self);

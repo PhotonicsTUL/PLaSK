@@ -33,7 +33,7 @@ void Geometry::setEdges(const std::function<plask::optional<std::string>(const s
                 if (v_lo) setEdge(Direction(dir_nr), false, *edge::Strategy::fromStrUnique(*v_lo, materialsDB));
                 if (v_hi) setEdge(Direction(dir_nr), true, *edge::Strategy::fromStrUnique(*v_hi, materialsDB));
             }
-        } catch (DimensionError) {
+        } catch (DimensionError&) {
             throw BadInput("setEdges", "Axis '{0}' is not allowed for this space", axis_name);
         }
     }
@@ -291,7 +291,7 @@ void Geometry2DCylindrical::setEdges(Direction direction, const edge::Strategy& 
     if (direction == DIRECTION_TRAN) {
         try {
             innerouter.setBoth(dynamic_cast<const edge::UniversalStrategy&>(border_to_set));
-        } catch (std::bad_cast) {
+        } catch (std::bad_cast&) {
             throw BadInput("setEdges", "Wrong edge type for inner or outer edge");
         }
     } else
@@ -311,7 +311,7 @@ void Geometry2DCylindrical::setEdge(Direction direction, bool higher, const edge
     if (direction == DIRECTION_TRAN) {
         try {
             innerouter.set(higher, dynamic_cast<const edge::UniversalStrategy&>(border_to_set));
-        } catch (std::bad_cast) {
+        } catch (std::bad_cast&) {
             throw BadInput("setEdge", "Wrong edge type for inner or outer edge");
         }
     } else

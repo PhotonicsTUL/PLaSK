@@ -87,7 +87,7 @@ void ReflectionTransfer::findReflection(std::size_t start, std::size_t end, bool
     cdiagonal gamma;
 
     // in the beginning the P matrix is zero
-    memset(P.data(), 0, NN*sizeof(dcomplex));
+    std::fill_n(P.data(), NN, dcomplex(0.0));
 
     std::exception_ptr error;
 

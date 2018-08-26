@@ -1435,7 +1435,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix& 
     try {
         std::size_t iter = solveDCG(ioA, precond, x.data(), B.data(), err, iterlim, itererr, logfreq, this->getId());
         this->writelog(LOG_DETAIL, "Conjugate gradient converged after {0} iterations.", iter);
-    } catch (DCGError exc) {
+    } catch (DCGError& exc) {
         throw ComputationError(this->getId(), "Conjugate gradient failed:, {0}", exc.what());
     }
 
