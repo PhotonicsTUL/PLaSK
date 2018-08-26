@@ -56,7 +56,7 @@ static void from_import_all(const char* name, py::object& dest)
 
     try {
         all = py::list(module.attr("__all__"));
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         PyErr_Clear();
         all = module_dict.keys();
     }
@@ -90,7 +90,7 @@ static py::object initPlask(int argc, const system_char* argv[])
     if (argc > 0) // This is correct!!! argv[0] here is argv[1] in `main`
         try {
             path.insert(0, boost::filesystem::absolute(boost::filesystem::path(argv[0])).parent_path().string());
-        } catch (std::runtime_error) { // can be thrown if there is wrong locale set
+        } catch (std::runtime_error&) { // can be thrown if there is wrong locale set
             system_string file(argv[0]);
             size_t pos = file.rfind(system_char(plask::FILE_PATH_SEPARATOR));
             if (pos == std::string::npos) pos = 0;
@@ -168,7 +168,7 @@ static inline void finalizeMPI() {
             if (initialized && !finalized) {
                 mpi.attr("Finalize")();
             }
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             PyErr_Clear();
         }
         return;
@@ -181,7 +181,7 @@ static inline void finalizeMPI() {
             if (initialized && !finalized) {
                 mpi.attr("finalize")();
             }
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             PyErr_Clear();
         }
         return;
@@ -267,7 +267,7 @@ int system_main(int argc, const system_char *argv[])
             const system_char* level = (arg.length() > 2)? argv[1]+2 : argv[2];
             try {
                 loglevel.reset(plask::LogLevel(boost::lexical_cast<unsigned>(level)));
-            } catch (boost::bad_lexical_cast) {
+            } catch (boost::bad_lexical_cast&) {
 				system_string ll = level; boost::to_lower(ll);
                 if (ll == CSTR(critical_error)) loglevel.reset(plask::LOG_CRITICAL_ERROR);
                 if (ll == CSTR(critical)) loglevel.reset(plask::LOG_CRITICAL_ERROR);
@@ -354,11 +354,11 @@ int system_main(int argc, const system_char *argv[])
     // Initalize python and load the plask module
     try {
         initPlask(argc-1, argv+1);
-    } catch (plask::CriticalException) {
+    } catch (plask::CriticalException&) {
         plask::writelog(plask::LOG_CRITICAL_ERROR, "Cannot import plask builtin module.");
         endPlask();
         return 101;
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         handlePythonException();
         endPlask();
         return 102;
@@ -389,7 +389,7 @@ int system_main(int argc, const system_char *argv[])
             if (!result) py::throw_error_already_set();
             else Py_DECREF(result);
 
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             int exitcode = handlePythonException();
             endPlask();
             return exitcode;
@@ -413,7 +413,7 @@ int system_main(int argc, const system_char *argv[])
             py::object runpy = py::import("runpy");
             py::object runasmain = runpy.attr("_run_module_as_main");
             runasmain(runmodule, true);
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             int exitcode = handlePythonException();
             endPlask();
             return exitcode;
@@ -429,7 +429,7 @@ int system_main(int argc, const system_char *argv[])
             py::object plask = py::import("plask");
             globals["plask"] = plask;           // import plask
             from_import_all("plask", globals);  // from plask import *
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             int exitcode = handlePythonException();
             endPlask();
             return exitcode;
@@ -459,7 +459,7 @@ int system_main(int argc, const system_char *argv[])
                         if (ext == CSTR(.xpl)) filetype = FILE_XML;
                         else if (ext == CSTR(.xml)) filetype = FILE_XML;
                         else if (ext.substr(1) == CSTR(.py)) filetype = FILE_PY;
-                    } catch (std::out_of_range) {}
+                    } catch (std::out_of_range&) {}
                 }
                 if (!filetype) {
                     // check first char (should be '<' in XML)
@@ -494,7 +494,7 @@ int system_main(int argc, const system_char *argv[])
                     try {
                         locals[keyval.first] = (plask::python::py_eval(keyval.second,
                                                                        *plask::python::xml_globals, locals));
-                    } catch (py::error_already_set) {
+                    } catch (py::error_already_set&) {
                         plask::writelog(plask::LOG_WARNING,
                                         "Cannot parse command-line definition '{}' (storing it as string): {}",
                                         keyval.first, plask::python::getPythonExceptionMessage());
@@ -605,7 +605,7 @@ int system_main(int argc, const system_char *argv[])
                 return 3;
             }
 #       endif
-        catch (py::error_already_set) {
+        catch (py::error_already_set&) {
             int exitcode = handlePythonException(system_to_utf8(filename).c_str());
             endPlask();
             return exitcode;
@@ -641,7 +641,7 @@ int system_main(int argc, const system_char *argv[])
             if (argc == 1) sys_argv.append("");
             for (int i = 1; i < argc; i++) sys_argv.append(argv[i]);
             interactive.attr("interact")(py::object(), sys_argv);
-        }  catch (py::error_already_set) { // This should not happen
+        }  catch (py::error_already_set&) { // This should not happen
             int exitcode = handlePythonException();
             endPlask();
             return exitcode;

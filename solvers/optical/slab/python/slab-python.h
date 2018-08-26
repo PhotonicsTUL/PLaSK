@@ -162,7 +162,7 @@ struct PythonComponentConventer {
                     val = Expansion::E_LONG;
                 else
                     throw py::error_already_set();
-            } catch (py::error_already_set) {
+            } catch (py::error_already_set&) {
                 throw ValueError("Wrong component specification.");
             }
         }

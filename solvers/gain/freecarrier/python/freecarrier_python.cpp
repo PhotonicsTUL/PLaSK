@@ -50,7 +50,7 @@ static py::object FreeCarrierGainSolver_getP(FreeCarrierGainSolver<GeometryT>* s
 #endif
 
 template <typename GeometryT>
-static py::object FreeCarrier_getLevels(FreeCarrierGainSolver<GeometryT>& self, py::object To)
+static py::object FreeCarrier_getLevels(FreeCarrierGainSolver<GeometryT>& self, py::object PLASK_UNUSED(To))
 {
     static const char* names[3] = { "el", "hh", "lh" };
 
@@ -92,7 +92,7 @@ static py::object FreeCarrierGainSpectrum__call__(GainSpectrum<GeometryT>& self,
    // return PARALLEL_UFUNC<double>([&](double x){return self.getGain(x);}, wavelengths);
     try {
         return py::object(self.getGain(py::extract<double>(wavelengths)));
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         PyErr_Clear();
 
         PyArrayObject* inarr = (PyArrayObject*)PyArray_FROM_OT(wavelengths.ptr(), NPY_DOUBLE);

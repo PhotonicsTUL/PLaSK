@@ -17,11 +17,11 @@ namespace detail {
             } else {
                 try {
                     path = py::extract<PathHints*>(key[1]);
-                } catch (py::error_already_set) {
+                } catch (py::error_already_set&) {
                     PyErr_Clear();
                     try {
                         pts = py::extract<int>(key[1]);
-                    } catch (py::error_already_set) {
+                    } catch (py::error_already_set&) {
                         throw KeyError(py::extract<std::string>(py::str(key)));
                     }
                 }

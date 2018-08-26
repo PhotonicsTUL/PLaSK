@@ -520,7 +520,7 @@ PLASK_PYTHON_API py::object Data(PyObject* obj, py::object omesh) {
             default: throw TypeError(u8"Array has wrong dtype (only float and complex allowed)");
         }
 
-    } catch (py::error_already_set) { PyErr_Clear(); try {
+    } catch (py::error_already_set&) { PyErr_Clear(); try {
         shared_ptr<MeshD<3>> mesh = py::extract<shared_ptr<MeshD<3>>>(omesh);
 
         switch (PyArray_TYPE(arr)) {
@@ -529,7 +529,7 @@ PLASK_PYTHON_API py::object Data(PyObject* obj, py::object omesh) {
             default: throw TypeError(u8"Array has wrong dtype (only float and complex allowed)");
         }
 
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         throw TypeError(u8"mesh must be a proper mesh object");
     }}
 
@@ -767,7 +767,7 @@ struct __InterpolateMeta__<python::MeshWrap<dim>, SrcT, DstT, 0>
             src_mesh->template call_python<boost::python::object>("interpolate", source, omesh, method);
         try {
             return boost::python::extract<ReturnedType>(result)();
-        } catch (boost::python::error_already_set) {
+        } catch (boost::python::error_already_set&) {
             PyErr_Clear();
             return boost::python::extract<ReturnedType>(python::Data(result.ptr(), omesh))();
         }

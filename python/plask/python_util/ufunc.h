@@ -9,7 +9,7 @@ template <typename T, typename F>
 py::object UFUNC(F f, py::object input) {
     try {
         return py::object(f(py::extract<T>(input)));
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         PyErr_Clear();
 
         PyArrayObject* inarr = (PyArrayObject*)PyArray_FROM_OT(input.ptr(), detail::typenum<T>());
@@ -63,7 +63,7 @@ template <typename T, typename F>
 py::object PARALLEL_UFUNC(F f, py::object input) {
     try {
         return py::object(f(py::extract<T>(input)));
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         PyErr_Clear();
 
         PyArrayObject* inarr = (PyArrayObject*)PyArray_FROM_OT(input.ptr(), detail::typenum<T>());

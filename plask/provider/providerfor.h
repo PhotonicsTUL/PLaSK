@@ -1017,7 +1017,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
 
         /// Throw NoValue exception if value is not initialized
         void ensureHasValue() const {
-            if (!hasValue()) throw NoValue(name());
+            if (!hasValue()) throw NoValue(this->name());
         }
 
         /**
@@ -1028,7 +1028,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
 
         /// Throw NoValue exception if value is not initialized and BadMesh exception if the mesh and values sizes mismatch
         void ensureHasCorrectValue() const {
-            if (!hasValue()) throw NoValue(name());
+            if (!hasValue()) throw NoValue(this->name());
             if (values.size() != mesh_ptr->size())
                 throw BadMesh("Provider::WithValue", "Mesh size ({1}) and values size ({0}) do not match", values.size(), mesh_ptr->size());
         }
@@ -1261,14 +1261,14 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
          * \param n value index
          */
         void ensureHasCorrectValue(size_t n) const {
-            if (n >= values.size()) throw NoValue(name());
+            if (n >= values.size()) throw NoValue(this->name());
             if (values[n].size() != mesh_ptr->size())
                     throw BadMesh("Provider::WithValue", "Mesh size ({1}) and values[{2}] size ({0}) do not match", values.size(), mesh_ptr->size(), n);
         }
 
         /// Throw NoValue exception if value is not initialized and BadMesh exception if the mesh and values sizes mismatch
         void ensureHasCorrectValues() const {
-            if (values.size() == 0) throw NoValue(name());
+            if (values.size() == 0) throw NoValue(this->name());
             for (size_t i = 0; i != values.size(); ++i)
                 if (values[i].size() != mesh_ptr->size())
                     throw BadMesh("Provider::WithValue", "Mesh size ({1}) and values[{2}] size ({0}) do not match", values.size(), mesh_ptr->size(), i);

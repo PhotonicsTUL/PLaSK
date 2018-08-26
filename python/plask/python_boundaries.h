@@ -59,7 +59,7 @@ struct RegisterBoundaryConditions {
             Boundary boundary = py::extract<Boundary>(object[0]);
             ValueT value = py::extract<ValueT>(object[1]);
             *iter = ConditionT(boundary, value);
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             throw TypeError(u8"You can only assign a tuple (boundary, value)");
         }
     }

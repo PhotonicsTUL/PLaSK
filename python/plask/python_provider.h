@@ -162,7 +162,7 @@ namespace detail {
         try {
             RegisterReceiverBase<ReceiverT>::connect(receiver, obj);
             return true;
-        } catch (py::error_already_set) { PyErr_Clear(); }
+        } catch (py::error_already_set&) { PyErr_Clear(); }
         return false;
     }
 
@@ -173,9 +173,9 @@ namespace detail {
             ValueT value = py::extract<ValueT>(obj);
             receiver = value;
             return true;
-        } catch (py::error_already_set) { PyErr_Clear(); }
-          catch (TypeError) { PyErr_Clear(); }
-          catch (ValueError) { PyErr_Clear(); }
+        } catch (py::error_already_set&) { PyErr_Clear(); }
+          catch (TypeError&) { PyErr_Clear(); }
+          catch (ValueError&) { PyErr_Clear(); }
         return false;
     }
 
@@ -187,9 +187,9 @@ namespace detail {
             py::stl_input_iterator<ValueT> begin(obj), end;
             receiver.setValues(begin, end);
             return true;
-        } catch (py::error_already_set) { PyErr_Clear(); }
-          catch (TypeError) { PyErr_Clear(); }
-          catch (ValueError) { PyErr_Clear(); }
+        } catch (py::error_already_set&) { PyErr_Clear(); }
+          catch (TypeError&) { PyErr_Clear(); }
+          catch (ValueError&) { PyErr_Clear(); }
         return false;
     }
 
@@ -467,7 +467,7 @@ namespace detail {
 
         try {
             return py::extract<VectorType>(Data(value.ptr(), mesh))();
-        } catch (TypeError) {
+        } catch (TypeError&) {
             PyErr_Clear();
         }
 
@@ -531,7 +531,7 @@ public ProviderFor<typename ProviderT::PropertyTag, typename ProviderT::SpaceTyp
                     if (n > 1) throw IndexError("Provider index out of range");
                     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
                     return dataInterpolate(data, const_pointer_cast<MeshD<ProviderT::SpaceType::DIM>>(dst_mesh), method);
-                } catch (py::error_already_set) {
+                } catch (py::error_already_set&) {
                     PyErr_Clear();
                 }
                 ReturnedType data = py::extract<ReturnedType>(this->function[n]);

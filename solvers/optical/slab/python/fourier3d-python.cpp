@@ -145,14 +145,14 @@ struct FourierSolver3D_LongTranSetter {
             self.*field_long = value;
             self.*field_tran = value;
             self.invalidate();
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             PyErr_Clear();
             try {
                 FourierSolver3D_LongTranWrapper<T>* value = py::extract<FourierSolver3D_LongTranWrapper<T>*>(object);
                 self.*field_long = *value->ptr_long;
                 self.*field_tran = *value->ptr_tran;
                 self.invalidate();
-            } catch (py::error_already_set) {
+            } catch (py::error_already_set&) {
                 PyErr_Clear();
                 try {
                     if (py::len(object) != 2) throw py::error_already_set();
@@ -161,7 +161,7 @@ struct FourierSolver3D_LongTranSetter {
                     self.*field_long = value_long;
                     self.*field_tran = value_tran;
                     self.invalidate();
-                } catch (py::error_already_set) {
+                } catch (py::error_already_set&) {
                     throw TypeError(u8"You may only assign a value or a sequence of two values");
                 }
             }
@@ -243,7 +243,7 @@ struct FourierSolver3D_SymmetryLongTranWrapper {
 
     static void setter(FourierSolver3D& self, py::object values) {
         try { if (py::len(values) != 2 || py::extract<std::string>(values).check()) throw py::error_already_set(); }
-        catch (py::error_already_set) { throw TypeError(u8"You may only assign a sequence of two values"); }
+        catch (py::error_already_set&) { throw TypeError(u8"You may only assign a sequence of two values"); }
         self.setSymmetryLong(py::extract<Expansion::Component>(values[0]));
         self.setSymmetryTran(py::extract<Expansion::Component>(values[1]));
     }

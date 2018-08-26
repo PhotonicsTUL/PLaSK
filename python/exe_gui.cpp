@@ -51,7 +51,7 @@ static py::object initPlask(int argc, const system_char* const argv[])
     if (argc > 0) // This is correct!!! argv[0] here is argv[1] in `main`
         try {
             path.insert(0, boost::filesystem::absolute(boost::filesystem::path(argv[0])).parent_path().string());
-        } catch (std::runtime_error) { // can be thrown if there is wrong locale set
+        } catch (std::runtime_error&) { // can be thrown if there is wrong locale set
 			system_string file(argv[0]);
             size_t pos = file.rfind(system_char(plask::FILE_PATH_SEPARATOR));
             if (pos == std::string::npos) pos = 0;
@@ -159,11 +159,11 @@ int system_main(int argc, const system_char *argv[])
     // Initalize python and load the plask module
     try {
         initPlask(argc, argv);
-    } catch (plask::CriticalException) {
+    } catch (plask::CriticalException&) {
         showError("Cannot import plask builtin module.");
         endPlask();
         return 101;
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         handlePythonException();
         endPlask();
         return 102;
@@ -181,7 +181,7 @@ int system_main(int argc, const system_char *argv[])
         showError(err.what());
         endPlask();
         return 3;
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         int exitcode = handlePythonException(/*argv[0]*/);
         endPlask();
         return exitcode;

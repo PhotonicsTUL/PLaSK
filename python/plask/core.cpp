@@ -267,7 +267,7 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
                     try {
                         int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1)) + scriptline;
                         printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}, line {1}: {2}: {3}", file, lineno, error_name, msg);
-                    } catch (boost::bad_lexical_cast) {
+                    } catch (boost::bad_lexical_cast&) {
                         printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}: {1}", error_name, message);
                     }
                 } else
@@ -283,7 +283,7 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
                 try {
                     int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
                     printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}, line {1}: {2}: {3}", file, lineno, error_name, msg);
-                } catch (boost::bad_lexical_cast) {
+                } catch (boost::bad_lexical_cast&) {
                     printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}: {1}", error_name, message);
                 }
         } else

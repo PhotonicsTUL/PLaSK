@@ -42,12 +42,12 @@ namespace detail {
             try {
                 shared_ptr<typename SolverT::MeshType> mesh = py::extract<shared_ptr<typename SolverT::MeshType>>(omesh);
                 self.setMesh(mesh);
-            } catch (py::error_already_set) {
+            } catch (py::error_already_set&) {
                 PyErr_Clear();
                 try {
                     shared_ptr<MeshGeneratorD<SolverT::MeshType::DIM>> meshg = py::extract<shared_ptr<MeshGeneratorD<SolverT::MeshType::DIM>>>(omesh);
                     self.setMesh(meshg);
-                } catch (py::error_already_set) {
+                } catch (py::error_already_set&) {
                     throw TypeError(u8"Cannot convert argument to proper mesh type.");
                 }
             }

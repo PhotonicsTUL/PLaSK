@@ -361,7 +361,7 @@ inline static py::object eval_common_type(const std::string& value) {
             return val;
         else
             return py::str(value);
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         PyErr_Clear();
         return py::str(value);
     }

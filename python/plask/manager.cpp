@@ -61,7 +61,7 @@ class PythonXMLFilter {
         boost::algorithm::trim(str);
         try {
             return py::extract<std::string>(py::str(py_eval(str, *xml_globals, manager->defs)));
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             throw Exception(getPythonExceptionMessage());
         }
     }
@@ -169,7 +169,7 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
             filename = std::move(filename_tmp);
         } else
             source.reset(new XMLReader::StreamDataSource(new std::istringstream(str)));
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         PyErr_Clear();
         if (!PyObject_HasAttrString(src.ptr(),"read")) throw TypeError("argument is neither string nor a proper file-like object");
         try {
@@ -234,7 +234,7 @@ void PythonManager::loadDefines(XMLReader& reader)
         if (!defs.has_key(name)) {
             try {
                 defs[name] = (py_eval(value, *xml_globals, defs));
-            } catch (py::error_already_set) {
+            } catch (py::error_already_set&) {
                 writelog(LOG_WARNING, u8"Cannot parse XML definition '{}' (storing it as string): {}",
                          name, getPythonExceptionMessage());
                 PyErr_Clear();
@@ -249,7 +249,7 @@ void PythonManager::loadDefines(XMLReader& reader)
         try {
             if (parsed.find(*key) == parsed.end())
                 writelog(LOG_WARNING, "Value '{}' is not defined in the XPL file", *key);
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             PyErr_Clear();
         }
     }
@@ -286,7 +286,7 @@ void PythonManager::loadConnects(XMLReader& reader)
         auto in_solver = solvers.find(in.first);
         if (in_solver == solvers.end()) throw XMLException(reader, format(u8"Cannot find (in) solver with name '{0}'.", in.first));
         try { solverin = py::object(in_solver->second); }
-        catch (py::error_already_set) { throw XMLException(reader, format(u8"Cannot convert solver '{0}' to python object.", in.first)); }
+        catch (py::error_already_set&) { throw XMLException(reader, format(u8"Cannot convert solver '{0}' to python object.", in.first)); }
 
         if (dynamic_pointer_cast<FilterCommonBase>(in_solver->second)) {
             int points = 10;
@@ -299,14 +299,14 @@ void PythonManager::loadConnects(XMLReader& reader)
                     receiver = solverin[py::make_tuple(geometrics[obj], points)];
                 else
                     receiver = solverin[py::make_tuple(geometrics[obj], pathHints[pth], points)];
-            } catch (py::error_already_set) {
+            } catch (py::error_already_set&) {
                 throw XMLException(reader, getPythonExceptionMessage());
-            } catch(std::exception err) {
+            } catch(std::exception& err) {
                 throw XMLException(reader, err.what());
             }
         } else {
             try { receiver = solverin.attr(in.second.c_str()); }
-            catch (py::error_already_set) { throw XMLException(reader, format("Solver '{0}' does not have attribute '{1}'.", in.first, in.second)); }
+            catch (py::error_already_set&) { throw XMLException(reader, format("Solver '{0}' does not have attribute '{1}'.", in.first, in.second)); }
         }
 
         std::string outkey = reader.requireAttribute("out");
@@ -323,10 +323,10 @@ void PythonManager::loadConnects(XMLReader& reader)
             auto out_solver = solvers.find(out.first);
             if (out_solver == solvers.end()) throw XMLException(reader, format(u8"Cannot find (out) solver with name '{0}'.", out.first));
             try { solverout = py::object(out_solver->second); }
-            catch (py::error_already_set) { throw XMLException(reader, format(u8"Cannot convert solver '{0}' to python object.", out.first)); }
+            catch (py::error_already_set&) { throw XMLException(reader, format(u8"Cannot convert solver '{0}' to python object.", out.first)); }
 
             try { prov = solverout.attr(out.second.c_str()); }
-            catch (py::error_already_set) { throw XMLException(reader, format(u8"Solver '{0}' does not have attribute '{1}'.", out.first, out.second)); }
+            catch (py::error_already_set&) { throw XMLException(reader, format(u8"Solver '{0}' does not have attribute '{1}'.", out.first, out.second)); }
 
             if (provider == py::object()) provider = prov;
             else provider = provider + prov;
@@ -334,7 +334,7 @@ void PythonManager::loadConnects(XMLReader& reader)
 
         try {
             receiver.attr("attach")(provider);
-        } catch (py::error_already_set) {
+        } catch (py::error_already_set&) {
             throw XMLException(reader, format(u8"Cannot connect '{0}' to '{1}'.", outkey, inkey));
         }
 
@@ -355,7 +355,7 @@ void PythonManager::loadMaterialModule(XMLReader& reader, MaterialsDB& materials
                 Py_DECREF(reloaded);
             }
         }
-    } catch (py::error_already_set) {
+    } catch (py::error_already_set&) {
         std::string msg = getPythonExceptionMessage();
         PyErr_Clear();
         if(!draft) throw XMLException(reader, msg);
