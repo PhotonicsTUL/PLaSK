@@ -143,13 +143,33 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
     };  // struct Elements
 
     /**
-     * Construct filtered mesh with elements of rectangularMesh chosen by a @p predicate.
+     * Construct empty/unitialized mesh. One should call reset() method before using this.
+     */
+    RectangularFilteredMesh2D() = default;
+
+    /**
+     * Change a selection of elements used to once pointed by a given @p predicate.
+     * @param predicate predicate which returns either @c true for accepting element or @c false for rejecting it
+     */
+    void reset(const Predicate& predicate);
+
+    /**
+     * Construct filtered mesh with elements of @p rectangularMesh chosen by a @p predicate.
      * Preserve order of elements and nodes of @p rectangularMesh.
      * @param rectangularMesh input mesh, before filtering
      * @param predicate predicate which returns either @c true for accepting element or @c false for rejecting it
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared with @p rectangularMesh (if @c false; default)
      */
     RectangularFilteredMesh2D(const RectangularMesh<2>& rectangularMesh, const Predicate& predicate, bool clone_axes = false);
+
+    /**
+     * Change parameters of this mesh to use elements of @p rectangularMesh chosen by a @p predicate.
+     * Preserve order of elements and nodes of @p rectangularMesh.
+     * @param rectangularMesh input mesh, before filtering
+     * @param predicate predicate which returns either @c true for accepting element or @c false for rejecting it
+     * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared with @p rectangularMesh (if @c false; default)
+     */
+    void reset(const RectangularMesh<2>& rectangularMesh, const Predicate& predicate, bool clone_axes = false);
 
     /**
      * Construct filtered mesh with all elements of @c rectangularMesh which have required materials in the midpoints.
@@ -167,6 +187,20 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
     }
 
     /**
+     * Change parameters of this mesh to use all elements of @c rectangularMesh which have required materials in the midpoints.
+     * Preserve order of elements and nodes of @p rectangularMesh.
+     * @param rectangularMesh input mesh, before filtering
+     * @param geom geometry to get materials from
+     * @param materialPredicate predicate which returns either @c true for accepting material or @c false for rejecting it
+     * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
+     */
+    void reset(const RectangularMesh<2>& rectangularMesh, const GeometryObjectD<2>& geom, const std::function<bool(shared_ptr<const Material>)> materialPredicate, bool clone_axes = false) {
+        reset(rectangularMesh,
+              [&](const RectangularMesh2D::Element& el) { return materialPredicate(geom.getMaterial(el.getMidpoint())); },
+              clone_axes);
+    }
+
+    /**
      * Construct filtered mesh with all elements of @c rectangularMesh which have required kinds of materials (in the midpoints).
      * Preserve order of elements and nodes of @p rectangularMesh.
      * @param rectangularMesh input mesh, before filtering
@@ -181,6 +215,22 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
                                     [&](const RectangularMesh2D::Element& el) { return (geom.getMaterialOrAir(el.getMidpoint())->kind() & materialKinds) != 0; },
                                     clone_axes)
     {
+    }
+
+    /**
+     * Change parameters of this mesh to use all elements of @c rectangularMesh which have required kinds of materials (in the midpoints).
+     * Preserve order of elements and nodes of @p rectangularMesh.
+     * @param rectangularMesh input mesh, before filtering
+     * @param geom geometry to get materials from
+     * @param materialKinds one or more kinds of material encoded with bit @c or operation,
+     *        e.g. @c DIELECTRIC|METAL for selecting all dielectrics and metals,
+     *        or @c ~(DIELECTRIC|METAL) for selecting everything else
+     * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
+     */
+    void reset(const RectangularMesh<2>& rectangularMesh, const GeometryObjectD<2>& geom, unsigned char materialKinds, bool clone_axes = false) {
+        reset(rectangularMesh,
+             [&](const RectangularMesh2D::Element& el) { return (geom.getMaterialOrAir(el.getMidpoint())->kind() & materialKinds) != 0; },
+             clone_axes);
     }
 
     Elements elements() const { return Elements(*this); }
@@ -237,6 +287,8 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
     }
 
 private:
+    void initNodesAndElements(const RectangularFilteredMesh2D::Predicate &predicate);
+
     bool canBeIncluded(const Vec<2>& point) const {
         return
             rectangularMesh.axis[0]->at(0) <= point[0] && point[0] <= rectangularMesh.axis[0]->at(rectangularMesh.axis[0]->size()-1) &&

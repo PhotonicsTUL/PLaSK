@@ -41,8 +41,6 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
     void setChangeSignal(const shared_ptr<MeshAxis>& axis) { if (axis) axis->changedConnectMethod(this, &RectangularMesh2D::onAxisChanged); }
     void unsetChangeSignal(const shared_ptr<MeshAxis>& axis) { if (axis) axis->changedDisconnectMethod(this, &RectangularMesh2D::onAxisChanged); }
 
-    void setAxis(const shared_ptr<MeshAxis>& axis, shared_ptr<MeshAxis> new_val);
-
   public:
 
     /**
@@ -267,21 +265,48 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
     RectangularMesh2D(shared_ptr<MeshAxis> axis0, shared_ptr<MeshAxis> axis1, IterationOrder iterationOrder = ORDER_01);
 
     /**
+     * Change axes and iteration order of this mesh.
+     * @param mesh0 mesh for the first coordinate
+     * @param mesh1 mesh for the second coordinate
+     * @param iterationOrder iteration order
+     */
+    void reset(shared_ptr<MeshAxis> axis0, shared_ptr<MeshAxis> axis1, IterationOrder iterationOrder = ORDER_01);
+
+    /**
      * Copy constructor.
      * @param src mesh to copy
      * @param clone_axes whether axes of the @p src should be cloned (if true) or shared (if false; default)
      */
     RectangularMesh2D(const RectangularMesh2D& src, bool clone_axes = false);
 
+    /**
+     * Change axes and iteration order of this mesh to the ones from @p src.
+     * @param src mesh to copy
+     * @param iterationOrder iteration order
+     */
+    void reset(const RectangularMesh2D& src, bool clone_axes = false);
+
+    RectangularMesh2D& operator=(const RectangularMesh2D& src) { reset(src, true); return *this; }
+
+    RectangularMesh2D& operator=(RectangularMesh2D&& src) { reset(src, false); return *this; }
+
     ~RectangularMesh2D();
+
+    /**
+     * Change axis.
+     * @param axis_nr number of axis to change
+     * @param new_val new value for axis
+     * @param fireResized whether to call fireResized()
+     */
+    void setAxis(std::size_t axis_nr, shared_ptr<MeshAxis> new_val, bool fireResized = true);
 
     const shared_ptr<MeshAxis> getAxis0() const { return axis[0]; }
 
-    void setAxis0(shared_ptr<MeshAxis> a0) { setAxis(this->axis[0], a0); }
+    void setAxis0(shared_ptr<MeshAxis> a0) { setAxis(0, a0); }
 
     const shared_ptr<MeshAxis> getAxis1() const { return axis[1]; }
 
-    void setAxis1(shared_ptr<MeshAxis> a1) { setAxis(this->axis[1], a1); }
+    void setAxis1(shared_ptr<MeshAxis> a1) { setAxis(1, a1); }
 
 
 

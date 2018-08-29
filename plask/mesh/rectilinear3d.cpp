@@ -71,14 +71,6 @@ void RectilinearMesh3D::setOptimalIterationOrder() {
     RECTILINEAR_MESH_3D_DETERMINE_ITERATION_ORDER(2,1,0)
 }
 
-void RectilinearMesh3D::setAxis(const shared_ptr<MeshAxis> &axis, shared_ptr<MeshAxis> new_val) {
-    if (axis == new_val) return;
-    unsetChangeSignal(axis);
-    const_cast<shared_ptr<MeshAxis>&>(axis) = new_val;
-    setChangeSignal(axis);
-    fireResized();
-}
-
 void RectilinearMesh3D::onAxisChanged(Mesh::Event &e) {
     assert(!e.isDelete());
     fireChanged(e.flags());
@@ -101,6 +93,13 @@ RectilinearMesh3D::RectilinearMesh3D(shared_ptr<MeshAxis> mesh0, shared_ptr<Mesh
     setChangeSignal(this->axis[2]);
 }
 
+void RectilinearMesh3D::reset(shared_ptr<MeshAxis> axis0, shared_ptr<MeshAxis> axis1, shared_ptr<MeshAxis> axis2, RectilinearMesh3D::IterationOrder iterationOrder) {
+    setAxis(0, std::move(axis0), false);
+    setAxis(1, std::move(axis1), false);
+    setAxis(2, std::move(axis2), false);
+    setIterationOrder(iterationOrder);
+}
+
 RectilinearMesh3D::RectilinearMesh3D(const RectilinearMesh3D &src, bool clone_axes)
 : RectangularMeshBase3D(src),
   axis{clone_axes ? src.axis[0]->clone() : src.axis[0],
@@ -113,10 +112,26 @@ RectilinearMesh3D::RectilinearMesh3D(const RectilinearMesh3D &src, bool clone_ax
     setChangeSignal(this->axis[2]);
 }
 
+void RectilinearMesh3D::reset(const RectilinearMesh3D &src, bool clone_axes)
+{
+    if (clone_axes)
+        reset(src.axis[0]->clone(), src.axis[1]->clone(), src.axis[2]->clone(), src.getIterationOrder());
+    else
+        reset(src.axis[0], src.axis[1], src.axis[2], src.getIterationOrder());
+}
+
 RectilinearMesh3D::~RectilinearMesh3D() {
     unsetChangeSignal(this->axis[0]);
     unsetChangeSignal(this->axis[1]);
     unsetChangeSignal(this->axis[2]);
+}
+
+void RectilinearMesh3D::setAxis(std::size_t axis_nr, shared_ptr<MeshAxis> new_val, bool fireResized) {
+    if (axis[axis_nr] == new_val) return;
+    unsetChangeSignal(axis[axis_nr]);
+    const_cast<shared_ptr<MeshAxis>&>(axis[axis_nr]) = new_val;
+    setChangeSignal(axis[axis_nr]);
+    if (fireResized) this->fireResized();
 }
 
 BoundaryNodeSet RectilinearMesh3D::createIndex0BoundaryAtLine(std::size_t line_nr_axis0) const {

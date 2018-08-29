@@ -46,14 +46,6 @@ typename RectangularMesh2D::IterationOrder RectangularMesh2D::getIterationOrder(
     return (index_f == &transposed_index)? ORDER_01 : ORDER_10;
 }
 
-void RectangularMesh2D::setAxis(const shared_ptr<MeshAxis> &axis, shared_ptr<MeshAxis> new_val) {
-    if (axis == new_val) return;
-    unsetChangeSignal(axis);
-    const_cast<shared_ptr<MeshAxis>&>(axis) = new_val;
-    setChangeSignal(axis);
-    fireResized();
-}
-
 void RectangularMesh2D::onAxisChanged(Mesh::Event &e) {
     assert(!e.isDelete());
     this->fireChanged(e.flags());
@@ -73,6 +65,12 @@ RectangularMesh2D::RectangularMesh2D(shared_ptr<MeshAxis> axis0, shared_ptr<Mesh
     setChangeSignal(this->axis[1]);
 }
 
+void RectangularMesh2D::reset(shared_ptr<MeshAxis> axis0, shared_ptr<MeshAxis> axis1, RectangularMesh2D::IterationOrder iterationOrder) {
+    setAxis(0, std::move(axis0), false);
+    setAxis(1, std::move(axis1), false);
+    setIterationOrder(iterationOrder);
+}
+
 RectangularMesh2D::RectangularMesh2D(const RectangularMesh2D &src, bool clone_axes):
     RectangularMeshBase2D(src),
     axis {clone_axes ? src.axis[0]->clone() : src.axis[0],
@@ -83,9 +81,25 @@ RectangularMesh2D::RectangularMesh2D(const RectangularMesh2D &src, bool clone_ax
     setChangeSignal(this->axis[1]);
 }
 
+void RectangularMesh2D::reset(const RectangularMesh2D &src, bool clone_axes) {
+    if (clone_axes)
+        reset(src.axis[0]->clone(), src.axis[1]->clone(), src.getIterationOrder());
+    else
+        reset(src.axis[0], src.axis[1], src.getIterationOrder());
+}
+
 RectangularMesh2D::~RectangularMesh2D() {
     unsetChangeSignal(this->axis[0]);
     unsetChangeSignal(this->axis[1]);
+}
+
+void RectangularMesh2D::setAxis(std::size_t axis_nr, shared_ptr<MeshAxis> new_val, bool fireResized)
+{
+    if (axis[axis_nr] == new_val) return;
+    unsetChangeSignal(axis[axis_nr]);
+    const_cast<shared_ptr<MeshAxis>&>(axis[axis_nr]) = new_val;
+    setChangeSignal(axis[axis_nr]);
+    if (fireResized) this->fireResized();
 }
 
 shared_ptr<RectangularMesh2D > RectangularMesh2D::getMidpointsMesh() {

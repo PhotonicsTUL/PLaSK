@@ -2,8 +2,23 @@
 
 namespace plask {
 
+void RectangularFilteredMesh2D::reset(const RectangularFilteredMesh2D::Predicate &predicate) {
+    RectangularFilteredMeshBase<2>::reset();
+    initNodesAndElements(predicate);
+}
+
 RectangularFilteredMesh2D::RectangularFilteredMesh2D(const RectangularMesh<2> &rectangularMesh, const RectangularFilteredMesh2D::Predicate &predicate, bool clone_axes)
     : RectangularFilteredMeshBase(rectangularMesh, clone_axes)
+{
+    initNodesAndElements(predicate);
+}
+
+void RectangularFilteredMesh2D::reset(const RectangularMesh<2> &rectangularMesh, const RectangularFilteredMesh2D::Predicate &predicate, bool clone_axes) {
+    this->rectangularMesh.reset(rectangularMesh, clone_axes);
+    reset(predicate);
+}
+
+void RectangularFilteredMesh2D::initNodesAndElements(const RectangularFilteredMesh2D::Predicate &predicate)
 {
     for (auto el_it = this->rectangularMesh.elements().begin(); el_it != this->rectangularMesh.elements().end(); ++el_it)
         if (predicate(*el_it)) {

@@ -42,8 +42,6 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
     void setChangeSignal(const shared_ptr<MeshAxis>& axis) { if (axis) axis->changedConnectMethod(this, &RectilinearMesh3D::onAxisChanged); }
     void unsetChangeSignal(const shared_ptr<MeshAxis>& axis) { if (axis) axis->changedDisconnectMethod(this, &RectilinearMesh3D::onAxisChanged); }
 
-    void setAxis(const shared_ptr<MeshAxis>& axis, shared_ptr<MeshAxis> new_val);
-
   public:
 
     /**
@@ -304,25 +302,52 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
     RectilinearMesh3D(shared_ptr<MeshAxis> mesh0, shared_ptr<MeshAxis> mesh1, shared_ptr<MeshAxis> mesh2, IterationOrder iterationOrder = ORDER_012);
 
     /**
+     * Change axes and iteration order of this mesh.
+     * @param mesh0 mesh for the first coordinate
+     * @param mesh1 mesh for the second coordinate
+     * @param mesh2 mesh for the third coordinate
+     * @param iterationOrder iteration order
+     */
+    void reset(shared_ptr<MeshAxis> mesh0, shared_ptr<MeshAxis> mesh1, shared_ptr<MeshAxis> mesh2, IterationOrder iterationOrder = ORDER_012);
+
+    /**
      * Copy constructor.
      * @param src mesh to copy
      * @param clone_axes whether axes of the @p src should be cloned (if true) or shared (if false; default)
      */
     RectilinearMesh3D(const RectilinearMesh3D& src, bool clone_axes = false);
 
+    /**
+     * Change axes and iteration order of this mesh to the ones from @p src.
+     * @param src mesh to copy
+     */
+    void reset(const RectilinearMesh3D& src, bool clone_axes = false);
+
+    RectilinearMesh3D& operator=(const RectilinearMesh3D& src) { reset(src, true); return *this; }
+
+    RectilinearMesh3D& operator=(RectilinearMesh3D&& src) { reset(src, false); return *this; }
+
     ~RectilinearMesh3D();
+
+    /**
+     * Change axis.
+     * @param axis_nr number of axis to change
+     * @param new_val new value for axis
+     * @param fireResized whether to call fireResized()
+     */
+    void setAxis(std::size_t axis_nr, shared_ptr<MeshAxis> new_val, bool fireResized = true);
 
     const shared_ptr<MeshAxis> getAxis0() const { return axis[0]; }
 
-    void setAxis0(shared_ptr<MeshAxis> a0) { setAxis(this->axis[0], a0);  }
+    void setAxis0(shared_ptr<MeshAxis> a0) { setAxis(0, a0);  }
 
     const shared_ptr<MeshAxis> getAxis1() const { return axis[1]; }
 
-    void setAxis1(shared_ptr<MeshAxis> a1) { setAxis(this->axis[1], a1); }
+    void setAxis1(shared_ptr<MeshAxis> a1) { setAxis(1, a1); }
 
     const shared_ptr<MeshAxis> getAxis2() const { return axis[2]; }
 
-    void setAxis2(shared_ptr<MeshAxis> a2) { setAxis(this->axis[2], a2); }
+    void setAxis2(shared_ptr<MeshAxis> a2) { setAxis(2, a2); }
 
     /**
      * Get numbered axis

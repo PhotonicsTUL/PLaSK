@@ -19,7 +19,7 @@ class RectangularFilteredMeshBase: public RectangularMeshBase<DIM> {
 
 protected:
 
-    const RectangularMesh<DIM> rectangularMesh;
+    RectangularMesh<DIM> rectangularMesh;
 
     //typedef CompressedSetOfNumbers<std::uint32_t> Set;
     typedef CompressedSetOfNumbers<std::size_t> Set;
@@ -121,6 +121,20 @@ protected:
 
     };  // struct Elements
 
+    void resetBoundyIndex() {
+        for (int d = 0; d < DIM; ++d) { // prepare for finding indexes by subclass constructor:
+            boundaryIndex[d].lo = this->rectangularMesh.axis[d]->size()-1;
+            boundaryIndex[d].up = 0;
+        }
+    }
+
+    /// Clear nodesSet, elementsSet and call resetBoundyIndex().
+    void reset() {
+        nodesSet.clear();
+        elementsSet.clear();
+        resetBoundyIndex();
+    }
+
 public:
 
     using typename MeshD<DIM>::LocalCoords;
@@ -134,12 +148,7 @@ public:
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if true) or shared (if false; default)
      */
     RectangularFilteredMeshBase(const RectangularMesh<DIM>& rectangularMesh, bool clone_axes = false)
-        : rectangularMesh(rectangularMesh, clone_axes) {
-        for (int d = 0; d < DIM; ++d) { // prepare for finding indexes by subclass constructor:
-            boundaryIndex[d].lo = this->rectangularMesh.axis[d]->size()-1;
-            boundaryIndex[d].up = 0;
-        }
-    }
+        : rectangularMesh(rectangularMesh, clone_axes) { resetBoundyIndex(); }
 
     /**
      * Iterator over nodes coordinates.
