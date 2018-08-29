@@ -5,6 +5,8 @@
 #include "iterative_matrix2d.h"
 #include <limits>
 
+#include <plask/mesh/rectangular_filtered2d.h>  //!!!
+
 namespace plask { namespace electrical { namespace shockley {
 
 /**
@@ -14,6 +16,8 @@ template<typename Geometry2DType>
 struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DType, RectangularMesh<2>> {
 
   protected:
+
+    RectangularFilteredMesh2D filteredMesh; //!!!
 
     /// Details of active region
     struct Active {

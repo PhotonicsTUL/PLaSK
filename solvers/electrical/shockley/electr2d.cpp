@@ -116,6 +116,8 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
         return;
     }
 
+    filteredMesh.reset(*this->mesh, *this->geometry, ~plask::Material::NONE); //!!!
+
     shared_ptr<RectangularMesh<2>> points = this->mesh->getMidpointsMesh();
 
     std::vector<typename Active::Region> regions;
