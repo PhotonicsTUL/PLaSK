@@ -237,8 +237,10 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @param materialPredicate predicate which returns either @c true for accepting material or @c false for rejecting it
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
      */
-    RectangularFilteredMesh3D(const RectangularMesh<3>& rectangularMesh, const GeometryObjectD<3>& geom, const std::function<bool(shared_ptr<const Material>)> materialPredicate)
-        : RectangularFilteredMesh3D(rectangularMesh, [&](const RectangularMesh3D::Element& el) { return materialPredicate(geom.getMaterial(el.getMidpoint())); })
+    RectangularFilteredMesh3D(const RectangularMesh<3>& rectangularMesh, const GeometryObjectD<3>& geom, const std::function<bool(shared_ptr<const Material>)> materialPredicate, bool clone_axes = false)
+        : RectangularFilteredMesh3D(rectangularMesh,
+                                    [&](const RectangularMesh3D::Element& el) { return materialPredicate(geom.getMaterial(el.getMidpoint())); },
+                                    clone_axes)
     {
     }
 
