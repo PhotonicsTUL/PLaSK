@@ -257,7 +257,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @param materialPredicate predicate which returns either @c true for accepting material or @c false for rejecting it
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
      */
-    RectangularFilteredMesh3D(const RectangularMesh<3>& rectangularMesh, const GeometryObjectD<3>& geom, const std::function<bool(shared_ptr<const Material>)> materialPredicate, bool clone_axes = false)
+    RectangularFilteredMesh3D(const RectangularMesh<3>& rectangularMesh, const GeometryD<3>& geom, const std::function<bool(shared_ptr<const Material>)> materialPredicate, bool clone_axes = false)
         : RectangularFilteredMesh3D(rectangularMesh,
                                     [&](const RectangularMesh3D::Element& el) { return materialPredicate(geom.getMaterial(el.getMidpoint())); },
                                     clone_axes)
@@ -272,7 +272,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @param materialPredicate predicate which returns either @c true for accepting material or @c false for rejecting it
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
      */
-    void reset(const RectangularMesh<3>& rectangularMesh, const GeometryObjectD<3>& geom, const std::function<bool(shared_ptr<const Material>)> materialPredicate, bool clone_axes = false) {
+    void reset(const RectangularMesh<3>& rectangularMesh, const GeometryD<3>& geom, const std::function<bool(shared_ptr<const Material>)> materialPredicate, bool clone_axes = false) {
         reset(rectangularMesh,
               [&](const RectangularMesh3D::Element& el) { return materialPredicate(geom.getMaterial(el.getMidpoint())); },
               clone_axes);
@@ -288,9 +288,9 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      *        or @c ~(DIELECTRIC|METAL) for selecting everything else
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
      */
-    RectangularFilteredMesh3D(const RectangularMesh<3>& rectangularMesh, const GeometryObjectD<3>& geom, unsigned char materialKinds, bool clone_axes = false)
+    RectangularFilteredMesh3D(const RectangularMesh<3>& rectangularMesh, const GeometryD<3>& geom, unsigned char materialKinds, bool clone_axes = false)
         : RectangularFilteredMesh3D(rectangularMesh,
-                                    [&](const RectangularMesh3D::Element& el) { return (geom.getMaterialOrAir(el.getMidpoint())->kind() & materialKinds) != 0; },
+                                    [&](const RectangularMesh3D::Element& el) { return (geom.getMaterial(el.getMidpoint())->kind() & materialKinds) != 0; },
                                     clone_axes)
     {
     }
@@ -305,9 +305,9 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      *        or @c ~(DIELECTRIC|METAL) for selecting everything else
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
      */
-    void reset(const RectangularMesh<3>& rectangularMesh, const GeometryObjectD<3>& geom, unsigned char materialKinds, bool clone_axes = false) {
+    void reset(const RectangularMesh<3>& rectangularMesh, const GeometryD<3>& geom, unsigned char materialKinds, bool clone_axes = false) {
         reset(rectangularMesh,
-             [&](const RectangularMesh3D::Element& el) { return (geom.getMaterialOrAir(el.getMidpoint())->kind() & materialKinds) != 0; },
+             [&](const RectangularMesh3D::Element& el) { return (geom.getMaterial(el.getMidpoint())->kind() & materialKinds) != 0; },
              clone_axes);
     }
 
