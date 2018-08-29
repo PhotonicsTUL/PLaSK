@@ -142,6 +142,9 @@ public:
     /// Returned by some methods to signalize that element or node (with given index(es)) is not included in the mesh.
     enum:std::size_t { NOT_INCLUDED = Set::NOT_INCLUDED };
 
+    /// Construct an empty mesh. One should use reset() method before using it.
+    RectangularFilteredMeshBase() = default;
+
     /**
      * Construct a mesh by wrap of a given @p rectangularMesh.
      * @param rectangularMesh mesh to wrap (it is copied by the constructor)
