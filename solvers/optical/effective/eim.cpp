@@ -204,7 +204,7 @@ std::vector<size_t> EffectiveIndex2D::findModes(dcomplex neff1, dcomplex neff2, 
             dcomplex z;
             try {
                 z = refine->find(0.5*(zz.first+zz.second));
-            } catch (ComputationError) {
+            } catch (ComputationError&) {
                 continue;
             }
             mode.neff = z;
