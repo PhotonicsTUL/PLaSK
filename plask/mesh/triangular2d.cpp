@@ -1,4 +1,4 @@
-#include "triangle2d.h"
+#include "triangular2d.h"
 
 namespace plask {
 
