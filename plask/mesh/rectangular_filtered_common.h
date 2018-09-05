@@ -10,16 +10,179 @@
 namespace plask {
 
 /**
+ * Iterator over nodes coordinates.
+ * It implements const_iterator for filtered meshes (RectangularFilteredMidpointsMesh and RectangularFilteredMesh).
+ *
+ * Iterator of this type is faster than IndexedIterator used by parent class of filtered meshes,
+ * as it has constant time dereference operation while <code>at</code> method has logarithmic time complexity.
+ *
+ * One can use:
+ * - getIndex() method of the iterator to get index of the node,
+ * - getNumber() method of the iterator to get index of the node in the wrapped mesh.
+ */
+template<typename MeshType>
+class RectangularFilteredMeshNodesIterator: public CompressedSetOfNumbers<std::size_t>::ConstIteratorFacade<RectangularFilteredMeshNodesIterator<MeshType>, typename MeshType::LocalCoords> {
+
+    friend class boost::iterator_core_access;
+
+    const MeshType* mesh;
+
+    typename MeshType::LocalCoords dereference() const {
+        return mesh->rectangularMesh.at(this->getNumber());
+    }
+
+public:
+
+    template <typename... CtorArgs>
+    explicit RectangularFilteredMeshNodesIterator(const MeshType& mesh, CtorArgs&&... ctorArgs)
+        : CompressedSetOfNumbers<std::size_t>::ConstIteratorFacade<RectangularFilteredMeshNodesIterator<MeshType>, typename MeshType::LocalCoords>(std::forward<CtorArgs>(ctorArgs)...), mesh(&mesh) {}
+
+    const CompressedSetOfNumbers<std::size_t>& set() const { return mesh->nodesSet; }
+};
+
+/**
+ * Rectangular mesh with filtered nodes.
+ *
+ * It implements midpoints mesh of RectangularFilteredMesh2D and RectangularFilteredMesh3D.
+ */
+template <int DIM>
+struct RectangularFilteredMidpointsMeshBase: public MeshD<DIM> {
+
+    /// Full, rectangular, wrapped mesh.
+    RectangularMesh<DIM> rectangularMesh;
+
+protected:
+
+    //typedef CompressedSetOfNumbers<std::uint32_t> Set;
+    typedef CompressedSetOfNumbers<std::size_t> Set;
+
+    /// Numbers of enabled nodes.
+    Set nodesSet;
+
+public:
+
+    using typename MeshD<DIM>::LocalCoords;
+
+    RectangularFilteredMidpointsMeshBase(const RectangularMesh<DIM>& rectangularMesh, Set nodesSet, bool clone_axes = false)
+        : rectangularMesh(rectangularMesh, clone_axes), nodesSet(std::move(nodesSet)) {}
+
+    typedef RectangularFilteredMeshNodesIterator<RectangularFilteredMidpointsMeshBase> const_iterator;
+
+    /// Iterator over nodes coordinates. The same as const_iterator, since non-const iterators are not supported.
+    typedef const_iterator iterator;
+
+    const_iterator begin() const { return const_iterator(*this, 0, nodesSet.segments.begin()); }
+    const_iterator end() const { return const_iterator(*this, size(), nodesSet.segments.end()); }
+
+    LocalCoords at(std::size_t index) const override {
+        return rectangularMesh.at(nodesSet.at(index));
+    }
+
+    std::size_t size() const override { return nodesSet.size(); }
+
+    bool empty() const override { return nodesSet.empty(); }
+
+    /**
+     * Calculate this mesh index using indexes of axis[0] and axis[1].
+     * @param indexes index of axis[0] and axis[1]
+     * @return this mesh index, from 0 to size()-1, or NOT_INCLUDED
+     */
+    inline std::size_t index(const Vec<DIM, std::size_t>& indexes) const {
+        return nodesSet.indexOf(rectangularMesh.index(indexes));
+    }
+
+    /**
+     * Calculate index of axis0 using this mesh index.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return index of axis0, from 0 to axis0->size()-1
+     */
+    inline std::size_t index0(std::size_t mesh_index) const {
+        return rectangularMesh.index0(nodesSet.at(mesh_index));
+    }
+
+    /**
+     * Calculate index of axis1 using this mesh index.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return index of axis1, from 0 to axis1->size()-1
+     */
+    inline std::size_t index1(std::size_t mesh_index) const {
+        return rectangularMesh.index1(nodesSet.at(mesh_index));
+    }
+
+    /**
+     * Calculate indexes of axes.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return indexes of axes
+     */
+    inline Vec<DIM, std::size_t> indexes(std::size_t mesh_index) const {
+        return rectangularMesh.indexes(nodesSet.at(mesh_index));
+    }
+
+    /**
+     * Calculate index of major axis using given mesh index.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return index of major axis, from 0 to majorAxis.size()-1
+     */
+    inline std::size_t majorIndex(std::size_t mesh_index) const {
+        return rectangularMesh.majorIndex(nodesSet.at(mesh_index));
+    }
+
+    /**
+     * Calculate index of major axis using given mesh index.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return index of major axis, from 0 to majorAxis.size()-1
+     */
+    inline std::size_t minorIndex(std::size_t mesh_index) const {
+        return rectangularMesh.minorIndex(nodesSet.at(mesh_index));
+    }
+
+};
+
+typedef RectangularFilteredMidpointsMeshBase<2> RectangularFilteredMidpointsMesh2D;
+
+struct RectangularFilteredMidpointsMesh3D: public RectangularFilteredMidpointsMeshBase<3> {
+
+    template<typename... Args> RectangularFilteredMidpointsMesh3D(Args&&... args) : RectangularFilteredMidpointsMeshBase<3>(std::forward<Args>(args)...) {}
+
+    /**
+     * Calculate index of axis2 using this mesh index.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return index of axis2, from 0 to axis2->size()-1
+     */
+    inline std::size_t index2(std::size_t mesh_index) const {   // method missing in the base as it is specific for 3D
+        return this->rectangularMesh.index2(this->nodesSet.at(mesh_index));
+    }
+
+    /**
+     * Calculate index of middle axis using given mesh index.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return index of major axis, from 0 to middleIndex.size()-1
+     */
+    inline std::size_t middleIndex(std::size_t mesh_index) const {   // method missing in the base as it is specific for 3D
+        return this->rectangularMesh.middleIndex(this->nodesSet.at(mesh_index));
+    }
+};
+
+template <int DIM>
+using RectangularFilteredMidpointsMesh =
+    typename std::conditional<
+        DIM == 2,
+        RectangularFilteredMidpointsMesh2D,
+        typename std::conditional<DIM == 3, RectangularFilteredMidpointsMesh3D, void>::type
+    >::type;
+
+/**
  * Common base class for RectangularFilteredMesh 2D and 3D.
  *
  * Do not use directly.
  */
 template <int DIM>
-class RectangularFilteredMeshBase: public RectangularMeshBase<DIM> {
+struct RectangularFilteredMeshBase: public RectangularMeshBase<DIM> {
+
+    /// Full, rectangular, wrapped mesh.
+    RectangularMesh<DIM> rectangularMesh;
 
 protected:
-
-    RectangularMesh<DIM> rectangularMesh;
 
     //typedef CompressedSetOfNumbers<std::uint32_t> Set;
     typedef CompressedSetOfNumbers<std::size_t> Set;
@@ -153,34 +316,7 @@ public:
     RectangularFilteredMeshBase(const RectangularMesh<DIM>& rectangularMesh, bool clone_axes = false)
         : rectangularMesh(rectangularMesh, clone_axes) { resetBoundyIndex(); }
 
-    /**
-     * Iterator over nodes coordinates.
-     *
-     * Iterator of this type is faster than IndexedIterator used by parent class,
-     * as it has constant time dereference operation while at method has logarithmic time complexity.
-     *
-     * One can use:
-     * - getIndex() method of the iterator to get index of the node,
-     * - getNumber() method of the iterator to get index of the node in the wrapped mesh.
-     */
-    class PLASK_API const_iterator: public Set::ConstIteratorFacade<const_iterator, LocalCoords> {
-
-        friend class boost::iterator_core_access;
-
-        const RectangularFilteredMeshBase* mesh;
-
-        LocalCoords dereference() const {
-            return mesh->rectangularMesh.at(this->getNumber());
-        }
-
-    public:
-
-        template <typename... CtorArgs>
-        explicit const_iterator(const RectangularFilteredMeshBase& mesh, CtorArgs&&... ctorArgs)
-            : Set::ConstIteratorFacade<const_iterator, LocalCoords>(std::forward<CtorArgs>(ctorArgs)...), mesh(&mesh) {}
-
-        const Set& set() const { return mesh->nodesSet; }
-    };
+    typedef RectangularFilteredMeshNodesIterator<RectangularFilteredMeshBase> const_iterator;
 
     /// Iterator over nodes coordinates. The same as const_iterator, since non-const iterators are not supported.
     typedef const_iterator iterator;
@@ -248,6 +384,15 @@ public:
      */
     inline std::size_t minorIndex(std::size_t mesh_index) const {
         return rectangularMesh.minorIndex(nodesSet.at(mesh_index));
+    }
+
+    /**
+     * Return a mesh that enables iterating over middle points of the selected rectangles.
+     * \return new rectilinear mesh with points in the middles of original, selected rectangles
+     */
+    shared_ptr<RectangularFilteredMidpointsMesh<DIM>> getMidpointsMesh() const {
+        return plask::make_shared<RectangularFilteredMidpointsMesh<DIM>>(*rectangularMesh.getMidpointsMesh(), elementsSet);
+        // elementsSet is passed as a second argument since nodes of midpoints mesh coresponds to elements of oryginal mesh
     }
 
     /**

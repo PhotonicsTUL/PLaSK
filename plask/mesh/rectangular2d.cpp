@@ -102,7 +102,7 @@ void RectangularMesh2D::setAxis(std::size_t axis_nr, shared_ptr<MeshAxis> new_va
     if (fireResized) this->fireResized();
 }
 
-shared_ptr<RectangularMesh2D > RectangularMesh2D::getMidpointsMesh() {
+shared_ptr<RectangularMesh2D> RectangularMesh2D::getMidpointsMesh() const {
     return plask::make_shared<RectangularMesh2D>(axis[0]->getMidpointsMesh(), axis[1]->getMidpointsMesh(), getIterationOrder());
 }
 
