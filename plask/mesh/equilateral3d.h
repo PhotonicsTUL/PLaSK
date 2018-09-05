@@ -189,7 +189,7 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
      * Return a mesh that enables iterating over middle points of the elements
      * \return new equilateral mesh with points in the middles of original elements
      */
-    shared_ptr<EquilateralMesh3D> getMidpointsMesh();
+    shared_ptr<EquilateralMesh3D> getMidpointsMesh() const;
 
     /**
      * Get point in center of Elements.

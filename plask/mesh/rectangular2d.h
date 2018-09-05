@@ -534,7 +534,7 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
      * Return a mesh that enables iterating over middle points of the rectangles
      * \return new rectilinear mesh with points in the middles of original rectangles
      */
-    shared_ptr<RectangularMesh2D> getMidpointsMesh();
+    shared_ptr<RectangularMesh2D> getMidpointsMesh() const;
 
     /**
      * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.

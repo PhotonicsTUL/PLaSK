@@ -124,7 +124,7 @@ class PLASK_API RectangularMesh3D: public RectilinearMesh3D {
      * Return a mesh that enables iterating over middle points of the cuboids
      * \return new rectangular mesh with points in the middles of original cuboids
      */
-    shared_ptr<RectangularMesh3D> getMidpointsMesh();
+    shared_ptr<RectangularMesh3D> getMidpointsMesh() const;
 
     /**
      * Get area of given element.
