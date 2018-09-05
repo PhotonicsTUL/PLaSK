@@ -349,7 +349,10 @@ try:
 except ImportError:
     from io import StringIO
 
-from sphinx.util.compat import Directive
+try:
+    from sphinx.util.compat import Directive
+except ImportError:
+    from docutils.parsers.rst import Directive
 from docutils import nodes, statemachine
 
 class ExecDirective(Directive):
