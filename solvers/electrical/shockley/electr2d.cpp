@@ -116,9 +116,9 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
         return;
     }
 
-    filteredMesh.reset(*this->mesh, *this->geometry, ~plask::Material::NONE); //!!!
+    filteredMesh->reset(*this->mesh, *this->geometry, ~plask::Material::NONE); //!!!
 
-    shared_ptr<RectangularMesh<2>> points = this->mesh->getMidpointsMesh();
+    shared_ptr<RectangularMesh<2>> points = this->filteredMesh->getMidpointsMesh();
 
     std::vector<typename Active::Region> regions;
 
@@ -166,7 +166,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
     size_t i = 0;
     for (auto& reg: regions) {
         if (reg.bottom == size_t(-1)) reg.bottom = reg.top = 0;
-        active.emplace_back(condsize, reg.left, reg.right, reg.bottom, reg.top, this->mesh->axis[1]->at(reg.top) - this->mesh->axis[1]->at(reg.bottom));
+        active.emplace_back(condsize, reg.left, reg.right, reg.bottom, reg.top, this->filteredMesh->getAxis(1)->at(reg.top) - this->filteredMesh->getAxis(1)->at(reg.bottom));
         condsize += reg.right - reg.left;
         this->writelog(LOG_DETAIL, "Detected junction {0} thickness = {1}nm", i++, 1e3 * active.back().height);
         this->writelog(LOG_DEBUG, "Junction {0} span: [{1},{3}]-[{2},{4}]", i-1, reg.left, reg.right, reg.bottom, reg.top);

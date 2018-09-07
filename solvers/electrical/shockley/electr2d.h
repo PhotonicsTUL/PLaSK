@@ -17,7 +17,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
 
   protected:
 
-    RectangularFilteredMesh2D filteredMesh; //!!!
+    plask::shared_ptr<RectangularFilteredMesh2D> filteredMesh = plask::make_shared<RectangularFilteredMesh2D>(); //!!!
 
     /// Details of active region
     struct Active {
@@ -136,7 +136,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     }
 
     /// Return \c true if the specified element is a junction
-    size_t isActive(const RectangularMesh<2>::Element& element) const { return isActive(element.getMidpoint()); }
+    size_t isActive(const RectangularFilteredMesh2D::Element& element) const { return isActive(element.getMidpoint()); }
 
   public:
 
