@@ -20,7 +20,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @return index of axis2, from 0 to axis2->size()-1
      */
     inline std::size_t index2(std::size_t mesh_index) const {   // method missing in the base as it is specific for 3D
-        return rectangularMesh.index2(nodesSet.at(mesh_index));
+        return fullMesh.index2(nodesSet.at(mesh_index));
     }
 
     /**
@@ -29,7 +29,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @return index of major axis, from 0 to middleIndex.size()-1
      */
     inline std::size_t middleIndex(std::size_t mesh_index) const {   // method missing in the base as it is specific for 3D
-        return rectangularMesh.middleIndex(nodesSet.at(mesh_index));
+        return fullMesh.middleIndex(nodesSet.at(mesh_index));
     }
 
     /**
@@ -37,7 +37,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @return number of elements in the full rectangular mesh in the third direction (axis2 direction).
      */
     std::size_t getElementsCount2() const {  // method missing in the base as it is specific for 3D
-        return rectangularMesh.getElementsCount2();
+        return fullMesh.getElementsCount2();
     }
 
     /**
@@ -46,7 +46,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @return third coordinate of the point in the center of the element
      */
     double getElementMidpoint2(std::size_t index2) const {   // method missing in the base as it is specific for 3D
-        return rectangularMesh.getElementMidpoint2(index2);
+        return fullMesh.getElementMidpoint2(index2);
     }
 
     typedef std::function<bool(const RectangularMesh3D::Element&)> Predicate;
@@ -61,7 +61,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
         /// Index of element. If it equals to UNKONOWN_ELEMENT_INDEX, it will be calculated on-demand from index0 and index1.
         mutable std::size_t elementIndex;
 
-        const RectangularMesh<3>& rectangularMesh() const { return filteredMesh.rectangularMesh; }
+        const RectangularMesh<3>& rectangularMesh() const { return filteredMesh.fullMesh; }
 
     public:
 
@@ -238,7 +238,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @param predicate predicate which returns either @c true for accepting element or @c false for rejecting it
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
      */
-    RectangularFilteredMesh3D(const RectangularMesh<3>& rectangularMesh, const Predicate& predicate, bool clone_axes = false);
+    RectangularFilteredMesh3D(const RectangularMesh<3>& fullMesh, const Predicate& predicate, bool clone_axes = false);
 
     /**
      * Change parameter of this mesh to use elements of @p rectangularMesh chosen by a @p predicate.
@@ -247,7 +247,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @param predicate predicate which returns either @c true for accepting element or @c false for rejecting it
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared with @p rectangularMesh (if @c false; default)
      */
-    void reset(const RectangularMesh<3>& rectangularMesh, const Predicate& predicate, bool clone_axes = false);
+    void reset(const RectangularMesh<3>& fullMesh, const Predicate& predicate, bool clone_axes = false);
 
     /**
      * Construct filtered mesh with all elements of @c rectangularMesh which have required materials in the midpoints.
@@ -339,7 +339,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @return this mesh index, from 0 to size()-1, or NOT_INCLUDED
      */
     inline std::size_t index(std::size_t axis0_index, std::size_t axis1_index, std::size_t axis2_index) const {
-        return nodesSet.indexOf(rectangularMesh.index(axis0_index, axis1_index, axis2_index));
+        return nodesSet.indexOf(fullMesh.index(axis0_index, axis1_index, axis2_index));
     }
 
     using RectangularFilteredMeshBase<3>::index;
@@ -353,7 +353,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @return point with given @p index
      */
     inline Vec<3, double> at(std::size_t index0, std::size_t index1, std::size_t index2) const {
-        return rectangularMesh.at(index0, index1, index2);
+        return fullMesh.at(index0, index1, index2);
     }
 
     /**
@@ -364,7 +364,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @return point with given axis0 and axis1 indexes
      */
     inline Vec<3, double> operator()(std::size_t axis0_index, std::size_t axis1_index, std::size_t axis2_index) const {
-        return rectangularMesh.operator()(axis0_index, axis1_index, axis2_index);
+        return fullMesh.operator()(axis0_index, axis1_index, axis2_index);
     }
 
 private:
@@ -372,9 +372,9 @@ private:
 
     bool canBeIncluded(const Vec<3>& point) const {
         return
-            rectangularMesh.axis[0]->at(0) <= point[0] && point[0] <= rectangularMesh.axis[0]->at(rectangularMesh.axis[0]->size()-1) &&
-            rectangularMesh.axis[1]->at(0) <= point[1] && point[1] <= rectangularMesh.axis[1]->at(rectangularMesh.axis[1]->size()-1) &&
-            rectangularMesh.axis[2]->at(0) <= point[2] && point[2] <= rectangularMesh.axis[2]->at(rectangularMesh.axis[2]->size()-1);
+            fullMesh.axis[0]->at(0) <= point[0] && point[0] <= fullMesh.axis[0]->at(fullMesh.axis[0]->size()-1) &&
+            fullMesh.axis[1]->at(0) <= point[1] && point[1] <= fullMesh.axis[1]->at(fullMesh.axis[1]->size()-1) &&
+            fullMesh.axis[2]->at(0) <= point[2] && point[2] <= fullMesh.axis[2]->at(fullMesh.axis[2]->size()-1);
     }
 
     bool prepareInterpolation(const Vec<3>& point, Vec<3>& wrapped_point,
@@ -402,9 +402,9 @@ public:
 
         return flags.postprocess(point,
                                  interpolation::trilinear(
-                                     rectangularMesh.axis[0]->at(index0_lo), rectangularMesh.axis[0]->at(index0_hi),
-                                     rectangularMesh.axis[1]->at(index1_lo), rectangularMesh.axis[1]->at(index1_hi),
-                                     rectangularMesh.axis[2]->at(index1_lo), rectangularMesh.axis[2]->at(index1_hi),
+                                     fullMesh.axis[0]->at(index0_lo), fullMesh.axis[0]->at(index0_hi),
+                                     fullMesh.axis[1]->at(index1_lo), fullMesh.axis[1]->at(index1_hi),
+                                     fullMesh.axis[2]->at(index1_lo), fullMesh.axis[2]->at(index1_hi),
                                      data[nodesSet.indexOf(rectmesh_index_lo)],
                                      data[index(index0_lo, index1_lo, index2_lo)],
                                      data[index(index0_hi, index1_lo, index2_lo)],
@@ -435,9 +435,9 @@ public:
 
         return flags.postprocess(point,
                                  data[this->index(
-                                     nearest(wrapped_point.c0, *rectangularMesh.axis[0], index0_lo, index0_hi),
-                                     nearest(wrapped_point.c1, *rectangularMesh.axis[1], index1_lo, index1_hi),
-                                     nearest(wrapped_point.c2, *rectangularMesh.axis[2], index2_lo, index2_hi)
+                                     nearest(wrapped_point.c0, *fullMesh.axis[0], index0_lo, index0_hi),
+                                     nearest(wrapped_point.c1, *fullMesh.axis[1], index1_lo, index1_hi),
+                                     nearest(wrapped_point.c2, *fullMesh.axis[2], index2_lo, index2_hi)
                                  )]);
     }
 
@@ -449,7 +449,7 @@ public:
      * @return index of the element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndexes(std::size_t axis0_index, std::size_t axis1_index, std::size_t axis2_index) const {
-        return elementsSet.indexOf(rectangularMesh.getElementIndexFromLowIndexes(axis0_index, axis1_index, axis2_index));
+        return elementsSet.indexOf(fullMesh.getElementIndexFromLowIndexes(axis0_index, axis1_index, axis2_index));
     }
 
     /**
@@ -458,7 +458,7 @@ public:
      * @return the area of the element with given indexes
      */
     double getElementArea(std::size_t index0, std::size_t index1, std::size_t index2) const {
-        return rectangularMesh.getElementArea(index0, index1, index2);
+        return fullMesh.getElementArea(index0, index1, index2);
     }
 
     /**
@@ -467,7 +467,7 @@ public:
      * @return point in center of element with given index
      */
     Vec<3, double> getElementMidpoint(std::size_t index0, std::size_t index1, std::size_t index2) const {
-        return rectangularMesh.getElementMidpoint(index0, index1, index2);
+        return fullMesh.getElementMidpoint(index0, index1, index2);
     }
 
     /**
@@ -476,7 +476,7 @@ public:
      * @return box of elements with given index
      */
     Box3D getElementBox(std::size_t index0, std::size_t index1, std::size_t index2) const {
-        return rectangularMesh.getElementBox(index0, index1, index2);
+        return fullMesh.getElementBox(index0, index1, index2);
     }
 
 
