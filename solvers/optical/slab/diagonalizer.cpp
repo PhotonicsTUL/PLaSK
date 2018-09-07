@@ -115,6 +115,8 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         //         std::cerr << format("{:7.1f} ", real(RH(r,c)));
         //     std::cerr << "\n";
         // }
+        assert(!RE.isnan());
+        assert(!RH.isnan());
 
         if (src->diagonalQE(layer)) {
 
@@ -172,6 +174,7 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             // Make Gamma of Gamma^2
             sqrtGamma(gam);
         }
+        assert(!Te[layer].isnan());
 
         // So now there is the time to find TH = Re * Te * Gamma^(-1)
         mult_matrix_by_matrix(RE, Te[layer], Th[layer]);
