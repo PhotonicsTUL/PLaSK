@@ -6,8 +6,8 @@
 #include "getmac.h"
 
 void print_macs() {
-    std::cout << std::endl << "Note: Detected system ids:" << std::endl;
-    for (auto& m: plask::getMacs()) std::cout << ' ' << plask::macToString(m) << std::endl;
+    std::cout << "\nNote: Detected system ids:\n";
+    for (auto& m: plask::getMacs()) std::cout << " " << plask::macToString(m) << std::endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -15,7 +15,7 @@ int main(int argc, char *argv[]) {
     try {
 
         if (argc != 2) {
-            std::cout << "Usage: " << argv[0] << " file_to_sign.xml" << std::endl;
+            std::cout << "Usage: " << argv[0] << " file_to_sign.xml\n";
             print_macs();
             return 1;
         }

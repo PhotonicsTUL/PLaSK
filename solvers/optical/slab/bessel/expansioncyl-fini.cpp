@@ -140,6 +140,10 @@ void ExpansionBesselFini::layerIntegrals(size_t layer, double lam, double glam)
 
 void ExpansionBesselFini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
 {
+    assert(initialized);
+    if (isnan(k0)) throw BadInput(SOLVER->getId(), "Wavelength or k0 not set");
+    if (isinf(k0.real())) throw BadInput(SOLVER->getId(), "Wavelength must not be 0");
+
     size_t N = SOLVER->size;
     dcomplex ik0 = 1. / k0;
     double b = rbounds[rbounds.size()-1];

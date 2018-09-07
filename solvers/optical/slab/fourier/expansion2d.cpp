@@ -402,6 +402,8 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
 void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
 {
     assert(initialized);
+    if (isnan(k0)) throw BadInput(SOLVER->getId(), "Wavelength or k0 not set");
+    if (isinf(k0.real())) throw BadInput(SOLVER->getId(), "Wavelength must not be 0");
 
     dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
 

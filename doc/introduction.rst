@@ -111,6 +111,10 @@ Program ``plask`` may be run with several command-line parameters tha--if presen
 
       print PLaSK version and exit.
 
+.. option:: -h
+
+      print system id for license and exit.
+
 .. option:: variable=value
 
       set the value of a variable defined in XPL section <defines>. This overrides the value from the file.

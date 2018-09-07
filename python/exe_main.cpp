@@ -2,6 +2,7 @@
 
 #include <plask/utils/system.h>
 #include <plask/config.h>
+#include "../license_sign/getmac.h"
 
 #if defined(MS_WINDOWS) || defined(__CYGWIN__)
 #  include <io.h>
@@ -223,15 +224,24 @@ int system_main(int argc, const system_char *argv[])
 {
     //setlocale(LC_ALL,""); std::locale::global(std::locale(""));    // set default locale from env (C is used when program starts), boost filesystem will do the same
 
-    if (argc > 1 && system_string(argv[1]) == CSTR(-V)) {
-        printf("PLaSK " PLASK_VERSION "\n");
-#       ifdef LICENSE_CHECK
-            std::string user = plask::license_verifier.getUser(),
-                        expiry = plask::license_verifier.getExpiration();
-            if (user != "") printf("%s %s\n", user.c_str(), expiry.c_str());
-#       else
-#   endif
-        return 0;
+    if (argc > 1) {
+        system_string arg(argv[1]);
+        if (arg == CSTR(-V)) {
+            printf("PLaSK " PLASK_VERSION "\n");
+#           ifdef LICENSE_CHECK
+                std::string user = plask::license_verifier.getUser(),
+                            expiry = plask::license_verifier.getExpiration();
+                if (user != "") printf("%s %s\n", user.c_str(), expiry.c_str());
+#           endif
+            return 0;
+        } else if (arg == CSTR(-h)) {
+            for (auto& m: plask::getMacs()) {
+                std::cout << "Detected system ID: " << plask::macToString(m) << std::endl;
+                return 0;
+            }
+            std::cout << "Cound not detect system ID\n";
+            return 1;
+        }
     }
 
 #   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
@@ -264,11 +274,17 @@ int system_main(int argc, const system_char *argv[])
             force_interactive = true;
             --argc; ++argv;
         } else if (arg.substr(0,2) == CSTR(-l)) {
-            const system_char* level = (arg.length() > 2)? argv[1]+2 : argv[2];
+            const system_char* level;
+            if (arg.length() > 2) level = argv[1]+2;
+            else if (argc > 2) level = argv[2];
+            else {
+                fprintf(stderr, "No log level specified\n");
+                return 4;
+            }
             try {
                 loglevel.reset(plask::LogLevel(boost::lexical_cast<unsigned>(level)));
             } catch (boost::bad_lexical_cast&) {
-				system_string ll = level; boost::to_lower(ll);
+                system_string ll = level; boost::to_lower(ll);
                 if (ll == CSTR(critical_error)) loglevel.reset(plask::LOG_CRITICAL_ERROR);
                 if (ll == CSTR(critical)) loglevel.reset(plask::LOG_CRITICAL_ERROR);
                 else if (ll == CSTR(error)) loglevel.reset(plask::LOG_ERROR);
