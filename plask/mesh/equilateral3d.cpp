@@ -15,7 +15,7 @@ EquilateralMesh3D::EquilateralMesh3D(shared_ptr<MeshAxis> mesh0, shared_ptr<Mesh
         findInverse();
     }
 
-shared_ptr<EquilateralMesh3D> EquilateralMesh3D::getMidpointsMesh() {
+shared_ptr<EquilateralMesh3D> EquilateralMesh3D::getMidpointsMesh() const {
     return plask::make_shared<EquilateralMesh3D>(axis[0]->getMidpointsMesh(), axis[1]->getMidpointsMesh(), axis[2]->getMidpointsMesh(),
                                                  getIterationOrder(), getVec0(), getVec1(), getVec2());
 }

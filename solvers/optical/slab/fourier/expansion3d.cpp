@@ -584,6 +584,8 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
 void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
 {
     assert(initialized);
+    if (isnan(k0)) throw BadInput(SOLVER->getId(), "Wavelength or k0 not set");
+    if (isinf(k0.real())) throw BadInput(SOLVER->getId(), "Wavelength must not be 0");
 
     int ordl = int(SOLVER->getLongSize()), ordt = int(SOLVER->getTranSize());
 

@@ -546,7 +546,7 @@ class PLASK_API Solver {
     /**
      * This should be called on beginning of each calculation method to ensure that solver will be initialized.
      * It's does nothing if solver is already initialized and calls onInitialize() if it's not.
-     * @return @c true only if solver is newly initialized (it was previously uninitialized) and onInitialize was called.
+     * @return @c true only if solver is newly initialized (it was previously uninitialized) and onInitialize has just been called.
      */
     bool initCalculation();
 
@@ -806,7 +806,7 @@ private:
     void parseStandardConfiguration(XMLReader& source, Manager& manager, const std::string& expected_msg="solver configuration element");
 
     /**
-     * This method is called when the mesh is changed.
+     * This method is called just after the mesh has been changed.
      * It just calls invalidate(); but subclasses can customize it.
      * @param evt information about mesh changes
      */

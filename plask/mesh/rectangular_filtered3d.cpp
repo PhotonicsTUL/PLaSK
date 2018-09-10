@@ -2,10 +2,26 @@
 
 namespace plask {
 
+void RectangularFilteredMesh3D::reset(const RectangularFilteredMesh3D::Predicate &predicate) {
+    RectangularFilteredMeshBase<3>::reset();
+    initNodesAndElements(predicate);
+}
+
 RectangularFilteredMesh3D::RectangularFilteredMesh3D(const RectangularMesh<3> &rectangularMesh, const RectangularFilteredMesh3D::Predicate &predicate, bool clone_axes)
     : RectangularFilteredMeshBase(rectangularMesh, clone_axes)
 {
-    for (auto el_it = this->rectangularMesh.elements().begin(); el_it != this->rectangularMesh.elements().end(); ++el_it)
+    initNodesAndElements(predicate);
+}
+
+void RectangularFilteredMesh3D::reset(const RectangularMesh<3> &rectangularMesh, const RectangularFilteredMesh3D::Predicate &predicate, bool clone_axes)
+{
+    this->fullMesh.reset(rectangularMesh, clone_axes);
+    reset(predicate);
+}
+
+void RectangularFilteredMesh3D::initNodesAndElements(const RectangularFilteredMesh3D::Predicate &predicate)
+{
+    for (auto el_it = this->fullMesh.elements().begin(); el_it != this->fullMesh.elements().end(); ++el_it)
         if (predicate(*el_it)) {
             elementsSet.push_back(el_it.index);
             nodesSet.insert(el_it->getLoLoLoIndex());
@@ -39,12 +55,12 @@ bool RectangularFilteredMesh3D::prepareInterpolation(const Vec<3> &point, Vec<3>
 
     if (!canBeIncluded(wrapped_point)) return false;
 
-    findIndexes(*rectangularMesh.axis[0], wrapped_point.c0, index0_lo, index0_hi);
-    findIndexes(*rectangularMesh.axis[1], wrapped_point.c1, index1_lo, index1_hi);
-    findIndexes(*rectangularMesh.axis[2], wrapped_point.c2, index2_lo, index2_hi);
+    findIndexes(*fullMesh.axis[0], wrapped_point.c0, index0_lo, index0_hi);
+    findIndexes(*fullMesh.axis[1], wrapped_point.c1, index1_lo, index1_hi);
+    findIndexes(*fullMesh.axis[2], wrapped_point.c2, index2_lo, index2_hi);
 
-    rectmesh_index_lo = rectangularMesh.index(index0_lo, index1_lo, index2_lo);
-    return elementsSet.includes(rectangularMesh.getElementIndexFromLowIndex(rectmesh_index_lo));
+    rectmesh_index_lo = fullMesh.index(index0_lo, index1_lo, index2_lo);
+    return elementsSet.includes(fullMesh.getElementIndexFromLowIndex(rectmesh_index_lo));
 }
 
 BoundaryNodeSet RectangularFilteredMesh3D::createIndex0BoundaryAtLine(std::size_t line_nr_axis0, std::size_t index1Begin, std::size_t index1End, std::size_t index2Begin, std::size_t index2End) const
@@ -100,9 +116,9 @@ BoundaryNodeSet RectangularFilteredMesh3D::createTopBoundary() const {
 
 BoundaryNodeSet RectangularFilteredMesh3D::createBackOfBoundary(const Box3D &box) const {
     std::size_t line, begInd1, endInd1, begInd2, endInd2;
-    if (details::getLineLo(line, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0) &&
-            details::getIndexesInBounds(begInd1, endInd1, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1) &&
-            details::getIndexesInBounds(begInd2, endInd2, *rectangularMesh.axis[2], box.lower.c2, box.upper.c2))
+    if (details::getLineLo(line, *fullMesh.axis[0], box.lower.c0, box.upper.c0) &&
+            details::getIndexesInBounds(begInd1, endInd1, *fullMesh.axis[1], box.lower.c1, box.upper.c1) &&
+            details::getIndexesInBounds(begInd2, endInd2, *fullMesh.axis[2], box.lower.c2, box.upper.c2))
         return createIndex0BoundaryAtLine(line, begInd1, endInd1, begInd2, endInd2);
     else
         return new EmptyBoundaryImpl();
@@ -110,9 +126,9 @@ BoundaryNodeSet RectangularFilteredMesh3D::createBackOfBoundary(const Box3D &box
 
 BoundaryNodeSet RectangularFilteredMesh3D::createFrontOfBoundary(const Box3D &box) const {
     std::size_t line, begInd1, endInd1, begInd2, endInd2;
-    if (details::getLineHi(line, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0) &&
-            details::getIndexesInBounds(begInd1, endInd1, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1) &&
-            details::getIndexesInBounds(begInd2, endInd2, *rectangularMesh.axis[2], box.lower.c2, box.upper.c2))
+    if (details::getLineHi(line, *fullMesh.axis[0], box.lower.c0, box.upper.c0) &&
+            details::getIndexesInBounds(begInd1, endInd1, *fullMesh.axis[1], box.lower.c1, box.upper.c1) &&
+            details::getIndexesInBounds(begInd2, endInd2, *fullMesh.axis[2], box.lower.c2, box.upper.c2))
         return createIndex0BoundaryAtLine(line, begInd1, endInd1, begInd2, endInd2);
     else
         return new EmptyBoundaryImpl();
@@ -120,9 +136,9 @@ BoundaryNodeSet RectangularFilteredMesh3D::createFrontOfBoundary(const Box3D &bo
 
 BoundaryNodeSet RectangularFilteredMesh3D::createLeftOfBoundary(const Box3D &box) const {
     std::size_t line, begInd0, endInd0, begInd2, endInd2;
-    if (details::getLineLo(line, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1) &&
-            details::getIndexesInBounds(begInd0, endInd0, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0) &&
-            details::getIndexesInBounds(begInd2, endInd2, *rectangularMesh.axis[2], box.lower.c2, box.upper.c2))
+    if (details::getLineLo(line, *fullMesh.axis[1], box.lower.c1, box.upper.c1) &&
+            details::getIndexesInBounds(begInd0, endInd0, *fullMesh.axis[0], box.lower.c0, box.upper.c0) &&
+            details::getIndexesInBounds(begInd2, endInd2, *fullMesh.axis[2], box.lower.c2, box.upper.c2))
         return createIndex1BoundaryAtLine(line, begInd0, endInd0, begInd2, endInd2);
     else
         return new EmptyBoundaryImpl();
@@ -130,9 +146,9 @@ BoundaryNodeSet RectangularFilteredMesh3D::createLeftOfBoundary(const Box3D &box
 
 BoundaryNodeSet RectangularFilteredMesh3D::createRightOfBoundary(const Box3D &box) const {
     std::size_t line, begInd0, endInd0, begInd2, endInd2;
-    if (details::getLineHi(line, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1) &&
-            details::getIndexesInBounds(begInd0, endInd0, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0) &&
-            details::getIndexesInBounds(begInd2, endInd2, *rectangularMesh.axis[2], box.lower.c2, box.upper.c2))
+    if (details::getLineHi(line, *fullMesh.axis[1], box.lower.c1, box.upper.c1) &&
+            details::getIndexesInBounds(begInd0, endInd0, *fullMesh.axis[0], box.lower.c0, box.upper.c0) &&
+            details::getIndexesInBounds(begInd2, endInd2, *fullMesh.axis[2], box.lower.c2, box.upper.c2))
         return createIndex1BoundaryAtLine(line, begInd0, endInd0, begInd2, endInd2);
     else
         return new EmptyBoundaryImpl();
@@ -140,9 +156,9 @@ BoundaryNodeSet RectangularFilteredMesh3D::createRightOfBoundary(const Box3D &bo
 
 BoundaryNodeSet RectangularFilteredMesh3D::createBottomOfBoundary(const Box3D &box) const {
     std::size_t line, begInd0, endInd0, begInd1, endInd1;
-    if (details::getLineLo(line, *rectangularMesh.axis[2], box.lower.c2, box.upper.c2) &&
-            details::getIndexesInBounds(begInd0, endInd0, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0) &&
-            details::getIndexesInBounds(begInd1, endInd1, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1))
+    if (details::getLineLo(line, *fullMesh.axis[2], box.lower.c2, box.upper.c2) &&
+            details::getIndexesInBounds(begInd0, endInd0, *fullMesh.axis[0], box.lower.c0, box.upper.c0) &&
+            details::getIndexesInBounds(begInd1, endInd1, *fullMesh.axis[1], box.lower.c1, box.upper.c1))
         return createIndex2BoundaryAtLine(line, begInd0, endInd0, begInd1, endInd1);
     else
         return new EmptyBoundaryImpl();
@@ -150,9 +166,9 @@ BoundaryNodeSet RectangularFilteredMesh3D::createBottomOfBoundary(const Box3D &b
 
 BoundaryNodeSet RectangularFilteredMesh3D::createTopOfBoundary(const Box3D &box) const {
     std::size_t line, begInd0, endInd0, begInd1, endInd1;
-    if (details::getLineHi(line, *rectangularMesh.axis[2], box.lower.c2, box.upper.c2) &&
-            details::getIndexesInBounds(begInd0, endInd0, *rectangularMesh.axis[0], box.lower.c0, box.upper.c0) &&
-            details::getIndexesInBounds(begInd1, endInd1, *rectangularMesh.axis[1], box.lower.c1, box.upper.c1))
+    if (details::getLineHi(line, *fullMesh.axis[2], box.lower.c2, box.upper.c2) &&
+            details::getIndexesInBounds(begInd0, endInd0, *fullMesh.axis[0], box.lower.c0, box.upper.c0) &&
+            details::getIndexesInBounds(begInd1, endInd1, *fullMesh.axis[1], box.lower.c1, box.upper.c1))
         return createIndex2BoundaryAtLine(line, begInd0, endInd0, begInd1, endInd1);
     else
         return new EmptyBoundaryImpl();

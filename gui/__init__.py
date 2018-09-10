@@ -759,7 +759,7 @@ class MainWindow(QMainWindow):
         if type(filename) == tuple: filename = filename[0]
         if not filename: return
         from shutil import copy
-        dest = os.path.expanduser("~\\plask_license.xml") if os.name == 'nt' else \
+        dest = os.path.join(os.environ['USERPROFILE'], "plask_license.xml") if os.name == 'nt' else \
                os.path.expanduser("~/.plask_license.xml")
         if os.path.lexists(dest):
             msgbox = QMessageBox()
