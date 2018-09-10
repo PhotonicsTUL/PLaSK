@@ -3,6 +3,8 @@ CMakeLists.txt.user
 build*
 *.kdev4
 .kdev*
+*.code-workspace
+.vscode
 .idea
 /.vs
 /CMakeSettings.json
