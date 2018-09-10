@@ -316,6 +316,134 @@ py::tuple Solver_getDiagonalized(Solver& self, size_t layer) {
 
 
 /**
+ * Proxy class for accessing layer eigenmodes
+ */
+template <typename SolverT>
+struct Eigenmodes {
+    cdiagonal gamma;
+    cmatrix TE, TH;
+
+    SolverT& solver;
+    size_t layer;
+
+    typename ProviderFor<ModeLightMagnitude, typename SolverT::SpaceType>::Delegate outLightMagnitude;
+    //     typename ProviderFor<ModeLightE,typename SolverT::SpaceType>::Delegate outLightE;
+    //     typename ProviderFor<ModeLightH,typename SolverT::SpaceType>::Delegate outLightH;
+
+
+    Eigenmodes(SolverT& solver, size_t layer): solver(solver), layer(layer),
+               outLightMagnitude(this, &Eigenmodes::getLightMagnitude, &Eigenmodes::size) {
+        bool changed = solver.Solver::initCalculation() || solver.setExpansionDefaults(true);
+        if (!solver.transfer) {
+            solver.initTransfer(solver.getExpansion(), false);
+            changed = true;
+        }
+        if (changed) {
+            solver.transfer->initDiagonalization();
+            solver.transfer->diagonalizer->diagonalizeLayer(layer);
+        } else if (!solver.transfer->diagonalizer->isDiagonalized(layer))
+            solver.transfer->diagonalizer->diagonalizeLayer(layer);
+        gamma = solver.transfer->diagonalizer->Gamma(layer);
+        TE = solver.transfer->diagonalizer->TE(layer),
+        TH = solver.transfer->diagonalizer->TH(layer);
+    }
+
+    static shared_ptr<Eigenmodes<SolverT>> init(SolverT& solver, double z) {
+        solver.Solver::initCalculation();
+        size_t layer = solver.stack[solver.getLayerFor(z)];
+        return make_shared<Eigenmodes<SolverT>>(solver, layer);
+    }
+
+    size_t size() const {
+        return gamma.size();
+    }
+
+    size_t index(int n) const {
+        int N = int(gamma.size());
+        if (n < 0) n += N;
+        if (n < 0 || n >= N) throw IndexError("{}: Bad eigenmode number", solver.getId());
+        return size_t(n);
+    }
+
+    py::object array(const dcomplex* data, size_t N) const;
+
+    LazyData<double> getLightMagnitude(std::size_t n, shared_ptr<const MeshD<SolverT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) {
+        cvector E(TE.data() + TE.rows()*index(int(n)), TE.rows());
+        cvector H(TH.data() + TH.rows()*index(int(n)), TH.rows());
+        solver.transfer->diagonalizer->source()->initField(Expansion::FIELD_E, method);
+        DataVector<double> destination(dst_mesh->size());
+        auto levels = makeLevelsAdapter(dst_mesh);
+        while (auto level = levels->yield()) {
+            //TODO warn if z is outside of the layer
+            //double z = level->vpos();
+            //size_t n = solver->getLayerFor(z);
+            auto dest = solver.transfer->diagonalizer->source()->getField(layer, level, E, H);
+            for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = abs2(dest[i]);
+        }
+        solver.transfer->diagonalizer->source()->cleanupField();
+        return destination;
+    }
+
+    struct Eigenmode {
+        Eigenmodes* ems;
+        int n;
+
+        Eigenmode(Eigenmodes* eigenmodes, int n): ems(eigenmodes), n(n) {}
+
+        dcomplex getGamma() const {
+            return ems->gamma[ems->index(n)];
+        }
+
+        py::object getCoefficientsE() const {
+            return ems->array(ems->TE.data() + ems->TE.rows()*ems->index(n), ems->TE.rows());
+        }
+
+        py::object getCoefficientsH() const {
+            return ems->array(ems->TH.data() + ems->TH.rows()*ems->index(n), ems->TH.rows());
+        }
+
+        double getFlux() const {
+            return abs(ems->solver.getExpansion().getModeFlux(n, ems->TE, ems->TH));
+        }
+    };
+
+    Eigenmode __getitem__(int n) {
+        if (n < 0) n = size() + n;
+        if (n < 0 || n >= size())
+            throw IndexError("Bad eigenmode number");
+        return Eigenmode(this, n);
+    }
+
+    static void registerClass(const char* suffix) {
+        py::class_<Eigenmodes, shared_ptr<Eigenmodes>, boost::noncopyable> ems("Eigenmodes",
+            u8"Layer eignemodes\n\n"
+            u8"This is an advanced class allowing to extract eignemodes in each layer.\n", py::no_init); ems
+            .def("__len__", &Eigenmodes::size)
+            .def("__getitem__", &Eigenmodes::__getitem__, py::with_custodian_and_ward_postcall<0,1>())
+            .def_readonly("outLightMagnitude",
+                        reinterpret_cast<ProviderFor<ModeLightMagnitude, typename SolverT::SpaceType> Eigenmodes::*> (&Eigenmodes::outLightMagnitude),
+                        format(docstring_attr_provider<ModeLightMagnitude>(), "LightMagnitude", suffix, u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude", "n=0", ":param int n: Mode number.").c_str()
+                        )
+        ;
+        py::scope scope(ems);
+        py::class_<Eigenmode>("Eigenmode", py::no_init)
+            .add_property("kvert", &Eigenmode::getGamma,
+                 u8"Vertical propagation constant for the eigenmode.")
+            .add_property("raw_E", &Eigenmode::getCoefficientsE,
+                 u8"Electric field coefficients for the eigenmode.")
+            .add_property("raw_H", &Eigenmode::getCoefficientsH,
+                 u8"Magnetic field coefficients for the eigenmode.")
+            .add_property("flux", &Eigenmode::getFlux,
+                 u8"Vertical flux for the eigenmode.\n\n"
+                 u8"This is equal to the vertical component of the Pointing vector integrated over\n"
+                 u8"the numerical domain.\n"
+             )
+        ;
+    }
+};
+
+
+/**
  * Proxy class for accessing scatterd fields
  */
 template <typename SolverT>
@@ -356,19 +484,40 @@ struct Scattering {
         return 100. * solver->getTransmission(incident, side);
     }
 
-    struct Reflected {
+    struct Input {
         Scattering* parent;
-        Reflected(Scattering* parent): parent(parent) {}
+        Input(Scattering* parent): parent(parent) {}
+        shared_ptr<Eigenmodes<SolverT>> eigenmodes() {
+            parent->solver->Solver::initCalculation();
+            size_t layer = (parent->side == Transfer::INCIDENCE_BOTTOM)? 0 : parent->solver->stack.back();
+            return make_shared<Eigenmodes<SolverT>>(*parent->solver, layer);
+        }
+    };
+
+    struct Reflected: Input {
+        Reflected(Scattering* parent): Input(parent) {}
         py::object get_coefficients() {
-            if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
-            return arrayFromVec<NPY_CDOUBLE>(parent->solver->getReflectedCoefficients(parent->incident, parent->side));
+            if (!this->parent->solver->initCalculation()) this->parent->solver->setExpansionDefaults();
+            return arrayFromVec<NPY_CDOUBLE>(this->parent->solver->getReflectedCoefficients(this->parent->incident, this->parent->side));
         }
         py::object get_fluxes() {
-            if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
-            return arrayFromVec<NPY_DOUBLE>(parent->solver->getReflectedAmplitudes(parent->incident, parent->side));
+            if (!this->parent->solver->initCalculation()) this->parent->solver->setExpansionDefaults();
+            return arrayFromVec<NPY_DOUBLE>(this->parent->solver->getReflectedAmplitudes(this->parent->incident, this->parent->side));
         }
     };
     Reflected get_reflected() { return Reflected(this); }
+
+    struct Incident: Input {
+        Incident(Scattering* parent): Input(parent) {}
+        py::object get_coefficients() {
+            return arrayFromVec<NPY_CDOUBLE>(this->parent->incident);
+        }
+        py::object get_fluxes() {
+            if (!this->parent->solver->initCalculation()) this->parent->solver->setExpansionDefaults();
+            return arrayFromVec<NPY_DOUBLE>(this->parent->solver->getIncidentAmplitudes(this->parent->incident, this->parent->side));
+        }
+    };
+    Incident get_incident() { return Incident(this); }
 
     struct Transmitted {
         Scattering* parent;
@@ -381,21 +530,13 @@ struct Scattering {
             if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
             return arrayFromVec<NPY_DOUBLE>(parent->solver->getTransmittedAmplitudes(parent->incident, parent->side));
         }
+        shared_ptr<Eigenmodes<SolverT>> eigenmodes() {
+            parent->solver->Solver::initCalculation();
+            size_t layer = (parent->side == Transfer::INCIDENCE_TOP)? 0 : parent->solver->stack.back();
+            return make_shared<Eigenmodes<SolverT>>(*parent->solver, layer);
+        }
     };
     Transmitted get_transmitted() { return Transmitted(this); }
-
-    struct Incident {
-        Scattering* parent;
-        Incident(Scattering* parent): parent(parent) {}
-        py::object get_coefficients() {
-            return arrayFromVec<NPY_CDOUBLE>(parent->incident);
-        }
-        py::object get_fluxes() {
-            if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
-            return arrayFromVec<NPY_DOUBLE>(parent->solver->getIncidentAmplitudes(parent->incident, parent->side));
-        }
-    };
-    Incident get_incident() { return Incident(this); }
 
 
     LazyData<Vec<3,dcomplex>> getLightE(const shared_ptr<const MeshD<SolverT::SpaceType::DIM>>& dst_mesh, InterpolationMethod method) {
@@ -463,16 +604,19 @@ struct Scattering {
         py::class_<Scattering<SolverT>::Reflected>("Reflected", "Reflected field details", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Reflected::get_coefficients, "Raw reflection ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Reflected::get_fluxes, "Perpendicular fluxes for reflected modes.")
+            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Input::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()), "Reflected eigenmodes.")
         ;
 
         py::class_<Scattering<SolverT>::Transmitted>("Transmitted", "Transmitted field details", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Transmitted::get_coefficients, "Raw transmission ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Transmitted::get_fluxes, "Perpendicular fluxes for transmitted modes.")
+            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Transmitted::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()), "Transmitted eigenmodes.")
         ;
 
         py::class_<Scattering<SolverT>::Incident>("Incident", "Incident field details", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Incident::get_coefficients, "Raw incident ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Incident::get_fluxes, "Perpendicular fluxes for incident modes.")
+            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Input::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()), "Incident eigenmodes.")
         ;
 //             .def("get_electric_coefficients", FourierSolver2D_getReflectedFieldVectorE, py::arg("level"),
 //                 u8"Get Fourier expansion coefficients for the electric field.\n\n"
@@ -481,7 +625,7 @@ struct Scattering {
 //                 u8"interpretation.\n\n"
 //                 u8"Args:\n"
 //                 u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
-//                 u8":rtype: numpy.ndarray\n"
+//                 u8":rtype: numproxypy.ndarray\n"
 //                 )
 //             .def("get_magnetic_coefficients", FourierSolver2D_getReflectedFieldVectorH, py::arg("level"),
 //                 u8"Get Fourier expansion coefficients for the magnegtic field.\n\n"
@@ -498,121 +642,6 @@ struct Scattering {
 };
 
 
-
-
-template <typename SolverT>
-struct Eigenmodes {
-    cdiagonal gamma;
-    cmatrix TE, TH;
-
-    SolverT& solver;
-    size_t layer;
-
-    typename ProviderFor<ModeLightMagnitude, typename SolverT::SpaceType>::Delegate outLightMagnitude;
-    //     typename ProviderFor<ModeLightE,typename SolverT::SpaceType>::Delegate outLightE;
-    //     typename ProviderFor<ModeLightH,typename SolverT::SpaceType>::Delegate outLightH;
-
-
-    Eigenmodes(SolverT& solver, double z): solver(solver),
-               outLightMagnitude(this, &Eigenmodes::getLightMagnitude, &Eigenmodes::size) {
-        bool changed = solver.Solver::initCalculation() || solver.setExpansionDefaults(true);
-        layer = solver.stack[solver.getLayerFor(z)];
-        if (!solver.transfer) {
-            solver.initTransfer(solver.getExpansion(), false);
-            changed = true;
-        }
-        if (changed) {
-            solver.transfer->initDiagonalization();
-            solver.transfer->diagonalizer->diagonalizeLayer(layer);
-        } else if (!solver.transfer->diagonalizer->isDiagonalized(layer))
-            solver.transfer->diagonalizer->diagonalizeLayer(layer);
-        gamma = solver.transfer->diagonalizer->Gamma(layer);
-        TE = solver.transfer->diagonalizer->TE(layer),
-        TH = solver.transfer->diagonalizer->TH(layer);
-    }
-
-    static shared_ptr<Eigenmodes<SolverT>> init(SolverT& solver, double z) {
-        return make_shared<Eigenmodes<SolverT>>(solver, z);
-    }
-
-    size_t size() const {
-        return gamma.size();
-    }
-
-  protected:
-    size_t index(int n) const {
-        int N = int(gamma.size());
-        if (n < 0) n += N;
-        if (n < 0 || n >= N) throw IndexError("{}: Bad eigenmode number", solver.getId());
-        return size_t(n);
-    }
-
-    py::object array(const dcomplex* data, size_t N) const;
-
-    LazyData<double> getLightMagnitude(std::size_t n, shared_ptr<const MeshD<SolverT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) {
-        cvector E(TE.data() + TE.rows()*index(int(n)), TE.rows());
-        cvector H(TH.data() + TH.rows()*index(int(n)), TH.rows());
-        solver.transfer->diagonalizer->source()->initField(Expansion::FIELD_E, method);
-        DataVector<double> destination(dst_mesh->size());
-        auto levels = makeLevelsAdapter(dst_mesh);
-        while (auto level = levels->yield()) {
-            //TODO warn if z is outside of the layer
-            //double z = level->vpos();
-            //size_t n = solver->getLayerFor(z);
-            auto dest = solver.transfer->diagonalizer->source()->getField(layer, level, E, H);
-            for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = abs2(dest[i]);
-        }
-        solver.transfer->diagonalizer->source()->cleanupField();
-        return destination;
-    }
-
-  public:
-    dcomplex Gamma(int n) const {
-        return gamma[index(n)];
-    }
-
-    py::object getCoefficientsE(int n) const {
-        return array(TE.data() + TE.rows()*index(n), TE.rows());
-    }
-
-    py::object getCoefficientsH(int n) const {
-        return array(TH.data() + TH.rows()*index(n), TH.rows());
-    }
-
-    double getFlux(int n) const {
-        return abs(solver.getExpansion().getModeFlux(n, TE, TH));
-    }
-
-    static void registerClass(const char* suffix) {
-        py::class_<Eigenmodes, shared_ptr<Eigenmodes>, boost::noncopyable>("Eigenmodes",
-            u8"Layer eignemodes proxy\n\n"
-            u8"This is an advanced class allowing to extract eignemodes in each layer.\n", py::no_init)
-            .def("__len__", &Eigenmodes::size)
-            .def("__getitem__", &Eigenmodes::Gamma)
-            .def("coefficientsE", &Eigenmodes::getCoefficientsE, py::arg("n"),
-                 u8"Get electric field coefficients for the n-th eigenmode.\n\n"
-                 u8"Args:\n"
-                 u8"    n (int): Eigenmode number.\n"
-            )
-            .def("coefficientsH", &Eigenmodes::getCoefficientsH, py::arg("n"),
-                 u8"Get magnetic field coefficients for the n-th eigenmode.\n\n"
-                 u8"Args:\n"
-                 u8"    n (int): Eigenmode number.\n"
-            )
-            .def("flux", &Eigenmodes::getFlux, py::arg("n"),
-                 u8"Get vertical flux for the n-th eigenmode.\n\n"
-                 u8"This is equal to the vertical component of the Pointing vector integrated over\n"
-                 u8"the numerical domain.\n\n"
-                 u8"Args:\n"
-                 u8"    n (int): Eigenmode number.\n"
-             )
-            .def_readonly("outLightMagnitude",
-                        reinterpret_cast<ProviderFor<LightMagnitude, typename SolverT::SpaceType> Eigenmodes::*> (&Eigenmodes::outLightMagnitude),
-                        format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", suffix, u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude", "n=0", ":param int n: Mode number.").c_str()
-                        )
-        ;
-    }
-};
 
 
 template <typename SolverT>

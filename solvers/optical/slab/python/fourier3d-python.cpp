@@ -550,7 +550,7 @@ void export_FourierSolver3D()
                u8":rtype: Fourier3D.Scattering\n"
                , (py::arg("side"), "polarization")
               );
-    solver.def("get_electric_coefficients", FourierSolver3D_getFieldVectorE, (py::arg("num"), "level"),
+    solver.def("get_raw_E", FourierSolver3D_getFieldVectorE, (py::arg("num"), "level"),
                u8"Get Fourier expansion coefficients for the electric field.\n\n"
                u8"This is a low-level function returning :math:`E_l` and/or :math:`E_t` Fourier\n"
                u8"expansion coefficients. Please refer to the detailed solver description for their\n"
@@ -560,7 +560,7 @@ void export_FourierSolver3D()
                u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
                u8":rtype: numpy.ndarray\n"
               );
-    solver.def("get_magnetic_coefficients", FourierSolver3D_getFieldVectorH, (py::arg("num"), "level"),
+    solver.def("get_raw_H", FourierSolver3D_getFieldVectorH, (py::arg("num"), "level"),
                u8"Get Fourier expansion coefficients for the magnetic field.\n\n"
                u8"This is a low-level function returning :math:`H_l` and/or :math:`H_t` Fourier\n"
                u8"expansion coefficients. Please refer to the detailed solver description for their\n"
@@ -580,6 +580,12 @@ void export_FourierSolver3D()
                py::with_custodian_and_ward_postcall<0,1>()
               );
     RO_FIELD(modes, "Computed modes.");
+
+    // OBSOLETE
+    solver.def("get_electric_coefficients", FourierSolver3D_getFieldVectorE, (py::arg("num"), "level"),
+               u8"Obsolete alias for :meth:`get_raw_E`.");
+    solver.def("get_magnetic_coefficients", FourierSolver3D_getFieldVectorH, (py::arg("num"), "level"),
+               u8"Obsolete alias for :meth:`get_raw_H`.");
 
     py::scope scope = solver;
     (void) scope;   // don't warn about unused variable scope
