@@ -448,16 +448,17 @@ void export_FourierSolver2D()
                         PML_ATTRS_DOC
                         );
     RO_FIELD(modes, "Computed modes.");
-    solver.def("scattering", Scattering<FourierSolver2D>::get, py::with_custodian_and_ward_postcall<0,1>(),
+    solver.def("scattering", Scattering<FourierSolver2D>::get1, py::with_custodian_and_ward_postcall<0,1>(), (py::arg("side"), "polarization"));
+    solver.def("scattering", Scattering<FourierSolver2D>::get2, py::with_custodian_and_ward_postcall<0,1>(), (py::arg("side"), "idx"),
                u8"Access to the reflected field.\n\n"
                u8"Args:\n"
                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                u8"        present.\n"
                u8"    polarization: Specification of the incident light polarization.\n"
                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
-               u8"        of the non-vanishing electric field component.\n\n"
+               u8"        of the non-vanishing electric field component.\n"
+               u8"    idx: Eigenmode number.\n\n"
                u8":rtype: Fourier2D.Scattering\n"
-               , (py::arg("side"), "polarization")
               );
     solver.def("get_raw_E", FourierSolver2D_getFieldVectorE, (py::arg("num"), "level"),
                u8"Get Fourier expansion coefficients for the electric field.\n\n"

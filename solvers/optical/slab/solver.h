@@ -229,6 +229,13 @@ struct PLASK_SOLVER_API SlabBase {
     virtual Expansion& getExpansion() = 0;
 
     /**
+     * Get incident field vector for given polarization.
+     * \param idx number of the mode to set to 1
+     * \return incident field vector
+     */
+    cvector incidentVector(size_t idx);
+
+    /**
      * Get amplitudes of incident diffraction orders
      * \param incident incident field vector
      * \param side incidence side

@@ -421,6 +421,15 @@ void SlabBase::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
 #endif
 
 
+cvector SlabBase::incidentVector(size_t idx) {
+    initCalculation();
+    if (idx >= getExpansion().matrixSize()) throw BadInput(getId(), "Wrong incident eignenmode index");
+
+    cvector incident(getExpansion().matrixSize(), 0.);
+    incident[idx] = 1.;
+    return incident;
+}
+
 
 dvector SlabBase::getIncidentAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
 {
@@ -450,7 +459,6 @@ dvector SlabBase::getIncidentAmplitudes(const cvector& incident, Transfer::Incid
 
     return result;
 }
-
 
 dvector SlabBase::getReflectedAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
 {

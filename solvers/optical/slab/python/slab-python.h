@@ -557,8 +557,8 @@ struct Scattering {
     /**
      * Construct proxy.
      * \param wavelength incident light wavelength
-     * \param polarization polarization of the perpendicularly incident light
      * \param side incidence side
+     * \param polarization polarization of the perpendicularly incident light
      */
     Scattering(SolverT* solver, Transfer::IncidentDirection side, Expansion::Component polarization):
         solver(solver), incident(solver->incidentVector(side, polarization)), side(side),
@@ -567,10 +567,29 @@ struct Scattering {
         outLightMagnitude(this, &Scattering::getLightMagnitude) {
     }
 
-    static shared_ptr<Scattering<SolverT>> get(SolverT* parent,
-                                                        Transfer::IncidentDirection side,
-                                                        Expansion::Component polarization) {
+    /**
+     * Construct proxy.
+     * \param wavelength incident light wavelength
+     * \param side incidence side
+     * \param idx incident eigenmode index
+     */
+    Scattering(SolverT* solver, Transfer::IncidentDirection side, size_t idx):
+        solver(solver), incident(solver->SlabBase::incidentVector(idx)), side(side),
+        outLightE(this, &Scattering::getLightE),
+        outLightH(this, &Scattering::getLightH),
+        outLightMagnitude(this, &Scattering::getLightMagnitude) {
+    }
+
+    static shared_ptr<Scattering<SolverT>> get1(SolverT* parent,
+                                                Transfer::IncidentDirection side,
+                                                Expansion::Component polarization) {
         return make_shared<Scattering<SolverT>>(parent, side, polarization);
+    }
+
+    static shared_ptr<Scattering<SolverT>> get2(SolverT* parent,
+                                                Transfer::IncidentDirection side,
+                                                size_t idx) {
+        return make_shared<Scattering<SolverT>>(parent, side, idx);
     }
 
 
