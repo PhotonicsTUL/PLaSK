@@ -52,6 +52,7 @@ struct CDiagonal_Python {
 };
 #endif
 
+
 BOOST_PYTHON_MODULE(slab)
 {
     plask_import_array();

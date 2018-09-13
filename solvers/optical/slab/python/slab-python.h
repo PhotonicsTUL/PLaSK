@@ -348,7 +348,7 @@ struct Eigenmodes {
         TH = solver.transfer->diagonalizer->TH(layer);
     }
 
-    static shared_ptr<Eigenmodes<SolverT>> init(SolverT& solver, double z) {
+    static shared_ptr<Eigenmodes<SolverT>> fromZ(SolverT& solver, double z) {
         solver.Solver::initCalculation();
         size_t layer = solver.stack[solver.getLayerFor(z)];
         return make_shared<Eigenmodes<SolverT>>(solver, layer);
@@ -358,27 +358,23 @@ struct Eigenmodes {
         return gamma.size();
     }
 
-    size_t index(int n) const {
-        int N = int(gamma.size());
-        if (n < 0) n += N;
-        if (n < 0 || n >= N) throw IndexError("{}: Bad eigenmode number", solver.getId());
-        return size_t(n);
-    }
-
     py::object array(const dcomplex* data, size_t N) const;
 
     LazyData<double> getLightMagnitude(std::size_t n, shared_ptr<const MeshD<SolverT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) {
-        cvector E(TE.data() + TE.rows()*index(int(n)), TE.rows());
-        cvector H(TH.data() + TH.rows()*index(int(n)), TH.rows());
+        if (n >= gamma.size())
+            throw IndexError("Bad eigenmode number");
+        cvector E(TE.data() + TE.rows()*n, TE.rows());
+        cvector H(TH.data() + TH.rows()*n, TH.rows());
         solver.transfer->diagonalizer->source()->initField(Expansion::FIELD_E, method);
         DataVector<double> destination(dst_mesh->size());
         auto levels = makeLevelsAdapter(dst_mesh);
         while (auto level = levels->yield()) {
             //TODO warn if z is outside of the layer
-            //double z = level->vpos();
+            double z = level->vpos();
+            dcomplex phas = exp(- I * gamma[n] * z);
             //size_t n = solver->getLayerFor(z);
             auto dest = solver.transfer->diagonalizer->source()->getField(layer, level, E, H);
-            for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = abs2(dest[i]);
+            for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = abs2(phas * dest[i]);
         }
         solver.transfer->diagonalizer->source()->cleanupField();
         return destination;
@@ -386,20 +382,20 @@ struct Eigenmodes {
 
     struct Eigenmode {
         Eigenmodes* ems;
-        int n;
+        size_t n;
 
         Eigenmode(Eigenmodes* eigenmodes, int n): ems(eigenmodes), n(n) {}
 
         dcomplex getGamma() const {
-            return ems->gamma[ems->index(n)];
+            return ems->gamma[n];
         }
 
         py::object getCoefficientsE() const {
-            return ems->array(ems->TE.data() + ems->TE.rows()*ems->index(n), ems->TE.rows());
+            return ems->array(ems->TE.data() + ems->TE.rows()*n, ems->TE.rows());
         }
 
         py::object getCoefficientsH() const {
-            return ems->array(ems->TH.data() + ems->TH.rows()*ems->index(n), ems->TH.rows());
+            return ems->array(ems->TH.data() + ems->TH.rows()*n, ems->TH.rows());
         }
 
         double getFlux() const {
@@ -484,37 +480,39 @@ struct Scattering {
         return 100. * solver->getTransmission(incident, side);
     }
 
-    struct Input {
+    struct Reflected {
         Scattering* parent;
-        Input(Scattering* parent): parent(parent) {}
+        Reflected(Scattering* parent): parent(parent) {}
+        py::object get_coefficients() {
+            if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
+            return arrayFromVec<NPY_CDOUBLE>(parent->solver->getReflectedCoefficients(parent->incident, parent->side));
+        }
+        py::object get_fluxes() {
+            if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
+            return arrayFromVec<NPY_DOUBLE>(parent->solver->getReflectedAmplitudes(parent->incident, parent->side));
+        }
         shared_ptr<Eigenmodes<SolverT>> eigenmodes() {
             parent->solver->Solver::initCalculation();
             size_t layer = (parent->side == Transfer::INCIDENCE_BOTTOM)? 0 : parent->solver->stack.back();
             return make_shared<Eigenmodes<SolverT>>(*parent->solver, layer);
         }
     };
-
-    struct Reflected: Input {
-        Reflected(Scattering* parent): Input(parent) {}
-        py::object get_coefficients() {
-            if (!this->parent->solver->initCalculation()) this->parent->solver->setExpansionDefaults();
-            return arrayFromVec<NPY_CDOUBLE>(this->parent->solver->getReflectedCoefficients(this->parent->incident, this->parent->side));
-        }
-        py::object get_fluxes() {
-            if (!this->parent->solver->initCalculation()) this->parent->solver->setExpansionDefaults();
-            return arrayFromVec<NPY_DOUBLE>(this->parent->solver->getReflectedAmplitudes(this->parent->incident, this->parent->side));
-        }
-    };
     Reflected get_reflected() { return Reflected(this); }
 
-    struct Incident: Input {
-        Incident(Scattering* parent): Input(parent) {}
+    struct Incident {
+        Scattering* parent;
+        Incident(Scattering* parent): parent(parent) {}
         py::object get_coefficients() {
-            return arrayFromVec<NPY_CDOUBLE>(this->parent->incident);
+            return arrayFromVec<NPY_CDOUBLE>(parent->incident);
         }
         py::object get_fluxes() {
-            if (!this->parent->solver->initCalculation()) this->parent->solver->setExpansionDefaults();
-            return arrayFromVec<NPY_DOUBLE>(this->parent->solver->getIncidentAmplitudes(this->parent->incident, this->parent->side));
+            if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
+            return arrayFromVec<NPY_DOUBLE>(parent->solver->getIncidentAmplitudes(parent->incident, parent->side));
+        }
+        shared_ptr<Eigenmodes<SolverT>> eigenmodes() {
+            parent->solver->Solver::initCalculation();
+            size_t layer = (parent->side == Transfer::INCIDENCE_BOTTOM)? 0 : parent->solver->stack.back();
+            return make_shared<Eigenmodes<SolverT>>(*parent->solver, layer);
         }
     };
     Incident get_incident() { return Incident(this); }
@@ -613,9 +611,15 @@ struct Scattering {
             .add_property("reflectivity", &Scattering<SolverT>::reflectivity100, u8"Total reflection coefficient [%].\n\nThis differs from :attr:`Scattering.R` by unit.\n")
             .add_property("transmittivity", &Scattering<SolverT>::transmittivity100, u8"Total transmission coefficient [%].\n\nThis differs from :attr:`Scattering.T` by unit.\n")
 
-            .add_property("reflected", py::make_function(&Scattering<SolverT>::get_reflected, py::with_custodian_and_ward_postcall<0,1>()), u8"Reflected field details.")
-            .add_property("transmitted", py::make_function(&Scattering<SolverT>::get_transmitted, py::with_custodian_and_ward_postcall<0,1>()), u8"Transmitted field details.")
-            .add_property("incident", py::make_function(&Scattering<SolverT>::get_incident, py::with_custodian_and_ward_postcall<0,1>()), u8"Incident field details.")
+            .add_property("reflected", py::make_function(&Scattering<SolverT>::get_reflected, py::with_custodian_and_ward_postcall<0,1>()),
+                          u8"Reflected field details.\n\n"
+                          u8":rtype: Reflected")
+            .add_property("transmitted", py::make_function(&Scattering<SolverT>::get_transmitted, py::with_custodian_and_ward_postcall<0,1>()),
+                          u8"Transmitted field details.\n\n"
+                          u8":rtype: Transmitted")
+            .add_property("incident", py::make_function(&Scattering<SolverT>::get_incident, py::with_custodian_and_ward_postcall<0,1>()),
+                          u8"Incident field details.\n\n"
+                          u8":rtype: Incident")
         ;
 
         py::scope scope(cls);
@@ -623,7 +627,7 @@ struct Scattering {
         py::class_<Scattering<SolverT>::Reflected>("Reflected", "Reflected field details", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Reflected::get_coefficients, "Raw reflection ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Reflected::get_fluxes, "Perpendicular fluxes for reflected modes.")
-            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Input::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()), "Reflected eigenmodes.")
+            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Reflected::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()), "Reflected eigenmodes.")
         ;
 
         py::class_<Scattering<SolverT>::Transmitted>("Transmitted", "Transmitted field details", py::no_init)
@@ -635,8 +639,9 @@ struct Scattering {
         py::class_<Scattering<SolverT>::Incident>("Incident", "Incident field details", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Incident::get_coefficients, "Raw incident ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Incident::get_fluxes, "Perpendicular fluxes for incident modes.")
-            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Input::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()), "Incident eigenmodes.")
+            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Transmitted::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()), "Incident eigenmodes.")
         ;
+
 //             .def("get_electric_coefficients", FourierSolver2D_getReflectedFieldVectorE, py::arg("level"),
 //                 u8"Get Fourier expansion coefficients for the electric field.\n\n"
 //                 u8"This is a low-level function returning :math:`E_l` and/or :math:`E_t` Fourier\n"

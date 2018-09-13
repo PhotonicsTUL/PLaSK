@@ -571,7 +571,7 @@ void export_FourierSolver3D()
                u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
                u8":rtype: numpy.ndarray\n"
               );
-    solver.def("layer_eigenmodes", &Eigenmodes<FourierSolver3D>::init, py::arg("level"),
+    solver.def("layer_eigenmodes", &Eigenmodes<FourierSolver3D>::fromZ, py::arg("level"),
                u8"Get eignemodes for a layer at specified level.\n\n"
                u8"This is a low-level function to access diagonalized eigenmodes for a specific\n"
                u8"layer. Please refer to the detailed solver description for the interpretation\n"

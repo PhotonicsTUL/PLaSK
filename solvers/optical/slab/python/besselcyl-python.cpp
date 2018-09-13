@@ -295,7 +295,7 @@ void export_BesselSolverCyl()
     solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, "Normalized frequency of the light [1/µm].");
     solver.add_property("m", &__Class__::getM, &__Class__::setM, "Angular dependence parameter.");
 
-	solver.def("layer_eigenmodes", &Eigenmodes<BesselSolverCyl>::init, py::arg("level"),
+	solver.def("layer_eigenmodes", &Eigenmodes<BesselSolverCyl>::fromZ, py::arg("level"),
 		u8"Get eignemodes for a layer at specified level.\n\n"
 		u8"This is a low-level function to access diagonalized eigenmodes for a specific\n"
 		u8"layer. Please refer to the detailed solver description for the interpretation\n"
