@@ -431,7 +431,7 @@ cvector SlabBase::incidentVector(size_t idx) {
 }
 
 
-dvector SlabBase::getIncidentAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
+dvector SlabBase::getIncidentFluxes(const cvector& incident, Transfer::IncidentDirection side)
 {
     initCalculation();
     if (!transfer) initTransfer(getExpansion(), true);
@@ -460,7 +460,7 @@ dvector SlabBase::getIncidentAmplitudes(const cvector& incident, Transfer::Incid
     return result;
 }
 
-dvector SlabBase::getReflectedAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
+dvector SlabBase::getReflectedFluxes(const cvector& incident, Transfer::IncidentDirection side)
 {
     cvector reflected = getReflectedCoefficients(incident, side);
     dvector result(reflected.size());
@@ -491,7 +491,7 @@ dvector SlabBase::getReflectedAmplitudes(const cvector& incident, Transfer::Inci
 }
 
 
-dvector SlabBase::getTransmittedAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
+dvector SlabBase::getTransmittedFluxes(const cvector& incident, Transfer::IncidentDirection side)
 {
     cvector transmitted = getTransmittedCoefficients(incident, side);
     dvector result(transmitted.size());

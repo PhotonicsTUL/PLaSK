@@ -489,7 +489,7 @@ struct Scattering {
         }
         py::object get_fluxes() {
             if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
-            return arrayFromVec<NPY_DOUBLE>(parent->solver->getReflectedAmplitudes(parent->incident, parent->side));
+            return arrayFromVec<NPY_DOUBLE>(parent->solver->getReflectedFluxes(parent->incident, parent->side));
         }
         shared_ptr<Eigenmodes<SolverT>> eigenmodes() {
             parent->solver->Solver::initCalculation();
@@ -507,7 +507,7 @@ struct Scattering {
         }
         py::object get_fluxes() {
             if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
-            return arrayFromVec<NPY_DOUBLE>(parent->solver->getIncidentAmplitudes(parent->incident, parent->side));
+            return arrayFromVec<NPY_DOUBLE>(parent->solver->getIncidentFluxes(parent->incident, parent->side));
         }
         shared_ptr<Eigenmodes<SolverT>> eigenmodes() {
             parent->solver->Solver::initCalculation();
@@ -526,7 +526,7 @@ struct Scattering {
         }
         py::object get_fluxes() {
             if (!parent->solver->initCalculation()) parent->solver->setExpansionDefaults();
-            return arrayFromVec<NPY_DOUBLE>(parent->solver->getTransmittedAmplitudes(parent->incident, parent->side));
+            return arrayFromVec<NPY_DOUBLE>(parent->solver->getTransmittedFluxes(parent->incident, parent->side));
         }
         shared_ptr<Eigenmodes<SolverT>> eigenmodes() {
             parent->solver->Solver::initCalculation();
