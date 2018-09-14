@@ -327,12 +327,14 @@ struct Eigenmodes {
     size_t layer;
 
     typename ProviderFor<ModeLightMagnitude, typename SolverT::SpaceType>::Delegate outLightMagnitude;
-    //     typename ProviderFor<ModeLightE,typename SolverT::SpaceType>::Delegate outLightE;
-    //     typename ProviderFor<ModeLightH,typename SolverT::SpaceType>::Delegate outLightH;
+    typename ProviderFor<ModeLightE,typename SolverT::SpaceType>::Delegate outLightE;
+    typename ProviderFor<ModeLightH,typename SolverT::SpaceType>::Delegate outLightH;
 
 
     Eigenmodes(SolverT& solver, size_t layer): solver(solver), layer(layer),
-               outLightMagnitude(this, &Eigenmodes::getLightMagnitude, &Eigenmodes::size) {
+               outLightMagnitude(this, &Eigenmodes::getLightMagnitude, &Eigenmodes::size),
+               outLightE(this, &Eigenmodes::getLightE, &Eigenmodes::size),
+               outLightH(this, &Eigenmodes::getLightH, &Eigenmodes::size) {
         bool changed = solver.Solver::initCalculation() || solver.setExpansionDefaults(true);
         if (!solver.transfer) {
             solver.initTransfer(solver.getExpansion(), false);
@@ -380,6 +382,46 @@ struct Eigenmodes {
         return destination;
     }
 
+    LazyData<Vec<3,dcomplex>> getLightE(std::size_t n, shared_ptr<const MeshD<SolverT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) {
+        if (n >= gamma.size())
+            throw IndexError("Bad eigenmode number");
+        cvector E(TE.data() + TE.rows()*n, TE.rows());
+        cvector H(TH.data() + TH.rows()*n, TH.rows());
+        solver.transfer->diagonalizer->source()->initField(Expansion::FIELD_E, method);
+        DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
+        auto levels = makeLevelsAdapter(dst_mesh);
+        while (auto level = levels->yield()) {
+            //TODO warn if z is outside of the layer
+            double z = level->vpos();
+            dcomplex phas = exp(- I * gamma[n] * z);
+            //size_t n = solver->getLayerFor(z);
+            auto dest = solver.transfer->diagonalizer->source()->getField(layer, level, E, H);
+            for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = phas * dest[i];
+        }
+        solver.transfer->diagonalizer->source()->cleanupField();
+        return destination;
+    }
+
+    LazyData<Vec<3,dcomplex>> getLightH(std::size_t n, shared_ptr<const MeshD<SolverT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) {
+        if (n >= gamma.size())
+            throw IndexError("Bad eigenmode number");
+        cvector E(TE.data() + TE.rows()*n, TE.rows());
+        cvector H(TH.data() + TH.rows()*n, TH.rows());
+        solver.transfer->diagonalizer->source()->initField(Expansion::FIELD_H, method);
+        DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
+        auto levels = makeLevelsAdapter(dst_mesh);
+        while (auto level = levels->yield()) {
+            //TODO warn if z is outside of the layer
+            double z = level->vpos();
+            dcomplex phas = exp(- I * gamma[n] * z);
+            //size_t n = solver->getLayerFor(z);
+            auto dest = solver.transfer->diagonalizer->source()->getField(layer, level, E, H);
+            for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = phas * dest[i];
+        }
+        solver.transfer->diagonalizer->source()->cleanupField();
+        return destination;
+    }
+
     struct Eigenmode {
         Eigenmodes* ems;
         size_t n;
@@ -417,9 +459,17 @@ struct Eigenmodes {
             .def("__len__", &Eigenmodes::size)
             .def("__getitem__", &Eigenmodes::__getitem__, py::with_custodian_and_ward_postcall<0,1>())
             .def_readonly("outLightMagnitude",
-                        reinterpret_cast<ProviderFor<ModeLightMagnitude, typename SolverT::SpaceType> Eigenmodes::*> (&Eigenmodes::outLightMagnitude),
-                        format(docstring_attr_provider<ModeLightMagnitude>(), "LightMagnitude", suffix, u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude", "n=0", ":param int n: Mode number.").c_str()
-                        )
+                          reinterpret_cast<ProviderFor<ModeLightMagnitude, typename SolverT::SpaceType> Eigenmodes::*> (&Eigenmodes::outLightMagnitude),
+                          format(docstring_attr_provider<ModeLightMagnitude>(), "LightMagnitude", suffix, u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude", "n=0", ":param int n: Mode number.").c_str()
+                         )
+            .def_readonly("outLightE",
+                          reinterpret_cast<ProviderFor<ModeLightE, typename SolverT::SpaceType> Eigenmodes::*> (&Eigenmodes::outLightE),
+                          format(docstring_attr_provider<ModeLightE>(), "LightE", suffix, u8"electric field", u8"V/m", "", "", "", "outLightE", "n=0", ":param int n: Mode number.").c_str()
+                         )
+            .def_readonly("outLightH",
+                          reinterpret_cast<ProviderFor<ModeLightE, typename SolverT::SpaceType> Eigenmodes::*> (&Eigenmodes::outLightH),
+                          format(docstring_attr_provider<ModeLightE>(), "LightH", suffix, u8"electric field", u8"A/m", "", "", "", "outLightH", "n=0", ":param int n: Mode number.").c_str()
+                         )
         ;
         py::scope scope(ems);
         py::class_<Eigenmode>("Eigenmode", py::no_init)
