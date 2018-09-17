@@ -20,7 +20,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @return index of axis2, from 0 to axis2->size()-1
      */
     inline std::size_t index2(std::size_t mesh_index) const {   // method missing in the base as it is specific for 3D
-        return fullMesh.index2(nodesSet.at(mesh_index));
+        return fullMesh.index2(nodeSet.at(mesh_index));
     }
 
     /**
@@ -29,7 +29,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @return index of major axis, from 0 to middleIndex.size()-1
      */
     inline std::size_t middleIndex(std::size_t mesh_index) const {   // method missing in the base as it is specific for 3D
-        return fullMesh.middleIndex(nodesSet.at(mesh_index));
+        return fullMesh.middleIndex(nodeSet.at(mesh_index));
     }
 
     /**
@@ -58,14 +58,14 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
         //std::uint32_t elementNumber;    ///< index of element in oryginal mesh
         std::size_t index0, index1, index2; // probably this form allows to do most operation fastest in average, low indexes of element corner or just element indexes
 
-        /// Index of element. If it equals to UNKONOWN_ELEMENT_INDEX, it will be calculated on-demand from index0 and index1.
+        /// Index of element. If it equals to UNKNOWN_ELEMENT_INDEX, it will be calculated on-demand from index0 and index1.
         mutable std::size_t elementIndex;
 
         const RectangularMesh<3>& rectangularMesh() const { return filteredMesh.fullMesh; }
 
     public:
 
-        enum: std::size_t { UNKONOWN_ELEMENT_INDEX = std::numeric_limits<std::size_t>::max() };
+        enum: std::size_t { UNKNOWN_ELEMENT_INDEX = std::numeric_limits<std::size_t>::max() };
 
         Element(const RectangularFilteredMesh3D& filteredMesh, std::size_t elementIndex, std::size_t index0, std::size_t index1, std::size_t index2)
             : filteredMesh(filteredMesh), index0(index0), index1(index1), index2(index2), elementIndex(elementIndex)
@@ -82,7 +82,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
         }
 
         Element(const RectangularFilteredMesh3D& filteredMesh, std::size_t elementIndex)
-            : Element(filteredMesh, elementIndex, filteredMesh.elementsSet.at(elementIndex))
+            : Element(filteredMesh, elementIndex, filteredMesh.elementSet.at(elementIndex))
         {}
 
 
@@ -148,7 +148,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
 
         /// @return index of this element
         inline std::size_t getIndex() const {
-            if (elementIndex == UNKONOWN_ELEMENT_INDEX)
+            if (elementIndex == UNKNOWN_ELEMENT_INDEX)
                 elementIndex = filteredMesh.getElementIndexFromLowIndexes(getLowerIndex0(), getLowerIndex1(), getLowerIndex2());
             return elementIndex;
         }
@@ -216,7 +216,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
 
         explicit Elements(const RectangularFilteredMesh3D& mesh): ElementsBase(mesh) {}
 
-        Element operator()(std::size_t i0, std::size_t i1, std::size_t i2) const { return Element(*filteredMesh, Element::UNKONOWN_ELEMENT_INDEX, i0, i1, i2); }
+        Element operator()(std::size_t i0, std::size_t i1, std::size_t i2) const { return Element(*filteredMesh, Element::UNKNOWN_ELEMENT_INDEX, i0, i1, i2); }
 
     };  // struct Elements
 
@@ -288,7 +288,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      *        or @c ~(DIELECTRIC|METAL) for selecting everything else
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
      */
-    RectangularFilteredMesh3D(const RectangularMesh<3>& rectangularMesh, const GeometryD<3>& geom, unsigned char materialKinds, bool clone_axes = false)
+    RectangularFilteredMesh3D(const RectangularMesh<3>& rectangularMesh, const GeometryD<3>& geom, unsigned int materialKinds, bool clone_axes = false)
         : RectangularFilteredMesh3D(rectangularMesh,
                                     [&](const RectangularMesh3D::Element& el) { return (geom.getMaterial(el.getMidpoint())->kind() & materialKinds) != 0; },
                                     clone_axes)
@@ -305,7 +305,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      *        or @c ~(DIELECTRIC|METAL) for selecting everything else
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
      */
-    void reset(const RectangularMesh<3>& rectangularMesh, const GeometryD<3>& geom, unsigned char materialKinds, bool clone_axes = false) {
+    void reset(const RectangularMesh<3>& rectangularMesh, const GeometryD<3>& geom, unsigned int materialKinds, bool clone_axes = false) {
         reset(rectangularMesh,
              [&](const RectangularMesh3D::Element& el) { return (geom.getMaterial(el.getMidpoint())->kind() & materialKinds) != 0; },
              clone_axes);
@@ -314,7 +314,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
     Elements elements() const { return Elements(*this); }
     Elements getElements() const { return elements(); }
 
-    Element element(std::size_t i0, std::size_t i1, std::size_t i2) const { return Element(*this, Element::UNKONOWN_ELEMENT_INDEX, i0, i1, i2); }
+    Element element(std::size_t i0, std::size_t i1, std::size_t i2) const { return Element(*this, Element::UNKNOWN_ELEMENT_INDEX, i0, i1, i2); }
     Element getElement(std::size_t i0, std::size_t i1, std::size_t i2) const { return element(i0, i1, i2); }
 
     /**
@@ -339,7 +339,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @return this mesh index, from 0 to size()-1, or NOT_INCLUDED
      */
     inline std::size_t index(std::size_t axis0_index, std::size_t axis1_index, std::size_t axis2_index) const {
-        return nodesSet.indexOf(fullMesh.index(axis0_index, axis1_index, axis2_index));
+        return nodeSet.indexOf(fullMesh.index(axis0_index, axis1_index, axis2_index));
     }
 
     using RectangularFilteredMeshBase<3>::index;
@@ -405,7 +405,7 @@ public:
                                      fullMesh.axis[0]->at(index0_lo), fullMesh.axis[0]->at(index0_hi),
                                      fullMesh.axis[1]->at(index1_lo), fullMesh.axis[1]->at(index1_hi),
                                      fullMesh.axis[2]->at(index1_lo), fullMesh.axis[2]->at(index1_hi),
-                                     data[nodesSet.indexOf(rectmesh_index_lo)],
+                                     data[nodeSet.indexOf(rectmesh_index_lo)],
                                      data[index(index0_lo, index1_lo, index2_lo)],
                                      data[index(index0_hi, index1_lo, index2_lo)],
                                      data[index(index0_hi, index1_hi, index2_lo)],
@@ -449,7 +449,7 @@ public:
      * @return index of the element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndexes(std::size_t axis0_index, std::size_t axis1_index, std::size_t axis2_index) const {
-        return elementsSet.indexOf(fullMesh.getElementIndexFromLowIndexes(axis0_index, axis1_index, axis2_index));
+        return elementSet.indexOf(fullMesh.getElementIndexFromLowIndexes(axis0_index, axis1_index, axis2_index));
     }
 
     /**

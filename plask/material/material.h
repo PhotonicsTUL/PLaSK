@@ -53,14 +53,15 @@ struct PLASK_API Material {
     };
 
     /// Material kind
-    enum Kind: unsigned char {
-        NONE = (1<<0),           ///< no material or air
-        SEMICONDUCTOR = (1<<1),  ///< semiconductor
-        OXIDE = (1<<2),          ///< oxide
-        DIELECTRIC = (1<<3),     ///< other dielectric
-        METAL = (1<<4),          ///< metal
-        LIQUID_CRYSTAL = (1<<5), ///< liquid crystal
-        MIXED = (1<<6)           ///< artificial mix of several materials with averaged properties
+    enum Kind: unsigned int {
+        GENERIC        = (1<<0), ///< generic material
+        VOID           = (1<<1), ///< no material or air
+        SEMICONDUCTOR  = (1<<2), ///< semiconductor
+        OXIDE          = (1<<3), ///< oxide
+        DIELECTRIC     = (1<<4), ///< other dielectric
+        METAL          = (1<<5), ///< metal
+        LIQUID_CRYSTAL = (1<<6), ///< liquid crystal
+        MIXED          = (1<<7)  ///< artificial mix of several materials with averaged properties
     };
 
     /// Material conductivity type.
@@ -866,7 +867,7 @@ struct PLASK_API DummyMaterial: public Material {
 
     std::string name() const override { return _name; }
 
-    Kind kind() const override { return NONE; }
+    Kind kind() const override { return GENERIC; }
 };
 
 /**
@@ -917,12 +918,12 @@ struct PLASK_API LiquidCrystal: public Material {
 };
 
 /**
- * Empty material, which can actually be instantiated
+ * Generic material, which can actually be instantiated
  */
-struct PLASK_API EmptyMaterial : public Material {
+struct PLASK_API GenericMaterial : public Material {
     virtual std::string name() const override { return ""; }
-    virtual Material::Kind kind() const override { return Material::NONE; }
-    virtual bool isEqual(const Material&) const override { return true; } // all empty materials are always equal
+    virtual Material::Kind kind() const override { return Material::GENERIC; }
+    virtual bool isEqual(const Material&) const override { return true; } // all generic materials are always equal
 };
 
 } // namespace plask

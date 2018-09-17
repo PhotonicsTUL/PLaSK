@@ -22,18 +22,18 @@ void RectangularFilteredMesh2D::initNodesAndElements(const RectangularFilteredMe
 {
     for (auto el_it = this->fullMesh.elements().begin(); el_it != this->fullMesh.elements().end(); ++el_it)
         if (predicate(*el_it)) {
-            elementsSet.push_back(el_it.index);
-            nodesSet.insert(el_it->getLoLoIndex());
-            nodesSet.insert(el_it->getLoUpIndex());
-            nodesSet.insert(el_it->getUpLoIndex());
-            nodesSet.push_back(el_it->getUpUpIndex());  //this is safe also for 10 axis order
+            elementSet.push_back(el_it.index);
+            nodeSet.insert(el_it->getLoLoIndex());
+            nodeSet.insert(el_it->getLoUpIndex());
+            nodeSet.insert(el_it->getUpLoIndex());
+            nodeSet.push_back(el_it->getUpUpIndex());  //this is safe also for 10 axis order
             if (el_it->getLowerIndex0() < boundaryIndex[0].lo) boundaryIndex[0].lo = el_it->getLowerIndex0();
             if (el_it->getUpperIndex0() > boundaryIndex[0].up) boundaryIndex[0].up = el_it->getUpperIndex0();
             if (el_it->getLowerIndex1() < boundaryIndex[1].lo) boundaryIndex[1].lo = el_it->getLowerIndex1();
             if (el_it->getUpperIndex1() > boundaryIndex[1].up) boundaryIndex[1].up = el_it->getUpperIndex1();
         }
-    nodesSet.shrink_to_fit();
-    elementsSet.shrink_to_fit();
+    nodeSet.shrink_to_fit();
+    elementSet.shrink_to_fit();
 }
 
 bool RectangularFilteredMesh2D::prepareInterpolation(const Vec<2> &point, Vec<2> &wrapped_point, std::size_t &index0_lo, std::size_t &index0_hi, std::size_t &index1_lo, std::size_t &index1_hi, std::size_t &rectmesh_index_lo, const InterpolationFlags &flags) const {
@@ -45,7 +45,7 @@ bool RectangularFilteredMesh2D::prepareInterpolation(const Vec<2> &point, Vec<2>
     findIndexes(*fullMesh.axis[1], wrapped_point.c1, index1_lo, index1_hi);
 
     rectmesh_index_lo = fullMesh.index(index0_lo, index1_lo);
-    return elementsSet.includes(fullMesh.getElementIndexFromLowIndex(rectmesh_index_lo));
+    return elementSet.includes(fullMesh.getElementIndexFromLowIndex(rectmesh_index_lo));
 }
 
 BoundaryNodeSet RectangularFilteredMesh2D::createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const {
