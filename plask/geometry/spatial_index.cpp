@@ -209,7 +209,7 @@ void calcOptimalSplitOffset(const std::vector< GeometryObjectBBox<DIMS> >& input
  *  - 0 - in original order,
  *  - dir*2 + 1 (for dim = 0 ... DIMS-1) - sorted by lower bound of bouding box in direction dir,
  *  - dir*2 + 2 (for dim = 0 ... DIMS-1) - sorted by upper bound of bouding box in direction dir.
- * Warning: this fynction change (destroy) inputs vectors.
+ * Warning: this function change (destroy) inputs vectors.
  * @param max_depth maximum depth
  * @return constructed cache
  */
