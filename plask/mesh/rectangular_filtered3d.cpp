@@ -23,18 +23,18 @@ void RectangularFilteredMesh3D::initNodesAndElements(const RectangularFilteredMe
 {
     for (auto el_it = this->fullMesh.elements().begin(); el_it != this->fullMesh.elements().end(); ++el_it)
         if (predicate(*el_it)) {
-            elementsSet.push_back(el_it.index);
-            nodesSet.insert(el_it->getLoLoLoIndex());
+            elementSet.push_back(el_it.index);
+            nodeSet.insert(el_it->getLoLoLoIndex());
 
-            nodesSet.insert(el_it->getUpLoLoIndex());
-            nodesSet.insert(el_it->getLoUpLoIndex());
-            nodesSet.insert(el_it->getLoLoUpIndex());
+            nodeSet.insert(el_it->getUpLoLoIndex());
+            nodeSet.insert(el_it->getLoUpLoIndex());
+            nodeSet.insert(el_it->getLoLoUpIndex());
 
-            nodesSet.insert(el_it->getLoUpUpIndex());
-            nodesSet.insert(el_it->getUpLoUpIndex());
-            nodesSet.insert(el_it->getUpUpLoIndex());
+            nodeSet.insert(el_it->getLoUpUpIndex());
+            nodeSet.insert(el_it->getUpLoUpIndex());
+            nodeSet.insert(el_it->getUpUpLoIndex());
 
-            nodesSet.push_back(el_it->getUpUpUpIndex());
+            nodeSet.push_back(el_it->getUpUpUpIndex());
             if (el_it->getLowerIndex0() < boundaryIndex[0].lo) boundaryIndex[0].lo = el_it->getLowerIndex0();
             if (el_it->getUpperIndex0() > boundaryIndex[0].up) boundaryIndex[0].up = el_it->getUpperIndex0();
             if (el_it->getLowerIndex1() < boundaryIndex[1].lo) boundaryIndex[1].lo = el_it->getLowerIndex1();
@@ -42,8 +42,8 @@ void RectangularFilteredMesh3D::initNodesAndElements(const RectangularFilteredMe
             if (el_it->getLowerIndex2() < boundaryIndex[2].lo) boundaryIndex[2].lo = el_it->getLowerIndex2();
             if (el_it->getUpperIndex2() > boundaryIndex[2].up) boundaryIndex[2].up = el_it->getUpperIndex2();
         }
-    nodesSet.shrink_to_fit();
-    elementsSet.shrink_to_fit();
+    nodeSet.shrink_to_fit();
+    elementSet.shrink_to_fit();
 }
 
 bool RectangularFilteredMesh3D::prepareInterpolation(const Vec<3> &point, Vec<3> &wrapped_point,
@@ -60,7 +60,7 @@ bool RectangularFilteredMesh3D::prepareInterpolation(const Vec<3> &point, Vec<3>
     findIndexes(*fullMesh.axis[2], wrapped_point.c2, index2_lo, index2_hi);
 
     rectmesh_index_lo = fullMesh.index(index0_lo, index1_lo, index2_lo);
-    return elementsSet.includes(fullMesh.getElementIndexFromLowIndex(rectmesh_index_lo));
+    return elementSet.includes(fullMesh.getElementIndexFromLowIndex(rectmesh_index_lo));
 }
 
 BoundaryNodeSet RectangularFilteredMesh3D::createIndex0BoundaryAtLine(std::size_t line_nr_axis0, std::size_t index1Begin, std::size_t index1End, std::size_t index2Begin, std::size_t index2End) const

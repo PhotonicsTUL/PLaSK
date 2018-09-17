@@ -365,7 +365,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 
         double n, p;
         if (calctype == CALC_PSI0) {
-            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::NONE ) { // 26.01.2016
+            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::VOID ) { // 26.01.2016
                 n = 0.;
                 p = 0.;
             }
@@ -381,7 +381,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             }
         }
         else {
-            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::NONE ) { // 26.01.2016
+            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::VOID ) { // 26.01.2016
                 n = 0.;
                 p = 0.;
             }
@@ -396,7 +396,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
         if (calctype == CALC_FN) {
             double normEc0(0.), normNc(0.), normNv(0.), normNe(0.), normNi(0.), normMobN(0.), yn(0.);
 
-            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::NONE ) { // 26.01.2016
+            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::VOID ) { // 26.01.2016
                 yn = 1.; // ?
                 normMobN = 1e-3; // ?
                 normNe = 1e-20; // ?
@@ -421,7 +421,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             ky = normMobN * normNe * yn * (hx*0.5) * (hx*0.5);
             ff = gg = 0.;
 
-            if (material->kind() != Material::OXIDE && material->kind() != Material::DIELECTRIC && material->kind() != Material::NONE ) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
+            if (material->kind() != Material::OXIDE && material->kind() != Material::DIELECTRIC && material->kind() != Material::VOID ) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 if (mRsrh) {
                     //this->writelog(LOG_DATA, "Recombination SRH");
                     double normte = material->taue(T) * mAx * 1e-9;  // 1e-9: ns -> s
@@ -448,7 +448,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
         else if (calctype == CALC_FP)  {
             double normEv0(0.), normNc(0.), normNv(0.), normNh(0.), normNi(0.), normMobP(0.), yp(0.);
 
-            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::NONE ) { // 26.01.2016
+            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::VOID ) { // 26.01.2016
                 yp = 1.; // ?
                 normMobP = 1e-3; // ?
                 normNh = 1e-20; // ?
@@ -473,7 +473,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             ky = normMobP * normNh * yp * (hx*0.5) * (hx*0.5);
             ff = gg = 0.;
 
-            if (material->kind() != Material::OXIDE && material->kind() != Material::DIELECTRIC && material->kind() != Material::NONE ) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
+            if (material->kind() != Material::OXIDE && material->kind() != Material::DIELECTRIC && material->kind() != Material::VOID ) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 if (mRsrh) {
                     //this->writelog(LOG_DATA, "Recombination SRH");
                     double normte = material->taue(T) * mAx * 1e-9;
@@ -504,7 +504,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             kx = normT * normEps * (hy*0.5) * (hy*0.5);
             ky = normT * normEps * (hx*0.5) * (hx*0.5);
 
-            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::NONE ) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
+            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::VOID ) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 gg = 0.;
                 ff = 0.;
             }
@@ -678,7 +678,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
         Vec < 2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
 
-        if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::NONE ) { // 26.01.2016
+        if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::VOID ) { // 26.01.2016
             dveN[i] = 0.;
             continue;
         }
@@ -708,7 +708,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
         Vec<2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
 
-        if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::NONE ) { // 26.01.2016
+        if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::VOID ) { // 26.01.2016
             dveP[i] = 0.;
             continue;
         }
@@ -834,7 +834,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
             epsi = found->second;
         }
         else {
-            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::NONE ) { // 26.01.2016
+            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::VOID ) { // 26.01.2016
                 cache[key] = epsi = 0.;
                 continue;
             }
@@ -1463,7 +1463,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
             size_t uprghtno = e.getUpUpIndex();
             auto midpoint = e.getMidpoint();
             auto material = this->geometry->getMaterial(midpoint);
-            if (material->kind() == Material::NONE || this->geometry->hasRoleAt("noheat", midpoint))
+            if (material->kind() == Material::VOID || this->geometry->hasRoleAt("noheat", midpoint))
                 heats[i] = 0.;
             else {
                 double T = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] + temperatures[upleftno] + temperatures[uprghtno]); // in (K)

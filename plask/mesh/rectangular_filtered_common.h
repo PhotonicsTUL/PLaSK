@@ -37,7 +37,7 @@ public:
     explicit RectangularFilteredMeshNodesIterator(const MeshType& mesh, CtorArgs&&... ctorArgs)
         : CompressedSetOfNumbers<std::size_t>::ConstIteratorFacade<RectangularFilteredMeshNodesIterator<MeshType>, typename MeshType::LocalCoords>(std::forward<CtorArgs>(ctorArgs)...), mesh(&mesh) {}
 
-    const CompressedSetOfNumbers<std::size_t>& set() const { return mesh->nodesSet; }
+    const CompressedSetOfNumbers<std::size_t>& set() const { return mesh->nodeSet; }
 };
 
 /**
@@ -57,30 +57,30 @@ protected:
     typedef CompressedSetOfNumbers<std::size_t> Set;
 
     /// Numbers of enabled nodes.
-    Set nodesSet;
+    Set nodeSet;
 
 public:
 
     using typename MeshD<DIM>::LocalCoords;
 
-    RectangularFilteredMidpointsMeshBase(const RectangularMesh<DIM>& rectangularMesh, Set nodesSet, bool clone_axes = false)
-        : fullMesh(rectangularMesh, clone_axes), nodesSet(std::move(nodesSet)) {}
+    RectangularFilteredMidpointsMeshBase(const RectangularMesh<DIM>& rectangularMesh, Set nodeSet, bool clone_axes = false)
+        : fullMesh(rectangularMesh, clone_axes), nodeSet(std::move(nodeSet)) {}
 
     typedef RectangularFilteredMeshNodesIterator<RectangularFilteredMidpointsMeshBase> const_iterator;
 
     /// Iterator over nodes coordinates. The same as const_iterator, since non-const iterators are not supported.
     typedef const_iterator iterator;
 
-    const_iterator begin() const { return const_iterator(*this, 0, nodesSet.segments.begin()); }
-    const_iterator end() const { return const_iterator(*this, size(), nodesSet.segments.end()); }
+    const_iterator begin() const { return const_iterator(*this, 0, nodeSet.segments.begin()); }
+    const_iterator end() const { return const_iterator(*this, size(), nodeSet.segments.end()); }
 
     LocalCoords at(std::size_t index) const override {
-        return fullMesh.at(nodesSet.at(index));
+        return fullMesh.at(nodeSet.at(index));
     }
 
-    std::size_t size() const override { return nodesSet.size(); }
+    std::size_t size() const override { return nodeSet.size(); }
 
-    bool empty() const override { return nodesSet.empty(); }
+    bool empty() const override { return nodeSet.empty(); }
 
     /**
      * Calculate this mesh index using indexes of axis[0] and axis[1].
@@ -88,7 +88,7 @@ public:
      * @return this mesh index, from 0 to size()-1, or NOT_INCLUDED
      */
     inline std::size_t index(const Vec<DIM, std::size_t>& indexes) const {
-        return nodesSet.indexOf(fullMesh.index(indexes));
+        return nodeSet.indexOf(fullMesh.index(indexes));
     }
 
     /**
@@ -97,7 +97,7 @@ public:
      * @return index of axis0, from 0 to axis0->size()-1
      */
     inline std::size_t index0(std::size_t mesh_index) const {
-        return fullMesh.index0(nodesSet.at(mesh_index));
+        return fullMesh.index0(nodeSet.at(mesh_index));
     }
 
     /**
@@ -106,7 +106,7 @@ public:
      * @return index of axis1, from 0 to axis1->size()-1
      */
     inline std::size_t index1(std::size_t mesh_index) const {
-        return fullMesh.index1(nodesSet.at(mesh_index));
+        return fullMesh.index1(nodeSet.at(mesh_index));
     }
 
     /**
@@ -115,7 +115,7 @@ public:
      * @return indexes of axes
      */
     inline Vec<DIM, std::size_t> indexes(std::size_t mesh_index) const {
-        return fullMesh.indexes(nodesSet.at(mesh_index));
+        return fullMesh.indexes(nodeSet.at(mesh_index));
     }
 
     /**
@@ -124,7 +124,7 @@ public:
      * @return index of major axis, from 0 to majorAxis.size()-1
      */
     inline std::size_t majorIndex(std::size_t mesh_index) const {
-        return fullMesh.majorIndex(nodesSet.at(mesh_index));
+        return fullMesh.majorIndex(nodeSet.at(mesh_index));
     }
 
     /**
@@ -133,7 +133,7 @@ public:
      * @return index of major axis, from 0 to majorAxis.size()-1
      */
     inline std::size_t minorIndex(std::size_t mesh_index) const {
-        return fullMesh.minorIndex(nodesSet.at(mesh_index));
+        return fullMesh.minorIndex(nodeSet.at(mesh_index));
     }
 
 };
@@ -150,7 +150,7 @@ struct RectangularFilteredMidpointsMesh3D: public RectangularFilteredMidpointsMe
      * @return index of axis2, from 0 to axis2->size()-1
      */
     inline std::size_t index2(std::size_t mesh_index) const {   // method missing in the base as it is specific for 3D
-        return this->fullMesh.index2(this->nodesSet.at(mesh_index));
+        return this->fullMesh.index2(this->nodeSet.at(mesh_index));
     }
 
     /**
@@ -159,7 +159,7 @@ struct RectangularFilteredMidpointsMesh3D: public RectangularFilteredMidpointsMe
      * @return index of major axis, from 0 to middleIndex.size()-1
      */
     inline std::size_t middleIndex(std::size_t mesh_index) const {   // method missing in the base as it is specific for 3D
-        return this->fullMesh.middleIndex(this->nodesSet.at(mesh_index));
+        return this->fullMesh.middleIndex(this->nodeSet.at(mesh_index));
     }
 };
 
@@ -188,10 +188,10 @@ protected:
     typedef CompressedSetOfNumbers<std::size_t> Set;
 
     /// Numbers of rectangularMesh indexes which are in the corners of the elements enabled.
-    Set nodesSet;
+    Set nodeSet;
 
     /// Numbers of enabled elements.
-    Set elementsSet;
+    Set elementSet;
 
     /// The lowest and the largest index in use, for each direction.
     struct { std::size_t lo, up; } boundaryIndex[DIM];
@@ -253,7 +253,7 @@ protected:
             explicit const_iterator(const FilteredMeshType& filteredMesh, CtorArgs&&... ctorArgs)
                 : Set::ConstIteratorFacade<const_iterator, Element>(std::forward<CtorArgs>(ctorArgs)...), filteredMesh(&filteredMesh) {}
 
-            const Set& set() const { return filteredMesh->elementsSet; }
+            const Set& set() const { return filteredMesh->elementSet; }
         };
 
         /// Iterator over elments. The same as const_iterator, since non-const iterators are not supported.
@@ -270,10 +270,10 @@ protected:
         std::size_t size() const { return filteredMesh->getElementsCount(); }
 
         /// @return iterator referring to the first element
-        const_iterator begin() const { return const_iterator(*filteredMesh, 0, filteredMesh->elementsSet.segments.begin()); }
+        const_iterator begin() const { return const_iterator(*filteredMesh, 0, filteredMesh->elementSet.segments.begin()); }
 
         /// @return iterator referring to the past-the-end element
-        const_iterator end() const { return const_iterator(*filteredMesh, size(), filteredMesh->elementsSet.segments.end()); }
+        const_iterator end() const { return const_iterator(*filteredMesh, size(), filteredMesh->elementSet.segments.end()); }
 
         /**
          * Get @p i-th element.
@@ -291,10 +291,10 @@ protected:
         }
     }
 
-    /// Clear nodesSet, elementsSet and call resetBoundyIndex().
+    /// Clear nodeSet, elementSet and call resetBoundyIndex().
     void reset() {
-        nodesSet.clear();
-        elementsSet.clear();
+        nodeSet.clear();
+        elementSet.clear();
         resetBoundyIndex();
     }
 
@@ -321,16 +321,16 @@ public:
     /// Iterator over nodes coordinates. The same as const_iterator, since non-const iterators are not supported.
     typedef const_iterator iterator;
 
-    const_iterator begin() const { return const_iterator(*this, 0, nodesSet.segments.begin()); }
-    const_iterator end() const { return const_iterator(*this, size(), nodesSet.segments.end()); }
+    const_iterator begin() const { return const_iterator(*this, 0, nodeSet.segments.begin()); }
+    const_iterator end() const { return const_iterator(*this, size(), nodeSet.segments.end()); }
 
     LocalCoords at(std::size_t index) const override {
-        return fullMesh.at(nodesSet.at(index));
+        return fullMesh.at(nodeSet.at(index));
     }
 
-    std::size_t size() const override { return nodesSet.size(); }
+    std::size_t size() const override { return nodeSet.size(); }
 
-    bool empty() const override { return nodesSet.empty(); }
+    bool empty() const override { return nodeSet.empty(); }
 
     /**
      * Calculate this mesh index using indexes of axis[0] and axis[1].
@@ -338,7 +338,7 @@ public:
      * @return this mesh index, from 0 to size()-1, or NOT_INCLUDED
      */
     inline std::size_t index(const Vec<DIM, std::size_t>& indexes) const {
-        return nodesSet.indexOf(fullMesh.index(indexes));
+        return nodeSet.indexOf(fullMesh.index(indexes));
     }
 
     /**
@@ -347,7 +347,7 @@ public:
      * @return index of axis0, from 0 to axis0->size()-1
      */
     inline std::size_t index0(std::size_t mesh_index) const {
-        return fullMesh.index0(nodesSet.at(mesh_index));
+        return fullMesh.index0(nodeSet.at(mesh_index));
     }
 
     /**
@@ -356,7 +356,7 @@ public:
      * @return index of axis1, from 0 to axis1->size()-1
      */
     inline std::size_t index1(std::size_t mesh_index) const {
-        return fullMesh.index1(nodesSet.at(mesh_index));
+        return fullMesh.index1(nodeSet.at(mesh_index));
     }
 
     /**
@@ -365,7 +365,7 @@ public:
      * @return indexes of axes
      */
     inline Vec<DIM, std::size_t> indexes(std::size_t mesh_index) const {
-        return fullMesh.indexes(nodesSet.at(mesh_index));
+        return fullMesh.indexes(nodeSet.at(mesh_index));
     }
 
     /**
@@ -374,7 +374,7 @@ public:
      * @return index of major axis, from 0 to majorAxis.size()-1
      */
     inline std::size_t majorIndex(std::size_t mesh_index) const {
-        return fullMesh.majorIndex(nodesSet.at(mesh_index));
+        return fullMesh.majorIndex(nodeSet.at(mesh_index));
     }
 
     /**
@@ -383,7 +383,7 @@ public:
      * @return index of major axis, from 0 to majorAxis.size()-1
      */
     inline std::size_t minorIndex(std::size_t mesh_index) const {
-        return fullMesh.minorIndex(nodesSet.at(mesh_index));
+        return fullMesh.minorIndex(nodeSet.at(mesh_index));
     }
 
     /**
@@ -391,8 +391,8 @@ public:
      * \return new rectilinear mesh with points in the middles of original, selected rectangles
      */
     shared_ptr<RectangularFilteredMidpointsMesh<DIM>> getMidpointsMesh() const {
-        return plask::make_shared<RectangularFilteredMidpointsMesh<DIM>>(*fullMesh.getMidpointsMesh(), elementsSet);
-        // elementsSet is passed as a second argument since nodes of midpoints mesh coresponds to elements of oryginal mesh
+        return plask::make_shared<RectangularFilteredMidpointsMesh<DIM>>(*fullMesh.getMidpointsMesh(), elementSet);
+        // elementSet is passed as a second argument since nodes of midpoints mesh coresponds to elements of oryginal mesh
     }
 
     /**
@@ -416,7 +416,7 @@ public:
      * @return number of elements in this mesh
      */
     std::size_t getElementsCount() const {
-        return elementsSet.size();
+        return elementSet.size();
     }
 
     /**
@@ -425,7 +425,7 @@ public:
      * @return index of the element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndex(std::size_t mesh_index_of_el_bottom_left) const {
-        return elementsSet.indexOf(fullMesh.getElementIndexFromLowIndex(nodesSet.at(mesh_index_of_el_bottom_left)));
+        return elementSet.indexOf(fullMesh.getElementIndexFromLowIndex(nodeSet.at(mesh_index_of_el_bottom_left)));
     }
 
     /**
@@ -434,7 +434,7 @@ public:
      * @return mesh index
      */
     std::size_t getElementMeshLowIndex(std::size_t element_index) const {
-        return nodesSet.indexOf(fullMesh.getElementMeshLowIndex(elementsSet.at(element_index)));
+        return nodeSet.indexOf(fullMesh.getElementMeshLowIndex(elementSet.at(element_index)));
     }
 
     /**
@@ -444,7 +444,7 @@ public:
      * you can easy calculate rest indexes of element corner by adding 1 to returned coordinates
      */
     Vec<DIM, std::size_t> getElementMeshLowIndexes(std::size_t element_index) const {
-        return fullMesh.getElementMeshLowIndexes(elementsSet.at(element_index));
+        return fullMesh.getElementMeshLowIndexes(elementSet.at(element_index));
     }
 
     /**
@@ -453,7 +453,7 @@ public:
      * @return the area of the element with given index
      */
     double getElementArea(std::size_t element_index) const {
-        return fullMesh.getElementArea(elementsSet.at(element_index));
+        return fullMesh.getElementArea(elementSet.at(element_index));
     }
 
     /**
@@ -476,7 +476,7 @@ public:
      * @return point in center of element with given index
      */
     Vec<DIM, double> getElementMidpoint(std::size_t element_index) const {
-        return fullMesh.getElementMidpoint(elementsSet.at(element_index));
+        return fullMesh.getElementMidpoint(elementSet.at(element_index));
     }
 
     /**
@@ -485,7 +485,7 @@ public:
      * @return the element as a rectangle (box)
      */
     typename Primitive<DIM>::Box getElementBox(std::size_t element_index) const {
-        return fullMesh.getElementBox(elementsSet.at(element_index));
+        return fullMesh.getElementBox(elementSet.at(element_index));
     }
 
 };

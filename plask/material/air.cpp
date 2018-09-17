@@ -8,7 +8,7 @@
 namespace plask { namespace materials {
 
 std::string Air::name() const { return NAME; }
-Material::Kind Air::kind() const { return Material::NONE; }
+Material::Kind Air::kind() const { return Material::VOID; }
 
 
 double Air::A(double /*T*/) const { RETURN_MATERIAL_NAN(A) }
