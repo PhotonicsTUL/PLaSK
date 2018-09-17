@@ -5,7 +5,7 @@
 #include "iterative_matrix2d.h"
 #include <limits>
 
-#include <plask/mesh/rectangular_filtered2d.h>  //!!!
+#include <plask/mesh/rectangular_filtered2d.h>
 
 namespace plask { namespace electrical { namespace shockley {
 
@@ -17,7 +17,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
 
   protected:
 
-    plask::shared_ptr<RectangularFilteredMesh2D> filteredMesh = plask::make_shared<RectangularFilteredMesh2D>(); //!!!
+    plask::shared_ptr<RectangularFilteredMesh2D> filteredMesh = plask::make_shared<RectangularFilteredMesh2D>();
 
     /// Details of active region
     struct Active {

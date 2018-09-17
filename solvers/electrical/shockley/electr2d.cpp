@@ -116,7 +116,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
         return;
     }
 
-    filteredMesh->reset(*this->mesh, *this->geometry, ~plask::Material::NONE); //!!!
+    filteredMesh->reset(*this->mesh, *this->geometry, ~plask::Material::VOID);
 
     auto points = this->filteredMesh->getMidpointsMesh();
 
@@ -716,8 +716,13 @@ const LazyData<Tensor2<double>> FiniteElementMethodElectrical2DSolver<Geometry2D
                    y = this->mesh->axis[1]->findUpIndex(point[1]);
             if (x == 0 || y == 0 || x == this->mesh->axis[0]->size() || y == this->mesh->axis[1]->size())
                 return Tensor2<double>(NAN);
-            else
-                return this->conds[this->filteredMesh->element(x-1, y-1).getIndex()];
+            else {
+                size_t index = this->filteredMesh->element(x-1, y-1).getIndex();
+                if (index == RectangularFilteredMesh2D::Element::UNKNOWN_ELEMENT_INDEX)
+                    return Tensor2<double>(NAN);
+                else
+                    return this->conds[index];
+            }
         }
     ));
 }
