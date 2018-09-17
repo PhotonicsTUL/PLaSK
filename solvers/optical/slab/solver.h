@@ -229,25 +229,32 @@ struct PLASK_SOLVER_API SlabBase {
     virtual Expansion& getExpansion() = 0;
 
     /**
+     * Get incident field vector for given polarization.
+     * \param idx number of the mode to set to 1
+     * \return incident field vector
+     */
+    cvector incidentVector(size_t idx);
+
+    /**
      * Get amplitudes of incident diffraction orders
      * \param incident incident field vector
      * \param side incidence side
      */
-    dvector getIncidentAmplitudes(const cvector& incident, Transfer::IncidentDirection side);
+    dvector getIncidentFluxes(const cvector& incident, Transfer::IncidentDirection side);
 
     /**
      * Get amplitudes of reflected diffraction orders
      * \param incident incident field vector
      * \param side incidence side
      */
-    dvector getReflectedAmplitudes(const cvector& incident, Transfer::IncidentDirection side);
+    dvector getReflectedFluxes(const cvector& incident, Transfer::IncidentDirection side);
 
     /**
      * Get amplitudes of transmitted diffraction orders
      * \param incident incident field vector
      * \param side incidence side
      */
-    dvector getTransmittedAmplitudes(const cvector& incident, Transfer::IncidentDirection side);
+    dvector getTransmittedFluxes(const cvector& incident, Transfer::IncidentDirection side);
 
     /**
      * Get coefficients of reflected diffraction orders
@@ -271,7 +278,7 @@ struct PLASK_SOLVER_API SlabBase {
      */
     double getReflection(const cvector& incident, Transfer::IncidentDirection side) {
         double R = 0.;
-        for (double r: getReflectedAmplitudes(incident, side)) R += r;
+        for (double r: getReflectedFluxes(incident, side)) R += r;
         return R;
     }
 
@@ -282,7 +289,7 @@ struct PLASK_SOLVER_API SlabBase {
      */
     double getTransmission(const cvector& incident, Transfer::IncidentDirection side) {
         double T = 0.;
-        for (double t: getTransmittedAmplitudes(incident, side)) T += t;
+        for (double t: getTransmittedFluxes(incident, side)) T += t;
         return T;
     }
 

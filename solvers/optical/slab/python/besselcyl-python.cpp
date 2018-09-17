@@ -207,7 +207,7 @@ void export_BesselSolverCyl()
                u8"    k0 (complex): Normalized frequency.\n"
                u8"    m (int): HE/EH Mode angular number.\n"
               );
-    solver.def("get_electric_coefficients", BesselSolverCyl_getFieldVectorE, (py::arg("num"), "level"),
+    solver.def("get_raw_E", BesselSolverCyl_getFieldVectorE, (py::arg("num"), "level"),
                u8"Get Bessel expansion coefficients for the electric field.\n\n"
                u8"This is a low-level function returning :math:`E_s` and :math:`E_p` Bessel\n"
                u8"expansion coefficients. Please refer to the detailed solver description for their\n"
@@ -217,7 +217,7 @@ void export_BesselSolverCyl()
                u8"    level (float): Vertical lever at which the coefficients are computed.\n\n"
                u8":rtype: numpy.ndarray\n"
               );
-    solver.def("get_magnetic_coefficients", BesselSolverCyl_getFieldVectorH, (py::arg("num"), "level"),
+    solver.def("get_raw_H", BesselSolverCyl_getFieldVectorH, (py::arg("num"), "level"),
                u8"Get Bessel expansion coefficients for the magnetic field.\n\n"
                u8"This is a low-level function returning :math:`H_s` and :math:`H_p` Bessel\n"
                u8"expansion coefficients. Please refer to the detailed solver description for their\n"
@@ -284,13 +284,18 @@ void export_BesselSolverCyl()
 //                u8"        present.\n\n"
 //                u8":rtype: Fourier2D.Reflected\n"
 //                , (py::arg("lam"), "polarization", "side"));
+    // OBSOLETE
+    solver.def("get_electric_coefficients", BesselSolverCyl_getFieldVectorE, (py::arg("num"), "level"),
+               u8"Obsolete alias for :meth:`get_raw_E`.");
+    solver.def("get_magnetic_coefficients", BesselSolverCyl_getFieldVectorH, (py::arg("num"), "level"),
+               u8"Obsolete alias for :meth:`get_raw_H`.");
 
 #ifndef NDEBUG
     solver.add_property("wavelength", &SlabBase::getWavelength, &Solver_setWavelength<__Class__>, "Wavelength of the light [nm].");
     solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, "Normalized frequency of the light [1/µm].");
     solver.add_property("m", &__Class__::getM, &__Class__::setM, "Angular dependence parameter.");
 
-	solver.def("layer_eigenmodes", &Eigenmodes<BesselSolverCyl>::init, py::arg("level"),
+	solver.def("layer_eigenmodes", &Eigenmodes<BesselSolverCyl>::fromZ, py::arg("level"),
 		u8"Get eignemodes for a layer at specified level.\n\n"
 		u8"This is a low-level function to access diagonalized eigenmodes for a specific\n"
 		u8"layer. Please refer to the detailed solver description for the interpretation\n"
