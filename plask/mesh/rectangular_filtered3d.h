@@ -61,7 +61,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
         /// Index of element. If it equals to UNKNOWN_ELEMENT_INDEX, it will be calculated on-demand from index0 and index1.
         mutable std::size_t elementIndex;
 
-        const RectangularMesh<3>& rectangularMesh() const { return filteredMesh.fullMesh; }
+        const RectangularMesh<3>& fullMesh() const { return filteredMesh.fullMesh; }
 
     public:
 
@@ -75,10 +75,10 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
         Element(const RectangularFilteredMesh3D& filteredMesh, std::size_t elementIndex, std::size_t elementIndexOfFullMesh)
             : filteredMesh(filteredMesh), elementIndex(elementIndex)
         {
-            const std::size_t v = rectangularMesh().getElementMeshLowIndex(elementIndexOfFullMesh);
-            index0 = rectangularMesh().index0(v);
-            index1 = rectangularMesh().index1(v);
-            index2 = rectangularMesh().index2(v);
+            const std::size_t v = fullMesh().getElementMeshLowIndex(elementIndexOfFullMesh);
+            index0 = fullMesh().index0(v);
+            index1 = fullMesh().index1(v);
+            index2 = fullMesh().index2(v);
         }
 
         Element(const RectangularFilteredMesh3D& filteredMesh, std::size_t elementIndex)
@@ -105,13 +105,13 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
         inline std::size_t getLowerIndex2() const { return index2; }
 
         /// \return long coordinate of the back edge of the element
-        inline double getLower0() const { return rectangularMesh().axis[0]->at(index0); }
+        inline double getLower0() const { return fullMesh().axis[0]->at(index0); }
 
         /// \return tran coordinate of the left edge of the element
-        inline double getLower1() const { return rectangularMesh().axis[1]->at(index1); }
+        inline double getLower1() const { return fullMesh().axis[1]->at(index1); }
 
         /// \return vert coordinate of the bottom edge of the element
-        inline double getLower2() const { return rectangularMesh().axis[2]->at(index2); }
+        inline double getLower2() const { return fullMesh().axis[2]->at(index2); }
 
         /// \return long index of the front edge of the element
         inline std::size_t getUpperIndex0() const { return index0+1; }
@@ -123,13 +123,13 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
         inline std::size_t getUpperIndex2() const { return index2+1; }
 
         /// \return long coordinate of the front edge of the element
-        inline double getUpper0() const { return rectangularMesh().axis[0]->at(getUpperIndex0()); }
+        inline double getUpper0() const { return fullMesh().axis[0]->at(getUpperIndex0()); }
 
         /// \return tran coordinate of the right edge of the element
-        inline double getUpper1() const { return rectangularMesh().axis[1]->at(getUpperIndex1()); }
+        inline double getUpper1() const { return fullMesh().axis[1]->at(getUpperIndex1()); }
 
         /// \return vert coordinate of the top edge of the element
-        inline double getUpper2() const { return rectangularMesh().axis[2]->at(getUpperIndex2()); }
+        inline double getUpper2() const { return fullMesh().axis[2]->at(getUpperIndex2()); }
 
         /// \return size of the element in the long direction
         inline double getSize0() const { return getUpper0() - getLower0(); }
@@ -214,7 +214,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
 
     struct PLASK_API Elements: ElementsBase<RectangularFilteredMesh3D> {
 
-        explicit Elements(const RectangularFilteredMesh3D& mesh): ElementsBase(mesh) {}
+        explicit Elements(const RectangularFilteredMesh3D& mesh): ElementsBase(mesh) { mesh.ensureHasElements(); }
 
         Element operator()(std::size_t i0, std::size_t i1, std::size_t i2) const { return Element(*filteredMesh, Element::UNKNOWN_ELEMENT_INDEX, i0, i1, i2); }
 
@@ -311,10 +311,21 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
              clone_axes);
     }
 
+    /**
+     * Construct a mesh with given set of nodes.
+     *
+     * Set of elements are calculated on-demand, just before the first use, according to the rule:
+     * An element is selected if and only if all its vertices are included in the @p nodeSet.
+     *
+     * This constructor is used by getMidpointsMesh.
+     */
+    RectangularFilteredMesh3D(const RectangularMesh<DIM>& rectangularMesh, Set nodeSet, bool clone_axes = false)
+        : RectangularFilteredMeshBase(rectangularMesh, std::move(nodeSet), clone_axes) {}
+
     Elements elements() const { return Elements(*this); }
     Elements getElements() const { return elements(); }
 
-    Element element(std::size_t i0, std::size_t i1, std::size_t i2) const { return Element(*this, Element::UNKNOWN_ELEMENT_INDEX, i0, i1, i2); }
+    Element element(std::size_t i0, std::size_t i1, std::size_t i2) const { ensureHasElements(); return Element(*this, Element::UNKNOWN_ELEMENT_INDEX, i0, i1, i2); }
     Element getElement(std::size_t i0, std::size_t i1, std::size_t i2) const { return element(i0, i1, i2); }
 
     /**
@@ -322,7 +333,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @param i index of the element
      * @return the element
      */
-    Element element(std::size_t i) const { return Element(*this, i); }
+    Element element(std::size_t i) const { ensureHasElements(); return Element(*this, i); }
 
     /**
      * Get an element with a given index @p i.
@@ -367,7 +378,19 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
         return fullMesh.operator()(axis0_index, axis1_index, axis2_index);
     }
 
+    /**
+     * Return a mesh that enables iterating over middle points of the selected rectangles.
+     * @param clone_axes whether axes of *this should be cloned (if true) or shared (if false; default) with the mesh returned
+     * @return new rectilinear filtered mesh with points in the middles of original, selected rectangles
+     */
+    shared_ptr<RectangularFilteredMesh3D> getMidpointsMesh(bool clone_axes = false) const {
+        ensureHasElements();
+        return plask::make_shared<RectangularFilteredMesh3D>(*fullMesh.getMidpointsMesh(), elementSet, clone_axes);
+        // elementSet is passed as a second argument since nodes of midpoints mesh coresponds to elements of oryginal mesh
+    }
+
 private:
+
     void initNodesAndElements(const RectangularFilteredMesh3D::Predicate &predicate);
 
     bool canBeIncluded(const Vec<3>& point) const {
@@ -449,6 +472,7 @@ public:
      * @return index of the element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndexes(std::size_t axis0_index, std::size_t axis1_index, std::size_t axis2_index) const {
+        ensureHasElements();
         return elementSet.indexOf(fullMesh.getElementIndexFromLowIndexes(axis0_index, axis1_index, axis2_index));
     }
 

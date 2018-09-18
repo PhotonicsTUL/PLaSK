@@ -250,7 +250,7 @@ struct CompressedSetOfNumbers {
     }
 
     /**
-     * Quickly append number to the end of the set.
+     * Quickly append a number to the end of the set.
      *
      * Time complexity: amortized constant.
      * @param number number to add, must be larger than all numbers already included in the set
