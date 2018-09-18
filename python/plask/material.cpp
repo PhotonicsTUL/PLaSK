@@ -1221,7 +1221,7 @@ void initMaterials() {
 
     py_enum<Material::Kind>()
         .value("GENERIC", Material::GENERIC)
-        .value("VOID", Material::VOID)
+        .value("EMPTY", Material::EMPTY)
         .value("SEMICONDUCTOR", Material::SEMICONDUCTOR)
         .value("OXIDE", Material::OXIDE)
         .value("DIELECTRIC", Material::DIELECTRIC)

@@ -19,7 +19,7 @@ from ...lib.highlighter import SyntaxHighlighter, load_syntax
 from ...lib.highlighter.xml import syntax
 from ...utils.str import empty_to_none
 from ...utils.texteditor import TextEditorWithCB
-from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, ComboBox, MultiLineEdit
+from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, ComboBox, MultiLineEdit, LineEditWithClear
 from ...utils.qsignals import BlockQtSignals
 from ...utils.qundo import UndoCommandWithSetter
 from ...model.solvers.schemasolver import SchemaTag, \
@@ -197,6 +197,9 @@ class SolverWidget(VerticalScrollArea):
             button.setArrowType(Qt.DownArrow if selected else Qt.RightArrow)
             for edit in rows:
                 edit.setVisible(selected)
+                label = self.form_layout.labelForField(edit)
+                if label is not None:
+                    label.setVisible(selected)
 
         button.toggled.connect(toggled)
 
@@ -206,11 +209,41 @@ class SolverWidget(VerticalScrollArea):
 
         self.form_layout.addRow(button)
 
+        self.headers.append((button, rows))
+
+    def _show_rows(self, rows):
+        for edit in rows:
+            edit.setVisible(True)
+            label = self.form_layout.labelForField(edit)
+            if label is not None:
+                label.setVisible(True)
+
+    def filter(self, text):
+        if text:
+            text = text.lower()
+            for button, rows in self.headers:
+                if not button.isChecked():
+                    continue
+                if text in button.text().lower():
+                    self._show_rows(rows)
+                else:
+                    for edit in rows:
+                        label = self.form_layout.labelForField(edit)
+                        if label is None:
+                            edit.setVisible(False)
+                        else:
+                            visible = text in label.text().lower()
+                            edit.setVisible(visible)
+                            label.setVisible(visible)
+        else:
+            for button, rows in self.headers:
+                if not button.isChecked():
+                    continue
+                self._show_rows(rows)
+
     def _add_row(self, label, edit, rows):
         rows.append(edit)
         self.form_layout.addRow(label + ':', edit)
-        label_widget = self.form_layout.labelForField(edit)
-        rows.append(label_widget)
 
     def __init__(self, controller, parent=None):
         super(SolverWidget, self).__init__(parent)
@@ -221,6 +254,13 @@ class SolverWidget(VerticalScrollArea):
         self.form_layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
 
         main = QWidget()
+
+        self.headers = []
+
+        filter = LineEditWithClear()
+        filter.setPlaceholderText("Filter...")
+        filter.textChanged.connect(self.filter)
+        self.form_layout.addRow(filter)
 
         rows = []
         if controller.model.geometry_type or controller.model.mesh_types:

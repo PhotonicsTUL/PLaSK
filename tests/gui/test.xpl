@@ -296,6 +296,23 @@
     <mesh diffusion="diffusion" electrical="default" thermal="default"/>
     <root bcond="0"/>
   </meta>
+  <meta name="threshold" solver="ThresholdSearchBesselCyl" lib="shockley">
+    <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
+    <mesh electrical="default" thermal="default"/>
+    <root bcond="1"/>
+    <voltage>
+      <condition place="bottom" value="0"/>
+      <condition value="1">
+        <place side="top" object="n-contact"/>
+      </condition>
+    </voltage>
+    <temperature>
+      <condition place="bottom" value="300"/>
+    </temperature>
+  </meta>
+  <optical name="F3D" solver="Fourier3D" lib="slab">
+    <geometry ref="l3cavity"/>
+  </optical>
 </solvers>
 
 <connects>
