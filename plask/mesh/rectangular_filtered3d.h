@@ -372,9 +372,9 @@ private:
 
     bool canBeIncluded(const Vec<3>& point) const {
         return
-            fullMesh.axis[0]->at(0) <= point[0] && point[0] <= fullMesh.axis[0]->at(fullMesh.axis[0]->size()-1) &&
-            fullMesh.axis[1]->at(0) <= point[1] && point[1] <= fullMesh.axis[1]->at(fullMesh.axis[1]->size()-1) &&
-            fullMesh.axis[2]->at(0) <= point[2] && point[2] <= fullMesh.axis[2]->at(fullMesh.axis[2]->size()-1);
+            fullMesh.axis[0]->at(0) - point[0] < MIN_DISTANCE && point[0] - fullMesh.axis[0]->at(fullMesh.axis[0]->size()-1) < MIN_DISTANCE &&
+            fullMesh.axis[1]->at(0) - point[1] < MIN_DISTANCE && point[1] - fullMesh.axis[1]->at(fullMesh.axis[1]->size()-1) < MIN_DISTANCE &&
+            fullMesh.axis[2]->at(0) - point[2] < MIN_DISTANCE && point[2] - fullMesh.axis[2]->at(fullMesh.axis[2]->size()-1) < MIN_DISTANCE;
     }
 
     bool prepareInterpolation(const Vec<3>& point, Vec<3>& wrapped_point,

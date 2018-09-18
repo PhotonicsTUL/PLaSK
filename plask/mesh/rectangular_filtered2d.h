@@ -291,8 +291,8 @@ private:
 
     bool canBeIncluded(const Vec<2>& point) const {
         return
-            fullMesh.axis[0]->at(0) <= point[0] && point[0] <= fullMesh.axis[0]->at(fullMesh.axis[0]->size()-1) &&
-            fullMesh.axis[1]->at(0) <= point[1] && point[1] <= fullMesh.axis[1]->at(fullMesh.axis[1]->size()-1);
+            fullMesh.axis[0]->at(0) - point[0] < MIN_DISTANCE && point[0] - fullMesh.axis[0]->at(fullMesh.axis[0]->size()-1) < MIN_DISTANCE &&
+            fullMesh.axis[1]->at(0) - point[1] < MIN_DISTANCE && point[1] - fullMesh.axis[1]->at(fullMesh.axis[1]->size()-1) < MIN_DISTANCE;
     }
 
     bool prepareInterpolation(const Vec<2>& point, Vec<2>& wrapped_point, std::size_t& index0_lo, std::size_t& index0_hi, std::size_t& index1_lo, std::size_t& index1_hi, std::size_t& rectmesh_index_lo, const InterpolationFlags& flags) const;
