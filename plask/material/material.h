@@ -55,7 +55,7 @@ struct PLASK_API Material {
     /// Material kind
     enum Kind: unsigned int {
         GENERIC        = (1<<0), ///< generic material
-        VOID           = (1<<1), ///< no material or air
+        EMPTY          = (1<<1), ///< no material or air
         SEMICONDUCTOR  = (1<<2), ///< semiconductor
         OXIDE          = (1<<3), ///< oxide
         DIELECTRIC     = (1<<4), ///< other dielectric

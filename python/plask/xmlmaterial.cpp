@@ -108,7 +108,7 @@ class PythonEvalMaterial: public MaterialWithBase
     }
 
     std::string name() const override { return cls->materialName; }
-    Material::Kind kind() const override { return (cls->kind == Material::VOID)? base->kind() : cls->kind; }
+    Material::Kind kind() const override { return (cls->kind == Material::EMPTY)? base->kind() : cls->kind; }
     Material::ConductivityType condtype() const override { return (cls->condtype == Material::CONDUCTIVITY_UNDETERMINED)? base->condtype() : cls->condtype; }
 
 #   define PYTHON_EVAL_CALL_0(rtype, fun) \

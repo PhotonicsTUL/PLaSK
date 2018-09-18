@@ -580,7 +580,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveHeatDensities()
             size_t upleftno = e.getLoUpIndex();
             size_t uprghtno = e.getUpUpIndex();
             auto midpoint = e.getMidpoint();
-            if (this->geometry->getMaterial(midpoint)->kind() == Material::VOID || this->geometry->hasRoleAt("noheat", midpoint))
+            if (this->geometry->getMaterial(midpoint)->kind() == Material::EMPTY || this->geometry->hasRoleAt("noheat", midpoint))
                 heats[i] = 0.;
             else {
                 double dvx = 0.5e6 * (- potentials[loleftno] + potentials[lorghtno] - potentials[upleftno] + potentials[uprghtno])
@@ -607,7 +607,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveHeatDensities()
                 double heatfact = 1e15 * phys::h_J * phys::c / (phys::qe * real(inWavelength(0)) * act.height);
                 double jy = conds[i].c11 * fabs(dvy); // [j] = A/m²
                 heats[i] = heatfact * jy ;
-            } else if (this->geometry->getMaterial(midpoint)->kind() == Material::VOID || this->geometry->hasRoleAt("noheat", midpoint))
+            } else if (this->geometry->getMaterial(midpoint)->kind() == Material::EMPTY || this->geometry->hasRoleAt("noheat", midpoint))
                 heats[i] = 0.;
             else
                 heats[i] = conds[i].c00 * dvx*dvx + conds[i].c11 * dvy*dvy;

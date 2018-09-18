@@ -601,7 +601,7 @@ void FiniteElementMethodElectrical3DSolver::saveHeatDensity()
                                      - potential[ull] + potential[ulu] - potential[uul] + potential[uuu])
                                 / (el.getUpper2() - el.getLower2()); // 1e6 - from µm to m
             auto midpoint = el.getMidpoint();
-            if (geometry->getMaterial(midpoint)->kind() == Material::VOID || geometry->hasRoleAt("noheat", midpoint))
+            if (geometry->getMaterial(midpoint)->kind() == Material::EMPTY || geometry->hasRoleAt("noheat", midpoint))
                 heat[i] = 0.;
             else {
                 heat[i] = conds[i].c00 * dvx*dvx + conds[i].c00 * dvy*dvy + conds[i].c11 * dvz*dvz;
@@ -634,7 +634,7 @@ void FiniteElementMethodElectrical3DSolver::saveHeatDensity()
                 double heatfact = 1e15 * phys::h_J * phys::c / (phys::qe * real(inWavelength(0)) * act.height);
                 double jz = conds[i].c11 * fabs(dvz); // [j] = A/m²
                 heat[i] = heatfact * jz ;
-            } else if (geometry->getMaterial(midpoint)->kind() == Material::VOID || roles.find("noheat") != roles.end())
+            } else if (geometry->getMaterial(midpoint)->kind() == Material::EMPTY || roles.find("noheat") != roles.end())
                 heat[i] = 0.;
             else
                 heat[i] = conds[i].c00 * dvx*dvx + conds[i].c00 * dvy*dvy + conds[i].c11 * dvz*dvz;
