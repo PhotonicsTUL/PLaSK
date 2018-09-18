@@ -234,7 +234,7 @@ struct DontCopyThisField: public T {
 
     DontCopyThisField() = default;
 
-    DontCopyThisField(const DontCopyThisField<T>&) noexcept {}
+    DontCopyThisField(const DontCopyThisField<T>&) noexcept: T() {}
 
     DontCopyThisField(const T&) noexcept {}
 
