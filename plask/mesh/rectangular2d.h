@@ -48,7 +48,7 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
      */
     class PLASK_API Element {
         const RectangularMesh2D& mesh;
-        std::size_t index0, index1; // probably this form allows to do most operation fastest in average, low indexes of element corner or just element indexes
+        std::size_t index0, index1; // probably this form allows us to do most operation the fastest in average, low indexes of element corner or just element indexes
 
         public:
 

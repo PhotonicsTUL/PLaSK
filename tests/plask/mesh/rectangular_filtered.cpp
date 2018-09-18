@@ -189,6 +189,12 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
         BOOST_CHECK_EQUAL(filteredMesh.interpolateNearestNeighbor(src_data, plask::vec(1.8, 4.5), plask::InterpolationFlags()), plask::vec(2.0, 2.0));
         BOOST_CHECK_EQUAL(filteredMesh.interpolateLinear(src_data, plask::vec(1.5, 4.5), plask::InterpolationFlags()), plask::vec(1.5, 1.5));
     }
+
+    {
+        auto midpoints = filteredMesh.getMidpointsMesh();
+        BOOST_CHECK_EQUAL(midpoints->size(), filteredMesh.getElementsCount());
+        BOOST_CHECK_EQUAL(midpoints->elements().size(), 0);
+    }
 }
 
 BOOST_AUTO_TEST_CASE(rectangular_filtered_2D_order10) {
@@ -256,6 +262,12 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_3D) {
         checkNodeIterator(filteredMesh, it,   17, 42,  plask::vec(3.0, 4.0, 5.0));
 
         BOOST_CHECK(it == filteredMesh.end());
+    }
+
+    {
+        auto midpoints = filteredMesh.getMidpointsMesh();
+        BOOST_CHECK_EQUAL(midpoints->size(), filteredMesh.getElementsCount());
+        BOOST_CHECK_EQUAL(midpoints->elements().size(), 0);
     }
 
     checkBoundary(filteredMesh.createBackBoundary(), { 0, 1, 2, 3, 4, 5, 6 });

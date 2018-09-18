@@ -6,170 +6,10 @@
 #include "rectangular.h"
 #include "../utils/numbers_set.h"
 
+#include <boost/thread.hpp>
+
 
 namespace plask {
-
-/**
- * Iterator over nodes coordinates.
- * It implements const_iterator for filtered meshes (RectangularFilteredMidpointsMesh and RectangularFilteredMesh).
- *
- * Iterator of this type is faster than IndexedIterator used by parent class of filtered meshes,
- * as it has constant time dereference operation while <code>at</code> method has logarithmic time complexity.
- *
- * One can use:
- * - getIndex() method of the iterator to get index of the node,
- * - getNumber() method of the iterator to get index of the node in the wrapped mesh.
- */
-template<typename MeshType>
-class RectangularFilteredMeshNodesIterator: public CompressedSetOfNumbers<std::size_t>::ConstIteratorFacade<RectangularFilteredMeshNodesIterator<MeshType>, typename MeshType::LocalCoords> {
-
-    friend class boost::iterator_core_access;
-
-    const MeshType* mesh;
-
-    typename MeshType::LocalCoords dereference() const {
-        return mesh->fullMesh.at(this->getNumber());
-    }
-
-public:
-
-    template <typename... CtorArgs>
-    explicit RectangularFilteredMeshNodesIterator(const MeshType& mesh, CtorArgs&&... ctorArgs)
-        : CompressedSetOfNumbers<std::size_t>::ConstIteratorFacade<RectangularFilteredMeshNodesIterator<MeshType>, typename MeshType::LocalCoords>(std::forward<CtorArgs>(ctorArgs)...), mesh(&mesh) {}
-
-    const CompressedSetOfNumbers<std::size_t>& set() const { return mesh->nodeSet; }
-};
-
-/**
- * Rectangular mesh with filtered nodes.
- *
- * It implements midpoints mesh of RectangularFilteredMesh2D and RectangularFilteredMesh3D.
- */
-template <int DIM>
-struct RectangularFilteredMidpointsMeshBase: public MeshD<DIM> {
-
-    /// Full, rectangular, wrapped mesh.
-    RectangularMesh<DIM> fullMesh;
-
-protected:
-
-    //typedef CompressedSetOfNumbers<std::uint32_t> Set;
-    typedef CompressedSetOfNumbers<std::size_t> Set;
-
-    /// Numbers of enabled nodes.
-    Set nodeSet;
-
-public:
-
-    using typename MeshD<DIM>::LocalCoords;
-
-    RectangularFilteredMidpointsMeshBase(const RectangularMesh<DIM>& rectangularMesh, Set nodeSet, bool clone_axes = false)
-        : fullMesh(rectangularMesh, clone_axes), nodeSet(std::move(nodeSet)) {}
-
-    typedef RectangularFilteredMeshNodesIterator<RectangularFilteredMidpointsMeshBase> const_iterator;
-
-    /// Iterator over nodes coordinates. The same as const_iterator, since non-const iterators are not supported.
-    typedef const_iterator iterator;
-
-    const_iterator begin() const { return const_iterator(*this, 0, nodeSet.segments.begin()); }
-    const_iterator end() const { return const_iterator(*this, size(), nodeSet.segments.end()); }
-
-    LocalCoords at(std::size_t index) const override {
-        return fullMesh.at(nodeSet.at(index));
-    }
-
-    std::size_t size() const override { return nodeSet.size(); }
-
-    bool empty() const override { return nodeSet.empty(); }
-
-    /**
-     * Calculate this mesh index using indexes of axis[0] and axis[1].
-     * @param indexes index of axis[0] and axis[1]
-     * @return this mesh index, from 0 to size()-1, or NOT_INCLUDED
-     */
-    inline std::size_t index(const Vec<DIM, std::size_t>& indexes) const {
-        return nodeSet.indexOf(fullMesh.index(indexes));
-    }
-
-    /**
-     * Calculate index of axis0 using this mesh index.
-     * @param mesh_index this mesh index, from 0 to size()-1
-     * @return index of axis0, from 0 to axis0->size()-1
-     */
-    inline std::size_t index0(std::size_t mesh_index) const {
-        return fullMesh.index0(nodeSet.at(mesh_index));
-    }
-
-    /**
-     * Calculate index of axis1 using this mesh index.
-     * @param mesh_index this mesh index, from 0 to size()-1
-     * @return index of axis1, from 0 to axis1->size()-1
-     */
-    inline std::size_t index1(std::size_t mesh_index) const {
-        return fullMesh.index1(nodeSet.at(mesh_index));
-    }
-
-    /**
-     * Calculate indexes of axes.
-     * @param mesh_index this mesh index, from 0 to size()-1
-     * @return indexes of axes
-     */
-    inline Vec<DIM, std::size_t> indexes(std::size_t mesh_index) const {
-        return fullMesh.indexes(nodeSet.at(mesh_index));
-    }
-
-    /**
-     * Calculate index of major axis using given mesh index.
-     * @param mesh_index this mesh index, from 0 to size()-1
-     * @return index of major axis, from 0 to majorAxis.size()-1
-     */
-    inline std::size_t majorIndex(std::size_t mesh_index) const {
-        return fullMesh.majorIndex(nodeSet.at(mesh_index));
-    }
-
-    /**
-     * Calculate index of major axis using given mesh index.
-     * @param mesh_index this mesh index, from 0 to size()-1
-     * @return index of major axis, from 0 to majorAxis.size()-1
-     */
-    inline std::size_t minorIndex(std::size_t mesh_index) const {
-        return fullMesh.minorIndex(nodeSet.at(mesh_index));
-    }
-
-};
-
-typedef RectangularFilteredMidpointsMeshBase<2> RectangularFilteredMidpointsMesh2D;
-
-struct RectangularFilteredMidpointsMesh3D: public RectangularFilteredMidpointsMeshBase<3> {
-
-    template<typename... Args> RectangularFilteredMidpointsMesh3D(Args&&... args) : RectangularFilteredMidpointsMeshBase<3>(std::forward<Args>(args)...) {}
-
-    /**
-     * Calculate index of axis2 using this mesh index.
-     * @param mesh_index this mesh index, from 0 to size()-1
-     * @return index of axis2, from 0 to axis2->size()-1
-     */
-    inline std::size_t index2(std::size_t mesh_index) const {   // method missing in the base as it is specific for 3D
-        return this->fullMesh.index2(this->nodeSet.at(mesh_index));
-    }
-
-    /**
-     * Calculate index of middle axis using given mesh index.
-     * @param mesh_index this mesh index, from 0 to size()-1
-     * @return index of major axis, from 0 to middleIndex.size()-1
-     */
-    inline std::size_t middleIndex(std::size_t mesh_index) const {   // method missing in the base as it is specific for 3D
-        return this->fullMesh.middleIndex(this->nodeSet.at(mesh_index));
-    }
-};
-
-template <int DIM>
-using RectangularFilteredMidpointsMesh =
-    typename std::conditional<
-        DIM == 2,
-        RectangularFilteredMidpointsMesh2D,
-        typename std::conditional<DIM == 3, RectangularFilteredMidpointsMesh3D, void>::type
-    >::type;
 
 /**
  * Common base class for RectangularFilteredMesh 2D and 3D.
@@ -198,7 +38,6 @@ protected:
 
     /// The lowest and the largest index in use, for each direction.
     struct { std::size_t lo, up; } boundaryIndex[DIM];
-
 
     /**
      * Used by interpolation.
@@ -311,6 +150,10 @@ public:
     /// Construct an empty mesh. One should use reset() method before using it.
     RectangularFilteredMeshBase() = default;
 
+    /// Constructor which allows us to construct midpoints mesh.
+    RectangularFilteredMeshBase(const RectangularMesh<DIM>& rectangularMesh, Set nodeSet, bool clone_axes = false)
+        : fullMesh(rectangularMesh, clone_axes), nodeSet(std::move(nodeSet)), elementSetInitialized(false) {}
+
     /**
      * Construct a mesh by wrap of a given @p rectangularMesh.
      * @param rectangularMesh mesh to wrap (it is copied by the constructor)
@@ -319,7 +162,34 @@ public:
     RectangularFilteredMeshBase(const RectangularMesh<DIM>& rectangularMesh, bool clone_axes = false)
         : fullMesh(rectangularMesh, clone_axes) { resetBoundyIndex(); }
 
-    typedef RectangularFilteredMeshNodesIterator<RectangularFilteredMeshBase> const_iterator;
+    /**
+     * Iterator over nodes coordinates. It implements const_iterator for filtered meshes.
+     *
+     * Iterator of this type is faster than IndexedIterator used by parent class of filtered meshes,
+     * as it has constant time dereference operation while <code>at</code> method has logarithmic time complexity.
+     *
+     * One can use:
+     * - getIndex() method of the iterator to get index of the node,
+     * - getNumber() method of the iterator to get index of the node in the wrapped mesh.
+     */
+    class const_iterator: public CompressedSetOfNumbers<std::size_t>::ConstIteratorFacade<const_iterator, LocalCoords> {
+
+        friend class boost::iterator_core_access;
+
+        const RectangularFilteredMeshBase* mesh;
+
+        LocalCoords dereference() const {
+            return mesh->fullMesh.at(this->getNumber());
+        }
+
+    public:
+
+        template <typename... CtorArgs>
+        explicit const_iterator(const RectangularFilteredMeshBase& mesh, CtorArgs&&... ctorArgs)
+            : CompressedSetOfNumbers<std::size_t>::ConstIteratorFacade<const_iterator, LocalCoords>(std::forward<CtorArgs>(ctorArgs)...), mesh(&mesh) {}
+
+        const CompressedSetOfNumbers<std::size_t>& set() const { return mesh->nodeSet; }
+    };
 
     /// Iterator over nodes coordinates. The same as const_iterator, since non-const iterators are not supported.
     typedef const_iterator iterator;
@@ -390,19 +260,11 @@ public:
     }
 
     /**
-     * Return a mesh that enables iterating over middle points of the selected rectangles.
-     * \return new rectilinear mesh with points in the middles of original, selected rectangles
-     */
-    shared_ptr<RectangularFilteredMidpointsMesh<DIM>> getMidpointsMesh() const {
-        return plask::make_shared<RectangularFilteredMidpointsMesh<DIM>>(*fullMesh.getMidpointsMesh(), elementSet);
-        // elementSet is passed as a second argument since nodes of midpoints mesh coresponds to elements of oryginal mesh
-    }
-
-    /**
      * Get number of elements (for FEM method) in the first direction.
      * @return number of elements in the full rectangular mesh in the first direction (axis0 direction).
      */
     std::size_t getElementsCount0() const {
+        ensureHasElements();
         return fullMesh.getElementsCount0();
     }
 
@@ -411,6 +273,7 @@ public:
      * @return number of elements in the full rectangular mesh in the second direction (axis1 direction).
      */
     std::size_t getElementsCount1() const {
+        ensureHasElements();
         return fullMesh.getElementsCount1();
     }
 
@@ -419,6 +282,7 @@ public:
      * @return number of elements in this mesh
      */
     std::size_t getElementsCount() const {
+        ensureHasElements();
         return elementSet.size();
     }
 
@@ -428,6 +292,7 @@ public:
      * @return index of the element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndex(std::size_t mesh_index_of_el_bottom_left) const {
+        ensureHasElements();
         return elementSet.indexOf(fullMesh.getElementIndexFromLowIndex(nodeSet.at(mesh_index_of_el_bottom_left)));
     }
 
@@ -437,6 +302,7 @@ public:
      * @return mesh index
      */
     std::size_t getElementMeshLowIndex(std::size_t element_index) const {
+        ensureHasElements();
         return nodeSet.indexOf(fullMesh.getElementMeshLowIndex(elementSet.at(element_index)));
     }
 
@@ -447,6 +313,7 @@ public:
      * you can easy calculate rest indexes of element corner by adding 1 to returned coordinates
      */
     Vec<DIM, std::size_t> getElementMeshLowIndexes(std::size_t element_index) const {
+        ensureHasElements();
         return fullMesh.getElementMeshLowIndexes(elementSet.at(element_index));
     }
 
@@ -456,6 +323,7 @@ public:
      * @return the area of the element with given index
      */
     double getElementArea(std::size_t element_index) const {
+        ensureHasElements();
         return fullMesh.getElementArea(elementSet.at(element_index));
     }
 
@@ -464,14 +332,20 @@ public:
      * @param index0 index of the element (axis0 index)
      * @return first coordinate of the point in the center of the element
      */
-    double getElementMidpoint0(std::size_t index0) const { return fullMesh.getElementMidpoint0(index0); }
+    double getElementMidpoint0(std::size_t index0) const {
+        ensureHasElements();
+        return fullMesh.getElementMidpoint0(index0);
+    }
 
     /**
      * Get second coordinate of point in the center of an elements.
      * @param index1 index of the element (axis1 index)
      * @return second coordinate of the point in the center of the element
      */
-    double getElementMidpoint1(std::size_t index1) const { return fullMesh.getElementMidpoint1(index1); }
+    double getElementMidpoint1(std::size_t index1) const {
+        ensureHasElements();
+        return fullMesh.getElementMidpoint1(index1);
+    }
 
     /**
      * Get point in the center of an element.
@@ -479,6 +353,7 @@ public:
      * @return point in center of element with given index
      */
     Vec<DIM, double> getElementMidpoint(std::size_t element_index) const {
+        ensureHasElements();
         return fullMesh.getElementMidpoint(elementSet.at(element_index));
     }
 
@@ -488,7 +363,50 @@ public:
      * @return the element as a rectangle (box)
      */
     typename Primitive<DIM>::Box getElementBox(std::size_t element_index) const {
+        ensureHasElements();
         return fullMesh.getElementBox(elementSet.at(element_index));
+    }
+
+private:    // constructing elementSet from nodes set (element is chosen when all its vertices are chosen) on-deamand
+
+    /// Only one thread can calculate elementSet
+    DontCopyThisField<boost::mutex> writeElementSet;
+
+    /// Whether elementSet is initialized (default for most contructors)
+    bool elementSetInitialized = true;
+
+    bool allVerticesIncluded(const RectangularMesh2D::Element& el) const {
+        return nodeSet.includes(el.getLoLoIndex()) &&
+               nodeSet.includes(el.getUpLoIndex()) &&
+               nodeSet.includes(el.getLoUpIndex()) &&
+               nodeSet.includes(el.getUpUpIndex());
+    }
+
+    bool allVerticesIncluded(const RectangularMesh3D::Element& el) {
+        return nodeSet.includes(el.getLoLoLoIndex()) &&
+               nodeSet.includes(el.getUpLoLoIndex()) &&
+               nodeSet.includes(el.getLoUpLoIndex()) &&
+               nodeSet.includes(el.getLoLoUpIndex()) &&
+               nodeSet.includes(el.getLoUpUpIndex()) &&
+               nodeSet.includes(el.getUpLoUpIndex()) &&
+               nodeSet.includes(el.getUpUpLoIndex()) &&
+               nodeSet.includes(el.getUpUpUpIndex());
+    }
+
+    void calculateElements() {
+        boost::lock_guard<boost::mutex> lock((boost::mutex&)writeElementSet);
+        if (elementSetInitialized) return;  // another thread has initilized elementSet just when we waited for mutex
+        // TODO faster implementation
+        for (auto el: fullMesh.elements())
+            if (allVerticesIncluded(el)) elementSet.push_back(el.getIndex());
+        elementSetInitialized = true;
+    }
+
+protected:
+
+    /// Ensure that elementSet is calculated (calculate it if it is not)
+    void ensureHasElements() const {
+        if (!elementSetInitialized) const_cast<RectangularFilteredMeshBase<DIM>*>(this)->calculateElements();
     }
 
 };
