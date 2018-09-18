@@ -58,9 +58,38 @@ bool RectangularFilteredMesh3D::prepareInterpolation(const Vec<3> &point, Vec<3>
     findIndexes(*fullMesh.axis[0], wrapped_point.c0, index0_lo, index0_hi);
     findIndexes(*fullMesh.axis[1], wrapped_point.c1, index1_lo, index1_hi);
     findIndexes(*fullMesh.axis[2], wrapped_point.c2, index2_lo, index2_hi);
+    assert(index0_hi == index0_lo + 1);
+    assert(index1_hi == index1_lo + 1);
+    assert(index2_hi == index2_lo + 1);
 
-    rectmesh_index_lo = fullMesh.index(index0_lo, index1_lo, index2_lo);
-    return elementSet.includes(fullMesh.getElementIndexFromLowIndex(rectmesh_index_lo));
+    double lo0 = fullMesh.axis[0]->at(index0_lo), hi0 = fullMesh.axis[0]->at(index0_hi),
+           lo1 = fullMesh.axis[1]->at(index1_lo), hi1 = fullMesh.axis[1]->at(index1_hi),
+           lo2 = fullMesh.axis[2]->at(index2_lo), hi2 = fullMesh.axis[2]->at(index2_hi);
+
+    for (char i2 = 0; i2 < 2; ++i2) {
+        for (char i1 = 0; i1 < 2; ++i1) {
+            for (char i0 = 0; i0 < 2; ++i0) {
+                rectmesh_index_lo = fullMesh.index(index0_lo, index1_lo, index2_lo);
+                if (elementSet.includes(fullMesh.getElementIndexFromLowIndex(rectmesh_index_lo))) {
+                    index0_hi = index0_lo + 1; index1_hi = index1_lo + 1; index2_hi = index2_lo + 1;
+                    return true;
+                }
+                if (index0_lo > 0 && lo0 <= wrapped_point.c0 && wrapped_point.c0 < lo0+MIN_DISTANCE) index0_lo = index0_hi-2;
+                else if (index0_lo < fullMesh.axis[0]->size()-2 && hi0-MIN_DISTANCE < wrapped_point.c0 && wrapped_point.c0 <= hi0) index0_lo = index0_hi;
+                else break;
+            }
+            index0_lo = index0_hi - 1;
+            if (index1_lo > 0 && lo1 <= wrapped_point.c1 && wrapped_point.c1 < lo1+MIN_DISTANCE) index1_lo = index1_hi-2;
+            else if (index1_lo < fullMesh.axis[1]->size()-2 && hi1-MIN_DISTANCE < wrapped_point.c1 && wrapped_point.c1 <= hi1) index1_lo = index1_hi;
+            else break;
+        }
+        index1_lo = index1_hi - 1;
+        if (index2_lo > 0 && lo2 <= wrapped_point.c2 && wrapped_point.c2 < lo2+MIN_DISTANCE) index2_lo = index2_hi-2;
+        else if (index2_lo < fullMesh.axis[2]->size()-2 && hi2-MIN_DISTANCE < wrapped_point.c2 && wrapped_point.c2 <= hi1) index2_lo = index2_hi;
+        else break;
+    }
+
+    return false;
 }
 
 BoundaryNodeSet RectangularFilteredMesh3D::createIndex0BoundaryAtLine(std::size_t line_nr_axis0, std::size_t index1Begin, std::size_t index1End, std::size_t index2Begin, std::size_t index2End) const

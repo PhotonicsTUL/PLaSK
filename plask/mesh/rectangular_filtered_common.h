@@ -179,6 +179,9 @@ using RectangularFilteredMidpointsMesh =
 template <int DIM>
 struct RectangularFilteredMeshBase: public RectangularMeshBase<DIM> {
 
+    /// Maximum distance from boundary to include in the inerpolation
+    constexpr static double MIN_DISTANCE = 1e-6; // 1 picometer
+
     /// Full, rectangular, wrapped mesh.
     RectangularMesh<DIM> fullMesh;
 
@@ -206,8 +209,8 @@ protected:
      */
     static void findIndexes(const MeshAxis& axis, double wrapped_point_coord, std::size_t& index_lo, std::size_t& index_hi) {
         index_hi = axis.findUpIndex(wrapped_point_coord);
-        if (index_hi+1 == axis.size()) --index_hi;    // p.c0 == axis0->at(axis0->size()-1)
-        assert(index_hi > 0);
+        if (index_hi == axis.size()) --index_hi;    // p.c0 == axis0->at(axis0->size()-1)
+        else if (index_hi == 0) index_hi = 1;
         index_lo = index_hi - 1;
     }
 
