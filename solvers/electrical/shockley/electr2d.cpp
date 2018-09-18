@@ -116,7 +116,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
         return;
     }
 
-    filteredMesh->reset(*this->mesh, *this->geometry, ~plask::Material::VOID);
+    filteredMesh->reset(*this->mesh, *this->geometry, ~plask::Material::EMPTY);
 
     auto points = this->filteredMesh->getMidpointsMesh();
 
