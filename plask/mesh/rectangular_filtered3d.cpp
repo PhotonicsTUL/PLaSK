@@ -44,6 +44,7 @@ void RectangularFilteredMesh3D::initNodesAndElements(const RectangularFilteredMe
         }
     nodeSet.shrink_to_fit();
     elementSet.shrink_to_fit();
+    elementSetInitialized = true;
 }
 
 bool RectangularFilteredMesh3D::prepareInterpolation(const Vec<3> &point, Vec<3> &wrapped_point,
@@ -66,6 +67,7 @@ bool RectangularFilteredMesh3D::prepareInterpolation(const Vec<3> &point, Vec<3>
            lo1 = fullMesh.axis[1]->at(index1_lo), hi1 = fullMesh.axis[1]->at(index1_hi),
            lo2 = fullMesh.axis[2]->at(index2_lo), hi2 = fullMesh.axis[2]->at(index2_hi);
 
+    ensureHasElements();
     for (char i2 = 0; i2 < 2; ++i2) {
         for (char i1 = 0; i1 < 2; ++i1) {
             for (char i0 = 0; i0 < 2; ++i0) {
