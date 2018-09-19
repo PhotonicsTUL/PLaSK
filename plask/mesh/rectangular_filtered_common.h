@@ -36,6 +36,9 @@ protected:
     /// Numbers of enabled elements.
     Set elementSet;
 
+    /// Whether elementSet is initialized (default for most contructors)
+    bool elementSetInitialized = true;
+
     /// The lowest and the largest index in use, for each direction.
     struct { std::size_t lo, up; } boundaryIndex[DIM];
 
@@ -371,9 +374,6 @@ private:    // constructing elementSet from nodes set (element is chosen when al
 
     /// Only one thread can calculate elementSet
     DontCopyThisField<boost::mutex> writeElementSet;
-
-    /// Whether elementSet is initialized (default for most contructors)
-    bool elementSetInitialized = true;
 
     bool allVerticesIncluded(const RectangularMesh2D::Element& el) const {
         return nodeSet.includes(el.getLoLoIndex()) &&

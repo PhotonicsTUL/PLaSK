@@ -679,8 +679,11 @@ const LazyData<Vec<2>> FiniteElementMethodElectrical2DSolver<Geometry2DType>::ge
     InterpolationFlags flags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN);
     auto result = interpolate(this->filteredMesh->getMidpointsMesh(), currents, dest_mesh, method, flags);
     return LazyData<Vec<2>>(result.size(),
-        [this, dest_mesh, result, flags](size_t i) {
-            return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<2>(0.,0.);
+        [result](size_t i) {
+            // Filtered mesh always returns NaN outside of itself
+            // return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<2>(0.,0.);
+            auto val = result[i];
+            return isnan(val)? Vec<2>(0.,0.) : val;
         }
     );
 }
@@ -696,8 +699,11 @@ const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::ge
     InterpolationFlags flags(this->geometry);
     auto result = interpolate(this->filteredMesh->getMidpointsMesh(), heats, dest_mesh, method, flags);
     return LazyData<double>(result.size(),
-        [this, dest_mesh, result, flags](size_t i) {
-            return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;
+        [result](size_t i) {
+            // Filtered mesh always returns NaN outside of itself
+            // return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;
+            auto val = result[i];
+            return isnan(val)? 0. : val;
         }
     );
 }

@@ -49,10 +49,15 @@ bool RectangularFilteredMesh2D::prepareInterpolation(const Vec<2> &point, Vec<2>
     double lo0 = fullMesh.axis[0]->at(index0_lo), hi0 = fullMesh.axis[0]->at(index0_hi),
            lo1 = fullMesh.axis[1]->at(index1_lo), hi1 = fullMesh.axis[1]->at(index1_hi);
 
+    size_t major = fullMesh.majorAxis()->size();
+
     for (char i1 = 0; i1 < 2; ++i1) {
         for (char i0 = 0; i0 < 2; ++i0) {
             rectmesh_index_lo = fullMesh.index(index0_lo, index1_lo);
-            if (elementSet.includes(fullMesh.getElementIndexFromLowIndex(rectmesh_index_lo))) {
+            if ((elementSetInitialized && elementSet.includes(fullMesh.getElementIndexFromLowIndex(rectmesh_index_lo))) ||
+                (nodeSet.includes(rectmesh_index_lo) && nodeSet.includes(rectmesh_index_lo+1) &&
+                 nodeSet.includes(rectmesh_index_lo+major) && nodeSet.includes(rectmesh_index_lo+major+1))
+            ) {
                 index0_hi = index0_lo + 1; index1_hi = index1_lo + 1;
                 return true;
             }
