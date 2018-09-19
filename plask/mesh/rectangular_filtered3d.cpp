@@ -73,7 +73,7 @@ bool RectangularFilteredMesh3D::prepareInterpolation(const Vec<3> &point, Vec<3>
         for (char i1 = 0; i1 < 2; ++i1) {
             for (char i0 = 0; i0 < 2; ++i0) {
                 rectmesh_index_lo = fullMesh.index(index0_lo, index1_lo, index2_lo);
-                if ((elementSetInitialized && elementSet.includes(fullMesh.getElementIndexFromLowIndex(rectmesh_index_lo))) ||
+                if (elementSetInitialized? elementSet.includes(fullMesh.getElementIndexFromLowIndex(rectmesh_index_lo)) :
                     (nodeSet.includes(rectmesh_index_lo) && nodeSet.includes(rectmesh_index_lo+1) &&
                      nodeSet.includes(rectmesh_index_lo+minor) && nodeSet.includes(rectmesh_index_lo+minor+1) &&
                      nodeSet.includes(rectmesh_index_lo+major) && nodeSet.includes(rectmesh_index_lo+major+1) &&
