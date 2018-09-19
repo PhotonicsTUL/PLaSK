@@ -213,9 +213,9 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_midpoints) {
      *     0     1     2     3      4
      * 0   |0--- |4---6|8--10|12--14|16            3
      *     |     |     |  *  |   *  |
-     * 1  0|1---3|5---7|9--11|13--15|17            4
+     * 1  0|1---3|5---7|9--11#13--15|17            4
      *left |  *  |  *  |  *  |   *  |    right
-     * 2  1|2---4|6---8|10-12|14--16|18            5
+     * 2  1|2---4#6---8#10-12|14--16|18            5
      *     |  *  |  *  |  *  |      |
      * 3  2|3---5|7---9|11-13|15--- |19            6
      *            top
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_midpoints) {
     BOOST_CHECK_EQUAL(mesh.getElementsCount(), 9);
     auto midpoints = mesh.getMidpointsMesh();
     BOOST_CHECK_EQUAL(midpoints->size(), 9);
-    BOOST_CHECK_EQUAL(midpoints->getElementsCount(), 3);
+    BOOST_CHECK_EQUAL(midpoints->getElementsCount(), 3);    // # on diagram
 }
 
 BOOST_AUTO_TEST_CASE(rectangular_filtered_2D_order10) {
