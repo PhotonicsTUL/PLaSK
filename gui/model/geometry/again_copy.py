@@ -63,6 +63,9 @@ class GNAgain(GNode):
         result.set_xml_element(element, conf)
         return result
 
+    @property
+    def name(self):
+        return self.ref
 
 # ---------- copy tag and its children: --------------
 
@@ -111,7 +114,7 @@ class GNCReplace(GNCopyChild):
 
     def __init__(self, parent=None, object=None, replacer=None):
         super(GNCReplace, self).__init__(parent, object)
-        self.replacer = replacer    # with in PLaSK
+        self.replacer = replacer    # within PLaSK
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNCReplace, self)._attributes_from_xml(attribute_reader, conf)

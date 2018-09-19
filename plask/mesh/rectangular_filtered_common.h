@@ -264,7 +264,6 @@ public:
      * @return number of elements in the full rectangular mesh in the first direction (axis0 direction).
      */
     std::size_t getElementsCount0() const {
-        ensureHasElements();
         return fullMesh.getElementsCount0();
     }
 
@@ -273,7 +272,6 @@ public:
      * @return number of elements in the full rectangular mesh in the second direction (axis1 direction).
      */
     std::size_t getElementsCount1() const {
-        ensureHasElements();
         return fullMesh.getElementsCount1();
     }
 
@@ -282,8 +280,7 @@ public:
      * @return number of elements in this mesh
      */
     std::size_t getElementsCount() const {
-        ensureHasElements();
-        return elementSet.size();
+        return ensureHasElements().size();
     }
 
     /**
@@ -292,8 +289,7 @@ public:
      * @return index of the element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndex(std::size_t mesh_index_of_el_bottom_left) const {
-        ensureHasElements();
-        return elementSet.indexOf(fullMesh.getElementIndexFromLowIndex(nodeSet.at(mesh_index_of_el_bottom_left)));
+        return ensureHasElements().indexOf(fullMesh.getElementIndexFromLowIndex(nodeSet.at(mesh_index_of_el_bottom_left)));
     }
 
     /**
@@ -302,8 +298,7 @@ public:
      * @return mesh index
      */
     std::size_t getElementMeshLowIndex(std::size_t element_index) const {
-        ensureHasElements();
-        return nodeSet.indexOf(fullMesh.getElementMeshLowIndex(elementSet.at(element_index)));
+        return nodeSet.indexOf(fullMesh.getElementMeshLowIndex(ensureHasElements().at(element_index)));
     }
 
     /**
@@ -313,8 +308,7 @@ public:
      * you can easy calculate rest indexes of element corner by adding 1 to returned coordinates
      */
     Vec<DIM, std::size_t> getElementMeshLowIndexes(std::size_t element_index) const {
-        ensureHasElements();
-        return fullMesh.getElementMeshLowIndexes(elementSet.at(element_index));
+        return fullMesh.getElementMeshLowIndexes(ensureHasElements().at(element_index));
     }
 
     /**
@@ -323,8 +317,7 @@ public:
      * @return the area of the element with given index
      */
     double getElementArea(std::size_t element_index) const {
-        ensureHasElements();
-        return fullMesh.getElementArea(elementSet.at(element_index));
+        return fullMesh.getElementArea(ensureHasElements().at(element_index));
     }
 
     /**
@@ -333,7 +326,6 @@ public:
      * @return first coordinate of the point in the center of the element
      */
     double getElementMidpoint0(std::size_t index0) const {
-        ensureHasElements();
         return fullMesh.getElementMidpoint0(index0);
     }
 
@@ -343,7 +335,6 @@ public:
      * @return second coordinate of the point in the center of the element
      */
     double getElementMidpoint1(std::size_t index1) const {
-        ensureHasElements();
         return fullMesh.getElementMidpoint1(index1);
     }
 
@@ -353,8 +344,7 @@ public:
      * @return point in center of element with given index
      */
     Vec<DIM, double> getElementMidpoint(std::size_t element_index) const {
-        ensureHasElements();
-        return fullMesh.getElementMidpoint(elementSet.at(element_index));
+        return fullMesh.getElementMidpoint(ensureHasElements().at(element_index));
     }
 
     /**
@@ -363,11 +353,10 @@ public:
      * @return the element as a rectangle (box)
      */
     typename Primitive<DIM>::Box getElementBox(std::size_t element_index) const {
-        ensureHasElements();
-        return fullMesh.getElementBox(elementSet.at(element_index));
+        return fullMesh.getElementBox(ensureHasElements().at(element_index));
     }
 
-private:    // constructing elementSet from nodes set (element is chosen when all its vertices are chosen) on-deamand
+protected:    // constructing elementSet from nodes set (element is chosen when all its vertices are chosen) on-deamand
 
     /// Only one thread can calculate elementSet
     DontCopyThisField<boost::mutex> writeElementSet;
@@ -402,11 +391,10 @@ private:    // constructing elementSet from nodes set (element is chosen when al
         elementSetInitialized = true;
     }
 
-protected:
-
     /// Ensure that elementSet is calculated (calculate it if it is not)
-    void ensureHasElements() const {
+    const Set& ensureHasElements() const {
         if (!elementSetInitialized) const_cast<RectangularFilteredMeshBase<DIM>*>(this)->calculateElements();
+        return elementSet;
     }
 
 };

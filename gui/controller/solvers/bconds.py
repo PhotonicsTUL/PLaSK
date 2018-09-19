@@ -170,6 +170,7 @@ if preview_available:
             # for b in bconds:
             #     print list(b.place(mesh, geometry)), b.value
             updater = self.plot_updater(self.first, plane)
+            points = []
             if bconds is not None:
                 for m in updater:
                     points = plask.plot_boundary(bconds, mesh, geometry, colors=colors, plane=plane, axes=self.axes)
@@ -182,9 +183,13 @@ if preview_available:
                         except:
                             pass
                 self.first = False
-            else:
-                points = []
             self.canvas.draw()
+            try:
+                stack = self.toolbar._nav_stack
+            except AttributeError:
+                stack = self.toolbar._views
+            stack.clear()
+            self.toolbar.push_current()
             return points
 
     class fake_plask_gui_solver(object):

@@ -384,8 +384,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * @return new rectilinear filtered mesh with points in the middles of original, selected rectangles
      */
     shared_ptr<RectangularFilteredMesh3D> getMidpointsMesh(bool clone_axes = false) const {
-        ensureHasElements();
-        return plask::make_shared<RectangularFilteredMesh3D>(*fullMesh.getMidpointsMesh(), elementSet, clone_axes);
+        return plask::make_shared<RectangularFilteredMesh3D>(*fullMesh.getMidpointsMesh(), ensureHasElements(), clone_axes);
         // elementSet is passed as a second argument since nodes of midpoints mesh coresponds to elements of oryginal mesh
     }
 
@@ -472,8 +471,7 @@ public:
      * @return index of the element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndexes(std::size_t axis0_index, std::size_t axis1_index, std::size_t axis2_index) const {
-        ensureHasElements();
-        return elementSet.indexOf(fullMesh.getElementIndexFromLowIndexes(axis0_index, axis1_index, axis2_index));
+        return ensureHasElements().indexOf(fullMesh.getElementIndexFromLowIndexes(axis0_index, axis1_index, axis2_index));
     }
 
     /**

@@ -34,6 +34,7 @@ void RectangularFilteredMesh2D::initNodesAndElements(const RectangularFilteredMe
         }
     nodeSet.shrink_to_fit();
     elementSet.shrink_to_fit();
+    elementSetInitialized = true;
 }
 
 bool RectangularFilteredMesh2D::prepareInterpolation(const Vec<2> &point, Vec<2> &wrapped_point, std::size_t &index0_lo, std::size_t &index0_hi, std::size_t &index1_lo, std::size_t &index1_hi, std::size_t &rectmesh_index_lo, const InterpolationFlags &flags) const {
@@ -49,6 +50,7 @@ bool RectangularFilteredMesh2D::prepareInterpolation(const Vec<2> &point, Vec<2>
     double lo0 = fullMesh.axis[0]->at(index0_lo), hi0 = fullMesh.axis[0]->at(index0_hi),
            lo1 = fullMesh.axis[1]->at(index1_lo), hi1 = fullMesh.axis[1]->at(index1_hi);
 
+    ensureHasElements();
     for (char i1 = 0; i1 < 2; ++i1) {
         for (char i0 = 0; i0 < 2; ++i0) {
             rectmesh_index_lo = fullMesh.index(index0_lo, index1_lo);
