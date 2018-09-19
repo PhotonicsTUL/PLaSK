@@ -614,6 +614,15 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
     }
 
     /**
+     * Check if mesh index is at the bottom, left, front corner of an element.
+     * @param meshIndex mesh index
+     * @return true only if @p meshIndex is at the bottom, left, front corner of an element
+     */
+    bool isLowIndexOfElement(std::size_t meshIndex) const {
+        return index0(meshIndex) + 1 < axis[0]->size() && index1(meshIndex) + 1 < axis[1]->size();
+    }
+
+    /**
      * Convert mesh index of bottom left element corner to index of this element.
      * @param mesh_index_of_el_bottom_left mesh index
      * @return index of the element, from 0 to getElementsCount()-1
