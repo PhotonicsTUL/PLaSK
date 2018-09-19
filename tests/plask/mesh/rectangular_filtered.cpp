@@ -203,6 +203,7 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_midpoints) {
     auto mesh = plask::RectangularFilteredMesh2D(
                 plask::RectangularMesh2D(axis0, axis1),    // 5x4 nodes, 4x3 elements
                 [] (const plask::RectangularMesh<2>::Element& e) {
+                    if (e.getLoLoIndex() == 14) return false;
                     return e.getIndex0() == 2 || e.getIndex0() == 3 ||  // 2 colums, 4 elements each = 8 elements
                            e.getIndex1() == 1 || e.getIndex1() == 2;    // 2 rows, 5 elements each = 10 elements
                                                                         // 8 + 10 - 8 (common elements) = 10 elements
@@ -215,16 +216,16 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_midpoints) {
      * 1  0|1---3|5---7|9--11|13--15|17            4
      *left |  *  |  *  |  *  |   *  |    right
      * 2  1|2---4|6---8|10-12|14--16|18            5
-     *     |  *  |  *  |  *  |   *  |
-     * 3  2|3---5|7---9|11-13|15--17|19            6
+     *     |  *  |  *  |  *  |      |
+     * 3  2|3---5|7---9|11-13|15--- |19            6
      *            top
      *     1     2     5    10     18
      */
-    BOOST_CHECK_EQUAL(mesh.size(), 18);
-    BOOST_CHECK_EQUAL(mesh.getElementsCount(), 10);
+    BOOST_CHECK_EQUAL(mesh.size(), 17);
+    BOOST_CHECK_EQUAL(mesh.getElementsCount(), 9);
     auto midpoints = mesh.getMidpointsMesh();
-    BOOST_CHECK_EQUAL(midpoints->size(), 10);
-    BOOST_CHECK_EQUAL(midpoints->getElementsCount(), 4);
+    BOOST_CHECK_EQUAL(midpoints->size(), 9);
+    BOOST_CHECK_EQUAL(midpoints->getElementsCount(), 3);
 }
 
 BOOST_AUTO_TEST_CASE(rectangular_filtered_2D_order10) {
