@@ -364,15 +364,16 @@ protected:    // constructing elementSet from nodes set (element is chosen when 
     /// Whether elementSet is initialized (default for most contructors)
     bool elementSetInitialized = true;
 
-    bool allVerticesIncluded(const RectangularMesh2D::Element& el) const {
-        return nodeSet.includes(el.getLoLoIndex()) &&
+private:
+    bool restVerticesIncluded(const RectangularMesh2D::Element& el) const {
+        return /*nodeSet.includes(el.getLoLoIndex()) &&*/
                nodeSet.includes(el.getUpLoIndex()) &&
                nodeSet.includes(el.getLoUpIndex()) &&
                nodeSet.includes(el.getUpUpIndex());
     }
 
-    bool allVerticesIncluded(const RectangularMesh3D::Element& el) {
-        return nodeSet.includes(el.getLoLoLoIndex()) &&
+    bool restVerticesIncluded(const RectangularMesh3D::Element& el) const {
+        return /*nodeSet.includes(el.getLoLoLoIndex()) &&*/
                nodeSet.includes(el.getUpLoLoIndex()) &&
                nodeSet.includes(el.getLoUpLoIndex()) &&
                nodeSet.includes(el.getLoLoUpIndex()) &&
@@ -386,11 +387,15 @@ protected:    // constructing elementSet from nodes set (element is chosen when 
         boost::lock_guard<boost::mutex> lock((boost::mutex&)writeElementSet);
         if (elementSetInitialized) return;  // another thread has initilized elementSet just when we waited for mutex
         // TODO faster implementation
-        for (auto el: fullMesh.elements())
-            if (allVerticesIncluded(el)) elementSet.push_back(el.getIndex());
+        for (auto lowNode: nodeSet) {
+            if (!fullMesh.isLowIndexOfElement(lowNode)) continue;
+            auto elementIndex = fullMesh.getElementIndexFromLowIndex(lowNode);
+            if (restVerticesIncluded(fullMesh.getElement(elementIndex))) elementSet.push_back(elementIndex);
+        }
         elementSetInitialized = true;
     }
 
+protected:
     /// Ensure that elementSet is calculated (calculate it if it is not)
     const Set& ensureHasElements() const {
         if (!elementSetInitialized) const_cast<RectangularFilteredMeshBase<DIM>*>(this)->calculateElements();

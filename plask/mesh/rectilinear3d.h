@@ -598,9 +598,18 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
     }
 
     /**
+     * Check if mesh index is at the bottom, left, front corner of an element.
+     * @param meshIndex mesh index
+     * @return true only if @p meshIndex is at the bottom, left, front corner of an element
+     */
+    bool isLowIndexOfElement(std::size_t meshIndex) const {
+        return index0(meshIndex) + 1 < axis[0]->size() && index1(meshIndex) + 1 < axis[1]->size() && index2(meshIndex) + 1 < axis[2]->size();
+    }
+
+    /**
      * Conver mesh index of bottom, left, front element corner to this element index.
      * @param mesh_index_of_el_bottom_left mesh index
-     * @return index of element, from 0 to getElementsCount()-1
+     * @return index of the element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndex(std::size_t mesh_index_of_el_bottom_left) const {
         const std::size_t verticles_per_level = (*minor_axis)->size() * (*medium_axis)->size();
