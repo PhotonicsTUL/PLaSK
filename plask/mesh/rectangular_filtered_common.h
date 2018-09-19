@@ -372,7 +372,7 @@ private:
                nodeSet.includes(el.getUpUpIndex());
     }
 
-    bool restVerticesIncluded(const RectangularMesh3D::Element& el) {
+    bool restVerticesIncluded(const RectangularMesh3D::Element& el) const {
         return /*nodeSet.includes(el.getLoLoLoIndex()) &&*/
                nodeSet.includes(el.getUpLoLoIndex()) &&
                nodeSet.includes(el.getLoUpLoIndex()) &&
