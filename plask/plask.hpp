@@ -87,6 +87,7 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "mesh/generator_rectangular.h"
 #include "mesh/rectangular_spline.h"
 #include "mesh/rectangular_filtered.h"
+#include "mesh/rectangular_filtered_spline.h"
 #include "mesh/basic.h"
 
 #include "provider/provider.h"

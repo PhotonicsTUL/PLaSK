@@ -1,15 +1,15 @@
 #include "rectangular_spline.h"
+#include "hyman.h"
 #include "../exceptions.h"
-
 
 namespace plask {
 
 
 template <typename DstT, typename SrcT>
 SplineRect2DLazyDataImpl<DstT, SrcT>::SplineRect2DLazyDataImpl(const shared_ptr<const RectangularMesh2D>& src_mesh,
-                                                                       const DataVector<const SrcT>& src_vec,
-                                                                       const shared_ptr<const MeshD<2>>& dst_mesh,
-                                                                       const InterpolationFlags& flags):
+                                                               const DataVector<const SrcT>& src_vec,
+                                                               const shared_ptr<const MeshD<2>>& dst_mesh,
+                                                               const InterpolationFlags& flags):
     InterpolatedLazyDataImpl<DstT, RectangularMesh2D, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
     diff0(src_mesh->size()), diff1(src_mesh->size()) {}
 
@@ -85,9 +85,9 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 
 template <typename DstT, typename SrcT>
 SplineRect3DLazyDataImpl<DstT, SrcT>::SplineRect3DLazyDataImpl(const shared_ptr<const RectilinearMesh3D>& src_mesh,
-                                                                       const DataVector<const SrcT>& src_vec,
-                                                                       const shared_ptr<const MeshD<3>>& dst_mesh,
-                                                                       const InterpolationFlags& flags):
+                                                               const DataVector<const SrcT>& src_vec,
+                                                               const shared_ptr<const MeshD<3>>& dst_mesh,
+                                                               const InterpolationFlags& flags):
     InterpolatedLazyDataImpl<DstT, RectilinearMesh3D, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
     diff0(src_mesh->size()), diff1(src_mesh->size()), diff2(src_mesh->size()) {}
 
@@ -238,54 +238,6 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 
 
 namespace hyman {
-    template <typename T> struct Hyman {
-        static void filter(T& data, const T& a, const T& b) {
-            T lim = 3 * min(abs(a), abs(b));
-            if (data > lim) data = lim;
-            else if (data < -lim) data = -lim;
-        }
-    };
-
-    template <> struct Hyman<dcomplex> {
-        static void filter(dcomplex& data, const dcomplex& a, const dcomplex& b) {
-            double re = data.real(), im = data.imag();
-            Hyman<double>::filter(re, real(a), real(b));
-            Hyman<double>::filter(im, imag(a), imag(b));
-            data = dcomplex(re,im);
-        }
-    };
-
-    template <typename T> struct Hyman<Vec<2,T>> {
-        static void filter(Vec<2,T>& data, const Vec<2,T>& a, const Vec<2,T>& b) {
-            Hyman<T>::filter(data.c0, a.c0, b.c0);
-            Hyman<T>::filter(data.c1, a.c1, b.c1);
-        }
-    };
-
-    template <typename T> struct Hyman<Vec<3,T>> {
-        static void filter(Vec<3,T>& data, const Vec<3,T>& a, const Vec<3,T>& b) {
-            Hyman<T>::filter(data.c0, a.c0, b.c0);
-            Hyman<T>::filter(data.c1, a.c1, b.c1);
-            Hyman<T>::filter(data.c2, a.c2, b.c2);
-        }
-    };
-
-    template <typename T> struct Hyman<Tensor2<T>> {
-        static void filter(Tensor2<T>& data, const Tensor2<T>& a, const Tensor2<T>& b) {
-            Hyman<T>::filter(data.c00, a.c00, b.c00);
-            Hyman<T>::filter(data.c11, a.c11, b.c11);
-        }
-    };
-
-    template <typename T> struct Hyman<Tensor3<T>> {
-        static void filter(Tensor3<T>& data, const Tensor3<T>& a, const Tensor3<T>& b) {
-            Hyman<T>::filter(data.c00, a.c00, b.c00);
-            Hyman<T>::filter(data.c11, a.c11, b.c11);
-            Hyman<T>::filter(data.c22, a.c22, b.c22);
-            Hyman<T>::filter(data.c01, a.c01, b.c01);
-        }
-    };
-
     template <typename DataT>
     static void computeDiffs(DataT* diffs, int ax, const shared_ptr<MeshAxis>& axis,
                              const DataT* data, std::size_t stride, const InterpolationFlags& flags)
@@ -480,10 +432,10 @@ namespace spline {
         const size_t n0 = axis->size();
         const size_t n1 = n0 - 1;
 
-		std::unique_ptr<double[]>
-			dl(new double[n1]),
-			dd(new double[n1 + 1]),
-			du(new double[n1]);
+        std::unique_ptr<double[]>
+            dl(new double[n1]),
+            dd(new double[n1 + 1]),
+            du(new double[n1]);
 
         std::unique_ptr<DataT[]> lastdata(new DataT[size1*size2]);
         {

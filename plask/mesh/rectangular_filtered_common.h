@@ -25,7 +25,7 @@ struct RectangularFilteredMeshBase: public RectangularMeshBase<DIM> {
     /// Full, rectangular, wrapped mesh.
     RectangularMesh<DIM> fullMesh;
 
-protected:
+  protected:
 
     //typedef CompressedSetOfNumbers<std::uint32_t> Set;
     typedef CompressedSetOfNumbers<std::size_t> Set;
@@ -140,7 +140,7 @@ protected:
         resetBoundyIndex();
     }
 
-public:
+  public:
 
     using typename MeshD<DIM>::LocalCoords;
 
@@ -356,7 +356,7 @@ public:
         return fullMesh.getElementBox(ensureHasElements().at(element_index));
     }
 
-protected:    // constructing elementSet from nodes set (element is chosen when all its vertices are chosen) on-deamand
+  protected:    // constructing elementSet from nodes set (element is chosen when all its vertices are chosen) on-deamand
 
     /// Only one thread can calculate elementSet
     DontCopyThisField<boost::mutex> writeElementSet;
@@ -395,7 +395,7 @@ private:
         elementSetInitialized = true;
     }
 
-protected:
+  protected:
     /// Ensure that elementSet is calculated (calculate it if it is not)
     const Set& ensureHasElements() const {
         if (!elementSetInitialized) const_cast<RectangularFilteredMeshBase<DIM>*>(this)->calculateElements();

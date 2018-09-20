@@ -307,7 +307,7 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
         // elementSet is passed as a second argument since nodes of midpoints mesh coresponds to elements of oryginal mesh
     }
 
-private:
+  private:
 
     void initNodesAndElements(const RectangularFilteredMesh2D::Predicate &predicate);
 
@@ -317,9 +317,19 @@ private:
             fullMesh.axis[1]->at(0) - point[1] < MIN_DISTANCE && point[1] - fullMesh.axis[1]->at(fullMesh.axis[1]->size()-1) < MIN_DISTANCE;
     }
 
-    bool prepareInterpolation(const Vec<2>& point, Vec<2>& wrapped_point, std::size_t& index0_lo, std::size_t& index0_hi, std::size_t& index1_lo, std::size_t& index1_hi, std::size_t& rectmesh_index_lo, const InterpolationFlags& flags) const;
+  public:
+    /** Prepare point for inteprolation
+     * \param point point to check
+     * \param[out] wrapped_point point after wrapping with interpolation flags
+     * \param[out] index0_lo,index0_hi surrounding indices in the rectantular mesh for axis0
+     * \param[out] index1_lo,index1_hi surrounding indices in the rectantular mesh for axis1
+     * \param[out] rectmesh_index_lo elelemnt index in the rectangular mesh
+     * \param flags interpolation flags
+     * \returns \c false if the point falls in the hole or outside of the mesh, \c true if it can be interpolated
+     */
+    bool prepareInterpolation(const Vec<2>& point, Vec<2>& wrapped_point, std::size_t& index0_lo, std::size_t& index0_hi, std::size_t& index1_lo, std::size_t& index1_hi,
+                              std::size_t& rectmesh_index_lo, const InterpolationFlags& flags) const;
 
-public:
     /**
      * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.
      * @param data values of data in points describe by this mesh
@@ -407,7 +417,7 @@ public:
         return fullMesh.getElementBox(index0, index1);
     }
 
-protected:  // boundaries code:
+  protected:  // boundaries code:
 
     // Common code for: left, right, bottom, top boundries:
     template <int CHANGE_DIR>
@@ -488,7 +498,7 @@ protected:  // boundaries code:
         }
     };
 
-public:     // boundaries:
+  public:     // boundaries:
 
     BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const override;
 

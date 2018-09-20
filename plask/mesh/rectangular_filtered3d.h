@@ -388,7 +388,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
         // elementSet is passed as a second argument since nodes of midpoints mesh coresponds to elements of oryginal mesh
     }
 
-private:
+  private:
 
     void initNodesAndElements(const RectangularFilteredMesh3D::Predicate &predicate);
 
@@ -399,13 +399,23 @@ private:
             fullMesh.axis[2]->at(0) - point[2] < MIN_DISTANCE && point[2] - fullMesh.axis[2]->at(fullMesh.axis[2]->size()-1) < MIN_DISTANCE;
     }
 
+  public:
+
+    /** Prepare point for inteprolation
+     * \param point point to check
+     * \param[out] wrapped_point point after wrapping with interpolation flags
+     * \param[out] index0_lo,index0_hi surrounding indices in the rectantular mesh for axis0
+     * \param[out] index1_lo,index1_hi surrounding indices in the rectantular mesh for axis1
+     * \param[out] index2_lo,index2_hi surrounding indices in the rectantular mesh for axis2
+     * \param[out] rectmesh_index_lo elelemnt index in the rectangular mesh
+     * \param flags interpolation flags
+     * \returns \c false if the point falls in the hole or outside of the mesh, \c true if it can be interpolated
+     */
     bool prepareInterpolation(const Vec<3>& point, Vec<3>& wrapped_point,
                               std::size_t& index0_lo, std::size_t& index0_hi,
                               std::size_t& index1_lo, std::size_t& index1_hi,
                               std::size_t& index2_lo, std::size_t& index2_hi,
                               std::size_t& rectmesh_index_lo, const InterpolationFlags& flags) const;
-
-public:
     /**
      * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.
      * @param data values of data in points describe by this mesh
@@ -502,7 +512,7 @@ public:
     }
 
 
-protected:
+  protected:
 
     // Common code for: left, right, bottom, top boundries:
     template <int CHANGE_DIR_SLOWER, int CHANGE_DIR_FASTER>
@@ -595,7 +605,7 @@ protected:
         }
     };
 
-public:     // boundaries:
+  public:     // boundaries:
 
     BoundaryNodeSet createIndex0BoundaryAtLine(std::size_t line_nr_axis0,
                                                              std::size_t index1Begin, std::size_t index1End,
