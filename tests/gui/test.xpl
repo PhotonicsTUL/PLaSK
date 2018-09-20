@@ -288,8 +288,13 @@
     <mesh ref="optical"/>
   </electrical>
   <meta name="meta2" solver="ThermoElectric2D" lib="shockley">
-    <geometry electrical="geo2d-copy" thermal="geo2d"/>
+    <geometry electrical="geo2d" thermal="geo2d-copy"/>
     <mesh electrical="default" thermal="default"/>
+    <voltage>
+      <condition value="0.">
+        <place side="top" object="stos2"/>
+      </condition>
+    </voltage>
   </meta>
   <meta name="bessel" solver="ThresholdSearchBesselCyl" lib="shockley">
     <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>

@@ -9,8 +9,9 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-from collections import OrderedDict
 import sys
+from collections import OrderedDict
+from copy import copy
 
 from lxml.etree import tostring
 
@@ -170,6 +171,11 @@ if preview_available:
             # for b in bconds:
             #     print list(b.place(mesh, geometry)), b.value
             updater = self.plot_updater(self.first, plane)
+            if self.first:
+                try:
+                    self.toolbar._nav_stack.clear()
+                except AttributeError:
+                    self.toolbar._views.clear()
             points = []
             if bconds is not None:
                 for m in updater:
@@ -184,12 +190,6 @@ if preview_available:
                             pass
                 self.first = False
             self.canvas.draw()
-            try:
-                stack = self.toolbar._nav_stack
-            except AttributeError:
-                stack = self.toolbar._views
-            stack.clear()
-            self.toolbar.push_current()
             return points
 
     class fake_plask_gui_solver(object):
@@ -372,11 +372,18 @@ class BoundaryConditionsDialog(QDialog):
 
     @QtSlot()
     def _picked_object(self):
-        if self._active_place_editor is not None and self._picked_path is not None and self.geometry_node is not None:
-            node = self.geometry_node.get_node_by_real_path(self._picked_path)
-            self._active_place_editor.fill_details(node.name, node.path)
-            self.place_details_delegate.commitData.emit(self._active_place_editor)
+        if self._picked_path is None: return
+        _picked_path = self._picked_path
         self._picked_path = None
+        if self._active_place_editor is not None and self.geometry_node is not None:
+            while _picked_path:
+                node = self.geometry_node.get_node_by_real_path(_picked_path)
+                if node.name:
+                    self._active_place_editor.fill_details(node.name, node.path)
+                    self.place_details_delegate.commitData.emit(self._active_place_editor)
+                    break
+                else:
+                    _picked_path.pop()
 
     def message(self, msg):
         if msg:
