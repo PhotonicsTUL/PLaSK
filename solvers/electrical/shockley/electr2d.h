@@ -57,6 +57,8 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
 
     std::vector<Active> active;                 ///< Active regions information
 
+    bool use_full_mesh;                         ///< Should we use full mesh?
+
     /// Save locate stiffness matrix to global one
     inline void setLocalMatrix(double& k44, double& k33, double& k22, double& k11,
                                double& k43, double& k21, double& k42, double& k31, double& k32, double& k41,
@@ -280,6 +282,14 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
         if (!this->mesh || cond.size() != condsize)
             throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
         junction_conductivity = cond.claim();
+    }
+
+    /// Are we using full mesh?
+    bool usingFullMesh() const { return use_full_mesh; }
+    /// Set whether we should use full mesh
+    void useFullMesh(bool val) {
+        use_full_mesh = val;
+        setActiveRegions();
     }
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)

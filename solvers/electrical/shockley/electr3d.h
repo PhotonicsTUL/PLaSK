@@ -55,6 +55,8 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
 
     std::vector<Active> active;                 ///< Active regions information
 
+    bool use_full_mesh;                         ///< Should we use full mesh?
+
 
     /**
      * Set stiffness matrix and load vector
@@ -289,6 +291,14 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
         if (!this->mesh || cond.size() != condsize)
             throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
         junction_conductivity = cond.claim();
+    }
+
+    /// Are we using full mesh?
+    bool usingFullMesh() const { return use_full_mesh; }
+    /// Set whether we should use full mesh
+    void useFullMesh(bool val) {
+        use_full_mesh = val;
+        setActiveRegions();
     }
 
   protected:

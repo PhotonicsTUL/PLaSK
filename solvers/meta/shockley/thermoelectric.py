@@ -103,6 +103,7 @@ class ThermoElectric(plask.Solver):
             self.electrical.geometry = tag.getitem(manager.geo, 'electrical')
         elif tag == 'mesh':
             self.thermal.mesh = tag.getitem(manager.msh, 'thermal')
+            self._read_attr(tag, 'include-empty', self.electrical, bool, 'include_empty')
             self.electrical.mesh = tag.getitem(manager.msh, 'electrical')
         elif tag == 'junction':
             self._read_attr(tag, 'pnjcond', self.electrical, float)

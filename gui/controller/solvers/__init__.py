@@ -47,7 +47,7 @@ class FilterController(Controller):
 
         self.geometry = QComboBox()
         self.geometry.setEditable(True)
-        self.geometry.textChanged.connect(self.fire_changed)
+        self.geometry.editTextChanged.connect(self.fire_changed)
         self.geometry.currentIndexChanged.connect(self.fire_changed)
         self.geometry.setCompleter(get_defines_completer(self.document.defines.model, self.widget))
         self.geometry.setToolTip('Name of the target geometry for this filter.')

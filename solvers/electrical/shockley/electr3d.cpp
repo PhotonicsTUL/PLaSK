@@ -93,8 +93,12 @@ void FiniteElementMethodElectrical3DSolver::loadConfiguration(XMLReader &source,
             source.requireTagEnd();
         }
 
-        else
-            parseStandardConfiguration(source, manager);
+        else {
+            if (param == "mesh") {
+                use_full_mesh = source.getAttribute<bool>("include-empty", use_full_mesh);
+            }
+            this->parseStandardConfiguration(source, manager);
+        }
     }
 }
 

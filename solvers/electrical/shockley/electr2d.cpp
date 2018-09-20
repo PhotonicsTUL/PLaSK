@@ -9,6 +9,7 @@ FiniteElementMethodElectrical2DSolver<Geometry2DType>::FiniteElementMethodElectr
     ncond(50.),
     loopno(0),
     default_junction_conductivity(5.),
+    use_full_mesh(false),
     maxerr(0.05),
     heatmet(HEAT_JOULES),
     outVoltage(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getVoltage),
@@ -94,8 +95,12 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConfiguration(XM
             source.requireTagEnd();
         }
 
-        else
+        else {
+            if (param == "mesh") {
+                use_full_mesh = source.getAttribute<bool>("include-empty", use_full_mesh);
+            }
             this->parseStandardConfiguration(source, manager);
+        }
     }
 }
 
@@ -116,7 +121,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
         return;
     }
 
-    filteredMesh->reset(*this->mesh, *this->geometry, ~plask::Material::EMPTY);
+    filteredMesh->reset(*this->mesh, *this->geometry, ~(use_full_mesh? 0 : plask::Material::EMPTY));
 
     auto points = this->filteredMesh->getMidpointsMesh();
 
@@ -625,8 +630,11 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::in
     double result = 0.;
     for (size_t i = 0; i < mesh->axis[0]->size()-1; ++i) {
         auto element = filteredMesh->element(i, vindex);
-        if (!onlyactive || isActive(element.getMidpoint()))
-            result += currents[element.getIndex()].c1 * element.getSize0();
+        if (!onlyactive || isActive(element.getMidpoint())) {
+            size_t index = element.getIndex();
+            if (index != RectangularFilteredMesh2D::Element::UNKNOWN_ELEMENT_INDEX)
+                result += currents[index].c1 * element.getSize0();
+        }
     }
     if (this->getGeometry()->isSymmetric(Geometry::DIRECTION_TRAN)) result *= 2.;
     return result * geometry->getExtrusion()->getLength() * 0.01; // kA/cm² µm² -->  mA;
@@ -641,8 +649,11 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::
     for (size_t i = 0; i < mesh->axis[0]->size()-1; ++i) {
         auto element = filteredMesh->element(i, vindex);
         if (!onlyactive || isActive(element.getMidpoint())) {
-            double rin = element.getLower0(), rout = element.getUpper0();
-            result += currents[element.getIndex()].c1 * (rout*rout - rin*rin);
+            size_t index = element.getIndex();
+            if (index != RectangularFilteredMesh2D::Element::UNKNOWN_ELEMENT_INDEX) {
+                double rin = element.getLower0(), rout = element.getUpper0();
+                result += currents[element.getIndex()].c1 * (rout*rout - rin*rin);
+            }
         }
     }
     return result * plask::PI * 0.01; // kA/cm² µm² -->  mA
@@ -665,8 +676,11 @@ const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::ge
 {
     if (!potentials) throw NoValue("Voltage");
     this->writelog(LOG_DEBUG, "Getting voltage");
-    if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
-    return interpolate(this->filteredMesh, potentials, dst_mesh, method, this->geometry);
+    if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
+    if (use_full_mesh)
+        return interpolate(this->mesh, potentials, dst_mesh, method, this->geometry);
+    else
+        return interpolate(this->filteredMesh, potentials, dst_mesh, method, this->geometry);
 }
 
 
@@ -677,15 +691,23 @@ const LazyData<Vec<2>> FiniteElementMethodElectrical2DSolver<Geometry2DType>::ge
     this->writelog(LOG_DEBUG, "Getting current densities");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN);
-    auto result = interpolate(this->filteredMesh->getMidpointsMesh(), currents, dest_mesh, method, flags);
-    return LazyData<Vec<2>>(result.size(),
-        [result](size_t i) {
-            // Filtered mesh always returns NaN outside of itself
-            // return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<2>(0.,0.);
-            auto val = result[i];
-            return isnan(val)? Vec<2>(0.,0.) : val;
-        }
-    );
+    if (use_full_mesh) {
+        auto result = interpolate(this->mesh->getMidpointsMesh(), currents, dest_mesh, method, flags);
+        return LazyData<Vec<2>>(result.size(),
+            [result, this, flags, dest_mesh](size_t i) {
+                return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<2>(0.,0.);
+            }
+        );
+    } else {
+        auto result = interpolate(this->filteredMesh->getMidpointsMesh(), currents, dest_mesh, method, flags);
+        return LazyData<Vec<2>>(result.size(),
+            [result](size_t i) {
+                // Filtered mesh always returns NaN outside of itself
+                auto val = result[i];
+                return isnan(val)? Vec<2>(0.,0.) : val;
+            }
+        );
+    }
 }
 
 
@@ -697,15 +719,23 @@ const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::ge
     if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry);
-    auto result = interpolate(this->filteredMesh->getMidpointsMesh(), heats, dest_mesh, method, flags);
-    return LazyData<double>(result.size(),
-        [result](size_t i) {
-            // Filtered mesh always returns NaN outside of itself
-            // return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;
-            auto val = result[i];
-            return isnan(val)? 0. : val;
-        }
-    );
+    if (use_full_mesh) {
+        auto result = interpolate(this->mesh->getMidpointsMesh(), heats, dest_mesh, method, flags);
+        return LazyData<double>(result.size(),
+            [result, this, flags, dest_mesh](size_t i) {
+                return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;
+            }
+        );
+    } else {
+        auto result = interpolate(this->filteredMesh->getMidpointsMesh(), heats, dest_mesh, method, flags);
+        return LazyData<double>(result.size(),
+            [result](size_t i) {
+                // Filtered mesh always returns NaN outside of itself
+                auto val = result[i];
+                return isnan(val)? 0. : val;
+            }
+        );
+    }
 }
 
 

@@ -51,6 +51,13 @@
       mesh types: [ Rectangular2D ]
       help: >
         Mesh used by the electrical solver.
+    - &full-mesh-electrical
+      attr: include-empty
+      label: Include Empty Regions
+      type: bool
+      default: no
+      help: >
+        Should empty regions (e.g. air) be included into electrical computations?
 
   - &voltage
     bcond: voltage
@@ -348,6 +355,7 @@
       mesh types: [ Rectangular3D ]
       help: >
         Mesh used by the electrical solver.
+    - *full-mesh-electrical
 
   - bcond: voltage
     label: Voltage
@@ -463,6 +471,7 @@
       mesh types: [ Ordered, Rectangular2D ]
       help: >
         Mesh used by the optical solver.
+    - *full-mesh-electrical
 
   - tag: optical
     label: Optical Solver Configuration
@@ -854,6 +863,7 @@
       mesh types: [ Ordered ]
       help: >
         Mesh used by the optical solver.
+    - *full-mesh-electrical
 
   - tag: optical
     label: Optical Solver Configuration
@@ -1168,6 +1178,7 @@
       mesh types: [ Ordered ]
       help: >
         Mesh used by the optical solver.
+    - *full-mesh-electrical
 
   - tag: optical
     label: Optical Solver Configuration

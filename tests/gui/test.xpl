@@ -255,14 +255,6 @@
   <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="shockley">
     <geometry ref="GeoE"/>
     <mesh ref="default"/>
-    <voltage>
-      <condition value="2.0">
-        <place side="bottom" object="p-contact"/>
-      </condition>
-      <condition value="0.0">
-        <place side="top" object="n-contact"/>
-      </condition>
-    </voltage>
     <matrix algorithm="cholesky" itererr="2"/>
     <junction beta0="{beta_def}" beta1="19.2" js0="{js_def}" js1="1.1"/>
   </electrical>
@@ -313,6 +305,9 @@
   <optical name="F3D" solver="Fourier3D" lib="slab">
     <geometry ref="l3cavity"/>
   </optical>
+  <electrical name="s2d" solver="Shockley2D" lib="shockley"/>
+  <electrical name="scyl" solver="ShockleyCyl" lib="shockley"/>
+  <electrical name="s3d" solver="Shockley3D" lib="shockley"/>
 </solvers>
 
 <connects>
