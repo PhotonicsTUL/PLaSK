@@ -21,9 +21,9 @@ template <typename DstT, typename SrcT>
 DstT SplineFilteredRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 {
     Vec<2> p;
-    size_t i0_lo, i0_hi, i1_lo, i1_hi, rilb;
+    size_t i0_lo, i0_hi, i1_lo, i1_hi;
 
-    if (!this->src_mesh->prepareInterpolation(this->dst_mesh->at(index), p, i0_lo, i0_hi, i1_lo, i1_hi, rilb, this->flags))
+    if (!this->src_mesh->prepareInterpolation(this->dst_mesh->at(index), p, i0_lo, i0_hi, i1_lo, i1_hi, this->flags))
         return NaNfor<decltype(this->src_vec[0])>();
 
     double left = this->src_mesh->fullMesh.getAxis0()->at(i0_lo), right = this->src_mesh->fullMesh.getAxis0()->at(i0_hi),
@@ -89,9 +89,9 @@ template <typename DstT, typename SrcT>
 DstT SplineFilteredRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 {
     Vec<3> p;
-    size_t i0_lo, i0_hi, i1_lo, i1_hi, i2_lo, i2_hi, rilll;
+    size_t i0_lo, i0_hi, i1_lo, i1_hi, i2_lo, i2_hi;
 
-    if (!this->src_mesh->prepareInterpolation(this->dst_mesh->at(index), p, i0_lo, i0_hi, i1_lo, i1_hi, i2_lo, i2_hi, rilll, this->flags))
+    if (!this->src_mesh->prepareInterpolation(this->dst_mesh->at(index), p, i0_lo, i0_hi, i1_lo, i1_hi, i2_lo, i2_hi, this->flags))
         return NaNfor<decltype(this->src_vec[0])>();
 
     double back = this->src_mesh->fullMesh.getAxis0()->at(i0_lo), front = this->src_mesh->fullMesh.getAxis0()->at(i0_hi),

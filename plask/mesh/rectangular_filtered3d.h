@@ -220,6 +220,114 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
 
     };  // struct Elements
 
+    /// Element mesh
+    struct PLASK_API ElementMesh: ElementMeshBase<RectangularFilteredMesh3D> {
+
+        explicit ElementMesh(const RectangularFilteredMesh3D* originalMesh): ElementMeshBase<RectangularFilteredMesh3D>(originalMesh) {}
+
+        /**
+         * Calculate this mesh index using indexes of axis0 and axis1.
+         * \param axis0_index index of axis0, from 0 to axis[0]->size()-1
+         * \param axis1_index index of axis1, from 0 to axis[1]->size()-1
+         * \param axis2_index index of axis1, from 0 to axis[2]->size()-1
+         * \return this mesh index, from 0 to size()-1, or NOT_INCLUDED
+         */
+        inline std::size_t index(std::size_t axis0_index, std::size_t axis1_index, std::size_t axis2_index) const {
+            return originalMesh->elementSet.indexOf(originalMesh->fullMesh.getElement(axis0_index, axis1_index, axis2_index).getIndex());
+        }
+
+        bool prepareInterpolation(const Vec<3>& point, Vec<3>& wrapped_point,
+                                  std::size_t& index0_lo, std::size_t& index0_hi,
+                                  std::size_t& index1_lo, std::size_t& index1_hi,
+                                  std::size_t& index2_lo, std::size_t& index2_hi,
+                                  const InterpolationFlags& flags) const {
+            return originalMesh->prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi, flags);
+        }
+
+        /**
+         * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.
+         * \param data values of data in points describe by this mesh
+         * \param point point in which value should be calculate
+         * \return interpolated value in point \p point
+         */
+        template <typename RandomAccessContainer>
+        auto interpolateLinear(const RandomAccessContainer& data, const Vec<3>& point, const InterpolationFlags& flags) const
+            -> typename std::remove_reference<decltype(data[0])>::type {
+            typedef typename std::remove_reference<decltype(data[0])>::type DataT;
+            Vec<3> p;
+            size_t index0, index0_hi, index1, index1_hi, index2, index2_hi;
+
+            if (!originalMesh->prepareInterpolation(point, p, index0, index0_hi, index1, index1_hi, index2, index2_hi, flags))
+                return NaNfor<decltype(data[0])>();
+
+            Vec<3> pa = originalMesh->fullMesh.getElement(index0, index1, index2).getMidpoint();
+
+            size_t step0 = (p.c0 < pa.c0)?
+                (index0 == 0)? 0 : -1 :
+                (index0_hi == originalMesh->fullMesh.axis[0]->size()-1)? 0 : 1;
+            size_t step1 = (p.c1 < pa.c1)?
+                (index1 == 0)? 0 : -1 :
+                (index1_hi == originalMesh->fullMesh.axis[1]->size()-1)? 0 : 1;
+            size_t step2 = (p.c2 < pa.c2)?
+                (index2 == 0)? 0 : -1 :
+                (index2_hi == originalMesh->fullMesh.axis[2]->size()-1)? 0 : 1;
+
+            size_t index_aaa = index(index0, index1, index2), index_aab, index_aba, index_abb,
+                   index_baa, index_bab, index_bba, index_bbb;
+
+            typename std::remove_const<DataT>::type data_aaa = data[index_aaa], data_aab, data_aba, data_abb,
+                                                    data_baa, data_bab, data_bba, data_bbb;
+
+            if (step0 == 0 && step1 == 0 && step2 == 0) {
+                index_aab = index_aba = index_abb = index_baa = index_bab = index_bba = index_bbb = index_aaa;
+                data_aab = data_aba = data_abb = data_baa = data_bab = data_bba = data_bbb = data_aaa;
+            } else {
+                index_aab = index(index0, index1+step1, index2+step2);
+                index_aba = index(index0, index1+step1, index2);
+                index_abb = index(index0, index1+step1, index2+step2);
+                index_baa = index(index0+step0, index1, index2);
+                index_bab = index(index0+step0, index1, index2+step2);
+                index_bba = index(index0+step0, index1+step1, index2);
+                index_bbb = index(index0+step0, index1+step1, index2+step2);
+                data_aab = (index_aab != Element::UNKNOWN_ELEMENT_INDEX)? data[index_aab] : data_aaa;
+                data_aba = (index_aba != Element::UNKNOWN_ELEMENT_INDEX)? data[index_aba] : data_aaa;
+                data_baa = (index_baa != Element::UNKNOWN_ELEMENT_INDEX)? data[index_baa] : data_aaa;
+                data_abb = (index_abb != Element::UNKNOWN_ELEMENT_INDEX)? data[index_abb] : data_aab + data_aba - data_aaa;
+                data_bab = (index_bab != Element::UNKNOWN_ELEMENT_INDEX)? data[index_bab] : data_baa + data_aab - data_aaa;
+                data_bba = (index_bba != Element::UNKNOWN_ELEMENT_INDEX)? data[index_bba] : data_aba + data_baa - data_aaa;
+                data_bbb = (index_bbb != Element::UNKNOWN_ELEMENT_INDEX)? data[index_bbb] : data_aab + data_aba + data_baa - 2. * data_aaa;
+            }
+
+            Vec<3> pb = originalMesh->fullMesh.getElement(index0+step0, index1+step1, index2+step2).getMidpoint();
+            if (step0 == 0) pb.c0 += 1.; if (step1 == 0) pb.c1 += 1.; if (step2 == 0) pb.c2 += 2.;
+
+            return flags.postprocess(point,
+                interpolation::trilinear(pa.c0, pb.c0, pa.c1, pb.c1, pa.c2, pb.c2,
+                                         data_aaa, data_baa, data_bba, data_aba,
+                                         data_aab, data_bab, data_bbb, data_abb,
+                                         p.c0, p.c1, p.c2));
+        }
+
+        /**
+         * Calculate (using nearest neighbor interpolation) value of data in point using data in points described by this mesh.
+         * \param data values of data in points describe by this mesh
+         * \param point point in which value should be calculate
+         * \return interpolated value in point \p point
+         */
+        template <typename RandomAccessContainer>
+        auto interpolateNearestNeighbor(const RandomAccessContainer& data, const Vec<3>& point, const InterpolationFlags& flags) const
+            -> typename std::remove_reference<decltype(data[0])>::type {
+            Vec<3> wrapped_point;
+            std::size_t index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi;
+
+            if (!originalMesh->prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi, flags))
+                return NaNfor<decltype(data[0])>();
+
+            return flags.postprocess(point, data[this->index(index0_lo, index1_lo, index2_lo)]);
+        }
+
+    };  // struct ElementMesh
+
     /**
      * Construct empty/unitialized mesh. One should call reset() method before using this.
      */
@@ -317,7 +425,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * Set of elements are calculated on-demand, just before the first use, according to the rule:
      * An element is selected if and only if all its vertices are included in the @p nodeSet.
      *
-     * This constructor is used by getMidpointsMesh.
+     * This constructor is used by getElementMesh.
      */
     RectangularFilteredMesh3D(const RectangularMesh<DIM>& rectangularMesh, Set nodeSet, bool clone_axes = false)
         : RectangularFilteredMeshBase(rectangularMesh, std::move(nodeSet), clone_axes) {}
@@ -380,12 +488,10 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
 
     /**
      * Return a mesh that enables iterating over middle points of the selected rectangles.
-     * @param clone_axes whether axes of *this should be cloned (if true) or shared (if false; default) with the mesh returned
      * @return new rectilinear filtered mesh with points in the middles of original, selected rectangles
      */
-    shared_ptr<RectangularFilteredMesh3D> getMidpointsMesh(bool clone_axes = false) const {
-        return plask::make_shared<RectangularFilteredMesh3D>(*fullMesh.getMidpointsMesh(), ensureHasElements(), clone_axes);
-        // elementSet is passed as a second argument since nodes of midpoints mesh coresponds to elements of oryginal mesh
+    shared_ptr<RectangularFilteredMesh3D::ElementMesh> getElementMesh() const {
+        return make_shared<RectangularFilteredMesh3D::ElementMesh>(this);
     }
 
   private:
@@ -407,7 +513,6 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
      * \param[out] index0_lo,index0_hi surrounding indices in the rectantular mesh for axis0
      * \param[out] index1_lo,index1_hi surrounding indices in the rectantular mesh for axis1
      * \param[out] index2_lo,index2_hi surrounding indices in the rectantular mesh for axis2
-     * \param[out] rectmesh_index_lo elelemnt index in the rectangular mesh
      * \param flags interpolation flags
      * \returns \c false if the point falls in the hole or outside of the mesh, \c true if it can be interpolated
      */
@@ -415,7 +520,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
                               std::size_t& index0_lo, std::size_t& index0_hi,
                               std::size_t& index1_lo, std::size_t& index1_hi,
                               std::size_t& index2_lo, std::size_t& index2_hi,
-                              std::size_t& rectmesh_index_lo, const InterpolationFlags& flags) const;
+                              const InterpolationFlags& flags) const;
     /**
      * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.
      * @param data values of data in points describe by this mesh
@@ -427,9 +532,9 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
         -> typename std::remove_reference<decltype(data[0])>::type
     {
         Vec<3> wrapped_point;
-        std::size_t index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi, rectmesh_index_lo;
+        std::size_t index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi;
 
-        if (!prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi, rectmesh_index_lo, flags))
+        if (!prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi, flags))
             return NaNfor<decltype(data[0])>();
 
         return flags.postprocess(point,
@@ -437,7 +542,6 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
                                      fullMesh.axis[0]->at(index0_lo), fullMesh.axis[0]->at(index0_hi),
                                      fullMesh.axis[1]->at(index1_lo), fullMesh.axis[1]->at(index1_hi),
                                      fullMesh.axis[2]->at(index1_lo), fullMesh.axis[2]->at(index1_hi),
-                                     data[nodeSet.indexOf(rectmesh_index_lo)],
                                      data[index(index0_lo, index1_lo, index2_lo)],
                                      data[index(index0_hi, index1_lo, index2_lo)],
                                      data[index(index0_hi, index1_hi, index2_lo)],
@@ -460,9 +564,9 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
         -> typename std::remove_reference<decltype(data[0])>::type
     {
         Vec<3> wrapped_point;
-        std::size_t index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi, rectmesh_index_lo;
+        std::size_t index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi;
 
-        if (!prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi, rectmesh_index_lo, flags))
+        if (!prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi, flags))
             return NaNfor<decltype(data[0])>();
 
         return flags.postprocess(point,
@@ -516,7 +620,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
 
     // Common code for: left, right, bottom, top boundries:
     template <int CHANGE_DIR_SLOWER, int CHANGE_DIR_FASTER>
-    struct BoundaryIteratorImpl: public plask::BoundaryNodeSetImpl::IteratorImpl {
+    struct BoundaryIteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
 
         const RectangularFilteredMeshBase<3> &mesh;
 
@@ -550,7 +654,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
             } while (index[CHANGE_DIR_SLOWER] < indexSlowerEnd && mesh.index(index) == NOT_INCLUDED);
         }
 
-        bool equal(const plask::BoundaryNodeSetImpl::IteratorImpl& other) const override {
+        bool equal(const BoundaryNodeSetImpl::IteratorImpl& other) const override {
             return index == static_cast<const BoundaryIteratorImpl&>(other).index;
         }
 
@@ -558,7 +662,7 @@ struct PLASK_API RectangularFilteredMesh3D: public RectangularFilteredMeshBase<3
             return mesh.index(index);
         }
 
-        typename plask::BoundaryNodeSetImpl::IteratorImpl* clone() const override {
+        typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
             return new BoundaryIteratorImpl<CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER>(*this);
         }
 
@@ -658,7 +762,7 @@ struct InterpolationAlgorithm<RectangularFilteredMesh3D, SrcT, DstT, INTERPOLATI
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularFilteredMesh3D>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
         if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
-        return new LinearInterpolatedLazyDataImpl< DstT, RectangularFilteredMesh3D, SrcT >(src_mesh, src_vec, dst_mesh, flags);
+        return new LinearInterpolatedLazyDataImpl<DstT, RectangularFilteredMesh3D, SrcT>(src_mesh, src_vec, dst_mesh, flags);
     }
 };
 
@@ -667,10 +771,28 @@ struct InterpolationAlgorithm<RectangularFilteredMesh3D, SrcT, DstT, INTERPOLATI
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularFilteredMesh3D>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
         if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
-        return new NearestNeighborInterpolatedLazyDataImpl< DstT, RectangularFilteredMesh3D, SrcT >(src_mesh, src_vec, dst_mesh, flags);
+        return new NearestNeighborInterpolatedLazyDataImpl<DstT, RectangularFilteredMesh3D, SrcT>(src_mesh, src_vec, dst_mesh, flags);
     }
 };
 
+
+template <typename SrcT, typename DstT>
+struct InterpolationAlgorithm<RectangularFilteredMesh3D::ElementMesh, SrcT, DstT, INTERPOLATION_LINEAR> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularFilteredMesh3D::ElementMesh>& src_mesh, const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
+        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        return new LinearInterpolatedLazyDataImpl<DstT, RectangularFilteredMesh3D::ElementMesh, SrcT>(src_mesh, src_vec, dst_mesh, flags);
+    }
+};
+
+template <typename SrcT, typename DstT>
+struct InterpolationAlgorithm<RectangularFilteredMesh3D::ElementMesh, SrcT, DstT, INTERPOLATION_NEAREST> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularFilteredMesh3D::ElementMesh>& src_mesh, const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
+        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        return new NearestNeighborInterpolatedLazyDataImpl<DstT, RectangularFilteredMesh3D::ElementMesh, SrcT>(src_mesh, src_vec, dst_mesh, flags);
+    }
+};
 
 }   // namespace plask
 

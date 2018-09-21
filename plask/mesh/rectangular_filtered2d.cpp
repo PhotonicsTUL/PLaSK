@@ -37,7 +37,7 @@ void RectangularFilteredMesh2D::initNodesAndElements(const RectangularFilteredMe
     elementSetInitialized = true;
 }
 
-bool RectangularFilteredMesh2D::prepareInterpolation(const Vec<2> &point, Vec<2> &wrapped_point, std::size_t &index0_lo, std::size_t &index0_hi, std::size_t &index1_lo, std::size_t &index1_hi, std::size_t &rectmesh_index_lo, const InterpolationFlags &flags) const {
+bool RectangularFilteredMesh2D::prepareInterpolation(const Vec<2> &point, Vec<2> &wrapped_point, std::size_t &index0_lo, std::size_t &index0_hi, std::size_t &index1_lo, std::size_t &index1_hi, const InterpolationFlags &flags) const {
     wrapped_point = flags.wrap(point);
 
     if (!canBeIncluded(wrapped_point)) return false;
@@ -53,8 +53,7 @@ bool RectangularFilteredMesh2D::prepareInterpolation(const Vec<2> &point, Vec<2>
     ensureHasElements();
     for (char i1 = 0; i1 < 2; ++i1) {
         for (char i0 = 0; i0 < 2; ++i0) {
-            rectmesh_index_lo = fullMesh.index(index0_lo, index1_lo);
-            if (elementSet.includes(fullMesh.getElementIndexFromLowIndex(rectmesh_index_lo))) {
+            if (elementSet.includes(fullMesh.getElementIndexFromLowIndexes(index0_lo, index1_lo))) {
                 index0_hi = index0_lo + 1; index1_hi = index1_lo + 1;
                 return true;
             }
@@ -70,6 +69,9 @@ bool RectangularFilteredMesh2D::prepareInterpolation(const Vec<2> &point, Vec<2>
 
     return false;
 }
+
+
+
 
 BoundaryNodeSet RectangularFilteredMesh2D::createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const {
     return createVerticalBoundaryAtLine(line_nr_axis0, boundaryIndex[1].lo, boundaryIndex[1].up+1);

@@ -51,7 +51,7 @@ bool RectangularFilteredMesh3D::prepareInterpolation(const Vec<3> &point, Vec<3>
                                                      std::size_t& index0_lo, std::size_t& index0_hi,
                                                      std::size_t& index1_lo, std::size_t& index1_hi,
                                                      std::size_t& index2_lo, std::size_t& index2_hi,
-                                                     std::size_t &rectmesh_index_lo, const InterpolationFlags &flags) const {
+                                                     const InterpolationFlags &flags) const {
     wrapped_point = flags.wrap(point);
 
     if (!canBeIncluded(wrapped_point)) return false;
@@ -71,8 +71,7 @@ bool RectangularFilteredMesh3D::prepareInterpolation(const Vec<3> &point, Vec<3>
     for (char i2 = 0; i2 < 2; ++i2) {
         for (char i1 = 0; i1 < 2; ++i1) {
             for (char i0 = 0; i0 < 2; ++i0) {
-                rectmesh_index_lo = fullMesh.index(index0_lo, index1_lo, index2_lo);
-                if (elementSet.includes(fullMesh.getElementIndexFromLowIndex(rectmesh_index_lo))) {
+                if (elementSet.includes(fullMesh.getElementIndexFromLowIndexes(index0_lo, index1_lo, index2_lo))) {
                     index0_hi = index0_lo + 1; index1_hi = index1_lo + 1; index2_hi = index2_lo + 1;
                     return true;
                 }

@@ -125,21 +125,21 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
 
     filteredMesh->reset(*this->mesh, *this->geometry, ~(use_full_mesh? 0 : plask::Material::EMPTY));
 
-    auto points = this->filteredMesh->getElementMesh();
+    auto points = this->filteredMesh->fullMesh.getElementMesh();
 
     std::vector<typename Active::Region> regions;
 
-    for (size_t r = 0; r < points->fullMesh.axis[1]->size(); ++r) {
+    for (size_t r = 0; r < points->axis[1]->size(); ++r) {
         size_t prev = 0;
         shared_ptr<Material> material;
-        for (size_t c = 0; c < points->fullMesh.axis[0]->size(); ++c) { // In the (possible) active region
-            auto point = points->fullMesh.at(c,r);
+        for (size_t c = 0; c < points->axis[0]->size(); ++c) { // In the (possible) active region
+            auto point = points->at(c,r);
             size_t num = isActive(point);
 
             if (num) { // here we are inside the active region
                 if (regions.size() >= num && regions[num-1].warn) {
-                    if (!material) material = this->geometry->getMaterial(points->fullMesh.at(c,r));
-                    else if (*material != *this->geometry->getMaterial(points->fullMesh.at(c,r))) {
+                    if (!material) material = this->geometry->getMaterial(points->at(c,r));
+                    else if (*material != *this->geometry->getMaterial(points->at(c,r))) {
                         writelog(LOG_WARNING, "Junction {} is laterally non-uniform", num-1);
                         regions[num-1].warn = false;
                     }
@@ -164,7 +164,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
             prev = num;
         }
         if (prev) // junction reached the edge
-            regions[prev-1].rowr = regions[prev-1].right = points->fullMesh.axis[0]->size();
+            regions[prev-1].rowr = regions[prev-1].right = points->axis[0]->size();
     }
 
     size_t condsize = 0;

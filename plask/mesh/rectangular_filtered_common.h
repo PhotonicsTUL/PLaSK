@@ -20,10 +20,12 @@ template <int DIM>
 struct RectangularFilteredMeshBase: public RectangularMeshBase<DIM> {
 
     /// Maximum distance from boundary to include in the inerpolation
-    constexpr static double MIN_DISTANCE = 1e-6; // 1 picometer
+    constexpr static double MIN_DISTANCE = 1e-9; // 1 femtometer
 
     /// Full, rectangular, wrapped mesh.
     RectangularMesh<DIM> fullMesh;
+
+    using typename MeshD<DIM>::LocalCoords;
 
   protected:
 
@@ -126,6 +128,63 @@ struct RectangularFilteredMeshBase: public RectangularMeshBase<DIM> {
 
     };  // struct Elements
 
+    /**
+     * Base class for element meshes with common code for 2D and 3D.
+     */
+    template <typename FilteredMeshType>
+    struct ElementMeshBase: MeshD<DIM> {
+
+        using Element = typename FilteredMeshType::Element;
+
+        /// Iterator over elements.
+        class const_iterator: public Set::ConstIteratorFacade<const_iterator, LocalCoords> {
+
+            const FilteredMeshType* originalMesh;
+
+            LocalCoords dereference() const {
+                return Element(*originalMesh, this->getIndex(), this->getNumber()).getMidpoint();
+            }
+
+            friend class boost::iterator_core_access;
+
+        public:
+
+            template <typename... CtorArgs>
+            explicit const_iterator(const FilteredMeshType& originalMesh, CtorArgs&&... ctorArgs)
+                : Set::ConstIteratorFacade<const_iterator, Element>(std::forward<CtorArgs>(ctorArgs)...), originalMesh(&originalMesh) {}
+
+            const Set& set() const { return originalMesh->elementSet; }
+        };
+
+        /// Iterator over elments. The same as const_iterator, since non-const iterators are not supported.
+        typedef const_iterator iterator;
+
+        /// @return iterator referring to the first element
+        const_iterator begin() const { return const_iterator(*originalMesh, 0, originalMesh->elementSet.segments.begin()); }
+
+        /// @return iterator referring to the past-the-end element
+        const_iterator end() const { return const_iterator(*originalMesh, size(), originalMesh->elementSet.segments.end()); }
+
+        const FilteredMeshType* originalMesh;
+
+        explicit ElementMeshBase(const FilteredMeshType* originalMesh): originalMesh(originalMesh) {}
+
+        explicit ElementMeshBase(const FilteredMeshType& originalMesh): originalMesh(&originalMesh) {}
+
+        /**
+         * Get number of elements.
+         * @return number of elements
+         */
+        std::size_t size() const override { return originalMesh->getElementsCount(); }
+
+        LocalCoords at(std::size_t index) const override {
+            return Element(*originalMesh, index).getMidpoint();
+        }
+
+        bool empty() const override { return originalMesh->elementSet.empty(); }
+
+    };  // ElementMeshBase
+
     void resetBoundyIndex() {
         for (int d = 0; d < DIM; ++d) { // prepare for finding indexes by subclass constructor:
             boundaryIndex[d].lo = this->fullMesh.axis[d]->size()-1;
@@ -141,8 +200,6 @@ struct RectangularFilteredMeshBase: public RectangularMeshBase<DIM> {
     }
 
   public:
-
-    using typename MeshD<DIM>::LocalCoords;
 
     /// Returned by some methods to signalize that element or node (with given index(es)) is not included in the mesh.
     enum:std::size_t { NOT_INCLUDED = Set::NOT_INCLUDED };
@@ -364,7 +421,7 @@ struct RectangularFilteredMeshBase: public RectangularMeshBase<DIM> {
     /// Whether elementSet is initialized (default for most contructors)
     bool elementSetInitialized = true;
 
-private:
+  private:
     bool restVerticesIncluded(const RectangularMesh2D::Element& el) const {
         return /*nodeSet.includes(el.getLoLoIndex()) &&*/
                nodeSet.includes(el.getUpLoIndex()) &&
@@ -403,6 +460,7 @@ private:
     }
 
 };
+
 
 }   // namespace plask
 
