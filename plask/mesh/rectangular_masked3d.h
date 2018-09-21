@@ -620,7 +620,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
 
     // Common code for: left, right, bottom, top boundries:
     template <int CHANGE_DIR_SLOWER, int CHANGE_DIR_FASTER>
-    struct BoundaryIteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
+    struct BoundaryIteratorImpl: public plask::BoundaryNodeSetImpl::IteratorImpl {
 
         const RectangularMaskedMeshBase<3> &mesh;
 
@@ -654,7 +654,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
             } while (index[CHANGE_DIR_SLOWER] < indexSlowerEnd && mesh.index(index) == NOT_INCLUDED);
         }
 
-        bool equal(const BoundaryNodeSetImpl::IteratorImpl& other) const override {
+        bool equal(const plask::BoundaryNodeSetImpl::IteratorImpl& other) const override {
             return index == static_cast<const BoundaryIteratorImpl&>(other).index;
         }
 
@@ -662,7 +662,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
             return mesh.index(index);
         }
 
-        typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
+        plask::BoundaryNodeSetImpl::IteratorImpl* clone() const override {
             return new BoundaryIteratorImpl<CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER>(*this);
         }
 

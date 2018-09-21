@@ -151,7 +151,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
 
             template <typename... CtorArgs>
             explicit const_iterator(const MaskedMeshType& originalMesh, CtorArgs&&... ctorArgs)
-                : Set::ConstIteratorFacade<const_iterator, Element>(std::forward<CtorArgs>(ctorArgs)...), originalMesh(&originalMesh) {}
+                : Set::ConstIteratorFacade<const_iterator, LocalCoords>(std::forward<CtorArgs>(ctorArgs)...), originalMesh(&originalMesh) {}
 
             const Set& set() const { return originalMesh->elementSet; }
         };
