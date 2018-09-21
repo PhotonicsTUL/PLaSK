@@ -5,7 +5,7 @@
 #include "iterative_matrix2d.h"
 #include <limits>
 
-#include <plask/mesh/rectangular_filtered2d.h>
+#include <plask/mesh/rectangular_masked2d.h>
 
 namespace plask { namespace electrical { namespace shockley {
 
@@ -17,7 +17,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
 
   protected:
 
-    plask::shared_ptr<RectangularFilteredMesh2D> filteredMesh = plask::make_shared<RectangularFilteredMesh2D>();
+    plask::shared_ptr<RectangularMaskedMesh2D> maskedMesh = plask::make_shared<RectangularMaskedMesh2D>();
 
     /// Details of active region
     struct Active {
@@ -138,7 +138,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     }
 
     /// Return \c true if the specified element is a junction
-    size_t isActive(const RectangularFilteredMesh2D::Element& element) const { return isActive(element.getMidpoint()); }
+    size_t isActive(const RectangularMaskedMesh2D::Element& element) const { return isActive(element.getMidpoint()); }
 
   public:
 
