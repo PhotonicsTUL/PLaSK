@@ -112,6 +112,8 @@ FiniteElementMethodElectrical2DSolver<Geometry2DType>::~FiniteElementMethodElect
 template<typename Geometry2DType>
 void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
 {
+    this->invalidate();
+
     if (!this->geometry || !this->mesh) {
         if (junction_conductivity.size() != 1) {
             double condy = 0.;

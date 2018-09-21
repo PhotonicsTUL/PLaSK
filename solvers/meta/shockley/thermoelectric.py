@@ -379,10 +379,9 @@ class ThermoElectric(plask.Solver):
             plask.linspace(x, self.electrical.mesh.axis0[i+1], refine+1)
             for i,x in enumerate(list(self.electrical.mesh.axis0)[:-1])
         ])
-        points = plask.mesh.Rectangular2D(axis, self.electrical.mesh.axis1).get_midpoints()
 
         i = 0
-        for i, (lb, msh) in enumerate(self._get_levels(self.electrical.geometry, points)):
+        for i, (lb, msh) in enumerate(self._get_levels(self.electrical.geometry, axis)):
             curr = self.electrical.outCurrentDensity(msh, interpolation).array[:,0,1]
             s = sum(curr)
             if label is None:
