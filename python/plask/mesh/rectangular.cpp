@@ -850,13 +850,24 @@ void register_smooth_generator() {
         detail::SmoothGeneratorParamMethods<dim>::register_proxy(dividecls);
 }
 
+template <int dim>
+shared_ptr<RectangularMesh<dim>> RectangularMesh_getMidpoints(const RectangularMesh<dim>& src) {
+    //writelog(LOG_WARNING, "RectangularMesh{0}D.get_midpoints() is obsolete: use RectangularMesh{0}D.elements.mesh", dim);
+    return src.getElementMesh();
+}
+
+shared_ptr<MeshAxis> MeshAxis_getMidpoints(const MeshAxis& src) {
+    writelog(LOG_WARNING, "Axis.get_midpoints() is obsolete: use Axis.midpoints");
+    return src.getMidpointAxis();
+}
 
 void register_mesh_rectangular()
 {
     py::class_<MeshAxis, shared_ptr<MeshAxis>, py::bases<MeshD<1>>, boost::noncopyable>
             ("Axis", u8"Base class for all 1D meshes (used as axes by 2D and 3D rectangular meshes).",
              py::no_init)
-            .def("get_midpoints", &MeshAxis::getMidpointsMesh, u8"Get new mesh with points in the middles of elements of this mesh")
+            .add_property("midpoints", &MeshAxis::getMidpointAxis, u8"Mesh with points in the middles of elements of this mesh")
+            .def("get_midpoints", &MeshAxis_getMidpoints)
 
     ;
 
@@ -987,12 +998,11 @@ void register_mesh_rectangular()
         .def("minor_index", &RectangularMesh<2>::minorIndex, u8"Return index in the minor axis of the point with given index", (py::arg("index")))
         .def("set_optimal_ordering", &RectangularMesh<2>::setOptimalIterationOrder, u8"Set the optimal ordering of the points in this mesh")
         .add_property("ordering", &RectangularMesh2D__getOrdering, &RectangularMesh2D__setOrdering, u8"Ordering of the points in this mesh")
-        .def("get_midpoints", &RectangularMesh<2>::getMidpointsMesh, u8"Get new mesh with points in the middles of elements of this mesh")
+        .def("get_midpoints", &RectangularMesh_getMidpoints<2>, py::with_custodian_and_ward_postcall<0,1>(), u8"Get new mesh with points in the middles of elements of this mesh")
         .def(py::self == py::self)
     ;
     py::implicitly_convertible<shared_ptr<RectangularMesh<2>>, shared_ptr<const RectangularMesh<2>>>();
-    //py::implicitly_convertible<shared_ptr<RectangularMesh<2>>, shared_ptr<RectangularMeshBase2D>>();
-    //py::implicitly_convertible<shared_ptr<RectangularMesh<2>>, shared_ptr<const RectangularMeshBase2D>>();
+
     {
         py::scope scope = rectangular2D;
         (void) scope;   // don't warn about unused variable scope
@@ -1090,7 +1100,7 @@ void register_mesh_rectangular()
         .def("minor_index", &RectangularMesh<3>::minorIndex, u8"Return index in the minor axis of the point with given index", (py::arg("index")))
         .def("set_optimal_ordering", &RectangularMesh<3>::setOptimalIterationOrder, u8"Set the optimal ordering of the points in this mesh")
         .add_property("ordering", &RectangularMesh3D__getOrdering, &RectangularMesh3D__setOrdering, u8"Ordering of the points in this mesh")
-        .def("get_midpoints", &RectangularMesh<3>::getMidpointsMesh, u8"Get new mesh with points in the middles of of elements of this mesh")
+        .def("get_midpoints", &RectangularMesh_getMidpoints<3>, py::with_custodian_and_ward_postcall<0,1>(), u8"Get new mesh with points in the middles of of elements of this mesh")
         .def(py::self == py::self)
     ;
     py::implicitly_convertible<shared_ptr<RectangularMesh<3>>, shared_ptr<const RectangularMesh<3>>>();

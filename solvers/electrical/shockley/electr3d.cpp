@@ -114,7 +114,7 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
         return;
     }
 
-    shared_ptr<RectangularMesh<3>> points = mesh->getMidpointsMesh();
+    shared_ptr<RectangularMesh<3>> points = mesh->getElementMesh();
 
     std::map<size_t, Active::Region> regions;
     size_t nreg = 0;
@@ -224,7 +224,7 @@ void FiniteElementMethodElectrical3DSolver::onInvalidate() {
 
 void FiniteElementMethodElectrical3DSolver::loadConductivity()
 {
-    auto midmesh = (this->mesh)->getMidpointsMesh();
+    auto midmesh = (this->mesh)->getElementMesh();
     auto temperature = inTemperature(midmesh);
 
     for (auto e: this->mesh->elements())
@@ -687,7 +687,7 @@ const LazyData<Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity
     this->writelog(LOG_DEBUG, "Getting current density");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(geometry, InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP, InterpolationFlags::Symmetry::PPN);
-    auto result = interpolate(mesh->getMidpointsMesh(), current, dest_mesh, method, flags);
+    auto result = interpolate(mesh->getElementMesh(), current, dest_mesh, method, flags);
     return LazyData<Vec<3>>(result.size(),
         [this, dest_mesh, result, flags](size_t i) {
             return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<3>(0.,0.,0.);
@@ -702,7 +702,7 @@ const LazyData<double> FiniteElementMethodElectrical3DSolver::getHeatDensity(sha
     if (!heat) saveHeatDensity(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(geometry);
-    auto result = interpolate(mesh->getMidpointsMesh(), heat, dest_mesh, method, flags);
+    auto result = interpolate(mesh->getElementMesh(), heat, dest_mesh, method, flags);
     return LazyData<double>(result.size(),
         [this, dest_mesh, result, flags](size_t i) {
             return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;
@@ -732,7 +732,7 @@ const LazyData<Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConduc
 
 double FiniteElementMethodElectrical3DSolver::getTotalEnergy() {
     double W = 0.;
-    auto T = inTemperature(this->mesh->getMidpointsMesh());
+    auto T = inTemperature(this->mesh->getElementMesh());
     for (auto el: this->mesh->elements()) {
             size_t lll = el.getLoLoLoIndex();
             size_t llu = el.getLoLoUpIndex();

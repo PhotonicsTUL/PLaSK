@@ -16,7 +16,7 @@ static py::object outPotential(const py::object& self) {
 // template <typename Cls>
 // static PythonDataVector<const double, 2> getCondJunc(const Cls* self) {
 //     if (self->getMesh() && self->getGeometry()) {
-//         auto midmesh = self->getMesh()->getMidpointsMesh();
+//         auto midmesh = self->getMesh()->getElementMesh();
 //         shared_ptr<OrderedAxis> line1 = plask::make_shared<OrderedAxis>();
 //         for (size_t n = 0; n < self->getActNo(); ++n)
 //             line1->addPoint(self->getMesh()->axis1->at((self->getActLo(n)+self->getActHi(n))/2));

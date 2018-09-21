@@ -788,9 +788,14 @@ std::vector<double> InterpolationFlags::reflect<std::vector<double>>(int ax, std
 
 namespace python {
 
-#define INTERPOLATE_NEAREST(M) \
-    InterpolationAlgorithm<M<dim>, typename std::remove_const<T>::type, typename std::remove_const<T>::type, INTERPOLATION_NEAREST> \
-        ::interpolate(src_mesh, self, dst_mesh, flags)
+#define NEAREST_INTERPOLATE_MESH(M) \
+    if (auto src_mesh = dynamic_pointer_cast<M>(self.mesh)) \
+        return PythonDataVector<T,dim>(InterpolationAlgorithm<M, typename std::remove_const<T>::type, typename std::remove_const<T>::type, INTERPOLATION_NEAREST> \
+            ::interpolate(src_mesh, self, dst_mesh, flags), dst_mesh)
+
+#define INTERPOLATE_MESH(M) \
+    if (auto src_mesh = dynamic_pointer_cast<M>(self.mesh)) \
+        return PythonDataVector<T,dim>(interpolate(src_mesh, self, dst_mesh, method, flags), dst_mesh)
 
 template <typename T, int dim>
 static inline typename std::enable_if<!detail::isBasicData<T>::value, PythonDataVector<T,dim>>::type
@@ -800,11 +805,10 @@ dataInterpolateImpl(const PythonDataVector<T,dim>& self, shared_ptr<MeshD<dim>> 
     if (method != INTERPOLATION_NEAREST)
         writelog(LOG_WARNING, u8"Using 'nearest' algorithm for interpolate(dtype={})", str(py::object(detail::dtype<T>())));
 
-    if (auto src_mesh = dynamic_pointer_cast<RectangularMesh<dim>>(self.mesh))
-        return PythonDataVector<T,dim>(INTERPOLATE_NEAREST(RectangularMesh), dst_mesh);
-    else if (auto src_mesh = dynamic_pointer_cast<MeshWrap<dim>>(self.mesh))
-        return PythonDataVector<T,dim>(INTERPOLATE_NEAREST(MeshWrap), dst_mesh);
-        // TODO add new mesh types here
+    NEAREST_INTERPOLATE_MESH(typename RectangularMesh<dim>::ElementMesh);
+    NEAREST_INTERPOLATE_MESH(RectangularMesh<dim>);
+    NEAREST_INTERPOLATE_MESH(MeshWrap<dim>);
+    // TODO add new mesh types here
 
     throw NotImplemented(format(u8"interpolate(source mesh type: {}, interpolation method: {})",
                                 typeid(*self.mesh).name(), interpolationMethodNames[method]));
@@ -818,10 +822,9 @@ dataInterpolateImpl(const PythonDataVector<T,dim>& self, shared_ptr<MeshD<dim>> 
 
     if (self.mesh_changed) throw Exception(u8"Cannot interpolate, mesh changed since data retrieval");
 
-    if (auto src_mesh = dynamic_pointer_cast<RectangularMesh<dim>>(self.mesh))
-        return PythonDataVector<T,dim>(interpolate(src_mesh, self, dst_mesh, method, flags), dst_mesh);
-    else if (auto src_mesh = dynamic_pointer_cast<MeshWrap<dim>>(self.mesh))
-        return PythonDataVector<T,dim>(interpolate(src_mesh, self, dst_mesh, method, flags), dst_mesh);
+    INTERPOLATE_MESH(typename RectangularMesh<dim>::ElementMesh);
+    INTERPOLATE_MESH(RectangularMesh<dim>);
+    INTERPOLATE_MESH(MeshWrap<dim>);
     // TODO add new mesh types here
 
     throw NotImplemented(format(u8"interpolate(source mesh type: {}, interpolation method: {})",

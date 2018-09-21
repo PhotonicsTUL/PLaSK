@@ -118,7 +118,7 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::setMatrix(
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
 
-    auto iMesh = (this->mesh)->getMidpointsMesh();
+    auto iMesh = (this->mesh)->getElementMesh();
     auto heatdensities = inHeat(iMesh);
 
     // zero the matrices A, B and the load vector F
@@ -268,7 +268,7 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylindrical>::setMatrix
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
 
-    auto iMesh = (this->mesh)->getMidpointsMesh();
+    auto iMesh = (this->mesh)->getElementMesh();
     auto heatdensities = inHeat(iMesh);
 
     // zero the matrices A, B and the load vector F
@@ -597,7 +597,7 @@ const LazyData<Vec<2>> FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>
     if (!temperatures) return LazyData<Vec<2>>(dest_mesh->size(), Vec<2>(0.,0.)); // in case the receiver is connected and no fluxes calculated yet
     if (!mHeatFluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh->getMidpointsMesh(), mHeatFluxes, dest_mesh, method,
+    return interpolate(this->mesh->getElementMesh(), mHeatFluxes, dest_mesh, method,
                        InterpolationFlags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN));
 }
 
@@ -606,7 +606,7 @@ template<typename Geometry2DType> FiniteElementMethodDynamicThermal2DSolver<Geom
 ThermalConductivityData::ThermalConductivityData(const FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>* solver, const shared_ptr<const MeshD<2>>& dst_mesh):
     solver(solver), dest_mesh(dst_mesh), flags(solver->geometry)
 {
-    if (solver->temperatures) temps = interpolate(solver->mesh, solver->temperatures, solver->mesh->getMidpointsMesh(), INTERPOLATION_LINEAR);
+    if (solver->temperatures) temps = interpolate(solver->mesh, solver->temperatures, solver->mesh->getElementMesh(), INTERPOLATION_LINEAR);
     else temps = LazyData<double>(solver->mesh->getElementsCount(), solver->inittemp);
 }
 

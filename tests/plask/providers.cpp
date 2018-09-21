@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE(attach_datavector)
 {
     auto mesh1 = plask::make_shared<plask::RectangularMesh<2>>(plask::make_shared<plask::RegularAxis>(0., 4., 3), plask::make_shared<plask::RegularAxis>(0., 20., 3), plask::RectangularMesh<2>::ORDER_10);
 
-    auto mesh2 = mesh1->getMidpointsMesh();
+    auto mesh2 = mesh1->getElementMesh();
 
     plask::DataVector<double> data(9);
     data[0] = 100.; data[1] = 100.; data[2] = 100.;

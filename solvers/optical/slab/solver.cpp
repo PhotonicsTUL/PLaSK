@@ -67,12 +67,12 @@ struct LateralMeshAdapter {
         mesh(makeGeometryGrid(solver->getGeometry())) {}
 
     void resetMidpoints(const shared_ptr<MeshAxis>& vbounds) {
-        mesh = make_shared<RectangularMesh<2>>(mesh->axis[0]->getMidpointsMesh(),
+        mesh = make_shared<RectangularMesh<2>>(mesh->axis[0]->getMidpointAxis(),
                                                vbounds, RectangularMesh<2>::ORDER_10);
     }
 
     void resetMidpoints(const shared_ptr<MeshAxis>& vbounds, double spacing) {
-        mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh->axis[0], spacing)->getMidpointsMesh(),
+        mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh->axis[0], spacing)->getMidpointAxis(),
                                                vbounds, RectangularMesh<2>::ORDER_10);
     }
 
@@ -89,7 +89,7 @@ struct LateralMeshAdapter {
     }
 
     shared_ptr<RectangularMesh<2>> midmesh() const {
-        return make_shared<RectangularMesh<2>>(mesh->axis[0], mesh->axis[1]->getMidpointsMesh());
+        return make_shared<RectangularMesh<2>>(mesh->axis[0], mesh->axis[1]->getElementMesh());
     }
 
     size_t size() const { return mesh->axis[0]->size(); }
@@ -121,15 +121,15 @@ struct LateralMeshAdapter<SolverOver<Geometry3D>> {
     }
 
     void resetMidpoints(const shared_ptr<MeshAxis>& vbounds) {
-        mesh = make_shared<RectangularMesh<3>>(mesh->axis[0]->getMidpointsMesh(),
-                                               mesh->axis[1]->getMidpointsMesh(),
+        mesh = make_shared<RectangularMesh<3>>(mesh->axis[0]->getMidpointAxis(),
+                                               mesh->axis[1]->getMidpointAxis(),
                                                vbounds, RectangularMesh<3>::ORDER_201);
         _size = mesh->axis[0]->size() * mesh->axis[1]->size();
     }
 
     void resetMidpoints(const shared_ptr<MeshAxis>& vbounds, double spacing) {
-        mesh = make_shared<RectangularMesh<3>>(refineAxis(mesh->axis[0], spacing)->getMidpointsMesh(),
-                                               refineAxis(mesh->axis[1], spacing)->getMidpointsMesh(),
+        mesh = make_shared<RectangularMesh<3>>(refineAxis(mesh->axis[0], spacing)->getMidpointAxis(),
+                                               refineAxis(mesh->axis[1], spacing)->getMidpointAxis(),
                                                vbounds, RectangularMesh<3>::ORDER_201);
         _size = mesh->axis[0]->size() * mesh->axis[1]->size();
     }
@@ -147,7 +147,7 @@ struct LateralMeshAdapter<SolverOver<Geometry3D>> {
     }
 
     shared_ptr<RectangularMesh<3>> midmesh() const {
-        return make_shared<RectangularMesh<3>>(mesh->axis[0], mesh->axis[1], mesh->axis[2]->getMidpointsMesh());
+        return make_shared<RectangularMesh<3>>(mesh->axis[0], mesh->axis[1], mesh->axis[2]->getMidpointAxis());
     }
 
     size_t size() const { return _size; }
@@ -227,7 +227,7 @@ void SlabSolver<BaseT>::setupLayers()
         vbounds->addOrderedPoints(refines.begin(), refines.end(), refines.size());
     }
 
-    adapter.reset(vbounds->getMidpointsMesh());
+    adapter.reset(vbounds->getMidpointAxis());
 
     // Add layers below bottom boundary and above top one
     verts = dynamic_pointer_cast<OrderedAxis>(adapter.mesh->vert());

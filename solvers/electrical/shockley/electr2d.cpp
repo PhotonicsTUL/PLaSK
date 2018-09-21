@@ -125,7 +125,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
 
     filteredMesh->reset(*this->mesh, *this->geometry, ~(use_full_mesh? 0 : plask::Material::EMPTY));
 
-    auto points = this->filteredMesh->getMidpointsMesh();
+    auto points = this->filteredMesh->getElementMesh();
 
     std::vector<typename Active::Region> regions;
 
@@ -385,7 +385,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A
 template<typename Geometry2DType>
 void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConductivities()
 {
-    auto midmesh = this->filteredMesh->getMidpointsMesh();
+    auto midmesh = this->filteredMesh->getElementMesh();
     auto temperature = inTemperature(midmesh);
 
     for (auto e: this->filteredMesh->elements())
@@ -694,14 +694,14 @@ const LazyData<Vec<2>> FiniteElementMethodElectrical2DSolver<Geometry2DType>::ge
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN);
     if (use_full_mesh) {
-        auto result = interpolate(this->mesh->getMidpointsMesh(), currents, dest_mesh, method, flags);
+        auto result = interpolate(this->mesh->getElementMesh(), currents, dest_mesh, method, flags);
         return LazyData<Vec<2>>(result.size(),
             [result, this, flags, dest_mesh](size_t i) {
                 return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<2>(0.,0.);
             }
         );
     } else {
-        auto result = interpolate(this->filteredMesh->getMidpointsMesh(), currents, dest_mesh, method, flags);
+        auto result = interpolate(this->filteredMesh->getElementMesh(), currents, dest_mesh, method, flags);
         return LazyData<Vec<2>>(result.size(),
             [result](size_t i) {
                 // Filtered mesh always returns NaN outside of itself
@@ -722,14 +722,14 @@ const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::ge
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry);
     if (use_full_mesh) {
-        auto result = interpolate(this->mesh->getMidpointsMesh(), heats, dest_mesh, method, flags);
+        auto result = interpolate(this->mesh->getElementMesh(), heats, dest_mesh, method, flags);
         return LazyData<double>(result.size(),
             [result, this, flags, dest_mesh](size_t i) {
                 return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;
             }
         );
     } else {
-        auto result = interpolate(this->filteredMesh->getMidpointsMesh(), heats, dest_mesh, method, flags);
+        auto result = interpolate(this->filteredMesh->getElementMesh(), heats, dest_mesh, method, flags);
         return LazyData<double>(result.size(),
             [result](size_t i) {
                 // Filtered mesh always returns NaN outside of itself
@@ -769,7 +769,7 @@ const LazyData<Tensor2<double>> FiniteElementMethodElectrical2DSolver<Geometry2D
 template <>
 double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getTotalEnergy() {
     double W = 0.;
-    auto T = inTemperature(this->filteredMesh->getMidpointsMesh());
+    auto T = inTemperature(this->filteredMesh->getElementMesh());
     for (auto e: this->filteredMesh->elements()) {
         size_t ll = e.getLoLoIndex();
         size_t lu = e.getUpLoIndex();
@@ -791,7 +791,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getTotalEnerg
 template <>
 double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getTotalEnergy() {
     double W = 0.;
-    auto T = inTemperature(this->filteredMesh->getMidpointsMesh());
+    auto T = inTemperature(this->filteredMesh->getElementMesh());
     for (auto e: this->filteredMesh->elements()) {
         size_t ll = e.getLoLoIndex();
         size_t lu = e.getUpLoIndex();

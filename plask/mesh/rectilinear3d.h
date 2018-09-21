@@ -234,6 +234,44 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
 
     };
 
+    /**
+     * Element mesh class.
+     *
+     * This class has changed nearest neighnour interpolation, to consider original mesh boundaries
+     */
+    template <typename BaseMeshT>
+    struct PLASK_API ElementMesh: BaseMeshT {
+
+        /// Original mesh
+        const BaseMeshT* originalMesh;
+
+        template <typename... Args>
+        ElementMesh(const BaseMeshT* originalMesh, Args... args): BaseMeshT(args...), originalMesh(originalMesh) {}
+
+        /**
+        * Calculate (using nearest neighbor interpolation) value of data in point using data in points described by this mesh.
+        * Consider original mesh boundaries for point selection
+        * \param data values of data in points describe by this mesh
+        * \param point point in which value should be calculate
+        * \return interpolated value in point @p point
+        */
+        template <typename RandomAccessContainer>
+        auto interpolateNearestNeighbor(const RandomAccessContainer& data, const Vec<3>& point, const InterpolationFlags& flags) const
+            -> typename std::remove_reference<decltype(data[0])>::type {
+            auto p = flags.wrap(point);
+            prepareNearestNeighborInterpolationForAxis(*originalMesh->axis[0], flags, p.c0, 0);
+            prepareNearestNeighborInterpolationForAxis(*originalMesh->axis[1], flags, p.c1, 1);
+            prepareNearestNeighborInterpolationForAxis(*originalMesh->axis[2], flags, p.c2, 2);
+            size_t i0 = originalMesh->axis[0]->findUpIndex(p.c0),
+                   i1 = originalMesh->axis[0]->findUpIndex(p.c1),
+                   i2 = originalMesh->axis[2]->findUpIndex(p.c2);
+            if (i0 == originalMesh->axis[0]->size()) --i0; if (i0 != 0) --i0;
+            if (i1 == originalMesh->axis[1]->size()) --i1; if (i1 != 0) --i1;
+            if (i2 == originalMesh->axis[2]->size()) --i2; if (i2 != 0) --i2;
+            return flags.postprocess(point, data[this->index(i0, i1, i2)]);
+        }
+    };
+
     /// First, second and third coordinates of points in this mesh.
     const shared_ptr<MeshAxis> axis[3];
 

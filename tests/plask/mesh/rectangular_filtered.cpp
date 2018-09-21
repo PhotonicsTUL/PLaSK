@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_2D) {
     }
 
     {
-        auto midpoints = filteredMesh.getMidpointsMesh();
+        auto midpoints = filteredMesh.getElementMesh();
         BOOST_CHECK_EQUAL(midpoints->size(), filteredMesh.getElementsCount());
         BOOST_CHECK_EQUAL(midpoints->elements().size(), 0);
     }
@@ -223,7 +223,7 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_midpoints) {
      */
     BOOST_CHECK_EQUAL(mesh.size(), 17);
     BOOST_CHECK_EQUAL(mesh.getElementsCount(), 9);
-    auto midpoints = mesh.getMidpointsMesh();
+    auto midpoints = mesh.getElementMesh();
     BOOST_CHECK_EQUAL(midpoints->size(), 9);
     BOOST_CHECK_EQUAL(midpoints->getElementsCount(), 3);    // # on diagram
 }
@@ -296,7 +296,7 @@ BOOST_AUTO_TEST_CASE(rectangular_filtered_3D) {
     }
 
     {
-        auto midpoints = filteredMesh.getMidpointsMesh();
+        auto midpoints = filteredMesh.getElementMesh();
         BOOST_CHECK_EQUAL(midpoints->size(), filteredMesh.getElementsCount());
         BOOST_CHECK_EQUAL(midpoints->elements().size(), 0);
     }
