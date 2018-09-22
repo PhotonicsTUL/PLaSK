@@ -10,14 +10,6 @@ namespace plask {
 
 
 template <typename DstT, typename SrcT>
-SplineMaskedRect2DLazyDataImpl<DstT, SrcT>::SplineMaskedRect2DLazyDataImpl(const shared_ptr<const RectangularMaskedMesh2D>& src_mesh,
-                                                                               const DataVector<const SrcT>& src_vec,
-                                                                               const shared_ptr<const MeshD<2>>& dst_mesh,
-                                                                               const InterpolationFlags& flags):
-    InterpolatedLazyDataImpl<DstT, RectangularMaskedMesh2D, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
-    diff0(src_mesh->size()), diff1(src_mesh->size()) {}
-
-template <typename DstT, typename SrcT>
 DstT SplineMaskedRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 {
     Vec<2> p;
@@ -76,14 +68,6 @@ DstT SplineMaskedRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
     );
 }
 
-
-template <typename DstT, typename SrcT>
-SplineMaskedRect3DLazyDataImpl<DstT, SrcT>::SplineMaskedRect3DLazyDataImpl(const shared_ptr<const RectangularMaskedMesh3D>& src_mesh,
-                                                                               const DataVector<const SrcT>& src_vec,
-                                                                               const shared_ptr<const MeshD<3>>& dst_mesh,
-                                                                               const InterpolationFlags& flags):
-    InterpolatedLazyDataImpl<DstT, RectangularMaskedMesh3D, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
-    diff0(src_mesh->size()), diff1(src_mesh->size()), diff2(src_mesh->size()) {}
 
 template <typename DstT, typename SrcT>
 DstT SplineMaskedRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
@@ -276,12 +260,12 @@ namespace masked_hyman {
 }
 
 
-template <typename DstT, typename SrcT>
-HymanSplineMaskedRect2DLazyDataImpl<DstT, SrcT>::HymanSplineMaskedRect2DLazyDataImpl(const shared_ptr<const RectangularMaskedMesh2D>& src_mesh,
-                                                                                         const DataVector<const SrcT>& src_vec,
-                                                                                         const shared_ptr<const MeshD<2>>& dst_mesh,
-                                                                                         const InterpolationFlags& flags):
-    SplineMaskedRect2DLazyDataImpl<DstT, SrcT>(src_mesh, src_vec, dst_mesh, flags)
+template <typename DstT, typename SrcT, typename BaseT>
+HymanSplineMaskedRect2DLazyDataImpl<DstT, SrcT, BaseT>::HymanSplineMaskedRect2DLazyDataImpl(const shared_ptr<const typename BaseT::MeshType>& src_mesh,
+                                                                                     const DataVector<const SrcT>& src_vec,
+                                                                                     const shared_ptr<const MeshD<2>>& dst_mesh,
+                                                                                     const InterpolationFlags& flags):
+    BaseT(src_mesh, src_vec, dst_mesh, flags)
 {
     const size_t n0 = src_mesh->fullMesh.axis[0]->size(), n1 = src_mesh->fullMesh.axis[1]->size();
 
@@ -291,27 +275,27 @@ HymanSplineMaskedRect2DLazyDataImpl<DstT, SrcT>::HymanSplineMaskedRect2DLazyData
     if (n0 > 1)
         for (size_t i1 = 0; i1 < n1; ++i1)
             masked_hyman::computeDiffs<SrcT>(this->diff0.data(), 0, src_mesh->fullMesh.axis[0], src_vec.data(),
-                                               [&src_mesh, i1](size_t i0) -> size_t { return src_mesh->index(i0, i1); },
-                                               flags);
+                                             [&src_mesh, i1](size_t i0) -> size_t { return src_mesh->index(i0, i1); },
+                                             flags);
     else
         std::fill(this->diff0.begin(), this->diff0.end(), 0. * SrcT());
     if (n1 > 1)
         for (size_t i0 = 0; i0 < n0; ++i0)
             masked_hyman::computeDiffs<SrcT>(this->diff1.data(), 1, src_mesh->fullMesh.axis[1], src_vec.data(),
-                                               [&src_mesh, i0](size_t i1) -> size_t { return src_mesh->index(i0, i1); },
-                                               flags);
+                                             [&src_mesh, i0](size_t i1) -> size_t { return src_mesh->index(i0, i1); },
+                                             flags);
     else
         std::fill(this->diff1.begin(), this->diff1.end(), 0. * SrcT());
 }
 
 
 
-template <typename DstT, typename SrcT>
-HymanSplineMaskedRect3DLazyDataImpl<DstT, SrcT>::HymanSplineMaskedRect3DLazyDataImpl(const shared_ptr<const RectangularMaskedMesh3D>& src_mesh,
-                                                                                         const DataVector<const SrcT>& src_vec,
-                                                                                         const shared_ptr<const MeshD<3>>& dst_mesh,
-                                                                                         const InterpolationFlags& flags):
-    SplineMaskedRect3DLazyDataImpl<DstT, SrcT>(src_mesh, src_vec, dst_mesh, flags)
+template <typename DstT, typename SrcT, typename BaseT>
+HymanSplineMaskedRect3DLazyDataImpl<DstT, SrcT, BaseT>::HymanSplineMaskedRect3DLazyDataImpl(const shared_ptr<const typename BaseT::MeshType>& src_mesh,
+                                                                                     const DataVector<const SrcT>& src_vec,
+                                                                                     const shared_ptr<const MeshD<3>>& dst_mesh,
+                                                                                     const InterpolationFlags& flags):
+    BaseT(src_mesh, src_vec, dst_mesh, flags)
 {
     const size_t n0 = src_mesh->fullMesh.axis[0]->size(), n1 = src_mesh->fullMesh.axis[1]->size(), n2 = src_mesh->fullMesh.axis[2]->size();
 
@@ -322,8 +306,8 @@ HymanSplineMaskedRect3DLazyDataImpl<DstT, SrcT>::HymanSplineMaskedRect3DLazyData
         for (size_t i2 = 0; i2 < n2; ++i2) {
             for (size_t i1 = 0; i1 < n1; ++i1) {
                 masked_hyman::computeDiffs<SrcT>(this->diff0.data(), 0, src_mesh->fullMesh.axis[0], src_vec.data(),
-                                               [&src_mesh, i2, i1](size_t i0) -> size_t { return src_mesh->index(i0, i1, i2); },
-                                               flags);
+                                                 [&src_mesh, i2, i1](size_t i0) -> size_t { return src_mesh->index(i0, i1, i2); },
+                                                 flags);
             }
         }
     } else
@@ -344,8 +328,8 @@ HymanSplineMaskedRect3DLazyDataImpl<DstT, SrcT>::HymanSplineMaskedRect3DLazyData
         for (size_t i1 = 0; i1 < n1; ++i1) {
             for (size_t i0 = 0; i0 < n0; ++i0) {
                 masked_hyman::computeDiffs<SrcT>(this->diff2.data(), 2, src_mesh->fullMesh.axis[2], src_vec.data(),
-                                               [&src_mesh, i1, i0](size_t i2) -> size_t { return src_mesh->index(i0, i1, i2); },
-                                               flags);
+                                                 [&src_mesh, i1, i0](size_t i2) -> size_t { return src_mesh->index(i0, i1, i2); },
+                                                 flags);
             }
         }
     } else
