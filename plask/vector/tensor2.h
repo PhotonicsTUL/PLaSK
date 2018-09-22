@@ -206,10 +206,16 @@ auto operator*(const OtherT scale, const Tensor2<T>& tensor) -> decltype(tensor*
 template <typename T>
 inline Tensor2<T> conj(const Tensor2<T>& v) { return Tensor2<T>(conj(v.c00), conj(v.c11)); }
 
-/// Specialization of NaNforImpl which add support for 2D tensors.
+/// Specialization of NaNImpl which add support for 2D tensors.
 template <typename T>
-struct NaNforImpl<Tensor2<T>> {
-    static constexpr Tensor2<T> get() { return Tensor2<T>(NaNfor<T>()); }
+struct NaNImpl<Tensor2<T>> {
+    static constexpr Tensor2<T> get() { return Tensor2<T>(NaN<T>()); }
+};
+
+/// Specialization of ZeroImpl which add support for 2D vectors.
+template <typename T>
+struct ZeroImpl<Tensor2<T>> {
+    static constexpr Tensor2<T> get() { return Tensor2<T>(0.); }
 };
 
 /*

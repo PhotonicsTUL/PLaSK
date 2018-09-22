@@ -258,7 +258,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
             size_t index0, index0_hi, index1, index1_hi, index2, index2_hi;
 
             if (!prepareInterpolation(point, p, index0, index0_hi, index1, index1_hi, index2, index2_hi, flags))
-                return NaNfor<decltype(data[0])>();
+                return NaN<decltype(data[0])>();
 
             Vec<3> pa = fullMesh.at(index0, index1, index2);
 
@@ -321,7 +321,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
             std::size_t index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi;
 
             if (!originalMesh->prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi, flags))
-                return NaNfor<decltype(data[0])>();
+                return NaN<decltype(data[0])>();
 
             return flags.postprocess(point, data[this->index(index0_lo, index1_lo, index2_lo)]);
         }
@@ -535,7 +535,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
         std::size_t index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi;
 
         if (!prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi, flags))
-            return NaNfor<decltype(data[0])>();
+            return NaN<decltype(data[0])>();
 
         return flags.postprocess(point,
                                  interpolation::trilinear(
@@ -567,7 +567,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
         std::size_t index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi;
 
         if (!prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, index2_lo, index2_hi, flags))
-            return NaNfor<decltype(data[0])>();
+            return NaN<decltype(data[0])>();
 
         return flags.postprocess(point,
                                  data[this->index(

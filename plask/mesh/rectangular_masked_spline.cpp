@@ -16,7 +16,7 @@ DstT SplineMaskedRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
     size_t i0_lo, i0_hi, i1_lo, i1_hi;
 
     if (!this->src_mesh->prepareInterpolation(this->dst_mesh->at(index), p, i0_lo, i0_hi, i1_lo, i1_hi, this->flags))
-        return NaNfor<decltype(this->src_vec[0])>();
+        return NaN<decltype(this->src_vec[0])>();
 
     double left = this->src_mesh->fullMesh.axis[0]->at(i0_lo), right = this->src_mesh->fullMesh.axis[0]->at(i0_hi),
            bottom = this->src_mesh->fullMesh.axis[1]->at(i1_lo), top = this->src_mesh->fullMesh.axis[1]->at(i1_hi);
@@ -75,7 +75,7 @@ DstT SplineMaskedRectElement2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) co
     size_t i0_lo, i0_hi, i1_lo, i1_hi;
 
     if (!this->src_mesh->prepareInterpolation(this->dst_mesh->at(index), p, i0_lo, i0_hi, i1_lo, i1_hi, this->flags))
-        return NaNfor<decltype(this->src_vec[0])>();
+        return NaN<decltype(this->src_vec[0])>();
 
     unsigned char s0, s1; // original index shift
 
@@ -124,14 +124,14 @@ DstT SplineMaskedRectElement2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) co
                     this->src_mesh->index(i0_lo, i1_hi),    // lt
                     this->src_mesh->index(i0_hi, i1_hi)};   // rt
 
-    SrcT diff0lb = (idx[0] != NOT_INCLUDED)? diff0[idx[0]] : 0. * SrcT(),
-         diff0rb = (idx[1] != NOT_INCLUDED)? diff0[idx[1]] : 0. * SrcT(),
-         diff0lt = (idx[2] != NOT_INCLUDED)? diff0[idx[2]] : 0. * SrcT(),
-         diff0rt = (idx[3] != NOT_INCLUDED)? diff0[idx[3]] : 0. * SrcT(),
-         diff1lb = (idx[0] != NOT_INCLUDED)? diff1[idx[0]] : 0. * SrcT(),
-         diff1rb = (idx[1] != NOT_INCLUDED)? diff1[idx[1]] : 0. * SrcT(),
-         diff1lt = (idx[2] != NOT_INCLUDED)? diff1[idx[2]] : 0. * SrcT(),
-         diff1rt = (idx[3] != NOT_INCLUDED)? diff1[idx[3]] : 0. * SrcT();
+    SrcT diff0lb = (idx[0] != NOT_INCLUDED)? diff0[idx[0]] : Zero<SrcT>(),
+         diff0rb = (idx[1] != NOT_INCLUDED)? diff0[idx[1]] : Zero<SrcT>(),
+         diff0lt = (idx[2] != NOT_INCLUDED)? diff0[idx[2]] : Zero<SrcT>(),
+         diff0rt = (idx[3] != NOT_INCLUDED)? diff0[idx[3]] : Zero<SrcT>(),
+         diff1lb = (idx[0] != NOT_INCLUDED)? diff1[idx[0]] : Zero<SrcT>(),
+         diff1rb = (idx[1] != NOT_INCLUDED)? diff1[idx[1]] : Zero<SrcT>(),
+         diff1lt = (idx[2] != NOT_INCLUDED)? diff1[idx[2]] : Zero<SrcT>(),
+         diff1rt = (idx[3] != NOT_INCLUDED)? diff1[idx[3]] : Zero<SrcT>();
 
     typename std::remove_const<SrcT>::type vals[4];
 
@@ -150,15 +150,16 @@ DstT SplineMaskedRectElement2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) co
     val_ba = (iba != NOT_INCLUDED)? this->src_vec[iba] : val_aa;
     val_bb = (ibb != NOT_INCLUDED)? this->src_vec[ibb] : 0.5 * (val_ab + val_ba);
 
+
     SrcT diff_l = gb * diff1lb + gt * diff1lt,
          diff_r = gb * diff1rb + gt * diff1rt,
          diff_b = gl * diff0lb + gr * diff0rb,
          diff_t = gl * diff0lt + gr * diff0rt;
 
-    return this->flags.postprocess(this->dst_mesh->at(index),
-        hl * (hb * vals[0] + ht * vals[2]) + hr * (hb * vals[1] + ht * vals[3]) +
-        hb * diff_b + ht * diff_t + hl * diff_l + hr * diff_r
-    );
+    SrcT result = hl * (hb * vals[0] + ht * vals[2]) + hr * (hb * vals[1] + ht * vals[3]) +
+        hb * diff_b + ht * diff_t + hl * diff_l + hr * diff_r;
+
+    return this->flags.postprocess(this->dst_mesh->at(index), result);
 }
 
 
@@ -169,7 +170,7 @@ DstT SplineMaskedRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
     size_t i0_lo, i0_hi, i1_lo, i1_hi, i2_lo, i2_hi;
 
     if (!this->src_mesh->prepareInterpolation(this->dst_mesh->at(index), p, i0_lo, i0_hi, i1_lo, i1_hi, i2_lo, i2_hi, this->flags))
-        return NaNfor<decltype(this->src_vec[0])>();
+        return NaN<decltype(this->src_vec[0])>();
 
     double back = this->src_mesh->fullMesh.axis[0]->at(i0_lo), front = this->src_mesh->fullMesh.axis[0]->at(i0_hi),
            left = this->src_mesh->fullMesh.axis[1]->at(i1_lo), right = this->src_mesh->fullMesh.axis[1]->at(i1_hi),
@@ -274,7 +275,7 @@ DstT SplineMaskedRectElement3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) co
     size_t i0_lo, i0_hi, i1_lo, i1_hi, i2_lo, i2_hi;
 
     if (!this->src_mesh->prepareInterpolation(this->dst_mesh->at(index), p, i0_lo, i0_hi, i1_lo, i1_hi, i2_lo, i2_hi, this->flags))
-        return NaNfor<decltype(this->src_vec[0])>();
+        return NaN<decltype(this->src_vec[0])>();
 
     unsigned char s0, s1, s2; // original index shift
 
@@ -433,7 +434,7 @@ namespace masked_hyman {
                          db = axis->at(i+1) - axis->at(i);
             size_t idxm = index(i-1), idxp = index(i+1);
             if (idxm == NOT_INCLUDED || idxp == NOT_INCLUDED) {   // at edges derivative is 0
-                diffs[idx] = 0. * DataT();
+                diffs[idx] = Zero<DataT>();
             } else {
                 const DataT sa = (data[idx] - data[idxm]) / da,
                             sb = (data[idxp] - data[idx]) / db;
@@ -462,11 +463,11 @@ namespace masked_hyman {
                     sa0 = (data[i0] - flags.reflect(ax, data[i0])) / (2.*da0);
                 else {
                     da0 = db0 = 0.5;
-                    sa0 = sb0 = 0. * DataT();
+                    sa0 = sb0 = Zero<DataT>();
                 }
             } else {
                 da0 = db0 = 0.5;
-                sa0 = sb0 = 0. * DataT();
+                sa0 = sb0 = Zero<DataT>();
             }
 
             // Use parabolic estimation of the derivative with Hyman filter
@@ -488,11 +489,11 @@ namespace masked_hyman {
                     sbn = (data[in] - flags.reflect(ax, data[in])) / (2.*dbn);
                 else {
                     dan = dbn = 0.5;
-                    san = sbn = 0. * DataT();
+                    san = sbn = Zero<DataT>();
                 }
             } else {
                 dan = dbn = 0.5;
-                san = sbn = 0. * DataT();
+                san = sbn = Zero<DataT>();
             }
 
             // Use parabolic estimation of the derivative with Hyman filter
@@ -520,14 +521,14 @@ HymanSplineMaskedRect2DLazyDataImpl<DstT, SrcT, BaseT>::HymanSplineMaskedRect2DL
                                              [&src_mesh, i1](size_t i0) -> size_t { return src_mesh->index(i0, i1); },
                                              flags);
     else
-        std::fill(this->diff0.begin(), this->diff0.end(), 0. * SrcT());
+        std::fill(this->diff0.begin(), this->diff0.end(), Zero<SrcT>());
     if (n1 > 1)
         for (size_t i0 = 0; i0 < n0; ++i0)
             masked_hyman::computeDiffs<SrcT>(this->diff1.data(), 1, src_mesh->fullMesh.axis[1], src_vec.data(),
                                              [&src_mesh, i0](size_t i1) -> size_t { return src_mesh->index(i0, i1); },
                                              flags);
     else
-        std::fill(this->diff1.begin(), this->diff1.end(), 0. * SrcT());
+        std::fill(this->diff1.begin(), this->diff1.end(), Zero<SrcT>());
 }
 
 
@@ -552,7 +553,7 @@ HymanSplineMaskedRect3DLazyDataImpl<DstT, SrcT, BaseT>::HymanSplineMaskedRect3DL
             }
         }
     } else
-        std::fill(this->diff0.begin(), this->diff0.end(), 0. * SrcT());
+        std::fill(this->diff0.begin(), this->diff0.end(), Zero<SrcT>());
 
     if (n1 > 1) {
         for (size_t i2 = 0; i2 < n2; ++i2) {
@@ -563,7 +564,7 @@ HymanSplineMaskedRect3DLazyDataImpl<DstT, SrcT, BaseT>::HymanSplineMaskedRect3DL
             }
         }
     } else
-        std::fill(this->diff1.begin(), this->diff1.end(), 0. * SrcT());
+        std::fill(this->diff1.begin(), this->diff1.end(), Zero<SrcT>());
 
     if (n2 > 1) {
         for (size_t i1 = 0; i1 < n1; ++i1) {
@@ -574,7 +575,7 @@ HymanSplineMaskedRect3DLazyDataImpl<DstT, SrcT, BaseT>::HymanSplineMaskedRect3DL
             }
         }
     } else
-        std::fill(this->diff2.begin(), this->diff2.end(), 0. * SrcT());
+        std::fill(this->diff2.begin(), this->diff2.end(), Zero<SrcT>());
 
 }
 

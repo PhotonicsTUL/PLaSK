@@ -413,10 +413,16 @@ inline constexpr Vec<3,T> vec(const T c0__lon, const T c1__tran, const T c2__up)
     return Vec<3,T>(c0__lon, c1__tran, c2__up);
 }
 
-/// Specialization of NaNforImpl which add support for 3D vectors.
+/// Specialization of NaNImpl which add support for 3D vectors.
 template <typename T>
-struct NaNforImpl<Vec<3, T>> {
-    static constexpr Vec<3, T> get() { return Vec<3, T>(NaNfor<T>(), NaNfor<T>(), NaNfor<T>()); }
+struct NaNImpl<Vec<3,T>> {
+    static constexpr Vec<3,T> get() { return Vec<3,T>(NaN<T>(), NaN<T>(), NaN<T>()); }
+};
+
+/// Specialization of ZeroImpl which add support for 2D vectors.
+template <typename T>
+struct ZeroImpl<Vec<3,T>> {
+    static constexpr Vec<3,T> get() { return Vec<3,T>(0., 0., 0.); }
 };
 
 PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(Vec<3, double>)

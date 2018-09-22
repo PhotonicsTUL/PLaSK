@@ -176,7 +176,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
             size_t index0, index0_hi, index1, index1_hi;
 
             if (!prepareInterpolation(point, p, index0, index0_hi, index1, index1_hi, flags))
-                return NaNfor<decltype(data[0])>();
+                return NaN<decltype(data[0])>();
 
             Vec<2> pa = fullMesh.at(index0, index1);
 
@@ -224,7 +224,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
             std::size_t index0_lo, index0_hi, index1_lo, index1_hi;
 
             if (!originalMesh->prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, flags))
-                return NaNfor<decltype(data[0])>();
+                return NaN<decltype(data[0])>();
 
             return flags.postprocess(point, data[this->index(index0_lo, index1_lo)]);
         }
@@ -432,7 +432,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
         std::size_t index0_lo, index0_hi, index1_lo, index1_hi;
 
         if (!prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, flags))
-            return NaNfor<decltype(data[0])>();
+            return NaN<decltype(data[0])>();
 
         return flags.postprocess(point,
                                  interpolation::bilinear(
@@ -459,7 +459,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
         std::size_t index0_lo, index0_hi, index1_lo, index1_hi;
 
         if (!prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, flags))
-            return NaNfor<decltype(data[0])>();
+            return NaN<decltype(data[0])>();
 
         return flags.postprocess(point,
                                  data[this->index(
