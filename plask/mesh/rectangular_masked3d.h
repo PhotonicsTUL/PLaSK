@@ -257,20 +257,20 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
             Vec<3> p;
             size_t index0, index0_hi, index1, index1_hi, index2, index2_hi;
 
-            if (!originalMesh->prepareInterpolation(point, p, index0, index0_hi, index1, index1_hi, index2, index2_hi, flags))
+            if (!prepareInterpolation(point, p, index0, index0_hi, index1, index1_hi, index2, index2_hi, flags))
                 return NaNfor<decltype(data[0])>();
 
             Vec<3> pa = fullMesh.at(index0, index1, index2);
 
             size_t step0 = (p.c0 < pa.c0)?
                 (index0 == 0)? 0 : -1 :
-                (index0_hi == originalMesh->fullMesh.axis[0]->size()-1)? 0 : 1;
+                (index0_hi == fullMesh.axis[0]->size())? 0 : 1;
             size_t step1 = (p.c1 < pa.c1)?
                 (index1 == 0)? 0 : -1 :
-                (index1_hi == originalMesh->fullMesh.axis[1]->size()-1)? 0 : 1;
+                (index1_hi == fullMesh.axis[1]->size())? 0 : 1;
             size_t step2 = (p.c2 < pa.c2)?
                 (index2 == 0)? 0 : -1 :
-                (index2_hi == originalMesh->fullMesh.axis[2]->size()-1)? 0 : 1;
+                (index2_hi == fullMesh.axis[2]->size())? 0 : 1;
 
             size_t index_aaa = index(index0, index1, index2), index_aab, index_aba, index_abb,
                    index_baa, index_bab, index_bba, index_bbb;

@@ -175,17 +175,17 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
             Vec<2> p;
             size_t index0, index0_hi, index1, index1_hi;
 
-            if (!originalMesh->prepareInterpolation(point, p, index0, index0_hi, index1, index1_hi, flags))
+            if (!prepareInterpolation(point, p, index0, index0_hi, index1, index1_hi, flags))
                 return NaNfor<decltype(data[0])>();
 
             Vec<2> pa = fullMesh.at(index0, index1);
 
             size_t step0 = (p.c0 < pa.c0)?
                 (index0 == 0)? 0 : -1 :
-                (index0_hi == originalMesh->fullMesh.axis[0]->size()-1)? 0 : 1;
+                (index0_hi == fullMesh.axis[0]->size())? 0 : 1;
             size_t step1 = (p.c1 < pa.c1)?
                 (index1 == 0)? 0 : -1 :
-                (index1_hi == originalMesh->fullMesh.axis[1]->size()-1)? 0 : 1;
+                (index1_hi == fullMesh.axis[1]->size())? 0 : 1;
 
             size_t index_aa = index(index0, index1), index_ab, index_ba, index_bb;
 
