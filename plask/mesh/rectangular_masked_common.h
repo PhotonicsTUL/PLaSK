@@ -166,10 +166,12 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
         const_iterator end() const { return const_iterator(*originalMesh, size(), originalMesh->elementSet.segments.end()); }
 
         const MaskedMeshType* originalMesh;
+        RectangularMesh<DIM> fullMesh;
 
-        explicit ElementMeshBase(const MaskedMeshType* originalMesh): originalMesh(originalMesh) {}
+        explicit ElementMeshBase(const MaskedMeshType* originalMesh):
+            originalMesh(originalMesh), fullMesh(*originalMesh->fullMesh.getElementMesh()) {}
 
-        explicit ElementMeshBase(const MaskedMeshType& originalMesh): originalMesh(&originalMesh) {}
+        explicit ElementMeshBase(const MaskedMeshType& originalMesh): ElementMeshBase(&originalMesh) {}
 
         /**
          * Get number of elements.
@@ -178,7 +180,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
         std::size_t size() const override { return originalMesh->getElementsCount(); }
 
         LocalCoords at(std::size_t index) const override {
-            return Element(*originalMesh, index).getMidpoint();
+            return fullMesh.at(originalMesh->elementSet.at(index));
         }
 
         bool empty() const override { return originalMesh->elementSet.empty(); }

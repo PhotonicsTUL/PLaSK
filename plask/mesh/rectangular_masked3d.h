@@ -233,7 +233,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
          * \return this mesh index, from 0 to size()-1, or NOT_INCLUDED
          */
         inline std::size_t index(std::size_t axis0_index, std::size_t axis1_index, std::size_t axis2_index) const {
-            return originalMesh->elementSet.indexOf(originalMesh->fullMesh.getElement(axis0_index, axis1_index, axis2_index).getIndex());
+            return originalMesh->elementSet.indexOf(fullMesh.index(axis0_index, axis1_index, axis2_index));
         }
 
         bool prepareInterpolation(const Vec<3>& point, Vec<3>& wrapped_point,
@@ -260,7 +260,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
             if (!originalMesh->prepareInterpolation(point, p, index0, index0_hi, index1, index1_hi, index2, index2_hi, flags))
                 return NaNfor<decltype(data[0])>();
 
-            Vec<3> pa = originalMesh->fullMesh.getElement(index0, index1, index2).getMidpoint();
+            Vec<3> pa = fullMesh.at(index0, index1, index2);
 
             size_t step0 = (p.c0 < pa.c0)?
                 (index0 == 0)? 0 : -1 :
@@ -298,7 +298,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
                 data_bbb = (index_bbb != Element::UNKNOWN_ELEMENT_INDEX)? data[index_bbb] : data_aab + data_aba + data_baa - 2. * data_aaa;
             }
 
-            Vec<3> pb = originalMesh->fullMesh.getElement(index0+step0, index1+step1, index2+step2).getMidpoint();
+            Vec<3> pb = fullMesh.at(index0+step0, index1+step1, index2+step2);
             if (step0 == 0) pb.c0 += 1.; if (step1 == 0) pb.c1 += 1.; if (step2 == 0) pb.c2 += 2.;
 
             return flags.postprocess(point,

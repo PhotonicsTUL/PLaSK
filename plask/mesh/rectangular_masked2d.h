@@ -153,7 +153,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
          * \return this mesh index, from 0 to size()-1, or NOT_INCLUDED
          */
         inline std::size_t index(std::size_t axis0_index, std::size_t axis1_index) const {
-            return originalMesh->elementSet.indexOf(originalMesh->fullMesh.getElement(axis0_index, axis1_index).getIndex());
+            return originalMesh->elementSet.indexOf(fullMesh.index(axis0_index, axis1_index));
         }
 
 
@@ -178,7 +178,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
             if (!originalMesh->prepareInterpolation(point, p, index0, index0_hi, index1, index1_hi, flags))
                 return NaNfor<decltype(data[0])>();
 
-            Vec<2> pa = originalMesh->fullMesh.getElement(index0, index1).getMidpoint();
+            Vec<2> pa = fullMesh.at(index0, index1);
 
             size_t step0 = (p.c0 < pa.c0)?
                 (index0 == 0)? 0 : -1 :
@@ -203,7 +203,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
                 data_bb = (index_bb != Element::UNKNOWN_ELEMENT_INDEX)? data[index_bb] : data_ab + data_ba - data_aa;
             }
 
-            Vec<2> pb = originalMesh->fullMesh.getElement(index0+step0, index1+step1).getMidpoint();
+            Vec<2> pb = fullMesh.at(index0+step0, index1+step1);
             if (step0 == 0) pb.c0 += 1.; if (step1 == 0) pb.c1 += 1.;
 
             return flags.postprocess(point,
