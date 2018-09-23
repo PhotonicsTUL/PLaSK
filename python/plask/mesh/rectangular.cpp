@@ -870,16 +870,20 @@ static py::tuple RectangularMesh2D_Element_nodes(const RectangularMesh2D::Elemen
     return py::make_tuple(self.getLoLoIndex(), self.getLoUpIndex(), self.getUpLoIndex(), self.getUpUpIndex());
 }
 
-static py::tuple RectangularMesh3D_Element_nodes(const RectangularMesh3D::Element& self) {
+static py::tuple RectangularMesh3D_Element_nodes(const RectilinearMesh3D::Element& self) {
     return py::make_tuple(self.getLoLoLoIndex(), self.getLoLoUpIndex(), self.getLoUpLoIndex(), self.getLoUpUpIndex(),
                           self.getUpLoLoIndex(), self.getUpLoUpIndex(), self.getUpUpLoIndex(), self.getUpUpUpIndex());
 }
 
-static Box3D RectangularMesh3D_Element_box(const RectangularMesh3D::Element& self) {
+static RectilinearMesh3D::Elements RectangularMesh3D_elements(const RectangularMesh3D& self) {
+    return self.elements();
+}
+
+static Box3D RectangularMesh3D_Element_box(const RectilinearMesh3D::Element& self) {
     return Box3D(self.getLoLoLo(), self.getUpUpUp());
 }
 
-static double RectangularMesh3D_Element_volume(const RectangularMesh3D::Element& self) {
+static double RectangularMesh3D_Element_volume(const RectilinearMesh3D::Element& self) {
     Vec<3, double> span = self.getSize();
     return span.c0 * span.c1 * span.c2;
 }
@@ -1154,7 +1158,7 @@ void register_mesh_rectangular()
         .def("minor_index", &RectangularMesh<3>::minorIndex, u8"Return index in the minor axis of the point with given index", (py::arg("index")))
         .def("set_optimal_ordering", &RectangularMesh<3>::setOptimalIterationOrder, u8"Set the optimal ordering of the points in this mesh")
         .add_property("ordering", &RectangularMesh3D__getOrdering, &RectangularMesh3D__setOrdering, u8"Ordering of the points in this mesh")
-        .add_property("elements", py::make_function(&RectangularMesh3D::elements, py::with_custodian_and_ward_postcall<0,1>()), u8"Element list in the mesh")
+        .add_property("elements", py::make_function(&RectangularMesh3D_elements, py::with_custodian_and_ward_postcall<0,1>()), u8"Element list in the mesh")
         .def("get_midpoints", &RectangularMesh_getMidpoints<3>, py::with_custodian_and_ward_postcall<0,1>(), u8"Get new mesh with points in the middles of of elements of this mesh")
         .def(py::self == py::self)
     ;
@@ -1164,21 +1168,21 @@ void register_mesh_rectangular()
         py::scope scope = rectangular3D;
         (void) scope;   // don't warn about unused variable scope
 
-        py::class_<RectangularMesh3D::Element>("Element", u8"Element list in the :py:class:`mesh.Rectangular3D", py::no_init)
-            .add_property("index0", /*size_t*/ &RectangularMesh3D::Element::getIndex0, u8"Element index in the first axis")
-            .add_property("index1", /*size_t*/ &RectangularMesh3D::Element::getIndex1, u8"Element index in the second axis")
-            .add_property("index2", /*size_t*/ &RectangularMesh3D::Element::getIndex2, u8"Element index in the third axis")
-            .add_property("back", /*double*/ &RectangularMesh3D::Element::getLower0, u8"Position of the back edge of the element")
-            .add_property("front", /*double*/ &RectangularMesh3D::Element::getUpper0, u8"Position of the front edge of the element")
-            .add_property("left", /*double*/ &RectangularMesh3D::Element::getLower1, u8"Position of the left edge of the element")
-            .add_property("right", /*double*/ &RectangularMesh3D::Element::getUpper1, u8"Position of the right edge of the element")
-            .add_property("top", /*double*/ &RectangularMesh3D::Element::getUpper2, u8"Position of the top edge of the element")
-            .add_property("bottom", /*double*/ &RectangularMesh3D::Element::getLower2, u8"Position of the bottom edge of the element")
-            .add_property("depth", /*double*/ &RectangularMesh3D::Element::getSize0, u8"Depth of the element")
-            .add_property("width", /*double*/ &RectangularMesh3D::Element::getSize1, u8"Width of the element")
-            .add_property("height", /*double*/ &RectangularMesh3D::Element::getSize2, u8"Height of the element")
-            .add_property("center", /*Vec<3,double>*/ &RectangularMesh3D::Element::getMidpoint, u8"Position of the element center")
-            .add_property("index", /*size_t*/ &RectangularMesh3D::Element::getIndex, u8"Element index")
+        py::class_<RectilinearMesh3D::Element>("Element", u8"Element list in the :py:class:`mesh.Rectangular3D", py::no_init)
+            .add_property("index0", /*size_t*/ &RectilinearMesh3D::Element::getIndex0, u8"Element index in the first axis")
+            .add_property("index1", /*size_t*/ &RectilinearMesh3D::Element::getIndex1, u8"Element index in the second axis")
+            .add_property("index2", /*size_t*/ &RectilinearMesh3D::Element::getIndex2, u8"Element index in the third axis")
+            .add_property("back", /*double*/ &RectilinearMesh3D::Element::getLower0, u8"Position of the back edge of the element")
+            .add_property("front", /*double*/ &RectilinearMesh3D::Element::getUpper0, u8"Position of the front edge of the element")
+            .add_property("left", /*double*/ &RectilinearMesh3D::Element::getLower1, u8"Position of the left edge of the element")
+            .add_property("right", /*double*/ &RectilinearMesh3D::Element::getUpper1, u8"Position of the right edge of the element")
+            .add_property("top", /*double*/ &RectilinearMesh3D::Element::getUpper2, u8"Position of the top edge of the element")
+            .add_property("bottom", /*double*/ &RectilinearMesh3D::Element::getLower2, u8"Position of the bottom edge of the element")
+            .add_property("depth", /*double*/ &RectilinearMesh3D::Element::getSize0, u8"Depth of the element")
+            .add_property("width", /*double*/ &RectilinearMesh3D::Element::getSize1, u8"Width of the element")
+            .add_property("height", /*double*/ &RectilinearMesh3D::Element::getSize2, u8"Height of the element")
+            .add_property("center", /*Vec<3,double>*/ &RectilinearMesh3D::Element::getMidpoint, u8"Position of the element center")
+            .add_property("index", /*size_t*/ &RectilinearMesh3D::Element::getIndex, u8"Element index")
             .add_property("box", /*Box3D*/ &RectangularMesh3D_Element_box, u8"Bounding box of the element")
             .add_property("volume", /*double*/ &RectangularMesh3D_Element_volume, u8"Volume of the element")
             .add_property("nodes", &RectangularMesh3D_Element_nodes, u8"Indices of the element vertices on the orignal mesh\n\n"
@@ -1187,11 +1191,11 @@ void register_mesh_rectangular()
                     u8"and front top right.")
         ;
 
-        py::class_<RectangularMesh3D::Elements>("Elements", u8"Element list in the :py:class:`mesh.Rectangular3D", py::no_init)
-            .def("__len__", &RectangularMesh3D::Elements::size)
-            .def("__getitem__", &RectangularMesh3D::Elements::operator[], py::with_custodian_and_ward_postcall<0,1>())
-            .def("__getitem__", &RectangularMesh3D::Elements::operator(), py::with_custodian_and_ward_postcall<0,1>())
-            .def("__iter__", py::range<py::with_custodian_and_ward_postcall<0,1>>(&RectangularMesh3D::Elements::begin, &RectangularMesh3D::Elements::end))
+        py::class_<RectilinearMesh3D::Elements>("Elements", u8"Element list in the :py:class:`mesh.Rectangular3D", py::no_init)
+            .def("__len__", &RectilinearMesh3D::Elements::size)
+            .def("__getitem__", &RectilinearMesh3D::Elements::operator[], py::with_custodian_and_ward_postcall<0,1>())
+            .def("__getitem__", &RectilinearMesh3D::Elements::operator(), py::with_custodian_and_ward_postcall<0,1>())
+            .def("__iter__", py::range<py::with_custodian_and_ward_postcall<0,1>>(&RectilinearMesh3D::Elements::begin, &RectilinearMesh3D::Elements::end))
             .add_property("mesh", &RectangularMesh_ElementMesh<RectangularMesh3D>, "Mesh with element centers")
         ;
 
