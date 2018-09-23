@@ -34,8 +34,15 @@ struct SparseBandMatrix3D {
         data = aligned_malloc<double>(LDA*size);
     }
 
+    SparseBandMatrix3D(const SparseBandMatrix3D&) = delete;
+
+    SparseBandMatrix3D(SparseBandMatrix3D&& src): size(src.size), data(src.data) {
+        src.data = nullptr;
+        std::move(std::begin(src.bno), std::end(src.bno), bno);
+    }
+
     ~SparseBandMatrix3D() {
-        aligned_free<double>(data);
+        if (data) aligned_free<double>(data);
     }
 
     /**

@@ -13,6 +13,8 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
 
   protected:
 
+    plask::shared_ptr<RectangularMaskedMesh3D> maskedMesh = plask::make_shared<RectangularMaskedMesh3D>();
+
     /// Details of active region
     struct Active {
         struct Region {
@@ -35,6 +37,8 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
             bottom(r.bottom), top(r.top), left(r.left), right(r.right), back(r.back), front(r.front),
             ld(r.front-r.back), offset(tot - (r.front-r.back)*r.left - r.back), height(h) {}
     };
+
+    size_t band;                                ///< Maximum band size
 
     std::vector<double> js;                     ///< p-n junction parameter [A/m^2]
     std::vector<double> beta;                   ///< p-n junction parameter [1/V]
@@ -108,6 +112,10 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
     /// Get info on active region
     void setActiveRegions();
 
+    /// Setup matrix
+    template <typename MatrixT>
+    MatrixT makeMatrix();
+
     /// Perform computations for particular matrix type
     template <typename MatrixT>
     double doCompute(unsigned loops=1);
@@ -134,6 +142,11 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
 
     /// Return \c true if the specified element is a junction
     size_t isActive(const RectangularMesh<3>::Element& element) const {
+           return isActive(element.getMidpoint());
+    }
+
+    /// Return \c true if the specified element is a junction
+    size_t isActive(const RectangularMaskedMesh<3>::Element& element) const {
            return isActive(element.getMidpoint());
     }
 

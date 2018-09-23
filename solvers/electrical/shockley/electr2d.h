@@ -36,7 +36,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
         Active(size_t tot, size_t l, size_t r, size_t b, size_t t, double h): left(l), right(r), bottom(b), top(t), offset(tot-l), height(h) {}
     };
 
-    std::size_t size;           ///< Number of columns in the main matrix
+    size_t band;                ///< Maximum band size
 
     std::vector<double> js;     ///< p-n junction parameter [A/m^2]
     std::vector<double> beta;   ///< p-n junction parameter [1/V]
@@ -109,6 +109,10 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     /// Set stiffness matrix + load vector
     template <typename MatrixT>
     void setMatrix(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bvoltage);
+
+    /// Setup matrix
+    template <typename MatrixT>
+    MatrixT makeMatrix();
 
     /// Perform computations for particular matrix type
     template <typename MatrixT>

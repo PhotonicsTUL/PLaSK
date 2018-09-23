@@ -125,7 +125,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
 
     maskedMesh->reset(*this->mesh, *this->geometry, ~(use_full_mesh? 0 : plask::Material::EMPTY));
 
-    auto points = this->maskedMesh->fullMesh.getElementMesh();
+    auto points = this->mesh->getElementMesh();
 
     std::vector<typename Active::Region> regions;
 
@@ -193,8 +193,8 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::onInitialize()
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
     loopno = 0;
-    size = this->maskedMesh->size();
-    potentials.reset(size, 0.);
+    band = 0;
+    potentials.reset(this->maskedMesh->size(), 0.);
     currents.reset(this->maskedMesh->getElementsCount(), vec(0.,0.));
     conds.reset(this->maskedMesh->getElementsCount());
     if (junction_conductivity.size() == 1) {
@@ -421,11 +421,45 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveConductivities()
 template<typename Geometry2DType>
 double FiniteElementMethodElectrical2DSolver<Geometry2DType>::compute(unsigned loops) {
     switch (algorithm) {
-        case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
-        case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
-        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix2D>(loops);
+        case ALGORITHM_CHOLESKY:
+            return doCompute<DpbMatrix>(loops);
+        case ALGORITHM_GAUSS:
+            return doCompute<DgbMatrix>(loops);
+        case ALGORITHM_ITERATIVE:
+            return doCompute<SparseBandMatrix2D>(loops);
     }
     return 0.;
+}
+
+template<typename Geometry2DType>
+template <typename MatrixT>
+MatrixT FiniteElementMethodElectrical2DSolver<Geometry2DType>::makeMatrix() {
+    if (band == 0) {
+        if (use_full_mesh) {
+            band = this->mesh->minorAxis()->size() + 1;
+        } else {
+            for (auto element: this->maskedMesh->elements()) {
+                size_t span = element.getUpUpIndex() - element.getLoLoIndex();
+                if (span > band) band = span;
+            }
+        }
+    }
+    return MatrixT(this->maskedMesh->size(), band);
+}
+
+// C++ if fucking stupid!!!!! We need to repeat this twice just because a fucking standard
+template<> template <>
+SparseBandMatrix2D FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::makeMatrix<SparseBandMatrix2D>() {
+    if (!use_full_mesh)
+        throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
+    return SparseBandMatrix2D(this->maskedMesh->size(), this->mesh->minorAxis()->size());
+}
+
+template<> template <>
+SparseBandMatrix2D FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::makeMatrix<SparseBandMatrix2D>() {
+    if (!use_full_mesh)
+        throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
+    return SparseBandMatrix2D(this->maskedMesh->size(), this->mesh->minorAxis()->size());
 }
 
 template<typename Geometry2DType>
@@ -443,7 +477,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
 
     unsigned loop = 0;
 
-    MatrixT A(size, this->mesh->minorAxis()->size());
+    MatrixT A = makeMatrix<MatrixT>();
 
     double err = 0.;
     toterr = 0.;
@@ -654,7 +688,7 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::
             size_t index = element.getIndex();
             if (index != RectangularMaskedMesh2D::Element::UNKNOWN_ELEMENT_INDEX) {
                 double rin = element.getLower0(), rout = element.getUpper0();
-                result += currents[element.getIndex()].c1 * (rout*rout - rin*rin);
+                result += currents[index].c1 * (rout*rout - rin*rin);
             }
         }
     }
@@ -674,15 +708,15 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::getTotalCurrent(si
 
 
 template<typename Geometry2DType>
-const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getVoltage(shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) const
+const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::getVoltage(shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod method) const
 {
     if (!potentials) throw NoValue("Voltage");
     this->writelog(LOG_DEBUG, "Getting voltage");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     if (use_full_mesh)
-        return interpolate(this->mesh, potentials, dst_mesh, method, this->geometry);
+        return interpolate(this->mesh, potentials, dest_mesh, method, this->geometry);
     else
-        return interpolate(this->maskedMesh, potentials, dst_mesh, method, this->geometry);
+        return interpolate(this->maskedMesh, potentials, dest_mesh, method, this->geometry);
 }
 
 
@@ -747,22 +781,7 @@ const LazyData<Tensor2<double>> FiniteElementMethodElectrical2DSolver<Geometry2D
     this->writelog(LOG_DEBUG, "Getting conductivities");
     loadConductivities();
     InterpolationFlags flags(this->geometry);
-    return LazyData<Tensor2<double>>(new LazyDataDelegateImpl<Tensor2<double>>(dest_mesh->size(),
-        [this, dest_mesh, flags](size_t i) -> Tensor2<double> {
-            auto point = flags.wrap(dest_mesh->at(i));
-            size_t x = this->mesh->axis[0]->findUpIndex(point[0]),
-                   y = this->mesh->axis[1]->findUpIndex(point[1]);
-            if (x == 0 || y == 0 || x == this->mesh->axis[0]->size() || y == this->mesh->axis[1]->size())
-                return Tensor2<double>(NAN);
-            else {
-                size_t index = this->maskedMesh->element(x-1, y-1).getIndex();
-                if (index == RectangularMaskedMesh2D::Element::UNKNOWN_ELEMENT_INDEX)
-                    return Tensor2<double>(NAN);
-                else
-                    return this->conds[index];
-            }
-        }
-    ));
+    return interpolate(this->maskedMesh->getElementMesh(), conds, dest_mesh, INTERPOLATION_NEAREST, flags);
 }
 
 

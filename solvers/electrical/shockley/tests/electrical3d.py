@@ -47,8 +47,7 @@ class Shockley3D_Test(unittest.TestCase):
         self.solver.maxerr = 1e-3
         self.solver.voltage_boundary.append(self.solver.mesh.TopOf(contact,top), 0.)
         self.solver.voltage_boundary.append(self.solver.mesh.BottomOf(contact, bottom), 1.)
-        self.solver.algorithm = 'gauss'
-        
+
     def testComputations(self):
         self.solver.compute(1000)
         correct_current = 1e-9 * self.S * self.solver.js * (exp(self.solver.beta) - 1)
@@ -59,10 +58,12 @@ class Shockley3D_Test(unittest.TestCase):
         self.assertAlmostEqual( self.solver.get_total_heat(), heat, 3 )
 
     def testConductivity(self):
-        msh = self.solver.mesh.get_midpoints()
+        msh = self.solver.mesh.elements.mesh
         geo = self.solver.geometry
         conds = [geo.get_material(point).cond(300.) if not geo.has_role('active', point) else (0.,5.) for point in msh]
-        self.assertListEqual( list(self.solver.outConductivity(msh)), conds )
+        ac = material.Air().cond(300.)
+        result = [ac if isnan(c[0]) else c for c in self.solver.outConductivity(msh)]
+        self.assertSequenceEqual( result, conds )
 
     if __name__ == '__main__':
         def testGeometry(self):

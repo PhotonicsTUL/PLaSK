@@ -28,8 +28,15 @@ struct SparseBandMatrix2D {
         data = aligned_malloc<double>(LDA*size);
     }
 
+    SparseBandMatrix2D(const SparseBandMatrix2D&) = delete;
+
+    SparseBandMatrix2D(SparseBandMatrix2D&& src): size(src.size), data(src.data) {
+        src.data = nullptr;
+        std::move(std::begin(src.bno), std::end(src.bno), bno);
+    }
+
     ~SparseBandMatrix2D() {
-        aligned_free<double>(data);
+        if (data) aligned_free<double>(data);
     }
 
     /**
@@ -49,7 +56,7 @@ struct SparseBandMatrix2D {
     void clear() {
         std::fill_n(data, LDA*size, 0.);
     }
-    
+
     /**
      * Multiply matrix by vector
      * \param vector vector to multiply

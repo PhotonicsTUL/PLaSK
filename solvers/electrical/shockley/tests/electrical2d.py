@@ -51,10 +51,10 @@ class Shockley2D_Test(unittest.TestCase):
 
 
     def testConductivity(self):
-        msh = self.solver.mesh.get_midpoints()
+        msh = self.solver.mesh.elements.mesh
         geo = self.solver.geometry
         conds = [geo.get_material(point).cond(300.) if not geo.has_role('active', point) else (0.,5.) for point in msh]
-        self.assertListEqual( list(self.solver.outConductivity(msh)), conds )
+        self.assertSequenceEqual( self.solver.outConductivity(msh), conds )
 
 
 
@@ -96,7 +96,7 @@ class ShockleyCyl_Test(unittest.TestCase):
         self.assertAlmostEqual( self.solver.get_total_heat(), heat, 3 )
 
     def testConductivity(self):
-        msh = self.solver.mesh.get_midpoints()
+        msh = self.solver.mesh.elements.mesh
         geo = self.solver.geometry
         reference = [geo.get_material(point).cond(300.) if not geo.has_role('active', point) else (0.,5.) for point in msh]
         ac = material.Air().cond(300.)
