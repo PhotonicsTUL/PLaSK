@@ -162,6 +162,11 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
             return originalMesh->prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, flags);
         }
 
+        // Convert to recctangular masked mesh
+        operator RectangularMaskedMesh2D() const {
+            return RectangularMaskedMesh2D(fullMesh, originalMesh->elementSet);
+        }
+
         /**
          * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.
          * \param data values of data in points describe by this mesh
@@ -342,7 +347,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
     /**
      * Get an element with a given index @p i.
      * @param i index of the element
-     * @return the element
+     * @return the element0.
      */
     Element element(std::size_t i) const { ensureHasElements(); return Element(*this, i); }
 

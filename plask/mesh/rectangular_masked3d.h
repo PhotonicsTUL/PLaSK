@@ -225,6 +225,11 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
 
         explicit ElementMesh(const RectangularMaskedMesh3D* originalMesh): ElementMeshBase<RectangularMaskedMesh3D>(originalMesh) {}
 
+        // Convert to recctangular masked mesh
+        operator RectangularMaskedMesh3D() const {
+            return RectangularMaskedMesh3D(fullMesh, originalMesh->elementSet);
+        }
+
         /**
          * Calculate this mesh index using indexes of axis0 and axis1.
          * \param axis0_index index of axis0, from 0 to axis[0]->size()-1
