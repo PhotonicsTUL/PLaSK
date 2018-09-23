@@ -98,9 +98,11 @@ class ShockleyCyl_Test(unittest.TestCase):
     def testConductivity(self):
         msh = self.solver.mesh.get_midpoints()
         geo = self.solver.geometry
-        conds = [geo.get_material(point).cond(300.) if not geo.has_role('active', point) else (0.,5.) for point in msh]
-        self.assertListEqual( list(self.solver.outConductivity(msh)), conds )
-    
+        reference = [geo.get_material(point).cond(300.) if not geo.has_role('active', point) else (0.,5.) for point in msh]
+        ac = material.Air().cond(300.)
+        result = [ac if isnan(c[0]) else c for c in self.solver.outConductivity(msh)]
+        self.assertListEqual( result, reference )
+
     if __name__ == '__main__':
         def testGeometry(self):
             fig = figure()

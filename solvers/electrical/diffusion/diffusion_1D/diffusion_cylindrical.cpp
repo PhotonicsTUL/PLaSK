@@ -789,7 +789,7 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
     if (!this->geometry) throw NoGeometryException(this->getId());
 
     shared_ptr<RectangularMesh<2>> grid = RectangularMesh2DSimpleGenerator().generate_t<RectangularMesh<2>>(this->geometry->getChild());
-    shared_ptr<RectangularMesh<2>> points = grid->getMidpointsMesh();
+    shared_ptr<RectangularMesh<2>> points = grid->getElementMesh();
 
     std::vector<Box2D> results;
 
@@ -922,8 +922,8 @@ plask::DataVector<const Tensor2<double>> FiniteElementMethodDiffusion2DSolver<Ge
     return Li;
 }
 
-template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::getClassName() const { return "Diffusion2D"; }
-template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::getClassName() const { return "DiffusionCyl"; }
+template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::getClassName() const { return "electrical.Diffusion2D"; }
+template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.DiffusionCyl"; }
 
 template class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>;
 template class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>;

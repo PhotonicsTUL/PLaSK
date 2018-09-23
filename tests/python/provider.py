@@ -16,7 +16,7 @@ class ReceiverTest(unittest.TestCase):
     def setUp(self):
         self.solver = plasktest.SimpleSolver()
         self.mesh1 = plask.mesh.Rectangular2D(plask.mesh.Regular(0., 4., 3), plask.mesh.Regular(0., 20., 3))
-        self.mesh2 = self.mesh1.get_midpoints();
+        self.mesh2 = self.mesh1.elements.mesh;
 
 
     def testReceiverWithConstant(self):
@@ -110,7 +110,7 @@ class DataTest(unittest.TestCase):
 
     def testOperations(self):
         v = plask.array([[ [1.,10.], [2.,20.] ], [ [3.,30.], [4.,40.] ]])
-        data = plask.Data(v, plask.mesh.Rectangular2D(plask.mesh.Regular(0., 4., 3), plask.mesh.Regular(0., 20., 3)).get_midpoints())
+        data = plask.Data(v, plask.mesh.Rectangular2D(plask.mesh.Regular(0., 4., 3), plask.mesh.Regular(0., 20., 3)).elements.mesh)
         self.assertEqual( data + data, 2 * data )
 
 

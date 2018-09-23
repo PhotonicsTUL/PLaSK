@@ -1,24 +1,24 @@
-#ifndef PLASK__RECTANGULAR_FILTERED2D_H
-#define PLASK__RECTANGULAR_FILTERED2D_H
+#ifndef PLASK__RECTANGULAR_MASKED2D_H
+#define PLASK__RECTANGULAR_MASKED2D_H
 
-#include "rectangular_filtered_common.h"
+#include "rectangular_masked_common.h"
 
 namespace plask {
 
 /**
  * Rectangular mesh which uses (and indexes) only chosen elements and all nodes in their corners.
  *
- * Objects of this class can be constructed from instences of full rectangular mesh (RectangularFilteredMesh2D)
+ * Objects of this class can be constructed from instences of full rectangular mesh (RectangularMaskedMesh2D)
  * and they can use the same boundary conditions (BoundaryConditions instance for full mesh accepts also objets of this class).
  * Interpolation methods return NaN-s for all elements which have not been chosen.
  */
-struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2> {
+struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
 
     typedef std::function<bool(const RectangularMesh2D::Element&)> Predicate;
 
     class PLASK_API Element {
 
-        const RectangularFilteredMesh2D& filteredMesh;
+        const RectangularMaskedMesh2D& maskedMesh;
 
         //std::uint32_t elementNumber;    ///< index of element in oryginal mesh
         std::size_t index0, index1; // probably this form allows to do most operation fastest in average, low indexes of element corner or just element indexes
@@ -26,27 +26,27 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
         /// Index of element. If it equals to UNKNOWN_ELEMENT_INDEX, it will be calculated on-demand from index0 and index1.
         mutable std::size_t elementIndex;
 
-        const RectangularMesh<2>& fullMesh() const { return filteredMesh.fullMesh; }
+        const RectangularMesh<2>& fullMesh() const { return maskedMesh.fullMesh; }
 
     public:
 
         enum: std::size_t { UNKNOWN_ELEMENT_INDEX = std::numeric_limits<std::size_t>::max() };
 
-        Element(const RectangularFilteredMesh2D& filteredMesh, std::size_t elementIndex, std::size_t index0, std::size_t index1)
-            : filteredMesh(filteredMesh), index0(index0), index1(index1), elementIndex(elementIndex)
+        Element(const RectangularMaskedMesh2D& maskedMesh, std::size_t elementIndex, std::size_t index0, std::size_t index1)
+            : maskedMesh(maskedMesh), index0(index0), index1(index1), elementIndex(elementIndex)
         {
         }
 
-        Element(const RectangularFilteredMesh2D& filteredMesh, std::size_t elementIndex, std::size_t elementIndexOfFullMesh)
-            : filteredMesh(filteredMesh), elementIndex(elementIndex)
+        Element(const RectangularMaskedMesh2D& maskedMesh, std::size_t elementIndex, std::size_t elementIndexOfFullMesh)
+            : maskedMesh(maskedMesh), elementIndex(elementIndex)
         {
             const std::size_t v = fullMesh().getElementMeshLowIndex(elementIndexOfFullMesh);
             index0 = fullMesh().index0(v);
             index1 = fullMesh().index1(v);
         }
 
-        Element(const RectangularFilteredMesh2D& filteredMesh, std::size_t elementIndex)
-            : Element(filteredMesh, elementIndex, filteredMesh.elementSet.at(elementIndex))
+        Element(const RectangularMaskedMesh2D& maskedMesh, std::size_t elementIndex)
+            : Element(maskedMesh, elementIndex, maskedMesh.elementSet.at(elementIndex))
         {}
 
         /// \return tran index of the element
@@ -89,17 +89,17 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
         inline Vec<2, double> getSize() const { return getUpUp() - getLoLo(); }
 
         /// \return position of the middle of the element
-        inline Vec<2, double> getMidpoint() const { return filteredMesh.getElementMidpoint(index0, index1); }
+        inline Vec<2, double> getMidpoint() const { return maskedMesh.getElementMidpoint(index0, index1); }
 
         /// @return index of this element
         inline std::size_t getIndex() const {
             if (elementIndex == UNKNOWN_ELEMENT_INDEX)
-                elementIndex = filteredMesh.getElementIndexFromLowIndexes(getLowerIndex0(), getLowerIndex1());
+                elementIndex = maskedMesh.getElementIndexFromLowIndexes(getLowerIndex0(), getLowerIndex1());
             return elementIndex;
         }
 
         /// \return this element as rectangular box
-        inline Box2D toBox() const { return filteredMesh.getElementBox(index0, index1); }
+        inline Box2D toBox() const { return maskedMesh.getElementBox(index0, index1); }
 
         /// \return total area of this element
         inline double getVolume() const { return getSize0() * getSize1(); }
@@ -108,44 +108,138 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
         inline double getArea() const { return getVolume(); }
 
         /// \return index of the lower left corner of this element
-        inline std::size_t getLoLoIndex() const { return filteredMesh.index(getLowerIndex0(), getLowerIndex1()); }
+        inline std::size_t getLoLoIndex() const { return maskedMesh.index(getLowerIndex0(), getLowerIndex1()); }
 
         /// \return index of the upper left corner of this element
-        inline std::size_t getLoUpIndex() const { return filteredMesh.index(getLowerIndex0(), getUpperIndex1()); }
+        inline std::size_t getLoUpIndex() const { return maskedMesh.index(getLowerIndex0(), getUpperIndex1()); }
 
         /// \return index of the lower right corner of this element
-        inline std::size_t getUpLoIndex() const { return filteredMesh.index(getUpperIndex0(), getLowerIndex1()); }
+        inline std::size_t getUpLoIndex() const { return maskedMesh.index(getUpperIndex0(), getLowerIndex1()); }
 
         /// \return index of the upper right corner of this element
-        inline std::size_t getUpUpIndex() const { return filteredMesh.index(getUpperIndex0(), getUpperIndex1()); }
+        inline std::size_t getUpUpIndex() const { return maskedMesh.index(getUpperIndex0(), getUpperIndex1()); }
 
         /// \return position of the lower left corner of this element
-        inline Vec<2, double> getLoLo() const { return filteredMesh(getLowerIndex0(), getLowerIndex1()); }
+        inline Vec<2, double> getLoLo() const { return maskedMesh(getLowerIndex0(), getLowerIndex1()); }
 
         /// \return position of the upper left corner of this element
-        inline Vec<2, double> getLoUp() const { return filteredMesh(getLowerIndex0(), getUpperIndex1()); }
+        inline Vec<2, double> getLoUp() const { return maskedMesh(getLowerIndex0(), getUpperIndex1()); }
 
         /// \return position of the lower right corner of this element
-        inline Vec<2, double> getUpLo() const { return filteredMesh(getUpperIndex0(), getLowerIndex1()); }
+        inline Vec<2, double> getUpLo() const { return maskedMesh(getUpperIndex0(), getLowerIndex1()); }
 
         /// \return position of the upper right corner of this element
-        inline Vec<2, double> getUpUp() const { return filteredMesh(getUpperIndex0(), getUpperIndex1()); }
+        inline Vec<2, double> getUpUp() const { return maskedMesh(getUpperIndex0(), getUpperIndex1()); }
 
     };  // class Element
 
+    struct PLASK_API Elements: ElementsBase<RectangularMaskedMesh2D> {
 
-    struct PLASK_API Elements: ElementsBase<RectangularFilteredMesh2D> {
+        explicit Elements(const RectangularMaskedMesh2D& mesh): ElementsBase(mesh) { mesh.ensureHasElements(); }
 
-        explicit Elements(const RectangularFilteredMesh2D& mesh): ElementsBase(mesh) { mesh.ensureHasElements(); }
-
-        Element operator()(std::size_t i0, std::size_t i1) const { return Element(*filteredMesh, Element::UNKNOWN_ELEMENT_INDEX, i0, i1); }
+        Element operator()(std::size_t i0, std::size_t i1) const { return Element(*maskedMesh, Element::UNKNOWN_ELEMENT_INDEX, i0, i1); }
 
     };  // struct Elements
+
+    /// Element mesh
+    struct PLASK_API ElementMesh: ElementMeshBase<RectangularMaskedMesh2D> {
+
+        explicit ElementMesh(const RectangularMaskedMesh2D* originalMesh): ElementMeshBase<RectangularMaskedMesh2D>(originalMesh) {}
+
+        /**
+         * Calculate this mesh index using indexes of axis0 and axis1.
+         * \param axis0_index index of axis0, from 0 to axis[0]->size()-1
+         * \param axis1_index index of axis1, from 0 to axis[1]->size()-1
+         * \return this mesh index, from 0 to size()-1, or NOT_INCLUDED
+         */
+        inline std::size_t index(std::size_t axis0_index, std::size_t axis1_index) const {
+            return originalMesh->elementSet.indexOf(fullMesh.index(axis0_index, axis1_index));
+        }
+
+
+        bool prepareInterpolation(const Vec<2>& point, Vec<2>& wrapped_point, std::size_t& index0_lo, std::size_t& index0_hi, std::size_t& index1_lo, std::size_t& index1_hi,
+                                  const InterpolationFlags& flags) const {
+            return originalMesh->prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, flags);
+        }
+
+        // Convert to recctangular masked mesh
+        operator RectangularMaskedMesh2D() const {
+            return RectangularMaskedMesh2D(fullMesh, originalMesh->elementSet);
+        }
+
+        /**
+         * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.
+         * \param data values of data in points describe by this mesh
+         * \param point point in which value should be calculate
+         * \return interpolated value in point \p point
+         */
+        template <typename RandomAccessContainer>
+        auto interpolateLinear(const RandomAccessContainer& data, const Vec<2>& point, const InterpolationFlags& flags) const
+            -> typename std::remove_reference<decltype(data[0])>::type {
+            typedef typename std::remove_reference<decltype(data[0])>::type DataT;
+            Vec<2> p;
+            size_t index0, index0_hi, index1, index1_hi;
+
+            if (!prepareInterpolation(point, p, index0, index0_hi, index1, index1_hi, flags))
+                return NaN<decltype(data[0])>();
+
+            Vec<2> pa = fullMesh.at(index0, index1);
+
+            size_t step0 = (p.c0 < pa.c0)?
+                (index0 == 0)? 0 : -1 :
+                (index0_hi == fullMesh.axis[0]->size())? 0 : 1;
+            size_t step1 = (p.c1 < pa.c1)?
+                (index1 == 0)? 0 : -1 :
+                (index1_hi == fullMesh.axis[1]->size())? 0 : 1;
+
+            size_t index_aa = index(index0, index1), index_ab, index_ba, index_bb;
+
+            typename std::remove_const<DataT>::type data_aa = data[index_aa], data_ab, data_ba, data_bb;
+
+            if (step0 == 0 && step1 == 0) {
+                index_ab = index_ba = index_bb = index_aa;
+                data_ab = data_ba = data_bb = data_aa;
+            } else {
+                index_ab = index(index0, index1+step1);
+                index_ba = index(index0+step0, index1);
+                index_bb = index(index0+step0, index1+step1);
+                data_ab = (index_ab != Element::UNKNOWN_ELEMENT_INDEX)? data[index_ab] : data_aa;
+                data_ba = (index_ba != Element::UNKNOWN_ELEMENT_INDEX)? data[index_ba] : data_aa;
+                data_bb = (index_bb != Element::UNKNOWN_ELEMENT_INDEX)? data[index_bb] : data_ab + data_ba - data_aa;
+            }
+
+            Vec<2> pb = fullMesh.at(index0+step0, index1+step1);
+            if (step0 == 0) pb.c0 += 1.; if (step1 == 0) pb.c1 += 1.;
+
+            return flags.postprocess(point,
+                interpolation::bilinear(pa.c0, pb.c0, pa.c1, pb.c1,
+                                        data_aa, data_ba, data_bb, data_ab, p.c0, p.c1));
+        }
+
+        /**
+         * Calculate (using nearest neighbor interpolation) value of data in point using data in points described by this mesh.
+         * \param data values of data in points describe by this mesh
+         * \param point point in which value should be calculate
+         * \return interpolated value in point \p point
+         */
+        template <typename RandomAccessContainer>
+        auto interpolateNearestNeighbor(const RandomAccessContainer& data, const Vec<2>& point, const InterpolationFlags& flags) const
+            -> typename std::remove_reference<decltype(data[0])>::type {
+            Vec<2> wrapped_point;
+            std::size_t index0_lo, index0_hi, index1_lo, index1_hi;
+
+            if (!originalMesh->prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, flags))
+                return NaN<decltype(data[0])>();
+
+            return flags.postprocess(point, data[this->index(index0_lo, index1_lo)]);
+        }
+
+    };  // struct ElementMesh
 
     /**
      * Construct empty/unitialized mesh. One should call reset() method before using this.
      */
-    RectangularFilteredMesh2D() = default;
+    RectangularMaskedMesh2D() = default;
 
     /**
      * Change a selection of elements used to once pointed by a given @p predicate.
@@ -154,33 +248,33 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
     void reset(const Predicate& predicate);
 
     /**
-     * Construct filtered mesh with elements of @p rectangularMesh chosen by a @p predicate.
+     * Construct masked mesh with elements of @p rectangularMesh chosen by a @p predicate.
      * Preserve order of elements and nodes of @p rectangularMesh.
-     * @param rectangularMesh input mesh, before filtering
+     * @param rectangularMesh input mesh, before masking
      * @param predicate predicate which returns either @c true for accepting element or @c false for rejecting it
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared with @p rectangularMesh (if @c false; default)
      */
-    RectangularFilteredMesh2D(const RectangularMesh<2>& fullMesh, const Predicate& predicate, bool clone_axes = false);
+    RectangularMaskedMesh2D(const RectangularMesh<2>& fullMesh, const Predicate& predicate, bool clone_axes = false);
 
     /**
      * Change parameters of this mesh to use elements of @p rectangularMesh chosen by a @p predicate.
      * Preserve order of elements and nodes of @p rectangularMesh.
-     * @param rectangularMesh input mesh, before filtering
+     * @param rectangularMesh input mesh, before masking
      * @param predicate predicate which returns either @c true for accepting element or @c false for rejecting it
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared with @p rectangularMesh (if @c false; default)
      */
     void reset(const RectangularMesh<2>& fullMesh, const Predicate& predicate, bool clone_axes = false);
 
     /**
-     * Construct filtered mesh with all elements of @c rectangularMesh which have required materials in the midpoints.
+     * Construct masked mesh with all elements of @c rectangularMesh which have required materials in the midpoints.
      * Preserve order of elements and nodes of @p rectangularMesh.
-     * @param rectangularMesh input mesh, before filtering
+     * @param rectangularMesh input mesh, before masking
      * @param geom geometry to get materials from
      * @param materialPredicate predicate which returns either @c true for accepting material or @c false for rejecting it
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
      */
-    RectangularFilteredMesh2D(const RectangularMesh<2>& rectangularMesh, const GeometryD<2>& geom, const std::function<bool(shared_ptr<const Material>)> materialPredicate, bool clone_axes = false)
-        : RectangularFilteredMesh2D(rectangularMesh,
+    RectangularMaskedMesh2D(const RectangularMesh<2>& rectangularMesh, const GeometryD<2>& geom, const std::function<bool(shared_ptr<const Material>)> materialPredicate, bool clone_axes = false)
+        : RectangularMaskedMesh2D(rectangularMesh,
                                     [&](const RectangularMesh2D::Element& el) { return materialPredicate(geom.getMaterial(el.getMidpoint())); },
                                     clone_axes)
     {
@@ -189,7 +283,7 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
     /**
      * Change parameters of this mesh to use all elements of @c rectangularMesh which have required materials in the midpoints.
      * Preserve order of elements and nodes of @p rectangularMesh.
-     * @param rectangularMesh input mesh, before filtering
+     * @param rectangularMesh input mesh, before masking
      * @param geom geometry to get materials from
      * @param materialPredicate predicate which returns either @c true for accepting material or @c false for rejecting it
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
@@ -201,17 +295,17 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
     }
 
     /**
-     * Construct filtered mesh with all elements of @c rectangularMesh which have required kinds of materials (in the midpoints).
+     * Construct masked mesh with all elements of @c rectangularMesh which have required kinds of materials (in the midpoints).
      * Preserve order of elements and nodes of @p rectangularMesh.
-     * @param rectangularMesh input mesh, before filtering
+     * @param rectangularMesh input mesh, before masking
      * @param geom geometry to get materials from
      * @param materialKinds one or more kinds of material encoded with bit @c or operation,
      *        e.g. @c DIELECTRIC|METAL for selecting all dielectrics and metals,
      *        or @c ~(DIELECTRIC|METAL) for selecting everything else
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
      */
-    RectangularFilteredMesh2D(const RectangularMesh<2>& rectangularMesh, const GeometryD<2>& geom, unsigned int materialKinds, bool clone_axes = false)
-        : RectangularFilteredMesh2D(rectangularMesh,
+    RectangularMaskedMesh2D(const RectangularMesh<2>& rectangularMesh, const GeometryD<2>& geom, unsigned int materialKinds, bool clone_axes = false)
+        : RectangularMaskedMesh2D(rectangularMesh,
                                     [&](const RectangularMesh2D::Element& el) { return (geom.getMaterial(el.getMidpoint())->kind() & materialKinds) != 0; },
                                     clone_axes)
     {
@@ -220,7 +314,7 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
     /**
      * Change parameters of this mesh to use all elements of @c rectangularMesh which have required kinds of materials (in the midpoints).
      * Preserve order of elements and nodes of @p rectangularMesh.
-     * @param rectangularMesh input mesh, before filtering
+     * @param rectangularMesh input mesh, before masking
      * @param geom geometry to get materials from
      * @param materialKinds one or more kinds of material encoded with bit @c or operation,
      *        e.g. @c DIELECTRIC|METAL for selecting all dielectrics and metals,
@@ -239,10 +333,10 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
      * Set of elements are calculated on-demand, just before the first use, according to the rule:
      * An element is selected if and only if all its vertices are included in the @p nodeSet.
      *
-     * This constructor is used by getMidpointsMesh.
+     * This constructor is used by getElementMesh.
      */
-    RectangularFilteredMesh2D(const RectangularMesh<DIM>& rectangularMesh, Set nodeSet, bool clone_axes = false)
-        : RectangularFilteredMeshBase(rectangularMesh, std::move(nodeSet), clone_axes) {}
+    RectangularMaskedMesh2D(const RectangularMesh<DIM>& rectangularMesh, Set nodeSet, bool clone_axes = false)
+        : RectangularMaskedMeshBase(rectangularMesh, std::move(nodeSet), clone_axes) {}
 
     Elements elements() const { return Elements(*this); }
     Elements getElements() const { return elements(); }
@@ -253,7 +347,7 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
     /**
      * Get an element with a given index @p i.
      * @param i index of the element
-     * @return the element
+     * @return the element0.
      */
     Element element(std::size_t i) const { ensureHasElements(); return Element(*this, i); }
 
@@ -274,8 +368,8 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
         return nodeSet.indexOf(fullMesh.index(axis0_index, axis1_index));
     }
 
-    using RectangularFilteredMeshBase<2>::index;
-    using RectangularFilteredMeshBase<2>::at;
+    using RectangularMaskedMeshBase<2>::index;
+    using RectangularMaskedMeshBase<2>::at;
 
     /**
      * Get point with given mesh indices.
@@ -299,17 +393,15 @@ struct PLASK_API RectangularFilteredMesh2D: public RectangularFilteredMeshBase<2
 
     /**
      * Return a mesh that enables iterating over middle points of the selected rectangles.
-     * @param clone_axes whether axes of *this should be cloned (if true) or shared (if false; default) with the mesh returned
-     * @return new rectilinear filtered mesh with points in the middles of original, selected rectangles
+     * @return new rectilinear masked mesh with points in the middles of original, selected rectangles
      */
-    shared_ptr<RectangularFilteredMesh2D> getMidpointsMesh(bool clone_axes = false) const {
-        return plask::make_shared<RectangularFilteredMesh2D>(*fullMesh.getMidpointsMesh(), ensureHasElements(), clone_axes);
-        // elementSet is passed as a second argument since nodes of midpoints mesh coresponds to elements of oryginal mesh
+    shared_ptr<RectangularMaskedMesh2D::ElementMesh> getElementMesh() const {
+        return make_shared<RectangularMaskedMesh2D::ElementMesh>(this);
     }
 
-private:
+  private:
 
-    void initNodesAndElements(const RectangularFilteredMesh2D::Predicate &predicate);
+    void initNodesAndElements(const RectangularMaskedMesh2D::Predicate &predicate);
 
     bool canBeIncluded(const Vec<2>& point) const {
         return
@@ -317,9 +409,20 @@ private:
             fullMesh.axis[1]->at(0) - point[1] < MIN_DISTANCE && point[1] - fullMesh.axis[1]->at(fullMesh.axis[1]->size()-1) < MIN_DISTANCE;
     }
 
-    bool prepareInterpolation(const Vec<2>& point, Vec<2>& wrapped_point, std::size_t& index0_lo, std::size_t& index0_hi, std::size_t& index1_lo, std::size_t& index1_hi, std::size_t& rectmesh_index_lo, const InterpolationFlags& flags) const;
+  public:
+    /** Prepare point for inteprolation
+     * \param point point to check
+     * \param[out] wrapped_point point after wrapping with interpolation flags
+     * \param[out] index0_lo,index0_hi surrounding indices in the rectantular mesh for axis0
+     * \param[out] index1_lo,index1_hi surrounding indices in the rectantular mesh for axis1
+     * \param flags interpolation flags
+     * \returns \c false if the point falls in the hole or outside of the mesh, \c true if it can be interpolated
+     */
+    bool prepareInterpolation(const Vec<2>& point, Vec<2>& wrapped_point,
+                              std::size_t& index0_lo, std::size_t& index0_hi,
+                              std::size_t& index1_lo, std::size_t& index1_hi,
+                              const InterpolationFlags& flags) const;
 
-public:
     /**
      * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.
      * @param data values of data in points describe by this mesh
@@ -331,16 +434,16 @@ public:
         -> typename std::remove_reference<decltype(data[0])>::type
     {
         Vec<2> wrapped_point;
-        std::size_t index0_lo, index0_hi, index1_lo, index1_hi, rectmesh_index_lo;
+        std::size_t index0_lo, index0_hi, index1_lo, index1_hi;
 
-        if (!prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, rectmesh_index_lo, flags))
-            return NaNfor<decltype(data[0])>();
+        if (!prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, flags))
+            return NaN<decltype(data[0])>();
 
         return flags.postprocess(point,
                                  interpolation::bilinear(
                                      fullMesh.axis[0]->at(index0_lo), fullMesh.axis[0]->at(index0_hi),
                                      fullMesh.axis[1]->at(index1_lo), fullMesh.axis[1]->at(index1_hi),
-                                     data[nodeSet.indexOf(rectmesh_index_lo)],
+                                     data[index(index0_lo, index1_lo)],
                                      data[index(index0_hi, index1_lo)],
                                      data[index(index0_hi, index1_hi)],
                                      data[index(index0_lo, index1_hi)],
@@ -358,10 +461,10 @@ public:
         -> typename std::remove_reference<decltype(data[0])>::type
     {
         Vec<2> wrapped_point;
-        std::size_t index0_lo, index0_hi, index1_lo, index1_hi, rectmesh_index_lo;
+        std::size_t index0_lo, index0_hi, index1_lo, index1_hi;
 
-        if (!prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, rectmesh_index_lo, flags))
-            return NaNfor<decltype(data[0])>();
+        if (!prepareInterpolation(point, wrapped_point, index0_lo, index0_hi, index1_lo, index1_hi, flags))
+            return NaN<decltype(data[0])>();
 
         return flags.postprocess(point,
                                  data[this->index(
@@ -407,13 +510,13 @@ public:
         return fullMesh.getElementBox(index0, index1);
     }
 
-protected:  // boundaries code:
+  protected:  // boundaries code:
 
     // Common code for: left, right, bottom, top boundries:
     template <int CHANGE_DIR>
     struct BoundaryIteratorImpl: public plask::BoundaryNodeSetImpl::IteratorImpl {
 
-        const RectangularFilteredMeshBase<2> &mesh;
+        const RectangularMaskedMeshBase<2> &mesh;
 
         /// current indexes
         Vec<2, std::size_t> index;
@@ -421,7 +524,7 @@ protected:  // boundaries code:
         /// past the last index of change direction
         std::size_t endIndex;
 
-        BoundaryIteratorImpl(const RectangularFilteredMeshBase<2>& mesh, Vec<2, std::size_t> index, std::size_t endIndex)
+        BoundaryIteratorImpl(const RectangularMaskedMeshBase<2>& mesh, Vec<2, std::size_t> index, std::size_t endIndex)
             : mesh(mesh), index(index), endIndex(endIndex)
         {
             // go to the first index existed in order to make dereference possible:
@@ -443,16 +546,16 @@ protected:  // boundaries code:
             return mesh.index(index);
         }
 
-        typename plask::BoundaryNodeSetImpl::IteratorImpl* clone() const override {
+        plask::BoundaryNodeSetImpl::IteratorImpl* clone() const override {
             return new BoundaryIteratorImpl<CHANGE_DIR>(*this);
         }
 
     };
 
     template <int CHANGE_DIR>
-    struct BoundaryNodeSetImpl: public BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<2>> {
+    struct BoundaryNodeSetImpl: public BoundaryNodeSetWithMeshImpl<RectangularMaskedMeshBase<2>> {
 
-        using typename BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<2>>::const_iterator;
+        using typename BoundaryNodeSetWithMeshImpl<RectangularMaskedMeshBase<2>>::const_iterator;
 
         /// first index
         Vec<2, std::size_t> index;
@@ -460,11 +563,11 @@ protected:  // boundaries code:
         /// past the last index of change direction
         std::size_t endIndex;
 
-        BoundaryNodeSetImpl(const RectangularFilteredMeshBase<2>& mesh, Vec<2, std::size_t> index, std::size_t endIndex)
-            : BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<2>>(mesh), index(index), endIndex(endIndex) {}
+        BoundaryNodeSetImpl(const RectangularMaskedMeshBase<2>& mesh, Vec<2, std::size_t> index, std::size_t endIndex)
+            : BoundaryNodeSetWithMeshImpl<RectangularMaskedMeshBase<2>>(mesh), index(index), endIndex(endIndex) {}
 
-        BoundaryNodeSetImpl(const RectangularFilteredMeshBase<2>& mesh, std::size_t index0, std::size_t index1, std::size_t endIndex)
-            : BoundaryNodeSetWithMeshImpl<RectangularFilteredMeshBase<2>>(mesh), index(index0, index1), endIndex(endIndex) {}
+        BoundaryNodeSetImpl(const RectangularMaskedMeshBase<2>& mesh, std::size_t index0, std::size_t index1, std::size_t endIndex)
+            : BoundaryNodeSetWithMeshImpl<RectangularMaskedMeshBase<2>>(mesh), index(index0, index1), endIndex(endIndex) {}
 
         bool contains(std::size_t mesh_index) const override {
             if (mesh_index >= this->mesh.size()) return false;
@@ -488,7 +591,7 @@ protected:  // boundaries code:
         }
     };
 
-public:     // boundaries:
+  public:     // boundaries:
 
     BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const override;
 
@@ -525,23 +628,42 @@ public:     // boundaries:
 };
 
 template <typename SrcT, typename DstT>
-struct InterpolationAlgorithm<RectangularFilteredMesh2D, SrcT, DstT, INTERPOLATION_LINEAR> {
-    static LazyData<DstT> interpolate(const shared_ptr<const RectangularFilteredMesh2D>& src_mesh, const DataVector<const SrcT>& src_vec,
+struct InterpolationAlgorithm<RectangularMaskedMesh2D, SrcT, DstT, INTERPOLATION_LINEAR> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMaskedMesh2D>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<2>>& dst_mesh, const InterpolationFlags& flags) {
         if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
-        return new LinearInterpolatedLazyDataImpl< DstT, RectangularFilteredMesh2D, SrcT >(src_mesh, src_vec, dst_mesh, flags);
+        return new LinearInterpolatedLazyDataImpl<DstT, RectangularMaskedMesh2D, SrcT>(src_mesh, src_vec, dst_mesh, flags);
     }
 };
 
 template <typename SrcT, typename DstT>
-struct InterpolationAlgorithm<RectangularFilteredMesh2D, SrcT, DstT, INTERPOLATION_NEAREST> {
-    static LazyData<DstT> interpolate(const shared_ptr<const RectangularFilteredMesh2D>& src_mesh, const DataVector<const SrcT>& src_vec,
+struct InterpolationAlgorithm<RectangularMaskedMesh2D, SrcT, DstT, INTERPOLATION_NEAREST> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMaskedMesh2D>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<2>>& dst_mesh, const InterpolationFlags& flags) {
         if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
-        return new NearestNeighborInterpolatedLazyDataImpl< DstT, RectangularFilteredMesh2D, SrcT >(src_mesh, src_vec, dst_mesh, flags);
+        return new NearestNeighborInterpolatedLazyDataImpl<DstT, RectangularMaskedMesh2D, SrcT>(src_mesh, src_vec, dst_mesh, flags);
+    }
+};
+
+
+template <typename SrcT, typename DstT>
+struct InterpolationAlgorithm<RectangularMaskedMesh2D::ElementMesh, SrcT, DstT, INTERPOLATION_LINEAR> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMaskedMesh2D::ElementMesh>& src_mesh, const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<2>>& dst_mesh, const InterpolationFlags& flags) {
+        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        return new LinearInterpolatedLazyDataImpl<DstT, RectangularMaskedMesh2D::ElementMesh, SrcT>(src_mesh, src_vec, dst_mesh, flags);
+    }
+};
+
+template <typename SrcT, typename DstT>
+struct InterpolationAlgorithm<RectangularMaskedMesh2D::ElementMesh, SrcT, DstT, INTERPOLATION_NEAREST> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMaskedMesh2D::ElementMesh>& src_mesh, const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<2>>& dst_mesh, const InterpolationFlags& flags) {
+        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        return new NearestNeighborInterpolatedLazyDataImpl<DstT, RectangularMaskedMesh2D::ElementMesh, SrcT>(src_mesh, src_vec, dst_mesh, flags);
     }
 };
 
 }   // namespace plask
 
-#endif // PLASK__RECTANGULAR_FILTERED2D_H
+#endif // PLASK__RECTANGULAR_MASKED2D_H

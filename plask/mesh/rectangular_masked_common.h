@@ -1,5 +1,5 @@
-#ifndef PLASK__RECTANGULAR_FILTERED_COMMON_H
-#define PLASK__RECTANGULAR_FILTERED_COMMON_H
+#ifndef PLASK__RECTANGULAR_MASKED_COMMON_H
+#define PLASK__RECTANGULAR_MASKED_COMMON_H
 
 #include <functional>
 
@@ -12,20 +12,22 @@
 namespace plask {
 
 /**
- * Common base class for RectangularFilteredMesh 2D and 3D.
+ * Common base class for RectangularMaskedMesh 2D and 3D.
  *
  * Do not use directly.
  */
 template <int DIM>
-struct RectangularFilteredMeshBase: public RectangularMeshBase<DIM> {
+struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
 
     /// Maximum distance from boundary to include in the inerpolation
-    constexpr static double MIN_DISTANCE = 1e-6; // 1 picometer
+    constexpr static double MIN_DISTANCE = 1e-9; // 1 femtometer
 
     /// Full, rectangular, wrapped mesh.
     RectangularMesh<DIM> fullMesh;
 
-protected:
+    using typename MeshD<DIM>::LocalCoords;
+
+  protected:
 
     //typedef CompressedSetOfNumbers<std::uint32_t> Set;
     typedef CompressedSetOfNumbers<std::size_t> Set;
@@ -67,10 +69,10 @@ protected:
     /**
      * Base class for Elements with common code for 2D and 3D.
      */
-    template <typename FilteredMeshType>
+    template <typename MaskedMeshType>
     struct ElementsBase {
 
-        using Element = typename FilteredMeshType::Element;
+        using Element = typename MaskedMeshType::Element;
 
         /**
          * Iterator over elements.
@@ -81,10 +83,10 @@ protected:
          */
         class const_iterator: public Set::ConstIteratorFacade<const_iterator, Element> {
 
-            const FilteredMeshType* filteredMesh;
+            const MaskedMeshType* maskedMesh;
 
             Element dereference() const {
-                return Element(*filteredMesh, this->getIndex(), this->getNumber());
+                return Element(*maskedMesh, this->getIndex(), this->getNumber());
             }
 
             friend class boost::iterator_core_access;
@@ -92,39 +94,98 @@ protected:
         public:
 
             template <typename... CtorArgs>
-            explicit const_iterator(const FilteredMeshType& filteredMesh, CtorArgs&&... ctorArgs)
-                : Set::ConstIteratorFacade<const_iterator, Element>(std::forward<CtorArgs>(ctorArgs)...), filteredMesh(&filteredMesh) {}
+            explicit const_iterator(const MaskedMeshType& maskedMesh, CtorArgs&&... ctorArgs)
+                : Set::ConstIteratorFacade<const_iterator, Element>(std::forward<CtorArgs>(ctorArgs)...), maskedMesh(&maskedMesh) {}
 
-            const Set& set() const { return filteredMesh->elementSet; }
+            const Set& set() const { return maskedMesh->elementSet; }
         };
 
         /// Iterator over elments. The same as const_iterator, since non-const iterators are not supported.
         typedef const_iterator iterator;
 
-        const FilteredMeshType* filteredMesh;
+        const MaskedMeshType* maskedMesh;
 
-        explicit ElementsBase(const FilteredMeshType& filteredMesh): filteredMesh(&filteredMesh) {}
+        explicit ElementsBase(const MaskedMeshType& maskedMesh): maskedMesh(&maskedMesh) {}
 
         /**
          * Get number of elements.
          * @return number of elements
          */
-        std::size_t size() const { return filteredMesh->getElementsCount(); }
+        std::size_t size() const { return maskedMesh->getElementsCount(); }
 
         /// @return iterator referring to the first element
-        const_iterator begin() const { return const_iterator(*filteredMesh, 0, filteredMesh->elementSet.segments.begin()); }
+        const_iterator begin() const { return const_iterator(*maskedMesh, 0, maskedMesh->elementSet.segments.begin()); }
 
         /// @return iterator referring to the past-the-end element
-        const_iterator end() const { return const_iterator(*filteredMesh, size(), filteredMesh->elementSet.segments.end()); }
+        const_iterator end() const { return const_iterator(*maskedMesh, size(), maskedMesh->elementSet.segments.end()); }
 
         /**
          * Get @p i-th element.
          * @param i element index
          * @return @p i-th element
          */
-        Element operator[](std::size_t i) const { return Element(*filteredMesh, i); }
+        Element operator[](std::size_t i) const { return Element(*maskedMesh, i); }
 
     };  // struct Elements
+
+    /**
+     * Base class for element meshes with common code for 2D and 3D.
+     */
+    template <typename MaskedMeshType>
+    struct ElementMeshBase: MeshD<DIM> {
+
+        using Element = typename MaskedMeshType::Element;
+
+        /// Iterator over elements.
+        class const_iterator: public Set::ConstIteratorFacade<const_iterator, LocalCoords> {
+
+            const MaskedMeshType* originalMesh;
+
+            LocalCoords dereference() const {
+                return Element(*originalMesh, this->getIndex(), this->getNumber()).getMidpoint();
+            }
+
+            friend class boost::iterator_core_access;
+
+        public:
+
+            template <typename... CtorArgs>
+            explicit const_iterator(const MaskedMeshType& originalMesh, CtorArgs&&... ctorArgs)
+                : Set::ConstIteratorFacade<const_iterator, LocalCoords>(std::forward<CtorArgs>(ctorArgs)...), originalMesh(&originalMesh) {}
+
+            const Set& set() const { return originalMesh->elementSet; }
+        };
+
+        /// Iterator over elments. The same as const_iterator, since non-const iterators are not supported.
+        typedef const_iterator iterator;
+
+        /// @return iterator referring to the first element
+        const_iterator begin() const { return const_iterator(*originalMesh, 0, originalMesh->elementSet.segments.begin()); }
+
+        /// @return iterator referring to the past-the-end element
+        const_iterator end() const { return const_iterator(*originalMesh, size(), originalMesh->elementSet.segments.end()); }
+
+        const MaskedMeshType* originalMesh;
+        RectangularMesh<DIM> fullMesh;
+
+        explicit ElementMeshBase(const MaskedMeshType* originalMesh):
+            originalMesh(originalMesh), fullMesh(*originalMesh->fullMesh.getElementMesh()) {}
+
+        explicit ElementMeshBase(const MaskedMeshType& originalMesh): ElementMeshBase(&originalMesh) {}
+
+        /**
+         * Get number of elements.
+         * @return number of elements
+         */
+        std::size_t size() const override { return originalMesh->getElementsCount(); }
+
+        LocalCoords at(std::size_t index) const override {
+            return fullMesh.at(originalMesh->elementSet.at(index));
+        }
+
+        bool empty() const override { return originalMesh->elementSet.empty(); }
+
+    };  // ElementMeshBase
 
     void resetBoundyIndex() {
         for (int d = 0; d < DIM; ++d) { // prepare for finding indexes by subclass constructor:
@@ -140,18 +201,16 @@ protected:
         resetBoundyIndex();
     }
 
-public:
-
-    using typename MeshD<DIM>::LocalCoords;
+  public:
 
     /// Returned by some methods to signalize that element or node (with given index(es)) is not included in the mesh.
     enum:std::size_t { NOT_INCLUDED = Set::NOT_INCLUDED };
 
     /// Construct an empty mesh. One should use reset() method before using it.
-    RectangularFilteredMeshBase() = default;
+    RectangularMaskedMeshBase() = default;
 
     /// Constructor which allows us to construct midpoints mesh.
-    RectangularFilteredMeshBase(const RectangularMesh<DIM>& rectangularMesh, Set nodeSet, bool clone_axes = false)
+    RectangularMaskedMeshBase(const RectangularMesh<DIM>& rectangularMesh, Set nodeSet, bool clone_axes = false)
         : fullMesh(rectangularMesh, clone_axes), nodeSet(std::move(nodeSet)), elementSetInitialized(false) {}
 
     /**
@@ -159,13 +218,13 @@ public:
      * @param rectangularMesh mesh to wrap (it is copied by the constructor)
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if true) or shared (if false; default)
      */
-    RectangularFilteredMeshBase(const RectangularMesh<DIM>& rectangularMesh, bool clone_axes = false)
+    RectangularMaskedMeshBase(const RectangularMesh<DIM>& rectangularMesh, bool clone_axes = false)
         : fullMesh(rectangularMesh, clone_axes) { resetBoundyIndex(); }
 
     /**
-     * Iterator over nodes coordinates. It implements const_iterator for filtered meshes.
+     * Iterator over nodes coordinates. It implements const_iterator for masked meshes.
      *
-     * Iterator of this type is faster than IndexedIterator used by parent class of filtered meshes,
+     * Iterator of this type is faster than IndexedIterator used by parent class of masked meshes,
      * as it has constant time dereference operation while <code>at</code> method has logarithmic time complexity.
      *
      * One can use:
@@ -176,7 +235,7 @@ public:
 
         friend class boost::iterator_core_access;
 
-        const RectangularFilteredMeshBase* mesh;
+        const RectangularMaskedMeshBase* mesh;
 
         LocalCoords dereference() const {
             return mesh->fullMesh.at(this->getNumber());
@@ -185,7 +244,7 @@ public:
     public:
 
         template <typename... CtorArgs>
-        explicit const_iterator(const RectangularFilteredMeshBase& mesh, CtorArgs&&... ctorArgs)
+        explicit const_iterator(const RectangularMaskedMeshBase& mesh, CtorArgs&&... ctorArgs)
             : CompressedSetOfNumbers<std::size_t>::ConstIteratorFacade<const_iterator, LocalCoords>(std::forward<CtorArgs>(ctorArgs)...), mesh(&mesh) {}
 
         const CompressedSetOfNumbers<std::size_t>& set() const { return mesh->nodeSet; }
@@ -356,7 +415,7 @@ public:
         return fullMesh.getElementBox(ensureHasElements().at(element_index));
     }
 
-protected:    // constructing elementSet from nodes set (element is chosen when all its vertices are chosen) on-deamand
+  protected:    // constructing elementSet from nodes set (element is chosen when all its vertices are chosen) on-deamand
 
     /// Only one thread can calculate elementSet
     DontCopyThisField<boost::mutex> writeElementSet;
@@ -364,7 +423,7 @@ protected:    // constructing elementSet from nodes set (element is chosen when 
     /// Whether elementSet is initialized (default for most contructors)
     bool elementSetInitialized = true;
 
-private:
+  private:
     bool restVerticesIncluded(const RectangularMesh2D::Element& el) const {
         return /*nodeSet.includes(el.getLoLoIndex()) &&*/
                nodeSet.includes(el.getUpLoIndex()) &&
@@ -395,15 +454,16 @@ private:
         elementSetInitialized = true;
     }
 
-protected:
+  protected:
     /// Ensure that elementSet is calculated (calculate it if it is not)
     const Set& ensureHasElements() const {
-        if (!elementSetInitialized) const_cast<RectangularFilteredMeshBase<DIM>*>(this)->calculateElements();
+        if (!elementSetInitialized) const_cast<RectangularMaskedMeshBase<DIM>*>(this)->calculateElements();
         return elementSet;
     }
 
 };
 
+
 }   // namespace plask
 
-#endif // PLASK__RECTANGULAR_FILTERED_COMMON_H
+#endif // PLASK__RECTANGULAR_MASKED_COMMON_H

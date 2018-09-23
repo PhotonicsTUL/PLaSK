@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(middle2) {
     axis0->addPointsLinear(0., 4.0, 3);
     axis1->addPointsLinear(2., 6.0, 3);
 
-    auto middles = mesh.getMidpointsMesh();
+    auto middles = mesh.getElementMesh();
     BOOST_CHECK_EQUAL(*middles->axis[0], plask::OrderedAxis({1., 3.}));
     BOOST_CHECK_EQUAL(*middles->axis[1], plask::OrderedAxis({3., 5.}));
 }

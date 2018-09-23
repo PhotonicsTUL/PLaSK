@@ -115,7 +115,7 @@ void FiniteElementMethodDynamicThermal3DSolver::setMatrix(MatrixT& A, MatrixT& B
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
 
-    auto heats = inHeat(mesh->getMidpointsMesh()/*, INTERPOLATION_NEAREST*/);
+    auto heats = inHeat(mesh->getElementMesh()/*, INTERPOLATION_NEAREST*/);
 
     // zero the matrices A, B and the load vector F
     std::fill_n(A.data, A.size*(A.ld+1), 0.);
@@ -422,7 +422,7 @@ const LazyData<Vec<3>> FiniteElementMethodDynamicThermal3DSolver::getHeatFluxes(
     if (!temperatures) return LazyData<Vec<3>>(dst_mesh->size(), Vec<3>(0.,0.,0.)); // in case the receiver is connected and no fluxes calculated yet
     if (!mHeatFluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh->getMidpointsMesh(), mHeatFluxes, dst_mesh, method, 
+    return interpolate(this->mesh->getElementMesh(), mHeatFluxes, dst_mesh, method, 
                        InterpolationFlags(geometry, InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP, InterpolationFlags::Symmetry::PPN));
 }
 
@@ -431,7 +431,7 @@ FiniteElementMethodDynamicThermal3DSolver::
 ThermalConductivityData::ThermalConductivityData(const FiniteElementMethodDynamicThermal3DSolver* solver, const shared_ptr<const MeshD<3>>& dst_mesh):
     solver(solver), dest_mesh(dst_mesh), flags(solver->geometry)
 {
-    if (solver->temperatures) temps = interpolate(solver->mesh, solver->temperatures, solver->mesh->getMidpointsMesh(), INTERPOLATION_LINEAR);
+    if (solver->temperatures) temps = interpolate(solver->mesh, solver->temperatures, solver->mesh->getElementMesh(), INTERPOLATION_LINEAR);
     else temps = LazyData<double>(solver->mesh->getElementsCount(), solver->inittemp);
 }
 Tensor2<double> FiniteElementMethodDynamicThermal3DSolver::ThermalConductivityData::at(std::size_t i) const {

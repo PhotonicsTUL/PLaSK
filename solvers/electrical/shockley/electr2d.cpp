@@ -9,6 +9,7 @@ FiniteElementMethodElectrical2DSolver<Geometry2DType>::FiniteElementMethodElectr
     ncond(50.),
     loopno(0),
     default_junction_conductivity(5.),
+    use_full_mesh(false),
     maxerr(0.05),
     heatmet(HEAT_JOULES),
     outVoltage(this, &FiniteElementMethodElectrical2DSolver<Geometry2DType>::getVoltage),
@@ -94,8 +95,12 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConfiguration(XM
             source.requireTagEnd();
         }
 
-        else
+        else {
+            if (param == "mesh") {
+                use_full_mesh = source.getAttribute<bool>("include-empty", use_full_mesh);
+            }
             this->parseStandardConfiguration(source, manager);
+        }
     }
 }
 
@@ -107,6 +112,8 @@ FiniteElementMethodElectrical2DSolver<Geometry2DType>::~FiniteElementMethodElect
 template<typename Geometry2DType>
 void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
 {
+    this->invalidate();
+
     if (!this->geometry || !this->mesh) {
         if (junction_conductivity.size() != 1) {
             double condy = 0.;
@@ -116,7 +123,9 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
         return;
     }
 
-    shared_ptr<RectangularMesh<2>> points = this->mesh->getMidpointsMesh();
+    maskedMesh->reset(*this->mesh, *this->geometry, ~(use_full_mesh? 0 : plask::Material::EMPTY));
+
+    auto points = this->maskedMesh->fullMesh.getElementMesh();
 
     std::vector<typename Active::Region> regions;
 
@@ -184,10 +193,10 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::onInitialize()
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
     loopno = 0;
-    size = this->mesh->size();
+    size = this->maskedMesh->size();
     potentials.reset(size, 0.);
-    currents.reset(this->mesh->getElementsCount(), vec(0.,0.));
-    conds.reset(this->mesh->getElementsCount());
+    currents.reset(this->maskedMesh->getElementsCount(), vec(0.,0.));
+    conds.reset(this->maskedMesh->getElementsCount());
     if (junction_conductivity.size() == 1) {
         size_t condsize = 0;
         for (const auto& act: active) condsize += act.right - act.left;
@@ -293,15 +302,15 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A
 
     // Update junction conductivities
     if (loopno != 0) {
-        for (auto e: this->mesh->elements()) {
+        for (auto e: this->maskedMesh->elements()) {
             if (size_t nact = isActive(e)) {
                 size_t i = e.getIndex();
-                size_t left = this->mesh->index0(e.getLoLoIndex());
-                size_t right = this->mesh->index0(e.getUpLoIndex());
+                size_t left = this->maskedMesh->index0(e.getLoLoIndex());
+                size_t right = this->maskedMesh->index0(e.getUpLoIndex());
                 const Active& act = active[nact-1];
                 double jy = 0.5e6 * conds[i].c11 *
-                    abs( - potentials[this->mesh->index(left, act.bottom)] - potentials[this->mesh->index(right, act.bottom)]
-                         + potentials[this->mesh->index(left, act.top)] + potentials[this->mesh->index(right, act.top)]
+                    abs( - potentials[this->maskedMesh->index(left, act.bottom)] - potentials[this->maskedMesh->index(right, act.bottom)]
+                         + potentials[this->maskedMesh->index(left, act.top)] + potentials[this->maskedMesh->index(right, act.top)]
                     ) / act.height; // [j] = A/m²
                 conds[i] = Tensor2<double>(0., 1e-6 * getBeta(nact-1) * jy * act.height / log(jy / getJs(nact-1) + 1.));
                 if (isnan(conds[i].c11) || abs(conds[i].c11) < 1e-16) conds[i].c11 = 1e-16;
@@ -313,7 +322,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A
     B.fill(0.);
 
     // Set stiffness matrix and load vector
-    for (auto e: this->mesh->elements()) {
+    for (auto e: this->maskedMesh->elements()) {
 
         size_t i = e.getIndex();
 
@@ -376,10 +385,10 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setMatrix(MatrixT& A
 template<typename Geometry2DType>
 void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConductivities()
 {
-    auto midmesh = (this->mesh)->getMidpointsMesh();
+    auto midmesh = this->maskedMesh->getElementMesh();
     auto temperature = inTemperature(midmesh);
 
-    for (auto e: this->mesh->elements())
+    for (auto e: this->maskedMesh->elements())
     {
         size_t i = e.getIndex();
         Vec<2,double> midpoint = e.getMidpoint();
@@ -404,7 +413,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveConductivities()
     for (size_t n = 0; n < active.size(); ++n) {
         const auto& act = active[n];
         for (size_t i = act.left, r = (act.top + act.bottom)/2; i != act.right; ++i)
-            junction_conductivity[act.offset + i] = conds[this->mesh->element(i,r).getIndex()].c11;
+            junction_conductivity[act.offset + i] = conds[this->maskedMesh->element(i,r).getIndex()].c11;
     }
 }
 
@@ -428,7 +437,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
     heats.reset();
 
     // Store boundary conditions for current mesh
-    auto vconst = voltage_boundary(this->mesh, this->geometry);
+    auto vconst = voltage_boundary(this->maskedMesh, this->geometry);
 
     this->writelog(LOG_INFO, "Running electrical calculations");
 
@@ -457,7 +466,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DType>::doCompute(unsigned
 
         err = 0.;
         double mcur = 0.;
-        for (auto el: this->mesh->elements()) {
+        for (auto el: this->maskedMesh->elements()) {
             size_t i = el.getIndex();
             size_t loleftno = el.getLoLoIndex();
             size_t lorghtno = el.getUpLoIndex();
@@ -570,10 +579,10 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveHeatDensities()
 {
     this->writelog(LOG_DETAIL, "Computing heat densities");
 
-    heats.reset(this->mesh->getElementsCount());
+    heats.reset(this->maskedMesh->getElementsCount());
 
     if (heatmet == HEAT_JOULES) {
-        for (auto e: this->mesh->elements()) {
+        for (auto e: this->maskedMesh->elements()) {
             size_t i = e.getIndex();
             size_t loleftno = e.getLoLoIndex();
             size_t lorghtno = e.getUpLoIndex();
@@ -591,7 +600,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::saveHeatDensities()
             }
         }
     } else {
-        for (auto e: this->mesh->elements()) {
+        for (auto e: this->maskedMesh->elements()) {
             size_t i = e.getIndex();
             size_t loleftno = e.getLoLoIndex();
             size_t lorghtno = e.getUpLoIndex();
@@ -622,9 +631,12 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::in
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis[0]->size()-1; ++i) {
-        auto element = mesh->element(i, vindex);
-        if (!onlyactive || isActive(element.getMidpoint()))
-            result += currents[element.getIndex()].c1 * element.getSize0();
+        auto element = maskedMesh->element(i, vindex);
+        if (!onlyactive || isActive(element.getMidpoint())) {
+            size_t index = element.getIndex();
+            if (index != RectangularMaskedMesh2D::Element::UNKNOWN_ELEMENT_INDEX)
+                result += currents[index].c1 * element.getSize0();
+        }
     }
     if (this->getGeometry()->isSymmetric(Geometry::DIRECTION_TRAN)) result *= 2.;
     return result * geometry->getExtrusion()->getLength() * 0.01; // kA/cm² µm² -->  mA;
@@ -637,10 +649,13 @@ template<> double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::
     this->writelog(LOG_DETAIL, "Computing total current");
     double result = 0.;
     for (size_t i = 0; i < mesh->axis[0]->size()-1; ++i) {
-        auto element = mesh->element(i, vindex);
+        auto element = maskedMesh->element(i, vindex);
         if (!onlyactive || isActive(element.getMidpoint())) {
-            double rin = element.getLower0(), rout = element.getUpper0();
-            result += currents[element.getIndex()].c1 * (rout*rout - rin*rin);
+            size_t index = element.getIndex();
+            if (index != RectangularMaskedMesh2D::Element::UNKNOWN_ELEMENT_INDEX) {
+                double rin = element.getLower0(), rout = element.getUpper0();
+                result += currents[element.getIndex()].c1 * (rout*rout - rin*rin);
+            }
         }
     }
     return result * plask::PI * 0.01; // kA/cm² µm² -->  mA
@@ -663,8 +678,11 @@ const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::ge
 {
     if (!potentials) throw NoValue("Voltage");
     this->writelog(LOG_DEBUG, "Getting voltage");
-    if (method == INTERPOLATION_DEFAULT)  method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh, potentials, dst_mesh, method, this->geometry);
+    if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
+    if (use_full_mesh)
+        return interpolate(this->mesh, potentials, dst_mesh, method, this->geometry);
+    else
+        return interpolate(this->maskedMesh, potentials, dst_mesh, method, this->geometry);
 }
 
 
@@ -675,12 +693,23 @@ const LazyData<Vec<2>> FiniteElementMethodElectrical2DSolver<Geometry2DType>::ge
     this->writelog(LOG_DEBUG, "Getting current densities");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN);
-    auto result = interpolate(this->mesh->getMidpointsMesh(), currents, dest_mesh, method, flags);
-    return LazyData<Vec<2>>(result.size(),
-        [this, dest_mesh, result, flags](size_t i) {
-            return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<2>(0.,0.);
-        }
-    );
+    if (use_full_mesh) {
+        auto result = interpolate(this->mesh->getElementMesh(), currents, dest_mesh, method, flags);
+        return LazyData<Vec<2>>(result.size(),
+            [result, this, flags, dest_mesh](size_t i) {
+                return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<2>(0.,0.);
+            }
+        );
+    } else {
+        auto result = interpolate(this->maskedMesh->getElementMesh(), currents, dest_mesh, method, flags);
+        return LazyData<Vec<2>>(result.size(),
+            [result](size_t i) {
+                // Masked mesh always returns NaN outside of itself
+                auto val = result[i];
+                return isnan(val)? Vec<2>(0.,0.) : val;
+            }
+        );
+    }
 }
 
 
@@ -692,12 +721,23 @@ const LazyData<double> FiniteElementMethodElectrical2DSolver<Geometry2DType>::ge
     if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry);
-    auto result = interpolate(this->mesh->getMidpointsMesh(), heats, dest_mesh, method, flags);
-    return LazyData<double>(result.size(),
-        [this, dest_mesh, result, flags](size_t i) {
-            return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;
-        }
-    );
+    if (use_full_mesh) {
+        auto result = interpolate(this->mesh->getElementMesh(), heats, dest_mesh, method, flags);
+        return LazyData<double>(result.size(),
+            [result, this, flags, dest_mesh](size_t i) {
+                return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;
+            }
+        );
+    } else {
+        auto result = interpolate(this->maskedMesh->getElementMesh(), heats, dest_mesh, method, flags);
+        return LazyData<double>(result.size(),
+            [result](size_t i) {
+                // Masked mesh always returns NaN outside of itself
+                auto val = result[i];
+                return isnan(val)? 0. : val;
+            }
+        );
+    }
 }
 
 
@@ -714,8 +754,13 @@ const LazyData<Tensor2<double>> FiniteElementMethodElectrical2DSolver<Geometry2D
                    y = this->mesh->axis[1]->findUpIndex(point[1]);
             if (x == 0 || y == 0 || x == this->mesh->axis[0]->size() || y == this->mesh->axis[1]->size())
                 return Tensor2<double>(NAN);
-            else
-                return this->conds[this->mesh->element(x-1, y-1).getIndex()];
+            else {
+                size_t index = this->maskedMesh->element(x-1, y-1).getIndex();
+                if (index == RectangularMaskedMesh2D::Element::UNKNOWN_ELEMENT_INDEX)
+                    return Tensor2<double>(NAN);
+                else
+                    return this->conds[index];
+            }
         }
     ));
 }
@@ -724,8 +769,8 @@ const LazyData<Tensor2<double>> FiniteElementMethodElectrical2DSolver<Geometry2D
 template <>
 double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getTotalEnergy() {
     double W = 0.;
-    auto T = inTemperature(this->mesh->getMidpointsMesh());
-    for (auto e: this->mesh->elements()) {
+    auto T = inTemperature(this->maskedMesh->getElementMesh());
+    for (auto e: this->maskedMesh->elements()) {
         size_t ll = e.getLoLoIndex();
         size_t lu = e.getUpLoIndex();
         size_t ul = e.getLoUpIndex();
@@ -746,8 +791,8 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getTotalEnerg
 template <>
 double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getTotalEnergy() {
     double W = 0.;
-    auto T = inTemperature(this->mesh->getMidpointsMesh());
-    for (auto e: this->mesh->elements()) {
+    auto T = inTemperature(this->maskedMesh->getElementMesh());
+    for (auto e: this->maskedMesh->elements()) {
         size_t ll = e.getLoLoIndex();
         size_t lu = e.getUpLoIndex();
         size_t ul = e.getLoUpIndex();
@@ -784,7 +829,7 @@ template <>
 double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getTotalHeat() {
     double W = 0.;
     if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
-    for (auto e: this->mesh->elements()) {
+    for (auto e: this->maskedMesh->elements()) {
         double width = e.getUpper0() - e.getLower0();
         double height = e.getUpper1() - e.getLower1();
         W += width * height * heats[e.getIndex()];
@@ -796,7 +841,7 @@ template <>
 double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getTotalHeat() {
     double W = 0.;
     if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
-    for (auto e: this->mesh->elements()) {
+    for (auto e: this->maskedMesh->elements()) {
         double width = e.getUpper0() - e.getLower0();
         double height = e.getUpper1() - e.getLower1();
         double r = e.getMidpoint().rad_r();

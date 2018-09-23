@@ -5,8 +5,27 @@
     Two-dimensional phenomenological solver in Cartesian geometry based on Shockley equation
     and using finite-element method.
   geometry: Cartesian2D
-  mesh: Rectangular2D
   tags:
+  - &mesh
+    tag: mesh
+    label: Mesh
+    help: >
+      Rectangular2D mesh used by this solver.
+    attrs:
+    - attr: ref
+      label: Mesh
+      required: true
+      type: mesh
+      mesh types: [ Rectangular2D ]
+      help: >
+        Name of a Rectangular2D mesh defined in the :xml:tag:`<grids>` section.
+    - &full-mesh
+      attr: include-empty
+      label: Include Empty Regions
+      type: bool
+      default: no
+      help: >
+        Should empty regions (e.g. air) be included into computation domain?
   - &voltage
     bcond: voltage
     label: Voltage
@@ -117,8 +136,8 @@
     Two-dimensional phenomenological solver in cylindrical geometry based on Shockley equation
     and using finite-element method.
   geometry: Cylindrical
-  mesh: Rectangular2D
   tags:
+  - *mesh
   - *voltage
   - *loop
   - *matrix
@@ -136,8 +155,20 @@
   lib: shockley
   category: electrical
   geometry: Cartesian3D
-  mesh: Rectangular3D
   tags:
+  - tag: mesh
+    label: Mesh
+    help: >
+      Rectangular3D mesh used by this solver.
+    attrs:
+    - attr: ref
+      label: Mesh
+      required: true
+      type: mesh
+      mesh types: [ Rectangular3D ]
+      help: >
+        Name of a Rectangular3D mesh defined in the :xml:tag:`<grids>` section.
+    - *full-mesh
   - *voltage
   - *loop
   - *matrix

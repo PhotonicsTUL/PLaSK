@@ -164,7 +164,7 @@ class PLASK_API RegularAxis: public MeshAxis {
 
     bool isIncreasing() const override;
 
-    shared_ptr<MeshAxis> getMidpointsMesh() const override;
+    shared_ptr<MeshAxis> getMidpointAxis() const override;
 
     /**
      * Calculate (using linear interpolation) value of data in point using data in points describe by this mesh.

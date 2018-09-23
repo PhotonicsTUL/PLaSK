@@ -1,15 +1,15 @@
 #include "rectangular_spline.h"
+#include "hyman.h"
 #include "../exceptions.h"
-
 
 namespace plask {
 
 
 template <typename DstT, typename SrcT>
 SplineRect2DLazyDataImpl<DstT, SrcT>::SplineRect2DLazyDataImpl(const shared_ptr<const RectangularMesh2D>& src_mesh,
-                                                                       const DataVector<const SrcT>& src_vec,
-                                                                       const shared_ptr<const MeshD<2>>& dst_mesh,
-                                                                       const InterpolationFlags& flags):
+                                                               const DataVector<const SrcT>& src_vec,
+                                                               const shared_ptr<const MeshD<2>>& dst_mesh,
+                                                               const InterpolationFlags& flags):
     InterpolatedLazyDataImpl<DstT, RectangularMesh2D, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
     diff0(src_mesh->size()), diff1(src_mesh->size()) {}
 
@@ -85,9 +85,9 @@ DstT SplineRect2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 
 template <typename DstT, typename SrcT>
 SplineRect3DLazyDataImpl<DstT, SrcT>::SplineRect3DLazyDataImpl(const shared_ptr<const RectilinearMesh3D>& src_mesh,
-                                                                       const DataVector<const SrcT>& src_vec,
-                                                                       const shared_ptr<const MeshD<3>>& dst_mesh,
-                                                                       const InterpolationFlags& flags):
+                                                               const DataVector<const SrcT>& src_vec,
+                                                               const shared_ptr<const MeshD<3>>& dst_mesh,
+                                                               const InterpolationFlags& flags):
     InterpolatedLazyDataImpl<DstT, RectilinearMesh3D, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
     diff0(src_mesh->size()), diff1(src_mesh->size()), diff2(src_mesh->size()) {}
 
@@ -238,54 +238,6 @@ DstT SplineRect3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
 
 
 namespace hyman {
-    template <typename T> struct Hyman {
-        static void filter(T& data, const T& a, const T& b) {
-            T lim = 3 * min(abs(a), abs(b));
-            if (data > lim) data = lim;
-            else if (data < -lim) data = -lim;
-        }
-    };
-
-    template <> struct Hyman<dcomplex> {
-        static void filter(dcomplex& data, const dcomplex& a, const dcomplex& b) {
-            double re = data.real(), im = data.imag();
-            Hyman<double>::filter(re, real(a), real(b));
-            Hyman<double>::filter(im, imag(a), imag(b));
-            data = dcomplex(re,im);
-        }
-    };
-
-    template <typename T> struct Hyman<Vec<2,T>> {
-        static void filter(Vec<2,T>& data, const Vec<2,T>& a, const Vec<2,T>& b) {
-            Hyman<T>::filter(data.c0, a.c0, b.c0);
-            Hyman<T>::filter(data.c1, a.c1, b.c1);
-        }
-    };
-
-    template <typename T> struct Hyman<Vec<3,T>> {
-        static void filter(Vec<3,T>& data, const Vec<3,T>& a, const Vec<3,T>& b) {
-            Hyman<T>::filter(data.c0, a.c0, b.c0);
-            Hyman<T>::filter(data.c1, a.c1, b.c1);
-            Hyman<T>::filter(data.c2, a.c2, b.c2);
-        }
-    };
-
-    template <typename T> struct Hyman<Tensor2<T>> {
-        static void filter(Tensor2<T>& data, const Tensor2<T>& a, const Tensor2<T>& b) {
-            Hyman<T>::filter(data.c00, a.c00, b.c00);
-            Hyman<T>::filter(data.c11, a.c11, b.c11);
-        }
-    };
-
-    template <typename T> struct Hyman<Tensor3<T>> {
-        static void filter(Tensor3<T>& data, const Tensor3<T>& a, const Tensor3<T>& b) {
-            Hyman<T>::filter(data.c00, a.c00, b.c00);
-            Hyman<T>::filter(data.c11, a.c11, b.c11);
-            Hyman<T>::filter(data.c22, a.c22, b.c22);
-            Hyman<T>::filter(data.c01, a.c01, b.c01);
-        }
-    };
-
     template <typename DataT>
     static void computeDiffs(DataT* diffs, int ax, const shared_ptr<MeshAxis>& axis,
                              const DataT* data, std::size_t stride, const InterpolationFlags& flags)
@@ -321,7 +273,7 @@ namespace hyman {
                 sa0 = (data[0] - flags.reflect(ax, data[0])) / (2.*da0);
             else {
                 da0 = db0 = 0.5;
-                sa0 = sb0 = 0. * DataT();
+                sa0 = sb0 = Zero<DataT>();
             }
             dan = axis->at(n1) - axis->at(n1-1);
             san = (data[in0] - data[in0-stride]) / dan;
@@ -335,7 +287,7 @@ namespace hyman {
                 sbn = (data[in0] - flags.reflect(ax, data[in0])) / (2.*dbn);
             else {
                 dan = dbn = 0.5;
-                san = sbn = 0. * DataT();
+                san = sbn = Zero<DataT>();
             }
         } else if (flags.periodic(ax)) {
             da0 = axis->at(0) - axis->at(n1) + flags.high(ax) - flags.low(ax);
@@ -350,7 +302,7 @@ namespace hyman {
             else sbn = (data[0] - data[in0]) / dbn;
         } else {
             da0 = db0 = dan = dbn = 0.5;
-            sa0 = sb0 = san = sbn = 0. * DataT();
+            sa0 = sb0 = san = sbn = Zero<DataT>();
         }
 
         // Use parabolic estimation of the derivative
@@ -382,12 +334,12 @@ HymanSplineRect2DLazyDataImpl<DstT, SrcT>::HymanSplineRect2DLazyDataImpl(const s
         for (size_t i1 = 0, i = 0; i1 < src_mesh->axis[1]->size(); ++i1, i += stride1)
             hyman::computeDiffs<SrcT>(this->diff0.data()+i, 0, src_mesh->axis[0], src_vec.data()+i, stride0, flags);
     else
-        std::fill(this->diff0.begin(), this->diff0.end(), 0. * SrcT());
+        std::fill(this->diff0.begin(), this->diff0.end(), Zero<SrcT>());
     if (n1 > 1)
         for (size_t i0 = 0, i = 0; i0 < src_mesh->axis[0]->size(); ++i0, i += stride0)
             hyman::computeDiffs<SrcT>(this->diff1.data()+i, 1, src_mesh->axis[1], src_vec.data()+i, stride1, flags);
     else
-        std::fill(this->diff1.begin(), this->diff1.end(), 0. * SrcT());
+        std::fill(this->diff1.begin(), this->diff1.end(), Zero<SrcT>());
 }
 
 
@@ -413,7 +365,7 @@ HymanSplineRect3DLazyDataImpl<DstT, SrcT>::HymanSplineRect3DLazyDataImpl(const s
             }
         }
     } else
-        std::fill(this->diff0.begin(), this->diff0.end(), 0. * SrcT());
+        std::fill(this->diff0.begin(), this->diff0.end(), Zero<SrcT>());
 
     if (n1 > 1) {
         size_t stride1 = src_mesh->index(0, 1, 0);
@@ -424,7 +376,7 @@ HymanSplineRect3DLazyDataImpl<DstT, SrcT>::HymanSplineRect3DLazyDataImpl(const s
             }
         }
     } else
-        std::fill(this->diff1.begin(), this->diff1.end(), 0. * SrcT());
+        std::fill(this->diff1.begin(), this->diff1.end(), Zero<SrcT>());
 
     if (n2 > 1) {
         size_t stride2 = src_mesh->index(0, 0, 1);
@@ -435,7 +387,7 @@ HymanSplineRect3DLazyDataImpl<DstT, SrcT>::HymanSplineRect3DLazyDataImpl(const s
             }
         }
     } else
-        std::fill(this->diff2.begin(), this->diff2.end(), 0. * SrcT());
+        std::fill(this->diff2.begin(), this->diff2.end(), Zero<SrcT>());
 
 }
 
@@ -480,10 +432,10 @@ namespace spline {
         const size_t n0 = axis->size();
         const size_t n1 = n0 - 1;
 
-		std::unique_ptr<double[]>
-			dl(new double[n1]),
-			dd(new double[n1 + 1]),
-			du(new double[n1]);
+        std::unique_ptr<double[]>
+            dl(new double[n1]),
+            dd(new double[n1 + 1]),
+            du(new double[n1]);
 
         std::unique_ptr<DataT[]> lastdata(new DataT[size1*size2]);
         {
@@ -536,7 +488,7 @@ namespace spline {
                     du[0] = 0.;
                     for (size_t c1 = 0, s1 = 0; c1 != size1; ++c1, s1 += stride1)
                         for (size_t c2 = 0, s2 = 0; c2 != size2; ++c2, s2 += stride2)
-                            data[s1+s2] = 0. * DataT();
+                            data[s1+s2] = Zero<DataT>();
                 }
                 if (axis->at(n1) == 0. || (flags.periodic(ax) && is_zero(flags.high(ax) - axis->at(n1)))) {
                     dd[n1] = 1.;
@@ -568,7 +520,7 @@ namespace spline {
                     size_t ns = n1 * stride;
                     for (size_t c1 = 0, s1 = 0; c1 != size1; ++c1, s1 += stride1) {
                         for (size_t c2 = 0, s2 = 0; c2 != size2; ++c2, s2 += stride2)
-                            data[s1+s2+ns] = 0. * DataT();
+                            data[s1+s2+ns] = Zero<DataT>();
                     }
                 }
             } else {
@@ -577,7 +529,7 @@ namespace spline {
                 size_t ns = n1 * stride;
                 for (size_t c1 = 0, s1 = 0; c1 != size1; ++c1, s1 += stride1) {
                     for (size_t c2 = 0, s2 = 0; c2 != size2; ++c2, s2 += stride2)
-                        data[s1+s2] = data[s1+s2+ns] = 0. * DataT();
+                        data[s1+s2] = data[s1+s2+ns] = Zero<DataT>();
                 }
             }
 
@@ -635,13 +587,13 @@ SmoothSplineRect2DLazyDataImpl<DstT, SrcT>::SmoothSplineRect2DLazyDataImpl(const
         std::copy(src_vec.begin(), src_vec.end(), this->diff0.begin());
         spline::computeDiffs<SrcT>(this->diff0.data(), stride0, stride1, src_mesh->axis[1]->size(), 0, 1, 0, src_mesh->axis[0], flags);
     } else {
-        std::fill(this->diff0.begin(), this->diff0.end(), 0. * SrcT());
+        std::fill(this->diff0.begin(), this->diff0.end(), Zero<SrcT>());
     }
     if (n1 > 1) {
         std::copy(src_vec.begin(), src_vec.end(), this->diff1.begin());
         spline::computeDiffs<SrcT>(this->diff1.data(), stride1, stride0, src_mesh->axis[0]->size(), 0, 1, 1, src_mesh->axis[1], flags);
     } else {
-        std::fill(this->diff1.begin(), this->diff1.end(), 0. * SrcT());
+        std::fill(this->diff1.begin(), this->diff1.end(), Zero<SrcT>());
     }
 }
 
@@ -670,7 +622,7 @@ SmoothSplineRect3DLazyDataImpl<DstT, SrcT>::SmoothSplineRect3DLazyDataImpl(const
                                    stride1, src_mesh->axis[1]->size(), stride2, src_mesh->axis[2]->size(),
                                    0, src_mesh->axis[0], flags);
     } else {
-        std::fill(this->diff0.begin(), this->diff0.end(), 0. * SrcT());
+        std::fill(this->diff0.begin(), this->diff0.end(), Zero<SrcT>());
     }
     if (n1 > 1) {
         std::copy(src_vec.begin(), src_vec.end(), this->diff1.begin());
@@ -678,7 +630,7 @@ SmoothSplineRect3DLazyDataImpl<DstT, SrcT>::SmoothSplineRect3DLazyDataImpl(const
                                    stride0, src_mesh->axis[0]->size(), stride2, src_mesh->axis[2]->size(),
                                    1, src_mesh->axis[1], flags);
     } else {
-        std::fill(this->diff1.begin(), this->diff1.end(), 0. * SrcT());
+        std::fill(this->diff1.begin(), this->diff1.end(), Zero<SrcT>());
     }
     if (n2 > 1) {
         std::copy(src_vec.begin(), src_vec.end(), this->diff2.begin());
@@ -686,7 +638,7 @@ SmoothSplineRect3DLazyDataImpl<DstT, SrcT>::SmoothSplineRect3DLazyDataImpl(const
                                    stride0, src_mesh->axis[0]->size(), stride1, src_mesh->axis[1]->size(),
                                    2, src_mesh->axis[2], flags);
     } else {
-        std::fill(this->diff2.begin(), this->diff2.end(), 0. * SrcT());
+        std::fill(this->diff2.begin(), this->diff2.end(), Zero<SrcT>());
     }
 }
 

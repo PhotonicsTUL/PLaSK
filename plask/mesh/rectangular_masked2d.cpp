@@ -1,24 +1,24 @@
-#include "rectangular_filtered2d.h"
+#include "rectangular_masked2d.h"
 
 namespace plask {
 
-void RectangularFilteredMesh2D::reset(const RectangularFilteredMesh2D::Predicate &predicate) {
-    RectangularFilteredMeshBase<2>::reset();
+void RectangularMaskedMesh2D::reset(const RectangularMaskedMesh2D::Predicate &predicate) {
+    RectangularMaskedMeshBase<2>::reset();
     initNodesAndElements(predicate);
 }
 
-RectangularFilteredMesh2D::RectangularFilteredMesh2D(const RectangularMesh<2> &rectangularMesh, const RectangularFilteredMesh2D::Predicate &predicate, bool clone_axes)
-    : RectangularFilteredMeshBase(rectangularMesh, clone_axes)
+RectangularMaskedMesh2D::RectangularMaskedMesh2D(const RectangularMesh<2> &rectangularMesh, const RectangularMaskedMesh2D::Predicate &predicate, bool clone_axes)
+    : RectangularMaskedMeshBase(rectangularMesh, clone_axes)
 {
     initNodesAndElements(predicate);
 }
 
-void RectangularFilteredMesh2D::reset(const RectangularMesh<2> &rectangularMesh, const RectangularFilteredMesh2D::Predicate &predicate, bool clone_axes) {
+void RectangularMaskedMesh2D::reset(const RectangularMesh<2> &rectangularMesh, const RectangularMaskedMesh2D::Predicate &predicate, bool clone_axes) {
     this->fullMesh.reset(rectangularMesh, clone_axes);
     reset(predicate);
 }
 
-void RectangularFilteredMesh2D::initNodesAndElements(const RectangularFilteredMesh2D::Predicate &predicate)
+void RectangularMaskedMesh2D::initNodesAndElements(const RectangularMaskedMesh2D::Predicate &predicate)
 {
     for (auto el_it = this->fullMesh.elements().begin(); el_it != this->fullMesh.elements().end(); ++el_it)
         if (predicate(*el_it)) {
@@ -37,7 +37,7 @@ void RectangularFilteredMesh2D::initNodesAndElements(const RectangularFilteredMe
     elementSetInitialized = true;
 }
 
-bool RectangularFilteredMesh2D::prepareInterpolation(const Vec<2> &point, Vec<2> &wrapped_point, std::size_t &index0_lo, std::size_t &index0_hi, std::size_t &index1_lo, std::size_t &index1_hi, std::size_t &rectmesh_index_lo, const InterpolationFlags &flags) const {
+bool RectangularMaskedMesh2D::prepareInterpolation(const Vec<2> &point, Vec<2> &wrapped_point, std::size_t &index0_lo, std::size_t &index0_hi, std::size_t &index1_lo, std::size_t &index1_hi, const InterpolationFlags &flags) const {
     wrapped_point = flags.wrap(point);
 
     if (!canBeIncluded(wrapped_point)) return false;
@@ -53,8 +53,7 @@ bool RectangularFilteredMesh2D::prepareInterpolation(const Vec<2> &point, Vec<2>
     ensureHasElements();
     for (char i1 = 0; i1 < 2; ++i1) {
         for (char i0 = 0; i0 < 2; ++i0) {
-            rectmesh_index_lo = fullMesh.index(index0_lo, index1_lo);
-            if (elementSet.includes(fullMesh.getElementIndexFromLowIndex(rectmesh_index_lo))) {
+            if (elementSet.includes(fullMesh.getElementIndexFromLowIndexes(index0_lo, index1_lo))) {
                 index0_hi = index0_lo + 1; index1_hi = index1_lo + 1;
                 return true;
             }
@@ -71,34 +70,37 @@ bool RectangularFilteredMesh2D::prepareInterpolation(const Vec<2> &point, Vec<2>
     return false;
 }
 
-BoundaryNodeSet RectangularFilteredMesh2D::createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const {
+
+
+
+BoundaryNodeSet RectangularMaskedMesh2D::createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const {
     return createVerticalBoundaryAtLine(line_nr_axis0, boundaryIndex[1].lo, boundaryIndex[1].up+1);
 }
 
-BoundaryNodeSet RectangularFilteredMesh2D::createVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) const {
+BoundaryNodeSet RectangularMaskedMesh2D::createVerticalBoundaryAtLine(std::size_t line_nr_axis0, std::size_t indexBegin, std::size_t indexEnd) const {
     return new BoundaryNodeSetImpl<1>(*this, line_nr_axis0, indexBegin, indexEnd);
 }
 
-BoundaryNodeSet RectangularFilteredMesh2D::createVerticalBoundaryNear(double axis0_coord) const {
+BoundaryNodeSet RectangularMaskedMesh2D::createVerticalBoundaryNear(double axis0_coord) const {
     return createVerticalBoundaryAtLine(fullMesh.axis[0]->findNearestIndex(axis0_coord));
 }
 
-BoundaryNodeSet RectangularFilteredMesh2D::createVerticalBoundaryNear(double axis0_coord, double from, double to) const {
+BoundaryNodeSet RectangularMaskedMesh2D::createVerticalBoundaryNear(double axis0_coord, double from, double to) const {
     std::size_t begInd, endInd;
     if (!details::getIndexesInBoundsExt(begInd, endInd, *fullMesh.axis[1], from, to))
         return new EmptyBoundaryImpl();
     return createVerticalBoundaryAtLine(fullMesh.axis[0]->findNearestIndex(axis0_coord), begInd, endInd);
 }
 
-BoundaryNodeSet RectangularFilteredMesh2D::createLeftBoundary() const {
+BoundaryNodeSet RectangularMaskedMesh2D::createLeftBoundary() const {
     return createVerticalBoundaryAtLine(boundaryIndex[0].lo);
 }
 
-BoundaryNodeSet RectangularFilteredMesh2D::createRightBoundary() const {
+BoundaryNodeSet RectangularMaskedMesh2D::createRightBoundary() const {
     return createVerticalBoundaryAtLine(boundaryIndex[0].up);
 }
 
-BoundaryNodeSet RectangularFilteredMesh2D::createLeftOfBoundary(const Box2D &box) const {
+BoundaryNodeSet RectangularMaskedMesh2D::createLeftOfBoundary(const Box2D &box) const {
     std::size_t line, begInd, endInd;
     if (details::getLineLo(line, *fullMesh.axis[0], box.lower.c0, box.upper.c0) &&
             details::getIndexesInBounds(begInd, endInd, *fullMesh.axis[1], box.lower.c1, box.upper.c1))
@@ -107,7 +109,7 @@ BoundaryNodeSet RectangularFilteredMesh2D::createLeftOfBoundary(const Box2D &box
         return new EmptyBoundaryImpl();
 }
 
-BoundaryNodeSet RectangularFilteredMesh2D::createRightOfBoundary(const Box2D &box) const {
+BoundaryNodeSet RectangularMaskedMesh2D::createRightOfBoundary(const Box2D &box) const {
     std::size_t line, begInd, endInd;
     if (details::getLineHi(line, *fullMesh.axis[0], box.lower.c0, box.upper.c0) &&
             details::getIndexesInBounds(begInd, endInd, *fullMesh.axis[1], box.lower.c1, box.upper.c1))
@@ -116,7 +118,7 @@ BoundaryNodeSet RectangularFilteredMesh2D::createRightOfBoundary(const Box2D &bo
         return new EmptyBoundaryImpl();
 }
 
-BoundaryNodeSet RectangularFilteredMesh2D::createBottomOfBoundary(const Box2D &box) const {
+BoundaryNodeSet RectangularMaskedMesh2D::createBottomOfBoundary(const Box2D &box) const {
     std::size_t line, begInd, endInd;
     if (details::getLineLo(line, *fullMesh.axis[1], box.lower.c1, box.upper.c1) &&
             details::getIndexesInBounds(begInd, endInd, *fullMesh.axis[0], box.lower.c0, box.upper.c0))
@@ -125,7 +127,7 @@ BoundaryNodeSet RectangularFilteredMesh2D::createBottomOfBoundary(const Box2D &b
         return new EmptyBoundaryImpl();
 }
 
-BoundaryNodeSet RectangularFilteredMesh2D::createTopOfBoundary(const Box2D &box) const {
+BoundaryNodeSet RectangularMaskedMesh2D::createTopOfBoundary(const Box2D &box) const {
     std::size_t line, begInd, endInd;
     if (details::getLineHi(line, *fullMesh.axis[1], box.lower.c1, box.upper.c1) &&
             details::getIndexesInBounds(begInd, endInd, *fullMesh.axis[0], box.lower.c0, box.upper.c0))
@@ -134,30 +136,30 @@ BoundaryNodeSet RectangularFilteredMesh2D::createTopOfBoundary(const Box2D &box)
         return new EmptyBoundaryImpl();
 }
 
-BoundaryNodeSet RectangularFilteredMesh2D::createHorizontalBoundaryAtLine(std::size_t line_nr_axis1) const {
+BoundaryNodeSet RectangularMaskedMesh2D::createHorizontalBoundaryAtLine(std::size_t line_nr_axis1) const {
     return createHorizontalBoundaryAtLine(line_nr_axis1, boundaryIndex[0].lo, boundaryIndex[0].up+1);
 }
 
-BoundaryNodeSet RectangularFilteredMesh2D::createHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) const {
+BoundaryNodeSet RectangularMaskedMesh2D::createHorizontalBoundaryAtLine(std::size_t line_nr_axis1, std::size_t indexBegin, std::size_t indexEnd) const {
     return new BoundaryNodeSetImpl<0>(*this, indexBegin, line_nr_axis1, indexEnd);
 }
 
-BoundaryNodeSet RectangularFilteredMesh2D::createHorizontalBoundaryNear(double axis1_coord) const {
+BoundaryNodeSet RectangularMaskedMesh2D::createHorizontalBoundaryNear(double axis1_coord) const {
     return createHorizontalBoundaryAtLine(fullMesh.axis[1]->findNearestIndex(axis1_coord));
 }
 
-BoundaryNodeSet RectangularFilteredMesh2D::createHorizontalBoundaryNear(double axis1_coord, double from, double to) const {
+BoundaryNodeSet RectangularMaskedMesh2D::createHorizontalBoundaryNear(double axis1_coord, double from, double to) const {
     std::size_t begInd, endInd;
     if (!details::getIndexesInBoundsExt(begInd, endInd, *fullMesh.axis[0], from, to))
         return new EmptyBoundaryImpl();
     return createHorizontalBoundaryAtLine(fullMesh.axis[1]->findNearestIndex(axis1_coord), begInd, endInd);
 }
 
-BoundaryNodeSet RectangularFilteredMesh2D::createTopBoundary() const {
+BoundaryNodeSet RectangularMaskedMesh2D::createTopBoundary() const {
     return createHorizontalBoundaryAtLine(boundaryIndex[1].up);
 }
 
-BoundaryNodeSet RectangularFilteredMesh2D::createBottomBoundary() const {
+BoundaryNodeSet RectangularMaskedMesh2D::createBottomBoundary() const {
     return createHorizontalBoundaryAtLine(boundaryIndex[1].lo);
 }
 

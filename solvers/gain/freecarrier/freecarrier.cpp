@@ -96,7 +96,7 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
     regions.clear();
 
     shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
-    shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
+    shared_ptr<RectangularMesh<2>> points = mesh->getElementMesh();
 
     size_t ileft = 0, iright = points->axis[0]->size();
     bool in_active = false;
@@ -332,7 +332,7 @@ FreeCarrierGainSolver<GeometryType>::ActiveRegionParams::ActiveRegionParams(cons
     } else {
         if (!quiet) solver->writelog(LOG_DETAIL, "Band edges taken from inBandEdges receiver");
         shared_ptr<Translation<2>> shifted(new Translation<2>(region.layers, region.origin));
-        auto mesh = makeGeometryGrid(shifted)->getMidpointsMesh();
+        auto mesh = makeGeometryGrid(shifted)->getElementMesh();
         assert(mesh->size() == mesh->axis[1]->size());
         auto CB = solver->inBandEdges(BandEdges::CONDUCTION, mesh);
         auto VB_H = solver->inBandEdges(BandEdges::VALENCE_HEAVY, mesh);

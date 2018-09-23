@@ -1,25 +1,25 @@
-#include "rectangular_filtered3d.h"
+#include "rectangular_masked3d.h"
 
 namespace plask {
 
-void RectangularFilteredMesh3D::reset(const RectangularFilteredMesh3D::Predicate &predicate) {
-    RectangularFilteredMeshBase<3>::reset();
+void RectangularMaskedMesh3D::reset(const RectangularMaskedMesh3D::Predicate &predicate) {
+    RectangularMaskedMeshBase<3>::reset();
     initNodesAndElements(predicate);
 }
 
-RectangularFilteredMesh3D::RectangularFilteredMesh3D(const RectangularMesh<3> &rectangularMesh, const RectangularFilteredMesh3D::Predicate &predicate, bool clone_axes)
-    : RectangularFilteredMeshBase(rectangularMesh, clone_axes)
+RectangularMaskedMesh3D::RectangularMaskedMesh3D(const RectangularMesh<3> &rectangularMesh, const RectangularMaskedMesh3D::Predicate &predicate, bool clone_axes)
+    : RectangularMaskedMeshBase(rectangularMesh, clone_axes)
 {
     initNodesAndElements(predicate);
 }
 
-void RectangularFilteredMesh3D::reset(const RectangularMesh<3> &rectangularMesh, const RectangularFilteredMesh3D::Predicate &predicate, bool clone_axes)
+void RectangularMaskedMesh3D::reset(const RectangularMesh<3> &rectangularMesh, const RectangularMaskedMesh3D::Predicate &predicate, bool clone_axes)
 {
     this->fullMesh.reset(rectangularMesh, clone_axes);
     reset(predicate);
 }
 
-void RectangularFilteredMesh3D::initNodesAndElements(const RectangularFilteredMesh3D::Predicate &predicate)
+void RectangularMaskedMesh3D::initNodesAndElements(const RectangularMaskedMesh3D::Predicate &predicate)
 {
     for (auto el_it = this->fullMesh.elements().begin(); el_it != this->fullMesh.elements().end(); ++el_it)
         if (predicate(*el_it)) {
@@ -47,11 +47,11 @@ void RectangularFilteredMesh3D::initNodesAndElements(const RectangularFilteredMe
     elementSetInitialized = true;
 }
 
-bool RectangularFilteredMesh3D::prepareInterpolation(const Vec<3> &point, Vec<3> &wrapped_point,
+bool RectangularMaskedMesh3D::prepareInterpolation(const Vec<3> &point, Vec<3> &wrapped_point,
                                                      std::size_t& index0_lo, std::size_t& index0_hi,
                                                      std::size_t& index1_lo, std::size_t& index1_hi,
                                                      std::size_t& index2_lo, std::size_t& index2_hi,
-                                                     std::size_t &rectmesh_index_lo, const InterpolationFlags &flags) const {
+                                                     const InterpolationFlags &flags) const {
     wrapped_point = flags.wrap(point);
 
     if (!canBeIncluded(wrapped_point)) return false;
@@ -71,8 +71,7 @@ bool RectangularFilteredMesh3D::prepareInterpolation(const Vec<3> &point, Vec<3>
     for (char i2 = 0; i2 < 2; ++i2) {
         for (char i1 = 0; i1 < 2; ++i1) {
             for (char i0 = 0; i0 < 2; ++i0) {
-                rectmesh_index_lo = fullMesh.index(index0_lo, index1_lo, index2_lo);
-                if (elementSet.includes(fullMesh.getElementIndexFromLowIndex(rectmesh_index_lo))) {
+                if (elementSet.includes(fullMesh.getElementIndexFromLowIndexes(index0_lo, index1_lo, index2_lo))) {
                     index0_hi = index0_lo + 1; index1_hi = index1_lo + 1; index2_hi = index2_lo + 1;
                     return true;
                 }
@@ -94,58 +93,58 @@ bool RectangularFilteredMesh3D::prepareInterpolation(const Vec<3> &point, Vec<3>
     return false;
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createIndex0BoundaryAtLine(std::size_t line_nr_axis0, std::size_t index1Begin, std::size_t index1End, std::size_t index2Begin, std::size_t index2End) const
+BoundaryNodeSet RectangularMaskedMesh3D::createIndex0BoundaryAtLine(std::size_t line_nr_axis0, std::size_t index1Begin, std::size_t index1End, std::size_t index2Begin, std::size_t index2End) const
 {
     return new BoundaryNodeSetImpl<1, 2>(*this, line_nr_axis0, index1Begin, index2Begin, index1End, index2End);
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createIndex0BoundaryAtLine(std::size_t line_nr_axis0) const {
+BoundaryNodeSet RectangularMaskedMesh3D::createIndex0BoundaryAtLine(std::size_t line_nr_axis0) const {
     return createIndex0BoundaryAtLine(line_nr_axis0, boundaryIndex[1].lo, boundaryIndex[1].up+1, boundaryIndex[2].lo, boundaryIndex[2].up+1);
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createIndex1BoundaryAtLine(std::size_t line_nr_axis1, std::size_t index0Begin, std::size_t index0End, std::size_t index2Begin, std::size_t index2End) const
+BoundaryNodeSet RectangularMaskedMesh3D::createIndex1BoundaryAtLine(std::size_t line_nr_axis1, std::size_t index0Begin, std::size_t index0End, std::size_t index2Begin, std::size_t index2End) const
 {
     return new BoundaryNodeSetImpl<0, 2>(*this, index0Begin, line_nr_axis1, index2Begin, index0End, index2End);
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createIndex1BoundaryAtLine(std::size_t line_nr_axis1) const {
+BoundaryNodeSet RectangularMaskedMesh3D::createIndex1BoundaryAtLine(std::size_t line_nr_axis1) const {
     return createIndex1BoundaryAtLine(line_nr_axis1, boundaryIndex[0].lo, boundaryIndex[0].up+1, boundaryIndex[2].lo, boundaryIndex[2].up+1);
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createIndex2BoundaryAtLine(std::size_t line_nr_axis2, std::size_t index0Begin, std::size_t index0End, std::size_t index1Begin, std::size_t index1End) const
+BoundaryNodeSet RectangularMaskedMesh3D::createIndex2BoundaryAtLine(std::size_t line_nr_axis2, std::size_t index0Begin, std::size_t index0End, std::size_t index1Begin, std::size_t index1End) const
 {
     return new BoundaryNodeSetImpl<0, 1>(*this, index0Begin, index1Begin, line_nr_axis2, index0End, index1End);
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createIndex2BoundaryAtLine(std::size_t line_nr_axis2) const {
+BoundaryNodeSet RectangularMaskedMesh3D::createIndex2BoundaryAtLine(std::size_t line_nr_axis2) const {
     return createIndex2BoundaryAtLine(line_nr_axis2, boundaryIndex[0].lo, boundaryIndex[0].up+1, boundaryIndex[1].lo, boundaryIndex[1].up+1);
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createBackBoundary() const {
+BoundaryNodeSet RectangularMaskedMesh3D::createBackBoundary() const {
     return createIndex0BoundaryAtLine(boundaryIndex[0].lo);
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createFrontBoundary() const {
+BoundaryNodeSet RectangularMaskedMesh3D::createFrontBoundary() const {
     return createIndex0BoundaryAtLine(boundaryIndex[0].up);
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createLeftBoundary() const {
+BoundaryNodeSet RectangularMaskedMesh3D::createLeftBoundary() const {
     return createIndex1BoundaryAtLine(boundaryIndex[1].lo);
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createRightBoundary() const {
+BoundaryNodeSet RectangularMaskedMesh3D::createRightBoundary() const {
     return createIndex1BoundaryAtLine(boundaryIndex[1].up);
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createBottomBoundary() const {
+BoundaryNodeSet RectangularMaskedMesh3D::createBottomBoundary() const {
     return createIndex2BoundaryAtLine(boundaryIndex[2].lo);
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createTopBoundary() const {
+BoundaryNodeSet RectangularMaskedMesh3D::createTopBoundary() const {
     return createIndex2BoundaryAtLine(boundaryIndex[2].up);
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createBackOfBoundary(const Box3D &box) const {
+BoundaryNodeSet RectangularMaskedMesh3D::createBackOfBoundary(const Box3D &box) const {
     std::size_t line, begInd1, endInd1, begInd2, endInd2;
     if (details::getLineLo(line, *fullMesh.axis[0], box.lower.c0, box.upper.c0) &&
             details::getIndexesInBounds(begInd1, endInd1, *fullMesh.axis[1], box.lower.c1, box.upper.c1) &&
@@ -155,7 +154,7 @@ BoundaryNodeSet RectangularFilteredMesh3D::createBackOfBoundary(const Box3D &box
         return new EmptyBoundaryImpl();
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createFrontOfBoundary(const Box3D &box) const {
+BoundaryNodeSet RectangularMaskedMesh3D::createFrontOfBoundary(const Box3D &box) const {
     std::size_t line, begInd1, endInd1, begInd2, endInd2;
     if (details::getLineHi(line, *fullMesh.axis[0], box.lower.c0, box.upper.c0) &&
             details::getIndexesInBounds(begInd1, endInd1, *fullMesh.axis[1], box.lower.c1, box.upper.c1) &&
@@ -165,7 +164,7 @@ BoundaryNodeSet RectangularFilteredMesh3D::createFrontOfBoundary(const Box3D &bo
         return new EmptyBoundaryImpl();
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createLeftOfBoundary(const Box3D &box) const {
+BoundaryNodeSet RectangularMaskedMesh3D::createLeftOfBoundary(const Box3D &box) const {
     std::size_t line, begInd0, endInd0, begInd2, endInd2;
     if (details::getLineLo(line, *fullMesh.axis[1], box.lower.c1, box.upper.c1) &&
             details::getIndexesInBounds(begInd0, endInd0, *fullMesh.axis[0], box.lower.c0, box.upper.c0) &&
@@ -175,7 +174,7 @@ BoundaryNodeSet RectangularFilteredMesh3D::createLeftOfBoundary(const Box3D &box
         return new EmptyBoundaryImpl();
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createRightOfBoundary(const Box3D &box) const {
+BoundaryNodeSet RectangularMaskedMesh3D::createRightOfBoundary(const Box3D &box) const {
     std::size_t line, begInd0, endInd0, begInd2, endInd2;
     if (details::getLineHi(line, *fullMesh.axis[1], box.lower.c1, box.upper.c1) &&
             details::getIndexesInBounds(begInd0, endInd0, *fullMesh.axis[0], box.lower.c0, box.upper.c0) &&
@@ -185,7 +184,7 @@ BoundaryNodeSet RectangularFilteredMesh3D::createRightOfBoundary(const Box3D &bo
         return new EmptyBoundaryImpl();
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createBottomOfBoundary(const Box3D &box) const {
+BoundaryNodeSet RectangularMaskedMesh3D::createBottomOfBoundary(const Box3D &box) const {
     std::size_t line, begInd0, endInd0, begInd1, endInd1;
     if (details::getLineLo(line, *fullMesh.axis[2], box.lower.c2, box.upper.c2) &&
             details::getIndexesInBounds(begInd0, endInd0, *fullMesh.axis[0], box.lower.c0, box.upper.c0) &&
@@ -195,7 +194,7 @@ BoundaryNodeSet RectangularFilteredMesh3D::createBottomOfBoundary(const Box3D &b
         return new EmptyBoundaryImpl();
 }
 
-BoundaryNodeSet RectangularFilteredMesh3D::createTopOfBoundary(const Box3D &box) const {
+BoundaryNodeSet RectangularMaskedMesh3D::createTopOfBoundary(const Box3D &box) const {
     std::size_t line, begInd0, endInd0, begInd1, endInd1;
     if (details::getLineHi(line, *fullMesh.axis[2], box.lower.c2, box.upper.c2) &&
             details::getIndexesInBounds(begInd0, endInd0, *fullMesh.axis[0], box.lower.c0, box.upper.c0) &&

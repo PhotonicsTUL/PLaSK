@@ -262,13 +262,14 @@ class SolverWidget(VerticalScrollArea):
         filter.textChanged.connect(self.filter)
         self.form_layout.addRow(filter)
 
-        rows = []
-        if controller.model.geometry_type or controller.model.mesh_types:
-            self._make_header("General", rows)
-
         defines = get_defines_completer(self.controller.document.defines.model, self)
 
+        last_header = None
+
         if controller.model.geometry_type is not None:
+            rows = []
+            last_header = "Geometry"
+            self._make_header(last_header, rows)
             self.geometry = ComboBox()
             self.geometry.setEditable(True)
             self.geometry.editingFinished.connect(
@@ -282,6 +283,9 @@ class SolverWidget(VerticalScrollArea):
             self.geometry = None
 
         if controller.model.mesh_types:
+            rows = []
+            last_header = "Mesh"
+            self._make_header(last_header, rows)
             self.mesh = ComboBox()
             self.mesh.setEditable(True)
             self.mesh.editingFinished.connect(lambda w=self.mesh: self._change_node_field('mesh', w.currentText()))
@@ -290,13 +294,13 @@ class SolverWidget(VerticalScrollArea):
                                  u'Name of the existing {} mesh for use by this solver.'
                                  .format(' or '.join(controller.model.mesh_types)))
             # TODO add some graphical thumbnail
+
             self._add_row("Mesh", self.mesh, rows)
         else:
             self.mesh = None
 
         self.controls = {}
 
-        last_header = None
         for schema in controller.model.schema:
             group = schema.name
             gname = group.split('/')[-1]

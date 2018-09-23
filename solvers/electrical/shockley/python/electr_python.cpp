@@ -16,7 +16,7 @@ static py::object outPotential(const py::object& self) {
 // template <typename Cls>
 // static PythonDataVector<const double, 2> getCondJunc(const Cls* self) {
 //     if (self->getMesh() && self->getGeometry()) {
-//         auto midmesh = self->getMesh()->getMidpointsMesh();
+//         auto midmesh = self->getMesh()->getElementMesh();
 //         shared_ptr<OrderedAxis> line1 = plask::make_shared<OrderedAxis>();
 //         for (size_t n = 0; n < self->getActNo(); ++n)
 //             line1->addPoint(self->getMesh()->axis1->at((self->getActLo(n)+self->getActHi(n))/2));
@@ -120,6 +120,7 @@ inline static void register_electrical_solver(const char* name, const char* geon
     RW_FIELD(maxerr, u8"Limit for the potential updates");
     RW_FIELD(algorithm, u8"Chosen matrix factorization algorithm");
     solver.def_readwrite("heat", &__Class__::heatmet, "Chosen method used for computing heats");
+    RW_PROPERTY(include_empty, usingFullMesh, useFullMesh, "Should empty regions (e.g. air) be included into computation domain?");
     solver.add_property("beta", &Shockley_getBeta<__Class__>, &Shockley_setBeta<__Class__>,
                         u8"Junction coefficient [1/V].\n\n"
                         u8"In case there is more than one junction you may set $\\beta$ parameter for any\n"
