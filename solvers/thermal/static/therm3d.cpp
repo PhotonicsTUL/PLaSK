@@ -93,7 +93,7 @@ void FiniteElementMethodThermal3DSolver::onInitialize() {
             }
             else break;
         }
-        for (size_t r = elem.getIndex1()+1; r < this->mesh->axis[1]->size()-1; r++) {
+        for (size_t r = elem.getIndex2()+1; r < this->mesh->axis[2]->size()-1; r++) {
             auto e = this->mesh->element(elem.getIndex0(), elem.getIndex1(), r);
             auto m = this->geometry->getMaterial(e.getMidpoint());
             if (m == material) {                            //TODO ignore doping

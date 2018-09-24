@@ -86,7 +86,7 @@ void FiniteElementMethodDynamicThermal3DSolver::onInitialize() {
             }
             else break;
         }
-        for (size_t r = elem.getIndex1()+1; r < this->mesh->axis[1]->size()-1; r++) {
+        for (size_t r = elem.getIndex2()+1; r < this->mesh->axis[2]->size()-1; r++) {
             auto e = this->mesh->element(elem.getIndex0(), elem.getIndex1(), r);
             auto m = this->geometry->getMaterial(e.getMidpoint());
             if (m == material) {                            //TODO ignore doping
@@ -422,7 +422,7 @@ const LazyData<Vec<3>> FiniteElementMethodDynamicThermal3DSolver::getHeatFluxes(
     if (!temperatures) return LazyData<Vec<3>>(dst_mesh->size(), Vec<3>(0.,0.,0.)); // in case the receiver is connected and no fluxes calculated yet
     if (!mHeatFluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh->getElementMesh(), mHeatFluxes, dst_mesh, method, 
+    return interpolate(this->mesh->getElementMesh(), mHeatFluxes, dst_mesh, method,
                        InterpolationFlags(geometry, InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP, InterpolationFlags::Symmetry::PPN));
 }
 
