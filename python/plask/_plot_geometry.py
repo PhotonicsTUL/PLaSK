@@ -332,7 +332,6 @@ def _draw_Triangle(env, geometry_object, transform, clipbox, plask_real_path):
                clipbox, geometry_object, plask_real_path
     )
 
-
 _geometry_drawers[plask.geometry.Triangle] = _draw_Triangle
 
 
@@ -352,6 +351,31 @@ def _draw_Cylinder(env, geometry_object, transform, clipbox, plask_real_path):
         _draw_Block(env, geometry_object, transform, clipbox, plask_real_path)
 
 _geometry_drawers[plask.geometry.Cylinder] = _draw_Cylinder
+
+
+def _draw_Prism(env, geometry_object, transform, clipbox, plask_real_path):
+    p1 = geometry_object.a
+    p2 = geometry_object.b
+    if env.axes == (0, 1) or env.axes == (1, 0):
+        env.append(matplotlib.patches.Polygon(
+            ((0.0, 0.0), (p1[env.axes[0]], p1[env.axes[1]]), (p2[env.axes[0]], p2[env.axes[1]])),
+            closed=True, transform=transform),
+            clipbox, geometry_object, plask_real_path
+        )
+    else:
+        axis = [a for a in env.axes if a != 2][0]
+        pts = sorted((0., p1[axis], p2[axis]))
+        height = geometry_object.height
+        box = matplotlib.patches.Rectangle((pts[0], 0.), pts[-1] - pts[0], height, transform=transform)
+        env.append(box, clipbox, geometry_object, plask_real_path)
+        if pts[1] != pts[0] and pts[1] != pts[2]:
+            line = matplotlib.patches.Polygon(((pts[1], 0.), (pts[1], height)), transform=transform)
+            env.append(line, clipbox, geometry_object, plask_real_path)
+
+        _draw_Block(env, geometry_object, transform, clipbox, plask_real_path)
+
+
+_geometry_drawers[plask.geometry.Prism] = _draw_Prism
 
 
 def _draw_Extrusion(env, geometry_object, transform, clipbox, plask_real_path):
@@ -389,7 +413,6 @@ def _draw_Revolution(env, geometry_object, transform, clipbox, plask_real_path):
             #_draw_Block(env, geometry_object, transform, clipbox)
         finally:
             env.axes = original_axes
-
 
 _geometry_drawers[plask.geometry.Revolution] = _draw_Revolution
 
