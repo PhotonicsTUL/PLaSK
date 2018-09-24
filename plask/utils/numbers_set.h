@@ -396,6 +396,7 @@ public:
     CompressedSetOfNumbers<number_t> intersection(const CompressedSetOfNumbers<number_t>& other) const {
         if (this->empty() || other.empty()) return CompressedSetOfNumbers<number_t>();
         CompressedSetOfNumbers<number_t> result;
+        result.reserve(this->size() + other.size());    // enought for sure
         auto this_segment = this->segments.begin();
         auto this_first_number = this_segment->numberEnd - this_segment->indexEnd;
         auto other_segment = other.segments.begin();
@@ -407,8 +408,19 @@ public:
                 if (intersectionStep(result, other_segment, other.segments.end(), other_first_number, this_first_number)) break;
             }
         };
+        result.shrink_to_fit();
         return result;
     }
+
+    /**
+     * Call f(first, last) for each segment [first, last).
+     * @param f two-argument functor
+     */
+    /*template <typename F>
+    void forEachSegment(F f) const {
+        for (auto it = this->segments.begin(); it != this->segments.end(); ++it)
+            f(firstNumber(it), it->numberEnd);
+    }*/
 
 };
 
