@@ -204,6 +204,7 @@ Good base classes for geometries objects are, for example:
 #include "triangle.h"
 #include "circle.h"
 #include "cylinder.h"
+#include "prism.h"
 
 #include "transform.h"
 #include "intersection.h"

@@ -194,6 +194,12 @@
   <cartesian2d name="main" axes="x,y">
     <rectangle material="mat" dx="1" dy="{wl('mat', 1000)}"/>
   </cartesian2d>
+  <cartesian3d name="prismatic" axes="x,y,z">
+    <stack>
+      <prism material="AlAs" ax="0.9" ay="-0.5" bx="-0.1" by="1.5" height="1.0"/>
+      <cuboid material="GaAs" dx="1.0" dy="2.0" dz="0.5"/>
+    </stack>
+  </cartesian3d>
 </geometry>
 
 <grids>
@@ -310,9 +316,6 @@
   <optical name="F3D" solver="Fourier3D" lib="slab">
     <geometry ref="l3cavity"/>
   </optical>
-  <electrical name="s2d" solver="Shockley2D" lib="shockley"/>
-  <electrical name="scyl" solver="ShockleyCyl" lib="shockley"/>
-  <electrical name="s3d" solver="Shockley3D" lib="shockley"/>
 </solvers>
 
 <connects>
