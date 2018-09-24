@@ -92,4 +92,13 @@ BOOST_AUTO_TEST_CASE(insert2) {
     check_2_567_9(set);
 }
 
+BOOST_AUTO_TEST_CASE(intersection) {
+    BOOST_CHECK_EQUAL(Set({1, 2, 3}).intersection(Set({2, 3, 4})), Set({2, 3}));
+    BOOST_CHECK_EQUAL(Set({1, 2, 5, 6, 7, 9, 10}).intersection(Set({2, 3, 4, 5, 8, 9})), Set({2, 5, 9}));
+    BOOST_CHECK_EQUAL(Set({6, 7, 9, 10}).intersection(Set({2, 3, 4, 5})), Set());
+    BOOST_CHECK_EQUAL(Set({1, 2, 3}).intersection(Set()), Set());
+    BOOST_CHECK_EQUAL(Set().intersection(Set()), Set());
+}
+
+
 BOOST_AUTO_TEST_SUITE_END()

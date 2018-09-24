@@ -30,25 +30,48 @@ struct CompressedSetOfNumbers {
 
         Segment(number_t numberEnd, number_t indexEnd): numberEnd(numberEnd), indexEnd(indexEnd) {}
 
+        bool operator==(const Segment& other) const {
+            return numberEnd == other.numberEnd && indexEnd == other.indexEnd;
+        }
+
+        bool operator!=(const Segment& other) const {
+            return numberEnd != other.numberEnd || indexEnd != other.indexEnd;
+        }
+
     };
 
     std::vector<Segment> segments;
 
-    /*number_t sizeOfSegment(std::size_t seg_nr) const {
-        return (seg_nr == 0) ? segments.front().indexEnd : (segments[seg_nr].indexEnd - segments[seg_nr-1].indexEnd);
+    CompressedSetOfNumbers() = default;
+
+    CompressedSetOfNumbers(const std::initializer_list<number_t>& sorted_list) {
+        for (number_t n: sorted_list) push_back(n);
     }
 
-    static number_t sizeOfSegment(std::vector<Segment>::const_iterator it) {
-        return (it == segments.begin()) ? it->indexEnd : (it->indexEnd - (it-1)->indexEnd);
+    /*number_t sizeOfSegment(std::size_t seg_nr) const {
+        return (seg_nr == 0) ? segments.front().indexEnd : (segments[seg_nr].indexEnd - segments[seg_nr-1].indexEnd);
     }*/
 
+    number_t sizeOfSegment(typename std::vector<Segment>::const_iterator it) const {
+        return (it == segments.begin()) ? it->indexEnd : (it->indexEnd - (it-1)->indexEnd);
+    }
+
     /**
-     * Get first index in the segment pointed by @p it.
+     * Get the first index in the segment pointed by @p it.
      * @param it iterator to segment
-     * @return first index in the segment @c *it
+     * @return the first index in the segment @c *it
      */
     number_t firstIndex(typename std::vector<Segment>::const_iterator it) const {
         return (it == segments.begin()) ? 0 : (it-1)->indexEnd;
+    }
+
+    /**
+     * Get the first number in the segment pointed by @p it.
+     * @param it iterator to segment
+     * @return first number in the segment @c *it
+     */
+    number_t firstNumber(typename std::vector<Segment>::const_iterator it) const {
+        return it->numberEnd - sizeOfSegment(it);
     }
 
     /**
@@ -266,6 +289,19 @@ struct CompressedSetOfNumbers {
     }
 
     /**
+     * Quickly append a segment to the end of the set.
+     *
+     * Time complexity: amortized constant.
+     * @param num_beg, num_end range [num_beg, num_end) to append; num_beg-1 must be larger than all numbers already included in the set
+     */
+    void push_back_segment(number_t num_beg, number_t num_end) {
+        if (empty())
+            segments.emplace_back(num_end, num_end - num_beg);
+        else
+            segments.emplace_back(num_end, segments.back().indexEnd + num_end - num_beg);
+    }
+
+    /**
      * Insert @p number to the set.
      *
      * Time complexity: logarithmic (optimistic, e.g. if number is already in the set or is inserted near the end) or linear (pesymistic) in number of segments.
@@ -302,7 +338,76 @@ struct CompressedSetOfNumbers {
                     segments.emplace(seg_it, number+1, prev_it->indexEnd+1);
             }
         }
+    }
 
+    friend std::ostream& operator<<(std::ostream& out, const CompressedSetOfNumbers<number_t>& set) {
+        out << "{";
+        auto it = set.segments.begin();
+        if (it != set.segments.end()) {
+            out << (it->numberEnd - it->indexEnd);
+            if (it->indexEnd > 1) out << ".." << (it->numberEnd-1);
+            ++it;
+            while (it != set.segments.end()) {
+                auto size = it->indexEnd - (it-1)->indexEnd;
+                out << ", " << (it->numberEnd - size);
+                if (size > 1) out << ".." << (it->numberEnd-1);
+                ++it;
+            }
+        }
+        return out << "}";
+    }
+
+    bool operator==(const CompressedSetOfNumbers<number_t>& other) const {
+        return segments.size() == other.segments.size() && std::equal(segments.begin(), segments.end(), other.segments.begin());
+    }
+
+    bool operator!=(const CompressedSetOfNumbers<number_t>& other) const {
+        return !(*this == other);
+    }
+
+private:
+
+    /**
+     * Try append an end frament of @p a_segment to @p result (if it is included in current segment of B) and update both @p a_segment and @p a_first_number.
+     * @param result where to append resulted segment
+     * @param a_segment segment in the set A; must meet: a_segment->numberEnd <= numberEnd of current segment of B; it is advanced by this method
+     * @param a_segment_end end iterator of the set A
+     * @param a_first_number first number in the a_segment; it is updated by this method
+     * @param b_first_number first number in the current segment of the set B
+     * @return true if output a_segment == a_segment_end
+     */
+    static bool intersectionStep(CompressedSetOfNumbers<number_t>& result, typename std::vector<Segment>::const_iterator& a_segment, typename std::vector<Segment>::const_iterator a_segment_end, number_t& a_first_number, number_t b_first_number) {
+        if (b_first_number < a_segment->numberEnd)  // b_first < a_end <= b_end => [b_first, a_end) is common
+            result.push_back_segment(b_first_number, a_segment->numberEnd);
+        ++a_segment;
+        if (a_segment == a_segment_end) return true;
+        a_first_number = a_segment->numberEnd - (a_segment->indexEnd - (a_segment-1)->indexEnd);
+        return false;
+    }
+
+public:
+    /**
+     * Calculate an intersection of this and the @p other.
+     *
+     * Time complexity: O(number of segments in this + number of segments in other)
+     * @param other set
+     * @return intersection of this and the @p other
+     */
+    CompressedSetOfNumbers<number_t> intersection(const CompressedSetOfNumbers<number_t>& other) const {
+        if (this->empty() || other.empty()) return CompressedSetOfNumbers<number_t>();
+        CompressedSetOfNumbers<number_t> result;
+        auto this_segment = this->segments.begin();
+        auto this_first_number = this_segment->numberEnd - this_segment->indexEnd;
+        auto other_segment = other.segments.begin();
+        auto other_first_number = other_segment->numberEnd - other_segment->indexEnd;
+        while (true) {
+            if (this_segment->numberEnd < other_segment->numberEnd) {   // a can be included in b
+                if (intersectionStep(result, this_segment, this->segments.end(), this_first_number, other_first_number)) break;
+            } else {    // b can be included in a
+                if (intersectionStep(result, other_segment, other.segments.end(), other_first_number, this_first_number)) break;
+            }
+        };
+        return result;
     }
 
 };
@@ -310,3 +415,4 @@ struct CompressedSetOfNumbers {
 }   // namespace plask
 
 #endif // PLASK__UTILS_NUMBERS_SET_H
+
