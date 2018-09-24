@@ -89,7 +89,7 @@ struct LateralMeshAdapter {
     }
 
     shared_ptr<RectangularMesh<2>> midmesh() const {
-        return make_shared<RectangularMesh<2>>(mesh->axis[0], mesh->axis[1]->getElementMesh());
+        return make_shared<RectangularMesh<2>>(mesh->axis[0], mesh->axis[1]->getMidpointAxis());
     }
 
     size_t size() const { return mesh->axis[0]->size(); }
