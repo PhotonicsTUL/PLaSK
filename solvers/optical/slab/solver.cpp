@@ -198,7 +198,7 @@ void SlabSolver<BaseT>::setupLayers()
         !isnan(max_temp_diff) && !isinf(max_temp_diff) &&
         !isnan(temp_dist) && !isinf(temp_dist) &&
         !isnan(temp_layer) && !isinf(temp_layer)) {
-        auto temp = inTemperature(adapter.mesh);
+        auto temp = SafeData<double>(inTemperature(adapter.mesh), 300.);
         std::deque<double> refines;
         for (size_t v = 1; v != vbounds->size(); ++v) {
             double mdt = 0.;
@@ -213,7 +213,7 @@ void SlabSolver<BaseT>::setupLayers()
             if (mdt > max_temp_diff) {
                 // We need to divide the layer.
                 auto line_mesh = adapter.makeLine(idt, v, temp_layer);
-                auto tmp = inTemperature(line_mesh);
+                auto tmp = SafeData<double>(inTemperature(line_mesh), 300.);
                 auto line = line_mesh->vert();
                 size_t li = 0;
                 for (size_t i = 2; i != line->size(); ++i) {
@@ -295,7 +295,7 @@ void SlabSolver<BaseT>::setupLayers()
         !isnan(max_temp_diff) && !isinf(max_temp_diff) &&
         !isnan(temp_dist) && !isinf(temp_dist) &&
         !isnan(temp_layer) && !isinf(temp_layer)) {
-        auto temp = inTemperature(adapter.mesh);
+        auto temp = SafeData<double>(inTemperature(adapter.mesh), 300.);
         size_t nl = lcount;     // number of idependent layers to consider (stays fixed)
         for (size_t l = 0; l != nl; ++l) {
             std::vector<size_t> indices;
