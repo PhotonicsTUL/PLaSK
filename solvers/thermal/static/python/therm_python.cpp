@@ -104,6 +104,7 @@ BOOST_PYTHON_MODULE(static)
         BOUNDARY_CONDITIONS(radiation_boundary, u8"Radiative boundary conditions");
         RW_FIELD(inittemp, u8"Initial temperature");
         RW_FIELD(maxerr, u8"Limit for the temperature updates");
+        RW_PROPERTY(include_empty, usingFullMesh, useFullMesh, "Should empty regions (e.g. air) be included into computation domain?");
         solver.def_readwrite("algorithm", &__Class__::algorithm, u8"Chosen matrix factorization algorithm");
         solver.def_readwrite("itererr", &__Class__::itererr, u8"Allowed residual iteration for iterative method");
         solver.def_readwrite("iterlim", &__Class__::iterlim, u8"Maximum number of iterations for iterative method");
@@ -124,10 +125,11 @@ BOOST_PYTHON_MODULE(static)
         BOUNDARY_CONDITIONS(radiation_boundary, u8"Radiative boundary conditions");
         RW_FIELD(inittemp, u8"Initial temperature");
         RW_FIELD(maxerr, u8"Limit for the temperature updates");
-        solver.def_readwrite("algorithm", &__Class__::algorithm, u8"Chosen matrix factorization algorithm");
-        solver.def_readwrite("itererr", &__Class__::itererr, u8"Allowed residual iteration for iterative method");
-        solver.def_readwrite("iterlim", &__Class__::iterlim, u8"Maximum number of iterations for iterative method");
-        solver.def_readwrite("logfreq", &__Class__::logfreq, u8"Frequency of iteration progress reporting");
+        RW_PROPERTY(include_empty, usingFullMesh, useFullMesh, "Should empty regions (e.g. air) be included into computation domain?");
+        RW_FIELD(algorithm, u8"Chosen matrix factorization algorithm");
+        RW_FIELD(itererr, u8"Allowed residual iteration for iterative method");
+        RW_FIELD(iterlim, u8"Maximum number of iterations for iterative method");
+        RW_FIELD(logfreq, u8"Frequency of iteration progress reporting");
     }
 
     {CLASS(FiniteElementMethodThermal3DSolver, "Static3D", u8"Finite element thermal solver for 3D Geometry.")
@@ -144,6 +146,7 @@ BOOST_PYTHON_MODULE(static)
         BOUNDARY_CONDITIONS(radiation_boundary, u8"Radiative boundary conditions");
         RW_FIELD(inittemp, u8"Initial temperature");
         RW_FIELD(maxerr, u8"Limit for the temperature updates");
+        RW_PROPERTY(include_empty, usingFullMesh, useFullMesh, "Should empty regions (e.g. air) be included into computation domain?");
         RW_PROPERTY(algorithm, getAlgorithm, setAlgorithm, u8"Chosen matrix factorization algorithm");
         RW_FIELD(itererr, u8"Allowed residual iteration for iterative method");
         RW_FIELD(iterlim, u8"Maximum number of iterations for iterative method");

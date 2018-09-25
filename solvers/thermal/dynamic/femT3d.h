@@ -24,7 +24,7 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal3DSolver: public Solver
 
     DataVector<double> thickness;               ///< Thicknesses of the layers
 
-    DataVector<Vec<3,double>> mHeatFluxes;      ///< Computed (only when needed) heat fluxes on our own mesh
+    DataVector<Vec<3,double>> fluxes;      ///< Computed (only when needed) heat fluxes on our own mesh
 
     /// Set stiffness matrix + load vector
     template <typename MatrixT>

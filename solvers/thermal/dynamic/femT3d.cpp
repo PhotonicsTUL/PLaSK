@@ -21,7 +21,7 @@ FiniteElementMethodDynamicThermal3DSolver::FiniteElementMethodDynamicThermal3DSo
     logfreq(500)
 {
     temperatures.reset();
-    mHeatFluxes.reset();
+    fluxes.reset();
     inHeat = 0.;
 }
 
@@ -104,7 +104,7 @@ void FiniteElementMethodDynamicThermal3DSolver::onInitialize() {
 
 void FiniteElementMethodDynamicThermal3DSolver::onInvalidate() {
     temperatures.reset();
-    mHeatFluxes.reset();
+    fluxes.reset();
     thickness.reset();
 }
 
@@ -252,7 +252,7 @@ double FiniteElementMethodDynamicThermal3DSolver::doCompute(double time)
 {
     this->initCalculation();
 
-    mHeatFluxes.reset();
+    fluxes.reset();
 
     // store boundary conditions for current mesh
     auto btemperature = temperature_boundary(this->mesh, this->geometry);
@@ -368,7 +368,7 @@ void FiniteElementMethodDynamicThermal3DSolver::saveHeatFluxes()
 {
     this->writelog(LOG_DETAIL, "Computing heat fluxes");
 
-    mHeatFluxes.reset(this->mesh->getElementsCount());
+    fluxes.reset(this->mesh->getElementsCount());
 
     for (auto el: this->mesh->elements())
     {
@@ -394,7 +394,7 @@ void FiniteElementMethodDynamicThermal3DSolver::saveHeatFluxes()
         else
             std::tie(kxy,kz) = std::tuple<double,double>(material->thermk(temp));
 
-        mHeatFluxes[el.getIndex()] = vec(
+        fluxes[el.getIndex()] = vec(
             - 0.25e6 * kxy * (- temperatures[lll] - temperatures[llu] - temperatures[lul] - temperatures[luu]
                               + temperatures[ull] + temperatures[ulu] + temperatures[uul] + temperatures[uuu])
                 / (el.getUpper0() - el.getLower0()), // 1e6 - from µm to m
@@ -420,9 +420,9 @@ const LazyData<double> FiniteElementMethodDynamicThermal3DSolver::getTemperature
 const LazyData<Vec<3>> FiniteElementMethodDynamicThermal3DSolver::getHeatFluxes(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
     this->writelog(LOG_DEBUG, "Getting heat fluxes");
     if (!temperatures) return LazyData<Vec<3>>(dst_mesh->size(), Vec<3>(0.,0.,0.)); // in case the receiver is connected and no fluxes calculated yet
-    if (!mHeatFluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
+    if (!fluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh->getElementMesh(), mHeatFluxes, dst_mesh, method,
+    return interpolate(this->mesh->getElementMesh(), fluxes, dst_mesh, method,
                        InterpolationFlags(geometry, InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP, InterpolationFlags::Symmetry::PPN));
 }
 

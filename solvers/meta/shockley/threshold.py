@@ -1200,7 +1200,7 @@ class ThresholdSearch2D(ThresholdSearch):
 
     def on_initialize(self):
         super(ThresholdSearch2D, self).on_initialize()
-        points = plask.mesh.Rectangular2D.SimpleGenerator()(self.optical.geometry).get_midpoints()
+        points = plask.mesh.Rectangular2D.SimpleGenerator()(self.optical.geometry).elements.mesh
         self._maxneff = max(self.optical.geometry.get_material(point).Nr(self.optical.wavelength.real).real
                             for point in points)
 
