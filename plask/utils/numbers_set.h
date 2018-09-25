@@ -292,12 +292,29 @@ struct CompressedSetOfNumbers {
      * Quickly append a segment to the end of the set.
      *
      * Time complexity: amortized constant.
-     * @param num_beg, num_end range [num_beg, num_end) to append; num_beg-1 must be larger than all numbers already included in the set
+     * @param num_beg, num_end range [num_beg, num_end) to append; must be non-empty; num_beg-1 must be larger than all numbers already included in the set
      */
     void push_back_segment(number_t num_beg, number_t num_end) {
         if (empty())
             segments.emplace_back(num_end, num_end - num_beg);
         else
+            segments.emplace_back(num_end, segments.back().indexEnd + num_end - num_beg);
+    }
+
+    /**
+     * Append range [num_beg, num_end) to the end of the set.
+     *
+     * Time complexity: amortized constant.
+     * @param num_beg, num_end range [num_beg, num_end) to append; num_beg must be larger than all numbers already included in the set
+     */
+    void push_back_range(number_t num_beg, number_t num_end) {
+        if (num_beg >= num_end) return;
+        if (empty())
+            segments.emplace_back(num_end, num_end - num_beg);
+        else if (segments.back().numberEnd == num_beg) {
+            segments.back().numberEnd = num_end;
+            segments.back().indexEnd += num_end - num_beg;
+        } else
             segments.emplace_back(num_end, segments.back().indexEnd + num_end - num_beg);
     }
 
@@ -424,6 +441,8 @@ public:
 
     /**
      * Calculate a set with numbers of @c this decreased by @p positions_count. Skip numbers which became negative.
+     *
+     * Time complexity: linear in number of segments.
      * @param positions_count number of positions to shift
      * @return set with numbers of @c this decreased by @p positions_count (numbers which became negative are skiped)
      */
@@ -437,6 +456,28 @@ public:
         do {
             result.segments.emplace_back(seg_it->numberEnd - positions_count, seg_it->indexEnd - indexShift);
         } while (++seg_it != segments.end());
+        return result;
+    }
+
+    /**
+     * Calculate a transformed version of @c this. Call f(first, last) for each successive segment [first, last) of @c this.
+     * Function @p f can change its arguments and this changed range is appended to the end of the resulted set.
+     *
+     * Time complexity: linear in number of segments.
+     * @param f functor which take two number_t& as arguments
+     * @return the transformed version of @c this
+     */
+    template <typename F>
+    CompressedSetOfNumbers<number_t> transformed(F f) const {
+        CompressedSetOfNumbers<number_t> result;
+        result.reserve(segments.size());
+        for (auto it = this->segments.begin(); it != this->segments.end(); ++it) {
+            number_t beg = firstNumber(it);
+            number_t end = it->numberEnd;
+            f(beg, end);
+            result.push_back_range(beg, end);
+        }
+        result.shrink_to_fit(); // some segments could be merged or removed
         return result;
     }
 

@@ -111,5 +111,8 @@ BOOST_AUTO_TEST_CASE(shiftedLeft) {
     BOOST_CHECK_EQUAL(Set({1, 2, 3, 4, 5}).shiftedLeft(6), Set({}));
 }
 
+BOOST_AUTO_TEST_CASE(transformed) {
+    BOOST_CHECK_EQUAL(Set({1, 2, 3,  5, 6,  9,  12, 13}).transformed([](std::size_t&, std::size_t& l) { l--; }), Set({1, 2,  5,  12}));
+}
 
 BOOST_AUTO_TEST_SUITE_END()
