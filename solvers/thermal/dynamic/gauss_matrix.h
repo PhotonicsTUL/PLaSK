@@ -1,5 +1,5 @@
-#ifndef PLASK__MODULE_THERMAL_GAUSS_MATRIX_H
-#define PLASK__MODULE_THERMAL_GAUSS_MATRIX_H
+#ifndef PLASK__MODULE_ELECTRICAL_GAUSS_MATRIX_H
+#define PLASK__MODULE_ELECTRICAL_GAUSS_MATRIX_H
 
 #include <cstddef>
 #include <plask/plask.hpp>
@@ -37,25 +37,21 @@ struct DgbMatrix {
     /**
      * Create matrix
      * \param rank size of the matrix
-     * \param major shift of nodes to the next major row (mesh[x,y+1])
+     * \param band band size
      */
-    DgbMatrix(size_t rank, size_t major):
-        size(rank), ld(((3*major+4+(15/sizeof(double))) & ~size_t(15/sizeof(double))) - 1),
-        kd(major+1), shift(2*major+2), data(aligned_malloc<double>(rank*(ld+1))) {}
+    DgbMatrix(size_t rank, size_t band):
+        size(rank), ld(((3*band+1+(15/sizeof(double))) & ~size_t(15/sizeof(double))) - 1),
+        kd(band), shift(2*band), data(aligned_malloc<double>(rank*(ld+1))) {}
 
-    /**
-     * Create matrix
-     * \param rank size of the matrix
-     * \param major shift of nodes to the next major row (mesh[x,y,z+1])
-     * \param minor shift of nodes to the next minor row (mesh[x,y+1,z])
-     */
-    DgbMatrix(size_t rank, size_t major, size_t minor):
-        size(rank), ld(((3*(major+minor)+4+(15/sizeof(double))) & ~size_t(15/sizeof(double))) - 1),
-        kd(major+minor+1), shift(2*(major+minor)+2), data(aligned_malloc<double>(rank*(ld+1))) {}
 
     DgbMatrix(const DgbMatrix&) = delete; // this object is non-copyable
 
-    ~DgbMatrix() { aligned_free(data); }
+    DgbMatrix(DgbMatrix&& src): size(src.size), ld(src.ld), kd(src.kd), shift(src.shift),
+        data(src.data), ipiv(std::move(src.ipiv)) {
+            src.data = nullptr;
+    }
+
+    ~DgbMatrix() { if (data) aligned_free(data); }
 
     /**
      * Return index in data array
@@ -97,7 +93,7 @@ struct DgbMatrix {
                 data[ldi + j] = data[ldi + ld * j];
         }
     }
-    
+
     /**
      * Multiply matrix by vector
      * \param vector vector to multiply
@@ -105,7 +101,7 @@ struct DgbMatrix {
      */
     void mult(const DataVector<const double>& vector, DataVector<double>& result) {
         mirror();
-        dgbmv('N', int(size), int(size), int(kd), int(kd), 1.0, data, int(ld+1), vector.data(), 1, 0.0, result.data(), 1);
+        dgbmv('N', int(size), int(size), int(kd), int(kd), 1.0, data, int(ld)+1, vector.data(), 1, 0.0, result.data(), 1);
     }
 
     /**
@@ -115,10 +111,10 @@ struct DgbMatrix {
      */
     void addmult(const DataVector<const double>& vector, DataVector<double>& result) {
         mirror();
-        dgbmv('N', int(size), int(size), int(kd), int(kd), 1.0, data, int(ld+1), vector.data(), 1, 1.0, result.data(), 1);
+        dgbmv('N', int(size), int(size), int(kd), int(kd), 1.0, data, int(ld)+1, vector.data(), 1, 1.0, result.data(), 1);
     }
 };
 
-}}} // namespace plask::solver::thermal
+}}} // namespaces
 
-#endif // PLASK__MODULE_THERMAL_GAUSS_MATRIX_H
+#endif // PLASK__MODULE_ELECTRICAL_GAUSS_MATRIX_H
