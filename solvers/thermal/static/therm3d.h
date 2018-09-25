@@ -17,6 +17,9 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal3DSolver: public SolverWithMes
 
   protected:
 
+    /// Masked mesh
+    plask::shared_ptr<RectangularMaskedMesh3D> maskedMesh = plask::make_shared<RectangularMaskedMesh3D>();
+
     Algorithm algorithm;   ///< Factorization algorithm to use
 
     int loopno;         ///< Number of completed loops
@@ -51,6 +54,10 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal3DSolver: public SolverWithMes
      */
     template <typename MatrixT>
     void applyBC(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature);
+
+    /// Setup matrix
+    template <typename MatrixT>
+    MatrixT makeMatrix();
 
     /// Update stored temperatures and calculate corrections
     double saveTemperatures(DataVector<double>& T);
@@ -101,6 +108,14 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal3DSolver: public SolverWithMes
 
     ReceiverFor<Heat,Geometry3D> inHeat;
 
+    /// Are we using full mesh?
+    bool usingFullMesh() const { return use_full_mesh; }
+    /// Set whether we should use full mesh
+    void useFullMesh(bool val) {
+        use_full_mesh = val;
+        invalidate();
+    }
+
     /**
      * Run temperature calculations
      * \param loops maximum number of loops to run
@@ -129,6 +144,9 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal3DSolver: public SolverWithMes
     void setAlgorithm(Algorithm alg);
 
   protected:
+
+    size_t band;                                ///< Maximum band size
+    bool use_full_mesh;                         ///< Should we use full mesh?
 
     struct ThermalConductivityData: public LazyDataImpl<Tensor2<double>> {
         const FiniteElementMethodThermal3DSolver* solver;

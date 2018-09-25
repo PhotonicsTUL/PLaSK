@@ -213,7 +213,7 @@ class ThermoElectric(plask.Solver):
         else:
             return
 
-        points = Mesh.SimpleGenerator()(geometry).get_midpoints()
+        points = Mesh.SimpleGenerator()(geometry).elements.mesh
         levels = {}
         for p in points:
             roles = geometry.get_roles(p)
@@ -234,7 +234,7 @@ class ThermoElectric(plask.Solver):
     def _save_thermoelectric(self, h5file, group):
         tmesh = self.thermal.mesh
         vmesh = self.electrical.mesh
-        jmesh = vmesh.get_midpoints()
+        jmesh = vmesh.elements.mesh
         temp = self.thermal.outTemperature(tmesh)
         volt = self.electrical.outVoltage(vmesh)
         curr = self.electrical.outCurrentDensity(jmesh)

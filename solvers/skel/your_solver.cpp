@@ -34,6 +34,7 @@ void YourSolver::compute(double parameter)
     initCalculation(); // This must be called before any calculation!
     writelog(LOG_INFO, "Begining calculation of something");
     auto temperature = inTemperature(*mesh); // Obtain temperature from some other solver
+    // Please mind that temperature can be NaN. You should test this assume 300K in such case.
     // [...] Do your computations here
     outSingleValue = new_computed_value;
     writelog(LOG_RESULT, "Found new value of something = $1$", new_computed_value);

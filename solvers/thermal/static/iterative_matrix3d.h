@@ -111,6 +111,6 @@ struct PrecondJacobi3D {
     }
 };
 
-}}} // namespace plask::thermal::statict3d
+}}} // namespace plask::thermal::tstatict3d
 
 #endif // PLASK__MODULE_THERMAL_ITERATIVE_MATRIX3D_H

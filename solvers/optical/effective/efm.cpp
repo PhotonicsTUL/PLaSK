@@ -280,7 +280,7 @@ void EffectiveFrequencyCyl::updateCache()
             axis1->addPoint(mesh->axis[1]->at(mesh->axis[1]->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
 
         auto midmesh = plask::make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
-        auto temp = inTemperature(midmesh);
+        auto temp = SafeData<double>(inTemperature(midmesh), 300.);
         bool have_gain = false;
         LazyData<Tensor2<double>> gain1, gain2;
 

@@ -270,7 +270,7 @@ void ExpansionPW3D::reset() {
 
 
 void ExpansionPW3D::prepareIntegrals(double lam, double glam) {
-    temperature = SOLVER->inTemperature(mesh);
+    temperature = SafeData<double>(SOLVER->inTemperature(mesh), 300.);
     gain_connected = SOLVER->inGain.hasProvider();
     if (gain_connected) {
         if (isnan(glam)) glam = lam;

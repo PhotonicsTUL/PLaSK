@@ -6,7 +6,7 @@
 #include "block_matrix.h"
 #include "gauss_matrix.h"
 #include "algorithm.h"
-#include "iterative_matrix.h"
+//#include "iterative_matrix.h"
 
 namespace plask { namespace thermal { namespace dynamic {
 
@@ -17,20 +17,26 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal3DSolver: public Solver
 
   protected:
 
-    std::size_t size;   ///< Number of columns in the main matrix
+    /// Masked mesh
+    plask::shared_ptr<RectangularMaskedMesh3D> maskedMesh = plask::make_shared<RectangularMaskedMesh3D>();
+
     double maxT;        ///< Maximum temperature recorded
 
     DataVector<double> temperatures;           ///< Computed temperatures
 
     DataVector<double> thickness;               ///< Thicknesses of the layers
 
-    DataVector<Vec<3,double>> mHeatFluxes;      ///< Computed (only when needed) heat fluxes on our own mesh
+    DataVector<Vec<3,double>> fluxes;      ///< Computed (only when needed) heat fluxes on our own mesh
 
     /// Set stiffness matrix + load vector
     template <typename MatrixT>
     void setMatrix(MatrixT& A, MatrixT& B, DataVector<double>& F,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature
                   );
+
+    /// Setup matrix
+    template <typename MatrixT>
+    MatrixT makeMatrix();
 
     /// Create 3D-vector with calculated heat fluxes
     void saveHeatFluxes(); // [W/m^2]
@@ -76,6 +82,14 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal3DSolver: public Solver
     size_t rebuildfreq;    ///< Frequency of mass matrix rebuilding
     size_t logfreq;        ///< Frequency of iteration progress reporting
 
+    /// Are we using full mesh?
+    bool usingFullMesh() const { return use_full_mesh; }
+    /// Set whether we should use full mesh
+    void useFullMesh(bool val) {
+        use_full_mesh = val;
+        this->invalidate();
+    }
+
     /**
      * Run temperature calculations
      * \return max correction of temperature against the last call
@@ -94,6 +108,9 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal3DSolver: public Solver
     ~FiniteElementMethodDynamicThermal3DSolver();
 
   protected:
+
+    size_t band;                                ///< Maximum band size
+    bool use_full_mesh;                         ///< Should we use full mesh?
 
     struct ThermalConductivityData: public LazyDataImpl<Tensor2<double>> {
         const FiniteElementMethodDynamicThermal3DSolver* solver;

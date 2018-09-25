@@ -390,6 +390,39 @@ PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_FOR_LAZY_DATA(double)
 
 #endif
 
+
+/**
+ * LazyData implementation removing NaN from another data.
+ * TODO: sanitize also \c inf
+ */
+template <typename T>
+struct SafeDataImpl: public LazyDataImpl<T> {
+
+    const LazyData<T> src;
+    const T safe_value;
+
+    /**
+     * Create lazy data filter.
+     * \param src source lazy data or vector
+     * \param sane_value sane value that is returned instead of NaN
+     */
+    SafeDataImpl(const LazyData<T>& src, const T safe_value=Zero<T>()): src(src), safe_value(safe_value) {}
+
+    std::size_t size() const override { return src.size(); }
+
+    T at(std::size_t i) const override { return remove_nan(src.at(i), safe_value); }
+};
+
+/**
+ * Make LazyData removing NaN from another lazy data.
+ * \param src source lazy data or vector
+ * \param sane_value sane value that is returned instead of NaN
+ */
+template <typename T>
+inline LazyData<T> SafeData(const LazyData<T>& src, const T safe_value=Zero<T>()) {
+    return LazyData<T>(new SafeDataImpl<T>(src, safe_value));
+}
+
 }   // namespace plask
 
 #endif // PLASK__LAZYDATA_H

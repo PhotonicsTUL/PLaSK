@@ -837,7 +837,7 @@ struct FreeCarrierGainSolver<GeometryT>::InterpolatedData: public FreeCarrierGai
             }
             AveragedData temps(this->solver, "temperature", this->regpoints[reg], this->solver->regions[reg]);
             AveragedData concs(temps); concs.name = "carriers concentration";
-            temps.data = this->solver->inTemperature(temps.mesh, interp);
+            temps.data = SafeData<double>(this->solver->inTemperature(temps.mesh, interp), 300.);
             concs.data = this->solver->inCarriersConcentration(CarriersConcentration::PAIRS, temps.mesh, interp);
             this->data[reg] = interpolate(plask::make_shared<RectangularMesh<2>>(this->regpoints[reg], zero_axis),
                                           getValues(wavelength, interp, reg, concs, temps),
@@ -1002,7 +1002,7 @@ struct FreeCarrierGainSolver<GeometryT>::EnergyLevelsData: public FreeCarrierGai
         temps.reserve(solver->regions.size());
         for (size_t reg = 0; reg != solver->regions.size(); ++reg) {
             AveragedData temp(this->solver, "temperature", this->regpoints[reg], this->solver->regions[reg]);
-            temp.data = this->solver->inTemperature(temp.mesh, interp);
+            temp.data = SafeData<double>(this->solver->inTemperature(temp.mesh, interp), 300.);
             temps.emplace_back(interpolate(temp.mesh, DataVector<const double>(temp.data), this->dest_mesh, interp,
                                            this->solver->geometry));
         }

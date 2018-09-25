@@ -135,6 +135,6 @@ std::size_t solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, do
 }
 
 
-}}} // namespace plask::thermal::statict3d
+}}} // namespace plask::thermal::tstatict3d
 
 #endif // PLASK__MODULE_THERMAL_STATIC_CONJUGATE_GRADIENT_H
