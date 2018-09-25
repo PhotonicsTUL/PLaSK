@@ -422,6 +422,24 @@ public:
             f(firstNumber(it), it->numberEnd);
     }*/
 
+    /**
+     * Calculate a set with numbers of @c this decreased by @p positions_count. Skip numbers which became negative.
+     * @param positions_count number of positions to shift
+     * @return set with numbers of @c this decreased by @p positions_count (numbers which became negative are skiped)
+     */
+    CompressedSetOfNumbers<number_t> shiftedLeft(number_t positions_count) const {
+        auto seg_it = std::upper_bound(segments.begin(), segments.end(), positions_count, Segment::compareByNumberEnd);
+        if (seg_it == segments.end()) return CompressedSetOfNumbers<number_t>();
+        CompressedSetOfNumbers<number_t> result;
+        result.reserve(segments.end() - seg_it);
+        auto first = firstNumber(seg_it);
+        auto indexShift = (positions_count > first ? positions_count - first : 0) + firstIndex(seg_it);
+        do {
+            result.segments.emplace_back(seg_it->numberEnd - positions_count, seg_it->indexEnd - indexShift);
+        } while (++seg_it != segments.end());
+        return result;
+    }
+
 };
 
 }   // namespace plask
