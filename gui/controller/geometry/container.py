@@ -134,7 +134,7 @@ class GNContainerChildBaseController(GNChildController):
             change_cb=lambda aligners:
             self._set_node_by_setter_undoable(setter, aligners, self.child_node.in_parent, 'change item position',
                                               node=self.child_node))
-        self.path = self.construct_combo_box('Path:', items=[''] + sorted(self.model.paths(), key=lambda s: s.lower()),
+        self.path = self.construct_combo_box('Path:', items=[''] + sorted(self.model.get_paths(), key=lambda s: s.lower()),
                                              node_property_name='path', node=self.child_node)
         self.path.setToolTip('Name of a path that can be later on used to distinguish '
                              'between multiple occurrences of the same object.')

@@ -180,7 +180,8 @@ class GeometryController(Controller):
         if current_index.isValid():
             add_child_menu = self._get_add_child_menu(current_index)
             if add_child_menu:
-                self.add_menu.addAction('&Item').setMenu(add_child_menu)
+                self._add_action = self.add_menu.addAction('&Item')
+                self._add_action.setMenu(add_child_menu)
         for n in geometry_types_geometries_core.keys():
             a = QAction(gname(n, True), self.add_menu)
             a.triggered.connect(lambda checked=False, n=n: self.append_geometry_node(n))
@@ -466,7 +467,7 @@ class GeometryController(Controller):
 
     def _fill_search_combo(self):
         self.search_combo.clear()
-        self.search_combo.addItems([''] + list(self.model.names()))
+        self.search_combo.addItems([''] + list(self.model.get_names()))
 
     def show_selection(self):
         if self._current_index is None: return

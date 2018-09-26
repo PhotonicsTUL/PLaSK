@@ -415,12 +415,12 @@ class SolverWidget(VerticalScrollArea):
                                     pass
                             elif isinstance(item, AttrGeometryObject):
                                 try:
-                                    self._set_items(edit, list(self.controller.document.geometry.model.names()))
+                                    self._set_items(edit, list(self.controller.document.geometry.model.get_names()))
                                 except AttributeError:
                                     pass
                             elif isinstance(item, AttrGeometryPath):
                                 try:
-                                    self._set_items(edit, list(self.controller.document.geometry.model.paths()))
+                                    self._set_items(edit, list(self.controller.document.geometry.model.get_paths()))
                                 except AttributeError:
                                     pass
                             elif isinstance(item, AttrMesh):

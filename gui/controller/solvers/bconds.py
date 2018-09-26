@@ -23,6 +23,7 @@ from ...utils import get_manager
 from ...utils.config import CONFIG
 from ...utils.str import none_to_empty, empty_to_none
 from ...utils.widgets import HTMLDelegate, ComboBox, table_edit_shortcut
+from ...utils.qsignals import BlockQtSignals
 from ..defines import DefinesCompletionDelegate, get_defines_completer
 from ..table import table_with_manipulators
 from ...model.solvers.bconds import RectangularBC, BoundaryConditionsModel
@@ -36,16 +37,22 @@ else:
     preview_available = True
     import matplotlib
 
+
 class PlaceDetailsEditor(QWidget):
-    pass
+
+    def __init__(self, delegate, parent=None):
+        super(PlaceDetailsEditor, self).__init__(parent)
+        self.delegate = delegate
+
+    def data_changed(self, *args):
+        self.delegate.commitData.emit(self)
 
 
 class RectangularPlaceSide(PlaceDetailsEditor):
     Model = RectangularBC.PlaceSide
 
-    def __init__(self, controller, defines=None, parent=None):
-        super(RectangularPlaceSide, self).__init__(parent)
-        self.controller = controller
+    def __init__(self, delegate, parent=None):
+        super(RectangularPlaceSide, self).__init__(delegate, parent)
         self.setAutoFillBackground(True)
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 4, 0)
@@ -53,13 +60,17 @@ class RectangularPlaceSide(PlaceDetailsEditor):
         self.object.sizePolicy().setHorizontalStretch(2)
         self.object.sizePolicy().setHorizontalPolicy(QSizePolicy.MinimumExpanding)
         self.object.setEditable(True)
+        self.object.currentIndexChanged.connect(self.data_changed)
+        self.object.editingFinished.connect(self.data_changed)
         self.path = ComboBox()
         self.path.sizePolicy().setHorizontalStretch(1)
         self.path.sizePolicy().setHorizontalPolicy(QSizePolicy.MinimumExpanding)
         self.path.setEditable(True)
-        if defines is not None:
-            self.object.setCompleter(defines)
-            self.path.setCompleter(defines)
+        self.path.currentIndexChanged.connect(self.data_changed)
+        self.path.editingFinished.connect(self.data_changed)
+        if delegate.defines is not None:
+            self.object.setCompleter(delegate.defines)
+            self.path.setCompleter(delegate.defines)
         label = QLabel(" Obj&ect:")
         label.setBuddy(self.object)
         label.setFixedWidth(label.fontMetrics().width(label.text()))
@@ -77,17 +88,18 @@ class RectangularPlaceSide(PlaceDetailsEditor):
         self.object.setFocus()
 
     def fill_details(self, obj, pth):
-        self.object.setCurrentIndex(self.object.findText(obj))
-        self.object.setEditText(none_to_empty(obj))
-        self.path.setCurrentIndex(self.path.findText(pth))
-        self.path.setEditText(none_to_empty(pth))
+        with BlockQtSignals(self.object):
+            self.object.setCurrentIndex(self.object.findText(obj))
+            self.object.setEditText(none_to_empty(obj))
+        with BlockQtSignals(self.path):
+            self.path.setCurrentIndex(self.path.findText(pth))
+            self.path.setEditText(none_to_empty(pth))
 
     def load_data(self, data):
         self.object.clear()
-        try: self.object.addItems([''] + list(self.controller.document.geometry.model.names()))
+        try: self.object.addItems([''] + list(self.delegate.controller.document.geometry.model.get_names()))
         except AttributeError: pass
-        self.path.clear()
-        try: self.path.addItems([''] + list(self.controller.document.geometry.model.paths()))
+        try: self.path.addItems([''] + list(self.delegate.controller.document.geometry.model.get_paths()))
         except AttributeError: pass
         self.fill_details(data.object, data.path)
 
@@ -99,22 +111,24 @@ class RectangularPlaceSide(PlaceDetailsEditor):
 class RectangularPlaceLine(PlaceDetailsEditor):
     Model = RectangularBC.PlaceLine
 
-    def __init__(self, controller, defines=None, parent=None):
-        super(RectangularPlaceLine, self).__init__(parent)
-        self.controller = controller
+    def __init__(self, delegate, parent=None):
+        super(RectangularPlaceLine, self).__init__(delegate, parent)
         self.setAutoFillBackground(True)
         layout = QHBoxLayout()
         layout.setContentsMargins(4, 0, 4, 0)
         self.position = QLineEdit()
         self.start = QLineEdit()
         self.stop = QLineEdit()
+        self.position.editingFinished.connect(self.data_changed)
+        self.start.editingFinished.connect(self.data_changed)
+        self.stop.editingFinished.connect(self.data_changed)
         self.position.sizePolicy().setHorizontalStretch(1)
         self.start.sizePolicy().setHorizontalStretch(1)
         self.stop.sizePolicy().setHorizontalStretch(1)
-        if defines is not None:
-            self.position.setCompleter(defines)
-            self.start.setCompleter(defines)
-            self.stop.setCompleter(defines)
+        if delegate.defines is not None:
+            self.position.setCompleter(delegate.defines)
+            self.start.setCompleter(delegate.defines)
+            self.stop.setCompleter(delegate.defines)
         label = QLabel(" &Pos:")
         label.setBuddy(self.position)
         label.setFixedWidth(label.fontMetrics().width(label.text()))
@@ -379,7 +393,8 @@ class BoundaryConditionsDialog(QDialog):
             while _picked_path:
                 node = self.geometry_node.get_node_by_real_path(_picked_path)
                 if node.name:
-                    self._active_place_editor.fill_details(node.name, node.path)
+                    node_path = node.path.split(',')[0].strip() if node.path is not None else None
+                    self._active_place_editor.fill_details(node.name, node_path)
                     self.place_details_delegate.commitData.emit(self._active_place_editor)
                     break
                 else:
@@ -520,7 +535,7 @@ class PlaceDetailsDelegate(HTMLDelegate):
         model = index.model()
         row = index.row()
         place = model.entries[row][0]
-        editor = PLACES_EDITORS[schema.mesh_type][place.label](self.controller, self.defines, parent)
+        editor = PLACES_EDITORS[schema.mesh_type][place.label](self, parent)
         self.dialog._active_place_editor = editor
         return editor
 

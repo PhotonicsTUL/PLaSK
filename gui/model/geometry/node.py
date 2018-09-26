@@ -12,6 +12,7 @@
 
 from lxml import etree
 from numbers import Number
+from itertools import chain
 
 from ...utils import require_str_first_attr_path_component
 from ...utils.xml import AttributeReader, OrderedTagReader
@@ -334,7 +335,7 @@ class GNode(object):
             yield e
             l[-1:] = reversed(e.children)
 
-    def names_before(self, result_set, end_node):
+    def get_names_before(self, result_set, end_node):
         """
         Search nodes in depth-first, left-to-right, pre-order and append all its names to result_set.
         Stop searching when end_node is found.
@@ -346,10 +347,10 @@ class GNode(object):
         name = getattr(self, 'name', None)
         if name is not None: result_set.add(name)
         for c in self.children:
-            if not c.names_before(result_set, end_node): return False
+            if not c.get_names_before(result_set, end_node): return False
         return True
 
-    def names(self, filter=None):
+    def get_names(self, filter=None):
         """
         Calculate all names of nodes in subtree with self in root.
         :param filter: names filter
@@ -378,15 +379,21 @@ class GNode(object):
         """
         return self.find(lambda node: getattr(node, 'name', None) == name)
 
-    def paths(self, filter=None):
+    def get_paths(self, filter=None):
         """
         Calculate all path's names of nodes in subtree with self in root.
         :return set: calculated set of path's names
         """
         if filter is not None:
-            return set(n for n in (getattr(nd, 'path', None) for nd in self.traverse() if filter(nd)) if n is not None)
+            return set(chain(*(
+                (p.strip() for p in ps.split(',')) for ps in
+                (getattr(nd, 'path', None) for nd in self.traverse() if filter(nd))
+                if ps is not None)))
         else:
-            return set(n for n in (getattr(nd, 'path', None) for nd in self.traverse()) if n is not None)
+            return set(chain(*(
+                (p.strip() for p in ps.split(',')) for ps in
+                (getattr(nd, 'path', None) for nd in self.traverse())
+                if ps is not None)))
 
     def new_child_pos(self):
         """Return position of a new child"""

@@ -148,11 +148,11 @@ class RectangularRefinedGeneratorController(GridController):
             self.refinements.setItemDelegateForColumn(0, ComboBoxDelegate(AXIS_NAMES[self.model.dim-1],
                                                                           self.refinements, editable=False))
         def object_names():
-            return self.document.geometry.model.names(filter=lambda x: not isinstance(x, GNGeometryBase))
+            return self.document.geometry.model.get_names(filter=lambda x: not isinstance(x, GNGeometryBase))
         self.refinements.setItemDelegateForColumn(1-one, ComboBoxDelegate(object_names,
                                                                           self.refinements, editable=True))
         try:
-            paths = self.document.geometry.model.paths
+            paths = self.document.geometry.model.get_paths()
         except AttributeError:
             pass
         else:

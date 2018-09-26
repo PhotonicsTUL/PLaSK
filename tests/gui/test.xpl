@@ -200,6 +200,31 @@
       <cuboid material="GaAs" dx="1.0" dy="2.0" dz="0.5"/>
     </stack>
   </cartesian3d>
+  <cartesian2d name="roads">
+    <stack>
+      <shelf>
+        <item path="bl,blsl,blsr">
+          <stack name="big">
+            <shelf>
+              <item path="sl,blsl,brsl">
+                <rectangle name="small" material="AlAs" dtran="0.333" dvert="0.2"/>
+              </item>
+              <gap total="1.0"/>
+              <item path="sr,blsr,brsr">
+                <again ref="small"/>
+              </item>
+            </shelf>
+            <rectangle material="AlN" dtran="1.0" dvert="0.5"/>
+          </stack>
+        </item>
+        <gap total="3.0"/>
+        <item path="br,brsl,brsr">
+          <again ref="big"/>
+        </item>
+      </shelf>
+      <rectangle material="GaN" dtran="3.0" dvert="0.5"/>
+    </stack>
+  </cartesian2d>
 </geometry>
 
 <grids>
@@ -286,11 +311,14 @@
     <mesh ref="optical"/>
   </electrical>
   <meta name="meta2" solver="ThermoElectric2D" lib="shockley">
-    <geometry electrical="geo2d" thermal="geo2d-copy"/>
+    <geometry electrical="roads" thermal="geo2d-copy"/>
     <mesh electrical="default" thermal="default"/>
     <voltage>
+      <condition value="1.">
+        <place side="top" object="small" path="sr"/>
+      </condition>
       <condition value="0.">
-        <place side="top" object="stos2"/>
+        <place line="horizontal" at="0" start="1" stop="2"/>
       </condition>
     </voltage>
   </meta>

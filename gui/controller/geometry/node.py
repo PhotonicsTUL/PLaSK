@@ -181,7 +181,7 @@ class GNodeController(Controller):
     def construct_names_before_self_combo_box(self, row_name=None, node_property_name=None,
                                               display_property_name=None, change_cb=None):
         res = self.construct_combo_box(items=[''] +
-                                       sorted(self.model.names_before(self.node), key=lambda s: s.lower()),
+                                       sorted(self.model.get_names_before(self.node), key=lambda s: s.lower()),
                                        node_property_name=node_property_name,
                                        display_property_name=display_property_name,
                                        change_cb=change_cb)
