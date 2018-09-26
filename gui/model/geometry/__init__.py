@@ -537,7 +537,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
             GeometryModel.ReparentCommand(self, parent_node, row, child_node, new_parent))
         return self.index_for_node(new_parent)
 
-    def names_before(self, end_node):
+    def get_names_before(self, end_node):
         res = set()
         for r in self.roots:
             if not r.get_names_before(res, end_node): break
