@@ -454,6 +454,19 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
         elementSetInitialized = true;
     }
 
+    void calculateElements2D() {
+        auto elementSet = nodeSet.transformed([] (std::size_t&, std::size_t& e) { --e; });   // same as nodeSet.intersected(nodeSet.shiftedLeft(1))
+        auto minor_axis_size = *(fullMesh.minor_axis)->size();
+        elementSet = elementSet.intersected(elementSet.shiftedLeft(minor_axis_size));
+        // now elementSet includes all low indexes which have other corners of elements (plus some indexes in the last column)
+        // we have to transform low indexes to indexes of elements:
+        elementSet = elementSet.transformed([=] (std::size_t& b, std::size_t& e) {  // here: 0 <= b < e
+            if (e % minor_axis_size == 0) --e;  // fix: end of segment cannot lie at the last column, as getElementIndexFromLowIndex confuses last column with the first element in the next row
+            b = fullMesh.getElementIndexFromLowIndex(b);
+            e = fullMesh.getElementIndexFromLowIndex(e);
+        });
+    }
+
   protected:
     /// Ensure that elementSet is calculated (calculate it if it is not)
     const Set& ensureHasElements() const {
