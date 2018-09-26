@@ -154,8 +154,7 @@
   geometry: Cartesian3D
 
   tags:
-  - &mesh
-    tag: mesh
+  - tag: mesh
     label: Mesh
     help: >
       Rectangular3D mesh used by this solver.

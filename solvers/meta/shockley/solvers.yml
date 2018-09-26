@@ -368,12 +368,6 @@
     mesh type: Rectangular3D
     mesh: { tag: mesh, attr: thermal }
     geometry: { tag: geometry, attr: thermal }
-    mesh:
-      tag: mesh
-      attr: thermal
-    geometry:
-      tag: geometry
-      attr: thermal
 
   - bcond: heatflux
     label: Heat Flux
