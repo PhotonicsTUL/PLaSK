@@ -546,7 +546,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
                                  interpolation::trilinear(
                                      fullMesh.axis[0]->at(index0_lo), fullMesh.axis[0]->at(index0_hi),
                                      fullMesh.axis[1]->at(index1_lo), fullMesh.axis[1]->at(index1_hi),
-                                     fullMesh.axis[2]->at(index1_lo), fullMesh.axis[2]->at(index1_hi),
+                                     fullMesh.axis[2]->at(index2_lo), fullMesh.axis[2]->at(index2_hi),
                                      data[index(index0_lo, index1_lo, index2_lo)],
                                      data[index(index0_hi, index1_lo, index2_lo)],
                                      data[index(index0_hi, index1_hi, index2_lo)],

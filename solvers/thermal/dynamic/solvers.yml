@@ -3,8 +3,27 @@
   category: thermal
   help: Two-dimensional dynamic thermal solver in Cartesian geometry, based on finite-element method.
   geometry: Cartesian2D
-  mesh: Rectangular2D
   tags:
+  - &mesh
+    tag: mesh
+    label: Mesh
+    help: >
+      Rectangular2D mesh used by this solver.
+    attrs:
+    - attr: ref
+      label: Mesh
+      required: true
+      type: mesh
+      mesh types: [ Rectangular2D ]
+      help: >
+        Name of a Rectangular2D mesh defined in the :xml:tag:`<grids>` section.
+    - &full-mesh
+      attr: include-empty
+      label: Include Empty Regions
+      type: bool
+      default: no
+      help: >
+        Should empty regions (e.g. air) be included into computation domain?
   - &temperature
     bcond: temperature
     label: Temperature
@@ -77,6 +96,7 @@
   geometry: Cylindrical
   mesh: Rectangular2D
   tags:
+  - *mesh
   - *temperature
   - *loop
   - *matrix
