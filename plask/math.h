@@ -140,18 +140,6 @@ typename std::remove_cv<typename std::remove_reference<T>::type>::type Zero() {
 }
 
 
-/**
- * Replace NaN with some specified value (zero by default).
- * \param val value to test
- * \param nan value returned instead of NaN
- * \returns \c val or its replacement (\c nan) if value is NaN
- */
-template <typename T>
-inline T remove_nan(T val, const T nan=Zero<T>()) {
-    return isnan(val)? nan : val;
-}
-
-
 // size_t is preferred for array indexing
 using std::size_t;
 using std::ptrdiff_t;
@@ -197,6 +185,18 @@ inline bool is_zero(dcomplex v) {
 /// Check if the complex number is NaN
 inline bool isnan(dcomplex v) {
     return isnan(v.real()) || isnan(v.imag());
+}
+
+
+/**
+ * Replace NaN with some specified value (zero by default).
+ * \param val value to test
+ * \param nan value returned instead of NaN
+ * \returns \c val or its replacement (\c nan) if value is NaN
+ */
+template <typename T>
+inline T remove_nan(T val, const T nan=Zero<T>()) {
+    return isnan(val)? nan : val;
 }
 
 
