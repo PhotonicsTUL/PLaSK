@@ -60,9 +60,9 @@ def set_conflict(widget, conflict):
     with BlockQtSignals(widget):
         widget.setEnabled(not conflict)
         color = QPalette().color(QPalette.Normal, QPalette.Window if conflict else QPalette.Base)
-        palette = widget.palette()
-        palette.setColor(QPalette.Base, color)
-        widget.setPalette(palette)
+        # palette = widget.palette()
+        # palette.setColor(QPalette.Base, color)
+        # widget.setPalette(palette)
         try:
             if conflict:
                 placeholder = widget.placeholderText()
