@@ -424,15 +424,15 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     bool elementSetInitialized = true;
 
   private:
-    bool restVerticesIncluded(const RectangularMesh2D::Element& el) const {
-        return /*nodeSet.includes(el.getLoLoIndex()) &&*/
+
+    /*bool restVerticesIncluded(const RectangularMesh2D::Element& el) const {
+        return //nodeSet.includes(el.getLoLoIndex()) &&
                nodeSet.includes(el.getUpLoIndex()) &&
                nodeSet.includes(el.getLoUpIndex()) &&
                nodeSet.includes(el.getUpUpIndex());
     }
-
     bool restVerticesIncluded(const RectangularMesh3D::Element& el) const {
-        return /*nodeSet.includes(el.getLoLoLoIndex()) &&*/
+        return //nodeSet.includes(el.getLoLoLoIndex()) &&
                nodeSet.includes(el.getUpLoLoIndex()) &&
                nodeSet.includes(el.getLoUpLoIndex()) &&
                nodeSet.includes(el.getLoLoUpIndex()) &&
@@ -441,9 +441,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
                nodeSet.includes(el.getUpUpLoIndex()) &&
                nodeSet.includes(el.getUpUpUpIndex());
     }
-
-    template <int d = DIM>
-    typename std::enable_if<d == 3>::type calculateElements() {
+    void calculateElements() {
         boost::lock_guard<boost::mutex> lock((boost::mutex&)writeElementSet);
         if (elementSetInitialized) return;  // another thread has initilized elementSet just when we waited for mutex
         // TODO faster implementation
@@ -453,7 +451,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
             if (restVerticesIncluded(fullMesh.getElement(elementIndex))) elementSet.push_back(elementIndex);
         }
         elementSetInitialized = true;
-    }
+    }*/ // ^ generic algorithm, slow but probably correct
 
     template <int d = DIM>
     typename std::enable_if<d == 2>::type calculateElements() {
@@ -467,7 +465,36 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
         // we have to transform low indexes to indexes of elements:
         elementSet = elementSet.transformed([&, minor_axis_size] (std::size_t& b, std::size_t& e) {  // here: 0 <= b < e
             if (e % minor_axis_size == 0) --e;  // end of segment cannot lie at the last column, as getElementIndexFromLowIndex confuses last column with the first element in the next row
+            // no need to fix b (if b % minor_axis_size == 0) as rounding in getElementIndexFromLowIndex will give good value (as getElementIndexFromLowIndex(b)==getElementIndexFromLowIndex(b+1))
             b = fullMesh.getElementIndexFromLowIndex(b);
+            e = fullMesh.getElementIndexFromLowIndex(e);
+        });
+
+        elementSetInitialized = true;
+    }
+
+    template <int d = DIM>
+    typename std::enable_if<d == 3>::type calculateElements() {
+        boost::lock_guard<boost::mutex> lock((boost::mutex&)writeElementSet);
+        if (elementSetInitialized) return;  // another thread has initilized elementSet just when we waited for mutex
+
+        elementSet = nodeSet.transformed([] (std::size_t&, std::size_t& e) { --e; });   // same as nodeSet.intersected(nodeSet.shiftedLeft(1))
+        auto minor_axis_size = fullMesh.minorAxis()->size();
+        elementSet = elementSet.intersection(elementSet.shiftedLeft(minor_axis_size));
+        auto medium_axis_size = fullMesh.mediumAxis()->size();
+        elementSet = elementSet.intersection(elementSet.shiftedLeft(minor_axis_size*medium_axis_size));
+        // now elementSet includes all low indexes which have other corners of elements (plus some indexes in the last column)
+        // we have to transform low indexes to indexes of elements:
+        elementSet = elementSet.transformed([&, minor_axis_size, medium_axis_size] (std::size_t& b, std::size_t& e) {  // here: 0 <= b < e
+            std::size_t b_div = b / minor_axis_size;
+            if (b_div % medium_axis_size == (medium_axis_size-1))
+                b = (b_div+1) * minor_axis_size;    // first index in the next plane
+            b = fullMesh.getElementIndexFromLowIndex(b);
+
+            std::size_t e_div = (e-1) / minor_axis_size;    // e-1 is the last index of the range
+            if (e_div % medium_axis_size == (medium_axis_size-1))
+                e = e_div * minor_axis_size - 1;    // -1 to not be divisible by minor_axis_size
+            else if (e % minor_axis_size == 0) --e;
             e = fullMesh.getElementIndexFromLowIndex(e);
         });
 
