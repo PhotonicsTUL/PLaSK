@@ -442,7 +442,8 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
                nodeSet.includes(el.getUpUpUpIndex());
     }
 
-    void calculateElements() {
+    template <int d = DIM>
+    typename std::enable_if<d == 3>::type calculateElements() {
         boost::lock_guard<boost::mutex> lock((boost::mutex&)writeElementSet);
         if (elementSetInitialized) return;  // another thread has initilized elementSet just when we waited for mutex
         // TODO faster implementation
@@ -454,17 +455,23 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
         elementSetInitialized = true;
     }
 
-    void calculateElements2D() {
-        auto elementSet = nodeSet.transformed([] (std::size_t&, std::size_t& e) { --e; });   // same as nodeSet.intersected(nodeSet.shiftedLeft(1))
-        auto minor_axis_size = *(fullMesh.minor_axis)->size();
-        elementSet = elementSet.intersected(elementSet.shiftedLeft(minor_axis_size));
+    template <int d = DIM>
+    typename std::enable_if<d == 2>::type calculateElements() {
+        boost::lock_guard<boost::mutex> lock((boost::mutex&)writeElementSet);
+        if (elementSetInitialized) return;  // another thread has initilized elementSet just when we waited for mutex
+
+        elementSet = nodeSet.transformed([] (std::size_t&, std::size_t& e) { --e; });   // same as nodeSet.intersected(nodeSet.shiftedLeft(1))
+        auto minor_axis_size = fullMesh.minorAxis()->size();
+        elementSet = elementSet.intersection(elementSet.shiftedLeft(minor_axis_size));
         // now elementSet includes all low indexes which have other corners of elements (plus some indexes in the last column)
         // we have to transform low indexes to indexes of elements:
-        elementSet = elementSet.transformed([=] (std::size_t& b, std::size_t& e) {  // here: 0 <= b < e
-            if (e % minor_axis_size == 0) --e;  // fix: end of segment cannot lie at the last column, as getElementIndexFromLowIndex confuses last column with the first element in the next row
+        elementSet = elementSet.transformed([&, minor_axis_size] (std::size_t& b, std::size_t& e) {  // here: 0 <= b < e
+            if (e % minor_axis_size == 0) --e;  // end of segment cannot lie at the last column, as getElementIndexFromLowIndex confuses last column with the first element in the next row
             b = fullMesh.getElementIndexFromLowIndex(b);
             e = fullMesh.getElementIndexFromLowIndex(e);
         });
+
+        elementSetInitialized = true;
     }
 
   protected:

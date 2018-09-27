@@ -226,6 +226,11 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
         explicit ElementMesh(const RectangularMaskedMesh3D* originalMesh): ElementMeshBase<RectangularMaskedMesh3D>(originalMesh) {}
 
         // Convert to recctangular masked mesh
+        RectangularMaskedMesh3D toMasked() const {
+            return RectangularMaskedMesh3D(fullMesh, originalMesh->elementSet);
+        }
+
+        // Convert to recctangular masked mesh
         operator RectangularMaskedMesh3D() const {
             return RectangularMaskedMesh3D(fullMesh, originalMesh->elementSet);
         }

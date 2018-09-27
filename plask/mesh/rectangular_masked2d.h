@@ -163,6 +163,11 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
         }
 
         // Convert to recctangular masked mesh
+        RectangularMaskedMesh2D toMasked() const {
+            return RectangularMaskedMesh2D(fullMesh, originalMesh->elementSet);
+        }
+
+        // Convert to recctangular masked mesh
         operator RectangularMaskedMesh2D() const {
             return RectangularMaskedMesh2D(fullMesh, originalMesh->elementSet);
         }

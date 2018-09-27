@@ -224,7 +224,13 @@ BOOST_AUTO_TEST_CASE(rectangular_masked_midpoints) {
     BOOST_CHECK_EQUAL(mesh.getElementsCount(), 9);
     auto midpoints = mesh.getElementMesh();
     BOOST_CHECK_EQUAL(midpoints->size(), 9);
-    // BOOST_CHECK_EQUAL(midpoints->getElementsCount(), 3);    // # on diagram
+
+    auto midpoints_masked = midpoints->toMasked();
+    BOOST_CHECK_EQUAL(midpoints_masked.size(), 9);
+    BOOST_REQUIRE_EQUAL(midpoints_masked.getElementsCount(), 3);    // # on diagram
+    BOOST_CHECK_EQUAL(midpoints_masked.getElement(0).getLoLoIndex(), 0);
+    BOOST_CHECK_EQUAL(midpoints_masked.getElement(1).getLoLoIndex(), 2);
+    BOOST_CHECK_EQUAL(midpoints_masked.getElement(2).getLoLoIndex(), 4);
 }
 
 BOOST_AUTO_TEST_CASE(rectangular_masked_2D_order10) {
