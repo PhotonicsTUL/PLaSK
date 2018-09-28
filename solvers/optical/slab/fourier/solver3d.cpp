@@ -264,7 +264,7 @@ cvector FourierSolver3D::incidentVector(Transfer::IncidentDirection side, Expans
     if (expansion.symmetry_tran == Expansion::Component(3-polarization))
         throw BadInput(getId(), "Current transverse symmetry is inconsistent with the specified incident polarization");
     size_t idx = (polarization == ExpansionPW3D::E_LONG)? expansion.iEx(0,0) : expansion.iEy(0,0);
-    cvector incident(expansion.matrixSize(), 0.);
+    cvector incident(transfer->diagonalizer->matrixSize(), 0.);
     incident[idx] = 1.;
     return transfer->diagonalizer->invTE(layer) * incident;
 }

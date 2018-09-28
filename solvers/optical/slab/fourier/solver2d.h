@@ -331,34 +331,6 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         return transfer->getFieldVectorH(z);
     }
 
-//     /**
-//      * Compute scattered electric field coefficients for given \a z
-//      * \param polarization incident field polarization
-//      * \param side incidence direction
-//      * \param z position within the layer
-//      * \return electric field coefficients
-//      */
-//     cvector getScatteredFieldVectorE(Expansion::Component polarization, Transfer::IncidentDirection side, double z) {
-//         if (!Solver::initCalculation())
-//             setExpansionDefaults();
-//         if (!transfer) initTransfer(expansion, true);
-//         return transfer->getScatteredFieldVectorE(incidentVector(polarization), side, z);
-//     }
-//
-//     /**
-//      * Compute scattered magnetic field coefficients for given \a z
-//      * \param polarization incident field polarization
-//      * \param side incidence direction
-//      * \param z position within the layer
-//      * \return magnetic field coefficients
-//      */
-//     cvector getScatteredFieldVectorH(Expansion::Component polarization, Transfer::IncidentDirection side, double z) {
-//         if (!Solver::initCalculation())
-//             setExpansionDefaults();
-//         if (!transfer) initTransfer(expansion, true);
-//         return transfer->getScatteredFieldVectorH(incidentVector(polarization), side, z);
-//     }
-
     /// Check if the current parameters correspond to some mode and insert it
     size_t setMode() {
         if (abs2(this->getDeterminant()) > root.tolf_max*root.tolf_max)

@@ -11,7 +11,7 @@ using phys::Z0;
 
 struct SlabBase;
 struct Expansion;
-struct Diagonalizer;
+class Diagonalizer;
 
 /**
  * Base class for Admittance and Reflection transfers.

@@ -264,7 +264,7 @@ cvector FourierSolver2D::incidentVector(Transfer::IncidentDirection side, Expans
     } else {
         idx = (polarization == Expansion::E_TRAN)? expansion.iEx(0) : expansion.iEz(0);
     }
-    cvector incident(expansion.matrixSize(), 0.);
+    cvector incident(transfer->diagonalizer->matrixSize(), 0.);
     incident[idx] = (polarization == Expansion::E_TRAN)? 1. : -1.;
     return transfer->diagonalizer->invTE(layer) * incident;
 }

@@ -517,30 +517,41 @@ void export_FourierSolver3D()
                 u8"    k0 (complex): Normalized frequency.\n"
                 u8"    klong (complex): Longitudinal wavevector.\n"
                 u8"    ktran (complex): Transverse wavevector.\n");
-    solver.def("compute_reflectivity", &Solver_computeReflectivityOld<FourierSolver3D>, (py::arg("lam"), "side", "polarization"));      //TODO remove in the future
-    solver.def("compute_transmittivity", &Solver_computeTransmittivityOld<FourierSolver3D>, (py::arg("lam"), "side", "polarization"));  //TODO remove in the future
-    solver.def("compute_reflectivity", &Solver_computeReflectivity<FourierSolver3D>,
-            u8"Compute reflection coefficient on planar incidence [%].\n\n"
-            u8"Args:\n"
-            u8"    lam (float or array of floats): Incident light wavelength.\n"
-            u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-            u8"        present.\n"
-            u8"    polarization: Specification of the incident light polarization.\n"
-            u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-            u8"        name of the non-vanishing electric field component.\n"
-            , (py::arg("lam"), "side", "polarization"));
-    solver.def("compute_transmittivity", &Solver_computeTransmittivity<FourierSolver3D>,
-            u8"Compute transmission coefficient on planar incidence [%].\n\n"
-            u8"Args:\n"
-            u8"    lam (float or array of floats): Incident light wavelength.\n"
-            u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-            u8"        present.\n"
-            u8"    polarization: Specification of the incident light polarization.\n"
-            u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
-            u8"        of the non-vanishing electric field component.\n"
-            , (py::arg("lam"), "side", "polarization"));
-    solver.def("scattering", Scattering<FourierSolver3D>::get1, py::with_custodian_and_ward_postcall<0,1>(), (py::arg("side"), "polarization"));
-    solver.def("scattering", Scattering<FourierSolver3D>::get2, py::with_custodian_and_ward_postcall<0,1>(), (py::arg("side"), "idx"),
+    solver.def("compute_reflectivity", &Solver_computeReflectivity_polarization<FourierSolver3D>,
+               (py::arg("lam"), "side", "polarization"));
+    solver.def("compute_reflectivity", &Solver_computeReflectivity_index<FourierSolver3D>,
+               (py::arg("lam"), "side", "index"));
+    solver.def("compute_reflectivity", &Solver_computeReflectivity_array<FourierSolver3D>,
+               (py::arg("lam"), "side", "coffs"),
+               u8"Compute reflection coefficient on planar incidence [%].\n\n"
+               u8"Args:\n"
+               u8"    lam (float or array of floats): Incident light wavelength.\n"
+               u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+               u8"        present.\n"
+               u8"    polarization: Specification of the incident light polarization.\n"
+               u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
+               u8"        name of the non-vanishing electric field component.\n"
+               u8"    idx: Eigenmode number.\n"
+               u8"    coeffs: expansion coefficients of the incident vector.\n");
+    solver.def("compute_transmittivity", &Solver_computeTransmittivity_polarization<FourierSolver3D>,
+               (py::arg("lam"), "side", "polarization"));
+    solver.def("compute_transmittivity", &Solver_computeTransmittivity_index<FourierSolver3D>,
+               (py::arg("lam"), "side", "index"));
+    solver.def("compute_transmittivity", &Solver_computeTransmittivity_array<FourierSolver3D>,
+               (py::arg("lam"), "side", "coffs"),
+               u8"Compute transmission coefficient on planar incidence [%].\n\n"
+               u8"Args:\n"
+               u8"    lam (float or array of floats): Incident light wavelength.\n"
+               u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+               u8"        present.\n"
+               u8"    polarization: Specification of the incident light polarization.\n"
+               u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+               u8"        of the non-vanishing electric field component.\n"
+               u8"    idx: Eigenmode number.\n"
+               u8"    coeffs: expansion coefficients of the incident vector.\n");
+    solver.def("scattering", Scattering<FourierSolver3D>::from_polarization, py::with_custodian_and_ward_postcall<0,1>(), (py::arg("side"), "polarization"));
+    solver.def("scattering", Scattering<FourierSolver3D>::from_index, py::with_custodian_and_ward_postcall<0,1>(), (py::arg("side"), "idx"));
+    solver.def("scattering", Scattering<FourierSolver3D>::from_array, py::with_custodian_and_ward_postcall<0,1>(), (py::arg("side"), "coeffs"),
                u8"Access to the reflected field.\n\n"
                u8"Args:\n"
                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
@@ -548,7 +559,8 @@ void export_FourierSolver3D()
                u8"    polarization: Specification of the incident light polarization.\n"
                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
                u8"        of the non-vanishing electric field component.\n"
-               u8"    idx: Eigenmode number.\n\n"
+               u8"    idx: Eigenmode number.\n"
+               u8"    coeffs: expansion coefficients of the incident vector.\n\n"
                u8":rtype: Fourier3D.Scattering\n"
               );
     solver.def("get_raw_E", FourierSolver3D_getFieldVectorE, (py::arg("num"), "level"),
