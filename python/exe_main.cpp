@@ -226,7 +226,7 @@ int system_main(int argc, const system_char *argv[])
 
     if (argc > 1) {
         system_string arg(argv[1]);
-        if (arg == CSTR(-V)) {
+        if (arg == CSTR(-V) || arg == CSTR(--version)) {
             printf("PLaSK " PLASK_VERSION "\n");
 #           ifdef LICENSE_CHECK
                 std::string user = plask::license_verifier.getUser(),
@@ -234,13 +234,41 @@ int system_main(int argc, const system_char *argv[])
                 if (user != "") printf("%s %s\n", user.c_str(), expiry.c_str());
 #           endif
             return 0;
-        } else if (arg == CSTR(-h)) {
+        } else if (arg == CSTR(-s)) {
             for (auto& m: plask::getMacs()) {
                 std::cout << "Detected system ID: " << plask::macToString(m) << std::endl;
                 return 0;
             }
             std::cout << "Cound not detect system ID\n";
             return 1;
+        } else if (arg == CSTR(-h) || arg == CSTR(--help) || arg == CSTR(-?)) {
+            printf(
+                "usage: plask [option]... [def=val]... [-i | -c cmd | -m mod | file | -] [args]\n\n"
+
+                "Options and arguments:\n"
+                "-c cmd         program passed in as string (terminates option list)\n"
+#   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+                "-g             run in graphical mode; do not show console window\n"
+#   endif
+                "-h, --help     print this help message and exit\n"
+                "-i             force interactive shell\n"
+                "-l arg         force logging level (error, error_detail, warning, important,\n"
+                "               info, result, data, detail, debug) or force colored (ansi) or\n"
+                "               monochromatic (mono) log\n"
+                "-m module      run python module as a script (terminates option list)\n"
+                "-p             thread provided file as Python script regardless of its\n"
+                "               extension (cannot be used together with -x)\n"
+                "-s             print hardware system ID for licensing and exit\n"
+                "-u             use unbuffered binary stdout and stderr\n"
+                "-V, --version  print the PLaSK version number and exit\n"
+                "-x             thread provided file as XPL regardless of its\n"
+                "               extension (cannot be used together with -p)\n\n"
+
+                "def=val        define 'def' to the value 'val'; this can be used only when\n"
+                "               running XPL file (the value defined in the file is ignored)\n"
+
+            );
+            return 0;
         }
     }
 

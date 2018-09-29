@@ -102,6 +102,8 @@ Program ``plask`` may be run with several command-line parameters tha--if presen
 .. option:: -c command
 
       run a single command instead of a script.
+Options have an Attribute: they can be hidden in the auto-created help message, or classified as "advanced", or "expert":
+
 
 .. option:: -i
 
@@ -111,7 +113,7 @@ Program ``plask`` may be run with several command-line parameters tha--if presen
 
       print PLaSK version and exit.
 
-.. option:: -h
+.. option:: -s
 
       print system id for license and exit.
 
