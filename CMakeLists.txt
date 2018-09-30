@@ -810,14 +810,10 @@ if(WIN32)
         install(TARGETS ${script} DESTINATION bin COMPONENT utils)
     endfunction()
 
-    #compile_python_script(dan2xpl)
-    #install(FILES utils/dan2xpl.py DESTINATION bin COMPONENT utils)
-    #install(FILES utils/xpl2dan.py DESTINATION bin COMPONENT utils)
+else()
 
-#else()
-
-    #install(FILES utils/dan2xpl.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME dan2xpl)
-    #install(FILES utils/xpl2dan.py DESTINATION bin PERMISSIONS ${script_permissions} COMPONENT utils RENAME xpl2dan)
+    install(FILES utils/bash/plask DESTINATION /etc/bash_completion.d COMPONENT core)
+    install(FILES utils/zsh/_plask DESTINATION /usr/share/zsh/vendor-completions COMPONENT core)
 
 endif()
 

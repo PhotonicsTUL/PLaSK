@@ -243,10 +243,13 @@ int system_main(int argc, const system_char *argv[])
             return 1;
         } else if (arg == CSTR(-h) || arg == CSTR(--help) || arg == CSTR(-?)) {
             printf(
-                "usage: plask [option]... [def=val]... [-i | -c cmd | -m mod | file | -] [args]\n\n"
+                // "usage: plask [option]... [def=val]... [-i | -c cmd | -m mod | file | -] [args]\n\n"
+                "usage: plask [option]... [-i | -c cmd | -m mod | file | -] [args]\n\n"
 
                 "Options and arguments:\n"
                 "-c cmd         program passed in as string (terminates option list)\n"
+                "-D def=val     define 'def' to the value 'val'; this can be used only when\n"
+                "               running XPL file (the value defined in the file is ignored)\n"
 #   if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
                 "-g             run in graphical mode; do not show console window\n"
 #   endif
@@ -262,10 +265,10 @@ int system_main(int argc, const system_char *argv[])
                 "-u             use unbuffered binary stdout and stderr\n"
                 "-V, --version  print the PLaSK version number and exit\n"
                 "-x             thread provided file as XPL regardless of its\n"
-                "               extension (cannot be used together with -p)\n\n"
+                "               extension (cannot be used together with -p)\n"
 
-                "def=val        define 'def' to the value 'val'; this can be used only when\n"
-                "               running XPL file (the value defined in the file is ignored)\n"
+                // "\ndef=val        define 'def' to the value 'val'; this can be used only when\n"
+                // "               running XPL file (the value defined in the file is ignored)\n"
 
             );
             return 0;
@@ -303,9 +306,13 @@ int system_main(int argc, const system_char *argv[])
             --argc; ++argv;
         } else if (arg.substr(0,2) == CSTR(-l)) {
             const system_char* level;
-            if (arg.length() > 2) level = argv[1]+2;
-            else if (argc > 2) level = argv[2];
-            else {
+            size_t drop = 1;
+            if (arg.length() > 2)
+                level = argv[1]+2;
+            else if (argc > 2) {
+                level = argv[2];
+                ++drop;
+            } else {
                 fprintf(stderr, "No log level specified\n");
                 return 4;
             }
@@ -333,8 +340,7 @@ int system_main(int argc, const system_char *argv[])
                 }
             }
             if (loglevel) plask::forcedLoglevel = true;
-            if (level == argv[2]) { argc -= 2; argv += 2; }
-            else { --argc; ++argv; }
+            argc -= drop; argv += drop;
         } else if (arg == CSTR(-c)) {
             command = argv[2];
             argv[2] = CSTR(-c);
@@ -380,6 +386,20 @@ int system_main(int argc, const system_char *argv[])
             }
             filetype = FILE_PY;
             --argc; ++argv;
+        } else if (arg.substr(0,2) == CSTR(-D)) {
+            const system_char* def;
+            size_t drop = 1;
+            if (arg.length() > 2)
+                def = argv[1]+2;
+            else if (argc > 2) {
+                def = argv[2];
+                ++drop;
+            } else {
+                fprintf(stderr, "No define specified\n");
+                return 4;
+            }
+            defs.push_back(system_to_utf8(def));
+            argc -= drop; argv += drop;
         } else if (arg.find(system_char('=')) != std::string::npos) {
             defs.push_back(system_to_utf8(argv[1]));
             --argc; ++argv;

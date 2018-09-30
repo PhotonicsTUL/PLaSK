@@ -102,8 +102,10 @@ Program ``plask`` may be run with several command-line parameters tha--if presen
 .. option:: -c command
 
       run a single command instead of a script.
-Options have an Attribute: they can be hidden in the auto-created help message, or classified as "advanced", or "expert":
 
+.. option:: -D key=val
+
+      define `def` to the value `val`; this can be used only when running XPL file (the value defined in the file is ignored).
 
 .. option:: -i
 

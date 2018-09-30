@@ -1,0 +1,62 @@
+#compdef plask
+
+arguments=(
+    '(1 -)-c+[program passed in as string]:python command'
+    '(1 * -)'{-h,--help}'[print this help message and exit]'
+    '(-x -D)-i[force interactive shell]'
+    '-l[force logging level or colored or monochromatic log]:log level:->log'
+    '(1 -)-m+[run python module as a script (terminates option list)]:module:_python_modules'
+    '(-x -D)-p[thread provided file as Python script regardless of its extension]'
+    '(1 * -)-s[print hardware system ID for licensing and exit]'
+    '-u[use unbuffered binary stdout and stderr]'
+    '(1 * -)'{-V,--version}'[print the PLaSK version number and exit]'
+    '(-p -i)-x[thread provided file as XPL regardless of its extension]'
+    '(-p -i)*-D+[force defined value]:definition:_plask_define'
+    '(-)1:PLaSK script:_files -g "*.(py|xpl)" -g "(main|xpl)"'
+    '*:: := ->normal'
+)
+
+
+(( $+functions[_plask_define] )) ||
+_plask_define() {
+    if compset -P 1 '*='; then
+        _description constants expl "Python constant"
+        compadd "$expl[@]" - True False None
+        if [[ "$PREFIX" != "None" && "$PREFIX" != "True" && "$PREFIX" != "False" &&
+              ! "$PREFIX" =~ ^[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][+-]?[0-9]+)?([+-]([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][+-]?[0-9]+)?j)?$ ]]; then
+            _description string expl "string"
+            compadd -Q -i "\\'" -I "\\'" "$expl[@]" - "${PREFIX}"
+        else
+            _description value expl "value"
+            compadd "$expl[@]" - "${PREFIX}"
+        fi
+        #_wanted property-values expl 'defined value' _cmake_define_property_values ${${IPREFIX%=}#-D} && return 0
+    fi
+}
+
+
+(( $+functions[_plask_log_levels] )) ||
+_plask_log_levels() {
+    _description -V levels expl "log level"
+    compadd "$expl[@]" - error error_detail warning important info result data detail debug
+}
+
+
+_arguments -S : $arguments
+
+case "$state" in
+    log)
+        _alternative \
+            'level:log level:_plask_log_levels' \
+            'color:log coloring:((ansi\:"color log using ansi codes" mono\:"do not color log"))'
+        return 0
+    ;;
+    normal)
+        if [[ -z "$opt_args[(I)-(c|m)]" ]]; then
+            shift words
+            (( CURRENT-- ))
+        fi
+        _normal && return 0
+    ;;
+esac
+
