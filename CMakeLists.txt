@@ -812,7 +812,13 @@ if(WIN32)
 
 else()
 
-    install(FILES utils/bash/plask DESTINATION /etc/bash_completion.d COMPONENT core)
+    find_package(bash-completion)
+    if(NOT BASH_COMPLETION_FOUND)
+        set (BASH_COMPLETION_COMPLETIONSDIR "/etc/bash_completion.d")
+        message (STATUS "Using fallback bash completion dir ${BASH_COMPLETION_COMPLETIONSDIR}")
+    endif()
+    install(FILES utils/bash/plask DESTINATION ${BASH_COMPLETION_COMPLETIONSDIR} COMPONENT core)
+
     install(FILES utils/zsh/_plask DESTINATION /usr/share/zsh/vendor-completions COMPONENT core)
 
 endif()
@@ -925,6 +931,8 @@ endif()
 if(UNIX)
     set(CPACK_GENERATOR "DEB;RPM;TBZ2")
     set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0)
+
+    set(CPACK_SET_DESTDIR "ON")
 
     if(NOT DEFINED CPACK_PACKAGE_NAME)
         set(CPACK_PACKAGE_NAME plask)
