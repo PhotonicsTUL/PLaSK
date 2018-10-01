@@ -250,6 +250,20 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      */
     cvector incidentVector(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam=NAN);
 
+    /**
+     * Compute incident vector with Gaussian profile
+     * \param side incidence side
+     * \param polarization polarization of the perpendicularly incident light
+     * \param sigma standard deviation
+     * \param lam wavelength
+     * \return incident field vector
+     */
+    cvector incidentGaussian(Transfer::IncidentDirection side, Expansion::Component polarization, double sigma, dcomplex lam=NAN);
+
+  private:
+
+    size_t initIncidence(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam);
+
   public:
 
     /**

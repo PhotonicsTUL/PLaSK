@@ -350,6 +350,10 @@ static py::object FourierSolver2D_getFieldVectorH(FourierSolver2D& self, int num
 // }
 
 
+py::object FourierSolver2D_incidentGaussian(FourierSolver2D& self, Transfer::IncidentDirection side, Expansion::Component polarization, double sigma) {
+    return arrayFromVec<NPY_CDOUBLE>(self.incidentGaussian(side, polarization, sigma));
+}
+
 
 void export_FourierSolver2D()
 {
@@ -500,6 +504,20 @@ void export_FourierSolver2D()
                u8"Args:\n"
                u8"    level (float): Vertical level at which the coefficients are computed.\n",
                py::with_custodian_and_ward_postcall<0,1>()
+              );
+    solver.def("gaussian", &FourierSolver2D_incidentGaussian, (py::arg("side"), "polarization", "sigma"),
+               u8"Create coefficients vector with Gaussian profile.\n\n"
+               u8"This method is intended to use for :py:meth:`scattering` method.\n\n"
+               u8"Args:\n"
+               u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+               u8"        present.\n"
+               u8"    polarization: Specification of the incident light polarization.\n"
+               u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+               u8"        of the non-vanishing electric field component.\n"
+               u8"    sigma (float): Gaussian standard deviation [µm].\n\n"
+               u8"Example:\n:"
+               u8"   >>> scattered = fourier.scattering('top', \n"
+               u8"                                      fourier.gaussian('top', 'Ex', 0.2))\n"
               );
     // OBSOLETE
     solver.def("get_electric_coefficients", FourierSolver2D_getFieldVectorE, (py::arg("num"), "level"),
