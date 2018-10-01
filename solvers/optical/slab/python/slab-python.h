@@ -741,7 +741,7 @@ struct Scattering {
         py::class_<Scattering<SolverT>::Incident>("Incident", "Incident field details", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Incident::get_coefficients, "Raw incident ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Incident::get_fluxes, "Perpendicular fluxes for incident modes.")
-            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Transmitted::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()), "Incident eigenmodes.")
+            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Incident::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()), "Incident eigenmodes.")
         ;
 
 //             .def("get_electric_coefficients", FourierSolver2D_getReflectedFieldVectorE, py::arg("level"),

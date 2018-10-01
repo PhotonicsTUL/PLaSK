@@ -20,7 +20,7 @@ arguments=(
 (( $+functions[_plask_define] )) ||
 _plask_define() {
     if compset -P 1 '*='; then
-        _description constants expl "Python constant"
+        _description -V constants expl "Python constant"
         compadd "$expl[@]" - True False None
         if [[ "$PREFIX" != "None" && "$PREFIX" != "True" && "$PREFIX" != "False" &&
               ! "$PREFIX" =~ ^[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][+-]?[0-9]+)?([+-]([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][+-]?[0-9]+)?j)?$ ]]; then
