@@ -236,8 +236,8 @@ LazyData<double> FourierSolver3D::getMagnitude(size_t num, shared_ptr<const Mesh
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
 
-
-cvector FourierSolver3D::incidentVector(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam) {
+size_t FourierSolver3D::initIncidence(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam)
+{
     bool changed = Solver::initCalculation() || setExpansionDefaults(isnan(lam));
     if (!isnan(lam)) {
         dcomplex k0 = 2e3*M_PI / lam;
@@ -263,9 +263,40 @@ cvector FourierSolver3D::incidentVector(Transfer::IncidentDirection side, Expans
         throw BadInput(getId(), "Current longitudinal symmetry is inconsistent with the specified incident polarization");
     if (expansion.symmetry_tran == Expansion::Component(3-polarization))
         throw BadInput(getId(), "Current transverse symmetry is inconsistent with the specified incident polarization");
+    return layer;
+}
+
+cvector FourierSolver3D::incidentVector(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam)
+{
+    size_t layer = initIncidence(side, polarization, lam);
+
     size_t idx = (polarization == ExpansionPW3D::E_LONG)? expansion.iEx(0,0) : expansion.iEy(0,0);
-    cvector incident(transfer->diagonalizer->matrixSize(), 0.);
+    cvector incident(expansion.matrixSize(), 0.);
     incident[idx] = 1.;
+    return transfer->diagonalizer->invTE(layer) * incident;
+}
+
+
+cvector FourierSolver3D::incidentGaussian(Transfer::IncidentDirection side, Expansion::Component polarization,
+                                          double sigma_long, double sigma_tran, double center_long, double center_tran,
+                                          dcomplex lam)
+{
+    size_t layer = initIncidence(side, polarization, lam);
+
+    double bl = 2.*PI / (expansion.front-expansion.back) * (expansion.symmetric_long()? 0.5 : 1.0),
+           bt = 2.*PI / (expansion.right-expansion.left) * (expansion.symmetric_tran()? 0.5 : 1.0);
+    dcomplex dl = I * bl * (center_long - expansion.back), dt = I * bt * (center_tran - expansion.left);
+    double cl2 = - 0.5 * sigma_long*sigma_long * bl*bl, ct2 = - 0.5 * sigma_tran*sigma_tran * bt*bt;
+
+    cvector incident(expansion.matrixSize(), 0.);
+    for (int it = -int(size_tran); it <= int(size_tran); ++it) {
+        dcomplex vt = exp(ct2 * double(it*it) - dt*double(it));
+        for (int il = -int(size_long); il <= int(size_long); ++il) {
+            size_t idx = (polarization == Expansion::E_LONG)? expansion.iEx(il, it) : expansion.iEy(il, it);
+            incident[idx] = vt * exp(cl2 * double(il*il) - dl*double(il));
+        }
+    }
+
     return transfer->diagonalizer->invTE(layer) * incident;
 }
 

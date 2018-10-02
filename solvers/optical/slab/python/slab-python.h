@@ -693,7 +693,7 @@ struct Scattering {
         return shared_ptr<Scattering<SolverT>>(new Scattering<SolverT>(parent, side, incident));
     }
 
-    static py::class_<Scattering<SolverT>, shared_ptr<Scattering<SolverT>>, boost::noncopyable> registerClass(const char* suffix) {
+    static py::class_<Scattering<SolverT>, shared_ptr<Scattering<SolverT>>, boost::noncopyable> registerClass(const char* suffix, const char* name="Fourier") {
         py::class_<Scattering<SolverT>, shared_ptr<Scattering<SolverT>>, boost::noncopyable> cls("Scattering",
             u8"Reflected mode proxy.\n\n"
             u8"This class contains providers for the scattered field.\n"
@@ -729,19 +729,28 @@ struct Scattering {
         py::class_<Scattering<SolverT>::Reflected>("Reflected", "Reflected field details", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Reflected::get_coefficients, "Raw reflection ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Reflected::get_fluxes, "Perpendicular fluxes for reflected modes.")
-            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Reflected::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()), "Reflected eigenmodes.")
+            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Reflected::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()),
+                          format("Reflected eigenmodes.\n\n"
+                                 ":rtype: :class:`~optical.slab.{}{}.Eigenmodes`", name, suffix).c_str()
+                         )
         ;
 
         py::class_<Scattering<SolverT>::Transmitted>("Transmitted", "Transmitted field details", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Transmitted::get_coefficients, "Raw transmission ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Transmitted::get_fluxes, "Perpendicular fluxes for transmitted modes.")
-            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Transmitted::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()), "Transmitted eigenmodes.")
+            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Transmitted::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()),
+                          format("Transmitted eigenmodes.\n\n"
+                                 ":rtype: :class:`~optical.slab.{}{}.Eigenmodes`", name, suffix).c_str()
+                         )
         ;
 
         py::class_<Scattering<SolverT>::Incident>("Incident", "Incident field details", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Incident::get_coefficients, "Raw incident ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Incident::get_fluxes, "Perpendicular fluxes for incident modes.")
-            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Incident::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()), "Incident eigenmodes.")
+            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Incident::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()),
+                          format("Incident eigenmodes.\n\n"
+                                 ":rtype: :class:`~optical.slab.{}{}.Eigenmodes`", name, suffix).c_str()
+                         )
         ;
 
 //             .def("get_electric_coefficients", FourierSolver2D_getReflectedFieldVectorE, py::arg("level"),

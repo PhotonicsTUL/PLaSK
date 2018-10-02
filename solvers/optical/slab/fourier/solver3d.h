@@ -282,6 +282,24 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     cvector incidentVector(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam=NAN);
 
     /**
+     * Compute incident vector with Gaussian profile
+     * \param side incidence side
+     * \param polarization polarization of the perpendicularly incident light
+     * \param sigma_long,sigma_tran standard deviations in longitudinal and transverse directions
+     * \param center_long,center_tran position of the beam center in longitudinal and transverse directions
+     * \param lam wavelength
+     * \return incident field vector
+     */
+    cvector incidentGaussian(Transfer::IncidentDirection side, Expansion::Component polarization, double sigma_long, double sigma_tran,
+                             double center_long=0., double center_tran=0., dcomplex lam=NAN);
+
+  private:
+
+    size_t initIncidence(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam);
+
+  public:
+
+    /**
      * Get electric field at the given mesh for reflected light.
      * \param incident incident field vector
      * \param side incidence direction

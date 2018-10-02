@@ -429,6 +429,33 @@ static py::object FourierSolver3D_getFieldVectorH(FourierSolver3D& self, int num
 
 
 
+static cvector FourierSolver3D_gaussian(FourierSolver3D& self, Transfer::IncidentDirection side, Expansion::Component polarization, py::object sigma, py::object center) {
+    if (py::len(center) != 2)
+        throw ValueError("Fourier3D.gaussian: 'center' must be a sequence of two floats");
+    double cx = py::extract<double>(center[0]);
+    double cy = py::extract<double>(center[1]);
+    double sx, sy;
+    try {
+        sx = sy = py::extract<double>(sigma);
+    } catch (py::error_already_set) {
+        PyErr_Clear();
+        if (!PySequence_Check(sigma.ptr()) || py::len(sigma) != 2)
+            throw ValueError("Fourier3D.gaussian: 'sigma' must be a float or a sequence of two floats");
+        sx = py::extract<double>(sigma[0]);
+        sy = py::extract<double>(sigma[1]);
+    }
+    return self.incidentGaussian(side, polarization, sx, sy, cx, cy);
+}
+
+static py::object FourierSolver3D_incidentGaussian(FourierSolver3D& self, Transfer::IncidentDirection side, Expansion::Component polarization, py::object sigma, py::object center) {
+    return arrayFromVec<NPY_CDOUBLE>(FourierSolver3D_gaussian(self, side, polarization, sigma, center));
+}
+
+static shared_ptr<Scattering<FourierSolver3D>> FourierSolver3D_scatteringGaussian(FourierSolver3D& self, Transfer::IncidentDirection side, Expansion::Component polarization, py::object sigma, py::object center) {
+    return shared_ptr<Scattering<FourierSolver3D>>(new Scattering<FourierSolver3D>(&self, side, FourierSolver3D_gaussian(self, side, polarization, sigma, center)));
+}
+
+
 void export_FourierSolver3D()
 {
     CLASS(FourierSolver3D, "Fourier3D",
@@ -593,7 +620,36 @@ void export_FourierSolver3D()
                py::with_custodian_and_ward_postcall<0,1>()
               );
     RO_FIELD(modes, "Computed modes.");
-
+    solver.def("gaussian", &FourierSolver3D_incidentGaussian, (py::arg("side"), "polarization", "sigma", py::arg("center")=py::make_tuple(0., 0.)),
+               u8"Create coefficients vector with Gaussian profile.\n\n"
+               u8"This method is intended to use for :py:meth:`scattering` method.\n\n"
+               u8"Args:\n"
+               u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+               u8"        present.\n"
+               u8"    polarization: Specification of the incident light polarization.\n"
+               u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+               u8"        of the non-vanishing electric field component.\n"
+               u8"    sigma (float or tuple): Gaussian standard deviation in longitudinal and\n"
+               u8"                            transverse directions [µm, µm].\n"
+               u8"    center (tuple): Position of the beam center [µm, µm].\n\n"
+               u8"Example:\n:"
+               u8"   >>> scattered = fourier.scattering('top', \n"
+               u8"                                      fourier.gaussian('top', 'Ex', 0.2))\n"
+              );
+    solver.def("scattering_gaussian", &FourierSolver3D_scatteringGaussian, (py::arg("side"), "polarization", "sigma", py::arg("center")=py::make_tuple(0., 0.)),
+               u8"Helper function to Access reflected fields for access incidence.\n\n"
+               u8"This method is equivalent to calling:\n\n"
+               u8"   >>> fourier.scattering(side,\n"
+               u8"                          fourier.gaussian(side, polarization, sigma, center))\n\n"
+               u8"Args:\n"
+               u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+               u8"        present.\n"
+               u8"    polarization: Specification of the incident light polarization.\n"
+               u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+               u8"        of the non-vanishing electric field component.\n"
+               u8"    sigma (float): Gaussian standard deviation [µm].\n"
+               u8"    center (float): Position of the beam center [µm].\n\n"
+              );
     // OBSOLETE
     solver.def("get_electric_coefficients", FourierSolver3D_getFieldVectorE, (py::arg("num"), "level"),
                u8"Obsolete alias for :meth:`get_raw_E`.");

@@ -255,10 +255,11 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      * \param side incidence side
      * \param polarization polarization of the perpendicularly incident light
      * \param sigma standard deviation
+     * \param center position of the beam center
      * \param lam wavelength
      * \return incident field vector
      */
-    cvector incidentGaussian(Transfer::IncidentDirection side, Expansion::Component polarization, double sigma, dcomplex lam=NAN);
+    cvector incidentGaussian(Transfer::IncidentDirection side, Expansion::Component polarization, double sigma, double center=0., dcomplex lam=NAN);
 
   private:
 

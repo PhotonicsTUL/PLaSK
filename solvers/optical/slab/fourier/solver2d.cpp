@@ -271,26 +271,28 @@ cvector FourierSolver2D::incidentVector(Transfer::IncidentDirection side, Expans
     size_t idx;
     if (expansion.separated()) idx = expansion.iE(0);
     else idx = (polarization == Expansion::E_TRAN)? expansion.iEx(0) : expansion.iEz(0);
-    cvector incident(transfer->diagonalizer->matrixSize(), 0.);
+    cvector incident(expansion.matrixSize(), 0.);
     incident[idx] = (polarization == Expansion::E_TRAN)? 1. : -1.;
 
     return transfer->diagonalizer->invTE(layer) * incident;
 }
 
 
-cvector FourierSolver2D::incidentGaussian(Transfer::IncidentDirection side, Expansion::Component polarization, double sigma, dcomplex lam)
+cvector FourierSolver2D::incidentGaussian(Transfer::IncidentDirection side, Expansion::Component polarization, double sigma, double center, dcomplex lam)
 {
     size_t layer = initIncidence(side, polarization, lam);
 
     double b = 2.*PI / (expansion.right-expansion.left) * (expansion.symmetric()? 0.5 : 1.0);
+    dcomplex d = I * b * (center - expansion.left);
     double c2 = - 0.5 * sigma*sigma * b*b;
 
-    cvector incident(transfer->diagonalizer->matrixSize(), 0.);
+    cvector incident(expansion.matrixSize(), 0.);
     for (int i = -int(size); i <= int(size); ++i) {
         size_t idx;
         if (expansion.separated()) idx = expansion.iE(i);
         else idx = (polarization == Expansion::E_TRAN)? expansion.iEx(i) : expansion.iEz(i);
-        incident[idx] = (polarization == Expansion::E_TRAN)? exp(c2 * double(i*i)) : -exp(c2 * double(i*i));
+        dcomplex val = exp(c2 * double(i*i) - d*double(i));
+        incident[idx] = (polarization == Expansion::E_TRAN)? val : -val;
     }
 
     return transfer->diagonalizer->invTE(layer) * incident;
