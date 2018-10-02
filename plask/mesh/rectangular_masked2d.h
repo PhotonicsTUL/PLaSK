@@ -242,7 +242,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
     };  // struct ElementMesh
 
     /**
-     * Construct empty/unitialized mesh. One should call reset() method before using this.
+     * Construct empty/unitialized mesh. One should call reset() or selectAll() method before using this.
      */
     RectangularMaskedMesh2D() = default;
 
@@ -251,15 +251,6 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
      * @param predicate predicate which returns either @c true for accepting element or @c false for rejecting it
      */
     void reset(const Predicate& predicate);
-
-    /**
-     * Construct masked mesh with all elements of @p fullMesh or without any elements.
-     * Preserve order of elements and nodes of @p fullMesh.
-     * @param fullMesh input mesh, before masking
-     * @param select_all whether select all nodes (if true; default) or do not select any nodes (if false) of @p fullMesh
-     * @param clone_axes whether axes of the @p fullMesh should be cloned (if @c true) or shared with @p fullMesh (if @c false; default)
-     */
-    RectangularMaskedMesh2D(const RectangularMesh<2>& fullMesh, bool select_all = true, bool clone_axes = false);
 
     /**
      * Construct masked mesh with elements of @p fullMesh chosen by a @p predicate.

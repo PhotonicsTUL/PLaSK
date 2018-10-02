@@ -339,18 +339,9 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
     };  // struct ElementMesh
 
     /**
-     * Construct empty/unitialized mesh. One should call reset() method before using this.
+     * Construct empty/unitialized mesh. One should call reset() or selectAll() method before using this.
      */
     RectangularMaskedMesh3D() = default;
-
-    /**
-     * Construct masked mesh with all elements of @p rectangularMesh or without any elements.
-     * Preserve order of elements and nodes of @p rectangularMesh.
-     * @param rectangularMesh input mesh, before masking
-     * @param select_all whether select all nodes (if true; default) or do not select any nodes (if false) of @p fullMesh
-     * @param clone_axes whether axes of the @p fullMesh should be cloned (if @c true) or shared with @p fullMesh (if @c false; default)
-     */
-    RectangularMaskedMesh3D(const RectangularMesh<3>& fullMesh, bool select_all = true, bool clone_axes = false);
 
     /**
      * Change a selection of elements used to once pointed by a given @p predicate.

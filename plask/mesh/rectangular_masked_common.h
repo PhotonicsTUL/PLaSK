@@ -206,7 +206,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     /// Returned by some methods to signalize that element or node (with given index(es)) is not included in the mesh.
     enum:std::size_t { NOT_INCLUDED = Set::NOT_INCLUDED };
 
-    /// Construct an empty mesh. One should use reset() method before using it.
+    /// Construct an empty mesh. One should use reset() or selectAll() method before using it.
     RectangularMaskedMeshBase() = default;
 
     /// Constructor which allows us to construct midpoints mesh.
@@ -227,16 +227,12 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     /**
      * Construct a mesh by wrap of a given @p rectangularMesh.
      * @param rectangularMesh mesh to wrap (it is copied by the constructor)
-     * @param select_all whether select all nodes (if true) or do not select any nodes (if false; default) of @p rectangularMesh
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if true) or shared (if false; default)
      */
-    RectangularMaskedMeshBase(const RectangularMesh<DIM>& rectangularMesh, bool select_all = false, bool clone_axes = false)
+    RectangularMaskedMeshBase(const RectangularMesh<DIM>& rectangularMesh, bool clone_axes = false)
         : fullMesh(rectangularMesh, clone_axes)
     {
-        if (select_all) {
-            selectAll();
-        } else
-            resetBoundyIndex();
+        resetBoundyIndex();
     }
 
     /**
@@ -281,6 +277,16 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     std::size_t size() const override { return nodeSet.size(); }
 
     bool empty() const override { return nodeSet.empty(); }
+
+    /**
+     * Set wrapped mesh and select all its elements.
+     * @param rectangularMesh input mesh, before masking
+     * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
+     */
+    void selectAll(const RectangularMesh<DIM>& rectangularMesh, bool clone_axes = false) {
+        fullMesh.reset(rectangularMesh, clone_axes);
+        selectAll();
+    }
 
     /**
      * Select all elements of wrapped mesh.
