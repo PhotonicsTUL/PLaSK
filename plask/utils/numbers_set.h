@@ -28,6 +28,8 @@ struct CompressedSetOfNumbers {
 
         static bool compareByNumberEnd(number_t n, const Segment& seg) { return n < seg.numberEnd; }
 
+        Segment() = default;
+
         Segment(number_t numberEnd, number_t indexEnd): numberEnd(numberEnd), indexEnd(indexEnd) {}
 
         bool operator==(const Segment& other) const {
@@ -316,6 +318,26 @@ struct CompressedSetOfNumbers {
             segments.back().indexEnd += num_end - num_beg;
         } else
             segments.emplace_back(num_end, segments.back().indexEnd + num_end - num_beg);
+    }
+
+    /**
+     * Assign a range [num_beg, num_end) to *this.
+     * @param num_beg, num_end the range to assing
+     */
+    void assignRange(number_t num_beg, number_t num_end) {
+        segments.resize(1);
+        segments.front().numberEnd = num_end;
+        segments.front().indexEnd = num_end - num_beg;
+    }
+
+    /**
+     * Assign a range [0, num_end) to *this.
+     * @param num_end end of the range to assing
+     */
+    void assignRange(number_t num_end) {
+        segments.resize(1);
+        segments.front().numberEnd = num_end;
+        segments.front().indexEnd = 0;
     }
 
     /**

@@ -253,33 +253,42 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
     void reset(const Predicate& predicate);
 
     /**
-     * Construct masked mesh with elements of @p rectangularMesh chosen by a @p predicate.
-     * Preserve order of elements and nodes of @p rectangularMesh.
-     * @param rectangularMesh input mesh, before masking
+     * Construct masked mesh with all elements of @p fullMesh or without any elements.
+     * Preserve order of elements and nodes of @p fullMesh.
+     * @param fullMesh input mesh, before masking
+     * @param select_all whether select all nodes (if true; default) or do not select any nodes (if false) of @p fullMesh
+     * @param clone_axes whether axes of the @p fullMesh should be cloned (if @c true) or shared with @p fullMesh (if @c false; default)
+     */
+    RectangularMaskedMesh2D(const RectangularMesh<2>& fullMesh, bool select_all = true, bool clone_axes = false);
+
+    /**
+     * Construct masked mesh with elements of @p fullMesh chosen by a @p predicate.
+     * Preserve order of elements and nodes of @p fullMesh.
+     * @param fullMesh input mesh, before masking
      * @param predicate predicate which returns either @c true for accepting element or @c false for rejecting it
-     * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared with @p rectangularMesh (if @c false; default)
+     * @param clone_axes whether axes of the @p fullMesh should be cloned (if @c true) or shared with @p fullMesh (if @c false; default)
      */
     RectangularMaskedMesh2D(const RectangularMesh<2>& fullMesh, const Predicate& predicate, bool clone_axes = false);
 
     /**
-     * Change parameters of this mesh to use elements of @p rectangularMesh chosen by a @p predicate.
-     * Preserve order of elements and nodes of @p rectangularMesh.
-     * @param rectangularMesh input mesh, before masking
+     * Change parameters of this mesh to use elements of @p fullMesh chosen by a @p predicate.
+     * Preserve order of elements and nodes of @p fullMesh.
+     * @param fullMesh input mesh, before masking
      * @param predicate predicate which returns either @c true for accepting element or @c false for rejecting it
-     * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared with @p rectangularMesh (if @c false; default)
+     * @param clone_axes whether axes of the @p fullMesh should be cloned (if @c true) or shared with @p rectangularMesh (if @c false; default)
      */
     void reset(const RectangularMesh<2>& fullMesh, const Predicate& predicate, bool clone_axes = false);
 
     /**
-     * Construct masked mesh with all elements of @c rectangularMesh which have required materials in the midpoints.
-     * Preserve order of elements and nodes of @p rectangularMesh.
-     * @param rectangularMesh input mesh, before masking
+     * Construct masked mesh with all elements of @c fullMesh which have required materials in the midpoints.
+     * Preserve order of elements and nodes of @p fullMesh.
+     * @param fullMesh input mesh, before masking
      * @param geom geometry to get materials from
      * @param materialPredicate predicate which returns either @c true for accepting material or @c false for rejecting it
-     * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
+     * @param clone_axes whether axes of the @p fullMesh should be cloned (if @c true) or shared (if @c false; default)
      */
-    RectangularMaskedMesh2D(const RectangularMesh<2>& rectangularMesh, const GeometryD<2>& geom, const std::function<bool(shared_ptr<const Material>)> materialPredicate, bool clone_axes = false)
-        : RectangularMaskedMesh2D(rectangularMesh,
+    RectangularMaskedMesh2D(const RectangularMesh<2>& fullMesh, const GeometryD<2>& geom, const std::function<bool(shared_ptr<const Material>)> materialPredicate, bool clone_axes = false)
+        : RectangularMaskedMesh2D(fullMesh,
                                     [&](const RectangularMesh2D::Element& el) { return materialPredicate(geom.getMaterial(el.getMidpoint())); },
                                     clone_axes)
     {

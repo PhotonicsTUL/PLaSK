@@ -227,10 +227,17 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     /**
      * Construct a mesh by wrap of a given @p rectangularMesh.
      * @param rectangularMesh mesh to wrap (it is copied by the constructor)
+     * @param select_all whether select all nodes (if true) or do not select any nodes (if false; default) of @p rectangularMesh
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if true) or shared (if false; default)
      */
-    RectangularMaskedMeshBase(const RectangularMesh<DIM>& rectangularMesh, bool clone_axes = false)
-        : fullMesh(rectangularMesh, clone_axes) { resetBoundyIndex(); }
+    RectangularMaskedMeshBase(const RectangularMesh<DIM>& rectangularMesh, bool select_all = false, bool clone_axes = false)
+        : fullMesh(rectangularMesh, clone_axes)
+    {
+        if (select_all) {
+            selectAll();
+        } else
+            resetBoundyIndex();
+    }
 
     /**
      * Iterator over nodes coordinates. It implements const_iterator for masked meshes.
@@ -274,6 +281,18 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     std::size_t size() const override { return nodeSet.size(); }
 
     bool empty() const override { return nodeSet.empty(); }
+
+    /**
+     * Select all elements of wrapped mesh.
+     */
+    void selectAll() {
+        this->nodeSet.assignRange(fullMesh.size());
+        this->elementSet.assignRange(fullMesh.getElementsCount());
+        for (int d = 0; d < DIM; ++d) {
+            boundaryIndex[d].lo = 0;
+            boundaryIndex[d].up = fullMesh.axis[d]->size()-1;
+        }
+    }
 
     /**
      * Calculate this mesh index using indexes of axis[0] and axis[1].

@@ -7,8 +7,13 @@ void RectangularMaskedMesh3D::reset(const RectangularMaskedMesh3D::Predicate &pr
     initNodesAndElements(predicate);
 }
 
+RectangularMaskedMesh3D::RectangularMaskedMesh3D(const RectangularMesh<3> &fullMesh, bool select_all, bool clone_axes)
+    : RectangularMaskedMeshBase(fullMesh, select_all, clone_axes)
+{
+}
+
 RectangularMaskedMesh3D::RectangularMaskedMesh3D(const RectangularMesh<3> &rectangularMesh, const RectangularMaskedMesh3D::Predicate &predicate, bool clone_axes)
-    : RectangularMaskedMeshBase(rectangularMesh, clone_axes)
+    : RectangularMaskedMeshBase(rectangularMesh, false, clone_axes)
 {
     initNodesAndElements(predicate);
 }
