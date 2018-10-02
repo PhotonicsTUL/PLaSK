@@ -211,7 +211,18 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
 
     /// Constructor which allows us to construct midpoints mesh.
     RectangularMaskedMeshBase(const RectangularMesh<DIM>& rectangularMesh, Set nodeSet, bool clone_axes = false)
-        : fullMesh(rectangularMesh, clone_axes), nodeSet(std::move(nodeSet)), elementSetInitialized(false) {}
+        : fullMesh(rectangularMesh, clone_axes), nodeSet(std::move(nodeSet)), elementSetInitialized(false)
+    {
+        resetBoundyIndex();
+        // TODO faster algorithm could iterate over segments
+        for (auto nodeIndex: nodeSet) {
+            auto indexes = rectangularMesh.indexes(nodeIndex);
+            for (int d = 0; d < DIM; ++d) {
+                if (indexes[d] < boundaryIndex[d].lo) boundaryIndex[d].lo = indexes[d];
+                if (indexes[d] > boundaryIndex[d].up) boundaryIndex[d].up = indexes[d];
+            }
+        }
+    }
 
     /**
      * Construct a mesh by wrap of a given @p rectangularMesh.
