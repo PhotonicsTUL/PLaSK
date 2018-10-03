@@ -263,18 +263,17 @@
     <spacing every0="0.2"/>
   </generator>
   <generator method="simple" name="spl" type="rectangular2d"/>
+  <mesh name="fine" type="rectangular3d">
+    <axis0 start="0" stop="1" num="2001"></axis0>
+    <axis1 start="0" stop="2" num="4001"></axis1>
+    <axis2>0.0 0.5 1.5</axis2>
+  </mesh>
 </grids>
 
 <solvers>
   <thermal name="THERMAL" solver="StaticCyl" lib="static">
     <geometry ref="GeoT"/>
     <mesh ref="default"/>
-    <temperature>
-      <condition value="320.">
-        <place line="horizontal" at="10" start="0" stop="{lineto}"/>
-      </condition>
-      <condition place="bottom" value="300."/>
-    </temperature>
   </thermal>
   <optical name="fourier2" solver="Fourier2D" lib="slab">
     <geometry ref="geo2d"/>
@@ -344,6 +343,10 @@
   <optical name="F3D" solver="Fourier3D" lib="slab">
     <geometry ref="l3cavity"/>
   </optical>
+  <thermal name="solver" solver="Static3D" lib="static">
+    <geometry ref="prismatic"/>
+    <mesh ref="fine"/>
+  </thermal>
 </solvers>
 
 <connects>
@@ -375,6 +378,7 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.""")
 
 import os
 import sys
+
 
 csys = 1
 cmap = 2

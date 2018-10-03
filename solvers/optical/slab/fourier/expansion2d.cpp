@@ -409,7 +409,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
 
     int order = int(SOLVER->getSize());
     dcomplex f = 1. / k0, k02 = k0*k0;
-    double b = 2*PI / (right-left) * (symmetric()? 0.5 : 1.0);
+    double b = 2.*PI / (right-left) * (symmetric()? 0.5 : 1.0);
 
     // Ez represents -Ez
 
@@ -574,7 +574,7 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
     dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
 
     const int order = int(SOLVER->getSize());
-    double b = 2*PI / (right-left) * (symmetric()? 0.5 : 1.0);
+    double b = 2.*PI / (right-left) * (symmetric()? 0.5 : 1.0);
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
     double vpos = level->vpos();

@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstring>
 #include <plask/python.hpp>
+#include <plask/python_numpy.h>
 #include <plask/python_util/ufunc.h>
 #include <boost/python/raw_function.hpp>
 using namespace plask;
@@ -489,6 +490,31 @@ struct Eigenmodes {
 };
 
 
+struct CoeffsArray {
+
+    PyArrayObject* array;
+
+    CoeffsArray(PyArrayObject* arr): array(arr) {
+        Py_XINCREF(array);
+    }
+
+    CoeffsArray(const CoeffsArray& src): array(src.array) {
+        Py_XINCREF(array);
+    }
+
+    CoeffsArray(CoeffsArray&& src): array(src.array) {
+        src.array = nullptr;
+    }
+
+    ~CoeffsArray() {
+        Py_XDECREF(array);
+    }
+
+    static void* convertible(PyObject* obj);
+    static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data);
+};
+
+
 /**
  * Proxy class for accessing scatterd fields
  */
@@ -605,6 +631,25 @@ struct Scattering {
     /**
      * Construct proxy.
      * \param wavelength incident light wavelength
+     * \param side incidence sideif (incident.size() >= self->transfer->diagonalizer->matrixSize())
+        throw BadInput(self->getId(), "Wrong incident vector size ({}, should be {}", incident.size(), solver->transfer->diagonalizer->matrixSize());
+
+     * \param incident incident vector
+     */
+    Scattering(SolverT* solver, Transfer::IncidentDirection side, const cvector& incident):
+        solver(solver), incident(incident), side(side),
+        outLightE(this, &Scattering::getLightE),
+        outLightH(this, &Scattering::getLightH),
+        outLightMagnitude(this, &Scattering::getLightMagnitude) {
+        solver->initCalculation();
+        if (!solver->transfer) solver->initTransfer(solver->getExpansion(), true);
+        if (incident.size() != solver->transfer->diagonalizer->matrixSize())
+            throw BadInput(solver->getId(), "Wrong incident vector size ({}, should be {}", incident.size(), solver->transfer->diagonalizer->matrixSize());
+    }
+
+    /**
+     * Construct proxy.
+     * \param wavelength incident light wavelength
      * \param side incidence side
      * \param polarization polarization of the perpendicularly incident light
      */
@@ -628,20 +673,27 @@ struct Scattering {
         outLightMagnitude(this, &Scattering::getLightMagnitude) {
     }
 
-    static shared_ptr<Scattering<SolverT>> get1(SolverT* parent,
-                                                Transfer::IncidentDirection side,
-                                                Expansion::Component polarization) {
+    static shared_ptr<Scattering<SolverT>> from_polarization(SolverT* parent,
+                                                             Transfer::IncidentDirection side,
+                                                             Expansion::Component polarization) {
         return make_shared<Scattering<SolverT>>(parent, side, polarization);
     }
 
-    static shared_ptr<Scattering<SolverT>> get2(SolverT* parent,
-                                                Transfer::IncidentDirection side,
-                                                size_t idx) {
+    static shared_ptr<Scattering<SolverT>> from_index(SolverT* parent,
+                                                      Transfer::IncidentDirection side,
+                                                      size_t idx) {
         return make_shared<Scattering<SolverT>>(parent, side, idx);
     }
 
+    static shared_ptr<Scattering<SolverT>> from_array(SolverT* parent,
+                                                      Transfer::IncidentDirection side,
+                                                      CoeffsArray coeffs) {
+        PyArrayObject* arr = coeffs.array;
+        cvector incident((dcomplex*)PyArray_DATA(arr), size_t(PyArray_DIMS(arr)[0]), plask::python::detail::NumpyDataDeleter(arr));
+        return shared_ptr<Scattering<SolverT>>(new Scattering<SolverT>(parent, side, incident));
+    }
 
-    static py::class_<Scattering<SolverT>, shared_ptr<Scattering<SolverT>>, boost::noncopyable> registerClass(const char* suffix) {
+    static py::class_<Scattering<SolverT>, shared_ptr<Scattering<SolverT>>, boost::noncopyable> registerClass(const char* suffix, const char* name="Fourier") {
         py::class_<Scattering<SolverT>, shared_ptr<Scattering<SolverT>>, boost::noncopyable> cls("Scattering",
             u8"Reflected mode proxy.\n\n"
             u8"This class contains providers for the scattered field.\n"
@@ -677,19 +729,28 @@ struct Scattering {
         py::class_<Scattering<SolverT>::Reflected>("Reflected", "Reflected field details", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Reflected::get_coefficients, "Raw reflection ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Reflected::get_fluxes, "Perpendicular fluxes for reflected modes.")
-            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Reflected::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()), "Reflected eigenmodes.")
+            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Reflected::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()),
+                          format("Reflected eigenmodes.\n\n"
+                                 ":rtype: :class:`~optical.slab.{}{}.Eigenmodes`", name, suffix).c_str()
+                         )
         ;
 
         py::class_<Scattering<SolverT>::Transmitted>("Transmitted", "Transmitted field details", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Transmitted::get_coefficients, "Raw transmission ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Transmitted::get_fluxes, "Perpendicular fluxes for transmitted modes.")
-            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Transmitted::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()), "Transmitted eigenmodes.")
+            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Transmitted::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()),
+                          format("Transmitted eigenmodes.\n\n"
+                                 ":rtype: :class:`~optical.slab.{}{}.Eigenmodes`", name, suffix).c_str()
+                         )
         ;
 
         py::class_<Scattering<SolverT>::Incident>("Incident", "Incident field details", py::no_init)
             .add_property("coeffs", &Scattering<SolverT>::Incident::get_coefficients, "Raw incident ceofficients for modes.")
             .add_property("fluxes", &Scattering<SolverT>::Incident::get_fluxes, "Perpendicular fluxes for incident modes.")
-            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Transmitted::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()), "Incident eigenmodes.")
+            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Incident::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()),
+                          format("Incident eigenmodes.\n\n"
+                                 ":rtype: :class:`~optical.slab.{}{}.Eigenmodes`", name, suffix).c_str()
+                         )
         ;
 
 //             .def("get_electric_coefficients", FourierSolver2D_getReflectedFieldVectorE, py::arg("level"),
@@ -719,38 +780,122 @@ struct Scattering {
 
 
 template <typename SolverT>
-py::object Solver_computeReflectivity(SolverT* self,
-                                      py::object wavelength,
-                                      Transfer::IncidentDirection side,
-                                      Expansion::Component polarization
-                                     )
+py::object Solver_computeReflectivity_polarization(SolverT* self,
+                                                   py::object wavelength,
+                                                   Transfer::IncidentDirection side,
+                                                   Expansion::Component polarization
+                                                  )
 {
     if (!self->Solver::initCalculation())
         self->setExpansionDefaults(false);
     return UFUNC<double>([=](double lam)->double {
         double k0 = 2e3*PI/lam;
-        cvector incident = self->incidentVector(side, polarization, k0);
+        cvector incident = self->incidentVector(side, polarization, lam);
         self->expansion.setK0(k0);
         return 100. * self->getReflection(incident, side);
     }, wavelength);
 }
 
 template <typename SolverT>
-py::object Solver_computeTransmittivity(SolverT* self,
-                                        py::object wavelength,
-                                        Transfer::IncidentDirection side,
-                                        Expansion::Component polarization
-                                       )
+py::object Solver_computeTransmittivity_polarization(SolverT* self,
+                                                     py::object wavelength,
+                                                     Transfer::IncidentDirection side,
+                                                     Expansion::Component polarization
+                                                    )
 {
     if (!self->Solver::initCalculation())
         self->setExpansionDefaults(false);
     return UFUNC<double>([=](double lam)->double {
         double k0 = 2e3*PI/lam;
-        cvector incident = self->incidentVector(side, polarization, k0);
+        cvector incident = self->incidentVector(side, polarization, lam);
         self->expansion.setK0(k0);
         return 100. * self->getTransmission(incident, side);
     }, wavelength);
 }
+
+template <typename SolverT>
+py::object Solver_computeReflectivity_index(SolverT* self,
+                                            py::object wavelength,
+                                            Transfer::IncidentDirection side,
+                                            size_t index
+                                           )
+{
+    if (!self->Solver::initCalculation())
+        self->setExpansionDefaults(false);
+    return UFUNC<double>([=](double lam)->double {
+        double k0 = 2e3*PI/lam;
+        cvector incident = self->SlabBase::incidentVector(index);
+        self->expansion.setK0(k0);
+        return 100. * self->getReflection(incident, side);
+    }, wavelength);
+}
+
+template <typename SolverT>
+py::object Solver_computeTransmittivity_index(SolverT* self,
+                                              py::object wavelength,
+                                              Transfer::IncidentDirection side,
+                                              size_t index
+                                             )
+{
+    if (!self->Solver::initCalculation())
+        self->setExpansionDefaults(false);
+    return UFUNC<double>([=](double lam)->double {
+        double k0 = 2e3*PI/lam;
+        cvector incident = self->SlabBase::incidentVector(index);
+        self->expansion.setK0(k0);
+        return 100. * self->getTransmission(incident, side);
+    }, wavelength);
+}
+
+template <typename SolverT>
+py::object Solver_computeReflectivity_array(SolverT* self,
+                                            py::object wavelength,
+                                            Transfer::IncidentDirection side,
+                                            CoeffsArray coeffs
+                                           )
+{
+    if (!self->Solver::initCalculation()) self->setExpansionDefaults(false);
+    if (!self->transfer) self->initTransfer(self->getExpansion(), true);
+
+    PyArrayObject* arr = coeffs.array;
+    size_t size(PyArray_DIMS(arr)[0]);
+    if (size != self->transfer->diagonalizer->matrixSize())
+        throw BadInput(self->getId(), "Wrong incident vector size ({}, should be {}", size, self->transfer->diagonalizer->matrixSize());
+
+    cvector incident((dcomplex*)PyArray_DATA(arr), size_t(PyArray_DIMS(arr)[0]), plask::python::detail::NumpyDataDeleter(arr));
+
+    return UFUNC<double>([self, incident, side](double lam)->double {
+        double k0 = 2e3*PI/lam;
+        self->expansion.setK0(k0);
+        return 100. * self->getReflection(incident, side);
+    }, wavelength);
+}
+
+template <typename SolverT>
+py::object Solver_computeTransmittivity_array(SolverT* self,
+                                              py::object wavelength,
+                                              Transfer::IncidentDirection side,
+                                              CoeffsArray coeffs
+                                             )
+{
+    if (!self->Solver::initCalculation()) self->setExpansionDefaults(false);
+    if (!self->transfer) self->initTransfer(self->getExpansion(), true);
+
+    PyArrayObject* arr = coeffs.array;
+    size_t size(PyArray_DIMS(arr)[0]);
+    if (size != self->transfer->diagonalizer->matrixSize())
+        throw BadInput(self->getId(), "Wrong incident vector size ({}, should be {}", size, self->transfer->diagonalizer->matrixSize());
+
+    cvector incident((dcomplex*)PyArray_DATA(arr), size_t(PyArray_DIMS(arr)[0]), plask::python::detail::NumpyDataDeleter(arr));
+
+    return UFUNC<double>([self, incident, side](double lam)->double {
+        double k0 = 2e3*PI/lam;
+        self->expansion.setK0(k0);
+        return 100. * self->getTransmission(incident, side);
+    }, wavelength);
+}
+
+
 
 template <typename SolverT>
 py::object get_max_temp_diff(SolverT* self) {
@@ -852,31 +997,6 @@ inline void export_base(Class solver) {
 #endif
 }
 
-
-
-//TODO remove in the future
-template <typename SolverT>
-py::object Solver_computeReflectivityOld(SolverT* self,
-                                         py::object wavelength,
-                                         Expansion::Component polarization,
-                                         Transfer::IncidentDirection side
-                                        ) {
-    self->writelog(LOG_WARNING, "Method 'compute_reflectivity(lam, polarization, side)' is obsolete. "
-                                "Please change to 'compute_reflectivity(lam, side, polarization)'");
-    return Solver_computeReflectivity<SolverT>(self, wavelength, side, polarization);
-}
-
-//TODO remove in the future
-template <typename SolverT>
-py::object Solver_computeTransmittivityOld(SolverT* self,
-                                         py::object wavelength,
-                                         Expansion::Component polarization,
-                                         Transfer::IncidentDirection side
-                                        ) {
-    self->writelog(LOG_WARNING, "Method 'compute_transmittivity(lam, polarization, side)' is obsolete. "
-                                "Please change to 'compute_transmittivity(lam, side, polarization)'");
-    return Solver_computeTransmittivity<SolverT>(self, wavelength, side, polarization);
-}
 
 }}}} // # namespace plask::optical::slab::python
 

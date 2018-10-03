@@ -423,9 +423,10 @@ void SlabBase::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
 
 cvector SlabBase::incidentVector(size_t idx) {
     initCalculation();
-    if (idx >= getExpansion().matrixSize()) throw BadInput(getId(), "Wrong incident eignenmode index");
+    if (!transfer) initTransfer(getExpansion(), true);
+    if (idx >= transfer->diagonalizer->matrixSize()) throw BadInput(getId(), "Wrong incident eignenmode index");
 
-    cvector incident(getExpansion().matrixSize(), 0.);
+    cvector incident(transfer->diagonalizer->matrixSize(), 0.);
     incident[idx] = 1.;
     return incident;
 }
