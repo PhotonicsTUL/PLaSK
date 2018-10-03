@@ -196,7 +196,15 @@ BOOST_AUTO_TEST_CASE(rectangular_masked_2D) {
     }
 }
 
-BOOST_AUTO_TEST_CASE(rectangular_masked_midpoints) {
+BOOST_AUTO_TEST_CASE(rectangular_masked_2D_order10) {
+    plask::RectangularMaskedMesh2D maskedMesh = constructMesh(plask::RectangularMesh2D::ORDER_10);
+    BOOST_REQUIRE_EQUAL(maskedMesh.size(), 2 + 5 + 5 + 4);
+    BOOST_REQUIRE_EQUAL(maskedMesh.getElementsCount(), 1 + 4 + 2);
+    BOOST_REQUIRE_EQUAL(maskedMesh.getElementsCount0(), 4);
+    BOOST_REQUIRE_EQUAL(maskedMesh.getElementsCount1(), 3);
+}
+
+BOOST_AUTO_TEST_CASE(rectangular_masked_2d_midpoints) {
     auto axis0 = plask::make_shared<plask::OrderedAxis>(std::initializer_list<double>{1.0, 2.0, 5.0, 10.0, 18.0});
     auto axis1 = plask::make_shared<plask::RegularAxis>(3.0, 6.0, 4);
     auto mesh = plask::RectangularMaskedMesh2D(
@@ -233,13 +241,23 @@ BOOST_AUTO_TEST_CASE(rectangular_masked_midpoints) {
     BOOST_CHECK_EQUAL(midpoints_masked.getElement(2).getLoLoIndex(), 4);
 }
 
-BOOST_AUTO_TEST_CASE(rectangular_masked_2D_order10) {
-    plask::RectangularMaskedMesh2D maskedMesh = constructMesh(plask::RectangularMesh2D::ORDER_10);
-    BOOST_REQUIRE_EQUAL(maskedMesh.size(), 2 + 5 + 5 + 4);
-    BOOST_REQUIRE_EQUAL(maskedMesh.getElementsCount(), 1 + 4 + 2);
-    BOOST_REQUIRE_EQUAL(maskedMesh.getElementsCount0(), 4);
-    BOOST_REQUIRE_EQUAL(maskedMesh.getElementsCount1(), 3);
+BOOST_AUTO_TEST_CASE(rectangular_masked_2d_full_midpoints) {
+    auto axis0 = plask::make_shared<plask::OrderedAxis>(std::initializer_list<double>{1.0, 2.0, 5.0, 10.0, 18.0});
+    auto axis1 = plask::make_shared<plask::RegularAxis>(3.0, 6.0, 4);
+    auto mesh = plask::RectangularMaskedMesh2D(
+                plask::RectangularMesh2D(axis0, axis1),    // 5x4 nodes, 4x3 elements
+                [] (const plask::RectangularMesh<2>::Element&) { return true; }
+    );
+    BOOST_CHECK_EQUAL(mesh.size(), 20);
+    BOOST_CHECK_EQUAL(mesh.getElementsCount(), 12);
+    auto midpoints = mesh.getElementMesh();
+    BOOST_CHECK_EQUAL(midpoints->size(), 12);
+
+    auto midpoints_masked = midpoints->toMasked();
+    BOOST_CHECK_EQUAL(midpoints_masked.size(), 12);
+    BOOST_REQUIRE_EQUAL(midpoints_masked.getElementsCount(), 6);
 }
+
 
 BOOST_AUTO_TEST_CASE(rectangular_masked_3D) {
     plask::RectangularMaskedMesh3D maskedMesh(
@@ -311,6 +329,24 @@ BOOST_AUTO_TEST_CASE(rectangular_masked_3D) {
     checkBoundary(maskedMesh.createRightBoundary(), { 5, 6, 12, 13, 16, 17 });
     checkBoundary(maskedMesh.createBottomBoundary(), { 0, 2, 7, 9 });
     checkBoundary(maskedMesh.createTopBoundary(), { 4, 6, 11, 13, 15, 17 });
+}
+
+BOOST_AUTO_TEST_CASE(rectangular_masked_3d_full_midpoints) {
+    auto axis0 = plask::make_shared<plask::OrderedAxis>(std::initializer_list<double>{1.0, 2.0, 5.0, 10.0, 18.0});
+    auto axis1 = plask::make_shared<plask::RegularAxis>(3.0, 6.0, 4);
+    auto axis2 = plask::make_shared<plask::RegularAxis>(5.0, 7.0, 3);
+    auto mesh = plask::RectangularMaskedMesh3D(
+                plask::RectangularMesh3D(axis0, axis1, axis2),    // 5x4x3 nodes, 4x3x2 elements
+                [] (const plask::RectangularMesh<3>::Element&) { return true; }
+    );
+    BOOST_CHECK_EQUAL(mesh.size(), 60);
+    BOOST_CHECK_EQUAL(mesh.getElementsCount(), 24);
+    auto midpoints = mesh.getElementMesh();
+    BOOST_CHECK_EQUAL(midpoints->size(), 24);
+
+    auto midpoints_masked = midpoints->toMasked();
+    BOOST_CHECK_EQUAL(midpoints_masked.size(), 24);
+    BOOST_REQUIRE_EQUAL(midpoints_masked.getElementsCount(), 6);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
