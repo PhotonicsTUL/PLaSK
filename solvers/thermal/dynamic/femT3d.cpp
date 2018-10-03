@@ -74,7 +74,10 @@ void FiniteElementMethodDynamicThermal3DSolver::onInitialize() {
     elapstime = 0.;
     band = 0;
 
-    maskedMesh->reset(*this->mesh, *this->geometry, ~(use_full_mesh? 0 : plask::Material::EMPTY));
+    if (use_full_mesh)
+        maskedMesh->selectAll(*this->mesh);
+    else
+        maskedMesh->reset(*this->mesh, *this->geometry, ~plask::Material::EMPTY);
 
     temperatures.reset(this->maskedMesh->size(), inittemp);
 

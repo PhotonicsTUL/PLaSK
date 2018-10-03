@@ -255,7 +255,7 @@ BOOST_AUTO_TEST_CASE(rectangular_masked_2d_full_midpoints) {
 
     auto midpoints_masked = midpoints->toMasked();
     BOOST_CHECK_EQUAL(midpoints_masked.size(), 12);
-    BOOST_REQUIRE_EQUAL(midpoints_masked.getElementsCount(), 6);
+    BOOST_CHECK_EQUAL(midpoints_masked.getElementsCount(), 6);
 }
 
 
@@ -349,7 +349,7 @@ BOOST_AUTO_TEST_CASE(rectangular_masked_3d_full_midpoints) {
 
     auto midpoints_masked = midpoints->toMasked();
     BOOST_CHECK_EQUAL(midpoints_masked.size(), 24);
-    BOOST_REQUIRE_EQUAL(midpoints_masked.getElementsCount(), 6);
+    BOOST_CHECK_EQUAL(midpoints_masked.getElementsCount(), 6);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

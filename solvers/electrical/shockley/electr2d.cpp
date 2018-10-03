@@ -123,7 +123,10 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::setActiveRegions()
         return;
     }
 
-    maskedMesh->reset(*this->mesh, *this->geometry, ~(use_full_mesh? 0 : plask::Material::EMPTY));
+    if (use_full_mesh)
+        maskedMesh->selectAll(*this->mesh);
+    else
+        maskedMesh->reset(*this->mesh, *this->geometry, ~plask::Material::EMPTY);
 
     auto points = this->mesh->getElementMesh();
 
