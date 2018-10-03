@@ -321,6 +321,9 @@ BOOST_AUTO_TEST_CASE(rectangular_masked_3D) {
     {
         auto midpoints = maskedMesh.getElementMesh();
         BOOST_CHECK_EQUAL(midpoints->size(), maskedMesh.getElementsCount());
+        auto midpoints_masked = midpoints->toMasked();
+        BOOST_CHECK_EQUAL(midpoints_masked.size(), maskedMesh.getElementsCount());
+        BOOST_CHECK_EQUAL(midpoints_masked.getElementsCount(), 0);
     }
 
     checkBoundary(maskedMesh.createBackBoundary(), { 0, 1, 2, 3, 4, 5, 6 });
