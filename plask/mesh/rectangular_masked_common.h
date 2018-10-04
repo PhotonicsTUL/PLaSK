@@ -39,7 +39,11 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     Set elementSet;
 
     /// The lowest and the largest index in use, for each direction.
-    struct { std::size_t lo, up; } boundaryIndex[DIM];
+    struct {
+        std::size_t lo, up;
+        void improveLo(std::size_t i) { if (i < lo) lo = i; }
+        void improveUp(std::size_t i) { if (i > up) up = i; }
+    } boundaryIndex[DIM];
 
     /**
      * Used by interpolation.
@@ -214,14 +218,6 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
         : fullMesh(rectangularMesh, clone_axes), nodeSet(std::move(nodeSet)), elementSetInitialized(false)
     {
         resetBoundyIndex();
-        // TODO faster algorithm could iterate over segments
-        for (auto nodeIndex: nodeSet) {
-            auto indexes = rectangularMesh.indexes(nodeIndex);
-            for (int d = 0; d < DIM; ++d) {
-                if (indexes[d] < boundaryIndex[d].lo) boundaryIndex[d].lo = indexes[d];
-                if (indexes[d] > boundaryIndex[d].up) boundaryIndex[d].up = indexes[d];
-            }
-        }
     }
 
     /**

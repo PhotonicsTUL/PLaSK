@@ -18,6 +18,26 @@ void RectangularMaskedMesh2D::reset(const RectangularMesh<2> &rectangularMesh, c
     reset(predicate);
 }
 
+RectangularMaskedMesh2D::RectangularMaskedMesh2D(const RectangularMesh<DIM> &rectangularMesh, RectangularMaskedMeshBase::Set nodeSet, bool clone_axes)
+    : RectangularMaskedMeshBase(rectangularMesh, std::move(nodeSet), clone_axes)
+{
+    nodeSet.forEachSegment([&] (std::size_t b, std::size_t e) {
+        const auto indexes_f = rectangularMesh.indexes(b);
+        const auto indexes_l = rectangularMesh.indexes(e-1);
+        const auto major = rectangularMesh.majorAxisIndex();
+        const auto minor = rectangularMesh.minorAxisIndex();
+        if (indexes_f[major] != indexes_l[major]) {
+            boundaryIndex[minor].lo = 0;
+            boundaryIndex[minor].up = rectangularMesh.minorAxis()->size();
+        } else {
+            boundaryIndex[minor].improveLo(indexes_f[minor]);
+            boundaryIndex[minor].improveUp(indexes_l[minor]);
+        }
+        boundaryIndex[major].improveLo(indexes_f[major]);
+        boundaryIndex[major].improveUp(indexes_l[major]);
+    });
+}
+
 void RectangularMaskedMesh2D::initNodesAndElements(const RectangularMaskedMesh2D::Predicate &predicate)
 {
     for (auto el_it = this->fullMesh.elements().begin(); el_it != this->fullMesh.elements().end(); ++el_it)
@@ -27,10 +47,10 @@ void RectangularMaskedMesh2D::initNodesAndElements(const RectangularMaskedMesh2D
             nodeSet.insert(el_it->getLoUpIndex());
             nodeSet.insert(el_it->getUpLoIndex());
             nodeSet.push_back(el_it->getUpUpIndex());  //this is safe also for 10 axis order
-            if (el_it->getLowerIndex0() < boundaryIndex[0].lo) boundaryIndex[0].lo = el_it->getLowerIndex0();
-            if (el_it->getUpperIndex0() > boundaryIndex[0].up) boundaryIndex[0].up = el_it->getUpperIndex0();
-            if (el_it->getLowerIndex1() < boundaryIndex[1].lo) boundaryIndex[1].lo = el_it->getLowerIndex1();
-            if (el_it->getUpperIndex1() > boundaryIndex[1].up) boundaryIndex[1].up = el_it->getUpperIndex1();
+            boundaryIndex[0].improveLo(el_it->getLowerIndex0());
+            boundaryIndex[0].improveUp(el_it->getUpperIndex0());
+            boundaryIndex[1].improveLo(el_it->getLowerIndex1());
+            boundaryIndex[1].improveUp(el_it->getUpperIndex1());
         }
     nodeSet.shrink_to_fit();
     elementSet.shrink_to_fit();

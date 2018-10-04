@@ -19,6 +19,37 @@ void RectangularMaskedMesh3D::reset(const RectangularMesh<3> &rectangularMesh, c
     reset(predicate);
 }
 
+RectangularMaskedMesh3D::RectangularMaskedMesh3D(const RectangularMesh<DIM> &rectangularMesh, RectangularMaskedMeshBase::Set nodeSet, bool clone_axes)
+    : RectangularMaskedMeshBase(rectangularMesh, std::move(nodeSet), clone_axes)
+{
+    nodeSet.forEachSegment([&] (std::size_t b, std::size_t e) {
+        const auto indexes_f = rectangularMesh.indexes(b);
+        const auto indexes_l = rectangularMesh.indexes(e-1);
+        const auto minor = rectangularMesh.minorAxisIndex();
+        const auto medium = rectangularMesh.mediumAxisIndex();
+        const auto major = rectangularMesh.majorAxisIndex();
+        if (indexes_f[major] != indexes_l[major]) {
+            boundaryIndex[minor].lo = 0;
+            boundaryIndex[minor].up = rectangularMesh.minorAxis()->size();
+            boundaryIndex[medium].lo = 0;
+            boundaryIndex[medium].up = rectangularMesh.mediumAxis()->size();
+        } else {
+            if (indexes_f[medium] != indexes_l[medium]) {
+                boundaryIndex[minor].lo = 0;
+                boundaryIndex[minor].up = rectangularMesh.minorAxis()->size();
+            } else {   // here:   indexes_f[minor] <= indexes_l[minor]
+                boundaryIndex[minor].improveLo(indexes_f[minor]);
+                boundaryIndex[minor].improveUp(indexes_l[minor]);
+            }
+            // indexes_f[major] == indexes_l[major]   =>   indexes_f[medium] <= indexes_l[medium]
+            boundaryIndex[medium].improveLo(indexes_f[medium]);
+            boundaryIndex[medium].improveUp(indexes_l[medium]);
+        }
+        boundaryIndex[major].improveLo(indexes_f[major]);
+        boundaryIndex[major].improveUp(indexes_l[major]);
+    });
+}
+
 void RectangularMaskedMesh3D::initNodesAndElements(const RectangularMaskedMesh3D::Predicate &predicate)
 {
     for (auto el_it = this->fullMesh.elements().begin(); el_it != this->fullMesh.elements().end(); ++el_it)
@@ -35,12 +66,12 @@ void RectangularMaskedMesh3D::initNodesAndElements(const RectangularMaskedMesh3D
             nodeSet.insert(el_it->getUpUpLoIndex());
 
             nodeSet.push_back(el_it->getUpUpUpIndex());
-            if (el_it->getLowerIndex0() < boundaryIndex[0].lo) boundaryIndex[0].lo = el_it->getLowerIndex0();
-            if (el_it->getUpperIndex0() > boundaryIndex[0].up) boundaryIndex[0].up = el_it->getUpperIndex0();
-            if (el_it->getLowerIndex1() < boundaryIndex[1].lo) boundaryIndex[1].lo = el_it->getLowerIndex1();
-            if (el_it->getUpperIndex1() > boundaryIndex[1].up) boundaryIndex[1].up = el_it->getUpperIndex1();
-            if (el_it->getLowerIndex2() < boundaryIndex[2].lo) boundaryIndex[2].lo = el_it->getLowerIndex2();
-            if (el_it->getUpperIndex2() > boundaryIndex[2].up) boundaryIndex[2].up = el_it->getUpperIndex2();
+            boundaryIndex[0].improveLo(el_it->getLowerIndex0());
+            boundaryIndex[0].improveUp(el_it->getUpperIndex0());
+            boundaryIndex[1].improveLo(el_it->getLowerIndex1());
+            boundaryIndex[1].improveUp(el_it->getUpperIndex1());
+            boundaryIndex[2].improveLo(el_it->getLowerIndex2());
+            boundaryIndex[2].improveUp(el_it->getUpperIndex2());
         }
     nodeSet.shrink_to_fit();
     elementSet.shrink_to_fit();

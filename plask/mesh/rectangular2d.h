@@ -385,9 +385,19 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
         return *major_axis;
     }
 
+    /// \return index of major axis
+    inline std::size_t majorAxisIndex() const {
+        return getIterationOrder() == IterationOrder::ORDER_01 ? 0 : 1;
+    }
+
     /// \return minor (changing fastest) axis
     inline const shared_ptr<MeshAxis> minorAxis() const {
         return *minor_axis;
+    }
+
+    /// \return index of minor axis
+    inline std::size_t minorAxisIndex() const {
+        return getIterationOrder() == IterationOrder::ORDER_01 ? 1 : 0;
     }
 
     /**

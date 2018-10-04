@@ -401,14 +401,35 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
         return *major_axis;
     }
 
+    /// \return index of major axis
+    inline std::size_t majorAxisIndex() const {
+        if (major_axis == &axis[0]) return 0;
+        if (major_axis == &axis[1]) return 1;
+        return 2;
+    }
+
     /// \return middle (between major and minor) axis
     inline const shared_ptr<MeshAxis> mediumAxis() const {
         return *medium_axis;
     }
 
+    /// \return index of middle axis
+    inline std::size_t mediumAxisIndex() const {
+        if (medium_axis == &axis[0]) return 0;
+        if (medium_axis == &axis[1]) return 1;
+        return 2;
+    }
+
     /// \return minor (changing fastes) axis
     inline const shared_ptr<MeshAxis> minorAxis() const {
         return *minor_axis;
+    }
+
+    /// \return index of minor (changing fastes) axis
+    inline std::size_t minorAxisIndex() const {
+        if (minor_axis == &axis[0]) return 0;
+        if (minor_axis == &axis[1]) return 1;
+        return 2;
     }
 
     /**

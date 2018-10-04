@@ -455,11 +455,11 @@ public:
      * Call f(first, last) for each segment [first, last).
      * @param f two-argument functor
      */
-    /*template <typename F>
+    template <typename F>
     void forEachSegment(F f) const {
         for (auto it = this->segments.begin(); it != this->segments.end(); ++it)
             f(firstNumber(it), it->numberEnd);
-    }*/
+    }
 
     /**
      * Calculate a set with numbers of @c this decreased by @p positions_count. Skip numbers which became negative.

@@ -340,8 +340,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
      *
      * This constructor is used by getElementMesh.
      */
-    RectangularMaskedMesh2D(const RectangularMesh<DIM>& rectangularMesh, Set nodeSet, bool clone_axes = false)
-        : RectangularMaskedMeshBase(rectangularMesh, std::move(nodeSet), clone_axes) {}
+    RectangularMaskedMesh2D(const RectangularMesh<DIM>& rectangularMesh, Set nodeSet, bool clone_axes = false);
 
     Elements elements() const { return Elements(*this); }
     Elements getElements() const { return elements(); }
