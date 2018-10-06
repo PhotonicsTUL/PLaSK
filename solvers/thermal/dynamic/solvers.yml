@@ -27,6 +27,8 @@
   - &temperature
     bcond: temperature
     label: Temperature
+    mesh type: Rectangular2D
+    mesh: { tag: mesh, attr: ref }
   - &loop
     tag: loop
     label: Time-Evolution Loop
@@ -112,7 +114,10 @@
   geometry: Cartesian3D
   mesh: Rectangular3D
   tags:
-  - *temperature
+  - bcond: temperature
+    label: Temperature
+    mesh type: Rectangular3D
+    mesh: { tag: mesh, attr: ref }
   - *loop
   - *matrix
   providers:

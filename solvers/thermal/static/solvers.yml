@@ -32,14 +32,20 @@
   - &temperature
     bcond: temperature
     label: Temperature
+    mesh type: Rectangular2D
+    mesh: { tag: mesh, attr: ref }
 
   - &heatflux
     bcond: heatflux
     label: Heat Flux
+    mesh type: Rectangular2D
+    mesh: { tag: mesh, attr: ref }
 
   - &convection
     bcond: convection
     label: Convective
+    mesh type: Rectangular2D
+    mesh: { tag: mesh, attr: ref }
     values: [ coeff, ambient ]
     help: >
       This boundary condition does not have <i>value</i> attribute. Use <i>coeff</i> for convection
@@ -48,6 +54,8 @@
   - &radiation
     bcond: radiation
     label: Radiative
+    mesh type: Rectangular2D
+    mesh: { tag: mesh, attr: ref }
     values: [ emissivity, ambient ]
     help: >
       This boundary condition does not have <i>value</i> attribute. Use <i>emissivity</i> for surface
@@ -168,13 +176,33 @@
         Name of a Rectangular3D mesh defined in the :xml:tag:`<grids>` section.
     - *full-mesh
 
-  - *temperature
+  - bcond: temperature
+    label: Temperature
+    mesh type: Rectangular3D
+    mesh: { tag: mesh, attr: ref }
 
-  - *heatflux
+  - bcond: heatflux
+    label: Heat Flux
+    mesh type: Rectangular3D
+    mesh: { tag: mesh, attr: ref }
 
-  - *convection
+  - bcond: convection
+    label: Convective
+    mesh type: Rectangular3D
+    mesh: { tag: mesh, attr: ref }
+    values: [ coeff, ambient ]
+    help: >
+      This boundary condition does not have <i>value</i> attribute. Use <i>coeff</i> for convection
+      coefficient and <i>ambient</i> for ambient temperature instead.
 
-  - *radiation
+  - bcond: radiation
+    label: Radiative
+    mesh type: Rectangular3D
+    mesh: { tag: mesh, attr: ref }
+    values: [ emissivity, ambient ]
+    help: >
+      This boundary condition does not have <i>value</i> attribute. Use <i>emissivity</i> for surface
+      emissivity and <i>ambient</i> for ambient temperature instead.
 
   - *loop
 

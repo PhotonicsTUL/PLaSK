@@ -29,6 +29,8 @@
   - &voltage
     bcond: voltage
     label: Voltage
+    mesh type: Rectangular2D
+    mesh: { tag: mesh, attr: ref }
   - &loop
     tag: loop
     label: Configuration of the Self-Consistent Loop
@@ -169,7 +171,10 @@
       help: >
         Name of a Rectangular3D mesh defined in the :xml:tag:`<grids>` section.
     - *full-mesh
-  - *voltage
+  - bcond: voltage
+    label: Voltage
+    mesh type: Rectangular3D
+    mesh: { tag: mesh, attr: ref }
   - *loop
   - *matrix
   - tag: junction

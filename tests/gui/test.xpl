@@ -274,6 +274,12 @@
   <thermal name="THERMAL" solver="StaticCyl" lib="static">
     <geometry ref="GeoT"/>
     <mesh ref="default"/>
+    <temperature>
+      <condition value="320.">
+        <place line="horizontal" at="10" start="0" stop="{lineto}"/>
+      </condition>
+      <condition place="bottom" value="300."/>
+    </temperature>
   </thermal>
   <optical name="fourier2" solver="Fourier2D" lib="slab">
     <geometry ref="geo2d"/>
