@@ -10,6 +10,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import weakref
 
 from .object import GNObjectController
 from ...utils.qsignals import BlockQtSignals
@@ -37,7 +38,9 @@ class GNClipController(GNObjectController):
 class GNFlipMirrorController(GNObjectController):
 
     def _save_axis_undoable(self):
-        self._set_node_by_setter_undoable(lambda n, v: n.set_axis(v), empty_to_none(self.axis.currentText()), self.node.axis, 'change axis property')
+        self._set_node_by_setter_undoable(lambda n, v: n.set_axis(v),
+                                          empty_to_none(
+                                              self.axis.currentText()), self.node.axis, 'change axis property')
         #self.node.set_axis(empty_to_none(self.axis.currentText()))
 
     def fill_form(self):
@@ -103,9 +106,10 @@ class GNTranslationController(GNObjectController):
     def construct_form(self):
         self.construct_group('Translation Settings')
         def setter(n, v): n.vector = v
+        weakself = weakref.proxy(self)
         self.vector = self.construct_point_controllers(row_name='Vector', change_cb=lambda point:
-            self._set_node_by_setter_undoable(setter, list(point), self.node.vector, 'change translation vector')
-        )
+            weakself._set_node_by_setter_undoable(setter, list(point),
+                                                  weakself.node.vector, 'change translation vector'))
         super(GNTranslationController, self).construct_form()
 
     def fill_form(self):
@@ -119,9 +123,9 @@ class GNArrangeController(GNObjectController):
     def construct_form(self):
         self.construct_group('Arrange Settings')
         def setter(n, v): n.step = v
+        weakself = weakref.proxy(self)
         self.step = self.construct_point_controllers(row_name='Step', change_cb=lambda point:
-            self._set_node_by_setter_undoable(setter, list(point), self.node.step, 'change step in arrange')
-        )
+            weakself._set_node_by_setter_undoable(setter, list(point), weakself.node.step, 'change step in arrange'))
         self.count = self.construct_line_edit('Count:', node_property_name='count')
         self.count.setToolTip(u'&lt;arrange <b>count</b>="" ...&gt;<br/>'
                                u'Number of item repetitions.')

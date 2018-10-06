@@ -96,9 +96,9 @@ class RectangularBC(SchemaBoundaryConditions):
             element = etree.Element('condition')
             place = etree.SubElement(element, 'place')
             place.attrib['line'] = self.line
-            place.attrib['at'] = self.at
-            place.attrib['start'] = self.start
-            place.attrib['stop'] = self.stop
+            place.attrib['at'] = str(self.at)
+            place.attrib['start'] = str(self.start)
+            place.attrib['stop'] = str(self.stop)
             return element
         def copy_from(self, old):
             self.at = old.at

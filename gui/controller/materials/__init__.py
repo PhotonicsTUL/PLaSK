@@ -9,7 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
+import weakref
 import itertools
 
 from ...qt.QtCore import *
@@ -324,7 +324,7 @@ class MaterialsController(Controller):
 
         self.materials_table = QTableView()
         self.materials_table.setModel(self.model)
-        #self.model.modelReset.connect(lambda : self.materials_table.clearSelection())  #TODO why does not work?
+        #self.model.modelReset.connect(self.materials_table.clearSelection)  #TODO why does not work?
         self.materials_table.setItemDelegateForColumn(0, MaterialNameDelegate(self.model, self.document.defines.model,
                                                                               self.materials_table))
         self.materials_table.setItemDelegateForColumn(1, MaterialBaseDelegate(self.document.defines.model,
@@ -332,15 +332,16 @@ class MaterialsController(Controller):
                                                                               self.materials_table))
         self.materials_table.setItemDelegateForColumn(2, CheckBoxDelegate(self.materials_table))
 
+        weakself = weakref.proxy(self)
 
         materials_table, materials_toolbar = \
             table_and_manipulators(self.materials_table, self.splitter, title="Materials")
         library_action = TableActions.make_action('material-library', 'Add &Library',
                                                   'Add new binary library to the list', self.materials_table,
-                                                  lambda: self.add_external('library'))
+                                                  lambda: weakself.add_external('library'))
         module_action = TableActions.make_action('material-module', 'Add &Module',
                                                  'Add new python module to the list', self.materials_table,
-                                                 lambda: self.add_external('module'))
+                                                 lambda: weakself.add_external('module'))
         tool_button = QToolButton()
         tool_button.setIcon(QIcon.fromTheme('material-external'))
         tool_menu = QMenu(self.materials_table)
@@ -405,7 +406,7 @@ class MaterialsController(Controller):
         self.document.window.config_changed.connect(self.reconfig)
 
         focus_action = QAction(self.materials_table)
-        focus_action.triggered.connect(lambda: self.properties_table.setFocus())
+        focus_action.triggered.connect(self.properties_table.setFocus)
         focus_action.setShortcut(QKeySequence(Qt.Key_Return))
         focus_action.setShortcutContext(Qt.WidgetShortcut)
         self.materials_table.addAction(focus_action)
@@ -471,7 +472,8 @@ class MaterialsController(Controller):
             row = indexes[0].row()
             self.propedit.setPlainText(self.selected_material.properties[row][1])
             self.propedit.show()
-            self.propedit.textChanged.connect(lambda: self.propedit_changed(row))
+            weakself = weakref.proxy(self)
+            self.propedit.textChanged.connect(lambda: weakself.propedit_changed(row))
         else:
             self.propedit.hide()
 

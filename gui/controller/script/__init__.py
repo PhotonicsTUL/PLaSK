@@ -9,8 +9,8 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
 import sys
+import weakref
 from copy import copy
 from numpy import inf
 
@@ -70,7 +70,7 @@ class ScriptEditor(TextEditor):
     """Editor with some features usefult for script editing"""
 
     def __init__(self, parent=None, controller=None):
-        self.controller = controller
+        self.controller = weakref.proxy(controller)
         super(ScriptEditor, self).__init__(parent)
 
         self.cursorPositionChanged.connect(self.highlight_brackets)

@@ -10,6 +10,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import weakref
 
 from . import GridController
 from ...qt.QtWidgets import *
@@ -29,7 +30,7 @@ class AxisEdit(QGroupBox):
     def __init__(self, controller, axis_path, axis, title=None, allow_type_select=False, accept_non_regular=False):
         super(AxisEdit, self).__init__(title if title is not None else axis)
         if axis is None: axis = 'axis'
-        self.controller = controller
+        self.controller = weakref.proxy(controller)
         self.axis_path = axis_path
         defines = get_defines_completer(controller.document.defines.model, self)
         form_layout = QFormLayout()

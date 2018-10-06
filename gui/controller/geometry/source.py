@@ -11,6 +11,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 import sys
+import weakref
 from lxml import etree
 from bisect import bisect
 
@@ -61,7 +62,7 @@ class SourceWithPreviewWidget(QSplitter):
 
     def __init__(self, controller, parent=None):
         super(SourceWithPreviewWidget, self).__init__(Qt.Horizontal, parent)
-        self.controller = controller
+        self.controller = weakref.proxy(controller)
 
     @property
     def editor(self):

@@ -10,8 +10,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 import sys
+import weakref
 from collections import OrderedDict
-from copy import copy
 
 from lxml.etree import tostring
 
@@ -230,7 +230,6 @@ class BoundaryConditionsDialog(QDialog):
         self.table = QTableView()
         self.model = BoundaryConditionsModel(schema, data)
         self.table.setModel(self.model)
-        cols = self.model.columnCount(None)  # column widths:
         self.table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.setColumnWidth(0, 150)
@@ -508,7 +507,7 @@ class PlaceDelegate(QStyledItemDelegate):
             completer.setCaseSensitivity(Qt.CaseSensitive)
             combo.setCompleter(completer)
 
-        combo.currentIndexChanged.connect(lambda: self.placeChanged.emit())
+        combo.currentIndexChanged.connect(self.placeChanged.emit)
 
         return combo
 
@@ -525,7 +524,7 @@ class PlaceDetailsDelegate(HTMLDelegate):
 
     def __init__(self, dialog, controller, defines=None, parent=None):
         super(PlaceDetailsDelegate, self).__init__(parent)
-        self.dialog = dialog
+        self.dialog = weakref.proxy(dialog)
         self.controller = controller
         self.defines = defines
         self.closeEditor.connect(self.on_close_editor)

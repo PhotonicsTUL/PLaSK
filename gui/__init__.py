@@ -160,6 +160,8 @@ class MainWindow(QMainWindow):
     def __init__(self, filename=None, Document=XPLDocument):
         super(MainWindow, self).__init__()
 
+        self.document = None
+
         self.current_tab_index = -1
         self.tabs = QTabWidget(self)
         self.tabs.setDocumentMode(True)
@@ -624,6 +626,7 @@ class MainWindow(QMainWindow):
                 return
 
         self.closed.emit()
+        self.document = None
 
         try:
             WINDOWS.remove(self)

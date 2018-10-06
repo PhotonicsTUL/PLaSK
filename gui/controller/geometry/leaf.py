@@ -10,6 +10,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import weakref
 
 from .object import GNObjectController
 from ...utils.str import empty_to_none, none_to_empty
@@ -141,8 +142,9 @@ class GNBlockController(GNLeafController):
             field_names = 'depth', 'width', 'height'
         self.construct_group('{} Settings'.format(name))
         def setter(n, v): n.size = v
+        weakself = weakref.proxy(self)
         self.size = self.construct_point_controllers(row_name='Size', field_names=field_names, change_cb=lambda point:
-            self._set_node_by_setter_undoable(setter, list(point), self.node.size, 'change block size'),
+            weakself._set_node_by_setter_undoable(setter, list(point), weakself.node.size, 'change block size'),
         )
         super(GNBlockController, self).construct_form()
 
@@ -163,10 +165,11 @@ class GNTriangleController(GNLeafController):
     def construct_form(self):
         self.construct_group('Vertex Coordinates (other than: {}):'
                              .format(', '.join('0' for _ in range(0, self.node.dim))))
+        weakself = weakref.proxy(self)
         self.points = (self.construct_point_controllers(row_name='First',
-                                                        change_cb=lambda point: self._on_point_set(0, point)),
+                                                        change_cb=lambda point: weakself._on_point_set(0, point)),
                       self.construct_point_controllers(row_name='Second',
-                                                       change_cb=lambda point: self._on_point_set(1, point)))
+                                                       change_cb=lambda point: weakself._on_point_set(1, point)))
         super(GNTriangleController, self).construct_form()
 
     def fill_form(self):
@@ -221,10 +224,11 @@ class GNPrismController(GNLeafController):
     def construct_form(self):
         self.construct_group('Base Vertex Coordinates (other than: {}):'
                              .format(', '.join('0' for _ in range(0, self.node.dim))))
+        weakself = weakref.proxy(self)
         self.points = (self.construct_point_controllers(row_name='First', field_names=('longitudinal', 'transverse'),
-                                                        change_cb=lambda point: self._on_point_set(0, point)),
+                                                        change_cb=lambda point: weakself._on_point_set(0, point)),
                        self.construct_point_controllers(row_name='Second', field_names=('longitudinal', 'transverse'),
-                                                        change_cb=lambda point: self._on_point_set(1, point)))
+                                                        change_cb=lambda point: weakself._on_point_set(1, point)))
         self.construct_group('Prism Settings')
         self.height = self.construct_line_edit('Prism Height:', unit=u'µm', node_property_name='height',
                                                display_property_name='height of the prism')

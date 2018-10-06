@@ -10,6 +10,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import weakref
 
 from . import GridController
 from ..defines import DefinesCompletionDelegate, get_defines_completer
@@ -39,6 +40,8 @@ class RectangularRegularGeneratorController(GridController):
 
         self.defines = get_defines_completer(self.document.defines.model, self.form)
 
+        weakself = weakref.proxy(self)
+
         dim = model.dim
         for i in range(dim):
             label = QLabel(self.LABELS[dim-1][i])
@@ -46,8 +49,7 @@ class RectangularRegularGeneratorController(GridController):
             attr = 'spacing{}'.format(i)
             edit = QLineEdit()
             edit.editingFinished.connect(
-                lambda attr=attr: self._change_attr(attr, empty_to_none(getattr(self,attr).text()))
-            )
+                lambda attr=attr: weakself._change_attr(attr, empty_to_none(getattr(weakself,attr).text())))
             edit.setCompleter(self.defines)
             edit.setToolTip('&lt;spacing <b>every{}</b>=""&gt;<br/>Approximate single element size.'
                             .format('' if dim == 1 else str(i)))
@@ -94,7 +96,9 @@ class RectangularRefinedGeneratorController(GridController):
             if model_path is None:
                 r.editingFinished.connect(self.fire_changed)
             else:
-                r.editingFinished.connect(lambda i=i, r=r: self._change_attr((model_path, i), empty_to_none(r.text())))
+                weakself = weakref.proxy(self)
+                r.editingFinished.connect(
+                    lambda i=i, r=r: weakself._change_attr((model_path, i), empty_to_none(r.text())))
         container_to_add.addRow(label, hbox_div)
         return res
 
@@ -109,8 +113,11 @@ class RectangularRefinedGeneratorController(GridController):
 
         self.options = QHBoxLayout()
 
+        weakself = weakref.proxy(self)
+
         self.aspect = QLineEdit()
-        self.aspect.editingFinished.connect(lambda : self._change_attr('aspect', empty_to_none(self.aspect.text())))
+        self.aspect.editingFinished.connect(
+            lambda: weakself._change_attr('aspect', empty_to_none(weakself.aspect.text())))
         self.aspect.setCompleter(self.defines)
         self.aspect.setToolTip('&lt;options <b>aspect</b>=""&gt;<br/>'
                                'Maximum aspect ratio for the rectangular and cubic elements generated '
@@ -124,7 +131,8 @@ class RectangularRefinedGeneratorController(GridController):
         warnings_layout = QHBoxLayout()
         for w in RectangularDivideGenerator.warnings:
             cb = ComboBox()
-            cb.editingFinished.connect(lambda w=w, cb=cb: self._change_attr('warn_'+w, empty_to_none(cb.currentText()), w+' warning') )
+            cb.editingFinished.connect(
+                lambda w=w, cb=cb: weakself._change_attr('warn_'+w, empty_to_none(cb.currentText()), w+' warning'))
             #cb.editingFinished.connect(self.fire_changed)
             #cb.currentIndexChanged.connect(self.fire_changed)
             cb.addItems(['', 'yes', 'no'])
@@ -148,17 +156,17 @@ class RectangularRefinedGeneratorController(GridController):
             self.refinements.setItemDelegateForColumn(0, ComboBoxDelegate(AXIS_NAMES[self.model.dim-1],
                                                                           self.refinements, editable=False))
         def object_names():
-            return self.document.geometry.model.get_names(filter=lambda x: not isinstance(x, GNGeometryBase))
+            return document.geometry.model.get_names(filter=lambda x: not isinstance(x, GNGeometryBase))
         self.refinements.setItemDelegateForColumn(1-one, ComboBoxDelegate(object_names,
                                                                           self.refinements, editable=True))
         try:
-            paths = self.document.geometry.model.get_paths()
+            paths = document.geometry.model.get_paths()
         except AttributeError:
             pass
         else:
             self.refinements.setItemDelegateForColumn(2-one, ComboBoxDelegate(paths,
                                                                               self.refinements, editable=True))
-        defines_delegate = DefinesCompletionDelegate(self.document.defines.model, self.refinements)
+        defines_delegate = DefinesCompletionDelegate(document.defines.model, self.refinements)
         self.refinements.setItemDelegateForColumn(3-one, defines_delegate)
         self.refinements.setItemDelegateForColumn(4-one, defines_delegate)
         self.refinements.setItemDelegateForColumn(5-one, defines_delegate)
@@ -197,8 +205,11 @@ class RectangularDivideGeneratorController(RectangularRefinedGeneratorController
     def __init__(self, document, model):
         super(RectangularDivideGeneratorController, self).__init__(document=document, model=model)
 
+        weakself = weakref.proxy(self)
+
         self.gradual = ComboBox()
-        self.gradual.editingFinished.connect(lambda : self._change_attr('gradual', empty_to_none(self.gradual.currentText())))
+        self.gradual.editingFinished.connect(
+            lambda: weakself._change_attr('gradual', empty_to_none(weakself.gradual.currentText())))
         #self.gradual.editingFinished.connect(self.fire_changed)
         #self.gradual.currentIndexChanged.connect(self.fire_changed)
         self.gradual.addItems(['', 'yes', 'no'])
@@ -214,12 +225,14 @@ class RectangularDivideGeneratorController(RectangularRefinedGeneratorController
                                             '&lt;<b>prediv by{}</b>=""&gt;<br/>'
                                             'The number of the initial divisions of each geometry object{}.',
                                             self.defines, 'prediv')
+
         self.postdiv = self._make_param_hbox(self.form_layout, 'Post-refining divisions:',
                                              '&lt;<b>postdiv by{}</b>=""&gt;<br/>'
                                              'The number of the final divisions of each geometry object{}.',
                                              self.defines, 'postdiv')
 
     def fill_form(self):
+        return
         super(RectangularDivideGeneratorController, self).fill_form()
         with self.mute_changes():
             with BlockQtSignals(self.gradual):

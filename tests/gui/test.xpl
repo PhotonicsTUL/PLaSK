@@ -260,11 +260,11 @@
     <steps small0="0.005" small1="0.05" small2="0.05" factor="1.2"/>
   </generator>
   <generator method="regular" name="reg" type="rectangular2d">
-    <spacing every0="0.2"/>
+    <spacing every0="0.2" every1="1"/>
   </generator>
   <generator method="simple" name="spl" type="rectangular2d"/>
   <mesh name="fine" type="rectangular3d">
-    <axis0 start="0" stop="1" num="2001"></axis0>
+    <axis0 start="0.5" stop="1.0" num="2001"></axis0>
     <axis1 start="0" stop="2" num="4001"></axis1>
     <axis2>0.0 0.5 1.5</axis2>
   </mesh>
@@ -314,6 +314,11 @@
   <electrical name="DDM" solver="DriftDiffusion2D" lib="ddm2d">
     <geometry ref="geo2d"/>
     <mesh ref="optical"/>
+    <voltage>
+      <condition value="0">
+        <place side="bottom" object="stack2d"/>
+      </condition>
+    </voltage>
   </electrical>
   <meta name="meta2" solver="ThermoElectric2D" lib="shockley">
     <geometry electrical="roads" thermal="geo2d-copy"/>

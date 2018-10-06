@@ -9,6 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import weakref
 from copy import deepcopy
 
 from ...qt.QtCore import *
@@ -140,12 +141,13 @@ class SolverWidget(VerticalScrollArea):
             ))
 
     def _add_attr(self, attr, defines, gname, group):
+        weakself = weakref.proxy(self)
         if isinstance(attr, AttrChoice):
             edit = ComboBox()
             edit.setEditable(True)
             edit.addItems([''] + list(attr.choices))
             edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name, attr=attr:
-                                         self._change_attr(group, name, edit.currentText(), attr))
+                                         weakself._change_attr(group, name, edit.currentText(), attr))
             completer = get_defines_completer(defines, edit, strings=attr.choices)
             edit.setCompleter(completer)
             if attr.default is not None:
@@ -154,7 +156,7 @@ class SolverWidget(VerticalScrollArea):
             edit = ComboBox()
             edit.setEditable(True)
             edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name:
-                                         self._change_attr(group, name, edit.currentText()))
+                                         weakself._change_attr(group, name, edit.currentText()))
             edit.setCompleter(get_defines_completer(defines, edit))
             if attr.default is not None:
                 edit.lineEdit().setPlaceholderText(attr.default)
@@ -164,13 +166,13 @@ class SolverWidget(VerticalScrollArea):
                 # edit.setFixedHeight(3 * edit.fontMetrics().lineSpacing())
                 # edit.textChanged.connect(self.controller.fire_changed)
                 edit.change_cb = lambda edit=edit, group=group, name=attr.name, attr=attr: \
-                    self._change_multi_attr(group, name, edit.get_values(), attr)
+                    weakself._change_multi_attr(group, name, edit.get_values(), attr)
             else:
                 edit = QLineEdit()
                 edit.setCompleter(defines)
                 # edit.textEdited.connect(self.controller.fire_changed)
                 edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name, attr=attr:
-                                             self._change_attr(group, name, edit.text(), attr))
+                                             weakself._change_attr(group, name, edit.text(), attr))
                 if attr.default is not None:
                     edit.setPlaceholderText(attr.default)
         edit.setToolTip(u'&lt;{} <b>{}</b>="{}"&gt;{}<br/>{}'.format(
@@ -193,11 +195,13 @@ class SolverWidget(VerticalScrollArea):
         """)
         button.setText(header)
 
+        weakself = weakref.proxy(self)
+
         def toggled(selected):
             button.setArrowType(Qt.DownArrow if selected else Qt.RightArrow)
             for edit in rows:
                 edit.setVisible(selected)
-                label = self.form_layout.labelForField(edit)
+                label = weakself.form_layout.labelForField(edit)
                 if label is not None:
                     label.setVisible(selected)
 
@@ -248,7 +252,7 @@ class SolverWidget(VerticalScrollArea):
     def __init__(self, controller, parent=None):
         super(SolverWidget, self).__init__(parent)
 
-        self.controller = controller
+        self.controller = weakref.proxy(controller)
 
         self.form_layout = QFormLayout()
         self.form_layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
@@ -266,6 +270,8 @@ class SolverWidget(VerticalScrollArea):
 
         last_header = None
 
+        weakself = weakref.proxy(self)
+
         if controller.model.geometry_type is not None:
             rows = []
             last_header = "Geometry"
@@ -273,7 +279,7 @@ class SolverWidget(VerticalScrollArea):
             self.geometry = ComboBox()
             self.geometry.setEditable(True)
             self.geometry.editingFinished.connect(
-                lambda w=self.geometry: self._change_node_field('geometry', w.currentText()))
+                lambda w=self.geometry: weakself._change_node_field('geometry', w.currentText()))
             self.geometry.setCompleter(get_defines_completer(defines, self.geometry))
             self.geometry.setToolTip(u'&lt;<b>geometry ref</b>=""&gt;<br/>'
                                      u'Name of the existing geometry for use by this solver.')
@@ -288,7 +294,7 @@ class SolverWidget(VerticalScrollArea):
             self._make_header(last_header, rows)
             self.mesh = ComboBox()
             self.mesh.setEditable(True)
-            self.mesh.editingFinished.connect(lambda w=self.mesh: self._change_node_field('mesh', w.currentText()))
+            self.mesh.editingFinished.connect(lambda w=self.mesh: weakself._change_node_field('mesh', w.currentText()))
             self.mesh.setCompleter(get_defines_completer(defines, self.geometry))
             self.mesh.setToolTip(u'&lt;<b>mesh ref</b>=""&gt;<br/>'
                                  u'Name of the existing {} mesh for use by this solver.'
@@ -330,7 +336,7 @@ class SolverWidget(VerticalScrollArea):
             elif bc:
                 edit = QPushButton("View / Edit")
                 edit.sizePolicy().setHorizontalStretch(1)
-                edit.pressed.connect(lambda schema=schema: self.edit_boundary_conditions(schema))
+                edit.pressed.connect(lambda schema=schema: weakself.edit_boundary_conditions(schema))
                 self.controls[group] = edit
                 self._add_row(schema.label2, edit, rows)
             else:
@@ -344,7 +350,7 @@ class SolverWidget(VerticalScrollArea):
                 rows.append(edit)
                 self.form_layout.addRow(edit)
                 # edit.textChanged.connect(self.controller.fire_changed)
-                edit.focus_out_cb = lambda edit=edit, group=group: self._change_attr(group, None, edit.toPlainText())
+                edit.focus_out_cb = lambda edit=edit, group=group: weakself._change_attr(group, None, edit.toPlainText())
 
         main.setLayout(self.form_layout)
         self.setWidget(main)

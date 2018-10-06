@@ -10,6 +10,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import weakref
 from lxml import etree
 
 try:
@@ -54,6 +55,8 @@ class GridsController(Controller):
     def __init__(self, document, model=None):
         if model is None: model = GridsModel()
         Controller.__init__(self, document, model)
+
+        weakself = weakref.proxy(self)
 
         self._current_index = None
         self._last_index = None
@@ -105,7 +108,7 @@ class GridsController(Controller):
         self.splitter.addWidget(self.vertical_splitter)
 
         focus_action = QAction(self.grids_table)
-        focus_action.triggered.connect(lambda: self.parent_for_editor_widget.currentWidget().setFocus())
+        focus_action.triggered.connect(lambda: weakself.parent_for_editor_widget.currentWidget().setFocus())
         focus_action.setShortcut(QKeySequence(Qt.Key_Return))
         focus_action.setShortcutContext(Qt.WidgetShortcut)
         self.grids_table.addAction(focus_action)
@@ -176,7 +179,7 @@ class GridsController(Controller):
     def select_info(self, info):
         try: action = info.action
         except AttributeError: pass
-        else: return action()
+        else: getattr(self, action)()
         if select_index_from_info(info, self.model, self.grids_table):
             self._current_controller.select_info(info) # try to select property
 
@@ -202,7 +205,9 @@ class GridsController(Controller):
                 return False
         self._current_index = new_index
         for i in reversed(range(self.parent_for_editor_widget.count())):
-            self.parent_for_editor_widget.removeWidget(self.parent_for_editor_widget.widget(i))
+            widget = self.parent_for_editor_widget.widget(i)
+            self.parent_for_editor_widget.removeWidget(widget)
+            widget.setParent(None)
         if self._current_index is None:
             self._current_controller = None
         else:
@@ -226,7 +231,7 @@ class GridsController(Controller):
         self.plotted_geometry = None
         self.generate_mesh_action.setEnabled(False)
         if self._current_controller is not None:
-            self.model.info_message("Mesh changed: click here to update the plot", Info.INFO, action=self.plot)
+            self.model.info_message("Mesh changed: click here to update the plot", Info.INFO, action='plot')
             # self.status_bar.setText("Press Alt+P to update the plot")
             # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ffff88;")
         else:
@@ -354,24 +359,21 @@ class GridController(Controller):
         super(GridController, self).__init__(document, model)
         #self.grid_model.changed.connect(self._model_change_cb)
 
-    """
-        :return Grid: model of edited grid
-    """
     @property
     def grid_model(self):
+        """ :return Grid: model of edited grid """
         return self.model
 
-    """
-        :return GridsModel: model of a whole grids's section
-    """
     @property
     def section_model(self):
+        """ :return GridsModel: model of a whole grids's section """
         return self.grid_model.tree_parent
 
     def _change(self, setter, value, old_value, label):
         if value != old_value:
+            weakself = weakref.proxy(self)
             self.section_model.undo_stack.push(UndoCommandWithSetter(
-                self.section_model, lambda v: setter(self.grid_model, v),
+                self.section_model, lambda v: setter(weakself.grid_model, v),
                 value, old_value, "change grid's {}".format(label)
             ))
 
@@ -380,9 +382,11 @@ class GridController(Controller):
         if value != old_value:
             if label is None:
                 label = attr
-                while not isinstance(label, basestring): label = label[0]
+                while not isinstance(label, basestring):
+                    label = label[0]
+            weakself = weakref.proxy(self)
             self.section_model.undo_stack.push(UndoCommandWithSetter(
-                self.section_model, lambda v: setattr_by_path(self.grid_model, attr, v),
+                self.section_model, lambda v: setattr_by_path(weakself.grid_model, attr, v),
                 value, old_value, "change grid's {}".format(label)
             ))
 
