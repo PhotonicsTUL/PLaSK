@@ -973,8 +973,10 @@ class RectangularMesh2D::ElementMesh: public RectangularMesh2D {
         prepareNearestNeighborInterpolationForAxis(*originalMesh->axis[0], flags, p.c0, 0);
         prepareNearestNeighborInterpolationForAxis(*originalMesh->axis[1], flags, p.c1, 1);
         size_t i0 = originalMesh->axis[0]->findUpIndex(p.c0), i1 = originalMesh->axis[1]->findUpIndex(p.c1);
-        if (i0 == originalMesh->axis[0]->size()) --i0; if (i0 != 0) --i0;
-        if (i1 == originalMesh->axis[1]->size()) --i1; if (i1 != 0) --i1;
+        if (i0 == originalMesh->axis[0]->size()) --i0;
+        if (i0 != 0) --i0;
+        if (i1 == originalMesh->axis[1]->size()) --i1;
+        if (i1 != 0) --i1;
         return flags.postprocess(point, data[this->index(i0, i1)]);
     }
 

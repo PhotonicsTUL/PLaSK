@@ -22,32 +22,6 @@ void RectangularMaskedMesh3D::reset(const RectangularMesh<3> &rectangularMesh, c
 RectangularMaskedMesh3D::RectangularMaskedMesh3D(const RectangularMesh<DIM> &rectangularMesh, RectangularMaskedMeshBase::Set nodeSet, bool clone_axes)
     : RectangularMaskedMeshBase(rectangularMesh, std::move(nodeSet), clone_axes)
 {
-    const auto minor = fullMesh.minorAxisIndex();
-    const auto medium = fullMesh.mediumAxisIndex();
-    const auto major = fullMesh.majorAxisIndex();
-    nodeSet.forEachSegment([&] (std::size_t b, std::size_t e) {
-        const auto indexes_f = fullMesh.indexes(b);
-        const auto indexes_l = fullMesh.indexes(e-1);
-        if (indexes_f[major] != indexes_l[major]) {
-            boundaryIndex[minor].lo = 0;
-            boundaryIndex[minor].up = fullMesh.minorAxis()->size();
-            boundaryIndex[medium].lo = 0;
-            boundaryIndex[medium].up = fullMesh.mediumAxis()->size();
-        } else {
-            if (indexes_f[medium] != indexes_l[medium]) {
-                boundaryIndex[minor].lo = 0;
-                boundaryIndex[minor].up = fullMesh.minorAxis()->size();
-            } else {   // here:   indexes_f[minor] <= indexes_l[minor]
-                boundaryIndex[minor].improveLo(indexes_f[minor]);
-                boundaryIndex[minor].improveUp(indexes_l[minor]);
-            }
-            // indexes_f[major] == indexes_l[major]   =>   indexes_f[medium] <= indexes_l[medium]
-            boundaryIndex[medium].improveLo(indexes_f[medium]);
-            boundaryIndex[medium].improveUp(indexes_l[medium]);
-        }
-        boundaryIndex[major].improveLo(indexes_f[major]);
-        boundaryIndex[major].improveUp(indexes_l[major]);
-    });
 }
 
 void RectangularMaskedMesh3D::initNodesAndElements(const RectangularMaskedMesh3D::Predicate &predicate)
@@ -66,12 +40,12 @@ void RectangularMaskedMesh3D::initNodesAndElements(const RectangularMaskedMesh3D
             nodeSet.insert(el_it->getUpUpLoIndex());
 
             nodeSet.push_back(el_it->getUpUpUpIndex());
-            boundaryIndex[0].improveLo(el_it->getLowerIndex0());
+            /*boundaryIndex[0].improveLo(el_it->getLowerIndex0());
             boundaryIndex[0].improveUp(el_it->getUpperIndex0());
             boundaryIndex[1].improveLo(el_it->getLowerIndex1());
             boundaryIndex[1].improveUp(el_it->getUpperIndex1());
             boundaryIndex[2].improveLo(el_it->getLowerIndex2());
-            boundaryIndex[2].improveUp(el_it->getUpperIndex2());
+            boundaryIndex[2].improveUp(el_it->getUpperIndex2());*/  // this is initilized lazy
         }
     nodeSet.shrink_to_fit();
     elementSet.shrink_to_fit();
@@ -130,6 +104,7 @@ BoundaryNodeSet RectangularMaskedMesh3D::createIndex0BoundaryAtLine(std::size_t 
 }
 
 BoundaryNodeSet RectangularMaskedMesh3D::createIndex0BoundaryAtLine(std::size_t line_nr_axis0) const {
+    ensureHasBoundaryIndex();
     return createIndex0BoundaryAtLine(line_nr_axis0, boundaryIndex[1].lo, boundaryIndex[1].up+1, boundaryIndex[2].lo, boundaryIndex[2].up+1);
 }
 
@@ -139,6 +114,7 @@ BoundaryNodeSet RectangularMaskedMesh3D::createIndex1BoundaryAtLine(std::size_t 
 }
 
 BoundaryNodeSet RectangularMaskedMesh3D::createIndex1BoundaryAtLine(std::size_t line_nr_axis1) const {
+    ensureHasBoundaryIndex();
     return createIndex1BoundaryAtLine(line_nr_axis1, boundaryIndex[0].lo, boundaryIndex[0].up+1, boundaryIndex[2].lo, boundaryIndex[2].up+1);
 }
 
@@ -148,31 +124,32 @@ BoundaryNodeSet RectangularMaskedMesh3D::createIndex2BoundaryAtLine(std::size_t 
 }
 
 BoundaryNodeSet RectangularMaskedMesh3D::createIndex2BoundaryAtLine(std::size_t line_nr_axis2) const {
+    ensureHasBoundaryIndex();
     return createIndex2BoundaryAtLine(line_nr_axis2, boundaryIndex[0].lo, boundaryIndex[0].up+1, boundaryIndex[1].lo, boundaryIndex[1].up+1);
 }
 
 BoundaryNodeSet RectangularMaskedMesh3D::createBackBoundary() const {
-    return createIndex0BoundaryAtLine(boundaryIndex[0].lo);
+    return createIndex0BoundaryAtLine(ensureHasBoundaryIndex()[0].lo);
 }
 
 BoundaryNodeSet RectangularMaskedMesh3D::createFrontBoundary() const {
-    return createIndex0BoundaryAtLine(boundaryIndex[0].up);
+    return createIndex0BoundaryAtLine(ensureHasBoundaryIndex()[0].up);
 }
 
 BoundaryNodeSet RectangularMaskedMesh3D::createLeftBoundary() const {
-    return createIndex1BoundaryAtLine(boundaryIndex[1].lo);
+    return createIndex1BoundaryAtLine(ensureHasBoundaryIndex()[1].lo);
 }
 
 BoundaryNodeSet RectangularMaskedMesh3D::createRightBoundary() const {
-    return createIndex1BoundaryAtLine(boundaryIndex[1].up);
+    return createIndex1BoundaryAtLine(ensureHasBoundaryIndex()[1].up);
 }
 
 BoundaryNodeSet RectangularMaskedMesh3D::createBottomBoundary() const {
-    return createIndex2BoundaryAtLine(boundaryIndex[2].lo);
+    return createIndex2BoundaryAtLine(ensureHasBoundaryIndex()[2].lo);
 }
 
 BoundaryNodeSet RectangularMaskedMesh3D::createTopBoundary() const {
-    return createIndex2BoundaryAtLine(boundaryIndex[2].up);
+    return createIndex2BoundaryAtLine(ensureHasBoundaryIndex()[2].up);
 }
 
 BoundaryNodeSet RectangularMaskedMesh3D::createBackOfBoundary(const Box3D &box) const {

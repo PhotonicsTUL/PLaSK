@@ -21,21 +21,6 @@ void RectangularMaskedMesh2D::reset(const RectangularMesh<2> &rectangularMesh, c
 RectangularMaskedMesh2D::RectangularMaskedMesh2D(const RectangularMesh<DIM> &rectangularMesh, RectangularMaskedMeshBase::Set nodeSet, bool clone_axes)
     : RectangularMaskedMeshBase(rectangularMesh, std::move(nodeSet), clone_axes)
 {
-    const auto major = fullMesh.majorAxisIndex();
-    const auto minor = fullMesh.minorAxisIndex();
-    nodeSet.forEachSegment([&] (std::size_t b, std::size_t e) {
-        const auto indexes_f = fullMesh.indexes(b);
-        const auto indexes_l = fullMesh.indexes(e-1);
-        if (indexes_f[major] != indexes_l[major]) {
-            boundaryIndex[minor].lo = 0;
-            boundaryIndex[minor].up = fullMesh.minorAxis()->size();
-        } else {
-            boundaryIndex[minor].improveLo(indexes_f[minor]);
-            boundaryIndex[minor].improveUp(indexes_l[minor]);
-        }
-        boundaryIndex[major].improveLo(indexes_f[major]);
-        boundaryIndex[major].improveUp(indexes_l[major]);
-    });
 }
 
 void RectangularMaskedMesh2D::initNodesAndElements(const RectangularMaskedMesh2D::Predicate &predicate)
@@ -47,10 +32,10 @@ void RectangularMaskedMesh2D::initNodesAndElements(const RectangularMaskedMesh2D
             nodeSet.insert(el_it->getLoUpIndex());
             nodeSet.insert(el_it->getUpLoIndex());
             nodeSet.push_back(el_it->getUpUpIndex());  //this is safe also for 10 axis order
-            boundaryIndex[0].improveLo(el_it->getLowerIndex0());
+            /*boundaryIndex[0].improveLo(el_it->getLowerIndex0());
             boundaryIndex[0].improveUp(el_it->getUpperIndex0());
             boundaryIndex[1].improveLo(el_it->getLowerIndex1());
-            boundaryIndex[1].improveUp(el_it->getUpperIndex1());
+            boundaryIndex[1].improveUp(el_it->getUpperIndex1());*/  // this is initilized lazy
         }
     nodeSet.shrink_to_fit();
     elementSet.shrink_to_fit();
@@ -94,6 +79,7 @@ bool RectangularMaskedMesh2D::prepareInterpolation(const Vec<2> &point, Vec<2> &
 
 
 BoundaryNodeSet RectangularMaskedMesh2D::createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const {
+    ensureHasBoundaryIndex();
     return createVerticalBoundaryAtLine(line_nr_axis0, boundaryIndex[1].lo, boundaryIndex[1].up+1);
 }
 
@@ -113,11 +99,11 @@ BoundaryNodeSet RectangularMaskedMesh2D::createVerticalBoundaryNear(double axis0
 }
 
 BoundaryNodeSet RectangularMaskedMesh2D::createLeftBoundary() const {
-    return createVerticalBoundaryAtLine(boundaryIndex[0].lo);
+    return createVerticalBoundaryAtLine(ensureHasBoundaryIndex()[0].lo);
 }
 
 BoundaryNodeSet RectangularMaskedMesh2D::createRightBoundary() const {
-    return createVerticalBoundaryAtLine(boundaryIndex[0].up);
+    return createVerticalBoundaryAtLine(ensureHasBoundaryIndex()[0].up);
 }
 
 BoundaryNodeSet RectangularMaskedMesh2D::createLeftOfBoundary(const Box2D &box) const {
@@ -157,6 +143,7 @@ BoundaryNodeSet RectangularMaskedMesh2D::createTopOfBoundary(const Box2D &box) c
 }
 
 BoundaryNodeSet RectangularMaskedMesh2D::createHorizontalBoundaryAtLine(std::size_t line_nr_axis1) const {
+    ensureHasBoundaryIndex();
     return createHorizontalBoundaryAtLine(line_nr_axis1, boundaryIndex[0].lo, boundaryIndex[0].up+1);
 }
 
@@ -176,11 +163,11 @@ BoundaryNodeSet RectangularMaskedMesh2D::createHorizontalBoundaryNear(double axi
 }
 
 BoundaryNodeSet RectangularMaskedMesh2D::createTopBoundary() const {
-    return createHorizontalBoundaryAtLine(boundaryIndex[1].up);
+    return createHorizontalBoundaryAtLine(ensureHasBoundaryIndex()[1].up);
 }
 
 BoundaryNodeSet RectangularMaskedMesh2D::createBottomBoundary() const {
-    return createHorizontalBoundaryAtLine(boundaryIndex[1].lo);
+    return createHorizontalBoundaryAtLine(ensureHasBoundaryIndex()[1].lo);
 }
 
 }   // namespace plask

@@ -39,14 +39,13 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     Set elementSet;
 
     /// The lowest and the largest index in use, for each direction.
-    struct {
+    struct BoundaryIndexForAxis {
         std::size_t lo, up;
         void improveLo(std::size_t i) { if (i < lo) lo = i; }
         void improveUp(std::size_t i) { if (i > up) up = i; }
-    } boundaryIndex[DIM];
-
-    /// @return @c true only if boundaryIndex is initialized
-    bool isBoundaryIndexInitialized() const { return boundaryIndex[0].lo <= boundaryIndex[0].up; }
+    };
+    typedef BoundaryIndexForAxis BoundaryIndex[DIM];
+    BoundaryIndex boundaryIndex;
 
     /**
      * Used by interpolation.
@@ -199,6 +198,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
             boundaryIndex[d].lo = this->fullMesh.axis[d]->size()-1;
             boundaryIndex[d].up = 0;
         }
+        boundatyIndexInitialized = false;
     }
 
     /// Clear nodeSet, elementSet and call resetBoundyIndex().
@@ -293,10 +293,12 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     void selectAll() {
         this->nodeSet.assignRange(fullMesh.size());
         this->elementSet.assignRange(fullMesh.getElementsCount());
+        elementSetInitialized = true;
         for (int d = 0; d < DIM; ++d) {
             boundaryIndex[d].lo = 0;
             boundaryIndex[d].up = fullMesh.axis[d]->size()-1;
         }
+        boundatyIndexInitialized = true;
     }
 
     /**
@@ -455,8 +457,11 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
     /// Only one thread can calculate elementSet or boundaryIndex
     DontCopyThisField<boost::mutex> writeMutex;
 
-    /// Whether elementSet is initialized (default for most contructors)
+    /// Whether elementSet is initialized (default for most constructors).
     bool elementSetInitialized = true;
+
+    /// Whether boundatyIndex is initialized.
+    bool boundatyIndexInitialized;
 
   private:
 
@@ -546,13 +551,83 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
         elementSetInitialized = true;
     }
 
+    template <int d = DIM>
+    typename std::enable_if<d == 2>::type calculateBoundaryIndex() {
+        boost::lock_guard<boost::mutex> lock((boost::mutex&)writeMutex);
+        if (boundatyIndexInitialized) return;  // another thread has initilized boundaryIndex just when we waited for mutex
+
+        const auto minor = fullMesh.minorAxisIndex();
+        const auto major = fullMesh.majorAxisIndex();
+        nodeSet.forEachSegment([this, minor, major] (std::size_t b, std::size_t e) {
+            const auto indexes_f = fullMesh.indexes(b);
+            const auto indexes_l = fullMesh.indexes(e-1);
+            if (indexes_f[major] != indexes_l[major]) {
+                boundaryIndex[minor].lo = 0;
+                boundaryIndex[minor].up = fullMesh.minorAxis()->size()-1;
+            } else {
+                boundaryIndex[minor].improveLo(indexes_f[minor]);
+                boundaryIndex[minor].improveUp(indexes_l[minor]);
+            }
+            boundaryIndex[major].improveLo(indexes_f[major]);
+            boundaryIndex[major].improveUp(indexes_l[major]);
+        });
+
+        boundatyIndexInitialized = true;
+    }
+
+    template <int d = DIM>
+    typename std::enable_if<d == 3>::type calculateBoundaryIndex() {
+        boost::lock_guard<boost::mutex> lock((boost::mutex&)writeMutex);
+        if (boundatyIndexInitialized) return;  // another thread has initilized boundaryIndex just when we waited for mutex
+
+        const auto minor = fullMesh.minorAxisIndex();
+        const auto medium = fullMesh.mediumAxisIndex();
+        const auto major = fullMesh.majorAxisIndex();
+        nodeSet.forEachSegment([this, minor, medium, major] (std::size_t b, std::size_t e) {
+            const auto indexes_f = fullMesh.indexes(b);
+            const auto indexes_l = fullMesh.indexes(e-1);
+            if (indexes_f[major] != indexes_l[major]) {
+                boundaryIndex[minor].lo = 0;
+                boundaryIndex[minor].up = fullMesh.minorAxis()->size()-1;
+                boundaryIndex[medium].lo = 0;
+                boundaryIndex[medium].up = fullMesh.mediumAxis()->size()-1;
+            } else {
+                if (indexes_f[medium] != indexes_l[medium]) {
+                    boundaryIndex[minor].lo = 0;
+                    boundaryIndex[minor].up = fullMesh.minorAxis()->size()-1;
+                } else {   // here:   indexes_f[minor] <= indexes_l[minor]
+                    boundaryIndex[minor].improveLo(indexes_f[minor]);
+                    boundaryIndex[minor].improveUp(indexes_l[minor]);
+                }
+                // indexes_f[major] == indexes_l[major]   =>   indexes_f[medium] <= indexes_l[medium]
+                boundaryIndex[medium].improveLo(indexes_f[medium]);
+                boundaryIndex[medium].improveUp(indexes_l[medium]);
+            }
+            boundaryIndex[major].improveLo(indexes_f[major]);
+            boundaryIndex[major].improveUp(indexes_l[major]);
+        });
+
+        boundatyIndexInitialized = true;
+    }
+
   protected:
-    /// Ensure that elementSet is calculated (calculate it if it is not)
+    /**
+     * Ensure that elementSet is calculated (calculate it if it is not).
+     * @return this->elementSet
+     */
     const Set& ensureHasElements() const {
         if (!elementSetInitialized) const_cast<RectangularMaskedMeshBase<DIM>*>(this)->calculateElements();
         return elementSet;
     }
 
+    /**
+     * Ensure that boundaryIndex is calculated (calculate it if it is not).
+     * @return this->boundaryIndex
+     */
+    const BoundaryIndex& ensureHasBoundaryIndex() const {
+        if (!boundatyIndexInitialized) const_cast<RectangularMaskedMeshBase<DIM>*>(this)->calculateBoundaryIndex();
+        return boundaryIndex;
+    }
 };
 
 
