@@ -22,21 +22,21 @@ void RectangularMaskedMesh3D::reset(const RectangularMesh<3> &rectangularMesh, c
 RectangularMaskedMesh3D::RectangularMaskedMesh3D(const RectangularMesh<DIM> &rectangularMesh, RectangularMaskedMeshBase::Set nodeSet, bool clone_axes)
     : RectangularMaskedMeshBase(rectangularMesh, std::move(nodeSet), clone_axes)
 {
+    const auto minor = fullMesh.minorAxisIndex();
+    const auto medium = fullMesh.mediumAxisIndex();
+    const auto major = fullMesh.majorAxisIndex();
     nodeSet.forEachSegment([&] (std::size_t b, std::size_t e) {
-        const auto indexes_f = rectangularMesh.indexes(b);
-        const auto indexes_l = rectangularMesh.indexes(e-1);
-        const auto minor = rectangularMesh.minorAxisIndex();
-        const auto medium = rectangularMesh.mediumAxisIndex();
-        const auto major = rectangularMesh.majorAxisIndex();
+        const auto indexes_f = fullMesh.indexes(b);
+        const auto indexes_l = fullMesh.indexes(e-1);
         if (indexes_f[major] != indexes_l[major]) {
             boundaryIndex[minor].lo = 0;
-            boundaryIndex[minor].up = rectangularMesh.minorAxis()->size();
+            boundaryIndex[minor].up = fullMesh.minorAxis()->size();
             boundaryIndex[medium].lo = 0;
-            boundaryIndex[medium].up = rectangularMesh.mediumAxis()->size();
+            boundaryIndex[medium].up = fullMesh.mediumAxis()->size();
         } else {
             if (indexes_f[medium] != indexes_l[medium]) {
                 boundaryIndex[minor].lo = 0;
-                boundaryIndex[minor].up = rectangularMesh.minorAxis()->size();
+                boundaryIndex[minor].up = fullMesh.minorAxis()->size();
             } else {   // here:   indexes_f[minor] <= indexes_l[minor]
                 boundaryIndex[minor].improveLo(indexes_f[minor]);
                 boundaryIndex[minor].improveUp(indexes_l[minor]);

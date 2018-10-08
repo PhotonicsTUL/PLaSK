@@ -21,14 +21,14 @@ void RectangularMaskedMesh2D::reset(const RectangularMesh<2> &rectangularMesh, c
 RectangularMaskedMesh2D::RectangularMaskedMesh2D(const RectangularMesh<DIM> &rectangularMesh, RectangularMaskedMeshBase::Set nodeSet, bool clone_axes)
     : RectangularMaskedMeshBase(rectangularMesh, std::move(nodeSet), clone_axes)
 {
+    const auto major = fullMesh.majorAxisIndex();
+    const auto minor = fullMesh.minorAxisIndex();
     nodeSet.forEachSegment([&] (std::size_t b, std::size_t e) {
-        const auto indexes_f = rectangularMesh.indexes(b);
-        const auto indexes_l = rectangularMesh.indexes(e-1);
-        const auto major = rectangularMesh.majorAxisIndex();
-        const auto minor = rectangularMesh.minorAxisIndex();
+        const auto indexes_f = fullMesh.indexes(b);
+        const auto indexes_l = fullMesh.indexes(e-1);
         if (indexes_f[major] != indexes_l[major]) {
             boundaryIndex[minor].lo = 0;
-            boundaryIndex[minor].up = rectangularMesh.minorAxis()->size();
+            boundaryIndex[minor].up = fullMesh.minorAxis()->size();
         } else {
             boundaryIndex[minor].improveLo(indexes_f[minor]);
             boundaryIndex[minor].improveUp(indexes_l[minor]);

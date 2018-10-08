@@ -45,6 +45,9 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
         void improveUp(std::size_t i) { if (i > up) up = i; }
     } boundaryIndex[DIM];
 
+    /// @return @c true only if boundaryIndex is initialized
+    bool isBoundaryIndexInitialized() const { return boundaryIndex[0].lo <= boundaryIndex[0].up; }
+
     /**
      * Used by interpolation.
      * @param axis
@@ -449,8 +452,8 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
 
   protected:    // constructing elementSet from nodes set (element is chosen when all its vertices are chosen) on-deamand
 
-    /// Only one thread can calculate elementSet
-    DontCopyThisField<boost::mutex> writeElementSet;
+    /// Only one thread can calculate elementSet or boundaryIndex
+    DontCopyThisField<boost::mutex> writeMutex;
 
     /// Whether elementSet is initialized (default for most contructors)
     bool elementSetInitialized = true;
@@ -487,7 +490,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
 
     template <int d = DIM>
     typename std::enable_if<d == 2>::type calculateElements() {
-        boost::lock_guard<boost::mutex> lock((boost::mutex&)writeElementSet);
+        boost::lock_guard<boost::mutex> lock((boost::mutex&)writeMutex);
         if (elementSetInitialized) return;  // another thread has initilized elementSet just when we waited for mutex
 
         if (fullMesh.axis[0]->size() <= 1 || fullMesh.axis[1]->size() <= 1) {
@@ -512,7 +515,7 @@ struct RectangularMaskedMeshBase: public RectangularMeshBase<DIM> {
 
     template <int d = DIM>
     typename std::enable_if<d == 3>::type calculateElements() {
-        boost::lock_guard<boost::mutex> lock((boost::mutex&)writeElementSet);
+        boost::lock_guard<boost::mutex> lock((boost::mutex&)writeMutex);
         if (elementSetInitialized) return;  // another thread has initilized elementSet just when we waited for mutex
 
         if (fullMesh.axis[0]->size() <= 1 || fullMesh.axis[1]->size() <= 1 || fullMesh.axis[2]->size() <= 1) {
