@@ -19,6 +19,7 @@ from __future__ import print_function, unicode_literals
 import sys
 import os
 import re
+import json
 
 from gui.qt.QtCore import *
 from gui.qt.QtGui import *
@@ -221,7 +222,10 @@ else:
             kwargs = dict(config)
             if 'dirs' in kwargs:
                 try:
-                    kwargs['dirs'] = pickle.loads(CONFIG.get('dirs', b'N.').encode('iso-8859-1'), encoding='utf8')
+                    try:
+                        kwargs['dirs'] = json.loads(CONFIG.get('dirs', 'null'))
+                    except json.JSONDecodeError:
+                        kwargs['dirs'] = pickle.loads(CONFIG.get('dirs', b'N.').encode('iso-8859-1'), encoding='utf8')
                 except (pickle.PickleError, EOFError):
                     del kwargs['dirs']
                 CONFIG.sync()
@@ -233,7 +237,7 @@ else:
 
         def save_dirs(self):
             key = 'launcher_remote/accounts/{}/dirs'.format(self.name)
-            CONFIG[key] = pickle.dumps(self.dirs, 0).decode('iso-8859-1')
+            CONFIG[key] = json.dumps(self.dirs)
 
         class EditDialog(QDialog):
             def __init__(self, account=None, name=None, parent=None):

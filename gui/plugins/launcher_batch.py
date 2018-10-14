@@ -21,6 +21,7 @@ import sys
 import os
 import re
 from stat import S_ISDIR
+import json
 
 from gui.qt.QtCore import Qt, QSize
 from gui.qt.QtGui import *
@@ -207,7 +208,11 @@ else:
             system = kwargs.pop('system')
             if 'params' in kwargs:
                 try:
-                    kwargs['params'] = pickle.loads(CONFIG.get('params', '').encode('iso-8859-1'))
+                    conf = CONFIG.get('params', '')
+                    try:
+                        kwargs['params'] = json.loads(conf)
+                    except json.JSONDecodeError:
+                        kwargs['params'] = pickle.loads(conf.encode('iso-8859-1'))
                 except (pickle.PickleError, EOFError):
                     del kwargs['params']
             if 'mpirun' in kwargs:
@@ -465,7 +470,7 @@ else:
 
         def save_params(self):
             key = 'launcher_batch/accounts/{}/params'.format(self.name)
-            CONFIG[key] = pickle.dumps(self.params, 0).decode('iso-8859-1')
+            CONFIG[key] = json.dumps(self.params)
             CONFIG.sync()
 
         def batch(self, name, params, path):
