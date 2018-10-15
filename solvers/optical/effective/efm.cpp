@@ -268,7 +268,7 @@ void EffectiveFrequencyCyl::updateCache()
 
         shared_ptr<OrderedAxis> axis0, axis1;
         {
-            shared_ptr<RectangularMesh<2>> midmesh = mesh->getMidpointsMesh();
+            shared_ptr<RectangularMesh<2>> midmesh = mesh->getElementMesh();
             axis0 = plask::make_shared<OrderedAxis>(*midmesh->axis[0]);
             axis1 = plask::make_shared<OrderedAxis>(*midmesh->axis[1]);
         }
@@ -280,7 +280,7 @@ void EffectiveFrequencyCyl::updateCache()
             axis1->addPoint(mesh->axis[1]->at(mesh->axis[1]->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
 
         auto midmesh = plask::make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
-        auto temp = inTemperature(midmesh);
+        auto temp = SafeData<double>(inTemperature(midmesh), 300.);
         bool have_gain = false;
         LazyData<Tensor2<double>> gain1, gain2;
 
@@ -728,7 +728,7 @@ double EffectiveFrequencyCyl::getGainIntegral(Mode& mode)
     double result = 0.;
     dcomplex lam0 = 2e3*PI / k0;
 
-    auto midmesh = mesh->getMidpointsMesh();
+    auto midmesh = mesh->getElementMesh();
 
     for (size_t ir = 0; ir < rsize; ++ir) {
         for (size_t iz = zbegin+1; iz < zsize-1; ++iz) {

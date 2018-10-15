@@ -10,6 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 import sys
+import weakref
 
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
@@ -69,6 +70,7 @@ class GeometryController(Controller):
         if geometry_node is None or not geometry_node.accept_new_child(): return None
         first = True
         result = QMenu()
+        weakself = weakref.proxy(self)
         for section in geometry_node.add_child_options():
             if not first:
                 result.addSeparator()
@@ -79,7 +81,7 @@ class GeometryController(Controller):
                 a = QAction(gname(type_name, True), result)
                 a.triggered.connect(lambda checked=False, type_constructor=type_constructor,
                                            parent_index=geometry_node_index:
-                                    self._add_child(type_constructor, parent_index))
+                                    weakself._add_child(type_constructor, parent_index))
                 result.addAction(a)
         return result
 
@@ -116,7 +118,9 @@ class GeometryController(Controller):
 
     def __init__(self, document, model=None):
         if model is None: model = GeometryModel()
-        Controller.__init__(self, document, model)
+        super(GeometryController, self).__init__(document, model)
+
+        weakself = weakref.proxy(self)
 
         self.manager = None
         self.plotted_object = None
@@ -160,7 +164,7 @@ class GeometryController(Controller):
 
         search_action = QAction(QIcon.fromTheme('edit-find'), '&Search', self.main_splitter)
         search_action.setShortcut(QKeySequence.Find)
-        search_action.triggered.connect(lambda checked=False: self.search_box.setFocus())
+        search_action.triggered.connect(lambda checked=False: weakself.search_box.setFocus())
         self.main_splitter.addAction(search_action)
 
         if PlotWidget is not None:
@@ -175,15 +179,17 @@ class GeometryController(Controller):
         self.document.window.config_changed.connect(self.reconfig)
 
     def fill_add_menu(self):
+        weakself = weakref.proxy(self)
         self.add_menu.clear()
         current_index = self.tree.selectionModel().currentIndex()
         if current_index.isValid():
             add_child_menu = self._get_add_child_menu(current_index)
             if add_child_menu:
-                self.add_menu.addAction('&Item').setMenu(add_child_menu)
+                self._add_action = self.add_menu.addAction('&Item')
+                self._add_action.setMenu(add_child_menu)
         for n in geometry_types_geometries_core.keys():
             a = QAction(gname(n, True), self.add_menu)
-            a.triggered.connect(lambda checked=False, n=n: self.append_geometry_node(n))
+            a.triggered.connect(lambda checked=False, n=n: weakself.append_geometry_node(n))
             self.add_menu.addAction(a)
 
     def fill_more_menu(self):
@@ -223,20 +229,22 @@ class GeometryController(Controller):
         index = self.tree.indexAt(pos)
         if not index.isValid(): return
 
+        weakself = weakref.proxy(self)
+
         menu = QMenu(self.tree)
         add_child_menu = self._get_add_child_menu(index)
         if add_child_menu:
             menu.addMenu(add_child_menu).setText("&Add item")
-        menu.addAction("&Remove", lambda: self.remove_node(index))
+        menu.addAction("&Remove", lambda: weakself.remove_node(index))
         u, d = self.model.can_move_node_up_down(index)
-        if u: menu.addAction("Move &up", lambda: self.move_up(index))
-        if d: menu.addAction("Move d&own", lambda: self.move_down(index))
+        if u: menu.addAction("Move &up", lambda: weakself.move_up(index))
+        if d: menu.addAction("Move d&own", lambda: weakself.move_down(index))
 
         parent = index.parent()
         if parent.isValid():
             parent_node = parent.internalPointer()
             if parent_node.accept_new_child():
-                menu.addAction("&Duplicate", lambda: self.duplicate(index))
+                menu.addAction("&Duplicate", lambda: weakself.duplicate(index))
 
         reparent_menu = self._get_reparent_menu(index)
         if reparent_menu and not reparent_menu.isEmpty():
@@ -360,7 +368,7 @@ class GeometryController(Controller):
                 self.plot_refresh()
             else:
                 self.model.info_message("Geometry changed: click here to refresh the plot", Info.INFO,
-                                        action=self.plot_refresh)
+                                        action='plot_refresh')
                 # self.status_bar.setText("Geometry changed: refresh the plot")
                 # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: #ffff88;")
         else:
@@ -369,6 +377,8 @@ class GeometryController(Controller):
             # self.status_bar.setStyleSheet("border: 1px solid palette(dark); background-color: palette(background);")
 
     def _construct_toolbar(self):
+        weakself = weakref.proxy(self)
+
         toolbar = QToolBar()
         toolbar.setStyleSheet("QToolBar { border: 0px }")
         set_icon_size(toolbar)
@@ -432,14 +442,14 @@ class GeometryController(Controller):
         # search_box.setAlignment(Qt.AlignRight)
         search_box.setPlaceholderText("Name search")
         search_box.returnPressed.connect(self.search)
-        self.search_combo.currentIndexChanged.connect(lambda i: self.search())
+        self.search_combo.currentIndexChanged.connect(lambda i: weakself.search())
         self.search_combo.setMinimumWidth(search_box.sizeHint().width())
         toolbar.addWidget(self.search_combo)
         find_action = QAction(QIcon.fromTheme('edit-find'), '&Find', toolbar)
         find_action.triggered.connect(self.search)
         toolbar.addAction(find_action)
 
-        self.model.dataChanged.connect(lambda i,j: self._fill_search_combo())
+        self.model.dataChanged.connect(lambda i,j: weakself._fill_search_combo())
 
         self.plot_auto_refresh = True
         return toolbar
@@ -466,7 +476,7 @@ class GeometryController(Controller):
 
     def _fill_search_combo(self):
         self.search_combo.clear()
-        self.search_combo.addItems([''] + list(self.model.names()))
+        self.search_combo.addItems([''] + list(self.model.get_names()))
 
     def show_selection(self):
         if self._current_index is None: return
@@ -538,7 +548,8 @@ class GeometryController(Controller):
             red.setColor(QPalette.Text, QColor("#a00"))
             pal = self.search_combo.palette()
             self.search_combo.setPalette(red)
-            QTimer.singleShot(500, lambda: self.search_combo.setPalette(pal))
+            weakself = weakref.proxy(self)
+            QTimer.singleShot(500, lambda: weakself.search_combo.setPalette(pal))
 
     def current_root(self):
         try:
@@ -612,7 +623,7 @@ class GeometryController(Controller):
     def select_info(self, info):
         try: action = info.action
         except AttributeError: pass
-        else: return action()
+        else: return getattr(self, action)()
         try:
             new_nodes = info.nodes
         except AttributeError:

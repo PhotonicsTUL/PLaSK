@@ -11,7 +11,7 @@ namespace plask {
 
 class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
 
-  protected:    
+  protected:
     double trans[9];    ///< Transfromation matrix
 
   private:
@@ -32,9 +32,9 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
         inv[7] = idet * (-trans[0]*trans[7] + trans[1]*trans[6]);
         inv[8] = idet * ( trans[0]*trans[4] - trans[1]*trans[3]);
     }
-    
+
   public:
-      
+
     /// Adapter for the destination mesh in interpolations, moving the src point to mesh coordinates
     struct Transformed: public MeshD<3> {
         const EquilateralMesh3D* src;
@@ -48,7 +48,9 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
             return src->toMeshCoords(dst->at(index));
         }
     };
-      
+
+    typedef RectilinearMesh3D::ElementMesh<EquilateralMesh3D> ElementMesh;
+
     /**
      * Construct mesh which has all axes of type OrderedAxis and all are empty.
      * @param iterationOrder iteration order
@@ -77,7 +79,7 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
     Vec<3,double> getVec0() const {
         return vec<double>(trans[0], trans[3], trans[6]);
     }
-    
+
     /// Return the second mesh vector
     Vec<3,double> getVec1() const {
         return vec<double>(trans[1], trans[4], trans[7]);
@@ -87,22 +89,22 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
     Vec<3,double> getVec2() const {
         return vec<double>(trans[2], trans[5], trans[8]);
     }
-    
+
     /// Return the first inverse vector
     Vec<3,double> getInvVec0() const {
         return vec<double>(inv[0], inv[1], inv[2]);
     }
-    
+
     /// Return the second inverse vector
     Vec<3,double> getInvVec1() const {
         return vec<double>(inv[3], inv[4], inv[5]);
     }
-    
+
     /// Return the third inverse vector
     Vec<3,double> getInvVec2() const {
         return vec<double>(inv[6], inv[7], inv[8]);
     }
-    
+
     /// Set the first mesh vector
     void setVec0(Vec<3,double> vec0) {
         trans[0] = vec0.c0;
@@ -111,7 +113,7 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
         findInverse();
         fireChanged(Event::EVENT_USER_DEFINED);
     }
-    
+
     /// Set the second mesh vector
     void setVec1(Vec<3,double> vec1) {
         trans[1] = vec1.c0;
@@ -120,7 +122,7 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
         findInverse();
         fireChanged(Event::EVENT_USER_DEFINED);
     }
-    
+
     /// Set the third mesh vector
     void setVec2(Vec<3,double> vec2) {
         trans[2] = vec2.c0;
@@ -140,7 +142,7 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
                              inv[3] * point.c0 + inv[4] * point.c1 + inv[5] * point.c2,
                              inv[6] * point.c0 + inv[7] * point.c1 + inv[8] * point.c2);
     }
-    
+
     /**
      * Transform point in the real coordinates to mesh coordinates
      * \param c0,c1,c2 point to transfrom
@@ -162,7 +164,7 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
                              trans[3] * coords.c0 + trans[4] * coords.c1 + trans[5] * coords.c2,
                              trans[6] * coords.c0 + trans[7] * coords.c1 + trans[8] * coords.c2);
     }
-    
+
     /**
      * Transform point in mesh coordinates to the real coordinates
      * \param c0,c1,c2 coordinates to transfrom
@@ -173,7 +175,7 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
                              trans[3] * c0 + trans[4] * c1 + trans[5] * c2,
                              trans[6] * c0 + trans[7] * c1 + trans[8] * c2);
     }
-    
+
     /**
      * Get point with given mesh indices.
      * @param index0 index of point in axis0
@@ -189,7 +191,7 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
      * Return a mesh that enables iterating over middle points of the elements
      * \return new equilateral mesh with points in the middles of original elements
      */
-    shared_ptr<EquilateralMesh3D> getMidpointsMesh() const;
+    shared_ptr<EquilateralMesh3D::ElementMesh> getElementMesh() const;
 
     /**
      * Get point in center of Elements.
@@ -202,30 +204,35 @@ class PLASK_API EquilateralMesh3D: public RectilinearMesh3D {
 };
 
 
-template <typename SrcT, typename DstT>
-struct InterpolationAlgorithm<EquilateralMesh3D, SrcT, DstT, INTERPOLATION_LINEAR> {
+template <typename SrcT, typename DstT, InterpolationMethod method>
+struct InterpolationAlgorithm<typename std::enable_if<method != INTERPOLATION_DEFAULT, EquilateralMesh3D>::type, SrcT, DstT, method> {
     static LazyData<DstT> interpolate(const shared_ptr<const EquilateralMesh3D>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
-        if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0 || src_mesh->axis[2]->size() == 0)
-            throw BadMesh("interpolate", "Source mesh empty");
-        return new LinearInterpolatedLazyDataImpl<DstT, RectilinearMesh3D, SrcT>
-            (src_mesh, src_vec, EquilateralMesh3D::Transformed(src_mesh, dst_mesh), flags);
+        //TODO Proprably we need to prohibit symmetry (or warn that its meaning is different)
+        return InterpolationAlgorithm<RectilinearMesh3D, SrcT, DstT, method>::interpolate(src_mesh, src_vec, EquilateralMesh3D::Transformed(src_mesh, dst_mesh), flags);
+    }
+};
+
+template <typename SrcT, typename DstT, InterpolationMethod method>
+struct InterpolationAlgorithm<typename std::enable_if<method != INTERPOLATION_DEFAULT, EquilateralMesh3D::ElementMesh>::type, SrcT, DstT, method> {
+    static LazyData<DstT> interpolate(const shared_ptr<const EquilateralMesh3D::ElementMesh>& src_mesh, const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
+        //TODO Proprably we need to prohibit symmetry (or warn that its meaning is different)
+        return InterpolationAlgorithm<RectilinearMesh3D, SrcT, DstT, method>::interpolate(src_mesh, src_vec, EquilateralMesh3D::Transformed(src_mesh, dst_mesh), flags);
     }
 };
 
 template <typename SrcT, typename DstT>
-struct InterpolationAlgorithm<EquilateralMesh3D, SrcT, DstT, INTERPOLATION_NEAREST> {
-    static LazyData<DstT> interpolate(const shared_ptr<const EquilateralMesh3D>& src_mesh, const DataVector<const SrcT>& src_vec,
+struct InterpolationAlgorithm<EquilateralMesh3D::ElementMesh, SrcT, DstT, INTERPOLATION_NEAREST> {
+    static LazyData<DstT> interpolate(const shared_ptr<const EquilateralMesh3D::ElementMesh>& src_mesh, const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
-        if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0 || src_mesh->axis[2]->size() == 0)
+        if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0)
             throw BadMesh("interpolate", "Source mesh empty");
-        return new NearestNeighborInterpolatedLazyDataImpl<DstT, RectilinearMesh3D, SrcT>
-            (src_mesh, src_vec, EquilateralMesh3D::Transformed(src_mesh, dst_mesh), flags);
+        //TODO Proprably we need to prohibit symmetry (or warn that its meaning is different)
+        return new NearestNeighborInterpolatedLazyDataImpl<DstT, EquilateralMesh3D::ElementMesh, SrcT>(src_mesh, src_vec, EquilateralMesh3D::Transformed(src_mesh, dst_mesh), flags);
     }
 };
 
-
-
-}; // namespace plask
+} // namespace plask
 
 #endif // PLASK__SMESH_EQUILATERAL3D_H

@@ -80,6 +80,7 @@ add_python_test(solvers/optical/slab/grating ${CMAKE_CURRENT_SOURCE_DIR}/tests/g
 add_python_test(solvers/optical/slab/fresnel ${CMAKE_CURRENT_SOURCE_DIR}/tests/fresnel.py)
 add_python_test(solvers/optical/slab/vcsel ${CMAKE_CURRENT_SOURCE_DIR}/tests/vcsel.py)
 add_xpl_test(solvers/optical/slab/huang ${CMAKE_CURRENT_SOURCE_DIR}/tests/huang.xpl)
+add_xpl_test(solvers/optical/slab/tilted ${CMAKE_CURRENT_SOURCE_DIR}/tests/tilted.xpl)
 
 
 # Uncomment and edit the line below if you need to link some external libraries

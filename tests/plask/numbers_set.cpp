@@ -92,4 +92,27 @@ BOOST_AUTO_TEST_CASE(insert2) {
     check_2_567_9(set);
 }
 
+BOOST_AUTO_TEST_CASE(intersection) {
+    BOOST_CHECK_EQUAL(Set({1, 2, 3}).intersection(Set({2, 3, 4})), Set({2, 3}));
+    BOOST_CHECK_EQUAL(Set({1, 2, 5, 6, 7, 9, 10}).intersection(Set({2, 3, 4, 5, 8, 9})), Set({2, 5, 9}));
+    BOOST_CHECK_EQUAL(Set({6, 7, 9, 10}).intersection(Set({2, 3, 4, 5})), Set());
+    BOOST_CHECK_EQUAL(Set({1, 2, 3}).intersection(Set()), Set());
+    BOOST_CHECK_EQUAL(Set().intersection(Set()), Set());
+}
+
+BOOST_AUTO_TEST_CASE(shiftedLeft) {
+    BOOST_CHECK_EQUAL(Set({1, 4, 7}).shiftedLeft(0), Set({1, 4, 7}));
+    BOOST_CHECK_EQUAL(Set({1, 2, 3}).shiftedLeft(1), Set({0, 1, 2}));
+    BOOST_CHECK_EQUAL(Set({1, 2, 3}).shiftedLeft(2), Set({0, 1}));
+    BOOST_CHECK_EQUAL(Set({1, 2, 6, 7, 9}).shiftedLeft(1), Set({0, 1, 5, 6, 8}));
+    BOOST_CHECK_EQUAL(Set({1, 2, 3, 4, 5, 10, 12}).shiftedLeft(3), Set({0, 1, 2, 7, 9}));
+    BOOST_CHECK_EQUAL(Set({1, 5, 6, 9, 12}).shiftedLeft(9), Set({0, 3}));
+    BOOST_CHECK_EQUAL(Set({1, 5, 6, 9, 12}).shiftedLeft(10), Set({2}));
+    BOOST_CHECK_EQUAL(Set({1, 2, 3, 4, 5}).shiftedLeft(6), Set({}));
+}
+
+BOOST_AUTO_TEST_CASE(transformed) {
+    BOOST_CHECK_EQUAL(Set({1, 2, 3,  5, 6,  9,  12, 13}).transformed([](std::size_t&, std::size_t& l) { l--; }), Set({1, 2,  5,  12}));
+}
+
 BOOST_AUTO_TEST_SUITE_END()

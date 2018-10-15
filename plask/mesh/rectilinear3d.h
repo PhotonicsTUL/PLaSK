@@ -234,6 +234,44 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
 
     };
 
+    /**
+     * Element mesh class.
+     *
+     * This class has changed nearest neighnour interpolation, to consider original mesh boundaries
+     */
+    template <typename BaseMeshT>
+    struct PLASK_API ElementMesh: BaseMeshT {
+
+        /// Original mesh
+        const BaseMeshT* originalMesh;
+
+        template <typename... Args>
+        ElementMesh(const BaseMeshT* originalMesh, Args... args): BaseMeshT(args...), originalMesh(originalMesh) {}
+
+        /**
+        * Calculate (using nearest neighbor interpolation) value of data in point using data in points described by this mesh.
+        * Consider original mesh boundaries for point selection
+        * \param data values of data in points describe by this mesh
+        * \param point point in which value should be calculate
+        * \return interpolated value in point @p point
+        */
+        template <typename RandomAccessContainer>
+        auto interpolateNearestNeighbor(const RandomAccessContainer& data, const Vec<3>& point, const InterpolationFlags& flags) const
+            -> typename std::remove_reference<decltype(data[0])>::type {
+            auto p = flags.wrap(point);
+            prepareNearestNeighborInterpolationForAxis(*originalMesh->axis[0], flags, p.c0, 0);
+            prepareNearestNeighborInterpolationForAxis(*originalMesh->axis[1], flags, p.c1, 1);
+            prepareNearestNeighborInterpolationForAxis(*originalMesh->axis[2], flags, p.c2, 2);
+            size_t i0 = originalMesh->axis[0]->findUpIndex(p.c0),
+                   i1 = originalMesh->axis[0]->findUpIndex(p.c1),
+                   i2 = originalMesh->axis[2]->findUpIndex(p.c2);
+            if (i0 == originalMesh->axis[0]->size()) --i0; if (i0 != 0) --i0;
+            if (i1 == originalMesh->axis[1]->size()) --i1; if (i1 != 0) --i1;
+            if (i2 == originalMesh->axis[2]->size()) --i2; if (i2 != 0) --i2;
+            return flags.postprocess(point, data[this->index(i0, i1, i2)]);
+        }
+    };
+
     /// First, second and third coordinates of points in this mesh.
     const shared_ptr<MeshAxis> axis[3];
 
@@ -363,14 +401,35 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
         return *major_axis;
     }
 
+    /// \return index of major axis
+    inline std::size_t majorAxisIndex() const {
+        if (major_axis == &axis[0]) return 0;
+        if (major_axis == &axis[1]) return 1;
+        return 2;
+    }
+
     /// \return middle (between major and minor) axis
     inline const shared_ptr<MeshAxis> mediumAxis() const {
         return *medium_axis;
     }
 
+    /// \return index of middle axis
+    inline std::size_t mediumAxisIndex() const {
+        if (medium_axis == &axis[0]) return 0;
+        if (medium_axis == &axis[1]) return 1;
+        return 2;
+    }
+
     /// \return minor (changing fastes) axis
     inline const shared_ptr<MeshAxis> minorAxis() const {
         return *minor_axis;
+    }
+
+    /// \return index of minor (changing fastes) axis
+    inline std::size_t minorAxisIndex() const {
+        if (minor_axis == &axis[0]) return 0;
+        if (minor_axis == &axis[1]) return 1;
+        return 2;
     }
 
     /**
@@ -598,9 +657,18 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
     }
 
     /**
+     * Check if mesh index is at the bottom, left, front corner of an element.
+     * @param meshIndex mesh index
+     * @return true only if @p meshIndex is at the bottom, left, front corner of an element
+     */
+    bool isLowIndexOfElement(std::size_t meshIndex) const {
+        return index0(meshIndex) + 1 < axis[0]->size() && index1(meshIndex) + 1 < axis[1]->size() && index2(meshIndex) + 1 < axis[2]->size();
+    }
+
+    /**
      * Conver mesh index of bottom, left, front element corner to this element index.
      * @param mesh_index_of_el_bottom_left mesh index
-     * @return index of element, from 0 to getElementsCount()-1
+     * @return index of the element, from 0 to getElementsCount()-1
      */
     std::size_t getElementIndexFromLowIndex(std::size_t mesh_index_of_el_bottom_left) const {
         const std::size_t verticles_per_level = (*minor_axis)->size() * (*medium_axis)->size();

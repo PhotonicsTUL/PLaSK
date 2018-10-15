@@ -282,6 +282,24 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     cvector incidentVector(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam=NAN);
 
     /**
+     * Compute incident vector with Gaussian profile
+     * \param side incidence side
+     * \param polarization polarization of the perpendicularly incident light
+     * \param sigma_long,sigma_tran standard deviations in longitudinal and transverse directions
+     * \param center_long,center_tran position of the beam center in longitudinal and transverse directions
+     * \param lam wavelength
+     * \return incident field vector
+     */
+    cvector incidentGaussian(Transfer::IncidentDirection side, Expansion::Component polarization, double sigma_long, double sigma_tran,
+                             double center_long=0., double center_tran=0., dcomplex lam=NAN);
+
+  private:
+
+    size_t initIncidence(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam);
+
+  public:
+
+    /**
      * Get electric field at the given mesh for reflected light.
      * \param incident incident field vector
      * \param side incidence direction
@@ -351,35 +369,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         return transfer->getFieldVectorH(z);
     }
 
-//     /**
-//      * Compute scattered electric field coefficients for given \a z
-//      * \param polarization incident field polarization
-//      * \param incident incidence direction
-//      * \param z position within the layer
-//      * \return electric field coefficients
-//      */
-//     cvector getScatteredFieldVectorE(Expansion::Component polarization, Transfer::IncidentDirection side, double z) {
-//         if (!Solver::initCalculation())
-//             setExpansionDefaults();
-//         if (!transfer) initTransfer(expansion, true);
-//         return transfer->getScatteredFieldVectorE(incidentVector(polarization), side, z);
-//     }
-//
-//     /**
-//      * Compute scattered magnetic field coefficients for given \a z
-//      * \param polarization incident field polarization
-//      * \param incident incidence direction
-//      * \param z position within the layer
-//      * \return magnetic field coefficients
-//      */
-//     cvector getScatteredFieldVectorH(Expansion::Component polarization, Transfer::IncidentDirection side, double z) {
-//         if (!Solver::initCalculation())
-//             setExpansionDefaults();
-//         if (!transfer) initTransfer(expansion, true);
-//         return transfer->getScatteredFieldVectorH(incidentVector(polarization), side, z);
-//     }
-
-    /// Check if the current parameters correspond to some mode and insert it
+   /// Check if the current parameters correspond to some mode and insert it
     size_t setMode() {
         if (abs2(this->getDeterminant()) > root.tolf_max*root.tolf_max)
             throw BadInput(this->getId(), "Cannot set the mode, determinant too large");

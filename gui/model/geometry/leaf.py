@@ -281,7 +281,7 @@ class GNTriangle(GNLeaf):
         for p_nr in (0, 1):
             for i, v in enumerate(self.points[p_nr]):
                 if not can_be_float(v, required=True):
-                    self._require(res, ('points', p_nr, i), 'coordinate of {} point'.format(('first', 'second')[p_nr]),
+                    self._require(res, ('points', p_nr, i), 'coordinate of the {} point'.format(('first', 'second')[p_nr]),
                                   type='float')
         #if None in self.points[0]: self._require(res, 'points', 'coordinate of first point', indexes=(0, self.points[0].index(None)))
         #if None in self.points[1]: self._require(res, 'points', 'coordinate of second point', indexes=(1, self.points[1].index(None)))
@@ -289,5 +289,66 @@ class GNTriangle(GNLeaf):
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNTriangle()
+        result.set_xml_element(element, conf)
+        return result
+
+
+class GNPrism(GNLeaf):
+
+    def __init__(self, parent=None):
+        super(GNPrism, self).__init__(parent=parent, dim=2)
+        self.points = ((None, None), (None, None))
+        self.height = None
+
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super(GNPrism, self)._attributes_from_xml(attribute_reader, conf)
+        n = conf.axes_names(3)[:2]
+        r = attribute_reader
+        self.points = ((r.get('a' + n[0]), r.get('a' + n[1])), (r.get('b' + n[0]), r.get('b' + n[1])))
+        self.height = r.get('height')
+
+    def _attributes_to_xml(self, element, conf):
+        super(GNPrism, self)._attributes_to_xml(element, conf)
+        axis_names = conf.axes_names(3)[:2]
+        for point_nr in range(0, 2):
+            for axis_nr in range(0, self.dim):
+                v = self.points[point_nr][axis_nr]
+                if v is not None: element.attrib[('a', 'b')[point_nr] + axis_names[axis_nr]] = v
+        attr_to_xml(self, element, 'height')
+
+    def tag_name(self, full_name=True):
+        return "prism"
+
+    def python_type(self):
+        return 'geometry.Prism'
+
+    def major_properties(self):
+        res = super(GNPrism, self).major_properties()
+        points_str = ', '.join('({}, {})'.format(x[0] if x[0] else '?', x[1] if x[1] else '?')
+                               for x in self.points if x != (None, None))
+        if points_str:
+            res.append(('base', points_str))
+        if self.height is not None:
+            res.append(('height', self.height))
+        return res
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.leaf import GNPrismController
+        return GNPrismController(document, model, self)
+
+    def create_info(self, res, names):
+        super(GNPrism, self).create_info(res, names)
+        for p_nr in (0, 1):
+            for i, v in enumerate(self.points[p_nr]):
+                if not can_be_float(v, required=True):
+                    self._require(res, ('points', p_nr, i),
+                                  'coordinate of the {} base point'.format(('first', 'second')[p_nr]),
+                                  type='float')
+        if not can_be_float(self.height, required=True):
+            self._require(res, 'height', type='float')
+
+    @staticmethod
+    def from_xml_3d(element, conf):
+        result = GNPrism()
         result.set_xml_element(element, conf)
         return result

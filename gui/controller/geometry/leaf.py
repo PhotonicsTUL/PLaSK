@@ -10,6 +10,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import weakref
 
 from .object import GNObjectController
 from ...utils.str import empty_to_none, none_to_empty
@@ -141,8 +142,9 @@ class GNBlockController(GNLeafController):
             field_names = 'depth', 'width', 'height'
         self.construct_group('{} Settings'.format(name))
         def setter(n, v): n.size = v
+        weakself = weakref.proxy(self)
         self.size = self.construct_point_controllers(row_name='Size', field_names=field_names, change_cb=lambda point:
-            self._set_node_by_setter_undoable(setter, list(point), self.node.size, 'change block size'),
+            weakself._set_node_by_setter_undoable(setter, list(point), weakself.node.size, 'change block size'),
         )
         super(GNBlockController, self).construct_form()
 
@@ -161,10 +163,13 @@ class GNTriangleController(GNLeafController):
         )
 
     def construct_form(self):
-        self.construct_group('Vertices Coordinates (other than: {}):'
+        self.construct_group('Vertex Coordinates (other than: {}):'
                              .format(', '.join('0' for _ in range(0, self.node.dim))))
-        self.points = (self.construct_point_controllers(row_name='First', change_cb=lambda point: self._on_point_set(0, point)),
-                      self.construct_point_controllers(row_name='Second', change_cb=lambda point: self._on_point_set(1, point)))
+        weakself = weakref.proxy(self)
+        self.points = (self.construct_point_controllers(row_name='First',
+                                                        change_cb=lambda point: weakself._on_point_set(0, point)),
+                      self.construct_point_controllers(row_name='Second',
+                                                       change_cb=lambda point: weakself._on_point_set(1, point)))
         super(GNTriangleController, self).construct_form()
 
     def fill_form(self):
@@ -192,15 +197,49 @@ class GNCylinderController(GNLeafController):
 
     def construct_form(self):
         self.construct_group('Cylinder Size')
-        self.radius = self.construct_line_edit('Radius:', unit=u'µm', node_property_name='radius', display_property_name='radius of the cylinder base')
+        self.radius = self.construct_line_edit('Radius:', unit=u'µm', node_property_name='radius',
+                                               display_property_name='radius of the cylinder base')
         self.radius.setToolTip(u'&lt;cylinder <b>radius</b>="" height="" ...&gt;<br/>'
                                u'Radius of the cylinder base. (float [µm], required)')
-        self.height = self.construct_line_edit('Height:', unit=u'µm', node_property_name='height', display_property_name='height of the cylinder')
-        self.radius.setToolTip(u'&lt;cylinder radius="" <b>height</b>="" ...&gt;<br/>'
+        self.height = self.construct_line_edit('Height:', unit=u'µm', node_property_name='height',
+                                               display_property_name='height of the cylinder')
+        self.height.setToolTip(u'&lt;cylinder radius="" <b>height</b>="" ...&gt;<br/>'
                                u'Height of the cylinder. (float [µm], required)')
         super(GNCylinderController, self).construct_form()
 
     def fill_form(self):
         super(GNCylinderController, self).fill_form()
         self.radius.setText(none_to_empty(self.node.radius))
+        self.height.setText(none_to_empty(self.node.height))
+
+
+class GNPrismController(GNLeafController):
+
+    def _on_point_set(self, index, value):
+        def setter(n, v): n.points = n.points[0:index] + (v,) + n.points[index+1:]
+        self._set_node_by_setter_undoable(setter, value, self.node.points[index],
+            'change {} triangle point'.format('first' if index == 0 else 'second')
+        )
+
+    def construct_form(self):
+        self.construct_group('Base Vertex Coordinates (other than: {}):'
+                             .format(', '.join('0' for _ in range(0, self.node.dim))))
+        weakself = weakref.proxy(self)
+        self.points = (self.construct_point_controllers(row_name='First', field_names=('longitudinal', 'transverse'),
+                                                        change_cb=lambda point: weakself._on_point_set(0, point)),
+                       self.construct_point_controllers(row_name='Second', field_names=('longitudinal', 'transverse'),
+                                                        change_cb=lambda point: weakself._on_point_set(1, point)))
+        self.construct_group('Prism Settings')
+        self.height = self.construct_line_edit('Prism Height:', unit=u'µm', node_property_name='height',
+                                               display_property_name='height of the prism')
+        self.height.setToolTip(u'&lt;prism radius="" <b>height</b>="" ...&gt;<br/>'
+                               u'Height of the prism. (float [µm], required)')
+
+        super(GNPrismController, self).construct_form()
+
+    def fill_form(self):
+        super(GNPrismController, self).fill_form()
+        for i in range(0, self.node.dim):
+            self.points[0][i].setText(none_to_empty(self.node.points[0][i]))
+            self.points[1][i].setText(none_to_empty(self.node.points[1][i]))
         self.height.setText(none_to_empty(self.node.height))

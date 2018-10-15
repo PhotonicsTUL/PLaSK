@@ -6,8 +6,8 @@
 namespace plask {
 
 
-shared_ptr<RectangularMesh3D> RectangularMesh3D::getMidpointsMesh() const {
-    return plask::make_shared<RectangularMesh3D>(axis[0]->getMidpointsMesh(), axis[1]->getMidpointsMesh(), axis[2]->getMidpointsMesh(), getIterationOrder());
+shared_ptr<RectangularMesh3D::ElementMesh> RectangularMesh3D::getElementMesh() const {
+    return plask::make_shared<RectangularMesh3D::ElementMesh>(this, axis[0]->getMidpointAxis(), axis[1]->getMidpointAxis(), axis[2]->getMidpointAxis(), getIterationOrder());
 }
 
 RectangularMesh3D::RectangularMesh3D(IterationOrder iterationOrder): RectilinearMesh3D(iterationOrder) {}

@@ -166,7 +166,7 @@ void ExpansionPW2D::reset() {
 
 
 void ExpansionPW2D::prepareIntegrals(double lam, double glam) {
-    temperature = SOLVER->inTemperature(mesh);
+    temperature = SafeData<double>(SOLVER->inTemperature(mesh), 300.);
     gain_connected = SOLVER->inGain.hasProvider();
     if (gain_connected) {
         if (isnan(glam)) glam = lam;
@@ -409,7 +409,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
 
     int order = int(SOLVER->getSize());
     dcomplex f = 1. / k0, k02 = k0*k0;
-    double b = 2*PI / (right-left) * (symmetric()? 0.5 : 1.0);
+    double b = 2.*PI / (right-left) * (symmetric()? 0.5 : 1.0);
 
     // Ez represents -Ez
 
@@ -574,7 +574,7 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
     dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
 
     const int order = int(SOLVER->getSize());
-    double b = 2*PI / (right-left) * (symmetric()? 0.5 : 1.0);
+    double b = 2.*PI / (right-left) * (symmetric()? 0.5 : 1.0);
     assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
     double vpos = level->vpos();
@@ -809,14 +809,9 @@ void ExpansionPW2D::getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmat
     std::fill_n(Te.data(), nr*nc, 0.);
     std::fill_n(Te1.data(), nr*nc, 0.);
 
-    if (polarization == E_LONG) {
+    if (separated()) {
         for (std::size_t i = 0; i < nc; i++) {
             Te(i,i) = Te1(i,i) = 1.;
-        }
-    } else if (polarization == E_TRAN) {
-        for (size_t i = 0; i < nc; i++) {
-            Te(i,i) = gamma[i] / RE(i,i);
-            Te1(i,i) = 1. / Te(i,i);
         }
     } else {
         // Ensure that for the same gamma E*H [2x2] is diagonal
@@ -825,11 +820,15 @@ void ExpansionPW2D::getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmat
         for (std::size_t i = 0; i < n; i++) {
             // Compute Te1 = sqrt(RE)
             // https://en.wikipedia.org/wiki/Square_root_of_a_2_by_2_matrix
+            // but after this normalize columns to 1
             dcomplex a = RE(2*i, 2*i), b = RE(2*i, 2*i+1), c = RE(2*i+1, 2*i), d = RE(2*i+1, 2*i+1);
             dcomplex s = sqrt(a*d - b*c);
-            dcomplex t = 1. / sqrt(a+d + 2.*s);
-            Te1(2*i, 2*i) = a = t * (a+s); Te1(2*i, 2*i+1) = b = t * b;
-            Te1(2*i+1, 2*i) = c = t * c; Te1(2*i+1, 2*i+1) = d = t * (d+s);
+            a += s; d += s;
+            // Normalize
+            s = 1. / sqrt(a*a + b*b); a *= s; b *= s;
+            s = 1. / sqrt(c*c + d*d); c *= s; d *= s;
+            Te1(2*i, 2*i) = a; Te1(2*i, 2*i+1) = b;
+            Te1(2*i+1, 2*i) = c; Te1(2*i+1, 2*i+1) = d;
             // Invert Te1
             s = 1. / (a*d - b*c);
             Te(2*i, 2*i) = s * d; Te(2*i, 2*i+1) = - s * b;

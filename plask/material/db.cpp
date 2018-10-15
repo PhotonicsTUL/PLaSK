@@ -130,14 +130,14 @@ void MaterialsDB::ensureCompositionIsNotEmpty(const Material::Composition &compo
 }
 
 MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor():
-    MaterialsDB::MaterialConstructor(""), material(new EmptyMaterial)
+    MaterialsDB::MaterialConstructor(""), material(new GenericMaterial)
 {}
 
 MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const std::string& name, const MaterialsDB& db):
     MaterialsDB::MaterialConstructor(name)
 {
     if (name.empty()) {
-        material = plask::make_shared<EmptyMaterial>();
+        material = plask::make_shared<GenericMaterial>();
     } else {
         try {
             material = db.get(name);

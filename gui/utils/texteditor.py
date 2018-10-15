@@ -66,6 +66,14 @@ class TextEditor(QPlainTextEdit):
             self.setTextCursor(cursor)
             event.ignore()
             return
+        elif key == Qt.Key_Up and modifiers == (Qt.ControlModifier | Qt.ShiftModifier):
+            self.move_line_up()
+            event.ignore()
+            return
+        elif key == Qt.Key_Down and modifiers == (Qt.ControlModifier | Qt.ShiftModifier):
+            self.move_line_down()
+            event.ignore()
+            return
         super(TextEditor, self).keyPressEvent(event)
 
     def focusInEvent(self, event):
@@ -81,6 +89,58 @@ class TextEditor(QPlainTextEdit):
         if selections is not None:
             self.selections = selections
         self.setExtraSelections(self.highlight_current_line() + self.get_same_as_selected() + self.selections)
+
+    def move_line_up(self):
+        cursor = self.textCursor()
+        cursor.beginEditBlock()
+        start = cursor.selectionStart()
+        end = dst = cursor.selectionEnd()
+        if start != end:
+            cursor.setPosition(end)
+            if cursor.positionInBlock() == 0:
+                dst -= 1
+        cursor.setPosition(start)
+        if not cursor.movePosition(QTextCursor.PreviousBlock):
+            cursor.endEditBlock()
+            return
+        src = cursor.position()
+        cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
+        line = cursor.selectedText()
+        cursor.setPosition(dst)
+        cursor.movePosition(QTextCursor.EndOfBlock)
+        cursor.insertText('\n'+line)
+        cursor.setPosition(src)
+        cursor.movePosition(QTextCursor.NextBlock, QTextCursor.KeepAnchor)
+        cursor.removeSelectedText()
+        cursor.endEditBlock()
+        cursor.setPosition(start-len(line)-1)
+        if start != end:
+            cursor.setPosition(end-len(line)-1, QTextCursor.KeepAnchor)
+        self.setTextCursor(cursor)
+
+    def move_line_down(self):
+        cursor = self.textCursor()
+        cursor.beginEditBlock()
+        start = cursor.selectionStart()
+        end = cursor.selectionEnd()
+        cursor.setPosition(end)
+        if start != end and cursor.positionInBlock() == 0:
+            cursor.movePosition(QTextCursor.PreviousCharacter)
+        if not cursor.movePosition(QTextCursor.NextBlock):
+            cursor.endEditBlock()
+            return
+        cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
+        line = cursor.selectedText()
+        cursor.removeSelectedText()
+        cursor.deletePreviousChar()  # remove previous newline
+        cursor.setPosition(start)
+        cursor.movePosition(QTextCursor.StartOfBlock)
+        cursor.insertText(line+'\n')
+        cursor.endEditBlock()
+        cursor.setPosition(start+len(line)+1)
+        if start != end:
+            cursor.setPosition(end+len(line)+1, QTextCursor.KeepAnchor)
+        self.setTextCursor(cursor)
 
     def highlight_current_line(self):
         selection = QTextEdit.ExtraSelection()

@@ -10,6 +10,7 @@ FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(con
     ncond(50.),
     loopno(0),
     default_junction_conductivity(5.),
+    use_full_mesh(false),
     algorithm(ALGORITHM_CHOLESKY),
     maxerr(0.05),
     heatmet(HEAT_JOULES),
@@ -93,14 +94,20 @@ void FiniteElementMethodElectrical3DSolver::loadConfiguration(XMLReader &source,
             source.requireTagEnd();
         }
 
-        else
-            parseStandardConfiguration(source, manager);
+        else {
+            if (param == "mesh") {
+                use_full_mesh = source.getAttribute<bool>("include-empty", use_full_mesh);
+            }
+            this->parseStandardConfiguration(source, manager);
+        }
     }
 }
 
 
 void FiniteElementMethodElectrical3DSolver::setActiveRegions()
 {
+    this->invalidate();
+
     if (!geometry || !mesh) {
         if (junction_conductivity.size() != 1) {
             double condy = 0.;
@@ -110,7 +117,12 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
         return;
     }
 
-    shared_ptr<RectangularMesh<3>> points = mesh->getMidpointsMesh();
+    if (use_full_mesh)
+        maskedMesh->selectAll(*this->mesh);
+    else
+        maskedMesh->reset(*this->mesh, *this->geometry, ~plask::Material::EMPTY);
+
+    shared_ptr<RectangularMesh<3>> points = mesh->getElementMesh();
 
     std::map<size_t, Active::Region> regions;
     size_t nreg = 0;
@@ -197,9 +209,10 @@ void FiniteElementMethodElectrical3DSolver::onInitialize() {
     if (!geometry) throw NoGeometryException(getId());
     if (!mesh) throw NoMeshException(getId());
     loopno = 0;
-    potential.reset(mesh->size(), 0.);
-    current.reset(this->mesh->getElementsCount(), vec(0.,0.,0.));
-    conds.reset(this->mesh->getElementsCount());
+    band = 0;
+    potential.reset(maskedMesh->size(), 0.);
+    current.reset(maskedMesh->getElementsCount(), vec(0.,0.,0.));
+    conds.reset(maskedMesh->getElementsCount());
     if (junction_conductivity.size() == 1) {
         size_t condsize = 0;
         for (const auto& act: active) condsize += (act.right-act.left)*act.ld;
@@ -220,10 +233,10 @@ void FiniteElementMethodElectrical3DSolver::onInvalidate() {
 
 void FiniteElementMethodElectrical3DSolver::loadConductivity()
 {
-    auto midmesh = (this->mesh)->getMidpointsMesh();
+    auto midmesh = (this->maskedMesh)->getElementMesh();
     auto temperature = inTemperature(midmesh);
 
-    for (auto e: this->mesh->elements())
+    for (auto e: this->maskedMesh->elements())
     {
         size_t i = e.getIndex();
         Vec<3,double> midpoint = e.getMidpoint();
@@ -250,7 +263,7 @@ void FiniteElementMethodElectrical3DSolver::saveConductivity()
         for (size_t t = act.left; t != act.right; ++t) {
             size_t offset = act.offset + act.ld * t;
             for (size_t l = act.back; l != act.front; ++l)
-                junction_conductivity[offset + l] = conds[this->mesh->element(l, t, v).getIndex()].c11;
+                junction_conductivity[offset + l] = conds[this->maskedMesh->element(l, t, v).getIndex()].c11;
         }
     }
 }
@@ -264,19 +277,19 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
 
     // Update junction conductivities
     if (loopno != 0) {
-        for (auto elem: mesh->elements()) {
+        for (auto elem: maskedMesh->elements()) {
             if (size_t nact = isActive(elem)) {
                 size_t index = elem.getIndex(), lll = elem.getLoLoLoIndex(), uuu = elem.getUpUpUpIndex();
-                size_t back = mesh->index0(lll),
-                       front = mesh->index0(uuu),
-                       left = mesh->index1(lll),
-                       right = mesh->index1(uuu);
+                size_t back = maskedMesh->index0(lll),
+                       front = maskedMesh->index0(uuu),
+                       left = maskedMesh->index1(lll),
+                       right = maskedMesh->index1(uuu);
                 const Active& act = active[nact-1];
                 double jy = 0.25e6 * conds[index].c11  * abs
-                    (- potential[mesh->index(back,left,act.bottom)] - potential[mesh->index(front,left,act.bottom)]
-                     - potential[mesh->index(back,right,act.bottom)] - potential[mesh->index(front,right,act.bottom)]
-                     + potential[mesh->index(back,left,act.top)] + potential[mesh->index(front,left,act.top)]
-                     + potential[mesh->index(back,right,act.top)] + potential[mesh->index(front,right,act.top)])
+                    (- potential[maskedMesh->index(back,left,act.bottom)] - potential[maskedMesh->index(front,left,act.bottom)]
+                     - potential[maskedMesh->index(back,right,act.bottom)] - potential[maskedMesh->index(front,right,act.bottom)]
+                     + potential[maskedMesh->index(back,left,act.top)] + potential[maskedMesh->index(front,left,act.top)]
+                     + potential[maskedMesh->index(back,right,act.top)] + potential[maskedMesh->index(front,right,act.top)])
                     / act.height; // [j] = A/m²
                 conds[index] = Tensor2<double>(0., 1e-6 * getBeta(nact-1) * jy * act.height / log(jy / getJs(nact-1) + 1.));
                 if (isnan(conds[index].c11) || abs(conds[index].c11) < 1e-16) {
@@ -291,7 +304,7 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
     B.fill(0.);
 
     // Set stiffness matrix and load vector
-    for (auto elem: mesh->elements()) {
+    for (auto elem: maskedMesh->elements()) {
 
         size_t index = elem.getIndex();
 
@@ -410,21 +423,52 @@ void FiniteElementMethodElectrical3DSolver::applyBC<SparseBandMatrix3D>(SparseBa
     }
 }
 
+
+
+double FiniteElementMethodElectrical3DSolver::compute(unsigned loops) {
+    switch (algorithm) {
+        case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
+        case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
+        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix3D>(loops);
+    }
+    return 0.;
+}
+
+template <typename MatrixT>
+MatrixT FiniteElementMethodElectrical3DSolver::makeMatrix() {
+    if (band == 0) {
+        if (use_full_mesh) {
+            band = this->mesh->minorAxis()->size() * (this->mesh->mediumAxis()->size() + 1) + 1;
+        } else {
+            for (auto element: this->maskedMesh->elements()) {
+                size_t span = element.getUpUpUpIndex() - element.getLoLoLoIndex();
+                if (span > band) band = span;
+            }
+        }
+    }
+    return MatrixT(this->maskedMesh->size(), band);
+}
+
+template <>
+SparseBandMatrix3D FiniteElementMethodElectrical3DSolver::makeMatrix<SparseBandMatrix3D>() {
+    if (!use_full_mesh)
+        throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
+    return SparseBandMatrix3D(this->maskedMesh->size(), mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
+}
+
 template <typename MatrixT>
 double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
 {
-    initCalculation();
+    this->initCalculation();
 
     // store boundary conditions for current mesh
-    auto bvoltage = voltage_boundary(mesh, geometry);
+    auto bvoltage = voltage_boundary(maskedMesh, geometry);
 
     this->writelog(LOG_INFO, "Running electrical calculations");
 
+    MatrixT A = makeMatrix<MatrixT>();
+
     unsigned loop = 0;
-    size_t size = mesh->size();
-
-    MatrixT A(size, mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
-
     double err = 0.;
     toterr = 0.;
 
@@ -446,7 +490,7 @@ double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
 
         err = 0.;
         double mcur = 0.;
-        for (auto el: mesh->elements()) {
+        for (auto el: maskedMesh->elements()) {
             size_t i = el.getIndex();
             size_t lll = el.getLoLoLoIndex();
             size_t llu = el.getLoLoUpIndex();
@@ -495,17 +539,6 @@ double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
 
     return toterr;
 }
-
-
-double FiniteElementMethodElectrical3DSolver::compute(unsigned loops) {
-    switch (algorithm) {
-        case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
-        case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
-        case ALGORITHM_ITERATIVE: return doCompute<SparseBandMatrix3D>(loops);
-    }
-    return 0.;
-}
-
 
 
 void FiniteElementMethodElectrical3DSolver::solveMatrix(DpbMatrix& A, DataVector<double>& B)
@@ -578,10 +611,10 @@ void FiniteElementMethodElectrical3DSolver::saveHeatDensity()
 {
     this->writelog(LOG_DETAIL, "Computing heat densities");
 
-    heat.reset(mesh->getElementsCount());
+    heat.reset(maskedMesh->getElementsCount());
 
     if (heatmet == HEAT_JOULES) {
-        for (auto el: mesh->elements()) {
+        for (auto el: maskedMesh->elements()) {
             size_t i = el.getIndex();
             size_t lll = el.getLoLoLoIndex();
             size_t llu = el.getLoLoUpIndex();
@@ -601,14 +634,14 @@ void FiniteElementMethodElectrical3DSolver::saveHeatDensity()
                                      - potential[ull] + potential[ulu] - potential[uul] + potential[uuu])
                                 / (el.getUpper2() - el.getLower2()); // 1e6 - from µm to m
             auto midpoint = el.getMidpoint();
-            if (geometry->getMaterial(midpoint)->kind() == Material::NONE || geometry->hasRoleAt("noheat", midpoint))
+            if (geometry->getMaterial(midpoint)->kind() == Material::EMPTY || geometry->hasRoleAt("noheat", midpoint))
                 heat[i] = 0.;
             else {
                 heat[i] = conds[i].c00 * dvx*dvx + conds[i].c00 * dvy*dvy + conds[i].c11 * dvz*dvz;
             }
         }
     } else {
-        for (auto el: mesh->elements()) {
+        for (auto el: maskedMesh->elements()) {
             size_t i = el.getIndex();
             size_t lll = el.getLoLoLoIndex();
             size_t llu = el.getLoLoUpIndex();
@@ -634,7 +667,7 @@ void FiniteElementMethodElectrical3DSolver::saveHeatDensity()
                 double heatfact = 1e15 * phys::h_J * phys::c / (phys::qe * real(inWavelength(0)) * act.height);
                 double jz = conds[i].c11 * fabs(dvz); // [j] = A/m²
                 heat[i] = heatfact * jz ;
-            } else if (geometry->getMaterial(midpoint)->kind() == Material::NONE || roles.find("noheat") != roles.end())
+            } else if (geometry->getMaterial(midpoint)->kind() == Material::EMPTY || roles.find("noheat") != roles.end())
                 heat[i] = 0.;
             else
                 heat[i] = conds[i].c00 * dvx*dvx + conds[i].c00 * dvy*dvy + conds[i].c11 * dvz*dvz;
@@ -650,9 +683,12 @@ double FiniteElementMethodElectrical3DSolver::integrateCurrent(size_t vindex, bo
     double result = 0.;
     for (size_t i = 0; i < mesh->axis[0]->size()-1; ++i) {
         for (size_t j = 0; j < mesh->axis[1]->size()-1; ++j) {
-            auto element = mesh->element(i, j, vindex);
-            if (!onlyactive || isActive(element.getMidpoint()))
-                result += current[element.getIndex()].c2 * element.getSize0() * element.getSize1();
+            auto element = maskedMesh->element(i, j, vindex);
+            if (!onlyactive || isActive(element.getMidpoint())) {
+                size_t index = element.getIndex();
+                if (index != RectangularMaskedMesh3D::Element::UNKNOWN_ELEMENT_INDEX)
+                    result += current[index].c2 * element.getSize0() * element.getSize1();
+            }
         }
     }
     if (geometry->isSymmetric(Geometry::DIRECTION_LONG)) result *= 2.;
@@ -674,7 +710,10 @@ const LazyData<double> FiniteElementMethodElectrical3DSolver::getVoltage(shared_
     if (!potential) throw NoValue("Voltage");
     this->writelog(LOG_DEBUG, "Getting potential");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(mesh, potential, dest_mesh, method, geometry);
+    if (use_full_mesh)
+        return interpolate(mesh, potential, dest_mesh, method, geometry);
+    else
+        return interpolate(maskedMesh, potential, dest_mesh, method, geometry);
 }
 
 
@@ -683,12 +722,23 @@ const LazyData<Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity
     this->writelog(LOG_DEBUG, "Getting current density");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(geometry, InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP, InterpolationFlags::Symmetry::PPN);
-    auto result = interpolate(mesh->getMidpointsMesh(), current, dest_mesh, method, flags);
-    return LazyData<Vec<3>>(result.size(),
-        [this, dest_mesh, result, flags](size_t i) {
-            return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<3>(0.,0.,0.);
-        }
-    );
+    auto result = interpolate(mesh->getElementMesh(), current, dest_mesh, method, flags);
+    if (use_full_mesh) {
+        return LazyData<Vec<3>>(result.size(),
+            [this, dest_mesh, result, flags](size_t i) {
+                return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<3>(0.,0.,0.);
+            }
+        );
+    } else {
+        auto result = interpolate(maskedMesh->getElementMesh(), current, dest_mesh, method, flags);
+        return LazyData<Vec<3>>(result.size(),
+            [result](size_t i) {
+                // Masked mesh always returns NaN outside of itself
+                auto val = result[i];
+                return isnan(val)? Vec<3>(0.,0.,0.) : val;
+            }
+        );
+    }
 }
 
 
@@ -698,38 +748,38 @@ const LazyData<double> FiniteElementMethodElectrical3DSolver::getHeatDensity(sha
     if (!heat) saveHeatDensity(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(geometry);
-    auto result = interpolate(mesh->getMidpointsMesh(), heat, dest_mesh, method, flags);
-    return LazyData<double>(result.size(),
-        [this, dest_mesh, result, flags](size_t i) {
-            return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;
-        }
-    );
+    auto result = interpolate(mesh->getElementMesh(), heat, dest_mesh, method, flags);
+    if (use_full_mesh) {
+        return LazyData<double>(result.size(),
+            [this, dest_mesh, result, flags](size_t i) {
+                return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;
+            }
+        );
+    } else {
+        auto result = interpolate(maskedMesh->getElementMesh(), heat, dest_mesh, method, flags);
+        return LazyData<double>(result.size(),
+            [result](size_t i) {
+                // Masked mesh always returns NaN outside of itself
+                auto val = result[i];
+                return isnan(val)? 0. : val;
+            }
+        );
+    }
 }
 
 
 const LazyData<Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConductivity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod /*method*/) {
     initCalculation();
-    this->writelog(LOG_DEBUG, "Getting conductivities");
+    writelog(LOG_DEBUG, "Getting conductivities");
     loadConductivity();
     InterpolationFlags flags(geometry);
-    return LazyData<Tensor2<double>>(dest_mesh->size(),
-        [this, dest_mesh, flags](size_t i) -> Tensor2<double> {
-            auto point = flags.wrap(dest_mesh->at(i));
-            size_t x = this->mesh->axis[0]->findUpIndex(point[0]),
-                   y = this->mesh->axis[1]->findUpIndex(point[1]),
-                   z = this->mesh->axis[2]->findUpIndex(point[2]);
-            if (x == 0 || y == 0 || z == 0 || x == this->mesh->axis[0]->size() || y == this->mesh->axis[1]->size() || z == this->mesh->axis[2]->size())
-                return Tensor2<double>(NAN);
-            else
-                return conds[this->mesh->element(x-1, y-1, z-1).getIndex()];
-        }
-    );
+    return interpolate(maskedMesh->getElementMesh(), conds, dest_mesh, INTERPOLATION_NEAREST, flags);
 }
 
 double FiniteElementMethodElectrical3DSolver::getTotalEnergy() {
     double W = 0.;
-    auto T = inTemperature(this->mesh->getMidpointsMesh());
-    for (auto el: this->mesh->elements()) {
+    auto T = inTemperature(maskedMesh->getElementMesh());
+    for (auto el: maskedMesh->elements()) {
             size_t lll = el.getLoLoLoIndex();
             size_t llu = el.getLoLoUpIndex();
             size_t lul = el.getLoUpLoIndex();
@@ -773,7 +823,7 @@ double FiniteElementMethodElectrical3DSolver::getCapacitance() {
 double FiniteElementMethodElectrical3DSolver::getTotalHeat() {
     double W = 0.;
     if (!heat) saveHeatDensity(); // we will compute heats only if they are needed
-    for (auto el: this->mesh->elements()) {
+    for (auto el: this->maskedMesh->elements()) {
         double d0 = el.getUpper0() - el.getLower0();
         double d1 = el.getUpper1() - el.getLower1();
         double d2 = el.getUpper2() - el.getLower2();

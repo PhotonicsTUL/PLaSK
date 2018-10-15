@@ -4,6 +4,8 @@
 #include <plask/geometry/cylinder.h>
 #include <plask/geometry/triangle.h>
 #include <plask/geometry/circle.h>
+#include <plask/geometry/prism.h>
+
 
 namespace plask { namespace python {
 
@@ -59,6 +61,7 @@ static shared_ptr<Cuboid> Cuboid_constructor_vec(const Vec<3,double>& size, cons
     return result;
 }
 
+// Triangle constructor wraps
 static shared_ptr<Triangle> Triangle_constructor_vec(const Vec<2, double>& p0, const Vec<2,double>& p1, const py::object& material) {
     auto result = plask::make_shared<Triangle>(p0, p1);
     setLeafMaterial<2>(result, material);
@@ -86,6 +89,20 @@ static shared_ptr<Circle<dim>> Circle_constructor(double radius, const py::objec
     return result;
 }
 
+// Prism constructor wraps
+static shared_ptr<Prism> Prism_constructor_vec(const Vec<2, double>& p0, const Vec<2,double>& p1, double height, const py::object& material) {
+    auto result = plask::make_shared<Prism>(p0, p1, height);
+    setLeafMaterial<3>(result, material);
+    return result;
+}
+
+static shared_ptr<Prism> Prism_constructor_pts(double x0, double y0, double x1, double y1, double height, const py::object& material) {
+    auto result = plask::make_shared<Prism>(vec(x0,y0), vec(x1,y1), height);
+    setLeafMaterial<3>(result, material);
+    return result;
+}
+
+
 // Access to attributes
 template <size_t dim>
 static double Block__getattr__(const Block<int(dim)>& self, const std::string& name) {
@@ -111,20 +128,23 @@ static void Block__setattr__(py::object self, const std::string& name, const py:
     self.attr("__class__").attr("__base__").attr("__setattr__")(self, name, value);
 }
 
-static double Triangle__getattr__(const Triangle& self, const std::string& name) {
+template <typename T>
+static double Triangle__getattr__(py::object self, const std::string& name) {
+    T& t = py::extract<T&>(self);
     if (name.front() == 'a' || name.front() == 'b') {
         size_t axis = current_axes[name.substr(1)] - 1;
-        if (axis < 2) return (name.front() == 'a') ? self.p0[axis] : self.p1[axis];
+        if (axis < 2) return (name.front() == 'a') ? t.p0[axis] : t.p1[axis];
     }
-    throw AttributeError(u8"'Triangle' object has no attribute '{0}'", name);
+    throw AttributeError(u8"'{0}' object has no attribute '{1}'", py::extract<std::string>(self.attr("__class__").attr("__name__"))(), name);
 }
 
+template <typename T>
 static void Triangle__setattr__(py::object self, const std::string& name, const py::object& value) {
     const bool zero = (name.front() == 'a');
     if (zero || name.front() == 'b') {
         size_t axis = current_axes[name.substr(1)] - 1;
         if (axis < 2) {
-            Triangle& t = py::extract<Triangle&>(self);
+            T& t = py::extract<T&>(self);
             Vec<2, double> v = zero ? t.p0 : t.p1;
             v[axis] = py::extract<double>(value);
             if (zero) t.setP0(v); else t.setP1(v);
@@ -135,10 +155,10 @@ static void Triangle__setattr__(py::object self, const std::string& name, const 
 }
 
 // This wrappers are necessary so the attributes show in documentation
-template <int i> static double Triangle_get_a(const Triangle& self) { return self.p0[i]; }
-template <int i> static double Triangle_get_b(const Triangle& self) { return self.p1[i]; }
-template <int i> static void Triangle_set_a(Triangle& self, double c) { auto v = self.p0; v[i] = c; self.setP0(v); }
-template <int i> static void Triangle_set_b(Triangle& self, double c) { auto v = self.p1; v[i] = c; self.setP1(v); }
+template <typename T, int i> static double Triangle_get_a(const T& self) { return self.p0[i]; }
+template <typename T, int i> static double Triangle_get_b(const T& self) { return self.p1[i]; }
+template <typename T, int i> static void Triangle_set_a(T& self, double c) { auto v = self.p0; v[i] = c; self.setP0(v); }
+template <typename T, int i> static void Triangle_set_b(T& self, double c) { auto v = self.p1; v[i] = c; self.setP1(v); }
 
 
 template <int dim, int axis>
@@ -231,12 +251,12 @@ void register_geometry_leafs()
         .def("__init__", py::make_constructor(&Triangle_constructor_pts, py::default_call_policies(), (py::arg("a0"), "a1", "b0", "b1", "material")))
         .add_property("a", py::make_getter(&Triangle::p0, py::return_value_policy<py::return_by_value>()), (void(Triangle::*)(const Vec<2>&))&Triangle::setP0, "Coordinates of the first vertex.")
         .add_property("b", py::make_getter(&Triangle::p1, py::return_value_policy<py::return_by_value>()), (void(Triangle::*)(const Vec<2>&))&Triangle::setP1, "Coordinates of the second vertex.")
-        .add_property("a0", &Triangle_get_a<0>, &Triangle_set_a<0>, "Horizontal coordinate of the first vertex.\n\nInstead of 0 you can use transverse axis name.")
-        .add_property("a1", &Triangle_get_a<1>, &Triangle_set_a<1>, "Vertical coordinate of the first vertex.\n\nInstead of 1 you can use vertical axis name.")
-        .add_property("b0", &Triangle_get_b<0>, &Triangle_set_b<0>, "Horizontal coordinate of the second vertex.\n\nInstead of 0 you can use transverse axis name.")
-        .add_property("b1", &Triangle_get_b<1>, &Triangle_set_b<1>, "Vertical coordinate of the second vertex.\n\nInstead of 1 you can use vertical axis name.")
-        .def("__getattr__", &Triangle__getattr__)
-        .def("__setattr__", &Triangle__setattr__)
+        .add_property("a0", &Triangle_get_a<Triangle,0>, &Triangle_set_a<Triangle,0>, "Horizontal coordinate of the first vertex.\n\nInstead of 0 you can use transverse axis name.")
+        .add_property("a1", &Triangle_get_a<Triangle,1>, &Triangle_set_a<Triangle,1>, "Vertical coordinate of the first vertex.\n\nInstead of 1 you can use vertical axis name.")
+        .add_property("b0", &Triangle_get_b<Triangle,0>, &Triangle_set_b<Triangle,0>, "Horizontal coordinate of the second vertex.\n\nInstead of 0 you can use transverse axis name.")
+        .add_property("b1", &Triangle_get_b<Triangle,1>, &Triangle_set_b<Triangle,1>, "Vertical coordinate of the second vertex.\n\nInstead of 1 you can use vertical axis name.")
+        .def("__getattr__", &Triangle__getattr__<Triangle>)
+        .def("__setattr__", &Triangle__setattr__<Triangle>)
     ;
 
     py::class_<Circle<2>, shared_ptr<Circle<2>>, py::bases<GeometryObjectLeaf<2>>, boost::noncopyable> ("Circle",
@@ -280,6 +300,40 @@ void register_geometry_leafs()
         .add_property("height", py::make_getter(&Cylinder::height), &Cylinder::setHeight, u8"Height of the cylinder.")
     ;
 
+    py::class_<Prism, shared_ptr<Prism>, py::bases<GeometryObjectLeaf<3>>, boost::noncopyable> prism("Prism",
+        u8"Prism(a0, a1, b0, b1, height, material)\n"
+        u8"Prism(a, b, height, material)\n"
+        u8"Prism (3D geometry object).\n\n"
+        u8"Three triangle vertices are located at points (0, 0, 0), (*a*, 0), and (*b*, 0).\n\n"
+        u8"Args:\n"
+        u8"    plask.vec a: Local coordinates of the first triangle vertex.\n"
+        u8"    plask.vec b: Local coordinates of the second triangle vertex.\n"
+        u8"    a0 (float): Longitudinal component of the local coordinates of the first\n"
+        u8"                triangle vertex.\n"
+        u8"    a1 (float): Transverse component of the local coordinates of the first\n"
+        u8"                triangle vertex.\n"
+        u8"    b0 (float): Longitudinal component of the local coordinates of the second\n"
+        u8"                triangle vertex.\n"
+        u8"    b1 (float): Transverse component of the local coordinates of the second\n"
+        u8"                triangle vertex.\n"
+        u8"    height (float): Prism height\n"
+        u8"    material (Material): Prism material.\n",
+        py::no_init
+        ); prism
+        .def("__init__", py::make_constructor(&Prism_constructor_vec, py::default_call_policies(), (py::arg("a"), "b", "height", "material")))
+        .def("__init__", py::make_constructor(&Prism_constructor_pts, py::default_call_policies(), (py::arg("a0"), "a1", "b0", "b1", "height", "material")))
+        .add_property("a", py::make_getter(&Prism::p0, py::return_value_policy<py::return_by_value>()), (void(Prism::*)(const Vec<2>&))&Prism::setP0,
+                      "Horizontal coordinates of the first base vertex.")
+        .add_property("b", py::make_getter(&Prism::p1, py::return_value_policy<py::return_by_value>()), (void(Prism::*)(const Vec<2>&))&Prism::setP1,
+                      "Horizontal coordinates of the second base vertex.")
+        .add_property("a0", &Triangle_get_a<Prism,0>, &Triangle_set_a<Prism,0>, "Horizontal coordinate of the first base vertex.\n\nInstead of 0 you can use longitudinal axis name.")
+        .add_property("a1", &Triangle_get_a<Prism,1>, &Triangle_set_a<Prism,1>, "Vertical coordinate of the first base vertex.\n\nInstead of 1 you can use transverse axis name.")
+        .add_property("b0", &Triangle_get_b<Prism,0>, &Triangle_set_b<Prism,0>, "Horizontal coordinate of the second base vertex.\n\nInstead of 0 you can use longitudinal axis name.")
+        .add_property("b1", &Triangle_get_b<Prism,1>, &Triangle_set_b<Prism,1>, "Vertical coordinate of the second base vertex.\n\nInstead of 1 you can use transverse axis name.")
+        .add_property("height", py::make_getter(&Prism::height), &Prism::setHeight, "Prism height.")
+        .def("__getattr__", &Triangle__getattr__<Prism>)
+        .def("__setattr__", &Triangle__setattr__<Prism>)
+    ;
 
 }
 

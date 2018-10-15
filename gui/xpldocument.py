@@ -53,6 +53,8 @@ class XPLDocument(object):
     NAME = "PLaSK structure data"
     EXT = "xpl"
 
+    coding = 'utf-8'
+
     def __init__(self, window, filename=None):
         self.window = window
         self.defines = GUIAndSourceController(DefinesController(self))
@@ -88,13 +90,9 @@ class XPLDocument(object):
         if _DEBUG and plask is not None:  # very useful!
             from .utils.modeltest import ModelTest
             ModelTest(self.model_by_name('geometry'))
-        # self.tree = etree()
-
         # self.undo_group = QUndoGroup()    # do we need this?
         # for c in self.controllers:
         #     self.undo_group.addStack(c.model.undo_stack)
-
-    coding = 'utf-8'
 
     def update_window_changed(self, ignored_clean_flag=None):   # ignored_clean_flag enable this to connect with cleanChanged signal
         self.window.set_changed(not self.is_clean())

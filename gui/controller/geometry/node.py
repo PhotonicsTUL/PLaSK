@@ -10,6 +10,8 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import weakref
+
 from ...qt.QtWidgets import *
 
 from .. import Controller
@@ -125,8 +127,10 @@ class GNodeController(Controller):
         if change_cb is not None:
             res.editingFinished.connect(change_cb)
         elif node_property_name is not None:
-            res.editingFinished.connect(lambda :
-                self._set_node_property_undoable(node_property_name, res.text(), display_property_name, unit))
+            weakself = weakref.proxy(self)
+            res.editingFinished.connect(
+                lambda : weakself._set_node_property_undoable(
+                    node_property_name, res.text(), display_property_name, unit))
         return res
 
     def construct_multi_line_edit(self, row_name=None, node_property_name=None, display_property_name=None,
@@ -139,8 +143,9 @@ class GNodeController(Controller):
         if change_cb is not None:
             res.focus_out_cb = change_cb
         elif node_property_name is not None:
-            res.focus_out_cb = lambda: self._set_node_property_undoable(node_property_name, sep.join(res.get_values()),
-                                                                        display_property_name)
+            weakself = weakref.proxy(self)
+            res.focus_out_cb = lambda: weakself._set_node_property_undoable(
+                node_property_name, sep.join(res.get_values()), display_property_name)
         return res
 
     def construct_combo_box(self, row_name=None, items=(), editable=True, node_property_name=None,
@@ -153,9 +158,10 @@ class GNodeController(Controller):
         if change_cb is not None:
             res.editingFinished.connect(change_cb)
         elif node_property_name is not None:
-            res.editingFinished.connect(lambda:
-                                        self._set_node_property_undoable(node_property_name, res.currentText(),
-                                                                         display_property_name, node=node))
+            weakself = weakref.proxy(self)
+            res.editingFinished.connect(
+                lambda: weakself._set_node_property_undoable(node_property_name, res.currentText(),
+                                                             display_property_name, node=node))
         return res
 
     def construct_material_combo_box(self, row_name=None, items=None, node_property_name=None,
@@ -181,7 +187,7 @@ class GNodeController(Controller):
     def construct_names_before_self_combo_box(self, row_name=None, node_property_name=None,
                                               display_property_name=None, change_cb=None):
         res = self.construct_combo_box(items=[''] +
-                                       sorted(self.model.names_before(self.node), key=lambda s: s.lower()),
+                                       sorted(self.model.get_names_before(self.node), key=lambda s: s.lower()),
                                        node_property_name=node_property_name,
                                        display_property_name=display_property_name,
                                        change_cb=change_cb)
@@ -286,7 +292,7 @@ class GNodeController(Controller):
             hbox.addWidget(res[i])
             hbox.addWidget(QLabel(u'µm' + ('' if i == dim-1 else u'  × ')))
             if change_cb is not None:
-                res[i].editingFinished.connect(lambda : change_cb(tuple(empty_to_none(p.text()) for p in res)))
+                res[i].editingFinished.connect(lambda: change_cb(tuple(empty_to_none(p.text()) for p in res)))
         return res if row_name else (res, group)
 
     def __init__(self, document, model, node):

@@ -96,7 +96,7 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
     regions.clear();
 
     shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
-    shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
+    shared_ptr<RectangularMesh<2>> points = mesh->getElementMesh();
 
     size_t ileft = 0, iright = points->axis[0]->size();
     bool in_active = false;
@@ -332,7 +332,7 @@ FreeCarrierGainSolver<GeometryType>::ActiveRegionParams::ActiveRegionParams(cons
     } else {
         if (!quiet) solver->writelog(LOG_DETAIL, "Band edges taken from inBandEdges receiver");
         shared_ptr<Translation<2>> shifted(new Translation<2>(region.layers, region.origin));
-        auto mesh = makeGeometryGrid(shifted)->getMidpointsMesh();
+        auto mesh = makeGeometryGrid(shifted)->getElementMesh();
         assert(mesh->size() == mesh->axis[1]->size());
         auto CB = solver->inBandEdges(BandEdges::CONDUCTION, mesh);
         auto VB_H = solver->inBandEdges(BandEdges::VALENCE_HEAVY, mesh);
@@ -837,7 +837,7 @@ struct FreeCarrierGainSolver<GeometryT>::InterpolatedData: public FreeCarrierGai
             }
             AveragedData temps(this->solver, "temperature", this->regpoints[reg], this->solver->regions[reg]);
             AveragedData concs(temps); concs.name = "carriers concentration";
-            temps.data = this->solver->inTemperature(temps.mesh, interp);
+            temps.data = SafeData<double>(this->solver->inTemperature(temps.mesh, interp), 300.);
             concs.data = this->solver->inCarriersConcentration(CarriersConcentration::PAIRS, temps.mesh, interp);
             this->data[reg] = interpolate(plask::make_shared<RectangularMesh<2>>(this->regpoints[reg], zero_axis),
                                           getValues(wavelength, interp, reg, concs, temps),
@@ -1002,7 +1002,7 @@ struct FreeCarrierGainSolver<GeometryT>::EnergyLevelsData: public FreeCarrierGai
         temps.reserve(solver->regions.size());
         for (size_t reg = 0; reg != solver->regions.size(); ++reg) {
             AveragedData temp(this->solver, "temperature", this->regpoints[reg], this->solver->regions[reg]);
-            temp.data = this->solver->inTemperature(temp.mesh, interp);
+            temp.data = SafeData<double>(this->solver->inTemperature(temp.mesh, interp), 300.);
             temps.emplace_back(interpolate(temp.mesh, DataVector<const double>(temp.data), this->dest_mesh, interp,
                                            this->solver->geometry));
         }

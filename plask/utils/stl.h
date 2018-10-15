@@ -221,6 +221,45 @@ inline auto apply_tuple(Op&& op, Tuple&& t)
 }   //http://preney.ca/paul/archives/934
 
 
+/**
+ * This template can be used to show fileds shich should be just ignore by copy constructors and assign operators of the class.
+ */
+template <typename T>
+struct DontCopyThisField: public T {
+
+    /*template <typename... Args>
+    DontCopyThisField(Args&&... args) noexcept(noexcept(T(::std::forward<Args>(args)...)))
+        : T(::std::forward<Args>(args)...)
+    {}*/
+
+    DontCopyThisField() = default;
+
+    DontCopyThisField(const DontCopyThisField<T>&) noexcept: T() {}
+
+    DontCopyThisField(const T&) noexcept {}
+
+    DontCopyThisField(DontCopyThisField&& from) = default;
+
+    DontCopyThisField(T&& from) noexcept(noexcept(T(::std::move(from))))
+        : T(::std::move(from))
+    {}
+
+    DontCopyThisField& operator=(const T&) noexcept {
+        return *this;
+    }
+
+    DontCopyThisField& operator=(const DontCopyThisField&) noexcept {
+        return *this;
+    }
+
+    DontCopyThisField& operator=(T&& from) noexcept(noexcept(T::operator=(::std::move(from)))) {
+        T::operator=(::std::move(from));
+        return *this;
+    }
+
+    DontCopyThisField& operator=(DontCopyThisField&& from) = default;
+};
+
 
 } // namespace plask
 

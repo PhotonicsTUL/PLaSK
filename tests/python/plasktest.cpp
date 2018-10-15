@@ -30,7 +30,7 @@ struct MyMaterial : public plask::Material {
 
     virtual std::string name() const override { return "MyMaterial"; }
 
-    virtual Material::Kind kind() const override { return Material::NONE; }
+    virtual Material::Kind kind() const override { return Material::GENERIC; }
 
     virtual double VB(double T, double /*e*/, char /*P*/, char /*h*/) const override { return 0.5*T; }
 

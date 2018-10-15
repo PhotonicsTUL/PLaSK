@@ -194,6 +194,37 @@
   <cartesian2d name="main" axes="x,y">
     <rectangle material="mat" dx="1" dy="{wl('mat', 1000)}"/>
   </cartesian2d>
+  <cartesian3d name="prismatic" axes="x,y,z">
+    <stack>
+      <prism material="AlAs" ax="0.9" ay="-0.5" bx="-0.1" by="1.5" height="1.0"/>
+      <cuboid material="GaAs" dx="1.0" dy="2.0" dz="0.5"/>
+    </stack>
+  </cartesian3d>
+  <cartesian2d name="roads">
+    <stack>
+      <shelf>
+        <item path="bl,blsl,blsr">
+          <stack name="big">
+            <shelf>
+              <item path="sl,blsl,brsl">
+                <rectangle name="small" material="AlAs" dtran="0.333" dvert="0.2"/>
+              </item>
+              <gap total="1.0"/>
+              <item path="sr,blsr,brsr">
+                <again ref="small"/>
+              </item>
+            </shelf>
+            <rectangle material="AlN" dtran="1.0" dvert="0.5"/>
+          </stack>
+        </item>
+        <gap total="3.0"/>
+        <item path="br,brsl,brsr">
+          <again ref="big"/>
+        </item>
+      </shelf>
+      <rectangle material="GaN" dtran="3.0" dvert="0.5"/>
+    </stack>
+  </cartesian2d>
 </geometry>
 
 <grids>
@@ -229,9 +260,14 @@
     <steps small0="0.005" small1="0.05" small2="0.05" factor="1.2"/>
   </generator>
   <generator method="regular" name="reg" type="rectangular2d">
-    <spacing every0="0.2"/>
+    <spacing every0="0.2" every1="1"/>
   </generator>
   <generator method="simple" name="spl" type="rectangular2d"/>
+  <mesh name="fine" type="rectangular3d">
+    <axis0 start="0.5" stop="1.0" num="2001"></axis0>
+    <axis1 start="0" stop="2" num="4001"></axis1>
+    <axis2>0.0 0.5 1.5</axis2>
+  </mesh>
 </grids>
 
 <solvers>
@@ -255,14 +291,6 @@
   <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="shockley">
     <geometry ref="GeoE"/>
     <mesh ref="default"/>
-    <voltage>
-      <condition value="2.0">
-        <place side="bottom" object="p-contact"/>
-      </condition>
-      <condition value="0.0">
-        <place side="top" object="n-contact"/>
-      </condition>
-    </voltage>
     <matrix algorithm="cholesky" itererr="2"/>
     <junction beta0="{beta_def}" beta1="19.2" js0="{js_def}" js1="1.1"/>
   </electrical>
@@ -286,16 +314,50 @@
   <electrical name="DDM" solver="DriftDiffusion2D" lib="ddm2d">
     <geometry ref="geo2d"/>
     <mesh ref="optical"/>
+    <voltage>
+      <condition value="0">
+        <place side="bottom" object="stack2d"/>
+      </condition>
+    </voltage>
   </electrical>
   <meta name="meta2" solver="ThermoElectric2D" lib="shockley">
-    <geometry electrical="geo2d-copy" thermal="geo2d"/>
+    <geometry electrical="roads" thermal="geo2d-copy"/>
     <mesh electrical="default" thermal="default"/>
+    <voltage>
+      <condition value="1.">
+        <place side="top" object="small" path="sr"/>
+      </condition>
+      <condition value="0.">
+        <place line="horizontal" at="0" start="1" stop="2"/>
+      </condition>
+    </voltage>
   </meta>
   <meta name="bessel" solver="ThresholdSearchBesselCyl" lib="shockley">
     <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
     <mesh diffusion="diffusion" electrical="default" thermal="default"/>
     <root bcond="0"/>
   </meta>
+  <meta name="threshold" solver="ThresholdSearchBesselCyl" lib="shockley">
+    <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
+    <mesh electrical="default" thermal="default"/>
+    <root bcond="1"/>
+    <voltage>
+      <condition place="bottom" value="0"/>
+      <condition value="1">
+        <place side="top" object="n-contact"/>
+      </condition>
+    </voltage>
+    <temperature>
+      <condition place="bottom" value="300"/>
+    </temperature>
+  </meta>
+  <optical name="F3D" solver="Fourier3D" lib="slab">
+    <geometry ref="l3cavity"/>
+  </optical>
+  <thermal name="solver" solver="Static3D" lib="static">
+    <geometry ref="prismatic"/>
+    <mesh ref="fine"/>
+  </thermal>
 </solvers>
 
 <connects>
@@ -327,6 +389,7 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.""")
 
 import os
 import sys
+
 
 csys = 1
 cmap = 2

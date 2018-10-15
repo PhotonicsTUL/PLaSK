@@ -37,9 +37,10 @@ def gname(key, menu=False):
         return key.title()
 
 
-from .leaf import GNBlock, GNCircle, GNCylinder, GNTriangle
+from .leaf import GNBlock, GNCircle, GNCylinder, GNTriangle, GNPrism
 from .container import GNStack, GNAlignContainer, GNShelf
-from .transform import GNClip, GNExtrusion, GNFlip, GNMirror, GNRevolution, GNTranslation, GNIntersection, GNArrange, GNLattice
+from .transform import GNClip, GNExtrusion, GNFlip, GNMirror, GNRevolution,\
+    GNTranslation, GNIntersection, GNArrange, GNLattice
 from .again_copy import GNCopy, GNAgain
 from .geometry import GNCartesian, GNCylindrical
 
@@ -84,6 +85,7 @@ geometry_types_3d_core_leafs = OrderedDict((
     ('cuboid', GNBlock.from_xml_3d),
     ('sphere', GNCircle.from_xml_3d),
     ('cylinder', GNCylinder.from_xml_3d),
+    ('prism', GNPrism.from_xml_3d)
 ))
 geometry_types_3d_core_containers = OrderedDict((
     ('stack3d', GNStack.from_xml_3d),

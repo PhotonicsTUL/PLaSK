@@ -229,10 +229,10 @@ For now, let us obtain the temperature on the same mesh it was computed. So, add
 This will assign the temperature distribution on the working mesh of the solver ``therm`` (given by ``therm.mesh``) to the variable ``temp``. Having done this we can get the maximum temperature simply as ``maxtemp = max(temp)``, save it to :term:`HDF5` file, or plot as a color map. Let us do the latter, using 12 color bands to indicate temperature. In addition we plot the wireframe of the analyzed structure, so we have some visual location reference, and add the temperature color-bar::
 
     plot_field(temp, 12)
-    plot_geometry(GEO["main"], color="w")
+    plot_geometry(GEO["main"])
     colorbar()
 
-In the second line above, there is a global dictionary ``GEO``, which contains all geometries and geometry objects defined in the XPL file, with keys matching the value of the attribute ``name`` of each geometry. Hence, ``GEO["main"]`` is simply Python representation of our diode geometry described in the beginning of this tutorial [#GEO.name]_. Additional parameter color of the ``plot_geometry`` command makes the geometry wireframe plotted white instead of the default black. The rest of the code responsible for plotting the temperature should be self-explanatory.
+In the second line above, there is a global dictionary ``GEO``, which contains all geometries and geometry objects defined in the XPL file, with keys matching the value of the attribute ``name`` of each geometry. Hence, ``GEO["main"]`` is simply Python representation of our diode geometry described in the beginning of this tutorial [#GEO.name]_. The rest of the code responsible for plotting the temperature should be self-explanatory.
 
 Apart from the results it may be also useful to see the computational mesh. In order to do this, we create a new plot window using ``figure()`` command and plot the structure together with the computational mesh (actually the mesh is the same for both solvers, so you may get it from either one)::
 

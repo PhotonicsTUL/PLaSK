@@ -95,9 +95,9 @@ class Solver(TreeFragmentModel):
             #     except (IOError, SystemError):
             #         pass
             if lib is not None:
-                return "import {1}.{2}.{3} as {0}\n{0} = {0}()".format(self.name, self.category, lib, self.solver)
+                return "from {1}.{2} import {3} as {0}\n{0} = {0}()".format(self.name, self.category, lib, self.solver)
             else:
-                return "import {1}.{2} as {0}\n{0} = {0}()".format(self.name, self.category, self.solver)
+                return "from {1} import {2} as {0}\n{0} = {0}()".format(self.name, self.category, self.solver)
         else:
             return "{} = None".format(self.name)
 

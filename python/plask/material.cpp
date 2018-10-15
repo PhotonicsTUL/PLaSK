@@ -191,9 +191,9 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     }
 
   public:
-    PythonMaterial(): MaterialWithBase(new EmptyMaterial) {}
+    PythonMaterial(): MaterialWithBase(new GenericMaterial) {}
     PythonMaterial(shared_ptr<Material> base): MaterialWithBase(base) {
-        if (!base) base = shared_ptr<Material>(new EmptyMaterial);
+        if (!base) base = shared_ptr<Material>(new GenericMaterial);
     }
 
     static shared_ptr<Material> __init__(py::tuple args, py::dict kwargs);
@@ -1220,7 +1220,8 @@ void initMaterials() {
     detail::ComplexTensor_fromto_Python();
 
     py_enum<Material::Kind>()
-        .value("NONE", Material::NONE)
+        .value("GENERIC", Material::GENERIC)
+        .value("EMPTY", Material::EMPTY)
         .value("SEMICONDUCTOR", Material::SEMICONDUCTOR)
         .value("OXIDE", Material::OXIDE)
         .value("DIELECTRIC", Material::DIELECTRIC)

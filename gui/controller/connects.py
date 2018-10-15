@@ -76,4 +76,3 @@ class ConnectsController(TableController):
         self.table.horizontalHeader().setStretchLastSection(False)
         self.table.setItemDelegateForColumn(0, ReceiversDelegate(self.document, self.table))
         self.table.setItemDelegateForColumn(1, ProvidersDelegate(self.document, self.table))
-

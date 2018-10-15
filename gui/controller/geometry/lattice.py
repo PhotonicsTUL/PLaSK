@@ -10,6 +10,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import weakref
 import numpy as np
 import itertools
 
@@ -70,17 +71,19 @@ class GNLatticeController(GNObjectController):
         if change_cb is not None:
             res.focus_out_cb = change_cb
         elif node_property_name is not None:
-            res.focus_out_cb = lambda: self._set_node_property_undoable(node_property_name, sep.join(res.get_values()),
-                                                                        display_property_name)
+            weakself = weakref.proxy(self)
+            res.focus_out_cb = lambda: weakself._set_node_property_undoable(
+                node_property_name, sep.join(res.get_values()), display_property_name)
         return res
 
     def construct_form(self):
         self.construct_group('Lattice Vectors')
         self.construct_group('Lattice Vectors')
+        weakself = weakref.proxy(self)
         self.vectors = (self.construct_point_controllers(row_name='First',
-                                                         change_cb=lambda vec: self._on_point_set(0, vec)),
+                                                         change_cb=lambda vec: weakself._on_point_set(0, vec)),
                         self.construct_point_controllers(row_name='Second',
-                                                         change_cb=lambda vec: self._on_point_set(1, vec)))
+                                                         change_cb=lambda vec: weakself._on_point_set(1, vec)))
         self.construct_group('Lattice Boundaries')
         self.segments = self.construct_lattice_edit(node_property_name='segments',
                                                     change_cb=self._segments_changed, edit_cb=self.edit_segments)

@@ -17,10 +17,11 @@ FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::FiniteElementMethodDy
     elapstime(0.),
     lumping(true),
     rebuildfreq(0),
-    logfreq(500)
+    logfreq(500),
+    use_full_mesh(false)
 {
     temperatures.reset();
-    mHeatFluxes.reset();
+    fluxes.reset();
     inHeat = 0.;
 }
 
@@ -56,8 +57,14 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::loadConfiguratio
                 .value("gauss", ALGORITHM_GAUSS)
                 .get(algorithm);
             source.requireTagEnd();
-        } else
+        }
+
+        else {
+            if (param == "mesh") {
+                use_full_mesh = source.getAttribute<bool>("include-empty", use_full_mesh);
+            }
             this->parseStandardConfiguration(source, manager);
+        }
     }
 }
 
@@ -67,12 +74,18 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::onInitialize() {
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
     elapstime = 0.;
-    size = this->mesh->size();
-    temperatures.reset(size, inittemp);
+    band = 0;
 
-    thickness.reset(this->mesh->getElementsCount(), NAN);
+    if (use_full_mesh)
+        maskedMesh->selectAll(*this->mesh);
+    else
+        maskedMesh->reset(*this->mesh, *this->geometry, ~plask::Material::EMPTY);
+
+    temperatures.reset(this->maskedMesh->size(), inittemp);
+
+    thickness.reset(this->maskedMesh->getElementsCount(), NAN);
     // Set stiffness matrix and load vector
-    for (auto elem: this->mesh->elements())
+    for (auto elem: this->maskedMesh->elements())
     {
         if (!isnan(thickness[elem.getIndex()])) continue;
         auto material = this->geometry->getMaterial(elem.getMidpoint());
@@ -99,15 +112,18 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::onInitialize() {
             else break;
         }
         double h = top - bottom;
-        for (size_t r = ibottom; r != itop; ++r)
-            thickness[this->mesh->element(c, r).getIndex()] = h;
+        for (size_t r = ibottom; r != itop; ++r) {
+            size_t idx = this->maskedMesh->element(c, r).getIndex();
+            if (idx != RectangularMaskedMesh2D::Element::UNKNOWN_ELEMENT_INDEX)
+                thickness[idx] = h;
+        }
     }
 }
 
 
 template<typename Geometry2DType> void FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::onInvalidate() {
     temperatures.reset();
-    mHeatFluxes.reset();
+    fluxes.reset();
 }
 
 
@@ -118,8 +134,7 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::setMatrix(
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
 
-    auto iMesh = (this->mesh)->getMidpointsMesh();
-    auto heatdensities = inHeat(iMesh);
+    auto heatdensities = inHeat(this->maskedMesh->getElementMesh());
 
     // zero the matrices A, B and the load vector F
     std::fill_n(A.data, A.size*(A.ld+1), 0.);
@@ -127,7 +142,7 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::setMatrix(
     F.fill(0.);
 
     // Set stiffness matrix and load vector
-    for (auto elem: this->mesh->elements())
+    for (auto elem: this->maskedMesh->elements())
     {
         // nodes numbers for the current element
         size_t loleftno = elem.getLoLoIndex();
@@ -148,20 +163,7 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::setMatrix(
 
         // thermal conductivity
         double kx, ky;
-        double top = elem.getUpper1(), bottom = elem.getLower1();
-        for (size_t r = elem.getIndex1(); r > 0; r--) {
-            auto e = this->mesh->element(elem.getIndex0(), r-1);
-            auto m = this->geometry->getMaterial(e.getMidpoint());
-            if (m == material) bottom = e.getLower1();                   //TODO ignore doping
-            else break;
-        }
-        for (size_t r = elem.getIndex1()+1; r < this->mesh->axis[1]->size()-1; r++) {
-            auto e = this->mesh->element(elem.getIndex0(), r);
-            auto m = this->geometry->getMaterial(e.getMidpoint());
-            if (m == material) top = e.getUpper1();                     //TODO ignore doping
-            else break;
-        }
-        std::tie(kx,ky) = std::tuple<double,double>(material->thermk(temp, top-bottom));
+        std::tie(kx,ky) = std::tuple<double,double>(material->thermk(temp, thickness[elem.getIndex()]));
 
         // element of heat capacity matrix
         double c = material->cp(temp) * material->dens(temp) * 0.25 * 1E-12 * elemheight * elemwidth / timestep / 1E-9;
@@ -268,8 +270,7 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylindrical>::setMatrix
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
 
-    auto iMesh = (this->mesh)->getMidpointsMesh();
-    auto heatdensities = inHeat(iMesh);
+    auto heatdensities = inHeat(this->maskedMesh->getElementMesh());
 
     // zero the matrices A, B and the load vector F
     std::fill_n(A.data, A.size*(A.ld+1), 0.);
@@ -277,7 +278,7 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylindrical>::setMatrix
     F.fill(0.);
 
     // Set stiffness matrix and load vector
-    for (auto elem: this->mesh->elements())
+    for (auto elem: this->maskedMesh->elements())
     {
         // nodes numbers for the current element
         size_t loleftno = elem.getLoLoIndex();
@@ -299,20 +300,7 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylindrical>::setMatrix
 
         // thermal conductivity
         double kx, ky;
-        double top = elem.getUpper1(), bottom = elem.getLower1();
-        for (size_t r = elem.getIndex1(); r > 0; r--) {
-            auto e = this->mesh->element(elem.getIndex0(), r-1);
-            auto m = this->geometry->getMaterial(e.getMidpoint());
-            if (m == material) bottom = e.getLower1();                   //TODO ignore doping
-            else break;
-        }
-        for (size_t r = elem.getIndex1()+1; r < this->mesh->axis[1]->size()-1; r++) {
-            auto e = this->mesh->element(elem.getIndex0(), r);
-            auto m = this->geometry->getMaterial(e.getMidpoint());
-            if (m == material) top = e.getUpper1();                     //TODO ignore doping
-            else break;
-        }
-        std::tie(kx,ky) = std::tuple<double,double>(material->thermk(temp, top-bottom));
+        std::tie(kx,ky) = std::tuple<double,double>(material->thermk(temp, thickness[elem.getIndex()]));
 
         // element of heat capacity matrix
         double c = material->cp(temp) * material->dens(temp) * 0.25 * 1E-12 * r * elemheight * elemwidth / timestep / 1E-9;
@@ -414,6 +402,38 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylindrical>::setMatrix
 
 
 template<typename Geometry2DType>
+template <typename MatrixT>
+MatrixT FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::makeMatrix() {
+    if (band == 0) {
+        if (use_full_mesh) {
+            band = this->mesh->minorAxis()->size() + 1;
+        } else {
+            for (auto element: this->maskedMesh->elements()) {
+                size_t span = element.getUpUpIndex() - element.getLoLoIndex();
+                if (span > band) band = span;
+            }
+        }
+    }
+    return MatrixT(this->maskedMesh->size(), band);
+}
+
+// // C++ if fucking stupid!!!!! We need to repeat this twice just because a fucking standard
+// template<> template <>
+// SparseBandMatrix2D FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>::makeMatrix<SparseBandMatrix2D>() {
+//     if (!use_full_mesh)
+//         throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
+//     return SparseBandMatrix2D(this->maskedMesh->size(), this->mesh->minorAxis()->size());
+// }
+//
+// template<> template <>
+// SparseBandMatrix2D FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylindrical>::makeMatrix<SparseBandMatrix2D>() {
+//     if (!use_full_mesh)
+//         throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
+//     return SparseBandMatrix2D(this->maskedMesh->size(), this->mesh->minorAxis()->size());
+// }
+
+
+template<typename Geometry2DType>
 double FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::compute(double time) {
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(time);
@@ -428,13 +448,14 @@ double FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::doCompute(doub
 {
     this->initCalculation();
 
-    mHeatFluxes.reset();
+    fluxes.reset();
 
     // store boundary conditions for current mesh
-    auto btemperature = temperature_boundary(this->mesh, this->geometry);
+    auto btemperature = temperature_boundary(this->maskedMesh, this->geometry);
 
-    MatrixT A(size, this->mesh->minorAxis()->size());
-    MatrixT B(size, this->mesh->minorAxis()->size());
+    size_t size = this->maskedMesh->size();
+    MatrixT A = makeMatrix<MatrixT>();
+    MatrixT B = makeMatrix<MatrixT>();
     this->writelog(LOG_INFO, "Running thermal calculations");
     maxT = *std::max_element(temperatures.begin(), temperatures.end());
 
@@ -548,9 +569,9 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::saveHeatFluxes()
 {
     this->writelog(LOG_DETAIL, "Computing heat fluxes");
 
-    mHeatFluxes.reset(this->mesh->getElementsCount());
+    fluxes.reset(this->maskedMesh->getElementsCount());
 
-    for (auto e: this->mesh->elements())
+    for (auto e: this->maskedMesh->elements())
     {
         Vec<2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
@@ -573,7 +594,7 @@ void FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::saveHeatFluxes()
             std::tie(kx,ky) = std::tuple<double,double>(material->thermk(temp));
 
 
-        mHeatFluxes[e.getIndex()] = vec(
+        fluxes[e.getIndex()] = vec(
             - 0.5e6 * kx * (- temperatures[loleftno] + temperatures[lorghtno]
                              - temperatures[upleftno] + temperatures[uprghtno]) / (e.getUpper0() - e.getLower0()), // 1e6 - from um to m
             - 0.5e6 * ky * (- temperatures[loleftno] - temperatures[lorghtno]
@@ -587,7 +608,10 @@ const LazyData<double> FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>
     this->writelog(LOG_DEBUG, "Getting temperatures");
     if (!temperatures) return LazyData<double>(dest_mesh->size(), inittemp); // in case the receiver is connected and no temperature calculated yet
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh, temperatures, dest_mesh, method, this->geometry);
+    if (use_full_mesh)
+        return interpolate(this->mesh, temperatures, dest_mesh, method, this->geometry);
+    else
+        return interpolate(this->maskedMesh, temperatures, dest_mesh, method, this->geometry);
 }
 
 
@@ -595,10 +619,14 @@ template<typename Geometry2DType>
 const LazyData<Vec<2>> FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::getHeatFluxes(const shared_ptr<const MeshD<2>>& dest_mesh, InterpolationMethod method) {
     this->writelog(LOG_DEBUG, "Getting heat fluxes");
     if (!temperatures) return LazyData<Vec<2>>(dest_mesh->size(), Vec<2>(0.,0.)); // in case the receiver is connected and no fluxes calculated yet
-    if (!mHeatFluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
+    if (!fluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
-    return interpolate(this->mesh->getMidpointsMesh(), mHeatFluxes, dest_mesh, method,
-                       InterpolationFlags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN));
+    if (use_full_mesh)
+        return interpolate(this->mesh->getElementMesh(), fluxes, dest_mesh, method,
+                        InterpolationFlags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN));
+    else
+        return interpolate(this->maskedMesh->getElementMesh(), fluxes, dest_mesh, method,
+                        InterpolationFlags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN));
 }
 
 
@@ -606,8 +634,8 @@ template<typename Geometry2DType> FiniteElementMethodDynamicThermal2DSolver<Geom
 ThermalConductivityData::ThermalConductivityData(const FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>* solver, const shared_ptr<const MeshD<2>>& dst_mesh):
     solver(solver), dest_mesh(dst_mesh), flags(solver->geometry)
 {
-    if (solver->temperatures) temps = interpolate(solver->mesh, solver->temperatures, solver->mesh->getMidpointsMesh(), INTERPOLATION_LINEAR);
-    else temps = LazyData<double>(solver->mesh->getElementsCount(), solver->inittemp);
+    if (solver->temperatures) temps = interpolate(solver->maskedMesh, solver->temperatures, solver->maskedMesh->getElementMesh(), INTERPOLATION_LINEAR);
+    else temps = LazyData<double>(solver->maskedMesh->getElementsCount(), solver->inittemp);
 }
 
 template<typename Geometry2DType> Tensor2<double> FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>::
@@ -618,9 +646,10 @@ ThermalConductivityData::at(std::size_t i) const {
     if (x == 0 || y == 0 || x == solver->mesh->axis[0]->size() || y == solver->mesh->axis[1]->size())
         return Tensor2<double>(NAN);
     else {
-        auto elem = solver->mesh->element(x-1, y-1);
+        auto elem = solver->maskedMesh->element(x-1, y-1);
         auto material = solver->geometry->getMaterial(elem.getMidpoint());
         size_t idx = elem.getIndex();
+        if (idx == RectangularMaskedMesh2D::Element::UNKNOWN_ELEMENT_INDEX) return Tensor2<double>(NAN);
         return material->thermk(temps[idx], solver->thickness[idx]);
     }
 }

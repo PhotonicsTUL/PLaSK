@@ -60,7 +60,7 @@ print_log(LOG_INFO, "Calculations finished!")
 temp = therm.outTemperature(therm.mesh)
 
 plot_field(temp, 12)
-plot_geometry(GEO["main"], color='w')
+plot_geometry(GEO["main"])
 colorbar()
 
 figure()

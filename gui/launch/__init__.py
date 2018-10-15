@@ -131,11 +131,11 @@ def launch_plask(window):
                     msgbox.setIcon(QMessageBox.Critical)
                     msgbox.exec_()
                     return
-                items = line.split('=')
+                items = line.split('=',1)
                 name = items[0].strip()
-                value = '='.join(items[1:]).strip()
+                value = items[1].strip()
                 if value:
-                    launch_defs.append('{}={}'.format(name, value))
+                    launch_defs.append('-D{}={}'.format(name, value))
         launcher.launch(window, shlex.split(_launch_args), launch_defs)
     for launch in LAUNCHERS:
         try:

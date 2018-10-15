@@ -14,8 +14,8 @@
 # plugin: HDF5 File Viewer
 # description: Viewer of the fields saved to HDF5 files with 'save_field' function.
 
-
 import sys
+import weakref
 import h5py
 
 from matplotlib.figure import Figure
@@ -128,7 +128,7 @@ class FieldWidget(QWidget):
     def __init__(self, controller=None, parent=None):
         super(FieldWidget, self).__init__(parent)
 
-        self.controller = controller
+        self.controller = weakref.proxy(controller)
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setParent(self)

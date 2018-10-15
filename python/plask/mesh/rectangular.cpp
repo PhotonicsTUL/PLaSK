@@ -87,13 +87,13 @@ static std::string OrderedAxis__repr__(const OrderedAxis& self) {
 
 static double OrderedAxis__getitem__(const OrderedAxis& self, int i) {
     if (i < 0) i += int(self.size());
-    if (i < 0 || std::size_t(i) >= self.size()) throw IndexError("axis/mesh index out of range");
+    if (i < 0 || size_t(i) >= self.size()) throw IndexError("axis/mesh index out of range");
     return self[i];
 }
 
 static void OrderedAxis__delitem__(OrderedAxis& self, int i) {
     if (i < 0) i += int(self.size());
-    if (i < 0 || std::size_t(i) >= self.size()) throw IndexError("axis/mesh index out of range");
+    if (i < 0 || size_t(i) >= self.size()) throw IndexError("axis/mesh index out of range");
     self.removePoint(i);
 }
 
@@ -157,7 +157,7 @@ static std::string RegularAxis__repr__(const RegularAxis& self) {
 
 static double RegularAxis__getitem__(const RegularAxis& self, int i) {
     if (i < 0) i += int(self.size());
-    if (i < 0 || std::size_t(i) >= self.size()) throw IndexError("axis/mesh index out of range");
+    if (i < 0 || size_t(i) >= self.size()) throw IndexError("axis/mesh index out of range");
     return self[i];
 }
 
@@ -218,7 +218,7 @@ static Vec<2,double> RectangularMesh2D__getitem__(const RectangularMesh<2>& self
     try {
         int indx = py::extract<int>(index);
         if (indx < 0) indx += int(self.size());
-        if (indx < 0 || std::size_t(indx) >= self.size()) throw IndexError("mesh index out of range");
+        if (indx < 0 || size_t(indx) >= self.size()) throw IndexError("mesh index out of range");
         return self[indx];
     } catch (py::error_already_set&) {
         PyErr_Clear();
@@ -283,7 +283,7 @@ Vec<3,double> RectangularMesh3D__getitem__(const MeshT& self, py::object index) 
     try {
         int indx = py::extract<int>(index);
         if (indx < 0) indx += int(self.size());
-        if (indx < 0 || std::size_t(indx) >= self.size()) throw IndexError("mesh index out of range");
+        if (indx < 0 || size_t(indx) >= self.size()) throw IndexError("mesh index out of range");
         return self[indx];
     } catch (py::error_already_set&) {
         PyErr_Clear();
@@ -850,13 +850,51 @@ void register_smooth_generator() {
         detail::SmoothGeneratorParamMethods<dim>::register_proxy(dividecls);
 }
 
+template <int dim>
+shared_ptr<RectangularMesh<dim>> RectangularMesh_getMidpoints(const RectangularMesh<dim>& src) {
+    writelog(LOG_WARNING, "RectangularMesh{0}D.get_midpoints() is obsolete: use RectangularMesh{0}D.elements.mesh", dim);
+    return src.getElementMesh();
+}
+
+shared_ptr<MeshAxis> MeshAxis_getMidpoints(const MeshAxis& src) {
+    writelog(LOG_WARNING, "Axis.get_midpoints() is obsolete: use Axis.midpoints");
+    return src.getMidpointAxis();
+}
+
+template <typename MeshT>
+shared_ptr<MeshT> RectangularMesh_ElementMesh(const typename MeshT::Elements& self) {
+    return static_cast<const MeshT*>(self.mesh)->getElementMesh();
+}
+
+static py::tuple RectangularMesh2D_Element_nodes(const RectangularMesh2D::Element& self) {
+    return py::make_tuple(self.getLoLoIndex(), self.getLoUpIndex(), self.getUpLoIndex(), self.getUpUpIndex());
+}
+
+static py::tuple RectangularMesh3D_Element_nodes(const RectilinearMesh3D::Element& self) {
+    return py::make_tuple(self.getLoLoLoIndex(), self.getLoLoUpIndex(), self.getLoUpLoIndex(), self.getLoUpUpIndex(),
+                          self.getUpLoLoIndex(), self.getUpLoUpIndex(), self.getUpUpLoIndex(), self.getUpUpUpIndex());
+}
+
+static RectilinearMesh3D::Elements RectangularMesh3D_elements(const RectangularMesh3D& self) {
+    return self.elements();
+}
+
+static Box3D RectangularMesh3D_Element_box(const RectilinearMesh3D::Element& self) {
+    return Box3D(self.getLoLoLo(), self.getUpUpUp());
+}
+
+static double RectangularMesh3D_Element_volume(const RectilinearMesh3D::Element& self) {
+    Vec<3, double> span = self.getSize();
+    return span.c0 * span.c1 * span.c2;
+}
 
 void register_mesh_rectangular()
 {
     py::class_<MeshAxis, shared_ptr<MeshAxis>, py::bases<MeshD<1>>, boost::noncopyable>
             ("Axis", u8"Base class for all 1D meshes (used as axes by 2D and 3D rectangular meshes).",
              py::no_init)
-            .def("get_midpoints", &MeshAxis::getMidpointsMesh, u8"Get new mesh with points in the middles of elements of this mesh")
+            .add_property("midpoints", &MeshAxis::getMidpointAxis, u8"Mesh with points in the middles of elements of this mesh")
+            .def("get_midpoints", &MeshAxis_getMidpoints)
 
     ;
 
@@ -978,7 +1016,7 @@ void register_mesh_rectangular()
         .add_property("minor_axis", &RectangularMesh<2>::minorAxis, u8"The quicker changing axis")
         //.def("clear", &RectangularMesh<2>::clear, u8"Remove all points from the mesh")
         .def("__getitem__", &RectangularMesh2D__getitem__)
-        .def("index", (std::size_t(RectangularMesh<2>::*)(std::size_t,std::size_t) const) &RectangularMesh<2>::index, u8"Return single index of the point indexed with index0 and index1", (py::arg("index0"), py::arg("index1")))
+        .def("index", (size_t(RectangularMesh<2>::*)(size_t,size_t) const) &RectangularMesh<2>::index, u8"Return single index of the point indexed with index0 and index1", (py::arg("index0"), py::arg("index1")))
         .def("index0", &RectangularMesh<2>::index0, u8"Return index in the first axis of the point with given index", (py::arg("index")))
         .def("index1", &RectangularMesh<2>::index1, u8"Return index in the second axis of the point with given index", (py::arg("index")))
         .def_readwrite("index_tran", &RectangularMesh<2>::index0, u8"Alias for :attr:`index0`")
@@ -987,15 +1025,45 @@ void register_mesh_rectangular()
         .def("minor_index", &RectangularMesh<2>::minorIndex, u8"Return index in the minor axis of the point with given index", (py::arg("index")))
         .def("set_optimal_ordering", &RectangularMesh<2>::setOptimalIterationOrder, u8"Set the optimal ordering of the points in this mesh")
         .add_property("ordering", &RectangularMesh2D__getOrdering, &RectangularMesh2D__setOrdering, u8"Ordering of the points in this mesh")
-        .def("get_midpoints", &RectangularMesh<2>::getMidpointsMesh, u8"Get new mesh with points in the middles of elements of this mesh")
+        .add_property("elements", py::make_function(&RectangularMesh2D::elements, py::with_custodian_and_ward_postcall<0,1>()), u8"Element list in the mesh")
+        .def("get_midpoints", &RectangularMesh_getMidpoints<2>, py::with_custodian_and_ward_postcall<0,1>(), u8"Get new mesh with points in the middles of elements of this mesh")
         .def(py::self == py::self)
     ;
     py::implicitly_convertible<shared_ptr<RectangularMesh<2>>, shared_ptr<const RectangularMesh<2>>>();
-    //py::implicitly_convertible<shared_ptr<RectangularMesh<2>>, shared_ptr<RectangularMeshBase2D>>();
-    //py::implicitly_convertible<shared_ptr<RectangularMesh<2>>, shared_ptr<const RectangularMeshBase2D>>();
+
     {
         py::scope scope = rectangular2D;
         (void) scope;   // don't warn about unused variable scope
+
+        py::class_<RectangularMesh2D::Element>("Element", u8"Element list in the :py:class:`mesh.Rectangular2D", py::no_init)
+            .add_property("index0", /*size_t*/ &RectangularMesh2D::Element::getIndex0, u8"Element index in the first axis")
+            .add_property("index1", /*size_t*/ &RectangularMesh2D::Element::getIndex1, u8"Element index in the second axis")
+            .add_property("left", /*double*/ &RectangularMesh2D::Element::getLower0, u8"Position of the left edge of the element")
+            .add_property("right", /*double*/ &RectangularMesh2D::Element::getUpper0, u8"Position of the right edge of the element")
+            .add_property("top", /*double*/ &RectangularMesh2D::Element::getUpper1, u8"Position of the top edge of the element")
+            .add_property("bottom", /*double*/ &RectangularMesh2D::Element::getLower1, u8"Position of the bottom edge of the element")
+            .add_property("width", /*double*/ &RectangularMesh2D::Element::getSize0, u8"Width of the element")
+            .add_property("height", /*double*/ &RectangularMesh2D::Element::getSize1, u8"Height of the element")
+            .add_property("center", /*Vec<2,double>*/ &RectangularMesh2D::Element::getMidpoint, u8"Position of the element center")
+            .add_property("index", /*size_t*/ &RectangularMesh2D::Element::getIndex, u8"Element index")
+            .add_property("box", /*Box2D*/ &RectangularMesh2D::Element::toBox, u8"Bounding box of the element")
+            .add_property("area", /*double*/ &RectangularMesh2D::Element::getArea, u8"Area of the element")
+            .add_property("volume", /*double*/ &RectangularMesh2D::Element::getVolume, u8"Alias for :attr:`area`")
+            .add_property("nodes", &RectangularMesh2D_Element_nodes, u8"Indices of the element vertices on the orignal mesh\n\n"
+                                                                     u8"Order of the vertices is bottom left, bottom right, top left, and top right.")
+            // .add_property("bottom_left", /*Vec<2,double>*/ &RectangularMesh2D::Element::getLoLo, u8"Position of the bottom left vertex of the elemnent")
+            // .add_property("top_left", /*Vec<2,double>*/ &RectangularMesh2D::Element::getLoUp, u8"Position of the top left vertex of the elemnent")
+            // .add_property("bottom_right", /*Vec<2,double>*/ &RectangularMesh2D::Element::getUpLo, u8"Position of the bottom right vertex of the elemnent")
+            // .add_property("top_right", /*Vec<2,double>*/ &RectangularMesh2D::Element::getUpUp, u8"Position of the top left right vertex of the elemnent")
+        ;
+
+        py::class_<RectangularMesh2D::Elements>("Elements", u8"Element list in the :py:class:`mesh.Rectangular2D", py::no_init)
+            .def("__len__", &RectangularMesh2D::Elements::size)
+            .def("__getitem__", &RectangularMesh2D::Elements::operator[], py::with_custodian_and_ward_postcall<0,1>())
+            .def("__getitem__", &RectangularMesh2D::Elements::operator(), py::with_custodian_and_ward_postcall<0,1>())
+            .def("__iter__", py::range<py::with_custodian_and_ward_postcall<0,1>>(&RectangularMesh2D::Elements::begin, &RectangularMesh2D::Elements::end))
+            .add_property("mesh", &RectangularMesh_ElementMesh<RectangularMesh2D>, "Mesh with element centers")
+        ;
 
         py::class_<RectangularMesh2DSimpleGenerator, shared_ptr<RectangularMesh2DSimpleGenerator>,
                    py::bases<MeshGeneratorD<2>>, boost::noncopyable>("SimpleGenerator",
@@ -1077,7 +1145,7 @@ void register_mesh_rectangular()
         .add_property("minor_axis", &RectangularMesh<3>::minorAxis, u8"The quickest changing axis")
         //.def("clear", &RectangularMesh<3>::clear, "Remove all points from the mesh")
         .def("__getitem__", &RectangularMesh3D__getitem__<RectangularMesh<3>>)
-        .def("index", (std::size_t(RectangularMesh<3>::*)(std::size_t,std::size_t,std::size_t) const) &RectangularMesh<3>::index, (py::arg("index0"), py::arg("index1"), py::arg("index2")),
+        .def("index", (size_t(RectangularMesh<3>::*)(size_t,size_t,size_t) const) &RectangularMesh<3>::index, (py::arg("index0"), py::arg("index1"), py::arg("index2")),
              "Return single index of the point indexed with index0, index1, and index2")
         .def("index0", &RectangularMesh<3>::index0, u8"Return index in the first axis of the point with given index", (py::arg("index")))
         .def("index1", &RectangularMesh<3>::index1, u8"Return index in the second axis of the point with given index", (py::arg("index")))
@@ -1090,7 +1158,8 @@ void register_mesh_rectangular()
         .def("minor_index", &RectangularMesh<3>::minorIndex, u8"Return index in the minor axis of the point with given index", (py::arg("index")))
         .def("set_optimal_ordering", &RectangularMesh<3>::setOptimalIterationOrder, u8"Set the optimal ordering of the points in this mesh")
         .add_property("ordering", &RectangularMesh3D__getOrdering, &RectangularMesh3D__setOrdering, u8"Ordering of the points in this mesh")
-        .def("get_midpoints", &RectangularMesh<3>::getMidpointsMesh, u8"Get new mesh with points in the middles of of elements of this mesh")
+        .add_property("elements", py::make_function(&RectangularMesh3D_elements, py::with_custodian_and_ward_postcall<0,1>()), u8"Element list in the mesh")
+        .def("get_midpoints", &RectangularMesh_getMidpoints<3>, py::with_custodian_and_ward_postcall<0,1>(), u8"Get new mesh with points in the middles of of elements of this mesh")
         .def(py::self == py::self)
     ;
     py::implicitly_convertible<shared_ptr<RectangularMesh<3>>, shared_ptr<const RectangularMesh<3>>>();
@@ -1098,6 +1167,37 @@ void register_mesh_rectangular()
     {
         py::scope scope = rectangular3D;
         (void) scope;   // don't warn about unused variable scope
+
+        py::class_<RectilinearMesh3D::Element>("Element", u8"Element list in the :py:class:`mesh.Rectangular3D", py::no_init)
+            .add_property("index0", /*size_t*/ &RectilinearMesh3D::Element::getIndex0, u8"Element index in the first axis")
+            .add_property("index1", /*size_t*/ &RectilinearMesh3D::Element::getIndex1, u8"Element index in the second axis")
+            .add_property("index2", /*size_t*/ &RectilinearMesh3D::Element::getIndex2, u8"Element index in the third axis")
+            .add_property("back", /*double*/ &RectilinearMesh3D::Element::getLower0, u8"Position of the back edge of the element")
+            .add_property("front", /*double*/ &RectilinearMesh3D::Element::getUpper0, u8"Position of the front edge of the element")
+            .add_property("left", /*double*/ &RectilinearMesh3D::Element::getLower1, u8"Position of the left edge of the element")
+            .add_property("right", /*double*/ &RectilinearMesh3D::Element::getUpper1, u8"Position of the right edge of the element")
+            .add_property("top", /*double*/ &RectilinearMesh3D::Element::getUpper2, u8"Position of the top edge of the element")
+            .add_property("bottom", /*double*/ &RectilinearMesh3D::Element::getLower2, u8"Position of the bottom edge of the element")
+            .add_property("depth", /*double*/ &RectilinearMesh3D::Element::getSize0, u8"Depth of the element")
+            .add_property("width", /*double*/ &RectilinearMesh3D::Element::getSize1, u8"Width of the element")
+            .add_property("height", /*double*/ &RectilinearMesh3D::Element::getSize2, u8"Height of the element")
+            .add_property("center", /*Vec<3,double>*/ &RectilinearMesh3D::Element::getMidpoint, u8"Position of the element center")
+            .add_property("index", /*size_t*/ &RectilinearMesh3D::Element::getIndex, u8"Element index")
+            .add_property("box", /*Box3D*/ &RectangularMesh3D_Element_box, u8"Bounding box of the element")
+            .add_property("volume", /*double*/ &RectangularMesh3D_Element_volume, u8"Volume of the element")
+            .add_property("nodes", &RectangularMesh3D_Element_nodes, u8"Indices of the element vertices on the orignal mesh\n\n"
+                    u8"Order of the vertices is back bottom left, back  bottom right, top left,\n"
+                    u8"back top right, front bottom left, front bottom right, front top left,\n"
+                    u8"and front top right.")
+        ;
+
+        py::class_<RectilinearMesh3D::Elements>("Elements", u8"Element list in the :py:class:`mesh.Rectangular3D", py::no_init)
+            .def("__len__", &RectilinearMesh3D::Elements::size)
+            .def("__getitem__", &RectilinearMesh3D::Elements::operator[], py::with_custodian_and_ward_postcall<0,1>())
+            .def("__getitem__", &RectilinearMesh3D::Elements::operator(), py::with_custodian_and_ward_postcall<0,1>())
+            .def("__iter__", py::range<py::with_custodian_and_ward_postcall<0,1>>(&RectilinearMesh3D::Elements::begin, &RectilinearMesh3D::Elements::end))
+            .add_property("mesh", &RectangularMesh_ElementMesh<RectangularMesh3D>, "Mesh with element centers")
+        ;
 
         py::class_<RectangularMesh3DSimpleGenerator, shared_ptr<RectangularMesh3DSimpleGenerator>,
                    py::bases<MeshGeneratorD<3>>, boost::noncopyable>("SimpleGenerator",

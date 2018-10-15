@@ -381,10 +381,16 @@ inline constexpr Vec<2,T> vec(const T c0__tran, const T c1__up) {
     return Vec<2,T>(c0__tran, c1__up);
 }
 
-/// Specialization of NaNforImpl which add support for 2D vectors.
+/// Specialization of NaNImpl which add support for 2D vectors.
 template <typename T>
-struct NaNforImpl<Vec<2, T>> {
-    static constexpr Vec<2, T> get() { return Vec<2, T>(NaNfor<T>(), NaNfor<T>()); }
+struct NaNImpl<Vec<2,T>> {
+    static constexpr Vec<2,T> get() { return Vec<2,T>(NaN<T>(), NaN<T>()); }
+};
+
+/// Specialization of ZeroImpl which add support for 2D vectors.
+template <typename T>
+struct ZeroImpl<Vec<2,T>> {
+    static constexpr Vec<2,T> get() { return Vec<2,T>(0., 0.); }
 };
 
 PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(Vec<2, double>)

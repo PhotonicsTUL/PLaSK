@@ -171,7 +171,7 @@ size_t DriftDiffusionModel2DSolver<Geometry2DType>::getActiveRegionMeshIndex(siz
 
     size_t actlo, acthi, lon = 0, hin = 0;
 
-    shared_ptr<RectangularMesh<2>> points = this->mesh->getMidpointsMesh();
+    shared_ptr<RectangularMesh<2>> points = this->mesh->getElementMesh();
     size_t ileft = 0, iright = points->axis[0]->size();
     bool in_active = false;
     for (size_t r = 0; r < points->axis[1]->size(); ++r) {
@@ -330,10 +330,10 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
 
-    //auto iMesh = (this->mesh)->getMidpointsMesh();
-    //auto temperatures = inTemperature(iMesh);
+    //auto iMesh = (this->mesh)->getElementMesh();
+    //auto temperatures = SafeData<double>(inTemperature(iMesh), 300.);
     auto iMeshN = this->mesh;
-    auto temperaturesN = inTemperature(iMeshN);
+    auto temperaturesN = SafeData<double>(inTemperature(iMeshN), 300.);
 
 //TODO    2e-6*pow((Me(T,e,point).c00*plask::phys::me*plask::phys::kB_eV*300.)/(2.*PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
 
@@ -365,7 +365,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
 
         double n, p;
         if (calctype == CALC_PSI0) {
-            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::NONE ) { // 26.01.2016
+            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::EMPTY ) { // 26.01.2016
                 n = 0.;
                 p = 0.;
             }
@@ -381,7 +381,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             }
         }
         else {
-            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::NONE ) { // 26.01.2016
+            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::EMPTY ) { // 26.01.2016
                 n = 0.;
                 p = 0.;
             }
@@ -396,7 +396,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
         if (calctype == CALC_FN) {
             double normEc0(0.), normNc(0.), normNv(0.), normNe(0.), normNi(0.), normMobN(0.), yn(0.);
 
-            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::NONE ) { // 26.01.2016
+            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::EMPTY ) { // 26.01.2016
                 yn = 1.; // ?
                 normMobN = 1e-3; // ?
                 normNe = 1e-20; // ?
@@ -421,7 +421,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             ky = normMobN * normNe * yn * (hx*0.5) * (hx*0.5);
             ff = gg = 0.;
 
-            if (material->kind() != Material::OXIDE && material->kind() != Material::DIELECTRIC && material->kind() != Material::NONE ) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
+            if (material->kind() != Material::OXIDE && material->kind() != Material::DIELECTRIC && material->kind() != Material::EMPTY ) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 if (mRsrh) {
                     //this->writelog(LOG_DATA, "Recombination SRH");
                     double normte = material->taue(T) * mAx * 1e-9;  // 1e-9: ns -> s
@@ -448,7 +448,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
         else if (calctype == CALC_FP)  {
             double normEv0(0.), normNc(0.), normNv(0.), normNh(0.), normNi(0.), normMobP(0.), yp(0.);
 
-            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::NONE ) { // 26.01.2016
+            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::EMPTY ) { // 26.01.2016
                 yp = 1.; // ?
                 normMobP = 1e-3; // ?
                 normNh = 1e-20; // ?
@@ -473,7 +473,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             ky = normMobP * normNh * yp * (hx*0.5) * (hx*0.5);
             ff = gg = 0.;
 
-            if (material->kind() != Material::OXIDE && material->kind() != Material::DIELECTRIC && material->kind() != Material::NONE ) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
+            if (material->kind() != Material::OXIDE && material->kind() != Material::DIELECTRIC && material->kind() != Material::EMPTY ) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 if (mRsrh) {
                     //this->writelog(LOG_DATA, "Recombination SRH");
                     double normte = material->taue(T) * mAx * 1e-9;
@@ -504,7 +504,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             kx = normT * normEps * (hy*0.5) * (hy*0.5);
             ky = normT * normEps * (hx*0.5) * (hx*0.5);
 
-            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::NONE ) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
+            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::EMPTY ) /*if (ttE->getL()->getID() == "QW")*/ { // TODO (only in active?)
                 gg = 0.;
                 ff = 0.;
             }
@@ -667,10 +667,10 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
 {
     //this->writelog(LOG_DETAIL, "Saving electron concentration");
 
-    //auto iMesh = (this->mesh)->getMidpointsMesh();
-    //auto temperatures = inTemperature(iMesh);
-    auto iMeshE = (this->mesh)->getMidpointsMesh();
-    auto temperaturesE = inTemperature(iMeshE);
+    //auto iMesh = (this->mesh)->getElementMesh();
+    //auto temperatures = SafeData<double>(inTemperature(iMesh), 300.);
+    auto iMeshE = (this->mesh)->getElementMesh();
+    auto temperaturesE = SafeData<double>(inTemperature(iMeshE), 300.);
 
     for (auto e: this->mesh->elements())
     {
@@ -678,7 +678,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
         Vec < 2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
 
-        if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::NONE ) { // 26.01.2016
+        if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::EMPTY ) { // 26.01.2016
             dveN[i] = 0.;
             continue;
         }
@@ -697,10 +697,10 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
 {
     //this->writelog(LOG_DETAIL, "Saving hole concentration");
 
-    //auto iMesh = (this->mesh)->getMidpointsMesh();
-    //auto temperatures = inTemperature(iMesh);
-    auto iMeshE = (this->mesh)->getMidpointsMesh();
-    auto temperaturesE = inTemperature(iMeshE);
+    //auto iMesh = (this->mesh)->getElementMesh();
+    //auto temperatures = SafeData<double>(inTemperature(iMesh), 300.);
+    auto iMeshE = (this->mesh)->getElementMesh();
+    auto temperaturesE = SafeData<double>(inTemperature(iMeshE), 300.);
 
     for (auto e: this->mesh->elements())
     {
@@ -708,7 +708,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
         Vec<2,double> midpoint = e.getMidpoint();
         auto material = this->geometry->getMaterial(midpoint);
 
-        if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::NONE ) { // 26.01.2016
+        if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::EMPTY ) { // 26.01.2016
             dveP[i] = 0.;
             continue;
         }
@@ -726,7 +726,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
 template <typename Geometry2DType>
 template <CalcType calctype>
 double DriftDiffusionModel2DSolver<Geometry2DType>::addCorr(DataVector<double>& corr, const BoundaryConditionsWithMesh <RectangularMesh<2>::Boundary,double>& vconst)
-{  
+{
     //this->writelog(LOG_DEBUG, "Adding corrections");
 
     double err;
@@ -810,10 +810,10 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
 
     dvnPsi0.reset(size, 0.);
 
-    //auto iMesh = (this->mesh)->getMidpointsMesh();
-    //auto temperatures = inTemperature(iMesh);
-    auto iMeshE = (this->mesh)->getMidpointsMesh();
-    auto temperaturesE = inTemperature(iMeshE);
+    //auto iMesh = (this->mesh)->getElementMesh();
+    //auto temperatures = SafeData<double>(inTemperature(iMesh), 300.);
+    auto iMeshE = (this->mesh)->getElementMesh();
+    auto temperaturesE = SafeData<double>(inTemperature(iMeshE), 300.);
 
     for (auto el: this->mesh->elements()) {
         size_t i = el.getIndex();
@@ -834,7 +834,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
             epsi = found->second;
         }
         else {
-            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::NONE ) { // 26.01.2016
+            if (material->kind() == Material::OXIDE || material->kind() == Material::DIELECTRIC || material->kind() == Material::EMPTY ) { // 26.01.2016
                 cache[key] = epsi = 0.;
                 continue;
             }
@@ -1000,7 +1000,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::compute(unsigned loops) {
 template <typename Geometry2DType>
 double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 	this->writelog(LOG_INFO, "Finding energy levels..");
-	
+
 	hh2m = 0.5 * phys::hb_eV * phys::hb_J * 1e9 * 1e9 / phys::me; /// hb*hb/(2m), unit: eV*nm*nm, 10^9 is introduced to change m into nm
 	Eshift = 20.; /// bands have to be up-shifted - we want only positive values of energy levels; unit: [eV]
 
@@ -1009,7 +1009,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 	bool potentialWell_el = false; /// true when electrons (el) are confined
 	bool potentialWell_hh = false; /// true when heavy holes (hh) are confined
 	bool potentialWell_lh = false; /// true when light holes (lh) are confined
-	
+
 	potentialWell_el = checkWell("el");
 
 	if (potentialWell_el)
@@ -1040,7 +1040,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 			Vec<2, double> point_RI; /// centre of the right element
             point_RI[0] = meshActMid->axis[0]->at(0); // TODO not only for 0
             point_RI[1] = meshActMid->axis[1]->at(i);
-			
+
 			shared_ptr<Material> m_LE = this->geometry->getMaterial(point_LE);
 			shared_ptr<Material> m_RI = this->geometry->getMaterial(point_RI);
 
@@ -1048,7 +1048,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::findEnergyLevels() {
 			this->writelog(LOG_DETAIL, "\tCBel for kp, node: {0}, CBel: {1}", i, CBel);
 
 			//this->writelog(LOG_DETAIL, "creating Hc matrix, central node: {0}, materials: {1} and {2}", i, m_le->name(), m_ri->name());
-						
+
 			std::complex<double> Hc_11_LE(0., 0.), Hc_11_CE(0., 0.), Hc_11_RI(0., 0.); /// left/central/right 1x1 local matrix
 			{
 				double y0_LE = 1. / m_LE->Me(T).c00; // TODO or sth else than c00?
@@ -1157,7 +1157,7 @@ bool DriftDiffusionModel2DSolver<Geometry2DType>::checkWell(std::string _carrier
             //point[1] = meshActMid->axis[1]->at(i);
 
 			//this->writelog(LOG_INFO, "position of element {0}: {1} um, {2} um", i, r_at_0, z_avg);
-			
+
 			shared_ptr<Material> material = this->geometry->getMaterial(point);
 			//this->writelog(LOG_DETAIL, "material found");
 			//this->writelog(LOG_DETAIL, "element {0}: {1}", i, material->name());
@@ -1169,17 +1169,17 @@ bool DriftDiffusionModel2DSolver<Geometry2DType>::checkWell(std::string _carrier
 		//{
 		//	CBel.push_back(material->CB(T, 0., '*') - dvnPsi[..] * mEx);
 		//}
-		
-		
-		
+
+
+
 		for (size_t i = 0; i < nn+2; ++i)
 			CBel.push_back(5.0);
 		for (size_t i = 60; i < 140; ++i)
 			CBel[i] = 4.5;
 		/// finding min. and max. for CB
-		CBelMin = 1e6; 
+		CBelMin = 1e6;
 		CBelMax = -1e6;
-		for (size_t i = 0; i < nn+2; ++i) 
+		for (size_t i = 0; i < nn+2; ++i)
 		{
 			if (CBel[i] < CBelMin)
 				CBelMin = CBel[i];
@@ -1187,7 +1187,7 @@ bool DriftDiffusionModel2DSolver<Geometry2DType>::checkWell(std::string _carrier
 				CBelMax = CBel[i];
 		}
 		/// max. CB at boundary
-		CBel[0] = CBelMax; 
+		CBel[0] = CBelMax;
 		CBel[nn+1] = CBelMax;
 		//for (size_t i = 0; i < nz+2; ++i) /// TEST
 		//	this->writelog(LOG_DETAIL, "node {0}: CBel = {1} eV", i, CBel[i]);
@@ -1207,8 +1207,8 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
 
     //heats.reset(); // LP_09.2015
 
-    auto iMesh = (this->mesh)->getMidpointsMesh();
-    auto temperatures = inTemperature(iMesh);
+    auto iMesh = (this->mesh)->getElementMesh();
+    auto temperatures = SafeData<double>(inTemperature(iMesh), 300.);
 
     // Store boundary conditions for current mesh
     auto vconst = voltage_boundary(this->mesh, this->geometry);
@@ -1451,8 +1451,8 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
 
     heats.reset(this->mesh->getElementsCount());
 
-    auto iMesh = (this->mesh)->getMidpointsMesh();
-    auto temperatures = inTemperature(iMesh);
+    auto iMesh = (this->mesh)->getElementMesh();
+    auto temperatures = SafeData<double>(inTemperature(iMesh), 300.);
 
     /*if (heatmet == HEAT_JOULES)*/ {
         for (auto e: this->mesh->elements()) {
@@ -1463,7 +1463,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
             size_t uprghtno = e.getUpUpIndex();
             auto midpoint = e.getMidpoint();
             auto material = this->geometry->getMaterial(midpoint);
-            if (material->kind() == Material::NONE || this->geometry->hasRoleAt("noheat", midpoint))
+            if (material->kind() == Material::EMPTY || this->geometry->hasRoleAt("noheat", midpoint))
                 heats[i] = 0.;
             else {
                 double T = 0.25 * (temperatures[loleftno] + temperatures[lorghtno] + temperatures[upleftno] + temperatures[uprghtno]); // in (K)
@@ -1577,8 +1577,8 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getBandEdg
 
         DataVector<double> dvnEc(size, 0.);
 
-        auto iMeshE = (this->mesh)->getMidpointsMesh();
-        auto temperaturesE = inTemperature(iMeshE);
+        auto iMeshE = (this->mesh)->getElementMesh();
+        auto temperaturesE = SafeData<double>(inTemperature(iMeshE), 300.);
 
         //double T(300.); // TODO
         double T;
@@ -1610,8 +1610,8 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getBandEdg
 
         DataVector<double> dvnEv(size, 0.);
 
-        auto iMeshE = (this->mesh)->getMidpointsMesh();
-        auto temperaturesE = inTemperature(iMeshE);
+        auto iMeshE = (this->mesh)->getElementMesh();
+        auto temperaturesE = SafeData<double>(inTemperature(iMeshE), 300.);
 
         //double T(300.); // TODO
         double T;
@@ -1650,7 +1650,7 @@ const LazyData < Vec<2>> DriftDiffusionModel2DSolver<Geometry2DType>::getCurrent
     this->writelog(LOG_DEBUG, "Getting current densities");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN);
-    auto result = interpolate(this->mesh->getMidpointsMesh(), currentsN, dest_mesh, method, flags);
+    auto result = interpolate(this->mesh->getElementMesh(), currentsN, dest_mesh, method, flags);
     return LazyData < Vec<2>>(result.size(),
         [this, dest_mesh, result, flags](size_t i) {
             return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<2>(0.,0.);
@@ -1666,7 +1666,7 @@ const LazyData < Vec<2>> DriftDiffusionModel2DSolver<Geometry2DType>::getCurrent
     this->writelog(LOG_DEBUG, "Getting current densities");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN);
-    auto result = interpolate(this->mesh->getMidpointsMesh(), currentsP, dest_mesh, method, flags);
+    auto result = interpolate(this->mesh->getElementMesh(), currentsP, dest_mesh, method, flags);
     return LazyData < Vec<2>>(result.size(),
         [this, dest_mesh, result, flags](size_t i) {
             return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<2>(0.,0.);
@@ -1731,7 +1731,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getCarrier
 
             if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
             return interpolate(this->mesh, dvn, dst_mesh, method, this->geometry); // here the hole concentration is rescalled (*mNx)*/
-        
+
         default:
             throw NotImplemented("{}: Carriers concentration of this type", this->getId());
     }
@@ -1746,7 +1746,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getHeatDen
     if (!heats) saveHeatDensities(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(this->geometry);
-    auto result = interpolate(this->mesh->getMidpointsMesh(), heats, dest_mesh, method, flags);
+    auto result = interpolate(this->mesh->getElementMesh(), heats, dest_mesh, method, flags);
     return LazyData<double>(result.size(),
         [this, dest_mesh, result, flags](size_t i) {
             return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;
@@ -1761,7 +1761,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 	regions.clear();
 
 	shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(this->geometry->getChild());
-	shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
+	shared_ptr<RectangularMesh<2>> points = mesh->getElementMesh();
 
     size_t ileft = 0, iright = points->axis[0]->size();
 	bool in_active = false;
@@ -1925,14 +1925,14 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 //void DriftDiffusionModel2DSolver<GeometryType>::detectActiveRegions()
 //{
 //	this->writelog(LOG_INFO, "Detecting active regions..");
-//	
+//
 //	regions.clear();
 //
 //	shared_ptr< MeshAxis > axis_vert = this->mesh->vert(); /// for the whole structure
 //	shared_ptr< MeshAxis > axis_tran = this->mesh->tran(); /// for the whole structure
 //	double r_at_0 = 0.5 * (axis_tran->at(0) + axis_tran->at(1)); // TODO
-//	
-//    shared_ptr<RectangularMesh<2>> meshMid = this->mesh->getMidpointsMesh();
+//
+//    shared_ptr<RectangularMesh<2>> meshMid = this->mesh->getElementMesh();
 //	bool found_substrate = false;
 //	bool found_active = false;
 //
@@ -1961,12 +1961,12 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 //			if (!found_substrate) /// first time in substrate
 //			{
 //				zSub = z_avg;
-//			}		
+//			}
 //			found_substrate = true;
 //		}
 //		if (tags.find("active") != tags.end())
 //		{
-//			//in_active = true;			
+//			//in_active = true;
 //			//this->writelog(LOG_INFO, "axis_vert_mid[{0}] {1}, active", i, z_avg);
 //			if (!found_active) /// first time in active
 //			{
@@ -1983,7 +1983,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 //			found_active = true;
 //		}
 //	}
-//	
+//
 //	this->writelog(LOG_INFO, "active region is from z = {0} um to z = {1} um", z1, z2); /// in [um]
 //	this->writelog(LOG_INFO, "active region thickness: {0} nm", (z2-z1)*1e3); /// [um] -> [nm]
 //
@@ -2016,14 +2016,14 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::detectActiveRegions()
 //	this->writelog(LOG_INFO, "haxis size: {0}", haxis->size());
 //
 //	meshAct = plask::make_shared<RectangularMesh<2>>(haxis, vaxis, RectangularMesh<2>::ORDER_01);
-//	meshActMid = meshAct->getMidpointsMesh(); // LUKI TODO
-//	
+//	meshActMid = meshAct->getElementMesh(); // LUKI TODO
+//
 //	this->writelog(LOG_INFO, "MeshAct 0 1: {0} {1} {2}", meshAct->at(0,0), meshAct->at(0,1), meshAct->at(0,2));
 //	this->writelog(LOG_INFO, "MeshAct 0 1: {0} {1} {2}", meshAct->axis[1]->at(0), meshAct->axis[1]->at(1), meshAct->axis[1]->at(2));
 //
 //	this->writelog(LOG_INFO, "Done.");
-//	
-//	/*shared_ptr<RectangularMesh<2>> points = mesh->getMidpointsMesh();
+//
+//	/*shared_ptr<RectangularMesh<2>> points = mesh->getElementMesh();
 //
 //    for (size_t r = 0; r < points->axis[1]->size(); ++r) {
 //        bool had_active = false; // indicates if we had active region in this layer
@@ -2229,7 +2229,7 @@ const LazyData < Tensor2<double>> DriftDiffusionModel2DSolver<Geometry2DType>::g
 template <>
 double DriftDiffusionModel2DSolver<Geometry2DCartesian>::getTotalEnergy() {
     double W = 0.;
-    auto T = inTemperature(this->mesh->getMidpointsMesh());
+    auto T = SafeData<double>(inTemperature(this->mesh->getElementMesh()), 300.);
     for (auto e: this->mesh->elements) {
         size_t ll = e.getLoLoIndex();
         size_t lu = e.getUpLoIndex();
@@ -2251,7 +2251,7 @@ double DriftDiffusionModel2DSolver<Geometry2DCartesian>::getTotalEnergy() {
 template <>
 double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getTotalEnergy() {
     double W = 0.;
-    auto T = inTemperature(this->mesh->getMidpointsMesh());
+    auto T = SafeData<double>(inTemperature(this->mesh->getElementMesh()), 300.);
     for (auto e: this->mesh->elements) {
         size_t ll = e.getLoLoIndex();
         size_t lu = e.getUpLoIndex();

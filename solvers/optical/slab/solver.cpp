@@ -67,12 +67,12 @@ struct LateralMeshAdapter {
         mesh(makeGeometryGrid(solver->getGeometry())) {}
 
     void resetMidpoints(const shared_ptr<MeshAxis>& vbounds) {
-        mesh = make_shared<RectangularMesh<2>>(mesh->axis[0]->getMidpointsMesh(),
+        mesh = make_shared<RectangularMesh<2>>(mesh->axis[0]->getMidpointAxis(),
                                                vbounds, RectangularMesh<2>::ORDER_10);
     }
 
     void resetMidpoints(const shared_ptr<MeshAxis>& vbounds, double spacing) {
-        mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh->axis[0], spacing)->getMidpointsMesh(),
+        mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh->axis[0], spacing)->getMidpointAxis(),
                                                vbounds, RectangularMesh<2>::ORDER_10);
     }
 
@@ -89,7 +89,7 @@ struct LateralMeshAdapter {
     }
 
     shared_ptr<RectangularMesh<2>> midmesh() const {
-        return make_shared<RectangularMesh<2>>(mesh->axis[0], mesh->axis[1]->getMidpointsMesh());
+        return make_shared<RectangularMesh<2>>(mesh->axis[0], mesh->axis[1]->getMidpointAxis());
     }
 
     size_t size() const { return mesh->axis[0]->size(); }
@@ -121,15 +121,15 @@ struct LateralMeshAdapter<SolverOver<Geometry3D>> {
     }
 
     void resetMidpoints(const shared_ptr<MeshAxis>& vbounds) {
-        mesh = make_shared<RectangularMesh<3>>(mesh->axis[0]->getMidpointsMesh(),
-                                               mesh->axis[1]->getMidpointsMesh(),
+        mesh = make_shared<RectangularMesh<3>>(mesh->axis[0]->getMidpointAxis(),
+                                               mesh->axis[1]->getMidpointAxis(),
                                                vbounds, RectangularMesh<3>::ORDER_201);
         _size = mesh->axis[0]->size() * mesh->axis[1]->size();
     }
 
     void resetMidpoints(const shared_ptr<MeshAxis>& vbounds, double spacing) {
-        mesh = make_shared<RectangularMesh<3>>(refineAxis(mesh->axis[0], spacing)->getMidpointsMesh(),
-                                               refineAxis(mesh->axis[1], spacing)->getMidpointsMesh(),
+        mesh = make_shared<RectangularMesh<3>>(refineAxis(mesh->axis[0], spacing)->getMidpointAxis(),
+                                               refineAxis(mesh->axis[1], spacing)->getMidpointAxis(),
                                                vbounds, RectangularMesh<3>::ORDER_201);
         _size = mesh->axis[0]->size() * mesh->axis[1]->size();
     }
@@ -147,7 +147,7 @@ struct LateralMeshAdapter<SolverOver<Geometry3D>> {
     }
 
     shared_ptr<RectangularMesh<3>> midmesh() const {
-        return make_shared<RectangularMesh<3>>(mesh->axis[0], mesh->axis[1], mesh->axis[2]->getMidpointsMesh());
+        return make_shared<RectangularMesh<3>>(mesh->axis[0], mesh->axis[1], mesh->axis[2]->getMidpointAxis());
     }
 
     size_t size() const { return _size; }
@@ -198,7 +198,7 @@ void SlabSolver<BaseT>::setupLayers()
         !isnan(max_temp_diff) && !isinf(max_temp_diff) &&
         !isnan(temp_dist) && !isinf(temp_dist) &&
         !isnan(temp_layer) && !isinf(temp_layer)) {
-        auto temp = inTemperature(adapter.mesh);
+        auto temp = SafeData<double>(inTemperature(adapter.mesh), 300.);
         std::deque<double> refines;
         for (size_t v = 1; v != vbounds->size(); ++v) {
             double mdt = 0.;
@@ -213,7 +213,7 @@ void SlabSolver<BaseT>::setupLayers()
             if (mdt > max_temp_diff) {
                 // We need to divide the layer.
                 auto line_mesh = adapter.makeLine(idt, v, temp_layer);
-                auto tmp = inTemperature(line_mesh);
+                auto tmp = SafeData<double>(inTemperature(line_mesh), 300.);
                 auto line = line_mesh->vert();
                 size_t li = 0;
                 for (size_t i = 2; i != line->size(); ++i) {
@@ -227,7 +227,7 @@ void SlabSolver<BaseT>::setupLayers()
         vbounds->addOrderedPoints(refines.begin(), refines.end(), refines.size());
     }
 
-    adapter.reset(vbounds->getMidpointsMesh());
+    adapter.reset(vbounds->getMidpointAxis());
 
     // Add layers below bottom boundary and above top one
     verts = dynamic_pointer_cast<OrderedAxis>(adapter.mesh->vert());
@@ -295,7 +295,7 @@ void SlabSolver<BaseT>::setupLayers()
         !isnan(max_temp_diff) && !isinf(max_temp_diff) &&
         !isnan(temp_dist) && !isinf(temp_dist) &&
         !isnan(temp_layer) && !isinf(temp_layer)) {
-        auto temp = inTemperature(adapter.mesh);
+        auto temp = SafeData<double>(inTemperature(adapter.mesh), 300.);
         size_t nl = lcount;     // number of idependent layers to consider (stays fixed)
         for (size_t l = 0; l != nl; ++l) {
             std::vector<size_t> indices;
@@ -421,8 +421,18 @@ void SlabBase::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
 #endif
 
 
+cvector SlabBase::incidentVector(size_t idx) {
+    initCalculation();
+    if (!transfer) initTransfer(getExpansion(), true);
+    if (idx >= transfer->diagonalizer->matrixSize()) throw BadInput(getId(), "Wrong incident eignenmode index");
 
-dvector SlabBase::getIncidentAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
+    cvector incident(transfer->diagonalizer->matrixSize(), 0.);
+    incident[idx] = 1.;
+    return incident;
+}
+
+
+dvector SlabBase::getIncidentFluxes(const cvector& incident, Transfer::IncidentDirection side)
 {
     initCalculation();
     if (!transfer) initTransfer(getExpansion(), true);
@@ -451,8 +461,7 @@ dvector SlabBase::getIncidentAmplitudes(const cvector& incident, Transfer::Incid
     return result;
 }
 
-
-dvector SlabBase::getReflectedAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
+dvector SlabBase::getReflectedFluxes(const cvector& incident, Transfer::IncidentDirection side)
 {
     cvector reflected = getReflectedCoefficients(incident, side);
     dvector result(reflected.size());
@@ -483,7 +492,7 @@ dvector SlabBase::getReflectedAmplitudes(const cvector& incident, Transfer::Inci
 }
 
 
-dvector SlabBase::getTransmittedAmplitudes(const cvector& incident, Transfer::IncidentDirection side)
+dvector SlabBase::getTransmittedFluxes(const cvector& incident, Transfer::IncidentDirection side)
 {
     cvector transmitted = getTransmittedCoefficients(incident, side);
     dvector result(transmitted.size());

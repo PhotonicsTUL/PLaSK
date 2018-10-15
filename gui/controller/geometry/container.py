@@ -10,6 +10,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import weakref
 
 from ...qt.QtWidgets import *
 
@@ -81,13 +82,16 @@ class GNShelfController(GNObjectController):
         with BlockQtSignals(self.flat):
             self.flat.setEditText(none_to_empty(self.node.flat))
 
+
 class GNContainerController(GNObjectController):
 
     def construct_form(self):
         self.pos_layout = self.construct_group('Default Items Positions')
+        weakself = weakref.proxy(self)
         def setter(n, v): n.aligners = v
         self.positions = self.construct_align_controllers(change_cb=lambda aligners:
-            self._set_node_by_setter_undoable(setter, aligners, self.node.aligners, 'change default items positions')
+            weakself._set_node_by_setter_undoable(setter, aligners,
+                                                  weakself.node.aligners, 'change default items positions')
         )
         super(GNContainerController, self).construct_form()
 
@@ -112,9 +116,10 @@ class GNStackController(GNObjectController):
                                 u' Defaults to 0. (float [µm])')
         self.pos_layout = self.construct_group('Default Items Positions')
         def setter(n, v): n.aligners = v
+        weakself = weakref.proxy(self)
         self.positions = self.construct_align_controllers(change_cb=lambda aligners:
-            self._set_node_by_setter_undoable(setter, aligners, self.node.aligners,
-                                              'change default items positions in stack')
+            weakself._set_node_by_setter_undoable(setter, aligners, self.node.aligners,
+                                                  'change default items positions in stack')
         )
         super(GNStackController, self).construct_form()
 
@@ -130,12 +135,13 @@ class GNContainerChildBaseController(GNChildController):
     def construct_form(self):
         self.construct_group('Position in Container')
         def setter(n, v): n.in_parent = v
-        self.positions = self.construct_align_controllers(
-            change_cb=lambda aligners:
-            self._set_node_by_setter_undoable(setter, aligners, self.child_node.in_parent, 'change item position',
-                                              node=self.child_node))
-        self.path = self.construct_combo_box('Path:', items=[''] + sorted(self.model.paths(), key=lambda s: s.lower()),
-                                             node_property_name='path', node=self.child_node)
+        weakself = weakref.proxy(self)
+        self.positions = self.construct_align_controllers(change_cb=lambda aligners:
+            weakself._set_node_by_setter_undoable(
+                setter, aligners, weakself.child_node.in_parent, 'change item position', node=self.child_node))
+        self.path = self.construct_combo_box(
+            'Path:', items=[''] + sorted(self.model.get_paths(), key=lambda s: s.lower()),
+            node_property_name='path', node=self.child_node)
         self.path.setToolTip('Name of a path that can be later on used to distinguish '
                              'between multiple occurrences of the same object.')
 

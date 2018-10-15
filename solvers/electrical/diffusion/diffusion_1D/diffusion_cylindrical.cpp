@@ -110,7 +110,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 
     this->writelog(LOG_INFO, "Computing lateral carriers diffusion using {0} FEM method", fem_method==FEM_LINEAR?"linear":"parabolic");
 
-    T_on_the_mesh = inTemperature(mesh2, interpolation_method);      // data temperature vector provided by inTemperature reciever
+    T_on_the_mesh = SafeData<double>(inTemperature(mesh2, interpolation_method), 300.);      // data temperature vector provided by inTemperature reciever
     j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by (in|out)Current reciever
 
     int mesh_changes = 0;
@@ -131,7 +131,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
             size_t nm = old_n.size()-1;
 
             current_mesh.reset(current_mesh.first(), current_mesh.last(), new_size);    // this calls invalidate
-            T_on_the_mesh = inTemperature(mesh2, interpolation_method);      // data temperature vector provided by inTemperature reciever
+            T_on_the_mesh = SafeData<double>(inTemperature(mesh2, interpolation_method), 300.);      // data temperature vector provided by inTemperature reciever
             j_on_the_mesh = inCurrentDensity(mesh2, interpolation_method);   // data current density vector provided by inCurrentDensity reciever
 
             n_present.reset(current_mesh.size(), 0.0);
@@ -789,7 +789,7 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
     if (!this->geometry) throw NoGeometryException(this->getId());
 
     shared_ptr<RectangularMesh<2>> grid = RectangularMesh2DSimpleGenerator().generate_t<RectangularMesh<2>>(this->geometry->getChild());
-    shared_ptr<RectangularMesh<2>> points = grid->getMidpointsMesh();
+    shared_ptr<RectangularMesh<2>> points = grid->getElementMesh();
 
     std::vector<Box2D> results;
 
@@ -922,8 +922,8 @@ plask::DataVector<const Tensor2<double>> FiniteElementMethodDiffusion2DSolver<Ge
     return Li;
 }
 
-template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::getClassName() const { return "Diffusion2D"; }
-template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::getClassName() const { return "DiffusionCyl"; }
+template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::getClassName() const { return "electrical.Diffusion2D"; }
+template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.DiffusionCyl"; }
 
 template class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>;
 template class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>;

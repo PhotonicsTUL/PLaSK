@@ -102,9 +102,9 @@ namespace plask {
 
 constexpr double PI_DOUBLED = 6.28318530717958647692;
 
-/// This template is used by NaNfor function and have to be specialized to support new types (other than type supported by std::numeric_limits).
+/// This template is used by NaN function and have to be specialized to support new types (other than type supported by std::numeric_limits).
 template <typename T>
-struct NaNforImpl {
+struct NaNImpl {
     static constexpr T get() { return std::numeric_limits<T>::quiet_NaN(); }
 };
 
@@ -113,16 +113,31 @@ struct NaNforImpl {
  * @return NaN or its counterpart
  */
 template <typename T> inline constexpr
-typename std::remove_cv<typename std::remove_reference<T>::type>::type NaNfor() {
-    return NaNforImpl<typename std::remove_cv<typename std::remove_reference<T>::type>::type>::get();
+typename std::remove_cv<typename std::remove_reference<T>::type>::type NaN() {
+    return NaNImpl<typename std::remove_cv<typename std::remove_reference<T>::type>::type>::get();
 }
 
-/// Specialization of NaNforImpl which adds support for complex numbers.
+/// Specialization of NaNImpl which adds support for complex numbers.
 template <typename T>
-struct NaNforImpl<std::complex<T>> {
-    static constexpr std::complex<T> get() { return std::complex<T>(NaNfor<T>(), NaNfor<T>()); }
+struct NaNImpl<std::complex<T>> {
+    static constexpr std::complex<T> get() { return std::complex<T>(NaN<T>(), NaN<T>()); }
 };
 
+
+/// This template is used by Zero function and have to be specialized to support new types
+template <typename T>
+struct ZeroImpl {
+    static constexpr T get() { return 0.; }
+};
+
+/**
+ * Construct NaN or its counterpart with given type @p T.
+ * @return NaN or its counterpart
+ */
+template <typename T> inline constexpr
+typename std::remove_cv<typename std::remove_reference<T>::type>::type Zero() {
+    return ZeroImpl<typename std::remove_cv<typename std::remove_reference<T>::type>::type>::get();
+}
 
 
 // size_t is preferred for array indexing
@@ -170,6 +185,18 @@ inline bool is_zero(dcomplex v) {
 /// Check if the complex number is NaN
 inline bool isnan(dcomplex v) {
     return isnan(v.real()) || isnan(v.imag());
+}
+
+
+/**
+ * Replace NaN with some specified value (zero by default).
+ * \param val value to test
+ * \param nan value returned instead of NaN
+ * \returns \c val or its replacement (\c nan) if value is NaN
+ */
+template <typename T>
+inline T remove_nan(T val, const T nan=Zero<T>()) {
+    return isnan(val)? nan : val;
 }
 
 

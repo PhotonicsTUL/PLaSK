@@ -103,6 +103,10 @@ Program ``plask`` may be run with several command-line parameters tha--if presen
 
       run a single command instead of a script.
 
+.. option:: -D key=val
+
+      define `def` to the value `val`; this can be used only when running XPL file (the value defined in the file is ignored).
+
 .. option:: -i
 
       always enter the interactive console, even if there is a script name specified. All the parameters are redirected to the console.
@@ -111,7 +115,7 @@ Program ``plask`` may be run with several command-line parameters tha--if presen
 
       print PLaSK version and exit.
 
-.. option:: -h
+.. option:: -s
 
       print system id for license and exit.
 

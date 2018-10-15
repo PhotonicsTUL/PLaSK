@@ -52,6 +52,37 @@ struct CDiagonal_Python {
 };
 #endif
 
+
+void* CoeffsArray::convertible(PyObject* obj) {
+    if (PyArray_Check(obj))
+        return obj;
+    return nullptr;
+
+}
+
+void CoeffsArray::construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+    PyArrayObject* arr = (PyArrayObject*)obj;
+    if (PyArray_NDIM(arr) != 1)
+        throw TypeError("Only rank 1 arrays allowed");
+    size_t size = PyArray_DIMS(arr)[0];
+
+    if (PyArray_TYPE(arr) != NPY_CDOUBLE || PyArray_STRIDES(arr)[0] != sizeof(dcomplex)) {
+    writelog(LOG_DEBUG, u8"Copying numpy array to make is contiguous");
+        npy_intp sizes[] = { (npy_int)size };
+        npy_intp strides[] = { sizeof(dcomplex) };
+        PyObject* newarr = PyArray_New(&PyArray_Type, 1, sizes,
+                                        PyArray_TYPE(arr), strides,
+                                        nullptr, 0, 0, nullptr);
+        PyArray_CopyInto((PyArrayObject*)newarr, arr);
+        arr = (PyArrayObject*)newarr;
+    }
+
+    void* storage = ((boost::python::converter::rvalue_from_python_storage<CoeffsArray>*)data)->storage.bytes;
+    new(storage) CoeffsArray(arr);
+    data->convertible = storage;
+}
+
+
 BOOST_PYTHON_MODULE(slab)
 {
     plask_import_array();
@@ -123,5 +154,7 @@ BOOST_PYTHON_MODULE(slab)
     export_FourierSolver2D();
     export_FourierSolver3D();
     export_BesselSolverCyl();
+
+    py::converter::registry::push_back(&CoeffsArray::convertible, &CoeffsArray::construct, boost::python::type_id<CoeffsArray>());
 }
 

@@ -12,6 +12,8 @@
 # GNU General Public License for more details.
 from __future__ import absolute_import
 
+import weakref
+
 from matplotlib.figure import Figure
 from matplotlib.ticker import MaxNLocator
 
@@ -90,7 +92,7 @@ class PlotWidgetBase(QWidget):
         def __init__(self, canvas, parent, controller=None, coordinates=True):
             self.widgets = {}
             super(PlotWidgetBase.NavigationToolbar, self).__init__(canvas, parent, coordinates)
-            self.controller = controller
+            self.controller = weakref.proxy(controller)
             if 'select_plane' in self._actions:
                 self.disable_planes(('long','tran','vert'))
 
@@ -251,7 +253,7 @@ class PlotWidgetBase(QWidget):
 
         self.selectors = []
         self.guidelines = {}
-        self.controller = controller
+        self.controller = weakref.proxy(controller)
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setParent(self)

@@ -48,12 +48,12 @@ public:
     virtual std::size_t findNearestIndex(double to_find) const;
 
     /**
-     * Return a mesh that enables iterating over middle points of the ranges.
+     * Return an axis that enables iterating over middle points of the ranges.
      *
      * Throw exception if this mesh has less than two points.
      * \return new rectilinear mesh with points in the middles of original ranges
      */
-    virtual shared_ptr<MeshAxis> getMidpointsMesh() const;
+    virtual shared_ptr<MeshAxis> getMidpointAxis() const;
 
     /**
      * @return @c true only if points are in increasing order, @c false if points are in decreasing order

@@ -48,7 +48,7 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
      */
     class PLASK_API Element {
         const RectangularMesh2D& mesh;
-        std::size_t index0, index1; // probably this form allows to do most operation fastest in average, low indexes of element corner or just element indexes
+        std::size_t index0, index1; // probably this form allows us to do most operation the fastest in average, low indexes of element corner or just element indexes
 
         public:
 
@@ -193,6 +193,13 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
         const_iterator end() const { return const_iterator(mesh, size()); }
 
     };
+
+    /**
+     * Element mesh class.
+     *
+     * This class has changed nearest neighnour interpolation, to consider original mesh boundaries
+     */
+    class ElementMesh;
 
     /// First and second coordinates of points in this mesh.
     const shared_ptr<MeshAxis> axis[2];
@@ -378,9 +385,19 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
         return *major_axis;
     }
 
+    /// \return index of major axis
+    inline std::size_t majorAxisIndex() const {
+        return getIterationOrder() == IterationOrder::ORDER_01 ? 0 : 1;
+    }
+
     /// \return minor (changing fastest) axis
     inline const shared_ptr<MeshAxis> minorAxis() const {
         return *minor_axis;
+    }
+
+    /// \return index of minor axis
+    inline std::size_t minorAxisIndex() const {
+        return getIterationOrder() == IterationOrder::ORDER_01 ? 1 : 0;
     }
 
     /**
@@ -534,7 +551,7 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
      * Return a mesh that enables iterating over middle points of the rectangles
      * \return new rectilinear mesh with points in the middles of original rectangles
      */
-    shared_ptr<RectangularMesh2D> getMidpointsMesh() const;
+    shared_ptr<RectangularMesh2D::ElementMesh> getElementMesh() const;
 
     /**
      * Calculate (using linear interpolation) value of data in point using data in points described by this mesh.
@@ -611,6 +628,15 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
     std::size_t getElementsCount() const {
         return (axis[0]->size() != 0 && axis[1]->size() != 0)?
             (axis[0]->size()-1) * (axis[1]->size()-1) : 0;
+    }
+
+    /**
+     * Check if mesh index is at the bottom, left, front corner of an element.
+     * @param meshIndex mesh index
+     * @return true only if @p meshIndex is at the bottom, left, front corner of an element
+     */
+    bool isLowIndexOfElement(std::size_t meshIndex) const {
+        return index0(meshIndex) + 1 < axis[0]->size() && index1(meshIndex) + 1 < axis[1]->size();
     }
 
     /**
@@ -888,7 +914,7 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
         }
     };*/
 
-public:     // boundaries:
+  public:     // boundaries:
 
     BoundaryNodeSet createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const override;
 
@@ -924,6 +950,39 @@ public:     // boundaries:
 };
 
 
+class RectangularMesh2D::ElementMesh: public RectangularMesh2D {
+
+    /// Original mesh
+    const RectangularMesh2D* originalMesh;
+
+  public:
+    template <typename... Args>
+    ElementMesh(const RectangularMesh2D* originalMesh, Args... args): RectangularMesh2D(args...), originalMesh(originalMesh) {}
+
+    /**
+    * Calculate (using nearest neighbor interpolation) value of data in point using data in points described by this mesh.
+    * Consider original mesh boundaries for point selection
+    * \param data values of data in points describe by this mesh
+    * \param point point in which value should be calculate
+    * \return interpolated value in point @p point
+    */
+    template <typename RandomAccessContainer>
+    auto interpolateNearestNeighbor(const RandomAccessContainer& data, const Vec<2>& point, const InterpolationFlags& flags) const
+        -> typename std::remove_reference<decltype(data[0])>::type {
+        auto p = flags.wrap(point);
+        prepareNearestNeighborInterpolationForAxis(*originalMesh->axis[0], flags, p.c0, 0);
+        prepareNearestNeighborInterpolationForAxis(*originalMesh->axis[1], flags, p.c1, 1);
+        size_t i0 = originalMesh->axis[0]->findUpIndex(p.c0), i1 = originalMesh->axis[1]->findUpIndex(p.c1);
+        if (i0 == originalMesh->axis[0]->size()) --i0;
+        if (i0 != 0) --i0;
+        if (i1 == originalMesh->axis[1]->size()) --i1;
+        if (i1 != 0) --i1;
+        return flags.postprocess(point, data[this->index(i0, i1)]);
+    }
+
+};
+
+
 template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<RectangularMesh2D, SrcT, DstT, INTERPOLATION_LINEAR> {
     static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh2D>& src_mesh, const DataVector<const SrcT>& src_vec,
@@ -943,6 +1002,26 @@ struct InterpolationAlgorithm<RectangularMesh2D, SrcT, DstT, INTERPOLATION_NEARE
         return new NearestNeighborInterpolatedLazyDataImpl< DstT, RectangularMesh2D, SrcT >(src_mesh, src_vec, dst_mesh, flags);
     }
 };
+
+
+template <typename SrcT, typename DstT, InterpolationMethod method>
+struct InterpolationAlgorithm<typename std::enable_if<method != INTERPOLATION_DEFAULT, RectangularMesh2D::ElementMesh>::type, SrcT, DstT, method> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh2D::ElementMesh>& src_mesh, const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<2>>& dst_mesh, const InterpolationFlags& flags) {
+        return InterpolationAlgorithm<RectangularMesh2D, SrcT, DstT, method>::interpolate(src_mesh, src_vec, dst_mesh, flags);
+    }
+};
+
+template <typename SrcT, typename DstT>
+struct InterpolationAlgorithm<RectangularMesh2D::ElementMesh, SrcT, DstT, INTERPOLATION_NEAREST> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh2D::ElementMesh>& src_mesh, const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<2>>& dst_mesh, const InterpolationFlags& flags) {
+        if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0)
+            throw BadMesh("interpolate", "Source mesh empty");
+        return new NearestNeighborInterpolatedLazyDataImpl<DstT, RectangularMesh2D::ElementMesh, SrcT>(src_mesh, src_vec, dst_mesh, flags);
+    }
+};
+
 
 /**
  * Copy @p to_copy mesh using OrderedAxis to represent each axis in returned mesh.

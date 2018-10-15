@@ -13,6 +13,8 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
 
   protected:
 
+    plask::shared_ptr<RectangularMaskedMesh3D> maskedMesh = plask::make_shared<RectangularMaskedMesh3D>();
+
     /// Details of active region
     struct Active {
         struct Region {
@@ -36,6 +38,8 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
             ld(r.front-r.back), offset(tot - (r.front-r.back)*r.left - r.back), height(h) {}
     };
 
+    size_t band;                                ///< Maximum band size
+
     std::vector<double> js;                     ///< p-n junction parameter [A/m^2]
     std::vector<double> beta;                   ///< p-n junction parameter [1/V]
     double pcond;                               ///< p-contact electrical conductivity [S/m]
@@ -54,6 +58,8 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
     DataVector<double> heat;                    ///< Computed and cached heat source densities
 
     std::vector<Active> active;                 ///< Active regions information
+
+    bool use_full_mesh;                         ///< Should we use full mesh?
 
 
     /**
@@ -106,6 +112,10 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
     /// Get info on active region
     void setActiveRegions();
 
+    /// Setup matrix
+    template <typename MatrixT>
+    MatrixT makeMatrix();
+
     /// Perform computations for particular matrix type
     template <typename MatrixT>
     double doCompute(unsigned loops=1);
@@ -132,6 +142,11 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
 
     /// Return \c true if the specified element is a junction
     size_t isActive(const RectangularMesh<3>::Element& element) const {
+           return isActive(element.getMidpoint());
+    }
+
+    /// Return \c true if the specified element is a junction
+    size_t isActive(const RectangularMaskedMesh<3>::Element& element) const {
            return isActive(element.getMidpoint());
     }
 
@@ -289,6 +304,14 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
         if (!this->mesh || cond.size() != condsize)
             throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
         junction_conductivity = cond.claim();
+    }
+
+    /// Are we using full mesh?
+    bool usingFullMesh() const { return use_full_mesh; }
+    /// Set whether we should use full mesh
+    void useFullMesh(bool val) {
+        use_full_mesh = val;
+        setActiveRegions();
     }
 
   protected:

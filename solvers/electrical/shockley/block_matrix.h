@@ -35,26 +35,20 @@ struct DpbMatrix {
     /**
      * Create matrix
      * \param rank size of the matrix
-     * \param major shift of nodes to the next major row (mesh[x,y+1])
+     * \param band maximum band size
      */
-    DpbMatrix(size_t rank, size_t major):
-        size(rank), ld(((major+2+(15/sizeof(double))) & ~size_t(15/sizeof(double))) - 1),
-        kd(major+1), data(aligned_malloc<double>(rank*(ld+1))) {}
-
-    /**
-     * Create matrix
-     * \param rank size of the matrix
-     * \param major shift of nodes to the next major row (mesh[x,y,z+1])
-     * \param minor shift of nodes to the next minor row (mesh[x,y+1,z])
-     */
-    DpbMatrix(size_t rank, size_t major, size_t minor):
-        size(rank), ld(((major+minor+2+(15/sizeof(double))) & ~size_t(15/sizeof(double))) - 1),
-        kd(major+minor+1), data(aligned_malloc<double>(rank*(ld+1))) {}
+    DpbMatrix(size_t rank, size_t band):
+        size(rank), ld(((band+1+(15/sizeof(double))) & ~size_t(15/sizeof(double))) - 1),
+        kd(band), data(aligned_malloc<double>(rank*(ld+1))) {}
 
 
     DpbMatrix(const DpbMatrix&) = delete; // this object is non-copyable
 
-    ~DpbMatrix() { aligned_free(data); }
+    DpbMatrix(DpbMatrix&& src): size(src.size), ld(src.ld), kd(src.kd), data(src.data) {
+        src.data = nullptr;
+    }
+
+    ~DpbMatrix() { if (data) aligned_free(data); }
 
     /**
      * Return index in data array
@@ -95,7 +89,7 @@ struct DpbMatrix {
     void clear() {
         std::fill_n(data, size * (ld+1), 0.);
     }
-    
+
     /**
      * Multiply matrix by vector
      * \param vector vector to multiply

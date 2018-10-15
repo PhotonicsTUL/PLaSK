@@ -301,7 +301,7 @@ void EffectiveIndex2D::updateCache()
 
         shared_ptr<OrderedAxis> axis0, axis1;
         {
-            shared_ptr<RectangularMesh<2>> midmesh = mesh->getMidpointsMesh();
+            shared_ptr<RectangularMesh<2>> midmesh = mesh->getElementMesh();
             axis0 = plask::make_shared<OrderedAxis>(*midmesh->axis[0]);
             axis1 = plask::make_shared<OrderedAxis>(*midmesh->axis[1]);
         }
@@ -319,7 +319,7 @@ void EffectiveIndex2D::updateCache()
 
         writelog(LOG_DEBUG, "Updating refractive indices cache");
         auto midmesh = plask::make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
-        auto temp = inTemperature(midmesh);
+        auto temp = SafeData<double>(inTemperature(midmesh), 300.);
         bool have_gain = false;
         LazyData<Tensor2<double>> gain;
 

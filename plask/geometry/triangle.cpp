@@ -21,6 +21,7 @@ Triangle::Triangle(const Triangle::DVec &p0, const Triangle::DVec &p1, shared_pt
     : BaseClass(materialTopBottom), p0(p0), p1(p1)
 {}
 
+
 Box2D Triangle::getBoundingBox() const {
     return Box2D(
                     std::min(std::min(p0.c0, p1.c0), 0.0),

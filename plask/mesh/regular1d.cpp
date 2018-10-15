@@ -38,7 +38,7 @@ bool RegularAxis::isIncreasing() const
     return step() >= 0;
 }
 
-shared_ptr<MeshAxis > RegularAxis::getMidpointsMesh() const
+shared_ptr<MeshAxis> RegularAxis::getMidpointAxis() const
 {
     beforeCalcMidpointMesh();
     auto result = plask::make_shared<RegularMesh1D>(*this);

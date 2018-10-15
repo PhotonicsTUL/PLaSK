@@ -24,6 +24,8 @@ class PLASK_API RectangularMesh3D: public RectilinearMesh3D {
 
   public:
 
+    typedef RectilinearMesh3D::ElementMesh<RectangularMesh3D> ElementMesh;
+
     /**
      * Construct mesh which has all axes of type OrderedAxis and all are empty.
      * @param iterationOrder iteration order
@@ -124,7 +126,7 @@ class PLASK_API RectangularMesh3D: public RectilinearMesh3D {
      * Return a mesh that enables iterating over middle points of the cuboids
      * \return new rectangular mesh with points in the middles of original cuboids
      */
-    shared_ptr<RectangularMesh3D> getMidpointsMesh() const;
+    shared_ptr<RectangularMesh3D::ElementMesh> getElementMesh() const;
 
     /**
      * Get area of given element.
@@ -202,6 +204,26 @@ struct InterpolationAlgorithm<RectangularMesh3D, SrcT, DstT, INTERPOLATION_NEARE
         if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0 || src_mesh->axis[2]->size() == 0)
             throw BadMesh("interpolate", "Source mesh empty");
         return new NearestNeighborInterpolatedLazyDataImpl<DstT, RectilinearMesh3D, SrcT>(src_mesh, src_vec, dst_mesh, flags);
+    }
+};
+
+
+
+template <typename SrcT, typename DstT, InterpolationMethod method>
+struct InterpolationAlgorithm<typename std::enable_if<method != INTERPOLATION_DEFAULT, RectangularMesh3D::ElementMesh>::type, SrcT, DstT, method> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh3D::ElementMesh>& src_mesh, const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
+        return InterpolationAlgorithm<RectangularMesh3D, SrcT, DstT, method>::interpolate(src_mesh, src_vec, dst_mesh, flags);
+    }
+};
+
+template <typename SrcT, typename DstT>
+struct InterpolationAlgorithm<RectangularMesh3D::ElementMesh, SrcT, DstT, INTERPOLATION_NEAREST> {
+    static LazyData<DstT> interpolate(const shared_ptr<const RectangularMesh3D::ElementMesh>& src_mesh, const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<3>>& dst_mesh, const InterpolationFlags& flags) {
+        if (src_mesh->axis[0]->size() == 0 || src_mesh->axis[1]->size() == 0)
+            throw BadMesh("interpolate", "Source mesh empty");
+        return new NearestNeighborInterpolatedLazyDataImpl<DstT, RectangularMesh3D::ElementMesh, SrcT>(src_mesh, src_vec, dst_mesh, flags);
     }
 };
 

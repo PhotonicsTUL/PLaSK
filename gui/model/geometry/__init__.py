@@ -537,20 +537,20 @@ class GeometryModel(SectionModel, QAbstractItemModel):
             GeometryModel.ReparentCommand(self, parent_node, row, child_node, new_parent))
         return self.index_for_node(new_parent)
 
-    def names_before(self, end_node):
+    def get_names_before(self, end_node):
         res = set()
         for r in self.roots:
-            if not r.names_before(res, end_node): break
+            if not r.get_names_before(res, end_node): break
         return res
 
-    def names(self, filter=None):
+    def get_names(self, filter=None):
         res = set()
-        for r in self.roots: res |= r.names(filter)
+        for r in self.roots: res |= r.get_names(filter)
         return res
 
-    def paths(self, filter=None):
+    def get_paths(self, filter=None):
         res = set()
-        for r in self.roots: res |= r.paths(filter)
+        for r in self.roots: res |= r.get_paths(filter)
         return res
 
     def find_by_name(self, name):

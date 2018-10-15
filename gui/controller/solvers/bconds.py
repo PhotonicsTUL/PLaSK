@@ -9,19 +9,21 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-from collections import OrderedDict
 import sys
+import weakref
+from collections import OrderedDict
 
 from lxml.etree import tostring
 
 from ...qt.QtCore import *
 from ...qt.QtGui import *
 from ...qt.QtWidgets import *
-from ...qt import QtSignal
+from ...qt import QtSignal, QtSlot
 from ...utils import get_manager
 from ...utils.config import CONFIG
 from ...utils.str import none_to_empty, empty_to_none
 from ...utils.widgets import HTMLDelegate, ComboBox, table_edit_shortcut
+from ...utils.qsignals import BlockQtSignals
 from ..defines import DefinesCompletionDelegate, get_defines_completer
 from ..table import table_with_manipulators
 from ...model.solvers.bconds import RectangularBC, BoundaryConditionsModel
@@ -35,16 +37,22 @@ else:
     preview_available = True
     import matplotlib
 
+
 class PlaceDetailsEditor(QWidget):
-    pass
+
+    def __init__(self, delegate, parent=None):
+        super(PlaceDetailsEditor, self).__init__(parent)
+        self.delegate = delegate
+
+    def data_changed(self, *args):
+        self.delegate.commitData.emit(self)
 
 
 class RectangularPlaceSide(PlaceDetailsEditor):
     Model = RectangularBC.PlaceSide
 
-    def __init__(self, controller, defines=None, parent=None):
-        super(RectangularPlaceSide, self).__init__(parent)
-        self.controller = controller
+    def __init__(self, delegate, parent=None):
+        super(RectangularPlaceSide, self).__init__(delegate, parent)
         self.setAutoFillBackground(True)
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 4, 0)
@@ -52,13 +60,17 @@ class RectangularPlaceSide(PlaceDetailsEditor):
         self.object.sizePolicy().setHorizontalStretch(2)
         self.object.sizePolicy().setHorizontalPolicy(QSizePolicy.MinimumExpanding)
         self.object.setEditable(True)
+        self.object.currentIndexChanged.connect(self.data_changed)
+        self.object.editingFinished.connect(self.data_changed)
         self.path = ComboBox()
         self.path.sizePolicy().setHorizontalStretch(1)
         self.path.sizePolicy().setHorizontalPolicy(QSizePolicy.MinimumExpanding)
         self.path.setEditable(True)
-        if defines is not None:
-            self.object.setCompleter(defines)
-            self.path.setCompleter(defines)
+        self.path.currentIndexChanged.connect(self.data_changed)
+        self.path.editingFinished.connect(self.data_changed)
+        if delegate.defines is not None:
+            self.object.setCompleter(delegate.defines)
+            self.path.setCompleter(delegate.defines)
         label = QLabel(" Obj&ect:")
         label.setBuddy(self.object)
         label.setFixedWidth(label.fontMetrics().width(label.text()))
@@ -75,17 +87,21 @@ class RectangularPlaceSide(PlaceDetailsEditor):
         super(RectangularPlaceSide, self).showEvent(event)
         self.object.setFocus()
 
+    def fill_details(self, obj, pth):
+        with BlockQtSignals(self.object):
+            self.object.setCurrentIndex(self.object.findText(obj))
+            self.object.setEditText(none_to_empty(obj))
+        with BlockQtSignals(self.path):
+            self.path.setCurrentIndex(self.path.findText(pth))
+            self.path.setEditText(none_to_empty(pth))
+
     def load_data(self, data):
         self.object.clear()
-        try: self.object.addItems([''] + list(self.controller.document.geometry.model.names()))
+        try: self.object.addItems([''] + list(self.delegate.controller.document.geometry.model.get_names()))
         except AttributeError: pass
-        self.object.setCurrentIndex(self.object.findText(data.object))
-        self.object.setEditText(none_to_empty(data.object))
-        self.path.clear()
-        try: self.path.addItems([''] + list(self.controller.document.geometry.model.paths()))
+        try: self.path.addItems([''] + list(self.delegate.controller.document.geometry.model.get_paths()))
         except AttributeError: pass
-        self.path.setCurrentIndex(self.object.findText(data.path))
-        self.path.setEditText(none_to_empty(data.path))
+        self.fill_details(data.object, data.path)
 
     def save_data(self, data):
         data.object = empty_to_none(self.object.currentText())
@@ -95,22 +111,24 @@ class RectangularPlaceSide(PlaceDetailsEditor):
 class RectangularPlaceLine(PlaceDetailsEditor):
     Model = RectangularBC.PlaceLine
 
-    def __init__(self, controller, defines=None, parent=None):
-        super(RectangularPlaceLine, self).__init__(parent)
-        self.controller = controller
+    def __init__(self, delegate, parent=None):
+        super(RectangularPlaceLine, self).__init__(delegate, parent)
         self.setAutoFillBackground(True)
         layout = QHBoxLayout()
         layout.setContentsMargins(4, 0, 4, 0)
         self.position = QLineEdit()
         self.start = QLineEdit()
         self.stop = QLineEdit()
+        self.position.editingFinished.connect(self.data_changed)
+        self.start.editingFinished.connect(self.data_changed)
+        self.stop.editingFinished.connect(self.data_changed)
         self.position.sizePolicy().setHorizontalStretch(1)
         self.start.sizePolicy().setHorizontalStretch(1)
         self.stop.sizePolicy().setHorizontalStretch(1)
-        if defines is not None:
-            self.position.setCompleter(defines)
-            self.start.setCompleter(defines)
-            self.stop.setCompleter(defines)
+        if delegate.defines is not None:
+            self.position.setCompleter(delegate.defines)
+            self.start.setCompleter(delegate.defines)
+            self.stop.setCompleter(delegate.defines)
         label = QLabel(" &Pos:")
         label.setBuddy(self.position)
         label.setFixedWidth(label.fontMetrics().width(label.text()))
@@ -157,15 +175,22 @@ if preview_available:
                 super(PlotWidget.NavigationToolbar, self).select_plane(index)
                 if self.controller.plot_auto_refresh: self.controller.plot_bboundaries()
 
-        def __init__(self, controller=None, parent=None):
+        def __init__(self, controller=None, parent=None, picker=None):
             super(PlotWidget, self).__init__(controller, parent)
             self.get_color = BwColor(self.axes)
             self.first = True
+            self.picker = picker
 
         def update_plot(self, bconds, mesh, geometry, colors, plane='12'):
             # for b in bconds:
             #     print list(b.place(mesh, geometry)), b.value
             updater = self.plot_updater(self.first, plane)
+            if self.first:
+                try:
+                    self.toolbar._nav_stack.clear()
+                except AttributeError:
+                    self.toolbar._views.clear()
+            points = []
             if bconds is not None:
                 for m in updater:
                     points = plask.plot_boundary(bconds, mesh, geometry, colors=colors, plane=plane, axes=self.axes)
@@ -173,12 +198,11 @@ if preview_available:
                         try:
                             plask.plot_geometry(axes=self.axes, geometry=geometry, fill=True, zorder=1,
                                                 plane=plane, lw=1.0, get_color=self.get_color,
-                                                margin=m if self.first else None)
+                                                margin=m if self.first else None,
+                                                picker=self.picker)
                         except:
                             pass
                 self.first = False
-            else:
-                points = []
             self.canvas.draw()
             return points
 
@@ -206,7 +230,6 @@ class BoundaryConditionsDialog(QDialog):
         self.table = QTableView()
         self.model = BoundaryConditionsModel(schema, data)
         self.table.setModel(self.model)
-        cols = self.model.columnCount(None)  # column widths:
         self.table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.setColumnWidth(0, 150)
@@ -236,8 +259,9 @@ class BoundaryConditionsDialog(QDialog):
 
         self.place_delegate = PlaceDelegate(self.table)
         self.table.setItemDelegateForColumn(0, self.place_delegate)
-        self.place_details_delegate = PlaceDetailsDelegate(controller, defines_completer, self.table)
+        self.place_details_delegate = PlaceDetailsDelegate(self, controller, defines_completer, self.table)
         self.table.setItemDelegateForColumn(1, self.place_details_delegate)
+        self._active_place_editor = None
 
         self.place_delegate.placeChanged.connect(self.update)
 
@@ -271,6 +295,8 @@ class BoundaryConditionsDialog(QDialog):
                                 controller.model.data[schema.geometry_attr['tag']][schema.geometry_attr['attr']]
             except KeyError:
                 geometry_name = None
+            else:
+                self.geometry_node = controller.document.geometry.model.find_by_name(geometry_name)
             self.manager = get_manager()
             try:
                 self.manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))
@@ -305,7 +331,7 @@ class BoundaryConditionsDialog(QDialog):
                 else:
                     splitter = QSplitter(self)
                     splitter.setOrientation(Qt.Vertical)
-                    self.preview = PlotWidget(self, splitter)
+                    self.preview = PlotWidget(self, splitter, picker=True)
                     wid = QWidget()
                     lay = QVBoxLayout()
                     lay.setContentsMargins(0, 0, 0, 0)
@@ -316,6 +342,7 @@ class BoundaryConditionsDialog(QDialog):
                     splitter.addWidget(wid)
                     splitter.addWidget(table_with_manipulators(self.table))
                     layout.addWidget(splitter)
+                    self.preview.canvas.mpl_connect('pick_event', self.on_pick_object)
 
             if schema.mesh_type not in fake_plask_gui_solver.__dict__:
                 Mesh = getattr(plask.mesh, schema.mesh_type)
@@ -344,8 +371,33 @@ class BoundaryConditionsDialog(QDialog):
 
         self.setLayout(layout)
 
+        self._picked_path = None
         self.points = []
+
         self.plot()
+
+    def on_pick_object(self, event):
+        # This seems as an ugly hack, but in reality this is the only way to make sure
+        # that `setCurrentIndex` is called only once if there are multiple artists in
+        # the clicked spot.
+        self._picked_path = event.artist.plask_real_path
+        QMetaObject.invokeMethod(self, '_picked_object', Qt.QueuedConnection)
+
+    @QtSlot()
+    def _picked_object(self):
+        if self._picked_path is None: return
+        _picked_path = self._picked_path
+        self._picked_path = None
+        if self._active_place_editor is not None and self.geometry_node is not None:
+            while _picked_path:
+                node = self.geometry_node.get_node_by_real_path(_picked_path)
+                if node.name:
+                    node_path = node.path.split(',')[0].strip() if node.path is not None else None
+                    self._active_place_editor.fill_details(node.name, node_path)
+                    self.place_details_delegate.commitData.emit(self._active_place_editor)
+                    break
+                else:
+                    _picked_path.pop()
 
     def message(self, msg):
         if msg:
@@ -455,7 +507,7 @@ class PlaceDelegate(QStyledItemDelegate):
             completer.setCaseSensitivity(Qt.CaseSensitive)
             combo.setCompleter(completer)
 
-        combo.currentIndexChanged.connect(lambda: self.placeChanged.emit())
+        combo.currentIndexChanged.connect(self.placeChanged.emit)
 
         return combo
 
@@ -470,18 +522,24 @@ class PlaceDelegate(QStyledItemDelegate):
 
 class PlaceDetailsDelegate(HTMLDelegate):
 
-    def __init__(self, controller, defines=None, parent=None):
+    def __init__(self, dialog, controller, defines=None, parent=None):
         super(PlaceDetailsDelegate, self).__init__(parent)
+        self.dialog = weakref.proxy(dialog)
         self.controller = controller
         self.defines = defines
+        self.closeEditor.connect(self.on_close_editor)
 
     def createEditor(self, parent, option, index):
         schema = index.model().schema
         model = index.model()
         row = index.row()
         place = model.entries[row][0]
-        editor = PLACES_EDITORS[schema.mesh_type][place.label](self.controller, self.defines, parent)
+        editor = PLACES_EDITORS[schema.mesh_type][place.label](self, parent)
+        self.dialog._active_place_editor = editor
         return editor
+
+    def on_close_editor(self, editor):
+        self.dialog._active_place_editor = None
 
     def setEditorData(self, editor, index):
         model = index.model()

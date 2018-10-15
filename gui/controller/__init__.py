@@ -9,6 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import weakref
 
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
@@ -19,7 +20,7 @@ from ..utils import sorted_index
 class MuteChanges(object):
 
     def __init__(self, controller):
-        self.controller = controller
+        self.controller = weakref.proxy(controller)
 
     def __enter__(self):
         self.controller._notify_changes = False
@@ -45,7 +46,10 @@ class Controller(object):
         """
         super(Controller, self).__init__()
         if document is not None:
-            self.document = document
+            if isinstance(document, weakref.ProxyType):
+                self.document = document
+            else:
+                self.document = weakref.proxy(document)
         if model is not None:
             self.model = model
         self._notify_changes = True

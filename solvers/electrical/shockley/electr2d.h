@@ -5,6 +5,8 @@
 #include "iterative_matrix2d.h"
 #include <limits>
 
+#include <plask/mesh/rectangular_masked2d.h>
+
 namespace plask { namespace electrical { namespace shockley {
 
 /**
@@ -14,6 +16,8 @@ template<typename Geometry2DType>
 struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DType, RectangularMesh<2>> {
 
   protected:
+
+    plask::shared_ptr<RectangularMaskedMesh2D> maskedMesh = plask::make_shared<RectangularMaskedMesh2D>();
 
     /// Details of active region
     struct Active {
@@ -32,7 +36,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
         Active(size_t tot, size_t l, size_t r, size_t b, size_t t, double h): left(l), right(r), bottom(b), top(t), offset(tot-l), height(h) {}
     };
 
-    std::size_t size;           ///< Number of columns in the main matrix
+    size_t band;                ///< Maximum band size
 
     std::vector<double> js;     ///< p-n junction parameter [A/m^2]
     std::vector<double> beta;   ///< p-n junction parameter [1/V]
@@ -52,6 +56,8 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     DataVector<double> heats;                   ///< Computed and cached heat source densities
 
     std::vector<Active> active;                 ///< Active regions information
+
+    bool use_full_mesh;                         ///< Should we use full mesh?
 
     /// Save locate stiffness matrix to global one
     inline void setLocalMatrix(double& k44, double& k33, double& k22, double& k11,
@@ -104,6 +110,10 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     template <typename MatrixT>
     void setMatrix(MatrixT& A, DataVector<double>& B, const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bvoltage);
 
+    /// Setup matrix
+    template <typename MatrixT>
+    MatrixT makeMatrix();
+
     /// Perform computations for particular matrix type
     template <typename MatrixT>
     double doCompute(unsigned loops=1);
@@ -132,7 +142,7 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     }
 
     /// Return \c true if the specified element is a junction
-    size_t isActive(const RectangularMesh<2>::Element& element) const { return isActive(element.getMidpoint()); }
+    size_t isActive(const RectangularMaskedMesh2D::Element& element) const { return isActive(element.getMidpoint()); }
 
   public:
 
@@ -276,6 +286,14 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
         if (!this->mesh || cond.size() != condsize)
             throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");
         junction_conductivity = cond.claim();
+    }
+
+    /// Are we using full mesh?
+    bool usingFullMesh() const { return use_full_mesh; }
+    /// Set whether we should use full mesh
+    void useFullMesh(bool val) {
+        use_full_mesh = val;
+        setActiveRegions();
     }
 
     virtual void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)

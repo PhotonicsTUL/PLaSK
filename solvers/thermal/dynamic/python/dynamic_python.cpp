@@ -33,8 +33,9 @@ BOOST_PYTHON_MODULE(dynamic)
         RW_FIELD(methodparam, u8"Initial parameter determining the calculation method: 0.5 - Crank-Nicolson method, 0 - explicit method, 1 - implicit method");
         RW_FIELD(lumping, u8"Chosen mass matrix type from lumped or non-lumped (consistent)");
         RW_FIELD(rebuildfreq, u8"Frequency of rebuild mass");
-        solver.def_readwrite("algorithm", &__Class__::algorithm, u8"Chosen matrix factorization algorithm");
-        solver.def_readwrite("logfreq", &__Class__::logfreq, u8"Frequency of iteration progress reporting");
+        RW_FIELD(algorithm, u8"Chosen matrix factorization algorithm");
+        RW_FIELD(logfreq, u8"Frequency of iteration progress reporting");
+        RW_PROPERTY(include_empty, usingFullMesh, useFullMesh, "Should empty regions (e.g. air) be included into computation domain?");
         RO_PROPERTY(time, getElapsTime, u8"Time of calculations performed so far since the last solver invalidation.");
         RO_PROPERTY(elapsed_time, getElapsTime, u8"Alias for :attr:`time` (obsolete).");
     }
@@ -52,8 +53,9 @@ BOOST_PYTHON_MODULE(dynamic)
         RW_FIELD(methodparam, u8"Initial parameter determining the calculation method: 0.5 - Crank-Nicolson method, 0 - explicit method, 1 - implicit method");
         RW_FIELD(lumping, u8"Chosen mass matrix type from lumped or non-lumped (consistent)");
         RW_FIELD(rebuildfreq, u8"Frequency of rebuild mass");
-        solver.def_readwrite("algorithm", &__Class__::algorithm, u8"Chosen matrix factorization algorithm");
-        solver.def_readwrite("logfreq", &__Class__::logfreq, u8"Frequency of iteration progress reporting");
+        RW_FIELD(algorithm, u8"Chosen matrix factorization algorithm");
+        RW_FIELD(logfreq, u8"Frequency of iteration progress reporting");
+        RW_PROPERTY(include_empty, usingFullMesh, useFullMesh, "Should empty regions (e.g. air) be included into computation domain?");
         RO_PROPERTY(time, getElapsTime, u8"Time of calculations performed so far since the last solver invalidation.");
         RO_PROPERTY(elapsed_time, getElapsTime, u8"Alias for :attr:`time` (obsolete).");
     }

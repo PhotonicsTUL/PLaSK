@@ -102,8 +102,8 @@ void RectangularMesh2D::setAxis(std::size_t axis_nr, shared_ptr<MeshAxis> new_va
     if (fireResized) this->fireResized();
 }
 
-shared_ptr<RectangularMesh2D> RectangularMesh2D::getMidpointsMesh() const {
-    return plask::make_shared<RectangularMesh2D>(axis[0]->getMidpointsMesh(), axis[1]->getMidpointsMesh(), getIterationOrder());
+shared_ptr<RectangularMesh2D::ElementMesh> RectangularMesh2D::getElementMesh() const {
+    return plask::make_shared<RectangularMesh2D::ElementMesh>(this, axis[0]->getMidpointAxis(), axis[1]->getMidpointAxis(), getIterationOrder());
 }
 
 BoundaryNodeSet RectangularMesh2D::createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const {

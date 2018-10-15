@@ -9,6 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import weakref
 from itertools import groupby
 
 from ...qt.QtCore import *
@@ -47,7 +48,7 @@ class FilterController(Controller):
 
         self.geometry = QComboBox()
         self.geometry.setEditable(True)
-        self.geometry.textChanged.connect(self.fire_changed)
+        self.geometry.editTextChanged.connect(self.fire_changed)
         self.geometry.currentIndexChanged.connect(self.fire_changed)
         self.geometry.setCompleter(get_defines_completer(self.document.defines.model, self.widget))
         self.geometry.setToolTip('Name of the target geometry for this filter.')
@@ -112,8 +113,10 @@ class SolversController(Controller):
 
         self.splitter.setSizes([10000, 20000])
 
+        weakself = weakref.proxy(self)
+
         focus_action = QAction(self.solvers_table)
-        focus_action.triggered.connect(lambda: self.parent_for_editor_widget.currentWidget().setFocus())
+        focus_action.triggered.connect(lambda: weakself.parent_for_editor_widget.currentWidget().setFocus())
         focus_action.setShortcut(QKeySequence(Qt.Key_Return))
         focus_action.setShortcutContext(Qt.WidgetShortcut)
         self.solvers_table.addAction(focus_action)
@@ -140,7 +143,9 @@ class SolversController(Controller):
                 return False
         self._current_index = new_index
         for i in reversed(range(self.parent_for_editor_widget.count())):
-            self.parent_for_editor_widget.removeWidget(self.parent_for_editor_widget.widget(i))
+            widget = self.parent_for_editor_widget.widget(i)
+            self.parent_for_editor_widget.removeWidget(widget)
+            widget.setParent(None)
         if self._current_index is None:
             self._current_controller = None
         else:
@@ -148,6 +153,7 @@ class SolversController(Controller):
             self.parent_for_editor_widget.addWidget(self._current_controller.get_widget())
             self._current_controller.on_edit_enter()
         return True
+
     def solver_selected(self, new_selection, old_selection):
         if new_selection.indexes() == old_selection.indexes(): return
         indexes = new_selection.indexes()
