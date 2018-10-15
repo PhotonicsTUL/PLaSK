@@ -2,7 +2,13 @@
 #define PLASK__TRIANGULAR2D_H
 
 #include "mesh.h"
+#include "interpolation.h"
 #include <array>
+
+#include <boost/geometry/index/rtree.hpp>
+
+#include <boost/geometry/geometries/register/point.hpp>
+BOOST_GEOMETRY_REGISTER_POINT_2D(plask::Vec<2>, double, cs::cartesian, c0, c1)
 
 namespace plask {
 
@@ -65,6 +71,8 @@ struct TriangularMesh2D: public MeshD<2> {
 
     struct Elements {
         TriangularMesh2D& mesh;
+
+        //TODO
     };
 
     /**
@@ -110,6 +118,54 @@ struct TriangularMesh2D: public MeshD<2> {
     iterator end() { return nodes.end(); }
     const_iterator begin() const { return nodes.begin(); }
     const_iterator end() const { return nodes.end(); }
+
+};
+
+template <typename DstT, typename SrcT>
+struct PLASK_API NearestNeighborTriangularMesh2DLazyDataImpl: public InterpolatedLazyDataImpl<DstT, TriangularMesh2D, const SrcT>
+{
+    struct TriangularMesh2DGetter {
+        typedef Vec<2, double> result_type;
+
+        shared_ptr<const TriangularMesh2D> src_mesh;
+
+        TriangularMesh2DGetter(const shared_ptr<const TriangularMesh2D>& src_mesh): src_mesh(src_mesh) {}
+
+        result_type operator()(std::size_t index) const {
+            return src_mesh->at(index);
+        }
+    };
+
+    typedef boost::geometry::index::rtree<
+            std::size_t,
+            boost::geometry::index::quadratic<16>, //??
+            TriangularMesh2DGetter
+            > Rtree;
+
+    Rtree nodesIndex;
+
+    NearestNeighborTriangularMesh2DLazyDataImpl(
+                const shared_ptr<const TriangularMesh2D>& src_mesh,
+                const DataVector<const SrcT>& src_vec,
+                const shared_ptr<const MeshD<2>>& dst_mesh,
+                const InterpolationFlags& flags);
+
+    DstT at(std::size_t index) const override;
+};
+
+template <typename SrcT, typename DstT>
+struct InterpolationAlgorithm<TriangularMesh2D, SrcT, DstT, INTERPOLATION_NEAREST> {
+    static LazyData<DstT> interpolate(const shared_ptr<const TriangularMesh2D>& src_mesh,
+                                      const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<3>>& dst_mesh,
+                                      const InterpolationFlags& flags)
+    {
+        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        return new NearestNeighborTriangularMesh2DLazyDataImpl<typename std::remove_const<DstT>::type,
+                                                       typename std::remove_const<SrcT>::type>
+            (src_mesh, src_vec, dst_mesh, flags);
+    }
+
 };
 
 }   // namespace plask
