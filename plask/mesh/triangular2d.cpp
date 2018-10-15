@@ -22,6 +22,9 @@ std::size_t TriangularMesh2D::Builder::addNode(TriangularMesh2D::LocalCoords nod
 }
 
 
+
+// ------------------ Nearest Neighbor interpolation ---------------------
+
 template<typename DstT, typename SrcT>
 NearestNeighborTriangularMesh2DLazyDataImpl<DstT, SrcT>::NearestNeighborTriangularMesh2DLazyDataImpl(const shared_ptr<const TriangularMesh2D> &src_mesh, const DataVector<const SrcT> &src_vec, const shared_ptr<const MeshD<2> > &dst_mesh, const InterpolationFlags &flags)
     : InterpolatedLazyDataImpl<DstT, TriangularMesh2D, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
@@ -52,6 +55,35 @@ template struct PLASK_API NearestNeighborTriangularMesh2DLazyDataImpl<Tensor2<do
 template struct PLASK_API NearestNeighborTriangularMesh2DLazyDataImpl<Tensor2<dcomplex>, Tensor2<dcomplex>>;
 template struct PLASK_API NearestNeighborTriangularMesh2DLazyDataImpl<Tensor3<double>, Tensor3<double>>;
 template struct PLASK_API NearestNeighborTriangularMesh2DLazyDataImpl<Tensor3<dcomplex>, Tensor3<dcomplex>>;
+
+
+// ------------------ Barycentric / Linear interpolation ---------------------
+
+template<typename DstT, typename SrcT>
+BarycentricTriangularMesh2DLazyDataImpl<DstT, SrcT>::BarycentricTriangularMesh2DLazyDataImpl(const shared_ptr<const TriangularMesh2D> &src_mesh, const DataVector<const SrcT> &src_vec, const shared_ptr<const MeshD<2> > &dst_mesh, const InterpolationFlags &flags)
+    : InterpolatedLazyDataImpl<DstT, TriangularMesh2D, const SrcT>(src_mesh, src_vec, dst_mesh, flags)
+{
+    //TODO
+}
+
+template <typename DstT, typename SrcT>
+DstT BarycentricTriangularMesh2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const
+{
+    auto point = this->dst_mesh->at(index);
+    auto wrapped_point = this->flags.wrap(point);
+    //TODO
+}
+
+template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<double, double>;
+template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<dcomplex, dcomplex>;
+template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Vec<2,double>, Vec<2,double>>;
+template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Vec<2,dcomplex>, Vec<2,dcomplex>>;
+template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Vec<3,double>, Vec<3,double>>;
+template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Vec<3,dcomplex>, Vec<3,dcomplex>>;
+template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor2<double>, Tensor2<double>>;
+template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor2<dcomplex>, Tensor2<dcomplex>>;
+template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor3<double>, Tensor3<double>>;
+template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor3<dcomplex>, Tensor3<dcomplex>>;
 
 
 }   // namespace plask

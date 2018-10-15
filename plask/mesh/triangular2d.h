@@ -10,6 +10,8 @@
 #include <boost/geometry/geometries/register/point.hpp>
 BOOST_GEOMETRY_REGISTER_POINT_2D(plask::Vec<2>, double, cs::cartesian, c0, c1)
 
+#include <boost/geometry/geometries/box.hpp>
+
 namespace plask {
 
 struct TriangularMesh2D: public MeshD<2> {
@@ -121,6 +123,9 @@ struct TriangularMesh2D: public MeshD<2> {
 
 };
 
+
+// ------------------ Nearest Neighbor interpolation ---------------------
+
 template <typename DstT, typename SrcT>
 struct PLASK_API NearestNeighborTriangularMesh2DLazyDataImpl: public InterpolatedLazyDataImpl<DstT, TriangularMesh2D, const SrcT>
 {
@@ -162,6 +167,46 @@ struct InterpolationAlgorithm<TriangularMesh2D, SrcT, DstT, INTERPOLATION_NEARES
     {
         if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
         return new NearestNeighborTriangularMesh2DLazyDataImpl<typename std::remove_const<DstT>::type,
+                                                       typename std::remove_const<SrcT>::type>
+            (src_mesh, src_vec, dst_mesh, flags);
+    }
+
+};
+
+
+
+// ------------------ Barycentric / Linear interpolation ---------------------
+
+template <typename DstT, typename SrcT>
+struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl: public InterpolatedLazyDataImpl<DstT, TriangularMesh2D, const SrcT>
+{
+    typedef boost::geometry::model::box<Vec<2>> Box;
+
+    typedef boost::geometry::index::rtree<
+            std::pair<Box, std::size_t>,
+            boost::geometry::index::quadratic<16> //??
+            > Rtree;
+
+    Rtree nodesIndex;
+
+    BarycentricTriangularMesh2DLazyDataImpl(
+                const shared_ptr<const TriangularMesh2D>& src_mesh,
+                const DataVector<const SrcT>& src_vec,
+                const shared_ptr<const MeshD<2>>& dst_mesh,
+                const InterpolationFlags& flags);
+
+    DstT at(std::size_t index) const override;
+};
+
+template <typename SrcT, typename DstT>
+struct InterpolationAlgorithm<TriangularMesh2D, SrcT, DstT, INTERPOLATION_LINEAR> {
+    static LazyData<DstT> interpolate(const shared_ptr<const TriangularMesh2D>& src_mesh,
+                                      const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<3>>& dst_mesh,
+                                      const InterpolationFlags& flags)
+    {
+        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        return new BarycentricTriangularMesh2DLazyDataImpl<typename std::remove_const<DstT>::type,
                                                        typename std::remove_const<SrcT>::type>
             (src_mesh, src_vec, dst_mesh, flags);
     }
