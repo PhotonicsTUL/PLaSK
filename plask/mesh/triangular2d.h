@@ -187,7 +187,7 @@ struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl: public InterpolatedLaz
             boost::geometry::index::quadratic<16> //??
             > Rtree;
 
-    Rtree nodesIndex;
+    Rtree trianglesIndex;
 
     BarycentricTriangularMesh2DLazyDataImpl(
                 const shared_ptr<const TriangularMesh2D>& src_mesh,
