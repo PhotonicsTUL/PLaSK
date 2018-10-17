@@ -312,7 +312,7 @@ inline IndexedIterator<ContainerType> makeIndexedIterator(ContainerType* c, std:
 template <typename FunctorType,
     typename Reference = decltype(std::declval<FunctorType>()(0)),
     typename Value = typename std::remove_reference<Reference>::type>
-struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIterator<FunctorType, Value, Reference>, Value, boost::random_access_traversal_tag, Reference > {
+struct FunctorIndexedIterator: public boost::iterator_facade< FunctorIndexedIterator<FunctorType, Reference, Value>, Value, boost::random_access_traversal_tag, Reference > {
 
     /// Functor
     FunctorType functor;

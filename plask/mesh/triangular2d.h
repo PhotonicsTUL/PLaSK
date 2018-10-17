@@ -29,9 +29,9 @@ struct TriangularMesh2D: public MeshD<2> {
 
     struct Element {
         TriangleNodeIndexes triangleNodes;
-        TriangularMesh2D& mesh;   // for getting access to the nodes
+        const TriangularMesh2D& mesh;   // for getting access to the nodes
 
-        Element(TriangularMesh2D& mesh, TriangleNodeIndexes triangleNodes)
+        Element(const TriangularMesh2D& mesh, TriangleNodeIndexes triangleNodes)
             : triangleNodes(triangleNodes), mesh(mesh) {}
 
         /**
@@ -49,7 +49,7 @@ struct TriangularMesh2D: public MeshD<2> {
          * @param index index of vertex in the triangle corresponded to this element; equals to 0, 1 or 2
          * @return coordinate of the triangle vertex
          */
-        LocalCoords getNode(std::size_t index) const noexcept {
+        const LocalCoords& getNode(std::size_t index) const noexcept {
             return mesh.nodes[getNodeIndex(index)];
         }
 
@@ -69,6 +69,10 @@ struct TriangularMesh2D: public MeshD<2> {
             return abs( (A.c0 - C.c0) * (B.c1 - A.c1)
                       - (A.c0 - B.c0) * (C.c1 - A.c1) ) / 2.0;
         }
+
+        Vec<3, double> barycentric(Vec<2, double> p) const {
+
+        }
     };
 
     struct Elements {
@@ -76,6 +80,14 @@ struct TriangularMesh2D: public MeshD<2> {
 
         //TODO
     };
+
+    Element getElement(std::size_t elementIndex) const {
+        return Element(*this, elementsNodes[elementIndex]);
+    };
+
+    std::size_t getElementsCount() const {
+        return elementsNodes.size();
+    }
 
     /**
      * Instance of this class allows for adding triangles to the mesh effectively.
@@ -188,6 +200,25 @@ struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl: public InterpolatedLaz
             > Rtree;
 
     Rtree trianglesIndex;
+
+    struct ValueGetter {
+        Rtree::value_type operator()(std::size_t index) const {
+            TriangularMesh2D::Element el = this->src_mesh->getElement(index);
+            const auto n0 = el.getNode(0);
+            const auto n1 = el.getNode(1);
+            const auto n2 = el.getNode(2);
+            return std::make_pair(
+                        Box(
+                            vec(std::min(std::min(n0.c0, n1.c0), n2.c0), std::min(std::min(n0.c1, n1.c1), n2.c1)),
+                            vec(std::max(std::max(n0.c0, n1.c0), n2.c0), std::max(std::max(n0.c1, n1.c1), n2.c1))
+                        ),
+                        index);
+        }
+
+        shared_ptr<const TriangularMesh2D> src_mesh;
+
+        ValueGetter(const shared_ptr<const TriangularMesh2D>& src_mesh): src_mesh(src_mesh) {}
+    };
 
     BarycentricTriangularMesh2DLazyDataImpl(
                 const shared_ptr<const TriangularMesh2D>& src_mesh,

@@ -39,7 +39,6 @@ DstT NearestNeighborTriangularMesh2DLazyDataImpl<DstT, SrcT>::at(std::size_t ind
 {
     auto point = this->dst_mesh->at(index);
     auto wrapped_point = this->flags.wrap(point);
-    std::vector<std::size_t> results;
     for (auto v: nodesIndex | boost::geometry::index::adaptors::queried(boost::geometry::index::nearest(wrapped_point, 1)))
         return this->flags.postprocess(point, this->src_vec[v]);
     assert(false);
@@ -61,9 +60,9 @@ template struct PLASK_API NearestNeighborTriangularMesh2DLazyDataImpl<Tensor3<dc
 
 template<typename DstT, typename SrcT>
 BarycentricTriangularMesh2DLazyDataImpl<DstT, SrcT>::BarycentricTriangularMesh2DLazyDataImpl(const shared_ptr<const TriangularMesh2D> &src_mesh, const DataVector<const SrcT> &src_vec, const shared_ptr<const MeshD<2> > &dst_mesh, const InterpolationFlags &flags)
-    : InterpolatedLazyDataImpl<DstT, TriangularMesh2D, const SrcT>(src_mesh, src_vec, dst_mesh, flags)
+    : InterpolatedLazyDataImpl<DstT, TriangularMesh2D, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
+      trianglesIndex(makeFunctorIndexedIterator(ValueGetter(src_mesh), 0), makeFunctorIndexedIterator(ValueGetter(src_mesh), src_mesh->getElementsCount()))
 {
-    //TODO
 }
 
 template <typename DstT, typename SrcT>
@@ -71,7 +70,10 @@ DstT BarycentricTriangularMesh2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) 
 {
     auto point = this->dst_mesh->at(index);
     auto wrapped_point = this->flags.wrap(point);
-    //TODO
+    for (auto v: trianglesIndex | boost::geometry::index::adaptors::queried(boost::geometry::index::intersects(wrapped_point))) {
+        //TODO this->src_mesh->getElement(v.second).barycentric(wrapped_point) zawiera wrapped_point to barycentric   this->flags.postprocess(point, v);
+    }
+    return NaN<decltype(this->src_vec[0])>();
 }
 
 template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<double, double>;
