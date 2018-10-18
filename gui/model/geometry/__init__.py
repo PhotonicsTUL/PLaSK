@@ -9,7 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-import cgi
+import html
 from collections import OrderedDict
 from copy import deepcopy
 from lxml import etree
@@ -35,6 +35,7 @@ from ..info import info_level_icon
 from ...utils.xml import AttributeReader
 from .types import geometry_types_geometries, gname
 from .node import GNFakeRoot
+from .again_copy import GNAgain
 
 
 try:
@@ -323,8 +324,8 @@ class GeometryModel(SectionModel, QAbstractItemModel):
                 return item.display_name(full_name=False)
             else:
                 name = getattr(item, 'name', '')
-                if name:
-                    res = '<span style="color: #866">name:</span> <b>{}</b>'.format(cgi.escape(name))
+                if name and not isinstance(item, GNAgain):
+                    res = '<span style="color: #866">name:</span> <b>{}</b>'.format(html.escape(name))
                 else:
                     res = ''
                 for prop_table in (item.in_parent_properties(), item.major_properties(), item.minor_properties()):
@@ -335,14 +336,14 @@ class GeometryModel(SectionModel, QAbstractItemModel):
                             in_group = False
                         elif isinstance(t, basestring):
                             if res: res += ' &nbsp; '
-                            res += '<span style="color: #769">[{}</span>'.format(cgi.escape(t).replace(' ', '&nbsp;'))
+                            res += '<span style="color: #769">[{}</span>'.format(html.escape(t).replace(' ', '&nbsp;'))
                             in_group = True
                         else:
                             n, v = t
                             if v is None: continue
                             if res: res += ' &nbsp;' if in_group else ' &nbsp; '
                             res += '<span style="color: #766">{}:</span>&nbsp;{}'\
-                                .format(cgi.escape(n).replace(' ', '&nbsp;'), cgi.escape(v).replace(' ', '&nbsp;'))
+                                .format(html.escape(n).replace(' ', '&nbsp;'), html.escape(v).replace(' ', '&nbsp;'))
                         # replacing ' ' to '&nbsp;' is for better line breaking (not in middle of name/value)
                 return res
         if role == Qt.DecorationRole and index.column() == 0:
