@@ -70,8 +70,24 @@ struct TriangularMesh2D: public MeshD<2> {
                       - (A.c0 - B.c0) * (C.c1 - A.c1) ) / 2.0;
         }
 
+        /**
+         * Calculate barycentric (area) coordinates of the point @p p with respect to the triangle represented by this.
+         * @param p point
+         * @return the barycentric (area) coordinates of @c p
+         */
         Vec<3, double> barycentric(Vec<2, double> p) const {
-
+            // formula comes from https://codeplea.com/triangular-interpolation
+            // but it is modified a bit, to reuse more diffs and call cross (which can be optimized)
+            Vec<2, double>
+                    diff_2_3 = getNode(1) - getNode(2),
+                    diff_p_3 = p - getNode(2),
+                    diff_1_3 = getNode(0) - getNode(2);
+            const double den = cross(diff_1_3, diff_2_3);   // diff_2_3.c1 * diff_1_3.c0 - diff_2_3.c0 * diff_1_3.c1
+            Vec<3, double> res;
+            res.c0 = cross(diff_p_3, diff_2_3) / den;   // (diff_2_3.c1 * diff_p_3.c0 - diff_2_3.c0 * diff_p_3.c1) / den
+            res.c1 = cross(diff_1_3, diff_p_3) / den;   // (- diff_1_3.c1 * diff_p_3.c0 + diff_1_3.c0 * diff_p_3.c1) / den
+            res.c2 = 1.0 - res.c0 - res.c1;
+            return res;
         }
     };
 

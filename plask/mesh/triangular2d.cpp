@@ -71,7 +71,13 @@ DstT BarycentricTriangularMesh2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) 
     auto point = this->dst_mesh->at(index);
     auto wrapped_point = this->flags.wrap(point);
     for (auto v: trianglesIndex | boost::geometry::index::adaptors::queried(boost::geometry::index::intersects(wrapped_point))) {
-        //TODO this->src_mesh->getElement(v.second).barycentric(wrapped_point) zawiera wrapped_point to barycentric   this->flags.postprocess(point, v);
+        const auto el = this->src_mesh->getElement(v.second);
+        const auto b = el.barycentric(wrapped_point);
+        if (b.c0 < 0.0 || b.c1 < 0.0 || b.c2 < 0.0) continue; // wrapped_point is outside of the triangle
+        return this->flags.postprocess(point,
+                                       b.c0*this->src_vec[el.getNodeIndex(0)] +
+                                       b.c1*this->src_vec[el.getNodeIndex(1)] +
+                                       b.c2*this->src_vec[el.getNodeIndex(2)]);
     }
     return NaN<decltype(this->src_vec[0])>();
 }

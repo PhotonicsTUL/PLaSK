@@ -350,6 +350,16 @@ inline auto dot(const Vec<2,T1>& v1, const Vec<2,T2>& v2) -> decltype(v1.c0*v2.c
 }
 
 /**
+ * Compute (analog of 3d) cross product of two vectors @p v1 and @p v2.
+ * @param v1, v2 vectors
+ * @return (analog of 3d) cross product of v1 and v2
+ */
+template <typename T1, typename T2>
+inline auto cross(const Vec<2,T1>& v1, const Vec<2,T2>& v2) -> decltype(v1.c0*v2.c1) {
+    return ::plask::fma(v1.c0, v2.c1, - v1.c1 * v2.c0);	//MSVC needs ::plask::
+}
+
+/**
  * Compute dot product of two vectors @p v1 and @p v2.
  * @param v1 first vector
  * @param v2 second vector
