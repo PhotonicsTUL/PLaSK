@@ -27,6 +27,9 @@ struct TriangularMesh2D: public MeshD<2> {
 
     std::vector< TriangleNodeIndexes > elementsNodes;
 
+    /**
+     * Represent FEM-like element (triangle) in TriangularMesh2D.
+     */
     struct Element {
         TriangleNodeIndexes triangleNodes;
         const TriangularMesh2D& mesh;   // for getting access to the nodes
@@ -91,16 +94,51 @@ struct TriangularMesh2D: public MeshD<2> {
         }
     };
 
+    /**
+     * Wrapper to TriangularMesh2D which allows for accessing FEM-like elements.
+     *
+     * It works like read-only, random access container of @ref Element objects.
+     */
     struct Elements {
-        TriangularMesh2D& mesh;
+        const TriangularMesh2D& mesh;
 
-        //TODO
+        explicit Elements(const TriangularMesh2D& mesh): mesh(mesh) {}
+
+        Element operator[](std::size_t index) const {
+            return Element(mesh, mesh.elementsNodes[index]);
+        }
+
+        /**
+         * Get number of elements (triangles) in the mesh.
+         * @return number of elements
+         */
+        std::size_t size() const { return mesh.getElementsCount(); }
+
+        typedef IndexedIterator<const Elements, Element> const_iterator;
+        typedef const_iterator iterator;
+
+        /// @return iterator referring to the first element (triangle) in the mesh
+        const_iterator begin() const { return const_iterator(this, 0); }
+
+        /// @return iterator referring to the past-the-end element (triangle) in the mesh
+        const_iterator end() const { return const_iterator(this, this->size()); }
     };
+
+    Elements getElements() const { return Elements(*this); }
+    Elements elements() const { return Elements(*this); }
 
     Element getElement(std::size_t elementIndex) const {
         return Element(*this, elementsNodes[elementIndex]);
     };
 
+    Element element(std::size_t elementIndex) const {
+        return Element(*this, elementsNodes[elementIndex]);
+    };
+
+    /**
+     * Get number of elements (triangles) in this mesh.
+     * @return number of elements
+     */
     std::size_t getElementsCount() const {
         return elementsNodes.size();
     }

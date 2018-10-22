@@ -151,7 +151,7 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
     };
 
     /**
-     * Wrapper to RectangularMesh which allow to access to FEM-like elements.
+     * Wrapper to TriangularMesh2D which allows for accessing FEM-like elements.
      *
      * It works like read-only, random access container of @ref Element objects.
      */
