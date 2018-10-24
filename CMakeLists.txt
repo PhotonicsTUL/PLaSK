@@ -321,6 +321,7 @@ endif()
 # CAMOS
 add_subdirectory(extlib/camos)
 add_subdirectory(extlib/fftpacx)
+add_subdirectory(extlib/triangle)
 
 # fmt
 if(NOT MSVC AND PLASK_EXPORTS_FMT)

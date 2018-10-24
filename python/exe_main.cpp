@@ -306,7 +306,7 @@ int system_main(int argc, const system_char *argv[])
             --argc; ++argv;
         } else if (arg.substr(0,2) == CSTR(-l)) {
             const system_char* level;
-            size_t drop = 1;
+            int drop = 1;
             if (arg.length() > 2)
                 level = argv[1]+2;
             else if (argc > 2) {
@@ -388,7 +388,7 @@ int system_main(int argc, const system_char *argv[])
             --argc; ++argv;
         } else if (arg.substr(0,2) == CSTR(-D)) {
             const system_char* def;
-            size_t drop = 1;
+            int drop = 1;
             if (arg.length() > 2)
                 def = argv[1]+2;
             else if (argc > 2) {
