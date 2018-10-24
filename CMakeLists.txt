@@ -331,7 +331,7 @@ endif()
 # ---------- PLaSK library --------------------------------------------
 
 add_library(libplask SHARED ${plask_src} ${plask_headers})
-target_link_libraries(libplask ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${EXPAT_LIBRARIES} ${PRINT_STACKTRACE_LIBRARY}) # ${Boost_THREAD_LIBRARY}
+target_link_libraries(libplask ${Boost_FILESYSTEM_LIBRARY} ${Boost_SYSTEM_LIBRARY} ${EXPAT_LIBRARIES} ${PRINT_STACKTRACE_LIBRARY} triangle) # ${Boost_THREAD_LIBRARY}
 if(WIN32)
     target_link_libraries(libplask kernel32 iphlpapi)
     if(INSTALL_DEV)
@@ -340,7 +340,7 @@ if(WIN32)
     else()
         install(TARGETS libplask RUNTIME DESTINATION bin COMPONENT core)
     endif()
-    if(MSVC)    # defualt "plask.pdb" is overriden by file for plask.exe, so we use different name ("libplask.pdb")
+    if(MSVC)    # default "plask.pdb" is overriden by file for plask.exe, so we use different name ("libplask.pdb")
         set_target_properties (libplask PROPERTIES PDB_NAME libplask)
     endif(MSVC)
 else()
