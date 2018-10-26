@@ -26,11 +26,24 @@ shared_ptr<MeshD<2>> TriangleGenerator::generate(const shared_ptr<GeometryObject
 }
 
 std::string TriangleGenerator::getSwitches() const {
+    std::ostringstream result;
+
     // z - points (and other items) are numbered from zero
     // Q - quiet
-    std::string result = "zQ";
-    // TODO configuration
-    return result;
+    // B - suppresses boundary markers in the output
+    // P - suppresses the output .poly file. Saves disk space, but you lose the ability to maintain
+    //     constraining segments on later refinements of the mesh.
+    result << "zQBP";
+
+    if (maxTriangleArea) result << 'a' << std::fixed << *maxTriangleArea;
+    if (minTriangleAngle) {
+        result << 'q';
+        if (!isnan(*minTriangleAngle)) result << std::fixed << *minTriangleAngle;
+    }
+
+    // TODO more configuration
+
+    return result.str();
 }
 
 }   // namespace plask

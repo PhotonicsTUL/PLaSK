@@ -19,6 +19,16 @@ struct TriangleGenerator: public MeshGeneratorD<2> {
 
     shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<DIM>>& geometry) override;
 
+    /**
+     * A maximum triangle area constraint.
+     */
+    optional<double> maxTriangleArea;
+
+    /**
+     * Minimum angle (if this is NaN, Triangle default is used, 20 degrees).
+     */
+    optional<double> minTriangleAngle;
+
 private:
 
     /**
@@ -26,6 +36,8 @@ private:
      * @return the switches
      */
     std::string getSwitches() const;
+
+
 };
 
 }   // namespace plask
