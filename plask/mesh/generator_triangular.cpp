@@ -13,8 +13,10 @@ shared_ptr<MeshD<2>> TriangleGenerator::generate(const shared_ptr<GeometryObject
     triangulate(const_cast<char*>(getSwitches().c_str()), &in, &out, nullptr);
 
     shared_ptr<TriangularMesh2D> result = make_shared<TriangularMesh2D>();
+    result->nodes.reserve(out.numberofpoints);
     for (std::size_t i = 0; i < std::size_t(out.numberofpoints)*2; i += 2)
         result->nodes.emplace_back(out.pointlist[i], out.pointlist[i+1]);
+    result->elementsNodes.reserve(out.numberoftriangles);
     for (std::size_t i = 0; i < std::size_t(out.numberoftriangles)*3; i += 3)
         result->elementsNodes.push_back({
             std::size_t(out.trianglelist[i]),
