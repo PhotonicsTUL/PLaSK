@@ -21,6 +21,15 @@ std::size_t TriangularMesh2D::Builder::addNode(TriangularMesh2D::LocalCoords nod
     return it.first->second;    // index of node (inserted or found)
 }
 
+TriangularMesh2D TriangularMesh2D::masked(const TriangularMesh2D::Predicate &predicate) const {
+    TriangularMesh2D result;
+    Builder builder(result);
+    for (auto el: elements())
+        if (predicate(el)) builder.add(el);
+    return result;
+}
+
+
 
 
 // ------------------ Nearest Neighbor interpolation ---------------------
@@ -92,6 +101,5 @@ template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor2<double
 template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor2<dcomplex>, Tensor2<dcomplex>>;
 template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor3<double>, Tensor3<double>>;
 template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor3<dcomplex>, Tensor3<dcomplex>>;
-
 
 }   // namespace plask

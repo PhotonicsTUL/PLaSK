@@ -13,7 +13,7 @@ namespace plask {
  * The latter can be generated with no small or large angles,
  * and are thus suitable for finite element analysis.
  *
- * See: http://www.cs.cmu.edu/%7Equake/triangle.html
+ * See: https://www.cs.cmu.edu/~quake/triangle.html
  */
 struct TriangleGenerator: public MeshGeneratorD<2> {
 

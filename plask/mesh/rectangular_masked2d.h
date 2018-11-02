@@ -14,6 +14,7 @@ namespace plask {
  */
 struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
 
+    /// Type of predicate function which returns bool for given element of a mesh.
     typedef std::function<bool(const RectangularMesh2D::Element&)> Predicate;
 
     class PLASK_API Element {
@@ -214,7 +215,8 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
             }
 
             Vec<2> pb = fullMesh.at(index0+step0, index1+step1);
-            if (step0 == 0) pb.c0 += 1.; if (step1 == 0) pb.c1 += 1.;
+            if (step0 == 0) pb.c0 += 1.;
+            if (step1 == 0) pb.c1 += 1.;
 
             return flags.postprocess(point,
                 interpolation::bilinear(pa.c0, pb.c0, pa.c1, pb.c1,
@@ -271,7 +273,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
     void reset(const RectangularMesh<2>& fullMesh, const Predicate& predicate, bool clone_axes = false);
 
     /**
-     * Construct masked mesh with all elements of @c fullMesh which have required materials in the midpoints.
+     * Construct masked mesh with all elements of @p fullMesh which have required materials in the midpoints.
      * Preserve order of elements and nodes of @p fullMesh.
      * @param fullMesh input mesh, before masking
      * @param geom geometry to get materials from
@@ -286,7 +288,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
     }
 
     /**
-     * Change parameters of this mesh to use all elements of @c rectangularMesh which have required materials in the midpoints.
+     * Change parameters of this mesh to use all elements of @p rectangularMesh which have required materials in the midpoints.
      * Preserve order of elements and nodes of @p rectangularMesh.
      * @param rectangularMesh input mesh, before masking
      * @param geom geometry to get materials from
@@ -300,7 +302,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
     }
 
     /**
-     * Construct masked mesh with all elements of @c rectangularMesh which have required kinds of materials (in the midpoints).
+     * Construct masked mesh with all elements of @p rectangularMesh which have required kinds of materials (in the midpoints).
      * Preserve order of elements and nodes of @p rectangularMesh.
      * @param rectangularMesh input mesh, before masking
      * @param geom geometry to get materials from
@@ -317,7 +319,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
     }
 
     /**
-     * Change parameters of this mesh to use all elements of @c rectangularMesh which have required kinds of materials (in the midpoints).
+     * Change parameters of this mesh to use all elements of @p rectangularMesh which have required kinds of materials (in the midpoints).
      * Preserve order of elements and nodes of @p rectangularMesh.
      * @param rectangularMesh input mesh, before masking
      * @param geom geometry to get materials from

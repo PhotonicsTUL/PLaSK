@@ -49,6 +49,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
         return fullMesh.getElementMidpoint2(index2);
     }
 
+    /// Type of predicate function which returns bool for given element of a mesh.
     typedef std::function<bool(const RectangularMesh3D::Element&)> Predicate;
 
     class PLASK_API Element {
@@ -309,7 +310,9 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
             }
 
             Vec<3> pb = fullMesh.at(index0+step0, index1+step1, index2+step2);
-            if (step0 == 0) pb.c0 += 1.; if (step1 == 0) pb.c1 += 1.; if (step2 == 0) pb.c2 += 2.;
+            if (step0 == 0) pb.c0 += 1.;
+            if (step1 == 0) pb.c1 += 1.;
+            if (step2 == 0) pb.c2 += 2.;
 
             return flags.postprocess(point,
                 interpolation::trilinear(pa.c0, pb.c0, pa.c1, pb.c1, pa.c2, pb.c2,

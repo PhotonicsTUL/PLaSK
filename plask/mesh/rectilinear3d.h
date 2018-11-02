@@ -265,9 +265,12 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
             size_t i0 = originalMesh->axis[0]->findUpIndex(p.c0),
                    i1 = originalMesh->axis[0]->findUpIndex(p.c1),
                    i2 = originalMesh->axis[2]->findUpIndex(p.c2);
-            if (i0 == originalMesh->axis[0]->size()) --i0; if (i0 != 0) --i0;
-            if (i1 == originalMesh->axis[1]->size()) --i1; if (i1 != 0) --i1;
-            if (i2 == originalMesh->axis[2]->size()) --i2; if (i2 != 0) --i2;
+            if (i0 == originalMesh->axis[0]->size()) --i0;
+            if (i0 != 0) --i0;
+            if (i1 == originalMesh->axis[1]->size()) --i1;
+            if (i1 != 0) --i1;
+            if (i2 == originalMesh->axis[2]->size()) --i2;
+            if (i2 != 0) --i2;
             return flags.postprocess(point, data[this->index(i0, i1, i2)]);
         }
     };

@@ -163,6 +163,13 @@ struct TriangularMesh2D: public MeshD<2> {
          */
         Builder& add(LocalCoords p1, LocalCoords p2, LocalCoords p3);
 
+        /**
+         * Add a triangle to the mesh.
+         * @param e a trianglular element (from another mesh) which defines the triangle to add
+         * @return <code>*this</code>
+         */
+        Builder& add(const Element& e) { return add(e.getNode(0), e.getNode(1), e.getNode(2)); }
+
     private:
         std::size_t addNode(LocalCoords node);
     };
@@ -187,6 +194,42 @@ struct TriangularMesh2D: public MeshD<2> {
     const_iterator begin() const { return nodes.begin(); }
     const_iterator end() const { return nodes.end(); }
 
+    // ----------------------- Masked meshes -----------------------
+
+    /// Type of predicate function which returns bool for given element of a mesh.
+    typedef std::function<bool(const Element&)> Predicate;
+
+    /**
+     * Construct masked mesh with elements of @c this chosen by a @p predicate.
+     * Preserve order of elements of @p this.
+     * @param predicate predicate which returns either @c true for accepting element or @c false for rejecting it
+     * @return the masked mesh constructed
+     */
+    TriangularMesh2D masked(const Predicate& predicate) const;
+
+    /**
+     * Construct masked mesh with all elements of @c this which have required materials in the midpoints.
+     * Preserve order of elements of @c this.
+     * @param geom geometry to get materials from
+     * @param materialPredicate predicate which returns either @c true for accepting material or @c false for rejecting it
+     * @return the masked mesh constructed
+     */
+    TriangularMesh2D masked(const GeometryD<2>& geom, const std::function<bool(shared_ptr<const Material>)> materialPredicate) const {
+        return masked([&](const Element& el) { return materialPredicate(geom.getMaterial(el.getMidpoint())); });
+    }
+
+    /**
+     * Construct masked mesh with all elements of @c this which have required kinds of materials (in the midpoints).
+     * Preserve order of elements of @p this.
+     * @param geom geometry to get materials from
+     * @param materialKinds one or more kinds of material encoded with bit @c or operation,
+     *        e.g. @c DIELECTRIC|METAL for selecting all dielectrics and metals,
+     *        or @c ~(DIELECTRIC|METAL) for selecting everything else
+     * @return the masked mesh constructed
+     */
+    TriangularMesh2D masked(const GeometryD<2>& geom, unsigned int materialKinds) const {
+        return masked([&](const Element& el) { return (geom.getMaterial(el.getMidpoint())->kind() & materialKinds) != 0; });
+    }
 };
 
 
