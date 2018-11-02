@@ -25,7 +25,7 @@ struct TriangularMesh2D: public MeshD<2> {
 
     typedef std::array<std::size_t, 3> TriangleNodeIndexes;
 
-    std::vector< TriangleNodeIndexes > elementsNodes;
+    std::vector< TriangleNodeIndexes > elementNodes;
 
     /**
      * Represent FEM-like element (triangle) in TriangularMesh2D.
@@ -64,6 +64,10 @@ struct TriangularMesh2D: public MeshD<2> {
             return (getNode(0)+getNode(1)+getNode(2)) / 3.0;
         }
 
+        /**
+         * Get area of the triangle represented by this element.
+         * @return the area of the triangle
+         */
         double getArea() const noexcept {
             // formula comes from http://www.mathguru.com/level2/application-of-coordinate-geometry-2007101600011139.aspx
             const LocalCoords A = getNode(0);
@@ -105,7 +109,7 @@ struct TriangularMesh2D: public MeshD<2> {
         explicit Elements(const TriangularMesh2D& mesh): mesh(mesh) {}
 
         Element operator[](std::size_t index) const {
-            return Element(mesh, mesh.elementsNodes[index]);
+            return Element(mesh, mesh.elementNodes[index]);
         }
 
         /**
@@ -128,11 +132,11 @@ struct TriangularMesh2D: public MeshD<2> {
     Elements elements() const { return Elements(*this); }
 
     Element getElement(std::size_t elementIndex) const {
-        return Element(*this, elementsNodes[elementIndex]);
+        return Element(*this, elementNodes[elementIndex]);
     };
 
     Element element(std::size_t elementIndex) const {
-        return Element(*this, elementsNodes[elementIndex]);
+        return Element(*this, elementNodes[elementIndex]);
     };
 
     /**
@@ -140,7 +144,7 @@ struct TriangularMesh2D: public MeshD<2> {
      * @return number of elements
      */
     std::size_t getElementsCount() const {
-        return elementsNodes.size();
+        return elementNodes.size();
     }
 
     /**
@@ -148,13 +152,38 @@ struct TriangularMesh2D: public MeshD<2> {
      */
     struct Builder {
         std::map<LocalCoords, std::size_t> indexOfNode; ///< map nodes to their indexes in mesh.nodes vector
-        TriangularMesh2D& mesh;
+        TriangularMesh2D& mesh; ///< destination mesh
 
         /**
          * Construct builder which will add triangles to the given @p mesh.
          * @param mesh triangles destination
          */
         explicit Builder(TriangularMesh2D& mesh);
+
+        /**
+         * Construct builder which will add triangles to the given @p mesh.
+         *
+         * This constructor preallocate extra space for elements and nodes in @p mesh,
+         * which usually improves performance.
+         * @param mesh triangles destination
+         * @param predicted_number_of_elements predicted (maximal) number of elements (triangles) to be added
+         * @param predicted_number_of_elements predicted (maximal) number of nodes to be added
+         */
+        explicit Builder(TriangularMesh2D& mesh, std::size_t predicted_number_of_elements, std::size_t predicted_number_of_nodes);
+
+        /**
+         * Construct builder which will add triangles to the given @p mesh.
+         *
+         * This constructor preallocate extra space for elements and nodes (3*predicted_number_of_elements) in @p mesh,
+         * which usually improves performance.
+         * @param mesh triangles destination
+         * @param predicted_number_of_elements predicted (maximal) number of elements to be added
+         */
+        explicit Builder(TriangularMesh2D& mesh, std::size_t predicted_number_of_elements)
+            : Builder(mesh, predicted_number_of_elements, predicted_number_of_elements*3) {}
+
+        /// Shrink to fit both: elements and nodes vectors of destination mesh.
+        ~Builder();
 
         /**
          * Add a triangle to the mesh.
@@ -171,6 +200,12 @@ struct TriangularMesh2D: public MeshD<2> {
         Builder& add(const Element& e) { return add(e.getNode(0), e.getNode(1), e.getNode(2)); }
 
     private:
+
+        /**
+         * Add a @p node to nodes vector of destination mesh if it is not already there.
+         * @param node coordinates of node to (conditionally) add
+         * @return an index of the node (added or found) in the vector
+         */
         std::size_t addNode(LocalCoords node);
     };
 

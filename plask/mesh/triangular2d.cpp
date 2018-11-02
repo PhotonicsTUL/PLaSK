@@ -9,8 +9,20 @@ TriangularMesh2D::Builder::Builder(TriangularMesh2D &mesh): mesh(mesh) {
         this->indexOfNode[mesh.nodes[i]] = i;
 }
 
+TriangularMesh2D::Builder::Builder(TriangularMesh2D &mesh, std::size_t predicted_number_of_elements, std::size_t predicted_number_of_nodes)
+    : Builder(mesh)
+{
+    mesh.elementNodes.reserve(mesh.elementNodes.size() + predicted_number_of_elements);
+    mesh.nodes.reserve(mesh.nodes.size() + predicted_number_of_nodes);
+}
+
+TriangularMesh2D::Builder::~Builder() {
+    mesh.elementNodes.shrink_to_fit();
+    mesh.nodes.shrink_to_fit();
+}
+
 TriangularMesh2D::Builder &TriangularMesh2D::Builder::add(TriangularMesh2D::LocalCoords p1, TriangularMesh2D::LocalCoords p2, TriangularMesh2D::LocalCoords p3) {
-    mesh.elementsNodes.push_back({addNode(p1), addNode(p2), addNode(p3)});
+    mesh.elementNodes.push_back({addNode(p1), addNode(p2), addNode(p3)});
     return *this;
 }
 
@@ -18,12 +30,12 @@ std::size_t TriangularMesh2D::Builder::addNode(TriangularMesh2D::LocalCoords nod
     auto it = this->indexOfNode.emplace(node, mesh.nodes.size());
     if (it.second) // new element has been appended to the map
         this->mesh.nodes.push_back(node);
-    return it.first->second;    // index of node (inserted or found)
+    return it.first->second;    // an index of the node (inserted or found)
 }
 
 TriangularMesh2D TriangularMesh2D::masked(const TriangularMesh2D::Predicate &predicate) const {
     TriangularMesh2D result;
-    Builder builder(result);
+    Builder builder(result, elementNodes.size(), nodes.size());
     for (auto el: elements())
         if (predicate(el)) builder.add(el);
     return result;
