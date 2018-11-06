@@ -15,21 +15,31 @@ shared_ptr<MeshD<2>> TriangleGenerator::generate(const shared_ptr<GeometryObject
     triangulateio in = {}, out = {};    // are fields are nulled, so we will only fill fields we need
 
     in.numberofpoints = 4;
-    std::unique_ptr<REAL[]> in_points(new REAL[4]);
+    std::unique_ptr<REAL[]> in_points(new REAL[8]);
     Box2D bb = geometry->getBoundingBox();
     in.pointlist = in_points.get();
     in_points[0] = in_points[6] = bb.left();
     in_points[2] = in_points[4] = bb.right();
     in_points[1] = in_points[3] = bb.top();
     in_points[5] = in_points[7] = bb.bottom();
+    in.numberofsegments = 4;
+    std::unique_ptr<int[]> in_segments(new int[8]);
+    in.segmentlist = in_segments.get();
+    in_segments[0] = 0; in_segments[1] = 1;
+    in_segments[2] = 1; in_segments[3] = 2;
+    in_segments[4] = 2; in_segments[5] = 3;
+    in_segments[6] = 3; in_segments[7] = 0;
 
     triangulate(const_cast<char*>(getSwitches().c_str()), &in, &out, nullptr);
 
     // just for case we free memory which could be allocated by triangulate but we do not need (some of this can be nullptr):
     trifree(out.pointattributelist);
+    trifree(out.pointmarkerlist);
     trifree(out.triangleattributelist);
     trifree(out.trianglearealist);
     trifree(out.neighborlist);
+    trifree(out.segmentlist);
+    trifree(out.segmentmarkerlist);
     trifree(out.holelist);
     trifree(out.regionlist);
     trifree(out.edgelist);
