@@ -7,10 +7,38 @@ extern "C" {
 
 namespace plask {
 
+struct TrifreeCaller {
+    void operator()(void* ptr) const { trifree(ptr); }
+};
+
 shared_ptr<MeshD<2>> TriangleGenerator::generate(const shared_ptr<GeometryObjectD<DIM> > &geometry) {
-    triangulateio in, out;
-    // TODO prepare in and out
+    triangulateio in = {}, out = {};    // are fields are nulled, so we will only fill fields we need
+
+    in.numberofpoints = 4;
+    std::unique_ptr<REAL[]> in_points(new REAL[4]);
+    Box2D bb = geometry->getBoundingBox();
+    in.pointlist = in_points.get();
+    in_points[0] = in_points[6] = bb.left();
+    in_points[2] = in_points[4] = bb.right();
+    in_points[1] = in_points[3] = bb.top();
+    in_points[5] = in_points[7] = bb.bottom();
+
     triangulate(const_cast<char*>(getSwitches().c_str()), &in, &out, nullptr);
+
+    // just for case we free memory which could be allocated by triangulate but we do not need (some of this can be nullptr):
+    trifree(out.pointattributelist);
+    trifree(out.triangleattributelist);
+    trifree(out.trianglearealist);
+    trifree(out.neighborlist);
+    trifree(out.holelist);
+    trifree(out.regionlist);
+    trifree(out.edgelist);
+    trifree(out.edgemarkerlist);
+    trifree(out.normlist);
+
+    // this will free rest of memory allocated by triangulate (even if an exception will be throwed):
+    std::unique_ptr<REAL[], TrifreeCaller> out_points(out.pointlist);
+    std::unique_ptr<int[], TrifreeCaller> out_triangles(out.trianglelist);
 
     shared_ptr<TriangularMesh2D> result = make_shared<TriangularMesh2D>();
     result->nodes.reserve(out.numberofpoints);
