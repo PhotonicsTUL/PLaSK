@@ -265,6 +265,12 @@ struct TriangularMesh2D: public MeshD<2> {
     TriangularMesh2D masked(const GeometryD<2>& geom, unsigned int materialKinds) const {
         return masked([&](const Element& el) { return (geom.getMaterial(el.getMidpoint())->kind() & materialKinds) != 0; });
     }
+
+    /**
+     * Write mesh to XML
+     * \param object XML object to write to
+     */
+    void writeXML(XMLElement& object) const override;
 };
 
 

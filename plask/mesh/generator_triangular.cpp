@@ -86,4 +86,14 @@ std::string TriangleGenerator::getSwitches() const {
     return result.str();
 }
 
+shared_ptr<MeshGenerator> readTriangleGenerator(XMLReader& reader, const Manager&) {
+    shared_ptr<TriangleGenerator> result = make_shared<TriangleGenerator>();
+    result->maxTriangleArea = reader.getAttribute<double>("maxarea");
+    result->minTriangleAngle = reader.getAttribute<double>("minangle");
+    reader.requireTagEnd();
+    return result;
+}
+
+static RegisterMeshGeneratorReader trianglegenerator_reader("triangle", readTriangleGenerator);
+
 }   // namespace plask

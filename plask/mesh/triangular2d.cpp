@@ -41,6 +41,18 @@ TriangularMesh2D TriangularMesh2D::masked(const TriangularMesh2D::Predicate &pre
     return result;
 }
 
+void TriangularMesh2D::writeXML(XMLElement &object) const {
+    object.attr("type", "triangular2d");
+    // TODO write nodes and elements
+}
+
+static shared_ptr<Mesh> readTriangularMesh2D(XMLReader& reader) {
+    shared_ptr<TriangularMesh2D> result = plask::make_shared<TriangularMesh2D>();
+    // TODO read nodes and elements
+    return result;
+}
+
+static RegisterMeshReader rectangular2d_reader("triangular2d", readTriangularMesh2D);
 
 
 
