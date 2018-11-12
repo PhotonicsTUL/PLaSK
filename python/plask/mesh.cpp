@@ -12,6 +12,7 @@
 namespace plask { namespace python {
 
 void register_mesh_rectangular();
+void register_mesh_triangular();
 
 template <typename T>
 static bool __nonempty__(const T& self) { return !self.empty(); }
@@ -121,6 +122,15 @@ ExportMeshGenerator(const char* name) {
     return pyclass;
 }
 
+template <int DIM>
+static typename std::conditional<DIM==1, double, Vec<DIM, double>>::type
+MeshXD__getitem__(const MeshD<DIM>& self, py::object index) {
+    int indx = py::extract<int>(index);
+    if (indx < 0) indx += int(self.size());
+    if (indx < 0 || size_t(indx) >= self.size()) throw IndexError("mesh index out of range");
+    return self.at(indx);
+}
+
 void register_mesh()
 {
     py_enum<InterpolationMethod> pyInterpolationMethod;
@@ -149,6 +159,7 @@ void register_mesh()
         u8"Base class for every one-dimensional transverse mesh in two-dimensional geometry", py::no_init); mesh1d
         .def("__init__", raw_constructor(&MeshWrap<1>::__init__))
         .def("__iter__", py::range(&MeshD<1>::begin, &MeshD<1>::end))
+        .def("__getitem__", MeshXD__getitem__<1>);
     ;
     mesh1d.attr("dim") = 1;
     py::implicitly_convertible<shared_ptr<MeshD<1>>, shared_ptr<const MeshD<1>>>();
@@ -157,6 +168,7 @@ void register_mesh()
         u8"Base class for every two-dimensional mesh", py::no_init); mesh2d
         .def("__init__", raw_constructor(&MeshWrap<2>::__init__))
         .def("__iter__", py::range(&MeshD<2>::begin, &MeshD<2>::end))
+        .def("__getitem__", MeshXD__getitem__<2>)
     ;
     mesh2d.attr("dim") = 2;
     py::implicitly_convertible<shared_ptr<MeshD<2>>, shared_ptr<const MeshD<2>>>();
@@ -165,6 +177,7 @@ void register_mesh()
         u8"Base class for every two-dimensional mesh", py::no_init); mesh3d
         .def("__init__", raw_constructor(&MeshWrap<3>::__init__))
         .def("__iter__", py::range(&MeshD<3>::begin, &MeshD<3>::end))
+        .def("__getitem__", MeshXD__getitem__<3>)
     ;
     mesh3d.attr("dim") = 3;
     py::implicitly_convertible<shared_ptr<MeshD<3>>, shared_ptr<const MeshD<3>>>();
@@ -182,6 +195,7 @@ void register_mesh()
     UnstructuredMesh<3>::register_class();
 
     register_mesh_rectangular();
+    register_mesh_triangular();
 
     register_vector_of<OrderedAxis>("Ordered");
 
