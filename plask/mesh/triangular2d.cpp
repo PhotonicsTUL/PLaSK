@@ -4,6 +4,33 @@
 
 namespace plask {
 
+Vec<3, double> TriangularMesh2D::Element::barycentric(Vec<2, double> p) const {
+    // formula comes from https://codeplea.com/triangular-interpolation
+    // but it is modified a bit, to reuse more diffs and call cross (which can be optimized)
+    Vec<2, double>
+            diff_2_3 = getNode(1) - getNode(2),
+            diff_p_3 = p - getNode(2),
+            diff_1_3 = getNode(0) - getNode(2);
+    const double den = cross(diff_1_3, diff_2_3);   // diff_2_3.c1 * diff_1_3.c0 - diff_2_3.c0 * diff_1_3.c1
+    Vec<3, double> res;
+    res.c0 = cross(diff_p_3, diff_2_3) / den;   // (diff_2_3.c1 * diff_p_3.c0 - diff_2_3.c0 * diff_p_3.c1) / den
+    res.c1 = cross(diff_1_3, diff_p_3) / den;   // (- diff_1_3.c1 * diff_p_3.c0 + diff_1_3.c0 * diff_p_3.c1) / den
+    res.c2 = 1.0 - res.c0 - res.c1;
+    return res;
+}
+
+Box2D TriangularMesh2D::Element::getBoundingBox() const {
+    LocalCoords lo = getNode(0);
+    LocalCoords up = lo;
+    const LocalCoords B = getNode(1);
+    if (B.c0 < lo.c0) lo.c0 = B.c0; else up.c0 = B.c0;
+    if (B.c1 < lo.c1) lo.c1 = B.c1; else up.c1 = B.c1;
+    const LocalCoords C = getNode(2);
+    if (C.c0 < lo.c0) lo.c0 = C.c0; else if (C.c0 > up.c0) up.c0 = C.c0;
+    if (C.c1 < lo.c1) lo.c1 = C.c1; else if (C.c1 > up.c1) up.c1 = C.c1;
+    return Box2D(lo, up);
+}
+
 TriangularMesh2D::Builder::Builder(TriangularMesh2D &mesh): mesh(mesh) {
     for (std::size_t i = 0; i < mesh.nodes.size(); ++i)
         this->indexOfNode[mesh.nodes[i]] = i;
@@ -125,5 +152,7 @@ template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor2<double
 template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor2<dcomplex>, Tensor2<dcomplex>>;
 template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor3<double>, Tensor3<double>>;
 template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor3<dcomplex>, Tensor3<dcomplex>>;
+
+
 
 }   // namespace plask

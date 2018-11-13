@@ -1035,7 +1035,7 @@ void register_mesh_rectangular()
         py::scope scope = rectangular2D;
         (void) scope;   // don't warn about unused variable scope
 
-        py::class_<RectangularMesh2D::Element>("Element", u8"Element list in the :py:class:`mesh.Rectangular2D", py::no_init)
+        py::class_<RectangularMesh2D::Element>("Element", u8"Element (FEM-like, rectangular) of the :py:class:`mesh.Rectangular2D", py::no_init)
             .add_property("index0", /*size_t*/ &RectangularMesh2D::Element::getIndex0, u8"Element index in the first axis")
             .add_property("index1", /*size_t*/ &RectangularMesh2D::Element::getIndex1, u8"Element index in the second axis")
             .add_property("left", /*double*/ &RectangularMesh2D::Element::getLower0, u8"Position of the left edge of the element")
@@ -1168,7 +1168,7 @@ void register_mesh_rectangular()
         py::scope scope = rectangular3D;
         (void) scope;   // don't warn about unused variable scope
 
-        py::class_<RectilinearMesh3D::Element>("Element", u8"Element list in the :py:class:`mesh.Rectangular3D", py::no_init)
+        py::class_<RectilinearMesh3D::Element>("Element", u8"Element (FEM-like, rectangular) of the :py:class:`mesh.Rectangular3D", py::no_init)
             .add_property("index0", /*size_t*/ &RectilinearMesh3D::Element::getIndex0, u8"Element index in the first axis")
             .add_property("index1", /*size_t*/ &RectilinearMesh3D::Element::getIndex1, u8"Element index in the second axis")
             .add_property("index2", /*size_t*/ &RectilinearMesh3D::Element::getIndex2, u8"Element index in the third axis")

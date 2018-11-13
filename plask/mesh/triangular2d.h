@@ -18,8 +18,8 @@ struct TriangularMesh2D: public MeshD<2> {
 
     using MeshD<2>::LocalCoords;
     typedef std::vector<LocalCoords> LocalCoordsVec;
-    typedef LocalCoordsVec::iterator iterator;
     typedef LocalCoordsVec::const_iterator const_iterator;
+    typedef const_iterator iterator;
 
     LocalCoordsVec nodes;
 
@@ -57,6 +57,14 @@ struct TriangularMesh2D: public MeshD<2> {
         }
 
         /**
+         * Get coordinates of the triangle vertices.
+         * @return coordinates of the triangle vertices
+         */
+        std::array<LocalCoords, 3> getNodes() const {
+            return { getNode(0), getNode(1), getNode(2) };
+        }
+
+        /**
          * Get centroid of the triangle corresponded to this element.
          * @return centroid of the triangle corresponded to this element
          */
@@ -82,20 +90,13 @@ struct TriangularMesh2D: public MeshD<2> {
          * @param p point
          * @return the barycentric (area) coordinates of @c p
          */
-        Vec<3, double> barycentric(Vec<2, double> p) const {
-            // formula comes from https://codeplea.com/triangular-interpolation
-            // but it is modified a bit, to reuse more diffs and call cross (which can be optimized)
-            Vec<2, double>
-                    diff_2_3 = getNode(1) - getNode(2),
-                    diff_p_3 = p - getNode(2),
-                    diff_1_3 = getNode(0) - getNode(2);
-            const double den = cross(diff_1_3, diff_2_3);   // diff_2_3.c1 * diff_1_3.c0 - diff_2_3.c0 * diff_1_3.c1
-            Vec<3, double> res;
-            res.c0 = cross(diff_p_3, diff_2_3) / den;   // (diff_2_3.c1 * diff_p_3.c0 - diff_2_3.c0 * diff_p_3.c1) / den
-            res.c1 = cross(diff_1_3, diff_p_3) / den;   // (- diff_1_3.c1 * diff_p_3.c0 + diff_1_3.c0 * diff_p_3.c1) / den
-            res.c2 = 1.0 - res.c0 - res.c1;
-            return res;
-        }
+        Vec<3, double> barycentric(Vec<2, double> p) const;
+
+        /**
+         * Calculate minimal rectangle which contains the triangle represented by the element.
+         * @return calculated rectangle
+         */
+        Box2D getBoundingBox() const;
     };
 
     /**
@@ -224,8 +225,6 @@ struct TriangularMesh2D: public MeshD<2> {
     }
 
     // ---- Faster iterators used when exact type of mesh is known; they hide polimorphic iterators of parent class ----
-    iterator begin() { return nodes.begin(); }
-    iterator end() { return nodes.end(); }
     const_iterator begin() const { return nodes.begin(); }
     const_iterator end() const { return nodes.end(); }
 
