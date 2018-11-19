@@ -461,15 +461,15 @@ struct Eigenmodes {
             .def("__getitem__", &Eigenmodes::__getitem__, py::with_custodian_and_ward_postcall<0,1>())
             .def_readonly("outLightMagnitude",
                           reinterpret_cast<ProviderFor<ModeLightMagnitude, typename SolverT::SpaceType> Eigenmodes::*> (&Eigenmodes::outLightMagnitude),
-                          format(docstring_attr_provider<ModeLightMagnitude>(), "LightMagnitude", suffix, u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude", "n=0", ":param int n: Mode number.").c_str()
+                          format(docstring_attr_provider<ModeLightMagnitude>(), "LightMagnitude", suffix, u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude", "n=0", ":param int n: Number of the mode found with :meth:`find_mode`.").c_str()
                          )
             .def_readonly("outLightE",
                           reinterpret_cast<ProviderFor<ModeLightE, typename SolverT::SpaceType> Eigenmodes::*> (&Eigenmodes::outLightE),
-                          format(docstring_attr_provider<ModeLightE>(), "LightE", suffix, u8"electric field", u8"V/m", "", "", "", "outLightE", "n=0", ":param int n: Mode number.").c_str()
+                          format(docstring_attr_provider<ModeLightE>(), "LightE", suffix, u8"electric field", u8"V/m", "", "", "", "outLightE", "n=0", ":param int n: Number of the mode found with :meth:`find_mode`.").c_str()
                          )
             .def_readonly("outLightH",
                           reinterpret_cast<ProviderFor<ModeLightE, typename SolverT::SpaceType> Eigenmodes::*> (&Eigenmodes::outLightH),
-                          format(docstring_attr_provider<ModeLightE>(), "LightH", suffix, u8"electric field", u8"A/m", "", "", "", "outLightH", "n=0", ":param int n: Mode number.").c_str()
+                          format(docstring_attr_provider<ModeLightE>(), "LightH", suffix, u8"electric field", u8"A/m", "", "", "", "outLightH", "n=0", ":param int n: Number of the mode found with :meth:`find_mode`.").c_str()
                          )
         ;
         py::scope scope(ems);

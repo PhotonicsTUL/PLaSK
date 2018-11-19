@@ -114,7 +114,7 @@ template <> constexpr const char* docstring_attr_provider_impl<MULTI_VALUE_PROPE
 
     u8"{7}(n=0{5})\n\n"
 
-    u8":param int n: Value number.\n"
+    u8"{9}"
     u8"{6}\n"
 
     u8":return: Value of the {2} **[{3}]**.\n\n"
@@ -175,7 +175,7 @@ template <> constexpr const char* docstring_attr_provider_impl<MULTI_FIELD_PROPE
 
     u8"{7}(n=0, mesh{5}, interpolation='default')\n\n"
 
-    u8":param int n: Value number.\n"
+    u8"{9}"
     u8":param mesh mesh: Target mesh to get the field at.\n"
     u8":param str interpolation: Requested interpolation method.\n"
     u8"{6}\n"
