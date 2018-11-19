@@ -756,8 +756,21 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, fi
         x_min = mesh[0]; x_max = mesh[-1]
         y_max = y_min = None
 
+    elif isinstance(mesh, plask.mesh.TriangularMesh2D):
+        x_max = max(node[0] for node in mesh)
+        x_min = min(node[0] for node in mesh)
+        y_max = max(node[1] for node in mesh)
+        y_min = min(node[1] for node in mesh)
+        for triangle in mesh.elements:
+            nodes = triangle.nodes
+            x = [p[0] for p in nodes]
+            x.append(x[0])
+            y = [p[1] for p in nodes]
+            y.append(y[0])
+            lines.append(matplotlib.lines.Line2D(x, y, color=color, lw=lw, zorder=zorder, alpha=alpha))
+
     else:
-        raise NotImplementedError("plot_mesh can be only used for rectangular mesh")
+        raise NotImplementedError("plot_mesh can be only used for rectangular or triangular mesh")
 
     for line in lines:
         axes.add_line(line)
