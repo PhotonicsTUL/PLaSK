@@ -18,8 +18,7 @@ namespace py = boost::python;
 void register_mesh_triangular() {
 
     py::class_<TriangularMesh2D, shared_ptr<TriangularMesh2D>, py::bases<MeshD<2>>> triangularMesh2D("TriangularMesh2D",
-        u8"Two-dimensional triangular mesh\n\n",
-        py::no_init);
+        u8"Two-dimensional triangular mesh");
     triangularMesh2D
             .def("__iter__", py::range(&TriangularMesh2D::begin, &TriangularMesh2D::end)) // we will use native iterators which perform better
             .add_property("elements", py::make_function(&TriangularMesh2D::elements, py::with_custodian_and_ward_postcall<0,1>()), u8"Element list in the mesh")
@@ -48,7 +47,7 @@ void register_mesh_triangular() {
 
         py::class_<TriangularMesh2D::Elements>("Elements", u8"Element list in the :py:class:`mesh.TriangularMesh2D", py::no_init)
             .def("__len__", &TriangularMesh2D::Elements::size)
-            .def("__getitem__", &TriangularMesh2D::Elements::operator[], py::with_custodian_and_ward_postcall<0,1>())
+            .def("__getitem__", &TriangularMesh2D::Elements::at, py::with_custodian_and_ward_postcall<0,1>())
             .def("__iter__", py::range<py::with_custodian_and_ward_postcall<0,1>>(&TriangularMesh2D::Elements::begin, &TriangularMesh2D::Elements::end))
             //.add_property("mesh", &RectangularMesh_ElementMesh<RectangularMesh2D>, "Mesh with element centers")
         ;

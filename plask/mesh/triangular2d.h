@@ -109,6 +109,12 @@ struct TriangularMesh2D: public MeshD<2> {
 
         explicit Elements(const TriangularMesh2D& mesh): mesh(mesh) {}
 
+        Element at(std::size_t index) const {
+            if (index >= mesh.elementNodes.size())
+                throw OutOfBoundsException("TriangularMesh2D::Elements::at", "index", index, 0, mesh.elementNodes.size()-1);
+            return Element(mesh, mesh.elementNodes[index]);
+        }
+
         Element operator[](std::size_t index) const {
             return Element(mesh, mesh.elementNodes[index]);
         }
