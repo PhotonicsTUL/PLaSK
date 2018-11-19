@@ -4,6 +4,7 @@
 
 //#include <boost/python/stl_iterator.hpp>
 #include <boost/python/iterator.hpp>
+#include <boost/python/iterator.hpp>
 
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/interpolation.h>
@@ -14,6 +15,13 @@ namespace plask { namespace python {
 
 namespace py = boost::python;
 
+static py::list element_nodes(const TriangularMesh2D::Element& self) {
+    py::list result;
+    result.append(self.getNode(0));
+    result.append(self.getNode(1));
+    result.append(self.getNode(2));
+    return result;
+}
 
 void register_mesh_triangular() {
 
@@ -36,7 +44,7 @@ void register_mesh_triangular() {
             .add_property("volume", /*double*/ &TriangularMesh2D::Element::getArea, u8"Alias for :attr:`area`")
             .add_property("center", /*Vec<2,double>*/ &TriangularMesh2D::Element::getMidpoint, u8"Position of the element center")
             .add_property("node_indexes", &TriangularMesh2D::Element::triangleNodes, u8"Indices of the element (triangle) vertices on the orignal mesh.")
-            .add_property("nodes", &TriangularMesh2D::Element::getNodes, "coordinates of the element (triangle) vertices")
+            .add_property("nodes", element_nodes, "coordinates of the element (triangle) vertices")
             .def("node", &TriangularMesh2D::Element::getNode, py::arg("index"), py::return_value_policy<py::return_by_value>(), "coordinate of the element (triangle) vertex")
             .add_property("box", /*Box2D*/ &TriangularMesh2D::Element::getBoundingBox, u8"bounding box of the element")
             .def("barycentric", &TriangularMesh2D::Element::barycentric, py::return_value_policy<py::return_by_value>(), "barycentric (area) coordinates of given point")

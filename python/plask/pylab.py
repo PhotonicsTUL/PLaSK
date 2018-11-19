@@ -757,6 +757,7 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, fi
         y_max = y_min = None
 
     elif isinstance(mesh, plask.mesh.TriangularMesh2D):
+        ix, iy = 0, 1
         x_max = max(node[0] for node in mesh)
         x_min = min(node[0] for node in mesh)
         y_max = max(node[1] for node in mesh)
