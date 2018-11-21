@@ -318,6 +318,7 @@ protected:
 
     ///Do everything, but align to_insert by aligner.
     PathHints::Hint _insertUnsafe(const std::size_t pos, shared_ptr<TranslationT> to_insert, ChildAligner aligner) {
+        if (!to_insert) return PathHints::Hint(this->shared_from_this(), shared_ptr<GeometryObject>());
         this->ensureIsValidInsertPosition(pos, "insertUnsafe");
         this->children.insert(children.begin() + pos, to_insert);
         aligners.insert(aligners.begin() + pos, aligner);
@@ -327,11 +328,12 @@ protected:
     }
 
     PathHints::Hint _insert(const std::size_t pos, shared_ptr<TranslationT> to_insert, ChildAligner aligner) {
-        this->ensureCanHaveAsChild(*to_insert);
+        if (to_insert) this->ensureCanHaveAsChild(*to_insert);
         return _insertUnsafe(pos, to_insert, aligner);
     }
 
     PathHints::Hint _addUnsafe(shared_ptr<TranslationT> to_add, ChildAligner aligner) {
+        if (!to_add) return PathHints::Hint(this->shared_from_this(), shared_ptr<GeometryObject>());
         this->children.push_back(to_add);
         aligners.push_back(aligner);
         this->connectOnChildChanged(*to_add);
@@ -340,7 +342,7 @@ protected:
     }
 
     /*PathHints::Hint _add(shared_ptr<TranslationT> to_add, ChildAligner aligner) {
-        this->ensureCanHaveAsChild(*to_add);
+        if (to_add) this->ensureCanHaveAsChild(*to_add);
         this->_addUnsafe(to_add, aligner);
         return PathHints::Hint(this->shared_from_this(), to_add);
     }*/

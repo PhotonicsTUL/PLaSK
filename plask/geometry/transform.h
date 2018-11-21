@@ -66,7 +66,7 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
      * Get child.
      * @return child
      */
-    inline shared_ptr<ChildType> getChild() const { 
+    inline shared_ptr<ChildType> getChild() const {
         return _child;
         /*if (hasChild()) return _child;    //TODO
         throw NoChildException();*/
@@ -151,7 +151,7 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
         if (hasChild()) result->setChild(dynamic_pointer_cast<ChildType>(_child->deepCopy(copied)));
         return result;
     }
-    
+
     shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const override {
         shared_ptr<GeometryObject> result(const_pointer_cast<GeometryObject>(this->shared_from_this()));
         if (changer.apply(result, translation) || !hasChild()) return result;

@@ -209,7 +209,7 @@ public:
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint add(const shared_ptr<ChildType> &el) {
-        this->ensureCanHaveAsChild(*el);
+        if (el) this->ensureCanHaveAsChild(*el);
         return addUnsafe(el);
     }
 
@@ -259,7 +259,7 @@ public:
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint insert(const shared_ptr<ChildType>& el, const std::size_t pos) {
-        this->ensureCanHaveAsChild(*el);
+        if (el) this->ensureCanHaveAsChild(*el);
         return insertUnsafe(el, pos);
     }
 
@@ -271,7 +271,7 @@ public:
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint push_front(const shared_ptr<ChildType>& el) {
-        this->ensureCanHaveAsChild(*el);
+        if (el) this->ensureCanHaveAsChild(*el);
         return insertUnsafe(el, 0);
     }
 
@@ -282,7 +282,7 @@ public:
     shared_ptr<GeometryObject> shallowCopy() const override;
 
     shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
-    
+
 };
 
 template <int dim>
@@ -374,7 +374,7 @@ struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint insert(const shared_ptr<ChildType>& el, const std::size_t pos, const ChildAligner& aligner) {
-        this->ensureCanHaveAsChild(*el);
+        if (el) this->ensureCanHaveAsChild(*el);
         return insertUnsafe(el, pos, aligner);
     }
 
@@ -403,7 +403,7 @@ struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint add(const shared_ptr<ChildType> &el, const ChildAligner& aligner) {
-        this->ensureCanHaveAsChild(*el);
+        if (el) this->ensureCanHaveAsChild(*el);
         return addUnsafe(el, aligner);
     }
 
@@ -434,7 +434,7 @@ struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint push_front(const shared_ptr<ChildType>& el, const ChildAligner& aligner) {
-        this->ensureCanHaveAsChild(*el);
+        if (el) this->ensureCanHaveAsChild(*el);
         return insertUnsafe(el, 0, aligner);
     }
 
@@ -470,7 +470,7 @@ struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim
     shared_ptr<GeometryObject> shallowCopy() const override;
 
     shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
-    
+
 protected:
     void writeXMLChildAttr(XMLWriter::Element &dest_xml_child_tag, std::size_t child_index, const AxisNames &axes) const override;
 

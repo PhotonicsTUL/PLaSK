@@ -73,7 +73,7 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint add(shared_ptr<ChildType> el, ChildAligner aligner) {
-        this->ensureCanHaveAsChild(*el);
+        if (el) this->ensureCanHaveAsChild(*el);
         return addUnsafe(el, aligner);
     }
 
@@ -85,7 +85,7 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
      * @throw CyclicReferenceException if adding the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint add(shared_ptr<ChildType> el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
-        this->ensureCanHaveAsChild(*el);
+        if (el) this->ensureCanHaveAsChild(*el);
         return addUnsafe(el, translation);
     }
 
@@ -118,7 +118,7 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
      * @throw CyclicReferenceException if inserting the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint insert(const std::size_t pos, shared_ptr<ChildType> el, ChildAligner aligner) {
-        this->ensureCanHaveAsChild(*el);
+        if (el) this->ensureCanHaveAsChild(*el);
         return insertUnsafe(pos, el, aligner);
     }
 
@@ -131,7 +131,7 @@ struct PLASK_API TranslationContainer: public WithAligners<GeometryObjectContain
      * @throw CyclicReferenceException if inserting the new child cause inception of cycle in geometry graph
      */
     PathHints::Hint insert(const std::size_t pos, shared_ptr<ChildType> el, const DVec& translation = Primitive<dim>::ZERO_VEC) {
-        this->ensureCanHaveAsChild(*el);
+        if (el) this->ensureCanHaveAsChild(*el);
         return insertUnsafe(pos, el, translation);
     }
 

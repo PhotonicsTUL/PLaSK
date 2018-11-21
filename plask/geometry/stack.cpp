@@ -195,6 +195,8 @@ const StackContainer<3>::ChildAligner& StackContainer<3>::DefaultAligner() {
 
 template <int dim>
 PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const ChildAligner& aligner) {
+    if (!el) return PathHints::Hint(shared_from_this(), shared_ptr<GeometryObject>());
+
     const auto bb = el->getBoundingBox();
     shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[pos] - bb.lower.vert(), bb);
     this->connectOnChildChanged(*trans_geom);
@@ -245,6 +247,8 @@ void StackContainer<dim>::onChildChanged(const GeometryObject::Event &evt) {
 
 template <int dim>
 PathHints::Hint StackContainer<dim>::addUnsafe(const shared_ptr<typename StackContainer<dim>::ChildType> &el, const typename StackContainer<dim>::ChildAligner &aligner) {
+    if (!el) return PathHints::Hint(shared_from_this(), shared_ptr<GeometryObject>());
+
     double el_translation, next_height;
     auto elBB = el->getBoundingBox();
     this->calcHeight(elBB, stackHeights.back(), el_translation, next_height);
@@ -374,6 +378,8 @@ bool ShelfContainer2D::isFlat() const {
 }
 
 PathHints::Hint ShelfContainer2D::addUnsafe(const shared_ptr<ChildType>& el) {
+    if (!el) return PathHints::Hint(shared_from_this(), shared_ptr<GeometryObject>());
+
     double el_translation, next_height;
     auto elBB = el->getBoundingBox();
     calcHeight(elBB, stackHeights.back(), el_translation, next_height);
@@ -389,6 +395,8 @@ PathHints::Hint ShelfContainer2D::addUnsafe(const shared_ptr<ChildType>& el) {
 }
 
 PathHints::Hint ShelfContainer2D::insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos) {
+    if (!el) return PathHints::Hint(shared_from_this(), shared_ptr<GeometryObject>());
+
     const auto bb = el->getBoundingBox();
     shared_ptr<TranslationT> trans_geom = plask::make_shared<TranslationT>(el, vec(stackHeights[pos] - bb.lower.tran(), -bb.lower.vert()));
     connectOnChildChanged(*trans_geom);

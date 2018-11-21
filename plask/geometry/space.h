@@ -1088,7 +1088,7 @@ public:
      * This method doesn't inform observers about change.
      * @param child new child
      */
-    void setChildUnsafe(shared_ptr< GeometryObjectD<3> > child) {
+    void setChildUnsafe(shared_ptr<GeometryObjectD<3>> child) {
         if (child == this->child) return;
         this->child = child;
         this->initNewChild();
@@ -1098,7 +1098,7 @@ public:
      * Set new child. Informs observers about change.
      * @param child new child
      */
-    void setChild(shared_ptr< GeometryObjectD<3> > child) {
+    void setChild(shared_ptr<GeometryObjectD<3>> child) {
         //this->ensureCanHaveAsChild(*child);
         setChildUnsafe(child);
         fireChildrenChanged();

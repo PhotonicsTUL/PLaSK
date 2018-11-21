@@ -84,10 +84,10 @@ XMLReader::NodeType XMLReader::ensureNodeTypeIs(int required_types, const char *
         std::string msg;
         if (required_types & NODE_ELEMENT) {
             if (new_tag_name) {
-                msg += "begin of tag ";
+                msg += "begining of tag ";
                 msg += new_tag_name;
             } else
-                msg += "begin of a new tag";
+                msg += "begining of a new tag";
         }
         if (required_types & NODE_ELEMENT_END) {
             if (!msg.empty()) msg += " or ";

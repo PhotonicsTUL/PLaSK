@@ -85,7 +85,7 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
     std::string nodeName = source.getNodeName();
 
     if (nodeName == "again") {
-        shared_ptr<GeometryObject> result = requireObjectWithName(source.requireAttribute("ref"));
+        shared_ptr<GeometryObject> result = requireObjectFromAttribute("ref");
         source.requireTagEnd();
         return result;
     }
@@ -104,42 +104,50 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
     std::deque<std::pair<std::string, shared_ptr<GeometryObject>>> other_names;
 
     if (nodeName == "copy") {
-        shared_ptr<GeometryObject> from = requireObjectWithName(source.requireAttribute("from"));
+        shared_ptr<GeometryObject> from = requireObjectFromAttribute("from");
         GeometryObject::CompositeChanger changers;
         while (source.requireTagOrEnd()) {
             const std::string operation_name = source.getNodeName();
             if (operation_name == "replace") {
-                shared_ptr<GeometryObject> op_from = requireObjectWithName(source.requireAttribute("object"));
-                shared_ptr<GeometryObject> to;
+                shared_ptr<GeometryObject> op_from = requireObjectFromAttribute("object");
                 plask::optional<std::string> to_name = source.getAttribute("with");
-                if (to_name) {
-                    to = requireObjectWithName(*to_name);
-                } else {
-                    source.requireTag();
-                    SetExpectedSuffix suffixSetter(*this, op_from->getDimensionsCount());
-                    to = readObject();
-                }
-                //TODO read translation
-                changers.append(new GeometryObject::ReplaceChanger(op_from, to, vec(0.0, 0.0, 0.0)));
-                source.requireTagEnd();
+                if (op_from) {
+                    shared_ptr<GeometryObject> to;
+                    if (to_name) {
+                        to = requireObjectWithName(*to_name);
+                        source.requireTagEnd();
+                    } else {
+                        if (source.requireTagOrEnd()) {
+                            SetExpectedSuffix suffixSetter(*this, op_from->getDimensionsCount());
+                            to = readObject();
+                            source.requireTagEnd();
+                        } else if (!manager.draft) {
+                            source.throwUnexpectedElementException("begining of a new tag");
+                        }
+                    }
+                    if (to) changers.append(new GeometryObject::ReplaceChanger(op_from, to, vec(0.0, 0.0, 0.0)));
+                    else changers.append(new GeometryObject::DeleteChanger(op_from));
+                } else
+                    source.requireTagEnd();
             } else if (operation_name == "toblock") {
-                shared_ptr<GeometryObject> op_from = requireObjectWithName(source.requireAttribute("object"));
-                shared_ptr<Material> blockMaterial = getMaterial(source.requireAttribute("material"));
-                GeometryObject::ToBlockChanger* changer = new GeometryObject::ToBlockChanger(op_from, blockMaterial);
-                changers.append(changer);
+                shared_ptr<GeometryObject> op_from = requireObjectFromAttribute("object");
+                shared_ptr<Material> blockMaterial = requireMaterial();
                 plask::optional<std::string> block_name = source.getAttribute(XML_NAME_ATTR);    // read name
-                if (block_name && !isAutoName(*block_name)) {
-                    BadId::throwIfBad("block replacing object", *block_name, '-');
-                    other_names.push_back(std::make_pair(*block_name, changer->to));
-                }
-                if (plask::optional<std::string> block_roles = source.getAttribute("role")) {  // if have some roles
-                    for (const std::string& c: splitEscIterator(*block_roles, ',')) changer->to->addRole(c);
+                if (op_from && blockMaterial) {
+                    GeometryObject::ToBlockChanger* changer = new GeometryObject::ToBlockChanger(op_from, blockMaterial);
+                    changers.append(changer);
+                    if (block_name && !isAutoName(*block_name)) {
+                        BadId::throwIfBad("block replacing object", *block_name, '-');
+                        other_names.push_back(std::make_pair(*block_name, changer->to));
+                    }
+                    if (plask::optional<std::string> block_roles = source.getAttribute("role")) {  // if have some roles
+                        for (const std::string& c: splitEscIterator(*block_roles, ',')) changer->to->addRole(c);
+                    }
                 }
                 source.requireTagEnd();
             } else if (operation_name == "delete") {
-                shared_ptr<GeometryObject> op_from = requireObjectWithName(source.requireAttribute("object"));
-                GeometryObject::DeleteChanger* changer = new GeometryObject::DeleteChanger(op_from);
-                changers.append(changer);
+                shared_ptr<GeometryObject> op_from = requireObjectFromAttribute("object");
+                if (op_from) changers.append(new GeometryObject::DeleteChanger(op_from));
                 source.requireTagEnd();
             } else {
                 throw Exception("\"{0}\" is not proper name of copy operation and so it is not allowed in <copy> tag.", operation_name);
@@ -267,10 +275,19 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
 shared_ptr<GeometryObject> GeometryReader::requireObjectWithName(const std::string &name) const {
     if (isAutoName(name)) {
         auto it = autoNamedObjects.find(name);
-        if (it == autoNamedObjects.end()) throw NoSuchGeometryObject(name);
+        if (it == autoNamedObjects.end()) {
+            if (!manager.draft) throw NoSuchGeometryObject(name);
+            else return shared_ptr<GeometryObject>();
+        }
         return it->second;
-    } else
-        return manager.requireGeometryObject(name);
+    } else {
+        try {
+            return manager.requireGeometryObject(name);
+        } catch (NoSuchGeometryObject) {
+            if (!manager.draft) throw;
+            else return shared_ptr<GeometryObject>();
+        }
+    }
 }
 
 void GeometryReader::registerObjectName(const std::string &name, shared_ptr<GeometryObject> object) {
