@@ -48,6 +48,7 @@ void register_mesh_triangular() {
             .def("node", &TriangularMesh2D::Element::getNode, py::arg("index"), py::return_value_policy<py::return_by_value>(), "coordinate of the element (triangle) vertex")
             .add_property("box", /*Box2D*/ &TriangularMesh2D::Element::getBoundingBox, u8"bounding box of the element")
             .def("barycentric", &TriangularMesh2D::Element::barycentric, py::return_value_policy<py::return_by_value>(), "barycentric (area) coordinates of given point")
+            .def("includes", &TriangularMesh2D::Element::includes, "check if given point is included in triangle represented by this element")
             //.add_property("index", /*size_t*/ &TriangularMesh2D::Element::getIndex, u8"element index")
         ;
 

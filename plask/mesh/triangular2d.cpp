@@ -60,6 +60,48 @@ std::size_t TriangularMesh2D::Builder::addNode(TriangularMesh2D::LocalCoords nod
     return it.first->second;    // an index of the node (inserted or found)
 }
 
+struct ElementIndexValueGetter {
+    TriangularMesh2D::ElementIndex::Rtree::value_type operator()(std::size_t index) const {
+        TriangularMesh2D::Element el = this->src_mesh->getElement(index);
+        const auto n0 = el.getNode(0);
+        const auto n1 = el.getNode(1);
+        const auto n2 = el.getNode(2);
+        return std::make_pair(
+                    TriangularMesh2D::ElementIndex::Box(
+                        vec(std::min(std::min(n0.c0, n1.c0), n2.c0), std::min(std::min(n0.c1, n1.c1), n2.c1)),
+                        vec(std::max(std::max(n0.c0, n1.c0), n2.c0), std::max(std::max(n0.c1, n1.c1), n2.c1))
+                    ),
+                    index);
+    }
+
+    const TriangularMesh2D* src_mesh;
+
+    ElementIndexValueGetter(const TriangularMesh2D& src_mesh): src_mesh(&src_mesh) {}
+};
+
+TriangularMesh2D::ElementIndex::ElementIndex(const TriangularMesh2D &mesh)
+    : mesh(mesh),
+      rtree(makeFunctorIndexedIterator(ElementIndexValueGetter(mesh), 0),
+            makeFunctorIndexedIterator(ElementIndexValueGetter(mesh), mesh.getElementsCount()))
+{}
+
+std::size_t TriangularMesh2D::ElementIndex::getIndex(Vec<2, double> p) const
+{
+    for (auto v: rtree | boost::geometry::index::adaptors::queried(boost::geometry::index::intersects(p))) {
+        const Element el = mesh.getElement(v.second);
+        if (el.includes(p)) return v.second;
+    }
+    return INDEX_NOT_FOUND;
+}
+
+optional<TriangularMesh2D::Element> TriangularMesh2D::ElementIndex::getElement(Vec<2, double> p) const {
+    for (auto v: rtree | boost::geometry::index::adaptors::queried(boost::geometry::index::intersects(p))) {
+        const Element el = mesh.getElement(v.second);
+        if (el.includes(p)) return el;
+    }
+    return optional<TriangularMesh2D::Element>();
+}
+
 TriangularMesh2D TriangularMesh2D::masked(const TriangularMesh2D::Predicate &predicate) const {
     TriangularMesh2D result;
     Builder builder(result, elementNodes.size(), nodes.size());
@@ -121,7 +163,7 @@ template struct PLASK_API NearestNeighborTriangularMesh2DLazyDataImpl<Tensor3<dc
 template<typename DstT, typename SrcT>
 BarycentricTriangularMesh2DLazyDataImpl<DstT, SrcT>::BarycentricTriangularMesh2DLazyDataImpl(const shared_ptr<const TriangularMesh2D> &src_mesh, const DataVector<const SrcT> &src_vec, const shared_ptr<const MeshD<2> > &dst_mesh, const InterpolationFlags &flags)
     : InterpolatedLazyDataImpl<DstT, TriangularMesh2D, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
-      trianglesIndex(makeFunctorIndexedIterator(ValueGetter(src_mesh), 0), makeFunctorIndexedIterator(ValueGetter(src_mesh), src_mesh->getElementsCount()))
+      elementIndex(*src_mesh)
 {
 }
 
@@ -130,7 +172,7 @@ DstT BarycentricTriangularMesh2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) 
 {
     auto point = this->dst_mesh->at(index);
     auto wrapped_point = this->flags.wrap(point);
-    for (auto v: trianglesIndex | boost::geometry::index::adaptors::queried(boost::geometry::index::intersects(wrapped_point))) {
+    for (auto v: elementIndex.rtree | boost::geometry::index::adaptors::queried(boost::geometry::index::intersects(wrapped_point))) {
         const auto el = this->src_mesh->getElement(v.second);
         const auto b = el.barycentric(wrapped_point);
         if (b.c0 < 0.0 || b.c1 < 0.0 || b.c2 < 0.0) continue; // wrapped_point is outside of the triangle
@@ -152,6 +194,26 @@ template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor2<double
 template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor2<dcomplex>, Tensor2<dcomplex>>;
 template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor3<double>, Tensor3<double>>;
 template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor3<dcomplex>, Tensor3<dcomplex>>;
+
+
+// ------------------ Element mesh Nearest Neighbor interpolation ---------------------
+
+template<typename DstT, typename SrcT>
+NearestNeighborElementTriangularMesh2DLazyDataImpl<DstT, SrcT>::NearestNeighborElementTriangularMesh2DLazyDataImpl(const shared_ptr<const TriangularMesh2D::ElementMesh> &src_mesh, const DataVector<const SrcT> &src_vec, const shared_ptr<const MeshD<2> > &dst_mesh, const InterpolationFlags &flags)
+    : InterpolatedLazyDataImpl<DstT, TriangularMesh2D::ElementMesh, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
+      elementIndex(src_mesh->getOriginalMesh())
+{
+}
+
+template<typename DstT, typename SrcT>
+DstT NearestNeighborElementTriangularMesh2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const {
+    auto point = this->dst_mesh->at(index);
+    auto wrapped_point = this->flags.wrap(point);
+    std::size_t element_index = elementIndex.getIndex(point);
+    if (element_index == TriangularMesh2D::ElementIndex::INDEX_NOT_FOUND)
+        return NaN<decltype(this->src_vec[0])>();
+    return this->flags.postprocess(point, this->src_vec[element_index]);
+}
 
 
 

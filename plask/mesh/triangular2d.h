@@ -93,6 +93,16 @@ struct TriangularMesh2D: public MeshD<2> {
         Vec<3, double> barycentric(Vec<2, double> p) const;
 
         /**
+         * Check if point @p p is included in triangle represented by @c this element.
+         * @param p point to check
+         * @return @c true only if @p p is included in @c this
+         */
+        bool includes(Vec<2, double> p) const {
+            auto b = barycentric(p);
+            return b.c0 >= 0 && b.c1 >= 0 && b.c2 >= 0;
+        }
+
+        /**
          * Calculate minimal rectangle which contains the triangle represented by the element.
          * @return calculated rectangle
          */
@@ -124,6 +134,8 @@ struct TriangularMesh2D: public MeshD<2> {
          * @return number of elements
          */
         std::size_t size() const { return mesh.getElementsCount(); }
+
+        bool empty() const { return mesh.getElementsCount() == 0; }
 
         typedef IndexedIterator<const Elements, Element> const_iterator;
         typedef const_iterator iterator;
@@ -216,6 +228,48 @@ struct TriangularMesh2D: public MeshD<2> {
         std::size_t addNode(LocalCoords node);
     };
 
+    class ElementMesh;
+
+    /**
+     * Return a mesh that enables iterating over middle points of the rectangles.
+     * \return the mesh
+     */
+    shared_ptr<ElementMesh> getElementMesh() const { return make_shared<ElementMesh>(this); }
+
+    /**
+     * Index which allows for fast finding elements which includes particular points.
+     */
+    struct ElementIndex {
+        typedef boost::geometry::model::box<Vec<2>> Box;
+
+        typedef boost::geometry::index::rtree<
+                std::pair<Box, std::size_t>,
+                boost::geometry::index::quadratic<16> //??
+                > Rtree;
+
+        const TriangularMesh2D& mesh;
+
+        Rtree rtree;
+
+        ElementIndex(const TriangularMesh2D& mesh);
+
+        static constexpr std::size_t INDEX_NOT_FOUND = std::numeric_limits<std::size_t>::max();
+
+        /**
+         * Get index of element which incldes point @p p.
+         * @param p point to find
+         * @return index of element which includes @p p or INDEX_NOT_FOUND if there is no element includes @p p.
+         */
+        std::size_t getIndex(Vec<2, double> p) const;
+
+        /**
+         * Get element which incldes point @p p.
+         * @param p point to find
+         * @return element which includes @p p or empty optional if there is no element includes @p p.
+         */
+        optional<Element> getElement(Vec<2, double> p) const;
+    };
+
     // ------------------ Mesh and MeshD<2> interfaces: ------------------
     LocalCoords at(std::size_t index) const override {
         assert(index < nodes.size());
@@ -276,6 +330,27 @@ struct TriangularMesh2D: public MeshD<2> {
      * \param object XML object to write to
      */
     void writeXML(XMLElement& object) const override;
+
+};
+
+
+class TriangularMesh2D::ElementMesh: public MeshD<2> {
+
+    /// Original mesh
+    const TriangularMesh2D* originalMesh;
+
+  public:
+    ElementMesh(const TriangularMesh2D* originalMesh): originalMesh(originalMesh) {}
+
+    LocalCoords at(std::size_t index) const override {
+        return originalMesh->element(index).getMidpoint();
+    }
+
+    std::size_t size() const override {
+        return originalMesh->getElementsCount();
+    }
+
+    const TriangularMesh2D& getOriginalMesh() const { return *originalMesh; }
 };
 
 
@@ -335,33 +410,7 @@ struct InterpolationAlgorithm<TriangularMesh2D, SrcT, DstT, INTERPOLATION_NEARES
 template <typename DstT, typename SrcT>
 struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl: public InterpolatedLazyDataImpl<DstT, TriangularMesh2D, const SrcT>
 {
-    typedef boost::geometry::model::box<Vec<2>> Box;
-
-    typedef boost::geometry::index::rtree<
-            std::pair<Box, std::size_t>,
-            boost::geometry::index::quadratic<16> //??
-            > Rtree;
-
-    Rtree trianglesIndex;
-
-    struct ValueGetter {
-        Rtree::value_type operator()(std::size_t index) const {
-            TriangularMesh2D::Element el = this->src_mesh->getElement(index);
-            const auto n0 = el.getNode(0);
-            const auto n1 = el.getNode(1);
-            const auto n2 = el.getNode(2);
-            return std::make_pair(
-                        Box(
-                            vec(std::min(std::min(n0.c0, n1.c0), n2.c0), std::min(std::min(n0.c1, n1.c1), n2.c1)),
-                            vec(std::max(std::max(n0.c0, n1.c0), n2.c0), std::max(std::max(n0.c1, n1.c1), n2.c1))
-                        ),
-                        index);
-        }
-
-        shared_ptr<const TriangularMesh2D> src_mesh;
-
-        ValueGetter(const shared_ptr<const TriangularMesh2D>& src_mesh): src_mesh(src_mesh) {}
-    };
+    TriangularMesh2D::ElementIndex elementIndex;
 
     BarycentricTriangularMesh2DLazyDataImpl(
                 const shared_ptr<const TriangularMesh2D>& src_mesh,
@@ -382,6 +431,38 @@ struct InterpolationAlgorithm<TriangularMesh2D, SrcT, DstT, INTERPOLATION_LINEAR
         if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
         return new BarycentricTriangularMesh2DLazyDataImpl<typename std::remove_const<DstT>::type,
                                                        typename std::remove_const<SrcT>::type>
+            (src_mesh, src_vec, dst_mesh, flags);
+    }
+
+};
+
+
+// ------------------ Element mesh Nearest Neighbor interpolation ---------------------
+
+template <typename DstT, typename SrcT>
+struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl: public InterpolatedLazyDataImpl<DstT, TriangularMesh2D::ElementMesh, const SrcT>
+{
+    TriangularMesh2D::ElementIndex elementIndex;
+
+    NearestNeighborElementTriangularMesh2DLazyDataImpl(
+                const shared_ptr<const TriangularMesh2D::ElementMesh>& src_mesh,
+                const DataVector<const SrcT>& src_vec,
+                const shared_ptr<const MeshD<2>>& dst_mesh,
+                const InterpolationFlags& flags);
+
+    DstT at(std::size_t index) const override;
+};
+
+template <typename SrcT, typename DstT>
+struct InterpolationAlgorithm<TriangularMesh2D::ElementMesh, SrcT, DstT, INTERPOLATION_LINEAR> {
+    static LazyData<DstT> interpolate(const shared_ptr<const TriangularMesh2D>& src_mesh,
+                                      const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<3>>& dst_mesh,
+                                      const InterpolationFlags& flags)
+    {
+        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        return new NearestNeighborElementTriangularMesh2DLazyDataImpl<typename std::remove_const<DstT>::type,
+                                                                      typename std::remove_const<SrcT>::type>
             (src_mesh, src_vec, dst_mesh, flags);
     }
 
