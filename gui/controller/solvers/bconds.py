@@ -393,8 +393,12 @@ class BoundaryConditionsDialog(QDialog):
                 node = self.geometry_node.get_node_by_real_path(_picked_path)
                 if node.name:
                     node_path = node.path.split(',')[0].strip() if node.path is not None else None
-                    self._active_place_editor.fill_details(node.name, node_path)
-                    self.place_details_delegate.commitData.emit(self._active_place_editor)
+                    try:
+                        self._active_place_editor.fill_details(node.name, node_path)
+                    except RuntimeError:
+                        pass
+                    else:
+                        self.place_details_delegate.commitData.emit(self._active_place_editor)
                     break
                 else:
                     _picked_path.pop()

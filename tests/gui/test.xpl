@@ -68,7 +68,10 @@
           </item>
           <rectangle material="AlN" dtran="0.8" dvert="0.1"/>
         </stack>
-        <rectangle material="AlGa(0.5)N" dtran="0.1" dvert="0.3"/>
+        <stack name="pikusik">
+          <rectangle name="kwadrat" material="AlGa(0.1)N" dtran="0.1" dvert="0.1"/>
+          <rectangle material="AlGa(0.5)N" dtran="0.1" dvert="0.2"/>
+        </stack>
       </shelf>
       <rectangle name="posredni" material="Al(0.2)GaN" dtran="2" dvert="0.5"/>
       <rectangle role="substrate" material="GaN" dtran="2" dvert="1"/>
@@ -84,6 +87,7 @@
         </shelf2d>
       </replace>
       <delete object="posredni"/>
+      <replace object="pikusik" with="kwadrat"/>
     </copy>
   </cartesian2d>
   <cartesian2d name="simple">
@@ -291,6 +295,12 @@
   <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="shockley">
     <geometry ref="GeoE"/>
     <mesh ref="default"/>
+    <voltage>
+      <condition value="1">
+        <place side="top" object="n-contact"/>
+      </condition>
+      <condition place="bottom" value="0"/>
+    </voltage>
     <matrix algorithm="cholesky" itererr="2"/>
     <junction beta0="{beta_def}" beta1="19.2" js0="{js_def}" js1="1.1"/>
   </electrical>
