@@ -79,10 +79,10 @@ for lib, cls in data:
     out.write('''\n\ndef %(cls)s(name=''):
     """
     Create %(cls)s solver.
-    
+
     This function automatically loads ``%(lib)s`` submodule and creates
-    ``%(lib)s.%(cls)s`` class.
-    
+    :class:`~%(lib)s.%(cls)s` class.
+
     Args:
         name (str): Solver name.
     """
