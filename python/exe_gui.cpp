@@ -115,8 +115,61 @@ void endPlask() {
 //******************************************************************************
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 
+class Splash {
+    HWND hSplashWnd;
+    HBITMAP hSplashBMP;
+    BITMAP bitmap;
+
+  public:
+    Splash(HINSTANCE hInst, int resid) {
+        hSplashBMP = LoadBitmap(hInst, MAKEINTRESOURCE(resid));
+        GetObject(hSplashBMP, sizeof(BITMAP), &bitmap);
+        int width = bitmap.bmWidth;
+        int height = bitmap.bmHeight;
+
+        RECT desktopRect;
+        GetWindowRect(GetDesktopWindow(), &desktopRect);
+
+        int left = (desktopRect.right + desktopRect.left - width) / 2,
+            top = (desktopRect.top + desktopRect.bottom - height) / 2;
+
+        hSplashWnd = CreateWindowEx(WS_EX_CLIENTEDGE, "Static", "PLaSK",
+            WS_POPUP | WS_DLGFRAME | SS_BITMAP, left, top, width, height, NULL, NULL, hInst, NULL);
+        SendMessage(hSplashWnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hSplashBMP);
+    }
+
+    virtual ~Splash() {
+        DestroyWindow(hSplashWnd);
+        DeleteObject(hSplashBMP);
+    }
+
+    void show() {
+        // auto windefer = BeginDeferWindowPos(1);
+        // DeferWindowPos(windefer, hSplashWnd, HWND_TOP, 0, 0, 50, 50, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+        // EndDeferWindowPos(windefer);
+        ShowWindow(hSplashWnd, SW_SHOWNORMAL);
+        UpdateWindow(hSplashWnd);
+    }
+
+    void hide() {
+        ShowWindow(hSplashWnd, SW_HIDE);
+    }
+
+    static void destroy();
+};
+
+Splash* splash;
+
+void Splash::destroy() {
+    if (splash) {
+        splash->hide();
+        delete splash;
+        splash = nullptr;
+    }
+}
+
 #ifndef _MSC_VER
-#include <boost/tokenizer.hpp>
+#   include <boost/tokenizer.hpp>
 #endif
 
 void showError(const std::string& msg, const std::string& cap) {
@@ -126,7 +179,10 @@ void showError(const std::string& msg, const std::string& cap) {
 // MingW need this (should be in windows.h)
 //extern "C" __declspec(dllimport) LPWSTR * __stdcall CommandLineToArgvW(LPCWSTR lpCmdLine, int* pNumArgs);
 
-int WinMain(HINSTANCE, HINSTANCE, LPSTR cmdline, int) {
+int WinMain(HINSTANCE hInst, HINSTANCE, LPSTR cmdline, int) {
+
+    splash = new Splash(hInst, 201);
+    splash->show();
 
 #ifdef _MSC_VER
 	int argc;	// doc: https://msdn.microsoft.com/pl-pl/library/windows/desktop/bb776391(v=vs.85).aspx
@@ -158,7 +214,12 @@ int system_main(int argc, const system_char *argv[])
 
     // Initalize python and load the plask module
     try {
-        initPlask(argc, argv);
+#       if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+            py::scope _plask = initPlask(argc, argv);
+            py::def("_close_splash", &Splash::destroy);
+#       else
+            initPlask(argc, argv);
+#       endif
     } catch (plask::CriticalException&) {
         showError("Cannot import plask builtin module.");
         endPlask();
