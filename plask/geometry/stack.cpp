@@ -136,12 +136,12 @@ template <int dim, typename Primitive<dim>::Direction growingDirection>
 void StackContainerBaseImpl<dim, growingDirection>::updateAllHeights() {
     AccurateSum sum = stackHeights[0];
     for (std::size_t child_index = 0; child_index < children.size(); ++child_index) {
-        auto elBoudingBox = children[child_index]->getChild()->getBoundingBox();
+        auto child = children[child_index]->getChild();
+        auto elBoudingBox = child? child->getBoundingBox() : Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
         sum -= elBoudingBox.lower[growingDirection];
         children[child_index]->translation[growingDirection] = sum;
         sum += elBoudingBox.upper[growingDirection];
         stackHeights[child_index+1] = sum;
-        //sum = stackHeights[child_index+1] = stackHeights[child_index] + elBoudingBox.upper[growingDirection];
     }
 }
 
@@ -195,9 +195,7 @@ const StackContainer<3>::ChildAligner& StackContainer<3>::DefaultAligner() {
 
 template <int dim>
 PathHints::Hint StackContainer<dim>::insertUnsafe(const shared_ptr<ChildType>& el, const std::size_t pos, const ChildAligner& aligner) {
-    if (!el) return PathHints::Hint(shared_from_this(), shared_ptr<GeometryObject>());
-
-    const auto bb = el->getBoundingBox();
+    const auto bb = el? el->getBoundingBox() : Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
     shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, stackHeights[pos] - bb.lower.vert(), bb);
     this->connectOnChildChanged(*trans_geom);
     children.insert(children.begin() + pos, trans_geom);
@@ -247,10 +245,8 @@ void StackContainer<dim>::onChildChanged(const GeometryObject::Event &evt) {
 
 template <int dim>
 PathHints::Hint StackContainer<dim>::addUnsafe(const shared_ptr<typename StackContainer<dim>::ChildType> &el, const typename StackContainer<dim>::ChildAligner &aligner) {
-    if (!el) return PathHints::Hint(shared_from_this(), shared_ptr<GeometryObject>());
-
     double el_translation, next_height;
-    auto elBB = el->getBoundingBox();
+    auto elBB = el? el->getBoundingBox() : Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
     this->calcHeight(elBB, stackHeights.back(), el_translation, next_height);
     shared_ptr<TranslationT> trans_geom = newTranslation(el, aligner, el_translation, elBB);
     this->connectOnChildChanged(*trans_geom);
@@ -308,7 +304,8 @@ void StackContainer<dim>::writeXML(XMLWriter::Element &parent_xml_object, Geomet
     for (int i = int(children.size())-1; i >= 0; --i) {   // children are written in reverse order
         XMLWriter::Element child_tag = write_cb.makeChildTag(container_tag, *this, i);
         writeXMLChildAttr(child_tag, i, axes);
-        children[i]->getChild()->writeXML(child_tag, write_cb, axes);
+        if (auto child = children[i]->getChild())
+            child->writeXML(child_tag, write_cb, axes);
     }
 }
 

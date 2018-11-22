@@ -292,7 +292,7 @@ class PLASK_API GeometryReader {
 template <typename RequiredObjectType>
 inline shared_ptr<RequiredObjectType> GeometryReader::readObject() {
     shared_ptr<RequiredObjectType> result = dynamic_pointer_cast<RequiredObjectType>(readObject());
-    if (!result) throw UnexpectedGeometryObjectTypeException();
+    if (!result && !manager.draft) throw UnexpectedGeometryObjectTypeException();
     return result;
 }
 
