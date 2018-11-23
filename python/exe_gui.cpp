@@ -116,14 +116,14 @@ void endPlask() {
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 
 class Splash {
-    HWND hSplashWnd;
-    HBITMAP hSplashBMP;
+    HWND hWnd;
+    HBITMAP hBitmap;
     BITMAP bitmap;
 
   public:
     Splash(HINSTANCE hInst, int resid) {
-        hSplashBMP = LoadBitmap(hInst, MAKEINTRESOURCE(resid));
-        GetObject(hSplashBMP, sizeof(BITMAP), &bitmap);
+        hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(resid));
+        GetObject(hBitmap, sizeof(BITMAP), &bitmap);
         int width = bitmap.bmWidth;
         int height = bitmap.bmHeight;
 
@@ -133,26 +133,26 @@ class Splash {
         int left = (desktopRect.right + desktopRect.left - width) / 2,
             top = (desktopRect.top + desktopRect.bottom - height) / 2;
 
-        hSplashWnd = CreateWindowEx(WS_EX_CLIENTEDGE, "Static", "PLaSK",
-            WS_POPUP | WS_DLGFRAME | SS_BITMAP, left, top, width, height, NULL, NULL, hInst, NULL);
-        SendMessage(hSplashWnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hSplashBMP);
+        hWnd = CreateWindowEx(WS_EX_CLIENTEDGE, "Static", "PLaSK",
+            WS_POPUP | SS_BITMAP /* | WS_DLGFRAME */, left, top, width, height, NULL, NULL, hInst, NULL);
+        SendMessage(hWnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
     }
 
     virtual ~Splash() {
-        DestroyWindow(hSplashWnd);
-        DeleteObject(hSplashBMP);
+        DestroyWindow(hWnd);
+        DeleteObject(hBitmap);
     }
 
     void show() {
         // auto windefer = BeginDeferWindowPos(1);
         // DeferWindowPos(windefer, hSplashWnd, HWND_TOP, 0, 0, 50, 50, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
         // EndDeferWindowPos(windefer);
-        ShowWindow(hSplashWnd, SW_SHOWNORMAL);
-        UpdateWindow(hSplashWnd);
+        ShowWindow(hWnd, SW_SHOWNORMAL);
+        UpdateWindow(hWnd);
     }
 
     void hide() {
-        ShowWindow(hSplashWnd, SW_HIDE);
+        ShowWindow(hWnd, SW_HIDE);
     }
 
     static void destroy();
