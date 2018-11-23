@@ -712,7 +712,7 @@ class MainWindow(QMainWindow):
         msgbox = QMessageBox(QMessageBox.Information,
                              "About PLaSK",
                              u"<b>PLaSK — Photonic Laser Simulation Kit</b><br/>\n"
-                             u"© 2014-2017 Lodz University of Technology, Photonics Group",
+                             u"© 2014-2019 Lodz University of Technology, Photonics Group",
                              QMessageBox.Ok,
                              self,
                              Qt.FramelessWindowHint | Qt.Popup)
