@@ -138,7 +138,7 @@ struct PLASK_API XMLWriter {
         ~Element();
 
         /**
-         * @return 0 for root, 1 for child of root, and so on
+         * @return 0 for the root, 1 for a child of the root, and so on
          */
         std::size_t getLevel() const;
 
@@ -164,18 +164,21 @@ struct PLASK_API XMLWriter {
         /**
          * Append text content to this element.
          * @param str content to append
+         * @return *this
          */
         Element& writeText(const char* str);
 
         /**
          * Append text content to this element.
          * @param str content to append
+         * @return *this
          */
         Element& writeText(const std::string& str) { return writeText(str.c_str()); }
 
         /**
          * Append text content to this element.
          * @param value content to append, will be change to string using boost::lexical_cast
+         * @return *this
          */
         template <class T>
         Element& writeText(const T& value) {
