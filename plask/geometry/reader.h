@@ -156,7 +156,7 @@ class PLASK_API GeometryReader {
     shared_ptr<Material> requireMaterial() const {
         try {
             return getMaterial(source.requireAttribute(XML_MATERIAL_ATTR));
-        } catch (XMLNoAttrException) {
+        } catch (XMLNoAttrException&) {
             if (!manager.draft) throw;
             else return plask::make_shared<DummyMaterial>("");
         }
@@ -237,7 +237,7 @@ class PLASK_API GeometryReader {
     shared_ptr<GeometryObject> requireObjectFromAttribute(const std::string& attr) const {
         try {
             return requireObjectWithName(source.requireAttribute(attr));
-        } catch (XMLNoAttrException) {
+        } catch (XMLNoAttrException&) {
             if (!manager.draft) throw;
             else return shared_ptr<GeometryObject>();
         }

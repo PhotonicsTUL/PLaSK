@@ -218,6 +218,13 @@ struct TriangularMesh2D: public MeshD<2> {
          */
         Builder& add(const Element& e) { return add(e.getNode(0), e.getNode(1), e.getNode(2)); }
 
+        /**
+         * Add a triangle to the mesh.
+         * @param points a coordinates of vertices of the triangle to add
+         * @return <code>*this</code>
+         */
+        Builder& add(const std::array<LocalCoords, 3>& points) { return add(points[0], points[1], points[2]); }
+
     private:
 
         /**

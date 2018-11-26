@@ -146,6 +146,7 @@ struct PLASK_API XMLWriter {
          * Append attribute to this element.
          * @param attr_name name of attribute to append
          * @param attr_value value of attribute to append
+         * @return *this
          */
         Element& attr(const std::string& attr_name, const std::string& attr_value);
 
@@ -153,6 +154,7 @@ struct PLASK_API XMLWriter {
          * Append attribute to this element.
          * @param attr_name name of attribute to append
          * @param attr_value value of attribute to append, will be change to string using boost::lexical_cast
+         * @return *this
          */
         template <typename ValueT>
         Element& attr(const std::string& attr_name, const ValueT& attr_value) {

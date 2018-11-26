@@ -112,12 +112,57 @@ TriangularMesh2D TriangularMesh2D::masked(const TriangularMesh2D::Predicate &pre
 
 void TriangularMesh2D::writeXML(XMLElement &object) const {
     object.attr("type", "triangular2d");
-    // TODO write nodes and elements
+    for (auto & node: nodes)
+        object.addTag("node").attr("tran", node.tran()).attr("vert", node.vert());
+    for (auto & el: elementNodes)
+        object.addTag("element").attr("a", el[0]).attr("b", el[1]).attr("c", el[2]);
+}
+
+std::size_t readTriangularMesh2D_readNodeIndex(XMLReader& reader, const char* attrName, std::size_t nodes_size) {
+    std::size_t result = reader.requireAttribute<std::size_t>(attrName);
+    if (result >= nodes_size)
+        reader.throwException(format("{} in <element> equals {} and is out of range [0, {})", attrName, result, nodes_size));
+    return result;
 }
 
 static shared_ptr<Mesh> readTriangularMesh2D(XMLReader& reader) {
     shared_ptr<TriangularMesh2D> result = plask::make_shared<TriangularMesh2D>();
-    // TODO read nodes and elements
+
+    if (reader.requireTagOrEnd()) { // has tag?
+        std::string tag_name = reader.getNodeName();
+        if (tag_name == "triangle") {   // sequence of triangles
+            TriangularMesh2D::Builder builder(*result);
+            do {
+                builder.add(
+                    vec(reader.requireAttribute<double>("a0"), reader.requireAttribute<double>("a1")),
+                    vec(reader.requireAttribute<double>("b0"), reader.requireAttribute<double>("b1")),
+                    vec(reader.requireAttribute<double>("c0"), reader.requireAttribute<double>("c1"))
+                );
+                reader.requireTagEnd();
+            } while (reader.requireTagOrEnd("triangle"));
+        } else if (tag_name == "node") {
+            result->nodes.emplace_back(reader.requireAttribute<double>("tran"), reader.requireAttribute<double>("vert"));
+            reader.requireTagEnd();
+            bool accept_nodes = true;   // accept <node> and <element> tags if true, else accept only <element>
+            while (reader.requireTagOrEnd()) {
+                std::string tag_name = reader.getNodeName();
+                if (accept_nodes && tag_name == "node") {
+                    result->nodes.emplace_back(reader.requireAttribute<double>("tran"), reader.requireAttribute<double>("vert"));
+                    reader.requireTagEnd();
+                } else if (tag_name == "element") {
+                    result->elementNodes.push_back({
+                        readTriangularMesh2D_readNodeIndex(reader, "a", result->nodes.size()),
+                        readTriangularMesh2D_readNodeIndex(reader, "b", result->nodes.size()),
+                        readTriangularMesh2D_readNodeIndex(reader, "c", result->nodes.size())
+                    });
+                    reader.requireTagEnd();
+                    accept_nodes = false;
+                }
+            }
+        } else
+            reader.throwUnexpectedElementException("expected <triangle> or <node> tag, got <" + tag_name + ">");
+    }
+
     return result;
 }
 
