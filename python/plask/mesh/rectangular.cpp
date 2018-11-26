@@ -793,20 +793,27 @@ shared_ptr<RectangularMeshSmoothGenerator<dim>> RectangularMeshSmoothGenerator__
     return result;
 }
 
-static shared_ptr<RectangularMesh2DRegularGenerator> RectangularMesh2DRegularGenerator__init__1(double spacing) {
-    return make_shared<RectangularMesh2DRegularGenerator>(spacing);
+static shared_ptr<RectangularMesh2DRegularGenerator> RectangularMesh2DRegularGenerator__init__1(double spacing, bool split) {
+    return make_shared<RectangularMesh2DRegularGenerator>(spacing, split);
 }
 
-static shared_ptr<RectangularMesh2DRegularGenerator> RectangularMesh2DRegularGenerator__init__2(double spacing0, double spacing1) {
-    return make_shared<RectangularMesh2DRegularGenerator>(spacing0, spacing1);
+static shared_ptr<RectangularMesh2DRegularGenerator> RectangularMesh2DRegularGenerator__init__2(double spacing0, const py::object& spacing1) {
+    if (PyBool_Check(spacing1.ptr()))
+        return make_shared<RectangularMesh2DRegularGenerator>(spacing0, py::extract<bool>(spacing1)());
+    else
+        return make_shared<RectangularMesh2DRegularGenerator>(spacing0, py::extract<double>(spacing1)());
 }
 
-static shared_ptr<RectangularMesh3DRegularGenerator> RectangularMesh3DRegularGenerator__init__1(double spacing) {
-    return make_shared<RectangularMesh3DRegularGenerator>(spacing);
+static shared_ptr<RectangularMesh2DRegularGenerator> RectangularMesh2DRegularGenerator__init__3(double spacing0, double spacing1, bool split) {
+    return make_shared<RectangularMesh2DRegularGenerator>(spacing0, spacing1, split);
 }
 
-static shared_ptr<RectangularMesh3DRegularGenerator> RectangularMesh3DRegularGenerator__init__3(double spacing0, double spacing1, double spacing2) {
-    return make_shared<RectangularMesh3DRegularGenerator>(spacing0, spacing1, spacing2);
+static shared_ptr<RectangularMesh3DRegularGenerator> RectangularMesh3DRegularGenerator__init__1(double spacing, bool split) {
+    return make_shared<RectangularMesh3DRegularGenerator>(spacing, split);
+}
+
+static shared_ptr<RectangularMesh3DRegularGenerator> RectangularMesh3DRegularGenerator__init__3(double spacing0, double spacing1, double spacing2, bool split) {
+    return make_shared<RectangularMesh3DRegularGenerator>(spacing0, spacing1, spacing2, split);
 }
 
 
@@ -1068,7 +1075,11 @@ void register_mesh_rectangular()
         py::class_<RectangularMesh2DSimpleGenerator, shared_ptr<RectangularMesh2DSimpleGenerator>,
                    py::bases<MeshGeneratorD<2>>, boost::noncopyable>("SimpleGenerator",
             u8"Generator of Rectangular2D mesh with lines at edges of all objects.\n\n"
-            u8"SimpleGenerator()\n    create generator")
+            u8"SimpleGenerator(split=False)\n    create generator\n\n"
+            u8"Args:\n"
+            u8"   split (bool): If ``True``, the mesh lines are split into two at each object\n"
+            u8"                 boundary.\n",
+            py::init<bool>(py::arg("split")=false))
         ;
         py::implicitly_convertible<shared_ptr<RectangularMesh2DSimpleGenerator>, shared_ptr<const RectangularMesh2DSimpleGenerator>>();
 
@@ -1077,14 +1088,24 @@ void register_mesh_rectangular()
             u8"Generator of Rectilinear2D mesh with lines at transverse edges of all objects\n"
             u8"and fine regular division of each object with spacing approximately equal to\n"
             u8"specified spacing.\n\n"
-            u8"RegularGenerator(spacing)\n"
+            u8"RegularGenerator(spacing, split=False)\n"
             u8"    create generator with equal spacing in all directions\n\n"
-            u8"RegularGenerator(spacing0, spacing1)\n"
-            u8"    create generator with equal spacing\n", py::no_init)
+            u8"RegularGenerator(spacing0, spacing1, split=False)\n"
+            u8"    create generator with equal spacing\n\n"
+            u8"Args:\n"
+            u8"   spacing (float): Approximate spacing between mesh lines in all directions.\n"
+            u8"   spacing0 (float): Approximate spacing between mesh lines in transverse\n"
+            u8"                     direction.\n"
+            u8"   spacing1 (float): Approximate spacing between mesh lines in vertical\n"
+            u8"                     direction.\n"
+            u8"   split (bool): If ``True``, the mesh lines are split into two at each object\n"
+            u8"                 boundary.\n", py::no_init)
             .def("__init__", py::make_constructor(RectangularMesh2DRegularGenerator__init__1, py::default_call_policies(),
-                                                  (py::arg("spacing"))))
+                                                  (py::arg("spacing"), py::arg("split")=false)))
             .def("__init__", py::make_constructor(RectangularMesh2DRegularGenerator__init__2, py::default_call_policies(),
                                                   (py::arg("spacing0"), py::arg("spacing1"))))
+            .def("__init__", py::make_constructor(RectangularMesh2DRegularGenerator__init__3, py::default_call_policies(),
+                                                  (py::arg("spacing0"), py::arg("spacing1"), py::arg("split"))))
         ;
         py::implicitly_convertible<shared_ptr<RectangularMesh2DRegularGenerator>, shared_ptr<const RectangularMesh2DRegularGenerator>>();
 
@@ -1202,7 +1223,11 @@ void register_mesh_rectangular()
         py::class_<RectangularMesh3DSimpleGenerator, shared_ptr<RectangularMesh3DSimpleGenerator>,
                    py::bases<MeshGeneratorD<3>>, boost::noncopyable>("SimpleGenerator",
             u8"Generator of Rectangular3D mesh with lines at edges of all objects.\n\n"
-            u8"SimpleGenerator()\n    create generator")
+            u8"SimpleGenerator(split=False)\n    create generator\n\n"
+            u8"Args:\n"
+            u8"   split (bool): If ``True``, the mesh lines are split into two at each object\n"
+            u8"                 boundary.\n",
+            py::init<bool>(py::arg("split")=false))
         ;
         py::implicitly_convertible<shared_ptr<RectangularMesh3DSimpleGenerator>, shared_ptr<const RectangularMesh3DSimpleGenerator>>();
 
@@ -1211,14 +1236,25 @@ void register_mesh_rectangular()
             u8"Generator of Rectilinear3D mesh with lines at transverse edges of all objects\n"
             u8"and fine regular division of each object with spacing approximately equal to\n"
             u8"specified spacing\n\n"
-            u8"RegularGenerator(spacing)\n"
+            u8"RegularGenerator(spacing, split=False)\n"
             u8"    create generator with equal spacing in all directions\n\n"
-            u8"RegularGenerator(spacing0, spacing1, spacing2)\n"
-            u8"    create generator with equal spacing\n", py::no_init)
+            u8"RegularGenerator(spacing0, spacing1, spacing2, split=False)\n"
+            u8"    create generator with equal spacing\n\n"
+            u8"Args:\n"
+            u8"   spacing (float): Approximate spacing between mesh lines in all directions.\n"
+            u8"   spacing0 (float): Approximate spacing between mesh lines in longitudinal\n"
+            u8"                     direction.\n"
+            u8"   spacing1 (float): Approximate spacing between mesh lines in transverse\n"
+            u8"                     direction.\n"
+            u8"   spacing2 (float): Approximate spacing between mesh lines in vertical\n"
+            u8"                     direction.\n"
+            u8"   split (bool): If ``True``, the mesh lines are split into two at each object\n"
+            u8"                 boundary.\n",
+            py::no_init)
             .def("__init__", py::make_constructor(RectangularMesh3DRegularGenerator__init__1, py::default_call_policies(),
-                                                  (py::arg("spacing"))))
+                                                  (py::arg("spacing"), py::arg("split")=false)))
             .def("__init__", py::make_constructor(RectangularMesh3DRegularGenerator__init__3, py::default_call_policies(),
-                                                  (py::arg("spacing0"), py::arg("spacing1"), py::arg("spacing2"))))
+                                                  (py::arg("spacing0"), py::arg("spacing1"), py::arg("spacing2"), py::arg("split")=false)))
         ;
         py::implicitly_convertible<shared_ptr<RectangularMesh3DRegularGenerator>, shared_ptr<const RectangularMesh3DRegularGenerator>>();
 

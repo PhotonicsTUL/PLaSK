@@ -266,7 +266,9 @@
   <generator method="regular" name="reg" type="rectangular2d">
     <spacing every0="0.2" every1="1"/>
   </generator>
-  <generator method="simple" name="spl" type="rectangular2d"/>
+  <generator method="simple" name="spl" type="rectangular2d">
+    <boundaries split="yes"/>
+  </generator>
   <mesh name="fine" type="rectangular3d">
     <axis0 start="0.5" stop="1.0" num="2001"></axis0>
     <axis1 start="0" stop="2" num="4001"></axis1>

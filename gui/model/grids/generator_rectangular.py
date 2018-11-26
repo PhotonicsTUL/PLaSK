@@ -152,7 +152,45 @@ class Refinements(TableModelEditMethods, QAbstractTableModel):
                                          type='non-negative float', reinf_row=i, reinf_col=5)
 
 
-class RectangularRegularGenerator(Grid):
+class RectangularSimpleGenerator(Grid):
+
+    @staticmethod
+    def from_xml(grids_model, element):
+        e = RectangularSimpleGenerator(grids_model, element.attrib['name'], element.attrib['type'])
+        e.set_xml_element(element)
+        return e
+
+    def __init__(self, grids_model, name, type, method='simple'):
+        super(RectangularSimpleGenerator, self).__init__(grids_model, name, type, method)
+        self.split = None
+
+    @property
+    def dim(self):
+        return 1 if self.type == 'ordered' else int(self.type[-2])
+
+    def get_xml_element(self):
+        res = super(RectangularSimpleGenerator, self).get_xml_element()
+        if self.split is not None:
+            SubElement(res, "boundaries", attrib={'split': self.split})
+        return res
+
+    def set_xml_element(self, element):
+        super(RectangularSimpleGenerator, self).set_xml_element(element)
+        boundaries = element.find('boundaries')
+        if boundaries is not None:
+            self.split = boundaries.attrib.get('split')
+
+    def get_controller(self, document):
+        from ...controller.grids.generator_rectangular import RectangularSimpleGeneratorController
+        return RectangularSimpleGeneratorController(document=document, model=self)
+
+    def create_info(self, res, rows):
+        super(RectangularSimpleGenerator, self).create_info(res, rows)
+        if not can_be_bool(self.split):
+            self._required(res, rows, 'split', type='bool')
+
+
+class RectangularRegularGenerator(RectangularSimpleGenerator):
 
     @staticmethod
     def from_xml(grids_model, element):
@@ -161,15 +199,10 @@ class RectangularRegularGenerator(Grid):
         return e
 
     def __init__(self, grids_model, name, type):
-
         super(RectangularRegularGenerator, self).__init__(grids_model, name, type, 'regular')
         self.spacing0 = None
         self.spacing1 = None
         self.spacing2 = None
-
-    @property
-    def dim(self):
-        return 1 if self.type == 'ordered' else int(self.type[-2])
 
     def get_xml_element(self):
         res = super(RectangularRegularGenerator, self).get_xml_element()
@@ -217,7 +250,6 @@ class RectangularRefinedGenerator(Grid):
 
     def __init__(self, grids_model, name, type, method, aspect=None, refinements=None,
                  warn_missing=None, warn_multiple=None, warn_outside=None):
-
         super(RectangularRefinedGenerator, self).__init__(grids_model, name, type, method)
         self.aspect = aspect
         self.refinements = Refinements(self, refinements)

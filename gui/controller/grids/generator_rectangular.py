@@ -18,13 +18,54 @@ from ...model.geometry.geometry import GNGeometryBase
 from ..table import table_with_manipulators
 from ...model.grids.generator_rectangular import RectangularDivideGenerator
 from ...model.grids.mesh_rectangular import AXIS_NAMES
+from ...qt.QtCore import Qt
 from ...qt.QtWidgets import *
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
 from ...utils.widgets import ComboBoxDelegate, ComboBox
 
 
-class RectangularRegularGeneratorController(GridController):
+class RectangularSimpleGeneratorController(GridController):
+
+    def __init__(self, document, model):
+        super(RectangularSimpleGeneratorController, self).__init__(document=document, model=model)
+
+        self.form = QGroupBox()
+        form_layout = QHBoxLayout()
+
+        label = QLabel(" Split Boundaries:")
+        form_layout.addWidget(label)
+        self.make_split_combo(form_layout, weakref.proxy(self))
+
+        form_layout.setAlignment(Qt.AlignLeft)
+
+        self.form.setLayout(form_layout)
+
+    def make_split_combo(self, form_layout, weakself):
+        self.split = ComboBox()
+        self.split.editingFinished.connect(
+            lambda: weakself._change_attr('split', empty_to_none(self.split.currentText()),
+                                          'mesh split on object boundaries'))
+        self.split.addItems(['', 'yes', 'no'])
+        self.split.setEditable(True)
+        self.split.setToolTip('&lt;boundaries <b>split</b>=""&gt;<br/>Split mesh lines at object boundaries '
+                              '(only useful for plotting material parameters).')
+        form_layout.addWidget(self.split)
+
+    def fill_form(self):
+        super(RectangularSimpleGeneratorController, self).fill_form()
+        with BlockQtSignals(self.split):
+            self.split.setEditText(none_to_empty(self.grid_model.split))
+
+    def get_widget(self):
+        return self.form
+
+    def select_info(self, info):
+        super(RectangularSimpleGeneratorController, self).select_info(info)
+        getattr(self, info.property).setFocus()
+
+
+class RectangularRegularGeneratorController(RectangularSimpleGeneratorController):
 
     LABELS = (('',),
               ('  horizontal:', '  vertical:'),
@@ -56,6 +97,10 @@ class RectangularRegularGeneratorController(GridController):
             form_layout.addWidget(edit)
             setattr(self,attr, edit)
 
+        label = QLabel(" Split Boundaries:")
+        form_layout.addWidget(label)
+        self.make_split_combo(form_layout, weakself)
+
         self.form.setLayout(form_layout)
 
     def fill_form(self):
@@ -63,13 +108,6 @@ class RectangularRegularGeneratorController(GridController):
         for i in range(self.grid_model.dim):
             attr = 'spacing{}'.format(i)
             getattr(self,attr).setText(none_to_empty(getattr(self.grid_model,attr)))
-
-    def get_widget(self):
-        return self.form
-
-    def select_info(self, info):
-        super(RectangularRegularGeneratorController, self).select_info(info)
-        getattr(self, info.property).setFocus()
 
 
 class RectangularRefinedGeneratorController(GridController):
