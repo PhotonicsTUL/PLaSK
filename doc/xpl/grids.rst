@@ -103,6 +103,42 @@ Possible <mesh> contents for different types
 
    Deprecated alias to :xml:tag:`<mesh> [rectangular2d]`.
 
+.. xml:tag:: <mesh type="triangular2d"> [triangular2d]
+
+   Two-dimensional triangular mesh.
+
+   .. xml:contents::
+
+      Either a sequence of ``<triangle>`` tags or a sequence of ``<node>`` tags followed by sequence of ``<element>`` tags.
+
+      The sequence of ``<node>`` tags describes a 0-indexed vector of nodes.
+
+      .. xml:tag:: <triangle> [in triangular2d mesh]
+
+         Specification of a triangular element of the mesh; a triangle.
+
+         :attr a0: horizontal coordinate of the first vertex of the triangle. (float [µm])
+         :attr a1: vertical coordinate of the first vertex of the triangle. (float [µm])
+         :attr b0: horizontal coordinate of the second vertex of the triangle. (float [µm])
+         :attr b1: vertical coordinate of the second vertex of the triangle. (float [µm])
+         :attr c0: horizontal coordinate of the third vertex of the triangle. (float [µm])
+         :attr c1: vertical coordinate of the third vertex of the triangle. (float [µm])
+
+      .. xml:tag:: <node> [in triangular2d mesh]
+
+         Node specification; a 2D point; a vertex of triangular element.
+
+         :attr tran: horizontal coordinate of the point. (float [µm])
+         :attr vert: vertical coordinate of the point. (float [µm])
+
+      .. xml:tag:: <element> [in triangular2d mesh]
+
+         Specification of a triangular element of the mesh; a triangle.
+
+         :attr a: index of the first vertex of the triangle in the vector of nodes. (integer)
+         :attr b: index of the second vertex of the triangle in the vector of nodes. (integer)
+         :attr c: index of the third vertex of the triangle in the vector of nodes. (integer)
+
 
 .. xml:tag:: <mesh type="rectangular3d"> [rectangular3d]
 
