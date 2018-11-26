@@ -272,8 +272,8 @@ void EffectiveFrequencyCyl::updateCache()
             axis0 = plask::make_shared<OrderedAxis>(*midmesh->axis[0]);
             axis1 = plask::make_shared<OrderedAxis>(*midmesh->axis[1]);
         }
-        if (rsize == axis0->size())
-            axis0->addPoint(mesh->axis[0]->at(axis0->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
+        if (rsize == mesh->axis[0]->size())
+            axis0->addPoint(mesh->axis[0]->at(mesh->axis[0]->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
         if (zbegin == 0)
             axis1->addPoint(mesh->axis[1]->at(0) - 2.*OrderedAxis::MIN_DISTANCE);
         if (zsize == mesh->axis[1]->size()+1)
