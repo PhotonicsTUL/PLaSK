@@ -39,7 +39,13 @@ from plask.hdf5 import *
 
 def preload_jedi_modules():
     with Lock(JEDI_MUTEX):
-        jedi.Script(PREAMBLE, 8, 0, None).completions()
+        try:
+            jedi.Script(PREAMBLE, 8, 0, None).completions()
+        except:
+            from ... import _DEBUG
+            if _DEBUG:
+                import traceback
+                traceback.print_exc()
 
 
 def prepare_completions():

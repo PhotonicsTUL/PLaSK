@@ -52,15 +52,15 @@ template <> inline const char* docstring_provider_multi_param_desc<CarriersConce
 
 
 template <> inline const char* docstring_provider_multi_param_desc<ModeLightMagnitude>() {
-    return u8":param int n: Mode number.\n";
+    return u8":param int n: Number of the mode found with :meth:`find_mode`.\n";
 }
 
 template <> inline const char* docstring_provider_multi_param_desc<ModeLightE>() {
-    return u8":param int n: Mode number.\n";
+    return u8":param int n: Number of the mode found with :meth:`find_mode`.\n";
 }
 
 template <> inline const char* docstring_provider_multi_param_desc<ModeLightH>() {
-    return u8":param int n: Mode number.\n";
+    return u8":param int n: Number of the mode found with :meth:`find_mode`.\n";
 }
 
 

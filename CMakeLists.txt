@@ -497,7 +497,7 @@ if(BUILD_PYTHON)
     # GUI
     if(BUILD_GUI)
         if(WIN32)
-            file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.rc "${manifest}2 ICON \"${CMAKE_SOURCE_DIR}/utils/plask.ico\"\n200 ICON \"${CMAKE_SOURCE_DIR}/utils/xpl.ico\"\n")
+            file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.rc "${manifest}2 ICON \"${CMAKE_SOURCE_DIR}/utils/plask.ico\"\n200 ICON \"${CMAKE_SOURCE_DIR}/utils/xpl.ico\"\n201 BITMAP \"${CMAKE_SOURCE_DIR}/utils/splash.bmp\"\n")
             add_executable(plaskgui WIN32 python/exe_gui.cpp ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.rc)
         else()
             add_executable(plaskgui WIN32 python/exe_gui.cpp)

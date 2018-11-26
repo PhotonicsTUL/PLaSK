@@ -200,7 +200,7 @@ class ThermoElectric(plask.Solver):
         return self.electrical.get_total_current(nact)
 
     @staticmethod
-    def _get_levels(geometry, mesh, *required):
+    def _iter_levels(geometry, mesh, *required):
         if isinstance(mesh, (plask.mesh.Mesh1D, plask.ndarray, list, tuple)):
             hor = mesh,
             Mesh = plask.mesh.Rectangular2D
@@ -241,7 +241,7 @@ class ThermoElectric(plask.Solver):
         plask.save_field(temp, h5file, group + '/Temperature')
         plask.save_field(volt, h5file, group + '/Potential')
         plask.save_field(curr, h5file, group + '/CurrentDensity')
-        for name, jmesh2 in self._get_levels(self.electrical.geometry, jmesh):
+        for name, jmesh2 in self._iter_levels(self.electrical.geometry, jmesh):
             curr2 = self.electrical.outCurrentDensity(jmesh2)
             plask.save_field(curr2, h5file, group + '/Junction' + name + 'CurrentDensity')
 
@@ -264,6 +264,67 @@ class ThermoElectric(plask.Solver):
         plask.print_log('info', "Fields saved to file '{}' in group '{}'".format(filename, group))
         return filename
 
+    def get_temperature(self):
+        """
+        Get temperature on a thermal mesh.
+        """
+        return self.thermal.outTemperature(self.thermal.mesh)
+
+    def get_voltage(self):
+        """
+        Get voltage on an electrical mesh.
+        """
+        return self.electrical.outVoltage(self.electrical.mesh)
+
+    def get_vertical_voltage(self, at=0):
+        """
+        Get computed voltage along the vertical axis.
+
+        Args:
+            at (float): Horizontal position of the axis at which the voltage
+                        is plotted.
+        """
+        if isinstance(self.electrical.geometry, plask.geometry.Cartesian3D):
+            try:
+                at0, at1 = at
+            except TypeError:
+                at0 = at1 = at
+            mesh = plask.mesh.Rectangular2D(plask.mesh.Ordered([at0]), plask.mesh.Ordered([at1]),
+                                            self.electrical.mesh.axis2)
+        else:
+            mesh = plask.mesh.Rectangular2D(plask.mesh.Ordered([at]), self.electrical.mesh.axis1)
+        field = self.electrical.outVoltage(mesh)
+        return field
+
+    def get_junction_currents(self, refine=16, interpolation='linear'):
+        """
+        Get current densities at the active regions.
+
+        Args:
+            refine (int): Number of points in the plot between each two points
+                          in the computational mesh.
+
+            interpolation (str): Interpolation used when retrieving current density.
+
+        Return:
+            dict: Dictionary of junction current density data.
+                  Keys are the junction number.
+        """
+        axis = plask.concatenate([
+            plask.linspace(x, self.electrical.mesh.axis0[i+1], refine+1)
+            for i,x in enumerate(list(self.electrical.mesh.axis0)[:-1])
+        ])
+
+        result = {}
+        for lb, msh in self._iter_levels(self.electrical.geometry, axis):
+            if not lb:
+                lb = 0
+            else:
+                try: lb = int(lb)
+                except ValueError: pass
+            result[lb] = self.electrical.outCurrentDensity(msh, interpolation).array[:,0,1]
+        return result
+
     def plot_temperature(self, geometry_color='0.75', mesh_color=None, geometry_alpha=0.35, mesh_alpha=0.15, **kwargs):
         """
         Plot computed temperature to the current axes.
@@ -284,7 +345,7 @@ class ThermoElectric(plask.Solver):
         See also:
             :func:`plask.plot_field` : Plot any field obtained from receivers
         """
-        field = self.thermal.outTemperature(self.thermal.mesh)
+        field = self.get_temperature()
         plask.plot_field(field, **kwargs)
         cbar = plask.colorbar(use_gridspec=True)
         cbar.set_label("Temperature [K]")
@@ -314,7 +375,7 @@ class ThermoElectric(plask.Solver):
         See also:
             :func:`plask.plot_field` : Plot any field obtained from receivers
         """
-        field = self.electrical.outVoltage(self.electrical.mesh)
+        field = self.get_voltage()
         plask.plot_field(field, **kwargs)
         cbar = plask.colorbar(use_gridspec=True)
         cbar.set_label("Voltage [V]")
@@ -326,7 +387,7 @@ class ThermoElectric(plask.Solver):
 
     def plot_vertical_voltage(self, at=0., **kwargs):
         """
-        Plot computed voltage along the vertical axis
+        Plot computed voltage along the vertical axis.
 
         Args:
             at (float): Horizontal position of the axis at which the voltage
@@ -334,17 +395,8 @@ class ThermoElectric(plask.Solver):
 
             **kwargs: Keyword arguments passed to the plot function.
         """
-        if isinstance(self.electrical.geometry, plask.geometry.Cartesian3D):
-            try:
-                at0, at1 = at
-            except TypeError:
-                at0 = at1 = at
-            mesh = plask.mesh.Rectangular2D(plask.mesh.Ordered([at0]), plask.mesh.Ordered([at1]),
-                                            self.electrical.mesh.axis2)
-        else:
-            mesh = plask.mesh.Rectangular2D(plask.mesh.Ordered([at]), self.electrical.mesh.axis1)
-        field = self.electrical.outVoltage(mesh)
-        plask.plot(mesh.axis1, field, **kwargs)
+        field = self.get_vertical_voltage(at)
+        plask.plot(field.mesh.axis1, field, **kwargs)
         plask.xlabel(u"${}$ [\xb5m]".format(plask.config.axes[-1]))
         plask.ylabel("Voltage [V]")
         plask.window_title("Voltage")
@@ -363,6 +415,7 @@ class ThermoElectric(plask.Solver):
         Args:
             refine (int): Number of points in the plot between each two points
                           in the computational mesh.
+
             bounds (bool): If *True* then the geometry objects boundaries are
                            plotted.
 
@@ -381,7 +434,7 @@ class ThermoElectric(plask.Solver):
         ])
 
         i = 0
-        for i, (lb, msh) in enumerate(self._get_levels(self.electrical.geometry, axis)):
+        for i, (lb, msh) in enumerate(self._iter_levels(self.electrical.geometry, axis)):
             curr = self.electrical.outCurrentDensity(msh, interpolation).array[:,0,1]
             s = sum(curr)
             if label is None:
@@ -413,7 +466,7 @@ class ThermoElectric(plask.Solver):
     def _get_info(self):
         return self._get_defines_info() + [
             "Total current [mA]:            {:8.3f}".format(self.get_total_current()),
-            "Maximum temperature [K]:       {:8.3f}".format(max(self.thermal.outTemperature(self.thermal.mesh)))
+            "Maximum temperature [K]:       {:8.3f}".format(max(self.get_temperature()))
         ]
 
 

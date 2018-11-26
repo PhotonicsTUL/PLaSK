@@ -154,7 +154,12 @@ class PLASK_API GeometryReader {
      * @return material which was read
      */
     shared_ptr<Material> requireMaterial() const {
-        return getMaterial(source.requireAttribute(XML_MATERIAL_ATTR));
+        try {
+            return getMaterial(source.requireAttribute(XML_MATERIAL_ATTR));
+        } catch (XMLNoAttrException) {
+            if (!manager.draft) throw;
+            else return plask::make_shared<DummyMaterial>("");
+        }
     }
 
     /**
@@ -224,6 +229,21 @@ class PLASK_API GeometryReader {
     shared_ptr<GeometryObject> requireObjectWithName(const std::string& name) const;
 
     /**
+     * Get objects from attribute. It support boths: named objects (from manager) and auto-named objects.
+     * @param attr attribute holding object name
+     * @return object with given name
+     * @throw NoSuchGeometryObject if object was not found
+     */
+    shared_ptr<GeometryObject> requireObjectFromAttribute(const std::string& attr) const {
+        try {
+            return requireObjectWithName(source.requireAttribute(attr));
+        } catch (XMLNoAttrException) {
+            if (!manager.draft) throw;
+            else return shared_ptr<GeometryObject>();
+        }
+    }
+
+    /**
      * Add name of object to register.
      *
      * It throws excepetion in case of names conflict.
@@ -272,7 +292,7 @@ class PLASK_API GeometryReader {
 template <typename RequiredObjectType>
 inline shared_ptr<RequiredObjectType> GeometryReader::readObject() {
     shared_ptr<RequiredObjectType> result = dynamic_pointer_cast<RequiredObjectType>(readObject());
-    if (!result) throw UnexpectedGeometryObjectTypeException();
+    if (!result && !manager.draft) throw UnexpectedGeometryObjectTypeException();
     return result;
 }
 

@@ -529,11 +529,11 @@ inline shared_ptr<GeometryObject> Manager::getGeometryObject<GeometryObject>(con
     return getGeometryObject(name);
 }
 
-//specialization for most types
+// Specialization for most types
 template <typename RequiredObjectType>
 inline shared_ptr<RequiredObjectType> Manager::requireGeometryObject(const std::string& name) const {
     shared_ptr<RequiredObjectType> result = dynamic_pointer_cast<RequiredObjectType>(requireGeometryObject(name));
-    if (!result) throw UnexpectedGeometryObjectTypeException();
+    if (!result && !draft) throw UnexpectedGeometryObjectTypeException();
     return result;
 }
 

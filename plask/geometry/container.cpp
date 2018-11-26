@@ -16,7 +16,8 @@ void GeometryObjectContainer<dim>::writeXML(XMLWriter::Element &parent_xml_objec
     for (std::size_t i = 0; i < children.size(); ++i) {
         XMLWriter::Element child_tag = write_cb.makeChildTag(container_tag, *this, i);
         writeXMLChildAttr(child_tag, i, axes);
-        children[i]->getChild()->writeXML(child_tag, write_cb, axes);
+        if (auto child = children[i]->getChild())
+            child->writeXML(child_tag, write_cb, axes);
     }
 }
 

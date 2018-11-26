@@ -327,7 +327,7 @@ protected:
     }
 
     PathHints::Hint _insert(const std::size_t pos, shared_ptr<TranslationT> to_insert, ChildAligner aligner) {
-        this->ensureCanHaveAsChild(*to_insert);
+        if (to_insert) this->ensureCanHaveAsChild(*to_insert);
         return _insertUnsafe(pos, to_insert, aligner);
     }
 
@@ -340,7 +340,7 @@ protected:
     }
 
     /*PathHints::Hint _add(shared_ptr<TranslationT> to_add, ChildAligner aligner) {
-        this->ensureCanHaveAsChild(*to_add);
+        if (to_add) this->ensureCanHaveAsChild(*to_add);
         this->_addUnsafe(to_add, aligner);
         return PathHints::Hint(this->shared_from_this(), to_add);
     }*/

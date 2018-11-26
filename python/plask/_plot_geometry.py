@@ -44,13 +44,14 @@ class BBoxIntersection(matplotlib.transforms.BboxBase):
         self.set_children(bbox1, bbox2)
 
     def __repr__(self):
-        return "BBoxIntersection(%r, %r)" % (self._bbox, self._bbox)
+        return "BBoxIntersection(%r, %r)" % (self._bbox1, self._bbox2)
 
-    def __nonzero__(self):
+    def __bool__(self):
         return not (self._bbox2.xmin > self._bbox1.xmax or
                     self._bbox2.xmax < self._bbox1.xmin or
                     self._bbox2.ymin > self._bbox1.ymax or
                     self._bbox2.ymax < self._bbox1.ymin)
+    __nonzero__ = __bool__  # for Python 2
 
     def get_points(self):
         if self._invalid:

@@ -1060,6 +1060,12 @@ def main():
 
     APPLICATION.commitDataRequest.connect(SESSION.commit)
     APPLICATION.saveStateRequest.connect(SESSION.save)
+
+    try:
+        plask._plask._close_splash()
+    except (NameError, AttributeError):
+        pass
+
     exit_code = APPLICATION.exec_()
 
     sys.exit(exit_code)

@@ -471,6 +471,8 @@ else:
         def save_params(self):
             key = 'launcher_batch/accounts/{}/params'.format(self.name)
             CONFIG[key] = json.dumps(self.params)
+            CONFIG[key] = json.dumps(self.params)
+            CONFIG[key] = json.dumps(self.params)
             CONFIG.sync()
 
         def batch(self, name, params, path):
