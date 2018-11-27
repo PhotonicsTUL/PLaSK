@@ -88,9 +88,11 @@ std::string TriangleGenerator::getSwitches() const {
 
 shared_ptr<MeshGenerator> readTriangleGenerator(XMLReader& reader, const Manager&) {
     shared_ptr<TriangleGenerator> result = make_shared<TriangleGenerator>();
-    result->maxTriangleArea = reader.getAttribute<double>("maxarea");
-    result->minTriangleAngle = reader.getAttribute<double>("minangle");
-    reader.requireTagEnd();
+    if (reader.requireTagOrEnd("options")) {
+        result->maxTriangleArea = reader.getAttribute<double>("maxarea");
+        result->minTriangleAngle = reader.getAttribute<double>("minangle");
+        reader.requireTagEnd();
+    }
     return result;
 }
 
