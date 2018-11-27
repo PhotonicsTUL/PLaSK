@@ -289,7 +289,7 @@ shared_ptr<GeometryObject> GeometryReader::requireObjectWithName(const std::stri
     } else {
         try {
             return manager.requireGeometryObject(name);
-        } catch (NoSuchGeometryObject) {
+        } catch (NoSuchGeometryObject&) {
             if (!manager.draft) throw;
             else return shared_ptr<GeometryObject>();
         }
