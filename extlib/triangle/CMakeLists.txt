@@ -21,7 +21,7 @@ else(PLASK_TRIANGLE_SHARED)
 endif (PLASK_TRIANGLE_SHARED)
 
 target_compile_options(triangle PRIVATE -DTRILIBRARY -fPIC)
-#target_include_directories(triangle INTERFACE .)
+target_include_directories(triangle INTERFACE .)
 
 if (PLASK_TRIANGLE_SHARED)
     if(WIN32)
