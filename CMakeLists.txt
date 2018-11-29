@@ -496,8 +496,11 @@ if(BUILD_PYTHON)
     # GUI
     if(BUILD_GUI)
         if(WIN32)
-            file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.rc "${manifest}2 ICON \"${CMAKE_SOURCE_DIR}/utils/plask.ico\"\n200 ICON \"${CMAKE_SOURCE_DIR}/utils/xpl.ico\"\n201 BITMAP \"${CMAKE_SOURCE_DIR}/utils/splash.bmp\"\n")
-            add_executable(plaskgui WIN32 python/exe_gui.cpp ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.rc)
+             add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash.bmp
+                                COMMAND ${PYTHON_EXECUTABLE} ARGS -c "from PIL import Image; Image.open('${CMAKE_SOURCE_DIR}/gui/splash620.png').save('${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash.bmp')"
+                                DEPENDS ${CMAKE_SOURCE_DIR}/gui/splash620.png)
+            file(WRITE ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/plaskgui.rc "${manifest}2 ICON \"${CMAKE_SOURCE_DIR}/utils/plask.ico\"\n200 ICON \"${CMAKE_SOURCE_DIR}/utils/xpl.ico\"\n201 BITMAP \"${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash.bmp\"\n")
+            add_executable(plaskgui WIN32 python/exe_gui.cpp ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/plaskgui.rc ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash.bmp)
         else()
             add_executable(plaskgui WIN32 python/exe_gui.cpp)
         endif()
