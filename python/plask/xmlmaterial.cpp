@@ -278,8 +278,8 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
             material->self.attr(item.first.c_str()) = item.second;
         }
     }
-    if (doping_amount_type == Material::DOPANT_CONCENTRATION) material->self.attr("dc") = doping_amount;
-    else if (doping_amount_type == Material::CARRIERS_CONCENTRATION) material->self.attr("cc") = doping_amount;
+    if (doping_amount_type == Material::DOPANT_CONCENTRATION) material->self.attr("doping") = doping_amount;
+    else if (doping_amount_type == Material::CARRIERS_CONCENTRATION) material->self.attr("carriers") = doping_amount;
     return material;
 }
 

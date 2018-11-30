@@ -32,13 +32,13 @@ class Material(unittest.TestCase):
             super(Material.AlGaAsDp, self).__init__()
             self.args = args,
             print(kwargs)
-            self.dc = kwargs.get('dc')
+            self.doping = kwargs.get('doping')
             self.composition = self.complete_composition(kwargs, self.name);
             print("Composition: %s" % self.composition)
         def __del__(self):
             ptest.print_ptr(self)
         def VB(self, T=300., e=0., point='G', hole='H'):
-            return self.dc * T
+            return self.doping * T
         def CB(self, T=300., e=0., point='G'):
             return self.composition['Ga'] * T
         def NR(self, lam, T, n):
@@ -93,7 +93,7 @@ class Material(unittest.TestCase):
         with(self.assertRaisesRegexp(TypeError, "'N' not allowed in material AlGaAs:Dp")):
             mx = Material.AlGaAsDp(Al=0.2, N=0.9)
 
-        m2 = material.AlGaAs(Al=0.2, dop="Dp", dc=5.0)
+        m2 = material.AlGaAs(Al=0.2, dopant="Dp", doping=5.0)
         self.assertEqual( m2.name, "AlGaAs:Dp" )
         self.assertEqual( m2.VB(), 1500.0 )
         correct = dict(Al=0.2, Ga=0.8, As=1.0)
@@ -114,7 +114,7 @@ class Material(unittest.TestCase):
     def testDefaultMaterials(self):
         self.assertIn( "GaN", material.db )
         self.assertEqual( str(material.AlGaN(Al=0.2)), "Al(0.2)GaN" )
-        self.assertRegexpMatches( str(material.AlGaN(Ga=0.8, dop="Si", dc=1e17)), r"Al\(0\.2\)GaN:Si=1e\+0?17" )
+        self.assertRegexpMatches( str(material.AlGaN(Ga=0.8, dopant="Si", doping=1e17)), r"Al\(0\.2\)GaN:Si=1e\+0?17" )
 
     def testExistingMaterial(self):
         '''Test if existing materials works correctly'''
@@ -152,7 +152,7 @@ class Material(unittest.TestCase):
         @material.simple('AlGaAs:Si')
         class WithBase2(material.Material):
             def __init__(self):
-                super(WithBase2, self).__init__(Al=0.2, dc=1e18)
+                super(WithBase2, self).__init__(Al=0.2, doping=1e18)
 
         m1 = WithBase2()
         m2 = material.db('Al(0.2)GaAs:Si=1e18')
