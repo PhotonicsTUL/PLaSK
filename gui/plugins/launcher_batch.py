@@ -29,6 +29,7 @@ from gui.qt.QtWidgets import *
 from gui.launch import LAUNCHERS
 from gui.utils.widgets import MultiLineEdit
 from gui.utils.qsignals import BlockQtSignals
+from gui.model.materials import MaterialsModel
 
 try:
     import cPickle as pickle
@@ -495,6 +496,14 @@ else:
                 if not bp.endswith('/'): bp += '/'
                 bp = quote(bp)
             command = self.program or 'plask'
+
+            # Copy material modules
+            if isinstance(document, XPLDocument):
+                modules = [entry.name for entry in document.materials.model.entries
+                           if isinstance(entry, MaterialsModel.External) and entry.what == 'module']
+            else:
+                files = []
+
             stdin, stdout, stderr = ssh.exec_command("/bin/bash -l -c " + quote(self.batch(name, params, bp)))
             try:
                 print("#!/bin/bash", file=stdin)
