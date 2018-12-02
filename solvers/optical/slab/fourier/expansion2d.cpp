@@ -221,14 +221,23 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
             }
         }
         Tl /= totalw; Tr /= totalw;
-        refl = geometry->getMaterial(vec(pl,maty))->NR(lam, Tl).sqr();
-        if (isnan(refl.c00) || isnan(refl.c11) || isnan(refl.c22) || isnan(refl.c01))
-            throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
-                           geometry->getMaterial(vec(pl,maty))->name(), lam, Tl);
-        refr = geometry->getMaterial(vec(pr,maty))->NR(lam, Tr).sqr();
-        if (isnan(refr.c00) || isnan(refr.c11) || isnan(refr.c22) || isnan(refr.c01))
-            throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
-                           geometry->getMaterial(vec(pr,maty))->name(), lam, Tr);
+        {
+            OmpLockGuard<OmpNestLock> lock; // this must be declared before `material` to guard its destruction
+            auto material = geometry->getMaterial(vec(pl,maty));
+            lock = material->lock();
+            refl = geometry->getMaterial(vec(pl,maty))->NR(lam, Tl).sqr();
+            if (isnan(refl.c00) || isnan(refl.c11) || isnan(refl.c22) || isnan(refl.c01))
+                throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
+                               material->name(), lam, Tl);
+        }{
+            OmpLockGuard<OmpNestLock> lock; // this must be declared before `material` to guard its destruction
+            auto material = geometry->getMaterial(vec(pr,maty));
+            lock = material->lock();
+            refr = geometry->getMaterial(vec(pr,maty))->NR(lam, Tr).sqr();
+            if (isnan(refr.c00) || isnan(refr.c11) || isnan(refr.c22) || isnan(refr.c01))
+                throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
+                               material->name(), lam, Tr);
+        }
     }
 
     // Make space for the result
