@@ -725,7 +725,7 @@ class MainWindow(QMainWindow):
             outer.setContentsMargins(0, 0, 0, 0)
             outer.setSpacing(0)
 
-            sw = QApplication.desktop().screenGeometry().width()
+            sw = QApplication.desktop().screenGeometry(self).width()
             if sw < 2000:
                 image_name = 'splash620'
             elif sw < 4000:
