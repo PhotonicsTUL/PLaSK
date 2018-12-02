@@ -5,32 +5,35 @@
 #include <boost/python/detail/api_placeholder.hpp>
 #include <boost/python/raw_function.hpp>
 
+#include "../python_globals.h"
+
 namespace plask { namespace python {
 
 namespace detail {
 
-  template <typename F>
-  struct raw_constructor_dispatcher
-  {
-      raw_constructor_dispatcher(F f) : f(boost::python::make_constructor(f)) {}
+    template <typename F>
+    struct raw_constructor_dispatcher
+    {
+        raw_constructor_dispatcher(F f) : f(boost::python::make_constructor(f)) {}
 
-      PyObject* operator()(PyObject* args, PyObject* keywords)
-      {
-          boost::python::detail::borrowed_reference_t* ra = boost::python::detail::borrowed_reference(args);
-          boost::python::object a(ra);
-          return boost::python::incref(
-              boost::python::object(
-                  f(boost::python::object(a[0]),
-                    a,
-                    keywords ? boost::python::dict(boost::python::detail::borrowed_reference(keywords)) : boost::python::dict()
-                  )
-              ).ptr()
-          );
-      }
+        PyObject* operator()(PyObject* args, PyObject* keywords)
+        {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+            boost::python::detail::borrowed_reference_t* ra = boost::python::detail::borrowed_reference(args);
+            boost::python::tuple a(ra);
+            return boost::python::incref(
+                boost::python::object(
+                    f(boost::python::object(a[0]),
+                      a,
+                      keywords ? boost::python::dict(boost::python::detail::borrowed_reference(keywords)) : boost::python::dict()
+                    )
+                ).ptr()
+            );
+        }
 
-   private:
-      boost::python::object f;
-  };
+     private:
+        boost::python::object f;
+    };
 
 } // namespace detail
 

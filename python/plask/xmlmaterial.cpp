@@ -271,8 +271,8 @@ class PythonEvalMaterial: public MaterialWithBase
 };
 
 inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
-    auto material = plask::make_shared<PythonEvalMaterial>(self.lock(), base(composition, doping_amount_type, doping_amount));
     OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+    auto material = plask::make_shared<PythonEvalMaterial>(self.lock(), base(composition, doping_amount_type, doping_amount));
     if (alloy) {
         for (auto item: Material::completeComposition(composition)) {
             material->self.attr(item.first.c_str()) = item.second;

@@ -196,7 +196,7 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
         if (!base) base = shared_ptr<Material>(new GenericMaterial);
     }
 
-    static shared_ptr<Material> __init__(py::tuple args, py::dict kwargs);
+    static shared_ptr<Material> __init__(const py::tuple& args, const py::dict& kwargs);
 
     // Here there are overridden methods from Material class
 
@@ -425,6 +425,7 @@ struct PythonMaterialConstructor: public MaterialsDB::MaterialConstructor
 
     shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const override
     {
+        OmpLockGuard<OmpNestLock> lock(python_omp_lock);
         py::tuple args;
         py::dict kwargs;
         // Composition
@@ -433,7 +434,8 @@ struct PythonMaterialConstructor: public MaterialsDB::MaterialConstructor
         if (doping_amount_type !=  Material::NO_DOPING) {
             kwargs[ doping_amount_type == Material::DOPANT_CONCENTRATION ? "doping" : "carriers" ] = doping_amount;
         }
-        return py::extract<shared_ptr<Material>>(material_class(*args, **kwargs));
+        py::object omaterial = material_class(*args, **kwargs);;
+        return py::extract<shared_ptr<Material>>(omaterial);
     }
 
     bool isSimple() const override { return simple; }
@@ -532,7 +534,7 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
     return result;
 }
 
-shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
+shared_ptr<Material> PythonMaterial::__init__(const py::tuple& args, const py::dict& kwargs)
 {
     auto len = py::len(args);
 
@@ -577,7 +579,7 @@ shared_ptr<Material> PythonMaterial::__init__(py::tuple args, py::dict kwargs)
         self.attr("composition") = pycomposition;
     }
 
-    ptr->self = self.ptr();  // key line !!!
+    ptr->self = self.ptr();     // key line !!!
 
     // Update cache
     auto found = cacheMap.find(cls.ptr());

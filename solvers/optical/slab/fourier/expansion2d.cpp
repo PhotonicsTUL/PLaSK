@@ -244,7 +244,6 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
     // Average material parameters
     for (size_t i = 0; i != nM; ++i) {
         for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
-            auto material = geometry->getMaterial(vec(mesh->tran()->at(j),maty));
             double T = 0., W = 0.;
             for (size_t k = 0, v = j * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
                 if (solver->stack[k] == layer) {
@@ -253,9 +252,15 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 }
             }
             T /= W;
-            Tensor3<dcomplex> nr = material->NR(lam, T);
-            if (isnan(nr.c00) || isnan(nr.c11) || isnan(nr.c22) || isnan(nr.c01))
-                throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K", material->name(), lam, T);
+            Tensor3<dcomplex> nr;
+            {
+                OmpLockGuard<OmpNestLock> lock; // this must be declared before `material` to guard its destruction
+                auto material = geometry->getMaterial(vec(mesh->tran()->at(j),maty));
+                lock = material->lock();
+                nr = material->NR(lam, T);
+                if (isnan(nr.c00) || isnan(nr.c11) || isnan(nr.c22) || isnan(nr.c01))
+                    throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K", material->name(), lam, T);
+            }
             if (nr.c01 != 0.) {
                 if (symmetric()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
                 if (separated()) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");

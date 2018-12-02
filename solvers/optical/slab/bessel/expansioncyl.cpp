@@ -223,11 +223,16 @@ std::pair<dcomplex, dcomplex> ExpansionBessel::integrateLayer(size_t layer, doub
         double r = raxis->at(ri);
         double w = segments[seg].weights[wi] * segments[seg].D;
 
-        auto material = geometry->getMaterial(vec(r, matz));
-        Tensor3<dcomplex> eps = material->NR(lam, getT(layer, ri));
-        if (isnan(eps.c00) || isnan(eps.c11) || isnan(eps.c22) || isnan(eps.c01))
-            throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
-                           material->name(), lam, getT(layer, ri));
+        Tensor3<dcomplex> eps;
+        {
+            OmpLockGuard<OmpNestLock> lock; // this must be declared before `material` to guard its destruction
+            auto material = geometry->getMaterial(vec(r, matz));
+            lock = material->lock();
+            eps = material->NR(lam, getT(layer, ri));
+            if (isnan(eps.c00) || isnan(eps.c11) || isnan(eps.c22) || isnan(eps.c01))
+                throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
+                            material->name(), lam, getT(layer, ri));
+        }
         if (eps.c01 != 0.)
             throw BadInput(solver->getId(), "Non-diagonal anisotropy not allowed for this solver");
         if (gain_connected &&  solver->lgained[layer]) {

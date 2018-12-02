@@ -360,7 +360,6 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
             Vec<2> norm(0.,0.);
             for (size_t t = tbegin, j = 0; t != tend; ++t) {
                 for (size_t l = lbegin; l != lend; ++l, ++j) {
-                    auto material = geometry->getMaterial(vec(long_mesh->at(l), tran_mesh->at(t), matv));
                     double T = 0., W = 0.;
                     for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->vert()->size(); ++v, ++k) {
                         if (solver->stack[k] == layer) {
@@ -369,9 +368,14 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                         }
                     }
                     T /= W;
-                    cell[j] = material->NR(lam, T);
-                    if (isnan(cell[j].c00) || isnan(cell[j].c11) || isnan(cell[j].c22) || isnan(cell[j].c01))
-                        throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K", material->name(), lam, T);
+                    {
+                        OmpLockGuard<OmpNestLock> lock; // this must be declared before `material` to guard its destruction
+                        auto material = geometry->getMaterial(vec(long_mesh->at(l), tran_mesh->at(t), matv));
+                        lock = material->lock();
+                        cell[j] = material->NR(lam, T);
+                        if (isnan(cell[j].c00) || isnan(cell[j].c11) || isnan(cell[j].c22) || isnan(cell[j].c01))
+                            throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K", material->name(), lam, T);
+                    }
                     if (cell[j].c01 != 0.) {
                         if (symmetric_long() || symmetric_tran()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
                     }
