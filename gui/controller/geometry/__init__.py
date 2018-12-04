@@ -433,6 +433,15 @@ class GeometryController(Controller):
         toolbar.addWidget(more_button)
 
         toolbar.addSeparator()
+
+        props_button = QToolButton(toolbar)
+        props_button.setIcon(QIcon.fromTheme('document-properties'))
+        props_button.setToolTip("Show object properties in the tree view")
+        props_button.setCheckable(True)
+        props_button.setChecked(True)
+        props_button.toggled.connect(self._show_props)
+        toolbar.addWidget(props_button)
+
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         toolbar.addWidget(spacer)
@@ -454,6 +463,13 @@ class GeometryController(Controller):
 
         self.plot_auto_refresh = True
         return toolbar
+
+    def _show_props(self, checked):
+        self.model.show_props = checked
+        index0 = self.model.index(0, 1)
+        index1 = self.model.index(self.model.rowCount()-1, 1)
+        self.model.dataChanged.emit(index0, index1)
+        self.tree.header().headerDataChanged(Qt.Horizontal, 1, 1)
 
     def _construct_tree(self, model):
         self.tree = GeometryTreeView()
@@ -477,7 +493,7 @@ class GeometryController(Controller):
 
         return self.tree
 
-    def _resize_first_column(self, index):
+    def _resize_first_column(self, index=None):
         self.tree.resizeColumnToContents(0)
 
     def _fill_search_combo(self):
@@ -613,6 +629,7 @@ class GeometryController(Controller):
             self.plot()
         self._fill_search_combo()
         self.update_actions()
+        self._resize_first_column()
         self.tree.setFocus()
 
     def on_edit_exit(self):

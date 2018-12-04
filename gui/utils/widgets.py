@@ -110,6 +110,10 @@ class HTMLDelegate(QStyledItemDelegate):
         style = QApplication.style() if options.widget is None else options.widget.style()
 
         doc = QTextDocument()
+        if self.compact:
+            text_option = doc.defaultTextOption()
+            text_option.setWrapMode(QTextOption.NoWrap)
+            doc.setDefaultTextOption(text_option)
         doc.documentLayout().setPaintDevice(self.parent())
         doc.setHtml(options.text)
         doc.setTextWidth(max(300, options.rect.width()))    #TODO 300 -> member
