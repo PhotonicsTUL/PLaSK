@@ -274,6 +274,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
         self.axes = None    #TODO ? use axes of FakeRoot
         self._message = None
         self.dirty = False
+        self.show_props = True
 
     @property
     def roots(self):
@@ -324,29 +325,65 @@ class GeometryModel(SectionModel, QAbstractItemModel):
                 return item.display_name(full_name=False)
             else:
                 name = getattr(item, 'name', '')
-                if name and not isinstance(item, GNAgain):
-                    res = '<span style="color: #866">name:</span> <b>{}</b>'.format(html.escape(name))
+                if self.show_props:
+                    if name and not isinstance(item, GNAgain):
+                        res = '<span style="color: #866">name:</span> <b>{}</b>'.format(html.escape(name))
+                    else:
+                        res = ''
+                    for prop_table in (item.in_parent_properties(), item.major_properties(), item.minor_properties()):
+                        in_group = False
+                        for t in prop_table:
+                            if t is None:
+                                if in_group: res += '<span style="color: #769">]</span>'
+                                in_group = False
+                            elif isinstance(t, basestring):
+                                if res: res += ' &nbsp; '
+                                res += '<span style="color: #769">[{}</span>'.format(html.escape(t).replace(' ', '&nbsp;'))
+                                in_group = True
+                            else:
+                                n, v = t
+                                if v is None: continue
+                                if res: res += ' &nbsp;' if in_group else ' &nbsp; '
+                                res += '<span style="color: #766">{}:</span>&nbsp;{}'\
+                                    .format(html.escape(n).replace(' ', '&nbsp;'), html.escape(v).replace(' ', '&nbsp;'))
+                                    # replacing ' ' to '&nbsp;' is for better line breaking (not in middle of name/value)
+                elif name and not isinstance(item, GNAgain):
+                    res = '<b>{}</b>'.format(html.escape(name))
                 else:
                     res = ''
-                for prop_table in (item.in_parent_properties(), item.major_properties(), item.minor_properties()):
-                    in_group = False
-                    for t in prop_table:
-                        if t is None:
-                            if in_group: res += '<span style="color: #769">]</span>'
-                            in_group = False
-                        elif isinstance(t, basestring):
-                            if res: res += ' &nbsp; '
-                            res += '<span style="color: #769">[{}</span>'.format(html.escape(t).replace(' ', '&nbsp;'))
-                            in_group = True
-                        else:
-                            n, v = t
-                            if v is None: continue
-                            if res: res += ' &nbsp;' if in_group else ' &nbsp; '
-                            res += '<span style="color: #766">{}:</span>&nbsp;{}'\
-                                .format(html.escape(n).replace(' ', '&nbsp;'), html.escape(v).replace(' ', '&nbsp;'))
-                        # replacing ' ' to '&nbsp;' is for better line breaking (not in middle of name/value)
                 return res
-        if role == Qt.DecorationRole and index.column() == 0:
+        elif role == Qt.ToolTipRole:
+            item = index.internalPointer()
+            res = '<table><tr><td colspan="2"><b>' + html.escape(item.display_name(full_name=False)) + '</b>'
+            name = getattr(item, 'name', '')
+            if name and not isinstance(item, GNAgain):
+                res += '</td></tr><tr><td>name:</td><td><b>{}</b>'.format(html.escape(name))
+            for prop_table in (item.in_parent_properties(), item.major_properties(), item.minor_properties()):
+                in_group = False
+                group_cont = False
+                for t in prop_table:
+                    if t is None:
+                        if in_group:
+                            res += "</td></tr></table>"
+                            in_group = False
+                    elif isinstance(t, basestring):
+                        res += '</td></tr><tr><td>{}&nbsp;</td><td><table><tr><td>'\
+                            .format(html.escape(t).replace(' ', '&nbsp;'))
+                        in_group = True
+                        group_cont = False
+                    else:
+                        n, v = t
+                        if v is None: continue
+                        if not in_group or group_cont:
+                            res += '</td></tr><tr><td>'
+                        else:
+                            group_cont = True
+                        res += '{}:&nbsp;</td><td>{}'\
+                            .format(html.escape(n).replace(' ', '&nbsp;'), html.escape(v).replace(' ', '&nbsp;'))
+                            # replacing ' ' to '&nbsp;' is for better line breaking (not in middle of name/value)
+            res += '</td></tr></table>'
+            return res
+        elif role == Qt.DecorationRole and index.column() == 0:
             node = self.node_for_index(index)
             if node is self.fake_root: return
             if self._info is not None:
@@ -374,7 +411,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return ('tag', 'properties')[section]
+            return ('Tag', 'Properties' if self.show_props else 'Name')[section]
         return None
 
     def node_for_index(self, index):

@@ -76,7 +76,121 @@ def set_conflict(widget, conflict):
             pass
 
 
-class SolverWidget(VerticalScrollArea):
+class SolverWidget(QWidget):
+
+    def __init__(self, controller, parent=None):
+        super(SolverWidget, self).__init__(parent)
+
+        self.controller = weakref.proxy(controller)
+
+        scroll = VerticalScrollArea(self)
+
+        filter = LineEditWithClear()
+        filter.setPlaceholderText("Filter...")
+        filter.textChanged.connect(self.filter)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(filter)
+        layout.addWidget(scroll)
+        layout.setSpacing(3)
+        self.setLayout(layout)
+
+        self.form_layout = QFormLayout()
+        self.form_layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+
+        main = QWidget()
+
+        self.headers = []
+
+        defines = get_defines_completer(self.controller.document.defines.model, self)
+
+        last_header = None
+
+        weakself = weakref.proxy(self)
+
+        if controller.model.geometry_type is not None:
+            rows = []
+            last_header = "Geometry"
+            self._make_header(last_header, rows)
+            self.geometry = ComboBox()
+            self.geometry.setEditable(True)
+            self.geometry.editingFinished.connect(
+                lambda w=self.geometry: weakself._change_node_field('geometry', w.currentText()))
+            self.geometry.setCompleter(get_defines_completer(defines, self.geometry))
+            self.geometry.setToolTip(u'&lt;<b>geometry ref</b>=""&gt;<br/>'
+                                     u'Name of the existing geometry for use by this solver.')
+            # TODO add some graphical thumbnail
+            self._add_row("Geometry", self.geometry, rows)
+        else:
+            self.geometry = None
+
+        if controller.model.mesh_types:
+            rows = []
+            last_header = "Mesh"
+            self._make_header(last_header, rows)
+            self.mesh = ComboBox()
+            self.mesh.setEditable(True)
+            self.mesh.editingFinished.connect(lambda w=self.mesh: weakself._change_node_field('mesh', w.currentText()))
+            self.mesh.setCompleter(get_defines_completer(defines, self.geometry))
+            self.mesh.setToolTip(u'&lt;<b>mesh ref</b>=""&gt;<br/>'
+                                 u'Name of the existing {} mesh for use by this solver.'
+                                 .format(' or '.join(controller.model.mesh_types)))
+            # TODO add some graphical thumbnail
+
+            self._add_row("Mesh", self.mesh, rows)
+        else:
+            self.mesh = None
+
+        self.controls = {}
+
+        for schema in controller.model.schema:
+            group = schema.name
+            gname = group.split('/')[-1]
+            bc = isinstance(schema, SchemaBoundaryConditions)
+            if last_header != schema.label:
+                last_header = schema.label
+                rows = []
+                self._make_header(last_header, rows)
+            if isinstance(schema, SchemaTag):
+                for attr in schema.attrs:
+                    if isinstance(attr, AttrGroup):
+                        edit = QWidget()
+                        lay = QHBoxLayout()
+                        lay.setContentsMargins(0, 0, 0, 0)
+                        edit.setLayout(lay)
+                        sep = ''
+                        for item in attr:
+                            field = self._add_attr(item, defines, gname, group)
+                            field.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
+                            label = QLabel(sep + item.label + ':')
+                            lay.addWidget(label)
+                            lay.addWidget(field)
+                            sep = ' '
+                    else:
+                        edit = self._add_attr(attr, defines, gname, group)
+                    self._add_row(attr.label, edit, rows)
+            elif bc:
+                edit = QPushButton("View / Edit")
+                edit.sizePolicy().setHorizontalStretch(1)
+                edit.pressed.connect(lambda schema=schema: weakself.edit_boundary_conditions(schema))
+                self.controls[group] = edit
+                self._add_row(schema.label2, edit, rows)
+            else:
+                edit = TextEditorWithCB(parent=parent, line_numbers=False)
+                font = QFont(EDITOR_FONT)
+                font.setPointSize(font.pointSize() - 1)
+                edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, SCHEME),
+                                                     default_font=font)
+                edit.setToolTip(u'&lt;<b>{0}</b>&gt;...&lt;/<b>{0}</b>&gt;<br/>{1}'.format(gname, schema.label))
+                self.controls[group] = edit
+                rows.append(edit)
+                self.form_layout.addRow(edit)
+                # edit.textChanged.connect(self.controller.fire_changed)
+                edit.focus_out_cb = lambda edit=edit, group=group: weakself._change_attr(group, None, edit.toPlainText())
+
+        main.setLayout(self.form_layout)
+        scroll.setWidget(main)
 
     def _change_attr(self, group, name, value, attr=None):
         node = self.controller.solver_model
@@ -248,112 +362,6 @@ class SolverWidget(VerticalScrollArea):
     def _add_row(self, label, edit, rows):
         rows.append(edit)
         self.form_layout.addRow(label + ':', edit)
-
-    def __init__(self, controller, parent=None):
-        super(SolverWidget, self).__init__(parent)
-
-        self.controller = weakref.proxy(controller)
-
-        self.form_layout = QFormLayout()
-        self.form_layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
-
-        main = QWidget()
-
-        self.headers = []
-
-        filter = LineEditWithClear()
-        filter.setPlaceholderText("Filter...")
-        filter.textChanged.connect(self.filter)
-        self.form_layout.addRow(filter)
-
-        defines = get_defines_completer(self.controller.document.defines.model, self)
-
-        last_header = None
-
-        weakself = weakref.proxy(self)
-
-        if controller.model.geometry_type is not None:
-            rows = []
-            last_header = "Geometry"
-            self._make_header(last_header, rows)
-            self.geometry = ComboBox()
-            self.geometry.setEditable(True)
-            self.geometry.editingFinished.connect(
-                lambda w=self.geometry: weakself._change_node_field('geometry', w.currentText()))
-            self.geometry.setCompleter(get_defines_completer(defines, self.geometry))
-            self.geometry.setToolTip(u'&lt;<b>geometry ref</b>=""&gt;<br/>'
-                                     u'Name of the existing geometry for use by this solver.')
-            # TODO add some graphical thumbnail
-            self._add_row("Geometry", self.geometry, rows)
-        else:
-            self.geometry = None
-
-        if controller.model.mesh_types:
-            rows = []
-            last_header = "Mesh"
-            self._make_header(last_header, rows)
-            self.mesh = ComboBox()
-            self.mesh.setEditable(True)
-            self.mesh.editingFinished.connect(lambda w=self.mesh: weakself._change_node_field('mesh', w.currentText()))
-            self.mesh.setCompleter(get_defines_completer(defines, self.geometry))
-            self.mesh.setToolTip(u'&lt;<b>mesh ref</b>=""&gt;<br/>'
-                                 u'Name of the existing {} mesh for use by this solver.'
-                                 .format(' or '.join(controller.model.mesh_types)))
-            # TODO add some graphical thumbnail
-
-            self._add_row("Mesh", self.mesh, rows)
-        else:
-            self.mesh = None
-
-        self.controls = {}
-
-        for schema in controller.model.schema:
-            group = schema.name
-            gname = group.split('/')[-1]
-            bc = isinstance(schema, SchemaBoundaryConditions)
-            if last_header != schema.label:
-                last_header = schema.label
-                rows = []
-                self._make_header(last_header, rows)
-            if isinstance(schema, SchemaTag):
-                for attr in schema.attrs:
-                    if isinstance(attr, AttrGroup):
-                        edit = QWidget()
-                        lay = QHBoxLayout()
-                        lay.setContentsMargins(0, 0, 0, 0)
-                        edit.setLayout(lay)
-                        sep = ''
-                        for item in attr:
-                            field = self._add_attr(item, defines, gname, group)
-                            field.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
-                            label = QLabel(sep + item.label + ':')
-                            lay.addWidget(label)
-                            lay.addWidget(field)
-                            sep = ' '
-                    else:
-                        edit = self._add_attr(attr, defines, gname, group)
-                    self._add_row(attr.label, edit, rows)
-            elif bc:
-                edit = QPushButton("View / Edit")
-                edit.sizePolicy().setHorizontalStretch(1)
-                edit.pressed.connect(lambda schema=schema: weakself.edit_boundary_conditions(schema))
-                self.controls[group] = edit
-                self._add_row(schema.label2, edit, rows)
-            else:
-                edit = TextEditorWithCB(parent=parent, line_numbers=False)
-                font = QFont(EDITOR_FONT)
-                font.setPointSize(font.pointSize() - 1)
-                edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, SCHEME),
-                                                     default_font=font)
-                edit.setToolTip(u'&lt;<b>{0}</b>&gt;...&lt;/<b>{0}</b>&gt;<br/>{1}'.format(gname, schema.label))
-                self.controls[group] = edit
-                rows.append(edit)
-                self.form_layout.addRow(edit)
-                # edit.textChanged.connect(self.controller.fire_changed)
-                edit.focus_out_cb = lambda edit=edit, group=group: weakself._change_attr(group, None, edit.toPlainText())
-
-        main.setLayout(self.form_layout)
-        self.setWidget(main)
 
     def _get_grids(self, mesh_types):
         if mesh_types is None:

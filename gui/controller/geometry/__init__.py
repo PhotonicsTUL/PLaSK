@@ -161,6 +161,7 @@ class GeometryController(Controller):
 
         self.main_splitter = QSplitter()
         self.main_splitter.addWidget(self.vertical_splitter)
+        self.main_splitter.setHandleWidth(4)
 
         search_action = QAction(QIcon.fromTheme('edit-find'), '&Search', self.main_splitter)
         search_action.setShortcut(QKeySequence.Find)
@@ -457,7 +458,7 @@ class GeometryController(Controller):
     def _construct_tree(self, model):
         self.tree = GeometryTreeView()
         self.tree.setModel(model)
-        self.properties_delegate = HTMLDelegate(self.tree)
+        self.properties_delegate = HTMLDelegate(self.tree, compact=True)
         self.tree.setItemDelegateForColumn(1, self.properties_delegate)
         self.tree.setColumnWidth(0, 200)
 
@@ -472,7 +473,12 @@ class GeometryController(Controller):
         self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
         self.tree.customContextMenuRequested.connect(self.on_tree_context_menu)
 
+        self.tree.expanded.connect(self._resize_first_column)
+
         return self.tree
+
+    def _resize_first_column(self, index):
+        self.tree.resizeColumnToContents(0)
 
     def _fill_search_combo(self):
         self.search_combo.clear()
