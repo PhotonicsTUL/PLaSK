@@ -20,7 +20,7 @@ else(PLASK_TRIANGLE_SHARED)
     add_library(triangle STATIC triangle.c triangle.h)
 endif (PLASK_TRIANGLE_SHARED)
 
-target_compile_options(triangle PRIVATE -DTRILIBRARY -fPIC)
+target_compile_options(triangle PRIVATE -DTRILIBRARY -DNO_TIMER -fPIC)
 target_include_directories(triangle INTERFACE .)
 
 if (PLASK_TRIANGLE_SHARED)
