@@ -157,7 +157,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     Data2DLog<dcomplex,dcomplex> log_value;
 
     size_t rsize,   ///< Last element of horizontal mesh to consider
-           zbegin,  ///<First element of vertical mesh to consider
+           zbegin,  ///< First element of vertical mesh to consider
            zsize;   ///< Last element of vertical mesh to consider
 
     /// Cached refractive indices

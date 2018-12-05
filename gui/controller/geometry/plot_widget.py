@@ -77,6 +77,7 @@ class PlotWidget(PlotWidgetBase):
 
     def select_object(self, root, selected):
         self.clean_selectors()
+        if selected is None: return
         bboxes = root.get_object_bboxes(selected)
         if not bboxes: return
         ax = plane_to_axes(self.plane, 2 if isinstance(bboxes[0], plask.geometry.Box2D) else 3)

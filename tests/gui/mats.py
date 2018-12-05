@@ -12,10 +12,10 @@ class AlGaAs_fake(material.Material):
     def VB(self, T=300., e=0., point='G', hole='H'):
         return 2.*T
 
-    def nr(self, wl, T=300., n=0.):
+    def nr(self, lam, T=300., n=0.):
         return 3.5
 
-    def absp(self, wl, T):
+    def absp(self, lam, T=300, n=0.):
         return 0.
 
 

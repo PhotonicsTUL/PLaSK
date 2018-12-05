@@ -36,10 +36,10 @@ def update_factories():
     """For each material in default database make factory in ``plask.material``."""
     def factory(name):
         def func(**kwargs):
-            if 'dop' in kwargs:
+            if 'dopant' in kwargs:
                 kwargs = kwargs.copy()
-                dop = kwargs.pop('dop')
-                return material.db.get(name+':'+dop, **kwargs)
+                dopant = kwargs.pop('dopant')
+                return material.db.get(name+':'+dopant, **kwargs)
             else:
                 return material.db.get(name, **kwargs)
         func.__doc__ = u"Create material {}.\n\n:rtype: Material".format(name)

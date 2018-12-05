@@ -99,6 +99,10 @@ def create_undo_actions(toolbar, model, widget):
 
 class HTMLDelegate(QStyledItemDelegate):
 
+    def __init__(self, parent=None, compact=False):
+        super(HTMLDelegate, self).__init__(parent)
+        self.compact = compact
+
     def paint(self, painter, option, index):
         options = QStyleOptionViewItem(option)
         self.initStyleOption(options, index)
@@ -106,6 +110,10 @@ class HTMLDelegate(QStyledItemDelegate):
         style = QApplication.style() if options.widget is None else options.widget.style()
 
         doc = QTextDocument()
+        if self.compact:
+            text_option = doc.defaultTextOption()
+            text_option.setWrapMode(QTextOption.NoWrap)
+            doc.setDefaultTextOption(text_option)
         doc.documentLayout().setPaintDevice(self.parent())
         doc.setHtml(options.text)
         doc.setTextWidth(max(300, options.rect.width()))    #TODO 300 -> member
@@ -135,9 +143,13 @@ class HTMLDelegate(QStyledItemDelegate):
 
         doc = QTextDocument()
         doc.documentLayout().setPaintDevice(self.parent())
+        if self.compact:
+            height = doc.size().height()
         doc.setHtml(options.text)
         doc.setTextWidth(max(300, options.rect.width()))
-        return QSize(doc.idealWidth(), doc.size().height())
+        if not self.compact:
+            height = doc.size().height()
+        return QSize(doc.idealWidth(), height)
 
 
 class ComboBoxDelegate(QItemDelegate):

@@ -102,12 +102,6 @@ class Grid(TreeFragmentModel):
         pass
     #    if not self.object: self._require(res, 'object')
 
-#class Generator(Grid):
-#    """Base class for models of generators"""
-
-#class Mesh(Grid):
-#    """Base class for models of meshes"""
-
 
 class TreeFragmentGrid(Grid):
     """Universal grid model, used for grids not supported in other way (data is stored as XML element)"""
@@ -157,15 +151,6 @@ class GridWithoutConf(Grid):
     @staticmethod
     def from_xml(grids_model, element):
         return GridWithoutConf(grids_model, element.attrib['name'], element.attrib['type'], element.attrib.get('method', None))
-
-    #def __init__(self, grids_model, name, type, method):
-    #    super(GridWithoutConf, self).__init__(grids_model, name, type, method)
-
-    #def get_xml_element(self):
-    #    return super(GridWithoutConf, self).get_xml_element()
-
-    #def set_xml_element(self, element):
-    #    super(GridWithoutConf, self).set_xml_element()
 
     def get_controller(self, document):
         from ...controller import NoConfController

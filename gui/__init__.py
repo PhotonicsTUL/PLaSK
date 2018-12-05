@@ -708,22 +708,73 @@ class MainWindow(QMainWindow):
             self.menu.insertAction(self._pysparkle_place, action_check_update)
         self.shown.disconnect(self.init_pysparkle)
 
+    class AboutWindow(QDialog):
+
+        def __init__(self, text, parent=None):
+            super(MainWindow.AboutWindow, self).__init__(parent)
+            self.setWindowFlags(Qt.FramelessWindowHint | Qt.Popup)
+            self.setWindowTitle("About PLaSK")
+            self.setStyleSheet("""
+                QDialog {
+                    border-style: outset;
+                    border-width: 1px;
+                    border-color: black;
+                }
+            """)
+            outer = QVBoxLayout()
+            outer.setContentsMargins(0, 0, 0, 0)
+            outer.setSpacing(0)
+
+            sw = QApplication.desktop().screenGeometry(self).width()
+            if sw < 1200:
+                image_name = 'splash620'
+            elif sw < 2600:
+                image_name = 'splash868'
+            else:
+                image_name = 'splash1116'
+
+            image_label = QLabel()
+            image_label.setPixmap(QPixmap(os.path.join(os.path.dirname(__file__), image_name)))
+            outer.addWidget(image_label)
+
+            vertical = QVBoxLayout()
+            vertical.setContentsMargins(16, 8, 16, 8)
+
+            horizontal = QHBoxLayout()
+            horizontal.setContentsMargins(0, 0, 0, 0)
+            horizontal.setSpacing(16)
+
+            style = QApplication.style()
+            ics = style.pixelMetric(QStyle.PM_MessageBoxIconSize)
+            icon = QIcon.fromTheme('dialog-information')
+            icon_label = QLabel()
+            icon_label.setPixmap(icon.pixmap(ics, QIcon.Normal, QIcon.Off))
+            icon_label.setFixedWidth(ics)
+            horizontal.addWidget(icon_label)
+            horizontal.setAlignment(icon_label, Qt.AlignTop)
+
+            label = QLabel(u"<b>PLaSK — Photonic Laser Simulation Kit</b><br/>\n"
+                           u"© 2014-2019 Lodz University of Technology, Photonics Group<br/><br/>" + text)
+            label.setTextFormat(Qt.RichText)
+            label.setWordWrap(True)
+            horizontal.addWidget(label)
+
+            vertical.addLayout(horizontal)
+
+            button_box = QDialogButtonBox(QDialogButtonBox.Ok)
+            button_box.accepted.connect(self.accept)
+            vertical.addWidget(button_box)
+
+            inner = QWidget()
+            inner.setLayout(vertical)
+            outer.addWidget(inner)
+
+            self.setLayout(outer)
+
+            self.adjustSize()
+
     def about(self):
-        msgbox = QMessageBox(QMessageBox.Information,
-                             "About PLaSK",
-                             u"<b>PLaSK — Photonic Laser Simulation Kit</b><br/>\n"
-                             u"© 2014-2017 Lodz University of Technology, Photonics Group",
-                             QMessageBox.Ok,
-                             self,
-                             Qt.FramelessWindowHint | Qt.Popup)
-        msgbox.setStyleSheet("""
-            QDialog {
-                border-style: outset;
-                border-width: 2px;
-                border-color: black;
-            }
-        """)
-        msgbox.setTextFormat(Qt.RichText)
+
         if VERSION is not None:
             details = u"Version <b>" + VERSION + u"</b><br/>(GUI using {} framework)<br/>\n<br/>\n".format(QT_API)
         else:
@@ -748,11 +799,12 @@ class MainWindow(QMainWindow):
         details += "Your system ID is {}".format(LICENSE['systemid'])
         note = '<br/>\n<br/>\n<span style="color: #888888;">Details have been copied to ' \
                'your clipboard.</span>'
-        msgbox.setInformativeText(details + note)
+
+        msgbox = self.AboutWindow(details + note, self)
+
         details = re.sub('<[^>]+>', '', details).replace('&lt;', '<').replace('&gt;', '>')
         QApplication.clipboard().setText(details)
-        # msgbox.setDetailedText(LICENSE["text"])
-        msgbox.adjustSize()
+
         msgbox.move(self.frameGeometry().topLeft() + self.rect().center() - msgbox.rect().center())
         msgbox.exec_()
 

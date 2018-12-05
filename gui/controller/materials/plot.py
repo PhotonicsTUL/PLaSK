@@ -293,7 +293,7 @@ class MaterialPlot(QWidget):
             val1.returnPressed.connect(self.update_plot)
             val1.setObjectName(name+'1')
             val1.textChanged.connect(self.param_changed)
-            select_text = 'dc' if what == 1 else name
+            select_text = 'doping' if what == 1 else name
             if select_text in PARAMS:
                 val0.setText(PARAMS[select_text][0])
                 val1.setText(PARAMS[select_text][1])
@@ -360,7 +360,7 @@ class MaterialPlot(QWidget):
             if elements:
                 self.mat_toolbar.addSeparator()
             if len(dopes) > 1 and update_toolbar:
-                PARAMS['dc'] = dopes[1], ''
+                PARAMS['doping'] = dopes[1], ''
             self.set_toolbar(self.mat_toolbar,
                              [(("[" + dope + "]"), dope + " doping concentration", "cm<sup>-3</sup>")], 1)
 
@@ -414,7 +414,7 @@ class MaterialPlot(QWidget):
                 except ValueError:
                     val = str(val)
                 if cat == 1:
-                    yield 'dc', val
+                    yield 'doping', val
                 else:
                     yield str(k.text())[:-1].replace('&', ''), val
 
@@ -444,8 +444,8 @@ class MaterialPlot(QWidget):
             plot_cat = self.arguments[self.arg_button][3]
             other_args = dict(self._parse_other_args(self.arg_button, 2))
             other_elements = dict(self._parse_other_args(self.arg_button, 0))
-            other_elements.update(dict(('dc', v) for k,v in self._parse_other_args(self.arg_button, 1)))
-            arg_name = 'dc' if plot_cat == 1 else str(self.arg_button.text())[:-1].replace('&', '')
+            other_elements.update(dict(('doping', v) for k,v in self._parse_other_args(self.arg_button, 1)))
+            arg_name = 'doping' if plot_cat == 1 else str(self.arg_button.text())[:-1].replace('&', '')
             material_name = str(self.material.currentText())
             if plask is not None:
                 if plot_cat == 2:

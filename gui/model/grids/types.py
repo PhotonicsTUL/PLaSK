@@ -10,9 +10,10 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from . import TreeFragmentGrid, GridWithoutConf
+from . import TreeFragmentGrid
 from .mesh_rectangular import RectangularMesh, RectangularMesh1D
-from .generator_rectangular import RectangularDivideGenerator, RectangularSmoothGenerator, RectangularRegularGenerator
+from .generator_rectangular import RectangularSimpleGenerator, RectangularRegularGenerator, \
+    RectangularDivideGenerator, RectangularSmoothGenerator
 
 MESHES_TYPES = {
     'ordered': RectangularMesh1D.from_xml,
@@ -25,19 +26,19 @@ GENERATORS_TYPES = {
     'ordered': {
             'divide': RectangularDivideGenerator.from_xml,
             'regular': RectangularRegularGenerator.from_xml,
-            'simple': GridWithoutConf.from_xml,
+            'simple': RectangularSimpleGenerator.from_xml,
             'smooth': RectangularSmoothGenerator.from_xml,
     },
     'rectangular2d': {
             'divide': RectangularDivideGenerator.from_xml,
             'regular': RectangularRegularGenerator.from_xml,
-            'simple': GridWithoutConf.from_xml,
+            'simple': RectangularSimpleGenerator.from_xml,
             'smooth': RectangularSmoothGenerator.from_xml,
     },
     'rectangular3d': {
             'divide': RectangularDivideGenerator.from_xml,
             'regular': RectangularRegularGenerator.from_xml,
-            'simple': GridWithoutConf.from_xml,
+            'simple': RectangularSimpleGenerator.from_xml,
             'smooth': RectangularSmoothGenerator.from_xml,
     },
 }   # use TreeFragmentGrid.from_xml for grids without special support

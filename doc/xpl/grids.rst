@@ -187,7 +187,7 @@ Possible <generator> contents for different types and methods
 
       .. xml:tag:: <options/> [in ordered, divide generator]
 
-         :attr gradual: Turn on/off smooth mesh step (i.e. if disabled, the adjacent elements of the generated mesh may differ more than by the factor of two). (boolean, ``yes`` by default)
+         :attr gradual: Turn on/off smooth mesh step (i.e. if disabled, the adjacent elements of the generated mesh may differ more than by the factor of two). (bool, ``yes`` by default)
 
       .. xml:tag:: <prediv/> [in ordered, divide generator]
 
@@ -223,9 +223,9 @@ Possible <generator> contents for different types and methods
 
          Control printing of the warnings.
 
-         :attr missing: Warn if any refinement references to non-existing object. Defaults to true. (boolean)
-         :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
-         :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
+         :attr missing: Warn if any refinement references to non-existing object. Defaults to ‘yes’. (bool)
+         :attr multiple: Warn if any refinement references to multiple objects. Defaults to ‘yes’. (bool)
+         :attr outside: Warn if refining line lies outside of the specified object. Defaults to ‘yes’. (bool)
 
 
 .. xml:tag:: <generator type="ordered" method="regular"> [ordered, regular]
@@ -236,10 +236,18 @@ Possible <generator> contents for different types and methods
 
       :attr every: Approximate single element size.
 
+   .. xml:tag:: <boundaries/> [in ordered, regular generator]
+
+      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinous material parameters. Defaults to ‘no’. (bool)
+
 
 .. xml:tag:: <generator type="ordered" method="simple"> [ordered, simple]
 
-   Simple generator creating the rectangular mesh consisting of ordered axes with lines at the edges of bounding boxes of each object of the geometry. This generator has no configuration.
+   Simple generator creating the rectangular mesh consisting of ordered axes with lines at the edges of bounding boxes of each object of the geometry.
+
+   .. xml:tag:: <boundaries/> [in ordered, simple generator]
+
+      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinous material parameters. Defaults to ‘no’. (bool)
 
 
 .. xml:tag:: <generator type="ordered" method="smooth"> [ordered, smooth]
@@ -278,9 +286,9 @@ Possible <generator> contents for different types and methods
 
          Control printing of the warnings.
 
-         :attr missing: Warn if any refinement references to non-existing object. Defaults to true. (boolean)
-         :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
-         :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
+         :attr missing: Warn if any refinement references to non-existing object. Defaults to ‘yes’. (bool)
+         :attr multiple: Warn if any refinement references to multiple objects. Defaults to ‘yes’. (bool)
+         :attr outside: Warn if refining line lies outside of the specified object. Defaults to ‘yes’. (bool)
 
 
 .. xml:tag:: <generator type="rectangular2d" method="divide"> [rectangular2d, divide]
@@ -295,7 +303,7 @@ Possible <generator> contents for different types and methods
 
          Gradual is enabled by default.
 
-         :attr all: enable (if ``yes``) or disable (if ``no``) gradual for all axes (boolean, ``yes`` by default)
+         :attr all: enable (if ``yes``) or disable (if ``no``) gradual for all axes (bool, ``yes`` by default)
 
       .. xml:tag:: <prediv/> [in rectangular2d, divide generator]
 
@@ -339,9 +347,9 @@ Possible <generator> contents for different types and methods
 
          Control printing of the warnings.
 
-         :attr missing: Warn if any refinement references to non-existing object. Defaults to true. (boolean)
-         :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
-         :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
+         :attr missing: Warn if any refinement references to non-existing object. Defaults to ‘yes’. (bool)
+         :attr multiple: Warn if any refinement references to multiple objects. Defaults to ‘yes’. (bool)
+         :attr outside: Warn if refining line lies outside of the specified object. Defaults to ‘yes’. (bool)
 
 
 .. xml:tag:: <generator type="rectangular2d" method="regular"> [rectangular2d, regular]
@@ -354,10 +362,18 @@ Possible <generator> contents for different types and methods
       :attr every0: Approximate single element size along horizontal axis.
       :attr every1: Approximate single element size along vertical axis.
 
+   .. xml:tag:: <boundaries/> [in rectangular2d, regular generator]
+
+      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinous material parameters. Defaults to ‘no’. (bool)
+
 
 .. xml:tag:: <generator type="rectangular2d" method="simple"> [rectangular2d, simple]
 
-   Simple generator creating the rectangular mesh consisting of ordered axes with lines at the edges of bounding boxes of each object of the geometry. This generator has no configuration.
+   Simple generator creating the rectangular mesh consisting of ordered axes with lines at the edges of bounding boxes of each object of the geometry.
+
+   .. xml:tag:: <boundaries/> [in rectangular2d, simple generator]
+
+      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinous material parameters. Defaults to ‘no’. (bool)
 
 
 .. xml:tag:: <generator type="rectangular2d" method="smooth"> [rectangular2d, smooth]
@@ -400,9 +416,9 @@ Possible <generator> contents for different types and methods
 
          Control printing of the warnings.
 
-         :attr missing: Warn if any refinement references to non-existing object. Defaults to true. (boolean)
-         :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
-         :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
+         :attr missing: Warn if any refinement references to non-existing object. Defaults to ‘yes’. (bool)
+         :attr multiple: Warn if any refinement references to multiple objects. Defaults to ‘yes’. (bool)
+         :attr outside: Warn if refining line lies outside of the specified object. Defaults to ‘yes’. (bool)
 
 .. xml:tag:: <generator type="triangular2d" method="triangle"> [triangular2d, triangle]
 
@@ -434,7 +450,7 @@ Possible <generator> contents for different types and methods
 
          Gradual is enabled by default.
 
-         :attr all: enable (if ``yes``) or disable (if ``no``) gradual for all axes (boolean, ``yes`` by default)
+         :attr all: enable (if ``yes``) or disable (if ``no``) gradual for all axes (bool, ``yes`` by default)
 
       .. xml:tag:: <no-gradual/> [in rectangular3d, divide generator]
 
@@ -491,9 +507,9 @@ Possible <generator> contents for different types and methods
 
          Control printing of the warnings.
 
-         :attr missing: Warn if any refinement references to non-existing object. Defaults to true. (boolean)
-         :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
-         :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
+         :attr missing: Warn if any refinement references to non-existing object. Defaults to ‘yes’. (bool)
+         :attr multiple: Warn if any refinement references to multiple objects. Defaults to ‘yes’. (bool)
+         :attr outside: Warn if refining line lies outside of the specified object. Defaults to ‘yes’. (bool)
 
 
 .. xml:tag:: <generator type="rectangular3d" method="regular"> [rectangular3d, regular]
@@ -507,10 +523,18 @@ Possible <generator> contents for different types and methods
       :attr every1: Approximate single element size along transverse axis.
       :attr every2: Approximate single element size along vertical axis.
 
+   .. xml:tag:: <boundaries/> [in rectangular3d, regular generator]
+
+      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinous material parameters. Defaults to ‘no’. (bool)
+
 
 .. xml:tag:: <generator type="rectangular3d" method="simple"> [rectangular3d, simple]
 
-   Simple generator creating the rectangular mesh consisting of ordered axes with lines at the edges of bounding boxes of each object of the geometry. This generator has no configuration.
+   Simple generator creating the rectangular mesh consisting of ordered axes with lines at the edges of bounding boxes of each object of the geometry.
+
+   .. xml:tag:: <boundaries/> [in rectangular3d, simple generator]
+
+      :attr split: Split mesh lines at object boundaries. This is useful mostly for plotting discontinous material parameters. Defaults to ‘no’. (bool)
 
 
 .. xml:tag:: <generator type="rectangular3d" method="smooth"> [rectangular3d, smooth]
@@ -565,6 +589,6 @@ Possible <generator> contents for different types and methods
 
          Control printing of the warnings.
 
-         :attr missing: Warn if any refinement references to non-existing object. Defaults to true. (boolean)
-         :attr multiple: Warn if any refinement references to multiple objects. Defaults to true. (boolean)
-         :attr outside: Warn if refining line lies outside of the specified object. Defaults to true. (boolean)
+         :attr missing: Warn if any refinement references to non-existing object. Defaults to ‘yes’. (bool)
+         :attr multiple: Warn if any refinement references to multiple objects. Defaults to ‘yes’. (bool)
+         :attr outside: Warn if refining line lies outside of the specified object. Defaults to ‘yes’. (bool)

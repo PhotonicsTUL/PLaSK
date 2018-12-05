@@ -17,7 +17,7 @@ inline static void addPoints(OrderedAxis& dst, double lo, double up, bool single
     }
 }
 
-shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry)
+shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>& geometry, double split)
 {
     auto mesh = plask::make_shared<OrderedAxis>();
     OrderedAxis::WarningOff warning_off(mesh);
@@ -28,7 +28,13 @@ shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>&
 
     for (std::size_t i = 0; i < boxes.size(); ++i)
         if (boxes[i].isValid()) {
-            addPoints(*mesh, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
+            if (split == 0) {
+                addPoints(*mesh, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
+            } else {
+                mesh->addPoint(boxes[i].lower.c0-split);
+                addPoints(*mesh, boxes[i].lower.c0+split, boxes[i].upper.c0-split, leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
+                mesh->addPoint(boxes[i].upper.c0+split);
+            }
         }
 
     return mesh;
@@ -36,13 +42,13 @@ shared_ptr<OrderedAxis> makeGeometryGrid1D(const shared_ptr<GeometryObjectD<2>>&
 
 shared_ptr<MeshD<1>> OrderedMesh1DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
-    auto mesh = makeGeometryGrid1D(geometry);
+    auto mesh = makeGeometryGrid1D(geometry, split? OrderedAxis::MIN_DISTANCE : 0.);
     writelog(LOG_DETAIL, "mesh.Rectangular1D.SimpleGenerator: Generating new mesh ({0})", mesh->size());
     return mesh;
 }
 
 
-shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry)
+shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD<2>>& geometry, double split)
 {
     shared_ptr<OrderedAxis> axis0(new OrderedAxis), axis1(new OrderedAxis);
     OrderedAxis::WarningOff warning_off0(axis0);
@@ -53,8 +59,17 @@ shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 
     for (std::size_t i = 0; i < boxes.size(); ++i)
         if (boxes[i].isValid()) {
-            addPoints(*axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
-            addPoints(*axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->isUniform(Primitive<3>::DIRECTION_VERT), leafs[i]->min_ply, leafs[i]->max_points);
+            if (split == 0) {
+                addPoints(*axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
+                addPoints(*axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->isUniform(Primitive<3>::DIRECTION_VERT), leafs[i]->min_ply, leafs[i]->max_points);
+            } else {
+                axis0->addPoint(boxes[i].lower.c0-split);
+                axis1->addPoint(boxes[i].lower.c1-split);
+                addPoints(*axis0, boxes[i].lower.c0+split, boxes[i].upper.c0-split, leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
+                addPoints(*axis1, boxes[i].lower.c1+split, boxes[i].upper.c1-split, leafs[i]->isUniform(Primitive<3>::DIRECTION_VERT), leafs[i]->min_ply, leafs[i]->max_points);
+                axis0->addPoint(boxes[i].upper.c0+split);
+                axis1->addPoint(boxes[i].upper.c1+split);
+            }
         }
 
     shared_ptr<RectangularMesh<2>> mesh = plask::make_shared<RectangularMesh<2>>(std::move(axis0), std::move(axis1));
@@ -64,7 +79,7 @@ shared_ptr<RectangularMesh<2>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 
 shared_ptr<MeshD<2>> RectangularMesh2DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
-    shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(geometry);
+    shared_ptr<RectangularMesh<2>> mesh = makeGeometryGrid(geometry, split? OrderedAxis::MIN_DISTANCE : 0.);
     writelog(LOG_DETAIL, "mesh.Rectangular2D.SimpleGenerator: Generating new mesh ({0}x{1})", mesh->axis[0]->size(), mesh->axis[1]->size());
     return mesh;
 }
@@ -76,7 +91,7 @@ shared_ptr<MeshD<2>> RectangularMesh2DFrom1DGenerator::generate(const shared_ptr
 }
 
 
-shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry)
+shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD<3>>& geometry, double split)
 {
     shared_ptr<OrderedAxis> axis0(new OrderedAxis), axis1(new OrderedAxis), axis2(new OrderedAxis);
     OrderedAxis::WarningOff warning_off0(axis0);
@@ -88,9 +103,21 @@ shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 
     for (std::size_t i = 0; i < boxes.size(); ++i)
         if (boxes[i].isValid()) {
-            addPoints(*axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isUniform(Primitive<3>::DIRECTION_LONG), leafs[i]->min_ply, leafs[i]->max_points);
-            addPoints(*axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
-            addPoints(*axis2, boxes[i].lower.c2, boxes[i].upper.c2, leafs[i]->isUniform(Primitive<3>::DIRECTION_VERT), leafs[i]->min_ply, leafs[i]->max_points);
+            if (split == 0) {
+                addPoints(*axis0, boxes[i].lower.c0, boxes[i].upper.c0, leafs[i]->isUniform(Primitive<3>::DIRECTION_LONG), leafs[i]->min_ply, leafs[i]->max_points);
+                addPoints(*axis1, boxes[i].lower.c1, boxes[i].upper.c1, leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
+                addPoints(*axis2, boxes[i].lower.c2, boxes[i].upper.c2, leafs[i]->isUniform(Primitive<3>::DIRECTION_VERT), leafs[i]->min_ply, leafs[i]->max_points);
+            } else {
+                axis0->addPoint(boxes[i].lower.c0-split);
+                axis1->addPoint(boxes[i].lower.c1-split);
+                axis2->addPoint(boxes[i].lower.c2-split);
+                addPoints(*axis0, boxes[i].lower.c0+split, boxes[i].upper.c0-split, leafs[i]->isUniform(Primitive<3>::DIRECTION_LONG), leafs[i]->min_ply, leafs[i]->max_points);
+                addPoints(*axis1, boxes[i].lower.c1+split, boxes[i].upper.c1-split, leafs[i]->isUniform(Primitive<3>::DIRECTION_TRAN), leafs[i]->min_ply, leafs[i]->max_points);
+                addPoints(*axis2, boxes[i].lower.c2+split, boxes[i].upper.c2-split, leafs[i]->isUniform(Primitive<3>::DIRECTION_VERT), leafs[i]->min_ply, leafs[i]->max_points);
+                axis0->addPoint(boxes[i].upper.c0+split);
+                axis1->addPoint(boxes[i].upper.c1+split);
+                axis2->addPoint(boxes[i].upper.c2+split);
+            }
         }
 
     shared_ptr<RectangularMesh<3>> mesh = plask::make_shared<RectangularMesh<3>>(std::move(axis0), std::move(axis1), std::move(axis2));
@@ -100,7 +127,7 @@ shared_ptr<RectangularMesh<3>> makeGeometryGrid(const shared_ptr<GeometryObjectD
 
 shared_ptr<MeshD<3>> RectangularMesh3DSimpleGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
-    auto mesh = makeGeometryGrid(geometry);
+    auto mesh = makeGeometryGrid(geometry, split? OrderedAxis::MIN_DISTANCE : 0.);
     writelog(LOG_DETAIL, "mesh.Rectangular3D.SimpleGenerator: Generating new mesh ({0}x{1}x{2})", mesh->axis[0]->size(), mesh->axis[1]->size(), mesh->axis[2]->size());
     return mesh;
 }
@@ -131,14 +158,14 @@ shared_ptr<OrderedAxis> refineAxis(const shared_ptr<MeshAxis>& axis, double spac
 
 shared_ptr<MeshD<1>> OrderedMesh1DRegularGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
-    auto mesh = refineAxis(makeGeometryGrid1D(geometry), spacing);
+    auto mesh = refineAxis(makeGeometryGrid1D(geometry, split? OrderedAxis::MIN_DISTANCE : 0.), spacing);
     writelog(LOG_DETAIL, "mesh.Rectangular1D.RegularGenerator: Generating new mesh ({0})", mesh->size());
     return mesh;
 }
 
 shared_ptr<MeshD<2>> RectangularMesh2DRegularGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry)
 {
-    auto mesh1 = makeGeometryGrid(geometry);
+    auto mesh1 = makeGeometryGrid(geometry, split? OrderedAxis::MIN_DISTANCE : 0.);
     auto mesh = make_shared<RectangularMesh<2>>(refineAxis(mesh1->axis[0], spacing0), refineAxis(mesh1->axis[1], spacing1));
     writelog(LOG_DETAIL, "mesh.Rectangular2D.RegularGenerator: Generating new mesh ({0}x{1})", mesh->axis[0]->size(), mesh->axis[1]->size());
     return mesh;
@@ -146,7 +173,7 @@ shared_ptr<MeshD<2>> RectangularMesh2DRegularGenerator::generate(const shared_pt
 
 shared_ptr<MeshD<3>> RectangularMesh3DRegularGenerator::generate(const shared_ptr<GeometryObjectD<3>>& geometry)
 {
-    auto mesh1 = makeGeometryGrid(geometry);
+    auto mesh1 = makeGeometryGrid(geometry, split? OrderedAxis::MIN_DISTANCE : 0.);
     auto mesh = make_shared<RectangularMesh<3>>(refineAxis(mesh1->axis[0], spacing0), refineAxis(mesh1->axis[1], spacing1), refineAxis(mesh1->axis[2], spacing2));
     writelog(LOG_DETAIL, "mesh.Rectangular3D.RegularGenerator: Generating new mesh ({0}x{1}x{2})", mesh->axis[0]->size(), mesh->axis[1]->size(), mesh->axis[2]->size());
     return mesh;
@@ -470,8 +497,15 @@ template struct PLASK_API RectangularMeshRefinedGenerator<3>;
 template <typename GeneratorT>
 static shared_ptr<MeshGenerator> readTrivialGenerator(XMLReader& reader, const Manager&)
 {
-    reader.requireTagEnd();
-    return plask::make_shared<GeneratorT>();
+    bool split = false;
+    while (reader.requireTagOrEnd()) {
+        if (reader.getNodeName() == "boundaries") {
+            split = reader.getAttribute<bool>("split", split);
+            reader.requireTagEnd();
+        } else
+            throw XMLUnexpectedElementException(reader, "<boundaries>");
+    }
+    return plask::make_shared<GeneratorT>(split);
 }
 
 static RegisterMeshGeneratorReader ordered_simplegenerator_reader  ("ordered.simple",   readTrivialGenerator<OrderedMesh1DSimpleGenerator>);
@@ -482,20 +516,25 @@ static RegisterMeshGeneratorReader rectangular3d_simplegenerator_reader("rectang
 static shared_ptr<MeshGenerator> readRegularGenerator1(XMLReader& reader, const Manager&)
 {
     double spacing = INFINITY;
+    bool split = false;
     while (reader.requireTagOrEnd()) {
         if (reader.getNodeName() == "spacing") {
             spacing = reader.getAttribute<double>("every", spacing);
             reader.requireTagEnd();
+        } else if (reader.getNodeName() == "boundaries") {
+            split = reader.getAttribute<bool>("split", split);
+            reader.requireTagEnd();
         } else
-            throw XMLUnexpectedElementException(reader, "<spacing>");
+            throw XMLUnexpectedElementException(reader, "<spacing>, <boundaries>");
     }
-    return plask::make_shared<OrderedMesh1DRegularGenerator>(spacing);
+    return plask::make_shared<OrderedMesh1DRegularGenerator>(spacing, split);
 }
 
 static shared_ptr<MeshGenerator> readRegularGenerator2(XMLReader& reader, const Manager&)
 {
     double spacing0 = INFINITY,
            spacing1 = INFINITY;
+    bool split = false;
     while (reader.requireTagOrEnd()) {
         if (reader.getNodeName() == "spacing") {
             if (reader.hasAttribute("every")) {
@@ -507,10 +546,13 @@ static shared_ptr<MeshGenerator> readRegularGenerator2(XMLReader& reader, const 
                 spacing1 = reader.getAttribute<double>("every1", spacing1);
             }
             reader.requireTagEnd();
+        } else if (reader.getNodeName() == "boundaries") {
+            split = reader.getAttribute<bool>("split", split);
+            reader.requireTagEnd();
         } else
-            throw XMLUnexpectedElementException(reader, "<spacing>");
+            throw XMLUnexpectedElementException(reader, "<spacing>, <boundaries>");
     }
-    return plask::make_shared<RectangularMesh2DRegularGenerator>(spacing0, spacing1);
+    return plask::make_shared<RectangularMesh2DRegularGenerator>(spacing0, spacing1, split);
 }
 
 static shared_ptr<MeshGenerator> readRegularGenerator3(XMLReader& reader, const Manager&)
@@ -518,6 +560,7 @@ static shared_ptr<MeshGenerator> readRegularGenerator3(XMLReader& reader, const 
     double spacing0 = INFINITY,
            spacing1 = INFINITY,
            spacing2 = INFINITY;
+    bool split = false;
     while (reader.requireTagOrEnd()) {
         if (reader.getNodeName() == "spacing") {
             if (reader.hasAttribute("every")) {
@@ -531,10 +574,13 @@ static shared_ptr<MeshGenerator> readRegularGenerator3(XMLReader& reader, const 
                 spacing2 = reader.getAttribute<double>("every2", spacing2);
             }
             reader.requireTagEnd();
+        } else if (reader.getNodeName() == "boundaries") {
+            split = reader.getAttribute<bool>("split", split);
+            reader.requireTagEnd();
         } else
-            throw XMLUnexpectedElementException(reader, "<spacing>");
+            throw XMLUnexpectedElementException(reader, "<spacing>, <boundaries>");
     }
-    return plask::make_shared<RectangularMesh3DRegularGenerator>(spacing0, spacing1, spacing2);
+    return plask::make_shared<RectangularMesh3DRegularGenerator>(spacing0, spacing1, spacing2, split);
 }
 
 static RegisterMeshGeneratorReader ordered_regulargenerator_reader("ordered.regular", readRegularGenerator1);

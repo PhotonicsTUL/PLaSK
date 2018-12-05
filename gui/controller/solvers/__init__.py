@@ -95,6 +95,7 @@ class SolversController(Controller):
         self._current_controller = None
 
         self.splitter = QSplitter()
+        self.splitter.setHandleWidth(4)
 
         self.solvers_table = QTableView()
         self.solvers_table.setModel(self.model)

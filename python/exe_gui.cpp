@@ -121,20 +121,30 @@ class Splash {
     BITMAP bitmap;
 
   public:
-    Splash(HINSTANCE hInst, int resid) {
+    Splash(HINSTANCE hInst) {
+        HMODULE user32 = LoadLibrary("user32");
+        if (user32 != NULL) {
+            auto set_dpi_awareness_context = reinterpret_cast<decltype(SetProcessDpiAwarenessContext)*>(GetProcAddress(user32, "SetProcessDpiAwarenessContext"));
+            if (set_dpi_awareness_context != NULL) set_dpi_awareness_context(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
+        }
+
+        RECT desktopRect;
+        GetWindowRect(GetDesktopWindow(), &desktopRect);
+        int desktop_width = desktopRect.right + desktopRect.left,
+            desktop_height = desktopRect.top + desktopRect.bottom;
+
+        int resid = (desktop_width < 1200)? 201 : (desktop_width < 2600)? 202 : 203;
+
         hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(resid));
         GetObject(hBitmap, sizeof(BITMAP), &bitmap);
         int width = bitmap.bmWidth;
         int height = bitmap.bmHeight;
 
-        RECT desktopRect;
-        GetWindowRect(GetDesktopWindow(), &desktopRect);
+        int left = (desktop_width - width) / 2,
+            top = (desktop_height - height) / 2;
 
-        int left = (desktopRect.right + desktopRect.left - width) / 2,
-            top = (desktopRect.top + desktopRect.bottom - height) / 2;
-
-        hWnd = CreateWindowEx(WS_EX_CLIENTEDGE, "Static", "PLaSK",
-            WS_POPUP | SS_BITMAP /* | WS_DLGFRAME */, left, top, width, height, NULL, NULL, hInst, NULL);
+        hWnd = CreateWindowEx(WS_EX_TOOLWINDOW, "Static", "PLaSK",
+            WS_POPUP | SS_BITMAP, left, top, width, height, NULL, NULL, hInst, NULL);
         SendMessage(hWnd, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM)hBitmap);
     }
 
@@ -181,7 +191,7 @@ void showError(const std::string& msg, const std::string& cap) {
 
 int WinMain(HINSTANCE hInst, HINSTANCE, LPSTR cmdline, int) {
 
-    splash = new Splash(hInst, 201);
+    splash = new Splash(hInst);
     splash->show();
 
 #ifdef _MSC_VER
