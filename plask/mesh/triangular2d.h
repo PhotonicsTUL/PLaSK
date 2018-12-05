@@ -7,8 +7,7 @@
 
 #include <boost/geometry/index/rtree.hpp>
 
-#include <boost/geometry/geometries/register/point.hpp>
-BOOST_GEOMETRY_REGISTER_POINT_2D(plask::Vec<2>, double, cs::cartesian, c0, c1)
+#include "../vector/boost_geometry.h"
 
 #include <boost/geometry/geometries/box.hpp>
 
