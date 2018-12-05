@@ -433,7 +433,7 @@ Possible <generator> contents for different types and methods
       .. xml:tag:: <options/> [in triangular2d, triangle generator]
 
          :attr maxarea: A maximum triangle area constraint. (float [µm²])
-         :attr minangle: Minimum angle. (float [°])
+         :attr minangle: A minimum angle. (float [°])
 
          Citing official *Triangle* documentation (http://www.cs.cmu.edu/~quake/triangle.q.html): If the minimum angle is 20.7° or smaller, the triangulation algorithm is theoretically guaranteed to terminate (assuming infinite precision arithmetic - *Triangle* may fail to terminate if you run out of precision). In practice, the algorithm often succeeds for minimum angles up to 33°. It usually does not terminate for angles above 34°. For some meshes, however, it may be necessary to reduce the minimum angle to well below 20° to avoid problems associated with insufficient floating-point precision.
 

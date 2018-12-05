@@ -12,14 +12,17 @@
 
 from . import TreeFragmentGrid
 from .mesh_rectangular import RectangularMesh, RectangularMesh1D
+from .mesh_triangular import TriangularMesh2D
 from .generator_rectangular import RectangularSimpleGenerator, RectangularRegularGenerator, \
     RectangularDivideGenerator, RectangularSmoothGenerator
+from .generator_triangular import TriangularTriangleGenerator
 
 MESHES_TYPES = {
     'ordered': RectangularMesh1D.from_xml,
     'regular': RectangularMesh1D.from_xml,
     'rectangular2d': RectangularMesh.from_xml,
     'rectangular3d': RectangularMesh.from_xml,
+    'triangular2d': TriangularMesh2D.from_xml
 }
 
 GENERATORS_TYPES = {
@@ -41,6 +44,9 @@ GENERATORS_TYPES = {
             'simple': RectangularSimpleGenerator.from_xml,
             'smooth': RectangularSmoothGenerator.from_xml,
     },
+    'triangular2d': {
+            'triangle': TriangularTriangleGenerator.from_xml
+    }
 }   # use TreeFragmentGrid.from_xml for grids without special support
 
 DISPLAY_NAMES = {

@@ -140,7 +140,8 @@ class RectangularMesh1DController(GridController):
         self.axis = AxisEdit(self, 'axis', None, allow_type_select=False, accept_non_regular=not model.is_regular)
 
     def fill_form(self):
-         with self.mute_changes(): self.axis.fill_form()
+        with self.mute_changes():
+            self.axis.fill_form()
 
     #def save_data_in_model(self):
     #    self.editor.to_model(self.model.axis)

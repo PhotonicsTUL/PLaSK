@@ -91,11 +91,12 @@ shared_ptr<MeshGenerator> readTriangleGenerator(XMLReader& reader, const Manager
     if (reader.requireTagOrEnd("options")) {
         result->maxTriangleArea = reader.getAttribute<double>("maxarea");
         result->minTriangleAngle = reader.getAttribute<double>("minangle");
-        reader.requireTagEnd();
+        reader.requireTagEnd(); // end of options
+        reader.requireTagEnd(); // end of generator
     }
     return result;
 }
 
-static RegisterMeshGeneratorReader trianglegenerator_reader("triangle", readTriangleGenerator);
+static RegisterMeshGeneratorReader trianglegenerator_reader("triangular2d.triangle", readTriangleGenerator);
 
 }   // namespace plask

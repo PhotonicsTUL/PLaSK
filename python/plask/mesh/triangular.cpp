@@ -80,7 +80,19 @@ void register_mesh_triangular() {
         py::implicitly_convertible<shared_ptr<TriangularMesh2D::Builder>, shared_ptr<const TriangularMesh2D::Builder>>();
     }
 
-
+    py::class_<TriangleGenerator, shared_ptr<TriangleGenerator>,
+               py::bases<MeshGeneratorD<2>>, boost::noncopyable>("TriangleGenerator",
+       u8"Generator which creates triangular mesh by Triangle library authored by Jonathan Richard Shewchuk.\n"
+       u8"\n"
+       u8"Triangle generates exact Delaunay triangulations, constrained Delaunay triangulations,"
+       u8"conforming Delaunay triangulations, Voronoi diagrams, and high-quality triangular meshes.\n"
+       u8"The latter can be generated with no small or large angles,"
+       u8"and are thus suitable for finite element analysis.\n"
+       u8"\n"
+       u8"See: https://www.cs.cmu.edu/~quake/triangle.html",
+       py::init<>()
+    );
+    py::implicitly_convertible<shared_ptr<TriangleGenerator>, shared_ptr<const TriangleGenerator>>();
 }
 
 } } // namespace plask::python
