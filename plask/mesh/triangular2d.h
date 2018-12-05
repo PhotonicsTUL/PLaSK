@@ -13,7 +13,7 @@
 
 namespace plask {
 
-struct TriangularMesh2D: public MeshD<2> {
+struct PLASK_API TriangularMesh2D: public MeshD<2> {
 
     using MeshD<2>::LocalCoords;
     typedef std::vector<LocalCoords> LocalCoordsVec;
@@ -29,7 +29,7 @@ struct TriangularMesh2D: public MeshD<2> {
     /**
      * Represent FEM-like element (triangle) in TriangularMesh2D.
      */
-    struct Element {
+    struct PLASK_API Element {
         TriangleNodeIndexes triangleNodes;
         const TriangularMesh2D& mesh;   // for getting access to the nodes
 
@@ -113,7 +113,7 @@ struct TriangularMesh2D: public MeshD<2> {
      *
      * It works like read-only, random access container of @ref Element objects.
      */
-    struct Elements {
+    struct PLASK_API Elements {
         const TriangularMesh2D& mesh;
 
         explicit Elements(const TriangularMesh2D& mesh): mesh(mesh) {}
@@ -168,7 +168,7 @@ struct TriangularMesh2D: public MeshD<2> {
     /**
      * Instance of this class allows for adding triangles to the mesh effectively.
      */
-    struct Builder {
+    struct PLASK_API Builder {
         std::map<LocalCoords, std::size_t> indexOfNode; ///< map nodes to their indexes in mesh.nodes vector
         TriangularMesh2D& mesh; ///< destination mesh
 
@@ -245,7 +245,7 @@ struct TriangularMesh2D: public MeshD<2> {
     /**
      * Index which allows for fast finding elements which includes particular points.
      */
-    struct ElementIndex {
+    struct PLASK_API ElementIndex {
         typedef boost::geometry::model::box<Vec<2>> Box;
 
         typedef boost::geometry::index::rtree<

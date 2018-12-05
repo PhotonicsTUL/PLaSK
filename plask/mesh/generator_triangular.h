@@ -15,7 +15,7 @@ namespace plask {
  *
  * See: https://www.cs.cmu.edu/~quake/triangle.html
  */
-struct TriangleGenerator: public MeshGeneratorD<2> {
+struct PLASK_API TriangleGenerator: public MeshGeneratorD<2> {
 
     shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<DIM>>& geometry) override;
 
