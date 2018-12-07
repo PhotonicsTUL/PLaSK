@@ -128,12 +128,16 @@ class Splash {
             if (set_dpi_awareness_context != NULL) set_dpi_awareness_context(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
         }
 
+        HDC screen = GetDC(NULL);
+        double scale = static_cast<FLOAT>(GetDeviceCaps(screen, LOGPIXELSX)) / 96.;
+        ReleaseDC(NULL, screen);
+
         RECT desktopRect;
         GetWindowRect(GetDesktopWindow(), &desktopRect);
         int desktop_width = desktopRect.right + desktopRect.left,
             desktop_height = desktopRect.top + desktopRect.bottom;
 
-        int resid = (desktop_width < 1200)? 201 : (desktop_width < 2600)? 202 : 203;
+        int resid = (scale < 1.4)? 201 : (scale < 1.8)? 202 : 203;
 
         hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(resid));
         GetObject(hBitmap, sizeof(BITMAP), &bitmap);
