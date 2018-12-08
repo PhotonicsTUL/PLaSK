@@ -121,13 +121,12 @@ static const char* DATA_DOCSTRING =
     u8"Examples:\n"
     u8"    To create the data from the flat sequential array:\n\n"
 
-    u8"    >>> msh = plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1, 2, 3]),\n"
-    u8"    ... plask.mesh.Rectilinear([10, 20]))\n"
+    u8"    >>> msh = plask.mesh.Rectangular2D([1, 2, 3], [10, 20])\n"
     u8"    >>> Data(array([1., 2., 3., 4., 5., 6.]), msh)\n"
     u8"    <plask.Data at 0x4698938>\n\n"
 
-    u8"    As the ``msh`` is a rectangular mesh, the data can be created from the\n"
-    u8"    structured array with the shape (3, 2), as the first and second mesh\n"
+    u8"    As the ``msh`` is a rectangular mesh, the data can be created from\n"
+    u8"    a structured array with the shape (3, 2), as the first and second mesh\n"
     u8"    dimensions are 3 and 2, respectively:\n\n"
 
     u8"    >>> dat = Data(array([[1., 2.], [3., 4.], [5., 6.]]), msh)\n"
