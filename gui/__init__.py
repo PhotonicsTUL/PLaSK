@@ -1055,6 +1055,8 @@ def main():
 
     if _DEBUG:
         sys.stderr.write("PLaSK GUI, version {}.\nUsing {} API.\n".format(VERSION, QT_API))
+        import faulthandler
+        faulthandler.enable()
 
     global APPLICATION, SESSION, pysparkle
 
