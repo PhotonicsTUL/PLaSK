@@ -160,6 +160,16 @@ TriangularMesh2D::SegmentsCounts TriangularMesh2D::countSegmentsIn(const std::ve
     return result;
 }
 
+TriangularMesh2D::SegmentsCounts TriangularMesh2D::countSegmentsIn(const GeometryD<2> &geometry, const GeometryObject &object, const PathHints *path) const {
+    TriangularMesh2D::SegmentsCounts result;
+    for (const auto el: elements())
+        if (geometry.objectIncludes(object, path, el.getNode(0)) &&
+            geometry.objectIncludes(object, path, el.getNode(1)) &&
+            geometry.objectIncludes(object, path, el.getNode(2)))
+            countSegmentsOf(result, el);
+    return result;
+}
+
 std::set<std::size_t> TriangularMesh2D::boundaryNodes(const TriangularMesh2D::SegmentsCounts& segmentsCount) {
     std::set<std::size_t> result;
     for (const std::pair<TriangularMesh2D::Segment, std::size_t>& s: segmentsCount)

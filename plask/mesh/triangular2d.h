@@ -4,6 +4,7 @@
 #include "mesh.h"
 #include "interpolation.h"
 #include "boundary.h"
+#include "../geometry/path.h"
 #include <array>
 #include <unordered_map>
 
@@ -375,6 +376,15 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
     SegmentsCounts countSegmentsIn(const std::vector<Box2D>& boxes) const;
 
     /**
+     * Calculate numbers of segments (sides of triangles) inside of @p object.
+     * @param geometry geometry (of the mesh) which contains an object
+     * @param object object to test
+     * @param path path hints specifying the object
+     * @return the numbers of segments
+     */
+    SegmentsCounts countSegmentsIn(const GeometryD<2>& geometry, const GeometryObject& object, const PathHints* path = nullptr) const;
+
+    /**
      * Calculate a set of indices of boundary nodes (in a whole mesh or a certain region).
      * @param segmentsCount numbers of segments in a whole mesh or requested region
      * @return the set of indices of boundary nodes
@@ -410,6 +420,29 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
     static Boundary getAllBoundaryIn(const std::vector<Box2D>& boxes) {
         return Boundary( [boxes](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
             return BoundaryNodeSet(new StdSetBoundaryImpl(boundaryNodes(mesh.countSegmentsIn(boxes))));
+        } );
+    }
+
+    /**
+     * Get boundary which describes all nodes which lies on all (outer and inner) boundaries of a given @p object.
+     * @param object object to test
+     * @return the boundary
+     */
+    static Boundary getAllBoundaryIn(shared_ptr<const GeometryObject> object) {
+        return Boundary( [=](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>& geom) {
+            return BoundaryNodeSet(new StdSetBoundaryImpl(boundaryNodes(mesh.countSegmentsIn(*geom, *object))));
+        } );
+    }
+
+    /**
+     * Get boundary which describes all nodes which lies on all (outer and inner) boundaries of a given @p object.
+     * @param object object to test
+     * @param path path hints specifying the object
+     * @return the boundary
+     */
+    static Boundary getAllBoundaryIn(shared_ptr<const GeometryObject> object, const PathHints& path) {
+        return Boundary( [=](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>& geom) {
+            return BoundaryNodeSet(new StdSetBoundaryImpl(boundaryNodes(mesh.countSegmentsIn(*geom, *object, &path))));
         } );
     }
 
