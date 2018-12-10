@@ -1,6 +1,7 @@
 #include "triangular2d.h"
 
 #include <boost/range/irange.hpp>
+#include <unordered_map>
 
 namespace plask {
 
@@ -116,6 +117,57 @@ void TriangularMesh2D::writeXML(XMLElement &object) const {
         object.addTag("node").attr("tran", node.tran()).attr("vert", node.vert());
     for (auto & el: elementNodes)
         object.addTag("element").attr("a", el[0]).attr("b", el[1]).attr("c", el[2]);
+}
+
+inline TriangularMesh2D::Segment makeSegment(std::size_t a, std::size_t b) {
+    return a < b ? std::make_pair(a, b) : std::make_pair(b, a);
+}
+
+static void countSegmentsOf(TriangularMesh2D::SegmentsCounts& counter, const TriangularMesh2D::Element& el) {
+    ++counter[makeSegment(el.getNodeIndex(0), el.getNodeIndex(1))];
+    ++counter[makeSegment(el.getNodeIndex(1), el.getNodeIndex(2))];
+    ++counter[makeSegment(el.getNodeIndex(2), el.getNodeIndex(0))];
+}
+
+TriangularMesh2D::SegmentsCounts TriangularMesh2D::countSegments() const {
+    TriangularMesh2D::SegmentsCounts result;
+    for (const auto el: elements()) countSegmentsOf(result, el);
+    return result;
+}
+
+TriangularMesh2D::SegmentsCounts TriangularMesh2D::countSegmentsIn(const Box2D &box) const {
+    TriangularMesh2D::SegmentsCounts result;
+    for (const auto el: elements())
+        if (box.contains(el.getNode(0)) && box.contains(el.getNode(1)) && box.contains(el.getNode(2)))
+            countSegmentsOf(result, el);
+    return result;
+}
+
+TriangularMesh2D::SegmentsCounts TriangularMesh2D::countSegmentsIn(const std::vector<Box2D>& boxes) const {
+    TriangularMesh2D::SegmentsCounts result;
+    for (const auto el: elements()) {
+        bool vertex0_included = false, vertex1_included = false, vertex2_included = false;
+        for (auto& box: boxes) {
+            if (!vertex0_included) vertex0_included = box.contains(el.getNode(0));
+            if (!vertex1_included) vertex1_included = box.contains(el.getNode(1));
+            if (!vertex2_included) vertex2_included = box.contains(el.getNode(2));
+            if (vertex0_included && vertex1_included && vertex2_included) {
+                countSegmentsOf(result, el);
+                break;
+            }
+        }
+    }
+    return result;
+}
+
+std::set<std::size_t> TriangularMesh2D::boundaryNodes(const TriangularMesh2D::SegmentsCounts& segmentsCount) {
+    std::set<std::size_t> result;
+    for (const std::pair<TriangularMesh2D::Segment, std::size_t>& s: segmentsCount)
+        if (s.second == 1) {
+            result.insert(s.first.first);
+            result.insert(s.first.second);
+        }
+    return result;
 }
 
 std::size_t readTriangularMesh2D_readNodeIndex(XMLReader& reader, const char* attrName, std::size_t nodes_size) {

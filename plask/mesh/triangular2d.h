@@ -5,12 +5,13 @@
 #include "interpolation.h"
 #include "boundary.h"
 #include <array>
+#include <unordered_map>
 
 #include <boost/geometry/index/rtree.hpp>
-
 #include "../vector/boost_geometry.h"
-
 #include <boost/geometry/geometries/box.hpp>
+
+#include <boost/functional/hash.hpp>
 
 namespace plask {
 
@@ -341,7 +342,76 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
      */
     void writeXML(XMLElement& object) const override;
 
-    // TODO: boundaries that mostly return StdSetBoundaryImpl
+
+    // ------------------ Boundaries: -----------------------
+
+    template <typename Predicate>
+    static Boundary getBoundary(Predicate predicate) {
+        return Boundary(new PredicateBoundaryImpl<TriangularMesh2D, Predicate>(predicate));
+    }
+
+    typedef std::pair<std::size_t, std::size_t> Segment;
+
+    typedef std::unordered_map<TriangularMesh2D::Segment, std::size_t, boost::hash<Segment>> SegmentsCounts;
+
+    /**
+     * Calculate numbers of segments (sides of triangles).
+     * @return the numbers of segments
+     */
+    SegmentsCounts countSegments() const;
+
+    /**
+     * Calculate numbers of segments (sides of triangles) inside any of a @p box.
+     * @param box a region in which segments should be counted
+     * @return the numbers of segments
+     */
+    SegmentsCounts countSegmentsIn(const Box2D& box) const;
+
+    /**
+     * Calculate numbers of segments (sides of triangles) inside any of @p boxes member.
+     * @param box vector of boxes that describes a region in which segments should be counted
+     * @return the numbers of segments
+     */
+    SegmentsCounts countSegmentsIn(const std::vector<Box2D>& boxes) const;
+
+    /**
+     * Calculate a set of indices of boundary nodes (in a whole mesh or a certain region).
+     * @param segmentsCount numbers of segments in a whole mesh or requested region
+     * @return the set of indices of boundary nodes
+     */
+    static std::set<std::size_t> boundaryNodes(const SegmentsCounts& segmentsCount);
+
+    /**
+     * Get boundary which describes all nodes which lies on all (outer and inner) boundaries of the whole mesh.
+     * @return the boundary
+     */
+    static Boundary getAllBoundary() {
+        return Boundary( [](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
+            return BoundaryNodeSet(new StdSetBoundaryImpl(boundaryNodes(mesh.countSegments())));
+        } );
+    }
+
+    /**
+     * Get boundary which describes all nodes which lies on all (outer and inner) boundaries of a given @p box.
+     * @param box box which describes a region
+     * @return the boundary
+     */
+    static Boundary getAllBoundaryIn(const Box2D& box) {
+        return Boundary( [box](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
+            return BoundaryNodeSet(new StdSetBoundaryImpl(boundaryNodes(mesh.countSegmentsIn(box))));
+        } );
+    }
+
+    /**
+     * Get boundary which describes all nodes which lies on all (outer and inner) boundaries of a given @p boxes.
+     * @param box vector of boxes that describes a region
+     * @return the boundary
+     */
+    static Boundary getAllBoundaryIn(const std::vector<Box2D>& boxes) {
+        return Boundary( [boxes](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
+            return BoundaryNodeSet(new StdSetBoundaryImpl(boundaryNodes(mesh.countSegmentsIn(boxes))));
+        } );
+    }
 
 };
 

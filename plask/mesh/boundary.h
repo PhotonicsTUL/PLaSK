@@ -287,6 +287,8 @@ struct PLASK_API StdSetBoundaryImpl: public BoundaryNodeSetImpl {
 
     StdNodeSet set;
 
+    StdSetBoundaryImpl(StdNodeSet set): set(std::move(set)) {}
+
     virtual bool contains(std::size_t PLASK_UNUSED(mesh_index)) const override { return false; }
 
     virtual typename BoundaryNodeSetImpl::const_iterator begin() const override {
