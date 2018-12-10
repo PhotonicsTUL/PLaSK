@@ -552,8 +552,8 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
             return mesh.index(index);
         }
 
-        plask::BoundaryNodeSetImpl::IteratorImpl* clone() const override {
-            return new BoundaryIteratorImpl<CHANGE_DIR>(*this);
+        std::unique_ptr<plask::BoundaryNodeSetImpl::IteratorImpl> clone() const override {
+            return std::unique_ptr<plask::BoundaryNodeSetImpl::IteratorImpl>(new BoundaryIteratorImpl<CHANGE_DIR>(*this));
         }
 
     };

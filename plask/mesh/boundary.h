@@ -541,7 +541,7 @@ struct PredicateBoundaryImpl: public BoundaryNodeSetWithMeshImpl<typename MeshT:
         }
 
         std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl> clone() const override {
-            return std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl>(new PredicateIteratorImpl)(*this);
+            return std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl>(new PredicateIteratorImpl(*this));
         }
 
     };
