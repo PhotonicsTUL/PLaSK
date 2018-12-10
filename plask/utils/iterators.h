@@ -9,14 +9,20 @@ This file contains iterators utils.
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <type_traits>
+#include <memory>
 
 namespace plask {
 
 /**
- * Base class for other  PolymorphicForwardIteratorImpl, should not be used directly.
- */
+Base class for forward, polymorphic iterators implementations.
+@tparam ValueT Type to iterate over.
+@tparam ReferenceT Type returned by dereference operation.
+Note that default type is not good if dereference returns temporary object.
+In such case <code>const ValueT</code> can be a better choice.
+*/
 template <typename ValueT, typename ReferenceT = ValueT&>
-struct PolymorphicForwardIteratorImplBase {
+struct PolymorphicForwardIteratorImpl {
+
     // some typedefs compatibile with stl:
 
     /// Type of objects pointed by the iterator.
@@ -32,18 +38,7 @@ struct PolymorphicForwardIteratorImplBase {
     virtual void increment() = 0;
 
     /// Virtual destructor, do nothing.
-    virtual ~PolymorphicForwardIteratorImplBase() {}
-};
-
-/**
-Base class for forward, polymorphic iterators implementations.
-@tparam ValueT Type to iterate over.
-@tparam ReferenceT Type returned by dereference operation.
-Note that default type is not good if dereference returns temporary object.
-In such case <code>const ValueT</code> can be a better choice.
-*/
-template <typename ValueT, typename ReferenceT = ValueT&>
-struct PolymorphicForwardIteratorImpl: public PolymorphicForwardIteratorImplBase<ValueT, ReferenceT> {
+    virtual ~PolymorphicForwardIteratorImpl() {}
 
     /**
      * Check if this is equal to @p other.
@@ -61,9 +56,9 @@ struct PolymorphicForwardIteratorImpl: public PolymorphicForwardIteratorImplBase
 
     /**
      * Clone this iterator.
-     * @return clone of @c *this, allocated with @a new operator (clone caller must trust to delete it)
+     * @return clone of @c *this, allocated with @a new operator (caller is responsible for deleting it)
      */
-    virtual PolymorphicForwardIteratorImpl<ValueT, ReferenceT>* clone() const = 0;
+    virtual std::unique_ptr<PolymorphicForwardIteratorImpl<ValueT, ReferenceT>> clone() const = 0;
 };
 
 /**
@@ -76,25 +71,38 @@ Note that default type is not good if dereference returns temporary object.
 In such case <code>const ValueT</code> can be a better choice.
 */
 template <typename ValueT, typename ReferenceT = ValueT&>
-struct PolymorphicForwardIteratorWithIndexImpl: public PolymorphicForwardIteratorImplBase<ValueT, ReferenceT> {
+struct PolymorphicForwardIteratorWithIndexImpl: public PolymorphicForwardIteratorImpl<ValueT, ReferenceT> {
 
     /**
      * Get index for current iterator state.
      * @return index for current iterator state
      */
     virtual std::size_t getIndex() const = 0;
+};
 
-    /**
-     * Check if this is equal to @p other.
-     * @return true only if this is equal to @a other
-     */
-    virtual bool equal(const PolymorphicForwardIteratorWithIndexImpl& other) const = 0;
+/**
+ * Polymorphic iterator that wrap another (usually not polimorphic) iterator (of type wrapped_iterator_type).
+ */
+template <typename wrapped_iterator_type, typename ValueT, typename ReferenceT = ValueT&>
+struct PolymorphicForwardIteratorWrapperImpl: public PolymorphicForwardIteratorImpl<ValueT, ReferenceT> {
 
-    /**
-     * Clone this iterator.
-     * @return clone of @c *this, reserved by @a new operator (clone caller must trust to delete it)
-     */
-    virtual PolymorphicForwardIteratorWithIndexImpl<ValueT, ReferenceT>* clone() const = 0;
+    wrapped_iterator_type wrapped_iterator;
+
+    PolymorphicForwardIteratorWrapperImpl(wrapped_iterator_type wrapped_iterator): wrapped_iterator(std::move(wrapped_iterator)) {}
+
+    ReferenceT dereference() const override { return *wrapped_iterator; }
+
+    void increment() override { ++wrapped_iterator; }
+
+    virtual bool equal(const PolymorphicForwardIteratorImpl<ValueT, ReferenceT>& other) const override {
+        return wrapped_iterator == static_cast<const PolymorphicForwardIteratorWrapperImpl<wrapped_iterator_type, ValueT, ReferenceT>&>(other).wrapped_iterator;
+    }
+
+    std::unique_ptr<PolymorphicForwardIteratorImpl<ValueT, ReferenceT>> clone() const override {
+        return std::unique_ptr<PolymorphicForwardIteratorImpl<ValueT, ReferenceT>>(
+                new PolymorphicForwardIteratorWrapperImpl<wrapped_iterator_type, ValueT, ReferenceT>(wrapped_iterator));
+    }
+
 };
 
 /**
@@ -114,7 +122,7 @@ struct PolymorphicForwardIterator:
     > {
 
     protected:
-    ImplT* impl;
+    std::unique_ptr<ImplT> impl;
 
     public:
 
@@ -125,29 +133,17 @@ struct PolymorphicForwardIterator:
      */
     PolymorphicForwardIterator(ImplT* impl = nullptr): impl(impl) {}
 
-    ///Delete wrapped iterator object.
-    ~PolymorphicForwardIterator() { delete impl; }
-
     /**
      * Copy constructor. Clone implementation object.
      * @param src Iterator from which implementation object should be clone.
      */
     PolymorphicForwardIterator(const PolymorphicForwardIterator& src) { impl = src.impl ? src.impl->clone() : nullptr; }
 
-    PolymorphicForwardIterator& operator=(const PolymorphicForwardIterator& src) {
-        if (this->impl != src.impl) {   //not self-assigned?
-            delete this->impl;
-            this->impl = src.impl ? src.impl->clone() : nullptr;
-        }
-        return *this;
-    }
-
     /**
      * Move constructor.
-     * Move ownership of wrapped implementation object from @a src to this.
-     * @param src iterator from which implementation object should be moved
+     * @param src Iterator to move from.
      */
-    PolymorphicForwardIterator(PolymorphicForwardIterator &&src) noexcept: impl(src.impl) { src.impl = nullptr; }
+    PolymorphicForwardIterator(PolymorphicForwardIterator&& src) = default;
 
     /**
      * Swap values of @c this and @p to_swap.
@@ -155,10 +151,12 @@ struct PolymorphicForwardIterator:
      */
     void swap(PolymorphicForwardIterator & to_swap) noexcept { std::swap(this->impl, to_swap.impl); }
 
-    PolymorphicForwardIterator& operator=(PolymorphicForwardIterator &&src) noexcept {
-        this->swap(src);    //old impl of this will be deleted for a moment (when src will be deleted)
+    PolymorphicForwardIterator& operator=(const PolymorphicForwardIterator &src) {
+        this->impl.reset(src.clone());
         return *this;
     }
+
+    PolymorphicForwardIterator& operator=(PolymorphicForwardIterator &&src) = default;
 
 
     private: //--- methods used by boost::iterator_facade: ---

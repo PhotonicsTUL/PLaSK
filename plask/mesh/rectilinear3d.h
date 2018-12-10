@@ -805,10 +805,10 @@ private:
       FixedIndex0IteratorImpl(const RectilinearMesh3D& mesh, std::size_t level_index0, std::size_t index_1, std::size_t index_1_begin, std::size_t index_1_end, std::size_t index_2)
           : BoundaryIteratorImpl(mesh, level_index0, index_1, index_1_begin, index_1_end, index_2) {}
 
-      virtual std::size_t dereference() const override { return this->mesh.index(this->level, this->index_f, this->index_s); }
+      std::size_t dereference() const override { return this->mesh.index(this->level, this->index_f, this->index_s); }
 
-      virtual typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
-          return new FixedIndex0IteratorImpl(*this);
+      std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl> clone() const override {
+          return std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl>(new FixedIndex0IteratorImpl(*this));
       }
   };
 
@@ -818,10 +818,10 @@ private:
       FixedIndex1IteratorImpl(const RectilinearMesh3D& mesh, std::size_t level_index1, std::size_t index_0, std::size_t index_0_begin, std::size_t index_0_end, std::size_t index_2)
           : BoundaryIteratorImpl(mesh, level_index1, index_0, index_0_begin, index_0_end, index_2) {}
 
-      virtual std::size_t dereference() const override { return this->mesh.index(this->index_f, this->level, this->index_s); }
+      std::size_t dereference() const override { return this->mesh.index(this->index_f, this->level, this->index_s); }
 
-      virtual typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
-          return new FixedIndex1IteratorImpl(*this);
+      std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl> clone() const override {
+          return std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl>(new FixedIndex1IteratorImpl(*this));
       }
   };
 
@@ -833,8 +833,8 @@ private:
 
       virtual std::size_t dereference() const override { return this->mesh.index(this->index_f, this->index_s, this->level); }
 
-      virtual typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
-          return new FixedIndex2IteratorImpl(*this);
+      virtual std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl> clone() const override {
+          return std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl>(new FixedIndex2IteratorImpl(*this));
       }
   };
 

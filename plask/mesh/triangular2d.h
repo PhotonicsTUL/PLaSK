@@ -3,6 +3,7 @@
 
 #include "mesh.h"
 #include "interpolation.h"
+#include "boundary.h"
 #include <array>
 
 #include <boost/geometry/index/rtree.hpp>
@@ -14,6 +15,9 @@
 namespace plask {
 
 struct PLASK_API TriangularMesh2D: public MeshD<2> {
+
+    /// Boundary type.
+    typedef plask::Boundary<TriangularMesh2D> Boundary;
 
     using MeshD<2>::LocalCoords;
     typedef std::vector<LocalCoords> LocalCoordsVec;
@@ -336,6 +340,8 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
      * \param object XML object to write to
      */
     void writeXML(XMLElement& object) const override;
+
+    // TODO: boundaries that mostly return StdSetBoundaryImpl
 
 };
 

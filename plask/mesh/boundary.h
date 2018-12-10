@@ -77,6 +77,7 @@ PLaSK contains some universal @ref plask::BoundaryNodeSetImpl "BoundaryNodeSet" 
 #include "../exceptions.h"
 #include "../geometry/space.h"
 #include <vector>
+#include <set>
 
 namespace plask {
 
@@ -176,7 +177,7 @@ struct BoundaryNodeSetWithMeshImpl: public BoundaryNodeSetImpl {
 };
 
 /**
- * Holds BoundaryLogicImpl and delegate all calls to it.
+ * Holds BoundaryNodeSetImpl and delegate all calls to it.
  */
 struct PLASK_API BoundaryNodeSet: public HolderRef< const BoundaryNodeSetImpl > {
 
@@ -235,7 +236,7 @@ struct PLASK_API BoundaryNodeSet: public HolderRef< const BoundaryNodeSetImpl > 
 /**
  * Implementation of empty boundary logic.
  *
- * This boundary represents empty index set.
+ * This boundary represents an empty set of indices.
  */
 struct PLASK_API EmptyBoundaryImpl: public BoundaryNodeSetImpl {
 
@@ -251,8 +252,8 @@ struct PLASK_API EmptyBoundaryImpl: public BoundaryNodeSetImpl {
             return true;
         }
 
-        virtual typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
-            return new IteratorImpl;
+        virtual std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl> clone() const override {
+            return std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl>(new IteratorImpl);
         }
 
     };
@@ -274,12 +275,41 @@ struct PLASK_API EmptyBoundaryImpl: public BoundaryNodeSetImpl {
     virtual bool empty() const override { return true; }
 };
 
+/**
+ * Implementation of boundary logic which holds a set of node indices in std::set.
+ * It serves the node indices in increasing order.
+ */
+struct PLASK_API StdSetBoundaryImpl: public BoundaryNodeSetImpl {
+
+    typedef std::set<std::size_t> StdNodeSet;
+
+    typedef PolymorphicForwardIteratorWrapperImpl<StdNodeSet::const_iterator, std::size_t, std::size_t> IteratorImpl;
+
+    StdNodeSet set;
+
+    virtual bool contains(std::size_t PLASK_UNUSED(mesh_index)) const override { return false; }
+
+    virtual typename BoundaryNodeSetImpl::const_iterator begin() const override {
+        return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl(set.begin()));
+    }
+
+    virtual typename BoundaryNodeSetImpl::const_iterator end() const override {
+        return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl(set.end()));
+    }
+
+    std::size_t size() const override {
+        return set.size();
+    }
+
+    virtual bool empty() const override { return set.empty(); }
+};
+
 // TODO może wykluczyć MeshType jako parametr szablonu i dodać w zamian DIM (używać MeshD)?
 /**
- * Instance of this class represents some conditions which allow to choose a subset of points (strictly: indexes of points) from mesh.
- * This mesh must be a specific type @p MeshType.
+ * Instance of this class represents predicate which chooses a subset of points (strictly: indices of points) from a mesh.
+ * The mesh must be a specific type @p MeshType.
  *
- * In fact Boundary is factory of BoundaryNodeSet which holds a pointer to abstract class @c BoundaryNodeSetImpl.
+ * Technically, Boundary is a factory of BoundaryNodeSet (objects that hold a pointer to abstract class @c BoundaryNodeSetImpl).
  * @tparam MeshType type of mesh
  * @ref boundaries
  */
@@ -407,8 +437,8 @@ struct SumBoundaryImpl: public BoundaryNodeSetImpl {
             return in_boundary == o.in_boundary;    // both are no ends, compare inner-loop iterators
         }
 
-        virtual IteratorImpl* clone() const override {
-            return new IteratorImpl(*this);
+        std::unique_ptr<BoundaryNodeSetImpl::IteratorImpl> clone() const override {
+            return std::unique_ptr<BoundaryNodeSetImpl::IteratorImpl>(new IteratorImpl(*this));
         }
 
         virtual std::size_t dereference() const override {
@@ -500,18 +530,18 @@ struct PredicateBoundaryImpl: public BoundaryNodeSetWithMeshImpl<typename MeshT:
 
       public:
 
-        virtual void increment() override {
+        void increment() override {
             do {
                 ++meshIterator;
             } while (meshIterator != meshIteratorEnd && !check_predicate());
         }
 
-        virtual bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& other) const override {
+        bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& other) const override {
             return meshIterator == static_cast<const PredicateIteratorImpl&>(other).meshIterator;
         }
 
-        virtual typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
-            return new PredicateIteratorImpl(*this);
+        std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl> clone() const override {
+            return std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl>(new PredicateIteratorImpl)(*this);
         }
 
     };

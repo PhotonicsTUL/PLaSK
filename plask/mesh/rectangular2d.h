@@ -775,10 +775,10 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
 
         VerticalIteratorImpl(const RectangularMesh2D& mesh, std::size_t line, std::size_t index): BoundaryIteratorImpl(mesh, line, index) {}
 
-        virtual std::size_t dereference() const override { return this->mesh.index(this->line, this->index); }
+        std::size_t dereference() const override { return this->mesh.index(this->line, this->index); }
 
-        virtual typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
-            return new VerticalIteratorImpl(*this);
+        std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl> clone() const override {
+            return std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl>(new VerticalIteratorImpl(*this));
         }
     };
 
@@ -789,8 +789,8 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
 
         virtual std::size_t dereference() const override { return this->mesh.index(this->index, this->line); }
 
-        virtual typename BoundaryNodeSetImpl::IteratorImpl* clone() const override {
-            return new HorizontalIteratorImpl(*this);
+        std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl> clone() const override {
+            return std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl>(new HorizontalIteratorImpl(*this));
         }
     };
 
