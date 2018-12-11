@@ -351,8 +351,10 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
         return Boundary(new PredicateBoundaryImpl<TriangularMesh2D, Predicate>(predicate));
     }
 
+    /// Segment (two-element set of node indices) represented by a pair of indices such that first < second.
     typedef std::pair<std::size_t, std::size_t> Segment;
 
+    /// Map segments to their counts.
     typedef std::unordered_map<TriangularMesh2D::Segment, std::size_t, boost::hash<Segment>> SegmentsCounts;
 
     /**
@@ -390,6 +392,8 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
      * @return the set of indices of boundary nodes
      */
     static std::set<std::size_t> boundaryNodes(const SegmentsCounts& segmentsCount);
+
+    //std::set<std::size_t> leftBoundaryNodes(const SegmentsCounts& segmentsCount) const;
 
     /**
      * Get boundary which describes all nodes which lies on all (outer and inner) boundaries of the whole mesh.

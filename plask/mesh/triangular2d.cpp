@@ -1,6 +1,7 @@
 #include "triangular2d.h"
 
 #include <boost/range/irange.hpp>
+//#include <boost/icl/interval_map.hpp>
 #include <unordered_map>
 
 namespace plask {
@@ -179,6 +180,30 @@ std::set<std::size_t> TriangularMesh2D::boundaryNodes(const TriangularMesh2D::Se
         }
     return result;
 }
+
+/*typedef std::set<TriangularMesh2D::Segment> SegmentsSet;
+
+std::set<std::size_t> TriangularMesh2D::leftBoundaryNodes(const TriangularMesh2D::SegmentsCounts &segmentsCount) const {
+    std::set<std::size_t> result;
+    boost::icl::interval_map<double, SegmentsSet> non_dominated;
+    for (const std::pair<TriangularMesh2D::Segment, std::size_t>& s: segmentsCount)
+        if (s.second == 1) {
+            const TriangularMesh2D::Segment& seg = s.first;
+            const LocalCoords &seg_from = this->nodes[seg.first], &seg_to = this->nodes[seg.second];
+            auto found = non_dominated.find(seg_from.c0);
+            if (found != non_dominated.end()) {
+                for (const TriangularMesh2D::Segment& set: found->second) {
+
+                }
+            }
+            //if (...)
+            non_dominated += std::make_pair(
+                boost::icl::interval<double>::closed(this->nodes[seg.first].c0, this->nodes[seg.second].c0),
+                SegmentsSet({seg})
+            );
+        }
+    return result;
+}*/
 
 std::size_t readTriangularMesh2D_readNodeIndex(XMLReader& reader, const char* attrName, std::size_t nodes_size) {
     std::size_t result = reader.requireAttribute<std::size_t>(attrName);
