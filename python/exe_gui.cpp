@@ -52,7 +52,7 @@ static py::object initPlask(int argc, const system_char* const argv[])
         try {
             path.insert(0, boost::filesystem::absolute(boost::filesystem::path(argv[0])).parent_path().string());
         } catch (std::runtime_error&) { // can be thrown if there is wrong locale set
-			system_string file(argv[0]);
+            system_string file(argv[0]);
             size_t pos = file.rfind(system_char(plask::FILE_PATH_SEPARATOR));
             if (pos == std::string::npos) pos = 0;
             path.insert(0, file.substr(0, pos));
@@ -62,7 +62,11 @@ static py::object initPlask(int argc, const system_char* const argv[])
 
     sys.attr("path") = path;
 
-    sys.attr("executable") = plask::exePathAndName();
+#   if defined(_MSC_VER) || defined(__MINGW32__)
+        sys.attr("executable") = plask::exePath() + "\\plask.exe";
+#   else
+        sys.attr("executable") = plask::exePath() + "/plask";
+#   endif
 
     py::object _plask = py::import("_plask");
 
