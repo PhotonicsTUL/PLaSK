@@ -1,7 +1,7 @@
 #include "triangular2d.h"
 
 #include <boost/range/irange.hpp>
-//#include <boost/icl/interval_map.hpp>
+#include <boost/icl/interval_map.hpp>
 #include <unordered_map>
 
 namespace plask {
@@ -181,29 +181,91 @@ std::set<std::size_t> TriangularMesh2D::boundaryNodes(const TriangularMesh2D::Se
     return result;
 }
 
-/*typedef std::set<TriangularMesh2D::Segment> SegmentsSet;
 
-std::set<std::size_t> TriangularMesh2D::leftBoundaryNodes(const TriangularMesh2D::SegmentsCounts &segmentsCount) const {
+template <int DIR, template<class> class Compare = std::less>  // DIR - oś prostopadła do przedziałów trzymanych w boost::icl::interval_map
+struct SegmentSetMember: private Compare<TriangularMesh2D::Segment> {
+    TriangularMesh2D::Segment segment;
+    double min, max;    // mniejsza i większa współrzędna (w osi DIR) końców segmentu
+
+    SegmentSetMember() = default;
+
+    SegmentSetMember(const TriangularMesh2D& mesh, const TriangularMesh2D::Segment& segment)
+        : segment(segment),
+          min(mesh.nodes[segment.first][DIR]),
+          max(mesh.nodes[segment.second][DIR])
+    {
+        //if (max < min) std::swap(min, max);
+        if (Compare<double>()(max, min))  // max < min ?
+            std::swap(min, max);
+    }
+
+    bool operator<(const SegmentSetMember& other) const {
+        return Compare<TriangularMesh2D::Segment>::operator()(this->segment, other.segment);
+                //this->segment < other.segment;
+    }
+
+    bool operator==(const SegmentSetMember& other) const {
+        return this->segment == other.segment;
+    }
+};
+
+// DIR - oś prostopadła do przedziałów trzymanych w boost::icl::interval_map
+template<int DIR, template<class> class Compare = std::less>
+struct SegmentSet: Compare<double> {
+    SegmentSet() = default;
+
+    SegmentSet(const SegmentSetMember<DIR>& to_append)
+        : maxOfMins(to_append.min) { set.insert(to_append); }
+
+    SegmentSet(const TriangularMesh2D& mesh, const TriangularMesh2D::Segment& segment)
+        : SegmentSet(SegmentSetMember<DIR>(mesh, segment)) {}
+
+    SegmentSet& operator+=(const SegmentSet& right) {
+        //if (maxOfMins < right.maxOfMins) {
+        if (Compare<double>::operator()(maxOfMins, right.maxOfMins)) {
+            std::set<SegmentSetMember<DIR>> this_set_backup = std::move(set);
+            set = right.set;
+            maxOfMins = right.maxOfMins;
+            insert(this_set_backup);
+        } else
+            insert(right.set);
+        return *this;
+    }
+
+    bool operator==(const SegmentSet<DIR>& other) const {
+        return this->set == other.set;
+    }
+
+private:
+    void insert(const std::set<SegmentSetMember<DIR>>& right) {
+        for (auto& s: right)
+            if (!Compare<double>::operator()(s.max, maxOfMins)) set.insert(s);
+            //if (s.max >= maxOfMins) set.insert(s);
+    }
+
+    std::set<SegmentSetMember<DIR, Compare>, Compare<SegmentSetMember<DIR, Compare>>> set;
+
+    /**
+     * Maximum of s.min, where s iterates over set.
+     *
+     * In set we store only non-dominated segments, which have max >= maxOfMins.
+     */
+    double maxOfMins;
+};
+
+std::set<std::size_t> TriangularMesh2D::rightBoundaryNodes(const TriangularMesh2D::SegmentsCounts &segmentsCount) const {
     std::set<std::size_t> result;
-    boost::icl::interval_map<double, SegmentsSet> non_dominated;
+    boost::icl::interval_map<double, SegmentSet<1>> non_dominated;
     for (const std::pair<TriangularMesh2D::Segment, std::size_t>& s: segmentsCount)
         if (s.second == 1) {
             const TriangularMesh2D::Segment& seg = s.first;
-            const LocalCoords &seg_from = this->nodes[seg.first], &seg_to = this->nodes[seg.second];
-            auto found = non_dominated.find(seg_from.c0);
-            if (found != non_dominated.end()) {
-                for (const TriangularMesh2D::Segment& set: found->second) {
-
-                }
-            }
-            //if (...)
             non_dominated += std::make_pair(
                 boost::icl::interval<double>::closed(this->nodes[seg.first].c0, this->nodes[seg.second].c0),
-                SegmentsSet({seg})
+                SegmentSet<1>(*this, seg)
             );
         }
     return result;
-}*/
+}
 
 std::size_t readTriangularMesh2D_readNodeIndex(XMLReader& reader, const char* attrName, std::size_t nodes_size) {
     std::size_t result = reader.requireAttribute<std::size_t>(attrName);

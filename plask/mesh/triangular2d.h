@@ -393,7 +393,7 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
      */
     static std::set<std::size_t> boundaryNodes(const SegmentsCounts& segmentsCount);
 
-    //std::set<std::size_t> leftBoundaryNodes(const SegmentsCounts& segmentsCount) const;
+    std::set<std::size_t> rightBoundaryNodes(const SegmentsCounts& segmentsCount) const;
 
     /**
      * Get boundary which describes all nodes which lies on all (outer and inner) boundaries of the whole mesh.
