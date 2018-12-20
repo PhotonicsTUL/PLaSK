@@ -168,13 +168,14 @@ else:
         RUN1 = ''
         RUNN = 'mpirun'
 
-        def __init__(self, name, userhost=None, port=None, program='', color=None, compress=None, bp='',
+        def __init__(self, name, userhost=None, port=None, program='', color=None, keep=None, compress=None, bp='',
                      run1='', runn='', params=None):
             self.name = name
             self.userhost = userhost
             self.port = _parse_int(port, 22)
             self.program = program
             self.color = _parse_bool(color, False)
+            self.keep = _parse_bool(keep, False)
             self.compress = _parse_bool(compress, True)
             self.bp = bp
             self.run1 = run1
@@ -190,6 +191,7 @@ else:
             self.port = source.port
             self.program = source.program
             self.color = source.color
+            self.keep = source.keep
             self.compress = source.compress
             self.bp = source.bp
             self.run1 = source.run1
@@ -200,7 +202,7 @@ else:
             #      1         2         3         4        5        6        7         8
             # 'userhost', 'system', 'queues', 'color', 'program', 'bp', 'port', 'compress'
             if len(data) == 7: data.append(22)
-            return SYSTEMS[data[2]](data[0], data[1], data[7], data[5], False, True, data[6], '', data[3])
+            return SYSTEMS[data[2]](data[0], data[1], data[7], data[5], False, False, True, data[6], '', data[3])
 
         @staticmethod
         def load(name, config):
@@ -221,7 +223,8 @@ else:
 
         def save(self):
             return dict(userhost=self.userhost, port=self.port, system=self.__class__.SYSTEM, program=self.program,
-                        color=int(self.color), compress=int(self.compress), bp=self.bp, run1=self.run1, runn=self.runn)
+                        color=int(self.color), keep=int(self.keep), compress=int(self.compress), bp=self.bp,
+                        run1=self.run1, runn=self.runn)
 
         class EditDialog(QDialog):
             def __init__(self, account=None, name=None, parent=None):
@@ -303,9 +306,16 @@ else:
                 self._set_rows_visibility(self._system_widgets[systems_index], True, layout)
 
                 self.color_checkbox = QCheckBox()
+                self.color_checkbox.setToolTip("Add color codes to log messages.")
                 if account is not None:
                     self.color_checkbox.setChecked(account.color)
                 layout.addRow("Co&lor Output:", self.color_checkbox)
+
+                self.keep_checkbox = QCheckBox()
+                self.keep_checkbox.setToolTip("Keep the executed PLaSK script after execution.")
+                if account is not None:
+                    self.keep_checkbox.setChecked(account.keep)
+                layout.addRow("&Keep script:", self.keep_checkbox)
 
                 self._advanced_widgets = []
 
@@ -451,6 +461,10 @@ else:
                 return self.color_checkbox.isChecked()
 
             @property
+            def keep(self):
+                return self.keep_checkbox.isChecked()
+
+            @property
             def compress(self):
                 return self.compress_checkbox.isChecked()
 
@@ -510,7 +524,10 @@ else:
                         print('module add', mod, file=stdin)
                 if params['nodes'] == 1:
                     run = self.run1 or self.RUN1
-                    fname2 = '-:' + fname
+                    if self.keep:
+                        fname2 = self.tmpfile(fname, params['array'] is not None)
+                    else:
+                        fname2 = '-:' + fname
                 else:
                     run = self.runn or self.RUNN
                     fname2 = self.tmpfile(fname, params['array'] is not None)
@@ -522,15 +539,7 @@ else:
                     ll=loglevel,
                     lc=' -lansi' if self.color else '',
                     ft='x' if isinstance(document, XPLDocument) else 'p')
-                if params['nodes'] <= 1:
-                    if self.compress:
-                        print("base64 -d <<\\_EOF_ | gunzip |", command_line, file=stdin)
-                        self._compress(document, fname, stdin)
-                    else:
-                        print(command_line, "<<\\_EOF_", file=stdin)
-                        stdin.write(document.get_content())
-                    print("_EOF_", file=stdin)
-                else:
+                if self.keep or params['nodes'] > 1:
                     if self.compress:
                         print("base64 -d <<\\_EOF_ | gunzip >", fname2, file=stdin)
                         self._compress(document, fname, stdin)
@@ -539,7 +548,16 @@ else:
                         stdin.write(document.get_content())
                     print("_EOF_", file=stdin)
                     print(command_line, file=stdin)
-                    print("rm", fname2, file=stdin)
+                    if not self.keep:
+                        print("rm", fname2, file=stdin)
+                else:
+                    if self.compress:
+                        print("base64 -d <<\\_EOF_ | gunzip |", command_line, file=stdin)
+                        self._compress(document, fname, stdin)
+                    else:
+                        print(command_line, "<<\\_EOF_", file=stdin)
+                        stdin.write(document.get_content())
+                    print("_EOF_", file=stdin)
                 stdin.flush()
                 stdin.channel.shutdown_write()
             except (OSError, IOError):
@@ -620,9 +638,9 @@ else:
 
         _value_suffix_re = re.compile("([\d.]*)(\D*)")
 
-        def __init__(self, name, userhost=None, port=22, program='', color=False, compress=True, bp='',
+        def __init__(self, name, userhost=None, port=22, program='', color=False, keep=None, compress=True, bp='',
                      run1='', runn='', partitions=None, qos=None, params=None):
-            super(Slurm, self).__init__(name, userhost, port, program, color, compress, bp, run1, runn, params)
+            super(Slurm, self).__init__(name, userhost, port, program, color, keep, compress, bp, run1, runn, params)
             if partitions:
                 self.partitions = partitions if isinstance(partitions, list) else partitions.split(',')
             else:
@@ -766,9 +784,9 @@ else:
         SYSTEM = 'PBS/Torque'
         RUNN = 'pbsdsh'
 
-        def __init__(self, name, userhost=None, port=22, program='', color=False, compress=True, bp='',
+        def __init__(self, name, userhost=None, port=22, program='', color=False, keep=None, compress=True, bp='',
                      run1='', runn='', queues=None, params=None):
-            super(Torque, self).__init__(name, userhost, port, program, color, compress, bp, run1, runn, params)
+            super(Torque, self).__init__(name, userhost, port, program, color, keep, compress, bp, run1, runn, params)
             if queues:
                 self.queues = queues if isinstance(queues, list) else queues.split(',')
             else:
