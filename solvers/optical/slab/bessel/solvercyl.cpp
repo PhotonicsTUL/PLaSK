@@ -151,7 +151,10 @@ size_t BesselSolverCyl::findMode(dcomplex start, int m)
     expansion->setLam0(this->lam0);
     expansion->setM(m);
     initTransfer(*expansion, false);
-    std::unique_ptr<RootDigger> root = getRootDigger([this](const dcomplex& x) { expansion->setK0(2e3*PI/x); return transfer->determinant(); }, "lam");
+    std::unique_ptr<RootDigger> root = getRootDigger([this](const dcomplex& x) {
+        if (isnan(x)) throw ComputationError(this->getId(), "'lam' converged to NaN");
+        expansion->setK0(2e3*PI/x); return transfer->determinant();
+    }, "lam");
     root->find(start);
     return insertMode();
 }

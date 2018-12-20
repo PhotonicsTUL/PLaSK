@@ -183,24 +183,36 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
         case FourierSolver3D::WHAT_WAVELENGTH:
             expansion.setKlong(klong);
             expansion.setKtran(ktran);
-            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(2e3*PI/x); return transfer->determinant(); }, "lam");
+            root = getRootDigger([this](const dcomplex& x) {
+                if (isnan(x)) throw ComputationError(this->getId(), "'lam' converged to NaN");
+                expansion.setK0(2e3*PI/x); return transfer->determinant();
+            }, "lam");
             break;
         case FourierSolver3D::WHAT_K0:
             expansion.setKlong(klong);
             expansion.setKtran(ktran);
-            root = getRootDigger([this](const dcomplex& x) { expansion.setK0(x); return transfer->determinant(); }, "k0");
+            root = getRootDigger([this](const dcomplex& x) {
+                if (isnan(x)) throw ComputationError(this->getId(), "'k0' converged to NaN");
+                expansion.setK0(x); return transfer->determinant();
+            }, "k0");
             break;
         case FourierSolver3D::WHAT_KLONG:
             expansion.setK0(this->k0);
             expansion.setKtran(ktran);
             transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-            root = getRootDigger([this](const dcomplex& x) { expansion.klong = x; return transfer->determinant(); }, "klong");
+            root = getRootDigger([this](const dcomplex& x) {
+                if (isnan(x)) throw ComputationError(this->getId(), "'klong' converged to NaN");
+                expansion.klong = x; return transfer->determinant();
+            }, "klong");
             break;
         case FourierSolver3D::WHAT_KTRAN:
             expansion.setK0(this->k0);
             expansion.setKlong(klong);
             transfer->fields_determined = Transfer::DETERMINED_NOTHING;
-            root = getRootDigger([this](const dcomplex& x) { expansion.ktran = x; return transfer->determinant(); }, "ktran");
+            root = getRootDigger([this](const dcomplex& x) {
+                if (isnan(x)) throw ComputationError(this->getId(), "'ktran' converged to NaN");
+                expansion.ktran = x; return transfer->determinant();
+            }, "ktran");
             break;
     }
     root->find(start);
