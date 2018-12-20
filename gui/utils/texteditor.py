@@ -54,6 +54,18 @@ class TextEditor(QPlainTextEdit):
             self.line_numbers.setGeometry(QRect(cr.left(), cr.top(),
                                                        self.line_numbers.get_width(), cr.height()))
 
+    def insertFromMimeData(self, source):
+        if source.hasText() and CONFIG['editor/select_after_paste']:
+            cursor = self.textCursor()
+            start = cursor.position()
+            end = start + len(source.text())
+            super(TextEditor, self).insertFromMimeData(source)
+            cursor.setPosition(start)
+            cursor.setPosition(end, QTextCursor.KeepAnchor)
+            self.setTextCursor(cursor)
+        else:
+            super(TextEditor, self).insertFromMimeData(source)
+
     def on_text_change(self):
         self._changed_pos = self.textCursor().position()
 

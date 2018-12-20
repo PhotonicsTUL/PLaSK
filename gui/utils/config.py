@@ -49,6 +49,7 @@ DEFAULTS = {
     'main_window/use_menu': False,
     'main_window/icons_theme': 'system',
     'main_window/icons_size': 'default',
+    'editor/select_after_paste': False,
     'help/online': False,
     'help/fontsize': 13,
     'updates/automatic_check': None,
@@ -60,7 +61,7 @@ DEFAULTS = {
     'editor/replace_color': '#ffddff',
     'editor/matching_bracket_color': '#aaffaa',
     'editor/not_matching_bracket_color': '#ffaaaa',
-    'launcher/defalt': 'Local Process',
+    'launcher/default': 'Local Process',
     'launcher_local/font': [_default_font_family, '10', '-1', '5', '50', '0', '0', '0', '0', '0'],
     'syntax/xml_comment': 'color=green, italic=true',
     'syntax/xml_tag': 'color=maroon, bold=true',
@@ -160,9 +161,15 @@ CONFIG_WIDGETS = OrderedDict([
              CheckBox('updates/automatic_check',
                       "If this option is checked, PLaSK will automatically check for a new version on startup.")),
         ]),
+        ("Editor",
+         [
+             ("Keep selection after paste", CheckBox('editor/select_after_paste',
+                                                     "Keep selection of pasted text."))
+         ]),
         ("Launcher",
          [
-            ("Default launcher", Combo('launcher/default', _get_launchers, "Default launcher to select in new window")),
+            ("Default launcher", Combo('launcher/default', _get_launchers,
+                                       "Default launcher to select in new window.")),
          ]),
         ("Help", [
             ("Show only online help",
