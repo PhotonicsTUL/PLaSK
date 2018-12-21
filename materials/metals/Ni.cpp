@@ -28,25 +28,25 @@ Tensor2<double> Ni::thermk(double T, double /*t*/) const {
     return ( Tensor2<double>(tCondT, tCondT) );
 }
 
-MI_PROPERTY(Ni, absp,
-            MISource(""),
-            MIComment("TODO")
-            )
-double Ni::absp(double /*lam*/, double /*T*/) const {
-    return ( 1e3 );
-}
-
 bool Ni::isEqual(const Material &/*other*/) const {
     return true;
 }
 
-MI_PROPERTY(Ni, nr,
-            MISource(""),
-            MIComment("TODO")
-			)
-double Ni::nr(double /*lam*/, double /*T*/, double /*n*/) const {
-    return ( 1. );
-}
+// MI_PROPERTY(Ni, absp,
+//             MISource(""),
+//             MIComment("TODO")
+//             )
+// double Ni::absp(double /*lam*/, double /*T*/) const {
+//     return ( 1e3 );
+// }
+//
+// MI_PROPERTY(Ni, nr,
+//             MISource(""),
+//             MIComment("TODO")
+// 			)
+// double Ni::nr(double /*lam*/, double /*T*/, double /*n*/) const {
+//     return ( 1. );
+// }
 
 static MaterialsDB::Register<Ni> materialDB_register_Ni;
 

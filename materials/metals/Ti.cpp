@@ -27,6 +27,10 @@ Tensor2<double> Ti::thermk(double T, double /*t*/) const {
     return ( Tensor2<double>(tCondT, tCondT) );
 }
 
+bool Ti::isEqual(const Material &/*other*/) const {
+    return true;
+}
+
 MI_PROPERTY(Ti, absp,
             MISource(""),
             MIComment("TODO"),
@@ -38,10 +42,6 @@ double Ti::absp(double lam, double /*T*/) const {
         return ( (4.75779 -19.2528*ulam + 34.0917*ulam*ulam -27.2725*pow(ulam,3.) + 8.1585*pow(ulam,4.))*1e6 );
     else
         return ( 864255*pow(exp(ulam),-1.18177) + 209715 + 6708.34*(ulam) - 633.799*ulam*ulam + 12.9902*pow(ulam,3.) );
-}
-
-bool Ti::isEqual(const Material &/*other*/) const {
-    return true;
 }
 
 MI_PROPERTY(Ti, nr,

@@ -26,25 +26,25 @@ Tensor2<double> AuZn::thermk(double /*T*/, double /*t*/) const {
     return ( Tensor2<double>(tCondT, tCondT) );
 }
 
-MI_PROPERTY(AuZn, absp,
-            MISource(""),
-            MIComment("TODO")
-            )
-double AuZn::absp(double /*lam*/, double /*T*/) const {
-    return ( 1e3 );
-}
-
 bool AuZn::isEqual(const Material &/*other*/) const {
     return true;
 }
 
-MI_PROPERTY(AuZn, nr,
-            MISource(""),
-            MIComment("TODO")
-			)
-double AuZn::nr(double /*lam*/, double /*T*/, double /*n*/) const {
-    return ( 1. );
-}
+// MI_PROPERTY(AuZn, absp,
+//             MISource(""),
+//             MIComment("TODO")
+//             )
+// double AuZn::absp(double /*lam*/, double /*T*/) const {
+//     return ( 1e3 );
+// }
+//
+// MI_PROPERTY(AuZn, nr,
+//             MISource(""),
+//             MIComment("TODO")
+//             )
+// double AuZn::nr(double /*lam*/, double /*T*/, double /*n*/) const {
+//     return ( 1. );
+// }
 
 static MaterialsDB::Register<AuZn> materialDB_register_AuZn;
 

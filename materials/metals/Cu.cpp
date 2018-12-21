@@ -28,25 +28,25 @@ Tensor2<double> Cu::thermk(double T, double /*t*/) const {
     return ( Tensor2<double>(tCondT, tCondT) );
 }
 
-MI_PROPERTY(Cu, absp,
-            MISource(""),
-            MIComment("TODO")
-            )
-double Cu::absp(double /*lam*/, double /*T*/) const {
-    return ( 1e3 );
-}
-
 bool Cu::isEqual(const Material &/*other*/) const {
     return true;
 }
 
-MI_PROPERTY(Cu, nr,
-            MISource(""),
-            MIComment("TODO")
-			)
-double Cu::nr(double /*lam*/, double /*T*/, double /*n*/) const {
-    return ( 1. );
-}
+// MI_PROPERTY(Cu, absp,
+//             MISource(""),
+//             MIComment("TODO")
+//             )
+// double Cu::absp(double /*lam*/, double /*T*/) const {
+//     return ( 1e3 );
+// }
+//
+// MI_PROPERTY(Cu, nr,
+//             MISource(""),
+//             MIComment("TODO")
+//             )
+// double Cu::nr(double /*lam*/, double /*T*/, double /*n*/) const {
+//     return ( 1. );
+// }
 
 static MaterialsDB::Register<Cu> materialDB_register_Cu;
 
