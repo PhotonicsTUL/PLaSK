@@ -60,6 +60,10 @@ struct MaterialCache {
     plask::optional<double> c13;
     plask::optional<double> c33;
     plask::optional<double> Psp;
+
+    plask::optional<double> y1;
+    plask::optional<double> y2;
+    plask::optional<double> y3;
 };
 
 /**

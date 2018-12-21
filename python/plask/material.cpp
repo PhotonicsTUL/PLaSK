@@ -395,6 +395,10 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     double c33(double T) const override { return call<double>("c33", &Material::c33, cache->c33, T); }
     double Psp(double T) const override { return call<double>("Psp", &Material::Psp, cache->Psp, T); }
 
+    double y1() const override { return call<double>("y1", &Material::y1, cache->y1); }
+    double y2() const override { return call<double>("y2", &Material::y2, cache->y2); }
+    double y3() const override { return call<double>("y3", &Material::y3, cache->y3); }
+
     // End of overriden methods
 
 };
@@ -1212,6 +1216,12 @@ void initMaterials() {
              u8"   This parameter is used only by solvers that can consider refractive index\n"
              u8"   anisotropy properly. It is stronly advised to also define\n"
              u8"   :meth:`~plask.material.Material.Nr`.\n")
+
+        .def("y1", &Material::y1, u8"Get Luttinger parameter γ₁ [-].\n")
+
+        .def("y2", &Material::y2, u8"Get Luttinger parameter γ₂ [-].\n")
+
+        .def("y3", &Material::y3, u8"Get Luttinger parameter γ₃ [-].\n")
     ;
 
     MaterialFromPythonString();

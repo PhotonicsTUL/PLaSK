@@ -35,9 +35,6 @@ struct PLASK_API MaterialInfo {
         Mhh,        ///< heavy-hole effective mass
         Mlh,        ///< light-hole effective mass
         Mh,         ///< hole effective mass
-		y1,         ///< Luttinger parameter 1
-		y2,         ///< Luttinger parameter 2
-		y3,         ///< Luttinger parameter 3
         ac,         ///< hydrostatic deformation potential for the conduction band
         av,         ///< hydrostatic deformation potential for the valence band
         b,          ///< shear deformation potential
@@ -67,7 +64,6 @@ struct PLASK_API MaterialInfo {
         absp,       ///< absorption coefficient alpha
         Nr,         ///< complex refractive index
         NR,         ///< complex refractive index tensor
-
         mobe,       ///< electron mobility
         mobh,       ///< hole mobility
         taue,       ///< monomolecular electrons lifetime [ns]
@@ -79,7 +75,10 @@ struct PLASK_API MaterialInfo {
         e33,        ///< piezoelectric constant
         c13,        ///< elastic constant
         c33,        ///< elastic constant
-        Psp         ///< spontaneous polarization
+        Psp,        ///< spontaneous polarization
+        y1,         ///< Luttinger parameter 1
+        y2,         ///< Luttinger parameter 2
+        y3          ///< Luttinger parameter 3
     };
 
     /// Names of the properties

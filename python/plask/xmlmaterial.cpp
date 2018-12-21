@@ -35,7 +35,8 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
         lattC, Eg, CB, VB, Dso, Mso, Me, Mhh, Mlh, Mh, ac, av, b, d, c11, c12, c44, eps, chi,
         Na, Nd, Ni, Nf, EactD, EactA, mob, cond, A, B, C, D,
         thermk, dens, cp, nr, absp, Nr, NR,
-        mobe, mobh, taue, tauh, Ce, Ch, e13, e15, e33, c13, c33, Psp;
+        mobe, mobh, taue, tauh, Ce, Ch, e13, e15, e33, c13, c33, Psp,
+        y1, y2, y3;
 
     PythonEvalMaterialConstructor(MaterialsDB& db, const std::string& name, const std::string& base, bool alloy) :
         MaterialsDB::MaterialConstructor(name),
@@ -267,6 +268,10 @@ class PythonEvalMaterial: public MaterialWithBase
     double c33(double T) const override { PYTHON_EVAL_CALL_1(double, c33, T) }
     double Psp(double T) const override { PYTHON_EVAL_CALL_1(double, Psp, T) }
 
+    double y1() const override { PYTHON_EVAL_CALL_0(double, y1) }
+    double y2() const override { PYTHON_EVAL_CALL_0(double, y2) }
+    double y3() const override { PYTHON_EVAL_CALL_0(double, y3) }
+
     // End of overridden methods
 };
 
@@ -409,6 +414,10 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
             COMPILE_PYTHON_MATERIAL_FUNCTION(c13)
             COMPILE_PYTHON_MATERIAL_FUNCTION(c33)
             COMPILE_PYTHON_MATERIAL_FUNCTION(Psp)
+
+            COMPILE_PYTHON_MATERIAL_FUNCTION(y1)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(y2)
+            COMPILE_PYTHON_MATERIAL_FUNCTION(y3)
 
             else throw XMLUnexpectedElementException(reader, "material parameter tag");
         }

@@ -41,7 +41,11 @@
     <thermk>100 + T/{tt}</thermk>
   </material>
   <material name="b" base="a"/>
-  <material name="GaAs" base="GaAs"/>
+  <material name="GaAs" base="GaAs">
+    <y1>10</y1>
+    <y2>10</y2>
+    <y3>10</y3>
+  </material>
 </materials>
 
 <geometry>

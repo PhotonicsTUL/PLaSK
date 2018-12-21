@@ -156,6 +156,9 @@ MATERIALS_PROPERTES = OrderedDict((
             [(u'T', u'temperature', u'K'), (u'e', u'lateral strain', '-'),
              (u'point', u'point in the Brillouin zone', '-'),
              (u'hole', u'hole type (\'H\' or \'L\')', '-')])),
+    ('y1', (u'Luttinger parameter <i>γ</i><sub>1</sub>', '-', [])),
+    ('y2', (u'Luttinger parameter <i>γ</i><sub>2</sub>', '-', [])),
+    ('y3', (u'Luttinger parameter <i>γ</i><sub>3</sub>', '-', [])),
 ))
 
 ELEMENT_GROUPS = (('Al', 'Ga', 'In'), ('N', 'P', 'As', 'Sb', 'Bi'))

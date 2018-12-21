@@ -572,7 +572,12 @@ def show_material_plot(parent, model, defines, init_material=None):
     # plot_window.setFloating(True)
     # plot_window.setWidget(MaterialPlot())
     # self.document.window.addDockWidget(Qt.BottomDockWidgetArea, plot_window)
+    try:
+        plot = MaterialPlot(model, defines, init_material=init_material)
+    except Exception as err:
+        QMessageBox.critical(None, "Error while parsing materials", str(err))
+        return
     plot_window = QMainWindow(parent)
     plot_window.setWindowTitle("Material Parameter")
-    plot_window.setCentralWidget(MaterialPlot(model, defines, init_material=init_material))
+    plot_window.setCentralWidget(plot)
     plot_window.show()
