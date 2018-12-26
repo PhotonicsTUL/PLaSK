@@ -247,7 +247,14 @@ void AdmittanceTransfer::determineFields()
             // H0 = y1 * E0 + y2 * Ed
             // for (int i = 0; i < N; i++)
             //     fields[n].H0[i] = y1[i] * fields[n].E0[i]  +  y2[i] * fields[n].Ed[i];
-            // However in some cases this can make the magnetic field discontinous
+            // However in some cases this can make the magnetic field discontinous.
+        }
+        if (start != end) {
+            // anyway, we must do it in the last layer
+            // (y1 and y2 are already computed in the above loop)
+            std::ptrdiff_t n = end + inc;
+            for (int i = 0; i < N; i++)
+                fields[n].H0[i] = y1[i] * fields[n].E0[i]  +  y2[i] * fields[n].Ed[i];
         }
     }
 

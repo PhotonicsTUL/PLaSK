@@ -43,8 +43,8 @@
   <material name="b" base="a"/>
   <material name="GaAs" base="GaAs">
     <y1>10</y1>
-    <y2>10</y2>
-    <y3>10</y3>
+    <y2>20</y2>
+    <y3>30</y3>
   </material>
 </materials>
 
@@ -390,6 +390,9 @@
 
 <script><![CDATA[
 from __future__ import print_function
+
+GaAs = material.get('GaAs')
+print(GaAs.y1(), GaAs.y2(), GaAs.y3())
 
 print(material.get('b').thermk(300))
 
