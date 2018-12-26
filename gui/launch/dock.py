@@ -273,8 +273,7 @@ class OutputWindow(QDockWidget):
         tool_action.setDefaultWidget(menu_button)
         toolbar.addAction(tool_action)
 
-        self.halt_action = QAction(QIcon.fromTheme('process-stop'),
-                                         "Halt (Alt+X)", self)
+        self.halt_action = QAction(QIcon.fromTheme('process-stop'), "Halt (Alt+X)", self)
         self.halt_action.setShortcut('Alt+x')
         self.halt_action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         self.halt_action.triggered.connect(self.halt_thread)
@@ -293,6 +292,13 @@ class OutputWindow(QDockWidget):
         label.setBuddy(self.search)
         toolbar.addWidget(self.search)
         self.search.textChanged.connect(self.filter_text)
+
+        close_all_action = QAction(QIcon.fromTheme('window-close'), "Clea&nup all", self)
+        close_all_action.setShortcut('Ctrl+Shift+w')
+        close_all_action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
+        close_all_action.triggered.connect(self.close_all_stopped_docks)
+        self.messages.addAction(close_all_action)
+        toolbar.addAction(close_all_action)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(1, 1, 1, 1)
@@ -322,8 +328,8 @@ class OutputWindow(QDockWidget):
         self.messages.context_menu.insertSeparator(before_action)
         self.messages.context_menu.insertAction(before_action, self.halt_action)
         self.messages.context_menu.insertAction(before_action, close_action)
+        self.messages.context_menu.insertAction(before_action, close_all_action)
         self.messages.context_menu.insertSeparator(before_action)
-
 
         self.lines = []
         self.printed_lines = 0
@@ -457,3 +463,11 @@ class OutputWindow(QDockWidget):
                       if isinstance(w, OutputWindow) and w is not self and w.isVisible()]
             if others:
                 others[-1].messages.setFocus()
+
+    def close_all_stopped_docks(self):
+        main_window = self.parent()
+        docks = (w for w in main_window.findChildren(QDockWidget)
+                 if isinstance(w, OutputWindow) and w.isVisible() and
+                 not (w.thread is None or w.thread.isRunning()))
+        for dock in docks:
+            dock.close()
