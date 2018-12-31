@@ -16,8 +16,9 @@
 namespace plask { namespace python {
 
 namespace detail {
-    struct Tensor2_fromto_Python
-    {
+
+    struct Tensor2_fromto_Python {
+
         Tensor2_fromto_Python() {
             boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<Tensor2<double>>());
             boost::python::to_python_converter<Tensor2<double>, Tensor2_fromto_Python>();
@@ -52,8 +53,8 @@ namespace detail {
         }
     };
 
-    struct ComplexTensor_fromto_Python
-    {
+    struct ComplexTensor_fromto_Python {
+
         ComplexTensor_fromto_Python() {
             boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<Tensor3<dcomplex>>());
             boost::python::to_python_converter<Tensor3<dcomplex>, ComplexTensor_fromto_Python>();
@@ -88,8 +89,20 @@ namespace detail {
         }
     };
 
-    struct StringFromMaterial
-    {
+    struct Tensor3_from_Python {
+        Tensor3_from_Python() {
+            boost::python::to_python_converter<Tensor3<double>, Tensor3_from_Python>();
+        }
+
+        static PyObject* convert(const Tensor3<double>& src)  {
+            py::tuple tuple = py::make_tuple(src.c00, src.c11, src.c22, src.c01);
+            return boost::python::incref(tuple.ptr());
+        }
+    };
+
+
+    struct StringFromMaterial {
+
         StringFromMaterial() {
             boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<std::string>());
         }
@@ -1230,6 +1243,7 @@ void initMaterials() {
     // Make std::pair<double,double> and std::tuple<dcomplex,dcomplex,dcomplex,dcomplex,dcomplex> understandable
     detail::Tensor2_fromto_Python();
     detail::ComplexTensor_fromto_Python();
+    detail::Tensor3_from_Python();
 
     py_enum<Material::Kind>()
         .value("GENERIC", Material::GENERIC)

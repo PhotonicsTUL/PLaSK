@@ -296,6 +296,7 @@ class OutputWindow(QDockWidget):
         close_all_action = QAction(QIcon.fromTheme('window-close'), "Clea&nup all", self)
         close_all_action.setShortcut('Ctrl+Shift+w')
         close_all_action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
+        close_all_action.setToolTip("Close all dock with finished processes")
         close_all_action.triggered.connect(self.close_all_stopped_docks)
         self.messages.addAction(close_all_action)
         toolbar.addAction(close_all_action)

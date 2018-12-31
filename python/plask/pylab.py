@@ -326,7 +326,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
             kwargs = kwargs.copy()
             _copy_kwargs = False
         kwargs['cmap'] = get_cmap(kwargs['cmap'])
-    if 'corner_mask' not in kwargs:
+    if 'corner_mask' not in kwargs and levels is not None:
         if _copy_kwargs:
             kwargs = kwargs.copy()
             _copy_kwargs = False

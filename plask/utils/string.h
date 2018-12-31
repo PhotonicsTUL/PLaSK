@@ -59,8 +59,8 @@ struct PLASK_API Printable {
 template <typename Iter>
 std::ostream& print_seq(std::ostream& out, Iter begin, Iter end, const char* sep = ", ") {
     if (begin == end) return out;
-    out << *begin;
-    while (++begin != end) { out << sep << *begin; }
+    out << str(*begin);
+    while (++begin != end) { out << sep << str(*begin); }
     return out;
 }
 

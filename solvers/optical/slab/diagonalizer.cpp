@@ -85,10 +85,11 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             if (omp_test_lock(tmplx+mn)) break;
         assert(mn != nthr);
         cmatrix QE = tmpmx[mn];
-        writelog(LOG_DEBUG, "{}: Diagonalizing matrix for layer {:d} in thread {:d} [{:d}]", src->solver->getId(), layer, omp_get_thread_num(), mn);
+        writelog(LOG_DEBUG, "{}: Diagonalizing matrix for layer {:d}/{:d} in thread {:d} [{:d}]",
+                 src->solver->getId(), layer, lcount, omp_get_thread_num(), mn);
     #else
         cmatrix QE = *tmpmx;
-        writelog(LOG_DEBUG, "{}: Diagonalizing matrix for layer {:d}", src->solver->getId(), layer);
+        writelog(LOG_DEBUG, "{}: Diagonalizing matrix for layer {:d}/{:d}", src->solver->getId(), layer, lcount);
     #endif
 
     try {
