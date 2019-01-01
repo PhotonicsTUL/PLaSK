@@ -33,11 +33,11 @@ class Diagonalizer
     std::vector<bool> diagonalized;     ///< True if the given layer was diagonalized
 
   public:
-    const std::size_t lcount;                   // number of layers
+    const std::size_t lcount;           ///< Number of distinct layers
 
     Diagonalizer(Expansion* src);
 
-    virtual ~Diagonalizer() {}
+    virtual ~Diagonalizer();
 
     /// Return the overall matrix size
     virtual std::size_t matrixSize() const = 0;
@@ -95,7 +95,7 @@ class SimpleDiagonalizer : public Diagonalizer
     cmatrix* tmpmx;                     ///< QE matrices for temporary storage
 
     #ifdef OPENMP_FOUND
-        omp_lock_t* tmplx;                 ///< Locks of allocated temporary matrices
+        omp_lock_t* tmplx;              ///< Locks of allocated temporary matrices
     #endif
 
     /// Make Gamma of Gamma^2

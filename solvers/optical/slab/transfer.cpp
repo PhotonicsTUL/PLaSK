@@ -20,7 +20,7 @@ Transfer::Transfer(SlabBase* solver, Expansion& expansion):
     // ...and eigenvalues determination
     evals = aligned_new_array<dcomplex>(N0);
     rwrk = aligned_new_array<double>(2*N0);
-    lwrk = max(std::size_t(2), N0*N0);
+    lwrk = max(std::size_t(2*N0), N0*N0);
     wrk = aligned_new_array<dcomplex>(lwrk);
 
     // Nothing found so far
@@ -185,6 +185,8 @@ LazyData<Vec<3,dcomplex>> Transfer::computeFieldH(double power, const shared_ptr
     diagonalizer->source()->cleanupField();
     return destination;
 }
+
+
 cvector Transfer::getFieldVectorE(double z) {
     determineFields();
     const std::size_t n = solver->getLayerFor(z);

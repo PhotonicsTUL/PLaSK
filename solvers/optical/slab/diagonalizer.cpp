@@ -15,6 +15,8 @@ namespace plask { namespace optical { namespace slab {
 Diagonalizer::Diagonalizer(Expansion* src) :
     src(src), diagonalized(src->solver->lcount, false), lcount(src->solver->lcount) {}
 
+Diagonalizer::~Diagonalizer() {}
+
 
 SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
     Diagonalizer(g),  gamma(lcount), Te(lcount), Th(lcount), Te1(lcount), Th1(lcount)
@@ -208,7 +210,6 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
                 Th1[layer](j,i) = QE(i,j) * g;
         }
         assert(!Th1[layer].isnan());
-
     } catch (...) {
         #ifdef OPENMP_FOUND
             omp_unset_lock(tmplx+mn);

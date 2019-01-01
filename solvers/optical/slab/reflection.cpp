@@ -13,20 +13,25 @@
 
 namespace plask { namespace optical { namespace slab {
 
-ReflectionTransfer::ReflectionTransfer(SlabBase* solver, Expansion& expansion): Transfer(solver, expansion)
-{
+ReflectionTransfer::ReflectionTransfer(SlabBase* solver, Expansion& expansion): Transfer(solver, expansion),
+    storeP(STORE_NONE) {
     writelog(LOG_DETAIL, "{}: Initializing Reflection Transfer", solver->getId());
     size_t N = diagonalizer->matrixSize();
     P = cmatrix(N,N);
     phas = cdiagonal(N);
     ipiv = aligned_new_array<int>(N);
-    allP = false;
 }
 
 
 ReflectionTransfer::~ReflectionTransfer() {
     size_t N = diagonalizer->matrixSize();
     aligned_delete_array<int>(N, ipiv); ipiv = nullptr;
+}
+
+
+void ReflectionTransfer::getFinalMatrix() {
+    getAM(0, solver->interface-1, false);
+    getAM(solver->stack.size()-1, solver->interface, true);
 }
 
 
@@ -38,7 +43,7 @@ void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
     const std::size_t NN = N*N;
     cmatrix work(N, N0, wrk);    // matrix object for the workspace
 
-    findReflection(start, end, false);
+    findReflection(start, end, false, int(add)&1);
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[end]);
 
@@ -69,7 +74,7 @@ void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
 }
 
 
-void ReflectionTransfer::findReflection(std::size_t start, std::size_t end, bool emitting)
+void ReflectionTransfer::findReflection(std::size_t start, std::size_t end, bool emitting, int store)
 {
     // Should be called from 0 to interface-1
     // and from count-1 to interface
@@ -91,8 +96,8 @@ void ReflectionTransfer::findReflection(std::size_t start, std::size_t end, bool
 
     std::exception_ptr error;
 
-    #pragma omp for schedule(dynamic,1)
-    for (openmp_size_t l = 0; l < openmp_size_t(diagonalizer->lcount); ++l) {
+    #pragma omp parallel for schedule(dynamic,1)
+    for (int l = 0; l < int(diagonalizer->lcount); ++l) {
         try {
             if (!error) diagonalizer->diagonalizeLayer(l);
         } catch(...) {
@@ -122,7 +127,7 @@ void ReflectionTransfer::findReflection(std::size_t start, std::size_t end, bool
         mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas); // P = phas * P * phas
     }
 
-    storeP(start);
+    if (storeP == STORE_ALL) saveP(start);
 
     for (std::size_t n = start; n != end; n += inc) {
         gamma = diagonalizer->Gamma(solver->stack[n]);
@@ -188,21 +193,10 @@ void ReflectionTransfer::findReflection(std::size_t start, std::size_t end, bool
                 for (std::size_t i = 0; i < N; i++) std::swap(P(i,j), P(i,jp));
             }
         }
-        storeP(n+inc);
-    }
-}
 
-
-void ReflectionTransfer::storeP(size_t n) {
-    if (allP) {
-        const std::size_t N = diagonalizer->matrixSize();
-        if (memP.size() != solver->stack.size()) {
-            // Allocate the storage for admittance matrices
-            memP.resize(solver->stack.size());
-            for (std::size_t i = 0; i < solver->stack.size(); i++) memP[i] = cmatrix(N,N);
-        }
-        memcpy(memP[n].data(), P.data(), N*N*sizeof(dcomplex));
+        if (storeP == STORE_ALL) saveP(n+inc);
     }
+    if (storeP == STORE_LAST) saveP(store);
 }
 
 
@@ -233,6 +227,13 @@ cvector ReflectionTransfer::getTransmissionVector(const cvector& incident, Incid
 }
 
 
+// Some aliases
+#define F1 fields[n].F
+#define B1 fields[n].B
+#define F2 fields[n+inc].F
+#define B2 fields[n+inc].B
+
+
 void ReflectionTransfer::determineFields()
 {
     if (fields_determined == DETERMINED_RESONANT) return;
@@ -242,6 +243,7 @@ void ReflectionTransfer::determineFields()
     const std::size_t N = diagonalizer->matrixSize();
     const std::size_t N0 = diagonalizer->source()->matrixSize();
     const std::size_t NN = N*N;
+    cvector temp(wrk, N);
 
     cdiagonal gamma;
 
@@ -251,10 +253,10 @@ void ReflectionTransfer::determineFields()
     fields.resize(count);
 
     // Obtain the physical fields at the last layer
-    allP = true; interface_field = nullptr;
+    storeP = STORE_LAST;
+    memP.resize(2);
+    interface_field = nullptr;
     auto E = getInterfaceVector();
-
-    cvector temp(wrk, N);
 
     for (unsigned pass = 0; pass < 1 || (pass < 2 && solver->interface != std::ptrdiff_t(count)); pass++)
     {
@@ -268,8 +270,8 @@ void ReflectionTransfer::determineFields()
             case 1: start = solver->interface;   end = count-1; inc = +1; break;
         }
 
-        fields[start].F = cvector(N);
-        fields[start].B = cvector(N);
+        fields[start].F.reset(N);
+        fields[start].B.reset(N);
 
         // compute B-field for the layer next to the interface
         std::size_t curr = solver->stack[start];
@@ -281,7 +283,8 @@ void ReflectionTransfer::determineFields()
             phas[i] = exp(-I*gamma[i]*H);
 
         // P = phas*P*phas + I
-        memcpy(P.data(), memP[start].data(), NN*sizeof(dcomplex));
+        assert(memP[pass].rows() == N && memP[pass].cols() == N);
+        memcpy(P.data(), memP[pass].data(), NN*sizeof(dcomplex));
         mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P := phas * P * phas
         for (std::size_t i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;       // P := P + I
 
@@ -289,24 +292,19 @@ void ReflectionTransfer::determineFields()
         invmult(P, fields[start].B);                                                // B := inv(P) * B
         for (std::size_t i = 0; i < N; i++) fields[start].B[i] *= phas[i];          // B := phas * B
 
-        for (std::size_t n = start; n != end; n += inc)
-        {
-            // F-field for the current layer
-            mult_matrix_by_vector(memP[n], fields[n].B, fields[n].F);
+        // F-field for the first layer
+        mult_matrix_by_vector(memP[pass], fields[start].B, fields[start].F);
 
-            // Compute B-field for the next (previous) layer
+        for (std::size_t n = start; n != end; n += inc) {
+            // Compute F and B field for the next (previous) layer
 
-            fields[n+inc].F = cvector(N);
-            fields[n+inc].B = cvector(N);
-
-            // some aliases
-            cvector& F1 = fields[n].F;
-            cvector& B1 = fields[n].B;
-            cvector& F2 = fields[n+inc].F;
-            cvector& B2 = fields[n+inc].B;
+            F2.reset(N);
+            B2.reset(N);
 
             curr = solver->stack[n];
             std::size_t next = solver->stack[n+inc];
+            assert(diagonalizer->isDiagonalized(curr));
+            assert(diagonalizer->isDiagonalized(next));
 
             gamma = diagonalizer->Gamma(next);
 
@@ -317,42 +315,46 @@ void ReflectionTransfer::determineFields()
 
                 for (std::size_t i = 0; i < N; i++) F2[i] = F1[i] + B1[i];          // F2 := F1 + B1
                 mult_matrix_by_vector(diagonalizer->TE(curr), F2, temp);            // temp := TE * F2
+                memcpy(F2.data(), B2.data(), N*sizeof(dcomplex));
                 zgemm('N','N', int(N), 1, int(N0), 1., diagonalizer->invTE(next).data(), int(N),
                       temp.data(), int(N0), -1., B2.data(), int(N));                // B2 := invTE * temp - B2
-            } else
+                for (std::size_t i = 0; i < N; i++)
+                    F2[i] += 0.5 * B2[i];                                           // F2 := B2 + tH (F1-B2)
+            } else {
                 for (std::size_t i = 0; i < N; i++) B2[i] = 2. * B1[i];
+                memcpy(F2.data(), F1.data(), N*sizeof(dcomplex));
+            }
 
-            H = (n+inc == end)? 0 : (solver->vbounds->at(n+inc) - solver->vbounds->at(n+inc-1));
-            for (std::size_t i = 0; i < N; i++)
-                B2[i] *= 0.5 * exp(-I*gamma[i]*H);                                  // B2 := 1/2 * phas * B2
+            H = (n+inc == end)? 0. : (solver->vbounds->at(n+inc) - solver->vbounds->at(n+inc-1));
+            for (std::size_t i = 0; i < N; i++) {
+                dcomplex phas = exp(-I*gamma[i]*H);
+                B2[i] *= 0.5 * phas;                                                // B2 := 1/2 * phas * B2
+                F2[i] /= phas;                                                      // F2 := phas^(-1) * F2
+            }
         }
-
-        mult_matrix_by_vector(memP[end], fields[end].B, fields[end].F);
     }
 
-    allP = false;
+    storeP = STORE_NONE;
     fields_determined = DETERMINED_RESONANT;
 
-    writelog(LOG_WARNING, "Reflection transfer cannot properly determine fields in the outer layers: "
-                          "fields not normalized");
-//     // Finally normalize fields
-//     if (solver->emission == SlabBase::EMISSION_BOTTOM || solver->emission == SlabBase::EMISSION_TOP) {
-//         size_t n = (solver->emission == SlabBase::EMISSION_BOTTOM)? 0 : count-1;
-//
-//         double P = 1./Z0 * abs(diagonalizer->source()->integratePoyntingVert(getFieldVectorE(n, 0.),
-//                                                                              getFieldVectorH(n, 0.)));
-//
-//         if (P < SMALL) {
-//             writelog(LOG_WARNING, "Device is not emitting to the {} side: skipping normalization",
-//                     (solver->emission == SlabBase::EMISSION_TOP)? "top" : "bottom");
-//         } else {
-//             P = 1. / sqrt(P);
-//             for (size_t i = 0; i < count; ++i) {
-//                 fields[i].F *= P;
-//                 fields[i].B *= P;
-//             }
-//         }
-//     }
+    // Finally normalize fields
+    if (solver->emission == SlabBase::EMISSION_BOTTOM || solver->emission == SlabBase::EMISSION_TOP) {
+        size_t n = (solver->emission == SlabBase::EMISSION_BOTTOM)? 0 : count-1;
+
+        double P = 1./Z0 * abs(diagonalizer->source()->integratePoyntingVert(getFieldVectorE(n, 0.),
+                                                                             getFieldVectorH(n, 0.)));
+
+        if (P < SMALL) {
+            writelog(LOG_WARNING, "Device is not emitting to the {} side: skipping normalization",
+                    (solver->emission == SlabBase::EMISSION_TOP)? "top" : "bottom");
+        } else {
+            P = 1. / sqrt(P);
+            for (size_t n = 0; n < count; ++n) {
+                F1 *= P;
+                B1 *= P;
+            }
+        }
+    }
 }
 
 
@@ -367,8 +369,6 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
 
     // Assign the space for the field vectors
     fields.resize(count);
-    // Obtain the physical fields at the last layer
-    allP = true;
 
     std::size_t start, end;
     std::ptrdiff_t inc;
@@ -377,6 +377,10 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
         case INCIDENCE_TOP:    start = count-1; end = 0;       inc = -1; break;
         case INCIDENCE_BOTTOM: start = 0;       end = count-1; inc = +1; break;
     }
+
+    // Store all reflectivities
+    storeP = STORE_ALL;
+    memP.resize(count);
 
     // Compute reflection matrices
     initDiagonalization();
@@ -392,23 +396,17 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
     double H;
 
     fields[start].B = incident.copy(); // diagonalized incident E-field
-    fields[start].F = cvector(N);
+    fields[start].F.reset(N);
 
     for (std::size_t n = start; n != end; n += inc)
     {
         // F-field for the current layer
-        mult_matrix_by_vector(memP[n], fields[n].B, fields[n].F);
+        mult_matrix_by_vector(memP[n], B1, F1);
 
-        // Compute B-field for the next (previous) layer
+        // Compute B field for the next (previous) layer
 
-        fields[n+inc].F = cvector(N);
-        fields[n+inc].B = cvector(N);
-
-        // some aliases
-        cvector& F1 = fields[n].F;
-        cvector& B1 = fields[n].B;
-        cvector& F2 = fields[n+inc].F;
-        cvector& B2 = fields[n+inc].B;
+        F2.reset(N);
+        B2.reset(N);
 
         curr = solver->stack[n];
         const std::size_t next = solver->stack[n+inc];
@@ -418,8 +416,8 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
         if (next != curr || n+inc == end) {
             if (next != curr) {
                 for (std::size_t i = 0; i < N; i++) F2[i] = F1[i] - B1[i];                  // F2 := F1 - B1
-                mult_matrix_by_vector(diagonalizer->TH(curr), F2, temp);            // temp := TH * F2
-                mult_matrix_by_vector(diagonalizer->invTH(next), temp, B2);         // B2 := invTH * temp
+                mult_matrix_by_vector(diagonalizer->TH(curr), F2, temp);                    // temp := TH * F2
+                mult_matrix_by_vector(diagonalizer->invTH(next), temp, B2);                 // B2 := invTH * temp
             } else {
                 for (std::size_t i = 0; i < N; i++) B2[i] = F1[i] - B1[i];                  // B2 := F1 - B1
             }
@@ -430,31 +428,27 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
             }
 
             for (std::size_t i = 0; i < N; i++) F2[i] = F1[i] + B1[i];                      // F2 := F1 + B1
-            if (next != curr || n+inc == end) {
-                mult_matrix_by_vector(diagonalizer->TE(curr), F2, temp);            // temp := TE * F2
+            if (next != curr) {
+                mult_matrix_by_vector(diagonalizer->TE(curr), F2, temp);                    // temp := TE * F2
                 zgemm('N','N', int(N), 1, int(N0), 1., diagonalizer->invTE(next).data(), int(N),
-                      temp.data(), int(N0), -1., B2.data(), int(N));                // B2 := invTE * temp - B2
+                      temp.data(), int(N0), -1., B2.data(), int(N));                        // B2 := invTE * temp - B2
             } else {
-                for (std::size_t i = 0; i < N; i++) B2[i] = F2[i] - B2[i];                  // B2 := F2 - B2
+                for (std::size_t i = 0; i < N; i++)
+                    B2[i] = F2[i] - B2[i];                                                  // B2 := (F1+B1) + (F1-B1)
             }
         } else {
             for (std::size_t i = 0; i < N; i++) B2[i] = 2. * B1[i];
         }
 
-        H = (n+inc != end)? solver->vbounds->at(n+inc) - solver->vbounds->at(n+inc-1) : 0.;
         if (n+inc != end) {
+            H = solver->vbounds->at(n+inc) - solver->vbounds->at(n+inc-1);
             for (std::size_t i = 0; i < N; i++)
-                B2[i] *= 0.5 * exp(-I*gamma[i]*H);                                  // B2 := 1/2 * phas * B2
+                B2[i] *= 0.5 * exp(-I*gamma[i]*H);                                          // B2 := 1/2 * phas * B2
         } else {
-            for (std::size_t i = 0; i < N; i++) {
-                dcomplex g = gamma[i];
-                if (real(g) < -SMALL) g = -g;
-                B2[i] *= 0.5 * exp(-I*g*H);                                         // B2 := 1/2 * phas * B2
-            }
+            for (std::size_t i = 0; i < N; i++) B2[i] *= 0.5;                               // B2 := 1/2 * phas * B2
         }
     }
 
-    //mult_matrix_by_vector(getP(0), layerFields[0].B, layerFields[0].F);
     fields[end].F = cvector(N, 0.);
 
     // In the outer layers replace F and B where necessary for consistent gamma handling
@@ -475,21 +469,19 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
     }
     // start = size_t(max(solver->interface, ptrdiff_t(0))); end = count;
     for (std::size_t n = start; n < end; n++) {
-        cvector& F2 = fields[n].F;
-        cvector& B2 = fields[n].B;
         gamma = diagonalizer->Gamma(solver->stack[n]);
         H = (n < count-1 && n > 0)? solver->vbounds->at(n) - solver->vbounds->at(n-1) : 0.;
         for (std::size_t i = 0; i < N; i++) {
             dcomplex phas = exp(-I*gamma[i]*H);
-            dcomplex t = B2[i] / phas;
-            if (isnan(t) && B2[i] == 0.) t = 0.;
-            B2[i] = F2[i] * phas;
-            if (isnan(B2[i]) && F2[i] == 0.) B2[i] = 0.;
-            F2[i] = t;
+            dcomplex t = B1[i] / phas;
+            if (isnan(t) && B1[i] == 0.) t = 0.;
+            B1[i] = F1[i] * phas;
+            if (isnan(B1[i]) && F1[i] == 0.) B1[i] = 0.;
+            F1[i] = t;
         }
     }
 
-    allP = false;
+    storeP = STORE_NONE;
     fields_determined = DETERMINED_REFLECTED;
 }
 
@@ -497,9 +489,6 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
 cvector ReflectionTransfer::getFieldVectorE(double z, std::size_t n)
 {
     assert(fields_determined != DETERMINED_NOTHING);
-
-    cvector& FF = fields[n].F;
-    cvector& BB = fields[n].B;
 
     if (std::ptrdiff_t(n) >= solver->interface) {
         z = - z;
@@ -514,11 +503,11 @@ cvector ReflectionTransfer::getFieldVectorE(double z, std::size_t n)
 
     for (std::size_t i = 0; i < N; i++) {
         dcomplex phi = - I * gamma[i] * z;
-        dcomplex ef = FF[i] * exp(phi), eb = BB[i] * exp(-phi);
-        if (isnan(ef) && FF[i] == 0.) ef = 0.;
-        if (isnan(eb) && BB[i] == 0.) eb = 0.;
-        // if (isnan(ef)) std::cerr << "ef" << FF[i] << exp(phi) << " ";
-        // if (isnan(eb)) std::cerr << "eb" << BB[i] << exp(-phi) << " ";
+        dcomplex ef = F1[i] * exp(phi), eb = B1[i] * exp(-phi);
+        if (isnan(ef) && F1[i] == 0.) ef = 0.;
+        if (isnan(eb) && B1[i] == 0.) eb = 0.;
+        // if (isnan(ef)) std::cerr << "ef" << F1[i] << exp(phi) << " ";
+        // if (isnan(eb)) std::cerr << "eb" << B1[i] << exp(-phi) << " ";
         E[i] = ef + eb;
     }
 
@@ -529,9 +518,6 @@ cvector ReflectionTransfer::getFieldVectorE(double z, std::size_t n)
 cvector ReflectionTransfer::getFieldVectorH(double z, std::size_t n)
 {
     assert(fields_determined != DETERMINED_NOTHING);
-
-    cvector& FF = fields[n].F;
-    cvector& BB = fields[n].B;
 
     if (std::ptrdiff_t(n) >= solver->interface) {
         z = - z;
@@ -546,11 +532,11 @@ cvector ReflectionTransfer::getFieldVectorH(double z, std::size_t n)
 
     for (std::size_t i = 0; i < N; i++) {
         dcomplex phi = - I * gamma[i] * z;
-        dcomplex ef = FF[i] * exp(phi), eb = BB[i] * exp(-phi);
-        if (isnan(ef) && FF[i] == 0.) ef = 0.;
-        if (isnan(eb) && BB[i] == 0.) eb = 0.;
-        // if (isnan(ef)) std::cerr << "ef" << FF[i] << exp(phi) << " ";
-        // if (isnan(eb)) std::cerr << "eb" << BB[i] << exp(-phi) << " ";
+        dcomplex ef = F1[i] * exp(phi), eb = B1[i] * exp(-phi);
+        if (isnan(ef) && F1[i] == 0.) ef = 0.;
+        if (isnan(eb) && B1[i] == 0.) eb = 0.;
+        // if (isnan(ef)) std::cerr << "ef" << F1[i] << exp(phi) << " ";
+        // if (isnan(eb)) std::cerr << "eb" << B1[i] << exp(-phi) << " ";
         H[i] = ef - eb;
     }
 
@@ -564,5 +550,15 @@ cvector ReflectionTransfer::getFieldVectorH(double z, std::size_t n)
 }
 
 
+
+double ReflectionTransfer::integrateEE(double z1, double z2) {
+    //TODO
+    throw NotImplemented("integrateEE");
+}
+
+double ReflectionTransfer::integrateHH(double z1, double z2) {
+    //TODO
+    throw NotImplemented("integrateHH");
+}
 
 }}} // namespace plask::optical::slab

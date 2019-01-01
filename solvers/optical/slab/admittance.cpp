@@ -575,4 +575,16 @@ cvector AdmittanceTransfer::getTransmissionVector(const cvector& incident, Incid
     return fields[n].E0;
 }
 
+
+
+double AdmittanceTransfer::integrateEE(double z1, double z2) {
+    //TODO
+    throw NotImplemented("integrateEE");
+}
+
+double AdmittanceTransfer::integrateHH(double z1, double z2) {
+    //TODO
+    throw NotImplemented("integrateHH");
+}
+
 }}} // namespace plask::optical::slab
