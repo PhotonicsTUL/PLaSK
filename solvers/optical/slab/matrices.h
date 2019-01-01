@@ -38,7 +38,7 @@ class Matrix {
 
   public:
 
-    Matrix() : gc(nullptr) {}
+    Matrix() : r(0), c(0), gc(nullptr) {}
 
     Matrix(std::size_t m, std::size_t n) : r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new std::atomic<int>(1)) {
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
