@@ -698,7 +698,7 @@ class MainWindow(QMainWindow):
         global pysparkle
         if pysparkle is None and PySparkle is not None:
             if VERSION is not None:
-                pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", VERSION[:10],
+                pysparkle = PySparkle("http://plask.app/appcast.xml", "PLaSK", VERSION[:10],
                                       config=ConfigProxy('updates'), shutdown=close_all_windows,
                                       frontend='qt5' if QT_API == 'PyQt5' else 'qt4')
         if pysparkle is not None:
