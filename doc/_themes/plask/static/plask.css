@@ -1,0 +1,626 @@
+/*
+ * Sphinx stylesheet
+ *
+ * :copyright: Copyright 2007-2011 by the Sphinx team, see AUTHORS.
+ * :license: BSD, see LICENSE for details.
+ *
+ */
+
+@import url(https://fonts.googleapis.com/css?family=Source+Code+Pro:300,400,500,600,700);
+
+* {
+  margin: 0px;
+  padding: 0px;
+}
+
+body {
+  font-family: sans-serif;
+  line-height: 1.4em;
+  color: black;
+  background-color: #ffffff;
+}
+
+body {
+    font-size: 12pt;
+}
+
+.pagecontent p {
+    text-align: justify;
+}
+
+
+.highlight {
+    background-color: #eeeeee!important;
+}
+
+.sidebar-toc li {
+    list-style-type: none;
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+}
+
+.nav-sidenav li > a code {
+  color: #323232;
+}
+
+h1 code {
+    color: #000000;
+}
+
+#searchbox div {
+    display: inline;
+}
+
+/* Header and footer */
+
+div.header {
+    background-color: #11113d;
+    width: 100%;
+    color: #ffffff;
+    padding: 4em 10px 10px 10px;
+    margin: 0 0 4px 0;
+}
+
+div.footer {
+    background-color: #e8e8e8;
+    width: 100%;
+    padding: 10px 10px 2em 10px;
+}
+
+/* Page layout */
+
+div.content {
+  width: 90em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+div.header-wrapper {
+  border-bottom: 3px solid #2e3436;
+}
+
+
+/* Default body styles */
+a {
+  color: #7f1111;
+}
+
+.clearer {
+  clear: both;
+}
+
+.left {
+  float: left;
+}
+
+.right {
+  float: right;
+}
+
+.line-block {
+    display: block;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+.line-block .line-block {
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 1.5em;
+}
+
+div.sphinxbody h1,
+div.sphinxbody h2,
+div.sphinxbody h3,
+div.sphinxbody h4 {
+  font-weight: normal;
+}
+
+div.sphinxbody h1 {
+    font-style: normal;
+    font-weight: 300;
+    border-bottom: 5px solid rgb(200, 200, 200);
+}
+
+
+a.headerlink {
+  visibility: hidden;
+  color: #dddddd;
+  padding-left: .3em;
+}
+
+div.sphinxbody h1:hover > a.headerlink,
+div.sphinxbody h2:hover > a.headerlink,
+div.sphinxbody h3:hover > a.headerlink,
+div.sphinxbody h4:hover > a.headerlink,
+div.sphinxbody h5:hover > a.headerlink,
+div.sphinxbody h6:hover > a.headerlink,
+div.sphinxbody dt:hover > a.headerlink {
+  visibility: visible;
+}
+
+img {
+  border: 0;
+}
+
+div.admonition {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding: 2px 7px 1px 7px;
+  border-left: 0.2em solid #8B0304;
+}
+
+p.admonition-title {
+  margin: 0px 10px 5px 0px;
+  font-weight: bold;
+}
+
+dt:target, .highlighted {
+  background-color: #fbe54e;
+}
+
+/* Header */
+
+div.header {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+div.header .headertitle {
+  font-family: "Georgia", serif;
+  font-weight: normal;
+  font-size: 180%;
+  letter-spacing: .08em;
+  margin-bottom: .8em;
+}
+
+div.header .headertitle a {
+  color: white;
+}
+
+div.header div.rel {
+  margin-top: 1em;
+}
+
+div.header div.rel a {
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+p.logo {
+    float: right;
+}
+
+img.logo {
+    border: 0;
+}
+
+
+/* Content */
+div.content-wrapper {
+  background-color: white;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+div.document {
+  width: 50em;
+  float: left;
+}
+
+div.body {
+  padding-right: 2em;
+  text-align: justify;
+}
+
+div.document h1 {
+  line-height: 120%;
+}
+
+div.document ul {
+  margin: 0 1.5em;
+  list-style-type: square;
+}
+
+div.document dd {
+  margin-left: 1.2em;
+  margin-top: .4em;
+  margin-bottom: 1em;
+}
+
+div.document .section {
+  margin-top: 1.7em;
+}
+div.document .section:first-child {
+  margin-top: 0px;
+}
+
+div.document div.highlight {
+  padding: 3px;
+  background-color: #eeeeec;
+  border-top: 2px solid #dddddd;
+  border-bottom: 2px solid #dddddd;
+  margin-top: .8em;
+  margin-bottom: .8em;
+}
+
+div.document h2 {
+  margin-top: .7em;
+}
+
+div.document p {
+  margin-bottom: .5em;
+}
+
+div.document li.toctree-l1 {
+  margin-bottom: 1em;
+}
+
+div.document .descname {
+  font-weight: bold;
+}
+
+div.document .docutils.literal {
+  background-color: #eeeeec;
+  padding: 1px;
+}
+
+div.document .docutils.xref.literal {
+  background-color: transparent;
+  padding: 0px;
+}
+
+div.document blockquote {
+  margin: 1em;
+}
+
+div.document ol {
+  margin: 1.5em;
+}
+
+
+/* Sidebar */
+
+div.sphinxsidebar {
+    font-size: 0.95em;
+}
+
+div.sphinxsidebar ul {
+    padding-left: 0px;
+    list-style: none;
+}
+
+div.sphinxsidebar ul ul,
+div.sphinxsidebar ul.want-points {
+    padding-left: 20px;
+    list-style: square;
+}
+
+div.sphinxsidebar a, div.header a {
+  text-decoration: none;
+}
+
+div.sphinxtoc a {
+  font-weight: normal;
+}
+
+div.sphinxsidebar a:hover, div.header a:hover {
+  text-decoration: underline;
+}
+
+div.sphinxsidebar h3 {
+  color: #2e3436;
+  text-transform: uppercase;
+  font-size: 130%;
+  letter-spacing: .1em;
+}
+
+
+/* Footer */
+
+div.footer-wrapper {
+  background: url(bgfooter.png) top left repeat-x;
+  border-top: 4px solid #babdb6;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  min-height: 80px;
+}
+
+div.footer, div.footer a {
+  color: #888a85;
+}
+
+div.footer .right {
+  text-align: right;
+}
+
+div.footer .left {
+  text-transform: uppercase;
+}
+
+
+/* Styles copied from basic theme */
+
+img.align-left, .figure.align-left, object.align-left {
+    clear: left;
+    float: left;
+    margin-right: 1em;
+}
+
+img.align-right, .figure.align-right, object.align-right {
+    clear: right;
+    float: right;
+    margin-left: 1em;
+}
+
+img.align-center, .figure.align-center, object.align-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.align-left {
+    text-align: left;
+}
+
+.align-center {
+    text-align: center;
+}
+
+.align-right {
+    text-align: right;
+}
+
+/* -- search page ----------------------------------------------------------- */
+
+ul.search {
+    margin: 10px 0 0 20px;
+    padding: 0;
+}
+
+ul.search li {
+    padding: 5px 0 5px 20px;
+    background-image: url(file.png);
+    background-repeat: no-repeat;
+    background-position: 0 7px;
+}
+
+ul.search li a {
+    font-weight: bold;
+}
+
+ul.search li div.context {
+    color: #888;
+    margin: 2px 0 0 30px;
+    text-align: left;
+}
+
+ul.keywordmatches li.goodmatch a {
+    font-weight: bold;
+}
+
+/* -- index page ------------------------------------------------------------ */
+
+table.contentstable {
+    width: 90%;
+}
+
+table.contentstable p.biglink {
+    line-height: 150%;
+}
+
+a.biglink {
+    font-size: 1.3em;
+}
+
+span.linkdescr {
+    font-style: italic;
+    padding-top: 5px;
+    font-size: 90%;
+}
+
+/* -- general index --------------------------------------------------------- */
+
+td {
+    text-align: left;
+    vertical-align: top;
+}
+
+table.indextable dl, table.indextable dd {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+table.indextable tr.pcap {
+    height: 10px;
+}
+
+table.indextable tr.cap {
+    margin-top: 10px;
+    background-color: #f2f2f2;
+}
+
+img.toggler {
+    margin-right: 3px;
+    margin-top: 3px;
+    cursor: pointer;
+}
+
+/* -- viewcode extension ---------------------------------------------------- */
+
+.viewcode-link {
+    float: right;
+}
+
+.viewcode-back {
+    float: right;
+    font-family: sans-serif;
+}
+
+div.viewcode-block:target {
+    margin: -1px -3px;
+    padding: 0 3px;
+    background-color: #f4debf;
+    border-top: 1px solid #ac9;
+    border-bottom: 1px solid #ac9;
+}
+
+/* -- PLaSK customizations -------------------------------------------------- */
+
+body {
+    font-size: 11pt;
+}
+
+div.bodywrapper a, div.footer a {
+  text-decoration: none;
+}
+
+div.bodywrapper a:hover, div.footer a:hover {
+  text-decoration: underline;
+}
+
+pre, kbd, samp, tt {
+    /* monospace font size fix */
+    /*
+    font-family: Monaco, Menlo, Consolas, monospace !important;
+    font-size: 0.95em;
+    */
+    font-family: Source Code Pro !important;
+    font-size: 97%;
+}
+
+div.sphinxsidebar li.toctree-l4 a { margin-left: 3em; }
+div.sphinxsidebar li.toctree-l5 a { margin-left: 4em; }
+div.sphinxsidebar li.toctree-l6 a { margin-left: 5em; }
+div.sphinxsidebar li.toctree-l7 a { margin-left: 6em; }
+div.sphinxsidebar li.toctree-l8 a { margin-left: 7em; }
+
+div.document li.toctree-l1 ul {
+  margin-top: 0.5em;
+}
+
+div#plask-user-guide.section em {
+    font-style: normal;
+    margin-bottom: 1em;
+}
+
+div#plask-user-guide.section li {
+    margin-bottom: 1em;
+}
+
+dl.xml-contents dt {
+    font-weight: bold;
+}
+
+th.field-name {
+    white-space: nowrap;
+    padding-right: 0.25em;
+}
+
+p.rubric {
+    font-weight: bold;
+}
+
+table.docutils {
+    border: none;
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 0.5em;
+}
+
+table.docutils tr.row-odd {
+    background-color: #f6f6f6;
+}
+
+table.docutils td {
+    border: none;
+    padding: 0em 0.25em 0em 0.25em;
+}
+
+table.docutils td p {
+    margin-bottom: 0px;
+}
+
+/* Lines increasing legibility */
+
+dl.tag>dd {
+    margin-left: 0em;
+    padding-left: 1.2em;
+    margin-top: 0em;
+    padding-top: 0.4em;
+    border-left: solid 4px #eee;
+}
+
+dl.method, dl.attribute, dl.function {
+    padding-left: 4px;
+    border-top: solid 4px #eee;
+    border-left: solid 4px #eee;
+}
+
+dl.method dt, dl.attribute dt, dl.function dt {
+    margin-left: -4px;
+    padding-left: 4px;
+    text-align: left;
+}
+
+/* Other */
+
+div.sphinxbody div.highlight {
+    padding: 0;
+}
+
+div.sphinxbody P.topic-title.first {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+div.sphinxbody blockquote {
+    padding: 0px 20px;
+}
+
+div.sphinxbody em {
+    margin-right: 0.15em;
+}
+
+div.sphinxbody pre {
+    padding: 5px;
+}
+
+/*div.sphinxbody span.pre {
+    background-color: #F5F5F5;
+}*/
+
+div.sphinxbody h1 span.pre,
+div.sphinxbody a span.pre,
+div.sphinxbody tr span.pre {
+    background: none;
+}
+
+/* Index */
+
+div.genindex-jumpbox a { margin: 0px 1px; }
+div.genindex-jumpbox a:first-child { margin-left: 0px; }
+div.genindex-jumpbox a:last-child { margin-right: 0px; }
+
+.genindex div.entry { 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+}
+
+.genindex div.entry:hover { 
+    overflow: visible;
+    background-color: white;
+    opacity: 1 !important; 
+    position: relative;
+    z-index: 1000;
+}
+
+.genindex div.subentry { 
+    margin-left: 1.2em;
+}
+
+dl.docutils dd {
+    margin-left: 30px;
+}

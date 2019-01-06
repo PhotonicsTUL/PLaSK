@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="">
+
+    <meta name="description" content=""/>
+    <meta name="keywords" content="Studia Łódź, Politechnika Łódzka, Fizyka"/>
+    <title>PLaSK User Guide — Instytut Fizyki Politechniki Łodzkiej — studia Łódź</title>
+    
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">
+	MathJax.Hub.Config({
+	    extensions: ['tex2jax.js'],
+	    jax: ['input/TeX', 'output/HTML-CSS'],
+	    tex2jax: {
+		inlineMath: [ ['$','$'], ['\\(', '\\)'] ],
+		displayMath: [ ['$$','$$'], ['\\[', '\\]'] ],
+		processEscapes: false,
+		ignoreClass: 'text-diff'
+	    },
+	    'HTML-CSS': {
+		availableFonts: ['TeX', 'STIX'],
+		preferredFont: 'STIX',
+		scale: 94
+	    }
+	});
+	MathJax.Hub.Typeset();
+    </script>
+
+    
+
+    
+  <link rel="stylesheet" href="/static/css/sphinx.css" type="text/css" />
+  <link rel="stylesheet" href="/static/css/pygments.css" type="text/css" />
+
+
+    
+    <link rel="shortcut icon" href="/static/if/images/favicon.ico">
+    <link rel="stylesheet" href="/static/if/css/bootstrap.css">
+    <link rel="stylesheet" href="/static/if/css/flexnav.css">
+    <link rel="stylesheet" href="/static/if/css/main.css">
+    <link rel="stylesheet" href="/static/if/css/responsive-text-align.css">
+    <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,900&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
+    
+    <!--[if lt IE 9]>
+      <script src="//oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="//oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+    <![endif]-->
+
+    
+    
+  </head>
+  <body>
+    
+    <div id="wrap">
+      <header class="site-header hidden-xs">
+        <div class="container">
+          <div class="row">
+            <div class="title-wrapper col8 col-sm-6 col-lg-8">
+              <h2 class="title"><a href="/pl/" rel="home">Instytut Fizyki</a></h2>
+              <h3 class="subtitle"><a href="/pl/" rel="home">Politechniki Łódzkiej</a></h3>
+            </div>
+            <div class="col4 col-sm-6 col-lg-4">
+              <div class="nav-secondary nav-header" role="navigation">
+               <ul class="nav-flat left">
+                 <li class="active"><a href="/">strona główna</a></li>
+                 <li><a href="/o-instytucie/kontakt">kontakt</a></li>
+                 <!--<li class="active"><a href="/pl/">strona główna</a></li>
+                 <li><a href="#kontakt">kontakt</a></li>-->
+                </ul>
+                <ul class="nav-flat right">
+                 
+		    <li>PL</li>
+                 
+                 
+		    <li><a href="/en/plask-user-guide/tutorial2/">EN</a></li>
+                 
+               </ul>
+              </div>
+              
+              <form method="get" action="/search">
+                <div class="input-group search">  
+                  <input type="text" class="form-control" name="q">
+                  <span class="input-group-btn">
+                    <button class="btn btn-search" type="submit"><span class="glyphicon glyphicon-search" alt="search"></span></button>
+                  </span>
+                </div><!-- /input-group -->
+              </form>
+              
+            </div>            
+          </div>
+        </div>
+      </header>
+    
+      <div class="navbar navbar-inverse nav-primary" role="navigation">
+        <div class="container">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle menu-button">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand visible-xs visible-sm" href="#">Instytut Fizyki</a>
+          </div>
+          <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav">
+              
+              
+            
+<li class="">
+    
+    <li class=" hidden-xs"><a href="/pl/"><span class="glyphicon glyphicon-home" alt="home"></span></a></li>
+    
+</li>
+            
+<li class="">
+    
+    <a href="/pl/aktualnosci/">Aktualności</a>
+    
+</li>
+            
+<li class="">
+    
+    <a href="/pl/studiuj-u-nas/">Studiuj u nas</a>
+    
+</li>
+            
+<li class="">
+    
+    <a href="/pl/dla-studentow/">Dla studentów</a>
+    
+</li>
+            
+<li class="">
+    
+    <a href="/pl/badania/">Badania</a>
+    
+</li>
+            
+<li class="">
+    
+    <a href="/pl/popularyzacja-fizyki/">Popularyzacja fizyki</a>
+    
+</li>
+            
+<li class="">
+    
+    <a href="/pl/scientific-bulletin/">Zeszyty Naukowe</a>
+    
+</li>
+            
+<li class="">
+    
+    <a href="/pl/o-instytucie/">O instytucie</a>
+    
+</li>
+
+
+              
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+      
+      <div class="container flexnav-container">
+          <ul class="flexnav visible-xs visible-sm">
+          
+          
+
+
+
+<li class="lang"><a href="/en/plask-user-guide/tutorial2/">See this page in English</a></li>
+
+
+            
+<li class="">
+    <a href="/pl/">Strona główna</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/aktualnosci/">Aktualności</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/studiuj-u-nas/">Studiuj u nas</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/studiuj-u-nas/fizyka-techniczna/">Fizyka techniczna</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/studiuj-u-nas/optoelektronika/">Optoelektronika</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/studiuj-u-nas/fizyka-medyczna/">Fizyka medyczna</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/studiuj-u-nas/science-and-technology/">Science and Technology</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/studiuj-u-nas/losy-absolwentow/piotr-kowalczewski/">Losy absolwentów</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/studiuj-u-nas/losy-absolwentow/piotr-kowalczewski/">Piotr Kowalczewski</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/studiuj-u-nas/losy-absolwentow/miroslaw-dominiak/">Mirosław Dominiak</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/studiuj-u-nas/losy-absolwentow/michal-baranowski/">Michał Baranowski</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/studiuj-u-nas/losy-absolwentow/magda-latkowska/">Magda Latkowska</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/studiuj-u-nas/losy-absolwentow/krzysztof-gutowski/">Krzysztof Gutowski</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/studiuj-u-nas/losy-absolwentow/jacek-wilk/">Jacek Wilk</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/studiuj-u-nas/losy-absolwentow/emilia-pruszynska/">Emilia Pruszyńska</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/studiuj-u-nas/losy-absolwentow/dariusz-zak/">Dariusz Żak</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/studiuj-u-nas/losy-absolwentow/sebastian-macegoniuk/">Sebastian Macegoniuk</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/dla-studentow/">Dla studentów</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/">Badania</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/badania/publikacje-i-konferencje/">Publikacje i konferencje</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/patenty/">Patenty</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fotonika/">Zespół Fotoniki</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/">Projekty</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/nowoczesne-lasery-o-emisji-powierzchniowej-z-krysztalem-fotonicznym-i-siatka-o-wysokim-kontrascie/">Polsko-singapurski</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/lasery-o-emisji-powierzchniowej-ze-sprzezonymi-wnekami-rezonansowymi/">VCSELe z wnękami sprzężonymi</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/modyfikacja-wlasciwosci-kwantowych-laserow-kaskadowych-za-pomoca-technologiitrawienia-zogniskowana-wiazka-jonowa-fib/">Lasery kaskadowe</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/analiza-zjawisk-fizycznych-w-antymonkowych-laserach-zlaczowych-o-emisji-powierzchniowej-z-pionowa-wneka-rezonansowa-emitujacych-promieniowanie-o-dlugosci-fali-bliskiej-3-mikrometrom/">Lasery antymonkowe</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/analiza-zjawisk-fizycznych-w-wysokiej-sprawnosci-elektrycznie-pobudzanych-laserach-o-emisji-powierzchniowej-z-zewnetrzna-wneka-rezonansowa-emitujacych-promieniowanie-o-dlugosciach-fal-1310-nm-oraz-1550-nm/">Lasery E-VECSEL</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/intechfun-innowacyjne-technologie-wielofunkcyjnych-materialow-i-struktur-dla-nanoelektroniki-fotoniki-spintroniki-i-technik-sensorowych/">InTechFun</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/lider/">LIDER</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/lider/projekt/">Szczegóły</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/lider/plask/">Program PLaSK</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/plask-user-guide/">Podręcznik użytkownika</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/lider/publikacje/">Publikacje</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/arrow-vcsel/">ARROW VCSELs</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/arrow-vcsel/zatrudnienie/">Zatrudnienie</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/polprzewodnikowe-lasery-dyskowe-dostosow/">SDL z zakresu średniej podczerwieni</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/siatka-dyfrakcyjna-o-wysokim-kontrascie/">HCG jako planarne zwierciadło skupiające do wykorzystania w laserach VCSEL</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/lasery-azotkowe-o-emisji-powierzchniowej/">Lasery azotkowe o emisji powierzchniowej</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fotonika/projekty/pol-siniv/">POL-SINIV (HybNanoSens)</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fotonika/czlonkowie/">Członkowie</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/badania/krysztaly-biogeniczne/">Zespół Kryształów Biogenicznych</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/badania/krysztaly-biogeniczne/czlonkowie/">Członkowie</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/krysztaly-biogeniczne/projekty/">Projekty</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/badania/krysztaly-biogeniczne/projekty/badanie-procesow-nukleacji-i-wzrostu-krysztalow-struwitu-w-kontekscie-powstawania-kamieni-moczowych/">Badanie procesów nukleacji i wzrostu kryształów struwitu w kontekście powstawania kamieni moczowych</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/krysztaly-biogeniczne/projekty/badanie-fizycznych-mechanizmow-zarodkowania-wzrostu-i-agregacji-weglanu-apatytu-i-struwitu-w-kontekscie-powstawania-infekcyjnej-kamicy-moczowej-oraz-wplywu-substancji-mogacych-modulowac-te-procesy/">Badanie fizycznych mechanizmów zarodkowania, wzrostu i agregacji węglanu apatytu i struwitu w kontekście powstawania infekcyjnej kamicy moczowej oraz wpływu substancji mogących modulować te procesy</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/badania/krysztaly-biogeniczne/biomineralizacja-roslin/">Biomineralizacja roślin</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/krysztaly-biogeniczne/infekcyjne-kamienie-moczowe/">Infekcyjne kamienie moczowe</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/krysztaly-biogeniczne/ewolucja-morfologii-krysztalu/">Ewolucja morfologii kryształu</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/krysztaly-biogeniczne/wczesne-fazy-zarodkowania/">Wczesne fazy zarodkowania</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fizyka-dielektrykow/">Zespół Fizyki Dielektryków</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/badania/fizyka-dielektrykow/czlonkowie/">Członkowie</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fizyka-dielektrykow/projekty/">Projekty</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/badania/fizyka-dielektrykow/projekty/warstwy-weglowe-jako-stymulatory-zimnej-emisji-z-polprzewodnikowych-podlozy/">Stymulatory zimnej emisji</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fizyka-dielektrykow/projekty/badania-wlasnosci-elektronowych-cienkich-warstw-diamentopodobnych/">Warstwy diamentopodobne</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/badania/monokrysztaly/">Zespół Fizyki Monokryształów</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/badania/monokrysztaly/czlonkowie/">Członkowie</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/monokrysztaly/projekty/">Projekty</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fizyka-teoretyczna/">Zespół Fizyki Teoretycznej</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/badania/fizyka-teoretyczna/czlonkowie/">Członkowie</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/fizyka-teoretyczna/projekty/">Projekty</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/badania/qchem/">Zespół Chemii Kwantowej</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/badania/qchem/czlonkowie/">Członkowie</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/qchem/projekty/">Projekty</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/badania/qchem/projekty/accurate-description-of-intermolecular-interaction-energies-from-extended-random-phase-approximation/">Accurate description of intermolecular interaction energies from extended random phase approximation</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/qchem/projekty/development-of-a-method-of-calculating-the-excitation-energies-of-atoms-and-molecules-based-on-the-ensemble-variational-principle/">Development of a method of calculating the excitation energies of atoms and molecules based on the ensemble variational principle</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/qchem/projekty/development-of-new-methods-for-quantum-chemical-embedding-based-on-reduced-density-matrices/">Development of new methods for quantum-chemical embedding based on reduced density matrices</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/qchem/projekty/development-of-new-electronic-structure/">Development of new electronic structure methods for intermolecular interactions in multireference systems</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/qchem/projekty/metoda-obliczeniowa-do-opisu-oddzialywan/">Description of intermolecular interactions in excited states</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/badania/qchem/available-positions/">Available Positions</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/badania/zespol-fizyki-cieklych-krysztalow-1/">Zespół Fizyki Ciekłych Kryształów</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/badania/zespol-fizyki-cieklych-krysztalow-1/czlonkowie/">Członkowie</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/badania/zespol-fizyki-cieklych-krysztalow-1/projekty/">Projekty</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/popularyzacja-fizyki/">Popularyzacja fizyki</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/popularyzacja-fizyki/szkoly-ponadgimnazjalne/">Szkoły Ponadgimnazjalne</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/popularyzacja-fizyki/gimnazjum/">Gimnazjum</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/popularyzacja-fizyki/szkoly-podstawowe/">Szkoły Podstawowe</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/popularyzacja-fizyki/debaty-szkolne/">Debaty Szkolne </a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/scientific-bulletin/">Zeszyty Naukowe</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/o-instytucie/">O instytucie</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/o-instytucie/pracownicy/">Pracownicy</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/o-instytucie/doktoranci/">Doktoranci i stypendyści</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/o-instytucie/biblioteka/">Biblioteka</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/o-instytucie/klaster/">Klaster obliczeniowy</a>
+	
+    <ul>
+        
+
+
+            
+<li class="">
+    <a href="/pl/o-instytucie/klaster/slurm/">Using SLURM</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/o-instytucie/klaster/modules/">Environment Modules User Guide</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/o-instytucie/klaster/software/">Available Software</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/o-instytucie/historia/">Historia</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+
+
+          
+          </ul>
+      </div>
+
+      
+      <div class="container breadcrumbs">
+        <span>Jesteś tutaj:</span> <ol class="breadcrumb">
+
+<li><a href="/pl/">Strona główna</a></li>
+
+
+
+<li><a href="/pl/plask-user-guide/">PLaSK: Podręcznik użytkownika</a></li>
+
+
+
+<li><a href="/pl/plask-user-guide/tutorials/">Tutorials and Examples</a></li>
+
+
+
+<li class="active">Optical Analysis of a Step-Profile VCSEL</li>
+
+</ol>
+      </div>
+      
+
+      <div class="container pagecontent">
+        
+<div class="row">
+    <div class="col-12 col-md-3 col-lg-3 hidden-xs hidden-sm">
+                
+        
+        <section class="section sidecontent">
+            
+            
+
+            
+
+            
+
+            
+
+            
+
+            
+
+            
+
+            
+
+
+
+            <ul class="nav-sidenav">
+                
+            
+
+            
+
+            
+
+            
+
+            
+
+            
+
+            
+
+            
+
+
+
+                
+            
+<li class="">
+    <a href="/pl/plask-user-guide/preface/">Preface</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/plask-user-guide/introduction/">Introduction</a>
+	
+</li>
+            
+<li class="ancestor">
+    <a href="/pl/plask-user-guide/tutorials/">Tutorials and Examples</a>
+	
+    <ul class="subnav">
+        
+            
+<li class="sibling">
+    <a href="/pl/plask-user-guide/tutorial1/">Thermo-Electrical Modeling of Simple Edge-Emitting Diode</a>
+	
+</li>
+            
+<li class="active">
+    <a href="/pl/plask-user-guide/tutorial2/">Optical Analysis of a Step-Profile VCSEL</a>
+	
+</li>
+            
+<li class="sibling">
+    <a href="/pl/plask-user-guide/tutorial3/">Finding the threshold current of a gallium-arsenide VCSEL</a>
+	
+</li>
+            
+<li class="sibling">
+    <a href="/pl/plask-user-guide/tutorial5/">Optical Analysis of Photonic-Crystal VCSEL</a>
+	
+</li>
+            
+<li class="sibling">
+    <a href="/pl/plask-user-guide/castle/">Castle Example</a>
+	
+</li>
+
+
+    </ul>
+    
+</li>
+            
+<li class="">
+    <a href="/pl/plask-user-guide/general/">General Concepts of PLaSK</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/plask-user-guide/geometry/">Geometry Specification</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/plask-user-guide/materials/">Managing Materials</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/plask-user-guide/meshes/">Specifying Meshes</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/plask-user-guide/solvers/">Computational Solvers</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/plask-user-guide/results/">Working with Results</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/plask-user-guide/gui/">Graphical User Interface</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/plask-user-guide/units/">Units in PLaSK</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/plask-user-guide/index-solvers/">Available Solvers</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/plask-user-guide/xpl/">XPL File Reference</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/plask-user-guide/api/">PLaSK Python API</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/plask-user-guide/glossary/">Glossary</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/plask-user-guide/licensing/">Licensing</a>
+	
+</li>
+            
+<li class="">
+    <a href="/pl/plask-user-guide/genindex/">Index</a>
+	
+</li>
+
+
+            </ul>
+        </section>        
+        
+    </div><!--/ sidebar -->
+    <div class="col-12 col-xs-12 col-md-9 col-lg-9">
+        
+
+<div class="section">
+  <div class="row">
+    <div class="sphinxsidebar col-3 col-sm-3 col-sm-push-9 col-md-push-9 col-lg-push-9">
+      <ul>
+        
+          
+            <li>Wyżej: <a href="../tutorials/">Tutorials and Examples</a></li>
+          
+        
+        
+          <li>Poprzedni: <a href="../tutorial1/">Thermo-Electrical Modeling of Simple Edge-Emitting Diode</a></li>
+        
+        
+          <li>Następny: <a href="../tutorial3/">Finding the threshold current of a gallium-arsenide VCSEL</a></li>
+        
+      </ul>
+      <div class="sphinxtoc"/>
+        Spis treści strony:<br/>
+        <ul>
+<li><a class="reference internal" href="#">Optical Analysis of a Step-Profile VCSEL</a><ul>
+<li><a class="reference internal" href="#analyzed-structure">Analyzed structure</a><ul>
+<li><a class="reference internal" href="#custom-materials">Custom Materials</a></li>
+<li><a class="reference internal" href="#geometry-definition">Geometry Definition</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#organization-of-the-computations">Organization of the computations</a></li>
+<li><a class="reference internal" href="#searching-for-the-threshold-gain-using-scipy">Searching for the threshold gain using Scipy</a></li>
+</ul>
+</li>
+</ul>
+
+      </div>
+    </div>
+    <div class="col-9 col-sm-9 col-sm-pull-3 col-md-pull-3 col-lg-pull-3 section">
+      <div class="sphinxbody">
+        <div class="section" id="optical-analysis-of-a-step-profile-vcsel">
+<span id="sec-optical-analysis-of-vcsel"></span><h1>Optical Analysis of a Step-Profile VCSEL<a class="headerlink" href="#optical-analysis-of-a-step-profile-vcsel" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="analyzed-structure">
+<h2>Analyzed structure<a class="headerlink" href="#analyzed-structure" title="Permalink to this headline">¶</a></h2>
+<p>In this section we will perform a simple purely optical analysis of an arsenide oxide confined Vertical-Cavity Surface-Emitting Laser (VCSEL) with an arbitrary step-profile gain. We will look for its resonant wavelength and the threshold gain using the popular effective frequency method. The schematic diagram of the VCSEL is shown in Figure <a class="reference internal" href="#fig-tutorial2-geometry"><span class="std std-ref">Geometry of the VCSEL</span></a>. It consists of 24.5 pair of the top GaAs/AlGaAs Distributed Bragg Reflectors (DBRs), a resonant cavity with a single qantum well, and 29.5 pais of the bottom GaAs/AlGaAs DBRs located on a GaAs substrate. As this the optical mode size is much lower than typical VCSEL mesa etching, we do consider the laser geometry as an infinite multi-stack of semiconductor layers. The only laterally limited features are the gain region and the oxide aperture necessary to confine the light.</p>
+<div class="figure align-center" id="id4">
+<span id="fig-tutorial2-geometry"></span><img alt="../_images/tutorial2-geometry.svg" src="../_images/tutorial2-geometry.svg" /><p class="caption"><span class="caption-text">Geometry of the VCSEL modeled in section <a class="reference internal" href="#sec-optical-analysis-of-vcsel"><span class="std std-ref">Optical Analysis of a Step-Profile VCSEL</span></a>.
+Its detailed structure is shown in the table below.</span></p>
+<div class="legend">
+<table border="1" class="docutils">
+<colgroup>
+<col width="9%" />
+<col width="16%" />
+<col width="19%" />
+<col width="56%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head" colspan="2">Layer</th>
+<th class="head">Thickness [nm]</th>
+<th class="head">Material</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>&#160;</td>
+<td><p class="first">Top DBR</p>
+<p class="last">24.5 pairs</p>
+</td>
+<td><p class="first">70.0</p>
+<p class="last">79.5</p>
+</td>
+<td><p class="first">GaAs</p>
+<p class="last">Al<sub>0.73</sub>GaAs</p>
+</td>
+</tr>
+<tr class="row-odd"><td rowspan="5">Cavity</td>
+<td>Oxide</td>
+<td>16.0</td>
+<td>AlAs (<em>r</em> ≤ 4&nbsp;µm) / AlOx (<em>r</em> &gt; 4&nbsp;µm)</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>63.5</td>
+<td>Al<sub>0.73</sub>GaAs</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>137.6</td>
+<td>GaAs</td>
+</tr>
+<tr class="row-even"><td>Gain Region</td>
+<td>5.0</td>
+<td>active (<em>r</em> ≤ 4&nbsp;µm) / inactive (<em>r</em> &gt; 4&nbsp;µm)</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>137.6</td>
+<td>GaAs</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td><p class="first">Bottom DBR</p>
+<p class="last">29.5 pairs</p>
+</td>
+<td><p class="first">79.5</p>
+<p class="last">70.0</p>
+</td>
+<td><p class="first">Al<sub>0.73</sub>GaAs</p>
+<p class="last">GaAs</p>
+</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+<td>Substrate</td>
+<td>infinite</td>
+<td>GaAs</td>
+</tr>
+</tbody>
+</table>
+<p>The <em>active</em> material is an InGaAs with refractive index 3.53 and no absorption, and the <em>inactive</em>
+material is a similar one, however, we assume it has a constant absorption of 1000&nbsp;cm<sup>-1</sup>.</p>
+</div>
+</div>
+<div class="section" id="custom-materials">
+<h3>Custom Materials<a class="headerlink" href="#custom-materials" title="Permalink to this headline">¶</a></h3>
+<p>Before we begin defining the geometry of our VCSEL structure, take a look a the specification of the gain region in the table above. It contains two custom materials: <em>active</em> and <em>inactive</em>. All we know about them is that they are some kind of an InGaAs with refractive index of 3.53 and specified absorption. There are no such materials in the database, so we need to define them ourselves. For this, switch to the <em>Materials</em> tab, where you should see two tables (both now empty). To the left there is a list of custom materials and to the right, the definition of its parameters. To create a new material, press <code class="docutils literal"><span class="pre">Ctrl</span></code>+<code class="docutils literal"><span class="pre">Shift</span></code>+<code class="docutils literal"><span class="pre">=</span></code>. In the materials table a new material should have appeared. By default it has the name ‘new’ and the base ‘semiconductor’. Double-click the material name (or press <code class="docutils literal"><span class="pre">N</span></code> and change it to <code class="docutils literal"><span class="pre">active</span></code>. Next, click <img alt="+" class="align-middle" src="../_images/list-add.png" /> icon above the right table. This adds a new property definition of our material. Double-click the empty property name in a new row and select <code class="docutils literal"><span class="pre">nr</span></code> in the list and press <code class="docutils literal"><span class="pre">Enter</span></code>. Now in the <em>Help</em> column you can see that you have selected a refractive index <em>n</em><sub>R</sub>. In the <em>Value</em> column you can type its value, which should be 3.53 in this case. Next, add another material property <code class="docutils literal"><span class="pre">absp</span></code>, which stands for absorption. Set its value to 0.</p>
+<p>You do not have to define all the properties of your custom materials. The ones you skip, will be looked-up in another material, specified in the <em>Base</em> column of the material table. This way you can create variations of existing materials (either in the default database or the ones you have previously defined) with only some parameters altered. Mind however, that the default base material ‘semiconductor’ has most of its parameters unspecified, which will result in an error if you try to use them in the computations <a class="footnote-reference" href="#material-parameters" id="id1">[1]</a>.</p>
+<p>To create <em>inactive</em> material, click <img alt="+" class="align-middle" src="../_images/list-add.png" /> icon above the materials list and set the name of the new material to <code class="docutils literal"><span class="pre">inactive</span></code> and its base to <code class="docutils literal"><span class="pre">active</span></code>. In the properties list add only one parameter — absorption — and set its value to 1000. The <em>inactive</em> refractive index will be taken from the previously defined <em>active</em> material.</p>
+<p>After pressing <code class="docutils literal"><span class="pre">F4</span></code>, verify that the XML of materials section looks as follows:</p>
+<div class="highlight-xml"><div class="highlight"><pre><span></span><span class="nt">&lt;material</span> <span class="na">name=</span><span class="s">&quot;active&quot;</span> <span class="na">base=</span><span class="s">&quot;semiconductor&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;nr&gt;</span>3.53<span class="nt">&lt;/nr&gt;</span>
+  <span class="nt">&lt;absp&gt;</span>0.<span class="nt">&lt;/absp&gt;</span>
+<span class="nt">&lt;/material&gt;</span>
+<span class="nt">&lt;material</span> <span class="na">name=</span><span class="s">&quot;inactive&quot;</span> <span class="na">base=</span><span class="s">&quot;active&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;absp&gt;</span>1000.<span class="nt">&lt;/absp&gt;</span>
+<span class="nt">&lt;/material&gt;</span>
+</pre></div>
+</div>
+<p>If the materials are defined properly, switch back to graphical editor and change to <em>Geometry</em> tab.</p>
+</div>
+<div class="section" id="geometry-definition">
+<h3>Geometry Definition<a class="headerlink" href="#geometry-definition" title="Permalink to this headline">¶</a></h3>
+<p>Because of the axial symmetry of the device, the natural coordinate system used in the simulations is the two-dimensional cylindrical one. Hence, after opening GUI, press <code class="docutils literal"><span class="pre">Ctrl</span></code>+<code class="docutils literal"><span class="pre">Shift</span></code>+<code class="docutils literal"><span class="pre">=</span></code> in the <em>Geometry</em> tab and create a <code class="docutils literal"><span class="pre">Cylindrical</span></code> geometry. Such geometry of the type <a class="reference internal" href="../xpl/geometry/types/#tag-cylindrical2d" title="cylindrical2d tag"><code class="xref xml xml-tag docutils literal"><span class="pre">cylindrical2d</span></code></a> means a set of axi-symmetrical disks created by rotating all two-dimensional objects around the vertical axis (we will name it <em>z</em>). In the <em>Basic settings</em> set the axes to <code class="docutils literal"><span class="pre">r,z</span></code> and the name to <code class="docutils literal"><span class="pre">main</span></code>. In the <em>Border settings*</em> set the bottom border (left box next to <em>Top/Bottom</em> label) to <code class="docutils literal"><span class="pre">GaAs</span></code> and the outer one (right box in <em>Inner/Outer</em>) to <code class="docutils literal"><span class="pre">extend</span></code>. This way you tell PLaSK that below the your defined structure there is infinite layer of gallium arsenide and to laterally all the layers are infinitely extended in the lateral direction.  This way we are able to simulate infinite lateral layers with only an oxide aperture located at the origin having some finite diameter of 8&nbsp;µm. The objects outside of this aperture need to have some dimension defined, but it will be ignored as long as the outer radius of each layer is equal (we set it to 10&nbsp;µm).</p>
+<p>Again, the most convenient way of defining the geometry is creating the stack and specifying the consecutive layers starting from the top. First we need to define 30 pairs of identical quarter-wavelength layers of DBR. As doing it by hand would be a tedious task, we may create another stack (within the original one) and tell PLaSK to repeat its contents 30 times. To do this create one stack for the whole VCSEL structure and another one within it (see <a class="reference internal" href="../tutorial1/#sec-thermo-electrical-modeling-of-simple-ee-laser"><span class="std std-ref">previous tutorial</span></a> if you do not remember how). Set the name of the inner stack to <code class="docutils literal"><span class="pre">bottom-DBR</span></code> and in the <em>Stack Settings</em> set the <em>Repeat</em> value to 24. This will make this stack to repeat its contents, creating 24 pairs of DBRs. You only need to add two rectangles defining a single DBR layer to it. So create two rectangles, both 10&nbsp;µm wide. The top one should be 79.5&nbsp;nm (0.0795&nbsp;µm) high consisting of material <code class="docutils literal"><span class="pre">Al(0.73)GaAs</span></code> (meaning Al<sub>0.73</sub>GaAs) and the second one 70.0&nbsp;nm high made of <code class="docutils literal"><span class="pre">GaAs</span></code> . After doing so, your geometry XML (displayed after pressing <code class="docutils literal"><span class="pre">F4</span></code>) should look like this:</p>
+<div class="highlight-xml"><div class="highlight"><pre><span></span><span class="nt">&lt;cylindrical2d</span> <span class="na">name=</span><span class="s">&quot;main&quot;</span> <span class="na">axes=</span><span class="s">&quot;r,z&quot;</span> <span class="na">outer=</span><span class="s">&quot;extend&quot;</span> <span class="na">bottom=</span><span class="s">&quot;GaAs&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;stack&gt;</span>
+    <span class="nt">&lt;stack</span> <span class="na">name=</span><span class="s">&quot;top-DBR&quot;</span> <span class="na">repeat=</span><span class="s">&quot;30&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;Al(0.73)GaAs&quot;</span> <span class="na">dr=</span><span class="s">&quot;10&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0795&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;GaAs&quot;</span> <span class="na">dr=</span><span class="s">&quot;10&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0700&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/stack&gt;</span>
+  <span class="nt">&lt;/stack&gt;</span>
+<span class="nt">&lt;/cylindrical2d&gt;</span>
+</pre></div>
+</div>
+<p>Next, according to the table below Figure <a class="reference internal" href="#fig-tutorial2-geometry"><span class="std std-ref">Geometry of the VCSEL modeled in section sec-Optical-analysis-of-VCSEL.
+Its detailed structure is shown in the table below.</span></a> we need to add a cavity. Hence, select the outer stack (the one without the name) and add a 137.6&nbsp;nm GaAs layer. Next, we need to specify the gain region. In consists of two objects located at the same level and organized from left to right. This requires a new container to be added to the stack, called <code class="docutils literal"><span class="pre">Shelf</span></code>. It holds its items like books on  book shelf — one next to another. Hence, add such container to the stack, select it and add two rectangles to it: both should be 5&nbsp;nm thick and the first one should have its first dimension (width) equal to 4&nbsp;µm and the second one should be 6&nbsp;µm wide. According to the table, they require materials <code class="docutils literal"><span class="pre">active</span></code> and <code class="docutils literal"><span class="pre">inactive</span></code>, respectively.</p>
+<p>As we will need to put some gain into the rectangle with the <em>active</em> material, we need to give it a name (<code class="docutils literal"><span class="pre">gain-region</span></code>) for further reference and set its role (parameter <em>Roles</em> in the <em>Basic Settings</em>) to <code class="docutils literal"><span class="pre">gain</span></code>, which will tell the optical solver that this is where the gain is present.</p>
+<p>After the above edits, your geometry XML should look as follows:</p>
+<div class="highlight-xml"><div class="highlight"><pre><span></span><span class="nt">&lt;cylindrical2d</span> <span class="na">name=</span><span class="s">&quot;main&quot;</span> <span class="na">axes=</span><span class="s">&quot;r,z&quot;</span> <span class="na">outer=</span><span class="s">&quot;extend&quot;</span> <span class="na">bottom=</span><span class="s">&quot;GaAs&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;shelf&gt;</span>
+      <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;active&quot;</span> <span class="na">dr=</span><span class="s">&quot;4&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0050&quot;</span>
+                 <span class="na">name=</span><span class="s">&quot;gain-region&quot;</span> <span class="na">role=</span><span class="s">&quot;gain&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;inactive&quot;</span> <span class="na">dr=</span><span class="s">&quot;6&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0050&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/shelf&gt;</span>
+    <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;GaAs&quot;</span> <span class="na">dr=</span><span class="s">&quot;10&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.1376&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;stack</span> <span class="na">name=</span><span class="s">&quot;bottom-DBR&quot;</span> <span class="na">repeat=</span><span class="s">&quot;30&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;Al(0.73)GaAs&quot;</span> <span class="na">dr=</span><span class="s">&quot;10&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0795&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;GaAs&quot;</span> <span class="na">dr=</span><span class="s">&quot;10&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0700&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/stack&gt;</span>
+  <span class="nt">&lt;/stack&gt;</span>
+<span class="nt">&lt;/cylindrical2d&gt;</span>
+</pre></div>
+</div>
+<p>Now, you can complete the other VCSEL layers according to Fig. <a class="reference internal" href="#fig-tutorial2-geometry"><span class="std std-ref">Geometry of the VCSEL modeled in section sec-Optical-analysis-of-VCSEL.
+Its detailed structure is shown in the table below.</span></a>. You will need another shelf for the oxide and another repeated stack for the top DBR. In the end, the XML of the geometry section should be similar to the one below:</p>
+<div class="highlight-xml"><div class="highlight"><pre><span></span><span class="nt">&lt;cylindrical2d</span> <span class="na">name=</span><span class="s">&quot;main&quot;</span> <span class="na">axes=</span><span class="s">&quot;r,z&quot;</span> <span class="na">outer=</span><span class="s">&quot;extend&quot;</span> <span class="na">bottom=</span><span class="s">&quot;GaAs&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;stack&gt;</span>
+    <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;GaAs&quot;</span> <span class="na">dr=</span><span class="s">&quot;10&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0700&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;stack</span> <span class="na">name=</span><span class="s">&quot;top-DBR&quot;</span> <span class="na">repeat=</span><span class="s">&quot;24&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;Al(0.73)GaAs&quot;</span> <span class="na">dr=</span><span class="s">&quot;10&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0795&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;GaAs&quot;</span> <span class="na">dr=</span><span class="s">&quot;10&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0700&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/stack&gt;</span>
+    <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;Al(0.73)GaAs&quot;</span> <span class="na">dr=</span><span class="s">&quot;10&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0318&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;shelf&gt;</span>
+      <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;AlAs&quot;</span> <span class="na">dr=</span><span class="s">&quot;4&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0160&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;AlOx&quot;</span> <span class="na">dr=</span><span class="s">&quot;6&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0160&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/shelf&gt;</span>
+    <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;Al(0.73)GaAs&quot;</span> <span class="na">dr=</span><span class="s">&quot;10&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0635&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;GaAs&quot;</span> <span class="na">dr=</span><span class="s">&quot;10&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.1376&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;shelf&gt;</span>
+      <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;active&quot;</span> <span class="na">dr=</span><span class="s">&quot;4&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0050&quot;</span>
+                 <span class="na">name=</span><span class="s">&quot;gain-region&quot;</span> <span class="na">role=</span><span class="s">&quot;gain&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;inactive&quot;</span> <span class="na">dr=</span><span class="s">&quot;6&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0050&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/shelf&gt;</span>
+    <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;GaAs&quot;</span> <span class="na">dr=</span><span class="s">&quot;10&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.1376&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;stack</span> <span class="na">name=</span><span class="s">&quot;bottom-DBR&quot;</span> <span class="na">repeat=</span><span class="s">&quot;30&quot;</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;Al(0.73)GaAs&quot;</span> <span class="na">dr=</span><span class="s">&quot;10&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0795&quot;</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;rectangle</span> <span class="na">material=</span><span class="s">&quot;GaAs&quot;</span> <span class="na">dr=</span><span class="s">&quot;10&quot;</span> <span class="na">dz=</span><span class="s">&quot;0.0700&quot;</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;/stack&gt;</span>
+  <span class="nt">&lt;/stack&gt;</span>
+<span class="nt">&lt;/cylindrical2d&gt;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="organization-of-the-computations">
+<h2>Organization of the computations<a class="headerlink" href="#organization-of-the-computations" title="Permalink to this headline">¶</a></h2>
+<p>In the section <a class="reference internal" href="../tutorial1/#sec-thermo-electrical-modeling-of-simple-ee-laser"><span class="std std-ref">Thermo-Electrical Modeling of Simple Edge-Emitting Diode</span></a> you have learned how to create an XPL file defining a basic structure and two solvers exchanging data with each other. You have also written a simple Python script controlling the computations flow in the last XPL section. Here, we will do the same, however, first we need to create an optical solver that will perform the computations. So, switch to the <em>Solvers</em> tab, and click the <img alt="+" class="align-middle" src="../_images/list-add.png" /> button. In the dialog select <em>Category</em>: <code class="docutils literal"><span class="pre">Optical</span></code>, <em>Solver</em>: <code class="docutils literal"><span class="pre">EffectiveFrequencyCyl</span></code>, and <em>Name</em>: <code class="docutils literal"><span class="pre">efm</span></code>. After confirming, choose the <code class="docutils literal"><span class="pre">main</span></code> geometry in the solver configuration. Next, in the <em>Mode Properties</em> section set <em>Approximate wavelength</em> to <code class="docutils literal"><span class="pre">980</span></code>&nbsp;nm. This will make the XML of this section look as follows:</p>
+<div class="highlight-xml"><div class="highlight"><pre><span></span><span class="nt">&lt;optical</span> <span class="na">solver=</span><span class="s">&quot;EffectiveFrequencyCyl&quot;</span> <span class="na">name=</span><span class="s">&quot;efm&quot;</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;geometry</span> <span class="na">ref=</span><span class="s">&quot;main&quot;</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;mode</span> <span class="na">lam0=</span><span class="s">&quot;980.&quot;</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/optical&gt;</span>
+</pre></div>
+</div>
+<p>Effective frequency solver does not need to have a mesh defined, as it will come out with a sensible default. However, we want to specify a step-profile gain in the gain region. This can be done only in the Python script. So, switch to the <em>Script</em> section and type:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">profile</span> <span class="o">=</span> <span class="n">plask</span><span class="o">.</span><span class="n">StepProfile</span><span class="p">(</span><span class="n">GEO</span><span class="o">.</span><span class="n">main</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
+<span class="n">profile</span><span class="p">[</span><span class="n">GEO</span><span class="o">.</span><span class="n">gain_region</span><span class="p">]</span> <span class="o">=</span> <span class="mf">500.</span>
+
+<span class="n">efm</span><span class="o">.</span><span class="n">inGain</span> <span class="o">=</span> <span class="n">profile</span><span class="o">.</span><span class="n">outGain</span>
+</pre></div>
+</div>
+<p>The first line of the above snippet creates the <code class="docutils literal"><span class="pre">profile</span></code> object. The <code class="docutils literal"><span class="pre">StepProfile</span></code> class — conveniently provided by PLaSK — takes a geometry in which the profile is defined as an argument. It is also possible to set the default value for every object in the geometry by providing a value to the <code class="docutils literal"><span class="pre">default</span></code> parameter. In the next line, we specify that there is a step gain of 500 cm<sup>-1</sup> (default units for the gain in PLaSK) at the object named ‘gain-region’ in the XPL file (<code class="docutils literal"><span class="pre">-</span></code> in names is replaced with <code class="docutils literal"><span class="pre">_</span></code> when using the attribute access to geometry objects) <a class="footnote-reference" href="#object-names" id="id2">[3]</a>. Finally, we connect the gain receiver of the <code class="docutils literal"><span class="pre">efm</span></code> solver with the profile’s gain provider. This way, all future changes to the <code class="docutils literal"><span class="pre">profile</span></code> be visible from the connected solver.</p>
+<p>Now we can perform the computations. We have already set the reference wavelength to 980nm (i.e. the effective frequency will be expanded around this wavelength) in the solver configuration. Then we look for the mode with the wavelength closest to 981.nm (we expect that the fundamental mode is at higher wavelengths). The solver can be used more than once (e.g. to find resonant wavelengths of other modes) and it stores every solution in its attribute <code class="docutils literal"><span class="pre">efm.modes</span></code>, which is a read-only list. The mode searching function is called <code class="docutils literal"><span class="pre">efm.find_mode</span></code>. It takes a starting wavelength approximation as its argument (we set it to 981. nm to make sure it will converge to the funcamental mode) and returns an index of a found mode in the <code class="docutils literal"><span class="pre">efm.modes</span></code> list. In the code below we assign this number to the variable <code class="docutils literal"><span class="pre">mode_number</span></code>. We can then use it to obtain the mode’s resonant wavelength and its modal losses [cm<sup>-1</sup>] either by accessing the relevant <code class="docutils literal"><span class="pre">efm.modes</span></code> element, or by using providers <code class="docutils literal"><span class="pre">efm.outWavelength</span></code> and <code class="docutils literal"><span class="pre">efm.outLoss</span></code>, respectively. These two providers are multi-value providers, so you call them without any mesh, but with the requested mode number as their argument. The relevant part of the scipt looks as follows:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">efm</span><span class="o">.</span><span class="n">lam0</span> <span class="o">=</span> <span class="mf">980.</span>
+<span class="n">mode_number</span> <span class="o">=</span> <span class="n">efm</span><span class="o">.</span><span class="n">find_mode</span><span class="p">(</span><span class="mf">981.</span><span class="p">)</span>
+<span class="n">mode_wavelength</span> <span class="o">=</span> <span class="n">efm</span><span class="o">.</span><span class="n">outWavelength</span><span class="p">(</span><span class="n">mode_number</span><span class="p">)</span>
+<span class="n">mode_loss</span> <span class="o">=</span> <span class="n">efm</span><span class="o">.</span><span class="n">outLoss</span><span class="p">(</span><span class="n">mode_number</span><span class="p">)</span>
+<span class="n">print_log</span><span class="p">(</span><span class="n">LOG_INFO</span><span class="p">,</span>
+    <span class="s2">&quot;Threshold material gain is </span><span class="si">{:.0f}</span><span class="s2">/cm with resonant wavelength </span><span class="si">{:.2f}</span><span class="s2">nm&quot;</span>
+    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">threshold_gain</span><span class="p">,</span> <span class="n">mode_wavelength</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Having written the script, we may run it by pressing <code class="docutils literal"><span class="pre">F5</span></code> in the GUI. The program will compute the resonant wavelength of the fundamental mode of the VCSEL, together with the losses for that mode, and print them to the screen. The modal losses will have a positive value, which means that the mode is still below threshold. We will see below, how to find the proper threshold gain value. By now, you may try to extend this script with the plot of the light intensity, which can be obtained using the <code class="docutils literal"><span class="pre">efm.outLightMagnitude</span></code> provider. Consider this as a homework exercise, keeping in mind, that the first argument for this provider has to be the solution number (<code class="docutils literal"><span class="pre">mode_number</span></code> in our case) and the second one, the target mesh (see <a class="reference internal" href="../tutorial1/#sec-thermo-electrical-modeling-of-simple-ee-laser"><span class="std std-ref">the first tutorial</span></a> for details).</p>
+</div>
+<div class="section" id="searching-for-the-threshold-gain-using-scipy">
+<h2>Searching for the threshold gain using Scipy<a class="headerlink" href="#searching-for-the-threshold-gain-using-scipy" title="Permalink to this headline">¶</a></h2>
+<p>We are now going to find the threshold gain of the simulated structure, which we define as the gain value in the provided <code class="docutils literal"><span class="pre">StepProfile</span></code> for which the material losses reach 0. This could be done by manually changing the gain value in the previous section until obtaining satisfyingly low losses, or writing an automated algorithm. But, naturally, there is better, simpler and faster solution — we may utilize the Brent root-finding algorithm from the <code class="docutils literal"><span class="pre">scipy.optimize</span></code> module <a class="footnote-reference" href="#module-scipy-optimize" id="id3">[2]</a>. The function we want to use from this module is named <code class="docutils literal"><span class="pre">fsolve</span></code> and it finds a root of a provided <em>f</em>(<em>x</em>) function starting from a given <em>x</em> value. You can read the function description in the <em>scipy</em> documentation at <a class="reference external" href="http://docs.scipy.org/doc/scipy-0.7.x/reference/generated/scipy.optimize.fsolve.html">http://docs.scipy.org/doc/scipy-0.7.x/reference/generated/scipy.optimize.fsolve.html</a>.</p>
+<p>In order to perform the root search, we have to import the <code class="docutils literal"><span class="pre">scipy.optimize</span></code> module, using Python built-in command <code class="docutils literal"><span class="pre">import</span></code>, and define a function (<em>f</em>(<em>x</em>)) that takes the gain value in the active region as it’s argument (<em>x</em>) and returns the modal loss of the resonant mode (which must be 0 at the threshold i.e. <em>f</em>(<em>threshold gain</em>) = 0):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">scipy.optimize</span>
+
+<span class="k">def</span> <span class="nf">loss_on_gain</span><span class="p">(</span><span class="n">gain</span><span class="p">):</span>
+    <span class="n">profile</span><span class="p">[</span><span class="n">GEO</span><span class="o">.</span><span class="n">gain_region</span><span class="p">]</span> <span class="o">=</span> <span class="n">gain</span>
+    <span class="n">mode_number</span> <span class="o">=</span> <span class="n">efm</span><span class="o">.</span><span class="n">find_mode</span><span class="p">(</span><span class="mf">981.</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">efm</span><span class="o">.</span><span class="n">outLoss</span><span class="p">(</span><span class="n">mode_number</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You notice that first, we modify the gain profile in the <em>gain-region</em> geometry object and then recompute the resonant mode. Because of the gain modification, all the modes computed earlier are lost as they become obsolete with the new gain. However, the <code class="docutils literal"><span class="pre">mode_number</span></code> variable in the above function will always be set to the current, recently computed, mode number we are interested in. We use this information to retrieve the computed modal loss and return it as the result of the function.</p>
+<p>Now we can provide <code class="docutils literal"><span class="pre">loss_on_gain</span></code> to the <code class="docutils literal"><span class="pre">fsolve</span></code> function, together with the gain value, which we expect to be near the threshold (2000/cm). The function has to be continuous on this interval and may contain exactly one root, otherwise an error might occur. Hence, we set the reference wavelength (which is always the necessary step) and run the root search as follows:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">efm</span><span class="o">.</span><span class="n">lam0</span> <span class="o">=</span> <span class="mf">980.</span>
+
+<span class="n">threshold_gain</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">fsolve</span><span class="p">(</span><span class="n">loss_on_gain</span><span class="p">,</span> <span class="mf">2000.</span><span class="p">,</span> <span class="n">xtol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">xtol</span></code> argument allows us to set the desired solution’s tolerance.</p>
+<p>When the <code class="docutils literal"><span class="pre">fsolve</span></code> function completes it returns a Python list with the found solutions (which in this case hase only one element), so the <code class="docutils literal"><span class="pre">threshold_gain</span></code> variable contains the value we were looking for. Now we just have to set the found threshold gain and run the optical calculations for the last time and print the final result to the log:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">profile</span><span class="p">[</span><span class="n">GEO</span><span class="o">.</span><span class="n">gain_region</span><span class="p">]</span> <span class="o">=</span> <span class="n">threshold_gain</span>
+<span class="n">mode_number</span> <span class="o">=</span> <span class="n">efm</span><span class="o">.</span><span class="n">find_mode</span><span class="p">(</span><span class="mf">981.</span><span class="p">)</span>
+<span class="n">mode_wavelength</span> <span class="o">=</span> <span class="n">efm</span><span class="o">.</span><span class="n">outWavelength</span><span class="p">(</span><span class="n">mode_number</span><span class="p">)</span>
+<span class="n">print_log</span><span class="p">(</span><span class="n">LOG_INFO</span><span class="p">,</span>
+    <span class="s2">&quot;Threshold material gain is </span><span class="si">{:.0f}</span><span class="s2">/cm with resonant wavelength </span><span class="si">{:.2f}</span><span class="s2">nm&quot;</span>
+    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">threshold_gain</span><span class="p">,</span> <span class="n">mode_wavelength</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The complete Python script (with some clean-ups) for this tutorial is presented in the <a class="reference internal" href="#lis-listing-of-tutorial2"><span class="std std-ref">listin</span></a>. Feel free to expand it with the presentation of the light intensity for the found mode at the threshold.</p>
+<div class="topic">
+<p class="topic-title first">Python script in file <code class="file docutils literal"><span class="pre">tutorial2.xpl</span></code>.</p>
+<div class="highlight-python" id="lis-listing-of-tutorial2"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">scipy.optimize</span>
+
+<span class="n">profile</span> <span class="o">=</span> <span class="n">plask</span><span class="o">.</span><span class="n">StepProfile</span><span class="p">(</span><span class="n">GEO</span><span class="o">.</span><span class="n">main</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>
+<span class="n">profile</span><span class="p">[</span><span class="n">GEO</span><span class="o">.</span><span class="n">gain_region</span><span class="p">]</span> <span class="o">=</span> <span class="mf">500.</span>
+
+<span class="k">def</span> <span class="nf">loss_on_gain</span><span class="p">(</span><span class="n">gain</span><span class="p">):</span>
+    <span class="n">profile</span><span class="p">[</span><span class="n">GEO</span><span class="o">.</span><span class="n">gain_region</span><span class="p">]</span> <span class="o">=</span> <span class="n">gain</span>
+    <span class="n">mode_number</span> <span class="o">=</span> <span class="n">efm</span><span class="o">.</span><span class="n">find_mode</span><span class="p">(</span><span class="mf">981.</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">efm</span><span class="o">.</span><span class="n">outLoss</span><span class="p">(</span><span class="n">mode_number</span><span class="p">)</span>
+
+<span class="n">threshold_gain</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">optimize</span><span class="o">.</span><span class="n">fsolve</span><span class="p">(</span><span class="n">loss_on_gain</span><span class="p">,</span> <span class="mf">2000.</span><span class="p">,</span> <span class="n">xtol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">profile</span><span class="p">[</span><span class="n">GEO</span><span class="o">.</span><span class="n">gain_region</span><span class="p">]</span> <span class="o">=</span> <span class="n">threshold_gain</span>
+<span class="n">mode_number</span> <span class="o">=</span> <span class="n">efm</span><span class="o">.</span><span class="n">find_mode</span><span class="p">(</span><span class="mf">981.</span><span class="p">)</span>
+<span class="n">mode_wavelength</span> <span class="o">=</span> <span class="n">efm</span><span class="o">.</span><span class="n">outWavelength</span><span class="p">(</span><span class="n">mode_number</span><span class="p">)</span>
+<span class="n">print_log</span><span class="p">(</span><span class="n">LOG_INFO</span><span class="p">,</span>
+    <span class="s2">&quot;Threshold material gain is {:.0f}/cm with resonant wavelength {:.2f}nm&quot;</span>
+    <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">threshold_gain</span><span class="p">,</span> <span class="n">mode_wavelength</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<p class="rubric">Example files</p>
+<p>You can download the complete file from this tutorial: <a class="reference download internal" href="../_downloads/tutorial2.xpl" download=""><code class="xref download docutils literal"><span class="pre">tutorial2.xpl</span></code></a>.</p>
+<p class="rubric">Footnotes</p>
+<table class="docutils footnote" frame="void" id="material-parameters" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[1]</a></td><td>In this tutorial, we perform only optical analysis, so the refractive index and absorption is all we need. Other parameters can be unspecified as they are never requested by optical solvers.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="module-scipy-optimize" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[2]</a></td><td>In Python modules are some external libraries that extend its functionality. The <code class="docutils literal"><span class="pre">sys</span></code> module give access to many system function and objects.</td></tr>
+</tbody>
+</table>
+<table class="docutils footnote" frame="void" id="object-names" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[3]</a></td><td><code class="docutils literal"><span class="pre">GEO.gain_region</span></code> is an alternative way to access named geometry objects. It is equivalent to <code class="docutils literal"><span class="pre">GEO[&quot;gain-region&quot;]</span></code>. Such an attribute access is often shorter, however when you use it, you must replace any hyphens in the name (<code class="docutils literal"><span class="pre">-</span></code>) with the underscore (<code class="docutils literal"><span class="pre">_</span></code>).</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+      </div>
+     </div> 
+  </div>
+</div>
+
+
+
+
+
+    </div><!--/ right column-->
+</div><!--/row-->
+
+      </div><!-- /.container -->
+    </div>
+    
+    <footer id="footer">
+      <div class="container">
+        <div class="row">
+          <div class="col-sm-8 col-md-6 col-lg-6 col-sm-push-4 col-md-push-6 col-lg-push-6">
+           
+            <div class="row">
+              <div class="col-sm-4">
+                
+
+
+<h4 class="nav-footer-title">Instytut</h4>
+
+<ul class="nav-footer">
+
+    <li><a href="/pl/aktualnosci/">Aktualności</a></li>
+
+    <li><a href="/pl/studiuj-u-nas/">Studiuj u nas</a></li>
+
+    <li><a href="/pl/badania/">Badania</a></li>
+
+    <li><a href="/pl/popularyzacja-fizyki/">Popularyzacja fizyki</a></li>
+
+    <li><a href="/pl/dla-studentow/">Dla studentów</a></li>
+
+    <li><a href="/pl/o-instytucie/">O instytucie</a></li>
+
+</ul>
+
+              </div>
+              <div class="col-sm-4">
+                
+
+
+<h4 class="nav-footer-title">Politechnika</h4>
+
+<ul class="nav-footer">
+
+    <li><a href="http://p.lodz.pl">Politechnika Łódzka</a></li>
+
+    <li><a href="http://ftims.p.lodz.pl">Wydział FTiMS</a></li>
+
+    <li><a href="http://bg.p.lodz.pl">Biblioteka Główna</a></li>
+
+</ul>
+
+              </div>
+              <div class="col-sm-4">
+                
+<h4 class="nav-footer-title">Zasoby</h4>
+<ul class="nav-footer">
+
+    <li><a href="https://pbn.nauka.gov.pl/?siteLanguage=pl">Polska Bibliografia Naukowa</a></li>
+
+    <li><a href="http://www.nauka.gov.pl/">Ministerstwo Nauki i Szkolnictwa Wyższego</a></li>
+
+    <li><a href="http://apps.webofknowledge.com/UA_GeneralSearch_input.do?product=UA&amp;search_mode=GeneralSearch&amp;SID=V1QKRmXt3scI7jPat9A&amp;preferencesSaved=">Web of Knowledge</a></li>
+
+</ul>
+<p><a href="/pl/o-instytucie/ciekawe-strony/" class="more">więcej</a></p>
+
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="nav-secondary nav-header" role="navigation">
+                <ul class="nav-flat right">
+                  <li><a href="/pl/">strona główna</a>
+</li>
+<li><a href="/pl/mapa-strony/">mapa strony</a>
+</li>
+<li><a href="/pl/o-instytucie/kontakt/">kontakt</a></li>
+
+
+                  
+                  <li><a href="https://fizyka.p.lodz.pl/accounts/login/?next=/pl/plask-user-guide/tutorial2/">zaloguj</a></li>
+                  
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-sm-4 col-md-6 col-lg-6 col-sm-pull-8 col-md-pull-6 col-lg-pull-6">
+            <div class="logo">
+                <a href="http://www.p.lodz.pl">Politechnika Łódzka</a>
+            </div>
+            <div class="address">
+              <p>ul. Wólczańska 219</p>
+              <p>90-924 Łódź</p>
+              <p>tel.: <a href="tel:+48426313641">42 631 3641</a>, fax: 42 631 3639</p>
+              <p>e-mail: <a href="mailto:i-3@adm.p.lodz.pl">i-3@adm.p.lodz.pl</a></p>
+            </div>
+<p class="copy">Copyright &copy; 2013 Instytut Fizyki<br/>
+            Wszelkie prawa zastrzeżone</p>
+           </div>
+        </div>
+      </div><!-- /.container -->
+    </footer>
+    
+    <script src="/static/if/js/jquery/jquery.js"></script>
+    <script src="/static/if/js/bootstrap.js"></script>
+    <script src="/static/if/js/jquery.flexnav.js"></script>
+    <script src="/static/if/js/plugins.js"></script>
+    <script src="/static/if/js/list/list.min.js" type="text/javascript"></script>
+    <script src="/static/if/js/if.js"></script>
+    
+    
+
+
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-8114518-3']);
+      _gaq.push(['_trackPageview']);
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+    </script>    
+
+  </body>
+</html>
