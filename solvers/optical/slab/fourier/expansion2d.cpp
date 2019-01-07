@@ -192,7 +192,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                          layer, solver->lcount, refine * nM, omp_get_thread_num());
     #else
         SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{} (sampled at {} points)",
-                         layer, refine * nM);
+                         layer, solver->lcount, refine * nM);
     #endif
 
     if (isnan(lam))
