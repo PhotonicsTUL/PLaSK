@@ -33,10 +33,16 @@ body {
     background-color: #eeeeee!important;
 }
 
-.sidebar-toc li {
+.sidebar-toc li,
+.toctree-wrapper li,
+.sphinxtoc li {
     list-style-type: none;
     margin-top: 0.2em;
     margin-bottom: 0.2em;
+}
+
+.nav-sidenav {
+    overflow-x: hidden;
 }
 
 .nav-sidenav li > a code {
@@ -47,10 +53,6 @@ h1 code {
     color: #000000;
 }
 
-#searchbox div {
-    display: inline;
-}
-
 /* Header and footer */
 
 div.header {
@@ -59,6 +61,11 @@ div.header {
     color: #ffffff;
     padding: 4em 10px 10px 10px;
     margin: 0 0 4px 0;
+}
+
+div.header h1 a {
+    text-decoration: none;
+    color: #ffffff;
 }
 
 div.footer {

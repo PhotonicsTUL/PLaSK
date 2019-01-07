@@ -15,7 +15,7 @@ Windows
 ^^^^^^^
 In order to install PLaSK on MS Windows, perform two steps:
 
-1. Install Anaconda Python Distribution **Python 3.6 version** (you must use 64-bit installer). While installing select “Register Anaconda as default Python version of the system” option. Do not install Anaconda in the folder with any spaces in the name (e.g. ``C:\Program Files\``)! This step needs to be performed only once.
+1. Install Anaconda Python Distribution **Python 3.7 version** (you must use 64-bit installer). While installing select “Register Anaconda as default Python version of the system” option. Do not install Anaconda in the folder with any spaces in the name (e.g. ``C:\Program Files\``)! This step needs to be performed only once.
 
 2. Download and install latest build of the PLaSK Windows binary. This should be done each time the new version is issued (PLaSK graphical launcher will inform you about it automatically).
 
@@ -36,9 +36,10 @@ Then issue the following commands:
 
 .. code-block:: bash
 
-   $ sudo apt-get install libexpat1 libboost-python-dev libboost-system-dev \
-                          libboost-filesystem-dev libopenblas-base liblapack3 \
-                          python3-numpy ipython3 python3-matplotlib python3-h5py \
+   $ sudo apt-get install libexpat1 libboost-python-dev \
+                          libboost-system-dev libboost-filesystem-dev \
+                          libopenblas-base liblapack3 python3-numpy \
+                          ipython3 python3-matplotlib python3-h5py \
                           python3-pyqt5 python3-lxml python3-yaml
 
    $ sudo dpkg -i your_downloaded_file.deb
