@@ -57,7 +57,7 @@ class TextEditor(QPlainTextEdit):
     def insertFromMimeData(self, source):
         if source.hasText() and CONFIG['editor/select_after_paste']:
             cursor = self.textCursor()
-            start = cursor.position()
+            start = min(cursor.position(), cursor.anchor())
             end = start + len(source.text())
             super(TextEditor, self).insertFromMimeData(source)
             cursor.setPosition(start)
