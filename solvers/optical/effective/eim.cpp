@@ -319,7 +319,7 @@ void EffectiveIndex2D::updateCache()
 
         writelog(LOG_DEBUG, "Updating refractive indices cache");
         auto midmesh = plask::make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
-        auto temp = SafeData<double>(inTemperature(midmesh), 300.);
+        auto temp = inTemperature(midmesh);
         bool have_gain = false;
         LazyData<Tensor2<double>> gain;
 

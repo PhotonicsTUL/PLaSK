@@ -389,7 +389,7 @@ template<typename Geometry2DType>
 void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConductivities()
 {
     auto midmesh = this->maskedMesh->getElementMesh();
-    auto temperature = SafeData<double>(inTemperature(midmesh), 300.);
+    auto temperature = inTemperature(midmesh);
 
     for (auto e: this->maskedMesh->elements())
     {
@@ -791,7 +791,7 @@ const LazyData<Tensor2<double>> FiniteElementMethodElectrical2DSolver<Geometry2D
 template <>
 double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getTotalEnergy() {
     double W = 0.;
-    auto T = SafeData<double>(inTemperature(this->maskedMesh->getElementMesh()), 300.);
+    auto T = inTemperature(this->maskedMesh->getElementMesh());
     for (auto e: this->maskedMesh->elements()) {
         size_t ll = e.getLoLoIndex();
         size_t lu = e.getUpLoIndex();
@@ -813,7 +813,7 @@ double FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>::getTotalEnerg
 template <>
 double FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>::getTotalEnergy() {
     double W = 0.;
-    auto T = SafeData<double>(inTemperature(this->maskedMesh->getElementMesh()), 300.);
+    auto T = inTemperature(this->maskedMesh->getElementMesh());
     for (auto e: this->maskedMesh->elements()) {
         size_t ll = e.getLoLoIndex();
         size_t lu = e.getUpLoIndex();

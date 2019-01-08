@@ -559,9 +559,9 @@ const LazyData<double> FiniteElementMethodThermal3DSolver::getTemperatures(const
     if (!temperatures) return LazyData<double>(dst_mesh->size(), inittemp); // in case the receiver is connected and no temperature calculated yet
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     if (use_full_mesh)
-        return interpolate(this->mesh, temperatures, dst_mesh, method, this->geometry);
+        return SafeData<double>(interpolate(this->mesh, temperatures, dst_mesh, method, this->geometry), 300.);
     else
-        return interpolate(this->maskedMesh, temperatures, dst_mesh, method, this->geometry);
+        return SafeData<double>(interpolate(this->maskedMesh, temperatures, dst_mesh, method, this->geometry), 300.);
 }
 
 
@@ -571,11 +571,13 @@ const LazyData<Vec<3>> FiniteElementMethodThermal3DSolver::getHeatFluxes(const s
     if (!fluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     if (use_full_mesh)
-        return interpolate(this->mesh->getElementMesh(), fluxes, dst_mesh, method,
-                        InterpolationFlags(this->geometry, InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP, InterpolationFlags::Symmetry::PPN));
+        return SafeData<Vec<3>>(interpolate(this->mesh->getElementMesh(), fluxes, dst_mesh, method,
+                                            InterpolationFlags(this->geometry, InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP, InterpolationFlags::Symmetry::PPN)),
+                                Zero<Vec<3>>());
     else
-        return interpolate(this->maskedMesh->getElementMesh(), fluxes, dst_mesh, method,
-                        InterpolationFlags(this->geometry,InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP, InterpolationFlags::Symmetry::PPN));
+        return SafeData<Vec<3>>(interpolate(this->maskedMesh->getElementMesh(), fluxes, dst_mesh, method,
+                                            InterpolationFlags(this->geometry,InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP, InterpolationFlags::Symmetry::PPN)),
+                                Zero<Vec<3>>());
 }
 
 

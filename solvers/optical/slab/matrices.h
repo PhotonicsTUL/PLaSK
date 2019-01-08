@@ -158,7 +158,7 @@ class MatrixDiagonal {
 
   public:
 
-    MatrixDiagonal() : gc(nullptr) {}
+    MatrixDiagonal() : siz(0), gc(nullptr) {}
 
     MatrixDiagonal(std::size_t n) : siz(n), data_(aligned_new_array<T>(n)), gc(new std::atomic<int>(1)) {
         write_debug("allocating diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, double(siz*sizeof(T))/1048576., (void*)data_);

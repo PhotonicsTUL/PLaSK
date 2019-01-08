@@ -139,7 +139,7 @@ void ExpansionBessel::init3() {
 
 void ExpansionBessel::prepareIntegrals(double lam, double glam) {
     if (m_changed) init2();
-    temperature = SafeData<double>(SOLVER->inTemperature(mesh), 300.);
+    temperature = SOLVER->inTemperature(mesh);
     gain_connected = SOLVER->inGain.hasProvider();
     if (gain_connected) {
         if (isnan(glam)) glam = lam;

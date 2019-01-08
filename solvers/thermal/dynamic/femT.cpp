@@ -609,9 +609,9 @@ const LazyData<double> FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>
     if (!temperatures) return LazyData<double>(dest_mesh->size(), inittemp); // in case the receiver is connected and no temperature calculated yet
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     if (use_full_mesh)
-        return interpolate(this->mesh, temperatures, dest_mesh, method, this->geometry);
+        return SafeData<double>(interpolate(this->mesh, temperatures, dest_mesh, method, this->geometry), 300.);
     else
-        return interpolate(this->maskedMesh, temperatures, dest_mesh, method, this->geometry);
+        return SafeData<double>(interpolate(this->maskedMesh, temperatures, dest_mesh, method, this->geometry), 300.);
 }
 
 
@@ -622,11 +622,13 @@ const LazyData<Vec<2>> FiniteElementMethodDynamicThermal2DSolver<Geometry2DType>
     if (!fluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     if (use_full_mesh)
-        return interpolate(this->mesh->getElementMesh(), fluxes, dest_mesh, method,
-                        InterpolationFlags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN));
+        return SafeData<Vec<2>>(interpolate(this->mesh->getElementMesh(), fluxes, dest_mesh, method,
+                                            InterpolationFlags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN)),
+                                Zero<Vec<2>>());
     else
-        return interpolate(this->maskedMesh->getElementMesh(), fluxes, dest_mesh, method,
-                        InterpolationFlags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN));
+        return SafeData<Vec<2>>(interpolate(this->maskedMesh->getElementMesh(), fluxes, dest_mesh, method,
+                                            InterpolationFlags(this->geometry, InterpolationFlags::Symmetry::NP, InterpolationFlags::Symmetry::PN)),
+                                Zero<Vec<2>>());
 }
 
 
