@@ -211,4 +211,33 @@ cvector Transfer::getScatteredFieldVectorH(const cvector& incident, IncidentDire
     return getFieldVectorH(z, solver->getLayerFor(z));
 }
 
+
+
+double Transfer::getIntegralEE(double z1, double z2) {
+    determineFields();
+    if (z1 > z2) std::swap(z1, z2);
+    size_t end = solver->getLayerFor(z2);
+    if (is_zero(z2)) --end;
+    double result = 0.;
+    for (size_t n = solver->getLayerFor(z1); n <= end; ++n) {
+        result += integrateEE(n, z1, (n != end)? solver->vbounds->at(n+1) - solver->vbounds->at(n) : z2);
+        z1 = 0.;
+    }
+    return 0.5 * result;
+}
+
+double Transfer::getIntegralHH(double z1, double z2) {
+    determineFields();
+    if (z1 > z2) std::swap(z1, z2);
+    size_t end = solver->getLayerFor(z2);
+    if (is_zero(z2)) --end;
+    double result = 0.;
+    for (size_t n = solver->getLayerFor(z1); n <= end; ++n) {
+        result += integrateHH(n, z1, (n != end)? solver->vbounds->at(n+1) - solver->vbounds->at(n) : z2);
+        z1 = 0.;
+    }
+    return 0.5 * result;
+}
+
+
 }}} // namespace plask::optical::slab

@@ -490,11 +490,7 @@ cvector ReflectionTransfer::getFieldVectorE(double z, std::size_t n)
 {
     assert(fields_determined != DETERMINED_NOTHING);
 
-    if (std::ptrdiff_t(n) >= solver->interface) {
-        z = - z;
-        if (n != 0 && n != solver->vbounds->size())
-            z += solver->vbounds->at(n) - solver->vbounds->at(n-1);
-    }
+    adjust_z(n, z);
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
 
@@ -519,11 +515,7 @@ cvector ReflectionTransfer::getFieldVectorH(double z, std::size_t n)
 {
     assert(fields_determined != DETERMINED_NOTHING);
 
-    if (std::ptrdiff_t(n) >= solver->interface) {
-        z = - z;
-        if (n != 0 && n != solver->vbounds->size())
-            z += solver->vbounds->at(n) - solver->vbounds->at(n-1);
-    }
+    adjust_z(n, z);
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
 
@@ -559,13 +551,7 @@ double ReflectionTransfer::integrateEE(size_t n, double z1, double z2) {
             TH = diagonalizer->TH(layer);
     cdiagonal gamma = diagonalizer->Gamma(layer);
 
-    if (std::ptrdiff_t(n) >= solver->interface) {
-        double zl = z1;
-        z1 = - z2; z2 = - zl;
-        if (n != 0 && n != solver->vbounds->size())
-            z1 += solver->vbounds->at(n) - solver->vbounds->at(n-1);
-            z2 += solver->vbounds->at(n) - solver->vbounds->at(n-1);
-    }
+    adjust_z(n, z1, z2);
 
     double result = 0.;
     for (size_t i = 0; i != N; ++i) {
@@ -577,9 +563,9 @@ double ReflectionTransfer::integrateEE(size_t n, double z1, double z2) {
         double fFF =   is_zero(gi)? z2-z1 : (exp(gi*z2)-exp(gi*z1)) / gi,
                fBB =   is_zero(gi)? z2-z1 : (exp(-gi*z1)-exp(-gi*z2)) / gi;
         dcomplex fFB = is_zero(gr)? z2-z1 : (exp(-I*gr*z1)-exp(-I*gr*z2)) / gr;
-        double VV =      real(F1*conj(F1)) * fFF +
-                         real(B1*conj(B1)) * fBB +
-                    2. * imag(F1*conj(B1) * fFB);
+        double VV =      real(F1[i]*conj(F1[i])) * fFF +
+                         real(B1[i]*conj(B1[i])) * fBB +
+                    2. * imag(F1[i]*conj(B1[i]) * fFB);
         result += TT * VV;
     }
 
@@ -594,13 +580,7 @@ double ReflectionTransfer::integrateHH(size_t n, double z1, double z2) {
             TH = diagonalizer->TH(layer);
     cdiagonal gamma = diagonalizer->Gamma(layer);
 
-    if (std::ptrdiff_t(n) >= solver->interface) {
-        double zl = z1;
-        z1 = - z2; z2 = - zl;
-        if (n != 0 && n != solver->vbounds->size())
-            z1 += solver->vbounds->at(n) - solver->vbounds->at(n-1);
-            z2 += solver->vbounds->at(n) - solver->vbounds->at(n-1);
-    }
+    adjust_z(n, z1, z2);
 
     double result = 0.;
     for (size_t i = 0; i != N; ++i) {
@@ -612,9 +592,9 @@ double ReflectionTransfer::integrateHH(size_t n, double z1, double z2) {
         double fFF =   is_zero(gi)? z2-z1 : (exp(gi*z2)-exp(gi*z1)) / gi,
                fBB =   is_zero(gi)? z2-z1 : (exp(-gi*z1)-exp(-gi*z2)) / gi;
         dcomplex fFB = is_zero(gr)? z2-z1 : (exp(-I*gr*z1)-exp(-I*gr*z2)) / gr;
-        double VV =      real(F1*conj(F1)) * fFF +
-                         real(B1*conj(B1)) * fBB +
-                    2. * imag(F1*conj(B1) * fFB);
+        double VV =      real(F1[i]*conj(F1[i])) * fFF +
+                         real(B1[i]*conj(B1[i])) * fBB +
+                    2. * imag(F1[i]*conj(B1[i]) * fFB);
         result += TT * VV;
     }
 

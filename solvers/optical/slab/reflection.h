@@ -42,6 +42,25 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
             memP[n] = P.copy();
     }
 
+    void adjust_z(size_t n, double& z) {
+        if (std::ptrdiff_t(n) >= solver->interface) {
+            z = - z;
+            if (n != 0 && n != solver->vbounds->size())
+                z += solver->vbounds->at(n) - solver->vbounds->at(n-1);
+        }
+    }
+
+    void adjust_z(size_t n, double& z1, double z2) {
+        if (std::ptrdiff_t(n) >= solver->interface) {
+            double zl = z1;
+            z1 = - z2; z2 = - zl;
+            if (n != 0 && n != solver->vbounds->size()) {
+                double d = solver->vbounds->at(n) - solver->vbounds->at(n-1);
+                z1 += d; z2 += d;
+            }
+        }
+    }
+
   public:
 
     ReflectionTransfer(SlabBase* solver, Expansion& expansion);

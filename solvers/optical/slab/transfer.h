@@ -294,10 +294,7 @@ struct PLASK_SOLVER_API Transfer {
      * \param z2 upper integration bound
      * \return computed integral
      */
-    double getEE(double z1, double z2) {
-        determineFields();
-//         return integrateEE(z1, z2);
-    }
+    double getIntegralEE(double z1, double z2);
 
     /**
      * Get ½ H·conj(H) integral between \a z1 and \a z2
@@ -305,10 +302,7 @@ struct PLASK_SOLVER_API Transfer {
      * \param z2 upper integration bound
      * \return computed integral
      */
-    double getHH(double z1, double z2) {
-        determineFields();
-//         return integrateHH(z1, z2);
-    }
+    double getIntegralHH(double z1, double z2);
 };
 
 

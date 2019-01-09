@@ -297,9 +297,7 @@ cvector AdmittanceTransfer::getFieldVectorE(double z, std::size_t n)
     cvector Ed = fields[n].Ed;
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
-    double d = (n == 0 || std::size_t(n) == solver->vbounds->size())? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
-    if (std::ptrdiff_t(n) >= solver->interface) z = d - z;
-    else if (n == 0) z += d;
+    double d = get_d(n, z);
 
     if ((n == 0 || std::size_t(n) == solver->vbounds->size()) && z < 0.)
         return cvector(diagonalizer->source()->matrixSize(), NAN);
@@ -340,9 +338,7 @@ cvector AdmittanceTransfer::getFieldVectorH(double z, std::size_t n)
     cvector Hd = fields[n].Hd;
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
-    double d = (n == 0 || std::size_t(n) == solver->vbounds->size())? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
-    if (std::ptrdiff_t(n) >= solver->interface) z = d - z;
-    else if (n == 0) z += d;
+    double d = get_d(n, z);
 
     if ((n == 0 || std::size_t(n) == solver->vbounds->size()) && z < 0.)
         return cvector(diagonalizer->source()->matrixSize(), NAN);

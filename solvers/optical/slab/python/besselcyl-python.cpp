@@ -227,101 +227,45 @@ void export_BesselSolverCyl()
                u8"    level (float): Vertical lever at which the coefficients are computed.\n\n"
                u8":rtype: numpy.ndarray\n"
               );
-//     solver.def("compute_reflectivity", &FourierSolver_computeReflectivity<BesselSolverCyl>,
-//                u8"Compute reflection coefficient on the perpendicular incidence [%].\n\n"
-//                u8"Args:\n"
-//                u8"    lam (float or array of floats): Incident light wavelength.\n"
-//                u8"    polarization: Specification of the incident light polarization.\n"
-//                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-//                u8"        name of the non-vanishing electric field component.\n"
-//                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-//                u8"        present.\n"
-//                , (py::arg("lam"), "polarization", "side");
-//     solver.def("compute_transmittivity", &FourierSolver_computeTransmittivity<BesselSolverCyl>,
-//                u8"Compute transmission coefficient on the perpendicular incidence [%].\n\n"
-//                u8"Args:\n"
-//                u8"    lam (float or array of floats): Incident light wavelength.\n"
-//                u8"    polarization: Specification of the incident light polarization.\n"
-//                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
-//                u8"        of the non-vanishing electric field component.\n"
-//                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-//                u8"        present.\n"
-//                , (py::arg("lam"), "polarization", "side"));
-//     solver.def("compute_reflected_orders", &BesselSolverCyl_reflectedAmplitudes,
-//                u8"Compute Fourier coefficients of the reflected field on the perpendicular incidence [-].\n\n"
-//                u8"Args:\n"
-//                u8"    lam (float): Incident light wavelength.\n"
-//                u8"    polarization: Specification of the incident light polarization.\n"
-//                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-//                u8"        name of the non-vanishing electric field component.\n"
-//                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-//                u8"        present.\n"
-//                , (py::arg("lam"), "polarization", "side"));
-//     solver.def("compute_transmitted_orders", &BesselSolverCyl_transmittedAmplitudes,
-//                u8"Compute Fourier coefficients of the reflected field on the perpendicular incidence [-].\n\n"
-//                u8"Args:\n"
-//                u8"    lam (float): Incident light wavelength.\n"
-//                u8"    polarization: Specification of the incident light polarization.\n"
-//                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis\n"
-//                u8"        name of the non-vanishing electric field component.\n"
-//                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-//                u8"        present.\n"
-//                , (py::arg("lam"), "polarization", "side"));
     solver.add_property("pml", py::make_function(&Solver_getPML<BesselSolverCyl>, py::with_custodian_and_ward_postcall<0,1>()),
                         &Solver_setPML<BesselSolverCyl>,
                         "Side Perfectly Matched Layers boundary conditions.\n\n"
                         PML_ATTRS_DOC
                        );
     RO_FIELD(modes, "Computed modes.");
-//     solver.def("reflected", &FourierSolver_getReflected<BesselSolverCyl>, py::with_custodian_and_ward_postcall<0,1>(),
-//                u8"Access to the reflected field.\n\n"
-//                u8"Args:\n"
-//                u8"    lam (float): Incident light wavelength.\n"
-//                u8"    polarization: Specification of the incident light polarization.\n"
-//                u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
-//                u8"        of the non-vanishing electric field component.\n"
-//                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
-//                u8"        present.\n\n"
-//                u8":rtype: Fourier2D.Reflected\n"
-//                , (py::arg("lam"), "polarization", "side"));
-    // OBSOLETE
-    solver.def("get_electric_coefficients", BesselSolverCyl_getFieldVectorE, (py::arg("num"), "level"),
-               u8"Obsolete alias for :meth:`get_raw_E`.");
-    solver.def("get_magnetic_coefficients", BesselSolverCyl_getFieldVectorH, (py::arg("num"), "level"),
-               u8"Obsolete alias for :meth:`get_raw_H`.");
 
-#ifndef NDEBUG
     solver.add_property("wavelength", &SlabBase::getWavelength, &Solver_setWavelength<__Class__>, "Wavelength of the light [nm].");
     solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, "Normalized frequency of the light [1/µm].");
     solver.add_property("m", &__Class__::getM, &__Class__::setM, "Angular dependence parameter.");
 
-	solver.def("layer_eigenmodes", &Eigenmodes<BesselSolverCyl>::fromZ, py::arg("level"),
-		u8"Get eignemodes for a layer at specified level.\n\n"
-		u8"This is a low-level function to access diagonalized eigenmodes for a specific\n"
-		u8"layer. Please refer to the detailed solver description for the interpretation\n"
-		u8"of the returned values.\n\n"
-		u8"Args:\n"
-		u8"    level (float): Vertical level at which the coefficients are computed.\n",
-		py::with_custodian_and_ward_postcall<0, 1>()
-	);
+    solver.def("layer_eigenmodes", &Eigenmodes<BesselSolverCyl>::fromZ, py::arg("level"),
+        u8"Get eignemodes for a layer at specified level.\n\n"
+        u8"This is a low-level function to access diagonalized eigenmodes for a specific\n"
+        u8"layer. Please refer to the detailed solver description for the interpretation\n"
+        u8"of the returned values.\n\n"
+        u8"Args:\n"
+        u8"    level (float): Vertical level at which the coefficients are computed.\n",
+        py::with_custodian_and_ward_postcall<0, 1>()
+    );
 
-    METHOD(epsVmm, epsVmm, u8"J_{m-1}(gr) \\varepsilon^{-1} J_{m-1}(kr) r dr", "layer");
-    METHOD(epsVpp, epsVpp, u8"J_{m+1}(gr) \\varepsilon^{-1} J_{m+1}(kr) r dr", "layer");
-    METHOD(epsTmm, epsTmm, u8"J_{m-1}(gr) (\\varepsilon_{rr} + \\varepsilon_{\\varphi\\varphi}) J_{m-1}(kr) r dr", "layer");
-    METHOD(epsTpp, epsTpp, u8"J_{m+1}(gr) (\\varepsilon_{rr} + \\varepsilon_{\\varphi\\varphi}) J_{m+1}(kr) r dr", "layer");
-    METHOD(epsTmp, epsTmp, u8"J_{m-1}(gr) (\\varepsilon_{rr} - \\varepsilon_{\\varphi\\varphi}) J_{m+1}(kr) r dr", "layer");
-    METHOD(epsTpm, epsTpm, u8"J_{m+1}(gr) (\\varepsilon_{rr} - \\varepsilon_{\\varphi\\varphi}) J_{m-1}(kr) r dr", "layer");
-    METHOD(epsDm, epsDm, u8"J_{m-1}(gr) d \\varepsilon^{-1}/dr J_m(kr) r dr", "layer");
-    METHOD(epsDp, epsDp, u8"J_{m+1}(gr) d \\varepsilon^{-1}/dr J_m(kr) r dr", "layer");
+#ifndef NDEBUG
+    METHOD(epsVmm, epsVmm, u8"$J_{m-1}(gr) \\varepsilon^{-1} J_{m-1}(kr) r dr$", "layer");
+    METHOD(epsVpp, epsVpp, u8"$J_{m+1}(gr) \\varepsilon^{-1} J_{m+1}(kr) r dr$", "layer");
+    METHOD(epsTmm, epsTmm, u8"$J_{m-1}(gr) (\\varepsilon_{rr} + \\varepsilon_{\\varphi\\varphi}) J_{m-1}(kr) r dr$", "layer");
+    METHOD(epsTpp, epsTpp, u8"$J_{m+1}(gr) (\\varepsilon_{rr} + \\varepsilon_{\\varphi\\varphi}) J_{m+1}(kr) r dr$", "layer");
+    METHOD(epsTmp, epsTmp, u8"$J_{m-1}(gr) (\\varepsilon_{rr} - \\varepsilon_{\\varphi\\varphi}) J_{m+1}(kr) r dr$", "layer");
+    METHOD(epsTpm, epsTpm, u8"$J_{m+1}(gr) (\\varepsilon_{rr} - \\varepsilon_{\\varphi\\varphi}) J_{m-1}(kr) r dr$", "layer");
+    METHOD(epsDm, epsDm, u8"$J_{m-1}(gr) d \\varepsilon^{-1}/dr J_m(kr) r dr$", "layer");
+    METHOD(epsDp, epsDp, u8"$J_{m+1}(gr) d \\varepsilon^{-1}/dr J_m(kr) r dr$", "layer");
 
-//     METHOD(muVmm, muVmm, u8"J_{m-1}(gr) \\mu^{-1} J_{m-1}(kr) r dr");
-//     METHOD(muVpp, muVpp, u8"J_{m+1}(gr) \\mu^{-1} J_{m+1}(kr) r dr");
-//     METHOD(muTmm, muTmm, u8"J_{m-1}(gr) (\\mu_{rr} + \\mu_{\\varphi\\varphi}) J_{m-1}(kr) r dr");
-//     METHOD(muTpp, muTpp, u8"J_{m+1}(gr) (\\mu_{rr} + \\mu_{\\varphi\\varphi}) J_{m+1}(kr) r dr");
-//     METHOD(muTmp, muTmp, u8"J_{m-1}(gr) (\\mu_{rr} - \\mu_{\\varphi\\varphi}) J_{m+1}(kr) r dr");
-//     METHOD(muTpm, muTpm, u8"J_{m+1}(gr) (\\mu_{rr} - \\mu_{\\varphi\\varphi}) J_{m-1}(kr) r dr");
-//     METHOD(muDm, muDm, u8"J_{m-1}(gr) d \\mu^{-1}/dr J_m(kr) r dr");
-//     METHOD(muDp, muDp, u8"J_{m+1}(gr) d \\mu^{-1}/dr J_m(kr) r dr");
+//     METHOD(muVmm, muVmm, u8"$J_{m-1}(gr) \\mu^{-1} J_{m-1}(kr) r dr$");
+//     METHOD(muVpp, muVpp, u8"$J_{m+1}(gr) \\mu^{-1} J_{m+1}(kr) r dr$");
+//     METHOD(muTmm, muTmm, u8"$J_{m-1}(gr) (\\mu_{rr} + \\mu_{\\varphi\\varphi}) J_{m-1}(kr) r dr$");
+//     METHOD(muTpp, muTpp, u8"$J_{m+1}(gr) (\\mu_{rr} + \\mu_{\\varphi\\varphi}) J_{m+1}(kr) r dr$");
+//     METHOD(muTmp, muTmp, u8"$J_{m-1}(gr) (\\mu_{rr} - \\mu_{\\varphi\\varphi}) J_{m+1}(kr) r dr$");
+//     METHOD(muTpm, muTpm, u8"$J_{m+1}(gr) (\\mu_{rr} - \\mu_{\\varphi\\varphi}) J_{m-1}(kr) r dr$");
+//     METHOD(muDm, muDm, u8"$J_{m-1}(gr) d \\mu^{-1}/dr J_m(kr) r dr$");
+//     METHOD(muDp, muDp, u8"$J_{m+1}(gr) d \\mu^{-1}/dr J_m(kr) r dr$");
 #endif
 
     py::scope scope = solver;

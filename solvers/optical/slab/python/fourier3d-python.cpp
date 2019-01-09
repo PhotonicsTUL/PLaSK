@@ -632,15 +632,15 @@ void export_FourierSolver3D()
                u8"    sigma (float or tuple): Gaussian standard deviation in longitudinal and\n"
                u8"                            transverse directions [µm, µm].\n"
                u8"    center (tuple): Position of the beam center [µm, µm].\n\n"
-               u8"Example:\n:"
+               u8"Example:\n"
                u8"   >>> scattered = fourier.scattering('top', \n"
-               u8"                                      fourier.gaussian('top', 'Ex', 0.2))\n"
+               u8"   ...     fourier.gaussian('top', 'Ex', 0.2))\n"
               );
     solver.def("scattering_gaussian", &FourierSolver3D_scatteringGaussian, (py::arg("side"), "polarization", "sigma", py::arg("center")=py::make_tuple(0., 0.)),
                u8"Helper function to Access reflected fields for access incidence.\n\n"
                u8"This method is equivalent to calling:\n\n"
                u8"   >>> fourier.scattering(side,\n"
-               u8"                          fourier.gaussian(side, polarization, sigma, center))\n\n"
+               u8"   ...     fourier.gaussian(side, polarization, sigma, center))\n\n"
                u8"Args:\n"
                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                u8"        present.\n"
@@ -650,11 +650,6 @@ void export_FourierSolver3D()
                u8"    sigma (float): Gaussian standard deviation [µm].\n"
                u8"    center (float): Position of the beam center [µm].\n\n"
               );
-    // OBSOLETE
-    solver.def("get_electric_coefficients", FourierSolver3D_getFieldVectorE, (py::arg("num"), "level"),
-               u8"Obsolete alias for :meth:`get_raw_E`.");
-    solver.def("get_magnetic_coefficients", FourierSolver3D_getFieldVectorH, (py::arg("num"), "level"),
-               u8"Obsolete alias for :meth:`get_raw_H`.");
 
     py::scope scope = solver;
     (void) scope;   // don't warn about unused variable scope

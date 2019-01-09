@@ -369,7 +369,31 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         return transfer->getFieldVectorH(z);
     }
 
-   /// Check if the current parameters correspond to some mode and insert it
+    /**
+     * Get ½ E·conj(E) integral between \a z1 and \a z2
+     * \param num mode number
+     * \param z1 lower integration bound
+     * \param z2 upper integration bound
+     * \return computed integral
+     */
+    double getIntegralEE(size_t num, double z1, double z2) {
+        applyMode(modes[num]);
+        return transfer->getIntegralEE(z1, z2);
+    }
+
+    /**
+     * Get ½ H·conj(H) integral between \a z1 and \a z2
+     * \param num mode number
+     * \param z1 lower integration bound
+     * \param z2 upper integration bound
+     * \return computed integral
+     */
+    double getIntegralHH(size_t num, double z1, double z2) {
+        applyMode(modes[num]);
+        return transfer->getIntegralHH(z1, z2);
+    }
+
+    /// Check if the current parameters correspond to some mode and insert it
     size_t setMode() {
         if (abs2(this->getDeterminant()) > root.tolf_max*root.tolf_max)
             throw BadInput(this->getId(), "Cannot set the mode, determinant too large");
