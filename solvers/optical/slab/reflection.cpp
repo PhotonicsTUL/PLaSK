@@ -551,14 +551,74 @@ cvector ReflectionTransfer::getFieldVectorH(double z, std::size_t n)
 
 
 
-double ReflectionTransfer::integrateEE(double z1, double z2) {
-    //TODO
-    throw NotImplemented("integrateEE");
+double ReflectionTransfer::integrateEE(size_t n, double z1, double z2) {
+    size_t layer = solver->stack[n];
+    size_t N = diagonalizer->matrixSize();
+
+    cmatrix TE = diagonalizer->TE(layer),
+            TH = diagonalizer->TH(layer);
+    cdiagonal gamma = diagonalizer->Gamma(layer);
+
+    if (std::ptrdiff_t(n) >= solver->interface) {
+        double zl = z1;
+        z1 = - z2; z2 = - zl;
+        if (n != 0 && n != solver->vbounds->size())
+            z1 += solver->vbounds->at(n) - solver->vbounds->at(n-1);
+            z2 += solver->vbounds->at(n) - solver->vbounds->at(n-1);
+    }
+
+    double result = 0.;
+    for (size_t i = 0; i != N; ++i) {
+        cvector E(TE.data() + N*i, N),
+                H(TE.data() + N*i, N);
+        double TT = diagonalizer->source()->integrateEE(E, H);
+
+        double gi = 2. * gamma[i].imag(), gr = 2. * gamma[i].real();
+        double fFF =   is_zero(gi)? z2-z1 : (exp(gi*z2)-exp(gi*z1)) / gi,
+               fBB =   is_zero(gi)? z2-z1 : (exp(-gi*z1)-exp(-gi*z2)) / gi;
+        dcomplex fFB = is_zero(gr)? z2-z1 : (exp(-I*gr*z1)-exp(-I*gr*z2)) / gr;
+        double VV =      real(F1*conj(F1)) * fFF +
+                         real(B1*conj(B1)) * fBB +
+                    2. * imag(F1*conj(B1) * fFB);
+        result += TT * VV;
+    }
+
+    return result;
 }
 
-double ReflectionTransfer::integrateHH(double z1, double z2) {
-    //TODO
-    throw NotImplemented("integrateHH");
+double ReflectionTransfer::integrateHH(size_t n, double z1, double z2) {
+    size_t layer = solver->stack[n];
+    size_t N = diagonalizer->matrixSize();
+
+    cmatrix TE = diagonalizer->TE(layer),
+            TH = diagonalizer->TH(layer);
+    cdiagonal gamma = diagonalizer->Gamma(layer);
+
+    if (std::ptrdiff_t(n) >= solver->interface) {
+        double zl = z1;
+        z1 = - z2; z2 = - zl;
+        if (n != 0 && n != solver->vbounds->size())
+            z1 += solver->vbounds->at(n) - solver->vbounds->at(n-1);
+            z2 += solver->vbounds->at(n) - solver->vbounds->at(n-1);
+    }
+
+    double result = 0.;
+    for (size_t i = 0; i != N; ++i) {
+        cvector E(TE.data() + N*i, N),
+                H(TE.data() + N*i, N);
+        double TT = diagonalizer->source()->integrateHH(E, H);
+
+        double gi = 2. * gamma[i].imag(), gr = 2. * gamma[i].real();
+        double fFF =   is_zero(gi)? z2-z1 : (exp(gi*z2)-exp(gi*z1)) / gi,
+               fBB =   is_zero(gi)? z2-z1 : (exp(-gi*z1)-exp(-gi*z2)) / gi;
+        dcomplex fFB = is_zero(gr)? z2-z1 : (exp(-I*gr*z1)-exp(-I*gr*z2)) / gr;
+        double VV =      real(F1*conj(F1)) * fFF +
+                         real(B1*conj(B1)) * fBB +
+                    2. * imag(F1*conj(B1) * fFB);
+        result += TT * VV;
+    }
+
+    return result;
 }
 
 }}} // namespace plask::optical::slab

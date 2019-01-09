@@ -166,19 +166,21 @@ struct PLASK_SOLVER_API Transfer {
 
     /**
      * Compute ½ E·conj(E) integral between \a z1 and \a z2
-     * \param z1 lower integration bound
-     * \param z2 upper integration bound
+     * \param n layer number
+     * \param z1 lower integration bound in local layer coordinates
+     * \param z2 upper integration bound in local layer coordinates
      * \return computed integral
      */
-    virtual double integrateEE(double z1, double z2) = 0;
+    virtual double integrateEE(size_t n, double z1, double z2) = 0;
 
     /**
      * Compute ½ H·conj(H) integral between \a z1 and \a z2
-     * \param z1 lower integration bound
-     * \param z2 upper integration bound
+     * \param n layer number
+     * \param z1 lower integration bound in local layer coordinates
+     * \param z2 upper integration bound in local layer coordinates
      * \return computed integral
      */
-    virtual double integrateHH(double z1, double z2) = 0;
+    virtual double integrateHH(size_t n, double z1, double z2) = 0;
 
   public:
 
@@ -294,7 +296,7 @@ struct PLASK_SOLVER_API Transfer {
      */
     double getEE(double z1, double z2) {
         determineFields();
-        return integrateEE(z1, z2);
+//         return integrateEE(z1, z2);
     }
 
     /**
@@ -305,7 +307,7 @@ struct PLASK_SOLVER_API Transfer {
      */
     double getHH(double z1, double z2) {
         determineFields();
-        return integrateHH(z1, z2);
+//         return integrateHH(z1, z2);
     }
 };
 

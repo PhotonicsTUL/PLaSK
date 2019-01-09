@@ -577,12 +577,12 @@ cvector AdmittanceTransfer::getTransmissionVector(const cvector& incident, Incid
 
 
 
-double AdmittanceTransfer::integrateEE(double z1, double z2) {
+double AdmittanceTransfer::integrateEE(size_t n, double z1, double z2) {
     //TODO
     throw NotImplemented("integrateEE");
 }
 
-double AdmittanceTransfer::integrateHH(double z1, double z2) {
+double AdmittanceTransfer::integrateHH(size_t n, double z1, double z2) {
     //TODO
     throw NotImplemented("integrateHH");
 }
