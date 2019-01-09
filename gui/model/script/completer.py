@@ -146,7 +146,7 @@ def get_completions(document, text, block, column):
 
 
 def get_docstring(document, text, block, column):
-    if jedi is None: return
+    if jedi is None or CONFIG['workarounds/no_jedi']: return
     from ... import _DEBUG
     with Lock(JEDI_MUTEX) as lck:
         try:
@@ -181,10 +181,10 @@ def get_docstring(document, text, block, column):
 
 
 def get_definitions(document, text, block, column):
-    if jedi is None: return None, None
+    if jedi is None or CONFIG['workarounds/no_jedi']: return None, None
     with Lock(JEDI_MUTEX) as lck:
-        script = jedi.Script(text, block+1, column, document.filename)
         try:
+            script = jedi.Script(text, block+1, column, document.filename)
             defs = script.goto_assignments()
         except:
             return None, None
