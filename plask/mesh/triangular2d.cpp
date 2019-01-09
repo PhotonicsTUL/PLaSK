@@ -207,6 +207,16 @@ struct SegmentSetMember: private Compare<TriangularMesh2D::Segment> {
     bool operator==(const SegmentSetMember& other) const {
         return this->segment == other.segment;
     }
+
+    /**
+     * Check if this segment dominate given point.
+     * @param mesh
+     * @param point
+     * @return
+     */
+    bool dominates(const TriangularMesh2D& mesh, const Vec<2, double>& point) const {
+        // TODO
+    }
 };
 
 // DIR - oś prostopadła do przedziałów trzymanych w boost::icl::interval_map
@@ -236,10 +246,18 @@ struct SegmentSet: Compare<double> {
         return this->set == other.set;
     }
 
+    // check if point is dominated by any segment in set represented by this
+    bool dominates(const TriangularMesh2D& mesh, const Vec<2, double>& point) const {
+        for (const SegmentSetMember<DIR, Compare>& s: set)
+            if (s.dominates(mesh, point)) return true;
+        return false;
+    }
+
 private:
     void insert(const std::set<SegmentSetMember<DIR>>& right) {
         for (auto& s: right)
-            if (!Compare<double>::operator()(s.max, maxOfMins)) set.insert(s);
+            if (!Compare<double>::operator()(s.max, maxOfMins))
+                set.insert(s);
             //if (s.max >= maxOfMins) set.insert(s);
     }
 
@@ -263,7 +281,17 @@ std::set<std::size_t> TriangularMesh2D::rightBoundaryNodes(const TriangularMesh2
                 boost::icl::interval<double>::closed(this->nodes[seg.first].c0, this->nodes[seg.second].c0),
                 SegmentSet<1>(*this, seg)
             );
+            result.insert(s.first.first);
+            result.insert(s.first.second);
         }
+    // remove nodes which are dominated:
+    for (auto it = result.begin(); it != result.end(); ) {
+        const auto& node_coords = this->nodes[*it];
+        if (non_dominated.find(node_coords.c0)->second.dominates(*this, node_coords))
+            it = result.erase(it);
+        else
+            ++it;
+    }
     return result;
 }
 

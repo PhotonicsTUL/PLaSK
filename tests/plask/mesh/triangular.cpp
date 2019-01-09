@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(triangular2d_boundaries) {
      06-07-08-09-10-11  1
      | \| \| \| \| \|
      12-13-14 15-16-17  2
-     | \| \     \| \|
+     | \| \|  | \| \|
      18-19-20-21-22-23  3
      | \| \| \| \| \|
      24-25-26-27-28-29  4
@@ -56,7 +56,8 @@ BOOST_AUTO_TEST_CASE(triangular2d_boundaries) {
     {
         plask::BoundaryNodeSet allBoundariesIn = mesh.getAllBoundaryIn(plask::Box2D(0.5, 0.5, 4.5, 4.5)).get(mesh, plask::make_shared<plask::Geometry2DCartesian>());
         BOOST_CHECK_EQUAL(allBoundariesIn.size(), 3*4 /*outer*/ + 4 /*inner*/);
-        //BOOST_CHECK_EQUAL_COLLECTIONS(allBoundariesIn.begin(), allBoundariesIn.end(), all_boundary_indices.begin(), all_boundary_indices.end());
+        std::size_t expected[] = {7,8,9,10, 13,14,15,16, 19,20,21,22, 25,26,27,28};
+        BOOST_CHECK_EQUAL_COLLECTIONS(allBoundariesIn.begin(), allBoundariesIn.end(), std::begin(expected), std::end(expected));
     }
     {
         //plask::BoundaryNodeSet leftBoundary = mesh.

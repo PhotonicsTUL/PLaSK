@@ -405,6 +405,12 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
         } );
     }
 
+    static Boundary getRightBoundary() {
+        return Boundary( [](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
+            return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.rightBoundaryNodes(mesh.countSegments())));
+        } );
+    }
+
     /**
      * Get boundary which describes all nodes which lies on all (outer and inner) boundaries of a given @p box.
      * @param box box which describes a region
