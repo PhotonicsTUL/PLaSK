@@ -822,6 +822,7 @@ private:
 
 
 namespace std {
+template<>
 inline void swap(plask::XMLReader& a, plask::XMLReader& b) { a.swap(b); }
 }   // namespace std
 

@@ -4,6 +4,8 @@
 #include <boost/icl/interval_map.hpp>
 #include <unordered_map>
 
+#include "../utils/interpolation.h"
+
 namespace plask {
 
 Vec<3, double> TriangularMesh2D::Element::barycentric(Vec<2, double> p) const {
@@ -184,6 +186,9 @@ std::set<std::size_t> TriangularMesh2D::boundaryNodes(const TriangularMesh2D::Se
 
 template <int DIR, template<class> class Compare = std::less>  // DIR - oś prostopadła do przedziałów trzymanych w boost::icl::interval_map
 struct SegmentSetMember: private Compare<TriangularMesh2D::Segment> {
+
+    constexpr static int SEG_DIR = 1 - DIR; // kierunek rozciągania się przedziałów w interval_map
+
     TriangularMesh2D::Segment segment;
     double min, max;    // mniejsza i większa współrzędna (w osi DIR) końców segmentu
 
@@ -215,7 +220,19 @@ struct SegmentSetMember: private Compare<TriangularMesh2D::Segment> {
      * @return
      */
     bool dominates(const TriangularMesh2D& mesh, const Vec<2, double>& point) const {
-        // TODO
+        // this two cases are supported also by interpolation, but they are common and we want to ensure to check them exact:
+        const Vec<2, double>& f = mesh.nodes[segment.first];
+        if (point[SEG_DIR] == f[SEG_DIR])
+            return Compare<double>()(point[DIR], f[DIR]); //point[DIR] < f[DIR];
+        const Vec<2, double>& s = mesh.nodes[segment.second];
+        if (point[SEG_DIR] == s[SEG_DIR])
+            return Compare<double>()(point[DIR], s[DIR]); //point[DIR] < f[DIR];
+
+        if (f[SEG_DIR] < s[SEG_DIR])
+            return Compare<double>()(point[DIR], interpolation::linear(f[SEG_DIR], f[DIR], s[SEG_DIR], s[DIR], point[SEG_DIR]));
+            //point[DIR] < interpolation::linear(f[SEG_DIR], f[DIR], s[SEG_DIR], s[DIR], point[SEG_DIR]);
+        else    // same as above, but f<->s are swapped
+            return Compare<double>()(point[DIR], interpolation::linear(s[SEG_DIR], s[DIR], f[SEG_DIR], f[DIR], point[SEG_DIR]));
     }
 };
 

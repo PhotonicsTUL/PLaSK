@@ -18,14 +18,15 @@ BOOST_AUTO_TEST_CASE(triangular2d_boundaries) {
     auto node = [](std::size_t x_i, std::size_t y_i) { return x_i*6 + y_i; };
     plask::TriangularMesh2D mesh;
     std::vector<std::size_t> all_boundary_indices;
-    /*
+    /* Our mesh (has rectangular hole 14-15-21-20):
+
      0  1  2  3  4  5
 
      00-01-02-03-04-05  0
      | \| \| \| \| \|
      06-07-08-09-10-11  1
      | \| \| \| \| \|
-     12-13-14 15-16-17  2
+     12-13-14-15-16-17  2
      | \| \|  | \| \|
      18-19-20-21-22-23  3
      | \| \| \| \| \|
@@ -60,6 +61,9 @@ BOOST_AUTO_TEST_CASE(triangular2d_boundaries) {
         BOOST_CHECK_EQUAL_COLLECTIONS(allBoundariesIn.begin(), allBoundariesIn.end(), std::begin(expected), std::end(expected));
     }
     {
-        //plask::BoundaryNodeSet leftBoundary = mesh.
+        plask::BoundaryNodeSet rightBoundary = mesh.getRightBoundary().get(mesh, plask::make_shared<plask::Geometry2DCartesian>());
+        BOOST_CHECK_EQUAL(rightBoundary.size(), 6);
+        std::size_t expected[] = {5, 11, 17, 23, 29, 35};
+        BOOST_CHECK_EQUAL_COLLECTIONS(rightBoundary.begin(), rightBoundary.end(), std::begin(expected), std::end(expected));
     }
 }
