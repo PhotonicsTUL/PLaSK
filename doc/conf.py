@@ -405,7 +405,7 @@ class ExecDirective(Directive):
 # -- Register custom elements ------------------------------------------------------
 
 def setup(app):
-    app.add_directive('exec', ExecDirective)
+    app.add_directive('exec', ExecDirective);
     ExecDirective.app = app
     #sphinx.writers.latex.LaTeXTranslator.visit_table = latex_visit_table
     #sphinx.writers.latex.LaTeXTranslator.visit_thead = latex_visit_thead
@@ -500,6 +500,19 @@ pdf_use_numbered_links = False
 
 # Background images fitting mode
 pdf_fit_background_mode = 'scale'
+
+
+# -- MathJaX config ----------------------------------------------------------------
+mathjax_config = {
+    'extensions': ['tex2jax.js'],
+    'jax': ['input/TeX', 'output/HTML-CSS'],
+    'tex2jax': {
+        'inlineMath': [ ['$','$'], ['\\(', '\\)'] ],
+        'displayMath': [ ['$$','$$'], ['\\[', '\\]'] ],
+        'processEscapes': False,
+        'ignoreClass': 'text-diff'
+    }
+}
 
 
 # -- Some tricks with plask for better documentation -------------------------------

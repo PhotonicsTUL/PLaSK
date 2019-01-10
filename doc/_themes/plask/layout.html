@@ -16,27 +16,32 @@
       <script src="//oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
       <script src="//oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
     <![endif]-->
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/x-mathjax-config">
-        MathJax.Hub.Config({
-            extensions: ['tex2jax.js'],
-            jax: ['input/TeX', 'output/HTML-CSS'],
-            tex2jax: {
-            inlineMath: [ ['$','$'], ['\\(', '\\)'] ],
-            displayMath: [ ['$$','$$'], ['\\[', '\\]'] ],
-            processEscapes: false,
-            ignoreClass: 'text-diff'
-            },
-            'HTML-CSS': {
-            availableFonts: ['TeX', 'STIX'],
-            preferredFont: 'STIX',
-            scale: 94
-            }
-        });
-        MathJax.Hub.Typeset();
-    </script>
     {{ super() }}
 {%- endblock %}
+
+{%- block extrahead %}
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Register.StartupHook("HTML-CSS Jax Ready",function () {
+            var VARIANT = MathJax.OutputJax["HTML-CSS"].FONTDATA.VARIANT;
+            VARIANT["normal"].fonts.unshift("MathJax_SansSerif");
+            VARIANT["bold"].fonts.unshift("MathJax_SansSerif-bold");
+            VARIANT["italic"].fonts.unshift("MathJax_SansSerif-italic");
+            VARIANT["-tex-mathit"].fonts.unshift("MathJax_SansSerif-italic");
+        });
+        MathJax.Hub.Register.StartupHook("SVG Jax Ready",function () {
+            var VARIANT = MathJax.OutputJax.SVG.FONTDATA.VARIANT;
+            VARIANT["normal"].fonts.unshift("MathJax_SansSerif");
+            VARIANT["bold"].fonts.unshift("MathJax_SansSerif-bold");
+            VARIANT["italic"].fonts.unshift("MathJax_SansSerif-italic");
+            VARIANT["-tex-mathit"].fonts.unshift("MathJax_SansSerif-italic");
+        });
+        MathJax.Hub.Config({
+            'HTML-CSS': {
+                scale: 84
+            }
+        });
+    </script>
+{% endblock %}
 
 
 {% set toctree = toctree(maxdepth=8, collapse=True, includehidden=True) %}
