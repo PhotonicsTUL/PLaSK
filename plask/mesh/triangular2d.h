@@ -449,32 +449,32 @@ public:
      * @param box box which describes a region
      * @return the boundary
      */
-    static Boundary getRightBoundaryIn(const Box2D& box);
+    static Boundary getRightBoundaryOf(const Box2D& box);
 
     /**
      * Get boundary which describes all nodes which lies on left boundary of a given @p box.
      * @param box box which describes a region
      * @return the boundary
      */
-    static Boundary getLeftBoundaryIn(const Box2D& box);
+    static Boundary getLeftBoundaryOf(const Box2D& box);
 
     /**
      * Get boundary which describes all nodes which lies on top boundary of a given @p box.
      * @param box box which describes a region
      * @return the boundary
      */
-    static Boundary getTopBoundaryIn(const Box2D& box);
+    static Boundary getTopBoundaryOf(const Box2D& box);
 
     /**
      * Get boundary which describes all nodes which lies on bottom boundary of a given @p box.
      * @param box box which describes a region
      * @return the boundary
      */
-    static Boundary getBottomBoundaryIn(const Box2D& box);
+    static Boundary getBottomBoundaryOf(const Box2D& box);
 
     /**
      * Get boundary which describes all nodes which lies on all (outer and inner) boundaries of a given @p boxes.
-     * @param box vector of boxes that describes a region
+     * @param boxes vector of boxes that describes a region
      * @return the boundary
      */
     static Boundary getAllBoundaryIn(const std::vector<Box2D>& boxes) {
@@ -482,6 +482,34 @@ public:
             return BoundaryNodeSet(new StdSetBoundaryImpl(allBoundaryNodes(mesh.countSegmentsIn(boxes))));
         } );
     }
+
+    /**
+     * Get boundary which describes all nodes which lies on right boundaries of a given @p boxes.
+     * @param boxes vector of boxes that describes a region
+     * @return the boundary
+     */
+    static Boundary getRightBoundaryOf(const std::vector<Box2D>& boxes);
+
+    /**
+     * Get boundary which describes all nodes which lies on left boundaries of a given @p boxes.
+     * @param boxes vector of boxes that describes a region
+     * @return the boundary
+     */
+    static Boundary getLeftBoundaryOf(const std::vector<Box2D>& boxes);
+
+    /**
+     * Get boundary which describes all nodes which lies on top boundaries of a given @p boxes.
+     * @param boxes vector of boxes that describes a region
+     * @return the boundary
+     */
+    static Boundary getTopBoundaryOf(const std::vector<Box2D>& boxes);
+
+    /**
+     * Get boundary which describes all nodes which lies on bottom boundaries of a given @p boxes.
+     * @param boxes vector of boxes that describes a region
+     * @return the boundary
+     */
+    static Boundary getBottomBoundaryOf(const std::vector<Box2D>& boxes);
 
     /**
      * Get boundary which describes all nodes which lies on all (outer and inner) boundaries of a given @p object.
@@ -495,6 +523,35 @@ public:
     }
 
     /**
+     * Get boundary which describes all nodes which lies on outer right boundary of a given @p object.
+     * @param object object to test
+     * @return the boundary
+     */
+    static Boundary getRightBoundaryOf(shared_ptr<const GeometryObject> object);
+
+    /**
+     * Get boundary which describes all nodes which lies on outer left boundary of a given @p object.
+     * @param object object to test
+     * @param path path hints specifying the object
+     * @return the boundary
+     */
+    static Boundary getLeftBoundaryOf(shared_ptr<const GeometryObject> object);
+
+    /**
+     * Get boundary which describes all nodes which lies on outer top boundary of a given @p object.
+     * @param object object to test
+     * @return the boundary
+     */
+    static Boundary getTopBoundaryOf(shared_ptr<const GeometryObject> object);
+
+    /**
+     * Get boundary which describes all nodes which lies on outer bottom boundary of a given @p object.
+     * @param object object to test
+     * @return the boundary
+     */
+    static Boundary getBottomBoundaryOf(shared_ptr<const GeometryObject> object);
+
+    /**
      * Get boundary which describes all nodes which lies on all (outer and inner) boundaries of a given @p object.
      * @param object object to test
      * @param path path hints specifying the object
@@ -505,6 +562,38 @@ public:
             return BoundaryNodeSet(new StdSetBoundaryImpl(allBoundaryNodes(mesh.countSegmentsIn(*geom, *object, &path))));
         } );
     }
+
+    /**
+     * Get boundary which describes all nodes which lies on outer right boundary of a given @p object.
+     * @param object object to test
+     * @param path path hints specifying the object
+     * @return the boundary
+     */
+    static Boundary getRightBoundaryOf(shared_ptr<const GeometryObject> object, const PathHints& path);
+
+    /**
+     * Get boundary which describes all nodes which lies on outer left boundary of a given @p object.
+     * @param object object to test
+     * @param path path hints specifying the object
+     * @return the boundary
+     */
+    static Boundary getLeftBoundaryOf(shared_ptr<const GeometryObject> object, const PathHints& path);
+
+    /**
+     * Get boundary which describes all nodes which lies on outer top boundary of a given @p object.
+     * @param object object to test
+     * @param path path hints specifying the object
+     * @return the boundary
+     */
+    static Boundary getTopBoundaryOf(shared_ptr<const GeometryObject> object, const PathHints& path);
+
+    /**
+     * Get boundary which describes all nodes which lies on outer bottom boundary of a given @p object.
+     * @param object object to test
+     * @param path path hints specifying the object
+     * @return the boundary
+     */
+    static Boundary getBottomBoundaryOf(shared_ptr<const GeometryObject> object, const PathHints& path);
 
 };
 
