@@ -106,7 +106,7 @@ option(USE_OMP "Use OpenMP" ON)
 
 set(USE_PROFILER "" CACHE STRING "Type of the profiler to use. Leave empty for no profiling. Set to 'GNU' if you want to use gprof or to 'Google' for google perftools.")
 
-if(WIN32)
+if(WIN32 AND NOT MSVC)
     set(USE_MANIFEST "msvcr90" CACHE STRING "Manifest to include into Windows executables")
 endif()
 
@@ -318,7 +318,11 @@ endif()
 
 # CAMOS
 add_subdirectory(extlib/camos)
+
+# FFTPACX
 add_subdirectory(extlib/fftpacx)
+
+# Triangle
 add_subdirectory(extlib/triangle)
 
 # fmt

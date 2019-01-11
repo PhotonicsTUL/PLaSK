@@ -23,7 +23,9 @@ file(GLOB spurious_libs ${PLASK_PATH}/materials/*.${lib_suffix})
 
 foreach(material ${materials})
     if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${material})
-        file(GLOB_RECURSE material_src FOLLOW_SYMLINKS ${CMAKE_CURRENT_SOURCE_DIR}/${material}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/${material}/*.h)
+        file(GLOB_RECURSE material_src FOLLOW_SYMLINKS
+             ${CMAKE_CURRENT_SOURCE_DIR}/${material}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/${material}/*.cc
+             ${CMAKE_CURRENT_SOURCE_DIR}/${material}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/${material}/*.hh ${CMAKE_CURRENT_SOURCE_DIR}/${material}/*.h)
         if(material_src)
             if (WIN32)
                 add_library(materials-${material} SHARED ${material_src})
