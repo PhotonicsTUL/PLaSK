@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(triangular2d_boundaries) {
      06-07-08-09-10-11  1
      | \| \| \| \| \|
      12-13-14-15-16-17  2
-     | \| \|  | \| \|
+     | \| \|**| \| \|
      18-19-20-21-22-23  3
      | \| \| \| \| \|
      24-25-26-27-28-29  4
@@ -61,9 +61,28 @@ BOOST_AUTO_TEST_CASE(triangular2d_boundaries) {
         BOOST_CHECK_EQUAL_COLLECTIONS(allBoundariesIn.begin(), allBoundariesIn.end(), std::begin(expected), std::end(expected));
     }
     {
+        plask::BoundaryNodeSet leftBoundary = mesh.getLeftBoundary().get(mesh, plask::make_shared<plask::Geometry2DCartesian>());
+        BOOST_CHECK_EQUAL(leftBoundary.size(), 6);
+        std::size_t expected[] = {0, 6, 12, 18, 24, 30};
+        BOOST_CHECK_EQUAL_COLLECTIONS(leftBoundary.begin(), leftBoundary.end(), std::begin(expected), std::end(expected));
+    }
+    {
         plask::BoundaryNodeSet rightBoundary = mesh.getRightBoundary().get(mesh, plask::make_shared<plask::Geometry2DCartesian>());
         BOOST_CHECK_EQUAL(rightBoundary.size(), 6);
         std::size_t expected[] = {5, 11, 17, 23, 29, 35};
         BOOST_CHECK_EQUAL_COLLECTIONS(rightBoundary.begin(), rightBoundary.end(), std::begin(expected), std::end(expected));
     }
+    {
+        plask::BoundaryNodeSet bottomBoundary = mesh.getBottomBoundary().get(mesh, plask::make_shared<plask::Geometry2DCartesian>());
+        BOOST_CHECK_EQUAL(bottomBoundary.size(), 6);
+        std::size_t expected[] = {0, 1, 2, 3, 4, 5};
+        BOOST_CHECK_EQUAL_COLLECTIONS(bottomBoundary.begin(), bottomBoundary.end(), std::begin(expected), std::end(expected));
+    }
+    {
+        plask::BoundaryNodeSet topBoundary = mesh.getTopBoundary().get(mesh, plask::make_shared<plask::Geometry2DCartesian>());
+        BOOST_CHECK_EQUAL(topBoundary.size(), 6);
+        std::size_t expected[] = {30, 31, 32, 33, 34, 35};
+        BOOST_CHECK_EQUAL_COLLECTIONS(topBoundary.begin(), topBoundary.end(), std::begin(expected), std::end(expected));
+    }
+
 }

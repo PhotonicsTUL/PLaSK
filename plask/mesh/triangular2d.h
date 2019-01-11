@@ -386,14 +386,18 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
      */
     SegmentsCounts countSegmentsIn(const GeometryD<2>& geometry, const GeometryObject& object, const PathHints* path = nullptr) const;
 
+private:
     /**
      * Calculate a set of indices of boundary nodes (in a whole mesh or a certain region).
      * @param segmentsCount numbers of segments in a whole mesh or requested region
      * @return the set of indices of boundary nodes
      */
-    static std::set<std::size_t> boundaryNodes(const SegmentsCounts& segmentsCount);
+    static std::set<std::size_t> allBoundaryNodes(const SegmentsCounts& segmentsCount);
 
-    std::set<std::size_t> rightBoundaryNodes(const SegmentsCounts& segmentsCount) const;
+    template<int SEG_DIR, template<class> class Compare>
+    std::set<std::size_t> dirBoundaryNodes(const SegmentsCounts& segmentsCount) const;
+
+public:
 
     /**
      * Get boundary which describes all nodes which lies on all (outer and inner) boundaries of the whole mesh.
@@ -401,15 +405,33 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
      */
     static Boundary getAllBoundary() {
         return Boundary( [](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
-            return BoundaryNodeSet(new StdSetBoundaryImpl(boundaryNodes(mesh.countSegments())));
+            return BoundaryNodeSet(new StdSetBoundaryImpl(allBoundaryNodes(mesh.countSegments())));
         } );
     }
 
-    static Boundary getRightBoundary() {
-        return Boundary( [](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
-            return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.rightBoundaryNodes(mesh.countSegments())));
-        } );
-    }
+    /**
+     * Get boundary which describes all nodes which lies on outer right boundary of the whole mesh.
+     * @return the boundary
+     */
+    static Boundary getRightBoundary();
+
+    /**
+     * Get boundary which describes all nodes which lies on outer top boundary of the whole mesh.
+     * @return the boundary
+     */
+    static Boundary getTopBoundary();
+
+    /**
+     * Get boundary which describes all nodes which lies on outer left boundary of the whole mesh.
+     * @return the boundary
+     */
+    static Boundary getLeftBoundary();
+
+    /**
+     * Get boundary which describes all nodes which lies on outer bottom boundary of the whole mesh.
+     * @return the boundary
+     */
+    static Boundary getBottomBoundary();
 
     /**
      * Get boundary which describes all nodes which lies on all (outer and inner) boundaries of a given @p box.
@@ -418,7 +440,7 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
      */
     static Boundary getAllBoundaryIn(const Box2D& box) {
         return Boundary( [box](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
-            return BoundaryNodeSet(new StdSetBoundaryImpl(boundaryNodes(mesh.countSegmentsIn(box))));
+            return BoundaryNodeSet(new StdSetBoundaryImpl(allBoundaryNodes(mesh.countSegmentsIn(box))));
         } );
     }
 
@@ -429,7 +451,7 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
      */
     static Boundary getAllBoundaryIn(const std::vector<Box2D>& boxes) {
         return Boundary( [boxes](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
-            return BoundaryNodeSet(new StdSetBoundaryImpl(boundaryNodes(mesh.countSegmentsIn(boxes))));
+            return BoundaryNodeSet(new StdSetBoundaryImpl(allBoundaryNodes(mesh.countSegmentsIn(boxes))));
         } );
     }
 
@@ -440,7 +462,7 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
      */
     static Boundary getAllBoundaryIn(shared_ptr<const GeometryObject> object) {
         return Boundary( [=](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>& geom) {
-            return BoundaryNodeSet(new StdSetBoundaryImpl(boundaryNodes(mesh.countSegmentsIn(*geom, *object))));
+            return BoundaryNodeSet(new StdSetBoundaryImpl(allBoundaryNodes(mesh.countSegmentsIn(*geom, *object))));
         } );
     }
 
@@ -452,7 +474,7 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
      */
     static Boundary getAllBoundaryIn(shared_ptr<const GeometryObject> object, const PathHints& path) {
         return Boundary( [=](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>& geom) {
-            return BoundaryNodeSet(new StdSetBoundaryImpl(boundaryNodes(mesh.countSegmentsIn(*geom, *object, &path))));
+            return BoundaryNodeSet(new StdSetBoundaryImpl(allBoundaryNodes(mesh.countSegmentsIn(*geom, *object, &path))));
         } );
     }
 

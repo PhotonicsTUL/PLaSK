@@ -173,7 +173,7 @@ TriangularMesh2D::SegmentsCounts TriangularMesh2D::countSegmentsIn(const Geometr
     return result;
 }
 
-std::set<std::size_t> TriangularMesh2D::boundaryNodes(const TriangularMesh2D::SegmentsCounts& segmentsCount) {
+std::set<std::size_t> TriangularMesh2D::allBoundaryNodes(const TriangularMesh2D::SegmentsCounts& segmentsCount) {
     std::set<std::size_t> result;
     for (const std::pair<TriangularMesh2D::Segment, std::size_t>& s: segmentsCount)
         if (s.second == 1) {
@@ -182,7 +182,6 @@ std::set<std::size_t> TriangularMesh2D::boundaryNodes(const TriangularMesh2D::Se
         }
     return result;
 }
-
 
 template <int DIR, template<class> class Compare = std::less>  // DIR - oś prostopadła do przedziałów trzymanych w boost::icl::interval_map
 struct SegmentSetMember: private Compare<TriangularMesh2D::Segment> {
@@ -241,16 +240,16 @@ template<int DIR, template<class> class Compare = std::less>
 struct SegmentSet: Compare<double> {
     SegmentSet() = default;
 
-    SegmentSet(const SegmentSetMember<DIR>& to_append)
+    SegmentSet(const SegmentSetMember<DIR, Compare>& to_append)
         : maxOfMins(to_append.min) { set.insert(to_append); }
 
     SegmentSet(const TriangularMesh2D& mesh, const TriangularMesh2D::Segment& segment)
-        : SegmentSet(SegmentSetMember<DIR>(mesh, segment)) {}
+        : SegmentSet(SegmentSetMember<DIR, Compare>(mesh, segment)) {}
 
     SegmentSet& operator+=(const SegmentSet& right) {
         //if (maxOfMins < right.maxOfMins) {
         if (Compare<double>::operator()(maxOfMins, right.maxOfMins)) {
-            std::set<SegmentSetMember<DIR>> this_set_backup = std::move(set);
+            SetT this_set_backup = std::move(set);
             set = right.set;
             maxOfMins = right.maxOfMins;
             insert(this_set_backup);
@@ -259,7 +258,7 @@ struct SegmentSet: Compare<double> {
         return *this;
     }
 
-    bool operator==(const SegmentSet<DIR>& other) const {
+    bool operator==(const SegmentSet& other) const {
         return this->set == other.set;
     }
 
@@ -271,14 +270,16 @@ struct SegmentSet: Compare<double> {
     }
 
 private:
-    void insert(const std::set<SegmentSetMember<DIR>>& right) {
+    typedef std::set<SegmentSetMember<DIR, Compare>, Compare<SegmentSetMember<DIR, Compare>>> SetT;
+
+    void insert(const SetT& right) {
         for (auto& s: right)
             if (!Compare<double>::operator()(s.max, maxOfMins))
                 set.insert(s);
             //if (s.max >= maxOfMins) set.insert(s);
     }
 
-    std::set<SegmentSetMember<DIR, Compare>, Compare<SegmentSetMember<DIR, Compare>>> set;
+    SetT set;
 
     /**
      * Maximum of s.min, where s iterates over set.
@@ -288,15 +289,17 @@ private:
     double maxOfMins;
 };
 
-std::set<std::size_t> TriangularMesh2D::rightBoundaryNodes(const TriangularMesh2D::SegmentsCounts &segmentsCount) const {
+template<int SEG_DIR, template<class> class Compare>
+std::set<std::size_t> TriangularMesh2D::dirBoundaryNodes(const TriangularMesh2D::SegmentsCounts &segmentsCount) const {
+    typedef SegmentSet<1-SEG_DIR, Compare> SegmentSetT;
     std::set<std::size_t> result;
-    boost::icl::interval_map<double, SegmentSet<1>> non_dominated;
+    boost::icl::interval_map<double, SegmentSetT> non_dominated;
     for (const std::pair<TriangularMesh2D::Segment, std::size_t>& s: segmentsCount)
         if (s.second == 1) {
             const TriangularMesh2D::Segment& seg = s.first;
             non_dominated += std::make_pair(
-                boost::icl::interval<double>::closed(this->nodes[seg.first].c0, this->nodes[seg.second].c0),
-                SegmentSet<1>(*this, seg)
+                boost::icl::interval<double>::closed(this->nodes[seg.first][SEG_DIR], this->nodes[seg.second][SEG_DIR]),
+                SegmentSetT(*this, seg)
             );
             result.insert(s.first.first);
             result.insert(s.first.second);
@@ -304,12 +307,41 @@ std::set<std::size_t> TriangularMesh2D::rightBoundaryNodes(const TriangularMesh2
     // remove nodes which are dominated:
     for (auto it = result.begin(); it != result.end(); ) {
         const auto& node_coords = this->nodes[*it];
-        if (non_dominated.find(node_coords.c0)->second.dominates(*this, node_coords))
+        if (non_dominated.find(node_coords[SEG_DIR])->second.dominates(*this, node_coords))
             it = result.erase(it);
         else
             ++it;
     }
     return result;
+}
+
+TriangularMesh2D::Boundary TriangularMesh2D::getRightBoundary() {
+    return Boundary( [](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
+        return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.dirBoundaryNodes<0, std::less>(mesh.countSegments())));
+    } );
+}
+
+template <typename T>   // we can't use std::grater as it use >, and we have < only
+struct greater: public std::binary_function<T, T, bool> {
+  bool operator()(const T& first, const T& second) const { return second < first; }
+};
+
+TriangularMesh2D::Boundary TriangularMesh2D::getTopBoundary() {
+    return Boundary( [](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
+        return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.dirBoundaryNodes<1, std::less>(mesh.countSegments())));
+    } );
+}
+
+TriangularMesh2D::Boundary TriangularMesh2D::getLeftBoundary() {
+    return Boundary( [](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
+        return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.dirBoundaryNodes<0, greater>(mesh.countSegments())));
+    } );
+}
+
+TriangularMesh2D::Boundary TriangularMesh2D::getBottomBoundary() {
+    return Boundary( [](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
+        return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.dirBoundaryNodes<1, greater>(mesh.countSegments())));
+    } );
 }
 
 std::size_t readTriangularMesh2D_readNodeIndex(XMLReader& reader, const char* attrName, std::size_t nodes_size) {
