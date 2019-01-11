@@ -410,7 +410,7 @@ double Metal::optpar(std::string model, std::string par, std::string mat, double
 	ii *= -1;
 
 	std::complex<double> eps_j; // total permittivity
-	double epsRe, epsIm, nr, ext, abs;
+	double epsRe, epsIm, nr, ext, absp;
 
 	if (model == "LD") // Lorentz-Drude Model
 	{
@@ -418,20 +418,52 @@ double Metal::optpar(std::string model, std::string par, std::string mat, double
 		std::vector<double> f; f.clear();
 		std::vector<double> G; G.clear();
 		std::vector<double> w; w.clear();
-		
-		//double wp = 15.92;
-		//std::vector<double> f = { 0.096, 0.100, 0.135, 0.106, 0.729 };
-		//std::vector<double> G = { 0.048, 4.511, 1.334, 2.178, 6.292 };
-		//std::vector<double> w = { 0.000, 0.174, 0.582, 1.597, 6.089 };
-		
-		if (mat == "Ni")
+			
+		if (mat == "Au")
+		{
+			wp = 9.03;
+			f.push_back(0.760); f.push_back(0.024); f.push_back(0.010); f.push_back(0.071); f.push_back(0.601); f.push_back(4.384);
+			G.push_back(0.053); G.push_back(0.241); G.push_back(0.345); G.push_back(0.870); G.push_back(2.494); G.push_back(2.214);
+			w.push_back(0.000); w.push_back(0.415); w.push_back(0.830); w.push_back(2.969); w.push_back(4.304); w.push_back(13.32);
+		}
+		else if (mat == "Cu")
+		{
+			wp = 10.83;
+			f.push_back(0.575); f.push_back(0.061); f.push_back(0.104); f.push_back(0.723); f.push_back(0.638);
+			G.push_back(0.030); G.push_back(0.378); G.push_back(1.056); G.push_back(3.213); G.push_back(4.305);
+			w.push_back(0.000); w.push_back(0.291); w.push_back(2.957); w.push_back(5.300); w.push_back(11.18);
+		}
+		else if (mat == "Ni")
 		{
 			wp = 15.92;
 			f.push_back(0.096); f.push_back(0.100); f.push_back(0.135); f.push_back(0.106); f.push_back(0.729);
 			G.push_back(0.048); G.push_back(4.511); G.push_back(1.334); G.push_back(2.178); G.push_back(6.292);
 			w.push_back(0.000); w.push_back(0.174); w.push_back(0.582); w.push_back(1.597); w.push_back(6.089);
 		}
-		
+		else if (mat == "Pt")
+		{
+			wp = 9.59;
+			f.push_back(0.333); f.push_back(0.191); f.push_back(0.659); f.push_back(0.547); f.push_back(3.576);
+			G.push_back(0.080); G.push_back(0.517); G.push_back(1.838); G.push_back(3.668); G.push_back(8.517);
+			w.push_back(0.000); w.push_back(0.780); w.push_back(1.314); w.push_back(3.141); w.push_back(9.249);
+		}
+		else if (mat == "Ti")
+		{
+			wp = 7.29;
+			f.push_back(0.148); f.push_back(0.899); f.push_back(0.393); f.push_back(0.187); f.push_back(0.001);
+			G.push_back(0.082); G.push_back(2.276); G.push_back(2.518); G.push_back(1.663); G.push_back(1.762);
+			w.push_back(0.000); w.push_back(0.777); w.push_back(1.545); w.push_back(2.509); w.push_back(19.43);
+		}
+		else
+			return NAN;
+		//else if (mat == " ") - NIE KASOWAC (PRZYDA SIE DLA KOLEJNYCH METALI)
+		//{
+		//	wp = ;
+		//	f.push_back(); f.push_back(); f.push_back(); f.push_back(); f.push_back();
+		//	G.push_back(); G.push_back(); G.push_back(); G.push_back(); G.push_back();
+		//	w.push_back(); w.push_back(); w.push_back(); w.push_back(); w.push_back();
+		//}
+
 		size_t k = f.size() - 1;
 
 		wp = ehbar * wp;
@@ -456,13 +488,13 @@ double Metal::optpar(std::string model, std::string par, std::string mat, double
 	epsIm = eps_j.imag(); // epsIm in [-] 
 	nr = sqrt((sqrt(epsRe*epsRe + epsIm * epsIm) + epsRe) / 2.); // nR in [-] 
 	ext = sqrt((sqrt(epsRe*epsRe + epsIm * epsIm) - epsRe) / 2.); // ext in [-] 
-	abs = 4. * PI * ext / (_lam * 1e2); // abs in [1/cm] 
+	absp = 4. * PI * ext / (_lam * 1e2); // abs in [1/cm] 
 
 	if (par == "eps1") return epsRe;
 	else if (par == "eps2") return epsIm;
 	else if (par == "nr") return nr;
 	else if (par == "ext") return ext;
-	else if (par == "abs") return abs;
+	else if (par == "absp") return absp;
 	else return NAN;
 }
 

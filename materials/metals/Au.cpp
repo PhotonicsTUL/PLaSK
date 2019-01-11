@@ -29,28 +29,44 @@ Tensor2<double> Au::thermk(double T, double /*t*/) const {
 }
 
 MI_PROPERTY(Au, absp,
-            MISource(""),
-            MIComment("TODO"),
-            MIArgumentRange(MaterialInfo::lam, 490, 10000)
-            )
-double Au::absp(double lam, double /*T*/) const {
-    double ulam = lam*1e-3;
-    return ( -39949.7*pow(ulam,-3.07546) - 113.313*ulam*ulam - 4530.42*ulam + 816908 );
+	MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
+	MIComment("no temperature dependence")
+)
+double Au::absp(double lam, double T) const {
+	return optpar("LD", "absp", name(), lam);
 }
+
+MI_PROPERTY(Au, nr,
+	MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
+	MIComment("no temperature dependence")
+)
+double Au::nr(double lam, double T, double n) const {
+	return optpar("LD", "nr", name(), lam);
+}
+
+//MI_PROPERTY(Au, absp,
+//            MISource(""),
+//            MIComment("TODO"),
+//            MIArgumentRange(MaterialInfo::lam, 490, 10000)
+//            )
+//double Au::absp(double lam, double /*T*/) const {
+//    double ulam = lam*1e-3;
+//    return ( -39949.7*pow(ulam,-3.07546) - 113.313*ulam*ulam - 4530.42*ulam + 816908 );
+//}
 
 bool Au::isEqual(const Material &/*other*/) const {
     return true;
 }
 
-MI_PROPERTY(Au, nr,
-            MISource(""),
-            MIComment("TODO"),
-            MIArgumentRange(MaterialInfo::lam, 700, 10000)
-			)
-double Au::nr(double lam, double /*T*/, double /*n*/) const {
-    double ulam = lam*1e-3;
-    return ( 0.113018*pow(ulam,1.96113) + 0.185598*ulam );
-}
+//MI_PROPERTY(Au, nr,
+//            MISource(""),
+//            MIComment("TODO"),
+//            MIArgumentRange(MaterialInfo::lam, 700, 10000)
+//			)
+//double Au::nr(double lam, double /*T*/, double /*n*/) const {
+//    double ulam = lam*1e-3;
+//    return ( 0.113018*pow(ulam,1.96113) + 0.185598*ulam );
+//}
 
 static MaterialsDB::Register<Au> materialDB_register_Au;
 

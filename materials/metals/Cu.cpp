@@ -32,6 +32,22 @@ bool Cu::isEqual(const Material &/*other*/) const {
     return true;
 }
 
+MI_PROPERTY(Cu, absp,
+	MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
+	MIComment("no temperature dependence")
+)
+double Cu::absp(double lam, double T) const {
+	return optpar("LD", "absp", name(), lam);
+}
+
+MI_PROPERTY(Cu, nr,
+	MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
+	MIComment("no temperature dependence")
+)
+double Cu::nr(double lam, double T, double n) const {
+	return optpar("LD", "nr", name(), lam);
+}
+
 // MI_PROPERTY(Cu, absp,
 //             MISource(""),
 //             MIComment("TODO")
