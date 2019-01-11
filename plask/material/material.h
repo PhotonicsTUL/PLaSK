@@ -558,6 +558,15 @@ struct PLASK_API Material {
      */
     virtual double eps(double T) const;
 
+	/**
+	 * Get optical parameter (eps1 [-], eps2 [-], nr [-], extinction [-] or absorption [1/cm]).
+	 * @param model model ("LD" Lorentz-Drude model or "BB" Brendel-Bormann model)
+	 * @param par optical paramter ("eps1", "eps2", "nr", "ext", "abs")
+	 * @param lam wavelength [nm]
+	 * @return optical parameter
+	 */
+	virtual double optpar(std::string model, std::string par, std::string mat, double lam) const;
+
     /**
      * Get electron affinity Chi[eV].
      * @param T temperature [K]
@@ -887,7 +896,7 @@ struct PLASK_API Metal: public Material {
     virtual std::string name() const override;
     virtual Kind kind() const override;
     virtual double eps(double T) const override;
-
+	virtual double optpar(std::string model, std::string par, std::string mat, double lam) const override;
 };
 
 /**

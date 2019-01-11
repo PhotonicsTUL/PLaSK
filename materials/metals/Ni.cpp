@@ -32,21 +32,21 @@ bool Ni::isEqual(const Material &/*other*/) const {
     return true;
 }
 
-// MI_PROPERTY(Ni, absp,
-//             MISource(""),
-//             MIComment("TODO")
-//             )
-// double Ni::absp(double /*lam*/, double /*T*/) const {
-//     return ( 1e3 );
-// }
-//
-// MI_PROPERTY(Ni, nr,
-//             MISource(""),
-//             MIComment("TODO")
-// 			)
-// double Ni::nr(double /*lam*/, double /*T*/, double /*n*/) const {
-//     return ( 1. );
-// }
+ MI_PROPERTY(Ni, absp,
+             MISource(""),
+             MIComment("TODO")
+             )
+ double Ni::absp(double lam, double T) const {
+	 return optpar("LD", "abs", name(), lam);
+ }
+
+ MI_PROPERTY(Ni, nr,
+			 MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
+             MIComment("no temperature dependence")
+ 			)
+ double Ni::nr(double lam, double T, double n) const {
+	 return optpar("LD", "nr", name(), lam);
+ }
 
 static MaterialsDB::Register<Ni> materialDB_register_Ni;
 

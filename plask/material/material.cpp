@@ -122,6 +122,8 @@ double Material::Eg(double /*T*/, double /*e*/, char /*point*/) const { throwNot
 
 double Material::eps(double /*T*/) const { throwNotImplemented("eps(double T)"); }
 
+double Material::optpar(std::string /*model*/, std::string /*par*/, std::string /*mat*/, double /*lam*/) const { throwNotImplemented("optpar(std::string model, std::string par, std::string mat, double lam)"); }
+
 double Material::lattC(double /*T*/, char /*x*/) const { throwNotImplemented("lattC(double T, char x)"); }
 
 Tensor2<double> Material::Me(double /*T*/, double /*e*/, char /*point*/) const { throwNotImplemented("Me(double T, double e, char point)"); }
@@ -396,6 +398,72 @@ static MaterialsDB::Register<LiquidCrystal> materialDB_register_LiquidCrystal;
 
 double Metal::eps(double /*T*/) const {
     return 1.;
+}
+
+double Metal::optpar(std::string model, std::string par, std::string mat, double lam) const {
+	double _lam = lam * 1e-9; // from now lam (wavelength) will be in [m]
+
+	double wl = 2. * M_PI * phys::c / _lam; // angular frequency of light [1/s]
+	//double invsqrt2 = 0.707106781186547; //% 1 / sqrt(2)
+	double ehbar = phys::qe / (phys::h_J / (2.*PI));
+	std::complex<double> ii = std::complex<double>(0., 1.); // i
+	ii *= -1;
+
+	std::complex<double> eps_j; // total permittivity
+	double epsRe, epsIm, nr, ext, abs;
+
+	if (model == "LD") // Lorentz-Drude Model
+	{
+		double wp;
+		std::vector<double> f; f.clear();
+		std::vector<double> G; G.clear();
+		std::vector<double> w; w.clear();
+		
+		//double wp = 15.92;
+		//std::vector<double> f = { 0.096, 0.100, 0.135, 0.106, 0.729 };
+		//std::vector<double> G = { 0.048, 4.511, 1.334, 2.178, 6.292 };
+		//std::vector<double> w = { 0.000, 0.174, 0.582, 1.597, 6.089 };
+		
+		if (mat == "Ni")
+		{
+			wp = 15.92;
+			f.push_back(0.096); f.push_back(0.100); f.push_back(0.135); f.push_back(0.106); f.push_back(0.729);
+			G.push_back(0.048); G.push_back(4.511); G.push_back(1.334); G.push_back(2.178); G.push_back(6.292);
+			w.push_back(0.000); w.push_back(0.174); w.push_back(0.582); w.push_back(1.597); w.push_back(6.089);
+		}
+		
+		size_t k = f.size() - 1;
+
+		wp = ehbar * wp;
+		G[0] = ehbar * G[0];
+		w[0] = ehbar * w[0];
+		for (size_t j = 1; j <= k; ++j)
+		{
+			G[j] = ehbar * G[j];
+			w[j] = ehbar * w[j];
+		}
+		double Wp = sqrt(f[0]) * wp;
+
+		std::complex<double> epsf = 1. - Wp * Wp / (wl * wl - ii * G[0] * wl); // first component of relative permittivity
+		std::complex<double> epsb = std::complex<double>(0., 0.); // second component of relative permittivity
+		for (size_t j = 1; j <= k; ++j)
+			epsb += ((f[j] * wp * wp) / ((w[j] * w[j] - wl * wl) + ii * G[j] * wl));
+		eps_j = epsf + epsb; // total permittivity
+	}
+	else return NAN;
+
+	epsRe = eps_j.real(); // epsRe in [-] 
+	epsIm = eps_j.imag(); // epsIm in [-] 
+	nr = sqrt((sqrt(epsRe*epsRe + epsIm * epsIm) + epsRe) / 2.); // nR in [-] 
+	ext = sqrt((sqrt(epsRe*epsRe + epsIm * epsIm) - epsRe) / 2.); // ext in [-] 
+	abs = 4. * PI * ext / (_lam * 1e2); // abs in [1/cm] 
+
+	if (par == "eps1") return epsRe;
+	else if (par == "eps2") return epsIm;
+	else if (par == "nr") return nr;
+	else if (par == "ext") return ext;
+	else if (par == "abs") return abs;
+	else return NAN;
 }
 
 }   // namespace plask
