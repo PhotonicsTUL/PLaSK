@@ -445,6 +445,34 @@ public:
     }
 
     /**
+     * Get boundary which describes all nodes which lies on right boundary of a given @p box.
+     * @param box box which describes a region
+     * @return the boundary
+     */
+    static Boundary getRightBoundaryIn(const Box2D& box);
+
+    /**
+     * Get boundary which describes all nodes which lies on left boundary of a given @p box.
+     * @param box box which describes a region
+     * @return the boundary
+     */
+    static Boundary getLeftBoundaryIn(const Box2D& box);
+
+    /**
+     * Get boundary which describes all nodes which lies on top boundary of a given @p box.
+     * @param box box which describes a region
+     * @return the boundary
+     */
+    static Boundary getTopBoundaryIn(const Box2D& box);
+
+    /**
+     * Get boundary which describes all nodes which lies on bottom boundary of a given @p box.
+     * @param box box which describes a region
+     * @return the boundary
+     */
+    static Boundary getBottomBoundaryIn(const Box2D& box);
+
+    /**
      * Get boundary which describes all nodes which lies on all (outer and inner) boundaries of a given @p boxes.
      * @param box vector of boxes that describes a region
      * @return the boundary

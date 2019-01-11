@@ -315,16 +315,16 @@ std::set<std::size_t> TriangularMesh2D::dirBoundaryNodes(const TriangularMesh2D:
     return result;
 }
 
+template <typename T>   // we can't use std::grater as it use >, and we have < only
+struct greater: public std::binary_function<T, T, bool> {
+  bool operator()(const T& first, const T& second) const { return second < first; }
+};
+
 TriangularMesh2D::Boundary TriangularMesh2D::getRightBoundary() {
     return Boundary( [](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
         return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.dirBoundaryNodes<0, std::less>(mesh.countSegments())));
     } );
 }
-
-template <typename T>   // we can't use std::grater as it use >, and we have < only
-struct greater: public std::binary_function<T, T, bool> {
-  bool operator()(const T& first, const T& second) const { return second < first; }
-};
 
 TriangularMesh2D::Boundary TriangularMesh2D::getTopBoundary() {
     return Boundary( [](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
@@ -341,6 +341,30 @@ TriangularMesh2D::Boundary TriangularMesh2D::getLeftBoundary() {
 TriangularMesh2D::Boundary TriangularMesh2D::getBottomBoundary() {
     return Boundary( [](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
         return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.dirBoundaryNodes<1, greater>(mesh.countSegments())));
+    } );
+}
+
+TriangularMesh2D::Boundary TriangularMesh2D::getRightBoundaryIn(const Box2D &box) {
+    return Boundary( [box](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
+        return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.dirBoundaryNodes<0, std::less>(mesh.countSegmentsIn(box))));
+    } );
+}
+
+TriangularMesh2D::Boundary TriangularMesh2D::getTopBoundaryIn(const Box2D &box) {
+    return Boundary( [box](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
+        return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.dirBoundaryNodes<1, std::less>(mesh.countSegmentsIn(box))));
+    } );
+}
+
+TriangularMesh2D::Boundary TriangularMesh2D::getLeftBoundaryIn(const Box2D &box) {
+    return Boundary( [box](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
+        return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.dirBoundaryNodes<0, greater>(mesh.countSegmentsIn(box))));
+    } );
+}
+
+TriangularMesh2D::Boundary TriangularMesh2D::getBottomBoundaryIn(const Box2D &box) {
+    return Boundary( [box](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>&) {
+        return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.dirBoundaryNodes<1, greater>(mesh.countSegmentsIn(box))));
     } );
 }
 

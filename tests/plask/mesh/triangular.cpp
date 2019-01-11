@@ -49,6 +49,7 @@ BOOST_AUTO_TEST_CASE(triangular2d_boundaries) {
         }
     BOOST_CHECK_EQUAL(mesh.size(), 6*6);
     BOOST_CHECK_EQUAL(mesh.elements().size(), 5*5*2-2);
+    // ---------------------- All boundaries ----------------------
     {
         plask::BoundaryNodeSet allBoundaries = mesh.getAllBoundary().get(mesh, plask::make_shared<plask::Geometry2DCartesian>());
         BOOST_CHECK_EQUAL(allBoundaries.size(), 5*4 /*outer*/ + 4 /*inner*/);
@@ -60,6 +61,7 @@ BOOST_AUTO_TEST_CASE(triangular2d_boundaries) {
         std::size_t expected[] = {7,8,9,10, 13,14,15,16, 19,20,21,22, 25,26,27,28};
         BOOST_CHECK_EQUAL_COLLECTIONS(allBoundariesIn.begin(), allBoundariesIn.end(), std::begin(expected), std::end(expected));
     }
+    // --------------------- Left boundaries ----------------------
     {
         plask::BoundaryNodeSet leftBoundary = mesh.getLeftBoundary().get(mesh, plask::make_shared<plask::Geometry2DCartesian>());
         BOOST_CHECK_EQUAL(leftBoundary.size(), 6);
@@ -67,11 +69,25 @@ BOOST_AUTO_TEST_CASE(triangular2d_boundaries) {
         BOOST_CHECK_EQUAL_COLLECTIONS(leftBoundary.begin(), leftBoundary.end(), std::begin(expected), std::end(expected));
     }
     {
+        plask::BoundaryNodeSet leftBoundaryIn = mesh.getLeftBoundaryIn(plask::Box2D(0.5, 0.5, 4.5, 4.5)).get(mesh, plask::make_shared<plask::Geometry2DCartesian>());
+        BOOST_CHECK_EQUAL(leftBoundaryIn.size(), 4);
+        std::size_t expected[] = {7, 13, 19, 25};
+        BOOST_CHECK_EQUAL_COLLECTIONS(leftBoundaryIn.begin(), leftBoundaryIn.end(), std::begin(expected), std::end(expected));
+    }
+    // --------------------- Right boundaries ----------------------
+    {
         plask::BoundaryNodeSet rightBoundary = mesh.getRightBoundary().get(mesh, plask::make_shared<plask::Geometry2DCartesian>());
         BOOST_CHECK_EQUAL(rightBoundary.size(), 6);
         std::size_t expected[] = {5, 11, 17, 23, 29, 35};
         BOOST_CHECK_EQUAL_COLLECTIONS(rightBoundary.begin(), rightBoundary.end(), std::begin(expected), std::end(expected));
     }
+    {
+        plask::BoundaryNodeSet rightBoundaryIn = mesh.getRightBoundaryIn(plask::Box2D(0.5, 0.5, 4.5, 4.5)).get(mesh, plask::make_shared<plask::Geometry2DCartesian>());
+        BOOST_CHECK_EQUAL(rightBoundaryIn.size(), 4);
+        std::size_t expected[] = {10, 16, 22, 28};
+        BOOST_CHECK_EQUAL_COLLECTIONS(rightBoundaryIn.begin(), rightBoundaryIn.end(), std::begin(expected), std::end(expected));
+    }
+    // --------------------- Bottom boundaries ---------------------
     {
         plask::BoundaryNodeSet bottomBoundary = mesh.getBottomBoundary().get(mesh, plask::make_shared<plask::Geometry2DCartesian>());
         BOOST_CHECK_EQUAL(bottomBoundary.size(), 6);
@@ -79,10 +95,22 @@ BOOST_AUTO_TEST_CASE(triangular2d_boundaries) {
         BOOST_CHECK_EQUAL_COLLECTIONS(bottomBoundary.begin(), bottomBoundary.end(), std::begin(expected), std::end(expected));
     }
     {
+        plask::BoundaryNodeSet bottomBoundaryIn = mesh.getBottomBoundaryIn(plask::Box2D(0.5, 0.5, 4.5, 4.5)).get(mesh, plask::make_shared<plask::Geometry2DCartesian>());
+        BOOST_CHECK_EQUAL(bottomBoundaryIn.size(), 4);
+        std::size_t expected[] = {7, 8, 9, 10};
+        BOOST_CHECK_EQUAL_COLLECTIONS(bottomBoundaryIn.begin(), bottomBoundaryIn.end(), std::begin(expected), std::end(expected));
+    }
+    // --------------------- Top boundaries ------------------------
+    {
         plask::BoundaryNodeSet topBoundary = mesh.getTopBoundary().get(mesh, plask::make_shared<plask::Geometry2DCartesian>());
         BOOST_CHECK_EQUAL(topBoundary.size(), 6);
         std::size_t expected[] = {30, 31, 32, 33, 34, 35};
         BOOST_CHECK_EQUAL_COLLECTIONS(topBoundary.begin(), topBoundary.end(), std::begin(expected), std::end(expected));
     }
-
+    {
+        plask::BoundaryNodeSet topBoundaryIn = mesh.getTopBoundaryIn(plask::Box2D(0.5, 0.5, 4.5, 4.5)).get(mesh, plask::make_shared<plask::Geometry2DCartesian>());
+        BOOST_CHECK_EQUAL(topBoundaryIn.size(), 4);
+        std::size_t expected[] = {25, 26, 27, 28};
+        BOOST_CHECK_EQUAL_COLLECTIONS(topBoundaryIn.begin(), topBoundaryIn.end(), std::begin(expected), std::end(expected));
+    }
 }
