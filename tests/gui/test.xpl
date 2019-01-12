@@ -457,6 +457,9 @@ print(f, file=sys.stderr)
 
 class A(object):
     
+    def __init__(self):
+        pass
+    
     val = property()
     """
     ppp
@@ -468,7 +471,7 @@ class A(object):
         Prop
         :rtype: RootParams
         """
-        pass
+        return 0xff
 
     def fun(self):
         """
@@ -492,7 +495,7 @@ def loss_on_voltage(voltage):
     verr = ELECTRICAL.compute(1)
     terr = THERMAL.compute(1)
     iters=0
-    while (terr > THERMAL.maxerr or verr > ELECTRICAL.maxerr) and iters < 15:
+    while (terr >= THERMAL.maxerr or verr >= ELECTRICAL.maxerr) and iters <= 15:
         verr = ELECTRICAL.compute(8)
         terr = THERMAL.compute(1)
         iters += 1
@@ -502,7 +505,7 @@ def loss_on_voltage(voltage):
     det_mins = np.r_[False, det_vals[1:] < det_vals[:-1]] & \
                np.r_[det_vals[:-1] < det_vals[1:], False] & \
                np.r_[det_vals[:] < 1]
-    mode_number = OPTICAL.find_mode(max(det_lams[det_mins]))
+    mode_number = OPTICAL.find_mode(max(det_lams[det_mins])) 
     mode_loss = OPTICAL.outLoss(mode_number)
     print_log(LOG_RESULT,
               'V = {:.3f}V, I = {:.3f}mA, lam = {:.2f}nm, loss = {}/cm'

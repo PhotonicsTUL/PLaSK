@@ -163,16 +163,27 @@ a code {
 /* Header and footer */
 
 .header {
-    background-color: #11113d;
-    width: 100%;
-    color: #ffffff;
-    padding: 10px;
-    margin: 0 0 4px 0;
+    background: #fff;
+    border-radius: 0 0 0 0;
+    margin-bottom: 8px;
+    border: 0;
+    padding: 0;
+    -webkit-box-shadow: 0 1px 3px 0 rgba(0,0,0,.2);
+    -moz-box-shadow: 0 1px 3px 0 rgba(0,0,0,.2);
+    box-shadow: 0 1px 3px 0 rgba(0,0,0,.2);
+    overflow: hidden;
 }
 
-.header h1 a {
+.header h1 {
+    margin-left: 10px;
+}
+
+.header h1 a,
+.header h1 a:hover,
+.header h1 a:focus,
+.header h1 a:active {
     text-decoration: none;
-    color: #ffffff;
+    color: #333;
 }
 
 .footer {
