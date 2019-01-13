@@ -21,6 +21,8 @@ This file contains base classes for materials and material database class.
 #include "../vector/tensor3.h"
 #include "../parallel.h"
 
+#include "../../materials/metals/Faddeeva.hh"
+
 #define RETURN_MATERIAL_NAN(param) \
     static bool warn = true; \
     if (warn) { writelog(LOG_WARNING, "Material {}: non-applicable parameter " BOOST_PP_STRINGIZE(param) " returned as NAN", name()); warn = false; } \

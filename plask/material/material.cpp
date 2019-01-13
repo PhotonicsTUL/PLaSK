@@ -482,6 +482,89 @@ double Metal::optpar(std::string model, std::string par, std::string mat, double
 			epsb += ((f[j] * wp * wp) / ((w[j] * w[j] - wl * wl) + ii * G[j] * wl));
 		eps_j = epsf + epsb; // total permittivity
 	}
+	else if (model == "BB") // Brendel-Bormann Model
+	{
+		double wp;
+		std::vector<double> f; f.clear();
+		std::vector<double> G; G.clear();
+		std::vector<double> w; w.clear();
+		std::vector<double> s; s.clear();
+
+		if (mat == "Au")
+		{
+			wp = 9.03;
+			f.push_back(0.770); f.push_back(0.054); f.push_back(0.050); f.push_back(0.312); f.push_back(0.719); f.push_back(1.648);
+			G.push_back(0.050); G.push_back(0.074); G.push_back(0.035); G.push_back(0.083); G.push_back(0.125); G.push_back(0.179);
+			w.push_back(0.000); w.push_back(0.218); w.push_back(2.885); w.push_back(4.069); w.push_back(6.137); w.push_back(27.97);
+			s.push_back(0.000); s.push_back(0.742); s.push_back(0.349); s.push_back(0.830); s.push_back(1.246); s.push_back(1.795);
+		}
+		else if (mat == "Cu")
+		{
+			wp = 10.83;
+			f.push_back(0.562); f.push_back(0.076); f.push_back(0.081); f.push_back(0.324); f.push_back(0.726);
+			G.push_back(0.030); G.push_back(0.056); G.push_back(0.047); G.push_back(0.113); G.push_back(0.172);
+			w.push_back(0.000); w.push_back(0.416); w.push_back(2.849); w.push_back(4.819); w.push_back(8.136);
+			s.push_back(0.000); s.push_back(0.562); s.push_back(0.469); s.push_back(1.131); s.push_back(1.719);
+		}
+		else if (mat == "Ni")
+		{
+			wp = 15.92;
+			f.push_back(0.083); f.push_back(0.357); f.push_back(0.039); f.push_back(0.127); f.push_back(0.654);
+			G.push_back(0.022); G.push_back(2.820); G.push_back(0.120); G.push_back(1.822); G.push_back(6.637);
+			w.push_back(0.000); w.push_back(0.317); w.push_back(1.059); w.push_back(4.583); w.push_back(8.825);
+			s.push_back(0.000); s.push_back(0.606); s.push_back(1.454); s.push_back(0.379); s.push_back(0.510);
+		}
+		else if (mat == "Pt")
+		{
+			wp = 9.59;
+			f.push_back(0.333); f.push_back(0.186); f.push_back(0.665); f.push_back(0.551); f.push_back(2.214);
+			G.push_back(0.080); G.push_back(0.498); G.push_back(1.851); G.push_back(2.604); G.push_back(2.891);
+			w.push_back(0.000); w.push_back(0.782); w.push_back(1.317); w.push_back(3.189); w.push_back(8.236);
+			s.push_back(0.000); s.push_back(0.031); s.push_back(0.096); s.push_back(0.766); s.push_back(1.146);
+		}
+		else if (mat == "Ti")
+		{
+			wp = 7.29;
+			f.push_back(0.126); f.push_back(0.427); f.push_back(0.218); f.push_back(0.513); f.push_back(0.0002);
+			G.push_back(0.067); G.push_back(1.877); G.push_back(0.100); G.push_back(0.615); G.push_back(4.109);
+			w.push_back(0.000); w.push_back(1.459); w.push_back(2.661); w.push_back(0.805); w.push_back(19.86);
+			s.push_back(0.000); s.push_back(0.463); s.push_back(0.506); s.push_back(0.799); s.push_back(2.854);
+		}
+		else
+			return NAN;
+		//else if (mat == "Au")
+		//{
+		//	wp = ;
+		//	f.push_back(); f.push_back(); f.push_back(); f.push_back(); f.push_back();
+		//	G.push_back(); G.push_back(); G.push_back(); G.push_back(); G.push_back();
+		//	w.push_back(); w.push_back(); w.push_back(); w.push_back(); w.push_back();
+		//	s.push_back(); s.push_back(); s.push_back(); s.push_back(); s.push_back();
+		//}
+
+		size_t k = f.size() - 1;
+
+		wp = ehbar * wp;
+		G[0] = ehbar * G[0];
+		w[0] = ehbar * w[0];
+		for (size_t j = 1; j <= k; ++j)
+		{
+			G[j] = ehbar * G[j];
+			w[j] = ehbar * w[j];
+			s[j] = ehbar * s[j];
+		}
+		double Wp = sqrt(f[0]) * wp;
+
+		std::complex<double> epsf = 1. - Wp * Wp / (wl * wl - ii * G[0] * wl); // first component of relative permittivity
+		std::complex<double> epsb = std::complex<double>(0., 0.); // second component of relative permittivity
+		for (size_t j = 1; j <= k; ++j)
+		{
+			std::complex<double> aj = sqrt(wl * wl - ii * G[j] * wl);
+			std::complex<double> zp = ii * (aj + w[j]) / (sqrt(2.) * s[j]);
+			std::complex<double> zm = ii * (aj - w[j]) / (sqrt(2.) * s[j]);
+			//epsb += ((-ii * sqrt(M_PI) * f[j] * wp * wp) / (2. * sqrt(2.) * aj * s[j])) * (exp(zm * zm) * Faddeeva::erfc(zm) + exp(zp * zp) * Faddeeva::erfc(zp)); //TODO
+		}
+		eps_j = epsf + epsb; // total permittivity
+	}
 	else return NAN;
 
 	epsRe = eps_j.real(); // epsRe in [-] 
