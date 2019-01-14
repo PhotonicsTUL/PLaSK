@@ -5,7 +5,7 @@
 This file contains AuGe
 */
 
-#include <plask/material/material.h>
+#include "metal.h"
 
 namespace plask { namespace materials {
 
@@ -28,4 +28,4 @@ protected:
 
 }} // namespace plask::materials
 
-#endif	//PLASK__AuGe_H
+#endif    //PLASK__AuGe_H

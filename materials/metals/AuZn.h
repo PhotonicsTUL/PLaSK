@@ -5,7 +5,7 @@
 This file contains AuZn
 */
 
-#include <plask/material/material.h>
+#include "metal.h"
 
 namespace plask { namespace materials {
 
@@ -29,4 +29,4 @@ protected:
 
 }} // namespace plask::materials
 
-#endif	//PLASK__AuZn_H
+#endif    //PLASK__AuZn_H

@@ -5,22 +5,22 @@
 This file contains Ti
 */
 
-#include <plask/material/material.h>
+#include "metal.h"
 
 namespace plask { namespace materials {
 
 /**
  * Represent Ti, its physical properties.
  */
-struct Ti: public Metal {
+struct Ti: public LorentzDrudeMetal {
+
+    Ti();
 
     static constexpr const char* NAME = "Ti";
 
     virtual std::string name() const override;
     virtual Tensor2<double> cond(double T) const override;
     virtual Tensor2<double> thermk(double T, double t) const override;
-    virtual double nr(double lam, double T=300., double n=0.) const override;
-    virtual double absp(double lam, double T=300.) const override;
 
 protected:
     virtual bool isEqual(const Material& other) const override;
@@ -29,4 +29,4 @@ protected:
 
 }} // namespace plask::materials
 
-#endif	//PLASK__Ti_H
+#endif    //PLASK__Ti_H

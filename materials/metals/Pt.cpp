@@ -8,6 +8,30 @@ namespace plask { namespace materials {
 
 std::string Pt::name() const { return NAME; }
 
+MI_PROPERTY(Pt, absp,
+    MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
+    MIComment("no temperature dependence")
+)
+
+MI_PROPERTY(Pt, nr,
+    MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
+    MIComment("no temperature dependence")
+)
+
+Pt::Pt(): LorentzDrudeMetal(9.59,
+                            {0.333,  0.191,  0.659,  0.547,  3.576}, // f
+                            {0.080,  0.517,  1.838,  3.668,  8.517}, // G
+                            {0.000,  0.780,  1.314,  3.141,  9.249}  // w
+) {}
+
+// Pt::Pt(): BrendelBormannMetal(9.59,
+//                               {0.333,  0.186,  0.665,  0.551,  2.214}, // f
+//                               {0.080,  0.498,  1.851,  2.604,  2.891}, // G
+//                               {0.000,  0.782,  1.317,  3.189,  8.236}, // w
+//                               {0.000,  0.031,  0.096,  0.766,  1.146}  // s
+// ) {}
+
+
 MI_PROPERTY(Pt, cond,
             MISource("CRC Handbook of Chemistry and Physics, Internet Version 2005, http://www.hbcpnetbase.com, edited by D.R. Lide, CRC Press, Boca Raton, FL, sec. 12, pp. 2121-2122, 2005."),
             MIComment("fit from: ?Lukasz Piskorski, PhD thesis, 2010"),
@@ -26,22 +50,6 @@ MI_PROPERTY(Pt, thermk,
 Tensor2<double> Pt::thermk(double T, double /*t*/) const {
     const double tCondT = 3.6e-5*pow(T-300.,2.) - 4e-3*(T-300.) + 71.7;
     return ( Tensor2<double>(tCondT, tCondT) );
-}
-
-MI_PROPERTY(Pt, absp,
-	MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-	MIComment("no temperature dependence")
-)
-double Pt::absp(double lam, double T) const {
-	return optpar("LD", "absp", name(), lam);
-}
-
-MI_PROPERTY(Pt, nr,
-	MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-	MIComment("no temperature dependence")
-)
-double Pt::nr(double lam, double T, double n) const {
-	return optpar("LD", "nr", name(), lam);
 }
 
 //MI_PROPERTY(Pt, absp,
@@ -65,7 +73,7 @@ bool Pt::isEqual(const Material &/*other*/) const {
 //            MISource(""),
 //            MIComment("TODO"),
 //            MIArgumentRange(MaterialInfo::lam, 280, 12400)
-//			)
+//            )
 //double Pt::nr(double lam, double /*T*/, double /*n*/) const {
 //    const double ulam = lam*1e-3;
 //    if (ulam<3700.)
