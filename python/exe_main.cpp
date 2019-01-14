@@ -362,8 +362,8 @@ int system_main(int argc, const system_char *argv[])
             argv[1] = CSTR(-u);
         } else if (arg == CSTR(-u)) {
 #           if defined(MS_WINDOWS) || defined(__CYGWIN__)
-                _setmode(fileno(stderr), _O_BINARY);
-                _setmode(fileno(stdout), _O_BINARY);
+                _setmode(_fileno(stderr), _O_BINARY);
+                _setmode(_fileno(stdout), _O_BINARY);
 #           endif
             setvbuf(stdout, nullptr, _IONBF, 0);
             setvbuf(stderr, nullptr, _IONBF, 0);

@@ -9,7 +9,7 @@ This file contains some common base for all metals
 
 namespace plask { namespace materials {
 
-struct PLASK_API LorentzDrudeMetal: public Metal {
+struct LorentzDrudeMetal: public Metal {
   protected:
 
     static constexpr double eh = 2.*PI * phys::qe / phys::h_J;
@@ -44,7 +44,7 @@ struct PLASK_API LorentzDrudeMetal: public Metal {
 };
 
 
-struct PLASK_API BrendelBormannMetal: public Metal {
+struct BrendelBormannMetal: public Metal {
   protected:
 
     static constexpr double eh = 2.*PI * phys::qe / phys::h_J;
