@@ -30,6 +30,21 @@ void register_mesh_triangular() {
     triangularMesh2D
             .def("__iter__", py::range(&TriangularMesh2D::begin, &TriangularMesh2D::end)) // we will use native iterators which perform better
             .add_property("elements", py::make_function(&TriangularMesh2D::elements, py::with_custodian_and_ward_postcall<0,1>()), u8"Element list in the mesh")
+            .def("Left", &TriangularMesh2D::getLeftBoundary, u8"Left edge of the mesh for setting boundary conditions").staticmethod("Left")
+            .def("Right", &TriangularMesh2D::getRightBoundary, u8"Right edge of the mesh for setting boundary conditions").staticmethod("Right")
+            .def("Top", &TriangularMesh2D::getTopBoundary, u8"Top edge of the mesh for setting boundary conditions").staticmethod("Top")
+            .def("Bottom", &TriangularMesh2D::getBottomBoundary, u8"Bottom edge of the mesh for setting boundary conditions").staticmethod("Bottom")
+            .def("Edge", &TriangularMesh2D::getAllBoundary, u8"Whole edge (outer and inner) of the mesh for setting boundary conditions").staticmethod("Edge")
+            .def("LeftOf", (TriangularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&TriangularMesh2D::getLeftOfBoundary,
+                 u8"Boundary left of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("LeftOf")
+            .def("RightOf", (TriangularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&TriangularMesh2D::getRightOfBoundary,
+                 u8"Boundary right of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("RightOf")
+            .def("TopOf", (TriangularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&TriangularMesh2D::getTopOfBoundary,
+                 u8"Boundary top of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("TopOf")
+            .def("BottomOf", (TriangularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&TriangularMesh2D::getBottomOfBoundary,
+                 u8"Boundary bottom of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("BottomOf")
+            .def("EdgeOf", (TriangularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&TriangularMesh2D::getAllBoundaryIn,
+                 u8"Edge of specified object (and edge of mesh holes inside the object)", (py::arg("object"), py::arg("path")=py::object())).staticmethod("EdgeOf")
             .def(py::self == py::self)
             ;
 
