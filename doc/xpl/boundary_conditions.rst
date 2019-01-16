@@ -28,9 +28,9 @@ Most of the solvers have some boundary conditions. They differ by name or type, 
 
             :attr required object: Name of the geometry object to set boundary conditions at.
             :attr path: Path name, specifying particular instance of the object given in the object attribute.
-            :attr required side: Side of the object to set boundary conditions at. (``left``, ``right``, ``top``, ``bottom``, ``back``, ``front``)
+            :attr required side: Side of the object to set boundary conditions at. (``left``, ``right``, ``top``, ``bottom``, ``back``, ``front``, ``all`` [supported by Triangular2D mesh only])
 
-            **Boundary conditions at some line (2D meshes):**
+            **Boundary conditions at some line (2D meshes) [supported by rectangular meshes only]:**
 
             :attr required line: Direction of the line. (``vertical`` or ``horizontal``)
             :attr required at: Location of the line i.e. its position on the perpendicular axis.

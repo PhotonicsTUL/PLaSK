@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "../utils/interpolation.h"
+#include "rectangular_common.h"
 
 namespace plask {
 
@@ -438,6 +439,33 @@ TriangularMesh2D::Boundary TriangularMesh2D::getBottomOfBoundary(shared_ptr<cons
     return Boundary( [=](const TriangularMesh2D& mesh, const shared_ptr<const GeometryD<2>>& geom) {
         return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.dirBoundaryNodes<1, greater>(mesh.countSegmentsIn(*geom, *object, &path))));
     } );
+}
+
+TriangularMesh2D::Boundary TriangularMesh2D::getBoundary(const std::string &boundary_desc) {
+    if (boundary_desc == "bottom") return getBottomBoundary();
+    if (boundary_desc == "left") return getLeftBoundary();
+    if (boundary_desc == "right") return getRightBoundary();
+    if (boundary_desc == "top") return getTopBoundary();
+    if (boundary_desc == "all") return getAllBoundary();
+    return Boundary();
+}
+
+TriangularMesh2D::Boundary TriangularMesh2D::getBoundary(XMLReader &boundary_desc, Manager &manager) {
+    auto side = boundary_desc.getAttribute("side");
+    if (side) {
+        if (*side == "bottom")
+            return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, manager, &getBottomBoundary, &getBottomOfBoundary);
+        if (*side == "left")
+            return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, manager, &getLeftBoundary, &getLeftOfBoundary);
+        if (*side == "right")
+            return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, manager, &getRightBoundary, &getRightOfBoundary);
+        if (*side == "top")
+            return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, manager, &getTopBoundary, &getTopOfBoundary);
+        if (*side == "all")
+            return details::parseBoundaryFromXML<Boundary, 2>(boundary_desc, manager, &getAllBoundary, &getAllBoundaryIn);
+        throw XMLBadAttrException(boundary_desc, "side", *side);
+    }
+    return Boundary();
 }
 
 std::size_t readTriangularMesh2D_readNodeIndex(XMLReader& reader, const char* attrName, std::size_t nodes_size) {

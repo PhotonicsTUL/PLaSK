@@ -103,6 +103,11 @@ You should also implement interpolation algorithms for your mesh, see @ref inter
 
 namespace plask {
 
+/// Common base for meshes and generators
+struct PLASK_API MeshBase {
+    virtual ~MeshBase() {}
+};
+
 /**
  * Base class for all the meshes.
  * Mesh represent a set of points in 2D or 3D space and:
@@ -113,14 +118,7 @@ namespace plask {
  *
  * @see @ref meshes
  */
-
-/// Common base for meshes and generators
-struct PLASK_API MeshBase {
-    virtual ~MeshBase() {}
-};
-
 struct PLASK_API Mesh: public Printable, MeshBase {
-
 
     /**
      * Store information about event connected with mesh.

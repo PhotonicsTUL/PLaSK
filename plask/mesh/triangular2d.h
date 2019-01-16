@@ -564,12 +564,32 @@ public:
     }
 
     /**
+     * Get boundary which describes all nodes which lies on all (outer and inner) boundaries of a given @p object.
+     * @param object object to test
+     * @param path (optional) path hints specifying the object
+     * @return the boundary
+     */
+    static Boundary getAllBoundaryIn(shared_ptr<const GeometryObject> object, const PathHints* path) {
+        return path ? getAllBoundaryIn(object, *path) : getAllBoundaryIn(object);
+    }
+
+    /**
      * Get boundary which describes all nodes which lies on outer right boundary of a given @p object.
      * @param object object to test
      * @param path path hints specifying the object
      * @return the boundary
      */
     static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path);
+
+    /**
+     * Get boundary which describes all nodes which lies on outer right boundary of a given @p object.
+     * @param object object to test
+     * @param path (optional) path hints specifying the object
+     * @return the boundary
+     */
+    static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path) {
+        return path ? getRightOfBoundary(object, *path) : getRightOfBoundary(object);
+    }
 
     /**
      * Get boundary which describes all nodes which lies on outer left boundary of a given @p object.
@@ -580,12 +600,32 @@ public:
     static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path);
 
     /**
+     * Get boundary which describes all nodes which lies on outer left boundary of a given @p object.
+     * @param object object to test
+     * @param path (optional) path hints specifying the object
+     * @return the boundary
+     */
+    static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path) {
+        return path ? getLeftOfBoundary(object, *path) : getLeftOfBoundary(object);
+    }
+
+    /**
      * Get boundary which describes all nodes which lies on outer top boundary of a given @p object.
      * @param object object to test
      * @param path path hints specifying the object
      * @return the boundary
      */
     static Boundary getTopOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path);
+
+    /**
+     * Get boundary which describes all nodes which lies on outer top boundary of a given @p object.
+     * @param object object to test
+     * @param path (optional) path hints specifying the object
+     * @return the boundary
+     */
+    static Boundary getTopOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path) {
+        return path ? getTopOfBoundary(object, *path) : getTopOfBoundary(object);
+    }
 
     /**
      * Get boundary which describes all nodes which lies on outer bottom boundary of a given @p object.
@@ -595,7 +635,28 @@ public:
      */
     static Boundary getBottomOfBoundary(shared_ptr<const GeometryObject> object, const PathHints& path);
 
+    /**
+     * Get boundary which describes all nodes which lies on outer bottom boundary of a given @p object.
+     * @param object object to test
+     * @param path (optional) path hints specifying the object
+     * @return the boundary
+     */
+    static Boundary getBottomOfBoundary(shared_ptr<const GeometryObject> object, const PathHints* path) {
+        return path ? getBottomOfBoundary(object, *path) : getBottomOfBoundary(object);
+    }
+
+    static Boundary getBoundary(const std::string &boundary_desc);
+
+    static Boundary getBoundary(XMLReader &boundary_desc, Manager &manager);
+
 };
+
+template <>
+inline TriangularMesh2D::Boundary parseBoundary<TriangularMesh2D::Boundary>(const std::string& boundary_desc, plask::Manager&) { return TriangularMesh2D::getBoundary(boundary_desc); }
+
+template <>
+inline TriangularMesh2D::Boundary parseBoundary<TriangularMesh2D::Boundary>(XMLReader& boundary_desc, Manager& env) { return TriangularMesh2D::getBoundary(boundary_desc, env); }
+
 
 
 class TriangularMesh2D::ElementMesh: public MeshD<2> {
