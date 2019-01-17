@@ -353,7 +353,7 @@ class AnalyzeResultsAction(QAction):
     def __init__(self, parent):
         super(AnalyzeResultsAction, self).__init__(QIcon.fromTheme('edit-find'),
                                              'Anal&yze Results...', parent)
-        self.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_A)
+        self.setShortcut(QKeySequence('Ctrl+Shift+A'))
         self.triggered.connect(self.execute)
 
     def execute(self):

@@ -243,12 +243,12 @@ class MainWindow(QMainWindow):
         launch_action.triggered.connect(lambda: launch_plask(self))
 
         goto_action = QAction(QIcon.fromTheme('go-jump'), '&Go to Line...', self)
-        goto_action.setShortcut(Qt.CTRL + Qt.Key_L)
+        goto_action.setShortcut(QKeySequence('Ctrl+L'))
         goto_action.setStatusTip('Go to the specified line')
         goto_action.triggered.connect(self.on_goto_line)
 
         plot_material_action = QAction(QIcon.fromTheme('matplotlib'), 'Examine &Material Parameters...', self)
-        plot_material_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_M)
+        plot_material_action.setShortcut(QKeySequence('Ctrl+Shift+M'))
         plot_material_action.triggered.connect(lambda: show_material_plot(self, self.document.materials.model,
                                                                           self.document.defines.model))
 
