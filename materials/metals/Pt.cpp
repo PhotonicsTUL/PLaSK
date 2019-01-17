@@ -18,6 +18,11 @@ MI_PROPERTY(Pt, nr,
     MIComment("no temperature dependence")
 )
 
+MI_PROPERTY(Pt, Nr,
+    MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
+    MIComment("no temperature dependence")
+)
+
 Pt::Pt(): LorentzDrudeMetal(9.59,
                             {0.333,  0.191,  0.659,  0.547,  3.576}, // f
                             {0.080,  0.517,  1.838,  3.668,  8.517}, // G

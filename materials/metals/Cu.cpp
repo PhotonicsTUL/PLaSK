@@ -18,6 +18,11 @@ MI_PROPERTY(Cu, nr,
     MIComment("no temperature dependence")
 )
 
+MI_PROPERTY(Cu, Nr,
+    MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
+    MIComment("no temperature dependence")
+)
+
 Cu::Cu(): LorentzDrudeMetal(10.83,
                             {0.575, 0.061, 0.104, 0.723, 0.638}, // f
                             {0.030, 0.378, 1.056, 3.213, 4.305}, // G

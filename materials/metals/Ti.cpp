@@ -18,6 +18,11 @@ MI_PROPERTY(Ti, nr,
     MIComment("no temperature dependence")
 )
 
+MI_PROPERTY(Ti, Nr,
+    MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
+    MIComment("no temperature dependence")
+)
+
 Ti::Ti(): LorentzDrudeMetal(7.29,
                             {0.148, 0.899, 0.393, 0.187, 0.001}, // f
                             {0.082, 2.276, 2.518, 1.663, 1.762}, // G

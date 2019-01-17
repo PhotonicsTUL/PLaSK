@@ -20,6 +20,11 @@ MI_PROPERTY(Au, nr,
     MIComment("no temperature dependence")
 )
 
+MI_PROPERTY(Au, Nr,
+    MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
+    MIComment("no temperature dependence")
+)
+
 Au::Au(): LorentzDrudeMetal(9.03,
                             {0.760, 0.024, 0.010, 0.071, 0.601, 4.384}, // f
                             {0.053, 0.241, 0.345, 0.870, 2.494, 2.214}, // G

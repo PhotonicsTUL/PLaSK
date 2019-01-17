@@ -18,6 +18,11 @@ MI_PROPERTY(Ni, nr,
     MIComment("no temperature dependence")
 )
 
+MI_PROPERTY(Ni, Nr,
+    MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
+    MIComment("no temperature dependence")
+)
+
 Ni::Ni(): LorentzDrudeMetal(15.92,
                             {0.096, 0.100, 0.135, 0.106, 0.729}, // f
                             {0.048, 4.511, 1.334, 2.178, 6.292}, // G
