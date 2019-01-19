@@ -247,7 +247,14 @@ void AdmittanceTransfer::determineFields()
             // H0 = y1 * E0 + y2 * Ed
             // for (int i = 0; i < N; i++)
             //     fields[n].H0[i] = y1[i] * fields[n].E0[i]  +  y2[i] * fields[n].Ed[i];
-            // However in some cases this can make the magnetic field discontinous
+            // However in some cases this can make the magnetic field discontinous.
+        }
+        if (start != end) {
+            // anyway, we must do it in the last layer
+            // (y1 and y2 are already computed in the above loop)
+            std::ptrdiff_t n = end + inc;
+            for (int i = 0; i < N; i++)
+                fields[n].H0[i] = y1[i] * fields[n].E0[i]  +  y2[i] * fields[n].Ed[i];
         }
     }
 
@@ -290,9 +297,7 @@ cvector AdmittanceTransfer::getFieldVectorE(double z, std::size_t n)
     cvector Ed = fields[n].Ed;
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
-    double d = (n == 0 || std::size_t(n) == solver->vbounds->size())? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
-    if (std::ptrdiff_t(n) >= solver->interface) z = d - z;
-    else if (n == 0) z += d;
+    double d = get_d(n, z);
 
     if ((n == 0 || std::size_t(n) == solver->vbounds->size()) && z < 0.)
         return cvector(diagonalizer->source()->matrixSize(), NAN);
@@ -333,9 +338,7 @@ cvector AdmittanceTransfer::getFieldVectorH(double z, std::size_t n)
     cvector Hd = fields[n].Hd;
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
-    double d = (n == 0 || std::size_t(n) == solver->vbounds->size())? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
-    if (std::ptrdiff_t(n) >= solver->interface) z = d - z;
-    else if (n == 0) z += d;
+    double d = get_d(n, z);
 
     if ((n == 0 || std::size_t(n) == solver->vbounds->size()) && z < 0.)
         return cvector(diagonalizer->source()->matrixSize(), NAN);
@@ -566,6 +569,18 @@ cvector AdmittanceTransfer::getTransmissionVector(const cvector& incident, Incid
     determineReflectedFields(incident, side);
     size_t n = (side == INCIDENCE_BOTTOM)? solver->stack.size()-1 : 0;
     return fields[n].E0;
+}
+
+
+
+double AdmittanceTransfer::integrateEE(size_t n, double z1, double z2) {
+    //TODO
+    throw NotImplemented("integrateEE");
+}
+
+double AdmittanceTransfer::integrateHH(size_t n, double z1, double z2) {
+    //TODO
+    throw NotImplemented("integrateHH");
 }
 
 }}} // namespace plask::optical::slab

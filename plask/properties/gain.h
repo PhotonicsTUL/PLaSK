@@ -31,7 +31,7 @@ struct PLASK_API Gain : public MultiFieldProperty<Tensor2<double>, double> {
     static constexpr size_t NUM_VALS = 2;
     static constexpr const char* NAME = "material gain";
     static constexpr const char* UNIT = "1/cm";
-    static inline double getDefaultValue() { return NAN; }
+    // static inline double getDefaultValue() { return NAN; }
 };
 
 /**
@@ -40,7 +40,7 @@ struct PLASK_API Gain : public MultiFieldProperty<Tensor2<double>, double> {
 struct PLASK_API Luminescence : public FieldProperty<double, double> {
     static constexpr const char* NAME = "luminescence";
     static constexpr const char* UNIT = "a.u.";
-    static inline double getDefaultValue() { return NAN; }
+    // static inline double getDefaultValue() { return NAN; }
 };
 
 } // namespace plask

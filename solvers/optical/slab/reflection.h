@@ -21,7 +21,11 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
   protected:
 
     cmatrix P;                                  ///< Current reflection matrix
-    bool allP;                                  ///< Do we need to keep all the P matrices?
+    enum {
+        STORE_NONE,
+        STORE_LAST,
+        STORE_ALL
+    } storeP;                                   ///< Do we need to keep the P matrices for both sides?
 
     std::vector<LayerFields> fields;            ///< Vector of fields computed for each layer
 
@@ -29,7 +33,33 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
 
     cdiagonal phas;                             ///< Current phase dist matrix
     int* ipiv;                                  ///< Pivot vector
-    std::vector<cmatrix> memP;                  ///< Reflection matrices for each layer
+    std::vector<cmatrix> memP;                  ///< Reflection matrices from each side
+
+    void saveP(size_t n) {
+        if (memP[n].rows() == P.rows() && memP[n].cols() == P.cols())
+            memcpy(memP[n].data(), P.data(), P.rows() * P.cols() * sizeof(dcomplex));
+        else
+            memP[n] = P.copy();
+    }
+
+    void adjust_z(size_t n, double& z) {
+        if (std::ptrdiff_t(n) >= solver->interface) {
+            z = - z;
+            if (n != 0 && n != solver->vbounds->size())
+                z += solver->vbounds->at(n) - solver->vbounds->at(n-1);
+        }
+    }
+
+    void adjust_z(size_t n, double& z1, double z2) {
+        if (std::ptrdiff_t(n) >= solver->interface) {
+            double zl = z1;
+            z1 = - z2; z2 = - zl;
+            if (n != 0 && n != solver->vbounds->size()) {
+                double d = solver->vbounds->at(n) - solver->vbounds->at(n-1);
+                z1 += d; z2 += d;
+            }
+        }
+    }
 
   public:
 
@@ -43,10 +73,7 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
 
   protected:
 
-    void getFinalMatrix() override {
-        getAM(0, solver->interface-1, false);
-        getAM(solver->stack.size()-1, solver->interface, true);
-    }
+    void getFinalMatrix() override;
 
     void determineFields() override;
 
@@ -70,14 +97,13 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
      * \param start starting layer
      * \param end last layer (reflection matrix is computed for this layer)
      * \param emitting should the reflection matrix in the first layer be 0?
+     * \param store where the final P matrix should be stored if so?
      */
-    void findReflection(std::size_t start, std::size_t end, bool emitting);
+    void findReflection(std::size_t start, std::size_t end, bool emitting, int store=0);
 
-    /**
-     * Store P matrix if we want it for field computation
-     * \param n layer number
-     */
-    void storeP(size_t n);
+    double integrateEE(size_t n, double z1, double z2) override;
+
+    double integrateHH(size_t n, double z1, double z2) override;
 };
 
 

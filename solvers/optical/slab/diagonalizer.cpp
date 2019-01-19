@@ -15,6 +15,8 @@ namespace plask { namespace optical { namespace slab {
 Diagonalizer::Diagonalizer(Expansion* src) :
     src(src), diagonalized(src->solver->lcount, false), lcount(src->solver->lcount) {}
 
+Diagonalizer::~Diagonalizer() {}
+
 
 SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
     Diagonalizer(g),  gamma(lcount), Te(lcount), Th(lcount), Te1(lcount), Th1(lcount)
@@ -85,10 +87,11 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
             if (omp_test_lock(tmplx+mn)) break;
         assert(mn != nthr);
         cmatrix QE = tmpmx[mn];
-        writelog(LOG_DEBUG, "{}: Diagonalizing matrix for layer {:d} in thread {:d} [{:d}]", src->solver->getId(), layer, omp_get_thread_num(), mn);
+        writelog(LOG_DEBUG, "{}: Diagonalizing matrix for layer {:d}/{:d} in thread {:d} [{:d}]",
+                 src->solver->getId(), layer, lcount, omp_get_thread_num(), mn);
     #else
         cmatrix QE = *tmpmx;
-        writelog(LOG_DEBUG, "{}: Diagonalizing matrix for layer {:d}", src->solver->getId(), layer);
+        writelog(LOG_DEBUG, "{}: Diagonalizing matrix for layer {:d}/{:d}", src->solver->getId(), layer, lcount);
     #endif
 
     try {
@@ -207,7 +210,6 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
                 Th1[layer](j,i) = QE(i,j) * g;
         }
         assert(!Th1[layer].isnan());
-
     } catch (...) {
         #ifdef OPENMP_FOUND
             omp_unset_lock(tmplx+mn);

@@ -45,7 +45,6 @@ const char* MaterialInfo::PROPERTY_NAME_STRING[] = {
     "absp",
     "Nr",
     "NR",
-
     "mobe",
     "mobh",
     "taue",
@@ -56,7 +55,10 @@ const char* MaterialInfo::PROPERTY_NAME_STRING[] = {
     "e33",
     "c13",
     "c33",
-    "Psp"
+    "Psp",
+    "y1",
+    "y2",
+    "y3"
 };
 
 /// Names of arguments for which we need to give the ranges

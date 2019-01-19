@@ -5,7 +5,7 @@
 This file contains AuGe
 */
 
-#include <plask/material/material.h>
+#include "metal.h"
 
 namespace plask { namespace materials {
 
@@ -19,8 +19,8 @@ struct AuGe: public Metal {
     virtual std::string name() const override;
     virtual Tensor2<double> cond(double T) const override;
     virtual Tensor2<double> thermk(double T, double t) const override;
-    virtual double nr(double lam, double T, double n=0.) const override;
-    virtual double absp(double lam, double T) const override;
+//     virtual double nr(double lam, double T, double n=0.) const override;
+//     virtual double absp(double lam, double T) const override;
 protected:
     virtual bool isEqual(const Material& other) const override;
 };
@@ -28,4 +28,4 @@ protected:
 
 }} // namespace plask::materials
 
-#endif	//PLASK__AuGe_H
+#endif    //PLASK__AuGe_H

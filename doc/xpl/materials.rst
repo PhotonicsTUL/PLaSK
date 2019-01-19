@@ -307,7 +307,7 @@ This section contains specification of custom materials that can be used togethe
 
       .. xml:tag:: <nr>
 
-         Real refractive index *n*\ :sub:`R` [-].
+         Real refractive index \ :sup:`2`*n*\ :sub:`R` [-].
 
          Variables: ``lam`` — wavelength [nm], ``T`` — temperature [K], n — injected carriers concentration [cm\ :sup:`-3`].
 
@@ -360,6 +360,19 @@ This section contains specification of custom materials that can be used togethe
          Variables: ``T`` — temperature [K], ``e`` — lateral strain [-],
          ``point`` — point in the Brillouin zone ('*' means minimum bandgap),
          ``hole`` — hole type (``'H'`` or ``'L'``).
+
+      .. xml:tag:: <y1>
+
+         Luttinger parameter *γ*\ :sup:`1` [-].
+
+      .. xml:tag:: <y2>
+
+         Luttinger parameter *γ*\ :sup:`2` [-].
+
+      .. xml:tag:: <y3>
+
+         Luttinger parameter *γ*\ :sup:`3` [-].
+
 
 .. xml:tag:: <library>
 

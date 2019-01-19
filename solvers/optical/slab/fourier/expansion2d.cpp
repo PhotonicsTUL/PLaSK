@@ -166,7 +166,7 @@ void ExpansionPW2D::reset() {
 
 
 void ExpansionPW2D::prepareIntegrals(double lam, double glam) {
-    temperature = SafeData<double>(SOLVER->inTemperature(mesh), 300.);
+    temperature = SOLVER->inTemperature(mesh);
     gain_connected = SOLVER->inGain.hasProvider();
     if (gain_connected) {
         if (isnan(glam)) glam = lam;
@@ -188,10 +188,11 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
     if (refine == 0) refine = 1;
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
-        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {0} (sampled at {1} points) in thread {2}", layer, refine * nM,
-                         omp_get_thread_num());
+        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{} (sampled at {} points) in thread {}",
+                         layer, solver->lcount, refine * nM, omp_get_thread_num());
     #else
-        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {0} (sampled at {1} points)", layer, refine * nM);
+        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{} (sampled at {} points)",
+                         layer, solver->lcount, refine * nM);
     #endif
 
     if (isnan(lam))

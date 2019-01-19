@@ -209,6 +209,30 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         return transfer->getFieldVectorH(z);
     }
 
+    /**
+     * Get ½ E·conj(E) integral between \a z1 and \a z2
+     * \param num mode number
+     * \param z1 lower integration bound
+     * \param z2 upper integration bound
+     * \return computed integral
+     */
+    double getIntegralEE(size_t num, double z1, double z2) {
+        applyMode(modes[num]);
+        return transfer->getIntegralEE(z1, z2);
+    }
+
+    /**
+     * Get ½ H·conj(H) integral between \a z1 and \a z2
+     * \param num mode number
+     * \param z1 lower integration bound
+     * \param z2 upper integration bound
+     * \return computed integral
+     */
+    double getIntegralHH(size_t num, double z1, double z2) {
+        applyMode(modes[num]);
+        return transfer->getIntegralHH(z1, z2);
+    }
+
     /// Check if the current parameters correspond to some mode and insert it
     size_t setMode() {
         if (abs2(this->getDeterminant()) > root.tolf_max*root.tolf_max)

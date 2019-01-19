@@ -270,7 +270,7 @@ void ExpansionPW3D::reset() {
 
 
 void ExpansionPW3D::prepareIntegrals(double lam, double glam) {
-    temperature = SafeData<double>(SOLVER->inTemperature(mesh), 300.);
+    temperature = SOLVER->inTemperature(mesh);
     gain_connected = SOLVER->inGain.hasProvider();
     if (gain_connected) {
         if (isnan(glam)) glam = lam;
@@ -308,10 +308,11 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
     const double normlim = min(Ll/double(nMl), Lt/double(nMt)) * 1e-9;
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
-        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {0} (sampled at {1}x{2} points) in thread {3}",
-                         layer, Ml, Mt, omp_get_thread_num());
+        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{} (sampled at {}x{} points) in thread {}",
+                         layer, solver->lcount, Ml, Mt, omp_get_thread_num());
     #else
-        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {0} (sampled at {1}x{2} points)", layer, Ml, Mt);
+        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{} (sampled at {}x{} points)",
+                         layer, solver->lcount, Ml, Mt);
     #endif
 
     if (isnan(lam))

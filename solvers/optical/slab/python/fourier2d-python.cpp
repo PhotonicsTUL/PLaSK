@@ -521,15 +521,15 @@ void export_FourierSolver2D()
                u8"        of the non-vanishing electric field component.\n"
                u8"    sigma (float): Gaussian standard deviation [µm].\n"
                u8"    center (float): Position of the beam center [µm].\n\n"
-               u8"Example:\n:"
+               u8"Example:\n"
                u8"   >>> scattered = fourier.scattering('top', \n"
-               u8"                                      fourier.gaussian('top', 'Ex', 0.2))\n"
+               u8"   ...     fourier.gaussian('top', 'Ex', 0.2))\n"
               );
     solver.def("scattering_gaussian", &FourierSolver2D_scatteringGaussian, (py::arg("side"), "polarization", "sigma", py::arg("center")=0.),
                u8"Helper function to Access reflected fields for access incidence.\n\n"
                u8"This method is equivalent to calling:\n\n"
                u8"   >>> fourier.scattering(side,\n"
-               u8"                          fourier.gaussian(side, polarization, sigma, center))\n\n"
+               u8"   ...     fourier.gaussian(side, polarization, sigma, center))\n\n"
                u8"Args:\n"
                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                u8"        present.\n"
@@ -539,11 +539,6 @@ void export_FourierSolver2D()
                u8"    sigma (float): Gaussian standard deviation [µm].\n"
                u8"    center (float): Position of the beam center [µm].\n\n"
               );
-    // OBSOLETE
-    solver.def("get_electric_coefficients", FourierSolver2D_getFieldVectorE, (py::arg("num"), "level"),
-               u8"Obsolete alias for :meth:`get_raw_E`.");
-    solver.def("get_magnetic_coefficients", FourierSolver2D_getFieldVectorH, (py::arg("num"), "level"),
-               u8"Obsolete alias for :meth:`get_raw_H`.");
 
     py::scope scope = solver;
     (void) scope;   // don't warn about unused variable scope

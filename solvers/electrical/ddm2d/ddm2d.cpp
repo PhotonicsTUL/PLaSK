@@ -331,9 +331,9 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
 
     //auto iMesh = (this->mesh)->getElementMesh();
-    //auto temperatures = SafeData<double>(inTemperature(iMesh), 300.);
+    //auto temperatures = inTemperature(iMesh);
     auto iMeshN = this->mesh;
-    auto temperaturesN = SafeData<double>(inTemperature(iMeshN), 300.);
+    auto temperaturesN = inTemperature(iMeshN);
 
 //TODO    2e-6*pow((Me(T,e,point).c00*plask::phys::me*plask::phys::kB_eV*300.)/(2.*PI*plask::phys::hb_eV*plask::phys::hb_J),1.5);
 
@@ -668,9 +668,9 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveN()
     //this->writelog(LOG_DETAIL, "Saving electron concentration");
 
     //auto iMesh = (this->mesh)->getElementMesh();
-    //auto temperatures = SafeData<double>(inTemperature(iMesh), 300.);
+    //auto temperatures = inTemperature(iMesh);
     auto iMeshE = (this->mesh)->getElementMesh();
-    auto temperaturesE = SafeData<double>(inTemperature(iMeshE), 300.);
+    auto temperaturesE = inTemperature(iMeshE);
 
     for (auto e: this->mesh->elements())
     {
@@ -698,9 +698,9 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveP()
     //this->writelog(LOG_DETAIL, "Saving hole concentration");
 
     //auto iMesh = (this->mesh)->getElementMesh();
-    //auto temperatures = SafeData<double>(inTemperature(iMesh), 300.);
+    //auto temperatures = inTemperature(iMesh);
     auto iMeshE = (this->mesh)->getElementMesh();
-    auto temperaturesE = SafeData<double>(inTemperature(iMeshE), 300.);
+    auto temperaturesE = inTemperature(iMeshE);
 
     for (auto e: this->mesh->elements())
     {
@@ -811,9 +811,9 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::computePsiI() {
     dvnPsi0.reset(size, 0.);
 
     //auto iMesh = (this->mesh)->getElementMesh();
-    //auto temperatures = SafeData<double>(inTemperature(iMesh), 300.);
+    //auto temperatures = inTemperature(iMesh);
     auto iMeshE = (this->mesh)->getElementMesh();
-    auto temperaturesE = SafeData<double>(inTemperature(iMeshE), 300.);
+    auto temperaturesE = inTemperature(iMeshE);
 
     for (auto el: this->mesh->elements()) {
         size_t i = el.getIndex();
@@ -1208,7 +1208,7 @@ double DriftDiffusionModel2DSolver<Geometry2DType>::doCompute(unsigned loops)
     //heats.reset(); // LP_09.2015
 
     auto iMesh = (this->mesh)->getElementMesh();
-    auto temperatures = SafeData<double>(inTemperature(iMesh), 300.);
+    auto temperatures = inTemperature(iMesh);
 
     // Store boundary conditions for current mesh
     auto vconst = voltage_boundary(this->mesh, this->geometry);
@@ -1452,7 +1452,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::saveHeatDensities()
     heats.reset(this->mesh->getElementsCount());
 
     auto iMesh = (this->mesh)->getElementMesh();
-    auto temperatures = SafeData<double>(inTemperature(iMesh), 300.);
+    auto temperatures = inTemperature(iMesh);
 
     /*if (heatmet == HEAT_JOULES)*/ {
         for (auto e: this->mesh->elements()) {
@@ -1578,7 +1578,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getBandEdg
         DataVector<double> dvnEc(size, 0.);
 
         auto iMeshE = (this->mesh)->getElementMesh();
-        auto temperaturesE = SafeData<double>(inTemperature(iMeshE), 300.);
+        auto temperaturesE = inTemperature(iMeshE);
 
         //double T(300.); // TODO
         double T;
@@ -1611,7 +1611,7 @@ const LazyData < double> DriftDiffusionModel2DSolver<Geometry2DType>::getBandEdg
         DataVector<double> dvnEv(size, 0.);
 
         auto iMeshE = (this->mesh)->getElementMesh();
-        auto temperaturesE = SafeData<double>(inTemperature(iMeshE), 300.);
+        auto temperaturesE = inTemperature(iMeshE);
 
         //double T(300.); // TODO
         double T;
@@ -2229,7 +2229,7 @@ const LazyData < Tensor2<double>> DriftDiffusionModel2DSolver<Geometry2DType>::g
 template <>
 double DriftDiffusionModel2DSolver<Geometry2DCartesian>::getTotalEnergy() {
     double W = 0.;
-    auto T = SafeData<double>(inTemperature(this->mesh->getElementMesh()), 300.);
+    auto T = inTemperature(this->mesh->getElementMesh());
     for (auto e: this->mesh->elements) {
         size_t ll = e.getLoLoIndex();
         size_t lu = e.getUpLoIndex();
@@ -2251,7 +2251,7 @@ double DriftDiffusionModel2DSolver<Geometry2DCartesian>::getTotalEnergy() {
 template <>
 double DriftDiffusionModel2DSolver<Geometry2DCylindrical>::getTotalEnergy() {
     double W = 0.;
-    auto T = SafeData<double>(inTemperature(this->mesh->getElementMesh()), 300.);
+    auto T = inTemperature(this->mesh->getElementMesh());
     for (auto e: this->mesh->elements) {
         size_t ll = e.getLoLoIndex();
         size_t lu = e.getUpLoIndex();

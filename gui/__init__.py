@@ -243,12 +243,12 @@ class MainWindow(QMainWindow):
         launch_action.triggered.connect(lambda: launch_plask(self))
 
         goto_action = QAction(QIcon.fromTheme('go-jump'), '&Go to Line...', self)
-        goto_action.setShortcut(Qt.CTRL + Qt.Key_L)
+        goto_action.setShortcut(QKeySequence('Ctrl+L'))
         goto_action.setStatusTip('Go to the specified line')
         goto_action.triggered.connect(self.on_goto_line)
 
         plot_material_action = QAction(QIcon.fromTheme('matplotlib'), 'Examine &Material Parameters...', self)
-        plot_material_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_M)
+        plot_material_action.setShortcut(QKeySequence('Ctrl+Shift+M'))
         plot_material_action.triggered.connect(lambda: show_material_plot(self, self.document.materials.model,
                                                                           self.document.defines.model))
 
@@ -698,7 +698,7 @@ class MainWindow(QMainWindow):
         global pysparkle
         if pysparkle is None and PySparkle is not None:
             if VERSION is not None:
-                pysparkle = PySparkle("http://phys.p.lodz.pl/appcast/plask.xml", "PLaSK", VERSION[:10],
+                pysparkle = PySparkle("https://plask.app/appcast.xml", "PLaSK", VERSION[:10],
                                       config=ConfigProxy('updates'), shutdown=close_all_windows,
                                       frontend='qt5' if QT_API == 'PyQt5' else 'qt4')
         if pysparkle is not None:
@@ -725,10 +725,10 @@ class MainWindow(QMainWindow):
             outer.setContentsMargins(0, 0, 0, 0)
             outer.setSpacing(0)
 
-            sw = QApplication.desktop().screenGeometry(self).width()
-            if sw < 1200:
+            scale = QApplication.desktop().logicalDpiX() / 96.
+            if scale < 1.4:
                 image_name = 'splash620'
-            elif sw < 2600:
+            elif scale < 1.8:
                 image_name = 'splash868'
             else:
                 image_name = 'splash1116'
@@ -1055,6 +1055,8 @@ def main():
 
     if _DEBUG:
         sys.stderr.write("PLaSK GUI, version {}.\nUsing {} API.\n".format(VERSION, QT_API))
+        import faulthandler
+        faulthandler.enable()
 
     global APPLICATION, SESSION, pysparkle
 

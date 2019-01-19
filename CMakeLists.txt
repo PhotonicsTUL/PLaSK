@@ -73,7 +73,7 @@ set(PLASK_PATH "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask")
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 if("$ENV{PLASK_VERSION}" STREQUAL "")
-    execute_process(COMMAND git show -s --pretty=format:%cd.%h --date=short WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    execute_process(COMMAND git show -s --pretty=format:%ad.%h --date=short WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                     RESULT_VARIABLE git_version_ok OUTPUT_VARIABLE PLASK_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)  # old git does not have --date=format
     if("${git_version_ok}" STREQUAL "0")
         string(REPLACE "-" "." PLASK_VERSION "${PLASK_VERSION}")
@@ -106,7 +106,7 @@ option(USE_OMP "Use OpenMP" ON)
 
 set(USE_PROFILER "" CACHE STRING "Type of the profiler to use. Leave empty for no profiling. Set to 'GNU' if you want to use gprof or to 'Google' for google perftools.")
 
-if(WIN32)
+if(WIN32 AND NOT MSVC)
     set(USE_MANIFEST "msvcr90" CACHE STRING "Manifest to include into Windows executables")
 endif()
 
@@ -198,21 +198,19 @@ if(USE_STATIC_BOOST)
 endif(USE_STATIC_BOOST)
 
 if(BUILD_PYTHON)
-    find_package(Boost QUIET COMPONENTS "python-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
-    unset(Boost_LIBRARIES)
-    if(Boost_PYTHON-PY${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}_FOUND)
-        list(APPEND boost_components "python-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}")
-        set(Boost_PYTHON_LIBRARIES ${Boost_PYTHON-PY${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}_LIBRARIES})
-    else()
-        find_package(Boost QUIET COMPONENTS "python${PYTHON_VERSION_MAJOR}")
+    foreach(boost_python "python-py${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}"
+                         "python${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}"
+                         "python${PYTHON_VERSION_MAJOR}")
+        find_package(Boost QUIET COMPONENTS "${boost_python}")
         unset(Boost_LIBRARIES)
-        if(Boost_PYTHON${PYTHON_VERSION_MAJOR}_FOUND)
-            list(APPEND boost_components "python${PYTHON_VERSION_MAJOR}")
-            set(Boost_PYTHON_LIBRARIES ${Boost_PYTHON${PYTHON_VERSION_MAJOR}_LIBRARIES})
-        else()
-            list(APPEND boost_components "python")
+        string(TOUPPER "${boost_python}" boost_python_libraries_name)
+        if(Boost_${boost_python_libraries_name}_FOUND)
+            message("PY: ${boost_python} Boost_${boost_python_libraries_name}_LIBRARIES ${Boost_PYTHON_LIBRARIES} ${boost_components}")
+            list(APPEND boost_components "${boost_python}")
+            set(Boost_PYTHON_LIBRARIES ${Boost_${boost_python_libraries_name}_LIBRARIES})
+            break()
         endif()
-    endif()
+    endforeach()
 endif()
 
 find_package(Boost REQUIRED COMPONENTS ${boost_components})
@@ -320,7 +318,11 @@ endif()
 
 # CAMOS
 add_subdirectory(extlib/camos)
+
+# FFTPACX
 add_subdirectory(extlib/fftpacx)
+
+# Triangle
 add_subdirectory(extlib/triangle)
 
 # fmt

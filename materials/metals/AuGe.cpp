@@ -26,25 +26,25 @@ Tensor2<double> AuGe::thermk(double /*T*/, double /*t*/) const {
     return ( Tensor2<double>(tCondT, tCondT) );
 }
 
-MI_PROPERTY(AuGe, absp,
-            MISource(""),
-            MIComment("TODO")
-            )
-double AuGe::absp(double /*lam*/, double /*T*/) const {
-    return ( 1e3 );
-}
-
 bool AuGe::isEqual(const Material &/*other*/) const {
     return true;
 }
 
-MI_PROPERTY(AuGe, nr,
-            MISource(""),
-            MIComment("TODO")
-			)
-double AuGe::nr(double /*lam*/, double /*T*/, double /*n*/) const {
-    return ( 1. );
-}
+// MI_PROPERTY(AuGe, absp,
+//             MISource(""),
+//             MIComment("TODO")
+//             )
+// double AuGe::absp(double /*lam*/, double /*T*/) const {
+//     return ( 1e3 );
+// }
+//
+// MI_PROPERTY(AuGe, nr,
+//             MISource(""),
+//             MIComment("TODO")
+//             )
+// double AuGe::nr(double /*lam*/, double /*T*/, double /*n*/) const {
+//     return ( 1. );
+// }
 
 static MaterialsDB::Register<AuGe> materialDB_register_AuGe;
 

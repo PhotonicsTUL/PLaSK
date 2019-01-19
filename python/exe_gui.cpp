@@ -52,7 +52,7 @@ static py::object initPlask(int argc, const system_char* const argv[])
         try {
             path.insert(0, boost::filesystem::absolute(boost::filesystem::path(argv[0])).parent_path().string());
         } catch (std::runtime_error&) { // can be thrown if there is wrong locale set
-			system_string file(argv[0]);
+            system_string file(argv[0]);
             size_t pos = file.rfind(system_char(plask::FILE_PATH_SEPARATOR));
             if (pos == std::string::npos) pos = 0;
             path.insert(0, file.substr(0, pos));
@@ -62,7 +62,11 @@ static py::object initPlask(int argc, const system_char* const argv[])
 
     sys.attr("path") = path;
 
-    sys.attr("executable") = plask::exePathAndName();
+#   if defined(_MSC_VER) || defined(__MINGW32__)
+        sys.attr("executable") = plask::exePath() + "\\plask.exe";
+#   else
+        sys.attr("executable") = plask::exePath() + "/plask";
+#   endif
 
     py::object _plask = py::import("_plask");
 
@@ -128,12 +132,16 @@ class Splash {
             if (set_dpi_awareness_context != NULL) set_dpi_awareness_context(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE);
         }
 
+        HDC screen = GetDC(NULL);
+        double scale = static_cast<FLOAT>(GetDeviceCaps(screen, LOGPIXELSX)) / 96.;
+        ReleaseDC(NULL, screen);
+
         RECT desktopRect;
         GetWindowRect(GetDesktopWindow(), &desktopRect);
         int desktop_width = desktopRect.right + desktopRect.left,
             desktop_height = desktopRect.top + desktopRect.bottom;
 
-        int resid = (desktop_width < 1200)? 201 : (desktop_width < 2600)? 202 : 203;
+        int resid = (scale < 1.4)? 201 : (scale < 1.8)? 202 : 203;
 
         hBitmap = LoadBitmap(hInst, MAKEINTRESOURCE(resid));
         GetObject(hBitmap, sizeof(BITMAP), &bitmap);

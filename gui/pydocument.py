@@ -85,7 +85,7 @@ class PyDocument(object):
             try:
                 text.encode(coding)
             except UnicodeEncodeError:
-                QMessageBox.critical(None, "Error while saving file.",
+                QMessageBox.critical(None, "Error while saving file",
                                            "The file could not be saved with the specified encoding '{}'.\n\n"
                                            "Please set the proper encoding and try again.".format(coding))
                 return

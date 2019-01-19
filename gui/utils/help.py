@@ -23,7 +23,7 @@ from ..qt.QtHelp import *
 from .config import CONFIG
 from .widgets import set_icon_size
 
-HELP_URL = 'http://fizyka.p.lodz.pl/en/plask-user-guide/'
+HELP_URL = 'https://doc.plask.app'
 
 HELP_DIR = os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'share', 'doc', 'plask')
 HELP_FILE = os.path.join(HELP_DIR, 'plask.qch')

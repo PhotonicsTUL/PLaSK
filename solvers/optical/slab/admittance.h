@@ -30,6 +30,15 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
 
     std::vector<cmatrix> memY;                  ///< admittance matrices for each layer
 
+    double get_d(size_t n, double& z) {       ///< get layer thickness and adjust z
+        double d = (n == 0 || std::size_t(n) == solver->vbounds->size())?
+            solver->vpml.dist :
+            solver->vbounds->at(n) - solver->vbounds->at(n-1);
+        if (std::ptrdiff_t(n) >= solver->interface) z = d - z;
+        else if (n == 0) z += d;
+        return d;
+    }
+
   public:
 
     cvector getReflectionVector(const cvector& incident, IncidentDirection side) override;
@@ -103,6 +112,9 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
         }
     }
 
+    double integrateEE(size_t n, double z1, double z2) override;
+
+    double integrateHH(size_t n, double z1, double z2) override;
 };
 
 

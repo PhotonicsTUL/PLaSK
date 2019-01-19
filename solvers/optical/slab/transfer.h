@@ -164,6 +164,24 @@ struct PLASK_SOLVER_API Transfer {
         return LazyData<double>(E.size(), [power,E](size_t i) { return power * abs2(E[i]); });
     }
 
+    /**
+     * Compute ½ E·conj(E) integral between \a z1 and \a z2
+     * \param n layer number
+     * \param z1 lower integration bound in local layer coordinates
+     * \param z2 upper integration bound in local layer coordinates
+     * \return computed integral
+     */
+    virtual double integrateEE(size_t n, double z1, double z2) = 0;
+
+    /**
+     * Compute ½ H·conj(H) integral between \a z1 and \a z2
+     * \param n layer number
+     * \param z1 lower integration bound in local layer coordinates
+     * \param z2 upper integration bound in local layer coordinates
+     * \return computed integral
+     */
+    virtual double integrateHH(size_t n, double z1, double z2) = 0;
+
   public:
 
     /**
@@ -269,6 +287,22 @@ struct PLASK_SOLVER_API Transfer {
      * \return magnetic field coefficients
      */
     cvector getScatteredFieldVectorH(const cvector& incident, IncidentDirection side, double z);
+
+    /**
+     * Get ½ E·conj(E) integral between \a z1 and \a z2
+     * \param z1 lower integration bound
+     * \param z2 upper integration bound
+     * \return computed integral
+     */
+    double getIntegralEE(double z1, double z2);
+
+    /**
+     * Get ½ H·conj(H) integral between \a z1 and \a z2
+     * \param z1 lower integration bound
+     * \param z2 upper integration bound
+     * \return computed integral
+     */
+    double getIntegralHH(double z1, double z2);
 };
 
 

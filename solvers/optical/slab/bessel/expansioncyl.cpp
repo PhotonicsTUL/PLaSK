@@ -139,7 +139,7 @@ void ExpansionBessel::init3() {
 
 void ExpansionBessel::prepareIntegrals(double lam, double glam) {
     if (m_changed) init2();
-    temperature = SafeData<double>(SOLVER->inTemperature(mesh), 300.);
+    temperature = SOLVER->inTemperature(mesh);
     gain_connected = SOLVER->inGain.hasProvider();
     if (gain_connected) {
         if (isnan(glam)) glam = lam;
@@ -161,9 +161,11 @@ std::pair<dcomplex, dcomplex> ExpansionBessel::integrateLayer(size_t layer, doub
     auto raxis = mesh->tran();
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
-        SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer {:d} in thread {:d}", layer, omp_get_thread_num());
+        SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer {:d}/{:d} in thread {:d}",
+                         layer, solver->lcount, omp_get_thread_num());
     #else
-        SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer {:d}", layer);
+        SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer {:d}/{:d}",
+                         layer, solver->lcount);
     #endif
 
     if (isnan(lam))
