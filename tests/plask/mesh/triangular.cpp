@@ -3,6 +3,8 @@
 #include <plask/mesh/triangular2d.h>
 #include <plask/mesh/generator_triangular.h>
 
+BOOST_AUTO_TEST_SUITE(triangular) // MUST be the same as the file name
+
 BOOST_AUTO_TEST_CASE(triangular2d_simple) {
     plask::TriangularMesh2D mesh;
     BOOST_CHECK(mesh.empty());
@@ -114,3 +116,5 @@ BOOST_AUTO_TEST_CASE(triangular2d_boundaries) {
         BOOST_CHECK_EQUAL_COLLECTIONS(topBoundaryIn.begin(), topBoundaryIn.end(), std::begin(expected), std::end(expected));
     }
 }
+
+BOOST_AUTO_TEST_SUITE_END()
