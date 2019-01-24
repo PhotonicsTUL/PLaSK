@@ -20,7 +20,7 @@ from ...utils.texteditor import TextEditor
 from ...utils.widgets import EDITOR_FONT, set_icon_size
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
 from ...lib.highlighter.xml import syntax
-from .indenter import indent, unindent, autoindent
+from .xml_formatter import indent, unindent, indent_new_line, close_tag
 
 SCHEME = {}
 
@@ -80,10 +80,13 @@ class XMLEditor(TextEditor):
                 self.setTextCursor(cursor)
                 return
 
+        if key == Qt.Key_Slash:
+            if close_tag(self): return
+
         super(XMLEditor, self).keyPressEvent(event)
 
-        if key in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Greater):
-            autoindent(self)
+        if key in (Qt.Key_Enter, Qt.Key_Return):
+            indent_new_line(self)
 
 
 class SourceWidget(QWidget):

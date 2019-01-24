@@ -11,11 +11,11 @@
 # GNU General Public License for more details.
 
 import re
+from xml.parsers import expat
 
 from ...qt.QtGui import *
 
-indent_re = re.compile(r'.*<(?:[^/].*)?[^/]\s*>\s*$')
-unindent_re = re.compile(r'\s*</.+\s*>.*$')
+indent_re = re.compile(r'.*<[^/><]+>\s*$')
 
 
 def indent(editor, col=0):
@@ -68,49 +68,54 @@ def unindent(editor, col=2):
     cursor.endEditBlock()
 
 
-def _find_prev_indent_level(document, row, spaces):
-    ni = len(spaces)
-    while row > 0:
-        row -= 1
-        line = document.findBlockByNumber(row).text()
-        nl = len(line) - len(line.lstrip())
-        if nl < ni:
-            return spaces[:nl]
-    return spaces
-
-
-def autoindent(editor):
+def indent_new_line(editor):
     """Automatically set indentation of the current line"""
     cursor = editor.textCursor()
+    row = cursor.blockNumber() - 1
+    if row == -1:
+        return
     document = editor.document()
-    if cursor.atBlockStart():
-        row = cursor.blockNumber() - 1
-        if row == -1:
-            return
-        cursor.joinPreviousEditBlock()
-        curline = document.findBlockByNumber(row).text()
-        spaces = curline[:len(curline) - len(curline.lstrip())]
-        if indent_re.match(curline):
-            cursor.insertText(spaces + '  ')
-        else:
-            cursor.insertText(spaces)
-        cursor.endEditBlock()
+    cursor.joinPreviousEditBlock()
+    curline = document.findBlockByNumber(row).text()
+    spaces = curline[:len(curline) - len(curline.lstrip())]
+    if indent_re.match(curline):
+        cursor.insertText(spaces + '  ')
     else:
-        row = cursor.blockNumber()
-        cursor.joinPreviousEditBlock()
-        curline = document.findBlockByNumber(row).text()
-        spaces = curline[:len(curline) - len(curline.lstrip())]
-        if unindent_re.match(curline):
-            if row == 0:
-                prevlen = 0
-                pspaces = ''
-            else:
-                prevline = document.findBlockByNumber(row-1).text()
-                pspaces = prevline[:len(prevline) - len(prevline.lstrip())]
-                prevlen = len(_find_prev_indent_level(document, row-1, pspaces))
-            if prevlen != len(spaces):
-                nl = len(spaces) - len(_find_prev_indent_level(document, row+1, spaces))
-                cursor.movePosition(QTextCursor.StartOfBlock)
-                for i in range(nl):
-                    cursor.deleteChar()
-        cursor.endEditBlock()
+        cursor.insertText(spaces)
+    cursor.endEditBlock()
+
+
+def close_tag(editor):
+    """Close the current tag, and unindent closing tag if necessary"""
+    cursor = editor.textCursor()
+    cursor.movePosition(QTextCursor.Left, QTextCursor.KeepAnchor)
+    if cursor.selectedText() != '<':
+        return False
+    pos = cursor.position()
+    text = editor.toPlainText()[:pos]
+    text = text[:-1]
+    parser = expat.ParserCreate('utf8')
+    stack = []
+    parser.StartElementHandler = lambda tag, atr:\
+        stack.append((
+            tag,
+            parser.CurrentColumnNumber if not stack or parser.CurrentLineNumber != stack[-1][2] else stack[-1][1],
+            parser.CurrentLineNumber))
+    parser.EndElementHandler = lambda tag: stack.pop()
+    try:
+        parser.Parse('<text>\n'+text)
+    except expat.ExpatError:
+        return False
+    if len(stack) < 2:
+        return False
+    tag, col, _ = stack[-1]
+    cursor.beginEditBlock()
+    cursor.insertText('</'+tag+'>')
+    cur = cursor.block().position() + col
+    if cur < pos and text[cur:].strip() == '':
+        cursor.setPosition(cur)
+        cursor.setPosition(pos, QTextCursor.KeepAnchor)
+        if cursor.hasSelection():
+            cursor.deleteChar()
+    cursor.endEditBlock()
+    return True
