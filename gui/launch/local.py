@@ -25,10 +25,10 @@ from ..utils.config import CONFIG
 from ..utils.files import which
 
 
-class PlaskThread(QThread):
+class LaunchThread(QThread):
 
     def __init__(self, program, fname, dirname, dock, main_window, args, defs):
-        super(PlaskThread, self).__init__()
+        super(LaunchThread, self).__init__()
         self.main_window = main_window
         env = os.environ.copy()
         if CONFIG['workarounds/disable_omp']:
@@ -176,7 +176,7 @@ class Launcher(object):
             dock.show()
             dock.raise_()
 
-        dock.thread = PlaskThread(program, filename, dirname, dock, main_window, args, defs)
+        dock.thread = LaunchThread(program, filename, dirname, dock, main_window, args, defs)
         dock.thread.finished.connect(dock.thread_finished)
         dock.thread.start()
 

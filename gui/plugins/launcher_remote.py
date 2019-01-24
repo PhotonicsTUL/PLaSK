@@ -375,10 +375,10 @@ else:
                 return self.program_edit.text()
 
 
-    class RemotePlaskThread(QThread):
+    class RemoteLaunchThread(QThread):
 
         def __init__(self, ssh, account, fname, workdir, dock, main_window, args, defs):
-            super(RemotePlaskThread, self).__init__()
+            super(RemoteLaunchThread, self).__init__()
             self.main_window = main_window
 
             command = account.program or 'plask'
@@ -853,7 +853,7 @@ else:
                 dock.show()
                 dock.raise_()
 
-            dock.thread = RemotePlaskThread(ssh, account, filename, workdir, dock, main_window, args, defs)
+            dock.thread = RemoteLaunchThread(ssh, account, filename, workdir, dock, main_window, args, defs)
             dock.thread.finished.connect(dock.thread_finished)
             dock.thread.start()
 
