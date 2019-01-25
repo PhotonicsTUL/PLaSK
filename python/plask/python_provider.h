@@ -318,7 +318,8 @@ namespace detail {
             if (obj == py::object()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
-            if (assignMultipleValues(self, obj)) return;
+            if (!py::extract<PythonDataVector<const typename ReceiverT::ValueType, ReceiverT::SpaceType::DIM>>(obj).check())
+                if (assignMultipleValues(self, obj)) return;
             auto data = plask::make_shared<PythonProviderFor<ProviderT, PropertyT::propertyType, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
             if (assignProvider(self, py::object(data))) return;
             throw TypeError(u8"You can only attach {0} provider, data, sequence of data, or constant of type '{1}'",
