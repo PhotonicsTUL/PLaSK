@@ -57,6 +57,8 @@ DEFAULTS = {
     'editor/help_font': [_default_font_family, '9', '-1', '5', '50', '0', '0', '0', '0', '0'],
     'editor/background_color': 'white',
     'editor/foreground_color': 'black',
+    'editor/linenumber_background_color': '#dddddd',
+    'editor/linenumber_foreground_color': '#808080',
     'editor/current_line_color': '#ffffee',
     'editor/selection_color': '#ffffdd',
     'editor/match_color': '#ddffdd',
@@ -259,6 +261,11 @@ CONFIG_WIDGETS = OrderedDict([
             ("Unmatched bracket color", Color('editor/not_matching_bracket_color',
                                               "Highlight color for unmatched brackets "
                                               "in script editor.")),
+            "Line Numbers Area",
+            ("Background color", Color('editor/linenumber_background_color',
+                                       "Background color in the line numbers area.")),
+            ("Foreground color", Color('editor/linenumber_foreground_color',
+                                       "Foreground color in the line numbers area.")),
         ]),
         ("Python Syntax", [
             ("Comment", Syntax('syntax/python_comment', "Python syntax highlighting.")),

@@ -253,7 +253,7 @@ class SourceWidget(QWidget):
         else:
             self.find_selection.setChecked(False)
         self.find_edit.selectAll()
-        self.find_edit.setPalette(self.editor.palette())
+        self.find_edit.setPalette(self.replace_edit.palette())
         self.find_toolbar.show()
         self.find_edit.setFocus()
 
@@ -267,7 +267,7 @@ class SourceWidget(QWidget):
                 self.find_selection.setChecked(False)
                 self.find_edit.setText(text)
         self.find_edit.selectAll()
-        self.find_edit.setPalette(self.editor.palette())
+        self.find_edit.setPalette(self.replace_edit.palette())
         self.find_toolbar.show()
         self.replace_toolbar.show()
         self.find_edit.setFocus()
@@ -308,7 +308,7 @@ class SourceWidget(QWidget):
         cursor = self.editor.textCursor()
         if cont:
             cursor.setPosition(cursor.selectionStart())
-        pal = self.editor.palette()
+        pal = self.replace_edit.palette()
         if self.find_regex.isChecked():
             self._findtext = QRegExp(self.find_edit.text())
         else:
