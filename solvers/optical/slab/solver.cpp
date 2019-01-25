@@ -351,12 +351,20 @@ void SlabSolver<BaseT>::setupLayers()
             for (++g; g != groups.end(); ++g) {
                 for (ItemIterator i = g->begin(); i != g->end(); ++i)
                     stack[indices[*i]] = lcount;
+                lgained.push_back(lgained[l]);
                 ++lcount;
             }
         }
     }
+    assert(lgained.size() == lcount);
 
     Solver::writelog(LOG_DETAIL, "Detected {0} {1}layers", lcount, group_layers? "distinct " : "");
+
+    // DEBUG
+    // for (size_t i = 0; i < stack.size(); ++i) {
+    //     if (i != 0) std::cerr << "---- " << vbounds->at(i-1) << "\n";
+    //     std::cerr << stack[i] << (lgained[stack[i]]? "*\n" : "\n");
+    // }
 
     if (!isnan(interface_position)) {
         double pos = interface_position;
