@@ -90,7 +90,7 @@
         Approximate lateral distance of the points in which the temperature is probed to decide about
         the temperature difference in one layer.
     - &temp-layer
-      attr: temp-dist
+      attr: temp-layer
       label: Minimum temperature layer width
       type: float
       unit: µm
