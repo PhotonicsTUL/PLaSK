@@ -74,8 +74,8 @@ def indent_new_line(editor):
     row = cursor.blockNumber() - 1
     if row == -1:
         return
-    document = editor.document()
     cursor.joinPreviousEditBlock()
+    document = editor.document()
     curline = document.findBlockByNumber(row).text()
     spaces = curline[:len(curline) - len(curline.lstrip())]
     if indent_re.match(curline):
@@ -93,7 +93,6 @@ def close_tag(editor):
         return False
     pos = cursor.position()
     text = editor.toPlainText()[:pos]
-    text = text[:-1]
     parser = expat.ParserCreate('utf8')
     stack = []
     parser.StartElementHandler = lambda tag, atr:\

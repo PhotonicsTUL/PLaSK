@@ -108,8 +108,10 @@ class GeometrySourceController(SourceEditController):
 
         def on_edit_exit(self):
             self.manager = None
-            self.source.editor.cursorPositionChanged.disconnect(self.cursor_moved)
-            self.source.editor.textChanged.disconnect(self.text_changed)
+            try: self.source.editor.cursorPositionChanged.disconnect(self.cursor_moved)
+            except: pass
+            try: self.source.editor.textChanged.disconnect(self.text_changed)
+            except: pass
             return super(GeometrySourceController, self).on_edit_exit()
 
     def show_geometry_preview(self, checked):
