@@ -85,36 +85,47 @@ def indent_new_line(editor):
     cursor.endEditBlock()
 
 
-def close_tag(editor):
+def parse_slash(editor):
     """Close the current tag, and unindent closing tag if necessary"""
     cursor = editor.textCursor()
-    cursor.movePosition(QTextCursor.Left, QTextCursor.KeepAnchor)
-    if cursor.selectedText() != '<':
-        return False
     pos = cursor.position()
     text = editor.toPlainText()[:pos]
+    closing = text[-1] == '<'
+    if closing:
+        text = text[:-1]
+        pos -= 1
+    else:
+        text = text+'/>'
     parser = expat.ParserCreate('utf8')
-    stack = []
+    stack = [(None, 0, None)]
     parser.StartElementHandler = lambda tag, atr:\
         stack.append((
             tag,
-            parser.CurrentColumnNumber if not stack or parser.CurrentLineNumber != stack[-1][2] else stack[-1][1],
+            parser.CurrentColumnNumber if parser.CurrentLineNumber != stack[-1][2] else stack[-1][1],
             parser.CurrentLineNumber))
     parser.EndElementHandler = lambda tag: stack.pop()
     try:
         parser.Parse('<text>\n'+text)
     except expat.ExpatError:
         return False
-    if len(stack) < 2:
-        return False
-    tag, col, _ = stack[-1]
-    cursor.beginEditBlock()
-    cursor.insertText('</'+tag+'>')
-    cur = cursor.block().position() + col
-    if cur < pos and text[cur:].strip() == '':
-        cursor.setPosition(cur)
-        cursor.setPosition(pos, QTextCursor.KeepAnchor)
-        if cursor.hasSelection():
-            cursor.deleteChar()
-    cursor.endEditBlock()
-    return True
+    if closing:
+        if len(stack) < 2:
+            return False
+        tag, col, _ = stack[-1]
+        cursor.beginEditBlock()
+        cursor.insertText('/'+tag+'>')
+        cur = cursor.block().position() + col
+        if cur < pos and text[cur:].strip() == '':
+            cursor.setPosition(cur)
+            cursor.setPosition(pos, QTextCursor.KeepAnchor)
+            if cursor.hasSelection():
+                cursor.deleteChar()
+        cursor.endEditBlock()
+        return True
+    elif parser.CurrentLineNumber == cursor.blockNumber() + 2 and \
+         parser.CurrentColumnNumber == pos - cursor.block().position() + 2:
+        cursor.joinPreviousEditBlock()
+        cursor.insertText('/>')
+        cursor.endEditBlock()
+        return True
+    return False

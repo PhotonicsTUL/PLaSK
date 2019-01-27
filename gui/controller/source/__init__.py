@@ -20,7 +20,7 @@ from ...utils.texteditor import TextEditor
 from ...utils.widgets import EDITOR_FONT, set_icon_size
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
 from ...lib.highlighter.xml import syntax
-from .xml_formatter import indent, unindent, indent_new_line, close_tag
+from .xml_formatter import indent, unindent, indent_new_line, parse_slash
 
 SCHEME = {}
 
@@ -81,7 +81,7 @@ class XMLEditor(TextEditor):
                 return
 
         if key == Qt.Key_Slash:
-            if close_tag(self): return
+            if parse_slash(self): return
 
         super(XMLEditor, self).keyPressEvent(event)
 
