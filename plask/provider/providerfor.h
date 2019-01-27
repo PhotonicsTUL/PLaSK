@@ -676,7 +676,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
      */
     typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(_ExtraParams...)> Delegate;
 
-    /// Used by receivers as const value provider, see Receiver::setConst
+    /// Used by receivers as const value provider, see Receiver::setConstValue
     typedef WithValue ConstProviderType;
 
 };
@@ -925,7 +925,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
 
     };
 
-    /// Used by receivers as const value provider, see Receiver::setConst
+    /// Used by receivers as const value provider, see Receiver::setConstValue
     typedef WithValue ConstProviderType;
 
 };
@@ -1105,7 +1105,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
     /**
      * Return same value in all points.
      *
-     * Used by receivers as const value provider, see Receiver::setConst
+     * Used by receivers as const value provider, see Receiver::setConstValue
      *
      * It ignores extra parameters.
      */
@@ -1441,7 +1441,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
     /**
      * Return same value in all points.
      *
-     * Used by receivers as const value provider, see Receiver::setConst
+     * Used by receivers as const value provider, see Receiver::setConstValue
      *
      * It ignores extra parameters.
      */

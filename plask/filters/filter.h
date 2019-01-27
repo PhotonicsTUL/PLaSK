@@ -16,7 +16,7 @@ struct FilterCommonBase: public Solver {
 template <typename PropertyT, PropertyType propertyType, typename OutputSpaceType, typename VariadicTemplateTypesHolder>
 struct FilterBaseImpl {
     static_assert(propertyType == FIELD_PROPERTY || propertyType == MULTI_FIELD_PROPERTY,
-                  "Filter can't be used with value properties (it can be uses only with field properties)");
+                  "Filter can't be used with value properties (it can be used with field properties only)");
 };
 
 template <typename PropertyT, typename OutputSpaceType, typename... ExtraArgs>
