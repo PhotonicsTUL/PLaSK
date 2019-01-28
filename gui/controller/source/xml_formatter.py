@@ -124,8 +124,6 @@ def parse_slash(editor):
         return True
     elif parser.CurrentLineNumber == cursor.blockNumber() + 2 and \
          parser.CurrentColumnNumber == pos - cursor.block().position() + 2:
-        cursor.joinPreviousEditBlock()
         cursor.insertText('/>')
-        cursor.endEditBlock()
         return True
     return False
