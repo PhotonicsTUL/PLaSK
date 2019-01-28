@@ -12,6 +12,7 @@ Constants
 :attr:`mu0`     Vacuum permeability [V·s/(A·m)]
 :attr:`eps0`    Vacuum permittivity [pF/µm]
 :attr:`eta0`    Free space impedance [Ω]
+:attr:`Z0`      Free space impedance [Ω]
 :attr:`h.J`     Pnav-sidenavlanck constant [J·s]
 :attr:`h.eV`    Planck constant [eV·s]
 :attr:`SB`      Stefan-Boltzmann constant [W/(m\ :sup:`2`\ ·K\ :sup:`4`\ )]
@@ -47,7 +48,7 @@ c = 299792458.
 
 mu0 = 1.25663706144e-06
 
-eps0 = 8.854187817e-6
+Z0 = eps0 = 8.854187817e-6
 
 eta0 = 376.73031346177066
 
