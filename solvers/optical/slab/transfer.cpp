@@ -213,30 +213,33 @@ cvector Transfer::getScatteredFieldVectorH(const cvector& incident, IncidentDire
 
 
 
-double Transfer::getIntegralEE(double z1, double z2) {
+double Transfer::getIntegralEE(double z1, double z2, double power) {
     determineFields();
     if (z1 > z2) std::swap(z1, z2);
     size_t end = solver->getLayerFor(z2);
-    if (is_zero(z2)) --end;
+    if (is_zero(z2)) {
+        --end;
+        z2 = solver->vbounds->at(end) - (end? solver->vbounds->at(end-1) : solver->vbounds->at(end));
+    }
     double result = 0.;
     for (size_t n = solver->getLayerFor(z1); n <= end; ++n) {
-        result += integrateEE(n, z1, (n != end)? solver->vbounds->at(n+1) - solver->vbounds->at(n) : z2);
+        result += integrateEE(n, z1, (n != end)? n? solver->vbounds->at(n) - solver->vbounds->at(n-1) : 0. : z2);
         z1 = 0.;
     }
-    return 0.5 * result;
+    return 2e-3 * power * result;
 }
 
-double Transfer::getIntegralHH(double z1, double z2) {
+double Transfer::getIntegralHH(double z1, double z2, double power) {
     determineFields();
     if (z1 > z2) std::swap(z1, z2);
     size_t end = solver->getLayerFor(z2);
     if (is_zero(z2)) --end;
     double result = 0.;
     for (size_t n = solver->getLayerFor(z1); n <= end; ++n) {
-        result += integrateHH(n, z1, (n != end)? solver->vbounds->at(n+1) - solver->vbounds->at(n) : z2);
+        result += integrateHH(n, z1, (n != end)? n? solver->vbounds->at(n) - solver->vbounds->at(n-1) : 0. : z2);
         z1 = 0.;
     }
-    return 0.5 * result;
+    return 2e-3/(Z0*Z0) * power * result;
 }
 
 

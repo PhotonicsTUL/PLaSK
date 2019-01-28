@@ -292,17 +292,19 @@ struct PLASK_SOLVER_API Transfer {
      * Get ½ E·conj(E) integral between \a z1 and \a z2
      * \param z1 lower integration bound
      * \param z2 upper integration bound
+     * \param power mode emitted power
      * \return computed integral
      */
-    double getIntegralEE(double z1, double z2);
+    double getIntegralEE(double z1, double z2, double power);
 
     /**
      * Get ½ H·conj(H) integral between \a z1 and \a z2
      * \param z1 lower integration bound
      * \param z2 upper integration bound
+     * \param power mode emitted power
      * \return computed integral
      */
-    double getIntegralHH(double z1, double z2);
+    double getIntegralHH(double z1, double z2, double power);
 };
 
 

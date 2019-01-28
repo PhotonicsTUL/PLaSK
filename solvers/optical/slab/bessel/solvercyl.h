@@ -218,7 +218,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
      */
     double getIntegralEE(size_t num, double z1, double z2) {
         applyMode(modes[num]);
-        return transfer->getIntegralEE(z1, z2);
+        return transfer->getIntegralEE(z1, z2, modes[num].power);
     }
 
     /**
@@ -230,7 +230,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
      */
     double getIntegralHH(size_t num, double z1, double z2) {
         applyMode(modes[num]);
-        return transfer->getIntegralHH(z1, z2);
+        return transfer->getIntegralHH(z1, z2, modes[num].power);
     }
 
     /// Check if the current parameters correspond to some mode and insert it

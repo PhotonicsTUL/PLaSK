@@ -556,7 +556,7 @@ double ReflectionTransfer::integrateEE(size_t n, double z1, double z2) {
     double result = 0.;
     for (size_t i = 0; i != N; ++i) {
         cvector E(TE.data() + N*i, N),
-                H(TE.data() + N*i, N);
+                H(TH.data() + N*i, N);
         double TT = diagonalizer->source()->integrateEE(E, H);
 
         double gi = 2. * gamma[i].imag(), gr = 2. * gamma[i].real();
@@ -585,7 +585,7 @@ double ReflectionTransfer::integrateHH(size_t n, double z1, double z2) {
     double result = 0.;
     for (size_t i = 0; i != N; ++i) {
         cvector E(TE.data() + N*i, N),
-                H(TE.data() + N*i, N);
+                H(TH.data() + N*i, N);
         double TT = diagonalizer->source()->integrateHH(E, H);
 
         double gi = 2. * gamma[i].imag(), gr = 2. * gamma[i].real();
