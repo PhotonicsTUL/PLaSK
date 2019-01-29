@@ -587,6 +587,8 @@ double AdmittanceTransfer::integrateEE(size_t n, double z1, double z2) {
     get_d(n, z1);
     double d = get_d(n, z2);
 
+    if (std::ptrdiff_t(n) >= solver->interface) std::swap(z1, z2);
+
     double result = 0.;
     for (size_t i = 0; i != N; ++i) {
         cvector E(TE.data() + N*i, N),
@@ -602,21 +604,21 @@ double AdmittanceTransfer::integrateEE(size_t n, double z1, double z2) {
             cos0d = cos(gamma[i] * d) * (z2-z1);
         } else {
             cos00 = (sin(gr * (d-z1)) - sin(gr * (d-z2))) / gr;
-            cosdd = (sin(gr * z2) - sin(gr * z2)) / gr;
+            cosdd = (sin(gr * z2) - sin(gr * z1)) / gr;
             cos0d = (sin(gamma[i] * d - gr * z1) - sin(gamma[i] * d - gr * z2)) / gr;
         }
         double cosh00, coshdd;
         dcomplex cosh0d;
         if (is_zero(gi)) {
             cosh00 = coshdd = z2-z1;
-            cosh0d = cosh(gamma[i] * d) * (z2-z1);
+            cosh0d = cos(gamma[i] * d) * (z2-z1);
         } else {
             cosh00 = (sinh(gi * (d-z1)) - sinh(gi * (d-z2))) / gi;
-            coshdd = (sinh(gi * z2) - sinh(gi * z2)) / gi;
-            cosh0d = (sinh(gamma[i] * d - gi * z1) - sinh(gamma[i] * d - gi * z2)) / gi;
+            coshdd = (sinh(gi * z2) - sinh(gi * z1)) / gi;
+            cosh0d = (sin(gamma[i] * d - gi * z1) - sin(gamma[i] * d - gi * z2)) / gi;
         }
         double VV =      real(E0[i]*conj(E0[i])) * (cosh00 - cos00) +
-                         real(Ed[i]*conj(Ed[i])) * (coshdd - cosdd) +
+                         real(Ed[i]*conj(Ed[i])) * (coshdd - cosdd) -
                     2. * real(E0[i]*conj(Ed[i]) * (cosh0d - cos0d));
         result += TT * VV / M;
     }
@@ -625,8 +627,56 @@ double AdmittanceTransfer::integrateEE(size_t n, double z1, double z2) {
 }
 
 double AdmittanceTransfer::integrateHH(size_t n, double z1, double z2) {
-    //TODO
-    throw NotImplemented("integrateHH");
+    size_t layer = solver->stack[n];
+    size_t N = diagonalizer->matrixSize();
+
+    cvector H0 = fields[n].H0;
+    cvector Hd = fields[n].Hd;
+
+    cmatrix TE = diagonalizer->TE(layer),
+            TH = diagonalizer->TH(layer);
+    cdiagonal gamma = diagonalizer->Gamma(layer);
+
+    get_d(n, z1);
+    double d = get_d(n, z2);
+
+    if (std::ptrdiff_t(n) >= solver->interface) std::swap(z1, z2);
+
+    double result = 0.;
+    for (size_t i = 0; i != N; ++i) {
+        cvector E(TE.data() + N*i, N),
+                H(TH.data() + N*i, N);
+        double TT = diagonalizer->source()->integrateHH(E, H);
+
+        double gr = 2. * gamma[i].real(), gi = 2. * gamma[i].imag();
+        double M = cosh(gi * d) - cos(gr * d);
+        double cos00, cosdd;
+        dcomplex cos0d;
+        if (is_zero(gr)) {
+            cos00 = cosdd = z2-z1;
+            cos0d = cos(gamma[i] * d) * (z2-z1);
+        } else {
+            cos00 = (sin(gr * (d-z1)) - sin(gr * (d-z2))) / gr;
+            cosdd = (sin(gr * z2) - sin(gr * z1)) / gr;
+            cos0d = (sin(gamma[i] * d - gr * z1) - sin(gamma[i] * d - gr * z2)) / gr;
+        }
+        double cosh00, coshdd;
+        dcomplex cosh0d;
+        if (is_zero(gi)) {
+            cosh00 = coshdd = z2-z1;
+            cosh0d = cos(gamma[i] * d) * (z2-z1);
+        } else {
+            cosh00 = (sinh(gi * (d-z1)) - sinh(gi * (d-z2))) / gi;
+            coshdd = (sinh(gi * z2) - sinh(gi * z1)) / gi;
+            cosh0d = (sin(gamma[i] * d - gi * z1) - sin(gamma[i] * d - gi * z2)) / gi;
+        }
+        double VV =      real(H0[i]*conj(H0[i])) * (cosh00 - cos00) +
+                         real(Hd[i]*conj(Hd[i])) * (coshdd - cosdd) -
+                    2. * real(H0[i]*conj(Hd[i]) * (cosh0d - cos0d));
+        result += TT * VV / M;
+    }
+
+    return result;
 }
 
 }}} // namespace plask::optical::slab

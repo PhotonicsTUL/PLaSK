@@ -912,6 +912,18 @@ void set_max_temp_diff(SolverT* self, py::object value) {
 
 
 template <typename SolverT>
+static double getIntegralEE_0(SolverT& self, double z1, double z2) {
+    if (self.modes.size() == 0) throw IndexError(u8"No mode computed");
+    return self.getIntegralEE(0, z1, z2);
+}
+
+template <typename SolverT>
+static double getIntegralHH_0(SolverT& self, double z1, double z2) {
+    if (self.modes.size() == 0) throw IndexError(u8"No mode computed");
+    return self.getIntegralHH(0, z1, z2);
+}
+
+template <typename SolverT>
 static double getIntegralEE(SolverT& self, int num, double z1, double z2) {
     if (num < 0) num += int(self.modes.size());
     if (std::size_t(num) >= self.modes.size()) throw IndexError(u8"Bad mode number {:d}", num);
@@ -1006,6 +1018,7 @@ inline void export_base(Class solver) {
                         "layers with gains. This allows to set py:attr:`lam0` for better efficiency and\n"
                         "still update gain for slight changes of wavelength.\n"
                        );
+    solver.def("integrateEE", &getIntegralEE_0<Solver>, (py::arg("z1"), "z2"));
     solver.def("integrateEE", &getIntegralEE<Solver>, (py::arg("num"), "z1", "z2"),
                u8"Get average integral of the squared electric field:\n\n"
                u8"\\\\[\\\\frac 1 2 \\\\int_{z_1}^{z_2} \\|E\\|^2.\\\\]\n\n"
@@ -1017,7 +1030,8 @@ inline void export_base(Class solver) {
                u8"Returns:\n"
                u8"    float: Computed integral [V\\ :sup:`2` / m\\ :sup:`2`].\n"
               );
-    solver.def("integrateHH", &getIntegralHH<Solver>, (py::arg("num"), "z1", "z2"),
+        solver.def("integrateHH", &getIntegralHH_0<Solver>, (py::arg("z1"), "z2"));
+        solver.def("integrateHH", &getIntegralHH<Solver>, (py::arg("num"), "z1", "z2"),
                u8"Get average integral of the squared magnetic field:\n\n"
                u8"\\\\[\\\\frac 1 2 \\\\int_{z_1}^{z_2} \\|H\\|^2.\\\\]\n\n"
                u8"In the lateral direction integration is performed over the whole domain.\n\n"

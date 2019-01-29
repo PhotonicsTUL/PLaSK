@@ -593,7 +593,7 @@ double ReflectionTransfer::integrateHH(size_t n, double z1, double z2) {
                fBB =   is_zero(gi)? z2-z1 : (exp(-gi*z1)-exp(-gi*z2)) / gi;
         dcomplex fFB = is_zero(gr)? z2-z1 : (exp(-I*gr*z1)-exp(-I*gr*z2)) / gr;
         double VV =      real(F1[i]*conj(F1[i])) * fFF +
-                         real(B1[i]*conj(B1[i])) * fBB +
+                         real(B1[i]*conj(B1[i])) * fBB -
                     2. * imag(F1[i]*conj(B1[i]) * fFB);
         result += TT * VV;
     }
