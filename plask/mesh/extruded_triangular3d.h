@@ -27,6 +27,24 @@ struct ExtrudedTriangularMesh3D: public MeshD<3> {
         /// @return index of this element
         std::size_t getIndex() const { return mesh.elementIndex(longTranIndex, vertIndex); }
 
+        /**
+         * Get mesh index of vertex of the bottom triangle.
+         * @param bottom_triangle_node_nr index of vertex in the triangle; equals to 0, 1 or 2
+         * @return mesh index of vertex of the bottom triangle
+         */
+        std::size_t getBottomNodeIndex(std::size_t bottom_triangle_node_nr) const {
+            return mesh.index(longTranElement().getNodeIndex(bottom_triangle_node_nr), vertIndex);
+        }
+
+        /**
+         * Get mesh index of vertex of the top triangle.
+         * @param top_triangle_node_nr index of vertex in the triangle; equals to 0, 1 or 2
+         * @return mesh index of vertex of the top triangle
+         */
+        std::size_t getTopNodeIndex(std::size_t top_triangle_node_nr) const {
+            return mesh.index(longTranElement().getNodeIndex(top_triangle_node_nr), vertIndex+1);
+        }
+
         /// @return position of the middle of the element
         inline Vec<3, double> getMidpoint() const;
 
@@ -43,7 +61,7 @@ struct ExtrudedTriangularMesh3D: public MeshD<3> {
          */
         bool includes(Vec<3, double> p) const {
             return mesh.vertAxis->at(vertIndex) <= p.vert() && p.vert() <= mesh.vertAxis->at(vertIndex+1)
-                    && mesh.longTranMesh.element(longTranIndex).includes(vec(p.lon(), p.tran()));
+                    && longTranElement().includes(vec(p.lon(), p.tran()));
         }
 
         /**
