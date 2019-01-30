@@ -53,9 +53,9 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
         }
 
         /**
-         * Get coordinate of the triangle vertex.
+         * Get coordinates of the triangle vertex.
          * @param index index of vertex in the triangle corresponded to this element; equals to 0, 1 or 2
-         * @return coordinate of the triangle vertex
+         * @return coordinates of the triangle vertex
          */
         const LocalCoords& getNode(std::size_t index) const noexcept {
             return mesh.nodes[getNodeIndex(index)];

@@ -6,7 +6,7 @@
 
 namespace plask {
 
-struct ExtrudedTriangularMesh3D: public MeshD<3> {
+struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
 
     TriangularMesh2D longTranMesh;
 
@@ -15,7 +15,10 @@ struct ExtrudedTriangularMesh3D: public MeshD<3> {
     /// Iteration order, if true vert axis is changed the fastest, else it is changed the slowest.
     bool vertFastest;
 
-    struct Element {
+    /**
+     * Represent FEM-like element (right triangular prism) in ExtrudedTriangularMesh3D.
+     */
+    struct PLASK_API Element {
         const ExtrudedTriangularMesh3D& mesh;
         std::size_t longTranIndex, vertIndex;
 
@@ -45,14 +48,44 @@ struct ExtrudedTriangularMesh3D: public MeshD<3> {
             return mesh.index(longTranElement().getNodeIndex(top_triangle_node_nr), vertIndex+1);
         }
 
-        /// @return position of the middle of the element
-        inline Vec<3, double> getMidpoint() const;
+        /**
+         * Get coordinates of the bottom base (triangle) vertex.
+         * @param index index of vertex in the triangle; equals to 0, 1 or 2
+         * @return coordinates of the bottom base vertex
+         */
+        Vec<3, double> getBottomNode(std::size_t bottom_triangle_node_nr) const {
+            return mesh.at(longTranElement().getNodeIndex(bottom_triangle_node_nr), vertIndex);
+        }
 
         /**
-         * Get area of this element.
-         * @return the area of the element
+         * Get coordinates of the top base (triangle) vertex.
+         * @param index index of vertex in the triangle; equals to 0, 1 or 2
+         * @return coordinates of the top base vertex
          */
-        double getArea() const;
+        Vec<3, double> getTopNode(std::size_t bottom_triangle_node_nr) const {
+            return mesh.at(longTranElement().getNodeIndex(bottom_triangle_node_nr), vertIndex+1);
+        }
+
+        /// @return position of the middle of the element
+        Vec<3, double> getMidpoint() const;
+
+        /**
+         * Get area of the prism base (which is a triangle).
+         * @return the area of the prism base
+         */
+        double getBaseArea() const { return longTranElement().getArea(); }
+
+        /**
+         * Get height of the prism base.
+         * @return the height
+         */
+        double getHeight() const { return mesh.vertAxis->at(vertIndex+1) - mesh.vertAxis->at(vertIndex); }
+
+        /**
+         * Get volume of the prism represented by this element.
+         * @return the volume of the element
+         */
+        double getArea() const { return getBaseArea() * getHeight(); }
 
         /**
          * Check if point @p p is included in @c this element.
@@ -74,6 +107,37 @@ struct ExtrudedTriangularMesh3D: public MeshD<3> {
         TriangularMesh2D::Element longTranElement() const { return mesh.longTranMesh.element(longTranIndex); }
     };
 
+    /**
+     * Wrapper to ExtrudedTriangularMesh3D which allows for accessing FEM-like elements.
+     *
+     * It works like read-only, random access container of @ref Element objects.
+     */
+    struct PLASK_API Elements {
+        const ExtrudedTriangularMesh3D& mesh;
+
+        explicit Elements(const ExtrudedTriangularMesh3D& mesh): mesh(mesh) {}
+
+        Element at(std::size_t index) const {
+            if (index >= mesh.getElementsCount())
+                throw OutOfBoundsException("ExtrudedTriangularMesh3D::Elements::at", "index", index, 0, mesh.getElementsCount()-1);
+            return Element(mesh, index);
+        }
+
+        Element operator[](std::size_t index) const {
+            return Element(mesh, index);
+        }
+
+        /**
+         * Get number of elements (right triangular prisms) in the mesh.
+         * @return number of elements
+         */
+        std::size_t size() const { return mesh.getElementsCount(); }
+
+        bool empty() const { return (mesh.vertAxis->size() <= 1) || (mesh.longTranMesh.getElementsCount() == 0); }
+
+        // TODO iterators
+    };
+
     Vec<3, double> at(std::size_t index) const override;
 
     std::size_t size() const override;
@@ -81,6 +145,14 @@ struct ExtrudedTriangularMesh3D: public MeshD<3> {
     bool empty() const override;
 
     void writeXML(XMLElement& object) const override;
+
+    /**
+     * Get coordinates of node pointed by given indexes (longTranIndex and vertIndex).
+     * @param longTranIndex index of longTranMesh
+     * @param vertIndex index of vertAxis
+     * @return the coordinates of node
+     */
+    Vec<3, double> at(std::size_t longTranIndex, std::size_t vertIndex) const;
 
     /**
      * Calculate index of this mesh using indexes of embeded meshes.

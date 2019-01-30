@@ -27,11 +27,6 @@ Vec<3, double> ExtrudedTriangularMesh3D::Element::getMidpoint() const {
     );
 }
 
-double ExtrudedTriangularMesh3D::Element::getArea() const {
-    return longTranElement().getArea() *
-            (mesh.vertAxis->at(vertIndex+1) - mesh.vertAxis->at(vertIndex));
-}
-
 Box3D ExtrudedTriangularMesh3D::Element::getBoundingBox() const {
     Box2D ltBox = longTranElement().getBoundingBox();
     return Box3D(
@@ -43,10 +38,10 @@ Box3D ExtrudedTriangularMesh3D::Element::getBoundingBox() const {
 Vec<3, double> ExtrudedTriangularMesh3D::at(std::size_t index) const {
     if (vertFastest) {
         const std::size_t seg_size = vertAxis->size();
-        return from_longTran_vert(longTranMesh[index / seg_size], vertAxis->at(index % seg_size));
+        return at(index / seg_size, index % seg_size);
     } else {
         const std::size_t seg_size = longTranMesh.size();
-        return from_longTran_vert(longTranMesh[index % seg_size], vertAxis->at(index / seg_size));
+        return at(index % seg_size, index / seg_size);
     }
 }
 
@@ -62,6 +57,10 @@ void ExtrudedTriangularMesh3D::writeXML(XMLElement &object) const {
     object.attr("type", "extruded_triangular2d");
     { auto a = object.addTag("vert"); vertAxis->writeXML(a); }
     { auto a = object.addTag("long_tran"); longTranMesh.writeXML(a); }
+}
+
+Vec<3, double> ExtrudedTriangularMesh3D::at(std::size_t longTranIndex, std::size_t vertIndex) const {
+    return from_longTran_vert(longTranMesh[longTranIndex], vertAxis->at(vertIndex));
 }
 
 

@@ -115,7 +115,7 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
         inline double getUpper1() const { return mesh.axis[1]->at(getUpperIndex1()); }
 
         /// \return vert coordinate of the top edge of the element
-         inline double getUpper2() const { return mesh.axis[2]->at(getUpperIndex2()); }
+        inline double getUpper2() const { return mesh.axis[2]->at(getUpperIndex2()); }
 
         /// \return size of the element in the long direction
         inline double getSize0() const { return getUpper0() - getLower0(); }
