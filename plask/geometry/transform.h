@@ -68,8 +68,6 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
      */
     inline shared_ptr<ChildType> getChild() const {
         return _child;
-        /*if (hasChild()) return _child;    //TODO
-        throw NoChildException();*/
     }
 
     /**

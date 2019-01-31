@@ -212,7 +212,12 @@ struct DataFromCyl2Dto3DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTy
 
     virtual void calcConnectionParameters() override {
         InnerDataSource<PropertyT, Geometry3D, Geometry2DCylindrical, Geometry3D, Revolution>::calcConnectionParameters();
-        auto box = this->inputObj->getChild()->getBoundingBox();
+        auto child = this->inputObj->getChild();
+        if (!child) {
+            r_sqr_begin = r_sqr_end = 0.;
+            return;
+        }
+        auto box = child->getBoundingBox();
         r_sqr_begin = std::max(box.lower.rad_r(), 0.0); r_sqr_begin *= r_sqr_begin;
         r_sqr_end = std::abs(box.upper.rad_r()); r_sqr_end *= r_sqr_end;
     }
@@ -285,7 +290,12 @@ struct DataFromCyl2Dto3DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemp
 
     virtual void calcConnectionParameters() override {
         InnerDataSource<PropertyT, Geometry3D, Geometry2DCylindrical, Geometry3D, Revolution>::calcConnectionParameters();
-        auto box = this->inputObj->getChild()->getBoundingBox();
+        auto child = this->inputObj->getChild();
+        if (!child) {
+            r_sqr_begin = r_sqr_end = 0.;
+            return;
+        }
+        auto box = child->getBoundingBox();
         r_sqr_begin = std::max(box.lower.rad_r(), 0.0); r_sqr_begin *= r_sqr_begin;
         r_sqr_end = std::abs(box.upper.rad_r()); r_sqr_end *= r_sqr_end;
     }

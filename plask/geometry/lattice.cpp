@@ -68,6 +68,7 @@ typename ArrangeContainer<dim>::Box ArrangeContainer<dim>::getBoundingBox() cons
 
 template <int dim>
 typename ArrangeContainer<dim>::Box ArrangeContainer<dim>::getRealBoundingBox() const {
+    if (!getChild()) return ArrangeContainer<dim>::Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
     return getChild()->getBoundingBox();
 }
 
@@ -352,7 +353,7 @@ void Lattice::refillContainer()
     SegmentsIterator segment(this->segments);
     while (segment.next()) {
         if (segment.first.c1 == segment.second.c1) {
-            std::set<int>& dst = result[segment.first.c1];           
+            std::set<int>& dst = result[segment.first.c1];
             if (segment.first.c0 > segment.second.c0)
                 std::swap(segment.first.c0, segment.second.c0);
             for (int x = segment.first.c0; x <= segment.second.c0; ++x)

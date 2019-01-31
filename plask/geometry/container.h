@@ -203,7 +203,7 @@ public:
      * @return true if anything has been removed
      */
     bool removeIf(const std::function<bool(const shared_ptr<ChildType>& c)>& predicate) {
-        return removeIfT([&](const shared_ptr<const TranslationT>& c) { return predicate(c->getChild()); });
+        return removeIfT([&](const shared_ptr<const TranslationT>& c) { return c->getChild() && predicate(c->getChild()); });
     }
 
     /**

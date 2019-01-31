@@ -122,10 +122,10 @@ shared_ptr<GeometryObject> read_TranslationContainer(GeometryReader& reader) {
     read_children(reader,
         [&]() -> PathHints::Hint {
             auto aligner = align::fromXML(reader.source, reader.getAxisNames(), default_aligner);
-            return result->add(reader.readExactlyOneChild< typename TranslationContainer<dim>::ChildType >(), aligner);
+            return result->add(reader.readExactlyOneChild<typename TranslationContainer<dim>::ChildType>(), aligner);
         },
         [&]() {
-            result->add(reader.readObject< typename TranslationContainer<dim>::ChildType >(), default_aligner);
+            result->add(reader.readObject<typename TranslationContainer<dim>::ChildType>(), default_aligner);
         }
     );
     return result;

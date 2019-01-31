@@ -91,7 +91,7 @@ struct AlignerImpl: public Printable {
      * @param toAlign translation to set, should have child, which is an object to align
      */
     virtual double align(Translation<3>& toAlign) const {
-        if (this->useBounds())
+        if (this->useBounds() && toAlign.getChild())
             return align(toAlign, toAlign.getChild()->getBoundingBox());
         else
             return toAlign.translation[direction] = this->getAlign(0.0, 0.0);
@@ -159,7 +159,7 @@ struct AlignerBase: public HolderRef<AlignerImpl<_direction>> {
      * Set object coordinate in direction of aligner activity.
      *
      * This version is called if caller knows child bounding box.
-     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param toAlign translation to set, should have child, which is an object to align
      * @param childBoundingBox bounding box of object to align
      */
     double align(Translation<3>& toAlign, const Box3D& childBoundingBox) const {
@@ -170,7 +170,7 @@ struct AlignerBase: public HolderRef<AlignerImpl<_direction>> {
      * Set object translation in direction of aligner activity.
      *
      * This version is called if caller doesn't know child bounding box.
-     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param toAlign translation to set, should have child, which is an object to align
      */
     virtual double align(Translation<3>& toAlign) const {
         return this->held->align(toAlign);
@@ -242,7 +242,7 @@ struct Aligner<_direction>: public AlignerBase<_direction> {
      * Set object coordinate in direction of aligner activity.
      *
      * This version is called if caller knows child bounding box.
-     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param toAlign translation to set, should have child, which is an object to align
      * @param childBoundingBox bounding box of object to align
      */
     void align(Translation<2>& toAlign, const Box2D& childBoundingBox) const {
@@ -253,10 +253,10 @@ struct Aligner<_direction>: public AlignerBase<_direction> {
      * Set object translation in direction of aligner activity.
      *
      * This version is called if caller doesn't know child bounding box.
-     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param toAlign translation to set, should have child, which is an object to align
      */
     void align(Translation<2>& toAlign) const {
-        if (this->useBounds())
+        if (this->useBounds() && toAlign.getChild())
             this->align(toAlign, toAlign.getChild()->getBoundingBox());
         else
             toAlign.translation[direction2D] = this->getAlign(0.0, 0.0);
@@ -328,7 +328,7 @@ struct AlignerBase2D {
     }*/
 
     /**
-     * Check if this aligner getAlign use bounding box in calculation.
+     * Check if this aligner getAlign uses bounding box in calculation.
      * @return @c true only if this aligner use bounding box, @c false if is ignored
      */
     bool useBounds() const { return dir1aligner.useBounds() || dir2aligner.useBounds(); }
@@ -337,7 +337,7 @@ struct AlignerBase2D {
      * Set object translation in directions of aligner activity.
      *
      * This version is called if caller knows child bounding box.
-     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param toAlign translation to set, should have child, which is an object to align
      * @param childBoundingBox bounding box of object to align
      */
     virtual void align(Translation<3>& toAlign, const Box3D& childBoundingBox) const {
@@ -351,10 +351,10 @@ struct AlignerBase2D {
      * Set object translation in directions of aligner activity.
      *
      * This version is called if caller doesn't know child bounding box.
-     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param toAlign translation to set, should have child, which is an object to align
      */
     virtual void align(Translation<3>& toAlign) const {
-        if (useBounds())
+        if (useBounds() && toAlign.getChild())
             align(toAlign, toAlign.getChild()->getBoundingBox());
         else {
             toAlign.translation[direction1] = dir1aligner.getAlign(0.0, 0.0);
@@ -436,7 +436,7 @@ struct Aligner<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT>: publ
      * Set object coordinate in direction of aligner activity.
      *
      * This version is called if caller knows child bounding box.
-     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param toAlign translation to set, should have child, which is an object to align
      * @param childBoundingBox bounding box of object to align
      */
     void align(Translation<2>& toAlign, const Box2D& childBoundingBox) const {
@@ -448,10 +448,10 @@ struct Aligner<Primitive<3>::DIRECTION_TRAN, Primitive<3>::DIRECTION_VERT>: publ
      * Set object translation in direction of aligner activity.
      *
      * This version is called if caller doesn't know child bounding box.
-     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param toAlign translation to set, should have child, which is an object to align
      */
     void align(Translation<2>& toAlign) const {
-        if (this->useBounds())
+        if (this->useBounds() && toAlign.getChild())
             this->align(toAlign, toAlign.getChild()->getBoundingBox());
         else {
             toAlign.translation[0] = this->dir1aligner.getAlign(0.0, 0.0);
@@ -488,7 +488,7 @@ struct Aligner<> {
      * Set object translation in directions of aligner activity.
      *
      * This version is called if caller knows child bounding box.
-     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param toAlign translation to set, should have child, which is an object to align
      * @param childBoundingBox bounding box of object to align
      */
     virtual void align(Translation<3>& toAlign, const Box3D& childBoundingBox) const {
@@ -501,10 +501,10 @@ struct Aligner<> {
      * Set object translation in directions of aligner activity.
      *
      * This version is called if caller doesn't know child bounding box.
-     * @param toAlign trasnlation to set, should have child, which is an object to align
+     * @param toAlign translation to set, should have child, which is an object to align
      */
     virtual void align(Translation<3>& toAlign) const {
-        if (useBounds())
+        if (useBounds() && toAlign.getChild())
             align(toAlign, toAlign.getChild()->getBoundingBox());
         else {
             toAlign.translation[0] = dir1aligner.getAlign(0.0, 0.0);
@@ -911,7 +911,7 @@ inline Aligner<> fromXML(const XMLReader& reader, const AxisNames& axes, Aligner
  */
 template <typename TranslationT, typename Aligner1T, typename Aligner2T>
 void align(TranslationT& toAlign, const Aligner1T& aligner1, const Aligner2T& aligner2) {
-    if (aligner1.useBounds() || aligner2.useBounds()) {
+    if ((aligner1.useBounds() || aligner2.useBounds()) && toAlign.getChild()) {
         auto bb = toAlign.getChild()->getBoundingBox();
         aligner1.align(toAlign, bb);
         aligner2.align(toAlign, bb);
