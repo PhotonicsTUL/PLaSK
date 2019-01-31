@@ -1433,6 +1433,9 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, Data
 
     // Factorize matrix
     dpbtrf(UPLO, int(A.size), int(A.kd), A.data, int(A.ld)+1, info);
+
+	this->writelog(LOG_DETAIL, "info {0}", info);
+
     if (info < 0)
         throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", this->getId(), -info);
     else if (info > 0)
