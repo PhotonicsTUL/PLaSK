@@ -49,7 +49,7 @@ static inline double Ni(double Nc, double Nv, double Eg, double T) {
 
 template <typename Geometry2DType>
 DriftDiffusionModel2DSolver<Geometry2DType>::DriftDiffusionModel2DSolver(const std::string& name) : SolverWithMesh <Geometry2DType, RectangularMesh<2>>(name),
-    mTx(300.),
+	mTx(300.),
     mEx(phys::kB_eV*mTx),
     mNx(1e18),
     mEpsRx(12.9),
@@ -626,6 +626,36 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(MatrixT& A, DataVect
             throw ComputationError(this->getId(), "Error in stiffness matrix at position {0} ({1})", pa-A.data, isnan(*pa)?"nan":"inf");
     }
 #endif
+	this->writelog(LOG_DETAIL, "A Matrix Test");
+	this->writelog(LOG_DETAIL, "filteredMesh elenents size: {0}", this->filteredMesh->size());
+	boost::this_thread::sleep(boost::posix_time::seconds(5));
+	for (auto e : this->filteredMesh->elements()) {
+
+		size_t i = e.getIndex();
+
+		// nodes numbers for the current element
+		size_t loleftno = e.getLoLoIndex();
+		size_t lorghtno = e.getUpLoIndex();
+		size_t upleftno = e.getLoUpIndex();
+		size_t uprghtno = e.getUpUpIndex();
+
+		Vec <2, double> midpoint = e.getMidpoint();
+		auto material = this->geometry->getMaterial(midpoint);
+
+		this->writelog(LOG_DETAIL, "e: {0}, LoLo: {1}, UpUp: {2}, material: {3}", e.getIndex(), e.getLoLo(), e.getUpUp(), material->name());
+
+		//this->writelog(LOG_DETAIL, "A11: {0}.", A(loleftno, loleftno));
+		//this->writelog(LOG_DETAIL, "A22: {0}.", A(lorghtno, lorghtno));
+		//this->writelog(LOG_DETAIL, "A33: {0}.", A(uprghtno, uprghtno));
+		//this->writelog(LOG_DETAIL, "A44: {0}.", A(upleftno, upleftno));
+
+		//this->writelog(LOG_DETAIL, "A21: {0}.", A(lorghtno, loleftno));
+		//this->writelog(LOG_DETAIL, "A31: {0}.", A(uprghtno, loleftno));
+		//this->writelog(LOG_DETAIL, "A41: {0}.", A(upleftno, loleftno));
+		//this->writelog(LOG_DETAIL, "A32: {0}.", A(uprghtno, lorghtno));
+		//this->writelog(LOG_DETAIL, "A42: {0}.", A(upleftno, lorghtno));
+		//this->writelog(LOG_DETAIL, "A43: {0}.", A(upleftno, uprghtno));
+	}
 
 }
 
@@ -1395,27 +1425,35 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, Data
 {
     int info = 0;
 
-    this->writelog(LOG_DETAIL, "Solving matrix system");
+    this->writelog(LOG_DETAIL, "Solving matrix system Dpb");
+	this->writelog(LOG_DETAIL, "Here0");
+	this->writelog(LOG_DETAIL, "A.size {0} A.kd {1} A.ld {2} info {3}", int(A.size), int(A.kd), (int(A.ld)+1), info);
+
+	//this->writelog(LOG_DETAIL, "A{0}:", A(1,1));
 
     // Factorize matrix
-    dpbtrf(UPLO, int(A.size), int(A.kd), A.data, int(A.ld+1), info);
+    dpbtrf(UPLO, int(A.size), int(A.kd), A.data, int(A.ld)+1, info);
     if (info < 0)
         throw CriticalException("{0}: Argument {1} of dpbtrf has illegal value", this->getId(), -info);
     else if (info > 0)
         throw ComputationError(this->getId(), "Leading minor of order {0} of the stiffness matrix is not positive-definite", info);
 
+	this->writelog(LOG_DETAIL, "Here1");
+
     // Find solutions
-    dpbtrs(UPLO, int(A.size), int(A.kd), 1, A.data, int(A.ld+1), B.data(), int(B.size()), info);
+    dpbtrs(UPLO, int(A.size), int(A.kd), 1, A.data, int(A.ld)+1, B.data(), int(B.size()), info);
     if (info < 0) throw CriticalException("{0}: Argument {1} of dpbtrs has illegal value", this->getId(), -info);
 
     // now A contains factorized matrix and B the solutions
+
+	this->writelog(LOG_DETAIL, "Here2");
 }
 
 template <typename Geometry2DType>
 void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, DataVector<double>& B)
 {
     int info = 0;
-    this->writelog(LOG_DETAIL, "Solving matrix system");
+    this->writelog(LOG_DETAIL, "Solving matrix system Dgb");
     aligned_unique_ptr <int> ipiv(aligned_malloc<int>(A.size));
 
     A.mirror();
@@ -1438,7 +1476,7 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, Data
 template <typename Geometry2DType>
 void DriftDiffusionModel2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix& ioA, DataVector<double>& B)
 {
-    this->writelog(LOG_DETAIL, "Solving matrix system");
+    this->writelog(LOG_DETAIL, "Solving matrix system SparseBand");
 
     PrecondJacobi precond(ioA);
 
