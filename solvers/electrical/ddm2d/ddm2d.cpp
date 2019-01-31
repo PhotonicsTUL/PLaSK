@@ -573,6 +573,36 @@ void DriftDiffusionModel2DSolver<Geometry2DType>::setMatrix(FemMatrix& A, DataVe
             throw ComputationError(this->getId(), "Error in stiffness matrix at position {0} ({1})", pa-A.data, isnan(*pa)?"nan":"inf");
     }
 #endif
+	this->writelog(LOG_DETAIL, "A Matrix Test");
+	this->writelog(LOG_DETAIL, "filteredMesh elenents size: {0}", this->filteredMesh->size());
+	boost::this_thread::sleep(boost::posix_time::seconds(5));
+	for (auto e : this->filteredMesh->elements()) {
+
+		size_t i = e.getIndex();
+
+		// nodes numbers for the current element
+		size_t loleftno = e.getLoLoIndex();
+		size_t lorghtno = e.getUpLoIndex();
+		size_t upleftno = e.getLoUpIndex();
+		size_t uprghtno = e.getUpUpIndex();
+
+		Vec <2, double> midpoint = e.getMidpoint();
+		auto material = this->geometry->getMaterial(midpoint);
+
+		this->writelog(LOG_DETAIL, "e: {0}, LoLo: {1}, UpUp: {2}, material: {3}", e.getIndex(), e.getLoLo(), e.getUpUp(), material->name());
+
+		//this->writelog(LOG_DETAIL, "A11: {0}.", A(loleftno, loleftno));
+		//this->writelog(LOG_DETAIL, "A22: {0}.", A(lorghtno, lorghtno));
+		//this->writelog(LOG_DETAIL, "A33: {0}.", A(uprghtno, uprghtno));
+		//this->writelog(LOG_DETAIL, "A44: {0}.", A(upleftno, upleftno));
+
+		//this->writelog(LOG_DETAIL, "A21: {0}.", A(lorghtno, loleftno));
+		//this->writelog(LOG_DETAIL, "A31: {0}.", A(uprghtno, loleftno));
+		//this->writelog(LOG_DETAIL, "A41: {0}.", A(upleftno, loleftno));
+		//this->writelog(LOG_DETAIL, "A32: {0}.", A(uprghtno, lorghtno));
+		//this->writelog(LOG_DETAIL, "A42: {0}.", A(upleftno, lorghtno));
+		//this->writelog(LOG_DETAIL, "A43: {0}.", A(upleftno, uprghtno));
+	}
 
 }
 
