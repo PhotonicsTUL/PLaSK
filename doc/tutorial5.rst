@@ -116,7 +116,7 @@ In the code above, we have added a name ``interface`` to one of the barriers in 
 Photonic crystal
 ~~~~~~~~~~~~~~~~
 
-At this point we have defined a simple VCSEL structure with a limited active region and no optical confinement. Now we need to add a photonic crytal. We simulate etching air holes in the structure by overlaying air cylinders over the top DBRs. To do so, right-click on the first ``Stack`` in the geometry tree view (the one containing the whole structure). From the pop-up menu select ``Insert into`` and then ``Align``. This will create an another container around the stack. Select it and specify *Default Items Positions* as follows:
+At this point we have defined a simple VCSEL structure with a limited active region and no optical confinement. Now we need to add a photonic crytal. We simulate etching air holes in the structure by overlaying air cylinders over the top DBRs. To do so, right-click on the first ``Stack`` in the geometry tree view (the one containing the whole structure). From the pop-up menu select ``Insert into`` and then ``Align``. This will create an another container around the stack. Select it and specify *Default Items' Positions* as follows:
 
 ============= ====== ==========================
 Longitudinal: center ``0``

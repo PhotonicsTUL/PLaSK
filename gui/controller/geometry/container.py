@@ -86,7 +86,7 @@ class GNShelfController(GNObjectController):
 class GNContainerController(GNObjectController):
 
     def construct_form(self):
-        self.pos_layout = self.construct_group('Default Items Positions')
+        self.pos_layout = self.construct_group("Default Items' Positions")
         weakself = weakref.proxy(self)
         def setter(n, v): n.aligners = v
         self.positions = self.construct_align_controllers(change_cb=lambda aligners:
@@ -114,7 +114,7 @@ class GNStackController(GNObjectController):
         self.shift.setToolTip(u'&lt;stack <b>shift</b>="" ...&gt;<br/>'
                                 u'Vertical position of the stack bottom edge in its local coordinates.'
                                 u' Defaults to 0. (float [µm])')
-        self.pos_layout = self.construct_group('Default Items Positions')
+        self.pos_layout = self.construct_group("Default Items' Positions")
         def setter(n, v): n.aligners = v
         weakself = weakref.proxy(self)
         self.positions = self.construct_align_controllers(change_cb=lambda aligners:
