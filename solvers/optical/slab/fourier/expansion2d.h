@@ -80,9 +80,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
                                               InterpolationMethod interp=INTERPOLATION_DEFAULT) override;
 
-    double integrateEE(const cvector& E, const cvector& H) override;
-
-    double integrateHH(const cvector& E, const cvector& H) override;
+    double integrateField(WhichField field, const cvector& E, const cvector& H) override;
 
     double integratePoyntingVert(const cvector& E, const cvector& H) override;
 

@@ -1,8 +1,9 @@
 <plask loglevel="detail">
 
 <defines>
-  <define name="refl" value="False"/>
+  <define name="refl" value="True"/>
   <define name="iox" value="True"/>
+  <define name="f" value="'E'"/>
 </defines>
 
 <materials>
@@ -61,36 +62,49 @@ F2D.find_mode(lam=980.)
 
 def integrals(ibox):
     print(ibox.bottom, ibox.top, end=': ')
-    a = F2D.integrateEE(0, ibox.bottom, ibox.top)
+    a = getattr(F2D, 'integrate{0}{0}'.format(f))(ibox.bottom, ibox.top)
     b = sum(field)/len(field) * (ibox.top - ibox.bottom)
     print(a, b, a/b)
 
 
 fbox = GEO.onedi.bbox
+
 nmesh = mesh.Rectangular2D([0.], mesh.Rectangular2D.SimpleGenerator(split=True)(GEO.onedi).axis1)
 fmesh = mesh.Rectangular2D([0.], mesh.Regular(fbox.bottom, fbox.top, 100001))
 
-field = F2D.outLightE(fmesh)
+field_provider = getattr(F2D, 'outLight{0}'.format(f))
+
+field = field_provider(fmesh)
 field = Data(0.5 * sum(abs(field.array[0,:,0:2])**2, 1), fmesh)
 
 plot_profile(F2D.outRefractiveIndex(nmesh), comp='rr', color='C0')
 twinx()
-plot_profile(field, color='C1')
+plot_profile(field, color='C{}'.format({'E':1, 'H':3}[f]))
 
 integrals(fbox)
 
 
 abox = GEO.onedi.get_object_bboxes(GEO.gain_region)[0]
 amesh = mesh.Rectangular2D([0.], mesh.Regular(abox.bottom, abox.top, 20001))
-
-field = F2D.outLightE(amesh)
+field = field_provider(amesh)
 field = Data(0.5 * sum(abs(field.array[0,:,0:2])**2, 1), amesh)
-
 integrals(abox)
 
 
-# gamma, Te, Th = F2D.get_diagonalized(2)
-# print(gamma)
+cbox = geometry.Box2D(fbox.left, 4.44, fbox.right, 4.50)
+cmesh = mesh.Rectangular2D([0.], mesh.Regular(cbox.bottom, cbox.top, 20001))
+field = field_provider(cmesh)
+field = Data(0.5 * sum(abs(field.array[0,:,0:2])**2, 1), cmesh)
+integrals(cbox)
+
+
+cbox = geometry.Box2D(fbox.left, 4.90, fbox.right, 4.95)
+# cbox = geometry.Box2D(fbox.left, 4.7652, fbox.right, 4.7287)
+cmesh = mesh.Rectangular2D([0.], mesh.Regular(cbox.bottom, cbox.top, 20001))
+field = field_provider(cmesh)
+field = Data(0.5 * sum(abs(field.array[0,:,0:2])**2, 1), cmesh)
+integrals(cbox)
+
 
 show()
 

@@ -368,7 +368,7 @@ struct Eigenmodes {
             throw IndexError("Bad eigenmode number");
         cvector E(TE.data() + TE.rows()*n, TE.rows());
         cvector H(TH.data() + TH.rows()*n, TH.rows());
-        solver.transfer->diagonalizer->source()->initField(Expansion::FIELD_E, method);
+        solver.transfer->diagonalizer->source()->initField(FIELD_E, method);
         DataVector<double> destination(dst_mesh->size());
         auto levels = makeLevelsAdapter(dst_mesh);
         while (auto level = levels->yield()) {
@@ -388,7 +388,7 @@ struct Eigenmodes {
             throw IndexError("Bad eigenmode number");
         cvector E(TE.data() + TE.rows()*n, TE.rows());
         cvector H(TH.data() + TH.rows()*n, TH.rows());
-        solver.transfer->diagonalizer->source()->initField(Expansion::FIELD_E, method);
+        solver.transfer->diagonalizer->source()->initField(FIELD_E, method);
         DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
         auto levels = makeLevelsAdapter(dst_mesh);
         while (auto level = levels->yield()) {
@@ -408,7 +408,7 @@ struct Eigenmodes {
             throw IndexError("Bad eigenmode number");
         cvector E(TE.data() + TE.rows()*n, TE.rows());
         cvector H(TH.data() + TH.rows()*n, TH.rows());
-        solver.transfer->diagonalizer->source()->initField(Expansion::FIELD_H, method);
+        solver.transfer->diagonalizer->source()->initField(FIELD_H, method);
         DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
         auto levels = makeLevelsAdapter(dst_mesh);
         while (auto level = levels->yield()) {

@@ -852,14 +852,16 @@ void ExpansionPW2D::getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmat
     }
 }
 
-double ExpansionPW2D::integrateEE(const cvector& E, const cvector& H)
+double ExpansionPW2D::integrateField(WhichField field, const cvector& E, const cvector& H)
 {
+    double L = (right-left) * (symmetric()? 2. : 1.);
+    double sum = 0.;
+    if (field == FIELD_E)
+        for (dcomplex e: E) sum += real(e * conj(e));
+    else
+        for (dcomplex h: H) sum += real(h * conj(h));
+    return 0.5 * L * sum;
 }
-
-double ExpansionPW2D::integrateHH(const cvector& E, const cvector& H)
-{
-}
-
 
 
 }}} // namespace plask

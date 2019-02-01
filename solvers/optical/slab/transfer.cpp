@@ -142,7 +142,7 @@ LazyData<Vec<3,dcomplex>> Transfer::computeFieldE(double power, const shared_ptr
     double zlim = solver->vpml.dist + solver->vpml.size;
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
     auto levels = makeLevelsAdapter(dst_mesh);
-    diagonalizer->source()->initField(Expansion::FIELD_E, method);
+    diagonalizer->source()->initField(FIELD_E, method);
     while (auto level = levels->yield()) {
         double z = level->vpos();
         const std::size_t n = solver->getLayerFor(z);
@@ -167,7 +167,7 @@ LazyData<Vec<3,dcomplex>> Transfer::computeFieldH(double power, const shared_ptr
     double zlim = solver->vpml.dist + solver->vpml.size;
     DataVector<Vec<3,dcomplex>> destination(dst_mesh->size());
     auto levels = makeLevelsAdapter(dst_mesh);
-    diagonalizer->source()->initField(Expansion::FIELD_H, method);
+    diagonalizer->source()->initField(FIELD_H, method);
     while (auto level = levels->yield()) {
         double z = level->vpos();
         size_t n = solver->getLayerFor(z);
@@ -213,7 +213,7 @@ cvector Transfer::getScatteredFieldVectorH(const cvector& incident, IncidentDire
 
 
 
-double Transfer::getIntegralEE(double z1, double z2, double power) {
+double Transfer::getFieldIntegral(WhichField field, double z1, double z2, double power) {
     determineFields();
     if (z1 > z2) std::swap(z1, z2);
     size_t end = solver->getLayerFor(z2);
@@ -223,27 +223,10 @@ double Transfer::getIntegralEE(double z1, double z2, double power) {
     }
     double result = 0.;
     for (size_t n = solver->getLayerFor(z1); n <= end; ++n) {
-        result += integrateEE(n, z1, (n != end)? n? solver->vbounds->at(n) - solver->vbounds->at(n-1) : 0. : z2);
+        result += integrateField(field, n, z1, (n != end)? n? solver->vbounds->at(n) - solver->vbounds->at(n-1) : 0. : z2);
         z1 = 0.;
     }
-    return 2e-3 * power * result;
+    return ((field == FIELD_E)? 2e-3 : 2e-3/(Z0*Z0)) * power * result;
 }
-
-double Transfer::getIntegralHH(double z1, double z2, double power) {
-    determineFields();
-    if (z1 > z2) std::swap(z1, z2);
-    size_t end = solver->getLayerFor(z2);
-    if (is_zero(z2) && end != 0) {
-        --end;
-        z2 = solver->vbounds->at(end) - (end? solver->vbounds->at(end-1) : solver->vbounds->at(end));
-    }
-    double result = 0.;
-    for (size_t n = solver->getLayerFor(z1); n <= end; ++n) {
-        result += integrateHH(n, z1, (n != end)? n? solver->vbounds->at(n) - solver->vbounds->at(n-1) : 0. : z2);
-        z1 = 0.;
-    }
-    return 2e-3/(Z0*Z0) * power * result;
-}
-
 
 }}} // namespace plask::optical::slab

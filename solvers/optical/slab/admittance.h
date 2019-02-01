@@ -112,9 +112,7 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
         }
     }
 
-    double integrateEE(size_t n, double z1, double z2) override;
-
-    double integrateHH(size_t n, double z1, double z2) override;
+    double integrateField(WhichField field, size_t n, double z1, double z2) override;
 };
 
 

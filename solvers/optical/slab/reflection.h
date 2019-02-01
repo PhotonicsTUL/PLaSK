@@ -101,9 +101,7 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
      */
     void findReflection(std::size_t start, std::size_t end, bool emitting, int store=0);
 
-    double integrateEE(size_t n, double z1, double z2) override;
-
-    double integrateHH(size_t n, double z1, double z2) override;
+    double integrateField(WhichField field, size_t n, double z1, double z2) override;
 };
 
 

@@ -355,7 +355,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      */
     double getIntegralEE(size_t num, double z1, double z2) {
         applyMode(modes[num]);
-        return transfer->getIntegralEE(z1, z2, modes[num].power);
+        return transfer->getFieldIntegral(FIELD_E, z1, z2, modes[num].power);
     }
 
     /**
@@ -367,7 +367,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
      */
     double getIntegralHH(size_t num, double z1, double z2) {
         applyMode(modes[num]);
-        return transfer->getIntegralHH(z1, z2, modes[num].power);
+        return transfer->getFieldIntegral(FIELD_H, z1, z2, modes[num].power);
     }
 
     /// Check if the current parameters correspond to some mode and insert it

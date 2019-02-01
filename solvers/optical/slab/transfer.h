@@ -7,6 +7,12 @@
 
 namespace plask { namespace optical { namespace slab {
 
+/// Field identification
+enum WhichField {
+    FIELD_E,            ///< Electric field
+    FIELD_H             ///< Magnetic field
+};
+
 using phys::Z0;
 
 struct SlabBase;
@@ -165,22 +171,14 @@ struct PLASK_SOLVER_API Transfer {
     }
 
     /**
-     * Compute ½ E·conj(E) integral between \a z1 and \a z2
+     * Compute ½ E·conj(E) or ½ H·conj(H) integral between \a z1 and \a z2
+     * \param field field to integrate
      * \param n layer number
      * \param z1 lower integration bound in local layer coordinates
      * \param z2 upper integration bound in local layer coordinates
      * \return computed integral
      */
-    virtual double integrateEE(size_t n, double z1, double z2) = 0;
-
-    /**
-     * Compute ½ H·conj(H) integral between \a z1 and \a z2
-     * \param n layer number
-     * \param z1 lower integration bound in local layer coordinates
-     * \param z2 upper integration bound in local layer coordinates
-     * \return computed integral
-     */
-    virtual double integrateHH(size_t n, double z1, double z2) = 0;
+    virtual double integrateField(WhichField field, size_t n, double z1, double z2) = 0;
 
   public:
 
@@ -289,22 +287,14 @@ struct PLASK_SOLVER_API Transfer {
     cvector getScatteredFieldVectorH(const cvector& incident, IncidentDirection side, double z);
 
     /**
-     * Get ½ E·conj(E) integral between \a z1 and \a z2
+     * Get ½ E·conj(E) or ½ H·conj(H) integral between \a z1 and \a z2
+     * \param field field to integrate
      * \param z1 lower integration bound
      * \param z2 upper integration bound
      * \param power mode emitted power
      * \return computed integral
      */
-    double getIntegralEE(double z1, double z2, double power);
-
-    /**
-     * Get ½ H·conj(H) integral between \a z1 and \a z2
-     * \param z1 lower integration bound
-     * \param z2 upper integration bound
-     * \param power mode emitted power
-     * \return computed integral
-     */
-    double getIntegralHH(double z1, double z2, double power);
+    double getFieldIntegral(WhichField field, double z1, double z2, double power);
 };
 
 
