@@ -557,7 +557,7 @@ double ReflectionTransfer::integrateField(WhichField field, size_t n, double z1,
     for (size_t i = 0; i != N; ++i) {
         cvector E(TE.data() + N*i, N),
                 H(TH.data() + N*i, N);
-        double TT = diagonalizer->source()->integrateField(field, E, H);
+        double TT = diagonalizer->source()->integrateField(field, layer, E, H);
 
         double gi = 2. * gamma[i].imag(), gr = 2. * gamma[i].real();
         double fFF =   is_zero(gi)? z2-z1 : (exp(gi*z2)-exp(gi*z1)) / gi,

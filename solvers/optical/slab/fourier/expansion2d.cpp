@@ -852,14 +852,138 @@ void ExpansionPW2D::getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmat
     }
 }
 
-double ExpansionPW2D::integrateField(WhichField field, const cvector& E, const cvector& H)
+double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& E, const cvector& H)
 {
-    double L = (right-left) * (symmetric()? 2. : 1.);
+    const int order = int(SOLVER->getSize());
+    double b = 2.*PI / (right-left) * (symmetric()? 0.5 : 1.0);
+
+    dcomplex vert;
     double sum = 0.;
-    if (field == FIELD_E)
-        for (dcomplex e: E) sum += real(e * conj(e));
-    else
-        for (dcomplex h: H) sum += real(h * conj(h));
+
+    if (which_field == FIELD_E) {
+        if (separated()) {
+            if (polarization == E_TRAN) {
+                if (symmetric()) {
+                    for (int i = 0; i <= order; ++i) {
+                        vert = 0.; // beta is equal to 0
+                        if (symmetry == E_TRAN) { // symmetry == H_LONG
+                            for (int j = -order; j <= order; ++j)
+                                vert += iepsyy(l,abs(i-j)) * b*double(j) * H[iH(abs(j))];
+                        } else { // symmetry == H_TRAN
+                            for (int j = 1; j <= order; ++j)
+                                vert += (iepsyy(l,abs(i-j)) + iepsyy(l,abs(i+j))) * b*double(j) * H[iH(j)];
+                        }
+                        vert /= k0;
+                        sum += real(vert * conj(vert));
+                    }
+                } else {
+                    for (int i = -order; i <= order; ++i) {
+                        vert = 0.; // beta is equal to 0
+                        for (int j = -order; j <= order; ++j)
+                            vert += iepsyy(l,i-j) * (b*double(j)-ktran) * H[iH(j)];
+                        vert /= k0;
+                        sum += real(vert * conj(vert));
+                    }
+                }
+            }
+        } else {
+            for (int i = symmetric()? 0 : -order; i <= order; ++i) {
+                if (symmetric()) {
+                    if (symmetry == E_TRAN) { // symmetry = H_LONG
+                        vert = 0.;
+                        for (int j = 1; j <= order; ++j)
+                            vert -= (iepsyy(l,abs(i-j)) - iepsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
+                    } else { // symmetry = H_TRAN
+                        vert = - iepsyy(l,abs(i)) * beta * H[iHx(0)];
+                        for (int j = 1; j <= order; ++j)
+                            vert -= (iepsyy(l,abs(i-j)) + iepsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
+                    }
+                } else {
+                    vert = 0.;
+                    for (int j = -order; j <= order; ++j)
+                        vert -= iepsyy(l,i-j) * (beta * H[iHx(i)] + (b*double(j)-ktran) * H[iHz(j)]);
+                }
+                vert /= k0;
+                sum += real(vert * conj(vert));
+            }
+        }
+    } else { // which_field == FIELD_H
+        if (separated()) {
+            if (polarization == E_LONG) {  // polarization == H_TRAN
+                if (symmetric()) {
+                    for (int i = 0; i <= order; ++i) {
+                        vert = 0.; // beta is equal to 0
+                        if (symmetry == E_LONG) {
+                            for (int j = -order; j <= order; ++j)
+                                vert -= imuyy(l,abs(i-j)) * b*double(j) * E[iE(abs(j))];
+                        } else { // symmetry == E_TRAN
+                            for (int j = 1; j <= order; ++j)
+                                vert -= (imuyy(l,abs(i-j)) + imuyy(l,abs(i+j))) * b*double(j) * E[iE(j)];
+                        }
+                        vert /= k0;
+                        sum += real(vert * conj(vert));
+                    }
+                } else {
+                    for (int i = -order; i <= order; ++i) {
+                        vert = 0.; // beta is equal to 0
+                        for (int j = -order; j <= order; ++j)
+                            vert -= imuyy(l,i-j) * (b*double(j)-ktran) * E[iE(j)];
+                        vert /= k0;
+                        sum += real(vert * conj(vert));
+                    }
+                }
+            }
+        } else {
+            for (int i = symmetric()? 0 : -order; i <= order; ++i) {
+                if (symmetric()) {
+                    if (symmetry == E_LONG) {
+                        vert = 0.;
+                        for (int j = 1; j <= order; ++j)
+                            vert += (imuyy(l,abs(i-j)) - imuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
+                    } else { // symmetry == E_TRAN
+                        vert = imuyy(l,abs(i)) * beta * E[iEx(0)];
+                        for (int j = 1; j <= order; ++j)
+                            vert += (imuyy(l,abs(i-j)) + imuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
+                    }
+                } else {
+                    vert = 0.;
+                    for (int j = -order; j <= order; ++j)
+                        vert += imuyy(l,i-j) * (beta * E[iEx(j)] - (b*double(j)-ktran) * E[iEz(j)]);
+                }
+                vert /= k0;
+                sum += real(vert * conj(vert));
+            }
+        }
+    }
+
+    double L = (right-left) * (symmetric()? 2. : 1.);
+    if (field == FIELD_E) {
+        if (symmetric()) {
+            for (dcomplex e: E) sum += 2. * real(e * conj(e));
+            if (separated()) {
+                size_t i = iE(0);
+                sum -= real(E[i] * conj(E[i]));
+            } else {
+                size_t ix = iEx(0), iz = iEz(0);
+                sum -= real(E[ix] * conj(E[ix])) + real(E[iz] * conj(E[iz]));
+            }
+        } else {
+            for (dcomplex e: E) sum += real(e * conj(e));
+        }
+    } else {
+        if (symmetric()) {
+            for (dcomplex h: H) sum += 2. * real(h * conj(h));
+            if (separated()) {
+                size_t i = iH(0);
+                sum -= real(H[i] * conj(H[i]));
+            } else {
+                size_t ix = iHx(0), iz = iHz(0);
+                sum -= real(H[ix] * conj(H[ix])) + real(H[iz] * conj(H[iz]));
+            }
+        } else {
+            for (dcomplex e: H) sum += real(e * conj(e));
+        }
+    }
     return 0.5 * L * sum;
 }
 

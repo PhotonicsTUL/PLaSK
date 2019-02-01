@@ -598,7 +598,7 @@ double AdmittanceTransfer::integrateField(WhichField field, size_t n, double z1,
     for (size_t i = 0; i != N; ++i) {
         cvector E(TE.data() + N*i, N),
                 H(TH.data() + N*i, N);
-        double TT = diagonalizer->source()->integrateField(field, E, H);
+        double TT = diagonalizer->source()->integrateField(field, layer, E, H);
 
         double gr = 2. * gamma[i].real(), gi = 2. * gamma[i].imag();
         double M = cosh(gi * d) - cos(gr * d);

@@ -14,7 +14,7 @@ void Expansion::getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmatrix&
 
 // This is the basic relation using fields orthonormality and neglecting vertical component.
 // Subclasses may override it with better formula.
-double Expansion::integrateField(WhichField field, const cvector& E, const cvector& H) {
+double Expansion::integrateField(WhichField field, size_t, const cvector& E, const cvector& H) {
     double sum = 0.;
     if (field == FIELD_E)
         for (dcomplex e: E) sum += real(e * conj(e));

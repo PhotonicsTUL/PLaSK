@@ -195,11 +195,12 @@ struct PLASK_SOLVER_API Expansion {
     /**
      * Compute ½ E·conj(E)
      * \param field field to integrate
+     * \param layer layer number
      * \param E electric field coefficients vector
      * \param H magnetic field coefficients vector
      * \return integrated ½ E·conj(E)
      */
-    virtual double integrateField(WhichField field, const cvector& E, const cvector& H);
+    virtual double integrateField(WhichField field, size_t layer, const cvector& E, const cvector& H);
 
     /**
      * Compute vertical component of the Poynting vector for specified fields
