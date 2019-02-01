@@ -81,11 +81,14 @@ struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
          */
         double getHeight() const { return mesh.vertAxis->at(vertIndex+1) - mesh.vertAxis->at(vertIndex); }
 
+        //@{
         /**
          * Get volume of the prism represented by this element.
          * @return the volume of the element
          */
         double getArea() const { return getBaseArea() * getHeight(); }
+        double getVolume() const { return getArea(); }
+        //@}
 
         /**
          * Check if point @p p is included in @c this element.
@@ -112,31 +115,55 @@ struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
      *
      * It works like read-only, random access container of @ref Element objects.
      */
-    struct PLASK_API Elements {
-        const ExtrudedTriangularMesh3D& mesh;
+    class PLASK_API Elements {
 
-        explicit Elements(const ExtrudedTriangularMesh3D& mesh): mesh(mesh) {}
+        static inline Element deref(const ExtrudedTriangularMesh3D& mesh, std::size_t index) { return mesh.getElement(index); }
+    public:
+        typedef IndexedIterator<const ExtrudedTriangularMesh3D, Element, deref> const_iterator;
+        typedef const_iterator iterator;
+
+        const ExtrudedTriangularMesh3D* mesh;
+
+        explicit Elements(const ExtrudedTriangularMesh3D& mesh): mesh(&mesh) {}
 
         Element at(std::size_t index) const {
-            if (index >= mesh.getElementsCount())
-                throw OutOfBoundsException("ExtrudedTriangularMesh3D::Elements::at", "index", index, 0, mesh.getElementsCount()-1);
-            return Element(mesh, index);
+            if (index >= mesh->getElementsCount())
+                throw OutOfBoundsException("ExtrudedTriangularMesh3D::Elements::at", "index", index, 0, mesh->getElementsCount()-1);
+            return Element(*mesh, index);
         }
 
         Element operator[](std::size_t index) const {
-            return Element(mesh, index);
+            return Element(*mesh, index);
         }
 
         /**
          * Get number of elements (right triangular prisms) in the mesh.
          * @return number of elements
          */
-        std::size_t size() const { return mesh.getElementsCount(); }
+        std::size_t size() const { return mesh->getElementsCount(); }
 
-        bool empty() const { return (mesh.vertAxis->size() <= 1) || (mesh.longTranMesh.getElementsCount() == 0); }
+        bool empty() const { return (mesh->vertAxis->size() <= 1) || (mesh->longTranMesh.getElementsCount() == 0); }
 
-        // TODO iterators
+        /// @return iterator referring to the first element
+        const_iterator begin() const { return const_iterator(mesh, 0); }
+
+        /// @return iterator referring to the past-the-end element
+        const_iterator end() const { return const_iterator(mesh, size()); }
     };
+
+    /// Accessor to FEM-like elements.
+    Elements elements() const { return Elements(*this); }
+    Elements getElements() const { return elements(); }
+
+    //@{
+    /**
+     * Get an element with a given index @p elementIndex.
+     * @param elementIndex index of the element
+     * @return the element
+     */
+    Element element(std::size_t elementIndex) const { return Element(*this, elementIndex); }
+    Element getElement(std::size_t elementIndex) const { return element(elementIndex); }
+    //@}
 
     Vec<3, double> at(std::size_t index) const override;
 
