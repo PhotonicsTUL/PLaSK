@@ -964,4 +964,81 @@ void ExpansionPW3D::getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmat
     }
 }
 
+double ExpansionPW3D::integrateField(WhichField field, size_t l, const cvector& E, const cvector& H)
+{
+    Component syml = (which_field == FIELD_E)? symmetry_long : Component((3-symmetry_long) % 3);
+    Component symt = (which_field == FIELD_E)? symmetry_tran : Component((3-symmetry_tran) % 3);
+
+    size_t nl = (syml == E_UNSPECIFIED)? Nl+1 : Nl,
+           nt = (symt == E_UNSPECIFIED)? Nt+1 : Nt;
+    const dcomplex kx = klong, ky = ktran;
+
+    int ordl = int(SOLVER->getLongSize()), ordt = int(SOLVER->getTranSize());
+
+    double bl = 2*PI / (front-back) * (symmetric_long()? 0.5 : 1.0),
+           bt = 2*PI / (right-left) * (symmetric_tran()? 0.5 : 1.0);
+
+    dcomplex vert;
+    double sum = 0.;
+
+    if (which_field == FIELD_E) {
+        for (int it = symmetric_tran()? 0 : -ordt; it <= ordt; ++it) {
+            for (int il = symmetric_long()? 0 : -ordl; il <= ordl; ++il) {
+                vert = 0.;
+                for (int jt = -ordt; jt <= ordt; ++jt)
+                    for (int jl = -ordl; jl <= ordl; ++jl) {
+                        double fhx = ((jl < 0 && symmetry_long == E_LONG)? -1. : 1) *
+                                        ((jt < 0 && symmetry_tran == E_LONG)? -1. : 1);
+                        double fhy = ((jl < 0 && symmetry_long == E_TRAN)? -1. : 1) *
+                                        ((jt < 0 && symmetry_tran == E_TRAN)? -1. : 1);
+                        vert += iepszz(l,il-jl,it-jt) *
+                               (  (bl*double(jl)-kx) * fhy*H[iHy(jl,jt)]
+                                + (bt*double(jt)-ky) * fhx*H[iHx(jl,jt)]);
+                    }
+                vert /= k0;
+                sum += real(vert * conj(vert));
+            }
+        }
+    } else { // which_field == FIELD_H
+        for (int it = symmetric_tran()? 0 : -ordt; it <= ordt; ++it) {
+            for (int il = symmetric_long()? 0 : -ordl; il <= ordl; ++il) {
+                vert = 0.;
+                for (int jt = -ordt; jt <= ordt; ++jt)
+                    for (int jl = -ordl; jl <= ordl; ++jl) {
+                        double fex = ((jl < 0 && symmetry_long == E_TRAN)? -1. : 1) *
+                                        ((jt < 0 && symmetry_tran == E_TRAN)? -1. : 1);
+                        double fey = ((jl < 0 && symmetry_long == E_LONG)? -1. : 1) *
+                                        ((jt < 0 && symmetry_tran == E_LONG)? -1. : 1);
+                        vert += imuzz(l,il-jl,it-jt) *
+                               (- (bl*double(jl)-kx) * fey*E[iEy(jl,jt)]
+                                + (bt*double(jt)-ky) * fex*E[iEx(jl,jt)]);
+                    }
+                vert /= k0;
+                sum += real(vert * conj(vert));
+            }
+        }
+    }
+
+    double area = (front-back) * (symmetric_long()? 2. : 1.) * (right-left) * (symmetric_tran()? 2. : 1.);
+
+    if (field == FIELD_E) {
+        for (int t = -ordt; t <= ordt; ++t) {
+            for (int l = -ordl; l <= ordl; ++l) {
+                size_t ix = iEx(l, t), iy = iEy(l, t);
+                sum += real(E[ix] * conj(E[ix])) + real(E[iy] * conj(E[iy]));
+            }
+        }
+    } else {
+        for (int t = -ordt; t <= ordt; ++t) {
+            for (int l = -ordl; l <= ordl; ++l) {
+                size_t ix = iHx(l, t), iy = iHy(l, t);
+                sum += real(H[ix] * conj(H[ix])) + real(H[iy] * conj(H[iy]));
+            }
+        }
+    }
+
+    return 0.5 * area * sum;
+}
+
+
 }}} // namespace plask

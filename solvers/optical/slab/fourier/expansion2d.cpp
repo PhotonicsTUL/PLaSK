@@ -874,7 +874,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
                                 vert += (iepsyy(l,abs(i-j)) + iepsyy(l,abs(i+j))) * b*double(j) * H[iH(j)];
                         }
                         vert /= k0;
-                        sum += real(vert * conj(vert));
+                        sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
                     }
                 } else {
                     for (int i = -order; i <= order; ++i) {
@@ -898,13 +898,15 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
                         for (int j = 1; j <= order; ++j)
                             vert -= (iepsyy(l,abs(i-j)) + iepsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
                     }
+                    vert /= k0;
+                    sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
                 } else {
                     vert = 0.;
                     for (int j = -order; j <= order; ++j)
                         vert -= iepsyy(l,i-j) * (beta * H[iHx(i)] + (b*double(j)-ktran) * H[iHz(j)]);
+                    vert /= k0;
+                    sum += real(vert * conj(vert));
                 }
-                vert /= k0;
-                sum += real(vert * conj(vert));
             }
         }
     } else { // which_field == FIELD_H
@@ -921,7 +923,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
                                 vert -= (imuyy(l,abs(i-j)) + imuyy(l,abs(i+j))) * b*double(j) * E[iE(j)];
                         }
                         vert /= k0;
-                        sum += real(vert * conj(vert));
+                        sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
                     }
                 } else {
                     for (int i = -order; i <= order; ++i) {
@@ -945,13 +947,15 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
                         for (int j = 1; j <= order; ++j)
                             vert += (imuyy(l,abs(i-j)) + imuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
                     }
+                    vert /= k0;
+                    sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
                 } else {
                     vert = 0.;
                     for (int j = -order; j <= order; ++j)
                         vert += imuyy(l,i-j) * (beta * E[iEx(j)] - (b*double(j)-ktran) * E[iEz(j)]);
+                    vert /= k0;
+                    sum += real(vert * conj(vert));
                 }
-                vert /= k0;
-                sum += real(vert * conj(vert));
             }
         }
     }
