@@ -852,4 +852,14 @@ void ExpansionPW2D::getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmat
     }
 }
 
+double ExpansionPW2D::integrateEE(const cvector& E, const cvector& H)
+{
+}
+
+double ExpansionPW2D::integrateHH(const cvector& E, const cvector& H)
+{
+}
+
+
+
 }}} // namespace plask
