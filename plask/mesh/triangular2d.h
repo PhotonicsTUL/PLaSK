@@ -681,28 +681,34 @@ class TriangularMesh2D::ElementMesh: public MeshD<2> {
 
 // ------------------ Nearest Neighbor interpolation ---------------------
 
+/**
+ * Utility struct that allows for using triangular mesh in boost::geometry::index::rtree effectively
+ * (without copying coordinates of nodes).
+ */
+struct TriangularMesh2DGetterForRtree {
+    typedef Vec<2, double> result_type;
+
+    const TriangularMesh2D* src_mesh;
+
+    TriangularMesh2DGetterForRtree(const TriangularMesh2D* src_mesh): src_mesh(src_mesh) {}
+
+    result_type operator()(std::size_t index) const {
+        return src_mesh->at(index);
+    }
+};
+
+/// Boost rtree that holds nodes of TriangularMesh2D
+typedef boost::geometry::index::rtree<
+        std::size_t,
+        boost::geometry::index::quadratic<16>, //??
+        TriangularMesh2DGetterForRtree
+        >
+RtreeOfTriangularMesh2DNodes;
+
 template <typename DstT, typename SrcT>
 struct PLASK_API NearestNeighborTriangularMesh2DLazyDataImpl: public InterpolatedLazyDataImpl<DstT, TriangularMesh2D, const SrcT>
 {
-    struct TriangularMesh2DGetter {
-        typedef Vec<2, double> result_type;
-
-        shared_ptr<const TriangularMesh2D> src_mesh;
-
-        TriangularMesh2DGetter(const shared_ptr<const TriangularMesh2D>& src_mesh): src_mesh(src_mesh) {}
-
-        result_type operator()(std::size_t index) const {
-            return src_mesh->at(index);
-        }
-    };
-
-    typedef boost::geometry::index::rtree<
-            std::size_t,
-            boost::geometry::index::quadratic<16>, //??
-            TriangularMesh2DGetter
-            > Rtree;
-
-    Rtree nodesIndex;
+    RtreeOfTriangularMesh2DNodes nodesIndex;
 
     NearestNeighborTriangularMesh2DLazyDataImpl(
                 const shared_ptr<const TriangularMesh2D>& src_mesh,
@@ -750,7 +756,7 @@ template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<TriangularMesh2D, SrcT, DstT, INTERPOLATION_LINEAR> {
     static LazyData<DstT> interpolate(const shared_ptr<const TriangularMesh2D>& src_mesh,
                                       const DataVector<const SrcT>& src_vec,
-                                      const shared_ptr<const MeshD<3>>& dst_mesh,
+                                      const shared_ptr<const MeshD<2>>& dst_mesh,
                                       const InterpolationFlags& flags)
     {
         if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
@@ -782,7 +788,7 @@ template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<TriangularMesh2D::ElementMesh, SrcT, DstT, INTERPOLATION_LINEAR> {
     static LazyData<DstT> interpolate(const shared_ptr<const TriangularMesh2D>& src_mesh,
                                       const DataVector<const SrcT>& src_vec,
-                                      const shared_ptr<const MeshD<3>>& dst_mesh,
+                                      const shared_ptr<const MeshD<2>>& dst_mesh,
                                       const InterpolationFlags& flags)
     {
         if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");

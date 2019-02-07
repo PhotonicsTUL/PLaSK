@@ -217,7 +217,7 @@ struct SegmentSetMember: private Compare<TriangularMesh2D::Segment> {
      * Check if this segment dominate given point.
      * @param mesh
      * @param point
-     * @return
+     * @return whether this segment dominate given point
      */
     bool dominates(const TriangularMesh2D& mesh, const Vec<2, double>& point) const {
         // this two cases are supported also by interpolation, but they are common and we want to ensure to check them exact:
@@ -526,8 +526,8 @@ template<typename DstT, typename SrcT>
 NearestNeighborTriangularMesh2DLazyDataImpl<DstT, SrcT>::NearestNeighborTriangularMesh2DLazyDataImpl(const shared_ptr<const TriangularMesh2D> &src_mesh, const DataVector<const SrcT> &src_vec, const shared_ptr<const MeshD<2> > &dst_mesh, const InterpolationFlags &flags)
     : InterpolatedLazyDataImpl<DstT, TriangularMesh2D, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
       nodesIndex(boost::irange(std::size_t(0), src_mesh->size()),
-                 typename Rtree::parameters_type(),
-                 TriangularMesh2DGetter(src_mesh))
+                 typename RtreeOfTriangularMesh2DNodes::parameters_type(),
+                 TriangularMesh2DGetterForRtree(src_mesh.get()))
 {
 }
 
