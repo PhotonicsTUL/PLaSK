@@ -151,6 +151,14 @@ struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
         const_iterator end() const { return const_iterator(mesh, size()); }
     };
 
+    class ElementMesh;
+
+    /**
+     * Return a mesh that enables iterating over middle points of the rectangles.
+     * \return the mesh
+     */
+    shared_ptr<ElementMesh> getElementMesh() const { return make_shared<ElementMesh>(this); }
+
     /// Accessor to FEM-like elements.
     Elements elements() const { return Elements(*this); }
     Elements getElements() const { return elements(); }
@@ -213,6 +221,27 @@ struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
         const std::size_t vertSize = vertAxis->size();
         return vertSize == 0 ? 0 : (vertSize-1) * longTranMesh.getElementsCount();
     }
+
+
+};
+
+class ExtrudedTriangularMesh3D::ElementMesh: public MeshD<3> {
+
+    /// Original mesh
+    const ExtrudedTriangularMesh3D* originalMesh;
+
+  public:
+    ElementMesh(const ExtrudedTriangularMesh3D* originalMesh): originalMesh(originalMesh) {}
+
+    LocalCoords at(std::size_t index) const override {
+        return originalMesh->element(index).getMidpoint();
+    }
+
+    std::size_t size() const override {
+        return originalMesh->getElementsCount();
+    }
+
+    const ExtrudedTriangularMesh3D& getOriginalMesh() const { return *originalMesh; }
 };
 
 }   // namespace plask
