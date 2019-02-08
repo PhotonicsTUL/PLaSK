@@ -188,4 +188,50 @@ template struct PLASK_API BarycentricExtrudedTriangularMesh3DLazyDataImpl<Tensor
 template struct PLASK_API BarycentricExtrudedTriangularMesh3DLazyDataImpl<Tensor3<dcomplex>, Tensor3<dcomplex>>;
 
 
+// ------------------ Element mesh Nearest Neighbor interpolation ---------------------
+
+template<typename DstT, typename SrcT>
+NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<DstT, SrcT>::NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl(
+        const shared_ptr<const ExtrudedTriangularMesh3D::ElementMesh> &src_mesh,
+        const DataVector<const SrcT> &src_vec,
+        const shared_ptr<const MeshD<3> > &dst_mesh,
+        const InterpolationFlags &flags)
+    : InterpolatedLazyDataImpl<DstT, ExtrudedTriangularMesh3D::ElementMesh, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
+      elementIndex(src_mesh->getOriginalMesh().longTranMesh)
+{
+}
+
+template<typename DstT, typename SrcT>
+DstT NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const {
+    const auto point = this->dst_mesh->at(index);
+    const auto wrapped_point = this->flags.wrap(point);
+
+    if (wrapped_point.vert() < this->src_mesh->vertAxis[0] || this->src_mesh->vertAxis[this->src_mesh->vertAxis.size()] < wrapped_point.vert())
+        return NaN<decltype(this->src_vec[0])>();
+
+    const auto wrapped_longTran = to_longTran(wrapped_point);
+
+    std::size_t longTran_element_index = elementIndex.getIndex(wrapped_point);
+    if (longTran_element_index == TriangularMesh2D::ElementIndex::INDEX_NOT_FOUND)
+        return NaN<decltype(this->src_vec[0])>();
+
+    return this->flags.postprocess(point,
+                                   this->src_vec[this->src_mesh.index(
+                                        longTran_element_index,
+                                        this->src_mesh->vertAxis.findUpIndex(wrapped_point.vert())-1
+                                   )]);
+}
+
+template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<double, double>;
+template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<dcomplex, dcomplex>;
+template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<Vec<2,double>, Vec<2,double>>;
+template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<Vec<2,dcomplex>, Vec<2,dcomplex>>;
+template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<Vec<3,double>, Vec<3,double>>;
+template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<Vec<3,dcomplex>, Vec<3,dcomplex>>;
+template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<Tensor2<double>, Tensor2<double>>;
+template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<Tensor2<dcomplex>, Tensor2<dcomplex>>;
+template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<Tensor3<double>, Tensor3<double>>;
+template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<Tensor3<dcomplex>, Tensor3<dcomplex>>;
+
+
 }   // namespace plask

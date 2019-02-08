@@ -243,7 +243,7 @@ struct PLASK_API MeshD: public Mesh {
      * @param index index of point, from 0 to size()-1
      * @return point with given @p index
      */
-    const LocalCoords operator[](std::size_t index) const { return at(index); }
+    LocalCoords operator[](std::size_t index) const { return at(index); }
 
     /**
      * Random access iterator type which allow iterate over all points in this mesh, in order appointed by operator[].

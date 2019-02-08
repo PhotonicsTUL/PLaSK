@@ -594,7 +594,10 @@ template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor3<dcompl
 // ------------------ Element mesh Nearest Neighbor interpolation ---------------------
 
 template<typename DstT, typename SrcT>
-NearestNeighborElementTriangularMesh2DLazyDataImpl<DstT, SrcT>::NearestNeighborElementTriangularMesh2DLazyDataImpl(const shared_ptr<const TriangularMesh2D::ElementMesh> &src_mesh, const DataVector<const SrcT> &src_vec, const shared_ptr<const MeshD<2> > &dst_mesh, const InterpolationFlags &flags)
+NearestNeighborElementTriangularMesh2DLazyDataImpl<DstT, SrcT>::NearestNeighborElementTriangularMesh2DLazyDataImpl(
+        const shared_ptr<const TriangularMesh2D::ElementMesh> &src_mesh,
+        const DataVector<const SrcT> &src_vec,
+        const shared_ptr<const MeshD<2> > &dst_mesh, const InterpolationFlags &flags)
     : InterpolatedLazyDataImpl<DstT, TriangularMesh2D::ElementMesh, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
       elementIndex(src_mesh->getOriginalMesh())
 {
@@ -610,6 +613,15 @@ DstT NearestNeighborElementTriangularMesh2DLazyDataImpl<DstT, SrcT>::at(std::siz
     return this->flags.postprocess(point, this->src_vec[element_index]);
 }
 
-
+template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<double, double>;
+template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<dcomplex, dcomplex>;
+template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<Vec<2,double>, Vec<2,double>>;
+template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<Vec<2,dcomplex>, Vec<2,dcomplex>>;
+template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<Vec<3,double>, Vec<3,double>>;
+template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<Vec<3,dcomplex>, Vec<3,dcomplex>>;
+template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<Tensor2<double>, Tensor2<double>>;
+template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<Tensor2<dcomplex>, Tensor2<dcomplex>>;
+template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<Tensor3<double>, Tensor3<double>>;
+template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<Tensor3<dcomplex>, Tensor3<dcomplex>>;
 
 }   // namespace plask

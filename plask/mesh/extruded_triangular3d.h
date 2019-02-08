@@ -305,6 +305,39 @@ struct InterpolationAlgorithm<ExtrudedTriangularMesh3D, SrcT, DstT, INTERPOLATIO
 
 };
 
+
+// ------------------ Element mesh Nearest Neighbor interpolation ---------------------
+
+template <typename DstT, typename SrcT>
+struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl: public InterpolatedLazyDataImpl<DstT, ExtrudedTriangularMesh3D::ElementMesh, const SrcT>
+{
+    TriangularMesh2D::ElementIndex elementIndex;
+
+    NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl(
+                const shared_ptr<const ExtrudedTriangularMesh3D::ElementMesh>& src_mesh,
+                const DataVector<const SrcT>& src_vec,
+                const shared_ptr<const MeshD<3>>& dst_mesh,
+                const InterpolationFlags& flags);
+
+    DstT at(std::size_t index) const override;
+};
+
+template <typename SrcT, typename DstT>
+struct InterpolationAlgorithm<ExtrudedTriangularMesh3D::ElementMesh, SrcT, DstT, INTERPOLATION_LINEAR> {
+    static LazyData<DstT> interpolate(const shared_ptr<const ExtrudedTriangularMesh3D>& src_mesh,
+                                      const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<3>>& dst_mesh,
+                                      const InterpolationFlags& flags)
+    {
+        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        return new NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<typename std::remove_const<DstT>::type,
+                                                                              typename std::remove_const<SrcT>::type>
+            (src_mesh, src_vec, dst_mesh, flags);
+    }
+
+};
+
+
 }   // namespace plask
 
 #endif // PLASK__MESH_EXTRUDED_TRIANGULAR3D_H
