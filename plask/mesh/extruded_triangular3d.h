@@ -95,10 +95,7 @@ struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
          * @param p point to check
          * @return @c true only if @p p is included in @c this
          */
-        bool includes(Vec<3, double> p) const {
-            return mesh.vertAxis->at(vertIndex) <= p.vert() && p.vert() <= mesh.vertAxis->at(vertIndex+1)
-                    && longTranElement().includes(vec(p.lon(), p.tran()));
-        }
+        bool includes(Vec<3, double> p) const;
 
         /**
          * Calculate minimal box which contains this element.
@@ -270,6 +267,38 @@ struct InterpolationAlgorithm<ExtrudedTriangularMesh3D, SrcT, DstT, INTERPOLATIO
     {
         if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
         return new NearestNeighborExtrudedTriangularMesh3DLazyDataImpl<typename std::remove_const<DstT>::type,
+                                                       typename std::remove_const<SrcT>::type>
+            (src_mesh, src_vec, dst_mesh, flags);
+    }
+
+};
+
+
+// ------------------ Barycentric / Linear interpolation ---------------------
+
+template <typename DstT, typename SrcT>
+struct PLASK_API BarycentricExtrudedTriangularMesh3DLazyDataImpl: public InterpolatedLazyDataImpl<DstT, ExtrudedTriangularMesh3D, const SrcT>
+{
+    TriangularMesh2D::ElementIndex elementIndex;
+
+    BarycentricExtrudedTriangularMesh3DLazyDataImpl(
+                const shared_ptr<const ExtrudedTriangularMesh3D>& src_mesh,
+                const DataVector<const SrcT>& src_vec,
+                const shared_ptr<const MeshD<3>>& dst_mesh,
+                const InterpolationFlags& flags);
+
+    DstT at(std::size_t index) const override;
+};
+
+template <typename SrcT, typename DstT>
+struct InterpolationAlgorithm<ExtrudedTriangularMesh3D, SrcT, DstT, INTERPOLATION_LINEAR> {
+    static LazyData<DstT> interpolate(const shared_ptr<const TriangularMesh2D>& src_mesh,
+                                      const DataVector<const SrcT>& src_vec,
+                                      const shared_ptr<const MeshD<3>>& dst_mesh,
+                                      const InterpolationFlags& flags)
+    {
+        if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
+        return new BarycentricExtrudedTriangularMesh3DLazyDataImpl<typename std::remove_const<DstT>::type,
                                                        typename std::remove_const<SrcT>::type>
             (src_mesh, src_vec, dst_mesh, flags);
     }
