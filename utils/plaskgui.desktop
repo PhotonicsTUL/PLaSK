@@ -1,5 +1,5 @@
 [Desktop Entry]
-Comment=
+Comment=Numerical analysis of physical phenomena in photonic devices.
 Exec=plaskgui %f
 GenericName=Photonic Laser Simulation Kit
 Icon=plaskgui
@@ -10,4 +10,4 @@ StartupNotify=true
 Terminal=false
 TerminalOptions=
 Type=Application
-Categories=Science;Physics;Python;Qt;
+Categories=Science;Education;Physics;Python;Qt;
