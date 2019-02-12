@@ -88,6 +88,8 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
                                               InterpolationMethod interp) override;
 
+    double integrateField(WhichField field, size_t l, const cvector& E, const cvector& H) override;
+
     double integratePoyntingVert(const cvector& E, const cvector& H) override;
 
     void getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmatrix& RE, const cdiagonal& gamma) override;

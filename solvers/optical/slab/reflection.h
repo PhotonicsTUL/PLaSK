@@ -50,7 +50,7 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
         }
     }
 
-    void adjust_z(size_t n, double& z1, double z2) {
+    void adjust_z(size_t n, double& z1, double& z2) {
         if (std::ptrdiff_t(n) >= solver->interface) {
             double zl = z1;
             z1 = - z2; z2 = - zl;
@@ -101,9 +101,7 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
      */
     void findReflection(std::size_t start, std::size_t end, bool emitting, int store=0);
 
-    double integrateEE(size_t n, double z1, double z2) override;
-
-    double integrateHH(size_t n, double z1, double z2) override;
+    double integrateField(WhichField field, size_t n, double z1, double z2) override;
 };
 
 

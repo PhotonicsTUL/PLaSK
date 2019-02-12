@@ -543,7 +543,7 @@ cvector ReflectionTransfer::getFieldVectorH(double z, std::size_t n)
 
 
 
-double ReflectionTransfer::integrateEE(size_t n, double z1, double z2) {
+double ReflectionTransfer::integrateField(WhichField field, size_t n, double z1, double z2) {
     size_t layer = solver->stack[n];
     size_t N = diagonalizer->matrixSize();
 
@@ -556,45 +556,15 @@ double ReflectionTransfer::integrateEE(size_t n, double z1, double z2) {
     double result = 0.;
     for (size_t i = 0; i != N; ++i) {
         cvector E(TE.data() + N*i, N),
-                H(TE.data() + N*i, N);
-        double TT = diagonalizer->source()->integrateEE(E, H);
+                H(TH.data() + N*i, N);
+        double TT = diagonalizer->source()->integrateField(field, layer, E, H);
 
         double gi = 2. * gamma[i].imag(), gr = 2. * gamma[i].real();
         double fFF =   is_zero(gi)? z2-z1 : (exp(gi*z2)-exp(gi*z1)) / gi,
                fBB =   is_zero(gi)? z2-z1 : (exp(-gi*z1)-exp(-gi*z2)) / gi;
         dcomplex fFB = is_zero(gr)? z2-z1 : (exp(-I*gr*z1)-exp(-I*gr*z2)) / gr;
-        double VV =      real(F1[i]*conj(F1[i])) * fFF +
-                         real(B1[i]*conj(B1[i])) * fBB +
-                    2. * imag(F1[i]*conj(B1[i]) * fFB);
-        result += TT * VV;
-    }
-
-    return result;
-}
-
-double ReflectionTransfer::integrateHH(size_t n, double z1, double z2) {
-    size_t layer = solver->stack[n];
-    size_t N = diagonalizer->matrixSize();
-
-    cmatrix TE = diagonalizer->TE(layer),
-            TH = diagonalizer->TH(layer);
-    cdiagonal gamma = diagonalizer->Gamma(layer);
-
-    adjust_z(n, z1, z2);
-
-    double result = 0.;
-    for (size_t i = 0; i != N; ++i) {
-        cvector E(TE.data() + N*i, N),
-                H(TE.data() + N*i, N);
-        double TT = diagonalizer->source()->integrateHH(E, H);
-
-        double gi = 2. * gamma[i].imag(), gr = 2. * gamma[i].real();
-        double fFF =   is_zero(gi)? z2-z1 : (exp(gi*z2)-exp(gi*z1)) / gi,
-               fBB =   is_zero(gi)? z2-z1 : (exp(-gi*z1)-exp(-gi*z2)) / gi;
-        dcomplex fFB = is_zero(gr)? z2-z1 : (exp(-I*gr*z1)-exp(-I*gr*z2)) / gr;
-        double VV =      real(F1[i]*conj(F1[i])) * fFF +
-                         real(B1[i]*conj(B1[i])) * fBB +
-                    2. * imag(F1[i]*conj(B1[i]) * fFB);
+        double VV = real(F1[i]*conj(F1[i])) * fFF + real(B1[i]*conj(B1[i])) * fBB +
+                    ((field == FIELD_E)? 2.: -2.) * imag(F1[i]*conj(B1[i]) * fFB);
         result += TT * VV;
     }
 

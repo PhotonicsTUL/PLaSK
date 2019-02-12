@@ -572,13 +572,18 @@ cvector AdmittanceTransfer::getTransmissionVector(const cvector& incident, Incid
 }
 
 
-
-double AdmittanceTransfer::integrateEE(size_t n, double z1, double z2) {
+double AdmittanceTransfer::integrateField(WhichField field, size_t n, double z1, double z2) {
     size_t layer = solver->stack[n];
     size_t N = diagonalizer->matrixSize();
 
-    cvector E0 = fields[n].E0;
-    cvector Ed = fields[n].Ed;
+    cvector F0, Fd;
+    if (field == FIELD_E) {
+        F0 = fields[n].E0;
+        Fd = fields[n].Ed;
+    } else {
+        F0 = fields[n].H0;
+        Fd = fields[n].Hd;
+    }
 
     cmatrix TE = diagonalizer->TE(layer),
             TH = diagonalizer->TH(layer);
@@ -587,11 +592,13 @@ double AdmittanceTransfer::integrateEE(size_t n, double z1, double z2) {
     get_d(n, z1);
     double d = get_d(n, z2);
 
+    if (std::ptrdiff_t(n) >= solver->interface) std::swap(z1, z2);
+
     double result = 0.;
     for (size_t i = 0; i != N; ++i) {
         cvector E(TE.data() + N*i, N),
-                H(TE.data() + N*i, N);
-        double TT = diagonalizer->source()->integrateEE(E, H);
+                H(TH.data() + N*i, N);
+        double TT = diagonalizer->source()->integrateField(field, layer, E, H);
 
         double gr = 2. * gamma[i].real(), gi = 2. * gamma[i].imag();
         double M = cosh(gi * d) - cos(gr * d);
@@ -602,31 +609,26 @@ double AdmittanceTransfer::integrateEE(size_t n, double z1, double z2) {
             cos0d = cos(gamma[i] * d) * (z2-z1);
         } else {
             cos00 = (sin(gr * (d-z1)) - sin(gr * (d-z2))) / gr;
-            cosdd = (sin(gr * z2) - sin(gr * z2)) / gr;
+            cosdd = (sin(gr * z2) - sin(gr * z1)) / gr;
             cos0d = (sin(gamma[i] * d - gr * z1) - sin(gamma[i] * d - gr * z2)) / gr;
         }
         double cosh00, coshdd;
         dcomplex cosh0d;
         if (is_zero(gi)) {
             cosh00 = coshdd = z2-z1;
-            cosh0d = cosh(gamma[i] * d) * (z2-z1);
+            cosh0d = cos(gamma[i] * d) * (z2-z1);
         } else {
             cosh00 = (sinh(gi * (d-z1)) - sinh(gi * (d-z2))) / gi;
-            coshdd = (sinh(gi * z2) - sinh(gi * z2)) / gi;
-            cosh0d = (sinh(gamma[i] * d - gi * z1) - sinh(gamma[i] * d - gi * z2)) / gi;
+            coshdd = (sinh(gi * z2) - sinh(gi * z1)) / gi;
+            cosh0d = (sin(gamma[i] * d - gi * z1) - sin(gamma[i] * d - gi * z2)) / gi;
         }
-        double VV =      real(E0[i]*conj(E0[i])) * (cosh00 - cos00) +
-                         real(Ed[i]*conj(Ed[i])) * (coshdd - cosdd) +
-                    2. * real(E0[i]*conj(Ed[i]) * (cosh0d - cos0d));
+        double VV =      real(F0[i]*conj(F0[i])) * (cosh00 - cos00) +
+                         real(Fd[i]*conj(Fd[i])) * (coshdd - cosdd) -
+                    2. * real(F0[i]*conj(Fd[i]) * (cosh0d - cos0d));
         result += TT * VV / M;
     }
 
     return result;
-}
-
-double AdmittanceTransfer::integrateHH(size_t n, double z1, double z2) {
-    //TODO
-    throw NotImplemented("integrateHH");
 }
 
 }}} // namespace plask::optical::slab

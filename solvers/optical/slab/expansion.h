@@ -18,10 +18,6 @@ struct PLASK_SOLVER_API Expansion {
         E_LONG = 2          ///< E_long and H_tran exist or are symmetric and E_tran and H_long anti-symmetric
     };
 
-    enum WhichField {
-        FIELD_E,            ///< Electric field
-        FIELD_H             ///< Magnetic field
-    };
     WhichField which_field;
     InterpolationMethod field_interpolation;
 
@@ -198,19 +194,13 @@ struct PLASK_SOLVER_API Expansion {
 
     /**
      * Compute ½ E·conj(E)
+     * \param field field to integrate
+     * \param layer layer number
      * \param E electric field coefficients vector
      * \param H magnetic field coefficients vector
      * \return integrated ½ E·conj(E)
      */
-    virtual double integrateEE(const cvector& E, const cvector& H);
-
-    /**
-     * Compute ½ H·conj(H)
-     * \param E electric field coefficients vector
-     * \param H magnetic field coefficients vector
-     * \return integrated ½ H·conj(H)
-     */
-    virtual double integrateHH(const cvector& E, const cvector& H);
+    virtual double integrateField(WhichField field, size_t layer, const cvector& E, const cvector& H);
 
     /**
      * Compute vertical component of the Poynting vector for specified fields

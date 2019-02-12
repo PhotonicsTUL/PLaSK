@@ -17,7 +17,7 @@ void GeometryObjectContainer<dim>::writeXML(XMLWriter::Element &parent_xml_objec
         XMLWriter::Element child_tag = write_cb.makeChildTag(container_tag, *this, i);
         writeXMLChildAttr(child_tag, i, axes);
         if (auto child = children[i]->getChild())
-            child->writeXML(child_tag, write_cb, axes);
+            if (child) child->writeXML(child_tag, write_cb, axes);
     }
 }
 
@@ -192,6 +192,7 @@ shared_ptr<const GeometryObject> GeometryObjectContainer<dim>::changedVersion(co
     for (const shared_ptr<TranslationT>& child_tran: children) {
         Vec<3, double> trans_from_child;
         shared_ptr<GeometryObject> old_child = child_tran->getChild();
+        if (!old_child) continue;
         shared_ptr<GeometryObject> new_child = const_pointer_cast<GeometryObject>(old_child->changedVersion(changer, &trans_from_child));
         if (new_child != old_child) were_changes = true;
         children_after_change.emplace_back(dynamic_pointer_cast<ChildType>(new_child), trans_from_child);
