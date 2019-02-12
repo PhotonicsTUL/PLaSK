@@ -206,19 +206,21 @@ DstT NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<DstT, SrcT>::at(
     const auto point = this->dst_mesh->at(index);
     const auto wrapped_point = this->flags.wrap(point);
 
-    if (wrapped_point.vert() < this->src_mesh->vertAxis[0] || this->src_mesh->vertAxis[this->src_mesh->vertAxis.size()] < wrapped_point.vert())
+    const ExtrudedTriangularMesh3D& orginal_src_mesh = this->src_mesh->getOriginalMesh();
+    const MeshAxis& vertAxis = *orginal_src_mesh.vertAxis;
+    if (wrapped_point.vert() < vertAxis[0] || vertAxis[vertAxis.size()] < wrapped_point.vert())
         return NaN<decltype(this->src_vec[0])>();
 
     const auto wrapped_longTran = to_longTran(wrapped_point);
 
-    std::size_t longTran_element_index = elementIndex.getIndex(wrapped_point);
+    std::size_t longTran_element_index = this->elementIndex.getIndex(wrapped_longTran);
     if (longTran_element_index == TriangularMesh2D::ElementIndex::INDEX_NOT_FOUND)
         return NaN<decltype(this->src_vec[0])>();
 
     return this->flags.postprocess(point,
-                                   this->src_vec[this->src_mesh.index(
+                                   this->src_vec[orginal_src_mesh.elementIndex(
                                         longTran_element_index,
-                                        this->src_mesh->vertAxis.findUpIndex(wrapped_point.vert())-1
+                                        vertAxis.findUpIndex(wrapped_point.vert())-1
                                    )]);
 }
 

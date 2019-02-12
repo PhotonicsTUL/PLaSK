@@ -277,7 +277,7 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
         /**
          * Get element which incldes point @p p.
          * @param p point to find
-         * @return element which includes @p p or empty optional if there is no element includes @p p.
+         * @return element which includes @p p or empty optional if no element includes @p p.
          */
         optional<Element> getElement(Vec<2, double> p) const;
     };
@@ -785,7 +785,7 @@ struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl: public Inte
 };
 
 template <typename SrcT, typename DstT>
-struct InterpolationAlgorithm<TriangularMesh2D::ElementMesh, SrcT, DstT, INTERPOLATION_LINEAR> {
+struct InterpolationAlgorithm<TriangularMesh2D::ElementMesh, SrcT, DstT, INTERPOLATION_NEAREST> {
     static LazyData<DstT> interpolate(const shared_ptr<const TriangularMesh2D>& src_mesh,
                                       const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<2>>& dst_mesh,

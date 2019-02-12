@@ -607,7 +607,7 @@ template<typename DstT, typename SrcT>
 DstT NearestNeighborElementTriangularMesh2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) const {
     auto point = this->dst_mesh->at(index);
     auto wrapped_point = this->flags.wrap(point);
-    std::size_t element_index = elementIndex.getIndex(point);
+    std::size_t element_index = elementIndex.getIndex(wrapped_point);
     if (element_index == TriangularMesh2D::ElementIndex::INDEX_NOT_FOUND)
         return NaN<decltype(this->src_vec[0])>();
     return this->flags.postprocess(point, this->src_vec[element_index]);

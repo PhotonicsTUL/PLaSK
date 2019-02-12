@@ -323,7 +323,7 @@ struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl: pub
 };
 
 template <typename SrcT, typename DstT>
-struct InterpolationAlgorithm<ExtrudedTriangularMesh3D::ElementMesh, SrcT, DstT, INTERPOLATION_LINEAR> {
+struct InterpolationAlgorithm<ExtrudedTriangularMesh3D::ElementMesh, SrcT, DstT, INTERPOLATION_NEAREST> {
     static LazyData<DstT> interpolate(const shared_ptr<const ExtrudedTriangularMesh3D>& src_mesh,
                                       const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh,
