@@ -4,7 +4,6 @@
 
 //#include <boost/python/stl_iterator.hpp>
 #include <boost/python/iterator.hpp>
-#include <boost/python/iterator.hpp>
 
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/interpolation.h>
@@ -25,7 +24,7 @@ static py::list element_nodes(const TriangularMesh2D::Element& self) {
 
 void register_mesh_triangular() {
 
-    py::class_<TriangularMesh2D, shared_ptr<TriangularMesh2D>, py::bases<MeshD<2>>> triangularMesh2D("TriangularMesh2D",
+    py::class_<TriangularMesh2D, shared_ptr<TriangularMesh2D>, py::bases<MeshD<2>>> triangularMesh2D("Triangular2D",
         u8"Two-dimensional triangular mesh");
     triangularMesh2D
             .def("__iter__", py::range(&TriangularMesh2D::begin, &TriangularMesh2D::end)) // we will use native iterators which perform better
@@ -54,7 +53,7 @@ void register_mesh_triangular() {
         py::scope scope = triangularMesh2D;
         (void) scope;   // don't warn about unused variable scope
 
-        py::class_<TriangularMesh2D::Element>("Element", u8"Element (FEM-like, triangle) of the :py:class:`mesh.Rectangular2D", py::no_init)
+        py::class_<TriangularMesh2D::Element>("Element", u8"Element (FEM-like, triangle) of the :py:class:`mesh.Triangular2D", py::no_init)
             .add_property("area", /*double*/ &TriangularMesh2D::Element::getArea, u8"Area of the element")
             .add_property("volume", /*double*/ &TriangularMesh2D::Element::getArea, u8"Alias for :attr:`area`")
             .add_property("center", /*Vec<2,double>*/ &TriangularMesh2D::Element::getMidpoint, u8"Position of the element center")
@@ -69,7 +68,7 @@ void register_mesh_triangular() {
 
         py::implicitly_convertible<shared_ptr<TriangularMesh2D::Element>, shared_ptr<const TriangularMesh2D::Element>>();
 
-        py::class_<TriangularMesh2D::Elements>("Elements", u8"Element list in the :py:class:`mesh.TriangularMesh2D", py::no_init)
+        py::class_<TriangularMesh2D::Elements>("Elements", u8"Element list in the :py:class:`mesh.Triangular2D", py::no_init)
             .def("__len__", &TriangularMesh2D::Elements::size)
             .def("__getitem__", &TriangularMesh2D::Elements::at, py::with_custodian_and_ward_postcall<0,1>())
             .def("__iter__", py::range<py::with_custodian_and_ward_postcall<0,1>>(&TriangularMesh2D::Elements::begin, &TriangularMesh2D::Elements::end))
@@ -80,7 +79,7 @@ void register_mesh_triangular() {
 
 
         py::class_<TriangularMesh2D::Builder>("Builder",
-                                              u8"Allows for adding triangles to the :py:class:`mesh.TriangularMesh2D effectively",
+                                              u8"Allows for adding triangles to the :py:class:`mesh.Triangular2D effectively",
                                               py::init<TriangularMesh2D&>()[py::with_custodian_and_ward<1,2>()])
             .def("add",
                  (TriangularMesh2D::Builder&(TriangularMesh2D::Builder::*)(Vec<2,double>, Vec<2,double>, Vec<2,double>)) &TriangularMesh2D::Builder::add,

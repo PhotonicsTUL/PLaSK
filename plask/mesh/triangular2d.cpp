@@ -523,7 +523,11 @@ static RegisterMeshReader rectangular2d_reader("triangular2d", readTriangularMes
 // ------------------ Nearest Neighbor interpolation ---------------------
 
 template<typename DstT, typename SrcT>
-NearestNeighborTriangularMesh2DLazyDataImpl<DstT, SrcT>::NearestNeighborTriangularMesh2DLazyDataImpl(const shared_ptr<const TriangularMesh2D> &src_mesh, const DataVector<const SrcT> &src_vec, const shared_ptr<const MeshD<2> > &dst_mesh, const InterpolationFlags &flags)
+NearestNeighborTriangularMesh2DLazyDataImpl<DstT, SrcT>::NearestNeighborTriangularMesh2DLazyDataImpl(
+        const shared_ptr<const TriangularMesh2D>& src_mesh,
+        const DataVector<const SrcT>& src_vec,
+        const shared_ptr<const MeshD<2>>& dst_mesh,
+        const InterpolationFlags& flags)
     : InterpolatedLazyDataImpl<DstT, TriangularMesh2D, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
       nodesIndex(boost::irange(std::size_t(0), src_mesh->size()),
                  typename RtreeOfTriangularMesh2DNodes::parameters_type(),
@@ -595,9 +599,10 @@ template struct PLASK_API BarycentricTriangularMesh2DLazyDataImpl<Tensor3<dcompl
 
 template<typename DstT, typename SrcT>
 NearestNeighborElementTriangularMesh2DLazyDataImpl<DstT, SrcT>::NearestNeighborElementTriangularMesh2DLazyDataImpl(
-        const shared_ptr<const TriangularMesh2D::ElementMesh> &src_mesh,
-        const DataVector<const SrcT> &src_vec,
-        const shared_ptr<const MeshD<2> > &dst_mesh, const InterpolationFlags &flags)
+        const shared_ptr<const TriangularMesh2D::ElementMesh>& src_mesh,
+        const DataVector<const SrcT>& src_vec,
+        const shared_ptr<const MeshD<2>>& dst_mesh,
+        const InterpolationFlags& flags)
     : InterpolatedLazyDataImpl<DstT, TriangularMesh2D::ElementMesh, const SrcT>(src_mesh, src_vec, dst_mesh, flags),
       elementIndex(src_mesh->getOriginalMesh())
 {

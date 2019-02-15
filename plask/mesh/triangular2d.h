@@ -723,7 +723,7 @@ template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<TriangularMesh2D, SrcT, DstT, INTERPOLATION_NEAREST> {
     static LazyData<DstT> interpolate(const shared_ptr<const TriangularMesh2D>& src_mesh,
                                       const DataVector<const SrcT>& src_vec,
-                                      const shared_ptr<const MeshD<3>>& dst_mesh,
+                                      const shared_ptr<const MeshD<2>>& dst_mesh,
                                       const InterpolationFlags& flags)
     {
         if (src_mesh->empty()) throw BadMesh("interpolate", "Source mesh empty");
@@ -734,6 +734,16 @@ struct InterpolationAlgorithm<TriangularMesh2D, SrcT, DstT, INTERPOLATION_NEARES
 
 };
 
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborTriangularMesh2DLazyDataImpl<double, double>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborTriangularMesh2DLazyDataImpl<dcomplex, dcomplex>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborTriangularMesh2DLazyDataImpl<Vec<2,double>, Vec<2,double>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborTriangularMesh2DLazyDataImpl<Vec<2,dcomplex>, Vec<2,dcomplex>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborTriangularMesh2DLazyDataImpl<Vec<3,double>, Vec<3,double>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborTriangularMesh2DLazyDataImpl<Vec<3,dcomplex>, Vec<3,dcomplex>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborTriangularMesh2DLazyDataImpl<Tensor2<double>, Tensor2<double>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborTriangularMesh2DLazyDataImpl<Tensor2<dcomplex>, Tensor2<dcomplex>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborTriangularMesh2DLazyDataImpl<Tensor3<double>, Tensor3<double>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborTriangularMesh2DLazyDataImpl<Tensor3<dcomplex>, Tensor3<dcomplex>>);
 
 
 // ------------------ Barycentric / Linear interpolation ---------------------
@@ -767,6 +777,17 @@ struct InterpolationAlgorithm<TriangularMesh2D, SrcT, DstT, INTERPOLATION_LINEAR
 
 };
 
+PLASK_API_EXTERN_TEMPLATE_STRUCT(BarycentricTriangularMesh2DLazyDataImpl<double, double>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(BarycentricTriangularMesh2DLazyDataImpl<dcomplex, dcomplex>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(BarycentricTriangularMesh2DLazyDataImpl<Vec<2,double>, Vec<2,double>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(BarycentricTriangularMesh2DLazyDataImpl<Vec<2,dcomplex>, Vec<2,dcomplex>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(BarycentricTriangularMesh2DLazyDataImpl<Vec<3,double>, Vec<3,double>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(BarycentricTriangularMesh2DLazyDataImpl<Vec<3,dcomplex>, Vec<3,dcomplex>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(BarycentricTriangularMesh2DLazyDataImpl<Tensor2<double>, Tensor2<double>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(BarycentricTriangularMesh2DLazyDataImpl<Tensor2<dcomplex>, Tensor2<dcomplex>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(BarycentricTriangularMesh2DLazyDataImpl<Tensor3<double>, Tensor3<double>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(BarycentricTriangularMesh2DLazyDataImpl<Tensor3<dcomplex>, Tensor3<dcomplex>>);
+
 
 // ------------------ Element mesh Nearest Neighbor interpolation ---------------------
 
@@ -786,7 +807,7 @@ struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl: public Inte
 
 template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<TriangularMesh2D::ElementMesh, SrcT, DstT, INTERPOLATION_NEAREST> {
-    static LazyData<DstT> interpolate(const shared_ptr<const TriangularMesh2D>& src_mesh,
+    static LazyData<DstT> interpolate(const shared_ptr<const TriangularMesh2D::ElementMesh>& src_mesh,
                                       const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<2>>& dst_mesh,
                                       const InterpolationFlags& flags)
@@ -798,6 +819,17 @@ struct InterpolationAlgorithm<TriangularMesh2D::ElementMesh, SrcT, DstT, INTERPO
     }
 
 };
+
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborElementTriangularMesh2DLazyDataImpl<double, double>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborElementTriangularMesh2DLazyDataImpl<dcomplex, dcomplex>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborElementTriangularMesh2DLazyDataImpl<Vec<2,double>, Vec<2,double>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborElementTriangularMesh2DLazyDataImpl<Vec<2,dcomplex>, Vec<2,dcomplex>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborElementTriangularMesh2DLazyDataImpl<Vec<3,double>, Vec<3,double>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborElementTriangularMesh2DLazyDataImpl<Vec<3,dcomplex>, Vec<3,dcomplex>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborElementTriangularMesh2DLazyDataImpl<Tensor2<double>, Tensor2<double>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborElementTriangularMesh2DLazyDataImpl<Tensor2<dcomplex>, Tensor2<dcomplex>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborElementTriangularMesh2DLazyDataImpl<Tensor3<double>, Tensor3<double>>);
+PLASK_API_EXTERN_TEMPLATE_STRUCT(NearestNeighborElementTriangularMesh2DLazyDataImpl<Tensor3<dcomplex>, Tensor3<dcomplex>>);
 
 }   // namespace plask
 

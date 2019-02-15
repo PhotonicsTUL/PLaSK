@@ -6,6 +6,9 @@
 
 namespace plask {
 
+/**
+ * 3D mesh that is a cartesian product of 2D triangular mesh at long-tran and 1D mesh at vert axis.
+ */
 struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
 
     TriangularMesh2D longTranMesh;

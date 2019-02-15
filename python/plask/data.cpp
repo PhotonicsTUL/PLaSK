@@ -8,6 +8,8 @@
 
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/rectangular.h>
+#include <plask/mesh/triangular2d.h>
+#include <plask/mesh/extruded_triangular3d.h>
 #include <plask/data.h>
 
 namespace boost { namespace python {
@@ -796,6 +798,19 @@ namespace python {
     if (auto src_mesh = dynamic_pointer_cast<M>(self.mesh)) \
         return PythonDataVector<T,dim>(interpolate(src_mesh, self, dst_mesh, method, flags), dst_mesh)
 
+template <typename T>   // NN interpolation for 2D only meshes:
+static inline optional<PythonDataVector<T,2>> NNdataInterpolateImpl2D(const PythonDataVector<T,2>& self, shared_ptr<MeshD<2>> dst_mesh, const InterpolationFlags& flags)
+{
+    constexpr int dim = 2;
+    NEAREST_INTERPOLATE_MESH(TriangularMesh2D::ElementMesh);
+    NEAREST_INTERPOLATE_MESH(TriangularMesh2D);
+    return optional<PythonDataVector<T,2>>();
+}
+
+template <typename T>
+static inline optional<PythonDataVector<T,3>> NNdataInterpolateImpl2D(const PythonDataVector<T,3>&, shared_ptr<MeshD<3>>, const InterpolationFlags&)
+{ return optional<PythonDataVector<T,3>>(); } // do not change
+
 template <typename T, int dim>
 static inline typename std::enable_if<!detail::isBasicData<T>::value, PythonDataVector<T,dim>>::type
 dataInterpolateImpl(const PythonDataVector<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh,
@@ -807,6 +822,12 @@ dataInterpolateImpl(const PythonDataVector<T,dim>& self, shared_ptr<MeshD<dim>> 
     NEAREST_INTERPOLATE_MESH(typename RectangularMesh<dim>::ElementMesh);
     NEAREST_INTERPOLATE_MESH(RectangularMesh<dim>);
     NEAREST_INTERPOLATE_MESH(MeshWrap<dim>);
+    if (auto result = NNdataInterpolateImpl2D<T>(self, dst_mesh, flags))
+        return std::move(*result);
+    /*if (dim == 3) {
+        NEAREST_INTERPOLATE_MESH(ExtrudedTriangularMesh3D::ElementMesh);
+        NEAREST_INTERPOLATE_MESH(ExtrudedTriangularMesh3D);
+    }*/
     // TODO add new mesh types here
 
     throw NotImplemented(format(u8"interpolate(source mesh type: {}, interpolation method: {})",
