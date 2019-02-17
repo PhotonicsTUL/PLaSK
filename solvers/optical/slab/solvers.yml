@@ -366,7 +366,7 @@
   - tag: expansion
     label: Details on Fourier Expansion
     help: >
-      ''
+      Details on Fourier expansion used in computations.
     attrs:
     - *lam0
     - *update-gain
