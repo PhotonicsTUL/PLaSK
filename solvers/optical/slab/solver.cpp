@@ -117,6 +117,19 @@ struct LateralMeshAdapter<SolverOver<Geometry3D>> {
 
     LateralMeshAdapter(const SolverOver<Geometry3D>* solver):
         mesh(makeGeometryGrid(solver->getGeometry())) {
+        // We divide each rectangle into three points to correctly consider circles and triangles
+        for (int ax = 0; ax != 2; ++ax) {
+            if (mesh->axis[ax]->size() < 2) continue;
+            std::vector<double> refines;
+            refines.reserve(2 * (mesh->axis[ax]->size()-1));
+            double x = mesh->axis[ax]->at(0);
+            for (auto it = ++(mesh->axis[ax]->begin()); it != mesh->axis[ax]->end(); ++it) {
+                refines.push_back((2. * x + *it) / 3.);
+                refines.push_back((x + 2. * *it) / 3.);
+                x = *it;
+            }
+            static_pointer_cast<OrderedAxis>(mesh->axis[ax])->addOrderedPoints(refines.begin(), refines.end());
+        }
         _size = mesh->axis[0]->size() * mesh->axis[1]->size();
     }
 
