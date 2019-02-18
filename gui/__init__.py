@@ -50,7 +50,6 @@ from .qt.QtWidgets import *
 from .qt.QtGui import *
 from .qt import QtSignal, QT_API
 
-sys.path.insert(2, os.path.join(__path__[0], 'lib'))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'share', 'plask', 'stubs'))
 
 sys.path.insert(4, os.path.join(__path__[0], 'external', 'pysparkle'))
@@ -62,16 +61,22 @@ try:
 except ImportError:
     matplotlib = None
 
+from .utils.config import CONFIG
+
+if not CONFIG.get('workarounds/system_jedi'):
+    sys.path.insert(1, os.path.join(__path__[0], 'lib', 'jedi'))
+
 from .xpldocument import XPLDocument
 from .pydocument import PyDocument
 from .model.info import InfoListModel, Info
 from .launch import launch_plask
 from .controller.materials.plot import show_material_plot
 
-from .utils.config import CONFIG, ConfigProxy, ConfigDialog
+from .utils.config import ConfigProxy, ConfigDialog
 from .utils.texteditor import update_textedit_colors
 from .utils.widgets import fire_edit_end, InfoListView
 from .utils.help import open_help
+
 
 try:
     from pysparkle import PySparkle
