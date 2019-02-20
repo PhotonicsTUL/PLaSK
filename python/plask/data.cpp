@@ -798,7 +798,7 @@ namespace python {
     if (auto src_mesh = dynamic_pointer_cast<M>(self.mesh)) \
         return PythonDataVector<T,dim>(interpolate(src_mesh, self, dst_mesh, method, flags), dst_mesh)
 
-template <typename T>   // NN interpolation for 2D only meshes:
+/*template <typename T>   // NN interpolation for 2D only meshes:
 static inline optional<PythonDataVector<T,2>> NNdataInterpolateImpl2D(const PythonDataVector<T,2>& self, shared_ptr<MeshD<2>> dst_mesh, const InterpolationFlags& flags)
 {
     constexpr int dim = 2;
@@ -809,29 +809,47 @@ static inline optional<PythonDataVector<T,2>> NNdataInterpolateImpl2D(const Pyth
 
 template <typename T>
 static inline optional<PythonDataVector<T,3>> NNdataInterpolateImpl2D(const PythonDataVector<T,3>&, shared_ptr<MeshD<3>>, const InterpolationFlags&)
-{ return optional<PythonDataVector<T,3>>(); } // do not change
+{ return optional<PythonDataVector<T,3>>(); } // do not change*/
 
 template <typename T, int dim>
 static inline typename std::enable_if<!detail::isBasicData<T>::value, PythonDataVector<T,dim>>::type
-dataInterpolateImpl(const PythonDataVector<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh,
-                    InterpolationMethod method, const InterpolationFlags& flags)
+dataInterpolateImpl(const PythonDataVector<T,dim>& self, shared_ptr<MeshD<dim>> /*dst_mesh*/,
+                    InterpolationMethod method, const InterpolationFlags& /*flags*/)
 {
-    if (method != INTERPOLATION_NEAREST)
+    /*if (method != INTERPOLATION_NEAREST)
         writelog(LOG_WARNING, u8"Using 'nearest' algorithm for interpolate(dtype={})", str(py::object(detail::dtype<T>())));
 
     NEAREST_INTERPOLATE_MESH(typename RectangularMesh<dim>::ElementMesh);
     NEAREST_INTERPOLATE_MESH(RectangularMesh<dim>);
     NEAREST_INTERPOLATE_MESH(MeshWrap<dim>);
     if (auto result = NNdataInterpolateImpl2D<T>(self, dst_mesh, flags))
-        return std::move(*result);
-    /*if (dim == 3) {
-        NEAREST_INTERPOLATE_MESH(ExtrudedTriangularMesh3D::ElementMesh);
-        NEAREST_INTERPOLATE_MESH(ExtrudedTriangularMesh3D);
-    }*/
+        return std::move(*result);*/
     // TODO add new mesh types here
 
-    throw NotImplemented(format(u8"interpolate(source mesh type: {}, interpolation method: {})",
-                                typeid(*self.mesh).name(), interpolationMethodNames[method]));
+    throw NotImplemented(format(u8"interpolate(source mesh type: {}, interpolation method: {}, dtype: {})",
+                                typeid(*self.mesh).name(), interpolationMethodNames[method]), str(py::object(detail::dtype<T>())));
+}
+
+template <typename T>   // linear interpolation for 2D only meshes:
+static inline optional<PythonDataVector<T,2>> OptionalLinearDataInterpolateImpl(
+        const PythonDataVector<T,2>& self, shared_ptr<MeshD<2>> dst_mesh,
+        InterpolationMethod method, const InterpolationFlags& flags)
+{
+    constexpr int dim = 2;
+    INTERPOLATE_MESH(TriangularMesh2D::ElementMesh);
+    INTERPOLATE_MESH(TriangularMesh2D);
+    return optional<PythonDataVector<T,2>>();
+}
+
+template <typename T>   // linear interpolation for 3D only meshes:
+static inline optional<PythonDataVector<T,3>> OptionalLinearDataInterpolateImpl(
+        const PythonDataVector<T,3>& self, shared_ptr<MeshD<3>> dst_mesh,
+        InterpolationMethod method, const InterpolationFlags& flags)
+{
+    constexpr int dim = 3;
+    INTERPOLATE_MESH(ExtrudedTriangularMesh3D::ElementMesh);
+    INTERPOLATE_MESH(ExtrudedTriangularMesh3D);
+    return optional<PythonDataVector<T,3>>();
 }
 
 template <typename T, int dim>
@@ -845,6 +863,8 @@ dataInterpolateImpl(const PythonDataVector<T,dim>& self, shared_ptr<MeshD<dim>> 
     INTERPOLATE_MESH(typename RectangularMesh<dim>::ElementMesh);
     INTERPOLATE_MESH(RectangularMesh<dim>);
     INTERPOLATE_MESH(MeshWrap<dim>);
+    if (auto result = OptionalLinearDataInterpolateImpl<T>(self, dst_mesh, method, flags))
+            return std::move(*result);
     // TODO add new mesh types here
 
     throw NotImplemented(format(u8"interpolate(source mesh type: {}, interpolation method: {})",
@@ -852,7 +872,8 @@ dataInterpolateImpl(const PythonDataVector<T,dim>& self, shared_ptr<MeshD<dim>> 
 }
 
 template <typename T, int dim>
-PLASK_PYTHON_API PythonDataVector<T,dim> dataInterpolate(const PythonDataVector<T,dim>& self,
+PLASK_PYTHON_API PythonDataVector<T,dim>
+dataInterpolate(const PythonDataVector<T,dim>& self,
                                                        shared_ptr<MeshD<dim>> dst_mesh,
                                                        InterpolationMethod method,
                                                        const py::object& geometry)

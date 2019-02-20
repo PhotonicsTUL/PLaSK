@@ -295,7 +295,7 @@ struct PLASK_API BarycentricExtrudedTriangularMesh3DLazyDataImpl: public Interpo
 
 template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<ExtrudedTriangularMesh3D, SrcT, DstT, INTERPOLATION_LINEAR> {
-    static LazyData<DstT> interpolate(const shared_ptr<const TriangularMesh2D>& src_mesh,
+    static LazyData<DstT> interpolate(const shared_ptr<const ExtrudedTriangularMesh3D>& src_mesh,
                                       const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh,
                                       const InterpolationFlags& flags)
@@ -327,7 +327,7 @@ struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl: pub
 
 template <typename SrcT, typename DstT>
 struct InterpolationAlgorithm<ExtrudedTriangularMesh3D::ElementMesh, SrcT, DstT, INTERPOLATION_NEAREST> {
-    static LazyData<DstT> interpolate(const shared_ptr<const ExtrudedTriangularMesh3D>& src_mesh,
+    static LazyData<DstT> interpolate(const shared_ptr<const ExtrudedTriangularMesh3D::ElementMesh>& src_mesh,
                                       const DataVector<const SrcT>& src_vec,
                                       const shared_ptr<const MeshD<3>>& dst_mesh,
                                       const InterpolationFlags& flags)

@@ -88,6 +88,8 @@ You should start reading from section \ref solvers "How to implement an own solv
 #include "mesh/rectangular_spline.h"
 #include "mesh/rectangular_masked.h"
 #include "mesh/rectangular_masked_spline.h"
+#include "mesh/triangular2d.h"
+#include "mesh/extruded_triangular3d.h"
 #include "mesh/basic.h"
 
 #include "provider/provider.h"
