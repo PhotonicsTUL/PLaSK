@@ -104,6 +104,7 @@ DEFAULTS = {
     'workarounds/jedi_no_dot': False,
     'workarounds/no_jedi': False,
     'workarounds/blocking_jedi': False,
+    'workarounds/system_jedi': False,
     'workarounds/disable_omp': False,
 }
 
@@ -286,9 +287,14 @@ CONFIG_WIDGETS = OrderedDict([
                                                 "Do not show completion pop-up after you type a dot. This still allows "
                                                 "to show the pop-up manually by pressing Ctrl+Space.")),
             ("Run in a single thread", CheckBox('workarounds/blocking_jedi',
-                                                "Do not run script completion in background. This may cause the GUI stop "
-                                                "responding for the couple of seconds when showing completion pop-up, but "
-                                                "may be helpful if the program often crashes on completion.")),
+                                                "Do not run script completion in background. This may cause the GUI "
+                                                "stop responding for the couple of seconds when showing completion "
+                                                "pop-up, but may be helpful if the program often crashes on "
+                                                "completion.")),
+            ("Use system completion library", CheckBox('workarounds/system_jedi',
+                                                       "Use system jedi library. This may be newer version "
+                                                       "than the one bundled with PLaSK. However, it has been "
+                                                       "reported to cause GUI crashes.", True)),
             ("Disable completion", CheckBox('workarounds/no_jedi',
                                             "Disable script completion and on-line help.")),
         ]),
@@ -306,9 +312,9 @@ CONFIG_WIDGETS = OrderedDict([
 if os.name == 'posix':
     DEFAULTS['launcher_console/terminal'] = '/usr/bin/gnome-terminal'
     CONFIG_WIDGETS.setdefault('General Settings', OrderedDict()).setdefault("Launcher", []).extend([
-         "Console Launcher",
-         ("Terminal program", Path('launcher_console/terminal', "Terminal program", "Executable (*)",
-                                   "Full patch to terminal program on your system")),
+        "Console Launcher",
+        ("Terminal program", Path('launcher_console/terminal', "Terminal program", "Executable (*)",
+                                  "Full patch to terminal program on your system")),
     ])
 
 

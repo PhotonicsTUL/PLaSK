@@ -11,6 +11,7 @@
 # GNU General Public License for more details.
 
 import sys
+import os
 
 from ...qt.QtCore import *
 from ...qt.QtGui import *
@@ -20,8 +21,12 @@ from ...utils.config import CONFIG
 try:
     import jedi
 except ImportError:
-    jedi = None
-
+    jedi_path = os.path.join(__path__[0], 'lib', 'jedi')
+    if jedi_path not in sys.path:
+        sys.path.insert(1, jedi_path)
+        import jedi
+    else:
+        jedi = None
 
 JEDI_MUTEX = QMutex()
 
