@@ -388,14 +388,40 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
 
 private:
     /**
-     * Calculate a set of indices of boundary nodes (in a whole mesh or a certain region).
+     * Calculate a set of indices of all boundary nodes (in a whole mesh or a certain region).
      * @param segmentsCount numbers of segments in a whole mesh or requested region
+     *          (usually a result of countSegments or countSegmentsIn method)
      * @return the set of indices of boundary nodes
      */
     static std::set<std::size_t> allBoundaryNodes(const SegmentsCounts& segmentsCount);
 
+    template <typename T>   // we can't use std::grater as it use >, and we have < only
+    struct greater: public std::binary_function<T, T, bool> {
+      bool operator()(const T& first, const T& second) const { return second < first; }
+    };
+
+    /**
+     * Calculate a set of indices of boundary nodes (in a whole mesh or a certain region).
+     * @param segmentsCount numbers of segments in a whole mesh or requested region
+     *         (usually a result of countSegments or countSegmentsIn method)
+     * @return the set of indices of boundary nodes
+     * @tparam SEG_DIR 0 for right or left boundary, 1 for top or bottom boundary
+     * @tparam Compare std::less for right ot top boundary, greater for left or bottom boundary
+     */
     template<int SEG_DIR, template<class> class Compare>
     std::set<std::size_t> dirBoundaryNodes(const SegmentsCounts& segmentsCount) const;
+
+    enum class BoundaryDir { LEFT, RIGHT, BOTTOM, TOP };
+
+    template<BoundaryDir boundaryDir, typename std::enable_if<int(boundaryDir)%2==0, int>::type = 0>
+    std::set<std::size_t> boundaryNodes(const SegmentsCounts& segmentsCount) const {
+        return dirBoundaryNodes<int(boundaryDir) / 2, greater>(segmentsCount);
+    }
+
+    template<BoundaryDir boundaryDir, typename std::enable_if<int(boundaryDir)%2==1, int>::type = 0>
+    std::set<std::size_t> boundaryNodes(const SegmentsCounts& segmentsCount) const {
+        return dirBoundaryNodes<int(boundaryDir) / 2, std::less>(segmentsCount);
+    }
 
 public:
 
