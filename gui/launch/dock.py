@@ -61,19 +61,10 @@ class OutputModel(QAbstractListModel):
             return self.lines[row][1]
         if role == Qt.ForegroundRole:
             level = self.lines[row][0]
-            color = [
-                'black',    # default
-                'red',      # critical error
-                'red',      # error
-                'brown',    # warning
-                'magenta',  # important
-                'blue',     # info
-                'green',    # result
-                '#006060',  # data
-                '#404040',  # detail
-                '#800000',  # error detail
-                'gray',     # debug
-            ][level]
+            if level == 0:
+                color = 'black'
+            else:
+                color = CONFIG['syntax/launcher_color_{:d}'.format(level)]
             return QBrush(QColor(color))
         if role == LEVEL_ROLE:
             return self.lines[row][0]

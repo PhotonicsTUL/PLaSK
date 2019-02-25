@@ -55,6 +55,8 @@ DEFAULTS = {
     'updates/automatic_check': None,
     'editor/font': [_default_font_family, '11', '-1', '5', '50', '0', '0', '0', '0', '0'],
     'editor/help_font': [_default_font_family, '9', '-1', '5', '50', '0', '0', '0', '0', '0'],
+    'editor/background_color': 'white',
+    'editor/foreground_color': 'black',
     'editor/current_line_color': '#ffffee',
     'editor/selection_color': '#ffffdd',
     'editor/match_color': '#ddffdd',
@@ -63,6 +65,17 @@ DEFAULTS = {
     'editor/not_matching_bracket_color': '#ffaaaa',
     'launcher/default': 'Local Process',
     'launcher_local/font': [_default_font_family, '10', '-1', '5', '50', '0', '0', '0', '0', '0'],
+    'syntax/launcher_color_0': 'black',   # default
+    'syntax/launcher_color_1': 'red',     # critical error
+    'syntax/launcher_color_2': 'red',     # error
+    'syntax/launcher_color_3': 'brown',   # warning
+    'syntax/launcher_color_4': 'magenta', # important
+    'syntax/launcher_color_5': 'blue',    # info
+    'syntax/launcher_color_6': 'green',   # result
+    'syntax/launcher_color_7': '#006060', # data
+    'syntax/launcher_color_8': '#404040', # detail
+    'syntax/launcher_color_9': '#800000', # error detail
+    'syntax/launcher_color_10': 'gray',   # debug
     'syntax/xml_comment': 'color=green, italic=true',
     'syntax/xml_tag': 'color=maroon, bold=true',
     'syntax/xml_attr': 'color=#888800',
@@ -142,8 +155,8 @@ def Path(entry, title, mask, help=None, needs_restart=False):
 
 
 CONFIG_WIDGETS = OrderedDict([
-    ("General Settings", OrderedDict([
-        ("General Settings", [
+    ("General", OrderedDict([
+        ("Appearance && Behavior", [
             ("Create backup files on save",
              CheckBox('main_window/make_backup',
                       "Create backup files on save. "
@@ -162,16 +175,6 @@ CONFIG_WIDGETS = OrderedDict([
              CheckBox('updates/automatic_check',
                       "If this option is checked, PLaSK will automatically check for a new version on startup.")),
         ]),
-        ("Editor",
-         [
-             ("Keep selection after paste", CheckBox('editor/select_after_paste',
-                                                     "Keep selection of pasted text."))
-         ]),
-        ("Launcher",
-         [
-            ("Default launcher", Combo('launcher/default', _get_launchers,
-                                       "Default launcher to select in new window.")),
-         ]),
         ("Help", [
             ("Show only online help",
              CheckBox('help/online',
@@ -181,7 +184,7 @@ CONFIG_WIDGETS = OrderedDict([
                       "Default font size in the help window.")),
         ]),
     ])),
-    ("Window Display", OrderedDict([
+    ("Graphics", OrderedDict([
         ("Geometry View", [
             ("Selection frame color", Color('geometry/selected_color',
                                             "Color of a frame around the selected object.")),
@@ -233,9 +236,15 @@ CONFIG_WIDGETS = OrderedDict([
             ("Selected color", Color('boundary_conditions/selected_color',
                                    "Marker color of the selected boundary condition.")),
         ]),
-        ("Text Editor", [
+    ])),
+    ("Editor", OrderedDict([
+        ("Appearance && Behavior", [
+            ("Keep selection after paste", CheckBox('editor/select_after_paste',
+                                                     "Keep selection of pasted text.")),
             ("Editor font", Font('editor/font', "Font in text editors.")),
             ("Help font", Font('editor/help_font', "Font in script on-line help.")),
+            ("Background color", Color('editor/background_color', "Background color in text editor.", True)),
+            ("Foreground color", Color('editor/foreground_color', "Foreground color in text editor.", True)),
             ("Current line color", Color('editor/current_line_color',
                                          "Background color of the current line.")),
             ("Find result color", Color('editor/match_color',
@@ -251,11 +260,6 @@ CONFIG_WIDGETS = OrderedDict([
                                               "Highlight color for unmatched brackets "
                                               "in script editor.")),
         ]),
-        ("Other", [
-            ("Messages font", Font('launcher_local/font', "Font in local launcher window.")),
-        ]),
-    ])),
-    ("Syntax Highlighting", OrderedDict([
         ("Python Syntax", [
             ("Comment", Syntax('syntax/python_comment', "Python syntax highlighting.")),
             ("String", Syntax('syntax/python_string', "Python syntax highlighting.")),
@@ -280,8 +284,6 @@ CONFIG_WIDGETS = OrderedDict([
             ("XML Text", Syntax('syntax/xml_text', "XML syntax highlighting.")),
             ("XML Comment", Syntax('syntax/xml_comment', "XML syntax highlighting.")),
         ]),
-    ])),
-    ("Workarounds", OrderedDict([
         ("Script Completion", [
             ("Do not complete on dot", CheckBox('workarounds/jedi_no_dot',
                                                 "Do not show completion pop-up after you type a dot. This still allows "
@@ -298,7 +300,28 @@ CONFIG_WIDGETS = OrderedDict([
             ("Disable completion", CheckBox('workarounds/no_jedi',
                                             "Disable script completion and on-line help.")),
         ]),
-        ("Launcher", [
+    ])),
+    ("Launcher", OrderedDict([
+        ("Settings",
+         [
+            ("Default launcher", Combo('launcher/default', _get_launchers,
+                                       "Default launcher to select in new window.")),
+            ("Messages font", Font('launcher_local/font', "Font in local launcher window.")),
+        ]),
+        ("Colors", [
+            ("Critical error", Color('syntax/launcher_color_1', "Log colors.")),
+            ("Error", Color('syntax/launcher_color_2', "Log colors.")),
+            ("Warning", Color('syntax/launcher_color_3', "Log colors.")),
+            ("Important", Color('syntax/launcher_color_4', "Log colors.")),
+            ("Info", Color('syntax/launcher_color_5', "Log colors.")),
+            ("Result", Color('syntax/launcher_color_6', "Log colors.")),
+            ("Data", Color('syntax/launcher_color_7', "Log colors.")),
+            ("Detail", Color('syntax/launcher_color_8', "Log colors.")),
+            ("Error detail", Color('syntax/launcher_color_9', "Log colors.")),
+            ("Debug", Color('syntax/launcher_color_10', "Log colors.")),
+        ]),
+        ("Workarounds",
+         [
             ("PLaSK executable", Path('launcher_local/program', "PLaSK executable",
                                       "PLaSK ({});;Any program ({})"
                                       .format(_plask_binary, '*.exe' if sys.platform == 'win32' else '*'),
@@ -311,7 +334,7 @@ CONFIG_WIDGETS = OrderedDict([
 
 if os.name == 'posix':
     DEFAULTS['launcher_console/terminal'] = '/usr/bin/gnome-terminal'
-    CONFIG_WIDGETS.setdefault('General Settings', OrderedDict()).setdefault("Launcher", []).extend([
+    CONFIG_WIDGETS['Launcher']["Settings"].extend([
         "Console Launcher",
         ("Terminal program", Path('launcher_console/terminal', "Terminal program", "Executable (*)",
                                   "Full patch to terminal program on your system")),
