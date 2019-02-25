@@ -222,6 +222,15 @@ struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
         return vertSize == 0 ? 0 : (vertSize-1) * longTranMesh.getElementsCount();
     }
 
+private:
+    enum class SideBoundaryDir { BACK, FRONT, LEFT, RIGHT };
+
+    static constexpr TriangularMesh2D::BoundaryDir boundaryDir3Dto2D(SideBoundaryDir d) { return TriangularMesh2D::BoundaryDir(d); }
+
+    template <SideBoundaryDir boundaryDir>
+    std::set<std::size_t> boundaryNodes(std::size_t layer_begin, std::size_t layer_end, const std::function<TriangularMesh2D::SegmentsCounts(std::size_t layer)>& getSegmentsCount) const;
+
+public:
 
 };
 

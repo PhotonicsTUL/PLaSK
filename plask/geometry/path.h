@@ -21,7 +21,7 @@ Represent hints for path finder.
 Hints are used to find unique path for all GeometryObject pairs,
 even if one of the pair object is inserted to the geometry graph in more than one place.
 
-Each hint allow to choose one child for geometry object container and it is a pair:
+Each hint allows for chooseing one child for geometry object container and it is a pair:
 geometry object container -> object in container.
 
 Typically, hints are returned by methods which adds new objects to containers.

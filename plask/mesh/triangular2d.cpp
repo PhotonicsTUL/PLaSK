@@ -513,7 +513,10 @@ static shared_ptr<Mesh> readTriangularMesh2D(XMLReader& reader) {
 
 static RegisterMeshReader rectangular2d_reader("triangular2d", readTriangularMesh2D);
 
-
+template PLASK_API std::set<std::size_t> TriangularMesh2D::boundaryNodes<TriangularMesh2D::BoundaryDir::TOP>(const TriangularMesh2D::SegmentsCounts& segmentsCount) const;
+template PLASK_API std::set<std::size_t> TriangularMesh2D::boundaryNodes<TriangularMesh2D::BoundaryDir::LEFT>(const TriangularMesh2D::SegmentsCounts& segmentsCount) const;
+template PLASK_API std::set<std::size_t> TriangularMesh2D::boundaryNodes<TriangularMesh2D::BoundaryDir::RIGHT>(const TriangularMesh2D::SegmentsCounts& segmentsCount) const;
+template PLASK_API std::set<std::size_t> TriangularMesh2D::boundaryNodes<TriangularMesh2D::BoundaryDir::BOTTOM>(const TriangularMesh2D::SegmentsCounts& segmentsCount) const;
 
 // ------------------ Nearest Neighbor interpolation ---------------------
 
@@ -623,7 +626,5 @@ template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<Ten
 template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<Tensor2<dcomplex>, Tensor2<dcomplex>>;
 template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<Tensor3<double>, Tensor3<double>>;
 template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<Tensor3<dcomplex>, Tensor3<dcomplex>>;
-
-
 
 }   // namespace plask

@@ -76,6 +76,24 @@ Vec<3, double> ExtrudedTriangularMesh3D::at(std::size_t longTranIndex, std::size
     return from_longTran_vert(longTranMesh[longTranIndex], vertAxis->at(vertIndex));
 }
 
+template<ExtrudedTriangularMesh3D::SideBoundaryDir boundaryDir>
+std::set<std::size_t> ExtrudedTriangularMesh3D::boundaryNodes(std::size_t layer_begin, std::size_t layer_end, const std::function<TriangularMesh2D::SegmentsCounts (std::size_t)> &getSegmentsCount) const
+{
+    std::set<std::size_t> result;
+    for (std::size_t layer = layer_begin; layer != layer_end; ++layer) {
+        for (std::size_t longTranNode: this->longTranMesh.boundaryNodes<ExtrudedTriangularMesh3D::boundaryDir3Dto2D(boundaryDir)>(getSegmentsCount(layer)))
+            result.insert(index(longTranNode, layer));
+    }
+    return result;
+}
+
+/*ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) {
+    return Boundary( [=](const ExtrudedTriangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>& geometry) {
+        geometry->getObjectBoundingBoxes(object, path);
+        return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.boundaryNodes<SideBoundaryDir::BACK>(mesh.countSegmentsIn(*geom, *object, &path))));
+    } );
+}*/
+
 
 // ------------------ Nearest Neighbor interpolation ---------------------
 
@@ -234,6 +252,8 @@ template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyData
 template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<Tensor2<dcomplex>, Tensor2<dcomplex>>;
 template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<Tensor3<double>, Tensor3<double>>;
 template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<Tensor3<dcomplex>, Tensor3<dcomplex>>;
+
+
 
 
 }   // namespace plask

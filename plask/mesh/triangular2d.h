@@ -18,6 +18,8 @@ namespace plask {
 
 struct PLASK_API TriangularMesh2D: public MeshD<2> {
 
+    friend struct ExtrudedTriangularMesh3D;
+
     /// Boundary type.
     typedef plask::Boundary<TriangularMesh2D> Boundary;
 
@@ -364,7 +366,7 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
     SegmentsCounts countSegments() const;
 
     /**
-     * Calculate numbers of segments (sides of triangles) inside any of a @p box.
+     * Calculate numbers of segments (sides of triangles) inside a @p box.
      * @param box a region in which segments should be counted
      * @return the numbers of segments
      */
@@ -683,6 +685,10 @@ inline TriangularMesh2D::Boundary parseBoundary<TriangularMesh2D::Boundary>(cons
 template <>
 inline TriangularMesh2D::Boundary parseBoundary<TriangularMesh2D::Boundary>(XMLReader& boundary_desc, Manager& env) { return TriangularMesh2D::getBoundary(boundary_desc, env); }
 
+extern template PLASK_API std::set<std::size_t> TriangularMesh2D::boundaryNodes<TriangularMesh2D::BoundaryDir::TOP>(const TriangularMesh2D::SegmentsCounts& segmentsCount) const;
+extern template PLASK_API std::set<std::size_t> TriangularMesh2D::boundaryNodes<TriangularMesh2D::BoundaryDir::LEFT>(const TriangularMesh2D::SegmentsCounts& segmentsCount) const;
+extern template PLASK_API std::set<std::size_t> TriangularMesh2D::boundaryNodes<TriangularMesh2D::BoundaryDir::RIGHT>(const TriangularMesh2D::SegmentsCounts& segmentsCount) const;
+extern template PLASK_API std::set<std::size_t> TriangularMesh2D::boundaryNodes<TriangularMesh2D::BoundaryDir::BOTTOM>(const TriangularMesh2D::SegmentsCounts& segmentsCount) const;
 
 
 class TriangularMesh2D::ElementMesh: public MeshD<2> {
