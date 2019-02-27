@@ -27,7 +27,7 @@ from .brackets import get_selections as get_bracket_selections, update_brackets_
 from .indenter import indent, unindent, autoindent
 from ..source import SourceEditController, SourceWidget
 from ...model.script import ScriptModel
-from ...utils.config import CONFIG, parse_highlight
+from ...utils.config import CONFIG, parse_highlight, parse_font
 from ...utils.widgets import EDITOR_FONT
 from ...utils.texteditor import TextEditor
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
@@ -423,7 +423,7 @@ class HelpDock(QDockWidget):
         self.textarea = QTextEdit()
         self.textarea.setReadOnly(True)
         help_font = QFont(EDITOR_FONT)
-        help_font.fromString(','.join(CONFIG['editor/help_font'][:-1])+',0')
+        help_font.fromString(parse_font('editor/help_font'))
         pal = self.textarea.palette()
         pal.setColor(QPalette.Base, QColor("#ffe"))
         self.textarea.setPalette(pal)
@@ -443,7 +443,7 @@ class HelpDock(QDockWidget):
 
     def reconfig(self):
         help_font = self.textarea.font()
-        help_font.fromString(','.join(CONFIG['editor/help_font'][:-1])+',0')
+        help_font.fromString(parse_font('editor/help_font'))
         self.textarea.setFont(help_font)
         font_metrics = self.textarea.fontMetrics()
         self.textarea.setMinimumWidth(86 * font_metrics.width('a'))

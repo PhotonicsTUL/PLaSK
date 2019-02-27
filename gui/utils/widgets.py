@@ -22,12 +22,11 @@ except ImportError:
     from ..qt.QtWidgets import QStyleOptionViewItem
 from .qsignals import BlockQtSignals
 
-from ..utils.config import CONFIG
-
+from ..utils.config import CONFIG, parse_font
 
 EDITOR_FONT = QFont()
 EDITOR_FONT.setBold(False)
-EDITOR_FONT.fromString(','.join(CONFIG['editor/font'][:-1])+',0')
+EDITOR_FONT.fromString(parse_font('editor/font'))
 
 
 def set_icon_size(widget):

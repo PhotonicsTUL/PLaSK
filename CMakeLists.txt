@@ -790,6 +790,15 @@ install(FILES ${examples} DESTINATION ${doc_dest}/examples COMPONENT doc)
 
 add_subdirectory(doc)
 
+
+
+
+if(BUILD_GUI)
+    install(FILES tests/gui/dark.yml DESTINATION ${doc_dest}/examples/gui COMPONENT gui)
+endif()
+
+
+
 # ----------===== Optional tools =====--------------------------------------------
 
 set(script_permissions "OWNER_WRITE;OWNER_READ;OWNER_EXECUTE;GROUP_READ;GROUP_EXECUTE;WORLD_READ;WORLD_EXECUTE")

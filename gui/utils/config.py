@@ -21,6 +21,11 @@ from ..qt.QtWidgets import *
 from ..qt.QtGui import *
 
 try:
+    import yaml
+except ImportError:
+    yaml = None
+
+try:
     unicode = unicode
 except NameError:
     # 'unicode' is undefined, must be Python 3
@@ -123,6 +128,7 @@ DEFAULTS = {
     'workarounds/disable_omp': False,
 }
 
+GROUPS = set(e.split('/', 1)[0] for e in DEFAULTS)
 
 def _get_launchers():
     from ..launch import LAUNCHERS
@@ -346,10 +352,13 @@ if os.name == 'posix':
         ("Terminal program", Path('launcher_console/terminal', "Terminal program", "Executable (*)",
                                   "Full patch to terminal program on your system")),
     ])
+    GROUPS.add('launcher_console')
 
 
 def parse_highlight(string):
     """Parse syntax highlighting from config"""
+    if isinstance(string, dict):
+        return string
     result = {}
     for item in string.split(','):
         item = item.strip()
@@ -358,6 +367,12 @@ def parse_highlight(string):
         result[key] = _parsed.get(val, val)
     return result
 
+
+def parse_font(entry):
+    font = CONFIG[entry]
+    if isinstance(font, (str, unicode)):
+        font = font.split(',')
+    return ','.join(font[:-1])+',0'
 
 class Config(object):
     """Configuration wrapper"""
@@ -418,6 +433,31 @@ class Config(object):
         """Synchronize settings"""
         self.qsettings.sync()
 
+    def load(self, filename, widgets=None):
+        data = yaml.load(open(filename))
+        if not isinstance(data, dict):
+            raise TypeError("Wrong YAML file contents.")
+        for prefix, group in data.items():
+            for key, value in group.items():
+                entry = prefix + '/' + key
+                try:
+                    widgets[entry].load(value)
+                except KeyError:
+                    pass
+
+    def save(self, filename):
+        with open(filename, 'w') as out:
+            for group, data in self.groups:
+                if group not in GROUPS: continue
+                out.write(group + ':\n')
+                for key, value in data:
+                    if value is None: value = 'null'
+                    elif isinstance(value, (list, tuple)):
+                        try: value = ','.join(value)
+                        except TypeError: pass
+                    if isinstance(value, str) and '#' in value: value = "'" + value + "'"
+                    out.write('  ' + key + ': ' + str(value) + '\n')
+
 CONFIG = Config()
 
 
@@ -445,12 +485,14 @@ class ConfigDialog(QDialog):
         def __init__(self, entry, parent=None, help=None, needs_restart=False):
             super(ConfigDialog.CheckBox, self).__init__(parent)
             self.entry = entry
-            self.setChecked(bool(CONFIG[entry]))
             if help is not None: self.setWhatsThis(help)
             self.needs_restart = needs_restart
+            self.load(bool(CONFIG[self.entry]))
         @property
         def changed(self):
             return CONFIG[self.entry] != self.isChecked()
+        def load(self, value):
+            self.setChecked(value)
         def save(self):
             CONFIG[self.entry] = self.isChecked()
 
@@ -461,17 +503,21 @@ class ConfigDialog(QDialog):
             if callable(options):
                 options = options()
             self.addItems(options)
+            if help is not None:
+                self.setWhatsThis(help)
+            self.needs_restart = needs_restart
             try:
                 index = options.index(CONFIG[entry])
             except ValueError:
                 index = 0
             self.setCurrentIndex(index)
-            if help is not None:
-                self.setWhatsThis(help)
-            self.needs_restart = needs_restart
         @property
         def changed(self):
             return CONFIG[self.entry] != self.currentText()
+        def load(self, value):
+            index = self.findText(value)
+            if index != -1:
+                self.setCurrentIndex(index)
         def save(self):
             CONFIG[self.entry] = self.currentText()
 
@@ -481,12 +527,14 @@ class ConfigDialog(QDialog):
             self.entry = entry
             if min is not None: self.setMinimum(min)
             if max is not None: self.setMaximum(max)
-            self.setValue(int(CONFIG[entry]))
             if help is not None: self.setWhatsThis(help)
             self.needs_restart = needs_restart
+            self.load(int(CONFIG[self.entry]))
         @property
         def changed(self):
             return CONFIG[self.entry] != self.value()
+        def load(self, value):
+            self.setValue(value)
         def save(self):
             CONFIG[self.entry] = self.value()
 
@@ -499,12 +547,14 @@ class ConfigDialog(QDialog):
             if step is not None:
                 self.setSingleStep(step)
                 self.setDecimals(int(ceil(-log10(step))))
-            self.setValue(float(CONFIG[entry]))
             if help is not None: self.setWhatsThis(help)
             self.needs_restart = needs_restart
+            self.load(float(CONFIG[self.entry]))
         @property
         def changed(self):
             return CONFIG[self.entry] != self.value()
+        def load(self, value):
+            self.setValue(value)
         def save(self):
             CONFIG[self.entry] = self.value()
 
@@ -512,12 +562,12 @@ class ConfigDialog(QDialog):
         def __init__(self, entry, parent=None, help=None, needs_restart=False):
             super(ConfigDialog.Color, self).__init__(parent)
             self.entry = entry
-            self._color = CONFIG[entry]
-            self.setStyleSheet(u"background-color: {};".format(self._color))
-            if help is not None: self.setWhatsThis(help)
+            if help is not None:
+                self.setWhatsThis(help)
             self.clicked.connect(self.on_press)
             self.setSizePolicy(QSizePolicy.Expanding, self.sizePolicy().verticalPolicy())
             self.needs_restart = needs_restart
+            self.load(CONFIG[self.entry])
         def on_press(self):
             dlg = QColorDialog(self.parent())
             if self._color:
@@ -528,6 +578,9 @@ class ConfigDialog(QDialog):
         @property
         def changed(self):
             return CONFIG[self.entry] != self._color
+        def load(self, value):
+            self._color = value
+            self.setStyleSheet(u"background-color: {};".format(value))
         def save(self):
             CONFIG[self.entry] = self._color
 
@@ -535,7 +588,6 @@ class ConfigDialog(QDialog):
         def __init__(self, entry, parent=None, help=None, needs_restart=False):
             super(ConfigDialog.Syntax, self).__init__(parent)
             self.entry = entry
-            syntax = parse_highlight(CONFIG[entry])
             layout = QHBoxLayout()
             layout.setContentsMargins(0, 0, 0, 0)
             layout.setSpacing(4)
@@ -544,19 +596,13 @@ class ConfigDialog(QDialog):
             self.color_button.setSizePolicy(QSizePolicy.Expanding, self.color_button.sizePolicy().verticalPolicy())
             self.color_button.clicked.connect(self.on_color_press)
             layout.addWidget(self.color_button)
-            self._color = syntax.get('color')
-            if self._color is not None:
-                self.color_button.setStyleSheet(u"background-color: {};".format(self._color))
-            layout.addWidget(self.color_button)
             self.bold = QCheckBox('bold', self)
-            self.bold.setChecked(syntax.get('bold', False))
             layout.addWidget(self.bold)
             self.italic = QCheckBox('italic', self)
-            self.italic.setChecked(syntax.get('italic', False))
             layout.addWidget(self.italic)
             if help is not None: self.setWhatsThis(help)
             self.needs_restart = needs_restart
-            self.changed = False
+            self.load(CONFIG[self.entry])
         def on_color_press(self):
             if QApplication.keyboardModifiers() == Qt.CTRL:
                 self._color = None
@@ -569,6 +615,14 @@ class ConfigDialog(QDialog):
                 self._color = dlg.currentColor().name()
                 self.color_button.setStyleSheet(u"background-color: {};".format(self._color))
                 self.changed = True
+        def load(self, value):
+            syntax = parse_highlight(value)
+            self._color = syntax.get('color')
+            if self._color is not None:
+                self.color_button.setStyleSheet(u"background-color: {};".format(self._color))
+            self.bold.setChecked(syntax.get('bold', False))
+            self.italic.setChecked(syntax.get('italic', False))
+            self.changed = False
         def save(self):
             syntax = []
             if self._color is not None: syntax.append('color=' + self._color)
@@ -581,16 +635,12 @@ class ConfigDialog(QDialog):
             super(ConfigDialog.Font, self).__init__(parent)
             self.entry = entry
             self.current_font = QFont()
-            self.current_font.fromString(','.join(CONFIG[entry]))
-            family = self.current_font.family()
-            size = self.current_font.pointSize()
-            self.setText("{} {}".format(family, size))
-            self.setFont(self.current_font)
             if help is not None:
                 self.setWhatsThis(help)
             self.clicked.connect(self.on_press)
             self.setSizePolicy(QSizePolicy.Expanding, self.sizePolicy().verticalPolicy())
             self.needs_restart = needs_restart
+            self.load(parse_font(self.entry))
         def on_press(self):
             dlg = QFontDialog(self.parent())
             dlg.setCurrentFont(self.current_font)
@@ -601,6 +651,12 @@ class ConfigDialog(QDialog):
         @property
         def changed(self):
             return CONFIG[self.entry] != self.current_font.toString().split(',')
+        def load(self, value):
+            self.current_font.fromString(value)
+            family = self.current_font.family()
+            size = self.current_font.pointSize()
+            self.setText("{} {}".format(family, size))
+            self.setFont(self.current_font)
         def save(self):
             CONFIG[self.entry] = self.current_font.toString().split(',')
 
@@ -611,9 +667,6 @@ class ConfigDialog(QDialog):
             layout.setContentsMargins(0, 0, 0, 0)
             layout.setSpacing(0)
             self.edit = QLineEdit(self)
-            path = CONFIG[entry]
-            if path is not None:
-                self.edit.setText(str(path))
             self.select = QToolButton(self)
             self.select.setIcon(QIcon.fromTheme('document-open'))
             self.select.pressed.connect(self.pushed)
@@ -626,6 +679,7 @@ class ConfigDialog(QDialog):
             if help is not None:
                 self.setWhatsThis(help)
             self.needs_restart = needs_restart
+            self.load(CONFIG[self.entry])
         def pushed(self):
             dirname = os.path.dirname(self.edit.text())
             if not dirname:
@@ -636,6 +690,9 @@ class ConfigDialog(QDialog):
         @property
         def changed(self):
             return CONFIG[self.entry] != self.edit.text()
+        def load(self, value):
+            if value is not None:
+                self.edit.setText(str(value))
         def save(self):
             CONFIG[self.entry] = self.edit.text()
 
@@ -653,7 +710,7 @@ class ConfigDialog(QDialog):
         hlayout.addWidget(stack)
         vlayout.addLayout(hlayout)
 
-        self.items = []
+        self.items = {}
 
         for cat, tabs in CONFIG_WIDGETS.items():
             page = QTabWidget()
@@ -673,7 +730,7 @@ class ConfigDialog(QDialog):
                         tab_layout.addRow(label)
                     else:
                         widget = item[1](self)
-                        self.items.append(widget)
+                        self.items[widget.entry] = widget
                         tab_layout.addRow(item[0], widget)
 
         page = QTabWidget()
@@ -713,7 +770,7 @@ class ConfigDialog(QDialog):
             label.setBuddy(checkbox)
             inframe_layout.addWidget(checkbox, row, 0)
             inframe_layout.addWidget(label, row, 1)
-            self.items.append(checkbox)
+            self.items[entry] = checkbox
             row += 1
         frame.setWidget(inframe)
         stack.addWidget(page)
@@ -727,20 +784,72 @@ class ConfigDialog(QDialog):
         buttons.rejected.connect(self.reject)
         buttons.button(QDialogButtonBox.Apply).clicked.connect(self.apply)
 
-        vlayout.addWidget(buttons)
+        hlayout = QHBoxLayout()
+        hlayout.setContentsMargins(0, 0, 0, 0)
+
+        load_button = QPushButton("&Import...")
+        load_button.pressed.connect(self.load)
+        hlayout.addWidget(load_button)
+
+        save_button = QPushButton("&Export...")
+        save_button.pressed.connect(self.save)
+        hlayout.addWidget(save_button)
+
+        hlayout.addWidget(buttons)
+        vlayout.addLayout(hlayout)
         self.setLayout(vlayout)
 
         self.resize(800, 600)
 
+    def load(self):
+        from .. import CURRENT_DIR
+        filename = QFileDialog.getOpenFileName(self, "Import settings", CURRENT_DIR, "YAML file (*.yml)")
+        if type(filename) is tuple: filename = filename[0]
+        if not filename: return False
+        try:
+            CONFIG.load(filename, self.items)
+        except Exception as err:
+            msgbox = QMessageBox()
+            msgbox.setWindowTitle("Settings Import Error")
+            msgbox.setText("The file '{}' could not be loaded from disk.".format(filename))
+            msgbox.setInformativeText(unicode(err))
+            msgbox.setStandardButtons(QMessageBox.Ok)
+            msgbox.setIcon(QMessageBox.Critical)
+            msgbox.exec_()
+
+    def save(self):
+        from .. import CURRENT_DIR
+        filename = QFileDialog.getSaveFileName(self, "Export settings", CURRENT_DIR, "YAML file (*.yml)")
+        if type(filename) is tuple: filename = filename[0]
+        if not filename: return False
+        if not filename.endswith('.yml'): filename += '.yml'
+        try:
+            CONFIG.save(filename)
+        except Exception as err:
+            msgbox = QMessageBox()
+            msgbox.setWindowTitle("Settings Export Error")
+            msgbox.setText("The file '{}' could not be saved to disk.".format(filename))
+            msgbox.setInformativeText(unicode(err))
+            msgbox.setStandardButtons(QMessageBox.Ok)
+            msgbox.setIcon(QMessageBox.Critical)
+            msgbox.exec_()
+        else:
+            msgbox = QMessageBox()
+            msgbox.setWindowTitle("Settings Exported")
+            msgbox.setText("Settings exported to file '{}'.".format(filename))
+            msgbox.setStandardButtons(QMessageBox.Ok)
+            msgbox.setIcon(QMessageBox.Information)
+            msgbox.exec_()
+
     def apply(self):
         need_restart = False
-        for item in self.items:
+        for item in self.items.values():
             if item.needs_restart and item.changed:
                 need_restart = True
             item.save()
         CONFIG.sync()
         from .widgets import EDITOR_FONT
-        EDITOR_FONT.fromString(','.join(CONFIG['editor/font'][:-1])+',0')
+        EDITOR_FONT.fromString(parse_font('editor/font'))
         self.parent().config_changed.emit()
         if need_restart:
             QMessageBox.information(None,

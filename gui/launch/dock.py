@@ -17,8 +17,7 @@ from ..qt.QtCore import *
 from ..qt.QtGui import *
 from ..qt.QtWidgets import *
 
-from ..utils.config import CONFIG
-
+from ..utils.config import CONFIG, parse_font
 
 LEVEL_CRITICAL_ERROR = 1
 LEVEL_ERROR          = 2
@@ -151,7 +150,7 @@ class OutputWindow(QDockWidget):
 
         font = QFont()
         font.setStyleHint(QFont.TypeWriter)
-        font.fromString(','.join(CONFIG['launcher_local/font'][:-1])+',0')
+        font.fromString(parse_font('launcher_local/font'))
         self.messages = OutputListView()
         self.messages.setFont(font)
         self.messages.setSelectionMode(QAbstractItemView.ContiguousSelection)
@@ -345,7 +344,7 @@ class OutputWindow(QDockWidget):
 
     def reconfig(self):
         font = self.messages.font()
-        if font.fromString(','.join(CONFIG['launcher_local/font'][:-1])+',0'):
+        if font.fromString(parse_font('launcher_local/font')):
             self.messages.setFont(font)
         self.model.update_font(self.messages.fontMetrics())
         self.filter.invalidate()
