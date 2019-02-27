@@ -389,6 +389,10 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
     SegmentsCounts countSegmentsIn(const GeometryD<2>& geometry, const GeometryObject& object, const PathHints* path = nullptr) const;
 
 private:
+
+    /// Add all edges of el to counter.
+    static void countSegmentsOf(SegmentsCounts& counter, const Element& el);
+
     /**
      * Calculate a set of indices of all boundary nodes (in a whole mesh or a certain region).
      * @param segmentsCount numbers of segments in a whole mesh or requested region

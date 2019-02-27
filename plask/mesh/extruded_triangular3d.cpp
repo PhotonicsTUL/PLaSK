@@ -76,23 +76,45 @@ Vec<3, double> ExtrudedTriangularMesh3D::at(std::size_t longTranIndex, std::size
     return from_longTran_vert(longTranMesh[longTranIndex], vertAxis->at(vertIndex));
 }
 
+TriangularMesh2D::SegmentsCounts ExtrudedTriangularMesh3D::countSegmentsIn(std::size_t layer, const GeometryD<3> &geometry, const GeometryObject &object, const PathHints *path) const {
+    TriangularMesh2D::SegmentsCounts result;
+    for (const auto el: this->longTranMesh.elements())
+        if (geometry.objectIncludes(object, path, this->at(el.getNodeIndex(0), layer)) &&
+            geometry.objectIncludes(object, path, this->at(el.getNodeIndex(1), layer)) &&
+            geometry.objectIncludes(object, path, this->at(el.getNodeIndex(2), layer)))
+            this->longTranMesh.countSegmentsOf(result, el);
+    return result;
+}
+
 template<ExtrudedTriangularMesh3D::SideBoundaryDir boundaryDir>
-std::set<std::size_t> ExtrudedTriangularMesh3D::boundaryNodes(std::size_t layer_begin, std::size_t layer_end, const std::function<TriangularMesh2D::SegmentsCounts (std::size_t)> &getSegmentsCount) const
+std::set<std::size_t> ExtrudedTriangularMesh3D::boundaryNodes(const ExtrudedTriangularMesh3D::LayersIntervalSet& layers, const std::function<TriangularMesh2D::SegmentsCounts (std::size_t)> &getSegmentsCount) const
 {
     std::set<std::size_t> result;
-    for (std::size_t layer = layer_begin; layer != layer_end; ++layer) {
-        for (std::size_t longTranNode: this->longTranMesh.boundaryNodes<ExtrudedTriangularMesh3D::boundaryDir3Dto2D(boundaryDir)>(getSegmentsCount(layer)))
-            result.insert(index(longTranNode, layer));
+    for (ExtrudedTriangularMesh3D::LayersInterval layer_interval: layers) {
+        for (std::size_t layer = layer_interval.first(); layer <= layer_interval.last(); ++layer) {
+            for (std::size_t longTranNode: this->longTranMesh.boundaryNodes<ExtrudedTriangularMesh3D::boundaryDir3Dto2D(boundaryDir)>(getSegmentsCount(layer)))
+                result.insert(index(longTranNode, layer));
+        }
     }
     return result;
 }
 
-/*ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) {
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) {
     return Boundary( [=](const ExtrudedTriangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>& geometry) {
-        geometry->getObjectBoundingBoxes(object, path);
-        return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.boundaryNodes<SideBoundaryDir::BACK>(mesh.countSegmentsIn(*geom, *object, &path))));
+        if (mesh.empty()) return BoundaryNodeSet(new EmptyBoundaryImpl());
+        LayersIntervalSet layers;
+        for (Box3D box: geometry->getObjectBoundingBoxes(object, path)) {
+            const long f = mesh.vertAxis->findIndex(box.lower.vert());
+            const long l = mesh.vertAxis->findUpIndex(box.upper.vert())-1;
+            if (f <= l) layers.add(LayersInterval(f, l));
+        }
+        if (layers.empty()) return BoundaryNodeSet(new EmptyBoundaryImpl());
+        return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.boundaryNodes<SideBoundaryDir::BACK>(
+                                                          layers,
+                                                          [&] (std::size_t layer) { return mesh.countSegmentsIn(layer, *geometry, *object, &path); }
+                                                      )));
     } );
-}*/
+}
 
 
 // ------------------ Nearest Neighbor interpolation ---------------------

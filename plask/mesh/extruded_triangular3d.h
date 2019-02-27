@@ -4,12 +4,17 @@
 #include "axis1d.h"
 #include "triangular2d.h"
 
+#include <boost/icl/interval_set.hpp>
+#include <boost/icl/closed_interval.hpp>
+
 namespace plask {
 
 /**
  * 3D mesh that is a cartesian product of 2D triangular mesh at long-tran and 1D mesh at vert axis.
  */
 struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
+
+    typedef plask::Boundary<ExtrudedTriangularMesh3D> Boundary;
 
     TriangularMesh2D longTranMesh;
 
@@ -227,10 +232,17 @@ private:
 
     static constexpr TriangularMesh2D::BoundaryDir boundaryDir3Dto2D(SideBoundaryDir d) { return TriangularMesh2D::BoundaryDir(d); }
 
+    typedef boost::icl::closed_interval<std::size_t> LayersInterval;
+    typedef boost::icl::interval_set<std::size_t, std::less, LayersInterval> LayersIntervalSet;
+
     template <SideBoundaryDir boundaryDir>
-    std::set<std::size_t> boundaryNodes(std::size_t layer_begin, std::size_t layer_end, const std::function<TriangularMesh2D::SegmentsCounts(std::size_t layer)>& getSegmentsCount) const;
+    std::set<std::size_t> boundaryNodes(const LayersIntervalSet& layers, const std::function<TriangularMesh2D::SegmentsCounts(std::size_t layer)>& getSegmentsCount) const;
+
+    TriangularMesh2D::SegmentsCounts countSegmentsIn(std::size_t layer, const GeometryD<3> &geometry, const GeometryObject &object, const PathHints *path) const;
 
 public:
+
+    static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);
 
 };
 

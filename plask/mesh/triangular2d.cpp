@@ -127,7 +127,7 @@ inline TriangularMesh2D::Segment makeSegment(std::size_t a, std::size_t b) {
     return a < b ? std::make_pair(a, b) : std::make_pair(b, a);
 }
 
-static void countSegmentsOf(TriangularMesh2D::SegmentsCounts& counter, const TriangularMesh2D::Element& el) {
+void TriangularMesh2D::countSegmentsOf(TriangularMesh2D::SegmentsCounts& counter, const TriangularMesh2D::Element& el) {
     ++counter[makeSegment(el.getNodeIndex(0), el.getNodeIndex(1))];
     ++counter[makeSegment(el.getNodeIndex(1), el.getNodeIndex(2))];
     ++counter[makeSegment(el.getNodeIndex(2), el.getNodeIndex(0))];
