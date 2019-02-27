@@ -60,6 +60,8 @@ DEFAULTS = {
     'updates/automatic_check': None,
     'editor/font': [_default_font_family, '11', '-1', '5', '50', '0', '0', '0', '0', '0'],
     'editor/help_font': [_default_font_family, '9', '-1', '5', '50', '0', '0', '0', '0', '0'],
+    'editor/help_background_color': '#ffffee',
+    'editor/help_foreground_color': 'black',
     'editor/background_color': 'white',
     'editor/foreground_color': 'black',
     'editor/linenumber_background_color': '#dddddd',
@@ -72,17 +74,18 @@ DEFAULTS = {
     'editor/not_matching_bracket_color': '#ffaaaa',
     'launcher/default': 'Local Process',
     'launcher_local/font': [_default_font_family, '10', '-1', '5', '50', '0', '0', '0', '0', '0'],
-    'syntax/launcher_color_0': 'black',   # default
-    'syntax/launcher_color_1': 'red',     # critical error
-    'syntax/launcher_color_2': 'red',     # error
-    'syntax/launcher_color_3': 'brown',   # warning
-    'syntax/launcher_color_4': 'magenta', # important
-    'syntax/launcher_color_5': 'blue',    # info
-    'syntax/launcher_color_6': 'green',   # result
-    'syntax/launcher_color_7': '#006060', # data
-    'syntax/launcher_color_8': '#404040', # detail
-    'syntax/launcher_color_9': '#800000', # error detail
-    'syntax/launcher_color_10': 'gray',   # debug
+    'launcher_local/background_color': 'white',
+    'launcher_local/color_0': 'black',   # default
+    'launcher_local/color_1': 'red',     # critical error
+    'launcher_local/color_2': 'red',     # error
+    'launcher_local/color_3': 'brown',   # warning
+    'launcher_local/color_4': 'magenta', # important
+    'launcher_local/color_5': 'blue',    # info
+    'launcher_local/color_6': 'green',   # result
+    'launcher_local/color_7': '#006060', # data
+    'launcher_local/color_8': '#55557f', # detail
+    'launcher_local/color_9': '#800000', # error detail
+    'launcher_local/color_10': 'gray',   # debug
     'syntax/xml_comment': 'color=green, italic=true',
     'syntax/xml_tag': 'color=maroon, bold=true',
     'syntax/xml_attr': 'color=#888800',
@@ -250,9 +253,8 @@ CONFIG_WIDGETS = OrderedDict([
             ("Keep selection after paste", CheckBox('editor/select_after_paste',
                                                      "Keep selection of pasted text.")),
             ("Editor font", Font('editor/font', "Font in text editors.")),
-            ("Help font", Font('editor/help_font', "Font in script on-line help.")),
-            ("Background color", Color('editor/background_color', "Background color in text editor.", True)),
-            ("Foreground color", Color('editor/foreground_color', "Foreground color in text editor.", True)),
+            ("Foreground color", Color('editor/foreground_color', "Foreground color in text editor.")),
+            ("Background color", Color('editor/background_color', "Background color in text editor.")),
             ("Current line color", Color('editor/current_line_color',
                                          "Background color of the current line.")),
             ("Find result color", Color('editor/match_color',
@@ -272,6 +274,10 @@ CONFIG_WIDGETS = OrderedDict([
                                        "Background color in the line numbers area.")),
             ("Foreground color", Color('editor/linenumber_foreground_color',
                                        "Foreground color in the line numbers area.")),
+            "Help dock",
+            ("Help font", Font('editor/help_font', "Font in script on-line help.")),
+            ("Foreground color", Color('editor/help_foreground_color', "Foreground color in script on-line help.")),
+            ("Background color", Color('editor/help_background_color', "Background color in script on-line help.")),
         ]),
         ("Python Syntax", [
             ("Comment", Syntax('syntax/python_comment', "Python syntax highlighting.")),
@@ -322,16 +328,18 @@ CONFIG_WIDGETS = OrderedDict([
             ("Messages font", Font('launcher_local/font', "Font in local launcher window.")),
         ]),
         ("Colors", [
-            ("Critical error", Color('syntax/launcher_color_1', "Log colors.")),
-            ("Error", Color('syntax/launcher_color_2', "Log colors.")),
-            ("Warning", Color('syntax/launcher_color_3', "Log colors.")),
-            ("Important", Color('syntax/launcher_color_4', "Log colors.")),
-            ("Info", Color('syntax/launcher_color_5', "Log colors.")),
-            ("Result", Color('syntax/launcher_color_6', "Log colors.")),
-            ("Data", Color('syntax/launcher_color_7', "Log colors.")),
-            ("Detail", Color('syntax/launcher_color_8', "Log colors.")),
-            ("Error detail", Color('syntax/launcher_color_9', "Log colors.")),
-            ("Debug", Color('syntax/launcher_color_10', "Log colors.")),
+            ("Background color", Color('launcher_local/background_color', "Background color in launcher window.")),
+            ("Foreground color", Color('launcher_local/color_0', "Foreground color in launcher window.")),
+            ("Critical error", Color('launcher_local/color_1', "Log colors.")),
+            ("Error", Color('launcher_local/color_2', "Log colors.")),
+            ("Warning", Color('launcher_local/color_3', "Log colors.")),
+            ("Important", Color('launcher_local/color_4', "Log colors.")),
+            ("Info", Color('launcher_local/color_5', "Log colors.")),
+            ("Result", Color('launcher_local/color_6', "Log colors.")),
+            ("Data", Color('launcher_local/color_7', "Log colors.")),
+            ("Detail", Color('launcher_local/color_8', "Log colors.")),
+            ("Error detail", Color('launcher_local/color_9', "Log colors.")),
+            ("Debug", Color('launcher_local/color_10', "Log colors.")),
         ]),
         ("Workarounds",
          [

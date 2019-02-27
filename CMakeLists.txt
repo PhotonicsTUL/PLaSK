@@ -794,7 +794,7 @@ add_subdirectory(doc)
 
 
 if(BUILD_GUI)
-    install(FILES tests/gui/dark.yml DESTINATION ${doc_dest}/examples/gui COMPONENT gui)
+    install(FILES tests/gui/solarized-dark.yml tests/gui/original-colors.yml DESTINATION ${doc_dest}/examples/gui COMPONENT gui)
 endif()
 
 

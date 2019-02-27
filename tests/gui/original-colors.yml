@@ -1,0 +1,47 @@
+editor:
+  background_color: white
+  current_line_color: '#dff5ff'
+  foreground_color: black
+  help_background_color: '#ffffee'
+  help_foreground_color: 'black'
+  linenumber_background_color: '#dddddd'
+  linenumber_foreground_color: '#808080'
+  match_color: '#ddffdd'
+  matching_bracket_color: '#aaffaa'
+  not_matching_bracket_color: '#ffaaaa'
+  replace_color: '#ffddff'
+  selection_color: '#ffff7f'
+syntax:
+  python_builtin: { color: maroon }
+  python_comment: { color: '#008000', italic: true }
+  python_decorator: { color: '#009f81' }
+  python_define: { color: '#1c68b9', italic: true }
+  python_keyword: { color: black, bold: true }
+  python_loaded: { color: '#ff8800' }
+  python_log: { color: blue }
+  python_member: { color: '#444400' }
+  python_number: { color: darkblue }
+  python_plask: { color: '#aa007f' }
+  python_provider: { color: '#888800' }
+  python_pylab: { color: '#440088' }
+  python_receiver: { color: '#888800' }
+  python_solver: { color: red }
+  python_string: { color: '#0000ff' }
+  xml_attr: { color: '#888800' }
+  xml_comment: { color: green, italic: true }
+  xml_tag: { color: maroon, bold: true }
+  xml_text: { color: black }
+  xml_value: { color: darkblue }
+launcher_local:
+  background_color: white
+  color_0: black
+  color_1: red
+  color_2: red
+  color_3: brown
+  color_4: magenta
+  color_5: blue
+  color_6: green
+  color_7: '#006060'
+  color_8: '#55557f'
+  color_9: '#800000'
+  color_10: gray

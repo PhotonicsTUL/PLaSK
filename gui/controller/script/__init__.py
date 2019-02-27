@@ -382,8 +382,12 @@ class ScriptController(SourceEditController):
     def reconfig(self):
         editor = self.source_widget.editor
         editor.setFont(EDITOR_FONT)
-        if editor.line_numbers is not None:
-            editor.line_numbers.setFont(EDITOR_FONT)
+        editor.setStyleSheet("QPlainTextEdit {{ color: {fg}; background-color: {bg} }}".format(
+            fg=(CONFIG['editor/foreground_color']),
+            bg=(CONFIG['editor/background_color'])
+        ))
+        try: editor.line_numbers.setFont(EDITOR_FONT)
+        except AttributeError: pass
         update_brackets_colors()
         if self.highlighter is not None:
             with BlockQtSignals(editor):
@@ -425,7 +429,8 @@ class HelpDock(QDockWidget):
         help_font = QFont(EDITOR_FONT)
         help_font.fromString(parse_font('editor/help_font'))
         pal = self.textarea.palette()
-        pal.setColor(QPalette.Base, QColor("#ffe"))
+        pal.setColor(QPalette.Base, QColor(CONFIG['editor/help_background_color']))
+        pal.setColor(QPalette.Text, QColor(CONFIG['editor/help_foreground_color']))
         self.textarea.setPalette(pal)
         self.textarea.setFont(help_font)
         font_metrics = self.textarea.fontMetrics()
@@ -448,3 +453,7 @@ class HelpDock(QDockWidget):
         font_metrics = self.textarea.fontMetrics()
         self.textarea.setMinimumWidth(86 * font_metrics.width('a'))
         self.textarea.setMinimumHeight(8 * font_metrics.height())
+        self.textarea.setStyleSheet("QTextEdit {{ color: {fg}; background-color: {bg} }}".format(
+            fg=(CONFIG['editor/help_foreground_color']),
+            bg=(CONFIG['editor/help_background_color'])
+        ))

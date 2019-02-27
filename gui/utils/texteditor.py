@@ -15,7 +15,6 @@ import math
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
-from .widgets import EDITOR_FONT
 from .config import CONFIG
 
 
@@ -33,11 +32,6 @@ class TextEditor(QPlainTextEdit):
 
     def __init__(self, parent=None, line_numbers=True):
         super(TextEditor, self).__init__(parent)
-        self.setFont(EDITOR_FONT)
-        palette = self.palette()
-        palette.setColor(QPalette.Base, QColor(CONFIG['editor/background_color']))
-        palette.setColor(QPalette.Text, QColor(CONFIG['editor/foreground_color']))
-        self.setPalette(palette)
         self.setLineWrapMode(QPlainTextEdit.NoWrap)
         if line_numbers:
             self.line_numbers = LineNumberArea(self)

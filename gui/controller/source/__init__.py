@@ -96,6 +96,10 @@ class SourceWidget(QWidget):
 
         self.editor = editor_class(self, *args, **kwargs)
         self.editor.setFont(EDITOR_FONT)
+        palette = self.editor.palette()
+        palette.setColor(QPalette.Base, QColor(CONFIG['editor/background_color']))
+        palette.setColor(QPalette.Text, QColor(CONFIG['editor/foreground_color']))
+        self.editor.setPalette(palette)
 
         self.toolbar = QToolBar(self)
         self.toolbar.setStyleSheet("QToolBar { border: 0px }")
@@ -487,8 +491,12 @@ class SourceEditController(Controller):
     def reconfig(self):
         editor = self.source_widget.editor
         editor.setFont(EDITOR_FONT)
-        if editor.line_numbers is not None:
-            editor.line_numbers.setFont(EDITOR_FONT)
+        editor.setStyleSheet("QPlainTextEdit {{ color: {fg}; background-color: {bg} }}".format(
+            fg=(CONFIG['editor/foreground_color']),
+            bg=(CONFIG['editor/background_color'])
+        ))
+        try: editor.line_numbers.setFont(EDITOR_FONT)
+        except AttributeError: pass
         if self.highlighter is not None:
             with BlockQtSignals(editor):
                 update_xml_scheme()

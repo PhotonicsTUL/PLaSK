@@ -60,10 +60,10 @@ class OutputModel(QAbstractListModel):
             return self.lines[row][1]
         if role == Qt.ForegroundRole:
             level = self.lines[row][0]
-            if level == 0:
-                color = 'black'
-            else:
-                color = CONFIG['syntax/launcher_color_{:d}'.format(level)]
+            color = CONFIG['launcher_local/color_{:d}'.format(level)]
+            return QBrush(QColor(color))
+        if role == Qt.BackgroundRole:
+            color = CONFIG['launcher_local/background_color']
             return QBrush(QColor(color))
         if role == LEVEL_ROLE:
             return self.lines[row][0]
@@ -99,6 +99,11 @@ class OutputListView(QListView):
         clear_selection_action = QAction("Clea&r Selection", self)
         clear_selection_action.triggered.connect(self.clearSelection)
         self.context_menu.addAction(clear_selection_action)
+
+        pal = self.palette()
+        pal.setColor(QPalette.Base, QColor(CONFIG['launcher_local/background_color']))
+        pal.setColor(QPalette.Text, QColor(CONFIG['launcher_local/color_0']))
+        self.setPalette(pal)
 
     def mouseMoveEvent(self, event):
         super(OutputListView, self).mouseMoveEvent(event)
