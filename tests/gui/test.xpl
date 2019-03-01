@@ -61,7 +61,9 @@
               </item>
             </stack>
           </arrange>
-          <again ref="Pilars"/>
+          <item left="0.0">
+            <again ref="Pilars"/>
+          </item>
           <rectangle material="Al(0.9)GaN:Si=2e18" dtran="1" dvert="0.1"/>
           <rectangle material="Al(0.5)GaN:Si=2e18" dtran="1" dvert="0.2"/>
         </stack>
