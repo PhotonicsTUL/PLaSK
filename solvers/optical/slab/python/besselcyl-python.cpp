@@ -199,6 +199,11 @@ void export_BesselSolverCyl()
                 u8"    k0 (complex): Normalized frequency.\n"
                 u8"    m (int): HE/EH Mode angular number.\n"
               );
+    RW_FIELD(emission, "Direction of the useful light emission.\n\n"
+                       u8"Necessary for the over-threshold model to correctly compute the output power.\n"
+                       u8"Currently the fields are normalized only if this parameter is set to\n"
+                       u8"``top`` or ``bottom``. Otherwise, it is ``undefined`` (default) and the fields\n"
+                       u8"are not normalized.");
     solver.def("get_determinant", py::raw_function(BesselSolverCyl_getDeterminant),
                u8"Compute discontinuity matrix determinant.\n\n"
                u8"Arguments can be given through keywords only.\n\n"

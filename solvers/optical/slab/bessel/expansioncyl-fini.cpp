@@ -118,7 +118,7 @@ void ExpansionBesselFini::init2()
     } else {
         mu_integrals.zero();
         for (std::size_t i = 0; i < N; ++i) {
-            double eta = cyl_bessel_j(m+1, kpts[i]) * rbounds[rbounds.size()-1]; eta = 0.5 * eta*eta;;
+            double eta = cyl_bessel_j(m+1, kpts[i]) * rbounds[rbounds.size()-1]; eta = 0.5 * eta*eta;
             mu_integrals.Vmm(i,i) = mu_integrals.Vpp(i,i) = mu_integrals.Tmm(i,i) = mu_integrals.Tpp(i,i) = eta;
         }
     }
@@ -183,6 +183,18 @@ void ExpansionBesselFini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
     #undef mu
 }
 
+
+double ExpansionBesselFini::integratePoyntingVert(const cvector& E, const cvector& H)
+{
+    double result = 0.;
+    for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
+        double eta = cyl_bessel_j(m+1, kpts[i]) * rbounds[rbounds.size()-1]; eta = 2 * eta*eta; // 4 × ½
+        size_t is = idxs(i);
+        size_t ip = idxp(i);
+        result += real(E[is] * conj(H[is]) + E[ip] * conj(H[ip])) * eta;
+    }
+    return 2.*PI * result;
+}
 
 #ifndef NDEBUG
 cmatrix ExpansionBesselFini::muVmm() {

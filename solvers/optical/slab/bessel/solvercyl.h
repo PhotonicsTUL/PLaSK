@@ -244,6 +244,11 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
     /// Insert mode to the list or return the index of the exiting one
     size_t insertMode() {
+        static bool warn = true;
+        if (warn && ((emission != EMISSION_TOP && emission != EMISSION_BOTTOM) || domain == DOMAIN_INFINITE)) {
+            writelog(LOG_WARNING, "Mode fields are not normalized");
+            warn = false;
+        }
         Mode mode(expansion, root.tolx);
         for (size_t i = 0; i != modes.size(); ++i)
             if (modes[i] == mode) return i;

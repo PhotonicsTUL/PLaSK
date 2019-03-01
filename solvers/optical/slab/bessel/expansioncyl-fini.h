@@ -29,6 +29,8 @@ struct PLASK_SOLVER_API ExpansionBesselFini: public ExpansionBessel {
 
     void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) override;
 
+    double integratePoyntingVert(const cvector& E, const cvector& H) override;
+
   protected:
 
     /// Integrals for magnetic permeability

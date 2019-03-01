@@ -48,7 +48,7 @@ void ExpansionBesselInfini::init2()
             break;
         case BesselSolverCyl::WAVEVECTORS_MANUAL:
             if (SOLVER->klist.size() != N+1)
-                throw BadInput(SOLVER->getId(), "Number of manually specified wavevectors mjust be {}", N+1);
+                throw BadInput(SOLVER->getId(), "Number of manually specified wavevectors must be {}", N+1);
             kpts.resize(N);
             kdelts.reset(N);
             for (size_t i = 0; i != N; ++i) {
@@ -120,6 +120,12 @@ void ExpansionBesselInfini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
         RE(ip, ip) += k0eps;
         RE(is, is) += k0eps - g*g * ik0;
     }
+}
+
+
+double ExpansionBesselInfini::integratePoyntingVert(const cvector& /*E*/, const cvector& /*H*/)
+{
+    return 1.;
 }
 
 }}} // # namespace plask::optical::slab

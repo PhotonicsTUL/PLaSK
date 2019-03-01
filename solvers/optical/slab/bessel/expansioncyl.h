@@ -67,8 +67,6 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
                                               InterpolationMethod interp=INTERPOLATION_DEFAULT) override;
 
-    double integratePoyntingVert(const cvector& E, const cvector& H) override;
-
   private:
     inline double getT(size_t layer, size_t ri) {
         double T = 0., W = 0.;
