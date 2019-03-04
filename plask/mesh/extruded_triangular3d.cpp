@@ -99,7 +99,8 @@ std::set<std::size_t> ExtrudedTriangularMesh3D::boundaryNodes(const ExtrudedTria
     return result;
 }
 
-ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) {
+template <ExtrudedTriangularMesh3D::SideBoundaryDir boundaryDir>
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getObjBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) {
     return Boundary( [=](const ExtrudedTriangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>& geometry) {
         if (mesh.empty()) return BoundaryNodeSet(new EmptyBoundaryImpl());
         LayersIntervalSet layers;
@@ -109,11 +110,31 @@ ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getBackOfBoundary(s
             if (f <= l) layers.add(LayersInterval(f, l));
         }
         if (layers.empty()) return BoundaryNodeSet(new EmptyBoundaryImpl());
-        return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.boundaryNodes<SideBoundaryDir::BACK>(
+        return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.boundaryNodes<boundaryDir>(
                                                           layers,
                                                           [&] (std::size_t layer) { return mesh.countSegmentsIn(layer, *geometry, *object, &path); }
                                                       )));
     } );
+}
+
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) {
+    return getObjBoundary<SideBoundaryDir::BACK>(object, path);
+}
+
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getFrontOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) {
+    return getObjBoundary<SideBoundaryDir::FRONT>(object, path);
+}
+
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) {
+    return getObjBoundary<SideBoundaryDir::LEFT>(object, path);
+}
+
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) {
+    return getObjBoundary<SideBoundaryDir::RIGHT>(object, path);
+}
+
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getAllBoundaryIn(shared_ptr<const GeometryObject> object, const PathHints &path) {
+    return getObjBoundary<SideBoundaryDir::ALL>(object, path);
 }
 
 

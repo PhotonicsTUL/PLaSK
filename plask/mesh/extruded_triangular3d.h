@@ -228,7 +228,7 @@ struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
     }
 
 private:
-    enum class SideBoundaryDir { BACK, FRONT, LEFT, RIGHT };
+    enum class SideBoundaryDir { BACK, FRONT, LEFT, RIGHT, ALL };
 
     static constexpr TriangularMesh2D::BoundaryDir boundaryDir3Dto2D(SideBoundaryDir d) { return TriangularMesh2D::BoundaryDir(d); }
 
@@ -238,12 +238,26 @@ private:
     template <SideBoundaryDir boundaryDir>
     std::set<std::size_t> boundaryNodes(const LayersIntervalSet& layers, const std::function<TriangularMesh2D::SegmentsCounts(std::size_t layer)>& getSegmentsCount) const;
 
-    TriangularMesh2D::SegmentsCounts countSegmentsIn(std::size_t layer, const GeometryD<3> &geometry, const GeometryObject &object, const PathHints *path) const;
+    TriangularMesh2D::SegmentsCounts countSegmentsIn(std::size_t layer, const GeometryD<3> &geometry, const GeometryObject &object, const PathHints *path = nullptr) const;
+
+    template <SideBoundaryDir boundaryDir>
+    static Boundary getObjBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);
 
 public:
 
     static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);
+    //static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) { return getBackOfBoundary(object, &path); }
 
+    static Boundary getFrontOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);
+    //static Boundary getFrontOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) { return getFrontOfBoundary(object, &path); }
+
+    static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);
+    //static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) { return getLeftOfBoundary(object, &path); }
+
+    static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);
+    //static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) { return getRightOfBoundary(object, &path); }
+
+    static Boundary getAllBoundaryIn(shared_ptr<const GeometryObject> object, const PathHints& path);
 };
 
 class ExtrudedTriangularMesh3D::ElementMesh: public MeshD<3> {

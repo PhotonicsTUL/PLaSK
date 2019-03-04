@@ -417,16 +417,21 @@ private:
     template<int SEG_DIR, template<class> class Compare>
     std::set<std::size_t> dirBoundaryNodes(const SegmentsCounts& segmentsCount) const;
 
-    enum class BoundaryDir { LEFT, RIGHT, BOTTOM, TOP };
+    enum class BoundaryDir { LEFT, RIGHT, BOTTOM, TOP, ALL };
 
-    template<BoundaryDir boundaryDir, typename std::enable_if<int(boundaryDir)%2==0, int>::type = 0>
+    template<BoundaryDir boundaryDir, typename std::enable_if<boundaryDir != BoundaryDir::ALL && int(boundaryDir)%2==0, int>::type = 0>
     std::set<std::size_t> boundaryNodes(const SegmentsCounts& segmentsCount) const {
         return dirBoundaryNodes<int(boundaryDir) / 2, greater>(segmentsCount);
     }
 
-    template<BoundaryDir boundaryDir, typename std::enable_if<int(boundaryDir)%2==1, int>::type = 0>
+    template<BoundaryDir boundaryDir, typename std::enable_if<boundaryDir != BoundaryDir::ALL && int(boundaryDir)%2==1, int>::type = 0>
     std::set<std::size_t> boundaryNodes(const SegmentsCounts& segmentsCount) const {
         return dirBoundaryNodes<int(boundaryDir) / 2, std::less>(segmentsCount);
+    }
+
+    template<BoundaryDir boundaryDir, typename std::enable_if<boundaryDir == BoundaryDir::ALL, int>::type = 0>
+    std::set<std::size_t> boundaryNodes(const SegmentsCounts& segmentsCount) const {
+        return allBoundaryNodes(segmentsCount);
     }
 
 public:

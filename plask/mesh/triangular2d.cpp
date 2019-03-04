@@ -517,6 +517,7 @@ template PLASK_API std::set<std::size_t> TriangularMesh2D::boundaryNodes<Triangu
 template PLASK_API std::set<std::size_t> TriangularMesh2D::boundaryNodes<TriangularMesh2D::BoundaryDir::LEFT>(const TriangularMesh2D::SegmentsCounts& segmentsCount) const;
 template PLASK_API std::set<std::size_t> TriangularMesh2D::boundaryNodes<TriangularMesh2D::BoundaryDir::RIGHT>(const TriangularMesh2D::SegmentsCounts& segmentsCount) const;
 template PLASK_API std::set<std::size_t> TriangularMesh2D::boundaryNodes<TriangularMesh2D::BoundaryDir::BOTTOM>(const TriangularMesh2D::SegmentsCounts& segmentsCount) const;
+template PLASK_API std::set<std::size_t> TriangularMesh2D::boundaryNodes<TriangularMesh2D::BoundaryDir::ALL>(const TriangularMesh2D::SegmentsCounts& segmentsCount) const;
 
 // ------------------ Nearest Neighbor interpolation ---------------------
 
