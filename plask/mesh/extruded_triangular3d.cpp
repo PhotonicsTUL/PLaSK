@@ -87,54 +87,86 @@ TriangularMesh2D::SegmentsCounts ExtrudedTriangularMesh3D::countSegmentsIn(std::
 }
 
 template<ExtrudedTriangularMesh3D::SideBoundaryDir boundaryDir>
-std::set<std::size_t> ExtrudedTriangularMesh3D::boundaryNodes(const ExtrudedTriangularMesh3D::LayersIntervalSet& layers, const std::function<TriangularMesh2D::SegmentsCounts (std::size_t)> &getSegmentsCount) const
+std::set<std::size_t> ExtrudedTriangularMesh3D::boundaryNodes(
+        const ExtrudedTriangularMesh3D::LayersIntervalSet& layers,
+        const GeometryD<3>& geometry,
+        const GeometryObject& object,
+        const PathHints *path) const
 {
     std::set<std::size_t> result;
     for (ExtrudedTriangularMesh3D::LayersInterval layer_interval: layers) {
         for (std::size_t layer = layer_interval.first(); layer <= layer_interval.last(); ++layer) {
-            for (std::size_t longTranNode: this->longTranMesh.boundaryNodes<ExtrudedTriangularMesh3D::boundaryDir3Dto2D(boundaryDir)>(getSegmentsCount(layer)))
+            for (std::size_t longTranNode: this->longTranMesh.boundaryNodes<ExtrudedTriangularMesh3D::boundaryDir3Dto2D(boundaryDir)>(countSegmentsIn(layer, geometry, object, path)))
                 result.insert(index(longTranNode, layer));
         }
     }
     return result;
 }
 
+ExtrudedTriangularMesh3D::LayersIntervalSet ExtrudedTriangularMesh3D::layersIn(const std::vector<Box3D>& boxes) const {
+    LayersIntervalSet layers;
+    for (const Box3D& box: boxes) {
+        const long f = this->vertAxis->findIndex(box.lower.vert());
+        const long l = this->vertAxis->findUpIndex(box.upper.vert())-1;
+        if (f <= l) layers.add(LayersInterval(f, l));
+    }
+    return layers;
+}
+
 template <ExtrudedTriangularMesh3D::SideBoundaryDir boundaryDir>
 ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getObjBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) {
     return Boundary( [=](const ExtrudedTriangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>& geometry) {
         if (mesh.empty()) return BoundaryNodeSet(new EmptyBoundaryImpl());
-        LayersIntervalSet layers;
-        for (Box3D box: geometry->getObjectBoundingBoxes(object, path)) {
-            const long f = mesh.vertAxis->findIndex(box.lower.vert());
-            const long l = mesh.vertAxis->findUpIndex(box.upper.vert())-1;
-            if (f <= l) layers.add(LayersInterval(f, l));
-        }
+        LayersIntervalSet layers = mesh.layersIn(geometry->getObjectBoundingBoxes(object, path));
         if (layers.empty()) return BoundaryNodeSet(new EmptyBoundaryImpl());
-        return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.boundaryNodes<boundaryDir>(
-                                                          layers,
-                                                          [&] (std::size_t layer) { return mesh.countSegmentsIn(layer, *geometry, *object, &path); }
-                                                      )));
+        return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.boundaryNodes<boundaryDir>(layers, *geometry, *object, &path)));
     } );
 }
 
+template <ExtrudedTriangularMesh3D::SideBoundaryDir boundaryDir>
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getObjBoundary(shared_ptr<const GeometryObject> object) {
+    return Boundary( [=](const ExtrudedTriangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>& geometry) {
+        if (mesh.empty()) return BoundaryNodeSet(new EmptyBoundaryImpl());
+        LayersIntervalSet layers = mesh.layersIn(geometry->getObjectBoundingBoxes(object));
+        if (layers.empty()) return BoundaryNodeSet(new EmptyBoundaryImpl());
+        return BoundaryNodeSet(new StdSetBoundaryImpl(mesh.boundaryNodes<boundaryDir>(layers, *geometry, *object)));
+    } );
+}
+
+
 ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) {
     return getObjBoundary<SideBoundaryDir::BACK>(object, path);
+}
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getBackOfBoundary(shared_ptr<const GeometryObject> object) {
+    return getObjBoundary<SideBoundaryDir::BACK>(object);
 }
 
 ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getFrontOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) {
     return getObjBoundary<SideBoundaryDir::FRONT>(object, path);
 }
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getFrontOfBoundary(shared_ptr<const GeometryObject> object) {
+    return getObjBoundary<SideBoundaryDir::FRONT>(object);
+}
 
 ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) {
     return getObjBoundary<SideBoundaryDir::LEFT>(object, path);
+}
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getLeftOfBoundary(shared_ptr<const GeometryObject> object) {
+    return getObjBoundary<SideBoundaryDir::LEFT>(object);
 }
 
 ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) {
     return getObjBoundary<SideBoundaryDir::RIGHT>(object, path);
 }
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getRightOfBoundary(shared_ptr<const GeometryObject> object) {
+    return getObjBoundary<SideBoundaryDir::RIGHT>(object);
+}
 
 ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getAllBoundaryIn(shared_ptr<const GeometryObject> object, const PathHints &path) {
     return getObjBoundary<SideBoundaryDir::ALL>(object, path);
+}
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getAllBoundaryIn(shared_ptr<const GeometryObject> object) {
+    return getObjBoundary<SideBoundaryDir::ALL>(object);
 }
 
 

@@ -236,28 +236,49 @@ private:
     typedef boost::icl::interval_set<std::size_t, std::less, LayersInterval> LayersIntervalSet;
 
     template <SideBoundaryDir boundaryDir>
-    std::set<std::size_t> boundaryNodes(const LayersIntervalSet& layers, const std::function<TriangularMesh2D::SegmentsCounts(std::size_t layer)>& getSegmentsCount) const;
+    std::set<std::size_t> boundaryNodes(const LayersIntervalSet& layers, const GeometryD<3>& geometry, const GeometryObject& object, const PathHints *path = nullptr) const;
 
     TriangularMesh2D::SegmentsCounts countSegmentsIn(std::size_t layer, const GeometryD<3> &geometry, const GeometryObject &object, const PathHints *path = nullptr) const;
+
+    LayersIntervalSet layersIn(const std::vector<Box3D>& boxes) const;
 
     template <SideBoundaryDir boundaryDir>
     static Boundary getObjBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);
 
+    template <SideBoundaryDir boundaryDir>
+    static Boundary getObjBoundary(shared_ptr<const GeometryObject> object);
+
 public:
 
     static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);
-    //static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) { return getBackOfBoundary(object, &path); }
+    static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object);
+    static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints *path) {
+        return path ? getBackOfBoundary(object, *path) : getBackOfBoundary(object);
+    }
 
     static Boundary getFrontOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);
-    //static Boundary getFrontOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) { return getFrontOfBoundary(object, &path); }
+    static Boundary getFrontOfBoundary(shared_ptr<const GeometryObject> object);
+    static Boundary getFrontOfBoundary(shared_ptr<const GeometryObject> object, const PathHints *path) {
+        return path ? getFrontOfBoundary(object, *path) : getFrontOfBoundary(object);
+    }
 
     static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);
-    //static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) { return getLeftOfBoundary(object, &path); }
+    static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object);
+    static Boundary getLeftOfBoundary(shared_ptr<const GeometryObject> object, const PathHints *path) {
+        return path ? getLeftOfBoundary(object, *path) : getLeftOfBoundary(object);
+    }
 
     static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);
-    //static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) { return getRightOfBoundary(object, &path); }
+    static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object);
+    static Boundary getRightOfBoundary(shared_ptr<const GeometryObject> object, const PathHints *path) {
+        return path ? getRightOfBoundary(object, *path) : getRightOfBoundary(object);
+    }
 
     static Boundary getAllBoundaryIn(shared_ptr<const GeometryObject> object, const PathHints& path);
+    static Boundary getAllBoundaryIn(shared_ptr<const GeometryObject> object);
+    static Boundary getAllBoundaryIn(shared_ptr<const GeometryObject> object, const PathHints *path) {
+        return path ? getAllBoundaryIn(object, *path) : getAllBoundaryIn(object);
+    }
 };
 
 class ExtrudedTriangularMesh3D::ElementMesh: public MeshD<3> {
