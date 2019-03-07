@@ -76,12 +76,22 @@ Vec<3, double> ExtrudedTriangularMesh3D::at(std::size_t longTranIndex, std::size
     return from_longTran_vert(longTranMesh[longTranIndex], vertAxis->at(vertIndex));
 }
 
+std::pair<std::size_t, std::size_t> ExtrudedTriangularMesh3D::longTranAndVertIndices(std::size_t index) const {
+    if (vertFastest) {
+        const std::size_t seg_size = vertAxis->size();
+        return std::pair<std::size_t, std::size_t>(index / seg_size, index % seg_size);
+    } else {
+        const std::size_t seg_size = longTranMesh.size();
+        return std::pair<std::size_t, std::size_t>(index % seg_size, index / seg_size);
+    }
+}
+
 TriangularMesh2D::SegmentsCounts ExtrudedTriangularMesh3D::countSegmentsIn(std::size_t layer, const GeometryD<3> &geometry, const GeometryObject &object, const PathHints *path) const {
     TriangularMesh2D::SegmentsCounts result;
     for (const auto el: this->longTranMesh.elements())
         if (geometry.objectIncludes(object, path, this->at(el.getNodeIndex(0), layer)) &&
-            geometry.objectIncludes(object, path, this->at(el.getNodeIndex(1), layer)) &&
-            geometry.objectIncludes(object, path, this->at(el.getNodeIndex(2), layer)))
+                geometry.objectIncludes(object, path, this->at(el.getNodeIndex(1), layer)) &&
+                geometry.objectIncludes(object, path, this->at(el.getNodeIndex(2), layer)))
             this->longTranMesh.countSegmentsOf(result, el);
     return result;
 }

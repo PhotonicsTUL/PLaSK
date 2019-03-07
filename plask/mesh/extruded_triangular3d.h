@@ -207,6 +207,13 @@ struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
     }
 
     /**
+     * Calculate indexes of embeded meshes from index of this mesh.
+     * @param index index of this mesh
+     * @return a pair: (index of longTranMesh, index of vertAxis)
+     */
+    std::pair<std::size_t, std::size_t> longTranAndVertIndices(std::size_t index) const;
+
+    /**
      * Calculate element index of this mesh using element indexes of embeded meshes.
      * @param longTranIndex index of longTranMesh element
      * @param vertIndex index of vertAxis element
@@ -247,6 +254,96 @@ private:
 
     template <SideBoundaryDir boundaryDir>
     static Boundary getObjBoundary(shared_ptr<const GeometryObject> object);
+
+    // for left, right, front, back boundaries of whole mesh or box:
+    struct ExtrudedTriangularBoundaryImpl: public BoundaryNodeSetImpl {
+
+        struct IteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
+
+            const ExtrudedTriangularBoundaryImpl &boundary;
+
+            std::set<std::size_t>::const_iterator longTranIter;
+
+            std::size_t vertIndex;
+
+            IteratorImpl(const ExtrudedTriangularBoundaryImpl &boundary, std::set<std::size_t>::const_iterator longTranIter, std::size_t vertIndex)
+                : boundary(boundary), longTranIter(longTranIter), vertIndex(vertIndex)
+            {}
+
+            /*IteratorImpl(const ExtrudedTriangularBoundaryImpl &boundary, std::size_t vertIndex)
+                : IteratorImpl(boundary, boundary.longTranIndices.begin(), vertIndex)
+            {}*/
+
+            std::size_t dereference() const override {
+                return boundary.mesh.index(*longTranIter, vertIndex);
+            }
+
+            void increment() override {
+                if (boundary.mesh.vertFastest) {
+                    ++vertIndex;
+                    if (vertIndex == boundary.vertIndexEnd) {
+                        vertIndex = boundary.vertIndexBegin;
+                        ++longTranIter;
+                    }
+                } else {
+                    ++longTranIter;
+                    if (longTranIter == boundary.longTranIndices.end()) {
+                        longTranIter = boundary.longTranIndices.begin();
+                        ++vertIndex;
+                    }
+                }
+            }
+
+            virtual bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& other) const override {
+                return longTranIter == static_cast<const IteratorImpl&>(other).longTranIter &&
+                       vertIndex == static_cast<const IteratorImpl&>(other).vertIndex;
+            }
+
+            std::unique_ptr<PolymorphicForwardIteratorImpl<std::size_t, std::size_t>> clone() const override {
+                return std::unique_ptr<PolymorphicForwardIteratorImpl<std::size_t, std::size_t>>(new IteratorImpl(*this));
+            }
+
+        };
+
+        const ExtrudedTriangularMesh3D &mesh;
+
+        std::set<std::size_t> longTranIndices;
+
+        std::size_t vertIndexBegin, vertIndexEnd;
+
+        ExtrudedTriangularBoundaryImpl(
+                const ExtrudedTriangularMesh3D &mesh,
+                std::set<std::size_t> longTranIndices,
+                std::size_t vertIndexBegin, std::size_t vertIndexEnd)
+            : mesh(mesh), longTranIndices(std::move(longTranIndices)), vertIndexBegin(vertIndexBegin), vertIndexEnd(vertIndexEnd)
+        {
+        }
+
+        bool contains(std::size_t mesh_index) const override {
+            std::pair<std::size_t, std::size_t> lt_v = mesh.longTranAndVertIndices(mesh_index);
+            return vertIndexBegin <= lt_v.second && lt_v.second < vertIndexEnd
+                    && longTranIndices.find(lt_v.first) != longTranIndices.end();
+        }
+
+        bool empty() const override { return vertIndexBegin == vertIndexEnd || longTranIndices.empty(); }
+
+        std::size_t size() const override { return (vertIndexEnd - vertIndexBegin) * longTranIndices.size(); }
+
+        BoundaryNodeSetImpl::const_iterator begin() const override {
+            return BoundaryNodeSetImpl::const_iterator(new IteratorImpl(*this, longTranIndices.begin(), vertIndexBegin));
+        }
+
+        BoundaryNodeSetImpl::const_iterator end() const override {
+            return BoundaryNodeSetImpl::const_iterator(
+                mesh.vertFastest ?
+                    new IteratorImpl(*this, longTranIndices.end(), vertIndexBegin) :
+                    new IteratorImpl(*this, longTranIndices.begin(), vertIndexEnd)
+            );
+        }
+    };
+
+
+
 
 public:
 
