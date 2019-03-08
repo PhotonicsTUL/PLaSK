@@ -239,13 +239,15 @@ private:
 
     static constexpr TriangularMesh2D::BoundaryDir boundaryDir3Dto2D(SideBoundaryDir d) { return TriangularMesh2D::BoundaryDir(d); }
 
-    typedef boost::icl::closed_interval<std::size_t> LayersInterval;
+    typedef boost::icl::right_open_interval<std::size_t> LayersInterval;
     typedef boost::icl::interval_set<std::size_t, std::less, LayersInterval> LayersIntervalSet;
 
     template <SideBoundaryDir boundaryDir>
     std::set<std::size_t> boundaryNodes(const LayersIntervalSet& layers, const GeometryD<3>& geometry, const GeometryObject& object, const PathHints *path = nullptr) const;
 
     TriangularMesh2D::SegmentsCounts countSegmentsIn(std::size_t layer, const GeometryD<3> &geometry, const GeometryObject &object, const PathHints *path = nullptr) const;
+
+    LayersInterval layersIn(const Box3D& box) const;
 
     LayersIntervalSet layersIn(const std::vector<Box3D>& boxes) const;
 
@@ -281,8 +283,8 @@ private:
             void increment() override {
                 if (boundary.mesh.vertFastest) {
                     ++vertIndex;
-                    if (vertIndex == boundary.vertIndexEnd) {
-                        vertIndex = boundary.vertIndexBegin;
+                    if (vertIndex == boundary.vertIndices.upper()) {
+                        vertIndex = boundary.vertIndices.lower();
                         ++longTranIter;
                     }
                 } else {
@@ -309,43 +311,58 @@ private:
 
         std::set<std::size_t> longTranIndices;
 
-        std::size_t vertIndexBegin, vertIndexEnd;
+        LayersInterval vertIndices;
 
         ExtrudedTriangularBoundaryImpl(
                 const ExtrudedTriangularMesh3D &mesh,
                 std::set<std::size_t> longTranIndices,
-                std::size_t vertIndexBegin, std::size_t vertIndexEnd)
-            : mesh(mesh), longTranIndices(std::move(longTranIndices)), vertIndexBegin(vertIndexBegin), vertIndexEnd(vertIndexEnd)
+                LayersInterval vertIndices)
+            : mesh(mesh), longTranIndices(std::move(longTranIndices)), vertIndices(vertIndices)
         {
         }
 
         bool contains(std::size_t mesh_index) const override {
             std::pair<std::size_t, std::size_t> lt_v = mesh.longTranAndVertIndices(mesh_index);
-            return vertIndexBegin <= lt_v.second && lt_v.second < vertIndexEnd
+            return vertIndices.lower() <= lt_v.second && lt_v.second < vertIndices.upper()
                     && longTranIndices.find(lt_v.first) != longTranIndices.end();
         }
 
-        bool empty() const override { return vertIndexBegin == vertIndexEnd || longTranIndices.empty(); }
+        bool empty() const override { return vertIndices.lower() == vertIndices.upper() || longTranIndices.empty(); }
 
-        std::size_t size() const override { return (vertIndexEnd - vertIndexBegin) * longTranIndices.size(); }
+        std::size_t size() const override { return (vertIndices.upper() - vertIndices.lower()) * longTranIndices.size(); }
 
         BoundaryNodeSetImpl::const_iterator begin() const override {
-            return BoundaryNodeSetImpl::const_iterator(new IteratorImpl(*this, longTranIndices.begin(), vertIndexBegin));
+            return BoundaryNodeSetImpl::const_iterator(new IteratorImpl(*this, longTranIndices.begin(), vertIndices.lower()));
         }
 
         BoundaryNodeSetImpl::const_iterator end() const override {
             return BoundaryNodeSetImpl::const_iterator(
                 mesh.vertFastest ?
-                    new IteratorImpl(*this, longTranIndices.end(), vertIndexBegin) :
-                    new IteratorImpl(*this, longTranIndices.begin(), vertIndexEnd)
+                    new IteratorImpl(*this, longTranIndices.end(), vertIndices.lower()) :
+                    new IteratorImpl(*this, longTranIndices.begin(), vertIndices.upper())
             );
         }
     };
 
+    template <SideBoundaryDir boundaryDir>
+    static Boundary getMeshBoundary();
 
-
+    template <SideBoundaryDir boundaryDir>
+    static Boundary getBoxBoundary(const Box3D& box);
 
 public:
+
+    static Boundary getBackBoundary();
+    static Boundary getFrontBoundary();
+    static Boundary getLeftBoundary();
+    static Boundary getRightBoundary();
+    static Boundary getAllSidesBoundary();
+
+    static Boundary getBackOfBoundary(const Box3D& box);
+    static Boundary getFrontOfBoundary(const Box3D& box);
+    static Boundary getLeftOfBoundary(const Box3D& box);
+    static Boundary getRightOfBoundary(const Box3D& box);
+    static Boundary getAllSidesOfBoundary(const Box3D& box);
 
     static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);
     static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object);
@@ -371,10 +388,10 @@ public:
         return path ? getRightOfBoundary(object, *path) : getRightOfBoundary(object);
     }
 
-    static Boundary getAllBoundaryIn(shared_ptr<const GeometryObject> object, const PathHints& path);
-    static Boundary getAllBoundaryIn(shared_ptr<const GeometryObject> object);
-    static Boundary getAllBoundaryIn(shared_ptr<const GeometryObject> object, const PathHints *path) {
-        return path ? getAllBoundaryIn(object, *path) : getAllBoundaryIn(object);
+    static Boundary getAllSidesBoundaryIn(shared_ptr<const GeometryObject> object, const PathHints& path);
+    static Boundary getAllSidesBoundaryIn(shared_ptr<const GeometryObject> object);
+    static Boundary getAllSidesBoundaryIn(shared_ptr<const GeometryObject> object, const PathHints *path) {
+        return path ? getAllSidesBoundaryIn(object, *path) : getAllSidesBoundaryIn(object);
     }
 };
 
