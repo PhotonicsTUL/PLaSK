@@ -193,7 +193,7 @@ double ExpansionBesselFini::integratePoyntingVert(const cvector& E, const cvecto
         size_t ip = idxp(i);
         result += real(E[is] * conj(H[is]) + E[ip] * conj(H[ip])) * eta;
     }
-    return 2.*PI * result;
+    return 2e-12*PI * result; // µm² -> m²
 }
 
 #ifndef NDEBUG

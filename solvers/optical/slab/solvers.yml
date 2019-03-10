@@ -299,7 +299,7 @@
       type: float
       default: 0.1
       help: >
-        Maximum step in one iteration of root finding. Significant for the Broyden's method only.
+        Maximum step in one iteration of root finding. Significant for the Broyden method only.
     - attr: maxiter
       label: Maximum number of iterations
       type: int
@@ -694,6 +694,30 @@
         A list of relative wavevetors ranges. The numbers should be relative to the inverse of the structure
         width. The actual wavevectors used in the computations are the avrages of each two adjacent values
         specified here and the integration weights are the sizes of each interval.
+
+  - tag: mode
+    label: Mode Properties
+    help: >
+      Mode properties.
+    attrs:
+    - attr: wavelength
+      label: Wavelength
+      type: float
+      unit: nm
+      help: >
+        Light wavelength. For finding modes this parameter is ignored. However, it is important
+        for reflection and transmission computation.
+    - attr: emission
+      label: Direction of emission
+      type: choice
+      default: undefined
+      choices:
+      - undefined
+      - top
+      - bottom
+      help: >
+        Direction of the useful light emission. Necessary for the over-threshold model to correctly
+        compute the output power. In this solver only top and bottom emission is possible.
 
   - *interface
 

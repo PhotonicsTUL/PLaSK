@@ -246,7 +246,10 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     size_t insertMode() {
         static bool warn = true;
         if (warn && ((emission != EMISSION_TOP && emission != EMISSION_BOTTOM) || domain == DOMAIN_INFINITE)) {
-            writelog(LOG_WARNING, "Mode fields are not normalized");
+            if (domain == DOMAIN_INFINITE)
+                writelog(LOG_WARNING, "Mode fields are not normalized (infinite domain)");
+            else
+                writelog(LOG_WARNING, "Mode fields are not normalized (emission direction not specified)");
             warn = false;
         }
         Mode mode(expansion, root.tolx);

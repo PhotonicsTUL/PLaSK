@@ -61,6 +61,14 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
                 }
             }
             reader.requireTagEnd();
+        } else if (param == "mode") {
+            emission = reader.enumAttribute<Emission>("emission")
+                                .value("undefined", EMISSION_UNSPECIFIED)
+                                .value("top", EMISSION_TOP)
+                                .value("bottom", EMISSION_BOTTOM)
+                       .get(emission);
+            k0 = 2e3*PI / reader.getAttribute<dcomplex>("wavelength", 2e3*PI / k0);
+            reader.requireTagEnd();
         } else if (param == "interface") {
             if (reader.hasAttribute("index")) {
                 throw XMLException(reader, "Setting interface by layer index is not supported anymore (set it by object or position)");
