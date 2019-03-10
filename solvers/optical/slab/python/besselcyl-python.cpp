@@ -212,6 +212,41 @@ void export_BesselSolverCyl()
                u8"    k0 (complex): Normalized frequency.\n"
                u8"    m (int): HE/EH Mode angular number.\n"
               );
+    solver.def("compute_reflectivity", &Solver_computeReflectivity_index<BesselSolverCyl>,
+               (py::arg("lam"), "side", "index"));
+    solver.def("compute_reflectivity", &Solver_computeReflectivity_array<BesselSolverCyl>,
+               (py::arg("lam"), "side", "coffs"),
+               u8"Compute reflection coefficient on planar incidence [%].\n\n"
+               u8"Args:\n"
+               u8"    lam (float or array of floats): Incident light wavelength.\n"
+               u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+               u8"        present.\n"
+               u8"    idx: Eigenmode number.\n"
+               u8"    coeffs: expansion coefficients of the incident vector.\n");
+    solver.def("compute_transmittivity", &Solver_computeTransmittivity_index<BesselSolverCyl>,
+               (py::arg("lam"), "side", "index"));
+    solver.def("compute_transmittivity", &Solver_computeTransmittivity_array<BesselSolverCyl>,
+               (py::arg("lam"), "side", "coffs"),
+               u8"Compute transmission coefficient on planar incidence [%].\n\n"
+               u8"Args:\n"
+               u8"    lam (float or array of floats): Incident light wavelength.\n"
+               u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+               u8"        present.\n"
+               u8"    idx: Eigenmode number.\n"
+               u8"    coeffs: expansion coefficients of the incident vector.\n");
+    solver.def("scattering", Scattering<BesselSolverCyl>::from_index, py::with_custodian_and_ward_postcall<0,1>(), (py::arg("side"), "idx"));
+    solver.def("scattering", Scattering<BesselSolverCyl>::from_array, py::with_custodian_and_ward_postcall<0,1>(), (py::arg("side"), "coeffs"),
+               u8"Access to the reflected field.\n\n"
+               u8"Args:\n"
+               u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+               u8"        present.\n"
+               u8"    polarization: Specification of the incident light polarization.\n"
+               u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+               u8"        of the non-vanishing electric field component.\n"
+               u8"    idx: Eigenmode number.\n"
+               u8"    coeffs: expansion coefficients of the incident vector.\n\n"
+               u8":rtype: Fourier2D.Scattering\n"
+              );
     solver.def("get_raw_E", BesselSolverCyl_getFieldVectorE, (py::arg("num"), "level"),
                u8"Get Bessel expansion coefficients for the electric field.\n\n"
                u8"This is a low-level function returning :math:`E_s` and :math:`E_p` Bessel\n"

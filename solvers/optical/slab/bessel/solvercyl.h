@@ -188,6 +188,54 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     Expansion& getExpansion() override { return *expansion; }
 
     /**
+     * Get electric field at the given mesh for reflected light.
+     * \param incident incident field vector
+     * \param side incidence direction
+     * \param dst_mesh target mesh
+     * \param method interpolation method
+     */
+    LazyData<Vec<3,dcomplex>> getScatteredFieldE(const cvector& incident,
+                                                 Transfer::IncidentDirection side,
+                                                 const shared_ptr<const MeshD<2>>& dst_mesh,
+                                                 InterpolationMethod method) {
+        if (!Solver::initCalculation()) setExpansionDefaults(false);
+        if (!transfer) initTransfer(*expansion, true);
+        return transfer->getScatteredFieldE(incident, side, dst_mesh, method);
+    }
+
+    /**
+     * Get magnetic field at the given mesh for reflected light.
+     * \param incident incident field vector
+     * \param side incidence direction
+     * \param dst_mesh target mesh
+     * \param method interpolation method
+     */
+    LazyData<Vec<3,dcomplex>> getScatteredFieldH(const cvector& incident,
+                                                 Transfer::IncidentDirection side,
+                                                 const shared_ptr<const MeshD<2>>& dst_mesh,
+                                                 InterpolationMethod method) {
+        if (!Solver::initCalculation()) setExpansionDefaults(false);
+        if (!transfer) initTransfer(*expansion, true);
+        return transfer->getScatteredFieldH(incident, side, dst_mesh, method);
+    }
+
+    /**
+     * Get light intensity for reflected light.
+     * \param incident incident field vector
+     * \param side incidence direction
+     * \param dst_mesh destination mesh
+     * \param method interpolation method
+     */
+    LazyData<double> getScatteredFieldMagnitude(const cvector& incident,
+                                                Transfer::IncidentDirection side,
+                                                const shared_ptr<const MeshD<2>>& dst_mesh,
+                                                InterpolationMethod method) {
+        if (!Solver::initCalculation()) setExpansionDefaults(false);
+        if (!transfer) initTransfer(*expansion, true);
+        return transfer->getScatteredFieldMagnitude(incident, side, dst_mesh, method);
+    }
+
+    /**
      * Compute electric field coefficients for given \a z
      * \param num mode number
      * \param z position within the layer
