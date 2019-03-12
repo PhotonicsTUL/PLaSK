@@ -350,6 +350,8 @@ private:
     template <SideBoundaryDir boundaryDir>
     static Boundary getBoxBoundary(const Box3D& box);
 
+    BoundaryNodeSet topOrBottomBoundaryNodeSet(const Box3D &box, bool top) const;
+
 public:
 
     static Boundary getBackBoundary();
@@ -362,6 +364,8 @@ public:
     static Boundary getFrontOfBoundary(const Box3D& box);
     static Boundary getLeftOfBoundary(const Box3D& box);
     static Boundary getRightOfBoundary(const Box3D& box);
+    static Boundary getTopOfBoundary(const Box3D& box);
+    static Boundary getBottomOfBoundary(const Box3D& box);
     static Boundary getAllSidesOfBoundary(const Box3D& box);
 
     static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);

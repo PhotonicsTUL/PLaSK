@@ -182,6 +182,18 @@ ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getBoxBoundary(cons
     } );
 }
 
+BoundaryNodeSet ExtrudedTriangularMesh3D::topOrBottomBoundaryNodeSet(const Box3D &box, bool top) const {
+    LayersInterval layers = layersIn(box);
+    if (layers.lower() >= layers.upper()) return new EmptyBoundaryImpl();
+    const std::size_t layer = top ? layers.upper()-1 : layers.lower();
+    std::set<std::size_t> nodes3d;
+    Box2D box2d = to_longTran(box);
+    for (std::size_t index2d = 0; index2d < longTranMesh.size(); ++index2d)
+        if (box2d.contains(longTranMesh[index2d]))
+            nodes3d.insert(index(index2d, layer));
+    return new StdSetBoundaryImpl(std::move(nodes3d));
+}
+
 ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getBackBoundary() {
     return getMeshBoundary<SideBoundaryDir::BACK>();
 }
@@ -216,6 +228,18 @@ ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getLeftOfBoundary(c
 
 ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getRightOfBoundary(const Box3D &box) {
     return getBoxBoundary<SideBoundaryDir::RIGHT>(box);
+}
+
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getTopOfBoundary(const Box3D &box) {
+    return Boundary( [=](const ExtrudedTriangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+        return mesh.topOrBottomBoundaryNodeSet(box, true);
+    } );
+}
+
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getBottomOfBoundary(const Box3D &box) {
+    return Boundary( [=](const ExtrudedTriangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>&) {
+        return mesh.topOrBottomBoundaryNodeSet(box, false);
+    } );
 }
 
 ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getAllSidesOfBoundary(const Box3D &box) {
