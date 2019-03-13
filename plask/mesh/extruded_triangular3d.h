@@ -214,6 +214,13 @@ struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
     std::pair<std::size_t, std::size_t> longTranAndVertIndices(std::size_t index) const;
 
     /**
+     * Calculate index of vertAxis from index of this mesh.
+     * @param index index of this mesh
+     * @return the index of vertAxis
+     */
+    std::size_t vertIndex(std::size_t index) const;
+
+    /**
      * Calculate element index of this mesh using element indexes of embeded meshes.
      * @param longTranIndex index of longTranMesh element
      * @param vertIndex index of vertAxis element
@@ -239,21 +246,52 @@ private:
 
     static constexpr TriangularMesh2D::BoundaryDir boundaryDir3Dto2D(SideBoundaryDir d) { return TriangularMesh2D::BoundaryDir(d); }
 
+    /// Interval of indices [lower, upper).
     typedef boost::icl::right_open_interval<std::size_t> LayersInterval;
+
+    /// Set of indexes stored by intervals.
     typedef boost::icl::interval_set<std::size_t, std::less, LayersInterval> LayersIntervalSet;
 
+    /**
+     * Calculate a set of indices of nodes that lie on boundary (pointed by boundaryDir) of an object.
+     * Calculation space is restricted to points that have vertical position included in layers.
+     */
     template <SideBoundaryDir boundaryDir>
     std::set<std::size_t> boundaryNodes(const LayersIntervalSet& layers, const GeometryD<3>& geometry, const GeometryObject& object, const PathHints *path = nullptr) const;
 
+    /**
+     * Call countSegmentsOf of longTranMesh for points that have vertical position included in a layer.
+     * @param layer
+     * @param geometry
+     * @param object
+     * @param path
+     * @return
+     */
     TriangularMesh2D::SegmentsCounts countSegmentsIn(std::size_t layer, const GeometryD<3> &geometry, const GeometryObject &object, const PathHints *path = nullptr) const;
 
+    /**
+     * Calculate range of vertical indices that are included between bottom and top of a box.
+     * @param box the box
+     * @return the range of vertical indices included between bottom and top of the box
+     */
     LayersInterval layersIn(const Box3D& box) const;
 
+    /**
+     * Calculate range of vertical indices that are included between bottom and top of any box.
+     * @param boxes vector of the boxes
+     * @return the range of vertical indices
+     */
     LayersIntervalSet layersIn(const std::vector<Box3D>& boxes) const;
 
+    /**
+     * Calculate boundary (pointed by boundaryDir) of an object.
+     */
     template <SideBoundaryDir boundaryDir>
     static Boundary getObjBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);
 
+    /**
+     * Calculate boundary (pointed by boundaryDir) of an object.
+     */
     template <SideBoundaryDir boundaryDir>
     static Boundary getObjBoundary(shared_ptr<const GeometryObject> object);
 
@@ -344,12 +382,83 @@ private:
         }
     };
 
+    // for top and bottom boundaries of whole mesh:
+    struct ExtrudedTriangularWholeLayerBoundaryImpl: public BoundaryNodeSetImpl {
+
+        struct IteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
+
+            const ExtrudedTriangularWholeLayerBoundaryImpl &boundary;
+
+            std::size_t longTranIndex;
+
+            IteratorImpl(const ExtrudedTriangularWholeLayerBoundaryImpl &boundary, std::size_t longTranIndex)
+                : boundary(boundary), longTranIndex(longTranIndex)
+            {}
+
+            std::size_t dereference() const override {
+                return boundary.mesh.index(longTranIndex, boundary.vertIndex);
+            }
+
+            void increment() override {
+                ++longTranIndex;
+            }
+
+            virtual bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& other) const override {
+                return longTranIndex == static_cast<const IteratorImpl&>(other).longTranIndex;
+            }
+
+            std::unique_ptr<PolymorphicForwardIteratorImpl<std::size_t, std::size_t>> clone() const override {
+                return std::unique_ptr<PolymorphicForwardIteratorImpl<std::size_t, std::size_t>>(new IteratorImpl(*this));
+            }
+
+        };
+
+        const ExtrudedTriangularMesh3D &mesh;
+
+        std::size_t vertIndex; ///< vertical index (layer)
+
+        ExtrudedTriangularWholeLayerBoundaryImpl(const ExtrudedTriangularMesh3D &mesh, std::size_t vertIndex)
+            : mesh(mesh), vertIndex(vertIndex)
+        {
+        }
+
+        bool contains(std::size_t mesh_index) const override {
+            return mesh.vertIndex(mesh_index) == this->vertIndex;
+        }
+
+        bool empty() const override { return mesh.vertAxis->empty(); }
+
+        std::size_t size() const override { return mesh.vertAxis->size(); }
+
+        BoundaryNodeSetImpl::const_iterator begin() const override {
+            return BoundaryNodeSetImpl::const_iterator(new IteratorImpl(*this, 0));
+        }
+
+        BoundaryNodeSetImpl::const_iterator end() const override {
+            return BoundaryNodeSetImpl::const_iterator(new IteratorImpl(*this, mesh.longTranMesh.size()));
+        }
+    };
+
+    /**
+     * Get boundary (pointed by boundaryDir) of the whole mesh (this).
+     */
     template <SideBoundaryDir boundaryDir>
     static Boundary getMeshBoundary();
 
+    /**
+     * Get boundary (pointed by boundaryDir) of a box.
+     * @param box the box
+     * @return the boundary
+     */
     template <SideBoundaryDir boundaryDir>
     static Boundary getBoxBoundary(const Box3D& box);
 
+    /**
+     * Get top or bottom boundary of a box.
+     * @param box the box
+     * @param top indicates which boundary should be calculated: true => top, false => bottom
+     * @return the boundary
+     */
     BoundaryNodeSet topOrBottomBoundaryNodeSet(const Box3D &box, bool top) const;
 
 public:
@@ -358,14 +467,16 @@ public:
     static Boundary getFrontBoundary();
     static Boundary getLeftBoundary();
     static Boundary getRightBoundary();
+    static Boundary getBottomBoundary();
+    static Boundary getTopBoundary();
     static Boundary getAllSidesBoundary();
 
     static Boundary getBackOfBoundary(const Box3D& box);
     static Boundary getFrontOfBoundary(const Box3D& box);
     static Boundary getLeftOfBoundary(const Box3D& box);
     static Boundary getRightOfBoundary(const Box3D& box);
-    static Boundary getTopOfBoundary(const Box3D& box);
     static Boundary getBottomOfBoundary(const Box3D& box);
+    static Boundary getTopOfBoundary(const Box3D& box);
     static Boundary getAllSidesOfBoundary(const Box3D& box);
 
     static Boundary getBackOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);
