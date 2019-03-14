@@ -10,11 +10,13 @@ std::string AlInAs_Si::name() const { return NAME; }
 
 std::string AlInAs_Si::str() const { return StringBuilder("Al", Al)("In")("As").dopant("Si", ND); }
 
+double AlInAs_Si::doping() const { return ND; }
+
 Material::ConductivityType AlInAs_Si::condtype() const { return Material::CONDUCTIVITY_N; }
 
 MI_PARENT(AlInAs_Si, AlInAs)
 
-AlInAs_Si::AlInAs_Si(const Material::Composition& Comp, DopingAmountType Type, double Val): AlInAs(Comp), mAlAs_Si(Type,Val), mInAs_Si(Type,Val)
+AlInAs_Si::AlInAs_Si(const Material::Composition& Comp, double Val): AlInAs(Comp), mAlAs_Si(Val), mInAs_Si(Val)
 {
 }
 

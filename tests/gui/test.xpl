@@ -393,6 +393,8 @@
 <script><![CDATA[
 from __future__ import print_function
 
+print(material.get('InGa(0.8)As_QW:Si=1e19'))
+
 GaAs = material.get('GaAs')
 print(GaAs.y1(), GaAs.y2(), GaAs.y3())
 

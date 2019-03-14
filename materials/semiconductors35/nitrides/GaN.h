@@ -30,7 +30,7 @@ struct GaN: public Semiconductor {
     Tensor2<double> Mlh(double T, double e) const override;
     double CB(double T, double e, char point) const override;
     double VB(double T, double e, char point, char hole) const override;
-    virtual ConductivityType condtype() const override;
+    ConductivityType condtype() const override;
 
 protected:
     bool isEqual(const Material& other) const override;
@@ -44,7 +44,7 @@ struct GaN_bulk: public GaN {
 
     static constexpr const char* NAME = "GaN_bulk";
 
-    virtual Tensor2<double> thermk(double T, double t) const override;
+    Tensor2<double> thermk(double T, double t) const override;
 
 };
 

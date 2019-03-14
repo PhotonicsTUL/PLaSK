@@ -12,15 +12,9 @@ std::string InN_Mg::name() const { return NAME; }
 
 std::string InN_Mg::str() const { return StringBuilder("InN").dopant("Mg", NA); }
 
-InN_Mg::InN_Mg(DopingAmountType Type, double Val) {
-    if (Type == CARRIERS_CONCENTRATION) {
-        Nf_RT = Val;
-        NA = 7.392E9*pow(Val,0.439);
-    }
-    else {
-        Nf_RT = 3.311E-23*pow(Val,2.278);
-        NA = Val;
-    }
+InN_Mg::InN_Mg(double Val) {
+    Nf_RT = 3.311E-23*pow(Val,2.278);
+    NA = Val;
     mob_RT = 5.739E13*pow(Nf_RT,-0.663);
     cond_RT = phys::qe*100.*Nf_RT*mob_RT;
 }
@@ -55,7 +49,7 @@ double InN_Mg::Nd() const {
     return ( 0. );
 }
 
-double InN_Mg::Dop() const {
+double InN_Mg::doping() const {
     return NA;
 }
 

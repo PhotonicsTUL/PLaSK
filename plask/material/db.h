@@ -72,16 +72,15 @@ struct PLASK_API MaterialsDB {
         /**
          * Create material.
          * @param composition parsed amounts of objects, can be not completed (see Material::completeComposition), empty composition in case of simple materials
-         * @param dopant_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
          * @param dopant_amount amount of dopant, is ignored if @p dopant_amount_type is @c NO_DOPANT
          * @return created material
          */
-        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType dopant_amount_type, double dopant_amount) const = 0;
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, double dopant_amount) const = 0;
 
         /**
          * @return @c true only if this contructor creates simple material (does not use composition)
          */
-        virtual bool isSimple() const = 0;
+        virtual bool isAlloy() const = 0;
 
         virtual ~MaterialConstructor() {}
 
@@ -89,8 +88,8 @@ struct PLASK_API MaterialsDB {
             if (!composition.empty()) throw Exception("Redundant composition given for material '{0}'", materialName);
         }
 
-        void ensureDopantIsNo(Material::DopingAmountType dopant_amount_type) const {
-            if (dopant_amount_type != Material::NO_DOPING) throw Exception("Redundant dopant given for material '{0}'", materialName);
+        void ensureNoDoping(double doping) const {
+            if (!isnan(doping)) throw Exception("Redundant doping given for material '{0}'", materialName);
         }
     };
 
@@ -162,11 +161,11 @@ struct PLASK_API MaterialsDB {
          * @return constructed material
          */
         shared_ptr<Material> operator()(double m1_weight) const override {
-            return (*constructor)(mixedComposition(m1_weight), Material::NO_DOPING, 0.0);
+            return (*constructor)(mixedComposition(m1_weight), 0.0);
         }
 
         virtual shared_ptr<Material> singleMaterial() const override {
-            return material1composition == material2composition ? (*constructor)(material1composition, Material::NO_DOPING, 0.0) : shared_ptr<Material>();
+            return material1composition == material2composition ? (*constructor)(material1composition, 0.0) : shared_ptr<Material>();
         }
     };
 
@@ -175,8 +174,6 @@ struct PLASK_API MaterialsDB {
      */
     struct PLASK_API MixedCompositionAndDopantFactory: public MixedCompositionOnlyFactory {
       protected:
-        Material::DopingAmountType dopAmountType;
-
         double m1DopAmount, m2DopAmount;
 
       public:
@@ -185,13 +182,12 @@ struct PLASK_API MaterialsDB {
          * @param constructor material constructor
          * @param material1composition incomplate composition of first material
          * @param material2composition incomplate composition of second material, must be defined for the same objects as @p material1composition
-         * @param dopAmountType type of doping amounts, common for @p m1DopAmount and @p m2DopAmount
          * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
          * \param shape changing material shape exponent
          */
         MixedCompositionAndDopantFactory(shared_ptr<const MaterialConstructor> constructor, const Material::Composition& material1composition, const Material::Composition& material2composition,
-                                         Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount, double shape=1.)
-            : MixedCompositionOnlyFactory(constructor, material1composition, material2composition, shape), dopAmountType(dopAmountType), m1DopAmount(m1DopAmount), m2DopAmount(m2DopAmount) {}
+                                         double m1DopAmount, double m2DopAmount, double shape=1.)
+            : MixedCompositionOnlyFactory(constructor, material1composition, material2composition, shape), m1DopAmount(m1DopAmount), m2DopAmount(m2DopAmount) {}
 
         /**
          * Construct material.
@@ -199,13 +195,13 @@ struct PLASK_API MaterialsDB {
          * @return constructed material
          */
         shared_ptr<Material> operator()(double m1_weight) const override {
-            return (*constructor)(mixedComposition(m1_weight), dopAmountType,
+            return (*constructor)(mixedComposition(m1_weight),
                                   m1DopAmount * pow(m1_weight, shape) + m2DopAmount * (1.0 - pow(m1_weight, shape)));
         }
 
         virtual shared_ptr<Material> singleMaterial() const override {
             return (material1composition == material2composition) && (m1DopAmount == m2DopAmount) ?
-                        (*constructor)(material1composition, dopAmountType, m1DopAmount) : shared_ptr<Material>();
+                        (*constructor)(material1composition, m1DopAmount) : shared_ptr<Material>();
         }
     };
 
@@ -214,8 +210,6 @@ struct PLASK_API MaterialsDB {
      */
     struct PLASK_API MixedDopantFactory: public MixedCompositionFactory {
       protected:
-        Material::DopingAmountType dopAmountType;
-
         double m1DopAmount, m2DopAmount;
 
         double shape;
@@ -224,12 +218,11 @@ struct PLASK_API MaterialsDB {
         /**
          * Construct MixedDopantFactory for given material constructor of simple material, and doping amounts for this constructor.
          * @param constructor material constructor
-         * @param dopAmountType type of doping amounts, common for both materials
          * @param m1DopAmount, m2DopAmount amounts of doping for first and second material
          * \param shape changing material shape exponent
          */
-        MixedDopantFactory(shared_ptr<const MaterialConstructor> constructor, Material::DopingAmountType dopAmountType, double m1DopAmount, double m2DopAmount, double shape=1.)
-            : MixedCompositionFactory(constructor), dopAmountType(dopAmountType), m1DopAmount(m1DopAmount), m2DopAmount(m2DopAmount), shape(shape) {}
+        MixedDopantFactory(shared_ptr<const MaterialConstructor> constructor, double m1DopAmount, double m2DopAmount, double shape=1.)
+            : MixedCompositionFactory(constructor), m1DopAmount(m1DopAmount), m2DopAmount(m2DopAmount), shape(shape) {}
 
         /**
          * Construct material.
@@ -237,11 +230,11 @@ struct PLASK_API MaterialsDB {
          * @return constructed material
          */
         shared_ptr<Material> operator()(double m1_weight) const override {
-            return (*constructor)(Material::Composition(), dopAmountType, m1DopAmount * pow(m1_weight, shape) + m2DopAmount * (1.0 - pow(m1_weight, shape)));
+            return (*constructor)(Material::Composition(), m1DopAmount * pow(m1_weight, shape) + m2DopAmount * (1.0 - pow(m1_weight, shape)));
         }
 
         virtual shared_ptr<Material> singleMaterial() const override {
-            return m1DopAmount == m2DopAmount ? (*constructor)(Material::Composition(), dopAmountType, m1DopAmount) : shared_ptr<Material>();
+            return m1DopAmount == m2DopAmount ? (*constructor)(Material::Composition(), m1DopAmount) : shared_ptr<Material>();
         }
     };
 
@@ -337,12 +330,12 @@ public:
 
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
 
-        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const override {
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const override {
             ensureCompositionIsNotEmpty(composition);
-            return plask::make_shared<MaterialType>(Material::completeComposition(composition), doping_amount_type, doping_amount);
+            return plask::make_shared<MaterialType>(Material::completeComposition(composition), doping);
         }
 
-        bool isSimple() const override { return false; }    // == ! requireComposition
+        bool isAlloy() const override { return true; }    // == ! requireComposition
     };
 
     template <typename MaterialType>
@@ -350,13 +343,13 @@ public:
 
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
 
-        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double) const override {
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const override {
             ensureCompositionIsNotEmpty(composition);
-            ensureDopantIsNo(doping_amount_type);
+            ensureNoDoping(doping);
             return plask::make_shared<MaterialType>(Material::completeComposition(composition));
         }
 
-        bool isSimple() const override { return false; }
+        bool isAlloy() const override { return true; }
     };
 
     template <typename MaterialType>
@@ -364,12 +357,12 @@ public:
 
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
 
-        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const override {
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const override {
             ensureCompositionIsEmpty(composition);
-            return plask::make_shared<MaterialType>(doping_amount_type, doping_amount);
+            return plask::make_shared<MaterialType>(doping);
         }
 
-        bool isSimple() const override { return true; }
+        bool isAlloy() const override { return false; }
     };
 
     template <typename MaterialType>
@@ -377,13 +370,13 @@ public:
 
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
 
-        virtual shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double) const override {
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const override {
             ensureCompositionIsEmpty(composition);
-            ensureDopantIsNo(doping_amount_type);
+            ensureNoDoping(doping);
             return plask::make_shared<MaterialType>();
         }
 
-        bool isSimple() const override { return true; }
+        bool isAlloy() const override { return false; }
     };
 
     /**
@@ -393,8 +386,7 @@ public:
         shared_ptr<Material> material;
         shared_ptr<const MaterialsDB::MaterialConstructor> constructor;
         Material::Composition composition;
-        Material::DopingAmountType doping_amount_type;
-        double doping_amount;
+        double doping;
 
       public:
         ProxyMaterialConstructor();
@@ -403,43 +395,40 @@ public:
 
         ProxyMaterialConstructor(const shared_ptr<Material>& material);
 
-        shared_ptr<Material> operator()(const Material::Composition& comp, Material::DopingAmountType dopt, double dop) const override;
+        shared_ptr<Material> operator()(const Material::Composition& comp, double dop) const override;
 
-        bool isSimple() const override;
+        bool isAlloy() const override;
     };
 
     /**
      * Create material object.
      * @param composition complete objects composition
      * @param dopant_name name of dopant (if any)
-     * @param doping_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
-     * @param doping_amount amount of dopant, is ignored if @p doping_amount_type is @c NO_DOPANT
+     * @param doping amount of dopant
      * @return constructed material
      * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
      * @see @ref Material::completeComposition
      */
-    shared_ptr<Material> get(const Material::Composition& composition, const std::string& label, const std::string& dopant_name = "", Material::DopingAmountType doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
+    shared_ptr<Material> get(const Material::Composition& composition, const std::string& label, const std::string& dopant_name = "", double doping = 0.0) const;
 
     /**
      * Create material object.
      * @param parsed_name_with_dopant material name with dopant name in format material_name[:dopant_name], for example: "AlGaN" or "AlGaN:Mg"
      * @param composition amounts of objects, with NaN for each object for which composition was not given
-     * @param doping_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
-     * @param doping_amount amount of dopant, is ignored if @p doping_amount_type is @c NO_DOPANT
+     * @param doping amount of dopant
      * @return constructed material
      * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
      */
-    //shared_ptr<Material> get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition, Material::DopingAmountType doping_amount_type = Material::NO_DOPING, double doping_amount = 0.0) const;
+    //shared_ptr<Material> get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition, double doping = 0.) const;
 
     /**
      * Create material object.
      * @param name_with_dopant material name with dopant name in format material[_label][:dopant_name], for example: "Al(0.2)GaN" or "Al(0.2)GaN:Mg"
-     * @param doping_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
-     * @param doping_amount amount of dopant, is ignored if @p doping_amount_type is @c NO_DOPANT
+     * @param doping amount of dopant
      * @return constructed material
      * @throw NoSuchMaterial if database doesn't know material with name @p parsed_name_with_donor
      */
-    shared_ptr<Material> get(const std::string& name_with_dopant, Material::DopingAmountType doping_amount_type, double doping_amount) const;
+    shared_ptr<Material> get(const std::string& name_with_dopant, double doping) const;
 
     /*
      * Create material object.
@@ -586,7 +575,7 @@ public:
      * @return @c true only if the material is simple
      * @throw NoSuchMaterial if database doesn't know the material with name @p name_without_composition
      */
-    bool isSimple(const std::string& material_name) const;
+    bool isAlloy(const std::string& material_name) const;
 
     /*
      * Get complex material constructor object.
@@ -613,14 +602,12 @@ private:
      * Create material object.
      * @param dbKey key in database
      * @param composition objects composition, empty composition for simple materials
-     * @param doping_amount_type type of amount of dopant, needed to interpretation of @p dopant_amount
-     * @param doping_amount amount of dopant, is ignored if @p doping_amount_type is @c NO_DOPANT
+     * @param doping amount of dopant
      * @return constructed material
      * @throw NoSuchMaterial if there is no material with key @p dbKey in database
      * @see @ref Material::completeComposition
      */
-    shared_ptr<Material> get(const std::string& dbKey, const Material::Composition& composition, Material::DopingAmountType doping_amount_type = Material::NO_DOPING,
-                             double doping_amount = 0.0) const;
+    shared_ptr<Material> get(const std::string& dbKey, const Material::Composition& composition, double doping = 0.0) const;
 
 };
 

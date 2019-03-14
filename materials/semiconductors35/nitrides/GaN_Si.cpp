@@ -13,15 +13,9 @@ std::string GaN_Si::name() const { return NAME; }
 
 std::string GaN_Si::str() const { return StringBuilder("GaN").dopant("Si", ND); }
 
-GaN_Si::GaN_Si(DopingAmountType Type, double Val) {
-    if (Type == CARRIERS_CONCENTRATION) {
-        Nf_RT = Val;
-        ND = std::pow(Val/0.55,1/1.01);
-    }
-    else {
-        Nf_RT = 0.55*std::pow(Val,1.01);
-        ND = Val;
-    }
+GaN_Si::GaN_Si(double Val) {
+    Nf_RT = 0.55*std::pow(Val,1.01);
+    ND = Val;
     mob_RT = 4.164e6*pow(Nf_RT,-0.228);
 }
 
@@ -59,7 +53,7 @@ double GaN_Si::Nd() const {
     return ( ND );
 }
 
-double GaN_Si::Dop() const {
+double GaN_Si::doping() const {
     return ND;
 }
 
@@ -94,7 +88,7 @@ MI_PROPERTY(GaN_Si, absp,
             )
 double GaN_Si::absp(double lam, double T) const {
     double dE = phys::h_eVc1e9 / lam - Eg(T); // dE = E - Eg
-    double N = Dop() * 1e-18;
+    double N = doping() * 1e-18;
 
     double tNgr = -0.0003878*lam*lam + 0.3946*lam - 90.42;
     if (N > tNgr) { // Perlin

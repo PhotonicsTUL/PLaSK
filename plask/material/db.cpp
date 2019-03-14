@@ -91,11 +91,11 @@ std::string complexDbKey(const std::string& fullComplexName) {
 
 std::string dbKey(const Material::Parameters& parameters) {
     std::string res;
-    if (parameters.isSimple())
+    if (!parameters.isAlloy())
         res = parameters.name;
     else
         for (auto c: parameters.composition) res += c.first;
-    return appendLabelDopant(res, parameters.label, parameters.dopantName);
+    return appendLabelDopant(res, parameters.label, parameters.dopant);
 }
 
 
@@ -145,8 +145,7 @@ MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const std::strin
             Material::Parameters p(name, true);
             constructor = db.getConstructor(p, true);
             composition = p.composition;
-            doping_amount_type = p.dopingAmountType;
-            doping_amount = p.dopingAmount;
+            doping = p.doping;
         }
     }
     assert(material || constructor);
@@ -156,24 +155,21 @@ MaterialsDB::ProxyMaterialConstructor::ProxyMaterialConstructor(const shared_ptr
     MaterialsDB::MaterialConstructor(material->name()), material(material)
 {}
 
-shared_ptr<Material> MaterialsDB::ProxyMaterialConstructor::operator()(const Material::Composition& comp, Material::DopingAmountType dopt, double dop) const {
+shared_ptr<Material> MaterialsDB::ProxyMaterialConstructor::operator()(const Material::Composition& comp, double dop) const {
     if (material) {
         return material;
     }
-    if (dopt == Material::NO_DOPING && doping_amount_type != Material::NO_DOPING) {
-        dopt = doping_amount_type;
-        dop = doping_amount;
-    }
+    if (isnan(dop) && !isnan(doping)) dop = doping;
     if (composition.empty()) {
-        return (*constructor)(comp, dopt, dop);
+        return (*constructor)(comp, dop);
     } else {
-        return (*constructor)(composition, dopt, dop);
+        return (*constructor)(composition, dop);
     }
 }
 
-bool MaterialsDB::ProxyMaterialConstructor::isSimple() const {
-    if (material || !composition.empty() || !constructor) return true;
-    return constructor->isSimple();
+bool MaterialsDB::ProxyMaterialConstructor::isAlloy() const {
+    if (material || !composition.empty() || !constructor) return false;
+    return constructor->isAlloy();
 }
 
 
@@ -199,8 +195,8 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
     return it->second;
 }
 
-shared_ptr<Material> MaterialsDB::get(const std::string& db_Key, const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
-    return (*getConstructor(db_Key, composition))(composition, doping_amount_type, doping_amount);
+shared_ptr<Material> MaterialsDB::get(const std::string& db_Key, const Material::Composition& composition, double doping) const {
+    return (*getConstructor(db_Key, composition))(composition, doping);
 }
 
 shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const Material::Composition& composition, const std::string& label, const std::string& dopant_name) const {
@@ -212,30 +208,28 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
     return getConstructor(dbKey(material), material.composition, allow_complex_without_composition);
 }
 
-shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, const std::string& label, const std::string& dopant_name, Material::DopingAmountType doping_amount_type, double doping_amount) const {
-    return get(complexDbKey(composition, label, dopant_name), composition, doping_amount_type, doping_amount);
+shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, const std::string& label, const std::string& dopant_name, double doping) const {
+    return get(complexDbKey(composition, label, dopant_name), composition, doping);
 }
 
-/*shared_ptr<Material> MaterialsDB::get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition,
-                                               Material::DopingAmountType doping_amount_type, double doping_amount) const {
+/*shared_ptr<Material> MaterialsDB::get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition, double doping) const {
     std::string name, dopant;
     std::tie(name, dopant) = splitString2(parsed_name_with_dopant, ':');
     if (composition.empty())
-        return get(parsed_name_with_dopant, Material::Composition(), dopant, doping_amount_type, doping_amount);
+        return get(parsed_name_with_dopant, Material::Composition(), dopant, doping);
     std::vector<std::string> objects = Material::parseObjectsNames(name);
     if (composition.size() > objects.size())
         throw plask::Exception("Too long material composition vector (longer than number of objects in '{0}')", parsed_name_with_dopant);
     Material::Composition comp;
     for (std::size_t i = 0; i < composition.size(); ++i) comp[objects[i]] = composition[i];
     for (std::size_t i = composition.size(); i < objects.size(); ++i) comp[objects[i]] = std::numeric_limits<double>::quiet_NaN();
-    return get(Material::completeComposition(comp), dopant, doping_amount_type, doping_amount);
+    return get(Material::completeComposition(comp), dopant, doping);
 }*/
 
-shared_ptr<Material> MaterialsDB::get(const std::string& name_with_dopant, Material::DopingAmountType doping_amount_type, double doping_amount) const {
+shared_ptr<Material> MaterialsDB::get(const std::string& name_with_dopant, double doping) const {
     Material::Parameters p(name_with_dopant, true);
     if (p.hasDopantName()) {
-        p.dopingAmount = doping_amount;
-        p.dopingAmountType = doping_amount_type;
+        p.doping = doping;
     }
     return get(p);
 }
@@ -249,7 +243,7 @@ shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(c
 }
 
 shared_ptr<Material> MaterialsDB::get(const Material::Parameters &m) const {
-    return (*getConstructor(m))(m.composition, m.dopingAmountType, m.dopingAmount);
+    return (*getConstructor(m))(m.composition, m.doping);
 }
 
 shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
@@ -258,14 +252,12 @@ shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
 
 shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const std::string& material1_fullname, const std::string& material2_fullname, double shape) const {
     Material::Parameters m1(material1_fullname), m2(material2_fullname);
-    if (m1.dopantName != m2.dopantName)
+    if (m1.dopant != m2.dopant)
         throw MaterialParseException("Cannot mix materials with different doping: '{0}' and '{1}'", material1_fullname, material2_fullname);
-    if (m1.dopingAmountType != m2.dopingAmountType)
-        throw MaterialParseException("Cannot mix materials for which doping is given in different formats: '{0}' and '{1}'", material1_fullname, material2_fullname);
-    if ((m1.label != m2.label) || (m1.isSimple() != m2.isSimple()))
+    if ((m1.label != m2.label) || (m1.isAlloy() != m2.isAlloy()))
         throw MaterialParseException("Cannot mix different materials: '{0}' and '{1}'", material1_fullname, material2_fullname);
 
-    if (m1.isSimple()) {  // simple material, without parsing composition, still dopants can be mixed
+    if (!m1.isAlloy()) {  // simple material, without parsing composition, still dopants can be mixed
         if (m1.name != m2.name)
             throw MaterialParseException("Cannot mix different materials: '{0}' and '{1}'", material1_fullname, material2_fullname);
 
@@ -273,7 +265,7 @@ shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const s
             throw MaterialParseException("{0}: only complex or doped materials with different doping concentrations can be mixed", material1_fullname);
 
         return shared_ptr<MaterialsDB::MixedCompositionFactory>(
-                    new MixedDopantFactory(getConstructor(m1), m1.dopingAmountType, m1.dopingAmount, m2.dopingAmount, shape)
+                    new MixedDopantFactory(getConstructor(m1), m1.doping, m2.doping, shape)
                     );
     }
 
@@ -282,7 +274,7 @@ shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const s
         return shared_ptr<MaterialsDB::MixedCompositionFactory>(
                     new MixedCompositionAndDopantFactory(getConstructor(m1),
                                                     m1.composition, m2.composition,
-                                                    m1.dopingAmountType, m1.dopingAmount, m2.dopingAmount, shape)
+                                                    m1.doping, m2.doping, shape)
                     );
 
     //both undopped
@@ -294,7 +286,6 @@ shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const s
     std::tie(m1comp, m1dop) = splitString2(material1_fullname, ':');
     std::tie(m2comp, m2dop) = splitString2(material2_fullname, ':');
     std::string m1_dop_name, m2_dop_name;
-    Material::DopingAmountType m1_dop_type = Material::NO_DOPING, m2_dop_type = Material::NO_DOPING;
     double m1_dop_am = 0.0, m2_dop_am = 0.0;
     if (m1dop != "") Material::parseDopant(m1dop, m1_dop_name, m1_dop_type, m1_dop_am);
     if (m2dop != "") Material::parseDopant(m2dop, m2_dop_name, m2_dop_type, m2_dop_am);
@@ -329,6 +320,6 @@ void MaterialsDB::removeComplex(const std::string& name) {
     constructors.erase(complexDbKey(name));
 }
 
-bool MaterialsDB::isSimple(const std::string &material_name) const { return getConstructor(material_name)->isSimple(); }
+bool MaterialsDB::isAlloy(const std::string &material_name) const { return getConstructor(material_name)->isAlloy(); }
 
 }  // namespace plask

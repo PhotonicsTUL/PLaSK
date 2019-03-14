@@ -16,6 +16,10 @@ AlGaN::AlGaN(const Material::Composition& Comp) {
     Ga = Comp.find("Ga")->second;
 }
 
+Material::Composition AlGaN::composition() const {
+    return { {"Al", Al}, {"Ga", Ga}, {"N", 1} };
+}
+
 MI_PROPERTY(AlGaN, thermk,
             MISource("B. C. Daly et al., Journal of Applied Physics 92 (2002) 3820"),
             MIComment("based on data for Al = 0.2, 0.45")

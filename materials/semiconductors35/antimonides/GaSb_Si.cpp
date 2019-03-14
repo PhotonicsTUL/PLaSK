@@ -10,17 +10,12 @@ std::string GaSb_Si::name() const { return NAME; }
 
 std::string GaSb_Si::str() const { return StringBuilder("GaSb").dopant("Si", NA); }
 
-GaSb_Si::GaSb_Si(DopingAmountType Type, double Val) {
-    if (Type == CARRIERS_CONCENTRATION)
-        Nf_RT = Val;
+GaSb_Si::GaSb_Si(double Val) {
+    NA = Val;
+    if ( NA < pow(10.,((1.-2.27)/(-0.0731))) )
+        Nf_RT = NA;
     else
-    {
-        NA = Val;
-        if ( NA < pow(10.,((1.-2.27)/(-0.0731))) )
-            Nf_RT = NA;
-        else
-            Nf_RT = ( (-0.0731*log10(NA)+2.27) * NA );
-    }
+        Nf_RT = ( (-0.0731*log10(NA)+2.27) * NA );
     mob_RT = 95. + (565. - 95.) / (1.+pow(NA/4e18,0.85));
 }
 
@@ -44,7 +39,7 @@ double GaSb_Si::Nf(double T) const {
     return ( Nf_RT*pow(T/300.,tD) );
 }
 
-double GaSb_Si::Dop() const {
+double GaSb_Si::doping() const {
     return ( NA );
 }
 

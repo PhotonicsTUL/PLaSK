@@ -12,7 +12,7 @@ std::string AlN_Mg::str() const { return StringBuilder("AlN").dopant("Mg", NA); 
 
 MI_PARENT(AlN_Mg, AlN)
 
-AlN_Mg::AlN_Mg(DopingAmountType Type, double Val) {
+AlN_Mg::AlN_Mg(double Val) {
     Nf_RT = 2e11;
     mob_RT = 10.;
     cond_RT = 3e-5;
@@ -28,7 +28,7 @@ double AlN_Mg::Nf(double /*T*/) const {
 }
 
 
-double AlN_Mg::Dop() const {
+double AlN_Mg::doping() const {
     return NA;
 }
 

@@ -12,15 +12,9 @@ std::string AlN_Si::str() const { return StringBuilder("AlN").dopant("Si", ND); 
 
 MI_PARENT(AlN_Si, AlN)
 
-AlN_Si::AlN_Si(DopingAmountType Type, double Val) {
-    if (Type == CARRIERS_CONCENTRATION) {
-        Nf_RT = Val;
-        ND = 1.223e10*pow(Val,5.540e-1);
-    }
-    else {
-        Nf_RT = 6.197E-19*pow(Val,1.805);
-        ND = Val;
-    }
+AlN_Si::AlN_Si(double Val) {
+    Nf_RT = 6.197E-19*pow(Val,1.805);
+    ND = Val;
     //mobRT(Nf_RT),
     mob_RT = 29.410*exp(-1.838E-17*Nf_RT);
 }
@@ -44,7 +38,7 @@ double AlN_Si::Nf(double T) const {
 	return ( Nf_RT * 3.502E-27*pow(T,10.680) );
 }
 
-double AlN_Si::Dop() const {
+double AlN_Si::doping() const {
     return ND;
 }
 

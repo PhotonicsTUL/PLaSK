@@ -27,7 +27,7 @@ struct AlN: public Semiconductor {
     Tensor2<double> Me(double T, double e, char point) const override;
     Tensor2<double> Mhh(double T, double e) const override;
     Tensor2<double> Mlh(double T, double e) const override;
-    virtual ConductivityType condtype() const override;
+    ConductivityType condtype() const override;
 /*TODO
     double Mhh(double T, double e, char point) const override;
     double Mhh_l(double T, char point) const override;
@@ -38,7 +38,7 @@ struct AlN: public Semiconductor {
 */
 
 protected:
-    virtual bool isEqual(const Material& other) const override;
+    bool isEqual(const Material& other) const override;
 
 };
 

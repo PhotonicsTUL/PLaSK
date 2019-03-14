@@ -13,15 +13,9 @@ std::string GaN_Mg::name() const { return NAME; }
 
 std::string GaN_Mg::str() const { return StringBuilder("GaN").dopant("Mg", NA); }
 
-GaN_Mg::GaN_Mg(DopingAmountType Type, double Val) {
-    if (Type == CARRIERS_CONCENTRATION) {
-        Nf_RT = Val;
-        NA = std::pow(Val/0.65e4,1/0.71);
-    }
-    else {
-        Nf_RT = 0.65E4*std::pow(Val,0.71);
-        NA = Val;
-    }
+GaN_Mg::GaN_Mg(double Val) {
+    Nf_RT = 0.65E4*std::pow(Val,0.71);
+    NA = Val;
     mob_RT = 26.7*exp(-Nf_RT/1e18);
 }
 
@@ -60,7 +54,7 @@ double GaN_Mg::Nd() const {
     return ( 0. );
 }
 
-double GaN_Mg::Dop() const {
+double GaN_Mg::doping() const {
     return NA;
 }
 
@@ -78,7 +72,7 @@ MI_PROPERTY(GaN_Mg, absp,
             )
 double GaN_Mg::absp(double lam, double T) const {
     double dE = phys::h_eVc1e9/lam - Eg(T, 0., 'G');
-    double N = Dop() * 1e-18;
+    double N = doping() * 1e-18;
     return  (19000.+200.*N) * exp(dE/(0.019+0.0001*N)) + (330.+30.*N) * exp(dE/(0.07+0.0008*N));
 }
 

@@ -45,9 +45,9 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
         alloy(alloy)
     {}
 
-    inline shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const override;
+    inline shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const override;
 
-    bool isSimple() const override { return !alloy; }
+    bool isAlloy() const override { return alloy; }
 };
 
 class PythonEvalMaterial: public MaterialWithBase
@@ -55,6 +55,8 @@ class PythonEvalMaterial: public MaterialWithBase
     shared_ptr<PythonEvalMaterialConstructor> cls;
 
     py::object self;
+
+    Parameters params;
 
     friend struct PythonEvalMaterialConstructor;
 
@@ -111,6 +113,20 @@ class PythonEvalMaterial: public MaterialWithBase
     std::string name() const override { return cls->materialName; }
     Material::Kind kind() const override { return (cls->kind == Material::EMPTY)? base->kind() : cls->kind; }
     Material::ConductivityType condtype() const override { return (cls->condtype == Material::CONDUCTIVITY_UNDETERMINED)? base->condtype() : cls->condtype; }
+
+    std::string str() const override {
+        return params.str();
+    }
+
+    double doping() const override {
+        if (isnan(params.doping)) return 0.;
+        else return params.doping;
+    }
+
+    Composition composition() const override {
+        return params.composition;
+    }
+
 
 #   define PYTHON_EVAL_CALL_0(rtype, fun) \
         if (cls->cache.fun) return *cls->cache.fun;\
@@ -275,16 +291,12 @@ class PythonEvalMaterial: public MaterialWithBase
     // End of overridden methods
 };
 
-inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const {
+inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Material::Composition& composition, double doping) const {
     OmpLockGuard<OmpNestLock> lock(python_omp_lock);
-    auto material = plask::make_shared<PythonEvalMaterial>(self.lock(), base(composition, doping_amount_type, doping_amount));
-    if (alloy) {
-        for (auto item: Material::completeComposition(composition)) {
-            material->self.attr(item.first.c_str()) = item.second;
-        }
-    }
-    if (doping_amount_type == Material::DOPANT_CONCENTRATION) material->self.attr("doping") = doping_amount;
-    else if (doping_amount_type == Material::CARRIERS_CONCENTRATION) material->self.attr("carriers") = doping_amount;
+    auto material = plask::make_shared<PythonEvalMaterial>(self.lock(), base(composition, doping));
+    material->params = Material::Parameters(materialName, true);
+    if (alloy) material->params.composition = Material::completeComposition(composition);
+    material->params.doping = doping;
     return material;
 }
 
@@ -293,13 +305,6 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
         std::string material_name = reader.requireAttribute("name");
         std::string base_name = reader.requireAttribute("base");
         bool alloy = reader.getAttribute<bool>("alloy", false);
-
-        //TODO Remove soon
-        if (reader.hasAttribute("complex")) {
-            if (reader.hasAttribute("alloy")) throw XMLException(reader, "Obsolete 'complex' attribute now allowed if 'alloy' is specified");
-            alloy = reader.getAttribute<bool>("complex", false);
-            writelog(LOG_WARNING, "XML line {} in <material>: attribute 'complex' is obsolete, use 'alloy' instead", reader.getLineNr());
-        }
 
         shared_ptr<PythonEvalMaterialConstructor> constructor = plask::make_shared<PythonEvalMaterialConstructor>(materialsDB, material_name, base_name, alloy);
         constructor->self = constructor;

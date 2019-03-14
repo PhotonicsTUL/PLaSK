@@ -12,13 +12,9 @@ std::string AlGaN_Mg::str() const { return StringBuilder("Al", Al)("Ga")("N").do
 
 MI_PARENT(AlGaN_Mg, AlGaN)
 
-AlGaN_Mg::AlGaN_Mg(const Material::Composition& Comp, DopingAmountType Type, double Val): AlGaN(Comp), mGaN_Mg(Type,Val), mAlN_Mg(Type,Val)
+AlGaN_Mg::AlGaN_Mg(const Material::Composition& Comp, double Val): AlGaN(Comp), mGaN_Mg(Val), mAlN_Mg(Val)
 {
-    if (Type == CARRIERS_CONCENTRATION)
-        NA = mGaN_Mg.Dop();
-        //NA = mAlN_Mg.Dop()*Al + mGaN_Mg.Dop()*Ga;
-    else
-        NA = Val;
+    NA = Val;
 }
 
 MI_PROPERTY(AlGaN_Mg, mob,
@@ -39,7 +35,7 @@ double AlGaN_Mg::Nf(double T) const {
     //return mAlN_Mg.Nf(T)*Al + mGaN_Mg.Nf(T)*Ga;
 }
 
-double AlGaN_Mg::Dop() const {
+double AlGaN_Mg::doping() const {
     return NA;
 }
 
@@ -54,7 +50,7 @@ MI_PROPERTY(AlGaN_Mg, absp,
             )
 double AlGaN_Mg::absp(double lam, double T) const {
     double E = phys::h_eVc1e9/lam;
-    return ( (19000.+200.*Dop()/1e18)*exp((E-Eg(T,0.,'G'))/(0.019+0.0001*Dop()/1e18))+(330.+30.*Dop()/1e18)*exp((E-Eg(T,0.,'G'))/(0.07+0.0008*Dop()/1e18)) );
+    return ( (19000.+200.*doping()/1e18)*exp((E-Eg(T,0.,'G'))/(0.019+0.0001*doping()/1e18))+(330.+30.*doping()/1e18)*exp((E-Eg(T,0.,'G'))/(0.07+0.0008*doping()/1e18)) );
 }
 
 bool AlGaN_Mg::isEqual(const Material &other) const {

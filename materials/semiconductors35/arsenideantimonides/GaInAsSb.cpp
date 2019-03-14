@@ -17,6 +17,10 @@ std::string GaInAsSb::str() const { return StringBuilder("Ga")("In", In)("As")("
 
 std::string GaInAsSb::name() const { return NAME; }
 
+Material::Composition GaInAsSb::composition() const {
+    return { {"In", In}, {"Ga", Ga}, {"As", As}, {"Sb", Sb} };
+}
+
 MI_PROPERTY(GaInAsSb, lattC,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
             MISource("linear interpolation: GaSb, InSb, GaAs, InAs")

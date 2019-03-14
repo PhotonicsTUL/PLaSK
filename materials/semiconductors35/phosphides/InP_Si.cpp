@@ -10,7 +10,7 @@ std::string InP_Si::name() const { return NAME; }
 
 std::string InP_Si::str() const { return StringBuilder("InP").dopant("Si", ND); }
 
-InP_Si::InP_Si(DopingAmountType /*Type*/, double Val) {
+InP_Si::InP_Si(double Val) {
     Nf_RT = Val;
     ND = Val;
     mob_RT = 3900./(1+pow((Nf_RT/1e18),0.51));
@@ -32,7 +32,7 @@ double InP_Si::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
-double InP_Si::Dop() const {
+double InP_Si::doping() const {
     return ( ND );
 }
 

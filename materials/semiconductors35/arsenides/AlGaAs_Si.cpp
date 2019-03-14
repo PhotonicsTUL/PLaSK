@@ -12,21 +12,14 @@ std::string AlGaAs_Si::str() const { return StringBuilder("Al", Al)("Ga")("As").
 
 MI_PARENT(AlGaAs_Si, AlGaAs)
 
-AlGaAs_Si::AlGaAs_Si(const Material::Composition& Comp, DopingAmountType Type, double Val): AlGaAs(Comp), mGaAs_Si(Type,Val), mAlAs_Si(Type,Val)
+AlGaAs_Si::AlGaAs_Si(const Material::Composition& Comp, double Val): AlGaAs(Comp), mGaAs_Si(Val), mAlAs_Si(Val)
 {
     double fx1A = (1.-7.8*Al*Al); // x < 0.35
     double fx1B = (1.14*Al-0.36); // else
-    if (Type == CARRIERS_CONCENTRATION) {
-        Nf_RT = Val;
-        if (Al < 0.35) ND = mGaAs_Si.Dop()*fx1A;
-        else ND = mGaAs_Si.Dop()*fx1B;
-    }
-    else {
-        ND = Val;
-        double Nf_GaAs_Si_RT = ND; // = 1.00*ND
-        if (Al < 0.35) Nf_RT = Nf_GaAs_Si_RT*fx1A;
-        else Nf_RT = Nf_GaAs_Si_RT*fx1B;
-    }
+    ND = Val;
+    double Nf_GaAs_Si_RT = ND; // = 1.00*ND
+    if (Al < 0.35) Nf_RT = Nf_GaAs_Si_RT*fx1A;
+    else Nf_RT = Nf_GaAs_Si_RT*fx1B;
     double mob_GaAs_Si_RT = 6600./(1+pow((Nf_RT/5e17),0.53));
     double fx2A = exp(-16.*Al*Al); // x < 0.5
     double fx2B = 0.054*Al-0.009; // else
@@ -79,7 +72,7 @@ double AlGaAs_Si::Nd() const {
     return ( ND );
 }
 
-double AlGaAs_Si::Dop() const {
+double AlGaAs_Si::doping() const {
     return ( ND );
 }
 

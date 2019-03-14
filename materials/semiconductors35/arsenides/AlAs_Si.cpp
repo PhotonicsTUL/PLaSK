@@ -10,18 +10,12 @@ std::string AlAs_Si::name() const { return NAME; }
 
 std::string AlAs_Si::str() const { return StringBuilder("AlAs").dopant("Si", ND); }
 
-AlAs_Si::AlAs_Si(DopingAmountType Type, double Val) {
+AlAs_Si::AlAs_Si(double Val) {
     //double act_GaAs = 1.;
     //double Al = 1.; // AlAs (not AlGaAs)
     //double fx1 = 1.14*Al-0.36;
-    if (Type == CARRIERS_CONCENTRATION) {
-        Nf_RT = Val;
-        ND = Val/0.78; // Val/(act_GaAs*fx1);
-    }
-    else {
-        Nf_RT = 0.78*Val; // (act_GaAs*fx1)*Val;
-        ND = Val;
-    }
+    Nf_RT = 0.78*Val; // (act_GaAs*fx1)*Val;
+    ND = Val;
     double mob_RT_GaAs = 6600./(1+pow((Nf_RT/5e17),0.53));
     double fx2 = 0.045; // 0.054*Al-0.009;
     mob_RT = mob_RT_GaAs * fx2;
@@ -42,7 +36,7 @@ double AlAs_Si::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
-double AlAs_Si::Dop() const {
+double AlAs_Si::doping() const {
     return ( ND );
 }
 

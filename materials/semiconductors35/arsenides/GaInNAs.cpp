@@ -17,6 +17,10 @@ std::string GaInNAs::str() const { return StringBuilder("Ga")("In", In)("N", N)(
 
 std::string GaInNAs::name() const { return NAME; }
 
+Material::Composition GaInNAs::composition() const {
+    return { {"Ga", Ga}, {"In", In}, {"N", N}, {"As", As} };
+}
+
 MI_PROPERTY(GaInNAs, lattC,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696; "),

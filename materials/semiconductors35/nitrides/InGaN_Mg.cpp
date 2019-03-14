@@ -12,12 +12,9 @@ std::string InGaN_Mg::name() const { return NAME; }
 
 std::string InGaN_Mg::str() const { return StringBuilder("In", In)("Ga")("N").dopant("Mg", NA); }
 
-InGaN_Mg::InGaN_Mg(const Material::Composition& Comp, DopingAmountType Type, double Val): InGaN(Comp), mGaN_Mg(Type,Val), mInN_Mg(Type,Val)
+InGaN_Mg::InGaN_Mg(const Material::Composition& Comp, double Val): InGaN(Comp), mGaN_Mg(Val), mInN_Mg(Val)
 {
-    if (Type == CARRIERS_CONCENTRATION)
-        NA = mInN_Mg.Dop()*In + mGaN_Mg.Dop()*Ga;
-    else
-        NA = Val;
+    NA = Val;
 }
 
 MI_PROPERTY(InGaN_Mg, mob,
@@ -51,7 +48,7 @@ double InGaN_Mg::Nd() const {
     return ( 0. );
 }
 
-double InGaN_Mg::Dop() const {
+double InGaN_Mg::doping() const {
     return NA;
 }
 
@@ -66,7 +63,7 @@ MI_PROPERTY(InGaN_Mg, absp,
             )
 double InGaN_Mg::absp(double lam, double T) const {
     double E = phys::h_eVc1e9/lam;
-    return ( (19000.+200.*Dop()/1e18)*exp((E-Eg(T,0.,'G'))/(0.019+0.0001*Dop()/1e18))+(330.+30.*Dop()/1e18)*exp((E-Eg(T,0.,'G'))/(0.07+0.0008*Dop()/1e18)) );
+    return ( (19000.+200.*doping()/1e18)*exp((E-Eg(T,0.,'G'))/(0.019+0.0001*doping()/1e18))+(330.+30.*doping()/1e18)*exp((E-Eg(T,0.,'G'))/(0.07+0.0008*doping()/1e18)) );
 }
 
 bool InGaN_Mg::isEqual(const Material &other) const {

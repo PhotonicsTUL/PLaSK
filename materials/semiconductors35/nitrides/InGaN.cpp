@@ -16,6 +16,10 @@ InGaN::InGaN(const Material::Composition& Comp)
     Ga = Comp.find("Ga")->second;
 }
 
+Material::Composition InGaN::composition() const {
+    return { {"In", In}, {"Ga", Ga}, {"N", 1} };
+}
+
 MI_PROPERTY(InGaN, thermk,
             MISource("B. N. Pantha et al., Applied Physics Letters 92 (2008) 042112"),
             MIComment("based on data for In: 16% - 36%")

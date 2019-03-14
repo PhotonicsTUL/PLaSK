@@ -48,7 +48,7 @@ struct GaAs: public Semiconductor {
 
   protected:
 
-    virtual bool isEqual(const Material &other) const override;};
+    bool isEqual(const Material &other) const override;};
 
 }} // namespace plask::materials
 

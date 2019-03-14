@@ -21,6 +21,7 @@ struct AlGaAs: public Semiconductor {
     AlGaAs(const Material::Composition& Comp);
     std::string str() const override;
     std::string name() const override;
+    Composition composition() const override;
     double lattC(double T, char x) const override;
     double Eg(double T, double e, char point) const override;
     double Dso(double T, double e) const override;
@@ -49,7 +50,7 @@ struct AlGaAs: public Semiconductor {
     double eps(double T) const override;
 
 protected:
-    virtual bool isEqual(const Material& other) const override;
+    bool isEqual(const Material& other) const override;
 
 protected:
     double Al,
