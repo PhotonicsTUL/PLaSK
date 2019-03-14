@@ -16,6 +16,13 @@ import os
 from collections import OrderedDict
 from numpy import log10, ceil
 
+try:
+    import matplotlib
+except ImportError:
+    matplotlib = None
+else:
+    import matplotlib.colors
+
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
@@ -106,6 +113,14 @@ DEFAULTS = {
     'syntax/python_pylab': 'color=#440088',
     'syntax/python_define': 'color=#1c68b9, italic=true',
     'syntax/python_decorator': 'color=#009f81',
+    'plots/face_color': matplotlib.colors.to_hex(matplotlib.rcParams['axes.facecolor'])
+                       if matplotlib is not None else '#ffffff',
+    'plots/edge_color': matplotlib.colors.to_hex(matplotlib.rcParams['axes.edgecolor'])
+                       if matplotlib is not None else '#000000',
+    'plots/axes_color': matplotlib.colors.to_hex(matplotlib.rcParams['axes.edgecolor'])
+                       if matplotlib is not None else '#000000',
+    'plots/grid_color': matplotlib.colors.to_hex(matplotlib.rcParams['grid.color'])
+                       if matplotlib is not None else '#b0b0b0',
     'geometry/selected_color': '#ff4444',
     'geometry/selected_alpha': 0.7,
     'geometry/selected_width': 2.0,
@@ -196,6 +211,12 @@ CONFIG_WIDGETS = OrderedDict([
         ]),
     ])),
     ("Graphics", OrderedDict([
+        ("General", [
+            ("Background color", Color('plots/face_color', "Background color of all plots.")),
+            ("Edges color", Color('plots/edge_color', "Color of edges in all plots.")),
+            ("Axes color", Color('plots/axes_color', "Color of zero axes in all plots.")),
+            ("Grid color", Color('plots/grid_color', "Color of grid in all plots.")),
+        ]),
         ("Geometry View", [
             ("Selection frame color", Color('geometry/selected_color',
                                             "Color of a frame around the selected object.")),
@@ -858,13 +879,17 @@ class ConfigDialog(QDialog):
         CONFIG.sync()
         from .widgets import EDITOR_FONT
         EDITOR_FONT.fromString(parse_font('editor/font'))
+        # This should be changed before the plots are updates
+        if matplotlib is not None:
+            matplotlib.rcParams['axes.facecolor'] = CONFIG['plots/face_color']
+            matplotlib.rcParams['axes.edgecolor'] = CONFIG['plots/edge_color']
+            matplotlib.rcParams['grid.color'] = CONFIG['plots/grid_color']
         self.parent().config_changed.emit()
         if need_restart:
             QMessageBox.information(None,
                                     "Restart Needed",
                                     "Some of the settings you have changed require restart to take effect. "
                                     "Save your work, close PLaSK and open it again.")
-
 
     def accept(self):
         self.apply()

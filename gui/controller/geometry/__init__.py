@@ -23,6 +23,7 @@ from ...model.info import Info
 from .. import Controller
 from ...utils import get_manager
 from ...utils.widgets import HTMLDelegate, VerticalScrollArea, create_undo_actions, set_icon_size
+from ...utils.config import CONFIG
 
 try:
     import plask
@@ -361,6 +362,8 @@ class GeometryController(Controller):
 
     def reconfig(self):
         if self.plotted_tree_element is not None and self.get_widget().isVisible():
+            self.geometry_view.axes.set_facecolor(CONFIG['plots/face_color'])
+            self.geometry_view.axes.grid(True, color=CONFIG['plots/grid_color'])
             self.plot_refresh()
 
     def on_model_change(self, *args, **kwargs):

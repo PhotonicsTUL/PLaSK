@@ -131,22 +131,27 @@ def close_all_windows():
     return True
 
 
-# icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
-SECTION_ICONS = {
-    'defines': 'accessories-dictionary',
-    'materials': 'accessories-character-map',
-    'geometry': 'system-file-manager',
-    'grids': 'preferences-desktop-keyboard',
-    'solvers': 'utilities-system-monitor',
-    'connects': 'preferences-desktop-accessibility',
-    'script': 'accessories-text-editor',
-}
+if matplotlib is not None:
+    matplotlib.rcParams['axes.facecolor'] = CONFIG['plots/face_color']
+    matplotlib.rcParams['axes.edgecolor'] = CONFIG['plots/edge_color']
+    matplotlib.rcParams['grid.color'] = CONFIG['plots/grid_color']
 
 
 class MainWindow(QMainWindow):
 
     SECTION_TITLES = dict(defines=" &Defines ", materials=" &Materials ", geometry=" &Geometry ", grids=" M&eshing ",
                           solvers=" &Solvers ", connects=" &Connects ", script=" Sc&ript ")
+
+    # icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
+    SECTION_ICONS = {
+        'defines': 'accessories-dictionary',
+        'materials': 'accessories-character-map',
+        'geometry': 'system-file-manager',
+        'grids': 'preferences-desktop-keyboard',
+        'solvers': 'utilities-system-monitor',
+        'connects': 'preferences-desktop-accessibility',
+        'script': 'accessories-text-editor',
+    }
 
     SECTION_TIPS = {
         'defines': "Edit the list of pre-defined variables for use in the rest of the file (Alt+D)",

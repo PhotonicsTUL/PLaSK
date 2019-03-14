@@ -32,9 +32,11 @@ if QT_API == 'PyQt5':
 else:
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
+import matplotlib.colors
 
 from ..utils.widgets import set_icon_size
 
+from .config import CONFIG
 
 class Cursors(object):
     # this class is only used as a simple namespace
@@ -53,6 +55,8 @@ class BwColor(object):
     def __init__(self, axes, compress=0.5):
         self.color = plask.ColorFromDict(plask.DEFAULT_COLORS, axes)
         self.compress = compress
+        bc = 1.0 - compress
+        self.background = tuple(bc * c for c in matplotlib.colors.to_rgb(axes.get_facecolor()))
 
     def __call__(self, material):
         try:
@@ -64,8 +68,8 @@ class BwColor(object):
                 r, g, b = color
         except:
             r, b, b = 0.5, 0.5, 0.5
-        bw = (1.0-self.compress) + self.compress * (0.2126*r + 0.7152*b + 0.0722*b)
-        return bw, bw, bw
+        bw = self.compress * (0.2126*r + 0.7152*b + 0.0722*b)
+        return tuple(bw + c for c in self.background)
 
 
 class PlotWidgetBase(QWidget):
@@ -271,7 +275,7 @@ class PlotWidgetBase(QWidget):
         vbox.setContentsMargins(0, 0, 2, 1)
 
         self.axes = self.figure.add_subplot(111, adjustable='datalim')
-        self.axes.grid()
+        self.axes.grid(True)
         # self.axes.tick_params(axis='both', length=6, width=1, direction='in', which='major', zorder=9,
         #                       labelbottom=False, labeltop=False, labelleft=False, labelright=False)
         # self.axes.tick_params(axis='both', length=3, width=1, direction='in', which='minor', zorder=9)
@@ -311,8 +315,8 @@ class PlotWidgetBase(QWidget):
         self.axes.minorticks_on()
         self.axes.grid(which='major', ls='-', lw=1, alpha=0.4, color='0.5')
         self.axes.grid(which='minor', ls='-', lw=1, alpha=0.1, color='0.5')
-        self.axes.axhline(0., ls='-', color='k', alpha=0.4, zorder=3)
-        self.axes.axvline(0., ls='-', color='k', alpha=0.4, zorder=3)
+        self.axes.axhline(0., ls='-', color=CONFIG['plots/axes_color'], alpha=0.4, zorder=3)
+        self.axes.axvline(0., ls='-', color=CONFIG['plots/axes_color'], alpha=0.4, zorder=3)
         margin = 0.1 if set_limits else None
         yield margin
         for ax in self.axes.xaxis, self.axes.yaxis:

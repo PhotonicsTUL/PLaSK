@@ -45,3 +45,17 @@ launcher_local:
   color_8: '#839496'
   color_9: '#dc322f'
   color_10: '#586e75'
+plots:
+  face_color: '#002b36'
+  edge_color: '#93a1a1'
+  axes_color: '#586e75'
+  grid_color: '#073642'
+geometry:
+  extra_color: '#268bd2'
+  lattice_active_color: '#dc322f'
+  lattice_line_color: '#2aa198'
+  lattice_mark_color: '#b58900'
+  origin_color: '#b58900'
+  selected_color: '#cb4b16'
+mesh:
+  mesh_color: '#859900'

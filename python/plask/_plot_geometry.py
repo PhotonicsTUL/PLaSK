@@ -211,10 +211,10 @@ DEFAULT_COLORS = {
     'InAs':                                 _InAs,
     _r(r'InAs:Si.*=(.*)'):                  DopedColors(_InAs, _As_n),
     _r(r'InAs:C.*=(.*)'):                   DopedColors(_InAs, _As_p),
-    _r(r'Al\(([\d.]+)\)GaAs$'): _AlGaAs,
+    _r(r'Al\(([\d.]+)\)GaAs$'):             _AlGaAs,
     _r(r'Al\(([\d.]+)\)GaAs:Si.*=(.*)'):    DopedColors(_AlGaAs, _As_n),
     _r(r'Al\(([\d.]+)\)GaAs:C.*=(.*)'):     DopedColors(_AlGaAs, _As_p),
-    _r(r'In\(([\d.]+)\)GaAs$'): _InGaAs,
+    _r(r'In\(([\d.]+)\)GaAs$'):             _InGaAs,
     _r(r'In\(([\d.]+)\)GaAs:Si.*=(.*)'):    DopedColors(_InGaAs, _As_n),
     _r(r'In\(([\d.]+)\)GaAs:C.*=(.*)'):     DopedColors(_InGaAs, _As_p),
 
@@ -242,7 +242,7 @@ class DrawEnviroment(object):
         Drawing configuration.
     """
 
-    def __init__(self, plane, dest, fill=False, color='k', get_color=None, lw=1.0, alpha=1.0, zorder=3.0, picker=None,
+    def __init__(self, plane, dest, fill=False, color=None, get_color=None, lw=1.0, alpha=1.0, zorder=3.0, picker=None,
                  extra=None):
         """
         :param plane: plane to draw (important in 3D)
@@ -257,7 +257,7 @@ class DrawEnviroment(object):
         super(DrawEnviroment, self).__init__()
         self.dest = dest
         self.fill = fill
-        self.color = color
+        self.color = color if color is not None else matplotlib.rcParams['axes.edgecolor']
         self.lw = lw
         self.alpha = alpha
         self.axes = plane
@@ -555,7 +555,7 @@ def plane_to_axes(plane, dim):
     return _get_2d_axes(plane) if dim == 3 else (0, 1)
 
 
-def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=False, periods=(1,1), fill=False,
+def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=False, periods=(1,1), fill=False,
                   axes=None, figure=None, margin=None, get_color=None, alpha=1.0, extra=None, picker=None):
     """
     Plot specified geometry.
