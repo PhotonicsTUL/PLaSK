@@ -80,7 +80,7 @@
         </stack>
       </shelf>
       <rectangle name="posredni" material="Al(0.2)GaN" dtran="2" dvert="0.5"/>
-      <rectangle role="substrate" material="GaN" dtran="2" dvert="1"/>
+      <rectangle role="substrate" material="Ag" dtran="2" dvert="1"/>
     </stack>
   </cartesian2d>
   <cartesian2d name="geo2d-copy">

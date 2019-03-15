@@ -67,7 +67,8 @@ class PlotWidget(PlotWidgetBase):
 
     def __init__(self, controller=None, parent=None):
         super(PlotWidget, self).__init__(controller, parent)
-        self.get_color = BwColor(self.axes)
+        colors = CONFIG['geometry/material_colors'].copy()
+        self.get_color = BwColor(colors, self.axes)
         # self.layout().setContentsMargins(0, 9, 6, 2)
 
     def update_plot(self, mesh, geometry, set_limits, plane='12'):

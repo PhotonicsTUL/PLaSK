@@ -32,6 +32,7 @@ from ...model.info import Info
 from ...utils import get_manager
 from ...utils.xml import XML_parser
 from ...utils.config import CONFIG
+from ...utils.matplotlib import BwColor
 
 try:
     unicode = unicode
@@ -323,6 +324,8 @@ class GridsController(Controller):
 
     def reconfig(self):
         if plask is not None:
+            colors = CONFIG['geometry/material_colors'].copy()
+            self.mesh_preview.get_color = BwColor(colors, self.mesh_preview.axes)
             self.mesh_preview.axes.set_facecolor(CONFIG['plots/face_color'])
             self.mesh_preview.axes.grid(True, color=CONFIG['plots/grid_color'])
             if self._current_controller is not None and \

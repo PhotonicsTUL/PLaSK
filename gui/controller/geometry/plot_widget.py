@@ -62,6 +62,8 @@ class PlotWidget(PlotWidgetBase):
 
     def __init__(self, controller=None, parent=None, picker=None):
         super(PlotWidget, self).__init__(controller, parent)
+        colors = CONFIG['geometry/material_colors'].copy()
+        self.get_color = plask.ColorFromDict(colors, self.axes)
         self.picker = picker
 
     def clean_selectors(self):
@@ -114,6 +116,7 @@ class PlotWidget(PlotWidgetBase):
                 _, self.guidelines = plask.plot_geometry(axes=self.axes, geometry=geometry,
                                                  fill=True, margin=margin, zorder=1,
                                                  plane=plane, lw=1.5, picker=self.picker,
+                                                 get_color=self.get_color,
                                                  extra=dict(ec=to_rgba(CONFIG['geometry/extra_color'],
                                                                        alpha=float(CONFIG['geometry/extra_alpha'])),
                                                             lw=float(CONFIG['geometry/extra_width'])))

@@ -33,6 +33,11 @@ except ImportError:
     yaml = None
 
 try:
+    import plask
+except ImportError:
+    plask = None
+
+try:
     unicode = unicode
 except NameError:
     # 'unicode' is undefined, must be Python 3
@@ -135,6 +140,7 @@ DEFAULTS = {
     'geometry/lattice_line_color': '#30a2da',
     'geometry/lattice_active_color': '#fc4f30',
     'geometry/lattice_mark_color': '#e5ae38',
+    'geometry/material_colors': plask.MATERIAL_COLORS if plask is not None else {},
     'boundary_conditions/color': '#000088',
     'boundary_conditions/selected_color': '#ffea00',
     'mesh/mesh_color': '#00aaff',
@@ -178,6 +184,101 @@ def Font(entry, help=None, needs_restart=False):
 
 def Path(entry, title, mask, help=None, needs_restart=False):
     return lambda parent: ConfigDialog.Path(entry, title, mask, help=help, parent=parent, needs_restart=needs_restart)
+
+
+class MaterialColorsConfig(QWidget):
+
+    entry = 'geometry/material_colors'
+    caption = "Select custom colors for materials shown in geometry preview."
+    needs_restart = False
+
+    class TableModel(QAbstractTableModel):
+        def __init__(self):
+            super(MaterialColorsConfig.TableModel, self).__init__()
+            self.colors = list(CONFIG[MaterialColorsConfig.entry].items())
+        def flags(self, index):
+            flags = super(MaterialColorsConfig.TableModel, self).flags(index) | Qt.ItemIsEnabled
+            if index.column() == 0:
+                flags |= Qt.ItemIsSelectable | Qt.ItemIsEditable
+            else:
+                flags &= ~Qt.ItemIsSelectable
+            return flags
+        def columnCount(self, parent=None):
+            return 2
+        def rowCount(self, parent=None):
+            return len(self.colors)
+        def headerData(self, section, orientation, role=Qt.DisplayRole):
+            if role == Qt.DisplayRole and orientation == Qt.Horizontal:
+                return ('Material', 'Color')[section]
+        def data(self, index, role=Qt.DisplayRole):
+            if index.column() == 0:
+                if role == Qt.DisplayRole or role == Qt.EditRole:
+                    return self.colors[index.row()][0]
+            elif index.column() == 1:
+                if role == Qt.BackgroundColorRole:
+                    return QColor(self.colors[index.row()][1])
+        def setData(self, index, value, role=Qt.EditRole):
+            row = index.row()
+            if index.column() == 0:
+                self.colors[row] = value, self.colors[row][1]
+                return True
+            return False
+
+    def __init__(self, parent=None):
+        super(MaterialColorsConfig, self).__init__(parent)
+        toolbar = QHBoxLayout()
+        add_action = QToolButton()
+        add_action.setIcon(QIcon.fromTheme('list-add'))
+        add_action.pressed.connect(self.add)
+        toolbar.addWidget(add_action)
+        remove = QToolButton()
+        remove.setIcon(QIcon.fromTheme('list-remove'))
+        remove.pressed.connect(self.remove)
+        toolbar.addWidget(remove)
+        toolbar.setAlignment(Qt.AlignLeft)
+
+        self.table = QTableView()
+        self.model = self.TableModel()
+        self.table.setModel(self.model)
+        self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
+
+        self.table.clicked.connect(self.select_color)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addLayout(toolbar)
+        layout.addWidget(self.table)
+        self.setLayout(layout)
+
+        self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+
+    def add(self):
+        row = len(self.model.colors)
+        self.model.beginInsertRows(QModelIndex(), row, row)
+        self.model.colors.append(('', '#ffffff'))
+        self.model.endInsertRows()
+
+    def remove(self):
+        row = self.table.selectionModel().currentIndex().row()
+        self.model.beginRemoveRows(QModelIndex(), row, row)
+        del self.model.colors[row]
+        self.model.endRemoveRows()
+
+    def select_color(self, index):
+        if index.column() != 1: return
+        row = index.row()
+        dlg = QColorDialog(self.parent())
+        dlg.setCurrentColor(QColor(self.model.colors[row][1]))
+        if dlg.exec_():
+            color = dlg.currentColor().name()
+            self.model.colors[row] = self.model.colors[row][0], color
+
+    def load(self, value):
+        self.model.colors = list(value.items())
+
+    def save(self):
+        CONFIG[self.entry] = dict(self.model.colors)
 
 
 CONFIG_WIDGETS = OrderedDict([
@@ -268,6 +369,7 @@ CONFIG_WIDGETS = OrderedDict([
             ("Selected color", Color('boundary_conditions/selected_color',
                                    "Marker color of the selected boundary condition.")),
         ]),
+        ("Material Colors", MaterialColorsConfig)
     ])),
     ("Editor", OrderedDict([
         ("Appearance && Behavior", [
@@ -374,6 +476,7 @@ CONFIG_WIDGETS = OrderedDict([
     ]))
 ])
 
+
 if os.name == 'posix':
     DEFAULTS['launcher_console/terminal'] = '/usr/bin/gnome-terminal'
     CONFIG_WIDGETS['Launcher']["Settings"].extend([
@@ -402,6 +505,7 @@ def parse_font(entry):
     if isinstance(font, (str, unicode)):
         font = font.split(',')
     return ','.join(font[:-1])+',0'
+
 
 class Config(object):
     """Configuration wrapper"""
@@ -486,6 +590,7 @@ class Config(object):
                         except TypeError: pass
                     if isinstance(value, str) and '#' in value: value = "'" + value + "'"
                     out.write('  ' + key + ': ' + str(value) + '\n')
+
 
 CONFIG = Config()
 
@@ -745,22 +850,36 @@ class ConfigDialog(QDialog):
             page = QTabWidget()
             stack.addWidget(page)
             categories.addItem(cat)
-            for label, items in tabs.items():
+            for title, items in tabs.items():
                 tab = QWidget(page)
-                tab_layout = QFormLayout()
-                tab.setLayout(tab_layout)
-                page.addTab(tab, label)
-                for item in items:
-                    if isinstance(item, basestring):
-                        label = QLabel(item)
-                        font = label.font()
-                        font.setBold(True)
-                        label.setFont(font)
-                        tab_layout.addRow(label)
-                    else:
-                        widget = item[1](self)
-                        self.items[widget.entry] = widget
-                        tab_layout.addRow(item[0], widget)
+                if isinstance(items, type) and issubclass(items, QWidget):
+                    tab_layout = QVBoxLayout()
+                    tab.setLayout(tab_layout)
+                    label = QLabel(items.caption)
+                    tab_layout.addWidget(label)
+                    widget = items(tab)
+                    self.items[widget.entry] = widget
+                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+                    tab_layout.addWidget(widget)
+                else:
+                    tab_layout = QFormLayout()
+                    tab.setLayout(tab_layout)
+                    for item in items:
+                        if isinstance(item, basestring):
+                            label = QLabel(item)
+                            font = label.font()
+                            font.setBold(True)
+                            label.setFont(font)
+                            tab_layout.addRow(label)
+                        elif isinstance(item, type) and issubclass(item, QWidget):
+                            widget = item(self)
+                            self.items[widget.entry] = widget
+                            tab_layout.addRow(widget)
+                        else:
+                            widget = item[1](self)
+                            self.items[widget.entry] = widget
+                            tab_layout.addRow(item[0], widget)
+                page.addTab(tab, title)
 
         page = QTabWidget()
         tab = QWidget()
@@ -816,13 +935,14 @@ class ConfigDialog(QDialog):
         hlayout = QHBoxLayout()
         hlayout.setContentsMargins(0, 0, 0, 0)
 
-        load_button = QPushButton("&Import...")
-        load_button.pressed.connect(self.load)
-        hlayout.addWidget(load_button)
+        if yaml is not None:
+            load_button = QPushButton("&Import...")
+            load_button.pressed.connect(self.load)
+            hlayout.addWidget(load_button)
 
-        save_button = QPushButton("&Export...")
-        save_button.pressed.connect(self.save)
-        hlayout.addWidget(save_button)
+            save_button = QPushButton("&Export...")
+            save_button.pressed.connect(self.save)
+            hlayout.addWidget(save_button)
 
         hlayout.addWidget(buttons)
         vlayout.addLayout(hlayout)

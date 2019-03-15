@@ -52,15 +52,15 @@ cursord = {
 
 
 class BwColor(object):
-    def __init__(self, axes, compress=0.5):
-        self.color = plask.ColorFromDict(plask.MATERIAL_COLORS, axes)
+    def __init__(self, colors, axes, compress=0.5):
+        self.colors = plask.ColorFromDict(colors, axes)
         self.compress = compress
         bc = 1.0 - compress
         self.background = tuple(bc * c for c in matplotlib.colors.to_rgb(axes.get_facecolor()))
 
     def __call__(self, material):
         try:
-            color = self.color(material)
+            color = self.colors(material)
             if isinstance(color, str):
                 if color.startswith('#'): color = color[1:]
                 r, g, b = tuple(ord(c)/255. for c in color.decode('hex'))
