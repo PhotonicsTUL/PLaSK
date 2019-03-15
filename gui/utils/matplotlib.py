@@ -53,7 +53,7 @@ cursord = {
 
 class BwColor(object):
     def __init__(self, axes, compress=0.5):
-        self.color = plask.ColorFromDict(plask.DEFAULT_COLORS, axes)
+        self.color = plask.ColorFromDict(plask.MATERIAL_COLORS, axes)
         self.compress = compress
         bc = 1.0 - compress
         self.background = tuple(bc * c for c in matplotlib.colors.to_rgb(axes.get_facecolor()))

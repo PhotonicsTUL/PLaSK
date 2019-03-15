@@ -2,6 +2,8 @@
 # ### plot_geometry ###
 import math
 import colorsys
+from copy import copy
+import re
 
 import plask
 import matplotlib
@@ -16,8 +18,6 @@ import collections
 from zlib import crc32
 
 from .pylab import _get_2d_axes
-
-from re import compile as _r
 
 __all__ = ('plot_geometry')
 
@@ -70,6 +70,22 @@ class BBoxIntersection(matplotlib.transforms.BboxBase):
     get_points.__doc__ = matplotlib.transforms.Bbox.get_points.__doc__
 
 
+class TertiaryColors(object):
+    """
+    Interpolate colors of tertiary compounds.
+    """
+
+    def __init__(self, color1, color2, x=None):
+        self.color2 = array(to_rgb(color2))
+        self.color12 = array(to_rgb(color1)) - self.color2
+        self.x = x
+
+    def __call__(self, x=None, **kwargs):
+        if x is None and self.x is not None:
+            x = kwargs[self.x]
+        return self.color2 + float(x) * self.color12
+
+
 class ColorFromDict(object):
     """
     Get color from Python dictionary. The dictionary should map material name
@@ -81,14 +97,16 @@ class ColorFromDict(object):
                                      plotted. It is used for retrieving background
                                      color.
         tint_doping: Automatically add tint to doped materials.
+        tertiary: Autmatically create combinations for these tertiary materials.
     """
 
-    DOPING_TINTS = dict(N=array([0.0, 0.2, 0.0]), P=array([0.2, 0.0, 0.0]))
+    DOPING_TINTS = dict(N=array([0.0, 0.2, 0.2]), P=array([0.2, 0.0, 0.0]))
 
-    def __init__(self, material_dict, axes=None, tint_doping=True):
+    def __init__(self, material_dict, axes=None, tint_doping=True,
+                 tertiary=(('In', 'Al', 'Ga'), ('As', 'N', 'P', 'Sb'))):
         self.tint_doping = tint_doping
-        if material_dict is not DEFAULT_COLORS:
-            self.default_color = ColorFromDict(DEFAULT_COLORS, axes)
+        if material_dict is not plask.MATERIAL_COLORS:
+            self.default_color = ColorFromDict(plask.MATERIAL_COLORS, axes)
             if any(isinstance(m, plask.material.Material) for m in material_dict):
                 material_dict = dict((str(k), v) for k, v in material_dict.items())
         else:
@@ -102,6 +120,24 @@ class ColorFromDict(object):
             self.default_color = self.auto_color
         self.material_dict = material_dict
         self.tint_doping = tint_doping
+        if tertiary is not None:
+            self.material_dict = copy(self.material_dict)
+            # TODO: add quarternary materials as well
+            for third in tertiary[1]:
+                for n, first in enumerate(tertiary[0][:-1]):
+                    for second in tertiary[0][n+1:]:
+                        try:
+                            first_third = self.material_dict[first + third]
+                        except KeyError:
+                            first_third = self.default_color(first + third)
+                        try:
+                            second_third = self.material_dict[second + third]
+                        except KeyError:
+                            second_third = self.default_color(second + third)
+                        colors = TertiaryColors(first_third, second_third, first)
+                        r = re.compile(r'{}\(([\d.]+)\){}{}$'.format(first, second, third))
+                        self.material_dict[r] = colors
+                        self.material_dict[frozenset((first, second, third))] = colors
 
     def __call__(self, material):
         """
@@ -120,30 +156,42 @@ class ColorFromDict(object):
             result = self.material_dict[s]
         except KeyError:
             for r in self.material_dict:
-                try:
-                    m = r.match(s)
-                    if m is not None:
-                        c = self.material_dict[r]
-                        if isinstance(c, collections.Callable):
-                            result = c(*m.groups())
-                        else:
-                            result = m.expand(c)
-                        break
-                except AttributeError:
-                    pass
+                if isinstance(r, frozenset):
+                    try:
+                        if not isinstance(material, plask.material.Material):
+                            material = plask.material.get(s)
+                        if r == frozenset(material.composition):
+                            c = self.material_dict[r]
+                            result = c(**material.composition)
+                            break
+                    except:
+                        pass
+                else:  # regexp
+                    try:
+                        m = r.match(s)
+                    except AttributeError:
+                        pass
+                    else:
+                        if m is not None:
+                            c = self.material_dict[r]
+                            if isinstance(c, collections.Callable):
+                                result = c(*m.groups())
+                            else:
+                                result = m.expand(c)
+                            break
             else:
                 result = self.default_color(material)
         if self.tint_doping:
-            if not isinstance(material, plask.material.Material):
-                material = plask.material.get(s)
             try:
+                if not isinstance(material, plask.material.Material):
+                    material = plask.material.get(s)
                 tint = self.DOPING_TINTS[material.condtype]
                 doping = material.doping
             except:
                 pass
             else:
                 result = array(to_rgb(result))
-                result += tint * max(math.log10(doping)-10., 0.) / 10.
+                result += tint * max(math.log10(doping)-15., 0.) / 5.
                 result[result > 1.] = 1.
                 result[result < 0.] = 0.
         return result
@@ -161,61 +209,6 @@ class ColorFromDict(object):
         h, s, v = (i & 0xff), (i >> 8) & 0xff, (i >> 16) & 0xff
         h, s, v = (h + 12.) / 279., (s + 153.) / 408., (v + 153.) / 408.
         return colorsys.hsv_to_rgb(h, s, v)
-
-
-class TertiaryColors(object):
-    """
-    Interpolate colors of tertiary compounds.
-    """
-
-    def __init__(self, color1, color2):
-        self.color2 = array(to_rgb(color2))
-        self.color12 = array(to_rgb(color1)) - self.color2
-
-    def __call__(self, x):
-        return self.color2 + float(x) * self.color12
-
-
-# Default colors
-
-_GaAs = (0.00, 0.62, 0.00)
-_AlAs = (0.82, 0.94, 0.00)
-_InAs = (0.82, 0.50, 0.00)
-_As_n = (0.0, 0.0, 0.3)
-_As_p = (0.1, 0.0, 0.0)
-
-_GaN = (0.00, 0.00, 0.62)
-_AlN = (0.00, 0.82, 0.94)
-_InN = (0.82, 0.00, 0.50)
-_N_n = (0.0, 0.2, 0.0)
-_N_p = (0.2, 0.0, 0.0)
-
-DEFAULT_COLORS = {
-    'Cu': '#9E807E',
-    'Au': '#A6A674',
-    'Pt': '#A6A674',
-    'In': '#585266',
-
-    'SiO2': '#FFD699',
-    'Si': '#BF7300',
-    'aSiO2': '#FFDF99',
-    'aSi': '#BF8300',
-
-    'AlOx': '#98F2FF',
-
-    'GaAs': _GaAs,
-    'AlAs': _AlAs,
-    'InAs': _InAs,
-    _r(r'Al\(([\d.]+)\)GaAs$'): TertiaryColors(_AlAs, _GaAs),
-    _r(r'In\(([\d.]+)\)GaAs$'): TertiaryColors(_InAs, _GaAs),
-
-    'GaN': _GaN,
-    'GaN_bulk': (0.00, 0.00, 0.50),
-    'AlN': _AlN,
-    'InN': _InN,
-    _r(r'Al\(([\d.]+)\)GaN$'): TertiaryColors(_AlN, _GaN),
-    _r(r'In\(([\d.]+)\)GaN$'): TertiaryColors(_InN, _GaN),
-}
 
 
 class DrawEnviroment(object):
@@ -248,7 +241,7 @@ class DrawEnviroment(object):
         self.extra = extra
 
         if get_color is None:
-            self.get_color = ColorFromDict(DEFAULT_COLORS, dest)
+            self.get_color = ColorFromDict(plask.MATERIAL_COLORS, dest)
         elif get_color is not None and not isinstance(get_color, collections.Callable):
             self.get_color = ColorFromDict(get_color, dest)
         else:

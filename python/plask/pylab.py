@@ -792,4 +792,4 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, fi
     return lines
 
 
-from ._plot_geometry import plot_geometry, DEFAULT_COLORS, ColorFromDict
+from ._plot_geometry import plot_geometry, ColorFromDict
