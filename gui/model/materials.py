@@ -182,7 +182,7 @@ def parse_material_components(material, alloy=None):
                 except (ValueError, RuntimeError):
                     alloy = False
             else:
-                alloy = not mat.simple
+                alloy = mat.alloy
         else:
             alloy = False
     if ':' in material:
