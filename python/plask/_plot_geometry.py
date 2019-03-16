@@ -135,9 +135,9 @@ class ColorFromDict(object):
                         except KeyError:
                             second_third = self.default_color(second + third)
                         colors = TertiaryColors(first_third, second_third, first)
-                        r = re.compile(r'{}\(([\d.]+)\){}{}$'.format(first, second, third))
+                        r = re.compile(r'{}\(([\d.]+)\){}{}(?:_.*)?$'.format(first, second, third))
                         self.material_dict[r] = colors
-                        self.material_dict[frozenset((first, second, third))] = colors
+                        # self.material_dict[frozenset((first, second, third))] = colors
 
     def __call__(self, material):
         """
