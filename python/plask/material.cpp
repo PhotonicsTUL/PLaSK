@@ -259,8 +259,13 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     }
 
     double doping() const override {
-        if (isnan(params.doping)) return 0.;
-        else return params.doping;
+        if (isnan(params.doping)) {
+            if (base)
+                return base->doping();
+            else
+                return 0.;
+        } else
+            return params.doping;
     }
 
     Composition composition() const override {

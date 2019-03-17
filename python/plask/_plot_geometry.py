@@ -190,10 +190,11 @@ class ColorFromDict(object):
             except:
                 pass
             else:
-                result = array(to_rgb(result))
-                result += tint * max(math.log10(doping)-15., 0.) / 5.
-                result[result > 1.] = 1.
-                result[result < 0.] = 0.
+                if doping > 0:
+                    result = array(to_rgb(result))
+                    result += tint * max(math.log10(doping)-15., 0.) / 5.
+                    result[result > 1.] = 1.
+                    result[result < 0.] = 0.
         return result
 
     def auto_color(self, material):
