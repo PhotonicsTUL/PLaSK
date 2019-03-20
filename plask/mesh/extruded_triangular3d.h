@@ -461,6 +461,16 @@ private:
      */
     BoundaryNodeSet topOrBottomBoundaryNodeSet(const Box3D &box, bool top) const;
 
+    /**
+     * Get top or bottom boundary of an object.
+     * @param geometry
+     * @param object
+     * @param path
+     * @param top indicates which boundary should be calculated: true => top, false => bottom
+     * @return the boundary
+     */
+    BoundaryNodeSet topOrBottomBoundaryNodeSet(const GeometryD<3>& geometry, const GeometryObject& object, const PathHints *path, bool top) const;
+
 public:
 
     static Boundary getBackBoundary();
@@ -507,6 +517,18 @@ public:
     static Boundary getAllSidesBoundaryIn(shared_ptr<const GeometryObject> object);
     static Boundary getAllSidesBoundaryIn(shared_ptr<const GeometryObject> object, const PathHints *path) {
         return path ? getAllSidesBoundaryIn(object, *path) : getAllSidesBoundaryIn(object);
+    }
+
+    static Boundary getTopOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);
+    static Boundary getTopOfBoundary(shared_ptr<const GeometryObject> object);
+    static Boundary getTopOfBoundary(shared_ptr<const GeometryObject> object, const PathHints *path) {
+        return path ? getTopOfBoundary(object, *path) : getTopOfBoundary(object);
+    }
+
+    static Boundary getBottomOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path);
+    static Boundary getBottomOfBoundary(shared_ptr<const GeometryObject> object);
+    static Boundary getBottomOfBoundary(shared_ptr<const GeometryObject> object, const PathHints *path) {
+        return path ? getBottomOfBoundary(object, *path) : getBottomOfBoundary(object);
     }
 };
 

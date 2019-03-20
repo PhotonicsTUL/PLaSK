@@ -198,6 +198,32 @@ BoundaryNodeSet ExtrudedTriangularMesh3D::topOrBottomBoundaryNodeSet(const Box3D
     return new StdSetBoundaryImpl(std::move(nodes3d));
 }
 
+BoundaryNodeSet ExtrudedTriangularMesh3D::topOrBottomBoundaryNodeSet(const GeometryD<3>& geometry, const GeometryObject& object, const PathHints *path, bool top) const {
+    if (this->empty()) return BoundaryNodeSet(new EmptyBoundaryImpl());
+    LayersIntervalSet layers = layersIn(geometry.getObjectBoundingBoxes(object, path));
+    if (layers.empty()) return new EmptyBoundaryImpl();
+    std::unique_ptr<std::size_t[]> index2d_to_layer(new std::size_t[this->longTranMesh.size()]);
+    std::fill_n(index2d_to_layer.get(), this->longTranMesh.size(), std::numeric_limits<std::size_t>::max());
+    if (top) {
+        for (ExtrudedTriangularMesh3D::LayersInterval layer_interval: layers)
+            for (std::size_t layer = layer_interval.lower(); layer < layer_interval.upper(); ++layer)
+                for (std::size_t node2d_index = 0; node2d_index < longTranMesh.size(); ++node2d_index)
+                    if (geometry.objectIncludes(object, path, at(node2d_index, layer)))
+                        index2d_to_layer[node2d_index] = layer;
+    } else {
+        for (auto layers_it = layers.rbegin(); layers_it != layers.rend(); ++layers_it)
+            for (std::size_t layer = layers_it->upper(); layer-- > layers_it->lower(); )
+                for (std::size_t node2d_index = 0; node2d_index < longTranMesh.size(); ++node2d_index)
+                    if (geometry.objectIncludes(object, path, at(node2d_index, layer)))
+                        index2d_to_layer[node2d_index] = layer;
+    }
+    std::set<std::size_t> nodes3d;
+    for (std::size_t node2d_index = 0; node2d_index < longTranMesh.size(); ++node2d_index)
+        if (index2d_to_layer[node2d_index] != std::numeric_limits<std::size_t>::max())
+            nodes3d.insert(index(node2d_index, index2d_to_layer[node2d_index]));
+    return new StdSetBoundaryImpl(std::move(nodes3d));
+}
+
 ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getBackBoundary() {
     return getMeshBoundary<SideBoundaryDir::BACK>();
 }
@@ -298,6 +324,30 @@ ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getAllSidesBoundary
 }
 ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getAllSidesBoundaryIn(shared_ptr<const GeometryObject> object) {
     return getObjBoundary<SideBoundaryDir::ALL>(object);
+}
+
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getTopOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) {
+    return Boundary( [=](const ExtrudedTriangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>& geometry) {
+        return mesh.topOrBottomBoundaryNodeSet(*geometry, *object, &path, true);
+    } );
+}
+
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getTopOfBoundary(shared_ptr<const GeometryObject> object) {
+    return Boundary( [=](const ExtrudedTriangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>& geometry) {
+        return mesh.topOrBottomBoundaryNodeSet(*geometry, *object, nullptr, true);
+    } );
+}
+
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getBottomOfBoundary(shared_ptr<const GeometryObject> object, const PathHints &path) {
+    return Boundary( [=](const ExtrudedTriangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>& geometry) {
+        return mesh.topOrBottomBoundaryNodeSet(*geometry, *object, &path, false);
+    } );
+}
+
+ExtrudedTriangularMesh3D::Boundary ExtrudedTriangularMesh3D::getBottomOfBoundary(shared_ptr<const GeometryObject> object) {
+    return Boundary( [=](const ExtrudedTriangularMesh3D& mesh, const shared_ptr<const GeometryD<3>>& geometry) {
+        return mesh.topOrBottomBoundaryNodeSet(*geometry, *object, nullptr, false);
+    } );
 }
 
 
