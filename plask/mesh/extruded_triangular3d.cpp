@@ -39,9 +39,9 @@ Vec<3, double> ExtrudedTriangularMesh3D::Element::getMidpoint() const {
     );
 }
 
-bool ExtrudedTriangularMesh3D::Element::includes(Vec<3, double> p) const {
+bool ExtrudedTriangularMesh3D::Element::contains(Vec<3, double> p) const {
     return mesh.vertAxis->at(vertIndex) <= p.vert() && p.vert() <= mesh.vertAxis->at(vertIndex+1)
-            && longTranElement().includes(to_longTran(p));
+            && longTranElement().contains(to_longTran(p));
 }
 
 Box3D ExtrudedTriangularMesh3D::Element::getBoundingBox() const {

@@ -94,7 +94,7 @@ std::size_t TriangularMesh2D::ElementIndex::getIndex(Vec<2, double> p) const
 {
     for (auto v: rtree | boost::geometry::index::adaptors::queried(boost::geometry::index::intersects(p))) {
         const Element el = mesh.getElement(v.second);
-        if (el.includes(p)) return v.second;
+        if (el.contains(p)) return v.second;
     }
     return INDEX_NOT_FOUND;
 }
@@ -102,7 +102,7 @@ std::size_t TriangularMesh2D::ElementIndex::getIndex(Vec<2, double> p) const
 optional<TriangularMesh2D::Element> TriangularMesh2D::ElementIndex::getElement(Vec<2, double> p) const {
     for (auto v: rtree | boost::geometry::index::adaptors::queried(boost::geometry::index::intersects(p))) {
         const Element el = mesh.getElement(v.second);
-        if (el.includes(p)) return el;
+        if (el.contains(p)) return el;
     }
     return optional<TriangularMesh2D::Element>();
 }

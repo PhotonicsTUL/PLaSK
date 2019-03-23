@@ -118,6 +118,13 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
         /// \return this element as rectangular box
         inline Box2D toBox() const { return mesh.getElementBox(index0, index1); }
 
+        /**
+         * Check if point @p p is included in rectangle represented by @c this element.
+         * @param p point to check
+         * @return @c true only if @p p is included in @c this
+         */
+        bool contains(Vec<2, double> p) const { return toBox().contains(p); }
+
         /// \return total area of this element
         inline double getVolume() const { return getSize0() * getSize1(); }
 

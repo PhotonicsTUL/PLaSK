@@ -29,20 +29,26 @@ void register_mesh_extruded_triangular() {
     extrudedTriangularMesh3D
             //.def("__iter__", py::range(&ExtrudedTriangularMesh3D::begin, &ExtrudedTriangularMesh3D::end)) // we will use native iterators which perform better
             .add_property("elements", py::make_function(&ExtrudedTriangularMesh3D::elements, py::with_custodian_and_ward_postcall<0,1>()), u8"Element list in the mesh")
-            /*.def("Left", &TriangularMesh2D::getLeftBoundary, u8"Left edge of the mesh for setting boundary conditions").staticmethod("Left")
-            .def("Right", &TriangularMesh2D::getRightBoundary, u8"Right edge of the mesh for setting boundary conditions").staticmethod("Right")
-            .def("Top", &TriangularMesh2D::getTopBoundary, u8"Top edge of the mesh for setting boundary conditions").staticmethod("Top")
-            .def("Bottom", &TriangularMesh2D::getBottomBoundary, u8"Bottom edge of the mesh for setting boundary conditions").staticmethod("Bottom")
-            .def("Edge", &TriangularMesh2D::getAllBoundary, u8"Whole edge (outer and inner) of the mesh for setting boundary conditions").staticmethod("Edge")
-            .def("LeftOf", (TriangularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&TriangularMesh2D::getLeftOfBoundary,
+            .def("Front", &ExtrudedTriangularMesh3D::getFrontBoundary, u8"Front side of the mesh for setting boundary conditions").staticmethod("Front")
+            .def("Back", &ExtrudedTriangularMesh3D::getBackBoundary, u8"Back side of the mesh for setting boundary conditions").staticmethod("Back")
+            .def("Left", &ExtrudedTriangularMesh3D::getLeftBoundary, u8"Left edge of the mesh for setting boundary conditions").staticmethod("Left")
+            .def("Right", &ExtrudedTriangularMesh3D::getRightBoundary, u8"Right edge of the mesh for setting boundary conditions").staticmethod("Right")
+            .def("Top", &ExtrudedTriangularMesh3D::getTopBoundary, u8"Top edge of the mesh for setting boundary conditions").staticmethod("Top")
+            .def("Bottom", &ExtrudedTriangularMesh3D::getBottomBoundary, u8"Bottom edge of the mesh for setting boundary conditions").staticmethod("Bottom")
+            //.def("Edge", &ExtrudedTriangularMesh3D::getAllBoundary, u8"Whole edge (outer and inner) of the mesh for setting boundary conditions").staticmethod("Edge")
+            .def("FrontOf", (ExtrudedTriangularMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&ExtrudedTriangularMesh3D::getFrontOfBoundary,
+                 u8"Boundary in front of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("FrontOf")
+            .def("BackOf", (ExtrudedTriangularMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&ExtrudedTriangularMesh3D::getBackOfBoundary,
+                 u8"Boundary back of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("BackOf")
+            .def("LeftOf", (ExtrudedTriangularMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&ExtrudedTriangularMesh3D::getLeftOfBoundary,
                  u8"Boundary left of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("LeftOf")
-            .def("RightOf", (TriangularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&TriangularMesh2D::getRightOfBoundary,
+            .def("RightOf", (ExtrudedTriangularMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&ExtrudedTriangularMesh3D::getRightOfBoundary,
                  u8"Boundary right of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("RightOf")
-            .def("TopOf", (TriangularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&TriangularMesh2D::getTopOfBoundary,
+            .def("TopOf", (ExtrudedTriangularMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&ExtrudedTriangularMesh3D::getTopOfBoundary,
                  u8"Boundary top of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("TopOf")
-            .def("BottomOf", (TriangularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&TriangularMesh2D::getBottomOfBoundary,
+            .def("BottomOf", (ExtrudedTriangularMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&ExtrudedTriangularMesh3D::getBottomOfBoundary,
                  u8"Boundary bottom of specified object", (py::arg("object"), py::arg("path")=py::object())).staticmethod("BottomOf")
-            .def("EdgeOf", (TriangularMesh2D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&TriangularMesh2D::getAllBoundaryIn,
+            /*.def("EdgeOf", (ExtrudedTriangularMesh3D::Boundary(*)(shared_ptr<const GeometryObject>,const PathHints&))&ExtrudedTriangularMesh3D::getAllBoundaryIn,
                  u8"Edge of specified object (and edge of mesh holes inside the object)", (py::arg("object"), py::arg("path")=py::object())).staticmethod("EdgeOf")*/
             .def(py::self == py::self)
             ;
@@ -65,7 +71,7 @@ void register_mesh_extruded_triangular() {
             .def("bottom_node", &ExtrudedTriangularMesh3D::Element::getBottomNode, py::arg("index"), py::return_value_policy<py::return_by_value>(), "coordinates of the bottom base (triangle) vertex")
             .add_property("box", /*Box2D*/ &ExtrudedTriangularMesh3D::Element::getBoundingBox, u8"bounding box of the element")
             //.def("barycentric", &ExtrudedTriangularMesh3D::Element::barycentric, py::return_value_policy<py::return_by_value>(), "barycentric (area) coordinates of given point")
-            .def("includes", &ExtrudedTriangularMesh3D::Element::includes, "check if given point is included in triangle represented by this element")
+            .def("__contains__", &ExtrudedTriangularMesh3D::Element::contains, "check if given point is included in triangle represented by this element")
             //.add_property("index", /*size_t*/ &TriangularMesh2D::Element::getIndex, u8"element index")
         ;
 

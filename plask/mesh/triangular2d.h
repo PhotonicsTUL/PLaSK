@@ -104,7 +104,7 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
          * @param p point to check
          * @return @c true only if @p p is included in @c this
          */
-        bool includes(Vec<2, double> p) const {
+        bool contains(Vec<2, double> p) const {
             auto b = barycentric(p);
             return b.c0 >= 0 && b.c1 >= 0 && b.c2 >= 0;
         }

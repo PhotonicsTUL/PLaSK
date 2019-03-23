@@ -183,6 +183,16 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
         /// \return position of the upper right front corner of this element
         inline Vec<3, double> getUpUpUp() const { return mesh(getUpperIndex0(), getUpperIndex1(), getUpperIndex2()); }
 
+        /// \return this element as rectangular box
+        inline Box3D toBox() const { return mesh.getElementBox(index0, index1, index2); }
+
+        /**
+         * Check if point @p p is included in rectangle represented by @c this element.
+         * @param p point to check
+         * @return @c true only if @p p is included in @c this
+         */
+        bool contains(Vec<3, double> p) const { return toBox().contains(p); }
+
     };
 
     /**
@@ -298,6 +308,16 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
      * @return the element
      */
     Element getElement(std::size_t i) const { return element(i); }
+
+    /**
+     * Get element as box.
+     * @param index0, index1, index2 index of element
+     * @return box of elements with given indexes
+     */
+    Box3D getElementBox(std::size_t index0, std::size_t index1, std::size_t index2) const {
+        return Box3D(axis[0]->at(index0), axis[1]->at(index1), axis[2]->at(index2),
+                     axis[0]->at(index0+1), axis[1]->at(index1+1), axis[2]->at(index2+1));
+    }
 
     /**
      * Iteration orders:

@@ -1058,6 +1058,7 @@ void register_mesh_rectangular()
             .add_property("volume", /*double*/ &RectangularMesh2D::Element::getVolume, u8"Alias for :attr:`area`")
             .add_property("nodes", &RectangularMesh2D_Element_nodes, u8"Indices of the element vertices on the orignal mesh\n\n"
                                                                      u8"Order of the vertices is bottom left, bottom right, top left, and top right.")
+            .def("__contains__", &RectangularMesh2D::Element::contains, "check if given point is included in this element")
             // .add_property("bottom_left", /*Vec<2,double>*/ &RectangularMesh2D::Element::getLoLo, u8"Position of the bottom left vertex of the elemnent")
             // .add_property("top_left", /*Vec<2,double>*/ &RectangularMesh2D::Element::getLoUp, u8"Position of the top left vertex of the elemnent")
             // .add_property("bottom_right", /*Vec<2,double>*/ &RectangularMesh2D::Element::getUpLo, u8"Position of the bottom right vertex of the elemnent")
@@ -1210,6 +1211,7 @@ void register_mesh_rectangular()
                     u8"Order of the vertices is back bottom left, back  bottom right, top left,\n"
                     u8"back top right, front bottom left, front bottom right, front top left,\n"
                     u8"and front top right.")
+            .def("__contains__", &RectilinearMesh3D::Element::contains, "check if given point is included in this element")
         ;
 
         py::class_<RectilinearMesh3D::Elements>("Elements", u8"Element list in the :py:class:`mesh.Rectangular3D", py::no_init)

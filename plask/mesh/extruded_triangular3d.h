@@ -103,7 +103,7 @@ struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
          * @param p point to check
          * @return @c true only if @p p is included in @c this
          */
-        bool includes(Vec<3, double> p) const;
+        bool contains(Vec<3, double> p) const;
 
         /**
          * Calculate minimal box which contains this element.
