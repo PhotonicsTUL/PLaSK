@@ -684,6 +684,30 @@ def plot_boundary(boundary, mesh, geometry, colors=None, color='0.75', plane=Non
 
 # ### plot_mesh ###
 
+def _plot_triangular(mesh, lines, color, lw, zorder, alpha, ix=0, iy=1)
+    x_max = max(node[ix] for node in mesh)
+    x_min = min(node[ix] for node in mesh)
+    y_max = max(node[iy] for node in mesh)
+    y_min = min(node[iy] for node in mesh)
+    for triangle in mesh.elements:
+        nodes = triangle.nodes
+        x = [p[ix] for p in nodes]
+        x.append(x[0])
+        y = [p[iy] for p in nodes]
+        y.append(y[0])
+        lines.append(matplotlib.lines.Line2D(x, y, color=color, lw=lw, zorder=zorder, alpha=alpha))
+    return x_min, x_max, y_min, y_max
+
+def _plot_rectangular(axis_x, axis_y, lines, color, lw, zorder, alpha):
+    y_min = axis_y[0]; y_max = axis_y[-1]
+    for x in axis_x:
+        lines.append(matplotlib.lines.Line2D([x,x], [y_min,y_max], color=color, lw=lw, zorder=zorder, alpha=alpha))
+    x_min = axis_x[0]; x_max = axis_x[-1]
+    for y in axis_y:
+        lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=lw, zorder=zorder, alpha=alpha))
+    return x_min, x_max, y_min, y_max
+
+
 def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, figure=None, zorder=1.5, alpha=1.0):
     """
     Plot two-dimensional mesh.
@@ -731,23 +755,12 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, fi
 
     if isinstance(mesh, plask.mesh.Rectangular2D):
         ix, iy = 0, 1
-        y_min = mesh.axis1[0]; y_max = mesh.axis1[-1]
-        for x in mesh.axis0:
-            lines.append(matplotlib.lines.Line2D([x,x], [y_min,y_max], color=color, lw=lw, zorder=zorder, alpha=alpha))
-        x_min = mesh.axis0[0]; x_max = mesh.axis0[-1]
-        for y in mesh.axis1:
-            lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=lw, zorder=zorder, alpha=alpha))
+        x_min, x_max, y_min, y_max = _plot_rectangular(mesh.axis0, mesh.axis1, color, lw, zorder, alpha)
 
     elif isinstance(mesh, plask.mesh.Rectangular3D):
         ix, iy = _get_2d_axes(plane)
         axis = tuple((mesh.axis0, mesh.axis1, mesh.axis2)[i] for i in (ix,iy))
-
-        y_min = axis[1][0]; y_max = axis[1][-1]
-        for x in axis[0]:
-            lines.append(matplotlib.lines.Line2D([x,x], [y_min,y_max], color=color, lw=lw, zorder=zorder, alpha=alpha))
-        x_min = axis[0][0]; x_max = axis[0][-1]
-        for y in axis[1]:
-            lines.append(matplotlib.lines.Line2D([x_min,x_max], [y,y], color=color, lw=lw, zorder=zorder, alpha=alpha))
+        x_min, x_max, y_min, y_max = _plot_rectangular(axis[0], axis[1], color, lw, zorder, alpha)
 
     elif isinstance(mesh, (plask.mesh.Regular, plask.mesh.Ordered)):
         ix, iy = 0, 1
@@ -758,17 +771,16 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, fi
 
     elif isinstance(mesh, plask.mesh.TriangularMesh2D):
         ix, iy = 0, 1
-        x_max = max(node[0] for node in mesh)
-        x_min = min(node[0] for node in mesh)
-        y_max = max(node[1] for node in mesh)
-        y_min = min(node[1] for node in mesh)
-        for triangle in mesh.elements:
-            nodes = triangle.nodes
-            x = [p[0] for p in nodes]
-            x.append(x[0])
-            y = [p[1] for p in nodes]
-            y.append(y[0])
-            lines.append(matplotlib.lines.Line2D(x, y, color=color, lw=lw, zorder=zorder, alpha=alpha))
+        x_min, x_max, y_min, y_max = _plot_triangular(mesh, lines, color, lw, zorder, alpha, ix, iy)
+
+    elif isinstance(mesh, plask.mesh.ExtrudedTriangular):
+        ix, iy = _get_2d_axes(plane)
+        if ix==2:
+            x_min, x_max, y_min, y_max = _plot_rectangular(mesh.axis_vert, sorted(n[iy] for n in mesh.long_tran), color, lw, zorder, alpha)
+        elif iy==2:
+            x_min, x_max, y_min, y_max = _plot_rectangular(sorted(n[ix] for n in mesh.long_tran), mesh.axis_vert, color, lw, zorder, alpha)
+        else: #ix in (0, 1) and iy in (0, 1):
+            x_min, x_max, y_min, y_max = _plot_triangular(mesh.long_tran, lines, color, lw, zorder, alpha, ix, iy)
 
     else:
         raise NotImplementedError("plot_mesh can be only used for rectangular or triangular mesh")
@@ -787,7 +799,6 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, fi
     dim = max(2, mesh.dim)
     xlabel(u"${}$ [µm]".format(plask.config.axes[3 - dim + ix]))
     ylabel(u"${}$ [µm]".format(plask.config.axes[3 - dim + iy]))
-
 
     return lines
 
