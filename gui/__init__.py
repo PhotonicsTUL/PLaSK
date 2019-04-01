@@ -335,7 +335,10 @@ class MainWindow(QMainWindow):
             menu_button = QPushButton(self)
         menu_button.setText("PLaSK")
         pal = menu_button.palette()
-        pal.setColor(QPalette.Button, QColor("#88aaff"))
+        if CONFIG['main_window/dark_style']:
+            pal.setColor(QPalette.Button, QColor(42, 130, 218))
+        else:
+            pal.setColor(QPalette.Button, QColor("#88aaff"))
         menu_button.setIcon(QIcon.fromTheme('plask-logo'))
         menu_button.setPalette(pal)
         menu_button.setToolTip("Show operations menu (F2)")
@@ -1079,6 +1082,28 @@ def main():
     except AttributeError:
         pass
     sys.argv = APPLICATION.arguments()
+
+    if CONFIG['main_window/dark_style']:
+        if QT_API == 'PyQt5':
+            APPLICATION.setStyle(QStyleFactory.create("Fusion"))
+        else:
+            APPLICATION.setStyle(QStyleFactory.create("Plastique"))
+        dark_palette = QPalette()
+        dark_palette.setColor(QPalette.Window, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.WindowText, QColor('#dddddd'))
+        dark_palette.setColor(QPalette.Base, QColor(25, 25, 25))
+        dark_palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.ToolTipBase, QColor('#dddddd'))
+        dark_palette.setColor(QPalette.ToolTipText, QColor('#dddddd'))
+        dark_palette.setColor(QPalette.Text, QColor('#dddddd'))
+        dark_palette.setColor(QPalette.Button, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.ButtonText, QColor('#dddddd'))
+        dark_palette.setColor(QPalette.BrightText, Qt.red)
+        dark_palette.setColor(QPalette.Link, QColor(42, 130, 218))
+        dark_palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+        dark_palette.setColor(QPalette.HighlightedText, Qt.black)
+        qApp.setPalette(dark_palette)
+        qApp.setStyleSheet("QToolTip { color: #dddddd; background-color: #2a82da; border: 1px solid #dddddd; }")
 
     pysparkle = None
 
