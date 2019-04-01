@@ -1,3 +1,6 @@
+boundary_conditions:
+  color: '#93a1a1'
+  selected_color: '#268bd2'
 editor:
   background_color: '#002B36'
   current_line_color: '#073642'
@@ -82,3 +85,5 @@ geometry:
     aSiO2: '#93a1a1'
 mesh:
   mesh_color: '#859900'
+main_window:
+  dark_style: true

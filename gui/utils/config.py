@@ -48,6 +48,9 @@ else:
     bytes = str
 
 
+PRESET_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'presets')
+
+
 _parsed = {'true': True, 'yes': True, 'false': False, 'no': False}
 
 if sys.platform == 'win32':
@@ -277,6 +280,7 @@ class MaterialColorsConfig(QWidget):
 
     def load(self, value):
         self.model.colors = list(value.items())
+        self.table.viewport().update()
 
     def save(self):
         CONFIG[self.entry] = dict(self.model.colors)
@@ -939,6 +943,17 @@ class ConfigDialog(QDialog):
         hlayout.setContentsMargins(0, 0, 0, 0)
 
         if yaml is not None:
+            presets_menu = QMenu()
+            presets = (f[:-4] for f in os.listdir(PRESET_DIR) if f.endswith('.yml'))
+            for preset in presets:
+                preset_action = QAction(preset, self)
+                preset_action.triggered.connect(
+                    (lambda preset: lambda: CONFIG.load(preset, self.items))(os.path.join(PRESET_DIR, preset+'.yml')))
+                presets_menu.addAction(preset_action)
+            presets_button = QPushButton("&Presets")
+            presets_button.setMenu(presets_menu)
+            hlayout.addWidget(presets_button)
+
             load_button = QPushButton("&Import...")
             load_button.pressed.connect(self.load)
             hlayout.addWidget(load_button)

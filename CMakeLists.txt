@@ -792,12 +792,6 @@ add_subdirectory(doc)
 
 
 
-if(BUILD_GUI)
-    install(FILES tests/gui/solarized-dark.yml tests/gui/original-colors.yml DESTINATION ${doc_dest}/examples/gui COMPONENT gui)
-endif()
-
-
-
 # ----------===== Optional tools =====--------------------------------------------
 
 set(script_permissions "OWNER_WRITE;OWNER_READ;OWNER_EXECUTE;GROUP_READ;GROUP_EXECUTE;WORLD_READ;WORLD_EXECUTE")
