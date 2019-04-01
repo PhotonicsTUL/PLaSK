@@ -15,7 +15,7 @@
    version="1.1"
    inkscape:version="0.92.3 (2405546, 2018-03-11)"
    viewBox="0 0 16 16"
-   sodipodi:docname="show-source.svg">
+   sodipodi:docname="folder.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -25,9 +25,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="28.963094"
-     inkscape:cx="-0.36173118"
-     inkscape:cy="8.4906902"
+     inkscape:zoom="44.8"
+     inkscape:cx="7.6273873"
+     inkscape:cy="10.873751"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
@@ -38,9 +38,7 @@
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
-     units="px"
-     inkscape:snap-bbox="true"
-     inkscape:snap-global="true">
+     units="px">
     <inkscape:grid
        type="xygrid"
        id="grid4101" />
@@ -83,9 +81,9 @@
      id="layer1"
      transform="translate(0,-1036.3622)">
     <path
-       style="fill:#4d4d4d;fill-opacity:1"
-       d="M 3 2 L 3 3 L 3 13.25 L 3 14 L 5 14 L 5 13 L 4 13 L 4 3 L 12 3 L 12 8 L 13 8 L 13 2 L 3 2 z M 11.501953 8 L 10.753906 8.7441406 L 10.751953 8.7441406 L 7 12.476562 L 7.0039062 12.486328 L 7 12.498047 L 7.0058594 12.507812 L 7.0019531 13.248047 L 7 13.248047 L 7 13.990234 L 7 14 L 8.5 14 L 8.5039062 13.990234 L 8.5078125 13.990234 L 8.515625 13.990234 L 8.5097656 13.980469 L 9.25 13.242188 L 12.251953 10.255859 L 13 9.5097656 L 11.501953 8.0175781 L 11.501953 8 z "
+       style="fill:#eff0f1;fill-opacity:1;stroke:none"
+       d="M 2 2 L 2 3 L 2 6 L 2 7 L 2 13 L 2 14 L 14 14 L 14 13 L 14 6 L 14 5 L 14 4 L 9.0078125 4 L 7.0078125 2 L 7 2.0078125 L 7 2 L 3 2 L 2 2 z M 3 3 L 6.5917969 3 L 7.59375 4 L 7 4 L 7 4.0078125 L 6.9921875 4 L 4.9921875 6 L 3 6 L 3 3 z M 3 7 L 13 7 L 13 13 L 3 13 L 3 7 z "
        transform="translate(0,1036.3622)"
-       id="path4141" />
+       id="rect4079" />
   </g>
 </svg>

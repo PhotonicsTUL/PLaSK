@@ -1111,9 +1111,14 @@ def main():
     if icons_theme == 'system':
         icons_path = QIcon.themeSearchPaths()[:-1]
         if not QIcon.themeName():
-            QIcon.setThemeName('breeze')
+            if CONFIG['main_window/dark_style']:
+                QIcon.setThemeName('breeze-dark')
+            else:
+                QIcon.setThemeName('breeze')
     else:
         if icons_theme == 'tango': icons_theme = 'hicolor'
+        elif icons_theme == 'breeze' and CONFIG['main_window/dark_style']:
+            icons_theme = 'breeze-dark'
         icons_path = []
         QIcon.setThemeName(icons_theme)
     icons_path.insert(0, os.path.join(__path__[0], 'icons'))
