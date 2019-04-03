@@ -73,7 +73,7 @@ from .launch import launch_plask
 from .controller.materials.plot import show_material_plot
 
 from .utils.config import ConfigProxy, ConfigDialog
-from .utils.texteditor import update_textedit_colors
+from .utils.texteditor import update_textedit
 from .utils.widgets import fire_edit_end, InfoListView
 from .utils.help import open_help
 
@@ -371,7 +371,7 @@ class MainWindow(QMainWindow):
         self.tabs.setStyleSheet("QTabBar {{ font-size: {}pt; }}".format(fs))
         menu_button.setStyleSheet("QPushButton {{ font-size: {}pt; font-weight: bold; }}".format(fs))
 
-        self.config_changed.connect(update_textedit_colors)
+        self.config_changed.connect(update_textedit)
 
         desktop = QDesktopWidget()
         geometry = CONFIG['session/geometry']

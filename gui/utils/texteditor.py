@@ -18,13 +18,15 @@ from ..qt.QtGui import *
 from .config import CONFIG
 
 
-def update_textedit_colors():
+def update_textedit():
     global CURRENT_LINE_COLOR, SELECTION_COLOR, LINENUMBER_BACKGROUND_COLOR, LINENUMBER_FOREGROUND_COLOR
     CURRENT_LINE_COLOR = QColor(CONFIG['editor/current_line_color'])
     SELECTION_COLOR = QColor(CONFIG['editor/selection_color'])
     LINENUMBER_BACKGROUND_COLOR = QColor(CONFIG['editor/linenumber_background_color'])
     LINENUMBER_FOREGROUND_COLOR = QColor(CONFIG['editor/linenumber_foreground_color'])
-update_textedit_colors()
+    global SELECT_AFTER_PASTE
+    SELECT_AFTER_PASTE = CONFIG['editor/select_after_paste']
+update_textedit()
 
 
 class TextEditor(QPlainTextEdit):
@@ -55,7 +57,7 @@ class TextEditor(QPlainTextEdit):
                                                        self.line_numbers.get_width(), cr.height()))
 
     def insertFromMimeData(self, source):
-        if source.hasText() and CONFIG['editor/select_after_paste']:
+        if source.hasText() and SELECT_AFTER_PASTE:
             cursor = self.textCursor()
             start = min(cursor.position(), cursor.anchor())
             end = start + len(source.text())
