@@ -84,12 +84,13 @@ static shared_ptr<Mesh> readExtrudedTriangularMesh3D(XMLReader& reader) {
     for (int i = 0; i < 2; ++i) {
         reader.requireTag();
         std::string node = reader.getNodeName();
-        if (node != "vert" && node != "long_tran") throw XMLUnexpectedElementException(reader, "<vert> or <long_tran>");
         dub_check(std::string("<mesh>"), node);
         if (node == "vert")
             result->vertAxis = readMeshAxis(reader);
-        else    // long_tran
+        else if (node == "long_tran")
             result->longTranMesh = TriangularMesh2D::read(reader);
+        else
+            throw XMLUnexpectedElementException(reader, "<vert> or <long_tran>");
     }
     reader.requireTagEnd();
     return result;
