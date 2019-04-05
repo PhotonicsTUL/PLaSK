@@ -128,4 +128,12 @@ double ExpansionBesselInfini::integratePoyntingVert(const cvector& /*E*/, const 
     return 1.;
 }
 
+double ExpansionBesselInfini::integrateField(WhichField /*field*/, size_t /*l*/,
+                                             const cvector& /*E*/, const cvector& /*H*/)
+{
+    throw NotImplemented("BesselCyl", "field integration for infinite expansion");
+}
+
+
+
 }}} // # namespace plask::optical::slab

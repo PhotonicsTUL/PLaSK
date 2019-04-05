@@ -37,6 +37,8 @@ struct PLASK_SOLVER_API ExpansionBesselInfini: public ExpansionBessel {
 
     double integratePoyntingVert(const cvector& E, const cvector& H) override;
 
+    double integrateField(WhichField field, size_t l, const cvector& E, const cvector& H) override;
+
   protected:
 
     void layerIntegrals(size_t layer, double lam, double glam) override;

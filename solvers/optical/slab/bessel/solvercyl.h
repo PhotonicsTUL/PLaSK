@@ -364,15 +364,17 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     cmatrix epsTpm(size_t layer);
     cmatrix epsDm(size_t layer);
     cmatrix epsDp(size_t layer);
+    dmatrix epsVV(size_t layer);
 
-//     cmatrix muVmm();
-//     cmatrix muVpp();
-//     cmatrix muTmm();
-//     cmatrix muTpp();
-//     cmatrix muTmp();
-//     cmatrix muTpm();
-//     cmatrix muDm();
-//     cmatrix muDp();
+    cmatrix muVmm();
+    cmatrix muVpp();
+    cmatrix muTmm();
+    cmatrix muTpp();
+    cmatrix muTmp();
+    cmatrix muTpm();
+    cmatrix muDm();
+    cmatrix muDp();
+    dmatrix muVV();
 #endif
 
 };

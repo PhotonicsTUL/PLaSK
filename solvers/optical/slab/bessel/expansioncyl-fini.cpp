@@ -112,6 +112,7 @@ void ExpansionBesselFini::init2()
                         mu_integrals.Dm(j,i) -= imu1 * (0.5*r*(k*(Jm2k-Jk)*Jg + g*Jmk*(Jmg-Jpg)) + Jmk*Jg);
                         mu_integrals.Dp(j,i) -= imu1 * (0.5*r*(k*(Jk-Jp2k)*Jg + g*Jpk*(Jmg-Jpg)) + Jpk*Jg);
                     }
+                    mu_integrals.VV(i,j) += r * Jg * real(imu*conj(imu)) * Jk;
                 }
             }
         }
@@ -146,17 +147,17 @@ void ExpansionBesselFini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
 
     size_t N = SOLVER->size;
     dcomplex ik0 = 1. / k0;
-    double b = rbounds[rbounds.size()-1];
+    double R = rbounds[rbounds.size()-1];
 
     const Integrals& eps = layers_integrals[layer];
     #define mu mu_integrals
 
     for (size_t i = 0; i != N; ++i) {
         size_t is = idxs(i); size_t ip = idxp(i);
-        double i2eta = 1. / (cyl_bessel_j(m+1, kpts[i]) * b); i2eta *= i2eta;
+        double i2eta = 1. / (cyl_bessel_j(m+1, kpts[i]) * R); i2eta *= i2eta;
         for (size_t j = 0; j != N; ++j) {
             size_t js = idxs(j); size_t jp = idxp(j);
-            double k = kpts[j] / b;
+            double k = kpts[j] / R;
             RH(is, js) = i2eta *  k0 * (mu.Tmm(i,j) - mu.Tmp(i,j) + mu.Tpp(i,j) - mu.Tpm(i,j));
             RH(ip, js) = i2eta *  k0 * (mu.Tmm(i,j) - mu.Tmp(i,j) - mu.Tpp(i,j) + mu.Tpm(i,j));
             RH(is, jp) = i2eta * (k0 * (mu.Tmm(i,j) + mu.Tmp(i,j) - mu.Tpp(i,j) - mu.Tpm(i,j))
@@ -168,10 +169,10 @@ void ExpansionBesselFini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
 
     for (size_t i = 0; i != N; ++i) {
         size_t is = idxs(i); size_t ip = idxp(i);
-        double i2eta = 1. / (cyl_bessel_j(m+1, kpts[i]) * b); i2eta *= i2eta;
+        double i2eta = 1. / (cyl_bessel_j(m+1, kpts[i]) * R); i2eta *= i2eta;
         for (size_t j = 0; j != N; ++j) {
             size_t js = idxs(j); size_t jp = idxp(j);
-            double k = kpts[j] / b;
+            double k = kpts[j] / R;
             RE(is, js) = i2eta * (k0 * (eps.Tmm(i,j) + eps.Tmp(i,j) + eps.Tpp(i,j) + eps.Tpm(i,j))
                                 - ik0 * k * (k * (mu.Vmm(i,j) + mu.Vpp(i,j)) + mu.Dm(i,j) - mu.Dp(i,j)));
             RE(ip, js) = i2eta * (k0 * (eps.Tmm(i,j) + eps.Tmp(i,j) - eps.Tpp(i,j) - eps.Tpm(i,j))
@@ -191,10 +192,40 @@ double ExpansionBesselFini::integratePoyntingVert(const cvector& E, const cvecto
         double eta = cyl_bessel_j(m+1, kpts[i]) * rbounds[rbounds.size()-1]; eta = 2 * eta*eta; // 4 × ½
         size_t is = idxs(i);
         size_t ip = idxp(i);
-        result += real(E[is] * conj(H[is]) + E[ip] * conj(H[ip])) * eta;
+        result += real(E[is]*conj(H[is]) + E[ip]*conj(H[ip])) * eta;
     }
     return 2e-12*PI * result; // µm² -> m²
 }
+
+double ExpansionBesselFini::integrateField(WhichField field, size_t l, const cvector& E, const cvector& H)
+{
+    double result = 0.;
+    double R = rbounds[rbounds.size()-1];
+    double iRk02 = 1. / (R*R * real(k0*conj(k0)));
+    if (which_field == FIELD_E) {
+        for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
+            double eta = cyl_bessel_j(m+1, kpts[i]) * R; eta = 2. * eta*eta; // 4 × ½
+            size_t is = idxs(i);
+            size_t ip = idxp(i);
+            result += real(E[is]*conj(E[is]) + E[ip]*conj(E[ip])) * eta;
+            // Add Ez²
+            double g4 = 4. * iRk02 * kpts[i];
+            for (size_t j = 0; j < N; ++j) {
+                size_t jp = idxp(j);
+                result += g4*kpts[j] * layers_integrals[l].VV(i,j) * real(H[ip]*conj(H[jp]));
+            }
+        }
+    } else {
+        for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
+            double eta = cyl_bessel_j(m+1, kpts[i]) * R; eta = eta*eta; // 2 × ½
+            size_t is = idxs(i);
+            size_t ip = idxp(i);
+            result += (2. * (real(H[is]*conj(H[is]) + H[ip]*conj(H[ip]))) + iRk02*kpts[i]*kpts[i] * real(E[is]*conj(E[is]))) * eta;
+        }
+    }
+    return 2*PI * result;
+}
+
 
 #ifndef NDEBUG
 cmatrix ExpansionBesselFini::muVmm() {
@@ -259,6 +290,14 @@ cmatrix ExpansionBesselFini::muDp() {
     for (size_t i = 0; i != N; ++i)
         for (size_t j = 0; j != N; ++j)
             result(i,j) = mu_integrals.Dp(i,j);
+    return result;
+}
+dmatrix ExpansionBesselFini::muVV() {
+    size_t N = SOLVER->size;
+    dmatrix result(N, N, 0.);
+    for (size_t i = 0; i != N; ++i)
+        for (size_t j = 0; j != N; ++j)
+            result(i,j) = mu_integrals.VV(i,j);
     return result;
 }
 #endif

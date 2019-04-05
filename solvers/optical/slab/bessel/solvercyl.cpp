@@ -235,47 +235,93 @@ cmatrix BesselSolverCyl::epsDp(size_t layer) {
     computeIntegrals();
     return expansion->epsDp(layer);
 }
+dmatrix BesselSolverCyl::epsVV(size_t layer) {
+    Solver::initCalculation();
+    computeIntegrals();
+    return expansion->epsVV(layer);
+}
 
-// cmatrix BesselSolverCyl::muVmm() {
-//     Solver::initCalculation();
-//     computeIntegrals();
-//     return expansion->muVmm();
-// }
-// cmatrix BesselSolverCyl::muVpp() {
-//     Solver::initCalculation();
-//     computeIntegrals();
-//     return expansion->muVpp();
-// }
-// cmatrix BesselSolverCyl::muTmm() {
-//     Solver::initCalculation();
-//     computeIntegrals();
-//     return expansion->muTmm();
-// }
-// cmatrix BesselSolverCyl::muTpp() {
-//     Solver::initCalculation();
-//     computeIntegrals();
-//     return expansion->muTpp();
-// }
-// cmatrix BesselSolverCyl::muTmp() {
-//     Solver::initCalculation();
-//     computeIntegrals();
-//     return expansion->muTmp();
-// }
-// cmatrix BesselSolverCyl::muTpm() {
-//     Solver::initCalculation();
-//     computeIntegrals();
-//     return expansion->muTpm();
-// }
-// cmatrix BesselSolverCyl::muDm() {
-//     Solver::initCalculation();
-//     computeIntegrals();
-//     return expansion->muDm();
-// }
-// cmatrix BesselSolverCyl::muDp() {
-//     Solver::initCalculation();
-//     computeIntegrals();
-//     return expansion->muDp();
-// }
+cmatrix BesselSolverCyl::muVmm() {
+    Solver::initCalculation();
+    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+        computeIntegrals();
+        return finite_expansion->muVmm();
+    } else {
+        return cmatrix();
+    }
+}
+cmatrix BesselSolverCyl::muVpp() {
+    Solver::initCalculation();
+    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+        computeIntegrals();
+        return finite_expansion->muVpp();
+    } else {
+        return cmatrix();
+    }
+}
+cmatrix BesselSolverCyl::muTmm() {
+    Solver::initCalculation();
+    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+        computeIntegrals();
+        return finite_expansion->muTmm();
+    } else {
+        return cmatrix();
+    }
+}
+cmatrix BesselSolverCyl::muTpp() {
+    Solver::initCalculation();
+    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+        computeIntegrals();
+        return finite_expansion->muTpp();
+    } else {
+        return cmatrix();
+    }
+}
+cmatrix BesselSolverCyl::muTmp() {
+    Solver::initCalculation();
+    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+        computeIntegrals();
+        return finite_expansion->muTmp();
+    } else {
+        return cmatrix();
+    }
+}
+cmatrix BesselSolverCyl::muTpm() {
+    Solver::initCalculation();
+    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+        computeIntegrals();
+        return finite_expansion->muTpm();
+    } else {
+        return cmatrix();
+    }
+}
+cmatrix BesselSolverCyl::muDm() {
+    Solver::initCalculation();
+    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+        computeIntegrals();
+        return finite_expansion->muDm();
+    } else {
+        return cmatrix();
+    }
+}
+cmatrix BesselSolverCyl::muDp() {
+    Solver::initCalculation();
+    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+        computeIntegrals();
+        return finite_expansion->muDp();
+    } else {
+        return cmatrix();
+    }
+}
+dmatrix BesselSolverCyl::muVV() {
+    Solver::initCalculation();
+    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+        computeIntegrals();
+        return finite_expansion->muVV();
+    } else {
+        return dmatrix();
+    }
+}
 #endif
 
 

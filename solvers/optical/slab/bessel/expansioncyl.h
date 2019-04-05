@@ -111,21 +111,22 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     struct Integrals {
 
         struct Data {
-            dcomplex im;   ///< J_{m-1}(gr) eps_{zz}^{-1}(r) J_{m-1}(kr) r dr
-            dcomplex ip;   ///< J_{m+1}(gr) eps_{zz}^{-1}(r) J_{m+1}(kr) r dr
+            dcomplex im;    ///< J_{m-1}(gr) eps_{zz}^{-1}(r) J_{m-1}(kr) r dr
+            dcomplex ip;    ///< J_{m+1}(gr) eps_{zz}^{-1}(r) J_{m+1}(kr) r dr
             dcomplex mm;    ///< J_{m-1}(gr) ½ [eps_{rr}(r) + eps_{pp}(r)] J_{m-1}(kr) r dr
             dcomplex pp;    ///< J_{m+1}(gr) ½ [eps_{rr}(r) + eps_{pp}(r)] J_{m+1}(kr) r dr
             dcomplex mp;    ///< J_{m-1}(gr) ½ [eps_{rr}(r) - eps_{pp}(r)] J_{m+1}(kr) r dr
             dcomplex pm;    ///< J_{m+1}(gr) ½ [eps_{rr}(r) - eps_{pp}(r)] J_{m-1}(kr) r dr
-            dcomplex dm;   ///< J_{m-1}(gr) deps_{zz}^{-1}/dr J_{m}(kr) r dr
-            dcomplex dp;   ///< J_{m+1}(gr) deps_{zz}^{-1}/dr J_{m}(kr) r dr
-            dcomplex bm;   ///< J_{m-1}(kr) deps_{zz}^{-1}/dr J_{m}(gr) r dr
-            dcomplex bp;   ///< J_{m+1}(kr) deps_{zz}^{-1}/dr J_{m}(gr) r dr
+            dcomplex dm;    ///< J_{m-1}(gr) deps_{zz}^{-1}/dr J_{m}(kr) r dr
+            dcomplex dp;    ///< J_{m+1}(gr) deps_{zz}^{-1}/dr J_{m}(kr) r dr
+            dcomplex bm;    ///< J_{m-1}(kr) deps_{zz}^{-1}/dr J_{m}(gr) r dr
+            dcomplex bp;    ///< J_{m+1}(kr) deps_{zz}^{-1}/dr J_{m}(gr) r dr
+            double ii;      ///< J_{m}(gr) |eps_{zz}|^{-2}(r) J_{m}(kr) r dr
             Data() {}
           private:
             friend struct Integrals;
             Data(std::nullptr_t):
-                im(0.), ip(0.), mm(0.), pp(0.), mp(0.), pm(0.), dm(0.), dp(0.), bm(0.), bp(0.) {}
+                im(0.), ip(0.), mm(0.), pp(0.), mp(0.), pm(0.), dm(0.), dp(0.), bm(0.), bp(0.), ii(0.) {}
         };
 
       private:
@@ -201,6 +202,9 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
             if (i <= j) return data[j*(j+1)/2+i].dp;
             else return data[i*(i+1)/2+j].bp;
         }
+
+        double& VV(size_t i, size_t j) { return data[idx(i,j)].ii; }
+        const double& VV(size_t i, size_t j) const { return data[idx(i,j)].ii; }
     };
 
     /// Computed integrals
@@ -239,6 +243,7 @@ struct PLASK_SOLVER_API ExpansionBessel: public Expansion {
     cmatrix epsTpm(size_t layer);
     cmatrix epsDm(size_t layer);
     cmatrix epsDp(size_t layer);
+    dmatrix epsVV(size_t layer);
 #endif
 };
 

@@ -114,7 +114,7 @@ class VCSEL(unittest.TestCase):
         box = self.solver.geometry.bbox
         msh = mesh.Rectangular2D(linspace(-box.right, box.right, 101),
                                  linspace(box.bottom, box.top, 1001))
-        field = self.solver.outElectricField(msh)
+        field = self.solver.outLightE(msh)
         mag = max(abs(field.array.ravel()))
         scale = linspace(-mag, mag, 255)
         figure()
@@ -146,7 +146,7 @@ class VCSEL(unittest.TestCase):
 
         z = self.solver.geometry.get_object_bboxes(self.manager.geo.QW)[0].center.z
         arr = light.array
-        r = msh.axis0[unravel_index(argmax(arr), arr.shape)[0]]
+        r = msh.axis0[int(unravel_index(argmax(arr), arr.shape)[0])]
         rmsh = mesh.Rectangular2D(linspace(-box.right, box.right, 2001), [z])
         zmsh = mesh.Rectangular2D([r], linspace(box.bottom, box.top, 10001))
         figure()
