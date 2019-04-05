@@ -684,7 +684,7 @@ def plot_boundary(boundary, mesh, geometry, colors=None, color='0.75', plane=Non
 
 # ### plot_mesh ###
 
-def _plot_triangular(mesh, lines, color, lw, zorder, alpha, ix=0, iy=1)
+def _plot_triangular(mesh, lines, color, lw, zorder, alpha, ix=0, iy=1):
     x_max = max(node[ix] for node in mesh)
     x_min = min(node[ix] for node in mesh)
     y_max = max(node[iy] for node in mesh)

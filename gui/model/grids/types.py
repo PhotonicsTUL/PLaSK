@@ -12,7 +12,7 @@
 
 from . import TreeFragmentGrid
 from .mesh_rectangular import RectangularMesh, RectangularMesh1D
-from .mesh_triangular import TriangularMesh2D
+from .mesh_triangular import TriangularMesh2D, ExtrudedTriangularMesh2D
 from .generator_rectangular import RectangularSimpleGenerator, RectangularRegularGenerator, \
     RectangularDivideGenerator, RectangularSmoothGenerator
 from .generator_triangular import TriangularTriangleGenerator
@@ -22,7 +22,8 @@ MESHES_TYPES = {
     'regular': RectangularMesh1D.from_xml,
     'rectangular2d': RectangularMesh.from_xml,
     'rectangular3d': RectangularMesh.from_xml,
-    'triangular2d': TriangularMesh2D.from_xml
+    'triangular2d': TriangularMesh2D.from_xml,
+    'extruded_triangular3d': ExtrudedTriangularMesh2D.from_xml,
 }
 
 GENERATORS_TYPES = {
@@ -56,6 +57,8 @@ DISPLAY_NAMES = {
     'regular1d': "Regular1D",
     'regular2d': "Regular2D",
     'regular3d': "Regular3D",
+    'triangular2d': "Triangular2D",
+    'extruded_triangular3d': "ExtrudedTriangular3D",
 }
 
 def contruct_mesh(grids_model, element):

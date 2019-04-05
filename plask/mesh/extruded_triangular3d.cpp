@@ -71,7 +71,7 @@ bool ExtrudedTriangularMesh3D::empty() const {
 }
 
 void ExtrudedTriangularMesh3D::writeXML(XMLElement &object) const {
-    object.attr("type", "extruded_triangular2d");
+    object.attr("type", "extruded_triangular3d");
     { auto a = object.addTag("vert"); vertAxis->writeXML(a); }
     { auto a = object.addTag("long_tran"); longTranMesh.writeXML(a); }
 }

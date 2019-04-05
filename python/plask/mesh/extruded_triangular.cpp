@@ -30,7 +30,7 @@ void register_mesh_extruded_triangular() {
             //.def("__iter__", py::range(&ExtrudedTriangularMesh3D::begin, &ExtrudedTriangularMesh3D::end)) // we will use native iterators which perform better
             .add_property("elements", py::make_function(&ExtrudedTriangularMesh3D::elements, py::with_custodian_and_ward_postcall<0,1>()), u8"Element list in the mesh")
             .def_readwrite("long_tran", &ExtrudedTriangularMesh3D::longTranMesh, u8"Two-dimensional triangular mesh (Triangular2D) with long-tran coordinates of nodes.")
-            .def_readwrite("axis_vert", &ExtrudedTriangularMesh3D::vertAxis, u8"The third (vertical) axis of the mesh.")
+            .def_readonly("axis_vert", &ExtrudedTriangularMesh3D::vertAxis, u8"The third (vertical) axis of the mesh.")
             //.add_property("long_tran")
             .def("Front", &ExtrudedTriangularMesh3D::getFrontBoundary, u8"Front side of the mesh for setting boundary conditions").staticmethod("Front")
             .def("Back", &ExtrudedTriangularMesh3D::getBackBoundary, u8"Back side of the mesh for setting boundary conditions").staticmethod("Back")
