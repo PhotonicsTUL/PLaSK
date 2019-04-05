@@ -18,7 +18,7 @@ struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
 
     TriangularMesh2D longTranMesh;
 
-    const shared_ptr<MeshAxis> vertAxis;
+    shared_ptr<MeshAxis> vertAxis;
 
     /// Iteration order, if true vert axis is changed the fastest, else it is changed the slowest.
     bool vertFastest;

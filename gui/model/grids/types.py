@@ -12,7 +12,7 @@
 
 from . import TreeFragmentGrid
 from .mesh_rectangular import RectangularMesh, RectangularMesh1D
-from .mesh_triangular import TriangularMesh2D, ExtrudedTriangularMesh2D
+from .mesh_triangular import TriangularMesh2D, ExtrudedTriangularMesh3D
 from .generator_rectangular import RectangularSimpleGenerator, RectangularRegularGenerator, \
     RectangularDivideGenerator, RectangularSmoothGenerator
 from .generator_triangular import TriangularTriangleGenerator
@@ -23,7 +23,7 @@ MESHES_TYPES = {
     'rectangular2d': RectangularMesh.from_xml,
     'rectangular3d': RectangularMesh.from_xml,
     'triangular2d': TriangularMesh2D.from_xml,
-    'extruded_triangular3d': ExtrudedTriangularMesh2D.from_xml,
+    'extruded_triangular3d': ExtrudedTriangularMesh3D.from_xml,
 }
 
 GENERATORS_TYPES = {

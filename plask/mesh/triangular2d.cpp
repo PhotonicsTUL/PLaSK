@@ -470,13 +470,13 @@ std::size_t readTriangularMesh2D_readNodeIndex(XMLReader& reader, const char* at
     return result;
 }
 
-static shared_ptr<Mesh> readTriangularMesh2D(XMLReader& reader) {
-    shared_ptr<TriangularMesh2D> result = plask::make_shared<TriangularMesh2D>();
+TriangularMesh2D TriangularMesh2D::read(XMLReader& reader) {
+    TriangularMesh2D result;
 
     if (reader.requireTagOrEnd()) { // has tag?
         std::string tag_name = reader.getNodeName();
         if (tag_name == "triangle") {   // sequence of triangles
-            TriangularMesh2D::Builder builder(*result);
+            TriangularMesh2D::Builder builder(result);
             do {
                 builder.add(
                     vec(reader.requireAttribute<double>("a0"), reader.requireAttribute<double>("a1")),
@@ -486,19 +486,19 @@ static shared_ptr<Mesh> readTriangularMesh2D(XMLReader& reader) {
                 reader.requireTagEnd();
             } while (reader.requireTagOrEnd("triangle"));
         } else if (tag_name == "node") {
-            result->nodes.emplace_back(reader.requireAttribute<double>("tran"), reader.requireAttribute<double>("vert"));
+            result.nodes.emplace_back(reader.requireAttribute<double>("tran"), reader.requireAttribute<double>("vert"));
             reader.requireTagEnd();
             bool accept_nodes = true;   // accept <node> and <element> tags if true, else accept only <element>
             while (reader.requireTagOrEnd()) {
                 std::string tag_name = reader.getNodeName();
                 if (accept_nodes && tag_name == "node") {
-                    result->nodes.emplace_back(reader.requireAttribute<double>("tran"), reader.requireAttribute<double>("vert"));
+                    result.nodes.emplace_back(reader.requireAttribute<double>("tran"), reader.requireAttribute<double>("vert"));
                     reader.requireTagEnd();
                 } else if (tag_name == "element") {
-                    result->elementNodes.push_back({
-                        readTriangularMesh2D_readNodeIndex(reader, "a", result->nodes.size()),
-                        readTriangularMesh2D_readNodeIndex(reader, "b", result->nodes.size()),
-                        readTriangularMesh2D_readNodeIndex(reader, "c", result->nodes.size())
+                    result.elementNodes.push_back({
+                        readTriangularMesh2D_readNodeIndex(reader, "a", result.nodes.size()),
+                        readTriangularMesh2D_readNodeIndex(reader, "b", result.nodes.size()),
+                        readTriangularMesh2D_readNodeIndex(reader, "c", result.nodes.size())
                     });
                     reader.requireTagEnd();
                     accept_nodes = false;
@@ -509,6 +509,10 @@ static shared_ptr<Mesh> readTriangularMesh2D(XMLReader& reader) {
     }
 
     return result;
+}
+
+static shared_ptr<Mesh> readTriangularMesh2D(XMLReader& reader) {
+    return plask::make_shared<TriangularMesh2D>(TriangularMesh2D::read(reader));
 }
 
 static RegisterMeshReader rectangular2d_reader("triangular2d", readTriangularMesh2D);

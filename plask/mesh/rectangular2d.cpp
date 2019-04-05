@@ -214,15 +214,7 @@ static shared_ptr<Mesh> readRectangularMesh2D(XMLReader& reader) {
         std::string node = reader.getNodeName();
         if (node != "axis0" && node != "axis1") throw XMLUnexpectedElementException(reader, "<axis0> or <axis1>");
         dub_check(std::string("<mesh>"), node);
-        plask::optional<std::string> type = reader.getAttribute("type");
-        if (type) {
-            if (*type == "regular") axis[node[4]-'0'] = readRegularMeshAxis(reader);
-            else if (*type == "ordered") axis[node[4]-'0'] = readRectilinearMeshAxis(reader);
-            else throw XMLBadAttrException(reader, "type", *type, "\"regular\" or \"ordered\"");
-        } else {
-            if (reader.hasAttribute("start")) axis[node[4]-'0'] = readRegularMeshAxis(reader);
-            else axis[node[4]-'0'] = readRectilinearMeshAxis(reader);
-        }
+        axis[node[4]-'0'] = readMeshAxis(reader);
     }
     reader.requireTagEnd();
     return plask::make_shared<RectangularMesh2D>(std::move(axis[0]), std::move(axis[1]));

@@ -345,6 +345,13 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
      */
     void writeXML(XMLElement& object) const override;
 
+    /**
+     * Construct new mesh with data from XPL file.
+     * @param reader
+     * @return the mesh constructed
+     */
+    static TriangularMesh2D read(XMLReader& reader);
+
 
     // ------------------ Boundaries: -----------------------
 

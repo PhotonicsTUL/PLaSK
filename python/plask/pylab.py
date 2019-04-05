@@ -755,12 +755,12 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, fi
 
     if isinstance(mesh, plask.mesh.Rectangular2D):
         ix, iy = 0, 1
-        x_min, x_max, y_min, y_max = _plot_rectangular(mesh.axis0, mesh.axis1, color, lw, zorder, alpha)
+        x_min, x_max, y_min, y_max = _plot_rectangular(mesh.axis0, mesh.axis1, lines, color, lw, zorder, alpha)
 
     elif isinstance(mesh, plask.mesh.Rectangular3D):
         ix, iy = _get_2d_axes(plane)
         axis = tuple((mesh.axis0, mesh.axis1, mesh.axis2)[i] for i in (ix,iy))
-        x_min, x_max, y_min, y_max = _plot_rectangular(axis[0], axis[1], color, lw, zorder, alpha)
+        x_min, x_max, y_min, y_max = _plot_rectangular(axis[0], axis[1], lines, color, lw, zorder, alpha)
 
     elif isinstance(mesh, (plask.mesh.Regular, plask.mesh.Ordered)):
         ix, iy = 0, 1
@@ -776,9 +776,9 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, fi
     elif isinstance(mesh, plask.mesh.ExtrudedTriangular):
         ix, iy = _get_2d_axes(plane)
         if ix==2:
-            x_min, x_max, y_min, y_max = _plot_rectangular(mesh.axis_vert, sorted(n[iy] for n in mesh.long_tran), color, lw, zorder, alpha)
+            x_min, x_max, y_min, y_max = _plot_rectangular(mesh.axis_vert, sorted(n[iy] for n in mesh.long_tran), lines, color, lw, zorder, alpha)
         elif iy==2:
-            x_min, x_max, y_min, y_max = _plot_rectangular(sorted(n[ix] for n in mesh.long_tran), mesh.axis_vert, color, lw, zorder, alpha)
+            x_min, x_max, y_min, y_max = _plot_rectangular(sorted(n[ix] for n in mesh.long_tran), mesh.axis_vert, lines, color, lw, zorder, alpha)
         else: #ix in (0, 1) and iy in (0, 1):
             x_min, x_max, y_min, y_max = _plot_triangular(mesh.long_tran, lines, color, lw, zorder, alpha, ix, iy)
 

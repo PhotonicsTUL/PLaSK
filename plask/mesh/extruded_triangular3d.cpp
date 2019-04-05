@@ -3,6 +3,7 @@
 #include <boost/range/irange.hpp>
 
 #include "../utils/interpolation.h"
+#include "rectangular_common.h"
 
 namespace plask {
 
@@ -71,10 +72,30 @@ bool ExtrudedTriangularMesh3D::empty() const {
 }
 
 void ExtrudedTriangularMesh3D::writeXML(XMLElement &object) const {
-    object.attr("type", "extruded_triangular3d");
+    object.attr("type", "extrudedtriangular3d");
     { auto a = object.addTag("vert"); vertAxis->writeXML(a); }
     { auto a = object.addTag("long_tran"); longTranMesh.writeXML(a); }
 }
+
+static shared_ptr<Mesh> readExtrudedTriangularMesh3D(XMLReader& reader) {
+    shared_ptr<ExtrudedTriangularMesh3D> result = plask::make_shared<ExtrudedTriangularMesh3D>();
+
+    XMLReader::CheckTagDuplication dub_check;
+    for (int i = 0; i < 2; ++i) {
+        reader.requireTag();
+        std::string node = reader.getNodeName();
+        if (node != "vert" && node != "long_tran") throw XMLUnexpectedElementException(reader, "<vert> or <long_tran>");
+        dub_check(std::string("<mesh>"), node);
+        if (node == "vert")
+            result->vertAxis = readMeshAxis(reader);
+        else    // long_tran
+            result->longTranMesh = TriangularMesh2D::read(reader);
+    }
+    reader.requireTagEnd();
+    return result;
+}
+
+static RegisterMeshReader extrudedtriangular3d_reader("extrudedtriangular3d", readExtrudedTriangularMesh3D);
 
 Vec<3, double> ExtrudedTriangularMesh3D::at(std::size_t longTranIndex, std::size_t vertIndex) const {
     return from_longTran_vert(longTranMesh[longTranIndex], vertAxis->at(vertIndex));

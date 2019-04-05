@@ -1,6 +1,19 @@
 #include "rectangular_common.h"
+#include "regular1d.h"
 
 namespace plask {
+
+shared_ptr<MeshAxis> readMeshAxis(XMLReader& reader) {
+    plask::optional<std::string> type = reader.getAttribute("type");
+    if (type) {
+        if (*type == "regular") return readRegularMeshAxis(reader);
+        else if (*type == "ordered") return readRectilinearMeshAxis(reader);
+        else throw XMLBadAttrException(reader, "type", *type, "\"regular\" or \"ordered\"");
+    } else {
+        if (reader.hasAttribute("start")) return readRegularMeshAxis(reader);
+        else return readRectilinearMeshAxis(reader);
+    }
+}
 
 RectangularMeshBase2D::Boundary RectangularMeshBase2D::getBoundary(const std::string &boundary_desc) {
     if (boundary_desc == "bottom") return getBottomBoundary();

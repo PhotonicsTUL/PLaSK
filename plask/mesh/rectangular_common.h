@@ -8,6 +8,13 @@
 
 namespace plask {
 
+/**
+ * Read 1d mesh axis from XML.
+ * @param reader
+ * @return the axis readed
+ */
+shared_ptr<MeshAxis> readMeshAxis(XMLReader& reader);
+
 namespace details {
 
 /**
