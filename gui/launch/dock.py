@@ -17,8 +17,7 @@ from ..qt.QtCore import *
 from ..qt.QtGui import *
 from ..qt.QtWidgets import *
 
-from ..utils.config import CONFIG
-
+from ..utils.config import CONFIG, parse_font
 
 LEVEL_CRITICAL_ERROR = 1
 LEVEL_ERROR          = 2
@@ -61,19 +60,10 @@ class OutputModel(QAbstractListModel):
             return self.lines[row][1]
         if role == Qt.ForegroundRole:
             level = self.lines[row][0]
-            color = [
-                'black',    # default
-                'red',      # critical error
-                'red',      # error
-                'brown',    # warning
-                'magenta',  # important
-                'blue',     # info
-                'green',    # result
-                '#006060',  # data
-                '#404040',  # detail
-                '#800000',  # error detail
-                'gray',     # debug
-            ][level]
+            color = CONFIG['launcher_local/color_{:d}'.format(level)]
+            return QBrush(QColor(color))
+        if role == Qt.BackgroundRole:
+            color = CONFIG['launcher_local/background_color']
             return QBrush(QColor(color))
         if role == LEVEL_ROLE:
             return self.lines[row][0]
@@ -109,6 +99,11 @@ class OutputListView(QListView):
         clear_selection_action = QAction("Clea&r Selection", self)
         clear_selection_action.triggered.connect(self.clearSelection)
         self.context_menu.addAction(clear_selection_action)
+
+        pal = self.palette()
+        pal.setColor(QPalette.Base, QColor(CONFIG['launcher_local/background_color']))
+        pal.setColor(QPalette.Text, QColor(CONFIG['launcher_local/color_0']))
+        self.setPalette(pal)
 
     def mouseMoveEvent(self, event):
         super(OutputListView, self).mouseMoveEvent(event)
@@ -160,7 +155,7 @@ class OutputWindow(QDockWidget):
 
         font = QFont()
         font.setStyleHint(QFont.TypeWriter)
-        font.fromString(','.join(CONFIG['launcher_local/font'][:-1])+',0')
+        font.fromString(parse_font('launcher_local/font'))
         self.messages = OutputListView()
         self.messages.setFont(font)
         self.messages.setSelectionMode(QAbstractItemView.ContiguousSelection)
@@ -354,7 +349,7 @@ class OutputWindow(QDockWidget):
 
     def reconfig(self):
         font = self.messages.font()
-        if font.fromString(','.join(CONFIG['launcher_local/font'][:-1])+',0'):
+        if font.fromString(parse_font('launcher_local/font')):
             self.messages.setFont(font)
         self.model.update_font(self.messages.fontMetrics())
         self.filter.invalidate()

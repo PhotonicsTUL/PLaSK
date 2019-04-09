@@ -30,13 +30,13 @@ HELP_FILE = os.path.join(HELP_DIR, 'plask.qch')
 COLLECTION_FILE = os.path.join(HELP_DIR, 'plask.qhc')
 
 HELP_WINDOW = None
+HELP_ENGINE = None
 
 
 class HelpBrowser(QTextBrowser):
 
-    def __init__(self, help_engine, parent=None):
+    def __init__(self, parent=None):
         super(HelpBrowser, self).__init__(parent)
-        self.help_engine = help_engine
         self.setOpenLinks(False)
         self.anchorClicked.connect(self.open_link)
         font = self.font()
@@ -44,10 +44,10 @@ class HelpBrowser(QTextBrowser):
         self.setFont(font)
 
     def loadResource(self, typ, url):
-        if typ < 4 and self.help_engine:
+        if typ < 4 and HELP_ENGINE:
             if url.isRelative():
                 url = self.source().resolved(url)
-            return self.help_engine.fileData(url)
+            return HELP_ENGINE.fileData(url)
 
     def open_link(self, url):
         if url.isRelative():
@@ -65,26 +65,16 @@ class HelpWindow(QSplitter):
         self.setWindowTitle("PLaSK Help")
         self.setWindowIcon(QIcon.fromTheme('help-contents'))
 
-        self.help_engine = QHelpEngine(COLLECTION_FILE, self)
-
         try:
             main_window.config_changed.connect(self.reconfig)
         except AttributeError:
             pass
 
-        if not self.help_engine.setupData():
-            self.help_engine = None
-            label = QLabel("ERROR: Could not load help file!")
-            label.setAlignment(Qt.AlignCenter)
-            self.resize(600, 400)
-            self.addWidget(label)
-            return
-
         browser_area = QWidget()
         browser_layout = QVBoxLayout()
         self.toolbar = QToolBar()
         set_icon_size(self.toolbar)
-        self.browser = HelpBrowser(self.help_engine)
+        self.browser = HelpBrowser()
         browser_layout.setContentsMargins(0, 0, 0, 0)
         browser_layout.addWidget(self.toolbar)
         browser_layout.addWidget(self.browser)
@@ -109,18 +99,18 @@ class HelpWindow(QSplitter):
         self.setOrientation(Qt.Horizontal)
         tabs = QTabWidget(self)
         tabs.setMaximumWidth(480)
-        tabs.addTab(self.help_engine.contentWidget(), "Contents")
-        tabs.addTab(self.help_engine.indexWidget(), "Index")
+        tabs.addTab(HELP_ENGINE.contentWidget(), "Contents")
+        tabs.addTab(HELP_ENGINE.indexWidget(), "Index")
         self.addWidget(tabs)
         self.addWidget(browser_area)
 
-        self.help_engine.contentWidget().linkActivated.connect(self.browser.setSource)
-        self.help_engine.indexWidget().linkActivated.connect(self.browser.setSource)
+        HELP_ENGINE.contentWidget().linkActivated.connect(self.browser.setSource)
+        HELP_ENGINE.indexWidget().linkActivated.connect(self.browser.setSource)
         self.browser.sourceChanged.connect(self.update_content_widget)
-        self.help_engine.contentModel().contentsCreated.connect(
+        HELP_ENGINE.contentModel().contentsCreated.connect(
             lambda: self.update_content_widget(self.browser.source()))
 
-        self.namespace = self.help_engine.namespaceName(HELP_FILE)
+        self.namespace = HELP_ENGINE.namespaceName(HELP_FILE)
         self.prefix = 'qthelp://{}/doc/'.format(self.namespace)
         self.browser.setSource(QUrl(self.prefix+'index.html'))
 
@@ -132,7 +122,7 @@ class HelpWindow(QSplitter):
         self.browser.setFont(font)
 
     def update_content_widget(self, url):
-        content_widget = self.help_engine.contentWidget()
+        content_widget = HELP_ENGINE.contentWidget()
         return content_widget.setCurrentIndex(content_widget.indexOf(url))
 
     def update_toolbar(self):
@@ -140,8 +130,8 @@ class HelpWindow(QSplitter):
         self.next.setEnabled(self.browser.isForwardAvailable())
 
     def show_help_for_keyword(self, keyword):
-        if self.help_engine:
-            links = self.help_engine.linksForIdentifier(keyword)
+        if HELP_ENGINE:
+            links = HELP_ENGINE.linksForIdentifier(keyword)
             if links.count():
                 self.browser.setSource(links.constBegin().value())
 
@@ -157,8 +147,18 @@ class HelpWindow(QSplitter):
             webbrowser.open("{}".format(HELP_URL))
 
 
+def init_help_engine(parent=None):
+    global HELP_ENGINE
+    if HELP_ENGINE is None:
+        HELP_ENGINE = QHelpEngine(COLLECTION_FILE, parent)
+        if not HELP_ENGINE.setupData():
+            HELP_ENGINE = None
+            return False
+    return True
+
+
 def open_help(page=None, main_window=None):
-    if os.path.exists(COLLECTION_FILE) and not CONFIG['help/online']:
+    if os.path.exists(COLLECTION_FILE) and not CONFIG['help/online'] and init_help_engine(main_window):
         global HELP_WINDOW
         if HELP_WINDOW is None:
             HELP_WINDOW = HelpWindow(main_window)

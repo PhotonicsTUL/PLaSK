@@ -90,7 +90,7 @@ static py::object initPlask(int argc, const system_char* argv[])
     path.insert(1, solvers_path);
     if (argc > 0) // This is correct!!! argv[0] here is argv[1] in `main`
         try {
-            path.insert(0, boost::filesystem::absolute(boost::filesystem::path(argv[0])).parent_path().string());
+            path.insert(0, system_to_utf8(boost::filesystem::absolute(boost::filesystem::path(argv[0])).parent_path().wstring()));
         } catch (std::runtime_error&) { // can be thrown if there is wrong locale set
             system_string file(argv[0]);
             size_t pos = file.rfind(system_char(plask::FILE_PATH_SEPARATOR));

@@ -16,6 +16,10 @@ std::string AlGaInP::str() const { return StringBuilder("Al", Al)("Ga", Ga)("In"
 
 std::string AlGaInP::name() const { return NAME; }
 
+Material::Composition AlGaInP::composition() const {
+    return { {"Al", Al}, {"Ga", Ga}, {"In", In}, {"P", 1} };
+}
+
 MI_PROPERTY(AlGaInP, lattC,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
             MISource("linear interpolation: AlP, GaP, InP")

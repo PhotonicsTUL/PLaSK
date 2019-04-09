@@ -17,19 +17,19 @@ struct AlGaAsSb_Te: public AlGaAsSb {
 
     static constexpr const char* NAME = "AlGaAsSb:Te";
 
-    AlGaAsSb_Te(const Composition &Comp, DopingAmountType Type, double Val);
-    virtual std::string name() const override;
-    virtual std::string str() const override;
-    virtual Tensor2<double> mob(double T) const override;
-    virtual double Nf(double T) const override; //TODO make sure the result is in cm^(-3)
-    virtual double Dop() const; //TODO Piotr: NEW virtual method (there is no Dop() in Material), maybe it should be non-virtual?
-    virtual Tensor2<double> cond(double T) const override;
-    virtual ConductivityType condtype() const override;
-    virtual double nr(double lam, double T, double n = .0) const override;
-    virtual double absp(double lam, double T) const override;
+    AlGaAsSb_Te(const Composition &Comp, double Val);
+    std::string name() const override;
+    std::string str() const override;
+    Tensor2<double> mob(double T) const override;
+    double Nf(double T) const override; //TODO make sure the result is in cm^(-3)
+    double doping() const override; //TODO Piotr: NEW method (there is no doping() in Material), maybe it should be non-virtual?
+    Tensor2<double> cond(double T) const override;
+    ConductivityType condtype() const override;
+    double nr(double lam, double T, double n = .0) const override;
+    double absp(double lam, double T) const override;
 
 protected:
-    virtual bool isEqual(const Material& other) const override;
+    bool isEqual(const Material& other) const override;
 
 private:
     double ND,

@@ -17,6 +17,7 @@ from ...utils.str import none_to_empty
 
 from ...qt.QtWidgets import QSizePolicy
 
+
 class GNAgainController(GNodeController):
 
     def construct_form(self):
@@ -33,6 +34,10 @@ class GNAgainController(GNodeController):
         super(GNAgainController, self).fill_form()
         with BlockQtSignals(self.ref):
             self.ref.setEditText(none_to_empty(self.node.ref))
+        if self.in_parent_controller is not None: self.in_parent_controller.fill_form()
+
+    def save_data_in_model(self):
+        if self.in_parent_controller is not None: self.in_parent_controller.save_data_in_model()
 
 
 class GNCopyChildController(GNodeController):

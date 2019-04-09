@@ -15,6 +15,10 @@ std::string AlAsSb::str() const { return StringBuilder("Al")("As")("Sb", Sb); }
 
 std::string AlAsSb::name() const { return NAME; }
 
+Material::Composition AlAsSb::composition() const {
+    return { {"Al", 1}, {"As", As}, {"Sb", Sb} };
+}
+
 MI_PROPERTY(AlAsSb, lattC,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
             MISource("linear interpolation: AlAs, AlSb")

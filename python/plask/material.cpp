@@ -204,10 +204,9 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     }
 
   public:
-    PythonMaterial(): MaterialWithBase(new GenericMaterial) {}
-    PythonMaterial(shared_ptr<Material> base): MaterialWithBase(base) {
-        if (!base) base = shared_ptr<Material>(new GenericMaterial);
-    }
+    Material::Parameters params;
+
+    PythonMaterial(const py::object& self) { this->self = self.ptr(); }
 
     static shared_ptr<Material> __init__(const py::tuple& args, const py::dict& kwargs);
 
@@ -229,7 +228,8 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
 
         return *base == *theother.base &&
                 oself.attr("__class__") == oother.attr("__class__") &&
-                oself.attr("__dict__") == oother.attr("__dict__");
+                oself.attr("__dict__") == oother.attr("__dict__") &&
+                doping() == theother.doping() && params.composition == theother.params.composition;
     }
 
     std::string name() const override {
@@ -254,54 +254,22 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
             return call_method<std::string>("__str__");
         }
         else {
-            std::string result, doping;
-            std::tie(result, doping) = splitString2(name(), ':');
-            py::object cls = py::object(py::borrowed(self)).attr("__class__");
-            bool simple;
-            try {
-                simple = py::extract<bool>(cls.attr("simple"));
-            } catch (py::error_already_set&) {
-                PyErr_Clear();
-                simple = true;
-            }
-            if (!simple) {
-                if (PyObject_HasAttrString(self, "composition")) {
-                    py::object composition { py::handle<> (PyObject_GetAttrString(self, "composition")) };
-                    std::string basename, label;
-                    std::tie(basename, label) = splitString2(result, '_');
-                    auto elements = Material::parseObjectsNames(basename);
-                    result = "";
-                    for (const auto& el: elements) {
-                        result += el;
-                        try {
-                            double x = py::extract<double>(composition[el]);
-                            if (!isnan(x)) result += format("({})", x);
-                        } catch (py::error_already_set&) {
-                            PyErr_Clear();
-                        }
-                    }
-                    if (label != "_") result += "_" + label;
-                } else {
-                    writelog(LOG_WARNING, u8"Cannot determine composition for material {} (override '__str__' method, or specify 'composition' attribute)", result);
-                }
-            }
-            if (doping != "") {
-                result += ":" + doping;
-                if (PyObject* dc {PyObject_GetAttrString(self, "doping")}) {
-                    result += "=" + py::extract<std::string>(py::str(py::handle<>(dc)))();
-                } else if (PyObject* cc {PyObject_GetAttrString(self, "carriers")}) {
-                    PyErr_Clear();
-                    if (condtype() == CONDUCTIVITY_P)
-                        result += " p=" + py::extract<std::string>(py::str(py::handle<>(cc)))();
-                    else
-                        result += " n=" + py::extract<std::string>(py::str(py::handle<>(cc)))();
-                } else {
-                    PyErr_Clear();
-                    writelog(LOG_WARNING, u8"Cannot determine doping for material {} (override '__str__' method, or specify 'doping' or 'carriers' attribute)", result);
-                }
-            }
-            return result;
+            return params.str();
         }
+    }
+
+    double doping() const override {
+        if (isnan(params.doping)) {
+            if (base)
+                return base->doping();
+            else
+                return 0.;
+        } else
+            return params.doping;
+    }
+
+    Composition composition() const override {
+        return params.composition;
     }
 
     Material::ConductivityType condtype() const override {
@@ -316,6 +284,9 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
         }
         return py::extract<Material::ConductivityType>(octype);
     }
+
+//     double doping() const override {
+//     }
 
     Material::Kind kind() const override {
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
@@ -425,10 +396,10 @@ struct PythonMaterialConstructor: public MaterialsDB::MaterialConstructor
 {
     py::object material_class;
     MaterialsDB::ProxyMaterialConstructor base_constructor;
-    const bool simple;
+    const bool alloy;
 
-    PythonMaterialConstructor(const std::string& name, const py::object& cls, const py::object& base, bool simple):
-        MaterialsDB::MaterialConstructor(name), material_class(cls), simple(simple)
+    PythonMaterialConstructor(const std::string& name, const py::object& cls, const py::object& base, bool alloy):
+        MaterialsDB::MaterialConstructor(name), material_class(cls), alloy(alloy)
     {
         if (base == py::object()) return;
 
@@ -440,7 +411,7 @@ struct PythonMaterialConstructor: public MaterialsDB::MaterialConstructor
         }
     }
 
-    shared_ptr<Material> operator()(const Material::Composition& composition, Material::DopingAmountType doping_amount_type, double doping_amount) const override
+    shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const override
     {
         OmpLockGuard<OmpNestLock> lock(python_omp_lock);
         py::tuple args;
@@ -448,14 +419,12 @@ struct PythonMaterialConstructor: public MaterialsDB::MaterialConstructor
         // Composition
         for (auto c : composition) kwargs[c.first] = c.second;
         // Doping information
-        if (doping_amount_type !=  Material::NO_DOPING) {
-            kwargs[ doping_amount_type == Material::DOPANT_CONCENTRATION ? "doping" : "carriers" ] = doping_amount;
-        }
+        if (!isnan(doping)) kwargs["doping"] = doping;
         py::object omaterial = material_class(*args, **kwargs);;
         return py::extract<shared_ptr<Material>>(omaterial);
     }
 
-    bool isSimple() const override { return simple; }
+    bool isAlloy() const override { return alloy; }
 };
 
 /**
@@ -466,7 +435,7 @@ struct PythonMaterialConstructor: public MaterialsDB::MaterialConstructor
  */
 void registerSimpleMaterial(const std::string& name, py::object material_class, const py::object& base)
 {
-    auto constructor = plask::make_shared<PythonMaterialConstructor>(name, material_class, base, true);
+    auto constructor = plask::make_shared<PythonMaterialConstructor>(name, material_class, base, false);
     MaterialsDB::getDefault().addSimple(constructor);
     material_class.attr("_factory") = py::object(constructor);
     material_class.attr("simple") = true;
@@ -480,7 +449,7 @@ void registerSimpleMaterial(const std::string& name, py::object material_class, 
  */
 void registerAlloyMaterial(const std::string& name, py::object material_class, const py::object& base)
 {
-    auto constructor = plask::make_shared<PythonMaterialConstructor>(name, material_class, base, false);
+    auto constructor = plask::make_shared<PythonMaterialConstructor>(name, material_class, base, true);
     MaterialsDB::getDefault().addComplex(constructor);
     material_class.attr("_factory") = py::object(constructor);
     material_class.attr("simple") = false;
@@ -495,29 +464,17 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
     py::object cobj;
     try {
         cobj = kwargs["doping"];
-        if (result.hasDoping()) throw ValueError(u8"doping or carrier concentrations specified in both full name and argument");
-        result.dopingAmountType = Material::DOPANT_CONCENTRATION;
-        had_doping_key = true;
-    } catch (py::error_already_set&) {
-        PyErr_Clear();
-    }
-    try {
-        cobj = kwargs["carriers"];
-        if (had_doping_key) throw ValueError(u8"doping and carrier concentrations specified simultaneously");
-        if (result.hasDoping()) throw ValueError(u8"doping or carrier concentrations specified in both full name and argument");
-        result.dopingAmountType = Material::CARRIERS_CONCENTRATION;
+        if (result.hasDoping()) throw ValueError(u8"doping concentrations specified in both full name and argument");
         had_doping_key = true;
     } catch (py::error_already_set&) {
         PyErr_Clear();
     }
     if (had_doping_key) {
-        if (!result.hasDopantName())
-            throw ValueError(u8"{} concentration given for undoped material",
-                             (result.dopingAmountType==Material::DOPANT_CONCENTRATION)?"doping":"carrier");
-        result.dopingAmount = py::extract<double>(cobj);
+        if (!result.hasDopantName()) throw ValueError(u8"doping concentration given for undoped material");
+        result.doping = py::extract<double>(cobj);
     } else {
         if (result.hasDopantName() && !result.hasDoping())
-            throw ValueError(u8"dopant specified, but neither doping nor carrier concentrations given correctly");
+            throw ValueError(u8"dopant specified, but doping concentrations not given correctly");
     }
 
     py::list keys = kwargs.keys();
@@ -533,8 +490,11 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
     // test if only correct objects are given
     for (int i = 0; i < py::len(keys); ++i) {
         std::string k = py::extract<std::string>(keys[i]);
-        if (k != "doping" && k != "carriers" && std::find(objects.begin(), objects.end(), k) == objects.end()) {
-            throw TypeError(u8"'{}' not allowed in material {}", k, result.name);
+        if (k != "doping" && std::find(objects.begin(), objects.end(), k) == objects.end()) {
+            std::string name = result.name;
+            if (result.label != "") name += "_" + result.label;
+            if (result.dopant != "") name += ":" + result.dopant;
+            throw TypeError(u8"'{}' not allowed in material {}", k, name);
         }
     }
     // make composition map
@@ -562,41 +522,17 @@ shared_ptr<Material> PythonMaterial::__init__(const py::tuple& args, const py::d
     py::object self(args[0]);
     py::object cls = self.attr("__class__");
 
-    shared_ptr<PythonMaterial> ptr;
+    shared_ptr<PythonMaterial> ptr(new PythonMaterial(self));
+    ptr->params = kwargs2MaterialComposition(ptr->name(), kwargs);
+    ptr->params.composition = ptr->params.completeComposition();
 
-    Material::Parameters params;
     if (PyObject_HasAttrString(cls.ptr(), "_factory")) {
         shared_ptr<PythonMaterialConstructor> factory
             = py::extract<shared_ptr<PythonMaterialConstructor>>(cls.attr("_factory"));
-        params = kwargs2MaterialComposition(factory->base_constructor.materialName, kwargs);
-        ptr.reset(new PythonMaterial(factory->base_constructor(params.completeComposition(), params.dopingAmountType, params.dopingAmount)));
+        ptr->base = factory->base_constructor(ptr->params.composition, ptr->params.doping);
     } else {
-        ptr.reset(new PythonMaterial());
-        try {
-            params = kwargs2MaterialComposition(ptr->name(), kwargs);
-        } catch (...) {
-            PyErr_Clear();
-        }
+        ptr->base.reset(new GenericMaterial());
     }
-    if (params.dopingAmountType == DOPANT_CONCENTRATION) {
-        if (!PyObject_HasAttrString(self.ptr(), "doping")) {
-            self.attr("doping") = params.dopingAmount;
-        }
-    } else if (params.dopingAmountType == CARRIERS_CONCENTRATION) {
-        if (!PyObject_HasAttrString(self.ptr(), "carriers")) {
-            self.attr("carriers") = params.dopingAmount;
-        }
-    }
-    if (params.composition.size() && !PyObject_HasAttrString(self.ptr(), "composition")) {
-        py::dict pycomposition;
-        for (const auto& item: params.completeComposition()) {
-            if (!isnan(item.second))
-                pycomposition[item.first] = item.second;
-        }
-        self.attr("composition") = pycomposition;
-    }
-
-    ptr->self = self.ptr();     // key line !!!
 
     // Update cache
     auto found = cacheMap.find(cls.ptr());
@@ -733,34 +669,34 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     return DB->get(kwargs2MaterialComposition(name, kwargs));
 }
 
-py::dict Material__completeComposition(py::dict src, std::string name) {
-    py::list keys = src.keys();
-    Material::Composition comp;
-    py::object none;
-    for(int i = 0; i < py::len(keys); ++i) {
-        std::string k = py::extract<std::string>(keys[i]);
-        if (k != "doping" && k != "carriers") {
-            py::object s = src[keys[i]];
-            comp[py::extract<std::string>(keys[i])] = (s != none) ? py::extract<double>(s): std::numeric_limits<double>::quiet_NaN();
-        }
-    }
-    if (name != "") {
-        std::string basename = splitString2(name, ':').first;
-        std::vector<std::string> objects = Material::parseObjectsNames(basename);
-        for (auto c: comp) {
-            if (std::find(objects.begin(), objects.end(), c.first) == objects.end()) {
-                throw TypeError(u8"'{}' not allowed in material {}", c.first, name);
-            }
-        }
-    }
-
-    comp = Material::completeComposition(comp);
-
-    py::dict result;
-    for (auto c: comp) result[c.first] = c.second;
-    return result;
-}
-
+// py::dict Material__completeComposition(const Material& self, py::dict src) {
+//     py::list keys = src.keys();
+//     Material::Composition comp;
+//     py::object none;
+//     for(int i = 0; i < py::len(keys); ++i) {
+//         std::string k = py::extract<std::string>(keys[i]);
+//         if (k != "doping") {
+//             py::object s = src[keys[i]];
+//             comp[py::extract<std::string>(keys[i])] = (s != none) ? py::extract<double>(s): std::numeric_limits<double>::quiet_NaN();
+//         }
+//     }
+//     std::string name = self.name();
+//     if (name != "") {
+//         std::string basename = splitString2(name, ':').first;
+//         std::vector<std::string> objects = Material::parseObjectsNames(basename);
+//         for (auto c: comp) {
+//             if (std::find(objects.begin(), objects.end(), c.first) == objects.end()) {
+//                 throw TypeError(u8"'{}' not allowed in material {}", c.first, name);
+//             }
+//         }
+//     }
+//
+//     comp = Material::completeComposition(comp);
+//
+//     py::dict result;
+//     for (auto c: comp) result[c.first] = c.second;
+//     return result;
+// }
 
 std::string Material__str__(const Material& self) {
     return self.str();
@@ -769,6 +705,30 @@ std::string Material__str__(const Material& self) {
 std::string Material__repr__(const Material& self) {
     return format("plask.materials.Material('{0}')", Material__str__(self));
 }
+
+py::dict Material_composition(const Material& self) {
+    py::dict result;
+    for (const auto& item: self.composition()) {
+        result[item.first] = item.second;
+    }
+    return result;
+}
+
+py::dict Material__minimal_composition(const Material& self) {
+    py::dict result;
+    for (const auto& item: Material::minimalComposition(self.composition())) {
+        result[item.first] = item.second;
+    }
+    return result;
+}
+
+double Material__getattr__composition(const Material& self, const std::string& attr) {
+    auto composition = self.composition();
+    auto found = composition.find(attr);
+    if (found == composition.end()) throw AttributeError("'Material' object has no attribute '{}'", attr);
+    return found->second;
+}
+
 
 namespace detail {
     inline bool getRanges(const MaterialInfo::PropertyInfo&, py::dict&) { return false; }
@@ -901,8 +861,8 @@ void initMaterials() {
         .add_property("all", &MaterialsDB_list, "List of all materials in the database.")
         .def("__iter__", &MaterialsDB_iter)
         .def("__contains__", &MaterialsDB_contains)
-        .def("is_simple", &MaterialsDB::isSimple, py::arg("name"),
-             u8"Return ``True`` if the specified material is a simple one.\n\n"
+        .def("is_alloy", &MaterialsDB::isAlloy, py::arg("name"),
+             u8"Return ``True`` if the specified material is an alloy one.\n\n"
              u8"Args:\n"
              u8"    name (str): material name without doping amount and composition.\n"
              u8"                (e.g. 'GaAs:Si', 'AlGaAs')."
@@ -922,23 +882,29 @@ void initMaterials() {
     MaterialClass
         .def("__init__", raw_constructor(&PythonMaterial::__init__))
 
-        .def("complete_composition", &Material__completeComposition, (py::arg("composition"), py::arg("name")=""),
-             u8"Fix incomplete material composition basing on pattern.\n\n"
-             u8"Args:\n"
-             u8"    composition (dict): Dictionary with incomplete composition (i.e. the one\n"
-             u8"                        missing some elements).\n"
-             u8"    name (str): Material name.\n\n"
-             u8"Return:\n"
-             u8"    dict: Dictionary with completed composition.")
-        .staticmethod("complete_composition")
+        // .def("complete_composition", &Material__completeComposition, (py::arg("composition")),
+        //         u8"Fix incomplete material composition basing on pattern.\n\n"
+        //         u8"Args:\n"
+        //         u8"    composition (dict): Dictionary with incomplete composition (i.e. the one\n"
+        //         u8"                        missing some elements).\n"
+        //         u8"Return:\n"
+        //         u8"    dict: Dictionary with completed composition.")
 
         .add_property("name", &Material::name, u8"Material name (without composition and doping amounts).")
 
-        .add_property("dopant_name", &Material::dopantName, u8"Dopant material name (part of name after ':', possibly empty).")
+        .add_property("dopant", &Material::dopant, u8"Dopant material name (part of name after ':', possibly empty).")
 
         .add_property("name_without_dopant", &Material::nameWithoutDopant, u8"Material name without dopant (without ':' and part of name after it).")
 
         .add_property("kind", &Material::kind, u8"Material kind.")
+
+        .add_property("composition", &Material_composition, u8"Material composition.")
+
+        .def("__getattr__", &Material__getattr__composition)
+
+        .add_property("_minimal_composition", &Material__minimal_composition, u8"Material composition.")
+
+        .add_property("doping", &Material::doping, u8"Doping concentration.")
 
         .add_property("base", &Material_base, u8"Base material.\n\nThis a base material specified for Python and XPL custom materials.")
 
@@ -948,7 +914,7 @@ void initMaterials() {
 
         .def("__eq__", (bool(Material::*)(const Material&)const)&Material::operator==)
 
-        .add_property("simple", &Material::isSimple)
+        .add_property("alloy", &Material::isAlloy)
 
         .def("lattC", &Material::lattC, (py::arg("T")=300., py::arg("x")="a"),
              u8"Get lattice constant [A].\n\n"

@@ -15,6 +15,10 @@ std::string GaInP::str() const { return StringBuilder("In", In)("Ga")("P"); }
 
 std::string GaInP::name() const { return NAME; }
 
+Material::Composition GaInP::composition() const {
+    return { {"Ga", Ga}, {"In", In}, {"P", 1} };
+}
+
 MI_PROPERTY(GaInP, lattC,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
             MISource("linear interpolation: GaP, InP")

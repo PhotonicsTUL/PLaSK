@@ -96,6 +96,10 @@ class SourceWidget(QWidget):
 
         self.editor = editor_class(self, *args, **kwargs)
         self.editor.setFont(EDITOR_FONT)
+        palette = self.editor.palette()
+        palette.setColor(QPalette.Base, QColor(CONFIG['editor/background_color']))
+        palette.setColor(QPalette.Text, QColor(CONFIG['editor/foreground_color']))
+        self.editor.setPalette(palette)
 
         self.toolbar = QToolBar(self)
         self.toolbar.setStyleSheet("QToolBar { border: 0px }")
@@ -253,7 +257,7 @@ class SourceWidget(QWidget):
         else:
             self.find_selection.setChecked(False)
         self.find_edit.selectAll()
-        self.find_edit.setPalette(self.editor.palette())
+        self.find_edit.setPalette(self.replace_edit.palette())
         self.find_toolbar.show()
         self.find_edit.setFocus()
 
@@ -267,7 +271,7 @@ class SourceWidget(QWidget):
                 self.find_selection.setChecked(False)
                 self.find_edit.setText(text)
         self.find_edit.selectAll()
-        self.find_edit.setPalette(self.editor.palette())
+        self.find_edit.setPalette(self.replace_edit.palette())
         self.find_toolbar.show()
         self.replace_toolbar.show()
         self.find_edit.setFocus()
@@ -308,7 +312,7 @@ class SourceWidget(QWidget):
         cursor = self.editor.textCursor()
         if cont:
             cursor.setPosition(cursor.selectionStart())
-        pal = self.editor.palette()
+        pal = self.replace_edit.palette()
         if self.find_regex.isChecked():
             self._findtext = QRegExp(self.find_edit.text())
         else:
@@ -487,8 +491,12 @@ class SourceEditController(Controller):
     def reconfig(self):
         editor = self.source_widget.editor
         editor.setFont(EDITOR_FONT)
-        if editor.line_numbers is not None:
-            editor.line_numbers.setFont(EDITOR_FONT)
+        editor.setStyleSheet("QPlainTextEdit {{ color: {fg}; background-color: {bg} }}".format(
+            fg=(CONFIG['editor/foreground_color']),
+            bg=(CONFIG['editor/background_color'])
+        ))
+        try: editor.line_numbers.setFont(EDITOR_FONT)
+        except AttributeError: pass
         if self.highlighter is not None:
             with BlockQtSignals(editor):
                 update_xml_scheme()

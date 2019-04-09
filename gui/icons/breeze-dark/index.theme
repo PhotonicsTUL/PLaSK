@@ -1,0 +1,27 @@
+[Icon Theme/actions]
+Name=Breeze Dark
+Comment=Elegant monochromatic icon theme
+Hidden=true
+
+Directories=scalable
+
+[scalable/actions]
+Size=48
+Context=Actions
+Type=Scalable
+MinSize=32
+MaxSize=256
+
+[scalable/apps]
+Size=48
+Context=Applications
+Type=Scalable
+MinSize=32
+MaxSize=256
+
+[scalable/mimetypes]
+Size=48
+Context=MimeTypes
+Type=Scalable
+MinSize=32
+MaxSize=256

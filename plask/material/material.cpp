@@ -11,18 +11,47 @@
 
 namespace plask {
 
-inline std::pair<std::string, int> el_g(const std::string& g, int p) { return std::pair<std::string, int>(g, p); }
+// inline std::pair<std::string, int> el_g(const std::string& g, int p) { return std::pair<std::string, int>(g, p); }
 
 int objectGroup(const std::string& objectName) {
     static const std::map<std::string, int> objectGroups =
-        { el_g("Be", 2), el_g("Mg", 2), el_g("Ca", 2), el_g("Sr", 2), el_g("Ba", 2),
-          el_g("B", 3), el_g("Al", 3), el_g("Ga", 3), el_g("In", 3), el_g("Tl", 3),
-          el_g("C", 4), el_g("Si", 4), el_g("Ge", 4), el_g("Sn", 4), el_g("Pb", 4),
-          el_g("N", 5), el_g("P", 5), el_g("As", 5), el_g("Sb", 5), el_g("Bi", 5),
-          el_g("O", 6), el_g("S", 6), el_g("Se", 6), el_g("Te", 6)
+        { {"Be", 2}, {"Mg", 2}, {"Ca", 2}, {"Sr", 2}, {"Ba", 2},
+          {"B", 3}, {"Al", 3}, {"Ga", 3}, {"In", 3}, {"Tl", 3},
+          {"C", 4}, {"Si", 4}, {"Ge", 4}, {"Sn", 4}, {"Pb", 4},
+          {"N", 5}, {"P", 5}, {"As", 5}, {"Sb", 5}, {"Bi", 5},
+          {"O", 6}, {"S", 6}, {"Se", 6}, {"Te", 6}
         };
     return map_find(objectGroups, objectName, 0);
 }
+
+template <typename NameValuePairIter>
+inline void fillGroupMaterialCompositionAmounts(NameValuePairIter begin, NameValuePairIter end, int group_nr) {
+    static const char* const ROMANS[] = { "I", "II", "III", "IV", "V", "VI", "VII" };
+    assert(0 < group_nr && group_nr < 8);
+    auto no_info = end;
+    double sum = 0.0;
+    unsigned n = 0;
+    for (auto i = begin; i != end; ++i) {
+        if (std::isnan(i->second)) {
+            if (no_info != end)
+                throw plask::MaterialParseException("Incomplete material composition for group {0} elements", ROMANS[group_nr-1]);
+            else
+                no_info = i;
+        } else {
+            sum += i->second;
+            ++n;
+        }
+    }
+    if (n > 0 && sum - 1.0 > SMALL*n)
+        throw plask::MaterialParseException("Total material composition for group {0} elements exceeds 1", ROMANS[group_nr-1]);
+    if (no_info != end) {
+        no_info->second = 1.0 - sum;
+    } else {
+        if (!is_zero(sum - 1.0))
+             throw plask::MaterialParseException("Total material composition for group {0} elements ({1}) differs from 1", ROMANS[group_nr-1], sum);
+    }
+}
+
 
 Material::StringBuilder& Material::StringBuilder::operator()(const std::string& objectName, double ammount) {
     str << objectName;
@@ -32,30 +61,20 @@ Material::StringBuilder& Material::StringBuilder::operator()(const std::string& 
     return *this;
 }
 
-std::string Material::StringBuilder::dopant(const std::string& dopantName, double dopantConcentration) {
+std::string Material::StringBuilder::dopant(const std::string& dopant, double dopantConcentration) {
     str << ':';
-    str << dopantName;
+    str << dopant;
     str << '=';
     str << dopantConcentration;
     return str.str();
 }
 
-std::string Material::StringBuilder::dopant(const std::string& dopantName, char n_or_p, double carrierConcentration) {
-    str << ':';
-    str << dopantName;
-    str << ' ';
-    str << n_or_p;
-    str << '=';
-    str << carrierConcentration;
-    return str.str();
-}
-
 void Material::Parameters::parse(const std::string &full_material_str, bool allow_dopant_without_amount) {
-    std::string dopant;
-    std::tie(this->name, dopant) = splitString2(full_material_str, ':');
-    std::tie(this->name, this->label) = splitString2(this->name, '_');
-    if (!dopant.empty())
-        Material::parseDopant(dopant, this->dopantName, this->dopingAmountType, this->dopingAmount, allow_dopant_without_amount);
+    std::string dope;
+    std::tie(name, dope) = splitString2(full_material_str, ':');
+    std::tie(name, label) = splitString2(name, '_');
+    if (!dope.empty())
+        Material::parseDopant(dope, dopant, doping, allow_dopant_without_amount);
     else
         this->clearDoping();
     if (isSimpleMaterialName(name))
@@ -64,22 +83,55 @@ void Material::Parameters::parse(const std::string &full_material_str, bool allo
         composition = Material::parseComposition(name);
 }
 
+std::string Material::Parameters::str() const {
+    std::string result;
+    if (isAlloy()) {
+        std::map<int, std::vector<std::pair<std::string, double>>> by_group;
+        for (auto c: composition) {
+            int group = objectGroup(c.first);
+            if (group == 0) throw plask::MaterialParseException("Wrong object name \"{0}\"", c.first);
+            by_group[group].push_back(c);
+        }
+        for (auto g: by_group) {
+            fillGroupMaterialCompositionAmounts(g.second.begin(), g.second.end(), g.first);
+            if (g.second.begin() != g.second.end()) {
+                auto last = g.second.end() - 1;
+                for (auto el = g.second.begin(); el != last; ++el)
+                    result += format("{}({})", el->first, el->second);
+                result += last->first;
+            }
+        }
+    } else {
+        result = name;
+    }
+    if (label != "") result += "_" + label;
+    if (dopant != "") result += ":" + dopant + "=" + plask::str(doping);
+    return result;
+}
+
 Material::Composition Material::Parameters::completeComposition() const {
     return Material::completeComposition(composition);
 }
 
-void Material::Parameters::setDoping(const std::string& dopantName, Material::DopingAmountType dopingAmountType, double dopingAmount) {
-    this->dopantName = dopantName;
-    this->dopingAmountType = dopingAmountType;
-    this->dopingAmount = dopingAmount;
+void Material::Parameters::setDoping(const std::string& dopant, double doping) {
+    this->dopant = dopant;
+    this->doping = doping;
 }
 
 std::string Material::str() const {
     return name();
 }
 
-bool Material::isSimple() const {
-    return isSimpleMaterialName(str());
+bool Material::isAlloy() const {
+    return !isSimpleMaterialName(str());
+}
+
+Material::Composition Material::composition() const {
+    return Composition();
+}
+
+double Material::doping() const {
+    return 0;
 }
 
 double Material::A(double /*T*/) const { throwNotImplemented("A(double T)"); }
@@ -205,36 +257,8 @@ double Material::Nd() const { throwNotImplemented("Nd()"); }
     throw MaterialMethodNotImplemented(name(), method_name);
 }
 
-template <typename NameValuePairIter>
-inline void fillGroupMaterialCompositionAmounts(NameValuePairIter begin, NameValuePairIter end, int group_nr) {
-    static const char* const ROMANS[] = { "I", "II", "III", "IV", "V", "VI", "VII" };
-    assert(0 < group_nr && group_nr < 8);
-    auto no_info = end;
-    double sum = 0.0;
-    unsigned n = 0;
-    for (auto i = begin; i != end; ++i) {
-        if (std::isnan(i->second)) {
-            if (no_info != end)
-                throw plask::MaterialParseException("Incomplete material composition for group {0} elements", ROMANS[group_nr-1]);
-            else
-                no_info = i;
-        } else {
-            sum += i->second;
-            ++n;
-        }
-    }
-    if (n > 0 && sum - 1.0 > SMALL*n)
-        throw plask::MaterialParseException("Total material composition for group {0} elements exceeds 1", ROMANS[group_nr-1]);
-    if (no_info != end) {
-        no_info->second = 1.0 - sum;
-    } else {
-        if (!is_zero(sum - 1.0))
-             throw plask::MaterialParseException("Total material composition for group {0} elements ({1}) differs from 1", ROMANS[group_nr-1], sum);
-    }
-}
-
 Material::Composition Material::completeComposition(const Composition &composition) {
-    std::map<int, std::vector< std::pair<std::string, double> > > by_group;
+    std::map<int, std::vector<std::pair<std::string, double>>> by_group;
     for (auto c: composition) {
         int group = objectGroup(c.first);
         if (group == 0) throw plask::MaterialParseException("Wrong object name \"{0}\"", c.first);
@@ -243,6 +267,22 @@ Material::Composition Material::completeComposition(const Composition &compositi
     Material::Composition result;
     for (auto g: by_group) {
         fillGroupMaterialCompositionAmounts(g.second.begin(), g.second.end(), g.first);
+        result.insert(g.second.begin(), g.second.end());
+    }
+    return result;
+}
+
+Material::Composition Material::minimalComposition(const Composition &composition) {
+    std::map<int, std::vector<std::pair<std::string, double>>> by_group;
+    for (auto c: composition) {
+        int group = objectGroup(c.first);
+        if (group == 0) throw plask::MaterialParseException("Wrong object name \"{0}\"", c.first);
+        by_group[group].push_back(c);
+    }
+    Material::Composition result;
+    for (auto g: by_group) {
+        fillGroupMaterialCompositionAmounts(g.second.begin(), g.second.end(), g.first);
+        if (g.second.begin() != g.second.end()) (g.second.end()-1)->second = NAN;
         result.insert(g.second.begin(), g.second.end());
     }
     return result;
@@ -311,7 +351,7 @@ Material::Composition Material::parseComposition(const std::string& str) {
     return parseComposition(c, c + str.size());
 }
 
-void Material::parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, Material::DopingAmountType& doping_amount_type, double& doping_amount, bool allow_dopant_without_amount) {
+void Material::parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, double& doping, bool allow_dopant_without_amount) {
     const char* name_end = getObjectEnd(begin, end);
     if (name_end == begin)
          throw MaterialParseException("No dopant name");
@@ -320,28 +360,20 @@ void Material::parseDopant(const char* begin, const char* end, std::string& dopa
         if (!allow_dopant_without_amount)
             throw MaterialParseException("Unexpected end of input while reading doping concentration");
         // there might be some reason to specify material with dopant but undoped (can be caught in material constructor)
-        doping_amount_type = Material::NO_DOPING;
-        doping_amount = 0.;
+        doping = NAN;
         return;
     }
     if (*name_end == '=') {
         if (name_end+1 == end) throw MaterialParseException("Unexpected end of input while reading doping concentration");
-        doping_amount_type = Material::DOPANT_CONCENTRATION;
-        doping_amount = toDouble(std::string(name_end+1, end));
+        doping = toDouble(std::string(name_end+1, end));
         return;
     }
-    if (!isspace(*name_end))
-        throw MaterialParseException("Expected space or '=' but found '{0}' instead", *name_end);
-    do {  ++name_end; } while (name_end != end && isspace(*name_end));   //skip whites
-    auto p = splitString2(std::string(name_end, end), '=');
-    //TODO check p.first if is p/n compatibile with dopant_elem_name
-    doping_amount_type = Material::CARRIERS_CONCENTRATION;
-    doping_amount = toDouble(p.second);
+    throw MaterialParseException("Expected '=' but found '{0}' instead", *name_end);
 }
 
-void Material::parseDopant(const std::string &dopant, std::string &dopant_elem_name, Material::DopingAmountType &doping_amount_type, double &doping_amount, bool allow_dopant_without_amount) {
+void Material::parseDopant(const std::string &dopant, std::string &dopant_elem_name, double &doping, bool allow_dopant_without_amount) {
     const char* c = dopant.data();
-    parseDopant(c, c + dopant.size(), dopant_elem_name, doping_amount_type, doping_amount, allow_dopant_without_amount);
+    parseDopant(c, c + dopant.size(), dopant_elem_name, doping, allow_dopant_without_amount);
 }
 
 std::vector<std::string> Material::parseObjectsNames(const char *begin, const char *end) {
@@ -361,7 +393,7 @@ std::vector<std::string> Material::parseObjectsNames(const std::string &allNames
     return parseObjectsNames(c, c + allNames.size());
 }
 
-std::string Material::dopantName() const {
+std::string Material::dopant() const {
     std::string::size_type p = this->name().rfind(':');
     return p == std::string::npos ? "" : this->name().substr(p+1);
 }

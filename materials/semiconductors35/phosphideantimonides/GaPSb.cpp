@@ -15,6 +15,10 @@ std::string GaPSb::str() const { return StringBuilder("Ga")("P")("Sb", Sb); }
 
 std::string GaPSb::name() const { return NAME; }
 
+Material::Composition GaPSb::composition() const {
+    return { {"Ga", 1}, {"P", P}, {"Sb", Sb} };
+}
+
 MI_PROPERTY(GaPSb, lattC,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
             MISource("linear interpolation: GaP, GaSb")

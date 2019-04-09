@@ -12,17 +12,11 @@ std::string AlGaAs_C::str() const { return StringBuilder("Al", Al)("Ga")("As").d
 
 MI_PARENT(AlGaAs_C, AlGaAs)
 
-AlGaAs_C::AlGaAs_C(const Material::Composition& Comp, DopingAmountType Type, double Val): AlGaAs(Comp), mGaAs_C(Type,Val), mAlAs_C(Type,Val)
+AlGaAs_C::AlGaAs_C(const Material::Composition& Comp, double Val): AlGaAs(Comp), mGaAs_C(Val), mAlAs_C(Val)
 {
-    if (Type == CARRIERS_CONCENTRATION) {
-        Nf_RT = Val;
-        NA = mGaAs_C.Dop(); // mGaAs_C.Dop()*fx1;
-    }
-    else {
-        NA = Val;
-        //double Nf_GaAs_C_RT = 0.92*NA; do not delete this!
-        Nf_RT = 0.92*NA/*Nf_GaAs_C_RT*/; // fx1 = 1
-    }
+    NA = Val;
+    //double Nf_GaAs_C_RT = 0.92*NA; do not delete this!
+    Nf_RT = 0.92*NA/*Nf_GaAs_C_RT*/; // fx1 = 1
     double mob_GaAs_C_RT = 530./(1+pow((Nf_RT/1e17),0.30));
     double fx = 0.66 / (1. + pow(Al/0.21,3.0)) + 0.34; // (1.00-0.34) / (1. + pow(Al/0.21,3.0)) + 0.34;
     mob_RT = mob_GaAs_C_RT * fx;
@@ -73,7 +67,7 @@ double AlGaAs_C::Nd() const {
     return ( 0. );
 }
 
-double AlGaAs_C::Dop() const {
+double AlGaAs_C::doping() const {
     return ( NA );
 }
 

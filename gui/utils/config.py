@@ -16,9 +16,26 @@ import os
 from collections import OrderedDict
 from numpy import log10, ceil
 
+try:
+    import matplotlib
+except ImportError:
+    matplotlib = None
+else:
+    import matplotlib.colors
+
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
+
+try:
+    import yaml
+except ImportError:
+    yaml = None
+
+try:
+    import plask
+except ImportError:
+    plask = None
 
 try:
     unicode = unicode
@@ -29,6 +46,9 @@ except NameError:
 else:
     # 'unicode' exists, must be Python 2
     bytes = str
+
+
+PRESET_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'presets')
 
 
 _parsed = {'true': True, 'yes': True, 'false': False, 'no': False}
@@ -49,12 +69,19 @@ DEFAULTS = {
     'main_window/use_menu': False,
     'main_window/icons_theme': 'system',
     'main_window/icons_size': 'default',
+    'main_window/dark_style': False,
     'editor/select_after_paste': False,
     'help/online': False,
     'help/fontsize': 13,
     'updates/automatic_check': None,
     'editor/font': [_default_font_family, '11', '-1', '5', '50', '0', '0', '0', '0', '0'],
     'editor/help_font': [_default_font_family, '9', '-1', '5', '50', '0', '0', '0', '0', '0'],
+    'editor/help_background_color': '#ffffee',
+    'editor/help_foreground_color': 'black',
+    'editor/background_color': 'white',
+    'editor/foreground_color': 'black',
+    'editor/linenumber_background_color': '#dddddd',
+    'editor/linenumber_foreground_color': '#808080',
     'editor/current_line_color': '#ffffee',
     'editor/selection_color': '#ffffdd',
     'editor/match_color': '#ddffdd',
@@ -63,6 +90,18 @@ DEFAULTS = {
     'editor/not_matching_bracket_color': '#ffaaaa',
     'launcher/default': 'Local Process',
     'launcher_local/font': [_default_font_family, '10', '-1', '5', '50', '0', '0', '0', '0', '0'],
+    'launcher_local/background_color': 'white',
+    'launcher_local/color_0': 'black',   # default
+    'launcher_local/color_1': 'red',     # critical error
+    'launcher_local/color_2': 'red',     # error
+    'launcher_local/color_3': 'brown',   # warning
+    'launcher_local/color_4': 'magenta', # important
+    'launcher_local/color_5': 'blue',    # info
+    'launcher_local/color_6': 'green',   # result
+    'launcher_local/color_7': '#006060', # data
+    'launcher_local/color_8': '#55557f', # detail
+    'launcher_local/color_9': '#800000', # error detail
+    'launcher_local/color_10': 'gray',   # debug
     'syntax/xml_comment': 'color=green, italic=true',
     'syntax/xml_tag': 'color=maroon, bold=true',
     'syntax/xml_attr': 'color=#888800',
@@ -83,6 +122,14 @@ DEFAULTS = {
     'syntax/python_pylab': 'color=#440088',
     'syntax/python_define': 'color=#1c68b9, italic=true',
     'syntax/python_decorator': 'color=#009f81',
+    'plots/face_color': matplotlib.colors.to_hex(matplotlib.rcParams['axes.facecolor'])
+                       if matplotlib is not None else '#ffffff',
+    'plots/edge_color': matplotlib.colors.to_hex(matplotlib.rcParams['axes.edgecolor'])
+                       if matplotlib is not None else '#000000',
+    'plots/axes_color': matplotlib.colors.to_hex(matplotlib.rcParams['axes.edgecolor'])
+                       if matplotlib is not None else '#000000',
+    'plots/grid_color': matplotlib.colors.to_hex(matplotlib.rcParams['grid.color'])
+                       if matplotlib is not None else '#b0b0b0',
     'geometry/selected_color': '#ff4444',
     'geometry/selected_alpha': 0.7,
     'geometry/selected_width': 2.0,
@@ -97,6 +144,7 @@ DEFAULTS = {
     'geometry/lattice_line_color': '#30a2da',
     'geometry/lattice_active_color': '#fc4f30',
     'geometry/lattice_mark_color': '#e5ae38',
+    'geometry/material_colors': plask.MATERIAL_COLORS if plask is not None else {},
     'boundary_conditions/color': '#000088',
     'boundary_conditions/selected_color': '#ffea00',
     'mesh/mesh_color': '#00aaff',
@@ -108,6 +156,7 @@ DEFAULTS = {
     'workarounds/disable_omp': False,
 }
 
+GROUPS = set(e.split('/', 1)[0] for e in DEFAULTS)
 
 def _get_launchers():
     from ..launch import LAUNCHERS
@@ -141,9 +190,105 @@ def Path(entry, title, mask, help=None, needs_restart=False):
     return lambda parent: ConfigDialog.Path(entry, title, mask, help=help, parent=parent, needs_restart=needs_restart)
 
 
+class MaterialColorsConfig(QWidget):
+
+    entry = 'geometry/material_colors'
+    caption = "Select custom colors for materials shown in geometry preview."
+    needs_restart = False
+
+    class TableModel(QAbstractTableModel):
+        def __init__(self):
+            super(MaterialColorsConfig.TableModel, self).__init__()
+            self.colors = list(CONFIG[MaterialColorsConfig.entry].items())
+        def flags(self, index):
+            flags = super(MaterialColorsConfig.TableModel, self).flags(index) | Qt.ItemIsEnabled
+            if index.column() == 0:
+                flags |= Qt.ItemIsSelectable | Qt.ItemIsEditable
+            else:
+                flags &= ~Qt.ItemIsSelectable
+            return flags
+        def columnCount(self, parent=None):
+            return 2
+        def rowCount(self, parent=None):
+            return len(self.colors)
+        def headerData(self, section, orientation, role=Qt.DisplayRole):
+            if role == Qt.DisplayRole and orientation == Qt.Horizontal:
+                return ('Material', 'Color')[section]
+        def data(self, index, role=Qt.DisplayRole):
+            if index.column() == 0:
+                if role == Qt.DisplayRole or role == Qt.EditRole:
+                    return self.colors[index.row()][0]
+            elif index.column() == 1:
+                if role == Qt.BackgroundColorRole:
+                    return QColor(self.colors[index.row()][1])
+        def setData(self, index, value, role=Qt.EditRole):
+            row = index.row()
+            if index.column() == 0:
+                self.colors[row] = value, self.colors[row][1]
+                return True
+            return False
+
+    def __init__(self, parent=None):
+        super(MaterialColorsConfig, self).__init__(parent)
+        toolbar = QHBoxLayout()
+        add_action = QToolButton()
+        add_action.setIcon(QIcon.fromTheme('list-add'))
+        add_action.pressed.connect(self.add)
+        toolbar.addWidget(add_action)
+        remove = QToolButton()
+        remove.setIcon(QIcon.fromTheme('list-remove'))
+        remove.pressed.connect(self.remove)
+        toolbar.addWidget(remove)
+        toolbar.setAlignment(Qt.AlignLeft)
+
+        self.table = QTableView()
+        self.model = self.TableModel()
+        self.table.setModel(self.model)
+        self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
+
+        self.table.clicked.connect(self.select_color)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addLayout(toolbar)
+        layout.addWidget(self.table)
+        self.setLayout(layout)
+
+        self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+
+    def add(self):
+        row = len(self.model.colors)
+        self.model.beginInsertRows(QModelIndex(), row, row)
+        self.model.colors.append(('', '#ffffff'))
+        self.model.endInsertRows()
+
+    def remove(self):
+        row = self.table.selectionModel().currentIndex().row()
+        self.model.beginRemoveRows(QModelIndex(), row, row)
+        del self.model.colors[row]
+        self.model.endRemoveRows()
+
+    def select_color(self, index):
+        if index.column() != 1: return
+        row = index.row()
+        dlg = QColorDialog(self.parent())
+        dlg.setCurrentColor(QColor(self.model.colors[row][1]))
+        if dlg.exec_():
+            color = dlg.currentColor().name()
+            self.model.colors[row] = self.model.colors[row][0], color
+
+    def load(self, value):
+        self.model.colors = list(value.items())
+        self.table.viewport().update()
+
+    def save(self):
+        CONFIG[self.entry] = dict(self.model.colors)
+
+
 CONFIG_WIDGETS = OrderedDict([
-    ("General Settings", OrderedDict([
-        ("General Settings", [
+    ("General", OrderedDict([
+        ("Appearance && Behavior", [
             ("Create backup files on save",
              CheckBox('main_window/make_backup',
                       "Create backup files on save. "
@@ -158,20 +303,12 @@ CONFIG_WIDGETS = OrderedDict([
              Combo('main_window/icons_size',
                    ['default', 'small', 'normal', 'large', 'huge', 'enormous'],
                    "Main windows icons size.", needs_restart=True)),
+            ("Dark style",
+             CheckBox('main_window/dark_style', "Use dark style for application window.", needs_restart=True)),
             ("Automatically check for updates",
              CheckBox('updates/automatic_check',
                       "If this option is checked, PLaSK will automatically check for a new version on startup.")),
         ]),
-        ("Editor",
-         [
-             ("Keep selection after paste", CheckBox('editor/select_after_paste',
-                                                     "Keep selection of pasted text."))
-         ]),
-        ("Launcher",
-         [
-            ("Default launcher", Combo('launcher/default', _get_launchers,
-                                       "Default launcher to select in new window.")),
-         ]),
         ("Help", [
             ("Show only online help",
              CheckBox('help/online',
@@ -181,7 +318,13 @@ CONFIG_WIDGETS = OrderedDict([
                       "Default font size in the help window.")),
         ]),
     ])),
-    ("Window Display", OrderedDict([
+    ("Graphics", OrderedDict([
+        ("General", [
+            ("Background color", Color('plots/face_color', "Background color of all plots.")),
+            ("Edges color", Color('plots/edge_color', "Color of edges in all plots.")),
+            ("Axes color", Color('plots/axes_color', "Color of zero axes in all plots.")),
+            ("Grid color", Color('plots/grid_color', "Color of grid in all plots.")),
+        ]),
         ("Geometry View", [
             ("Selection frame color", Color('geometry/selected_color',
                                             "Color of a frame around the selected object.")),
@@ -233,9 +376,15 @@ CONFIG_WIDGETS = OrderedDict([
             ("Selected color", Color('boundary_conditions/selected_color',
                                    "Marker color of the selected boundary condition.")),
         ]),
-        ("Text Editor", [
+        ("Material Colors", MaterialColorsConfig)
+    ])),
+    ("Editor", OrderedDict([
+        ("Appearance && Behavior", [
+            ("Keep selection after paste", CheckBox('editor/select_after_paste',
+                                                     "Keep selection of pasted text.")),
             ("Editor font", Font('editor/font', "Font in text editors.")),
-            ("Help font", Font('editor/help_font', "Font in script on-line help.")),
+            ("Foreground color", Color('editor/foreground_color', "Foreground color in text editor.")),
+            ("Background color", Color('editor/background_color', "Background color in text editor.")),
             ("Current line color", Color('editor/current_line_color',
                                          "Background color of the current line.")),
             ("Find result color", Color('editor/match_color',
@@ -250,12 +399,16 @@ CONFIG_WIDGETS = OrderedDict([
             ("Unmatched bracket color", Color('editor/not_matching_bracket_color',
                                               "Highlight color for unmatched brackets "
                                               "in script editor.")),
+            "Line Numbers Area",
+            ("Background color", Color('editor/linenumber_background_color',
+                                       "Background color in the line numbers area.")),
+            ("Foreground color", Color('editor/linenumber_foreground_color',
+                                       "Foreground color in the line numbers area.")),
+            "Help dock",
+            ("Help font", Font('editor/help_font', "Font in script on-line help.")),
+            ("Foreground color", Color('editor/help_foreground_color', "Foreground color in script on-line help.")),
+            ("Background color", Color('editor/help_background_color', "Background color in script on-line help.")),
         ]),
-        ("Other", [
-            ("Messages font", Font('launcher_local/font', "Font in local launcher window.")),
-        ]),
-    ])),
-    ("Syntax Highlighting", OrderedDict([
         ("Python Syntax", [
             ("Comment", Syntax('syntax/python_comment', "Python syntax highlighting.")),
             ("String", Syntax('syntax/python_string', "Python syntax highlighting.")),
@@ -280,8 +433,6 @@ CONFIG_WIDGETS = OrderedDict([
             ("XML Text", Syntax('syntax/xml_text', "XML syntax highlighting.")),
             ("XML Comment", Syntax('syntax/xml_comment', "XML syntax highlighting.")),
         ]),
-    ])),
-    ("Workarounds", OrderedDict([
         ("Script Completion", [
             ("Do not complete on dot", CheckBox('workarounds/jedi_no_dot',
                                                 "Do not show completion pop-up after you type a dot. This still allows "
@@ -298,7 +449,30 @@ CONFIG_WIDGETS = OrderedDict([
             ("Disable completion", CheckBox('workarounds/no_jedi',
                                             "Disable script completion and on-line help.")),
         ]),
-        ("Launcher", [
+    ])),
+    ("Launcher", OrderedDict([
+        ("Settings",
+         [
+            ("Default launcher", Combo('launcher/default', _get_launchers,
+                                       "Default launcher to select in new window.")),
+            ("Messages font", Font('launcher_local/font', "Font in local launcher window.")),
+        ]),
+        ("Colors", [
+            ("Background color", Color('launcher_local/background_color', "Background color in launcher window.")),
+            ("Foreground color", Color('launcher_local/color_0', "Foreground color in launcher window.")),
+            ("Critical error", Color('launcher_local/color_1', "Log colors.")),
+            ("Error", Color('launcher_local/color_2', "Log colors.")),
+            ("Warning", Color('launcher_local/color_3', "Log colors.")),
+            ("Important", Color('launcher_local/color_4', "Log colors.")),
+            ("Info", Color('launcher_local/color_5', "Log colors.")),
+            ("Result", Color('launcher_local/color_6', "Log colors.")),
+            ("Data", Color('launcher_local/color_7', "Log colors.")),
+            ("Detail", Color('launcher_local/color_8', "Log colors.")),
+            ("Error detail", Color('launcher_local/color_9', "Log colors.")),
+            ("Debug", Color('launcher_local/color_10', "Log colors.")),
+        ]),
+        ("Workarounds",
+         [
             ("PLaSK executable", Path('launcher_local/program', "PLaSK executable",
                                       "PLaSK ({});;Any program ({})"
                                       .format(_plask_binary, '*.exe' if sys.platform == 'win32' else '*'),
@@ -309,17 +483,21 @@ CONFIG_WIDGETS = OrderedDict([
     ]))
 ])
 
+
 if os.name == 'posix':
     DEFAULTS['launcher_console/terminal'] = '/usr/bin/gnome-terminal'
-    CONFIG_WIDGETS.setdefault('General Settings', OrderedDict()).setdefault("Launcher", []).extend([
+    CONFIG_WIDGETS['Launcher']["Settings"].extend([
         "Console Launcher",
         ("Terminal program", Path('launcher_console/terminal', "Terminal program", "Executable (*)",
                                   "Full patch to terminal program on your system")),
     ])
+    GROUPS.add('launcher_console')
 
 
 def parse_highlight(string):
     """Parse syntax highlighting from config"""
+    if isinstance(string, dict):
+        return string
     result = {}
     for item in string.split(','):
         item = item.strip()
@@ -327,6 +505,13 @@ def parse_highlight(string):
         key, val = item.split('=')
         result[key] = _parsed.get(val, val)
     return result
+
+
+def parse_font(entry):
+    font = CONFIG[entry]
+    if isinstance(font, (str, unicode)):
+        font = font.split(',')
+    return ','.join(font[:-1])+',0'
 
 
 class Config(object):
@@ -388,6 +573,32 @@ class Config(object):
         """Synchronize settings"""
         self.qsettings.sync()
 
+    def load(self, filename, widgets=None):
+        data = yaml.load(open(filename))
+        if not isinstance(data, dict):
+            raise TypeError("Wrong YAML file contents.")
+        for prefix, group in data.items():
+            for key, value in group.items():
+                entry = prefix + '/' + key
+                try:
+                    widgets[entry].load(value)
+                except KeyError:
+                    pass
+
+    def save(self, filename):
+        with open(filename, 'w') as out:
+            for group, data in self.groups:
+                if group not in GROUPS: continue
+                out.write(group + ':\n')
+                for key, value in data:
+                    if value is None: value = 'null'
+                    elif isinstance(value, (list, tuple)):
+                        try: value = ','.join(value)
+                        except TypeError: pass
+                    if isinstance(value, str) and '#' in value: value = "'" + value + "'"
+                    out.write('  ' + key + ': ' + str(value) + '\n')
+
+
 CONFIG = Config()
 
 
@@ -415,12 +626,14 @@ class ConfigDialog(QDialog):
         def __init__(self, entry, parent=None, help=None, needs_restart=False):
             super(ConfigDialog.CheckBox, self).__init__(parent)
             self.entry = entry
-            self.setChecked(bool(CONFIG[entry]))
             if help is not None: self.setWhatsThis(help)
             self.needs_restart = needs_restart
+            self.load(bool(CONFIG[self.entry]))
         @property
         def changed(self):
             return CONFIG[self.entry] != self.isChecked()
+        def load(self, value):
+            self.setChecked(value)
         def save(self):
             CONFIG[self.entry] = self.isChecked()
 
@@ -431,17 +644,21 @@ class ConfigDialog(QDialog):
             if callable(options):
                 options = options()
             self.addItems(options)
+            if help is not None:
+                self.setWhatsThis(help)
+            self.needs_restart = needs_restart
             try:
                 index = options.index(CONFIG[entry])
             except ValueError:
                 index = 0
             self.setCurrentIndex(index)
-            if help is not None:
-                self.setWhatsThis(help)
-            self.needs_restart = needs_restart
         @property
         def changed(self):
             return CONFIG[self.entry] != self.currentText()
+        def load(self, value):
+            index = self.findText(value)
+            if index != -1:
+                self.setCurrentIndex(index)
         def save(self):
             CONFIG[self.entry] = self.currentText()
 
@@ -451,12 +668,14 @@ class ConfigDialog(QDialog):
             self.entry = entry
             if min is not None: self.setMinimum(min)
             if max is not None: self.setMaximum(max)
-            self.setValue(int(CONFIG[entry]))
             if help is not None: self.setWhatsThis(help)
             self.needs_restart = needs_restart
+            self.load(int(CONFIG[self.entry]))
         @property
         def changed(self):
             return CONFIG[self.entry] != self.value()
+        def load(self, value):
+            self.setValue(value)
         def save(self):
             CONFIG[self.entry] = self.value()
 
@@ -469,12 +688,14 @@ class ConfigDialog(QDialog):
             if step is not None:
                 self.setSingleStep(step)
                 self.setDecimals(int(ceil(-log10(step))))
-            self.setValue(float(CONFIG[entry]))
             if help is not None: self.setWhatsThis(help)
             self.needs_restart = needs_restart
+            self.load(float(CONFIG[self.entry]))
         @property
         def changed(self):
             return CONFIG[self.entry] != self.value()
+        def load(self, value):
+            self.setValue(value)
         def save(self):
             CONFIG[self.entry] = self.value()
 
@@ -482,12 +703,12 @@ class ConfigDialog(QDialog):
         def __init__(self, entry, parent=None, help=None, needs_restart=False):
             super(ConfigDialog.Color, self).__init__(parent)
             self.entry = entry
-            self._color = CONFIG[entry]
-            self.setStyleSheet(u"background-color: {};".format(self._color))
-            if help is not None: self.setWhatsThis(help)
+            if help is not None:
+                self.setWhatsThis(help)
             self.clicked.connect(self.on_press)
             self.setSizePolicy(QSizePolicy.Expanding, self.sizePolicy().verticalPolicy())
             self.needs_restart = needs_restart
+            self.load(CONFIG[self.entry])
         def on_press(self):
             dlg = QColorDialog(self.parent())
             if self._color:
@@ -498,6 +719,9 @@ class ConfigDialog(QDialog):
         @property
         def changed(self):
             return CONFIG[self.entry] != self._color
+        def load(self, value):
+            self._color = value
+            self.setStyleSheet(u"background-color: {};".format(value))
         def save(self):
             CONFIG[self.entry] = self._color
 
@@ -505,7 +729,6 @@ class ConfigDialog(QDialog):
         def __init__(self, entry, parent=None, help=None, needs_restart=False):
             super(ConfigDialog.Syntax, self).__init__(parent)
             self.entry = entry
-            syntax = parse_highlight(CONFIG[entry])
             layout = QHBoxLayout()
             layout.setContentsMargins(0, 0, 0, 0)
             layout.setSpacing(4)
@@ -514,19 +737,13 @@ class ConfigDialog(QDialog):
             self.color_button.setSizePolicy(QSizePolicy.Expanding, self.color_button.sizePolicy().verticalPolicy())
             self.color_button.clicked.connect(self.on_color_press)
             layout.addWidget(self.color_button)
-            self._color = syntax.get('color')
-            if self._color is not None:
-                self.color_button.setStyleSheet(u"background-color: {};".format(self._color))
-            layout.addWidget(self.color_button)
             self.bold = QCheckBox('bold', self)
-            self.bold.setChecked(syntax.get('bold', False))
             layout.addWidget(self.bold)
             self.italic = QCheckBox('italic', self)
-            self.italic.setChecked(syntax.get('italic', False))
             layout.addWidget(self.italic)
             if help is not None: self.setWhatsThis(help)
             self.needs_restart = needs_restart
-            self.changed = False
+            self.load(CONFIG[self.entry])
         def on_color_press(self):
             if QApplication.keyboardModifiers() == Qt.CTRL:
                 self._color = None
@@ -539,6 +756,14 @@ class ConfigDialog(QDialog):
                 self._color = dlg.currentColor().name()
                 self.color_button.setStyleSheet(u"background-color: {};".format(self._color))
                 self.changed = True
+        def load(self, value):
+            syntax = parse_highlight(value)
+            self._color = syntax.get('color')
+            if self._color is not None:
+                self.color_button.setStyleSheet(u"background-color: {};".format(self._color))
+            self.bold.setChecked(syntax.get('bold', False))
+            self.italic.setChecked(syntax.get('italic', False))
+            self.changed = False
         def save(self):
             syntax = []
             if self._color is not None: syntax.append('color=' + self._color)
@@ -551,16 +776,12 @@ class ConfigDialog(QDialog):
             super(ConfigDialog.Font, self).__init__(parent)
             self.entry = entry
             self.current_font = QFont()
-            self.current_font.fromString(','.join(CONFIG[entry]))
-            family = self.current_font.family()
-            size = self.current_font.pointSize()
-            self.setText("{} {}".format(family, size))
-            self.setFont(self.current_font)
             if help is not None:
                 self.setWhatsThis(help)
             self.clicked.connect(self.on_press)
             self.setSizePolicy(QSizePolicy.Expanding, self.sizePolicy().verticalPolicy())
             self.needs_restart = needs_restart
+            self.load(parse_font(self.entry))
         def on_press(self):
             dlg = QFontDialog(self.parent())
             dlg.setCurrentFont(self.current_font)
@@ -571,6 +792,12 @@ class ConfigDialog(QDialog):
         @property
         def changed(self):
             return CONFIG[self.entry] != self.current_font.toString().split(',')
+        def load(self, value):
+            self.current_font.fromString(value)
+            family = self.current_font.family()
+            size = self.current_font.pointSize()
+            self.setText("{} {}".format(family, size))
+            self.setFont(self.current_font)
         def save(self):
             CONFIG[self.entry] = self.current_font.toString().split(',')
 
@@ -581,9 +808,6 @@ class ConfigDialog(QDialog):
             layout.setContentsMargins(0, 0, 0, 0)
             layout.setSpacing(0)
             self.edit = QLineEdit(self)
-            path = CONFIG[entry]
-            if path is not None:
-                self.edit.setText(str(path))
             self.select = QToolButton(self)
             self.select.setIcon(QIcon.fromTheme('document-open'))
             self.select.pressed.connect(self.pushed)
@@ -596,6 +820,7 @@ class ConfigDialog(QDialog):
             if help is not None:
                 self.setWhatsThis(help)
             self.needs_restart = needs_restart
+            self.load(CONFIG[self.entry])
         def pushed(self):
             dirname = os.path.dirname(self.edit.text())
             if not dirname:
@@ -606,6 +831,9 @@ class ConfigDialog(QDialog):
         @property
         def changed(self):
             return CONFIG[self.entry] != self.edit.text()
+        def load(self, value):
+            if value is not None:
+                self.edit.setText(str(value))
         def save(self):
             CONFIG[self.entry] = self.edit.text()
 
@@ -623,28 +851,42 @@ class ConfigDialog(QDialog):
         hlayout.addWidget(stack)
         vlayout.addLayout(hlayout)
 
-        self.items = []
+        self.items = {}
 
         for cat, tabs in CONFIG_WIDGETS.items():
             page = QTabWidget()
             stack.addWidget(page)
             categories.addItem(cat)
-            for label, items in tabs.items():
+            for title, items in tabs.items():
                 tab = QWidget(page)
-                tab_layout = QFormLayout()
-                tab.setLayout(tab_layout)
-                page.addTab(tab, label)
-                for item in items:
-                    if isinstance(item, basestring):
-                        label = QLabel(item)
-                        font = label.font()
-                        font.setBold(True)
-                        label.setFont(font)
-                        tab_layout.addRow(label)
-                    else:
-                        widget = item[1](self)
-                        self.items.append(widget)
-                        tab_layout.addRow(item[0], widget)
+                if isinstance(items, type) and issubclass(items, QWidget):
+                    tab_layout = QVBoxLayout()
+                    tab.setLayout(tab_layout)
+                    label = QLabel(items.caption)
+                    tab_layout.addWidget(label)
+                    widget = items(tab)
+                    self.items[widget.entry] = widget
+                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+                    tab_layout.addWidget(widget)
+                else:
+                    tab_layout = QFormLayout()
+                    tab.setLayout(tab_layout)
+                    for item in items:
+                        if isinstance(item, basestring):
+                            label = QLabel(item)
+                            font = label.font()
+                            font.setBold(True)
+                            label.setFont(font)
+                            tab_layout.addRow(label)
+                        elif isinstance(item, type) and issubclass(item, QWidget):
+                            widget = item(self)
+                            self.items[widget.entry] = widget
+                            tab_layout.addRow(widget)
+                        else:
+                            widget = item[1](self)
+                            self.items[widget.entry] = widget
+                            tab_layout.addRow(item[0], widget)
+                page.addTab(tab, title)
 
         page = QTabWidget()
         tab = QWidget()
@@ -683,7 +925,7 @@ class ConfigDialog(QDialog):
             label.setBuddy(checkbox)
             inframe_layout.addWidget(checkbox, row, 0)
             inframe_layout.addWidget(label, row, 1)
-            self.items.append(checkbox)
+            self.items[entry] = checkbox
             row += 1
         frame.setWidget(inframe)
         stack.addWidget(page)
@@ -697,27 +939,95 @@ class ConfigDialog(QDialog):
         buttons.rejected.connect(self.reject)
         buttons.button(QDialogButtonBox.Apply).clicked.connect(self.apply)
 
-        vlayout.addWidget(buttons)
+        hlayout = QHBoxLayout()
+        hlayout.setContentsMargins(0, 0, 0, 0)
+
+        if yaml is not None:
+            presets_menu = QMenu()
+            presets = (f[:-4] for f in os.listdir(PRESET_DIR) if f.endswith('.yml'))
+            for preset in presets:
+                preset_action = QAction(preset, self)
+                preset_action.triggered.connect(
+                    (lambda preset: lambda: CONFIG.load(preset, self.items))(os.path.join(PRESET_DIR, preset+'.yml')))
+                presets_menu.addAction(preset_action)
+            presets_button = QPushButton("&Presets")
+            presets_button.setMenu(presets_menu)
+            hlayout.addWidget(presets_button)
+
+            load_button = QPushButton("&Import...")
+            load_button.pressed.connect(self.load)
+            hlayout.addWidget(load_button)
+
+            save_button = QPushButton("&Export...")
+            save_button.pressed.connect(self.save)
+            hlayout.addWidget(save_button)
+
+        hlayout.addWidget(buttons)
+        vlayout.addLayout(hlayout)
         self.setLayout(vlayout)
 
         self.resize(800, 600)
 
+    def load(self):
+        from .. import CURRENT_DIR
+        filename = QFileDialog.getOpenFileName(self, "Import settings", CURRENT_DIR, "YAML file (*.yml)")
+        if type(filename) is tuple: filename = filename[0]
+        if not filename: return False
+        try:
+            CONFIG.load(filename, self.items)
+        except Exception as err:
+            msgbox = QMessageBox()
+            msgbox.setWindowTitle("Settings Import Error")
+            msgbox.setText("The file '{}' could not be loaded from disk.".format(filename))
+            msgbox.setInformativeText(unicode(err))
+            msgbox.setStandardButtons(QMessageBox.Ok)
+            msgbox.setIcon(QMessageBox.Critical)
+            msgbox.exec_()
+
+    def save(self):
+        from .. import CURRENT_DIR
+        filename = QFileDialog.getSaveFileName(self, "Export settings", CURRENT_DIR, "YAML file (*.yml)")
+        if type(filename) is tuple: filename = filename[0]
+        if not filename: return False
+        if not filename.endswith('.yml'): filename += '.yml'
+        try:
+            CONFIG.save(filename)
+        except Exception as err:
+            msgbox = QMessageBox()
+            msgbox.setWindowTitle("Settings Export Error")
+            msgbox.setText("The file '{}' could not be saved to disk.".format(filename))
+            msgbox.setInformativeText(unicode(err))
+            msgbox.setStandardButtons(QMessageBox.Ok)
+            msgbox.setIcon(QMessageBox.Critical)
+            msgbox.exec_()
+        else:
+            msgbox = QMessageBox()
+            msgbox.setWindowTitle("Settings Exported")
+            msgbox.setText("Settings exported to file '{}'.".format(filename))
+            msgbox.setStandardButtons(QMessageBox.Ok)
+            msgbox.setIcon(QMessageBox.Information)
+            msgbox.exec_()
+
     def apply(self):
         need_restart = False
-        for item in self.items:
+        for item in self.items.values():
             if item.needs_restart and item.changed:
                 need_restart = True
             item.save()
         CONFIG.sync()
         from .widgets import EDITOR_FONT
-        EDITOR_FONT.fromString(','.join(CONFIG['editor/font'][:-1])+',0')
+        EDITOR_FONT.fromString(parse_font('editor/font'))
+        # This should be changed before the plots are updates
+        if matplotlib is not None:
+            matplotlib.rcParams['axes.facecolor'] = CONFIG['plots/face_color']
+            matplotlib.rcParams['axes.edgecolor'] = CONFIG['plots/edge_color']
+            matplotlib.rcParams['grid.color'] = CONFIG['plots/grid_color']
         self.parent().config_changed.emit()
         if need_restart:
             QMessageBox.information(None,
                                     "Restart Needed",
                                     "Some of the settings you have changed require restart to take effect. "
                                     "Save your work, close PLaSK and open it again.")
-
 
     def accept(self):
         self.apply()

@@ -15,6 +15,10 @@ std::string AlInP::str() const { return StringBuilder("Al", Al)("In")("P"); }
 
 std::string AlInP::name() const { return NAME; }
 
+Material::Composition AlInP::composition() const {
+    return { {"Al", Al}, {"In", In}, {"P", 1} };
+}
+
 MI_PROPERTY(AlInP, lattC,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
             MISource("linear interpolation: AlP, InP")

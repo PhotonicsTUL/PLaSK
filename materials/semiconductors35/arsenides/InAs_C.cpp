@@ -10,7 +10,7 @@ std::string InAs_C::name() const { return NAME; }
 
 std::string InAs_C::str() const { return StringBuilder("InAs").dopant("C", NA); }
 
-InAs_C::InAs_C(DopingAmountType /*Type*/, double Val) {
+InAs_C::InAs_C(double Val) {
     Nf_RT = 0.; //TODO
     NA = 0.; //TODO
     mob_RT = 0.; //TODO
@@ -30,7 +30,7 @@ double InAs_C::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
-double InAs_C::Dop() const {
+double InAs_C::doping() const {
     return ( NA );
 }
 

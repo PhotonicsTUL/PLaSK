@@ -15,15 +15,18 @@ import math
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
-from .widgets import EDITOR_FONT
 from .config import CONFIG
 
 
-def update_textedit_colors():
-    global CURRENT_LINE_COLOR, SELECTION_COLOR
+def update_textedit():
+    global CURRENT_LINE_COLOR, SELECTION_COLOR, LINENUMBER_BACKGROUND_COLOR, LINENUMBER_FOREGROUND_COLOR
     CURRENT_LINE_COLOR = QColor(CONFIG['editor/current_line_color'])
     SELECTION_COLOR = QColor(CONFIG['editor/selection_color'])
-update_textedit_colors()
+    LINENUMBER_BACKGROUND_COLOR = QColor(CONFIG['editor/linenumber_background_color'])
+    LINENUMBER_FOREGROUND_COLOR = QColor(CONFIG['editor/linenumber_foreground_color'])
+    global SELECT_AFTER_PASTE
+    SELECT_AFTER_PASTE = CONFIG['editor/select_after_paste']
+update_textedit()
 
 
 class TextEditor(QPlainTextEdit):
@@ -31,7 +34,6 @@ class TextEditor(QPlainTextEdit):
 
     def __init__(self, parent=None, line_numbers=True):
         super(TextEditor, self).__init__(parent)
-        self.setFont(EDITOR_FONT)
         self.setLineWrapMode(QPlainTextEdit.NoWrap)
         if line_numbers:
             self.line_numbers = LineNumberArea(self)
@@ -55,7 +57,7 @@ class TextEditor(QPlainTextEdit):
                                                        self.line_numbers.get_width(), cr.height()))
 
     def insertFromMimeData(self, source):
-        if source.hasText() and CONFIG['editor/select_after_paste']:
+        if source.hasText() and SELECT_AFTER_PASTE:
             cursor = self.textCursor()
             start = min(cursor.position(), cursor.anchor())
             end = start + len(source.text())
@@ -240,14 +242,14 @@ class LineNumberArea(QWidget):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.fillRect(event.rect(), QColor('#ddd'))
+        painter.fillRect(event.rect(), LINENUMBER_BACKGROUND_COLOR)
         block = self.editor.firstVisibleBlock()
         block_number = block.blockNumber() + 1 + self._offset
         top = self.editor.blockBoundingGeometry(block).translated(self.editor.contentOffset()).top()
         bottom = top + self.editor.blockBoundingRect(block).height()
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
-                painter.setPen(Qt.darkGray)
+                painter.setPen(LINENUMBER_FOREGROUND_COLOR)
                 painter.drawText(0, top, self.width()-3, self.editor.fontMetrics().height(),
                                  Qt.AlignRight, str(block_number))
             block = block.next()

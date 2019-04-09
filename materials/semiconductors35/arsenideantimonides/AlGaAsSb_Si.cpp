@@ -12,18 +12,13 @@ MI_PARENT(AlGaAsSb_Si, AlGaAsSb)
 
 std::string AlGaAsSb_Si::str() const { return StringBuilder("Al", Al)("Ga")("As")("Sb", Sb).dopant("Si", NA); }
 
-AlGaAsSb_Si::AlGaAsSb_Si(const Material::Composition& Comp, DopingAmountType Type, double Val): AlGaAsSb(Comp)
+AlGaAsSb_Si::AlGaAsSb_Si(const Material::Composition& Comp, double Val): AlGaAsSb(Comp)
 {
-    if (Type == CARRIERS_CONCENTRATION)
-        Nf_RT = Val;
+    NA = Val;
+    if ( NA < pow(10.,((1.-2.27)/(-0.0731))) )
+        Nf_RT = NA;
     else
-    {
-        NA = Val;
-        if ( NA < pow(10.,((1.-2.27)/(-0.0731))) )
-            Nf_RT = NA;
-        else
-            Nf_RT = ( (-0.0731*log10(NA)+2.27) * NA );
-    }
+        Nf_RT = ( (-0.0731*log10(NA)+2.27) * NA );
     double mob_RT_AlSb = 30. + (300. - 30.) / (1.+pow(NA/3e17,1.54)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
     double mob_RT_GaSb = 95. + (565. - 95.) / (1.+pow(NA/4e18,0.85)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
     mob_RT = 1. / (Al/mob_RT_AlSb + Ga/mob_RT_GaSb + 6e-8*Al*Ga); // for small amount of arsenide
@@ -49,7 +44,7 @@ double AlGaAsSb_Si::Nf(double T) const {
     return ( Nf_RT*pow(T/300.,tD) );
 }
 
-double AlGaAsSb_Si::Dop() const {
+double AlGaAsSb_Si::doping() const {
     return ( NA );
 }
 

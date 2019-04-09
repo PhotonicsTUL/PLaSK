@@ -12,22 +12,17 @@ std::string AlAsSb_Te::str() const { return StringBuilder("Al")("As")("Sb", Sb).
 
 MI_PARENT(AlAsSb_Te, AlAsSb)
 
-AlAsSb_Te::AlAsSb_Te(const Material::Composition& Comp, DopingAmountType Type, double Val): AlAsSb(Comp)//, mGaAs_Si(Type,Val), mAlAs_Si(Type,Val)
+AlAsSb_Te::AlAsSb_Te(const Material::Composition& Comp, double Val): AlAsSb(Comp) //, mGaAs_Te(Val), mAlAs_Te(Val)
 {
-    if (Type == CARRIERS_CONCENTRATION)
-        Nf_RT = Val;
+    ND = Val;
+    // based on: Chiu (1990) Te doping (1990) Appl. Phys. Lett. (Fig. 4), fit by L. Piskorski
+    if (ND <= 1e18)
+        Nf_RT = ND;
     else
     {
-        ND = Val;
-        // based on: Chiu (1990) Te doping (1990) Appl. Phys. Lett. (Fig. 4), fit by L. Piskorski
-        if (ND <= 1e18)
-            Nf_RT = ND;
-        else
-        {
-            double tNL = log10(ND);
-            double tnL = 0.383027*tNL*tNL*tNL - 22.1278*tNL*tNL + 425.212*tNL - 2700.2222;
-            Nf_RT = ( pow(10.,tnL) );
-        }
+        double tNL = log10(ND);
+        double tnL = 0.383027*tNL*tNL*tNL - 22.1278*tNL*tNL + 425.212*tNL - 2700.2222;
+        Nf_RT = ( pow(10.,tnL) );
     }
     double mob_RT_AlAs = 30. + (310. - 30.) / (1.+pow(ND/8e17,2.)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
     double mob_RT_AlSb = 30. + (200. - 30.) / (1.+pow(ND/4e17,3.25)); // 1e-4: cm^2/(V*s) -> m^2/(V*s)
@@ -50,7 +45,7 @@ double AlAsSb_Te::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
-double AlAsSb_Te::Dop() const {
+double AlAsSb_Te::doping() const {
     return ( ND );
 }
 

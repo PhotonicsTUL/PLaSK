@@ -193,12 +193,12 @@ struct PLASK_SOLVER_API Expansion {
     }
 
     /**
-     * Compute ½ E·conj(E)
+     * Compute ½ E·conj(E) or ½ H·conj(H)
      * \param field field to integrate
      * \param layer layer number
      * \param E electric field coefficients vector
      * \param H magnetic field coefficients vector
-     * \return integrated ½ E·conj(E)
+     * \return integrated ½ E·conj(E) or ½ H·conj(H)
      */
     virtual double integrateField(WhichField field, size_t layer, const cvector& E, const cvector& H);
 

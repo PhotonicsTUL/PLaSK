@@ -31,6 +31,8 @@ from ...model.grids import GridsModel, construct_grid
 from ...model.info import Info
 from ...utils import get_manager
 from ...utils.xml import XML_parser
+from ...utils.config import CONFIG
+from ...utils.matplotlib import BwColor
 
 try:
     unicode = unicode
@@ -126,6 +128,8 @@ class GridsController(Controller):
         self.checked_plane = '12'
         self.plotted_model = self.plotted_mesh = None
         self.plot_auto_refresh = False
+
+        self.document.window.config_changed.connect(self.reconfig)
 
     def update_geometries(self):
         if plask is not None:
@@ -317,6 +321,17 @@ class GridsController(Controller):
     def plot(self):
         if self._current_controller is not None:
             self.plot_mesh(self._current_controller.model, set_limits=self.plotted_geometry is None)
+
+    def reconfig(self):
+        if plask is not None:
+            colors = CONFIG['geometry/material_colors'].copy()
+            self.mesh_preview.get_color = BwColor(colors, self.mesh_preview.axes)
+            self.mesh_preview.axes.set_facecolor(CONFIG['plots/face_color'])
+            self.mesh_preview.axes.grid(True, color=CONFIG['plots/grid_color'])
+            if self._current_controller is not None and \
+               (self.plot_auto_refresh or hasattr(self._current_controller.model, 'geometry_name')):
+                self.plot_mesh(self._current_controller.model, set_limits=True, ignore_no_geometry=True)
+
 
     def generate_mesh(self):
         from ... import _DEBUG

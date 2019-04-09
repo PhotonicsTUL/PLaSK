@@ -18,6 +18,10 @@ std::string AlGaInAsSb::str() const { return StringBuilder("Al", Al)("Ga", Ga)("
 
 std::string AlGaInAsSb::name() const { return NAME; }
 
+Material::Composition AlGaInAsSb::composition() const {
+    return { {"Al", Al}, {"In", In}, {"Ga", Ga}, {"As", As}, {"Sb", Sb} };
+}
+
 MI_PROPERTY(AlGaInAsSb, lattC,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
             MISource("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs")

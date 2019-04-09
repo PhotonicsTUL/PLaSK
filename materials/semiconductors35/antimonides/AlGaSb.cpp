@@ -15,6 +15,10 @@ std::string AlGaSb::str() const { return StringBuilder("Al", Al)("Ga")("Sb"); }
 
 std::string AlGaSb::name() const { return NAME; }
 
+Material::Composition AlGaSb::composition() const {
+    return { {"Al", Al}, {"Ga", Ga}, {"Sb", 1} };
+}
+
 MI_PROPERTY(AlGaSb, lattC,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
             MISource("linear interpolation: AlSb, GaSb")

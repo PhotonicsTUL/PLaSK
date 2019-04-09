@@ -2,6 +2,8 @@
 # ### plot_geometry ###
 import math
 import colorsys
+from copy import copy
+import re
 
 import plask
 import matplotlib
@@ -17,9 +19,9 @@ from zlib import crc32
 
 from .pylab import _get_2d_axes
 
-from re import compile as _r
-
 __all__ = ('plot_geometry')
+
+to_rgb = matplotlib.colors.colorConverter.to_rgb
 
 
 _geometry_drawers = {}
@@ -68,6 +70,22 @@ class BBoxIntersection(matplotlib.transforms.BboxBase):
     get_points.__doc__ = matplotlib.transforms.Bbox.get_points.__doc__
 
 
+class TertiaryColors(object):
+    """
+    Interpolate colors of tertiary compounds.
+    """
+
+    def __init__(self, color1, color2, x=None):
+        self.color2 = array(to_rgb(color2))
+        self.color12 = array(to_rgb(color1)) - self.color2
+        self.x = x
+
+    def __call__(self, x=None, **kwargs):
+        if x is None and self.x is not None:
+            x = kwargs[self.x]
+        return self.color2 + float(x) * self.color12
+
+
 class ColorFromDict(object):
     """
     Get color from Python dictionary. The dictionary should map material name
@@ -78,11 +96,17 @@ class ColorFromDict(object):
         axes (matplotlib.axes.Axes): Matplotlib axes, to which the geometry will
                                      plotted. It is used for retrieving background
                                      color.
+        tint_doping: Automatically add tint to doped materials.
+        tertiary: Autmatically create combinations for these tertiary materials.
     """
 
-    def __init__(self, material_dict, axes=None):
-        if material_dict is not DEFAULT_COLORS:
-            self.default_color = ColorFromDict(DEFAULT_COLORS, axes)
+    DOPING_TINTS = dict(N=array([0.0, 0.2, 0.2]), P=array([0.2, 0.0, 0.0]))
+
+    def __init__(self, material_dict, axes=None, tint_doping=True,
+                 tertiary=(('In', 'Al', 'Ga'), ('As', 'N', 'P', 'Sb'))):
+        self.tint_doping = tint_doping
+        if material_dict is not plask.MATERIAL_COLORS:
+            self.default_color = ColorFromDict(plask.MATERIAL_COLORS, axes)
             if any(isinstance(m, plask.material.Material) for m in material_dict):
                 material_dict = dict((str(k), v) for k, v in material_dict.items())
         else:
@@ -95,33 +119,83 @@ class ColorFromDict(object):
                     self._air_color = axes.get_axis_bgcolor()
             self.default_color = self.auto_color
         self.material_dict = material_dict
+        self.tint_doping = tint_doping
+        if tertiary is not None:
+            self.material_dict = copy(self.material_dict)
+            # TODO: add quarternary materials as well
+            for third in tertiary[1]:
+                for n, first in enumerate(tertiary[0][:-1]):
+                    for second in tertiary[0][n+1:]:
+                        try:
+                            first_third = self.material_dict[first + third]
+                        except KeyError:
+                            first_third = self.default_color(first + third)
+                        try:
+                            second_third = self.material_dict[second + third]
+                        except KeyError:
+                            second_third = self.default_color(second + third)
+                        colors = TertiaryColors(first_third, second_third, first)
+                        r = re.compile(r'{}\(([\d.]+)\){}{}(?:_.*)?$'.format(first, second, third))
+                        self.material_dict[r] = colors
+                        # self.material_dict[frozenset((first, second, third))] = colors
 
     def __call__(self, material):
         """
         Get color for specified material.
 
         Args:
-            material (str): Material name
+            material (plask.material.Material or str): Material.
 
         Returns:
             tuple: Tuple with desired color in RGB format.
         """
         s = str(material)
+        if self.tint_doping:
+            s = s.split(':')[0]
         try:
-            return self.material_dict[s]
+            result = self.material_dict[s]
         except KeyError:
             for r in self.material_dict:
-                try:
-                    m = r.match(s)
-                    if m is not None:
-                        c = self.material_dict[r]
-                        if isinstance(c, collections.Callable):
-                            return c(*m.groups())
-                        else:
-                            return m.expand(c)
-                except AttributeError:
-                    pass
-            return self.default_color(material)
+                if isinstance(r, frozenset):
+                    try:
+                        if not isinstance(material, plask.material.Material):
+                            material = plask.material.get(s)
+                        if r == frozenset(material.composition):
+                            c = self.material_dict[r]
+                            result = c(**material.composition)
+                            break
+                    except:
+                        pass
+                else:  # regexp
+                    try:
+                        m = r.match(s)
+                    except AttributeError:
+                        pass
+                    else:
+                        if m is not None:
+                            c = self.material_dict[r]
+                            if isinstance(c, collections.Callable):
+                                result = c(*m.groups())
+                            else:
+                                result = m.expand(c)
+                            break
+            else:
+                result = self.default_color(material)
+        if self.tint_doping:
+            try:
+                if not isinstance(material, plask.material.Material):
+                    material = plask.material.get(s)
+                tint = self.DOPING_TINTS[material.condtype]
+                doping = material.doping
+            except:
+                pass
+            else:
+                if doping > 0:
+                    result = array(to_rgb(result))
+                    result += tint * max(math.log10(doping)-15., 0.) / 5.
+                    result[result > 1.] = 1.
+                    result[result < 0.] = 0.
+        return result
 
     def auto_color(self, material):
         """
@@ -138,111 +212,12 @@ class ColorFromDict(object):
         return colorsys.hsv_to_rgb(h, s, v)
 
 
-class TertiaryColors(object):
-    """
-    Interpolate colors of tertiary compounds.
-    """
-
-    def __init__(self, color1, color2):
-        self.color2 = array(color2)
-        self.color12 = array(color1) - self.color2
-
-    def __call__(self, x):
-        return self.color2 + float(x) * self.color12
-
-
-class DopedColors(object):
-    """
-    Modify  color by doping
-    """
-
-    def __init__(self, color, doping_color):
-        self.color = color
-        self.doping_color = array(doping_color)
-
-    def __call__(self, *args):
-        if isinstance(self.color, collections.Callable):
-            result = self.color(*args[:-1])
-        else:
-            result = array(self.color)
-        result += self.doping_color * math.log10(float(args[-1]))/20.
-        result[result > 1.] = 1.
-        result[result < 0.] = 0.
-        return result
-
-
-# Default colors
-
-_GaAs = (0.00, 0.62, 0.00)
-_AlAs = (0.82, 0.94, 0.00)
-_InAs = (0.82, 0.50, 0.00)
-_AlGaAs = TertiaryColors(_AlAs, _GaAs)
-_InGaAs = TertiaryColors(_InAs, _GaAs)
-_As_n = (0.0, 0.0, 0.3)
-_As_p = (0.1, 0.0, 0.0)
-
-_GaN = (0.00, 0.00, 0.62)
-_AlN = (0.00, 0.82, 0.94)
-_InN = (0.82, 0.00, 0.50)
-_AlGaN = TertiaryColors(_AlN, _GaN)
-_InGaN = TertiaryColors(_InN, _GaN)
-_N_n = (0.0, 0.2, 0.0)
-_N_p = (0.2, 0.0, 0.0)
-
-DEFAULT_COLORS = {
-    'Cu':                                   '#9E807E',
-    'Au':                                   '#A6A674',
-    'Pt':                                   '#A6A674',
-    'In':                                   '#585266',
-
-    'SiO2':                                 '#FFD699',
-    'Si':                                   '#BF7300',
-    'aSiO2':                                '#FFDF99',
-    'aSi':                                  '#BF8300',
-
-    'AlOx':                                 '#98F2FF',
-
-    'GaAs':                                 _GaAs,
-    _r(r'GaAs:Si.*=(.*)'):                  DopedColors(_GaAs, _As_n),
-    _r(r'GaAs:(?:Be|Zn|C).*=(.*)'):         DopedColors(_GaAs, _As_p),
-    'AlAs':                                 _AlAs,
-    _r(r'AlAs:Si.*=(.*)'):                  DopedColors(_AlAs, _As_n),
-    _r(r'AlAs:C.*=(.*)'):                   DopedColors(_AlAs, _As_p),
-    'InAs':                                 _InAs,
-    _r(r'InAs:Si.*=(.*)'):                  DopedColors(_InAs, _As_n),
-    _r(r'InAs:C.*=(.*)'):                   DopedColors(_InAs, _As_p),
-    _r(r'Al\(([\d.]+)\)GaAs$'): _AlGaAs,
-    _r(r'Al\(([\d.]+)\)GaAs:Si.*=(.*)'):    DopedColors(_AlGaAs, _As_n),
-    _r(r'Al\(([\d.]+)\)GaAs:C.*=(.*)'):     DopedColors(_AlGaAs, _As_p),
-    _r(r'In\(([\d.]+)\)GaAs$'): _InGaAs,
-    _r(r'In\(([\d.]+)\)GaAs:Si.*=(.*)'):    DopedColors(_InGaAs, _As_n),
-    _r(r'In\(([\d.]+)\)GaAs:C.*=(.*)'):     DopedColors(_InGaAs, _As_p),
-
-    'GaN':                                  _GaN,
-    'GaN_bulk':                             (0.00, 0.00, 0.50),
-    _r(r'GaN:Si.*=(.*)'):                   DopedColors(_GaN, _N_n),
-    _r(r'GaN:Mg.*=(.*)'):                   DopedColors(_GaN, _N_p),
-    'AlN':                                  _AlN,
-    _r(r'AlN:Si.*=(.*)'):                   DopedColors(_AlN, _N_n),
-    _r(r'AlN:Mg.*=(.*)'):                   DopedColors(_AlN, _N_p),
-    'InN':                                  _InN,
-    _r(r'InN:Si.*=(.*)'):                   DopedColors(_InN, _N_n),
-    _r(r'InN:C.*=(.*)'):                    DopedColors(_InN, _N_p),
-    _r(r'Al\(([\d.]+)\)GaN$'):              _AlGaN,
-    _r(r'Al\(([\d.]+)\)GaN:Si.*=(.*)'):     DopedColors(_AlGaN, _N_n),
-    _r(r'Al\(([\d.]+)\)GaN:Mg.*=(.*)'):     DopedColors(_AlGaN, _N_p),
-    _r(r'In\(([\d.]+)\)GaN$'):              _InGaN,
-    _r(r'In\(([\d.]+)\)GaN:Si.*=(.*)'):     DopedColors(_InGaN, _N_n),
-    _r(r'In\(([\d.]+)\)GaN:Mg.*=(.*)'):     DopedColors(_InGaN, _N_p),
-}
-
-
 class DrawEnviroment(object):
     """
         Drawing configuration.
     """
 
-    def __init__(self, plane, dest, fill=False, color='k', get_color=None, lw=1.0, alpha=1.0, zorder=3.0, picker=None,
+    def __init__(self, plane, dest, fill=False, color=None, get_color=None, lw=1.0, alpha=1.0, zorder=3.0, picker=None,
                  extra=None):
         """
         :param plane: plane to draw (important in 3D)
@@ -257,7 +232,7 @@ class DrawEnviroment(object):
         super(DrawEnviroment, self).__init__()
         self.dest = dest
         self.fill = fill
-        self.color = color
+        self.color = color if color is not None else matplotlib.rcParams['axes.edgecolor']
         self.lw = lw
         self.alpha = alpha
         self.axes = plane
@@ -267,7 +242,7 @@ class DrawEnviroment(object):
         self.extra = extra
 
         if get_color is None:
-            self.get_color = ColorFromDict(DEFAULT_COLORS, dest)
+            self.get_color = ColorFromDict(plask.MATERIAL_COLORS, dest)
         elif get_color is not None and not isinstance(get_color, collections.Callable):
             self.get_color = ColorFromDict(get_color, dest)
         else:
@@ -555,7 +530,7 @@ def plane_to_axes(plane, dim):
     return _get_2d_axes(plane) if dim == 3 else (0, 1)
 
 
-def plot_geometry(geometry, color='k', lw=1.0, plane=None, zorder=None, mirror=False, periods=(1,1), fill=False,
+def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=False, periods=(1,1), fill=False,
                   axes=None, figure=None, margin=None, get_color=None, alpha=1.0, extra=None, picker=None):
     """
     Plot specified geometry.

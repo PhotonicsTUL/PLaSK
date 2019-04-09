@@ -15,6 +15,10 @@ std::string InAsP::str() const { return StringBuilder("In")("As")("P", P); }
 
 std::string InAsP::name() const { return NAME; }
 
+Material::Composition InAsP::composition() const {
+    return { {"In", 1}, {"As", As}, {"P", P} };
+}
+
 MI_PROPERTY(InAsP, lattC,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
             MISource("linear interpolation: InAs, InP")

@@ -45,13 +45,6 @@ struct MaterialsDB;
  */
 struct PLASK_API Material {
 
-    /// Dopting specification type
-    enum DopingAmountType {
-        NO_DOPING,              ///< no dopant
-        DOPANT_CONCENTRATION,   ///< doping concentration
-        CARRIERS_CONCENTRATION   ///< carrier concentration
-    };
-
     /// Material kind
     enum Kind: unsigned int {
         GENERIC        = (1<<0), ///< generic material
@@ -86,15 +79,15 @@ struct PLASK_API Material {
     struct is_with_composition {
         static const bool value =
             std::is_constructible<MaterialType, Composition>::value ||
-            std::is_constructible<MaterialType, Composition, DopingAmountType, double>::value;
+            std::is_constructible<MaterialType, Composition, double>::value;
     };
 
     /// Check if material can be constructed with dopant.
     template <typename MaterialType>
     struct is_with_dopant {
         static const bool value =
-            std::is_constructible<MaterialType, DopingAmountType, double>::value ||
-            std::is_constructible<MaterialType, Composition, DopingAmountType, double>::value;
+            std::is_constructible<MaterialType, double>::value ||
+            std::is_constructible<MaterialType, Composition, double>::value;
     };
 
     friend struct MaterialsDB;
@@ -137,23 +130,20 @@ struct PLASK_API Material {
         Composition composition;
 
         /// name of dopant
-        std::string dopantName;
+        std::string dopant;
 
         /// ammount of dopant (0.0 if there is no dopant)
-        double dopingAmount;
-
-        /// type of dopant
-        Material::DopingAmountType dopingAmountType;
+        double doping;
 
         /// Construct empty parameters info.
-        Parameters(): dopingAmount(0.0), dopingAmountType(NO_DOPING) {}
+        Parameters(): doping(NAN) {}
 
         /**
          * Construct parameters filled with information parsed from format name[_label][:dopant].
          *
          * Part before label is always put in name, also for complex materials.
          * @param full_material_str material in format name[_label][:dopant]
-         * @param allow_dopant_without_amount if true, dopant part without ammount is allowed (in such case, dopantName is filled, but dopingAmountType is set to NO_DOPING and dopingAmount to 0.0)
+         * @param allow_dopant_without_amount if true, dopant part without ammount is allowed (in such case, dopant is filled, but doping is 0.0)
          */
         explicit Parameters(const std::string& full_name, bool allow_dopant_without_amount = false)
             { parse(full_name, allow_dopant_without_amount); }
@@ -162,26 +152,26 @@ struct PLASK_API Material {
          * Check if material is simple, i.e. has empty composition.
          * @return true only if material is simple
          */
-        bool isSimple() const { return composition.empty(); }
+        bool isAlloy() const { return !composition.empty(); }
 
         /**
          * Check if dopant name is known.
-         * @return true only if dopant name is known (dopingAmountType still can be equal NO_DOPING if name of dopant was given without ammount)
+         * @return true only if dopant name is known (doping still can be equal 0)
          */
-        bool hasDopantName() const { return !dopantName.empty(); }
+        bool hasDopantName() const { return !dopant.empty(); }
 
         /**
          * Check if has full dopant information (with ammount).
          * @return true if has full dopant information
          */
-        bool hasDoping() const { return dopingAmountType != NO_DOPING; }
+        bool hasDoping() const { return !isnan(doping); }
 
         /**
          * Parse material in format name[_label][:dopant].
          *
          * Part before label is always put in name, also for complex materials.
          * @param full_material_str material in format name[_label][:dopant]
-         * @param allow_dopant_without_amount if true, dopant part without ammount is allowed (in such case, dopantName is filled, but dopingAmountType is set to NO_DOPING and dopingAmount to 0.0)
+         * @param allow_dopant_without_amount if true, dopant part without ammount is allowed (in such case, dopant is filled, but doping is 0.0)
          */
         void parse(const std::string& full_material_str, bool allow_dopant_without_amount = false);
 
@@ -193,16 +183,21 @@ struct PLASK_API Material {
 
         /**
          * Set doping parameters.
-         * @param dopantName, dopingAmountType, dopingAmount new dopant parameters
+         * @param dopant, doping new dopant parameters
          */
-        void setDoping(const std::string& dopantName, Material::DopingAmountType dopingAmountType, double dopingAmount);
+        void setDoping(const std::string& dopant, double doping);
 
         /**
          * Clear doping parameters.
          */
         void clearDoping() {
-            setDoping("", Material::NO_DOPING, 0.0);
+            setDoping("", NAN);
         }
+
+        /**
+         * Construct good material string
+         */
+        std::string str() const;
     };
 
     /**
@@ -263,21 +258,11 @@ struct PLASK_API Material {
 
         /**
          * Append information about doping to built string.
-         * @param dopantName name of dopant
+         * @param dopant name of dopant
          * @param dopantConcentration dopant concentration
          * @return built material name
          */
-        std::string dopant(const std::string& dopantName, double dopantConcentration);
-
-        /**
-         * Append information about doping to built string.
-         * @param dopantName name of dopant
-         * @param n_or_p 'n' or 'p'
-         * @param carrierConcentration carrier concentration
-         * @return built material name
-         */
-        std::string dopant(const std::string& dopantName, char n_or_p, double carrierConcentration);
-
+        std::string dopant(const std::string& dopant, double dopantConcentration);
     };
 
     /**
@@ -293,16 +278,25 @@ struct PLASK_API Material {
      *
      * Throw exception if it is impossible to complete given composition.
      * @param composition amounts of objects composition with NaN on position for which amounts has not been taken
-     * @return complate composition, for example for ("Al", 0.7), ("Ga", NaN), ("N", NaN) result is ("Al", 0.7), ("Ga", 0.3), ("N", 1.0)
+     * @return complete composition, for example for ("Al", 0.7), ("Ga", NaN), ("N", NaN) result is ("Al", 0.7), ("Ga", 0.3), ("N", 1.0)
      */
     static Composition completeComposition(const Composition& composition);
+
+    /**
+     * Change material composition to minimal set.
+     *
+     * Throw exception if it is impossible to complete given composition.
+     * @param composition amounts of objects composition with NaN on position for which amounts has not been taken
+     * @return minimal composition, for example for ("Al", 0.7), ("Ga", 0.3), ("N", 1.0) result is ("Al", 0.7), ("Ga", NaN), ("N", NaN)
+     */
+    static Composition minimalComposition(const Composition& composition);
 
     /**
      * Parse composition from string, or string fragment.
      *
      * Throws exception in case of parsing errors.
      * @param begin, end [begin, end) string or range in string, for example "Al(0.7)GaN"
-     * @return parsed composition, can be not complate, for "Al(0.7)GaN" result is ("Al", 0.7), ("Ga", NaN), ("N", NaN)
+     * @return parsed composition, can be not complete, for "Al(0.7)GaN" result is ("Al", 0.7), ("Ga", NaN), ("N", NaN)
      * @see @ref completeComposition
      */
     static Composition parseComposition(const char* begin, const char* end);
@@ -322,20 +316,20 @@ struct PLASK_API Material {
      *
      * Throws exception in case of parsing errors.
      * @param[in] begin, end [begin, end) string or range in string
-     * @param[out] dopant_elem_name, doping_amount_type, doping_amount parsed values
-     * @param[in] allow_dopant_without_amount if true, dopant without ammount is allowed (in such case, dopant_elem_name is filled, but doping_amount_type is set to NO_DOPING and doping_amount to 0.0)
+     * @param[out] dopant_elem_name, doping parsed values
+     * @param[in] allow_dopant_without_amount if true, dopant without ammount is allowed (in such case, dopant_elem_name is filled, but doping_type is set to NO_DOPING and doping to 0.0)
      */
-    static void parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, DopingAmountType& doping_amount_type, double& doping_amount, bool allow_dopant_without_amount = false);
+    static void parseDopant(const char* begin, const char* end, std::string& dopant_elem_name, double& doping, bool allow_dopant_without_amount = false);
 
     /**
      * Parse information about dopant from string.
      *
      * Throws exception in case of parsing errors.
      * @param[in] dopant string to parse
-     * @param[out] dopant_elem_name, doping_amount_type, doping_amount parsed values
-     * @param[in] allow_dopant_without_amount if true, dopant without ammount is allowed (in such case, dopant_elem_name is filled, but doping_amount_type is set to NO_DOPING and doping_amount to 0.0)
+     * @param[out] dopant_elem_name, doping parsed values
+     * @param[in] allow_dopant_without_amount if true, dopant without ammount is allowed (in such case, dopant_elem_name is filled, but doping_type is set to NO_DOPING and doping to 0.0)
      */
-    static void parseDopant(const std::string& dopant, std::string& dopant_elem_name, DopingAmountType& doping_amount_type, double& doping_amount, bool allow_dopant_without_amount = false);
+    static void parseDopant(const std::string& dopant, std::string& dopant_elem_name, double& doping, bool allow_dopant_without_amount = false);
 
     /**
      * Split object name to objects.
@@ -373,7 +367,7 @@ struct PLASK_API Material {
      * Get dopant material name (part of name after ':', possibly empty).
      * @return dopant material name
      */
-    std::string dopantName() const;
+    std::string dopant() const;
 
     /**
      * Get material name without dopant (without ':' and part of name after it).
@@ -394,7 +388,18 @@ struct PLASK_API Material {
      * Check if @c this material is simple.
      * @return @c true only if @c this material is simple
      */
-    bool isSimple() const;
+    bool isAlloy() const;
+
+    /**
+     * If this material is alloy return its composition
+     * \return material composition
+     */
+    virtual Composition composition() const;
+
+    /**
+     * Doping concentration
+     */
+    virtual double doping() const;
 
     /// @return material kind
     virtual Kind kind() const = 0;

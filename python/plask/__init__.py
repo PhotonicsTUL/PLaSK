@@ -22,15 +22,18 @@ from ._plask import *
 try: from ._plask import _print_stack # for debug only
 except ImportError: pass
 
+
 def print_exc():
     """Print last exception to PLaSK log."""
     _plask._print_exception(sys.exc_type, sys.exc_value, sys.exc_traceback)
+
 
 ## ## plask.material ## ##
 
 material.db = material.MaterialsDB.get_default()
 
 material.get = lambda *args, **kwargs: material.db.get(*args, **kwargs)
+
 
 def update_factories():
     """For each material in default database make factory in ``plask.material``."""
@@ -52,11 +55,13 @@ def update_factories():
 material.update_factories = update_factories
 del update_factories
 
+
 material.air = material.db.get("air")
 material.Air = lambda: material.air
 
 material.db.load_all()
 material.update_factories()
+
 
 def load(lib):
     """
@@ -69,6 +74,7 @@ def load(lib):
     material.update_factories()
 material.load = load
 del load
+
 
 class _simple(object):
     """
@@ -91,6 +97,7 @@ class _simple(object):
         return cls
 material.simple = _simple
 del _simple
+
 
 class _alloy(object):
     """
@@ -155,6 +162,7 @@ def Stack2D(repeat=None, shift=0., **kwargs):
 geometry.Stack2D = Stack2D
 del Stack2D
 
+
 def Stack3D(repeat=None, shift=0., **kwargs):
     """
     Create a 3D container that organizes its items in a vertical stack.
@@ -185,6 +193,7 @@ def Stack3D(repeat=None, shift=0., **kwargs):
 geometry.Stack3D = Stack3D
 del Stack3D
 
+
 def Shelf(repeat=None, shift=0.):
     """
     Create a 2D shelf container that organizes its items one next to another
@@ -213,6 +222,7 @@ del Shelf
 
 geometry.AlignContainer2D = geometry.Align2D
 geometry.AlignContainer3D = geometry.Align3D
+
 
 ## ## plask.manager ## ##
 
@@ -249,6 +259,7 @@ def loadxpl(source, vars={}, sections=None, destination=None, update=False):
     lst = [ g.axes for g in manager.geo.values() if isinstance(g, geometry.Geometry) ]
     same = lst and lst.count(lst[0]) == len(lst)
     if same: current_axes = lst[0]
+
 
 def runxpl(source, vars={}):
     """
@@ -474,8 +485,42 @@ for PROCID in 'OMPI_COMM_WORLD_RANK', 'PMI_RANK', 'SLURM_PROCID', 'PBS_VNODENUM'
 else:
     PROCID = None
 
+
 ## ##  ## ##
 _plask.__xml__globals.update(globals())
 
 
 ## ##  ## ##
+
+# Default colors
+MATERIAL_COLORS = {
+    'Cu': '#9E807E',
+    'Au': '#A6A674',
+    'Pt': '#A6A674',
+    'In': '#585266',
+
+    'SiO2': '#FFD699',
+    'Si': '#BF7300',
+    'aSiO2': '#FFDF99',
+    'aSi': '#BF8300',
+
+    'AlOx': '#98F2FF',
+
+    'GaAs': '#009e00',
+    'AlAs': '#d1f000',
+    'InAs': '#d18000',
+
+    'GaN': '#00009e',
+    'GaN_bulk': '#000080',
+    'AlN': '#00d1f0',
+    'InN': '#d10080',
+
+    'GaP': '#915daf',
+    'AlP': '#a089b5',
+    'InP': '#6218a3',
+
+    'GaSb': '#c17024',
+    'AlSb': '#d19359',
+    'InSb': '#b56113',
+
+}

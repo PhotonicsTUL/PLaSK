@@ -12,18 +12,11 @@ std::string GaInAs_Zn::str() const { return StringBuilder("In", In)("Ga")("As").
 
 MI_PARENT(GaInAs_Zn, GaInAs)
 
-GaInAs_Zn::GaInAs_Zn(const Material::Composition& Comp, DopingAmountType Type, double Val): GaInAs(Comp)/*, mGaAs_Zn(Type,Val), mInAs_Zn(Type,Val)*/
+GaInAs_Zn::GaInAs_Zn(const Material::Composition& Comp, double Val): GaInAs(Comp)/*, mGaAs_Zn(Val), mInAs_Zn(Val)*/
 {
-    if (Type == CARRIERS_CONCENTRATION) {
-        Nf_RT = Val;
-        if (In == 0.53) NA = Val/0.90;
-        else NA = Val;
-    }
-    else {
-        if (In == 0.53) Nf_RT = 0.90*Val;
-        else Nf_RT = Val;
-        NA = Val;
-    }
+    if (In == 0.53) Nf_RT = 0.90*Val;
+    else Nf_RT = Val;
+    NA = Val;
     if (In == 0.53)
         mob_RT = 250./(1+pow((Nf_RT/6e17),0.34));
     else
@@ -46,7 +39,7 @@ double GaInAs_Zn::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
-double GaInAs_Zn::Dop() const {
+double GaInAs_Zn::doping() const {
     return ( NA );
 }
 

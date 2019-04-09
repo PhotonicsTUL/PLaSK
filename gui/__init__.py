@@ -73,7 +73,7 @@ from .launch import launch_plask
 from .controller.materials.plot import show_material_plot
 
 from .utils.config import ConfigProxy, ConfigDialog
-from .utils.texteditor import update_textedit_colors
+from .utils.texteditor import update_textedit
 from .utils.widgets import fire_edit_end, InfoListView
 from .utils.help import open_help
 
@@ -131,22 +131,27 @@ def close_all_windows():
     return True
 
 
-# icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
-SECTION_ICONS = {
-    'defines': 'accessories-dictionary',
-    'materials': 'accessories-character-map',
-    'geometry': 'system-file-manager',
-    'grids': 'preferences-desktop-keyboard',
-    'solvers': 'utilities-system-monitor',
-    'connects': 'preferences-desktop-accessibility',
-    'script': 'accessories-text-editor',
-}
+if matplotlib is not None:
+    matplotlib.rcParams['axes.facecolor'] = CONFIG['plots/face_color']
+    matplotlib.rcParams['axes.edgecolor'] = CONFIG['plots/edge_color']
+    matplotlib.rcParams['grid.color'] = CONFIG['plots/grid_color']
 
 
 class MainWindow(QMainWindow):
 
     SECTION_TITLES = dict(defines=" &Defines ", materials=" &Materials ", geometry=" &Geometry ", grids=" M&eshing ",
                           solvers=" &Solvers ", connects=" &Connects ", script=" Sc&ript ")
+
+    # icons: http://standards.freedesktop.org/icon-naming-spec/icon-naming-spec-latest.html
+    SECTION_ICONS = {
+        'defines': 'accessories-dictionary',
+        'materials': 'accessories-character-map',
+        'geometry': 'system-file-manager',
+        'grids': 'preferences-desktop-keyboard',
+        'solvers': 'utilities-system-monitor',
+        'connects': 'preferences-desktop-accessibility',
+        'script': 'accessories-text-editor',
+    }
 
     SECTION_TIPS = {
         'defines': "Edit the list of pre-defined variables for use in the rest of the file (Alt+D)",
@@ -330,7 +335,10 @@ class MainWindow(QMainWindow):
             menu_button = QPushButton(self)
         menu_button.setText("PLaSK")
         pal = menu_button.palette()
-        pal.setColor(QPalette.Button, QColor("#88aaff"))
+        if CONFIG['main_window/dark_style']:
+            pal.setColor(QPalette.Button, QColor(42, 130, 218))
+        else:
+            pal.setColor(QPalette.Button, QColor("#88aaff"))
         menu_button.setIcon(QIcon.fromTheme('plask-logo'))
         menu_button.setPalette(pal)
         menu_button.setToolTip("Show operations menu (F2)")
@@ -363,7 +371,7 @@ class MainWindow(QMainWindow):
         self.tabs.setStyleSheet("QTabBar {{ font-size: {}pt; }}".format(fs))
         menu_button.setStyleSheet("QPushButton {{ font-size: {}pt; font-weight: bold; }}".format(fs))
 
-        self.config_changed.connect(update_textedit_colors)
+        self.config_changed.connect(update_textedit)
 
         desktop = QDesktopWidget()
         geometry = CONFIG['session/geometry']
@@ -1075,15 +1083,42 @@ def main():
         pass
     sys.argv = APPLICATION.arguments()
 
+    if CONFIG['main_window/dark_style']:
+        if QT_API == 'PyQt5':
+            APPLICATION.setStyle(QStyleFactory.create("Fusion"))
+        else:
+            APPLICATION.setStyle(QStyleFactory.create("Plastique"))
+        dark_palette = QPalette()
+        dark_palette.setColor(QPalette.Window, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.WindowText, QColor('#dddddd'))
+        dark_palette.setColor(QPalette.Base, QColor(25, 25, 25))
+        dark_palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.ToolTipBase, QColor('#dddddd'))
+        dark_palette.setColor(QPalette.ToolTipText, QColor('#dddddd'))
+        dark_palette.setColor(QPalette.Text, QColor('#dddddd'))
+        dark_palette.setColor(QPalette.Button, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.ButtonText, QColor('#dddddd'))
+        dark_palette.setColor(QPalette.BrightText, Qt.red)
+        dark_palette.setColor(QPalette.Link, QColor(42, 130, 218))
+        dark_palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+        dark_palette.setColor(QPalette.HighlightedText, Qt.black)
+        qApp.setPalette(dark_palette)
+        qApp.setStyleSheet("QToolTip { color: #dddddd; background-color: #2a82da; border: 1px solid #dddddd; }")
+
     pysparkle = None
 
     icons_theme = str(CONFIG['main_window/icons_theme']).lower()
     if icons_theme == 'system':
         icons_path = QIcon.themeSearchPaths()[:-1]
         if not QIcon.themeName():
-            QIcon.setThemeName('breeze')
+            if CONFIG['main_window/dark_style']:
+                QIcon.setThemeName('breeze-dark')
+            else:
+                QIcon.setThemeName('breeze')
     else:
         if icons_theme == 'tango': icons_theme = 'hicolor'
+        elif icons_theme == 'breeze' and CONFIG['main_window/dark_style']:
+            icons_theme = 'breeze-dark'
         icons_path = []
         QIcon.setThemeName(icons_theme)
     icons_path.insert(0, os.path.join(__path__[0], 'icons'))

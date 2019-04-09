@@ -16,6 +16,10 @@ std::string AlGaInAs::str() const { return StringBuilder("Al", Al)("Ga", Ga)("In
 
 std::string AlGaInAs::name() const { return NAME; }
 
+Material::Composition AlGaInAs::composition() const {
+    return { {"Al", Al}, {"In", In}, {"Ga", Ga}, {"As", 1} };
+}
+
 MI_PROPERTY(AlGaInAs, lattC,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
             MISource("linear interpolation: AlAs, GaAs, InAs")

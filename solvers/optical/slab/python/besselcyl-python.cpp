@@ -199,6 +199,11 @@ void export_BesselSolverCyl()
                 u8"    k0 (complex): Normalized frequency.\n"
                 u8"    m (int): HE/EH Mode angular number.\n"
               );
+    RW_FIELD(emission, "Direction of the useful light emission.\n\n"
+                       u8"Necessary for the over-threshold model to correctly compute the output power.\n"
+                       u8"Currently the fields are normalized only if this parameter is set to\n"
+                       u8"``top`` or ``bottom``. Otherwise, it is ``undefined`` (default) and the fields\n"
+                       u8"are not normalized.");
     solver.def("get_determinant", py::raw_function(BesselSolverCyl_getDeterminant),
                u8"Compute discontinuity matrix determinant.\n\n"
                u8"Arguments can be given through keywords only.\n\n"
@@ -206,6 +211,41 @@ void export_BesselSolverCyl()
                u8"    lam (complex): Wavelength.\n"
                u8"    k0 (complex): Normalized frequency.\n"
                u8"    m (int): HE/EH Mode angular number.\n"
+              );
+    solver.def("compute_reflectivity", &Solver_computeReflectivity_index<BesselSolverCyl>,
+               (py::arg("lam"), "side", "index"));
+    solver.def("compute_reflectivity", &Solver_computeReflectivity_array<BesselSolverCyl>,
+               (py::arg("lam"), "side", "coffs"),
+               u8"Compute reflection coefficient on planar incidence [%].\n\n"
+               u8"Args:\n"
+               u8"    lam (float or array of floats): Incident light wavelength.\n"
+               u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+               u8"        present.\n"
+               u8"    idx: Eigenmode number.\n"
+               u8"    coeffs: expansion coefficients of the incident vector.\n");
+    solver.def("compute_transmittivity", &Solver_computeTransmittivity_index<BesselSolverCyl>,
+               (py::arg("lam"), "side", "index"));
+    solver.def("compute_transmittivity", &Solver_computeTransmittivity_array<BesselSolverCyl>,
+               (py::arg("lam"), "side", "coffs"),
+               u8"Compute transmission coefficient on planar incidence [%].\n\n"
+               u8"Args:\n"
+               u8"    lam (float or array of floats): Incident light wavelength.\n"
+               u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+               u8"        present.\n"
+               u8"    idx: Eigenmode number.\n"
+               u8"    coeffs: expansion coefficients of the incident vector.\n");
+    solver.def("scattering", Scattering<BesselSolverCyl>::from_index, py::with_custodian_and_ward_postcall<0,1>(), (py::arg("side"), "idx"));
+    solver.def("scattering", Scattering<BesselSolverCyl>::from_array, py::with_custodian_and_ward_postcall<0,1>(), (py::arg("side"), "coeffs"),
+               u8"Access to the reflected field.\n\n"
+               u8"Args:\n"
+               u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
+               u8"        present.\n"
+               u8"    polarization: Specification of the incident light polarization.\n"
+               u8"        It should be a string of the form 'E\\ *#*\\ ', where *#* is the axis name\n"
+               u8"        of the non-vanishing electric field component.\n"
+               u8"    idx: Eigenmode number.\n"
+               u8"    coeffs: expansion coefficients of the incident vector.\n\n"
+               u8":rtype: Fourier2D.Scattering\n"
               );
     solver.def("get_raw_E", BesselSolverCyl_getFieldVectorE, (py::arg("num"), "level"),
                u8"Get Bessel expansion coefficients for the electric field.\n\n"
@@ -257,15 +297,17 @@ void export_BesselSolverCyl()
     METHOD(epsTpm, epsTpm, u8"$J_{m+1}(gr) (\\varepsilon_{rr} - \\varepsilon_{\\varphi\\varphi}) J_{m-1}(kr) r dr$", "layer");
     METHOD(epsDm, epsDm, u8"$J_{m-1}(gr) d \\varepsilon^{-1}/dr J_m(kr) r dr$", "layer");
     METHOD(epsDp, epsDp, u8"$J_{m+1}(gr) d \\varepsilon^{-1}/dr J_m(kr) r dr$", "layer");
+    METHOD(epsVV, epsVV, u8"$J_{m}(gr) \\varepsilon^{-1} J_{m}(kr) r dr$", "layer");
 
-//     METHOD(muVmm, muVmm, u8"$J_{m-1}(gr) \\mu^{-1} J_{m-1}(kr) r dr$");
-//     METHOD(muVpp, muVpp, u8"$J_{m+1}(gr) \\mu^{-1} J_{m+1}(kr) r dr$");
-//     METHOD(muTmm, muTmm, u8"$J_{m-1}(gr) (\\mu_{rr} + \\mu_{\\varphi\\varphi}) J_{m-1}(kr) r dr$");
-//     METHOD(muTpp, muTpp, u8"$J_{m+1}(gr) (\\mu_{rr} + \\mu_{\\varphi\\varphi}) J_{m+1}(kr) r dr$");
-//     METHOD(muTmp, muTmp, u8"$J_{m-1}(gr) (\\mu_{rr} - \\mu_{\\varphi\\varphi}) J_{m+1}(kr) r dr$");
-//     METHOD(muTpm, muTpm, u8"$J_{m+1}(gr) (\\mu_{rr} - \\mu_{\\varphi\\varphi}) J_{m-1}(kr) r dr$");
-//     METHOD(muDm, muDm, u8"$J_{m-1}(gr) d \\mu^{-1}/dr J_m(kr) r dr$");
-//     METHOD(muDp, muDp, u8"$J_{m+1}(gr) d \\mu^{-1}/dr J_m(kr) r dr$");
+    METHOD(muVmm, muVmm, u8"$J_{m-1}(gr) \\mu^{-1} J_{m-1}(kr) r dr$");
+    METHOD(muVpp, muVpp, u8"$J_{m+1}(gr) \\mu^{-1} J_{m+1}(kr) r dr$");
+    METHOD(muTmm, muTmm, u8"$J_{m-1}(gr) (\\mu_{rr} + \\mu_{\\varphi\\varphi}) J_{m-1}(kr) r dr$");
+    METHOD(muTpp, muTpp, u8"$J_{m+1}(gr) (\\mu_{rr} + \\mu_{\\varphi\\varphi}) J_{m+1}(kr) r dr$");
+    METHOD(muTmp, muTmp, u8"$J_{m-1}(gr) (\\mu_{rr} - \\mu_{\\varphi\\varphi}) J_{m+1}(kr) r dr$");
+    METHOD(muTpm, muTpm, u8"$J_{m+1}(gr) (\\mu_{rr} - \\mu_{\\varphi\\varphi}) J_{m-1}(kr) r dr$");
+    METHOD(muDm, muDm, u8"$J_{m-1}(gr) d \\mu^{-1}/dr J_m(kr) r dr$");
+    METHOD(muDp, muDp, u8"$J_{m+1}(gr) d \\mu^{-1}/dr J_m(kr) r dr$");
+    METHOD(muVV, muVV, u8"$J_{m}(gr) \\mu^{-1} J_{m}(kr) r dr$");
 #endif
 
     py::scope scope = solver;

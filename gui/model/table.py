@@ -77,11 +77,9 @@ class TableModelEditMethods(object):
             self.table.fire_changed()
             self.table.endInsertRows()
 
-
     def remove(self, index):
         if self.is_read_only() or index < 0 or index >= len(self.entries): return
         self._exec_command(TableModelEditMethods.RemoveEntryCommand(self, index))
-
 
     class SwapEntriesCommand(QUndoCommand):
 

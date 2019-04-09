@@ -15,6 +15,10 @@ std::string InPSb::str() const { return StringBuilder("In")("P")("Sb", Sb); }
 
 std::string InPSb::name() const { return NAME; }
 
+Material::Composition InPSb::composition() const {
+    return { {"In", 1}, {"P", P}, {"Sb", Sb} };
+}
+
 MI_PROPERTY(InPSb, lattC,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
             MISource("linear interpolation: InP, InSb")

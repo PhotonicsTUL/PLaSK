@@ -19,13 +19,14 @@ struct AlInAs_Si: public AlInAs {
 
     static constexpr const char* NAME = "AlInAs:Si";
 
-    AlInAs_Si(const Material::Composition& Comp, DopingAmountType Type, double Val);
-    virtual std::string name() const override;
-    virtual std::string str() const override;
-    virtual ConductivityType condtype() const override;
+    AlInAs_Si(const Material::Composition& Comp, double Val);
+    std::string name() const override;
+    std::string str() const override;
+    double doping() const override;
+    ConductivityType condtype() const override;
 
 protected:
-    virtual bool isEqual(const Material& other) const override;
+    bool isEqual(const Material& other) const override;
 
 private:
     double ND,

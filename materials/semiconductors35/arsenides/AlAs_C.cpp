@@ -10,17 +10,11 @@ std::string AlAs_C::name() const { return NAME; }
 
 std::string AlAs_C::str() const { return StringBuilder("AlAs").dopant("C", NA); }
 
-AlAs_C::AlAs_C(DopingAmountType Type, double Val) {
+AlAs_C::AlAs_C(double Val) {
     //double act_GaAs = 0.92;
     //double fx1 = 1.;
-    if (Type == CARRIERS_CONCENTRATION) {
-        Nf_RT = Val;
-        NA = Val/0.92; // Val/(act_GaAs*fx1);
-    }
-    else {
-        Nf_RT = 0.92*Val; // (act_GaAs*fx1)*Val;
-        NA = Val;
-    }
+    Nf_RT = 0.92*Val; // (act_GaAs*fx1)*Val;
+    NA = Val;
     double mob_RT_GaAs = 530./(1+pow((Nf_RT/1e17),0.30));
     //double Al = 1.; // AlAs (not AlGaAs)
     double fx2 = 0.66 / (1. + pow(1./0.21,3.)) + 0.34; // (1.00-0.34) / (1. + pow(Al/0.21,3.)) + 0.34;
@@ -42,7 +36,7 @@ double AlAs_C::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
-double AlAs_C::Dop() const {
+double AlAs_C::doping() const {
     return ( NA );
 }
 

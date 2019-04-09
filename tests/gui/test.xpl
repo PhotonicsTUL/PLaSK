@@ -61,7 +61,9 @@
               </item>
             </stack>
           </arrange>
-          <again ref="Pilars"/>
+          <item left="0.0">
+            <again ref="Pilars"/>
+          </item>
           <rectangle material="Al(0.9)GaN:Si=2e18" dtran="1" dvert="0.1"/>
           <rectangle material="Al(0.5)GaN:Si=2e18" dtran="1" dvert="0.2"/>
         </stack>
@@ -390,6 +392,8 @@
 
 <script><![CDATA[
 from __future__ import print_function
+
+print(material.get('InGa(0.8)As_QW:Si=1e19'))
 
 GaAs = material.get('GaAs')
 print(GaAs.y1(), GaAs.y2(), GaAs.y3())

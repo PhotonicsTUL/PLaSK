@@ -89,26 +89,28 @@ def parse_slash(editor):
     """Close the current tag, and unindent closing tag if necessary"""
     cursor = editor.textCursor()
     pos = cursor.position()
-    text = editor.toPlainText()[:pos]
-    closing = text[-1] == '<'
+    text = editor.toPlainText()[:pos+1]
+    closing = text[pos-1] == '<'
     if closing:
-        text = text[:-1]
+        text = text[:pos-1]
         pos -= 1
+    elif text[-1] != '>':
+        text = text[:pos]
     else:
-        text = text+'/>'
-    parser = expat.ParserCreate('utf8')
-    stack = [(None, 0, None)]
-    parser.StartElementHandler = lambda tag, atr:\
-        stack.append((
-            tag,
-            parser.CurrentColumnNumber if parser.CurrentLineNumber != stack[-1][2] else stack[-1][1],
-            parser.CurrentLineNumber))
-    parser.EndElementHandler = lambda tag: stack.pop()
-    try:
-        parser.Parse('<text>\n'+text)
-    except expat.ExpatError:
         return False
+    parser = expat.ParserCreate('utf8')
     if closing:
+        stack = [(None, 0, None)]
+        parser.StartElementHandler = lambda tag, atr:\
+            stack.append((
+                tag,
+                parser.CurrentColumnNumber if parser.CurrentLineNumber != stack[-1][2] else stack[-1][1],
+                parser.CurrentLineNumber))
+        parser.EndElementHandler = lambda tag: stack.pop()
+        try:
+            parser.Parse('<text>\n'+text)
+        except expat.ExpatError:
+            return False
         if len(stack) < 2:
             return False
         tag, col, _ = stack[-1]
@@ -122,8 +124,16 @@ def parse_slash(editor):
                 cursor.deleteChar()
         cursor.endEditBlock()
         return True
-    elif parser.CurrentLineNumber == cursor.blockNumber() + 2 and \
-         parser.CurrentColumnNumber == pos - cursor.block().position() + 2:
-        cursor.insertText('/>')
-        return True
+    else:
+        try:
+            parser.Parse('<text>\n'+text)
+            line = cursor.blockNumber() + 2
+            column = pos - cursor.block().position()
+            if parser.CurrentLineNumber != line or parser.CurrentColumnNumber != column:
+                parser.Parse('>')
+                if parser.CurrentLineNumber == line and parser.CurrentColumnNumber == column + 1:
+                    cursor.insertText('/>')
+                return True
+        except expat.ExpatError:
+            return False
     return False

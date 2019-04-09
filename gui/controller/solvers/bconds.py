@@ -177,7 +177,8 @@ if preview_available:
 
         def __init__(self, controller=None, parent=None, picker=None):
             super(PlotWidget, self).__init__(controller, parent)
-            self.get_color = BwColor(self.axes)
+            colors = CONFIG['geometry/material_colors'].copy()
+            self.get_color = BwColor(colors, self.axes)
             self.first = True
             self.picker = picker
 

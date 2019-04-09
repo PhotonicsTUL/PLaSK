@@ -791,7 +791,7 @@ py::object Solver_computeReflectivity_polarization(SolverT* self,
     return UFUNC<double>([=](double lam)->double {
         double k0 = 2e3*PI/lam;
         cvector incident = self->incidentVector(side, polarization, lam);
-        self->expansion.setK0(k0);
+        self->getExpansion().setK0(k0);
         return 100. * self->getReflection(incident, side);
     }, wavelength);
 }
@@ -808,7 +808,7 @@ py::object Solver_computeTransmittivity_polarization(SolverT* self,
     return UFUNC<double>([=](double lam)->double {
         double k0 = 2e3*PI/lam;
         cvector incident = self->incidentVector(side, polarization, lam);
-        self->expansion.setK0(k0);
+        self->getExpansion().setK0(k0);
         return 100. * self->getTransmission(incident, side);
     }, wavelength);
 }
@@ -825,7 +825,7 @@ py::object Solver_computeReflectivity_index(SolverT* self,
     return UFUNC<double>([=](double lam)->double {
         double k0 = 2e3*PI/lam;
         cvector incident = self->SlabBase::incidentVector(index);
-        self->expansion.setK0(k0);
+        self->getExpansion().setK0(k0);
         return 100. * self->getReflection(incident, side);
     }, wavelength);
 }
@@ -842,7 +842,7 @@ py::object Solver_computeTransmittivity_index(SolverT* self,
     return UFUNC<double>([=](double lam)->double {
         double k0 = 2e3*PI/lam;
         cvector incident = self->SlabBase::incidentVector(index);
-        self->expansion.setK0(k0);
+        self->getExpansion().setK0(k0);
         return 100. * self->getTransmission(incident, side);
     }, wavelength);
 }
@@ -866,7 +866,7 @@ py::object Solver_computeReflectivity_array(SolverT* self,
 
     return UFUNC<double>([self, incident, side](double lam)->double {
         double k0 = 2e3*PI/lam;
-        self->expansion.setK0(k0);
+        self->getExpansion().setK0(k0);
         return 100. * self->getReflection(incident, side);
     }, wavelength);
 }
@@ -890,7 +890,7 @@ py::object Solver_computeTransmittivity_array(SolverT* self,
 
     return UFUNC<double>([self, incident, side](double lam)->double {
         double k0 = 2e3*PI/lam;
-        self->expansion.setK0(k0);
+        self->getExpansion().setK0(k0);
         return 100. * self->getTransmission(incident, side);
     }, wavelength);
 }

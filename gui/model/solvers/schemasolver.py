@@ -14,10 +14,7 @@
 import os
 from lxml import etree
 
-try:
-    import yaml
-except ImportError:
-    yaml = None
+import yaml
 
 from ..info import Info
 from ...utils.xml import AttributeReader, print_interior
@@ -401,7 +398,6 @@ def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
             if _DEBUG:
                 import traceback
                 traceback.print_exc()
-            continue
 
 
 # Find XML files with solvers configuration
@@ -411,4 +407,10 @@ for _dirname, _, _files in os.walk(os.path.join(_d(_d(_d(_d(__file__)))), 'solve
     if os.path.split(_dirname)[-1] == 'skel': continue
     for _f in _files:
         if _f.endswith('.yml'):
-            load_yaml(os.path.join(_dirname, _f))
+            try:
+                load_yaml(os.path.join(_dirname, _f))
+            except yaml.YAMLError:
+                from ... import _DEBUG
+                if _DEBUG:
+                    import traceback
+                    traceback.print_exc()

@@ -10,21 +10,16 @@ std::string GaSb_Te::name() const { return NAME; }
 
 std::string GaSb_Te::str() const { return StringBuilder("GaSb").dopant("Te", ND); }
 
-GaSb_Te::GaSb_Te(DopingAmountType Type, double Val) {
-    if (Type == CARRIERS_CONCENTRATION)
-        Nf_RT = Val;
+GaSb_Te::GaSb_Te(double Val) {
+    ND = Val;
+    // based on: Chiu (1990) Te doping (1990) Appl. Phys. Lett. (Fig. 4), fit by L. Piskorski
+    if (ND <= 1e18)
+        Nf_RT = ND;
     else
     {
-        ND = Val;
-        // based on: Chiu (1990) Te doping (1990) Appl. Phys. Lett. (Fig. 4), fit by L. Piskorski
-        if (ND <= 1e18)
-            Nf_RT = ND;
-        else
-        {
-            double tNL = log10(ND);
-            double tnL = 0.383027*tNL*tNL*tNL - 22.1278*tNL*tNL + 425.212*tNL - 2700.2222;
-            Nf_RT = ( pow(10.,tnL) );
-        }
+        double tNL = log10(ND);
+        double tnL = 0.383027*tNL*tNL*tNL - 22.1278*tNL*tNL + 425.212*tNL - 2700.2222;
+        Nf_RT = ( pow(10.,tnL) );
     }
     mob_RT = 550. + (6300. - 550.) / (1.+pow(Nf_RT/2e17,0.786));
 }
@@ -47,7 +42,7 @@ double GaSb_Te::Nf(double T) const {
     return ( Nf_RT*pow(T/300.,tD) );
 }
 
-double GaSb_Te::Dop() const {
+double GaSb_Te::doping() const {
     return ( ND );
 }
 

@@ -178,11 +178,11 @@ def parse_material_components(material, alloy=None):
                 mat = plask.material.db.get(material)
             except (ValueError, RuntimeError):
                 try:
-                    alloy = not plask.material.db.is_simple(material)
+                    alloy = plask.material.db.is_alloy(material)
                 except (ValueError, RuntimeError):
                     alloy = False
             else:
-                alloy = not mat.simple
+                alloy = mat.alloy
         else:
             alloy = False
     if ':' in material:

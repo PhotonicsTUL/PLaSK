@@ -23,6 +23,7 @@ from ...model.info import Info
 from .. import Controller
 from ...utils import get_manager
 from ...utils.widgets import HTMLDelegate, VerticalScrollArea, create_undo_actions, set_icon_size
+from ...utils.config import CONFIG
 
 try:
     import plask
@@ -360,8 +361,13 @@ class GeometryController(Controller):
         self.plot_element(self.plotted_tree_element, set_limits=False)
 
     def reconfig(self):
-        if self.plotted_tree_element is not None and self.get_widget().isVisible():
-            self.plot_refresh()
+        if self.geometry_view is not None:
+            colors = CONFIG['geometry/material_colors'].copy()
+            self.geometry_view.get_color = plask.ColorFromDict(colors, self.geometry_view.axes)
+            if self.plotted_tree_element is not None and self.get_widget().isVisible():
+                self.geometry_view.axes.set_facecolor(CONFIG['plots/face_color'])
+                self.geometry_view.axes.grid(True, color=CONFIG['plots/grid_color'])
+                self.plot_refresh()
 
     def on_model_change(self, *args, **kwargs):
         if self.plotted_tree_element is not None:

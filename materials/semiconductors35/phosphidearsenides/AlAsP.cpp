@@ -15,6 +15,10 @@ std::string AlAsP::str() const { return StringBuilder("Al")("As")("P", P); }
 
 std::string AlAsP::name() const { return NAME; }
 
+Material::Composition AlAsP::composition() const {
+    return { {"Al", 1}, {"As", As}, {"P", P} };
+}
+
 MI_PROPERTY(AlAsP, lattC,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
             MISource("linear interpolation: AlAs, AlP")

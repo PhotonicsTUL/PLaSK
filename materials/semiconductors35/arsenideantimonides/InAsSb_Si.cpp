@@ -12,22 +12,17 @@ std::string InAsSb_Si::str() const { return StringBuilder("In")("As")("Sb", Sb).
 
 MI_PARENT(InAsSb_Si, InAsSb)
 
-InAsSb_Si::InAsSb_Si(const Material::Composition& Comp, DopingAmountType Type, double Val): InAsSb(Comp)//, mGaAs_Si(Type,Val), mAlAs_Si(Type,Val)
+InAsSb_Si::InAsSb_Si(const Material::Composition& Comp, double Val): InAsSb(Comp)//, mGaAs_Si(Val), mAlAs_Si(Val)
 {
-    if (Type == CARRIERS_CONCENTRATION)
-        Nf_RT = Val;
+    ND = Val;
+    // Barashar (2010) only data for InAs used - use it for InAsSb with high As content
+    if (ND <= 1e19)
+        Nf_RT = ND;
     else
     {
-        ND = Val;
-        // Barashar (2010) only data for InAs used - use it for InAsSb with high As content
-        if (ND <= 1e19)
-            Nf_RT = ND;
-        else
-        {
-            double tNL = log10(ND);
-            double tnL = -0.259963*tNL*tNL + 10.9705*tNL - 95.5924;
-            Nf_RT = ( pow(10.,tnL) );
-        }
+        double tNL = log10(ND);
+        double tnL = -0.259963*tNL*tNL + 10.9705*tNL - 95.5924;
+        Nf_RT = ( pow(10.,tnL) );
     }
     double tInAs_mob_RT = 450. + (12000. - 450.) / (1.+pow(ND/2e18,0.80));
     mob_RT = tInAs_mob_RT; // data for InAs(0.91)Sb(0.09) fit to above relation (see: Talercio 2014)
@@ -54,7 +49,7 @@ double InAsSb_Si::Nf(double T) const {
     return ( Nf_RT*pow(T/300.,tD) );
 }
 
-double InAsSb_Si::Dop() const {
+double InAsSb_Si::doping() const {
     return ( ND );
 }
 

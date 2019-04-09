@@ -14,6 +14,7 @@ class Material(unittest.TestCase):
     @material.alloy('AlGaAs')
     class AlGaAs_fake(material.Material):
         def __init__(self, **kwargs):
+            print(kwargs)
             super(Material.AlGaAs_fake, self).__init__(**kwargs)
             ptest.print_ptr(self)
         def __del__(self):
@@ -29,11 +30,8 @@ class Material(unittest.TestCase):
     class AlGaAsDp(material.Material):
         name = "AlGaAs:Dp"
         def __init__(self, *args, **kwargs):
-            super(Material.AlGaAsDp, self).__init__()
-            self.args = args,
+            super(Material.AlGaAsDp, self).__init__(**kwargs)
             print(kwargs)
-            self.doping = kwargs.get('doping')
-            self.composition = self.complete_composition(kwargs, self.name);
             print("Composition: %s" % self.composition)
         def __del__(self):
             ptest.print_ptr(self)
@@ -52,13 +50,6 @@ class Material(unittest.TestCase):
 
     def setUp(self):
         ptest.add_my_material(material.db)
-
-    def testMaterial(self):
-        '''Test basic behavior of Material class'''
-        result = material.Material.complete_composition(dict(Ga=0.3, Al=None, As=0.0, N=None))
-        correct = dict(Ga=0.3, Al=0.7, As=0.0, N=1.0)
-        for k in correct:
-            self.assertAlmostEqual( result[k], correct[k] )
 
     def testCustomMaterial(self):
         '''Test creation of custom materials'''
@@ -91,7 +82,7 @@ class Material(unittest.TestCase):
         self.assertEqual( ptest.NR(m1), (3.5, 3.6, 3.7, 0.1) )
 
         with(self.assertRaisesRegexp(TypeError, "'N' not allowed in material AlGaAs:Dp")):
-            mx = Material.AlGaAsDp(Al=0.2, N=0.9)
+            mx = Material.AlGaAsDp(Al=0.2, N=0.9, doping=1e18)
 
         m2 = material.AlGaAs(Al=0.2, dopant="Dp", doping=5.0)
         self.assertEqual( m2.name, "AlGaAs:Dp" )
@@ -133,7 +124,7 @@ class Material(unittest.TestCase):
 
         @material.simple(mm)
         class WithBase(material.Material):
-            def __init__(self):
+            def __init__(self, **kwargs):
                 super(WithBase, self).__init__()
 
         m1 = WithBase()
@@ -148,11 +139,12 @@ class Material(unittest.TestCase):
         self.assertEqual( ptest.material_VB("WithBase", material.db, 1.0), 0.5 )
 
 
-    def testMaterialWithComplexBase(self):
-        @material.simple('AlGaAs:Si')
+    def testMaterialWithBaseAndDoping(self):
+        @material.simple('Al(0.2)GaAs:Si')
         class WithBase2(material.Material):
+            name="WithBase2:Si"
             def __init__(self):
-                super(WithBase2, self).__init__(Al=0.2, doping=1e18)
+                super(WithBase2, self).__init__(doping=1e18)
 
         m1 = WithBase2()
         m2 = material.db('Al(0.2)GaAs:Si=1e18')
@@ -254,6 +246,7 @@ class Material(unittest.TestCase):
         ''')
         self.assertEqual( material.get('Al(0.2)GaAs_my').thermk(), (8.0, 8.0) )
         algas = material.get('Al(0.2)GaAs:Si=1e18')
+        self.assertEqual( str(algas), 'Al(0.2)GaAs:Si=1e+18' )
         self.assertEqual( algas.thermk(), (0.4, 0.4) )
         self.assertEqual( algas.cond(), cond )
         algas0 = material.get('Al(0.2)GaAs:Si=1e18')

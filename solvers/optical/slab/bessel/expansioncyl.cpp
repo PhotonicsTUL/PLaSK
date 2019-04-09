@@ -303,6 +303,7 @@ std::pair<dcomplex, dcomplex> ExpansionBessel::integrateLayer(size_t layer, doub
                     integrals.Dm(j,i) -= ieps * (0.5*r*(k*(Jm2k-Jk)*Jg + g*Jmk*(Jmg-Jpg)) + Jmk*Jg);
                     integrals.Dp(j,i)  -= ieps * (0.5*r*(k*(Jk-Jp2k)*Jg + g*Jpk*(Jmg-Jpg)) + Jpk*Jg);
                 }
+                integrals.VV(i,j) += r * Jg * real(ieps*conj(ieps)) * Jk;
             }
         }
     }
@@ -314,6 +315,7 @@ std::pair<dcomplex, dcomplex> ExpansionBessel::integrateLayer(size_t layer, doub
             for (std::size_t i = 0; i < N; ++i) {
                 double eta = cyl_bessel_j(m+1, kpts[i]) * rbounds[rbounds.size()-1]; eta = 0.5 * eta*eta;;
                 integrals.Vmm(i,i) = integrals.Vpp(i,i) = eta * ieps0;
+                integrals.VV(i,i) = eta * real(ieps0*conj(ieps0));
                 integrals.Tmm(i,i) = integrals.Tpp(i,i) = eta * epsa0;
             }
         }
@@ -386,6 +388,14 @@ cmatrix ExpansionBessel::epsDp(size_t layer) {
     for (size_t i = 0; i != N; ++i)
         for (size_t j = 0; j != N; ++j)
             result(i,j) = layers_integrals[layer].Dp(i,j);
+    return result;
+}
+dmatrix ExpansionBessel::epsVV(size_t layer) {
+    size_t N = SOLVER->size;
+    dmatrix result(N, N, 0.);
+    for (size_t i = 0; i != N; ++i)
+        for (size_t j = 0; j != N; ++j)
+            result(i,j) = layers_integrals[layer].VV(i,j);
     return result;
 }
 #endif
@@ -483,12 +493,6 @@ LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialNR(size_t layer,
                        InterpolationFlags(SOLVER->getGeometry(),
                                           InterpolationFlags::Symmetry::POSITIVE,
                                           InterpolationFlags::Symmetry::NO));
-}
-
-
-double ExpansionBessel::integratePoyntingVert(const cvector& /*E*/, const cvector& /*H*/)
-{
-    return 1.;
 }
 
 
