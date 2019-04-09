@@ -22,7 +22,7 @@ struct LorentzDrudeMetal: public Metal {
                       std::initializer_list<double> f,
                       std::initializer_list<double> G,
                       std::initializer_list<double> w) :
-        wp(wp), f(f), G(G), w(w) {
+        f(f), G(G), w(w), wp(wp) {
         assert(f.size() == G.size());
         assert(G.size() == w.size());
     }
@@ -59,7 +59,7 @@ struct BrendelBormannMetal: public Metal {
                         std::initializer_list<double> G,
                         std::initializer_list<double> w,
                         std::initializer_list<double> s) :
-        wp(wp), f(f), G(G), w(w), s(s) {
+        f(f), G(G), w(w), s(s), wp(wp) {
         assert(f.size() == G.size());
         assert(G.size() == w.size());
         assert(w.size() == s.size());
