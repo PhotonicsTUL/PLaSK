@@ -996,6 +996,8 @@ double ExpansionPW3D::integrateField(WhichField field, size_t l, const cvector& 
                                 + (bt*double(jt)-ky) * fhx*H[iHx(jl,jt)]);
                     }
                 vert /= k0;
+                if (symmetric_long() && il != 0) vert *= 2;
+                if (symmetric_tran() && it != 0) vert *= 2;
                 sum += real(vert * conj(vert));
             }
         }
@@ -1014,6 +1016,8 @@ double ExpansionPW3D::integrateField(WhichField field, size_t l, const cvector& 
                                 + (bt*double(jt)-ky) * fex*E[iEx(jl,jt)]);
                     }
                 vert /= k0;
+                if (symmetric_long() && il != 0) vert *= 2;
+                if (symmetric_tran() && it != 0) vert *= 2;
                 sum += real(vert * conj(vert));
             }
         }
