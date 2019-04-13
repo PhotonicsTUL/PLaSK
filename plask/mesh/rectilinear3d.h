@@ -342,6 +342,36 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
     IterationOrder getIterationOrder() const;
 
     /**
+     * Get iteration order as an array, e.g. [1, 0, 2] is returned for ORDER_102.
+     * @return the array of length 3, pointer to static memory
+     */
+    const char* getIterationOrderAsArray() const {
+        return &"\0\1\2\0\2\1\1\0\2\1\2\0\2\0\1\2\1\0"[getIterationOrder() * 3];
+        //       |0 1 2|0 1 2|0 1 2|0 1 2|0 1 2|0 1 2|
+    };
+
+    /**
+     * Similar to getIterationOrderAsArray but the resulted array has exchanged indexes with values.
+     *
+     * Resulted array is indexed by axis number (0, 1, 2) and the bigger value means
+     * that the index of the axis changes faster when index of the mesh is changed by 1.
+     * @return the array which maps axis number to position in iteration order
+     */
+    const char* getAxisToIterationOrder() const {
+        return &"\0\1\2\0\2\1\1\0\2\2\0\1\1\2\0\2\1\0"[getIterationOrder() * 3];
+        //       |0 1 2|0 1 2|0 1 2|0 1 2|0 1 2|0 1 2|
+    };
+
+    /**
+     * Check if axis with index @p axis_index1 changes slower than one with index @p axis_index2 when the mesh is changed by 1.
+     * @param array_index1, array_index2 indexes of axes, 0, 1, or 2
+     * @return whether axis with index @p axis_index1 changes slower than one with index @p axis_index2
+     */
+    bool isChangeSlower(std::size_t axis_index1, std::size_t axis_index2) const {
+        return getAxisToIterationOrder()[axis_index1] < getAxisToIterationOrder()[axis_index2];
+    }
+
+    /**
      * Set iteration order to the shortest axis changes fastest.
      */
     void setOptimalIterationOrder();

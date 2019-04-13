@@ -630,7 +630,11 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
 
   protected:
 
-    // Common code for: left, right, bottom, top boundries:
+    /**
+     * Iterator over plane CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER (an index if the remain coordinate is constant)
+     *
+     * Common code for: left, right, bottom, top boundries:
+     */
     template <int CHANGE_DIR_SLOWER, int CHANGE_DIR_FASTER>
     struct BoundaryIteratorImpl: public plask::BoundaryNodeSetImpl::IteratorImpl {
 

@@ -100,7 +100,10 @@ bool RectangularMaskedMesh3D::prepareInterpolation(const Vec<3> &point, Vec<3> &
 
 BoundaryNodeSet RectangularMaskedMesh3D::createIndex0BoundaryAtLine(std::size_t line_nr_axis0, std::size_t index1Begin, std::size_t index1End, std::size_t index2Begin, std::size_t index2End) const
 {
-    return new BoundaryNodeSetImpl<1, 2>(*this, line_nr_axis0, index1Begin, index2Begin, index1End, index2End);
+    if (this->fullMesh.isChangeSlower(1, 2))
+        return new BoundaryNodeSetImpl<1, 2>(*this, line_nr_axis0, index1Begin, index2Begin, index1End, index2End);
+    else
+        return new BoundaryNodeSetImpl<2, 1>(*this, line_nr_axis0, index1Begin, index2Begin, index2End, index1End);
 }
 
 BoundaryNodeSet RectangularMaskedMesh3D::createIndex0BoundaryAtLine(std::size_t line_nr_axis0) const {
@@ -110,7 +113,10 @@ BoundaryNodeSet RectangularMaskedMesh3D::createIndex0BoundaryAtLine(std::size_t 
 
 BoundaryNodeSet RectangularMaskedMesh3D::createIndex1BoundaryAtLine(std::size_t line_nr_axis1, std::size_t index0Begin, std::size_t index0End, std::size_t index2Begin, std::size_t index2End) const
 {
-    return new BoundaryNodeSetImpl<0, 2>(*this, index0Begin, line_nr_axis1, index2Begin, index0End, index2End);
+    if (this->fullMesh.isChangeSlower(0, 2))
+        return new BoundaryNodeSetImpl<0, 2>(*this, index0Begin, line_nr_axis1, index2Begin, index0End, index2End);
+    else
+        return new BoundaryNodeSetImpl<2, 0>(*this, index0Begin, line_nr_axis1, index2Begin, index2End, index0End);
 }
 
 BoundaryNodeSet RectangularMaskedMesh3D::createIndex1BoundaryAtLine(std::size_t line_nr_axis1) const {
@@ -120,7 +126,10 @@ BoundaryNodeSet RectangularMaskedMesh3D::createIndex1BoundaryAtLine(std::size_t 
 
 BoundaryNodeSet RectangularMaskedMesh3D::createIndex2BoundaryAtLine(std::size_t line_nr_axis2, std::size_t index0Begin, std::size_t index0End, std::size_t index1Begin, std::size_t index1End) const
 {
-    return new BoundaryNodeSetImpl<0, 1>(*this, index0Begin, index1Begin, line_nr_axis2, index0End, index1End);
+    if (this->fullMesh.isChangeSlower(0, 1))
+        return new BoundaryNodeSetImpl<0, 1>(*this, index0Begin, index1Begin, line_nr_axis2, index0End, index1End);
+    else
+        return new BoundaryNodeSetImpl<1, 0>(*this, index0Begin, index1Begin, line_nr_axis2, index1End, index0End);
 }
 
 BoundaryNodeSet RectangularMaskedMesh3D::createIndex2BoundaryAtLine(std::size_t line_nr_axis2) const {
