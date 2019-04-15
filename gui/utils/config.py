@@ -107,6 +107,7 @@ DEFAULTS = {
     'syntax/xml_attr': 'color=#888800',
     'syntax/xml_value': 'color=darkblue',
     'syntax/xml_text': 'color=black',
+    'syntax/xml_define': 'color=black',
     'syntax/python_comment': 'color=#008000, italic=true',
     'syntax/python_string': 'color=#0000ff',
     'syntax/python_keyword': 'color=black, bold=true',
@@ -431,6 +432,7 @@ CONFIG_WIDGETS = OrderedDict([
             ("XML Attribute", Syntax('syntax/xml_attr', "XML syntax highlighting.")),
             ("XML Value", Syntax('syntax/xml_value', "XML syntax highlighting.")),
             ("XML Text", Syntax('syntax/xml_text', "XML syntax highlighting.")),
+            ("XML Defined Value", Syntax('syntax/xml_define', "XML syntax highlighting.")),
             ("XML Comment", Syntax('syntax/xml_comment', "XML syntax highlighting.")),
         ]),
         ("Script Completion", [

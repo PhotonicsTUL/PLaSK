@@ -2,18 +2,18 @@ from __future__ import absolute_import
 
 syntax = {
     'formats': {
-        'member': '%(syntax_member)s',
-        'plask': '%(syntax_plask)s',
-        'provider': '%(syntax_provider)s',
-        'receiver': '%(syntax_receiver)s',
-        'log': '%(syntax_log)s',
-        'solver': '%(syntax_solver)s',
-        'define': '%(syntax_define)s',
-        'loaded': '%(syntax_loaded)s',
-        'pylab': '%(syntax_pylab)s',
+        'member': '{syntax_member}',
+        'plask': '{syntax_plask}',
+        'provider': '{syntax_provider}',
+        'receiver': '{syntax_receiver}',
+        'log': '{syntax_log}',
+        'solver': '{syntax_solver}',
+        'define': '{syntax_define}',
+        'loaded': '{syntax_loaded}',
+        'pylab': '{syntax_pylab}',
     },
 
-    'scanner': [
+    'tokens': [
         ('provider', 'out[A-Z]\w*', '\\.'),
         ('receiver', 'in[A-Z]\w*', '\\.'),
         ('member', '[A-Za-z_]\w*', '\\.'),
@@ -61,7 +61,7 @@ syntax = {
 # except ImportError:
 #     pass
 # else:
-#     syntax['scanner'][0][1] = [k for k in plask.__dict__ if not k.startswith('_')]
+#     syntax['token_scanner'][0][1] = [k for k in plask.__dict__ if not k.startswith('_')]
 
 try:
     import pylab
@@ -70,7 +70,7 @@ except ImportError:
 else:
     _pylab = [k for k in pylab.__dict__ if not k.startswith('_')]
     _pylab.extend(['aspect', 'window_title'])
-    syntax['scanner'].append(
+    syntax['tokens'].append(
         ('pylab', _pylab,
          '(^|[^\\.\\w]|\\bplask\\.)', '[\x08\\W]')
     )

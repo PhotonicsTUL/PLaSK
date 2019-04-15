@@ -1,9 +1,18 @@
-# -*- coding: utf-8 -*-
-"""
-Partition-based syntax highlighter
+# coding: utf-8
+# Copyright (C) 2014 Photonics Group, Lodz University of Technology
+#
+# This program is free software; you can redistribute it and/or modify it
+# under the terms of GNU General Public License as published by the
+# Free Software Foundation; either version 2 of the license, or (at your
+# opinion) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 
-https://bitbucket.org/henning/syntaxhighlighter/
-"""
+# This code is a heavily based on: https://bitbucket.org/henning/syntaxhighlighter/
+
 import re
 from ...qt.QtGui import QSyntaxHighlighter, QColor, QTextCharFormat, QFont, QBrush, QTextFormat
 
@@ -49,76 +58,72 @@ class Format(object):
         self.tcf = tcf
 
 
-class Partition(object):
-    # every partition maps to a specific state in QSyntaxHighlighter
+class Context(object):
+    # Every context maps to a specific state in QSyntaxHighlighter
 
-    __slots__ = ("name", "start", "end", "is_multiline", "search_end")
+    __slots__ = 'name', 'groups', 'next', 'is_multiline', 'search_next'
 
-
-    def __init__(self, name, start, end, is_multiline=False):
+    def __init__(self, name, next, is_multiline=False):
         self.name = name
-        self.start = start
-        self.end = end
+        self.groups = []
+        next_groups = []
+        for p, n in next:
+            next_groups.append(p)
+            self.groups.append(n)
         self.is_multiline = is_multiline
-        self.search_end = re.compile(end, re.M|re.S).search
+        next_pattern = '(' + ')|('.join(next_groups) + ')'
+        self.search_next = re.compile(next_pattern, re.M|re.S).search
 
 
-class PartitionScanner(object):
-    # The idea to partition the source into different contexts comes from Eclipse.
-    # http://wiki.eclipse.org/FAQ_What_is_a_document_partition%3F
+class ContextScanner(object):
 
-    def __init__(self, partitions):
-        start_groups = []
-        self.partitions = []
-        for i, p in enumerate(partitions):
-            if isinstance(p, (tuple,list)):
-                p = Partition(*p)
-            self.partitions.append(p)
-            start_groups.append("(?P<g%s_%s>%s)" % (i, p.name, p.start))
-        start_pat = "|".join(start_groups)
-        self.search_start = re.compile(start_pat, re.M|re.S).search
+    def __init__(self, contexts):
+        self.contexts = []
+        cidx = {}
+        for i, c in enumerate(contexts):
+            if isinstance(c, (tuple,list)): c = Context(*c)
+            self.contexts.append(c)
+            cidx[c.name] = i
+        for c in self.contexts:
+            c.groups = [-1 if g is None else -2 if g == '#' else cidx[g] for g in c.groups]
+        self.modulo = len(self.contexts)
 
     def scan(self, current_state, text):
         last_pos = 0
         length = len(text)
-        parts = self.partitions
-        search_start = self.search_start
-        # loop yields (start, end, partition, new_state, is_inside)
+        contexts = self.contexts
+        modulo = self.modulo
+        current_context = contexts[current_state % modulo]
+        # loop yields (start, end, context, new_state, is_inside)
         while last_pos < length:
-            if current_state == -1:
-                found = search_start(text, last_pos)
-                if found:
-                    start, end = found.span()
-                    yield last_pos, start, None, -1, True
-                    current_state = found.lastindex - 1
-                    p = parts[current_state]
-                    yield start, end, p.name, current_state, False
-                    last_pos = end
+            found = current_context.search_next(text, last_pos)
+            if found:
+                start, end = found.span()
+                yield last_pos, start, current_context.name, current_state, True
+                next_state = current_context.groups[found.lastindex-1]
+                if next_state == -1:
+                    yield start, end, current_context.name, current_state, False
+                    current_state //= modulo
+                    current_context = contexts[current_state % modulo]
+                elif next_state == -2:
+                    yield start, end, current_context.name, current_state, False
                 else:
-                    current_state = -1
-                    yield last_pos, length, None, -1, True
-                    break
+                    current_state = current_state * modulo + next_state
+                    current_context = contexts[next_state]
+                    yield start, end, current_context.name, current_state, False
+                last_pos = end
             else:
-                p = parts[current_state]
-                found = p.search_end(text, last_pos)
-                if found:
-                    start, end = found.span()
-                    yield last_pos, start, p.name, current_state, True
-                    yield start, end, p.name, current_state, False
-                    last_pos = end
-                    current_state = -1
-                else:
-                    yield last_pos, length, p.name, current_state, True
-                    break
-        if current_state != -1:
-            p = parts[current_state]
-            if not p.is_multiline:
-                current_state = -1
+                yield last_pos, length, current_context.name, current_state, True
+                break
+        if current_state != 0:
+            c = contexts[current_state % modulo]
+            if not c.is_multiline:
+                current_state //= modulo
         yield length, length, None, current_state, False
 
 
 class Token(object):
-    __slots__ = ("name", "pattern", "prefix", "suffix")
+    __slots__ = 'name', 'pattern', 'prefix', 'suffix'
 
     def __init__(self, name, pattern, prefix="", suffix=""):
         self.name = name
@@ -129,8 +134,8 @@ class Token(object):
         self.suffix = suffix
 
 
-class Scanner(object):
-    __slots__ = ("tokens", "search")
+class TokenScanner(object):
+    __slots__ = 'tokens', 'search'
 
     def __init__(self, tokens):
         self.tokens = []
@@ -141,12 +146,12 @@ class Scanner(object):
             elif isinstance(t, dict):
                 t = Token(**t)
             else:
-                assert isinstance(t, Token), "Token expected, got %r" % t
-            gdef = "?P<%s>"  % t.name
+                assert isinstance(t, Token), "Token expected, got {!r}".format(t)
+            gdef = "?P<{}>".format(t.name)
             if gdef in t.pattern:
                 p = t.pattern
             else:
-                p = ("(%s%s)" % (gdef, t.pattern))
+                p = "({}{})".format(gdef, t.pattern)
             p = t.prefix + p + t.suffix
             groups.append(p)
             self.tokens.append(t)
@@ -170,24 +175,24 @@ class Scanner(object):
 
 class SyntaxHighlighter(QSyntaxHighlighter):
 
-    def __init__(self, parent, partition_scanner, scanner, formats, default_font=None):
+    def __init__(self, parent, context_scanner, token_scanner, formats, default_font=None):
         """
         :param parent: QDocument or QTextEdit/QPlainTextEdit instance
-        'partition_scanner:
-            PartitionScanner instance
-        :param scanner:
-            dictionary of token scanners for each partition
-            The key is the name of the partition, the value is a Scanner instance
+        'context_scanner:
+            ContextScanner instance
+        :param token_scanner:
+            dictionary of token scanners for each context
+            The key is the name of the context, the value is a TokenScanner instance
             The default scanner has the key None
         :formats:
             list of tuples consisting of a name and a format definition
-            The name is the name of a partition or token
+            The name is the name of a context or token
 
         """
         QSyntaxHighlighter.__init__(self, parent)
         parent.setDefaultFont(default_font)
-        self.partition_scanner = partition_scanner
-        self.scanner = scanner
+        self.context_scanner = context_scanner
+        self.token_scanner = token_scanner
 
         self.formats = {}
         for f in formats:
@@ -202,66 +207,66 @@ class SyntaxHighlighter(QSyntaxHighlighter):
             elif isinstance(f, dict):
                 f = Format(**dict(name=fname, **f))
             else:
-                assert isinstance(f, Format), "Format expected, %r found" % f
+                assert isinstance(f, Format), "Format expected, {!r} found".format(f)
             f.tcf.setFontFamily(parent.defaultFont().family())
             self.formats[f.name] = f.tcf
 
-
         scan_inside = {}
-        for inside_part, inside_scanner in self.scanner.items():
+        for inside_part, inside_scanner in self.token_scanner.items():
             scan_inside[inside_part] = inside_scanner.scan
         # reduce name look-ups for better speed
-        self.get_scanner = scan_inside.get
-        self.scan_partitions = partition_scanner.scan
+        self.get_tokens = scan_inside.get
+        self.scan_contexts = context_scanner.scan
         self.get_format = self.formats.get
 
     def highlightBlock(self, text):
-        "automatically called by Qt"
+        """Automatically called by Qt"""
+
         text = unicode(text) + "\n"
-        previous_state = self.previousBlockState()
+        previous_state = self.previousBlockState() + 1
         new_state = previous_state
         # speed-up name-lookups
         get_format = self.get_format
         set_format = self.setFormat
-        get_scanner = self.get_scanner
+        get_tokens = self.get_tokens
 
-        for start, end, partition, new_state, is_inside in self.scan_partitions(previous_state, text):
-            f = get_format(partition, None)
-            if f:
-                set_format(start, end-start, f)
+        for start, end, context, new_state, is_inside in self.scan_contexts(previous_state, text):
+            f = get_format(context, None)
+            if f: set_format(start, end-start, f)
             if is_inside:
-                scan = get_scanner(partition)
-                if scan:
-                    for token, token_pos, token_end in scan(text[start:end]):
+                tokens = get_tokens(context)
+                if tokens:
+                    for token, token_pos, token_end in tokens(text[start:end]):
                         f = get_format(token)
-                        if f:
-                            set_format(start+token_pos, token_end-token_pos, f)
+                        if f: set_format(start+token_pos, token_end-token_pos, f)
 
-        self.setCurrentBlockState(new_state)
+        self.setCurrentBlockState(new_state - 1)
 
 
 def load_syntax(syntax, context=None):
     context = context or {}
 
-    partition_scanner = PartitionScanner(syntax.get("partitions", []))
+    context_scanner = ContextScanner(syntax.get("contexts", []))
 
-    scanners = {}
-    for part_name, part_scanner in syntax.get("scanner", {}).items():
-        scanners[part_name] = Scanner(part_scanner)
+    tokens = {}
+    for names, items in syntax.get("tokens", {}).items():
+        scanner = TokenScanner(items)
+        if not isinstance(names, tuple):
+            names = names,
+        for name in names:
+            tokens[name] = scanner
 
     formats = []
     for fname, fstyle in syntax.get("formats", {}).items():
         if isinstance(fstyle, basestring):
-            if fstyle.startswith("%(") and fstyle.endswith(")s"):
-                key = fstyle[2:-2]
+            if fstyle.startswith("{") and fstyle.endswith("}"):
+                key = fstyle[1:-1]
                 fstyle = context[key]
             else:
-                fstyle = fstyle % context
+                fstyle = fstyle.format(context)
         formats.append((fname,fstyle))
 
-    return partition_scanner, scanners, formats
+    return context_scanner, tokens, formats
 
 
-__all__ = [
-  "Format", "Partition", "PartitionScanner", "Token", "Scanner", "SynxtaxHighlighter", "load_syntax"
-]
+__all__ = "Format", "Context", "ContextScanner", "Token", "TokenScanner", "SyntaxHighlighter", "load_syntax"

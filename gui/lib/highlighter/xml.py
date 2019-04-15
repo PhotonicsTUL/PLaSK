@@ -1,24 +1,33 @@
 syntax = {
     'formats': {
-        'comment': '%(syntax_comment)s',
-        'tag': '%(syntax_tag)s',
-        'attr': '%(syntax_attr)s',
-        'equals': '%(syntax_attr)s',
-        'value': '%(syntax_value)s',
-        'text': '%(syntax_text)s',
+        'comment': '{syntax_comment}',
+        'tag': '{syntax_tag}',
+        'attr': '{syntax_attr}',
+        'equals': '{syntax_attr}',
+        'value': '{syntax_value}',
+        'text': '{syntax_text}',
+        'define': '{syntax_define}',
+        'dict': '{syntax_define}',
     },
 
-    'partitions': [
-        ('comment', '<!--', '-->', True),
-        ('tag', '<', '>', True),
+    'contexts': [
+        ('default', [
+            ('<!--', 'comment'),
+            ('<', 'tag'),
+            ('"', 'value')
+        ], True),
+        ('comment', [('-->', None)], True),
+        ('tag', [('>', None), ('"', 'value')], True),
+        ('value', [('"', None), (r'(?<=\{)', 'define')]),
+        ('define', [(r'(?=\})', None), (r'\{', 'dict')]),
+        ('dict', [('}', None)]),
     ],
 
-    'scanner': {
+    'tokens': {
         'tag': [
-            ('tag', '^[\s]+'),
+            ('tag', r'^[\s]+'),
             ('attr', '[A-Za-z_][A-Za-z_0-9-:]*(?==)'),
             ('equals', '='),
-            ('value', '"[^"]*("|\n|\x08)'),
         ]
     }
 }

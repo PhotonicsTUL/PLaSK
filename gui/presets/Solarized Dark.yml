@@ -35,6 +35,7 @@ syntax:
   xml_tag: { color: '#dc322f', bold: true }
   xml_text: { color: '#eee8d5' }
   xml_value: { color: '#2aa198' }
+  xml_define: { color: '#6c71c4', italic: true }
 launcher_local:
   background_color: '#002b36'
   color_0: '#93a1a1'

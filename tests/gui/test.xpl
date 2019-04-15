@@ -413,9 +413,17 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.""")
 import os
 import sys
 
+dictionary = {
+    'a': 1,
+    'b': 2,
+    'c': print_log
+}
+
 
 csys = 1
 cmap = 2
+
+print(f"csys = {csys}, cmap = {{{ {1: 'c', 2: 'a'}[cmap] }}}")
 
 print_log('info', "START")
 
@@ -430,7 +438,8 @@ plot(xx, cos(xx), color='C1')
 show()
 
 figure()
-xx = linspace(0., 12., 1001)
+xx = linspace(0., 12., 10
+# print ur"Pyt01)
 plot(xx, sin(xx)/xx, color='C2')
 show()
 

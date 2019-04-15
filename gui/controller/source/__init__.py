@@ -32,6 +32,7 @@ def update_xml_scheme():
         'syntax_attr': parse_highlight(CONFIG['syntax/xml_attr']),
         'syntax_value': parse_highlight(CONFIG['syntax/xml_value']),
         'syntax_text': parse_highlight(CONFIG['syntax/xml_text']),
+        'syntax_define': parse_highlight(CONFIG['syntax/xml_define']),
     }
 update_xml_scheme()
 
