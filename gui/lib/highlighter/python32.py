@@ -28,12 +28,13 @@ syntax = {
         'string format multi single': '{syntax_string}',
         'string format double': '{syntax_string}',
         'string format multi double': '{syntax_string}',
+        'fspec': '{syntax_string}',
     },
 
     'contexts': [
         ('default', default_context, True),
         ('dict', [('}', None)] + default_context, True),
-        ('format', [('}', None)] + default_context, True),
+        ('format', default_context + [(r'\}', None)], True),
         ('comment', [('\n', None)]),
         ('string multi single', [("'''", None)], True),
         ('string single', [("'", None)]),
@@ -212,6 +213,9 @@ syntax = {
             ], '([^\\.\\w]|^)', '[\x08\\W]'),
             ('decorator', '^\s*@[A-Za-z_][A-Za-z_0-9]*'),
             ('ident', '[A-Za-z_][A-Za-z_0-9]*')
+        ],
+        'format': [
+            ('fspec', r'(![rs])?(:([^}]?[&lt;&gt;=^])?[ +-]?#?0?[0-9]*(\.[0-9]+)?[bcdeEfFgGnosxX%]?)\s*$')
         ]
     }
 }

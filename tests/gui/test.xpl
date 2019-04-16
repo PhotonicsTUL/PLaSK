@@ -423,7 +423,7 @@ dictionary = {
 csys = 1
 cmap = 2
 
-print(f"csys = {csys}, cmap = {{{ {1: 'c', 2: 'a'}[cmap] }}}")
+print(f"csys = {csys:03d}, cmap = {{{ {1: 'c', 2: 'a'}[cmap] }}}")
 
 print_log('info', "START")
 
@@ -438,8 +438,7 @@ plot(xx, cos(xx), color='C1')
 show()
 
 figure()
-xx = linspace(0., 12., 10
-# print ur"Pyt01)
+xx = linspace(0., 12., 1001)
 plot(xx, sin(xx)/xx, color='C2')
 show()
 
