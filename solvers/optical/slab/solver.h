@@ -170,10 +170,10 @@ struct PLASK_SOLVER_API SlabBase {
     }
 
     /// Get current wavelength
-    dcomplex getWavelength() const { return 2e3*PI / k0; }
+    dcomplex getLam() const { return 2e3*PI / k0; }
 
     /// Set current wavelength
-    void setWavelength(dcomplex lambda) {
+    void setLam(dcomplex lambda) {
         k0 = 2e3*PI / lambda;
     }
 
@@ -359,6 +359,9 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
     /// Provider of the refractive index
     typename ProviderFor<RefractiveIndex, typename BaseT::SpaceType>::Delegate outRefractiveIndex;
 
+    /// Provider for computed resonant wavelength
+    typename ProviderFor<ModeWavelength>::Delegate outWavelength;
+
     /// Provider of the optical field intensity
     typename ProviderFor<ModeLightMagnitude, typename BaseT::SpaceType>::Delegate outLightMagnitude;
 
@@ -516,6 +519,12 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
      * \param method interpolation method
      */
     virtual LazyData<double> getMagnitude(size_t num, shared_ptr<const MeshD<BaseT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) = 0;
+
+    /**
+     * Return mode wavelength
+     * \param n mode number
+     */
+    virtual double getWavelength(size_t n) = 0;
 
 };
 

@@ -14,7 +14,6 @@ BesselSolverCyl::BesselSolverCyl(const std::string& name):
     kmethod(WAVEVECTORS_UNIFORM),
     integral_error(1e-6),
     max_integration_points(1000),
-    outWavelength(this, &BesselSolverCyl::getWavelength, &BesselSolverCyl::nummodes),
     outLoss(this, &BesselSolverCyl::getModalLoss,  &BesselSolverCyl::nummodes)
 {
     pml.dist = 20.;
@@ -193,6 +192,13 @@ LazyData<double> BesselSolverCyl::getMagnitude(size_t num, shared_ptr<const Mesh
     applyMode(modes[num]);
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
+
+
+double BesselSolverCyl::getWavelength(size_t n) {
+    if (n >= modes.size()) throw NoValue(ModeWavelength::NAME);
+    return real(2e3*M_PI / modes[n].k0);
+}
+
 
 #ifndef NDEBUG
 cmatrix BesselSolverCyl::epsVmm(size_t layer) {

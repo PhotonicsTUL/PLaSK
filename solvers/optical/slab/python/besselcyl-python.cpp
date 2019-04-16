@@ -90,33 +90,25 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
     return py::object();
 }
 
-static size_t BesselSolverCyl_setMode(py::tuple args, py::dict kwargs) {
-    if (py::len(args) != 1)
-        throw TypeError(u8"set_mode() takes exactly one non-keyword argument ({0} given)", py::len(args));
-    BesselSolverCyl* self = py::extract<BesselSolverCyl*>(args[0]);
-
-    int m = self->getM();
-
-    plask::optional<dcomplex> k0, neff, ktran;
-    py::stl_input_iterator<std::string> begin(kwargs), end;
-    for (auto i = begin; i != end; ++i) {
-        if (*i == "lam" || *i == "wavelength") {
-            if (k0) throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");
-            k0.reset(2e3*PI / py::extract<dcomplex>(kwargs[*i])());
-        } else if (*i == "k0") {
-            if (k0) throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");
-            k0.reset(py::extract<dcomplex>(kwargs[*i]));
-        } else if (*i == "m") {
-            m = py::extract<int>(kwargs[*i]);
-        } else
-            throw TypeError(u8"set_mode() got unexpected keyword argument '{0}'", *i);
+static size_t BesselSolverCyl_findMode(BesselSolverCyl& self, dcomplex start, const py::object& pym) {
+    int m;
+    if (pym == py::object()) {
+        m = self.getM();
+    } else {
+        m = py::extract<int>(pym);
     }
+    return self.findMode(start, m);
+}
 
+static size_t BesselSolverCyl_setMode(BesselSolverCyl* self, dcomplex lam, const py::object& pym) {
     self->Solver::initCalculation();
     auto* expansion = self->expansion.get();
 
-    if (k0) expansion->setK0(*k0); else expansion->setK0(self->getK0());
-    expansion->setM(m);
+    expansion->setK0(2e3*PI / lam);
+
+    if (pym != py::object()) {
+        expansion->setM(py::extract<int>(pym));
+    }
 
     return self->setMode();
 }
@@ -154,7 +146,6 @@ void export_BesselSolverCyl()
         u8"and reflection transfer in two-dimensional cylindrical space.")
         export_base(solver);
 //     solver.add_property("material_mesh", &__Class__::getMesh, u8"Regular mesh with points in which material is sampled.");
-    PROVIDER(outWavelength, "");
     PROVIDER(outLoss, "");
     RW_PROPERTY(domain, getDomain, setDomain, u8"Computational domain ('finite' or 'infinite').");
     RW_PROPERTY(size, getSize, setSize, u8"Orthogonal expansion size.");
@@ -168,27 +159,24 @@ void export_BesselSolverCyl()
              u8"and the integration weights are the sizes of each interval.");
     RW_PROPERTY(kscale, getKscale, setKscale,
                 u8"Scale factor for wavectors used in infinite domain. Multiplied by the expansions\n"
-                u8"size and divided by the geometry width it is a maximum considered wavevector.");
-    solver.add_property("lam", &__Class__::getWavelength, &Solver_setWavelength<__Class__>,
-                u8"Wavelength of the light [nm].\n\n"
-                u8"Use this property only if you are looking for anything else than\n"
-                u8"the wavelength, e.g. the effective index of lateral wavevector.\n");
-    solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>,
+                u8"size and divided by the geometry width it is a maximum considered wavevector.\n");
+    solver.add_property("lam", &__Class__::getLam, &Solver_setLam<__Class__>,
+                u8"Wavelength of the light [nm].\n");
+    solver.add_property("wavelength", &__Class__::getLam, &Solver_setLam<__Class__>,
                 u8"Alias for :attr:`lam`");
     solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>,
-                u8"Normalized frequency of the light [1/µm].\n\n"
-                u8"Use this property only if you are looking for anything else than\n"
-                u8"the wavelength,e.g. the effective index of lateral wavevector.\n");
-    METHOD(find_mode, findMode,
+                u8"Normalized frequency of the light [1/µm].\n");
+    solver.add_property("m", &__Class__::getM, &__Class__::setM, "Angular dependence parameter.");
+    solver.def("find_mode", &BesselSolverCyl_findMode,
            u8"Compute the mode near the specified effective index.\n\n"
            u8"Only one of the following arguments can be given through a keyword.\n"
            u8"It is the starting point for search of the specified parameter.\n\n"
            u8"Args:\n"
-           u8"    lam (complex): Startring wavelength.\n"
-           u8"    m (int): HE/EH Mode angular number.\n",
-           "lam", arg("m")=1
+           u8"    lam (complex): Starting wavelength.\n"
+           u8"    m (int): HE/EH Mode angular number. If ``None``, use :attr:`m` attribute.\n",
+           (arg("lam"), arg("m")=py::object())
           );
-    solver.def("set_mode", py::raw_function(BesselSolverCyl_setMode),
+    solver.def("set_mode", &BesselSolverCyl_setMode,
                 u8"Set the mode for specified parameters.\n\n"
                 u8"This method should be used if you have found a mode manually and want to insert\n"
                 u8"it into the solver in order to determine the fields. Calling this will raise an\n"
@@ -196,7 +184,6 @@ void export_BesselSolverCyl()
                 u8"Arguments can be given through keywords only.\n\n"
                 u8"Args:\n"
                 u8"    lam (complex): Wavelength.\n"
-                u8"    k0 (complex): Normalized frequency.\n"
                 u8"    m (int): HE/EH Mode angular number.\n"
               );
     RW_FIELD(emission, "Direction of the useful light emission.\n\n"
@@ -273,10 +260,6 @@ void export_BesselSolverCyl()
                         PML_ATTRS_DOC
                        );
     RO_FIELD(modes, "Computed modes.");
-
-    solver.add_property("wavelength", &SlabBase::getWavelength, &Solver_setWavelength<__Class__>, "Wavelength of the light [nm].");
-    solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>, "Normalized frequency of the light [1/µm].");
-    solver.add_property("m", &__Class__::getM, &__Class__::setM, "Angular dependence parameter.");
 
     solver.def("layer_eigenmodes", &Eigenmodes<BesselSolverCyl>::fromZ, py::arg("level"),
         u8"Get eignemodes for a layer at specified level.\n\n"

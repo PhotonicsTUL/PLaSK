@@ -444,29 +444,13 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         }
     }
 
-    /**
-     * Compute electric field
-     * \param num mode number
-     * \param dst_mesh destination mesh
-     * \param method interpolation method
-     */
     LazyData<Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
 
-    /**
-     * Compute magnetic field
-     * \param num mode number
-     * \param dst_mesh destination mesh
-     * \param method interpolation method
-     */
     LazyData<Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
 
-    /**
-     * Compute light intensity
-     * \param num mode number
-     * \param dst_mesh destination mesh
-     * \param method interpolation method
-     */
     LazyData<double> getMagnitude(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
+
+    double getWavelength(size_t n) override;
 };
 
 

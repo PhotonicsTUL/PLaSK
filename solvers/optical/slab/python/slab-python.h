@@ -252,7 +252,7 @@ struct WrappedType<PML> {
 
 
 template <typename SolverT>
-static void Solver_setWavelength(SolverT& self, dcomplex lam) { self.setWavelength(lam); }
+static void Solver_setLam(SolverT& self, dcomplex lam) { self.setLam(lam); }
 
 template <typename SolverT>
 static void Solver_setK0(SolverT& self, dcomplex k0) { self.setK0(k0); }
@@ -979,6 +979,7 @@ inline void export_base(Class solver) {
     solver.template add_receiver<ReceiverFor<Temperature, typename Solver::SpaceType>, Solver>("inTemperature", &Solver::inTemperature, "");
     solver.template add_receiver<ReceiverFor<Gain, typename Solver::SpaceType>, Solver>("inGain", &Solver::inGain, "");
     solver.add_provider("outRefractiveIndex", &Solver::outRefractiveIndex, "");
+    solver.add_provider("outWavelength", &Solver::outWavelength, "");
     solver.add_provider("outLightMagnitude", &Solver::outLightMagnitude, "");
     solver.add_provider("outLightE", &Solver::outLightE, "");
     solver.add_provider("outLightH", &Solver::outLightH, "");

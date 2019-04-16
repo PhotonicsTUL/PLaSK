@@ -242,6 +242,12 @@ LazyData<double> FourierSolver2D::getMagnitude(size_t num, shared_ptr<const Mesh
 }
 
 
+double FourierSolver2D::getWavelength(size_t n) {
+    if (n >= modes.size()) throw NoValue(ModeWavelength::NAME);
+    return real(2e3*M_PI / modes[n].k0);
+}
+
+
 size_t FourierSolver2D::initIncidence(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam)
 {
     bool changed = Solver::initCalculation() || setExpansionDefaults(isnan(lam));

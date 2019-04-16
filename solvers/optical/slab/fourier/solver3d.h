@@ -454,6 +454,8 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     LazyData<Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
 
     LazyData<double> getMagnitude(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
+
+    double getWavelength(size_t n) override;
 };
 
 
