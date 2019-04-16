@@ -110,6 +110,7 @@ DEFAULTS = {
     'syntax/xml_define': 'color=black',
     'syntax/python_comment': 'color=#008000, italic=true',
     'syntax/python_string': 'color=#0000ff',
+    'syntax/python_special': 'color=#4444ff',
     'syntax/python_keyword': 'color=black, bold=true',
     'syntax/python_number': 'color=darkblue',
     'syntax/python_builtin': 'color=maroon',
@@ -413,6 +414,7 @@ CONFIG_WIDGETS = OrderedDict([
         ("Python Syntax", [
             ("Comment", Syntax('syntax/python_comment', "Python syntax highlighting.")),
             ("String", Syntax('syntax/python_string', "Python syntax highlighting.")),
+            ("Special character", Syntax('syntax/python_special', "Python syntax highlighting.")),
             ("Builtin", Syntax('syntax/python_builtin', "Python syntax highlighting.")),
             ("Keyword", Syntax('syntax/python_keyword', "Python syntax highlighting.")),
             ("Number", Syntax('syntax/python_number', "Python syntax highlighting.")),

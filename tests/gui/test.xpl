@@ -423,7 +423,7 @@ dictionary = {
 csys = 1
 cmap = 2
 
-print(f"""csys = {csys:03d}, cmap = {{{ {1: 'c', 2: 'a'}[cmap] }}}, function: {(lambda x: x)(3)}. And that's i!""")
+print(f"""csys = {csys:03d}, cmap = {{{ {1: 'c', 2: 'a'}[cmap] }}}, function: {(lambda x: x)(3)}. And that's it! {js_def:.2f}""")
 
 print_log('info', "START")
 
@@ -519,9 +519,7 @@ def loss_on_voltage(voltage):
                np.r_[det_vals[:] < 1]
     mode_number = OPTICAL.find_mode(max(det_lams[det_mins])) 
     mode_loss = OPTICAL.outLoss(mode_number)
-    print_log(LOG_RESULT,
-              'V = {:.3f}V, I = {:.3f}mA, lam = {:.2f}nm, loss = {}/cm'
-              .format(voltage[0], ELECTRICAL.get_total_current(), OPTICAL.outWavelength(mode_number), mode_loss))
+    print_log(LOG_RESULT, f'V = {voltage[0]:.3f}V, I = {ELECTRICAL.get_total_current():.3f}mA, lam = {OPTICAL.outWavelength(mode_number):.2f}nm, loss = {mode_loss}/cm')
     return mode_loss
 
 OPTICAL.lam0 = 981.5

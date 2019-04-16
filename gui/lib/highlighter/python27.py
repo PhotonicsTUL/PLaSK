@@ -12,22 +12,31 @@ syntax = {
         'string multi single': '{syntax_string}',
         'string double': '{syntax_string}',
         'string multi double': '{syntax_string}',
+        'special': '{syntax_special}',
         'obsolete': '{syntax_obsolete}'
     },
 
     'contexts': [
         ('default', [
             ('comment', '#'),
-            ('string multi single', "[buBU]?[rR]?'''"),
-            ('string single', "[buBU]?[rR]?'"),
-            ('string multi double', '[buBU]?[rR]?"""'),
-            ('string double', '[buBU]?[rR]?"'),
+            ('string raw multi single', "[buBU]?[rR]'''"),
+            ('string raw single', "[buBU]?[rR]'"),
+            ('string raw multi double', '[buBU]?[rR]"""'),
+            ('string raw double', '[buBU]?[rR]"'),
+            ('string multi single', "[buBU]?'''"),
+            ('string single', "[buBU]?'"),
+            ('string multi double', '[buBU]?"""'),
+            ('string double', '[buBU]?"'),
         ], True),
         ('comment', [(None, '\n')]),
+        ('string raw multi single', [(None, "'''")], True),
+        ('string raw single', [(None, "'")]),
+        ('string raw multi double', [(None, '"""')], True),
+        ('string raw double', [(None, '"')]),
         ('string multi single', [(None, "'''")], True),
         ('string single', [(None, "'")]),
         ('string multi double', [(None, '"""')], True),
-        ('string double', [(None, '"')])
+        ('string double', [(None, '"')]),
     ],
 
     'tokens': {
@@ -67,7 +76,7 @@ syntax = {
                 'while',
                 'with',
                 'yield'
-            ], '(^|[\x08\\W])', '[\x08\\W]'),
+            ], '(^|[\x08\\W])', '(?:[\x08\\W]|$)'),
             ('builtin', [
                 'ArithmeticError',
                 'AssertionError',
@@ -209,9 +218,13 @@ syntax = {
                 'vars',
                 'xrange',
                 'zip'
-            ], '(^|[^\\.\\w])', '[\x08\\W]'),
+            ], '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'),
             ('decorator', r'^\s*@[A-Za-z_][A-Za-z_0-9]*'),
             ('ident', '[A-Za-z_][A-Za-z_0-9]*')
+        ],
+        ('string multi single', 'string single', 'string multi double', 'string double'): [
+            ('special', r'\\(["\'abfnrtv]|[0-7]{1,3}|'
+                        r'x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8}|N\{[a-zA-Z0-9\- ]+\}|\s*$)')
         ]
     }
 }

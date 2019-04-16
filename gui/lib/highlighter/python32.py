@@ -1,14 +1,22 @@
 default_context = [
     ('comment', '#'),
     ('dict', '{'),
-    ('string multi single', "[buBU]?[rR]?'''"),
-    ('string single', "[buBU]?[rR]?'"),
-    ('string multi double', '[buBU]?[rR]?"""'),
-    ('string double', '[buBU]?[rR]?"'),
-    ('string format multi single', "[rR]?[fF][rR]?'''"),
-    ('string format single', "[rR]?[fF][rR]?'"),
-    ('string format multi double', '[rR]?[fF][rR]?"""'),
-    ('string format double', '[rR]?[fF][rR]?"'),
+    ('string raw multi single', "[buBU]?[rR]'''"),
+    ('string raw single', "[buBU]?[rR]'"),
+    ('string raw multi double', '[buBU]?[rR]"""'),
+    ('string raw double', '[buBU]?[rR]"'),
+    ('string multi single', "[buBU]?'''"),
+    ('string single', "[buBU]?'"),
+    ('string multi double', '[buBU]?"""'),
+    ('string double', '[buBU]?"'),
+    ('string raw format multi single', "(?:[fF][rR]|[rR][fF])'''"),
+    ('string raw format single', "(?:[fF][rR]|[rR][fF])'"),
+    ('string raw format multi double', '(?:[fF][rR]|[rR][fF])"""'),
+    ('string raw format double', '(?:[fF][rR]|[rR][fF])"'),
+    ('string format multi single', "[fF]'''"),
+    ('string format single', "[fF]'"),
+    ('string format multi double', '[fF]"""'),
+    ('string format double', '[fF]"'),
 ]
 
 default_key = ('default', 'dict', 'format')
@@ -20,34 +28,50 @@ syntax = {
         'keyword': '{syntax_keyword}',
         'number': '{syntax_number}',
         'decorator': '{syntax_decorator}',
+        'string raw single': '{syntax_string}',
+        'string raw multi single': '{syntax_string}',
+        'string raw double': '{syntax_string}',
+        'string raw multi double': '{syntax_string}',
         'string single': '{syntax_string}',
         'string multi single': '{syntax_string}',
         'string double': '{syntax_string}',
         'string multi double': '{syntax_string}',
+        'string raw format single': '{syntax_string}',
+        'string raw format multi single': '{syntax_string}',
+        'string raw format double': '{syntax_string}',
+        'string raw format multi double': '{syntax_string}',
         'string format single': '{syntax_string}',
         'string format multi single': '{syntax_string}',
         'string format double': '{syntax_string}',
         'string format multi double': '{syntax_string}',
-        'fspec': '{syntax_string}',
+        'special': '{syntax_special}',
     },
 
     'contexts': [
         ('default', default_context, True),
         ('dict', [(None, '}')] + default_context, True),
         ('format', default_context + [
-            (None, '}'),
-            ('fspec', r'(![rs])?(:([^}]?[&lt;&gt;=^])?[ +-]?#?0?[0-9]*(\.[0-9]+)?[bcdeEfFgGnosxX%]?)(?=\s*\})')
+            (None,
+             r'(?:![rs])?(?::([^}]?[&lt;&gt;=^])?[ +-]?#?0?[0-9]*(?:\.[0-9]+)?[bcdeEfFgGnosxX%]?)?\s*\}',
+             'special')
         ], True),
-        ('fspec', [(None, '')]),
         ('comment', [(None, '\n')]),
+        ('string raw multi single', [(None, "'''")], True),
+        ('string raw single', [(None, "'")]),
+        ('string raw multi double', [(None, '"""')], True),
+        ('string raw double', [(None, '"')]),
         ('string multi single', [(None, "'''")], True),
         ('string single', [(None, "'")]),
         ('string multi double', [(None, '"""')], True),
         ('string double', [(None, '"')]),
-        ('string format multi single', [(None, "'''"), ('#', r"\{\{"), ('format', r"\{")], True),
-        ('string format single', [(None, "'"), ('#', r"\{\{"), ('format', r"\{")]),
-        ('string format multi double', [(None, '"""'), ('#', r"\{\{"), ('format', r"\{")], True),
-        ('string format double', [(None, '"'), ('#', r"\{\{"), ('format', r"\{")]),
+        ('string raw format multi single', [(None, "'''"), ('#', "{{"), ('format', "{", 'special')], True),
+        ('string raw format single', [(None, "'"), ('#', "{{"), ('format', "{", 'special')]),
+        ('string raw format multi double', [(None, '"""'), ('#', "{{"), ('format', "{", 'special')], True),
+        ('string raw format double', [(None, '"'), ('#', "{{"), ('format', "{", 'special')]),
+        ('string format multi single', [(None, "'''"), ('#', "{{"), ('format', "{", 'special')], True),
+        ('string format single', [(None, "'"), ('#', "{{"), ('format', "{", 'special')]),
+        ('string format multi double', [(None, '"""'), ('#', "{{"), ('format', "{", 'special')], True),
+        ('string format double', [(None, '"'), ('#', "{{"), ('format', "{", 'special')]),
     ],
 
     'tokens': {
@@ -85,7 +109,7 @@ syntax = {
                 'while',
                 'with',
                 'yield'
-            ], '(^|[\x08\\W])', '[\x08\\W]'),
+            ], '(^|[\x08\\W])', '(?:[\x08\\W]|$)'),
             ('builtin', [
                 'ArithmeticError',
                 'AssertionError',
@@ -214,9 +238,15 @@ syntax = {
                 'type',
                 'vars',
                 'zip'
-            ], '([^\\.\\w]|^)', '[\x08\\W]'),
-            ('decorator', '^\s*@[A-Za-z_][A-Za-z_0-9]*'),
+            ], '([^\\.\\w]|^)', '(?:[\x08\\W]|$)'),
+            ('decorator', r'^\s*@[A-Za-z_][A-Za-z_0-9]*'),
             ('ident', '[A-Za-z_][A-Za-z_0-9]*')
+        ],
+        ('string multi single', 'string single', 'string multi double', 'string double',
+         'string format multi single', 'string format single', 'string format multi double', 'string format double'): [
+            ('special', r'\\(["\'abfnrtv]|[0-7]{1,3}|'
+                        r'x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8}|N\{[a-zA-Z0-9\- ]+\}|\s*$)')
         ]
     }
 }
+

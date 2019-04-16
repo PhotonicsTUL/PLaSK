@@ -30,6 +30,7 @@ syntax:
   python_receiver: { color: '#fdf6e3' }
   python_solver: { color: '#eee8d5' }
   python_string: { color: '#268bd2' }
+  python_special: { color: '#93a1a1' }
   xml_attr: { color: '#b58900' }
   xml_comment: { color: '#586e75', italic: true }
   xml_tag: { color: '#dc322f', bold: true }

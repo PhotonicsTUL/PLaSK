@@ -61,18 +61,25 @@ class Format(object):
 class Context(object):
     # Every context maps to a specific state in QSyntaxHighlighter
 
-    __slots__ = 'name', 'groups', 'next', 'is_multiline', 'search_next'
+    __slots__ = 'name', 'groups', 'formats', 'is_multiline', 'search_next'
 
     def __init__(self, name, next, is_multiline=False):
         self.name = name
         self.groups = []
+        self.formats = []
         next_groups = []
-        for n, p in next:
-            self.groups.append(n)
-            next_groups.append(p)
+        for n in next:
+            next_groups.append(self._parse_next(*n))
         self.is_multiline = is_multiline
         next_pattern = '(' + ')|('.join(next_groups) + ')'
         self.search_next = re.compile(next_pattern, re.M|re.S).search
+
+    def _parse_next(self, n, p, f=None):
+        if f is None:
+            f = self.name if n is None or n == '#' else n
+        self.groups.append(n)
+        self.formats.append(f)
+        return p
 
 
 class ContextScanner(object):
@@ -100,17 +107,19 @@ class ContextScanner(object):
             if found:
                 start, end = found.span()
                 yield last_pos, start, current_context.name, current_state, True
-                next_state = current_context.groups[found.lastindex-1]
+                lastindex = found.lastindex - 1
+                next_state = current_context.groups[lastindex]
+                next_format = current_context.formats[lastindex]
                 if next_state == -1:
-                    yield start, end, current_context.name, current_state, False
+                    yield start, end, next_format, current_state, False
                     current_state //= modulo
                     current_context = contexts[current_state % modulo]
                 elif next_state == -2:
-                    yield start, end, current_context.name, current_state, False
+                    yield start, end, next_format, current_state, False
                 else:
                     current_state = current_state * modulo + next_state
                     current_context = contexts[next_state]
-                    yield start, end, current_context.name, current_state, False
+                    yield start, end, next_format, current_state, False
                 last_pos = end
             else:
                 yield last_pos, length, current_context.name, current_state, True

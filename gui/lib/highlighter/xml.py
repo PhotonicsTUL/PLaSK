@@ -18,8 +18,8 @@ syntax = {
         ], True),
         ('comment', [(None, '-->')], True),
         ('tag', [(None, '>'), ('value', '"')], True),
-        ('value', [(None, '"'), ('define', r'(?<=\{)')]),
-        ('define', [(None, r'(?=\})'), ('dict', r'\{')]),
+        ('value', [(None, '"'), ('define', '{', 'value')]),
+        ('define', [(None, '}', 'value'), ('dict', '{')]),
         ('dict', [(None, '}')]),
     ],
 

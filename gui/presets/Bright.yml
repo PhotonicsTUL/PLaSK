@@ -82,9 +82,10 @@ syntax:
   python_receiver: { color: '#c08000' }
   python_solver: { color: '#ff3333' }
   python_string: { color: '#2659c0' }
+  python_special: { color: '#268bd2' }
   xml_attr: { color: '#c08000' }
   xml_comment: { color: '#5ca45c', italic: true }
   xml_tag: { color: '#a42020', bold: true }
   xml_text: { color: '#073642' }
   xml_value: { color: '#2659c0' }
-  xml_define: { color: '#586e75', italic: true }
+  xml_define: { color: '#586e75' }

@@ -48,6 +48,7 @@ def update_python_scheme():
     scheme = {
         'syntax_comment': parse_highlight(CONFIG['syntax/python_comment']),
         'syntax_string': parse_highlight(CONFIG['syntax/python_string']),
+        'syntax_special': parse_highlight(CONFIG['syntax/python_special']),
         'syntax_builtin': parse_highlight(CONFIG['syntax/python_builtin']),
         'syntax_keyword': parse_highlight(CONFIG['syntax/python_keyword']),
         'syntax_number': parse_highlight(CONFIG['syntax/python_number']),
@@ -369,11 +370,11 @@ class ScriptController(SourceEditController):
         defines = ['ARRAYID', 'PROCID', 'JOBID']
         if self.document.defines is not None:
             defines += [e.name for e in self.document.defines.model.entries]
-        current_syntax['tokens'][default_key].insert(0, ('define', defines, '(^|[^\\.\\w])', '[\x08\\W]'))
+        current_syntax['tokens'][default_key].insert(0, ('define', defines, '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
         if self.document.solvers is not None:
             solvers = [e.name for e in self.document.solvers.model.entries]
             if solvers:
-                current_syntax['tokens'][default_key].insert(0, ('solver', solvers, '(^|[^\\.\\w])', '[\x08\\W]'))
+                current_syntax['tokens'][default_key].insert(0, ('solver', solvers, '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
         self.highlighter = SyntaxHighlighter(self.source_widget.editor.document(),
                                              *load_syntax(current_syntax, scheme),
                                              default_font=EDITOR_FONT)
