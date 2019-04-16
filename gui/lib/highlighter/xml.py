@@ -12,15 +12,15 @@ syntax = {
 
     'contexts': [
         ('default', [
-            ('<!--', 'comment'),
-            ('<', 'tag'),
-            ('"', 'value')
+            ('comment', '<!--'),
+            ('tag', '<'),
+            ('value', '"')
         ], True),
-        ('comment', [('-->', None)], True),
-        ('tag', [('>', None), ('"', 'value')], True),
-        ('value', [('"', None), (r'(?<=\{)', 'define')]),
-        ('define', [(r'(?=\})', None), (r'\{', 'dict')]),
-        ('dict', [('}', None)]),
+        ('comment', [(None, '-->')], True),
+        ('tag', [(None, '>'), ('value', '"')], True),
+        ('value', [(None, '"'), ('define', r'(?<=\{)')]),
+        ('define', [(None, r'(?=\})'), ('dict', r'\{')]),
+        ('dict', [(None, '}')]),
     ],
 
     'tokens': {

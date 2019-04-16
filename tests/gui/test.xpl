@@ -423,7 +423,7 @@ dictionary = {
 csys = 1
 cmap = 2
 
-print(f"csys = {csys:03d}, cmap = {{{ {1: 'c', 2: 'a'}[cmap] }}}")
+print(f"""csys = {csys:03d}, cmap = {{{ {1: 'c', 2: 'a'}[cmap] }}}, function: {(lambda x: x)(3)}. And that's i!""")
 
 print_log('info', "START")
 

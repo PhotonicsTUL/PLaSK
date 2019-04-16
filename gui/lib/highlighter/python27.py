@@ -17,17 +17,17 @@ syntax = {
 
     'contexts': [
         ('default', [
-            ('#', 'comment'),
-            ("[buBU]?[rR]?'''", 'string multi single'),
-            ("[buBU]?[rR]?'", 'string single'),
-            ('[buBU]?[rR]?"""', 'string multi double'),
-            ('[buBU]?[rR]?"', 'string double'),
+            ('comment', '#'),
+            ('string multi single', "[buBU]?[rR]?'''"),
+            ('string single', "[buBU]?[rR]?'"),
+            ('string multi double', '[buBU]?[rR]?"""'),
+            ('string double', '[buBU]?[rR]?"'),
         ], True),
-        ('comment', [('\n', None)]),
-        ('string multi single', [("'''", None)], True),
-        ('string single', [("'", None)]),
-        ('string multi double', [('"""', None)], True),
-        ('string double', [('"', None)])
+        ('comment', [(None, '\n')]),
+        ('string multi single', [(None, "'''")], True),
+        ('string single', [(None, "'")]),
+        ('string multi double', [(None, '"""')], True),
+        ('string double', [(None, '"')])
     ],
 
     'tokens': {
@@ -210,7 +210,7 @@ syntax = {
                 'xrange',
                 'zip'
             ], '(^|[^\\.\\w])', '[\x08\\W]'),
-            ('decorator', '^\s*@[A-Za-z_][A-Za-z_0-9]*'),
+            ('decorator', r'^\s*@[A-Za-z_][A-Za-z_0-9]*'),
             ('ident', '[A-Za-z_][A-Za-z_0-9]*')
         ]
     }

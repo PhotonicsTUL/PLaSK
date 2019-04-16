@@ -1,14 +1,14 @@
 default_context = [
-    ('#', 'comment'),
-    ('{', 'dict'),
-    ("[buBU]?[rR]?'''", 'string multi single'),
-    ("[buBU]?[rR]?'", 'string single'),
-    ('[buBU]?[rR]?"""', 'string multi double'),
-    ('[buBU]?[rR]?"', 'string double'),
-    ("[rR]?[fF][rR]?'''", 'string format multi single'),
-    ("[rR]?[fF][rR]?'", 'string format single'),
-    ('[rR]?[fF][rR]?"""', 'string format multi double'),
-    ('[rR]?[fF][rR]?"', 'string format double'),
+    ('comment', '#'),
+    ('dict', '{'),
+    ('string multi single', "[buBU]?[rR]?'''"),
+    ('string single', "[buBU]?[rR]?'"),
+    ('string multi double', '[buBU]?[rR]?"""'),
+    ('string double', '[buBU]?[rR]?"'),
+    ('string format multi single', "[rR]?[fF][rR]?'''"),
+    ('string format single', "[rR]?[fF][rR]?'"),
+    ('string format multi double', '[rR]?[fF][rR]?"""'),
+    ('string format double', '[rR]?[fF][rR]?"'),
 ]
 
 default_key = ('default', 'dict', 'format')
@@ -33,23 +33,27 @@ syntax = {
 
     'contexts': [
         ('default', default_context, True),
-        ('dict', [('}', None)] + default_context, True),
-        ('format', default_context + [(r'\}', None)], True),
-        ('comment', [('\n', None)]),
-        ('string multi single', [("'''", None)], True),
-        ('string single', [("'", None)]),
-        ('string multi double', [('"""', None)], True),
-        ('string double', [('"', None)]),
-        ('string format multi single', [("'''", None), (r"\{\{", '#'), (r"\{", 'format')], True),
-        ('string format single', [("'", None), (r"\{\{", '#'), (r"\{", 'format')]),
-        ('string format multi double', [('"""', None), (r"\{\{", '#'), (r"\{", 'format')], True),
-        ('string format double', [('"', None), (r"\{\{", '#'), (r"\{", 'format')]),
+        ('dict', [(None, '}')] + default_context, True),
+        ('format', default_context + [
+            (None, '}'),
+            ('fspec', r'(![rs])?(:([^}]?[&lt;&gt;=^])?[ +-]?#?0?[0-9]*(\.[0-9]+)?[bcdeEfFgGnosxX%]?)(?=\s*\})')
+        ], True),
+        ('fspec', [(None, '')]),
+        ('comment', [(None, '\n')]),
+        ('string multi single', [(None, "'''")], True),
+        ('string single', [(None, "'")]),
+        ('string multi double', [(None, '"""')], True),
+        ('string double', [(None, '"')]),
+        ('string format multi single', [(None, "'''"), ('#', r"\{\{"), ('format', r"\{")], True),
+        ('string format single', [(None, "'"), ('#', r"\{\{"), ('format', r"\{")]),
+        ('string format multi double', [(None, '"""'), ('#', r"\{\{"), ('format', r"\{")], True),
+        ('string format double', [(None, '"'), ('#', r"\{\{"), ('format', r"\{")]),
     ],
 
     'tokens': {
         default_key: [
             ('hexnumber', '(0x)([0-9a-fA-F])+?'),
-            ('number', '[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?[jJ]?|0x[0-9a-f]+'),
+            ('number', r'[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?[jJ]?|0x[0-9a-f]+'),
             ('keyword', [
                 'and',
                 'as',
@@ -213,9 +217,6 @@ syntax = {
             ], '([^\\.\\w]|^)', '[\x08\\W]'),
             ('decorator', '^\s*@[A-Za-z_][A-Za-z_0-9]*'),
             ('ident', '[A-Za-z_][A-Za-z_0-9]*')
-        ],
-        'format': [
-            ('fspec', r'(![rs])?(:([^}]?[&lt;&gt;=^])?[ +-]?#?0?[0-9]*(\.[0-9]+)?[bcdeEfFgGnosxX%]?)\s*$')
         ]
     }
 }

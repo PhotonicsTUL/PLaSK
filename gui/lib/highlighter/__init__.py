@@ -67,9 +67,9 @@ class Context(object):
         self.name = name
         self.groups = []
         next_groups = []
-        for p, n in next:
-            next_groups.append(p)
+        for n, p in next:
             self.groups.append(n)
+            next_groups.append(p)
         self.is_multiline = is_multiline
         next_pattern = '(' + ')|('.join(next_groups) + ')'
         self.search_next = re.compile(next_pattern, re.M|re.S).search
