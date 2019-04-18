@@ -618,6 +618,19 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
     }
 
     /**
+     * Calculate index of c<axis_nr> using this mesh index.
+     * @param mesh_index this mesh index, from 0 to size()-1
+     * @return index of c<axis_nr>, from 0 to c<axis_nr>.size()-1
+     */
+    template <std::size_t axis_nr>
+    inline std::size_t index_axis(std::size_t mesh_index) const {
+        if (axis_nr == 0) return index0(mesh_index);
+        if (axis_nr == 1) return index1(mesh_index);
+        if (axis_nr == 2) return index2(mesh_index);
+        assert(false);
+    }
+
+    /**
      * Calculate indexes of axes.
      * @param mesh_index this mesh index, from 0 to size()-1
      * @return index of axis[0], axis[1], and axis[2]
@@ -818,259 +831,140 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
 
 private:
 
-  // Common code for: left, right, bottom, top, front, back boundaries:
-  struct BoundaryIteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
+    /**
+     * Iterator over plane CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER (an index if the remain coordinate is constant)
+     *
+     * Each increment() changes CHANGE_DIR_FASTER index.
+     *
+     * Common code for: left, right, bottom, top, front, back boundaries.
+     */
+    template <int CHANGE_DIR_SLOWER, int CHANGE_DIR_FASTER>
+    struct BoundaryIteratorImpl: public plask::BoundaryNodeSetImpl::IteratorImpl {
 
-      const RectilinearMesh3D &mesh;
+        const RectilinearMesh3D &mesh;
 
-      const std::size_t level;
-
-      std::size_t index_f, index_s;
-
-      const std::size_t index_f_begin, index_f_end;
-
-      BoundaryIteratorImpl(const RectilinearMesh3D& mesh, std::size_t level,
-                           std::size_t index_f, std::size_t index_f_begin, std::size_t index_f_end,
-                           std::size_t index_s)
-          : mesh(mesh), level(level), index_f(index_f), index_s(index_s), index_f_begin(index_f_begin), index_f_end(index_f_end) {
-      }
-
-      virtual void increment() override {
-          ++index_f;
-          if (index_f == index_f_end) {
-              index_f = index_f_begin;
-              ++index_s;
-          }
-      }
-
-      virtual bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& other) const override {
-          return index_f == static_cast<const BoundaryIteratorImpl&>(other).index_f && index_s == static_cast<const BoundaryIteratorImpl&>(other).index_s;
-      }
-
-  };
-
-  // iterator with fixed first coordinate
-  struct FixedIndex0IteratorImpl: public BoundaryIteratorImpl {
-
-      FixedIndex0IteratorImpl(const RectilinearMesh3D& mesh, std::size_t level_index0, std::size_t index_1, std::size_t index_1_begin, std::size_t index_1_end, std::size_t index_2)
-          : BoundaryIteratorImpl(mesh, level_index0, index_1, index_1_begin, index_1_end, index_2) {}
-
-      std::size_t dereference() const override { return this->mesh.index(this->level, this->index_f, this->index_s); }
-
-      std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl> clone() const override {
-          return std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl>(new FixedIndex0IteratorImpl(*this));
-      }
-  };
-
-  // iterator with fixed second coordinate
-  struct FixedIndex1IteratorImpl: public BoundaryIteratorImpl {
-
-      FixedIndex1IteratorImpl(const RectilinearMesh3D& mesh, std::size_t level_index1, std::size_t index_0, std::size_t index_0_begin, std::size_t index_0_end, std::size_t index_2)
-          : BoundaryIteratorImpl(mesh, level_index1, index_0, index_0_begin, index_0_end, index_2) {}
-
-      std::size_t dereference() const override { return this->mesh.index(this->index_f, this->level, this->index_s); }
-
-      std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl> clone() const override {
-          return std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl>(new FixedIndex1IteratorImpl(*this));
-      }
-  };
-
-  // iterator with fixed third coordinate
-  struct FixedIndex2IteratorImpl: public BoundaryIteratorImpl {
-
-      FixedIndex2IteratorImpl(const RectilinearMesh3D& mesh, std::size_t level_index2, std::size_t index_0, std::size_t index_0_begin, std::size_t index_0_end, std::size_t index_1)
-          : BoundaryIteratorImpl(mesh, level_index2, index_0, index_0_begin, index_0_end, index_1) {}
-
-      virtual std::size_t dereference() const override { return this->mesh.index(this->index_f, this->index_s, this->level); }
-
-      virtual std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl> clone() const override {
-          return std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl>(new FixedIndex2IteratorImpl(*this));
-      }
-  };
-
-  struct FixedIndex0Boundary: public BoundaryNodeSetWithMeshImpl<RectilinearMesh3D> {
-
-      typedef typename BoundaryNodeSetImpl::Iterator Iterator;
-
-      std::size_t level_axis0;
-
-      FixedIndex0Boundary(const RectilinearMesh3D& mesh, std::size_t level_axis0): BoundaryNodeSetWithMeshImpl<RectilinearMesh3D>(mesh), level_axis0(level_axis0) {}
-
-      bool contains(std::size_t mesh_index) const override {
-          return this->mesh.index0(mesh_index) == level_axis0;
-      }
-
-      Iterator begin() const override {
-          return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, 0, 0, this->mesh.axis[1]->size(), 0));
-      }
-
-      Iterator end() const override {
-          return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, 0, 0, this->mesh.axis[1]->size(), this->mesh.axis[2]->size()));
-      }
-
-      std::size_t size() const override {
-          return this->mesh.axis[1]->size() * this->mesh.axis[2]->size();
-      }
-  };
-
-  struct FixedIndex0BoundaryInRange: public BoundaryNodeSetWithMeshImpl<RectilinearMesh3D> {
-
-      typedef typename BoundaryNodeSetImpl::Iterator Iterator;
-
-      std::size_t level_axis0, beginAxis1, endAxis1, beginAxis2, endAxis2;
-
-      FixedIndex0BoundaryInRange(const RectilinearMesh3D& mesh, std::size_t level_axis0, std::size_t beginAxis1, std::size_t endAxis1, std::size_t beginAxis2, std::size_t endAxis2)
-          : BoundaryNodeSetWithMeshImpl<RectilinearMesh3D>(mesh), level_axis0(level_axis0),
-            beginAxis1(beginAxis1), endAxis1(endAxis1), beginAxis2(beginAxis2), endAxis2(endAxis2)
-            {}
-
-      bool contains(std::size_t mesh_index) const override {
-          return this->mesh.index0(mesh_index) == level_axis0
-                  && in_range(this->mesh.index1(mesh_index), beginAxis1, endAxis1)
-                  && in_range(this->mesh.index2(mesh_index), beginAxis2, endAxis2);
-      }
-
-      Iterator begin() const override {
-          return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, beginAxis1, beginAxis1, endAxis1, beginAxis2));
-      }
-
-      Iterator end() const override {
-          return Iterator(new FixedIndex0IteratorImpl(this->mesh, level_axis0, beginAxis1, beginAxis1, endAxis1, endAxis2));
-      }
-
-      std::size_t size() const override {
-          return (endAxis1 - beginAxis1) * (endAxis2 - beginAxis2);
-      }
-
-      bool empty() const override {
-          return beginAxis1 == endAxis1 || beginAxis2 == endAxis2;
-      }
-  };
-
-  struct FixedIndex1Boundary: public BoundaryNodeSetWithMeshImpl<RectilinearMesh3D> {
-
-      typedef typename BoundaryNodeSetImpl::Iterator Iterator;
-
-      std::size_t level_axis1;
-
-      FixedIndex1Boundary(const RectilinearMesh3D& mesh, std::size_t level_axis1): BoundaryNodeSetWithMeshImpl<RectilinearMesh3D>(mesh), level_axis1(level_axis1) {}
-
-      //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
-
-      bool contains(std::size_t mesh_index) const override {
-          return this->mesh.index1(mesh_index) == level_axis1;
-      }
-
-      Iterator begin() const override {
-          return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, 0, 0, this->mesh.axis[0]->size(), 0));
-      }
-
-      Iterator end() const override {
-          return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, 0, 0, this->mesh.axis[0]->size(), this->mesh.axis[2]->size()));
-      }
-
-      std::size_t size() const override {
-          return this->mesh.axis[0]->size() * this->mesh.axis[2]->size();
-      }
-  };
-
-  struct FixedIndex1BoundaryInRange: public BoundaryNodeSetWithMeshImpl<RectilinearMesh3D> {
-
-      typedef typename BoundaryNodeSetImpl::Iterator Iterator;
-
-      std::size_t level_axis1, beginAxis0, endAxis0, beginAxis2, endAxis2;
-
-      FixedIndex1BoundaryInRange(const RectilinearMesh3D& mesh, std::size_t level_axis1, std::size_t beginAxis0, std::size_t endAxis0, std::size_t beginAxis2, std::size_t endAxis2)
-          : BoundaryNodeSetWithMeshImpl<RectilinearMesh3D>(mesh), level_axis1(level_axis1),
-            beginAxis0(beginAxis0), endAxis0(endAxis0), beginAxis2(beginAxis2), endAxis2(endAxis2)
-            {}
-
-      bool contains(std::size_t mesh_index) const override {
-          return this->mesh.index1(mesh_index) == level_axis1
-                  && in_range(this->mesh.index0(mesh_index), beginAxis0, endAxis0)
-                  && in_range(this->mesh.index2(mesh_index), beginAxis2, endAxis2);
-      }
-
-      Iterator begin() const override {
-          return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, beginAxis0, beginAxis0, endAxis0, beginAxis2));
-      }
-
-      Iterator end() const override {
-          return Iterator(new FixedIndex1IteratorImpl(this->mesh, level_axis1, beginAxis0, beginAxis0, endAxis0, endAxis2));
-      }
-
-      std::size_t size() const override {
-          return (endAxis0 - beginAxis0) * (endAxis2 - beginAxis2);
-      }
-
-      bool empty() const override {
-          return beginAxis0 == endAxis0 || beginAxis2 == endAxis2;
-      }
-  };
-
-
-  struct FixedIndex2Boundary: public BoundaryNodeSetWithMeshImpl<RectilinearMesh3D> {
-
-      typedef typename BoundaryNodeSetImpl::Iterator Iterator;
-
-      std::size_t level_axis2;
-
-      FixedIndex2Boundary(const RectilinearMesh3D& mesh, std::size_t level_axis2): BoundaryNodeSetWithMeshImpl<RectilinearMesh3D>(mesh), level_axis2(level_axis2) {}
-
-      //virtual LeftBoundary* clone() const { return new LeftBoundary(); }
-
-      bool contains(std::size_t mesh_index) const override {
-          return this->mesh.index2(mesh_index) == level_axis2;
-      }
-
-      Iterator begin() const override {
-          return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, 0, 0, this->mesh.axis[0]->size(), 0));
-      }
-
-      Iterator end() const override {
-          return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, 0, 0, this->mesh.axis[0]->size(), this->mesh.axis[1]->size()));
-      }
-
-      std::size_t size() const override {
-          return this->mesh.axis[0]->size() * this->mesh.axis[1]->size();
-      }
-  };
-
-  struct FixedIndex2BoundaryInRange: public BoundaryNodeSetWithMeshImpl<RectilinearMesh3D> {
-
-      typedef typename BoundaryNodeSetImpl::Iterator Iterator;
-
-      std::size_t level_axis2, beginAxis0, endAxis0, beginAxis1, endAxis1;
-
-      FixedIndex2BoundaryInRange(const RectilinearMesh3D& mesh, std::size_t level_axis2, std::size_t beginAxis0, std::size_t endAxis0, std::size_t beginAxis1, std::size_t endAxis1)
-          : BoundaryNodeSetWithMeshImpl<RectilinearMesh3D>(mesh), level_axis2(level_axis2),
-            beginAxis0(beginAxis0), endAxis0(endAxis0), beginAxis1(beginAxis1), endAxis1(endAxis1)
-            {
-          }
-
-      bool contains(std::size_t mesh_index) const override {
-          return this->mesh.index2(mesh_index) == level_axis2
-                  && in_range(this->mesh.index0(mesh_index), beginAxis0, endAxis0)
-                  && in_range(this->mesh.index1(mesh_index), beginAxis1, endAxis1);
-      }
-
-      Iterator begin() const override {
-          return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, beginAxis0, beginAxis0, endAxis0, beginAxis1));
-      }
-
-      Iterator end() const override {
-          return Iterator(new FixedIndex2IteratorImpl(this->mesh, level_axis2, beginAxis0, beginAxis0, endAxis0, endAxis1));
-      }
-
-      std::size_t size() const override {
-          return (endAxis0 - beginAxis0) * (endAxis1 - beginAxis1);
-      }
-
-      bool empty() const override {
-          return beginAxis0 == endAxis0 || beginAxis1 == endAxis1;
-      }
-  };
-
+        /// current indexes
+        Vec<3, std::size_t> index;
+
+        /// past the last index of change direction
+        const std::size_t indexFasterBegin, indexFasterEnd, indexSlowerEnd;
+
+    public:
+        BoundaryIteratorImpl(const RectilinearMesh3D& mesh, Vec<3, std::size_t> index, std::size_t indexSlowerEnd, std::size_t indexFasterEnd)
+            : mesh(mesh), index(index), indexFasterBegin(index[CHANGE_DIR_FASTER]), indexFasterEnd(indexFasterEnd), indexSlowerEnd(indexSlowerEnd)
+        {
+        }
+
+        void increment() override {
+            ++index[CHANGE_DIR_FASTER];
+            if (index[CHANGE_DIR_FASTER] == indexFasterEnd) {
+                index[CHANGE_DIR_FASTER] = indexFasterBegin;
+                ++index[CHANGE_DIR_SLOWER];
+            }
+        }
+
+        bool equal(const plask::BoundaryNodeSetImpl::IteratorImpl& other) const override {
+            return index == static_cast<const BoundaryIteratorImpl&>(other).index;
+        }
+
+        std::size_t dereference() const override {
+            return mesh.index(index);
+        }
+
+        std::unique_ptr<plask::BoundaryNodeSetImpl::IteratorImpl> clone() const override {
+            return std::unique_ptr<plask::BoundaryNodeSetImpl::IteratorImpl>(new BoundaryIteratorImpl<CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER>(*this));
+        }
+
+    };
+
+    template <int CHANGE_DIR_SLOWER, int CHANGE_DIR_FASTER>
+    struct BoundaryNodeSetImpl: public BoundaryNodeSetWithMeshImpl<RectilinearMesh3D> {
+
+        static constexpr int FIXED_DIR = 3 - CHANGE_DIR_SLOWER - CHANGE_DIR_FASTER;
+
+        using typename BoundaryNodeSetWithMeshImpl<RectilinearMesh3D>::const_iterator;
+
+        /// fixed index
+        std::size_t level;
+
+        /// past the last index of change directions
+        std::size_t indexFasterEnd, indexSlowerEnd;
+
+        BoundaryNodeSetImpl(const RectilinearMesh3D& mesh, std::size_t level)
+            : BoundaryNodeSetWithMeshImpl<RectilinearMesh3D>(mesh), level(level) {}
+
+        bool contains(std::size_t mesh_index) const override {
+            return mesh_index < this->mesh.size() && this->mesh.index_axis<FIXED_DIR>(mesh_index) == level;
+        }
+
+        const_iterator begin() const override {
+            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER>(this->mesh, Vec<3, std::size_t>(0, 0, 0),
+                                                                                           this->mesh.axis[CHANGE_DIR_SLOWER]->size(),
+                                                                                           this->mesh.axis[CHANGE_DIR_FASTER]->size()));
+        }
+
+        const_iterator end() const override {
+            Vec<3, std::size_t> index_end(0, 0, 0);
+            index_end[CHANGE_DIR_SLOWER] = this->mesh.axis[CHANGE_DIR_SLOWER]->size();
+            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER>(this->mesh, index_end,
+                                                                                           this->mesh.axis[CHANGE_DIR_SLOWER]->size(),
+                                                                                           this->mesh.axis[CHANGE_DIR_FASTER]->size()));
+        }
+
+        std::size_t size() const override {
+            return this->mesh.axis[CHANGE_DIR_FASTER]->size() * this->mesh.axis[CHANGE_DIR_SLOWER]->size();
+        }
+
+        bool empty() const override {
+            return this->mesh.axis[CHANGE_DIR_FASTER]->empty() || this->mesh.axis[CHANGE_DIR_SLOWER]->empty();
+        }
+    };
+
+    template <int CHANGE_DIR_SLOWER, int CHANGE_DIR_FASTER>
+    struct BoundaryNodeSetRangeImpl: public BoundaryNodeSetWithMeshImpl<RectilinearMesh3D> {
+
+        static constexpr int FIXED_DIR = 3 - CHANGE_DIR_SLOWER - CHANGE_DIR_FASTER;
+
+        typedef typename BoundaryNodeSetImpl::Iterator Iterator;
+
+        /// first index
+        Vec<3, std::size_t> index;
+
+        /// past the last index of change directions
+        std::size_t indexFasterEnd, indexSlowerEnd;
+
+        BoundaryNodeSetRangeImpl(const RectilinearMesh3D& mesh, Vec<3, std::size_t> index, std::size_t indexSlowerEnd, std::size_t indexFasterEnd)
+            : BoundaryNodeSetWithMeshImpl<RectilinearMesh3D>(mesh), index(index), indexFasterEnd(indexFasterEnd), indexSlowerEnd(indexSlowerEnd) {}
+
+        BoundaryNodeSetRangeImpl(const RectilinearMesh3D& mesh, std::size_t index0, std::size_t index1, std::size_t index2, std::size_t indexSlowerEnd, std::size_t indexFasterEnd)
+            : BoundaryNodeSetWithMeshImpl<RectilinearMesh3D>(mesh), index(index0, index1, index2), indexFasterEnd(indexFasterEnd), indexSlowerEnd(indexSlowerEnd) {}
+
+        bool contains(std::size_t mesh_index) const override {
+            if (mesh_index >= this->mesh.size()) return false;
+            Vec<3, std::size_t> mesh_indexes = this->mesh.indexes(mesh_index);
+            return mesh_indexes[FIXED_DIR] == index[FIXED_DIR] &&
+                   (index[CHANGE_DIR_FASTER] <= mesh_indexes[CHANGE_DIR_FASTER] && mesh_indexes[CHANGE_DIR_FASTER] < indexFasterEnd) &&
+                   (index[CHANGE_DIR_SLOWER] <= mesh_indexes[CHANGE_DIR_SLOWER] && mesh_indexes[CHANGE_DIR_SLOWER] < indexSlowerEnd);
+        }
+
+        const_iterator begin() const override {
+            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER>(this->mesh, index, indexSlowerEnd, indexFasterEnd));
+        }
+
+        const_iterator end() const override {
+            Vec<3, std::size_t> index_end = index;
+            index_end[CHANGE_DIR_SLOWER] = indexSlowerEnd;
+            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER>(this->mesh, index_end, indexSlowerEnd, indexFasterEnd));
+        }
+
+        std::size_t size() const override {
+            return (indexFasterEnd - index[CHANGE_DIR_FASTER]) * (indexSlowerEnd - index[CHANGE_DIR_SLOWER]);
+        }
+
+        bool empty() const override {
+            return indexFasterEnd == index[CHANGE_DIR_FASTER] || indexSlowerEnd == index[CHANGE_DIR_SLOWER];
+        }
+    };
 
   public:
 

@@ -631,9 +631,11 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
   protected:
 
     /**
-     * Iterator over plane CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER (an index if the remain coordinate is constant)
+     * Iterator over plane CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER (an index if the remain coordinate is constant).
      *
-     * Common code for: left, right, bottom, top boundries:
+     * Each increment() changes CHANGE_DIR_FASTER index.
+     *
+     * Common code for: left, right, bottom, top boundries.
      */
     template <int CHANGE_DIR_SLOWER, int CHANGE_DIR_FASTER>
     struct BoundaryIteratorImpl: public plask::BoundaryNodeSetImpl::IteratorImpl {
@@ -687,6 +689,8 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
     template <int CHANGE_DIR_SLOWER, int CHANGE_DIR_FASTER>
     struct BoundaryNodeSetImpl: public BoundaryNodeSetWithMeshImpl<RectangularMaskedMeshBase<3>> {
 
+        static constexpr int FIXED_DIR = 3 - CHANGE_DIR_SLOWER - CHANGE_DIR_FASTER;
+
         using typename BoundaryNodeSetWithMeshImpl<RectangularMaskedMeshBase<3>>::const_iterator;
 
         /// first index
@@ -704,14 +708,9 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
         bool contains(std::size_t mesh_index) const override {
             if (mesh_index >= this->mesh.size()) return false;
             Vec<3, std::size_t> mesh_indexes = this->mesh.indexes(mesh_index);
-            for (int i = 0; i < 3; ++i)
-                if (i == CHANGE_DIR_FASTER) {
-                    if (mesh_indexes[i] < index[i] || mesh_indexes[i] >= indexFasterEnd) return false;
-                } else if (i == CHANGE_DIR_SLOWER) {
-                    if (mesh_indexes[i] < index[i] || mesh_indexes[i] >= indexSlowerEnd) return false;
-                } else
-                    if (mesh_indexes[i] != index[i]) return false;
-            return true;
+            return mesh_indexes[FIXED_DIR] == index[FIXED_DIR] &&
+                   (index[CHANGE_DIR_FASTER] <= mesh_indexes[CHANGE_DIR_FASTER] && mesh_indexes[CHANGE_DIR_FASTER] < indexFasterEnd) &&
+                   (index[CHANGE_DIR_SLOWER] <= mesh_indexes[CHANGE_DIR_SLOWER] && mesh_indexes[CHANGE_DIR_SLOWER] < indexSlowerEnd);
         }
 
         const_iterator begin() const override {

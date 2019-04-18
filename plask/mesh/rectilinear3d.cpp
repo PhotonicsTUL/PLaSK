@@ -135,7 +135,10 @@ void RectilinearMesh3D::setAxis(std::size_t axis_nr, shared_ptr<MeshAxis> new_va
 }
 
 BoundaryNodeSet RectilinearMesh3D::createIndex0BoundaryAtLine(std::size_t line_nr_axis0) const {
-    return new FixedIndex0Boundary(*this, line_nr_axis0);
+    if (this->isChangeSlower(1, 2))
+        return new BoundaryNodeSetImpl<1, 2>(*this, line_nr_axis0);
+    else
+        return new BoundaryNodeSetImpl<2, 1>(*this, line_nr_axis0);
 }
 
 BoundaryNodeSet RectilinearMesh3D::createBackBoundary() const {
@@ -147,7 +150,10 @@ BoundaryNodeSet RectilinearMesh3D::createFrontBoundary() const {
 }
 
 BoundaryNodeSet RectilinearMesh3D::createIndex1BoundaryAtLine(std::size_t line_nr_axis1) const {
-    return new FixedIndex1Boundary(*this, line_nr_axis1);
+    if (this->isChangeSlower(0, 2))
+        return new BoundaryNodeSetImpl<0, 2>(*this, line_nr_axis1);
+    else
+        return new BoundaryNodeSetImpl<2, 0>(*this, line_nr_axis1);
 }
 
 BoundaryNodeSet RectilinearMesh3D::createLeftBoundary() const {
@@ -159,7 +165,10 @@ BoundaryNodeSet RectilinearMesh3D::createRightBoundary() const {
 }
 
 BoundaryNodeSet RectilinearMesh3D::createIndex2BoundaryAtLine(std::size_t line_nr_axis2) const {
-    return new FixedIndex2Boundary(*this, line_nr_axis2);
+    if (this->isChangeSlower(0, 1))
+        return new BoundaryNodeSetImpl<0, 1>(*this, line_nr_axis2);
+    else
+        return new BoundaryNodeSetImpl<1, 0>(*this, line_nr_axis2);
 }
 
 BoundaryNodeSet RectilinearMesh3D::createBottomBoundary() const {
@@ -170,12 +179,13 @@ BoundaryNodeSet RectilinearMesh3D::createTopBoundary() const {
     return createIndex2BoundaryAtLine(axis[2]->size()-1);
 }
 
-BoundaryNodeSet RectilinearMesh3D::createIndex0BoundaryAtLine(std::size_t line_nr_axis0, std::size_t index1Begin, std::size_t index1End, std::size_t index2Begin, std::size_t index2End) const
-{
-    if (index1Begin < index1End && index2Begin < index2End)
-        return new FixedIndex0BoundaryInRange(*this, line_nr_axis0, index1Begin, index1End, index2Begin, index2End);
-    else
+BoundaryNodeSet RectilinearMesh3D::createIndex0BoundaryAtLine(std::size_t line_nr_axis0, std::size_t index1Begin, std::size_t index1End, std::size_t index2Begin, std::size_t index2End) const {
+    if (index1Begin >= index1End || index2Begin >= index2End)
         return new EmptyBoundaryImpl();
+    if (isChangeSlower(1, 2))
+        return new BoundaryNodeSetRangeImpl<1, 2>(*this, line_nr_axis0, index1Begin, index2Begin, index1End, index2End);
+    else
+        return new BoundaryNodeSetRangeImpl<2, 1>(*this, line_nr_axis0, index1Begin, index2Begin, index2End, index1End);
 }
 
 BoundaryNodeSet RectilinearMesh3D::createBackOfBoundary(const Box3D &box) const {
@@ -183,7 +193,7 @@ BoundaryNodeSet RectilinearMesh3D::createBackOfBoundary(const Box3D &box) const 
     if (details::getLineLo(line, *axis[0], box.lower.c0, box.upper.c0) &&
             details::getIndexesInBounds(begInd1, endInd1, *axis[1], box.lower.c1, box.upper.c1) &&
             details::getIndexesInBounds(begInd2, endInd2, *axis[2], box.lower.c2, box.upper.c2))
-        return new FixedIndex0BoundaryInRange(*this, line, begInd1, endInd1, begInd2, endInd2);
+        return createIndex0BoundaryAtLine(line, begInd1, endInd1, begInd2, endInd2);
     else
         return new EmptyBoundaryImpl();
 }
@@ -193,17 +203,19 @@ BoundaryNodeSet RectilinearMesh3D::createFrontOfBoundary(const Box3D &box) const
     if (details::getLineHi(line, *axis[0], box.lower.c0, box.upper.c0) &&
             details::getIndexesInBounds(begInd1, endInd1, *axis[1], box.lower.c1, box.upper.c1) &&
             details::getIndexesInBounds(begInd2, endInd2, *axis[2], box.lower.c2, box.upper.c2))
-        return new FixedIndex0BoundaryInRange(*this, line, begInd1, endInd1, begInd2, endInd2);
+        return createIndex0BoundaryAtLine(line, begInd1, endInd1, begInd2, endInd2);
     else
         return new EmptyBoundaryImpl();
 }
 
 BoundaryNodeSet RectilinearMesh3D::createIndex1BoundaryAtLine(std::size_t line_nr_axis1, std::size_t index0Begin, std::size_t index0End, std::size_t index2Begin, std::size_t index2End) const
 {
-    if (index0Begin < index0End && index2Begin < index2End)
-        return new FixedIndex1BoundaryInRange(*this, line_nr_axis1, index0Begin, index0End, index2Begin, index2End);
-    else
+    if (index0Begin >= index0End || index2Begin >= index2End)
         return new EmptyBoundaryImpl();
+    if (isChangeSlower(0, 2))
+        return new BoundaryNodeSetRangeImpl<0, 2>(*this, index0Begin, line_nr_axis1, index2Begin, index0End, index2End);
+    else
+        return new BoundaryNodeSetRangeImpl<2, 0>(*this, index0Begin, line_nr_axis1, index2Begin, index2End, index0End);
 }
 
 BoundaryNodeSet RectilinearMesh3D::createLeftOfBoundary(const Box3D &box) const {
@@ -211,7 +223,7 @@ BoundaryNodeSet RectilinearMesh3D::createLeftOfBoundary(const Box3D &box) const 
     if (details::getLineLo(line, *axis[1], box.lower.c1, box.upper.c1) &&
             details::getIndexesInBounds(begInd0, endInd0, *axis[0], box.lower.c0, box.upper.c0) &&
             details::getIndexesInBounds(begInd2, endInd2, *axis[2], box.lower.c2, box.upper.c2))
-        return new FixedIndex1BoundaryInRange(*this, line, begInd0, endInd0, begInd2, endInd2);
+        return createIndex1BoundaryAtLine(line, begInd0, endInd0, begInd2, endInd2);
     else
         return new EmptyBoundaryImpl();
 }
@@ -221,17 +233,19 @@ BoundaryNodeSet RectilinearMesh3D::createRightOfBoundary(const Box3D &box) const
     if (details::getLineHi(line, *axis[1], box.lower.c1, box.upper.c1) &&
             details::getIndexesInBounds(begInd0, endInd0, *axis[0], box.lower.c0, box.upper.c0) &&
             details::getIndexesInBounds(begInd2, endInd2, *axis[2], box.lower.c2, box.upper.c2))
-        return new FixedIndex1BoundaryInRange(*this, line, begInd0, endInd0, begInd2, endInd2);
+        return createIndex1BoundaryAtLine(line, begInd0, endInd0, begInd2, endInd2);
     else
         return new EmptyBoundaryImpl();
 }
 
 BoundaryNodeSet RectilinearMesh3D::createIndex2BoundaryAtLine(std::size_t line_nr_axis2, std::size_t index0Begin, std::size_t index0End, std::size_t index1Begin, std::size_t index1End) const
 {
-    if (index0Begin < index0End && index1Begin < index1End)
-        return new FixedIndex2BoundaryInRange(*this, line_nr_axis2, index0Begin, index0End, index1Begin, index1End);
-    else
+    if (index0Begin >= index0End || index1Begin >= index1End)
         return new EmptyBoundaryImpl();
+    if (isChangeSlower(0, 1))
+        return new BoundaryNodeSetRangeImpl<0, 1>(*this, index0Begin, index1Begin, line_nr_axis2, index0End, index1End);
+    else
+        return new BoundaryNodeSetRangeImpl<1, 0>(*this, index0Begin, index1Begin, line_nr_axis2, index1End, index0End);
 }
 
 BoundaryNodeSet RectilinearMesh3D::createBottomOfBoundary(const Box3D &box) const {
@@ -239,7 +253,7 @@ BoundaryNodeSet RectilinearMesh3D::createBottomOfBoundary(const Box3D &box) cons
     if (details::getLineLo(line, *axis[2], box.lower.c2, box.upper.c2) &&
             details::getIndexesInBounds(begInd0, endInd0, *axis[0], box.lower.c0, box.upper.c0) &&
             details::getIndexesInBounds(begInd1, endInd1, *axis[1], box.lower.c1, box.upper.c1))
-        return new FixedIndex2BoundaryInRange(*this, line, begInd0, endInd0, begInd1, endInd1);
+        return createIndex2BoundaryAtLine(line, begInd0, endInd0, begInd1, endInd1);
     else
         return new EmptyBoundaryImpl();
 }
@@ -249,7 +263,7 @@ BoundaryNodeSet RectilinearMesh3D::createTopOfBoundary(const Box3D &box) const {
     if (details::getLineHi(line, *axis[2], box.lower.c2, box.upper.c2) &&
             details::getIndexesInBounds(begInd0, endInd0, *axis[0], box.lower.c0, box.upper.c0) &&
             details::getIndexesInBounds(begInd1, endInd1, *axis[1], box.lower.c1, box.upper.c1))
-        return new FixedIndex2BoundaryInRange(*this, line, begInd0, endInd0, begInd1, endInd1);
+        return createIndex2BoundaryAtLine(line, begInd0, endInd0, begInd1, endInd1);
     else
         return new EmptyBoundaryImpl();
 }
