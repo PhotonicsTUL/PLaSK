@@ -381,14 +381,11 @@ class ScriptController(SourceEditController):
         self.highlighter.rehighlight()
 
     def reconfig(self):
+        global MATCH_COLOR, REPLACE_COLOR
+        MATCH_COLOR = QColor(CONFIG['editor/match_color'])
+        REPLACE_COLOR = QColor(CONFIG['editor/replace_color'])
         editor = self.source_widget.editor
-        editor.setFont(EDITOR_FONT)
-        editor.setStyleSheet("QPlainTextEdit {{ color: {fg}; background-color: {bg} }}".format(
-            fg=(CONFIG['editor/foreground_color']),
-            bg=(CONFIG['editor/background_color'])
-        ))
-        try: editor.line_numbers.setFont(EDITOR_FONT)
-        except AttributeError: pass
+        editor.reconfig()
         update_brackets_colors()
         if self.highlighter is not None:
             with BlockQtSignals(editor):

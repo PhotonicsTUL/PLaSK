@@ -6,7 +6,8 @@ syntax = {
         'equals': '{syntax_attr}',
         'value': '{syntax_value}',
         'text': '{syntax_text}',
-        'define': '{syntax_define}',
+        'define attr': '{syntax_define}',
+        'define text': '{syntax_define}',
         'dict': '{syntax_define}',
     },
 
@@ -14,12 +15,15 @@ syntax = {
         ('default', [
             ('comment', '<!--'),
             ('tag', '<'),
-            ('value', '"')
+            ('value', '"'),
+            ('#', '{{'),
+            ('define text', '{', 'text')
         ], True),
         ('comment', [(None, '-->')], True),
         ('tag', [(None, '>'), ('value', '"')], True),
-        ('value', [(None, '"'), ('define', '{', 'value')]),
-        ('define', [(None, '}', 'value'), ('dict', '{')]),
+        ('value', [(None, '"'), ('#', '{{'), ('define attr', '{', 'value')]),
+        ('define attr', [(None, '}', 'value'), ('dict', '{')]),
+        ('define text', [(None, '}', 'text'), ('dict', '{')]),
         ('dict', [(None, '}')]),
     ],
 

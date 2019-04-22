@@ -22,6 +22,7 @@ from ...model.info import Info
 from ...model.geometry.reader import axes_as_list
 
 from ...utils import get_manager
+from ...utils.config import CONFIG
 from ..source import SourceEditController
 
 try:
@@ -218,3 +219,12 @@ class GeometrySourceController(SourceEditController):
             pass
         else:
             self.document.window.goto_line(line)
+            
+    def reconfig(self):
+        super(GeometrySourceController, self).reconfig()
+        if self.geometry_view is not None:
+            colors = CONFIG['geometry/material_colors'].copy()
+            self.geometry_view.get_color = plask.ColorFromDict(colors, self.geometry_view.axes)
+            self.geometry_view.axes.set_facecolor(CONFIG['plots/face_color'])
+            self.geometry_view.axes.grid(True, color=CONFIG['plots/grid_color'])
+            self.plot_current_element()

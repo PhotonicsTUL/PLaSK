@@ -16,7 +16,7 @@ from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
 from .config import CONFIG
-
+from .widgets import EDITOR_FONT
 
 def update_textedit():
     global CURRENT_LINE_COLOR, SELECTION_COLOR, LINENUMBER_BACKGROUND_COLOR, LINENUMBER_FOREGROUND_COLOR
@@ -34,9 +34,15 @@ class TextEditor(QPlainTextEdit):
 
     def __init__(self, parent=None, line_numbers=True):
         super(TextEditor, self).__init__(parent)
+        palette = self.palette()
+        palette.setColor(QPalette.Base, QColor(CONFIG['editor/background_color']))
+        palette.setColor(QPalette.Text, QColor(CONFIG['editor/foreground_color']))
+        self.setFont(EDITOR_FONT)
+        self.setPalette(palette)
         self.setLineWrapMode(QPlainTextEdit.NoWrap)
         if line_numbers:
             self.line_numbers = LineNumberArea(self)
+            self.line_numbers.setFont(EDITOR_FONT)
             self.line_numbers.update_width()
             self.blockCountChanged.connect(self.line_numbers.update_width)
             self.updateRequest.connect(self.line_numbers.on_update_request)
@@ -184,6 +190,13 @@ class TextEditor(QPlainTextEdit):
             else:
                 break
         return selections
+
+    def reconfig(self):
+        self.setFont(EDITOR_FONT)
+        self.setStyleSheet("QPlainTextEdit {{ color: {fg}; background-color: {bg} }}".format(
+            fg=CONFIG['editor/foreground_color'], bg=CONFIG['editor/background_color']
+        ))
+        self.line_numbers.setFont(EDITOR_FONT)
 
 
 class TextEditorWithCB(TextEditor):

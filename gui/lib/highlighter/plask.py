@@ -68,9 +68,15 @@ try:
 except ImportError:
     pass
 else:
-    _pylab = [k for k in pylab.__dict__ if not k.startswith('_')]
-    _pylab.extend(['aspect', 'window_title'])
+    _pylab = [k for k in pylab.__dict__ if not k.startswith('_') and
+        not k in (
+            'sys',
+        )
+    ]
+    _pylab.extend([
+        'aspect', 'window_title'
+    ])
     syntax['tokens'].append(
         ('pylab', _pylab,
-         '(^|[^\\.\\w]|\\bplask\\.)', '[\x08\\W]')
+         '(^|[^\\.\\w]|\\bplask\\.)', '(?:[\x08\\W]|$)')
     )
