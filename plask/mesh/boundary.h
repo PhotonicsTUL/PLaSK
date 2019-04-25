@@ -405,53 +405,49 @@ struct SumBoundaryImpl: public BoundaryNodeSetImpl {
 
     struct IteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
 
-        BoundariesVec::const_iterator current_boundary;
-        BoundariesVec::const_iterator current_boundary_end;
-        BoundaryNodeSet::const_iterator in_boundary;
-        BoundaryNodeSet::const_iterator in_boundary_end;
+        struct IteratorWithEnd {
+            BoundaryNodeSet::const_iterator iter;
+            BoundaryNodeSet::const_iterator end;
 
-        // Skip empty or finished boundaries and advance to the next one
-        void fixCurrentBoundary() {
-            while (in_boundary == in_boundary_end) {
-                ++current_boundary;
-                if (current_boundary == current_boundary_end) return;
-                in_boundary = current_boundary->begin();
-                in_boundary_end = current_boundary->end();
-            }
-        }
+            IteratorWithEnd(BoundaryNodeSet::const_iterator iter, BoundaryNodeSet::const_iterator end)
+                : iter(iter), end(end) {}
 
-        // Special version for begin
-        IteratorImpl(typename BoundariesVec::const_iterator current_boundary, typename BoundariesVec::const_iterator current_boundary_end)
-            : current_boundary(current_boundary), current_boundary_end(current_boundary_end), in_boundary(current_boundary->begin()), in_boundary_end(current_boundary->end()) {
-            if (current_boundary != current_boundary_end) fixCurrentBoundary();
-        }
+            bool valid() const { return iter != end; }
 
-        // Special version for end
-        IteratorImpl(typename BoundariesVec::const_iterator current_boundary_end)
-            : current_boundary(current_boundary_end), current_boundary_end(current_boundary_end)
-        {}
+            bool operator==(const IteratorWithEnd& o) const { return iter == o.iter; }
+        };
+
+        std::vector<IteratorWithEnd> position;
 
         bool equal(const typename BoundaryNodeSetImpl::IteratorImpl &other) const override {
             const IteratorImpl& o = static_cast<const IteratorImpl&>(other);
-            if (current_boundary != o.current_boundary) return false;   // other outer-loop boundaries
-            //same outer-loop boundaries:
-            if (current_boundary == current_boundary_end) return true;  // and both are ends
-            return in_boundary == o.in_boundary;    // both are no ends, compare inner-loop iterators
+            return position.size() == o.position.size() && std::equal(position.begin(), position.end(), o.position.begin());
         }
 
         std::unique_ptr<BoundaryNodeSetImpl::IteratorImpl> clone() const override {
             return std::unique_ptr<BoundaryNodeSetImpl::IteratorImpl>(new IteratorImpl(*this));
         }
 
+    private:
+        std::size_t minimal_position() const {
+            std::size_t minimum = std::numeric_limits<std::size_t>::max();
+            for (const IteratorWithEnd& v: position)
+                if (v.valid()) {
+                    auto vv = *v.iter;
+                    if (vv < minimum) minimum = vv;
+                }
+            return minimum;
+        }
+
+    public:
         virtual std::size_t dereference() const override {
-            return *in_boundary;
+            return minimal_position();
         }
 
         virtual void increment() override {
-            if (current_boundary != current_boundary_end) {
-                ++in_boundary;
-                fixCurrentBoundary();
-            }
+            std::size_t m = minimal_position();
+            for (IteratorWithEnd& v: position)
+                if (v.valid() && *v.iter == m) ++v.iter;
         }
 
     };
@@ -467,25 +463,32 @@ struct SumBoundaryImpl: public BoundaryNodeSetImpl {
     }
 
     typename BoundaryNodeSetImpl::Iterator begin() const override {
-        if (boundaries.empty()) // boundaries.begin() == boundaries.end()
-            return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl(boundaries.end()));
-        return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl(boundaries.begin(), boundaries.end()));
+        std::unique_ptr<IteratorImpl> impl(new IteratorImpl());
+        impl->position.reserve(boundaries.size());
+        for (const BoundaryNodeSet& b: boundaries)
+            impl->position.emplace_back(b.begin(), b.end());
+        return typename BoundaryNodeSetImpl::Iterator(impl.release());
     }
 
     typename BoundaryNodeSetImpl::Iterator end() const override {
-        return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl(boundaries.end()));
+        std::unique_ptr<IteratorImpl> impl(new IteratorImpl());
+        impl->position.reserve(boundaries.size());
+        for (const BoundaryNodeSet& b: boundaries)
+            impl->position.emplace_back(b.end(), b.end());
+        return typename BoundaryNodeSetImpl::Iterator(impl.release());
     }
 
     bool empty() const override {
-        for (auto bound: boundaries) if (!bound.empty()) return false;
+        for (auto bound: boundaries)
+            if (!bound.empty()) return false;
         return true;
     }
 
-    std::size_t size() const override {
+    /*std::size_t size() const override {
         std::size_t s = 0;
         for (auto bound: boundaries) s += bound.size();
         return s;
-    }
+    }*/
 
     void push_back(const BoundaryNodeSet& to_append) { boundaries.push_back(to_append); }
 
