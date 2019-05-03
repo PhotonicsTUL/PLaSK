@@ -166,7 +166,7 @@ class GeometryController(Controller):
 
         search_action = QAction(QIcon.fromTheme('edit-find'), '&Search', self.main_splitter)
         search_action.setShortcut(QKeySequence.Find)
-        search_action.triggered.connect(lambda checked=False: weakself.search_box.setFocus())
+        search_action.triggered.connect(lambda checked=False: weakself.search_combo.setFocus())
         self.main_splitter.addAction(search_action)
 
         if PlotWidget is not None:
