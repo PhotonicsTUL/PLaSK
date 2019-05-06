@@ -586,6 +586,97 @@ struct DiffBoundaryImpl: public BoundaryNodeSetImpl {
 
 };
 
+
+/**
+ * This logic holds a two boundaries and represent a set product of them.
+ */
+template <typename MeshType>
+struct ProdBoundaryImpl: public BoundaryNodeSetImpl {
+
+    BoundaryNodeSet A, B;
+
+    struct IteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
+
+        struct IteratorWithEnd {
+            BoundaryNodeSet::const_iterator iter;
+            BoundaryNodeSet::const_iterator end;
+
+            IteratorWithEnd(BoundaryNodeSet::const_iterator iter, BoundaryNodeSet::const_iterator end)
+                : iter(std::move(iter)), end(std::move(end)) {}
+
+            bool valid() const { return iter != end; }
+
+            bool operator==(const IteratorWithEnd& o) const { return iter == o.iter; }
+        };
+
+        IteratorWithEnd Apos, Bpos;
+
+    private:
+        void advanceToNearestValidPos() {
+            while (Apos.valid()) {
+                if (!Bpos.valid()) {
+                    Apos.iter = Apos.end;
+                    return;
+                }
+                const std::size_t Aindex = *Apos.iter;
+                const std::size_t Bindex = *Bpos.iter;
+                if (Aindex < Bindex) ++Apos.iter;
+                else if (Bindex < Aindex) ++Bpos.iter;
+                else return;    // Aindex == Bindex
+            }
+        }
+
+    public:
+
+        IteratorImpl(BoundaryNodeSet::const_iterator Aiter, BoundaryNodeSet::const_iterator Aend,
+                     BoundaryNodeSet::const_iterator Biter, BoundaryNodeSet::const_iterator Bend):
+            Apos(std::move(Aiter), std::move(Aend)), Bpos(std::move(Biter), std::move(Bend))
+        {
+            advanceToNearestValidPos();
+        }
+
+        bool equal(const typename BoundaryNodeSetImpl::IteratorImpl &other) const override {
+            const IteratorImpl& o = static_cast<const IteratorImpl&>(other);
+            return Apos == o.Apos;
+        }
+
+        std::unique_ptr<BoundaryNodeSetImpl::IteratorImpl> clone() const override {
+            return std::unique_ptr<BoundaryNodeSetImpl::IteratorImpl>(new IteratorImpl(*this));
+        }
+
+        virtual std::size_t dereference() const override {
+            return *Apos.iter;
+        }
+
+        virtual void increment() override {
+            ++Apos;
+            ++Bpos;
+            advanceToNearestValidPos();
+        }
+
+    };
+
+    ProdBoundaryImpl(BoundaryNodeSet A, BoundaryNodeSet B):
+        A(std::move(A)), B(std::move(B)) {   }
+
+    virtual bool contains(std::size_t mesh_index) const override {
+        return A.contains(mesh_index) && B.contains(mesh_index);
+    }
+
+    typename BoundaryNodeSetImpl::Iterator begin() const override {
+        return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl(A.begin(), A.end(), B.begin(), B.end()));
+    }
+
+    typename BoundaryNodeSetImpl::Iterator end() const override {
+        return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl(A.end(), A.end(), B.end(), B.end()));
+    }
+
+    bool empty() const override {
+        return begin() == end();
+    }
+
+};
+
 /**
  * Boundary logic implementation which represents set of indexes which fulfill predicate.
  * @tparam MeshT type of mesh
