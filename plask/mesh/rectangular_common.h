@@ -125,7 +125,7 @@ inline typename MeshType::Boundary getBoundaryForBoxes(GetBoxes getBoxes, GetBou
             }
             if (boundaries.empty()) return new EmptyBoundaryImpl();
             if (boundaries.size() == 1) return boundaries_with_meshes[0];
-            return new SumBoundaryImpl<MeshType>(std::move(boundaries_with_meshes));
+            return new SumBoundaryImpl(std::move(boundaries_with_meshes));
         }
     );
 }

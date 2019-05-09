@@ -397,7 +397,6 @@ public:
 /**
  * This logic holds a list of boundaries and represent a set of indexes which is a sum of sets from this boundaries.
  */
-template <typename MeshType>
 struct SumBoundaryImpl: public BoundaryNodeSetImpl {
 
     typedef std::vector< BoundaryNodeSet > BoundariesVec;
@@ -456,6 +455,9 @@ struct SumBoundaryImpl: public BoundaryNodeSetImpl {
     SumBoundaryImpl(Args&&... args):
         boundaries(std::forward<Args>(args)...) {   }
 
+    SumBoundaryImpl(BoundaryNodeSet A, BoundaryNodeSet B)
+        : boundaries(std::initializer_list<plask::BoundaryNodeSet>{A, B}) {}
+
     virtual bool contains(std::size_t mesh_index) const override {
         for (auto& b: boundaries)
             if (b.contains(mesh_index)) return true;
@@ -499,7 +501,6 @@ struct SumBoundaryImpl: public BoundaryNodeSetImpl {
 /**
  * This logic holds a two boundaries and represent a set difference of them.
  */
-template <typename MeshType>
 struct DiffBoundaryImpl: public BoundaryNodeSetImpl {
 
     BoundaryNodeSet A, B;
@@ -530,9 +531,9 @@ struct DiffBoundaryImpl: public BoundaryNodeSetImpl {
                     if (Bindex == Aindex) break;    // go to next A index
                     if (Bindex > Aindex) return;    // accept current Apos
                     // here Bindex < Aindex
-                    ++Bpos;                         // go to next B index
+                    ++Bpos.iter;                         // go to next B index
                 }
-                ++Apos;
+                ++Apos.iter;
             }
         }
 
@@ -559,7 +560,7 @@ struct DiffBoundaryImpl: public BoundaryNodeSetImpl {
         }
 
         virtual void increment() override {
-            ++Apos;
+            ++Apos.iter;
             advanceAtoNearestValidPos();
         }
 
@@ -590,7 +591,6 @@ struct DiffBoundaryImpl: public BoundaryNodeSetImpl {
 /**
  * This logic holds a two boundaries and represent a set product of them.
  */
-template <typename MeshType>
 struct ProdBoundaryImpl: public BoundaryNodeSetImpl {
 
     BoundaryNodeSet A, B;
@@ -620,9 +620,8 @@ struct ProdBoundaryImpl: public BoundaryNodeSetImpl {
                 }
                 const std::size_t Aindex = *Apos.iter;
                 const std::size_t Bindex = *Bpos.iter;
-                if (Aindex < Bindex) ++Apos.iter;
-                else if (Bindex < Aindex) ++Bpos.iter;
-                else return;    // Aindex == Bindex
+                if (Aindex == Bindex) return;
+                if (Aindex < Bindex) ++Apos.iter; else ++Bpos.iter;
             }
         }
 
@@ -649,8 +648,8 @@ struct ProdBoundaryImpl: public BoundaryNodeSetImpl {
         }
 
         virtual void increment() override {
-            ++Apos;
-            ++Bpos;
+            ++Apos.iter;
+            ++Bpos.iter;
             advanceToNearestValidPos();
         }
 

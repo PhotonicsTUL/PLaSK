@@ -152,7 +152,7 @@ struct PolymorphicForwardIterator:
     void swap(PolymorphicForwardIterator & to_swap) noexcept { std::swap(this->impl, to_swap.impl); }
 
     PolymorphicForwardIterator& operator=(const PolymorphicForwardIterator &src) {
-        this->impl.reset(src.clone());
+        this->impl = src.impl->clone();
         return *this;
     }
 

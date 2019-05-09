@@ -59,6 +59,17 @@ BOOST_AUTO_TEST_CASE(boundary_conditions_from_XML) {
     BOOST_CHECK_EQUAL(conditions[1].value, 234.0);
 }
 
+BOOST_AUTO_TEST_CASE(boundary_conditions_bool_op) {
+    plask::BoundaryNodeSet A(new plask::StdSetBoundaryImpl(std::set<std::size_t>{1, 2, 5, 7}));
+    plask::BoundaryNodeSet B(new plask::StdSetBoundaryImpl(std::set<std::size_t>{1, 3, 6, 7, 8}));
+    BOOST_REQUIRE_EQUAL(A.size(), 4);
+    BOOST_REQUIRE_EQUAL(B.size(), 5);
+    plask::BoundaryNodeSet sum(new plask::SumBoundaryImpl(A, B));
+    BOOST_CHECK_EQUAL(sum.size(), 7);
+    std::size_t expected_sum[] = {1, 2, 3, 5, 6, 7, 8};
+    BOOST_CHECK_EQUAL_COLLECTIONS(A.begin(), B.begin(), std::begin(expected_sum), std::end(expected_sum));
+}
+
 
 
 BOOST_AUTO_TEST_SUITE_END()
