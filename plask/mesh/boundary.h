@@ -289,7 +289,9 @@ struct PLASK_API StdSetBoundaryImpl: public BoundaryNodeSetImpl {
 
     StdSetBoundaryImpl(StdNodeSet set): set(std::move(set)) {}
 
-    virtual bool contains(std::size_t PLASK_UNUSED(mesh_index)) const override { return false; }
+    virtual bool contains(std::size_t mesh_index) const override {
+        return set.find(mesh_index) != set.end();
+    }
 
     virtual typename BoundaryNodeSetImpl::const_iterator begin() const override {
         return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl(set.begin()));
@@ -303,7 +305,9 @@ struct PLASK_API StdSetBoundaryImpl: public BoundaryNodeSetImpl {
         return set.size();
     }
 
-    virtual bool empty() const override { return set.empty(); }
+    virtual bool empty() const override {
+        return set.empty();
+    }
 };
 
 // TODO może wykluczyć MeshType jako parametr szablonu i dodać w zamian DIM (używać MeshD)?
