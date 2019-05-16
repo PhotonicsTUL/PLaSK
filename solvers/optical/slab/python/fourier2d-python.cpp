@@ -371,11 +371,11 @@ void export_FourierSolver2D()
     RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
     RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
     RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization.");
-    solver.add_property("lam", &__Class__::getWavelength, &Solver_setWavelength<__Class__>,
+    solver.add_property("lam", &__Class__::getLam, &Solver_setLam<__Class__>,
                 u8"Wavelength of the light [nm].\n\n"
                 u8"Use this property only if you are looking for anything else than\n"
                 u8"the wavelength, e.g. the effective index of lateral wavevector.\n");
-    solver.add_property("wavelength", &__Class__::getWavelength, &Solver_setWavelength<__Class__>,
+    solver.add_property("wavelength", &__Class__::getLam, &Solver_setLam<__Class__>,
                 u8"Alias for :attr:`lam`");
     solver.add_property("k0", &__Class__::getK0, &Solver_setK0<__Class__>,
                 u8"Normalized frequency of the light [1/µm].\n\n"

@@ -33,14 +33,14 @@ from ...utils.texteditor import TextEditor
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
 
 if sys.version_info >= (3, 0, 0):
-    from ...lib.highlighter.python32 import syntax
+    from ...lib.highlighter.python32 import syntax, default_key
 else:
-    from ...lib.highlighter.python27 import syntax
+    from ...lib.highlighter.python27 import syntax, default_key
 from ...lib.highlighter.plask import syntax as plask_syntax
 
 
 syntax['formats'].update(plask_syntax['formats'])
-syntax['scanner'][None][-1:-1] = plask_syntax['scanner']
+syntax['tokens'][default_key][-1:-1] = plask_syntax['tokens']
 
 
 def update_python_scheme():
@@ -48,6 +48,7 @@ def update_python_scheme():
     scheme = {
         'syntax_comment': parse_highlight(CONFIG['syntax/python_comment']),
         'syntax_string': parse_highlight(CONFIG['syntax/python_string']),
+        'syntax_special': parse_highlight(CONFIG['syntax/python_special']),
         'syntax_builtin': parse_highlight(CONFIG['syntax/python_builtin']),
         'syntax_keyword': parse_highlight(CONFIG['syntax/python_keyword']),
         'syntax_number': parse_highlight(CONFIG['syntax/python_number']),
@@ -363,31 +364,28 @@ class ScriptController(SourceEditController):
 
     def rehighlight(self):
         current_syntax = {'formats': syntax['formats'],
-                          'partitions': syntax['partitions'],
-                          'scanner': copy(syntax['scanner'])}
-        current_syntax['scanner'][None] = copy(syntax['scanner'][None])
+                          'contexts': syntax['contexts'],
+                          'tokens': copy(syntax['tokens'])}
+        current_syntax['tokens'][default_key] = copy(syntax['tokens'][default_key])
         defines = ['ARRAYID', 'PROCID', 'JOBID']
         if self.document.defines is not None:
             defines += [e.name for e in self.document.defines.model.entries]
-        current_syntax['scanner'][None].insert(0, ('define', defines, '(^|[^\\.\\w])', '[\x08\\W]'))
+        current_syntax['tokens'][default_key].insert(0, ('define', defines, '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
         if self.document.solvers is not None:
             solvers = [e.name for e in self.document.solvers.model.entries]
             if solvers:
-                current_syntax['scanner'][None].insert(0, ('solver', solvers, '(^|[^\\.\\w])', '[\x08\\W]'))
+                current_syntax['tokens'][default_key].insert(0, ('solver', solvers, '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
         self.highlighter = SyntaxHighlighter(self.source_widget.editor.document(),
                                              *load_syntax(current_syntax, scheme),
                                              default_font=EDITOR_FONT)
         self.highlighter.rehighlight()
 
     def reconfig(self):
+        global MATCH_COLOR, REPLACE_COLOR
+        MATCH_COLOR = QColor(CONFIG['editor/match_color'])
+        REPLACE_COLOR = QColor(CONFIG['editor/replace_color'])
         editor = self.source_widget.editor
-        editor.setFont(EDITOR_FONT)
-        editor.setStyleSheet("QPlainTextEdit {{ color: {fg}; background-color: {bg} }}".format(
-            fg=(CONFIG['editor/foreground_color']),
-            bg=(CONFIG['editor/background_color'])
-        ))
-        try: editor.line_numbers.setFont(EDITOR_FONT)
-        except AttributeError: pass
+        editor.reconfig()
         update_brackets_colors()
         if self.highlighter is not None:
             with BlockQtSignals(editor):

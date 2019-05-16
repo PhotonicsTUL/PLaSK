@@ -331,6 +331,8 @@ class GridsController(Controller):
             if self._current_controller is not None and \
                (self.plot_auto_refresh or hasattr(self._current_controller.model, 'geometry_name')):
                 self.plot_mesh(self._current_controller.model, set_limits=True, ignore_no_geometry=True)
+            else:
+                self.mesh_preview.canvas.draw()
 
 
     def generate_mesh(self):

@@ -110,34 +110,34 @@ class VCSEL(unittest.TestCase):
 
     def plot_field(self):
         self.solver.find_mode(980.1, m=1)
-        print(self.solver.modes[0])
+        print_log('result', self.solver.modes[0])
         box = self.solver.geometry.bbox
-        msh = mesh.Rectangular2D(linspace(-box.right, box.right, 101),
-                                 linspace(box.bottom, box.top, 1001))
+        msh = mesh.Rectangular2D(mesh.Regular(0., box.right, 101),
+                                 mesh.Regular(box.bottom, box.top, 1001))
         field = self.solver.outLightE(msh)
         mag = max(abs(field.array.ravel()))
         scale = linspace(-mag, mag, 255)
         figure()
-        plot_geometry(self.solver.geometry, mirror=True, color='k', alpha=0.15)
+        plot_geometry(self.solver.geometry, color='k', alpha=0.15)
         plot_field(field, scale, comp='r', cmap='bwr')
         gcf().canvas.set_window_title("Er")
         colorbar(use_gridspec=True)
         tight_layout(0.1)
         figure()
-        plot_geometry(self.solver.geometry, mirror=True, color='k', alpha=0.15)
+        plot_geometry(self.solver.geometry, color='k', alpha=0.15)
         plot_field(field, scale, comp='p', cmap='bwr')
         colorbar(use_gridspec=True)
         gcf().canvas.set_window_title("Ep")
         tight_layout(0.1)
         figure()
-        plot_geometry(self.solver.geometry, mirror=True, color='k', alpha=0.15)
+        plot_geometry(self.solver.geometry, color='k', alpha=0.15)
         plot_field(field, scale, comp='z', cmap='bwr')
         colorbar(use_gridspec=True)
         gcf().canvas.set_window_title("Ez")
         tight_layout(0.1)
 
         figure()
-        plot_geometry(self.solver.geometry, mirror=True, color='w', alpha=0.15)
+        plot_geometry(self.solver.geometry, color='w', alpha=0.15)
         light = self.solver.outLightMagnitude(msh)
         plot_field(light)
         colorbar(use_gridspec=True)
@@ -147,16 +147,35 @@ class VCSEL(unittest.TestCase):
         z = self.solver.geometry.get_object_bboxes(self.manager.geo.QW)[0].center.z
         arr = light.array
         r = msh.axis0[int(unravel_index(argmax(arr), arr.shape)[0])]
-        rmsh = mesh.Rectangular2D(linspace(-box.right, box.right, 2001), [z])
+        rmsh = mesh.Rectangular2D(linspace(0, box.right, 2001), [z])
         zmsh = mesh.Rectangular2D([r], linspace(box.bottom, box.top, 10001))
         figure()
         plot_profile(self.solver.outLightMagnitude(rmsh))
         gcf().canvas.set_window_title(u"Horizontal (z = {:.1f} µm".format(z))
         tight_layout(0.1)
         figure()
-        plot_profile(self.solver.outLightMagnitude(zmsh))
+        plot_profile(self.solver.outLightMagnitude(zmsh), swap_axes=True)
         gcf().canvas.set_window_title(u"Vertical (r = {:.1f} µm".format(r))
         tight_layout(0.1)
+
+        # Test integration of the fields
+
+        dr = msh.axis0[1] - msh.axis0[0]
+        dz = msh.axis1[1] - msh.axis1[0]
+        integral_mesh = msh.elements.mesh
+        rr, _ = meshgrid(integral_mesh.axis0, integral_mesh.axis1, indexing='ij')
+
+        E = self.solver.outLightE(integral_mesh).array
+        E2 = sum(real(E*conj(E)), -1)
+        EE0 = 0.5 * 2*pi * sum((rr * E2).ravel()) * dr * dz
+        EE1 = self.solver.integrateEE(box.bottom, box.top)
+        print_log('result', "E:", EE0 / EE1)
+
+        H = self.solver.outLightH(integral_mesh).array
+        H2 = sum(real(H*conj(H)), -1)
+        HH0 = 0.5 * 2*pi * sum((rr * H2).ravel()) * dr * dz
+        HH1 = self.solver.integrateHH(box.bottom, box.top)
+        print_log('result', "H:", HH0 / HH1)
 
 
 if __name__ == "__main__":

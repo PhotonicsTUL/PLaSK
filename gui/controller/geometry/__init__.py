@@ -166,7 +166,7 @@ class GeometryController(Controller):
 
         search_action = QAction(QIcon.fromTheme('edit-find'), '&Search', self.main_splitter)
         search_action.setShortcut(QKeySequence.Find)
-        search_action.triggered.connect(lambda checked=False: weakself.search_box.setFocus())
+        search_action.triggered.connect(lambda checked=False: weakself.search_combo.setFocus())
         self.main_splitter.addAction(search_action)
 
         if PlotWidget is not None:
@@ -364,10 +364,12 @@ class GeometryController(Controller):
         if self.geometry_view is not None:
             colors = CONFIG['geometry/material_colors'].copy()
             self.geometry_view.get_color = plask.ColorFromDict(colors, self.geometry_view.axes)
+            self.geometry_view.axes.set_facecolor(CONFIG['plots/face_color'])
+            self.geometry_view.axes.grid(True, color=CONFIG['plots/grid_color'])
             if self.plotted_tree_element is not None and self.get_widget().isVisible():
-                self.geometry_view.axes.set_facecolor(CONFIG['plots/face_color'])
-                self.geometry_view.axes.grid(True, color=CONFIG['plots/grid_color'])
                 self.plot_refresh()
+            else:
+                self.geometry_view.canvas.draw()
 
     def on_model_change(self, *args, **kwargs):
         if self.plotted_tree_element is not None:

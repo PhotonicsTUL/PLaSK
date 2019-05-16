@@ -32,6 +32,7 @@ def update_xml_scheme():
         'syntax_attr': parse_highlight(CONFIG['syntax/xml_attr']),
         'syntax_value': parse_highlight(CONFIG['syntax/xml_value']),
         'syntax_text': parse_highlight(CONFIG['syntax/xml_text']),
+        'syntax_define': parse_highlight(CONFIG['syntax/xml_define']),
     }
 update_xml_scheme()
 
@@ -40,6 +41,14 @@ REPLACE_COLOR = QColor(CONFIG['editor/replace_color'])
 
 
 class XMLEditor(TextEditor):
+
+    def __init__(self, parent=None, line_numbers=True):
+        super(XMLEditor, self).__init__(parent, line_numbers)
+        palette = self.palette()
+        color = parse_highlight(CONFIG['syntax/xml_text']).get('color')
+        if color is None: color = CONFIG['editor/foreground_color']
+        palette.setColor(QPalette.Text, QColor(color))
+        self.setPalette(palette)
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -88,6 +97,15 @@ class XMLEditor(TextEditor):
         if key in (Qt.Key_Enter, Qt.Key_Return):
             indent_new_line(self)
 
+    def reconfig(self):
+        self.setFont(EDITOR_FONT)
+        color = parse_highlight(CONFIG['syntax/xml_text']).get('color')
+        if color is None: color = CONFIG['editor/foreground_color']
+        self.setStyleSheet("QPlainTextEdit {{ color: {fg}; background-color: {bg} }}".format(
+            fg=color, bg=CONFIG['editor/background_color']
+        ))
+        self.line_numbers.setFont(EDITOR_FONT)
+
 
 class SourceWidget(QWidget):
 
@@ -95,11 +113,6 @@ class SourceWidget(QWidget):
         super(SourceWidget, self).__init__(parent)
 
         self.editor = editor_class(self, *args, **kwargs)
-        self.editor.setFont(EDITOR_FONT)
-        palette = self.editor.palette()
-        palette.setColor(QPalette.Base, QColor(CONFIG['editor/background_color']))
-        palette.setColor(QPalette.Text, QColor(CONFIG['editor/foreground_color']))
-        self.editor.setPalette(palette)
 
         self.toolbar = QToolBar(self)
         self.toolbar.setStyleSheet("QToolBar { border: 0px }")
@@ -489,14 +502,11 @@ class SourceEditController(Controller):
         return self.get_source_widget()
 
     def reconfig(self):
+        global MATCH_COLOR, REPLACE_COLOR
+        MATCH_COLOR = QColor(CONFIG['editor/match_color'])
+        REPLACE_COLOR = QColor(CONFIG['editor/replace_color'])
         editor = self.source_widget.editor
-        editor.setFont(EDITOR_FONT)
-        editor.setStyleSheet("QPlainTextEdit {{ color: {fg}; background-color: {bg} }}".format(
-            fg=(CONFIG['editor/foreground_color']),
-            bg=(CONFIG['editor/background_color'])
-        ))
-        try: editor.line_numbers.setFont(EDITOR_FONT)
-        except AttributeError: pass
+        editor.reconfig()
         if self.highlighter is not None:
             with BlockQtSignals(editor):
                 update_xml_scheme()

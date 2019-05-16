@@ -223,7 +223,7 @@ double ExpansionBesselFini::integrateField(WhichField field, size_t l, const cve
             result += (2. * (real(H[is]*conj(H[is]) + H[ip]*conj(H[ip]))) + iRk02*kpts[i]*kpts[i] * real(E[is]*conj(E[is]))) * eta;
         }
     }
-    return 2*PI * result;
+    return 0.5 * 2*PI * result;
 }
 
 

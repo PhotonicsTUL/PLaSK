@@ -1,0 +1,116 @@
+boundary_conditions:
+  color: '#000088'
+  selected_color: '#ffea00'
+editor:
+  background_color: '#ffffff'
+  current_line_color: '#dff5ff'
+  foreground_color: '#000000'
+  help_background_color: '#ffffee'
+  help_foreground_color: '#000000'
+  linenumber_background_color: '#dddddd'
+  linenumber_foreground_color: '#808080'
+  match_color: '#ddffdd'
+  matching_bracket_color: '#aaffaa'
+  not_matching_bracket_color: '#ffaaaa'
+  replace_color: '#ffddff'
+  select_after_paste: false
+  selection_color: '#ffff7f'
+geometry:
+  extra_alpha: 0.7
+  extra_color: '#00aaff'
+  extra_width: 1
+  lattice_active_color: '#fc4f30'
+  lattice_line_color: '#30a2da'
+  lattice_mark_color: '#e5ae38'
+  material_colors:
+    AlAs: '#d1f000'
+    AlN: '#00d1f0'
+    AlOx: '#98F2FF'
+    AlP: '#a089b5'
+    AlSb: '#d19359'
+    Au: '#A6A674'
+    Cu: '#9E807E'
+    GaAs: '#009e00'
+    GaN: '#00009e'
+    GaN_bulk: '#000080'
+    GaP: '#915daf'
+    GaSb: '#c17024'
+    In: '#585266'
+    InAs: '#d18000'
+    InN: '#d10080'
+    InP: '#6218a3'
+    InSb: '#b56113'
+    Pt: '#A6A674'
+    Si: '#BF7300'
+    SiO2: '#FFD699'
+    aSi: '#BF8300'
+    aSiO2: '#FFDF99'
+  origin_alpha: 0.7
+  origin_color: '#ffea00'
+  origin_size: 10
+  origin_width: 2
+  selected_alpha: 0.7
+  selected_color: '#ff4444'
+  selected_width: 2
+  show_origin: true
+help:
+  fontsize: 13
+  online: false
+launcher:
+  default: 'Local Process'
+launcher_local:
+  background_color: '#eeeeec'
+  color_0: '#2e3436'
+  color_1: '#ef2929'
+  color_10: '#888a85'
+  color_2: '#cc0000'
+  color_3: '#f57900'
+  color_4: '#c17d11'
+  color_5: '#3465a4'
+  color_6: '#4e9a06'
+  color_7: '#ad7fa8'
+  color_8: '#555753'
+  color_9: '#a40000'
+  program:
+main_window:
+  dark_style: false
+  icons_size: 'default'
+  icons_theme: 'Breeze'
+  make_backup: true
+mesh:
+  line_width: 1
+  mesh_color: '#00aaff'
+plots:
+  axes_color: '#000000'
+  edge_color: '#000000'
+  face_color: '#ffffff'
+  grid_color: '#b0b0b0'
+syntax:
+  python_builtin: 'color=maroon'
+  python_comment: 'color=#5ca45c, italic=true'
+  python_decorator: 'color=#009f81'
+  python_define: 'color=#00aaff, italic=true'
+  python_keyword: 'color=#000000, bold=true'
+  python_loaded: 'color=#ff8800'
+  python_log: 'color=#5f5fc0'
+  python_member: 'color=#444400'
+  python_number: 'color=#1b3d80'
+  python_plask: 'color=#aa007f'
+  python_provider: 'color=#c08000'
+  python_pylab: 'color=#440088'
+  python_receiver: 'color=#c08000'
+  python_solver: 'color=#ff3333'
+  python_special: 'color=#268bd2'
+  python_string: 'color=#2659c0'
+  xml_attr: 'color=#c08000'
+  xml_comment: 'color=#5ca45c, italic=true'
+  xml_define: 'color=#000000'
+  xml_tag: 'color=#a42020, bold=true'
+  xml_text: 'color=#5c5c5c'
+  xml_value: 'color=#2659c0'
+workarounds:
+  blocking_jedi: false
+  disable_omp: false
+  jedi_no_dot: false
+  no_jedi: false
+  system_jedi: false

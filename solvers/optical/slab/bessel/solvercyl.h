@@ -127,9 +127,6 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     /// Lateral PMLs
     PML pml;
 
-    /// Provider for computed resonant wavelength
-    typename ProviderFor<ModeWavelength>::Delegate outWavelength;
-
     /// Provider for computed modal extinction
     typename ProviderFor<ModeLoss>::Delegate outLoss;
 
@@ -175,15 +172,6 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     unsigned getM() const { return m; }
     /// Set order of the orthogonal base
     void setM(unsigned n) { m = n; }
-
-    /**
-     * Return mode wavelength
-     * \param n mode number
-     */
-    double getWavelength(size_t n) {
-        if (n >= modes.size()) throw NoValue(ModeWavelength::NAME);
-        return (2e3*PI / modes[n].k0).real();
-    }
 
     Expansion& getExpansion() override { return *expansion; }
 
@@ -330,29 +318,13 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         return 2e4 * modes[n].k0.imag();  // 2e4  2/µm -> 2/cm
     }
 
-    /**
-     * Compute electric field
-     * \param num mode number
-     * \param dst_mesh destination mesh
-     * \param method interpolation method
-     */
     LazyData<Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
 
-    /**
-     * Compute magnetic field
-     * \param num mode number
-     * \param dst_mesh destination mesh
-     * \param method interpolation method
-     */
     LazyData<Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
 
-    /**
-     * Compute light intensity
-     * \param num mode number
-     * \param dst_mesh destination mesh
-     * \param method interpolation method
-     */
     LazyData<double> getMagnitude(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
+
+    double getWavelength(size_t n) override;
 
 #ifndef NDEBUG
   public:

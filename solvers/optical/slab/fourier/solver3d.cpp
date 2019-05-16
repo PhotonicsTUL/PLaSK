@@ -248,6 +248,13 @@ LazyData<double> FourierSolver3D::getMagnitude(size_t num, shared_ptr<const Mesh
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
 
+
+double FourierSolver3D::getWavelength(size_t n) {
+    if (n >= modes.size()) throw NoValue(ModeWavelength::NAME);
+    return real(2e3*M_PI / modes[n].k0);
+}
+
+
 size_t FourierSolver3D::initIncidence(Transfer::IncidentDirection side, Expansion::Component polarization, dcomplex lam)
 {
     bool changed = Solver::initCalculation() || setExpansionDefaults(isnan(lam));

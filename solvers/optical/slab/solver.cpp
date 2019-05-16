@@ -32,6 +32,7 @@ template <typename BaseT>
 SlabSolver<BaseT>::SlabSolver(const std::string& name): BaseT(name),
     smooth(0.),
     outRefractiveIndex(this, &SlabSolver<BaseT>::getRefractiveIndexProfile),
+    outWavelength(this, &SlabSolver<BaseT>::getWavelength, &SlabSolver<BaseT>::nummodes),
     outLightMagnitude(this, &SlabSolver<BaseT>::getMagnitude, &SlabSolver<BaseT>::nummodes),
     outLightE(this, &SlabSolver<BaseT>::getE, &SlabSolver<BaseT>::nummodes),
     outLightH(this, &SlabSolver<BaseT>::getH, &SlabSolver<BaseT>::nummodes)
