@@ -74,6 +74,20 @@ static py::object initPlask(int argc, const system_char* argv[])
     // Initialize the plask module
     if (PyImport_AppendInittab("_plask", &PLASK_MODULE) != 0) throw plask::CriticalException("No _plask module");
 
+    // Workaround Anaconda bug in Windows preventing finding proper Python home
+    #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+    if (!getenv("PYTHONHOME")) {
+        static const WCHAR key[] = L"Software\\Python\\PythonCore\\" BOOST_PP_STRINGIZE(PY_MAJOR_VERSION) L"." BOOST_PP_STRINGIZE(PY_MINOR_VERSION) L"\\InstallPath";
+        WCHAR reg_buf[MAX_PATH + 1];
+        DWORD buf_size = MAX_PATH + 1;
+        LSTATUS result = RegGetValueW(HKEY_CURRENT_USER, key, NULL, RRF_RT_REG_SZ, NULL, reg_buf, &buf_size);
+        if (result != ERROR_SUCCESS)
+            result = RegGetValueW(HKEY_LOCAL_MACHINE, key, NULL, RRF_RT_REG_SZ, NULL, reg_buf, &buf_size);
+        if (result == ERROR_SUCCESS)
+            Py_SetPythonHome(reg_buf);
+    }
+    #endif
+
     // Initialize Python
     Py_Initialize();
 
