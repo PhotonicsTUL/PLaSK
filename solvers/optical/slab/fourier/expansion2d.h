@@ -39,6 +39,9 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     /// Mesh for getting material data
     shared_ptr<RectangularMesh<2>> mesh;
 
+    /// Boundaries mesh
+    shared_ptr<MeshAxis> original_mesh;
+
     /**
      * Create new expansion
      * \param solver solver which performs calculations
@@ -111,6 +114,47 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     void cleanupIntegrals(double lam, double glam) override;
 
     void layerIntegrals(size_t layer, double lam, double glam) override;
+
+    Tensor3<dcomplex> getEpsilon(const shared_ptr<GeometryD<2>>& geometry, size_t layer, double maty,
+                                 double lam, double glam, size_t j) {
+        double T = 0., W = 0.;
+        for (size_t k = 0, v = j * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
+            if (solver->stack[k] == layer) {
+                double w = (k == 0 || k == mesh->vert()->size()-1)? 1e-6 : solver->vbounds->at(k) - solver->vbounds->at(k-1);
+                T += w * temperature[v]; W += w;
+            }
+        }
+        T /= W;
+        Tensor3<dcomplex> nr;
+        {
+            OmpLockGuard<OmpNestLock> lock; // this must be declared before `material` to guard its destruction
+            auto material = geometry->getMaterial(vec(mesh->tran()->at(j),maty));
+            lock = material->lock();
+            nr = material->NR(lam, T);
+            if (isnan(nr.c00) || isnan(nr.c11) || isnan(nr.c22) || isnan(nr.c01))
+                throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K", material->name(), lam, T);
+        }
+        if (nr.c01 != 0.) {
+            if (symmetric()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
+            if (separated()) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
+        }
+        if (gain_connected && solver->lgained[layer]) {
+            auto roles = geometry->getRolesAt(vec(mesh->tran()->at(j),maty));
+            if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
+                Tensor2<double> g = 0.; W = 0.;
+                for (size_t k = 0, v = j * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
+                    if (solver->stack[k] == layer) {
+                        double w = (k == 0 || k == mesh->vert()->size()-1)? 1e-6 : solver->vbounds->at(k) - solver->vbounds->at(k-1);
+                        g += w * gain[v]; W += w;
+                    }
+                }
+                Tensor2<double> ni = glam * g/W * (0.25e-7/PI);
+                nr.c00.imag(ni.c00); nr.c11.imag(ni.c00); nr.c22.imag(ni.c11); nr.c01.imag(0.);
+            }
+        }
+        nr.sqr_inplace();
+        return nr;
+    }
 
   public:
 

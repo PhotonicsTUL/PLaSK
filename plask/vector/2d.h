@@ -150,7 +150,7 @@ struct Vec<2,T> {
      * @return @c true only if this vector and @p p have almost equals coordinates
      */
     template <typename OtherT, typename SuprType>
-    constexpr bool equal(const Vec<2, OtherT>& p, const SuprType& abs_supremum) const {
+    constexpr bool equals(const Vec<2, OtherT>& p, const SuprType& abs_supremum) const {
         return is_zero(p.c0 - c0, abs_supremum) && is_zero(p.c1 - c1, abs_supremum); }
 
     /**
@@ -159,7 +159,7 @@ struct Vec<2,T> {
      * @return @c true only if this vector and @p p have almost equals coordinates
      */
     template <typename OtherT>
-    constexpr bool equal(const Vec<2, OtherT>& p) const {
+    constexpr bool equals(const Vec<2, OtherT>& p) const {
         return is_zero(p.c0 - c0) && is_zero(p.c1 - c1); }
 
     /**
@@ -402,6 +402,15 @@ template <typename T>
 struct ZeroImpl<Vec<2,T>> {
     static constexpr Vec<2,T> get() { return Vec<2,T>(0., 0.); }
 };
+
+/// Check if the vector is almost zero
+/// \param v vector to verify
+template <typename T>
+inline bool is_zero(const Vec<2,T>& v) {
+    return is_zero(v.c0) && is_zero(v.c1);
+}
+
+
 
 PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(Vec<2, double>)
 PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(Vec<2, std::complex<double> >)

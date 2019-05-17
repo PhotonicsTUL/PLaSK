@@ -18,8 +18,9 @@ size = 16
 refine = 8
 oversampling = 1
 
-smooth = 0.01
+smooth = 0#.01
 
+ft = 'analytic'
 dct = 2
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -77,6 +78,7 @@ opt.refine = refine
 opt.oversampling = oversampling
 
 opt.dct = dct
+opt.ft = ft
 
 opt.set_interface(shelf, p)
 
@@ -87,7 +89,7 @@ opt.pml.factor = 1-2j
 right = 3.5
 left = -3.5
 
-if symmetric:
+if symmetric is True:
     opt.symmetry = 'Ex'
 
 #XX = linspace(left, right, 10)
@@ -102,6 +104,7 @@ NR = [main.get_material(x, 0.5*h).nr(opt.wavelength.real).real for x in XX]
 plot(XX, NR, '--k')
 
 NR = opt.outRefractiveIndex(msh)
+plot(XX, NR.array[:,0,0].real, 'g')
 plot(XX, NR.array[:,0,2].real, 'r', label='Fourier')
 
 

@@ -6,6 +6,9 @@
 
   geometry: Cartesian2D
 
+  mesh: [ Ordered, Regular ]
+  need mesh: false
+
   tags:
   - tag: expansion
     label: Details on Fourier Expansion
@@ -49,6 +52,14 @@
       default: 1
       help: >
         Factor by which the number of coefficients is increased for FFT.
+    - attr: ft
+      label: Fourier transform type
+      type: choice
+      default: discrete
+      choices: [ discrete, analytic ]
+      help: >
+        Type of the Fourier transform. Analytic transform is faster and more precise,
+        however it ignores temperature and gain distributions.
     - &dct
       attr: dct
       label: Symmetric transform type

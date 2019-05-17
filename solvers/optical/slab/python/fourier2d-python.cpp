@@ -362,6 +362,11 @@ static shared_ptr<Scattering<FourierSolver2D>> FourierSolver2D_scatteringGaussia
 
 void export_FourierSolver2D()
 {
+    py_enum<typename FourierSolver2D::FourierType>()
+        .value("DISCRETE", FourierSolver2D::FOURIER_DISCRETE)
+        .value("ANALYTIC", FourierSolver2D::FOURIER_ANALYTIC)
+    ;
+
     CLASS(FourierSolver2D, "Fourier2D",
         u8"Optical Solver using Fourier expansion in 2D.\n\n"
         u8"It calculates optical modes and optical field distribution using Fourier slab method\n"
@@ -391,6 +396,9 @@ void export_FourierSolver2D()
                 u8"the transverse component of the propagation vector.\n");
     RW_FIELD(refine, "Number of refinement points for refractive index averaging.");
     RW_FIELD(oversampling, "Factor by which the number of coefficients is increased for FFT.");
+    solver.add_property("ft", &__Class__::getFourierType, &__Class__::setFourierType,
+                u8"Type of the Fourier transform. Analytic transform is faster and more precise,\n"
+                u8"however it ignores temperature and gain distributions.\n");
     solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT,
                 "Type of discrete cosine transform for symmetric expansion.");
     RW_FIELD(emission, "Direction of the useful light emission.\n\n"
