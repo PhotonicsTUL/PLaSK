@@ -21,6 +21,8 @@ oversampling = 1
 smooth = 0#.01
 
 ft = 'analytic'
+#ft = 'discrete'
+
 dct = 2
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

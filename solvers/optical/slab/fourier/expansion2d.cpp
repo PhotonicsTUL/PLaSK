@@ -387,7 +387,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         coeffs[layer][0] = eps0;
         double l, r = 0.;
         const ptrdiff_t di = (mesh->tran()->size() == original_mesh->size()+1)? 1 : 0;
-        const int start = symmetric()? 0 : -int(nN)/2, end = int(nN+1)/2;
+        const int start = symmetric()? 0 : -int(nN)/2, end = symmetric()? nN : int(nN+1)/2;
         const double b = 2*PI / L;
         for (size_t i = 1; i < mn; ++i) {
             Tensor3<dcomplex> eps1 = getEpsilon(geometry, layer, maty, lam, glam, i);
