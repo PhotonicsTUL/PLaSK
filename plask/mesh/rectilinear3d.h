@@ -898,14 +898,18 @@ private:
         }
 
         const_iterator begin() const override {
-            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER>(this->mesh, Vec<3, std::size_t>(0, 0, 0),
+            Vec<3, std::size_t> index_begin(0, 0, 0);
+            index_begin[FIXED_DIR] = level;
+            return Iterator(new BoundaryIteratorImpl<CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER>(this->mesh, index_begin,
                                                                                            this->mesh.axis[CHANGE_DIR_SLOWER]->size(),
                                                                                            this->mesh.axis[CHANGE_DIR_FASTER]->size()));
         }
 
         const_iterator end() const override {
-            Vec<3, std::size_t> index_end(0, 0, 0);
+            Vec<3, std::size_t> index_end;
             index_end[CHANGE_DIR_SLOWER] = this->mesh.axis[CHANGE_DIR_SLOWER]->size();
+            index_end[FIXED_DIR] = level;
+            index_end[CHANGE_DIR_FASTER] = 0;
             return Iterator(new BoundaryIteratorImpl<CHANGE_DIR_SLOWER, CHANGE_DIR_FASTER>(this->mesh, index_end,
                                                                                            this->mesh.axis[CHANGE_DIR_SLOWER]->size(),
                                                                                            this->mesh.axis[CHANGE_DIR_FASTER]->size()));

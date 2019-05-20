@@ -161,5 +161,61 @@ BOOST_AUTO_TEST_CASE(elements) {
     }
 }
 
+BOOST_AUTO_TEST_CASE(boundary3d) {
+    plask::RectangularMesh<3> mesh(
+                plask::make_shared<plask::OrderedAxis>(std::initializer_list<double>{1.1, 2.1}),
+                plask::make_shared<plask::OrderedAxis>(std::initializer_list<double>{1.2, 2.2}),
+                plask::make_shared<plask::OrderedAxis>(std::initializer_list<double>{1.3, 2.3}),
+                plask::RectangularMesh<3>::ORDER_102);
+    {
+        auto b = mesh.createLeftBoundary();
+        std::size_t expected_left[] = { 0, 1, 2, 3 };
+        BOOST_CHECK_EQUAL_COLLECTIONS(b.begin(), b.end(), std::begin(expected_left), std::end(expected_left));
+        BOOST_CHECK_EQUAL(b.size(), 4);
+        BOOST_CHECK(b.contains(3));
+        BOOST_CHECK(!b.contains(4));
+    }
+    {
+        auto b = mesh.createRightBoundary();
+        std::size_t expected_right[] = { 4, 5, 6, 7 };
+        BOOST_CHECK_EQUAL_COLLECTIONS(b.begin(), b.end(), std::begin(expected_right), std::end(expected_right));
+        BOOST_CHECK_EQUAL(b.size(), 4);
+        BOOST_CHECK(b.contains(7));
+        BOOST_CHECK(!b.contains(3));
+
+    }
+    {
+        auto b = mesh.createBottomBoundary();
+        std::size_t expected_bottom[] = { 0, 2, 4, 6 };
+        BOOST_CHECK_EQUAL_COLLECTIONS(b.begin(), b.end(), std::begin(expected_bottom), std::end(expected_bottom));
+        BOOST_CHECK_EQUAL(b.size(), 4);
+        BOOST_CHECK(b.contains(4));
+        BOOST_CHECK(!b.contains(5));
+    }
+    {
+        auto b = mesh.createTopBoundary();
+        std::size_t expected_top[] = { 1, 3, 5, 7 };
+        BOOST_CHECK_EQUAL_COLLECTIONS(b.begin(), b.end(), std::begin(expected_top), std::end(expected_top));
+        BOOST_CHECK_EQUAL(b.size(), 4);
+        BOOST_CHECK(b.contains(3));
+        BOOST_CHECK(!b.contains(4));
+    }
+    {
+        auto b = mesh.createBackBoundary();
+        std::size_t expected_back[] = { 0, 1, 4, 5 };
+        BOOST_CHECK_EQUAL_COLLECTIONS(b.begin(), b.end(), std::begin(expected_back), std::end(expected_back));
+        BOOST_CHECK_EQUAL(b.size(), 4);
+        BOOST_CHECK(b.contains(1));
+        BOOST_CHECK(!b.contains(2));
+    }
+    {
+        auto b = mesh.createFrontBoundary();
+        std::size_t expected_front[] = { 2, 3, 6, 7 };
+        BOOST_CHECK_EQUAL_COLLECTIONS(b.begin(), b.end(), std::begin(expected_front), std::end(expected_front));
+        BOOST_CHECK_EQUAL(b.size(), 4);
+        BOOST_CHECK(b.contains(3));
+        BOOST_CHECK(!b.contains(4));
+    }
+}
 
 BOOST_AUTO_TEST_SUITE_END()
