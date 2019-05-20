@@ -11,7 +11,7 @@ namespace plask { namespace optical { namespace slab {
 /**
  * Reflection transformation solver in Cartesian 2D geometry.
  */
-struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2DCartesian>> {
+struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverWithMesh<Geometry2DCartesian,MeshAxis>> {
 
     friend struct ExpansionPW2D;
 
@@ -25,6 +25,8 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         WHAT_KTRAN          ///< Search for transverse wavevector
     };
 
+
+    /// Mode parameters
     struct Mode {
         Expansion::Component symmetry;          ///< Mode horizontal symmetry
         Expansion::Component polarization;      ///< Mode polarization
@@ -73,6 +75,12 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
         }
     };
 
+    /// Possible ways of computation of Fourier coefficients
+    enum FourierType {
+        FOURIER_DISCRETE,
+        FOURIER_ANALYTIC
+    };
+
   protected:
 
     dcomplex beta,                     ///< Longitudinal wavevector [1/µm]
@@ -94,6 +102,9 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
 
     /// Type of discrete cosine transform. Can be only 1 or two
     int dct;
+
+    /// Way of computation of Fourier coefficients
+    FourierType ftt;
 
   public:
 
@@ -141,6 +152,14 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
     void loadConfiguration(XMLReader& reader, Manager& manager) override;
 
     /**
+     * Set the simple mesh based on the geometry bounding boxes.
+     **/
+    void setSimpleMesh() {
+        writelog(LOG_DETAIL, "Creating simple mesh");
+        setMesh(plask::make_shared<OrderedMesh1DSimpleGenerator>());
+    }
+
+    /**
      * Find the mode around the specified effective index.
      * This method remembers the determined mode, for retrieval of the field profiles.
      * \param what what to search for
@@ -165,11 +184,22 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverOver<Geometry2D
             throw BadInput(getId(), "Bad DCT type (can be only 1 or 2)");
         if (dct != n) {
             dct = n;
-            if (symmetric()) invalidate();
+            if (symmetric() && ftt == FOURIER_DISCRETE) invalidate();
         }
     }
     /// True if DCT == 2
     bool dct2() const { return dct == 2; }
+
+
+    /// Get type of the DCT
+    FourierType getFourierType() const { return ftt; }
+    /// Set type of the DCT
+    void setFourierType(FourierType ft) {
+        if (ft != ftt) {
+            ftt = ft;
+            invalidate();
+        }
+    }
 
     /// Get transverse wavevector
     dcomplex getKtran() const { return ktran; }

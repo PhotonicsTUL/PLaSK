@@ -1,4 +1,6 @@
 #include <boost/algorithm/clamp.hpp>
+#include <boost/range/adaptor/reversed.hpp>
+#include <boost/range/adaptor/transformed.hpp>
 using boost::algorithm::clamp;
 
 #include "expansion2d.h"
@@ -27,12 +29,13 @@ void ExpansionPW2D::init()
 {
     auto geometry = SOLVER->getGeometry();
 
-    shared_ptr<RegularAxis> xmesh;
+    shared_ptr<MeshAxis> xmesh;
 
     periodic = geometry->isPeriodic(Geometry2DCartesian::DIRECTION_TRAN);
 
-    left = geometry->getChild()->getBoundingBox().lower[0];
-    right = geometry->getChild()->getBoundingBox().upper[0];
+    auto bbox = geometry->getChild()->getBoundingBox();
+    left = bbox.lower[0];
+    right = bbox.upper[0];
 
     size_t refine = SOLVER->refine, M;
     if (refine == 0) refine = 1;
@@ -49,6 +52,26 @@ void ExpansionPW2D::init()
         if (!symmetric()) left = -right;
     }
 
+    if (SOLVER->ftt == FourierSolver2D::FOURIER_ANALYTIC) {
+        if (!SOLVER->mesh) SOLVER->setSimpleMesh();
+        if (SOLVER->mesh->size() < 2) throw BadInput(SOLVER->getId(), "Mesh needs at least two points");
+        if (!geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN) || SOLVER->mesh->at(0) < 0.) {
+            original_mesh = SOLVER->mesh;
+        } else {
+            shared_ptr<OrderedAxis> new_mesh = make_shared<OrderedAxis>(*SOLVER->mesh);
+            original_mesh = new_mesh;
+            auto negate = [](double x) { return -x; };
+            auto transformed = (*original_mesh) | boost::adaptors::reversed | boost::adaptors::transformed(negate);
+            new_mesh->addOrderedPoints(transformed.begin(), transformed.end(), new_mesh->size());
+        }
+        if (!is_zero(original_mesh->at(0) - (symmetric()? -right : left)))
+            throw BadInput(SOLVER->getId(), "First mesh point ({}) must match left geometry boundary ({})",
+                           original_mesh->at(0), symmetric()? -right : left);
+        if (!is_zero(original_mesh->at(original_mesh->size()-1) - right))
+            throw BadInput(SOLVER->getId(), "Last mesh point ({}) must match right geometry boundary ({})",
+                           original_mesh->at(original_mesh->size()-1), right);
+    }
+
     if (!periodic) {
         // Add PMLs
         if (!symmetric()) left -= SOLVER->pml.size + SOLVER->pml.dist;
@@ -56,30 +79,31 @@ void ExpansionPW2D::init()
     }
 
     double L;
-                                                            // N = 3  nN = 5  refine = 5  M = 25
-    if (!symmetric()) {                                     //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
-        L = right - left;                                   //  ^ ^ ^ ^ ^
-        N = 2 * SOLVER->getSize() + 1;                      // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
+                                                                // N = 3  nN = 5  refine = 5  M = 25
+    if (!symmetric()) {                                         //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
+        L = right - left;                                       //  ^ ^ ^ ^ ^
+        N = 2 * SOLVER->getSize() + 1;                          // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
         nN = 4 * SOLVER->getSize() + 1;
-        nM = size_t(round(SOLVER->oversampling * double(nN)));  // N = 3  nN = 5  refine = 4  M = 20
-        M = refine * nM;                                        // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
-        double dx = 0.5 * L * double(refine-1) / double(M);     //  ^ ^ ^ ^
-        xmesh = plask::make_shared<RegularAxis>(                // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
-                               left-dx, right-dx-L/double(M), M);
+        nM = size_t(round(SOLVER->oversampling * double(nN)));      // N = 3  nN = 5  refine = 4  M = 20
+        M = refine * nM;                                            // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
+        double dx = 0.5 * L * double(refine-1) / double(M);         //  ^ ^ ^ ^
+        if (SOLVER->ftt == FourierSolver2D::FOURIER_DISCRETE)       // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+            xmesh = plask::make_shared<RegularAxis>(left-dx, right-dx-L/double(M), M);
     } else {
         L = 2. * right;
         N = SOLVER->getSize() + 1;
         nN = 2 * SOLVER->getSize() + 1;
         nM = size_t(round(SOLVER->oversampling * double(nN)));
-        M = refine * nM;                                    // N = 3  nN = 5  refine = 4  M = 20
-        if (SOLVER->dct2()) {                               // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
-            double dx = 0.25 * L / double(M);               //  ^ ^ ^ ^
-            xmesh = plask::make_shared<RegularAxis>(        // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
-                               dx, right - dx, M);
+        M = refine * nM;                                            // N = 3  nN = 5  refine = 4  M = 20
+        if (SOLVER->dct2()) {                                       // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
+            double dx = 0.25 * L / double(M);                       //  ^ ^ ^ ^
+            if (SOLVER->ftt == FourierSolver2D::FOURIER_DISCRETE)   // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
+                xmesh = plask::make_shared<RegularAxis>(dx, right-dx, M);
         } else {
             size_t nNa = 4 * SOLVER->getSize() + 1;
             double dx = 0.5 * L * double(refine-1) / double(refine*nNa);
-            xmesh = plask::make_shared<RegularAxis>(-dx, right+dx, M);
+            if (SOLVER->ftt == FourierSolver2D::FOURIER_DISCRETE)
+                xmesh = plask::make_shared<RegularAxis>(-dx, right+dx, M);
         }
     }
 
@@ -90,53 +114,72 @@ void ExpansionPW2D::init()
 
     if (symmetric()) SOLVER->writelog(LOG_DETAIL, "Symmetry is {0}", (symmetry== E_TRAN)? "Etran" : "Elong");
 
-    matFFT = FFT::Forward1D(4, int(nM), symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE);
+    if (SOLVER->ftt == FourierSolver2D::FOURIER_DISCRETE) {
+        matFFT = FFT::Forward1D(4, int(nM),
+                                symmetric()?
+                                    SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 :
+                                    FFT::SYMMETRY_NONE);
+    } else {
+        if (!periodic) {
+            xmesh = plask::make_shared<OrderedAxis>(*original_mesh->getMidpointAxis());
+            static_pointer_cast<OrderedAxis>(xmesh)->addPoint(SOLVER->mesh->at(0) - 2.*OrderedAxis::MIN_DISTANCE);
+            static_pointer_cast<OrderedAxis>(xmesh)->addPoint(SOLVER->mesh->at(SOLVER->mesh->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
+        } else
+            xmesh = original_mesh->getMidpointAxis();
+    }
 
     // Compute permeability coefficients
     if (periodic) {
         mag.reset(nN, Tensor2<dcomplex>(0.));
         mag[0].c00 = 1.; mag[0].c11 = 1.; // constant 1
     } else {
-        DataVector<Tensor2<dcomplex>> work;
-        if (nN != nM) {
-            mag.reset(nN);
-            work.reset(nM, Tensor2<dcomplex>(0.));
-        } else {
-            mag.reset(nN, Tensor2<dcomplex>(0.));
-            work = mag;
-        }
-        // Add PMLs
-        SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure width: {0}um)", L);
-        double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
-        if (symmetric()) pil = 0;
-        else pil = std::lower_bound(xmesh->begin(), xmesh->end(), pl) - xmesh->begin();
-        pir = std::lower_bound(xmesh->begin(), xmesh->end(), pr) - xmesh->begin();
-        for (size_t i = 0; i != nM; ++i) {
-            for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
-                dcomplex sy = 1.;
-                if (j < pil) {
-                    double h = (pl - xmesh->at(j)) / SOLVER->pml.size;
-                    sy = 1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order);
-                } else if (j > pir) {
-                    double h = (xmesh->at(j) - pr) / SOLVER->pml.size;
-                    sy = 1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order);
-                }
-                work[i] += Tensor2<dcomplex>(sy, 1./sy);
-            }
-            work[i] /= (double)refine;
-        }
-        // Compute FFT
-        FFT::Forward1D(2, int(nM), symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE)
-            .execute(reinterpret_cast<dcomplex*>(work.data()));
-        // Copy data to its final destination
-        if (nN != nM) {
-            if (symmetric()) {
-                std::copy_n(work.begin(), nN, mag.begin());
+        if (SOLVER->ftt == FourierSolver2D::FOURIER_DISCRETE) {
+            DataVector<Tensor2<dcomplex>> work;
+            if (nN != nM) {
+                mag.reset(nN);
+                work.reset(nM, Tensor2<dcomplex>(0.));
             } else {
-                size_t nn = nN/2;
-                std::copy_n(work.begin(), nn+1, mag.begin());
-                std::copy_n(work.end()-nn, nn, mag.begin()+nn+1);
+                mag.reset(nN, Tensor2<dcomplex>(0.));
+                work = mag;
             }
+            // Add PMLs
+            SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure width: {0}um)", L);
+            double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
+            if (symmetric()) pil = 0;
+            else pil = std::lower_bound(xmesh->begin(), xmesh->end(), pl) - xmesh->begin();
+            pir = std::lower_bound(xmesh->begin(), xmesh->end(), pr) - xmesh->begin();
+            for (size_t i = 0; i != nM; ++i) {
+                for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
+                    dcomplex sy = 1.;
+                    if (j < pil) {
+                        double h = (pl - xmesh->at(j)) / SOLVER->pml.size;
+                        sy = 1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order);
+                    } else if (j > pir) {
+                        double h = (xmesh->at(j) - pr) / SOLVER->pml.size;
+                        sy = 1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order);
+                    }
+                    work[i] += Tensor2<dcomplex>(sy, 1./sy);
+                }
+                work[i] /= (double)refine;
+            }
+            // Compute FFT
+            FFT::Forward1D(2, int(nM),
+                           symmetric()?
+                               SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 :
+                               FFT::SYMMETRY_NONE)
+                .execute(reinterpret_cast<dcomplex*>(work.data()));
+            // Copy data to its final destination
+            if (nN != nM) {
+                if (symmetric()) {
+                    std::copy_n(work.begin(), nN, mag.begin());
+                } else {
+                    size_t nn = nN/2;
+                    std::copy_n(work.begin(), nn+1, mag.begin());
+                    std::copy_n(work.end()-nn, nn, mag.begin()+nn+1);
+                }
+            }
+        } else {
+            throw NotImplemented(SOLVER->getId(), "Analytic Fourier transform for non-periodic structure");  //TODO
         }
         // Smooth coefficients
         if (SOLVER->smooth) {
@@ -184,26 +227,6 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
 {
     auto geometry = SOLVER->getGeometry();
 
-    size_t refine = SOLVER->refine;
-    if (refine == 0) refine = 1;
-
-    #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
-        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{} (sampled at {} points) in thread {}",
-                         layer, solver->lcount, refine * nM, omp_get_thread_num());
-    #else
-        SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{} (sampled at {} points)",
-                         layer, solver->lcount, refine * nM);
-    #endif
-
-    if (isnan(lam))
-        throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
-
-    if (gain_connected && solver->lgained[layer]) {
-        SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
-        if (isnan(glam)) glam = lam;
-    }
-
-    double factor = 1. / double(refine);
     double maty;
     for (size_t i = 0; i != solver->stack.size(); ++i) {
         if (solver->stack[i] == layer) {
@@ -211,146 +234,188 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
             break;
         }
     }
-    double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
-    Tensor3<dcomplex> refl, refr;
-    if (!periodic) {
-        double Tl = 0., Tr = 0., totalw = 0.;
-        for (size_t i = 0, vl = pil * solver->verts->size(), vr = pir * solver->verts->size(); i != mesh->vert()->size(); ++vl, ++vr, ++i) {
-            if (solver->stack[i] == layer) {
-                double w = (i == 0 || i == mesh->vert()->size()-1)? 1e-6 : solver->vbounds->at(i) - solver->vbounds->at(i-1);
-                Tl += w * temperature[vl]; Tr += w * temperature[vr]; totalw += w;
-            }
-        }
-        Tl /= totalw; Tr /= totalw;
-        {
-            OmpLockGuard<OmpNestLock> lock; // this must be declared before `material` to guard its destruction
-            auto material = geometry->getMaterial(vec(pl,maty));
-            lock = material->lock();
-            refl = geometry->getMaterial(vec(pl,maty))->NR(lam, Tl).sqr();
-            if (isnan(refl.c00) || isnan(refl.c11) || isnan(refl.c22) || isnan(refl.c01))
-                throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
-                               material->name(), lam, Tl);
-        }{
-            OmpLockGuard<OmpNestLock> lock; // this must be declared before `material` to guard its destruction
-            auto material = geometry->getMaterial(vec(pr,maty));
-            lock = material->lock();
-            refr = geometry->getMaterial(vec(pr,maty))->NR(lam, Tr).sqr();
-            if (isnan(refr.c00) || isnan(refr.c11) || isnan(refr.c22) || isnan(refr.c01))
-                throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
-                               material->name(), lam, Tr);
-        }
-    }
 
-    // Make space for the result
-    DataVector<Tensor3<dcomplex>> work;
-    if (nN != nM) {
-        coeffs[layer].reset(nN);
-        work.reset(nM, Tensor3<dcomplex>(0.));
-    } else {
-        coeffs[layer].reset(nN, Tensor3<dcomplex>(0.));
-        work = coeffs[layer];
-    }
+    double L = (right-left) * (symmetric()? 2. : 1.);
 
-    // Average material parameters
-    for (size_t i = 0; i != nM; ++i) {
-        for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
-            double T = 0., W = 0.;
-            for (size_t k = 0, v = j * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
-                if (solver->stack[k] == layer) {
-                    double w = (k == 0 || k == mesh->vert()->size()-1)? 1e-6 : solver->vbounds->at(k) - solver->vbounds->at(k-1);
-                    T += w * temperature[v]; W += w;
+    if (SOLVER->ftt == FourierSolver2D::FOURIER_DISCRETE) {
+        size_t refine = SOLVER->refine;
+        if (refine == 0) refine = 1;
+
+        #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
+            SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{} (sampled at {} points) in thread {}",
+                            layer, solver->lcount, refine * nM, omp_get_thread_num());
+        #else
+            SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{} (sampled at {} points)",
+                            layer, solver->lcount, refine * nM);
+        #endif
+
+        if (isnan(lam))
+            throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
+
+        if (gain_connected && solver->lgained[layer]) {
+            SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
+            if (isnan(glam)) glam = lam;
+        }
+
+        double factor = 1. / double(refine);
+
+        double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
+        Tensor3<dcomplex> refl, refr;
+        if (!periodic) {
+            double Tl = 0., Tr = 0., totalw = 0.;
+            for (size_t i = 0, vl = pil * solver->verts->size(), vr = pir * solver->verts->size(); i != mesh->vert()->size(); ++vl, ++vr, ++i) {
+                if (solver->stack[i] == layer) {
+                    double w = (i == 0 || i == mesh->vert()->size()-1)? 1e-6 : solver->vbounds->at(i) - solver->vbounds->at(i-1);
+                    Tl += w * temperature[vl]; Tr += w * temperature[vr]; totalw += w;
                 }
             }
-            T /= W;
-            Tensor3<dcomplex> nr;
+            Tl /= totalw; Tr /= totalw;
             {
                 OmpLockGuard<OmpNestLock> lock; // this must be declared before `material` to guard its destruction
-                auto material = geometry->getMaterial(vec(mesh->tran()->at(j),maty));
+                auto material = geometry->getMaterial(vec(pl,maty));
                 lock = material->lock();
-                nr = material->NR(lam, T);
-                if (isnan(nr.c00) || isnan(nr.c11) || isnan(nr.c22) || isnan(nr.c01))
-                    throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K", material->name(), lam, T);
-            }
-            if (nr.c01 != 0.) {
-                if (symmetric()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
-                if (separated()) throw BadInput(solver->getId(), "Single polarization not allowed for structure with non-diagonal NR tensor");
-            }
-            if (gain_connected && solver->lgained[layer]) {
-                auto roles = geometry->getRolesAt(vec(mesh->tran()->at(j),maty));
-                if (roles.find("QW") != roles.end() || roles.find("QD") != roles.end() || roles.find("gain") != roles.end()) {
-                    Tensor2<double> g = 0.; W = 0.;
-                    for (size_t k = 0, v = j * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
-                        if (solver->stack[k] == layer) {
-                            double w = (k == 0 || k == mesh->vert()->size()-1)? 1e-6 : solver->vbounds->at(k) - solver->vbounds->at(k-1);
-                            g += w * gain[v]; W += w;
-                        }
-                    }
-                    Tensor2<double> ni = glam * g/W * (0.25e-7/PI);
-                    nr.c00.imag(ni.c00); nr.c11.imag(ni.c00); nr.c22.imag(ni.c11); nr.c01.imag(0.);
-                }
-            }
-            nr.sqr_inplace();
-
-            // Add PMLs
-            if (!periodic) {
-                if (j < pil) {
-                    double h = (pl - mesh->tran()->at(j)) / SOLVER->pml.size;
-                    dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
-                    nr = Tensor3<dcomplex>(refl.c00*sy, refl.c11/sy, refl.c22*sy);
-                } else if (j > pir) {
-                    double h = (mesh->tran()->at(j) - pr) / SOLVER->pml.size;
-                    dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
-                    nr = Tensor3<dcomplex>(refr.c00*sy, refr.c11/sy, refr.c22*sy);
-                }
-            }
-
-            work[i] += Tensor3<dcomplex>(nr.c00, nr.c00/(nr.c00*nr.c11-nr.c01*nr.c01), nr.c22, nr.c01);
-        }
-        work[i] *= factor;
-        if (work[i].c11 != 0. && !isnan(work[i].c11.real()) && !isnan(work[i].c11.imag()))
-            work[i].c11 = 1. / work[i].c11; // We were averaging inverses of c11 (xx)
-        else work[i].c11 = 0.;
-        if (work[i].c22 != 0.)
-            work[i].c22 = 1. / work[i].c22; // We need inverse of c22 (yy)
-    }
-
-    // Check if the layer is uniform
-    if (periodic) {
-        diagonals[layer] = true;
-        for (size_t i = 1; i != nM; ++i) {
-            Tensor3<dcomplex> diff = work[i] - work[0];
-            if (!(is_zero(diff.c00) && is_zero(diff.c11) && is_zero(diff.c22) && is_zero(diff.c01))) {
-                diagonals[layer] = false;
-                break;
+                refl = geometry->getMaterial(vec(pl,maty))->NR(lam, Tl).sqr();
+                if (isnan(refl.c00) || isnan(refl.c11) || isnan(refl.c22) || isnan(refl.c01))
+                    throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
+                                material->name(), lam, Tl);
+            }{
+                OmpLockGuard<OmpNestLock> lock; // this must be declared before `material` to guard its destruction
+                auto material = geometry->getMaterial(vec(pr,maty));
+                lock = material->lock();
+                refr = geometry->getMaterial(vec(pr,maty))->NR(lam, Tr).sqr();
+                if (isnan(refr.c00) || isnan(refr.c11) || isnan(refr.c22) || isnan(refr.c01))
+                    throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
+                                material->name(), lam, Tr);
             }
         }
-    } else
-        diagonals[layer] = false;
 
-    if (diagonals[layer]) {
-        SOLVER->writelog(LOG_DETAIL, "Layer {0} is uniform", layer);
-        if (nN != nM) coeffs[layer][0] = work[0];
-        std::fill(coeffs[layer].begin()+1, coeffs[layer].end(), Tensor3<dcomplex>(0.));
-    } else {
-        // Perform FFT
-        matFFT.execute(reinterpret_cast<dcomplex*>(work.data()));
-        // Copy result
+        // Make space for the result
+        DataVector<Tensor3<dcomplex>> work;
         if (nN != nM) {
-            if (symmetric()) {
-                std::copy_n(work.begin(), nN, coeffs[layer].begin());
-            } else {
-                size_t nn = nN/2;
-                std::copy_n(work.begin(), nn+1, coeffs[layer].begin());
-                std::copy_n(work.end()-nn, nn, coeffs[layer].begin()+nn+1);
+            coeffs[layer].reset(nN);
+            work.reset(nM, Tensor3<dcomplex>(0.));
+        } else {
+            coeffs[layer].reset(nN, Tensor3<dcomplex>(0.));
+            work = coeffs[layer];
+        }
+
+        // Average material parameters
+        for (size_t i = 0; i != nM; ++i) {
+            for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
+                Tensor3<dcomplex> eps = getEpsilon(geometry, layer, maty, lam, glam, j);
+
+                // Add PMLs
+                if (!periodic) {
+                    if (j < pil) {
+                        double h = (pl - mesh->tran()->at(j)) / SOLVER->pml.size;
+                        dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
+                        eps = Tensor3<dcomplex>(refl.c00*sy, refl.c11/sy, refl.c22*sy);
+                    } else if (j > pir) {
+                        double h = (mesh->tran()->at(j) - pr) / SOLVER->pml.size;
+                        dcomplex sy(1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order));
+                        eps = Tensor3<dcomplex>(refr.c00*sy, refr.c11/sy, refr.c22*sy);
+                    }
+                }
+
+                work[i] += Tensor3<dcomplex>(eps.c00, eps.c00/(eps.c00*eps.c11-eps.c01*eps.c01), eps.c22, eps.c01);
+            }
+            work[i] *= factor;
+            if (work[i].c11 != 0. && !isnan(work[i].c11.real()) && !isnan(work[i].c11.imag()))
+                work[i].c11 = 1. / work[i].c11; // We were averaging inverses of c11 (xx)
+            else work[i].c11 = 0.;
+            if (work[i].c22 != 0.)
+                work[i].c22 = 1. / work[i].c22; // We need inverse of c22 (yy)
+        }
+
+        // Check if the layer is uniform
+        if (periodic) {
+            diagonals[layer] = true;
+            for (size_t i = 1; i != nM; ++i) {
+                Tensor3<dcomplex> diff = work[i] - work[0];
+                if (!(is_zero(diff.c00) && is_zero(diff.c11) && is_zero(diff.c22) && is_zero(diff.c01))) {
+                    diagonals[layer] = false;
+                    break;
+                }
+            }
+        } else
+            diagonals[layer] = false;
+
+        if (diagonals[layer]) {
+            SOLVER->writelog(LOG_DETAIL, "Layer {0} is uniform", layer);
+            if (nN != nM) coeffs[layer][0] = work[0];
+            std::fill(coeffs[layer].begin()+1, coeffs[layer].end(), Tensor3<dcomplex>(0.));
+        } else {
+            // Perform FFT
+            matFFT.execute(reinterpret_cast<dcomplex*>(work.data()));
+            // Copy result
+            if (nN != nM) {
+                if (symmetric()) {
+                    std::copy_n(work.begin(), nN, coeffs[layer].begin());
+                } else {
+                    size_t nn = nN/2;
+                    std::copy_n(work.begin(), nn+1, coeffs[layer].begin());
+                    std::copy_n(work.end()-nn, nn, coeffs[layer].begin()+nn+1);
+                }
             }
         }
-        // Smooth coefficients
-        if (SOLVER->smooth) {
-            double bb4 = PI / ((right-left) * (symmetric()? 2. : 1.)); bb4 *= bb4;   // (2π/L)² / 4
-            for (size_t i = 0; i != nN; ++i) {
-                int k = int(i); if (!symmetric() && k > int(nN/2)) k -= int(nN);
-                coeffs[layer][i] *= exp(-SOLVER->smooth * bb4 * k * k);
+
+    } else {
+
+        #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
+            SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{} in thread {}",
+                            layer, solver->lcount, omp_get_thread_num());
+        #else
+            SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{}",
+                            layer, solver->lcount);
+        #endif
+
+        if (isnan(lam))
+            throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
+
+        if (gain_connected && solver->lgained[layer]) {
+            SOLVER->writelog(LOG_DEBUG, "Layer {:d} has gain", layer);
+            if (isnan(glam)) glam = lam;
+        }
+
+        coeffs[layer].reset(nN, Tensor3<dcomplex>(0.));
+
+        size_t mn = mesh->tran()->size();
+        Tensor3<dcomplex> eps0 = getEpsilon(geometry, layer, maty, lam, glam, mn-1);
+        eps0.c22 = 1. / eps0.c22;
+        Tensor3<dcomplex> eps = getEpsilon(geometry, layer, maty, lam, glam, 0);
+        eps.c22 = 1. / eps.c22;
+        coeffs[layer][0] = eps0;
+        double l, r = 0.;
+        const ptrdiff_t di = (mesh->tran()->size() == original_mesh->size()+1)? 1 : 0;
+        const int start = symmetric()? 0 : -int(nN)/2, end = symmetric()? nN : int(nN+1)/2;
+        const double b = 2*PI / L;
+        for (size_t i = 1; i < mn; ++i) {
+            Tensor3<dcomplex> eps1 = getEpsilon(geometry, layer, maty, lam, glam, i);
+            eps1.c22 = 1. / eps1.c22;
+            if (!eps1.equals(eps)) {
+                l = r;
+                r = original_mesh->at(i-di) - left;
+                eps -= eps0;
+                if (!is_zero(eps)) {
+                    for (int k = start; k != end; ++k) {
+                        size_t j = (k>=0)? k : k + nN;
+                        if (j) // k != 0
+                            coeffs[layer][j] += eps * dcomplex(0., 0.5/PI/k) * (exp(dcomplex(0., -b*k*r)) - exp(dcomplex(0., -b*k*l)));
+                        else
+                            coeffs[layer][j] += eps * (r-l) / L;
+                    }
+                }
+                eps = eps1;
             }
+        }
+        //TODO Add PMLs
+    }
+    // Smooth coefficients
+    if (SOLVER->smooth) {
+        double bb4 = PI / L; bb4 *= bb4;   // (2π/L)² / 4
+        for (size_t i = 0; i != nN; ++i) {
+            int k = int(i); if (!symmetric() && k > int(nN/2)) k -= int(nN);
+            coeffs[layer][i] *= exp(-SOLVER->smooth * bb4 * k * k);
         }
     }
 }

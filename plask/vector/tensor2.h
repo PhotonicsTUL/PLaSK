@@ -79,6 +79,16 @@ struct Tensor2 {
     bool operator==(const Tensor2<OtherT>& p) const { return p.c00 == c00 && p.c11 == c11; }
 
     /**
+     * Check if two tensors, this and @p p are almost equal.
+     * @param p tensors to compare
+     * @return @c true only if this tensors and @p p have almost equals coordinates
+     */
+    template <typename OtherT>
+    constexpr bool equals(const Tensor2<OtherT>& p) const {
+        return is_zero(p.c00 - c00) && is_zero(p.c11 - c11);
+    }
+
+    /**
      * Compare two tensors, this and @p p.
      * @param p tensor to compare
      * @return true only if this tensor and @p p don't have equals coordinates
@@ -217,6 +227,13 @@ template <typename T>
 struct ZeroImpl<Tensor2<T>> {
     static constexpr Tensor2<T> get() { return Tensor2<T>(0.); }
 };
+
+/// Check if the tensor is almost zero
+/// \param v tensor to verify
+template <typename T>
+inline bool is_zero(const Tensor2<T>& v) {
+    return is_zero(v.c00) && is_zero(v.c11);
+}
 
 /*
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Tensor2<double>)

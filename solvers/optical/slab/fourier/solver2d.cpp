@@ -4,12 +4,14 @@
 
 namespace plask { namespace optical { namespace slab {
 
-FourierSolver2D::FourierSolver2D(const std::string& name): SlabSolver<SolverOver<Geometry2DCartesian>>(name),
+FourierSolver2D::FourierSolver2D(const std::string& name):
+    SlabSolver<SolverWithMesh<Geometry2DCartesian,MeshAxis>>(name),
     beta(0.), ktran(0.),
     symmetry(Expansion::E_UNSPECIFIED),
     polarization(Expansion::E_UNSPECIFIED),
     size(12),
     dct(2),
+    ftt(FOURIER_DISCRETE),
     expansion(this),
     refine(32),
     oversampling(1.),
@@ -28,6 +30,10 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             refine = reader.getAttribute<size_t>("refine", refine);
             smooth = reader.getAttribute<double>("smooth", smooth);
             oversampling = reader.getAttribute<double>("oversampling", oversampling);
+            ftt = reader.enumAttribute<FourierType>("ft")
+                .value("discrete", FOURIER_DISCRETE)
+                .value("analytic", FOURIER_ANALYTIC)
+                .get(ftt);
             int dc = reader.getAttribute<int>("dct", dct);
             if (dc != 1 && dc != 2)
                 throw XMLBadAttrException(reader, "dct", boost::lexical_cast<std::string>(dc), "\"1\" or \"2\"");
@@ -132,7 +138,7 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             double R2 = reader.requireAttribute<double>("R2");
             mirrors.reset(std::make_pair(R1,R2));
             reader.requireTagEnd();
-        } else
+       } else
             parseStandardConfiguration(reader, manager);
     }
 }

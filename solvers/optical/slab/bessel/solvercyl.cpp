@@ -6,7 +6,7 @@ namespace plask { namespace optical { namespace slab {
 
 
 BesselSolverCyl::BesselSolverCyl(const std::string& name):
-    SlabSolver<SolverWithMesh<Geometry2DCylindrical,OrderedAxis>>(name),
+    SlabSolver<SolverWithMesh<Geometry2DCylindrical,MeshAxis>>(name),
     domain(DOMAIN_INFINITE),
     m(1),
     size(12),

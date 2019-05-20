@@ -225,7 +225,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      * Set the simple mesh based on the geometry bounding boxes.
      **/
     void setSimpleMesh() {
-        writelog(LOG_INFO, "Creating simple mesh");
+        writelog(LOG_DETAIL, "Creating simple mesh");
         setMesh(plask::make_shared<RectangularMesh2DSimpleGenerator>());
     }
 
@@ -235,7 +235,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      * \param meshx horizontal mesh
      **/
     void setHorizontalMesh(shared_ptr<MeshAxis> meshx) { //TODO pointer to mesh is held now, is this fine?
-        writelog(LOG_INFO, "Setting horizontal mesh");
+        writelog(LOG_DETAIL, "Setting horizontal mesh");
         if (!geometry) throw NoChildException();
         auto meshxy = RectangularMesh2DSimpleGenerator().generate_t<RectangularMesh<2>>(geometry->getChild());
         meshxy->setAxis0(meshx);

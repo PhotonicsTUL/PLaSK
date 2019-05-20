@@ -566,8 +566,9 @@ cvector SlabBase::getTransmittedCoefficients(const cvector& incident, Transfer::
 
 
 
-template class PLASK_SOLVER_API SlabSolver<SolverOver<Geometry2DCartesian>>;
-template class PLASK_SOLVER_API SlabSolver<SolverWithMesh<Geometry2DCylindrical, OrderedAxis>>;
+// template class PLASK_SOLVER_API SlabSolver<SolverOver<Geometry2DCartesian>>;
+template class PLASK_SOLVER_API SlabSolver<SolverWithMesh<Geometry2DCartesian, MeshAxis>>;
+template class PLASK_SOLVER_API SlabSolver<SolverWithMesh<Geometry2DCylindrical, MeshAxis>>;
 template class PLASK_SOLVER_API SlabSolver<SolverOver<Geometry3D>>;
 
 
