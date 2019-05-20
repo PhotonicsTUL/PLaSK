@@ -894,7 +894,7 @@ private:
             : BoundaryNodeSetWithMeshImpl<RectilinearMesh3D>(mesh), level(level) {}
 
         bool contains(std::size_t mesh_index) const override {
-            return mesh_index < this->mesh.size() && this->mesh.index_axis<FIXED_DIR>(mesh_index) == level;
+            return mesh_index < this->mesh.size() && this->mesh.template index_axis<FIXED_DIR>(mesh_index) == level;
         }
 
         const_iterator begin() const override {
