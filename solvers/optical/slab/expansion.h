@@ -159,8 +159,9 @@ struct PLASK_SOLVER_API Expansion {
      * Get RE anf RH matrices
      * \param layer layer number
      * \param[out] RE,RH resulting matrix
+     * \param work temporary matrix
      */
-    virtual void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) = 0;
+    virtual void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH, cmatrix& work) = 0;
 
     /**
      * Get refractive index back from expansion

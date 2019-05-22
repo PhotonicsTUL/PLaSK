@@ -16,7 +16,6 @@ periodic = True
 
 size = 16
 refine = 8
-oversampling = 1
 
 smooth = 0#.01
 
@@ -77,8 +76,6 @@ opt.smooth = smooth
 opt.size = size
 opt.refine = refine
 
-opt.oversampling = oversampling
-
 opt.dct = dct
 opt.ft = ft
 
@@ -107,7 +104,7 @@ plot(XX, NR, '--k')
 
 NR = opt.outRefractiveIndex(msh)
 plot(XX, NR.array[:,0,0].real, 'g')
-plot(XX, NR.array[:,0,2].real, 'r', label='Fourier')
+plot(XX, NR.array[:,0,1].real, 'r', label='Fourier')
 
 
 
@@ -124,7 +121,7 @@ tight_layout()
 #else:
     #title = "New symmetric method"
 #gcf().canvas.set_window_title(title)
-gcf().canvas.set_window_title("%s %s" % ('Symmetric' if symmetric else 'Asymmetric', 'periodic' if periodic else ''))
+gcf().canvas.set_window_title("%s %s %s" % ('Symmetric' if symmetric else 'Asymmetric', 'periodic' if periodic else '', ft))
 
 del opt
 

@@ -14,11 +14,8 @@ FourierSolver2D::FourierSolver2D(const std::string& name):
     ftt(FOURIER_DISCRETE),
     expansion(this),
     refine(32),
-    oversampling(1.),
     outNeff(this, &FourierSolver2D::getEffectiveIndex, &FourierSolver2D::nummodes)
-{
-    smooth = 0.00025;
-}
+{}
 
 
 void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
@@ -29,7 +26,10 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             size = reader.getAttribute<size_t>("size", size);
             refine = reader.getAttribute<size_t>("refine", refine);
             smooth = reader.getAttribute<double>("smooth", smooth);
-            oversampling = reader.getAttribute<double>("oversampling", oversampling);
+            if (reader.hasAttribute("oversampling")) {
+                reader.ignoreAttribute("oversampling");
+                writelog(LOG_WARNING, "'oversampling' is ignored in XML line {}", reader.getLineNr());
+            }
             ftt = reader.enumAttribute<FourierType>("ft")
                 .value("discrete", FOURIER_DISCRETE)
                 .value("analytic", FOURIER_ANALYTIC)

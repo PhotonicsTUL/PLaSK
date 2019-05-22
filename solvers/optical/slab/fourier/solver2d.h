@@ -134,10 +134,6 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverWithMesh<Geomet
     /// Mesh multiplier for finer computation of the refractive indices
     size_t refine;
 
-    /// Factor by which the number of coefficients is multiplied for FFT.
-    /// Afterwards the coefficients are truncated to the required number.
-    double oversampling;
-
     /// Lateral PMLs
     PML pml;
 
@@ -251,7 +247,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverWithMesh<Geomet
 
     /// Set new mode polarization
     void setPolarization(Expansion::Component pol) {
-        if ((polarization == Expansion::E_UNSPECIFIED) != (pol == Expansion::E_UNSPECIFIED))
+        if (polarization != pol)
             invalidate();
         if (beta != 0. && pol != Expansion::E_UNSPECIFIED) {
             Solver::writelog(LOG_WARNING, "Resetting beta to 0.");

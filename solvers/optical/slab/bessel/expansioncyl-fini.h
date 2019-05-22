@@ -27,7 +27,7 @@ struct PLASK_SOLVER_API ExpansionBesselFini: public ExpansionBessel {
     /// Free allocated memory
     void reset() override;
 
-    void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) override;
+    void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH, cmatrix&) override;
 
     double integratePoyntingVert(const cvector& E, const cvector& H) override;
 

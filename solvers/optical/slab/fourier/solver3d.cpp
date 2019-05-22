@@ -15,7 +15,6 @@ FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<SolverOver
 {
     pml_tran.factor = {1., -2.};
     pml_long.factor = {1., -2.};
-    smooth = 0.00025;
 }
 
 static inline void updatePML(PML& pml, XMLReader& reader) {

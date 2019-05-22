@@ -16,10 +16,7 @@ ExpansionPW2D::ExpansionPW2D(FourierSolver2D* solver): Expansion(solver), initia
 
 void ExpansionPW2D::setPolarization(Component pol) {
     if (pol != polarization) {
-        if (separated() == (pol != E_UNSPECIFIED))
-            solver->clearFields();
-        else
-            SOLVER->invalidate();
+        SOLVER->invalidate();
         polarization = pol;
     }
 }
@@ -37,7 +34,7 @@ void ExpansionPW2D::init()
     left = bbox.lower[0];
     right = bbox.upper[0];
 
-    size_t refine = SOLVER->refine, M;
+    size_t refine = SOLVER->refine, nrN;
     if (refine == 0) refine = 1;
 
     if (symmetry != E_UNSPECIFIED && !geometry->isSymmetric(Geometry2DCartesian::DIRECTION_TRAN))
@@ -79,43 +76,40 @@ void ExpansionPW2D::init()
     }
 
     double L;
-                                                                // N = 3  nN = 5  refine = 5  M = 25
+                                                                // N = 3  nN = 5  refine = 5  nrN = 25
     if (!symmetric()) {                                         //  . . 0 . . . . 1 . . . . 2 . . . . 3 . . . . 4 . .
         L = right - left;                                       //  ^ ^ ^ ^ ^
         N = 2 * SOLVER->getSize() + 1;                          // |0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|5 6 7 8 9|0 1 2 3 4|
-        nN = 4 * SOLVER->getSize() + 1;
-        nM = size_t(round(SOLVER->oversampling * double(nN)));      // N = 3  nN = 5  refine = 4  M = 20
-        M = refine * nM;                                            // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
-        double dx = 0.5 * L * double(refine-1) / double(M);         //  ^ ^ ^ ^
+        nN = 4 * SOLVER->getSize() + 1;                             // N = 3  nN = 5  refine = 4  nrN = 20
+        nrN = refine * nN;                                          // . . 0 . . . 1 . . . 2 . . . 3 . . . 4 . . . 0
+        double dx = 0.5 * L * double(refine-1) / double(nrN);       //  ^ ^ ^ ^
         if (SOLVER->ftt == FourierSolver2D::FOURIER_DISCRETE)       // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
-            xmesh = plask::make_shared<RegularAxis>(left-dx, right-dx-L/double(M), M);
+            xmesh = plask::make_shared<RegularAxis>(left-dx, right-dx-L/double(nrN), nrN);
     } else {
         L = 2. * right;
         N = SOLVER->getSize() + 1;
         nN = 2 * SOLVER->getSize() + 1;
-        nM = size_t(round(SOLVER->oversampling * double(nN)));
-        M = refine * nM;                                            // N = 3  nN = 5  refine = 4  M = 20
+        nrN = refine * nN;                                          // N = 3  nN = 5  refine = 4  nrN = 20
         if (SOLVER->dct2()) {                                       // # . 0 . # . 1 . # . 2 . # . 3 . # . 4 . # . 4 .
-            double dx = 0.25 * L / double(M);                       //  ^ ^ ^ ^
+            double dx = 0.25 * L / double(nrN);                     //  ^ ^ ^ ^
             if (SOLVER->ftt == FourierSolver2D::FOURIER_DISCRETE)   // |0 1 2 3|4 5 6 7|8 9 0 1|2 3 4 5|6 7 8 9|
-                xmesh = plask::make_shared<RegularAxis>(dx, right-dx, M);
+                xmesh = plask::make_shared<RegularAxis>(dx, right-dx, nrN);
         } else {
             size_t nNa = 4 * SOLVER->getSize() + 1;
             double dx = 0.5 * L * double(refine-1) / double(refine*nNa);
             if (SOLVER->ftt == FourierSolver2D::FOURIER_DISCRETE)
-                xmesh = plask::make_shared<RegularAxis>(-dx, right+dx, M);
+                xmesh = plask::make_shared<RegularAxis>(-dx, right+dx, nrN);
         }
     }
-
-    if (nM < nN) throw BadInput(solver->getId(), "Oversampling cannot be smaller than 1");
+    size_t M = matrixSize();
 
     SOLVER->writelog(LOG_DETAIL, "Creating{2}{3} expansion with {0} plane-waves (matrix size: {1})",
-                     N, matrixSize(), symmetric()?" symmetric":"", separated()?" separated":"");
+                     N, M, symmetric()?" symmetric":"", separated()?" separated":"");
 
     if (symmetric()) SOLVER->writelog(LOG_DETAIL, "Symmetry is {0}", (symmetry== E_TRAN)? "Etran" : "Elong");
 
     if (SOLVER->ftt == FourierSolver2D::FOURIER_DISCRETE) {
-        matFFT = FFT::Forward1D(4, int(nM),
+        matFFT = FFT::Forward1D(1, int(nN),
                                 symmetric()?
                                     SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 :
                                     FFT::SYMMETRY_NONE);
@@ -130,25 +124,23 @@ void ExpansionPW2D::init()
 
     // Compute permeability coefficients
     if (periodic) {
-        mag.reset(nN, Tensor2<dcomplex>(0.));
-        mag[0].c00 = 1.; mag[0].c11 = 1.; // constant 1
+        mag.reset(nN, 0.);
+        mag[0] = 1.;
+        if (polarization != E_TRAN) {
+            rmag.reset(nN, 0.);
+            rmag[0] = 1.;
+        }
     } else {
         if (SOLVER->ftt == FourierSolver2D::FOURIER_DISCRETE) {
-            DataVector<Tensor2<dcomplex>> work;
-            if (nN != nM) {
-                mag.reset(nN);
-                work.reset(nM, Tensor2<dcomplex>(0.));
-            } else {
-                mag.reset(nN, Tensor2<dcomplex>(0.));
-                work = mag;
-            }
+            mag.reset(nN, 0.);
+            if (polarization != E_TRAN) rmag.reset(nN, 0.);
             // Add PMLs
             SOLVER->writelog(LOG_DETAIL, "Adding side PMLs (total structure width: {0}um)", L);
             double pl = left + SOLVER->pml.size, pr = right - SOLVER->pml.size;
             if (symmetric()) pil = 0;
             else pil = std::lower_bound(xmesh->begin(), xmesh->end(), pl) - xmesh->begin();
             pir = std::lower_bound(xmesh->begin(), xmesh->end(), pr) - xmesh->begin();
-            for (size_t i = 0; i != nM; ++i) {
+            for (size_t i = 0; i != nN; ++i) {
                 for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
                     dcomplex sy = 1.;
                     if (j < pil) {
@@ -158,26 +150,19 @@ void ExpansionPW2D::init()
                         double h = (xmesh->at(j) - pr) / SOLVER->pml.size;
                         sy = 1. + (SOLVER->pml.factor-1.)*pow(h, SOLVER->pml.order);
                     }
-                    work[i] += Tensor2<dcomplex>(sy, 1./sy);
+                    mag[i] += sy;
+                    if (polarization != E_TRAN) rmag[i] += 1. / sy;
                 }
-                work[i] /= (double)refine;
+                mag[i] /= (double)refine;
+                if (polarization != E_TRAN) rmag[i] /= (double)refine;
             }
             // Compute FFT
-            FFT::Forward1D(2, int(nM),
+            FFT::Forward1D fft(1, int(nN),
                            symmetric()?
                                SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 :
-                               FFT::SYMMETRY_NONE)
-                .execute(reinterpret_cast<dcomplex*>(work.data()));
-            // Copy data to its final destination
-            if (nN != nM) {
-                if (symmetric()) {
-                    std::copy_n(work.begin(), nN, mag.begin());
-                } else {
-                    size_t nn = nN/2;
-                    std::copy_n(work.begin(), nn+1, mag.begin());
-                    std::copy_n(work.end()-nn, nn, mag.begin()+nn+1);
-                }
-            }
+                               FFT::SYMMETRY_NONE);
+            fft.execute(mag.data());
+            if (polarization != E_TRAN) fft.execute(rmag.data());
         } else {
             throw NotImplemented(SOLVER->getId(), "Analytic Fourier transform for non-periodic structure");  //TODO
         }
@@ -187,6 +172,7 @@ void ExpansionPW2D::init()
             for (std::size_t i = 0; i != nN; ++i) {
                 int k = int(i); if (!symmetric() && k > int(nN/2)) k -= int(nN);
                 mag[i] *= exp(-SOLVER->smooth * bb4 * k * k);
+                if (polarization != E_TRAN) rmag[i] *= exp(-SOLVER->smooth * bb4 * k * k);
             }
         }
     }
@@ -205,6 +191,8 @@ void ExpansionPW2D::reset() {
     coeffs.clear();
     initialized = false;
     mesh.reset();
+    mag.reset();
+    rmag.reset();
 }
 
 
@@ -237,16 +225,18 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
 
     double L = (right-left) * (symmetric()? 2. : 1.);
 
+    bool epsilon_isotropic = true, epsilon_diagonal = true;
+
     if (SOLVER->ftt == FourierSolver2D::FOURIER_DISCRETE) {
         size_t refine = SOLVER->refine;
         if (refine == 0) refine = 1;
 
         #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
             SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{} (sampled at {} points) in thread {}",
-                            layer, solver->lcount, refine * nM, omp_get_thread_num());
+                            layer, solver->lcount, refine * nN, omp_get_thread_num());
         #else
             SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{} (sampled at {} points)",
-                            layer, solver->lcount, refine * nM);
+                            layer, solver->lcount, refine * nN);
         #endif
 
         if (isnan(lam))
@@ -290,17 +280,15 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         }
 
         // Make space for the result
-        DataVector<Tensor3<dcomplex>> work;
-        if (nN != nM) {
-            coeffs[layer].reset(nN);
-            work.reset(nM, Tensor3<dcomplex>(0.));
+        if (polarization == E_LONG) {
+            coeffs[layer].zz.reset(nN, 0.);
         } else {
-            coeffs[layer].reset(nN, Tensor3<dcomplex>(0.));
-            work = coeffs[layer];
+            coeffs[layer].rxx.reset(nN, 0.);
+            coeffs[layer].yy.reset(nN, 0.);
         }
 
         // Average material parameters
-        for (size_t i = 0; i != nM; ++i) {
+        for (size_t i = 0; i != nN; ++i) {
             for (size_t j = refine*i, end = refine*(i+1); j != end; ++j) {
                 Tensor3<dcomplex> eps = getEpsilon(geometry, layer, maty, lam, glam, j);
 
@@ -317,56 +305,154 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                     }
                 }
 
-                work[i] += Tensor3<dcomplex>(eps.c00, eps.c00/(eps.c00*eps.c11-eps.c01*eps.c01), eps.c22, eps.c01);
+                if (polarization == E_LONG) {
+                    if (eps.c01 != 0.)
+                        throw BadInput(solver->getId(), "Polarization can be specified only for diagonal refractive index tensor (NR)");
+                    coeffs[layer].zz[i] += eps.c00;
+                } else if (polarization == E_TRAN) {
+                    if (eps.c01 != 0.)
+                        throw BadInput(solver->getId(), "Polarization can be specified only for diagonal refractive index tensor (NR)");
+                    coeffs[layer].rxx[i] += 1./eps.c11;
+                    coeffs[layer].yy[i] += eps.c22;
+                } else {
+                    dcomplex rm;
+                    bool nd = false;
+                    if (eps.c01 != 0.) {
+                        if (epsilon_diagonal) {
+                            if (symmetric())
+                                throw BadInput(solver->getId(), "Symmetry can be specified only for diagonal refractive index tensor (NR)");
+                            coeffs[layer].zx.reset(nN, 0.);
+                            coeffs[layer].rzx.reset(nN, 0.);
+                            epsilon_diagonal = false;
+                        }
+                        nd = true;
+                        rm = 1. / (eps.c00*eps.c11 - eps.c01.real()*eps.c01.real() - eps.c01.imag()*eps.c01.imag());
+                        coeffs[layer].zx[i] += eps.c01;
+                        coeffs[layer].rzx[i] -= rm*eps.c01;
+                    };
+                    if (eps.c00 != eps.c22 || eps.c11 != eps.c22 || !epsilon_isotropic) {
+                        if (epsilon_isotropic) {
+                            coeffs[layer].zz = coeffs[layer].yy.copy();
+                            coeffs[layer].rzz = coeffs[layer].rxx.copy();
+                            coeffs[layer].xx = coeffs[layer].yy.copy();
+                            coeffs[layer].ryy = coeffs[layer].rxx.copy();
+                            epsilon_isotropic = false;
+                        }
+                        coeffs[layer].zz[i] += eps.c00;
+                        coeffs[layer].rzz[i] += nd? rm*eps.c11 : 1./eps.c00;
+                        coeffs[layer].xx[i] += eps.c11;
+                        coeffs[layer].ryy[i] += 1./eps.c22;
+                    }
+                    coeffs[layer].rxx[i] += nd? rm*eps.c00 : 1./eps.c11;
+
+                    coeffs[layer].yy[i] += eps.c22;
+                }
             }
-            work[i] *= factor;
-            if (work[i].c11 != 0. && !isnan(work[i].c11.real()) && !isnan(work[i].c11.imag()))
-                work[i].c11 = 1. / work[i].c11; // We were averaging inverses of c11 (xx)
-            else work[i].c11 = 0.;
-            if (work[i].c22 != 0.)
-                work[i].c22 = 1. / work[i].c22; // We need inverse of c22 (yy)
+
+            if (polarization == E_LONG) {
+                coeffs[layer].zz[i] *= factor;
+            } else {
+                coeffs[layer].rxx[i] *= factor;
+                coeffs[layer].yy[i] *= factor;
+                if (!epsilon_isotropic) {
+                    coeffs[layer].zz[i] *= factor;
+                    coeffs[layer].rzz[i] *= factor;
+                    coeffs[layer].xx[i] *= factor;
+                    coeffs[layer].ryy[i] *= factor;
+                }
+                if (!epsilon_diagonal) {
+                    coeffs[layer].zx[i] *= factor;
+                    coeffs[layer].rzx[i] *= factor;
+                }
+            }
         }
 
         // Check if the layer is uniform
         if (periodic) {
             diagonals[layer] = true;
-            for (size_t i = 1; i != nM; ++i) {
-                Tensor3<dcomplex> diff = work[i] - work[0];
-                if (!(is_zero(diff.c00) && is_zero(diff.c11) && is_zero(diff.c22) && is_zero(diff.c01))) {
-                    diagonals[layer] = false;
-                    break;
+            if (polarization == E_LONG) {
+                for (size_t i = 1; i != nN; ++i)
+                    if (!is_zero(coeffs[layer].zz[i] - coeffs[layer].zz[0])) {
+                        diagonals[layer] = false; break;
+                    }
+            } else {
+                if (epsilon_isotropic) {
+                    for (size_t i = 1; i != nN; ++i)
+                        if (!is_zero(coeffs[layer].yy[i] - coeffs[layer].yy[0])) {
+                            diagonals[layer] = false; break;
+                        }
+                } else {
+                    for (size_t i = 1; i != nN; ++i)
+                        if (!(is_zero(coeffs[layer].zz[i] - coeffs[layer].zz[0]) && is_zero(coeffs[layer].xx[i] - coeffs[layer].xx[0]) && is_zero(coeffs[layer].yy[i] - coeffs[layer].yy[0]))) {
+                            diagonals[layer] = false; break;
+                        }
+                }
+                if (!epsilon_diagonal) {
+                    for (size_t i = 1; i != nN; ++i)
+                        if (!is_zero(coeffs[layer].zx[i] - coeffs[layer].zx[0])) {
+                            diagonals[layer] = false; break;
+                        }
                 }
             }
-        } else
+        } else {
             diagonals[layer] = false;
+        }
 
         if (diagonals[layer]) {
             SOLVER->writelog(LOG_DETAIL, "Layer {0} is uniform", layer);
-            if (nN != nM) coeffs[layer][0] = work[0];
-            std::fill(coeffs[layer].begin()+1, coeffs[layer].end(), Tensor3<dcomplex>(0.));
+            size_t n1 = nN - 1;
+            if (polarization == E_LONG) {
+                std::fill_n(coeffs[layer].zz.data()+1, n1, 0.);
+            } else {
+                std::fill_n(coeffs[layer].rxx.data()+1, n1, 0.);
+                std::fill_n(coeffs[layer].yy.data()+1, n1, 0.);
+                if (epsilon_isotropic) {
+                    if (polarization != E_TRAN) {
+                        coeffs[layer].rzz = coeffs[layer].ryy = coeffs[layer].rxx;
+                        coeffs[layer].zz = coeffs[layer].xx = coeffs[layer].yy;
+                    }
+                } else {
+                    std::fill_n(coeffs[layer].zz.data()+1, n1, 0.);
+                    std::fill_n(coeffs[layer].rzz.data()+1, n1, 0.);
+                    std::fill_n(coeffs[layer].xx.data()+1, n1, 0.);
+                    std::fill_n(coeffs[layer].ryy.data()+1, n1, 0.);
+                }
+                if (!epsilon_diagonal) {
+                    std::fill_n(coeffs[layer].zx.data()+1, n1, 0.);
+                    std::fill_n(coeffs[layer].rzx.data()+1, n1, 0.);
+                }
+            }
         } else {
             // Perform FFT
-            matFFT.execute(reinterpret_cast<dcomplex*>(work.data()));
-            // Copy result
-            if (nN != nM) {
-                if (symmetric()) {
-                    std::copy_n(work.begin(), nN, coeffs[layer].begin());
+            if (polarization == E_LONG) {
+                matFFT.execute(coeffs[layer].zz.data());
+            } else {
+                matFFT.execute(coeffs[layer].rxx.data());
+                matFFT.execute(coeffs[layer].yy.data());
+                if (epsilon_isotropic) {
+                    if (polarization != E_TRAN) {
+                        coeffs[layer].rzz = coeffs[layer].ryy = coeffs[layer].rxx;
+                        coeffs[layer].zz = coeffs[layer].xx = coeffs[layer].yy;
+                    }
                 } else {
-                    size_t nn = nN/2;
-                    std::copy_n(work.begin(), nn+1, coeffs[layer].begin());
-                    std::copy_n(work.end()-nn, nn, coeffs[layer].begin()+nn+1);
+                    matFFT.execute(coeffs[layer].zz.data());
+                    matFFT.execute(coeffs[layer].rzz.data());
+                    matFFT.execute(coeffs[layer].xx.data());
+                    matFFT.execute(coeffs[layer].ryy.data());
+                }
+                if (!epsilon_diagonal) {
+                    matFFT.execute(coeffs[layer].zx.data());
+                    matFFT.execute(coeffs[layer].rzx.data());
                 }
             }
         }
 
     } else {
-
         #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
             SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{} in thread {}",
                             layer, solver->lcount, omp_get_thread_num());
         #else
-            SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{}",
-                            layer, solver->lcount);
+            SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{}", layer, solver->lcount);
         #endif
 
         if (isnan(lam))
@@ -377,32 +463,89 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
             if (isnan(glam)) glam = lam;
         }
 
-        coeffs[layer].reset(nN, Tensor3<dcomplex>(0.));
-
         size_t mn = mesh->tran()->size();
-        Tensor3<dcomplex> eps0 = getEpsilon(geometry, layer, maty, lam, glam, mn-1);
-        eps0.c22 = 1. / eps0.c22;
-        Tensor3<dcomplex> eps = getEpsilon(geometry, layer, maty, lam, glam, 0);
-        eps.c22 = 1. / eps.c22;
-        coeffs[layer][0] = eps0;
+        const Tensor3<dcomplex> eps0 = getEpsilon(geometry, layer, maty, lam, glam, mn-1);
+        bool nd = eps0.c01 != 0.;
+        dcomplex rm;
+        if (nd) {
+            if (polarization != E_UNSPECIFIED)
+                throw BadInput(solver->getId(), "Polarization can be specified only for diagonal refractive index tensor (NR)");
+            rm = 1. / (eps0.c00*eps0.c11 - eps0.c01.real()*eps0.c01.real() - eps0.c01.imag()*eps0.c01.imag());
+        }
+        const Tensor3<dcomplex> reps0 = nd? Tensor3<dcomplex>(rm*eps0.c11, rm*eps0.c00, 1./eps0.c22, -rm*eps0.c01) :
+                                            Tensor3<dcomplex>(1./eps0.c00, 1./eps0.c11, 1./eps0.c22);
+
+        if (polarization == E_LONG) {
+            coeffs[layer].zz.reset(nN, 0.); coeffs[layer].zz[0] = eps0.c00;
+        } else {
+            coeffs[layer].rxx.reset(nN, 0.); coeffs[layer].rxx[0] = reps0.c11;
+            coeffs[layer].yy.reset(nN, 0.); coeffs[layer].yy[0] = eps0.c22;
+            if (polarization != E_TRAN) {
+                if (eps0.c00 != eps0.c22 || eps0.c11 != eps0.c22) {
+                    coeffs[layer].zz.reset(nN, 0.); coeffs[layer].zz[0] = eps0.c00;
+                    coeffs[layer].rzz.reset(nN, 0.); coeffs[layer].rzz[0] = reps0.c00;
+                    coeffs[layer].xx.reset(nN, 0.); coeffs[layer].xx[0] = eps0.c11;
+                    coeffs[layer].ryy.reset(nN, 0.); coeffs[layer].ryy[0] = reps0.c22;
+                } else {
+                    coeffs[layer].rzz = coeffs[layer].ryy = coeffs[layer].rxx;
+                    coeffs[layer].zz = coeffs[layer].xx = coeffs[layer].yy;
+                }
+            }
+        }
+
+        diagonals[layer] = true;
+
+        Tensor3<dcomplex> eps = getEpsilon(geometry, layer, maty, lam, glam, 0), reps;
+
         double l, r = 0.;
         const ptrdiff_t di = (mesh->tran()->size() == original_mesh->size()+1)? 1 : 0;
         const int start = symmetric()? 0 : -int(nN)/2, end = symmetric()? nN : int(nN+1)/2;
         const double b = 2*PI / L;
         for (size_t i = 1; i < mn; ++i) {
             Tensor3<dcomplex> eps1 = getEpsilon(geometry, layer, maty, lam, glam, i);
-            eps1.c22 = 1. / eps1.c22;
             if (!eps1.equals(eps)) {
+                nd = eps.c01 != 0.;
+                if (nd) {
+                    if (polarization != E_UNSPECIFIED)
+                        throw BadInput(solver->getId(), "Polarization can be specified only for diagonal refractive index tensor (NR)");
+                    rm = 1. / (eps.c00*eps.c11 - eps.c01.real()*eps.c01.real() - eps.c01.imag()*eps.c01.imag());
+                    Tensor3<dcomplex>(rm*eps.c11, rm*eps.c00, 1./eps.c22, -rm*eps.c01);
+                } else
+                    reps = Tensor3<dcomplex>(1./eps.c00, 1./eps.c11, 1./eps.c22);
+                diagonals[layer] = false;
                 l = r;
                 r = original_mesh->at(i-di) - left;
-                eps -= eps0;
-                if (!is_zero(eps)) {
-                    for (int k = start; k != end; ++k) {
-                        size_t j = (k>=0)? k : k + nN;
-                        if (j) // k != 0
-                            coeffs[layer][j] += eps * dcomplex(0., 0.5/PI/k) * (exp(dcomplex(0., -b*k*r)) - exp(dcomplex(0., -b*k*l)));
-                        else
-                            coeffs[layer][j] += eps * (r-l) / L;
+                if (polarization == E_LONG) {
+                    add_coeffs(start, end, b, l, r, coeffs[layer].zz, eps.c00 - eps0.c00);
+                } else if (polarization == E_TRAN) {
+                    add_coeffs(start, end, b, l, r, coeffs[layer].rxx, 1./eps.c11 - reps0.c11);
+                    add_coeffs(start, end, b, l, r, coeffs[layer].yy, eps.c22 - eps0.c22);
+                } else {
+                    if (eps.c00 != eps.c22 || eps.c11 != eps.c22 || !epsilon_isotropic) {
+                        if (epsilon_isotropic) {
+                            coeffs[layer].zz = coeffs[layer].yy.copy();
+                            coeffs[layer].rzz = coeffs[layer].rxx.copy();
+                            coeffs[layer].xx = coeffs[layer].yy.copy();
+                            coeffs[layer].ryy = coeffs[layer].rxx.copy();
+                            epsilon_isotropic = false;
+                        }
+                        add_coeffs(start, end, b, l, r, coeffs[layer].zz, eps.c00 - eps0.c00);
+                        add_coeffs(start, end, b, l, r, coeffs[layer].rzz, reps.c00 - reps0.c00);
+                        add_coeffs(start, end, b, l, r, coeffs[layer].xx, eps.c11 - eps0.c11);
+                        add_coeffs(start, end, b, l, r, coeffs[layer].ryy, reps.c22 - reps0.c22);
+                    }
+                    add_coeffs(start, end, b, l, r, coeffs[layer].rxx, reps.c11 - reps0.c11);
+                    add_coeffs(start, end, b, l, r, coeffs[layer].yy, eps.c22 - eps0.c22);
+                    if (eps.c01 != 0.) {
+                        if (epsilon_diagonal) {
+                            if (symmetric())
+                                throw BadInput(solver->getId(), "Symmetry can be specified only for diagonal refractive index tensor (NR)");
+                            coeffs[layer].zx.reset(nN, 0.);
+                            coeffs[layer].rzx.reset(nN, 0.);
+                            epsilon_diagonal = false;
+                        }
+                        add_coeffs(start, end, b, l, r, coeffs[layer].zx, eps.c01 - eps0.c01);
+                        add_coeffs(start, end, b, l, r, coeffs[layer].rzx, reps.c01 - reps0.c01);
                     }
                 }
                 eps = eps1;
@@ -411,11 +554,27 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         //TODO Add PMLs
     }
     // Smooth coefficients
-    if (SOLVER->smooth) {
+    if (!diagonals[layer] && SOLVER->smooth) {
         double bb4 = PI / L; bb4 *= bb4;   // (2π/L)² / 4
         for (size_t i = 0; i != nN; ++i) {
             int k = int(i); if (!symmetric() && k > int(nN/2)) k -= int(nN);
-            coeffs[layer][i] *= exp(-SOLVER->smooth * bb4 * k * k);
+            double s = exp(-SOLVER->smooth * bb4 * k * k);
+            if (polarization == E_LONG) {
+                coeffs[layer].zz[i] *= s;
+            } else {
+                coeffs[layer].rxx[i] *= s;
+                coeffs[layer].yy[i] *= s;
+                if (!epsilon_isotropic) {
+                    coeffs[layer].zz[i] *= s;
+                    coeffs[layer].rzz[i] *= s;
+                    coeffs[layer].xx[i] *= s;
+                    coeffs[layer].ryy[i] *= s;
+                }
+                if (!epsilon_diagonal) {
+                    coeffs[layer].zx[i] *= s;
+                    coeffs[layer].rzx[i] *= s;
+                }
+            }
         }
     }
 }
@@ -431,28 +590,106 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
                 Tensor3<dcomplex> eps(0.);
                 for (int k = -int(nN)/2, end = int(nN+1)/2; k != end; ++k) {
                     size_t j = (k>=0)? k : k + nN;
-                    eps += coeffs[l][j] * exp(2*PI * k * I * (dest_mesh->at(i).c0-left) / (right-left));
+                    dcomplex ff = exp(2*PI * k * I * (dest_mesh->at(i).c0-left) / (right-left));
+                    switch (polarization) {
+                        case E_LONG:
+                            eps.c00 += coeffs[l].zz[j] * ff;
+                            break;
+                        case E_TRAN:
+                            eps.c11 += coeffs[l].rxx[j] * ff;
+                            eps.c22 += coeffs[l].yy[j] * ff;
+                            break;
+                        case E_UNSPECIFIED:
+                            eps.c00 += coeffs[l].zz[j] * ff;
+                            eps.c11 += coeffs[l].rxx[j] * ff;
+                            eps.c22 += coeffs[l].yy[j] * ff;
+                            if (coeffs[l].zx) eps.c01 += coeffs[l].zx[k] * ff;
+                            break;
+                    }
                 }
-                eps.c22 = 1. / eps.c22;
+                switch (polarization) {
+                    case E_LONG:
+                        eps.c22 = eps.c11 = eps.c00;
+                        break;
+                    case E_TRAN:
+                        eps.c00 = eps.c22;
+                    case E_UNSPECIFIED:
+                        eps.c11 = 1. / eps.c11;
+                }
                 eps.sqrt_inplace();
                 return eps;
             });
         } else {
             return LazyData<Tensor3<dcomplex>>(dest_mesh->size(), [this,l,dest_mesh](size_t i)->Tensor3<dcomplex>{
-                Tensor3<dcomplex> eps = coeffs[l][0];
-                for (std::size_t k = 1; k != nN; ++k) {
-                    eps += 2. * coeffs[l][k] * cos(PI * double(k) * dest_mesh->at(i).c0 / (right-left));
+                Tensor3<dcomplex> eps(0.);
+                for (std::size_t k = 0; k != nN; ++k) {
+                    dcomplex ff = (k? 2. : 1.) * cos(PI * double(k) * dest_mesh->at(i).c0 / (right-left));
+                    switch (polarization) {
+                        case E_LONG:
+                            eps.c00 += coeffs[l].zz[k] * ff;
+                            break;
+                        case E_TRAN:
+                            eps.c11 += coeffs[l].rxx[k] * ff;
+                            eps.c22 += coeffs[l].yy[k] * ff;
+                            break;
+                        case E_UNSPECIFIED:
+                            eps.c00 += coeffs[l].zz[k] * ff;
+                            eps.c11 += coeffs[l].rxx[k] * ff;
+                            eps.c22 += coeffs[l].yy[k] * ff;
+                            break;
+                    }
                 }
-                eps.c22 = 1. / eps.c22;
+                switch (polarization) {
+                    case E_LONG:
+                        eps.c22 = eps.c11 = eps.c00;
+                        break;
+                    case E_TRAN:
+                        eps.c00 = eps.c22;
+                    case E_UNSPECIFIED:
+                        eps.c11 = 1. / eps.c11;
+                }
                 eps.sqrt_inplace();
                 return eps;
             });
         }
     } else {
         DataVector<Tensor3<dcomplex>> params(symmetric()? nN : nN+1);
-        std::copy(coeffs[l].begin(), coeffs[l].end(), params.begin());
-        FFT::Backward1D(4, int(nN), symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE)
-            .execute(reinterpret_cast<dcomplex*>(params.data()));
+        FFT::Backward1D fft(1, int(nN), symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE, 4);
+        if (symmetry == E_LONG) {
+            for (size_t i = 0; i != nN; ++i) params[i].c00 = coeffs[l].zz[i];
+            fft.execute(reinterpret_cast<dcomplex*>(params.data()));
+            for (Tensor3<dcomplex>& eps: params) {
+                eps.c22 = eps.c11 = eps.c00;
+                eps.sqrt_inplace();
+            }
+        } else {
+            for (size_t i = 0; i != nN; ++i) {
+                params[i].c11 = coeffs[l].rxx[i];
+                params[i].c22 = coeffs[l].yy[i];
+            }
+            fft.execute(reinterpret_cast<dcomplex*>(params.data())+1);
+            fft.execute(reinterpret_cast<dcomplex*>(params.data())+2);
+            if (coeffs[l].zx) {
+                for (size_t i = 0; i != nN; ++i) params[i].c01 = coeffs[l].zx[i];
+                fft.execute(reinterpret_cast<dcomplex*>(params.data())+3);
+            } else {
+                for (size_t i = 0; i != nN; ++i) params[i].c01 = 0.;
+            }
+            if (symmetry == E_TRAN || coeffs[l].zz.data() == coeffs[l].yy.data()) {
+                for (Tensor3<dcomplex>& eps: params) {
+                    eps.c00 = eps.c22;
+                    eps.c11 = 1. / eps.c11;
+                    eps.sqrt_inplace();
+                }
+            } else {
+                for (size_t i = 0; i != nN; ++i) params[i].c00 = coeffs[l].zz[i];
+                fft.execute(reinterpret_cast<dcomplex*>(params.data()));
+                for (Tensor3<dcomplex>& eps: params) {
+                    eps.c11 = 1. / eps.c11;
+                    eps.sqrt_inplace();
+                }
+            }
+        }
         shared_ptr<RegularAxis> cmesh = plask::make_shared<RegularAxis>();
         if (symmetric()) {
             if (SOLVER->dct2()) {
@@ -465,10 +702,6 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
             cmesh->reset(left, right, nN+1);
             params[nN] = params[0];
         }
-        for (Tensor3<dcomplex>& eps: params) {
-            eps.c22 = 1. / eps.c22;
-            eps.sqrt_inplace();
-        }
         auto src_mesh = plask::make_shared<RectangularMesh<2>>(cmesh, plask::make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
         return interpolate(src_mesh, params, dest_mesh, interp,
                            InterpolationFlags(SOLVER->getGeometry(),
@@ -479,7 +712,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
 }
 
 
-void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
+void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& work)
 {
     assert(initialized);
     if (isnan(k0)) throw BadInput(SOLVER->getId(), "Wavelength or k0 not set");
@@ -488,74 +721,150 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
     dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
 
     int order = int(SOLVER->getSize());
-    dcomplex f = 1. / k0, k02 = k0*k0;
+    dcomplex rk0 = 1. / k0, k02 = k0*k0;
     double b = 2.*PI / (right-left) * (symmetric()? 0.5 : 1.0);
+
+    std::fill_n(RE.data(), N*N, dcomplex(0.));
+    std::fill_n(RH.data(), N*N, dcomplex(0.));
 
     // Ez represents -Ez
 
     if (separated()) {
         if (symmetric()) {
             // Separated symmetric()
-            std::fill_n(RE.data(), N*N, dcomplex(0.));
-            std::fill_n(RH.data(), N*N, dcomplex(0.));
             if (polarization == E_LONG) {                   // Ez & Hx
-                for (int i = 0; i <= order; ++i) {
-                    double gi = b * double(i);
-                    size_t ie = iE(i), ih = iH(i);
-                    for (int j = -order; j <= order; ++j) {
-                        int ij = abs(i-j);   double gj = b * double(j);
-                        dcomplex fz = (j < 0 && symmetry == E_TRAN)? -f : f;
-                        int aj = abs(j);
-                        size_t je = iE(aj), jh = iH(aj);
-                        RE(ih, je) += fz * (- gi * gj * imuyy(l,ij) + k02 * epszz(l,ij) );
-                        RH(ie, jh) += fz *                            k02 * muxx(l,ij);
+                const bool sym = symmetry == E_LONG;
+                for (int j = 0; j <= order; ++j) {
+                    size_t je = iE(j), jh = iH(j);
+                    RE(j, j) = - rk0 * b * double(j);
+                    RH(j, j) = k0;
+                }
+                if (!periodic) {
+                    for (int i = 0; i <= order; ++i)
+                        work(i, 0) = muyy(l, i);
+                    for (int j = 1; j <= order; ++j) {
+                        for (int i = 0; i <= order; ++i)
+                            work(i, j) = sym? muyy(l,abs(i-j)) - muyy(l,i+j) : muyy(l,abs(i-j)) + muyy(l,i+j);
                     }
+                    invmult(work, RE);
+                    for (int i = 0; i <= order; ++i)
+                        work(i, 0) = rmuxx(l, i);
+                    for (int j = 1; j <= order; ++j) {
+                        for (int i = 0; i <= order; ++i)
+                            work(i, j) = sym? rmuxx(l,abs(i-j)) + rmuxx(l,i+j) : rmuxx(l,abs(i-j)) - rmuxx(l,i+j);
+                    }
+                    invmult(work, RH);
+                }
+                for (int i = 0; i <= order; ++i) {
+                    dcomplex gi = b * double(i);
+                    RE(i, 0) = gi * RE(i, 0) + k0 * epszz(l,i);
+                    for (int j = 1; j <= order; ++j)
+                        RE(i, j) = gi * RE(i, j) + k0 * (sym? epszz(l,abs(i-j)) + epszz(l,i+j) : epszz(l,abs(i-j)) - epszz(l,i+j));
                     // Ugly hack to avoid singularity
-                    if (RE(ie, ie) == 0.) RE(ie, ie) = 1e-32;
-                    if (RH(ih, ih) == 0.) RH(ih, ih) = 1e-32;
+                    if (RE(i, i) == 0.) RE(i, i) = 1e-32;
+                    if (RH(i, i) == 0.) RH(i, i) = 1e-32;
                 }
             } else {                                        // Ex & Hz
-                for (int i = 0; i <= order; ++i) {
-                    double gi = b * double(i);
-                    size_t ie = iE(i), ih = iH(i);
-                    for (int j = -order; j <= order; ++j) {
-                        int ij = abs(i-j);   double gj = b * double(j);
-                        dcomplex fx = (j < 0 && symmetry == E_LONG)? -f : f;
-                        int aj = abs(j);
-                        size_t je = iE(aj), jh = iH(aj);
-                        RE(ih, je) += fx *                             k02 * epsxx(l,ij);
-                        RH(ie, jh) += fx * (- gi * gj * iepsyy(l,ij) + k02 * muzz(l,ij) );
+                const bool sym = symmetry == E_TRAN;
+                for (int j = 0; j <= order; ++j) {
+                    RE(j, j) = k0;
+                    RH(j, j) = - rk0 * b * double(j);
+                }
+                {
+                    for (int i = 0; i <= order; ++i)
+                        work(i, 0) = repsxx(l, i);
+                    for (int j = 1; j <= order; ++j) {
+                        for (int i = 0; i <= order; ++i)
+                            work(i, j) = sym? repsxx(l,abs(i-j)) + repsxx(l,i+j) : repsxx(l,abs(i-j)) - repsxx(l,i+j);
                     }
+                    invmult(work, RE);
+                }
+                {
+                    for (int i = 0; i <= order; ++i)
+                        work(i, 0) = epsyy(l, i);
+                    for (int j = 1; j <= order; ++j) {
+                        for (int i = 0; i <= order; ++i)
+                            work(i, j) = sym? epsyy(l,abs(i-j)) - epsyy(l,i+j) : epsyy(l,abs(i-j)) + epsyy(l,i+j);
+                    }
+                    invmult(work, RH);
+                }
+                for (int i = 0; i <= order; ++i) {
+                    const dcomplex gi = b * double(i);
+                    RH(i, 0) = gi * RH(i, 0) + k0 * muzz(l,i);
+                    for (int j = 1; j <= order; ++j)
+                        RH(i, j) = gi * RH(i, j) + k0 * (sym? muzz(l,abs(i-j)) + muzz(l,i+j) : muzz(l,abs(i-j)) - muzz(l,i+j));
                     // Ugly hack to avoid singularity
-                    if (RE(ie, ie) == 0.) RE(ie, ie) = 1e-32;
-                    if (RH(ih, ih) == 0.) RH(ih, ih) = 1e-32;
+                    if (RE(i, i) == 0.) RE(i, i) = 1e-32;
+                    if (RH(i, i) == 0.) RH(i, i) = 1e-32;
                 }
             }
         } else {
             // Separated asymmetric()
             if (polarization == E_LONG) {                   // Ez & Hx
-                for (int i = -order; i <= order; ++i) {
-                    dcomplex gi = b * double(i) - ktran;
-                    size_t ie = iE(i), ih = iH(i);
+                for (int j = -order; j <= order; ++j) {
+                    const size_t je = iE(j), jh = iH(j);
+                    RE(jh, jh) = - rk0 * (b * double(j) - ktran);
+                    RH(je, je) = k0;
+                }
+                if (!periodic) {
                     for (int j = -order; j <= order; ++j) {
-                        int ij = i-j;   dcomplex gj = b * double(j) - ktran;
-                        size_t je = iE(j), jh = iH(j);
-                        RE(ih, je) = f * (-  gi * gj  * imuyy(l,ij) + k02 * epszz(l,ij) );
-                        RH(ie, jh) = f *                              k02 * muxx(l,ij);
+                        const size_t jt = iH(j);
+                        for (int i = -order; i <= order; ++i) {
+                            const size_t it = iE(i);
+                            work(it, jt) = muyy(l,i-j);
+                        }
+                    }
+                    invmult(work, RE);
+                    for (int j = -order; j <= order; ++j) {
+                        const size_t jt = iH(j);
+                        for (int i = -order; i <= order; ++i) {
+                            const size_t it = iE(i);
+                            work(it, jt) = rmuxx(l,i-j);
+                        }
+                    }
+                    invmult(work, RH);
+                }
+                for (int i = -order; i <= order; ++i) {
+                    const dcomplex gi = b * double(i) - ktran;
+                    const size_t ie = iE(i), ih = iH(i);
+                    for (int j = -order; j <= order; ++j) {
+                        const size_t je = iE(j), jh = iH(j);
+                        RE(ih, je) = gi * RE(ih, je) + k0 * epszz(l,i-j);
                     }
                     // Ugly hack to avoid singularity
                     if (RE(ie, ie) == 0.) RE(ie, ie) = 1e-32;
                     if (RH(ih, ih) == 0.) RH(ih, ih) = 1e-32;
                 }
             } else {                                        // Ex & Hz
-                for (int i = -order; i <= order; ++i) {
-                    dcomplex gi = b * double(i) - ktran;
-                    size_t ie = iE(i), ih = iH(i);
+                for (int j = -order; j <= order; ++j) {
+                    const size_t je = iE(j), jh = iH(j);
+                    RE(je, je) = k0;
+                    RH(jh, jh) = - rk0 * (b * double(j) - ktran);
+                }
+                {
                     for (int j = -order; j <= order; ++j) {
-                        int ij = i-j;   dcomplex gj = b * double(j) - ktran;
-                        size_t je = iE(j), jh = iH(j);
-                        RE(ih, je) = f *                               k02 * epsxx(l,ij);
-                        RH(ie, jh) = f * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
+                        const size_t jt = iH(j);
+                        for (int i = -order; i <= order; ++i) {
+                            const size_t it = iE(i);
+                            work(it, jt) = repsxx(l,i-j);
+                        }
+                    }
+                    invmult(work, RE);
+                    for (int j = -order; j <= order; ++j) {
+                        const size_t jt = iH(j);
+                        for (int i = -order; i <= order; ++i) {
+                            const size_t it = iE(i);
+                            work(it, jt) = epsyy(l,i-j);
+                        }
+                    }
+                    invmult(work, RH);
+                }
+                for (int i = -order; i <= order; ++i) {
+                    const dcomplex gi = b * double(i) - ktran;
+                    const size_t ie = iE(i), ih = iH(i);
+                    for (int j = -order; j <= order; ++j) {
+                        const size_t jh = iH(j);
+                        RH(ie, jh) = gi * RH(ie, jh) + k0 * muzz(l,i-j);
                     }
                     // Ugly hack to avoid singularity
                     if (RE(ie, ie) == 0.) RE(ie, ie) = 1e-32;
@@ -565,26 +874,25 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
         }
     } else {
         if (symmetric()) {
+            const size_t jex0 = iEx(0), jez0 = iEz(0), jhx0 = iHx(0), jhz0 = iHz(0);
             // Full symmetric()
-            std::fill_n(RE.data(), 4*N*N, dcomplex(0.));
-            std::fill_n(RH.data(), 4*N*N, dcomplex(0.));
             for (int i = 0; i <= order; ++i) {
                 double gi = b * double(i);
                 size_t iex = iEx(i), iez = iEz(i), ihx = iHx(i), ihz = iHz(i);
                 for (int j = -order; j <= order; ++j) {
                     int ij = abs(i-j);   double gj = b * double(j);
-                    dcomplex fx = (j < 0 && symmetry == E_LONG)? -f : f;
-                    dcomplex fz = (j < 0 && symmetry == E_TRAN)? -f : f;
+                    dcomplex fx = (j < 0 && symmetry == E_LONG)? -rk0 : rk0;
+                    dcomplex fz = (j < 0 && symmetry == E_TRAN)? -rk0 : rk0;
                     int aj = abs(j);
                     size_t jex = iEx(aj), jez = iEz(aj), jhx = iHx(aj), jhz = iHz(aj);
-                    RE(ihz, jex) += fx * (- beta*beta * imuyy(l,ij) + k02 * epsxx(l,ij) );
-                    RE(ihx, jex) += fx * (  beta* gi  * imuyy(l,ij)                     );
-                    RE(ihz, jez) += fz * (  beta* gj  * imuyy(l,ij)                     );
-                    RE(ihx, jez) += fz * (-  gi * gj  * imuyy(l,ij) + k02 * epszz(l,ij) );
-                    RH(iex, jhz) += fx * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
-                    RH(iez, jhz) += fx * (- beta* gj  * iepsyy(l,ij)                    );
-                    RH(iex, jhx) += fz * (- beta* gi  * iepsyy(l,ij)                    );
-                    RH(iez, jhx) += fz * (- beta*beta * iepsyy(l,ij) + k02 * muxx(l,ij) );
+                    RE(ihz, jex) += fx * (- beta*beta * rmuyy(l,ij) + k02 * epsxx(l,ij) );
+                    RE(ihx, jex) += fx * (  beta* gi  * rmuyy(l,ij)                     );
+                    RE(ihz, jez) += fz * (  beta* gj  * rmuyy(l,ij)                     );
+                    RE(ihx, jez) += fz * (-  gi * gj  * rmuyy(l,ij) + k02 * epszz(l,ij) );
+                    RH(iex, jhz) += fx * (-  gi * gj  * repsyy(l,ij) + k02 * muzz(l,ij) );
+                    RH(iez, jhz) += fx * (- beta* gj  * repsyy(l,ij)                    );
+                    RH(iex, jhx) += fz * (- beta* gi  * repsyy(l,ij)                    );
+                    RH(iez, jhx) += fz * (- beta*beta * repsyy(l,ij) + k02 * muxx(l,ij) );
                 }
                 // Ugly hack to avoid singularity
                 if (RE(iex, iex) == 0.) RE(iex, iex) = 1e-32;
@@ -600,14 +908,14 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
                 for (int j = -order; j <= order; ++j) {
                     int ij = i-j;   dcomplex gj = b * double(j) - ktran;
                     size_t jex = iEx(j), jez = iEz(j), jhx = iHx(j), jhz = iHz(j);
-                    RE(ihz, jex) = f * (- beta*beta * imuyy(l,ij) + k02 * epsxx(l,ij) );
-                    RE(ihx, jex) = f * (  beta* gi  * imuyy(l,ij) - k02 * epszx(l,ij) );
-                    RE(ihz, jez) = f * (  beta* gj  * imuyy(l,ij) - k02 * epsxz(l,ij) );
-                    RE(ihx, jez) = f * (-  gi * gj  * imuyy(l,ij) + k02 * epszz(l,ij) );
-                    RH(iex, jhz) = f * (-  gi * gj  * iepsyy(l,ij) + k02 * muzz(l,ij) );
-                    RH(iez, jhz) = f * (- beta* gj  * iepsyy(l,ij)                    );
-                    RH(iex, jhx) = f * (- beta* gi  * iepsyy(l,ij)                    );
-                    RH(iez, jhx) = f * (- beta*beta * iepsyy(l,ij) + k02 * muxx(l,ij) );
+                    RE(ihz, jex) = rk0 * (- beta*beta * rmuyy(l,ij) + k02 * epsxx(l,ij) );
+                    RE(ihx, jex) = rk0 * (  beta* gi  * rmuyy(l,ij) - k02 * epszx(l,ij) );
+                    RE(ihz, jez) = rk0 * (  beta* gj  * rmuyy(l,ij) - k02 * epsxz(l,ij) );
+                    RE(ihx, jez) = rk0 * (-  gi * gj  * rmuyy(l,ij) + k02 * epszz(l,ij) );
+                    RH(iex, jhz) = rk0 * (-  gi * gj  * repsyy(l,ij) + k02 * muzz(l,ij) );
+                    RH(iez, jhz) = rk0 * (- beta* gj  * repsyy(l,ij)                    );
+                    RH(iex, jhx) = rk0 * (- beta* gi  * repsyy(l,ij)                    );
+                    RH(iez, jhx) = rk0 * (- beta*beta * repsyy(l,ij) + k02 * muxx(l,ij) );
                 }
                 // Ugly hack to avoid singularity
                 if (RE(iex, iex) == 0.) RE(iex, iex) = 1e-32;
@@ -679,14 +987,14 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                         if (symmetric()) {
                             if (symmetry == E_TRAN) { // symmetry == H_LONG
                                 for (int j = -order; j <= order; ++j)
-                                    field[iE(i)-dz].vert() += iepsyy(l,abs(i-j)) * b*double(j) * H[iH(abs(j))];
+                                    field[iE(i)-dz].vert() += repsyy(l,abs(i-j)) * b*double(j) * H[iH(abs(j))];
                             } else { // symmetry == H_TRAN
                                 for (int j = 1; j <= order; ++j)
-                                    field[iE(i)-dz].vert() += (iepsyy(l,abs(i-j)) + iepsyy(l,abs(i+j))) * b*double(j) * H[iH(j)];
+                                    field[iE(i)-dz].vert() += (repsyy(l,abs(i-j)) + repsyy(l,abs(i+j))) * b*double(j) * H[iH(j)];
                             }
                         } else {
                             for (int j = -order; j <= order; ++j)
-                                field[iE(i)-dz].vert() += iepsyy(l,i-j) * (b*double(j)-ktran) * H[iH(j)];
+                                field[iE(i)-dz].vert() += repsyy(l,i-j) * (b*double(j)-ktran) * H[iH(j)];
                         }
                         field[iE(i)-dz].vert() /= k0;
                     }
@@ -702,16 +1010,16 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                         if (symmetry == E_TRAN) { // symmetry = H_LONG
                             field[iE(i)-dz].vert() = 0.; // Hx[0] == 0
                             for (int j = 1; j <= order; ++j)
-                                field[iE(i)-dz].vert() -= (iepsyy(l,abs(i-j)) - iepsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
+                                field[iE(i)-dz].vert() -= (repsyy(l,abs(i-j)) - repsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
                         } else { // symmetry = H_TRAN
-                            field[iE(i)-dz].vert() = - iepsyy(l,abs(i)) * beta * H[iHx(0)];
+                            field[iE(i)-dz].vert() = - repsyy(l,abs(i)) * beta * H[iHx(0)];
                             for (int j = 1; j <= order; ++j)
-                                field[iE(i)-dz].vert() -= (iepsyy(l,abs(i-j)) + iepsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
+                                field[iE(i)-dz].vert() -= (repsyy(l,abs(i-j)) + repsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
                         }
                     } else {
                         field[iE(i)-dz].vert() = 0.;
                         for (int j = -order; j <= order; ++j)
-                            field[iE(i)-dz].vert() -= iepsyy(l,i-j) * (beta * H[iHx(i)] + (b*double(j)-ktran) * H[iHz(j)]);
+                            field[iE(i)-dz].vert() -= repsyy(l,i-j) * (beta * H[iHx(i)] + (b*double(j)-ktran) * H[iHz(j)]);
                     }
                     field[iE(i)-dz].vert() /= k0;
                 }
@@ -734,14 +1042,14 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                         if (symmetric()) {
                             if (symmetry == E_LONG) {
                                 for (int j = -order; j <= order; ++j)
-                                    field[iH(i)-dz].vert() -= imuyy(l,abs(i-j)) * b*double(j) * E[iE(abs(j))];
+                                    field[iH(i)-dz].vert() -= rmuyy(l,abs(i-j)) * b*double(j) * E[iE(abs(j))];
                             } else { // symmetry == E_TRAN
                                 for (int j = 1; j <= order; ++j)
-                                    field[iH(i)-dz].vert() -= (imuyy(l,abs(i-j)) + imuyy(l,abs(i+j))) * b*double(j) * E[iE(j)];
+                                    field[iH(i)-dz].vert() -= (rmuyy(l,abs(i-j)) + rmuyy(l,abs(i+j))) * b*double(j) * E[iE(j)];
                             }
                         } else {
                             for (int j = -order; j <= order; ++j)
-                                field[iH(i)-dz].vert() -= imuyy(l,i-j) * (b*double(j)-ktran) * E[iE(j)];
+                                field[iH(i)-dz].vert() -= rmuyy(l,i-j) * (b*double(j)-ktran) * E[iE(j)];
                         }
                         field[iH(i)-dz].vert() /= k0;
                     }
@@ -758,16 +1066,16 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                         if (symmetry == E_LONG) {
                             field[iE(i)-dz].vert() = 0.; // Ex[0] = 0
                             for (int j = 1; j <= order; ++j)
-                                field[iE(i)-dz].vert() += (imuyy(l,abs(i-j)) - imuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
+                                field[iE(i)-dz].vert() += (rmuyy(l,abs(i-j)) - rmuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
                         } else { // symmetry == E_TRAN
-                            field[iE(i)-dz].vert() = imuyy(l,abs(i)) * beta * E[iEx(0)];
+                            field[iE(i)-dz].vert() = rmuyy(l,abs(i)) * beta * E[iEx(0)];
                             for (int j = 1; j <= order; ++j)
-                                field[iE(i)-dz].vert() += (imuyy(l,abs(i-j)) + imuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
+                                field[iE(i)-dz].vert() += (rmuyy(l,abs(i-j)) + rmuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
                         }
                     } else {
                         field[iH(i)-dz].vert() = 0.;
                         for (int j = -order; j <= order; ++j)
-                            field[iE(i)-dz].vert() += imuyy(l,i-j) * (beta * E[iEx(j)] - (b*double(j)-ktran) * E[iEz(j)]);
+                            field[iE(i)-dz].vert() += rmuyy(l,i-j) * (beta * E[iEx(j)] - (b*double(j)-ktran) * E[iEz(j)]);
                     }
                     field[iH(i)].vert() /= k0;
                 }
@@ -933,10 +1241,10 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
                         vert = 0.; // beta is equal to 0
                         if (symmetry == E_TRAN) { // symmetry == H_LONG
                             for (int j = -order; j <= order; ++j)
-                                vert += iepsyy(l,abs(i-j)) * b*double(j) * H[iH(abs(j))];
+                                vert += repsyy(l,abs(i-j)) * b*double(j) * H[iH(abs(j))];
                         } else { // symmetry == H_TRAN
                             for (int j = 1; j <= order; ++j)
-                                vert += (iepsyy(l,abs(i-j)) + iepsyy(l,abs(i+j))) * b*double(j) * H[iH(j)];
+                                vert += (repsyy(l,abs(i-j)) + repsyy(l,abs(i+j))) * b*double(j) * H[iH(j)];
                         }
                         vert /= k0;
                         sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
@@ -945,7 +1253,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
                     for (int i = -order; i <= order; ++i) {
                         vert = 0.; // beta is equal to 0
                         for (int j = -order; j <= order; ++j)
-                            vert += iepsyy(l,i-j) * (b*double(j)-ktran) * H[iH(j)];
+                            vert += repsyy(l,i-j) * (b*double(j)-ktran) * H[iH(j)];
                         vert /= k0;
                         sum += real(vert * conj(vert));
                     }
@@ -957,18 +1265,18 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
                     if (symmetry == E_TRAN) { // symmetry = H_LONG
                         vert = 0.;
                         for (int j = 1; j <= order; ++j)
-                            vert -= (iepsyy(l,abs(i-j)) - iepsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
+                            vert -= (repsyy(l,abs(i-j)) - repsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
                     } else { // symmetry = H_TRAN
-                        vert = - iepsyy(l,abs(i)) * beta * H[iHx(0)];
+                        vert = - repsyy(l,abs(i)) * beta * H[iHx(0)];
                         for (int j = 1; j <= order; ++j)
-                            vert -= (iepsyy(l,abs(i-j)) + iepsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
+                            vert -= (repsyy(l,abs(i-j)) + repsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
                     }
                     vert /= k0;
                     sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
                 } else {
                     vert = 0.;
                     for (int j = -order; j <= order; ++j)
-                        vert -= iepsyy(l,i-j) * (beta * H[iHx(i)] + (b*double(j)-ktran) * H[iHz(j)]);
+                        vert -= repsyy(l,i-j) * (beta * H[iHx(i)] + (b*double(j)-ktran) * H[iHz(j)]);
                     vert /= k0;
                     sum += real(vert * conj(vert));
                 }
@@ -982,10 +1290,10 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
                         vert = 0.; // beta is equal to 0
                         if (symmetry == E_LONG) {
                             for (int j = -order; j <= order; ++j)
-                                vert -= imuyy(l,abs(i-j)) * b*double(j) * E[iE(abs(j))];
+                                vert -= rmuyy(l,abs(i-j)) * b*double(j) * E[iE(abs(j))];
                         } else { // symmetry == E_TRAN
                             for (int j = 1; j <= order; ++j)
-                                vert -= (imuyy(l,abs(i-j)) + imuyy(l,abs(i+j))) * b*double(j) * E[iE(j)];
+                                vert -= (rmuyy(l,abs(i-j)) + rmuyy(l,abs(i+j))) * b*double(j) * E[iE(j)];
                         }
                         vert /= k0;
                         sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
@@ -994,7 +1302,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
                     for (int i = -order; i <= order; ++i) {
                         vert = 0.; // beta is equal to 0
                         for (int j = -order; j <= order; ++j)
-                            vert -= imuyy(l,i-j) * (b*double(j)-ktran) * E[iE(j)];
+                            vert -= rmuyy(l,i-j) * (b*double(j)-ktran) * E[iE(j)];
                         vert /= k0;
                         sum += real(vert * conj(vert));
                     }
@@ -1006,18 +1314,18 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
                     if (symmetry == E_LONG) {
                         vert = 0.;
                         for (int j = 1; j <= order; ++j)
-                            vert += (imuyy(l,abs(i-j)) - imuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
+                            vert += (rmuyy(l,abs(i-j)) - rmuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
                     } else { // symmetry == E_TRAN
-                        vert = imuyy(l,abs(i)) * beta * E[iEx(0)];
+                        vert = rmuyy(l,abs(i)) * beta * E[iEx(0)];
                         for (int j = 1; j <= order; ++j)
-                            vert += (imuyy(l,abs(i-j)) + imuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
+                            vert += (rmuyy(l,abs(i-j)) + rmuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
                     }
                     vert /= k0;
                     sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
                 } else {
                     vert = 0.;
                     for (int j = -order; j <= order; ++j)
-                        vert += imuyy(l,i-j) * (beta * E[iEx(j)] - (b*double(j)-ktran) * E[iEz(j)]);
+                        vert += rmuyy(l,i-j) * (beta * E[iEx(j)] - (b*double(j)-ktran) * E[iEz(j)]);
                     vert /= k0;
                     sum += real(vert * conj(vert));
                 }

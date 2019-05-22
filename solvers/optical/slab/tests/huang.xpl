@@ -24,8 +24,8 @@
 </materials>
 
 <geometry>
-  <cartesian2d name="grating" axes="xy" left="periodic" right="periodic" bottom="Subs">
-    <clip left="{-L/2}" right="{L/2}">
+  <cartesian2d name="grating" axes="xy" left="mirror" right="periodic" bottom="Subs">
+    <clip left="0" right="{L/2}">
       <stack xcenter="0">
         <rectangle name="bar" material="Hi" dx="{fill*L}" dy="{tg}"/>
         <rectangle material="Lo" dx="{2*L}" dy="{tl}"/>
@@ -56,18 +56,29 @@ import unittest
 class GratingTest(unittest.TestCase):
 
     def testComputations(self):
-        solver.initialize()
-        l_te = array([1500., 1600.])
         solver.lam0 = 1500.
+
+        l_te = array([1500., 1600.])
+        solver.polarization = 'El'
+        solver.symmetry = None
         r_te = solver.compute_reflectivity(l_te, 'top', 'El')
         self.assertAlmostEqual( r_te[0], 99.934, 2 )
         self.assertAlmostEqual( r_te[1], 98.878, 2 )
+        solver.symmetry = 'El'
+        r_te = solver.compute_reflectivity(l_te, 'top', 'El')
+        self.assertAlmostEqual( r_te[0], 99.934, 2 )
+        self.assertAlmostEqual( r_te[1], 98.864, 2 )
 
         l_tm = array([1298., 1344.])
-        solver.lam0 = 1500.
+        solver.polarization = 'Et'
+        solver.symmetry = None
         r_tm = solver.compute_reflectivity(l_tm, 'top', 'Et')
-        self.assertAlmostEqual( r_tm[0], 99.097, 2 )
-        self.assertAlmostEqual( r_tm[1], 26.911, 2 )
+        self.assertAlmostEqual( r_tm[0], 98.504, 2 )
+        self.assertAlmostEqual( r_tm[1], 28.228, 2 )
+        solver.symmetry = 'Et'
+        r_tm = solver.compute_reflectivity(l_tm, 'top', 'Et')
+        self.assertAlmostEqual( r_tm[0], 98.640, 2 )
+        self.assertAlmostEqual( r_tm[1], 28.228, 2 )
 
 
 if __name__ == '__main__':
