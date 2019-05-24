@@ -398,8 +398,21 @@ public:
     }
 };
 
+/// Boundary which represents union/intersection/difference (depending on OpNodeSetImplT) of boundaries.
+template <typename MeshType, typename OpNodeSetImplT>
+struct BoundaryOp {
+
+    Boundary<MeshType> A, B;
+
+    BoundaryOp(Boundary<MeshType> A, Boundary<MeshType> B): A(std::move(A)), B(std::move(B)) {}
+
+    BoundaryNodeSet operator()(const MeshType& mesh, const shared_ptr<const GeometryD<MeshType::DIM>>& geom) const {
+        return new OpNodeSetImplT(A.get(mesh, geom), B.get(mesh, geom));
+    }
+};
+
 /**
- * This logic holds a list of boundaries and represent a set of indexes which is a sum of sets from this boundaries.
+ * This logic holds a list of boundaries and represent a set of indexes which is a sum (an union) of sets from this boundaries.
  */
 struct SumBoundaryImpl: public BoundaryNodeSetImpl {
 
@@ -593,7 +606,7 @@ struct DiffBoundaryImpl: public BoundaryNodeSetImpl {
 
 
 /**
- * This logic holds a two boundaries and represent a set product of them.
+ * This logic holds a two boundaries and represent a set product (intersection) of them.
  */
 struct ProdBoundaryImpl: public BoundaryNodeSetImpl {
 
