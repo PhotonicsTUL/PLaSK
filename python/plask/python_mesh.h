@@ -68,6 +68,18 @@ struct ExportBoundary {
         return self(mesh, geometry);
     }
 
+    static BoundaryNodeSet BoundarySets__sum__(const BoundaryNodeSet& self, const BoundaryNodeSet& right) {
+        return new SumBoundaryImpl(self, right);
+    }
+
+    static BoundaryNodeSet BoundarySets__prod__(const BoundaryNodeSet& self, const BoundaryNodeSet& right) {
+        return new ProdBoundaryImpl(self, right);
+    }
+
+    static BoundaryNodeSet BoundarySets__diff__(const BoundaryNodeSet& self, const BoundaryNodeSet& right) {
+        return new DiffBoundaryImpl(self, right);
+    }
+
     ExportBoundary(py::object mesh_class) {
 
         py::scope scope = mesh_class;
@@ -80,6 +92,11 @@ struct ExportBoundary {
                 .def("__contains__", &BoundaryNodeSet::contains)
                 .def("__iter__", py::range(&BoundaryNodeSet::begin, &BoundaryNodeSet::end))
                 .def("__len__", &BoundaryNodeSet::size)
+                .def("__or__",  &BoundarySets__sum__,  py::arg("other"), u8"union of sets of indices included in self and other")
+                .def("__add__", &BoundarySets__sum__,  py::arg("other"), u8"union of sets of indices included in self and other")
+                .def("__and__", &BoundarySets__prod__, py::arg("other"), u8"intersection of sets of indices included in self and other")
+                .def("__mul__", &BoundarySets__prod__, py::arg("other"), u8"intersection of sets of indices included in self and other")
+                .def("__sub__", &BoundarySets__diff__, py::arg("other"), u8"difference of sets of indices included in self and other")
             ;
             py::delattr(scope, "BoundaryInstance");
         }
