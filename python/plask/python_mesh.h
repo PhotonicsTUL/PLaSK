@@ -68,16 +68,28 @@ struct ExportBoundary {
         return self(mesh, geometry);
     }
 
-    static BoundaryNodeSet BoundarySets__sum__(const BoundaryNodeSet& self, const BoundaryNodeSet& right) {
-        return new SumBoundaryImpl(self, right);
+    static BoundaryNodeSet BoundarySets__sum__(BoundaryNodeSet self, BoundaryNodeSet right) {
+        return new UnionBoundarySetImpl(std::move(self), std::move(right));
     }
 
-    static BoundaryNodeSet BoundarySets__prod__(const BoundaryNodeSet& self, const BoundaryNodeSet& right) {
-        return new ProdBoundaryImpl(self, right);
+    static BoundaryNodeSet BoundarySets__prod__(BoundaryNodeSet self, BoundaryNodeSet right) {
+        return new IntersectionBoundarySetImpl(std::move(self), std::move(right));
     }
 
-    static BoundaryNodeSet BoundarySets__diff__(const BoundaryNodeSet& self, const BoundaryNodeSet& right) {
-        return new DiffBoundaryImpl(self, right);
+    static BoundaryNodeSet BoundarySets__diff__(BoundaryNodeSet self, BoundaryNodeSet right) {
+        return new DiffBoundarySetImpl(std::move(self), std::move(right));
+    }
+
+    static Boundary Boundary__sum__(Boundary self, Boundary right) {
+        return Boundary(UnionBoundary<MeshType>(std::move(self), std::move(right)));
+    }
+
+    static Boundary Boundary__prod__(Boundary self, Boundary right) {
+        return Boundary(IntersectionBoundary<MeshType>(std::move(self), std::move(right)));
+    }
+
+    static Boundary Boundary__diff__(Boundary self, Boundary right) {
+        return Boundary(DiffBoundary<MeshType>(std::move(self), std::move(right)));
     }
 
     ExportBoundary(py::object mesh_class) {
@@ -104,8 +116,17 @@ struct ExportBoundary {
         py::class_<Boundary, shared_ptr<Boundary>>("Boundary",
             ("Generic boundary specification for "+name+" mesh").c_str(), py::no_init)
             .def("__call__", &Boundary__call__, (py::arg("mesh"), "geometry"), u8"Get boundary instance for particular mesh",
-                 py::with_custodian_and_ward_postcall<0,1,
-                 py::with_custodian_and_ward_postcall<0,2>>())
+                 py::with_custodian_and_ward_postcall<0,1, py::with_custodian_and_ward_postcall<0,2>>())
+            .def("__or__", &Boundary__sum__, py::with_custodian_and_ward_postcall<0,1, py::with_custodian_and_ward_postcall<0,2>>(),
+                 py::arg("other"), u8"boundary which represents union of boundaries (union of produced sets of indices by): self and other")
+            .def("__add__", &Boundary__sum__, py::with_custodian_and_ward_postcall<0,1, py::with_custodian_and_ward_postcall<0,2>>(),
+                 py::arg("other"), u8"boundary which represents union of boundaries (union of produced sets of indices by): self and other")
+            .def("__and__", &Boundary__prod__, py::with_custodian_and_ward_postcall<0,1, py::with_custodian_and_ward_postcall<0,2>>(),
+                 py::arg("other"), u8"boundary which represents intersection of boundaries (intersection of produced sets of indices by): self and other")
+            .def("__mul__", &Boundary__prod__, py::with_custodian_and_ward_postcall<0,1, py::with_custodian_and_ward_postcall<0,2>>(),
+                 py::arg("other"), u8"boundary which represents intersection of boundaries (intersection of produced sets of indices by): self and other")
+            .def("__sub__", &BoundarySets__diff__, py::with_custodian_and_ward_postcall<0,1, py::with_custodian_and_ward_postcall<0,2>>(),
+                 py::arg("other"), u8"boundary which represents difference of boundaries (difference of produced sets of indices by): self and other")
         ;
 
         detail::RegisterBoundaryConditions<Boundary, py::object>(false);

@@ -412,9 +412,9 @@ struct BoundaryOp {
 };
 
 /**
- * This logic holds a list of boundaries and represent a set of indexes which is a sum (an union) of sets from this boundaries.
+ * This logic holds a list of boundaries and represent a set of indices which is an union of sets from this boundaries.
  */
-struct SumBoundaryImpl: public BoundaryNodeSetImpl {
+struct UnionBoundarySetImpl: public BoundaryNodeSetImpl {
 
     typedef std::vector< BoundaryNodeSet > BoundariesVec;
     BoundariesVec boundaries;
@@ -469,10 +469,10 @@ struct SumBoundaryImpl: public BoundaryNodeSetImpl {
     };
 
     template <typename... Args>
-    SumBoundaryImpl(Args&&... args):
+    UnionBoundarySetImpl(Args&&... args):
         boundaries(std::forward<Args>(args)...) {   }
 
-    SumBoundaryImpl(BoundaryNodeSet A, BoundaryNodeSet B)
+    UnionBoundarySetImpl(BoundaryNodeSet A, BoundaryNodeSet B)
         : boundaries(std::initializer_list<plask::BoundaryNodeSet>{A, B}) {}
 
     virtual bool contains(std::size_t mesh_index) const override {
@@ -516,9 +516,9 @@ struct SumBoundaryImpl: public BoundaryNodeSetImpl {
 };
 
 /**
- * This logic holds a two boundaries and represent a set difference of them.
+ * This logic holds two boundaries and represent a set difference of them.
  */
-struct DiffBoundaryImpl: public BoundaryNodeSetImpl {
+struct DiffBoundarySetImpl: public BoundaryNodeSetImpl {
 
     BoundaryNodeSet A, B;
 
@@ -583,7 +583,7 @@ struct DiffBoundaryImpl: public BoundaryNodeSetImpl {
 
     };
 
-    DiffBoundaryImpl(BoundaryNodeSet A, BoundaryNodeSet B):
+    DiffBoundarySetImpl(BoundaryNodeSet A, BoundaryNodeSet B):
         A(std::move(A)), B(std::move(B)) {   }
 
     virtual bool contains(std::size_t mesh_index) const override {
@@ -606,9 +606,9 @@ struct DiffBoundaryImpl: public BoundaryNodeSetImpl {
 
 
 /**
- * This logic holds a two boundaries and represent a set product (intersection) of them.
+ * This logic holds two boundaries and represent a set intersection of them.
  */
-struct ProdBoundaryImpl: public BoundaryNodeSetImpl {
+struct IntersectionBoundarySetImpl: public BoundaryNodeSetImpl {
 
     BoundaryNodeSet A, B;
 
@@ -672,7 +672,7 @@ struct ProdBoundaryImpl: public BoundaryNodeSetImpl {
 
     };
 
-    ProdBoundaryImpl(BoundaryNodeSet A, BoundaryNodeSet B):
+    IntersectionBoundarySetImpl(BoundaryNodeSet A, BoundaryNodeSet B):
         A(std::move(A)), B(std::move(B)) {   }
 
     virtual bool contains(std::size_t mesh_index) const override {
@@ -692,6 +692,15 @@ struct ProdBoundaryImpl: public BoundaryNodeSetImpl {
     }
 
 };
+
+/// Boundary which represents union of boundaries.
+template <typename MeshType> using UnionBoundary = BoundaryOp<MeshType, UnionBoundarySetImpl>;
+
+/// Boundary which represents difference of boundaries.
+template <typename MeshType> using DiffBoundary = BoundaryOp<MeshType, DiffBoundarySetImpl>;
+
+/// Boundary which represents intersection of boundaries.
+template <typename MeshType> using IntersectionBoundary = BoundaryOp<MeshType, IntersectionBoundarySetImpl>;
 
 /**
  * Boundary logic implementation which represents set of indexes which fulfill predicate.

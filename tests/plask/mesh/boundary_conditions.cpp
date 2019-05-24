@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(boundary_conditions_sets) {
     BOOST_CHECK(A.contains(1));
     BOOST_CHECK(!A.contains(3));
 
-    plask::BoundaryNodeSet sum(new plask::SumBoundaryImpl(A, B));
+    plask::BoundaryNodeSet sum(new plask::UnionBoundarySetImpl(A, B));
     BOOST_CHECK_EQUAL(sum.size(), 7);
     std::size_t expected_sum[] = {1, 2, 3, 5, 6, 7, 8};
     BOOST_CHECK_EQUAL_COLLECTIONS(sum.begin(), sum.end(), std::begin(expected_sum), std::end(expected_sum));
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(boundary_conditions_sets) {
     BOOST_CHECK(sum.contains(3));
     BOOST_CHECK(!sum.contains(10));
 
-    plask::BoundaryNodeSet prod(new plask::ProdBoundaryImpl(A, B));
+    plask::BoundaryNodeSet prod(new plask::IntersectionBoundarySetImpl(A, B));
     BOOST_CHECK_EQUAL(prod.size(), 2);
     std::size_t expected_prod[] = {1, 7};
     BOOST_CHECK_EQUAL_COLLECTIONS(prod.begin(), prod.end(), std::begin(expected_prod), std::end(expected_prod));
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(boundary_conditions_sets) {
     BOOST_CHECK(prod.contains(7));
     BOOST_CHECK(!prod.contains(8));
 
-    plask::BoundaryNodeSet diff(new plask::DiffBoundaryImpl(A, B));
+    plask::BoundaryNodeSet diff(new plask::DiffBoundarySetImpl(A, B));
     BOOST_CHECK_EQUAL(diff.size(), 2);
     std::size_t diff_prod[] = {2, 5};
     BOOST_CHECK_EQUAL_COLLECTIONS(diff.begin(), diff.end(), std::begin(diff_prod), std::end(diff_prod));
