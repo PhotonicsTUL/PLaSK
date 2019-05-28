@@ -269,8 +269,7 @@ size_t FourierSolver2D::initIncidence(Transfer::IncidentDirection side, Expansio
         throw BadInput(getId(), "Unspecified incident polarization for reflectivity computation");
     if (expansion.symmetric() && expansion.symmetry != polarization)
         throw BadInput(getId(), "Current symmetry is inconsistent with the specified incident polarization");
-    if (expansion.separated())
-        expansion.polarization = polarization;
+    if (expansion.separated()) expansion.setPolarization(polarization);
 
     size_t layer = stack[(side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1];
     if (!transfer) {
@@ -290,7 +289,7 @@ cvector FourierSolver2D::incidentVector(Transfer::IncidentDirection side, Expans
     size_t layer = initIncidence(side, polarization, lam);
 
     size_t idx;
-    if (expansion.separated()) idx = expansion.iE(0);
+    if (expansion.separated()) idx = expansion.iEH(0);
     else idx = (polarization == Expansion::E_TRAN)? expansion.iEx(0) : expansion.iEz(0);
     cvector incident(expansion.matrixSize(), 0.);
     incident[idx] = (polarization == Expansion::E_TRAN)? 1. : -1.;
@@ -310,7 +309,7 @@ cvector FourierSolver2D::incidentGaussian(Transfer::IncidentDirection side, Expa
     cvector incident(expansion.matrixSize(), 0.);
     for (int i = -int(size); i <= int(size); ++i) {
         size_t idx;
-        if (expansion.separated()) idx = expansion.iE(i);
+        if (expansion.separated()) idx = expansion.iEH(i);
         else idx = (polarization == Expansion::E_TRAN)? expansion.iEx(i) : expansion.iEz(i);
         dcomplex val = exp(c2 * double(i*i) - d*double(i));
         incident[idx] = (polarization == Expansion::E_TRAN)? val : -val;

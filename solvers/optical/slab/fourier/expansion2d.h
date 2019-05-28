@@ -232,8 +232,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     size_t iEz(int i) { return 2 * ((i>=0)?i:i+N) + 1; }    ///< Get \f$ E_z \f$ index
     size_t iHx(int i) { return 2 * ((i>=0)?i:i+N) + 1; }    ///< Get \f$ H_x \f$ index
     size_t iHz(int i) { return 2 * ((i>=0)?i:i+N); }        ///< Get \f$ H_z \f$ index
-    size_t iE(int i) { return (i>=0)?i:i+N; }               ///< Get \f$ E \f$ index for separated equations
-    size_t iH(int i) { return (i>=0)?i:i+N; }               ///< Get \f$ H \f$ index for separated equations
+    size_t iEH(int i) { return (i>=0)?i:i+N; }              ///< Get \f$ E \f$ or \f$ H \f$ index for separated equations
 };
 
 }}} // namespace plask::optical::slab
