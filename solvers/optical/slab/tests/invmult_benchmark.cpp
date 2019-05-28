@@ -60,8 +60,13 @@ int main() {
 //     }
 //     std::cerr << "])\n\n";
 
-    invmult(T, X);
-//     ToeplitzLevinson(eps, X);
+    // Invert matrices with LAPACK
+    std::unique_ptr<int[]> ipiv(new int[N]);
+    int info;
+    zgesv(N, N, T.data(), N, ipiv.get(), X.data(), N, info);
+    if (info > 0) throw ComputationError("invmult", "Toeplitz matrix singular");
+    
+    // ToeplitzLevinson(eps, X);
 
     // std::cerr << "X = matrix([\n";
     // for (size_t i = 0; i < N; ++i) {
