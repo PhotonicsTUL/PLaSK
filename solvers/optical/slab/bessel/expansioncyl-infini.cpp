@@ -75,7 +75,7 @@ void ExpansionBesselInfini::layerIntegrals(size_t layer, double lam, double glam
 }
 
 
-void ExpansionBesselInfini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
+void ExpansionBesselInfini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH, cmatrix&)
 {
     assert(initialized);
     if (isnan(k0)) throw BadInput(SOLVER->getId(), "Wavelength or k0 not set");

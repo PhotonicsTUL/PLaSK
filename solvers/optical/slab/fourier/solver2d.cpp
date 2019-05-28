@@ -14,11 +14,8 @@ FourierSolver2D::FourierSolver2D(const std::string& name):
     ftt(FOURIER_DISCRETE),
     expansion(this),
     refine(32),
-    oversampling(1.),
     outNeff(this, &FourierSolver2D::getEffectiveIndex, &FourierSolver2D::nummodes)
-{
-    smooth = 0.00025;
-}
+{}
 
 
 void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
@@ -29,7 +26,10 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             size = reader.getAttribute<size_t>("size", size);
             refine = reader.getAttribute<size_t>("refine", refine);
             smooth = reader.getAttribute<double>("smooth", smooth);
-            oversampling = reader.getAttribute<double>("oversampling", oversampling);
+            if (reader.hasAttribute("oversampling")) {
+                reader.ignoreAttribute("oversampling");
+                writelog(LOG_WARNING, "'oversampling' is ignored in XML line {}", reader.getLineNr());
+            }
             ftt = reader.enumAttribute<FourierType>("ft")
                 .value("discrete", FOURIER_DISCRETE)
                 .value("analytic", FOURIER_ANALYTIC)
@@ -269,8 +269,7 @@ size_t FourierSolver2D::initIncidence(Transfer::IncidentDirection side, Expansio
         throw BadInput(getId(), "Unspecified incident polarization for reflectivity computation");
     if (expansion.symmetric() && expansion.symmetry != polarization)
         throw BadInput(getId(), "Current symmetry is inconsistent with the specified incident polarization");
-    if (expansion.separated())
-        expansion.polarization = polarization;
+    if (expansion.separated()) expansion.setPolarization(polarization);
 
     size_t layer = stack[(side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1];
     if (!transfer) {
@@ -290,7 +289,7 @@ cvector FourierSolver2D::incidentVector(Transfer::IncidentDirection side, Expans
     size_t layer = initIncidence(side, polarization, lam);
 
     size_t idx;
-    if (expansion.separated()) idx = expansion.iE(0);
+    if (expansion.separated()) idx = expansion.iEH(0);
     else idx = (polarization == Expansion::E_TRAN)? expansion.iEx(0) : expansion.iEz(0);
     cvector incident(expansion.matrixSize(), 0.);
     incident[idx] = (polarization == Expansion::E_TRAN)? 1. : -1.;
@@ -310,7 +309,7 @@ cvector FourierSolver2D::incidentGaussian(Transfer::IncidentDirection side, Expa
     cvector incident(expansion.matrixSize(), 0.);
     for (int i = -int(size); i <= int(size); ++i) {
         size_t idx;
-        if (expansion.separated()) idx = expansion.iE(i);
+        if (expansion.separated()) idx = expansion.iEH(i);
         else idx = (polarization == Expansion::E_TRAN)? expansion.iEx(i) : expansion.iEz(i);
         dcomplex val = exp(c2 * double(i*i) - d*double(i));
         incident[idx] = (polarization == Expansion::E_TRAN)? val : -val;

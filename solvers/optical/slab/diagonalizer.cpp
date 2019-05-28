@@ -24,11 +24,11 @@ SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
     const std::size_t N = src->matrixSize();         // Size of each matrix
 
     for (std::size_t i = 0; i < lcount; i++) {
-        gamma[i] = cdiagonal(N);
-        Th[i] = cmatrix(N, N);
-        Th1[i] = cmatrix(N, N);
-        Te[i] = cmatrix(N, N);
-        Te1[i] = cmatrix(N, N);
+        gamma[i].reset(N);
+        Th[i].reset(N, N);
+        Th1[i].reset(N, N);
+        Te[i].reset(N, N);
+        Te1[i].reset(N, N);
     }
     #ifdef OPENMP_FOUND
         int nthr = std::min(omp_get_max_threads(), int(lcount));
@@ -36,7 +36,7 @@ SimpleDiagonalizer::SimpleDiagonalizer(Expansion* g) :
         tmplx = new omp_lock_t[nthr];
         writelog(LOG_DEBUG, "{}: Creating {:d} temporary matri{} for diagonalizer", src->solver->getId(), nthr, (nthr==1)?"x":"ces");
         for (int i = 0; i != nthr; ++i) {
-            tmpmx[i] = cmatrix(N, N);
+            tmpmx[i].reset(N, N);
             omp_init_lock(tmplx+i);
         }
     #else
@@ -98,7 +98,7 @@ bool SimpleDiagonalizer::diagonalizeLayer(size_t layer)
         // First find necessary matrices
         cmatrix RE = Th1[layer], RH = Th[layer];
 
-        src->getMatrices(layer, RE, RH);
+        src->getMatrices(layer, RE, RH, QE);
 
         // Ugly hack to avoid singularities
         for (std::size_t i = 0; i != N; ++i) {
