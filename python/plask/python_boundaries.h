@@ -29,7 +29,7 @@ template <> inline boost::python::object parseBoundaryValue<boost::python::objec
     for (const auto& item: attributes) {
         result[item.first] = python::eval_common_type(item.second);
     }
-    return result;
+    return std::move(result);
 }
 
 

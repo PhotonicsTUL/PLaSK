@@ -702,6 +702,85 @@ template <typename MeshType> using DiffBoundary = BoundaryOp<MeshType, DiffBound
 /// Boundary which represents intersection of boundaries.
 template <typename MeshType> using IntersectionBoundary = BoundaryOp<MeshType, IntersectionBoundarySetImpl>;
 
+//@{
+/**
+ * Return union of left and right sets of nodes.
+ * @param left, right sets of nodes
+ * @return the union
+ */
+inline BoundaryNodeSet operator+(BoundaryNodeSet left, BoundaryNodeSet right) {
+    return new UnionBoundarySetImpl(std::move(left), std::move(right));
+}
+inline BoundaryNodeSet operator|(BoundaryNodeSet left, BoundaryNodeSet right) {
+    return new UnionBoundarySetImpl(std::move(left), std::move(right));
+}
+//@}
+
+//@{
+/**
+ * Return intersection of left and right sets of nodes.
+ * @param left, right sets of nodes
+ * @return the intersection
+ */
+inline BoundaryNodeSet operator*(BoundaryNodeSet left, BoundaryNodeSet right) {
+    return new IntersectionBoundarySetImpl(std::move(left), std::move(right));
+}
+inline BoundaryNodeSet operator&(BoundaryNodeSet left, BoundaryNodeSet right) {
+    return new IntersectionBoundarySetImpl(std::move(left), std::move(right));
+}
+//@}
+
+/**
+ * Return difference of left and right sets of nodes.
+ * @param left, right sets of nodes
+ * @return the difference
+ */
+inline BoundaryNodeSet operator-(BoundaryNodeSet left, BoundaryNodeSet right) {
+    return new DiffBoundarySetImpl(std::move(left), std::move(right));
+}
+
+//@{
+/**
+ * Return boundary which produces the union of sets given by left and right boundaries.
+ * @param left, right boundaries
+ * @return the union boundary
+ */
+template <typename MeshType>
+inline Boundary<MeshType> operator+(Boundary<MeshType> left, Boundary<MeshType> right) {
+    return Boundary<MeshType>(UnionBoundary<MeshType>(std::move(left), std::move(right)));
+}
+template <typename MeshType>
+inline Boundary<MeshType> operator|(Boundary<MeshType> left, Boundary<MeshType> right) {
+    return Boundary<MeshType>(UnionBoundary<MeshType>(std::move(left), std::move(right)));
+}
+//@}
+
+//@{
+/**
+ * Return boundary which produces the intersection of sets given by left and right boundaries.
+ * @param left, right boundaries
+ * @return the intersection boundary
+ */
+template <typename MeshType>
+inline Boundary<MeshType> operator*(Boundary<MeshType> left, Boundary<MeshType> right) {
+    return Boundary<MeshType>(IntersectionBoundary<MeshType>(std::move(left), std::move(right)));
+}
+template <typename MeshType>
+inline Boundary<MeshType> operator&(Boundary<MeshType> left, Boundary<MeshType> right) {
+    return Boundary<MeshType>(IntersectionBoundary<MeshType>(std::move(left), std::move(right)));
+}
+//@}
+
+/**
+ * Return boundary which produces the difference of sets given by left and right boundaries.
+ * @param left, right boundaries
+ * @return the difference boundary
+ */
+template <typename MeshType>
+inline Boundary<MeshType> operator-(Boundary<MeshType> left, Boundary<MeshType> right) {
+    return Boundary<MeshType>(DiffBoundary<MeshType>(std::move(left), std::move(right)));
+}
+
 /**
  * Boundary logic implementation which represents set of indexes which fulfill predicate.
  * @tparam MeshT type of mesh
