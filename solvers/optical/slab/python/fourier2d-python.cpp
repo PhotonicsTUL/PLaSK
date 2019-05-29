@@ -395,7 +395,6 @@ void export_FourierSolver2D()
                 u8"Use this property only  if you are looking for anything else than\n"
                 u8"the transverse component of the propagation vector.\n");
     RW_FIELD(refine, "Number of refinement points for refractive index averaging.");
-    RW_FIELD(oversampling, "Factor by which the number of coefficients is increased for FFT.");
     solver.add_property("ft", &__Class__::getFourierType, &__Class__::setFourierType,
                 u8"Type of the Fourier transform. Analytic transform is faster and more precise,\n"
                 u8"however it ignores temperature and gain distributions.\n");

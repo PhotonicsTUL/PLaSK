@@ -18,7 +18,6 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
     size_t N;                           ///< Number of expansion coefficients
     size_t nN;                          ///< Number of of required coefficients for material parameters
-    size_t nM;                          ///< Number of FFT coefficients
     double left;                        ///< Left side of the sampled area
     double right;                       ///< Right side of the sampled area
     bool periodic;                      ///< Indicates if the geometry is periodic (otherwise use PMLs)
@@ -30,8 +29,11 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     size_t pil,                         ///< Index of the beginning of the left PML
            pir;                         ///< Index of the beginning of the right PML
 
+    struct Coeffs {
+        DataVector<dcomplex> zz, rzz, xx, rxx, yy, ryy, zx, rzx;
+    };
     /// Cached permittivity expansion coefficients
-    std::vector<DataVector<Tensor3<dcomplex>>> coeffs;
+    std::vector<Coeffs> coeffs;
 
     /// Information if the layer is diagonal
     std::vector<bool> diagonals;
@@ -69,7 +71,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
     size_t matrixSize() const override { return separated()? N : 2*N; }
 
-    void getMatrices(size_t l, cmatrix& RE, cmatrix& RH) override;
+    void getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& work) override;
 
     void prepareField() override;
 
@@ -94,9 +96,18 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     DataVector<Vec<3,dcomplex>> field;
     FFT::Backward1D fft_x, fft_yz;
 
+    void add_coeffs(int start, int end, double b, double l, double r, DataVector<dcomplex>& dst, dcomplex val) {
+            for (int k = start; k != end; ++k) {
+                size_t j = (k>=0)? k : k + nN;
+                dcomplex ff = (j)? (dcomplex(0., 0.5/PI/k) * (exp(dcomplex(0., -b*k*r)) - exp(dcomplex(0., -b*k*l)))) : ((r-l) * b*(0.5/PI));
+                dst[j] += val * ff;
+            }
+    }
+
   protected:
 
-    DataVector<Tensor2<dcomplex>> mag;      ///< Magnetic permeability coefficients (used with for PMLs)
+    DataVector<dcomplex> mag;               ///< Magnetic permeability coefficients (used with for PMLs)
+    DataVector<dcomplex> rmag;              ///< Inverted magnetic permeability coefficients (used with for PMLs)
 
     FFT::Forward1D matFFT;                  ///< FFT object for material coefficients
 
@@ -185,49 +196,45 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     Component getPolarization() const { return polarization; }
     void setPolarization(Component pol);
 
-    /// Get \f$ \varepsilon_{zz} \f$
-    dcomplex epszz(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c00; }
+    const DataVector<dcomplex>& epszz(size_t l) { return coeffs[l].zz; }            ///< Get \f$ \varepsilon_{zz} \f$
+    const DataVector<dcomplex>& epsxx(size_t l) { return coeffs[l].xx; }            ///< Get \f$ \varepsilon_{xx} \f$
+    const DataVector<dcomplex>& epsyy(size_t l) { return coeffs[l].yy; }            ///< Get \f$ \varepsilon_{yy} \f$
+    const DataVector<dcomplex>& repszz(size_t l) { return coeffs[l].rzz; }          ///< Get \f$ \varepsilon_{zz}^{-1} \f$
+    const DataVector<dcomplex>& repsxx(size_t l) { return coeffs[l].rxx; }          ///< Get \f$ \varepsilon_{xx}^{-1} \f$
+    const DataVector<dcomplex>& repsyy(size_t l) { return coeffs[l].ryy; }          ///< Get \f$ \varepsilon_{yy}^{-1} \f$
+    const DataVector<dcomplex>& epszx(size_t l) { return coeffs[l].zx; }            ///< Get \f$ \varepsilon_{zx} \f$
+    const DataVector<dcomplex>& repszx(size_t l) { return coeffs[l].rzx; }          ///< Get \f$ \varepsilon_{zx}^{-1} \f$
+    const DataVector<dcomplex>& muzz(size_t PLASK_UNUSED(l)) { return mag; }        ///< Get \f$ \mu_{zz} \f$
+    const DataVector<dcomplex>& muxx(size_t PLASK_UNUSED(l)) { return mag; }        ///< Get \f$ \mu_{xx} \f$
+    const DataVector<dcomplex>& muyy(size_t PLASK_UNUSED(l)) { return mag; }        ///< Get \f$ \mu_{yy} \f$
+    const DataVector<dcomplex>& rmuzz(size_t PLASK_UNUSED(l)) { return rmag; }      ///< Get \f$ \mu_{zz}^{-1} \f$
+    const DataVector<dcomplex>& rmuxx(size_t PLASK_UNUSED(l)) { return rmag; }      ///< Get \f$ \mu_{xx}^{-1} \f$
+    const DataVector<dcomplex>& rmuyy(size_t PLASK_UNUSED(l)) { return rmag; }      ///< Get \f$ \mu_{yy}^{-1} \f$
 
-    /// Get \f$ \varepsilon_{xx} \f$
-    dcomplex epsxx(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c11; }
+    dcomplex epszz(size_t l, int i) { return coeffs[l].zz[(i>=0)?i:i+nN]; }         ///< Get element of \f$ \varepsilon_{zz} \f$
+    dcomplex epsxx(size_t l, int i) { return coeffs[l].xx[(i>=0)?i:i+nN]; }         ///< Get element of \f$ \varepsilon_{xx} \f$
+    dcomplex epsyy(size_t l, int i) { return coeffs[l].yy[(i>=0)?i:i+nN]; }         ///< Get element of \f$ \varepsilon_{yy} \f$
+    dcomplex repszz(size_t l, int i) { return coeffs[l].rzz[(i>=0)?i:i+nN]; }       ///< Get element of \f$ \varepsilon_{zz}^{-1} \f$
+    dcomplex repsxx(size_t l, int i) { return coeffs[l].rxx[(i>=0)?i:i+nN]; }       ///< Get element of \f$ \varepsilon_{xx}^{-1} \f$
+    dcomplex repsyy(size_t l, int i) { return coeffs[l].ryy[(i>=0)?i:i+nN]; }       ///< Get element of \f$ \varepsilon_{yy}^{-1} \f$
+    dcomplex epszx(size_t l, int i) { return coeffs[l].zx[(i>=0)?i:i+nN]; }         ///< Get element of \f$ \varepsilon_{zx} \f$
+    dcomplex epsxz(size_t l, int i) { return conj(coeffs[l].zx[(i>=0)?i:i+nN]); }   ///< Get element of \f$ \varepsilon_{zx} \f$
+    dcomplex repszx(size_t l, int i) { return coeffs[l].rzx[(i>=0)?i:i+nN]; }       ///< Get element of \f$ \varepsilon_{zx}^{-1} \f$
+    dcomplex iepsxz(size_t l, int i) { return conj(coeffs[l].rzx[(i>=0)?i:i+nN]); } ///< Get element of \f$ \varepsilon_{zx}^{-1} \f$
+    dcomplex muzz(size_t PLASK_UNUSED(l), int i) { return mag[(i>=0)?i:i+nN]; }     ///< Get element of \f$ \mu_{zz} \f$
+    dcomplex muxx(size_t PLASK_UNUSED(l), int i) { return mag[(i>=0)?i:i+nN]; }     ///< Get element of \f$ \mu_{xx} \f$
+    dcomplex muyy(size_t PLASK_UNUSED(l), int i) { return mag[(i>=0)?i:i+nN]; }     ///< Get element of \f$ \mu_{yy} \f$
+    dcomplex rmuzz(size_t PLASK_UNUSED(l), int i) { return rmag[(i>=0)?i:i+nN]; }   ///< Get element of \f$ \mu_{zz}^{-1} \f$
+    dcomplex rmuxx(size_t PLASK_UNUSED(l), int i) { return rmag[(i>=0)?i:i+nN]; }   ///< Get element of \f$ \mu_{xx}^{-1} \f$
+    dcomplex rmuyy(size_t PLASK_UNUSED(l), int i) { return rmag[(i>=0)?i:i+nN]; }   ///< Get element of \f$ \mu_{yy}^{-1} \f$
 
-    /// Get \f$ \varepsilon_{yy}^{-1} \f$
-    dcomplex iepsyy(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c22; }
-
-    /// Get \f$ \varepsilon_{zx} \f$
-    dcomplex epszx(size_t l, int i) { return coeffs[l][(i>=0)?i:i+nN].c01; }
-
-    /// Get \f$ \varepsilon_{xz} \f$
-    dcomplex epsxz(size_t l, int i) { return conj(coeffs[l][(i>=0)?i:i+nN].c01); }
-
-    /// Get \f$ \mu_{zz} \f$
-    dcomplex muzz(size_t PLASK_UNUSED(l), int i) { return mag[(i>=0)?i:i+nN].c00; }
-
-    /// Get \f$ \mu_{xx} \f$
-    dcomplex muxx(size_t PLASK_UNUSED(l), int i) { return mag[(i>=0)?i:i+nN].c11; }
-
-    /// Get \f$ \mu_{yy}^{-1} \f$
-    dcomplex imuyy(size_t PLASK_UNUSED(l), int i) { return mag[(i>=0)?i:i+nN].c11; }
-
-    /// Get \f$ E_x \f$ index
-    size_t iEx(int i) { return 2 * ((i>=0)?i:i+N); }
-
-    /// Get \f$ E_z \f$ index
-    size_t iEz(int i) { return 2 * ((i>=0)?i:i+N) + 1; }
-
-    /// Get \f$ H_x \f$ index
-    size_t iHx(int i) { return 2 * ((i>=0)?i:i+N) + 1; }
-
-    /// Get \f$ H_z \f$ index
-    size_t iHz(int i) { return 2 * ((i>=0)?i:i+N); }
-
-    /// Get \f$ E \f$ index for separated equations
-    size_t iE(int i) { return (i>=0)?i:i+N; }
-
-    /// Get \f$ H \f$ index for separated equations
-    size_t iH(int i) { return (i>=0)?i:i+N; }
+    size_t iEx(int i) { return 2 * ((i>=0)?i:i+N); }        ///< Get \f$ E_x \f$ index
+    size_t iEz(int i) { return 2 * ((i>=0)?i:i+N) + 1; }    ///< Get \f$ E_z \f$ index
+    size_t iHx(int i) { return 2 * ((i>=0)?i:i+N) + 1; }    ///< Get \f$ H_x \f$ index
+    size_t iHz(int i) { return 2 * ((i>=0)?i:i+N); }        ///< Get \f$ H_z \f$ index
+    size_t iEH(int i) { return (i>=0)?i:i+N; }              ///< Get \f$ E \f$ or \f$ H \f$ index for separated equations
 };
 
-}}} // namespace plask
+}}} // namespace plask::optical::slab
 
 #endif // PLASK__SOLVER_SLAB_EXPANSION_PW2D_H

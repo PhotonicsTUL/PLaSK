@@ -46,12 +46,6 @@
       default: 32
       help: >
         Number of refinement points for refractive index averaging.
-    - attr: oversampling
-      label: Oversampling
-      type: float
-      default: 1
-      help: >
-        Factor by which the number of coefficients is increased for FFT.
     - attr: ft
       label: Fourier transform type
       type: choice
@@ -72,7 +66,7 @@
       attr: smooth
       label: Smoothing parameter
       type: float
-      default: 0.00025
+      default: 0.0
       help: >
         Smoothing parameter for material boundaries (increases convergence).
     - &group-layers

@@ -66,9 +66,13 @@ file(GLOB solver_src *.cpp *.h fourier/*.cpp fourier/*.h bessel/*.cpp bessel/*.h
 enable_testing()
 
 if(BUILD_TESTING)
-    add_executable(fft_test tests/fft_test.cpp)
-    target_link_libraries(fft_test libplask ${SOLVER_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
-    add_solver_test(solvers/optical/slab/fft fft_test)
+    foreach(slab_test fft toeplitz)
+        add_executable(${slab_test}_test tests/${slab_test}_test.cpp)
+        target_link_libraries(${slab_test}_test libplask ${SOLVER_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
+        add_solver_test(solvers/optical/slab/${slab_test} ${slab_test}_test)
+    endforeach()
+    add_executable(invmult_benchmark tests/invmult_benchmark.cpp)
+    target_link_libraries(invmult_benchmark libplask ${SOLVER_LIBRARY})
 endif()
 
 add_python_test(solvers/optical/slab ${CMAKE_CURRENT_SOURCE_DIR}/tests/slab.py)

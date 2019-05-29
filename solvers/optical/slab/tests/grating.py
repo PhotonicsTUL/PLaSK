@@ -58,5 +58,9 @@ class GratingTest(unittest.TestCase):
         l_tm = array([1298., 1344.])
         self.solver.lam0 = 1500.
         r_tm = self.solver.compute_reflectivity(l_tm, 'top', 'Et')
-        self.assertAlmostEqual( r_tm[0], 99.549, 2 )
-        self.assertAlmostEqual( r_tm[1], 26.479, 2 )
+        self.assertAlmostEqual( r_tm[0], 98.529, 2 )
+        self.assertAlmostEqual( r_tm[1], 28.296, 2 )
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -18,7 +18,7 @@ template <typename T> class MatrixDiagonal;
 template <typename T>
 class Matrix {
   protected:
-    std::size_t r, c;
+    size_t r, c;
 
     T* data_;               ///< The data of the matrix
     std::atomic<int>* gc;   ///< the reference count for the garbage collector
@@ -40,11 +40,11 @@ class Matrix {
 
     Matrix() : r(0), c(0), gc(nullptr) {}
 
-    Matrix(std::size_t m, std::size_t n) : r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new std::atomic<int>(1)) {
+    Matrix(size_t m, size_t n) : r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new std::atomic<int>(1)) {
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
     }
 
-    Matrix(std::size_t m, std::size_t n, T val) : r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new std::atomic<int>(1)) {
+    Matrix(size_t m, size_t n, T val) : r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new std::atomic<int>(1)) {
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
         std::fill_n(data_, m*n, val);
     }
@@ -66,40 +66,59 @@ class Matrix {
         for (int j = 0, n = 0; j < r; j++, n += c+1) data_[n] = M[j];
     }
 
-    Matrix(std::size_t m, std::size_t n, T* existing_data) : r(m), c(n), gc(nullptr) {
+    Matrix(size_t m, size_t n, T* existing_data) : r(m), c(n), gc(nullptr) {
         // Create matrix using exiting data. This data is never garbage-collected
         data_ = existing_data;
+    }
+
+    Matrix(size_t m, size_t n, std::initializer_list<T> data): r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new std::atomic<int>(1)) {
+        std::copy(data.begin(), data.end(), data_);
     }
 
     ~Matrix() {
         dec_ref();
     }
 
+    void reset() {
+        dec_ref();
+        r = c = 0;
+        data_ = nullptr;
+        gc = nullptr;
+    }
+
+    void reset(size_t m, size_t n) {
+        dec_ref();
+        r = m; c = n;
+        data_ = aligned_new_array<T>(m*n);
+        gc = new std::atomic<int>(1);
+        write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
+    }
+
     inline const T* data() const { return data_; }
     inline T* data() { return data_; }
 
-    inline const T& operator[](std::size_t i) const {
+    inline const T& operator[](size_t i) const {
         assert(i < r*c);
         return data_[i];
     }
-    inline T& operator[](std::size_t i) {
+    inline T& operator[](size_t i) {
         assert(i < r*c);
         return data_[i];
     }
 
-    inline const T& operator()(std::size_t m, std::size_t n) const {
+    inline const T& operator()(size_t m, size_t n) const {
         assert(m < r);
         assert(n < c);
         return data_[n*r + m];
     }
-    inline T& operator()(std::size_t m, std::size_t n) {
+    inline T& operator()(size_t m, size_t n) {
         assert(m < r);
         assert(n < c);
         return data_[n*r + m];
     }
 
-    inline std::size_t rows() const { return r; }
-    inline std::size_t cols() const { return c; }
+    inline size_t rows() const { return r; }
+    inline size_t cols() const { return c; }
 
     Matrix<T> copy() const {
         Matrix<T> copy_(r, c);
@@ -108,18 +127,18 @@ class Matrix {
     }
 
     Matrix<T>& operator*=(T a) {
-        std::size_t size = r*c; for (std::size_t i = 0; i < size; i++) data_[i] *= a;
+        size_t size = r*c; for (size_t i = 0; i < size; i++) data_[i] *= a;
         return *this;
     }
     Matrix<T>& operator/=(T a) {
-        std::size_t size = r*c; for (std::size_t i = 0; i < size; i++) data_[i] /= a;
+        size_t size = r*c; for (size_t i = 0; i < size; i++) data_[i] /= a;
         return *this;
     }
 
     /// Check if the matrix contains any NaN
     inline bool isnan() const {
-        const std::size_t n = r * c;
-        for (std::size_t i = 0; i < n; ++i)
+        const size_t n = r * c;
+        for (size_t i = 0; i < n; ++i)
             if (std::isnan(real(data_[i])) || std::isnan(imag(data_[i]))) return true;
         return false;
     }
@@ -138,7 +157,7 @@ class Matrix {
 template <typename T>
 class MatrixDiagonal {
   protected:
-    std::size_t siz;
+    size_t siz;
 
     T* data_;               //< The data of the matrix
     std::atomic<int>* gc;   //< the reference count for the garbage collector
@@ -160,11 +179,11 @@ class MatrixDiagonal {
 
     MatrixDiagonal() : siz(0), gc(nullptr) {}
 
-    MatrixDiagonal(std::size_t n) : siz(n), data_(aligned_new_array<T>(n)), gc(new std::atomic<int>(1)) {
+    MatrixDiagonal(size_t n) : siz(n), data_(aligned_new_array<T>(n)), gc(new std::atomic<int>(1)) {
         write_debug("allocating diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, double(siz*sizeof(T))/1048576., (void*)data_);
     }
 
-    MatrixDiagonal(std::size_t n, T val) : siz(n), data_(aligned_new_array<T>(n)), gc(new std::atomic<int>(1)) {
+    MatrixDiagonal(size_t n, T val) : siz(n), data_(aligned_new_array<T>(n)), gc(new std::atomic<int>(1)) {
         write_debug("allocating and filling diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, double(siz*sizeof(T))/1048576., (void*)data_);
         std::fill_n(data_, n, val);
     }
@@ -184,31 +203,46 @@ class MatrixDiagonal {
         dec_ref();
     }
 
+    inline void reset() {
+        dec_ref();
+        siz = 0;
+        data_ = nullptr;
+        gc = nullptr;
+    }
+
+    void reset(size_t n) {
+        dec_ref();
+        siz = n;
+        data_ = aligned_new_array<T>(n);
+        gc = new std::atomic<int>(1);
+        write_debug("allocating diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, double(siz*sizeof(T))/1048576., (void*)data_);
+    }
+
     inline const T* data() const { return data_; }
     inline T* data() { return data_; }
 
-    inline const T& operator[](std::size_t n) const {
+    inline const T& operator[](size_t n) const {
         assert(n < siz);
         return data_[n];
     }
-    inline T& operator[](std::size_t n) {
+    inline T& operator[](size_t n) {
         assert(n < siz);
         return data_[n];
     }
 
-    inline const T& operator()(std::size_t m, std::size_t n) const {
+    inline const T& operator()(size_t m, size_t n) const {
         assert(m < siz);
         assert(n < siz);
         return (m == n)? data_[n] : 0;
     }
-    inline T& operator()(std::size_t m, std::size_t n) {
+    inline T& operator()(size_t m, size_t n) {
         assert(m < siz);
         assert(n < siz);
         assert(m == n);
         return data_[n];
     }
 
-    inline std::size_t size() const { return siz; }
+    inline size_t size() const { return siz; }
 
     MatrixDiagonal<T> copy() const {
         MatrixDiagonal<T> C(siz);
@@ -221,7 +255,7 @@ class MatrixDiagonal {
 
     /// Check if the matrix contains any NaN
     inline bool isnan() const {
-        for (std::size_t i = 0; i != siz; ++i)
+        for (size_t i = 0; i != siz; ++i)
             if (std::isnan(real(data_[i])) || std::isnan(imag(data_[i]))) return true;
         return false;
     }
@@ -258,7 +292,7 @@ inline cmatrix operator*(const cmatrix& A, const cmatrix& B) {
 
 /// Multiplication operator of the matrix-vector product (using BLAS level3)
 inline cvector operator*(const cmatrix& A, const cvector& v) {
-    std::size_t n = A.cols(), m = A.rows();
+    size_t n = A.cols(), m = A.rows();
     // if (n != v.size()) throw ComputationError("mult_matrix_by_vector", "A.cols != v.size");
     assert(n == v.size());
     cvector dst(m);
@@ -272,12 +306,12 @@ inline cmatrix operator*(const Matrix<T>& A, const MatrixDiagonal<T>& B) {
     // if (A.cols() != B.size()) throw ComputationError("operator*<cmatrix,cdiagonal>", "Cannot multiply: A.cols != B.size");
     assert(A.cols() == B.size());
     cmatrix C(A.rows(), B.size());
-    std::size_t n = 0;
-    const std::size_t r = A.rows(), c = A.cols();
-    for (std::size_t j = 0; j < c; j++)
+    size_t n = 0;
+    const size_t r = A.rows(), c = A.cols();
+    for (size_t j = 0; j < c; j++)
     {
         T b = B[j];
-        for (std::size_t i = 0; i < r; i++, n++)
+        for (size_t i = 0; i < r; i++, n++)
             C[n] = A[n] * b;
     }
     return C;
@@ -289,10 +323,10 @@ inline cmatrix operator*(const MatrixDiagonal<T>& A, const Matrix<T>& B) {
     // if (A.size() != B.rows()) throw ComputationError("operator*<cdiagonal,cmatrix>", "Cannot multiply: A.size != B.rows");
     assert(A.size() == B.rows());
     cmatrix C(A.size(), B.cols());
-    std::size_t n = 0;
-    const std::size_t r = B.rows(), c = B.cols();
-    for (std::size_t j = 0; j < c; j++)
-        for (std::size_t i = 0; i < r; i++, n++)
+    size_t n = 0;
+    const size_t r = B.rows(), c = B.cols();
+    for (size_t j = 0; j < c; j++)
+        for (size_t i = 0; i < r; i++, n++)
             C[n] = A[i] * B[n];
     return C;
 }
@@ -302,11 +336,11 @@ template <typename T>
 inline void mult_matrix_by_diagonal(Matrix<T>& A, const MatrixDiagonal<T>& B) {
     // if (A.cols() != B.size()) throw ComputationError("mult_matrix_by_diagonal", "Cannot multiply: A.cols != B.size");
     assert(A.cols() == B.size());
-    std::size_t n = 0;
-    const std::size_t r = A.rows(), c = A.cols();
-    for (std::size_t j = 0; j < c; j++) {
+    size_t n = 0;
+    const size_t r = A.rows(), c = A.cols();
+    for (size_t j = 0; j < c; j++) {
         T b = B[j];
-        for (std::size_t i = 0; i < r; i++, n++)
+        for (size_t i = 0; i < r; i++, n++)
             A[n] *= b;
     }
 }
@@ -316,17 +350,17 @@ template <typename T>
 inline void mult_diagonal_by_matrix(const MatrixDiagonal<T>& A, Matrix<T>& B) {
     // if (A.size() != B.rows()) throw ComputationError("mult_diagonal_by_matrix", "Cannot multiply: A.size != B.rows");
     assert(A.size() == B.rows());
-    std::size_t n = 0;
-    const std::size_t r = B.rows(), c = B.cols();
-    for (std::size_t j = 0; j < c; j++)
-        for (std::size_t i = 0; i < r; i++, n++)
+    size_t n = 0;
+    const size_t r = B.rows(), c = B.cols();
+    for (size_t j = 0; j < c; j++)
+        for (size_t i = 0; i < r; i++, n++)
             B[n] *= A[i];
 }
 
 
 // BLAS wrappers for multiplications without allocating additional storage
 inline void mult_matrix_by_vector(const cmatrix& A, const const_cvector& v, cvector& dst) {
-    const std::size_t m = A.rows(),
+    const size_t m = A.rows(),
                       n = A.cols();
     // if (n != v.size()) throw ComputationError("mult_matrix_by_vector", "A.cols != v.size");
     // if (m != dst.size()) throw ComputationError("mult_matrix_by_vector", "A.rows != dst.size");
@@ -336,7 +370,7 @@ inline void mult_matrix_by_vector(const cmatrix& A, const const_cvector& v, cvec
 }
 
 inline void mult_matrix_by_matrix(const cmatrix& A, const cmatrix& B, cmatrix& dst) {
-    const std::size_t k = A.cols(),
+    const size_t k = A.cols(),
                       m = A.rows(),
                       n = B.cols();
     // if (k != B.rows()) throw ComputationError("mult_matrix_by_matrix", "cannot multiply: A.cols != B.rows");
@@ -349,7 +383,7 @@ inline void mult_matrix_by_matrix(const cmatrix& A, const cmatrix& B, cmatrix& d
 }
 
 inline void add_mult_matrix_by_vector(const cmatrix& A, const cvector& v, cvector& dst) {
-    const std::size_t m = A.rows(),
+    const size_t m = A.rows(),
                       n = A.cols();
     // if (n != v.size()) throw ComputationError("add_mult_matrix_by_vector", "A.cols != v.size");
     // if (m != dst.size()) throw ComputationError("add_mult_matrix_by_vector", "A.rows != dst.size");
@@ -359,7 +393,7 @@ inline void add_mult_matrix_by_vector(const cmatrix& A, const cvector& v, cvecto
 }
 
 inline void add_mult_matrix_by_matrix(const cmatrix& A, const cmatrix& B, cmatrix& dst) {
-    const std::size_t k = A.cols(),
+    const size_t k = A.cols(),
                       m = A.rows(),
                       n = B.cols();
     // if (k != B.rows()) throw ComputationError("add_mult_matrix_by_matrix", "cannot multiply: A.cols != B.rows");
