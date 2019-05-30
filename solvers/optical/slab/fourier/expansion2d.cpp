@@ -343,14 +343,10 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                     if (eps.c00 != eps.c22 || eps.c11 != eps.c22 || !epsilon_isotropic) {
                         if (epsilon_isotropic) {
                             coeffs[layer].zz = coeffs[layer].yy.copy();
-                            coeffs[layer].rzz = coeffs[layer].rxx.copy();
-                            coeffs[layer].xx = coeffs[layer].yy.copy();
                             coeffs[layer].ryy = coeffs[layer].rxx.copy();
                             epsilon_isotropic = false;
                         }
                         coeffs[layer].zz[i] += eps.c00;
-                        coeffs[layer].rzz[i] += nd? rm*eps.c11 : 1./eps.c00;
-                        coeffs[layer].xx[i] += eps.c11;
                         coeffs[layer].ryy[i] += 1./eps.c22;
                     }
                     coeffs[layer].rxx[i] += nd? rm*eps.c00 : 1./eps.c11;
@@ -366,8 +362,6 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 coeffs[layer].yy[i] *= factor;
                 if (!epsilon_isotropic) {
                     coeffs[layer].zz[i] *= factor;
-                    coeffs[layer].rzz[i] *= factor;
-                    coeffs[layer].xx[i] *= factor;
                     coeffs[layer].ryy[i] *= factor;
                 }
                 if (!epsilon_diagonal) {
@@ -393,7 +387,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                         }
                 } else {
                     for (size_t i = 1; i != nN; ++i)
-                        if (!(is_zero(coeffs[layer].zz[i] - coeffs[layer].zz[0]) && is_zero(coeffs[layer].xx[i] - coeffs[layer].xx[0]) && is_zero(coeffs[layer].yy[i] - coeffs[layer].yy[0]))) {
+                        if (!(is_zero(coeffs[layer].zz[i] - coeffs[layer].zz[0]) && is_zero(coeffs[layer].rxx[i] - coeffs[layer].rxx[0]) && is_zero(coeffs[layer].yy[i] - coeffs[layer].yy[0]))) {
                             diagonals[layer] = false; break;
                         }
                 }
@@ -423,8 +417,6 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                     }
                 } else {
                     std::fill_n(coeffs[layer].zz.data()+1, n1, 0.);
-                    std::fill_n(coeffs[layer].rzz.data()+1, n1, 0.);
-                    std::fill_n(coeffs[layer].xx.data()+1, n1, 0.);
                     std::fill_n(coeffs[layer].ryy.data()+1, n1, 0.);
                 }
                 if (!epsilon_diagonal) {
@@ -446,8 +438,6 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                     }
                 } else {
                     matFFT.execute(coeffs[layer].zz.data());
-                    matFFT.execute(coeffs[layer].rzz.data());
-                    matFFT.execute(coeffs[layer].xx.data());
                     matFFT.execute(coeffs[layer].ryy.data());
                 }
                 if (!epsilon_diagonal) {
@@ -493,8 +483,6 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
             if (polarization != E_TRAN) {
                 if (eps0.c00 != eps0.c22 || eps0.c11 != eps0.c22) {
                     coeffs[layer].zz.reset(nN, 0.); coeffs[layer].zz[0] = eps0.c00;
-                    coeffs[layer].rzz.reset(nN, 0.); coeffs[layer].rzz[0] = reps0.c00;
-                    coeffs[layer].xx.reset(nN, 0.); coeffs[layer].xx[0] = eps0.c11;
                     coeffs[layer].ryy.reset(nN, 0.); coeffs[layer].ryy[0] = reps0.c22;
                 } else {
                     coeffs[layer].rzz = coeffs[layer].ryy = coeffs[layer].rxx;
@@ -534,14 +522,10 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                     if (eps.c00 != eps.c22 || eps.c11 != eps.c22 || !epsilon_isotropic) {
                         if (epsilon_isotropic) {
                             coeffs[layer].zz = coeffs[layer].yy.copy();
-                            coeffs[layer].rzz = coeffs[layer].rxx.copy();
-                            coeffs[layer].xx = coeffs[layer].yy.copy();
                             coeffs[layer].ryy = coeffs[layer].rxx.copy();
                             epsilon_isotropic = false;
                         }
                         add_coeffs(start, end, b, l, r, coeffs[layer].zz, eps.c00 - eps0.c00);
-                        add_coeffs(start, end, b, l, r, coeffs[layer].rzz, reps.c00 - reps0.c00);
-                        add_coeffs(start, end, b, l, r, coeffs[layer].xx, eps.c11 - eps0.c11);
                         add_coeffs(start, end, b, l, r, coeffs[layer].ryy, reps.c22 - reps0.c22);
                     }
                     add_coeffs(start, end, b, l, r, coeffs[layer].rxx, reps.c11 - reps0.c11);
@@ -576,8 +560,6 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 coeffs[layer].yy[i] *= s;
                 if (!epsilon_isotropic) {
                     coeffs[layer].zz[i] *= s;
-                    coeffs[layer].rzz[i] *= s;
-                    coeffs[layer].xx[i] *= s;
                     coeffs[layer].ryy[i] *= s;
                 }
                 if (!epsilon_diagonal) {
