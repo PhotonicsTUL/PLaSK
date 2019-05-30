@@ -268,8 +268,9 @@ size_t FourierSolver2D::initIncidence(Transfer::IncidentDirection side, Expansio
     if (polarization == Expansion::E_UNSPECIFIED)
         throw BadInput(getId(), "Unspecified incident polarization for reflectivity computation");
     if (expansion.symmetric() && expansion.symmetry != polarization)
-        throw BadInput(getId(), "Current symmetry is inconsistent with the specified incident polarization");
-    if (expansion.separated()) expansion.setPolarization(polarization);
+        throw BadInput(getId(), "Current solver symmetry is inconsistent with the specified incident polarization");
+    if (expansion.separated() && expansion.polarization != polarization)
+        throw BadInput(getId(), "Current solver polarization is inconsistent with the specified incident polarization");
 
     size_t layer = stack[(side == Transfer::INCIDENCE_BOTTOM)? 0 : stack.size()-1];
     if (!transfer) {
