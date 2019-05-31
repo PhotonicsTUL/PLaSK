@@ -94,6 +94,15 @@ class Matrix {
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
     }
 
+    void reset(size_t m, size_t n, T val) {
+        dec_ref();
+        r = m; c = n;
+        data_ = aligned_new_array<T>(m*n);
+        gc = new std::atomic<int>(1);
+        write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
+        std::fill_n(data_, m*n, val);
+    }
+
     inline const T* data() const { return data_; }
     inline T* data() { return data_; }
 
@@ -126,6 +135,12 @@ class Matrix {
         return copy_;
     }
 
+    void copyto(Matrix<T>& dst) {
+        assert(dst.rows() == rows() && dst.cols() == cols());
+        assert(dst.rows() == rows() && dst.cols() == cols());
+        std::copy(begin(), end(), dst.begin());
+    }
+
     Matrix<T>& operator*=(T a) {
         size_t size = r*c; for (size_t i = 0; i < size; i++) data_[i] *= a;
         return *this;
@@ -141,6 +156,11 @@ class Matrix {
         for (size_t i = 0; i < n; ++i)
             if (std::isnan(real(data_[i])) || std::isnan(imag(data_[i]))) return true;
         return false;
+    }
+
+    /// Check if the matrix has any data
+    bool empty() const {
+        return !data_;
     }
 
     T* begin() const {
@@ -218,6 +238,15 @@ class MatrixDiagonal {
         write_debug("allocating diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, double(siz*sizeof(T))/1048576., (void*)data_);
     }
 
+    void reset(size_t n, T val) {
+        dec_ref();
+        siz = n;
+        data_ = aligned_new_array<T>(n);
+        gc = new std::atomic<int>(1);
+        write_debug("allocating diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, double(siz*sizeof(T))/1048576., (void*)data_);
+        std::fill_n(data_, n, val);
+    }
+
     inline const T* data() const { return data_; }
     inline T* data() { return data_; }
 
@@ -258,6 +287,11 @@ class MatrixDiagonal {
         for (size_t i = 0; i != siz; ++i)
             if (std::isnan(real(data_[i])) || std::isnan(imag(data_[i]))) return true;
         return false;
+    }
+
+    /// Check if the matrix has any data
+    bool empty() const {
+        return !data_;
     }
 
     T* begin() const {
@@ -361,7 +395,7 @@ inline void mult_diagonal_by_matrix(const MatrixDiagonal<T>& A, Matrix<T>& B) {
 // BLAS wrappers for multiplications without allocating additional storage
 inline void mult_matrix_by_vector(const cmatrix& A, const const_cvector& v, cvector& dst) {
     const size_t m = A.rows(),
-                      n = A.cols();
+                 n = A.cols();
     // if (n != v.size()) throw ComputationError("mult_matrix_by_vector", "A.cols != v.size");
     // if (m != dst.size()) throw ComputationError("mult_matrix_by_vector", "A.rows != dst.size");
     assert(n == v.size());
@@ -384,7 +418,7 @@ inline void mult_matrix_by_matrix(const cmatrix& A, const cmatrix& B, cmatrix& d
 
 inline void add_mult_matrix_by_vector(const cmatrix& A, const cvector& v, cvector& dst) {
     const size_t m = A.rows(),
-                      n = A.cols();
+                 n = A.cols();
     // if (n != v.size()) throw ComputationError("add_mult_matrix_by_vector", "A.cols != v.size");
     // if (m != dst.size()) throw ComputationError("add_mult_matrix_by_vector", "A.rows != dst.size");
     assert(n == v.size());
@@ -394,8 +428,8 @@ inline void add_mult_matrix_by_vector(const cmatrix& A, const cvector& v, cvecto
 
 inline void add_mult_matrix_by_matrix(const cmatrix& A, const cmatrix& B, cmatrix& dst) {
     const size_t k = A.cols(),
-                      m = A.rows(),
-                      n = B.cols();
+                 m = A.rows(),
+                 n = B.cols();
     // if (k != B.rows()) throw ComputationError("add_mult_matrix_by_matrix", "cannot multiply: A.cols != B.rows");
     // if (m != dst.rows()) throw ComputationError("add_mult_matrix_by_matrix", "A.rows != dst.rows");
     // if (n != dst.cols()) throw ComputationError("add_mult_matrix_by_matrix", "B.cols != dst.cols");
@@ -412,6 +446,22 @@ cvector invmult(cmatrix& A, cvector& B);
 cmatrix inv(cmatrix& A);
 dcomplex det(cmatrix& A);
 int eigenv(cmatrix& A, cdiagonal& vals, cmatrix* rightv=NULL, cmatrix* leftv=NULL);
+
+/// Create unit matrix
+template <typename T>
+void make_unit_matrix(Matrix<T>& A, size_t n) {
+    if (A.rows() != n || A.cols() != n) A.reset(n, n, 0.);
+    else std::fill_n(A.data(), n*n, 0.);
+    for (int i = 0; i < n; ++i) A(i,i) = 1.;
+}
+
+/// Create unit matrix
+template <typename T>
+void make_unit_matrix(Matrix<T>& A) {
+    assert(A.rows() == A.cols());
+    std::fill_n(A.data(), A.rows()*A.cols(), 0.);
+    for (int i = 0; i < A.rows(); ++i) A(i,i) = 1.;
+}
 
 }}}
 #endif // PLASK__SOLVER_VSLAB_MATRIX_H

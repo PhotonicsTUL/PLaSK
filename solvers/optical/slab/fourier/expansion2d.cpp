@@ -191,6 +191,7 @@ void ExpansionPW2D::init()
     size_t nlayers = solver->lcount;
     coeffs.resize(nlayers);
     diagonals.assign(nlayers, false);
+    if (SOLVER->cache_coeff_matrices) coeff_matrices.resize(nlayers);
 
     mesh = plask::make_shared<RectangularMesh<2>>(xmesh, solver->verts, RectangularMesh<2>::ORDER_01);
 
@@ -199,6 +200,7 @@ void ExpansionPW2D::init()
 
 void ExpansionPW2D::reset() {
     coeffs.clear();
+    coeff_matrices.clear();
     initialized = false;
     mesh.reset();
     mag.reset();
@@ -412,8 +414,8 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 std::fill_n(coeffs[layer].yy.data()+1, n1, 0.);
                 if (epsilon_isotropic) {
                     if (polarization != E_TRAN) {
-                        coeffs[layer].rzz = coeffs[layer].ryy = coeffs[layer].rxx;
-                        coeffs[layer].zz = coeffs[layer].xx = coeffs[layer].yy;
+                        coeffs[layer].ryy = coeffs[layer].rxx;
+                        coeffs[layer].zz = coeffs[layer].yy;
                     }
                 } else {
                     std::fill_n(coeffs[layer].zz.data()+1, n1, 0.);
@@ -433,8 +435,8 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 matFFT.execute(coeffs[layer].yy.data());
                 if (epsilon_isotropic) {
                     if (polarization != E_TRAN) {
-                        coeffs[layer].rzz = coeffs[layer].ryy = coeffs[layer].rxx;
-                        coeffs[layer].zz = coeffs[layer].xx = coeffs[layer].yy;
+                        coeffs[layer].ryy = coeffs[layer].rxx;
+                        coeffs[layer].zz = coeffs[layer].yy;
                     }
                 } else {
                     matFFT.execute(coeffs[layer].zz.data());
@@ -485,8 +487,8 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                     coeffs[layer].zz.reset(nN, 0.); coeffs[layer].zz[0] = eps0.c00;
                     coeffs[layer].ryy.reset(nN, 0.); coeffs[layer].ryy[0] = reps0.c22;
                 } else {
-                    coeffs[layer].rzz = coeffs[layer].ryy = coeffs[layer].rxx;
-                    coeffs[layer].zz = coeffs[layer].xx = coeffs[layer].yy;
+                    coeffs[layer].ryy = coeffs[layer].rxx;
+                    coeffs[layer].zz = coeffs[layer].yy;
                 }
             }
         }
@@ -710,74 +712,97 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
     if (isnan(k0)) throw BadInput(SOLVER->getId(), "Wavelength or k0 not set");
     if (isinf(k0.real())) throw BadInput(SOLVER->getId(), "Wavelength must not be 0");
 
+    if (SOLVER->cache_coeff_matrices) {
+        if (coeff_matrices.empty()) coeff_matrices.resize(solver->lcount);
+    } else {
+        if (!coeff_matrices.empty()) coeff_matrices.clear();
+    }
+
     dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
 
     int order = int(SOLVER->getSize());
     dcomplex rk0 = 1. / k0, k02 = k0*k0;
     double b = 2.*PI / (right-left) * (symmetric()? 0.5 : 1.0);
+    double bb = b * b;
 
     // Ez represents -Ez
 
     if (separated()) {
-
-        std::fill_n(RE.data(), N*N, dcomplex(0.));
-        std::fill_n(RH.data(), N*N, dcomplex(0.));
 
         if (symmetric()) {
 
             // Separated symmetric()
             if (polarization == E_LONG) {                   // Ez & Hx
                 const bool sym = symmetry == E_LONG;
-                for (int j = 0; j <= order; ++j) {
-                    RE(j,j) = - rk0 * b * double(j);
-                    RH(j,j) = k0;
-                }
                 if (!periodic) {
-                    for (int i = 0; i <= order; ++i)
-                        work(i,0) = muyy(l, i);
-                    for (int j = 1; j <= order; ++j)
+                    if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].mxx.empty()) {
                         for (int i = 0; i <= order; ++i)
-                            work(i,j) = sym? muyy(l,abs(i-j)) - muyy(l,i+j) : muyy(l,abs(i-j)) + muyy(l,i+j);
-                    invmult(work, RE);
-                    for (int i = 0; i <= order; ++i)
-                        work(i,0) = rmuxx(l, i);
-                    for (int j = 1; j <= order; ++j)
+                            work(i,0) = muyy(l, i);
+                        for (int j = 1; j <= order; ++j)
+                            for (int i = 0; i <= order; ++i)
+                                work(i,j) = sym? muyy(l,abs(i-j)) - muyy(l,i+j) : muyy(l,abs(i-j)) + muyy(l,i+j);
+                        make_unit_matrix(RE);
+                        invmult(work, RE);
+                        if (SOLVER->cache_coeff_matrices) coeff_matrices[l].rmyy = RE.copy();
                         for (int i = 0; i <= order; ++i)
-                            work(i,j) = sym? rmuxx(l,abs(i-j)) + rmuxx(l,i+j) : rmuxx(l,abs(i-j)) - rmuxx(l,i+j);
-                    invmult(work, RH);
+                            work(i,0) = rmuxx(l, i);
+                        for (int j = 1; j <= order; ++j)
+                            for (int i = 0; i <= order; ++i)
+                                work(i,j) = sym? rmuxx(l,abs(i-j)) + rmuxx(l,i+j) : rmuxx(l,abs(i-j)) - rmuxx(l,i+j);
+                        make_unit_matrix(RH);
+                        invmult(work, RH);
+                        if (SOLVER->cache_coeff_matrices) coeff_matrices[l].mxx = RH.copy();
+                    } else {
+                        coeff_matrices[l].rmyy.copyto(RE);
+                        coeff_matrices[l].mxx.copyto(RH);
+                    }
+                } else {
+                    make_unit_matrix(RE);
+                    make_unit_matrix(RH);
                 }
                 for (int i = 0; i <= order; ++i) {
-                    dcomplex gi = b * double(i);
-                    RE(i,0) = gi * RE(i,0) + k0 * epszz(l,i);
-                    for (int j = 1; j <= order; ++j)
-                        RE(i,j) = gi * RE(i,j) + k0 * (sym? epszz(l,abs(i-j)) + epszz(l,i+j) : epszz(l,abs(i-j)) - epszz(l,i+j));
+                    dcomplex gi = - rk0 * bb * double(i);
+                    RE(i,0) = k0 * epszz(l,i);
+                    RH(i,0) *= k0;
+                    for (int j = 1; j <= order; ++j) {
+                        RE(i,j) = gi * double(j) * RE(i,j) + k0 * (sym? epszz(l,abs(i-j)) + epszz(l,i+j) : epszz(l,abs(i-j)) - epszz(l,i+j));
+                        RH(i,j) *= k0;
+                    }
                     // Ugly hack to avoid singularity
                     if (RE(i,i) == 0.) RE(i,i) = 1e-32;
                     if (RH(i,i) == 0.) RH(i,i) = 1e-32;
                 }
             } else {                                        // Ex & Hz
                 const bool sym = symmetry == E_TRAN;
-                for (int j = 0; j <= order; ++j) {
-                    RE(j,j) = k0;
-                    RH(j,j) = - rk0 * b * double(j);
-                }
-                for (int i = 0; i <= order; ++i)
-                    work(i,0) = repsxx(l, i);
-                for (int j = 1; j <= order; ++j)
+                if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].reyy.empty()) {
                     for (int i = 0; i <= order; ++i)
-                        work(i,j) = sym? repsxx(l,abs(i-j)) + repsxx(l,i+j) : repsxx(l,abs(i-j)) - repsxx(l,i+j);
-                invmult(work, RE);
-                for (int i = 0; i <= order; ++i)
-                    work(i,0) = epsyy(l, i);
-                for (int j = 1; j <= order; ++j)
-                    for (int i = 0; i <= order; ++i)
-                        work(i,j) = sym? epsyy(l,abs(i-j)) - epsyy(l,i+j) : epsyy(l,abs(i-j)) + epsyy(l,i+j);
-                invmult(work, RH);
-                for (int i = 0; i <= order; ++i) {
-                    const dcomplex gi = b * double(i);
-                    RH(i,0) = gi * RH(i,0) + k0 * muzz(l,i);
+                        work(i,0) = repsxx(l, i);
                     for (int j = 1; j <= order; ++j)
-                        RH(i,j) = gi * RH(i,j) + k0 * (sym? muzz(l,abs(i-j)) + muzz(l,i+j) : muzz(l,abs(i-j)) - muzz(l,i+j));
+                        for (int i = 0; i <= order; ++i)
+                            work(i,j) = sym? repsxx(l,abs(i-j)) + repsxx(l,i+j) : repsxx(l,abs(i-j)) - repsxx(l,i+j);
+                    make_unit_matrix(RE);
+                    invmult(work, RE);
+                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].exx = RE.copy();
+                    for (int i = 0; i <= order; ++i)
+                        work(i,0) = epsyy(l, i);
+                    for (int j = 1; j <= order; ++j)
+                        for (int i = 0; i <= order; ++i)
+                            work(i,j) = sym? epsyy(l,abs(i-j)) - epsyy(l,i+j) : epsyy(l,abs(i-j)) + epsyy(l,i+j);
+                    make_unit_matrix(RH);
+                    invmult(work, RH);
+                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].reyy = RH.copy();
+                } else {
+                    coeff_matrices[l].exx.copyto(RE);
+                    coeff_matrices[l].reyy.copyto(RH);
+                }
+                for (int i = 0; i <= order; ++i) {
+                    const dcomplex gi = - rk0 * bb * double(i);
+                    RE(i,0) *= k0;
+                    RH(i,0) = k0 * muzz(l,i);
+                    for (int j = 1; j <= order; ++j) {
+                        RE(i,j) *= k0;
+                        RH(i,j) = gi * double(j) * RH(i,j) + k0 * (sym? muzz(l,abs(i-j)) + muzz(l,i+j) : muzz(l,abs(i-j)) - muzz(l,i+j));
+                    }
                     // Ugly hack to avoid singularity
                     if (RE(i,i) == 0.) RE(i,i) = 1e-32;
                     if (RH(i,i) == 0.) RH(i,i) = 1e-32;
@@ -788,68 +813,81 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
 
             // Separated asymmetric()
             if (polarization == E_LONG) {                   // Ez & Hx
-                for (int j = -order; j <= order; ++j) {
-                    const size_t jt = iEH(j);
-                    RE(jt,jt) = - rk0 * (b * double(j) - ktran);
-                    RH(jt,jt) = k0;
-                }
                 if (!periodic) {
-                    for (int j = -order; j <= order; ++j) {
-                        const size_t jt = iEH(j);
-                        for (int i = -order; i <= order; ++i) {
-                            const size_t it = iEH(i);
-                            work(it,jt) = muyy(l,i-j);
+                    if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].mxx.empty()) {
+                        for (int j = -order; j <= order; ++j) {
+                            const size_t jt = iEH(j);
+                            for (int i = -order; i <= order; ++i) {
+                                const size_t it = iEH(i);
+                                work(it,jt) = muyy(l,i-j);
+                            }
                         }
-                    }
-                    invmult(work, RE);
-                    for (int j = -order; j <= order; ++j) {
-                        const size_t jt = iEH(j);
-                        for (int i = -order; i <= order; ++i) {
-                            const size_t it = iEH(i);
-                            work(it,jt) = rmuxx(l,i-j);
+                        make_unit_matrix(RE);
+                        invmult(work, RE);
+                        if (SOLVER->cache_coeff_matrices) coeff_matrices[l].rmyy = RE.copy();
+                        for (int j = -order; j <= order; ++j) {
+                            const size_t jt = iEH(j);
+                            for (int i = -order; i <= order; ++i) {
+                                const size_t it = iEH(i);
+                                work(it,jt) = rmuxx(l,i-j);
+                            }
                         }
+                        make_unit_matrix(RH);
+                        invmult(work, RH);
+                        if (SOLVER->cache_coeff_matrices) coeff_matrices[l].mxx = RH.copy();
+                    } else {
+                        coeff_matrices[l].rmyy.copyto(RE);
+                        coeff_matrices[l].mxx.copyto(RH);
                     }
-                    invmult(work, RH);
+                } else {
+                    make_unit_matrix(RE);
+                    make_unit_matrix(RH);
                 }
                 for (int i = -order; i <= order; ++i) {
-                    const dcomplex gi = b * double(i) - ktran;
+                    const dcomplex gi = - rk0 * (b * double(i) - ktran);
                     const size_t it = iEH(i);
                     for (int j = -order; j <= order; ++j) {
                         const size_t jt = iEH(j);
-                        RE(it,jt) = gi * RE(it,jt) + k0 * epszz(l,i-j);
+                        RE(it,jt) = gi * (b * double(j) - ktran) * RE(it,jt) + k0 * epszz(l,i-j);
+                        RH(it,jt) *= k0;
                     }
                     // Ugly hack to avoid singularity
                     if (RE(it,it) == 0.) RE(it,it) = 1e-32;
                     if (RH(it,it) == 0.) RH(it,it) = 1e-32;
                 }
             } else {                                        // Ex & Hz
-                for (int j = -order; j <= order; ++j) {
-                    const size_t jt = iEH(j);
-                    RE(jt,jt) = k0;
-                    RH(jt,jt) = - rk0 * (b * double(j) - ktran);
-                }
-                for (int j = -order; j <= order; ++j) {
-                    const size_t jt = iEH(j);
-                    for (int i = -order; i <= order; ++i) {
-                        const size_t it = iEH(i);
-                        work(it,jt) = repsxx(l,i-j);
+                if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].reyy.empty()) {
+                    for (int j = -order; j <= order; ++j) {
+                        const size_t jt = iEH(j);
+                        for (int i = -order; i <= order; ++i) {
+                            const size_t it = iEH(i);
+                            work(it,jt) = repsxx(l,i-j);
+                        }
                     }
-                }
-                invmult(work, RE);
-                for (int j = -order; j <= order; ++j) {
-                    const size_t jt = iEH(j);
-                    for (int i = -order; i <= order; ++i) {
-                        const size_t it = iEH(i);
-                        work(it,jt) = epsyy(l,i-j);
+                    make_unit_matrix(RE);
+                    invmult(work, RE);
+                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].exx = RE.copy();
+                    for (int j = -order; j <= order; ++j) {
+                        const size_t jt = iEH(j);
+                        for (int i = -order; i <= order; ++i) {
+                            const size_t it = iEH(i);
+                            work(it,jt) = epsyy(l,i-j);
+                        }
                     }
+                    make_unit_matrix(RH);
+                    invmult(work, RH);
+                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].reyy = RH.copy();
+                } else {
+                    coeff_matrices[l].exx.copyto(RE);
+                    coeff_matrices[l].reyy.copyto(RH);
                 }
-                invmult(work, RH);
                 for (int i = -order; i <= order; ++i) {
-                    const dcomplex gi = b * double(i) - ktran;
+                    const dcomplex gi = - rk0 * (b * double(i) - ktran);
                     const size_t it = iEH(i);
                     for (int j = -order; j <= order; ++j) {
                         const size_t jt = iEH(j);
-                        RH(it,jt) = gi * RH(it,jt) + k0 * muzz(l,i-j);
+                        RE(it,jt) *= k0;
+                        RH(it,jt) = gi * (b * double(j) - ktran) * RH(it,jt) + k0 * muzz(l,i-j);
                     }
                     // Ugly hack to avoid singularity
                     if (RE(it,it) == 0.) RE(it,it) = 1e-32;
@@ -863,31 +901,41 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
         // work matrix is 2N×2N, so we can use its space for four N×N matrices
         const size_t NN = N*N;
         cmatrix workij(N, N, work.data());
-        cmatrix workxx(N, N, work.data()+NN);
-        cmatrix workyy(N, N, work.data()+2*NN);
-        cmatrix workzx(N, N, work.data()+3*NN);
+        cmatrix workxx, workyy, workzx;
 
         if (symmetric()) {
 
             // Full symmetric()
             const bool sel = symmetry == E_LONG;
 
-            std::fill_n(workxx.data(), 2*NN, 0.);
-            for (int j = 0; j <= order; ++j)
-                workxx(j,j) = workyy(j,j) = 1.;
-            for (int i = 0; i <= order; ++i)
-                workij(i,0) = epsyy(l,i);
-            for (int j = 1; j <= order; ++j)
+            if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].reyy.empty()) {
                 for (int i = 0; i <= order; ++i)
-                    workij(i,j) = sel? epsyy(l,abs(i-j)) + epsyy(l,i+j) : epsyy(l,abs(i-j)) - epsyy(l,i+j);
-            invmult(workij, workyy);
-            if (!periodic) {
-                for (int i = 0; i <= order; ++i)
-                    workij(i,0) = rmuxx(l,i);
+                    workij(i,0) = epsyy(l,i);
                 for (int j = 1; j <= order; ++j)
                     for (int i = 0; i <= order; ++i)
-                        workij(i,j) = sel? rmuxx(l,abs(i-j)) + rmuxx(l,i+j) : rmuxx(l,abs(i-j)) - rmuxx(l,i+j);
-                invmult(workij, workxx);
+                        workij(i,j) = sel? epsyy(l,abs(i-j)) + epsyy(l,i+j) : epsyy(l,abs(i-j)) - epsyy(l,i+j);
+                workyy = cmatrix(N, N, work.data()+2*NN);
+                make_unit_matrix(workyy);
+                invmult(workij, workyy);
+                if (SOLVER->cache_coeff_matrices) coeff_matrices[l].reyy = workyy.copy();
+            } else
+                workyy = coeff_matrices[l].reyy;
+            if (!periodic) {
+                if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].mxx.empty()) {
+                    for (int i = 0; i <= order; ++i)
+                        workij(i,0) = rmuxx(l,i);
+                    for (int j = 1; j <= order; ++j)
+                        for (int i = 0; i <= order; ++i)
+                            workij(i,j) = sel? rmuxx(l,abs(i-j)) + rmuxx(l,i+j) : rmuxx(l,abs(i-j)) - rmuxx(l,i+j);
+                    workxx = cmatrix(N, N, work.data()+NN);
+                    make_unit_matrix(workxx);
+                    invmult(workij, workxx);
+                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].mxx = workxx.copy();
+                } else
+                    workxx = coeff_matrices[l].mxx;
+            } else {
+                workxx = cmatrix(N, N, work.data()+NN);
+                make_unit_matrix(workxx);
             }
             for (int i = 0; i <= order; ++i) {
                 const dcomplex gi = b * double(i) - ktran;
@@ -909,22 +957,34 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                 if (RH(iez,iez) == 0.) RH(iez,iez) = 1e-32;
             }
 
-            std::fill_n(workxx.data(), 2*NN, 0.);
-            for (int j = 0; j <= order; ++j)
-                workxx(j,j) = workyy(j,j) = 1.;
-            for (int i = 0; i <= order; ++i)
-                workij(i,0) = repsxx(l,i);
-            for (int j = 1; j <= order; ++j)
+            if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].exx.empty()) {
                 for (int i = 0; i <= order; ++i)
-                    workij(i,j) = sel? repsxx(l,abs(i-j)) - repsxx(l,i+j) : repsxx(l,abs(i-j)) + repsxx(l,i+j);
-            invmult(workij, workxx);
-            if (!periodic) {
-                for (int i = 0; i <= order; ++i)
-                    workij(i,0) = muyy(l,i);
+                    workij(i,0) = repsxx(l,i);
                 for (int j = 1; j <= order; ++j)
                     for (int i = 0; i <= order; ++i)
-                        workij(i,j) = sel? muyy(l,abs(i-j)) - muyy(l,i+j) : muyy(l,abs(i-j)) + muyy(l,i+j);
-                invmult(workij, workyy);
+                        workij(i,j) = sel? repsxx(l,abs(i-j)) - repsxx(l,i+j) : repsxx(l,abs(i-j)) + repsxx(l,i+j);
+                workxx = cmatrix(N, N, work.data()+NN);
+                make_unit_matrix(workxx);
+                invmult(workij, workxx);
+                if (SOLVER->cache_coeff_matrices) coeff_matrices[l].exx = workxx.copy();
+            } else
+                workxx = coeff_matrices[l].exx;
+            if (!periodic) {
+                if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].rmyy.empty()) {
+                    for (int i = 0; i <= order; ++i)
+                        workij(i,0) = muyy(l,i);
+                    for (int j = 1; j <= order; ++j)
+                        for (int i = 0; i <= order; ++i)
+                            workij(i,j) = sel? muyy(l,abs(i-j)) - muyy(l,i+j) : muyy(l,abs(i-j)) + muyy(l,i+j);
+                    workyy = cmatrix(N, N, work.data()+2*NN);
+                    make_unit_matrix(workyy);
+                    invmult(workij, workyy);
+                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].rmyy = workyy.copy();
+                } else
+                    workyy = coeff_matrices[l].rmyy;
+            } else {
+                workyy = cmatrix(N, N, work.data()+2*NN);
+                make_unit_matrix(workyy);
             }
             for (int i = 0; i <= order; ++i) {
                 const dcomplex gi = b * double(i) - ktran;
@@ -949,28 +1009,39 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
         } else {
 
             // Full asymmetric()
-            std::fill_n(workxx.data(), 2*NN, 0.);
-            for (int j = -order; j <= order; ++j) {
-                const size_t jt = iEH(j);
-                workxx(jt,jt) = workyy(jt,jt) = 1.;
-            }
-            for (int j = -order; j <= order; ++j) {
-                const size_t jt = iEH(j);
-                for (int i = -order; i <= order; ++i) {
-                    const size_t it = iEH(i);
-                    workij(it,jt) = epsyy(l,i-j);
-                }
-            }
-            invmult(workij, workyy);
-            if (!periodic) {
+            if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].reyy.empty()) {
                 for (int j = -order; j <= order; ++j) {
                     const size_t jt = iEH(j);
                     for (int i = -order; i <= order; ++i) {
                         const size_t it = iEH(i);
-                        workij(it,jt) = rmuxx(l,i-j);
+                        workij(it,jt) = epsyy(l,i-j);
                     }
                 }
-                invmult(workij, workxx);
+                workyy = cmatrix(N, N, work.data()+2*NN);
+                make_unit_matrix(workyy);
+                invmult(workij, workyy);
+                if (SOLVER->cache_coeff_matrices) coeff_matrices[l].reyy = workyy.copy();
+            } else {
+                workyy = coeff_matrices[l].reyy;
+            }
+            if (!periodic) {
+                if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].mxx.empty()) {
+                    for (int j = -order; j <= order; ++j) {
+                        const size_t jt = iEH(j);
+                        for (int i = -order; i <= order; ++i) {
+                            const size_t it = iEH(i);
+                            workij(it,jt) = rmuxx(l,i-j);
+                        }
+                    }
+                    workxx = cmatrix(N, N, work.data()+NN);
+                    make_unit_matrix(workxx);
+                    invmult(workij, workxx);
+                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].mxx = workxx.copy();
+                } else
+                    workxx = coeff_matrices[l].mxx;
+            } else {
+                workxx = cmatrix(N, N, work.data()+NN);
+                make_unit_matrix(workxx);
             }
             for (int i = -order; i <= order; ++i) {
                 const dcomplex gi = b * double(i) - ktran;
@@ -987,44 +1058,54 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                 if (RH(iex,iex) == 0.) RH(iex,iex) = 1e-32;
                 if (RH(iez,iez) == 0.) RH(iez,iez) = 1e-32;
             }
-
-            std::fill_n(workxx.data(), 2*NN, 0.);
-            for (int j = -order; j <= order; ++j) {
-                const size_t jt = iEH(j);
-                workxx(jt,jt) = workyy(jt,jt) = 1.;
-            }
-            for (int j = -order; j <= order; ++j) {
-                const size_t jt = iEH(j);
-                for (int i = -order; i <= order; ++i) {
-                    const size_t it = iEH(i);
-                    workij(it, jt) = repsxx(l,i-j);
-                }
-            }
-            invmult(workij, workxx);
-            if (!periodic) {
+            if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].exx.empty()) {
                 for (int j = -order; j <= order; ++j) {
                     const size_t jt = iEH(j);
                     for (int i = -order; i <= order; ++i) {
                         const size_t it = iEH(i);
-                        workij(it, jt) = muyy(l,i-j);
+                        workij(it, jt) = repsxx(l,i-j);
                     }
                 }
-                invmult(workij, workyy);
+                workxx = cmatrix(N, N, work.data()+NN);
+                make_unit_matrix(workxx);
+                invmult(workij, workxx);
+                if (SOLVER->cache_coeff_matrices) coeff_matrices[l].exx = workxx.copy();
+            } else
+                workxx = coeff_matrices[l].exx;
+            if (!periodic) {
+                if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].rmyy.empty()) {
+                    for (int j = -order; j <= order; ++j) {
+                        const size_t jt = iEH(j);
+                        for (int i = -order; i <= order; ++i) {
+                            const size_t it = iEH(i);
+                            workij(it, jt) = muyy(l,i-j);
+                        }
+                    }
+                    workyy = cmatrix(N, N, work.data()+2*NN);
+                    make_unit_matrix(workyy);
+                    invmult(workij, workyy);
+                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].rmyy = workyy.copy();
+                } else
+                    workyy = coeff_matrices[l].rmyy;
+            } else {
+                workyy = cmatrix(N, N, work.data()+2*NN);
+                make_unit_matrix(workyy);
             }
             if (epszx(l)) {
-                std::fill_n(workzx.data(), NN, 0.);
-                for (int j = -order; j <= order; ++j) {
-                    const size_t jt = iEH(j);
-                    workzx(jt,jt) = 1.;
-                }
-                for (int j = -order; j <= order; ++j) {
-                    const size_t jt = iEH(j);
-                    for (int i = -order; i <= order; ++i) {
-                        const size_t it = iEH(i);
-                        workij(it, jt) = repszx(l,i-j);
+                if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].ezx.empty()) {
+                    for (int j = -order; j <= order; ++j) {
+                        const size_t jt = iEH(j);
+                        for (int i = -order; i <= order; ++i) {
+                            const size_t it = iEH(i);
+                            workij(it, jt) = repszx(l,i-j);
+                        }
                     }
-                }
-                invmult(workij, workzx);
+                    workzx = cmatrix(N, N, work.data()+3*NN);
+                    make_unit_matrix(workzx);
+                    invmult(workij, workzx);
+                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].ezx = workzx.copy();
+                } else
+                    workzx = coeff_matrices[l].ezx;
             }
             for (int i = -order; i <= order; ++i) {
                 const dcomplex gi = b * double(i) - ktran;

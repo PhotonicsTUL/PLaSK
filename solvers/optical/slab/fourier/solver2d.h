@@ -108,6 +108,9 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverWithMesh<Geomet
 
   public:
 
+    /// Should inverses of Toeplitz matrices be cached?
+    bool cache_coeff_matrices;
+
     /// Class responsible for computing expansion coefficients
     ExpansionPW2D expansion;
 

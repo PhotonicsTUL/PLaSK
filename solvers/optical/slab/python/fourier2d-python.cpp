@@ -335,6 +335,10 @@ void export_FourierSolver2D()
                 u8"however it ignores temperature and gain distributions.\n");
     solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT,
                 "Type of discrete cosine transform for symmetric expansion.");
+    solver.def_readwrite("cache_coeffs", &__Class__::cache_coeff_matrices,
+                         u8"Should the inverses of Fourier coefficient matrices be cached?\n\n"
+                         u8"Setting this to `True` will somehow speed up each computation step, however\n"
+                         u8"it will also result in the increased memory consumption.\n");
     RW_FIELD(emission, "Direction of the useful light emission.\n\n"
                        u8"Necessary for the over-threshold model to correctly compute the output power.\n"
                        u8"Currently the fields are normalized only if this parameter is set to\n"

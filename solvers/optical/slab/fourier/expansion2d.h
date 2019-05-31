@@ -30,10 +30,16 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
            pir;                         ///< Index of the beginning of the right PML
 
     struct Coeffs {
-        DataVector<dcomplex> zz, rzz, xx, rxx, yy, ryy, zx, rzx;
+        DataVector<dcomplex> zz, rxx, yy, ryy, zx, rzx;
     };
     /// Cached permittivity expansion coefficients
     std::vector<Coeffs> coeffs;
+
+    struct CoeffMatrices {
+        cmatrix exx, reyy, mxx, rmyy, ezx;
+    };
+    /// Cached permittivity expansion coefficients
+    std::vector<CoeffMatrices> coeff_matrices;
 
     /// Information if the layer is diagonal
     std::vector<bool> diagonals;
@@ -189,6 +195,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     void setSymmetry(Component sym) {
         if (sym != symmetry) {
             symmetry = sym;
+            coeff_matrices.clear();
             solver->clearFields();
         }
     }
@@ -197,9 +204,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     void setPolarization(Component pol);
 
     const DataVector<dcomplex>& epszz(size_t l) { return coeffs[l].zz; }            ///< Get \f$ \varepsilon_{zz} \f$
-    const DataVector<dcomplex>& epsxx(size_t l) { return coeffs[l].xx; }            ///< Get \f$ \varepsilon_{xx} \f$
     const DataVector<dcomplex>& epsyy(size_t l) { return coeffs[l].yy; }            ///< Get \f$ \varepsilon_{yy} \f$
-    const DataVector<dcomplex>& repszz(size_t l) { return coeffs[l].rzz; }          ///< Get \f$ \varepsilon_{zz}^{-1} \f$
     const DataVector<dcomplex>& repsxx(size_t l) { return coeffs[l].rxx; }          ///< Get \f$ \varepsilon_{xx}^{-1} \f$
     const DataVector<dcomplex>& repsyy(size_t l) { return coeffs[l].ryy; }          ///< Get \f$ \varepsilon_{yy}^{-1} \f$
     const DataVector<dcomplex>& epszx(size_t l) { return coeffs[l].zx; }            ///< Get \f$ \varepsilon_{zx} \f$
@@ -212,9 +217,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     const DataVector<dcomplex>& rmuyy(size_t PLASK_UNUSED(l)) { return rmag; }      ///< Get \f$ \mu_{yy}^{-1} \f$
 
     dcomplex epszz(size_t l, int i) { return coeffs[l].zz[(i>=0)?i:i+nN]; }         ///< Get element of \f$ \varepsilon_{zz} \f$
-    dcomplex epsxx(size_t l, int i) { return coeffs[l].xx[(i>=0)?i:i+nN]; }         ///< Get element of \f$ \varepsilon_{xx} \f$
     dcomplex epsyy(size_t l, int i) { return coeffs[l].yy[(i>=0)?i:i+nN]; }         ///< Get element of \f$ \varepsilon_{yy} \f$
-    dcomplex repszz(size_t l, int i) { return coeffs[l].rzz[(i>=0)?i:i+nN]; }       ///< Get element of \f$ \varepsilon_{zz}^{-1} \f$
     dcomplex repsxx(size_t l, int i) { return coeffs[l].rxx[(i>=0)?i:i+nN]; }       ///< Get element of \f$ \varepsilon_{xx}^{-1} \f$
     dcomplex repsyy(size_t l, int i) { return coeffs[l].ryy[(i>=0)?i:i+nN]; }       ///< Get element of \f$ \varepsilon_{yy}^{-1} \f$
     dcomplex epszx(size_t l, int i) { return coeffs[l].zx[(i>=0)?i:i+nN]; }         ///< Get element of \f$ \varepsilon_{zx} \f$
