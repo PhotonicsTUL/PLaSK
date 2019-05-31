@@ -334,6 +334,7 @@ public:
 
     Boundary(std::function<BoundaryNodeSet(const MeshType&, const shared_ptr<const GeometryD<MeshType::DIM>>&)> create_fun): create(create_fun) {}
 
+    /// Construct null boundary.
     Boundary() {}
 
     //Boundary(const Boundary<MeshType>&) = default;

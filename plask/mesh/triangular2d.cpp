@@ -446,6 +446,10 @@ TriangularMesh2D::Boundary TriangularMesh2D::getBoundary(const std::string &boun
 }
 
 TriangularMesh2D::Boundary TriangularMesh2D::getBoundary(XMLReader &boundary_desc, Manager &manager) {
+    {
+        Boundary setop = details::parseSetOpBoundaryFromXML<TriangularMesh2D::Boundary>(boundary_desc, [&]() { return getBoundary(boundary_desc, manager); });
+        if (!setop.isNull()) return setop;
+    }
     auto side = boundary_desc.getAttribute("side");
     if (side) {
         if (*side == "bottom")
