@@ -249,41 +249,47 @@ class BoundaryConditionsModel(QAbstractItemModel):
         else:
             self.entries = conditions
 
+    def place_of(self, node):
+        try:
+            return node[0]
+        except IndexError:
+            return node
+
     def children_of(self, index):
         return index.internalPointer().children if index is not None and index.isValid() else self.entries
 
-    def node_for_index(self, index):
+    def place_for_index(self, index):
         return index.internalPointer() if index.isValid() else self
 
-    def index_for_node(self, node, column=0):
-        if node is None or isinstance(node, BoundaryConditionsModel):
+    def index_for_place(self, place_node, column=0):
+        if place_node is None or isinstance(place_node, BoundaryConditionsModel):
             return QModelIndex()
         try:
-            c = self.node.parent.children if node.parent else self.entries
+            c = self.node.parent.children if place_node.parent is not None else self.entries
             child_row = 0
             for row, item in enumerate(c):
-                if item is node:
+                if self.place_of(item) is place_node:
                     child_row = row
                     break
-            index = self.createIndex(child_row, column, node)
+            index = self.createIndex(child_row, column, place_node)
         except (ValueError, IndexError, TypeError):
             return QModelIndex()
         return index
 
     def rowCount(self, parent=QModelIndex()):
         if parent.column() > 0: return 0
-        return len(self.children(parent))
+        return len(self.children_of(parent))
 
     def columnCount(self, parent=QModelIndex()):
         return 2 + len(self.schema.keys)
 
     def index(self, row, column, parent=QModelIndex()):
         if not self.hasIndex(row, column, parent): return QModelIndex()
-        return self.createIndex(row, column, self.children(parent)[row]) #if 0 <= row < len(l) else QModelIndex()
+        return self.createIndex(row, column, self.place_of(self.children_of(parent)[row])) #if 0 <= row < len(l) else QModelIndex()
 
     def parent(self, index):
         if not index.isValid(): return QModelIndex()
-        return self.index_for_node(index.internalPointer().parent)
+        return self.index_for_place(index.internalPointer().parent)
 
     def headerData(self, no, orientation, role):
         if role == Qt.DisplayRole:
