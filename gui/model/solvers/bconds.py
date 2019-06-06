@@ -54,31 +54,40 @@ class SchemaBoundaryConditions(object):
 
 class RectangularBC(SchemaBoundaryConditions):
 
-    class PlaceSide(object):
-        def __init__(self, side, of=None, path=None):
+    class PlaceNode(object):
+        def __init__(self, parent=None):
+            self.parent = parent
+            self.children = []
+
+    class PlaceSide(PlaceNode):
+        def __init__(self, parent, side, of=None, path=None):
+            super(RectangularBC.PlaceSide, self).__init__(parent)
             self.side = side
             self.object = of
             self.path = path
+
         def get_xml_element(self):
-            element = etree.Element('condition')
-            if self.object is None:
-                element.attrib['place'] = self.side
-            else:
-                place = etree.SubElement(element, 'place')
-                place.attrib['side'] = self.side
+            place = etree.Element('place')
+            place.attrib['side'] = self.side
+            if self.object is not None:
                 place.attrib['object'] = self.object
-                if self.path is not None:
-                    place.attrib['path'] = self.path
-            return element
+            if self.path is not None:
+                place.attrib['path'] = self.path
+            return place
+
         def copy_from(self, old):
+            self.parent = old.parent
             self.object = old.object
             self.path = old.path
+
         @property
         def label(self):
             return self.side.title()
+
         def __eq__(self, other):
             return type(other) == RectangularBC.PlaceSide and \
                    self.side == other.side and self.object == other.object and self.path == other.path
+
         def __str__(self):
             if self.object is None: return ''
             if self.path is None:
@@ -86,41 +95,88 @@ class RectangularBC(SchemaBoundaryConditions):
             else:
                 return "<i>Object:</i>&nbsp;" + self.object + "&nbsp;&nbsp;&nbsp;&nbsp;<i>Path:</i>&nbsp;" + self.path
 
-    class PlaceLine(object):
-        def __init__(self, line, at=0, start=0, stop=0):
+    class PlaceLine(PlaceNode):
+        def __init__(self, parent, line, at=0, start=0, stop=0):
+            super(RectangularBC.PlaceLine, self).__init__(parent)
             self.line = line
             self.at = at
             self.start = start
             self.stop = stop
+
         def get_xml_element(self):
-            element = etree.Element('condition')
-            place = etree.SubElement(element, 'place')
+            place = etree.Element('place')
             place.attrib['line'] = self.line
             place.attrib['at'] = str(self.at)
             place.attrib['start'] = str(self.start)
             place.attrib['stop'] = str(self.stop)
-            return element
+            return place
+
         def copy_from(self, old):
+            self.parent = old.parent
             self.at = old.at
             self.start = old.start
             self.stop = old.stop
+
         @property
         def label(self):
             return self.line.title() + ' Line'
+
         def __eq__(self, other):
             return type(other) == RectangularBC.PlaceLine and \
                    self.line == other.line and self.at == other.at and \
-                   self.start == other.start and self.stop== other.stop
+                   self.start == other.start and self.stop == other.stop
+
         def __str__(self):
             return "<i>Pos:</i>&nbsp;{0.at}&nbsp;&nbsp;&nbsp;&nbsp;" \
                    "<i>From:</i>&nbsp;{0.start}&nbsp;&nbsp;&nbsp;&nbsp;<i>To:</i>&nbsp;{0.stop}".format(self)
 
+    class SetOp(PlaceNode):
+        def __init__(self, parent, operation=None, children=None):
+            super(RectangularBC.SetOp, self).__init__(parent)
+            self.operation = operation
+            self.children = [] if children is None else children
+            self._fix_parents_of_children()
+
+        def _fix_parents_of_children(self):
+            for c in self.children:
+                if c is not None:
+                    c.parent = self
+
+        def get_xml_element(self):
+            place = etree.Element(self.operation)
+            for child in self.children:
+                if child is not None:
+                    place.append(child.get_xml_element())
+            return place
+
+        def copy_from(self, old):
+            self.parent = old.parent
+            self.operation = old.operation
+            self.children = old.children
+            self._fix_parents_of_children()
+
+        @property
+        def label(self):
+            return self.operation.title()
+
+        def __eq__(self, other):
+            return type(other) == RectangularBC.SetOp and \
+                   self.operation == other.operation and \
+                   all(c == oc for c, oc in zip(self.children, other.children))
+
+        def child_label(self, index):
+            return self.children[index].label if index < len(self.children) and self.children[index] is not None else '?'
+
+        def __str__(self):
+            return "<i>of</i>&nbsp;{0}&nbsp;<i>and</i>&nbsp;{1}".format(self.child_label(0), self.child_label(1))
+
+
     @staticmethod
-    def place_from_xml(element):
-        try:
-            side = element.attrib['place']
-        except KeyError:
-            place = element.find('place')
+    def place_from_xml(place):
+        if place.tag in ('intersection', 'union', 'difference'):
+            return RectangularBC.SetOp(place.tag, (RectangularBC.place_from_xml(el) for el in list(place)[:2]))
+        else:   # place tag:
+            # TODO ensure that: place.tag == 'place'
             side = place.attrib.get('side')
             line = place.attrib.get('line')
             if side is not None and line is not None:
@@ -136,14 +192,22 @@ class RectangularBC(SchemaBoundaryConditions):
                 return RectangularBC.PlaceLine(line, at, start, stop)
             else:
                 raise TypeError("Exactly one of 'side' and 'line' attributes must be given")
+
+    @staticmethod
+    def place_from_xml_cond_tag(cond_element):
+        try:
+            side = cond_element.attrib['place']
+        except KeyError:
+            RectangularBC.place_from_xml(next(cond_element.iter()))
         else:
             return RectangularBC.PlaceSide(side)
 
     def to_xml(self, conditions):
         if conditions:
             element = etree.Element(self.name)
-            for place,value in conditions:
-                cond = place.get_xml_element()
+            for place, value in conditions:
+                cond = etree.Element('condition')
+                cond.append(place.get_xml_element())
                 for key in self.keys:
                     val = value[key]
                     if val is not None:
@@ -154,28 +218,28 @@ class RectangularBC(SchemaBoundaryConditions):
     def from_xml(self, element):
         conditions = []
         for cond in element.findall('condition'):
-            place = self.place_from_xml(cond)
+            place = self.place_from_xml_cond_tag(cond)
             value = dict((key, cond.attrib.get(key)) for key in self.keys)
             conditions.append((place, value))
         return conditions
 
     def create_default_entry(self):
-        return RectangularBC.PlaceSide('left'), dict((key,None) for key in self.keys)
+        return RectangularBC.PlaceSide(None, 'left'), dict((key,None) for key in self.keys)
 
-    def create_place(self, label):
+    def create_place(self, label, parent=None):
         return {
-            "Left": lambda: RectangularBC.PlaceSide('left'),
-            "Right": lambda: RectangularBC.PlaceSide('right'),
-            "Top": lambda: RectangularBC.PlaceSide('top'),
-            "Bottom": lambda: RectangularBC.PlaceSide('bottom'),
-            "Horizontal Line": lambda: RectangularBC.PlaceLine('horizontal'),
-            "Vertical Line": lambda: RectangularBC.PlaceLine('vertical'),
-            "Front": lambda: RectangularBC.PlaceSide('front'),
-            "Back": lambda: RectangularBC.PlaceSide('back'),
+            "Left": lambda: RectangularBC.PlaceSide(parent, 'left'),
+            "Right": lambda: RectangularBC.PlaceSide(parent, 'right'),
+            "Top": lambda: RectangularBC.PlaceSide(parent, 'top'),
+            "Bottom": lambda: RectangularBC.PlaceSide(parent, 'bottom'),
+            "Horizontal Line": lambda: RectangularBC.PlaceLine(parent, 'horizontal'),
+            "Vertical Line": lambda: RectangularBC.PlaceLine(parent, 'vertical'),
+            "Front": lambda: RectangularBC.PlaceSide(parent, 'front'),
+            "Back": lambda: RectangularBC.PlaceSide(parent, 'back'),
         }[label]()
 
 
-class BoundaryConditionsModel(QAbstractTableModel):
+class BoundaryConditionsModel(QAbstractItemModel):
 
     def __init__(self, schema, conditions=None, parent=None):
         super(BoundaryConditionsModel, self).__init__(parent)
@@ -185,11 +249,41 @@ class BoundaryConditionsModel(QAbstractTableModel):
         else:
             self.entries = conditions
 
+    def children_of(self, index):
+        return index.internalPointer().children if index is not None and index.isValid() else self.entries
+
+    def node_for_index(self, index):
+        return index.internalPointer() if index.isValid() else self
+
+    def index_for_node(self, node, column=0):
+        if node is None or isinstance(node, BoundaryConditionsModel):
+            return QModelIndex()
+        try:
+            c = self.node.parent.children if node.parent else self.entries
+            child_row = 0
+            for row, item in enumerate(c):
+                if item is node:
+                    child_row = row
+                    break
+            index = self.createIndex(child_row, column, node)
+        except (ValueError, IndexError, TypeError):
+            return QModelIndex()
+        return index
+
     def rowCount(self, parent=QModelIndex()):
-        return len(self.entries)
+        if parent.column() > 0: return 0
+        return len(self.children(parent))
 
     def columnCount(self, parent=QModelIndex()):
         return 2 + len(self.schema.keys)
+
+    def index(self, row, column, parent=QModelIndex()):
+        if not self.hasIndex(row, column, parent): return QModelIndex()
+        return self.createIndex(row, column, self.children(parent)[row]) #if 0 <= row < len(l) else QModelIndex()
+
+    def parent(self, index):
+        if not index.isValid(): return QModelIndex()
+        return self.index_for_node(index.internalPointer().parent)
 
     def headerData(self, no, orientation, role):
         if role == Qt.DisplayRole:
