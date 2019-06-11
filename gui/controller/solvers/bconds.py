@@ -228,19 +228,19 @@ class BoundaryConditionsDialog(QDialog):
         self.plot_auto_refresh = True
         self.checked_plane = '12'
 
-        self.table = QTableView()
+        self.table = QTreeView()
         self.model = BoundaryConditionsModel(schema, data)
         self.table.setModel(self.model)
         self.table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.setColumnWidth(0, 150)
         self.table.setColumnWidth(1, 250)
-        self.table.verticalHeader().show()
+        #self.table.verticalHeader().show() # TODO tree view does not support this
 
-        try:
-            self.table.horizontalHeader().setResizeMode(1, QHeaderView.Stretch)
-        except AttributeError:
-            self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        #try:    # TODO tree view does not support this
+        #    self.table.horizontalHeader().setResizeMode(1, QHeaderView.Stretch)
+        #except AttributeError:
+        #    self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
 
         table_edit_shortcut(self.table, 0, QKeySequence(Qt.Key_P))
         table_edit_shortcut(self.table, 1, QKeySequence(Qt.Key_D))
@@ -567,6 +567,9 @@ PLACES_EDITORS = {
         ("Bottom", RectangularPlaceSide),
         ("Horizontal Line", RectangularPlaceLine),
         ("Vertical Line", RectangularPlaceLine),
+        ("Union", None),
+        ("Intersection", None),
+        ("Difference", None),
     )),
     'Rectangular3D': OrderedDict((
         ("Left", RectangularPlaceSide),
@@ -575,5 +578,8 @@ PLACES_EDITORS = {
         ("Bottom", RectangularPlaceSide),
         ("Front", RectangularPlaceSide),
         ("Back", RectangularPlaceSide),
+        ("Union", None),
+        ("Intersection", None),
+        ("Difference", None),
     )),
 }

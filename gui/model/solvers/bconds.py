@@ -61,9 +61,14 @@ class RectangularBC(SchemaBoundaryConditions):
             self.place = place
             if value: self.value = value
 
-        def fix_parents_of_children(self):
-            for c in self.children:
-                c.parent = self
+        def fix_children(self, schema):
+            c = getattr(self.place, 'required_child_count', None)
+            if c is not None:
+                self.children = self.children[:c]
+                for _ in range(len(self.children), c):
+                    self.append_child(schema.create_default_entry())
+            #for c in self.children:
+            #    c.parent = self
 
         def append_child(self, node):
             node.parent = self
@@ -94,6 +99,10 @@ class RectangularBC(SchemaBoundaryConditions):
 
 
     class PlaceSide(object):
+
+        required_child_count = 0
+        is_editable = True
+
         def __init__(self, side, of=None, path=None):
             super(RectangularBC.PlaceSide, self).__init__()
             self.side = side
@@ -129,6 +138,10 @@ class RectangularBC(SchemaBoundaryConditions):
                 return "<i>Object:</i>&nbsp;" + self.object + "&nbsp;&nbsp;&nbsp;&nbsp;<i>Path:</i>&nbsp;" + self.path
 
     class PlaceLine():
+
+        required_child_count = 0
+        is_editable = True
+
         def __init__(self, line, at=0, start=0, stop=0):
             super(RectangularBC.PlaceLine, self).__init__()
             self.line = line
@@ -163,6 +176,10 @@ class RectangularBC(SchemaBoundaryConditions):
                    "<i>From:</i>&nbsp;{0.start}&nbsp;&nbsp;&nbsp;&nbsp;<i>To:</i>&nbsp;{0.stop}".format(self)
 
     class SetOp(object):
+
+        required_child_count = 2
+        is_editable = False
+
         def __init__(self, operation=None):
             super(RectangularBC.SetOp, self).__init__()
             self.operation = operation
@@ -193,7 +210,7 @@ class RectangularBC(SchemaBoundaryConditions):
     def place_node_from_xml(place_element):
         if place_element.tag in ('intersection', 'union', 'difference'):
             place = RectangularBC.PlaceNode(RectangularBC.SetOp(place_element.tag))
-            for el in place_element:
+            for el in list(place_element)[:2]:
                 place.append_child(RectangularBC.place_node_from_xml(el))
             return place
         else:   # place tag:
@@ -259,6 +276,9 @@ class RectangularBC(SchemaBoundaryConditions):
             "Vertical Line": lambda: RectangularBC.PlaceLine('vertical'),
             "Front": lambda: RectangularBC.PlaceSide('front'),
             "Back": lambda: RectangularBC.PlaceSide('back'),
+            "Union": lambda: RectangularBC.SetOp('union'),
+            "Intersection": lambda: RectangularBC.SetOp('intersection'),
+            "Difference": lambda: RectangularBC.SetOp('difference')
         }[label]()
 
 
@@ -312,18 +332,17 @@ class BoundaryConditionsModel(QAbstractItemModel):
         if not index.isValid():
             return None
         if role in (Qt.DisplayRole, Qt.EditRole):
-            try:
-                node = self.entries[index.row()]
-                place, values = node.place, node.value
-            except IndexError:
-                return
+            node = index.internalPointer()
             col = index.column()
             if col == 0:
-                return place.label
+                return node.place.label
             elif col == 1:
-                return str(place)
+                return str(node.place)
             else:
-                return values[self.schema.keys[col-2]]
+                try:
+                    return node.value[self.schema.keys[col-2]]
+                except (IndexError, AttributeError):
+                    pass
         # if role == Qt.ToolTipRole:
         #     return '\n'.join([str(err) for err in self.info_by_row.get(index.row(), []) if err.has_connection('cols', index.column())])
         # if role == Qt.DecorationRole: #Qt.BackgroundColorRole:   # maybe TextColorRole?
@@ -335,27 +354,36 @@ class BoundaryConditionsModel(QAbstractItemModel):
         #     return info.info_level_icon(max_level)
 
     def setData(self, index, value, role=Qt.EditRole):
+        if not index.isValid(): return False
+        node = index.internalPointer()
+        entries = self.children_of(node.parent)
         row = index.row()
-        if row < 0 or row >= len(self.entries):
+        if row < 0 or row >= len(entries):
             return False
         col = index.column()
         if col == 0:
-            old_place = self.entries[row].place
+            old_place = entries[row].place
             new_place = self.schema.create_place(value)
-            self.entries[row].place = new_place
+            entries[row].place = new_place
             if type(old_place) == type(new_place):
                 new_place.copy_from(old_place)
             self.dataChanged.emit(index, index)
-        elif col == 1:
+            return True
+        if col == 1 or node.parent is not None:
             return False
-        else:
-            self.entries[row].value[self.schema.keys[col-2]] = value
-            self.dataChanged.emit(index, index)
+        # col > 1 and node.parent is None:
+        entries[row].value[self.schema.keys[col-2]] = value
+        self.dataChanged.emit(index, index)
         return True
 
     def flags(self, index):
         flags = super(BoundaryConditionsModel, self).flags(index) \
-                | Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
+                | Qt.ItemIsSelectable | Qt.ItemIsEnabled #| Qt.ItemIsEditable
+        col = index.column()
+        if col == 0 or\
+            (col == 1 and index.internalPointer().place.is_editable) or\
+            (col > 1 and index.internalPointer().parent is None):
+            flags |= Qt.ItemIsEditable
         return flags
 
     def insert(self, index=None, value=None):
