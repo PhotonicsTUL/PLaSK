@@ -206,12 +206,12 @@ class RectangularBC(SchemaBoundaryConditions):
             return "<i>of</i>&nbsp;{0}&nbsp;<i>and</i>&nbsp;{1}".format(self.child_label(0), self.child_label(1))
 
 
-    @staticmethod
-    def place_node_from_xml(place_element):
+    def place_node_from_xml(self, place_element):
         if place_element.tag in ('intersection', 'union', 'difference'):
             place = RectangularBC.PlaceNode(RectangularBC.SetOp(place_element.tag))
             for el in list(place_element)[:2]:
                 place.append_child(RectangularBC.place_node_from_xml(el))
+            place.fix_children(self)    # this eventually adds missing children
             return place
         else:   # place tag:
             # TODO ensure that: place.tag == 'place'
@@ -231,12 +231,11 @@ class RectangularBC(SchemaBoundaryConditions):
             else:
                 raise TypeError("Exactly one of 'side' and 'line' attributes must be given")
 
-    @staticmethod
-    def place_node_from_xml_cond(cond_element):
+    def place_node_from_xml_cond(self, cond_element):
         try:
             side = cond_element.attrib['place']
         except KeyError:
-            RectangularBC.place_node_from_xml(next(cond_element.iter()))
+            self.place_node_from_xml(next(cond_element.iter()))
         else:
             return RectangularBC.PlaceNode(RectangularBC.PlaceSide(side))
 
