@@ -27,21 +27,41 @@ class TableActions(object):
     def model(self):
         return self._model if self._model is not None else self.table.model()
 
+    @staticmethod
+    def top_level_index(index):
+        """Find top level index (child of the root) by traversing the tree upwards."""
+        prev = index
+        while index.isValid():
+            prev = index
+            index = index.parent()
+        return prev
+
+    def top_level_selection_index(self):
+        return TableActions.top_level_index(self.table.selectionModel().currentIndex())
+
+    def select_row(self, row):
+        if row is None: return
+        if isinstance(self.table, QTableView):
+            self.table.selectRow(row)
+        else:
+            self.table.selectionModel().setCurrentIndex(self.model.index(row, 0, QModelIndex()),
+                                               QItemSelectionModel.SelectCurrent | QItemSelectionModel.Rows | QItemSelectionModel.ClearAndSelect)
+
     def add_entry(self):
-        index = self.table.selectionModel().currentIndex()
+        index = self.top_level_selection_index()
         if index.isValid():
             row = self.model.insert(index.row()+1)
         else:
             row = self.model.insert()
-        if row is not None: self.table.selectRow(row)
+        self.select_row(row)
 
     def remove_entry(self):
-        index = self.table.selectionModel().currentIndex()
+        index = self.top_level_selection_index()
         if index.isValid():
             self.model.remove(index.row())
 
     def move_up(self):
-        index = self.table.selectionModel().currentIndex()
+        index = self.top_level_selection_index()
         if not index.isValid(): return
         index = index.row()
         if 1 <= index < len(self.model.entries):
@@ -49,7 +69,7 @@ class TableActions(object):
             #self.table.selectRow(index-1)
 
     def move_down(self):
-        index = self.table.selectionModel().currentIndex()
+        index = self.top_level_selection_index()
         if not index.isValid(): return
         index = index.row()
         if 0 <= index < len(self.model.entries)-1:
