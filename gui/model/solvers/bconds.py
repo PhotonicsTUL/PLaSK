@@ -289,8 +289,11 @@ class BoundaryConditionsModel(QAbstractItemModel):
         self.schema = schema
         self.entries = [] if conditions is None else conditions
 
-    def children_of(self, index):
+    def children_of_index(self, index):
         return index.internalPointer().children if index is not None and index.isValid() else self.entries
+
+    def children_of_node(self, node):
+        return self.entries if node is None else node.children
 
     def place_for_index(self, index):
         return index.internalPointer() if index.isValid() else self
@@ -299,21 +302,20 @@ class BoundaryConditionsModel(QAbstractItemModel):
         if place_node is None:  # root has no parent
             return QModelIndex()
         try:
-            c = self.entries if place_node.parent is None else self.node.parent.children
-            return self.createIndex(c.index(place_node), column, place_node)
+            return self.createIndex(self.children_of_node(place_node.parent).index(place_node), column, place_node)
         except (ValueError, IndexError, TypeError):
             return QModelIndex()
 
     def rowCount(self, parent=QModelIndex()):
         if parent.column() > 0: return 0
-        return len(self.children_of(parent))
+        return len(self.children_of_index(parent))
 
     def columnCount(self, parent=QModelIndex()):
         return 2 + len(self.schema.keys)
 
     def index(self, row, column, parent=QModelIndex()):
         if not self.hasIndex(row, column, parent): return QModelIndex()
-        return self.createIndex(row, column, self.children_of(parent)[row]) #if 0 <= row < len(l) else QModelIndex()
+        return self.createIndex(row, column, self.children_of_index(parent)[row]) #if 0 <= row < len(l) else QModelIndex()
 
     def parent(self, index):
         if not index.isValid(): return QModelIndex()
@@ -356,7 +358,7 @@ class BoundaryConditionsModel(QAbstractItemModel):
     def setData(self, index, value, role=Qt.EditRole):
         if not index.isValid(): return False
         node = index.internalPointer()
-        entries = self.children_of(node.parent)
+        entries = self.children_of_node(node.parent)
         row = index.row()
         if row < 0 or row >= len(entries):
             return False
@@ -367,6 +369,7 @@ class BoundaryConditionsModel(QAbstractItemModel):
             entries[row].place = new_place
             if type(old_place) == type(new_place):
                 new_place.copy_from(old_place)
+            entries[row].fix_children(self.schema)
             self.dataChanged.emit(index, index)
             return True
         if col == 1 or node.parent is not None:
