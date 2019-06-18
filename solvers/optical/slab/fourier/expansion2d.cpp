@@ -201,6 +201,8 @@ void ExpansionPW2D::init()
 void ExpansionPW2D::reset() {
     coeffs.clear();
     coeff_matrices.clear();
+    coeff_matrix_mxx.reset();
+    coeff_matrix_rmyy.reset();
     initialized = false;
     mesh.reset();
     mag.reset();
@@ -705,6 +707,51 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
     }
 }
 
+void ExpansionPW2D::make_permeability_matrices(cmatrix& work) {
+    if (periodic || polarization == E_TRAN || !coeff_matrix_mxx.empty()) return;
+    coeff_matrix_mxx.reset(N, N);
+    coeff_matrix_rmyy.reset(N, N);
+
+    int order = int(SOLVER->getSize());
+
+    if (symmetric()) {
+        const bool sym = symmetry == E_LONG;
+        for (int i = 0; i <= order; ++i)
+            work(i,0) = muyy(i);
+        for (int j = 1; j <= order; ++j)
+            for (int i = 0; i <= order; ++i)
+                work(i,j) = sym? muyy(abs(i-j)) - muyy(i+j) : muyy(abs(i-j)) + muyy(i+j);
+        make_unit_matrix(coeff_matrix_rmyy);
+        invmult(work, coeff_matrix_rmyy);
+        for (int i = 0; i <= order; ++i)
+            work(i,0) = rmuxx(i);
+        for (int j = 1; j <= order; ++j)
+            for (int i = 0; i <= order; ++i)
+                work(i,j) = sym? rmuxx(abs(i-j)) + rmuxx(i+j) : rmuxx(abs(i-j)) - rmuxx(i+j);
+        make_unit_matrix(coeff_matrix_mxx);
+        invmult(work, coeff_matrix_mxx);
+    } else {
+        for (int j = -order; j <= order; ++j) {
+            const size_t jt = iEH(j);
+            for (int i = -order; i <= order; ++i) {
+                const size_t it = iEH(i);
+                work(it,jt) = muyy(i-j);
+            }
+        }
+        make_unit_matrix(coeff_matrix_rmyy);
+        invmult(work, coeff_matrix_rmyy);
+        for (int j = -order; j <= order; ++j) {
+            const size_t jt = iEH(j);
+            for (int i = -order; i <= order; ++i) {
+                const size_t it = iEH(i);
+                work(it,jt) = rmuxx(i-j);
+            }
+        }
+        make_unit_matrix(coeff_matrix_mxx);
+        invmult(work, coeff_matrix_mxx);
+    }
+}
+
 
 void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& work)
 {
@@ -729,33 +776,16 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
 
     if (separated()) {
 
+        make_permeability_matrices(work);
+
         if (symmetric()) {
 
             // Separated symmetric()
             if (polarization == E_LONG) {                   // Ez & Hx
                 const bool sym = symmetry == E_LONG;
                 if (!periodic) {
-                    if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].mxx.empty()) {
-                        for (int i = 0; i <= order; ++i)
-                            work(i,0) = muyy(l, i);
-                        for (int j = 1; j <= order; ++j)
-                            for (int i = 0; i <= order; ++i)
-                                work(i,j) = sym? muyy(l,abs(i-j)) - muyy(l,i+j) : muyy(l,abs(i-j)) + muyy(l,i+j);
-                        make_unit_matrix(RE);
-                        invmult(work, RE);
-                        if (SOLVER->cache_coeff_matrices) coeff_matrices[l].rmyy = RE.copy();
-                        for (int i = 0; i <= order; ++i)
-                            work(i,0) = rmuxx(l, i);
-                        for (int j = 1; j <= order; ++j)
-                            for (int i = 0; i <= order; ++i)
-                                work(i,j) = sym? rmuxx(l,abs(i-j)) + rmuxx(l,i+j) : rmuxx(l,abs(i-j)) - rmuxx(l,i+j);
-                        make_unit_matrix(RH);
-                        invmult(work, RH);
-                        if (SOLVER->cache_coeff_matrices) coeff_matrices[l].mxx = RH.copy();
-                    } else {
-                        coeff_matrices[l].rmyy.copyto(RE);
-                        coeff_matrices[l].mxx.copyto(RH);
-                    }
+                    coeff_matrix_rmyy.copyto(RE);
+                    coeff_matrix_mxx.copyto(RH);
                 } else {
                     make_unit_matrix(RE);
                     make_unit_matrix(RH);
@@ -798,10 +828,10 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                 for (int i = 0; i <= order; ++i) {
                     const dcomplex gi = - rk0 * bb * double(i);
                     RE(i,0) *= k0;
-                    RH(i,0) = k0 * muzz(l,i);
+                    RH(i,0) = k0 * muzz(i);
                     for (int j = 1; j <= order; ++j) {
                         RE(i,j) *= k0;
-                        RH(i,j) = gi * double(j) * RH(i,j) + k0 * (sym? muzz(l,abs(i-j)) + muzz(l,i+j) : muzz(l,abs(i-j)) - muzz(l,i+j));
+                        RH(i,j) = gi * double(j) * RH(i,j) + k0 * (sym? muzz(abs(i-j)) + muzz(i+j) : muzz(abs(i-j)) - muzz(i+j));
                     }
                     // Ugly hack to avoid singularity
                     if (RE(i,i) == 0.) RE(i,i) = 1e-32;
@@ -814,31 +844,8 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
             // Separated asymmetric()
             if (polarization == E_LONG) {                   // Ez & Hx
                 if (!periodic) {
-                    if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].mxx.empty()) {
-                        for (int j = -order; j <= order; ++j) {
-                            const size_t jt = iEH(j);
-                            for (int i = -order; i <= order; ++i) {
-                                const size_t it = iEH(i);
-                                work(it,jt) = muyy(l,i-j);
-                            }
-                        }
-                        make_unit_matrix(RE);
-                        invmult(work, RE);
-                        if (SOLVER->cache_coeff_matrices) coeff_matrices[l].rmyy = RE.copy();
-                        for (int j = -order; j <= order; ++j) {
-                            const size_t jt = iEH(j);
-                            for (int i = -order; i <= order; ++i) {
-                                const size_t it = iEH(i);
-                                work(it,jt) = rmuxx(l,i-j);
-                            }
-                        }
-                        make_unit_matrix(RH);
-                        invmult(work, RH);
-                        if (SOLVER->cache_coeff_matrices) coeff_matrices[l].mxx = RH.copy();
-                    } else {
-                        coeff_matrices[l].rmyy.copyto(RE);
-                        coeff_matrices[l].mxx.copyto(RH);
-                    }
+                    coeff_matrix_rmyy.copyto(RE);
+                    coeff_matrix_mxx.copyto(RH);
                 } else {
                     make_unit_matrix(RE);
                     make_unit_matrix(RH);
@@ -887,7 +894,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                     for (int j = -order; j <= order; ++j) {
                         const size_t jt = iEH(j);
                         RE(it,jt) *= k0;
-                        RH(it,jt) = gi * (b * double(j) - ktran) * RH(it,jt) + k0 * muzz(l,i-j);
+                        RH(it,jt) = gi * (b * double(j) - ktran) * RH(it,jt) + k0 * muzz(i-j);
                     }
                     // Ugly hack to avoid singularity
                     if (RE(it,it) == 0.) RE(it,it) = 1e-32;
@@ -902,6 +909,8 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
         const size_t NN = N*N;
         cmatrix workij(N, N, work.data());
         cmatrix workxx, workyy, workzx;
+
+        make_permeability_matrices(workij);
 
         if (symmetric()) {
 
@@ -921,18 +930,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
             } else
                 workyy = coeff_matrices[l].reyy;
             if (!periodic) {
-                if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].mxx.empty()) {
-                    for (int i = 0; i <= order; ++i)
-                        workij(i,0) = rmuxx(l,i);
-                    for (int j = 1; j <= order; ++j)
-                        for (int i = 0; i <= order; ++i)
-                            workij(i,j) = sel? rmuxx(l,abs(i-j)) + rmuxx(l,i+j) : rmuxx(l,abs(i-j)) - rmuxx(l,i+j);
-                    workxx = cmatrix(N, N, work.data()+NN);
-                    make_unit_matrix(workxx);
-                    invmult(workij, workxx);
-                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].mxx = workxx.copy();
-                } else
-                    workxx = coeff_matrices[l].mxx;
+                workxx = coeff_matrix_mxx;
             } else {
                 workxx = cmatrix(N, N, work.data()+NN);
                 make_unit_matrix(workxx);
@@ -947,7 +945,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                     dcomplex reyy = j == 0? repsyy(l,i) :
                                     sel? repsyy(l,ijp) + repsyy(l,ijn) : repsyy(l,ijp) - repsyy(l,ijn);
                     RH(iex,jhz) = - rk0 *  gi * gj  * workyy(i,j) +
-                                    k0 * (j == 0? muzz(l,i) : sel? muzz(l,ijp) - muzz(l,ijn) : muzz(l,ijp) + muzz(l,ijn));
+                                    k0 * (j == 0? muzz(i) : sel? muzz(ijp) - muzz(ijn) : muzz(ijp) + muzz(ijn));
                     RH(iex,jhx) = - rk0 * beta* gi  * reyy;
                     RH(iez,jhz) = - rk0 * beta* gj  * workyy(i,j);
                     RH(iez,jhx) = - rk0 * beta*beta * reyy + k0 * workxx(i,j);
@@ -970,18 +968,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
             } else
                 workxx = coeff_matrices[l].exx;
             if (!periodic) {
-                if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].rmyy.empty()) {
-                    for (int i = 0; i <= order; ++i)
-                        workij(i,0) = muyy(l,i);
-                    for (int j = 1; j <= order; ++j)
-                        for (int i = 0; i <= order; ++i)
-                            workij(i,j) = sel? muyy(l,abs(i-j)) - muyy(l,i+j) : muyy(l,abs(i-j)) + muyy(l,i+j);
-                    workyy = cmatrix(N, N, work.data()+2*NN);
-                    make_unit_matrix(workyy);
-                    invmult(workij, workyy);
-                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].rmyy = workyy.copy();
-                } else
-                    workyy = coeff_matrices[l].rmyy;
+                workyy = coeff_matrix_rmyy;
             } else {
                 workyy = cmatrix(N, N, work.data()+2*NN);
                 make_unit_matrix(workyy);
@@ -993,8 +980,8 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                     int ijp = abs(i-j), ijn = i+j;
                     dcomplex gj = b * double(j) - ktran;
                     const size_t jex = iEx(j), jez = iEz(j);
-                    dcomplex rmyy = j == 0? rmuyy(l,i) :
-                                    sel? rmuyy(l,ijp) - rmuyy(l,ijn) : rmuyy(l,ijp) + rmuyy(l,ijn);
+                    dcomplex rmyy = j == 0? rmuyy(i) :
+                                    sel? rmuyy(ijp) - rmuyy(ijn) : rmuyy(ijp) + rmuyy(ijn);
                     RE(ihz,jex) = - rk0 * beta*beta * rmyy + k0 * workxx(i,j);
                     RE(ihz,jez) =   rk0 * beta* gj  * workyy(i,j);
                     RE(ihx,jex) =   rk0 * beta* gi  * rmyy;
@@ -1025,20 +1012,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                 workyy = coeff_matrices[l].reyy;
             }
             if (!periodic) {
-                if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].mxx.empty()) {
-                    for (int j = -order; j <= order; ++j) {
-                        const size_t jt = iEH(j);
-                        for (int i = -order; i <= order; ++i) {
-                            const size_t it = iEH(i);
-                            workij(it,jt) = rmuxx(l,i-j);
-                        }
-                    }
-                    workxx = cmatrix(N, N, work.data()+NN);
-                    make_unit_matrix(workxx);
-                    invmult(workij, workxx);
-                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].mxx = workxx.copy();
-                } else
-                    workxx = coeff_matrices[l].mxx;
+                workxx = coeff_matrix_mxx;
             } else {
                 workxx = cmatrix(N, N, work.data()+NN);
                 make_unit_matrix(workxx);
@@ -1049,7 +1023,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                 for (int j = -order; j <= order; ++j) {
                     int ij = i-j;   dcomplex gj = b * double(j) - ktran;
                     const size_t jhx = iHx(j), jhz = iHz(j), jt = iEH(j);
-                    RH(iex,jhz) = - rk0 *  gi * gj  * workyy(it,jt) + k0 * muzz(l,ij);
+                    RH(iex,jhz) = - rk0 *  gi * gj  * workyy(it,jt) + k0 * muzz(ij);
                     RH(iex,jhx) = - rk0 * beta* gi  * repsyy(l,ij);
                     RH(iez,jhz) = - rk0 * beta* gj  * workyy(it,jt);
                     RH(iez,jhx) = - rk0 * beta*beta * repsyy(l,ij) + k0 * workxx(it,jt);
@@ -1073,20 +1047,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
             } else
                 workxx = coeff_matrices[l].exx;
             if (!periodic) {
-                if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].rmyy.empty()) {
-                    for (int j = -order; j <= order; ++j) {
-                        const size_t jt = iEH(j);
-                        for (int i = -order; i <= order; ++i) {
-                            const size_t it = iEH(i);
-                            workij(it, jt) = muyy(l,i-j);
-                        }
-                    }
-                    workyy = cmatrix(N, N, work.data()+2*NN);
-                    make_unit_matrix(workyy);
-                    invmult(workij, workyy);
-                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].rmyy = workyy.copy();
-                } else
-                    workyy = coeff_matrices[l].rmyy;
+                workyy = coeff_matrix_rmyy;
             } else {
                 workyy = cmatrix(N, N, work.data()+2*NN);
                 make_unit_matrix(workyy);
@@ -1113,9 +1074,9 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                 for (int j = -order; j <= order; ++j) {
                     int ij = i-j;   dcomplex gj = b * double(j) - ktran;
                     const size_t jex = iEx(j), jez = iEz(j), jt = iEH(j);
-                    RE(ihz,jex) = - rk0 * beta*beta * rmuyy(l,ij) + k0 * workxx(it,jt);
+                    RE(ihz,jex) = - rk0 * beta*beta * rmuyy(ij) + k0 * workxx(it,jt);
                     RE(ihz,jez) =   rk0 * beta* gj  * workyy(it,jt);
-                    RE(ihx,jex) =   rk0 * beta* gi  * rmuyy(l,ij);
+                    RE(ihx,jex) =   rk0 * beta* gi  * rmuyy(ij);
                     RE(ihx,jez) = - rk0 *  gi * gj  * workyy(it,jt) + k0 * epszz(l,ij);
                     if (epszx(l)) {
                         RE(ihx,jex) -= k0 * workzx(it,jt);
@@ -1245,14 +1206,14 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                         if (symmetric()) {
                             if (symmetry == E_LONG) {
                                 for (int j = -order; j <= order; ++j)
-                                    field[iEH(i)-dz].vert() -= rmuyy(l,abs(i-j)) * b*double(j) * E[iEH(abs(j))];
+                                    field[iEH(i)-dz].vert() -= rmuyy(abs(i-j)) * b*double(j) * E[iEH(abs(j))];
                             } else { // symmetry == E_TRAN
                                 for (int j = 1; j <= order; ++j)
-                                    field[iEH(i)-dz].vert() -= (rmuyy(l,abs(i-j)) + rmuyy(l,abs(i+j))) * b*double(j) * E[iEH(j)];
+                                    field[iEH(i)-dz].vert() -= (rmuyy(abs(i-j)) + rmuyy(abs(i+j))) * b*double(j) * E[iEH(j)];
                             }
                         } else {
                             for (int j = -order; j <= order; ++j)
-                                field[iEH(i)-dz].vert() -= rmuyy(l,i-j) * (b*double(j)-ktran) * E[iEH(j)];
+                                field[iEH(i)-dz].vert() -= rmuyy(i-j) * (b*double(j)-ktran) * E[iEH(j)];
                         }
                         field[iEH(i)-dz].vert() /= k0;
                     }
@@ -1269,16 +1230,16 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                         if (symmetry == E_LONG) {
                             field[iEH(i)-dz].vert() = 0.; // Ex[0] = 0
                             for (int j = 1; j <= order; ++j)
-                                field[iEH(i)-dz].vert() += (rmuyy(l,abs(i-j)) - rmuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
+                                field[iEH(i)-dz].vert() += (rmuyy(abs(i-j)) - rmuyy(abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
                         } else { // symmetry == E_TRAN
-                            field[iEH(i)-dz].vert() = rmuyy(l,abs(i)) * beta * E[iEx(0)];
+                            field[iEH(i)-dz].vert() = rmuyy(abs(i)) * beta * E[iEx(0)];
                             for (int j = 1; j <= order; ++j)
-                                field[iEH(i)-dz].vert() += (rmuyy(l,abs(i-j)) + rmuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
+                                field[iEH(i)-dz].vert() += (rmuyy(abs(i-j)) + rmuyy(abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
                         }
                     } else {
                         field[iEH(i)-dz].vert() = 0.;
                         for (int j = -order; j <= order; ++j)
-                            field[iEH(i)-dz].vert() += rmuyy(l,i-j) * (beta * E[iEx(j)] - (b*double(j)-ktran) * E[iEz(j)]);
+                            field[iEH(i)-dz].vert() += rmuyy(i-j) * (beta * E[iEx(j)] - (b*double(j)-ktran) * E[iEz(j)]);
                     }
                     field[iEH(i)].vert() /= k0;
                 }
@@ -1493,10 +1454,10 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
                         vert = 0.; // beta is equal to 0
                         if (symmetry == E_LONG) {
                             for (int j = -order; j <= order; ++j)
-                                vert -= rmuyy(l,abs(i-j)) * b*double(j) * E[iEH(abs(j))];
+                                vert -= rmuyy(abs(i-j)) * b*double(j) * E[iEH(abs(j))];
                         } else { // symmetry == E_TRAN
                             for (int j = 1; j <= order; ++j)
-                                vert -= (rmuyy(l,abs(i-j)) + rmuyy(l,abs(i+j))) * b*double(j) * E[iEH(j)];
+                                vert -= (rmuyy(abs(i-j)) + rmuyy(abs(i+j))) * b*double(j) * E[iEH(j)];
                         }
                         vert /= k0;
                         sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
@@ -1505,7 +1466,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
                     for (int i = -order; i <= order; ++i) {
                         vert = 0.; // beta is equal to 0
                         for (int j = -order; j <= order; ++j)
-                            vert -= rmuyy(l,i-j) * (b*double(j)-ktran) * E[iEH(j)];
+                            vert -= rmuyy(i-j) * (b*double(j)-ktran) * E[iEH(j)];
                         vert /= k0;
                         sum += real(vert * conj(vert));
                     }
@@ -1517,18 +1478,18 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
                     if (symmetry == E_LONG) {
                         vert = 0.;
                         for (int j = 1; j <= order; ++j)
-                            vert += (rmuyy(l,abs(i-j)) - rmuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
+                            vert += (rmuyy(abs(i-j)) - rmuyy(abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
                     } else { // symmetry == E_TRAN
-                        vert = rmuyy(l,abs(i)) * beta * E[iEx(0)];
+                        vert = rmuyy(abs(i)) * beta * E[iEx(0)];
                         for (int j = 1; j <= order; ++j)
-                            vert += (rmuyy(l,abs(i-j)) + rmuyy(l,abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
+                            vert += (rmuyy(abs(i-j)) + rmuyy(abs(i+j))) * (beta * E[iEx(j)] - b*double(j) * E[iEz(j)]);
                     }
                     vert /= k0;
                     sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
                 } else {
                     vert = 0.;
                     for (int j = -order; j <= order; ++j)
-                        vert += rmuyy(l,i-j) * (beta * E[iEx(j)] - (b*double(j)-ktran) * E[iEz(j)]);
+                        vert += rmuyy(i-j) * (beta * E[iEx(j)] - (b*double(j)-ktran) * E[iEz(j)]);
                     vert /= k0;
                     sum += real(vert * conj(vert));
                 }

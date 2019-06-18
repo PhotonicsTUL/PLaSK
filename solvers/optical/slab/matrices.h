@@ -38,7 +38,7 @@ class Matrix {
 
   public:
 
-    Matrix() : r(0), c(0), gc(nullptr) {}
+    Matrix() : r(0), c(0), data_(nullptr), gc(nullptr) {}
 
     Matrix(size_t m, size_t n) : r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new std::atomic<int>(1)) {
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
@@ -66,9 +66,8 @@ class Matrix {
         for (int j = 0, n = 0; j < r; j++, n += c+1) data_[n] = M[j];
     }
 
-    Matrix(size_t m, size_t n, T* existing_data) : r(m), c(n), gc(nullptr) {
+    Matrix(size_t m, size_t n, T* existing_data) : r(m), c(n), data_(existing_data), gc(nullptr) {
         // Create matrix using exiting data. This data is never garbage-collected
-        data_ = existing_data;
     }
 
     Matrix(size_t m, size_t n, std::initializer_list<T> data): r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new std::atomic<int>(1)) {
