@@ -195,6 +195,8 @@ void ExpansionPW2D::init()
 
     mesh = plask::make_shared<RectangularMesh<2>>(xmesh, solver->verts, RectangularMesh<2>::ORDER_01);
 
+    temp_reyy_layer = size_t(-1);
+
     initialized = true;
 }
 
@@ -203,6 +205,8 @@ void ExpansionPW2D::reset() {
     coeff_matrices.clear();
     coeff_matrix_mxx.reset();
     coeff_matrix_rmyy.reset();
+    temp_coeff_matrix_reyy.reset();
+    temp_reyy_layer = size_t(-1);
     initialized = false;
     mesh.reset();
     mag.reset();
@@ -1135,13 +1139,19 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
     int dz = (symmetric() && field_interpolation != INTERPOLATION_FOURIER && sym != E_LONG)? 1 : 0; // 1 for sin expansion of long component
 
     if (which_field == FIELD_E) {
-        if (separated()) {
-            if (polarization == E_LONG) {
-                for (int i = symmetric()? 0 : -order; i <= order; ++i) {
-                    field[iEH(i)].tran() = field[iEH(i)].vert() = 0.;
-                    if (iEH(i) != 0 || !dz) field[iEH(i)-dz].lon() = - E[iEH(i)];
+        if (polarization == E_LONG) {
+            for (int i = symmetric()? 0 : -order; i <= order; ++i) {
+                field[iEH(i)].tran() = field[iEH(i)].vert() = 0.;
+                if (iEH(i) != 0 || !dz) field[iEH(i)-dz].lon() = - E[iEH(i)];
+            }
+        } else {
+            if (!SOLVER->cache_coeff_matrices && temp_coeff_matrix_reyy.rows() != N) temp_coeff_matrix_reyy.reset(N, N);
+            if (l != temp_reyy_layer) {
+                temp_reyy_layer = l;
+                if (symmetric) {
                 }
-            } else { // polarization == E_TRAN
+            }
+            if (polarization == E_TRAN) {
                 for (int i = symmetric()? 0 : -order; i <= order; ++i) {
                     field[iEH(i)].lon() = 0.;
                     if (iEH(i) != 0 || !dx)
@@ -1163,29 +1173,29 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                         field[iEH(i)-dz].vert() /= k0;
                     }
                 }
-            }
-        } else {
-            for (int i = symmetric()? 0 : -order; i <= order; ++i) {
-                if (iEH(i) != 0 || !dx)
-                    field[iEH(i)-dx].tran() = E[iEx(i)];
-                if (iEH(i) != 0 || !dz) {
-                    field[iEH(i)-dz].lon() = - E[iEz(i)];
-                    if (symmetric()) {
-                        if (symmetry == E_TRAN) { // symmetry = H_LONG
-                            field[iEH(i)-dz].vert() = 0.; // Hx[0] == 0
-                            for (int j = 1; j <= order; ++j)
-                                field[iEH(i)-dz].vert() -= (repsyy(l,abs(i-j)) - repsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
-                        } else { // symmetry = H_TRAN
-                            field[iEH(i)-dz].vert() = - repsyy(l,abs(i)) * beta * H[iHx(0)];
-                            for (int j = 1; j <= order; ++j)
-                                field[iEH(i)-dz].vert() -= (repsyy(l,abs(i-j)) + repsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
+            } else {
+                for (int i = symmetric()? 0 : -order; i <= order; ++i) {
+                    if (iEH(i) != 0 || !dx)
+                        field[iEH(i)-dx].tran() = E[iEx(i)];
+                    if (iEH(i) != 0 || !dz) {
+                        field[iEH(i)-dz].lon() = - E[iEz(i)];
+                        if (symmetric()) {
+                            if (symmetry == E_TRAN) { // symmetry = H_LONG
+                                field[iEH(i)-dz].vert() = 0.; // Hx[0] == 0
+                                for (int j = 1; j <= order; ++j)
+                                    field[iEH(i)-dz].vert() -= (repsyy(l,abs(i-j)) - repsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
+                            } else { // symmetry = H_TRAN
+                                field[iEH(i)-dz].vert() = - repsyy(l,abs(i)) * beta * H[iHx(0)];
+                                for (int j = 1; j <= order; ++j)
+                                    field[iEH(i)-dz].vert() -= (repsyy(l,abs(i-j)) + repsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
+                            }
+                        } else {
+                            field[iEH(i)-dz].vert() = 0.;
+                            for (int j = -order; j <= order; ++j)
+                                field[iEH(i)-dz].vert() -= repsyy(l,i-j) * (beta * H[iHx(i)] + (b*double(j)-ktran) * H[iHz(j)]);
                         }
-                    } else {
-                        field[iEH(i)-dz].vert() = 0.;
-                        for (int j = -order; j <= order; ++j)
-                            field[iEH(i)-dz].vert() -= repsyy(l,i-j) * (beta * H[iHx(i)] + (b*double(j)-ktran) * H[iHz(j)]);
+                        field[iEH(i)-dz].vert() /= k0;
                     }
-                    field[iEH(i)-dz].vert() /= k0;
                 }
             }
         }

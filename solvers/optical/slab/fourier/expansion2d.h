@@ -115,6 +115,9 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
     void make_permeability_matrices(cmatrix& work);
 
+    cmatrix temp_coeff_matrix_reyy; ///< Temporary storage for fields computation if we do not use permanent one
+    size_t temp_reyy_layer;         ///< Layer for which \p temp_coeff_matrix_reyy is computed
+
   protected:
 
     DataVector<dcomplex> mag;               ///< Magnetic permeability coefficients (used with for PMLs)
