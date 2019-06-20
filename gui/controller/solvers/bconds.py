@@ -536,9 +536,7 @@ class PlaceDetailsDelegate(HTMLDelegate):
 
     def createEditor(self, parent, option, index):
         schema = index.model().schema
-        model = index.model()
-        row = index.row()
-        place = model.entries[row].place
+        place = index.internalPointer().place
         editor = PLACES_EDITORS[schema.mesh_type][place.label](self, parent)
         self.dialog._active_place_editor = editor
         return editor
@@ -547,15 +545,10 @@ class PlaceDetailsDelegate(HTMLDelegate):
         self.dialog._active_place_editor = None
 
     def setEditorData(self, editor, index):
-        model = index.model()
-        row = index.row()
-        place = model.entries[row].place
-        editor.load_data(place)
+        editor.load_data(index.internalPointer().place)
 
     def setModelData(self, editor, model, index):
-        row = index.row()
-        place = model.entries[row].place
-        editor.save_data(place)
+        editor.save_data(index.internalPointer().place)
         model.dataChanged.emit(index, index)
 
 
