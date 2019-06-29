@@ -173,36 +173,6 @@ inline Boundary parseBoundaryFromXML(XMLReader& boundary_desc, Manager& manager,
     }
 }
 
-/**
- * Parse union, intersection or difference boundary from XML.
- * @param boundary_desc XML reader which points to tag to read (after read it will be moved to end of this tag; if it is none of union, intersection, nor difference tag, boundary_desc does not change by this template)
- * @param getBundary function used to parse argument boundaries (typically it calls this template to support nested union, intersection and difference)
- * @return union, intersection, difference if the current tag represents one of them; or null boundary
- */
-template <typename Boundary>
-inline Boundary parseSetOpBoundaryFromXML(XMLReader& boundary_desc, std::function<Boundary()> getBundary) {
-    std::string op_name = boundary_desc.getTagName();
-    if (op_name == "union") {
-        boundary_desc.requireTag(); Boundary A = getBundary();
-        boundary_desc.requireTag(); Boundary B = getBundary();
-        boundary_desc.requireTagEnd();
-        return A + B;
-    }
-    if (op_name == "intersection") {
-        boundary_desc.requireTag(); Boundary A = getBundary();
-        boundary_desc.requireTag(); Boundary B = getBundary();
-        boundary_desc.requireTagEnd();
-        return A * B;
-    }
-    if (op_name == "difference") {
-        boundary_desc.requireTag(); Boundary A = getBundary();
-        boundary_desc.requireTag(); Boundary B = getBundary();
-        boundary_desc.requireTagEnd();
-        return A - B;
-    }
-    return Boundary();
-}
-
 }   // namespace details
 
 struct PLASK_API RectangularMeshBase2D: public MeshD<2> {

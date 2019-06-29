@@ -191,7 +191,7 @@ struct BoundaryConditions
     typedef BoundaryCondition<Boundary, ValueType> Element;
 
 private:
-    typedef std::list<Element> elements_container_t;    // std::list to not invalidate iterators on add/erase
+    typedef std::list<Element> elements_container_t;    // std::list does not invalidate iterators on add/erase
     elements_container_t container;
 
 public:

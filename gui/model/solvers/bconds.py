@@ -96,6 +96,7 @@ class RectangularBC(SchemaBoundaryConditions):
             result = self.place.get_xml_element()
             for child in self.children:
                 result.append(child.to_xml())
+            return result
 
 
     class PlaceSide(object):
@@ -137,7 +138,7 @@ class RectangularBC(SchemaBoundaryConditions):
             else:
                 return "<i>Object:</i>&nbsp;" + self.object + "&nbsp;&nbsp;&nbsp;&nbsp;<i>Path:</i>&nbsp;" + self.path
 
-    class PlaceLine():
+    class PlaceLine(object):
 
         required_child_count = 0
         is_editable = True
@@ -242,11 +243,11 @@ class RectangularBC(SchemaBoundaryConditions):
     def to_xml(self, conditions):
         if conditions:
             element = etree.Element(self.name)
-            for place, value in conditions:
+            for node in conditions:
                 cond = etree.Element('condition')
-                cond.append(place.to_xml())
+                cond.append(node.to_xml())
                 for key in self.keys:
-                    val = value[key]
+                    val = node.value[key]
                     if val is not None:
                         cond.attrib[key] = val
                 element.append(cond)

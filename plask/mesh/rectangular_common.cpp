@@ -24,10 +24,6 @@ RectangularMeshBase2D::Boundary RectangularMeshBase2D::getBoundary(const std::st
 }
 
 RectangularMeshBase2D::Boundary RectangularMeshBase2D::getBoundary(XMLReader &boundary_desc, Manager &manager) {
-    {
-        Boundary setop = details::parseSetOpBoundaryFromXML<RectangularMeshBase2D::Boundary>(boundary_desc, [&]() { return getBoundary(boundary_desc, manager); });
-        if (!setop.isNull()) return setop;
-    }
     auto side = boundary_desc.getAttribute("side");
     auto line = boundary_desc.getAttribute("line");
     if (side && line) {
@@ -69,10 +65,6 @@ RectangularMeshBase3D::Boundary RectangularMeshBase3D::getBoundary(const std::st
 }
 
 RectangularMeshBase3D::Boundary RectangularMeshBase3D::getBoundary(XMLReader &boundary_desc, plask::Manager &manager) {
-    {
-        Boundary setop = details::parseSetOpBoundaryFromXML<RectangularMeshBase3D::Boundary>(boundary_desc, [&]() { return getBoundary(boundary_desc, manager); });
-        if (!setop.isNull()) return setop;
-    }
     auto side = boundary_desc.requireAttribute("side");
     /* auto side = boundary_desc.getAttribute("side");
         auto line = boundary_desc.getAttribute("line");
