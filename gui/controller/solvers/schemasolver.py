@@ -510,9 +510,10 @@ class SchemaSolverController(Controller):
             self.widget.load_data()
 
     def select_info(self, info):
-        if info.what == 'geometry' and self.widget.geometry is not None:
+        what = getattr(info, 'what', None)
+        if what == 'geometry' and self.widget.geometry is not None:
             self.widget.geometry.setFocus()
-        elif info.what == 'mesh' and self.widget.mesh is not None:
+        elif what == 'mesh' and self.widget.mesh is not None:
             self.widget.mesh.setFocus()
-        elif isinstance(info.what, tuple) and info.what in self.widget.controls:
-            self.widget.controls[info.what].setFocus()
+        elif isinstance(what, tuple) and what in self.widget.controls:
+            self.widget.controls[what].setFocus()
