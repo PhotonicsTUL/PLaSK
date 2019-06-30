@@ -435,8 +435,34 @@ private:
      */
     void loadFromFILE(FILE* file, MaterialsDB& materialsDB = MaterialsDB::getDefault(), const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
 
+private:
     /**
-     * Read boundary (place) from current tag and move parser to end of current tag.
+     * Get boundary stored in boundaries map. Throw exception if there is no boundary with a given @p name.
+     * @param reader
+     * @param name name of the boundary to get
+     * @return the boundary got
+     */
+    template <typename Boundary>
+    Boundary getBoundaryByName(XMLReader& reader, const std::string& name) {
+        auto p = this->boundaries.find(name);
+        if (p == this->boundaries.end())
+            throw XMLException(reader, format("Can't find boundary (place) with given name \"{0}\".", name));
+        return boost::any_cast<Boundary>(p->second);
+    }
+
+    /**
+     * Store boundary in boundaries map. Throw exception if there is already boundary with a given @p name in the map.
+     * @param name name of the boundary to store
+     * @param boundary
+     */
+    void storeBoundary(const std::string& name, boost::any&& boundary) {
+        if (!this->boundaries.insert(std::make_pair(name, std::move(boundary))).second)
+            throw NamesConflictException("Place (boundary)", name);
+    }
+
+public:
+    /**
+     * Read boundary (place) from current tag and move parser to end of the current tag.
      * @return the boundary read
      */
     template <typename Boundary>
@@ -585,30 +611,29 @@ Boundary Manager::readBoundary(XMLReader& reader) {
         reader.requireTag(); Boundary A = this->readBoundary<Boundary>(reader);
         reader.requireTag(); Boundary B = this->readBoundary<Boundary>(reader);
         reader.requireTagEnd();
-        return A + B;
+        boundary = A + B;
     } else
     if (op_name == "intersection") {
         reader.requireTag(); Boundary A = this->readBoundary<Boundary>(reader);
         reader.requireTag(); Boundary B = this->readBoundary<Boundary>(reader);
         reader.requireTagEnd();
-        return A * B;
+        boundary = A * B;
     } else
     if (op_name == "difference") {
         reader.requireTag(); Boundary A = this->readBoundary<Boundary>(reader);
         reader.requireTag(); Boundary B = this->readBoundary<Boundary>(reader);
         reader.requireTagEnd();
-        return A - B;
+        boundary = A - B;
     } else
     if (op_name == "place") {
         reader.ensureNodeTypeIs(XMLReader::NODE_ELEMENT, "place");
-        boundary = parseBoundary<Boundary>(reader, *this);
+        plask::optional<std::string> refname = reader.getAttribute("ref");
+        boundary = refname ? this->getBoundaryByName<Boundary>(reader, *refname)
+                           : parseBoundary<Boundary>(reader, *this);
     } else
         reader.throwUnexpectedElementException("place, union, intersection, or difference tag");
     if (boundary.isNull() && !draft) throw XMLException(reader, "Can't parse boundary place from XML.");
-    if (placename) {
-        if (!this->boundaries.insert(std::make_pair(*placename, boost::any(boundary))).second)
-            throw NamesConflictException("Place (boundary)", *placename);
-    }
+    if (placename) this->storeBoundary(*placename, boundary);
     return boundary;
 }
 
@@ -628,13 +653,10 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
             boundary = parseBoundary<Boundary>(*place, *this);
             if (boundary.isNull() && !draft) throw XMLException(reader, format("Can't parse boundary place from string \"{0}\".", *place));
         } else {
-            place = reader.getAttribute("placeref");    // TODO support for placeref in readBoundary
-            if (place) {
-                auto p = this->boundaries.find(*place);
-                if (p == this->boundaries.end())
-                    throw XMLException(reader, format("Can't find boundary (place) with given name \"{0}\".", *place));
-                boundary = boost::any_cast<Boundary>(p->second);
-            } else {
+            place = reader.getAttribute("placeref");
+            if (place)
+                boundary = this->getBoundaryByName<Boundary>(reader, *place);
+            else {
                 reader.requireTag();
                 boundary = this->readBoundary<Boundary>(reader);
                 //placename.reset(); // accept "placename" or only "name" in place tag?
@@ -645,10 +667,7 @@ inline void Manager::readBoundaryConditions(XMLReader& reader, BoundaryCondition
             *value = reader.requireText<ConditionT>();
             reader.requireTagEnd();
         }*/ //now we read only from XML tags
-        if (placename) {
-            if (!this->boundaries.insert(std::make_pair(*placename, boost::any(boundary))).second)
-                throw NamesConflictException("Place (boundary)", *placename);
-        }
+        if (placename) this->storeBoundary(*placename, boundary);
         dest.add(std::move(boundary), std::move(value));
         reader.requireTagEnd(); // </condition>
     }
