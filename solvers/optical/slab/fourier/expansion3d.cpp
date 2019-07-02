@@ -265,6 +265,7 @@ void ExpansionPW3D::reset() {
     initialized = false;
     k0 = klong = ktran = lam0 = NAN;
     mesh.reset();
+    temporary.reset();
 }
 
 
@@ -586,7 +587,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
 }
 
 
-void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH, cmatrix&)
+void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
 {
     assert(initialized);
     if (isnan(k0)) throw BadInput(SOLVER->getId(), "Wavelength or k0 not set");

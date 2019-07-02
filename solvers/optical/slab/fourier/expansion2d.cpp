@@ -191,11 +191,14 @@ void ExpansionPW2D::init()
     size_t nlayers = solver->lcount;
     coeffs.resize(nlayers);
     diagonals.assign(nlayers, false);
-    if (SOLVER->cache_coeff_matrices) coeff_matrices.resize(nlayers);
+    coeff_matrices.resize(nlayers);
 
     mesh = plask::make_shared<RectangularMesh<2>>(xmesh, solver->verts, RectangularMesh<2>::ORDER_01);
 
-    temp_reyy_layer = size_t(-1);
+//    TempMatrix temp = getTempMatrix();
+//    cmatrix work(temp);
+
+
 
     initialized = true;
 }
@@ -205,12 +208,11 @@ void ExpansionPW2D::reset() {
     coeff_matrices.clear();
     coeff_matrix_mxx.reset();
     coeff_matrix_rmyy.reset();
-    temp_coeff_matrix_reyy.reset();
-    temp_reyy_layer = size_t(-1);
     initialized = false;
     mesh.reset();
     mag.reset();
     rmag.reset();
+    temporary.reset();
 }
 
 
@@ -577,6 +579,8 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
             }
         }
     }
+
+    // Compute necessary inverses of Toeplitz matrices
 }
 
 
@@ -712,8 +716,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
 }
 
 void ExpansionPW2D::make_permeability_matrices(cmatrix& work) {
-    if (periodic || polarization == E_TRAN || !coeff_matrix_mxx.empty()) return;
-    coeff_matrix_mxx.reset(N, N);
+    if (periodic || !coeff_matrix_mxx.empty()) return;
     coeff_matrix_rmyy.reset(N, N);
 
     int order = int(SOLVER->getSize());
@@ -727,13 +730,16 @@ void ExpansionPW2D::make_permeability_matrices(cmatrix& work) {
                 work(i,j) = sym? muyy(abs(i-j)) - muyy(i+j) : muyy(abs(i-j)) + muyy(i+j);
         make_unit_matrix(coeff_matrix_rmyy);
         invmult(work, coeff_matrix_rmyy);
-        for (int i = 0; i <= order; ++i)
-            work(i,0) = rmuxx(i);
-        for (int j = 1; j <= order; ++j)
+        if (polarization != E_TRAN) {
+            coeff_matrix_mxx.reset(N, N);
             for (int i = 0; i <= order; ++i)
-                work(i,j) = sym? rmuxx(abs(i-j)) + rmuxx(i+j) : rmuxx(abs(i-j)) - rmuxx(i+j);
-        make_unit_matrix(coeff_matrix_mxx);
-        invmult(work, coeff_matrix_mxx);
+                work(i,0) = rmuxx(i);
+            for (int j = 1; j <= order; ++j)
+                for (int i = 0; i <= order; ++i)
+                    work(i,j) = sym? rmuxx(abs(i-j)) + rmuxx(i+j) : rmuxx(abs(i-j)) - rmuxx(i+j);
+            make_unit_matrix(coeff_matrix_mxx);
+            invmult(work, coeff_matrix_mxx);
+        }
     } else {
         for (int j = -order; j <= order; ++j) {
             const size_t jt = iEH(j);
@@ -744,30 +750,29 @@ void ExpansionPW2D::make_permeability_matrices(cmatrix& work) {
         }
         make_unit_matrix(coeff_matrix_rmyy);
         invmult(work, coeff_matrix_rmyy);
-        for (int j = -order; j <= order; ++j) {
-            const size_t jt = iEH(j);
-            for (int i = -order; i <= order; ++i) {
-                const size_t it = iEH(i);
-                work(it,jt) = rmuxx(i-j);
+        if (polarization != E_TRAN) {
+            coeff_matrix_mxx.reset(N, N);
+            for (int j = -order; j <= order; ++j) {
+                const size_t jt = iEH(j);
+                for (int i = -order; i <= order; ++i) {
+                    const size_t it = iEH(i);
+                    work(it,jt) = rmuxx(i-j);
+                }
             }
+            make_unit_matrix(coeff_matrix_mxx);
+            invmult(work, coeff_matrix_mxx);
         }
-        make_unit_matrix(coeff_matrix_mxx);
-        invmult(work, coeff_matrix_mxx);
     }
 }
 
 
-void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& work)
+void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
 {
     assert(initialized);
     if (isnan(k0)) throw BadInput(SOLVER->getId(), "Wavelength or k0 not set");
     if (isinf(k0.real())) throw BadInput(SOLVER->getId(), "Wavelength must not be 0");
 
-    if (SOLVER->cache_coeff_matrices) {
-        if (coeff_matrices.empty()) coeff_matrices.resize(solver->lcount);
-    } else {
-        if (!coeff_matrices.empty()) coeff_matrices.clear();
-    }
+    if (coeff_matrices.empty()) coeff_matrices.resize(solver->lcount);
 
     dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
 
@@ -777,6 +782,9 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
     double bb = b * b;
 
     // Ez represents -Ez
+
+    TempMatrix temp = getTempMatrix();
+    cmatrix work(temp);
 
     if (separated()) {
 
@@ -808,7 +816,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                 }
             } else {                                        // Ex & Hz
                 const bool sym = symmetry == E_TRAN;
-                if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].reyy.empty()) {
+                if (coeff_matrices[l].reyy.empty()) {
                     for (int i = 0; i <= order; ++i)
                         work(i,0) = repsxx(l, i);
                     for (int j = 1; j <= order; ++j)
@@ -816,7 +824,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                             work(i,j) = sym? repsxx(l,abs(i-j)) + repsxx(l,i+j) : repsxx(l,abs(i-j)) - repsxx(l,i+j);
                     make_unit_matrix(RE);
                     invmult(work, RE);
-                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].exx = RE.copy();
+                    coeff_matrices[l].exx = RE.copy();
                     for (int i = 0; i <= order; ++i)
                         work(i,0) = epsyy(l, i);
                     for (int j = 1; j <= order; ++j)
@@ -824,7 +832,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                             work(i,j) = sym? epsyy(l,abs(i-j)) - epsyy(l,i+j) : epsyy(l,abs(i-j)) + epsyy(l,i+j);
                     make_unit_matrix(RH);
                     invmult(work, RH);
-                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].reyy = RH.copy();
+                    coeff_matrices[l].reyy = RH.copy();
                 } else {
                     coeff_matrices[l].exx.copyto(RE);
                     coeff_matrices[l].reyy.copyto(RH);
@@ -867,7 +875,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                     if (RH(it,it) == 0.) RH(it,it) = 1e-32;
                 }
             } else {                                        // Ex & Hz
-                if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].reyy.empty()) {
+                if (coeff_matrices[l].reyy.empty()) {
                     for (int j = -order; j <= order; ++j) {
                         const size_t jt = iEH(j);
                         for (int i = -order; i <= order; ++i) {
@@ -877,7 +885,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                     }
                     make_unit_matrix(RE);
                     invmult(work, RE);
-                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].exx = RE.copy();
+                    coeff_matrices[l].exx = RE.copy();
                     for (int j = -order; j <= order; ++j) {
                         const size_t jt = iEH(j);
                         for (int i = -order; i <= order; ++i) {
@@ -887,7 +895,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                     }
                     make_unit_matrix(RH);
                     invmult(work, RH);
-                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].reyy = RH.copy();
+                    coeff_matrices[l].reyy = RH.copy();
                 } else {
                     coeff_matrices[l].exx.copyto(RE);
                     coeff_matrices[l].reyy.copyto(RH);
@@ -921,7 +929,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
             // Full symmetric()
             const bool sel = symmetry == E_LONG;
 
-            if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].reyy.empty()) {
+            if (coeff_matrices[l].reyy.empty()) {
                 for (int i = 0; i <= order; ++i)
                     workij(i,0) = epsyy(l,i);
                 for (int j = 1; j <= order; ++j)
@@ -930,7 +938,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                 workyy = cmatrix(N, N, work.data()+2*NN);
                 make_unit_matrix(workyy);
                 invmult(workij, workyy);
-                if (SOLVER->cache_coeff_matrices) coeff_matrices[l].reyy = workyy.copy();
+                coeff_matrices[l].reyy = workyy.copy();
             } else
                 workyy = coeff_matrices[l].reyy;
             if (!periodic) {
@@ -959,7 +967,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                 if (RH(iez,iez) == 0.) RH(iez,iez) = 1e-32;
             }
 
-            if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].exx.empty()) {
+            if (coeff_matrices[l].exx.empty()) {
                 for (int i = 0; i <= order; ++i)
                     workij(i,0) = repsxx(l,i);
                 for (int j = 1; j <= order; ++j)
@@ -968,7 +976,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                 workxx = cmatrix(N, N, work.data()+NN);
                 make_unit_matrix(workxx);
                 invmult(workij, workxx);
-                if (SOLVER->cache_coeff_matrices) coeff_matrices[l].exx = workxx.copy();
+                coeff_matrices[l].exx = workxx.copy();
             } else
                 workxx = coeff_matrices[l].exx;
             if (!periodic) {
@@ -1000,7 +1008,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
         } else {
 
             // Full asymmetric()
-            if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].reyy.empty()) {
+            if (coeff_matrices[l].reyy.empty()) {
                 for (int j = -order; j <= order; ++j) {
                     const size_t jt = iEH(j);
                     for (int i = -order; i <= order; ++i) {
@@ -1011,7 +1019,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                 workyy = cmatrix(N, N, work.data()+2*NN);
                 make_unit_matrix(workyy);
                 invmult(workij, workyy);
-                if (SOLVER->cache_coeff_matrices) coeff_matrices[l].reyy = workyy.copy();
+                coeff_matrices[l].reyy = workyy.copy();
             } else {
                 workyy = coeff_matrices[l].reyy;
             }
@@ -1036,7 +1044,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                 if (RH(iex,iex) == 0.) RH(iex,iex) = 1e-32;
                 if (RH(iez,iez) == 0.) RH(iez,iez) = 1e-32;
             }
-            if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].exx.empty()) {
+            if (coeff_matrices[l].exx.empty()) {
                 for (int j = -order; j <= order; ++j) {
                     const size_t jt = iEH(j);
                     for (int i = -order; i <= order; ++i) {
@@ -1047,7 +1055,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                 workxx = cmatrix(N, N, work.data()+NN);
                 make_unit_matrix(workxx);
                 invmult(workij, workxx);
-                if (SOLVER->cache_coeff_matrices) coeff_matrices[l].exx = workxx.copy();
+                coeff_matrices[l].exx = workxx.copy();
             } else
                 workxx = coeff_matrices[l].exx;
             if (!periodic) {
@@ -1057,7 +1065,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                 make_unit_matrix(workyy);
             }
             if (epszx(l)) {
-                if (!SOLVER->cache_coeff_matrices || coeff_matrices[l].ezx.empty()) {
+                if (coeff_matrices[l].ezx.empty()) {
                     for (int j = -order; j <= order; ++j) {
                         const size_t jt = iEH(j);
                         for (int i = -order; i <= order; ++i) {
@@ -1068,7 +1076,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& wor
                     workzx = cmatrix(N, N, work.data()+3*NN);
                     make_unit_matrix(workzx);
                     invmult(workij, workzx);
-                    if (SOLVER->cache_coeff_matrices) coeff_matrices[l].ezx = workzx.copy();
+                    coeff_matrices[l].ezx = workzx.copy();
                 } else
                     workzx = coeff_matrices[l].ezx;
             }
@@ -1145,12 +1153,6 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                 if (iEH(i) != 0 || !dz) field[iEH(i)-dz].lon() = - E[iEH(i)];
             }
         } else {
-            if (!SOLVER->cache_coeff_matrices && temp_coeff_matrix_reyy.rows() != N) temp_coeff_matrix_reyy.reset(N, N);
-            if (l != temp_reyy_layer) {
-                temp_reyy_layer = l;
-                if (symmetric) {
-                }
-            }
             if (polarization == E_TRAN) {
                 for (int i = symmetric()? 0 : -order; i <= order; ++i) {
                     field[iEH(i)].lon() = 0.;

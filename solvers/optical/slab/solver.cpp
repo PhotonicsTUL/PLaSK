@@ -438,8 +438,7 @@ void SlabBase::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
     size_t N = this->getExpansion().matrixSize();
     if (std::size_t(RE.cols()) != N || std::size_t(RE.rows()) != N) RE.reset(N, N);
     if (std::size_t(RH.cols()) != N || std::size_t(RH.rows()) != N) RH.reset(N, N);
-    cmatrix work(N, N);
-    this->getExpansion().getMatrices(layer, RE, RH, work);
+    this->getExpansion().getMatrices(layer, RE, RH);
 }
 #endif
 

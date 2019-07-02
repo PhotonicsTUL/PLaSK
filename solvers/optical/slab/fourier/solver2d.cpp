@@ -12,7 +12,6 @@ FourierSolver2D::FourierSolver2D(const std::string& name):
     size(12),
     dct(2),
     ftt(FOURIER_DISCRETE),
-    cache_coeff_matrices(true),
     expansion(this),
     refine(32),
     outNeff(this, &FourierSolver2D::getEffectiveIndex, &FourierSolver2D::nummodes)
@@ -45,7 +44,6 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             max_temp_diff = reader.getAttribute<double>("temp-diff", max_temp_diff);
             temp_dist = reader.getAttribute<double>("temp-dist", temp_dist);
             temp_layer = reader.getAttribute<double>("temp-layer", temp_layer);
-            cache_coeff_matrices = reader.getAttribute<bool>("cache-coeffs", cache_coeff_matrices);
             reader.requireTagEnd();
         } else if (param == "interface") {
             if (reader.hasAttribute("index")) {

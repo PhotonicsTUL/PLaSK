@@ -3,9 +3,14 @@
 
 #include <plask/plask.hpp>
 
+#ifdef OPENMP_FOUND
+#   include <omp.h>
+#endif
+
 #include "solver.h"
 #include "matrices.h"
 #include "meshadapter.h"
+#include "temp_matrix.h"
 
 namespace plask { namespace optical { namespace slab {
 
@@ -32,10 +37,18 @@ struct PLASK_SOLVER_API Expansion {
 
     Expansion(SlabBase* solver): solver(solver), k0(NAN), lam0(NAN) {}
 
+    virtual ~Expansion() {}
+
+    TempMatrix getTempMatrix() {
+        return temporary.get(matrixSize());
+    }
+
   private:
-      double glambda;
+    double glambda;
 
   protected:
+
+    TempMatrixPool temporary;
 
     /**
      * Method called before layer integrals are computed
@@ -159,9 +172,8 @@ struct PLASK_SOLVER_API Expansion {
      * Get RE anf RH matrices
      * \param layer layer number
      * \param[out] RE,RH resulting matrix
-     * \param work temporary matrix
      */
-    virtual void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH, cmatrix& work) = 0;
+    virtual void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) = 0;
 
     /**
      * Get refractive index back from expansion

@@ -62,14 +62,6 @@
       choices: [ 1, 2 ]
       help: >
         Type of discrete cosine transform for symmetric expansion.
-    - attr: cache-coeffs
-      label: Cache coefficient matrices
-      tybe: bool
-      default: true
-      help: >
-        If this is set to <i>yes</i>, the inverses of Fourier coefficient matrices will be cached.
-        This will somehow speed up each computation step, however it will also result in the increased
-        memory consumption.
     - &smooth
       attr: smooth
       label: Smoothing parameter
