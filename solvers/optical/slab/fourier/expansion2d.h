@@ -200,8 +200,8 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     void setSymmetry(Component sym) {
         if (sym != symmetry) {
             symmetry = sym;
-            coeff_matrices.clear();
             solver->clearFields();
+            solver->recompute_integrals = true;
         }
     }
 

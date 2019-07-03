@@ -64,7 +64,7 @@ struct TempMatrixPool {
             }
         #else
             write_debug("freeing temporary matrix");
-            tmpmx->reset()
+            tmpmx->reset();
         #endif
     }
 
@@ -91,7 +91,7 @@ struct TempMatrix {
                 write_debug("allocating temporary matrix {}", mn);
                 pool->tmpmx[mn].reset(N, N);
             }
-            write_debug("acquiring temporary matrix {} ({})", mn, l);
+            write_debug("acquiring temporary matrix {} in thread {} ({})", mn, omp_get_thread_num(), l);
         }
         TempMatrix(TempMatrix&& src): pool(src.pool), mn(src.mn) { src.pool = nullptr; }
         TempMatrix(const TempMatrix& src) = delete;
@@ -107,7 +107,7 @@ struct TempMatrix {
     #ifdef OPENMP_FOUND
         ~TempMatrix() {
             if (pool) {
-                write_debug("releasing temporary matrix {}", mn);
+                write_debug("releasing temporary matrix {} in thread {}", mn, omp_get_thread_num());
                 omp_unset_nest_lock(pool->tmplx+mn);
             }
         }
@@ -115,8 +115,12 @@ struct TempMatrix {
 
     #ifdef OPENMP_FOUND
         operator cmatrix() { return pool->tmpmx[mn]; }
+
+        dcomplex* data() { return pool->tmpmx[mn].data(); }
     #else
         operator cmatrix() { return *pool->tmpmx; }
+
+        dcomplex* data() { return pool->tmpmx->data(); }
     #endif
 };
 

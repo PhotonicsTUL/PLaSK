@@ -185,6 +185,10 @@ void ExpansionPW2D::init()
                 if (polarization != E_TRAN) rmag[i] *= exp(-SOLVER->smooth * bb4 * k * k);
             }
         }
+        TempMatrix temp = getTempMatrix();
+        cmatrix work(temp);
+        cmatrix workij(N, N, work.data());
+        make_permeability_matrices(workij);
     }
 
     // Allocate memory for expansion coefficients
@@ -194,11 +198,6 @@ void ExpansionPW2D::init()
     coeff_matrices.resize(nlayers);
 
     mesh = plask::make_shared<RectangularMesh<2>>(xmesh, solver->verts, RectangularMesh<2>::ORDER_01);
-
-//    TempMatrix temp = getTempMatrix();
-//    cmatrix work(temp);
-
-
 
     initialized = true;
 }
@@ -563,11 +562,11 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         for (size_t i = 0; i != nN; ++i) {
             int k = int(i); if (!symmetric() && k > int(nN/2)) k -= int(nN);
             double s = exp(-SOLVER->smooth * bb4 * k * k);
+            coeffs[layer].yy[i] *= s;
             if (polarization == E_LONG) {
-                coeffs[layer].zz[i] *= s;
+                if (!epsilon_isotropic) coeffs[layer].zz[i] *= s;
             } else {
                 coeffs[layer].rxx[i] *= s;
-                coeffs[layer].yy[i] *= s;
                 if (!epsilon_isotropic) {
                     coeffs[layer].zz[i] *= s;
                     coeffs[layer].ryy[i] *= s;
@@ -580,7 +579,69 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
         }
     }
 
+    //TODO there is no need to do all the above if only symmetry changes (just do the code below)
+
     // Compute necessary inverses of Toeplitz matrices
+    TempMatrix temp = getTempMatrix();
+    cmatrix work(N, N, temp.data());
+
+    const int order = int(SOLVER->getSize());
+
+    if (polarization != E_LONG) {
+        if (symmetric()) {
+            // Full symmetric()
+            const bool sel = symmetry == E_LONG;
+            for (int i = 0; i <= order; ++i)
+                work(i,0) = epsyy(layer,i);
+            for (int j = 1; j <= order; ++j)
+                for (int i = 0; i <= order; ++i)
+                    work(i,j) = sel? epsyy(layer,abs(i-j)) + epsyy(layer,i+j) : epsyy(layer,abs(i-j)) - epsyy(layer,i+j);
+            coeff_matrices[layer].reyy.reset(N, N);
+            make_unit_matrix(coeff_matrices[layer].reyy);
+            invmult(work, coeff_matrices[layer].reyy);
+            for (int i = 0; i <= order; ++i)
+                work(i,0) = repsxx(layer,i);
+            for (int j = 1; j <= order; ++j)
+                for (int i = 0; i <= order; ++i)
+                    work(i,j) = sel? repsxx(layer,abs(i-j)) - repsxx(layer,i+j) : repsxx(layer,abs(i-j)) + repsxx(layer,i+j);
+            coeff_matrices[layer].exx.reset(N, N);
+            make_unit_matrix(coeff_matrices[layer].exx);
+            invmult(work, coeff_matrices[layer].exx);
+        } else {
+            for (int j = -order; j <= order; ++j) {
+                const size_t jt = iEH(j);
+                for (int i = -order; i <= order; ++i) {
+                    const size_t it = iEH(i);
+                    work(it,jt) = epsyy(layer,i-j);
+                }
+            }
+            coeff_matrices[layer].reyy.reset(N, N);
+            make_unit_matrix(coeff_matrices[layer].reyy);
+            invmult(work, coeff_matrices[layer].reyy);
+            for (int j = -order; j <= order; ++j) {
+                const size_t jt = iEH(j);
+                for (int i = -order; i <= order; ++i) {
+                    const size_t it = iEH(i);
+                    work(it, jt) = repsxx(layer,i-j);
+                }
+            }
+            coeff_matrices[layer].exx.reset(N, N);
+            make_unit_matrix(coeff_matrices[layer].exx);
+            invmult(work, coeff_matrices[layer].exx);
+            if (repszx(layer)) {
+                for (int j = -order; j <= order; ++j) {
+                    const size_t jt = iEH(j);
+                    for (int i = -order; i <= order; ++i) {
+                        const size_t it = iEH(i);
+                        work(it, jt) = repszx(layer,i-j);
+                    }
+                }
+                coeff_matrices[layer].ezx.reset(N, N);
+                make_unit_matrix(coeff_matrices[layer].ezx);
+                invmult(work, coeff_matrices[layer].ezx);
+            }
+        }
+    }
 }
 
 
@@ -716,7 +777,6 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
 }
 
 void ExpansionPW2D::make_permeability_matrices(cmatrix& work) {
-    if (periodic || !coeff_matrix_mxx.empty()) return;
     coeff_matrix_rmyy.reset(N, N);
 
     int order = int(SOLVER->getSize());
@@ -776,22 +836,15 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
 
     dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
 
-    int order = int(SOLVER->getSize());
+    const int order = int(SOLVER->getSize());
     dcomplex rk0 = 1. / k0, k02 = k0*k0;
     double b = 2.*PI / (right-left) * (symmetric()? 0.5 : 1.0);
     double bb = b * b;
 
     // Ez represents -Ez
 
-    TempMatrix temp = getTempMatrix();
-    cmatrix work(temp);
-
     if (separated()) {
-
-        make_permeability_matrices(work);
-
         if (symmetric()) {
-
             // Separated symmetric()
             if (polarization == E_LONG) {                   // Ez & Hx
                 const bool sym = symmetry == E_LONG;
@@ -816,27 +869,8 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
                 }
             } else {                                        // Ex & Hz
                 const bool sym = symmetry == E_TRAN;
-                if (coeff_matrices[l].reyy.empty()) {
-                    for (int i = 0; i <= order; ++i)
-                        work(i,0) = repsxx(l, i);
-                    for (int j = 1; j <= order; ++j)
-                        for (int i = 0; i <= order; ++i)
-                            work(i,j) = sym? repsxx(l,abs(i-j)) + repsxx(l,i+j) : repsxx(l,abs(i-j)) - repsxx(l,i+j);
-                    make_unit_matrix(RE);
-                    invmult(work, RE);
-                    coeff_matrices[l].exx = RE.copy();
-                    for (int i = 0; i <= order; ++i)
-                        work(i,0) = epsyy(l, i);
-                    for (int j = 1; j <= order; ++j)
-                        for (int i = 0; i <= order; ++i)
-                            work(i,j) = sym? epsyy(l,abs(i-j)) - epsyy(l,i+j) : epsyy(l,abs(i-j)) + epsyy(l,i+j);
-                    make_unit_matrix(RH);
-                    invmult(work, RH);
-                    coeff_matrices[l].reyy = RH.copy();
-                } else {
-                    coeff_matrices[l].exx.copyto(RE);
-                    coeff_matrices[l].reyy.copyto(RH);
-                }
+                coeff_matrices[l].exx.copyto(RE);
+                coeff_matrices[l].reyy.copyto(RH);
                 for (int i = 0; i <= order; ++i) {
                     const dcomplex gi = - rk0 * bb * double(i);
                     RE(i,0) *= k0;
@@ -850,9 +884,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
                     if (RH(i,i) == 0.) RH(i,i) = 1e-32;
                 }
             }
-
         } else {
-
             // Separated asymmetric()
             if (polarization == E_LONG) {                   // Ez & Hx
                 if (!periodic) {
@@ -875,31 +907,8 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
                     if (RH(it,it) == 0.) RH(it,it) = 1e-32;
                 }
             } else {                                        // Ex & Hz
-                if (coeff_matrices[l].reyy.empty()) {
-                    for (int j = -order; j <= order; ++j) {
-                        const size_t jt = iEH(j);
-                        for (int i = -order; i <= order; ++i) {
-                            const size_t it = iEH(i);
-                            work(it,jt) = repsxx(l,i-j);
-                        }
-                    }
-                    make_unit_matrix(RE);
-                    invmult(work, RE);
-                    coeff_matrices[l].exx = RE.copy();
-                    for (int j = -order; j <= order; ++j) {
-                        const size_t jt = iEH(j);
-                        for (int i = -order; i <= order; ++i) {
-                            const size_t it = iEH(i);
-                            work(it,jt) = epsyy(l,i-j);
-                        }
-                    }
-                    make_unit_matrix(RH);
-                    invmult(work, RH);
-                    coeff_matrices[l].reyy = RH.copy();
-                } else {
-                    coeff_matrices[l].exx.copyto(RE);
-                    coeff_matrices[l].reyy.copyto(RH);
-                }
+                coeff_matrices[l].exx.copyto(RE);
+                coeff_matrices[l].reyy.copyto(RH);
                 for (int i = -order; i <= order; ++i) {
                     const dcomplex gi = - rk0 * (b * double(i) - ktran);
                     const size_t it = iEH(i);
@@ -914,33 +923,17 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
                 }
             }
         }
-
     } else {
-
         // work matrix is 2N×2N, so we can use its space for four N×N matrices
         const size_t NN = N*N;
+        TempMatrix temp = getTempMatrix();
+        cmatrix work(temp);
         cmatrix workij(N, N, work.data());
-        cmatrix workxx, workyy, workzx;
-
-        make_permeability_matrices(workij);
-
+        cmatrix workxx, workyy;
         if (symmetric()) {
-
             // Full symmetric()
             const bool sel = symmetry == E_LONG;
-
-            if (coeff_matrices[l].reyy.empty()) {
-                for (int i = 0; i <= order; ++i)
-                    workij(i,0) = epsyy(l,i);
-                for (int j = 1; j <= order; ++j)
-                    for (int i = 0; i <= order; ++i)
-                        workij(i,j) = sel? epsyy(l,abs(i-j)) + epsyy(l,i+j) : epsyy(l,abs(i-j)) - epsyy(l,i+j);
-                workyy = cmatrix(N, N, work.data()+2*NN);
-                make_unit_matrix(workyy);
-                invmult(workij, workyy);
-                coeff_matrices[l].reyy = workyy.copy();
-            } else
-                workyy = coeff_matrices[l].reyy;
+            workyy = coeff_matrices[l].reyy;
             if (!periodic) {
                 workxx = coeff_matrix_mxx;
             } else {
@@ -966,19 +959,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
                 if (RH(iex,iex) == 0.) RH(iex,iex) = 1e-32;
                 if (RH(iez,iez) == 0.) RH(iez,iez) = 1e-32;
             }
-
-            if (coeff_matrices[l].exx.empty()) {
-                for (int i = 0; i <= order; ++i)
-                    workij(i,0) = repsxx(l,i);
-                for (int j = 1; j <= order; ++j)
-                    for (int i = 0; i <= order; ++i)
-                        workij(i,j) = sel? repsxx(l,abs(i-j)) - repsxx(l,i+j) : repsxx(l,abs(i-j)) + repsxx(l,i+j);
-                workxx = cmatrix(N, N, work.data()+NN);
-                make_unit_matrix(workxx);
-                invmult(workij, workxx);
-                coeff_matrices[l].exx = workxx.copy();
-            } else
-                workxx = coeff_matrices[l].exx;
+            workxx = coeff_matrices[l].exx;
             if (!periodic) {
                 workyy = coeff_matrix_rmyy;
             } else {
@@ -1004,25 +985,9 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
                 if (RE(ihx,ihx) == 0.) RE(ihx,ihx) = 1e-32;
                 if (RE(ihz,ihz) == 0.) RE(ihz,ihz) = 1e-32;
             }
-
         } else {
-
             // Full asymmetric()
-            if (coeff_matrices[l].reyy.empty()) {
-                for (int j = -order; j <= order; ++j) {
-                    const size_t jt = iEH(j);
-                    for (int i = -order; i <= order; ++i) {
-                        const size_t it = iEH(i);
-                        workij(it,jt) = epsyy(l,i-j);
-                    }
-                }
-                workyy = cmatrix(N, N, work.data()+2*NN);
-                make_unit_matrix(workyy);
-                invmult(workij, workyy);
-                coeff_matrices[l].reyy = workyy.copy();
-            } else {
-                workyy = coeff_matrices[l].reyy;
-            }
+            workyy = coeff_matrices[l].reyy;
             if (!periodic) {
                 workxx = coeff_matrix_mxx;
             } else {
@@ -1044,41 +1009,12 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
                 if (RH(iex,iex) == 0.) RH(iex,iex) = 1e-32;
                 if (RH(iez,iez) == 0.) RH(iez,iez) = 1e-32;
             }
-            if (coeff_matrices[l].exx.empty()) {
-                for (int j = -order; j <= order; ++j) {
-                    const size_t jt = iEH(j);
-                    for (int i = -order; i <= order; ++i) {
-                        const size_t it = iEH(i);
-                        workij(it, jt) = repsxx(l,i-j);
-                    }
-                }
-                workxx = cmatrix(N, N, work.data()+NN);
-                make_unit_matrix(workxx);
-                invmult(workij, workxx);
-                coeff_matrices[l].exx = workxx.copy();
-            } else
-                workxx = coeff_matrices[l].exx;
+            workxx = coeff_matrices[l].exx;
             if (!periodic) {
                 workyy = coeff_matrix_rmyy;
             } else {
                 workyy = cmatrix(N, N, work.data()+2*NN);
                 make_unit_matrix(workyy);
-            }
-            if (epszx(l)) {
-                if (coeff_matrices[l].ezx.empty()) {
-                    for (int j = -order; j <= order; ++j) {
-                        const size_t jt = iEH(j);
-                        for (int i = -order; i <= order; ++i) {
-                            const size_t it = iEH(i);
-                            workij(it, jt) = repszx(l,i-j);
-                        }
-                    }
-                    workzx = cmatrix(N, N, work.data()+3*NN);
-                    make_unit_matrix(workzx);
-                    invmult(workij, workzx);
-                    coeff_matrices[l].ezx = workzx.copy();
-                } else
-                    workzx = coeff_matrices[l].ezx;
             }
             for (int i = -order; i <= order; ++i) {
                 const dcomplex gi = b * double(i) - ktran;
@@ -1091,7 +1027,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
                     RE(ihx,jex) =   rk0 * beta* gi  * rmuyy(ij);
                     RE(ihx,jez) = - rk0 *  gi * gj  * workyy(it,jt) + k0 * epszz(l,ij);
                     if (epszx(l)) {
-                        RE(ihx,jex) -= k0 * workzx(it,jt);
+                        RE(ihx,jex) -= k0 * coeff_matrices[l].ezx(it,jt);
                         RE(ihz,jez) -= k0 * epsxz(l,ij);
                     }
                 }
@@ -1146,58 +1082,59 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
     int dx = (symmetric() && field_interpolation != INTERPOLATION_FOURIER && sym != E_TRAN)? 1 : 0; // 1 for sin expansion of tran component
     int dz = (symmetric() && field_interpolation != INTERPOLATION_FOURIER && sym != E_LONG)? 1 : 0; // 1 for sin expansion of long component
 
+    TempMatrix temp = getTempMatrix();
+    cvector work(temp.data(), N);
+
     if (which_field == FIELD_E) {
         if (polarization == E_LONG) {
             for (int i = symmetric()? 0 : -order; i <= order; ++i) {
                 field[iEH(i)].tran() = field[iEH(i)].vert() = 0.;
                 if (iEH(i) != 0 || !dz) field[iEH(i)-dz].lon() = - E[iEH(i)];
             }
-        } else {
-            if (polarization == E_TRAN) {
-                for (int i = symmetric()? 0 : -order; i <= order; ++i) {
-                    field[iEH(i)].lon() = 0.;
-                    if (iEH(i) != 0 || !dx)
-                        field[iEH(i)-dx].tran() = E[iEH(i)];
-                    if (iEH(i) != 0 || !dz) {
-                        field[iEH(i)-dz].vert() = 0.; // beta is equal to 0
-                        if (symmetric()) {
-                            if (symmetry == E_TRAN) { // symmetry == H_LONG
-                                for (int j = -order; j <= order; ++j)
-                                    field[iEH(i)-dz].vert() += repsyy(l,abs(i-j)) * b*double(j) * H[iEH(abs(j))];
-                            } else { // symmetry == H_TRAN
-                                for (int j = 1; j <= order; ++j)
-                                    field[iEH(i)-dz].vert() += (repsyy(l,abs(i-j)) + repsyy(l,abs(i+j))) * b*double(j) * H[iEH(j)];
-                            }
-                        } else {
+        } else if (polarization == E_TRAN) {
+            for (int i = symmetric()? 0 : -order; i <= order; ++i) {
+                field[iEH(i)].lon() = 0.;
+                if (iEH(i) != 0 || !dx)
+                    field[iEH(i)-dx].tran() = E[iEH(i)];
+                if (iEH(i) != 0 || !dz) {
+                    field[iEH(i)-dz].vert() = 0.; // beta is equal to 0
+                    if (symmetric()) {
+                        if (symmetry == E_TRAN) { // symmetry == H_LONG
                             for (int j = -order; j <= order; ++j)
-                                field[iEH(i)-dz].vert() += repsyy(l,i-j) * (b*double(j)-ktran) * H[iEH(j)];
+                                field[iEH(i)-dz].vert() += repsyy(l,abs(i-j)) * b*double(j) * H[iEH(abs(j))];
+                        } else { // symmetry == H_TRAN
+                            for (int j = 1; j <= order; ++j)
+                                field[iEH(i)-dz].vert() += (repsyy(l,abs(i-j)) + repsyy(l,abs(i+j))) * b*double(j) * H[iEH(j)];
                         }
-                        field[iEH(i)-dz].vert() /= k0;
+                    } else {
+                        for (int j = -order; j <= order; ++j)
+                            field[iEH(i)-dz].vert() += repsyy(l,i-j) * (b*double(j)-ktran) * H[iEH(j)];
                     }
+                    field[iEH(i)-dz].vert() /= k0;
                 }
-            } else {
-                for (int i = symmetric()? 0 : -order; i <= order; ++i) {
-                    if (iEH(i) != 0 || !dx)
-                        field[iEH(i)-dx].tran() = E[iEx(i)];
-                    if (iEH(i) != 0 || !dz) {
-                        field[iEH(i)-dz].lon() = - E[iEz(i)];
-                        if (symmetric()) {
-                            if (symmetry == E_TRAN) { // symmetry = H_LONG
-                                field[iEH(i)-dz].vert() = 0.; // Hx[0] == 0
-                                for (int j = 1; j <= order; ++j)
-                                    field[iEH(i)-dz].vert() -= (repsyy(l,abs(i-j)) - repsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
-                            } else { // symmetry = H_TRAN
-                                field[iEH(i)-dz].vert() = - repsyy(l,abs(i)) * beta * H[iHx(0)];
-                                for (int j = 1; j <= order; ++j)
-                                    field[iEH(i)-dz].vert() -= (repsyy(l,abs(i-j)) + repsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
-                            }
-                        } else {
-                            field[iEH(i)-dz].vert() = 0.;
-                            for (int j = -order; j <= order; ++j)
-                                field[iEH(i)-dz].vert() -= repsyy(l,i-j) * (beta * H[iHx(i)] + (b*double(j)-ktran) * H[iHz(j)]);
+            }
+        } else {
+            for (int i = symmetric()? 0 : -order; i <= order; ++i) {
+                if (iEH(i) != 0 || !dx)
+                    field[iEH(i)-dx].tran() = E[iEx(i)];
+                if (iEH(i) != 0 || !dz) {
+                    field[iEH(i)-dz].lon() = - E[iEz(i)];
+                    if (symmetric()) {
+                        if (symmetry == E_TRAN) { // symmetry = H_LONG
+                            field[iEH(i)-dz].vert() = 0.; // Hx[0] == 0
+                            for (int j = 1; j <= order; ++j)
+                                field[iEH(i)-dz].vert() -= (repsyy(l,abs(i-j)) - repsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
+                        } else { // symmetry = H_TRAN
+                            field[iEH(i)-dz].vert() = - repsyy(l,abs(i)) * beta * H[iHx(0)];
+                            for (int j = 1; j <= order; ++j)
+                                field[iEH(i)-dz].vert() -= (repsyy(l,abs(i-j)) + repsyy(l,abs(i+j))) * (beta * H[iHx(j)] + b*double(j) * H[iHz(j)]);
                         }
-                        field[iEH(i)-dz].vert() /= k0;
+                    } else {
+                        field[iEH(i)-dz].vert() = 0.;
+                        for (int j = -order; j <= order; ++j)
+                            field[iEH(i)-dz].vert() -= repsyy(l,i-j) * (beta * H[iHx(i)] + (b*double(j)-ktran) * H[iHz(j)]);
                     }
+                    field[iEH(i)-dz].vert() /= k0;
                 }
             }
         }
