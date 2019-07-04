@@ -25,7 +25,7 @@ from ...utils.str import none_to_empty, empty_to_none
 from ...utils.widgets import HTMLDelegate, ComboBox, table_edit_shortcut
 from ...utils.qsignals import BlockQtSignals
 from ..defines import DefinesCompletionDelegate, get_defines_completer
-from ..table import table_with_manipulators
+from ..table import table_with_manipulators, top_level_index
 from ...model.solvers.bconds import RectangularBC, BoundaryConditionsModel
 
 try:
@@ -417,6 +417,7 @@ class BoundaryConditionsDialog(QDialog):
         if self.points:
             colors = [CONFIG['boundary_conditions/color']] * len(self.points)
             for index in self.table.selectionModel().selectedRows():
+                index = top_level_index(index)
                 colors[index.row()] = CONFIG['boundary_conditions/selected_color']
             for points, color in zip(self.points, colors):
                 points.set_color(color)
@@ -464,6 +465,7 @@ class BoundaryConditionsDialog(QDialog):
             plotted_bconds = solver.bconds
             colors = [CONFIG['boundary_conditions/color']] * len(plotted_bconds)
             for index in self.table.selectionModel().selectedRows():
+                index = top_level_index(index)
                 colors[index.row()] = CONFIG['boundary_conditions/selected_color']
 
             self.points = self.preview.update_plot(plotted_bconds, self.mesh, self.geometry,

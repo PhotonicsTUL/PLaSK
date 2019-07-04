@@ -17,6 +17,15 @@ from . import Controller, select_index_from_info
 from ..utils.widgets import table_edit_shortcut, table_last_col_fill, create_undo_actions, set_icon_size
 
 
+def top_level_index(index):
+    """Find top level index (child of the root) by traversing the tree upwards."""
+    prev = index
+    while index.isValid():
+        prev = index
+        index = index.parent()
+    return prev
+
+
 class TableActions(object):
 
     def __init__(self, table, model=None):
@@ -27,17 +36,8 @@ class TableActions(object):
     def model(self):
         return self._model if self._model is not None else self.table.model()
 
-    @staticmethod
-    def top_level_index(index):
-        """Find top level index (child of the root) by traversing the tree upwards."""
-        prev = index
-        while index.isValid():
-            prev = index
-            index = index.parent()
-        return prev
-
     def top_level_selection_index(self):
-        return TableActions.top_level_index(self.table.selectionModel().currentIndex())
+        return top_level_index(self.table.selectionModel().currentIndex())
 
     def select_row(self, row):
         if row is None: return

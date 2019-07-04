@@ -211,7 +211,7 @@ class RectangularBC(SchemaBoundaryConditions):
         if place_element.tag in ('intersection', 'union', 'difference'):
             place = RectangularBC.PlaceNode(RectangularBC.SetOp(place_element.tag))
             for el in list(place_element)[:2]:
-                place.append_child(RectangularBC.place_node_from_xml(el))
+                place.append_child(self.place_node_from_xml(el))
             place.fix_children(self)    # this eventually adds missing children
             return place
         else:   # place tag:
@@ -236,7 +236,7 @@ class RectangularBC(SchemaBoundaryConditions):
         try:
             side = cond_element.attrib['place']
         except KeyError:
-            self.place_node_from_xml(next(cond_element.iter()))
+            return self.place_node_from_xml(next(iter(cond_element)))
         else:
             return RectangularBC.PlaceNode(RectangularBC.PlaceSide(side))
 
