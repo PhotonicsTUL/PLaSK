@@ -1,4 +1,4 @@
-<plask loglevel="info">
+<plask loglevel="detail">
 
 <defines>
   <define name="ns" value="3.48"/>
@@ -89,7 +89,6 @@ class GratingTest(unittest.TestCase):
     def testTE_asymmetric(self):
         solver.polarization = None
         solver.symmetry = None
-        solver.initialize()
         r_te = solver.compute_reflectivity(array([1500., 1600.]), 'top', 'El')
         self.assertAlmostEqual( r_te[0], 99.934, 2 )
         self.assertAlmostEqual( r_te[1], 98.878, 2 )
@@ -97,7 +96,6 @@ class GratingTest(unittest.TestCase):
     def testTE_symmetric(self):
         solver.polarization = None
         solver.symmetry = 'El'
-        solver.initialize()
         r_te = solver.compute_reflectivity(array([1500., 1600.]), 'top', 'El')
         self.assertAlmostEqual( r_te[0], 99.934, 2 )
         self.assertAlmostEqual( r_te[1], 98.864, 2 )
@@ -105,7 +103,6 @@ class GratingTest(unittest.TestCase):
     def testTM_asymmetric(self):
         solver.polarization = None
         solver.symmetry = None
-        solver.initialize()
         r_tm = solver.compute_reflectivity(array([1298., 1344.]), 'top', 'Et')
         self.assertAlmostEqual( r_tm[0], 98.504, 2 )
         self.assertAlmostEqual( r_tm[1], 28.228, 2 )
@@ -113,7 +110,6 @@ class GratingTest(unittest.TestCase):
     def testTM_symmetric(self):
         solver.polarization = None
         solver.symmetry = 'Et'
-        solver.initialize()
         r_tm = solver.compute_reflectivity(array([1298., 1344.]), 'top', 'Et')
         self.assertAlmostEqual( r_tm[0], 98.640, 2 )
         self.assertAlmostEqual( r_tm[1], 28.228, 2 )

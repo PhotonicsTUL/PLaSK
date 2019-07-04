@@ -92,12 +92,6 @@ class SimpleDiagonalizer : public Diagonalizer
     std::vector<cmatrix> Te, Th;        ///< Matrices TE and TH
     std::vector<cmatrix> Te1, Th1;      ///< Matrices TE^-1 and TH^-1
 
-    cmatrix* tmpmx;                     ///< QE matrices for temporary storage
-
-    #ifdef OPENMP_FOUND
-        omp_lock_t* tmplx;              ///< Locks of allocated temporary matrices
-    #endif
-
     /// Make Gamma of Gamma^2
     /// \param gam gamma^2 matrix to root
     void sqrtGamma(cdiagonal& gam) {
@@ -113,7 +107,7 @@ class SimpleDiagonalizer : public Diagonalizer
 
   public:
     SimpleDiagonalizer(Expansion* g);
-    ~SimpleDiagonalizer();
+    ~SimpleDiagonalizer() {}
 
     std::size_t matrixSize() const override;
 

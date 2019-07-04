@@ -59,6 +59,7 @@ void ExpansionBessel::reset()
     kpts.clear();
     initialized = false;
     mesh.reset();
+    temporary.reset();
 }
 
 

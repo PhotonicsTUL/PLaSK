@@ -30,10 +30,19 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
            pir;                         ///< Index of the beginning of the right PML
 
     struct Coeffs {
-        DataVector<dcomplex> zz, rzz, xx, rxx, yy, ryy, zx, rzx;
+        DataVector<dcomplex> zz, rxx, yy, ryy, zx, rzx;
     };
     /// Cached permittivity expansion coefficients
     std::vector<Coeffs> coeffs;
+
+    struct CoeffMatrices {
+        cmatrix exx, reyy, ezx;
+    };
+    /// Cached permittivity expansion coefficient matrixess
+    std::vector<CoeffMatrices> coeff_matrices;
+
+    /// Cached permeability expansion coefficient matrices
+    cmatrix coeff_matrix_mxx, coeff_matrix_rmyy;
 
     /// Information if the layer is diagonal
     std::vector<bool> diagonals;
@@ -71,7 +80,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
     size_t matrixSize() const override { return separated()? N : 2*N; }
 
-    void getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix& work) override;
+    void getMatrices(size_t l, cmatrix& RE, cmatrix& RH) override;
 
     void prepareField() override;
 
@@ -103,6 +112,8 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
                 dst[j] += val * ff;
             }
     }
+
+    void make_permeability_matrices(cmatrix& work);
 
   protected:
 
@@ -190,6 +201,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
         if (sym != symmetry) {
             symmetry = sym;
             solver->clearFields();
+            solver->recompute_integrals = true;
         }
     }
 
@@ -197,36 +209,32 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     void setPolarization(Component pol);
 
     const DataVector<dcomplex>& epszz(size_t l) { return coeffs[l].zz; }            ///< Get \f$ \varepsilon_{zz} \f$
-    const DataVector<dcomplex>& epsxx(size_t l) { return coeffs[l].xx; }            ///< Get \f$ \varepsilon_{xx} \f$
     const DataVector<dcomplex>& epsyy(size_t l) { return coeffs[l].yy; }            ///< Get \f$ \varepsilon_{yy} \f$
-    const DataVector<dcomplex>& repszz(size_t l) { return coeffs[l].rzz; }          ///< Get \f$ \varepsilon_{zz}^{-1} \f$
     const DataVector<dcomplex>& repsxx(size_t l) { return coeffs[l].rxx; }          ///< Get \f$ \varepsilon_{xx}^{-1} \f$
     const DataVector<dcomplex>& repsyy(size_t l) { return coeffs[l].ryy; }          ///< Get \f$ \varepsilon_{yy}^{-1} \f$
     const DataVector<dcomplex>& epszx(size_t l) { return coeffs[l].zx; }            ///< Get \f$ \varepsilon_{zx} \f$
     const DataVector<dcomplex>& repszx(size_t l) { return coeffs[l].rzx; }          ///< Get \f$ \varepsilon_{zx}^{-1} \f$
-    const DataVector<dcomplex>& muzz(size_t PLASK_UNUSED(l)) { return mag; }        ///< Get \f$ \mu_{zz} \f$
-    const DataVector<dcomplex>& muxx(size_t PLASK_UNUSED(l)) { return mag; }        ///< Get \f$ \mu_{xx} \f$
-    const DataVector<dcomplex>& muyy(size_t PLASK_UNUSED(l)) { return mag; }        ///< Get \f$ \mu_{yy} \f$
-    const DataVector<dcomplex>& rmuzz(size_t PLASK_UNUSED(l)) { return rmag; }      ///< Get \f$ \mu_{zz}^{-1} \f$
-    const DataVector<dcomplex>& rmuxx(size_t PLASK_UNUSED(l)) { return rmag; }      ///< Get \f$ \mu_{xx}^{-1} \f$
-    const DataVector<dcomplex>& rmuyy(size_t PLASK_UNUSED(l)) { return rmag; }      ///< Get \f$ \mu_{yy}^{-1} \f$
+    const DataVector<dcomplex>& muzz() { return mag; }                              ///< Get \f$ \mu_{zz} \f$
+    const DataVector<dcomplex>& muxx() { return mag; }                              ///< Get \f$ \mu_{xx} \f$
+    const DataVector<dcomplex>& muyy() { return mag; }                              ///< Get \f$ \mu_{yy} \f$
+    const DataVector<dcomplex>& rmuzz() { return rmag; }                            ///< Get \f$ \mu_{zz}^{-1} \f$
+    const DataVector<dcomplex>& rmuxx() { return rmag; }                            ///< Get \f$ \mu_{xx}^{-1} \f$
+    const DataVector<dcomplex>& rmuyy() { return rmag; }                            ///< Get \f$ \mu_{yy}^{-1} \f$
 
     dcomplex epszz(size_t l, int i) { return coeffs[l].zz[(i>=0)?i:i+nN]; }         ///< Get element of \f$ \varepsilon_{zz} \f$
-    dcomplex epsxx(size_t l, int i) { return coeffs[l].xx[(i>=0)?i:i+nN]; }         ///< Get element of \f$ \varepsilon_{xx} \f$
     dcomplex epsyy(size_t l, int i) { return coeffs[l].yy[(i>=0)?i:i+nN]; }         ///< Get element of \f$ \varepsilon_{yy} \f$
-    dcomplex repszz(size_t l, int i) { return coeffs[l].rzz[(i>=0)?i:i+nN]; }       ///< Get element of \f$ \varepsilon_{zz}^{-1} \f$
     dcomplex repsxx(size_t l, int i) { return coeffs[l].rxx[(i>=0)?i:i+nN]; }       ///< Get element of \f$ \varepsilon_{xx}^{-1} \f$
     dcomplex repsyy(size_t l, int i) { return coeffs[l].ryy[(i>=0)?i:i+nN]; }       ///< Get element of \f$ \varepsilon_{yy}^{-1} \f$
     dcomplex epszx(size_t l, int i) { return coeffs[l].zx[(i>=0)?i:i+nN]; }         ///< Get element of \f$ \varepsilon_{zx} \f$
     dcomplex epsxz(size_t l, int i) { return conj(coeffs[l].zx[(i>=0)?i:i+nN]); }   ///< Get element of \f$ \varepsilon_{zx} \f$
     dcomplex repszx(size_t l, int i) { return coeffs[l].rzx[(i>=0)?i:i+nN]; }       ///< Get element of \f$ \varepsilon_{zx}^{-1} \f$
     dcomplex iepsxz(size_t l, int i) { return conj(coeffs[l].rzx[(i>=0)?i:i+nN]); } ///< Get element of \f$ \varepsilon_{zx}^{-1} \f$
-    dcomplex muzz(size_t PLASK_UNUSED(l), int i) { return mag[(i>=0)?i:i+nN]; }     ///< Get element of \f$ \mu_{zz} \f$
-    dcomplex muxx(size_t PLASK_UNUSED(l), int i) { return mag[(i>=0)?i:i+nN]; }     ///< Get element of \f$ \mu_{xx} \f$
-    dcomplex muyy(size_t PLASK_UNUSED(l), int i) { return mag[(i>=0)?i:i+nN]; }     ///< Get element of \f$ \mu_{yy} \f$
-    dcomplex rmuzz(size_t PLASK_UNUSED(l), int i) { return rmag[(i>=0)?i:i+nN]; }   ///< Get element of \f$ \mu_{zz}^{-1} \f$
-    dcomplex rmuxx(size_t PLASK_UNUSED(l), int i) { return rmag[(i>=0)?i:i+nN]; }   ///< Get element of \f$ \mu_{xx}^{-1} \f$
-    dcomplex rmuyy(size_t PLASK_UNUSED(l), int i) { return rmag[(i>=0)?i:i+nN]; }   ///< Get element of \f$ \mu_{yy}^{-1} \f$
+    dcomplex muzz(int i) { return mag[(i>=0)?i:i+nN]; }                             ///< Get element of \f$ \mu_{zz} \f$
+    dcomplex muxx(int i) { return mag[(i>=0)?i:i+nN]; }                             ///< Get element of \f$ \mu_{xx} \f$
+    dcomplex muyy(int i) { return mag[(i>=0)?i:i+nN]; }                             ///< Get element of \f$ \mu_{yy} \f$
+    dcomplex rmuzz(int i) { return rmag[(i>=0)?i:i+nN]; }                           ///< Get element of \f$ \mu_{zz}^{-1} \f$
+    dcomplex rmuxx(int i) { return rmag[(i>=0)?i:i+nN]; }                           ///< Get element of \f$ \mu_{xx}^{-1} \f$
+    dcomplex rmuyy(int i) { return rmag[(i>=0)?i:i+nN]; }                           ///< Get element of \f$ \mu_{yy}^{-1} \f$
 
     size_t iEx(int i) { return 2 * ((i>=0)?i:i+N); }        ///< Get \f$ E_x \f$ index
     size_t iEz(int i) { return 2 * ((i>=0)?i:i+N) + 1; }    ///< Get \f$ E_z \f$ index

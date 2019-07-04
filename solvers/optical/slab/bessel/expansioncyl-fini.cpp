@@ -139,7 +139,7 @@ void ExpansionBesselFini::layerIntegrals(size_t layer, double lam, double glam)
 }
 
 
-void ExpansionBesselFini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH, cmatrix&)
+void ExpansionBesselFini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
 {
     assert(initialized);
     if (isnan(k0)) throw BadInput(SOLVER->getId(), "Wavelength or k0 not set");

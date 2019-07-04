@@ -24,8 +24,10 @@ ReflectionTransfer::ReflectionTransfer(SlabBase* solver, Expansion& expansion): 
 
 
 ReflectionTransfer::~ReflectionTransfer() {
-    size_t N = diagonalizer->matrixSize();
-    aligned_delete_array<int>(N, ipiv); ipiv = nullptr;
+    // here we just use `aligned_free` as int is a PODT and diagonalizer->matrixSize() will call pure virtual method
+    // size_t N = diagonalizer->matrixSize();
+    // aligned_delete_array<int>(N, ipiv); ipiv = nullptr;
+    aligned_free(ipiv);
 }
 
 

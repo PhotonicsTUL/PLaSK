@@ -74,7 +74,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     size_t matrixSize() const override { return 2*Nl*Nt; }
 
-    void getMatrices(size_t l, cmatrix& RE, cmatrix& RH, cmatrix&) override;
+    void getMatrices(size_t l, cmatrix& RE, cmatrix& RH) override;
 
     void prepareField() override;
 
