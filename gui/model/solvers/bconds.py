@@ -61,15 +61,6 @@ class RectangularBC(SchemaBoundaryConditions):
             self.place = place
             if value: self.value = value
 
-        def fix_children(self, schema):
-            c = getattr(self.place, 'required_child_count', None)
-            if c is not None:
-                self.children = self.children[:c]
-                for _ in range(len(self.children), c):
-                    self.append_child(schema.create_default_entry())
-            #for c in self.children:
-            #    c.parent = self
-
         def append_child(self, node):
             node.parent = self
             self.children.append(node)
@@ -189,7 +180,7 @@ class RectangularBC(SchemaBoundaryConditions):
             return etree.Element(self.operation)
 
         def copy_from(self, old):
-            self.operation = old.operation
+            pass
 
         @property
         def label(self):
@@ -212,7 +203,8 @@ class RectangularBC(SchemaBoundaryConditions):
             place = RectangularBC.PlaceNode(RectangularBC.SetOp(place_element.tag))
             for el in list(place_element)[:2]:
                 place.append_child(self.place_node_from_xml(el))
-            place.fix_children(self)    # this eventually adds missing children
+            for _ in range(2-len(place.children)):  # we must have exact two children
+                place.append_child(self.create_default_entry())
             return place
         else:   # place tag:
             # TODO ensure that: place.tag == 'place'
@@ -364,12 +356,26 @@ class BoundaryConditionsModel(QAbstractItemModel):
             return False
         col = index.column()
         if col == 0:
-            old_place = entries[row].place
+            entry = entries[row]
+            old_place = entry.place
             new_place = self.schema.create_place(value)
-            entries[row].place = new_place
+            entry.place = new_place
             if type(old_place) == type(new_place):
                 new_place.copy_from(old_place)
-            entries[row].fix_children(self.schema)
+
+            required_child_count = getattr(new_place, 'required_child_count', None)
+            if required_child_count is not None:
+                old_child_count = len(entry.children)
+                if required_child_count > old_child_count:     # we need more children, add:
+                    self.beginInsertRows(index, old_child_count, required_child_count-1)
+                    for _ in range(old_child_count, required_child_count):
+                        entry.append_child(self.schema.create_default_entry())
+                    self.endInsertRows()
+                elif required_child_count < old_child_count:   # some children are not needed, remove:
+                    self.beginRemoveRows(index, required_child_count, old_child_count-1)
+                    entry.children = entries[row].children[:required_child_count]
+                    self.endRemoveRows()
+
             self.dataChanged.emit(index, index)
             return True
         if col == 1 or node.parent is not None:
