@@ -1151,14 +1151,14 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                         if (symmetric()) {
                             if (symmetry == E_TRAN) { // symmetry == H_LONG
                                 for (int j = -order; j <= order; ++j)
-                                    field[iEH(i)-dz].vert() += repsxx(l,abs(i-j)) * b*double(j) * H[iEH(abs(j))];   //BAD
+                                    field[iEH(i)-dz].vert() += repsyy(l,abs(i-j)) * b*double(j) * H[iEH(abs(j))];
                             } else { // symmetry == H_TRAN
                                 for (int j = 1; j <= order; ++j)
-                                    field[iEH(i)-dz].vert() += (repsxx(l,abs(i-j)) + repsxx(l,abs(i+j))) * b*double(j) * H[iEH(j)];   //BAD
+                                    field[iEH(i)-dz].vert() += (repsyy(l,abs(i-j)) + repsyy(l,abs(i+j))) * b*double(j) * H[iEH(j)];
                             }
                         } else {
                             for (int j = -order; j <= order; ++j)
-                                field[iEH(i)-dz].vert() += repsxx(l,i-j) * (b*double(j)-ktran) * H[iEH(j)];   //BAD
+                                field[iEH(i)-dz].vert() += repsyy(l,i-j) * (b*double(j)-ktran) * H[iEH(j)];
                         }
                         field[iEH(i)-dz].vert() /= k0;
                     }
@@ -1405,10 +1405,10 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
                         vert = 0.; // beta is equal to 0
                         if (symmetry == E_TRAN) { // symmetry == H_LONG
                             for (int j = -order; j <= order; ++j)
-                                vert += repsxx(l,abs(i-j)) * b*double(j) * H[iEH(abs(j))];
+                                vert += repsyy(l,abs(i-j)) * b*double(j) * H[iEH(abs(j))];
                         } else { // symmetry == H_TRAN
                             for (int j = 1; j <= order; ++j)
-                                vert += (repsxx(l,abs(i-j)) + repsxx(l,abs(i+j))) * b*double(j) * H[iEH(j)];
+                                vert += (repsyy(l,abs(i-j)) + repsyy(l,abs(i+j))) * b*double(j) * H[iEH(j)];
                         }
                         vert /= k0;
                         sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
@@ -1417,7 +1417,7 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
                     for (int i = -order; i <= order; ++i) {
                         vert = 0.; // beta is equal to 0
                         for (int j = -order; j <= order; ++j)
-                            vert += repsxx(l,i-j) * (b*double(j)-ktran) * H[iEH(j)];
+                            vert += repsyy(l,i-j) * (b*double(j)-ktran) * H[iEH(j)];
                         vert /= k0;
                         sum += real(vert * conj(vert));
                     }
