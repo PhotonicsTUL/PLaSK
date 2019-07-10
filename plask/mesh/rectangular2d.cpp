@@ -238,7 +238,7 @@ static RegisterMeshReader rectilinear2d_reader("rectilinear2d", readRectangularM
 
 bool RectangularMesh2D::ElementMesh::hasSameNodes(const MeshD<2> &to_compare) const {
     if (const RectangularMesh2D::ElementMesh* c = dynamic_cast<const RectangularMesh2D::ElementMesh*>(&to_compare))
-        return *this == *c;  // this will call == operator from RectangularMesh2D
+        if (this->originalMesh == c->originalMesh) return true;
     return RectangularMesh2D::hasSameNodes(to_compare);
 }
 

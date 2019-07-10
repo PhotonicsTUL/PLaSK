@@ -634,7 +634,7 @@ template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<Ten
 
 bool TriangularMesh2D::ElementMesh::hasSameNodes(const MeshD<2> &to_compare) const {
     if (const ElementMesh* c = dynamic_cast<const ElementMesh*>(&to_compare))
-        return *this == *c;  // this will call == operator from ElementMesh
+        if (this->originalMesh == c->originalMesh) return true;
     return MeshD<2>::hasSameNodes(to_compare);
 }
 

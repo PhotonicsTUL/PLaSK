@@ -284,19 +284,11 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
             return flags.postprocess(point, data[this->index(i0, i1, i2)]);
         }
 
-        bool operator==(const ElementMesh& to_compare) const {
-            return *originalMesh == *to_compare.originalMesh;
-        }
-
-        bool operator!=(const ElementMesh& to_compare) const {
-            return !(*this == to_compare);
-        }
-
     protected:
 
         bool hasSameNodes(const MeshD<3> &to_compare) const override {
             if (const ElementMesh* c = dynamic_cast<const ElementMesh*>(&to_compare))
-                return *this == *c;  // this will call == operator from ElementMesh
+                if (this->originalMesh == c->originalMesh) return true;
             return BaseMeshT::hasSameNodes(to_compare);
         }
     };

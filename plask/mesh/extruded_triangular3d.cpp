@@ -545,6 +545,12 @@ template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyData
 template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<Tensor3<double>, Tensor3<double>>;
 template struct PLASK_API NearestNeighborElementExtrudedTriangularMesh3DLazyDataImpl<Tensor3<dcomplex>, Tensor3<dcomplex>>;
 
+bool ExtrudedTriangularMesh3D::ElementMesh::hasSameNodes(const MeshD<3> &to_compare) const {
+    if (const ElementMesh* c = dynamic_cast<const ElementMesh*>(&to_compare))
+        if (this->originalMesh == c->originalMesh) return true;
+    return MeshD<3>::hasSameNodes(to_compare);
+}
+
 
 
 

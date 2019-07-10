@@ -725,14 +725,6 @@ class TriangularMesh2D::ElementMesh: public MeshD<2> {
 
     const TriangularMesh2D& getOriginalMesh() const { return *originalMesh; }
 
-    bool operator==(const ElementMesh& to_compare) const {
-        return *originalMesh == *to_compare.originalMesh;
-    }
-
-    bool operator!=(const ElementMesh& to_compare) const {
-        return !(*this == to_compare);
-    }
-
 protected:
 
     bool hasSameNodes(const MeshD<2> &to_compare) const override;

@@ -1000,14 +1000,6 @@ class RectangularMesh2D::ElementMesh: public RectangularMesh2D {
         return flags.postprocess(point, data[this->index(i0, i1)]);
     }
 
-    bool operator==(const ElementMesh& to_compare) const {
-        return *originalMesh == *to_compare.originalMesh;
-    }
-
-    bool operator!=(const ElementMesh& to_compare) const {
-        return !(*this == to_compare);
-    }
-
 protected:
 
     bool hasSameNodes(const MeshD<2> &to_compare) const override;
