@@ -50,6 +50,12 @@ shared_ptr<MeshAxis> RegularAxis::getMidpointAxis() const
     //return plask::make_shared<RegularMesh1D>(this->first() + this->step() * 0.5, this->last() - this->step() * 0.5, this->points_count - 1);
 }
 
+bool RegularAxis::hasSameNodes(const MeshD<1> &to_compare) const {
+    if (const RegularAxis* c = dynamic_cast<const RegularAxis*>(&to_compare))
+        return *this == *c;  // this will call == operator from RegularAxis
+    return MeshAxis::hasSameNodes(to_compare);
+}
+
 shared_ptr<RegularMesh1D> readRegularMeshAxis(XMLReader& reader) {
     double start = reader.requireAttribute<double>("start");
     double stop = reader.requireAttribute<double>("stop");

@@ -106,6 +106,12 @@ shared_ptr<RectangularMesh2D::ElementMesh> RectangularMesh2D::getElementMesh() c
     return plask::make_shared<RectangularMesh2D::ElementMesh>(this, axis[0]->getMidpointAxis(), axis[1]->getMidpointAxis(), getIterationOrder());
 }
 
+bool RectangularMesh2D::hasSameNodes(const MeshD<2> &to_compare) const {
+    if (const RectangularMesh2D* c = dynamic_cast<const RectangularMesh2D*>(&to_compare))
+        return *this == *c;  // this will call == operator from RectangularMesh2D
+    return RectangularMeshBase2D::hasSameNodes(to_compare);
+}
+
 BoundaryNodeSet RectangularMesh2D::createVerticalBoundaryAtLine(std::size_t line_nr_axis0) const {
     return new VerticalBoundary(*this, line_nr_axis0);
 }
@@ -229,6 +235,12 @@ static shared_ptr<Mesh> readRectangularMesh2D_obsolete(XMLReader& reader) {
 }
 static RegisterMeshReader regularmesh2d_reader("regular2d", readRectangularMesh2D_obsolete);
 static RegisterMeshReader rectilinear2d_reader("rectilinear2d", readRectangularMesh2D_obsolete);
+
+bool RectangularMesh2D::ElementMesh::hasSameNodes(const MeshD<2> &to_compare) const {
+    if (const RectangularMesh2D::ElementMesh* c = dynamic_cast<const RectangularMesh2D::ElementMesh*>(&to_compare))
+        return *this == *c;  // this will call == operator from RectangularMesh2D
+    return RectangularMesh2D::hasSameNodes(to_compare);
+}
 
 } // namespace plask
 

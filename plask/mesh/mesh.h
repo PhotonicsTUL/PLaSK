@@ -278,7 +278,10 @@ struct PLASK_API MeshD: public Mesh {
      * @param to_compare mesh to compare
      * @return @p to_compare represent the same sequence of points as this
      */
-    bool operator==(const MeshD& to_compare) const;
+    bool operator==(const MeshD& to_compare) const {
+        if (this == &to_compare) return true;
+        return hasSameNodes(to_compare);
+    }
 
     /**
      * Check if this mesh and @p to_compare represent different sequences of points.
@@ -288,6 +291,18 @@ struct PLASK_API MeshD: public Mesh {
     bool operator!=(const MeshD& to_compare) const { return ! (*this == to_compare); }
 
     void print(std::ostream& out) const override;
+
+protected:
+
+    /**
+     * Check if this mesh and @p to_compare represent the same sequence of points (have exactly the same points in the same order).
+     *
+     * Default implementation naively compares seqences of points, so its pesimistic complexity is O(size()).
+     * However subclasses can use extra optimizations.
+     * @param to_compare mesh to compare
+     * @return @p to_compare represent the same sequence of points as this
+     */
+    virtual bool hasSameNodes(const MeshD<dimension>& to_compare) const;
 
 };
 

@@ -84,13 +84,23 @@ class PLASK_API RegularAxis: public MeshAxis {
     virtual std::size_t size() const override { return points_count; }
 
     /**
-     * Compare meshes
+     * Compare meshes.
      * It uses algorithm which has constant time complexity.
      * @param to_compare mesh to compare
      * @return @c true only if this mesh and @p to_compare represents the same set of points
      */
     bool operator==(const RegularAxis& to_compare) const {
         return this->lo == to_compare.lo && this->_step == to_compare._step && this->points_count == to_compare.points_count;
+    }
+
+    /**
+     * Compare meshes.
+     * It uses algorithm which has constant time complexity.
+     * @param to_compare mesh to compare
+     * @return @c true only if this mesh and @p to_compare represents different sets of points
+     */
+    bool operator!=(const RegularAxis& to_compare) const {
+        return !(*this == to_compare);
     }
 
     /// @return true only if there are no points in mesh
@@ -174,6 +184,9 @@ class PLASK_API RegularAxis: public MeshAxis {
      */
     template <typename RandomAccessContainer>
     auto interpolateLinear(const RandomAccessContainer& data, double point) -> typename std::remove_reference<decltype(data[0])>::type;
+
+protected:
+    bool hasSameNodes(const MeshD<1>& to_compare) const override;
 
 };
 

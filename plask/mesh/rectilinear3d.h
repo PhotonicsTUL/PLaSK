@@ -283,6 +283,22 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
             if (i2 != 0) --i2;
             return flags.postprocess(point, data[this->index(i0, i1, i2)]);
         }
+
+        bool operator==(const ElementMesh& to_compare) const {
+            return *originalMesh == *to_compare.originalMesh;
+        }
+
+        bool operator!=(const ElementMesh& to_compare) const {
+            return !(*this == to_compare);
+        }
+
+    protected:
+
+        bool hasSameNodes(const MeshD<3> &to_compare) const override {
+            if (const ElementMesh* c = dynamic_cast<const ElementMesh*>(&to_compare))
+                return *this == *c;  // this will call == operator from ElementMesh
+            return BaseMeshT::hasSameNodes(to_compare);
+        }
     };
 
     /// First, second and third coordinates of points in this mesh.
@@ -486,12 +502,21 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
     }
 
     /**
-      * Compare meshes
+      * Compare meshes.
       * @param to_compare mesh to compare
-      * @return @c true only if this mesh and @p to_compare represents the same set of points regardless of iteration order
+      * @return @c true only if this mesh and @p to_compare represents the same sequence of points
       */
     bool operator==(const RectilinearMesh3D& to_compare) const {
-        return *axis[0] == *to_compare.axis[0] && *axis[1] == *to_compare.axis[1] && *axis[2] == *to_compare.axis[2];
+        if (empty()) return to_compare.empty();
+        // here we know that axes are non-empty
+        if (*axis[0] != *to_compare.axis[0] || *axis[1] != *to_compare.axis[1] || *axis[2] != *to_compare.axis[2]) return false;
+        // here we know that axes are equal
+        return this->getIterationOrder() == to_compare.getIterationOrder() ||
+                (unsigned(axis[0]->size() == 1) + unsigned(axis[1]->size() == 1) + unsigned(axis[2]->size() == 1)) >= 2;
+    }
+
+    bool operator!=(const RectilinearMesh3D& to_compare) const {
+        return !(*this == to_compare);
     }
 
     /**
@@ -827,6 +852,13 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
         prepareNearestNeighborInterpolationForAxis(*axis[1], flags, p.c1, 1);
         prepareNearestNeighborInterpolationForAxis(*axis[2], flags, p.c2, 2);
         return flags.postprocess(point, data[this->index(axis[0]->findNearestIndex(p.c0), axis[1]->findNearestIndex(p.c1), axis[2]->findNearestIndex(p.c2))]);
+    }
+
+protected:
+    bool hasSameNodes(const MeshD<3> &to_compare) const override {
+        if (const RectilinearMesh3D* c = dynamic_cast<const RectilinearMesh3D*>(&to_compare))
+            return *this == *c;  // this will call == operator from RectilinearMesh3D
+        return RectangularMeshBase3D::hasSameNodes(to_compare);
     }
 
 private:

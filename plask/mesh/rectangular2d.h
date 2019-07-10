@@ -408,12 +408,20 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
     }
 
     /**
-      * Compare meshes
+      * Compare meshes.
       * @param to_compare mesh to compare
-      * @return @c true only if this mesh and @p to_compare represents the same set of points regardless of iteration order
+      * @return @c true only if this mesh and @p to_compare represents the same sequence of points
       */
     bool operator==(const RectangularMesh2D& to_compare) const {
-        return *axis[0] == *to_compare.axis[0] && *axis[1] == *to_compare.axis[1];
+        if (empty()) return to_compare.empty();
+        // here we know that axes are non-empty
+        if (*axis[0] != *to_compare.axis[0] || *axis[1] != *to_compare.axis[1]) return false;
+        // here we know that axes are equal
+        return this->getIterationOrder() == to_compare.getIterationOrder() || (axis[0]->size() == 1) || (axis[1]->size() == 1);
+    }
+
+    bool operator!=(const RectangularMesh2D& to_compare) const {
+        return !(*this == to_compare);
     }
 
     /**
@@ -756,6 +764,11 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
         return getElementBox(index0(bl_index), index1(bl_index));
     }
 
+  protected:
+
+    bool hasSameNodes(const MeshD<2> &to_compare) const override;
+
+
   private:
 
     // Common code for: left, right, bottom, top boundries:
@@ -986,6 +999,18 @@ class RectangularMesh2D::ElementMesh: public RectangularMesh2D {
         if (i1 != 0) --i1;
         return flags.postprocess(point, data[this->index(i0, i1)]);
     }
+
+    bool operator==(const ElementMesh& to_compare) const {
+        return *originalMesh == *to_compare.originalMesh;
+    }
+
+    bool operator!=(const ElementMesh& to_compare) const {
+        return !(*this == to_compare);
+    }
+
+protected:
+
+    bool hasSameNodes(const MeshD<2> &to_compare) const override;
 
 };
 
