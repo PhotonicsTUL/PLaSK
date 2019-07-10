@@ -632,4 +632,10 @@ template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<Ten
 template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<Tensor3<double>, Tensor3<double>>;
 template struct PLASK_API NearestNeighborElementTriangularMesh2DLazyDataImpl<Tensor3<dcomplex>, Tensor3<dcomplex>>;
 
+bool TriangularMesh2D::ElementMesh::hasSameNodes(const MeshD<2> &to_compare) const {
+    if (const ElementMesh* c = dynamic_cast<const ElementMesh*>(&to_compare))
+        return *this == *c;  // this will call == operator from ElementMesh
+    return MeshD<2>::hasSameNodes(to_compare);
+}
+
 }   // namespace plask

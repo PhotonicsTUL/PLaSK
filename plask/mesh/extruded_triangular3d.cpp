@@ -116,6 +116,20 @@ std::size_t ExtrudedTriangularMesh3D::vertIndex(std::size_t index) const {
     return vertFastest ? index % vertAxis->size() : index / longTranMesh.size();
 }
 
+bool ExtrudedTriangularMesh3D::operator==(const ExtrudedTriangularMesh3D &to_compare) const {
+    if (empty()) return to_compare.empty();
+    // this mesh is not empty here
+    if (*vertAxis != *to_compare.vertAxis || longTranMesh != to_compare.longTranMesh) return false;
+    // here axes are equal
+    return vertFastest == to_compare.vertFastest || vertAxis->size() == 1 || longTranMesh.size() == 1;
+}
+
+bool ExtrudedTriangularMesh3D::hasSameNodes(const MeshD<3> &to_compare) const {
+    if (const ExtrudedTriangularMesh3D* c = dynamic_cast<const ExtrudedTriangularMesh3D*>(&to_compare))
+        return *this == *c;  // this will call == operator from ExtrudedTriangularMesh3D
+    return MeshD<3>::hasSameNodes(to_compare);
+}
+
 TriangularMesh2D::SegmentsCounts ExtrudedTriangularMesh3D::countSegmentsIn(
         std::size_t layer,
         const GeometryD<3> &geometry,

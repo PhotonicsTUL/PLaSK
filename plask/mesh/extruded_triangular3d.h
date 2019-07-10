@@ -241,6 +241,16 @@ struct PLASK_API ExtrudedTriangularMesh3D: public MeshD<3> {
         return vertSize == 0 ? 0 : (vertSize-1) * longTranMesh.getElementsCount();
     }
 
+    bool operator==(const ExtrudedTriangularMesh3D& to_compare) const;
+
+    bool operator!=(const ExtrudedTriangularMesh3D& to_compare) const {
+        return !(*this == to_compare);
+    }
+
+protected:
+
+    bool hasSameNodes(const MeshD<3> &to_compare) const override;
+
 private:
     enum class SideBoundaryDir { BACK, FRONT, LEFT, RIGHT, ALL };
 
@@ -549,6 +559,22 @@ class ExtrudedTriangularMesh3D::ElementMesh: public MeshD<3> {
     }
 
     const ExtrudedTriangularMesh3D& getOriginalMesh() const { return *originalMesh; }
+
+    bool operator==(const ElementMesh& to_compare) const {
+        return *originalMesh == *to_compare.originalMesh;
+    }
+
+    bool operator!=(const ElementMesh& to_compare) const {
+        return !(*this == to_compare);
+    }
+
+protected:
+
+    bool hasSameNodes(const MeshD<3> &to_compare) const override {
+        if (const ElementMesh* c = dynamic_cast<const ElementMesh*>(&to_compare))
+            return *this == *c;  // this will call == operator from ElementMesh
+        return MeshD<3>::hasSameNodes(to_compare);
+    }
 };
 
 
