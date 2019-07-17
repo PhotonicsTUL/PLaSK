@@ -616,7 +616,8 @@ void export_FourierSolver3D()
                u8"layer. Please refer to the detailed solver description for the interpretation\n"
                u8"of the returned values.\n\n"
                u8"Args:\n"
-               u8"    level (float): Vertical level at which the coefficients are computed.\n",
+               u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
+               u8":rtype: :class:`~optical.slab.Fourier3D.Eigenmodes`\n",
                py::with_custodian_and_ward_postcall<0,1>()
               );
     RO_FIELD(modes, "Computed modes.");
@@ -669,7 +670,7 @@ void export_FourierSolver3D()
     ;
 
     Scattering<FourierSolver3D>::registerClass("3D");
-    Eigenmodes<FourierSolver3D>::registerClass("3D");
+    Eigenmodes<FourierSolver3D>::registerClass("Fourier3D", "3D");
 
     FourierSolver3D_LongTranWrapper<size_t>::register_("Sizes");
     FourierSolver3D_LongTranWrapper<double>::register_("Oversampling");

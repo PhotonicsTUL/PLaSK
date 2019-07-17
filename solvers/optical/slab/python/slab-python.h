@@ -453,7 +453,7 @@ struct Eigenmodes {
         return Eigenmode(this, n);
     }
 
-    static void registerClass(const char* suffix) {
+    static void registerClass(const char* solver, const char* suffix) {
         py::class_<Eigenmodes, shared_ptr<Eigenmodes>, boost::noncopyable> ems("Eigenmodes",
             u8"Layer eignemodes\n\n"
             u8"This is an advanced class allowing to extract eignemodes in each layer.\n", py::no_init); ems
@@ -473,7 +473,10 @@ struct Eigenmodes {
                          )
         ;
         py::scope scope(ems);
-        py::class_<Eigenmode>("Eigenmode", py::no_init)
+        py::class_<Eigenmode>("Eigenmode",
+            format("Single eignemode. You can access object of this class by indexing\n"
+                   ":class:`~optical.slab.{}.Eigenmodes` object.", solver).c_str(),
+            py::no_init)
             .add_property("kvert", &Eigenmode::getGamma,
                  u8"Vertical propagation constant for the eigenmode.")
             .add_property("raw_E", &Eigenmode::getCoefficientsE,
