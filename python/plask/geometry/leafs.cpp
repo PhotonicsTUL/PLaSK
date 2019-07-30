@@ -26,7 +26,7 @@ DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, "GeometryObjectLeaf", "Base cla
 
 /// Class providing custom material from realtive position and Python callable
 template<int dim>
-struct PLASK_API PythonMaterialProvider: public GeometryObjectLeaf<dim>::MaterialProvider {
+struct PythonMaterialProvider: public GeometryObjectLeaf<dim>::MaterialProvider {
 
     typedef typename GeometryObjectLeaf<dim>::DVec DVec;
     typedef typename GeometryObjectLeaf<dim>::Box Box;
