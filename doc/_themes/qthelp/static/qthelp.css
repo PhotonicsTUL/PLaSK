@@ -4,7 +4,7 @@
 }
 
 body {
-  font-family: sans-serif, Calibri;
+  font-family: "Liberation Sans", "DejaVu Sans", "Calibri", sans-serif;
   line-height: 1.4em;
   color: black;
   background-color: #ffffff;
@@ -12,6 +12,10 @@ body {
 
 
 /* Default body styles */
+pre, kbd, samp, tt, code {
+    font-family: "Liberation Mono", "DejaVu Sans Mono", "Monaco", "Menlo", "Consolas", monospace;
+}
+
 a {
   color: #7f1111;
   text-decoration: none;
@@ -168,10 +172,6 @@ ol {
   margin: 1.5em;
 }
 
-
-pre, kbd, samp, tt, code {
-    font-family: monospace, Monaco, Menlo, Consolas;
-}
 
 dl.xml-contents dt {
     font-weight: bold;

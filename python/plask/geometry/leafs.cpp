@@ -11,17 +11,83 @@ namespace plask { namespace python {
 
 extern AxisNames current_axes;
 
+template <int dim> void setLeafMaterial(shared_ptr<GeometryObjectLeaf<dim>> self, py::object omaterial);
+
+template <int dim> py::object getLeafMaterial(shared_ptr<GeometryObjectLeaf<dim>> self);
+
 /// Initialize class GeometryObjectLeaf for Python
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, "GeometryObjectLeaf", "Base class for all "," leaves") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, GeometryObjectD<dim>)
-       .add_property("material", &GeometryObjectLeaf<dim>::singleMaterial, &GeometryObjectLeaf<dim>::setMaterial,
+       .add_property("material", &GeometryObjectLeaf<dim>::singleMaterial, &setLeafMaterial<dim>,
                      u8"material of the geometry object (or None if there is no single material for the object)")
        .add_property("representative_material", &GeometryObjectLeaf<dim>::getRepresentativeMaterial)
     ;
 }
 
+/// Class providing custom material from realtive position and Python callable
+template<int dim>
+struct PythonMaterialProvider: public GeometryObjectLeaf<dim>::MaterialProvider {
+
+    typedef typename GeometryObjectLeaf<dim>::DVec DVec;
+    typedef typename GeometryObjectLeaf<dim>::Box Box;
+
+    py::object callable;
+
+    PythonMaterialProvider(const py::object& callable): callable(callable) {}
+
+    shared_ptr<Material> getMaterial(const GeometryObjectLeaf<dim>& thisObj, const DVec& p) const override;
+
+    shared_ptr<Material> singleMaterial() const override {
+        return shared_ptr<Material>();
+    }
+
+    PythonMaterialProvider* clone() const override {
+        return new PythonMaterialProvider(callable);
+    }
+
+    shared_ptr<Material> getRepresentativeMaterial() const override;
+
+    bool isUniform(Primitive<3>::Direction direction) const override { return false; }
+
+    XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const override {
+        throw NotImplemented("Writing Python callable material to XML");
+    }
+};
+
+template <>
+shared_ptr<Material> PythonMaterialProvider<2>::getMaterial(const GeometryObjectLeaf<2>& thisObj, const DVec& p) const {
+    Box b = thisObj.getBoundingBox();
+    DVec rp(
+        (p.tran() - b.lower.tran()) / b.width(),
+        (p.vert() - b.lower.vert()) / b.height()
+    );
+    return py::extract<shared_ptr<Material>>(callable(rp));
+}
+
+template <>
+shared_ptr<Material> PythonMaterialProvider<3>::getMaterial(const GeometryObjectLeaf<3>& thisObj, const DVec& p) const {
+    Box b = thisObj.getBoundingBox();
+    DVec rp(
+        (p.lon() - b.lower.lon()) / b.depth(),
+        (p.tran() - b.lower.tran()) / b.width(),
+        (p.vert() - b.lower.vert()) / b.height()
+    );
+    return py::extract<shared_ptr<Material>>(callable(rp));
+}
+
+template <>
+shared_ptr<Material> PythonMaterialProvider<2>::getRepresentativeMaterial() const {
+    return py::extract<shared_ptr<Material>>(callable(DVec(0.5, 0.5)));
+}
+
+template <>
+shared_ptr<Material> PythonMaterialProvider<3>::getRepresentativeMaterial() const {
+    return py::extract<shared_ptr<Material>>(callable(DVec(0.5, 0.5, 0.5)));
+}
+
+
 template <int dim>
-void setLeafMaterial(shared_ptr<GeometryObjectLeaf<dim>> self, py::object omaterial) {
+void setLeafMaterialFast(shared_ptr<GeometryObjectLeaf<dim>> self, py::object omaterial) {
     if (PyTuple_Check(omaterial.ptr()) || PyList_Check(omaterial.ptr())) {
         auto l = py::len(omaterial);
         double shape = 1.;
@@ -30,54 +96,62 @@ void setLeafMaterial(shared_ptr<GeometryObjectLeaf<dim>> self, py::object omater
         std::string mat1 = py::extract<std::string>(omaterial[0]);
         std::string mat2 = py::extract<std::string>(omaterial[1]);
         if (l == 3) shape = py::extract<double>(omaterial[2]);
-        self->setMaterialTopBottomComposition(MaterialsDB::getDefault().getFactory(mat2, mat1, shape));
+        self->setMaterialTopBottomCompositionFast(MaterialsDB::getDefault().getFactory(mat2, mat1, shape));
+    } else if (PyCallable_Check(omaterial.ptr())) {
+        self->setMaterialProviderFast(new PythonMaterialProvider<dim>(omaterial));
     } else {
         shared_ptr<Material> material = py::extract<shared_ptr<Material>>(omaterial);
-        self->setMaterial(material);
+        self->setMaterialFast(material);
     }
+}
+
+template <int dim>
+void setLeafMaterial(shared_ptr<GeometryObjectLeaf<dim>> self, py::object omaterial) {
+    setLeafMaterialFast(self, omaterial);
+    self->fireChanged();
 }
 
 // Rectangle constructor wraps
 static shared_ptr<Rectangle> Rectangle_constructor_wh(double w, double h, const py::object& material) {
     auto result = plask::make_shared<Rectangle>(Vec<2,double>(w,h));
-    setLeafMaterial<2>(result, material);
+    setLeafMaterialFast<2>(result, material);
     return result;
 }
 static shared_ptr<Rectangle> Rectangle_constructor_vec(const Vec<2,double>& size, const py::object& material) {
     auto result = plask::make_shared<Rectangle>(size);
-    setLeafMaterial<2>(result, material);
+    setLeafMaterialFast<2>(result, material);
     return result;
 }
 
 // Cuboid constructor wraps
 static shared_ptr<Cuboid> Cuboid_constructor_dwh(double d, double w, double h, const py::object& material) {
     auto result =  plask::make_shared<Cuboid>(Vec<3,double>(d,w,h));
-    setLeafMaterial<3>(result, material);
+    setLeafMaterialFast<3>(result, material);
     return result;
 }
 static shared_ptr<Cuboid> Cuboid_constructor_vec(const Vec<3,double>& size, const py::object& material) {
     auto result =  plask::make_shared<Cuboid>(size);
-    setLeafMaterial<3>(result, material);
+    setLeafMaterialFast<3>(result, material);
     return result;
 }
 
 // Triangle constructor wraps
 static shared_ptr<Triangle> Triangle_constructor_vec(const Vec<2, double>& p0, const Vec<2,double>& p1, const py::object& material) {
     auto result = plask::make_shared<Triangle>(p0, p1);
-    setLeafMaterial<2>(result, material);
+    setLeafMaterialFast<2>(result, material);
     return result;
 }
 
 static shared_ptr<Triangle> Triangle_constructor_pts(double x0, double y0, double x1, double y1, const py::object& material) {
     auto result = plask::make_shared<Triangle>(vec(x0,y0), vec(x1,y1));
-    setLeafMaterial<2>(result, material);
+    setLeafMaterialFast<2>(result, material);
     return result;
 }
 
 // Cylinder constructor wraps
 static shared_ptr<Cylinder> Cylinder_constructor(double radius, double height, const py::object& material) {
     auto result =  plask::make_shared<Cylinder>(radius, height);
-    setLeafMaterial<3>(result, material);
+    setLeafMaterialFast<3>(result, material);
     return result;
 }
 
@@ -85,20 +159,20 @@ static shared_ptr<Cylinder> Cylinder_constructor(double radius, double height, c
 template <int dim>
 static shared_ptr<Circle<dim>> Circle_constructor(double radius, const py::object& material) {
     auto result =  plask::make_shared<Circle<dim>>(radius);
-    setLeafMaterial<dim>(result, material);
+    setLeafMaterialFast<dim>(result, material);
     return result;
 }
 
 // Prism constructor wraps
 static shared_ptr<Prism> Prism_constructor_vec(const Vec<2, double>& p0, const Vec<2,double>& p1, double height, const py::object& material) {
     auto result = plask::make_shared<Prism>(p0, p1, height);
-    setLeafMaterial<3>(result, material);
+    setLeafMaterialFast<3>(result, material);
     return result;
 }
 
 static shared_ptr<Prism> Prism_constructor_pts(double x0, double y0, double x1, double y1, double height, const py::object& material) {
     auto result = plask::make_shared<Prism>(vec(x0,y0), vec(x1,y1), height);
-    setLeafMaterial<3>(result, material);
+    setLeafMaterialFast<3>(result, material);
     return result;
 }
 

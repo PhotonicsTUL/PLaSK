@@ -271,7 +271,7 @@ class MainWindow(QMainWindow):
         about_action.triggered.connect(self.about)
 
         help_action = QAction(QIcon.fromTheme('help-contents'), 'Open &Help...', self)
-        help_action.setStatusTip('Open on-line help in a web browser')
+        help_action.setStatusTip('Open on-line help')
         help_action.triggered.connect(lambda: open_help(main_window=self))
 
         install_license_action = QAction('Install License...', self)

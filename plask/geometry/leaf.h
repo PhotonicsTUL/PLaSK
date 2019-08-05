@@ -25,7 +25,7 @@ struct PLASK_API GeometryObjectLeaf: public GeometryObjectD<dim> {
     using GeometryObjectD<dim>::getBoundingBox;
     using GeometryObjectD<dim>::shared_from_this;
 
-protected:
+  public:
 
     struct PLASK_API MaterialProvider {
         virtual shared_ptr<Material> getMaterial(const GeometryObjectLeaf<dim>& thisObj, const DVec& p) const = 0;
@@ -50,6 +50,8 @@ protected:
 
         virtual ~MaterialProvider() {}
     };
+
+  protected:
 
     struct PLASK_API SolidMaterial: public MaterialProvider {
         shared_ptr<Material> material;
@@ -109,7 +111,7 @@ protected:
 
     std::unique_ptr<MaterialProvider> materialProvider;
 
-public:
+  public:
 
     GeometryReader& readMaterial(GeometryReader &src);
 
@@ -173,7 +175,7 @@ public:
     }
 
     /**
-     * Set new, lineary changeble, material.
+     * Set new, lineary changeable, material.
      * @param materialTopBottom materials to set (lineary changeble), first is the material on top of this, the second is on bottom of this
      */
     void setMaterialTopBottomCompositionFast(shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom) {
@@ -181,11 +183,28 @@ public:
     }
 
     /**
-     * Set new, lineary changeble, material. Do not inform listeners about the change.
+     * Set new, lineary changeable, material. Do not inform listeners about the change.
      * @param materialTopBottom materials to set (lineary changeble), first is the material on top of this, the second is on bottom of this
      */
     void setMaterialTopBottomComposition(shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom) {
         setMaterialTopBottomCompositionFast(materialTopBottom);
+        this->fireChanged();
+    }
+
+    /**
+     * Set new custom material provider. Do not inform listeners about the change.
+     * \param provider custom material provider to set; this class takes ownership of this provider
+     */
+    void setMaterialProviderFast(MaterialProvider* provider) {
+        materialProvider.reset(provider);
+    }
+
+    /**
+     * Set new custom material provider.
+     * \param provider custom material provider to set; this class takes ownership of this provider
+     */
+    void setMaterialProvider(MaterialProvider* provider) {
+        setMaterialProviderFast(provider);
         this->fireChanged();
     }
 

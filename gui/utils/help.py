@@ -142,7 +142,10 @@ class HelpWindow(QSplitter):
         page = self.browser.source().path()[4:-5]
         if page[-5:] == 'index': page = page[:-5]
         if page:
-            webbrowser.open("{}{}/".format(HELP_URL, page))
+            if not page.startswith('/'):
+                webbrowser.open("{}/{}".format(HELP_URL, page))
+            else:
+                webbrowser.open("{}{}".format(HELP_URL, page))
         else:
             webbrowser.open("{}".format(HELP_URL))
 
@@ -168,6 +171,9 @@ def open_help(page=None, main_window=None):
             HELP_WINDOW.show_page(page)
         HELP_WINDOW.show()
     elif page:
-        webbrowser.open("{}{}/".format(HELP_URL, page))
+        if not page.startswith('/'):
+            webbrowser.open("{}/{}".format(HELP_URL, page))
+        else:
+            webbrowser.open("{}{}".format(HELP_URL, page))
     else:
         webbrowser.open(HELP_URL)

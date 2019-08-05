@@ -290,7 +290,9 @@
       <condition value="320.">
         <place line="horizontal" at="10" start="0" stop="{lineto}"/>
       </condition>
-      <condition place="bottom" value="300."/>
+      <condition value="300.">
+        <place side="bottom"/>
+      </condition>
     </temperature>
   </thermal>
   <optical name="fourier2" solver="Fourier2D" lib="slab">
@@ -307,7 +309,9 @@
       <condition value="1">
         <place side="top" object="n-contact"/>
       </condition>
-      <condition place="bottom" value="0"/>
+      <condition value="0">
+        <place side="bottom"/>
+      </condition>
     </voltage>
     <matrix algorithm="cholesky" itererr="2"/>
     <junction beta0="{beta_def}" beta1="19.2" js0="{js_def}" js1="1.1"/>
@@ -360,13 +364,17 @@
     <mesh electrical="default" thermal="default"/>
     <root bcond="1"/>
     <voltage>
-      <condition place="bottom" value="0"/>
+      <condition value="0">
+        <place side="bottom"/>
+      </condition>
       <condition value="1">
         <place side="top" object="n-contact"/>
       </condition>
     </voltage>
     <temperature>
-      <condition place="bottom" value="300"/>
+      <condition value="300">
+        <place side="bottom"/>
+      </condition>
     </temperature>
   </meta>
   <optical name="F3D" solver="Fourier3D" lib="slab">

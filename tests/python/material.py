@@ -6,7 +6,7 @@ from numpy import *
 import sys
 
 import plask
-from plask import material
+from plask import material, geometry
 import plasktest as ptest
 
 class Material(unittest.TestCase):
@@ -169,7 +169,6 @@ class Material(unittest.TestCase):
 
 
     def testComparison(self):
-
         @material.simple('GaAs')
         class Mat1(material.Material):
             def __init__(self, val):
@@ -254,6 +253,32 @@ class Material(unittest.TestCase):
         self.assertEqual( algas, algas0 )
         self.assertNotEqual( algas, algas1 )
 
+    def testGradingMaterial(self):
+        rect = geometry.Rectangle(2., 2., ('Al(0.2)GaAs', 'Al(0.8)GaAs'))
+        m1 = rect.get_material(1., 0.000001)
+        m2 = rect.representative_material
+        m3 = rect.get_material(1., 1.999999)
+        self.assertAlmostEqual( m1.composition['Al'], 0.2, 4 )
+        self.assertAlmostEqual( m2.composition['Al'], 0.5, 4 )
+        self.assertAlmostEqual( m3.composition['Al'], 0.8, 4 )
+
+    def testCustomProvider(self):
+        @material.simple('GaAs')
+        class ChangingMaterial(material.Material):
+            def __init__(self, point):
+                super(ChangingMaterial, self).__init__()
+                self.point = point
+            def cond(self, T=300.):
+                return self.point[0]**2
+        def get_material(p):
+            return ChangingMaterial(p)
+        rect = geometry.Rectangle(4., 2., get_material)
+        m1 = rect.get_material(1., 1.)
+        m2 = rect.representative_material
+        m3 = rect.get_material(3., 1.)
+        self.assertAlmostEqual( m1.cond(), 0.25**2, 4 )
+        self.assertAlmostEqual( m2.cond(), 0.50**2, 4 )
+        self.assertAlmostEqual( m3.cond(), 0.75**2, 4 )
 
 if __name__ == '__main__':
     test = unittest.main(exit=False)

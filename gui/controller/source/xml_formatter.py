@@ -133,7 +133,9 @@ def parse_slash(editor):
                 parser.Parse('>')
                 if parser.CurrentLineNumber == line and parser.CurrentColumnNumber == column + 1:
                     cursor.insertText('/>')
-                return True
+                    return True
+                else:
+                    return False
         except expat.ExpatError:
             return False
     return False

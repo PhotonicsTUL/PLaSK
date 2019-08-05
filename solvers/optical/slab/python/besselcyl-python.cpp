@@ -267,7 +267,8 @@ void export_BesselSolverCyl()
         u8"layer. Please refer to the detailed solver description for the interpretation\n"
         u8"of the returned values.\n\n"
         u8"Args:\n"
-        u8"    level (float): Vertical level at which the coefficients are computed.\n",
+        u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
+        u8":rtype: :class:`~optical.slab.BesselCyl.Eigenmodes`\n",
         py::with_custodian_and_ward_postcall<0, 1>()
     );
 
@@ -308,7 +309,7 @@ void export_BesselSolverCyl()
         .def("__repr__", &BesselSolverCyl_Mode_repr)
     ;
 
-    Eigenmodes<BesselSolverCyl>::registerClass("Cyl");
+    Eigenmodes<BesselSolverCyl>::registerClass("BesselCyl", "Cyl");
 }
 
 }}}} // namespace plask::optical::slab::python

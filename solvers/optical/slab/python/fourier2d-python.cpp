@@ -449,7 +449,8 @@ void export_FourierSolver2D()
                u8"layer. Please refer to the detailed solver description for the interpretation\n"
                u8"of the returned values.\n\n"
                u8"Args:\n"
-               u8"    level (float): Vertical level at which the coefficients are computed.\n",
+               u8"    level (float): Vertical level at which the coefficients are computed.\n\n"
+               u8":rtype: :class:`~optical.slab.Fourier2D.Eigenmodes`\n",
                py::with_custodian_and_ward_postcall<0,1>()
               );
     solver.def("gaussian", &FourierSolver2D_incidentGaussian, (py::arg("side"), "polarization", "sigma", py::arg("center")=0.),
@@ -502,7 +503,7 @@ void export_FourierSolver2D()
     ;
 
     Scattering<FourierSolver2D>::registerClass("2D");
-    Eigenmodes<FourierSolver2D>::registerClass("2D");
+    Eigenmodes<FourierSolver2D>::registerClass("Fourier2D", "2D");
 }
 
 }}}} // namespace plask::optical::slab::python

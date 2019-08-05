@@ -89,7 +89,7 @@ struct PLASK_API MaterialsDB {
         }
 
         void ensureNoDoping(double doping) const {
-            if (!isnan(doping)) throw Exception("Redundant doping given for material '{0}'", materialName);
+            if (!isnan(doping) && doping != 0.) throw Exception("Redundant doping given for material '{0}'", materialName);
         }
     };
 
