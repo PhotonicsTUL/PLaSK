@@ -47,9 +47,9 @@ struct PythonMaterialProvider: public GeometryObjectLeaf<dim>::MaterialProvider 
 
     shared_ptr<Material> getRepresentativeMaterial() const override;
 
-    bool isUniform(Primitive<3>::Direction direction) const override { return false; }
+    bool isUniform(Primitive<3>::Direction /*direction*/) const override { return false; }
 
-    XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const override {
+    XMLWriter::Element& writeXML(XMLWriter::Element &/*dest_xml_object*/, const AxisNames &/*axes*/) const override {
         throw NotImplemented("Writing Python callable material to XML");
     }
 };

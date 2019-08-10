@@ -23,6 +23,10 @@ struct PLASK_API MaterialsDB {
      */
     static MaterialsDB& getDefault();
 
+    /// Replace default database with temporary (or empty) value and revert its original state in destructor.
+    struct TemporaryReplaceDefault;
+    typedef TemporaryReplaceDefault TemporaryClearDefault;
+
     /**
      * Load materials from file (dynamic library which is in plask directory with materials) to default database.
      * @param fileName_mainpart main part of file name (filename without lib prefix and extension)
@@ -609,6 +613,27 @@ private:
      */
     shared_ptr<Material> get(const std::string& dbKey, const Material::Composition& composition, double doping = 0.0) const;
 
+};
+
+struct PLASK_API MaterialsDB::TemporaryReplaceDefault {
+    MaterialsDB toRevert;
+
+    TemporaryReplaceDefault(const TemporaryReplaceDefault&) = delete;
+    TemporaryReplaceDefault& operator=(const TemporaryReplaceDefault&) = delete;
+    TemporaryReplaceDefault(TemporaryReplaceDefault&&) = delete;
+    TemporaryReplaceDefault& operator=(TemporaryReplaceDefault&&) = delete;
+
+    /**
+     * Construct an object which replace default database with @p temporaryValue and revert its original state in destructor.
+     * @param temporaryValue new, temporary value for default database (the empty database by default)
+     */
+    TemporaryReplaceDefault(MaterialsDB temporaryValue = MaterialsDB()): toRevert(std::move(getDefault())) {
+        getDefault() = std::move(temporaryValue);
+    }
+
+    ~TemporaryReplaceDefault() {
+        MaterialsDB::getDefault() = std::move(toRevert);
+    }
 };
 
 }   // namespace plask
