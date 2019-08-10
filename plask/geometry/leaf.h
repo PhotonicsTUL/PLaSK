@@ -51,8 +51,6 @@ struct PLASK_API GeometryObjectLeaf: public GeometryObjectD<dim> {
         virtual ~MaterialProvider() {}
     };
 
-  protected:
-
     struct PLASK_API SolidMaterial: public MaterialProvider {
         shared_ptr<Material> material;
 
@@ -81,11 +79,11 @@ struct PLASK_API GeometryObjectLeaf: public GeometryObjectD<dim> {
         virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const override;
     };
 
-    struct PLASK_API MixedCompositionMaterial: public MaterialProvider {
+    struct PLASK_API GradientMaterial: public MaterialProvider {
 
         shared_ptr<MaterialsDB::MixedCompositionFactory> materialFactory;
 
-        MixedCompositionMaterial(shared_ptr<MaterialsDB::MixedCompositionFactory> materialFactory): materialFactory(materialFactory) {}
+        GradientMaterial(shared_ptr<MaterialsDB::MixedCompositionFactory> materialFactory): materialFactory(materialFactory) {}
 
         virtual shared_ptr<Material> getMaterial(const GeometryObjectLeaf<dim>& thisObj, const DVec& p) const override {
             Box b = thisObj.getBoundingBox(); //TODO sth. faster. we only need vert() coordinates, we can also cache lower and height
@@ -96,8 +94,8 @@ struct PLASK_API GeometryObjectLeaf: public GeometryObjectD<dim> {
             return shared_ptr<Material>();
         }
 
-        MixedCompositionMaterial* clone() const override {
-            return new MixedCompositionMaterial(materialFactory);
+        GradientMaterial* clone() const override {
+            return new GradientMaterial(materialFactory);
         }
 
         virtual shared_ptr<Material> getRepresentativeMaterial() const override {
@@ -108,6 +106,8 @@ struct PLASK_API GeometryObjectLeaf: public GeometryObjectD<dim> {
 
         virtual XMLWriter::Element& writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const override;
     };
+
+  protected:
 
     std::unique_ptr<MaterialProvider> materialProvider;
 
@@ -137,7 +137,7 @@ struct PLASK_API GeometryObjectLeaf: public GeometryObjectD<dim> {
      * Construct leaf which uses linearly changeble material.
      * @param materialTopBottom materials to set (lineary changeble), first is the material on top of this, the second is on bottom of this
      */
-    GeometryObjectLeaf<dim>(shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom): materialProvider(new MixedCompositionMaterial(materialTopBottom)) {}
+    GeometryObjectLeaf<dim>(shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom): materialProvider(new GradientMaterial(materialTopBottom)) {}
 
     bool isUniform(Primitive<3>::Direction direction) const override;
 
@@ -179,7 +179,7 @@ struct PLASK_API GeometryObjectLeaf: public GeometryObjectD<dim> {
      * @param materialTopBottom materials to set (lineary changeble), first is the material on top of this, the second is on bottom of this
      */
     void setMaterialTopBottomCompositionFast(shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom) {
-        materialProvider.reset(new MixedCompositionMaterial(materialTopBottom));
+        materialProvider.reset(new GradientMaterial(materialTopBottom));
     }
 
     /**
@@ -206,6 +206,13 @@ struct PLASK_API GeometryObjectLeaf: public GeometryObjectD<dim> {
     void setMaterialProvider(MaterialProvider* provider) {
         setMaterialProviderFast(provider);
         this->fireChanged();
+    }
+
+    /**
+     * Return pointer to the material provider
+     */
+    const MaterialProvider* getMaterialProvider() const {
+        return materialProvider.get();
     }
 
     GeometryObject::Type getType() const override;

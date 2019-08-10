@@ -13,7 +13,7 @@ XMLWriter::Element& GeometryObjectLeaf<dim>::SolidMaterial::writeXML(XMLWriter::
 }
 
 template <int dim>
-XMLWriter::Element& GeometryObjectLeaf<dim>::MixedCompositionMaterial::writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &) const {
+XMLWriter::Element& GeometryObjectLeaf<dim>::GradientMaterial::writeXML(XMLWriter::Element &dest_xml_object, const AxisNames &) const {
     if (! materialFactory) return dest_xml_object;
     return dest_xml_object
             .attr(GeometryReader::XML_MATERIAL_BOTTOM_ATTR, (*materialFactory)(0.0)->str())
@@ -33,7 +33,7 @@ GeometryReader &GeometryObjectLeaf<dim>::readMaterial(GeometryReader &src) {
             this->setMaterialFast(src.getMaterial(*matstr));
     } else {
         if (!top_attr || !bottom_attr)
-            src.source.throwException(format("If '{0}' or '{1}' attribute is given, the second one is also required",
+            src.source.throwException(format("If '{0}' or '{1}' attribute is given, the other one is also required",
                                                 GeometryReader::XML_MATERIAL_TOP_ATTR, GeometryReader::XML_MATERIAL_BOTTOM_ATTR));
         double shape = src.source.getAttribute<double>(GeometryReader::XML_MATERIAL_GRADING_ATTR, 1.);
         this->setMaterialTopBottomCompositionFast(src.getMixedCompositionFactory(*top_attr, *bottom_attr, shape));

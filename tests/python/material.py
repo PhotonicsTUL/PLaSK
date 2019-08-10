@@ -253,7 +253,7 @@ class Material(unittest.TestCase):
         self.assertEqual( algas, algas0 )
         self.assertNotEqual( algas, algas1 )
 
-    def testGradingMaterial(self):
+    def testGradientMaterial(self):
         rect = geometry.Rectangle(2., 2., ('Al(0.2)GaAs', 'Al(0.8)GaAs'))
         m1 = rect.get_material(1., 0.000001)
         m2 = rect.representative_material
@@ -261,6 +261,7 @@ class Material(unittest.TestCase):
         self.assertAlmostEqual( m1.composition['Al'], 0.2, 4 )
         self.assertAlmostEqual( m2.composition['Al'], 0.5, 4 )
         self.assertAlmostEqual( m3.composition['Al'], 0.8, 4 )
+        self.assertEqual( rect.material, (material.get('Al(0.2)GaAs'), material.get('Al(0.8)GaAs')) )
 
     def testCustomProvider(self):
         @material.simple('GaAs')
@@ -279,6 +280,7 @@ class Material(unittest.TestCase):
         self.assertAlmostEqual( m1.cond(), 0.25**2, 4 )
         self.assertAlmostEqual( m2.cond(), 0.50**2, 4 )
         self.assertAlmostEqual( m3.cond(), 0.75**2, 4 )
+        self.assertIs( rect.material, get_material )
 
 if __name__ == '__main__':
     test = unittest.main(exit=False)

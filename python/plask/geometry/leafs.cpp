@@ -18,7 +18,7 @@ template <int dim> py::object getLeafMaterial(shared_ptr<GeometryObjectLeaf<dim>
 /// Initialize class GeometryObjectLeaf for Python
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, "GeometryObjectLeaf", "Base class for all "," leaves") {
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectLeaf, GeometryObjectD<dim>)
-       .add_property("material", &GeometryObjectLeaf<dim>::singleMaterial, &setLeafMaterial<dim>,
+       .add_property("material", &getLeafMaterial<dim>, &setLeafMaterial<dim>,
                      u8"material of the geometry object (or None if there is no single material for the object)")
        .add_property("representative_material", &GeometryObjectLeaf<dim>::getRepresentativeMaterial)
     ;
@@ -83,6 +83,20 @@ shared_ptr<Material> PythonMaterialProvider<2>::getRepresentativeMaterial() cons
 template <>
 shared_ptr<Material> PythonMaterialProvider<3>::getRepresentativeMaterial() const {
     return py::extract<shared_ptr<Material>>(callable(DVec(0.5, 0.5, 0.5)));
+}
+
+
+template <int dim> py::object getLeafMaterial(shared_ptr<GeometryObjectLeaf<dim>> self) {
+    const typename GeometryObjectLeaf<dim>::MaterialProvider* material = self->getMaterialProvider();
+    if (auto solid_material = dynamic_cast<const typename GeometryObjectLeaf<dim>::SolidMaterial*>(material)) {
+        return py::object(material->singleMaterial());
+    } else if (auto gradient_material = dynamic_cast<const typename GeometryObjectLeaf<dim>::GradientMaterial*>(material)) {
+        return py::make_tuple((*gradient_material->materialFactory)(0.), (*gradient_material->materialFactory)(1.));
+    } else if (auto python_material = dynamic_cast<const PythonMaterialProvider<dim>*>(material)) {
+        return python_material->callable;
+    } else {
+        return py::object();
+    }
 }
 
 
