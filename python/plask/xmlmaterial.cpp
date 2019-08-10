@@ -38,9 +38,9 @@ struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
         mobe, mobh, taue, tauh, Ce, Ch, e13, e15, e33, c13, c33, Psp,
         y1, y2, y3;
 
-    PythonEvalMaterialConstructor(MaterialsDB& db, const std::string& name, const std::string& base, bool alloy) :
+    PythonEvalMaterialConstructor(const std::string& name, const std::string& base, bool alloy) :
         MaterialsDB::MaterialConstructor(name),
-        base(base, db),
+        base(base),
         kind(Material::GENERIC), condtype(Material::CONDUCTIVITY_UNDETERMINED),
         alloy(alloy)
     {}
@@ -305,13 +305,13 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
     return material;
 }
 
-void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
+void PythonManager::loadMaterial(XMLReader& reader) {
     try {
         std::string material_name = reader.requireAttribute("name");
         std::string base_name = reader.requireAttribute("base");
         bool alloy = reader.getAttribute<bool>("alloy", false);
 
-        shared_ptr<PythonEvalMaterialConstructor> constructor = plask::make_shared<PythonEvalMaterialConstructor>(materialsDB, material_name, base_name, alloy);
+        shared_ptr<PythonEvalMaterialConstructor> constructor = plask::make_shared<PythonEvalMaterialConstructor>(material_name, base_name, alloy);
         constructor->self = constructor;
 
         auto trim = [](const char* s) -> const char* {
@@ -433,9 +433,9 @@ void PythonManager::loadMaterial(XMLReader& reader, MaterialsDB& materialsDB) {
         }
 
         if (alloy)
-            materialsDB.addComplex(constructor);
+            MaterialsDB::getDefault().addComplex(constructor);
         else
-            materialsDB.addSimple(constructor);
+            MaterialsDB::getDefault().addSimple(constructor);
     } catch (py::error_already_set&) {
         if (draft) PyErr_Clear();
         else throw;

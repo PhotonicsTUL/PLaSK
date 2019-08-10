@@ -7,6 +7,6 @@ struct DumbMaterial: public plask::Material {
     virtual plask::Material::Kind kind() const override { return plask::Material::SEMICONDUCTOR; }
 };
 
-inline void initDumbMaterialDb(plask::MaterialsDB& db) {
+inline void initDumbMaterialDb(plask::MaterialsDB& db = plask::MaterialsDB::getDefault()) {
     db.add<DumbMaterial>("Al");
 }

@@ -24,14 +24,14 @@ BOOST_AUTO_TEST_CASE(boundary_conditions_rect_simple) {
 
 BOOST_AUTO_TEST_CASE(boundary_conditions_rect_custom) {
     plask::BoundaryConditions<plask::RectangularMesh<2>::Boundary, double> conditions;
-    plask::MaterialsDB materialsDB;
-    initDumbMaterialDb(materialsDB);
+    plask::MaterialsDB::TemporaryClearDefault default_materials_db_reverter;
+    initDumbMaterialDb();
     plask::Manager manager;
     manager.loadFromXMLString(
                 "<plask><geometry><cartesian2d name=\"space\" length=\"1\" axes=\"xy\"><stack>"
                     "<block name=\"top\" dx=\"5\" dy=\"3\" material=\"Al\" />"
                     "<block name=\"bottom\" dx=\"5\" dy=\"3\" material=\"Al\" />"
-                "</stack></cartesian2d></geometry></plask>", materialsDB); //repeat=\"2\"
+                "</stack></cartesian2d></geometry></plask>"); //repeat=\"2\"
     plask::RectangularMesh<2>::Boundary bottom_b = plask::RectangularMesh<2>::getBottomOfBoundary(manager.getGeometryObject("bottom"));
     auto axis0 = plask::make_shared<plask::OrderedAxis>();
     auto axis1 = plask::make_shared<plask::OrderedAxis>();

@@ -15,7 +15,7 @@ namespace plask {
 
 Manager::SetAxisNames::SetAxisNames(GeometryReader& reader): SetAxisNames(reader.manager, reader.source) {}
 
-void Manager::ExternalSourcesFromFile::operator()(Manager &manager, MaterialsDB& materialsDB, const std::string &url, const std::string &section) {
+void Manager::ExternalSourcesFromFile::operator()(Manager &manager, const std::string &url, const std::string &section) {
     boost::filesystem::path url_path(url);
     if (url_path.is_relative()) {
         if (originalFileName.empty())
@@ -27,7 +27,7 @@ void Manager::ExternalSourcesFromFile::operator()(Manager &manager, MaterialsDB&
     if (hasCircularRef(url_path, section))
         throw Exception("Error while reading section \"{0}\": circular reference was detected.", section);
     XMLReader reader(url_path.string().c_str());
-    manager.loadSection(reader, section, materialsDB, ExternalSourcesFromFile(url_path, section, this));
+    manager.loadSection(reader, section, ExternalSourcesFromFile(url_path, section, this));
 }
 
 Manager::SetAxisNames::SetAxisNames(Manager &manager, const AxisNames* names)
@@ -41,10 +41,10 @@ Manager::SetAxisNames::SetAxisNames(Manager &manager, XMLReader& source)
     if (axis) manager.axisNames = &AxisNames::axisNamesRegister.get(*axis);
 }
 
-bool Manager::tryLoadFromExternal(XMLReader& reader, MaterialsDB& materialsDB, const Manager::LoadFunCallbackT& load_from) {
+bool Manager::tryLoadFromExternal(XMLReader& reader, const Manager::LoadFunCallbackT& load_from) {
     plask::optional<std::string> from_attr = reader.getAttribute("external");
     if (!from_attr) return false;
-    load_from(*this, materialsDB, *from_attr, reader.getNodeName());
+    load_from(*this, *from_attr, reader.getNodeName());
     return true;
 
     /*std::string section_to_load = reader.getNodeName();
@@ -109,27 +109,27 @@ void Manager::loadDefines(XMLReader &reader) {
     reader.gotoEndOfCurrentTag();
 }
 
-void Manager::loadFromReader(XMLReader &reader, MaterialsDB& materialsDB, const LoadFunCallbackT& load_from_cb) {
-    load(reader, materialsDB, load_from_cb);
+void Manager::loadFromReader(XMLReader &reader, const LoadFunCallbackT& load_from_cb) {
+    load(reader, load_from_cb);
 }
 
-void Manager::loadFromStream(std::unique_ptr<std::istream>&& input, MaterialsDB& materialsDB, const LoadFunCallbackT& load_from_cb) {
+void Manager::loadFromStream(std::unique_ptr<std::istream>&& input, const LoadFunCallbackT& load_from_cb) {
     XMLReader reader(std::move(input));
-    loadFromReader(reader, materialsDB, load_from_cb);
+    loadFromReader(reader, load_from_cb);
 }
 
-void Manager::loadFromXMLString(const std::string &input_XML_str, MaterialsDB& materialsDB, const LoadFunCallbackT& load_from_cb) {
-    loadFromStream(std::unique_ptr<std::istream>(new std::istringstream(input_XML_str)), materialsDB, load_from_cb);
+void Manager::loadFromXMLString(const std::string &input_XML_str, const LoadFunCallbackT& load_from_cb) {
+    loadFromStream(std::unique_ptr<std::istream>(new std::istringstream(input_XML_str)), load_from_cb);
 }
 
-void Manager::loadFromFile(const std::string &fileName, MaterialsDB& materialsDB) {
+void Manager::loadFromFile(const std::string &fileName) {
     XMLReader reader(fileName.c_str());
-    loadFromReader(reader, materialsDB, ExternalSourcesFromFile(fileName));
+    loadFromReader(reader, ExternalSourcesFromFile(fileName));
 }
 
-void Manager::loadFromFILE(FILE* file, MaterialsDB& materialsDB, const LoadFunCallbackT& load_from_cb) {
+void Manager::loadFromFILE(FILE* file, const LoadFunCallbackT& load_from_cb) {
     XMLReader reader(file);
-    loadFromReader(reader, materialsDB, load_from_cb);
+    loadFromReader(reader, load_from_cb);
 }
 
 
@@ -142,10 +142,10 @@ void Manager::loadGeometry(GeometryReader& greader) {
 }
 
 
-void Manager::loadMaterialLib(XMLReader& reader, MaterialsDB& materialsDB) {
+void Manager::loadMaterialLib(XMLReader& reader) {
     std::string name = reader.requireAttribute("name");
     try {
-        if (name != "" && &materialsDB == &materialsDB.getDefault()) materialsDB.loadToDefault(name);
+        if (name != "") MaterialsDB::loadToDefault(name);
     } catch (Exception& err) {
         if(!draft) throw XMLException(reader, err.what());
     }
@@ -153,19 +153,19 @@ void Manager::loadMaterialLib(XMLReader& reader, MaterialsDB& materialsDB) {
 }
 
 
-void Manager::loadMaterial(XMLReader& reader, MaterialsDB& /*materialsDB*/)
+void Manager::loadMaterial(XMLReader& reader)
 {
     writelog(LOG_ERROR, "Loading XML material from C++ not implemented (ignoring material {})", reader.getAttribute<std::string>("name", "unknown"));
     reader.gotoEndOfCurrentTag();
 }
 
-void Manager::loadMaterials(XMLReader& reader, MaterialsDB& materialsDB)
+void Manager::loadMaterials(XMLReader& reader)
 {
     while (reader.requireTagOrEnd()) {
         if (reader.getNodeName() == "material")
-            loadMaterial(reader, materialsDB);
+            loadMaterial(reader);
         else if (reader.getNodeName() == "library")
-            loadMaterialLib(reader, materialsDB);
+            loadMaterialLib(reader);
         else
             throw XMLUnexpectedElementException(reader, "<material>");
     }
@@ -291,7 +291,7 @@ void Manager::loadScript(XMLReader& reader)
     return src ? const_cast<MaterialsDB&>(src->materialsDB) : MaterialsDB::getDefault();
 }*/
 
-void Manager::load(XMLReader& reader, MaterialsDB& materialsDB,
+void Manager::load(XMLReader& reader,
                    const LoadFunCallbackT& load_from,
                    const std::function<bool(const std::string& section_name)>& section_filter)
 {
@@ -326,7 +326,7 @@ void Manager::load(XMLReader& reader, MaterialsDB& materialsDB,
         if (reader.getNodeName() == TAG_NAME_DEFINES) {
             next = 1;
             if (section_filter(TAG_NAME_DEFINES)) {
-                if (!tryLoadFromExternal(reader, materialsDB, load_from)) loadDefines(reader);
+                if (!tryLoadFromExternal(reader, load_from)) loadDefines(reader);
             } else
                 reader.gotoEndOfCurrentTag();
             if (!reader.requireTagOrEnd()) return;
@@ -335,7 +335,7 @@ void Manager::load(XMLReader& reader, MaterialsDB& materialsDB,
         if (reader.getNodeName() == TAG_NAME_MATERIALS) {
             next = 2;
             if (section_filter(TAG_NAME_MATERIALS)) {
-                if (!tryLoadFromExternal(reader, materialsDB, load_from)) loadMaterials(reader, materialsDB);
+                if (!tryLoadFromExternal(reader, load_from)) loadMaterials(reader);
             } else
                 reader.gotoEndOfCurrentTag();
             if (!reader.requireTagOrEnd()) return;
@@ -344,8 +344,8 @@ void Manager::load(XMLReader& reader, MaterialsDB& materialsDB,
         if (reader.getNodeName() == TAG_NAME_GEOMETRY) {
             next = 3;
             if (section_filter(TAG_NAME_GEOMETRY)) {
-                if (!tryLoadFromExternal(reader, materialsDB, load_from)) {
-                    GeometryReader greader(*this, reader, materialsDB);
+                if (!tryLoadFromExternal(reader, load_from)) {
+                    GeometryReader greader(*this, reader);
                     loadGeometry(greader);
                 }
             } else
@@ -356,7 +356,7 @@ void Manager::load(XMLReader& reader, MaterialsDB& materialsDB,
         if (reader.getNodeName() == TAG_NAME_GRIDS) {
             next = 4;
             if (section_filter(TAG_NAME_GRIDS)) {
-                if (!tryLoadFromExternal(reader, materialsDB, load_from)) loadGrids(reader);
+                if (!tryLoadFromExternal(reader, load_from)) loadGrids(reader);
             } else
                 reader.gotoEndOfCurrentTag();
             if (!reader.requireTagOrEnd()) return;
@@ -365,7 +365,7 @@ void Manager::load(XMLReader& reader, MaterialsDB& materialsDB,
         if (reader.getNodeName() == TAG_NAME_SOLVERS) {
             next = 5;
             if (section_filter(TAG_NAME_SOLVERS)) {
-                if (!tryLoadFromExternal(reader, materialsDB, load_from)) loadSolvers(reader);
+                if (!tryLoadFromExternal(reader, load_from)) loadSolvers(reader);
             } else
                 reader.gotoEndOfCurrentTag();
             if (!reader.requireTagOrEnd()) return;
@@ -374,7 +374,7 @@ void Manager::load(XMLReader& reader, MaterialsDB& materialsDB,
         if (reader.getNodeName() == TAG_NAME_CONNECTS) {
             next = 6;
             if (section_filter(TAG_NAME_CONNECTS)) {
-                if (!tryLoadFromExternal(reader, materialsDB, load_from)) loadConnects(reader);
+                if (!tryLoadFromExternal(reader, load_from)) loadConnects(reader);
             } else
                 reader.gotoEndOfCurrentTag();
             if (!reader.requireTagOrEnd()) return;
@@ -383,7 +383,7 @@ void Manager::load(XMLReader& reader, MaterialsDB& materialsDB,
         if (reader.getNodeName() == TAG_NAME_SCRIPT) {
             next = 7;
             if (section_filter(TAG_NAME_SCRIPT)) {
-                if (!tryLoadFromExternal(reader, materialsDB, load_from)) loadScript(reader);
+                if (!tryLoadFromExternal(reader, load_from)) loadScript(reader);
             } else
                 reader.gotoEndOfCurrentTag();
             if (!reader.requireTagOrEnd()) return;

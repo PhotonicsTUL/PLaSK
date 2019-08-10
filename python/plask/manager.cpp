@@ -198,17 +198,15 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
 
     reader.setFilter(PythonXMLFilter(manager));
 
-    MaterialsDB& materials = manager->materialsDB? *manager->materialsDB.get() : MaterialsDB::getDefault();
-
     try {
         if (filter == py::object()) {
-            manager->load(reader, materials, Manager::ExternalSourcesFromFile(filename));
+            manager->load(reader, Manager::ExternalSourcesFromFile(filename));
         } else {
             py::list sections = py::list(filter);
             auto filterfun = [sections](const std::string& section) -> bool {
                 return py::extract<bool>(sections.contains(section));
             };
-            manager->load(reader, materials, Manager::ExternalSourcesFromFile(filename), filterfun);
+            manager->load(reader, Manager::ExternalSourcesFromFile(filename), filterfun);
         }
     } catch (...) {
         py::delitem(manager->defs, py::str("self"));
@@ -342,10 +340,10 @@ void PythonManager::loadConnects(XMLReader& reader)
     }
 }
 
-void PythonManager::loadMaterialModule(XMLReader& reader, MaterialsDB& materialsDB) {
+void PythonManager::loadMaterialModule(XMLReader& reader) {
     std::string name = reader.requireAttribute("name");
     try {
-        if (name != "" && &materialsDB == &materialsDB.getDefault()) {
+        if (!name.empty()) {
             py::str modname(name);
             bool reload = PyDict_Contains(PyImport_GetModuleDict(), modname.ptr());
             py::object module = py::import(modname);
@@ -365,15 +363,15 @@ void PythonManager::loadMaterialModule(XMLReader& reader, MaterialsDB& materials
     reader.requireTagEnd();
 }
 
-void PythonManager::loadMaterials(XMLReader& reader, MaterialsDB& materialsDB)
+void PythonManager::loadMaterials(XMLReader& reader)
 {
     while (reader.requireTagOrEnd()) {
         if (reader.getNodeName() == "material")
-            loadMaterial(reader, materialsDB);
+            loadMaterial(reader);
         else if (reader.getNodeName() == "library")
-            loadMaterialLib(reader, materialsDB);
+            loadMaterialLib(reader);
         else if (reader.getNodeName() == "module")
-            loadMaterialModule(reader, materialsDB);
+            loadMaterialModule(reader);
         else
             throw XMLUnexpectedElementException(reader, "<material>");
     }
@@ -645,12 +643,10 @@ void register_manager() {
         u8"Manager(materials=None, draft=False)\n\n"
 
         u8"Args:\n"
-        u8"    materials: Material database to use.\n"
-        u8"               If *None*, the default material database is used.\n"
         u8"    draft (bool): If *True* then partially incomplete XML is accepted\n"
         u8"                  (e.g. non-existent materials are allowed).\n",
 
-        py::init<const shared_ptr<MaterialsDB>, bool>((py::arg("materials")=py::object(), py::arg("draft")=false)))
+        py::init<bool>(py::arg("draft")=false))
         .def("load", &PythonManager_load,
              u8"Load data from source.\n\n"
              u8"Args:\n"

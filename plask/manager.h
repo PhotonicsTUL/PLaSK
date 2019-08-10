@@ -36,7 +36,7 @@ class GeometryReader;
 struct PLASK_API Manager {
 
     /// Throw exception with information that loading from external sources is not supported or disallowed.
-    static void disallowExternalSources(Manager& PLASK_UNUSED(manager), const MaterialsDB& PLASK_UNUSED(materialsDB), const std::string& url, const std::string& section) {
+    static void disallowExternalSources(Manager& PLASK_UNUSED(manager), const std::string& url, const std::string& section) {
         throw Exception("Can't load section \"{0}\" from \"{1}\". Loading from external sources is not supported or disallowed.", section, url); }
 
     /// Allow to support reading some sections from other files.
@@ -74,7 +74,7 @@ struct PLASK_API Manager {
                                 ExternalSourcesFromFile* prev = nullptr)
             : originalFileName(originalFileName), currentSection(currentSection), prev(prev) {}
 
-        void operator()(Manager& manager, MaterialsDB&, const std::string& url, const std::string& section);
+        void operator()(Manager& manager, const std::string& url, const std::string& section);
 
     };
 
@@ -92,18 +92,17 @@ private:
         }
     };*/
 
-    /// Load section from external URL, throw exception in case of errors, takes as parameters: manager, materials database, URL and section name.
-    typedef std::function<void(Manager&, MaterialsDB&, const std::string&, const std::string&)> LoadFunCallbackT;
+    /// Load section from external URL, throw exception in case of errors, takes as parameters: manager, URL and section name.
+    typedef std::function<void(Manager&, const std::string&, const std::string&)> LoadFunCallbackT;
 
     /**
      * Try load section from external location.
      *
      * Check if current tag in @p reader has "from" attribute, and if it has, load section represented by this tag from external location using @p load_from.
      * @param reader XML data source
-     * @param materialsDB source of materials
      * @param load_from
      */
-    bool tryLoadFromExternal(XMLReader& reader, MaterialsDB& materialsDB, const LoadFunCallbackT& load_from);
+    bool tryLoadFromExternal(XMLReader& reader, const LoadFunCallbackT& load_from);
 
   protected:
 
@@ -117,19 +116,16 @@ private:
 
 
     /**
-     * Load binary material library
+     * Load binary material library to default database
      * @param reader reader to read from
-     * @param materialsDB materials database, which was passed to load method
      */
-    void loadMaterialLib(XMLReader& reader, MaterialsDB& materialsDB);
+    void loadMaterialLib(XMLReader& reader);
 
     /**
-     * Load one material using @p reader.
+     * Load one material using @p reader to default database.
      * @param reader reader to read from
-     * @param materialsDB materials database, which was passed to load method
-     *  (in case of using material database, you can convert @p materialsDB back to MaterialsDB using Manager::getMaterialsDBfromSource)
      */
-    virtual void loadMaterial(XMLReader& reader, MaterialsDB& materialsDB);
+    virtual void loadMaterial(XMLReader& reader);
 
   public:
 
@@ -236,7 +232,9 @@ private:
         ~SetAxisNames() { manager.axisNames = old; }
     };
 
-    Manager(): scriptline(0), axisNames(&AxisNames::axisNamesRegister.get("long, tran, vert")), draft(false) {}
+    explicit Manager(bool draft = false): scriptline(0), axisNames(&AxisNames::axisNamesRegister.get("long, tran, vert")), draft(draft) {}
+
+    virtual ~Manager() {}
 
     /**
      * Get path hints with given name.
@@ -350,12 +348,10 @@ private:
     virtual void loadGeometry(GeometryReader& reader);
 
     /**
-     * Load materials using @p reader.
+     * Load materials using @p reader to default database.
      * @param reader reader to read from, should point to @c \<materials> tag, after read it will be point to @c \</materials> tag
-     * @param materialsDB materials database, which was passed to load method
-     *  (in case of using material database, you can convert @p materialsDB back to MaterialsDB using Manager::getMaterialsDBfromSource)
      */
-    virtual void loadMaterials(XMLReader& reader, MaterialsDB& materialsDB);
+    virtual void loadMaterials(XMLReader& reader);
 
     /**
      * Load meshes and mesh generators using reader.
@@ -385,29 +381,26 @@ private:
     /**
      * Load geometry using XML reader.
      * @param XMLreader reader to read from, should point to @c \<geometry> tag, after read it will be point to @c \</geometry> tag
-     * @param materialsDB materials database, used to get materials by name for leafs
      * @param load_from_cb callback called to open external location, allow loading some section from another sources,
      *  this callback should read section from external XML source pointed by url (typically name of file) or throw exception
      */
-    void loadFromReader(XMLReader& XMLreader, MaterialsDB& materialsDB = MaterialsDB::getDefault(), const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
+    void loadFromReader(XMLReader& XMLreader, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
 
     /**
      * Load geometry from (XML) stream.
      * @param input stream to read from, with XML content, will be closed and deleted after read
-     * @param materialsDB materials database, used to get materials by name for leafs
      * @param load_from_cb callback called to open external location, allow loading some section from another sources,
      *  this callback should read section from external XML source pointed by url (typically name of file) or throw exception
      */
-    void loadFromStream(std::unique_ptr<std::istream>&& input, MaterialsDB& materialsDB = MaterialsDB::getDefault(), const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
+    void loadFromStream(std::unique_ptr<std::istream>&& input, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
 
     /**
      * Load geometry from string which consist of XML.
      * @param input_XML_str string with XML content
-     * @param materialsDB materials database, used to get materials by name for leafs
      * @param load_from_cb callback called to open external location, allow loading some section from another sources,
      *  this callback should read section from external XML source pointed by url (typically name of file) or throw exception
      */
-    void loadFromXMLString(const std::string &input_XML_str, MaterialsDB& materialsDB = MaterialsDB::getDefault(), const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
+    void loadFromXMLString(const std::string &input_XML_str, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
 
     /*
      * Read all objects up to end of XML tag and call functor(object) for each object which was read.
@@ -422,18 +415,16 @@ private:
     /**
      * Load geometry from XML file.
      * @param fileName name of XML file
-     * @param materialsDB materials database, used to get materials by name for leafs
      */
-    void loadFromFile(const std::string& fileName, MaterialsDB& materialsDB = MaterialsDB::getDefault());
+    void loadFromFile(const std::string& fileName);
 
     /**
      * Load geometry from C file object.
      * @param file open file object
-     * @param materialsDB materials database, used to get materials by name for leafs
      * @param load_from_cb callback called to open external location, allow loading some section from another sources,
      *  this callback should read section from external XML source pointed by url (typically name of file) or throw exception
      */
-    void loadFromFILE(FILE* file, MaterialsDB& materialsDB = MaterialsDB::getDefault(), const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
+    void loadFromFILE(FILE* file, const LoadFunCallbackT& load_from_cb = &disallowExternalSources);
 
 private:
     /**
@@ -501,12 +492,11 @@ public:
     /**
      * Load XML content.
      * @param XMLreader XML data source, to load
-     * @param materialsDB source of materials, typically materials database
      * @param load_from_cb callback called to open external location, allow loading some section from another sources,
      *  this callback should read section from external XML source pointed by url (typically name of file) or throw exception
      * @param section_filter predicate which returns @c true only if given section should be read, by default it always return @c true
      */
-    void load(XMLReader& XMLreader, MaterialsDB& materialsDB,
+    void load(XMLReader& XMLreader,
               const LoadFunCallbackT& load_from_cb = &disallowExternalSources,
               const std::function<bool(const std::string& section_name)>& section_filter = &acceptAllSections);
 
@@ -514,13 +504,12 @@ public:
      * Load one section from XML content.
      * @param XMLreader XML data source, to load
      * @param section_to_load name of section to load
-     * @param materialsDB source of materials, typically materials database
      * @param load_from_cb callback called to open external location, allow loading some section from another sources,
      *  this callback should read section from external XML source pointed by url (typically name of file) or throw exception
      */
-    void loadSection(XMLReader& XMLreader, const std::string& section_to_load, MaterialsDB& materialsDB,
+    void loadSection(XMLReader& XMLreader, const std::string& section_to_load,
               const LoadFunCallbackT& load_from_cb = &disallowExternalSources) {
-        load(XMLreader, materialsDB, load_from_cb, [&](const std::string& section_name) -> bool { return section_name == section_to_load; });
+        load(XMLreader, load_from_cb, [&](const std::string& section_name) -> bool { return section_name == section_to_load; });
     }
 
     /**
