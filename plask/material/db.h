@@ -58,7 +58,7 @@ struct PLASK_API MaterialsDB {
 
     /**
      * Object of this class (inherited from it) construct material instance.
-     * It produces materials of one type but with variouse composition and ammount of dopant.
+     * It produces materials of one type but with various composition and ammount of dopant.
      */
     struct PLASK_API MaterialConstructor {
 
