@@ -3,6 +3,12 @@
 #include <iostream>
 #include "../../exceptions.h"
 
+#ifdef PLASK__UTILS_PLUGIN_WINAPI
+    #include "../minimal_windows.h"
+#else
+    #include <dlfcn.h>
+#endif
+
 namespace plask {
 
 DynamicLibrary::DynamicLibrary(const std::string& filename, unsigned flags)
@@ -61,7 +67,7 @@ void DynamicLibrary::open(const std::string &filename, unsigned flags) {
     //std::unique_ptr<wchar_t> output_buffer(new wchar_t [length]);
     //MultiByteToWideChar(CP_UTF8, 0, filename.data(), filename.size(), output_buffer.get(), length);
     //handler = LoadLibraryW(output_buffer->get());
-    handler = LoadLibraryA(filename.c_str());
+    handler = (handler_t)LoadLibraryA(filename.c_str());
     if (!handler) {
         throw plask::Exception("Could not open dynamic library from file \"{0}\". {1}", filename, GetLastErrorStr());
     }
@@ -80,7 +86,7 @@ void DynamicLibrary::close() {
     if (!handler) return;
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
     if (unload) {
-        if (!FreeLibrary(handler))
+        if (!FreeLibrary((HINSTANCE)handler))
             throw plask::Exception("Can't close dynamic library: {0}", GetLastErrorStr());
     }
 #else
@@ -96,7 +102,7 @@ void * DynamicLibrary::getSymbol(const std::string &symbol_name) const {
 
     return
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
-        (void*) GetProcAddress(handler, symbol_name.c_str());
+        (void*) GetProcAddress((HINSTANCE)handler, symbol_name.c_str());
 #else
         dlsym(handler, symbol_name.c_str());
 #endif

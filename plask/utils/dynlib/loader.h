@@ -3,10 +3,8 @@
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   define PLASK__UTILS_PLUGIN_WINAPI
-#   include "../minimal_windows.h"
 #else
 #   define PLASK__UTILS_PLUGIN_DLOPEN
-#   include <dlfcn.h>
 #endif
 
 #include <string>
@@ -28,11 +26,11 @@ struct PLASK_API DynamicLibrary {
     };
 
     /// Type of system shared library handler.
-#ifdef PLASK__UTILS_PLUGIN_WINAPI
-    typedef HINSTANCE handler_t;
-#else
-    typedef void* handler_t;
-#endif
+//#ifdef PLASK__UTILS_PLUGIN_WINAPI
+//    typedef HINSTANCE handler_t;
+//#else
+    typedef void* handler_t;    // real type on windows is HINSTANCE, but it is a pointer (to struct), so we are going to cast it from/to void* to avoid indluding windows.h
+//#endif
 
 private:
     /// System shared library handler
@@ -183,6 +181,7 @@ public:
      * Release ownership over holded system library handler.
      * This does not close the library.
      * @return system library handler which ownership has been relased
+     *          (on windows it can be casted to HINSTANCE)
      */
     handler_t release();
 

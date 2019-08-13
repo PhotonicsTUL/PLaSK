@@ -1,7 +1,8 @@
 #ifndef PLASK_GETMAC_H
 #define PLASK_GETMAC_H
 
-// This file should not be included in any plask .h file because it can be not distributed to solvers' developers.
+// This file should not be included in any plask .h file because it can not be distributed to developers (of solvers).
+// (the second reason: it also includes windows.h on windows)
 
 #include <vector>
 #include <string>
