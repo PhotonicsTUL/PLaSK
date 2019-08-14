@@ -22,7 +22,7 @@ DynamicLibrary::DynamicLibrary(DynamicLibrary&& to_move) noexcept
     : handler(to_move.handler)
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
     , unload(to_move.unload)
-#endif    
+#endif
 { to_move.handler = 0; }
 
 DynamicLibrary::~DynamicLibrary() {

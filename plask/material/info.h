@@ -235,11 +235,11 @@ struct PLASK_API MaterialInfo {
     /// Name of parent class
     std::string parent;
 
-    private:
+  private:
     /// Information about properties.
     std::map<PROPERTY_NAME, PropertyInfo> propertyInfo;
 
-    public:
+  public:
 
     /**
      * Override all information about this by informations from @p to_override.
@@ -303,7 +303,7 @@ struct PLASK_API MaterialInfo {
         /// Parent database which is requested for all materials not described in this database
         const DB* parent;
 
-    public:
+      public:
 
         /**
          * Create database.

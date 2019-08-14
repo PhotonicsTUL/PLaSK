@@ -466,7 +466,7 @@ if(BUILD_PYTHON)
         set_target_properties(plask PROPERTIES LINK_FLAGS "${EXE_FLAGS}")
     endif()
 
-    set(plask_stubs _plask geometry mesh material flow)
+    set(plask_stubs _plask geometry mesh _material flow)
     foreach(stub ${plask_stubs})
         list(APPEND plask_stubs_files ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/python/plask/${stub}.py)
         list(APPEND plask_stubs_modules plask.${stub})

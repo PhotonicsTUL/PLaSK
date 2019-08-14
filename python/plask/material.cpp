@@ -13,6 +13,12 @@
 
 #include "python_util/raw_constructor.h"
 
+#if PY_VERSION_HEX >= 0x03000000
+#   define NEXT "__next__"
+#else
+#   define NEXT "next"
+#endif
+
 namespace plask { namespace python {
 
 namespace detail {
@@ -442,7 +448,7 @@ void registerSimpleMaterial(const std::string& name, py::object material_class, 
 }
 
 /**
- * Function registering custom complex material class to plask
+ * Function registering custom alloy material class to plask
  * \param name name of the material
  * \param material_class Python class object of the custom material
  * \param base base material specification
@@ -450,7 +456,7 @@ void registerSimpleMaterial(const std::string& name, py::object material_class, 
 void registerAlloyMaterial(const std::string& name, py::object material_class, const py::object& base)
 {
     auto constructor = plask::make_shared<PythonMaterialConstructor>(name, material_class, base, true);
-    MaterialsDB::getDefault().addComplex(constructor);
+    MaterialsDB::getDefault().addAlloy(constructor);
     material_class.attr("_factory") = py::object(constructor);
     material_class.attr("simple") = false;
 }
@@ -623,22 +629,6 @@ py::object Material_base(const Material* self) {
 }
 
 /**
- * \return the list of all materials in database
- */
-py::list MaterialsDB_list(const MaterialsDB& DB) {
-    py::list materials;
-    for (auto material: DB) materials.append(material->materialName);
-    return materials;
-}
-
-/**
- * \return iterator over registered material names
- */
-py::object MaterialsDB_iter(const MaterialsDB& DB) {
-    return MaterialsDB_list(DB).attr("__iter__")();
-}
-
-/**
  * \return true is the material with given name is in the database
  */
 bool MaterialsDB_contains(const MaterialsDB& DB, const std::string& name) {
@@ -646,8 +636,8 @@ bool MaterialsDB_contains(const MaterialsDB& DB, const std::string& name) {
     return false;
 }
 
-shared_ptr<MaterialsDB> MaterialsDB_copy(const MaterialsDB& DB) {
-    return make_shared<MaterialsDB>(DB);
+MaterialsDB* MaterialsDB_copy(const MaterialsDB& DB) {
+    return new MaterialsDB(DB);
 }
 
 
@@ -703,7 +693,7 @@ std::string Material__str__(const Material& self) {
 }
 
 std::string Material__repr__(const Material& self) {
-    return format("plask.materials.Material('{0}')", Material__str__(self));
+    return format("plask.material.Material('{0}')", Material__str__(self));
 }
 
 py::dict Material_composition(const Material& self) {
@@ -766,8 +756,8 @@ namespace detail {
 
 }
 
-py::dict getMaterialInfo(const std::string& name) {
-    plask::optional<MaterialInfo> minfo = MaterialInfo::DB::getDefault().get(name);
+py::dict getMaterialInfoForDB(const MaterialsDB& materialsdb, const std::string& name) {
+    plask::optional<MaterialInfo> minfo = materialsdb.info.get(name);
     py::dict result;
     if (!minfo) return result;
     detail::getPropertyInfo(result, *minfo, MaterialInfo::kind);
@@ -818,63 +808,140 @@ py::dict getMaterialInfo(const std::string& name) {
     return result;
 }
 
+py::dict getMaterialInfo(const std::string& name) {
+    return getMaterialInfoForDB(MaterialsDB::getDefault(), name);
+}
+
+bool MaterialIsAlloy(const std::string& material_name) {
+    return MaterialsDB::getDefault().isAlloy(material_name);
+}
+
+/**
+ * Iterator over material database
+ */
+struct MaterialsDBIterator {
+    MaterialsDB::const_iterator iterator;
+    const MaterialsDB::const_iterator end;
+
+    MaterialsDBIterator(const MaterialsDB& self): iterator(self.begin()), end(self.end()) {}
+
+    std::string next() {
+        if (iterator == end) {
+            PyErr_SetString(PyExc_StopIteration, "");
+            py::throw_error_already_set();
+        }
+        return (*(iterator++))->materialName;
+    }
+
+    static MaterialsDBIterator* iter(const MaterialsDB& self) {
+        return new MaterialsDBIterator(self);
+    }
+
+};
+
+/**
+ * Python Context manager for temporaty database
+ */
+struct TemporaryMaterialDatabase {
+
+    std::unique_ptr<MaterialsDB::TemporaryReplaceDefault> temporary;
+    bool copy;
+
+    TemporaryMaterialDatabase(bool copy): copy(copy) {}
+
+    MaterialsDB& enter() {
+        temporary.reset(new MaterialsDB::TemporaryReplaceDefault(copy? MaterialsDB::getDefault() : MaterialsDB()));
+        return temporary->toRevert;
+    }
+
+    void exit(const py::object&, const py::object&, const py::object&) {
+        temporary.reset();
+    }
+
+};
+
+TemporaryMaterialDatabase* saveMaterialDatabase(bool copy) {
+    return new TemporaryMaterialDatabase(copy);
+};
+
+
+
 void initMaterials() {
 
-    py::object materials_module { py::handle<>(py::borrowed(PyImport_AddModule("plask.material"))) };
-    py::scope().attr("material") = materials_module;
+    py::object materials_module { py::handle<>(py::borrowed(PyImport_AddModule("plask._material"))) };
+    py::scope().attr("_material") = materials_module;
     py::scope scope = materials_module;
 
-    scope.attr("__doc__") =
-        "Materials and material database.\n\n"
-    ;
+    py::def("getdb", &MaterialsDB::getDefault, "Get default database.", py::return_value_policy<py::reference_existing_object>());
 
-    py::class_<MaterialsDB, shared_ptr<MaterialsDB>, boost::noncopyable> materialsDB("MaterialsDB",
-        u8"Material database clMaterialsDB_copyass\n\n"
-        u8"Many semiconductor materials used in photonics are defined here. We have made\n"
-        u8"a significant effort to ensure their physical properties to be the most precise\n"
-        u8"as the current state of the art. However, you can derive an abstract class\n"
-        u8":class:`plask.Material` to create your own materials.\n"
-        ); materialsDB
-        .def("get_default", &MaterialsDB::getDefault, "Get default database.", py::return_value_policy<py::reference_existing_object>())
-        .staticmethod("get_default")
-        .def("load", &MaterialsDB::loadToDefault,
-             u8"Load materials from library ``lib`` to default database.\n\n"
-             u8"This method can be used to extend the database with custom materials provided\n"
-             u8"in a binary library.\n\n"
-             u8"Args:\n"
-             u8"    lib (str): Library name to load (without an extension).\n",
-             py::arg("lib"))
-        .staticmethod("load") // TODO make it non-static
-        .def("load_all", &MaterialsDB::loadAllToDefault,
-             u8"Load all materials from specified directory to default database.\n\n"
-             u8"This method can be used to extend the database with custom materials provided\n"
-             u8"in binary libraries.\n\n"
-             u8"Args:\n"
-             u8"    dir (str): Directory name to load materials from.\n",
-             py::arg("dir")=plaskMaterialsPath())
-        .staticmethod("load_all") // TODO make it non-static
+    py::def("savedb", &saveMaterialDatabase, py::arg("copy")=true, py::return_value_policy<py::manage_new_object>(),
+            u8"Save existing material database.\n\n"
+            u8"This function returns context manager used to save the existing database.\n"
+            u8"On entering the context, the old saved database is returned.\n\n"
+            u8"Args:\n"
+            u8"    copy (bool): if True, the current database is copied to the temporary one.\n\n"
+            u8"Example:\n"
+            u8"    >>> with plask.material.savedb() as saved:\n"
+            u8"    >>>     plask.material.load('some_other_lib')\n");
+
+    py::def("load", &MaterialsDB::loadToDefault, py::arg("lib"),
+            u8"Load materials from library ``lib`` to default database.\n\n"
+            u8"This method can be used to extend the database with custom materials provided\n"
+            u8"in a binary library.\n\n"
+            u8"Args:\n"
+            u8"    lib (str): Library name to load (without an extension).\n");
+
+    py::def("load_all", &MaterialsDB::loadAllToDefault, py::arg("dir")=plaskMaterialsPath(),
+            u8"Load all materials from specified directory to default database.\n\n"
+            u8"This method can be used to extend the database with custom materials provided\n"
+            u8"in binary libraries.\n\n"
+            u8"Args:\n"
+            u8"    dir (str): Directory name to load materials from.\n");
+
+    py::def("info", &getMaterialInfo, py::arg("name"),
+            u8"Get information dictionary on built-in material.\n\n"
+            u8"Args:\n"
+            u8"    name (str): material name without doping amount and composition.\n"
+            u8"                (e.g. 'GaAs:Si', 'AlGaAs').");
+
+    py::def("is_alloy", &MaterialIsAlloy, py::arg("name"),
+            u8"Return ``True`` if the specified material is an alloy one.\n\n"
+            u8"Args:\n"
+            u8"    name (str): material name without doping amount and composition.\n"
+            u8"                (e.g. 'GaAs:Si', 'AlGaAs').");
+
+    py::class_<MaterialsDB, boost::noncopyable> materialsDB("MaterialsDB",
+        u8"Container of all materials"); materialsDB
         .def("get", py::raw_function(&MaterialsDB_get),
              u8"Get material of given name and doping.\n\n"
-             u8":rtype: Material\n"
-             )
-        .def("__call__", py::raw_function(&MaterialsDB_get), ":rtype: Material\n")
-        .add_property("all", &MaterialsDB_list, "List of all materials in the database.")
-        .def("__iter__", &MaterialsDB_iter)
-        .def("__contains__", &MaterialsDB_contains)
+             u8":rtype: Material\n" )
         .def("is_alloy", &MaterialsDB::isAlloy, py::arg("name"),
              u8"Return ``True`` if the specified material is an alloy one.\n\n"
              u8"Args:\n"
              u8"    name (str): material name without doping amount and composition.\n"
-             u8"                (e.g. 'GaAs:Si', 'AlGaAs')."
-            )
-        .def("info", &getMaterialInfo, py::arg("name"),
+             u8"                (e.g. 'GaAs:Si', 'AlGaAs').")
+        .def("info", &getMaterialInfoForDB, py::arg("name"),
              u8"Get information dictionary on built-in material.\n\n"
              u8"Args:\n"
              u8"    name (str): material name without doping amount and composition.\n"
-             u8"                (e.g. 'GaAs:Si', 'AlGaAs')."
-            )
-        .staticmethod("info")
-        .def("__copy__", &MaterialsDB_copy)
+             u8"                (e.g. 'GaAs:Si', 'AlGaAs').")
+        .def("__call__", py::raw_function(&MaterialsDB_get), ":rtype: Material\n")
+        .def("__iter__", &MaterialsDBIterator::iter, py::return_value_policy<py::manage_new_object>())
+        .def("__contains__", &MaterialsDB_contains)
+        .def("__copy__", &MaterialsDB_copy, py::return_value_policy<py::manage_new_object>())
+    ;
+
+    {
+        py::scope scope(materialsDB);
+        py::class_<MaterialsDBIterator, boost::noncopyable>("Iterator", py::no_init)
+            .def(NEXT, &MaterialsDBIterator::next)
+            .def("__iter__", pass_through)
+        ;
+    }
+
+    py::class_<TemporaryMaterialDatabase, boost::noncopyable>("SavedMaterialsContext", py::no_init)
+        .def("__enter__", &TemporaryMaterialDatabase::enter, py::return_value_policy<py::reference_existing_object>())
+        .def("__exit__", &TemporaryMaterialDatabase::exit)
     ;
 
     // Common material interface

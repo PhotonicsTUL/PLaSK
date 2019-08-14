@@ -70,11 +70,11 @@ class Material(unittest.TestCase):
         self.assertEqual( ptest.material_name("Al(0.2)GaAs_fake", material.db), "AlGaAs_fake" )
         self.assertEqual( ptest.material_VB("Al(0.2)GaAs_fake", material.db, 1.0), 2.0 )
 
-        print(material.db.all)
-        with self.assertRaises(ValueError): material.db.get("Al(0.2)GaAs:Np=1e14")
+        print(list(material.db))
+        with self.assertRaises(ValueError): material.get("Al(0.2)GaAs:Np=1e14")
 
-        print(material.db.all)
-        m1 = material.db.get("Al(0.2)GaAs:Dp=3.0")
+        print(list(material.db))
+        m1 = material.get("Al(0.2)GaAs:Dp=3.0")
         self.assertEqual( m1.__class__, Material.AlGaAsDp )
         self.assertEqual( m1.name, "AlGaAs:Dp" )
         self.assertEqual( m1.VB(1.0), 3.0 )
@@ -91,7 +91,7 @@ class Material(unittest.TestCase):
         for k in correct:
             self.assertAlmostEqual( m2.composition[k], correct[k] )
 
-        self.assertEqual( m1, material.db.get("Al(0.2)GaAs:Dp=3.0") )
+        self.assertEqual( m1, material.get("Al(0.2)GaAs:Dp=3.0") )
         self.assertNotEqual( m1, m2 )
 
         self.assertEqual( ptest.material_name("Al(0.2)GaAs:Dp=3.0", material.db), "AlGaAs:Dp" )
@@ -109,9 +109,9 @@ class Material(unittest.TestCase):
 
     def testExistingMaterial(self):
         '''Test if existing materials works correctly'''
-        m = material.db.get("MyMaterial")
-        self.assertEqual( material.db.get("MyMaterial").name, "MyMaterial" )
-        self.assertEqual( material.db.get("MyMaterial").VB(1.0), 0.5 )
+        m = material.get("MyMaterial")
+        self.assertEqual( material.get("MyMaterial").name, "MyMaterial" )
+        self.assertEqual( material.get("MyMaterial").VB(1.0), 0.5 )
         self.assertEqual( ptest.material_name("MyMaterial", material.db), "MyMaterial" )
         self.assertEqual( ptest.material_VB("MyMaterial", material.db, 1.0), 0.5 )
         self.assertEqual( ptest.call_chi(m, 'B'), 1.0 )
@@ -120,7 +120,7 @@ class Material(unittest.TestCase):
 
 
     def testMaterialWithBase(self):
-        mm = material.db.get("MyMaterial")
+        mm = material.get("MyMaterial")
 
         @material.simple(mm)
         class WithBase(material.Material):
@@ -131,7 +131,7 @@ class Material(unittest.TestCase):
         self.assertEqual( m1.name, "WithBase" )
         self.assertEqual( m1.VB(1.0), 0.5 )
 
-        m2 = material.db.get("WithBase")
+        m2 = material.get("WithBase")
         self.assertEqual( m2.name, "WithBase" )
         self.assertEqual( m2.VB(2.0), 1.0 )
 
@@ -147,7 +147,7 @@ class Material(unittest.TestCase):
                 super(WithBase2, self).__init__(doping=1e18)
 
         m1 = WithBase2()
-        m2 = material.db('Al(0.2)GaAs:Si=1e18')
+        m2 = material.get('Al(0.2)GaAs:Si=1e18')
         self.assertEqual( m1.cond(), m2.cond() )
 
 
@@ -281,6 +281,21 @@ class Material(unittest.TestCase):
         self.assertAlmostEqual( m2.cond(), 0.50**2, 4 )
         self.assertAlmostEqual( m3.cond(), 0.75**2, 4 )
         self.assertIs( rect.material, get_material )
+
+    def testTemporaryDB(self):
+        @material.simple('semiconductor')
+        class Test(material.Material):
+            def A(self, T=300.):
+                return 1
+        with material.savedb() as saved:
+            @material.simple('semiconductor')
+            class Test(material.Material):
+                def A(self, T=300.):
+                    return 2
+            self.assertEqual( material.get('Test').A(), 2)
+            self.assertEqual( saved.get('Test').A(), 1)
+        self.assertEqual( material.get('Test').A(), 1)
+
 
 if __name__ == '__main__':
     test = unittest.main(exit=False)

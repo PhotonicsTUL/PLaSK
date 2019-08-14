@@ -106,11 +106,10 @@ def require_str_first_attr_path_component(path):
 
 def get_manager():
     if plask is None: return
-    materials = copy(plask.material.db)
-    manager = plask.Manager(materials, draft=True)
+    manager = plask.Manager(draft=True)
     if 'wl' not in manager.defs:
         def wl(mat, lam, T=300.):
-            try: nr = materials.get(mat).Nr(lam, T).real
+            try: nr = plask.material.get(mat).Nr(lam, T).real
             except: nr = 1.
             return 1e-3 * lam / nr
         plask._plask.__xml__globals['wl'] = wl

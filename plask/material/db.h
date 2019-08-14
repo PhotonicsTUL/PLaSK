@@ -8,6 +8,8 @@
 #include "../utils/system.h"
 #include "../utils/warnings.h"
 
+#include "info.h"
+
 namespace plask {
 
 /**
@@ -284,12 +286,15 @@ private:
     /// Map: material db key -> materials constructors object (with name)
     constructors_map_t constructors;
 
-    //static const constructors_map_t::mapped_type& iter_val(const constructors_map_t::value_type &pair) { return pair.second; }
+    // Static const constructors_map_t::mapped_type& iter_val(const constructors_map_t::value_type &pair) { return pair.second; }
     struct iter_val: public std::unary_function<const constructors_map_t::value_type&, const constructors_map_t::mapped_type&> {
         const constructors_map_t::mapped_type& operator()(const constructors_map_t::value_type &pair) const { return pair.second; }
     };
 
 public:
+
+    /// Info for this database
+    MaterialInfo::DB info;
 
     /// Iterator over material constructors (shared_ptr<shared_ptr<const MaterialConstructor>>).
     typedef boost::transform_iterator<iter_val, constructors_map_t::const_iterator> iterator;
@@ -488,13 +493,13 @@ public:
      * Add complex material (which require composition parsing) to DB. Replace existing material if there is one already in DB.
      * @param constructor object which can create material instance; must be created by operator new and material DB will call delete for it
      */
-    //void addComplex(const MaterialConstructor* constructor);
+    //void addAlloy(const MaterialConstructor* constructor);
 
     /**
      * Add complex material (which require composition parsing) to DB. Replace existing material if there is one already in DB.
      * @param constructor object which can create material instance
      */
-    void addComplex(shared_ptr<MaterialConstructor> constructor);
+    void addAlloy(shared_ptr<MaterialConstructor> constructor);
 
     /**
      * Add material to DB. Replace existing material if there is one already in DB.
@@ -506,7 +511,7 @@ public:
     template <typename MaterialType, bool requireComposition, bool requireDopant>
     void add(const std::string& name) {
         if (requireComposition)
-            addComplex(plask::make_shared< DelegateMaterialConstructor<MaterialType, requireComposition, requireDopant> >(name));
+            addAlloy(plask::make_shared< DelegateMaterialConstructor<MaterialType, requireComposition, requireDopant> >(name));
         else
             addSimple(plask::make_shared< DelegateMaterialConstructor<MaterialType, requireComposition, requireDopant> >(name));
     }

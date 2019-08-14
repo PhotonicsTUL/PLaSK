@@ -212,9 +212,9 @@ class StubCreator(object):
         self.emit("", 0)
 
     def create_stub_from_module(self, module_name):
-        mod = __import__(module_name, {}, {}, [])
-        for part in module_name.split(".")[1:]:
-            mod = getattr(mod, part)
+        package, module = module_name.rsplit('.', 1)
+        mod = __import__(package, {}, {}, [module])
+        mod = getattr(mod, module)
         doc = getattr(mod, "__doc__")
         #if doc:
         #    self.emit_doc(doc)

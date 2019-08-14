@@ -225,9 +225,9 @@ class Manager(_plask.Manager):
     Dictionary of all named geometries and geometry objects.
     """
 
-    def load(self, source, vars, sections=None):
+    def load(self, source, vars={}, sections=None):
         """
-        load(self, source, vars, sections=None)
+        load(self, source, vars={}, sections=None)
 
             Load data from source.
 

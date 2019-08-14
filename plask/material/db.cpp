@@ -105,9 +105,10 @@ MaterialsDB& MaterialsDB::getDefault() {
 }
 
 void MaterialsDB::loadToDefault(const std::string &fileName_mainpart) {
-    //DynamicLibraries::defaultLoad(plaskMaterialsPath() + fileName_mainpart + DynamicLibrary::DEFAULT_EXTENSION);
-    DynamicLibrary(boost::filesystem::absolute(fileName_mainpart + DynamicLibrary::DEFAULT_EXTENSION, boost::filesystem::current_path()).string<std::string>(),
-                   DynamicLibrary::DONT_CLOSE);
+    DynamicLibraries::defaultLoad(boost::filesystem::absolute(fileName_mainpart + DynamicLibrary::DEFAULT_EXTENSION, boost::filesystem::current_path()).string<std::string>(),
+                                  DynamicLibrary::DONT_CLOSE);
+    // DynamicLibrary(boost::filesystem::absolute(fileName_mainpart + DynamicLibrary::DEFAULT_EXTENSION, boost::filesystem::current_path()).string<std::string>(),
+    //                 DynamicLibrary::DONT_CLOSE);
 }
 
 void MaterialsDB::loadAllToDefault(const std::string& dir) {
@@ -304,11 +305,11 @@ void MaterialsDB::addSimple(shared_ptr<MaterialConstructor> constructor) {
     constructors[constructor->materialName] = constructor;
 }
 
-/*void MaterialsDB::addComplex(const MaterialConstructor* constructor) {
+/*void MaterialsDB::addAlloy(const MaterialConstructor* constructor) {
     constructors[dbKey(constructor->materialName)] = shared_ptr<const MaterialConstructor>(constructor);
 }*/
 
-void MaterialsDB::addComplex(shared_ptr<MaterialConstructor> constructor) {
+void MaterialsDB::addAlloy(shared_ptr<MaterialConstructor> constructor) {
     constructors[complexDbKey(constructor->materialName)] = constructor;
 }
 

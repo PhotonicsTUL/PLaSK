@@ -1,4 +1,5 @@
 #include "info.h"
+#include "db.h"
 
 #include <limits>
 
@@ -110,8 +111,7 @@ MaterialInfo::PropertyInfo& MaterialInfo::PropertyInfo::setArgumentRange(Materia
 }
 
 MaterialInfo::DB& MaterialInfo::DB::getDefault() {
-    static MaterialInfo::DB defaultInfoDB;
-    return defaultInfoDB;
+    return MaterialsDB::getDefault().info;
 }
 
 MaterialInfo & MaterialInfo::DB::add(const std::string &materialName, const std::string &parentMaterial) {

@@ -42,8 +42,8 @@ class AlGaAsDp(material.Material):
 
 @material.simple()
 class WithChar(material.Material):
-    def chi(self, T, e, p):
-        print("WithChar: %s" % p)
+    def chi(self, T, e=0., point='G'):
+        print("WithChar: %s" % point)
         return 1.5
 
 

@@ -433,7 +433,7 @@ void PythonManager::loadMaterial(XMLReader& reader) {
         }
 
         if (alloy)
-            MaterialsDB::getDefault().addComplex(constructor);
+            MaterialsDB::getDefault().addAlloy(constructor);
         else
             MaterialsDB::getDefault().addSimple(constructor);
     } catch (py::error_already_set&) {

@@ -231,11 +231,13 @@ class MaterialPlot(QWidget):
                 externals = [e for e in self.model.entries if isinstance(e, MaterialsModel.External)]
                 for ext in externals:
                     if ext.what == 'library':
+                        #TODO load this into temporary material database (need to resolve single dlopen)
                         try:
-                            plask.material.db.load(ext.name)
+                            plask.material.load(ext.name)
                         except RuntimeError:
                             pass
                     elif ext.what == 'module':
+                        #TODO load this into temporary material database
                         sys.path.insert(0, '.')
                         try:
                             if ext.name in sys.modules:
@@ -246,9 +248,11 @@ class MaterialPlot(QWidget):
                             pass
                         finally:
                             sys.path = sys.path[1:]
-            self.materialdb = copy(plask.material.db)
-            self.manager = plask.Manager(self.materialdb, draft=True)
-            self.manager.load(self._get_xpl_content())
+            with plask.material.savedb():
+                self.materialdb = copy(plask.material.db)
+                manager = plask.Manager(draft=True)
+                manager.load(self._get_xpl_content())
+                del manager
             material_blacklist = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor', 'air']
             material_list.extend(sorted((mat for mat in plask.material.db
                                          if mat not in material_list and mat not in material_blacklist),
@@ -313,7 +317,7 @@ class MaterialPlot(QWidget):
         property_name = str(self.param.currentText())
         # TODO add browsing model if info can be included in XML
         try:
-            info = plask.material.db.info(material_name)[property_name]
+            info = self.materialdb.info(material_name)[property_name]
         except (ValueError, KeyError, AttributeError):
             info = None
         self.info.clear()
