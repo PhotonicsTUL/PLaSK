@@ -30,7 +30,11 @@ def print_exc():
 
 ## ## plask.material ## ##
 
-from . import _material
+try:
+    from . import _material
+except ImportError:
+    from ._plask import _material
+
 from . import material
 
 

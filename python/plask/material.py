@@ -8,7 +8,11 @@ as the current state of the art. However, you can derive an abstract class
 :class:`plask.Material` to create your own materials.
 """
 
-from . import _material
+try:
+    from . import _material
+except ImportError:
+    from ._plask import _material
+
 from ._material import *
 
 
