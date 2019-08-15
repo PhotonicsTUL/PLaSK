@@ -15,7 +15,7 @@
 namespace plask {
 
 /**
- * Hold opened shared library. Portable, thin wrapper over system handler to library.
+ * Hold opened shared library. Portable, thin wrapper over system handle to library.
  *
  * Close holded library in destructor.
  */
@@ -25,21 +25,23 @@ struct PLASK_API DynamicLibrary {
         DONT_CLOSE = 1  ///< if this flag is set DynamicLibrary will not close the library, but it will be closed on application exit
     };
 
-    /// Type of system shared library handler.
+    /// Type of system shared library handle.
 //#ifdef PLASK__UTILS_PLUGIN_WINAPI
-//    typedef HINSTANCE handler_t;
+//    typedef HINSTANCE handle_t;
 //#else
-    typedef void* handler_t;    // real type on windows is HINSTANCE, but it is a pointer (to struct), so we are going to cast it from/to void* to avoid indluding windows.h
+    typedef void* handle_t;    // real type on windows is HINSTANCE, but it is a pointer (to struct), so we are going to cast it from/to void* to avoid indluding windows.h
 //#endif
 
 private:
-    /// System shared library handler
-    handler_t handler;
+    /// System shared library handle
+    handle_t handle;
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
-    bool unload;    // true if lib. should be unloaded, destructor just don't call FreeLibrary if this is false, undefined when handler == 0
+    bool unload;    // true if lib. should be unloaded, destructor just don't call FreeLibrary if this is false, undefined when handle == 0
 #endif
 
 public:
+
+    void* getHandle() const { return handle; }
 
     static constexpr const char* DEFAULT_EXTENSION =
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
@@ -89,7 +91,7 @@ public:
      * @param to_swap library to swap with
      */
     void swap(DynamicLibrary& to_swap) noexcept {
-        std::swap(handler, to_swap.handler);
+        std::swap(handle, to_swap.handle);
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
         std::swap(unload, to_swap.unload);
 #endif
@@ -167,32 +169,32 @@ public:
      * Check if library is already open.
      * @return @c true only if library is already open
      */
-    bool isOpen() const { return handler != 0; }
+    bool isOpen() const { return handle != 0; }
 
     /**
-     * Get system handler.
+     * Get system handle.
      *
-     * Type of result is system specyfic (DynamicLibrary::handler_t).
-     * @return system handler
+     * Type of result is system specyfic (DynamicLibrary::handle_t).
+     * @return system handle
      */
-    handler_t getSystemHandler() const { return handler; }
+    handle_t getSystemHandler() const { return handle; }
 
     /**
-     * Release ownership over holded system library handler.
+     * Release ownership over holded system library handle.
      * This does not close the library.
-     * @return system library handler which ownership has been relased
+     * @return system library handle which ownership has been relased
      *          (on windows it can be casted to HINSTANCE)
      */
-    handler_t release();
+    handle_t release();
 
     /**
      * Compare operator, defined to allow store dynamic libriaries in standard containers which require this.
      */
     bool operator<(const DynamicLibrary& other) const {
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
-        return this->handler < other.handler || (this->handler == other.handler && !this->unload && other.unload);
+        return this->handle < other.handle || (this->handle == other.handle && !this->unload && other.unload);
 #else
-        return this->handler < other.handler;
+        return this->handle < other.handle;
 #endif
     }
 
@@ -201,9 +203,9 @@ public:
      */
     bool operator == (const DynamicLibrary& other) const {
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
-        return (this->handler == other.handler) && (this->unload == other.unload);
+        return (this->handle == other.handle) && (this->unload == other.unload);
 #else
-        return this->handler == other.handler;
+        return this->handle == other.handle;
 #endif
     }
 
@@ -219,7 +221,7 @@ inline void swap(plask::DynamicLibrary& a, plask::DynamicLibrary& b) noexcept { 
 /// hash method, allow to store dynamic libraries in hash maps
 template<>
 struct hash<plask::DynamicLibrary> {
-    std::hash<plask::DynamicLibrary::handler_t> h;
+    std::hash<plask::DynamicLibrary::handle_t> h;
 public:
     std::size_t operator()(const plask::DynamicLibrary &s) const {
         return h(s.getSystemHandler());

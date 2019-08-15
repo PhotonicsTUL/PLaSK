@@ -40,31 +40,37 @@ air = get("air")
 
 Air = lambda: air
 
-_material.load_all()
+_material.load_all_libraries()
 update_factories()
 
 
-def load(lib):
+def load_library(lib):
     """
-    Load material library from file.
+    Load material library from file to database.
+
+    Mind that this function will load each library only once (even if
+    the database was cleared).
 
     Args:
         lib (str): Library to load without the extension (.so or .dll).
     """
-    _material.load(lib)
+    _material.load_library(lib)
     update_factories()
 
-def load_all(lib):
+def load_all_libraries(lib):
     """
-    Load all materials from specified directory to default database.
+    Load all materials from specified directory to database.
 
     This method can be used to extend the database with custom materials provided
     in binary libraries.
 
+    Mind that this function will load each library only once (even if
+    the database was cleared).
+
     Args:
         dir (str): Directory name to load materials from.
     """
-    _material.load_all(lib)
+    _material.load_all_libraries(lib)
     update_factories()
 
 
@@ -86,6 +92,8 @@ class simple(object):
     def __call__(self, cls):
         if 'name' not in cls.__dict__: cls.name = cls.__name__
         _material._register_material_simple(cls.name, cls, self.base)
+        try: db._registered.append(cls.name)
+        except: pass
         return cls
 
 
@@ -107,6 +115,8 @@ class alloy(object):
     def __call__(self, cls):
         if 'name' not in cls.__dict__: cls.name = cls.__name__
         _material._register_material_alloy(cls.name, cls, self.base)
+        try: db._registered.append(cls.name)
+        except: pass
         return cls
 
 class complex(alloy):

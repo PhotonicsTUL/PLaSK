@@ -12,6 +12,8 @@
 # GNU General Public License for more details.
 
 import re
+from copy import copy
+
 from lxml import etree as ElementTree
 from collections import OrderedDict
 import itertools
@@ -165,6 +167,12 @@ ELEMENT_GROUPS = (('Al', 'Ga', 'In'), ('N', 'P', 'As', 'Sb', 'Bi'))
 
 
 elements_re = re.compile(r"([A-Z][a-z]*)(?:\((\d*\.?\d*)\))?")
+
+
+if plask is not None:
+    DB = copy(plask.material.db)
+else:
+    DB = []
 
 
 def parse_material_components(material, alloy=None):
@@ -390,7 +398,7 @@ class MaterialsModel(TableModel):
             if role == Qt.UserRole:
                 return True
             if role == Qt.ToolTipRole:
-                return "Check this box if material is a generic alloy (i.e. alloy material, which you can specify " \
+                return "Check this box if material is a include_generic alloy (i.e. alloy material, which you can specify " \
                        "composition of).\nIts name must then consist of compound elements symbols with optional "\
                        "label and dopant, separated by '_' and ':' respectively"
         return super(MaterialsModel, self).data(index, role)

@@ -42,6 +42,25 @@ struct PLASK_API MaterialsDB {
     static void loadAllToDefault(const std::string& dir = plaskMaterialsPath());
 
     /**
+     * Clear the database
+     */
+    void clear() {
+        constructors.clear();
+        info.clear();
+    }
+
+    /**
+     * Update with values from different database
+     * \param src source database
+     */
+    void update(const MaterialsDB& src) {
+        for (const auto& item: src.constructors) {
+            constructors[item.first] = item.second;
+        }
+        info.update(src.info);
+    }
+
+    /**
      * Helper which calls getDefault().add<MaterialType>([name]) in constructor.
      *
      * Creating global objects of this type allow to fill the default database.
@@ -278,7 +297,7 @@ struct PLASK_API MaterialsDB {
 
 
 
-private:
+  private:
 
     /// Type for map: material db key -> materials constructors object (with name)
     typedef std::map<std::string, shared_ptr<const MaterialConstructor> > constructors_map_t;

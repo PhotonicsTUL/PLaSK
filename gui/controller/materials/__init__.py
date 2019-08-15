@@ -9,8 +9,14 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import sys
+import os
 import weakref
 import itertools
+from copy import copy
+from importlib import import_module, reload as reload_module
+
+from psutil.tests import reload_module
 
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
@@ -19,7 +25,7 @@ from ...qt import QtSignal
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
 from ...lib.highlighter.python27 import syntax
 from ..script import scheme
-from ...model.materials import MaterialsModel, material_html_help, parse_material_components, elements_re
+from ...model.materials import MaterialsModel, material_html_help, parse_material_components, elements_re, DB
 from ...utils.texteditor import TextEditor
 from ...utils.widgets import HTMLDelegate, table_last_col_fill, EDITOR_FONT, table_edit_shortcut, CheckBoxDelegate
 from ...utils.qsignals import BlockQtSignals
@@ -135,31 +141,39 @@ class MaterialsComboBox(QComboBox):
 
     editingFinished = QtSignal()
 
-    def __init__(self, parent=None, materials_model=None, material_list=None, defines_model=None, popup_select_cb=None):
+    def __init__(self, parent=None, materials_model=None, defines_model=None, popup_select_cb=None,
+                 limit_model=0, include_generic=False, editable=True, show_popup=True):
         """
         :param parent: Qt Object parent
-        :param material_list: list of materials to add
         :param defines_model: defines model used to completion
         :param popup_select_cb: called after selecting components in ComponentsPopup
                (it can be called after deleting internal QComboBox)
+        :param limit_model: maximum number of items from model
+        :param include_generic: if True, generic materials are included
+        :param editable: if True, material can be manually edited
+        :param show_popup: if True, the composition popup can be shown
         """
         super(MaterialsComboBox, self).__init__(parent)
-        if materials_model is not None:
+        if materials_model is not None and editable:
             line_edit = MaterialLineEdit(self, materials_model, defines_model)
             self.setLineEdit(line_edit)
         else:
             line_edit = self.lineEdit()
+        material_list = self.append_materials(materials_model, limit_model, include_generic)
         self.popup_select_cb = popup_select_cb
         self.setEditable(True)
         self.setInsertPolicy(QComboBox.NoInsert)
         if defines_model is not None:
             completer = get_defines_completer(defines_model, parent, material_list)
-            completer.activated.connect(self.show_components_popup)
-            line_edit.setCompleter(completer)
-        if material_list:
-            self.addItems(material_list)
-            self.setMaxVisibleItems(len(material_list))
-        self.currentIndexChanged[str].connect(self.show_components_popup)
+            if show_popup:
+                completer.activated.connect(self.show_components_popup)
+            if editable:
+                line_edit.setCompleter(completer)
+            else:
+                self.setEditable(False)
+        self.setMaxVisibleItems(len(material_list))
+        if show_popup:
+            self.currentIndexChanged[str].connect(self.show_components_popup)
         self.material_edit_popup = None
 
     def focusOutEvent(self, event):
@@ -182,15 +196,48 @@ class MaterialsComboBox(QComboBox):
         if list_to_append:
             if insert_separator and self.count() > 0: self.insertSeparator(self.count())
             self.addItems(list_to_append)
+        return list_to_append
 
-    def append_materials_from_model(self, material_model, insert_separator=True):
-        self.append_list([e.name for e in material_model.entries if isinstance(e, MaterialsModel.Material)],
-                         insert_separator)
-
-    def append_materials_from_db(self, db=None, insert_separator=True):
-        self.append_list([m for m in sorted(db if db is not None else plask.material.db, key=lambda x: x.lower())
-                          if m not in BASE_MATERIALS], True)
-        self.append_list(BASE_MATERIALS, insert_separator)
+    def append_materials(self, material_model, limit_model=0, include_generic=False):
+        material_list = []
+        if include_generic:
+            material_list.extend(self.append_list(BASE_MATERIALS))
+        model_materials = set()
+        if material_model:
+            if limit_model:
+                entries = material_model.entries[:limit_model]
+            else:
+                entries = material_model.entries
+            for material in entries:
+                if isinstance(material, MaterialsModel.External):
+                    if plask is not None:
+                        if material.what == 'library':
+                            try:
+                                with plask.material.savedb(False):
+                                    plask.material.load_library(material.name)
+                                    model_materials |= set(plask.material.db)
+                            except RuntimeError:
+                                pass
+                        elif material.what == 'module':
+                            plask.material.db._registered = []
+                            sys.path.insert(0, '.')
+                            try:
+                                if material.name in sys.modules:
+                                    reload_module(sys.modules[material.name])
+                                else:
+                                    import_module(material.name)
+                            except:
+                                pass
+                            else:
+                                model_materials |= set(plask.material.db._registered)
+                            finally:
+                                del sys.path[0]
+                else:
+                    model_materials.add(material.name)
+            material_list.extend(self.append_list(list(sorted(model_materials, key=lambda x: x.lower()))))
+        material_list.extend(self.append_list([m for m in sorted(DB, key=lambda x: x.lower())
+                             if m not in BASE_MATERIALS and m not in model_materials]))
+        return material_list
 
     def show_components_popup(self, text):
         pos = self.mapToGlobal(QPoint(0, self.height()))
@@ -244,24 +291,12 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
     def createEditor(self, parent, option, index):
         material_list = BASE_MATERIALS[:]
 
-        if plask:
-            material_list.extend(
-                sorted((self._format_material(mat) for mat in plask.material.db if mat not in material_list),
-                       key=lambda x: x.lower()))
-
-        material_list.extend(e.name for e in index.model().entries[0:index.row()])
-
-        if not material_list: return super(MaterialBaseDelegate, self).createEditor(parent, option, index)
-
-        combo = MaterialsComboBox(parent, self.materials_model, material_list, self.model,
-                                  popup_select_cb=lambda mat: index.model().setData(index, mat))
+        combo = MaterialsComboBox(parent, self.materials_model, self.model, limit_model=index.row(), show_popup=False,
+                                  include_generic=True, popup_select_cb=lambda mat: index.model().setData(index, mat))
         combo.setEditText(index.data())
-        with BlockQtSignals(combo):
-            try: combo.setCurrentIndex(material_list.index(index.data()))
-            except ValueError: pass
-            combo.insertSeparator(4)
-            combo.insertSeparator(len(material_list)-index.row()+1)
-            combo.setMaxVisibleItems(len(material_list))
+        # with BlockQtSignals(combo):
+        #     try: combo.setCurrentIndex(material_list.index(index.data()))
+        #     except ValueError: pass
         return combo
 
 

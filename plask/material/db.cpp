@@ -104,11 +104,19 @@ MaterialsDB& MaterialsDB::getDefault() {
     return defaultDb;
 }
 
+static void loadLibrary(const std::string& file_name) {
+    static std::map<void*, MaterialsDB> libraryCache;
+    void* key;
+    {
+        MaterialsDB::TemporaryClearDefault temporary;
+        key = DynamicLibraries::defaultLoad(file_name, DynamicLibrary::DONT_CLOSE).getHandle();
+        if (libraryCache.find(key) == libraryCache.end()) libraryCache[key] = MaterialsDB::getDefault();
+    }
+    MaterialsDB::getDefault().update(libraryCache[key]);
+}
+
 void MaterialsDB::loadToDefault(const std::string &fileName_mainpart) {
-    DynamicLibraries::defaultLoad(boost::filesystem::absolute(fileName_mainpart + DynamicLibrary::DEFAULT_EXTENSION, boost::filesystem::current_path()).string<std::string>(),
-                                  DynamicLibrary::DONT_CLOSE);
-    // DynamicLibrary(boost::filesystem::absolute(fileName_mainpart + DynamicLibrary::DEFAULT_EXTENSION, boost::filesystem::current_path()).string<std::string>(),
-    //                 DynamicLibrary::DONT_CLOSE);
+    loadLibrary(boost::filesystem::absolute(fileName_mainpart + DynamicLibrary::DEFAULT_EXTENSION, boost::filesystem::current_path()).string<std::string>());
 }
 
 void MaterialsDB::loadAllToDefault(const std::string& dir) {
@@ -118,7 +126,7 @@ void MaterialsDB::loadAllToDefault(const std::string& dir) {
         while (iter != end) {
             boost::filesystem::path p = iter->path();
             if (boost::filesystem::is_regular_file(p) && p.extension() == DynamicLibrary::DEFAULT_EXTENSION)
-                DynamicLibraries::defaultLoad(p.string(), DynamicLibrary::DONT_CLOSE);
+                loadLibrary(p.string());
             ++iter;
         }
     } else {

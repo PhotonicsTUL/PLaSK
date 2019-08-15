@@ -318,6 +318,23 @@ struct PLASK_API MaterialInfo {
         static DB& getDefault();
 
         /**
+         * Clear the database
+         */
+        void clear() {
+            materialInfo.clear();
+        }
+
+        /**
+         * Update with values from different database
+         * \param src source database
+        */
+        void update(const DB& src) {
+            for (const auto& item: src.materialInfo) {
+                materialInfo[item.first] = item.second;
+            }
+        }
+
+        /**
          * Add meta-informations about material to database.
          * @param materialName name of material to add
          * @param parentMaterial parent material, from which all properties all inherited (some may be overwritten)

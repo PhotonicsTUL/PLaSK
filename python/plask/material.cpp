@@ -865,6 +865,10 @@ TemporaryMaterialDatabase* saveMaterialDatabase(bool copy) {
 };
 
 
+void setMaterialDatabase(const MaterialsDB& src) {
+    MaterialsDB::getDefault() = src;
+}
+
 
 void initMaterials() {
 
@@ -873,6 +877,14 @@ void initMaterials() {
     py::scope scope = materials_module;
 
     py::def("getdb", &MaterialsDB::getDefault, "Get default database.", py::return_value_policy<py::reference_existing_object>());
+
+    py::def("setdb", &setMaterialDatabase, py::arg("src"),
+            u8"Set new material database.\n\n"
+            u8"This function sets a material database to a copy of the provided one.\n"
+            u8"It clears the old database, so use it with care. To temporarily switch\n"
+            u8"the database, use :func:`~plask.material.savedb`.\n\n"
+            u8"Args:\n"
+            u8"    src: New material database.\n");
 
     py::def("savedb", &saveMaterialDatabase, py::arg("copy")=true, py::return_value_policy<py::manage_new_object>(),
             u8"Save existing material database.\n\n"
@@ -884,17 +896,21 @@ void initMaterials() {
             u8"    >>> with plask.material.savedb() as saved:\n"
             u8"    >>>     plask.material.load('some_other_lib')\n");
 
-    py::def("load", &MaterialsDB::loadToDefault, py::arg("lib"),
+    py::def("load_library", &MaterialsDB::loadToDefault, py::arg("lib"),
             u8"Load materials from library ``lib`` to default database.\n\n"
             u8"This method can be used to extend the database with custom materials provided\n"
             u8"in a binary library.\n\n"
+            u8"Mind that this function will load each library only once (even if\n"
+            u8"the database was cleared).\n\n"
             u8"Args:\n"
             u8"    lib (str): Library name to load (without an extension).\n");
 
-    py::def("load_all", &MaterialsDB::loadAllToDefault, py::arg("dir")=plaskMaterialsPath(),
+    py::def("load_all_libraries", &MaterialsDB::loadAllToDefault, py::arg("dir")=plaskMaterialsPath(),
             u8"Load all materials from specified directory to default database.\n\n"
             u8"This method can be used to extend the database with custom materials provided\n"
             u8"in binary libraries.\n\n"
+            u8"Mind that this function will load each library only once (even if\n"
+            u8"the database was cleared).\n\n"
             u8"Args:\n"
             u8"    dir (str): Directory name to load materials from.\n");
 
@@ -925,6 +941,11 @@ void initMaterials() {
              u8"Args:\n"
              u8"    name (str): material name without doping amount and composition.\n"
              u8"                (e.g. 'GaAs:Si', 'AlGaAs').")
+        .def("clear", &MaterialsDB::clear, u8"Clear the database.")
+        .def("update", &MaterialsDB::update, py::arg("src"),
+             u8"Update the database  from a different one.\n\n"
+             u8"Args:\n"
+             u8"    src: Source database.\n")
         .def("__call__", py::raw_function(&MaterialsDB_get), ":rtype: Material\n")
         .def("__iter__", &MaterialsDBIterator::iter, py::return_value_policy<py::manage_new_object>())
         .def("__contains__", &MaterialsDB_contains)

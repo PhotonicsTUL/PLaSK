@@ -32,7 +32,7 @@ from ... import _DEBUG
 from ...qt.QtCore import *
 from ...qt.QtGui import *
 from ...qt.QtWidgets import *
-from ...model.materials import MATERIALS_PROPERTES, material_html_help, parse_material_components, MaterialsModel
+from ...model.materials import MATERIALS_PROPERTES, material_html_help, parse_material_components, MaterialsModel, DB
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import html_to_tex
 from ...utils.widgets import set_icon_size
@@ -73,7 +73,22 @@ class MaterialPlot(QWidget):
         self.model = model
         self.defines = defines
 
-        self.material = QComboBox()
+        from ...controller.materials import MaterialsComboBox
+
+        if plask is not None:
+            plask.material.setdb(DB)
+            manager = plask.Manager(draft=True)
+            try:
+                sys.path.insert(0, '.')
+                manager.load(self._get_xpl_content())
+            except:
+                pass
+            finally:
+                del sys.path[0]
+            self.materialdb = copy(plask.material.db)
+            del manager
+
+        self.material = MaterialsComboBox(self, model, editable=QLineEdit, show_popup=False)
         self.material.setEditable(False)
         self.material.setInsertPolicy(QComboBox.NoInsert)
         self.material.setMinimumWidth(180)
@@ -183,7 +198,6 @@ class MaterialPlot(QWidget):
         layout.addWidget(splitter)
         self.setLayout(layout)
 
-        self.update_materials()
         if init_material is not None:
             self.set_material(init_material, True)
             self.material.setDisabled(True)
@@ -220,49 +234,6 @@ class MaterialPlot(QWidget):
                     data += etree.tostring(element, encoding='unicode', pretty_print=True) + '\n'
         data += '</plask>\n'
         return data
-
-    def update_materials(self, *args, **kwargs):
-        text = self.material.currentText()
-        material_list = [] if self.model is None else [e.name for e in self.model.entries
-                                                       if not isinstance(e, MaterialsModel.External)]
-        sep = len(material_list)
-        if plask:
-            if self.model is not None:
-                externals = [e for e in self.model.entries if isinstance(e, MaterialsModel.External)]
-                for ext in externals:
-                    if ext.what == 'library':
-                        #TODO load this into temporary material database (need to resolve single dlopen)
-                        try:
-                            plask.material.load(ext.name)
-                        except RuntimeError:
-                            pass
-                    elif ext.what == 'module':
-                        #TODO load this into temporary material database
-                        sys.path.insert(0, '.')
-                        try:
-                            if ext.name in sys.modules:
-                                reload_module(sys.modules[ext.name])
-                            else:
-                                import_module(ext.name)
-                        except:
-                            pass
-                        finally:
-                            sys.path = sys.path[1:]
-            with plask.material.savedb():
-                self.materialdb = copy(plask.material.db)
-                manager = plask.Manager(draft=True)
-                manager.load(self._get_xpl_content())
-                del manager
-            material_blacklist = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor', 'air']
-            material_list.extend(sorted((mat for mat in plask.material.db
-                                         if mat not in material_list and mat not in material_blacklist),
-                                        key=lambda x: x.lower()))
-        self.material.clear()
-        self.material.addItems(material_list)
-        self.material.insertSeparator(sep)
-        if args:
-            self.material.setEditText(text)
-        self.material.setMaxVisibleItems(len(material_list) - (-1 if plask is None else 1))
 
     def param_changed(self, value):
         name = self.sender().objectName()

@@ -12,18 +12,18 @@
 namespace plask {
 
 DynamicLibrary::DynamicLibrary(const std::string& filename, unsigned flags)
-: handler(0) {
+: handle(0) {
     open(filename, flags);
 }
 
-DynamicLibrary::DynamicLibrary(): handler(0) {}
+DynamicLibrary::DynamicLibrary(): handle(0) {}
 
 DynamicLibrary::DynamicLibrary(DynamicLibrary&& to_move) noexcept
-    : handler(to_move.handler)
+    : handle(to_move.handle)
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
     , unload(to_move.unload)
 #endif
-{ to_move.handler = 0; }
+{ to_move.handle = 0; }
 
 DynamicLibrary::~DynamicLibrary() {
     close();
@@ -66,45 +66,45 @@ void DynamicLibrary::open(const std::string &filename, unsigned flags) {
     //const int length = MultiByteToWideChar(CP_UTF8, 0, filename.data(), filename.size(), 0, 0);
     //std::unique_ptr<wchar_t> output_buffer(new wchar_t [length]);
     //MultiByteToWideChar(CP_UTF8, 0, filename.data(), filename.size(), output_buffer.get(), length);
-    //handler = LoadLibraryW(output_buffer->get());
-    handler = (handler_t)LoadLibraryA(filename.c_str());
-    if (!handler) {
+    //handle = LoadLibraryW(output_buffer->get());
+    handle = (handle_t)LoadLibraryA(filename.c_str());
+    if (!handle) {
         throw plask::Exception("Could not open dynamic library from file \"{0}\". {1}", filename, GetLastErrorStr());
     }
     unload = !(flags & DONT_CLOSE);
 #else
     int mode = RTLD_NOW;
     if (flags & DONT_CLOSE) mode |= RTLD_NODELETE;
-    handler = dlopen(filename.c_str(), mode);
-    if (!handler) {
+    handle = dlopen(filename.c_str(), mode);
+    if (!handle) {
         throw plask::Exception("Could not open dynamic library from file \"{0}\". {1}", filename, dlerror());
     }
 #endif
 }
 
 void DynamicLibrary::close() {
-    if (!handler) return;
+    if (!handle) return;
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
     if (unload) {
-        if (!FreeLibrary((HINSTANCE)handler))
+        if (!FreeLibrary((HINSTANCE)handle))
             throw plask::Exception("Can't close dynamic library: {0}", GetLastErrorStr());
     }
 #else
-    if (dlclose(handler))
+    if (dlclose(handle))
         throw plask::Exception("Can't close dynamic library: {0}", dlerror());
 #endif
-    handler = 0;
+    handle = 0;
 }
 
 void * DynamicLibrary::getSymbol(const std::string &symbol_name) const {
-    if (!handler)
+    if (!handle)
         throw plask::Exception("Trying to get symbol from dynamic library which is not opened.");
 
     return
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
-        (void*) GetProcAddress((HINSTANCE)handler, symbol_name.c_str());
+        (void*) GetProcAddress((HINSTANCE)handle, symbol_name.c_str());
 #else
-        dlsym(handler, symbol_name.c_str());
+        dlsym(handle, symbol_name.c_str());
 #endif
 }
 
@@ -115,9 +115,9 @@ void *DynamicLibrary::requireSymbol(const std::string &symbol_name) const {
     return result;
 }
 
-DynamicLibrary::handler_t DynamicLibrary::release() {
-     handler_t r = handler;
-     handler = 0;
+DynamicLibrary::handle_t DynamicLibrary::release() {
+     handle_t r = handle;
+     handle = 0;
      return r;
 }
 

@@ -187,7 +187,7 @@ if (BLA_VENDOR STREQUAL "ATLAS" OR BLA_VENDOR STREQUAL "All")
  endif(NOT BLAS_LIBRARIES)
 endif (BLA_VENDOR STREQUAL "ATLAS" OR BLA_VENDOR STREQUAL "All")
 
-# BLAS in PhiPACK libraries? (requires generic BLAS lib, too)
+# BLAS in PhiPACK libraries? (requires include_generic BLAS lib, too)
 if (BLA_VENDOR STREQUAL "PhiPACK" OR BLA_VENDOR STREQUAL "All")
  if(NOT BLAS_LIBRARIES)
   check_fortran_libraries(
@@ -274,7 +274,7 @@ if (BLA_VENDOR STREQUAL "SGIMATH" OR BLA_VENDOR STREQUAL "All")
  endif(NOT BLAS_LIBRARIES)
 endif (BLA_VENDOR STREQUAL "SGIMATH" OR BLA_VENDOR STREQUAL "All")
 
-# BLAS in IBM ESSL library? (requires generic BLAS lib, too)
+# BLAS in IBM ESSL library? (requires include_generic BLAS lib, too)
 if (BLA_VENDOR STREQUAL "IBMESSL" OR BLA_VENDOR STREQUAL "All")
  if(NOT BLAS_LIBRARIES)
   check_fortran_libraries(
