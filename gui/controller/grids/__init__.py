@@ -10,6 +10,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import sys
 import weakref
 from lxml import etree
 
@@ -351,7 +352,7 @@ class GridsController(Controller):
             name = self._current_controller.model.name + '-' + self.selected_geometry
             xml = plask.XmlWriter({}, {name: mesh}, {})
             if _DEBUG:
-                print(xml)
+                print(xml, file=sys.stderr)
             mesh_model = construct_grid(self.model,
                                         etree.parse(StringIO(str(xml)), XML_parser).getroot().find('grids/mesh'))
             mesh_model.geometry_name = self.selected_geometry

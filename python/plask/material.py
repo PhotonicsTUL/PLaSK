@@ -92,8 +92,6 @@ class simple(object):
     def __call__(self, cls):
         if 'name' not in cls.__dict__: cls.name = cls.__name__
         _material._register_material_simple(cls.name, cls, self.base)
-        try: db._registered.append(cls.name)
-        except: pass
         return cls
 
 
@@ -115,12 +113,11 @@ class alloy(object):
     def __call__(self, cls):
         if 'name' not in cls.__dict__: cls.name = cls.__name__
         _material._register_material_alloy(cls.name, cls, self.base)
-        try: db._registered.append(cls.name)
-        except: pass
         return cls
 
 class complex(alloy):
     def __init__(self, base=None):
+        from . import print_log
         print_log('warning', "Decorator @material.complex is obsolete, use @material.alloy instead")
         super(complex, self).__init__(base)
 

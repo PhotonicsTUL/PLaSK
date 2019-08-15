@@ -135,9 +135,9 @@ def get_completions(document, text, block, column):
         try:
             prefix = PREAMBLE + document.stubs() + '\n'
             if _DEBUG:
-                print("------------------------------------------------------------------------------------")
-                print(prefix)
-                print("------------------------------------------------------------------------------------")
+                print("------------------------------------------------------------------------------------\n" +
+                      prefix + "\n------------------------------------------------------------------------------------",
+                      file=sys.stderr)
                 sys.stdout.flush()
             script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column, document.filename)
             items = [(c.name, _try_type(c)) for c in script.completions()
@@ -157,9 +157,9 @@ def get_docstring(document, text, block, column):
         try:
             prefix = PREAMBLE + document.stubs()
             if _DEBUG:
-                print("------------------------------------------------------------------------------------")
-                print(prefix)
-                print("------------------------------------------------------------------------------------")
+                print("------------------------------------------------------------------------------------\n" +
+                      prefix + "\n------------------------------------------------------------------------------------",
+                      file=sys.stderr)
                 sys.stdout.flush()
             script = jedi.Script(prefix+text, block+prefix.count('\n')+1, column, document.filename)
             defs = script.completions()
@@ -173,8 +173,7 @@ def get_docstring(document, text, block, column):
                         doc = defs[0].docstring()
                 if _DEBUG:
                     d = defs[0]
-                    print('{}: [{}] {} "{}..."'.format(d.name, d.type, d.description, doc[:8]))
-                    sys.stdout.flush()
+                    print('{}: [{}] {} "{}..."'.format(d.name, d.type, d.description, doc[:8]), file=sys.stderr)
                 if doc:
                     return name, doc
                 else:

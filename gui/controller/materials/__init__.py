@@ -10,13 +10,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 import sys
-import os
 import weakref
 import itertools
-from copy import copy
-from importlib import import_module, reload as reload_module
-
-from psutil.tests import reload_module
 
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
@@ -25,26 +20,16 @@ from ...qt import QtSignal
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
 from ...lib.highlighter.python27 import syntax
 from ..script import scheme
-from ...model.materials import MaterialsModel, material_html_help, parse_material_components, elements_re, DB
+from ...model.materials import MaterialsModel, BASE_MATERIALS, DB, \
+    material_html_help, parse_material_components, elements_re
 from ...utils.texteditor import TextEditor
 from ...utils.widgets import HTMLDelegate, table_last_col_fill, EDITOR_FONT, table_edit_shortcut, CheckBoxDelegate
 from ...utils.qsignals import BlockQtSignals
 from .. import Controller, select_index_from_info
 from ..defines import DefinesCompletionDelegate
-from ..table import table_and_manipulators, table_with_manipulators, TableActions
+from ..table import table_and_manipulators, TableActions
 from ..defines import get_defines_completer
 from .plot import show_material_plot
-
-
-try:
-    import plask
-except ImportError:
-    plask = None
-else:
-    import plask.material
-
-
-BASE_MATERIALS = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor']
 
 
 class ComponentsPopup(QFrame):
@@ -196,48 +181,20 @@ class MaterialsComboBox(QComboBox):
         if list_to_append:
             if insert_separator and self.count() > 0: self.insertSeparator(self.count())
             self.addItems(list_to_append)
-        return list_to_append
 
     def append_materials(self, material_model, limit_model=0, include_generic=False):
-        material_list = []
         if include_generic:
-            material_list.extend(self.append_list(BASE_MATERIALS))
-        model_materials = set()
+            self.append_list(BASE_MATERIALS)
         if material_model:
-            if limit_model:
-                entries = material_model.entries[:limit_model]
-            else:
-                entries = material_model.entries
-            for material in entries:
-                if isinstance(material, MaterialsModel.External):
-                    if plask is not None:
-                        if material.what == 'library':
-                            try:
-                                with plask.material.savedb(False):
-                                    plask.material.load_library(material.name)
-                                    model_materials |= set(plask.material.db)
-                            except RuntimeError:
-                                pass
-                        elif material.what == 'module':
-                            plask.material.db._registered = []
-                            sys.path.insert(0, '.')
-                            try:
-                                if material.name in sys.modules:
-                                    reload_module(sys.modules[material.name])
-                                else:
-                                    import_module(material.name)
-                            except:
-                                pass
-                            else:
-                                model_materials |= set(plask.material.db._registered)
-                            finally:
-                                del sys.path[0]
-                else:
-                    model_materials.add(material.name)
-            material_list.extend(self.append_list(list(sorted(model_materials, key=lambda x: x.lower()))))
-        material_list.extend(self.append_list([m for m in sorted(DB, key=lambda x: x.lower())
-                             if m not in BASE_MATERIALS and m not in model_materials]))
-        return material_list
+            model_materials = material_model.get_materials(limit_model)
+            self.append_list(model_materials)
+        default_materials = [m for m in sorted(DB, key=lambda x: x.lower())
+                             if m not in BASE_MATERIALS and m not in model_materials]
+        self.append_list(default_materials)
+        if include_generic:
+            return BASE_MATERIALS + model_materials + default_materials
+        else:
+            return model_materials + default_materials
 
     def show_components_popup(self, text):
         pos = self.mapToGlobal(QPoint(0, self.height()))
@@ -353,6 +310,8 @@ class MaterialsController(Controller):
         if material_selection_model is None: material_selection_model = MaterialsModel()
         Controller.__init__(self, document, material_selection_model)
 
+        material_selection_model.document = self.document
+
         self.selected_material = None
 
         self.splitter = QSplitter()
@@ -403,8 +362,9 @@ class MaterialsController(Controller):
         self.properties_table.setItemDelegateForColumn(2, self.unit_delegate)
         self.properties_table.setItemDelegateForColumn(3, self.help_delegate)
         #self.properties_table.setWordWrap(True)
-        self.prop_splitter.addWidget(table_with_manipulators(self.properties_table, self.splitter,
-                                                             title="Properties of the material"))
+        self.properties_widget, self.properties_toolbar = table_and_manipulators(self.properties_table, self.splitter,
+                                                                                 title="Material Properties")
+        self.prop_splitter.addWidget(self.properties_widget)
 
         self.materials_table.setSelectionMode(QAbstractItemView.SingleSelection)
         self.materials_table.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -476,28 +436,40 @@ class MaterialsController(Controller):
         self.propedit.hide()
         indexes = new_selection.indexes()
         if self.selected_material is not None:
-            self.selected_material.dataChanged.disconnect(self.property_data_changed)
-        if indexes and isinstance(self.model.entries[indexes[0].row()], MaterialsModel.Material):
-            #self.property_model.material = self.model.entries[indexes[0].row()]
+            try: self.selected_material.dataChanged.disconnect(self.property_data_changed)
+            except (AttributeError, TypeError): pass
+        if indexes:
             self.selected_material = self.model.entries[indexes[0].row()]
+            if isinstance(self.selected_material, MaterialsModel.External):
+                self.model.get_materials(indexes[0].row()+1)
+                self.properties_table.setSelectionMode(QAbstractItemView.NoSelection)
+                self.properties_toolbar.setEnabled(False)
+                self.properties_widget.setTitle("{} Properties".format(self.selected_material.what.title()))
+            else:
+                self.properties_table.setSelectionMode(QAbstractItemView.SingleSelection)
+                self.properties_toolbar.setEnabled(True)
+                self.properties_widget.setTitle("Material Properties")
             self.properties_table.setModel(self.selected_material)
             property_selection_model = self.properties_table.selectionModel()
             property_selection_model.selectionChanged.connect(self.property_selected)
             self.prop_splitter.setEnabled(True)
-            # self.properties_table.resizeColumnsToContents()
-            try:
-                self.properties_table.horizontalHeader().setResizeMode(2, QHeaderView.ResizeToContents)
-            except AttributeError:
-                self.properties_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
-            self.properties_table.resizeColumnToContents(1)
-            self.properties_table.resizeRowsToContents()
+            if isinstance(self.selected_material, MaterialsModel.Material):
+                try:
+                    self.properties_table.horizontalHeader().setResizeMode(0, QHeaderView.ResizeToContents)
+                    self.properties_table.horizontalHeader().setResizeMode(2, QHeaderView.ResizeToContents)
+                except AttributeError:
+                    self.properties_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+                    self.properties_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+                self.properties_table.resizeColumnToContents(1)
+                self.properties_table.resizeRowsToContents()
         else:
             #self.property_model.material = None
             self.selected_material = None
             self.properties_table.setModel(self.selected_material)
             self.prop_splitter.setEnabled(False)
         if self.selected_material is not None:
-            self.selected_material.dataChanged.connect(self.property_data_changed)
+            try: self.selected_material.dataChanged.connect(self.property_data_changed)
+            except AttributeError: pass
 
     def property_selected(self, new_selection, old_selection):
         indexes = new_selection.indexes()

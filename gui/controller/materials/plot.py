@@ -54,11 +54,6 @@ except ImportError:
 else:
     import plask.material
 
-from importlib import import_module
-try:
-    from importlib import reload as reload_module
-except ImportError:
-    reload_module = reload
 
 PARAMS = {'T': ['300', '400']}
 CURRENT_PROP = 'thermk'

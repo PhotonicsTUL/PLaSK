@@ -446,7 +446,7 @@ class BoundaryConditionsDialog(QDialog):
         xml = self.schema.to_xml(self.model.entries)
         xml = tostring(xml, encoding='utf8').decode('utf8') if xml is not None else ''
         if _DEBUG:
-            print(xml)
+            print(xml, file=sys.stderr)
         text = text[:-9] + """\
           <solvers>
             <local name="bconds" solver="{solver}" lib="fake_plask_gui_solver">

@@ -10,13 +10,18 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
+import sys
+import os
 import re
 from copy import copy
 
 from lxml import etree as ElementTree
 from collections import OrderedDict
 import itertools
+
+from importlib import import_module
+try: from importlib import reload as reload_module
+except ImportError: reload_module = reload
 
 from ..qt.QtCore import *
 from ..qt.QtGui import *
@@ -31,6 +36,9 @@ except ImportError:
     plask = None
 else:
     import plask.material
+
+
+BASE_MATERIALS = ['dielectric', 'liquid_crystal', 'metal', 'semiconductor']
 
 
 MATERIALS_PROPERTES = OrderedDict((
@@ -232,13 +240,15 @@ def material_unit(property_name):
 
 class MaterialsModel(TableModel):
 
-    class External(object):
+    class External(QAbstractTableModel):
 
         def __init__(self, materials_model, what, name='', comment=None):
+            super(MaterialsModel.External, self).__init__()
             self.materials_model = materials_model
             self.what = what
             self.name = name
             self.comment = comment
+            self.cache = None
 
         def add_to_xml(self, material_section_element):
             ElementTree.SubElement(material_section_element, self.what, {"name": self.name})
@@ -246,6 +256,23 @@ class MaterialsModel(TableModel):
         @property
         def base(self):
             return {'library': 'Binary Library', 'module': 'Python Module'}[self.what]
+
+        def columnCount(self, parent=QModelIndex()):
+            return 1
+
+        def headerData(self, col, orientation, role):
+            if orientation == Qt.Horizontal and role == Qt.DisplayRole and col == 0:
+                return 'Materials in the ' + self.what
+            return None
+
+        def rowCount(self, parent=QModelIndex()):
+            if self.cache is None: return 0
+            return len(self.cache)
+
+        def data(self, index, role=Qt.DisplayRole):
+            if not index.isValid() or self.cache is None: return None
+            if role == Qt.DisplayRole:
+                return self.cache[index.row()]
 
     class Material(TableModelEditMethods, QAbstractTableModel): #(InfoSource)
 
@@ -353,6 +380,7 @@ class MaterialsModel(TableModel):
 
     def __init__(self, parent=None, info_cb=None, *args):
         super(MaterialsModel, self).__init__(u'materials', parent, info_cb, *args)
+        self.document = None
 
     def set_xml_element(self, element, undoable=True):
         new_entries = []
@@ -417,11 +445,20 @@ class MaterialsModel(TableModel):
         raise IndexError(u'column number for MaterialsModel should be 0, 1, 2, or 3, but is {}'.format(col))
 
     def set(self, col, row, value):
-        if col == 0: self.entries[row].name = value
-        elif col == 1: self.entries[row].base = value
-        elif col == 2: self.entries[row].alloy = value
-        elif col == 3: self.entries[row].comment = value
+        entry = self.entries[row]
+        if col == 0: entry.name = value
+        elif col == 1: entry.base = value
+        elif col == 2: entry.alloy = value
+        elif col == 3: entry.comment = value
         else: raise IndexError(u'column number for MaterialsModel should be 0, 1, 2, or 3, but is {}'.format(col))
+        if isinstance(entry, MaterialsModel.External):
+            entry.cache = None
+            self.get_materials(row+1)
+            index0 = entry.index(0, 0)
+            last = len(entry.cache) - 1 if entry.cache is not None else 0
+            index1 = entry.index(last, 0)
+            entry.headerDataChanged.emit(Qt.Vertical, 0, last)
+            entry.dataChanged.emit(index0, index1)
 
     def create_default_entry(self):
         return MaterialsModel.Material(self, "name", "semiconductor")
@@ -481,3 +518,95 @@ class MaterialsModel(TableModel):
                     Info(u'Duplicated material name "{}" [rows: {}]'.format(name, ', '.join(str(i+1) for i in rows)),
                          Info.ERROR, rows=rows, cols=[0]))
         return res
+
+    if plask is not None:
+
+        class _HandleMaterialsModule(object):
+
+            class Register(object):
+                def __init__(self, handler, fun):
+                    self.handler = handler
+                    self.fun = fun
+                def __call__(self, name, cls, base):
+                    try: self.handler.names.remove(name)
+                    except ValueError: pass
+                    self.handler.names.append(name)
+                    return self.fun(name, cls, base)
+
+            def __init__(self, model):
+                self.names = []
+                self._register_simple = plask._material._register_material_simple
+                self._register_alloy = plask._material._register_material_alloy
+                if model.document is not None and model.document.filename is not None:
+                    self.dirname = os.path.dirname(model.document.filename)
+                else:
+                    self.dirname = None
+
+            def __enter__(self):
+                if self.dirname is not None:
+                    sys.path.insert(0, self.dirname)
+                sys.path.insert(0, '.')
+                plask._material._register_material_simple = self.Register(self, self._register_simple)
+                plask._material._register_material_alloy = self.Register(self, self._register_alloy)
+                return self
+
+            def __exit__(self, type=None, value=None, traceback=None):
+                del sys.path[0]
+                if self.dirname is not None:
+                    del sys.path[0]
+                plask._material._register_material_simple = self._register_simple
+                plask._material._register_material_alloy = self._register_alloy
+
+    else:
+
+        class _HandleMaterialsModule(object):
+
+            def __init__(self, names=None):
+                pass
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, type=None, value=None, traceback=None):
+                pass
+
+    def get_materials(self, limit=None):
+        model_materials = []
+        if limit is not None:
+            entries = self.entries[:limit]
+        else:
+            entries = self.entries
+        with self._HandleMaterialsModule(self) as module_handler:
+            for material in entries:
+                if isinstance(material, MaterialsModel.External):
+                    if material.cache is None and plask is not None and material.name:
+                        from .. import _DEBUG
+                        if _DEBUG:
+                            print("Reading materials from", material.what, material.name, file=sys.stderr)
+                        if material.what == 'library':
+                            try:
+                                with plask.material.savedb(False):
+                                    plask.material.load_library(material.name)
+                                    material.cache = list(plask.material.db)
+                            except RuntimeError:
+                                if _DEBUG:
+                                    import traceback
+                                    traceback.print_exc()
+                        elif material.what == 'module':
+                            material.cache = module_handler.names = []
+                            try:
+                                if material.name in sys.modules:
+                                    reload_module(sys.modules[material.name])
+                                else:
+                                    import_module(material.name)
+                            except:
+                                if _DEBUG:
+                                    import traceback
+                                    traceback.print_exc()
+                    if material.cache is not None:
+                        model_materials = [m for m in model_materials if m not in material.cache] + material.cache
+                else:
+                    try: model_materials.remove(material.name)
+                    except ValueError: pass
+                    model_materials.append(material.name)
+        return model_materials

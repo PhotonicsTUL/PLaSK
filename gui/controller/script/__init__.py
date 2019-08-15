@@ -64,6 +64,7 @@ def update_python_scheme():
         'syntax_pylab': parse_highlight(CONFIG['syntax/python_pylab']),
         'syntax_obsolete': {'color': '#aaaaaa', 'bold': True, 'italic': True}
     }
+scheme = None   # Only for Pycharm not to complain about missing scheme
 update_python_scheme()
 
 
