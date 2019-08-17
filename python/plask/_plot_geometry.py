@@ -452,6 +452,10 @@ def _draw_clipped(env, geometry_object, transform, clipbox, new_clipbox, plask_r
     def _b(bound):
         return math.copysign(1e100, bound) if math.isinf(bound) else bound
 
+    if new_clipbox.upper[env.axes[0]] < new_clipbox.lower[env.axes[0]] or \
+       new_clipbox.upper[env.axes[1]] < new_clipbox.lower[env.axes[1]]:
+        return
+
     new_clipbox = matplotlib.transforms.TransformedBbox(
        #matplotlib.transforms.Bbox([
        #    [obj_box.lower[env.axes[0]], obj_box.lower[env.axes[1]]],

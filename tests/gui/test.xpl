@@ -235,6 +235,18 @@
       <rectangle material="GaN" dtran="3.0" dvert="0.5"/>
     </stack>
   </cartesian2d>
+  <cartesian2d name="clip" axes="xy">
+    <stack x="0">
+      <clip left="0" right="-1">
+        <align xcenter="0" bottom="0">
+          <rectangle material="AlN" dx="2" dy="1"/>
+        </align>
+      </clip>
+      <align xcenter="0" bottom="0">
+        <rectangle material="InN" dx="2" dy="1"/>
+      </align>
+    </stack>
+  </cartesian2d>
 </geometry>
 
 <grids>
