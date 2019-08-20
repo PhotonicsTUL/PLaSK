@@ -326,7 +326,7 @@ add_subdirectory(extlib/triangle)
 
 # fmt
 if(NOT MSVC AND PLASK_EXPORTS_FMT)
-    list(APPEND plask_src extlib/fmt/format.cc extlib/fmt/ostream.cc)
+    list(APPEND plask_src extlib/fmt/format.cc extlib/fmt/posix.cc)
 endif()
 
 # ---------- PLaSK library --------------------------------------------
@@ -357,7 +357,7 @@ set_target_properties(libplask PROPERTIES OUTPUT_NAME plask COMPILE_FLAGS "-DPLA
 if(INSTALL_DEV)
     install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
     install(DIRECTORY solvers/providers DESTINATION include/plask COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
-    install(FILES extlib/fmt/format.h DESTINATION include/fmt COMPONENT dev)
+    install(FILES extlib/fmt/format.h extlib/fmt/core.h DESTINATION include/fmt COMPONENT dev)
     install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
 endif()
 
