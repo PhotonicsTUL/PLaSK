@@ -32,31 +32,30 @@ except ImportError:
 else:
     from .plot_widget import PlotWidget as GeometryPlotWidget
 
+    class PlotWidget(GeometryPlotWidget):
 
-class PlotWidget(GeometryPlotWidget):
+        class NavigationToolbar(GeometryPlotWidget.NavigationToolbar):
 
-    class NavigationToolbar(GeometryPlotWidget.NavigationToolbar):
+            toolitems = (
+                ('Plot', 'Plot selected geometry object', 'draw-brush', 'plot', None),
+                ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', True),
+                (None, None, None, None, None),
+                ('Home', 'Zoom to whole geometry', 'go-home', 'home', None),
+                ('Back', 'Back to previous view', 'go-previous', 'back', None),
+                ('Forward', 'Forward to next view', 'go-next', 'forward', None),
+                (None, None, None, None, None),
+                ('Pan', 'Pan axes with left mouse, zoom with right', 'transform-move', 'pan', False),
+                ('Zoom', 'Zoom to rectangle', 'zoom-in', 'zoom', False),
+                (None, None, None, None, None),
+                ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False),
+                (None, None, None, None, None),
+                ('Plane:', 'Select longitudinal-transverse plane', None, 'select_plane',
+                 (('tran-long', 'long-vert', 'tran-vert'), 2)),
+            )
 
-        toolitems = (
-            ('Plot', 'Plot selected geometry object', 'draw-brush', 'plot', None),
-            ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', True),
-            (None, None, None, None, None),
-            ('Home', 'Zoom to whole geometry', 'go-home', 'home', None),
-            ('Back', 'Back to previous view', 'go-previous', 'back', None),
-            ('Forward', 'Forward to next view', 'go-next', 'forward', None),
-            (None, None, None, None, None),
-            ('Pan', 'Pan axes with left mouse, zoom with right', 'transform-move', 'pan', False),
-            ('Zoom', 'Zoom to rectangle', 'zoom-in', 'zoom', False),
-            (None, None, None, None, None),
-            ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False),
-            (None, None, None, None, None),
-            ('Plane:', 'Select longitudinal-transverse plane', None, 'select_plane',
-             (('tran-long', 'long-vert', 'tran-vert'), 2)),
-        )
-
-        def select_plane(self, index):
-            super(GeometryPlotWidget.NavigationToolbar, self).select_plane(index)
-            self.controller.plot()
+            def select_plane(self, index):
+                super(GeometryPlotWidget.NavigationToolbar, self).select_plane(index)
+                self.controller.plot()
 
 
 class SourceWithPreviewWidget(QSplitter):
