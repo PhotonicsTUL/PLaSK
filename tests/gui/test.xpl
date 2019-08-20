@@ -488,10 +488,10 @@ print_log('info', "informacja")
 print(f, file=sys.stderr)
 
 class A(object):
-    
+
     def __init__(self):
         pass
-    
+
     val = property()
     """
     ppp
@@ -537,7 +537,7 @@ def loss_on_voltage(voltage):
     det_mins = np.r_[False, det_vals[1:] < det_vals[:-1]] & \
                np.r_[det_vals[:-1] < det_vals[1:], False] & \
                np.r_[det_vals[:] < 1]
-    mode_number = OPTICAL.find_mode(max(det_lams[det_mins])) 
+    mode_number = OPTICAL.find_mode(max(det_lams[det_mins]))
     mode_loss = OPTICAL.outLoss(mode_number)
     print_log(LOG_RESULT, f'V = {voltage[0]:.3f}V, I = {ELECTRICAL.get_total_current():.3f}mA, lam = {OPTICAL.outWavelength(mode_number):.2f}nm, loss = {mode_loss}/cm')
     return mode_loss
@@ -611,7 +611,7 @@ GEO.junction
 class A(object):
     def __init__(self):
         self.a = 1
-        
+
 a = A()
 print(a.a, file=sys.stderr)
 ]]></script>

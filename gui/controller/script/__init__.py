@@ -396,6 +396,20 @@ class ScriptController(SourceEditController):
     def on_edit_exit(self):
         return super(ScriptController, self).on_edit_exit()
 
+    def before_save(self):
+        if CONFIG['editor/remove_trailing_spaces']:
+            editor = self.get_source_widget().editor
+            document = editor.document()
+            cursor = editor.textCursor()
+            cursor.beginEditBlock()
+            regex = QRegExp(r'\s+$')
+            found = document.find(regex)
+            while found:
+                found.removeSelectedText()
+                found = document.find(regex, found.position())
+            cursor.endEditBlock()
+            self.model._code = document.toPlainText()
+
     def open_help(self):
         open_help('api', self.document.window)
 
