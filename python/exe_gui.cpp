@@ -1,5 +1,8 @@
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-#include <windows.h>    // or <shellscalingapi.h> SetProcessDpiAwarenessContext
+#define NOMINMAX
+#include <windows.h>
+#undef NOMINMAX
+//#include <windows.h>    // or <shellscalingapi.h> SetProcessDpiAwarenessContext
 //#include <shellapi.h>   // CommandLineToArgvW
 #endif
 
