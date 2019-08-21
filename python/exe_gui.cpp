@@ -1,9 +1,9 @@
-#include "exe_common.h" // includes minimal windows.h
-
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-#include <shellscalingapi.h>    // SetProcessDpiAwarenessContext
+#include <winuser.h>    // or <shellscalingapi.h> SetProcessDpiAwarenessContext
 #include <shellapi.h>   // CommandLineToArgvW
 #endif
+
+#include "exe_common.h" // includes minimal windows.h
 
 //******************************************************************************
 #if PY_VERSION_HEX >= 0x03000000
