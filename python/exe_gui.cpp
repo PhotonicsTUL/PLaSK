@@ -1,7 +1,7 @@
 #include "exe_common.h" // includes minimal windows.h
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-#include <winuser.h>    // SetProcessDpiAwarenessContext
+#include <shellscalingapi.h>    // SetProcessDpiAwarenessContext
 #include <shellapi.h>   // CommandLineToArgvW
 #endif
 
