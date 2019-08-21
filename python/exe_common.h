@@ -17,7 +17,14 @@
 #include <boost/python/stl_iterator.hpp>
 namespace py = boost::python;
 
-#include <plask/utils/minimal_windows.h>
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+#pragma push_macro("NOMINMAX")
+#ifndef NOMINMAX
+    #define NOMINMAX    //prevents windows.h from defining min, max macros, see http://stackoverflow.com/questions/1904635/warning-c4003-and-errors-c2589-and-c2059-on-x-stdnumeric-limitsintmax
+#endif
+#include <windows.h>    //we include whole windows.h, as plask/minimal_windows.h is not enought for gui_main
+#pragma pop_macro("NOMINMAX")
+#endif
 
 // definitions which helps to use wide or narrow string encoding, depending on system/compiler:
 #ifdef _MSC_VER		// ------------- Windows - system_string is wstring -------------
