@@ -171,6 +171,7 @@ class XPLDocument(object):
 
     def save_to_file(self, filename):
         # safe write: maybe inefficient, but does not destroy the file if the error occurs
+        self.script.before_save()
         data = self.get_content()
         if CONFIG['main_window/make_backup']:
             try:

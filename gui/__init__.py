@@ -713,7 +713,7 @@ class MainWindow(QMainWindow):
             if VERSION is not None:
                 pysparkle = PySparkle("https://plask.app/appcast.xml", "PLaSK", VERSION[:10],
                                       config=ConfigProxy('updates'), shutdown=close_all_windows,
-                                      frontend='qt5' if QT_API == 'PyQt5' else 'qt4')
+                                      frontend='qt5' if QT_API in ('PyQt5', 'PySide2') else 'qt4')
         if pysparkle is not None:
             action_check_update = QAction(QIcon.fromTheme('software-update-available'),
                                           "Check for &Updates Now...", self)

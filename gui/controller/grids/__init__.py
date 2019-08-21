@@ -33,7 +33,6 @@ from ...model.info import Info
 from ...utils import get_manager
 from ...utils.xml import XML_parser
 from ...utils.config import CONFIG
-from ...utils.matplotlib import BwColor
 
 try:
     unicode = unicode
@@ -51,6 +50,8 @@ try:
     from .plot_widget import PlotWidget
 except ImportError:
     plask = None
+else:
+    from ...utils.matplotlib import BwColor
 
 
 class GridsController(Controller):

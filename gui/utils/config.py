@@ -82,6 +82,7 @@ DEFAULTS = {
     'editor/replace_color': '#ffddff',
     'editor/select_after_paste': False,
     'editor/selection_color': '#ffff7f',
+    'editor/remove_trailing_spaces': False,
     'geometry/extra_alpha': 0.7,
     'geometry/extra_color': '#00aaff',
     'geometry/extra_width': 1,
@@ -382,6 +383,8 @@ CONFIG_WIDGETS = OrderedDict([
         ("Appearance && Behavior", [
             ("Keep selection after paste", CheckBox('editor/select_after_paste',
                                                     "Keep selection of pasted text.")),
+            ("Remove trailing spaces", CheckBox('editor/remove_trailing_spaces',
+                                                "Remove trailing spaces from script on file save.")),
             ("Editor font", Font('editor/font', "Font in text editors.")),
             ("Foreground color", Color('editor/foreground_color', "Foreground color in text editor.")),
             ("Background color", Color('editor/background_color', "Background color in text editor.")),

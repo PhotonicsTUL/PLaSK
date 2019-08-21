@@ -14,17 +14,15 @@ TODO
 import sys as _sys
 import os as _os
 
+if 'PLASK_MPLBACKEND' in _os.environ:
+    _os.environ['MPLBACKEND'] = _os.environ['PLASK_MPLBACKEND']
+
 import matplotlib.colors
 import matplotlib.lines
 import matplotlib.patches
 import matplotlib.artist
 
-try:
-    backend = _os.environ['MATPLOTLIB_BACKEND']
-except KeyError:
-    backend = matplotlib.rcParams['backend']
-else:
-    matplotlib.use(backend)
+backend = _os.environ.get('MPLBACKEND', matplotlib.rcParams['backend'])
 
 # Specify Qt4 API v2 while it is not too late
 if backend == 'Qt4Agg' and matplotlib.rcParams['backend.qt4'] == 'PyQt4':

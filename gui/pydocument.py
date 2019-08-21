@@ -78,6 +78,7 @@ class PyDocument(object):
         return self.script.model.get_text()
 
     def save_to_file(self, filename):
+        self.script.before_save()
         text = self.get_content()
         m = coding_re_s.match(text)
         if m:
