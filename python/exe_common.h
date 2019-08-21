@@ -17,7 +17,10 @@
 #include <boost/python/stl_iterator.hpp>
 namespace py = boost::python;
 
-#include <plask/utils/minimal_windows.h>
+//#include <plask/utils/minimal_windows.h>
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+#include <windows.h>
+#endif
 
 // definitions which helps to use wide or narrow string encoding, depending on system/compiler:
 #ifdef _MSC_VER		// ------------- Windows - system_string is wstring -------------
