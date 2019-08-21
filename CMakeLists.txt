@@ -17,7 +17,7 @@ if(MSVC)    # flags needed by Visual Studio:
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4018")   # disable warning about signed/unsigned generated mainly by workaround for OpenMP 2 (which can use only signed types)
     add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS) # hide many warnings which are caused by boost and fmt under MSVC, https://msdn.microsoft.com/query/dev14.query?appId=Dev14IDEF1&l=EN-US&k=k(C4996)&rd=true
     add_definitions(-DBOOST_ALL_DYN_LINK)   # MSVC+cmake require this to properly detect dynamic boost libraries
-    add_definitions(-DFMT_HEADER_ONLY)      # don't compile fmt, workaround for many linker errors
+    #add_definitions(-DFMT_HEADER_ONLY)      # don't compile fmt, workaround for many linker errors
     #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++14")   # nothing is needed for C++11
 else(MSVC)
     if(MINGW)
@@ -325,7 +325,7 @@ add_subdirectory(extlib/fftpacx)
 add_subdirectory(extlib/triangle)
 
 # fmt
-if(NOT MSVC AND PLASK_EXPORTS_FMT)
+if(PLASK_EXPORTS_FMT)
     list(APPEND plask_src extlib/fmt/format.cc extlib/fmt/posix.cc)
 endif()
 
@@ -348,7 +348,10 @@ else()
     target_link_libraries(libplask dl)
     install(TARGETS libplask LIBRARY DESTINATION lib COMPONENT core)
 endif()
-set_target_properties(libplask PROPERTIES OUTPUT_NAME plask COMPILE_FLAGS "-DPLASK_EXPORTS -DFMT_EXPORT")
+set_target_properties(libplask PROPERTIES OUTPUT_NAME plask COMPILE_FLAGS "-DPLASK_EXPORTS")
+if(PLASK_EXPORTS_FMT)
+    target_compile_definitions(libplask PRIVATE FMT_EXPORT INTERFACE FMT_SHARED)
+endif()
 
 #if (NOT WIN32) # can be usefull if more thread libraries will be used
 #    target_link_libraries(sdsolver "pthread")
