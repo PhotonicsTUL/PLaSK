@@ -984,8 +984,8 @@ PLUGINS = []
 def load_plugins():
     global PLUGINS
 
-    name_re = re.compile(r'^\s*#\s*plugin:\s*(.*)\s*$', re.IGNORECASE)
-    desc_re = re.compile(r'^\s*#\s*description:\s*(.*)\s*$', re.IGNORECASE)
+    name_re = re.compile(r'^#\s*plugin:\s*(.*)\s*$', re.IGNORECASE)
+    desc_re = re.compile(r'^#\s*desc(?:ription)?:\s*(.*)\s*$', re.IGNORECASE)
 
     if os.name == 'nt':
         plugin_dirs = [os.path.join(os.environ.get('SYSTEMDRIVE', 'C:'), r'ProgramData\PLaSK\gui\plugins')]
@@ -1005,11 +1005,14 @@ def load_plugins():
             fname = loader.find_module(modname).get_filename()
         try:
             for line in open(fname):
+                line = line.strip()
                 m = name_re.match(line)
-                if m is not None: name = m.group(1)
+                if m is not None:
+                    name = m.group(1)
                 m = desc_re.match(line)
-                if m is not None: desc = m.group(1)
-                if name is not None and desc is not None: break
+                if m is not None:
+                    desc = m.group(1) if desc is None else desc + '<br/>' + m.group(1)
+                if name is not None and desc is not None and not line.startswith('#'): break
         except:
             pass
         if name is not None:
