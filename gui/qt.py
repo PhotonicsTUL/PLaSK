@@ -59,7 +59,7 @@ for QT_API in (QT_API, 'PySide2', 'PyQt5', 'PySide', 'PyQt4'):
             QtSignal = QtCore.Signal
             QtSlot = QtCore.Slot
             break
-    elif QT_API == 'PyQt4v2':
+    elif QT_API in ('PyQt4', 'PyQt4v2'):
         try:
             import sip
             for n in ("QString", "QVariant"):

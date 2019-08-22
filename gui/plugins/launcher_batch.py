@@ -12,7 +12,8 @@
 # coding: utf8
 
 # plugin: Batch Laucher
-# description: Launcher allowing to submit computations to a remote batch system (SLURM or Torque).<br/>Requires Paramiko.
+# description: Launcher allowing to submit computations to a remote batch system (SLURM or Torque).
+# description: Requires Paramiko.
 
 
 from __future__ import print_function, unicode_literals
@@ -512,9 +513,8 @@ else:
             stdin, stdout, stderr = ssh.exec_command("/bin/bash -l -c " + quote(self.batch(name, params, bp)))
             try:
                 print("#!/bin/bash", file=stdin)
-                for oth in params['other']:
-                    oth = oth.strip()
-                    if oth: print(self.SUBMIT_OPTION, oth, file=stdin)
+                if params['other']:
+                    print(self.SUBMIT_OPTION, params['other'], file=stdin)
                 for mod in params['modules'].splitlines():
                     if mod.startswith('-'):
                         print('module del', mod[1:], file=stdin)

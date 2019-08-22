@@ -165,6 +165,8 @@ syntax = {
                 'Warning',
                 'ZeroDivisionError',
                 '__import__',
+                '__name__',
+                '__file__',
                 'abs',
                 'all',
                 'any',

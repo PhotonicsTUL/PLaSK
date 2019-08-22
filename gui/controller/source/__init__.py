@@ -88,8 +88,7 @@ class XMLEditor(TextEditor):
                     cursor.movePosition(QTextCursor.Right, mode)
                 self.setTextCursor(cursor)
                 return
-
-        if key == Qt.Key_Slash:
+        elif key == Qt.Key_Slash:
             if parse_slash(self): return
 
         super(XMLEditor, self).keyPressEvent(event)
