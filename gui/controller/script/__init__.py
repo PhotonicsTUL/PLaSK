@@ -152,6 +152,18 @@ class ScriptEditor(TextEditor):
             pass
         cursor.endEditBlock()
 
+    def join_lines(self):
+        cursor = self.textCursor()
+        cursor.movePosition(QTextCursor.EndOfBlock)
+        if cursor.atEnd(): return
+        document = self.document()
+        cursor.beginEditBlock()
+        cursor.deleteChar()
+        while document.characterAt(cursor.position()) in ' \t':
+            cursor.deleteChar()
+        cursor.insertText(' ')
+        cursor.endEditBlock()
+
     def keyPressEvent(self, event):
         key = event.key()
         modifiers = event.modifiers()
@@ -208,6 +220,9 @@ class ScriptEditor(TextEditor):
                     cursor.movePosition(QTextCursor.Right, mode)
                 self.setTextCursor(cursor)
                 return
+        elif key == Qt.Key_J and modifiers & Qt.ShiftModifier and modifiers & Qt.ControlModifier:
+            self.join_lines()
+            return
 
         if not (key == Qt.Key_Space and modifiers == Qt.ControlModifier) or CONFIG['workarounds/no_jedi']:
             super(ScriptEditor, self).keyPressEvent(event)
