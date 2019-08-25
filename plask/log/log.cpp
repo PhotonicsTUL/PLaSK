@@ -12,12 +12,6 @@
 #   include "../parallel.h"
 #endif
 
-/*#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-#   include <Windows.h>
-#else
-#   include <unistd.h>
-#endif*/
-
 namespace plask {
 
 #ifdef NDEBUG

@@ -1,4 +1,4 @@
-#include "exe_common.h" // includes minimal windows.h
+#include "exe_common.h" // includes windows.h
 
 #include <plask/utils/system.h>
 #include <plask/config.h>

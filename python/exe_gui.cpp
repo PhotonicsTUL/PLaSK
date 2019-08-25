@@ -1,4 +1,4 @@
-#include "exe_common.h" // includes minimal windows.h
+#include "exe_common.h" // includes windows.h
 
 //******************************************************************************
 #if PY_VERSION_HEX >= 0x03000000

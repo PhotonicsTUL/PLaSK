@@ -5,14 +5,6 @@
 #include <cmath>
 #include <vector>
 
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-#ifndef _WIN32_WINNT
-#   define _WIN32_WINNT 0x502
-#endif
-#   include <plask/utils/minimal_windows.h>
-//#   define BOOST_USE_WINDOWS_H
-#endif
-
 // ----------------------------------------------------------------------------------------------------------------------
 // Shared pointer
 #include <plask/memory.h>

@@ -25,12 +25,7 @@ struct PLASK_API DynamicLibrary {
         DONT_CLOSE = 1  ///< if this flag is set DynamicLibrary will not close the library, but it will be closed on application exit
     };
 
-    /// Type of system shared library handle.
-//#ifdef PLASK__UTILS_PLUGIN_WINAPI
-//    typedef HINSTANCE handle_t;
-//#else
     typedef void* handle_t;    // real type on windows is HINSTANCE, but it is a pointer (to struct), so we are going to cast it from/to void* to avoid indluding windows.h
-//#endif
 
 private:
     /// System shared library handle
@@ -41,7 +36,13 @@ private:
 
 public:
 
-    void* getHandle() const { return handle; }
+    /**
+     * Get system handler to the loaded library.
+     *
+     * In windows it can be casted to HINSTANCE (defined in windows.h).
+     * @return the system handler
+     */
+    handle_t getHandle() const { return handle; }
 
     static constexpr const char* DEFAULT_EXTENSION =
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
