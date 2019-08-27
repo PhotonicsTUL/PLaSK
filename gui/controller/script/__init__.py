@@ -388,7 +388,7 @@ class ScriptController(SourceEditController):
             defines += [e.name for e in self.document.defines.model.entries]
         current_syntax['tokens'][default_key].insert(0, ('define', defines, '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
         if self.document.solvers is not None:
-            solvers = [e.name for e in self.document.solvers.model.entries]
+            solvers = [e.name for e in self.document.solvers.model.entries if e.name]
             if solvers:
                 current_syntax['tokens'][default_key].insert(0, ('solver', solvers, '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
         self.highlighter = SyntaxHighlighter(self.source_widget.editor.document(),
@@ -413,6 +413,7 @@ class ScriptController(SourceEditController):
 
     def before_save(self):
         if CONFIG['editor/remove_trailing_spaces']:
+            self.load_data_from_model()
             editor = self.get_source_widget().editor
             document = editor.document()
             cursor = editor.textCursor()

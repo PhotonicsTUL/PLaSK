@@ -476,12 +476,11 @@ class SourceEditController(Controller):
     def __init__(self, document=None, model=None, line_numbers=True):
         Controller.__init__(self, document, model)
         self.line_numbers = line_numbers
-        self.fresh = False
-        self.visible = False
+        self._dirty = True
+        self._visible = False
         self.source_widget = None
         self.document.window.config_changed.connect(self.reconfig)
         self.highlighter = None
-        self._clean_state = False
 
     def create_source_widget(self, parent):
         source = SourceWidget(parent, XMLEditor, line_numbers=self.line_numbers)
@@ -513,38 +512,42 @@ class SourceEditController(Controller):
                                                      *load_syntax(syntax, SCHEME),
                                                      default_font=EDITOR_FONT)
 
-    def refresh_editor(self, *args, **kwargs):
-        if self.visible:
+    def load_data_from_model(self):
+        if self._dirty:
             editor = self.get_source_widget().editor
             text = self.model.get_text()
             if text and text[-1] == '\n':
                 text = text[:-1]
             editor.setPlainText(text)
-            self.fresh = True
-        else:
-            self.fresh = False
+            self._dirty = False
 
     def save_data_in_model(self):
         if not self.get_source_widget().editor.isReadOnly() and \
                 self.get_source_widget().editor.document().isModified():
-            try: self.model.changed -= self.refresh_editor
+            try: self.model.changed -= self.update_editor
             except AttributeError: pass
             try:
                 self.model.set_text(self.get_source_widget().editor.toPlainText() + '\n')
             finally:
-                try: self.model.changed += self.refresh_editor
+                try: self.model.changed += self.update_editor
                 except AttributeError: pass
             self.get_source_widget().editor.document().setModified(False)
 
     def _modification_changed(self, changed):
             self.document.set_changed(changed)
 
+    def update_editor(self, *args, **kwargs):
+        if self._visible:
+            self.load_data_from_model()
+        else:
+            self._dirty = True
+
     def on_edit_enter(self):
-        self.visible = True
-        if not self.fresh: self.refresh_editor()
+        self._visible = True
+        self.load_data_from_model()
         try: self.source_widget.editor.line_numbers.offset = self.model.line_in_file
         except AttributeError: pass
-        try: self.model.changed += self.refresh_editor
+        try: self.model.changed += self.update_editor
         except AttributeError: pass
         self.source_widget.editor.document().setModified(self.document.is_changed())
         self.source_widget.editor.modificationChanged.connect(self._modification_changed)
@@ -558,5 +561,5 @@ class SourceEditController(Controller):
         except (RuntimeError, TypeError):
             pass
         #if hasattr(self.model, 'changed'): self.model.changed -= self.refresh_editor
-        self.visible = False
+        self._visible = False
         return True

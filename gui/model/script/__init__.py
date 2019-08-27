@@ -57,7 +57,10 @@ class ScriptModel(SectionModel):
     def get_xml_element(self):
         res = etree.Element(self.name)
         if self._code and self._code != '\n':
-            res.text = etree.CDATA('\n' + self._code)
+            code = '\n' + self._code
+            if code[-1] != '\n':
+                code += '\n'
+            res.text = etree.CDATA(code)
         return res
 
     def get_text(self):
