@@ -295,6 +295,18 @@ struct PLASK_SOLVER_API Transfer {
      * \return computed integral
      */
     double getFieldIntegral(WhichField field, double z1, double z2, double power);
+
+    /**
+     * Get ½ E·conj(E) or ½ H·conj(H) integral between \a z1 and \a z2 for reflected light
+     * \param field field to integrate
+     * \param incident incident field vector
+     * \param side incidence side
+     * \param z1 lower integration bound
+     * \param z2 upper integration bound
+     * \return computed integral
+     */
+    double getScatteredFieldIntegral(WhichField field, const cvector& incident, IncidentDirection side,
+                                     double z1, double z2);
 };
 
 

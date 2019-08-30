@@ -38,10 +38,10 @@ class Lo(material.Material):
 class GratingTest(unittest.TestCase):
 
     def setUp(self):
-        stack = geometry.Stack2D()
-        bar = geometry.Block2D(fill*L, tg, 'Hi'); stack.prepend(bar)
-        stack.prepend(geometry.Block2D(L, tl, 'Lo'))
-        geom = geometry.Cartesian2D(stack, bottom='Subs', left='periodic', right='periodic')
+        self.stack = geometry.Stack2D()
+        bar = geometry.Block2D(fill*L, tg, 'Hi'); self.stack.prepend(bar)
+        self.stack.prepend(geometry.Block2D(L, tl, 'Lo'))
+        geom = geometry.Cartesian2D(self.stack, bottom='Subs', left='periodic', right='periodic')
         self.solver = Fourier2D('solver')
         self.solver.geometry = geom
         self.solver.set_interface(bar)
@@ -56,10 +56,29 @@ class GratingTest(unittest.TestCase):
         self.assertAlmostEqual( r_te[1], 98.886, 2 )
 
         l_tm = array([1298., 1344.])
-        self.solver.lam0 = 1500.
+        self.solver.lam0 = 1300.
         r_tm = self.solver.compute_reflectivity(l_tm, 'top', 'Et')
         self.assertAlmostEqual( r_tm[0], 98.529, 2 )
         self.assertAlmostEqual( r_tm[1], 28.296, 2 )
+
+    def testIntegrals(self):
+        self.solver.lam = self.solver.lam0 = 1500.
+        scattering = self.solver.scattering('top', 'El')
+
+        box = self.solver.geometry.get_object_bboxes(self.stack)[0]
+        msh = mesh.Rectangular2D(mesh.Regular(0., box.right, 101),
+                                 mesh.Regular(box.bottom, box.top, 1001))
+        dr = msh.axis0[1] - msh.axis0[0]
+        dz = msh.axis1[1] - msh.axis1[0]
+        integral_mesh = msh.elements.mesh
+
+        E = scattering.outLightE(integral_mesh).array
+        EE0 = 0.5 * sum(real(E*conj(E))) * dr * dz
+        EE1 = scattering.integrateEE(box.bottom, box.top)
+
+        ratio = EE1 / EE0
+        print_log('result', "ratio:", ratio)
+        self.assertTrue(abs(1 - ratio) < 0.2)
 
 
 if __name__ == '__main__':

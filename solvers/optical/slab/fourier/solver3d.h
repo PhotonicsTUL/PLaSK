@@ -382,7 +382,7 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     }
 
     /**
-     * Get ½ H·conj(H) integral between \a z1 and \a z2
+     * Get ½ H·conj(H) integral between \a z1 and \a z2 for reflected light
      * \param num mode number
      * \param z1 lower integration bound
      * \param z2 upper integration bound
@@ -391,6 +391,34 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     double getIntegralHH(size_t num, double z1, double z2) {
         applyMode(modes[num]);
         return transfer->getFieldIntegral(FIELD_H, z1, z2, modes[num].power);
+    }
+
+    /**
+     * Get ½ E·conj(E) integral between \a z1 and \a z2 for reflected light
+     * \param incident incident field vector
+     * \param side incidence side
+     * \param z1 lower integration bound
+     * \param z2 upper integration bound
+     * \return computed integral
+     */
+    double getScatteredIntegralEE(const cvector& incident, Transfer::IncidentDirection side, double z1, double z2) {
+        if (!Solver::initCalculation()) setExpansionDefaults(false);
+        if (!transfer) initTransfer(expansion, true);
+        return transfer->getScatteredFieldIntegral(FIELD_E, incident, side, z1, z2);
+    }
+
+    /**
+     * Get ½ H·conj(H) integral between \a z1 and \a z2
+     * \param incident incident field vector
+     * \param side incidence side
+     * \param z1 lower integration bound
+     * \param z2 upper integration bound
+     * \return computed integral
+     */
+    double getScatteredIntegralHH(const cvector& incident, Transfer::IncidentDirection side, double z1, double z2) {
+        if (!Solver::initCalculation()) setExpansionDefaults(false);
+        if (!transfer) initTransfer(expansion, true);
+        return transfer->getScatteredFieldIntegral(FIELD_H, incident, side, z1, z2);
     }
 
     /// Check if the current parameters correspond to some mode and insert it

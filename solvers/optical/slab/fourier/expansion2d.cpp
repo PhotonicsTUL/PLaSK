@@ -19,8 +19,10 @@ void ExpansionPW2D::setPolarization(Component pol) {
         solver->clearFields();
         if (!periodic && polarization == E_TRAN) {
             polarization = pol;
-            reset();
-            init();
+            if (initialized) {
+                reset();
+                init();
+            }
             solver->recompute_integrals = true;
         } else if (polarization != E_UNSPECIFIED) {
             polarization = pol;
@@ -1089,30 +1091,37 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
     if (which_field == FIELD_E) {
         if (polarization == E_LONG) {
             for (int i = symmetric()? 0 : -order; i <= order; ++i) {
-                field[iEH(i)].tran() = field[iEH(i)].vert() = 0.;
-                if (iEH(i) != 0 || !dz) field[iEH(i)-dz].lon() = - E[iEH(i)];
+                size_t iehi = iEH(i);
+                field[iehi].tran() = field[iehi].vert() = 0.;
+                if (iehi != 0 || !dz) field[iehi-dz].lon() = - E[iehi];
             }
         } else if (polarization == E_TRAN) {
             for (int i = symmetric()? 0 : -order; i <= order; ++i) {
-                field[iEH(i)].lon() = 0.;
-                if (iEH(i) != 0 || !dx)
-                    field[iEH(i)-dx].tran() = E[iEH(i)];
-                if (iEH(i) != 0 || !dz) {
-                    field[iEH(i)-dz].vert() = 0.;
-                    for (int j = symmetric()? 0 : -order; j <= order; ++j)
-                        field[iEH(i)-dz].vert() += coeff_matrices[l].reyy(i,j) * (b*double(j)-ktran) * H[iEH(j)];
-                    field[iEH(i)-dz].vert() /= k0;
+                size_t iehi = iEH(i);
+                field[iehi].lon() = 0.;
+                if (iehi != 0 || !dx)
+                    field[iehi-dx].tran() = E[iehi];
+                if (iehi != 0 || !dz) {
+                    field[iehi-dz].vert() = 0.;
+                    for (int j = symmetric()? 0 : -order; j <= order; ++j) {
+                        size_t iehj = iEH(j);
+                        field[iehi-dz].vert() += coeff_matrices[l].reyy(iehi,iehj) * (b*double(j)-ktran) * H[iehj];
+                    }
+                    field[iehi-dz].vert() /= k0;
                 }
             }
         } else {
             for (int i = symmetric()? 0 : -order; i <= order; ++i) {
-                if (iEH(i) != 0 || !dx)
-                    field[iEH(i)-dx].tran() = E[iEx(i)];
-                if (iEH(i) != 0 || !dz) {
-                    field[iEH(i)-dz].lon() = - E[iEz(i)];
-                    field[iEH(i)-dz].vert() = 0.;
-                    for (int j = symmetric()? 0 : -order; j <= order; ++j)
-                        field[iEH(i)-dz].vert() -= coeff_matrices[l].reyy(i,j) * (beta * H[iHx(i)] + (b*double(j)-ktran) * H[iHz(j)]);
+                size_t iehi = iEH(i);
+                if (iehi != 0 || !dx)
+                    field[iehi-dx].tran() = E[iEx(i)];
+                if (iehi != 0 || !dz) {
+                    field[iehi-dz].lon() = - E[iEz(i)];
+                    field[iehi-dz].vert() = 0.;
+                    size_t ihx = iHx(i);
+                    for (int j = symmetric()? 0 : -order; j <= order; ++j) {
+                        field[iehi-dz].vert() -= coeff_matrices[l].reyy(iehi,iEH(j)) * (beta * H[ihx] + (b*double(j)-ktran) * H[iHz(j)]);
+                    }
                     field[iEH(i)-dz].vert() /= k0;
                 }
             }
@@ -1314,15 +1323,18 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
                 for (int i = 0; i <= order; ++i) {
                     vert = 0.;
                     for (int j = 0; j <= order; ++j)
-                        vert += coeff_matrices[l].reyy(i,j) * b*double(j) * H[iEH(j)];
+                        vert += coeff_matrices[l].reyy(i,j) * b*double(j) * H[j];
                     vert /= k0;
                     sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
                 }
             } else {
                 for (int i = -order; i <= order; ++i) {
                     vert = 0.; // beta is equal to 0
-                    for (int j = -order; j <= order; ++j)
-                        vert += coeff_matrices[l].reyy(i,j) * (b*double(j)-ktran) * H[iEH(j)];
+                    size_t iehi = iEH(i);
+                    for (int j = -order; j <= order; ++j) {
+                        size_t iehj = iEH(j);
+                        vert += coeff_matrices[l].reyy(iehi,iehj) * (b*double(j)-ktran) * H[iehj];
+                    }
                     vert /= k0;
                     sum += real(vert * conj(vert));
                 }
@@ -1331,16 +1343,18 @@ double ExpansionPW2D::integrateField(WhichField field, size_t l, const cvector& 
             if (symmetric()) {
                 for (int i = 0; i <= order; ++i) {
                     vert = 0.;
+                    size_t ihxi = iHx(i);
                     for (int j = 0; j <= order; ++j)
-                        vert -= coeff_matrices[l].reyy(i,j) * (beta * H[iHx(i)] + (b*double(j)-ktran) * H[iHz(j)]);
+                        vert -= coeff_matrices[l].reyy(i,j) * (beta * H[ihxi] + (b*double(j)-ktran) * H[iHz(j)]);
                     vert /= k0;
                     sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
                 }
             } else {
                 for (int i = -order; i <= order; ++i) {
                     vert = 0.;
+                    size_t iehi = iEH(i), ihxi = iHx(i);
                     for (int j = -order; j <= order; ++j)
-                        vert -= coeff_matrices[l].reyy(i,j) * (beta * H[iHx(i)] + (b*double(j)-ktran) * H[iHz(j)]);
+                        vert -= coeff_matrices[l].reyy(iehi,iEH(j)) * (beta * H[ihxi] + (b*double(j)-ktran) * H[iHz(j)]);
                     vert /= k0;
                     sum += real(vert * conj(vert));
                 }

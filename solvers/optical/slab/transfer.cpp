@@ -229,4 +229,22 @@ double Transfer::getFieldIntegral(WhichField field, double z1, double z2, double
     return ((field == FIELD_E)? 2e-3 : 2e-3/(Z0*Z0)) * power * result;
 }
 
+
+double Transfer::getScatteredFieldIntegral(WhichField field, const cvector& incident, IncidentDirection side,
+                                           double z1, double z2) {
+    determineReflectedFields(incident, side);
+    if (z1 > z2) std::swap(z1, z2);
+    size_t end = solver->getLayerFor(z2);
+    if (is_zero(z2) && end != 0) {
+        --end;
+        z2 = solver->vbounds->at(end) - (end? solver->vbounds->at(end-1) : solver->vbounds->at(end));
+    }
+    double result = 0.;
+    for (size_t n = solver->getLayerFor(z1); n <= end; ++n) {
+        result += integrateField(field, n, z1, (n != end)? n? solver->vbounds->at(n) - solver->vbounds->at(n-1) : 0. : z2);
+        z1 = 0.;
+    }
+    return ((field == FIELD_E)? 2e-3 : 2e-3/(Z0*Z0)) * result;
+}
+
 }}} // namespace plask::optical::slab

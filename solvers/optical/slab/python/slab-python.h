@@ -617,18 +617,23 @@ struct Scattering {
 
 
     LazyData<Vec<3,dcomplex>> getLightE(const shared_ptr<const MeshD<SolverT::SpaceType::DIM>>& dst_mesh, InterpolationMethod method) {
-        if (!solver->initCalculation()) solver->setExpansionDefaults();
         return solver->getScatteredFieldE(incident, side, dst_mesh, method);
     }
 
     LazyData<Vec<3,dcomplex>> getLightH(const shared_ptr<const MeshD<SolverT::SpaceType::DIM>>& dst_mesh, InterpolationMethod method) {
-        if (!solver->initCalculation()) solver->setExpansionDefaults();
         return solver->getScatteredFieldH(incident, side, dst_mesh, method);
     }
 
     LazyData<double> getLightMagnitude(const shared_ptr<const MeshD<SolverT::SpaceType::DIM>>& dst_mesh, InterpolationMethod method) {
-        if (!solver->initCalculation()) solver->setExpansionDefaults();
         return solver->getScatteredFieldMagnitude(incident, side, dst_mesh, method);
+    }
+
+    double getIntegralEE(double z1, double z2) {
+        return solver->getScatteredIntegralEE(incident, side, z1, z2);
+    }
+
+    double getIntegralHH(double z1, double z2) {
+        return solver->getScatteredIntegralHH(incident, side, z1, z2);
     }
 
     /**
@@ -710,6 +715,27 @@ struct Scattering {
             .def_readonly("outLightMagnitude", reinterpret_cast<ProviderFor<LightMagnitude, typename SolverT::SpaceType> Scattering<SolverT>::*>
                                                 (&Scattering<SolverT>::outLightMagnitude),
                 format(docstring_attr_provider<LightMagnitude>(), "LightMagnitude", suffix, u8"light intensity", u8"W/m²", "", "", "", "outLightMagnitude").c_str() )
+
+            .def("integrateEE", &Scattering<SolverT>::getIntegralEE, (py::arg("z1"), "z2"),
+                 u8"Get average integral of the squared electric field:\n\n"
+                 u8"\\\\[\\\\frac 1 2 \\\\int_{z_1}^{z_2} \\|E\\|^2.\\\\]\n\n"
+                 u8"In the lateral direction integration is performed over the whole domain.\n\n"
+                 u8"Args:\n"
+                 u8"    z1 (float): Lower vertical bound of the integral.\n"
+                 u8"    z2 (float): Upper vertical bound of the integral.\n\n"
+                 u8"Returns:\n"
+                 u8"    float: Computed integral [V\\ :sup:`2` / m\\ :sup:`2`].\n"
+            )
+            .def("integrateHH", &Scattering<SolverT>::getIntegralHH, (py::arg("z1"), "z2"),
+                 u8"Get average integral of the squared magnetic field:\n\n"
+                 u8"\\\\[\\\\frac 1 2 \\\\int_{z_1}^{z_2} \\|H\\|^2.\\\\]\n\n"
+                 u8"In the lateral direction integration is performed over the whole domain.\n\n"
+                 u8"Args:\n"
+                 u8"    z1 (float): Lower vertical bound of the integral.\n"
+                 u8"    z2 (float): Upper vertical bound of the integral.\n"
+                 u8"Returns:\n"
+                 u8"    float: Computed integral [A\\ :sup:`2` / m\\ :sup:`2`].\n"
+              )
 
             .add_property("R", &Scattering<SolverT>::reflectivity, u8"Total reflection coefficient [-].")
             .add_property("T", &Scattering<SolverT>::transmittivity, u8"Total transmission coefficient [-].")
