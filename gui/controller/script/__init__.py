@@ -420,7 +420,7 @@ class ScriptController(SourceEditController):
             cursor.beginEditBlock()
             regex = QRegExp(r'\s+$')
             found = document.find(regex)
-            while found:
+            while found and not found.isNull():
                 found.removeSelectedText()
                 found = document.find(regex, found.position())
             cursor.endEditBlock()
