@@ -8,6 +8,8 @@ from plask import *
 from plask import material, geometry, mesh
 from optical import slab
 
+config.axes = 'zxy'
+
 @material.simple()
 class Glass(material.Material):
     def Nr(self, wl, T=300., n=0.): return 1.3
@@ -23,15 +25,15 @@ class Wire(unittest.TestCase):
     def setUp(self):
         self.solver = slab.Fourier2D("fourier")
         wire_stack = geometry.Stack2D()
-        wire_stack.append(geometry.Rectangle(0.75, 0.25, Glass()))
-        rect = geometry.Rectangle(0.75, 0.25, Glass())
+        wire_stack.append(geometry.Rectangle(0.75, 0.125, Glass()))
+        rect = geometry.Rectangle(0.75, 0.375, Glass())
         rect.role = 'interface'
         wire_stack.append(rect)
         space = geometry.Cartesian2D(wire_stack, left="mirror")
         self.solver.geometry = space
 
     def testComputations(self):
-        self.solver.wavelength = 1000.
+        self.solver.lam = 1000.
         self.solver.symmetry = 'Etran'
         # self.solver.polarization = "Etran"
         self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(neff=1.15)].neff, 1.147, 3 )
