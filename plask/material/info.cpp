@@ -127,7 +127,7 @@ MaterialInfo & MaterialInfo::DB::add(const std::string& materialName) {
 plask::optional<MaterialInfo> MaterialInfo::DB::get(const std::string &materialName, bool with_inherited_info) const {
     auto this_mat_info = materialInfo.find(materialName);
     if (this_mat_info == materialInfo.end())
-        return parent ? parent->get(materialName, with_inherited_info) : plask::optional<MaterialInfo>();
+        return plask::optional<MaterialInfo>();
 
     if (!with_inherited_info || this_mat_info->second.parent.empty())
         return plask::optional<MaterialInfo>(this_mat_info->second);
@@ -142,7 +142,7 @@ plask::optional<MaterialInfo> MaterialInfo::DB::get(const std::string &materialN
 plask::optional<MaterialInfo::PropertyInfo> MaterialInfo::DB::get(const std::string &materialName, PROPERTY_NAME propertyName, bool with_inherited_info) const {
     auto this_mat_info = materialInfo.find(materialName);
     if (this_mat_info == materialInfo.end())
-        return parent ? parent->get(materialName, propertyName, with_inherited_info) : plask::optional<MaterialInfo::PropertyInfo>();
+        return plask::optional<MaterialInfo::PropertyInfo>();
 
     auto res = this_mat_info->second.getPropertyInfo(propertyName);
     return res || !with_inherited_info || this_mat_info->second.parent.empty() ? res : get(this_mat_info->second.parent, propertyName, true);

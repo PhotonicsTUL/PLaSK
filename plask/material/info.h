@@ -300,16 +300,7 @@ struct PLASK_API MaterialInfo {
         /// Material name -> material information
         std::map<std::string, MaterialInfo> materialInfo;
 
-        /// Parent database which is requested for all materials not described in this database
-        const DB* parent;
-
       public:
-
-        /**
-         * Create database.
-         * @param parent parent database, which is requested for all materials not described in this database.
-         */
-        explicit DB(const DB* parent = nullptr): parent(parent) {}
 
         /**
          * Get default database of materials' meta-informations.
