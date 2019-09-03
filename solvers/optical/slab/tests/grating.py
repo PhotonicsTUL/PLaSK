@@ -84,7 +84,7 @@ class GratingTest(unittest.TestCase):
         HH1 = scattering.integrateHH(box.bottom, box.top)
         ratio = HH1 / HH0
         print_log('result', "H ratio:", ratio)
-        self.assertAlmostEqual(ratio, 1.0, delta=0.1)
+        self.assertAlmostEqual(ratio, 1.00, delta=0.15)
 
 
 if __name__ == '__main__':
