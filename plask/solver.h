@@ -917,7 +917,7 @@ void SolverWithMesh<SpaceT, MeshT>::parseStandardConfiguration(XMLReader& reader
                 this->setMesh(mesh);
             } else {
                 auto generator = dynamic_pointer_cast<MeshGeneratorD<MeshT::DIM>>(found->second);
-                if (!generator) throw BadInput(this->getId(), "Mesh mesh or generator '{0}' of wrong type", *name);
+                if (!generator) throw BadInput(this->getId(), "Mesh or generator '{0}' of wrong type", *name);
                 this->setMesh(generator);
             }
         }

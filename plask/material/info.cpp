@@ -5,7 +5,7 @@
 
 namespace plask {
 
-const char* MaterialInfo::PROPERTY_NAME_STRING[] = {
+const char* MaterialInfo::PROPERTY_NAME_STRING[55] = {
     "kind",
     "lattC",
     "Eg",
@@ -63,7 +63,7 @@ const char* MaterialInfo::PROPERTY_NAME_STRING[] = {
 };
 
 /// Names of arguments for which we need to give the ranges
-const char* MaterialInfo::ARGUMENT_NAME_STRING[] = {
+const char* MaterialInfo::ARGUMENT_NAME_STRING[6] = {
     "T",
     "e",
     "lam",
@@ -72,6 +72,28 @@ const char* MaterialInfo::ARGUMENT_NAME_STRING[] = {
     "doping"
 };
 
+
+
+MaterialInfo::PROPERTY_NAME MaterialInfo::parsePropertyName(const std::string &name)
+{
+    for (unsigned i = 0; i < sizeof (PROPERTY_NAME_STRING) / sizeof (PROPERTY_NAME_STRING[0]); ++i)
+        if (name == PROPERTY_NAME_STRING[i]) return PROPERTY_NAME(i);
+    throw plask::Exception("\"" + name + "\" is not a proper name of material's property.");
+}
+
+MaterialInfo::ARGUMENT_NAME MaterialInfo::parseArgumentName(const std::string &name)
+{
+    for (unsigned i = 0; i < sizeof (ARGUMENT_NAME_STRING) / sizeof (ARGUMENT_NAME_STRING[0]); ++i)
+        if (name == ARGUMENT_NAME_STRING[i]) return ARGUMENT_NAME(i);
+    throw plask::Exception("\"" + name + "\" is not a proper name of argument of material's method.");
+}
+
+MaterialInfo::Link::Link(const std::string &to_parse) {
+    std::string s;
+    std::tie(s, this->comment) = plask::splitString2(to_parse, ' ');
+    std::tie(this->className, s) = plask::splitString2(s, '.');
+    this->property = MaterialInfo::parsePropertyName(s);
+}
 
 
 void MaterialInfo::override(const MaterialInfo &to_override) {
@@ -147,6 +169,7 @@ plask::optional<MaterialInfo::PropertyInfo> MaterialInfo::DB::get(const std::str
     auto res = this_mat_info->second.getPropertyInfo(propertyName);
     return res || !with_inherited_info || this_mat_info->second.parent.empty() ? res : get(this_mat_info->second.parent, propertyName, true);
 }
+
 
 
 }

@@ -82,7 +82,9 @@ struct PLASK_API MaterialInfo {
     };
 
     /// Names of the properties
-    static const char* PROPERTY_NAME_STRING[];
+    static const char* PROPERTY_NAME_STRING[55];
+
+    static PROPERTY_NAME parsePropertyName(const std::string& name);
 
     /// Names of arguments for which we need to give the ranges
     enum ARGUMENT_NAME {
@@ -95,7 +97,9 @@ struct PLASK_API MaterialInfo {
     };
 
     /// Names of the arguments
-    static const char* ARGUMENT_NAME_STRING[];
+    static const char* ARGUMENT_NAME_STRING[6];
+
+    static ARGUMENT_NAME parseArgumentName(const std::string& name);
 
     /**
      * Represent link ("see also") to property in class.
@@ -110,6 +114,12 @@ struct PLASK_API MaterialInfo {
 
         Link(std::string className, PROPERTY_NAME property, std::string comment = std::string())
             : className(className), property(property), comment(comment) {}
+
+        /**
+         * Construct a link from a string.
+         * @param to_parse the string to parse, in form "class_name.property comment"
+         */
+        Link(const std::string& to_parse);
     };
 
     ///Collect information about material property.
