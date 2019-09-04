@@ -322,9 +322,12 @@ static void loadMaterialInfo(XMLReader& reader,
     }
     {
         plask::optional<std::string> see = reader.getAttribute("see");
-        unsigned counter = 2;
-        while (see) {
-            MaterialInfo::DB::getDefault().add(material_name, base_name)(property_name).addLink(MaterialInfo::Link(*see));
+        unsigned counter = 1;
+        while (see || counter == 1) {
+            if (see) {
+                if ((*see)[0] == '.') see->insert(0, material_name);
+                MaterialInfo::DB::getDefault().add(material_name, base_name)(property_name).addLink(MaterialInfo::Link(*see));
+            }
             see = reader.getAttribute("see" + boost::lexical_cast<std::string>(counter));
             counter++;
         }
@@ -332,7 +335,12 @@ static void loadMaterialInfo(XMLReader& reader,
     {
         for (unsigned i = 0; i < sizeof (MaterialInfo::ARGUMENT_NAME_STRING) / sizeof (MaterialInfo::ARGUMENT_NAME_STRING[0]); ++i) {
             plask::optional<std::string> range_desc = reader.getAttribute(std::string(MaterialInfo::ARGUMENT_NAME_STRING[i]) + "_range");
-            if (range_desc)
+            if (range_desc) {
+                std::string from, to;
+                std::tie(from, to) = splitString2(*range_desc, ':');
+                MaterialInfo::DB::getDefault().add(material_name, base_name)(property_name)
+                        .setArgumentRange(MaterialInfo::ARGUMENT_NAME(i), boost::lexical_cast<double>(from), boost::lexical_cast<double>(to));
+            }
         }
     }
 }

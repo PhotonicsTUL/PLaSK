@@ -122,7 +122,7 @@ struct PLASK_API MaterialInfo {
         Link(const std::string& to_parse);
     };
 
-    ///Collect information about material property.
+    /// Collect information about material property.
     struct PLASK_API PropertyInfo {
 
         typedef std::pair<double, double> ArgumentRange;
@@ -138,7 +138,7 @@ struct PLASK_API MaterialInfo {
         /// Information about source of property calclulation algorithm
         std::string _source;
 
-        ///Other comments about property
+        /// Other comments about property
         std::string _comment;
 
         /**
@@ -170,20 +170,20 @@ struct PLASK_API MaterialInfo {
         const std::string& getSource() const { return _source; }
 
         /**
-         * Set comment for this material property.
+         * Set comment on this material property.
          * @param new_comment comment
          * @return *this
          */
         PropertyInfo& setComment(const std::string& new_comment) { this->_comment = new_comment; return *this; }
 
         /**
-         * Get comment for this material property.
-         * @return comment for this material property
+         * Get comment on this material property.
+         * @return comment on this material property
          */
         const std::string& getComment() const { return _comment; }
 
         /**
-         * Get the range of argument's values for which calculation method is known to works fine.
+         * Get the range of argument's values for which the calculation method is known to works fine.
          * @param argument name of requested argument
          * @return range (NO_RANGE if the information is not available)
          */
@@ -210,7 +210,7 @@ struct PLASK_API MaterialInfo {
         PropertyInfo& addComment(const std::string& commentToAdd) { addToString(this->_comment, commentToAdd); return *this; }
 
         /**
-         * Set the range of argument's values for which calculation method is known to works fine.
+         * Set the range of argument's values for which the calculation method is known to works fine.
          * @param argument name of argument
          * @param range range of values for which calculation method is known to works fine (NO_RANGE if the information is not available)
          * @return *this
@@ -218,7 +218,7 @@ struct PLASK_API MaterialInfo {
         PropertyInfo& setArgumentRange(ARGUMENT_NAME argument, ArgumentRange range);
 
         /**
-         * Set the range of argument's values for which calculation method is known to works fine.
+         * Set the range of argument's values for which the calculation method is known to works fine.
          * @param argument name of argument
          * @param from, to range of values for which calculation method is known to works fine
          * @return *this

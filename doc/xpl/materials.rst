@@ -22,6 +22,13 @@ This section contains specification of custom materials that can be used togethe
 
       Some properties are anisotropic and can have different values for lateral and vertical components. In such case, two separate values may (but do not have to) be defined in the contents of the material property tag and they should be separated with a comma.
 
+      Each property tag bellow can have the following (optional) attributes which can provide addtional information on the calculation method:
+
+      :attr comment: any comment
+      :attr source: bibliography source of calculation method of the material property
+      :attr see: "see also" link to different property (of different material, if given) in format ``material_name.property comment`` (both ``material_name`` and ``comment`` are optional, but dot is always required); addtional links can be specified by ``see2``, ``see3``, etc. attributes
+      :attr ARGUMENT_range: the range (in format: ``from:to``) of ``ARGUMENT``'s values for which the calculation method is known to works fine; ``ARGUMENT`` is one of: ``T``, ``e``, ``lam``, ``n``, ``h``, ``doping``
+
       .. rubric:: Example:
 
       .. code-block:: xml
@@ -29,7 +36,7 @@ This section contains specification of custom materials that can be used togethe
          <materials>
            <material name="MyMaterial" base="Semiconductor">
              <nr>3.5 + 0.01*T</nr>
-             <absp>10.</absp>
+             <absp comment="no temperature dependence">10.</absp>
            </material>
          <materials>
 
