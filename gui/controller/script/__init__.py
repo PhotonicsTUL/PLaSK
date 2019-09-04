@@ -411,6 +411,10 @@ class ScriptController(SourceEditController):
     def on_edit_exit(self):
         return super(ScriptController, self).on_edit_exit()
 
+    def save_data_in_model(self):
+        self.before_save()
+        super(ScriptController, self).save_data_in_model()
+
     def before_save(self):
         if CONFIG['editor/remove_trailing_spaces']:
             self.load_data_from_model()
