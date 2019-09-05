@@ -502,10 +502,10 @@ cvector ReflectionTransfer::getFieldVectorE(double z, std::size_t n)
     for (std::size_t i = 0; i < N; i++) {
         dcomplex phi = - I * gamma[i] * z;
         dcomplex ef = F1[i] * exp(phi), eb = B1[i] * exp(-phi);
-        if (isnan(ef) && F1[i] == 0.) ef = 0.;
-        if (isnan(eb) && B1[i] == 0.) eb = 0.;
-        // if (isnan(ef)) std::cerr << "ef" << F1[i] << exp(phi) << " ";
-        // if (isnan(eb)) std::cerr << "eb" << B1[i] << exp(-phi) << " ";
+        if (isnan(ef) || isinf(ef.real()) || isinf(ef.imag())) ef = exp(log(F1[i]) + phi);
+        if (isnan(eb) || isinf(eb.real()) || isinf(eb.imag())) eb = exp(log(B1[i]) - phi);
+        if (isnan(ef) || isinf(ef.real()) || isinf(ef.imag())) ef = 0.;  // not elegant but allows to avoid NaNs
+        if (isnan(eb) || isinf(eb.real()) || isinf(eb.imag())) eb = 0.;  // not elegant but allows to avoid NaNs
         E[i] = ef + eb;
     }
 
@@ -527,10 +527,10 @@ cvector ReflectionTransfer::getFieldVectorH(double z, std::size_t n)
     for (std::size_t i = 0; i < N; i++) {
         dcomplex phi = - I * gamma[i] * z;
         dcomplex ef = F1[i] * exp(phi), eb = B1[i] * exp(-phi);
-        if (isnan(ef) && F1[i] == 0.) ef = 0.;
-        if (isnan(eb) && B1[i] == 0.) eb = 0.;
-        // if (isnan(ef)) std::cerr << "ef" << F1[i] << exp(phi) << " ";
-        // if (isnan(eb)) std::cerr << "eb" << B1[i] << exp(-phi) << " ";
+        if (isnan(ef) || isinf(ef.real()) || isinf(ef.imag())) ef = exp(log(F1[i]) + phi);
+        if (isnan(eb) || isinf(eb.real()) || isinf(eb.imag())) eb = exp(log(B1[i]) - phi);
+        if (isnan(ef) || isinf(ef.real()) || isinf(ef.imag())) ef = 0.;  // not elegant but allows to avoid NaNs
+        if (isnan(eb) || isinf(eb.real()) || isinf(eb.imag())) eb = 0.;  // not elegant but allows to avoid NaNs
         H[i] = ef - eb;
     }
 
