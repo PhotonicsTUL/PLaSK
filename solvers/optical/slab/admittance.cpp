@@ -602,30 +602,35 @@ double AdmittanceTransfer::integrateField(WhichField field, size_t n, double z1,
 
         double gr = 2. * gamma[i].real(), gi = 2. * gamma[i].imag();
         double M = cosh(gi * d) - cos(gr * d);
-        double cos00, cosdd;
-        dcomplex cos0d;
-        if (is_zero(gr)) {
-            cos00 = cosdd = z2-z1;
-            cos0d = cos(gamma[i] * d) * (z2-z1);
+        if (isinf(M)) {
+            double VV = real(F0[i]*conj(F0[i])) + real(Fd[i]*conj(Fd[i])) - 2. * real(F0[i]*conj(Fd[i]));
+            result += TT * VV;
         } else {
-            cos00 = (sin(gr * (d-z1)) - sin(gr * (d-z2))) / gr;
-            cosdd = (sin(gr * z2) - sin(gr * z1)) / gr;
-            cos0d = (sin(gamma[i] * d - gr * z1) - sin(gamma[i] * d - gr * z2)) / gr;
+            double cos00, cosdd;
+            dcomplex cos0d;
+            if (is_zero(gr)) {
+                cos00 = cosdd = z2-z1;
+                cos0d = cos(gamma[i] * d) * (z2-z1);
+            } else {
+                cos00 = (sin(gr * (d-z1)) - sin(gr * (d-z2))) / gr;
+                cosdd = (sin(gr * z2) - sin(gr * z1)) / gr;
+                cos0d = (sin(gamma[i] * d - gr * z1) - sin(gamma[i] * d - gr * z2)) / gr;
+            }
+            double cosh00, coshdd;
+            dcomplex cosh0d;
+            if (is_zero(gi)) {
+                cosh00 = coshdd = z2-z1;
+                cosh0d = cos(gamma[i] * d) * (z2-z1);
+            } else {
+                cosh00 = (sinh(gi * (d-z1)) - sinh(gi * (d-z2))) / gi;
+                coshdd = (sinh(gi * z2) - sinh(gi * z1)) / gi;
+                cosh0d = (sin(gamma[i] * d - gi * z1) - sin(gamma[i] * d - gi * z2)) / gi;
+            }
+            double VV =      real(F0[i]*conj(F0[i])) * (cosh00 - cos00) +
+                             real(Fd[i]*conj(Fd[i])) * (coshdd - cosdd) -
+                        2. * real(F0[i]*conj(Fd[i])  * (cosh0d - cos0d));
+            result += TT * VV / M;
         }
-        double cosh00, coshdd;
-        dcomplex cosh0d;
-        if (is_zero(gi)) {
-            cosh00 = coshdd = z2-z1;
-            cosh0d = cos(gamma[i] * d) * (z2-z1);
-        } else {
-            cosh00 = (sinh(gi * (d-z1)) - sinh(gi * (d-z2))) / gi;
-            coshdd = (sinh(gi * z2) - sinh(gi * z1)) / gi;
-            cosh0d = (sin(gamma[i] * d - gi * z1) - sin(gamma[i] * d - gi * z2)) / gi;
-        }
-        double VV =      real(F0[i]*conj(F0[i])) * (cosh00 - cos00) +
-                         real(Fd[i]*conj(Fd[i])) * (coshdd - cosdd) -
-                    2. * real(F0[i]*conj(Fd[i]) * (cosh0d - cos0d));
-        result += TT * VV / M;
     }
 
     return result;
