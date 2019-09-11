@@ -244,7 +244,7 @@ double Transfer::getScatteredFieldIntegral(WhichField field, const cvector& inci
         result += integrateField(field, n, z1, (n != end)? n? solver->vbounds->at(n) - solver->vbounds->at(n-1) : 0. : z2);
         z1 = 0.;
     }
-    return ((field == FIELD_E)? 2e-3 : 2e-3/(Z0*Z0)) * result;
+    return ((field == FIELD_E)? 2.*Z0 : 2./Z0) * result;
 }
 
 }}} // namespace plask::optical::slab

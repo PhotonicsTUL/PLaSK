@@ -502,10 +502,10 @@ cvector ReflectionTransfer::getFieldVectorE(double z, std::size_t n)
     for (std::size_t i = 0; i < N; i++) {
         dcomplex phi = - I * gamma[i] * z;
         dcomplex ef = F1[i] * exp(phi), eb = B1[i] * exp(-phi);
-        if (isnan(ef) && F1[i] == 0.) ef = 0.;
-        if (isnan(eb) && B1[i] == 0.) eb = 0.;
-        // if (isnan(ef)) std::cerr << "ef" << F1[i] << exp(phi) << " ";
-        // if (isnan(eb)) std::cerr << "eb" << B1[i] << exp(-phi) << " ";
+        if (isnan(ef) || isinf(ef.real()) || isinf(ef.imag())) ef = exp(log(F1[i]) + phi);
+        if (isnan(eb) || isinf(eb.real()) || isinf(eb.imag())) eb = exp(log(B1[i]) - phi);
+        if (isnan(ef) || isinf(ef.real()) || isinf(ef.imag())) ef = 0.;  // not elegant but allows to avoid NaNs
+        if (isnan(eb) || isinf(eb.real()) || isinf(eb.imag())) eb = 0.;  // not elegant but allows to avoid NaNs
         E[i] = ef + eb;
     }
 
@@ -527,10 +527,10 @@ cvector ReflectionTransfer::getFieldVectorH(double z, std::size_t n)
     for (std::size_t i = 0; i < N; i++) {
         dcomplex phi = - I * gamma[i] * z;
         dcomplex ef = F1[i] * exp(phi), eb = B1[i] * exp(-phi);
-        if (isnan(ef) && F1[i] == 0.) ef = 0.;
-        if (isnan(eb) && B1[i] == 0.) eb = 0.;
-        // if (isnan(ef)) std::cerr << "ef" << F1[i] << exp(phi) << " ";
-        // if (isnan(eb)) std::cerr << "eb" << B1[i] << exp(-phi) << " ";
+        if (isnan(ef) || isinf(ef.real()) || isinf(ef.imag())) ef = exp(log(F1[i]) + phi);
+        if (isnan(eb) || isinf(eb.real()) || isinf(eb.imag())) eb = exp(log(B1[i]) - phi);
+        if (isnan(ef) || isinf(ef.real()) || isinf(ef.imag())) ef = 0.;  // not elegant but allows to avoid NaNs
+        if (isnan(eb) || isinf(eb.real()) || isinf(eb.imag())) eb = 0.;  // not elegant but allows to avoid NaNs
         H[i] = ef - eb;
     }
 
@@ -562,11 +562,23 @@ double ReflectionTransfer::integrateField(WhichField field, size_t n, double z1,
         double TT = diagonalizer->source()->integrateField(field, layer, E, H);
 
         double gi = 2. * gamma[i].imag(), gr = 2. * gamma[i].real();
-        double fFF =   is_zero(gi)? z2-z1 : (exp(gi*z2)-exp(gi*z1)) / gi,
-               fBB =   is_zero(gi)? z2-z1 : (exp(-gi*z1)-exp(-gi*z2)) / gi;
+        double FF = real(F1[i]*conj(F1[i])),
+               BB = real(real(B1[i]*conj(B1[i])));
+        dcomplex FB = F1[i]*conj(B1[i]);
+        double VV;
+        if (is_zero(gi)) {
+            VV = (z2-z1) * (FF + BB);
+        } else {
+            VV = FF * (exp(gi*z2) - exp(gi*z1)) / gi +
+                 BB * (exp(-gi*z1) - exp(-gi*z2)) / gi;
+            if (isinf(VV) || isnan(VV)) {
+                double logFF = log(FF), logBB = log(BB);
+                VV = (exp(logFF + gi*z2) - exp(logFF + gi*z1)) / gi +
+                     (exp(logBB - gi*z1) - exp(logBB - gi*z2)) / gi;
+            }
+        }
         dcomplex fFB = is_zero(gr)? z2-z1 : (exp(-I*gr*z1)-exp(-I*gr*z2)) / gr;
-        double VV = real(F1[i]*conj(F1[i])) * fFF + real(B1[i]*conj(B1[i])) * fBB +
-                    ((field == FIELD_E)? 2.: -2.) * imag(F1[i]*conj(B1[i]) * fFB);
+        VV += ((field == FIELD_E)? 2.: -2.) * imag(FB * fFB);
         result += TT * VV;
     }
 

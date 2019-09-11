@@ -72,6 +72,7 @@ def plotFields(symmetry):
     subplot2grid((3,3), (0,2), rowspan=3, sharey=ax_mag)
     msh1 = mesh.Rectangular3D([0], [0], msh.axis2)
     E1 = solver.outLightE(mn, msh1)
+    E1 /= m
     mr = max(abs(E.array[:,:,c].real).ravel())
     mi = max(abs(E.array[:,:,c].imag).ravel())
     if mi > mr: E1 = E1.imag

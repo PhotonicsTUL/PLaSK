@@ -193,7 +193,11 @@ class SolverWidget(QWidget):
         scroll.setWidget(main)
 
     def _change_attr(self, group, name, value, attr=None):
-        node = self.controller.solver_model
+        try:
+            node = self.controller.solver_model
+        except ReferenceError:
+            # this can happen when closing window, so we have not choice but to ignore it
+            return
 
         def set_solver_attr(value):
             if name is None:

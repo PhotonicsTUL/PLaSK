@@ -55,6 +55,8 @@ def plotFields(symmetry):
     figure(figsize=(14, 6))
 
     E = solver.outLightE(mn, msh)
+    m = max(abs(E))
+    E /= m
 
     ax_mag = subplot2grid((3,3), (0,1), rowspan=3)
     plot_field(Data(sum(real(E*conj(E)),-1), E.mesh))
@@ -66,7 +68,6 @@ def plotFields(symmetry):
     subplot2grid((3,3), (0,2), rowspan=3, sharey=ax_mag)
     msh1 = mesh.Rectangular2D([0], msh.axis1)
     E1 = solver.outLightE(mn, msh1)
-    m = max(abs(E.array[:,:,:c]).ravel())
     E1 /= m
     mr = max(abs(E.array[:,:,c].real).ravel())
     mi = max(abs(E.array[:,:,c].imag).ravel())

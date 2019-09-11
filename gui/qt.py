@@ -44,10 +44,10 @@ if QT_API is None:
         QT_API = 'PyQt5'
     else:
         if matplotlib.rcParams['backend'] == 'Qt4Agg':
-            QT_API = matplotlib.rcParams['backend.qt4']
+            QT_API = matplotlib.rcParams.get('backend.qt4', 'PySide')
         else:
             matplotlib.use('Qt5Agg')
-            QT_API = matplotlib.rcParams['backend.qt5']
+            QT_API = matplotlib.rcParams.get('backend.qt5', 'PySide2')
 
 for QT_API in (QT_API, 'PySide2', 'PyQt5', 'PySide', 'PyQt4'):
     if QT_API == 'PySide':

@@ -68,17 +68,23 @@ class GratingTest(unittest.TestCase):
         box = self.solver.geometry.get_object_bboxes(self.stack)[0]
         msh = mesh.Rectangular2D(mesh.Regular(0., box.right, 501),
                                  mesh.Regular(box.bottom, box.top, 201))
-        dr = msh.axis0[1] - msh.axis0[0]
-        dz = msh.axis1[1] - msh.axis1[0]
+        dx = msh.axis0[1] - msh.axis0[0]
+        dy = msh.axis1[1] - msh.axis1[0]
         integral_mesh = msh.elements.mesh
 
         E = scattering.outLightE(integral_mesh).array
-        EE0 = 0.5 * sum(real(E*conj(E))) * dr * dz
+        EE0 = 0.5 * sum(real(E*conj(E))) * dx * dy
         EE1 = scattering.integrateEE(box.bottom, box.top)
-
         ratio = EE1 / EE0
-        print_log('result', "ratio:", ratio)
-        self.assertAlmostEqual(ratio, 1.0, delta=0.2)
+        print_log('result', "E ratio:", ratio)
+        self.assertAlmostEqual(ratio, 1.0, delta=0.1)
+
+        H = scattering.outLightH(integral_mesh).array
+        HH0 = 0.5 * sum(real(H*conj(H))) * dx * dy
+        HH1 = scattering.integrateHH(box.bottom, box.top)
+        ratio = HH1 / HH0
+        print_log('result', "H ratio:", ratio)
+        self.assertAlmostEqual(ratio, 1.00, delta=0.15)
 
 
 if __name__ == '__main__':

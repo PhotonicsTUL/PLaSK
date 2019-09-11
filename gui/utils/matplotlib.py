@@ -143,7 +143,6 @@ class PlotWidgetBase(QWidget):
                         if tooltip_text is not None:
                             action.setToolTip(tooltip_text)
                     self._actions[callback] = action
-            self.buttons = {}
             # Add the x,y location widget at the right side of the toolbar
             # The stretch factor is 1 which means any resizing of the toolbar
             # will resize this label instead of the buttons.

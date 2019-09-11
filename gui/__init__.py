@@ -566,6 +566,11 @@ class MainWindow(QMainWindow):
 
     def before_save(self):
         """"Is called just before save, return True if document can be saved."""
+        try:
+            QApplication.focusWidget().editingFinished.emit()
+        except AttributeError:
+            pass
+
         if self.current_tab_index != -1:
             try:
                 self.document.controller_by_index(self.current_tab_index).save_data_in_model()
@@ -578,6 +583,7 @@ class MainWindow(QMainWindow):
                 msgbox.setIcon(QMessageBox.Warning)
                 #msgbox.setDefaultButton(QMessageBox.Yes);
                 return msgbox.exec_() == QMessageBox.Yes
+
         errors = self.document.get_info(Info.ERROR)
         if errors:
             msgbox = QMessageBox()
@@ -625,6 +631,11 @@ class MainWindow(QMainWindow):
             self.tools_menu.removeAction(action)
 
     def closeEvent(self, event):
+
+        try:
+            QApplication.focusWidget().editingFinished.emit()
+        except AttributeError:
+            pass
 
         self.closing.emit(event)
         if not event.isAccepted():
