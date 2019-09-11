@@ -477,7 +477,7 @@ class MaterialsController(Controller):
         except (RuntimeError, TypeError): pass
         if indexes:
             row = indexes[0].row()
-            self.propedit.setPlainText(self.selected_material.properties[row][1])
+            self.propedit.setPlainText(self.selected_material.properties[row].value)
             self.propedit.show()
             weakself = weakref.proxy(self)
             self.propedit.textChanged.connect(lambda: weakself.propedit_changed(row))

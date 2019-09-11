@@ -276,6 +276,24 @@ class MaterialsModel(TableModel):
 
     class Material(TableModelEditMethods, QAbstractTableModel): #(InfoSource)
 
+        class Property:
+            def __init__(self, name=None, value=None, comment=None, source=None, links=None):
+                self.name = name
+                self.value = value
+                self.comment = comment
+                self.source = source
+                self.links = [] if links is None else links
+
+            def add_to_xml(self, material_element):
+                if not self.name: return
+                el = ElementTree.SubElement(material_element, self.name)
+                if self.value: el.text = self.value
+                if self.comment: el.attrib["comment"] = self.comment
+                if self.source: el.attrib["source"] = self.source
+                for nr, link in enumerate(self.links):  # TODO special type for the links
+                    el.attrib["see{}".format('' if nr == 0 else nr+1)] = link
+
+
         def __init__(self, materials_model, name, base=None, properties=None, alloy=False, comment=None,
                      parent=None, *args):
             QAbstractTableModel.__init__(self, parent, *args)
@@ -292,9 +310,7 @@ class MaterialsModel(TableModel):
             mat = ElementTree.SubElement(material_section_element, "material", {"name": self.name})
             if self.base: mat.attrib['base'] = self.base
             if self.alloy: mat.attrib['alloy'] = 'yes'
-            for (n, v) in self.properties:
-                if n:
-                    ElementTree.SubElement(mat, n).text = v
+            for p in self.properties: p.add_to_xml(mat)
 
         def rowCount(self, parent=QModelIndex()):
             if parent.isValid(): return 0
@@ -304,12 +320,12 @@ class MaterialsModel(TableModel):
             return 4    # 5 if comment supported
 
         def get(self, col, row):
-            n, v = self.properties[row]
+            p = self.properties[row]
             if col == 2:
-                return material_unit(n)
+                return material_unit(p.name)
             elif col == 3:
-                return material_html_help(n, with_unit=False, with_attr=True)
-            return n if col == 0 else v
+                return material_html_help(p.name, with_unit=False, with_attr=True)
+            return p.name if col == 0 else p.value
 
         get_raw = get
 
@@ -331,11 +347,11 @@ class MaterialsModel(TableModel):
                 return QBrush(QPalette().color(QPalette.Normal, QPalette.Window))
 
         def set(self, col, row, value):
-            n, v = self.properties[row]
+            p = self.properties[row]
             if col == 0:
-                self.properties[row] = (value, v)
+                p.name = value
             elif col == 1:
-                self.properties[row] = (n, value)
+                p.value = value
 
         def flags(self, index):
             flags = super(MaterialsModel.Material, self).flags(index) | Qt.ItemIsSelectable | Qt.ItemIsEnabled
@@ -357,7 +373,7 @@ class MaterialsModel(TableModel):
             """:return: list of available options to choose at given index or None"""
             if index.column() == 0: return MATERIALS_PROPERTES.keys()
             if index.column() == 1:
-                if self.properties[index.row()][0] == 'condtype':
+                if self.properties[index.row()].name == 'condtype':
                     return ['n', 'i', 'p', 'other']
             return None
 
@@ -372,7 +388,7 @@ class MaterialsModel(TableModel):
             self.materials_model.fire_changed()
 
         def create_default_entry(self):
-            return "", ""
+            return MaterialsModel.Material.Property()
 
         @property
         def undo_stack(self):
@@ -390,8 +406,16 @@ class MaterialsModel(TableModel):
                     properties = []
                     for prop in mat:
                         require_no_children(prop)
-                        require_no_attributes(prop)
-                        properties.append((prop.tag, prop.text))
+                        with AttributeReader(mat) as prop_attrib:
+                            p = MaterialsModel.Material.Property(prop.tag, prop.text,
+                                                             prop_attrib.get("comment"), prop_attrib.get("source"))
+                            see = prop_attrib.get("see")
+                            counter = 1
+                            while see is not None or counter == 1:
+                                if see is not None: p.links.append(see)
+                                see = prop_attrib.get("see{}".format(counter))
+                                counter += 1
+                            properties.append(p)
                     base = mat_attrib.get('base', None)
                     if base is None: base = mat_attrib.get('kind')  # for old files
                     alloy = mat_attrib.get('complex', False)  #TODO remove soon
