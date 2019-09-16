@@ -161,6 +161,12 @@ class MaterialsComboBox(QComboBox):
             self.currentIndexChanged[str].connect(self.show_components_popup)
         self.material_edit_popup = None
 
+    def setEditText(self, text: str):
+        super(MaterialsComboBox, self).setEditText(text)
+        index = self.findData(text, Qt.DisplayRole)
+        if index != -1:
+            self.setCurrentIndex(index)
+
     def focusOutEvent(self, event):
         if self.material_edit_popup is None:
             self.editingFinished.emit()
