@@ -145,7 +145,7 @@ std::string MaterialInfo::PropertyInfo::getSource() const {
     std::string result;
     for (const std::string& source: eachCommentOfType("source")) {
         if (source.empty()) continue;
-        if (result.empty()) result += '\n';
+        if (!result.empty()) result += '\n';
         result += source;
     }
     return result;
