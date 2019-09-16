@@ -406,16 +406,16 @@ class MaterialsModel(TableModel):
                     properties = []
                     for prop in mat:
                         require_no_children(prop)
-                        #with AttributeReader(mat) as prop_attrib:
-                        #    p = MaterialsModel.Material.Property(prop.tag, prop.text,
-                        #                                     prop_attrib.get("comment"), prop_attrib.get("source"))
-                        #    see = prop_attrib.get("see")
-                        #    counter = 1
-                        #    while see is not None or counter == 1:
-                        #        if see is not None: p.links.append(see)
-                        #        see = prop_attrib.get("see{}".format(counter))
-                        #        counter += 1
-                        #    properties.append(p)
+                        with AttributeReader(prop) as prop_attrib:
+                           p = MaterialsModel.Material.Property(prop.tag, prop.text,
+                                                            prop_attrib.get("comment"), prop_attrib.get("source"))
+                           # see = prop_attrib.get("see")
+                           # counter = 1
+                           # while see is not None or counter == 1:
+                           #     if see is not None: p.links.append(see)
+                           #     see = prop_attrib.get("see{}".format(counter))
+                           #     counter += 1
+                           properties.append(p)
                     base = mat_attrib.get('base', None)
                     if base is None: base = mat_attrib.get('kind')  # for old files
                     alloy = mat_attrib.get('complex', False)  #TODO remove soon
