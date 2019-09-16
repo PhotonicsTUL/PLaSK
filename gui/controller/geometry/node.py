@@ -172,10 +172,8 @@ class GNodeController(Controller):
                     node_property_name, res.currentText(), display_property_name, node=node)
         res = MaterialsComboBox(materials_model=self.document.materials.model,
                                 defines_model=self.document.defines.model,
-                                popup_select_cb=lambda m: change_cb())
+                                popup_select_cb=lambda m: change_cb(), items=items)
         res.setEditable(True)
-        res.append_list(items)
-        res.setCompleter(get_defines_completer(self.document.defines.model, res))
         res.setMinimumWidth(2)
         if row_name: self._get_current_form().addRow(row_name, res)
         if change_cb is not None:
@@ -184,8 +182,7 @@ class GNodeController(Controller):
 
     def construct_names_before_self_combo_box(self, row_name=None, node_property_name=None,
                                               display_property_name=None, change_cb=None):
-        res = self.construct_combo_box(items=[''] +
-                                       sorted(self.model.get_names_before(self.node), key=lambda s: s.lower()),
+        res = self.construct_combo_box(sorted(self.model.get_names_before(self.node), key=lambda s: s.lower()),
                                        node_property_name=node_property_name,
                                        display_property_name=display_property_name,
                                        change_cb=change_cb)

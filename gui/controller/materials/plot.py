@@ -550,4 +550,5 @@ def show_material_plot(parent, model, defines, init_material=None):
     plot_window = QMainWindow(parent)
     plot_window.setWindowTitle("Material Parameter")
     plot_window.setCentralWidget(plot)
+    plot_window.setAttribute(Qt.WA_DeleteOnClose)
     plot_window.show()

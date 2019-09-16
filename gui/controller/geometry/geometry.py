@@ -40,7 +40,7 @@ class GNGeometryController(GNObjectController):
             grid_layout.addWidget(label, row, 0, alignment)
             label = QLabel("{}:".format(hi.title()))
             grid_layout.addWidget(label, row, 2, alignment)
-            res = tuple(self.construct_material_combo_box(items=['', 'mirror', 'periodic', 'extend'],
+            res = tuple(self.construct_material_combo_box(items=['mirror', 'periodic', 'extend'],
                                                           change_cb=self._borders_to_model_undoable)
                         for _ in range(0, 2))
             for r in res:

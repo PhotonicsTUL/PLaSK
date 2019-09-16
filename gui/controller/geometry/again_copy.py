@@ -84,7 +84,7 @@ class GNCToBlockController(GNCopyChildController):
         super(GNCToBlockController, self).construct_form()
         self.object.setToolTip('&lt;toblock <b>object</b>="" material=""/&gt;<br/>'
                                'Name of the object to replace with the the solid block. Required.')
-        self.material = self.construct_material_combo_box('Block material:', items=[''], node_property_name='material')
+        self.material = self.construct_material_combo_box('Block material:', node_property_name='material')
         self.material.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.material.setToolTip('&lt;toblock object="" <b>material</b>=""/&gt;<br/>'
                                  'Material of the solid block. Required.')

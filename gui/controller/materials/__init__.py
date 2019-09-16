@@ -127,14 +127,14 @@ class MaterialsComboBox(QComboBox):
     editingFinished = QtSignal()
 
     def __init__(self, parent=None, materials_model=None, defines_model=None, popup_select_cb=None,
-                 limit_model=0, include_generic=False, editable=True, show_popup=True):
+                 limit_model=None, items=None, editable=True, show_popup=True):
         """
         :param parent: Qt Object parent
         :param defines_model: defines model used to completion
         :param popup_select_cb: called after selecting components in ComponentsPopup
                (it can be called after deleting internal QComboBox)
         :param limit_model: maximum number of items from model
-        :param include_generic: if True, generic materials are included
+        :param items: list of additional items
         :param editable: if True, material can be manually edited
         :param show_popup: if True, the composition popup can be shown
         """
@@ -144,7 +144,7 @@ class MaterialsComboBox(QComboBox):
             self.setLineEdit(line_edit)
         else:
             line_edit = self.lineEdit()
-        material_list = self.append_materials(materials_model, limit_model, include_generic)
+        material_list = self.append_materials(materials_model, limit_model, items)
         self.popup_select_cb = popup_select_cb
         self.setEditable(True)
         self.setInsertPolicy(QComboBox.NoInsert)
@@ -182,17 +182,19 @@ class MaterialsComboBox(QComboBox):
             if insert_separator and self.count() > 0: self.insertSeparator(self.count())
             self.addItems(list_to_append)
 
-    def append_materials(self, material_model, limit_model=0, include_generic=False):
-        if include_generic:
-            self.append_list(BASE_MATERIALS)
+    def append_materials(self, material_model, limit_model=None, items=None):
+        if items:
+            self.append_list(items)
         if material_model:
             model_materials = material_model.get_materials(limit_model)
             self.append_list(model_materials)
+        else:
+            model_materials = []
         default_materials = [m for m in sorted(DB, key=lambda x: x.lower())
                              if m not in BASE_MATERIALS and m not in model_materials]
         self.append_list(default_materials)
-        if include_generic:
-            return BASE_MATERIALS + model_materials + default_materials
+        if items is not None:
+            return items + model_materials + default_materials
         else:
             return model_materials + default_materials
 
@@ -246,14 +248,9 @@ class MaterialBaseDelegate(DefinesCompletionDelegate):
         self.materials_model = materials_model
 
     def createEditor(self, parent, option, index):
-        material_list = BASE_MATERIALS[:]
-
         combo = MaterialsComboBox(parent, self.materials_model, self.model, limit_model=index.row(), show_popup=False,
-                                  include_generic=True, popup_select_cb=lambda mat: index.model().setData(index, mat))
+                                  items=BASE_MATERIALS, popup_select_cb=lambda mat: index.model().setData(index, mat))
         combo.setEditText(index.data())
-        # with BlockQtSignals(combo):
-        #     try: combo.setCurrentIndex(material_list.index(index.data()))
-        #     except ValueError: pass
         return combo
 
 

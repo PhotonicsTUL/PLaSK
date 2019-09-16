@@ -27,14 +27,11 @@ class GNLeafController(GNObjectController):
         self.material_selection_type.addItems(['Solid', 'Vertical Gradient'])
         self.material_selection_type.currentIndexChanged.connect(self._material_type_changed)
 
-        self.material_solid = self.construct_material_combo_box(items=[''],
-                                                                change_cb=self._save_material_in_model_undoable)
+        self.material_solid = self.construct_material_combo_box(change_cb=self._save_material_in_model_undoable)
 
         material_tb_hbox, material_tb_group = self._construct_hbox()
-        self.material_bottom = self.construct_material_combo_box(items=[''],
-                                                                 change_cb=self._save_material_in_model_undoable)
-        self.material_top = self.construct_material_combo_box(items=[''],
-                                                              change_cb=self._save_material_in_model_undoable)
+        self.material_bottom = self.construct_material_combo_box(change_cb=self._save_material_in_model_undoable)
+        self.material_top = self.construct_material_combo_box(change_cb=self._save_material_in_model_undoable)
         self.material_shape = self.construct_line_edit(None, node_property_name='material_shape',
                                                        display_property_name='material shape exponent',
                                                        change_cb=self._save_material_in_model_undoable)
