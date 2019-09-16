@@ -22,12 +22,11 @@ This section contains specification of custom materials that can be used togethe
 
       Some properties are anisotropic and can have different values for lateral and vertical components. In such case, two separate values may (but do not have to) be defined in the contents of the material property tag and they should be separated with a comma.
 
-      Each property tag bellow can have the following (optional) attributes which can provide addtional information on the calculation method:
+      Content of each property can contain doc-string which can provide additional information on the calculation method. Lines of the doc-string with the following formats have special meanings:
 
-      :attr comment: any comment
-      :attr source: bibliography source of calculation method of the material property
-      :attr see: "see also" link to different property (of different material, if given) in format ``material_name.property comment`` (both ``material_name`` and ``comment`` are optional, but dot is always required); addtional links can be specified by ``see2``, ``see3``, etc. attributes
-      :attr ARGUMENT_range: the range (in format: ``from:to``) of ``ARGUMENT``'s values for which the calculation method is known to works fine; ``ARGUMENT`` is one of: ``T``, ``e``, ``lam``, ``n``, ``h``, ``doping``
+      - ``*source:* ...`` - bibliography source of calculation method of the material property;
+      - ``*see:* material_name.property comment`` link to different property (of different material, if given) (both ``material_name`` and ``comment`` are optional, but dot is always required);
+      - ``argument_name *range:* from*:*to`` the range of the argument values for which the calculation method is known to works fine; ``from`` and ``to`` are floats and ``argument_name`` is one of: ``T``, ``e``, ``lam``, ``n``, ``h``, ``doping``
 
       .. rubric:: Example:
 

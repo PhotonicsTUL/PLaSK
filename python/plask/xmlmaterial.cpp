@@ -305,46 +305,6 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
     return material;
 }
 
-static void loadMaterialInfo(XMLReader& reader,
-                             const std::string& material_name,
-                             const std::string& base_name,
-                             MaterialInfo::PROPERTY_NAME property_name)
-{
-    {
-        plask::optional<std::string> comment = reader.getAttribute("comment");
-        if (comment)
-            MaterialInfo::DB::getDefault().add(material_name, base_name)(property_name).setComment(*comment);
-    }
-    {
-        plask::optional<std::string> source = reader.getAttribute("source");
-        if (source)
-            MaterialInfo::DB::getDefault().add(material_name, base_name)(property_name).setSource(*source);
-    }
-    {
-        plask::optional<std::string> see = reader.getAttribute("see");
-        unsigned counter = 1;
-        while (see || counter == 1) {
-            if (see) {
-                if ((*see)[0] == '.') see->insert(0, material_name);
-                MaterialInfo::DB::getDefault().add(material_name, base_name)(property_name).addLink(MaterialInfo::Link(*see));
-            }
-            see = reader.getAttribute("see" + boost::lexical_cast<std::string>(counter));
-            counter++;
-        }
-    }
-    {
-        for (unsigned i = 0; i < sizeof (MaterialInfo::ARGUMENT_NAME_STRING) / sizeof (MaterialInfo::ARGUMENT_NAME_STRING[0]); ++i) {
-            plask::optional<std::string> range_desc = reader.getAttribute(std::string(MaterialInfo::ARGUMENT_NAME_STRING[i]) + "_range");
-            if (range_desc) {
-                std::string from, to;
-                std::tie(from, to) = splitString2(*range_desc, ':');
-                MaterialInfo::DB::getDefault().add(material_name, base_name)(property_name)
-                        .setArgumentRange(MaterialInfo::ARGUMENT_NAME(i), boost::lexical_cast<double>(from), boost::lexical_cast<double>(to));
-            }
-        }
-    }
-}
-
 void PythonManager::loadMaterial(XMLReader& reader) {
     try {
         std::string material_name = reader.requireAttribute("name");
@@ -362,7 +322,6 @@ void PythonManager::loadMaterial(XMLReader& reader) {
     #   if PY_VERSION_HEX >= 0x03000000
     #       define COMPILE_PYTHON_MATERIAL_FUNCTION2(funcname, func) \
             else if (reader.getNodeName() == funcname) { \
-                loadMaterialInfo(reader, material_name, base_name, MaterialInfo::PROPERTY_NAME::func); \
                 constructor->func = (PyCodeObject*)Py_CompileString(trim(reader.requireTextInCurrentTag().c_str()), funcname, Py_eval_input); \
                 if (constructor->func == nullptr) \
                     throw XMLException(format("XML line {0} in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
@@ -382,7 +341,6 @@ void PythonManager::loadMaterial(XMLReader& reader) {
             PyCompilerFlags flags { CO_FUTURE_DIVISION };
     #       define COMPILE_PYTHON_MATERIAL_FUNCTION2(funcname, func) \
             else if (reader.getNodeName() == funcname) { \
-                loadMaterialInfo(reader, material_name, base_name, MaterialInfo::PROPERTY_NAME::func); \
                 constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireTextInCurrentTag().c_str()), funcname, Py_eval_input, &flags); \
                 if (constructor->func == nullptr) \
                     throw XMLException(format("XML line {0} in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \

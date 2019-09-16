@@ -280,18 +280,18 @@ class MaterialsModel(TableModel):
             def __init__(self, name=None, value=None, comment=None, source=None, links=None):
                 self.name = name
                 self.value = value
-                self.comment = comment
-                self.source = source
-                self.links = [] if links is None else links
+                #self.comment = comment
+                #self.source = source
+                #self.links = [] if links is None else links
 
             def add_to_xml(self, material_element):
                 if not self.name: return
                 el = ElementTree.SubElement(material_element, self.name)
                 if self.value: el.text = self.value
-                if self.comment: el.attrib["comment"] = self.comment
-                if self.source: el.attrib["source"] = self.source
-                for nr, link in enumerate(self.links):  # TODO special type for the links
-                    el.attrib["see{}".format('' if nr == 0 else nr+1)] = link
+                #if self.comment: el.attrib["comment"] = self.comment
+                #if self.source: el.attrib["source"] = self.source
+                #for nr, link in enumerate(self.links):  # TODO special type for the links
+                #    el.attrib["see{}".format('' if nr == 0 else nr+1)] = link
 
 
         def __init__(self, materials_model, name, base=None, properties=None, alloy=False, comment=None,
@@ -406,16 +406,16 @@ class MaterialsModel(TableModel):
                     properties = []
                     for prop in mat:
                         require_no_children(prop)
-                        with AttributeReader(mat) as prop_attrib:
-                            p = MaterialsModel.Material.Property(prop.tag, prop.text,
-                                                             prop_attrib.get("comment"), prop_attrib.get("source"))
-                            see = prop_attrib.get("see")
-                            counter = 1
-                            while see is not None or counter == 1:
-                                if see is not None: p.links.append(see)
-                                see = prop_attrib.get("see{}".format(counter))
-                                counter += 1
-                            properties.append(p)
+                        #with AttributeReader(mat) as prop_attrib:
+                        #    p = MaterialsModel.Material.Property(prop.tag, prop.text,
+                        #                                     prop_attrib.get("comment"), prop_attrib.get("source"))
+                        #    see = prop_attrib.get("see")
+                        #    counter = 1
+                        #    while see is not None or counter == 1:
+                        #        if see is not None: p.links.append(see)
+                        #        see = prop_attrib.get("see{}".format(counter))
+                        #        counter += 1
+                        #    properties.append(p)
                     base = mat_attrib.get('base', None)
                     if base is None: base = mat_attrib.get('kind')  # for old files
                     alloy = mat_attrib.get('complex', False)  #TODO remove soon

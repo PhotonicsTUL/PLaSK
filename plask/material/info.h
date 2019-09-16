@@ -10,6 +10,8 @@ This file contains classes which stores meta-informations about materials.
 #include <vector>
 #include <utility>
 
+#include <boost/tokenizer.hpp>
+
 #include "../optional.h"
 
 #include <plask/config.h>   // for PLASK_API
@@ -120,54 +122,39 @@ struct PLASK_API MaterialInfo {
          * @param to_parse the string to parse, in form "class_name.property comment"
          */
         Link(const std::string& to_parse);
+
+        /**
+         * Construct a string in format "class_name.property comment".
+         * @return the string constructed
+         */
+        std::string str() const;
     };
 
     /// Collect information about material property.
-    struct PLASK_API PropertyInfo {
-
-        typedef std::pair<double, double> ArgumentRange;
-
-    private:
-
-        /// Property arguments constraints (ranges)
-        std::map<ARGUMENT_NAME, ArgumentRange> _argumentRange;
-
-        /// See also links to properties in another class.
-        std::vector<Link> _links;
-
-        /// Information about source of property calclulation algorithm
-        std::string _source;
+    class PLASK_API PropertyInfo {
 
         /// Other comments about property
         std::string _comment;
 
-        /**
-         * Append @p what to @p where.
-         * If @p where is not empty it append end-line between @p where and @p what.
-         * @param where string to change
-         * @param what string to append to @p where
-         */
-        static void addToString(std::string& where, const std::string& what) {
-            if (where.empty()) where = what; else (where += '\n') += what;
-        }
+        boost::tokenizer<boost::char_separator<char>> eachCommentLine() const;
+
+        std::vector<std::string> eachCommentOfType(const std::string& type) const;
 
     public:
+
+        typedef std::pair<double, double> ArgumentRange;
+
+        /// Construct info with given comment.
+        PropertyInfo(std::string comment = ""): _comment(std::move(comment)) {}
 
         /// Returned by getArgumentRange if there is no range for given argument, holds two NaNs
         static const ArgumentRange NO_RANGE;
 
         /**
-         * Set bibliography source of calculation method of this material property.
-         * @param new_source bibliography source
-         * @return *this
-         */
-        PropertyInfo& setSource(const std::string& new_source) { this->_source = new_source; return *this; }
-
-        /**
-         * Get bibliography source of calculation method of this material property.
+         * Get bibliography source of calculation method of this material property. One source per line.
          * @return bibliography source of calculation method of this material property
          */
-        const std::string& getSource() const { return _source; }
+        std::string getSource() const;
 
         /**
          * Set comment on this material property.
@@ -187,27 +174,36 @@ struct PLASK_API MaterialInfo {
          * @param argument name of requested argument
          * @return range (NO_RANGE if the information is not available)
          */
-        const ArgumentRange& getArgumentRange(ARGUMENT_NAME argument) const;
+        ArgumentRange getArgumentRange(ARGUMENT_NAME argument) const;
 
         /**
          * Get array of "see also" links.
+         *
+         * It finds them in comment. It tries to parse ech line which starts with "see:".
          * @return array of "see also" links
          */
-        const std::vector<Link>& getLinks() const { return _links; }
+        std::vector<Link> getLinks() const;
 
         /**
-         * Append bibliography source to string returned by getSource().
+         * Append bibliography source to the comment (and the string returned by getSource()).
          * @param sourceToAdd bibliography source to append
          * @return *this
          */
-        PropertyInfo& addSource(const std::string& sourceToAdd) { addToString(this->_source, sourceToAdd); return *this; }
+        PropertyInfo& addSource(const std::string& sourceToAdd) {
+            return addComment("source: " + sourceToAdd);
+        }
 
         /**
          * Append comment to string returned by getComment().
+         *
+         * If @p getComment() is not empty it appends end-line between @p getComment() and @p comment.
          * @param commentToAdd comment to append
          * @return *this
          */
-        PropertyInfo& addComment(const std::string& commentToAdd) { addToString(this->_comment, commentToAdd); return *this; }
+        PropertyInfo& addComment(const std::string& commentToAdd) {
+            if (_comment.empty()) _comment = commentToAdd; else (_comment += '\n') += commentToAdd;
+            return *this;
+        }
 
         /**
          * Set the range of argument's values for which the calculation method is known to works fine.
@@ -232,14 +228,7 @@ struct PLASK_API MaterialInfo {
          * @param link link to add
          * @return *this
          */
-        PropertyInfo& addLink(const Link& link) { _links.push_back(link); return *this; }
-
-        /**
-         * Move link to array of "see also" links.
-         * @param link link to add (move)
-         * @return *this
-         */
-        PropertyInfo& addLink(Link&& link) { _links.push_back(std::move(link)); return *this; }
+        PropertyInfo& addLink(const Link& link) { return addComment("see: " + link.str()); }
     };
 
     /// Name of parent class
