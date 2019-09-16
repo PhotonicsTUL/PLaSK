@@ -47,8 +47,12 @@ BOOST_AUTO_TEST_SUITE(material) // MUST be the same as the file name
         info.setArgumentRange(plask::MaterialInfo::e, 7.5, 8.5);
         BOOST_CHECK_EQUAL(info.getComment(), "line 1\nsource: my source A\nT range: 3:5\nsource: my source B\nsee: GaN.Mh my comment\ne range: 7.5:8.5");
         BOOST_CHECK_EQUAL(info.getSource(), "my source A\nmy source B");
+        BOOST_CHECK_EQUAL(info.getArgumentRange(plask::MaterialInfo::T).first, 3.0);
+        BOOST_CHECK_EQUAL(info.getArgumentRange(plask::MaterialInfo::T).second, 5.0);
         BOOST_CHECK_EQUAL(info.getArgumentRange(plask::MaterialInfo::e).first, 7.5);
         BOOST_CHECK_EQUAL(info.getArgumentRange(plask::MaterialInfo::e).second, 8.5);
+        BOOST_CHECK(plask::isnan(info.getArgumentRange(plask::MaterialInfo::lam).first));
+        BOOST_CHECK(plask::isnan(info.getArgumentRange(plask::MaterialInfo::lam).second));
         auto links = info.getLinks();
         BOOST_REQUIRE_EQUAL(links.size(), 1);
         BOOST_CHECK_EQUAL(links[0].str(), "GaN.Mh my comment");
