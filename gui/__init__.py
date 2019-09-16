@@ -1176,4 +1176,10 @@ def main():
 
     exit_code = APPLICATION.exec_()
 
+    try:
+        # This prevents crash on exit, because of PyFinalize not being supported by boost
+        plask.material.db.clear()
+    except NameError:
+        pass
+
     sys.exit(exit_code)

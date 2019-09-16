@@ -126,7 +126,7 @@ int handlePythonException(/*const char* scriptname=nullptr*/) {
 // Finalize Python interpreter
 void endPlask() {
     // PyEval_RestoreThread(mainTS);
-    Py_Finalize(); // Py_Finalize is not supported by Boost
+    // Py_Finalize(); // Py_Finalize is not supported by Boost
 }
 
 
