@@ -31,6 +31,12 @@ try:
     import yaml
 except ImportError:
     yaml = None
+else:
+    # Disable yaml warning
+    try:
+        yaml.warnings({'YAMLLoadWarning': False})
+    except (TypeError, NameError, AttributeError):
+        pass
 
 try:
     import plask

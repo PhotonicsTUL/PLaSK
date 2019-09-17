@@ -6,6 +6,12 @@ import os
 
 import yaml
 
+# Disable yaml warning
+try:
+    yaml.warnings({'YAMLLoadWarning': False})
+except (TypeError, NameError, AttributeError):
+    pass
+
 source = sys.argv[1]
 target = sys.argv[2]
 

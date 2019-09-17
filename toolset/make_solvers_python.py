@@ -9,6 +9,12 @@ import textwrap
 
 import yaml
 
+# Disable yaml warning
+try:
+    yaml.warnings({'YAMLLoadWarning': False})
+except (TypeError, NameError, AttributeError):
+    pass
+
 plaskdir = os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0])))
 
 fname = sys.argv[1]

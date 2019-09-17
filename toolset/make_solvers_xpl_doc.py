@@ -9,6 +9,13 @@ from codecs import open
 
 import yaml
 
+# Disable yaml warning
+try:
+    yaml.warnings({'YAMLLoadWarning': False})
+except (TypeError, NameError, AttributeError):
+    pass
+
+
 plaskdir = os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0])))
 docdir = os.path.join(plaskdir, 'doc')
 
