@@ -20,7 +20,7 @@ from ...qt import QtSignal
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
 from ...lib.highlighter.python27 import syntax
 from ..script import scheme
-from ...model.materials import MaterialsModel, BASE_MATERIALS, DB, \
+from ...model.materials import MaterialsModel, BASE_MATERIALS, default_materialdb, \
     material_html_help, parse_material_components, elements_re
 from ...utils.texteditor import TextEditor
 from ...utils.widgets import HTMLDelegate, table_last_col_fill, EDITOR_FONT, table_edit_shortcut, CheckBoxDelegate
@@ -196,7 +196,7 @@ class MaterialsComboBox(QComboBox):
             self.append_list(model_materials)
         else:
             model_materials = []
-        default_materials = [m for m in sorted(DB, key=lambda x: x.lower())
+        default_materials = [m for m in sorted(default_materialdb, key=lambda x: x.lower())
                              if m not in BASE_MATERIALS and m not in model_materials]
         self.append_list(default_materials)
         if items is not None:

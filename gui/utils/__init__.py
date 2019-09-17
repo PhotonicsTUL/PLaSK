@@ -12,7 +12,7 @@
 
 from bisect import bisect_left
 
-from ..model.materials import DB
+from ..model.materials import default_materialdb
 
 try:
     unicode = unicode
@@ -107,7 +107,7 @@ def require_str_first_attr_path_component(path):
 
 def get_manager():
     if plask is None: return
-    plask.material.setdb(DB)
+    plask.material.setdb(default_materialdb)
     manager = plask.Manager(draft=True)
     if 'wl' not in manager.defs:
         def wl(mat, lam, T=300.):
