@@ -757,7 +757,8 @@
 
   - *root
 
-  - tag: pml
+  - &pml
+    tag: pml
     label: Radial PMLs (for finite domain only)
     help: >
       Side absorbing perfectly matched layer boundary conditions parameters.
@@ -798,6 +799,83 @@
   - outUpwardsLightH: LightH
   - outDownwardsLightE: LightE
   - outDownwardsLightH: LightH
+  - outRefractiveIndex
+  - outWavelength
+
+  receivers: *receivers
+
+###########################################################################################
+
+- solver: FiniteDifferencesCyl
+  lib: slab
+  category: optical
+  help: >
+    Vectorial optical solver based on the finite differences reflection transfer method.
+
+  geometry: Cylindrical
+  mesh: Ordered
+  need mesh: true
+
+  tags:
+  - tag: expansion
+    label: Details on Finite Differeces Expansion
+    help: >
+      Details on Bessel expansion used in computations
+    attrs:
+    - attr: lam0
+      label: Wavelength for parameters
+      type: float
+      help: >
+        This is a wavelength at which refractive index is retrieved from the structure. If this parameter
+        is None, material parameters are computed each time, the wavelenght changes even slightly (this
+        is most accurate, but can be very inefficient.
+    - *update-gain
+    - *group-layers
+    - *temp-diff
+    - *temp-dist
+    - *temp-layer
+
+  - tag: mode
+    label: Mode Properties
+    help: >
+      Mode properties.
+    attrs:
+    - attr: wavelength
+      label: Wavelength
+      type: float
+      unit: nm
+      help: >
+        Light wavelength. For finding modes this parameter is ignored. However, it is important
+        for reflection and transmission computation.
+    - attr: emission
+      label: Direction of emission
+      type: choice
+      default: undefined
+      choices:
+      - undefined
+      - top
+      - bottom
+      help: >
+        Direction of the useful light emission. Necessary for the over-threshold model to correctly
+        compute the output power. In this solver only top and bottom emission is possible.
+
+  - *interface
+
+  - *transfer
+
+  - *vpml
+
+  - *root
+
+  - *pml
+
+  providers:
+  - outLightMagnitude
+  - outLoss
+  - outLightE
+  - outElectricField: LightE
+  - outLightH
+  - outMagneticField: LightH
   - outRefractiveIndex
   - outWavelength
 

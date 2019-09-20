@@ -17,9 +17,16 @@
 using namespace plask;
 using namespace plask::python;
 
+<<<<<<< HEAD
 #include "fourier2d-python.hpp"
 #include "fourier3d-python.hpp"
 #include "besselcyl-python.hpp"
+=======
+#include "fourier2d-python.h"
+#include "fourier3d-python.h"
+#include "besselcyl-python.h"
+#include "cylinders-python.h"
+>>>>>>> c4a9ebac (Added naive cylinders expansion)
 using namespace plask::optical::slab;
 using namespace plask::optical::slab::python;
 
@@ -185,6 +192,7 @@ BOOST_PYTHON_MODULE(slab)
     export_FourierSolver2D();
     export_FourierSolver3D();
     export_BesselSolverCyl();
+    export_CylindersSolverCyl();
 
     py::converter::registry::push_back(&CoeffsArray::convertible, &CoeffsArray::construct, boost::python::type_id<CoeffsArray>());
 }
