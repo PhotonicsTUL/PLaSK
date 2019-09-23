@@ -62,7 +62,7 @@ class TestGUIModelDefines(unittest.TestCase):
         self.defines.entries[1].value = ''  # no required value
         info = self.defines.create_info()
         self.assertEqual(len(info), 2)
-        self.assertCountEqual(_sum(i.rows for i in info), (0, 1))
+        self.assertCountEqual(info[0].rows + info[1].rows, (0, 1))
 
     def test_create_info_with_duplicated(self):
         self.defines.entries[0].name = self.defines.entries[1].name   # duplicated name
