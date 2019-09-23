@@ -43,8 +43,6 @@ Package 'plask' is already imported into global namespace.
 '''
 
 preexec_lines = [
-'_any = any',
-'_sum = sum',
 'from __future__ import division',
 'from numpy import *',
 'import plask',

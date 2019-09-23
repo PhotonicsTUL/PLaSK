@@ -18,8 +18,6 @@ from PySide import QtCore, QtGui
 
 preexec_lines = [
 'from __future__ import division',
-'_any = any',
-'_sum = sum',
 'from numpy import *',
 'import plask',
 'plask.config.logging.output = "stdout"',
