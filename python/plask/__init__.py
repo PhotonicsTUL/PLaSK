@@ -12,7 +12,9 @@ import sys
 import os as _os
 import weakref as _weakref
 
-_any = any # this buit-in is overriden by numpy
+# this buit-ins are overriden by numpy:
+_any = any 
+_sum = sum
 
 #_os.environ["PLASK_PREFIX_PATH"] = _os.sep.join(__file__.split(_os.sep)[:-5])
 

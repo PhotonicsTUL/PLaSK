@@ -82,7 +82,8 @@ class DefinesModel(TableModel):
                                 Info.ERROR, cols=(0,), rows=indexes))
         return res
 
-    def create_default_entry(self):
+    @staticmethod
+    def create_default_entry():
         return DefinesModel.Entry("new", "")
 
     # QAbstractListModel implementation
