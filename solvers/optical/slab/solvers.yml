@@ -631,7 +631,7 @@
 
 ###########################################################################################
 
-- solver: BesselCyl
+- solver: OldBesselCyl
   lib: slab
   category: optical
   help: >
