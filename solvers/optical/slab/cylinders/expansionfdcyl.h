@@ -91,13 +91,13 @@ struct PLASK_SOLVER_API ExpansionCylinders: public Expansion {
     }
 
     /// Get \f$ E_r \f$ index
-    size_t iEr(size_t i) { return 2 * i; }
+    size_t iEs(size_t i) { return 2 * i; }
 
     /// Get \f$ E_φ \f$ index
     size_t iEp(size_t i) { return 2 * i + 1; }
 
     /// Get \f$ E_r \f$ index
-    size_t iHr(size_t i) { return 2 * i + 1; }
+    size_t iHs(size_t i) { return 2 * i + 1; }
 
     /// Get \f$ E_φ \f$ index
     size_t iHp(size_t i) { return 2 * i; }
