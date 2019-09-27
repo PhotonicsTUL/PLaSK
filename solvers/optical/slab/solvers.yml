@@ -806,11 +806,11 @@
 
 ###########################################################################################
 
-- solver: FiniteDifferencesCyl
+- solver: LinesCyl
   lib: slab
   category: optical
   help: >
-    Vectorial optical solver based on the finite differences reflection transfer method.
+    Vectorial optical solver based on the method of lines in Cylindrical coordinates.
 
   geometry: Cylindrical
   mesh: Ordered

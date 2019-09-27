@@ -1,11 +1,11 @@
 #ifndef PLASK__SOLVER__OPTICAL__SLAB_CYLINDERSCYL_PYTHON_H
 #define PLASK__SOLVER__OPTICAL__SLAB_CYLINDERSCYL_PYTHON_H
 
-#include "../cylinders/solverfdcyl.h"
+#include "../lines/solverfdcyl.h"
 
 namespace plask { namespace optical { namespace slab { namespace python {
 
-void export_CylindersSolverCyl();
+void export_LinesSolverCyl();
 
 
 }}}} // # namespace plask::optical::slab::python

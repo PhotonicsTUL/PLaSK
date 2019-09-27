@@ -8,9 +8,9 @@
 
 namespace plask { namespace optical { namespace slab {
 
-struct CylindersSolverCyl;
+struct LinesSolverCyl;
 
-struct PLASK_SOLVER_API ExpansionCylinders: public Expansion {
+struct PLASK_SOLVER_API ExpansionLines: public Expansion {
 
     int m;                              ///< Angular dependency index
 
@@ -20,9 +20,9 @@ struct PLASK_SOLVER_API ExpansionCylinders: public Expansion {
      * Create new expansion
      * \param solver solver which performs calculations
      */
-    ExpansionCylinders(CylindersSolverCyl* solver);
+    ExpansionLines(LinesSolverCyl* solver);
 
-    virtual ~ExpansionCylinders() {}
+    virtual ~ExpansionLines() {}
 
     /// Init expansion
     void init();
@@ -91,16 +91,16 @@ struct PLASK_SOLVER_API ExpansionCylinders: public Expansion {
     }
 
     /// Get \f$ E_r \f$ index
-    size_t iEs(size_t i) { return 2 * i; }
+    size_t iEs(size_t i) { return 2 * i - ((m==1)? 0 : 2); }
 
     /// Get \f$ E_φ \f$ index
-    size_t iEp(size_t i) { return 2 * i + 1; }
+    size_t iEp(size_t i) { return 2 * i - 1; }
 
     /// Get \f$ E_r \f$ index
-    size_t iHs(size_t i) { return 2 * i + 1; }
+    size_t iHs(size_t i) { return 2 * i - 1; }
 
     /// Get \f$ E_φ \f$ index
-    size_t iHp(size_t i) { return 2 * i; }
+    size_t iHp(size_t i) { return 2 * i - ((m==1)? 0 : 2); }
 
     /// Shift between adjacent indices
     static constexpr int i1 = 2;

@@ -13,11 +13,11 @@ namespace plask { namespace optical { namespace slab {
 /**
  * Reflection transformation solver in Cartesian 2D geometry.
  */
-struct PLASK_SOLVER_API CylindersSolverCyl: public SlabSolver<SolverWithMesh<Geometry2DCylindrical,MeshAxis>> {
+struct PLASK_SOLVER_API LinesSolverCyl: public SlabSolver<SolverWithMesh<Geometry2DCylindrical,MeshAxis>> {
 
-    friend struct ExpansionCylinders;
+    friend struct ExpansionLines;
 
-    std::string getClassName() const override { return "optical.CylindersCyl"; }
+    std::string getClassName() const override { return "optical.LinesCyl"; }
 
     struct Mode {
         double lam0;                    ///< Wavelength for which integrals are computed
@@ -26,7 +26,7 @@ struct PLASK_SOLVER_API CylindersSolverCyl: public SlabSolver<SolverWithMesh<Geo
         double power;                   ///< Mode power [mW]
         double tolx;                            ///< Tolerance for mode comparison
 
-        Mode(const ExpansionCylinders& expansion, double tolx):
+        Mode(const ExpansionLines& expansion, double tolx):
             lam0(expansion.lam0), k0(expansion.k0), m(expansion.m), power(1.), tolx(tolx) {}
 
         bool operator==(const Mode& other) const {
@@ -34,7 +34,7 @@ struct PLASK_SOLVER_API CylindersSolverCyl: public SlabSolver<SolverWithMesh<Geo
                    ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0);
         }
 
-        bool operator==(const ExpansionCylinders& other) const {
+        bool operator==(const ExpansionLines& other) const {
             return m == other.m && is_equal(k0, other.k0) && is_equal(lam0, other.lam0) &&
                    ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0);
         }
@@ -69,7 +69,7 @@ struct PLASK_SOLVER_API CylindersSolverCyl: public SlabSolver<SolverWithMesh<Geo
   public:
 
       /// Class responsible for computing expansion coefficients
-    ExpansionCylinders expansion;
+    ExpansionLines expansion;
 
     /// Computed modes
     std::vector<Mode> modes;
@@ -94,7 +94,7 @@ struct PLASK_SOLVER_API CylindersSolverCyl: public SlabSolver<SolverWithMesh<Geo
     /// Provider for computed modal extinction
     typename ProviderFor<ModeLoss>::Delegate outLoss;
 
-    CylindersSolverCyl(const std::string& name="");
+    LinesSolverCyl(const std::string& name="");
 
     void loadConfiguration(XMLReader& reader, Manager& manager) override;
 
