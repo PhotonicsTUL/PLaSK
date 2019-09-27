@@ -2,13 +2,13 @@ import sys, os
 import unittest
 sys.path.insert(0, os.path.abspath('../..'))
 
+from gui_test_utils import GUITestCase
 from gui.model.defines import DefinesModel
-from gui_test_utils import assert_XML_equal
 
 from lxml import etree
 
 
-class TestGUIModelDefines(unittest.TestCase):
+class TestGUIModelDefines(GUITestCase):
 
     def setUp(self):
         self.defines = DefinesModel()
@@ -45,7 +45,7 @@ class TestGUIModelDefines(unittest.TestCase):
         self.assertEqual(self.defines.columnCount(), 2)
 
     def test_get_xml_element(self):
-        assert_XML_equal(self, self.defines.get_xml_element(),
+        self.assertEqualXML(self.defines.get_xml_element(),
             '<defines><define name="def1" value="val1"/><!--def 2 comment--><define name="def2" value="val2"/></defines>')
 
     def test_set_xml_element(self):
