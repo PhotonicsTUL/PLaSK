@@ -5,10 +5,10 @@
 namespace plask { namespace optical { namespace slab {
 
 
-CylindersSolverCyl::CylindersSolverCyl(const std::string& name):
+LinesSolverCyl::LinesSolverCyl(const std::string& name):
     SlabSolver<SolverWithMesh<Geometry2DCylindrical,MeshAxis>>(name),
     m(1), expansion(this),
-    outLoss(this, &CylindersSolverCyl::getModalLoss,  &CylindersSolverCyl::nummodes)
+    outLoss(this, &LinesSolverCyl::getModalLoss,  &LinesSolverCyl::nummodes)
 {
     pml.dist = 20.;
     pml.size = 5.;
@@ -17,7 +17,7 @@ CylindersSolverCyl::CylindersSolverCyl(const std::string& name):
 }
 
 
-void CylindersSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
+void LinesSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
 {
     while (reader.requireTagOrEnd()) {
         std::string param = reader.getNodeName();
@@ -87,16 +87,16 @@ void CylindersSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
 }
 
 
-void CylindersSolverCyl::onInitialize()
+void LinesSolverCyl::onInitialize()
 {
     this->setupLayers();
     if (!this->mesh) throw NoMeshException(this->getId());
 
     if (this->interface == -1)
-        Solver::writelog(LOG_DETAIL, "Initializing CylindersCyl solver ({0} layers in the stack)",
+        Solver::writelog(LOG_DETAIL, "Initializing LinesCyl solver ({0} layers in the stack)",
                                      this->stack.size());
     else
-        Solver::writelog(LOG_DETAIL, "Initializing CylindersCyl solver ({0} layers in the stack, interface after {1} layer{2})",
+        Solver::writelog(LOG_DETAIL, "Initializing LinesCyl solver ({0} layers in the stack, interface after {1} layer{2})",
                                      this->stack.size(), this->interface, (this->interface==1)? "" : "s");
     setExpansionDefaults();
     expansion.init();
@@ -104,7 +104,7 @@ void CylindersSolverCyl::onInitialize()
 }
 
 
-void CylindersSolverCyl::onInvalidate()
+void LinesSolverCyl::onInvalidate()
 {
     modes.clear();
     expansion.reset();
@@ -112,7 +112,7 @@ void CylindersSolverCyl::onInvalidate()
 }
 
 
-size_t CylindersSolverCyl::findMode(dcomplex start, int m)
+size_t LinesSolverCyl::findMode(dcomplex start, int m)
 {
     Solver::initCalculation();
     ensureInterface();
@@ -128,7 +128,7 @@ size_t CylindersSolverCyl::findMode(dcomplex start, int m)
 }
 
 
-LazyData<Vec<3,dcomplex>> CylindersSolverCyl::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+LazyData<Vec<3,dcomplex>> LinesSolverCyl::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
     if (num >= modes.size()) throw BadInput(this->getId()+".outLightE", "Mode {0} has not been computed", num);
     assert(transfer);
@@ -137,7 +137,7 @@ LazyData<Vec<3,dcomplex>> CylindersSolverCyl::getE(size_t num, shared_ptr<const 
 }
 
 
-LazyData<Vec<3,dcomplex>> CylindersSolverCyl::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+LazyData<Vec<3,dcomplex>> LinesSolverCyl::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
     if (num >= modes.size()) throw BadInput(this->getId()+".outLightH", "Mode {0} has not been computed", num);
     assert(transfer);
@@ -146,7 +146,7 @@ LazyData<Vec<3,dcomplex>> CylindersSolverCyl::getH(size_t num, shared_ptr<const 
 }
 
 
-LazyData<double> CylindersSolverCyl::getMagnitude(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
+LazyData<double> LinesSolverCyl::getMagnitude(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
 {
     if (num >= modes.size()) throw BadInput(this->getId()+".outLightMagnitude", "Mode {0} has not been computed", num);
     assert(transfer);
@@ -155,7 +155,7 @@ LazyData<double> CylindersSolverCyl::getMagnitude(size_t num, shared_ptr<const M
 }
 
 
-double CylindersSolverCyl::getWavelength(size_t n) {
+double LinesSolverCyl::getWavelength(size_t n) {
     if (n >= modes.size()) throw NoValue(ModeWavelength::NAME);
     return real(2e3*M_PI / modes[n].k0);
 }
