@@ -136,7 +136,7 @@ class AttributeReader(object):
 
 class OrderedTagReader(object):
     """Helper class to read children of XML element in required order.
-       It checks if all children has been read.
+       It checks if all children has been read and optionally (by default) ignores comments.
 
        Usage::
 
@@ -144,10 +144,19 @@ class OrderedTagReader(object):
                 # use r.get(...) or r.require(...) to access children of parent_element
     """
 
-    def __init__(self, parent_element, first_index=0):
+    def __init__(self, parent_element, ignore_comments=True, first_index=0):
         # super(OrderedTagReader, self).__init__()
         self.parent_element = parent_element
-        self.current_index = first_index
+        self.ignore_comments = ignore_comments
+        self.current_index = self._proper_index(first_index)
+
+    def _proper_index(self, index, delta = 1):
+        """ Fix index by consistently adding delta to it to be a proper current_index.
+            :return: fixed index"""
+        if self.ignore_comments:
+            while 0 <= index < len(self.parent_element) and self.parent_element[index].tag is etree.Comment:
+                index += delta
+        return index
 
     def _next_element(self):
         """:return: next element"""
@@ -164,7 +173,7 @@ class OrderedTagReader(object):
         """
         if not self._has_next(): return None
         res = self._next_element()
-        self.current_index += 1
+        self.current_index = self._proper_index(self.current_index + 1)
         return res
 
     def require_end(self):
@@ -176,7 +185,7 @@ class OrderedTagReader(object):
 
     def recent_was_unexpected(self):
         """Raise ValueError about tag that has been read recently."""
-        self.current_index -= 1
+        self.current_index = self._proper_index(self.current_index - 1, delta=-1)
         self.require_end()  # raise exception
 
     def __enter__(self):
@@ -248,12 +257,13 @@ class UnorderedTagReader(object):
                 # use r.get(...) or r.require(...) to access children of parent_element
     """
 
-    def __init__(self, parent_element, first_index=0):
+    def __init__(self, parent_element):
         # super(UnorderedTagReader, self).__init__()
         self.parent_element = parent_element
         self.read = set()
         tag_names = set()
         for child in parent_element:
+            if child.tag is etree.Comment: continue
             if child.tag in tag_names:
                 raise ValueError("Duplicated tags <{}>{} in <{}>{} are not allowed.".format(
                     child.tag, at_line_str(self.child, ' (recurrence at line {})'),
@@ -294,7 +304,7 @@ class UnorderedTagReader(object):
 
     def require_all_read(self):
         """Raise ValueError if not all children have been read from XML tag."""
-        not_read = set(e.tag for e in self.parent_element) - self.read
+        not_read = set(e.tag for e in self.parent_element if e.tag is not etree.Comment) - self.read
         if not_read:
             raise ValueError("XML tag <{}>{} has unexpected child(ren):\n {}".format(
                 self.parent_element.tag, at_line_str(self.parent_element), ", ".join(not_read)))

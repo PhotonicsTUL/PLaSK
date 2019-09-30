@@ -49,7 +49,7 @@ class TestGUIModelDefines(GUITestCase):
             '<defines><define name="def1" value="val1"/><!--def 2 comment--><define name="def2" value="val2"/></defines>')
 
     def test_set_xml_element(self):
-        self.defines.set_xml_element(etree.XML('<defines><define name="x1" value="y1"/></defines>'))
+        self.defines.set_xml_element(etree.XML('<defines><define name="x1" value="y1"/><!--ignored--></defines>'))
         self.assertEqual(len(self.defines.entries), 1)
         self.assertEqual(self.defines.entries[0].name, "x1")
         self.assertEqual(self.defines.entries[0].value, "y1")
