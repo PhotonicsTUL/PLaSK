@@ -337,7 +337,7 @@ struct CompressedSetOfNumbers {
     void assignRange(number_t num_end) {
         segments.resize(1);
         segments.front().numberEnd = num_end;
-        segments.front().indexEnd = 0;
+        segments.front().indexEnd = num_end;
     }
 
     /**

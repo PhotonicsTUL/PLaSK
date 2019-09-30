@@ -86,15 +86,13 @@
       type: float
       unit: A/m<sup>2</sup>
       help: Reverse bias current densities.
-    - &pnjcond
-      attr: pnjcond
+    - attr: pnjcond
       label: Initial junctions conductivity
       type: float
       unit: S/m
       default: 5.0
       help: Initial vertical conductivity of the junctions.
-    - &heat
-      attr: heat
+    - attr: heat
       label: Heat generation method
       type: choice
       default: joules
@@ -102,8 +100,7 @@
       - joules
       - wavelength
       help: Method of determination of the heat generated in the junction.
-    - &wavelength
-      attr: wavelength
+    - attr: wavelength
       label: Emitted wavelength
       type: float
       unit: nm
@@ -153,6 +150,7 @@
   receivers: &receivers
   - inWavelength
   - inTemperature
+
 - solver: Shockley3D
   lib: shockley
   category: electrical
@@ -177,23 +175,7 @@
     mesh: { tag: mesh, attr: ref }
   - *loop
   - *matrix
-  - tag: junction
-    label: Configuration of the Effective Model of p-n Junction
-    help: Configuration of the effective model of p-n junction.
-    attrs:
-    - attr: beta
-      label: Junction coefficient
-      type: float
-      unit: 1/V
-      help: Junction coefficient. This is an inverse of the junction thermal voltage.
-    - attr: js
-      label: Reverse bias current density
-      type: float
-      unit: A/m<sup>2</sup>]<br/>
-      help: Reverse bias current density.
-    - *pnjcond
-    - *heat
-    - *wavelength
+  - *junction
   - *contacts
   providers: *providers
   receivers: *receivers

@@ -448,14 +448,17 @@ MatrixT FiniteElementMethodElectrical3DSolver::makeMatrix() {
             }
         }
     }
-    return MatrixT(this->maskedMesh->size(), band);
+    if (use_full_mesh)
+        return MatrixT(this->mesh->size(), band);
+    else
+        return MatrixT(this->maskedMesh->size(), band);
 }
 
 template <>
 SparseBandMatrix3D FiniteElementMethodElectrical3DSolver::makeMatrix<SparseBandMatrix3D>() {
     if (!use_full_mesh)
         throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
-    return SparseBandMatrix3D(this->maskedMesh->size(), mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
+    return SparseBandMatrix3D(this->mesh->size(), mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
 }
 
 template <typename MatrixT>
@@ -724,8 +727,8 @@ const LazyData<Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity
     this->writelog(LOG_DEBUG, "Getting current density");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(geometry, InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP, InterpolationFlags::Symmetry::PPN);
-    auto result = interpolate(mesh->getElementMesh(), current, dest_mesh, method, flags);
     if (use_full_mesh) {
+        auto result = interpolate(mesh->getElementMesh(), current, dest_mesh, method, flags);
         return LazyData<Vec<3>>(result.size(),
             [this, dest_mesh, result, flags](size_t i) {
                 return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<3>(0.,0.,0.);
@@ -750,8 +753,8 @@ const LazyData<double> FiniteElementMethodElectrical3DSolver::getHeatDensity(sha
     if (!heat) saveHeatDensity(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(geometry);
-    auto result = interpolate(mesh->getElementMesh(), heat, dest_mesh, method, flags);
     if (use_full_mesh) {
+        auto result = interpolate(mesh->getElementMesh(), heat, dest_mesh, method, flags);
         return LazyData<double>(result.size(),
             [this, dest_mesh, result, flags](size_t i) {
                 return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;
