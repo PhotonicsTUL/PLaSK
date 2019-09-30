@@ -70,7 +70,7 @@ void FiniteElementMethodElectrical2DSolver<Geometry2DType>::loadConfiguration(XM
                 .value("wavelength", HEAT_BANDGAP)
                 .get(heatmet);
             for (auto attr: source.getAttributes()) {
-                if (attr.first == "beta" || attr.first == "Vt" || attr.first == "js" || attr.first == "pnjcond" || attr.first == "wavelength" || attr.first == "heat") continue;
+                if (attr.first == "beta" || attr.first == "js" || attr.first == "pnjcond" || attr.first == "wavelength" || attr.first == "heat") continue;
                 if (attr.first.substr(0,4) == "beta") {
                     size_t no;
                     try { no = boost::lexical_cast<size_t>(attr.first.substr(4)); }

@@ -22,6 +22,8 @@ FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(con
     outHeat(this, &FiniteElementMethodElectrical3DSolver::getHeatDensity),
     outConductivity(this, &FiniteElementMethodElectrical3DSolver::getConductivity)
 {
+    js.assign(1, 1.),
+    beta.assign(1, NAN),
     potential.reset();
     current.reset();
     inTemperature = 300.;
@@ -69,7 +71,7 @@ void FiniteElementMethodElectrical3DSolver::loadConfiguration(XMLReader &source,
                 .value("wavelength", HEAT_BANDGAP)
                 .get(heatmet);
             for (auto attr: source.getAttributes()) {
-                if (attr.first == "beta" || attr.first == "Vt" || attr.first == "js" || attr.first == "pnjcond" || attr.first == "wavelength" || attr.first == "heat") continue;
+                if (attr.first == "beta" || attr.first == "js" || attr.first == "pnjcond" || attr.first == "wavelength" || attr.first == "heat") continue;
                 if (attr.first.substr(0,4) == "beta") {
                     size_t no;
                     try { no = boost::lexical_cast<size_t>(attr.first.substr(4)); }
