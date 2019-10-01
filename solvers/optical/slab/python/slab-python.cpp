@@ -20,7 +20,7 @@ using namespace plask::python;
 #include "fourier2d-python.hpp"
 #include "fourier3d-python.hpp"
 #include "besselcyl-python.hpp"
-#include "linescyl-python.h"
+#include "linescyl-python.hpp"
 using namespace plask::optical::slab;
 using namespace plask::optical::slab::python;
 

@@ -3,18 +3,17 @@
 
 #include <plask/plask.hpp>
 
-#include "../expansion.h"
-#include "../meshadapter.h"
+#include "../expansion.hpp"
+#include "../meshadapter.hpp"
 
 namespace plask { namespace optical { namespace slab {
 
 struct LinesSolverCyl;
 
-struct PLASK_SOLVER_API ExpansionLines: public Expansion {
+struct PLASK_SOLVER_API ExpansionLines : public Expansion {
+    int m;  ///< Angular dependency index
 
-    int m;                              ///< Angular dependency index
-
-    bool initialized;                   ///< Expansion is initialized
+    bool initialized;  ///< Expansion is initialized
 
     /**
      * Create new expansion
@@ -30,9 +29,7 @@ struct PLASK_SOLVER_API ExpansionLines: public Expansion {
     /// Free allocated memory
     virtual void reset();
 
-    bool diagonalQE(size_t l) const override {
-        return diagonals[l];
-    }
+    bool diagonalQE(size_t l) const override { return diagonals[l]; }
 
     size_t matrixSize() const override;
 
@@ -40,16 +37,16 @@ struct PLASK_SOLVER_API ExpansionLines: public Expansion {
 
     void cleanupField() override;
 
-    LazyData<Vec<3,dcomplex>> getField(size_t layer,
-                                       const shared_ptr<const typename LevelsAdapter::Level>& level,
-                                       const cvector& E, const cvector& H) override;
+    LazyData<Vec<3, dcomplex>> getField(size_t layer,
+                                        const shared_ptr<const typename LevelsAdapter::Level>& level,
+                                        const cvector& E,
+                                        const cvector& H) override;
 
     LazyData<Tensor3<dcomplex>> getMaterialNR(size_t layer,
                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
-                                              InterpolationMethod interp=INTERPOLATION_DEFAULT) override;
+                                              InterpolationMethod interp = INTERPOLATION_DEFAULT) override;
 
   protected:
-
     /// The real mesh
     shared_ptr<MeshAxis> raxis;
 
@@ -68,16 +65,15 @@ struct PLASK_SOLVER_API ExpansionLines: public Expansion {
     std::vector<DataVector<Tensor3<dcomplex>>> epsilons;
     DataVector<Tensor3<dcomplex>> mu;
 
-    void prepareIntegrals(double lam, double glam) override;
+    void beforeLayersIntegrals(double lam, double glam) override;
 
-    void cleanupIntegrals(double, double) override;
+    void afterLayersIntegrals() override;
 
     void layerIntegrals(size_t layer, double lam, double glam) override;
 
     void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) override;
 
   public:
-
     double integratePoyntingVert(const cvector& E, const cvector& H) override;
 
     unsigned getM() const { return m; }
@@ -91,21 +87,21 @@ struct PLASK_SOLVER_API ExpansionLines: public Expansion {
     }
 
     /// Get \f$ E_r \f$ index
-    size_t iEs(size_t i) { return 2 * i - ((m==1)? 0 : 2); }
+    size_t iEr(size_t i) { return 2 * i - ((m == 1) ? 0 : 2); }
 
     /// Get \f$ E_φ \f$ index
     size_t iEp(size_t i) { return 2 * i - 1; }
 
     /// Get \f$ E_r \f$ index
-    size_t iHs(size_t i) { return 2 * i - 1; }
+    size_t iHp(size_t i) { return 2 * i - 1; }
 
     /// Get \f$ E_φ \f$ index
-    size_t iHp(size_t i) { return 2 * i - ((m==1)? 0 : 2); }
+    size_t iHr(size_t i) { return 2 * i - ((m == 1) ? 0 : 2); }
 
     /// Shift between adjacent indices
     static constexpr int i1 = 2;
 };
 
-}}} // # namespace plask::optical::slab
+}}}  // namespace plask::optical::slab
 
-#endif // PLASK__SOLVER__SLAB_EXPANSIONCYL_H
+#endif  // PLASK__SOLVER__SLAB_EXPANSIONCYL_H

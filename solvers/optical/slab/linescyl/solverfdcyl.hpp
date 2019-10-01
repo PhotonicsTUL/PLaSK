@@ -3,9 +3,9 @@
 
 #include <plask/plask.hpp>
 
-#include "../solver.h"
-#include "../reflection.h"
-#include "expansionfdcyl.h"
+#include "../solver.hpp"
+#include "../reflection.hpp"
+#include "expansionfdcyl.hpp"
 
 
 namespace plask { namespace optical { namespace slab {
@@ -253,11 +253,13 @@ struct PLASK_SOLVER_API LinesSolverCyl: public SlabSolver<SolverWithMesh<Geometr
         return 2e4 * modes[n].k0.imag();  // 2e4  2/µm -> 2/cm
     }
 
-    LazyData<Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
+    double applyMode(size_t n) override {
+        if (n >= modes.size()) throw BadInput(this->getId(), "Mode {0} has not been computed", n);
+        applyMode(modes[n]);
+        return modes[n].power;
+    }
 
-    LazyData<Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
 
-    LazyData<double> getMagnitude(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) override;
 
     double getWavelength(size_t n) override;
 };

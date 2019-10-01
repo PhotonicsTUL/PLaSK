@@ -1,10 +1,10 @@
 #define PY_ARRAY_UNIQUE_SYMBOL PLASK_OPTICAL_SLAB_ARRAY_API
 #define NO_IMPORT_ARRAY
 
-#include <plask/python_numpy.h>
+#include <plask/python_numpy.hpp>
 
-#include "linescyl-python.h"
-#include "slab-python.h"
+#include "linescyl-python.hpp"
+#include "slab-python.hpp"
 
 namespace plask { namespace optical { namespace slab { namespace python {
 
@@ -76,12 +76,16 @@ py::object LinesSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
         case WHAT_WAVELENGTH:
             return UFUNC<dcomplex>(
                 [self](dcomplex x) -> dcomplex { self->expansion.setK0(2e3*PI / x); return self->getDeterminant(); },
-                array
+                array,
+                "LinesSolverCyl.getDeterminant",
+                "lam"
             );
         case WHAT_K0:
             return UFUNC<dcomplex>(
                 [self](dcomplex x) -> dcomplex { self->expansion.setK0(x); return self->getDeterminant(); },
-                array
+                array,
+                "LinesSolverCyl.getDeterminant",
+                "k0"
             );
     }
     return py::object();

@@ -1,5 +1,5 @@
-#include "expansionfdcyl.h"
-#include "solverfdcyl.h"
+#include "expansionfdcyl.hpp"
+#include "solverfdcyl.hpp"
 
 #define SOLVER static_cast<LinesSolverCyl*>(solver)
 
@@ -62,7 +62,7 @@ void ExpansionLines::reset()
 
 
 
-void ExpansionLines::prepareIntegrals(double lam, double glam) {
+void ExpansionLines::beforeLayersIntegrals(double lam, double glam) {
     auto mesh = plask::make_shared<RectangularMesh<2>>(raxis, solver->verts, RectangularMesh<2>::ORDER_01);
     temperature = SOLVER->inTemperature(mesh);
     gain_connected = SOLVER->inGain.hasProvider();
@@ -72,7 +72,7 @@ void ExpansionLines::prepareIntegrals(double lam, double glam) {
     }
 }
 
-void ExpansionLines::cleanupIntegrals(double, double) {
+void ExpansionLines::afterLayersIntegrals() {
     temperature.reset();
     gain.reset();
 }
@@ -191,7 +191,7 @@ void ExpansionLines::layerIntegrals(size_t layer, double lam, double glam) {
 }
 
 
-void ExpansionLines::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
+void ExpansionLines::getMatrices(size_t layer, cmatrix& RH, cmatrix& RE)
 {
     assert(initialized);
     if (isnan(k0)) throw BadInput(SOLVER->getId(), "Wavelength or k0 not set");
@@ -199,113 +199,107 @@ void ExpansionLines::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
 
     size_t N1 = raxis->size() - 1;
 
-    std::fill(RE.begin(), RE.end(), dcomplex(0.));
     std::fill(RH.begin(), RH.end(), dcomplex(0.));
+    std::fill(RE.begin(), RE.end(), dcomplex(0.));
 
-    const int m21 = m*m - 1, mm2 = (m-1)*(m-1), mp2 = (m+1)*(m+1);
-    const dcomplex h0 = 0.5 * k0;
+    const int m2 = m * m;
 
     //The first element
     if (m == 1) {
-        size_t ies = iEs(0), ihp = iHp(0);
-
-        const dcomplex fe = 0.5 / (k0 * epsilons[layer][0].c22),
-                       fh = 0.5 / (k0 * mu[0].c22);
-
-        const double d = raxis->at(1);
-        const double DDp = 2. / (d*d);
-
-        RE(ies, ihp) += h0 * (mu[0].c00 + mu[0].c11);
-        RE(ies, iHs(1)) += fe * DDp;
-        RH(ihp, ies) += h0 * (epsilons[layer][0].c11 + epsilons[layer][0].c00);
-        RH(ihp, iEp(1)) -= fh * DDp;
+//         size_t ier = iEr(0), ihp = iHp(0);
+//
+//         const dcomplex fe = 1. / (k0 * epsilons[layer][0].c22),
+//                        fh = 1. / (k0 * mu[0].c22);
+//
+//         RH(ier, ihp) += fe * (r * DD) + k0 * r * mu[i].c00;
+//         RH(ier, ihp+i1) += fe * (r * DDp);
+//         RH(ier, ihr) += fe * (-mr2);
+//
+//         RE(ihr, ier) += fh * (-mr2);
+//         RE(ihr, iep) += fh * (-r * DD) - k0 * r * epsilons[layer][i].c00;
+//         RE(ihr, iep+i1) += fh * (-r * DDp);
     }
 
     for (size_t i = 1; i != N1; ++i) {
-        size_t ies = iEs(i), iep = iEp(i), ihs = iHs(i), ihp = iHp(i);
+        size_t ier = iEr(i), iep = iEp(i), ihr = iHr(i), ihp = iHp(i);
 
-        const double r = 1. / raxis->at(i);
-        const double r2 = r * r;
+        const double r = 1. / raxis->at(i), rm = (i==1)? 1. : 1. / raxis->at(i-1), rp = raxis->at(i+1);
+        const double rsm = 2. / (raxis->at(i) + raxis->at(i-1)), rsp = 2. / (raxis->at(i) + raxis->at(i+1));
+        const double mr = m*r, m2r = m2*r, mrm = m*rm, mrp = m*rp;
 
-        const dcomplex fe = 0.5 / (k0 * epsilons[layer][i].c22),
-                       fh = 0.5 / (k0 * mu[i].c22);
+        const dcomplex fe = 1. / (k0 * epsilons[layer][i].c22),
+                       fh = 1. / (k0 * mu[i].c22);
 
         const double dm = raxis->at(i) - raxis->at(i-1), dp = raxis->at(i+1) - raxis->at(i);
         const double D = (dp-dm) / (dm*dp), Dp = dm/dp / (dm+dp), Dm = - dp/dm / (dm+dp);
-        const double DD = - 2. / (dm*dp), DDp = 2. / (dm+dp) / dp, DDm = 2. / (dm+dp) / dm;
+        const double DrD = - 2. / (dm*dp) * (rsm*rsp) / r + (dp-dm)*(dp+dm)/(dm*dm*dp*dp) * r,
+                     DrDp = 2. / (dm+dp) * (rsm / dp + r / (dp*dp) * (dp-dm)),
+                     DrDm = 2. / (dm+dp) * (rsp / dm - r / (dm*dm) * (dp-dm));
 
-        const dcomplex dep = (Dm / epsilons[layer][i-1].c22 + D / epsilons[layer][i].c22 + Dp / epsilons[layer][i+1].c22) / (2. * k0);
-        const dcomplex dmu = (Dm / mu[i-1].c22 + D / mu[i].c22 + Dp / mu[i+1].c22) / (2. * k0);
+        const dcomplex de = Dm / (k0 * epsilons[layer][i-1].c22) +
+                            D  / (k0 * epsilons[layer][i].c22) +
+                            Dp / (k0 * epsilons[layer][i+1].c22);
+        const dcomplex dh = Dm / (k0 * mu[i-1].c22) + D / (k0 * mu[i].c22) + Dp / (k0 * mu[i+1].c22);
 
-        RE(ies, ihp) += fe * (-mm2 * r2 + r * D + DD) + dep * (D - (m-1) * r) + h0 * (mu[i].c00 + mu[i].c11);
-        RE(ies, ihp+i1) += fe * (r * Dp + DDp) + dep * Dp;
-        if (i != 1 || m == 1)
-            RE(ies, ihp-i1) += fe * (r * Dm + DDm) + dep * Dm;
-        RE(ies, ihs) += fe * (m21 * r2 + (2*m+1) * r * D + DD) + dep * (D + (m+1) * r) + h0 * (mu[i].c00 - mu[i].c11);;
-        RE(ies, ihs+i1) += fe * ((2*m+1) * r * Dp + DDp) + dep * Dp;
+        RE(ihr, iep) += fh * DrD + dh * r * D + k0 * r * epsilons[layer][i].c00;
+        RE(ihr, iep+i1) += fh * DrDp + dh * r * Dp;
         if (i != 1)
-            RE(ies, ihs-i1) += fe * ((2*m+1) * r * Dm + DDm) + dep * Dm;
-
-        RE(iep, ihp) += fe * (m21 * r2 - (2*m-1) * r * D + DD) + dep * (D - (m-1) * r) + h0 * (mu[i].c00 - mu[i].c11);
-        RE(iep, ihp+i1) += fe * (- (2*m-1) * r * Dp + DDp) + dep * Dp;
+            RE(ihr, iep-i1) += fh * DrDm + dh * r * Dm;
+        RE(ihr, ier) += fh * mr * D + dh * mr;
+        RE(ihr, ier+i1) += fh * mrp * Dp;
         if (i != 1 || m == 1)
-            RE(iep, ihp-i1) += fe * (- (2*m-1) * r * Dm + DDm) + dep * Dm;
-        RE(iep, ihs) += fe * (-mp2 * r2 + r * D + DD) + dep * (D + (m+1) * r) + h0 * (mu[i].c00 + mu[i].c11);
-        RE(iep, ihs+i1) += fe * (r * Dp + DDp) + dep * Dp;
-        if (i != 1)
-            RE(iep, ihs-i1) += fe * (r * Dm + DDm) + dep * Dm;
+            RE(ihr, ier-i1) += fh * mrm * Dm;
 
-        RH(ihp, ies) += fh * (-mm2 * r2 + r * D + DD) + dmu * (D - (m-1) * r) + h0 * (epsilons[layer][i].c11 + epsilons[layer][i].c00);
-        RH(ihp, ies+i1) += fh * (r * Dp + DDp) + dmu * Dp;
-        if (i != 1 || m == 1)
-            RH(ihp, ies-i1) += fh * (r * Dm + DDm) + dmu * Dm;
-        RH(ihp, iep) += fh * (-m21 * r2 - (2*m+1) * r * D - DD) - dmu * (D + (m+1) * r) + h0 * (epsilons[layer][i].c11 - epsilons[layer][i].c00);
-        RH(ihp, iep+i1) += fh * (- (2*m+1) * r * Dp - DDp) - dmu * Dp;
+        RE(ihp, iep) -= fh * mr * D;
+        RE(ihp, iep+i1) -= fh * mr * Dp;
         if (i != 1)
-            RH(ihp, iep-i1) += fh * (- (2*m+1) * r * Dm - DDm) - dmu * Dm;
+            RE(ihp, iep-i1) -= fh * mr * Dm;
+        RE(ihp, ier) += - fh * m2r + k0 * raxis->at(i) * epsilons[layer][i].c11;
 
-        RH(ihs, ies) += fh * (-m21 * r2 + (2*m-1) * r * D - DD) - dmu * (D - (m-1) * r) + h0 * (epsilons[layer][i].c11 - epsilons[layer][i].c00);
-        RH(ihs, ies+i1) += fh * ((2*m-1) * r * Dp - DDp) - dmu * Dp;
-        if (i != 1 || m == 1)
-            RH(ihs, ies-i1) += fh * ((2*m-1) * r * Dm - DDm) - dmu * Dm;
-        RH(ihs, iep) += fh * (-mp2 * r2 + r * D + DD) + dmu * (D + (m+1) * r) + h0 * (epsilons[layer][i].c11 + epsilons[layer][i].c00);
-        RH(ihs, iep+i1) += fh * (r * Dp + DDp) + dmu * Dp;
+        RH(iep, ihr) += - fe * m2r + k0 * raxis->at(i) * mu[i].c11;
+        RH(iep, ihp) += fe * mr * D;
+        RH(iep, ihp+i1) += fe * mr * Dp;
         if (i != 1)
-            RH(ihs, iep-i1) += fh * (r * Dm + DDm) + dmu * Dm;
+            RH(iep, ihp-i1) -= fe * mr * Dm;
+
+        RH(ier, ihr) += fe * mr * D + de * mr;
+        RH(ier, ihr+i1) += fe * mrp * Dp;
+        if (i != 1 || m == 1)
+            RH(ier, ihr-i1) += fe * mrm * Dm;
+        RH(ier, ihp) += fe * DrD + de * r * D + k0 * r * mu[i].c00;
+        RH(ier, ihp+i1) += fe * DrDp + de * r * Dp;
+        if (i != 1)
+            RH(ier, ihp-i1) += fe * DrDm + de * r * Dm;
     }
 
-    // At the end we assume both r derivatives to be equal to 0
+    // At the end we assume second r derivative to be equal to 0
     {
-        const size_t ies = iEs(N1), iep = iEp(N1), ihs = iHs(N1), ihp = iHp(N1);
+        size_t ier = iEr(N1), iep = iEp(N1), ihr = iHr(N1), ihp = iHp(N1);
 
-        const double r = 1. / raxis->at(N1);
-        const double r2 = r * r;
+        const double r = 1. / raxis->at(N1), rm = raxis->at(N1-1);
+        const double rsm = 2. / (raxis->at(N1) + raxis->at(N1-1));
+        const double mr = m*r, m2r = m2*r, mrm = m*rm;
 
-        const dcomplex fe = 0.5 / (k0 * epsilons[layer][N1].c22),
-                       fh = 0.5 / (k0 * mu[N1].c22);
+        const dcomplex fe = 1. / (k0 * epsilons[layer][N1].c22),
+                       fh = 1. / (k0 * mu[N1].c22);
 
-        const double D = 1. / (raxis->at(N1) - raxis->at(N1-1));
-        const double Dm = -D;
+        const double D = 1 / rsm, Dm = - D;  // TODO: Verify this!!
 
-        RE(ies, ihp) += fe * (-mm2 * r2 + r * D) + h0 * (mu[N1].c00 + mu[N1].c11);
-        RE(ies, ihp-i1) += fe * (r * Dm);
-        RE(ies, ihs) += fe * (m21 * r2 + (2*m+1) * r * D) + h0 * (mu[N1].c00 - mu[N1].c11);;
-        RE(ies, ihs-i1) += fe * ((2*m+1) * r * Dm);
+        RE(ihr, iep) += k0 * r * epsilons[layer][N1].c00;
+        RE(ihr, ier) += fh * mr * D;
+        RE(ihr, ier-i1) += fh * mrm * Dm;
 
-        RE(iep, ihp) += fe * (m21 * r2 - (2*m-1) * r * D) + h0 * (mu[N1].c00 - mu[N1].c11);
-        RE(iep, ihp-i1) += fe * (- (2*m-1) * r * Dm);
-        RE(iep, ihs) += fe * (-mp2 * r2 + r * D) + h0 * (mu[N1].c00 + mu[N1].c11);
-        RE(iep, ihs-i1) += fe * (r * Dm);
+        RE(ihp, iep) -= fh * mr * D;
+        RE(ihp, iep-i1) -= fh * mr * Dm;
+        RE(ihp, ier) += - fh * m2r + k0 * raxis->at(N1) * epsilons[layer][N1].c11;
 
-        RH(ihp, ies) += fh * (-mm2 * r2 + r * D) + h0 * (epsilons[layer][N1].c11 + epsilons[layer][N1].c00);
-        RH(ihp, ies-i1) += fh * (r * Dm);
-        RH(ihp, iep) += fh * (-m21 * r2 - (2*m+1) * r * D) + h0 * (epsilons[layer][N1].c11 - epsilons[layer][N1].c00);
-        RH(ihp, iep-i1) += fh * (- (2*m+1) * r * Dm);
+        RH(iep, ihr) += - fe * m2r + k0 * raxis->at(N1) * mu[N1].c11;
+        RH(iep, ihp) += fe * mr * D;
+        RH(iep, ihp-i1) -= fe * mr * Dm;
 
-        RH(ihs, ies) += fh * (-m21 * r2 + (2*m-1) * r * D) + h0 * (epsilons[layer][N1].c11 - epsilons[layer][N1].c00);
-        RH(ihs, ies-i1) += fh * ((2*m-1) * r * Dm);
-        RH(ihs, iep) += fh * (-mp2 * r2 + r * D) + h0 * (epsilons[layer][N1].c11 + epsilons[layer][N1].c00);
-        RH(ihs, iep-i1) += fh * (r * Dm);
+        RH(ier, ihr) += fe * mr * D;
+        RH(ier, ihr-i1) += fe * mrm * Dm;
+        RH(ier, ihp) += k0 * r * mu[N1].c00;
     }
 
 }
@@ -335,29 +329,29 @@ LazyData<Vec<3,dcomplex>> ExpansionLines::getField(size_t l,
 
     if (which_field == FIELD_E) {
         if (m == 1) {
-            field[0].c0 = E[iEs(0)];
-            field[0].c1 = E[iEs(0)];
+            field[0].c0 =   E[iEr(0)];
+            field[0].c1 = - E[iEr(0)];
         } else {
             field[0].c0 = field[0].c1 = 0.;
         }
         field[0].c2 = 0;
         for (size_t i = 1; i != N; ++i) {
-            field[i].c0 = E[iEs(i)] - E[iEp(i)];
-            field[i].c1 = E[iEs(i)] + E[iEp(i)];
+            field[i].c0 = E[iEp(i)] / SOLVER->mesh->at(i);
+            field[i].c1 = E[iEr(i)];
             //TODO add z component
             field[i].c2 = 0;
         }
     } else { // which_field == FIELD_H
         if (m == 1) {
-            field[0].c0 =   H[iEp(0)];
-            field[0].c1 = - H[iEp(0)];
+            field[0].c0 =   H[iHr(0)];
+            field[0].c1 = - H[iHr(0)];
         } else {
             field[0].c0 = field[0].c1 = 0.;
         }
         field[0].c2 = 0;
         for (size_t i = 1; i != N; ++i) {
-            field[i].c0 = H[iHs(i)] + H[iHp(i)];
-            field[i].c1 = H[iHs(i)] - H[iHp(i)];
+            field[i].c0 = H[iHp(i)] / SOLVER->mesh->at(i);
+            field[i].c1 = - H[iHr(i)];
             //TODO add z component
             field[i].c2 = 0;
         }

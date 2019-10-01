@@ -73,7 +73,7 @@ endif()
 #set(solver_src file1.cpp file2.cpp file3.h file4.hpp)
 #set(interface_src python/file1.cpp python/file2.cpp python/file3.h)
 
-file(GLOB solver_src *.cpp fourier/*.cpp bessel/*.cpp lines/*.cpp)
+file(GLOB solver_src *.cpp fourier/*.cpp bessel/*.cpp linescyl/*.cpp)
 
 
 # To add unit tests to your project create appropriate targets (binary executables,
