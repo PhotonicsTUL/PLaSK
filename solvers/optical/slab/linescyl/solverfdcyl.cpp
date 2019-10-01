@@ -1,6 +1,6 @@
 #include <memory>
 
-#include "solverfdcyl.h"
+#include "solverfdcyl.hpp"
 
 namespace plask { namespace optical { namespace slab {
 
@@ -37,38 +37,6 @@ void LinesSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
                        .get(emission);
             k0 = 2e3*PI / reader.getAttribute<dcomplex>("wavelength", 2e3*PI / k0);
             reader.requireTagEnd();
-        } else if (param == "interface") {
-            if (reader.hasAttribute("index")) {
-                throw XMLException(reader, "Setting interface by layer index is not supported anymore (set it by object or position)");
-            } else if (reader.hasAttribute("position")) {
-                if (reader.hasAttribute("object")) throw XMLConflictingAttributesException(reader, "index", "object");
-                if (reader.hasAttribute("path")) throw XMLConflictingAttributesException(reader, "index", "path");
-                setInterfaceAt(reader.requireAttribute<double>("position"));
-            } else if (reader.hasAttribute("object")) {
-                auto object = manager.requireGeometryObject<GeometryObject>(reader.requireAttribute("object"));
-                PathHints path; if (auto pathattr = reader.getAttribute("path")) path = manager.requirePathHints(*pathattr);
-                setInterfaceOn(object, path);
-            } else if (reader.hasAttribute("path")) {
-                throw XMLUnexpectedAttrException(reader, "path");
-            }
-            reader.requireTagEnd();
-        } else if (param == "vpml") {
-            vpml.factor = reader.getAttribute<dcomplex>("factor", vpml.factor);
-            vpml.size = reader.getAttribute<double>("size", vpml.size);
-            vpml.dist = reader.getAttribute<double>("dist", vpml.dist);
-            if (reader.hasAttribute("order")) { //TODO Remove in the future
-                writelog(LOG_WARNING, "XML line {:d} in <vpml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
-                vpml.order = reader.requireAttribute<double>("order");
-            }
-            vpml.order = reader.getAttribute<double>("shape", vpml.order);
-            reader.requireTagEnd();
-        } else if (param == "transfer") {
-            transfer_method = reader.enumAttribute<Transfer::Method>("method")
-                .value("auto", Transfer::METHOD_AUTO)
-                .value("reflection", Transfer::METHOD_REFLECTION)
-                .value("admittance", Transfer::METHOD_ADMITTANCE)
-                .get(transfer_method);
-            reader.requireTagEnd();
         } else if (param == "pml") {
             pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
             pml.size = reader.getAttribute<double>("size", pml.size);
@@ -82,7 +50,7 @@ void LinesSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
         } else if (param == "root") {
             readRootDiggerConfig(reader);
         } else
-            parseStandardConfiguration(reader, manager);
+            parseCommonSlabConfiguration(reader, manager);
     }
 }
 
@@ -125,33 +93,6 @@ size_t LinesSolverCyl::findMode(dcomplex start, int m)
     }, "lam");
     root->find(start);
     return insertMode();
-}
-
-
-LazyData<Vec<3,dcomplex>> LinesSolverCyl::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
-{
-    if (num >= modes.size()) throw BadInput(this->getId()+".outLightE", "Mode {0} has not been computed", num);
-    assert(transfer);
-    applyMode(modes[num]);
-    return transfer->getFieldE(modes[num].power, dst_mesh, method);
-}
-
-
-LazyData<Vec<3,dcomplex>> LinesSolverCyl::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
-{
-    if (num >= modes.size()) throw BadInput(this->getId()+".outLightH", "Mode {0} has not been computed", num);
-    assert(transfer);
-    applyMode(modes[num]);
-    return transfer->getFieldH(modes[num].power, dst_mesh, method);
-}
-
-
-LazyData<double> LinesSolverCyl::getMagnitude(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
-{
-    if (num >= modes.size()) throw BadInput(this->getId()+".outLightMagnitude", "Mode {0} has not been computed", num);
-    assert(transfer);
-    applyMode(modes[num]);
-    return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
 
 
