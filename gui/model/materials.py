@@ -277,21 +277,14 @@ class MaterialsModel(TableModel):
     class Material(TableModelEditMethods, QAbstractTableModel): #(InfoSource)
 
         class Property:
-            def __init__(self, name=None, value=None, comment=None, source=None, links=None):
+            def __init__(self, name=None, value=None):
                 self.name = name
                 self.value = value
-                #self.comment = comment
-                #self.source = source
-                #self.links = [] if links is None else links
 
             def add_to_xml(self, material_element):
                 if not self.name: return
                 el = ElementTree.SubElement(material_element, self.name)
                 if self.value: el.text = self.value
-                #if self.comment: el.attrib["comment"] = self.comment
-                #if self.source: el.attrib["source"] = self.source
-                #for nr, link in enumerate(self.links):  # TODO special type for the links
-                #    el.attrib["see{}".format('' if nr == 0 else nr+1)] = link
 
 
         def __init__(self, materials_model, name, base=None, properties=None, alloy=False, comment=None,
