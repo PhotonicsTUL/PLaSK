@@ -299,11 +299,12 @@ class MaterialsModel(TableModel):
             self.comment = comment
             self.alloy = alloy
 
-        def add_to_xml(self, material_section_element):
-            mat = ElementTree.SubElement(material_section_element, "material", {"name": self.name})
+        def get_xml_element(self):
+            mat = ElementTree.Element("material", {"name": self.name})
             if self.base: mat.attrib['base'] = self.base
             if self.alloy: mat.attrib['alloy'] = 'yes'
             for p in self.properties: p.add_to_xml(mat)
+            return mat
 
         def rowCount(self, parent=QModelIndex()):
             if parent.isValid(): return 0
@@ -399,16 +400,8 @@ class MaterialsModel(TableModel):
                     properties = []
                     for prop in mat:
                         require_no_children(prop)
-                        with AttributeReader(prop) as prop_attrib:
-                           p = MaterialsModel.Material.Property(prop.tag, prop.text,
-                                                            prop_attrib.get("comment"), prop_attrib.get("source"))
-                           # see = prop_attrib.get("see")
-                           # counter = 1
-                           # while see is not None or counter == 1:
-                           #     if see is not None: p.links.append(see)
-                           #     see = prop_attrib.get("see{}".format(counter))
-                           #     counter += 1
-                           properties.append(p)
+                        with AttributeReader(prop) as _:
+                           properties.append(MaterialsModel.Material.Property(prop.tag, prop.text))
                     base = mat_attrib.get('base', None)
                     if base is None: base = mat_attrib.get('kind')  # for old files
                     alloy = mat_attrib.get('complex', False)  #TODO remove soon
@@ -424,7 +417,7 @@ class MaterialsModel(TableModel):
         res = ElementTree.Element(self.name)
         for e in self.entries:
             if e.comment: res.append(ElementTree.Comment(e.comment))
-            e.add_to_xml(res)
+            res.append(e.get_xml_element())
         return res
 
     def data(self, index, role=Qt.DisplayRole):
