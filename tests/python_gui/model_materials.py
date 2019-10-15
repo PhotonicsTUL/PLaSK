@@ -49,12 +49,12 @@ class TestGUIModelMaterials(GUITestCase):
 
     def setUp(self):
         self.materials = MaterialsModel()
-        self.materials.entries.append(MaterialsModel.Material(self.materials, "custom_material", "AlGaN", [MaterialsModel.Material.Property('dens', '1')]))
-        self.materials.entries.append(MaterialsModel.Material(self.materials, "second_material", "Ag", alloy=True))
+        self.materials.entries.append(MaterialsModel.Material(self.materials, "custom_material", "Al(0.5)GaN", [MaterialsModel.Material.Property('dens', '1')]))
+        self.materials.entries.append(MaterialsModel.Material(self.materials, "second_material", "Ag"))
 
     def test_get_xml_element(self):
         self.assertEqualXML(self.materials.get_xml_element(),
-           "<materials><material name='custom_material' base='AlGaN'><dens>1</dens></material><material name='second_material' base='Ag' alloy='yes'/></materials>")
+           "<materials><material name='custom_material' base='Al(0.5)GaN'><dens>1</dens></material><material name='second_material' base='Ag'/></materials>")
 
     def test_set_xml_element(self):
         self.materials.set_xml_element(etree.XML(
@@ -82,25 +82,47 @@ class TestGUIModelMaterials(GUITestCase):
 
     def test_get(self):
         self.assertEqual(self.materials.get(0, 0), "custom_material")
-        self.assertEqual(self.materials.get(1, 0), "AlGaN")
+        self.assertEqual(self.materials.get(1, 0), "Al(0.5)GaN")
         self.assertEqual(self.materials.get(2, 0), False)
         self.assertEqual(self.materials.get(0, 1), "second_material")
         self.assertEqual(self.materials.get(1, 1), "Ag")
-        self.assertEqual(self.materials.get(2, 1), True)
+        self.assertEqual(self.materials.get(2, 1), False)
 
     def test_set(self):
         self.materials.set(0, 0, "new_name")
         self.materials.set(2, 0, True)
         self.materials.set(1, 1, "AuGe")
         self.assertEqual(self.materials.get(0, 0), "new_name")
-        self.assertEqual(self.materials.get(1, 0), "AlGaN")
+        self.assertEqual(self.materials.get(1, 0), "Al(0.5)GaN")
         self.assertEqual(self.materials.get(2, 0), True)
         self.assertEqual(self.materials.get(0, 1), "second_material")
         self.assertEqual(self.materials.get(1, 1), "AuGe")
-        self.assertEqual(self.materials.get(2, 1), True)
+        self.assertEqual(self.materials.get(2, 1), False)
 
     def test_columnCount(self):
         self.assertEqual(self.materials.columnCount(), 3)
+
+    def test_create_info_with_no_name(self):
+        self.materials.entries[1].name = ''   # no required name
+        info = self.materials.create_info()
+        self.assertEqual(len(info), 1)
+        self.assertCountEqual(info[0].rows, (1,))
+        self.assertCountEqual(info[0].cols, (0,))
+
+    def test_create_info_with_no_name(self):
+        self.materials.entries[0].base = ''   # no required base
+        info = self.materials.create_info()
+        self.assertEqual(len(info), 1)
+        self.assertCountEqual(info[0].rows, (0,))
+        self.assertCountEqual(info[0].cols, (1,))
+
+    def test_create_info_no_dopant(self):
+        self.materials.entries[0].base = 'AlGaN'   # no required dopant
+        info = self.materials.create_info()
+        self.assertEqual(len(info), 1)
+        self.assertCountEqual(info[0].rows, (0,))
+        self.assertCountEqual(info[0].cols, (1,))
+
 
 
 if __name__ == '__main__':
