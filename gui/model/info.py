@@ -48,7 +48,7 @@ class Info(object):
             :param value: required value
             :param ans_if_non_attr: result which is returned when object has no required attribute
             :return: True if self has attribute with given name which includes given value,
-                     False if self has attribute with given name which dpesn't include given value,
+                     False if self has attribute with given name which doesn't include given value,
                      ans_if_non_attr if self has not attribute with given name.
         """
         #if hasattr(self, attr_name): return getattr(self, attr_name) == value
