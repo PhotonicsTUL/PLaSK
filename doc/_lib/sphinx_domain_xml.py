@@ -94,7 +94,10 @@ class xmlcontents_node(nodes.Admonition, nodes.Element): pass
 def visit_xmlcontents_html(self, node):
     self.body.append('<dl class="xml-contents"><dt>Contents:</dt>\n')
     self.body.append(self.starttag(node, 'dd', ''))
-    self.set_first_last(node)
+    try:
+        self.set_first_last(node)
+    except AttributeError:
+        pass
 
 def depart_xmlcontents_html(self, node):
     self.body.append('</dd><dl>\n')
@@ -183,7 +186,7 @@ class XMLTag(ObjectDescription):
             objects[key] = self.env.docname
         indextext = self.get_index_text(self.objtype, name)
         if indextext:
-            self.indexnode['entries'].append(('single', indextext, targetname, ''))
+            self.indexnode['entries'].append(('single', indextext, targetname, targetname, ''))
 
     def get_index_text(self, objectname, name):
         if self.objtype == 'tag' and name:

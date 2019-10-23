@@ -185,6 +185,8 @@ def make_rst(dirname):
 
         categories.setdefault(cat, []).append('{}.{}'.format(lib, name))
 
+        outfile.close()
+
 
 for dirname, subdirs, files in os.walk(basedir):
     if 'solvers.yml' in files and not os.path.basename(dirname) == 'skel':

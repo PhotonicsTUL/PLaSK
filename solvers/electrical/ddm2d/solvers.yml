@@ -182,9 +182,9 @@
   lib: ddm2d
   category: electrical
   help: >
-    Finite element drift-diffusion electrical solver for 2D Cartesian geometry using finite-element method.
+    Finite element drift-diffusion electrical solver for cylindrical geometry using finite-element method.
   geometry: Cylindrical
-  mesh: Rectangular2D
+  mesh: RectangularCyl
   tags:
   - *voltage
   - *loop
