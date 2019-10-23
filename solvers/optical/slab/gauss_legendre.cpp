@@ -1,6 +1,7 @@
 #include "gauss_legendre.h"
 #include "fortran.h"
 
+#include <boost/math/tools/convert_from_string.hpp>
 #include <boost/math/special_functions/legendre.hpp>
 using boost::math::legendre_p;
 
