@@ -212,7 +212,7 @@ if(BUILD_PYTHON)
     endforeach()
 endif()
 
-find_package(Boost REQUIRED COMPONENTS ${boost_components})
+find_package(Boost 1.54.0 REQUIRED COMPONENTS ${boost_components})
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 

@@ -4,7 +4,6 @@
 
 #include "../gauss_legendre.h"
 
-#include <boost/math/tools/convert_from_string.hpp>
 #include <boost/math/special_functions/bessel.hpp>
 #include <boost/math/special_functions/legendre.hpp>
 using boost::math::cyl_bessel_j;
