@@ -1085,16 +1085,17 @@ def main():
         import faulthandler
         faulthandler.enable()
 
+    try:
+        QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
+        QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
+    except AttributeError:
+        pass
+
     global APPLICATION, SESSION, pysparkle
 
     APPLICATION = QApplication(sys.argv)
     APPLICATION.setApplicationName("PLaSK")
     APPLICATION.setAttribute(Qt.AA_DontShowIconsInMenus, False)
-    try:
-        APPLICATION.setAttribute(Qt.AA_EnableHighDpiScaling, True)
-        APPLICATION.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
-    except AttributeError:
-        pass
     sys.argv = APPLICATION.arguments()
 
     if CONFIG['main_window/dark_style']:
@@ -1133,7 +1134,7 @@ def main():
         if icons_theme == 'tango': icons_theme = 'hicolor'
         elif icons_theme == 'breeze' and CONFIG['main_window/dark_style']:
             icons_theme = 'breeze-dark'
-        icons_path = []
+        icons_path = [os.path.join(__path__[0], 'icons', icons_theme)]
         QIcon.setThemeName(icons_theme)
     icons_path.insert(0, os.path.join(__path__[0], 'icons'))
     QIcon.setThemeSearchPaths(icons_path)

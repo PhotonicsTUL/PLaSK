@@ -13,7 +13,9 @@
 import sys
 import os
 
+
 QT_API = os.environ.get('PLASK_QT_API', os.environ.get('QT_API'))
+
 if QT_API is not None:
     QT_API = dict(pyqt='PyQt4v2', pyqt4='PyQt4v2', pyqt4v2='PyQt4v2', pyside='PySide',
                   pyqt5='PyQt5', pyside2='PySide2').get(QT_API)
@@ -29,27 +31,31 @@ if QT_API is not None:
             pass
         else:
             if QT_API in ('PyQt5', 'PySide2'):
-                matplotlib.rcParams['backend.qt5'] = QT_API
                 matplotlib.use('Qt5Agg')
             else:
-                matplotlib.rcParams['backend.qt4'] = QT_API
                 matplotlib.use('Qt4Agg')
         finally:
             if _mplbackend is not None:
                 os.environ['MPLBACKEND'] = _mplbackend
+
 if QT_API is None:
     try:
         import matplotlib
     except ImportError:
         QT_API = 'PyQt5'
     else:
-        if matplotlib.rcParams['backend'] == 'Qt4Agg':
-            QT_API = matplotlib.rcParams.get('backend.qt4', 'PySide')
+        if matplotlib.get_backend() == 'Qt4Agg':
+            QT_API = matplotlib.rcParams.get('backend.qt4', 'PyQt4')
         else:
             matplotlib.use('Qt5Agg')
-            QT_API = matplotlib.rcParams.get('backend.qt5', 'PySide2')
+            try:
+                QT_API = matplotlib.backends.backend_qt5.QT_API
+            except:
+                QT_API = matplotlib.rcParams.get('backend.qt5', 'PyQt5')
 
-for QT_API in (QT_API, 'PySide2', 'PyQt5', 'PySide', 'PyQt4'):
+os.environ['QT_API'] = QT_API.lower()
+
+for QT_API in (QT_API, 'PyQt5', 'PySide2', 'PyQt4', 'PySide'):
     if QT_API == 'PySide':
         try:
             from PySide import QtCore, QtGui, QtGui as QtWidgets, QtHelp

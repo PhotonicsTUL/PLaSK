@@ -22,10 +22,11 @@ import matplotlib.lines
 import matplotlib.patches
 import matplotlib.artist
 
-backend = _os.environ.get('MPLBACKEND', matplotlib.rcParams['backend'])
+backend = matplotlib.get_backend()
 
 # Specify Qt4 API v2 while it is not too late
-if backend == 'Qt4Agg' and matplotlib.rcParams['backend.qt4'] == 'PyQt4':
+if backend == 'Qt4Agg' and _os.environ.get('QT_API') != 'pyside' and \
+        matplotlib.rcParams.get('backend.qt4', 'PyQt4') == 'PyQt4':
     try:
         import sip
         for n in ("QString", "QVariant"):

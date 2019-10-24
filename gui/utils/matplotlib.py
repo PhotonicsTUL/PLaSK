@@ -26,7 +26,7 @@ from ..qt import QT_API
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
-if QT_API == 'PyQt5':
+if QT_API in ('PyQt5', 'PySide2'):
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 else:
