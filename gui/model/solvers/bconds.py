@@ -48,7 +48,7 @@ class SchemaBoundaryConditions(object):
     def create_default_entry(self):
         pass
 
-    def create_place(self, Label):
+    def create_place(self, label):
         pass
 
 
