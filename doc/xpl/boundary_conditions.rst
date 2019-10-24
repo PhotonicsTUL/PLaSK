@@ -20,9 +20,11 @@ Most of the solvers have some boundary conditions. They differ by name or type, 
 
       .. xml:contents::
 
+         One of the following tag can be used instead of the ``place`` attribute if more detailed description of the boundary condition location is required:
+
          .. xml:tag:: <place>
 
-            Set location of boundary condition. This tag can be used instead of the ``place`` attribute if more detailed description of the boundary condition location is required. Its attributes are mesh-specific. Below there are most common examples of attribute sets for rectangular or triangular meshes:
+            Set location of boundary condition. Its attributes are mesh-specific. Below there are most common examples of attribute sets for rectangular or triangular meshes:
 
             **Boundary conditions at the side of some object or the whole mesh:**
 
@@ -39,15 +41,15 @@ Most of the solvers have some boundary conditions. They differ by name or type, 
 
          .. xml:tag:: <union>
 
-            Set location of boundary condition to union of two places given as child nodes (each must be of type: :xml:tag:`<place>`, :xml:tag:`<union>`, :xml:tag:`<intersection>`, or :xml:tag:`<difference>`). This tag can be used instead of the ``place`` attribute if more detailed description of the boundary condition location is required.
+            Set location of boundary condition to union of two places given as child nodes (each must be of type: :xml:tag:`<place>`, :xml:tag:`<union>`, :xml:tag:`<intersection>`, or :xml:tag:`<difference>`).
 
          .. xml:tag:: <intersection>
 
-            Set location of boundary condition to intersection of two places given as child nodes (each must be of type: :xml:tag:`<place>`, :xml:tag:`<union>`, :xml:tag:`<intersection>`, or :xml:tag:`<difference>`). This tag can be used instead of the ``place`` attribute if more detailed description of the boundary condition location is required.
+            Set location of boundary condition to intersection of two places given as child nodes (each must be of type: :xml:tag:`<place>`, :xml:tag:`<union>`, :xml:tag:`<intersection>`, or :xml:tag:`<difference>`).
 
          .. xml:tag:: <difference>
 
-            Set location of boundary condition to difference of two places given as child nodes (each must be of type: :xml:tag:`<place>`, :xml:tag:`<union>`, :xml:tag:`<intersection>`, or :xml:tag:`<difference>`). This tag can be used instead of the ``place`` attribute if more detailed description of the boundary condition location is required.
+            Set location of boundary condition to difference of two places given as child nodes (each must be of type: :xml:tag:`<place>`, :xml:tag:`<union>`, :xml:tag:`<intersection>`, or :xml:tag:`<difference>`).
 
 .. rubric:: Footnotes
 
