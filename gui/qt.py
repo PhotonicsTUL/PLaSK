@@ -53,10 +53,10 @@ if QT_API is None:
             except:
                 QT_API = matplotlib.rcParams.get('backend.qt5', 'PyQt5')
 
-os.environ['QT_API'] = QT_API.lower()
-
 for QT_API in (QT_API, 'PyQt5', 'PySide2', 'PyQt4', 'PySide'):
-    if QT_API == 'PySide':
+    if QT_API is None:
+        continue
+    elif QT_API == 'PySide':
         try:
             from PySide import QtCore, QtGui, QtGui as QtWidgets, QtHelp
         except ImportError:
@@ -99,13 +99,15 @@ for QT_API in (QT_API, 'PyQt5', 'PySide2', 'PyQt4', 'PySide'):
             pass
         else:
             QT_API = 'PySide2'
-            if os.name == 'nt':
-                QtWidgets.QApplication.addLibraryPath(os.path.join(sys.prefix, 'Library', 'plugins'))
-                QtWidgets.QApplication.addLibraryPath(os.path.join(os.path.dirname(QtCore.__file__), 'plugins'))
             QtSignal = QtCore.Signal
             QtSlot = QtCore.Slot
             break
 
+if os.name == 'nt' and QT_API in ('PyQt5', 'PySide2'):
+    QtWidgets.QApplication.addLibraryPath(os.path.join(sys.prefix, 'Library', 'plugins'))
+    QtWidgets.QApplication.addLibraryPath(os.path.join(os.path.dirname(QtCore.__file__), 'plugins'))
+
+os.environ['QT_API'] = QT_API.lower()
 
 sys.modules['gui.qt.QtCore'] = QtCore
 sys.modules['gui.qt.QtWidgets'] = QtWidgets
