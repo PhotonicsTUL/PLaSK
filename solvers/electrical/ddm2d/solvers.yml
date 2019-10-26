@@ -184,7 +184,7 @@
   help: >
     Finite element drift-diffusion electrical solver for cylindrical geometry using finite-element method.
   geometry: Cylindrical
-  mesh: RectangularCyl
+  mesh: Rectangular2D
   tags:
   - *voltage
   - *loop
