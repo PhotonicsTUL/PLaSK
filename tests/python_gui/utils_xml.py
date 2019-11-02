@@ -65,7 +65,7 @@ class TestAttributeReader(GUITestCase):
                 r.require('unexisted_attr')
             self.assertEqual(r.require('attr3'), 'val3')
 
-    def test_get_and_len(self):
+    def test_get_and_len_attrib(self):
         with TestAttributeReader._construct_reader() as r:
             self.assertEqual(len(r), 3)
             self.assertEqual(r.get('attr1'), 'val1')
@@ -74,6 +74,7 @@ class TestAttributeReader(GUITestCase):
             self.assertEqual(r.get('unexisted_attr', 'my_default'), 'my_default')
             self.assertEqual(r.get('attr3'), 'val3')
             self.assertEqual(len(r), 3)
+            self.assertIs(r.attrib, r)
 
     def test_contains(self):
         with TestAttributeReader._construct_reader() as r:
