@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 
 from gui_test_utils import GUITestCase
 
-from gui.utils.xml import attr_to_xml, xml_to_attr
+from gui.utils.xml import attr_to_xml, xml_to_attr, AttributeReader
 from lxml import etree
 
 class TestGUIUtilsXML(GUITestCase):
@@ -39,6 +39,71 @@ class TestGUIUtilsXML(GUITestCase):
         self.element.attrib['attr1'] = 'attr1_value'
         self.element.attrib['unread'] = 'to cause error'
         with self.assertRaises(ValueError): xml_to_attr(self.element, self.obj, 'attr1')
+
+
+class TestAttributeReader(GUITestCase):
+
+    @staticmethod
+    def _construct_reader():
+        return AttributeReader(etree.XML('<element attr1="val1" attr2="val2" attr3="val3"/>'))
+
+    def test_unexpected_attributes(self):
+        with self.assertRaisesRegexp(ValueError, 'unexpected.*attr'):
+            with TestAttributeReader._construct_reader(): pass
+
+    def test_unexpected_attribute(self):
+        with self.assertRaisesRegexp(ValueError, 'unexpected.*attr2'):
+            with TestAttributeReader._construct_reader() as r:
+                self.assertEqual(r.get('attr1'), 'val1')
+                self.assertEqual(r.get('attr3'), 'val3')
+
+    def test_require(self):
+        with TestAttributeReader._construct_reader() as r:
+            self.assertEqual(r.require('attr1'), 'val1')
+            self.assertEqual(r.require('attr2'), 'val2')
+            with (self.assertRaisesRegexp(ValueError, '"unexisted_attr" is expected in tag <element>')):
+                r.require('unexisted_attr')
+            self.assertEqual(r.require('attr3'), 'val3')
+
+    def test_get_and_len(self):
+        with TestAttributeReader._construct_reader() as r:
+            self.assertEqual(len(r), 3)
+            self.assertEqual(r.get('attr1'), 'val1')
+            self.assertEqual(r.get('attr2'), 'val2')
+            self.assertEqual(r.get('unexisted_attr'), None)
+            self.assertEqual(r.get('unexisted_attr', 'my_default'), 'my_default')
+            self.assertEqual(r.get('attr3'), 'val3')
+            self.assertEqual(len(r), 3)
+
+    def test_contains(self):
+        with TestAttributeReader._construct_reader() as r:
+            self.assertTrue('attr1' in r)
+            self.assertFalse('unexisted_attr' in r)
+            self.assertTrue('attr2' in r)
+            self.assertTrue('attr3' in r)
+
+    def test_getitem(self):
+        with TestAttributeReader._construct_reader() as r:
+            self.assertEqual(r['attr1'], 'val1')
+            self.assertEqual(r['attr2'], 'val2')
+            self.assertEqual(r['attr3'], 'val3')
+
+    def test_mark_read_some(self):
+        with self.assertRaisesRegexp(ValueError, 'unexpected.*attr3'):
+            with TestAttributeReader._construct_reader() as r:
+                r.mark_read('attr1', 'attr2')
+
+    def test_mark_read(self):
+        with TestAttributeReader._construct_reader() as r:
+            r.mark_read('attr1', 'attr2', 'attr3')
+
+    def test_require_all_read(self):
+        with TestAttributeReader._construct_reader() as r:
+            r.mark_read('attr1', 'attr2')
+            with self.assertRaisesRegexp(ValueError, 'unexpected.*attr3'):
+                r.require_all_read()
+            self.assertEqual(r.require('attr3'), 'val3')
+
 
 
 if __name__ == '__main__':

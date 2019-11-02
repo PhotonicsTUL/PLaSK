@@ -80,6 +80,12 @@ class TestGUIModelSolversRectangularBCPlaceLine(GUITestCase):
         self.assertEqual(self.place.label, 'Horizontal Line')
 
 
+class TestGUIModelSolversRectangularBC(GUITestCase):
+
+    def setUp(self):
+        self.bc = RectangularBC()
+
+
 if __name__ == '__main__':
     test = unittest.main(exit=False)
     sys.exit(not test.result.wasSuccessful())

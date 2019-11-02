@@ -42,9 +42,9 @@ class AxisConf(object):
         self.points = points
         self.type = None if type == '' else type
 
-    def fill_xml_element(self, axisElement):
-        attr_to_xml(self, axisElement, 'start', 'stop', 'num', 'type')
-        axisElement.text = self.points if self.type != 'regular' and self.points else ''
+    def fill_xml_element(self, axis_element):
+        attr_to_xml(self, axis_element, 'start', 'stop', 'num', 'type')
+        axis_element.text = self.points if self.type != 'regular' and self.points else ''
 
 
     def set_from_xml(self, axis_element):

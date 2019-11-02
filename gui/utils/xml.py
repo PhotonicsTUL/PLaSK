@@ -89,7 +89,7 @@ class AttributeReader(object):
     def require(self, key):
         res = self.get(key)
         if res is None:
-            raise ValueError('Attribute "{}" is expected in tag <{}>{}.'.format(self.element.tag, key, at_line_str(self.element)))
+            raise ValueError('Attribute "{}" is expected in tag <{}>{}.'.format(key, self.element.tag, at_line_str(self.element)))
         return res
     
     def __len__(self):
