@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 
 from gui_test_utils import GUITestCase
 
-from gui.utils.xml import attr_to_xml, xml_to_attr, AttributeReader
+from gui.utils.xml import attr_to_xml, xml_to_attr, AttributeReader, OrderedTagReader
 from lxml import etree
 
 class TestGUIUtilsXML(GUITestCase):
@@ -61,7 +61,7 @@ class TestAttributeReader(GUITestCase):
         with TestAttributeReader._construct_reader() as r:
             self.assertEqual(r.require('attr1'), 'val1')
             self.assertEqual(r.require('attr2'), 'val2')
-            with (self.assertRaisesRegexp(ValueError, '"unexisted_attr" is expected in tag <element>')):
+            with (self.assertRaisesRegexp(KeyError, '"unexisted_attr" is expected in tag <element>')):
                 r.require('unexisted_attr')
             self.assertEqual(r.require('attr3'), 'val3')
 
@@ -105,6 +105,31 @@ class TestAttributeReader(GUITestCase):
                 r.require_all_read()
             self.assertEqual(r.require('attr3'), 'val3')
 
+
+class TestOrderedTagReader(GUITestCase):
+
+    @staticmethod
+    def _construct_reader():
+        return OrderedTagReader(etree.XML('<parent><a/><b/><!--comment--><c><child/></c><!--comment--><d/></parent>'))
+
+    def test_unexpected_child(self):
+        with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child.*a'):
+            with TestOrderedTagReader._construct_reader(): pass
+
+    def test_unexpected_child_after_some_reads(self):
+        with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child.*a'):
+            with TestOrderedTagReader._construct_reader() as r:
+                self.assertEqualXML(r.get(), '<a/>')
+                self.assertEqualXML(r.get(), '<b/>')
+
+    def test_get(self):
+        with TestOrderedTagReader._construct_reader() as r:
+            self.assertEqualXML(r.get(), '<a/>')
+            self.assertEqualXML(r.get('b'), '<b/>')
+            self.assertIs(r.get('child', 'other', 'b', 'd'), None)
+            self.assertEqualXML(r.get('other', 'c'), '<c><child/></c>')
+            self.assertIs(r.get('c', 'a', 'b'), None)
+            self.assertEqualXML(r.get('c', 'd', 'b'), '<d/>')
 
 
 if __name__ == '__main__':

@@ -89,7 +89,7 @@ class AttributeReader(object):
     def require(self, key):
         res = self.get(key)
         if res is None:
-            raise ValueError('Attribute "{}" is expected in tag <{}>{}.'.format(key, self.element.tag, at_line_str(self.element)))
+            raise KeyError('Attribute "{}" is expected in tag <{}>{}.'.format(key, self.element.tag, at_line_str(self.element)))
         return res
     
     def __len__(self):
@@ -150,7 +150,7 @@ class OrderedTagReader(object):
         self.ignore_comments = ignore_comments
         self.current_index = self._proper_index(first_index)
 
-    def _proper_index(self, index, delta = 1):
+    def _proper_index(self, index, delta=1):
         """ Fix index by consistently adding delta to it to be a proper current_index.
             :return: fixed index"""
         if self.ignore_comments:
