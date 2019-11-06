@@ -85,11 +85,10 @@ static py::list Space_leafsAsTranslations(const S& self, const PathHints& path) 
 }
 
 template <typename S>
-static std::vector<shared_ptr<GeometryObject>> Space_getLeafs(S& self, const PathHints& path) {
+static py::list Space_getLeafs(S& self, const PathHints& path) {
     std::vector<shared_ptr<const GeometryObject>> leafs = self.getLeafs(&path);
-    std::vector<shared_ptr<GeometryObject>> result;
-    result.reserve(leafs.size());
-    for (auto i: leafs) result.push_back(const_pointer_cast<GeometryObject>(i));
+    py::list result;
+    for (auto i: leafs) result.append(const_pointer_cast<GeometryObject>(i));
     return result;
 }
 
