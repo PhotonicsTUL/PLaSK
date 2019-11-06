@@ -156,7 +156,7 @@ if True:
                     return _Rc.Group(newgroup)
 
         def __call__(self, group, **kwargs):
-            if matplotlib.is_string_like(group):
+            if isinstance(group, six.string_types):
                 group = (group,)
             for g in group:
                 for k,v in kwargs.items():
