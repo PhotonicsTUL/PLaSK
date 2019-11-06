@@ -107,7 +107,10 @@ if os.name == 'nt' and QT_API in ('PyQt5', 'PySide2'):
     QtWidgets.QApplication.addLibraryPath(os.path.join(sys.prefix, 'Library', 'plugins'))
     QtWidgets.QApplication.addLibraryPath(os.path.join(os.path.dirname(QtCore.__file__), 'plugins'))
 
-os.environ['QT_API'] = QT_API.lower()
+if QT_API.startswith('PyQt4'):
+    os.environ['QT_API'] = 'pyqt'
+else:
+    os.environ['QT_API'] = QT_API.lower()
 
 sys.modules['gui.qt.QtCore'] = QtCore
 sys.modules['gui.qt.QtWidgets'] = QtWidgets
