@@ -110,26 +110,32 @@ class TestOrderedTagReader(GUITestCase):
 
     @staticmethod
     def _construct_reader():
-        return OrderedTagReader(etree.XML('<parent><a/><b/><!--comment--><c><child/></c><!--comment--><d/></parent>'))
+        return OrderedTagReader(etree.XML('<parent><aaa/><bbb/><!--comment--><ccc><child/></ccc><!--comment--><ddd/></parent>'))
 
     def test_unexpected_child(self):
-        with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child.*a'):
+        with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child.*aaa'):
             with TestOrderedTagReader._construct_reader(): pass
 
     def test_unexpected_child_after_some_reads(self):
-        with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child.*a'):
+        with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child.*ccc'):
             with TestOrderedTagReader._construct_reader() as r:
-                self.assertEqualXML(r.get(), '<a/>')
-                self.assertEqualXML(r.get(), '<b/>')
+                self.assertEqualXML(r.get(), '<aaa/>')
+                self.assertEqualXML(r.get(), '<bbb/>')
 
-    def test_get(self):
+    def test_get_and_recent_was_unexpected(self):
         with TestOrderedTagReader._construct_reader() as r:
-            self.assertEqualXML(r.get(), '<a/>')
-            self.assertEqualXML(r.get('b'), '<b/>')
-            self.assertIs(r.get('child', 'other', 'b', 'd'), None)
-            self.assertEqualXML(r.get('other', 'c'), '<c><child/></c>')
-            self.assertIs(r.get('c', 'a', 'b'), None)
-            self.assertEqualXML(r.get('c', 'd', 'b'), '<d/>')
+            self.assertEqualXML(r.get(), '<aaa/>')
+            with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child.*aaa'):
+                r.recent_was_unexpected()
+            self.assertEqualXML(r.get(), '<aaa/>')
+            self.assertEqualXML(r.get('bbb'), '<bbb/>')
+            self.assertIs(r.get('child', 'other', 'bbb', 'ddd'), None)
+            self.assertEqualXML(r.get('other', 'ccc'), '<ccc><child/></ccc>')
+            self.assertIs(r.get('ccc', 'aaa', 'bbb'), None)
+            self.assertEqualXML(r.get('ccc', 'ddd', 'bbb'), '<ddd/>')
+            with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child.*ddd'):
+                r.recent_was_unexpected()
+            self.assertEqualXML(r.get(), '<ddd/>')
 
 
 if __name__ == '__main__':
