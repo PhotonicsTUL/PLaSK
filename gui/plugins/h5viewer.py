@@ -44,14 +44,16 @@ class FieldWidget(QWidget):
     class NavigationToolbar(PlotWidgetBase.NavigationToolbar):
 
         toolitems = (
-            ('Save', 'Save image', 'document-save', 'save_figure', None),
-            (None, None, None, None, None),
             ('Home', 'Zoom to whole geometry', 'go-home', 'home', None),
             ('Back', 'Back to previous view', 'go-previous', 'back', None),
             ('Forward', 'Forward to next view', 'go-next', 'forward', None),
             (None, None, None, None, None),
+            ('Export', 'Export the figure', 'document-save', 'save_figure', None),
+            (None, None, None, None, None),
             ('Pan', 'Pan axes with left mouse, zoom with right', 'transform-move', 'pan', False),
             ('Zoom', 'Zoom to rectangle', 'zoom-in', 'zoom', False),
+            ('Subplots', 'Configure subplots', 'document-properties', 'configure_subplots', None),
+            ('Customize', 'Edit axis, curve and image parameters', 'document-edit', 'edit_parameters', None),
             (None, None, None, None, None),
             ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False),
             (None, None, None, None, None),
@@ -286,6 +288,10 @@ class ResultsWindow(QMainWindow):
 
     def update_geometries(self):
         if not isinstance(self.document, XPLDocument):
+            self.manager = None
+            self.geometries2d = self.geometries3d = ()
+            self.axes = {}
+            self._default_axes = plask.config.axes
             return False
         self.manager = plask.Manager(draft=True)
         self.geometries2d = [g.name for g in self.document.geometry.model.get_roots(2)]
@@ -330,7 +336,7 @@ class ResultsWindow(QMainWindow):
             geom = "(none)"
             self.geometry_list.hide()
 
-        if geom in self.manager.geo:
+        if self.manager is not None and geom in self.manager.geo:
             geometry = self.manager.geo[geom]
         else:
             geometry = None
@@ -341,7 +347,7 @@ class ResultsWindow(QMainWindow):
         fld = self.field_list.currentItem().text()
         field = plask.load_field(self.h5file, fld)
         self.field_geometries[fld] = geom
-        if geom in self.manager.geo:
+        if self.manager is not None and geom in self.manager.geo:
             geometry = self.manager.geo[geom]
         else:
             geometry = None
