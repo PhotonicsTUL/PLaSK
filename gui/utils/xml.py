@@ -291,9 +291,8 @@ class UnorderedTagReader(object):
         """
         res = self.get(child_name)
         if res is None:
-            raise ValueError('<{}> tag does not have required <{}> child.'.format(
-                    self.parent_element.tag, at_line_str(self.parent_element),
-                    child_name))
+            raise KeyError('<{}> tag{} does not have required <{}> child.'.format(
+                    self.parent_element.tag, at_line_str(self.parent_element), child_name))
         return res
 
     def __len__(self):
@@ -317,7 +316,8 @@ class UnorderedTagReader(object):
             It raise ValueError if any other exception haven't been raised
             and not all attributes have been read from XML tag.
         """
-        if exc_type is None and exc_value is None and traceback is None: self.require_all_read()
+        if exc_type is None and exc_value is None and traceback is None:
+            self.require_all_read()
 
 
 

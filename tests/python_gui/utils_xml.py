@@ -4,7 +4,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 
 from gui_test_utils import GUITestCase
 
-from gui.utils.xml import attr_to_xml, xml_to_attr, AttributeReader, OrderedTagReader
+from gui.utils.xml import attr_to_xml, xml_to_attr, AttributeReader, OrderedTagReader, UnorderedTagReader
 from lxml import etree
 
 class TestGUIUtilsXML(GUITestCase):
@@ -136,6 +136,48 @@ class TestOrderedTagReader(GUITestCase):
             with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child.*ddd'):
                 r.recent_was_unexpected()
             self.assertEqualXML(r.get(), '<ddd/>')
+
+
+class TestUnorderedTagReader(GUITestCase):
+
+    @staticmethod
+    def _construct_reader():
+        return UnorderedTagReader(etree.XML('<parent><aaa/><bbb/><!--comment--><ccc><child/></ccc><!--comment--><ddd/></parent>'))
+
+    def test_unexpected_child(self):
+        with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child'):
+            with TestUnorderedTagReader._construct_reader(): pass
+
+    def test_unexpected_child_after_some_reads(self):
+        with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child'):
+            with TestUnorderedTagReader._construct_reader() as r:
+                self.assertEqualXML(r.get('ccc'), '<ccc><child/></ccc>')
+                self.assertEqualXML(r.get('aaa'), '<aaa/>')
+                self.assertEqualXML(r.get('ccc'), '<ccc><child/></ccc>')    # again
+
+    def test_get_and_mark_read_and_require_all_read(self):
+        with TestUnorderedTagReader._construct_reader() as r:
+            self.assertEqualXML(r.get('ccc'), '<ccc><child/></ccc>')
+            r.mark_read('ddd')
+            self.assertEqualXML(r.get('aaa'), '<aaa/>')
+            with self.assertRaisesRegexp(ValueError, 'parent.*has unexpected child'):
+                r.require_all_read()
+            r.mark_read('bbb')
+            self.assertEqualXML(r.get('ccc'), '<ccc><child/></ccc>')  # again
+            self.assertEqualXML(r.get('bbb'), '<bbb/>')  # again
+            r.require_all_read()    # should not throw
+
+    def test_require_and_mark_read(self):
+        with TestUnorderedTagReader._construct_reader() as r:
+            self.assertEqualXML(r.require('ccc'), '<ccc><child/></ccc>')
+            with self.assertRaisesRegexp(KeyError, 'parent.*does not have required.*zzz'):
+                r.require('zzz')
+            r.mark_read('ddd')
+            self.assertEqualXML(r.require('ddd'), '<ddd/>')
+            self.assertEqualXML(r.require('bbb'), '<bbb/>')
+            with self.assertRaisesRegexp(KeyError, 'parent.*does not have required.*xxx'):
+                r.require('xxx')
+            r.mark_read('aaa')
 
 
 if __name__ == '__main__':
