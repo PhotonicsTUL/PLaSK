@@ -21,7 +21,7 @@ def can_be_float(value, required=False, float_validator=None):
     """
     Check if given value can represent a valid float.
     :param str value: value to check, can be None
-    :param bool required: only if True, the function returns False if value is None or empty string
+    :param bool required: only if True, the function returns False if value is None or an empty string
     :param float_validator: optional validator of float value, callable which takes float and returns bool
     :return bool: True only if:
         - value includes '{' or
