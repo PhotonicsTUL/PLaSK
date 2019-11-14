@@ -4,12 +4,20 @@ Generate PLaSK stubs
 
 from __future__ import print_function
 
-from inspect import getargspec, isclass
 import sys
 import os
 import errno
 import re
 import collections
+
+from inspect import isclass
+
+try:
+    from inspect import getfullargspec
+except ImportError:
+    from inspect import getargspec
+    def getfullargspec(f):
+        return tuple(getargspec(f)) + (None, None, None)
 
 
 INDENT = " " * 4
@@ -146,7 +154,7 @@ class StubCreator(object):
 
     def func_args(self, func):
         try:
-            args, varargs, keywords, defaults = getargspec(func)
+            args, varargs, keywords, defaults, kwonlyargs, kwonlydefaults, annotations = getfullargspec()
         except TypeError as e:
             doc = getattr(func, "__doc__", "")
             arglist = []

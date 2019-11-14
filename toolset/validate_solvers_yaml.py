@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import sys
 import os
 import jsonschema
@@ -6,17 +6,25 @@ import jsonschema.exceptions
 
 from collections import OrderedDict
 
+
 def open_utf8(*args, **kwargs):
     try:
         return open(*args, encoding='utf-8', **kwargs)
     except TypeError:
         return open(*args, **kwargs)
 
+
 try:
     from ruamel import yaml
 
 except ImportError:
     import yaml
+
+    # Disable yaml warning
+    try:
+        yaml.warnings({'YAMLLoadWarning': False})
+    except (TypeError, NameError, AttributeError):
+        pass
 
     def dict_representer(dumper, data):
         return dumper.represent_dict(data.iteritems())

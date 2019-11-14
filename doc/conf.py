@@ -131,8 +131,7 @@ def process_generate_options(app):
     if not genfiles:
         return
     from autosummary_generate import generate_autosummary_docs
-    generate_autosummary_docs(genfiles, builder=app.builder,
-                              warn=app.warn, info=app.info,
+    generate_autosummary_docs(app, genfiles, builder=app.builder,
                               base_path=app.srcdir)
 
 sphinx.ext.autosummary.process_generate_options = process_generate_options

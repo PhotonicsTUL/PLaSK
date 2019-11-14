@@ -26,7 +26,7 @@ from ..qt import QT_API
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
-if QT_API == 'PyQt5':
+if QT_API in ('PyQt5', 'PySide2'):
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 else:
@@ -83,6 +83,8 @@ class PlotWidgetBase(QWidget):
             ('Home', 'Zoom to whole geometry', 'go-home', 'home', None),
             ('Back', 'Back to previous view', 'go-previous', 'back', None),
             ('Forward', 'Forward to next view', 'go-next', 'forward', None),
+            (None, None, None, None, None),
+            ('Export', 'Export the figure', 'document-save', 'save_figure', None),
             (None, None, None, None, None),
             ('Pan', 'Pan axes with left mouse, zoom with right', 'transform-move', 'pan', False),
             ('Zoom', 'Zoom to rectangle', 'zoom-in', 'zoom', False),

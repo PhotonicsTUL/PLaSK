@@ -22,6 +22,8 @@ FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(con
     outHeat(this, &FiniteElementMethodElectrical3DSolver::getHeatDensity),
     outConductivity(this, &FiniteElementMethodElectrical3DSolver::getConductivity)
 {
+    js.assign(1, 1.),
+    beta.assign(1, NAN),
     potential.reset();
     current.reset();
     inTemperature = 300.;
@@ -69,7 +71,7 @@ void FiniteElementMethodElectrical3DSolver::loadConfiguration(XMLReader &source,
                 .value("wavelength", HEAT_BANDGAP)
                 .get(heatmet);
             for (auto attr: source.getAttributes()) {
-                if (attr.first == "beta" || attr.first == "Vt" || attr.first == "js" || attr.first == "pnjcond" || attr.first == "wavelength" || attr.first == "heat") continue;
+                if (attr.first == "beta" || attr.first == "js" || attr.first == "pnjcond" || attr.first == "wavelength" || attr.first == "heat") continue;
                 if (attr.first.substr(0,4) == "beta") {
                     size_t no;
                     try { no = boost::lexical_cast<size_t>(attr.first.substr(4)); }
@@ -446,14 +448,17 @@ MatrixT FiniteElementMethodElectrical3DSolver::makeMatrix() {
             }
         }
     }
-    return MatrixT(this->maskedMesh->size(), band);
+    if (use_full_mesh)
+        return MatrixT(this->mesh->size(), band);
+    else
+        return MatrixT(this->maskedMesh->size(), band);
 }
 
 template <>
 SparseBandMatrix3D FiniteElementMethodElectrical3DSolver::makeMatrix<SparseBandMatrix3D>() {
     if (!use_full_mesh)
         throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
-    return SparseBandMatrix3D(this->maskedMesh->size(), mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
+    return SparseBandMatrix3D(this->mesh->size(), mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
 }
 
 template <typename MatrixT>
@@ -722,8 +727,8 @@ const LazyData<Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity
     this->writelog(LOG_DEBUG, "Getting current density");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(geometry, InterpolationFlags::Symmetry::NPP, InterpolationFlags::Symmetry::PNP, InterpolationFlags::Symmetry::PPN);
-    auto result = interpolate(mesh->getElementMesh(), current, dest_mesh, method, flags);
     if (use_full_mesh) {
+        auto result = interpolate(mesh->getElementMesh(), current, dest_mesh, method, flags);
         return LazyData<Vec<3>>(result.size(),
             [this, dest_mesh, result, flags](size_t i) {
                 return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : Vec<3>(0.,0.,0.);
@@ -748,8 +753,8 @@ const LazyData<double> FiniteElementMethodElectrical3DSolver::getHeatDensity(sha
     if (!heat) saveHeatDensity(); // we will compute heats only if they are needed
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
     InterpolationFlags flags(geometry);
-    auto result = interpolate(mesh->getElementMesh(), heat, dest_mesh, method, flags);
     if (use_full_mesh) {
+        auto result = interpolate(mesh->getElementMesh(), heat, dest_mesh, method, flags);
         return LazyData<double>(result.size(),
             [this, dest_mesh, result, flags](size_t i) {
                 return this->geometry->getChildBoundingBox().contains(flags.wrap(dest_mesh->at(i)))? result[i] : 0.;

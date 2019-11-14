@@ -178,9 +178,9 @@ elements_re = re.compile(r"([A-Z][a-z]*)(?:\((\d*\.?\d*)\))?")
 
 
 if plask is not None:
-    DB = copy(plask.material.db)
+    default_materialdb = copy(plask.material.db)
 else:
-    DB = []
+    default_materialdb = []
 
 
 def parse_material_components(material, alloy=None):

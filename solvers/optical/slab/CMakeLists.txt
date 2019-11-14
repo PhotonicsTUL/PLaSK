@@ -27,9 +27,7 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES} fftpacx)
 # If you use external libraries, you can use the variables returned by find_package.
 # Don't include external directories with your own headers. Just copy them here and
 # commit to the repository.
-if(${Boost_VERSION} LESS 105400)
-    set(SOLVER_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/boostfix)
-endif()
+#set(SOLVER_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/xxxx)
 
 #find_package(Eigen3)
 

@@ -15,8 +15,14 @@
 import sys
 import os.path
 from lxml import etree
-import yaml
 from collections import OrderedDict
+import yaml
+
+# Disable yaml warning
+try:
+    yaml.warnings({'YAMLLoadWarning': False})
+except (TypeError, NameError, AttributeError):
+    pass
 
 
 def represent_odict(dump, tag, mapping, flow_style=None):

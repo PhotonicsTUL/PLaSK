@@ -89,7 +89,7 @@ def _simple_warn(msg):
 
 # -- Generating output ---------------------------------------------------------
 
-def generate_autosummary_docs(sources, output_dir=None, suffix='.rst',
+def generate_autosummary_docs(app, sources, output_dir=None, suffix='.rst',
                               warn=_simple_warn, info=_simple_info,
                               base_path=None, builder=None, template_dir=None):
 
@@ -157,7 +157,10 @@ def generate_autosummary_docs(sources, output_dir=None, suffix='.rst',
         f = open(fn, 'w')
 
         try:
-            doc = get_documenter(obj, parent)
+            try:
+                doc = get_documenter(app, obj, parent)
+            except TypeError:
+                doc = get_documenter(obj, parent)
 
             if template_name is not None:
                 template = template_env.get_template(template_name)
@@ -174,7 +177,10 @@ def generate_autosummary_docs(sources, output_dir=None, suffix='.rst',
                 for name in dir(obj):
                     try:
                         member = safe_getattr(obj, name)
-                        documenter = get_documenter(member, obj)
+                        try:
+                            documenter = get_documenter(app, member, obj)
+                        except TypeError:
+                            documenter = get_documenter(member, obj)
                     except AttributeError:
                         continue
                     if documenter.objtype == typ:
@@ -242,10 +248,9 @@ def generate_autosummary_docs(sources, output_dir=None, suffix='.rst',
 
     # descend recursively to new files
     if new_files:
-        generate_autosummary_docs(new_files, output_dir=output_dir,
-                                  suffix=suffix, warn=warn, info=info,
-                                  base_path=base_path, builder=builder,
-                                  template_dir=template_dir)
+        generate_autosummary_docs(app, new_files, output_dir=output_dir,
+                                  suffix=suffix, base_path=base_path,
+                                  builder=builder, template_dir=template_dir)
 
 
 # -- Finding documented entries in files ---------------------------------------

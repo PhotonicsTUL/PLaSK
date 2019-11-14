@@ -81,7 +81,7 @@ class ScriptEditor(TextEditor):
         self.comment_action = QAction('Co&mment lines', self)
         self.uncomment_action = QAction('Uncomm&ent lines', self)
         self.comment_action.setShortcut(Qt.CTRL + Qt.Key_Slash)
-        if QT_API == 'PySide':
+        if QT_API in ('PySide', 'PySide2'):
             self.uncomment_action.setShortcut(Qt.CTRL + Qt.Key_Question)
         else:
             self.uncomment_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Slash)
@@ -300,11 +300,11 @@ class ScriptController(SourceEditController):
         indent_action = QAction(QIcon.fromTheme('format-indent-more'), '&Indent', source)
         indent_action.triggered.connect(lambda: indent(source.editor))
         source.toolbar.addAction(indent_action)
-        menu = QMenu()
-        menu.addAction(source.editor.comment_action)
-        menu.addAction(source.editor.uncomment_action)
         button = QToolButton()
         button.setIcon(QIcon.fromTheme('document-properties'))
+        menu = QMenu(button)
+        menu.addAction(source.editor.comment_action)
+        menu.addAction(source.editor.uncomment_action)
         button.setMenu(menu)
         button.setPopupMode(QToolButton.InstantPopup)
         source.toolbar.addWidget(button)
@@ -412,6 +412,7 @@ class ScriptController(SourceEditController):
         return super(ScriptController, self).on_edit_exit()
 
     def save_data_in_model(self):
+        self.before_save()
         self.before_save()
         super(ScriptController, self).save_data_in_model()
 

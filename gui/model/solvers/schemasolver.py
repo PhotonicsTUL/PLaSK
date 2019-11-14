@@ -23,6 +23,13 @@ from ...utils.files import open_utf8
 from . import Solver, SOLVERS, CATEGORIES
 from .bconds import BCONDS, SchemaBoundaryConditions
 
+# Disable yaml warning
+try:
+    yaml.warnings({'YAMLLoadWarning': False})
+except (TypeError, NameError, AttributeError):
+    pass
+
+
 VALIDATORS = {'int': can_be_int, 'float': can_be_float, 'bool': can_be_bool}
 
 try:
