@@ -842,7 +842,8 @@ else()
     endif()
     install(FILES utils/bash/plask DESTINATION ${BASH_COMPLETION_COMPLETIONSDIR} COMPONENT core)
 
-    install(FILES utils/zsh/_plask DESTINATION /usr/share/zsh/vendor-completions COMPONENT core)
+    set(ZSH_COMPLETIONS_PATH /usr/share/zsh/vendor-completions CACHE PATH "Location of ZSH completions file")
+    install(FILES utils/zsh/_plask DESTINATION ${ZSH_COMPLETIONS_PATH} COMPONENT core)
 
 endif()
 
