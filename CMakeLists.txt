@@ -616,6 +616,11 @@ macro(add_python_test test test_file)
              COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
 endmacro()
 
+macro(add_python_gui_test test test_file)
+    add_test(NAME python_gui/${test}
+             COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python_gui/main ${test_file} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/python_gui)  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
+endmacro()
+
 macro(add_xpl_test test test_file)
     add_test(NAME xpl/${test}
              COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/xpl ${test_file})
@@ -744,6 +749,12 @@ if(BUILD_TESTING)
         foreach(test_file ${python_tests})
             get_filename_component(test ${test_file} NAME_WE)
             add_python_test(${test} ${test_file})
+        endforeach()
+
+        file(GLOB_RECURSE python_tests FOLLOW_SYMLINKS tests/python_gui/*.py)
+        foreach(test_file ${python_tests})
+            get_filename_component(test ${test_file} NAME_WE)
+            add_python_gui_test(${test} ${test_file})
         endforeach()
     endif(BUILD_PYTHON)
 
