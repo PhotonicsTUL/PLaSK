@@ -61,7 +61,7 @@ try:
 except ImportError:
     matplotlib = None
 
-from .utils.config import CONFIG
+from .utils.config import CONFIG, dark_style
 
 if not CONFIG.get('workarounds/system_jedi'):
     sys.path.insert(1, os.path.join(__path__[0], 'lib', 'jedi'))
@@ -1126,13 +1126,13 @@ def main():
     if icons_theme == 'system':
         icons_path = QIcon.themeSearchPaths()[:-1]
         if not QIcon.themeName():
-            if CONFIG['main_window/dark_style']:
+            if dark_style():
                 QIcon.setThemeName('breeze-dark')
             else:
                 QIcon.setThemeName('breeze')
     else:
         if icons_theme == 'tango': icons_theme = 'hicolor'
-        elif icons_theme == 'breeze' and CONFIG['main_window/dark_style']:
+        elif icons_theme == 'breeze' and dark_style():
             icons_theme = 'breeze-dark'
         icons_path = [os.path.join(__path__[0], 'icons', icons_theme)]
         QIcon.setThemeName(icons_theme)

@@ -14,7 +14,7 @@ from ...qt.QtCore import *
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *
 from .. import Controller
-from ...utils.config import CONFIG, parse_highlight
+from ...utils.config import CONFIG, parse_highlight, dark_style
 from ...utils.qsignals import BlockQtSignals
 from ...utils.texteditor import TextEditor
 from ...utils.widgets import EDITOR_FONT, set_icon_size
@@ -23,6 +23,7 @@ from ...lib.highlighter.xml import syntax
 from .xml_formatter import indent, unindent, indent_new_line, parse_slash
 
 SCHEME = {}
+
 
 def update_xml_scheme():
     global SCHEME
@@ -338,16 +339,16 @@ class SourceWidget(QWidget):
                 cursor.movePosition(QTextCursor.End if backward else QTextCursor.Start)
                 found = document.find(self._findtext, cursor, findflags)
             if found.isNull():
-                pal.setColor(QPalette.Base, QColor("#fdd"))
+                pal.setColor(QPalette.Base, QColor("#381111" if dark_style() else "#fdd"))
                 self.find_edit.setPalette(pal)
                 return False
             elif theend is not None and found.selectionEnd() > theend:
-                pal.setColor(QPalette.Base, QColor("#fdd"))
+                pal.setColor(QPalette.Base, QColor("#381111" if dark_style() else "#fdd"))
                 self.find_edit.setPalette(pal)
                 return False
             else:
                 self.editor.setTextCursor(found)
-                pal.setColor(QPalette.Base, QColor("#dfd"))
+                pal.setColor(QPalette.Base, QColor("#232" if dark_style() else "#dfd"))
                 self.find_edit.setPalette(pal)
                 self._highlight_matches()
                 return True

@@ -77,7 +77,7 @@ class StubCreator(object):
             elif isinstance(value, property):
                 self.create_property_stub(name, value, depth)
                 emitted = True
-            elif isinstance(value, collections.Callable) and hasattr(value, "__name__"):
+            elif isinstance(value, collections.abc.Callable) and hasattr(value, "__name__"):
                 if isclass(value):
                     if name != "__class__":
                         self.create_class_stub(name, value, depth)

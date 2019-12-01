@@ -250,8 +250,8 @@ class MaterialsModel(TableModel):
             self.comment = comment
             self.cache = None
 
-        def add_to_xml(self, material_section_element):
-            ElementTree.SubElement(material_section_element, self.what, {"name": self.name})
+        def get_xml_element(self):
+            return ElementTree.Element(self.what, {"name": self.name})
 
         @property
         def base(self):

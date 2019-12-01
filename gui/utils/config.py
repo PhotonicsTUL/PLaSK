@@ -613,6 +613,14 @@ class Config(object):
 CONFIG = Config()
 
 
+def dark_style():
+    palette = QPalette()
+    base_color = palette.color(QPalette.Base)
+    text_color = palette.color(QPalette.Text)
+    return base_color.lightness() < text_color.lightness()
+
+
+
 class ConfigProxy(object):
 
     def __init__(self, prefix):
