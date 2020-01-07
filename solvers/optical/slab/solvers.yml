@@ -109,7 +109,7 @@
       Mode properties.
     attrs:
     - &wavelength
-      attr: wavelength
+      attr: lam
       label: Wavelength
       type: float
       unit: nm
@@ -705,7 +705,7 @@
     help: >
       Mode properties.
     attrs:
-    - attr: wavelength
+    - attr: lam
       label: Wavelength
       type: float
       unit: nm

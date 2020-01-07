@@ -100,6 +100,7 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             vpml.dist = reader.getAttribute<double>("dist", vpml.dist);
             if (reader.hasAttribute("order")) { //TODO Remove in the future
                 writelog(LOG_WARNING, "XML line {:d} in <vpml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
+                if (reader.hasAttribute("shape")) throw XMLConflictingAttributesException(reader, "order", "shape");
                 vpml.order = reader.requireAttribute<double>("order");
             }
             vpml.order = reader.getAttribute<double>("shape", vpml.order);
@@ -130,7 +131,12 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
                                 .value("top", EMISSION_TOP)
                                 .value("bottom", EMISSION_BOTTOM)
                        .get(emission);
-            k0 = 2e3*PI / reader.getAttribute<dcomplex>("wavelength", 2e3*PI / k0);
+            if (reader.hasAttribute("wavelength")) { //TODO Remove in the future
+                writelog(LOG_WARNING, "XML line {:d} in <mode>: Attribute 'wavelength' is obsolete, use 'lam' instead", reader.getLineNr());
+                if (reader.hasAttribute("lam")) throw XMLConflictingAttributesException(reader, "wavelength", "lam");
+                k0 = 2e3*PI / reader.requireAttribute<dcomplex>("wavelength");
+            }
+            if (reader.hasAttribute("lam")) k0 = 2e3*PI / reader.requireAttribute<dcomplex>("lam");
             ktran = reader.getAttribute<dcomplex>("k-tran", ktran);
             klong = reader.getAttribute<dcomplex>("k-long", klong);
             std::string sym_tran, sym_long;

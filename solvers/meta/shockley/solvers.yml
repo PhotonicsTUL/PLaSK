@@ -486,8 +486,7 @@
         default: 1
         help: >
           Radial mode number <i>n</i> (1 for LPx1, 2 for LPx2, etc.).
-    - &lam0
-      attr: lam0
+    - attr: lam0
       label: Approximate wavelength
       required: true
       type: float
@@ -880,7 +879,8 @@
         default: 1
         help: >
           Radial mode number <i>n</i> (1 for LPx1, 2 for LPx2, etc.).
-    - attr: lam0
+    - &lam0
+      attr: lam0
       var: optical.lam0
       label: Wavelength for parameters
       type: float
@@ -888,7 +888,8 @@
         This is a wavelength at which refractive index is retrieved from the structure. If this parameter
         is None, material parameters are computed each time, the wavelenght changes even slightly (this
         is most accurate, but can be very inefficient.
-    - attr: update-gain
+    - &update-gain
+      attr: update-gain
       var: optical.update_gain
       label: Always update gain
       type: bool
@@ -906,14 +907,16 @@
       help: >
         Computational domain. If set to finite, the field is expanded in Fourier-Bessel series over
         a finite domain (geometry + PMLs). For infinite domain, the field is represented by its Hankel transform.
-    - attr: size
+    - &size
+      attr: size
       var: optical.size
       label: Expansion size
       type: int
       default: 12
       help: >
         Expansion size.
-    - attr: group-layers
+    - &group-layers
+      attr: group-layers
       var: optical.group_layers
       label: Layers grouping
       type: bool
@@ -943,7 +946,8 @@
         A list of relative wavevetors ranges. The numbers should be relative to the inverse of the structure
         width. The actual wavevectors used in the computations are the avrages of each two adjacent values
         specified here and the integration weights are the sizes of each interval.
-    - attr: transfer
+    - &transfer
+      attr: transfer
       var: optical.transfer
       label: Transfer method
       type: choice
@@ -1137,7 +1141,8 @@
     The optical computations are done with effective index method.
 
   tags:
-  - tag: geometry
+  - &geometry-2d-threshold
+    tag: geometry
     label: Geometry
     help: >
       Geometry settings for all solvers.
@@ -1158,7 +1163,8 @@
       help: >
         Geometry used by the optical solver.
 
-  - tag: mesh
+  - &mesh-2d-threshold
+    tag: mesh
     label: Mesh
     help: >
       Mesh settings for all solvers.
@@ -1186,21 +1192,24 @@
       default: TE
       help: >
         Mode polarization.
-    - attr: mn
+    - &mn
+      attr: mn
       var: mn
       label: Lateral mode number
       type: int
       default: 0
       help: >
         Lateral mode number
-    - attr: wavelength
+    - &lam
+      attr: lam
       label: Emission wavelength
       required: true
       type: float
       unit: nm
       help: >
         Emission wavelength. The effective index is searched for this wavelenght.
-    - attr: dneff
+    - &dneff
+      attr: dneff
       var: dneff
       label: Effective index step
       type: float
@@ -1246,7 +1255,8 @@
 
   - *gain
 
-  - tag: optical-root
+  - &optical-root
+    tag: optical-root
     label: Parameters of the Optical Horizontal Root-Finding Algorithm
     help: >
       Parameters of the horizontal root-finding algorithm.
@@ -1330,6 +1340,95 @@
     - *alpha-2
     - *lambda-2
     - *initial-range-2
+
+  - *threshold-output
+
+  providers: *threshold-providers
+
+###########################################################################################
+
+- solver: ThresholdSearchFourier2D
+  lib: shockley
+  category: meta
+  help: >
+    Solver for threshold search of semiconductor laser in 2D Cartesian geometry.
+
+    This solver performs thermo-electrical computations followed by
+    determination ot threshold current and optical analysis in order to
+    determine the threshold of a semiconductor laser. The search is
+    performed by ``scipy`` root finding algorithm in order to determine
+    the voltage and electric current ensuring no optical loss in the
+    laser cavity.
+
+    The optical computations are done with vector method based on 2D Fourier exansion.
+
+  tags:
+  - *geometry-2d-threshold
+
+  - *mesh-2d-threshold
+
+  - tag: optical
+    label: Optical Solver Configuration
+    help: >
+      Configuration of the optical solver
+    attrs:
+    - *size
+    - attr: refine
+      label: Averaging points
+      type: int
+      default: 32
+      help: >
+        Number of refinement points for refractive index averaging.
+    - attr: symmetry
+      label: Mode symmetry
+      type: choice
+      default: none
+      choices: &none-tran-long [ none, Etran, Elong ]
+      other: &components [ Ex, Ey, Ez, Er, Ep, Et, El, Htran, Hlong, Hx, Hy, Hz, Hr, Hp, Ht, Hl ]
+      case sensitive: true
+      help: >
+        Mode symmetry. Specify a symmetric field component here (e.g. '<i>Etran</i>', '<i>Hx</i>').
+    - &smooth
+      attr: smooth
+      label: Smoothing parameter
+      type: float
+      default: 0.0
+      help: >
+        Smoothing parameter for material boundaries (increases convergence).
+    - *update-gain
+    - *group-layers
+    - *transfer
+    - *lam
+    - *mn
+    - *dneff
+
+  - *threshold-root
+
+  - *voltage
+
+  - *temperature
+
+  - *heatflux
+
+  - *convection
+
+  - *radiation
+
+  - *junction
+
+  - *contacts
+
+  - *threshold-thermoelectric-loop
+
+  - *tmatrix
+
+  - *ematrix
+
+  - *diffusion
+
+  - *gain
+
+  - *optical-root
 
   - *threshold-output
 

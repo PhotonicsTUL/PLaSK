@@ -1125,12 +1125,12 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
         if tag == 'optical':
             self._read_attr(tag, 'lam0', self.optical, float)
             self._read_attr(tag, 'update-gain', self.optical, bool, 'update_gain')
-            self._read_attr(tag, 'domain', self.optical, str, 'domain')
+            self._read_attr(tag, 'domain', self.optical)
             self._read_attr(tag, 'size', self.optical, int, 'size')
             self._read_attr(tag, 'group-layers', self.optical, bool, 'group_layers')
-            self._read_attr(tag, 'k-method', self.optical, str, 'kmethod')
+            self._read_attr(tag, 'k-method', self.optical, pyattr='kmethod')
             self._read_attr(tag, 'k-scale', self.optical, float, 'kscale')
-            self._read_attr(tag, 'transfer', self.optical, str, 'transfer')
+            self._read_attr(tag, 'transfer', self.optical)
             maxlam = tag.get('maxlam')
             if maxlam is not None:
                 try:
@@ -1223,19 +1223,19 @@ class ThresholdSearch2D(ThresholdSearch):
     outLightE = property(lambda self: self.optical.outLightE, doc=_doc.outLightE)
 
     thermal = attribute(_Thermal.__name__+"()")
-    ":class:`thermal.static.StaticCyl` solver used for thermal calculations."
+    ":class:`thermal.static.Static2D` solver used for thermal calculations."
 
     electrical = attribute(_Electrical.__name__+"()")
-    ":class:`electrical.shockley.ShockleyCyl` solver used for electrical calculations."
+    ":class:`electrical.shockley.Shockley2D` solver used for electrical calculations."
 
     diffusion = attribute(_Diffusion.__name__+"()")
-    ":class:`electrical.diffusion.DiffusionCyl` solver used for electrical calculations."
+    ":class:`electrical.diffusion.Diffusion2D` solver used for electrical calculations."
 
     gain = attribute(_Gain.__name__+"()")
-    ":class:`gain.freecarrier.FreeCarrierCyl` solver used for gain calculations."
+    ":class:`gain.freecarrier.FreeCarrier2D` solver used for gain calculations."
 
-    optical = attribute("EffectiveFrequencyCyl()")
-    ":class:`optical.effective.EffectiveFrequencyCyl` solver used for optical calculations."
+    optical = attribute("EffectiveIndex2D()")
+    ":class:`optical.effective.EffectiveIndex2D` solver used for optical calculations."
 
     tfreq = 6.0
     """
@@ -1338,7 +1338,7 @@ class ThresholdSearch2D(ThresholdSearch):
 
     def _parse_xpl(self, tag, manager):
         if tag == 'optical':
-            self._read_attr(tag, 'wavelength', self.optical, float)
+            self._read_attr(tag, 'lam', self.optical, float)
             self._read_attr(tag, 'polarization', self.optical, float)
             self._read_attr(tag, 'vneff', self.optical, float)
             self._read_attr(tag, 'vat', self.optical, float)
@@ -1423,4 +1423,259 @@ class ThresholdSearch2D(ThresholdSearch):
         ]
 
 
-__all__ = 'ThresholdSearchCyl', 'ThresholdSearchBesselCyl', 'ThresholdSearch2D'
+class ThresholdSearchFourier2D(ThresholdSearch):
+    """
+    Solver for threshold search of semiconductor laser.
+
+    This solver performs thermo-electrical computations followed by
+    determination ot threshold current and optical analysis in order to
+    determine the threshold of a semiconductor laser. The search is
+    performed by ``scipy`` root finding algorithm in order to determine
+    the voltage and electric current ensuring no optical loss in the
+    laser cavity.
+
+    This solver uses vector optical solver :class:`~plask.optical.slab.Fourier2D`.
+
+    The computations can be executed using `compute` method, after which
+    the results may be save to the HDF5 file with `save` or presented visually
+    using ``plot_...`` methods. If ``save`` parameter of the :meth:`compute` method
+    is *True* the fields are saved automatically after the computations.
+    The file name is based on the name of the executed script with suffix denoting
+    either the launch time or the identifier of a batch job if a batch system
+    (like SLURM, OpenPBS, or SGE) is used.
+    """
+
+    _optarg = 'neff'
+    _lam0 = 'lam'
+
+    _Thermal = thermal.static.Static2D
+    _Electrical = electrical.shockley.Shockley2D
+    _Diffusion = electrical.diffusion.Diffusion2D
+    _Gain = gain.freecarrier.FreeCarrier2D
+
+    _OPTICAL_ROOTS = {'optical-root': 'root'}
+
+    outTemperature = property(lambda self: self.thermal.outTemperature, doc=_Thermal.outTemperature.__doc__)
+    outHeatFlux = property(lambda self: self.thermal.outHeatFlux, doc=_Thermal.outHeatFlux.__doc__)
+
+    outThermalConductivity = property(lambda self: self.thermal.outThermalConductivity,
+                                      doc=_Thermal.outThermalConductivity.__doc__)
+    outVoltage = property(lambda self: self.electrical.outVoltage, doc=_Electrical.outVoltage.__doc__)
+    outCurrentDensity = property(lambda self: self.electrical.outCurrentDensity,
+                                 doc=_Electrical.outCurrentDensity.__doc__)
+    outHeat = property(lambda self: self.electrical.outHeat, doc=_Electrical.outHeat.__doc__)
+    outConductivity = property(lambda self: self.electrical.outConductivity, doc=_Electrical.outConductivity.__doc__)
+    outCarriersConcentration = property(lambda self: self.diffusion.outCarriersConcentration,
+                                        doc=_Diffusion.outCarriersConcentration.__doc__)
+    outGain = property(lambda self: self.gain.outGain, doc=_Gain.outGain.__doc__)
+    outLightMagnitude = property(lambda self: self.optical.outLightMagnitude, doc=_doc.outLightMagnitude)
+    outNeff = property(lambda self: self.optical.outNeff, doc=_doc.outNeff)
+    outRefractiveIndex = property(lambda self: self.optical.outRefractiveIndex, doc=_doc.outRefractiveIndex)
+    outLightE = property(lambda self: self.optical.outLightE, doc=_doc.outLightE)
+
+    thermal = attribute(_Thermal.__name__+"()")
+    ":class:`thermal.static.Static2D` solver used for thermal calculations."
+
+    electrical = attribute(_Electrical.__name__+"()")
+    ":class:`electrical.shockley.Shockley2D` solver used for electrical calculations."
+
+    diffusion = attribute(_Diffusion.__name__+"()")
+    ":class:`electrical.diffusion.Diffusion2D` solver used for electrical calculations."
+
+    gain = attribute(_Gain.__name__+"()")
+    ":class:`gain.freecarrier.FreeCarrier2D` solver used for gain calculations."
+
+    optical = attribute("Fourier2D()")
+    ":class:`optical.slab.Fourier2D` solver used for optical calculations."
+
+    tfreq = 6.0
+    """
+    Number of electrical iterations per single thermal step.
+
+    As temperature tends to converge faster, it is reasonable to repeat thermal
+    solution less frequently.
+    """
+
+    vmin = None
+    """
+    Minimum voltage to search threshold for.
+
+    It should be below the threshold.
+    """
+
+    vmax = None
+    """
+    Maximum voltage to search threshold for.
+
+    It should be above the threshold.
+    """
+
+    vtol = 1e-5
+    "Tolerance on voltage in the root search."
+
+    maxiter = 50
+    "Maximum number of root finding iterations."
+
+    wavelength = None
+    "Emission wavelength [nm]."
+
+    dneff = 0.02
+    """
+    Effective index step.
+
+    Step, by which the effective index is swept while searching for the approximate mode.
+    """
+
+    mn = 1
+    """
+    Lateral mode number $n$.
+    """
+
+    optical_resolution = (800, 600)
+    """
+    Number of points along the horizontal and vertical axes for the saved
+    and plotted optical field.
+    """
+
+    skip_thermal = False
+    """
+    Skip thermal computations.
+
+    The structure is assumed to have a constant temperature.
+    This can be used to look for the threshold under pulse laser operation.
+    """
+
+    def __init__(self, name=''):
+        from optical.slab import Fourier2D
+        self._Optical = Fourier2D
+        super(ThresholdSearchFourier2D, self).__init__(name)
+
+    def on_initialize(self):
+        super(ThresholdSearchFourier2D, self).on_initialize()
+        points = plask.mesh.Rectangular2D.SimpleGenerator()(self.optical.geometry).elements.mesh
+        self._maxneff = max(self.optical.geometry.get_material(point).Nr(self.optical.wavelength.real).real
+                            for point in points)
+
+    def get_neff(self):
+        """
+        Get approximate effective index for optical computations.
+
+        This method returns approximate wavelength for optical computations.
+        By default if browses the wavelength range starting from :attr:`maxneff`,
+        decreasing it by :attr:`dneff` until lateral mode :attr:`mn` is found.
+
+        You can override this method to use custom mode approximation.
+
+        Example:
+             >>> solver = ThresholdSearchFourier2D()
+             >>> solver.get_neff = lambda: 3.5
+             >>> solver.compute()
+        """
+
+        neff = self._maxneff
+        n = 0
+        prev = 0.
+        decr = False
+        while n < self.mn and neff.real > 0.:
+            curr = abs(self.optical.get_determinant(neff=neff))
+            if decr and curr > prev:
+                n += 1
+            decr = curr < prev
+            prev = curr
+            neff -= self.dneff
+        if n == self.mn:
+            return neff + 2. * self.dneff
+        raise ValueError("Mode approximation not found")
+
+    def _parse_xpl(self, tag, manager):
+        if tag == 'optical':
+            self._read_attr(tag, 'size', self.optical, int)
+            self._read_attr(tag, 'refine', self.optical, int)
+            self._read_attr(tag, 'smooth', self.optical, float)
+            self._read_attr(tag, 'symmetry', self.optical)
+            self._read_attr(tag, 'group-layers', self.optical, bool, 'group_layers')
+            self._read_attr(tag, 'transfer', self.optical)
+            self._read_attr(tag, 'lam', self.optical, float)
+            self.dneff = float(tag.get('dneff', self.dneff))
+            self.mn = int(tag.get('mn', self.mn))
+        elif tag == 'optical-interface':
+            attrs = {key: val for (key, val) in ((key, tag.get(key)) for key in ('position', 'object', 'path'))
+                     if val is not None}
+            if len(attrs) > 1 and (len(attrs) > 2 or 'position' in attrs):
+                raise plask.XMLError("{}: conflicting attributes '{}'".format(tag, "' and '".join(attrs.keys())))
+            elif 'position' in attrs:
+                self.optical.set_interface(attrs['position'])
+            elif 'object' in attrs:
+                path = attrs.get('path')
+                if path is not None:
+                    self.optical.set_interface(manager.geo[attrs['object']], manager.pth[path])
+                else:
+                    self.optical.set_interface(manager.geo[attrs['object']])
+        elif tag == 'optical-vpml':
+            self._read_attr(tag, 'factor', self.optical.vpml, complex, 'factor')
+            self._read_attr(tag, 'dist', self.optical.vpml, float, 'dist')
+            self._read_attr(tag, 'size', self.optical.vpml, float, 'size')
+        elif tag == 'optical-pml':
+            self._read_attr(tag, 'factor', self.optical.pml, complex, 'factor')
+            self._read_attr(tag, 'shape', self.optical.pml, float, 'shape')
+            self._read_attr(tag, 'dist', self.optical.pml, float, 'dist')
+            self._read_attr(tag, 'size', self.optical.pml, float, 'size')
+        else:
+            super(ThresholdSearchFourier2D, self)._parse_xpl(tag, manager)
+
+    def get_optical_determinant(self, neff):
+        """
+        Function computing determinant of the optical solver.
+
+        Args:
+             neff (float or array): Effective index to compute the determinant for.
+
+        Returns:
+            float or array: Optical determinant.
+        """
+        self.compute_thermoelectric()
+        if self._optarg is None:
+            return self.optical.get_determinant(neff, **self._optargs())
+        else:
+            _optargs = self._optargs().copy()
+            _optargs[self._optarg] = neff
+            return self.optical.get_determinant(**_optargs)
+
+    def plot_optical_determinant(self, neffs, **kwargs):
+        """
+        Function plotting determinant of the optical solver.
+
+        Args:
+            neffs (array): Array of effective indices to plot the determinant for.
+
+            **kwargs: Keyword arguments passed to the plot function.
+        """
+        vals = self.get_optical_determinant(neff=neffs)
+        plask.plot(neffs, abs(vals))
+        plask.yscale('log')
+        plask.xlabel("Effective Index")
+        plask.ylabel("Determinant [ar.u.]")
+
+    def plot_vert_optical_determinant(self, vneffs, **kwargs):
+        """
+        Function plotting ‘vertical determinant’ of the optical solver.
+
+        Args:
+            vneffs (array): Array of effective indices to plot the vertical
+                            determinant for.
+
+            **kwargs: Keyword arguments passed to the plot function.
+        """
+        vals = self.get_vert_optical_determinant(vneffs)
+        plask.plot(vneffs, abs(vals))
+        plask.yscale('log')
+        plask.xlabel("Vertical Effective Index")
+        plask.ylabel("Determinant [ar.u.]")
+
+    def _get_info(self):
+        return super(ThresholdSearchFourier2D, self)._get_info() + [
+            "Effective index:     {:8.3f}".format(self.optical.modes[self.modeno].neff.real)
+        ]
+
+
+__all__ = 'ThresholdSearchCyl', 'ThresholdSearchBesselCyl', 'ThresholdSearch2D', 'ThresholdSearchFourier2D'

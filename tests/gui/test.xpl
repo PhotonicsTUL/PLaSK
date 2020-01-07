@@ -396,6 +396,12 @@
     <geometry ref="prismatic"/>
     <mesh ref="fine"/>
   </thermal>
+  <meta name="thf2d" solver="ThresholdSearchFourier2D" lib="shockley">
+    <geometry electrical="geo2d" optical="geo2d-copy" thermal="geo2d"/>
+    <mesh diffusion="diffusion" electrical="default" thermal="default"/>
+    <optical lam="980"/>
+    <root bcond="0" vmax="2" vmin="0"/>
+  </meta>
 </solvers>
 
 <connects>
