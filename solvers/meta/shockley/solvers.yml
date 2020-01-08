@@ -480,7 +480,7 @@
         default: 0
         help: >
           Angular mode number <i>m</i> (0 for LP0x, 1 for LP1x, etc.).
-      - attr: n
+      - attr: 'n'
         label: <i>n</i> (radial)
         type: int
         default: 1
@@ -872,7 +872,7 @@
         default: 1
         help: >
           Angular mode number <i>m</i> (0 for LP0x, 1 for LP1x, etc.).
-      - attr: n
+      - attr: 'n'
         var: hen
         label: <i>n</i> (radial)
         type: int

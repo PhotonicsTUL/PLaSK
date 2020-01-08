@@ -99,7 +99,7 @@ else:
     warnings.simplefilter('ignore', yaml.error.UnsafeLoaderWarning)
 
 
-schema_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'doc', 'schema', 'solvers.yml')
+schema_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'doc', 'schema', 'solvers.yaml')
 schema = yaml.load(open_utf8(schema_file))
 validator = jsonschema.validators.validator_for(schema)(schema)
 
