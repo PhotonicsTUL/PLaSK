@@ -68,13 +68,7 @@ PyObject* py_enum<T>::convert(T const& x)
 template <class T>
 void* py_enum<T>::convertible(PyObject* obj)
 {
-    return
-#       if PY_VERSION_HEX >= 0x03000000
-        (PyUnicode_Check(obj))
-#       else
-        (PyString_Check(obj))
-#       endif
-        ? obj : 0;
+    return PyUnicode_Check(obj)? obj : 0;
 }
 
 // Constructs an instance of the enumeration type in the from_python

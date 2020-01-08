@@ -147,11 +147,7 @@ namespace detail {
                 (space!="")? " in "+space+" geometry" : "", ReceiverT::ProviderType::PropertyTag::UNIT).c_str()
             ) {
             receiver_class.def("reset", &disconnect, u8"Disconnect any provider of value from the receiver.");
-#           if PY_VERSION_HEX >= 0x03000000
-                receiver_class.def("__bool__", &ReceiverT::hasProvider);
-#           else
-                receiver_class.def("__nonzero__", &ReceiverT::hasProvider);
-#           endif
+            receiver_class.def("__bool__", &ReceiverT::hasProvider);
             receiver_class.def("__get__", &__get__);
             receiver_class.def("__set__", &__set__);
         }
@@ -733,15 +729,10 @@ namespace detail {
                     u8"call the provider again if they need its value (otherwise they might take it\n"
                     u8"from the cache.\n");
         }
-        static shared_ptr<PythonProviderType> __get__(const shared_ptr<PythonProviderType>& self, PyObject* instance, PyObject* owner) {
+        static shared_ptr<PythonProviderType> __get__(const shared_ptr<PythonProviderType>& self, PyObject* instance, PyObject*) {
             PyObject* func = self->function.ptr();
             if (!PyCallable_Check(func) || (PyMethod_Check(func) && PyMethod_Self(func))) return self;
-#if PY_VERSION_HEX >= 0x03000000
-            (void) owner;   // don't warn that owner parameter is unused
             PyObject* bound_method = PyMethod_New(func, instance);
-#else
-            PyObject* bound_method = PyMethod_New(func, instance, owner);
-#endif
             return PythonProviderFor__init__<ProviderT>(py::object(py::handle<>(bound_method)));
         }
     };

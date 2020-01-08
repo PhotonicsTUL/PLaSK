@@ -61,12 +61,7 @@ class PythonEvalMaterial: public MaterialWithBase
     friend struct PythonEvalMaterialConstructor;
 
     static inline PyObject* py_eval(PyCodeObject *fun, const py::dict& locals) {
-        return
-#if PY_VERSION_HEX >= 0x03000000
-            PyEval_EvalCode((PyObject*)fun, xml_globals->ptr(), locals.ptr());
-#else
-            PyEval_EvalCode(fun, xml_globals->ptr(), locals.ptr());
-#endif
+        return PyEval_EvalCode((PyObject*)fun, xml_globals->ptr(), locals.ptr());
     }
 
     template <typename RETURN>
@@ -319,46 +314,25 @@ void PythonManager::loadMaterial(XMLReader& reader) {
             return s;
         };
 
-    #   if PY_VERSION_HEX >= 0x03000000
-    #       define COMPILE_PYTHON_MATERIAL_FUNCTION2(funcname, func) \
-            else if (reader.getNodeName() == funcname) { \
-                constructor->func = (PyCodeObject*)Py_CompileString(trim(reader.requireTextInCurrentTag().c_str()), funcname, Py_eval_input); \
-                if (constructor->func == nullptr) \
-                    throw XMLException(format("XML line {0} in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
-                try { \
-                    py::dict locals; \
-                    constructor->cache.func.reset( \
-                        py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
-                            py::handle<>(PyEval_EvalCode(constructor->func.ptr_cast<PyObject>(), xml_globals->ptr(), locals.ptr())).get() \
-                        ) \
-                    ); \
-                    writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '{0}'", material_name); \
-                } catch (py::error_already_set&) { \
-                    PyErr_Clear(); \
-                } \
-            }
-    #   else
-            PyCompilerFlags flags { CO_FUTURE_DIVISION };
-    #       define COMPILE_PYTHON_MATERIAL_FUNCTION2(funcname, func) \
-            else if (reader.getNodeName() == funcname) { \
-                constructor->func = (PyCodeObject*)Py_CompileStringFlags(trim(reader.requireTextInCurrentTag().c_str()), funcname, Py_eval_input, &flags); \
-                if (constructor->func == nullptr) \
-                    throw XMLException(format("XML line {0} in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
-                try { \
-                    py::dict locals; \
-                    constructor->cache.func.reset( \
-                        py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
-                            py::handle<>(PyEval_EvalCode(constructor->func, xml_globals->ptr(), locals.ptr())).get() \
-                        ) \
-                    ); \
-                    writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '{0}'", material_name); \
-                } catch (py::error_already_set) { \
-                    PyErr_Clear(); \
-                } \
-            }
-    #   endif
+#       define COMPILE_PYTHON_MATERIAL_FUNCTION2(funcname, func) \
+        else if (reader.getNodeName() == funcname) { \
+            constructor->func = (PyCodeObject*)Py_CompileString(trim(reader.requireTextInCurrentTag().c_str()), funcname, Py_eval_input); \
+            if (constructor->func == nullptr) \
+                throw XMLException(format("XML line {0} in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
+            try { \
+                py::dict locals; \
+                constructor->cache.func.reset( \
+                    py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
+                        py::handle<>(PyEval_EvalCode(constructor->func.ptr_cast<PyObject>(), xml_globals->ptr(), locals.ptr())).get() \
+                    ) \
+                ); \
+                writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '{0}'", material_name); \
+            } catch (py::error_already_set&) { \
+                PyErr_Clear(); \
+            } \
+        }
 
-    #   define COMPILE_PYTHON_MATERIAL_FUNCTION(func) COMPILE_PYTHON_MATERIAL_FUNCTION2(BOOST_PP_STRINGIZE(func), func)
+#       define COMPILE_PYTHON_MATERIAL_FUNCTION(func) COMPILE_PYTHON_MATERIAL_FUNCTION2(BOOST_PP_STRINGIZE(func), func)
 
         while (reader.requireTagOrEnd()) {
             if (reader.getNodeName() == "condtype") {

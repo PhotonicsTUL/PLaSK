@@ -18,7 +18,7 @@ from ...qt.QtWidgets import *
 from ...qt.QtGui import *
 from ...qt import QtSignal
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
-from ...lib.highlighter.python27 import syntax
+from ...lib.highlighter.python36 import syntax
 from ..script import scheme
 from ...model.materials import MaterialsModel, BASE_MATERIALS, default_materialdb, \
     material_html_help, parse_material_components, elements_re

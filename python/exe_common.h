@@ -80,9 +80,7 @@ typedef char system_char;
 typedef std::string system_string;
 constexpr auto system_fopen = &fopen;
 #define system_Py_CompileString Py_CompileString
-#if PY_VERSION_HEX >= 0x03000000
 #define system_Py_fopen _Py_fopen
-#endif
 #define system_main main
 #define CSTR(s) #s
 #endif

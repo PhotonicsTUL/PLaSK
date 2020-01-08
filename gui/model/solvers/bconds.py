@@ -14,17 +14,7 @@ from lxml import etree
 
 from ...qt.QtCore import *
 
-try:
-    unicode = unicode
-except NameError:
-    # 'unicode' is undefined, must be Python 3
-    unicode = str
-    basestring = (str, bytes)
-else:
-    # 'unicode' exists, must be Python 2
-    bytes = str
-
-
+basestring = str, bytes
 class SchemaBoundaryConditions(object):
 
     def __init__(self, name, label, group, mesh_type, mesh_attr=None, geometry_attr=None, values=None):

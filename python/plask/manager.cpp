@@ -11,12 +11,6 @@
 #include "python_manager.h"
 #include "python_provider.h"
 
-#if PY_VERSION_HEX >= 0x03000000
-#   define NEXT "__next__"
-#else
-#   define NEXT "next"
-#endif
-
 namespace plask { namespace python {
 
 PLASK_PYTHON_API std::string getPythonExceptionMessage();
@@ -107,16 +101,12 @@ struct XMLPythonDataSource: public XMLReader::DataSource {
         size_t read = 0, len;
         do {
             py::object readobj = file.attr("read")(buf_size-read);
-#           if PY_VERSION_HEX >= 0x03000000
-                const char* data;
-                if (PyBytes_Check(readobj.ptr())) {
-                    data = PyBytes_AS_STRING(readobj.ptr());
-                } else {
-                    data = py::extract<const char*>(readobj);
-                }
-#           else
-                const char* data = py::extract<const char*>(readobj);
-#           endif
+            const char* data;
+            if (PyBytes_Check(readobj.ptr())) {
+                data = PyBytes_AS_STRING(readobj.ptr());
+            } else {
+                data = py::extract<const char*>(readobj);
+            }
             len = strlen(data);
             if (len > buf_size-read) throw CriticalException("Too much data read");
             std::copy_n(data, len, buff);
@@ -131,15 +121,11 @@ struct XMLPythonDataSource: public XMLReader::DataSource {
 };
 
 inline boost::filesystem::path pyobject_to_path(py::object src) {
-#if PY_VERSION_HEX >= 0x03000000
-    Py_ssize_t size;
-    wchar_t* str = PyUnicode_AsWideCharString(src.ptr(), &size);
-    std::wstring wstr(str, size);
-    PyMem_Free(str);
-    return wstr;
-#else
-    return std::string(py::extract<std::string>(src));
-#endif
+Py_ssize_t size;
+wchar_t* str = PyUnicode_AsWideCharString(src.ptr(), &size);
+std::wstring wstr(str, size);
+PyMem_Free(str);
+return wstr;
 }
 
 /**
@@ -158,10 +144,6 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
 
     std::string str;
     try {
-#if PY_VERSION_HEX < 0x03000000
-        if (PyUnicode_Check(src.ptr()))
-            src = py::str(src).encode("utf8");
-#endif
         str = py::extract<std::string>(src);
         if (str.find('<') == std::string::npos && str.find('>') == std::string::npos) { // str is not XML (a filename probably)
             boost::filesystem::path filename_tmp = pyobject_to_path(src);
@@ -186,11 +168,7 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
 
     // Variables
 
-#   if PY_VERSION_HEX >= 0x03000000
-        manager->overrites = py::tuple(vars.keys());
-#   else
-        manager->overrites = py::tuple(vars.iterkeys());
-#   endif
+    manager->overrites = py::tuple(vars.keys());
     if (vars.has_key("self"))
         throw ValueError("Definition name 'self' is reserved");
     manager->defs.update(vars.copy());
@@ -592,7 +570,7 @@ static void register_manager_dict(const std::string name) {
 
     py::class_<detail::dict_iterator<T>>("Iterator", py::no_init)
         .def("__iter__", &detail::dict_iterator<T>::__iter__, py::return_self<>())
-        .def(NEXT, &detail::dict_iterator<T>::next)
+        .def("__next__", &detail::dict_iterator<T>::next)
     ;
 }
 

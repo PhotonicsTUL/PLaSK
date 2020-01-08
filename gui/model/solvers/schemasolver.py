@@ -32,17 +32,8 @@ except (TypeError, NameError, AttributeError):
 
 VALIDATORS = {'int': can_be_int, 'float': can_be_float, 'bool': can_be_bool}
 
-try:
-    unicode = unicode
-except NameError:
-    # 'unicode' is undefined, must be Python 3
-    unicode = str
-    basestring = (str, bytes)
-    strings = str,
-else:
-    # 'unicode' exists, must be Python 2
-    bytes = str
-    strings = str, unicode
+basestring = str, bytes
+
 
 try:
     import plask

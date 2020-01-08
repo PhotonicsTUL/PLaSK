@@ -2,12 +2,6 @@
 
 #include <plask/utils/xml/reader.h>
 
-#if PY_VERSION_HEX >= 0x03000000
-#   define NEXT "__next__"
-#else
-#   define NEXT "next"
-#endif
-
 namespace plask { namespace python {
 
 //     /**
@@ -337,7 +331,7 @@ void register_xml_reader() {
     (void) scope;   // don't warn about unused variable scope
 
     py::class_<detail::XMLIterator>("_Iterator", py::no_init)
-        .def(NEXT, &detail::XMLIterator::next, py::return_value_policy<py::reference_existing_object>())
+        .def("__next__", &detail::XMLIterator::next, py::return_value_policy<py::reference_existing_object>())
     ;
 }
 

@@ -34,17 +34,7 @@ from ...utils import get_manager
 from ...utils.xml import XML_parser
 from ...utils.config import CONFIG
 
-try:
-    unicode = unicode
-except NameError:
-    # 'unicode' is undefined, must be Python 3
-    unicode = str
-    basestring = (str, bytes)
-else:
-    # 'unicode' exists, must be Python 2
-    bytes = str
-
-
+basestring = str, bytes
 try:
     import plask
     from .plot_widget import PlotWidget

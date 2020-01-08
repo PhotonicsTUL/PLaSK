@@ -11,12 +11,6 @@
 #include <plask/mesh/interpolation.h>
 #include <plask/mesh/generator_rectangular.h>
 
-#if PY_VERSION_HEX >= 0x03000000
-#   define NEXT "__next__"
-#else
-#   define NEXT "next"
-#endif
-
 #define DIM RectangularMeshRefinedGenerator<dim>::DIM
 
 namespace plask { namespace python {
@@ -390,7 +384,7 @@ namespace detail {
             py::scope scope2 = cls;
             (void) scope2;   // don't warn about unused variable scope2
             py::class_<Iter, shared_ptr<Iter>, boost::noncopyable>("Iterator", py::no_init)
-                .def(NEXT, &Iter::next)
+                .def("__next__", &Iter::next)
                 .def("__iter__", pass_through)
             ;
         }

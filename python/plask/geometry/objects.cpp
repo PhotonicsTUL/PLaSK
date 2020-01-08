@@ -11,12 +11,6 @@
 #include "../python_util/py_set.h"
 #include "../python_numpy.h"
 
-#if PY_VERSION_HEX >= 0x03000000
-#   define NEXT "__next__"
-#else
-#   define NEXT "next"
-#endif
-
 namespace plask { namespace python {
 
 // Some helpful wrappers
@@ -761,7 +755,7 @@ void register_geometry_object()
         .def("__repr__", &GeometryObjectSteps::str)
     ;
     py::class_<GeometryObjectIter>("_Iterator", "Items iterator.", py::no_init)
-        .def(NEXT, &GeometryObjectIter::next)
+        .def("__next__", &GeometryObjectIter::next)
         .def("__iter__", pass_through)
     ;}
 

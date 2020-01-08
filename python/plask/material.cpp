@@ -13,12 +13,6 @@
 
 #include "python_util/raw_constructor.h"
 
-#if PY_VERSION_HEX >= 0x03000000
-#   define NEXT "__next__"
-#else
-#   define NEXT "next"
-#endif
-
 namespace plask { namespace python {
 
 namespace detail {
@@ -955,7 +949,7 @@ void initMaterials() {
     {
         py::scope scope(materialsDB);
         py::class_<MaterialsDBIterator, boost::noncopyable>("Iterator", py::no_init)
-            .def(NEXT, &MaterialsDBIterator::next)
+            .def("__next__", &MaterialsDBIterator::next)
             .def("__iter__", pass_through)
         ;
     }

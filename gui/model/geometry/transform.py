@@ -20,17 +20,7 @@ from ...utils.xml import xml_to_attr, attr_to_xml, require_no_children
 from ...utils.compat import next
 
 
-try:
-    unicode = unicode
-except NameError:
-    # 'unicode' is undefined, must be Python 3
-    unicode = str
-    basestring = (str, bytes)
-else:
-    # 'unicode' exists, must be Python 2
-    bytes = str
-
-
+basestring = str, bytes
 class GNTransform(GNObject):
 
     def accept_as_child(self, node):

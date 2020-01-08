@@ -11,18 +11,13 @@
 #endif
 
 //******************************************************************************
-#if PY_VERSION_HEX >= 0x03000000
-    extern "C" PyObject* PyInit__plask(void);
-#   define PLASK_MODULE PyInit__plask
-    inline auto PyString_Check(PyObject* o) -> decltype(PyUnicode_Check(o)) { return PyUnicode_Check(o); }
-    inline const char* PyString_AsString(PyObject* o) { return py::extract<const char*>(o); }
-    inline bool PyInt_Check(PyObject* o) { return PyLong_Check(o); }
-    inline long PyInt_AsLong(PyObject* o) { return PyLong_AsLong(o); }
-    PyAPI_DATA(int) Py_UnbufferedStdioFlag;
-#else
-    extern "C" void init_plask(void);
-#   define PLASK_MODULE init_plask
-#endif
+#define PLASK_MODULE PyInit__plask
+extern "C" PyObject* PLASK_MODULE(void);
+inline auto PyString_Check(PyObject* o) -> decltype(PyUnicode_Check(o)) { return PyUnicode_Check(o); }
+inline const char* PyString_AsString(PyObject* o) { return py::extract<const char*>(o); }
+inline bool PyInt_Check(PyObject* o) { return PyLong_Check(o); }
+inline long PyInt_AsLong(PyObject* o) { return PyLong_AsLong(o); }
+PyAPI_DATA(int) Py_UnbufferedStdioFlag;
 
 //******************************************************************************
 py::object globals;
@@ -382,9 +377,7 @@ int system_main(int argc, const system_char *argv[])
             setvbuf(stdout, nullptr, _IONBF, 0);
             setvbuf(stderr, nullptr, _IONBF, 0);
             log_color = "none";
-#           if PY_VERSION_HEX >= 0x03000000
-                Py_UnbufferedStdioFlag = 1;
-#           endif
+            Py_UnbufferedStdioFlag = 1;
             --argc; ++argv;
         } else if (arg == CSTR(-x)) {
             if (filetype == FILE_PY)  {
@@ -455,14 +448,8 @@ int system_main(int argc, const system_char *argv[])
             from_import_all("plask", globals);  // from plask import *
 
             PyObject* result = NULL;
-#           if PY_VERSION_HEX >= 0x03000000
-                PyObject* code = system_Py_CompileString(command, CSTR(-c), Py_file_input);
-                if (code) result = PyEval_EvalCode(code, globals.ptr(), globals.ptr());
-#           else
-                PyCompilerFlags flags { CO_FUTURE_DIVISION };
-                PyObject* code = Py_CompileStringFlags(command, "-c", Py_file_input, &flags);
-                if (code) result = PyEval_EvalCode((PyCodeObject*)code, globals.ptr(), globals.ptr());
-#           endif
+            PyObject* code = system_Py_CompileString(command, CSTR(-c), Py_file_input);
+            if (code) result = PyEval_EvalCode(code, globals.ptr(), globals.ptr());
             Py_XDECREF(code);
             if (!result) py::throw_error_already_set();
             else Py_DECREF(result);
@@ -589,11 +576,7 @@ int system_main(int argc, const system_char *argv[])
                     plask::python::PythonManager_load(omanager, system_str_to_pyobject(filename), locals);
                 else {
                     py::object sys = py::import("sys");
-#                   if PY_VERSION_HEX >= 0x03000000
-                        plask::python::PythonManager_load(omanager, sys.attr("stdin").attr("buffer"), locals);
-#                   else
-                        plask::python::PythonManager_load(omanager, sys.attr("stdin"), locals);
-#                   endif
+                    plask::python::PythonManager_load(omanager, sys.attr("stdin").attr("buffer"), locals);
                 }
                 if (manager->scriptline)
                     manager->script = "#coding: utf8\n" + std::string(manager->scriptline-1, '\n') + manager->script;
@@ -612,16 +595,9 @@ int system_main(int argc, const system_char *argv[])
                 if (axes) plask::python::current_axes = *axes;
 
                 PyObject* result = NULL;
-#               if PY_VERSION_HEX >= 0x03000000
-                    PyObject* code = system_Py_CompileString(manager->script.c_str(), filename.c_str(), Py_file_input);
-                    if (code)
-                        result = PyEval_EvalCode(code, globals.ptr(), globals.ptr());
-#               else
-                    PyCompilerFlags flags { CO_FUTURE_DIVISION };
-                    PyObject* code = Py_CompileStringFlags(manager->script.c_str(), filename.c_str(), Py_file_input, &flags);
-                    if (code)
-                        result = PyEval_EvalCode((PyCodeObject*)code, globals.ptr(), globals.ptr());
-#               endif
+                PyObject* code = system_Py_CompileString(manager->script.c_str(), filename.c_str(), Py_file_input);
+                if (code)
+                    result = PyEval_EvalCode(code, globals.ptr(), globals.ptr());
                 Py_XDECREF(code);
                 if (!result) py::throw_error_already_set();
                 else Py_DECREF(result);
@@ -633,32 +609,13 @@ int system_main(int argc, const system_char *argv[])
                 }
                 PyObject* pyfile = nullptr;
                 PyObject* result;
-#               if PY_VERSION_HEX >= 0x03000000
-                    if (realfile) {
-#                       if PY_VERSION_HEX >= 0x03040000
-                            FILE* file = system_Py_fopen(filename.c_str(), CSTR(r));
-#                       else
-                            pyfile = PyUnicode_FromString(filename.c_str());
-                            FILE* file = _Py_fopen(pyfile, "r");
-#                       endif
-                        // TODO conversion to UTF-8 might not be proper here, especially for windows
-                        result = PyRun_FileEx(file, system_to_utf8(filename).c_str(), Py_file_input, globals.ptr(), globals.ptr(), 1);
-                    } else {
-                        result = PyRun_File(stdin, system_to_utf8(filename).c_str(), Py_file_input, globals.ptr(), globals.ptr());
-                    }
-#               else
-                    // We want to set "from __future__ import division" flag
-                    if (realfile) {
-                        pyfile = PyFile_FromString(const_cast<char*>(filename.c_str()), const_cast<char*>("r"));
-                        if (!pyfile) throw std::invalid_argument("No such file: '" + filename + "'");
-                        FILE* file = PyFile_AsFile(pyfile);
-                        PyCompilerFlags flags { CO_FUTURE_DIVISION };
-                        result = PyRun_FileFlags(file, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr(), &flags);
-                    } else {
-                        PyCompilerFlags flags { CO_FUTURE_DIVISION };
-                        result = PyRun_FileFlags(stdin, filename.c_str(), Py_file_input, globals.ptr(), globals.ptr(), &flags);
-                    }
-#               endif
+                if (realfile) {
+                    FILE* file = system_Py_fopen(filename.c_str(), CSTR(r));
+                    // TODO conversion to UTF-8 might not be proper here, especially for windows
+                    result = PyRun_FileEx(file, system_to_utf8(filename).c_str(), Py_file_input, globals.ptr(), globals.ptr(), 1);
+                } else {
+                    result = PyRun_File(stdin, system_to_utf8(filename).c_str(), Py_file_input, globals.ptr(), globals.ptr());
+                }
                 Py_XDECREF(pyfile);
                 if (!result) py::throw_error_already_set();
                 else Py_DECREF(result);

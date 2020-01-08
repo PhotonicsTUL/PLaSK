@@ -37,16 +37,7 @@ from ...utils.qsignals import BlockQtSignals
 from ...utils.str import html_to_tex
 from ...utils.widgets import set_icon_size
 
-try:
-    unicode = unicode
-except NameError:
-    # 'unicode' is undefined, must be Python 3
-    unicode = str
-    basestring = (str, bytes)
-else:
-    # 'unicode' exists, must be Python 2
-    bytes = str
-
+basestring = str, bytes
 try:
     import plask
 except ImportError:

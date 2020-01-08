@@ -43,17 +43,7 @@ try:
 except ImportError:
     plask = None
 
-try:
-    unicode = unicode
-except NameError:
-    # 'unicode' is undefined, must be Python 3
-    unicode = str
-    basestring = (str, bytes)
-else:
-    # 'unicode' exists, must be Python 2
-    bytes = str
-
-
+basestring = str, bytes
 PRESET_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'presets')
 
 
@@ -520,7 +510,7 @@ def parse_highlight(string):
 
 def parse_font(entry):
     font = CONFIG[entry]
-    if isinstance(font, (str, unicode)):
+    if isinstance(font, (str, str)):
         font = font.split(',')
     return ','.join(font[:-1])+',0'
 

@@ -16,17 +16,7 @@
 import re
 from ...qt.QtGui import QSyntaxHighlighter, QColor, QTextCharFormat, QFont, QBrush, QTextFormat
 
-try:
-    unicode = unicode
-except NameError:
-    # 'unicode' is undefined, must be Python 3
-    unicode = str
-    basestring = (str, bytes)
-else:
-    # 'unicode' exists, must be Python 2
-    bytes = str
-
-
+basestring = str, bytes
 class Format(object):
 
     __slots__ = ("name", "tcf")
@@ -231,7 +221,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
     def highlightBlock(self, text):
         """Automatically called by Qt"""
 
-        text = unicode(text) + "\n"
+        text += "\n"
         previous_state = self.previousBlockState() + 1
         new_state = previous_state
         # speed-up name-lookups

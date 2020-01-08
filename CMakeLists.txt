@@ -1,7 +1,7 @@
 # CMake file for project PLaSK
 
 cmake_minimum_required(VERSION 2.8)
-cmake_policy(SET CMP0017 OLD)       # ensure our CMake modules are loaded first
+# cmake_policy(SET CMP0017 OLD)       # ensure our CMake modules are loaded first
 
 project(plask)
 
@@ -168,10 +168,7 @@ if(BUILD_PYTHON)
     set(PLASK_PYTHON_PATH "${PLASK_PATH}/python/plask")
 
     if(NOT PYTHON_VERSION)
-        find_package(PythonInterp "3.4")
-        if(NOT PYTHONINTERP_FOUND)
-            find_package(PythonInterp "2.6" REQUIRED)
-        endif()
+        find_package(PythonInterp "3.5")
     else()
         find_package(PythonInterp ${PYTHON_VERSION} REQUIRED)
     endif()

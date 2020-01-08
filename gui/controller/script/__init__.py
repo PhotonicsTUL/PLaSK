@@ -32,10 +32,7 @@ from ...utils.widgets import EDITOR_FONT
 from ...utils.texteditor import TextEditor
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
 
-if sys.version_info >= (3, 0, 0):
-    from ...lib.highlighter.python32 import syntax, default_key
-else:
-    from ...lib.highlighter.python27 import syntax, default_key
+from ...lib.highlighter.python36 import syntax, default_key
 from ...lib.highlighter.plask import syntax as plask_syntax
 
 

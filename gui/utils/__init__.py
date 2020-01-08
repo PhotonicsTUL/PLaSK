@@ -14,17 +14,7 @@ from bisect import bisect_left
 
 from ..model.materials import default_materialdb
 
-try:
-    unicode = unicode
-except NameError:
-    # 'unicode' is undefined, must be Python 3
-    unicode = str
-    basestring = (str, bytes)
-else:
-    # 'unicode' exists, must be Python 2
-    bytes = str
-
-
+basestring = str, bytes
 try:
     import plask
 except ImportError:

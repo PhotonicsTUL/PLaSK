@@ -30,16 +30,7 @@ if __name__ == '__main__':
 ACTIONS = []
 HELP_ACTIONS = []
 
-try:
-    unicode = unicode
-except NameError:
-    # 'unicode' is undefined, must be Python 3
-    unicode = str
-    basestring = (str, bytes)
-else:
-    # 'unicode' exists, must be Python 2
-    bytes = str
-
+basestring = str, bytes
 try:
     _DEBUG = bool(eval(os.environ['PLASKGUI_DEBUG'].title()))
 except KeyError:
@@ -524,12 +515,12 @@ class MainWindow(QMainWindow):
     def _save_document(self, filename):
         fire_edit_end()
         try:
-            self.document.save_to_file(unicode(filename))
+            self.document.save_to_file(str(filename))
         except Exception as err:
             msgbox = QMessageBox()
             msgbox.setWindowTitle("Save Error")
             msgbox.setText("The file '{}' could not be saved to disk.".format(filename))
-            msgbox.setInformativeText(unicode(err))
+            msgbox.setInformativeText(str(err))
             msgbox.setStandardButtons(QMessageBox.Ok)
             msgbox.setIcon(QMessageBox.Critical)
             msgbox.exec_()
@@ -589,7 +580,7 @@ class MainWindow(QMainWindow):
             msgbox = QMessageBox()
             msgbox.setText("Document contains some non-critical errors.\n\n"
                            "It is possible to save it, however launching it will most probably fail.")
-            msgbox.setDetailedText(u'\n'.join(map(unicode, errors)))
+            msgbox.setDetailedText('\n'.join(map(str, errors)))
             msgbox.setInformativeText("Do you want to save anyway?")
             msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             msgbox.setIcon(QMessageBox.Warning)
@@ -854,7 +845,7 @@ class MainWindow(QMainWindow):
             msgbox = QMessageBox()
             msgbox.setWindowTitle("License Install Error")
             msgbox.setText("The license file '{}' could not be installed.".format(filename))
-            msgbox.setInformativeText(unicode(err))
+            msgbox.setInformativeText(str(err))
             msgbox.setStandardButtons(QMessageBox.Ok)
             msgbox.setIcon(QMessageBox.Critical)
             msgbox.exec_()

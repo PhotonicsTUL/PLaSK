@@ -64,12 +64,7 @@ PLASK_PYTHON_API py::object py_eval(std::string string, py::object global, py::o
             global = py::dict();
     }
     if (local.is_none()) local = global;
-#   if PY_VERSION_HEX >= 0x03000000
-        PyObject* result = PyRun_String(string.c_str(), Py_eval_input, global.ptr(), local.ptr());
-#   else
-        PyCompilerFlags flags { CO_FUTURE_DIVISION };
-        PyObject* result = PyRun_StringFlags(string.c_str(), Py_eval_input, global.ptr(), local.ptr(), &flags);
-#   endif
+    PyObject* result = PyRun_String(string.c_str(), Py_eval_input, global.ptr(), local.ptr());
     if (!result) py::throw_error_already_set();
     return py::object(py::detail::new_reference(result));
 }

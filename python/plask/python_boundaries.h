@@ -6,12 +6,6 @@
 #include <plask/mesh/boundary_conditions.h>
 #include <plask/manager.h>
 
-#if PY_VERSION_HEX >= 0x03000000
-#   define NEXT "__next__"
-#else
-#   define NEXT "next"
-#endif
-
 namespace plask {
 
 template <> inline boost::python::object parseBoundaryValue<boost::python::object>(const XMLReader& tag_with_value)
@@ -156,7 +150,7 @@ struct RegisterBoundaryConditions {
             (void) scope1;   // don't warn about unused variable scope1
 
             py::class_<Iter>("Iterator", py::no_init)
-                .def(NEXT, &Iter::next, py::return_value_policy<py::reference_existing_object>())
+                .def("__next__", &Iter::next, py::return_value_policy<py::reference_existing_object>())
                 .def("__iter__", pass_through)
             ;
 
@@ -170,7 +164,7 @@ struct RegisterBoundaryConditions {
             py::scope scope2 = cd;
             (void) scope2;   // don't warn about unused variable scope2
             py::class_<ConditionIter>("Iterator", py::no_init)
-                .def(NEXT, &ConditionIter::next)
+                .def("__next__", &ConditionIter::next)
                 .def("__iter__", pass_through)
             ;
         }
