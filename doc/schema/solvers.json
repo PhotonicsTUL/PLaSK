@@ -280,7 +280,7 @@
       },
       "need mesh": {
         "type": "boolean",
-        "description": "Flag indicating is setting the mesh is necessary",
+        "description": "Flag indicating if setting the mesh is necessary",
         "default": true
       },
       "tags": {
