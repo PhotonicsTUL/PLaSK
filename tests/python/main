@@ -1,3 +1,5 @@
+#!/usr/bin/env plask
+
 import sys, unittest, traceback
 import os.path
 

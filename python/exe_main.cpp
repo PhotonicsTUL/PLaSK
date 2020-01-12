@@ -168,8 +168,8 @@ static inline void fixMatplotlibBug() {
 }
 
 static inline void finalizeMPI() {
-    py::object sys(py::import("sys"));
-    py::dict modules(sys.attr("modules"));
+    py::dict modules(py::handle<>(PySys_GetObject("modules")));
+
     py::object mpi(modules.get("mpi4py.MPI"));
     if (mpi != py::object()) {
         try {
@@ -183,6 +183,7 @@ static inline void finalizeMPI() {
         }
         return;
     }
+
     mpi = modules.get("boost.mpi");
     if (mpi != py::object()) {
         try {
@@ -225,6 +226,12 @@ void endPlask() {
     if (PyObject_HasAttrString(atexit.ptr(), "_run_exitfuncs"))
         atexit.attr("_run_exitfuncs")();
     finalizeMPI();
+
+    // Flush buffers
+    try { py::object(py::handle<>(PySys_GetObject("stderr"))).attr("flush")(); }
+    catch (py::error_already_set) { PyErr_Clear(); }
+    try { py::object(py::handle<>(PySys_GetObject("stdout"))).attr("flush")(); }
+    catch (py::error_already_set) { PyErr_Clear(); }
 }
 
 
