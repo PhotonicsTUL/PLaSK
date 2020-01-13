@@ -22,6 +22,10 @@ class Material(unittest.TestCase):
         def VB(self, T=300., e=0., point='G', hole='H'):
             return 2.*T
         def nr(self, lam, T=300., n=0.):
+            """
+            T range: 300:400
+            source: Just imagination
+            """
             return 3.5
         def absp(self, lam, T):
             return 0.
@@ -45,6 +49,10 @@ class Material(unittest.TestCase):
     @material.simple()
     class WithChar(material.Material):
         def chi(self, T, e, p):
+            """
+            T range: 300:400
+            source: Simplicity
+            """
             print("WithChar: %s" % p)
             return 1.5
 
@@ -101,6 +109,10 @@ class Material(unittest.TestCase):
         self.assertEqual( c.name, "WithChar" )
         with self.assertRaisesRegexp(NotImplementedError, "Method not implemented"): c.VB(1.0)
         self.assertEqual( ptest.call_chi(c, 'A'), 1.5)
+
+    def testInfo(self):
+        self.assertEqual( material.info("WithChar"), {'chi': {'source': "Simplicity", 'ranges': {'T': (300., 400.)}}} )
+        self.assertEqual( material.info("AlGaAs_fake"), {'nr': {'source': "Just imagination", 'ranges': {'T': (300., 400.)}}} )
 
     def testDefaultMaterials(self):
         self.assertIn( "GaN", material.db )

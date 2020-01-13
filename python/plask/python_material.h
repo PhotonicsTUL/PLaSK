@@ -47,7 +47,6 @@ struct MaterialCache {
     plask::optional<double> absp;
     plask::optional<dcomplex> Nr;
     plask::optional<Tensor3<dcomplex>> NR;
-
     plask::optional<Tensor2<double>> mobe;
     plask::optional<Tensor2<double>> mobh;
     plask::optional<double> taue;
@@ -60,7 +59,6 @@ struct MaterialCache {
     plask::optional<double> c13;
     plask::optional<double> c33;
     plask::optional<double> Psp;
-
     plask::optional<double> y1;
     plask::optional<double> y2;
     plask::optional<double> y3;

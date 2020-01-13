@@ -365,7 +365,6 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
             catch (NotImplemented&) { return base->NR(lam, T, n); }
         }
     }
-
     Tensor2<double> mobe(double T) const override { return call<Tensor2<double>>("mobe", &Material::mobe, cache->mobe, T); }
     Tensor2<double> mobh(double T) const override { return call<Tensor2<double>>("mobh", &Material::mobh, cache->mobh, T); }
     double taue(double T) const override { return call<double>("taue", &Material::taue, cache->taue, T); }
@@ -378,7 +377,6 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     double c13(double T) const override { return call<double>("c13", &Material::c13, cache->c13, T); }
     double c33(double T) const override { return call<double>("c33", &Material::c33, cache->c33, T); }
     double Psp(double T) const override { return call<double>("Psp", &Material::Psp, cache->Psp, T); }
-
     double y1() const override { return call<double>("y1", &Material::y1, cache->y1); }
     double y2() const override { return call<double>("y2", &Material::y2, cache->y2); }
     double y3() const override { return call<double>("y3", &Material::y3, cache->y3); }
@@ -427,6 +425,74 @@ struct PythonMaterialConstructor: public MaterialsDB::MaterialConstructor
     bool isAlloy() const override { return alloy; }
 };
 
+static void setMaterialInfo(const std::string& material_name, PyObject* class_object)
+{
+    MaterialInfo& info = MaterialsDB::getDefault().info.add(material_name);
+
+    #define UPDATE_INFO(meth) if (PyType_Check(class_object) && reinterpret_cast<PyTypeObject*>(class_object)->tp_dict) { \
+        if (PyObject* method_object = PyDict_GetItemString(reinterpret_cast<PyTypeObject*>(class_object)->tp_dict, BOOST_PP_STRINGIZE(meth))) { \
+            if (PyObject* docstring_object = PyObject_GetAttrString(method_object, "__doc__")) { \
+                py::extract<std::string> docstring(docstring_object); \
+                if (docstring.check()) info(plask::MaterialInfo::meth).setComment(docstring()); \
+            } \
+        } \
+    }
+
+    UPDATE_INFO(lattC);
+    UPDATE_INFO(Eg);
+    UPDATE_INFO(CB);
+    UPDATE_INFO(VB);
+    UPDATE_INFO(Dso);
+    UPDATE_INFO(Mso);
+    UPDATE_INFO(Me);
+    UPDATE_INFO(Mhh);
+    UPDATE_INFO(Mlh);
+    UPDATE_INFO(Mh);
+    UPDATE_INFO(ac);
+    UPDATE_INFO(av);
+    UPDATE_INFO(b);
+    UPDATE_INFO(d);
+    UPDATE_INFO(c11);
+    UPDATE_INFO(c12);
+    UPDATE_INFO(c44);
+    UPDATE_INFO(eps);
+    UPDATE_INFO(chi);
+    UPDATE_INFO(Na);
+    UPDATE_INFO(Nd);
+    UPDATE_INFO(Ni);
+    UPDATE_INFO(Nf);
+    UPDATE_INFO(EactD);
+    UPDATE_INFO(EactA);
+    UPDATE_INFO(mob);
+    UPDATE_INFO(cond);
+    UPDATE_INFO(A);
+    UPDATE_INFO(B);
+    UPDATE_INFO(C);
+    UPDATE_INFO(D);
+    UPDATE_INFO(thermk);
+    UPDATE_INFO(dens);
+    UPDATE_INFO(cp);
+    UPDATE_INFO(nr);
+    UPDATE_INFO(absp);
+    UPDATE_INFO(Nr);
+    UPDATE_INFO(NR);
+    UPDATE_INFO(mobe);
+    UPDATE_INFO(mobh);
+    UPDATE_INFO(taue);
+    UPDATE_INFO(tauh);
+    UPDATE_INFO(Ce);
+    UPDATE_INFO(Ch);
+    UPDATE_INFO(e13);
+    UPDATE_INFO(e15);
+    UPDATE_INFO(e33);
+    UPDATE_INFO(c13);
+    UPDATE_INFO(c33);
+    UPDATE_INFO(Psp);
+    UPDATE_INFO(y1);
+    UPDATE_INFO(y2);
+    UPDATE_INFO(y3);
+}
+
 /**
  * Function registering custom simple material class to plask
  * \param name name of the material
@@ -439,6 +505,7 @@ void registerSimpleMaterial(const std::string& name, py::object material_class, 
     MaterialsDB::getDefault().addSimple(constructor);
     material_class.attr("_factory") = py::object(constructor);
     material_class.attr("simple") = true;
+    setMaterialInfo(name, material_class.ptr());
 }
 
 /**
@@ -453,6 +520,7 @@ void registerAlloyMaterial(const std::string& name, py::object material_class, c
     MaterialsDB::getDefault().addAlloy(constructor);
     material_class.attr("_factory") = py::object(constructor);
     material_class.attr("simple") = false;
+    setMaterialInfo(name, material_class.ptr());
 }
 
 //parse material parameters from full_name and extra parameters in kwargs
@@ -599,7 +667,6 @@ shared_ptr<Material> PythonMaterial::__init__(const py::tuple& args, const py::d
         CHECK_CACHE(double, absp, "absp", py::object(), 300.)
         CHECK_CACHE(dcomplex, Nr, "Nr", py::object(), 300., 0.)
         CHECK_CACHE(Tensor3<dcomplex>, NR, "NR", py::object(), 300., 0.)
-
         CHECK_CACHE(Tensor2<double>, mobe, "mobe", 300.)
         CHECK_CACHE(Tensor2<double>, mobh, "mobh", 300.)
         CHECK_CACHE(double, taue, "taue", 300.)
@@ -612,6 +679,9 @@ shared_ptr<Material> PythonMaterial::__init__(const py::tuple& args, const py::d
         CHECK_CACHE(double, c13, "c13", 300.)
         CHECK_CACHE(double, c33, "c33", 300.)
         CHECK_CACHE(double, Psp, "Psp", 300.)
+        CHECK_CACHE(double, y1, "y1")
+        CHECK_CACHE(double, y2, "y2")
+        CHECK_CACHE(double, y3, "y3")
     }
     return ptr;
 }
@@ -733,7 +803,7 @@ namespace detail {
         if (plask::optional<plask::MaterialInfo::PropertyInfo> info = minfo.getPropertyInfo(prop)) {
             py::dict data;
             if (info->getSource() != "") data["source"] = info->getSource();
-            if (info->getComment() != "") data["comment"] = info->getComment();
+            // if (info->getComment() != "") data["comment"] = info->getComment();
             py::list links;
             for (const auto& link: info->getLinks()) {
                 if (link.comment == "")
@@ -771,12 +841,7 @@ py::dict getMaterialInfoForDB(const MaterialsDB& materialsdb, const std::string&
     detail::getPropertyInfo(result, *minfo, MaterialInfo::d, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::c11, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::c12, MaterialInfo::T);
-    detail::getPropertyInfo(result, *minfo, MaterialInfo::c13, MaterialInfo::T);
-    detail::getPropertyInfo(result, *minfo, MaterialInfo::c33, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::c44, MaterialInfo::T);
-    detail::getPropertyInfo(result, *minfo, MaterialInfo::e13, MaterialInfo::T);
-    detail::getPropertyInfo(result, *minfo, MaterialInfo::e15, MaterialInfo::T);
-    detail::getPropertyInfo(result, *minfo, MaterialInfo::e33, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::eps, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::chi, MaterialInfo::T);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::Na);
@@ -799,6 +864,21 @@ py::dict getMaterialInfoForDB(const MaterialsDB& materialsdb, const std::string&
     detail::getPropertyInfo(result, *minfo, MaterialInfo::absp, MaterialInfo::lam, MaterialInfo::T, MaterialInfo::n);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::Nr, MaterialInfo::lam, MaterialInfo::T, MaterialInfo::n);
     detail::getPropertyInfo(result, *minfo, MaterialInfo::NR, MaterialInfo::lam, MaterialInfo::T, MaterialInfo::n);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::mobe, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::mobh, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::taue, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::tauh, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Ce, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Ch, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::e13, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::e15, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::e33, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::c13, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::c33, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::Psp, MaterialInfo::T);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::y1);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::y2);
+    detail::getPropertyInfo(result, *minfo, MaterialInfo::y3);
     return result;
 }
 
