@@ -404,7 +404,7 @@ class MainWindow(QMainWindow):
     def _update_info_color(self):
         pal = self.info_table.palette()
         if any(info.level != Info.NONE for info in self.info_model.entries):
-            pal.setColor(QPalette.Base, QColor("#ffc"))
+            pal.setColor(QPalette.Base, QColor("#6f4402" if dark_style() else "#ffc"))
         else:
             pal.setColor(QPalette.Base, pal.color(QPalette.Window))
         self.info_table.setPalette(pal)
