@@ -102,8 +102,9 @@ static size_t BesselSolverCyl_findMode(BesselSolverCyl& self, dcomplex start, co
 
 static size_t BesselSolverCyl_setMode(BesselSolverCyl* self, dcomplex lam, const py::object& pym) {
     self->Solver::initCalculation();
-    auto* expansion = self->expansion.get();
+    self->setExpansionDefaults();
 
+    auto* expansion = self->expansion.get();
     expansion->setK0(2e3*PI / lam);
 
     if (pym != py::object()) {

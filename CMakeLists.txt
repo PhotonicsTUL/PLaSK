@@ -113,7 +113,7 @@ endif()
 
 option(LICENSE_CHECK "Perform license check" OFF)
 
-option(PRINT_STACKTRACE_ON_EXCEPTION "Print stack-trace on stderr when plask::Exception is throwed (works only in debug mode)." ON)
+option(PRINT_STACKTRACE_ON_EXCEPTION "Print stack-trace on stderr when plask::Exception is thrown (works only in debug mode)." ON)
 
 option(PLASK_OPTIONAL_STD "Use std optional (supported by C++17) instead of boost one." OFF)
 

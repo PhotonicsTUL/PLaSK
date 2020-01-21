@@ -174,7 +174,7 @@ static size_t FourierSolver2D_setMode(py::tuple args, py::dict kwargs) {
     self->Solver::initCalculation();
 
     if (k0) expansion->setK0(*k0); else expansion->setK0(self->getK0());
-    if (neff) expansion->setBeta(*neff * expansion->k0); else expansion->setBeta(self->getK0());
+    if (neff) expansion->setBeta(*neff * expansion->k0); else expansion->setBeta(self->getBeta());
     if (ktran) expansion->setKtran(*ktran); else expansion->setKtran(self->getKtran());
     expansion->setLam0(self->getLam0());
     expansion->setSymmetry(self->getSymmetry());
