@@ -23,7 +23,7 @@ except ImportError:
 INDENT = " " * 4
 
 
-class StubCreator(object):
+class StubCreator:
 
     def __init__(self, module):
         self._module = module

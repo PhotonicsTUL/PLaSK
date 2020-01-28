@@ -80,7 +80,7 @@ class LaunchThread(QThread):
             pass
 
 
-class Launcher(object):
+class Launcher:
     name = "Local Process"
 
     def __init__(self):

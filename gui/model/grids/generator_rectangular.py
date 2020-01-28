@@ -21,7 +21,7 @@ from . import Grid
 from .mesh_rectangular import AXIS_NAMES
 
 
-class RefinementConf(object):
+class RefinementConf:
     """Store refinement configuration of rectilinear generator"""
 
     attributes_names = ['object', 'path', 'at', 'by', 'every']

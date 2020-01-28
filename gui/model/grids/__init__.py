@@ -204,7 +204,7 @@ class GridsModel(TableModel):
         return construct_grid_using_dialog(self)
 
     def stubs(self):
-        res = 'class MSH(object):\n    """PLaSK object containing the defined meshes."""\n'
+        res = 'class MSH:\n    """PLaSK object containing the defined meshes."""\n'
         res += '\n'.join("    {0} = mesh.{1}()".format(e.name.replace('-', '_'), display_name(e.type))
                          for e in self.entries if not e.is_generator) + '\n'
         res += '\n'.join("    {0} = mesh.{1}.{2}Generator()"

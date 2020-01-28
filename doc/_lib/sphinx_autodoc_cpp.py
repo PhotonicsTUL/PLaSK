@@ -38,7 +38,7 @@ py_ext_sig_re = re.compile(
 boost_signature_re = re.compile(r"^\s*(\w+ )?(?:[\w.]+::)?(\w*)\(tuple args, dict kwds\)(?: :)?$")
 
 
-class PlaskDocMixin(object):
+class PlaskDocMixin:
     """Mixin that can properly output multiple signatures and inherited classes"""
 
     def parse_name(self):

@@ -17,7 +17,7 @@ except ImportError:
 
 
 basestring = str, bytes
-class GNAligner(object):
+class GNAligner:
 
     POSITION_LOW = 0
     POSITION_CENTER = 1
@@ -103,7 +103,7 @@ def axes_dim(axes, dim):
     return axes_as_list(axes) if dim == 3 else axes_as_list(axes)[1:]
 
 
-class GNReadConf(object):
+class GNReadConf:
     """ Configuration using while geometry objects are read.
         Stores information about expected suffix, axes configuration and parent node for new elements.
     """

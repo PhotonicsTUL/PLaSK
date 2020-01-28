@@ -248,7 +248,7 @@ class OutputWindow(QDockWidget):
             self.action_debug
         )
 
-        view_menu = QMenu("Show")
+        view_menu = QMenu("Show", self)
         view_menu.addAction(self.action_error)
         view_menu.addAction(self.action_warning)
         view_menu.addAction(self.action_important)
@@ -259,7 +259,7 @@ class OutputWindow(QDockWidget):
         view_menu.addAction(self.action_debug)
 
         menu_button = QToolButton()
-        menu_button.setMenu((view_menu))
+        menu_button.setMenu(view_menu)
         menu_button.setPopupMode(QToolButton.InstantPopup)
         menu_button.setIcon(QIcon.fromTheme('edit-find'))
         menu_button.setFocusPolicy(Qt.NoFocus)

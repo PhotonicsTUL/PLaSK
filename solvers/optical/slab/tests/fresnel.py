@@ -16,7 +16,7 @@ angles = linspace(0.0, 90.0, 11)
 nr = material.GaAs().nr(1000)
 print("nr = {}".format(nr))
 
-class Refl(object):
+class Refl:
 
     def __init__(self, solver, direction, polarization):
         self.solver = solver

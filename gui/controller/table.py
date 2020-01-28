@@ -26,7 +26,7 @@ def top_level_index(index):
     return prev
 
 
-class TableActions(object):
+class TableActions:
 
     def __init__(self, table, model=None):
         self.table = table

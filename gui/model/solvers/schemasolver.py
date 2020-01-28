@@ -57,7 +57,7 @@ class AttrGroup(list):
         self.label = label
 
 
-class Attr(object):
+class Attr:
     def __init__(self, tag, name, label, required, help, typ, default=None):
         self.tag = tag
         self.name = name
@@ -108,7 +108,7 @@ class AttrMesh(Attr):
         self.types = mesh_types
 
 
-class SchemaTag(object):
+class SchemaTag:
     def __init__(self, name, label, attrs):
         self.name = name
         self.label = label
@@ -254,7 +254,7 @@ class SchemaSolver(Solver):
             return "from {1} import {2} as {0}\n{0} = {0}()".format(self.name, self.category, self.solver)
 
 
-class SchemaSolverFactory(object):
+class SchemaSolverFactory:
 
     def __init__(self, category, lib, solver, schema, geometry_type, mesh_types, need_mesh, providers, receivers):
         self.category = category

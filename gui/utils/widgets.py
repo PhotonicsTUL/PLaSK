@@ -67,7 +67,7 @@ def create_undo_actions(toolbar, model, widget):
     toolbar.addAction(undo)
     toolbar.addAction(redo)
 
-    class SetupMenu(object):
+    class SetupMenu:
         def __init__(self, action, redo):
             self.button = toolbar.widgetForAction(action)
             self.button.setContextMenuPolicy(Qt.CustomContextMenu)

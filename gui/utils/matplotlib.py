@@ -38,7 +38,7 @@ from ..utils.widgets import set_icon_size
 
 from .config import CONFIG
 
-class Cursors(object):
+class Cursors:
     # this class is only used as a simple namespace
     HAND, POINTER, SELECT_REGION, MOVE = range(4)
 cursors = Cursors()
@@ -51,7 +51,7 @@ cursord = {
 }
 
 
-class BwColor(object):
+class BwColor:
     def __init__(self, colors, axes, compress=0.5):
         self.colors = plask.ColorFromDict(colors, axes)
         self.compress = compress

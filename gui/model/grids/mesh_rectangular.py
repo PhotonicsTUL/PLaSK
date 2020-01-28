@@ -22,7 +22,7 @@ AXIS_NAMES = [
 ]
 
 
-class AxisConf(object):
+class AxisConf:
     """Store axis configuration of rectilinear mesh"""
 
     def __init__(self, start=None, stop=None, num=None, points=None, type=None):

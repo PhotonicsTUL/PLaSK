@@ -299,7 +299,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
         self.dirty = True
 
     def stubs(self):
-        res = 'class GEO(object):\n    """PLaSK object containing the defined geometry objects."""\n'
+        res = 'class GEO:\n    """PLaSK object containing the defined geometry objects."""\n'
         res += '\n'.join(s for s in (r.stub() for r in self.roots) if s)
         return res
 

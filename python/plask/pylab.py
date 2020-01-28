@@ -61,7 +61,7 @@ def window_title(title):
 
 # Easier rc handling. Make conditional on matplotlib version if I manage to introduce it there
 if True:
-    class _Rc(object):
+    class _Rc:
         """
         Set the current rc params.  There are two alternative ways of using
         this object.  One is to call it like a function::
@@ -136,7 +136,7 @@ if True:
             'sans': 'sans-serif'
         }
 
-        class Group(object):
+        class Group:
             def __init__(self, group):
                 self.__dict__['_group'] = group
 

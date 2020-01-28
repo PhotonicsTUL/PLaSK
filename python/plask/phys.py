@@ -52,7 +52,7 @@ eps0 = 8.854187817e-6
 
 Z0 = eta0 = 376.73031346177066
 
-class h(object):
+class h:
     J = 6.62606957e-34
     eV = 4.135667516e-15
 h = h()
@@ -60,7 +60,7 @@ h = h()
 SB = 5.670373e-8
 
 
-class kB(object):
+class kB:
     J = 1.3806503e-23
     eV = 8.6173423e-5
 kB = kB()

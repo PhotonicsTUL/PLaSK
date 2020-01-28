@@ -35,7 +35,7 @@ def sorted_index(sorted_list, x):
     raise ValueError
 
 
-class _GETATTR_BY_PATH_NO_DEFAULT(object):
+class _GETATTR_BY_PATH_NO_DEFAULT:
     pass
 
 

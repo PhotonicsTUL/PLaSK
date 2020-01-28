@@ -80,7 +80,7 @@ def Data(array, mesh):
     """
 
 
-class DataLog2(object):
+class DataLog2:
     """
     Class used to log relations between two variables (argument and value)
 
@@ -121,7 +121,7 @@ LOG_INFO = 'INFO'
 LOG_RESULT = 'RESULT'
 LOG_WARNING = 'WARNING'
 
-class LoggingConfig(object):
+class LoggingConfig:
     """
     Settings of the logging system
     """
@@ -172,7 +172,7 @@ class Manager(_plask.Manager):
         draft (bool): If *True* then partially incomplete XML is accepted
                       (e.g. non-existent materials are allowed).
     """
-    class _Roots(object):
+    class _Roots:
         pass
 
     _roots = None
@@ -279,7 +279,7 @@ class Manager(_plask.Manager):
 
 
 
-class Solver(object):
+class Solver:
     """
     Base class for all solvers.
 
@@ -440,8 +440,8 @@ def XmlWriter(geo=None, msh=None, names=None):
     """
 
 
-class XplReader(object):
-    class _Iterator(object):
+class XplReader:
+    class _Iterator:
         def next(self):
             """
             next(self)
@@ -479,7 +479,7 @@ class XplReader(object):
 
 
 
-class XplWriter(object):
+class XplWriter:
     """
     XPL writer that can save existing geometries and meshes to the XPL.
 

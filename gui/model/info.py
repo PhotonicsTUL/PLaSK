@@ -19,7 +19,7 @@ from ..qt.QtGui import *
 from ..utils.signal import Signal
 
 
-class Info(object):
+class Info:
 
     NONE = 0
     GROUP = 1
@@ -129,7 +129,7 @@ class InfoListModel(QAbstractListModel):
         return None
 
 
-class InfoSource(object):
+class InfoSource:
 
     def __init__(self, info_cb=None):
         """

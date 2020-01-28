@@ -326,7 +326,7 @@ if not screen:
 
 color_cycle = [c['color'] for c in rc.axes.prop_cycle]
 
-class SaveFigure(object):
+class SaveFigure:
     def __init__(self):
         self.nr = 1
     def __call__(self, title=None):
@@ -366,7 +366,7 @@ OPTICAL.mesh = MSG.optical
 #     desc += '-lp{}{}'.format(m, n)
 
 
-class ApproximateMode(object):
+class ApproximateMode:
     def __init__(self, m=m, n=1, lams=olams, imags=linspace(-0.05, 0.05, 41)):
         self.lams = lams
         self.no = -n
@@ -1000,7 +1000,7 @@ try:
 
         work = algorithm.ThermoElectric(THERMAL, ELECTRICAL)
 
-        class Func(object):
+        class Func:
             def __init__(self, modes):
                 self.modes = modes
             def __call__(self, powers):
@@ -1087,7 +1087,7 @@ try:
 
         work = algorithm.ThermoElectric(THERMAL, ELECTRICAL)
 
-        class Func(object):
+        class Func:
             def __init__(self, modes):
                 self.modes = modes
             def __call__(self, powers):

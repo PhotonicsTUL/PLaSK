@@ -207,7 +207,7 @@ if preview_available:
             self.canvas.draw()
             return points
 
-    class fake_plask_gui_solver(object):
+    class fake_plask_gui_solver:
         pass
 
     sys.modules['fake_plask_gui_solver'] = fake_plask_gui_solver

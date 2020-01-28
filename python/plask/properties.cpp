@@ -297,7 +297,7 @@ void register_standard_properties()
         u8"   To create the solver that gets temperature from another source and\n"
         u8"   increases it by 60 K, use the following class:\n\n"
 
-        u8"   >>> class Hotter(object):\n"
+        u8"   >>> class Hotter:\n"
         u8"   ...     def __init__(self):\n"
         u8"   ...         self.inTemperature = flow.TemperatureReceiver2D()\n"
         u8"   ...         self.outTemperature = flow.TemperatureProvider2D(\n"

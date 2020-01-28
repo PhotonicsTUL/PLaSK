@@ -44,7 +44,7 @@ except ImportError:
     import webbrowser
     import subprocess
 
-    class Launcher(object):
+    class Launcher:
         name = "Remote Process"
 
         def widget(self, main_window):
@@ -199,7 +199,7 @@ else:
 
     X11_DEFAULT = False if system == 'Windows' else True
 
-    class Account(object):
+    class Account:
         """
         Base class for account data.
         """
@@ -509,7 +509,7 @@ else:
                 pass
 
 
-    class Launcher(object):
+    class Launcher:
         name = "Remote Process"
 
         _passwd_cache = {}

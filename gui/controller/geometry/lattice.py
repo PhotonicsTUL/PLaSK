@@ -148,7 +148,7 @@ class GNLatticeController(GNObjectController):
             self._set_node_property_undoable('segments', segments)
 
 
-class Cursors(object):
+class Cursors:
     # this class is only used as a simple namespace
     HAND, POINTER, SELECT_REGION, MOVE = range(4)
 cursors = Cursors()
@@ -532,7 +532,7 @@ class LatticeEditor(QDialog):
                 a = b
             yield a, bound[0]
 
-    class _Yends(object):
+    class _Yends:
         def __init__(self):
             self.coords = {}
         def add(self, x2, y=None):

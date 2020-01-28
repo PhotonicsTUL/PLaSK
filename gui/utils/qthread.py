@@ -13,7 +13,7 @@
 from ..qt.QtCore import *
 
 
-class BackgroundTask(object):
+class BackgroundTask:
 
     instances = set()
 
@@ -50,7 +50,7 @@ class BackgroundTask(object):
             pass
 
 
-class Lock(object):
+class Lock:
 
     def __init__(self, mutex, blocking=True):
         self._mutex = mutex

@@ -22,7 +22,7 @@ from .. import Info
 from ...utils.compat import next
 
 
-class GNode(object):
+class GNode:
     """Base class for all geometry nodes (objects and other XML nodes like again, copy, etc.)."""
 
     def __init__(self, parent=None, dim=None, children_dim=None, parent_index=None):

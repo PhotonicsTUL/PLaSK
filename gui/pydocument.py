@@ -23,11 +23,11 @@ coding_re_b = re.compile(b"(?:\\s*#[^\\n]*\\n)*\\s*#[^\\n]*coding[=:]\\s*([-\\w.
 loglevel_re_b = re.compile(b"(?:\\s*#[^\\n]*\\n)*\\s*#[^\\n]*log[_\\- ]?level[=:]\\s*([-\\w.]+)")
 
 
-class _Dummy(object):
+class _Dummy:
     pass
 
 
-class PyDocument(object):
+class PyDocument:
 
     SECTION_NAMES = ["script"]
     NAME = "Python script"

@@ -15,7 +15,7 @@ from lxml import etree
 from ...qt.QtCore import *
 
 basestring = str, bytes
-class SchemaBoundaryConditions(object):
+class SchemaBoundaryConditions:
 
     def __init__(self, name, label, group, mesh_type, mesh_attr=None, geometry_attr=None, values=None):
         self.geometry_attr = geometry_attr
@@ -44,7 +44,7 @@ class SchemaBoundaryConditions(object):
 
 class RectangularBC(SchemaBoundaryConditions):
 
-    class PlaceNode(object):
+    class PlaceNode:
         def __init__(self, place=None, value=None):
             self.parent = None
             self.children = []
@@ -80,7 +80,7 @@ class RectangularBC(SchemaBoundaryConditions):
             return result
 
 
-    class PlaceSide(object):
+    class PlaceSide:
 
         required_child_count = 0
         is_editable = True
@@ -119,7 +119,7 @@ class RectangularBC(SchemaBoundaryConditions):
             else:
                 return "<i>Object:</i>&nbsp;" + self.object + "&nbsp;&nbsp;&nbsp;&nbsp;<i>Path:</i>&nbsp;" + self.path
 
-    class PlaceLine(object):
+    class PlaceLine:
 
         required_child_count = 0
         is_editable = True
@@ -157,7 +157,7 @@ class RectangularBC(SchemaBoundaryConditions):
             return "<i>Pos:</i>&nbsp;{0.at}&nbsp;&nbsp;&nbsp;&nbsp;" \
                    "<i>From:</i>&nbsp;{0.start}&nbsp;&nbsp;&nbsp;&nbsp;<i>To:</i>&nbsp;{0.stop}".format(self)
 
-    class SetOp(object):
+    class SetOp:
 
         required_child_count = 2
         is_editable = False

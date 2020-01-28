@@ -13,7 +13,7 @@ import pslab as ps
 from pslab import Geometry as pg
 
 
-class _UniqueId(object):
+class _UniqueId:
     """Generator of unique names"""
 
     def __init__(self, prefix, suffix='', fmt="d", initial=0):

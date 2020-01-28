@@ -26,7 +26,7 @@ import inspect
 from weakref import WeakKeyDictionary
 
 
-class Signal(object):
+class Signal:
 
     def __init__(self):
         self._functions = set()

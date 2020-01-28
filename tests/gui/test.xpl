@@ -493,7 +493,7 @@ print_log('info', "informacja")
 
 print(f, file=sys.stderr)
 
-class A(object):
+class A:
 
     def __init__(self):
         pass
@@ -614,7 +614,7 @@ sys.exit()
 
 GEO.junction
 
-class A(object):
+class A:
     def __init__(self):
         self.a = 1
 

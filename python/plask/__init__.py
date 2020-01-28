@@ -214,7 +214,7 @@ del warnings
 
 ## ##  ## ##
 
-class StepProfile(object):
+class StepProfile:
     """
     Step profile for use in custom providers.
 
@@ -360,6 +360,53 @@ except ImportError:
     has_hdf5 = False
 else:
     has_hdf5 = True
+
+## ##  ## ##
+
+class MaterialField:
+    """
+    Distribution of materials for a given geometry on a mesh.
+
+    This class creates a ‘field’ of :py:class:`material.Material` objects and
+    provides getters to easily obtain its properties as :py:class:`Data` object.
+
+    Args:
+        geometry: Geometry for which the materials a retrieved
+        mesh: Mesh at which the parameters are retrieved
+
+    Example:
+        >>> material_field = MaterialField(your_geometry, your_mesh)
+        >>> plot_field(material_field.thermk(300.), comp=0)
+    """
+
+    def __init__(self, geometry, mesh):
+        self.materials = [geometry.get_material(point) for point in mesh]
+        self.mesh = mesh
+
+    def __getattr__(self, item):
+        return lambda *args, **kwargs: \
+            Data(numpy.array([getattr(m, item)(*args, **kwargs) for m in self.materials]), self.mesh)
+
+
+def get_material_field(self, mesh):
+    """
+    Distribution of materials for a given geometry on a mesh.
+
+    This class creates a ‘field’ of :py:class:`material.Material` objects and
+    provides getters to easily obtain its properties as :py:class:`Data` object.
+
+    Args:
+        geometry: Geometry for which the materials a retrieved
+        mesh: Mesh at which the parameters are retrieved
+
+    Example:
+        >>> material_field = this_geometry.get_material_field(your_mesh)
+        >>> plot_field(material_field.thermk(300.), comp=0)
+    """
+    return MaterialField(self, mesh)
+
+geometry.Geometry.get_material_field = get_material_field
+del get_material_field
 
 ## ##  ## ##
 

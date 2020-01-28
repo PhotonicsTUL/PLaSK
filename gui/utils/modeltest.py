@@ -67,7 +67,7 @@ def QVERIFY(v):
         raise Exception("QVERIFY")
 
 
-class Changing(object):
+class Changing:
     def __init__(self):
         self.parent = None
         self.oldSize = 0

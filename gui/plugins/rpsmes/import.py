@@ -43,7 +43,7 @@ except NameError:
                 return default
 
 
-class RpsmesFile(object):
+class RpsmesFile:
     """
     Generator, which skips empty lines, strips the '\n' character, and splits line by tabs
     """
@@ -62,7 +62,7 @@ class RpsmesFile(object):
         raise exc("{} in '{}' line {}: {}".format(exc.__name__, os.path.basename(self.name), self.line, msg))
 
 
-class UniqueId(object):
+class UniqueId:
     """Generator of unique names"""
 
     def __init__(self, prefix, suffix='', fmt="02d", initial=1):
@@ -79,7 +79,7 @@ class UniqueId(object):
 unique_object_name = UniqueId("object")
 
 
-class Material(object):
+class Material:
     """Materials read from *.dan file"""
 
     def __init__(self, label, kind="metal"):
@@ -121,7 +121,7 @@ class Material(object):
         output.write('  </material>\n')
 
 
-class Region(object):
+class Region:
     """Regions read from *.dan file"""
 
     def __init__(self, axes):

@@ -515,7 +515,7 @@ def parse_font(entry):
     return ','.join(font[:-1])+',0'
 
 
-class Config(object):
+class Config:
     """Configuration wrapper"""
 
     def __init__(self):
@@ -543,7 +543,7 @@ class Config(object):
         for key in self.qsettings.childKeys():
             yield key, self.qsettings.value(key)
 
-    class _Group(object):
+    class _Group:
         def __init__(self, config, group):
             self.config = config
             self.group = group
@@ -611,7 +611,7 @@ def dark_style():
 
 
 
-class ConfigProxy(object):
+class ConfigProxy:
 
     def __init__(self, prefix):
         self.prefix = prefix + '/'

@@ -18,7 +18,7 @@ from . import SectionModel
 from . import info
 
 
-class TableModelEditMethods(object):
+class TableModelEditMethods:
 
     def _exec_command(self, command):
         if hasattr(self, 'undo_stack'):

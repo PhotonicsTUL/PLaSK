@@ -44,7 +44,7 @@ def getSectionXMLFromFile(section_name, filename, original_filename=None):
             if filename in usednames: raise RuntimeError("Error while reading section \"%s\": circular reference was detected." % section_name)
 
 
-class ExternalSource(object):
+class ExternalSource:
     """Store information about data source of section if the source is external (file name)"""
 
     def __init__(self, filename, original_filename=None):

@@ -531,9 +531,9 @@ class MaterialsModel(TableModel):
 
     if plask is not None:
 
-        class _HandleMaterialsModule(object):
+        class _HandleMaterialsModule:
 
-            class Register(object):
+            class Register:
                 def __init__(self, handler, fun):
                     self.handler = handler
                     self.fun = fun
@@ -569,7 +569,7 @@ class MaterialsModel(TableModel):
 
     else:
 
-        class _HandleMaterialsModule(object):
+        class _HandleMaterialsModule:
 
             def __init__(self, names=None):
                 pass

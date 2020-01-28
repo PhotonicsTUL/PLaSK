@@ -40,7 +40,7 @@ def which(program):
     return None
 
 
-class Launcher(object):
+class Launcher:
     name = "Local Console"
 
     def __init__(self):

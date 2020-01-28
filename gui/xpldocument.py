@@ -38,7 +38,7 @@ from .utils.xml import XML_parser, OrderedTagReader
 from .utils.config import CONFIG
 
 
-class XPLDocument(object):
+class XPLDocument:
 
     SECTION_NAMES = ['defines', 'materials', 'geometry', 'grids', 'solvers', 'connects', 'script']
     NAME = "PLaSK structure data"
@@ -213,7 +213,7 @@ class XPLDocument(object):
     #         self.script.model.undo_stack.
 
 
-class FieldParser(object):
+class FieldParser:
     subst = re.compile('\{([^}]*)\}')
 
     def __init__(self, document):

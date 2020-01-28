@@ -428,7 +428,7 @@ class MaterialPlot(QWidget):
                             if mprop:
                                 expr = mprop[0][1]
                                 code = compile(expr, '', 'eval')
-                                class Material(object): pass
+                                class Material: pass
                                 mat = Material()
                                 for k, v in other_elements.items():
                                     setattr(mat, k, v)

@@ -78,7 +78,7 @@ def load_all_libraries(lib):
     update_factories()
 
 
-class simple(object):
+class simple:
     """
     Decorator for custom simple material class.
 
@@ -99,7 +99,7 @@ class simple(object):
         return cls
 
 
-class alloy(object):
+class alloy:
     """
     Decorator for custom alloy material class.
 

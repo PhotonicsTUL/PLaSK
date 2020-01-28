@@ -60,7 +60,7 @@ def at_line_str(element, template=' at line {}'):
     return template.format(element.sourceline) if element.sourceline is not None else ''
 
 
-class AttributeReader(object):
+class AttributeReader:
     """
         Helper class to check if all attributes have been read from XML tag, usage::
         
@@ -134,7 +134,7 @@ class AttributeReader(object):
         return self.element.attrib.__iter__()
 
 
-class OrderedTagReader(object):
+class OrderedTagReader:
     """Helper class to read children of XML element in required order.
        It checks if all children has been read and optionally (by default) ignores comments.
 
@@ -246,7 +246,7 @@ class OrderedTagReader(object):
             res = self.get(*expected_tag_names)
 
 
-class UnorderedTagReader(object):
+class UnorderedTagReader:
     """Helper class to read children of XML element, if the children can be in any order.
        Two or more children with the same name are not allowed.
        It checks if all children has been read.

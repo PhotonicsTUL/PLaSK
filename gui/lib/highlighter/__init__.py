@@ -17,7 +17,7 @@ import re
 from ...qt.QtGui import QSyntaxHighlighter, QColor, QTextCharFormat, QFont, QBrush, QTextFormat
 
 basestring = str, bytes
-class Format(object):
+class Format:
 
     __slots__ = ("name", "tcf")
 
@@ -48,7 +48,7 @@ class Format(object):
         self.tcf = tcf
 
 
-class Context(object):
+class Context:
     # Every context maps to a specific state in QSyntaxHighlighter
 
     __slots__ = 'name', 'groups', 'formats', 'is_multiline', 'search_next'
@@ -72,7 +72,7 @@ class Context(object):
         return p
 
 
-class ContextScanner(object):
+class ContextScanner:
 
     def __init__(self, contexts):
         self.contexts = []
@@ -121,7 +121,7 @@ class ContextScanner(object):
         yield length, length, None, current_state, False
 
 
-class Token(object):
+class Token:
     __slots__ = 'name', 'pattern', 'prefix', 'suffix'
 
     def __init__(self, name, pattern, prefix="", suffix=""):
@@ -133,7 +133,7 @@ class Token(object):
         self.suffix = suffix
 
 
-class TokenScanner(object):
+class TokenScanner:
     __slots__ = 'tokens', 'search'
 
     def __init__(self, tokens):

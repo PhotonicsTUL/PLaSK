@@ -67,7 +67,7 @@ class ReceiverTest(unittest.TestCase):
 
 class PythonProviderTest(unittest.TestCase):
 
-    class CustomSolver(object):
+    class CustomSolver:
         def __init__(self, parent):
             self.parent = parent
             self.outGain = plask.flow.GainProvider2D(lambda *args: self.get_gain(*args))
@@ -96,7 +96,7 @@ class PythonProviderTest(unittest.TestCase):
         self.assertEqual( list(self.solver.outTemperature(msh, 'linear')), [2.5] )
         self.assertEqual( list(self.binary_solver.inTemperature(msh, 'linear')), [2.5] )
 
-    class CustomData(object):
+    class CustomData:
         def __getitem__(self, i):
             return 10. * (i + 1)
 

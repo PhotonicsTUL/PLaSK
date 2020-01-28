@@ -68,7 +68,7 @@ def main(argv=sys.argv):
     if len(args) < 1:
         p.error('no input files given')
 
-    class Sphinx(object):
+    class Sphinx:
         def add_autodocumenter(self, cls):
             autodoc.add_documenter(cls)
         def add_event(self, name):

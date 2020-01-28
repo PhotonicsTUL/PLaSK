@@ -17,7 +17,7 @@ from ..qt.QtGui import *
 from ..utils import sorted_index
 
 
-class MuteChanges(object):
+class MuteChanges:
 
     def __init__(self, controller):
         self.controller = weakref.proxy(controller)
@@ -29,7 +29,7 @@ class MuteChanges(object):
         self.controller._notify_changes = True
 
 
-class Controller(object):
+class Controller:
     """
         Base class for controllers.
         Controllers create editor for the fragment of the XPL document (a section or smaller fragment) and make it

@@ -44,7 +44,7 @@ except ImportError:
     import subprocess
     import platform
 
-    class Launcher(object):
+    class Launcher:
         name = "Remote Batch Job"
 
         def widget(self, main_window):
@@ -159,7 +159,7 @@ else:
         return cls
 
 
-    class Account(object):
+    class Account:
         """
         Base class for account data.
         """
@@ -879,7 +879,7 @@ else:
                                      "{}qstat -Q | cut -d' ' -f1 | tail -n+3")]
 
 
-    class Launcher(object):
+    class Launcher:
         name = "Remote Batch Job"
 
         _passwd_cache = {}

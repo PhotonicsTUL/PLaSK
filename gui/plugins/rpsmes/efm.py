@@ -39,7 +39,7 @@ except NameError:
                 return default
 
 
-class Material(object):
+class Material:
 
     def __new__(cls, materials, name, nr, ar, ng, ag, tnr, tar, lam0):
         obj = object.__new__(cls)
@@ -64,7 +64,7 @@ class Material(object):
         return self.__dict__ == other.__dict__
 
 
-class Layer(object):
+class Layer:
     def __init__(self, d, *mats):
         self.d = d * 1e4
         self.mats = mats

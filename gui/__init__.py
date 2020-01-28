@@ -421,7 +421,7 @@ class MainWindow(QMainWindow):
 
     def update_recent_menu(self):
         self.recent_menu.clear()
-        class Func(object):
+        class Func:
             def __init__(s, f): s.f = f
             def __call__(s): return self.open(s.f)
         for i,f in enumerate(reversed(load_recent_files())):
@@ -1029,7 +1029,7 @@ def load_plugins():
 
 
 
-class Session(object):
+class Session:
     def __init__(self):
         self.opened_files = []
 

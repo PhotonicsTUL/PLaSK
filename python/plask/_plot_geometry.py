@@ -70,7 +70,7 @@ class BBoxIntersection(matplotlib.transforms.BboxBase):
     get_points.__doc__ = matplotlib.transforms.Bbox.get_points.__doc__
 
 
-class TertiaryColors(object):
+class TertiaryColors:
     """
     Interpolate colors of tertiary compounds.
     """
@@ -86,7 +86,7 @@ class TertiaryColors(object):
         return self.color2 + float(x) * self.color12
 
 
-class ColorFromDict(object):
+class ColorFromDict:
     """
     Get color from Python dictionary. The dictionary should map material name
     or regular expression object to RGB tuple with each component in range [0, 1].
@@ -212,7 +212,7 @@ class ColorFromDict(object):
         return colorsys.hsv_to_rgb(h, s, v)
 
 
-class DrawEnviroment(object):
+class DrawEnviroment:
     """
         Drawing configuration.
     """
