@@ -161,8 +161,10 @@ dcomplex RootBrent::find(dcomplex xstart) const
     double f0 = NAN;
 
     xstart.real(axisBrent(xstart, f0, true));
-    xstart.imag(axisBrent(xstart, f0, false));
-    xstart.real(axisBrent(xstart, f0, true));
+    for (int i = 0; i < params.stairs; ++i) {
+        xstart.imag(axisBrent(xstart, f0, false));
+        xstart.real(axisBrent(xstart, f0, true));
+    }
 
     if (f0 > params.tolf_min)
         ComputationError(solver.getId(),

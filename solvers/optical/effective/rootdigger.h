@@ -27,6 +27,7 @@ struct RootDigger {
         double alpha,           ///< Ensures sufficient decrease of determinant in each step
             lambda_min;         ///< Minimum decrease ratio of the step (lambda)
         dcomplex initial_dist;  ///< Distance between initial points
+        int stairs;             ///< Number of staircase iterations in Brent algorithm
 
         Params():
             method(ROOT_BROYDEN),
@@ -37,7 +38,9 @@ struct RootDigger {
             maxiter(500),
             alpha(1e-7),
             lambda_min(1e-8),
-            initial_dist(1e-3) {}
+            initial_dist(1e-3),
+            stairs(3)
+            {}
     };
 
   protected:

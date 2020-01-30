@@ -28,6 +28,7 @@ void RootDigger::readRootDiggerConfig(XMLReader& reader, Params& params) {
         .value("broyden", RootDigger::ROOT_BROYDEN)
         .value("muller", RootDigger::ROOT_MULLER)
         .get(params.method);
+    params.stairs = reader.getAttribute<int>("stairs", params.stairs);
     reader.requireTagEnd();
 }
 

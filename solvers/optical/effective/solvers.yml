@@ -119,6 +119,13 @@
       default: 0.001
       help: >
         Initial range size (Muller method only).
+    - &stairs
+      attr: stairs
+      label: Staircase iterations
+      type: int
+      default: 3
+      help: >
+        Number of staircase iterations (Brent method only).
 
   - tag: stripe-root
     label: Parameters of the Vertical Root-Finding Algorithm
@@ -140,6 +147,7 @@
     - *alpha
     - *lambda
     - *initial-range
+    - *stairs
 
   - tag: mirrors
     label: Mirror Losses
@@ -246,6 +254,7 @@
     - *alpha
     - *lambda
     - *initial-range
+    - *stairs
 
   - tag: stripe-root
     label: Parameters of the Vertical Root-Finding Algorithm
@@ -261,6 +270,7 @@
     - *alpha
     - *lambda
     - *initial-range
+    - *stairs
 
   providers:
   - outLightMagnitude

@@ -23,6 +23,7 @@ using namespace plask::optical::effective;
     u8"   ~optical.effective.RootParams.tolf_max\n" \
     u8"   ~optical.effective.RootParams.tolf_min\n" \
     u8"   ~optical.effective.RootParams.tolx\n\n" \
+    u8"   ~optical.effective.RootParams.stairs\n\n" \
     u8":rtype: RootParams\n"
 
 #define SEARCH_ARGS_DOC \
@@ -512,6 +513,7 @@ BOOST_PYTHON_MODULE(effective)
         .def_readwrite("alpha", &RootDigger::Params::maxstep, u8"Parameter ensuring sufficient decrease of determinant in each step\n(Broyden method only).")
         .def_readwrite("lambd", &RootDigger::Params::maxstep, u8"Minimum decrease ratio of one step (Broyden method only).")
         .def_readwrite("initial_range", &RootDigger::Params::initial_dist, u8"Initial range size (Muller and Brent methods only).")
+        .def_readwrite("stairs", &RootDigger::Params::stairs, u8"Number of staircase iterations (Brent method only).")
     ;
 
     py_enum<RootDigger::Method>()
