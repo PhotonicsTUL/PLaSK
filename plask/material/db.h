@@ -186,11 +186,11 @@ struct PLASK_API MaterialsDB {
          * @return constructed material
          */
         shared_ptr<Material> operator()(double m1_weight) const override {
-            return (*constructor)(mixedComposition(m1_weight), 0.0);
+            return (*constructor)(mixedComposition(m1_weight), NAN);
         }
 
         virtual shared_ptr<Material> singleMaterial() const override {
-            return material1composition == material2composition ? (*constructor)(material1composition, 0.0) : shared_ptr<Material>();
+            return material1composition == material2composition ? (*constructor)(material1composition, NAN) : shared_ptr<Material>();
         }
     };
 
