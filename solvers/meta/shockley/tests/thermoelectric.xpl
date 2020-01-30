@@ -96,6 +96,7 @@
 <script><![CDATA[
 import unittest
 
+
 class GratingTest(unittest.TestCase):
 
     def testComputations(self):

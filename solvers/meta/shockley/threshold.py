@@ -134,6 +134,12 @@ class ThresholdSearch(ThermoElectric):
     def _optargs(self):
         return {}
 
+    def _get_lam(self):
+        if callable(self.get_lam):
+            return self.get_lam()
+        else:
+            return self.get_lam
+
     def get_lam(self):
         raise NotImplemented('get_lam')
 
@@ -275,7 +281,7 @@ class ThresholdSearch(ThermoElectric):
                   Keys are the junction number.
         """
         lam = getattr(self.optical, self._lam0).real
-        if lam is None: lam = self.get_lam().real
+        if lam is None: lam = self._get_lam().real
         return self._get_in_junction(lambda msh: self.gain.outGain(msh, lam, interpolation), axis)
 
     def get_gain_spectrum(self, lams, pos=0., junction=0):
@@ -356,7 +362,7 @@ class ThresholdSearch(ThermoElectric):
             **kwargs: Keyword arguments passed to the plot function.
         """
         lam = getattr(self.optical, self._lam0).real
-        if lam is None: lam = self.get_lam().real
+        if lam is None: lam = self._get_lam().real
         self._plot_in_junction(lambda msh: self.gain.outGain(msh, lam, interpolation),
                                axis, bounds, kwargs, label)
         plask.ylabel(u"Gain [1/cm]")
@@ -450,7 +456,7 @@ class ThresholdSearch(ThermoElectric):
                 if stepsave:
                     plask.print_log('warning', "Fields cannot be saved in each step if the quick method is used")
                 self.compute_thermoelectric()
-                lam = self.get_lam().real
+                lam = self._get_lam().real
                 self._quickscale = np.array([volt, lam])
                 result = scipy.optimize.root(self._quickstep, np.array([1., 1.]),
                                              tol=1e-3 * min(self.vtol/volt, 1e-6),
@@ -506,7 +512,7 @@ class ThresholdSearch(ThermoElectric):
         result.append("Maximum concentration [1/cm3]:    {}"
                       .format(', '.join('{:.3e}'.format(c) for c in max_concentration)))
         lam = getattr(self.optical, self._lam0).real
-        if lam is None: lam = self.get_lam().real
+        if lam is None: lam = self._get_lam().real
         max_gain = []
         for no, mesh in levels:
             value = self.gain.outGain(mesh, lam)
@@ -538,7 +544,7 @@ class ThresholdSearch(ThermoElectric):
             value = self.diffusion.outCarriersConcentration(mesh)
             plask.save_field(value, h5file, group + '/Junction'+no+'CarriersConcentration')
         lam = getattr(self.optical, self._lam0).real
-        if lam is None: lam = self.get_lam().real
+        if lam is None: lam = self._get_lam().real
         for no, mesh in levels:
             value = self.gain.outGain(mesh, lam)
             plask.save_field(value, h5file, group + '/Junction'+no+'Gain')
@@ -847,11 +853,12 @@ class ThresholdSearchCyl(ThresholdSearch):
         By default if browses the wavelength range starting from :attr:`maxlam`,
         decreasing it by :attr:`dlam` until radial mode :attr:`lpn` is found.
 
-        You can override this method to use custom mode approximation.
+        You can override this method or set it to a a fixed value to use custom
+        mode approximation.
 
         Example:
              >>> solver = ThresholdSearchCyl()
-             >>> solver.get_lam = lambda: 980.
+             >>> solver.get_lam = 980.
              >>> solver.compute()
         """
 
@@ -1092,11 +1099,12 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
         By default if browses the wavelength range starting from :attr:`maxlam`,
         decreasing it by :attr:`dlam` until radial mode :attr:`hen` is found.
 
-        You can override this method to use custom mode approximation.
+        You can override this method or set it to a a fixed value to use custom
+        mode approximation.
 
         Example:
              >>> solver = ThresholdSearchBesselCyl()
-             >>> solver.get_lam = lambda: 980.
+             >>> solver.get_lam = 980.
              >>> solver.compute()
         """
 
