@@ -250,7 +250,7 @@
 </geometry>
 
 <grids>
-  <generator method="divide" name="default" type="rectangular2d">
+  <generator name="default" type="rectangular2d" method="divide">
     <postdiv by0="2" by1="1"/>
     <refinements>
       <axis1 object="p-contact" at="50"/>
@@ -262,14 +262,14 @@
   <mesh name="diffusion" type="regular">
     <axis start="0" stop="{mesa}" num="200"></axis>
   </mesh>
-  <generator method="divide" name="optical" type="rectangular2d">
+  <generator name="optical" type="rectangular2d" method="divide">
     <prediv by0="10" by1="3"/>
-    <options aspect="100" gradual="no"/>
+    <options gradual="no" aspect="100"/>
   </generator>
-  <generator method="smooth" name="smoothie" type="rectangular2d">
+  <generator name="smoothie" type="rectangular2d" method="smooth">
     <steps small0="0.005" small1="0.01" large0="0.05" factor="1.2"/>
   </generator>
-  <generator method="divide" name="oned" type="ordered">
+  <generator name="oned" type="ordered" method="divide">
     <refinements>
       <axis0 object="bottom-DBR" at="1"/>
     </refinements>
@@ -278,13 +278,13 @@
     <axis0 start="0" stop="10" num="20"></axis0>
     <axis1 start="0" stop="1" num="10"></axis1>
   </mesh>
-  <generator method="smooth" name="sss" type="rectangular3d">
+  <generator name="sss" type="rectangular3d" method="smooth">
     <steps small0="0.005" small1="0.05" small2="0.05" factor="1.2"/>
   </generator>
-  <generator method="regular" name="reg" type="rectangular2d">
+  <generator name="reg" type="rectangular2d" method="regular">
     <spacing every0="0.2" every1="1"/>
   </generator>
-  <generator method="simple" name="spl" type="rectangular2d">
+  <generator name="spl" type="rectangular2d" method="simple">
     <boundaries split="yes"/>
   </generator>
   <mesh name="fine" type="rectangular3d">
@@ -312,7 +312,7 @@
   </optical>
   <gain name="gain2" solver="FreeCarrierCyl" lib="freecarrier">
     <geometry ref="GeoO"/>
-    <config T0="300" matrix-elem="10"/>
+    <config matrix-elem="10" T0="300"/>
   </gain>
   <electrical name="ELECTRICAL" solver="ShockleyCyl" lib="shockley">
     <geometry ref="GeoE"/>
@@ -339,9 +339,9 @@
   <optical name="OPTICAL" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="GeoO"/>
     <mesh ref="optical"/>
-    <mode emission="bottom" lam0="980"/>
+    <mode lam0="980" emission="bottom"/>
   </optical>
-  <filter for="Temperature" geometry="GeoT" name="filtr"/>
+  <filter name="filtr" for="Temperature" geometry="GeoT"/>
   <optical name="efm" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="GeoO"/>
   </optical>
@@ -355,8 +355,8 @@
     </voltage>
   </electrical>
   <meta name="meta2" solver="ThermoElectric2D" lib="shockley">
-    <geometry electrical="roads" thermal="geo2d-copy"/>
-    <mesh electrical="default" thermal="default"/>
+    <geometry thermal="geo2d-copy" electrical="roads"/>
+    <mesh thermal="default" electrical="default"/>
     <voltage>
       <condition value="1.">
         <place side="top" object="small" path="sr"/>
@@ -367,13 +367,13 @@
     </voltage>
   </meta>
   <meta name="bessel" solver="ThresholdSearchBesselCyl" lib="shockley">
-    <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
-    <mesh diffusion="diffusion" electrical="default" thermal="default"/>
+    <geometry thermal="GeoT" electrical="GeoE" optical="GeoO"/>
+    <mesh thermal="default" electrical="default" diffusion="diffusion"/>
     <root bcond="0"/>
   </meta>
   <meta name="threshold" solver="ThresholdSearchBesselCyl" lib="shockley">
-    <geometry electrical="GeoE" optical="GeoO" thermal="GeoT"/>
-    <mesh electrical="default" thermal="default"/>
+    <geometry thermal="GeoT" electrical="GeoE" optical="GeoO"/>
+    <mesh thermal="default" electrical="default"/>
     <root bcond="1"/>
     <voltage>
       <condition value="0">
@@ -397,23 +397,23 @@
     <mesh ref="fine"/>
   </thermal>
   <meta name="thf2d" solver="ThresholdSearchFourier2D" lib="shockley">
-    <geometry electrical="geo2d" optical="geo2d-copy" thermal="geo2d"/>
-    <mesh diffusion="diffusion" electrical="default" thermal="default"/>
+    <geometry thermal="geo2d" electrical="geo2d" optical="geo2d-copy"/>
+    <mesh thermal="default" electrical="default" diffusion="diffusion"/>
     <optical lam="980"/>
-    <root bcond="0" vmax="2" vmin="0"/>
+    <root bcond="0" vmin="0" vmax="2"/>
   </meta>
 </solvers>
 
 <connects>
-  <connect in="ELECTRICAL.inTemperature" out="THERMAL.outTemperature"/>
-  <connect in="THERMAL.inHeat" out="ELECTRICAL.outHeat"/>
-  <connect in="DIFFUSION.inTemperature" out="THERMAL.outTemperature"/>
-  <connect in="DIFFUSION.inCurrentDensity" out="ELECTRICAL.outCurrentDensity"/>
-  <connect in="GAIN.inTemperature" out="THERMAL.outTemperature"/>
-  <connect in="GAIN.inCarriersConcentration" out="DIFFUSION.outCarriersConcentration"/>
-  <connect in="OPTICAL.inTemperature" out="THERMAL.outTemperature"/>
-  <connect in="OPTICAL.inGain" out="GAIN.outGain"/>
-  <connect in="DIFFUSION.inGain" out="GAIN.outGain"/>
+  <connect out="THERMAL.outTemperature" in="ELECTRICAL.inTemperature"/>
+  <connect out="ELECTRICAL.outHeat" in="THERMAL.inHeat"/>
+  <connect out="THERMAL.outTemperature" in="DIFFUSION.inTemperature"/>
+  <connect out="ELECTRICAL.outCurrentDensity" in="DIFFUSION.inCurrentDensity"/>
+  <connect out="THERMAL.outTemperature" in="GAIN.inTemperature"/>
+  <connect out="DIFFUSION.outCarriersConcentration" in="GAIN.inCarriersConcentration"/>
+  <connect out="THERMAL.outTemperature" in="OPTICAL.inTemperature"/>
+  <connect out="GAIN.outGain" in="OPTICAL.inGain"/>
+  <connect out="GAIN.outGain" in="DIFFUSION.inGain"/>
 </connects>
 
 <script><![CDATA[

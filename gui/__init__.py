@@ -815,6 +815,11 @@ class MainWindow(QMainWindow):
         note = '<br/>\n<br/>\n<span style="color: #888888;">Details have been copied to ' \
                'your clipboard.</span>'
 
+        if pysparkle is not None:
+            from pysparkle.backend import appcast
+            details += "<br/>\n<br/>\nOperating System: {}<br/>\n{}" \
+                .format(appcast.OS.title(), ", ".join(appcast.DISTS))
+
         msgbox = self.AboutWindow(details + note, self)
 
         details = re.sub('<[^>]+>', '', details).replace('&lt;', '<').replace('&gt;', '>')

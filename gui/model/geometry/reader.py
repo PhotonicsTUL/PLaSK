@@ -29,6 +29,9 @@ class GNAligner:
         self.position = position
         self.value = value
 
+    def __eq__(self, other):
+        return self.position == other.position and self.value == other.value
+
     @staticmethod
     def names(dims, axis_names_in_dims, axis_nr):
         """
