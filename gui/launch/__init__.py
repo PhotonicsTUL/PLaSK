@@ -9,28 +9,87 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-
+import os
 import shlex
+import json
+
 from ..qt.QtGui import *
 from ..qt.QtWidgets import *
 from ..qt.QtCore import *
-from ..utils.config import CONFIG
+from ..utils.widgets import ComboBox
+from ..utils.config import CONFIG, parse_highlight
+from ..utils.qsignals import BlockQtSignals
+from ..utils.system import hide_file
+from ..lib.highlighter import Format
 
 from .local import Launcher as LocalLauncher
 from .console import Launcher as ConsoleLauncher
 
+# Disable yaml warning
+try:
+    yaml.warnings({'YAMLLoadWarning': False})
+except (TypeError, NameError, AttributeError):
+    pass
 
-_launch_args = ''
-_defs_visible = False
+
+LAUNCH_CONFIG = {}
+
+_DEFS_VISIBLE = False
 
 LAUNCHERS = [LocalLauncher(), ConsoleLauncher()]
 
-current_launcher = None
+current_launcher = 0
+
+
+class DefinesSyntaxHighlighter(QSyntaxHighlighter):
+
+    def __init__(self, parent, defs):
+        super().__init__(parent)
+
+        self.defs = defs
+
+        self.formats = {}
+
+        for n, f in (
+                ('inactive', parse_highlight(CONFIG['syntax/python_comment'])),
+                ('key', parse_highlight(CONFIG['syntax/python_define'])),
+                ('eq', parse_highlight(CONFIG['syntax/python_special'])),
+            ):
+            if isinstance(f, str):
+                f = (f,)  # only color specified
+            if isinstance(f, (tuple,list)) and len(f) > 0:
+                f = Format(qFuzzyIsNull(), f[0])
+            elif isinstance(f, dict):
+                f = Format(n, f.get('color'))
+            else:
+                assert isinstance(f, Format), "Format expected, {!r} found".format(f)
+            f.tcf.setFontFamily(parent.defaultFont().family())
+            self.formats[f.name] = f.tcf
+        self.formats['key'].setFontWeight(QFont.Bold)
+        self.formats['bad key'] = Format('bad key', self.formats['key'].foreground().color(),
+                                         bold=True, strikeout=True).tcf
+        self.formats['bad key'].setFontFamily(parent.defaultFont().family())
+
+    def highlightBlock(self, text):
+        items = text.split('=', 1)
+        if len(items) < 2:
+            self.setFormat(0, len(text), self.formats['inactive'])
+            return
+        key, value = items
+        if not value:
+            self.setFormat(0, len(text), self.formats['inactive'])
+            return
+        kl = len(key)
+        if key in self.defs:
+            self.setFormat(0, kl, self.formats['key'])
+        else:
+            self.setFormat(0, kl, self.formats['bad key'])
+        self.setFormat(kl, 1, self.formats['eq'])
 
 
 class LaunchDialog(QDialog):
 
-    def __init__(self, window, parent=None):
+    def __init__(self, window, launch_config, parent=None):
         super(LaunchDialog, self).__init__(parent)
         self.setWindowTitle("Launch Computations")
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowMaximizeButtonHint)
@@ -46,7 +105,7 @@ class LaunchDialog(QDialog):
         if window.document.defines is not None:
             self.defines_button = QToolButton()
             self.defines_button.setCheckable(True)
-            self.defines_button.setChecked(_defs_visible)
+            self.defines_button.setChecked(_DEFS_VISIBLE)
             self.defines_button.toggled.connect(self.show_defines)
             self.defines_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
             self.defines_button.setIconSize(QSize(8, 8))
@@ -55,18 +114,34 @@ class LaunchDialog(QDialog):
                 margin-left: -2px;
                 padding-left: 0px;
             """)
-            self.defines_button.setArrowType(Qt.DownArrow if _defs_visible else Qt.RightArrow)
+            self.defines_button.setArrowType(Qt.DownArrow if _DEFS_VISIBLE else Qt.RightArrow)
             self.defines_button.setText("Temporary de&fines:")
             self.layout.addWidget(self.defines_button)
 
             self.defines = QPlainTextEdit()
             self.layout.addWidget(self.defines)
-            self.defines.setVisible(_defs_visible)
+            self.defines.setVisible(_DEFS_VISIBLE)
+            defines_text = '\n'.join(e.name + '=' for e in window.document.defines.model.entries)
+            self.defines.setPlainText(defines_text)
+            self.highlighter = DefinesSyntaxHighlighter(self.defines.document(),
+                                                        [e.name for e in window.document.defines.model.entries])
+            self.highlighter.rehighlight()
+            self.recent_defines = launch_config.get('defines', []).copy()
+            self.recent_defines.insert(0, defines_text)
+            self.recent_defines_combo = QComboBox()
+            self.recent_defines_combo.addItems(
+                ['; '.join('{}={}'.format(it[0], it[1]) for it in
+                           ([i.strip() for i in ln.split('=', 1)] for ln in defs.splitlines())
+                           if len(it) == 2 and it[1]
+                          ) for defs in self.recent_defines])
+            self.layout.addWidget(self.recent_defines_combo)
+            self.recent_defines_combo.setVisible(_DEFS_VISIBLE)
+            self.recent_defines_combo.currentIndexChanged.connect(self.recent_defines_selected)
+            self.defines.textChanged.connect(self.defines_edited)
 
-            self.defines.setPlainText('\n'.join(e.name+'=' for e in window.document.defines.model.entries))
-
-        self.args = QLineEdit()
-        self.args.setText(_launch_args)
+        self.args = ComboBox()
+        self.args.setEditable(True)
+        self.args.addItems(launch_config.get('args', ['']))
         args_label = QLabel("Command line &arguments:", self)
         args_label.setBuddy(self.args)
         self.layout.addWidget(args_label)
@@ -95,11 +170,21 @@ class LaunchDialog(QDialog):
         self.setFixedHeight(self.sizeHint().height())
         self.adjustSize()
 
+    def recent_defines_selected(self, i):
+        with BlockQtSignals(self.defines):
+            self.defines.setPlainText(self.recent_defines[i])
+
+    def defines_edited(self):
+        self.recent_defines[0] = self.defines.toPlainText()
+        with BlockQtSignals(self.recent_defines_combo):
+            self.recent_defines_combo.setCurrentIndex(0)
+
     def show_defines(self, visible):
         self.defines_button.setArrowType(Qt.DownArrow if visible else Qt.RightArrow)
-        global _defs_visible
-        _defs_visible = visible
+        global _DEFS_VISIBLE
+        _DEFS_VISIBLE = visible
         self.defines.setVisible(visible)
+        self.recent_defines_combo.setVisible(visible)
         self.setFixedHeight(self.sizeHint().height())
         self.adjustSize()
 
@@ -112,16 +197,57 @@ class LaunchDialog(QDialog):
         self.adjustSize()
 
 
+def _get_config_filename(filename):
+    dirname, basename = os.path.split(filename)
+    return os.path.join(dirname, '.'+basename+'.json')
+
+def load_launch_config(filename):
+    with open(_get_config_filename(filename)) as config_file:
+        return json.load(config_file).get('launch', {})
+
+def save_launch_config(filename):
+    try:
+        config = LAUNCH_CONFIG[filename]
+        filename = _get_config_filename(filename)
+        if config:
+            with open(filename, 'w') as config_file:
+                json.dump({'launch': config}, config_file, indent=1)
+            hide_file(filename)
+    except:
+        from .. import _DEBUG
+        if _DEBUG:
+            import traceback
+            traceback.print_exc()
+
+
 def launch_plask(window):
-    dialog = LaunchDialog(window)
-    global _launch_args
+    try:
+        launch_config = load_launch_config(window.document.filename)
+    except:
+        launch_config = LAUNCH_CONFIG.setdefault(window.document.filename, {})
+    else:
+        if not isinstance(launch_config, dict): launch_config = {}
+        LAUNCH_CONFIG[window.document.filename] = launch_config
+    dialog = LaunchDialog(window, launch_config)
     result = dialog.exec_()
     launcher = LAUNCHERS[current_launcher]
-    _launch_args = dialog.args.text()
+    launch_args = dialog.args.currentText().strip()
     if result == QDialog.Accepted:
+        try:
+            launch_config['args'].remove(launch_args)
+        except KeyError:
+            launch_config['args'] = []
+        except ValueError:
+            pass
+        launch_config['args'].insert(0, launch_args)
+        if launch_config['args'] == ['']:
+            del launch_config['args']
+        else:
+            launch_config['args'] = launch_config['args'][:10]
         launch_defs = []
         if window.document.defines is not None:
-            for line in dialog.defines.toPlainText().split('\n'):
+            defines = dialog.defines.toPlainText()
+            for line in defines.split('\n'):
                 if not line.strip(): continue
                 if '=' not in line or line.startswith('-'):
                     msgbox = QMessageBox()
@@ -136,9 +262,18 @@ def launch_plask(window):
                 value = items[1].strip()
                 if value:
                     launch_defs.append('-D{}={}'.format(name, value))
-        launcher.launch(window, shlex.split(_launch_args), launch_defs)
+            recent_defs = dialog.recent_defines[1:]
+            try:
+                recent_defs.remove(defines)
+            except ValueError:
+                pass
+            if launch_defs:
+                recent_defs.insert(0, defines)
+            launch_config['defines'] = recent_defs[:10]
+        launcher.launch(window, shlex.split(launch_args), launch_defs)
     for launch in LAUNCHERS:
         try:
-            launch.exit(launch is launcher)
+            launch.exit(window, launch is launcher)
         except AttributeError:
             pass
+    save_launch_config(window.document.filename)

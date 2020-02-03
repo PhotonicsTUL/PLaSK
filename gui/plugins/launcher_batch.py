@@ -27,7 +27,7 @@ import json
 from gui.qt.QtCore import Qt, QSize
 from gui.qt.QtGui import *
 from gui.qt.QtWidgets import *
-from gui.launch import LAUNCHERS
+from gui.launch import LAUNCHERS, LAUNCH_CONFIG
 from gui.utils.widgets import MultiLineEdit
 from gui.utils.qsignals import BlockQtSignals
 
@@ -483,12 +483,10 @@ else:
         def update_widget(self, params):
             return
 
-        def save_params(self):
-            key = 'launcher_batch/accounts/{}/params'.format(self.name)
-            CONFIG[key] = json.dumps(self.params)
-            CONFIG[key] = json.dumps(self.params)
-            CONFIG[key] = json.dumps(self.params)
-            CONFIG.sync()
+        def save_params(self, filename):
+            if filename in self.params:
+                config = LAUNCH_CONFIG[filename].setdefault('batch', {})
+                config[self.name] = self.params[filename]
 
         def batch(self, name, params, path):
             return ''
@@ -576,9 +574,9 @@ else:
                 self._widget = QWidget()
             return self._widget
 
-        def exit(self):
+        def exit(self, filename):
             self._widget = None
-            self.save_params()
+            self.save_params(filename)
 
         @classmethod
         def config_widgets(cls, self, dialog, parent=None):
@@ -1129,9 +1127,10 @@ else:
             widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             return widget
 
-        def exit(self, visible):
+        def exit(self, window, visible):
+            filename = window.document.filename
             for account in self.accounts:
-                account.exit()
+                account.exit(filename)
 
         def get_params(self):
             params = {'workdir': self.workdir.text(),
@@ -1149,7 +1148,9 @@ else:
         def update_params(self):
             if not self.accounts or self.current_account is None:
                 return
-            params = self.accounts[self.current_account].params.get(self.filename, {})
+            account = self.accounts[self.current_account]
+            params = account.params.get(self.filename, {})
+            params.update(LAUNCH_CONFIG[self.filename].get('batch', {}).get(account.name, {}))
             with BlockQtSignals(self._widget):
                 self.workdir.setText(params.get('workdir', ''))
                 self.wall_time.setText(params.get('wall', ''))

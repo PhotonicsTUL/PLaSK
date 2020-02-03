@@ -618,7 +618,7 @@ else:
             self._widget = widget
             return widget
 
-        def exit(self, visible):
+        def exit(self, window, visible):
             if self.accounts and self.current_account is not None:
                 self.accounts[self.current_account].dirs[self.filename] = self.workdir.text()
             for account in self.accounts:

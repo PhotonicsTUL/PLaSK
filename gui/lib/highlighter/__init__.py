@@ -23,7 +23,7 @@ class Format:
 
     NAME = QTextFormat.UserProperty + 1
 
-    def __init__(self, name, color=None, bold=None, italic=None, underline=None, base_format=None):
+    def __init__(self, name, color=None, bold=None, italic=None, underline=None, strikeout=None, base_format=None):
         self.name = name
         tcf = QTextCharFormat()
         if base_format is not None:
@@ -44,6 +44,8 @@ class Format:
             tcf.setFontItalic(italic)
         if underline is not None:
             tcf.setFontUnderline(underline)
+        if strikeout is not None:
+            tcf.setFontStrikeOut(strikeout)
         tcf.setProperty(Format.NAME, name)
         self.tcf = tcf
 
@@ -183,7 +185,7 @@ class SyntaxHighlighter(QSyntaxHighlighter):
             dictionary of token scanners for each context
             The key is the name of the context, the value is a TokenScanner instance
             The default scanner has the key None
-        :formats:
+        :param formats:
             list of tuples consisting of a name and a format definition
             The name is the name of a context or token
 
@@ -196,15 +198,15 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         self.formats = {}
         for f in formats:
             if isinstance(f, tuple):
-                fname, f = f
+                n, f = f
             else:
                 assert isinstance(f, Format)
             if isinstance(f, basestring):
                 f = (f,)  # only color specified
             if isinstance(f, (tuple,list)):
-                f = Format(*((fname,) + f))
+                f = Format(*((n,) + f))
             elif isinstance(f, dict):
-                f = Format(**dict(name=fname, **f))
+                f = Format(**dict(name=n, **f))
             else:
                 assert isinstance(f, Format), "Format expected, {!r} found".format(f)
             f.tcf.setFontFamily(parent.defaultFont().family())

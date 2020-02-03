@@ -417,7 +417,7 @@
 </connects>
 
 <script><![CDATA[
-from __future__ import print_function
+print(sys.argv)
 
 print(material.get('InGa(0.8)As_QW:Si=1e19'))
 
