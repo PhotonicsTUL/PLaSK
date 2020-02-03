@@ -117,7 +117,7 @@ class Material(unittest.TestCase):
     def testDefaultMaterials(self):
         self.assertIn( "GaN", material.db )
         self.assertEqual( str(material.AlGaN(Al=0.2)), "Al(0.2)GaN" )
-        self.assertRegexpMatches( str(material.AlGaN(Ga=0.8, dopant="Si", doping=1e17)), r"Al\(0\.2\)GaN:Si=1e\+0?17" )
+        self.assertRegex( str(material.AlGaN(Ga=0.8, dopant="Si", doping=1e17)), r"Al\(0\.2\)GaN:Si=1e\+0?17" )
 
     def testExistingMaterial(self):
         '''Test if existing materials works correctly'''
@@ -162,7 +162,28 @@ class Material(unittest.TestCase):
         m2 = material.get('Al(0.2)GaAs:Si=1e18')
         self.assertEqual( m1.cond(), m2.cond() )
 
+    def testAlloyMaterialWithBaseAndDoping(self):
+        @material.simple('AlGaAs:Si=1e18')
+        class AlGaAs_1_Si(material.Material):
+            name="AlGaAs_1:Si"
+            def __init__(self):
+                super(AlGaAs_1_Si, self).__init__(Al=0.2, doping=1e5)
 
+        m1 = AlGaAs_1_Si()
+        m2 = material.get('Al(0.2)GaAs:Si=1e18')
+        self.assertEqual( m1.doping, 1e5 )
+        self.assertEqual( m1.cond(), m2.cond() )
+
+    def testAlloyMaterialWithUndopedBaseAndDoping(self):
+        @material.alloy('AlGaAs')
+        class AlGaAs_2_Si(material.Material):
+            name="AlGaAs_2:Si"
+            def __init__(self):
+                super(AlGaAs_2_Si, self).__init__(Al=0.2, doping=1e18)
+
+        m = AlGaAs_2_Si()
+        self.assertEqual( m.doping, 1e18 )
+ 
     def testPassingMaterialsByName(self):
         mat = plask.geometry.Rectangle(2,2, "Al(0.2)GaAs:Dp=3.0").get_material(0,0)
         self.assertEqual( mat.name, "AlGaAs:Dp" )

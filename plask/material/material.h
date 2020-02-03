@@ -136,7 +136,7 @@ struct PLASK_API Material {
         double doping;
 
         /// Construct empty parameters info.
-        Parameters(): doping(NAN) {}
+        Parameters(): doping(0.) {}
 
         /**
          * Construct parameters filled with information parsed from format name[_label][:dopant].
@@ -164,7 +164,7 @@ struct PLASK_API Material {
          * Check if has full dopant information (with ammount).
          * @return true if has full dopant information
          */
-        bool hasDoping() const { return !isnan(doping); }
+        bool hasDoping() const { return !isnan(doping) && hasDopantName(); }
 
         /**
          * Parse material in format name[_label][:dopant].
@@ -191,7 +191,7 @@ struct PLASK_API Material {
          * Clear doping parameters.
          */
         void clearDoping() {
-            setDoping("", NAN);
+            setDoping("", 0.);
         }
 
         /**

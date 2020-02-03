@@ -252,32 +252,32 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
             if (funcname == "<module>" && (traceback == original_traceback || (second_is_script && traceback == original_traceback->tb_next)))
                 funcname = "<script>";
             if (traceback->tb_next)
-                plask::writelog(plask::LOG_ERROR_DETAIL, u8"{0}, line {1}, function '{2}' calling:", filename, lineno, funcname);
+                plask::writelog(plask::LOG_ERROR_DETAIL, u8"{0} line {1}, function '{2}' calling:", filename, lineno, funcname);
             else {
                 if ((PyObject*)type == PyExc_IndentationError || (PyObject*)type == PyExc_SyntaxError) {
-                    plask::writelog(plask::LOG_ERROR_DETAIL, u8"{0}, line {1}, function '{2}' calling:", filename, lineno, funcname);
+                    plask::writelog(plask::LOG_ERROR_DETAIL, u8"{0} line {1}, function '{2}' calling:", filename, lineno, funcname);
                     std::string form = message;
-                    std::size_t f = form.find(" (") + 2, l = form.rfind(", line ") + 7;
+                    std::size_t f = form.find(" (") + 2, l = form.rfind(" line ") + 7;
                     std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
                     try {
                         int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1)) + scriptline;
-                        printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}, line {1}: {2}: {3}", file, lineno, error_name, msg);
+                        printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0} line {1}: {2}: {3}", file, lineno, error_name, msg);
                     } catch (boost::bad_lexical_cast&) {
                         printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}: {1}", error_name, message);
                     }
                 } else
-                    printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}, line {1}, function '{2}': {3}: {4}", filename, lineno, funcname, error_name, message);
+                    printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0} line {1}, function '{2}': {3}: {4}", filename, lineno, funcname, error_name, message);
             }
             traceback = traceback->tb_next;
         }
     } else {
         if ((PyObject*)type == PyExc_IndentationError || (PyObject*)type == PyExc_SyntaxError) {
                 std::string form = message;
-                std::size_t f = form.find(" (") + 2, l = form.rfind(", line ") + 7;
+                std::size_t f = form.find(" (") + 2, l = form.rfind(" line ") + 7;
                 std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
                 try {
                     int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
-                    printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}, line {1}: {2}: {3}", file, lineno, error_name, msg);
+                    printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0} line {1}: {2}: {3}", file, lineno, error_name, msg);
                 } catch (boost::bad_lexical_cast&) {
                     printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}: {1}", error_name, message);
                 }

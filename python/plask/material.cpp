@@ -417,7 +417,7 @@ struct PythonMaterialConstructor: public MaterialsDB::MaterialConstructor
         // Composition
         for (auto c : composition) kwargs[c.first] = c.second;
         // Doping information
-        if (!isnan(doping)) kwargs["doping"] = doping;
+        if (!isnan(doping) && (doping != 0 || materialName.find(':') != std::string::npos)) kwargs["doping"] = doping;
         py::object omaterial = material_class(*args, **kwargs);;
         return py::extract<shared_ptr<Material>>(omaterial);
     }
@@ -523,7 +523,7 @@ void registerAlloyMaterial(const std::string& name, py::object material_class, c
     setMaterialInfo(name, material_class.ptr());
 }
 
-//parse material parameters from full_name and extra parameters in kwargs
+// Parse material parameters from full_name and extra parameters in kwargs
 static Material::Parameters kwargs2MaterialComposition(const std::string& full_name, const py::dict& kwargs)
 {
     Material::Parameters result(full_name, true);
@@ -532,17 +532,17 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
     py::object cobj;
     try {
         cobj = kwargs["doping"];
-        if (result.hasDoping()) throw ValueError(u8"doping concentrations specified in both full name and argument");
+        if (result.hasDoping()) throw ValueError(u8"Doping concentrations specified in both full name and argument");
         had_doping_key = true;
     } catch (py::error_already_set&) {
         PyErr_Clear();
     }
     if (had_doping_key) {
-        if (!result.hasDopantName()) throw ValueError(u8"doping concentration given for undoped material");
+        if (!result.hasDopantName()) throw ValueError(u8"Doping concentration given for undoped material");
         result.doping = py::extract<double>(cobj);
     } else {
         if (result.hasDopantName() && !result.hasDoping())
-            throw ValueError(u8"dopant specified, but doping concentrations not given correctly");
+            throw ValueError(u8"Dopant specified, but doping concentrations not given correctly");
     }
 
     py::list keys = kwargs.keys();

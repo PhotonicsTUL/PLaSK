@@ -168,7 +168,7 @@ shared_ptr<Material> MaterialsDB::ProxyMaterialConstructor::operator()(const Mat
     if (material) {
         return material;
     }
-    if (isnan(dop) && !isnan(doping)) dop = doping;
+    if (!isnan(doping)) dop = doping;
     if (composition.empty()) {
         return (*constructor)(comp, dop);
     } else {
