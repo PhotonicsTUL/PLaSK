@@ -25,12 +25,6 @@ from ..lib.highlighter import Format
 from .local import Launcher as LocalLauncher
 from .console import Launcher as ConsoleLauncher
 
-# Disable yaml warning
-try:
-    yaml.warnings({'YAMLLoadWarning': False})
-except (TypeError, NameError, AttributeError):
-    pass
-
 
 LAUNCH_CONFIG = {}
 
@@ -87,6 +81,23 @@ class DefinesSyntaxHighlighter(QSyntaxHighlighter):
         self.setFormat(kl, 1, self.formats['eq'])
 
 
+class _CombolItemView(QListView):
+
+    def __init__(self, parent=None, source_list=None, offset=0):
+        super().__init__(parent)
+        self.source_list = source_list
+        self.offset = offset
+
+    def keyReleaseEvent(self, event):
+        if event.key() == Qt.Key_Delete:
+            index = self.currentIndex()
+            if index.isValid() and index.row() >= self.offset:
+                self.model().removeRow(index.row())
+                if self.source_list is not None:
+                    del self.source_list[index.row()-self.offset]
+        super().keyReleaseEvent(event)
+
+
 class LaunchDialog(QDialog):
 
     def __init__(self, window, launch_config, parent=None):
@@ -121,15 +132,15 @@ class LaunchDialog(QDialog):
             self.defines = QPlainTextEdit()
             self.layout.addWidget(self.defines)
             self.defines.setVisible(_DEFS_VISIBLE)
-            defines_text = '\n'.join(e.name + '=' for e in window.document.defines.model.entries)
-            self.defines.setPlainText(defines_text)
+            self.edited_defines = '\n'.join(e.name + '=' for e in window.document.defines.model.entries)
+            self.defines.setPlainText(self.edited_defines)
             self.highlighter = DefinesSyntaxHighlighter(self.defines.document(),
                                                         [e.name for e in window.document.defines.model.entries])
             self.highlighter.rehighlight()
-            self.recent_defines = launch_config.get('defines', []).copy()
-            self.recent_defines.insert(0, defines_text)
+            self.recent_defines = launch_config.setdefault('defines', [])
             self.recent_defines_combo = QComboBox()
-            self.recent_defines_combo.addItems(
+            self.recent_defines_combo.setView(_CombolItemView(self.recent_defines_combo, self.recent_defines, 1))
+            self.recent_defines_combo.addItems([''] +
                 ['; '.join('{}={}'.format(it[0], it[1]) for it in
                            ([i.strip() for i in ln.split('=', 1)] for ln in defs.splitlines())
                            if len(it) == 2 and it[1]
@@ -139,13 +150,15 @@ class LaunchDialog(QDialog):
             self.recent_defines_combo.currentIndexChanged.connect(self.recent_defines_selected)
             self.defines.textChanged.connect(self.defines_edited)
 
-        self.args = ComboBox()
-        self.args.setEditable(True)
-        self.args.addItems(launch_config.get('args', ['']))
+        self.args_edit = ComboBox()
+        args = launch_config.get('args', [''])
+        self.args_edit.setView(_CombolItemView(self.args_edit, args))
+        self.args_edit.setEditable(True)
+        self.args_edit.addItems(args)
         args_label = QLabel("Command line &arguments:", self)
-        args_label.setBuddy(self.args)
+        args_label.setBuddy(self.args_edit)
         self.layout.addWidget(args_label)
-        self.layout.addWidget(self.args)
+        self.layout.addWidget(self.args_edit)
 
         self.launcher_widgets = [l.widget(window) for l in LAUNCHERS]
         global current_launcher
@@ -172,11 +185,15 @@ class LaunchDialog(QDialog):
 
     def recent_defines_selected(self, i):
         with BlockQtSignals(self.defines):
-            self.defines.setPlainText(self.recent_defines[i])
+            if i == 0:
+                self.defines.setPlainText(self.edited_defines)
+            else:
+                self.defines.setPlainText(self.recent_defines[i-1])
 
     def defines_edited(self):
-        self.recent_defines[0] = self.defines.toPlainText()
+        self.edited_defines = self.defines.toPlainText()
         with BlockQtSignals(self.recent_defines_combo):
+            self.recent_defines_combo.setItemText(0, "(custom)")
             self.recent_defines_combo.setCurrentIndex(0)
 
     def show_defines(self, visible):
@@ -195,7 +212,6 @@ class LaunchDialog(QDialog):
         self.launcher_widgets[current_launcher].setVisible(True)
         self.setFixedHeight(self.sizeHint().height())
         self.adjustSize()
-
 
 def _get_config_filename(filename):
     dirname, basename = os.path.split(filename)
@@ -231,7 +247,7 @@ def launch_plask(window):
     dialog = LaunchDialog(window, launch_config)
     result = dialog.exec_()
     launcher = LAUNCHERS[current_launcher]
-    launch_args = dialog.args.currentText().strip()
+    launch_args = dialog.args_edit.currentText().strip()
     if result == QDialog.Accepted:
         try:
             launch_config['args'].remove(launch_args)
@@ -242,8 +258,6 @@ def launch_plask(window):
         launch_config['args'].insert(0, launch_args)
         if launch_config['args'] == ['']:
             del launch_config['args']
-        else:
-            launch_config['args'] = launch_config['args'][:10]
         launch_defs = []
         if window.document.defines is not None:
             defines = dialog.defines.toPlainText()
@@ -262,15 +276,15 @@ def launch_plask(window):
                 value = items[1].strip()
                 if value:
                     launch_defs.append('-D{}={}'.format(name, value))
-            recent_defs = dialog.recent_defines[1:]
             try:
-                recent_defs.remove(defines)
+                launch_config['defines'].remove(defines)
             except ValueError:
                 pass
             if launch_defs:
-                recent_defs.insert(0, defines)
-            launch_config['defines'] = recent_defs[:10]
+                launch_config['defines'].insert(0, defines)
         launcher.launch(window, shlex.split(launch_args), launch_defs)
+    if launch_config.get('defines') == []:  # None != []
+        del launch_config['defines']
     for launch in LAUNCHERS:
         try:
             launch.exit(window, launch is launcher)

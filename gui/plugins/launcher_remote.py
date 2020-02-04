@@ -25,7 +25,7 @@ import json
 from gui.qt.QtCore import *
 from gui.qt.QtGui import *
 from gui.qt.QtWidgets import *
-from gui.launch import LAUNCHERS
+from gui.launch import LAUNCHERS, LAUNCH_CONFIG
 from gui.launch.dock import OutputWindow
 from gui import _DEBUG
 
@@ -235,10 +235,6 @@ else:
 
         def save(self):
             return dict(userhost=self.userhost, port=self.port, program=self.program, x11=int(self.x11))
-
-        def save_dirs(self):
-            key = 'launcher_remote/accounts/{}/dirs'.format(self.name)
-            CONFIG[key] = json.dumps(self.dirs)
 
         class EditDialog(QDialog):
             def __init__(self, account=None, name=None, parent=None):
@@ -516,6 +512,7 @@ else:
 
         def __init__(self):
             self.current_account = None
+            self.filename = None
             self.load_accounts()
 
         def widget(self, main_window, parent=None):
@@ -610,6 +607,7 @@ else:
             widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
             if self.accounts:
+                self.load_workdirs()
                 try:
                     self.workdir.setText(self.accounts[self.current_account].dirs.get(self.filename, ''))
                 except:
@@ -621,15 +619,32 @@ else:
         def exit(self, window, visible):
             if self.accounts and self.current_account is not None:
                 self.accounts[self.current_account].dirs[self.filename] = self.workdir.text()
+            self.save_workdirs()
+
+        def load_workdirs(self):
+            if self.filename is not None:
+                for account in self.accounts:
+                    account.dirs[self.filename] = \
+                        LAUNCH_CONFIG[self.filename].get('remote', {}).get(account.name, {}).get('workdir')
+
+        def save_workdirs(self):
+            remote_config = LAUNCH_CONFIG[self.filename].setdefault('remote', {})
             for account in self.accounts:
-                account.save_dirs()
-            CONFIG.sync()
+                workdir = account.dirs[self.filename]
+                if workdir:
+                    remote_config.setdefault(account.name, {})['workdir'] = workdir
+                else:
+                    try: del remote_config[account.name]
+                    except KeyError: pass
+            if not remote_config:
+                del LAUNCH_CONFIG[self.filename]['remote']
 
         def load_accounts(self):
             self.accounts = []
             with CONFIG.group('launcher_remote/accounts') as config:
                 for name, account in config.groups:
                     self.accounts.append(Account.load(name, account))
+            self.load_workdirs()
 
         def save_accounts(self):
             del CONFIG['launcher_remote/accounts']
@@ -639,10 +654,8 @@ else:
                     with config.group(account.name) as group:
                         for k, v in account.save().items():
                             group[k] = v
-            for account in self.accounts:
-                account.save_dirs()
             CONFIG.sync()
-
+            self.save_workdirs()
 
         def account_add(self):
             dialog = Account.EditDialog()
@@ -831,8 +844,7 @@ else:
             workdir = self.workdir.text()
 
             account.dirs[self.filename] = workdir
-            account.save_dirs()
-            CONFIG.sync()
+            self.save_workdirs()
 
             if not workdir:
                 _, stdout, _ = ssh.exec_command("pwd")
