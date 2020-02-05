@@ -415,7 +415,7 @@ wl = phys.wl
 
 ## ##  ## ##
 
-for JOBID in 'JOB_ID', 'SLURM_JOB_ID', 'SLURM_JOBID', 'PBS_JOBID', 'LSB_JOBID', 'LOAD_STEP_ID':
+for JOBID in 'PLASK_JOBID', 'JOB_ID', 'SLURM_JOB_ID', 'SLURM_JOBID', 'PBS_JOBID', 'LSB_JOBID', 'LOAD_STEP_ID':
     if JOBID in _os.environ:
         try: JOBID = int(_os.environ[JOBID])
         except ValueError: JOBID = _os.environ[JOBID]
@@ -427,7 +427,7 @@ else:
     BATCH = False
     del _time
 
-for ARRAYID in 'PBS_ARRAYID', 'SLURM_ARRAY_TASK_ID', 'LSB_JOBINDEX', 'SGE_TASK_ID':
+for ARRAYID in 'PLASK_ARRAYID', 'PBS_ARRAYID', 'SLURM_ARRAY_TASK_ID', 'LSB_JOBINDEX', 'SGE_TASK_ID':
     if ARRAYID in _os.environ:
         try: ARRAYID = int(_os.environ[ARRAYID])
         except ValueError: ARRAYID = _os.environ[ARRAYID]
@@ -435,7 +435,7 @@ for ARRAYID in 'PBS_ARRAYID', 'SLURM_ARRAY_TASK_ID', 'LSB_JOBINDEX', 'SGE_TASK_I
 else:
     ARRAYID = None
 
-for PROCID in 'OMPI_COMM_WORLD_RANK', 'PMI_RANK', 'SLURM_PROCID', 'PBS_VNODENUM':
+for PROCID in 'PLASK_PROCID', 'OMPI_COMM_WORLD_RANK', 'PMI_RANK', 'SLURM_PROCID', 'PBS_VNODENUM':
     if PROCID in _os.environ:
         try: PROCID = int(_os.environ[PROCID])
         except ValueError: PROCID = _os.environ[PROCID]

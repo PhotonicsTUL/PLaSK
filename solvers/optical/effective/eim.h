@@ -324,6 +324,16 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
      */
     double getTotalAbsorption(size_t num);
 
+    /**
+     * Return lateral effective index part at specified position
+     * \param horizontal position
+     */
+    dcomplex getDeltaNeff(double x) {
+        stageOne();
+        size_t i(clamp(mesh->tran()->findIndex(geometry->isSymmetric(Geometry::DIRECTION_TRAN)? abs(x) : x), xbegin, xend-1));
+        return sqrt(epsilons[i]);
+    }
+
   protected:
 
     /// Slot called when gain has changed

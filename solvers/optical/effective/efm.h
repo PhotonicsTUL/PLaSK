@@ -237,6 +237,28 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
         invalidate();
     }
 
+    /**
+     * Return radial effective index part at specified position
+     * \param horizontal position
+     */
+    dcomplex getDeltaNeff(double r) {
+        stageOne();
+        if (r < 0) throw BadInput(getId(), "Radial position cannot be negative");
+        size_t ir = mesh->axis[0]->findIndex(r); if (ir > 0) --ir; if (ir >= veffs.size()) ir = veffs.size()-1;
+        return sqrt(nng[ir] * veffs[ir]);
+    }
+
+    /**
+     * Return effective index at specified position
+     * \param horizontal position
+     */
+    dcomplex getNNg(double r) {
+        stageOne();
+        if (r < 0) throw BadInput(getId(), "Radial position cannot be negative");
+        size_t ir = mesh->axis[0]->findIndex(r); if (ir > 0) --ir; if (ir >= veffs.size()) ir = veffs.size()-1;
+        return sqrt(nng[ir]);
+    }
+
     // Parameters for rootdigger
     RootDigger::Params root;        ///< Parameters for horizontal root digger
     RootDigger::Params stripe_root; ///< Parameters for vertical root diggers

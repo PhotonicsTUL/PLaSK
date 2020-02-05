@@ -55,6 +55,12 @@ class EffectiveIndex(unittest.TestCase):
         refr = [geo.get_material(point).Nr(1000., 300.) for point in msh]
         self.assertEqual( [nr[0] for nr in self.solver.outRefractiveIndex(msh)], refr )
 
+    def testDeltaNeffs(self):
+        xx = array([0.0, 0.5, 1.0])
+        neffs = self.solver.get_delta_neff(xx)
+        self.assertAlmostEqual( neffs[0], 1.1829, 3 )
+        self.assertAlmostEqual( neffs[1], 1.1829, 3 )
+        self.assertAlmostEqual( neffs[2], 0.9240, 3 )
 
 class EffectiveIndexLaser(unittest.TestCase):
 
@@ -234,3 +240,17 @@ class EffectiveFrequency(unittest.TestCase):
         # 1e-15: µm³->m³ W->mW
         integral = 2e-15 * pi * sum(heat * msh.axis0) * (box.upper.z - box.lower.z) * (msh.axis0[1] - msh.axis0[0])
         self.assertAlmostEqual( integral, self.solver.get_total_absorption(m), 2 )
+
+    def testNeffs(self):
+        rr = array([0.0, 2.0, 6.0])
+        neffs = self.solver.get_nng(rr)
+        self.assertAlmostEqual( neffs[0], 3.3174, 3 )
+        self.assertAlmostEqual( neffs[1], 3.3174, 3 )
+        self.assertAlmostEqual( neffs[2], 3.2816, 3 )
+
+    def testDeltaNeffs(self):
+        rr = array([0.0, 2.0, 6.0])
+        neffs = self.solver.get_delta_neff(rr)
+        self.assertAlmostEqual( neffs[0], 0.0244635-0.0095423j, 6 )
+        self.assertAlmostEqual( neffs[1], 0.0244635-0.0095423j, 6 )
+        self.assertAlmostEqual( neffs[2], 0.0006568-0.3719099j, 6 )

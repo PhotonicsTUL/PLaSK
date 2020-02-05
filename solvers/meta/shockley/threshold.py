@@ -1313,7 +1313,7 @@ class ThresholdSearch2D(ThresholdSearch):
         self._maxneff = max(self.optical.geometry.get_material(point).Nr(self.optical.wavelength.real).real
                             for point in points)
 
-    def get_neff(self):
+    def get_nng(self):
         """
         Get approximate effective index for optical computations.
 
@@ -1325,7 +1325,7 @@ class ThresholdSearch2D(ThresholdSearch):
 
         Example:
              >>> solver = ThresholdSearch2D()
-             >>> solver.get_neff = lambda: 3.5
+             >>> solver.get_nng = lambda: 3.5
              >>> solver.compute()
         """
 
@@ -1564,7 +1564,7 @@ class ThresholdSearchFourier2D(ThresholdSearch):
         self._maxneff = max(self.optical.geometry.get_material(point).Nr(self.optical.wavelength.real).real
                             for point in points)
 
-    def get_neff(self):
+    def get_nng(self):
         """
         Get approximate effective index for optical computations.
 
@@ -1576,7 +1576,7 @@ class ThresholdSearchFourier2D(ThresholdSearch):
 
         Example:
              >>> solver = ThresholdSearchFourier2D()
-             >>> solver.get_neff = lambda: 3.5
+             >>> solver.get_nng = lambda: 3.5
              >>> solver.compute()
         """
 

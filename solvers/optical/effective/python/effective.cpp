@@ -218,6 +218,17 @@ static double Mode_gain_integral(EffectiveFrequencyCyl::Mode& self) {
     return self.solver->getGainIntegral(self);
 }
 
+template <typename Solver>
+static py::object getDeltaNeff(Solver& self, py::object pos)
+{
+   return UFUNC<dcomplex, double>([&](double p){return self.getDeltaNeff(p);}, pos);
+}
+
+static py::object EffectiveFrequencyCyl_getNNg(EffectiveFrequencyCyl& self, py::object pos)
+{
+   return UFUNC<dcomplex, double>([&](double p){return self.getNNg(p);}, pos);
+}
+
 /**
  * Initialization of your solver to Python
  *
@@ -291,6 +302,12 @@ BOOST_PYTHON_MODULE(effective)
                py::arg("num")=0);
         RW_PROPERTY(vat, getStripeX, setStripeX, u8"Horizontal position of the main stripe (with dominant mode).");
         RW_FIELD(vneff, u8"Effective index in the vertical direction.");
+        solver.def("get_delta_neff", &getDeltaNeff<EffectiveIndex2D>, py::arg("pos"),
+                u8"Return effective index part for lateral propagation at specified horizontal\n"
+                u8"position.\n\n"
+                u8"Args:\n"
+                u8"    pos (float or array of floats): Horizontal position to get the effective\n"
+                u8"                                    index.\n");
         solver.add_property("mirrors", EffectiveIndex2D_getMirrors, EffectiveIndex2D_setMirrors,
                     u8"Mirror reflectivities. If None then they are automatically estimated from the"
                     u8"Fresnel equations.\n");
@@ -306,7 +323,7 @@ BOOST_PYTHON_MODULE(effective)
         solver.def("get_determinant", &EffectiveIndex2D_getDeterminant,
                    u8"Get modal determinant.\n\n"
                    u8"Args:\n"
-                   u8"    neff (complex of numeric array of complex): effective index value\n"
+                   u8"    neff (complex or array of complex): effective index value\n"
                    u8"    to compute the determinant at.\n\n"
                    u8"Returns:\n"
                    u8"    complex or list of complex: Determinant at the effective index *neff* or\n"
@@ -472,6 +489,15 @@ BOOST_PYTHON_MODULE(effective)
                             u8"Radial position of at which the vertical part of the field is calculated.\n\n"
                             u8"Should be a float number or ``None`` to compute effective frequencies for all\n"
                             u8"the stripes.\n");
+        solver.def("get_delta_neff", &getDeltaNeff<EffectiveFrequencyCyl>, py::arg("pos"),
+                u8"Return effective index part for lateral propagation at specified radial\n"
+                u8"position.\n\n"
+                u8"Args:\n"
+                u8"    pos (float or array of floats): Radial position to get the effective index.\n");
+        solver.def("get_nng", &EffectiveFrequencyCyl_getNNg, py::arg("pos"),
+                u8"Return average index at specified radial position.\n\n"
+                u8"Args:\n"
+                u8"    pos (float or array of floats): Radial position to get the effective index.\n");
 
         py::scope scope = solver;
         (void) scope;   // don't warn about unused variable scope
