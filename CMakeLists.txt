@@ -19,7 +19,7 @@ if(MSVC)    # flags needed by Visual Studio:
     add_definitions(-DBOOST_ALL_DYN_LINK)   # MSVC+cmake require this to properly detect dynamic boost libraries
     #add_definitions(-DFMT_HEADER_ONLY)      # don't compile fmt, workaround for many linker errors
     #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++14")   # nothing is needed for C++11
-else(MSVC)
+else()
     if(MINGW)
         set(CMAKE_CXX_FLAGS "-std=gnu++11 ${CMAKE_CXX_FLAGS}")
     else()
@@ -32,7 +32,7 @@ else(MSVC)
             set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-int-in-bool-context")
         endif()
     endif()
-endif(MSVC)
+endif()
 
 if(WIN32 AND "${CMAKE_SIZEOF_VOID_P}" EQUAL "8")
     set(WIN64 YES) # CMake cannot automatically detect that we compile for WIN64
@@ -482,7 +482,7 @@ if(BUILD_PYTHON)
             file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/share/plask/stubs)
         endif()
         add_custom_command(OUTPUT ${plask_stubs_files}
-                           COMMAND plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_stubs_modules}
+                           COMMAND ${CMAKE_COMMAND} -E env PLASK_DEFAULT_MATERIALS= ${CMAKE_BINARY_DIR}/bin/plask -lwarning ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${plask_stubs_modules}
                            DEPENDS plask ${CMAKE_SOURCE_DIR}/toolset/makestub.py ${PLASK_MATERIALS}
                            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}/lib/plask/python
                           )

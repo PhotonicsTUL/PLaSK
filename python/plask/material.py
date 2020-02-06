@@ -8,6 +8,8 @@ as the current state of the art. However, you can derive an abstract class
 :class:`plask.Material` to create your own materials.
 """
 
+import os as _os
+
 try:
     from . import _material
 except ImportError:
@@ -44,7 +46,11 @@ air = get("air")
 
 Air = lambda: air
 
-_material.load_all_libraries()
+if 'PLASK_DEFAULT_MATERIALS' not in _os.environ:
+    _material.load_all_libraries()
+else:
+    for _ml in _os.environ['PLASK_DEFAULT_MATERIALS'].split(','):
+        if _ml: _material.load_library(_ml)
 update_factories()
 
 

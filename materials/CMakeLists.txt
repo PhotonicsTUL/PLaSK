@@ -27,7 +27,7 @@ foreach(material ${materials})
              ${CMAKE_CURRENT_SOURCE_DIR}/${material}/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/${material}/*.cc
              ${CMAKE_CURRENT_SOURCE_DIR}/${material}/*.h ${CMAKE_CURRENT_SOURCE_DIR}/${material}/*.hh ${CMAKE_CURRENT_SOURCE_DIR}/${material}/*.h)
         if(material_src)
-            if (WIN32)
+            if (MINGW)
                 add_library(materials-${material} SHARED ${material_src})
                 install(TARGETS materials-${material} RUNTIME DESTINATION lib/plask/materials COMPONENT core)
             else()
