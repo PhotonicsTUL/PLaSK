@@ -156,7 +156,7 @@ if True:
                     return _Rc.Group(newgroup)
 
         def __call__(self, group, **kwargs):
-            if isinstance(group, six.string_types):
+            if isinstance(group, str):
                 group = (group,)
             for g in group:
                 for k,v in kwargs.items():

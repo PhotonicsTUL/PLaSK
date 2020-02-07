@@ -257,8 +257,8 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
                 if ((PyObject*)type == PyExc_IndentationError || (PyObject*)type == PyExc_SyntaxError) {
                     plask::writelog(plask::LOG_ERROR_DETAIL, u8"{0} line {1}, function '{2}' calling:", filename, lineno, funcname);
                     std::string form = message;
-                    std::size_t f = form.find(" (") + 2, l = form.rfind(" line ") + 7;
-                    std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
+                    std::size_t f = form.find(" (") + 2, l = form.rfind(" line ") + 6;
+                    std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-6);
                     try {
                         int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1)) + scriptline;
                         printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0} line {1}: {2}: {3}", file, lineno, error_name, msg);
@@ -273,8 +273,8 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
     } else {
         if ((PyObject*)type == PyExc_IndentationError || (PyObject*)type == PyExc_SyntaxError) {
                 std::string form = message;
-                std::size_t f = form.find(" (") + 2, l = form.rfind(" line ") + 7;
-                std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-7);
+                std::size_t f = form.find(" (") + 2, l = form.rfind(" line ") + 6;
+                std::string msg = form.substr(0, f-2), file = form.substr(f, l-f-6);
                 try {
                     int lineno = boost::lexical_cast<int>(form.substr(l, form.length()-l-1));
                     printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0} line {1}: {2}: {3}", file, lineno, error_name, msg);
