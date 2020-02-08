@@ -565,6 +565,7 @@ if(BUILD_PYTHON)
                     PATTERN __pycache__ EXCLUDE # for python 3
             )
             # This will make plaskgui work without install
+            file(MAKE_DIRECTORY ${PLASK_PATH})
             execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/gui ${PLASK_PATH}/gui)
         endif()
 
