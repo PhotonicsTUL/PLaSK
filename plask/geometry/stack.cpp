@@ -733,7 +733,7 @@ static shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) 
     shared_ptr<Gap1D<2, Primitive<2>::DIRECTION_TRAN>> total_size_gap;  //gap which can change total size
     double required_total_size;  //required total size, valid only if total_size_gap is not nullptr
     const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
-    shared_ptr< ShelfContainer2D > result(
+    shared_ptr<ShelfContainer2D> result(
                      reader.source.hasAttribute(repeat_attr) ?
                      new MultiStackContainer<ShelfContainer2D>(reader.source.getAttribute(repeat_attr, 1u), baseH) :
                      new ShelfContainer2D(baseH)

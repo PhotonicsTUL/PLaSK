@@ -106,26 +106,28 @@ XMLReader::NodeType XMLReader::ensureNodeTypeIs(int required_types, const char *
     return result;
 }
 
+#define DEFAULT_PARSERS &XMLReader::strToBool, &parse_complex<double>, &XMLReader::strToUnsigned
+
 XMLReader::XMLReader(std::unique_ptr<DataSource> &&source):
-    source(std::move(source)), stringInterpreter(&XMLReader::strToBool, &parse_complex<double>), check_if_all_attributes_were_read(true)
+    source(std::move(source)), stringInterpreter(DEFAULT_PARSERS), check_if_all_attributes_were_read(true)
 {
     initParser();
 }
 
 XMLReader::XMLReader(std::unique_ptr<std::istream> &&istream):
-    source(new StreamDataSource(std::move(istream))), stringInterpreter(&XMLReader::strToBool, &parse_complex<double>), check_if_all_attributes_were_read(true)
+    source(new StreamDataSource(std::move(istream))), stringInterpreter(DEFAULT_PARSERS), check_if_all_attributes_were_read(true)
 {
     initParser();
 }
 
 XMLReader::XMLReader(const char* file_name):
-    source(new StreamDataSource(new std::ifstream(file_name))), stringInterpreter(&XMLReader::strToBool, &parse_complex<double>), check_if_all_attributes_were_read(true)
+    source(new StreamDataSource(new std::ifstream(file_name))), stringInterpreter(DEFAULT_PARSERS), check_if_all_attributes_were_read(true)
 {
     initParser();
 }
 
 XMLReader::XMLReader(FILE* file):
-    source(new CFileDataSource(file)), stringInterpreter(&XMLReader::strToBool, &parse_complex<double>), check_if_all_attributes_were_read(true)
+    source(new CFileDataSource(file)), stringInterpreter(DEFAULT_PARSERS), check_if_all_attributes_were_read(true)
 {
     initParser();
 }

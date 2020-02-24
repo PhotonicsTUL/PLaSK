@@ -1427,7 +1427,7 @@ else:
 
             result, message = account.submit(ssh, document, args, defs, loglevel, name, params)
 
-            account.save_params()
+            account.save_params(document.filename)
 
             if message: message = "\n\n" + message
             if result:

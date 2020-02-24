@@ -437,6 +437,18 @@ private:
     }
 
     /**
+     * Parse \p str as unsigned
+     * \param str string with a value to parse
+     * \return unsigned parsed from \p str
+     * This function checks if the given value is not negative (\p lexical_cast does not do it)
+     */
+    static unsigned strToUnsigned(std::string str) {
+        int value = boost::lexical_cast<int>(boost::trim_copy(str));
+        if (value < 0) throw XMLException("Negative value given for unsigned");
+        return unsigned(value);
+    }
+
+    /**
      * Parse some data from input. Can (but not must!) append some states to states deque
      * @return @c true if has more data to read and @c false if end of source was reach while reading
      */
