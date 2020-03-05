@@ -52,7 +52,7 @@ syntax = {
         ('dict', [(None, '}')] + default_context, True),
         ('format', default_context + [
             (None,
-             r'(?:![rs])?(?::([^}]?[&lt;&gt;=^])?[ +-]?#?0?[0-9]*(?:\.[0-9]+)?[bcdeEfFgGnosxX%]?)?\s*\}',
+             r'(?:![rs])?(?::([^}]?[&lt;&gt;=^])?[ +-]?#?0?[\d]*(?:\.[\d]+)?[bcdeEfFgGnosxX%]?)?\s*\}',
              'special')
         ], True),
         ('comment', [(None, '\n')]),
@@ -76,8 +76,8 @@ syntax = {
 
     'tokens': {
         default_key: [
-            ('hexnumber', '(0x)([0-9a-fA-F])+?'),
-            ('number', r'[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?[jJ]?|0x[0-9a-f]+'),
+            ('hexnumber', '(0x)([\da-fA-F])+?'),
+            ('number', r'[-+]?[\d]*\.?[\d]+([eE][-+]?[\d]+)?[jJ]?|0x[\da-f]+'),
             ('keyword', [
                 'and',
                 'as',
@@ -240,14 +240,14 @@ syntax = {
                 'type',
                 'vars',
                 'zip'
-            ], '([^\\.\\w]|^)', '(?:[\x08\\W]|$)'),
-            ('decorator', r'^\s*@[A-Za-z_][A-Za-z_0-9]*'),
-            ('ident', '[A-Za-z_][A-Za-z_0-9]*')
+            ], r'([^\.\w]|^)', '(?:[\x08\\W]|$)'),
+            ('decorator', r'^\s*@(?!\d)\w+'),
+            ('ident', r'\w+')  # identifies starting with numbers are already captured
         ],
         ('string multi single', 'string single', 'string multi double', 'string double',
          'string format multi single', 'string format single', 'string format multi double', 'string format double'): [
             ('special', r'\\(["\'abfnrtv]|[0-7]{1,3}|'
-                        r'x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8}|N\{[a-zA-Z0-9\- ]+\}|\s*$)')
+                        r'x[\dA-Fa-f]{2}|u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8}|N\{[[a-zA-Z0-9\- ]+]+\}|\s*$)')
         ]
     }
 }

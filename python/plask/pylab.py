@@ -1,14 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 This is an interface to Matplotlib and pylab.
-
-It contains some helper functions helping with plotting PLaSK
-input/output.
-
-Additional functions defined here are:
-
-TODO
-
 """
 
 import sys as _sys
@@ -46,6 +38,7 @@ import matplotlib.pylab
 from matplotlib.pylab import *
 # __doc__ += matplotlib.pylab.__doc__
 
+π = pi  # why not use Greeek letters?
 
 def aspect(aspect, adjustable=None, anchor=None):
     gca().set_aspect(aspect, adjustable, anchor)

@@ -458,10 +458,10 @@ class MaterialsController(Controller):
             self.prop_splitter.setEnabled(True)
             if isinstance(self.selected_material, MaterialsModel.Material):
                 try:
-                    self.properties_table.horizontalHeader().setResizeMode(0, QHeaderView.ResizeToContents)
+                    # self.properties_table.horizontalHeader().setResizeMode(0, QHeaderView.ResizeToContents)
                     self.properties_table.horizontalHeader().setResizeMode(2, QHeaderView.ResizeToContents)
                 except AttributeError:
-                    self.properties_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
+                    # self.properties_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
                     self.properties_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
                 self.properties_table.resizeColumnToContents(1)
                 self.properties_table.resizeRowsToContents()
