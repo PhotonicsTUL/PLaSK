@@ -18,6 +18,13 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
         cvector F, B;
     };
 
+    /// Matching methods
+    enum Matching {
+        MATCH_ADMITTANCE,
+        MATCH_IMPEDANCE
+    };
+    Matching matching;                          ///< Matching method at interface (admittance/impedance)
+
   protected:
 
     cmatrix P;                                  ///< Current reflection matrix
@@ -63,7 +70,7 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
 
   public:
 
-    ReflectionTransfer(SlabBase* solver, Expansion& expansion);
+    ReflectionTransfer(SlabBase* solver, Expansion& expansion, Matching matching);
 
     ~ReflectionTransfer();
 

@@ -116,7 +116,10 @@ BOOST_PYTHON_MODULE(slab)
 
     py_enum<Transfer::Method>()
         .value("AUTO", Transfer::METHOD_AUTO)
-        .value("REFLECTION", Transfer::METHOD_REFLECTION)
+        .value("REFLECTION", Transfer::METHOD_REFLECTION_ADMITTANCE)
+        .value("REFLECTION_ADMITTANCE", Transfer::METHOD_REFLECTION_ADMITTANCE)
+        .value("REFLECTION_IMPEDANCE", Transfer::METHOD_REFLECTION_IMPEDANCE)
+        .value("REFLECTION", Transfer::METHOD_REFLECTION_ADMITTANCE)
         .value("ADMITTANCE", Transfer::METHOD_ADMITTANCE)
     ;
 
@@ -126,9 +129,9 @@ BOOST_PYTHON_MODULE(slab)
         .value("BRENT", RootDigger::ROOT_BRENT)
     ;
 
-    py_enum<typename ReflectionTransfer::IncidentDirection>()
-        .value("TOP", ReflectionTransfer::INCIDENCE_TOP)
-        .value("BOTTOM", ReflectionTransfer::INCIDENCE_BOTTOM)
+    py_enum<typename Transfer::IncidentDirection>()
+        .value("TOP", Transfer::INCIDENCE_TOP)
+        .value("BOTTOM", Transfer::INCIDENCE_BOTTOM)
     ;
 
     py_enum<SlabBase::Emission>()

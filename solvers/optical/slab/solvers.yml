@@ -235,11 +235,15 @@
       label: Transfer method
       type: choice
       default: auto
-      choices: [ auto, reflection, admittance ]
+      choices: [ auto, admittance, impedance, reflection, reflection-impedance ]
+      other: [ reflection-admittance ]
       help: >
-        Layers transfer algorithm. Can be either reflection transfer, admittance transfer or automatic,
+        Layers transfer algorithm. Can be either reflection transfer, admittance/impedance transfer or automatic,
         in which case the reflection computations will use reflection transfer and eigenmode search is done
-        with admittance transfer.
+        with admittance transfer. Reflection transfer can have optional suffix <tt>-admittance</tt> (default) or
+        <tt>-impedance</tt>, in which case the admittance/impedance matching is done at interface (for eigenmode search).
+        You should prefer admittance if electric field is expected to have significant horizontal components (particularly
+        at the interface) i.e. for TE-like modes and impedance for TM-like modes.
 
   - &vpml
     tag: vpml

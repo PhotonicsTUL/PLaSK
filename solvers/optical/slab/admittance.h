@@ -59,7 +59,6 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public Transfer {
 
     cvector getFieldVectorH(double z, std::size_t n) override;
 
-
     /**
      * Find admittance matrix for the part of the structure
      * \param start starting layer

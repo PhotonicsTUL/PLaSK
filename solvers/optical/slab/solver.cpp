@@ -12,18 +12,35 @@ namespace plask { namespace optical { namespace slab {
 
 void SlabBase::initTransfer(Expansion& expansion, bool reflection) {
     switch (transfer_method) {
-        case Transfer::METHOD_REFLECTION: reflection = true; break;
-        case Transfer::METHOD_ADMITTANCE: reflection = false; break;
-        default: break;
+        case Transfer::METHOD_REFLECTION_ADMITTANCE:
+        case Transfer::METHOD_REFLECTION_IMPEDANCE:
+            reflection = true;
+            break;
+        case Transfer::METHOD_ADMITTANCE:
+        case Transfer::METHOD_IMPEDANCE:
+            reflection = false;
+            break;
+        default:
+            break;
     }
     if (reflection) {
-        if (!this->transfer || !dynamic_cast<ReflectionTransfer*>(this->transfer.get()) ||
-            this->transfer->diagonalizer->source() != &expansion)
-        this->transfer.reset(new ReflectionTransfer(this, expansion));
+        ReflectionTransfer::Matching matching =
+            (transfer_method == Transfer::METHOD_REFLECTION_IMPEDANCE)?
+                ReflectionTransfer::MATCH_IMPEDANCE : 
+                ReflectionTransfer::MATCH_ADMITTANCE;
+        if (!this->transfer) {
+            ReflectionTransfer* transfer = dynamic_cast<ReflectionTransfer*>(this->transfer.get());
+            if (!transfer || transfer->diagonalizer->source() != &expansion || transfer->matching != matching)
+                this->transfer.reset(new ReflectionTransfer(this, expansion, matching));
+        } 
     } else {
-        if (!this->transfer || !dynamic_cast<AdmittanceTransfer*>(this->transfer.get()) ||
-            this->transfer->diagonalizer->source() != &expansion)
-        this->transfer.reset(new AdmittanceTransfer(this, expansion));
+        if (transfer_method == ReflectionTransfer::MATCH_IMPEDANCE) {
+            throw NotImplemented("Impedance transfer");
+        } else {
+            if (!this->transfer || !dynamic_cast<AdmittanceTransfer*>(this->transfer.get()) ||
+                this->transfer->diagonalizer->source() != &expansion)
+                this->transfer.reset(new AdmittanceTransfer(this, expansion));
+        }
     }
 }
 

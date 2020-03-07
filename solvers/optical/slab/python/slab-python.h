@@ -1033,7 +1033,13 @@ inline void export_base(Class solver) {
                         "*auto*       Automatically choose the best method\n"
                         "*reflection* Reflection Transfer Method\n"
                         "*admittance* Admittance Transfer Method\n"
-                        "============ ====================================\n"
+                        "*impedance*  Impedance Transfer Method\n"
+                        "============ ====================================\n\n"
+                        "Reflection transfer can have optional suffix ``-admittance`` (default)\n"
+                        "or ``-impedance``, in which case the admittance/impedance matching is done\n"
+                        "at interface (for eigenmode search). You should prefer admittance if electric\n"
+                        "field is expected to have significant horizontal components (particularly\n"
+                        "at the interface) i.e. for TE-like modes and impedance for TM-like modes."
                        );
     solver.add_property("lam0", Solver_getLam0<Solver>, Solver_setLam0<Solver>,
                         "Reference wavelength.\n\n"

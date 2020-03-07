@@ -73,8 +73,11 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
         } else if (param == "transfer") {
             transfer_method = reader.enumAttribute<Transfer::Method>("method")
                 .value("auto", Transfer::METHOD_AUTO)
-                .value("reflection", Transfer::METHOD_REFLECTION)
+                .value("reflection", Transfer::METHOD_REFLECTION_ADMITTANCE)
+                .value("reflection-admittance", Transfer::METHOD_REFLECTION_ADMITTANCE)
+                .value("reflection-impedance", Transfer::METHOD_REFLECTION_IMPEDANCE)
                 .value("admittance", Transfer::METHOD_ADMITTANCE)
+                .value("impedance", Transfer::METHOD_IMPEDANCE)
                 .get(transfer_method);
             reader.requireTagEnd();
         } else if (param == "pml") {

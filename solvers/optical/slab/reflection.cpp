@@ -13,9 +13,11 @@
 
 namespace plask { namespace optical { namespace slab {
 
-ReflectionTransfer::ReflectionTransfer(SlabBase* solver, Expansion& expansion): Transfer(solver, expansion),
+ReflectionTransfer::ReflectionTransfer(SlabBase* solver, Expansion& expansion, Matching matching): Transfer(solver, expansion),
+    matching(matching),
     storeP(STORE_NONE) {
-    writelog(LOG_DETAIL, "{}: Initializing Reflection Transfer", solver->getId());
+    writelog(LOG_DETAIL, "{}: Initializing Reflection Transfer (with {} matching)", solver->getId(),
+             (matching == MATCH_ADMITTANCE)? "admittance" : "impedance");
     size_t N = diagonalizer->matrixSize();
     P = cmatrix(N,N);
     phas = cdiagonal(N);
@@ -56,9 +58,11 @@ void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
     mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P = phas * P * phas
     memcpy(temp.data(), P.data(), NN*sizeof(dcomplex));                         // temp = P
 
-    // temp = [ phas*P*phas - I ] [ phas*P*phas + I ]^{-1}
-    for (std::size_t i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1;        // P = P + I
-    for (std::size_t i = 0, ii = 0; i < N; i++, ii += (N+1)) temp[ii] -= 1;     // temp = temp - I
+    double II = (matching == MATCH_ADMITTANCE)? 1. : -1.;
+
+    // temp = [ phas*P*phas ∓ I ] [ phas*P*phas ± I ]^{-1}
+    for (std::size_t i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += II;       // P = P ± I
+    for (std::size_t i = 0, ii = 0; i < N; i++, ii += (N+1)) temp[ii] -= II;    // temp = temp ∓ I
     int info;
     zgetrf(int(N), int(N), P.data(), int(N), ipiv, info);                       // P = LU(P)
     ztrsm('R', 'U', 'N', 'N', int(N), int(N), 1., P.data(), int(N), temp.data(), int(N));  // temp = temp * U^{-1}
@@ -70,9 +74,15 @@ void ReflectionTransfer::getAM(size_t start, size_t end, bool add, double mfac)
     }
 
     // M for the half of the structure
-    mult_matrix_by_matrix(temp, diagonalizer->invTE(solver->stack[end]), work); // work = temp * invTE[end]
-    zgemm('N','N', int(N0), int(N0), int(N), mfac, diagonalizer->TH(solver->stack[end]).data(), int(N0),
-          wrk, int(N), add?1.:0., M.data(), int(N0));                           // M = mfac * TH[end] * work
+    if (matching == MATCH_ADMITTANCE) {
+        mult_matrix_by_matrix(temp, diagonalizer->invTE(solver->stack[end]), work); // work = temp * invTE[end]
+        zgemm('N','N', int(N0), int(N0), int(N), mfac, diagonalizer->TH(solver->stack[end]).data(), int(N0),
+            wrk, int(N), add?1.:0., M.data(), int(N0));                         // M = mfac * TH[end] * work
+    } else {
+        mult_matrix_by_matrix(temp, diagonalizer->invTH(solver->stack[end]), work); // work = temp * invTH[end]
+        zgemm('N','N', int(N0), int(N0), int(N), mfac, diagonalizer->TE(solver->stack[end]).data(), int(N0),
+            wrk, int(N), add?1.:0., M.data(), int(N0));                         // M = mfac * TE[end] * work
+    }
 }
 
 
@@ -149,7 +159,7 @@ void ReflectionTransfer::findReflection(std::size_t start, std::size_t end, bool
             // temp = invTE(n+1)*TE(n) * [ phas*P*phas + I ]
             assert(!diagonalizer->TE(solver->stack[n]).isnan());
             assert(!diagonalizer->invTE(solver->stack[n]).isnan());
-            for (std::size_t i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;               // P = P + I
+            for (std::size_t i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;       // P = P + I
             if (solver->stack[n] != solver->stack[n+inc]) {
                 mult_matrix_by_matrix(diagonalizer->TE(solver->stack[n]), P, work);     // work = TE[n] * P
                 mult_matrix_by_matrix(diagonalizer->invTE(solver->stack[n+inc]), work, temp);// temp = invTE[n+1] * work (= A)
@@ -160,7 +170,7 @@ void ReflectionTransfer::findReflection(std::size_t start, std::size_t end, bool
             // P = invTH(n+1)*TH(n) * [ phas*P*phas - I ]
             assert(!diagonalizer->TH(solver->stack[n]).isnan());
             assert(!diagonalizer->invTH(solver->stack[n+inc]).isnan());
-            for (std::size_t i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] -= 2.;               // P = P - I
+            for (std::size_t i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] -= 2.;       // P = P - I
 
             // multiply rows of P by -1 where necessary for properly outgoing wave
             if (emitting && n == start) {
@@ -258,7 +268,7 @@ void ReflectionTransfer::determineFields()
     storeP = STORE_LAST;
     memP.resize(2);
     interface_field = nullptr;
-    auto E = getInterfaceVector();
+    auto EH = getInterfaceVector();
 
     for (unsigned pass = 0; pass < 1 || (pass < 2 && solver->interface != std::ptrdiff_t(count)); pass++)
     {
@@ -284,13 +294,18 @@ void ReflectionTransfer::determineFields()
         for (std::size_t i = 0; i < N; i++)
             phas[i] = exp(-I*gamma[i]*H);
 
+        double II = (matching == MATCH_ADMITTANCE)? 1. : -1.;
+
         // P = phas*P*phas + I
         assert(memP[pass].rows() == N && memP[pass].cols() == N);
         memcpy(P.data(), memP[pass].data(), NN*sizeof(dcomplex));
         mult_diagonal_by_matrix(phas, P); mult_matrix_by_diagonal(P, phas);         // P := phas * P * phas
-        for (std::size_t i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += 1.;       // P := P + I
+        for (std::size_t i = 0, ii = 0; i < N; i++, ii += (N+1)) P[ii] += II;       // P := P ± I
 
-        mult_matrix_by_vector(diagonalizer->invTE(curr), E, fields[start].B);       // B := invTE * E
+        if (matching == MATCH_ADMITTANCE)
+            mult_matrix_by_vector(diagonalizer->invTE(curr), EH, fields[start].B);  //   B := invTE * E
+        else
+            mult_matrix_by_vector(diagonalizer->invTH(curr), EH, fields[start].B);  //   B := invTH * H
         invmult(P, fields[start].B);                                                // B := inv(P) * B
         for (std::size_t i = 0; i < N; i++) fields[start].B[i] *= phas[i];          // B := phas * B
 
