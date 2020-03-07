@@ -7,6 +7,7 @@
 #include "brent.h"
 #include "reflection.h"
 #include "admittance.h"
+#include "impedance.h"
 
 namespace plask { namespace optical { namespace slab {
 
@@ -34,8 +35,10 @@ void SlabBase::initTransfer(Expansion& expansion, bool reflection) {
                 this->transfer.reset(new ReflectionTransfer(this, expansion, matching));
         } 
     } else {
-        if (transfer_method == ReflectionTransfer::MATCH_IMPEDANCE) {
-            throw NotImplemented("Impedance transfer");
+        if (transfer_method == Transfer::METHOD_IMPEDANCE) {
+            if (!this->transfer || !dynamic_cast<ImpedanceTransfer*>(this->transfer.get()) ||
+                this->transfer->diagonalizer->source() != &expansion)
+                this->transfer.reset(new ImpedanceTransfer(this, expansion));
         } else {
             if (!this->transfer || !dynamic_cast<AdmittanceTransfer*>(this->transfer.get()) ||
                 this->transfer->diagonalizer->source() != &expansion)

@@ -1,5 +1,5 @@
-#ifndef PLASK__SOLVER_SLAB_ADMITTANCE_H
-#define PLASK__SOLVER_SLAB_ADMITTANCE_H
+#ifndef PLASK__SOLVER_SLAB_IMPEDANCE_H
+#define PLASK__SOLVER_SLAB_IMPEDANCE_H
 
 #include "matrices.h"
 #include "xance.h"
@@ -11,11 +11,11 @@ namespace plask { namespace optical { namespace slab {
 /**
  * Base class for all solvers using reflection matrix method.
  */
-struct PLASK_SOLVER_API AdmittanceTransfer: public XanceTransfer {
+struct PLASK_SOLVER_API ImpedanceTransfer: public XanceTransfer {
   
     cvector getReflectionVector(const cvector& incident, IncidentDirection side) override;
 
-    AdmittanceTransfer(SlabBase* solver, Expansion& expansion);
+    ImpedanceTransfer(SlabBase* solver, Expansion& expansion);
 
   protected:
 
@@ -23,17 +23,19 @@ struct PLASK_SOLVER_API AdmittanceTransfer: public XanceTransfer {
 
     void determineFields() override;
 
+    // cvector getReflectionVectorH(const cvector& incident, IncidentDirection side);
+
     void determineReflectedFields(const cvector& incident, IncidentDirection side) override;
 
     /**
-     * Find admittance matrix for the part of the structure
+     * Find impedance matrix for the part of the structure
      * \param start starting layer
      * \param end last layer (reflection matrix is computed for this layer)
      */
-    void findAdmittance(std::ptrdiff_t start, std::ptrdiff_t end);
+    void findImpedance(std::ptrdiff_t start, std::ptrdiff_t end);
 };
 
 
 }}} // namespace plask::optical::slab
 
-#endif // PLASK__SOLVER_SLAB_ADMITTANCE_H
+#endif // PLASK__SOLVER_SLAB_IMPEDANCE_H

@@ -121,6 +121,7 @@ BOOST_PYTHON_MODULE(slab)
         .value("REFLECTION_IMPEDANCE", Transfer::METHOD_REFLECTION_IMPEDANCE)
         .value("REFLECTION", Transfer::METHOD_REFLECTION_ADMITTANCE)
         .value("ADMITTANCE", Transfer::METHOD_ADMITTANCE)
+        .value("IMPEDANCE", Transfer::METHOD_IMPEDANCE)
     ;
 
     py_enum<RootDigger::Method>()

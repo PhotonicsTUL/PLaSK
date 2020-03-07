@@ -11,13 +11,9 @@
 
 namespace plask { namespace optical { namespace slab {
 
-AdmittanceTransfer::AdmittanceTransfer(SlabBase* solver, Expansion& expansion): Transfer(solver, expansion)
+AdmittanceTransfer::AdmittanceTransfer(SlabBase* solver, Expansion& expansion): XanceTransfer(solver, expansion)
 {
     writelog(LOG_DETAIL, "{}: Initializing Admittance Transfer", solver->getId());
-    // Reserve space for matrix multiplications...
-    const std::size_t N = diagonalizer->matrixSize();
-    Y = cmatrix(N,N);
-    needAllY = false;
 }
 
 
@@ -80,10 +76,10 @@ void AdmittanceTransfer::findAdmittance(std::ptrdiff_t start, std::ptrdiff_t end
     for (std::size_t i = 0; i < N; i++) Y(i,i) = - y1[i] * y2[i];
 
     // First layer
-    double H = solver->vpml.dist;
+    double h = solver->vpml.dist;
     gamma = diagonalizer->Gamma(solver->stack[start]);
-    get_y1(gamma, H, y1);
-    get_y2(gamma, H, y2);
+    get_y1(gamma, h, y1);
+    get_y2(gamma, h, y2);
     // off-diagonal elements of Y are 0
     for (std::size_t i = 0; i < N; i++) Y(i,i) = y2[i] * y2[i] / (y1[i] - Y(i,i)) - y1[i]; // Y = y2 * inv(y1-Y) * y2 - y1
 
@@ -99,50 +95,37 @@ void AdmittanceTransfer::findAdmittance(std::ptrdiff_t start, std::ptrdiff_t end
     {
         gamma = diagonalizer->Gamma(solver->stack[n]);
 
-        H = solver->vbounds->at(n) - solver->vbounds->at(n-1);
-        get_y1(gamma, H, y1);
-        get_y2(gamma, H, y2);
+        h = solver->vbounds->at(n) - solver->vbounds->at(n-1);
+        get_y1(gamma, h, y1);
+        get_y2(gamma, h, y2);
 
         // The main equation
         // Y[n] = y2 * tE * inv(y1*tE - tH*Y[n-1]) * y2  -  y1
 
-        mult_matrix_by_matrix(diagonalizer->TH(solver->stack[n-inc]), Y, temp);     // work = tH * Y[n-1]
-        mult_matrix_by_matrix(diagonalizer->invTH(solver->stack[n]), temp, work);   // ...
+        mult_matrix_by_matrix(diagonalizer->TH(solver->stack[n-inc]), Y, temp);         // work = tH * Y[n-1]
+        mult_matrix_by_matrix(diagonalizer->invTH(solver->stack[n]), temp, work);       // ...
 
         mult_matrix_by_matrix(diagonalizer->invTE(solver->stack[n]), diagonalizer->TE(solver->stack[n-inc]), temp); // compute tE
 
         for (std::size_t j = 0; j < N; j++)
-            for (std::size_t i = 0; i < N; i++) Y(i,j) = y1[i]*temp(i,j) - work(i,j);       // Y[n] = y1 * tE - work
+            for (std::size_t i = 0; i < N; i++) Y(i,j) = y1[i]*temp(i,j) - work(i,j);   // Y[n] = y1 * tE - work
 
         for (std::size_t i = 0; i < NN; i++) work[i] = 0.;
-        for (std::size_t j = 0, i = 0; j < N; j++, i += N+1) work[i] = y2[j];               // work = y2
+        for (std::size_t j = 0, i = 0; j < N; j++, i += N+1) work[i] = y2[j];           // work = y2
 
-        invmult(Y, work);                                                           // work = inv(Y[n]) * (work = y2)
-        mult_matrix_by_matrix(temp, work, Y);                                       // Y[n] = tE * work
+        invmult(Y, work);                                                               // work = inv(Y[n]) * (work = y2)
+        mult_matrix_by_matrix(temp, work, Y);                                           // Y[n] = tE * work
 
         for (std::size_t j = 0; j < N; j++)
-            for (std::size_t i = 0; i < N; i++) Y(i,j) *= y2[i];                            // Y[n] = y2 * Y[n]
+            for (std::size_t i = 0; i < N; i++) Y(i,j) *= y2[i];                        // Y[n] = y2 * Y[n]
 
-        for (std::size_t j = 0, i = 0; j < N; j++, i += N+1) Y[i] -= y1[j];                 // Y[n] = Y[n] - y1
+        for (std::size_t j = 0, i = 0; j < N; j++, i += N+1) Y[i] -= y1[j];             // Y[n] = Y[n] - y1
 
         // Save the Y matrix for n-th layer
         storeY(n);
     }
 }
 
-
-void AdmittanceTransfer::storeY(size_t n)
-{
-    if (needAllY) {
-        const std::size_t N = diagonalizer->matrixSize();
-        if (memY.size() != solver->stack.size()) {
-            // Allocate the storage for admittance matrices
-            memY.resize(solver->stack.size());
-            for (std::size_t i = 0; i < solver->stack.size(); i++) memY[i] = cmatrix(N,N);
-        }
-        memcpy(memY[n].data(), Y.data(), N*N*sizeof(dcomplex));
-    }
-}
 
 
 void AdmittanceTransfer::determineFields()
@@ -193,10 +176,10 @@ void AdmittanceTransfer::determineFields()
         {
             const std::size_t curr = solver->stack[n];
 
-            double H = (n == 0 || n == std::ptrdiff_t(count)-1)? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
+            double h = (n == 0 || n == std::ptrdiff_t(count)-1)? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
             gamma = diagonalizer->Gamma(curr);
-            get_y1(gamma, H, y1);
-            get_y2(gamma, H, y2);
+            get_y1(gamma, h, y1);
+            get_y2(gamma, h, y2);
 
             // work = Y[n] + y1
             cmatrix Y = getY(n);
@@ -221,12 +204,6 @@ void AdmittanceTransfer::determineFields()
                 fields[n-inc].Ed = cvector(N);
                 mult_matrix_by_vector(diagonalizer->TE(curr), fields[n].E0, tv);
                 mult_matrix_by_vector(diagonalizer->invTE(prev), tv, fields[n-inc].Ed);
-            } else {
-                fields[n].H0 = cvector(N);
-                for (std::size_t i = 0; i < N; i++)
-                    //fields[end+inc].H0[i] = y2[i] * fields[end+inc].Ed[i];
-                    fields[end+inc].H0[i] = double(inc) *
-                                                 (y1[i] * fields[end+inc].E0[i] + y2[i] * fields[end+inc].Ed[i]);
             }
 
             // Now compute the magnetic fields
@@ -253,6 +230,7 @@ void AdmittanceTransfer::determineFields()
             // anyway, we must do it in the last layer
             // (y1 and y2 are already computed in the above loop)
             std::ptrdiff_t n = end + inc;
+            fields[n].H0 = cvector(N);
             for (std::size_t i = 0; i < N; i++)
                 fields[n].H0[i] = y1[i] * fields[n].E0[i]  +  y2[i] * fields[n].Ed[i];
         }
@@ -288,88 +266,6 @@ void AdmittanceTransfer::determineFields()
             }
         }
     }
-}
-
-
-cvector AdmittanceTransfer::getFieldVectorE(double z, std::size_t n)
-{
-    cvector E0 = fields[n].E0;
-    cvector Ed = fields[n].Ed;
-
-    cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
-    double d = get_d(n, z);
-
-    if ((n == 0 || std::size_t(n) == solver->vbounds->size()) && z < 0.)
-        return cvector(diagonalizer->source()->matrixSize(), NAN);
-
-    const std::size_t N = gamma.size();
-    cvector E(N);
-
-    for (std::size_t i = 0; i < N; i++) {
-        dcomplex g = gamma[i];
-        //E[i] = (sin(g*(d-z)) * E0[i] + sin(g*z) * Ed[i]) / sin(g*d);
-
-        double a = abs(exp(2.*I*g*d));
-        if (isinf(a) || a < SMALL) {
-            dcomplex d0p = exp(I*g*z) - exp(I*g*(z-2*d));
-            dcomplex d0n = exp(I*g*(2*d-z)) - exp(-I*g*z);
-            if (isinf(real(d0p)) || isinf(imag(d0p))) d0p = 0.; else d0p = 1./ d0p;
-            if (isinf(real(d0n)) || isinf(imag(d0n))) d0n = 0.; else d0n = 1./ d0n;
-            dcomplex ddp = exp(I*g*(d-z)) - exp(-I*g*(d+z));
-            dcomplex ddn = exp(I*g*(d+z)) - exp(I*g*(z-d));
-            if (isinf(real(ddp)) || isinf(imag(ddp))) ddp = 0.; else ddp = 1./ ddp;
-            if (isinf(real(ddn)) || isinf(imag(ddn))) ddn = 0.; else ddn = 1./ ddn;
-            E[i] = (d0p-d0n) * E0[i] + (ddp-ddn) * Ed[i];
-        } else {
-            E[i] = (sinh(I*g*(d-z)) * E0[i] + sinh(I*g*z) * Ed[i]) / sinh(I*g*d);
-        }
-    }
-
-    cvector result(diagonalizer->source()->matrixSize());
-    // result = diagonalizer->TE(n) * E;
-    mult_matrix_by_vector(diagonalizer->TE(solver->stack[n]), E, result);
-    return result;
-}
-
-
-cvector AdmittanceTransfer::getFieldVectorH(double z, std::size_t n)
-{
-    cvector H0 = fields[n].H0;
-    cvector Hd = fields[n].Hd;
-
-    cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
-    double d = get_d(n, z);
-
-    if ((n == 0 || std::size_t(n) == solver->vbounds->size()) && z < 0.)
-        return cvector(diagonalizer->source()->matrixSize(), NAN);
-
-    const std::size_t N = gamma.size();
-    cvector H(N);
-
-    for (std::size_t i = 0; i < N; i++) {
-        dcomplex g = gamma[i];
-        //H[i] = (sin(g*(d-z)) * H0[i] + sin(g*z) * Hd[i]) / sin(g*d);
-
-        double a = abs(exp(2.*I*g*d));
-        if (isinf(a) || a < SMALL) {
-            dcomplex d0p = exp(I*g*z) - exp(I*g*(z-2*d));
-            dcomplex d0n = exp(I*g*(2*d-z)) - exp(-I*g*z);
-            if (isinf(real(d0p)) || isinf(imag(d0p))) d0p = 0.; else d0p = 1./ d0p;
-            if (isinf(real(d0n)) || isinf(imag(d0n))) d0n = 0.; else d0n = 1./ d0n;
-            dcomplex ddp = exp(I*g*(d-z)) - exp(-I*g*(d+z));
-            dcomplex ddn = exp(I*g*(d+z)) - exp(I*g*(z-d));
-            if (isinf(real(ddp)) || isinf(imag(ddp))) ddp = 0.; else ddp = 1./ ddp;
-            if (isinf(real(ddn)) || isinf(imag(ddn))) ddn = 0.; else ddn = 1./ ddn;
-            H[i] = (d0p-d0n) * H0[i] + (ddp-ddn) * Hd[i];
-        } else {
-            H[i] = (sinh(I*g*(d-z)) * H0[i] + sinh(I*g*z) * Hd[i]) / sinh(I*g*d);
-        }
-    }
-
-    cvector result(diagonalizer->source()->matrixSize());
-    // result = diagonalizer->TH(n) * H;
-    mult_matrix_by_vector(diagonalizer->TH(solver->stack[n]), H, result);
-    return result;
 }
 
 
@@ -490,9 +386,9 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
     {
         const std::size_t curr = solver->stack[n];
 
-        double H = (n == 0 || n == int(count)-1)? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
+        double h = (n == 0 || n == int(count)-1)? solver->vpml.dist : solver->vbounds->at(n) - solver->vbounds->at(n-1);
         gamma = diagonalizer->Gamma(curr);
-        get_y1(gamma, H, y1);
+        get_y1(gamma, h, y1);
 
         // work = Y[n] + y1
         cmatrix Y = getY(n);
@@ -505,7 +401,7 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
 
         // E0[n] = - inv(y2) * E0[0]
         for (std::size_t i = 0; i < N; i++) {
-            iy2[i] = sinh(I*gamma[i]*H);
+            iy2[i] = sinh(I*gamma[i]*h);
             if (isinf(real(iy2[i])) || isinf(imag(iy2[i])) || abs(iy2[i]) > 1./SMALL) {
                 fields[n].E0[i] = 0.;           // Actually we cannot really compute E0 in this case.
             } else {                            // So let's cheat a little, as the field cannot
@@ -564,76 +460,5 @@ void AdmittanceTransfer::determineReflectedFields(const cvector& incident, Incid
     fields_determined = DETERMINED_REFLECTED;
 }
 
-cvector AdmittanceTransfer::getTransmissionVector(const cvector& incident, IncidentDirection side)
-{
-    determineReflectedFields(incident, side);
-    size_t n = (side == INCIDENCE_BOTTOM)? solver->stack.size()-1 : 0;
-    return fields[n].E0;
-}
-
-
-double AdmittanceTransfer::integrateField(WhichField field, size_t n, double z1, double z2) {
-    size_t layer = solver->stack[n];
-    size_t N = diagonalizer->matrixSize();
-
-    cvector F0, Fd;
-    if (field == FIELD_E) {
-        F0 = fields[n].E0;
-        Fd = fields[n].Ed;
-    } else {
-        F0 = fields[n].H0;
-        Fd = fields[n].Hd;
-    }
-
-    cmatrix TE = diagonalizer->TE(layer),
-            TH = diagonalizer->TH(layer);
-    cdiagonal gamma = diagonalizer->Gamma(layer);
-
-    get_d(n, z1);
-    double d = get_d(n, z2);
-
-    if (std::ptrdiff_t(n) >= solver->interface) std::swap(z1, z2);
-
-    double result = 0.;
-    for (size_t i = 0; i != N; ++i) {
-        cvector E(TE.data() + N*i, N),
-                H(TH.data() + N*i, N);
-        double TT = diagonalizer->source()->integrateField(field, layer, E, H);
-
-        double gr = 2. * gamma[i].real(), gi = 2. * gamma[i].imag();
-        double M = cosh(gi * d) - cos(gr * d);
-        if (isinf(M)) {
-            double VV = real(F0[i]*conj(F0[i])) + real(Fd[i]*conj(Fd[i])) - 2. * real(F0[i]*conj(Fd[i]));
-            result += TT * VV;
-        } else {
-            double cos00, cosdd;
-            dcomplex cos0d;
-            if (is_zero(gr)) {
-                cos00 = cosdd = z2-z1;
-                cos0d = cos(gamma[i] * d) * (z2-z1);
-            } else {
-                cos00 = (sin(gr * (d-z1)) - sin(gr * (d-z2))) / gr;
-                cosdd = (sin(gr * z2) - sin(gr * z1)) / gr;
-                cos0d = (sin(gamma[i] * d - gr * z1) - sin(gamma[i] * d - gr * z2)) / gr;
-            }
-            double cosh00, coshdd;
-            dcomplex cosh0d;
-            if (is_zero(gi)) {
-                cosh00 = coshdd = z2-z1;
-                cosh0d = cos(gamma[i] * d) * (z2-z1);
-            } else {
-                cosh00 = (sinh(gi * (d-z1)) - sinh(gi * (d-z2))) / gi;
-                coshdd = (sinh(gi * z2) - sinh(gi * z1)) / gi;
-                cosh0d = (sin(gamma[i] * d - gi * z1) - sin(gamma[i] * d - gi * z2)) / gi;
-            }
-            double VV =      real(F0[i]*conj(F0[i])) * (cosh00 - cos00) +
-                             real(Fd[i]*conj(Fd[i])) * (coshdd - cosdd) -
-                        2. * real(F0[i]*conj(Fd[i])  * (cosh0d - cos0d));
-            result += TT * VV / M;
-        }
-    }
-
-    return result;
-}
 
 }}} // namespace plask::optical::slab

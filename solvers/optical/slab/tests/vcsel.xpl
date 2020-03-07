@@ -82,7 +82,6 @@
 <script><![CDATA[
 from timeit import timeit
 
-rcParams['axes.color_cycle'] = cc = ['#348ABD', '#A60628', '#7A68A6', '#467821', '#D55E00', '#CC79A7', '#56B4E9', '#009E73', '#F0E442', '#0072B2']
 profile = StepProfile(GEO.vcsel)
 profile[GEO.active] = 0.
 
