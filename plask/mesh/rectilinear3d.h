@@ -28,7 +28,7 @@ class PLASK_API RectilinearMesh3D: public RectangularMeshBase3D /*MeshD<3>*/ {
     typedef std::size_t index_ft(const RectilinearMesh3D* mesh, std::size_t c0_index, std::size_t c1_index, std::size_t c2_index);
     typedef std::size_t index012_ft(const RectilinearMesh3D* mesh, std::size_t mesh_index);
 
-    // our own virtual table, changeable in run-time:
+    // our own virtual table, changeable at run-time:
     index_ft* index_f;
     index012_ft* index0_f;
     index012_ft* index1_f;

@@ -4,6 +4,7 @@ import unittest
 import sys
 
 from numpy import *
+from numpy.testing import assert_array_equal
 
 import plask
 import plask.mesh
@@ -19,7 +20,41 @@ class DataTest(unittest.TestCase):
         d2 = plask.Data(a, m2)
         self.assertEqual( list(d1), [0., 1., 2., 3., 4., 5.] )
         self.assertEqual( list(d2), [0., 3., 1., 4., 2., 5.] )
-        self.assertTrue( (d1.array == d2.array).all() )
+        assert_array_equal( d1.array, d2.array )
+
+    def testSlice2D(self):
+        axis = mesh.Regular(0, 9, 10)
+        a = array(axis)
+        arr = 10 * a[:,None] + a[None,:]
+        data = Data(arr, mesh.Rectangular2D(axis, axis))
+
+        data1 = data[1:4, 0:-2:4]
+        self.assertEqual(data1.mesh.axis0, [1, 2, 3])
+        self.assertEqual(data1.mesh.axis1, [0, 4])
+        assert_array_equal(data1.array, arr[1:4, 0:-2:4])
+
+        data2 = data[5,:]
+        self.assertEqual(data2.mesh.axis0, [5])
+        self.assertEqual(data2.mesh.axis1, axis)
+        assert_array_equal(data2.array, arr[[5],:])
+
+        with self.assertRaises(TypeError):
+            data[:,:,:]
+
+    def testSlice3D(self):
+        axis = mesh.Regular(0, 9, 10)
+        a = array(axis)
+        arr = 100 * a[:,None,None] + 10 * a[None,:,None] + a[None,None,:]
+        data = Data(arr, mesh.Rectangular3D(axis, axis, axis))
+
+        data1 = data[1:4, 0::4, -5:-1]
+        self.assertEqual(data1.mesh.axis0, [1, 2, 3])
+        self.assertEqual(data1.mesh.axis1, [0, 4, 8])
+        self.assertEqual(data1.mesh.axis2, [5, 6, 7, 8])
+        assert_array_equal(data1.array, arr[1:4, 0::4, -5:-1])
+
+        with self.assertRaises(TypeError):
+            data[:,:]
 
 
 if __name__ == '__main__':

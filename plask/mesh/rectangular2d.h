@@ -28,7 +28,7 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
     typedef std::size_t index_ft(const RectangularMesh2D* mesh, std::size_t axis0_index, std::size_t axis1_index);
     typedef std::size_t index01_ft(const RectangularMesh2D* mesh, std::size_t mesh_index);
 
-    // Our own virtual table, changeable in run-time:
+    // Our own virtual table, changeable at run-time:
     index_ft* index_f;
     index01_ft* index0_f;
     index01_ft* index1_f;
@@ -255,6 +255,27 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
      * @see IterationOrder
      */
     IterationOrder getIterationOrder() const;
+
+    /**
+     * Get iteration order as an array, e.g. [1, 0] is returned for ORDER_10.
+     * @return the array of length 3, pointer to static memory
+     */
+    const char* getIterationOrderAsArray() const {
+        return &"\1\0\0\1"[getIterationOrder() * 2];
+        //       |   |   |
+    };
+
+    /**
+     * Similar to getIterationOrderAsArray but the resulted array has exchanged indexes with values.
+     *
+     * Resulted array is indexed by axis number (0, 1) and the bigger value means
+     * that the index of the axis changes faster when index of the mesh is changed by 1.
+     * @return the array which maps axis number to position in iteration order
+     */
+    const char* getAxisToIterationOrder() const {
+        return &"\1\0\0\1"[getIterationOrder() * 2];
+        //       |   |   |
+    };
 
     /**
      * Set iteration order to the shortest axis changes fastest.

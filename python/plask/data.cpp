@@ -243,44 +243,135 @@ static const typename DataVector<T>::const_iterator PythonDataVector_begin(const
 template <typename T, int dim>
 static const typename DataVector<T>::const_iterator PythonDataVector_end(const PythonDataVector<T,dim>& self) { return self.end(); }
 
-template <typename T, int dim>
-static T PythonDataVector_getitem(const PythonDataVector<T,dim>& self, std::ptrdiff_t i) {
-    if (i < 0) i += self.size();
-    if (i < 0 || std::size_t(i) >= self.size()) throw IndexError(u8"index out of range");
-    return self[i];
-}
+
+
+template <typename MeshT> struct PythonDataVector_SliceBase {
+
+    enum { dim = MeshT::DIM };
+
+    Py_ssize_t start[dim], stop[dim], step[dim], length[dim], stride[dim];
+    shared_ptr<MeshT> mesh;
+    
+
+    PythonDataVector_SliceBase(const shared_ptr<MeshD<dim>>& data_mesh, const py::object& slice) {
+        auto src_mesh = dynamic_pointer_cast<MeshT>(data_mesh);
+        if (!src_mesh) throw TypeError("{0}D slice can only be extracted for data with RectangularMesh{0}D", dim);
+        
+        const char* iteration_order = src_mesh->getIterationOrderAsArray();
+
+        mesh = make_shared<MeshT>(src_mesh->getIterationOrder());
+
+        for (int id = 0; id != dim; ++id) {
+            int ax = iteration_order[id];
+            py::extract<int>index(slice[ax]);
+            size_t size = src_mesh->getAxis(ax)->size();
+            stride[id] = 1;
+            for (int i = 0; i < id; ++i) stride[i] *= size;
+
+            if (index.check()) {
+                int idx(index);
+                if (idx < 0) idx += size;
+                if (idx >= size)
+                    throw IndexError("Index {}} is out of bounds for axis {}} with size {}",
+                                     idx, ax, size);
+                start[id] = idx;
+                stop[id] = idx+1;
+                step[id] = 1;
+                length[id] = 1;
+            } else {
+#               if PY_VERSION_HEX < 0x03060100
+                    if (PySlice_GetIndicesEx(py::object(slice[ax]).ptr(), size, 
+                        start+id, stop+id, step+id, length+id) < 0)
+                        throw py::error_already_set();
+#               else
+                    if (PySlice_Unpack(py::object(slice[ax]).ptr(), start+id, stop+id, step+id) < 0)
+                        throw py::error_already_set();
+                    length[id] = PySlice_AdjustIndices(size, start+id, stop+id, step[id]);
+#               endif
+            }
+            if (step[id] < 0) throw ValueError("Negative slice steps are not suported for Data");
+            std::vector<double> points;
+            points.reserve(length[id]);
+            auto src_axis = src_mesh->getAxis(ax);
+            for (ssize_t i = start[id]; i < stop[id]; i += step[id]) points.push_back(src_axis->at(i));
+            mesh->setAxis(ax, plask::make_shared<OrderedAxis>(std::move(points)));
+        }
+    }
+};
+
+template <typename T, int dim> struct PythonDataVector_Slice {};
+
+template <typename T>
+struct PythonDataVector_Slice<T,2>: public PythonDataVector_SliceBase<RectangularMesh2D> {
+    
+    const PythonDataVector<T,2>& self;
+
+    PythonDataVector_Slice(const PythonDataVector<T,2>& self, const py::object& slice): 
+        PythonDataVector_SliceBase<RectangularMesh2D>(self.mesh, slice),
+        self(self) {}
+
+    operator py::object() const {
+        DataVector<typename std::remove_const<T>::type> data(size_t(length[0] * length[1]));
+        auto* dst = data.data();
+
+        for (int i0 = start[0]; i0 < stop[0]; i0 += step[0]) {
+            int offset0 = i0 * stride[0];
+            for (int i1 = start[1]; i1 < stop[1]; i1 += step[1], ++dst)
+                *dst = self[offset0 + i1];
+        }
+
+        auto result = plask::make_shared<PythonDataVector<T,dim>>(data, mesh);
+        return py::object(result);
+    }
+};
+
+template <typename T>
+struct PythonDataVector_Slice<T,3>: public PythonDataVector_SliceBase<RectangularMesh3D> {
+    
+    const PythonDataVector<T,3>& self;
+
+    PythonDataVector_Slice(const PythonDataVector<T,3>& self, const py::object& slice): 
+        PythonDataVector_SliceBase<RectangularMesh3D>(self.mesh, slice),
+        self(self) {}
+
+    operator py::object() const {
+       DataVector<typename std::remove_const<T>::type> data(size_t(length[0] * length[1] * length[2]));
+        auto* dst = data.data();
+
+        for (int i0 = start[0]; i0 < stop[0]; i0 += step[0]) {
+            int offset0 = i0 * stride[0];
+            for (int i1 = start[1]; i1 < stop[1]; i1 += step[1]) {
+                int offset1 = offset0 + i1 * stride[1];
+                for (int i2 = start[2]; i2 < stop[2]; i2 += step[2], ++dst)
+                    *dst = self[offset1 + i2];
+            }
+        }
+
+        auto result = plask::make_shared<PythonDataVector<T,dim>>(data, mesh);
+        return py::object(result);
+    }
+};
 
 
 template <typename T, int dim>
-static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type
-PythonDataVector_getslice(const PythonDataVector<T,dim>& self, std::ptrdiff_t from, std::ptrdiff_t to) {
-    if (from < 0) from = self.size() - from;
-    if (to < 0) to = self.size() - to;
-    if (from < 0) from = 0;
-    if (std::size_t(to) > self.size()) to = self.size();
-
-    npy_intp dims[] = { to-from, detail::type_dim<T>() };
-    py::object arr(py::handle<>(PyArray_SimpleNew((dims[1]!=1)? 2 : 1, dims, detail::typenum<T>())));
-    typename std::remove_const<T>::type* arr_data = static_cast<typename std::remove_const<T>::type*>(PyArray_DATA((PyArrayObject*)arr.ptr()));
-    for (auto i = self.begin()+from; i < self.begin()+to; ++i, ++arr_data)
-        *arr_data = *i;
-    return arr;
-}
-
-template <typename T, int dim>
-static typename std::enable_if<!detail::isBasicData<T>::value, py::object>::type
-PythonDataVector_getslice(const PythonDataVector<T,dim>& self, std::ptrdiff_t from, std::ptrdiff_t to) {
-    if (from < 0) from = self.size() - from;
-    if (to < 0) to = self.size() - to;
-    if (from < 0) from = 0;
-    if (std::size_t(to) > self.size()) to = self.size();
-
-    npy_intp dims[] = { to-from };
-    py::object arr(py::handle<>(PyArray_SimpleNew(1, dims, NPY_OBJECT)));
-    PyObject** arr_data = static_cast<PyObject**>(PyArray_DATA((PyArrayObject*)arr.ptr()));
-    for (auto i = self.begin()+from; i < self.begin()+to; ++i, ++arr_data)
-        *arr_data = py::incref(py::object(*i).ptr());
-    return arr;
+static py::object PythonDataVector_getitem(const PythonDataVector<T,dim>& self, const py::object& item) {
+    py::extract<std::ptrdiff_t> index(item);
+    if (index.check()) {
+        std::ptrdiff_t i = index();
+        if (i < 0) i += self.size();
+        if (i < 0 || std::size_t(i) >= self.size()) throw IndexError(u8"index out of range");
+        return py::object(self[i]);
+    } else if (PyTuple_Check(item.ptr()) && py::len(item) == dim) {
+        for (int i = 0; i != dim; ++i) {
+            PyObject* it = py::object(item[i]).ptr();
+            if (!(PySlice_Check(it) || PyInt_Check(it)))
+                throw TypeError("Data indices must be integers or {}D slices", dim);
+        }
+        return PythonDataVector_Slice<T,dim>(self, item);
+    } else {
+        throw TypeError("Data indices must be integers or {}D slices not {}", dim,
+                        py::extract<std::string>(item.attr("__class__").attr("__name__"))());
+    }
 }
 
 
@@ -297,33 +388,30 @@ py::handle<> DataVector_dtype() {
 template <typename T, int dim>
 static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type
 PythonDataVector__array__(py::object oself, py::object dtype=py::object()) {
-
     const PythonDataVector<T,dim>* self = py::extract<const PythonDataVector<T,dim>*>(oself);
-
     if (self->mesh_changed) throw Exception(u8"Cannot create array, mesh changed since data retrieval");
-
     const int nd = (detail::type_dim<T>() == 1)? 1 : 2;
-
     npy_intp dims[] = { static_cast<npy_intp>(self->mesh->size()), detail::type_dim<T>() };
     npy_intp strides[] = { static_cast<npy_intp>(sizeof(T)), static_cast<npy_intp>(sizeof(T) / detail::type_dim<T>()) };
-
     PyObject* arr = PyArray_New(&PyArray_Type, nd, dims, detail::typenum<T>(), strides, (void*)self->data(), 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from data");
-
     confirm_array<T>(arr, oself, dtype);
-
     return py::object(py::handle<>(arr));
 }
 
 template <typename T, int dim>
 static typename std::enable_if<!detail::isBasicData<T>::value, py::object>::type
-PythonDataVector__array__(const PythonDataVector<T,dim>& self, py::object dtype=py::object()) {
-
+PythonDataVector__array__(py::object oself, py::object dtype=py::object()) {
+    const PythonDataVector<T,dim>* self = py::extract<const PythonDataVector<T,dim>*>(oself);
     if (dtype != py::object()) throw ValueError(u8"dtype for this data must not be specified");
+    if (self->mesh_changed) throw Exception(u8"Cannot create array, mesh changed since data retrieval");
 
-    if (self.mesh_changed) throw Exception(u8"Cannot create array, mesh changed since data retrieval");
-
-    return PythonDataVector_getslice(self, 0, self.size());
+    npy_intp dims[] = { static_cast<npy_intp>(self->size()) };
+    py::object arr(py::handle<>(PyArray_SimpleNew(1, dims, NPY_OBJECT)));
+    PyObject** arr_data = static_cast<PyObject**>(PyArray_DATA((PyArrayObject*)arr.ptr()));
+    for (auto i = self->begin(); i != self->end(); ++i, ++arr_data)
+        *arr_data = py::incref(py::object(*i).ptr());
+    return arr;
 }
 
 
@@ -635,7 +723,6 @@ static inline py::class_<PythonDataVector<const T,dim>, shared_ptr<PythonDataVec
          )
         .def("__len__", &PythonDataVector<const T,dim>::size)
         .def("__getitem__", &PythonDataVector_getitem<const T,dim>)
-        .def("__getslice__", &PythonDataVector_getslice<const T,dim>)
         .def("__contains__", &PythonDataVector_contains<const T,dim>)
         .def("__iter__", py::range(&PythonDataVector_begin<const T,dim>, &PythonDataVector_end<const T,dim>))
         .def("__array__", &PythonDataVector__array__<const T,dim>, py::arg("dtype")=py::object())
