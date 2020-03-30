@@ -517,7 +517,7 @@
       unit: nm
       help: >
         "Vertical wavelength" i.e. the wavelength what would be in the absence of lateral confinement;
-        setting this value helps to find models in very long resonators.
+        setting this value helps to find modes in very long resonators.
     - attr: vat
       label: Vertical solution coord
       type: float
@@ -1221,7 +1221,7 @@
       type: float
       help: >
         "Vertical effective index" i.e. the effective index what would be in the absence of lateral confinement;
-        setting this value helps to find models in very long resonators.
+        setting this value helps to find modes in very long resonators.
     - attr: vat
       label: Vertical solution coord
       type: float

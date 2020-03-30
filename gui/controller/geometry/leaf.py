@@ -39,6 +39,7 @@ class GNLeafController(GNObjectController):
                                  u'Shape exponent of changing material. Setting this value to anything different than '
                                  u'one allows to specify non-linearly varying material. (float)'
                                  .format(self.node.tag_name(False)))
+        self.material_shape.setPlaceholderText('1')
         self.material_bottom.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.material_top.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.material_shape.setMaximumWidth(50)

@@ -247,7 +247,7 @@ syntax = {
         ('string multi single', 'string single', 'string multi double', 'string double',
          'string format multi single', 'string format single', 'string format multi double', 'string format double'): [
             ('special', r'\\(["\'abfnrtv]|[0-7]{1,3}|'
-                        r'x[\dA-Fa-f]{2}|u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8}|N\{[[a-zA-Z0-9\- ]+]+\}|\s*$)')
+                        r'x[\dA-Fa-f]{2}|u[\dA-Fa-f]{4}|U[\dA-Fa-f]{8}|N\{[a-zA-Z0-9\- ]+\}|\s*$)')
         ]
     }
 }
