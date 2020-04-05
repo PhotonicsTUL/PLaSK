@@ -51,7 +51,7 @@ class LaunchThread(QThread):
         if sep == '\\':
             sep = '\\\\'
             fd = fd.replace('\\', '\\\\')
-        self.link = re.compile(u'((?:{}{})?{}(?:(?:,|:)(?: XML)? line |:))(\\d+)(.*)'.format(fd, sep, fb))
+        self.link = re.compile(u'((?:{}{})?{}(?:(?:,|:)?(?: XML)? line |:))(\\d+)(.*)'.format(fd, sep, fb))
         self.dock = dock
         try:
             self.terminated.connect(self.kill_process)
