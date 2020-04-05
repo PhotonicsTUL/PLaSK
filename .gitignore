@@ -10,3 +10,4 @@ build*
 /CMakeSettings.json
 __pycache__
 *.json
+*.h5

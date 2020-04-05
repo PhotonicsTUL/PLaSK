@@ -207,7 +207,10 @@ class NavigationToolbar(NavigationToolbar2QT):
                 if tooltip_text is not None:
                     action.setToolTip(tooltip_text)
                 self._actions[callback] = action
-        self.buttons = {}
+        try:
+            self.buttons = {}
+        except AttributeError:
+            pass
         self._actions['undo'].setEnabled(False)
         self._actions['redo'].setEnabled(False)
         # Add the x,y location widget at the right side of the toolbar
