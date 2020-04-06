@@ -44,6 +44,7 @@ class GNGeometryController(GNObjectController):
                                                           change_cb=self._borders_to_model_undoable)
                         for _ in range(0, 2))
             for r in res:
+                r.lineEdit().setPlaceholderText('air')
                 r.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             grid_layout.addWidget(res[0], row, 1)
             grid_layout.addWidget(res[1], row, 3)
