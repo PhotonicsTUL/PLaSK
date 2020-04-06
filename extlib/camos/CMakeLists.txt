@@ -15,10 +15,14 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)  #all functions will be exported from
 add_library(camos SHARED mach.c camos.c camos.h)
 
 if(WIN32)
-    install(TARGETS camos RUNTIME DESTINATION bin COMPONENT solvers
-                          ARCHIVE DESTINATION lib COMPONENT dev)
-else(WIN32)
+    if(INSTALL_DEV)
+        install(TARGETS camos RUNTIME DESTINATION bin COMPONENT solvers
+                              ARCHIVE DESTINATION lib COMPONENT dev)
+        else()
+            install(TARGETS camos RUNTIME DESTINATION bin COMPONENT solvers)
+    endif()
+else()
     install(TARGETS camos LIBRARY DESTINATION lib COMPONENT solvers)
-endif(WIN32)
+endif()
 
 install(FILES camos.h DESTINATION include COMPONENT dev)

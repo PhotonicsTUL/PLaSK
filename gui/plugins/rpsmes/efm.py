@@ -103,7 +103,7 @@ def write_xpl(fname, materials, layers, lam0, lpm):
     out('</defines>')
 
     materials = materials.values()
-    materials.sort(key=lambda m: m.name)
+    # materials.sort(key=lambda m: m.name)
 
     out('<materials>')
     for mat in materials:
