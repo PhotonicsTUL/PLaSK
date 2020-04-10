@@ -1,5 +1,4 @@
 #include "python_globals.h"
-#include "python_material.h"
 #include <boost/python/raw_function.hpp>
 #include <boost/python/stl_iterator.hpp>
 #include <algorithm>
@@ -710,9 +709,8 @@ MaterialsDB* MaterialsDB_copy(const MaterialsDB& DB) {
  **/
 shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
 
-    if (py::len(args) != 2) {
+    if (py::len(args) != 2)
         throw ValueError(u8"MaterialsDB.get(self, name, **kwargs) takes exactly two non-keyword arguments");
-    }
 
     const MaterialsDB* DB = py::extract<MaterialsDB*>(args[0]);
     std::string name = py::extract<std::string>(args[1]);
@@ -721,6 +719,27 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
     if (py::len(kwargs) == 0) return DB->get(name);
 
     return DB->get(kwargs2MaterialComposition(name, kwargs));
+}
+
+shared_ptr<Material> MaterialsDB_const(py::tuple args, py::dict kwargs) {
+    if (py::len(args) != 1)
+        throw ValueError(u8"MaterialsDB.const(self, **kwargs) takes exactly one non-keyword argument");
+
+    std::map<std::string, double> params;
+
+    py::stl_input_iterator<std::string> begin(kwargs), end, key;
+    for (key = begin; key != end; ++key) {
+        try {
+            params[*key] = py::extract<double>(kwargs[*key]);
+        } catch (py::error_already_set) {
+            PyErr_Clear();
+            throw MaterialParseException("Bad material parameter value '{}={}'", std::string(*key),
+                                         py::extract<std::string>(py::str(kwargs[*key]))());
+        }
+        
+    }
+
+    return plask::make_shared<ConstMaterial>(params);
 }
 
 // py::dict Material__completeComposition(const Material& self, py::dict src) {
@@ -1024,7 +1043,10 @@ void initMaterials() {
         .def("__iter__", &MaterialsDBIterator::iter, py::return_value_policy<py::manage_new_object>())
         .def("__contains__", &MaterialsDB_contains)
         .def("__copy__", &MaterialsDB_copy, py::return_value_policy<py::manage_new_object>())
-    ;
+        .def("material_with_params", py::raw_function(&MaterialsDB_const),
+             u8"Get material with constant parameters specified as kwargs\n\n"
+             u8":rtype: Material\n")
+        ;
 
     {
         py::scope scope(materialsDB);

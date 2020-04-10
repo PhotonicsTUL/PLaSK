@@ -1,5 +1,6 @@
 #include "db.h"
 #include "mixed.h"
+#include "const_material.h"
 
 #include "../utils/string.h"
 #include "../utils/dynlib/manager.h"
@@ -66,27 +67,27 @@ std::string& appendLabelDopant(std::string& name, const std::string& label, cons
     return  appendDopant(appendLabel(name, label), dopant_name);
 }
 
-std::string complexDbKey(const Material::Composition &composition, const std::string& label, const std::string& dopant_name) {
+std::string alloyDbKey(const Material::Composition &composition, const std::string& label, const std::string& dopant_name) {
     std::string db_key;
     for (auto c: composition) db_key += c.first;
     return appendLabelDopant(db_key, label, dopant_name);
 }
 
-std::string complexDbKey(std::vector<std::string> elNames, const std::string& label, const std::string& dopant_name) {
+std::string alloyDbKey(std::vector<std::string> elNames, const std::string& label, const std::string& dopant_name) {
     std::string db_key;
     std::sort(elNames.begin(), elNames.end());
     for (std::string& c: elNames) db_key += c;
     return appendLabelDopant(db_key, label, dopant_name);
 }
 
-std::string complexDbKey(const std::string& name, const std::string& label, const std::string& dopant_name) {
-    return complexDbKey(Material::parseObjectsNames(name), label, dopant_name);
+std::string alloyDbKey(const std::string& name, const std::string& label, const std::string& dopant_name) {
+    return alloyDbKey(Material::parseObjectsNames(name), label, dopant_name);
 }
 
-std::string complexDbKey(const std::string& fullComplexName) {
+std::string alloyDbKey(const std::string& fullComplexName) {
     auto fullname_dopant = splitString2(fullComplexName, ':');
     auto name_label = splitString2(fullname_dopant.first, '_');
-    return complexDbKey(name_label.first, name_label.second, fullname_dopant.second);
+    return alloyDbKey(name_label.first, name_label.second, fullname_dopant.second);
 }
 
 std::string dbKey(const Material::Parameters& parameters) {
@@ -182,16 +183,16 @@ bool MaterialsDB::ProxyMaterialConstructor::isAlloy() const {
 }
 
 
-shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const std::string& db_Key, const Material::Composition& composition, bool allow_complex_without_composition) const {
+shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const std::string& db_Key, const Material::Composition& composition, bool allow_alloy_without_composition) const {
     auto it = constructors.find(db_Key);
     if (it == constructors.end()) {
         if (composition.empty()) {
             // check if material is complex, but user forgot to provide composition:
             std::string complex_DbKey;
-            try { complex_DbKey = complexDbKey(db_Key); } catch (std::exception&) {}
+            try { complex_DbKey = alloyDbKey(db_Key); } catch (std::exception&) {}
             auto c = constructors.find(complex_DbKey);
             if (c != constructors.end()) { //material is complex
-                if (allow_complex_without_composition)
+                if (allow_alloy_without_composition)
                     return c->second;
                 else
                     throw MaterialParseException(format("Material composition required for {0}", db_Key));
@@ -209,16 +210,16 @@ shared_ptr<Material> MaterialsDB::get(const std::string& db_Key, const Material:
 }
 
 shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const Material::Composition& composition, const std::string& label, const std::string& dopant_name) const {
-    return getConstructor(complexDbKey(composition, label, dopant_name), composition);
+    return getConstructor(alloyDbKey(composition, label, dopant_name), composition);
 }
 
-shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const Material::Parameters &material, bool allow_complex_without_composition) const
+shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const Material::Parameters &material, bool allow_alloy_without_composition) const
 {
-    return getConstructor(dbKey(material), material.composition, allow_complex_without_composition);
+    return getConstructor(dbKey(material), material.composition, allow_alloy_without_composition);
 }
 
 shared_ptr<Material> MaterialsDB::get(const Material::Composition &composition, const std::string& label, const std::string& dopant_name, double doping) const {
-    return get(complexDbKey(composition, label, dopant_name), composition, doping);
+    return get(alloyDbKey(composition, label, dopant_name), composition, doping);
 }
 
 /*shared_ptr<Material> MaterialsDB::get(const std::string& parsed_name_with_dopant, const std::vector<double>& composition, double doping) const {
@@ -246,7 +247,7 @@ shared_ptr<Material> MaterialsDB::get(const std::string& name_with_dopant, doubl
 shared_ptr<const MaterialsDB::MaterialConstructor> MaterialsDB::getConstructor(const std::string& name_without_composition) const {
     auto it = constructors.find(name_without_composition);  // try get as simple
     if (it != constructors.end()) return it->second;
-    it = constructors.find(complexDbKey(name_without_composition)); // try get as complex
+    it = constructors.find(alloyDbKey(name_without_composition)); // try get as complex
     if (it != constructors.end()) return it->second;
     throw NoSuchMaterial(name_without_composition);
 }
@@ -256,7 +257,10 @@ shared_ptr<Material> MaterialsDB::get(const Material::Parameters &m) const {
 }
 
 shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
-    return get(Material::Parameters(full_name));
+    if (full_name.size() != 0 && full_name[0] == '(' && full_name[full_name.size()-1] == ')')
+        return plask::make_shared<ConstMaterial>(full_name.substr(1, full_name.size()-2));
+    else
+        return get(Material::Parameters(full_name));
 }
 
 shared_ptr<MaterialsDB::MixedCompositionFactory> MaterialsDB::getFactory(const std::string& material1_fullname, const std::string& material2_fullname, double shape) const {
@@ -318,7 +322,7 @@ void MaterialsDB::addSimple(shared_ptr<MaterialConstructor> constructor) {
 }*/
 
 void MaterialsDB::addAlloy(shared_ptr<MaterialConstructor> constructor) {
-    constructors[complexDbKey(constructor->materialName)] = constructor;
+    constructors[alloyDbKey(constructor->materialName)] = constructor;
 }
 
 void MaterialsDB::removeSimple(const std::string& name) {
@@ -326,7 +330,7 @@ void MaterialsDB::removeSimple(const std::string& name) {
 }
 
 void MaterialsDB::removeComplex(const std::string& name) {
-    constructors.erase(complexDbKey(name));
+    constructors.erase(alloyDbKey(name));
 }
 
 bool MaterialsDB::isAlloy(const std::string &material_name) const { return getConstructor(material_name)->isAlloy(); }

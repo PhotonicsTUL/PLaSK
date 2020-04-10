@@ -51,6 +51,8 @@ class LaunchThread(QThread):
         if sep == '\\':
             sep = '\\\\'
             fd = fd.replace('\\', '\\\\')
+        fd = re.escape(fd)
+        fb = re.escape(fb)
         self.link = re.compile(u'((?:{}{})?{}(?:(?:,|:)?(?: XML)? line |:))(\\d+)(.*)'.format(fd, sep, fb))
         self.dock = dock
         try:

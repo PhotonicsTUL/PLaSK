@@ -3,6 +3,7 @@
 
 #include <functional>
 #include "material.h"
+#include "const_material.h"
 
 #include <boost/iterator/transform_iterator.hpp>
 #include "../utils/system.h"
@@ -97,10 +98,10 @@ struct PLASK_API MaterialsDB {
         /**
          * Create material.
          * @param composition parsed amounts of objects, can be not completed (see Material::completeComposition), empty composition in case of simple materials
-         * @param dopant_amount amount of dopant, is ignored if @p dopant_amount_type is @c NO_DOPANT
+         * @param doping amount of dopant
          * @return created material
          */
-        virtual shared_ptr<Material> operator()(const Material::Composition& composition, double dopant_amount) const = 0;
+        virtual shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const = 0;
 
         /**
          * @return @c true only if this contructor creates simple material (does not use composition)
@@ -119,7 +120,7 @@ struct PLASK_API MaterialsDB {
     };
 
     /**
-     * Base class for factories of complex material which construct it version with mixed version of two compositions and/or doping amounts.
+     * Base class for factories of alloy materials which construct their versions with mixed compositions and/or doping amounts.
      */
     struct PLASK_API MixedCompositionFactory {
 
@@ -195,7 +196,7 @@ struct PLASK_API MaterialsDB {
     };
 
     /**
-     * Factory of complex material which construct it version with mixed version of two compositions and dopants.
+     * Factory of complex material which construct its versions with mixed version of two compositions and dopants.
      */
     struct PLASK_API MixedCompositionAndDopantFactory: public MixedCompositionOnlyFactory {
       protected:
@@ -231,7 +232,7 @@ struct PLASK_API MaterialsDB {
     };
 
     /**
-     * Factory of complex material which construct it version with mixed version of two dopants (for material with same compositions).
+     * Factory of complex material which construct its versions with mixed versions of two dopants (for material with same compositions).
      */
     struct PLASK_API MixedDopantFactory: public MixedCompositionFactory {
       protected:

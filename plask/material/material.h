@@ -20,6 +20,7 @@ This file contains base classes for materials and material database class.
 #include "../vector/tensor2.h"
 #include "../vector/tensor3.h"
 #include "../parallel.h"
+#include "../optional.h"
 
 #define RETURN_MATERIAL_NAN(param) \
     static bool warn = true; \
@@ -108,7 +109,10 @@ struct PLASK_API Material {
      * @param material_name full material name or name without dopant (only part before ':')
      * @return @c true only if @p material_name is name of simple material (does not have composition).
      */
-    static bool isSimpleMaterialName(const std::string &material_name) { return material_name.find('(') == std::string::npos; }
+    static bool isSimpleMaterialName(const std::string &material_name) { 
+        auto brace = material_name.find('(');
+        return brace == std::string::npos || brace == 0; 
+    }
 
     /**
      * Parameters of material, information about: name, label, composition and dopant.
@@ -385,8 +389,8 @@ struct PLASK_API Material {
     virtual std::string str() const;
 
     /**
-     * Check if @c this material is simple.
-     * @return @c true only if @c this material is simple
+     * Check if @c this material is alloy.
+     * @return @c true only if @c this material is alloy
      */
     bool isAlloy() const;
 
@@ -929,6 +933,130 @@ struct PLASK_API GenericMaterial : public Material {
     virtual std::string name() const override { return ""; }
     virtual Material::Kind kind() const override { return Material::GENERIC; }
     virtual bool isEqual(const Material&) const override { return true; } // all generic materials are always equal
+};
+
+/**
+ * Material with another one as base
+ */
+struct MaterialWithBase: public Material {
+    shared_ptr<Material> base;
+
+    MaterialWithBase() = default;
+    MaterialWithBase(const shared_ptr<Material>& base): base(base) {}
+    MaterialWithBase(Material* base): base(base) {}
+};
+
+struct MaterialCache {
+    plask::optional<double> lattC;
+    plask::optional<double> Eg;
+    plask::optional<double> CB;
+    plask::optional<double> VB;
+    plask::optional<double> Dso;
+    plask::optional<double> Mso;
+    plask::optional<Tensor2<double>> Me;
+    plask::optional<Tensor2<double>> Mhh;
+    plask::optional<Tensor2<double>> Mlh;
+    plask::optional<Tensor2<double>> Mh;
+    plask::optional<double> ac;
+    plask::optional<double> av;
+    plask::optional<double> b;
+    plask::optional<double> d;
+    plask::optional<double> c11;
+    plask::optional<double> c12;
+    plask::optional<double> c44;
+    plask::optional<double> eps;
+    plask::optional<double> chi;
+    plask::optional<double> Na;
+    plask::optional<double> Nd;
+    plask::optional<double> Ni;
+    plask::optional<double> Nf;
+    plask::optional<double> EactD;
+    plask::optional<double> EactA;
+    plask::optional<Tensor2<double>> mob;
+    plask::optional<Tensor2<double>> cond;
+    plask::optional<double> A;
+    plask::optional<double> B;
+    plask::optional<double> C;
+    plask::optional<double> D;
+    plask::optional<Tensor2<double>> thermk;
+    plask::optional<double> dens;
+    plask::optional<double> cp;
+    plask::optional<double> nr;
+    plask::optional<double> absp;
+    plask::optional<dcomplex> Nr;
+    plask::optional<Tensor3<dcomplex>> NR;
+    plask::optional<Tensor2<double>> mobe;
+    plask::optional<Tensor2<double>> mobh;
+    plask::optional<double> taue;
+    plask::optional<double> tauh;
+    plask::optional<double> Ce;
+    plask::optional<double> Ch;
+    plask::optional<double> e13;
+    plask::optional<double> e15;
+    plask::optional<double> e33;
+    plask::optional<double> c13;
+    plask::optional<double> c33;
+    plask::optional<double> Psp;
+    plask::optional<double> y1;
+    plask::optional<double> y2;
+    plask::optional<double> y3;
+
+    bool operator==(const MaterialCache& other) const {
+        return
+            lattC == other.lattC &&
+            Eg == other.Eg &&
+            CB == other.CB &&
+            VB == other.VB &&
+            Dso == other.Dso &&
+            Mso == other.Mso &&
+            Me == other.Me &&
+            Mhh == other.Mhh &&
+            Mlh == other.Mlh &&
+            Mh == other.Mh &&
+            ac == other.ac &&
+            av == other.av &&
+            b == other.b &&
+            d == other.d &&
+            c11 == other.c11 &&
+            c12 == other.c12 &&
+            c44 == other.c44 &&
+            eps == other.eps &&
+            chi == other.chi &&
+            Na == other.Na &&
+            Nd == other.Nd &&
+            Ni == other.Ni &&
+            Nf == other.Nf &&
+            EactD == other.EactD &&
+            EactA == other.EactA &&
+            mob == other.mob &&
+            cond == other.cond &&
+            A == other.A &&
+            B == other.B &&
+            C == other.C &&
+            D == other.D &&
+            thermk == other.thermk &&
+            dens == other.dens &&
+            cp == other.cp &&
+            nr == other.nr &&
+            absp == other.absp &&
+            Nr == other.Nr &&
+            NR == other.NR &&
+            mobe == other.mobe &&
+            mobh == other.mobh &&
+            taue == other.taue &&
+            tauh == other.tauh &&
+            Ce == other.Ce &&
+            Ch == other.Ch &&
+            e13 == other.e13 &&
+            e15 == other.e15 &&
+            e33 == other.e33 &&
+            c13 == other.c13 &&
+            c33 == other.c33 &&
+            Psp == other.Psp &&
+            y1 == other.y1 &&
+            y2 == other.y2 &&
+            y3 == other.y3;
+    }
 };
 
 } // namespace plask

@@ -358,7 +358,7 @@ endif()
 if(INSTALL_DEV)
     install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
     install(DIRECTORY solvers/providers DESTINATION include/plask COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
-    install(FILES extlib/fmt/format.h extlib/fmt/core.h DESTINATION include/fmt COMPONENT dev)
+    install(FILES extlib/fmt/format.h extlib/fmt/core.h extlib/fmt/ostream.h DESTINATION include/fmt COMPONENT dev)
     install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
 endif()
 

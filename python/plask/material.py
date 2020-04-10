@@ -21,6 +21,7 @@ from ._material import *
 db = _material.getdb()
 
 get = db.get
+with_params = db.material_with_params
 
 
 def update_factories():

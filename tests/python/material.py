@@ -325,9 +325,16 @@ class Material(unittest.TestCase):
             class Test(material.Material):
                 def A(self, T=300.):
                     return 2
-            self.assertEqual( material.get('Test').A(), 2)
-            self.assertEqual( saved.get('Test').A(), 1)
-        self.assertEqual( material.get('Test').A(), 1)
+            self.assertEqual( material.get('Test').A(), 2 )
+            self.assertEqual( saved.get('Test').A(), 1 )
+        self.assertEqual( material.get('Test').A(), 1 )
+    
+    def testMaterialWithParams(self):
+        m1 = material.get('(nr=2.5, absp=2e5)')
+        m2 = material.with_params(nr=2.5, absp=2e5)
+        self.assertAlmostEqual( m1.Nr(980), 2.5-1.556j, 2 )
+        self.assertEquals( str(m1), '(absp=200000,nr=2.5)' )
+        self.assertEqual( m1, m2 )
 
 
 if __name__ == '__main__':

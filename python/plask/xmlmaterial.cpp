@@ -4,7 +4,6 @@
 #include <plask/utils/xml/reader.h>
 #include <plask/material/db.h>
 
-#include "python_material.h"
 #include "python_manager.h"
 #include "python_ptr.h"
 

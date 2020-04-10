@@ -17,12 +17,13 @@ from copy import copy
 
 import numpy
 from lxml import etree
+import matplotlib
 from matplotlib.figure import Figure
 from matplotlib.widgets import Cursor
 from matplotlib.ticker import ScalarFormatter
 
 from ...qt import QT_API
-if QT_API == 'PyQt5':
+if QT_API in ('PyQt5', 'PySide2'):
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 else:
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
@@ -464,6 +465,22 @@ class MaterialPlot(QWidget):
             self.label.hide()
             self.error.setFixedHeight(self.error.document().size().height())
         else:
+            # Update text colors
+            color = self.palette().color(QPalette.Text).name()
+            font = QApplication.font()
+            axes = self.axes,
+            matplotlib.rcParams['font.family'] = font.family()
+            matplotlib.rcParams['font.size'] = font.pointSize()
+            if self.axes2 is not None:
+                axes += self.axes2
+            for ax in axes:
+                ax.tick_params(axis='x', colors=color, labelsize=font.pointSize())
+                ax.tick_params(axis='y', colors=color, labelsize=font.pointSize())
+                ax.xaxis.label.set_color(color)
+                ax.yaxis.label.set_color(color)
+                ax.set_xticklabels(ax.get_xticks(), fontname=font.family(), weight=font.weight())
+                ax.set_yticklabels(ax.get_yticks(), fontname=font.family(), weight=font.weight())
+
             self.error.clear()
             self.error.hide()
             self.xn = self.arg_button.text()[:-1].replace('&', '')
@@ -475,7 +492,8 @@ class MaterialPlot(QWidget):
             self.axes.set_xlim(start, end)
             self.axes.set_xlabel(html_to_tex(u"{}{} [{}]".format(self.arg_button.descr[0].upper(),
                                                                  self.arg_button.descr[1:],
-                                                                 self.arg_button.unit)))
+                                                                 self.arg_button.unit)),
+                                 fontname=font.family(), weight=font.weight())
             self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
             self.axes.set_ylabel('[]')
             if self.axes2 is not None:
@@ -484,12 +502,17 @@ class MaterialPlot(QWidget):
             label = html_to_tex(MATERIALS_PROPERTES[param][0]).splitlines()[0] +\
                     ' [' + html_to_tex(MATERIALS_PROPERTES[param][1]) + ']'
             if self.axes2 is None:
-                self.axes.set_ylabel(label)
+                self.axes.set_ylabel(label, fontname=font.family(), weight=font.weight())
             else:
-                self.axes.set_ylabel(label + " (real part, solid)")
-                self.axes2.set_ylabel(label + " (imaginary part, dashed)")
+                self.axes.set_ylabel(label + " (real part, solid)", fontname=font.family(), weight=font.weight())
+                self.axes2.set_ylabel(label + " (imaginary part, dashed)", fontname=font.family(), weight=font.weight())
+
+            import matplotlib.pyplot as plt
+            plt.yticks()
+
             self._cursor = Cursor(self.axes, horizOn=False, useblit=True, color='#888888', linewidth=1)
             self.update_scale()
+
             warnings.showwarning = old_showwarning
             if warns:
                 # if self.error.text(): self.error.append("\n")
