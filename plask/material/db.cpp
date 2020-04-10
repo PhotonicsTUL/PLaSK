@@ -257,8 +257,8 @@ shared_ptr<Material> MaterialsDB::get(const Material::Parameters &m) const {
 }
 
 shared_ptr< Material > MaterialsDB::get(const std::string& full_name) const {
-    if (full_name.size() != 0 && full_name[0] == '(' && full_name[full_name.size()-1] == ')')
-        return plask::make_shared<ConstMaterial>(full_name.substr(1, full_name.size()-2));
+    if (full_name.size() != 0 && full_name.find('[') != std::string::npos && full_name[full_name.size()-1] == ']')
+        return plask::make_shared<ConstMaterial>(full_name);
     else
         return get(Material::Parameters(full_name));
 }

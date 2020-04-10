@@ -330,10 +330,20 @@ class Material(unittest.TestCase):
         self.assertEqual( material.get('Test').A(), 1 )
     
     def testMaterialWithParams(self):
-        m1 = material.get('(nr=2.5, absp=2e5)')
+        m1 = material.get('[nr=2.5 absp=2e5]')
         m2 = material.with_params(nr=2.5, absp=2e5)
         self.assertAlmostEqual( m1.Nr(980), 2.5-1.556j, 2 )
-        self.assertEquals( str(m1), '(absp=200000,nr=2.5)' )
+        self.assertEqual( str(m1), '[absp=200000 nr=2.5]' )
+        self.assertEqual( m1, m2 )
+    
+    def testMaterialWithParamsAndBase(self):
+        m0 = material.get('GaAs')
+        m1 = material.get('GaAs [nr=2.5 absp=2e5]')
+        m2 = material.with_params('GaAs', nr=2.5, absp=2e5)
+        self.assertEqual( m1.cond(), m0.cond() )
+        self.assertAlmostEqual( m1.Nr(980), 2.5-1.556j, 2 )
+        self.assertEqual( str(m1), 'GaAs [absp=200000 nr=2.5]' )
+        self.assertEqual( str(m2), 'GaAs [absp=200000 nr=2.5]' )
         self.assertEqual( m1, m2 )
 
 

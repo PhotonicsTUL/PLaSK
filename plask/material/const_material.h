@@ -11,23 +11,37 @@
 
 namespace plask {
 
-class PLASK_API ConstMaterial: public Material {
+class PLASK_API ConstMaterial: public MaterialWithBase {
 
     MaterialCache cache;
 
 public:
 
-    ConstMaterial(const std::string& definition);
+    ConstMaterial(const std::string& full_name);
 
-    ConstMaterial(const std::map<std::string, double>& items);
+    ConstMaterial(const shared_ptr<Material>& base, const std::map<std::string, double>& items);
 
     bool isEqual(const Material& other) const override {
-        return cache == static_cast<const ConstMaterial&>(other).cache;
+        const ConstMaterial& cother = static_cast<const ConstMaterial&>(other);
+        return 
+            ((!base && !cother.base) || (base && cother.base && *base == *cother.base)) &&
+            (cache == cother.cache);
     }
 
-    std::string name() const override { return "(...)"; }
-    Material::Kind kind() const override { return Material::GENERIC; }
-    Material::ConductivityType condtype() const override { return Material::CONDUCTIVITY_UNDETERMINED; }
+    std::string name() const override {
+        if (base) return base->name();
+        else return "";
+    }
+
+    Material::Kind kind() const override {
+        if (base) return base->kind();
+        else return Material::GENERIC; 
+    }
+
+    Material::ConductivityType condtype() const override {
+        if (base) return base->condtype();
+        else return Material::CONDUCTIVITY_UNDETERMINED;
+    }
 
     std::string str() const override;
 

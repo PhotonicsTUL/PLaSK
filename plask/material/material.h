@@ -938,7 +938,7 @@ struct PLASK_API GenericMaterial : public Material {
 /**
  * Material with another one as base
  */
-struct MaterialWithBase: public Material {
+struct PLASK_API MaterialWithBase: public Material {
     shared_ptr<Material> base;
 
     MaterialWithBase() = default;
@@ -946,7 +946,7 @@ struct MaterialWithBase: public Material {
     MaterialWithBase(Material* base): base(base) {}
 };
 
-struct MaterialCache {
+struct PLASK_API MaterialCache {
     plask::optional<double> lattC;
     plask::optional<double> Eg;
     plask::optional<double> CB;

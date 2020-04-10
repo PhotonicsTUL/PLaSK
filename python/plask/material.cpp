@@ -722,8 +722,13 @@ shared_ptr<Material> MaterialsDB_get(py::tuple args, py::dict kwargs) {
 }
 
 shared_ptr<Material> MaterialsDB_const(py::tuple args, py::dict kwargs) {
-    if (py::len(args) != 1)
-        throw ValueError(u8"MaterialsDB.const(self, **kwargs) takes exactly one non-keyword argument");
+    if (py::len(args) > 2)
+        throw ValueError(u8"MaterialsDB.const(self, **kwargs) takes at most two non-keyword arguments");
+
+    shared_ptr<Material> base;
+    if (py::len(args) == 2) {
+        base = py::extract<shared_ptr<Material>>(args[1]);
+    }
 
     std::map<std::string, double> params;
 
@@ -739,7 +744,7 @@ shared_ptr<Material> MaterialsDB_const(py::tuple args, py::dict kwargs) {
         
     }
 
-    return plask::make_shared<ConstMaterial>(params);
+    return plask::make_shared<ConstMaterial>(base, params);
 }
 
 // py::dict Material__completeComposition(const Material& self, py::dict src) {
