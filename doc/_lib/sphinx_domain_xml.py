@@ -29,7 +29,7 @@ from docutils.parsers.rst.directives.admonitions import BaseAdmonition
 
 from sphinx import addnodes
 from sphinx.domains import Domain, ObjType
-from sphinx.locale import l_, _
+from sphinx.locale import _
 from sphinx.directives import ObjectDescription
 from sphinx.roles import XRefRole
 from sphinx.util.nodes import make_refnode
@@ -156,13 +156,13 @@ class XMLTag(ObjectDescription):
     """
 
     doc_field_types = [
-        TypedField('attributes', label=l_('Attributes'),
+        TypedField('attributes', label=_('Attributes'),
                    names=('attribute', 'attr', 'parameter', 'param'),
                    typerolename='tag', typenames=('attrtype', 'paramtype', 'type')),
-        #GroupedField('attributes', label=l_('Attributes'), rolename='tag',
+        #GroupedField('attributes', label=_('Attributes'), rolename='tag',
         #             names=('attribute', 'attr', 'parameter', 'param'),
         #             can_collapse=True),
-        #Field('contents', label=l_('Contents'), has_arg=False,
+        #Field('contents', label=_('Contents'), has_arg=False,
         #      names=('contents', 'content', 'Contents', 'Content'))
     ]
 
@@ -216,7 +216,7 @@ class XMLDomain(Domain):
     label = 'XML'
 
     object_types = {
-        'tag': ObjType(l_('tag'), 'tag'),
+        'tag': ObjType(_('tag'), 'tag'),
     }
     directives = {
         'tag': XMLTag,
