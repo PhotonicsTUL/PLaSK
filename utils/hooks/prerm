@@ -2,7 +2,7 @@
 set -e
 
 if [ "$1" = "remove" ]; then
-    find /usr/lib/plask -type f -name "*.pyc" -delete
+    find /usr/lib/plask -type d -name "__pycache__" -exec rm -rf {} +
 
     if which update-binfmts >/dev/null 2>&1; then
         update-binfmts --package plask --remove plask /usr/bin/plask

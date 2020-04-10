@@ -2,3 +2,12 @@
 set -e
 /usr/bin/python3 -m compileall $RPM_INSTALL_PREFIX/lib/plask
 /sbin/ldconfig
+
+# Install missing packages from pip
+for pkg in matplotlib scipy h5py; do
+    python3 -c "import $pkg" >/dev/null 2>&1 || missing="$missing $pkg"
+done
+
+if [ "$missing" != "" ]; then
+    /usr/bin/pip3 install $missing
+fi
