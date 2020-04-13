@@ -116,7 +116,7 @@ class SchemaTag:
 
 
 class SchemaSolver(Solver):
-    """Model for solver with its configuration specified in a scheme file solvers.xml
+    """Model for solver with its configuration specified in a scheme file solvers.yml
        and automatically generated controller widget"""
 
     def __init__(self, category, schema, lib=None, solver='', geometry_type=None, mesh_types=None,

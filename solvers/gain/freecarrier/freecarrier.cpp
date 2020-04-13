@@ -139,7 +139,8 @@ void FreeCarrierGainSolver<GeometryType>::detectActiveRegions()
                     if (!had_active) {
                         if (!in_active)
                         { // active region is starting set-up new region info
-                            regions.emplace_back(mesh->at(c,r));
+                            regions.emplace_back(mesh->at(c, r));
+                            added_bottom_cladding = added_top_cladding = false;
                             ileft = c;
                         }
                         layer_material = this->geometry->getMaterial(point);
@@ -261,13 +262,13 @@ void FreeCarrierGainSolver<GeometryType>::ActiveRegionInfo::summarize(const Free
         double e;
         if (solver->strained) { double latt = material->lattC(solver->T0, 'a'); e = (substra - latt) / latt; } else e = 0.;
         double el0 = material->CB(solver->T0, e, 'G'),
-                hh0 = material->VB(solver->T0, e, 'G',  'H'),
-                lh0 = material->VB(solver->T0, e, 'G',  'L');
+               hh0 = material->VB(solver->T0, e, 'G',  'H'),
+               lh0 = material->VB(solver->T0, e, 'G',  'L');
         material = materials[1].get();
         if (solver->strained) { double latt = material->lattC(solver->T0, 'a'); e = (substra - latt) / latt; } else e = 0.;
         double el1 = material->CB(solver->T0, e, 'G'),
-                hh1 = material->VB(solver->T0, e, 'G',  'H'),
-                lh1 = material->VB(solver->T0, e, 'G',  'L');
+               hh1 = material->VB(solver->T0, e, 'G',  'H'),
+               lh1 = material->VB(solver->T0, e, 'G',  'L');
         for (size_t i = 2; i < materials.size(); ++i) {
             material = materials[i].get();
             if (solver->strained) { double latt = material->lattC(solver->T0, 'a'); e = (substra - latt) / latt; } else e = 0.;
@@ -664,7 +665,7 @@ void FreeCarrierGainSolver<GeometryT>::findFermiLevels(double& Fc, double& Fv, d
 
 template <typename GeometryT>
 Tensor2<double> FreeCarrierGainSolver<GeometryT>::getGain0(double hw, double Fc, double Fv, double T, double nr,
-                                                  const ActiveRegionParams& params) const
+                                                           const ActiveRegionParams& params) const
 {
     constexpr double fac = 1e4 * phys::qe*phys::qe / (2. * phys::c * phys::epsilon0 * phys::hb_J); // 1e4: 1/µm -> 1/cm
     const double ikT = (1./phys::kB_eV) / T;
@@ -698,7 +699,7 @@ Tensor2<double> FreeCarrierGainSolver<GeometryT>::getGain0(double hw, double Fc,
 
 template <typename GeometryT>
 Tensor2<double> FreeCarrierGainSolver<GeometryT>::getGain(double hw, double Fc, double Fv, double T, double nr,
-                                                 const ActiveRegionParams& params) const
+                                                          const ActiveRegionParams& params) const
 {
     if (lifetime == 0)
         return getGain0(hw, Fc, Fv, T, nr, params);
