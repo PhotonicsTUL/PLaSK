@@ -131,6 +131,8 @@ namespace detail {
         py::scope scope = flow_module;
         (void) scope;   // don't warn about unused variable scope
 
+        std::string out_name = "out" + type_name<PropertyT>();
+
         py::class_<Filter<PropertyT,GeometryT>, shared_ptr<Filter<PropertyT,GeometryT>>, py::bases<Solver>, boost::noncopyable>
         filter_class((type_name<PropertyT>()+"Filter"+suffix).c_str(),
                      format(
@@ -143,12 +145,14 @@ namespace detail {
                      py::init<shared_ptr<GeometryT>>((py::arg("geometry")))
                     );
         filter_class
-            .def_readonly("out",
+            .def_readonly(out_name.c_str(),
                           reinterpret_cast<ProviderFor<PropertyT, GeometryT> Filter<PropertyT,GeometryT>::*>(&Filter<PropertyT,GeometryT>::out),
-                          format(u8"Filter output provider.\n\nExample:\n    >>> some_solver.in{0} = my_filter.out\n", type_name<PropertyT>()).c_str())
+                          format(u8"Filter output provider.\n\nExample:\n    >>> some_solver.in{0} = my_filter.out{0}\n",
+                                 type_name<PropertyT>()).c_str())
             .def("__getitem__", &FilterIn<PropertyT,GeometryT>::template __getsetitem__<FilterinGetitemResult>)
             .def("__setitem__", &FilterIn<PropertyT,GeometryT>::template __getsetitem__<FilterinSetitemResult, py::object>)
         ;
+        filter_class.attr("out") = filter_class.attr(out_name.c_str());
 
         return filter_class;
     }

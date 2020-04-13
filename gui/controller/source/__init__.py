@@ -148,9 +148,12 @@ class SourceWidget(QWidget):
         self.message_toolbar = QToolBar(self)
         self.find_toolbar.setStyleSheet("QToolBar { border: 0px }")
         self.replace_toolbar.setStyleSheet("QToolBar { border: 0px }")
-        # self.message_toolbar.setStyleSheet("QToolBar { border: 0px }")
-        self.message_toolbar.setStyleSheet("QToolBar { border: 1px solid palette(dark);"
-                                           "           background-color: #ffffcc; color: black; }")
+        if dark_style():
+            self.message_toolbar.setStyleSheet("QToolBar { border: 1px solid palette(dark);"
+                                               "           background-color: #000; color: #ccc; }")
+        else:
+            self.message_toolbar.setStyleSheet("QToolBar { border: 1px solid palette(dark);"
+                                               "           background-color: #ffffcc; color: black; }")
         find_label = QLabel()
         find_label.setText("Search: ")
         find_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
