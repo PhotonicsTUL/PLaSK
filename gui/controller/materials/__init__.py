@@ -9,7 +9,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-import sys
+import os
 import weakref
 import itertools
 
@@ -119,7 +119,7 @@ class MaterialLineEdit(QLineEdit):
         self.button.move(self.rect().right() - frw - sz.width(), (self.rect().bottom() + 1 - sz.height()) / 2)
 
     def show_material(self):
-        show_material_plot(self, self.materials_model, self.defines_model, self.text())
+        show_material_plot(self.parent(), self.materials_model, self.defines_model, self.text())
 
 
 class MaterialsComboBox(QComboBox):
@@ -222,6 +222,58 @@ class MaterialsComboBox(QComboBox):
         if self.popup_select_cb is not None: self.popup_select_cb(material_name)
 
 
+
+class ExternalLineEdit(QLineEdit):
+
+    def __init__(self, parent, what, basedir=None):
+        super(ExternalLineEdit, self).__init__(parent)
+        self.what = what
+        self.basedir = basedir
+
+        # Create a button with icon
+        self.button = QToolButton(self)
+        self.button.setIcon(QIcon.fromTheme('document-open'))
+        self.button.setCursor(Qt.PointingHandCursor)
+        self.button.setStyleSheet("QToolButton { border: none; padding: 0px; }")
+        self.button.clicked.connect(self.show_file_dialog)
+
+        frw = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
+        self.setStyleSheet("QLineEdit {{ padding-right: {}px; }} ".format(self.button.sizeHint().width() + frw + 1))
+        msh = self.minimumSizeHint().height()
+        self.button.setMaximumHeight(msh)
+
+        self.keep = False
+
+    def resizeEvent(self, event):
+        sz = self.button.sizeHint()
+        frw = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
+        self.button.move(self.rect().right() - frw - sz.width(), (self.rect().bottom() + 1 - sz.height()) / 2)
+
+    def show_file_dialog(self):
+        ext = '.py' if self.what == 'module' else \
+         '.dll' if os.name == '.nt' else '.so'
+        what = self.what.title()
+        try:
+            self.keep = True
+            filename = QFileDialog.getOpenFileName(None, "Open Materials {}".format(what), self.basedir,
+                                                   "Materials {} (*{})".format(what.title(), ext))
+        finally:
+            self.keep = False
+            self.setFocus()
+        if type(filename) == tuple: filename = filename[0]
+        if not filename:
+            return
+        filename = os.path.abspath(filename)
+        if filename.startswith(self.basedir):
+            filename = os.path.relpath(filename, self.basedir)
+        if filename.endswith(ext):
+            if filename.endswith('__init__.py'):
+                pkg = os.path.dirname(filename)
+                if pkg: filename = pkg + '.py'  # '.py' will be removed in the next line
+            filename = filename[:-len(ext)]
+        self.setText(filename)
+        self.selectAll()
+
 class MaterialNameDelegate(QStyledItemDelegate):
 
     def __init__(self, model, defines, parent):
@@ -230,16 +282,24 @@ class MaterialNameDelegate(QStyledItemDelegate):
         self.defines = defines
 
     def createEditor(self, parent, option, index):
-        if not isinstance(self.model.entries[index.row()], MaterialsModel.External):
+        entry = self.model.entries[index.row()]
+        if not isinstance(entry, MaterialsModel.External):
             ed = MaterialLineEdit(parent, self.model, self.defines)
         else:
-            ed = QLineEdit(parent)
+            if self.model.document.filename is not None:
+                basedir = os.path.dirname(os.path.abspath(self.model.document.filename))
+            else:
+                basedir = os.getcwd()
+            ed = ExternalLineEdit(parent, entry.what, basedir)
         return ed
+
+    def setModelData(self, editor, model, index):
+        if not (isinstance(editor, ExternalLineEdit) and editor.keep):
+            model.setData(index, editor.text(), Qt.EditRole)
 
     def sizeHint(self, item, index):
         hint = super(MaterialNameDelegate, self).sizeHint(item, index)
-        if not isinstance(self.model.entries[index.row()], MaterialsModel.External):
-            hint.setWidth(hint.width() + 24)
+        hint.setWidth(hint.width() + 24)
         return hint
 
 
@@ -307,6 +367,13 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
             return super(MaterialPropertiesDelegate, self).eventFilter(editor, event)
 
 
+class MaterialsTable(QTableView):
+
+    def closeEditor(self, editor, hint):
+        if not (isinstance(editor, ExternalLineEdit) and editor.keep):
+            super(MaterialsTable, self).closeEditor(editor, hint)
+
+
 class MaterialsController(Controller):
 
     def __init__(self, document, material_selection_model=None):
@@ -319,7 +386,7 @@ class MaterialsController(Controller):
 
         self.splitter = QSplitter()
 
-        self.materials_table = QTableView()
+        self.materials_table = MaterialsTable()
         self.materials_table.setModel(self.model)
         #self.model.modelReset.connect(self.materials_table.clearSelection)  #TODO why does not work?
         self.materials_table.setItemDelegateForColumn(0, MaterialNameDelegate(self.model, self.document.defines.model,

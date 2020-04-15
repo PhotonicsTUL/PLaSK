@@ -436,7 +436,7 @@ class MaterialsModel(TableModel):
             if role == Qt.UserRole:
                 return True
             if role == Qt.ToolTipRole:
-                return "Check this box if material is a include_generic alloy (i.e. alloy material, which you can specify " \
+                return "Check this box if material is a generic alloy (i.e. an alloy material, which you can specify " \
                        "composition of).\nIts name must then consist of compound elements symbols with optional "\
                        "label and dopant, separated by '_' and ':' respectively"
         return super(MaterialsModel, self).data(index, role)
