@@ -95,9 +95,9 @@ class OrderedMeshes(unittest.TestCase):
         generator1 = plask.mesh.Rectangular2D.SimpleGenerator()
         generator2 = plask.mesh.Rectangular2D.DivideGenerator()
         generator2.prediv = 2,2
-        generator2.add_refinement("y", rect, 8.)
+        generator2.add_refinement("v", rect, 8.)
 
-        self.assertEqual( list(generator2.get_refinements("y").values()), [[8.]] )
+        self.assertEqual( list(generator2.get_refinements("v").values()), [[8.]] )
 
         mesh1 = generator1(stack)
         self.assertEqual( list(mesh1.axis0), [0., 2.] )

@@ -26,9 +26,9 @@ AxisNames::AxisNames(const std::string& c0_name, const std::string& c1_name, con
     : byIndex{c0_name, c1_name, c2_name} {}
 
 std::size_t AxisNames::operator [](const std::string &name) const {
-    if (byIndex[0] == name) return 0;
-    if (byIndex[1] == name) return 1;
-    if (byIndex[2] == name) return 2;
+    if (name == byIndex[0] || name == "l" || name == "long") return 0;
+    if (name == byIndex[1] || name == "t" || name == "tran") return 1;
+    if (name == byIndex[2] || name == "v" || name == "vert") return 2;
     return 3;
 }
 
