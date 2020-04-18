@@ -20,7 +20,7 @@ from ...qt.QtGui import *
 from ...qt.QtWidgets import *
 from ...qt import QtSignal, QtSlot
 from ...utils import get_manager
-from ...utils.config import CONFIG
+from ...utils.config import CONFIG, dark_style
 from ...utils.str import none_to_empty, empty_to_none
 from ...utils.widgets import HTMLDelegate, ComboBox, table_edit_shortcut
 from ...utils.qsignals import BlockQtSignals
@@ -280,7 +280,7 @@ class BoundaryConditionsDialog(QDialog):
             self.info.setContentsMargins(0, 0, 0, 0)
             self.info.setFrameStyle(0)
             pal = self.info.palette()
-            pal.setColor(QPalette.Base, QColor("#ffc"))
+            pal.setColor(QPalette.Base, QColor("#6f4402" if dark_style() else "#ffc"))
             self.info.setPalette(pal)
             self.info.acceptRichText()
             self.info.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)

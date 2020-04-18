@@ -191,24 +191,27 @@ def _get_2d_axes(plane):
 
 
 def _get_component(comp, total):
-    if type(comp) == str:
-        if total == 4: # tensor
-            if len(comp) == 1: comp = comp + comp # x - > xx
-            try:
-                a = plask.config.axes
-                values = (a[0]+a[0], a[1]+a[1], a[2]+a[2], a[0]+a[1], a[1]+a[0])
-                comp = min(values.index(comp), 3)
-            except ValueError:
-                comp = min(('ll', 'tt', 'vv', 'lt', 'tl').index(comp), 3)
-        else:
-            if comp in ('long', 'tran', 'vert'):
-                comp = comp[0]
-            try:
-                if plask.config.axes == 'long,tran,vert':
-                    raise ValueError
-                comp = plask.config.axes.index(comp)
-            except ValueError:
-                comp = 'ltv'.index(comp)
+    if isinstance(comp, str):
+        try:
+            if total == 4: # tensor
+                if len(comp) == 1: comp = comp + comp # x - > xx
+                try:
+                    a = plask.config.axes
+                    values = (a[0]+a[0], a[1]+a[1], a[2]+a[2], a[0]+a[1], a[1]+a[0])
+                    comp = min(values.index(comp), 3)
+                except ValueError:
+                    comp = min(('ll', 'tt', 'vv', 'lt', 'tl').index(comp), 3)
+            else:
+                if comp in ('long', 'tran', 'vert'):
+                    comp = comp[0]
+                try:
+                    if plask.config.axes == 'long,tran,vert':
+                        raise ValueError
+                    comp = plask.config.axes.index(comp)
+                except ValueError:
+                    comp = 'ltv'.index(comp)
+        except ValueError:
+            raise ValueError("Bad component '{}' (current axes are '{}')".format(comp, plask.config.axes))
     if total == 2:
         comp = max(comp-1, 0)
     return comp

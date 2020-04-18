@@ -74,7 +74,7 @@ PLASK_PYTHON_API py::object py_eval(std::string string, py::object global, py::o
 PLASK_PYTHON_API OmpNestLock python_omp_lock;
 
 // Config
-PLASK_PYTHON_API AxisNames current_axes = AxisNames::axisNamesRegister.get("zxy");
+PLASK_PYTHON_API AxisNames current_axes = AxisNames::axisNamesRegister.get("ltv");
 
 static LoggingConfig getLoggingConfig(const Config&) {
     return LoggingConfig();
@@ -83,8 +83,8 @@ static LoggingConfig getLoggingConfig(const Config&) {
 std::string Config::axes_name() const {
     return current_axes.str();
 }
-void Config::set_axes(std::string axis) {
-    current_axes = AxisNames::axisNamesRegister.get(axis);
+void Config::set_axes(std::string axes) {
+    current_axes = AxisNames::axisNamesRegister.get(axes);
 }
 
 // return list of 3 axes names or throw exception if axes_names isn't fine

@@ -37,6 +37,7 @@ from ...model.materials import MATERIALS_PROPERTES, material_html_help, parse_ma
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import html_to_tex
 from ...utils.widgets import set_icon_size
+from ...utils.config import dark_style
 
 basestring = str, bytes
 try:
@@ -130,7 +131,7 @@ class MaterialPlot(QWidget):
         self.error.setContentsMargins(0, 0, 0, 0)
         self.error.setFrameStyle(0)
         pal = self.error.palette()
-        pal.setColor(QPalette.Base, QColor("#ffc"))
+        pal.setColor(QPalette.Base, QColor("#6f4402" if dark_style() else "#ffc"))
         self.error.setPalette(pal)
         self.error.acceptRichText()
         self.error.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -391,7 +392,7 @@ class MaterialPlot(QWidget):
         warns = []
 
         def showwarning(message, category, filename, lineno, file=None, line=None):
-            message = unicode(message)
+            message = str(message)
             if message not in warns:
                 warns.append(message)
         warnings.showwarning = showwarning
@@ -472,7 +473,7 @@ class MaterialPlot(QWidget):
             matplotlib.rcParams['font.family'] = font.family()
             matplotlib.rcParams['font.size'] = font.pointSize()
             if self.axes2 is not None:
-                axes += self.axes2
+                axes += self.axes2,
             for ax in axes:
                 ax.tick_params(axis='x', colors=color, labelsize=font.pointSize())
                 ax.tick_params(axis='y', colors=color, labelsize=font.pointSize())
