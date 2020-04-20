@@ -41,7 +41,7 @@ struct PLASK_API GeometryObjectContainer: public GeometryObjectD<dim> {
     typedef Translation<dim> TranslationT;
 
     /// Type of the vector holding container children
-    typedef std::vector< shared_ptr<TranslationT> > TranslationVector;
+    typedef std::vector<shared_ptr<TranslationT>> TranslationVector;
 
 protected:
     TranslationVector children;
@@ -171,6 +171,22 @@ public:
     virtual std::size_t getChildrenCount() const override;
 
     virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override;
+
+    /**
+     * Return index of the given item.
+     * \param object Object which lower edge should lie at height 0
+     * \param path Path specifying a particular item instance
+     */
+    std::size_t getChildIndex(const shared_ptr<ChildType>& el, const PathHints* path = 0) const;
+
+    /**
+     * Return index of the given item.
+     * \param object Object which lower edge should lie at height 0
+     * \param path Path specifying a particular item instance
+     */
+    std::size_t getChildIndex(const shared_ptr<ChildType>& el, const PathHints& path) const {
+        return getChildIndex(el, &path);
+    }
 
     /*virtual shared_ptr<TranslationT> getTranslationOfRealChildAt(std::size_t child_no) const {
         this->ensureIsValidChildNr(child_no);

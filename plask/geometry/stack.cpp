@@ -5,9 +5,10 @@
 #define PLASK_STACK3D_NAME ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)
 #define PLASK_SHELF_NAME "shelf"
 
-#define baseH_attr "shift"
-#define repeat_attr "repeat"
-#define require_equal_heights_attr "flat"
+#define BASEH_ATTR "shift"
+#define REPEAT_ATTR "repeat"
+#define REQUIRE_EQUAL_HEIGHTS_ATTR "flat"
+#define ZERO_ATTR "zero"
 
 namespace plask {
 
@@ -27,12 +28,23 @@ void StackContainerBaseImpl<dim, growingDirection>::setBaseHeight(double newBase
 }
 
 template <int dim, typename Primitive<dim>::Direction growingDirection>
-void StackContainerBaseImpl<dim, growingDirection>::setZeroHeightBefore(std::size_t index)
+void StackContainerBaseImpl<dim, growingDirection>::setZeroBefore(std::size_t index)
 {
     std::size_t h_count = stackHeights.size();
     if (index >= h_count)
-        throw OutOfBoundsException("setZeroHeightBefore", "index", index, 0, h_count-1);
+        throw OutOfBoundsException("setZeroBefore", "index", index, 0, h_count-1);
     setBaseHeight(stackHeights[0] - stackHeights[index]);
+}
+
+template <int dim, typename Primitive<dim>::Direction growingDirection>
+void StackContainerBaseImpl<dim, growingDirection>::alignZeroOn(std::size_t index, double pos)
+{
+    std::size_t h_count = children.size();
+    if (index >= h_count)
+        throw OutOfBoundsException("alignZeroOn", "index", index, 0, h_count-1);
+    auto child = children[index]->getChild();
+    double shift = child? child->getBoundingBox().lower[growingDirection] : 0.;
+    setBaseHeight(stackHeights[0] - stackHeights[index] + shift - pos);
 }
 
 template <int dim, typename Primitive<dim>::Direction growingDirection>
@@ -155,7 +167,7 @@ void StackContainerBaseImpl<dim, growingDirection>::rebuildStackHeights(std::siz
 template <int dim, typename Primitive<dim>::Direction growingDirection>
 void StackContainerBaseImpl<dim, growingDirection>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames & axes) const {
     BaseClass::writeXMLAttr(dest_xml_object, axes);
-    dest_xml_object.attr(baseH_attr, getBaseHeight());
+    dest_xml_object.attr(BASEH_ATTR, getBaseHeight());
 }
 
 template <int dim, typename Primitive<dim>::Direction growingDirection>
@@ -444,7 +456,7 @@ shared_ptr<GeometryObject> ShelfContainer2D::changedVersionForChildren(std::vect
 
 void ShelfContainer2D::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames& axes) const {
     BaseClass::writeXMLAttr(dest_xml_object, axes);
-    dest_xml_object.attr(require_equal_heights_attr, false);
+    dest_xml_object.attr(REQUIRE_EQUAL_HEIGHTS_ATTR, false);
 }
 
 template <typename UpperClass>
@@ -615,7 +627,7 @@ shared_ptr<GeometryObject> MultiStackContainer<UpperClass>::getRealChildNo(std::
 template <typename UpperClass>
 void MultiStackContainer<UpperClass>::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
     UpperClass::writeXMLAttr(dest_xml_object, axes);
-    dest_xml_object.attr(repeat_attr, repeat_count);
+    dest_xml_object.attr(REPEAT_ATTR, repeat_count);
 }
 
 template <typename StackContainerT>
@@ -678,32 +690,53 @@ template class PLASK_API MultiStackContainer<ShelfContainer2D>;
 /// Helper used by read_... stack functions.
 struct HeightReader {
     XMLReader& reader;
-    int whereWasZeroTag;
+    const char* what;
+    int whereWasZero;
+    double alignZero;
+    bool align;
 
-    HeightReader(XMLReader& reader): reader(reader), whereWasZeroTag(reader.hasAttribute(baseH_attr) ? -2 : -1) {}
+    HeightReader(XMLReader& reader, const char* what): reader(reader), what(what), whereWasZero(reader.hasAttribute(BASEH_ATTR) ? -2 : -1),
+                                                       alignZero(0.), align(false) {}
 
-    bool tryReadZero(shared_ptr<plask::GeometryObject> stack) {
+    inline void setZero(shared_ptr<plask::GeometryObject> stack) {
+        if (whereWasZero != -1) throw XMLException(reader, format("{} shift has already been specified.", what));
+        whereWasZero = int(stack->getRealChildrenCount());
+    }
+
+    bool tryReadZeroTag(shared_ptr<plask::GeometryObject> stack) {
         if (reader.getNodeName() != "zero") return false;
-        if (whereWasZeroTag != -1) throw XMLException(reader, "Base height has been already chosen.");
+        setZero(stack);
         reader.requireTagEnd();
-        whereWasZeroTag = int(stack->getRealChildrenCount());
         return true;
+    }
+
+    void tryReadZeroAttr(shared_ptr<plask::GeometryObject> stack) {
+        auto zeroAttr = reader.getAttribute<double>(ZERO_ATTR);
+        if (!zeroAttr) return;
+        setZero(stack);
+        alignZero = *zeroAttr;
+        align = true;
     }
 
     template <typename StackPtrT>
     void setBaseHeight(StackPtrT stack, bool reverse) {
-        if (whereWasZeroTag >= 0) stack->setZeroHeightBefore(reverse ? stack->getRealChildrenCount() - whereWasZeroTag : whereWasZeroTag);
+        if (whereWasZero >= 0) {
+            if (align)
+                stack->alignZeroOn(reverse ? stack->getRealChildrenCount() - whereWasZero - 1: whereWasZero, alignZero);
+            else
+                stack->setZeroBefore(reverse ? stack->getRealChildrenCount() - whereWasZero : whereWasZero);
+        }
     }
 };
 
 template <int dim>
 static shared_ptr<GeometryObject> read_StackContainer(GeometryReader& reader) {
-    HeightReader height_reader(reader.source);
-    const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
+    HeightReader height_reader(reader.source, "Stack's vertical");
+    const double baseH = reader.source.getAttribute(BASEH_ATTR, 0.0);
 
     shared_ptr<StackContainer<dim>> result(
-                    reader.source.hasAttribute(repeat_attr) ?
-                    new MultiStackContainer<StackContainer<dim>>(reader.source.getAttribute(repeat_attr, 1u), baseH) :
+                    reader.source.hasAttribute(REPEAT_ATTR) ?
+                    new MultiStackContainer<StackContainer<dim>>(reader.source.getAttribute(REPEAT_ATTR, 1u), baseH) :
                     new StackContainer<dim>(baseH)
                 );
 
@@ -712,11 +745,12 @@ static shared_ptr<GeometryObject> read_StackContainer(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, dim == 2 ? PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D : PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);
     read_children(reader,
             [&]() -> PathHints::Hint {
+                height_reader.tryReadZeroAttr(result);
                 auto aligner = align::fromXML(reader.source, reader.getAxisNames(), result->default_aligner);
                 return result->push_front(reader.readExactlyOneChild<typename StackContainer<dim>::ChildType>(), aligner);
             },
             [&]() {
-                if (height_reader.tryReadZero(result)) return;
+                if (height_reader.tryReadZeroTag(result)) return;
                 result->push_front(reader.readObject<typename StackContainer<dim>::ChildType>());
             }
     );
@@ -728,24 +762,25 @@ static GeometryReader::RegisterObjectReader stack2D_reader(PLASK_STACK2D_NAME, r
 static GeometryReader::RegisterObjectReader stack3D_reader(PLASK_STACK3D_NAME, read_StackContainer<3>);
 
 static shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) {
-    HeightReader height_reader(reader.source);
+    HeightReader height_reader(reader.source, "Shelf's horizontal");
     //TODO migrate to gap which can update self
     shared_ptr<Gap1D<2, Primitive<2>::DIRECTION_TRAN>> total_size_gap;  //gap which can change total size
     double required_total_size;  //required total size, valid only if total_size_gap is not nullptr
-    const double baseH = reader.source.getAttribute(baseH_attr, 0.0);
+    const double baseH = reader.source.getAttribute(BASEH_ATTR, 0.0);
     shared_ptr<ShelfContainer2D> result(
-                     reader.source.hasAttribute(repeat_attr) ?
-                     new MultiStackContainer<ShelfContainer2D>(reader.source.getAttribute(repeat_attr, 1u), baseH) :
+                     reader.source.hasAttribute(REPEAT_ATTR) ?
+                     new MultiStackContainer<ShelfContainer2D>(reader.source.getAttribute(REPEAT_ATTR, 1u), baseH) :
                      new ShelfContainer2D(baseH)
                      );
-    bool requireEqHeights = reader.source.getAttribute(require_equal_heights_attr, true);
+    bool requireEqHeights = reader.source.getAttribute(REQUIRE_EQUAL_HEIGHTS_ATTR, true);
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     read_children(reader,
             [&]() {
-                return result->push_back(reader.readExactlyOneChild< typename ShelfContainer2D::ChildType >());
+                height_reader.tryReadZeroAttr(result);
+                return result->push_back(reader.readExactlyOneChild<typename ShelfContainer2D::ChildType>());
             },
             [&]() {
-                if (height_reader.tryReadZero(result)) return;
+                if (height_reader.tryReadZeroTag(result)) return;
                 shared_ptr<Gap1D<2, Primitive<2>::DIRECTION_TRAN>> this_gap;
                 if (reader.source.getNodeName() == Gap1D<2, Primitive<2>::DIRECTION_TRAN>::NAME) {
                     plask::optional<double> total_size_attr = reader.source.getAttribute<double>("total");
@@ -769,7 +804,7 @@ static shared_ptr<GeometryObject> read_ShelfContainer2D(GeometryReader& reader) 
                     reader.source.requireTagEnd();
                     return;
                 }
-                result->push_back(reader.readObject< ShelfContainer2D::ChildType >());
+                result->push_back(reader.readObject<ShelfContainer2D::ChildType>());
             }
     );
     if (total_size_gap) {

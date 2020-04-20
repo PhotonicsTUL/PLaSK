@@ -205,15 +205,37 @@ class Containers(unittest.TestCase):
         self.assertEqual( stack.get_material(0,0,1), self.aln)
         self.assertEqual( stack.get_material(0,0,3), self.gan)
 
+    def testItemIndex(self):
+        stack = plask.geometry.Stack2D()
+        path0 = stack.append(self.block1)
+        stack.append(self.block1)
+        path2 = stack.append(self.block1)
+        self.assertEqual( stack.index(self.block1, path0), 0 )
+        self.assertEqual( stack.index(self.block1, path2), 2 )
+        with self.assertRaises(ValueError):  # multiple instances
+            stack.index(self.block1)
+        with self.assertRaises(ValueError):  # no instance
+            stack.index(self.block2)
+
     def testStackZero(self):
         stack = plask.geometry.Stack2D()
         stack.append(self.block1)
         stack.append(self.block1)
-        stack.append(self.block1)
+        path = stack.append(self.block1)
         self.assertEqual( stack.bbox, geometry.Box2D(0,0, 5,9) )
-        stack.set_zero_below(2)
+        stack.set_zero_below(self.block1, path)
         self.assertEqual( stack.bbox, geometry.Box2D(0,-6, 5,3) )
 
+    def testStackZeroInObject(self):
+        stack2 = plask.geometry.Stack2D()
+        stack2.append(self.block1)
+        p2 = stack2.append(self.block1)
+        stack2.align_zero_on(self.block1, p2)
+        stack1 = plask.geometry.Stack2D()
+        stack1.append(stack2)
+        stack1.align_zero_on(stack2, -1)
+        self.assertEqual( stack2.bbox, geometry.Box2D(0,-3, 5,3) )
+        self.assertEqual( stack1.bbox, geometry.Box2D(0,-2, 5,4) )
 
     def testRoles(self):
         stack = plask.geometry.Stack2D()

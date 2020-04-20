@@ -14,6 +14,7 @@ from lxml import etree
 from numbers import Number
 from itertools import chain
 
+from ...utils.validators import can_be_float
 from ...utils import require_str_first_attr_path_component
 from ...utils.xml import AttributeReader, OrderedTagReader
 from .reader import GNReadConf, axes_dim
@@ -37,9 +38,10 @@ class GNode:
         self.dim = dim
         self.children_dim = children_dim
         self.children = []
-        self.in_parent = None   # configuration inside parent (container)
-        self.path = None        # path inside parent (container)
-        self._parent = None     # needed for set_parent working fine
+        self.in_parent_aligners = None  # aligners inside the parent (container)
+        self.in_parent_attrs = {}       # other attributes inside the parent (container)
+        self.path = None                # path inside the parent (container)
+        self._parent = None             # needed for set_parent working fine
         self.set_parent(parent, parent_index)
 
     def _attributes_from_xml(self, attribute_reader, conf):
@@ -197,7 +199,7 @@ class GNode:
         :param GNode parent: new parent of self
         :param int index: required index on new parent list (None to default)
         :param remove_from_old_parent: if True self will be removed from its current parent children list
-        :param check_parent_params: if False, the `in_parent` and `path` params are kept unconditionally
+        :param check_parent_params: if False, the `in_parent_aligners` and `path` params are kept unconditionally
         """
         if self._parent == parent:
             if index is None or parent is None: return
@@ -216,12 +218,12 @@ class GNode:
                 if check_parent_params:
                     if parent is not None:
                         if type(parent) != type(self._parent):
-                            self.in_parent = None
+                            self.in_parent_aligners = None
                         from .container import GNContainerBase
                         if not isinstance(parent, GNContainerBase):
                             self.path = None
                     else:
-                        self.in_parent = None
+                        self.in_parent_aligners = None
                         self.path = None
             self._parent = parent
             if self._parent is not None:
@@ -264,7 +266,7 @@ class GNode:
 
     def get_controller_for_inparent(self, document, model):
         """
-        Get controller which allow to change position of self in its parent.
+        Get controller which allows to change position of self in its parent.
         :param document: document
         :param model: geometry model
         :return: controller which allow to change position of self in its parent
@@ -506,7 +508,7 @@ class GNode:
         :param List(Info) res: place to append info objects
         :param OrderedDict names: names of objects which are before this in tree
         """
-        pass
+        if not can_be_float(self.in_parent_attrs.get('zero')): self._wrong_type(res, 'float', 'zero')
 
 
 class GNFakeRoot(GNode):

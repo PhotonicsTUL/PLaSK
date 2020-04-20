@@ -119,7 +119,7 @@ class GNodeController(Controller):
         elif node_property_name is not None:
             weakself = weakref.proxy(self)
             res.editingFinished.connect(
-                lambda : weakself._set_node_property_undoable(
+                lambda: weakself._set_node_property_undoable(
                     node_property_name, res.text(), display_property_name, unit))
         return res
 

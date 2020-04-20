@@ -323,6 +323,9 @@ struct PLASK_API NoSuchGeometryObject: public Exception {
      */
     NoSuchGeometryObject(const std::string& object_name)
     : Exception("No geometry object with name \"" + object_name + "\"") {}
+
+    NoSuchGeometryObject()
+    : Exception("No geometry object found") {}
 };
 
 /**

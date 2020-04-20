@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_SUITE(geometry) // MUST be the same as the file name
         shelf->add(block_5_4);
         BOOST_CHECK(!shelf->isFlat());
         BOOST_CHECK_EQUAL(shelf->getBoundingBox(), plask::Box2D(0.0, 0.0, 25.0, 4.0));
-        shelf->setZeroHeightBefore(2);
+        shelf->setZeroBefore(2);
         BOOST_CHECK_EQUAL(shelf->getBoundingBox(), plask::Box2D(-15.0, 0.0, 10.0, 4.0));
     }
 

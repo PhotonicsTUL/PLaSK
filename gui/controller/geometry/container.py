@@ -107,13 +107,13 @@ class GNStackController(GNObjectController):
         self.repeat = self.construct_line_edit('Repeat:', node_property_name='repeat',
                                                display_property_name='number of repetitive occurrences')
         self.repeat.setToolTip('&lt;stack <b>repeat</b>="" ...&gt;<br/>'
-                                'Number of repetitive occurrences of stack content.'
-                                ' This attribute allows to create periodic vertical structures (e. g. DBRs) easily.'
-                                ' Defaults to 1. (integer))')
+                               'Number of repetitive occurrences of stack content.'
+                               ' This attribute allows to create periodic vertical structures (e. g. DBRs) easily.'
+                               ' Defaults to 1. (integer))')
         self.shift = self.construct_line_edit('Shift:', node_property_name='shift')
         self.shift.setToolTip(u'&lt;stack <b>shift</b>="" ...&gt;<br/>'
-                                u'Vertical position of the stack bottom edge in its local coordinates.'
-                                u' Defaults to 0. (float [µm])')
+                              u'Vertical position of the stack bottom edge in its local coordinates.'
+                              u' Defaults to 0. (float [µm])')
         self.pos_layout = self.construct_group("Default Items' Positions")
         def setter(n, v): n.aligners = v
         weakself = weakref.proxy(self)
@@ -130,15 +130,19 @@ class GNStackController(GNObjectController):
         aligners_to_controllers(self.node.aligners, self.positions)
 
 
-class GNContainerChildBaseController(GNChildController):
+class GNContainerChildController(GNChildController):
+
+    def construct_form_other(self):
+        pass
 
     def construct_form(self):
         self.construct_group('Position in Container')
-        def setter(n, v): n.in_parent = v
+        def setter(n, v): n.in_parent_aligners = v
         weakself = weakref.proxy(self)
         self.positions = self.construct_align_controllers(change_cb=lambda aligners:
             weakself._set_node_by_setter_undoable(
-                setter, aligners, weakself.child_node.in_parent, 'change item position', node=self.child_node))
+                setter, aligners, weakself.child_node.in_parent_aligners, 'change item position', node=self.child_node))
+        self.construct_form_other()
         self.path = self.construct_combo_box(
             'Path:', items=[''] + sorted(self.model.get_paths(), key=lambda s: s.lower()),
             node_property_name='path', node=self.child_node)
@@ -146,7 +150,35 @@ class GNContainerChildBaseController(GNChildController):
                              'between multiple occurrences of the same object.')
 
     def fill_form(self):
-        super(GNContainerChildBaseController, self).fill_form()
-        aligners_to_controllers(self.child_node.in_parent, self.positions)
+        super(GNContainerChildController, self).fill_form()
+        aligners_to_controllers(self.child_node.in_parent_aligners, self.positions)
         with BlockQtSignals(self.path):
             self.path.setEditText(none_to_empty(self.child_node.path))
+
+
+class GNStackChildController(GNContainerChildController):
+
+    def _set_node_zero_undoable(self):
+        new_value = empty_to_none(self.zero.text())
+        old_value = self.child_node.in_parent_attrs.get('zero')
+        action_name = "change {}'s zero to local {} in {}".format(self.node.display_name(full_name=False).lower(),
+                                                                self.zero.text(),
+                                                                self.child_node.display_name(full_name=False).lower())
+        self._set_node_by_setter_undoable(lambda n, v: n.in_parent_attrs.__setitem__('zero', v), new_value, old_value,
+                                          action_name=action_name, node=self.child_node)
+
+    def construct_form_other(self):
+        weakself = weakref.proxy(self)
+        name = self.node.display_name(full_name=False)
+        direction = {'Shelf': 'horizontal'}.get(name, 'vertical')
+        self.zero = self.construct_line_edit("{}'s zero align:".format(name),
+                                             change_cb=lambda: weakself._set_node_zero_undoable(),
+                                             unit="µm", use_defines_completer=True)
+        self.zero.setToolTip("Shift {0} {1}ly so its zero aligns with the specified {1} position in this item. "
+                             "Only one object in the {0} can have this value not empty and you must not "
+                             "use any other method of defining the {0} {1} coordinates."
+                             .format(name.lower(), direction))
+
+    def fill_form(self):
+        super(GNStackChildController, self).fill_form()
+        self.zero.setText(none_to_empty(self.child_node.in_parent_attrs.get('zero')))

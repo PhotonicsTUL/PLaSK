@@ -57,10 +57,55 @@ struct PLASK_API StackContainerBaseImpl: public GeometryObjectContainer<dim> {
     void setBaseHeight(double newBaseHeight);
 
     /**
-     * Set height where should start first object. Call changed.
+     * Set zero coordinate at the bottom of the specified object
      * @param index index of object which lower bound should lie at height 0
      */
-    void setZeroHeightBefore(std::size_t index);
+    void setZeroBefore(std::size_t index);
+
+    /**
+     * Set zero coordinate at the bottom of the specified object
+     * \param object object which lower bound should lie at height 0
+     * \param path path to object which lower bound should lie at height 0
+     */
+    void setZeroBefore(const shared_ptr<ChildType>& object, const PathHints* path = 0) {
+        setZeroBefore(this->getChildIndex(object, path));
+    }
+
+    /**
+     * Set zero coordinate at the bottom of the specified object
+     * \param object object which lower bound should lie at height 0
+     * \param path path to object which lower bound should lie at height 0
+     */
+    void setZeroBefore(const shared_ptr<ChildType>& object, const PathHints& path) {
+        setZeroBefore(this->getChildIndex(object, path));
+    }
+
+    /**
+     * Align zero coordinate with the specified position of the object of specified index
+     * \param index index of object which should be aligned
+     * \param pos local object position to align stack zero
+     */
+    void alignZeroOn(std::size_t index, double pos = 0.);
+
+    /**
+     * Align zero coordinate with the zero of the specified object
+     * \param object object which should be aligned
+     * \param path path to object which should be aligned
+     * \param pos local object position to align stack zero
+     */
+    void alignZeroOn(const shared_ptr<ChildType>& object, const PathHints* path = 0, double pos = 0.) {
+        alignZeroOn(this->getChildIndex(object, path), pos);
+    }
+
+    /**
+     * Align zero coordinate with the zero of the specified object
+     * \param object object which should be aligned
+     * \param path path to object which should be aligned
+     * \param pos local object position to align stack zero
+     */
+    void alignZeroOn(const shared_ptr<ChildType>& object, const PathHints& path, double pos = 0.) {
+        alignZeroOn(this->getChildIndex(object, path), pos);
+    }
 
     std::size_t getInsertionIndexForHeight(double height) const;
 

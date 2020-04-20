@@ -79,7 +79,9 @@
           <rectangle material="AlGa(0.5)N" dtran="0.1" dvert="0.2"/>
         </stack>
       </shelf>
-      <rectangle name="posredni" material="Al(0.2)GaN" dtran="2" dvert="0.5"/>
+      <item zero="0.3">
+        <rectangle name="posredni" material="Al(0.2)GaN" dtran="2" dvert="0.5"/>
+      </item>
       <rectangle role="substrate" material="GaN" dtran="2" dvert="1"/>
     </stack>
   </cartesian2d>

@@ -57,12 +57,19 @@ static void Container__delitem__(GeometryObjectContainer<dim>& self, py::object 
 
 
 DECLARE_GEOMETRY_ELEMENT_23D(GeometryObjectContainer, "Container", u8"Base class for all ", u8" containers.") {
+    typedef std::size_t (GeometryObjectContainer<dim>::*IndexFT)(const shared_ptr<typename GeometryObjectContainer<dim>::ChildType>&, const PathHints&) const;
     ABSTRACT_GEOMETRY_ELEMENT_23D(GeometryObjectContainer, GeometryObjectD<dim>)
         .def("__contains__", &Container__contains__<dim>)
         .def("__getitem__", &GeometryObject__getitem__)
         .def("__getitem__", &Container__getitem__hints<dim>)
         .def("__len__", &GeometryObjectD<dim>::getChildrenCount)
         .def("__delitem__", &Container__delitem__<dim>)
+        .template def<IndexFT>("index", &GeometryObjectContainer<dim>::getChildIndex,
+             (py::arg("item"), py::arg("path")=py::object()),
+             u8"Return index of the given item."
+             u8"Args:\n"
+             u8"    object: Object which lower edge should lie at height 0.\n"
+             u8"    path: Path specifying a particular item instance.\n")
     ;
 }
 

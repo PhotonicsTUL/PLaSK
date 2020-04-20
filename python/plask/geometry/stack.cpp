@@ -90,6 +90,26 @@ shared_ptr<MultiStackContainer<plask::StackContainer<dim>>> MultiStack__init__(c
         return plask::make_shared<MultiStackContainer<plask::StackContainer<dim>>>(repeat, shift, py::extract<typename StackContainer<dim>::ChildAligner>(kwargs));
 }
 
+template <typename T>
+static void align_zero_on_1(T& self, const shared_ptr<typename T::ChildType>& item) {
+    self.alignZeroOn(item);
+}
+
+template <typename T>
+static void align_zero_on_2(T& self, const shared_ptr<typename T::ChildType>& item, const PathHints& path) {
+    self.alignZeroOn(item, path);
+}
+
+template <typename T>
+static void align_zero_on_3(T& self, const shared_ptr<typename T::ChildType>& item, double pos) {
+    self.alignZeroOn(item, nullptr, pos);
+}
+
+template <typename T>
+static void align_zero_on_4(T& self, const shared_ptr<typename T::ChildType>& item, const PathHints& path, double pos) {
+    self.alignZeroOn(item, path, pos);
+}
+
 void register_geometry_container_stack()
 {
     // Stack container
@@ -147,13 +167,27 @@ void register_geometry_container_stack()
              u8"                      ``#center``, and ``#`` where `#` is the horizontal axis\n"
              u8"                      name. By default the object is aligned according to the\n"
              u8"                      specification in the stack constructor.\n")
-        .def("set_zero_below", &StackContainer<2>::setZeroHeightBefore, py::arg("index"),
-             u8"Set zero below the item with the given index.\n\n"
+        .def<void (StackContainer<2>::*)(const shared_ptr<StackContainer<2>::ChildType>&, const PathHints&)>(
+            "set_zero_below", &StackContainer<2>::setZeroBefore, (py::arg("item"), py::arg("path")=py::object()),
+             u8"Set zero below the specified item.\n\n"
              u8"This method shifts the local coordinates of the stack vertically. The vertical\n"
-             u8"coordinate of the stack origin is placed at the bootom edge of the item with\n"
-             u8"the specified index.\n\n"
+             u8"coordinate of the stack origin is placed at the bootom edge of the specified\n"
+             u8"item.\n\n"
              u8"Args:\n"
-             u8"    index (int): Index of the item to align the zero with.\n")
+             u8"    item: Stack item which lower edge should lie at height 0.\n"
+             u8"    path: Path specifying a particular item instance.\n")
+        .def("align_zero_on", &align_zero_on_1<StackContainer<2>>, py::arg("item"))
+        .def("align_zero_on", &align_zero_on_2<StackContainer<2>>, (py::arg("item"), "path"))
+        .def("align_zero_on", &align_zero_on_3<StackContainer<2>>, (py::arg("item"), "pos"))
+        .def("align_zero_on", &align_zero_on_4<StackContainer<2>>, (py::arg("item"), "path", "pos"),
+             u8"Align zero with the vertical position ``pos`` of the specified item.\n\n"
+             u8"This method shifts the local coordinates of the stack vertically. The vertical\n"
+             u8"coordinate of the stack origin is placed at the local position ``pos``\n"
+             u8"of the specified item (0 by default).\n\n"
+             u8"Args:\n"
+             u8"    item: Stack item which lower edge should lie at height 0.\n"
+             u8"    path: Path specifying a particular item instance.\n"
+             u8"    pos: Local position of the specified object to place at stack zero.\n")
         .def("move_item", py::raw_function(&Container_move<StackContainer<2>>),
              u8"move_item(path, **alignment)\n\n"
              u8"Move horizontally item existing in the stack, setting its position according\n"
@@ -230,13 +264,27 @@ void register_geometry_container_stack()
              u8"                       given edge/center/origin of the item. By default the\n"
              u8"                       object is aligned according to the specification in the\n"
              u8"                       stack constructor.\n")
-        .def("set_zero_below", &StackContainer<3>::setZeroHeightBefore, py::arg("index"),
-             u8"Set zero below the item with the given index.\n\n"
+        .def<void (StackContainer<3>::*)(const shared_ptr<StackContainer<3>::ChildType>&, const PathHints&)>(
+            "set_zero_below", &StackContainer<3>::setZeroBefore, (py::arg("item"), py::arg("path")=py::object()),
+             u8"Set zero below the specified item.\n\n"
              u8"This method shifts the local coordinates of the stack vertically. The vertical\n"
-             u8"coordinate of the stack origin is placed at the bootom edge of the item with\n"
-             u8"the specified index.\n\n"
+             u8"coordinate of the stack origin is placed at the bootom edge of the specified\n"
+             u8"item.\n\n"
              u8"Args:\n"
-             u8"    index (int): Index of the item to align the zero with.\n")
+             u8"    item: Stack item which lower edge should lie at height 0.\n"
+             u8"    path: Path specifying a particular item instance.\n")
+        .def("align_zero_on", &align_zero_on_1<StackContainer<3>>, py::arg("item"))
+        .def("align_zero_on", &align_zero_on_2<StackContainer<3>>, (py::arg("item"), "path"))
+        .def("align_zero_on", &align_zero_on_3<StackContainer<3>>, (py::arg("item"), "pos"))
+        .def("align_zero_on", &align_zero_on_4<StackContainer<3>>, (py::arg("item"), "path", "pos"),
+             u8"Align zero with the vertical position ``pos`` of the specified item.\n\n"
+             u8"This method shifts the local coordinates of the stack vertically. The vertical\n"
+             u8"coordinate of the stack origin is placed at the local position ``pos``\n"
+             u8"of the specified item (0 by default).\n\n"
+             u8"Args:\n"
+             u8"    item: Stack item which lower edge should lie at height 0.\n"
+             u8"    path: Path specifying a particular item instance.\n"
+             u8"    pos: Local position of the specified object to place at stack zero.\n")
         .def("move_item", py::raw_function(&Container_move<StackContainer<3>>),
              u8"move_item(path, **alignments)\n\n"
              u8"Move horizontally item existing in the stack, setting its position according\n"
@@ -335,13 +383,27 @@ void register_geometry_container_stack()
              u8"Args:\n"
              u8"    item (GeometryObject2D): Object to insert to the shelf.\n"
              u8"    index (int): Index of the inserted item in the stack.\n")
-        .def("set_zero_before", &StackContainer<3>::setZeroHeightBefore, py::arg("index"),
-             u8"Set zero to the left of the item with the given index.\n\n"
-             u8"This method shifts the local coordinates of the shelf horizontally.\n"
+        .def<void (ShelfContainer2D::*)(const shared_ptr<ShelfContainer2D::ChildType>&, const PathHints&)>(
+            "set_zero_before", &ShelfContainer2D::setZeroBefore, (py::arg("item"), py::arg("path")=py::object()),
+             u8"Set zero to the left the specified item.\n\n"
+             u8"This method shifts the local coordinates of the stack horizontally.\n"
              u8"The horizontal coordinate of the shelf origin is placed at the left edge\n"
-             u8"of the item with the specified index.\n\n"
+             u8"of the specified item.\n\n"
              u8"Args:\n"
-             u8"    index (int): Index of the item to align the zero with.\n")
+             u8"    item: Shelf item which left edge should lie at 0.\n"
+             u8"    path: Path specifying a particular item instance.\n")
+        .def("align_zero_on", &align_zero_on_1<ShelfContainer2D>, py::arg("item"))
+        .def("align_zero_on", &align_zero_on_2<ShelfContainer2D>, (py::arg("item"), "path"))
+        .def("align_zero_on", &align_zero_on_3<ShelfContainer2D>, (py::arg("item"), "pos"))
+        .def("align_zero_on", &align_zero_on_4<ShelfContainer2D>, (py::arg("item"), "path", "pos"),
+             u8"Align zero with the horizontal position ``pos`` of the specified item.\n\n"
+             u8"This method shifts the local coordinates of the stack horizontally.\n"
+             u8"The horizontal coordinate of the shelf origin is placed at the local\n"
+             u8"position ``pos`` of the specified item (0 by default).\n\n"
+             u8"Args:\n"
+             u8"    item: Shelf item which lower edge should lie at height 0.\n"
+             u8"    path: Path specifying a particular item instance.\n"
+             u8"    pos: Local position of the specified object to place at shelf zero.\n")
         .def("append_gap", &ShelfContainer2D::addGap, py::arg("size"),
              u8"Add a gap to the end of the shelf.\n\n"
              u8"This method adds a gap to the end of the shelf. All consecutive items will be\n"

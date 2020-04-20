@@ -103,8 +103,8 @@ class GNContainerBase(GNObject):
         return None
 
     def get_controller_for_child_inparent(self, document, model, child):
-        from ...controller.geometry.container import GNContainerChildBaseController
-        return GNContainerChildBaseController(document, model, self, child)
+        from ...controller.geometry.container import GNContainerChildController
+        return GNContainerChildController(document, model, self, child)
 
     def child_properties(self, child):
         res = super(GNContainerBase, self).child_properties(child)
@@ -181,7 +181,24 @@ class GNContainerBase(GNObject):
         return index
 
 
-class GNStack(GNContainerBase):
+class GNStackBase(GNContainerBase):
+
+    def item_attributes_from_xml(self, child, item_attr_reader, conf):
+        super().item_attributes_from_xml(child, item_attr_reader, conf)
+        child.in_parent_attrs['zero'] = item_attr_reader.get('zero')
+
+    def get_item_xml_element(self, child, conf):
+        res = super(GNStackBase, self).get_item_xml_element(child, conf)
+        zero = child.in_parent_attrs.get('zero')
+        if zero is not None: res.attrib['zero'] = zero
+        return res
+
+    def get_controller_for_child_inparent(self, document, model, child):
+        from ...controller.geometry.container import GNStackChildController
+        return GNStackChildController(document, model, self, child)
+
+
+class GNStack(GNStackBase):
     """2D/3D (multi-)stack"""
 
     def __init__(self, parent=None, dim=None):
@@ -213,7 +230,7 @@ class GNStack(GNContainerBase):
 
     def item_attributes_from_xml(self, child, item_attr_reader, conf):
         super(GNStack, self).item_attributes_from_xml(child, item_attr_reader, conf)
-        child.in_parent = conf.read_aligners(item_attr_reader, self.children_dim, *self.aligners_dir())
+        child.in_parent_aligners = conf.read_aligners(item_attr_reader, self.children_dim, *self.aligners_dir())
 
     def child_from_xml(self, child_element, conf):
         if child_element.tag == 'zero':
@@ -223,8 +240,8 @@ class GNStack(GNContainerBase):
 
     def get_item_xml_element(self, child, conf):
         res = super(GNStack, self).get_item_xml_element(child, conf)
-        if child.in_parent is not None:
-            conf.write_aligners(res, self.children_dim, self.aligners_dict(child.in_parent))
+        if child.in_parent_aligners is not None:
+            conf.write_aligners(res, self.children_dim, self.aligners_dict(child.in_parent_aligners))
         return res
 
     def tag_name(self, full_name=True):
@@ -271,7 +288,7 @@ class GNStack(GNContainerBase):
 
     def child_properties(self, child):
         res = super(GNStack, self).child_properties(child)
-        return res + self._aligners_to_properties(child.in_parent)
+        return res + self._aligners_to_properties(child.in_parent_aligners)
 
     def get_controller(self, document, model):
         from ...controller.geometry.container import GNStackController
@@ -312,7 +329,7 @@ class GNStack(GNContainerBase):
         return super(GNStack, self).model_to_real_index(self.real_children_count - 1 - index, model)
 
 
-class GNShelf(GNContainerBase):
+class GNShelf(GNStackBase):
     """(multi-)shelf"""
 
     def __init__(self, parent=None):
@@ -409,12 +426,12 @@ class GNAlignContainer(GNContainerBase):
 
     def item_attributes_from_xml(self, child, item_attr_reader, conf):
         super(GNAlignContainer, self).item_attributes_from_xml(child, item_attr_reader, conf)
-        child.in_parent = conf.read_aligners(item_attr_reader, self.children_dim)
+        child.in_parent_aligners = conf.read_aligners(item_attr_reader, self.children_dim)
 
     def get_item_xml_element(self, child, conf):
         res = super(GNAlignContainer, self).get_item_xml_element(child, conf)
-        if child.in_parent is not None:
-            conf.write_aligners(res, self.children_dim, child.in_parent)
+        if child.in_parent_aligners is not None:
+            conf.write_aligners(res, self.children_dim, child.in_parent_aligners)
         return res
 
     def tag_name(self, full_name=True):
@@ -440,8 +457,8 @@ class GNAlignContainer(GNContainerBase):
         return super(GNAlignContainer, self).major_properties() + self._aligners_to_properties(self.aligners)
 
     def child_properties(self, child):
-        if child.in_parent is None: return []
-        return self._aligners_to_properties(child.in_parent)
+        if child.in_parent_aligners is None: return []
+        return self._aligners_to_properties(child.in_parent_aligners)
 
     def get_controller(self, document, model):
         from ...controller.geometry.container import GNContainerController

@@ -597,6 +597,8 @@ BOOST_PYTHON_MODULE(_plask)
     register_exception<plask::NoSuchMaterial>(PyExc_ValueError);
     register_exception<plask::MaterialParseException>(PyExc_ValueError);
     register_exception<plask::NoSuchGeometryObjectType>(PyExc_TypeError);
+    register_exception<plask::NotUniqueObjectException>(PyExc_ValueError);
+    register_exception<plask::NoSuchGeometryObject>(PyExc_ValueError);
     register_exception<plask::BadInput>(PyExc_ValueError);
     register_exception<plask::DataError>(PyExc_ValueError);
     register_exception<plask::NoValue>(PyExc_ValueError);

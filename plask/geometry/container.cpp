@@ -183,6 +183,25 @@ shared_ptr<GeometryObject> GeometryObjectContainer<dim>::getChildNo(std::size_t 
 }
 
 template <int dim>
+
+std::size_t GeometryObjectContainer<dim>::getChildIndex(const shared_ptr<ChildType>& el, const PathHints* path) const {
+    std::size_t index, i = 0;
+    bool found = false;
+    auto self = this->shared_from_this();
+    for (auto child_tran: children) {
+        auto child = child_tran->getChild();
+        if (child && child == el && (path == nullptr || path->includes(self, child_tran))) {
+            if (found) throw NotUniqueObjectException();
+            found = true;
+            index = i;
+        }
+        ++i;
+    }
+    if (!found) throw NoSuchGeometryObject();
+    return index;
+}
+
+template <int dim>
 shared_ptr<const GeometryObject> GeometryObjectContainer<dim>::changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation) const {
     shared_ptr<GeometryObject> result(const_pointer_cast<GeometryObject>(this->shared_from_this()));
     if (changer.apply(result, translation) || children.empty()) return result;

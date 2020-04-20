@@ -196,8 +196,8 @@ class GeometryModel(SectionModel, QAbstractItemModel):
             self.child_node = child_node
             self.new_parent = new_parent
             new_child = deepcopy(child_node, memo={id(child_node._parent): child_node._parent})
-            new_parent.path, new_parent.in_parent = new_child.path, new_child.in_parent
-            new_child.path = new_child.in_parent = None
+            new_parent.path, new_parent.in_parent_aligners = new_child.path, new_child.in_parent_aligners
+            new_child.path = new_child.in_parent_aligners = None
             new_child.set_parent(self.new_parent, self.new_parent.new_child_pos(), remove_from_old_parent=False)
             super(GeometryModel.ReparentCommand, self).__init__(
                 "insert {} into {}".format(gname(child_node.tag_name(full_name=False)),
