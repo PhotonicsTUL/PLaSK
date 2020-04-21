@@ -89,9 +89,16 @@ Containers 2D
 
          Exactly one of the above attributes must be specified and only one ``gap`` in the shelf can have the ``total`` attribute.
 
+      .. xml:tag:: <item> [in shelf2d]
+
+         Tag that allows to specify additional item attributes.
+
+         :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
+         :attr zero: The attribute can be specified only for one item. If present the shelf must not have the ``shift`` attribute and there must be no :xml:tag:`<zero/> [in shelf2d]` tag in the stack. For the item with ``zero`` attribute, the shelf coordinates are matched to the local coordinates of the item: the origin of the stack will be horizontally alligned with the item's local horizontal coordinate specified as the attribute value.
+
       .. xml:tag:: <zero/> [in shelf2d]
 
-         This tag can appear as a shelf content only once. If present, it indicates the horizontal position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
+         This tag can appear as a shelf content only once and only if no item has ``zero`` attribute specified and the stack does not have the ``shift`` attribute. If present, it indicates the horizontal position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
 
 .. xml:tag:: <stack2d> (or <stack>)
 
@@ -125,6 +132,7 @@ Containers 2D
          Tag that allows to specify additional item attributes.
 
          :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
+         :attr zero: The attribute can be specified only for one item. If present the stack must not have the ``shift`` attribute and there must be no :xml:tag:`<zero/> [in stack2d]` tag in the stack. For the item with ``zero`` attribute, the stack coordinates are matched to the local coordinates of the item: the origin of the stack will be vertically alligned with the item's local vertical coordinate specified as the attribute value.
          :attr {alignment}: Any of the stack alignment specification attributes (``left``, ``right``, ``trancenter``, **X**\ ``center``, **X**) that overrides the stack default for the particular item.
 
          .. xml:contents::
@@ -133,4 +141,4 @@ Containers 2D
 
       .. xml:tag:: <zero/> [in stack2d]
 
-         This tag can appear as a stack content only once. If present, it indicates the vertical position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
+         This tag can appear as a stack content only once and only if no item has ``zero`` attribute specified and the stack does not have the ``shift`` attribute. If present, it indicates the vertical position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.

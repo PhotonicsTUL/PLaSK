@@ -111,6 +111,7 @@ Containers 3D
          Tag that allows to specify additional item attributes.
 
          :attr path: Name of a path that can be later on used to distinguish between multiple occurrences of the same object.
+         :attr zero: The attribute can be specified only for one item. If present the stack must not have the ``shift`` attribute and there must be no :xml:tag:`<zero/> [in stack3d]` tag in the stack. For the item with ``zero`` attribute, the stack coordinates are matched to the local coordinates of the item: the origin of the stack will be vertically alligned with the item's local vertical coordinate specified as the attribute value.
          :attr {alignment}: Any of the stack alignment specification attributes (``back``, ``front``, ``longcenter``, **{X}**\ ``center``, **{X}**, ``left``, ``right``, ``trancenter``, **{Y}**\ ``center``, **{Y}**) that overrides the stack default for the particular item.
 
          .. xml:contents::
@@ -119,4 +120,4 @@ Containers 3D
 
       .. xml:tag:: <zero/> [in stack3d]
 
-         This tag can appear as a stack content only once. If present, it indicates the vertical position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
+         This tag can appear as a stack content only once and only if no item has ``zero`` attribute specified and the stack does not have the ``shift`` attribute. If present, it indicates the vertical position of origin of the local coordinate system. Hence, it is an alternative method of specifying ``shift`` value.
