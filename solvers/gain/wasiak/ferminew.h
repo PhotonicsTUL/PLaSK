@@ -1,12 +1,12 @@
 /**
- * \file
+ * \file ferminew.h
  * Sample solver header for your solver
  */
 #ifndef PLASK__SOLVER_GAIN_FermiNew_H
 #define PLASK__SOLVER_GAIN_FermiNew_H
 
 #include <plask/plask.hpp>
-#include "kubly.h"
+#include "kublybr.h"
 
 namespace plask { namespace solvers { namespace FermiNew {
 
@@ -20,11 +20,22 @@ template <typename GeometryT> struct LuminescenceSpectrum;
 
 struct Levels {
     int mEc, mEvhh, mEvlh;          // to choose the correct band edges
-    std::vector<std::unique_ptr<QW::Warstwa>> mpEc, mpEvhh, mpEvlh;
-    std::unique_ptr<QW::Struktura> mpStrEc, mpStrEvhh, mpStrEvlh;
-    plask::shared_ptr<QW::ObszarAktywny> aktyw;
+    std::vector<warstwa*> mpEc, mpEvhh, mpEvlh;
+    std::unique_ptr<struktura> mpStrEc, mpStrEvhh, mpStrEvlh;
+    plask::shared_ptr<obszar_aktywny> aktyw;
     bool invalid;
     Levels(): mEc(-1), mEvhh(-1), mEvlh(-1), invalid(true) {}
+    Levels(Levels&& src):
+        mEc(src.mEc), mEvhh(src.mEvhh), mEvlh(src.mEvlh),
+        mpEc(std::move(src.mpEc)), mpEvhh(std::move(src.mpEvhh)), mpEvlh(std::move(src.mpEvlh)),
+        mpStrEc(std::move(src.mpStrEc)), mpStrEvhh(std::move(src.mpStrEvhh)), mpStrEvlh(std::move(src.mpStrEvlh)),
+        aktyw(std::move(src.aktyw)), invalid(src.invalid) {
+        src.mpEc.clear(); src.mpEvhh.clear(); src.mpEvlh.clear();
+    }
+    void clearEc() { for (warstwa* ptr: mpEc) delete ptr; mpEc.clear(); }
+    void clearEvhh() { for (warstwa* ptr: mpEvhh) delete ptr; mpEvhh.clear(); }
+    void clearEvlh() { for (warstwa* ptr: mpEvlh) delete ptr; mpEvlh.clear(); }
+    ~Levels() { clearEc(); clearEvhh(); clearEvlh(); }
 };
 
 inline static double nm_to_eV(double wavelength) {
@@ -182,7 +193,7 @@ struct PLASK_SOLVER_API FermiNewGainSolver: public SolverWithMesh<GeometryType,M
     
     friend struct GainSpectrum<GeometryType>;
     friend struct LuminescenceSpectrum<GeometryType>;
-    friend class QW::Gain;
+    friend class wzmocnienie;
 
     double cond_qw_shift;           ///< additional conduction band shift for qw [eV]
     double vale_qw_shift;           ///< additional valence band shift for qw [eV]
@@ -201,10 +212,12 @@ struct PLASK_SOLVER_API FermiNewGainSolver: public SolverWithMesh<GeometryType,M
     int buildEvhh(Levels& levels, double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
     int buildEvlh(Levels& levels, double T, const ActiveRegionInfo& region, bool iShowSpecLogs=false);
 
-    QW::Gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region, 
+    void showEnergyLevels(std::string str, const std::unique_ptr<struktura>& structure, double nQW);
+
+    wzmocnienie getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region, 
                            const Levels& levels, bool iShowSpecLogs=false);
 
-    void prepareLevels(QW::Gain& gmodule, const ActiveRegionInfo& region) {
+    void prepareLevels(wzmocnienie& gmodule, const ActiveRegionInfo& region) {
     }
 
     /// Initialize the solver
@@ -351,11 +364,10 @@ struct GainSpectrum {
     double T;                           ///< Temperature
     double n;                           ///< Carriers concentration
     Levels levels;                      ///< Computed energy levels
-    QW::Gain gMod;
-    bool gModExist;
+    std::unique_ptr<wzmocnienie> gMod;
 
     GainSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point):
-        solver(solver), point(point), gModExist(false)
+        solver(solver), point(point)
     {
         auto mesh = plask::make_shared<const OnePointMesh<2>>(point);
         T = solver->inTemperature(mesh)[0];
@@ -372,18 +384,16 @@ struct GainSpectrum {
     }
 
     GainSpectrum(const GainSpectrum& orig):
-        solver(orig.solver), point(orig.point), region(orig.region), T(orig.T), n(orig.n), gModExist(false) {}
+        solver(orig.solver), point(orig.point), region(orig.region), T(orig.T), n(orig.n) {}
 
     GainSpectrum(GainSpectrum&& orig) = default;
     
     void onTChange(ReceiverBase&, ReceiverBase::ChangeReason) {
         T = solver->inTemperature(plask::make_shared<const OnePointMesh<2>>(point))[0];
-        gModExist = false;
     }
 
     void onNChange(ReceiverBase&, ReceiverBase::ChangeReason) {
         n = solver->inCarriersConcentration(plask::make_shared<const OnePointMesh<2>>(point))[0];
-        gModExist = false;
     }
 
     ~GainSpectrum() {
@@ -398,14 +408,27 @@ struct GainSpectrum {
      */
     double getGain(double wavelength)
     {
-        if (!gModExist) {
+        if (!gMod) {
             solver->findEnergyLevels(levels, *region, T, true);
-            gMod = solver->getGainModule(wavelength, T, n, *region, levels, true);
-            gModExist = true;
+            gMod.reset(new wzmocnienie(std::move(solver->getGainModule(wavelength, T, n, *region, levels, true))));
         }
-        return gMod.Get_gain_at_n(nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen, solver->getLifeTime());
+
+        double E = nm_to_eV(wavelength);
+        double QWfrac = region->qwtotallen / region->totallen;
+        double tau = solver->getLifeTime();
+        if (!tau) return ( gMod->wzmocnienie_calk_bez_splotu(E) / QWfrac ); //20.10.2014 adding lifetime
+        else return ( gMod->wzmocnienie_calk_ze_splotem(E, phys::hb_eV*1e12/tau) / QWfrac ); //20.10.2014 adding lifetime
     }
 };
+
+inline static double sumLuminescence(wzmocnienie& gain, double wavelength) {
+    double E = nm_to_eV(wavelength);
+    double result = 0.;
+    for(int nr_c = 0; nr_c <= (int) gain.pasma->pasmo_przew.size() - 1; nr_c++)
+        for(int nr_v = 0; nr_v <= (int) gain.pasma->pasmo_wal.size() - 1; nr_v++)
+            result += gain.spont_od_pary_pasm(E, nr_c, nr_v, 0);  // TODO: consider other polarization (now only TE)
+    return result;
+}
 
 /**
  * Cached luminescence spectrum
@@ -422,11 +445,10 @@ struct LuminescenceSpectrum {
     double T;                           ///< Temperature
     double n;                           ///< Carriers concentration
     Levels levels;                      ///< Computed energy levels
-    QW::Gain gMod;
-    bool gModExist;
+    std::unique_ptr<wzmocnienie> gMod;
 
     LuminescenceSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point):
-        solver(solver), point(point), gModExist(false)
+        solver(solver), point(point)
     {
         auto mesh = plask::make_shared<const OnePointMesh<2>>(point);
         T = solver->inTemperature(mesh)[0];
@@ -443,18 +465,16 @@ struct LuminescenceSpectrum {
     }
 
     LuminescenceSpectrum(const LuminescenceSpectrum& orig):
-        solver(orig.solver), point(orig.point), region(orig.region), T(orig.T), n(orig.n), gModExist(false) {}
+        solver(orig.solver), point(orig.point), region(orig.region), T(orig.T), n(orig.n) {}
 
     LuminescenceSpectrum(LuminescenceSpectrum&& orig) = default;
         
     void onTChange(ReceiverBase&, ReceiverBase::ChangeReason) {
         T = solver->inTemperature(plask::make_shared<const OnePointMesh<2>>(point))[0];
-        gModExist = false;
     }
 
     void onNChange(ReceiverBase&, ReceiverBase::ChangeReason) {
         n = solver->inCarriersConcentration(plask::make_shared<const OnePointMesh<2>>(point))[0];
-        gModExist = false;
     }
 
 
@@ -470,12 +490,12 @@ struct LuminescenceSpectrum {
      */
     double getLuminescence(double wavelength)
     {
-        if (!gModExist) {
+        if (!gMod) {
             solver->findEnergyLevels(levels, *region, T, true);
-            gMod = solver->getGainModule(wavelength, T, n, *region, levels, true);
-            gModExist = true;
+            gMod.reset(new wzmocnienie(std::move(solver->getGainModule(wavelength, T, n, *region, levels, true))));
         }
-        return gMod.Get_luminescence_at_n(nm_to_eV(wavelength), region->qwtotallen, region->qwtotallen / region->totallen);
+        double QWfrac = region->qwtotallen / region->totallen;
+        return sumLuminescence(*gMod, wavelength) / QWfrac;
     }
 };
 
