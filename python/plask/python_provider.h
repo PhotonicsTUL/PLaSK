@@ -114,7 +114,7 @@ namespace detail {
         typedef RegisterReceiverImpl<ReceiverT, PropertyT::propertyType, typename PropertyT::ExtraParams> RegisterT;
 
         const std::string property_name;
-        py::class_<ReceiverT, boost::noncopyable> receiver_class;
+        py::class_<ReceiverT, py::bases<ReceiverBase>, boost::noncopyable> receiver_class;
 
         static void connect(ReceiverT& receiver, py::object oprovider) {
             ProviderT* provider = py::extract<ProviderT*>(oprovider);
@@ -157,6 +157,10 @@ namespace detail {
             RegisterT::setter(self, value);
         }
 
+        static boost::signals2::connection changed_connect(ReceiverT& receiver, py::object callable) {
+            return receiver.providerValueChanged.connect(callable);
+        }
+
         RegisterReceiverBase(const std::string& suffix="", const std::string& space="") :
             property_name(type_name<PropertyT>()),
             receiver_class((property_name + "Receiver" + suffix).c_str(),
@@ -167,9 +171,14 @@ namespace detail {
             receiver_class.def("__bool__", &ReceiverT::hasProvider);
             receiver_class.def("__get__", &__get__);
             receiver_class.def("__set__", &__set__);
+            receiver_class.def("add_watch",   &changed_connect, py::arg("callable"),
+                               u8"Connect callable to watch receiver changes.\n\n"
+                               u8"The callable will be called each time the value received by this receiver\n"
+                               u8"changes.\n\n"
+                               u8"The callable should accept two arguments: the first one will be the receiver\n"
+                               u8"and the second one gives information what is changed.\n");
         }
     };
-
     template <typename ReceiverT> static
     typename std::enable_if<std::is_same<typename ReceiverT::SpaceType, void>::value, bool>::type
     assignProvider(ReceiverT& receiver, const py::object& obj) {

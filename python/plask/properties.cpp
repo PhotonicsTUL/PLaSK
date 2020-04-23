@@ -350,6 +350,20 @@ void register_standard_properties()
         u8"   Example using filters: :ref:`sec-tutorial-threshold-of-array`.\n"
     ;
 
+    py_enum<ReceiverBase::ChangeReason>()
+        .value("DELETE", ReceiverBase::ChangeReason::REASON_DELETE)
+        .value("VALUE", ReceiverBase::ChangeReason::REASON_VALUE)
+        .value("PROVIDER", ReceiverBase::ChangeReason::REASON_PROVIDER)
+    ;
+
+    py::class_<ReceiverBase> receiver("Receiver");
+    {
+        py::scope scope(receiver);
+        py::class_<boost::signals2::connection>("_Watch")
+            .def("disconnect", &boost::signals2::connection::disconnect, "Disconnect callable watching receiver change.")
+        ;
+    }
+    
     register_standard_properties_thermal();
     register_standard_properties_temperature();
     register_standard_properties_heatdensity();
