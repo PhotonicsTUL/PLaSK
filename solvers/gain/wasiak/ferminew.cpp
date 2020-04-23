@@ -800,6 +800,17 @@ struct DgDnData: public DataBase<GeometryT, Tensor2<double>> {
     }
 };
 
+
+inline static double sumLuminescence(wzmocnienie& gain, double wavelength) {
+    double E = nm_to_eV(wavelength);
+    double result = 0.;
+    for(int nr_c = 0; nr_c <= (int) gain.pasma->pasmo_przew.size() - 1; nr_c++)
+        for(int nr_v = 0; nr_v <= (int) gain.pasma->pasmo_wal.size() - 1; nr_v++)
+            result += gain.spont_od_pary_pasm(E, nr_c, nr_v, 0);  // TODO: consider other polarization (now only TE)
+    return result;
+}
+
+
 template <typename GeometryT>
 struct LuminescenceData: public DataBase<GeometryT, double> {
     template <typename... Args>
@@ -850,6 +861,66 @@ const LazyData<double> FermiNewGainSolver<GeometryType>::getLuminescence(const s
     return LazyData<double>(data);
 }
 
+
+template <typename GeometryT>
+GainSpectrum<GeometryT>::GainSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point):
+    solver(solver), point(point) {
+    auto mesh = plask::make_shared<const OnePointMesh<2>>(point);
+    T = solver->inTemperature(mesh)[0];
+    n = solver->inCarriersConcentration(mesh)[0];
+    for (const auto& reg: solver->regions) {
+        if (reg.contains(point)) {
+            region = &reg;
+            solver->inTemperature.changedConnectMethod(this, &GainSpectrum::onTChange);
+            solver->inCarriersConcentration.changedConnectMethod(this, &GainSpectrum::onNChange);
+            return;
+        };
+    }
+    throw BadInput(solver->getId(), "Point {0} does not belong to any active region", point);
+}
+
+template <typename GeometryT>
+double GainSpectrum<GeometryT>::getGain(double wavelength) {
+    if (!gMod) {
+        solver->findEnergyLevels(levels, *region, T, true);
+        gMod.reset(new wzmocnienie(std::move(solver->getGainModule(wavelength, T, n, *region, levels, true))));
+    }
+
+    double E = nm_to_eV(wavelength);
+    double QWfrac = region->qwtotallen / region->totallen;
+    double tau = solver->getLifeTime();
+    if (!tau) return ( gMod->wzmocnienie_calk_bez_splotu(E) / QWfrac ); //20.10.2014 adding lifetime
+    else return ( gMod->wzmocnienie_calk_ze_splotem(E, phys::hb_eV*1e12/tau) / QWfrac ); //20.10.2014 adding lifetime
+}
+
+
+template <typename GeometryT>
+LuminescenceSpectrum<GeometryT>::LuminescenceSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point):
+    solver(solver), point(point) {
+    auto mesh = plask::make_shared<const OnePointMesh<2>>(point);
+    T = solver->inTemperature(mesh)[0];
+    n = solver->inCarriersConcentration(mesh)[0];
+    for (const auto& reg: solver->regions) {
+        if (reg.contains(point)) {
+            region = &reg;
+            solver->inTemperature.changedConnectMethod(this, &LuminescenceSpectrum::onTChange);
+            solver->inCarriersConcentration.changedConnectMethod(this, &LuminescenceSpectrum::onNChange);
+            return;
+        };
+    }
+    throw BadInput(solver->getId(), "Point {0} does not belong to any active region", point);
+}
+
+template <typename GeometryT>
+double LuminescenceSpectrum<GeometryT>::getLuminescence(double wavelength) {
+    if (!gMod) {
+        solver->findEnergyLevels(levels, *region, T, true);
+        gMod.reset(new wzmocnienie(std::move(solver->getGainModule(wavelength, T, n, *region, levels, true))));
+    }
+    double QWfrac = region->qwtotallen / region->totallen;
+    return sumLuminescence(*gMod, wavelength) / QWfrac;
+}
+
 template <typename GeometryType>
 GainSpectrum<GeometryType> FermiNewGainSolver<GeometryType>::getGainSpectrum(const Vec<2>& point) {
     this->initCalculation();
@@ -862,11 +933,19 @@ LuminescenceSpectrum<GeometryType> FermiNewGainSolver<GeometryType>::getLuminesc
     return LuminescenceSpectrum<GeometryType>(this, point);
 }
 
+
 template <> std::string FermiNewGainSolver<Geometry2DCartesian>::getClassName() const { return "gain.FermiNew2D"; }
 template <> std::string FermiNewGainSolver<Geometry2DCylindrical>::getClassName() const { return "gain.FermiNewCyl"; }
 
 template struct PLASK_SOLVER_API FermiNewGainSolver<Geometry2DCartesian>;
 template struct PLASK_SOLVER_API FermiNewGainSolver<Geometry2DCylindrical>;
+
+
+template struct PLASK_SOLVER_API GainSpectrum<Geometry2DCartesian>;
+template struct PLASK_SOLVER_API GainSpectrum<Geometry2DCylindrical>;
+
+template struct PLASK_SOLVER_API LuminescenceSpectrum<Geometry2DCartesian>;
+template struct PLASK_SOLVER_API LuminescenceSpectrum<Geometry2DCylindrical>;
 
 }}} // namespace
 

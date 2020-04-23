@@ -19,12 +19,12 @@ warstwa & warstwa::operator=(const warstwa & war)
   return *this;
 }
 *****************************************************************************/
-warstwa::warstwa(double m_p, double m_r, double x_p, double y_p, double x_k, double y_k, double niepar, double niepar2) : x_pocz(x_p/struktura::przelm), x_kon(x_k/struktura::przelm), y_pocz(y_p), y_kon(y_k), nieparab(niepar), nieparab_2(niepar2), m_p(m_p), nast(NULL), masa_r(m_r), moreInfo(false)  // PoĹoĹźenia w A
+warstwa::warstwa(double m_p, double m_r, double x_p, double y_p, double x_k, double y_k, double niepar, double niepar2) : x_pocz(x_p/struktura::przelm), x_kon(x_k/struktura::przelm), y_pocz(y_p), y_kon(y_k), nieparab(niepar), nieparab_2(niepar2), m_p(m_p), nast(NULL), masa_r(m_r), moreInfo(false)  // Położenia w A
 {
   //std::cout << "\tmasa_r w warstwa_konstruktor: " << masa_r << ", x_p: " << x_p << ", x_k: " << x_k << "\n"; /// TEST /// TEST LUKASZ
   if(x_k <= x_p)
     {
-      std::cerr<<"ZĹe dane!\n";
+      std::cerr<<"Złe dane!\n";
       std::cerr<<"pocz = "<<x_p<<"\tkoniec = "<<x_k<<"\tmasa_p = "<<m_p<<"\n";
       abort();
     }
@@ -50,7 +50,7 @@ inline double warstwa::masa_p(double E) const
     }
   else
     {
-      if( (nieparab_2 < 0) && (Ek > -nieparab/(2*nieparab_2)) ) // czy nie przesz<B3>o na opadaj<B1>c<B1> cz<EA><B6><E6>?
+      if( (nieparab_2 < 0) && (Ek > -nieparab/(2*nieparab_2)) ) // czy nie przeszło na opadającą część?
 	wynik = m_p*(1. -nieparab*nieparab/(4*nieparab_2));
       else
 	wynik = (1. + nieparab*Ek + nieparab_2*Ek*Ek)*m_p;
@@ -86,7 +86,7 @@ double warstwa::ffala(double x, double E) const
   //  std::clog<<" E = "<<E<<"\n";
   if(pole !=0)
     {
-      //      std::clog<<"\n poczÄtek warstwy w "<<x_pocz<<" Airy";
+      //      std::clog<<"\n początek warstwy w "<<x_pocz<<" Airy";
       //      wartosc = Ai(x, E);
       wartosc = Ai_skala(x, E);
     }
@@ -94,12 +94,12 @@ double warstwa::ffala(double x, double E) const
     {
       if(E >= y_pocz)
 	{
-	  //	  std::clog<<"\n poczÄtek warstwy w "<<x_pocz<<" tryg";
+	  //	  std::clog<<"\n początek warstwy w "<<x_pocz<<" tryg";
 	  wartosc = tryga(x, E);
 	}
       else
 	{
-	  //	  std::clog<<"\n poczÄtek warstwy w "<<x_pocz<<" exp";
+	  //	  std::clog<<"\n początek warstwy w "<<x_pocz<<" exp";
 	  wartosc = expa(x, E);
 	}
     }
@@ -176,7 +176,7 @@ double warstwa::tryga(double x, double E) const
 {
   if((y_kon != y_pocz) || (E < y_pocz))
     {
-      std::cerr<<"ZĹa funkcja (tryga)!\n";
+      std::cerr<<"Zła funkcja (tryga)!\n";
       abort();
     }
   double k = sqrt(2*masa_p(E)*(E-y_pocz));
@@ -187,7 +187,7 @@ double warstwa::tryga_prim(double x, double E) const
 {
   if((y_kon != y_pocz) || (E < y_pocz))
     {
-      std::cerr<<"ZĹa funkcja (tryga_prim)!\n";
+      std::cerr<<"Zła funkcja (tryga_prim)!\n";
       abort();
     }
   double k = sqrt(2*masa_p(E)*(E-y_pocz));
@@ -198,7 +198,7 @@ double warstwa::trygb(double x, double E) const
 {
   if((y_kon != y_pocz) || (E < y_pocz))
     {
-      std::cerr<<"ZĹa funkcja (trygb)!\n";
+      std::cerr<<"Zła funkcja (trygb)!\n";
       abort();
     }
   double k = sqrt(2*masa_p(E)*(E-y_pocz));
@@ -209,7 +209,7 @@ double warstwa::trygb_prim(double x, double E) const
 {
   if((y_kon != y_pocz) || (E < y_pocz))
     {
-      std::cerr<<"ZĹa funkcja (trygb_prim)!\n";
+      std::cerr<<"Zła funkcja (trygb_prim)!\n";
       abort();
     }
   double k = sqrt(2*masa_p(E)*(E-y_pocz));
@@ -220,7 +220,7 @@ double warstwa::tryg_kwadr_pierwotna(double x, double E, double A, double B) con
 {
   if((y_kon != y_pocz) || (E <= y_pocz))
     {
-      std::cerr<<"ZĹa funkcja (tryg_kwadr_pierwotna)!\n";
+      std::cerr<<"Zła funkcja (tryg_kwadr_pierwotna)!\n";
       abort();
     }
   double k = sqrt(2*masa_p(E)*(E-y_pocz));
@@ -233,7 +233,7 @@ double warstwa::expa(double x, double E) const
 {
   if((y_kon != y_pocz) || (E > y_pocz))
     {
-      std::cerr<<"ZĹa funkcja (expa)!\n";
+      std::cerr<<"Zła funkcja (expa)!\n";
       abort();
     }
   double kp = sqrt(2*masa_p(E)*(y_pocz-E));
@@ -244,7 +244,7 @@ double warstwa::expa_prim(double x, double E) const
 {
   if((y_kon != y_pocz) || (E > y_pocz))
     {
-      std::cerr<<"ZĹa funkcja (expa_prim)!\n";
+      std::cerr<<"Zła funkcja (expa_prim)!\n";
       abort();
     }
   double kp = sqrt(2*masa_p(E)*(y_pocz-E));
@@ -255,7 +255,7 @@ double warstwa::expb(double x, double E) const
 {
   if((y_kon != y_pocz) || (E > y_pocz))
     {
-      std::cerr<<"ZĹa funkcja (expb)!\n";
+      std::cerr<<"Zła funkcja (expb)!\n";
       std::cerr<<"y_pocz = "<<y_pocz<<"\ty_kon = "<<y_kon<<"\n";
       abort();
     }
@@ -267,7 +267,7 @@ double warstwa::expb_prim(double x, double E) const
 {
   if((y_kon != y_pocz) || (E > y_pocz))
     {
-      std::cerr<<"ZĹa funkcja (expb_prim)!\n";
+      std::cerr<<"Zła funkcja (expb_prim)!\n";
       abort();
     }
   double kp = sqrt(2*masa_p(E)*(y_pocz-E));
@@ -278,7 +278,7 @@ double warstwa::exp_kwadr_pierwotna(double x, double E, double A, double B) cons
 {
   if((y_kon != y_pocz) || (E > y_pocz))
     {
-      std::cerr<<"ZĹa funkcja (expa)!\n";
+      std::cerr<<"Zła funkcja (expa)!\n";
       abort();
     }
   double kp = sqrt(2*masa_p(E)*(y_pocz-E));
@@ -291,10 +291,10 @@ double warstwa::Ai(double x, double E) const
 {
   if(y_kon == y_pocz)
     {
-      std::cerr<<"ZĹa funkcja!\n";
+      std::cerr<<"Zła funkcja!\n";
       abort();
     }
-  // rĂłwnanie: -f''(x) + (b + ax)f(x) = 0
+  // równanie: -f''(x) + (b + ax)f(x) = 0
   // a = 2m*pole/h^2
   // b = 2m(U - E)/h^2
   // rozw f(x) = Ai( (ax+b)/a^{2/3} ) = Ai( a^{1/3} (x + b/a^{2/3}) )
@@ -310,10 +310,10 @@ double warstwa::Ai_skala(double x, double E) const
 {
   if(y_kon == y_pocz)
     {
-      std::cerr<<"ZĹa funkcja!\n";
+      std::cerr<<"Zła funkcja!\n";
       abort();
     }
-  // rĂłwnanie: -f''(x) + (b + ax)f(x) = 0
+  // równanie: -f''(x) + (b + ax)f(x) = 0
   // a = 2m*pole/h^2
   // b = 2m(U - E)/h^2
   // rozw f(x) = Ai( (ax+b)/a^{2/3} ) = Ai( a^{1/3} (x + b/a^{2/3}) )
@@ -346,7 +346,7 @@ double warstwa::Ai_prim(double x, double E) const
 {
   if(y_kon == y_pocz)
     {
-      std::cerr<<"ZĹa funkcja!\n";
+      std::cerr<<"Zła funkcja!\n";
       abort();
     }
   double U = y_pocz - pole*x_pocz;
@@ -361,7 +361,7 @@ double warstwa::Ai_prim_skala(double x, double E) const
 {
   if(y_kon == y_pocz)
     {
-      std::cerr<<"ZĹa funkcja!\n";
+      std::cerr<<"Zła funkcja!\n";
       abort();
     }
   double U = y_pocz - pole*x_pocz;
@@ -393,10 +393,10 @@ double warstwa::Bi(double x, double E) const
 {
   if(y_kon == y_pocz)
     {
-      std::cerr<<"ZĹa funkcja!\n";
+      std::cerr<<"Zła funkcja!\n";
       abort();
     }
-  // rĂłwnanie: -f''(x) + (b + ax)f(x) = 0
+  // równanie: -f''(x) + (b + ax)f(x) = 0
   // a = 2m*pole/h^2
   // b = 2m(U - E)/h^2
   // rozw f(x) = Ai( (ax+b)/a^{2/3} ) = Ai( a^{1/3} (x + b/a^{2/3}) )
@@ -412,10 +412,10 @@ double warstwa::Bi_skala(double x, double E) const
 {
   if(y_kon == y_pocz)
     {
-      std::cerr<<"ZĹa funkcja!\n";
+      std::cerr<<"Zła funkcja!\n";
       abort();
     }
-  // rĂłwnanie: -f''(x) + (b + ax)f(x) = 0
+  // równanie: -f''(x) + (b + ax)f(x) = 0
   // a = 2m*pole/h^2
   // b = 2m(U - E)/h^2
   // rozw f(x) = Ai( (ax+b)/a^{2/3} ) = Ai( a^{1/3} (x + b/a^{2/3}) )
@@ -448,7 +448,7 @@ double warstwa::Bi_prim(double x, double E) const
 {
   if(y_kon == y_pocz)
     {
-      std::cerr<<"ZĹa funkcja!\n";
+      std::cerr<<"Zła funkcja!\n";
       abort();
     }
   double U = y_pocz - pole*x_pocz;
@@ -463,7 +463,7 @@ double warstwa::Bi_prim_skala(double x, double E) const
 {
   if(y_kon == y_pocz)
     {
-      std::cerr<<"ZĹa funkcja!\n";
+      std::cerr<<"Zła funkcja!\n";
       abort();
     }
   double U = y_pocz - pole*x_pocz;
@@ -495,7 +495,7 @@ double warstwa::airy_kwadr_pierwotna(double x, double E, double A, double B) con
 {
   if(y_kon == y_pocz)
     {
-      std::cerr<<"ZĹa funkcja!\n";
+      std::cerr<<"Zła funkcja!\n";
       abort();
     }
   double U = y_pocz - pole*x_pocz;
@@ -521,14 +521,14 @@ double warstwa::k_kwadr(double E) const // Zwraca k^2, ujemne dla energii spod b
   return wartosc;
 }
 /*****************************************************************************/
-int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, double sasiad_z_prawej) const // wartoĹci sÄsiadĂłw po to, Ĺźeby uniknÄÄ kĹopotĂłw, kiedy zero wypada na ĹÄczeniu
+int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, double sasiad_z_prawej) const // wartości sąsiadów po to, żeby uniknąć kłopotów, kiedy zero wypada na łączeniu
 {
   int tylezer = 0;
-  double wart_kon = (funkcjafal(x_kon, E, A, B) + sasiad_z_prawej)/2; // UĹrednienie dla unikniÄcia kĹopotĂłw z zerami na ĹÄczeniu, gdzie malutka nieciÄgĹoĹÄ moĹźe generowaÄ zmiany znakĂłw
+  double wart_kon = (funkcjafal(x_kon, E, A, B) + sasiad_z_prawej)/2; // Uśrednienie dla uniknięcia kłopotów z zerami na łączeniu, gdzie malutka nieciągłość może generować zmiany znaków
   double wart_pocz = (funkcjafal(x_pocz, E, A, B) + sasiad_z_lewej)/2;
   double iloczyn = wart_pocz*wart_kon;
-  //  std::cerr<<"\nwart na koĹcach: "<<funkcjafal(x_pocz, E, A, B)<<", "<<funkcjafal(x_kon, E, A, B);
-  //    std::cerr<<"\npo uĹrednieniu: "<<wart_pocz<<", "<<wart_kon;
+  //  std::cerr<<"\nwart na końcach: "<<funkcjafal(x_pocz, E, A, B)<<", "<<funkcjafal(x_kon, E, A, B);
+  //    std::cerr<<"\npo uśrednieniu: "<<wart_pocz<<", "<<wart_kon;
   if(pole !=0)
     {
       double a13 = (pole > 0)?pow(2*masa_p(E)*pole,1./3):-pow(-2*masa_p(E)*pole,1./3); // a^{1/3}
@@ -544,15 +544,15 @@ int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, doub
       argp = gmax(arg1, arg2); /// LUKASZ moje funkcje
       nrza=1;
       double z1 = -1.174; // oszacowanie pierwszego zera B1
-      double dz = -2.098; // oszacowanie odstÄpu miÄdzy perwszymi dwoma zerami
+      double dz = -2.098; // oszacowanie odstępu między perwszymi dwoma zerami
       //  nrprzed=1;
-      //      nrprzed = floor((argl-z1)/dz + 1); // oszacowanie z doĹu numeru miejsca zerowego
+      //      nrprzed = floor((argl-z1)/dz + 1); // oszacowanie z dołu numeru miejsca zerowego
       nrprzed = floor((argp-z1)/dz + 1);
       nrprzed = (nrprzed >= 1)?nrprzed:1;
       int tymcz=0;
       double ntezero = gsl_sf_airy_zero_Bi(nrprzed);
       //      std::cerr<<"\nU = "<<U<<" a13 = "<<a13<<" b_a23 = "<<b_a23<<" argl = "<<argl<<" argp = "<<argp<<" ntezero = "<<ntezero<<" nrprzed = "<<nrprzed;
-      double brak; // oszacowanie z doĹu braku
+      double brak; // oszacowanie z dołu braku
       long licznik = 0;
       //      while(ntezero>=argl)
       while(ntezero>=argp)
@@ -561,7 +561,7 @@ int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, doub
 	    {
 	      dz = ntezero - gsl_sf_airy_zero_Bi(nrprzed-1);
 	      brak = (argp-ntezero)/dz;
-	      if(brak > 2.) //jeĹli jeszcze daleko
+	      if(brak > 2.) //jeśli jeszcze daleko
 		{
 		  nrprzed = nrprzed + floor(brak);
 		}
@@ -590,7 +590,7 @@ int warstwa::zera_ffal(double E, double A, double B, double sasiad_z_lewej, doub
       xlew = std::min(x1, x2);
       xpra = std::max(x1, x2);
       std::cerr<<"\txlew="<<struktura::dlugosc_na_A(xlew)<<" xpra="<<struktura::dlugosc_na_A(xpra);
-      tylko do testĂłw tutaj  */
+      tylko do testów tutaj  */
 
       if(nrza-nrprzed>=2)
 	{
@@ -658,7 +658,7 @@ int warstwa::zera_ffal(double E, double A, double B) const
   int tylezer = 0;
   double wart_kon = funkcjafal(x_kon, E, A, B);
   double iloczyn = funkcjafal(x_pocz, E, A, B)*wart_kon;
-  //  std::cerr<<"\n wart na koĹcach: "<<funkcjafal(x_pocz, E, A, B)<<", "<<funkcjafal(x_kon, E, A, B);
+  //  std::cerr<<"\n wart na końcach: "<<funkcjafal(x_pocz, E, A, B)<<", "<<funkcjafal(x_kon, E, A, B);
   if(pole !=0)
     {
       double a13 = (pole > 0)?pow(2*masa_p(E)*pole,1./3):-pow(-2*masa_p(E)*pole,1./3); // a^{1/3}
@@ -674,15 +674,15 @@ int warstwa::zera_ffal(double E, double A, double B) const
       argp = gmax(arg1, arg2); /// LUKASZ moje funkcje
       nrza=1;
       double z1 = -1.174; // oszacowanie pierwszego zera B1
-      double dz = -2.098; // oszacowanie odstÄpu miÄdzy perwszymi dwoma zerami
+      double dz = -2.098; // oszacowanie odstępu między perwszymi dwoma zerami
       //  nrprzed=1;
-      //      nrprzed = floor((argl-z1)/dz + 1); // oszacowanie z doĹu numeru miejsca zerowego
+      //      nrprzed = floor((argl-z1)/dz + 1); // oszacowanie z dołu numeru miejsca zerowego
       nrprzed = floor((argp-z1)/dz + 1);
       nrprzed = (nrprzed >= 1)?nrprzed:1;
       int tymcz=0;
       double ntezero = gsl_sf_airy_zero_Bi(nrprzed);
       //      std::cerr<<"\nU = "<<U<<" a13 = "<<a13<<" b_a23 = "<<b_a23<<" argl = "<<argl<<" argp = "<<argp<<" ntezero = "<<ntezero<<" nrprzed = "<<nrprzed;
-      double brak; // oszacowanie z doĹu braku
+      double brak; // oszacowanie z dołu braku
       long licznik = 0;
       //      while(ntezero>=argl)
       while(ntezero>=argp)
@@ -691,7 +691,7 @@ int warstwa::zera_ffal(double E, double A, double B) const
 	    {
 	      dz = ntezero - gsl_sf_airy_zero_Bi(nrprzed-1);
 	      brak = (argp-ntezero)/dz;
-	      if(brak > 2.) //jeĹli jeszcze daleko
+	      if(brak > 2.) //jeśli jeszcze daleko
 		{
 		  nrprzed = nrprzed + floor(brak);
 		}
@@ -720,7 +720,7 @@ int warstwa::zera_ffal(double E, double A, double B) const
       xlew = std::min(x1, x2);
       xpra = std::max(x1, x2);
       std::cerr<<"\txlew="<<struktura::dlugosc_na_A(xlew)<<" xpra="<<struktura::dlugosc_na_A(xpra);
-      tylko do testĂłw tutaj  */
+      tylko do testów tutaj  */
 
       if(nrza-nrprzed>=2)
 	{
@@ -838,7 +838,7 @@ double warstwa_skraj::ffala(double x, double E) const
     {
       if(E > y)
 	{
-	  std::cerr<<"Energia nad skrajnÄ barierÄ!\nE = "<<E<<" y = "<<y<<"\n";
+	  std::cerr<<"Energia nad skrajną barierą!\nE = "<<E<<" y = "<<y<<"\n";
 	  abort();
 	}
       else
@@ -861,7 +861,7 @@ double warstwa_skraj::ffalb(double x, double E) const
     {
       if(E > y)
 	{
-	  std::cerr<<"Energia nad skrajnÄ barierÄ!\nE = "<<E<<" y = "<<y<<"\n";
+	  std::cerr<<"Energia nad skrajną barierą!\nE = "<<E<<" y = "<<y<<"\n";
 	  abort();
 	}
       else
@@ -883,7 +883,7 @@ double warstwa_skraj::ffala_prim(double x, double E) const
     {
       if(E > y)
 	{
-	  std::cerr<<"Energia nad skrajnÄ barierÄ!\nE = "<<E<<" y = "<<y<<"\n";
+	  std::cerr<<"Energia nad skrajną barierą!\nE = "<<E<<" y = "<<y<<"\n";
 	  abort();
 	}
       else
@@ -905,7 +905,7 @@ double warstwa_skraj::ffalb_prim(double x, double E) const
     {
       if(E > y)
 	{
-	  std::cerr<<"Energia nad skrajnÄ barierÄ!\n";
+	  std::cerr<<"Energia nad skrajną barierą!\n";
 	  abort();
 	}
       else
@@ -925,7 +925,7 @@ double warstwa_skraj::norma_kwadr(double E, double C) const
 {
   if(E > y)
     {
-      std::cerr<<"ZĹa energia!\n";
+      std::cerr<<"Zła energia!\n";
       abort();
     }
   double kp = sqrt(2*masa_p*(y - E));
@@ -1080,7 +1080,7 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
 	  abort();
 	}
       kawalki.push_back(*tablica[i]);
-      tablica[i-1]->nast = tablica[i]; // ustawianie wskaĹşnika na sÄsiadkÄ
+      tablica[i-1]->nast = tablica[i]; // ustawianie wskaźnika na sąsiadkę
       czydol = (tablica[i]->y_pocz > tablica[i]->y_kon)?tablica[i]->y_kon:tablica[i]->y_pocz;
       if(czydol < dol)
 	{
@@ -1102,7 +1102,7 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
       std::cerr<<"Brak jakiejkolwiek studni!\n";
       abort();
     }
-  double gornyprog = dol; // pierwsze prĂłg _pod_ barierÄ
+  double gornyprog = dol; // pierwsze próg _pod_ barierą
   std::vector<double>::iterator it = progi.begin();
   while(it != progi.end())
     {
@@ -1123,7 +1123,7 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
   typ = co;
   dokl = 1e-6;
   double start;
-  start = -dokl;//(0.001*gornyprog > -dokl)?(0.001*gornyprog):-dokl; // Ĺźeby nie zaczÄÄ od progu
+  start = -dokl;//(0.001*gornyprog > -dokl)?(0.001*gornyprog):-dokl; // żeby nie zacząć od progu
   szukanie_poziomow(start);
   normowanie();
   // profil(0., 1e-5);
@@ -1147,19 +1147,19 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
 //  bool gwiazdka = false;
 //  std::clog<<"\njestpole = "<<jestpole<<"\n";
 //  int max_par = (jestpole)?7:6;
-//  int min_par = (jestpole)?5:4; // maksymalna i minimalna liczba parametrĂłw w wierszu
+//  int min_par = (jestpole)?5:4; // maksymalna i minimalna liczba parametrów w wierszu
 //  while (!plik.eof())
 //    {
 //      bezkoment = regex_replace(wiersz, wykoment, nic);
 //      boost::sregex_token_iterator it(bezkoment.begin(), bezkoment.end(), pust, -1);
-//      boost::sregex_token_iterator kon; //z jakiegoĹ powodu oznacza to koniec
-//      if(it != kon) // niepusta zawartoĹÄ
+//      boost::sregex_token_iterator kon; //z jakiegoś powodu oznacza to koniec
+//      if(it != kon) // niepusta zawartość
 //	{
 //	  parametry.clear();
 //	  while (it != kon)
 //	    {
 //	      std::clog << *it << " * ";
-//	      if(it->str() == "*") // oznaczenie warstw do liczenia nnoĹnikĂłw
+//	      if(it->str() == "*") // oznaczenie warstw do liczenia nnośników
 //		{
 //		  gwiazdka = true;
 //		  ++it;
@@ -1169,7 +1169,7 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
 //		liczba = boost::lexical_cast<double>(*it);
 //		it++;
 //	      } catch(boost::bad_lexical_cast&) {
-//		std::cerr<<"\n napis "<< *it<<" nie jest liczbÄ\n";
+//		std::cerr<<"\n napis "<< *it<<" nie jest liczbą\n";
 //		abort();
 //	      }
 //	      parametry.push_back(liczba);
@@ -1178,9 +1178,9 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
 //	  if(bylalewa && ( ((int)parametry.size() < min_par && parametry.size() != 1) || (int)parametry.size() > max_par) )
 //	    {
 //	      if(jestpole)
-//		std::cerr<<"\nwarstwa wymaga 1 lub od 5 do 7 parametrĂłw, a sÄ "<<parametry.size()<<"\n";
+//		std::cerr<<"\nwarstwa wymaga 1 lub od 5 do 7 parametrów, a są "<<parametry.size()<<"\n";
 //	      else
-//		std::cerr<<"\nwarstwa wymaga 1 lub od 4 do 6 parametrĂłw, a sÄ "<<parametry.size()<<"\n";
+//		std::cerr<<"\nwarstwa wymaga 1 lub od 4 do 6 parametrów, a są "<<parametry.size()<<"\n";
 //	      abort();
 //	    }
 //	  if(bylalewa)
@@ -1189,11 +1189,11 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
 //		{
 //		  bylaprawa = true;
 //		  wskazwar = new warstwa_skraj(warstwa_skraj::prawa, parametry[0], parametry[0], x_pocz, 0.);
-//		  std::clog<<"\nrobi siÄ prawa: masa = "<<parametry[0]<<" x_pocz = "<<x_pocz<<"\n";
+//		  std::clog<<"\nrobi się prawa: masa = "<<parametry[0]<<" x_pocz = "<<x_pocz<<"\n";
 //		  tablica.push_back(wskazwar);
 //		  break;
 //		}
-//	      else // wewnÄtrzna
+//	      else // wewnętrzna
 //		{
 //		  x_kon = x_pocz + parametry[0];
 //		  y_pocz = -parametry[1];
@@ -1242,17 +1242,17 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
 //	      bylalewa = true;
 //	      wskazwar = new warstwa_skraj(warstwa_skraj::lewa, parametry[0], parametry[0], x_pocz, 0.);
 //	      tablica.push_back(wskazwar);
-//	      std::clog<<"\nrobi siÄ lewa: masa = "<<parametry[0]<<" x_pocz = "<<x_pocz<<"\n";
+//	      std::clog<<"\nrobi się lewa: masa = "<<parametry[0]<<" x_pocz = "<<x_pocz<<"\n";
 //	    }
 //	}
 //      if(bylalewa && bylawew && bylaprawa)
 //	{
-//	  std::clog<<"\nWsystko byĹo\n";
+//	  std::clog<<"\nWsystko było\n";
 //	}
 //      std::getline(plik, wiersz);
 //    }
 //
-//  // poniĹźej zawartoĹÄ konstruktora od tablicy
+//  // poniżej zawartość konstruktora od tablicy
 //
 //  lewa = *((const warstwa_skraj *)  tablica[0]);
 //  if(lewa.lp == warstwa_skraj::prawa)
@@ -1284,7 +1284,7 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
 //	  abort();
 //	}
 //      kawalki.push_back(*tablica[i]);
-//      tablica[i-1]->nast = tablica[i]; // ustawianie wskaĹşnika na sÄsiadkÄ
+//      tablica[i-1]->nast = tablica[i]; // ustawianie wskaźnika na sąsiadkę
 //      czydol = (tablica[i]->y_pocz > tablica[i]->y_kon)?tablica[i]->y_kon:tablica[i]->y_pocz;
 //      if(czydol < dol)
 //	{
@@ -1306,7 +1306,7 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
 //      std::cerr<<"Brak jakiejkolwiek studni!\n";
 //      abort();
 //    }
-//  double gornyprog = dol; // pierwsze prĂłg _pod_ barierÄ
+//  double gornyprog = dol; // pierwsze próg _pod_ barierą
 //  //  std::clog<<"gornyprog = "<<gornyprog<<"\n";
 //  std::vector<double>::iterator it = progi.begin();
 //  while(it != progi.end())
@@ -1338,7 +1338,7 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
 //      dokl = 5e-7;
 //      double start;
 //  //  std::clog<<"gornyprog = "<<gornyprog<<"\n";
-//      start = -dokl; //(0.001*gornyprog > -dokl)?(0.001*gornyprog):-dokl; // Ĺźeby nie zaczÄÄ od progu
+//      start = -dokl; //(0.001*gornyprog > -dokl)?(0.001*gornyprog):-dokl; // żeby nie zacząć od progu
 //      szukanie_poziomow_2(start,dokl,false);
 //      normowanie();
 //    }
@@ -1362,19 +1362,19 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
 //  bool gwiazdka = false;
 //  std::clog<<"\njestpole = "<<jestpole<<"\n";
 //  int max_par = (jestpole)?7:6;
-//  int min_par = (jestpole)?5:4; // maksymalna i minimalna liczba parametrĂłw w wierszu
+//  int min_par = (jestpole)?5:4; // maksymalna i minimalna liczba parametrów w wierszu
 //  while (!plik.eof())
 //    {
 //      bezkoment = regex_replace(wiersz, wykoment, nic);
 //      boost::sregex_token_iterator it(bezkoment.begin(), bezkoment.end(), pust, -1);
-//      boost::sregex_token_iterator kon; //z jakiegoĹ powodu oznacza to koniec
-//      if(it != kon) // niepusta zawartoĹÄ
+//      boost::sregex_token_iterator kon; //z jakiegoś powodu oznacza to koniec
+//      if(it != kon) // niepusta zawartość
 //	{
 //	  parametry.clear();
 //	  while (it != kon)
 //	    {
 //	      std::clog << *it << " * ";
-//	      if(it->str() == "*") // oznaczenie warstw do liczenia nnoĹnikĂłw
+//	      if(it->str() == "*") // oznaczenie warstw do liczenia nnośników
 //		{
 //		  gwiazdka = true;
 //		  ++it;
@@ -1384,7 +1384,7 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
 //		liczba = boost::lexical_cast<double>(*it);
 //		it++;
 //	      } catch(boost::bad_lexical_cast&) {
-//		std::cerr<<"\n napis "<< *it<<" nie jest liczbÄ\n";
+//		std::cerr<<"\n napis "<< *it<<" nie jest liczbą\n";
 //		abort();
 //	      }
 //	      parametry.push_back(liczba);
@@ -1393,9 +1393,9 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
 //	  if(bylalewa && ( ((int)parametry.size() < min_par && parametry.size() != 1) || (int)parametry.size() > max_par) )
 //	    {
 //	      if(jestpole)
-//		std::cerr<<"\nwarstwa wymaga 1 lub od 5 do 7 parametrĂłw, a sÄ "<<parametry.size()<<"\n";
+//		std::cerr<<"\nwarstwa wymaga 1 lub od 5 do 7 parametrów, a są "<<parametry.size()<<"\n";
 //	      else
-//		std::cerr<<"\nwarstwa wymaga 1 lub od 4 do 6 parametrĂłw, a sÄ "<<parametry.size()<<"\n";
+//		std::cerr<<"\nwarstwa wymaga 1 lub od 4 do 6 parametrów, a są "<<parametry.size()<<"\n";
 //	      abort();
 //	    }
 //	  if(bylalewa)
@@ -1404,11 +1404,11 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
 //		{
 //		  bylaprawa = true;
 //		  wskazwar = new warstwa_skraj(warstwa_skraj::prawa, parametry[0], parametry[0], x_pocz, 0.);
-//		  std::clog<<"\nrobi siÄ prawa: masa = "<<parametry[0]<<" x_pocz = "<<x_pocz<<"\n";
+//		  std::clog<<"\nrobi się prawa: masa = "<<parametry[0]<<" x_pocz = "<<x_pocz<<"\n";
 //		  tablica.push_back(wskazwar);
 //		  break;
 //		}
-//	      else // wewnÄtrzna
+//	      else // wewnętrzna
 //		{
 //		  x_kon = x_pocz + parametry[0];
 //		  y_pocz = -parametry[1];
@@ -1457,17 +1457,17 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
 //	      bylalewa = true;
 //	      wskazwar = new warstwa_skraj(warstwa_skraj::lewa, parametry[0], parametry[0], x_pocz, 0.);
 //	      tablica.push_back(wskazwar);
-//	      std::clog<<"\nrobi siÄ lewa: masa = "<<parametry[0]<<" x_pocz = "<<x_pocz<<"\n";
+//	      std::clog<<"\nrobi się lewa: masa = "<<parametry[0]<<" x_pocz = "<<x_pocz<<"\n";
 //	    }
 //	}
 //      if(bylalewa && bylawew && bylaprawa)
 //	{
-//	  std::clog<<"\nWsystko byĹo\n";
+//	  std::clog<<"\nWsystko było\n";
 //	}
 //      std::getline(plik, wiersz);
 //    }
 //
-//  // poniĹźej zawartoĹÄ konstruktora od tablicy
+//  // poniżej zawartość konstruktora od tablicy
 //
 //  lewa = *((const warstwa_skraj *)  tablica[0]);
 //  if(lewa.lp == warstwa_skraj::prawa)
@@ -1499,7 +1499,7 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
 //	  abort();
 //	}
 //      kawalki.push_back(*tablica[i]);
-//      tablica[i-1]->nast = tablica[i]; // ustawianie wskaĹşnika na sÄsiadkÄ
+//      tablica[i-1]->nast = tablica[i]; // ustawianie wskaźnika na sąsiadkę
 //      czydol = (tablica[i]->y_pocz > tablica[i]->y_kon)?tablica[i]->y_kon:tablica[i]->y_pocz;
 //      if(czydol < dol)
 //	{
@@ -1521,7 +1521,7 @@ struktura::struktura(const std::vector<warstwa*> & tablica, rodzaj co): moreInfo
 //      std::cerr<<"Brak jakiejkolwiek studni!\n";
 //      abort();
 //    }
-//  double gornyprog = dol; // pierwsze prĂłg _pod_ barierÄ
+//  double gornyprog = dol; // pierwsze próg _pod_ barierą
 //  //  std::clog<<"gornyprog = "<<gornyprog<<"\n";
 //  std::vector<double>::iterator it = progi.begin();
 //  while(it != progi.end())
@@ -1595,7 +1595,7 @@ double struktura::czyosobliwa(double E)
   // Bylo bez '+ 2'
   if(N < 3)
     {
-      std::cerr<<"Za maĹo warstw, bo "<<N<<"\n";
+      std::cerr<<"Za mało warstw, bo "<<N<<"\n";
       abort();
     }
   int M = 2*N - 2; // liczba rownan
@@ -1616,13 +1616,13 @@ double struktura::czyosobliwa(double E)
   double detUV = rozkladUV.det();
   //  return((S[S.dim() - 1]));
 
-  //  return((S[S.dim() - 1])/S[S.dim() - 2]); // Dzielone, Ĺźeby nie byĹo zer podwĂłjnych
+  //  return((S[S.dim() - 1])/S[S.dim() - 2]); // Dzielone, żeby nie było zer podwójnych
   double dzielnik = 1; // Zeby wyeleminowac zera na plaskich kawalkach
   for(int i = 0; i<= (int) progi.size() - 1; i++)
     {
       if(E == progi[i])
 	{
-	  std::cerr<<"Energia "<<E<<" rĂłwna progowi nr "<<i<<"\n";
+	  std::cerr<<"Energia "<<E<<" równa progowi nr "<<i<<"\n";
 	  abort();
 	}
       dzielnik *= (E - progi[i]);
@@ -1701,7 +1701,7 @@ void struktura::zrobmacierz(double E, A2D & macierz)
   macierz[2*n + 1][2*n + 1] = -prawa.ffala_prim(x, E)/prawa.masa_p;
  }
 /*****************************************************************************/
-double struktura::sprawdz_ciaglosc(double E, A2D & V) // zwraca sumÄ skokĂłw funkcji na interfejsach. znak ujemny oznacza Ĺźe byĹa zmiana znaku na nieciÄĹĹoĹci na interfejsie
+double struktura::sprawdz_ciaglosc(double E, A2D & V) // zwraca sumę skoków funkcji na interfejsach. znak ujemny oznacza że była zmiana znaku na nieciąŋłości na interfejsie
 {
   int N = kawalki.size() + 2; //liczba warstw
   int M = 2*N - 2; // liczba rownan
@@ -1833,7 +1833,7 @@ int struktura::ilezer_ffal(double E)
   rozklad.getV(V);
   int sumazer = 0;
   double A, B, As, Bs;
-  //  bool juz = false, jeszcze = true; // czy juĹź lub jeszcze warto sprawdzaÄ (nie bÄdzie zer w warstwie, w ktĂłrej poziom jest pod przerwÄ i tak samo jest we wszystkich od lub do skrajnej)
+  //  bool juz = false, jeszcze = true; // czy już lub jeszcze warto sprawdzać (nie będzie zer w warstwie, w której poziom jest pod przerwą i tak samo jest we wszystkich od lub do skrajnej)
   int pierwsza = -1;
   do
     {
@@ -1846,7 +1846,7 @@ int struktura::ilezer_ffal(double E)
     }while(ostatnia >= 0 && (kawalki[ostatnia].y_pocz > E && kawalki[ostatnia].y_kon > E) );
   std::clog<<"\npierwsza sprawdzana = "<<pierwsza<<" ostatnia = "<<ostatnia;
 
-  double sasiad; // wartoĹÄ ffal na lewym brzegu sÄsiada z prawej (ta, ktĂłra powinna byÄ wspĂłlna do obu)
+  double sasiad; // wartość ffal na lewym brzegu sąsiada z prawej (ta, która powinna być wspólna do obu)
   for(int j = pierwsza; j <= ostatnia - 1; j++)
     {
       A = V[2*j+1][V.dim2() - 1];
@@ -1858,7 +1858,7 @@ int struktura::ilezer_ffal(double E)
     }
   A = V[2*ostatnia+1][V.dim2() - 1];
   B = V[2*ostatnia+2][V.dim2() - 1];
-  sumazer += kawalki[ostatnia].zera_ffal(E, A, B); // W ostatniej warswie nie moĹźe byÄ zera na ĹÄczeniu, wiÄc nie ma problem
+  sumazer += kawalki[ostatnia].zera_ffal(E, A, B); // W ostatniej warswie nie może być zera na łączeniu, więc nie ma problem
   return sumazer;
 }
 *****************************************************************************/
@@ -1880,7 +1880,7 @@ int struktura::ilezer_ffal(double E, A2D & V)
       B = V[2*i][V.dim2() - 1];
       sumazer += kawalki[i - 1].zera_ffal(E, A, B);
     }
-  */ // tak byĹo bez szukania pierwszej i ostatniej
+  */ // tak było bez szukania pierwszej i ostatniej
   int pierwsza = -1;
   do
     {
@@ -1892,8 +1892,8 @@ int struktura::ilezer_ffal(double E, A2D & V)
       ostatnia--;
     }while(ostatnia >= 0 && (kawalki[ostatnia].y_pocz > E && kawalki[ostatnia].y_kon > E) );
   //  std::clog<<"\npierwsza sprawdzana = "<<pierwsza<<" ostatnia = "<<ostatnia;
-  double sasiadl, sasiadp; // wartoĹÄ ffal na lewym brzegu sÄsiada z prawej (ta, ktĂłra powinna byÄ wspĂłlna do obu)
-  if(ostatnia == pierwsza) // tylko jedna podejrzana warstwa, nie trzeba siÄ sÄsiadami przejmowaÄ
+  double sasiadl, sasiadp; // wartość ffal na lewym brzegu sąsiada z prawej (ta, która powinna być wspólna do obu)
+  if(ostatnia == pierwsza) // tylko jedna podejrzana warstwa, nie trzeba się sąsiadami przejmować
     {
       A = V[2*pierwsza+1][V.dim2() - 1];
       B = V[2*pierwsza+2][V.dim2() - 1];
@@ -1907,7 +1907,7 @@ int struktura::ilezer_ffal(double E, A2D & V)
       Ap = V[2*(j+1)+1][V.dim2() - 1];
       Bp = V[2*(j+1)+2][V.dim2() - 1];
       sasiadp = kawalki[j+1].funkcjafal(kawalki[j+1].x_pocz, E, Ap, Bp);
-      sasiadl = kawalki[j].funkcjafal(kawalki[j].x_pocz, E, A, B); // po lewej nie ma problemu, wiÄc moĹźna podstawiÄ wartoĹÄ z wĹasnej warstwy
+      sasiadl = kawalki[j].funkcjafal(kawalki[j].x_pocz, E, A, B); // po lewej nie ma problemu, więc można podstawić wartość z własnej warstwy
       sumazer += kawalki[j].zera_ffal(E, A, B, sasiadl, sasiadp);
       for(/*int*/ j = pierwsza + 1; j <= ostatnia - 1; j++) /// LUKASZ Visual 6
 	{
@@ -1926,15 +1926,15 @@ int struktura::ilezer_ffal(double E, A2D & V)
       B = V[2*j+2][V.dim2() - 1];
       Al = V[2*(j-1)+1][V.dim2() - 1];
       Bl = V[2*(j-1)+2][V.dim2() - 1];
-      sasiadp = kawalki[j].funkcjafal(kawalki[j].x_kon, E, A, B); // po prawej nie ma problemu, wiÄc moĹźna podstawiÄ wartoĹÄ z wĹasnej warstwy
+      sasiadp = kawalki[j].funkcjafal(kawalki[j].x_kon, E, A, B); // po prawej nie ma problemu, więc można podstawić wartość z własnej warstwy
       sasiadl = kawalki[j-1].funkcjafal(kawalki[j-1].x_kon, E, Al, Bl);
-      sumazer += kawalki[j].zera_ffal(E, A, B, sasiadl, sasiadp); // W ostatniej warswie nie moĹźe byÄ zera na ĹÄczeniu, wiÄc nie ma problemu
+      sumazer += kawalki[j].zera_ffal(E, A, B, sasiadl, sasiadp); // W ostatniej warswie nie może być zera na łączeniu, więc nie ma problemu
     }
   return sumazer;
-  //  return 0; //do testĂłw tylko!
+  //  return 0; //do testów tylko!
 }
 /*****************************************************************************/
-std::vector<double> struktura::zageszczanie(punkt p0, punkt pk) // ZagÄszcza aĹź znajdzie inny znak, zakĹada, Ĺźe poczÄtkowe znaki sÄ takie same
+std::vector<double> struktura::zageszczanie(punkt p0, punkt pk) // Zagęszcza aż znajdzie inny znak, zakłada, że początkowe znaki są takie same
 {
   std::list<punkt> lista;
   std::vector<double> wynik;
@@ -1960,7 +1960,7 @@ std::vector<double> struktura::zageszczanie(punkt p0, punkt pk) // ZagÄszcza 
     }
   iter=lista.insert(++iter,punkt(E,czyosobliwa(E)));
   */
-  double szer = dokl + 1; // Ĺźeby na wejĹciu byĹo wiÄcej niĹź dokl
+  double szer = dokl + 1; // żeby na wejściu było więcej niż dokl
   while(wynik.empty() && szer >= dokl)
     {
       iterp = lista.end();
@@ -1991,7 +1991,7 @@ void struktura::profil(double Ek, double rozdz)
   double E0 = dol;
   if(Ek <= E0)
     {
-      std::cerr<<"ZĹy zakres energii!\n";
+      std::cerr<<"Zły zakres energii!\n";
       abort();
     }
   for( double E = E0; E <= Ek; E += rozdz)
@@ -2014,7 +2014,7 @@ void struktura::szukanie_poziomow(double Ek, double rozdz, bool debug) // Trzeba
   double E0 = dol;
   if(Ek <= E0)
     {
-      std::cerr<<"ZĹy zakres energii!\n";
+      std::cerr<<"Zły zakres energii!\n";
       abort();
     }
   int M = 2*(kawalki.size() + 2) - 2;
@@ -2047,7 +2047,7 @@ void struktura::szukanie_poziomow(double Ek, double rozdz, bool debug) // Trzeba
       wartakt = czyosobliwa(E);
     }
   /*  std::clog<<"Sieczne z krancami "<<E<<" i "<<(E + rozdz)<<"\n";
-      double Eost = sieczne(fun, E, E + rozdz); // koniec szukania najwyĹźszego stanu */
+      double Eost = sieczne(fun, E, E + rozdz); // koniec szukania najwyższego stanu */
   if (moreInfo) std::clog<<"Bisekcja z krancami "<<E<<" i "<<(E + rozdz)<<"\n";
   double Eost = bisekcja(fun, E, E + rozdz);
   if(debug)
@@ -2080,9 +2080,9 @@ void struktura::szukanie_poziomow(double Ek, double rozdz, bool debug) // Trzeba
       if (moreInfo) std::clog<<"Epierw = "<<pierw.en<<" wartpierw = "<<pierw.wart<<"\n";
       if(ost.wart*pierw.wart > 0)
 	{
-	  if (moreInfo) std::clog<<"ZagÄszczanie z pierw = "<<pierw.en<<" i ost = "<<ost.en<<"\n";
+	  if (moreInfo) std::clog<<"Zagęszczanie z pierw = "<<pierw.en<<" i ost = "<<ost.en<<"\n";
 	  trojka = zageszczanie(pierw, ost);
-	  for(int i = 1; i >= 0; i--)// bo sÄ dwa zera
+	  for(int i = 1; i >= 0; i--)// bo są dwa zera
 	    {
 	      //	      E = sieczne(fun, trojka[i], trojka[i+1]);
 	      E = bisekcja(fun, trojka[i], trojka[i+1]);
@@ -2093,7 +2093,7 @@ void struktura::szukanie_poziomow(double Ek, double rozdz, bool debug) // Trzeba
 		}
 	      Eb0 = trojka[i];
 	      Eb1 = trojka[i+1];
-	      while(ciagl < 0 || ciagl > 1e-7) // zmiana znaku na interfejsie albo marna ciÄgĹoĹÄ
+	      while(ciagl < 0 || ciagl > 1e-7) // zmiana znaku na interfejsie albo marna ciągłość
 		{
 		  if(debug)
 		    {
@@ -2131,11 +2131,11 @@ void struktura::szukanie_poziomow(double Ek, double rozdz, bool debug) // Trzeba
 	      nowy = stan(E, V, liczbazer);
 	      if(liczbazer > ostatnie_dobre)
 		{
-		  std::cerr<<"Za duĹźo zer!\n";
+		  std::cerr<<"Za dużo zer!\n";
 		  abort();
 		}
 	      rozwiazania[liczbazer] = nowy;
-	      //	      if(debug && licz > 0) // rysuje funkcje jeĹli byĹo podejrzane 0
+	      //	      if(debug && licz > 0) // rysuje funkcje jeśli było podejrzane 0
 	      //		funkcja1_do_pliku(debugfun, nowy, 0.1);
 	    }
 	}
@@ -2150,7 +2150,7 @@ void struktura::szukanie_poziomow(double Ek, double rozdz, bool debug) // Trzeba
 	    }
 	  Eb0 = pierw.en;
 	  Eb1 = ost.en;
-	  while(ciagl < 0 || ciagl > 1e-7) // zmiana znaku na interfejsie albo marna ciÄgĹoĹÄ
+	  while(ciagl < 0 || ciagl > 1e-7) // zmiana znaku na interfejsie albo marna ciągłość
 	    {
 	      if(debug)
 		{
@@ -2188,10 +2188,10 @@ void struktura::szukanie_poziomow(double Ek, double rozdz, bool debug) // Trzeba
 	  nowy = stan(E, V, liczbazer);
 	  if(liczbazer > ostatnie_dobre)
 	    {
-	      std::cerr<<"Za duĹźo zer!\n";
+	      std::cerr<<"Za dużo zer!\n";
 	      abort();
 	    }
-	  if(rozwiazania[liczbazer].liczba_zer > -1) // juĹź jest stan z takÄ liczbÄ zer
+	  if(rozwiazania[liczbazer].liczba_zer > -1) // już jest stan z taką liczbą zer
 	    {
 	      std::cerr<<"Bez sensu z zerami!\n";
 	      abort();
@@ -2199,7 +2199,7 @@ void struktura::szukanie_poziomow(double Ek, double rozdz, bool debug) // Trzeba
 	      /*	      stymcz = rozwiazania[liczbazer];
 	      if(stymcz.poziom > nowy.poziom)
 		{
-		  if(nowy.liczba_zer == 0 || rozwiazania[liczbazer-1] > -1) // najniĹźszy poziom lub ponieĹźej zajÄte
+		  if(nowy.liczba_zer == 0 || rozwiazania[liczbazer-1] > -1) // najniższy poziom lub ponieżej zajęte
 		    {
 		      std::cerr<<"Bardzo bez sensu z zerami!\n";
 		      abort();
@@ -2225,7 +2225,7 @@ void struktura::szukanie_poziomow(double Ek, double rozdz, bool debug) // Trzeba
 	    {
 	      rozwiazania[liczbazer] = nowy;
 	    }
-	  if(debug && licz > 0) // rysuje funkcje jeĹli byĹo podejrzane 0
+	  if(debug && licz > 0) // rysuje funkcje jeśli było podejrzane 0
 	    funkcja1_do_pliku(debugfun, nowy, 0.1);
 	}
       if (moreInfo) std::clog<<"ostatnie_dobre = "<<ostatnie_dobre<<"\n";
@@ -2255,13 +2255,13 @@ void struktura::szukanie_poziomow_2(double Ek, double rozdz, bool debug)
       plikdebug<<"E\tzera\n";
       plikdebug.precision(12);
     }
-  std::list<stan> listast; // lista znalezionych stanĂłw
-  std::list<stan>::iterator itostd, itnastd; // najwyĹźszy stan nad ktĂłÂŠym wszystko jest znalezione, nastÄpny stan, nad ktĂłrym trzeba jeszcze szukaÄ
+  std::list<stan> listast; // lista znalezionych stanów
+  std::list<stan>::iterator itostd, itnastd; // najwyższy stan nad któ©ym wszystko jest znalezione, następny stan, nad którym trzeba jeszcze szukać
   std::list<stan>::iterator iter; //pomocniczy
   double E0 = dol;
   if(Ek <= E0)
     {
-      std::cerr<<"ZĹy zakres energii!\n";
+      std::cerr<<"Zły zakres energii!\n";
       abort();
     }
   int M = 2*(kawalki.size() + 2) - 2;
@@ -2294,7 +2294,7 @@ void struktura::szukanie_poziomow_2(double Ek, double rozdz, bool debug)
       wartakt = czyosobliwa(E);
     }
   /*  std::clog<<"Sieczne z krancami "<<E<<" i "<<(E + rozdz)<<"\n";
-      double Eost = sieczne(fun, E, E + rozdz); // koniec szukania najwyĹźszego stanu */
+      double Eost = sieczne(fun, E, E + rozdz); // koniec szukania najwyższego stanu */
   std::clog<<"Bisekcja z krancami "<<E<<" i "<<(E + rozdz)<<"\n";
   double Eost = bisekcja(fun, E, E + rozdz);
   if(debug)
@@ -2333,12 +2333,12 @@ void struktura::szukanie_poziomow_2(double Ek, double rozdz, bool debug)
 
       if(ost.wart*pierw.wart > 0)
 	{
-	  if (moreInfo) std::clog<<"ZagÄszczanie z pierw = "<<pierw.en<<" i ost = "<<ost.en<<"\n";
+	  if (moreInfo) std::clog<<"Zagęszczanie z pierw = "<<pierw.en<<" i ost = "<<ost.en<<"\n";
 	  trojka = zageszczanie(pierw, ost);
 	  if(!trojka.empty())
 	    {
 	      iter = itostd;
-	      for(int i = 1; i >= 0; i--)// bo sÄ dwa zera
+	      for(int i = 1; i >= 0; i--)// bo są dwa zera
 		{
 		  //	      E = sieczne(fun, trojka[i], trojka[i+1]);
 		  E = bisekcja(fun, trojka[i], trojka[i+1]);
@@ -2347,21 +2347,21 @@ void struktura::szukanie_poziomow_2(double Ek, double rozdz, bool debug)
 		  nowy = stan(E, V, liczbazer);
 		  /*	      if(liczbazer > ostatnie_dobre)
 			      {
-			      std::cerr<<"Za duĹźo zer!\n";
+			      std::cerr<<"Za dużo zer!\n";
 			      abort();
 			      }
 		  */
 		  listast.insert(iter, nowy);
 		  --iter;
 		  //	      rozwiazania[liczbazer] = nowy;
-		  //	      if(debug && licz > 0) // rysuje funkcje jeĹli byĹo podejrzane 0
+		  //	      if(debug && licz > 0) // rysuje funkcje jeśli było podejrzane 0
 		  //		funkcja1_do_pliku(debugfun, nowy, 0.1);
 		}
 	    }
 	  else
 	    {
 	      itostd = itnastd;
-	      std::clog<<"Nie znalazĹ a powinien\n";
+	      std::clog<<"Nie znalazł a powinien\n";
 	    }
 
 	}
@@ -2374,7 +2374,7 @@ void struktura::szukanie_poziomow_2(double Ek, double rozdz, bool debug)
 	  nowy = stan(E, V, liczbazer);
 	  if(liczbazer >= itostd->liczba_zer)
 	    {
-	      std::cerr<<"Za duĹźo zer!\n";
+	      std::cerr<<"Za dużo zer!\n";
 	      abort();
 	    }
 	  listast.insert(itostd, nowy);
@@ -2382,15 +2382,15 @@ void struktura::szukanie_poziomow_2(double Ek, double rozdz, bool debug)
 	}
       //      std::clog<<"ostatnie_dobre = "<<ostatnie_dobre<<"\n";
       //      while(ostatnie_dobre >= 1 && rozwiazania[ostatnie_dobre - 1].liczba_zer >= 0 )
-      ////////while((itostd != listast.begin()) && (itostd->liczba_zer <= std::prev(itostd)->liczba_zer + 1)) //stany na liĹcie schodzÄ po jeden w liczbie zer /// LUKASZ wykomentowalem
+      ////////while((itostd != listast.begin()) && (itostd->liczba_zer <= std::prev(itostd)->liczba_zer + 1)) //stany na liście schodzą po jeden w liczbie zer /// LUKASZ wykomentowalem
       std::list<stan>::iterator itostdprev1 = itostd; /// LUKASZ dopisalem
       itostdprev1 = itostdprev1--; /// LUKASZ dopisalem
-      while((itostd != listast.begin()) && (itostd->liczba_zer <= itostdprev1->liczba_zer + 1)) //stany na liĹcie schodzÄ po jeden w liczbie zer /// LUKASZ zastapilem prve
+      while((itostd != listast.begin()) && (itostd->liczba_zer <= itostdprev1->liczba_zer + 1)) //stany na liście schodzą po jeden w liczbie zer /// LUKASZ zastapilem prve
 	{
 	  ////////if(itostd->liczba_zer < std::prev(itostd)->liczba_zer + 1) /// LUKASZ wykomentowalem
       if(itostd->liczba_zer < itostdprev1->liczba_zer + 1) /// LUKASZ zastapilem prve
 	    {
-	      ////////std::clog<<"\nKĹopot z miejscami zerowymi: E1 = "<<(itostd->poziom)<<" zer "<<(itostd->liczba_zer)<<"\nE2 = "<<(std::prev(itostd)->poziom)<<" zer "<<(std::prev(itostd)->liczba_zer)<<"\n"; /// LUKASZ wykomentowalem
+	      ////////std::clog<<"\nKłopot z miejscami zerowymi: E1 = "<<(itostd->poziom)<<" zer "<<(itostd->liczba_zer)<<"\nE2 = "<<(std::prev(itostd)->poziom)<<" zer "<<(std::prev(itostd)->liczba_zer)<<"\n"; /// LUKASZ wykomentowalem
 	    }
 	  --itostd;
 	  --itostdprev1; /// LUKASZ dopisalem
@@ -2440,7 +2440,7 @@ void struktura::stany_z_tablicy(const std::vector<double> & energie)
       liczbazer = ilezer_ffal(E, V);
       if(liczbazer != i)
 	{
-	  if (moreInfo) std::cerr<<"E = "<<E<<" zer jest "<<liczbazer<<" a powinno byÄ "<<i<<"\n";
+	  if (moreInfo) std::cerr<<"E = "<<E<<" zer jest "<<liczbazer<<" a powinno być "<<i<<"\n";
 	  //	  abort();
 	}
       nowy = stan(E, V, liczbazer);
@@ -2455,21 +2455,21 @@ double struktura::sieczne(double (struktura::*f)(double), double pocz, double ko
   double dokl = 1e-10;
   double xp = kon;
   double xl = pocz;
-  std::clog<<"Sieczne. WartoĹci na koĹcach: "<<((this->*f)(pocz))<<", "<<((this->*f)(kon))<<"\n";
+  std::clog<<"Sieczne. Wartości na końcach: "<<((this->*f)(pocz))<<", "<<((this->*f)(kon))<<"\n";
   if((this->*f)(pocz)*(this->*f)(kon) > 0)
     {
-      std::cerr<<"ZĹe kraĹce przedziaĹu!\n";
+      std::cerr<<"Złe krańce przedziału!\n";
       abort();
     }
 
   double x, fc, fp, fl, xlp, xpp; // -p -- poprzednie krance
-  double fpw, flw; // kraĹce funkcji do wzoru -- mogÄ rĂłĹźniÄ siÄ od prawdziwych w Illinois
+  double fpw, flw; // krańce funkcji do wzoru -- mogą różnić się od prawdziwych w Illinois
   fl = (this->*f)(xl);
   fp = (this->*f)(xp);
   flw = fl;
   fpw = fp;
   xlp = (xl + xp)/2;
-  xpp = xlp; // Ĺźeby na pewno byĹo na poczÄtku rĂłĹźne od prawdzwych koĹcĂłw
+  xpp = xlp; // żeby na pewno było na początku różne od prawdzwych końców
   do
     {
       x = xp - fpw*(xp - xl)/(fpw - flw);
@@ -2525,17 +2525,17 @@ double struktura::bisekcja(double (struktura::*f)(double), double pocz, double k
   //  int limpetli = 30;
   double xp = kon;
   double xl = pocz;
-  if (moreInfo) std::clog<<"Bisekcja. WartoĹci na koĹcach: "<<((this->*f)(pocz))<<", "<<((this->*f)(kon))<<"\n";
+  if (moreInfo) std::clog<<"Bisekcja. Wartości na końcach: "<<((this->*f)(pocz))<<", "<<((this->*f)(kon))<<"\n";
   if((this->*f)(pocz)*(this->*f)(kon) > 0)
     {
-      std::cerr<<"ZĹe kraĹce przedziaĹu!\n";
+      std::cerr<<"Złe krańce przedziału!\n";
       abort();
     }
 
   double x, fc, fl; // -p -- poprzednie krance
   fl = (this->*f)(xl);
   int liczpetli = 0;
-  //  fp = (this->*f)(xp); //Wystarczy chyba tylko tu, ale wtedy nie wypisze dobrze wartoĹci na kraĹcach
+  //  fp = (this->*f)(xp); //Wystarczy chyba tylko tu, ale wtedy nie wypisze dobrze wartości na krańcach
   do
     {
       x = (xp + xl)/2;
@@ -2564,7 +2564,7 @@ double struktura::bisekcja(double (struktura::*f)(double), double pocz, double k
   /*
       if(liczpetli >= limpetli)
     {
-      std::cerr<<"\nPrzekroczony limit liczby pÄtli\nOsiÄgniÄta dokĹadnoĹÄ:"<<(xp - xl)<<"\n";
+      std::cerr<<"\nPrzekroczony limit liczby pętli\nOsiągnięta dokładność:"<<(xp - xl)<<"\n";
     }
   */
   if(fc*fc > 1e-8)
@@ -2628,13 +2628,13 @@ double struktura::ilenosnikow(double qFl, double T)
   while(it != rozwiazania.begin()) // suma po poziomach
     {
       --it;
-      //      std::clog<<"niepomonĹźone = "<<niepomnozone<<"\n";
+      //      std::clog<<"niepomonżone = "<<niepomnozone<<"\n";
       calkazFD = kT*log(1+exp((qFl - it->poziom)/kT));
       niepomnozone = lewa.norma_kwadr(it->poziom, it->wspolczynniki.front()) * lewa.masa_r;
       niepomnozone += prawa.norma_kwadr(it->poziom, it->wspolczynniki.back()) * prawa.masa_r;
       for(int i = 0; i<= (int) kawalki.size() - 1; i++) // Suma po warstwach
 	{
-	  //	  std::clog<<"niepomonĹźone = "<<niepomnozone<<"\n";
+	  //	  std::clog<<"niepomonżone = "<<niepomnozone<<"\n";
 	  niepomnozone += kawalki[i].norma_kwadr(it->poziom, it->wspolczynniki[2*i + 1], it->wspolczynniki[2*i + 2]) * kawalki[i].masa_r;
 	}
       tylenosnikow += niepomnozone*calkazFD/pi; // spiny juz sa
@@ -3028,13 +3028,13 @@ obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura
   int i = 0; /// LUKASZ Visual 6
   if(elektron->rozwiazania.size() != elektron_m->rozwiazania.size())
     {
-      std::cerr<<"Liczba rozwiaĹ dla struktur elektronowych jest rĂłĹźna!\n";
-      std::cerr<<"zwykĹe majÄ "<<(elektron->rozwiazania.size());
-      std::cerr<<"zmodyfikowane majÄ "<<(elektron_m->rozwiazania.size());
+      std::cerr<<"Liczba rozwiań dla struktur elektronowych jest różna!\n";
+      std::cerr<<"zwykłe mają "<<(elektron->rozwiazania.size());
+      std::cerr<<"zmodyfikowane mają "<<(elektron_m->rozwiazania.size());
       //      abort();
       if(elektron->rozwiazania.size() >  elektron_m->rozwiazania.size())
 	{
-	  std::cerr<<"Liczba rozwiaĹ dla struktury elektronowej jest wiÄksza niĹź dla mod!\n";
+	  std::cerr<<"Liczba rozwiań dla struktury elektronowej jest większa niż dla mod!\n";
 	  //	  abort();
 	}
     }
@@ -3042,13 +3042,13 @@ obszar_aktywny::obszar_aktywny(struktura * elektron, const std::vector<struktura
     {
       if(dziury[i]->rozwiazania.size() != dziury_m[i]->rozwiazania.size())
 	{
-	  std::cerr<<"Liczba rozwiaĹ dla dziur "<<i<<" jest rĂłĹźna:\n";
-	  std::cerr<<"zwykĹe majÄ "<<(dziury[i]->rozwiazania.size());
-	  std::cerr<<"zmodyfikowane majÄ "<<(dziury_m[i]->rozwiazania.size());
+	  std::cerr<<"Liczba rozwiań dla dziur "<<i<<" jest różna:\n";
+	  std::cerr<<"zwykłe mają "<<(dziury[i]->rozwiazania.size());
+	  std::cerr<<"zmodyfikowane mają "<<(dziury_m[i]->rozwiazania.size());
 	  //	  abort();
 	  if(dziury[i]->rozwiazania.size() > dziury_m[i]->rozwiazania.size())
 	    {
-	      std::cerr<<"Liczba rozwiaĹ dla struktury dziurowej jest wiÄksza niĹź dla mod!\n";
+	      std::cerr<<"Liczba rozwiań dla struktury dziurowej jest większa niż dla mod!\n";
 	      //	      abort();
 	    }
 	}
@@ -3262,9 +3262,9 @@ double obszar_aktywny::iloczyn_pierwotna_bezpola(double x, int nr_war, const str
   return wynik;
 }
 /*****************************************************************************/
-double obszar_aktywny::calka_iloczyn_zpolem(int nr_war, const struktura * struk1, const struktura * struk2, int i, int j) // numeryczne caĹkowanie
+double obszar_aktywny::calka_iloczyn_zpolem(int nr_war, const struktura * struk1, const struktura * struk2, int i, int j) // numeryczne całkowanie
 {
-  if (moreInfo) std::clog<<"\nW caĹk numer. Warstwa "<<nr_war<<" poziom el "<<i<<" poziom j "<<j<<"\n";;
+  if (moreInfo) std::clog<<"\nW całk numer. Warstwa "<<nr_war<<" poziom el "<<i<<" poziom j "<<j<<"\n";;
   double krok = 1.; // na razie krok na sztywno przelm (ok 2.6) A
   double Ec = struk1->rozwiazania[i].poziom;
   double Ev = struk2->rozwiazania[j].poziom;
@@ -3274,7 +3274,7 @@ double obszar_aktywny::calka_iloczyn_zpolem(int nr_war, const struktura * struk1
   double x_kon = struk1->kawalki[nr_war].x_kon;
   double szer = x_kon - x_pocz;
   int podzial = ceill(szer/krok);
-  krok = szer/podzial; // wyrĂłwnanie kroku
+  krok = szer/podzial; // wyrównanie kroku
   Ac = struk1->rozwiazania[i].wspolczynniki[2*nr_war + 1];
   Av = struk2->rozwiazania[j].wspolczynniki[2*nr_war + 1];
   Bc = struk1->rozwiazania[i].wspolczynniki[2*nr_war + 2];
@@ -3308,7 +3308,7 @@ double obszar_aktywny::calka_ij(const struktura * elektron, const struktura * dz
   double pierwk, pierwp, xp;
   for(int war = 0; war <= (int) elektron->kawalki.size() - 1; war++)
     {
-      if( (elektron->kawalki[war].pole == 0) && (dziura->kawalki[war].pole == 0) ) //trzeba posprzÄtaÄ, i wywoĹywaÄ funkcjÄ tutaj
+      if( (elektron->kawalki[war].pole == 0) && (dziura->kawalki[war].pole == 0) ) //trzeba posprzątać, i wywoływać funkcję tutaj
 	{
 	  xp = elektron->kawalki[war].x_pocz;
 	  xk = elektron->kawalki[war].x_kon;
@@ -3436,7 +3436,7 @@ double wzmocnienie::erf_dorored(double E, double E0, double sigma)
   return 0.5*(1 + erf((E - E0)/(sqrt(2)*sigma)));
 }
 /*****************************************************************************/
-double wzmocnienie::rored_posz(double E, double E0, double mc, double mv, double sigma) // gÄstoĹÄ do chopowatej studni o nominalnej rĂłĹźnicy energii poziomĂłw E0. Wersja najprostsza -- jedno poszerzenie na wszystko
+double wzmocnienie::rored_posz(double E, double E0, double mc, double mv, double sigma) // gęstość do chopowatej studni o nominalnej różnicy energii poziomów E0. Wersja najprostsza -- jedno poszerzenie na wszystko
 {
   if(sigma <= 0)
     {
@@ -3487,7 +3487,7 @@ wzmocnienie::wzmocnienie(obszar_aktywny * obsz, double konc_pow, double temp, do
 	  warstwy_do_nosnikow.insert(pasma->pasmo_wal[i]->gwiazdki[j]);
 	}
     }
-  if(warstwy_do_nosnikow.empty()) // nie byĹo Ĺźadnej gwiazdki, to wszystkie warstwy
+  if(warstwy_do_nosnikow.empty()) // nie było żadnej gwiazdki, to wszystkie warstwy
     {
       for(j = 0; j <= (int) pasma->pasmo_przew[0]->kawalki.size() - 1; ++j)
 	warstwy_do_nosnikow.insert(j+1);
@@ -3515,7 +3515,7 @@ wzmocnienie::wzmocnienie(obszar_aktywny * obsz, double konc_pow, double temp, do
     }
   /*  else
     {
-      std::clog<<"\n szerokoĹci gwiazdek i do wzmoc zgadzajÄ siÄ z dokĹadnoĹciÄ " <<(fabs(szer_do_wzmoc - szergwiazd)/szer_do_wzmoc)<<"\n";
+      std::clog<<"\n szerokości gwiazdek i do wzmoc zgadzają się z dokładnością " <<(fabs(szer_do_wzmoc - szergwiazd)/szer_do_wzmoc)<<"\n";
     }
   */
   ///policz_qFlc(); /// LUKASZ w plikach od Michala nie ma tu komentarza
@@ -3654,7 +3654,7 @@ double wzmocnienie::pozFerm_przew()
 /*****************************************************************************/
 double wzmocnienie::pozFerm_wal()
 {
-  return -qFlv; // w ukĹadzie, gdzie studnie sÄ w dĂłĹ, a bariera na 0.
+  return -qFlv; // w układzie, gdzie studnie są w dół, a bariera na 0.
 }
 /*****************************************************************************/
 double wzmocnienie::szerdowzmoc()
@@ -3688,7 +3688,7 @@ std::vector<double> wzmocnienie::koncentracje_dziur_w_warstwach()
 {
   std::vector<double> konce, koncetym;
   std::vector<struktura *>::const_iterator piter = pasma->pasmo_wal.begin();
-  konce = (*piter)->koncentracje_w_warstwach(-qFlv, T); //minus, bo struktury nie sÄ Ĺwiadome obrĂłcenia energii dla dziur
+  konce = (*piter)->koncentracje_w_warstwach(-qFlv, T); //minus, bo struktury nie są świadome obrócenia energii dla dziur
   ++piter;
   while(piter != pasma->pasmo_wal.end())
     {
@@ -3756,7 +3756,7 @@ double wzmocnienie::sieczne(double (wzmocnienie::*f)(double), double pocz, doubl
   /*
   if((this->*f)(pocz)*(this->*f)(kon) > 0)
     {
-      std::cerr<<"ZĹe kraĹce przedziaĹu!\n";
+      std::cerr<<"Złe krańce przedziału!\n";
       abort();
     }
   */
@@ -3764,7 +3764,7 @@ double wzmocnienie::sieczne(double (wzmocnienie::*f)(double), double pocz, doubl
   fl = (this->*f)(xl);
   fp = (this->*f)(xp);
   xlp = (xl + xp)/2;
-  xpp = xlp; // Ĺźeby na pewno byĹo na poczÄtku rĂłĹźne od prawdzwych koĹcĂłw
+  xpp = xlp; // żeby na pewno było na początku różne od prawdzwych końców
   do
     {
       x = xp - fp*(xp - xl)/(fp - fl);
@@ -3811,7 +3811,7 @@ double wzmocnienie::L(double x, double b)
   return 1/(M_PI*b)/(1 + x/b*x/b );
 }
 /*****************************************************************************/
-double wzmocnienie::wzmocnienie_calk_ze_splotem(double E, double b, double blad) // podziaĹ na kawaĹek o promieniu Rb wokĂłĹ 0 i resztÄ
+double wzmocnienie::wzmocnienie_calk_ze_splotem(double E, double b, double blad) // podział na kawałek o promieniu Rb wokół 0 i resztę
 {
   //  double blad = 0.005;
   // b energia do poszerzenia w lorentzu
@@ -3830,22 +3830,22 @@ double wzmocnienie::wzmocnienie_calk_ze_splotem(double E, double b, double blad)
 	}
     }
   double a = 2*(E0min - pasma->min_przerwa_energetyczna())*pasma->chrop;
-  // maksima (oszacowne z gĂłry) kolejnych pochodnych erfc(x/a)
+  // maksima (oszacowne z góry) kolejnych pochodnych erfc(x/a)
   double em = 2.;
   double epm = 1.13/a;
   double eppm = 1./(a*a);
   double epppm = 2.5/(a*a*a);
   double eppppm = 5/(a*a*a*a);
-  // maxima  (oszacowne z gĂłry) kolejnych pochodnych lorentza (x/b), pomnoĹźeone przez b
+  // maxima  (oszacowne z góry) kolejnych pochodnych lorentza (x/b), pomnożeone przez b
   double lm = 1/M_PI;
   double lpm = 0.2/b;
   double lppm = 0.7/(b*b);
   double lpppm = 1.5/(b*b*b);
   double lppppm = 24/M_PI/(b*b*b*b);
-  double czwpoch0b = (em*lppppm + 4*epm*lpppm + 6*eppm*lppm + 4*epppm*lpm + eppppm*lm); // szacowanie (grube) czwartej pochodnej dla |x| < 1, pomnoĹźone przez b
-  double R = 3.; // w ilu b jest zmiana zagÄszczenia
+  double czwpoch0b = (em*lppppm + 4*epm*lpppm + 6*eppm*lppm + 4*epppm*lpm + eppppm*lm); // szacowanie (grube) czwartej pochodnej dla |x| < 1, pomnożone przez b
+  double R = 3.; // w ilu b jest zmiana zagęszczenia
   double jedenplusR2 = 1 + R*R;
-  double lmR = 1/(M_PI*jedenplusR2); // oszacowania moduĹĂłw kolejnych pochodnych przez wartoĹÄ w R, bo dla R >=2 sÄ malejÄce
+  double lmR = 1/(M_PI*jedenplusR2); // oszacowania modułów kolejnych pochodnych przez wartość w R, bo dla R >=2 są malejące
   double lpmR = 2*R/(M_PI*jedenplusR2*jedenplusR2)/b;
   double lppmR = (6*R*R - 2)/(M_PI*jedenplusR2*jedenplusR2*jedenplusR2)/(b*b);
   double lpppmR = 24*R*(R*R - 1)/(M_PI*jedenplusR2*jedenplusR2*jedenplusR2*jedenplusR2)/(b*b*b);
@@ -3854,7 +3854,7 @@ double wzmocnienie::wzmocnienie_calk_ze_splotem(double E, double b, double blad)
 
   int n0 = pow(2*R,5./4)*b*pow(czwpoch0b/(180*blad),0.25);
   int nR = pow((32-R),5./4)*b*pow(czwpochRb/(180*blad),0.25);
-  if(n0%2) // ny powinny byÄ parzyste
+  if(n0%2) // ny powinny być parzyste
     {
       n0+=1;
     }
@@ -3862,7 +3862,7 @@ double wzmocnienie::wzmocnienie_calk_ze_splotem(double E, double b, double blad)
     {
       n0 += 2;
     }
-  if(nR%2) // ny powinny byÄ parzyste
+  if(nR%2) // ny powinny być parzyste
     {
       nR+=1;
     }
@@ -3870,7 +3870,7 @@ double wzmocnienie::wzmocnienie_calk_ze_splotem(double E, double b, double blad)
     {
       nR += 2;
     }
-  //  nR *= 2; // chwilowo, do testĂłw
+  //  nR *= 2; // chwilowo, do testów
   double szer = 2*R*b;
   double h = szer/n0;
   double x2j, x2jm1, x2jm2;
@@ -3888,14 +3888,14 @@ double wzmocnienie::wzmocnienie_calk_ze_splotem(double E, double b, double blad)
   szer = (32-R)*b;
   h = szer/nR;
   double calka2 = 0.;
-  for(j = 1; j <= nR/2; j++) // ujemne pĂłĹ
+  for(j = 1; j <= nR/2; j++) // ujemne pół
     {
       x2j = -32*b + 2*j*h;
       x2jm1 = x2j - h;
       x2jm2 = x2jm1 - h;
       calka2 += L(x2jm2,b)*wzmocnienie_calk_bez_splotu(E-x2jm2) + 4*L(x2jm1,b)*wzmocnienie_calk_bez_splotu(E-x2jm1) + L(x2j,b)*wzmocnienie_calk_bez_splotu(E-x2j);
     }
-  for(j = 1; j <= nR/2; j++) // dodatnie pĂłĹ
+  for(j = 1; j <= nR/2; j++) // dodatnie pół
     {
       x2j = R*b + 2*j*h;
       x2jm1 = x2j - h;
@@ -3943,7 +3943,7 @@ double wzmocnienie::wzmocnienie_od_pary_pasm(double E, size_t nr_c, size_t nr_v)
       //else; /// error - nie wstawiac nic innego niz 0 lub 1
 
 	  ///std::cout << "\tgain from pair of bands (if) - " << ">0?: " << ((*m_prz)[nrpoz_el][nrpoz_dziu] - 0.005) << ", >0?: " << (E-E0 + 8*posz_en) << ", nr_c: " << nr_c << ", nr_v: " << nr_v << ", nrpoz_el: " << nrpoz_el << ", nrpoz_dziu: " << nrpoz_dziu << "\n"; /// LUKASZ dodalem linie
-	  if( ((*m_prz)[nrpoz_el][nrpoz_dziu] > 0.005) && (E-E0 > -8*posz_en) ) // czy warto traciÄ czas
+	  if( ((*m_prz)[nrpoz_el][nrpoz_dziu] > 0.005) && (E-E0 > -8*posz_en) ) // czy warto tracić czas
 	    {
 	      ///std::cout << "\t\tcalc gain from pair of levels (if)\n"; /// LUKASZ dodalem linie
 	      wzmoc += wzmocnienie_od_pary_poziomow(E, nr_c, nrpoz_el, nr_v, nrpoz_dziu);
@@ -3988,7 +3988,7 @@ double wzmocnienie::spont_od_pary_pasm(double E, size_t nr_c, size_t nr_v, doubl
 
 	  //	  std::cerr<<"\n"<<nrpoz_el<<" "<<nrpoz_dziu<<" posz_en = "<<posz_en;
 	  ///std::cout << "\tlumi from pair of bands (if) - " << ">0?: " << ((*m_prz)[nrpoz_el][nrpoz_dziu] - 0.005) << ", >0?: " << (E-E0 + 8*posz_en) << ", nr_c: " << nr_c << ", nr_v: " << nr_v << ", nrpoz_el: " << nrpoz_el << ", nrpoz_dziu: " << nrpoz_dziu << "\n"; /// LUKASZ dodalem linie
-	  if( ((*m_prz)[nrpoz_el][nrpoz_dziu] > 0.005) && (E-E0 > -8*posz_en) ) // czy warto traciÄ czas
+	  if( ((*m_prz)[nrpoz_el][nrpoz_dziu] > 0.005) && (E-E0 > -8*posz_en) ) // czy warto tracić czas
 	    {
 	      ///std::cout << "\t\tcalc lumi from pair of levels (if)\n"; /// LUKASZ dodalem linie
 	      spont += spont_od_pary_poziomow(E, nr_c, nrpoz_el, nr_v, nrpoz_dziu, polar);
@@ -4013,7 +4013,7 @@ double wzmocnienie::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_
   //  std::cerr<<"\nTyp dziury = "<<dziu->typ;
   std::vector<double> calki_kawalki;
 
-  // UĹrednianie masy efektywnej
+  // Uśrednianie masy efektywnej
   //  std::cerr<<"\n prawd = "<<el->rozwiazania[poz_c].prawdopodobienstwa[0];
   double srednia_masa_el = el->rozwiazania[poz_c].prawdopodobienstwa[0]*el->lewa.masa_r;
   double srednia_masa_dziu = dziu->rozwiazania[poz_v].prawdopodobienstwa[0]*dziu->lewa.masa_r;
@@ -4028,16 +4028,16 @@ double wzmocnienie::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_
   //  std::cerr<<"\n prawd = "<<el->rozwiazania[poz_c].prawdopodobienstwa[ost_ind];
   srednia_masa_el += el->rozwiazania[poz_c].prawdopodobienstwa[ost_ind]*el->prawa.masa_r;
   srednia_masa_dziu += dziu->rozwiazania[poz_v].prawdopodobienstwa[ost_ind]*dziu->prawa.masa_r;
-  //  std::cerr<<"\nĹrednie masy:\n elektron = "<< srednia_masa_el<<"\ndziura = "<<srednia_masa_dziu<<"\n";;
+  //  std::cerr<<"\nŚrednie masy:\n elektron = "<< srednia_masa_el<<"\ndziura = "<<srednia_masa_dziu<<"\n";;
   double mnoznik_pol;
-  // koniec uĹredniania masy
+  // koniec uśredniania masy
 
   //  double srednie_k = (E-E0>0)?kodE(E-E0, srednia_masa_el, srednia_masa_dziu):0.;
   double srednie_k_zeznakiem = (E-E0>0)?kodE(E-E0, srednia_masa_el, srednia_masa_dziu):-kodE(E0-E, srednia_masa_el, srednia_masa_dziu);
 
   //  double minimalna_przerwa = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->dol + dziu->dol;
   //  double min_E0 = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->rozwiazania[0].poziom + dziu->rozwiazania[0].poziom;
-  //  double posz_en = 2*(min_E0 - minimalna_przerwa)*pasma->chrop; // oszacowanie rozmycia poziomĂłw z powodu chropowatoĹci
+  //  double posz_en = 2*(min_E0 - minimalna_przerwa)*pasma->chrop; // oszacowanie rozmycia poziomów z powodu chropowatości
   double posz_en;/// = posz_z_br(nr_c, poz_c, nr_v, poz_v);//posz_z_chrop(nr_c, poz_c, nr_v, poz_v); /// LUKASZ dodalem komentarz
 
   /// LUKASZ dodalem cale if-else
@@ -4053,7 +4053,7 @@ double wzmocnienie::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_
   }
   //else; /// error - nie wstawiac nic innego niz 0 lub 1
 
-  double sr_E_E0_dod = posz_en/(sqrt(2*struktura::pi))*exp(-(E-E0)*(E-E0)/(2*posz_en*posz_en)) + (E-E0)*erf_dorored(E, E0, posz_en);   //Ĺrednia energia kinetyczna w pĹaszczyĹşnie
+  double sr_E_E0_dod = posz_en/(sqrt(2*struktura::pi))*exp(-(E-E0)*(E-E0)/(2*posz_en*posz_en)) + (E-E0)*erf_dorored(E, E0, posz_en);   //średnia energia kinetyczna w płaszczyźnie
   Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c];
   //      std::cerr<<"lewa Eg = "<<Eg<<"\n";
   //  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
@@ -4070,7 +4070,7 @@ double wzmocnienie::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_
   //      std::cerr<<"\nprzekr_w_war = "<<przekr_w_war<<" el_mac = "<<pasma->el_mac[0]<<" wynik = "<<wynik;
   for(i = 0; i <= (int) el->kawalki.size() - 1; i++)
     {
-      Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->kawalki[i].y_pocz + dziu->kawalki[i].y_pocz; // y_pocz na szybko, moĹźe co innego powinno byÄ
+      Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->kawalki[i].y_pocz + dziu->kawalki[i].y_pocz; // y_pocz na szybko, może co innego powinno być
       //      cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
       cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
       mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet)/2:(5-3*cos2tet)/6;
@@ -4097,7 +4097,7 @@ double wzmocnienie::wzmocnienie_od_pary_poziomow(double E, size_t nr_c, int poz_
   ///else std::cout << "\t\tgain from pair of levels (2) - struktura: lh\n"; /// LUKASZ dodalem linie
   wynik += sqrt(pasma->el_mac.back() * mnoznik_pol) * przekr_w_war;
   //  std::cerr<<"\nprzekr_w_war = "<<przekr_w_war<<" el_mac = "<<pasma->el_mac.back()<<" wynik = "<<wynik<<" rored = "<<rored(srednie_k, srednia_masa_el, srednia_masa_dziu)<<"\n";
-  wynik *= wynik; // dopiero teraz kwadrat moduĹu
+  wynik *= wynik; // dopiero teraz kwadrat modułu
   //      std::cerr<<"\nwynik = "<<wynik;
 
   wynik *= rored_posz(E, E0, srednia_masa_el, srednia_masa_dziu, posz_en) * rozn_obsadzen;
@@ -4153,10 +4153,10 @@ double wzmocnienie::spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, siz
   //  double erf_dor = erf_dorored(E, E0, posz_en);
   double srednie_k_zeznakiem = (E-E0>0)?kodE(E-E0, srednia_masa_el, srednia_masa_dziu):-kodE(E0-E, srednia_masa_el, srednia_masa_dziu);
   Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c];
-  double sr_E_E0_dod = posz_en/(sqrt(2*struktura::pi))*exp(-(E-E0)*(E-E0)/(2*posz_en*posz_en)) + (E-E0)*erf_dorored(E, E0, posz_en);   //Ĺrednia energia kinetyczna w pĹaszczyĹşnie
+  double sr_E_E0_dod = posz_en/(sqrt(2*struktura::pi))*exp(-(E-E0)*(E-E0)/(2*posz_en*posz_en)) + (E-E0)*erf_dorored(E, E0, posz_en);   //średnia energia kinetyczna w płaszczyźnie
   //  std::clog<<(E-E0)<<" "<<sr_E_E0_dod<<"\n";
   //  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
-  //  cos2tet = 1.0; // na chwilÄ
+  //  cos2tet = 1.0; // na chwilę
   cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
   //  std::clog<<"\ncos2tet = "<<cos2tet;
   calki_kawalki =  (*(pasma->calki_przekrycia_kawalki[nr_c][nr_v]))[poz_c][poz_v];
@@ -4168,9 +4168,9 @@ double wzmocnienie::spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, siz
   for(i = 0; i <= (int) el->kawalki.size() - 1; i++)
     {
       //      std::cerr<<"kawalek "<<i<<"\n";
-      Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->kawalki[i].y_pocz + dziu->kawalki[i].y_pocz; // y_pocz na szybko, moĹźe co innego powinno byÄ
+      Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c] + el->kawalki[i].y_pocz + dziu->kawalki[i].y_pocz; // y_pocz na szybko, może co innego powinno być
       //      cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
-      //      cos2tet = 1.0; // na chwilÄ
+      //      cos2tet = 1.0; // na chwilę
       //      cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.0;
       cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
       //      std::clog<<"\ncos2tet = "<<cos2tet;
@@ -4183,21 +4183,21 @@ double wzmocnienie::spont_od_pary_poziomow(double E, size_t nr_c, int poz_c, siz
       //      std::clog<<"warstwa "<<i<<" przekrycie = "<<przekr_w_war<<"\n";
     }
   przekr_w_war = calki_kawalki.back();
-  double energia_elektronu = el->rozwiazania[poz_c].poziom + srednie_k_zeznakiem*fabs(srednie_k_zeznakiem)/(2*srednia_masa_el); /// abs, Ĺźeby mieÄ znak, i energie poniĹźej E0  /// LUKASZ abs->fabs
+  double energia_elektronu = el->rozwiazania[poz_c].poziom + srednie_k_zeznakiem*fabs(srednie_k_zeznakiem)/(2*srednia_masa_el); /// abs, żeby mieć znak, i energie poniżej E0  /// LUKASZ abs->fabs
   double energia_dziury = dziu->rozwiazania[poz_v].poziom + srednie_k_zeznakiem*fabs(srednie_k_zeznakiem)/(2*srednia_masa_dziu);  /// LUKASZ abs->fabs
   double obsadzenia = fc(energia_elektronu - pasma->Egcc[nr_c])*(1 - fv(-energia_dziury + Egcv_T[0] - Egcv_T[nr_v]));
-  //  std::cerr<<"\nE = "<<E<<"\tnr_v = "<<nr_v<<"\ten_el = "<<energia_elektronu<<" en_dziu = "<<energia_dziury<<" obsadz el = "<<fc(energia_elektronu - pasma->Egcc[nr_c])<<" obsadz dziu = "<<(1 - fv(-energia_dziury + pasma->Egcv[0] - pasma->Egcv[nr_v]))<<" obsadzenia = "<<obsadzenia<<" przesuniÄcie w fv "<<(pasma->Egcv[0] - pasma->Egcv[nr_v])<<"\n";
+  //  std::cerr<<"\nE = "<<E<<"\tnr_v = "<<nr_v<<"\ten_el = "<<energia_elektronu<<" en_dziu = "<<energia_dziury<<" obsadz el = "<<fc(energia_elektronu - pasma->Egcc[nr_c])<<" obsadz dziu = "<<(1 - fv(-energia_dziury + pasma->Egcv[0] - pasma->Egcv[nr_v]))<<" obsadzenia = "<<obsadzenia<<" przesunięcie w fv "<<(pasma->Egcv[0] - pasma->Egcv[nr_v])<<"\n";
   Eg = Egcv_T[nr_v] - pasma->Egcc[nr_c];
   //    cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(E-Eg):1.0;
-  //  cos2tet = 1.0; // na chwilÄ
+  //  cos2tet = 1.0; // na chwilę
   //  cos2tet= (E0>Eg && E > E0)?(E0-Eg)/(sr_E_E0_dod + E0-Eg);//:1.0;
   cos2tet= (E0 > Eg)?(E0-Eg)/(sr_E_E0_dod + E0-Eg):1.;
   mnoznik_pol = (dziu->typ == struktura::hh)?(1 + cos2tet + polar*(1 - 3*cos2tet))/2:(5-3*cos2tet + 3*polar*(3-cos2tet))/6;
   ///if (dziu->typ == struktura::hh) std::cout << "\t\tlumi from pair of levels (2) - struktura: hh\n"; /// LUKASZ dodalem linie
   ///else std::cout << "\t\tlumi from pair of levels (2) - struktura: lh\n"; /// LUKASZ dodalem linie
   wynik += sqrt(pasma->el_mac.back() * mnoznik_pol) * przekr_w_war;
-  wynik *= wynik; // dopiero teraz kwadrat moduĹu
-  //  double posz_en = 2*(E0 - minimalna_przerwa)*pasma->chrop; // oszacowanie rozmycia poziomĂłw z powodu chropowatoĹci
+  wynik *= wynik; // dopiero teraz kwadrat modułu
+  //  double posz_en = 2*(E0 - minimalna_przerwa)*pasma->chrop; // oszacowanie rozmycia poziomów z powodu chropowatości
   wynik *= rored_posz(E, E0, srednia_masa_el, srednia_masa_dziu, posz_en)*obsadzenia;
   //  std::cerr<<"typ_"<<dziu->typ<<" "<<E<<" "<<fc(energia_elektronu - pasma->Egcc[nr_c])<<" "<<(1 - fv(-energia_dziury + pasma->Egcv[0] - pasma->Egcv[nr_v]))<<"\n";
   //  std::cerr<<"\nrored = "<<rored_posz(E, E0, srednia_masa_el, srednia_masa_dziu, posz_en);
@@ -4330,7 +4330,7 @@ double wzmocnienie::posz_z_chrop(size_t nr_c, int poz_c, size_t nr_v, int poz_v)
       grub = (el->kawalki[i].x_kon - el->kawalki[i].x_pocz);
       E0 = el->rozwiazania[poz_c].poziom;
       Eklok = E0 - srdno;
-      srednia_ekz_el = (Eklok > 0)? el->rozwiazania[poz_c].prawdopodobienstwa[i+1]*Eklok: 0; // Ĺrednia energia kinetyczna po z
+      srednia_ekz_el = (Eklok > 0)? el->rozwiazania[poz_c].prawdopodobienstwa[i+1]*Eklok: 0; // średnia energia kinetyczna po z
       srdno = (dziu->kawalki[i].y_pocz + dziu->kawalki[i].y_kon)/2;
       E0 = dziu->rozwiazania[poz_v].poziom;
       Eklok = E0 - srdno;
@@ -4374,5 +4374,5 @@ double wzmocnienie::posz_z_br(size_t nr_c, int poz_c, size_t nr_v, int poz_v)
   double dE = dEe + dEd;
   dE = (dE >= 0)?dE:-dE;
   //  std::clog<<"pozc,v ="<<poz_c<<", "<<poz_v<<"\tdE = "<<dE<<"\n";
-  return dE*pasma->broad; // tutaj chrop oznacza mnoĹźnik dla rĂłĹźnicy miÄdzy pasmami a pasmami_mod
+  return dE*pasma->broad; // tutaj chrop oznacza mnożnik dla różnicy między pasmami a pasmami_mod
 }
