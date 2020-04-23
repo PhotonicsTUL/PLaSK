@@ -22,8 +22,8 @@
 #  BLA_F95     if set on tries to find the f95 interfaces for BLAS/LAPACK
 ##########
 ### List of vendors (BLA_VENDOR) valid in this module
-##  OpenBLAS, Goto, ATLAS PhiPACK, CXML, DXML, SunPerf, SCSL, SGIMATH, IBMESSL, Intel10_32 (intel mkl v10 32 bit), Intel10_64lp (intel mkl v10 64 bit,lp thread model, lp64 model),
-##  Intel10_64lp_seq (intel mkl v10 64 bit,sequential code, lp64 model),
+##  OpenBLAS, Goto, ATLAS PhiPACK, CXML, DXML, SunPerf, SCSL, SGIMATH, IBMESSL, Intel_32 (intel mkl v10 32 bit), Intel_64lp (intel mkl v10 64 bit,lp thread model, lp64 model),
+##  Intel_64lp_seq (intel mkl v10 64 bit,sequential code, lp64 model),
 ##  Intel( older versions of mkl 32 and 64 bit), ACML, ACML_MP, ACML_GPU, Apple, NAS, Generic
 # C/CXX should be enabled to use Intel mkl
 
@@ -501,17 +501,17 @@ if (BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
       list(APPEND BLAS_SEARCH_LIBS
         "mkl_blas95 mkl_intel_c mkl_intel_thread mkl_core libguide40")
     else (WIN32)
-      if (BLA_VENDOR STREQUAL "Intel10_32" OR BLA_VENDOR STREQUAL "All")
+      if (BLA_VENDOR STREQUAL "Intel_32" OR BLA_VENDOR STREQUAL "All")
         list(APPEND BLAS_SEARCH_LIBS
           "mkl_blas95 mkl_intel mkl_intel_thread mkl_core guide")
       endif ()
-      if (BLA_VENDOR STREQUAL "Intel10_64lp" OR BLA_VENDOR STREQUAL "All")
+      if (BLA_VENDOR STREQUAL "Intel_64lp" OR BLA_VENDOR STREQUAL "All")
         # old version
         list(APPEND BLAS_SEARCH_LIBS
           "mkl_blas95 mkl_intel_lp64 mkl_intel_thread mkl_core guide")
 
         # mkl >= 10.3
-        if (CMAKE_C_COMPILER MATCHES ".+gcc.*")
+        if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
           list(APPEND BLAS_SEARCH_LIBS
             "mkl_blas95_lp64 mkl_intel_lp64 mkl_gnu_thread mkl_core")
           set(LM "${LM};-lgomp")
@@ -521,7 +521,7 @@ if (BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
         endif ()
       endif ()
     endif (WIN32)
-    if (BLA_VENDOR STREQUAL "Intel10_64lp_seq" OR BLA_VENDOR STREQUAL "All")
+    if (BLA_VENDOR STREQUAL "Intel_64lp_seq" OR BLA_VENDOR STREQUAL "All")
       list(APPEND BLAS_SEARCH_LIBS
         "mkl_blas95_lp64 mkl_intel_lp64 mkl_sequential mkl_core")
     endif ()
@@ -530,42 +530,28 @@ if (BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
     set(_LIBRARIES BLAS_LIBRARIES)
     if (WIN32)
       list(APPEND BLAS_SEARCH_LIBS
-        "mkl_c_dll mkl_intel_thread_dll mkl_core_dll libguide40")
+        "mkl_c_dll mkl_intel_thread_dll mkl_avx2_dll mkd_def_dll mkl_core_dll libguide40")
     else (WIN32)
-      if (BLA_VENDOR STREQUAL "Intel10_32" OR BLA_VENDOR STREQUAL "All")
+      if (BLA_VENDOR STREQUAL "Intel_32" OR BLA_VENDOR STREQUAL "All")
         list(APPEND BLAS_SEARCH_LIBS
           "mkl_intel mkl_intel_thread mkl_core guide")
       endif ()
-      if (BLA_VENDOR STREQUAL "Intel10_64lp" OR BLA_VENDOR STREQUAL "All")
-
-        # old version
-        list(APPEND BLAS_SEARCH_LIBS
-          "mkl_intel_lp64 mkl_intel_thread mkl_core guide")
+      if (BLA_VENDOR STREQUAL "Intel_64lp" OR BLA_VENDOR STREQUAL "All")
 
         # mkl >= 10.3
-        if (CMAKE_C_COMPILER MATCHES ".+gcc.*")
+        if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
           list(APPEND BLAS_SEARCH_LIBS
-            "mkl_intel_lp64 mkl_gnu_thread mkl_core")
+            "mkl_intel_lp64 mkl_gnu_thread mkl_core mkl_avx2 mkl_def")
           set(LM "${LM};-lgomp")
         else ()
           list(APPEND BLAS_SEARCH_LIBS
-            "mkl_intel_lp64 mkl_intel_thread mkl_core iomp5")
+            "mkl_intel_lp64 mkl_intel_thread mkl_core mkl_avx2 mkl_def iomp5")
         endif ()
       endif ()
-
-      #older vesions of intel mkl libs
-      if (BLA_VENDOR STREQUAL "Intel" OR BLA_VENDOR STREQUAL "All")
-        list(APPEND BLAS_SEARCH_LIBS
-          "mkl")
-        list(APPEND BLAS_SEARCH_LIBS
-          "mkl_ia32")
-        list(APPEND BLAS_SEARCH_LIBS
-          "mkl_em64t")
-      endif ()
     endif (WIN32)
-    if (BLA_VENDOR STREQUAL "Intel10_64lp_seq" OR BLA_VENDOR STREQUAL "All")
+    if (BLA_VENDOR STREQUAL "Intel_64lp_seq" OR BLA_VENDOR STREQUAL "All")
       list(APPEND BLAS_SEARCH_LIBS
-        "mkl_intel_lp64 mkl_sequential mkl_core")
+        "mkl_intel_lp64 mkl_sequential mkl_core mkl_avx2 mkl_def")
     endif ()
   endif (BLA_F95)
 

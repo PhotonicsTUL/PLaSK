@@ -272,7 +272,7 @@ if (BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
       endif(NOT LAPACK95_LIBRARIES)
       if(NOT LAPACK95_LIBRARIES)
         # new >= 10.3
-        if (CMAKE_C_COMPILER MATCHES ".+gcc.*")
+        if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	  set(LM "${LM};-lgomp")
         endif()
         check_lapack_libraries(
@@ -300,7 +300,7 @@ if (BLA_VENDOR MATCHES "Intel*" OR BLA_VENDOR STREQUAL "All")
       endif(NOT LAPACK_LIBRARIES)
       if(NOT LAPACK_LIBRARIES)
         # new >= 10.3
-        if (CMAKE_C_COMPILER MATCHES ".+gcc.*")
+        if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	  set(LM "${LM};-lgomp")
         endif()
         check_lapack_libraries(
