@@ -9,6 +9,7 @@ This file contains classes and templates which allow to generate providers and r
 #include "provider.h"
 #include "../utils/stl.h"   // VariadicTemplateTypesHolder
 
+#include "../mesh/transformed.h"
 #include "../mesh/rectangular_spline.h"
 
 namespace plask {
@@ -131,54 +132,54 @@ struct Property<_propertyType, _ValueType, _ValueType, _ExtraParams...> {
     static const ValueType3D& value2Dto3D(const ValueType2D& v) { return v; }
 };
 
-template <typename PropertyTag, bool hasUniqueValueType>
-struct PropertyVecConverterImpl {};
+// template <typename PropertyTag, bool hasUniqueValueType>
+// struct PropertyVecConverterImpl {};
 
-template <typename PropertyTag>
-struct PropertyVecConverterImpl<PropertyTag, true> {
-    static const DataVector<const typename PropertyTag::ValueType2D>& from3Dto2D(const DataVector<const typename PropertyTag::ValueType3D>& datavec) {
-        return datavec;
-    }
-    static const DataVector<typename PropertyTag::ValueType2D>& from3Dto2D(const DataVector<typename PropertyTag::ValueType3D>& datavec) {
-        return datavec;
-    }
-    static const DataVector<const typename PropertyTag::ValueType3D>& from2Dto3D(const DataVector<const typename PropertyTag::ValueType2D>& datavec) {
-        return datavec;
-    }
-    static const DataVector<typename PropertyTag::ValueType3D>& from2Dto3D(const DataVector<typename PropertyTag::ValueType2D>& datavec) {
-        return datavec;
-    }
-};
+// template <typename PropertyTag>
+// struct PropertyVecConverterImpl<PropertyTag, true> {
+//     static const DataVector<const typename PropertyTag::ValueType2D>& from3Dto2D(const DataVector<const typename PropertyTag::ValueType3D>& datavec) {
+//         return datavec;
+//     }
+//     static const DataVector<typename PropertyTag::ValueType2D>& from3Dto2D(const DataVector<typename PropertyTag::ValueType3D>& datavec) {
+//         return datavec;
+//     }
+//     static const DataVector<const typename PropertyTag::ValueType3D>& from2Dto3D(const DataVector<const typename PropertyTag::ValueType2D>& datavec) {
+//         return datavec;
+//     }
+//     static const DataVector<typename PropertyTag::ValueType3D>& from2Dto3D(const DataVector<typename PropertyTag::ValueType2D>& datavec) {
+//         return datavec;
+//     }
+// };
 
 
-template <typename PropertyTag>
-struct PropertyVecConverterImpl<PropertyTag, false> {
-    static DataVector<typename PropertyTag::ValueType2D> from3Dto2D(const DataVector<const typename PropertyTag::ValueType3D>& datavec) {
-        DataVector<typename PropertyTag::ValueType2D> result(datavec.size());
-        for (std::size_t i = 0; i < datavec.size(); ++i)
-            result[i] = PropertyTag::value3Dto2D(datavec[i]);
-        return result;
-    }
-    static DataVector<typename PropertyTag::ValueType3D> from2Dto3D(const DataVector<const typename PropertyTag::ValueType2D>& datavec) {
-        DataVector<typename PropertyTag::ValueType3D> result(datavec.size());
-        for (std::size_t i = 0; i < datavec.size(); ++i)
-            result[i] = PropertyTag::value2Dto3D(datavec[i]);
-        return result;
-    }
-};
+// template <typename PropertyTag>
+// struct PropertyVecConverterImpl<PropertyTag, false> {
+//     static DataVector<typename PropertyTag::ValueType2D> from3Dto2D(const DataVector<const typename PropertyTag::ValueType3D>& datavec) {
+//         DataVector<typename PropertyTag::ValueType2D> result(datavec.size());
+//         for (std::size_t i = 0; i < datavec.size(); ++i)
+//             result[i] = PropertyTag::value3Dto2D(datavec[i]);
+//         return result;
+//     }
+//     static DataVector<typename PropertyTag::ValueType3D> from2Dto3D(const DataVector<const typename PropertyTag::ValueType2D>& datavec) {
+//         DataVector<typename PropertyTag::ValueType3D> result(datavec.size());
+//         for (std::size_t i = 0; i < datavec.size(); ++i)
+//             result[i] = PropertyTag::value2Dto3D(datavec[i]);
+//         return result;
+//     }
+// };
 
-/**
- * Convert data vector from type of proprty in 3D to 2D space.
- */
-template <typename PropertyTag, typename VectorType>
-inline auto PropertyVec3Dto2D(const VectorType& datavec) -> decltype(PropertyVecConverterImpl<PropertyTag, PropertyTag::hasUniqueValueType>::from3Dto2D(datavec)) {
-    return PropertyVecConverterImpl<PropertyTag, PropertyTag::hasUniqueValueType>::from3Dto2D(datavec);
-}
+// /**
+//  * Convert data vector from type of property in 3D to 2D space.
+//  */
+// template <typename PropertyTag, typename VectorType>
+// inline auto PropertyVec3Dto2D(const VectorType& datavec) -> decltype(PropertyVecConverterImpl<PropertyTag, PropertyTag::hasUniqueValueType>::from3Dto2D(datavec)) {
+//     return PropertyVecConverterImpl<PropertyTag, PropertyTag::hasUniqueValueType>::from3Dto2D(datavec);
+// }
 
-template <typename PropertyTag, typename VectorType>
-inline auto PropertyVec2Dto3D(const VectorType& datavec) -> decltype(PropertyVecConverterImpl<PropertyTag, PropertyTag::hasUniqueValueType>::from2Dto3D(datavec)) {
-    return PropertyVecConverterImpl<PropertyTag, PropertyTag::hasUniqueValueType>::from2Dto3D(datavec);
-}
+// template <typename PropertyTag, typename VectorType>
+// inline auto PropertyVec2Dto3D(const VectorType& datavec) -> decltype(PropertyVecConverterImpl<PropertyTag, PropertyTag::hasUniqueValueType>::from2Dto3D(datavec)) {
+//     return PropertyVecConverterImpl<PropertyTag, PropertyTag::hasUniqueValueType>::from2Dto3D(datavec);
+// }
 
 /// Describe property in given space. Don't use it directly, but use PropertyAt.
 template <typename PropertyTag, int DIM, bool hasUniqueValueType>
@@ -190,6 +191,8 @@ struct PropertyAtImpl<PropertyTag, 2, true> {
     typedef typename PropertyTag::ValueType2D ValueType;
 
     static ValueType getDefaultValue() { return PropertyTag::getDefaultValue(); }
+
+    static LazyData<ValueType> convertLazyData(const LazyData<ValueType>& src) { return src; }
 };
 
 template <typename PropertyTag>
@@ -197,6 +200,12 @@ struct PropertyAtImpl<PropertyTag, 2, false> {
     typedef typename PropertyTag::ValueType2D ValueType;
 
     static ValueType getDefaultValue() { return PropertyTag::getDefaultValue2D(); }
+
+    static LazyData<ValueType> convertLazyData(const LazyData<ValueType>& src) { return src; }
+
+    static LazyData<ValueType> convertLazyData(const LazyData<typename PropertyTag::ValueType3D>& src) { 
+        return LazyData<ValueType>(src.size(), [&](std::size_t i) { return PropertyTag::value3Dto2D(src[i]); });
+    }
 };
 
 /// Describe property in 3D space. Don't use it directly, but use PropertyAt.
@@ -205,6 +214,8 @@ struct PropertyAtImpl<PropertyTag, 3, true> {
     typedef typename PropertyTag::ValueType3D ValueType;
 
     static ValueType getDefaultValue() { return PropertyTag::getDefaultValue(); }
+
+    static LazyData<ValueType> convertLazyData(const LazyData<ValueType>& src) { return src; }
 };
 
 template <typename PropertyTag>
@@ -212,6 +223,12 @@ struct PropertyAtImpl<PropertyTag, 3, false> {
     typedef typename PropertyTag::ValueType3D ValueType;
 
     static ValueType getDefaultValue() { return PropertyTag::getDefaultValue3D(); }
+
+    static LazyData<ValueType> convertLazyData(const LazyData<ValueType>& src) { return src; }
+
+    static LazyData<ValueType> convertLazyData(const LazyData<typename PropertyTag::ValueType2D>& src) { 
+        return LazyData<ValueType>(src.size(), [&](std::size_t i) { return PropertyTag::value2Dto3D(src[i]); });
+    }
 };
 
 /**
@@ -379,6 +396,10 @@ typedef FieldProperty<double> ScalarFieldProperty;
  */
 typedef MultiFieldProperty<double> MultiScalarFieldProperty;
 
+
+
+
+
 /**
  * Specializations of this class are implementations of providers for given property tag class and this tag properties.
  *
@@ -398,23 +419,7 @@ struct ProviderImpl {};
  * @see plask::Temperature (contains example); @ref providers
  */
 template <typename PropertyT, typename SpaceT = void>
-struct ProviderFor: public ProviderImpl<PropertyT, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams> {
-
-    typedef PropertyT PropertyTag;
-    typedef SpaceT SpaceType;
-
-    /// Delegate all constructors to parent class.
-    template<typename ...Args>
-    ProviderFor(Args&&... params)
-    : ProviderImpl<PropertyT, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams>(std::forward<Args>(params)...) {
-    }
-
-};
-//TODO redefine ProviderFor using template aliases (require gcc 4.7), and then fix ReceiverFor
-//template <typename PropertyT, typename SpaceT = void>
-//using ProviderFor = ProviderImpl<PropertyT, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams>;
-
-
+using ProviderFor = ProviderImpl<PropertyT, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams>;
 
 
 /**
@@ -422,7 +427,6 @@ struct ProviderFor: public ProviderImpl<PropertyT, PropertyT::propertyType, Spac
  * @tparam PropertyT property tag class (describe physical property)
  * @tparam SpaceT type of space, required (and allowed) only for fields properties
  */
-//TODO setValue
 template <typename PropertyT, typename SpaceT = void>
 struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams>> {
     ReceiverFor & operator=(const ReceiverFor&) = delete;
@@ -476,7 +480,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
     }
 
     /**
-     * Set provider to internal to provider of given field.
+     * Set provider to internal provider of given field.
      * \param data data with field values in mesh points
      * \param mesh mesh value
      */
@@ -489,7 +493,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
     }
 
     /**
-     * Set provider to internal to provider of constant field.
+     * Set provider to internal provider of constant field.
      * \param data data with field values in mesh points
      */
     template <typename Iterator, PropertyType propertyType = PropertyTag::propertyType>
@@ -499,7 +503,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
     }
 
     /**
-     * Set provider to internal to provider of given field.
+     * Set provider to internal provider of given field.
      * \param data data with field values in mesh points
      * \param mesh mesh value
      */
@@ -514,7 +518,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
     }
 
     /**
-     * Set provider to internal to provider of given field.
+     * Set provider to internal provider of given field.
      * \param data data with field values in mesh points
      * \param mesh mesh value
      */
@@ -525,6 +529,42 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
             if (it->size() != mesh->size())
                 throw BadMesh("ReceiverFor::setValues()", "Mesh size ({1}) and data[{2}] size ({0}) do not match", it->size(), mesh->size(), it-data.begin());
         this->setProvider(new typename ProviderFor<PropertyTag, SpaceType>::template WithValue<MeshT>(data.begin(), data.end(), mesh), true);
+    }
+
+    /**
+     * Attach provider for Geometry2DCartesian -> Geometry3D transform
+     */
+    template <typename GeometryT = SpaceT>
+    typename std::enable_if<std::is_same<GeometryT, Geometry3D>::value>::type
+    setTransformedProvider(ProviderFor<PropertyT, Geometry2DCartesian>* provider) {
+        this->setProvider(new typename ProviderFor<PropertyT, GeometryT>::template Transform<ReductionTo2DMesh>(provider), true);
+    }
+
+    /**
+     * Attach provider for Geometry2DCylindrical -> Geometry3D transform
+     */
+    template <typename GeometryT = SpaceT>
+    typename std::enable_if<std::is_same<GeometryT, Geometry3D>::value>::type
+    setTransformedProvider(ProviderFor<PropertyT, Geometry2DCylindrical>* provider) {
+        this->setProvider(new typename ProviderFor<PropertyT, GeometryT>::template Transform<CylReductionTo2DMesh>(provider), true);
+    }
+
+    /**
+     * Attach provider for Geometry3D -> Geometry2DCartesian transform
+     */
+    template <typename GeometryT = SpaceT>
+    typename std::enable_if<std::is_same<GeometryT, Geometry2DCartesian>::value>::type
+    setTransformedProvider(ProviderFor<PropertyT, Geometry3D>* provider) {
+        this->setProvider(new typename ProviderFor<PropertyT, GeometryT>::template Transform<CartesianMesh2DTo3D>(provider), true);
+    }
+
+    /**
+     * Attach provider for Geometry3D -> Geometry2DCylindrical transform
+     */
+    template <typename GeometryT = SpaceT>
+    typename std::enable_if<std::is_same<GeometryT, Geometry2DCylindrical>::value>::type
+    setTransformedProvider(ProviderFor<PropertyT, Geometry3D>* provider) {
+        this->setProvider(new typename ProviderFor<PropertyT, GeometryT>::template Transform<PointsOnCircleMeshExtend>(provider), true);
     }
 
     /**
@@ -565,6 +605,7 @@ template <typename PropertyT, typename SpaceT, typename... _ExtraParams>
 struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public SingleValueProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, _ExtraParams...> {
 
     typedef PropertyT PropertyTag;
+    typedef SpaceT SpaceType;
 
     static constexpr const char* NAME = PropertyT::NAME;
     const char* name() const override { return NAME; }
@@ -692,6 +733,7 @@ template <typename PropertyT, typename SpaceT, typename... _ExtraParams>
 struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public MultiValueProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, typename PropertyT::EnumType, _ExtraParams...> {
 
     typedef PropertyT PropertyTag;
+    typedef SpaceT SpaceType;
 
     typedef typename PropertyT::EnumType EnumType;
     
@@ -937,7 +979,6 @@ template <typename PropertyT, typename SpaceT, typename... _ExtraParams>
 struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public FieldProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, SpaceT, _ExtraParams...> {
 
     typedef PropertyT PropertyTag;
-
     typedef SpaceT SpaceType;
     
     static constexpr const char* NAME = PropertyT::NAME;
@@ -1098,6 +1139,46 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
     };
 
     /**
+     * Provider that uses mesh transformation and has a received for different mesh type
+     */
+    template <typename MeshTransform>
+    struct Transform: public ProviderFor<PropertyT, SpaceT> {
+
+        static_assert(std::is_same<SpaceT, typename MeshTransform::SourceGeometry>::value, "Bad transform source mesh type");
+
+        /// Type of provided value.
+        typedef typename ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::ProvidedType ProvidedType;
+
+        /// Receiver for transformed geometry
+        ReceiverFor<PropertyT, typename MeshTransform::TargetGeometry> receiver;
+
+        Transform() {
+            receiver.changedConnectMethod(this, &Transform::_receiverChanged);
+        }
+
+        Transform(ProviderFor<PropertyT, typename MeshTransform::TargetGeometry>* provider) {
+            receiver.changedConnectMethod(this, &Transform::_receiverChanged);
+            receiver.setProvider(provider);
+        }
+
+        ~Transform() {
+            receiver.changedDisconnectMethod(this, &Transform::_receiverChanged);
+        }
+
+        ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams...params, InterpolationMethod method = INTERPOLATION_DEFAULT) const override {
+            auto trans_mesh(make_shared<MeshTransform>(dst_mesh));
+            return PropertyAtSpace<PropertyT, SpaceT>::convertLazyData(receiver(trans_mesh, params..., method));
+        }
+
+      private:
+
+         void _receiverChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
+             this->fireChanged();
+         }
+
+    };
+
+    /**
      * Implementation of field provider class which delegates all operator() calls to external functor.
      */
     typedef PolymorphicDelegateProvider<ProviderFor<PropertyT, SpaceT>, ProvidedType(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams..., InterpolationMethod method)> Delegate;
@@ -1141,7 +1222,6 @@ template <typename PropertyT, typename SpaceT, typename... _ExtraParams>
 struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public MultiFieldProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, SpaceT, typename PropertyT::EnumType, _ExtraParams...> {
 
     typedef PropertyT PropertyTag;
-
     typedef SpaceT SpaceType;
 
     typedef typename PropertyT::EnumType EnumType;
@@ -1361,6 +1441,55 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
             if (method == INTERPOLATION_DEFAULT) method = default_interpolation;
             return interpolate(mesh_ptr, values[n], dst_mesh, method);
         }
+    };
+
+    /**
+     * Provider that uses mesh transformation and has a received for different mesh type
+     */
+    template <typename MeshTransform>
+    struct Transform: public ProviderFor<PropertyT, SpaceT> {
+
+        static_assert(std::is_same<SpaceT, typename MeshTransform::SourceGeometry>::value, "Bad transform source mesh type");
+
+        /// Type of provided value.
+        typedef typename ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >::ProvidedType ProvidedType;
+
+        /// Receiver for transformed geometry
+        ReceiverFor<PropertyT, typename MeshTransform::TargetGeometry> receiver;
+
+        Transform() {
+            receiver.changedConnectMethod(this, &Transform::_receiverChanged);
+        }
+
+        Transform(ProviderFor<PropertyT, typename MeshTransform::TargetGeometry>* provider) {
+            receiver.changedConnectMethod(this, &Transform::_receiverChanged);
+            receiver.setProvider(provider);
+        }
+
+        ~Transform() {
+            receiver.changedDisconnectMethod(this, &Transform::_receiverChanged);
+        }
+
+        /**
+         * Get number of values
+         * \return number of values
+         */
+        size_t size() const override {
+            return receiver.size();
+        }
+
+
+        ProvidedType operator()(EnumType num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams...params, InterpolationMethod method = INTERPOLATION_DEFAULT) const override {
+            auto trans_mesh(make_shared<MeshTransform>(dst_mesh));
+            return PropertyAtSpace<PropertyT, SpaceT>::convertLazyData(receiver(num, trans_mesh, params..., method));
+        }
+
+      private:
+
+         void _receiverChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
+             this->fireChanged();
+         }
+
     };
 
     /**

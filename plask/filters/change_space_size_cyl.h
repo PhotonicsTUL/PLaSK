@@ -3,49 +3,9 @@
 
 #include "base.h"
 #include "../mesh/basic.h"
+#include "../mesh/transformed.h"
 
 namespace plask {
-
-/**
- * 3D mesh that wrap 2D mesh (sourceMesh).
- * Each point from sourceMesh is replaced by pointsCount points that lie on circle.
- * Point with index I in sourceMesh is used to creates points I * pointsCount to I * (pointsCount + 1) - 1.
- */
-struct PLASK_API PointsOnCircleMeshExtend: public MeshD<3> {
-
-    const shared_ptr<const MeshD<2>> sourceMesh;
-
-    Vec<3, double> translation;
-
-    double slice;
-
-    std::size_t pointsCount;
-
-    Vec<3, double> getCenterForPoint(const Vec<2, double>& p) const {
-        return Vec<3, double>(this->translation.lon(), this->translation.tran(), this->translation.vert() + p.rad_z());
-    }
-
-public:
-
-    PointsOnCircleMeshExtend(const shared_ptr<const MeshD<2>>& sourceMesh, const Vec<3, double>& translation, std::size_t pointsCount)
-        : sourceMesh(sourceMesh), translation(translation), slice(PI_DOUBLED / double(pointsCount)), pointsCount(pointsCount) {
-    }
-
-    virtual Vec<3, double> at(std::size_t index) const override {
-        Vec<2, double> p = sourceMesh->at(index / pointsCount);
-        const double angle = slice * double(index % pointsCount);
-        return Vec<3, double>(
-                    this->translation.lon()  +  p.rad_r() * cos(angle),
-                    this->translation.tran() +  p.rad_r() * sin(angle),
-                    this->translation.vert() +  p.rad_z()
-        );
-    }
-
-    virtual std::size_t size() const override {
-        return sourceMesh->size() * pointsCount;
-    }
-
-};
 
 /// Don't use this directly, use DataFrom3DtoCyl2DSource instead.
 template <typename PropertyT, PropertyType propertyType, typename VariadicTemplateTypesHolder>
@@ -129,28 +89,6 @@ template <typename PropertyT, PropertyType propertyType, typename VariadicTempla
 struct DataFromCyl2Dto3DSourceImpl {
     static_assert(propertyType == FIELD_PROPERTY || propertyType == MULTI_FIELD_PROPERTY,
                   "DataFromCyl2Dto3DSource can't be used with value properties (it can be used only with fields properties)");
-};
-
-/**
- * This class is a 2D mesh which wraps 3D mesh (@p sourceMesh), reduce each point of sourceMesh (in cylinder) to 2D and translate it by given vector (@p translation).
- */
-struct PLASK_API CylReductionTo2DMesh: public MeshD<2> {
-
-    Vec<3, double> translation;
-
-    const shared_ptr<const MeshD<3>> sourceMesh;
-
-    CylReductionTo2DMesh(const shared_ptr<const MeshD<3>> sourceMesh, const Vec<3, double>& translation)
-        : translation(translation), sourceMesh(sourceMesh) {}
-
-    virtual Vec<2, double> at(std::size_t index) const override {
-        return Revolution::childVec(sourceMesh->at(index) - translation);
-    }
-
-    virtual std::size_t size() const override {
-        return sourceMesh->size();
-    }
-
 };
 
 /// Don't use this directly, use DataFromCyl2Dto3DSource instead.

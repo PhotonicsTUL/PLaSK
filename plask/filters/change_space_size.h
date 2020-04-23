@@ -3,68 +3,10 @@
 
 #include "base.h"
 #include "../mesh/basic.h"
+#include "../mesh/transformed.h"
 #include "../utils/warnings.h"
 
 namespace plask {
-
-/**
- * 3D mesh that wrap 2D mesh (sourceMesh).
- * It translates all points of original mesh and complement lon. parameter of each point by pointsCount values.
- * Point with index I in sourceMesh is used to creates points I * pointsCount to I * (pointsCount + 1) - 1.
- */
-class PLASK_API CartesianMesh2DTo3DExtend: public MeshD<3> {
-
-    const shared_ptr<const MeshD<2>> sourceMesh;
-
-    Vec<3, double> translation;
-
-    double stepSize;
-
-    /// Number of points, must be > 1
-    std::size_t pointsCount;
-
-public:
-
-    CartesianMesh2DTo3DExtend(const shared_ptr<const MeshD<2>>& sourceMesh, const Vec<3, double>& translation, double longBegin, double lonSize, std::size_t pointsCount)
-        : sourceMesh(sourceMesh), translation(translation), stepSize(lonSize / double(pointsCount-1)), pointsCount(pointsCount) {
-        this->translation.lon() += longBegin;
-    }
-
-    virtual Vec<3, double> at(std::size_t index) const override {
-        return translation + vec(sourceMesh->at(index / pointsCount), stepSize * double(index));
-    }
-
-    virtual std::size_t size() const override {
-        return sourceMesh->size() * pointsCount;
-    }
-
-};
-
-/**
- * 3D mesh that wrap 2D mesh.
- * It translates all points of original mesh and complement lon. parameter of each point.
- */
-class PLASK_API CartesianMesh2DTo3D: public MeshD<3> {
-
-    Vec<3, double> translation;
-
-    const shared_ptr<const MeshD<2>> sourceMesh;
-
-public:
-
-    CartesianMesh2DTo3D(const shared_ptr<const MeshD<2>>& sourceMesh, Vec<3, double> translation, double lon)
-        : translation(translation), sourceMesh(sourceMesh) {
-        this->translation.lon() += lon;
-    }
-
-    virtual Vec<3, double> at(std::size_t index) const override {
-        return vec3Dplus2D(translation, sourceMesh->at(index));
-    }
-
-    virtual std::size_t size() const override {
-        return sourceMesh->size();
-    }
-};
 
 /// Don't use this directly, use DataFrom3Dto2DSource instead.
 template <typename PropertyT, PropertyType propertyType, typename VariadicTemplateTypesHolder>
@@ -166,32 +108,6 @@ template <typename PropertyT, PropertyType propertyType, typename VariadicTempla
 struct DataFrom2Dto3DSourceImpl {
     static_assert(propertyType == FIELD_PROPERTY || propertyType == MULTI_FIELD_PROPERTY,
                   "DataFrom2Dto3DSource can't be used with value properties (it can be used only with field properties)");
-};
-
-/**
- * This class is a 2D mesh which wraps 3D mesh (@p sourceMesh), reduce each point of sourceMesh to 2D and translate it back by given vector (@p translation).
- */
-//TODO better version for rectangular source (with size reduction by the size of removed axis)
-struct ReductionTo2DMesh: public MeshD<2> {
-
-    Vec<2, double> translation;
-
-    const shared_ptr<const MeshD<3>> sourceMesh;
-
-    ReductionTo2DMesh(const shared_ptr<const MeshD<3>> sourceMesh, const Vec<2, double>& translation)
-        : translation(translation), sourceMesh(sourceMesh) {}
-
-    ReductionTo2DMesh(const shared_ptr<const MeshD<3>> sourceMesh, const Vec<3, double>& translation)
-        : translation(vec<2>(translation)), sourceMesh(sourceMesh) {}
-
-    virtual Vec<2, double> at(std::size_t index) const override {
-        return vec<2>(sourceMesh->at(index)) - translation;
-    }
-
-    virtual std::size_t size() const override {
-        return sourceMesh->size();
-    }
-
 };
 
 /// Don't use this directly, use DataFrom2Dto3DSource instead.

@@ -132,6 +132,23 @@ namespace detail {
             );
         }
 
+        template <typename GeometryT>
+        static void connect_transformed(ReceiverT& receiver, py::object oprovider) {
+            ProviderFor<PropertyT,GeometryT>* provider = py::extract<ProviderFor<PropertyT,GeometryT>*>(oprovider);
+            receiver.setTransformedProvider(provider);
+            // Make sure that provider stays alive as long as it is connected
+            PyObject* obj = oprovider.ptr();
+            py::incref(obj);
+            receiver.providerValueChanged.connect_extended(
+                [obj](const boost::signals2::connection& conn, ReceiverBase&, ReceiverBase::ChangeReason reason) -> void {
+                    if (reason == ReceiverT::ChangeReason::REASON_PROVIDER || reason == ReceiverT::ChangeReason::REASON_DELETE) {
+                        conn.disconnect();
+                        py::decref(obj);
+                    }
+                }
+            );
+        }
+
         static void disconnect(ReceiverT& receiver) { receiver.setProvider(nullptr); }
 
         static py::object __get__(const py::object& self, const py::object&, const py::object&) { return self; }
@@ -153,12 +170,43 @@ namespace detail {
         }
     };
 
-    template <typename ReceiverT>
-    static bool assignProvider(ReceiverT& receiver, const py::object& obj) {
-        try {
-            RegisterReceiverBase<ReceiverT>::connect(receiver, obj);
-            return true;
-        } catch (py::error_already_set&) { PyErr_Clear(); }
+    template <typename ReceiverT> static
+    typename std::enable_if<std::is_same<typename ReceiverT::SpaceType, void>::value, bool>::type
+    assignProvider(ReceiverT& receiver, const py::object& obj) {
+        try { RegisterReceiverBase<ReceiverT>::connect(receiver, obj); return true; }
+        catch (py::error_already_set&) { PyErr_Clear(); }
+        return false;
+    }
+
+    template <typename ReceiverT> static
+    typename std::enable_if<std::is_same<typename ReceiverT::SpaceType, Geometry3D>::value, bool>::type
+    assignProvider(ReceiverT& receiver, const py::object& obj) {
+        try { RegisterReceiverBase<ReceiverT>::connect(receiver, obj); return true; }
+        catch (py::error_already_set&) { PyErr_Clear(); }
+        try { RegisterReceiverBase<ReceiverT>::template connect_transformed<Geometry2DCartesian>(receiver, obj); return true; }
+        catch (py::error_already_set&) { PyErr_Clear(); }
+        try { RegisterReceiverBase<ReceiverT>::template connect_transformed<Geometry2DCylindrical>(receiver, obj); return true; }
+        catch (py::error_already_set&) { PyErr_Clear(); }
+        return false;
+    }
+
+    template <typename ReceiverT> static
+    typename std::enable_if<std::is_same<typename ReceiverT::SpaceType, Geometry2DCartesian>::value, bool>::type
+    assignProvider(ReceiverT& receiver, const py::object& obj) {
+        try { RegisterReceiverBase<ReceiverT>::connect(receiver, obj); return true; }
+        catch (py::error_already_set&) { PyErr_Clear(); }
+        try { RegisterReceiverBase<ReceiverT>::template connect_transformed<Geometry3D>(receiver, obj); return true; }
+        catch (py::error_already_set&) { PyErr_Clear(); }
+        return false;
+    }
+
+    template <typename ReceiverT> static
+    typename std::enable_if<std::is_same<typename ReceiverT::SpaceType, Geometry2DCylindrical>::value, bool>::type
+    assignProvider(ReceiverT& receiver, const py::object& obj) {
+        try { RegisterReceiverBase<ReceiverT>::connect(receiver, obj); return true; }
+        catch (py::error_already_set&) { PyErr_Clear(); }
+        try { RegisterReceiverBase<ReceiverT>::template connect_transformed<Geometry3D>(receiver, obj); return true; }
+        catch (py::error_already_set&) { PyErr_Clear(); }
         return false;
     }
 
