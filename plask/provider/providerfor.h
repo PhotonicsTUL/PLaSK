@@ -419,7 +419,23 @@ struct ProviderImpl {};
  * @see plask::Temperature (contains example); @ref providers
  */
 template <typename PropertyT, typename SpaceT = void>
-using ProviderFor = ProviderImpl<PropertyT, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams>;
+struct ProviderFor: public ProviderImpl<PropertyT, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams> {
+
+    typedef PropertyT PropertyTag;
+    typedef SpaceT SpaceType;
+
+    /// Delegate all constructors to parent class.
+    template<typename ...Args>
+    ProviderFor(Args&&... params)
+    : ProviderImpl<PropertyT, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams>(std::forward<Args>(params)...) {
+    }
+
+};
+//TODO redefine ProviderFor using template aliases (does not work with GCC)
+//template <typename PropertyT, typename SpaceT = void>
+//using ProviderFor = ProviderImpl<PropertyT, PropertyT::propertyType, SpaceT, typename PropertyT::ExtraParams>;
+
+
 
 
 /**
