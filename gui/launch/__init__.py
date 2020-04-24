@@ -19,7 +19,7 @@ from ..qt.QtCore import *
 from ..utils.widgets import ComboBox
 from ..utils.config import CONFIG, parse_highlight
 from ..utils.qsignals import BlockQtSignals
-from ..utils.system import hide_file
+from ..utils import system
 from ..lib.highlighter import Format
 
 from .local import Launcher as LocalLauncher
@@ -226,9 +226,15 @@ def save_launch_config(filename):
         config = LAUNCH_CONFIG[filename]
         filename = _get_config_filename(filename)
         if config:
-            with open(filename, 'w') as config_file:
-                json.dump({'launch': config}, config_file, indent=1)
-            hide_file(filename)
+            if os.name == 'nt':
+                # workaround for hidden files
+                with open(filename, 'r+') as config_file:
+                    json.dump({'launch': config}, config_file, indent=1)
+                    config_file.truncate()
+                system.set_file_attributes(filename, system.FILE_ATTRIBUTE_HIDDEN)
+            else:
+                with open(filename, 'w') as config_file:
+                    json.dump({'launch': config}, config_file, indent=1)
     except:
         from .. import _DEBUG
         if _DEBUG:

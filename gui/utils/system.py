@@ -17,19 +17,16 @@ if os.name == 'nt':
 
     import ctypes
 
-    INVALID_FILE_ATTRIBUTES = -1
-    FILE_ATTRIBUTE_HIDDEN = 2
+    FILE_ATTRIBUTE_READONLY = 0x1
+    FILE_ATTRIBUTE_HIDDEN = 0x2
+    FILE_ATTRIBUTE_SYSTEM = 0x4
+    FILE_ATTRIBUTE_ARCHIVE = 0x20
+    FILE_ATTRIBUTE_NORMAL = 0x80
+    FILE_ATTRIBUTE_TEMPORARY = 0x100
+    FILE_ATTRIBUTE_OFFLINE = 0x1000
+    FILE_ATTRIBUTE_NOT_CONTENT_INDEXED = 0x2000
 
-    def hide_file(filename):
+    def set_file_attributes(filename, attrs):
         kernel32 = ctypes.WinDLL('kernel32', use_last_error=True)
-        attrs = kernel32.GetFileAttributesW(filename)
-        if attrs == -1:
-            raise ctypes.WinError(ctypes.get_last_error())
-        attrs |= FILE_ATTRIBUTE_HIDDEN
         if not kernel32.SetFileAttributesW(filename, attrs):
             raise ctypes.WinError(ctypes.get_last_error())
-
-else:
-
-    def hide_file(filename):
-        pass
