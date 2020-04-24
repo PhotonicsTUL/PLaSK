@@ -44,38 +44,39 @@ Methods
 Attributes
 ----------
 
+{% if attributes | select('is_receiver') | first -%}
 Receivers
 ^^^^^^^^^
 
 .. autosummary::
-{% for item in attributes %}
-{%- if item.startswith('in') and (item+'x')[2].isupper() %}
+{% for item in attributes | select('is_receiver') %}
    ~{{ fullname }}.{{ item }}
-{%- endif %}
 {%- endfor %}
+{%- endif %}
 
+{% if attributes | select('is_provider') | first -%}
 Providers
 ^^^^^^^^^
 
 .. autosummary::
-{% for item in attributes %}
-{%- if item.startswith('out') and (item+'x')[3].isupper() %}
+{% for item in attributes | select('is_provider') %}
    ~{{ fullname }}.{{ item }}
-{%- endif %}
 {%- endfor %}
+{%- endif %}
 
+{% if attributes | select('is_other') | first -%}
 Other
 ^^^^^
 
 .. autosummary::
-{% for item in attributes %}
-{%- if not (item.startswith('in') and (item+'x')[2].isupper()) and not (item.startswith('out') and (item+'x')[3].isupper()) %}
+{% for item in attributes | select('is_other') %}
    ~{{ fullname }}.{{ item }}
-{%- endif %}
 {%- endfor %}
+{%- endif %}
 
 {%- endif %}
 {%- endblock %}
+
 
 Descriptions
 ------------
@@ -99,36 +100,36 @@ Descriptions
 {%- block attributes_desc %}
 {%- if attributes %}
 
+{% if attributes | select('is_receiver') | first -%}
 .. rubric:: Receiver Details
 
-{%- for item in attributes %}
-{%- if item.startswith('in') and (item+'x')[2].isupper() %}
+{%- for item in attributes | select('is_receiver') %}
 
 .. autoattribute:: {{ fullname }}.{{ item }}
 
-{%- endif %}
 {%- endfor %}
+{%- endif %}
 
+{% if attributes | select('is_provider') | first -%}
 .. rubric:: Provider Details
 
-{%- for item in attributes %}
-{%- if item.startswith('out') and (item+'x')[3].isupper() %}
+{%- for item in attributes | select('is_provider') %}
 
 .. autoattribute:: {{ fullname }}.{{ item }}
    :show-signature:
 
-{%- endif %}
 {%- endfor %}
+{%- endif %}
 
+{% if attributes | select('is_other') | first -%}
 .. rubric:: Attribute Details
 
-{%- for item in attributes %}
-{%- if not (item.startswith('in') and (item+'x')[2].isupper()) and not (item.startswith('out') and (item+'x')[3].isupper()) %}
+{%- for item in attributes | select('is_other') %}
 
 .. autoattribute:: {{ fullname }}.{{ item }}
 
-{%- endif %}
 {%- endfor %}
+{%- endif %}
 
 {%- endif %}
 {%- endblock %}

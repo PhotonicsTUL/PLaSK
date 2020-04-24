@@ -3,7 +3,7 @@
     Autodoc extension for C++ classes
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    This extension adds autodoc support for functions, methods amd classes
+    This extension adds autodoc support for functions, methods and classes
     with multiple signatures as provided by Boost Python.
 
     :seealso: http://sphinx-doc.org/ext/autodoc.html

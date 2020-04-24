@@ -118,6 +118,13 @@ def generate_autosummary_docs(app, sources, output_dir=None, suffix='.rst',
         template_loader = FileSystemLoader(template_dirs)
     template_env = SandboxedEnvironment(loader=template_loader)
 
+    # Define PLaSK-specific tests
+    is_provider = lambda item: item.startswith('out') and (item + 'x')[3].isupper()
+    is_receiver = lambda item: item.startswith('in') and (item + 'x')[2].isupper()
+    template_env.tests['is_provider'] = is_provider
+    template_env.tests['is_receiver'] = is_receiver
+    template_env.tests['is_other'] = lambda item: not (is_provider(item) or is_receiver(item))
+
     # read
     items = find_autosummary_in_files(sources)
 
@@ -171,7 +178,9 @@ def generate_autosummary_docs(app, sources, output_dir=None, suffix='.rst',
                 except TemplateNotFound:
                     template = template_env.get_template('autosummary/base.rst')
 
-            def get_members(obj, typ, include_public=[]):
+            def get_members(obj, types, include_public=[]):
+                if not isinstance(types, (tuple, list)):
+                    types = types,
                 items = []
                 public = []
                 for name in dir(obj):
@@ -183,7 +192,7 @@ def generate_autosummary_docs(app, sources, output_dir=None, suffix='.rst',
                             documenter = get_documenter(member, obj)
                     except AttributeError:
                         continue
-                    if documenter.objtype == typ:
+                    if documenter.objtype in types:
                         items.append(name)
                         try:
                             docstring = member.__doc__.strip()
@@ -197,20 +206,14 @@ def generate_autosummary_docs(app, sources, output_dir=None, suffix='.rst',
 
             if doc.objtype == 'module':
                 ns['members'] = dir(obj)
-                ns['functions'], ns['all_functions'] = \
-                                   get_members(obj, 'function')
-                ns['classes'], ns['all_classes'] = \
-                                 get_members(obj, 'class')
-                ns['exceptions'], ns['all_exceptions'] = \
-                                   get_members(obj, 'exception')
+                ns['functions'], ns['all_functions'] = get_members(obj, 'function')
+                ns['classes'], ns['all_classes'] = get_members(obj, 'class')
+                ns['exceptions'], ns['all_exceptions'] = get_members(obj, 'exception')
             elif doc.objtype == 'class':
                 ns['members'] = dir(obj)
-                ns['methods'], ns['all_methods'] = \
-                                 get_members(obj, 'method', ['__call__'])
-                ns['attributes'], ns['all_attributes'] = \
-                                 get_members(obj, 'attribute')
-                ns['classes'], ns['all_classes'] = \
-                                 get_members(obj, 'class')
+                ns['methods'], ns['all_methods'] = get_members(obj, 'method', ['__call__'])
+                ns['attributes'], ns['all_attributes'] = get_members(obj, ('attribute', 'property'))
+                ns['classes'], ns['all_classes'] = get_members(obj, 'class')
                 ns['static_attributes'] = ns['all_static_attributes'] = []
 
                 ns['docstrings'] = {}
@@ -222,7 +225,7 @@ def generate_autosummary_docs(app, sources, output_dir=None, suffix='.rst',
                     #ns['docstrings']['dtype'] = s[:s.find('.')] + s[s.find('.')]
 
             parts = name.split('.')
-            if doc.objtype in ('method', 'attribute'):
+            if doc.objtype in ('method', 'attribute', 'property'):
                 mod_name = '.'.join(parts[:-2])
                 cls_name = parts[-2]
                 obj_name = '.'.join(parts[-2:])
