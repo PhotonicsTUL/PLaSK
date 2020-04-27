@@ -63,11 +63,15 @@ struct PLASK_API CylReductionTo2DMesh: public MeshD<2> {
         : translation(translation), sourceMesh(sourceMesh) {}
 
     virtual Vec<2, double> at(std::size_t index) const override {
-        return Revolution::childVec(sourceMesh->at(index) - translation);
+        return rotateToLonTranAbs(sourceMesh->at(index) - translation);
     }
 
     virtual std::size_t size() const override {
         return sourceMesh->size();
+    }
+
+    Vec<3,double> rVector(std::size_t index) const {
+        return sourceMesh->at(index) - translation;
     }
 };
 
@@ -196,6 +200,10 @@ public:
 
     virtual std::size_t size() const override {
         return sourceMesh->size() * pointsCount;
+    }
+
+    Vec<3,double> rVector(std::size_t index) const {
+        return at(index) - translation;
     }
 };
 

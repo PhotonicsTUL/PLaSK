@@ -27,7 +27,7 @@ struct FilterBaseImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTempl
     // vector of inner sources (inputs)
     // one output (provider)
 
-    typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, OutputSpaceType>::ValueType ValueType;
     typedef DataSource<PropertyT, OutputSpaceType> DataSourceT;
     typedef std::unique_ptr<DataSourceT> DataSourceTPtr;
     typedef std::function<plask::optional<ValueType>(std::size_t)> DataSourceF;
@@ -108,7 +108,7 @@ public:
             return this->get(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         })
     {
-        setDefault(PropertyAtSpace<PropertyT, OutputSpaceType>::getDefaultValue());
+        setDefault(PropertyAt<PropertyT, OutputSpaceType>::getDefaultValue());
     }
 
     virtual std::string getClassName() const override { return "Filter"; }
@@ -238,7 +238,7 @@ struct FilterBaseImpl< PropertyT, MULTI_FIELD_PROPERTY, OutputSpaceType, Variadi
     // vector of inner sources (inputs)
     // one output (provider)
 
-    typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, OutputSpaceType>::ValueType ValueType;
     typedef DataSource<PropertyT, OutputSpaceType> DataSourceT;
     typedef std::unique_ptr<DataSourceT> DataSourceTPtr;
     typedef std::function<plask::optional<ValueType>(std::size_t)> DataSourceF;
@@ -331,7 +331,7 @@ public:
                 return size;
             })
     {
-        setDefault(PropertyAtSpace<PropertyT, OutputSpaceType>::getDefaultValue());
+        setDefault(PropertyAt<PropertyT, OutputSpaceType>::getDefaultValue());
     }
 
     virtual std::string getClassName() const override { return "Filter"; }

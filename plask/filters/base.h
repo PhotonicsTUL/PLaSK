@@ -18,7 +18,7 @@ struct DataSourceImpl {
 //This class is simillar to field provider, but in each point it returns optional value
 template <typename PropertyT, typename OutputSpaceT, typename... ExtraArgs>
 class DataSourceImpl<PropertyT, FIELD_PROPERTY, OutputSpaceT, VariadicTemplateTypesHolder<ExtraArgs...>>
-//: public FieldProvider<plask::optional<typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType>, OutputSpaceType, ExtraArgs...>    //inharistance only for change signal, not neccessery
+//: public FieldProvider<plask::optional<typename PropertyAt<PropertyT, OutputSpaceType>::ValueType>, OutputSpaceType, ExtraArgs...>    //inharistance only for change signal, not neccessery
 {
 
     //shared_ptr<OutputSpaceType> destinationSpace;   //should be stored here? maybe only connection...
@@ -44,7 +44,7 @@ public:
     //virtual bool canProvide(const Vec<OutputSpaceType::DIM, double>& p) const = 0;
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, OutputSpaceType>::ValueType ValueType;
 
     /*
      * Check if this source can provide value for given point and eventualy return this value.
@@ -79,7 +79,7 @@ private:
 //This class is simillar to field provider, but in each point it returns optional value
 template <typename PropertyT, typename OutputSpaceT, typename... ExtraArgs>
 class DataSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, OutputSpaceT, VariadicTemplateTypesHolder<ExtraArgs...>>
-//: public FieldProvider<plask::optional<typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType>, OutputSpaceType, ExtraArgs...>    //inharistance only for change signal, not neccessery
+//: public FieldProvider<plask::optional<typename PropertyAt<PropertyT, OutputSpaceType>::ValueType>, OutputSpaceType, ExtraArgs...>    //inharistance only for change signal, not neccessery
 {
 
     //shared_ptr<OutputSpaceType> destinationSpace;   //should be stored here? maybe only connection...
@@ -106,7 +106,7 @@ public:
     //virtual bool canProvide(const Vec<OutputSpaceType::DIM, double>& p) const = 0;
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, OutputSpaceType>::ValueType ValueType;
 
     /*
      * Check if this source can provide value for given point and eventualy return this value.
@@ -337,7 +337,7 @@ struct ConstDataSourceImpl<PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicT
 public:
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, OutputSpaceType>::ValueType ValueType;
 
     ValueType value;
 
@@ -356,7 +356,7 @@ struct ConstDataSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, OutputSpaceType, Var
 public:
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, OutputSpaceType>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, OutputSpaceType>::ValueType ValueType;
 
     ValueType value;
 

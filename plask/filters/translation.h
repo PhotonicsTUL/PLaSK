@@ -21,7 +21,7 @@ struct TranslatedInnerDataSourceImpl<PropertyT, FIELD_PROPERTY, SpaceType, Varia
     using typename InnerDataSource<PropertyT, SpaceType, SpaceType, SpaceType /*GeometryObjectD<SpaceType::DIM>*/, GeometryObjectD<SpaceType::DIM>>::Region;
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, SpaceType>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, SpaceType>::ValueType ValueType;
 
     struct LazySourceImpl {
 
@@ -70,7 +70,7 @@ struct TranslatedInnerDataSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceType,
     using typename InnerDataSource<PropertyT, SpaceType, SpaceType, SpaceType /*GeometryObjectD<SpaceType::DIM>*/, GeometryObjectD<SpaceType::DIM>>::Region;
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, SpaceType>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, SpaceType>::ValueType ValueType;
 
     typedef typename PropertyT::EnumType EnumType;
     
@@ -134,7 +134,7 @@ struct TranslatedOuterDataSourceImpl<PropertyT, FIELD_PROPERTY, SpaceType, Varia
 : public OuterDataSource<PropertyT, SpaceType, SpaceType, GeometryObjectD<SpaceType::DIM>, GeometryObjectD<SpaceType::DIM>>
 {
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, SpaceType>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, SpaceType>::ValueType ValueType;
 
     std::function<plask::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<SpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         LazyData<ValueType> data = this->in(translate(dst_mesh, this->inTranslation), std::forward<ExtraArgs>(extra_args)..., method);
@@ -149,7 +149,7 @@ struct TranslatedOuterDataSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceType,
 : public OuterDataSource<PropertyT, SpaceType, SpaceType, GeometryObjectD<SpaceType::DIM>, GeometryObjectD<SpaceType::DIM>>
 {
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, SpaceType>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, SpaceType>::ValueType ValueType;
 
     std::function<plask::optional<ValueType>(std::size_t index)> operator()(typename PropertyT::EnumType n, const shared_ptr<const MeshD<SpaceType::DIM>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         LazyData<ValueType> data = this->in(n, translate(dst_mesh, this->inTranslation), std::forward<ExtraArgs>(extra_args)..., method);

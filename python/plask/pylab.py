@@ -476,10 +476,14 @@ def plot_vectors(field, plane=None, axes=None, figure=None, angles='xy', scale_u
     m = field.mesh
 
     if isinstance(m, plask.mesh.Rectangular2D):
+        if len(field.array.shape) != 3:
+            raise ValueError("Field is not 2D vector field")
         ix, iy = 0, 1
         xaxis, yaxis = m.axis0, m.axis1
         data = field.array.transpose((1,0,2))
     elif isinstance(m, plask.mesh.Rectangular3D):
+        if len(field.array.shape) != 4:
+            raise ValueError("Field is not 3D vector field")
         ix, iy = _get_2d_axes(plane)
         if field.array.shape[3-ix-iy] != 1:
             raise ValueError("Field mesh must have dimension {} equal to 1".format(3-ix-iy))
@@ -489,16 +493,16 @@ def plot_vectors(field, plane=None, axes=None, figure=None, angles='xy', scale_u
         else:
             data = field.array.reshape((len(yaxis), len(xaxis), field.array.shape[-1]))[:,:,[ix,iy]]
     else:
-        raise NotImplementedError("mesh type not supported")
+        raise NotImplementedError("Mesh type not supported")
 
     if ix > iy and not axes.yaxis_inverted():
         axes.invert_yaxis()
     axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ix]))
     axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + iy]))
 
-    if 'corner_mask' not in kwargs:
-        kwargs = kwargs.copy()
-        kwargs['corner_mask'] = False
+    # if 'corner_mask' not in kwargs:
+    #     kwargs = kwargs.copy()
+    #     kwargs['corner_mask'] = False
 
     result = axes.quiver(array(xaxis), array(yaxis), data[:,:,0].real, data[:,:,1].real,
                          angles=angles, scale_units=scale_units, **kwargs)
@@ -547,12 +551,16 @@ def plot_stream(field, plane=None, axes=None, figure=None, scale=8.0, color='k',
     if isinstance(m, plask.mesh.Rectangular2D):
         if type(m.axis0) != plask.mesh.Regular or type(m.axis1) != plask.mesh.Regular:
             raise TypeError("plot_stream can be only used for data obtained for rectangular mesh with regular axes")
+        if len(field.array.shape) != 3:
+            raise ValueError("Field is not 2D vector field")
         xaxis, yaxis = m.axis0, m.axis1
         ix, iy = -2, -1
         data = field.array.transpose((1,0,2))
     elif isinstance(m, plask.mesh.Rectangular3D):
         if type(m.axis0) != plask.mesh.Regular or type(m.axis1) != plask.mesh.Regular or type(m.axis2) != plask.mesh.Regular:
             raise TypeError("plot_stream can be only used for data obtained for rectangular mesh with regular axes")
+        if len(field.array.shape) != 4:
+            raise ValueError("Field is not 3D vector field")
         ix, iy = _get_2d_axes(plane)
         xaxis, yaxis = ((field.mesh.axis0, field.mesh.axis1, field.mesh.axis2)[i] for i in (ix,iy))
         if ix < iy:
@@ -576,9 +584,9 @@ def plot_stream(field, plane=None, axes=None, figure=None, scale=8.0, color='k',
     axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + ix]))
     axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[3 - field.mesh.dim + iy]))
 
-    if 'corner_mask' not in kwargs:
-        kwargs = kwargs.copy()
-        kwargs['corner_mask'] = False
+    # if 'corner_mask' not in kwargs:
+    #     kwargs = kwargs.copy()
+    #     kwargs['corner_mask'] = False
 
     if scale:
         result = axes.streamplot(m0, m1, data[:,:,0].real, data[:,:,1].real, linewidth=scale*norm, color=color, **kwargs)

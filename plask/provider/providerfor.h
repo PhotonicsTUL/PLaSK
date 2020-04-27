@@ -130,123 +130,115 @@ struct Property<_propertyType, _ValueType, _ValueType, _ExtraParams...> {
      * @return @p p converted to 3D space
      */
     static const ValueType3D& value2Dto3D(const ValueType2D& v) { return v; }
+
+    /**
+     * Convert value in 3D space to 2D space in cylindrical coordinates
+     * @param v value in 3D space
+     * @return @p p converted to 2D space
+     */
+    static const ValueType2D& value3Dto2Dcyl(const ValueType3D& v, const Vec<3, double>&) { return v; }
+
+    /**
+     * Convert value in 2D space to 2D space in cylindrical coordinates
+     * @param v value in 2D space
+     * @return @p p converted to 3D space
+     */
+    static const ValueType3D& value2Dto3Dcyl(const ValueType2D& v, const Vec<3, double>&) { return v; }
 };
 
-// template <typename PropertyTag, bool hasUniqueValueType>
-// struct PropertyVecConverterImpl {};
 
-// template <typename PropertyTag>
-// struct PropertyVecConverterImpl<PropertyTag, true> {
-//     static const DataVector<const typename PropertyTag::ValueType2D>& from3Dto2D(const DataVector<const typename PropertyTag::ValueType3D>& datavec) {
-//         return datavec;
-//     }
-//     static const DataVector<typename PropertyTag::ValueType2D>& from3Dto2D(const DataVector<typename PropertyTag::ValueType3D>& datavec) {
-//         return datavec;
-//     }
-//     static const DataVector<const typename PropertyTag::ValueType3D>& from2Dto3D(const DataVector<const typename PropertyTag::ValueType2D>& datavec) {
-//         return datavec;
-//     }
-//     static const DataVector<typename PropertyTag::ValueType3D>& from2Dto3D(const DataVector<typename PropertyTag::ValueType2D>& datavec) {
-//         return datavec;
-//     }
-// };
-
-
-// template <typename PropertyTag>
-// struct PropertyVecConverterImpl<PropertyTag, false> {
-//     static DataVector<typename PropertyTag::ValueType2D> from3Dto2D(const DataVector<const typename PropertyTag::ValueType3D>& datavec) {
-//         DataVector<typename PropertyTag::ValueType2D> result(datavec.size());
-//         for (std::size_t i = 0; i < datavec.size(); ++i)
-//             result[i] = PropertyTag::value3Dto2D(datavec[i]);
-//         return result;
-//     }
-//     static DataVector<typename PropertyTag::ValueType3D> from2Dto3D(const DataVector<const typename PropertyTag::ValueType2D>& datavec) {
-//         DataVector<typename PropertyTag::ValueType3D> result(datavec.size());
-//         for (std::size_t i = 0; i < datavec.size(); ++i)
-//             result[i] = PropertyTag::value2Dto3D(datavec[i]);
-//         return result;
-//     }
-// };
-
-// /**
-//  * Convert data vector from type of property in 3D to 2D space.
-//  */
-// template <typename PropertyTag, typename VectorType>
-// inline auto PropertyVec3Dto2D(const VectorType& datavec) -> decltype(PropertyVecConverterImpl<PropertyTag, PropertyTag::hasUniqueValueType>::from3Dto2D(datavec)) {
-//     return PropertyVecConverterImpl<PropertyTag, PropertyTag::hasUniqueValueType>::from3Dto2D(datavec);
-// }
-
-// template <typename PropertyTag, typename VectorType>
-// inline auto PropertyVec2Dto3D(const VectorType& datavec) -> decltype(PropertyVecConverterImpl<PropertyTag, PropertyTag::hasUniqueValueType>::from2Dto3D(datavec)) {
-//     return PropertyVecConverterImpl<PropertyTag, PropertyTag::hasUniqueValueType>::from2Dto3D(datavec);
-// }
-
-/// Describe property in given space. Don't use it directly, but use PropertyAt.
+/// Describe property in given space. Don't use it directly, but use PropertyAtDim.
 template <typename PropertyTag, int DIM, bool hasUniqueValueType>
-struct PropertyAtImpl {};
+struct PropertyAtDimImpl {};
 
-/// Describe property in 2D space. Don't use it directly, but use PropertyAt.
+/// Describe property in 2D space. Don't use it directly, but use PropertyAtDim.
 template <typename PropertyTag>
-struct PropertyAtImpl<PropertyTag, 2, true> {
+struct PropertyAtDimImpl<PropertyTag, 2, true> {
     typedef typename PropertyTag::ValueType2D ValueType;
 
     static ValueType getDefaultValue() { return PropertyTag::getDefaultValue(); }
 
-    static LazyData<ValueType> convertLazyData(const LazyData<ValueType>& src) { return src; }
+    template <typename MeshT>
+    static LazyData<ValueType> convertLazyData(const LazyData<ValueType>& src, const shared_ptr<MeshT>&) { return src; }
 };
 
 template <typename PropertyTag>
-struct PropertyAtImpl<PropertyTag, 2, false> {
+struct PropertyAtDimImpl<PropertyTag, 2, false> {
     typedef typename PropertyTag::ValueType2D ValueType;
 
     static ValueType getDefaultValue() { return PropertyTag::getDefaultValue2D(); }
 
     static LazyData<ValueType> convertLazyData(const LazyData<ValueType>& src) { return src; }
 
-    static LazyData<ValueType> convertLazyData(const LazyData<typename PropertyTag::ValueType3D>& src) { 
-        return LazyData<ValueType>(src.size(), [&](std::size_t i) { return PropertyTag::value3Dto2D(src[i]); });
+    template <typename MeshT>
+    static LazyData<ValueType> convertLazyData(const LazyData<typename PropertyTag::ValueType3D>& src, const shared_ptr<MeshT>&) { 
+        return LazyData<ValueType>(src.size(), [src](std::size_t i) { return PropertyTag::value3Dto2D(src[i]); });
     }
 };
 
-/// Describe property in 3D space. Don't use it directly, but use PropertyAt.
+/// Describe property in 3D space. Don't use it directly, but use PropertyAtDim.
 template <typename PropertyTag>
-struct PropertyAtImpl<PropertyTag, 3, true> {
+struct PropertyAtDimImpl<PropertyTag, 3, true> {
     typedef typename PropertyTag::ValueType3D ValueType;
 
     static ValueType getDefaultValue() { return PropertyTag::getDefaultValue(); }
 
-    static LazyData<ValueType> convertLazyData(const LazyData<ValueType>& src) { return src; }
+    template <typename MeshT>
+    static LazyData<ValueType> convertLazyData(const LazyData<ValueType>& src, const shared_ptr<MeshT>&) { return src; }
 };
 
 template <typename PropertyTag>
-struct PropertyAtImpl<PropertyTag, 3, false> {
+struct PropertyAtDimImpl<PropertyTag, 3, false> {
     typedef typename PropertyTag::ValueType3D ValueType;
 
     static ValueType getDefaultValue() { return PropertyTag::getDefaultValue3D(); }
 
     static LazyData<ValueType> convertLazyData(const LazyData<ValueType>& src) { return src; }
 
-    static LazyData<ValueType> convertLazyData(const LazyData<typename PropertyTag::ValueType2D>& src) { 
-        return LazyData<ValueType>(src.size(), [&](std::size_t i) { return PropertyTag::value2Dto3D(src[i]); });
+    template <typename MeshT>
+    static LazyData<ValueType> convertLazyData(const LazyData<typename PropertyTag::ValueType2D>& src, const shared_ptr<MeshT>&) { 
+        return LazyData<ValueType>(src.size(), [src](std::size_t i) { return PropertyTag::value2Dto3D(src[i]); });
     }
 };
 
+template <typename PropertyTag, int dim>
+using PropertyAtDim = PropertyAtDimImpl<PropertyTag, dim, PropertyTag::hasUniqueValueType>;
+
+
+template <typename PropertyTag, typename Space, typename SrcSpace, bool hasUniqueValueType>
+struct PropertyAtImpl: public PropertyAtDimImpl<PropertyTag, Space::DIM, hasUniqueValueType> {};
+
+template <typename PropertyTag>
+struct PropertyAtImpl<PropertyTag, Geometry3D, Geometry2DCylindrical, false>: public PropertyAtDimImpl<PropertyTag, 3, false> {
+    typedef typename PropertyTag::ValueType3D ValueType;
+
+    static LazyData<ValueType> convertLazyData(const LazyData<typename PropertyTag::ValueType2D>& src, const shared_ptr<CylReductionTo2DMesh>& mesh) { 
+        return LazyData<ValueType>(src.size(), [src, mesh](std::size_t i) { return PropertyTag::value2Dto3Dcyl(src[i], mesh->rVector(i)); });
+    }
+};
+
+template <typename PropertyTag>
+struct PropertyAtImpl<PropertyTag, Geometry2DCylindrical, Geometry3D, false>: public PropertyAtDimImpl<PropertyTag, 2, false> {
+    typedef typename PropertyTag::ValueType2D ValueType;
+
+    static LazyData<ValueType> convertLazyData(const LazyData<typename PropertyTag::ValueType3D>& src, const shared_ptr<PointsOnCircleMeshExtend>& mesh) { 
+        return LazyData<ValueType>(src.size(), [src, mesh](std::size_t i) { return PropertyTag::value3Dto2Dcyl(src[i], mesh->rVector(i)); });
+    }
+};
 /**
  * Describe property type in given space.
  *
  * Includes:
  * - ValueType - typedef to value provided by tag in given space.
  * - getDefaultValue() - static method which returns default value in given space.
+ * - convertLazyData() - static methods which converts data between spaces
  */
-template <typename PropertyTag, int dim>
-using PropertyAt = PropertyAtImpl<PropertyTag, dim, PropertyTag::hasUniqueValueType>;
-
-template <typename PropertyTag, typename Space>
-struct PropertyAtSpace: public PropertyAt<PropertyTag, Space::DIM> {};
+template <typename PropertyTag, typename Space, typename SrcSpace = void>
+struct PropertyAt: public PropertyAtImpl<PropertyTag, Space, SrcSpace, PropertyTag::hasUniqueValueType> {};
 
 template <typename PropertyTag>
-struct PropertyAtSpace<PropertyTag, void>: public PropertyAt<PropertyTag, 2> {
-    static_assert(PropertyTag::hasUniqueValueType, "Space was not given in PropertyAtSpace for property which has different types of values in 2D and 3D.");
+struct PropertyAt<PropertyTag, void>: public PropertyAtDim<PropertyTag, 2> {
+    static_assert(PropertyTag::hasUniqueValueType, "Space was not given in PropertyAt for property which has different types of values in 2D and 3D.");
 };
 
 
@@ -347,6 +339,26 @@ struct VectorFieldProperty: public Property<FIELD_PROPERTY, Vec<2, ValueT>, Vec<
      * @return @p p converted to 3D space
      */
     static Vec<3, ValueT> value2Dto3D(const Vec<2, ValueT>& v) { return vec(v, ValueT()); }
+
+    /**
+     * Convert value in 3D space to 2D space in cylindrical coordinates
+     * @param v value in 3D space
+     * @return @p p converted to 2D space
+     */
+    static const Vec<2, ValueT> value3Dto2Dcyl(const Vec<3, ValueT>& v, const Vec<3, double>& p) {
+        // v * p / |p|, v.c2
+        return vec(::plask::fma(v.c0, p.c0, v.c1 * p.c1) / std::hypot(p.c0, p.c1), v.c2);
+    }
+
+    /**
+     * Convert value in 2D space to 2D space in cylindrical coordinates
+     * @param v value in 2D space
+     * @return @p p converted to 3D space
+     */
+    static const Vec<3, ValueT> value2Dto3Dcyl(const Vec<2, ValueT>& v, const Vec<3, double>& p) {
+        double r = std::hypot(p.c0, p.c1);
+        return vec(v.c0 * p.c0/r, v.c0 * p.c1/r, v.c1);
+    }
 };
 
 /**
@@ -451,7 +463,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
 
     typedef PropertyT PropertyTag;
     typedef SpaceT SpaceType;
-    typedef typename PropertyAtSpace<PropertyT, SpaceT>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, SpaceT>::ValueType ValueType;
 
     /**
      * Set provider for this to provider of constant.
@@ -618,7 +630,7 @@ struct ReceiverFor: public Receiver<ProviderImpl<PropertyT, PropertyT::propertyT
  * @tparam SpaceT ignored
  */
 template <typename PropertyT, typename SpaceT, typename... _ExtraParams>
-struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public SingleValueProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, _ExtraParams...> {
+struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public SingleValueProvider<typename PropertyAt<PropertyT, SpaceT>::ValueType, _ExtraParams...> {
 
     typedef PropertyT PropertyTag;
     typedef SpaceT SpaceType;
@@ -629,7 +641,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
     static_assert(std::is_same<SpaceT, void>::value,
                   "Providers for single value properties doesn't need SpaceT. Use ProviderFor<propertyTag> (without second template parameter).");
 
-    typedef typename PropertyAtSpace<PropertyT, SpaceT>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, SpaceT>::ValueType ValueType;
 
     /// Type of provided value.
     typedef typename SingleValueProvider<ValueType>::ProvidedType ProvidedType;
@@ -746,7 +758,7 @@ struct ProviderImpl<PropertyT, SINGLE_VALUE_PROPERTY, SpaceT, VariadicTemplateTy
  * @tparam SpaceT ignored
  */
 template <typename PropertyT, typename SpaceT, typename... _ExtraParams>
-struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public MultiValueProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, typename PropertyT::EnumType, _ExtraParams...> {
+struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public MultiValueProvider<typename PropertyAt<PropertyT, SpaceT>::ValueType, typename PropertyT::EnumType, _ExtraParams...> {
 
     typedef PropertyT PropertyTag;
     typedef SpaceT SpaceType;
@@ -759,7 +771,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
     static_assert(std::is_same<SpaceT, void>::value,
                   "Providers for single value properties doesn't need SpaceT. Use ProviderFor<propertyTag> (without second template parameter).");
 
-    typedef typename PropertyAtSpace<PropertyT, SpaceT>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, SpaceT>::ValueType ValueType;
 
     /// Type of provided value.
     typedef typename MultiValueProvider<ValueType, EnumType>::ProvidedType ProvidedType;
@@ -992,7 +1004,7 @@ struct ProviderImpl<PropertyT, MULTI_VALUE_PROPERTY, SpaceT, VariadicTemplateTyp
  * Specialization which implements provider class which provides values in mesh points and uses interpolation.
  */
 template <typename PropertyT, typename SpaceT, typename... _ExtraParams>
-struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public FieldProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, SpaceT, _ExtraParams...> {
+struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public FieldProvider<typename PropertyAt<PropertyT, SpaceT>::ValueType, SpaceT, _ExtraParams...> {
 
     typedef PropertyT PropertyTag;
     typedef SpaceT SpaceType;
@@ -1003,7 +1015,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
     static_assert(!std::is_same<SpaceT, void>::value,
                   "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in plask/geometry/space.h.");
 
-    typedef typename PropertyAtSpace<PropertyT, SpaceT>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, SpaceT>::ValueType ValueType;
 
     /// Type of provided value.
     typedef typename FieldProvider<ValueType, SpaceT>::ProvidedType ProvidedType;
@@ -1183,7 +1195,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
 
         ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams...params, InterpolationMethod method = INTERPOLATION_DEFAULT) const override {
             auto trans_mesh(make_shared<MeshTransform>(dst_mesh));
-            return PropertyAtSpace<PropertyT, SpaceT>::convertLazyData(receiver(trans_mesh, params..., method));
+            return PropertyAt<PropertyT, SpaceT, typename MeshTransform::TargetGeometry>::convertLazyData(receiver(trans_mesh, params..., method), trans_mesh);
         }
 
       private:
@@ -1235,7 +1247,7 @@ struct ProviderImpl<PropertyT, FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHold
  * Specialization which implements provider class which provides multiple values in mesh points and uses interpolation.
  */
 template <typename PropertyT, typename SpaceT, typename... _ExtraParams>
-struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public MultiFieldProvider<typename PropertyAtSpace<PropertyT, SpaceT>::ValueType, SpaceT, typename PropertyT::EnumType, _ExtraParams...> {
+struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTypesHolder<_ExtraParams...> >: public MultiFieldProvider<typename PropertyAt<PropertyT, SpaceT>::ValueType, SpaceT, typename PropertyT::EnumType, _ExtraParams...> {
 
     typedef PropertyT PropertyTag;
     typedef SpaceT SpaceType;
@@ -1248,7 +1260,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
     static_assert(!std::is_same<SpaceT, void>::value,
                   "Providers for fields properties require SpaceT. Use ProviderFor<propertyTag, SpaceT>, where SpaceT is one of the class defined in plask/geometry/space.h.");
 
-    typedef typename PropertyAtSpace<PropertyT, SpaceT>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, SpaceT>::ValueType ValueType;
 
     /// Type of provided value.
     typedef typename MultiFieldProvider<ValueType, SpaceT, EnumType>::ProvidedType ProvidedType;
@@ -1497,7 +1509,7 @@ struct ProviderImpl<PropertyT, MULTI_FIELD_PROPERTY, SpaceT, VariadicTemplateTyp
 
         ProvidedType operator()(EnumType num, shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, _ExtraParams...params, InterpolationMethod method = INTERPOLATION_DEFAULT) const override {
             auto trans_mesh(make_shared<MeshTransform>(dst_mesh));
-            return PropertyAtSpace<PropertyT, SpaceT>::convertLazyData(receiver(num, trans_mesh, params..., method));
+            return PropertyAt<PropertyT, SpaceT, typename MeshTransform::TargetGeometry>::convertLazyData(receiver(num, trans_mesh, params..., method), trans_mesh);
         }
 
       private:

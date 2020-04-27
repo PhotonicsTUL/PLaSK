@@ -26,7 +26,7 @@ struct DataFrom3Dto2DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTypes
     explicit DataFrom3Dto2DSourceImpl(std::size_t pointsCount = 10): pointsCount(pointsCount) {}
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, Geometry2DCartesian>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, Geometry2DCartesian>::ValueType ValueType;
 
     std::function<plask::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<2>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         if (pointsCount > 1) {
@@ -64,7 +64,7 @@ struct DataFrom3Dto2DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemplat
     explicit DataFrom3Dto2DSourceImpl(std::size_t pointsCount = 10): pointsCount(pointsCount) {}
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, Geometry2DCartesian>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, Geometry2DCartesian>::ValueType ValueType;
 
     typedef typename PropertyT::EnumType EnumType;
 
@@ -118,10 +118,10 @@ struct DataFrom2Dto3DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTypes
     using typename InnerDataSource<PropertyT, Geometry3D, Geometry2DCartesian, Geometry3D /*GeometryObjectD<3>*/, Extrusion>::Region;
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, Geometry3D>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, Geometry3D>::ValueType ValueType;
 
     /// Type of property value in input space
-    typedef typename PropertyAtSpace<PropertyT, Geometry2DCartesian>::ValueType InputValueType;
+    typedef typename PropertyAt<PropertyT, Geometry2DCartesian>::ValueType InputValueType;
 
     struct LazySourceImpl {
 
@@ -170,10 +170,10 @@ struct DataFrom2Dto3DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemplat
     using typename InnerDataSource<PropertyT, Geometry3D, Geometry2DCartesian, Geometry3D /*GeometryObjectD<3>*/, Extrusion>::Region;
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, Geometry3D>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, Geometry3D>::ValueType ValueType;
 
     /// Type of property value in input space
-    typedef typename PropertyAtSpace<PropertyT, Geometry2DCartesian>::ValueType InputValueType;
+    typedef typename PropertyAt<PropertyT, Geometry2DCartesian>::ValueType InputValueType;
 
     typedef typename PropertyT::EnumType EnumType;
     

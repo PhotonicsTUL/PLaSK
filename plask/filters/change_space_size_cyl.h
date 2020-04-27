@@ -25,7 +25,7 @@ struct DataFrom3DtoCyl2DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTy
     explicit DataFrom3DtoCyl2DSourceImpl(std::size_t pointsCount = 10): pointsCount(pointsCount) {}
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, Geometry2DCylindrical>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, Geometry2DCylindrical>::ValueType ValueType;
 
     std::function<plask::optional<ValueType>(std::size_t index)> operator()(const shared_ptr<const MeshD<2>>& dst_mesh, ExtraArgs... extra_args, InterpolationMethod method) const override {
         const std::size_t point_count = this->pointsCount;
@@ -54,7 +54,7 @@ struct DataFrom3DtoCyl2DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemp
     explicit DataFrom3DtoCyl2DSourceImpl(std::size_t pointsCount = 10): pointsCount(pointsCount) {}
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, Geometry2DCylindrical>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, Geometry2DCylindrical>::ValueType ValueType;
 
     typedef typename PropertyT::EnumType EnumType;
 
@@ -100,10 +100,10 @@ struct DataFromCyl2Dto3DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTy
     using typename InnerDataSource<PropertyT, Geometry3D, Geometry2DCylindrical, Geometry3D /*GeometryObjectD<3>*/, Revolution>::Region;
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, Geometry3D>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, Geometry3D>::ValueType ValueType;
 
     /// Type of property value in input space
-    typedef typename PropertyAtSpace<PropertyT, Geometry2DCylindrical>::ValueType InputValueType;
+    typedef typename PropertyAt<PropertyT, Geometry2DCylindrical>::ValueType InputValueType;
 
     double r_sqr_begin, r_sqr_end;
 
@@ -176,10 +176,10 @@ struct DataFromCyl2Dto3DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemp
     using typename InnerDataSource<PropertyT, Geometry3D, Geometry2DCylindrical, Geometry3D /*GeometryObjectD<3>*/, Revolution>::Region;
 
     /// Type of property value in output space
-    typedef typename PropertyAtSpace<PropertyT, Geometry3D>::ValueType ValueType;
+    typedef typename PropertyAt<PropertyT, Geometry3D>::ValueType ValueType;
 
     /// Type of property value in input space
-    typedef typename PropertyAtSpace<PropertyT, Geometry2DCylindrical>::ValueType InputValueType;
+    typedef typename PropertyAt<PropertyT, Geometry2DCylindrical>::ValueType InputValueType;
 
     typedef typename PropertyT::EnumType EnumType;
 
