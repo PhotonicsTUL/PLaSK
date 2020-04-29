@@ -165,7 +165,7 @@ static py::object FermiNew_getLevels(FermiNew::FermiNewGainSolver<GeometryT>& se
     self.initCalculation();
     py::list result;
     double T;
-    if (To == py::object())
+    if (To.is_none())
         T = self.Tref;
     else
         T = py::extract<double>(To);
@@ -179,7 +179,7 @@ static py::object FermiNew_getLevels(FermiNew::FermiNewGainSolver<GeometryT>& se
         info["el"] = el;
         info["hh"] = hh;
         info["lh"] = lh;
-//         if (No != py::object()) {
+//         if (!No.is_none()) {
 //             double n = py::extract<double>(No);
 //             const auto& region = self.regios[reg];
 //             QW::Gain gainModule;

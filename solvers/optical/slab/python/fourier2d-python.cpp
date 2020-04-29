@@ -36,7 +36,7 @@ static py::object FourierSolver2D_getMirrors(const FourierSolver2D& self) {
 
 
 static void FourierSolver2D_setMirrors(FourierSolver2D& self, py::object value) {
-    if (value == py::object())
+    if (value.is_none())
         self.mirrors.reset();
     else {
         try {

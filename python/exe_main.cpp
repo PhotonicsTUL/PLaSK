@@ -171,7 +171,7 @@ static inline void finalizeMPI() {
     py::dict modules(py::handle<>(PySys_GetObject("modules")));
 
     py::object mpi(modules.get("mpi4py.MPI"));
-    if (mpi != py::object()) {
+    if (!mpi.is_none()) {
         try {
             bool initialized = py::extract<bool>(mpi.attr("Is_initialized")());
             bool finalized = py::extract<bool>(mpi.attr("Is_finalized")());
@@ -185,7 +185,7 @@ static inline void finalizeMPI() {
     }
 
     mpi = modules.get("boost.mpi");
-    if (mpi != py::object()) {
+    if (!mpi.is_none()) {
         try {
             bool initialized = py::extract<bool>(mpi.attr("initialized")());
             bool finalized = py::extract<bool>(mpi.attr("finalized")());

@@ -256,7 +256,7 @@ namespace detail {
         typedef RegisterReceiverImpl<ReceiverT, SINGLE_VALUE_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...>> Class;
 
         static void setter(ReceiverT& self, const py::object& obj) {
-            if (obj == py::object()) { self.setProvider(nullptr); return; }
+            if (obj.is_none()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
             throw TypeError("You can only attach {0} provider or value of type '{1}'",
@@ -285,7 +285,7 @@ namespace detail {
         typedef RegisterReceiverImpl<ReceiverT, MULTI_VALUE_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...>> Class;
 
         static void setter(ReceiverT& self, const py::object& obj) {
-            if (obj == py::object()) { self.setProvider(nullptr); return; }
+            if (obj.is_none()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignMultipleValues(self, obj)) return;
             if (assignValue(self, obj)) return;
@@ -323,7 +323,7 @@ namespace detail {
         typedef RegisterReceiverImpl<ReceiverT, FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...>> Class;
 
         static void setter(ReceiverT& self, const py::object& obj) {
-            if (obj == py::object()) { self.setProvider(nullptr); return; }
+            if (obj.is_none()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
             auto data = plask::make_shared<PythonProviderFor<ProviderT, PropertyT::propertyType, VariadicTemplateTypesHolder<ExtraParams...>>>(obj);
@@ -368,7 +368,7 @@ namespace detail {
         typedef RegisterReceiverImpl<ReceiverT, MULTI_FIELD_PROPERTY, VariadicTemplateTypesHolder<ExtraParams...>> Class;
 
         static void setter(ReceiverT& self, const py::object& obj) {
-            if (obj == py::object()) { self.setProvider(nullptr); return; }
+            if (obj.is_none()) { self.setProvider(nullptr); return; }
             if (assignProvider(self, obj)) return;
             if (assignValue(self, obj)) return;
             if (!py::extract<PythonDataVector<const typename ReceiverT::ValueType, ReceiverT::SpaceType::DIM>>(obj).check())

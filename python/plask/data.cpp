@@ -403,7 +403,7 @@ template <typename T, int dim>
 static typename std::enable_if<!detail::isBasicData<T>::value, py::object>::type
 PythonDataVector__array__(py::object oself, py::object dtype=py::object()) {
     const PythonDataVector<T,dim>* self = py::extract<const PythonDataVector<T,dim>*>(oself);
-    if (dtype != py::object()) throw ValueError(u8"dtype for this data must not be specified");
+    if (!dtype.is_none()) throw ValueError(u8"dtype for this data must not be specified");
     if (self->mesh_changed) throw Exception(u8"Cannot create array, mesh changed since data retrieval");
 
     npy_intp dims[] = { static_cast<npy_intp>(self->size()) };
@@ -966,7 +966,7 @@ dataInterpolate(const PythonDataVector<T,dim>& self,
                                                        const py::object& geometry)
 {
     InterpolationFlags flags;
-    if (geometry != py::object()) {
+    if (!geometry.is_none()) {
         py::extract<shared_ptr<const GeometryD<2>>> geometry2d(geometry);
         py::extract<shared_ptr<const GeometryD<3>>> geometry3d(geometry);
         if (geometry2d.check()) {

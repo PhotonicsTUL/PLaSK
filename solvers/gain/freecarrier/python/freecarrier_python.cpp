@@ -34,7 +34,7 @@ static py::object FreeCarrier_detLh(FreeCarrierGainSolver<GeometryT>* self, py::
 
 template <typename GeometryT>
 static py::object FreeCarrierGainSolver_getN(FreeCarrierGainSolver<GeometryT>* self, py::object F, py::object pT, size_t reg=0) {
-    double T = (pT == py::object())? self->getT0() : py::extract<double>(pT);
+    double T = (pT.is_none())? self->getT0() : py::extract<double>(pT);
     self->initCalculation();
     typename FreeCarrierGainSolver<GeometryT>::ActiveRegionParams params(self, self->params0[reg], T);
     return PARALLEL_UFUNC<double>([self,T,reg,&params](double x){return self->getN(x, T, params);}, F);
@@ -42,7 +42,7 @@ static py::object FreeCarrierGainSolver_getN(FreeCarrierGainSolver<GeometryT>* s
 
 template <typename GeometryT>
 static py::object FreeCarrierGainSolver_getP(FreeCarrierGainSolver<GeometryT>* self, py::object F, py::object pT, size_t reg=0) {
-    double T = (pT == py::object())? self->getT0() : py::extract<double>(pT);
+    double T = (pT.is_none())? self->getT0() : py::extract<double>(pT);
     self->initCalculation();
     typename FreeCarrierGainSolver<GeometryT>::ActiveRegionParams params(self, self->params0[reg], T);
     return PARALLEL_UFUNC<double>([self,T,reg,&params](double x){return self->getP(x, T, params);}, F);
@@ -72,7 +72,7 @@ static py::object FreeCarrier_getLevels(FreeCarrierGainSolver<GeometryT>& self, 
 template <typename GeometryT>
 static py::object FreeCarrier_getFermiLevels(FreeCarrierGainSolver<GeometryT>* self, double N, py::object To, int reg)
 {
-    double T = (To == py::object())? self->getT0() : py::extract<double>(To);
+    double T = (To.is_none())? self->getT0() : py::extract<double>(To);
     if (reg < 0) reg += int(self->regions.size());
     if (reg < 0 || std::size_t(reg) >= self->regions.size()) throw IndexError(u8"{}: Bad active region index", self->getId());
     self->initCalculation();

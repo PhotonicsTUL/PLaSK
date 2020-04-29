@@ -95,7 +95,7 @@ static py::object Solver_getLam0(const SolverT& self) {
 
 template <typename SolverT>
 static void Solver_setLam0(SolverT& self, py::object value) {
-    if (value == py::object()) self.clearLam0();
+    if (value.is_none()) self.clearLam0();
     else self.setLam0(py::extract<double>(value));
 }
 
@@ -935,7 +935,7 @@ py::object get_max_temp_diff(SolverT* self) {
 
 template <typename SolverT>
 void set_max_temp_diff(SolverT* self, py::object value) {
-    if (value == py::object()) self->setMaxTempDiff(NAN);
+    if (value.is_none()) self->setMaxTempDiff(NAN);
     else self->setMaxTempDiff(py::extract<double>(value));
 }
 

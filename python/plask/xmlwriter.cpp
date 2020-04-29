@@ -67,9 +67,9 @@ struct XplWriter
     XplWriter(const py::object& geo, const py::object& msh, const py::object& nams):
         geometry(geo), mesh(msh), names(nams)
     {
-        if (geometry == py::object()) geometry = py::dict();
-        if (mesh == py::object()) mesh = py::dict();
-        if (names == py::object()) names = py::dict();
+        if (geometry.is_none()) geometry = py::dict();
+        if (mesh.is_none()) mesh = py::dict();
+        if (names.is_none()) names = py::dict();
     }
 
     std::string __str__() {

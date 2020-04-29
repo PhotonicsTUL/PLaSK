@@ -398,7 +398,7 @@ struct PythonMaterialConstructor: public MaterialsDB::MaterialConstructor
     PythonMaterialConstructor(const std::string& name, const py::object& cls, const py::object& base, bool alloy):
         MaterialsDB::MaterialConstructor(name), material_class(cls), alloy(alloy)
     {
-        if (base == py::object()) return;
+        if (base.is_none()) return;
 
         py::extract<std::string> base_str(base);
         if (base_str.check()) {

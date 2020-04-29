@@ -17,6 +17,8 @@ PLASK_PYTHON_API std::string getPythonExceptionMessage();
 
 extern PLASK_PYTHON_API py::dict* xml_globals;
 
+extern PyObject* pyXmlError;
+
 class PythonXMLFilter {
 
     PythonManager* manager;
@@ -177,7 +179,7 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
     reader.setFilter(PythonXMLFilter(manager));
 
     try {
-        if (filter == py::object()) {
+        if (filter.is_none()) {
             manager->load(reader, Manager::ExternalSourcesFromFile(filename));
         } else {
             py::list sections = py::list(filter);
@@ -304,7 +306,7 @@ void PythonManager::loadConnects(XMLReader& reader)
             try { prov = solverout.attr(out.second.c_str()); }
             catch (py::error_already_set&) { throw XMLException(reader, format(u8"Solver '{0}' does not have attribute '{1}'.", out.first, out.second)); }
 
-            if (provider == py::object()) provider = prov;
+            if (provider.is_none()) provider = prov;
             else provider = provider + prov;
         }
 
@@ -320,9 +322,25 @@ void PythonManager::loadConnects(XMLReader& reader)
 
 void PythonManager::loadMaterialModule(XMLReader& reader) {
     std::string name = reader.requireAttribute("name");
+    std::string file;
     try {
         if (!name.empty()) {
             py::str modname(name);
+            try {
+#               if (PY_VERSION_HEX >= 0x03040000)
+                    py::object spec = py::import("importlib.util").attr("find_spec")(modname);
+                    if (spec.is_none())
+                        throw XMLException(reader, format("Cannot find materials module '{}'", name));
+                    file = py::extract<std::string>(spec.attr("origin"));
+#               else
+                    py::object loader = !py::import("importlib").attr("find_loader")(modname);
+                    if (loader.is_none())
+                        throw XMLException(reader, format("Cannot find materials module '{}'", name));
+                    file = py::extract<std::string>(loader.attr("get_filename")());
+#               endif
+            } catch (py::error_already_set) {
+                PyErr_Clear();
+            }
             bool reload = PyDict_Contains(PyImport_GetModuleDict(), modname.ptr());
             py::object module = py::import(modname);
             if (reload) {
@@ -332,9 +350,27 @@ void PythonManager::loadMaterialModule(XMLReader& reader) {
             }
         }
     } catch (py::error_already_set&) {
-        std::string msg = getPythonExceptionMessage();
-        PyErr_Clear();
-        if(!draft) throw XMLException(reader, msg);
+        if (draft) {
+            PyErr_Clear();
+        } else {
+            PyObject *value, *type, *traceback;
+            PyErr_Fetch(&type, &value, &traceback);
+            PyErr_NormalizeException(&type, &value, &traceback);
+            py::handle<> type_h(type), traceback_h(py::allow_null(traceback));
+            if (traceback != NULL) PyException_SetTraceback(value, traceback);
+            XMLException xml_exc(reader, file.empty()?
+                format("Cannot import materials module '{}'", name) :
+                format("Cannot import materials module '{}' (from '{}')", name, file));
+            PyErr_SetString(pyXmlError, xml_exc.what());
+            PyObject *value2, *type2, *traceback2;
+            PyErr_Fetch(&type2, &value2, &traceback2);
+            PyErr_NormalizeException(&type2, &value2, &traceback2);
+            Py_INCREF(value);
+            PyException_SetCause(value2, value);
+            PyException_SetContext(value2, value);
+            PyErr_Restore(type2, value2, traceback2);
+            throw;
+        }
     } catch (Exception& err) {
         if(!draft) throw XMLException(reader, err.what());
     }

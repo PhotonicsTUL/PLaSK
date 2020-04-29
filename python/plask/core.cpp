@@ -46,6 +46,9 @@ void register_python_log();
 
 void register_standard_properties();
 
+PyObject* pyXmlError;
+PyObject* pyComputationError;
+
 PLASK_PYTHON_API std::string getPythonExceptionMessage() {
     PyObject *value, *type, *original_traceback;
     PyErr_Fetch(&type, &value, &original_traceback);
@@ -210,35 +213,36 @@ static void printMultiLineLog(plask::LogLevel level, const std::string& msg, Arg
         plask::writelog(level, *line);
 }
 
-// Print Python exception to PLaSK logging system
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-__declspec(dllexport)
-#endif
-int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* /*scriptname*/=nullptr, bool second_is_script=false, int scriptline=0) {
-    PyTypeObject* type = (PyTypeObject*)otype;
-    PyTracebackObject* original_traceback = (PyTracebackObject*)otraceback;
 
-    if ((PyObject*)type == PyExc_SystemExit) {
-        int exitcode;
-        if (PyExceptionInstance_Check(value.ptr())) {
-            PyObject* code = PyObject_GetAttrString(value.ptr(), "code");
-            if (code) { value = py::object(py::handle<>(code)); }
+static void printPythonExceptionImpl(PyObject* otype, PyObject* value, PyObject* otraceback, const char* scriptname, bool second_is_script, int scriptline);
+
+static inline void printPythonExceptionImpl(PyObject* value, const char* scriptname, bool second_is_script, int scriptline) {
+    PyObject* type = PyObject_Type(value);
+    PyObject* traceback = PyException_GetTraceback(value);
+    py::handle<> type_h(type), traceback_h(py::allow_null(traceback));
+    printPythonExceptionImpl(type, value, traceback, scriptname, second_is_script, scriptline);
+}
+
+static void printPythonExceptionImpl(PyObject* otype, PyObject* value, PyObject* otraceback, const char* scriptname, bool second_is_script, int scriptline) {
+
+    {
+        PyObject* cause = PyException_GetCause(value);
+        PyObject* context = PyException_GetContext(value);
+        py::handle<> cause_h(py::allow_null(cause)), context_h(py::allow_null(context));
+        if (cause && cause != Py_None) {
+            printPythonExceptionImpl(cause, scriptname, second_is_script, scriptline);
+            writelog(LOG_ERROR_DETAIL, "The above exception was the direct cause of the following exception:");
+        } else if (context && context != Py_None) {
+            printPythonExceptionImpl(context, scriptname, second_is_script, scriptline);
+            writelog(LOG_ERROR_DETAIL, "During handling of the above exception, another exception occurred:");
         }
-        if (PyInt_Check(value.ptr()))
-            exitcode = (int)PyInt_AsLong(value.ptr());
-        else {
-            std::cerr.flush();
-            std::cout.flush();
-            PyObject_Print(value.ptr(), stderr, Py_PRINT_RAW);
-            PySys_WriteStderr("\n");
-            exitcode = 1;
-        }
-        PyErr_Clear();
-        return exitcode;
     }
 
-
-    std::string message = py::extract<std::string>(py::str(value));
+    PyTypeObject* type = (PyTypeObject*)otype;
+    PyTracebackObject* original_traceback = (PyTracebackObject*)otraceback;
+    PyObject* value_str = PyObject_Str(value);
+    std::string message = py::extract<std::string>(value_str);
+    Py_DECREF(value_str);
 
     std::string error_name = type->tp_name;
     if (error_name.substr(0, 11) == "exceptions.") error_name = error_name.substr(11);
@@ -284,6 +288,34 @@ int printPythonException(PyObject* otype, py::object value, PyObject* otraceback
         } else
             printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}: {1}", error_name, message);
     }
+}
+
+// Print Python exception to PLaSK logging system
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+__declspec(dllexport)
+#endif
+int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* scriptname=nullptr, bool second_is_script=false, int scriptline=0) {
+
+    if (otype == PyExc_SystemExit) {
+        int exitcode;
+        if (PyExceptionInstance_Check(value.ptr())) {
+            PyObject* code = PyObject_GetAttrString(value.ptr(), "code");
+            if (code) { value = py::object(py::handle<>(code)); }
+        }
+        if (PyInt_Check(value.ptr()))
+            exitcode = (int)PyInt_AsLong(value.ptr());
+        else {
+            std::cerr.flush();
+            std::cout.flush();
+            PyObject_Print(value.ptr(), stderr, Py_PRINT_RAW);
+            PySys_WriteStderr("\n");
+            exitcode = 1;
+        }
+        PyErr_Clear();
+        return exitcode;
+    }
+
+    printPythonExceptionImpl(otype, value.ptr(), otraceback, scriptname, second_is_script, scriptline);
     return 1;
 }
 
@@ -612,14 +644,14 @@ BOOST_PYTHON_MODULE(_plask)
     register_exception<plask::python::StopIteration>(PyExc_StopIteration);
     register_exception<plask::python::IOError>(PyExc_IOError);
 
-    PyObject* xml_error = PyErr_NewExceptionWithDoc((char*)"plask.XMLError", (char*)u8"Error in XML file.", NULL, NULL);
-    register_exception<plask::XMLException>(xml_error);
-    py::scope().attr("XMLError") = py::handle<>(py::incref(xml_error));
+    pyXmlError = PyErr_NewExceptionWithDoc((char*)"plask.XMLError", (char*)u8"Error in XML file.", NULL, NULL);
+    register_exception<plask::XMLException>(pyXmlError);
+    py::scope().attr("XMLError") = py::handle<>(py::incref(pyXmlError));
 
-    PyObject* computation_error = PyErr_NewExceptionWithDoc((char*)"plask.ComputationError", (char*)u8"Computational error in some PLaSK solver.",
+    pyComputationError = PyErr_NewExceptionWithDoc((char*)"plask.ComputationError", (char*)u8"Computational error in some PLaSK solver.",
                                                             PyExc_ArithmeticError, NULL);
-    register_exception<plask::ComputationError>(computation_error);
-    py::scope().attr("ComputationError") = py::handle<>(py::incref(computation_error));
+    register_exception<plask::ComputationError>(pyComputationError);
+    py::scope().attr("ComputationError") = py::handle<>(py::incref(pyComputationError));
 
     py::def("_print_exception", &printPythonException, u8"Print exception information to PLaSK logging system",
             (py::arg("exc_type"), "exc_value", "exc_traceback", py::arg("scriptname")="", py::arg("second_is_script")=false, py::arg("scriptline")=0));

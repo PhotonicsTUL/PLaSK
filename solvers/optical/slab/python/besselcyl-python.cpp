@@ -92,7 +92,7 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
 
 static size_t BesselSolverCyl_findMode(BesselSolverCyl& self, dcomplex start, const py::object& pym) {
     int m;
-    if (pym == py::object()) {
+    if (pym.is_none()) {
         m = self.getM();
     } else {
         m = py::extract<int>(pym);
@@ -107,7 +107,7 @@ static size_t BesselSolverCyl_setMode(BesselSolverCyl* self, dcomplex lam, const
     auto* expansion = self->expansion.get();
     expansion->setK0(2e3*PI / lam);
 
-    if (pym != py::object()) {
+    if (!pym.is_none()) {
         expansion->setM(py::extract<int>(pym));
     }
 

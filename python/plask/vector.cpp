@@ -312,7 +312,7 @@ static py::object new_vector(py::tuple args, py::dict kwargs)
         --nk;
         py::object dtype;
         dtype = kwargs["dtype"];
-        if (dtype != py::object()) {
+        if (!dtype.is_none()) {
             if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyFloat_Type)) force_double = true;
             else if (dtype.ptr() == reinterpret_cast<PyObject*>(&PyComplex_Type)) force_complex = true;
             else {

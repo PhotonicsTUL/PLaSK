@@ -207,7 +207,7 @@ void GeometryObject_setRoles(GeometryObject& self, py::object roles) {
 }
 
 py::object GeometryObject_deepCopy(const py::object& oself, py::object omemo) {
-    py::dict memo = (omemo == py::object())? py::dict() : py::dict(omemo);
+    py::dict memo = (omemo.is_none())? py::dict() : py::dict(omemo);
     std::size_t id = std::size_t(oself.ptr());
     if (memo.has_key(id)) return memo[id];
     shared_ptr<GeometryObject> self = py::extract<shared_ptr<GeometryObject>>(oself);

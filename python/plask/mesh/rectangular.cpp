@@ -722,8 +722,8 @@ template <int dim>
 shared_ptr<RectangularMeshDivideGenerator<dim>> RectangularMeshDivideGenerator__init__(py::object prediv, py::object postdiv, double aspect, bool gradual,
                                                                                        bool warn_multiple, bool warn_missing, bool warn_outside) {
     auto result = plask::make_shared<RectangularMeshDivideGenerator<dim>>();
-    if (prediv != py::object()) detail::DivideGeneratorDivMethods<dim>::setPre(*result, prediv);
-    if (postdiv != py::object()) detail::DivideGeneratorDivMethods<dim>::setPost(*result, postdiv);
+    if (!prediv.is_none()) detail::DivideGeneratorDivMethods<dim>::setPre(*result, prediv);
+    if (!postdiv.is_none()) detail::DivideGeneratorDivMethods<dim>::setPost(*result, postdiv);
     result->gradual = gradual;
     result->aspect = aspect;
     result->warn_multiple = warn_multiple;
@@ -777,9 +777,9 @@ shared_ptr<RectangularMeshSmoothGenerator<dim>> RectangularMeshSmoothGenerator__
                                                                                        double aspect,
                                                                                        bool warn_multiple, bool warn_missing, bool warn_outside) {
     auto result = plask::make_shared<RectangularMeshSmoothGenerator<dim>>();
-    if (small_ != py::object()) detail::SmoothGeneratorParamMethods<dim>::setSmall(*result, small_);
-    if (large != py::object()) detail::SmoothGeneratorParamMethods<dim>::setLarge(*result, large);
-    if (factor != py::object()) detail::SmoothGeneratorParamMethods<dim>::setFactor(*result, factor);
+    if (!small_.is_none()) detail::SmoothGeneratorParamMethods<dim>::setSmall(*result, small_);
+    if (!large.is_none()) detail::SmoothGeneratorParamMethods<dim>::setLarge(*result, large);
+    if (!factor.is_none()) detail::SmoothGeneratorParamMethods<dim>::setFactor(*result, factor);
     result->aspect = aspect;
     result->warn_multiple = warn_multiple;
     result->warn_missing = warn_missing;

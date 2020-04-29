@@ -46,7 +46,7 @@ namespace detail {
 template <typename T>
 inline void confirm_array(PyObject*& arr, py::object& self, py::object& dtype) {
     PyHandle<PyArray_Descr> descr;
-    if(dtype != py::object() && PyArray_DescrConverter(dtype.ptr(), &descr.ref()) && descr->type_num != detail::typenum<T>()) {
+    if(!dtype.is_none() && PyArray_DescrConverter(dtype.ptr(), &descr.ref()) && descr->type_num != detail::typenum<T>()) {
         PyHandle<PyArrayObject> oarr = reinterpret_cast<PyArrayObject*>(arr);
         arr = PyArray_CastToType(oarr, descr, 1);
         if (arr == nullptr) throw TypeError(u8"cannot convert array to required dtype");

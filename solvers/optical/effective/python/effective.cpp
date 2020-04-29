@@ -43,7 +43,7 @@ static py::object EffectiveIndex2D_getSymmetry(const EffectiveIndex2D::Mode& sel
 }
 
 static EffectiveIndex2D::Symmetry parseSymmetry(py::object symmetry) {
-    if (symmetry == py::object()) { return EffectiveIndex2D::SYMMETRY_DEFAULT; }
+    if (symmetry.is_none()) { return EffectiveIndex2D::SYMMETRY_DEFAULT; }
     try {
         std::string sym = py::extract<std::string>(symmetry);
         if (sym == "0" || sym == "none" ) {
@@ -116,7 +116,7 @@ py::object EffectiveIndex2D_getMirrors(const EffectiveIndex2D& self) {
 }
 
 void EffectiveIndex2D_setMirrors(EffectiveIndex2D& self, py::object value) {
-    if (value == py::object())
+    if (value.is_none())
         self.mirrors.reset();
     else {
         try {
@@ -198,7 +198,7 @@ py::object EffectiveFrequencyCyl_getStripeR(const EffectiveFrequencyCyl& self) {
 }
 
 void EffectiveFrequencyCyl_setStripeR(EffectiveFrequencyCyl& self, py::object r) {
-    if (r == py::object()) self.useAllStripes();
+    if (r.is_none()) self.useAllStripes();
     else self.setStripeR(py::extract<double>(r));
 }
 

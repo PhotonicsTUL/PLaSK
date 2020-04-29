@@ -147,7 +147,7 @@ static void _Space_setEdges(Geometry& self, py::dict edges, std::set<std::string
             std::replace(str.begin(), str.end(), '-', '_');
             parsed.insert(str);
             return edges.has_key(str) ?
-                plask::optional<std::string>( (edges[str]==py::object()) ? std::string("null") : py::extract<std::string>(edges[str]) ) :
+                plask::optional<std::string>( (edges[str] == py::object()) ? std::string("null") : py::extract<std::string>(edges[str]) ) :
                 plask::optional<std::string>();
         },
     current_axes);
@@ -301,9 +301,9 @@ struct EdgesProxy : public std::map<std::string, py::object> {
         std::string sep = "{'";
         for(auto i: *this) {
             result += sep; result += i.first; result += "': ";
-            if (i.second != py::object()) result += "'";
+            if (!i.second.is_none()) result += "'";
             result += py::extract<std::string>(py::str(i.second));
-            if (i.second != py::object()) result += "'";
+            if (!i.second.is_none()) result += "'";
             sep = ", '";
         }
         result += "}";
