@@ -6,7 +6,7 @@ from numpy import *
 
 from plask import *
 from plask import material, geometry, mesh
-from gain import FermiNew2D
+from gain import WasiakNew2D
 
 @material.simple()
 class Well(material.Material):
@@ -54,7 +54,7 @@ class Cap(material.Material):
 class NewGainValues(unittest.TestCase):
 
     def setUp(self):
-        self.solver = FermiNew2D("GAIN")
+        self.solver = WasiakNew2D("GAIN")
         plask.config.axes = 'xy'
 
         self.rect1 = geometry.Rectangle(10., 10., Substrate())

@@ -7,7 +7,7 @@ from numpy import *
 from plask import *
 from plask import material, geometry, mesh, flow
 
-from gain import FermiNewCyl
+from gain import WasiakNewCyl
 
 plask.config.axes = 'rz'
 
@@ -132,7 +132,7 @@ class TestStructureGain(unittest.TestCase):
             self.assertAlmostEqual(first[i], second[i], places=places, delta=delta)
 
     def test_gain(self):
-        solver = FermiNewCyl("self.solver")
+        solver = WasiakNewCyl("self.solver")
         solver.geometry = self.geometry
         solver.inCarriersConcentration = self.concentration.outCarriersConcentration
         self.assertAlmostEqual( solver.outGain(self.msh, 1275.)[0][0], 1254., 0 )
@@ -140,7 +140,7 @@ class TestStructureGain(unittest.TestCase):
         self.assertEqual( len(solver.outEnergyLevels('ELECTRONS', msh)[0]), 0 )
 
     def test_band_edges_receiver(self):
-        solver = FermiNewCyl("self.solver")
+        solver = WasiakNewCyl("self.solver")
         geom, _, _ = self.build_geometry('Well0', 'Barrier0')
         solver.geometry = geom
         solver.inBandEdges = flow.BandEdgesProviderCyl(self.get_bands)
@@ -161,7 +161,7 @@ class TestStructureGain(unittest.TestCase):
         3 )
 
     def test_fermi_levels_receiver(self):
-        solver = FermiNewCyl("self.solver")
+        solver = WasiakNewCyl("self.solver")
         solver.geometry = self.geometry
         solver.inCarriersConcentration = 0.
         solver.inFermiLevels = flow.FermiLevelsProviderCyl(self.get_fermi_level)

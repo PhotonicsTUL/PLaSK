@@ -203,7 +203,7 @@ BOOST_PYTHON_MODULE(wasiak)
 {
     plask_import_array();
 
-    {CLASS(fermi::FermiGainSolver<Geometry2DCartesian>, "Fermi2D", "Gain solver based on Fermi Golden Rule for Cartesian 2D geometry.")
+    {CLASS(fermi::FermiGainSolver<Geometry2DCartesian>, "Wasiak2D", "Gain solver based on Fermi Golden Rule for Cartesian 2D geometry.")
         solver.def("determine_levels", &FermiGain_determineLevels<Geometry2DCartesian>,
                    "Determine quasi-Fermi levels and carriers levels inside QW", (py::arg("T"), "n"));
         solver.def("set_levels", py::raw_function(&FermiGain_setLevels<Geometry2DCartesian>),
@@ -232,7 +232,7 @@ BOOST_PYTHON_MODULE(wasiak)
             .def("__call__", &FermiGainSpectrum__call__<Geometry2DCartesian>)
         ;
     }
-    {CLASS(fermi::FermiGainSolver<Geometry2DCylindrical>, "FermiCyl", "Gain solver based on Fermi Golden Rule for Cylindrical 2D geometry.")
+    {CLASS(fermi::FermiGainSolver<Geometry2DCylindrical>, "WasiakCyl", "Gain solver based on Fermi Golden Rule for Cylindrical 2D geometry.")
         solver.def("determine_levels", &FermiGain_determineLevels<Geometry2DCylindrical>,
                    "Determine quasi-Fermi levels and carriers levels inside QW", (py::arg("T"), "n"));
         solver.def("set_levels", py::raw_function(&FermiGain_setLevels<Geometry2DCylindrical>),
@@ -262,7 +262,7 @@ BOOST_PYTHON_MODULE(wasiak)
         ;
     }
 
-    {CLASS(FermiNew::FermiNewGainSolver<Geometry2DCartesian>, "FermiNew2D", "Gain solver based on Fermi Golden Rule for Cartesian 2D geometry.")
+    {CLASS(FermiNew::FermiNewGainSolver<Geometry2DCartesian>, "WasiakNew2D", "Gain solver based on Fermi Golden Rule for Cartesian 2D geometry.")
         solver.add_property("strained", &__Class__::getStrains, &__Class__::setStrains,
                             "Consider strain in QW and barriers? (True or False).");
         solver.add_property("adjust_layers", &__Class__::getAdjustWidths, &__Class__::setAdjustWidths,
@@ -308,7 +308,7 @@ BOOST_PYTHON_MODULE(wasiak)
             .def("__call__", &FermiNewLuminescenceSpectrum__call__<Geometry2DCartesian>)
         ;
     }
-    {CLASS(FermiNew::FermiNewGainSolver<Geometry2DCylindrical>, "FermiNewCyl", "Gain solver based on Fermi Golden Rule for Cylindrical 2D geometry.")
+    {CLASS(FermiNew::FermiNewGainSolver<Geometry2DCylindrical>, "WasiakNewCyl", "Gain solver based on Fermi Golden Rule for Cylindrical 2D geometry.")
         solver.add_property("strained", &__Class__::getStrains, &__Class__::setStrains,
                             "Consider strain in QW and barriers? (True or False).");
         solver.add_property("adjust_layers", &__Class__::getAdjustWidths, &__Class__::setAdjustWidths,

@@ -1,4 +1,4 @@
-- solver: Fermi2D
+- solver: Wasiak2D
   category: gain
   geometry: Cartesian2D
   help: "Simple gain solver based on Fermi Golden Rule for two-dimensional Cartesian\
@@ -69,8 +69,7 @@
       unit: eV
     help: Custom energy levels in quantum wells. If this tag is used all levels must
       be set.
-    label: 'Custom energy levels <span style=''font-weight: normal;''>(either none
-      or all attributes must be given)</span>'
+    label: Custom energy levels (either none or all attributes must be given)
     tag: levels
   providers: &providers1
   - outGain
@@ -80,7 +79,7 @@
 
 ###########################################################################################
 
-- solver: FermiCyl
+- solver: WasiakCyl
   category: gain
   geometry: Cylindrical
   help: "Simple gain solver based on Fermi Golden Rule for Cylindrical geometry.\n\
@@ -134,15 +133,14 @@
       unit: eV
     help: Custom energy levels in quantum wells. If this tag is used all levels must
       be set.
-    label: 'Custom energy levels <span style=''font-weight: normal;''>(either none
-      or all attributes must be given)</span>'
+    label: Custom energy levels (either none or all attributes must be given)
     tag: levels
   providers: *providers1
   receivers: *receivers
 
 ###########################################################################################
 
-- solver: FermiNew2D
+- solver: WasiakNew2D
   category: gain
   geometry: Cartesian2D
   help: "Simple gain solver based on Fermi Golden Rule for two-dimensional Cartesian\
@@ -222,7 +220,7 @@
 
 ###########################################################################################
 
-- solver: FermiNewCyl
+- solver: WasiakNewCyl
   category: gain
   geometry: Cylindrical
   help: "Simple gain solver based on Fermi Golden Rule for Cylindrical geometry.\n\
