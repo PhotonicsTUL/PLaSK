@@ -20,6 +20,7 @@ from ...model.geometry import GeometryModel
 from ...model.geometry.types import geometry_types_geometries_core, gname
 from ...model.geometry.geometry import GNGeometryBase
 from ...model.info import Info
+from ...model.materials import HandleMaterialsModule
 from .. import Controller
 from ...utils import get_manager
 from ...utils.widgets import HTMLDelegate, VerticalScrollArea, create_undo_actions, set_icon_size
@@ -306,14 +307,16 @@ class GeometryController(Controller):
         try:
             if self.manager is None:
                 manager = get_manager()
-                manager.load(self.document.get_content(sections=('defines', 'materials')))
+                with HandleMaterialsModule(self.document):
+                    manager.load(self.document.get_content(sections=('defines', 'materials')))
             else:
                 manager = self.manager
                 manager.geo.clear()
                 manager.pth.clear()
                 manager._roots.clear()
                 self.plotted_object = None
-            manager.load(self.document.get_content(sections=('geometry',)))
+            with HandleMaterialsModule(self.document):
+                manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry')))
             self.manager = manager
             try:
                 plotted_object = self.model.fake_root.get_corresponding_object(tree_element, manager)

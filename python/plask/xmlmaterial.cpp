@@ -15,7 +15,7 @@ namespace plask { namespace python {
  */
 class PythonEvalMaterial;
 
-extern PLASK_PYTHON_API py::dict* xml_globals;
+extern PLASK_PYTHON_API py::dict* pyXplGlobals;
 
 struct PythonEvalMaterialConstructor: public MaterialsDB::MaterialConstructor {
 
@@ -60,7 +60,7 @@ class PythonEvalMaterial: public MaterialWithBase
     friend struct PythonEvalMaterialConstructor;
 
     static inline PyObject* py_eval(PyCodeObject *fun, const py::dict& locals) {
-        return PyEval_EvalCode((PyObject*)fun, xml_globals->ptr(), locals.ptr());
+        return PyEval_EvalCode((PyObject*)fun, pyXplGlobals->ptr(), locals.ptr());
     }
 
     template <typename RETURN>
@@ -322,7 +322,7 @@ void PythonManager::loadMaterial(XMLReader& reader) {
                 py::dict locals; \
                 constructor->cache.func.reset( \
                     py::extract<typename std::remove_reference<decltype(*constructor->cache.func)>::type>( \
-                        py::handle<>(PyEval_EvalCode(constructor->func.ptr_cast<PyObject>(), xml_globals->ptr(), locals.ptr())).get() \
+                        py::handle<>(PyEval_EvalCode(constructor->func.ptr_cast<PyObject>(), pyXplGlobals->ptr(), locals.ptr())).get() \
                     ) \
                 ); \
                 writelog(LOG_DEBUG, "Cached parameter '" funcname "' in material '{0}'", material_name); \

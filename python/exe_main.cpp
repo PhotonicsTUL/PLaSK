@@ -28,11 +28,9 @@ py::object globals;
 
 namespace plask { namespace python {
 
-    PLASK_PYTHON_API int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* scriptname=nullptr, bool second_is_script=false, int scriptline=0);
-
     PLASK_PYTHON_API std::string getPythonExceptionMessage();
 
-    PLASK_PYTHON_API void PythonManager_load(py::object self, py::object src, py::dict vars, py::object filter=py::object());
+    PLASK_PYTHON_API void loadXpl(py::object self, py::object src, py::dict vars, py::object filter=py::object());
 
     PLASK_PYTHON_API void createPythonLogger();
 
@@ -40,7 +38,7 @@ namespace plask { namespace python {
 
     extern PLASK_PYTHON_API AxisNames current_axes;
 
-    extern PLASK_PYTHON_API py::dict* xml_globals;
+    extern PLASK_PYTHON_API py::dict* pyXplGlobals;
 }}
 
 //******************************************************************************
@@ -202,15 +200,11 @@ static inline void finalizeMPI() {
 
 //******************************************************************************
 int handlePythonException(const char* scriptname=nullptr) {
-    PyObject* value;
-    PyObject* type;
-    PyObject* original_traceback;
-
-    PyErr_Fetch(&type, &value, &original_traceback);
-    PyErr_NormalizeException(&type, &value, &original_traceback);
-
-    py::handle<> value_h(value), type_h(type), original_traceback_h(py::allow_null(original_traceback));
-    return plask::python::printPythonException(type, py::object(value_h), original_traceback, scriptname);
+    PyObject *value, *type, *traceback;
+    PyErr_Fetch(&type, &value, &traceback);
+    PyErr_NormalizeException(&type, &value, &traceback);
+    py::handle<> value_h(value), type_h(type), traceback_h(py::allow_null(traceback));
+    return plask::python::printPythonException(type, value, traceback, scriptname);
 }
 
 
@@ -565,7 +559,7 @@ int system_main(int argc, const system_char *argv[])
                         throw plask::python::ValueError("Definition name 'self' is reserved");
                     try {
                         locals[keyval.first] = (plask::python::py_eval(keyval.second,
-                                                                       *plask::python::xml_globals, locals));
+                                                                       *plask::python::pyXplGlobals, locals));
                     } catch (py::error_already_set&) {
                         plask::writelog(plask::LOG_WARNING,
                                         "Cannot parse command-line definition '{}' (storing it as string): {}",
@@ -580,10 +574,10 @@ int system_main(int argc, const system_char *argv[])
                 py::object omanager(manager);
                 globals["__manager__"] = omanager;
                 if (realfile)
-                    plask::python::PythonManager_load(omanager, system_str_to_pyobject(filename), locals);
+                    plask::python::loadXpl(omanager, system_str_to_pyobject(filename), locals);
                 else {
                     py::object sys = py::import("sys");
-                    plask::python::PythonManager_load(omanager, sys.attr("stdin").attr("buffer"), locals);
+                    plask::python::loadXpl(omanager, sys.attr("stdin").attr("buffer"), locals);
                 }
                 if (manager->scriptline)
                     manager->script = "#coding: utf8\n" + std::string(manager->scriptline-1, '\n') + manager->script;
@@ -635,14 +629,19 @@ int system_main(int argc, const system_char *argv[])
             endPlask();
             return -1;
         }
+        catch (plask::python::XMLExceptionWithCause& err) {
+            err.print(system_to_utf8(filename).c_str());
+            endPlask();
+            return 2;
+        }
 #       ifndef PRINT_STACKTRACE_ON_EXCEPTION
             catch (plask::XMLException& err) {
-                plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}, {1}", system_to_utf8(filename), err.what());
+                plask::writelog(plask::LOG_CRITICAL_ERROR, "{}, {}", system_to_utf8(filename), err.what());
                 endPlask();
                 return 2;
             }
             catch (plask::Exception& err) {
-                plask::writelog(plask::LOG_CRITICAL_ERROR, "{0}: {1}", system_to_utf8(filename), err.what());
+                plask::writelog(plask::LOG_CRITICAL_ERROR, "{}: {}", system_to_utf8(filename), err.what());
                 endPlask();
                 return 3;
             }

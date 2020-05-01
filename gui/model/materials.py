@@ -238,7 +238,76 @@ def material_unit(property_name):
     return MATERIALS_PROPERTES.get(property_name, (None, '', None))[1]
 
 
+if plask is not None:
+
+    class HandleMaterialsModule:
+
+        def __init__(self, document):
+            if document is not None and document.filename is not None:
+                self.dirname = os.path.dirname(document.filename)
+            else:
+                self.dirname = None
+
+        def __enter__(self):
+            if self.dirname is not None:
+                sys.path.insert(0, self.dirname)
+            sys.path.insert(0, '.')
+            return self
+
+        def __exit__(self, type=None, value=None, traceback=None):
+            del sys.path[0]
+            if self.dirname is not None:
+                del sys.path[0]
+
+else:
+
+    class HandleMaterialsModule:
+
+        def __init__(self, names=None):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, type=None, value=None, traceback=None):
+            pass
+
+
 class MaterialsModel(TableModel):
+
+    if plask is not None:
+        class _HandleMaterialsModule(HandleMaterialsModule):
+
+            class Register:
+                def __init__(self, handler, fun):
+                    self.handler = handler
+                    self.fun = fun
+                def __call__(self, name, cls, base):
+                    try: self.handler.names.remove(name)
+                    except ValueError: pass
+                    self.handler.names.append(name)
+                    return self.fun(name, cls, base)
+
+            def __init__(self, document):
+                super(MaterialsModel._HandleMaterialsModule, self).__init__(document)
+                self.names = []
+                self._register_simple = plask._material._register_material_simple
+                self._register_alloy = plask._material._register_material_alloy
+
+            def __enter__(self):
+                super(MaterialsModel._HandleMaterialsModule, self).__enter__()
+                plask._material._register_material_simple = self.Register(self, self._register_simple)
+                plask._material._register_material_alloy = self.Register(self, self._register_alloy)
+                return self
+
+            def __exit__(self, type=None, value=None, traceback=None):
+                super(MaterialsModel._HandleMaterialsModule, self).__exit__(type, value, traceback)
+                plask._material._register_material_simple = self._register_simple
+                plask._material._register_material_alloy = self._register_alloy
+
+    else:
+        class _HandleMaterialsModule(HandleMaterialsModule):
+            pass
 
     class External(QAbstractTableModel):
 
@@ -529,64 +598,13 @@ class MaterialsModel(TableModel):
                          Info.ERROR, rows=rows, cols=[0]))
         return res
 
-    if plask is not None:
-
-        class _HandleMaterialsModule:
-
-            class Register:
-                def __init__(self, handler, fun):
-                    self.handler = handler
-                    self.fun = fun
-                def __call__(self, name, cls, base):
-                    try: self.handler.names.remove(name)
-                    except ValueError: pass
-                    self.handler.names.append(name)
-                    return self.fun(name, cls, base)
-
-            def __init__(self, model):
-                self.names = []
-                self._register_simple = plask._material._register_material_simple
-                self._register_alloy = plask._material._register_material_alloy
-                if model.document is not None and model.document.filename is not None:
-                    self.dirname = os.path.dirname(model.document.filename)
-                else:
-                    self.dirname = None
-
-            def __enter__(self):
-                if self.dirname is not None:
-                    sys.path.insert(0, self.dirname)
-                sys.path.insert(0, '.')
-                plask._material._register_material_simple = self.Register(self, self._register_simple)
-                plask._material._register_material_alloy = self.Register(self, self._register_alloy)
-                return self
-
-            def __exit__(self, type=None, value=None, traceback=None):
-                del sys.path[0]
-                if self.dirname is not None:
-                    del sys.path[0]
-                plask._material._register_material_simple = self._register_simple
-                plask._material._register_material_alloy = self._register_alloy
-
-    else:
-
-        class _HandleMaterialsModule:
-
-            def __init__(self, names=None):
-                pass
-
-            def __enter__(self):
-                return self
-
-            def __exit__(self, type=None, value=None, traceback=None):
-                pass
-
     def get_materials(self, limit=None):
         model_materials = []
         if limit is not None:
             entries = self.entries[:limit]
         else:
             entries = self.entries
-        with self._HandleMaterialsModule(self) as module_handler:
+        with self._HandleMaterialsModule(self.document) as module_handler:
             for material in entries:
                 if isinstance(material, MaterialsModel.External):
                     if material.cache is None and plask is not None and material.name:

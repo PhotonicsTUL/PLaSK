@@ -547,7 +547,7 @@ class XplWriter:
 
 _Data = Data # class alias
 
-__xml__globals = __builtin__.dict()
+__xpl__globals = __builtin__.dict()
 
 def _print_exception(exc_type, exc_value, exc_traceback, scriptname='', second_is_script=False):
     """

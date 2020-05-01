@@ -15,9 +15,9 @@ namespace plask { namespace python {
 
 PLASK_PYTHON_API std::string getPythonExceptionMessage();
 
-extern PLASK_PYTHON_API py::dict* xml_globals;
+extern PLASK_PYTHON_API py::dict* pyXplGlobals;
 
-extern PyObject* pyXmlError;
+extern PLASK_PYTHON_API PyObject* pyXmlError;
 
 class PythonXMLFilter {
 
@@ -56,7 +56,7 @@ class PythonXMLFilter {
     std::string eval(std::string str) const {
         boost::algorithm::trim(str);
         try {
-            return py::extract<std::string>(py::str(py_eval(str, *xml_globals, manager->defs)));
+            return py::extract<std::string>(py::str(py_eval(str, *pyXplGlobals, manager->defs)));
         } catch (py::error_already_set&) {
             throw Exception(getPythonExceptionMessage());
         }
@@ -130,13 +130,24 @@ PyMem_Free(str);
 return wstr;
 }
 
+void XMLExceptionWithCause::setPythonException() {
+    PyErr_SetString(pyXmlError, what());
+    PyObject *value, *type, *traceback;
+    PyErr_Fetch(&type, &value, &traceback);
+    PyErr_NormalizeException(&type, &value, &traceback);
+    if (cause) {
+        Py_INCREF(cause);
+        Py_INCREF(cause);
+        PyException_SetCause(value, cause);
+        PyException_SetContext(value, cause);
+    }
+    PyErr_Restore(type, value, traceback);
+}
+
 /**
  * Load data from XML
  */
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-__declspec(dllexport)
-#endif
-void PythonManager_load(py::object self, py::object src, py::dict vars, py::object filter=py::object())
+PLASK_PYTHON_API void loadXpl(py::object self, py::object src, py::dict vars, py::object filter=py::object())
 {
     PythonManager* manager = py::extract<PythonManager*>(self);
 
@@ -197,6 +208,13 @@ void PythonManager_load(py::object self, py::object src, py::dict vars, py::obje
     manager->validatePositions();
 }
 
+PLASK_PYTHON_API void PythonManager_load(py::object self, py::object src, py::dict vars, py::object filter=py::object()) {
+    try {
+        loadXpl(self, src, vars, filter);
+    } catch (XMLExceptionWithCause& err) {
+        err.throwPythonException();
+    }
+}
 
 void PythonManager::loadDefines(XMLReader& reader)
 {
@@ -211,7 +229,7 @@ void PythonManager::loadDefines(XMLReader& reader)
         };
         if (!defs.has_key(name)) {
             try {
-                defs[name] = (py_eval(value, *xml_globals, defs));
+                defs[name] = (py_eval(value, *pyXplGlobals, defs));
             } catch (py::error_already_set&) {
                 writelog(LOG_WARNING, u8"Cannot parse XML definition '{}' (storing it as string): {}",
                          name, getPythonExceptionMessage());
@@ -330,12 +348,12 @@ void PythonManager::loadMaterialModule(XMLReader& reader) {
 #               if (PY_VERSION_HEX >= 0x03040000)
                     py::object spec = py::import("importlib.util").attr("find_spec")(modname);
                     if (spec.is_none())
-                        throw XMLException(reader, format("Cannot find materials module '{}'", name));
+                        throw Exception(format("Cannot find materials module '{}'", name));
                     file = py::extract<std::string>(spec.attr("origin"));
 #               else
                     py::object loader = !py::import("importlib").attr("find_loader")(modname);
                     if (loader.is_none())
-                        throw XMLException(reader, format("Cannot find materials module '{}'", name));
+                        throw Exception(format("Cannot find materials module '{}'", name));
                     file = py::extract<std::string>(loader.attr("get_filename")());
 #               endif
             } catch (py::error_already_set) {
@@ -356,22 +374,13 @@ void PythonManager::loadMaterialModule(XMLReader& reader) {
             PyObject *value, *type, *traceback;
             PyErr_Fetch(&type, &value, &traceback);
             PyErr_NormalizeException(&type, &value, &traceback);
-            py::handle<> type_h(type), traceback_h(py::allow_null(traceback));
+            py::handle<> value_h(value), type_h(type), traceback_h(py::allow_null(traceback));
             if (traceback != NULL) PyException_SetTraceback(value, traceback);
-            XMLException xml_exc(reader, file.empty()?
+            throw XMLExceptionWithCause(value, reader, file.empty()?
                 format("Cannot import materials module '{}'", name) :
                 format("Cannot import materials module '{}' (from '{}')", name, file));
-            PyErr_SetString(pyXmlError, xml_exc.what());
-            PyObject *value2, *type2, *traceback2;
-            PyErr_Fetch(&type2, &value2, &traceback2);
-            PyErr_NormalizeException(&type2, &value2, &traceback2);
-            Py_INCREF(value);
-            PyException_SetCause(value2, value);
-            PyException_SetContext(value2, value);
-            PyErr_Restore(type2, value2, traceback2);
-            throw;
         }
-    } catch (Exception& err) {
+    } catch (std::runtime_error& err) {
         if(!draft) throw XMLException(reader, err.what());
     }
     reader.requireTagEnd();

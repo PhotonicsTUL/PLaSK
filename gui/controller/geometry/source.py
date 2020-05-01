@@ -20,6 +20,7 @@ from ...qt.QtWidgets import *
 from ...qt.QtGui import *
 from ...model.info import Info
 from ...model.geometry.reader import axes_as_list
+from ...model.materials import HandleMaterialsModule
 
 from ...utils import get_manager
 from ...utils.config import CONFIG
@@ -161,14 +162,16 @@ class GeometrySourceController(SourceEditController):
             try:
                 if self.manager is None:
                     manager = get_manager()
-                    manager.load(self.document.get_content(sections=('defines', 'materials')))
+                    with HandleMaterialsModule(self.document):
+                        manager.load(self.document.get_content(sections=('defines', 'materials')))
                 else:
                     manager = self.manager
                     manager.geo.clear()
                     manager.pth.clear()
                     manager._roots.clear()
                 text = "<plask><geometry>\n" + self.source.editor.toPlainText() + "\n</geometry></plask>"
-                manager.load("\n"*(self.model.line_in_file-1) + text)
+                with HandleMaterialsModule(self.document):
+                    manager.load("\n"*(self.model.line_in_file-1) + text)
                 self.manager = manager
                 if self._elements is None:
                     self._elements = [e for e in etree.fromstring(text)[0]]

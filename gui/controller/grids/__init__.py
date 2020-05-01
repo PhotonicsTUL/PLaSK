@@ -29,6 +29,7 @@ from ...utils.qsignals import BlockQtSignals
 from ..table import table_and_manipulators
 from ...utils.qundo import UndoCommandWithSetter
 from ...model.grids import GridsModel, construct_grid
+from ...model.materials import HandleMaterialsModule
 from ...model.info import Info
 from ...utils import get_manager
 from ...utils.xml import XML_parser
@@ -252,7 +253,8 @@ class GridsController(Controller):
         try:
             if self.manager is None:
                 manager = get_manager()
-                manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry')))
+                with HandleMaterialsModule(self.document):
+                    manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry')))
             else:
                 manager = self.manager
                 manager.msh.clear()
@@ -333,7 +335,8 @@ class GridsController(Controller):
         try:
             if self.manager is None:
                 manager = get_manager()
-                manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry')))
+                with HandleMaterialsModule(self.document):
+                    manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry')))
             else:
                 manager = self.manager
                 manager.msh.clear()

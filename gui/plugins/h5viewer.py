@@ -32,6 +32,7 @@ from gui.utils.matplotlib import PlotWidgetBase, cursors
 from gui.utils.qsignals import BlockQtSignals
 from gui.utils.widgets import set_icon_size
 from gui.xpldocument import XPLDocument
+from gui.model.materials import HandleMaterialsModule
 
 if QT_API == 'PyQt5':
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -300,7 +301,8 @@ class ResultsWindow(QMainWindow):
         self.axes = {g.name: g.get_axes_conf() for g in roots}
         self._default_axes = roots[0].get_axes_conf() if roots else plask.config.axes
         try:
-            self.manager.load(self.document.get_content(sections=('defines', 'geometry')))
+            with HandleMaterialsModule(self.document):
+                self.manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry')))
         except Exception as e:
             from gui import _DEBUG
             if _DEBUG:

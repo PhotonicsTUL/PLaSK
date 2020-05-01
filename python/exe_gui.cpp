@@ -13,9 +13,6 @@ inline long PyInt_AsLong(PyObject* o) { return PyLong_AsLong(o); }
 // static PyThreadState* mainTS;   // state of the main thread
 
 namespace plask { namespace python {
-
-    int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* scriptname=nullptr, bool second_is_script=false, int scriptline=0);
-
     void createPythonLogger();
 }}
 

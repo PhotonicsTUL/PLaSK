@@ -6,6 +6,43 @@
 namespace plask { namespace  python {
 
 
+struct PLASK_PYTHON_API XMLExceptionWithCause: public XMLException {
+    PyObject* cause;
+
+    XMLExceptionWithCause(PyObject* cause, const XMLReader& reader, const std::string& msg):
+        XMLException(reader, msg), cause(cause) {
+        Py_XINCREF(cause);
+    }
+
+    XMLExceptionWithCause(XMLExceptionWithCause& src): XMLException(src), cause(src.cause) {
+        Py_XINCREF(cause);
+    }
+
+    XMLExceptionWithCause(XMLExceptionWithCause&& src): XMLException(std::move(src)), cause(src.cause) {
+        src.cause = nullptr;
+    }
+
+    virtual ~XMLExceptionWithCause() {
+        Py_XDECREF(cause);
+    }
+
+    void print(const char* scriptname=nullptr, bool second_is_script=false, int scriptline=0) {
+        if (cause) {
+            printPythonException(cause, scriptname, second_is_script, scriptline);
+            writelog(LOG_ERROR_DETAIL, "The above exception was the direct cause of the following exception:");
+        }
+        plask::writelog(plask::LOG_CRITICAL_ERROR, "{}, {}", scriptname, what());
+    }
+
+    void setPythonException();
+
+    void throwPythonException() {
+        setPythonException();
+        throw py::error_already_set();
+    }
+};
+
+
 struct PLASK_PYTHON_API PythonManager: public Manager {
 
 //     /// List of constant profiles

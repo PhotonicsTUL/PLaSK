@@ -33,7 +33,8 @@ from ... import _DEBUG
 from ...qt.QtCore import *
 from ...qt.QtGui import *
 from ...qt.QtWidgets import *
-from ...model.materials import MATERIALS_PROPERTES, material_html_help, parse_material_components, default_materialdb
+from ...model.materials import MATERIALS_PROPERTES, material_html_help, parse_material_components, default_materialdb, \
+                               HandleMaterialsModule
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import html_to_tex
 from ...utils.widgets import set_icon_size
@@ -67,8 +68,8 @@ class MaterialPlot(QWidget):
             plask.material.setdb(default_materialdb)
             manager = plask.Manager(draft=True)
             try:
-                sys.path.insert(0, '.')
-                manager.load(self._get_xpl_content())
+                with HandleMaterialsModule(model.document):
+                    manager.load(self._get_xpl_content())
             except:
                 pass
             finally:

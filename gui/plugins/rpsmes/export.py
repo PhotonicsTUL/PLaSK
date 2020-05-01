@@ -16,6 +16,7 @@ import gui
 from gui.qt.QtWidgets import *
 from gui.qt.QtGui import *
 from gui.xpldocument import XPLDocument
+from gui.model.materials import HandleMaterialsModule
 
 try:
     import plask
@@ -176,7 +177,8 @@ else:
 
         manager = plask.Manager()
         try:
-            manager.load(parent.document.get_content(sections=('geometry')))
+            with HandleMaterialsModule(parent.document):
+                manager.load(parent.document.get_content(sections=('defines', 'materials', 'geometry')))
             controller = parent.document.geometry.controllers[0]
             current_model = controller.current_root()
             name = controller.current_root().name

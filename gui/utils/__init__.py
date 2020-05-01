@@ -104,6 +104,6 @@ def get_manager():
             try: nr = plask.material.get(mat).Nr(lam, T).real
             except: nr = 1.
             return 1e-3 * lam / nr
-        plask._plask.__xml__globals['wl'] = wl
-        plask._plask.__xml__globals['phys'].__dict__['wl'] = wl
+        plask._plask.__xpl__globals['wl'] = wl
+        plask._plask.__xpl__globals['phys'].__dict__['wl'] = wl
     return manager

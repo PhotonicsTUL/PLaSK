@@ -46,8 +46,8 @@ void register_python_log();
 
 void register_standard_properties();
 
-PyObject* pyXmlError;
-PyObject* pyComputationError;
+PLASK_PYTHON_API PyObject* pyXmlError;
+PLASK_PYTHON_API PyObject* pyComputationError;
 
 PLASK_PYTHON_API std::string getPythonExceptionMessage() {
     PyObject *value, *type, *original_traceback;
@@ -202,7 +202,7 @@ inline static void register_config()
 
 
 // Globals for XML material
-PLASK_PYTHON_API py::dict* xml_globals;
+PLASK_PYTHON_API py::dict* pyXplGlobals;
 
 template <typename... Args>
 static void printMultiLineLog(plask::LogLevel level, const std::string& msg, Args&&... args) {
@@ -214,26 +214,42 @@ static void printMultiLineLog(plask::LogLevel level, const std::string& msg, Arg
 }
 
 
-static void printPythonExceptionImpl(PyObject* otype, PyObject* value, PyObject* otraceback, const char* scriptname, bool second_is_script, int scriptline);
+// Print Python exception to PLaSK logging system
+PLASK_PYTHON_API int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback, const char* scriptname, bool second_is_script, int scriptline) {
 
-static inline void printPythonExceptionImpl(PyObject* value, const char* scriptname, bool second_is_script, int scriptline) {
-    PyObject* type = PyObject_Type(value);
-    PyObject* traceback = PyException_GetTraceback(value);
-    py::handle<> type_h(type), traceback_h(py::allow_null(traceback));
-    printPythonExceptionImpl(type, value, traceback, scriptname, second_is_script, scriptline);
-}
+    if (otype == PyExc_SystemExit) {
+        Py_INCREF(value);
+        int exitcode;
+        if (PyExceptionInstance_Check(value)) {
+            PyObject* code = PyObject_GetAttrString(value, "code");
+            if (code) {
+                Py_DECREF(value);
+                value = code;
+            }
+        }
+        if (PyInt_Check(value))
+            exitcode = (int)PyInt_AsLong(value);
+        else {
+            std::cerr.flush();
+            std::cout.flush();
+            PyObject_Print(value, stderr, Py_PRINT_RAW);
+            PySys_WriteStderr("\n");
+            exitcode = 1;
+        }
+        Py_DECREF(value);
+        PyErr_Clear();
+        return exitcode;
+    }
 
-static void printPythonExceptionImpl(PyObject* otype, PyObject* value, PyObject* otraceback, const char* scriptname, bool second_is_script, int scriptline) {
-
-    {
+   {
         PyObject* cause = PyException_GetCause(value);
         PyObject* context = PyException_GetContext(value);
         py::handle<> cause_h(py::allow_null(cause)), context_h(py::allow_null(context));
         if (cause && cause != Py_None) {
-            printPythonExceptionImpl(cause, scriptname, second_is_script, scriptline);
+            printPythonException(cause, scriptname, second_is_script, scriptline);
             writelog(LOG_ERROR_DETAIL, "The above exception was the direct cause of the following exception:");
         } else if (context && context != Py_None) {
-            printPythonExceptionImpl(context, scriptname, second_is_script, scriptline);
+            printPythonException(context, scriptname, second_is_script, scriptline);
             writelog(LOG_ERROR_DETAIL, "During handling of the above exception, another exception occurred:");
         }
     }
@@ -288,34 +304,6 @@ static void printPythonExceptionImpl(PyObject* otype, PyObject* value, PyObject*
         } else
             printMultiLineLog(plask::LOG_CRITICAL_ERROR, u8"{0}: {1}", error_name, message);
     }
-}
-
-// Print Python exception to PLaSK logging system
-#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-__declspec(dllexport)
-#endif
-int printPythonException(PyObject* otype, py::object value, PyObject* otraceback, const char* scriptname=nullptr, bool second_is_script=false, int scriptline=0) {
-
-    if (otype == PyExc_SystemExit) {
-        int exitcode;
-        if (PyExceptionInstance_Check(value.ptr())) {
-            PyObject* code = PyObject_GetAttrString(value.ptr(), "code");
-            if (code) { value = py::object(py::handle<>(code)); }
-        }
-        if (PyInt_Check(value.ptr()))
-            exitcode = (int)PyInt_AsLong(value.ptr());
-        else {
-            std::cerr.flush();
-            std::cout.flush();
-            PyObject_Print(value.ptr(), stderr, Py_PRINT_RAW);
-            PySys_WriteStderr("\n");
-            exitcode = 1;
-        }
-        PyErr_Clear();
-        return exitcode;
-    }
-
-    printPythonExceptionImpl(otype, value.ptr(), otraceback, scriptname, second_is_script, scriptline);
     return 1;
 }
 
@@ -653,7 +641,8 @@ BOOST_PYTHON_MODULE(_plask)
     register_exception<plask::ComputationError>(pyComputationError);
     py::scope().attr("ComputationError") = py::handle<>(py::incref(pyComputationError));
 
-    py::def("_print_exception", &printPythonException, u8"Print exception information to PLaSK logging system",
+    py::def("_print_exception", static_cast<int(*)(PyObject*, PyObject*, PyObject*, const char*, bool, int)>(&printPythonException),
+            u8"Print exception information to PLaSK logging system",
             (py::arg("exc_type"), "exc_value", "exc_traceback", py::arg("scriptname")="", py::arg("second_is_script")=false, py::arg("scriptline")=0));
 
 #   ifdef PRINT_STACKTRACE_ON_EXCEPTION
@@ -667,9 +656,9 @@ BOOST_PYTHON_MODULE(_plask)
     scope.attr("version") = PLASK_VERSION;
 
     // Set global namespace for materials
-    plask::python::xml_globals = new py::dict();
-    py::incref(plask::python::xml_globals->ptr()); // HACK: Prevents segfault on exit. I don't know why it is needed.
-    scope.attr("__xml__globals") = *plask::python::xml_globals;
+    plask::python::pyXplGlobals = new py::dict();
+    py::incref(plask::python::pyXplGlobals->ptr()); // HACK: Prevents segfault on exit. I don't know why it is needed.
+    scope.attr("__xpl__globals") = *plask::python::pyXplGlobals;
 
     scope.attr("prefix") = plask::prefixPath();
     scope.attr("lib_path") = plask::plaskLibPath();

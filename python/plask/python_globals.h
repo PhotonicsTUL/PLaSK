@@ -85,6 +85,16 @@ struct IOError: public Exception {
 
 PLASK_PYTHON_API std::string getPythonExceptionMessage();
 
+PLASK_PYTHON_API int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback,
+                                          const char* scriptname=nullptr, bool second_is_script=false, int scriptline=0);
+
+inline int printPythonException(PyObject* value, const char* scriptname=nullptr, bool second_is_script=false, int scriptline=0) {
+    PyObject* type = PyObject_Type(value);
+    PyObject* traceback = PyException_GetTraceback(value);
+    py::handle<> type_h(type), traceback_h(py::allow_null(traceback));
+    return printPythonException(type, value, traceback, scriptname, second_is_script, scriptline);
+}
+
 // ----------------------------------------------------------------------------------------------------------------------
 // String functions for Python3
 inline auto PyString_Check(PyObject* o) -> decltype(PyUnicode_Check(o)) { return PyUnicode_Check(o); }

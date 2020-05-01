@@ -445,7 +445,7 @@ else:
 
 
 ## ##  ## ##
-_plask.__xml__globals.update(globals())
+_plask.__xpl__globals.update(globals())
 
 
 ## ##  ## ##

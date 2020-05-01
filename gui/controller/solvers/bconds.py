@@ -26,6 +26,7 @@ from ...utils.widgets import HTMLDelegate, ComboBox, table_edit_shortcut
 from ...utils.qsignals import BlockQtSignals
 from ..defines import DefinesCompletionDelegate, get_defines_completer
 from ..table import table_with_manipulators, top_level_index
+from ...model.materials import HandleMaterialsModule
 from ...model.solvers.bconds import RectangularBC, BoundaryConditionsModel
 
 try:
@@ -300,7 +301,8 @@ class BoundaryConditionsDialog(QDialog):
                 self.geometry_node = controller.document.geometry.model.find_by_name(geometry_name)
             self.manager = get_manager()
             try:
-                self.manager.load(self.document.get_content(sections=('defines', 'geometry', 'grids')))
+                with HandleMaterialsModule(self.document):
+                    self.manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry', 'grids')))
             except Exception as err:
                 self.preview = None
                 self.info.setText(str(err))
