@@ -1,9 +1,18 @@
-# We'll use defaults from the LLVM style, but with 4 columns indentation.
-BasedOnStyle: LLVM
-IndentWidth: 4
+BasedOnStyle: Chromium
+AccessModifierOffset: -2
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortFunctionsOnASingleLine: true
+AllowShortIfStatementsOnASingleLine: Always
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: true
+AlwaysBreakTemplateDeclarations: MultiLine
 ColumnLimit: 120
----
-Language: Cpp
-# Force pointers to the type for C++.
+CompactNamespaces: true
+Cpp11BracedListStyle: true
 DerivePointerAlignment: false
+FixNamespaceComments: true
+IndentPPDirectives: AfterHash
+IndentWidth: 4
 PointerAlignment: Left
+SpacesInAngles: false
+Standard: c++11
