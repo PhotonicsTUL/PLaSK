@@ -6,8 +6,6 @@ from plask import material
 from plask import print_log
 
 
-dupa
-
 @material.alloy('AlGaAs')
 class AlGaAs_fake(material.Material):
 

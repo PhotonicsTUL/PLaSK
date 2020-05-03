@@ -38,7 +38,7 @@ set(SOLVER_LINK_LIBRARIES ${GSL_LIBRARIES})
 # Uncomment and edit the line below if you need some special compiler flags.
 #
 #set(SOLVER_COMPILE_FLAGS ${CMAKE_GSL_CXX_FLAGS})
-
+set(SOLVER_COMPILE_FLAGS "-DPLASK")
 
 # If you want, you can manually specify your sources. Just uncomment and edit
 # the following lines. If you don't do it, your solver directory will be scanned
@@ -46,14 +46,13 @@ set(SOLVER_LINK_LIBRARIES ${GSL_LIBRARIES})
 #
 #set(solver_src file1.cpp file2.cpp file3.h file4.hpp)
 #set(interface_src python/file1.cpp python/file2.cpp python/file3.h)
-
+file(GLOB solver_src *.cpp wzmocnienie/*.cc)
 
 # To add unit tests to your project create appropriate targets (binary executables
 # or Python scripts) and register them using macro add_solver_test for binaries
 # and add_python_test(name file.py) for Python scripts. You should name
 # the test as 'solvers/your_solver/test_name'. Then uncomment and edit the line
 # below.
-#
 enable_testing()
 
 if(BUILD_TESTING)
