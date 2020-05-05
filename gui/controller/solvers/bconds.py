@@ -170,11 +170,15 @@ if preview_available:
 
             def __init__(self, *args, **kwargs):
                 super(PlotWidget.NavigationToolbar, self).__init__(*args, **kwargs)
+                if self.controller.geometry_node.dim == 2:
+                    self.disable_planes(self.controller.geometry_node.axes)
+                else:
+                    self.enable_planes(self.controller.geometry_node.axes)
                 self._actions['plot'].setShortcut(Qt.ALT + Qt.Key_P)
 
             def select_plane(self, index):
                 super(PlotWidget.NavigationToolbar, self).select_plane(index)
-                if self.controller.plot_auto_refresh: self.controller.plot_bboundaries()
+                if self.controller.plot_auto_refresh: self.plot()
 
         def __init__(self, controller=None, parent=None, picker=None):
             super(PlotWidget, self).__init__(controller, parent)
@@ -516,7 +520,7 @@ class PlaceDelegate(QStyledItemDelegate):
             completer.setCaseSensitivity(Qt.CaseSensitive)
             combo.setCompleter(completer)
 
-        combo.currentIndexChanged.connect(self.placeChanged.emit)
+        combo.currentIndexChanged.connect(lambda _: self.placeChanged.emit)
 
         return combo
 

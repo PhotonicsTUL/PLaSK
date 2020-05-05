@@ -395,7 +395,7 @@
     <geometry ref="l3cavity"/>
   </optical>
   <thermal name="solver" solver="Static3D" lib="static">
-    <geometry ref="prismatic"/>
+    <geometry ref="vcsel"/>
     <mesh ref="fine"/>
   </thermal>
   <meta name="thf2d" solver="ThresholdSearchFourier2D" lib="shockley">

@@ -293,7 +293,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
                 index_aab = index_aba = index_abb = index_baa = index_bab = index_bba = index_bbb = index_aaa;
                 data_aab = data_aba = data_abb = data_baa = data_bab = data_bba = data_bbb = data_aaa;
             } else {
-                index_aab = index(index0, index1+step1, index2+step2);
+                index_aab = index(index0, index1, index2+step2);
                 index_aba = index(index0, index1+step1, index2);
                 index_abb = index(index0, index1+step1, index2+step2);
                 index_baa = index(index0+step0, index1, index2);
@@ -312,7 +312,7 @@ struct PLASK_API RectangularMaskedMesh3D: public RectangularMaskedMeshBase<3> {
             Vec<3> pb = fullMesh.at(index0+step0, index1+step1, index2+step2);
             if (step0 == 0) pb.c0 += 1.;
             if (step1 == 0) pb.c1 += 1.;
-            if (step2 == 0) pb.c2 += 2.;
+            if (step2 == 0) pb.c2 += 1.;
 
             return flags.postprocess(point,
                 interpolation::trilinear(pa.c0, pb.c0, pa.c1, pb.c1, pa.c2, pb.c2,

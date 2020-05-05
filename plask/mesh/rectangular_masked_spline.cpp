@@ -105,7 +105,7 @@ DstT SplineMaskedRectElement2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) co
 
     // Hermite 3rd order spline polynomials (in Horner form)
     double d0 = p_hi.c0 - p_lo.c0,
-           d1 = p_hi.c1 - p_hi.c0;
+           d1 = p_hi.c1 - p_lo.c1;
     double x0 = (i0_lo != i0_hi)? (p.c0 - p_lo.c0) / d0 : 0./*5*/,
            x1 = (i1_lo != i1_hi)? (p.c1 - p_lo.c1) / d1 : 0./*5*/;
 
@@ -135,12 +135,12 @@ DstT SplineMaskedRectElement2DLazyDataImpl<DstT, SrcT>::at(std::size_t index) co
 
     typename std::remove_const<SrcT>::type vals[4];
 
-    size_t iaa = idx[s0+s1],
+    size_t iaa = idx[0+s0+s1],
            iba = idx[1-s0+s1],
            iab = idx[2+s0-s1],
            ibb = idx[3-s0-s1];
     typename std::remove_const<SrcT>::type
-           &val_aa = vals[s0+s1],
+           &val_aa = vals[0+s0+s1],
            &val_ba = vals[1-s0+s1],
            &val_ab = vals[2+s0-s1],
            &val_bb = vals[3-s0-s1];
@@ -344,34 +344,34 @@ DstT SplineMaskedRectElement3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) co
                          this->src_mesh->index(i0_hi, i1_hi, i2_lo),
                          this->src_mesh->index(i0_hi, i1_hi, i2_hi)};
 
-    SrcT diff0lll = diff0[idx[0]/*lll*/],
-         diff0llh = diff0[idx[1]/*llh*/],
-         diff0lhl = diff0[idx[2]/*lhl*/],
-         diff0lhh = diff0[idx[3]/*lhh*/],
-         diff0hll = diff0[idx[4]/*hll*/],
-         diff0hlh = diff0[idx[5]/*hlh*/],
-         diff0hhl = diff0[idx[6]/*hhl*/],
-         diff0hhh = diff0[idx[7]/*hhh*/],
-         diff1lll = diff1[idx[0]/*lll*/],
-         diff1llh = diff1[idx[1]/*llh*/],
-         diff1lhl = diff1[idx[2]/*lhl*/],
-         diff1lhh = diff1[idx[3]/*lhh*/],
-         diff1hll = diff1[idx[4]/*hll*/],
-         diff1hlh = diff1[idx[5]/*hlh*/],
-         diff1hhl = diff1[idx[6]/*hhl*/],
-         diff1hhh = diff1[idx[7]/*hhh*/],
-         diff2lll = diff2[idx[0]/*lll*/],
-         diff2llh = diff2[idx[1]/*llh*/],
-         diff2lhl = diff2[idx[2]/*lhl*/],
-         diff2lhh = diff2[idx[3]/*lhh*/],
-         diff2hll = diff2[idx[4]/*hll*/],
-         diff2hlh = diff2[idx[5]/*hlh*/],
-         diff2hhl = diff2[idx[6]/*hhl*/],
-         diff2hhh = diff2[idx[7]/*hhh*/];
+    SrcT diff0lll = (idx[0] != NOT_INCLUDED)? diff0[idx[0]/*lll*/] : Zero<SrcT>(),
+         diff0llh = (idx[1] != NOT_INCLUDED)? diff0[idx[1]/*llh*/] : Zero<SrcT>(),
+         diff0lhl = (idx[2] != NOT_INCLUDED)? diff0[idx[2]/*lhl*/] : Zero<SrcT>(),
+         diff0lhh = (idx[3] != NOT_INCLUDED)? diff0[idx[3]/*lhh*/] : Zero<SrcT>(),
+         diff0hll = (idx[4] != NOT_INCLUDED)? diff0[idx[4]/*hll*/] : Zero<SrcT>(),
+         diff0hlh = (idx[5] != NOT_INCLUDED)? diff0[idx[5]/*hlh*/] : Zero<SrcT>(),
+         diff0hhl = (idx[6] != NOT_INCLUDED)? diff0[idx[6]/*hhl*/] : Zero<SrcT>(),
+         diff0hhh = (idx[7] != NOT_INCLUDED)? diff0[idx[7]/*hhh*/] : Zero<SrcT>(),
+         diff1lll = (idx[0] != NOT_INCLUDED)? diff1[idx[0]/*lll*/] : Zero<SrcT>(),
+         diff1llh = (idx[1] != NOT_INCLUDED)? diff1[idx[1]/*llh*/] : Zero<SrcT>(),
+         diff1lhl = (idx[2] != NOT_INCLUDED)? diff1[idx[2]/*lhl*/] : Zero<SrcT>(),
+         diff1lhh = (idx[3] != NOT_INCLUDED)? diff1[idx[3]/*lhh*/] : Zero<SrcT>(),
+         diff1hll = (idx[4] != NOT_INCLUDED)? diff1[idx[4]/*hll*/] : Zero<SrcT>(),
+         diff1hlh = (idx[5] != NOT_INCLUDED)? diff1[idx[5]/*hlh*/] : Zero<SrcT>(),
+         diff1hhl = (idx[6] != NOT_INCLUDED)? diff1[idx[6]/*hhl*/] : Zero<SrcT>(),
+         diff1hhh = (idx[7] != NOT_INCLUDED)? diff1[idx[7]/*hhh*/] : Zero<SrcT>(),
+         diff2lll = (idx[0] != NOT_INCLUDED)? diff2[idx[0]/*lll*/] : Zero<SrcT>(),
+         diff2llh = (idx[1] != NOT_INCLUDED)? diff2[idx[1]/*llh*/] : Zero<SrcT>(),
+         diff2lhl = (idx[2] != NOT_INCLUDED)? diff2[idx[2]/*lhl*/] : Zero<SrcT>(),
+         diff2lhh = (idx[3] != NOT_INCLUDED)? diff2[idx[3]/*lhh*/] : Zero<SrcT>(),
+         diff2hll = (idx[4] != NOT_INCLUDED)? diff2[idx[4]/*hll*/] : Zero<SrcT>(),
+         diff2hlh = (idx[5] != NOT_INCLUDED)? diff2[idx[5]/*hlh*/] : Zero<SrcT>(),
+         diff2hhl = (idx[6] != NOT_INCLUDED)? diff2[idx[6]/*hhl*/] : Zero<SrcT>(),
+         diff2hhh = (idx[7] != NOT_INCLUDED)? diff2[idx[7]/*hhh*/] : Zero<SrcT>();
 
     typename std::remove_const<SrcT>::type vals[8];
 
-    size_t iaaa = idx[s0+s1+s2],
+    size_t iaaa = idx[0+s0+s1+s2],
            iaab = idx[1+s0+s1-s2],
            iaba = idx[2+s0-s1+s2],
            iabb = idx[3+s0-s1-s2],
@@ -380,7 +380,7 @@ DstT SplineMaskedRectElement3DLazyDataImpl<DstT, SrcT>::at(std::size_t index) co
            ibba = idx[6-s0-s1+s2],
            ibbb = idx[7-s0-s1-s2];
     typename std::remove_const<SrcT>::type
-           &val_aaa = vals[s0+s1+s2],
+           &val_aaa = vals[0+s0+s1+s2],
            &val_aab = vals[1+s0+s1-s2],
            &val_aba = vals[2+s0-s1+s2],
            &val_abb = vals[3+s0-s1-s2],
