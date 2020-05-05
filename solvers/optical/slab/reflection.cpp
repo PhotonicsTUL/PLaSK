@@ -358,8 +358,8 @@ void ReflectionTransfer::determineFields()
     if (solver->emission == SlabBase::EMISSION_BOTTOM || solver->emission == SlabBase::EMISSION_TOP) {
         size_t n = (solver->emission == SlabBase::EMISSION_BOTTOM)? 0 : count-1;
 
-        double P = 1./Z0 * abs(diagonalizer->source()->integratePoyntingVert(getFieldVectorE(n, 0.),
-                                                                             getFieldVectorH(n, 0.)));
+        double P = 1./Z0 * abs(diagonalizer->source()->integratePoyntingVert(getFieldVectorE(0., n),
+                                                                             getFieldVectorH(0., n)));
 
         if (P < SMALL) {
             writelog(LOG_WARNING, "Device is not emitting to the {} side: skipping normalization",
