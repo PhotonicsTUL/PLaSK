@@ -38,7 +38,7 @@ set(SOLVER_LINK_LIBRARIES ${GSL_LIBRARIES})
 # Uncomment and edit the line below if you need some special compiler flags.
 #
 #set(SOLVER_COMPILE_FLAGS ${CMAKE_GSL_CXX_FLAGS})
-set(SOLVER_COMPILE_FLAGS "-DPLASK")
+add_definitions(-DPLASK)
 
 # If you want, you can manually specify your sources. Just uncomment and edit
 # the following lines. If you don't do it, your solver directory will be scanned
