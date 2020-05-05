@@ -50,6 +50,7 @@ class RectangularSimpleGeneratorController(GridController):
         self.split.setEditable(True)
         self.split.setToolTip('&lt;boundaries <b>split</b>=""&gt;<br/>Split mesh lines at object boundaries '
                               '(only useful for plotting material parameters).')
+        self.split.lineEdit().setPlaceholderText('no')
         form_layout.addWidget(self.split)
 
     def fill_form(self):
@@ -182,6 +183,7 @@ class RectangularRefinedGeneratorController(GridController):
             label.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
             warnings_layout.addWidget(label)
             cb.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+            cb.lineEdit().setPlaceholderText('yes')
             warnings_layout.addWidget(cb)
         self.form_layout.addRow('Warnings:', warnings_layout)
 
@@ -256,6 +258,7 @@ class RectangularDivideGeneratorController(RectangularRefinedGeneratorController
         self.gradual.setToolTip('&lt;options <b>gradual</b>=""&gt;<br/>'
                                 'Turn on/off smooth mesh step (i.e. if disabled, the adjacent elements of the generated'
                                 ' mesh may differ more than by the factor of two). Gradual is enabled by default.')
+        self.gradual.lineEdit().setPlaceholderText('yes')
         self.options.insertWidget(0, QLabel("gradual:"))
         self.options.insertWidget(1, self.gradual)
 
@@ -270,7 +273,6 @@ class RectangularDivideGeneratorController(RectangularRefinedGeneratorController
                                              self.defines, 'postdiv')
 
     def fill_form(self):
-        return
         super(RectangularDivideGeneratorController, self).fill_form()
         with self.mute_changes():
             with BlockQtSignals(self.gradual):

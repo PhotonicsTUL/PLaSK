@@ -249,15 +249,15 @@ if plask is not None:
                 self.dirname = None
 
         def __enter__(self):
+            sys.path.insert(0, '.')
             if self.dirname is not None:
                 sys.path.insert(0, self.dirname)
-            sys.path.insert(0, '.')
             return self
 
         def __exit__(self, type=None, value=None, traceback=None):
-            del sys.path[0]
             if self.dirname is not None:
                 del sys.path[0]
+            del sys.path[0]
 
 else:
 
