@@ -473,8 +473,8 @@ class MaterialsModel(TableModel):
                            properties.append(MaterialsModel.Material.Property(prop.tag, prop.text))
                     base = mat_attrib.get('base', None)
                     if base is None: base = mat_attrib.get('kind')  # for old files
-                    alloy = mat_attrib.get('complex', False)  #TODO remove soon
-                    alloy = mat_attrib.get('alloy', alloy)
+                    alloy = mat_attrib.get('complex', '')  #TODO remove soon
+                    alloy = mat_attrib.get('alloy', alloy).lower() in ('yes', 'true', '1')
                     new_entries.append(MaterialsModel.Material(self, mat_attrib.get('name', ''),
                                                                base, properties, alloy))
             elif mat.tag in ('library', 'module'):
@@ -582,7 +582,8 @@ class MaterialsModel(TableModel):
                         plask.material.db.get(mat)
                     except (ValueError, RuntimeError) as err:
                         if not(d.alloy and isinstance(err, ValueError) and
-                               str(err).startswith("Material composition required")):
+                               (str(err).startswith("Material composition required") or
+                                str(err).startswith("Unknown material composition"))):
                             res.append(
                                 Info(u"Material base '{1}' is not a proper material ({2}) [row: {0}]"
                                      .format(i+1, d.base, err), Info.ERROR, rows=[i], cols=[1]))

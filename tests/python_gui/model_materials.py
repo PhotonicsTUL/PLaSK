@@ -71,13 +71,13 @@ class TestGUIModelMaterials(GUITestCase):
         self.assertEqual(len(self.materials.entries[0].properties), 0)
         self.assertEqual(self.materials.entries[1].name, 'b')
         self.assertEqual(self.materials.entries[1].base, 'Ag')
-        self.assertEqual(self.materials.entries[1].alloy, 'yes')
+        self.assertEqual(self.materials.entries[1].alloy, True)
         self.assertEqual(len(self.materials.entries[1].properties), 1)
         self.assertEqual(self.materials.entries[1].properties[0].name, 'mobe')
         self.assertEqual(self.materials.entries[1].properties[0].value, '3')
         self.assertEqual(self.materials.entries[2].name, 'c')
         self.assertEqual(self.materials.entries[2].base, 'In')
-        self.assertEqual(self.materials.entries[2].alloy, 'yes')
+        self.assertEqual(self.materials.entries[2].alloy, True)
         self.assertEqual(len(self.materials.entries[2].properties), 0)
 
     def test_get(self):

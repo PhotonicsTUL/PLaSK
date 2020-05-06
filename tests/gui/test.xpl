@@ -46,6 +46,9 @@
     <y2>20</y2>
     <y3>30</y3>
   </material>
+  <material name="AlGaSb_md" base="AlGaSb" alloy="yes">
+    <nr>self.Ga</nr>
+  </material>
 </materials>
 
 <geometry>
