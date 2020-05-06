@@ -11,12 +11,17 @@
 # GNU General Public License for more details.
 
 import math
+import typing
+
+from PyQt4 import QtCore
 
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
-from .config import CONFIG
-from .widgets import EDITOR_FONT
+from ..qt import QtSignal
+from .config import CONFIG, dark_style
+from .widgets import EDITOR_FONT, set_icon_size
+
 
 def update_textedit():
     global CURRENT_LINE_COLOR, SELECTION_COLOR, LINENUMBER_BACKGROUND_COLOR, LINENUMBER_FOREGROUND_COLOR
@@ -24,6 +29,9 @@ def update_textedit():
     SELECTION_COLOR = QColor(CONFIG['editor/selection_color'])
     LINENUMBER_BACKGROUND_COLOR = QColor(CONFIG['editor/linenumber_background_color'])
     LINENUMBER_FOREGROUND_COLOR = QColor(CONFIG['editor/linenumber_foreground_color'])
+    global MATCH_COLOR, REPLACE_COLOR
+    MATCH_COLOR = QColor(CONFIG['editor/match_color'])
+    REPLACE_COLOR = QColor(CONFIG['editor/replace_color'])
     global SELECT_AFTER_PASTE
     SELECT_AFTER_PASTE = CONFIG['editor/select_after_paste']
 update_textedit()
@@ -279,3 +287,418 @@ class LineNumberArea(QWidget):
         if val is not None:
             self._offset = val
             self.update_width()
+
+
+class LineEditWithHistory(QLineEdit):
+
+    historyChanged = QtSignal()
+
+    def __init__(self, parent=None, flags=None):
+        super(LineEditWithHistory, self).__init__(parent, flags)
+        self._history = []
+        self._position = 1
+        self.textEdited.connect(self._update_history)
+        self.editingFinished.connect(self.commit_history)
+
+    def _update_history(self):
+        text = self.text()
+        if self._position == len(self._history):
+            if text:
+                self._history[-1] = text
+            else:
+                del self._history[-1]
+        elif text:
+            self._history.append(text)
+            self._position = len(self._history)
+
+    def commit_history(self):
+        self._position = len(self._history) + 1
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Up and self._position > 1:
+            self._position -= 1
+            self.setText(self._history[self._position-1])
+            self.historyChanged.emit()
+        elif event.key() == Qt.Key_Down and self._position < len(self._history):
+            self.setText(self._history[self._position])
+            self._position += 1
+            self.historyChanged.emit()
+        super(LineEditWithHistory, self).keyPressEvent(event)
+
+
+class EditorWidget(QWidget):
+
+    def __init__(self, parent, editor_class=TextEditor, *args, **kwargs):
+        super(EditorWidget, self).__init__(parent)
+
+        self.editor = editor_class(self, *args, **kwargs)
+
+        self.toolbar = QToolBar(self)
+        self.toolbar.setStyleSheet("QToolBar { border: 0px }")
+        set_icon_size(self.toolbar)
+
+        self.add_action('&Undo', 'edit-undo', None, self.editor.undo)
+        self.add_action('R&edo', 'edit-redo', None, self.editor.redo)
+        self.toolbar.addSeparator()
+        self.add_action('&Copy', 'edit-copy', None, self.editor.copy)
+        self.add_action('C&ut', 'edit-cut', None, self.editor.cut)
+        self.add_action('&Paste', 'edit-paste', None, self.editor.paste)
+        self.toolbar.addSeparator()
+        self.add_action('&Find...', 'edit-find', QKeySequence.Find, self.show_find)
+        self.add_action('&Replace...', 'edit-find-replace', QKeySequence.Replace, self.show_replace)
+
+        self.make_find_replace_widget()
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.toolbar)
+        layout.addWidget(self.editor)
+        layout.addWidget(self.message_toolbar)
+        layout.addWidget(self.find_toolbar)
+        layout.addWidget(self.replace_toolbar)
+
+        layout.setContentsMargins(0, 1, 0, 0)
+        layout.setSpacing(0)
+
+        self.setLayout(layout)
+
+    def make_find_replace_widget(self):
+        self.find_toolbar = QToolBar(self)
+        self.replace_toolbar = QToolBar(self)
+        self.message_toolbar = QToolBar(self)
+        self.find_toolbar.setStyleSheet("QToolBar { border: 0px }")
+        self.replace_toolbar.setStyleSheet("QToolBar { border: 0px }")
+        if dark_style():
+            self.message_toolbar.setStyleSheet("QToolBar { border: 1px solid palette(dark);"
+                                               "           background-color: #000; color: #ccc; }")
+        else:
+            self.message_toolbar.setStyleSheet("QToolBar { border: 1px solid palette(dark);"
+                                               "           background-color: #ffffcc; color: black; }")
+        find_label = QLabel()
+        find_label.setText("Search: ")
+        find_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        replace_label = QLabel()
+        replace_label.setText("Replace: ")
+        replace_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        label_width = replace_label.fontMetrics().width(replace_label.text())
+        find_label.setFixedWidth(label_width)
+        replace_label.setFixedWidth(label_width)
+        self.find_edit = LineEditWithHistory()
+        self.find_edit.historyChanged.connect(self.find_type)
+        self.find_toolbar.addWidget(find_label)
+        self.find_toolbar.addWidget(self.find_edit)
+        self.replace_edit = LineEditWithHistory()
+        self.replace_toolbar.addWidget(replace_label)
+        self.replace_toolbar.addWidget(self.replace_edit)
+
+        self.replace_message = QLabel()
+        self.message_toolbar.addWidget(self.replace_message)
+
+        self.find_matchcase = QAction('&Match Case', self.find_edit)
+        self.find_matchcase.setCheckable(True)
+        self.find_matchcase.setChecked(True)
+        self.find_wholewords = QAction('&Whole Words', self.find_edit)
+        self.find_wholewords.setCheckable(True)
+        self.find_regex = QAction('&Regular Expression', self.find_edit)
+        self.find_regex.setCheckable(True)
+        self.find_regex.triggered.connect(self.trigger_regex)
+        self.find_selection = QAction('&Selection Only', self.find_edit)
+        self.find_selection.setCheckable(True)
+        self.find_edit.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.find_edit.customContextMenuRequested.connect(self._find_context_menu)
+        self.find_options = QMenu()
+        self.find_options.addAction(self.find_matchcase)
+        self.find_options.addAction(self.find_wholewords)
+        self.find_options.addAction(self.find_regex)
+        self.find_options.addAction(self.find_selection)
+        options_button = QPushButton(self)
+        options_button.setText("&Options")
+        options_button.setMenu(self.find_options)
+        self.find_toolbar.addWidget(options_button)
+
+        next_button = QPushButton(self)
+        next_button.setText("&Next")
+        next_button.pressed.connect(self.find_next)
+        prev_button = QPushButton(self)
+        prev_button.setText("&Previous")
+        prev_button.pressed.connect(self.find_prev)
+
+        self._replace_count = 0
+
+        self.find_toolbar.addWidget(next_button)
+        self.find_toolbar.addWidget(prev_button)
+        replace_button = QPushButton(self)
+        replace_button.setText("Rep&lace one")
+        replace_button.pressed.connect(self.replace_next)
+        replace_all_button = QPushButton(self)
+        replace_all_button.setText("Replace &all")
+        replace_all_button.pressed.connect(self.replace_all)
+        width = int(replace_button.fontMetrics().width(replace_button.text()) * 1.2)
+        next_button.setFixedWidth(width)
+        prev_button.setFixedWidth(width)
+        replace_button.setFixedWidth(width)
+        replace_all_button.setFixedWidth(width)
+        self.replace_toolbar.addWidget(replace_button)
+        self.replace_toolbar.addWidget(replace_all_button)
+        self.find_toolbar.hide()
+        self.replace_toolbar.hide()
+        self.message_toolbar.hide()
+        self._add_shortcut(QKeySequence(Qt.Key_Escape), self.hide_toolbars)
+        self._add_shortcut(QKeySequence.FindNext, self.find_next, alt=QKeySequence(Qt.Key_F3))
+        self._add_shortcut(QKeySequence.FindPrevious, self.find_prev, alt=Qt.SHIFT+Qt.Key_F3)
+        self.find_edit.textEdited.connect(self.find_type)
+        self.find_edit.returnPressed.connect(self.find_next)
+        self.replace_edit.returnPressed.connect(self.replace_next)
+        self._replaced_selections = []
+
+    def _find_context_menu(self, pos):
+        menu = self.find_edit.createStandardContextMenu()
+        menu.addSeparator()
+        menu.addAction(self.find_matchcase)
+        menu.addAction(self.find_wholewords)
+        menu.addAction(self.find_regex)
+        menu.addAction(self.find_selection)
+        menu.exec_(self.find_toolbar.mapToGlobal(pos))
+
+    def _find_flags(self):
+        flags = QTextDocument.FindFlags()
+        if self.find_matchcase.isChecked(): flags |= QTextDocument.FindCaseSensitively
+        if self.find_wholewords.isChecked(): flags |= QTextDocument.FindWholeWords
+        return flags
+
+    def add_action(self, name, icon, shortcut, slot):
+        action = QAction(QIcon.fromTheme(icon), name, self)
+        if shortcut is not None:
+            action.setShortcut(shortcut)
+        action.triggered.connect(slot)
+        self.toolbar.addAction(action)
+        return action
+
+    def _add_shortcut(self, shortcut, slot, alt=None):
+        action = QAction(self)
+        action.setShortcut(shortcut)
+        action.triggered.connect(slot)
+        if alt is not None and action.shortcut() != alt:
+            self._add_shortcut(alt, slot)
+        self.editor.addAction(action)
+        return action
+
+    def show_find(self):
+        cursor = self.editor.textCursor()
+        if cursor.hasSelection():
+            text = cursor.selectedText()
+            if u'\u2029' in text:
+                self.find_selection.setChecked(True)
+            else:
+                self.find_selection.setChecked(False)
+                self.find_edit.setText(text)
+        else:
+            self.find_selection.setChecked(False)
+        self.find_edit.selectAll()
+        self.find_edit.setPalette(self.replace_edit.palette())
+        self.find_toolbar.show()
+        self.find_edit.setFocus()
+
+    def show_replace(self):
+        cursor = self.editor.textCursor()
+        if cursor.hasSelection():
+            text = cursor.selectedText()
+            if u'\u2029' in text:
+                self.find_selection.setChecked(True)
+            else:
+                self.find_selection.setChecked(False)
+                self.find_edit.setText(text)
+        self.find_edit.selectAll()
+        self.find_edit.setPalette(self.replace_edit.palette())
+        self.find_toolbar.show()
+        self.replace_toolbar.show()
+        self.find_edit.setFocus()
+
+    def hide_toolbars(self):
+        self.find_edit.commit_history()
+        self.replace_edit.commit_history()
+        self.find_toolbar.hide()
+        self.replace_toolbar.hide()
+        self.message_toolbar.hide()
+        self.clear_matches()
+        self.editor.setFocus()
+
+    def _highlight_matches(self):
+        cursor = self.editor.textCursor()
+        if not cursor.hasSelection(): return []
+        document = self.editor.document()
+        cursor.movePosition(QTextCursor.Start)
+        selections = []
+        if self.find_regex.isChecked():
+            findtext = QRegExp(self.find_edit.text())
+        else:
+            findtext = self.find_edit.text()
+        while True:
+            cursor = document.find(findtext, cursor, self._find_flags())
+            if not cursor.isNull():
+                selection = QTextEdit.ExtraSelection()
+                selection.cursor = cursor
+                selection.format.setBackground(MATCH_COLOR)
+                selections.append(selection)
+            else:
+                break
+        self.editor.update_selections(selections + self._replaced_selections)
+
+    def clear_matches(self):
+        self._replaced_selections = []
+        self.editor.update_selections([])
+
+    def _find(self, cont=False, backward=False, rewind=True, theend=None):
+        cursor = self.editor.textCursor()
+        if cont:
+            cursor.setPosition(cursor.selectionStart())
+        pal = self.replace_edit.palette()
+        if self.find_regex.isChecked():
+            self._findtext = QRegExp(self.find_edit.text())
+        else:
+            self._findtext = self.find_edit.text()
+        if self._findtext:
+            document = self.editor.document()
+            findflags = self._find_flags()
+            if backward: findflags |= QTextDocument.FindBackward
+            found = document.find(self._findtext, cursor, findflags)
+            if found.isNull() and rewind:
+                cursor.movePosition(QTextCursor.End if backward else QTextCursor.Start)
+                found = document.find(self._findtext, cursor, findflags)
+            if found.isNull():
+                pal.setColor(QPalette.Base, QColor("#381111" if dark_style() else "#fdd"))
+                self.find_edit.setPalette(pal)
+                return False
+            elif theend is not None and found.selectionEnd() > theend:
+                pal.setColor(QPalette.Base, QColor("#381111" if dark_style() else "#fdd"))
+                self.find_edit.setPalette(pal)
+                return False
+            else:
+                self.editor.setTextCursor(found)
+                pal.setColor(QPalette.Base, QColor("#232" if dark_style() else "#dfd"))
+                self.find_edit.setPalette(pal)
+                self._highlight_matches()
+                return True
+        else:
+            self.find_edit.setPalette(pal)
+            cursor.setPosition(cursor.position())
+            self.editor.setTextCursor(cursor)
+
+    def find_next(self):
+        self.find_edit.commit_history()
+        self._find()
+        #self.editor.setFocus()
+
+    def find_prev(self):
+        self.find_edit.commit_history()
+        self._find(backward=True)
+        #self.editor.setFocus()
+
+    def find_type(self):
+        if not self.find_selection.isChecked():
+            self._find(cont=True)
+
+    def trigger_regex(self):
+        if self.find_toolbar.isVisible():
+            self.find_type()
+
+    def _replace_regexp(self, cursor):
+        block = cursor.block()
+        self._findtext.indexIn(block.text(), cursor.selectionStart()-block.position())  # guaranteed to succeed
+        text = self.replace_edit.text()
+        result = ""
+        s = 0
+        ignore = False
+        for i, c in enumerate(text):
+            if text[i] in '0123456789\\' and i != 0 and text[i-1] == '\\' and not ignore:
+                result += text[s:i-1]
+                s = i + 1
+                if text[i] == '\\':
+                    result += '\\'
+                    ignore = True
+                else:
+                    g = int(text[i])
+                    result += self._findtext.cap(g)
+            elif ignore:
+                ignore = False
+        result += text[s:]
+        return result
+
+    def replace_next(self):
+        self.find_edit.commit_history()
+        self.replace_edit.commit_history()
+        self.message_toolbar.hide()
+        self.clear_matches()
+        self._replace_next()
+
+    def _replace_next(self, rewind=True, theend=None):
+        if theend is None and self.find_selection.isChecked():
+            cursor = self.editor.textCursor()
+            if cursor.hasSelection():
+                theend = cursor.selectionEnd()
+        if rewind:
+            self._replaced_selections = []
+        if not self._find(cont=True, rewind=rewind, theend=theend):
+            return False
+        pal = self.editor.palette()
+        self.find_edit.setPalette(pal)
+        cursor = self.editor.textCursor()
+        start = cursor.selectionStart()
+        oldlen = self.editor.document().characterCount()
+        if isinstance(self._findtext, QRegExp):
+            cursor.insertText(self._replace_regexp(cursor))
+        else:
+            cursor.insertText(self.replace_edit.text())
+        if theend is not None:
+            theend += self.editor.document().characterCount() - oldlen
+        end = cursor.position()
+        selection = QTextEdit.ExtraSelection()
+        selection.cursor = self.editor.textCursor()
+        selection.cursor.setPosition(start)
+        selection.cursor.setPosition(end, QTextCursor.KeepAnchor)
+        selection.format.setBackground(REPLACE_COLOR)
+        self._replaced_selections.append(selection)
+        self._replace_count += 1
+        if not self._find(cont=False, rewind=rewind, theend=theend):
+            self.editor.update_selections(self._replaced_selections)
+            cursor.setPosition(start)
+            cursor.setPosition(end, QTextCursor.KeepAnchor)
+            self.editor.setTextCursor(cursor)
+            return False
+        # self.editor.setFocus()
+        return True
+
+    def replace_all(self):
+        self.find_edit.commit_history()
+        self.replace_edit.commit_history()
+        self.message_toolbar.hide()
+        self._replaced_selections = []
+        cursor = self.editor.textCursor()
+        if self.find_selection.isChecked() and cursor.hasSelection():
+            start = cursor.selectionStart()
+            end = cursor.selectionEnd()
+        else:
+            start = end = None
+        cursor.beginEditBlock()
+        self._replace_count = 0
+        try:
+            if end is None:
+                cursor.movePosition(QTextCursor.Start)
+            self.editor.setTextCursor(cursor)
+            doclen = self.editor.document().characterCount()
+            while self._replace_next(rewind=False, theend=end):
+                if end is not None:
+                    newlen = self.editor.document().characterCount()
+                    end += newlen - doclen
+                    doclen = newlen
+            if start is not None:
+                cursor.setPosition(start)
+                cursor.setPosition(end + self.editor.document().characterCount() - doclen, QTextCursor.KeepAnchor)
+                self.editor.setTextCursor(cursor)
+        finally:
+            cursor.endEditBlock()
+            # QToolTip.showText(self.replace_edit.mapToGlobal(QPoint(0, -32)),
+            #                         "{} replacement{} made".format(self._replace_count,
+            #                                                        's' if self._replace_count != 1 else ''))
+            self.replace_message.setText("{} replacement{} made".format(self._replace_count,
+                                                                        's' if self._replace_count != 1 else ''))
+            self.message_toolbar.show()

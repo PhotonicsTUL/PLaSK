@@ -623,10 +623,11 @@ class MaterialsModel(TableModel):
                         elif material.what == 'module':
                             material.cache = module_handler.names = []
                             try:
-                                if material.name in sys.modules:
-                                    reload_module(sys.modules[material.name])
-                                else:
-                                    import_module(material.name)
+                                with HandleMaterialsModule(self.document):
+                                    if material.name in sys.modules:
+                                        reload_module(sys.modules[material.name])
+                                    else:
+                                        import_module(material.name)
                             except:
                                 if _DEBUG:
                                     import traceback

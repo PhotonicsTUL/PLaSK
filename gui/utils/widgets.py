@@ -303,13 +303,13 @@ class VerticalScrollArea(QScrollArea):
         return super(VerticalScrollArea, self).eventFilter(obj, event)
 
 
-class ComboBox(QComboBox):
+class EditComboBox(QComboBox):
 
     editingFinished = QtSignal()
 
-    # Please do not mix this two signals!
+    # Please do not mix these two signals!
     # currentIndexChanged is also emitted from very unexpected places like addItems,
-    #  which ruins some my code (in Solver undo)
+    # which ruins some my code (in Solver undo)
     # Instead, just connect to both: editingFinished and currentIndexChanged
     # PB
     # def __init__(self, *args, **kwargs):
@@ -318,10 +318,10 @@ class ComboBox(QComboBox):
 
     def focusOutEvent(self, event):
         if not self.signalsBlocked(): self.editingFinished.emit()
-        super(ComboBox, self).focusOutEvent(event)
+        super(EditComboBox, self).focusOutEvent(event)
 
     def keyPressEvent(self, event):
-        super(ComboBox, self).keyPressEvent(event)
+        super(EditComboBox, self).keyPressEvent(event)
         if event.key() in (Qt.Key_Enter, Qt.Key_Return) and not self.signalsBlocked():
             self.editingFinished.emit()
 

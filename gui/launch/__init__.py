@@ -16,7 +16,7 @@ import json
 from ..qt.QtGui import *
 from ..qt.QtWidgets import *
 from ..qt.QtCore import *
-from ..utils.widgets import ComboBox
+from ..utils.widgets import EditComboBox
 from ..utils.config import CONFIG, parse_highlight
 from ..utils.qsignals import BlockQtSignals
 from ..utils import system
@@ -150,7 +150,7 @@ class LaunchDialog(QDialog):
             self.recent_defines_combo.currentIndexChanged.connect(self.recent_defines_selected)
             self.defines.textChanged.connect(self.defines_edited)
 
-        self.args_edit = ComboBox()
+        self.args_edit = EditComboBox()
         args = launch_config.get('args', [''])
         self.args_edit.setView(_CombolItemView(self.args_edit, args))
         self.args_edit.setEditable(True)

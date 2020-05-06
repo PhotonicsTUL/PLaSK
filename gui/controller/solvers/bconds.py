@@ -22,7 +22,7 @@ from ...qt import QtSignal, QtSlot
 from ...utils import get_manager
 from ...utils.config import CONFIG, dark_style
 from ...utils.str import none_to_empty, empty_to_none
-from ...utils.widgets import HTMLDelegate, ComboBox, table_edit_shortcut
+from ...utils.widgets import HTMLDelegate, EditComboBox, table_edit_shortcut
 from ...utils.qsignals import BlockQtSignals
 from ..defines import DefinesCompletionDelegate, get_defines_completer
 from ..table import table_with_manipulators, top_level_index
@@ -57,13 +57,13 @@ class RectangularPlaceSide(PlaceDetailsEditor):
         self.setAutoFillBackground(True)
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 4, 0)
-        self.object = ComboBox()
+        self.object = EditComboBox()
         self.object.sizePolicy().setHorizontalStretch(2)
         self.object.sizePolicy().setHorizontalPolicy(QSizePolicy.MinimumExpanding)
         self.object.setEditable(True)
         self.object.currentIndexChanged.connect(self.data_changed)
         self.object.editingFinished.connect(self.data_changed)
-        self.path = ComboBox()
+        self.path = EditComboBox()
         self.path.sizePolicy().setHorizontalStretch(1)
         self.path.sizePolicy().setHorizontalPolicy(QSizePolicy.MinimumExpanding)
         self.path.setEditable(True)

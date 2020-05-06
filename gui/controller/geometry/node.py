@@ -21,7 +21,7 @@ from ...model.geometry.reader import GNAligner
 
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
-from ...utils.widgets import ComboBox, MultiLineEdit
+from ...utils.widgets import EditComboBox, MultiLineEdit
 from ...utils import getattr_by_path
 
 
@@ -140,7 +140,7 @@ class GNodeController(Controller):
 
     def construct_combo_box(self, row_name=None, items=(), editable=True, node_property_name=None,
                             display_property_name=None, node=None, change_cb=None):
-        res = ComboBox()
+        res = EditComboBox()
         res.setEditable(editable)
         res.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         res.addItems(items)

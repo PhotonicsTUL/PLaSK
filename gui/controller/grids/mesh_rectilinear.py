@@ -19,7 +19,7 @@ from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
 from ...model.grids.mesh_rectangular import AXIS_NAMES
 from ..defines import get_defines_completer
-from ...utils.widgets import ComboBox, TextEdit
+from ...utils.widgets import EditComboBox, TextEdit
 
 
 class AxisEdit(QGroupBox):
@@ -38,7 +38,7 @@ class AxisEdit(QGroupBox):
         if not allow_type_select:
             self.accept_non_regular = accept_non_regular
         if self.allow_type_select:
-            self.type = ComboBox()
+            self.type = EditComboBox()
             self.type.addItems(['(auto-detected)', 'ordered', 'regular'])
             self.type.setEditable(True)
             self.type.setToolTip('&lt;{} <b>type</b>=""&gt;<br/>'

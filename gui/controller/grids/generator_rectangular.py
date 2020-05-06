@@ -22,7 +22,7 @@ from ...qt.QtCore import Qt
 from ...qt.QtWidgets import *
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
-from ...utils.widgets import ComboBoxDelegate, ComboBox
+from ...utils.widgets import ComboBoxDelegate, EditComboBox
 
 
 class RectangularSimpleGeneratorController(GridController):
@@ -42,7 +42,7 @@ class RectangularSimpleGeneratorController(GridController):
         self.form.setLayout(form_layout)
 
     def make_split_combo(self, form_layout, weakself):
-        self.split = ComboBox()
+        self.split = EditComboBox()
         self.split.editingFinished.connect(
             lambda: weakself._change_attr('split', empty_to_none(self.split.currentText()),
                                           'mesh split on object boundaries'))
@@ -169,7 +169,7 @@ class RectangularRefinedGeneratorController(GridController):
 
         warnings_layout = QHBoxLayout()
         for w in RectangularDivideGenerator.warnings:
-            cb = ComboBox()
+            cb = EditComboBox()
             cb.editingFinished.connect(
                 lambda w=w, cb=cb: weakself._change_attr('warn_'+w, empty_to_none(cb.currentText()), w+' warning'))
             #cb.editingFinished.connect(self.fire_changed)
@@ -247,7 +247,7 @@ class RectangularDivideGeneratorController(RectangularRefinedGeneratorController
 
         weakself = weakref.proxy(self)
 
-        self.gradual = ComboBox()
+        self.gradual = EditComboBox()
         self.gradual.editingFinished.connect(
             lambda: weakself._change_attr('gradual', empty_to_none(weakself.gradual.currentText())))
         #self.gradual.editingFinished.connect(self.fire_changed)

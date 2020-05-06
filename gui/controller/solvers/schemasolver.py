@@ -20,7 +20,7 @@ from ...lib.highlighter import SyntaxHighlighter, load_syntax
 from ...lib.highlighter.xml import syntax
 from ...utils.str import empty_to_none
 from ...utils.texteditor import TextEditorWithCB
-from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, ComboBox, MultiLineEdit, LineEditWithClear
+from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, EditComboBox, MultiLineEdit, LineEditWithClear
 from ...utils.qsignals import BlockQtSignals
 from ...utils.qundo import UndoCommandWithSetter
 from ...model.solvers.schemasolver import SchemaTag, \
@@ -113,7 +113,7 @@ class SolverWidget(QWidget):
             rows = []
             last_header = "Geometry"
             self._make_header(last_header, rows)
-            self.geometry = ComboBox()
+            self.geometry = EditComboBox()
             self.geometry.setEditable(True)
             self.geometry.editingFinished.connect(
                 lambda w=self.geometry: weakself._change_node_field('geometry', w.currentText()))
@@ -129,7 +129,7 @@ class SolverWidget(QWidget):
             rows = []
             last_header = "Mesh"
             self._make_header(last_header, rows)
-            self.mesh = ComboBox()
+            self.mesh = EditComboBox()
             self.mesh.setEditable(True)
             self.mesh.editingFinished.connect(lambda w=self.mesh: weakself._change_node_field('mesh', w.currentText()))
             self.mesh.setCompleter(get_defines_completer(defines, self.geometry))
@@ -261,7 +261,7 @@ class SolverWidget(QWidget):
     def _add_attr(self, attr, defines, gname, group):
         weakself = weakref.proxy(self)
         if isinstance(attr, AttrChoice):
-            edit = ComboBox()
+            edit = EditComboBox()
             edit.setEditable(True)
             edit.addItems([''] + list(attr.choices))
             edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name, attr=attr:
@@ -271,7 +271,7 @@ class SolverWidget(QWidget):
             if attr.default is not None:
                 edit.lineEdit().setPlaceholderText(attr.default)
         elif isinstance(attr, (AttrGeometryObject, AttrGeometryPath, AttrGeometry, AttrMesh)):
-            edit = ComboBox()
+            edit = EditComboBox()
             edit.setEditable(True)
             edit.editingFinished.connect(lambda edit=edit, group=group, name=attr.name:
                                          weakself._change_attr(group, name, edit.currentText()))
@@ -446,7 +446,7 @@ class SolverWidget(QWidget):
                                     self._set_items(edit, list(self._get_grids(item.types)))
                                 except AttributeError:
                                     pass
-                            if type(edit) in (ComboBox, QComboBox):
+                            if type(edit) in (EditComboBox, QComboBox):
                                 edit.setCurrentIndex(edit.findText(value))
                                 edit.setEditText(value)
                             else:

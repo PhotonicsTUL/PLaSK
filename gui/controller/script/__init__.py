@@ -25,11 +25,11 @@ from .completer import CompletionsController
 from ...model.script.completer import get_docstring, get_definitions
 from .brackets import get_selections as get_bracket_selections, update_brackets_colors
 from .indenter import indent, unindent, autoindent
-from ..source import SourceEditController, SourceWidget
+from ..source import SourceEditController
 from ...model.script import ScriptModel
 from ...utils.config import CONFIG, parse_highlight, parse_font
 from ...utils.widgets import EDITOR_FONT
-from ...utils.texteditor import TextEditor
+from ...utils.texteditor import TextEditor, EditorWidget
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
 
 from ...lib.highlighter.python36 import syntax, default_key
@@ -282,7 +282,7 @@ class ScriptController(SourceEditController):
         window = QMainWindow(parent)
         window.setWindowFlags(Qt.Widget)
 
-        source = SourceWidget(parent, ScriptEditor, self)
+        source = EditorWidget(parent, ScriptEditor, self)
 
         source.editor.setReadOnly(self.model.is_read_only())
         window.editor = source.editor
