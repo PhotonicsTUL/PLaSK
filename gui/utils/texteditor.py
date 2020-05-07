@@ -11,9 +11,6 @@
 # GNU General Public License for more details.
 
 import math
-import typing
-
-from PyQt4 import QtCore
 
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
