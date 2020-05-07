@@ -228,9 +228,13 @@ def save_launch_config(filename):
         if config:
             if os.name == 'nt':
                 # workaround for hidden files
-                with open(filename, 'r+') as config_file:
-                    json.dump({'launch': config}, config_file, indent=1)
-                    config_file.truncate()
+                try:
+                    with open(filename, 'r+') as config_file:
+                        json.dump({'launch': config}, config_file, indent=1)
+                        config_file.truncate()
+                except FileNotFoundError:
+                    with open(filename, 'w') as config_file:
+                        json.dump({'launch': config}, config_file, indent=1)
                 system.set_file_attributes(filename, system.FILE_ATTRIBUTE_HIDDEN)
             else:
                 with open(filename, 'w') as config_file:
