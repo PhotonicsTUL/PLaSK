@@ -128,6 +128,7 @@ class SchemaSolver(Solver):
         self.mesh_types = mesh_types
         self.need_mesh = need_mesh
         self.set_fresh_data()
+        self._controller = None
 
     def set_fresh_data(self):
         self.data = dict((schema.name,
@@ -209,7 +210,9 @@ class SchemaSolver(Solver):
 
     def get_controller(self, document):
         from ...controller.solvers.schemasolver import SchemaSolverController
-        return SchemaSolverController(document, self)
+        if self._controller is None:
+            self._controller = SchemaSolverController(document, self)
+        return self._controller
 
     def _create_info_for_attrs(self, res, row, tag, attrs):
         for attr in attrs:
