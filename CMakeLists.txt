@@ -615,9 +615,9 @@ macro(add_python_test test test_file)
              COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
 endmacro()
 
-macro(add_python_gui_test test test_file)
-    add_test(NAME python_gui/${test}
-             COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python_gui/main ${test_file} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/python_gui)  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
+macro(add_gui_test test test_file)
+    add_test(NAME gui/${test}
+             COMMAND plask ${CMAKE_SOURCE_DIR}/tests/gui/main ${test_file} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/gui)  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
 endmacro()
 
 macro(add_xpl_test test test_file)
@@ -751,21 +751,21 @@ if(BUILD_TESTING)
         endforeach()
 
         if(BUILD_GUI_TESTING)
-            file(GLOB_RECURSE python_tests FOLLOW_SYMLINKS tests/python_gui/*.py)
-            foreach(test_file ${python_tests})
+            file(GLOB_RECURSE gui_tests FOLLOW_SYMLINKS tests/gui/*.py)
+            foreach(test_file ${gui_tests})
                 get_filename_component(test ${test_file} NAME_WE)
                 if (NOT ${test} STREQUAL gui_test_utils)
-                    add_python_gui_test(${test} ${test_file})
+                    add_gui_test(${test} ${test_file})
                 endif()
             endforeach()
         endif()
-    endif(BUILD_PYTHON)
+    endif()
 
     if (CTEST_CONFIGURATION_TYPE)
         set(CTEST_EXTRA_PARAMS "-C ${CTEST_CONFIGURATION_TYPE}")
-    else(CTEST_CONFIGURATION_TYPE)
+    else()
         set(CTEST_EXTRA_PARAMS "")
-    endif(CTEST_CONFIGURATION_TYPE)
+    endif()
 
     if (RUN_TESTS)
         add_custom_target(tests ALL ${CMAKE_CTEST_COMMAND} ${CTEST_EXTRA_PARAMS} --output-on-failure --timeout 120 DEPENDS ${plask_test_depends} ${solvers_test_targets})  #-C ${CTEST_CONFIGURATION_TYPE}
