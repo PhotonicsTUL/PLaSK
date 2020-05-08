@@ -161,7 +161,8 @@ class SourceEditController(Controller):
             finally:
                 try: self.model.changed += self.update_editor
                 except AttributeError: pass
-            self.get_source_widget().editor.document().setModified(False)
+            # with BlockQtSignals(self.get_source_widget().editor.document()):
+            #     self.get_source_widget().editor.document().setModified(False)
 
     def _modification_changed(self, changed):
             self.document.set_changed(changed)
