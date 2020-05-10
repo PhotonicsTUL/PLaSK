@@ -31,7 +31,7 @@ class GNZero(GNode):
     @staticmethod
     def from_xml(element, conf):
         result = GNZero()
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     def add_parent_options(self, current_parent=None):
@@ -80,7 +80,7 @@ class GNGap(GNode):
     @staticmethod
     def from_xml(element, conf):
         result = GNGap()
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     def add_parent_options(self, current_parent=None):
@@ -114,7 +114,7 @@ class GNContainerBase(GNObject):
     def item_attributes_from_xml(self, child, item_attr_reader, conf):
         """
         Read item tag attributes from XML.
-        Default implementation support path attribute.
+        Default implementation supports path attribute.
         :param child: child node
         :param item_attr_reader: element-tree attributes reader
         :param GNReadConf conf: read configuration (axes, etc.)
@@ -124,7 +124,7 @@ class GNContainerBase(GNObject):
     def child_from_xml(self, child_element, conf):
         """
         Read single child from XML.
-        Default implementation support item tag (call item_attributes_from_xml to read it attributes)
+        Default implementation supports item tag (call item_attributes_from_xml to read it attributes)
         and call construct_geometry_object(child_element, conf) for all other tags.
         Subclasses should support custom tags before call this implementation.
         :param child_element: element-tree element with child configuration
@@ -134,6 +134,8 @@ class GNContainerBase(GNObject):
         if child_element.tag == 'item':
             with OrderedTagReader(child_element) as item_child_reader:
                 child = construct_geometry_object(item_child_reader.require(), conf)
+                child.comments, child.itemcomments = child_element.comments, child.comments
+                child.itemendcomments = item_child_reader.get_comments()
             with AttributeReader(child_element) as item_attr_reader:
                 self.item_attributes_from_xml(child, item_attr_reader, conf)
         else:
@@ -166,8 +168,12 @@ class GNContainerBase(GNObject):
         """
         child_element = super(GNContainerBase, self).get_child_xml_element(child, conf)
         res = self.get_item_xml_element(child, conf)
-        if res.attrib:
+        if res.attrib or child.itemcomments or child.itemendcomments:
+            for c in child.itemcomments:
+                res.append(etree.Comment(c))
             res.append(child_element)
+            for c in child.itemendcomments:
+                res.append(etree.Comment(c))
             return res
         else:
             return child_element
@@ -297,13 +303,13 @@ class GNStack(GNStackBase):
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNStack(dim=2)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNStack(dim=3)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     def new_child_pos(self):
@@ -402,7 +408,7 @@ class GNShelf(GNStackBase):
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNShelf()
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
 
@@ -467,11 +473,11 @@ class GNAlignContainer(GNContainerBase):
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNAlignContainer(dim=2)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNAlignContainer(dim=3)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result

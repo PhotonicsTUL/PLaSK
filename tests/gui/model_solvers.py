@@ -14,12 +14,12 @@ class TestGUIModelSolversFilter(GUITestCase):
         self.filter = FilterSolver('Temperature', 'filter_name')
         self.filter.geometry = 'geometry_name'
 
-    def test_get_xml_element(self):
-        self.assertEqualXML(self.filter.get_xml_element(),
+    def test_make_xml_element(self):
+        self.assertEqualXML(self.filter.make_xml_element(),
             '<filter for="Temperature" name="filter_name" geometry="geometry_name"/>')
 
-    def test_set_xml_element(self):
-        self.filter.set_xml_element(etree.XML(
+    def test_load_xml_element(self):
+        self.filter.load_xml_element(etree.XML(
             '''<filter for="Luminescence" name="name_from_XML" geometry="geometry_from_XML">
                 <!-- to ignore --></filter>'''
         ))
@@ -34,8 +34,8 @@ class TestGUIModelSolversRectangularBCPlaceSide(GUITestCase):
     def setUp(self):
         self.place = RectangularBC.PlaceSide('right', 'obj_name', 'path_name')
 
-    def test_get_xml_element(self):
-        self.assertEqualXML(self.place.get_xml_element(),
+    def test_make_xml_element(self):
+        self.assertEqualXML(self.place.make_xml_element(),
                             '<place side="right" object="obj_name" path="path_name"/>')
 
     def test_eq(self):
@@ -59,9 +59,9 @@ class TestGUIModelSolversRectangularBCPlaceLine(GUITestCase):
     def setUp(self):
         self.place = RectangularBC.PlaceLine('horizontal', '1', '2', '10')
 
-    def test_get_xml_element(self):
+    def test_make_xml_element(self):
         self.assertEqualXML('<place line="horizontal" at="1" start="2" stop="10"/>',
-                            self.place.get_xml_element())
+                            self.place.make_xml_element())
 
     def test_eq(self):
         self.assertEqual(self.place, RectangularBC.PlaceLine('horizontal', '1', '2', '10'))

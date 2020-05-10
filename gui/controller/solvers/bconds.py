@@ -306,7 +306,7 @@ class BoundaryConditionsDialog(QDialog):
             self.manager = get_manager()
             try:
                 with HandleMaterialsModule(self.document):
-                    self.manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry', 'grids')))
+                    self.manager.load(self.document.get_contents(sections=('defines', 'materials', 'geometry', 'grids')))
             except Exception as err:
                 self.preview = None
                 self.info.setText(str(err))
@@ -448,7 +448,7 @@ class BoundaryConditionsDialog(QDialog):
            self.geometry is None or self.mesh is None:
             return
 
-        text = self.document.get_content(sections=('defines'))
+        text = self.document.get_contents(sections=('defines'))
         xml = self.schema.to_xml(self.model.entries)
         xml = tostring(xml, encoding='utf8').decode('utf8') if xml is not None else ''
         if _DEBUG:

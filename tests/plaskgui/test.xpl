@@ -25,7 +25,8 @@
 
 <materials>
   <material name="test" base="semiconductor">
-    <A>0.1 * T + 0.02 * (T-300)**2</A>
+    <A>0.1 * T + 0.02 * (T-300)**2
+</A>
     <NR>3.6, 3.6, 3.4, 0.0</NR>
     <thermk>10.+ 0.001 * T**2</thermk>
   </material>
@@ -34,7 +35,9 @@
     <nr>3.621</nr>
     <thermk>self.In</thermk>
     <A>110000000</A>
+    <!--B-->
     <B>7e-011-1.08e-12*(T-300)</B>
+    <!--C-->
     <C>1e-029+1.4764e-33*(T-300)</C>
     <D>10+0.016670*(T-300)</D>
   </material>
@@ -59,16 +62,24 @@
 </materials>
 
 <geometry>
+  <!--c1-->
   <cartesian2d name="geo2d" bottom="extend" length="1000">
+    <!--c2-->
     <stack name="stack2d">
+      <!--c3-->
       <shelf flat="no">
         <stack name="new">
           <arrange name="Pilars" dtran="0.4" dvert="0" count="3">
             <stack name="STOS">
+              <!--cs1-->
               <rectangle name="rr" material="InN" dtran="0.2" dvert="0.1"/>
-              <item left="0">
+              <!--cs2-->
+              <item>
+                <!--cs2a-->
                 <rectangle material="In(0.5)GaN:Si=1e18" dtran="0.2" dvert="0.1"/>
+                <!--cs2b-->
               </item>
+              <!--ce-->
             </stack>
           </arrange>
           <item left="0.0">
@@ -77,7 +88,9 @@
           <rectangle material="Al(0.9)GaN:Si=2e18" dtran="1" dvert="0.1"/>
           <rectangle material="Al(0.5)GaN:Si=2e18" dtran="1" dvert="0.2"/>
         </stack>
+        <!--cg-->
         <gap total="2"/>
+        <!--cs-->
         <stack name="stos2">
           <item path="tadam" right="0.8">
             <triangle material="AlOx" atran="-0.4" avert="0" btran="0" bvert="0.2"/>
@@ -95,6 +108,7 @@
       <rectangle role="substrate" material="GaN" dtran="2" dvert="1"/>
     </stack>
   </cartesian2d>
+  <!--break-->
   <cartesian2d name="geo2d-copy">
     <copy from="stack2d">
       <toblock object="new" material="GaAs" name="blok2" role="rola1"/>
@@ -262,6 +276,7 @@
 </geometry>
 
 <grids>
+  <!--G1-->
   <generator name="default" type="rectangular2d" method="divide">
     <postdiv by0="2" by1="1"/>
     <refinements>
@@ -271,53 +286,98 @@
       <axis0 object="aperture" at="0.1"/>
     </refinements>
   </generator>
+  <!--M1-->
   <mesh name="diffusion" type="regular">
-    <axis start="0" stop="{mesa}" num="200"></axis>
+    <!--ax-->
+    <axis start="0" stop="{mesa}" num="200"/>
   </mesh>
+  <!--G2-->
   <generator name="optical" type="rectangular2d" method="divide">
+    <!--prediv-->
     <prediv by0="10" by1="3"/>
+    <!--options-->
     <options gradual="no" aspect="100"/>
+    <!--end-->
   </generator>
+  <!--G3-->
   <generator name="smoothie" type="rectangular2d" method="smooth">
+    <!--steps-->
     <steps small0="0.005" small1="0.01" large0="0.05" factor="1.2"/>
+    <!--end-->
   </generator>
+  <!--G3½-->
   <generator name="oned" type="ordered" method="divide">
+    <!--refinemenst-->
     <refinements>
+      <!--axis0-->
       <axis0 object="bottom-DBR" at="1"/>
+      <!--end0-->
     </refinements>
+    <!--end-->
   </generator>
+  <!--M2-->
   <mesh name="plots" type="rectangular2d">
-    <axis0 start="0" stop="10" num="20"></axis0>
-    <axis1 start="0" stop="1" num="10"></axis1>
+    <!--axis0-->
+    <axis0 start="0" stop="10" num="20"/>
+    <!--axis1-->
+    <axis1 start="0" stop="1" num="10"/>
+    <!--no more axes-->
   </mesh>
+  <!--G4-->
   <generator name="sss" type="rectangular3d" method="smooth">
     <steps small0="0.005" small1="0.05" small2="0.05" factor="1.2"/>
   </generator>
+  <!--G5-->
   <generator name="reg" type="rectangular2d" method="regular">
     <spacing every0="0.2" every1="1"/>
   </generator>
+  <!--G6-->
   <generator name="spl" type="rectangular2d" method="simple">
+    <!--boundaries-->
     <boundaries split="yes"/>
   </generator>
+  <!--M3-->
   <mesh name="fine" type="rectangular3d">
-    <axis0 start="0.5" stop="1.0" num="2001"></axis0>
-    <axis1 start="0" stop="2" num="4001"></axis1>
+    <axis0 start="0.5" stop="1.0" num="2001"/>
+    <axis1 start="0" stop="2" num="4001"/>
     <axis2>0.0 0.5 1.5</axis2>
   </mesh>
+  <!--trangle-->
+  <generator name="triangle" type="triangular2d" method="triangle">
+    <!--options-->
+    <options maxarea="1" minangle="30"/>
+    <!--end-->
+  </generator>
 </grids>
 
 <solvers>
   <thermal name="THERMAL" solver="StaticCyl" lib="static">
     <geometry ref="GeoT"/>
-    <mesh ref="default"/>
+    <!--mesh-->
+    <mesh ref="default" include-empty="yes"/>
+    <!--A-->
     <temperature>
+      <!--B-->
       <condition value="320.">
+        <!--C-->
         <place line="horizontal" at="10" start="0" stop="{lineto}"/>
+        <!--D-->
       </condition>
-      <condition value="300.">
-        <place side="bottom"/>
+      <!--E-->
+      <condition value="300">
+        <!--F-->
+        <difference>
+          <!--G-->
+          <place side="bottom"/>
+          <!--H-->
+          <place side="left"/>
+          <!--I-->
+        </difference>
+        <!--J-->
       </condition>
+      <!--K-->
     </temperature>
+    <!--L-->
   </thermal>
   <optical name="fourier2" solver="Fourier2D" lib="slab">
     <geometry ref="geo2d"/>
@@ -353,6 +413,7 @@
     <mesh ref="optical"/>
     <mode lam0="980" emission="bottom"/>
   </optical>
+  <!--filtr-->
   <filter name="filtr" for="Temperature" geometry="GeoT"/>
   <optical name="efm" solver="EffectiveFrequencyCyl" lib="effective">
     <geometry ref="GeoO"/>
@@ -406,14 +467,16 @@
     <!-- COMMENT 2 -->
     <geometry ref="vcsel"/>
     <!-- COMMENT 3 -->
+    <expansion size="12"/>
+    <!-- COMMENT 4 -->
     <pmls>
-      <!-- COMMENT 4 -->
-      <long shape="1"/>
       <!-- COMMENT 5 -->
-      <tran shape="1"/>
+      <long shape="1"/>
       <!-- COMMENT 6 -->
+      <tran shape="1"/>
+      <!-- COMMENT 7 -->
     </pmls>
-    <!-- COMMENT 7 -->
+    <!-- COMMENT 8 -->
   </optical>
   <thermal name="solver" solver="Static3D" lib="static">
     <geometry ref="vcsel"/>

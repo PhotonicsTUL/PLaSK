@@ -140,13 +140,13 @@ class GNBlock(GNLeaf):
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNBlock(dim=2)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNBlock(dim=3)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
 
@@ -189,7 +189,7 @@ class GNCylinder(GNLeaf):
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNCylinder()
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
 
@@ -229,13 +229,13 @@ class GNCircle(GNLeaf):
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNCircle(dim=2)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNCircle(dim=3)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
 
@@ -289,7 +289,7 @@ class GNTriangle(GNLeaf):
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNTriangle()
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
 
@@ -350,5 +350,5 @@ class GNPrism(GNLeaf):
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNPrism()
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result

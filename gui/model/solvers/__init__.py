@@ -17,7 +17,7 @@ from lxml import etree
 from xml.sax.saxutils import quoteattr
 
 from ...qt.QtCore import *
-from ...utils.xml import print_interior, XML_parser, AttributeReader
+from ...utils.xml import print_interior, XMLparser, AttributeReader, OrderedTagReader
 from ...controller.source import SourceEditController
 from ..table import TableModel
 from .. import TreeFragmentModel, Info
@@ -54,11 +54,12 @@ class Solver(TreeFragmentModel):
         self.lib = None
         self.geometry = ''
         self.mesh = ''
+        self.comments = []
 
-    def get_xml_element(self):
+    def make_xml_element(self):
         return etree.Element(self.category, {"name": self.name, "solver": self.solver})
 
-    def set_xml_element(self, element):
+    def load_xml_element(self, element):
         self.category = element.tag
         with AttributeReader(element) as attr:
             self.name = attr.get('name', None)
@@ -74,7 +75,7 @@ class Solver(TreeFragmentModel):
         tab.extend([' name=', quoteattr(self.name), '>',
                     text,
                     '</', self.category, '>'])
-        self.set_xml_element(etree.fromstringlist(tab, parser=XML_parser))
+        self.load_xml_element(etree.fromstringlist(tab, parser=XMLparser))
 
     def get_controller(self, document):
         return SourceEditController(document=document, model=self, line_numbers=False)
@@ -115,10 +116,10 @@ class TreeFragmentSolver(Solver):
         TreeFragmentModel.__init__(self, parent, info_cb)
         self.element = element
 
-    def set_xml_element(self, element):
+    def load_xml_element(self, element):
         self.element = element
 
-    def get_xml_element(self):
+    def make_xml_element(self):
         return self.element
 
     def get_text(self):
@@ -162,12 +163,13 @@ class SolversModel(TableModel):
         super(SolversModel, self).__init__('solvers', parent, info_cb, *args)
         self.local_categories = []
         self.local_solvers = {}
+        self.endcomments = []
 
     def construct_solver(self, element):
         if element.tag == 'filter':
             filter = FilterSolver(parent=self)
-            filter.set_xml_element(element)
-            return filter
+            filter.load_xml_element(element)
+            res = filter
         else:
             try:
                 key = element.tag, element.attrib['solver']
@@ -176,21 +178,32 @@ class SolversModel(TableModel):
                 else:
                     factory = SOLVERS[key]
             except KeyError:
-                return TreeFragmentSolver(element, self)
+                res = TreeFragmentSolver(element, self)
             else:
-                return factory(element=element, parent=self)
+                res = factory(element=element, parent=self)
+        res.comments = element.comments
+        return res
 
-    def set_file_xml_element(self, element, filename=None):
+    def load_file_xml_element(self, element, filename=None):
         update_solvers(filename, self)
-        super(SolversModel, self).set_file_xml_element(element, filename)
+        super(SolversModel, self).load_file_xml_element(element, filename)
 
-    def set_xml_element(self, element, undoable=True):
-        self._set_entries([] if element is None else [self.construct_solver(item) for item in element], undoable)
+    def load_xml_element(self, element, undoable=True):
+        if element is None:
+            self._set_entries([], undoable)
+        else:
+            with OrderedTagReader(element) as reader:
+                self._set_entries([self.construct_solver(item) for item in reader], undoable)
+                self.endcomments = reader.get_comments()
 
-    def get_xml_element(self):
+    def make_xml_element(self):
         res = etree.Element(self.name)
         for e in self.entries:
-            res.append(e.get_xml_element())
+            for c in e.comments:
+                res.append(etree.Comment(c))
+            res.append(e.make_xml_element())
+        for c in self.endcomments:
+            res.append(etree.Comment(c))
         return res
 
     def columnCount(self, parent=QModelIndex()):

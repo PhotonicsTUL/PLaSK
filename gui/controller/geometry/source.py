@@ -126,7 +126,8 @@ class GeometrySourceController(SourceEditController):
             try:
                 if self._elements is None:
                     self._elements = [e for e in etree.fromstring(
-                        "<plask><geometry>\n" + self.source.editor.toPlainText() + "\n</geometry></plask>")[0]]
+                        "<plask><geometry>\n" + self.source.editor.toPlainText() + "\n</geometry></plask>")[0]
+                                      if e.tag is not etree.Comment]
                 line_numbers = [e.sourceline-2 for e in self._elements[1:]]
                 index = bisect(line_numbers, current_line)
                 try:
@@ -163,18 +164,17 @@ class GeometrySourceController(SourceEditController):
                 if self.manager is None:
                     manager = get_manager()
                     with HandleMaterialsModule(self.document):
-                        manager.load(self.document.get_content(sections=('defines', 'materials')))
+                        manager.load(self.document.get_contents(sections=('defines', 'materials')))
                 else:
                     manager = self.manager
                     manager.geo.clear()
                     manager.pth.clear()
                     manager._roots.clear()
                 text = "<plask><geometry>\n" + self.source.editor.toPlainText() + "\n</geometry></plask>"
-                with HandleMaterialsModule(self.document):
-                    manager.load("\n"*(self.model.line_in_file-1) + text)
+                manager.load("\n"*(self.model.line_in_file-1) + text)
                 self.manager = manager
                 if self._elements is None:
-                    self._elements = [e for e in etree.fromstring(text)[0]]
+                    self._elements = [e for e in etree.fromstring(text)[0] if e.tag is not etree.Comment]
                 if self._index is None:
                     line_numbers = [e.sourceline-2 for e in self._elements[1:]]
                     current_line = self.source.editor.textCursor().blockNumber()

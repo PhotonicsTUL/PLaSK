@@ -498,7 +498,7 @@ else:
         def _compress(document, fname, stdin):
             gzipped = BytesIO()
             with GzipFile(fileobj=gzipped, filename=fname, mode='wb') as gzip:
-                gzip.write(document.get_content().encode('utf8'))
+                gzip.write(document.get_contents().encode('utf8'))
             stdin.write(base64(gzipped.getvalue()).decode('ascii'))
 
         def submit(self, ssh, document, args, defs, loglevel, name, params):
@@ -543,7 +543,7 @@ else:
                         self._compress(document, fname, stdin)
                     else:
                         print("cat <<\\_EOF_ >", fname2, file=stdin)
-                        stdin.write(document.get_content())
+                        stdin.write(document.get_contents())
                     print("_EOF_", file=stdin)
                     print(command_line, file=stdin)
                     if not self.keep:
@@ -554,7 +554,7 @@ else:
                         self._compress(document, fname, stdin)
                     else:
                         print(command_line, "<<\\_EOF_", file=stdin)
-                        stdin.write(document.get_content())
+                        stdin.write(document.get_contents())
                     print("_EOF_", file=stdin)
                 stdin.flush()
                 stdin.channel.shutdown_write()

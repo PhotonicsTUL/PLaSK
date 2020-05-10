@@ -16,7 +16,7 @@ from .object import GNObject
 from .constructor import construct_geometry_object
 from ...utils.str import none_to_empty
 from ...utils.validators import can_be_float, can_be_int
-from ...utils.xml import xml_to_attr, attr_to_xml, require_no_children
+from ...utils.xml import xml_to_attr, attr_to_xml, require_no_children, get_text
 from ...utils.compat import next
 
 
@@ -86,13 +86,13 @@ class GNTranslation(GNTransform):
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNTranslation(dim=2)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNTranslation(dim=3)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     def get_controller(self, document, model):
@@ -147,13 +147,13 @@ class GNClip(GNTransform):
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNClip(dim=2)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNClip(dim=3)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
 
@@ -217,13 +217,13 @@ class GNFlip(GNAxisBaseTransform):
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNFlip(dim=2)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNFlip(dim=3)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
 
@@ -242,13 +242,13 @@ class GNMirror(GNAxisBaseTransform):
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNMirror(dim=2)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNMirror(dim=3)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
 
@@ -274,13 +274,13 @@ class GNIntersection(GNTransform):
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNIntersection(dim=2)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNIntersection(dim=3)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
 
@@ -316,7 +316,7 @@ class GNExtrusion(GNTransform):
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNExtrusion()
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
 
@@ -352,7 +352,7 @@ class GNRevolution(GNTransform):
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNRevolution()
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
 
@@ -409,13 +409,13 @@ class GNArrange(GNTransform):
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNArrange(dim=2)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNArrange(dim=3)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     def model_to_real_index(self, index, model):
@@ -433,6 +433,7 @@ class GNLattice(GNTransform):
         super(GNLattice, self).__init__(parent=parent, dim=3, children_dim=3)
         self.vectors = ((None, None, None), (None, None, None))
         self.segments = None
+        self.segcomments = []   # comments before segments in XML
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNLattice, self)._attributes_from_xml(attribute_reader, conf)
@@ -490,7 +491,7 @@ class GNLattice(GNTransform):
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNLattice()
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     def model_to_real_index(self, index, model):
@@ -501,15 +502,18 @@ class GNLattice(GNTransform):
         next(path_iterator)
         return 0
 
-    def get_xml_element(self, conf):
-        el = super(GNLattice, self).get_xml_element(conf)
+    def make_xml_element(self, conf):
+        el = super(GNLattice, self).make_xml_element(conf)
         seg_el = etree.Element('segments')
         seg_el.text = none_to_empty(self.segments)
+        for c in self.segcomments:
+            el.insert(0, etree.Comment(c))
         el.insert(0, seg_el)
         return el
 
     def _children_from_xml(self, ordered_reader, conf):
         seg_el = ordered_reader.require('segments')
         require_no_children(seg_el)
-        self.segments = seg_el.text
+        self.segments = get_text(seg_el)
+        self.segcomments = seg_el.comments
         super(GNLattice, self)._children_from_xml(ordered_reader, conf)

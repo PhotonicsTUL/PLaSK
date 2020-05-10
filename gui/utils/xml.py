@@ -10,11 +10,39 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-
 from lxml import etree
 
-#TODO remove_comments set to False when all will be ready to support it
-XML_parser = etree.XMLParser(remove_blank_text=True, remove_comments=True, strip_cdata=False)
+from .config import CONFIG
+
+XMLparser = etree.XMLParser(remove_blank_text=True, strip_cdata=False,
+                            remove_comments=not CONFIG['experimental/preserve_comments'])
+
+class Element:
+
+    def __init__(self, element, comments=None):
+        self.__dict__['_element'] = element
+        if comments is None:
+            self.__dict__['comments'] = []
+        else:
+            self.__dict__['comments'] = comments
+
+    def __getattr__(self, item):
+        return getattr(self._element, item)
+
+    def __setattr__(self, key, value):
+        setattr(self._element, key, value)
+
+    def __len__(self):
+        return len(self._element)
+
+    def __iter__(self):
+        return iter(self._element)
+
+    def __getitem__(self, item):
+        return self._element[item]
+
+    def __setitem__(self, key, value):
+        self._element[key] = value
 
 
 def print_interior(element):
@@ -60,10 +88,28 @@ def at_line_str(element, template=' at line {}'):
     return template.format(element.sourceline) if element.sourceline is not None else ''
 
 
+def get_text(element):
+    """
+    Get text from XML element
+    :param element: XML element
+    :return: read texr
+    """
+    text = element.text
+    for comment in element:
+        if comment.tag is not etree.Comment:
+            raise ValueError("Only text allowed in <{}>".format(element.tag))
+        if comment.tail is not None:
+            if text is None:
+                text = comment.tail
+            else:
+                text += comment.tail
+    return text
+
+
 class AttributeReader:
     """
         Helper class to check if all attributes have been read from XML tag, usage::
-        
+
             with AttributeReader(xml_element) as a:
                 # use a.get(...) or a[...] to access to xml_element.attrib
     """
@@ -144,19 +190,10 @@ class OrderedTagReader:
                 # use r.get(...) or r.require(...) to access children of parent_element
     """
 
-    def __init__(self, parent_element, ignore_comments=True, first_index=0):
+    def __init__(self, parent_element, first_index=0):
         # super(OrderedTagReader, self).__init__()
         self.parent_element = parent_element
-        self.ignore_comments = ignore_comments
-        self.current_index = self._proper_index(first_index)
-
-    def _proper_index(self, index, delta=1):
-        """ Fix index by consistently adding delta to it to be a proper current_index.
-            :return: fixed index"""
-        if self.ignore_comments:
-            while 0 <= index < len(self.parent_element) and self.parent_element[index].tag is etree.Comment:
-                index += delta
-        return index
+        self.current_index = first_index
 
     def _next_element(self):
         """:return: next element"""
@@ -173,7 +210,7 @@ class OrderedTagReader:
         """
         if not self._has_next(): return None
         res = self._next_element()
-        self.current_index = self._proper_index(self.current_index + 1)
+        self.current_index += 1
         return res
 
     def require_end(self):
@@ -185,22 +222,46 @@ class OrderedTagReader:
 
     def recent_was_unexpected(self):
         """Raise ValueError about tag that has been read recently and move reader one tag back."""
-        self.current_index = self._proper_index(self.current_index - 1, delta=-1)
+        self._revert()
         self.require_end()  # raise exception
+
+    def _revert(self):
+        self.current_index -= 1
+        while self.current_index >= 0 and self._next_element().tag is etree.Comment:
+            self.current_index -= 1
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         """
-            It raise ValueError if any other exception haven't been raised
+            It raises ValueError if any other exception haven't been raised
             and self.parent_element still has unread children.
         """
-        if exc_type is None and exc_value is None and traceback is None: self.require_end()
+        if exc_type is None and exc_value is None and traceback is None:
+            self.require_end()
 
-    @classmethod
+    @staticmethod
     def _expected_tag_to_str(*expected_tag_names):
         return ', '.join('<{}>'.format(s) for s in expected_tag_names)
+
+    def _iter_comments(self):
+        """
+        Iterate over comments until the next element
+        :return:
+        """
+        while self._has_next() and self._next_element().tag is etree.Comment:
+            text = self._next_element().text
+            self._goto_next()
+            yield text
+
+
+    def get_comments(self):
+        """
+        Get list of comments until the next element
+        :return:
+        """
+        return list(self._iter_comments())
 
     def get(self, *expected_tag_names):
         """
@@ -209,13 +270,20 @@ class OrderedTagReader:
             :return: Next child of wrapped self.parent_element or None if there is no more child or next child has name
                     other than expected_tag_name
         """
+        comments = self.get_comments()
         if len(expected_tag_names) == 0:
-            return self._goto_next()
+            res = self._goto_next()
         else:
             if self._has_next() and self._next_element().tag in expected_tag_names:
-                return self._goto_next()
+                res = self._goto_next()
             else:
-                return None
+                res = None
+        if res is not None:
+            res = Element(res, comments)
+        else:
+            self._revert()
+            self.current_index += 1
+        return res
 
     def require(self, *expected_tag_names):
         """
@@ -231,7 +299,8 @@ class OrderedTagReader:
                     self.parent_element.tag, at_line_str(self.parent_element, ' (which is opened at line {})')))
             else:
                 raise ValueError('<{}> tag{} does not have required {} child.'.format(
-                    self.parent_element.tag, at_line_str(self.parent_element), OrderedTagReader._expected_tag_to_str(*expected_tag_names)))
+                    self.parent_element.tag, at_line_str(self.parent_element),
+                    OrderedTagReader._expected_tag_to_str(*expected_tag_names)))
         return res
 
     def iter(self, *expected_tag_names):
@@ -245,6 +314,8 @@ class OrderedTagReader:
             yield res
             res = self.get(*expected_tag_names)
 
+    def __iter__(self):
+        return self.iter()
 
 class UnorderedTagReader:
     """Helper class to read children of XML element, if the children can be in any order.
@@ -270,6 +341,36 @@ class UnorderedTagReader:
                     parent_element.tag, at_line_str(self.parent_element, ' (which is opened at line {})')))
             tag_names.add(child.tag)
 
+    def _iter_comments(self, element=None, inside=False):
+        """
+        Iterate comments preceding the specified element or the comments after the last element
+        """
+        if element is None:
+            if len(self.parent_element) == 0:
+                return
+            element = self.parent_element[-1]
+            if element.tag is not etree.Comment:
+                return
+        elif inside:
+            if len(element) == 0:
+                return
+            element = element[-1]
+        else:
+            assert element.tag is not etree.Comment
+        prev = element.getprevious()
+        while prev is not None and prev.tag is etree.Comment:
+            element = prev
+            prev = element.getprevious()
+        while element is not None and element.tag is etree.Comment:
+            yield element.text
+            element = element.getnext()
+
+    def get_comments(self, element=None, inside=False):
+        """
+        Get comments preceding the specified element or the comments after the last element
+        """
+        return list(self._iter_comments(element, inside))
+
     def get(self, child_name):
         """
             Get child of wrapped self.parent_element.
@@ -278,10 +379,12 @@ class UnorderedTagReader:
                         or None if there is no child with expected name
         """
         res = self.parent_element.find(child_name)
-        if res is not None: self.read.add(child_name)
+        if res is not None:
+            self.read.add(child_name)
+            res = Element(res, self.get_comments(res))
         return res
 
-    find = get  #alias for compatibility with unwrapped etree.Element
+    find = get  # alias for compatibility with unwrapped etree.Element
 
     def require(self, child_name):
         """

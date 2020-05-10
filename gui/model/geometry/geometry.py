@@ -161,13 +161,13 @@ class GNCartesian(GNGeometryBase):
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNCartesian(dim=2)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     @staticmethod
     def from_xml_3d(element, conf):
         result = GNCartesian(dim=3)
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
 
@@ -221,5 +221,5 @@ class GNCylindrical(GNGeometryBase):
     @staticmethod
     def from_xml_2d(element, conf):
         result = GNCylindrical()
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result

@@ -24,10 +24,10 @@ from ..utils.xml import OrderedTagReader, AttributeReader
 class DefinesModel(TableModel):
 
     class Entry:
-        def __init__(self, name, value, comment=None):
+        def __init__(self, name, value, comments=None):
             self.name = name
             self.value = value
-            self.comment = comment
+            self.comments = [] if comments is None else comments
 
     def __init__(self, parent=None, info_cb=None, *args):
         TableModel.__init__(self, 'defines', parent, info_cb, *args)
@@ -38,32 +38,36 @@ class DefinesModel(TableModel):
             if val.name == name: return idx
         return -1
 
-    def set_xml_element(self, element, undoable = True):
+    def load_xml_element(self, element, undoable=True):
         new_entries = []
         with OrderedTagReader(element) as r:
             for e in r.iter("define"):
                 with AttributeReader(e) as a:
-                    new_entries.append(DefinesModel.Entry(a.get("name", ""), a.get("value", "")))
+                    new_entries.append(DefinesModel.Entry(a.get("name", ""), a.get("value", ""), e.comments))
+            self.endcomments = r.get_comments()
         self._set_entries(new_entries, undoable)
 
     # XML element that represents whole section
-    def get_xml_element(self):
+    def make_xml_element(self):
         res = etree.Element(self.name)
         for e in self.entries:
-            if e.comment: res.append(etree.Comment(e.comment))
+            for c in e.comments:
+                res.append(etree.Comment(c))
             etree.SubElement(res, "define", { "name": e.name, "value": e.value }) #.tail = '\n'
+        for c in self.endcomments:
+            res.append(etree.Comment(c))
         return res
 
     def get(self, col, row):
         if col == 0: return self.entries[row].name
         if col == 1: return self.entries[row].value
-        if col == 2: return self.entries[row].comment
+        if col == 2: return self.entries[row].comments
         raise IndexError('column number for DefinesModel should be 0, 1, or 2, but is %d' % col)
 
     def set(self, col, row, value):
         if col == 0: self.entries[row].name = value
         elif col == 1: self.entries[row].value = value
-        elif col == 2: self.entries[row].comment = value
+        elif col == 2: self.entries[row].comments = value
         else: raise IndexError('column number for DefinesModel should be 0, 1, or 2, but is %d' % col)
 
     def create_info(self):

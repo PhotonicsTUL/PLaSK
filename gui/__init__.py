@@ -33,7 +33,7 @@ HELP_ACTIONS = []
 basestring = str, bytes
 try:
     _DEBUG = bool(eval(os.environ['PLASKGUI_DEBUG'].title()))
-except KeyError:
+except (KeyError, ValueError):
     _DEBUG = False
 
 from .qt.QtCore import *

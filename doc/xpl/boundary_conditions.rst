@@ -20,7 +20,7 @@ Most of the solvers have some boundary conditions. They differ by name or type, 
 
       .. xml:contents::
 
-         One of the following tag can be used instead of the ``place`` attribute if more detailed description of the boundary condition location is required:
+         One of the following tags can be used instead of the ``place`` attribute if more detailed description of the boundary condition location is required:
 
          .. xml:tag:: <place>
 

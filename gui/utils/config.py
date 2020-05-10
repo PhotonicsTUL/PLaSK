@@ -152,6 +152,7 @@ DEFAULTS = {
     'workarounds/jedi_no_dot': False,
     'workarounds/no_jedi': False,
     'workarounds/system_jedi': False,
+    'experimental/preserve_comments': False,
 }
 GROUPS = set(e.split('/', 1)[0] for e in DEFAULTS)
 
@@ -314,6 +315,17 @@ CONFIG_WIDGETS = OrderedDict([
              SpinBox('help/fontsize', 1, 512,
                      "Default font size in the help window.")),
         ]),
+        ("Experimental Features", [
+            "Here you can turn on experimental features. Please expect that they do not work 100% reliable.\n"
+            "Turning them on may cause GUI to crash or the correct files may not load properly.\n\n"
+            "You have been warned, use at your own risk!\n",
+            ("Preserve XML comments",
+             CheckBox('experimental/preserve_comments',
+                      "If this option is checked, PLaSK will try to preserve comments in the XML source.",
+                      needs_restart=True)),
+
+        ]
+         )
     ])),
     ("Graphics", OrderedDict([
         ("General", [

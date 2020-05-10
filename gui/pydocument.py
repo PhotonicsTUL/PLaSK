@@ -74,11 +74,11 @@ class PyDocument:
         self.filename = filename
         self.set_changed(False)
 
-    def get_content(self):
+    def get_contents(self):
         return self.script.model.get_text()
 
     def save_to_file(self, filename):
-        text = self.get_content()
+        text = self.get_contents()
         m = coding_re_s.match(text)
         if m:
             coding = m.group(1)

@@ -12,6 +12,7 @@
 
 from lxml import etree
 
+from ...utils.xml import OrderedTagReader
 from ...qt.QtCore import *
 
 basestring = str, bytes
@@ -28,6 +29,7 @@ class SchemaBoundaryConditions:
         self.label2 = label
         self.mesh_type = mesh_type
         self.keys = ('value',) if values is None else values
+        self.endcomments = []
 
     def to_xml(self, conditions):
         pass
@@ -45,11 +47,14 @@ class SchemaBoundaryConditions:
 class RectangularBC(SchemaBoundaryConditions):
 
     class PlaceNode:
-        def __init__(self, place=None, value=None):
+        def __init__(self, place=None, value=None, comments=None):
             self.parent = None
             self.children = []
             self.place = place
             if value: self.value = value
+            self.comments = []
+            self.comments1 = comments if comments is not None else []
+            self.comments2 = []
 
         def append_child(self, node):
             node.parent = self
@@ -74,9 +79,13 @@ class RectangularBC(SchemaBoundaryConditions):
             return self.children[index].place
 
         def to_xml(self):
-            result = self.place.get_xml_element()
+            result = self.place.make_xml_element()
             for child in self.children:
+                for c in child.comments1:
+                    result.append(etree.Comment(c))
                 result.append(child.to_xml())
+                for c in child.comments2:
+                    result.append(etree.Comment(c))
             return result
 
 
@@ -91,7 +100,7 @@ class RectangularBC(SchemaBoundaryConditions):
             self.object = of
             self.path = path
 
-        def get_xml_element(self):
+        def make_xml_element(self):
             place = etree.Element('place')
             place.attrib['side'] = self.side
             if self.object is not None:
@@ -131,7 +140,7 @@ class RectangularBC(SchemaBoundaryConditions):
             self.start = start
             self.stop = stop
 
-        def get_xml_element(self):
+        def make_xml_element(self):
             place = etree.Element('place')
             place.attrib['line'] = self.line
             place.attrib['at'] = str(self.at)
@@ -166,7 +175,7 @@ class RectangularBC(SchemaBoundaryConditions):
             super(RectangularBC.SetOp, self).__init__()
             self.operation = operation
 
-        def get_xml_element(self):
+        def make_xml_element(self):
             return etree.Element(self.operation)
 
         def copy_from(self, old):
@@ -188,13 +197,23 @@ class RectangularBC(SchemaBoundaryConditions):
             return "<i>of</i>&nbsp;{0}&nbsp;<i>and</i>&nbsp;{1}".format(self.child_label(0), self.child_label(1))
 
 
-    def place_node_from_xml(self, place_element):
+    def place_node_from_xml(self, place_element, comments=None):
         if place_element.tag in ('intersection', 'union', 'difference'):
-            place = RectangularBC.PlaceNode(RectangularBC.SetOp(place_element.tag))
-            for el in list(place_element)[:2]:
-                place.append_child(self.place_node_from_xml(el))
-            for _ in range(2-len(place.children)):  # we must have exact two children
+            place = RectangularBC.PlaceNode(RectangularBC.SetOp(place_element.tag), comments=comments)
+            comments = []
+            for el in place_element:
+                if el.tag is etree.Comment:
+                    comments.append(el.text)
+                else:
+                    place.append_child(self.place_node_from_xml(el, comments))
+                    comments = []
+            if len(place.children) > 2:
+                raise ValueError("Excactly two places must be given inside {}".format(place_element.tag))
+            for _ in range(2 - len(place.children)):  # we must have exactly two children
                 place.append_child(self.create_default_entry())
+                place.children[-1].comments1 = comments
+                comments = []
+            place.children[-1].comments2 = comments
             return place
         else:   # place tag:
             # TODO ensure that: place.tag == 'place'
@@ -205,20 +224,31 @@ class RectangularBC(SchemaBoundaryConditions):
             if side is not None:
                 of = place_element.attrib.get('object')
                 path = place_element.attrib.get('path')
-                return RectangularBC.PlaceNode(RectangularBC.PlaceSide(side, of, path))
+                return RectangularBC.PlaceNode(RectangularBC.PlaceSide(side, of, path), comments=comments)
             elif line is not None:
                 at = place_element.attrib['at']
                 start = place_element.attrib['start']
                 stop = place_element.attrib['stop']
-                return RectangularBC.PlaceNode(RectangularBC.PlaceLine(line, at, start, stop))
+                return RectangularBC.PlaceNode(RectangularBC.PlaceLine(line, at, start, stop), comments=comments)
             else:
-                raise TypeError("Exactly one of 'side' and 'line' attributes must be given")
+                raise ValueError("Exactly one of 'side' and 'line' attributes must be given")
 
     def place_node_from_xml_cond(self, cond_element):
         try:
             side = cond_element.attrib['place']
         except KeyError:
-            return self.place_node_from_xml(next(iter(cond_element)))
+            contents = iter(cond_element)
+            item = next(contents)
+            comments = []
+            while item.tag is etree.Comment:
+                comments.append(item.text)
+                item = next(contents)
+            result = self.place_node_from_xml(item, comments)
+            for item in contents:
+                if item.tag is not etree.Comment:
+                    raise ValueError("Exactly one place must be given")
+                result.comments2.append(item.text)
+            return result
         else:
             return RectangularBC.PlaceNode(RectangularBC.PlaceSide(side))
 
@@ -226,26 +256,36 @@ class RectangularBC(SchemaBoundaryConditions):
         if conditions:
             element = etree.Element(self.name)
             for node in conditions:
-                cond = etree.Element('condition')
+                for c in node.comments:
+                    element.append(etree.Comment(c))
+                cond = etree.SubElement(element, 'condition')
+                for c in node.comments1:
+                    cond.append(etree.Comment(c))
                 cond.append(node.to_xml())
                 for key in self.keys:
                     val = node.value[key]
                     if val is not None:
                         cond.attrib[key] = val
-                element.append(cond)
+                for c in node.comments2:
+                    cond.append(etree.Comment(c))
+            for c in self.endcomments:
+                element.append(etree.Comment(c))
             return element
 
     def from_xml(self, element):
         conditions = []
-        for cond in element.findall('condition'):
-            place_node = self.place_node_from_xml_cond(cond)
-            place_node.value = dict((key, cond.attrib.get(key)) for key in self.keys)
-            conditions.append(place_node)
+        with OrderedTagReader(element) as reader:
+            for cond in reader.iter('condition'):
+                place_node = self.place_node_from_xml_cond(cond)
+                place_node.value = dict((key, cond.attrib.get(key)) for key in self.keys)
+                place_node.comments = cond.comments
+                conditions.append(place_node)
+            self.endcomments = reader.get_comments()
         return conditions
 
     def create_default_entry(self):
         return RectangularBC.PlaceNode(
-            place=RectangularBC.PlaceSide('left'),
+            place=RectangularBC.PlaceSide('top'),
             value=dict((key,None) for key in self.keys))
 
     def create_place(self, label):
@@ -400,8 +440,14 @@ class BoundaryConditionsModel(QAbstractItemModel):
         if index is None or index < 0 or index >= len(self.entries):
             return
         self.beginRemoveRows(QModelIndex(), index, index)
+        comments = self.entries[index].comments
         del self.entries[index]
         self.endRemoveRows()
+        if len(comments) > 0:
+            if index < len(self.entries):
+                self.entries[index].comments = comments + self.entries[index].comments
+            else:
+                self.schema.endcomments = comments + self.schema.endcomments
         return index
 
     def swap_entries(self, index1, index2):

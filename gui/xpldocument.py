@@ -33,7 +33,7 @@ from .controller.solvers import SolversController
 from .controller.connects import ConnectsController
 from .controller import materials
 from .controller.grids import GridsController
-from .utils.xml import XML_parser, OrderedTagReader
+from .utils.xml import XMLparser, OrderedTagReader
 
 from .utils.config import CONFIG
 
@@ -76,6 +76,7 @@ class XPLDocument:
             c.model.undo_stack.cleanChanged.connect(self.update_window_changed)
         self.filename = None
         self.set_clean()
+        self.comments = [None] * (len(XPLDocument.SECTION_NAMES) + 1)
         if filename: self.load_from_file(filename)
 
         if _DEBUG and plask is not None:  # very useful!
@@ -122,19 +123,21 @@ class XPLDocument:
 
     def load_from_file(self, filename):
         infile = open(filename, 'rb')
-        tree = etree.parse(infile, XML_parser)
+        tree = etree.parse(infile, XMLparser)
         self.loglevel = tree.getroot().attrib.get('loglevel', 'detail')
         with OrderedTagReader(tree.getroot()) as r:
             for i, name in enumerate(XPLDocument.SECTION_NAMES):
                 element = r.get(name)
                 if element is not None:
-                    self.model_by_index(i).set_file_xml_element(element, filename)
+                    self.comments[i] = element.comments
+                    self.model_by_index(i).load_file_xml_element(element, filename)
                 else:
                     self.model_by_index(i).clear()
+            self.comments[-1] = r.get_comments()
         self.filename = filename
         self.set_clean()
 
-    def get_content(self, sections=None, update_lines=None):
+    def get_contents(self, sections=None, update_lines=None):
         """
         Get document content in XPL format.
         :param sections: if given, only selected sections will be included in result, list or string (in such case all sections up to given one will be included)
@@ -146,9 +149,13 @@ class XPLDocument:
         if update_lines is None: update_lines = sections is None or sections == self.SECTION_NAMES
         data = '<plask loglevel="{}">\n\n'.format(self.loglevel)
         current_line_in_file = 3
-        for c in self.controllers:
+        for i, c in enumerate(self.controllers):
+            if self.comments[i]:
+                for cmt in self.comments[i]:
+                    data += "<!--{}-->\n".format(cmt)
+                data += "\n"
             if update_lines: c.update_line_numbers(current_line_in_file)
-            element = c.model.get_file_xml_element()
+            element = c.model.make_file_xml_element()
             if len(element) or element.text:
                 section_string = etree.tostring(element, encoding='unicode', pretty_print=True)
                 lines_count = section_string.count('\n') + 1
@@ -157,12 +164,16 @@ class XPLDocument:
                     data += section_string + '\n'
                 else:
                     data += '\n' * lines_count
+        if self.comments[-1]:
+            for cmt in self.comments[-1]:
+                data += "<!--{}-->\n".format(cmt)
+            data += "\n"
         data += '</plask>\n'
         return data
 
     def save_to_file(self, filename):
         # safe write: maybe inefficient, but does not destroy the file if the error occurs
-        data = self.get_content()
+        data = self.get_contents()
         if CONFIG['main_window/make_backup']:
             try:
                 shutil.copyfile(filename, filename+'.bak')

@@ -70,8 +70,20 @@ class TableModelEditMethods:
             del self.table.entries[self.index]
             self.table.fire_changed()
             self.table.endRemoveRows()
+            if len(self.removed_entry.comments) > 0:
+                if self.index < len(self.table.entries):
+                    self.table.entries[self.index].comments = self.removed_entry.comments + \
+                                                              self.table.entries[self.index].comments
+                else:
+                    self.table.endcomments = self.removed_entry.comments + self.table.endcomments
 
         def undo(self):
+            strip_comments = len(self.removed_entry.comments)
+            if strip_comments > 0:
+                if self.index < len(self.table.entries):
+                    self.table.entries[self.index].comments = self.table.entries[self.index].comments[strip_comments:]
+                else:
+                    self.table.endcomments = self.table.endcomments[strip_comments:]
             self.table.beginInsertRows(QModelIndex(), self.index, self.index)
             self.table.entries.insert(self.index, self.removed_entry)
             self.table.fire_changed()
@@ -173,6 +185,7 @@ class TableModel(TableModelEditMethods, SectionModel, QAbstractTableModel):
         SectionModel.__init__(self, name, info_cb)
         QAbstractTableModel.__init__(self, parent)
         self.entries = []
+        self.endcomments = []
         self._row_to_errors = None
 
     @property
@@ -205,12 +218,14 @@ class TableModel(TableModelEditMethods, SectionModel, QAbstractTableModel):
         if role == Qt.DisplayRole or role == Qt.EditRole:
             return self.get(index.column(), index.row())
         if role == Qt.ToolTipRole:
-            return '\n'.join([str(err) for err in self.info_by_row.get(index.row(), []) if err.has_connection('cols', index.column())])
+            return '\n'.join([str(err) for err in self.info_by_row.get(index.row(), [])
+                              if err.has_connection('cols', index.column())])
         if role == Qt.DecorationRole: #Qt.BackgroundColorRole:   #maybe TextColorRole?
             max_level = -1
             c = index.column()
             for err in self.info_by_row.get(index.row(), []):
-                if err.has_connection('cols', c, c == 0):   # c == 0 -> whole row messages hav decoration only in first column
+                if err.has_connection('cols', c, c == 0):
+                    # c == 0 -> whole row messages have decoration only in the first column
                     if err.level > max_level: max_level = err.level
             return info.info_level_icon(max_level)
             #c = QPalette().color(QPalette.Window)    #default color

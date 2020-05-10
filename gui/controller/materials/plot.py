@@ -215,7 +215,7 @@ class MaterialPlot(QWidget):
         data = '<plask loglevel="error">\n\n'
         for m in (self.defines, self.model):
             try:
-                element = m.get_file_xml_element()
+                element = m.make_file_xml_element()
             except:
                 pass
             else:

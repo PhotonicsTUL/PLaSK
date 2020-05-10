@@ -43,11 +43,15 @@ class GNode:
         self.path = None                # path inside the parent (container)
         self._parent = None             # needed for set_parent working fine
         self.set_parent(parent, parent_index)
+        self.comments = []              # comments before element in XML
+        self.endcomments = []           # comments at the end of the element (in XML)
+        self.itemcomments = []          # comments inside <item> this node is in (in XML)
+        self.itemendcomments = []       # comments at the end of <item> this node is in (in XML)
 
     def _attributes_from_xml(self, attribute_reader, conf):
         """
         Read attributes of self from XML.
-        This method is used by set_xml_element.
+        This method is used by load_xml_element.
         :param GNReadConf reader: reader configuration
         :param AttributeReader attribute_reader: source of attributes
         """
@@ -56,7 +60,7 @@ class GNode:
     def _children_from_xml(self, ordered_reader, conf):
         """
         Read children of self from XML.
-        This method is used by set_xml_element.
+        This method is used by load_xml_element.
         :param OrderedTagReader ordered_reader: source of children XML nodes
         :param GNReadConf conf: reader configuration
         """
@@ -65,7 +69,7 @@ class GNode:
     def preset_conf(self, conf):
         conf.parent = self
 
-    def set_xml_element(self, element, conf=None):
+    def load_xml_element(self, element, conf=None):
         """
         Read content of self (and whole subtree) from XML.
         Use _attributes_from_xml and _children_from_xml.
@@ -77,14 +81,18 @@ class GNode:
         if element is None: return
         subtree_conf = GNReadConf(conf)
         self.preset_conf(subtree_conf)
-        with AttributeReader(element) as a: self._attributes_from_xml(a, subtree_conf)
-        with OrderedTagReader(element) as r: self._children_from_xml(r, subtree_conf)
+        with AttributeReader(element) as a:
+            self._attributes_from_xml(a, subtree_conf)
+        with OrderedTagReader(element) as r:
+            self._children_from_xml(r, subtree_conf)
+            self.endcomments = r.get_comments()
+        self.comments = element.comments
         subtree_conf.after_read(self)
 
     def _attributes_to_xml(self, element, conf):
         """
         Safe XML attributes of self to element.
-        This method is used by get_xml_element.
+        This method is used by make_xml_element.
         :param etree.Element element: XML node
         :param GNReadConf conf: reader configuration
         """
@@ -97,9 +105,9 @@ class GNode:
         :param GNReadConf conf: reader configuration
         :return etree.Element: XML representation of child (with whole subtree and position in self)
         """
-        return child.get_xml_element(conf)
+        return child.make_xml_element(conf)
 
-    def get_xml_element(self, conf):
+    def make_xml_element(self, conf):
         """
         Get XML representation of self.
         Use _attributes_to_xml and get_child_xml_element.
@@ -110,8 +118,12 @@ class GNode:
         self.preset_conf(subtree_conf)
         res = etree.Element(self.tag_name(full_name=conf.parent is None or conf.parent.children_dim is None))
         self._attributes_to_xml(res, subtree_conf)
-        for c in self.children:
-            res.append(self.get_child_xml_element(c, subtree_conf))
+        for child in self.children:
+            for c in child.comments:
+                res.append(etree.Comment(c))
+            res.append(self.get_child_xml_element(child, subtree_conf))
+        for c in self.endcomments:
+            res.append(etree.Comment(c))
         return res
 
     #def append(self, child):

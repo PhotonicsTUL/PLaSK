@@ -15,7 +15,7 @@ import os
 import re
 from copy import copy
 
-from lxml import etree as ElementTree
+from lxml import etree
 from collections import OrderedDict
 import itertools
 
@@ -28,7 +28,7 @@ from ..qt.QtGui import *
 from ..qt.QtWidgets import *
 from .table import TableModel, TableModelEditMethods
 from .info import Info
-from ..utils.xml import AttributeReader, require_no_attributes, require_no_children
+from ..utils.xml import AttributeReader, require_no_attributes, require_no_children, OrderedTagReader, get_text
 
 try:
     import plask
@@ -311,16 +311,16 @@ class MaterialsModel(TableModel):
 
     class External(QAbstractTableModel):
 
-        def __init__(self, materials_model, what, name='', comment=None):
+        def __init__(self, materials_model, what, name='', comments=None):
             super(MaterialsModel.External, self).__init__()
             self.materials_model = materials_model
             self.what = what
             self.name = name
-            self.comment = comment
+            self.comments = [] if comments is None else comments
             self.cache = None
 
-        def get_xml_element(self):
-            return ElementTree.Element(self.what, {"name": self.name})
+        def make_xml_element(self):
+            return etree.Element(self.what, {"name": self.name})
 
         @property
         def base(self):
@@ -346,18 +346,20 @@ class MaterialsModel(TableModel):
     class Material(TableModelEditMethods, QAbstractTableModel): #(InfoSource)
 
         class Property:
-            def __init__(self, name=None, value=None):
+            def __init__(self, name=None, value=None, comments=None):
                 self.name = name
                 self.value = value
+                self.comments = [] if comments is None else comments
 
             def add_to_xml(self, material_element):
                 if not self.name: return
-                el = ElementTree.SubElement(material_element, self.name)
+                for c in self.comments:
+                    material_element.append(etree.Comment(c))
+                el = etree.SubElement(material_element, self.name)
                 if self.value: el.text = self.value
 
-
-        def __init__(self, materials_model, name, base=None, properties=None, alloy=False, comment=None,
-                     parent=None, *args):
+        def __init__(self, materials_model, name, base=None, properties=None, alloy=False, comments=None,
+                     endcomments=None, parent=None, *args):
             QAbstractTableModel.__init__(self, parent, *args)
             TableModelEditMethods.__init__(self)
             self.materials_model = materials_model
@@ -365,14 +367,18 @@ class MaterialsModel(TableModel):
             self.name = name
             self.base = base
             self.properties = properties
-            self.comment = comment
+            self.comments = [] if comments is None else comments
+            self.endcomments = [] if endcomments is None else endcomments
             self.alloy = alloy
 
-        def get_xml_element(self):
-            mat = ElementTree.Element("material", {"name": self.name})
+        def make_xml_element(self):
+            mat = etree.Element("material", {"name": self.name})
             if self.base: mat.attrib['base'] = self.base
             if self.alloy: mat.attrib['alloy'] = 'yes'
-            for p in self.properties: p.add_to_xml(mat)
+            for p in self.properties:
+                p.add_to_xml(mat)
+            for c in self.endcomments:
+                mat.append(etree.Comment(c))
             return mat
 
         def rowCount(self, parent=QModelIndex()):
@@ -461,32 +467,40 @@ class MaterialsModel(TableModel):
         super(MaterialsModel, self).__init__(u'materials', parent, info_cb, *args)
         self.document = None
 
-    def set_xml_element(self, element, undoable=True):
+    def load_xml_element(self, element, undoable=True):
         new_entries = []
-        for mat in element:
-            if mat.tag == 'material':
-                with AttributeReader(mat) as mat_attrib:
-                    properties = []
-                    for prop in mat:
-                        require_no_children(prop)
-                        with AttributeReader(prop) as _:
-                           properties.append(MaterialsModel.Material.Property(prop.tag, prop.text))
-                    base = mat_attrib.get('base', None)
-                    if base is None: base = mat_attrib.get('kind')  # for old files
-                    alloy = mat_attrib.get('complex', '')  #TODO remove soon
-                    alloy = mat_attrib.get('alloy', alloy).lower() in ('yes', 'true', '1')
-                    new_entries.append(MaterialsModel.Material(self, mat_attrib.get('name', ''),
-                                                               base, properties, alloy))
-            elif mat.tag in ('library', 'module'):
-                new_entries.append(MaterialsModel.External(self, mat.tag, mat.attrib.get('name', '')))
+        with OrderedTagReader(element) as materials:
+            for mat in materials:
+                if mat.tag == 'material':
+                    with OrderedTagReader(mat) as props:
+                        with AttributeReader(mat) as mat_attrib:
+                            properties = []
+                            for prop in props:
+                                require_no_children(prop)
+                                with AttributeReader(prop) as _:
+                                   properties.append(MaterialsModel.Material.Property(prop.tag, get_text(prop),
+                                                                                      prop.comments))
+                            base = mat_attrib.get('base', None)
+                            if base is None: base = mat_attrib.get('kind')  # for old files
+                            alloy = mat_attrib.get('complex', '')  #TODO remove soon
+                            alloy = mat_attrib.get('alloy', alloy).lower() in ('yes', 'true', '1')
+                            material = MaterialsModel.Material(self, mat_attrib.get('name', ''), base, properties,
+                                                               alloy, mat.comments, props.get_comments())
+                            new_entries.append(material)
+                elif mat.tag in ('library', 'module'):
+                    new_entries.append(MaterialsModel.External(self, mat.tag, mat.attrib.get('name', ''), mat.comments))
+            self.endcomments = materials.get_comments()
         self._set_entries(new_entries, undoable)
 
     # XML element that represents whole section
-    def get_xml_element(self):
-        res = ElementTree.Element(self.name)
+    def make_xml_element(self):
+        res = etree.Element(self.name)
         for e in self.entries:
-            if e.comment: res.append(ElementTree.Comment(e.comment))
-            res.append(e.get_xml_element())
+            for c in e.comments:
+                res.append(etree.Comment(c))
+            res.append(e.make_xml_element())
+        for c in self.endcomments:
+            res.append(etree.Comment(c))
         return res
 
     def data(self, index, role=Qt.DisplayRole):
@@ -520,7 +534,7 @@ class MaterialsModel(TableModel):
         if col == 0: return self.entries[row].name
         if col == 1: return self.entries[row].base
         if col == 2: return self.entries[row].alloy
-        if col == 3: return self.entries[row].comment
+        if col == 3: return self.entries[row].comments
         raise IndexError(u'column number for MaterialsModel should be 0, 1, 2, or 3, but is {}'.format(col))
 
     def set(self, col, row, value):
@@ -528,7 +542,7 @@ class MaterialsModel(TableModel):
         if col == 0: entry.name = value
         elif col == 1: entry.base = value
         elif col == 2: entry.alloy = value
-        elif col == 3: entry.comment = value
+        elif col == 3: entry.comments = value
         else: raise IndexError(u'column number for MaterialsModel should be 0, 1, 2, or 3, but is {}'.format(col))
         if isinstance(entry, MaterialsModel.External):
             entry.cache = None

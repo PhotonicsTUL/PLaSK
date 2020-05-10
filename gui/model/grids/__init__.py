@@ -17,7 +17,7 @@ from xml.sax.saxutils import quoteattr
 
 from ...qt.QtCore import *
 from ...utils import require_str_first_attr_path_component
-from ...utils.xml import XML_parser, AttributeReader
+from ...utils.xml import XMLparser, AttributeReader, OrderedTagReader
 from ...controller.source import SourceEditController
 from .. import TreeFragmentModel, Info
 from ..table import TableModel
@@ -38,15 +38,21 @@ class Grid(TreeFragmentModel):
         if name is not None: self.name = name
         if type is not None: self.type = type
         if method is not None: self._method = method
+        self.comments = []
+        self.endcomments = []
 
-    def get_xml_element(self):
+    def make_xml_element(self):
         return Grid.contruct_empty_xml_element(self.name, self.type, self.method)
 
-    def set_xml_element(self, element):
+    def load_xml_element(self, element):
         with AttributeReader(element) as a:
             self.name = a.get('name', None)
             a.mark_read('type')
             if self.is_generator: a.mark_read('method')
+
+    def save_endcomments(self, res):
+        for c in self.endcomments:
+            res.append(etree.Comment(c))
 
     @property
     def method(self):
@@ -69,7 +75,7 @@ class Grid(TreeFragmentModel):
             tab = ['<mesh name=', quoteattr(self.name), ' type=',
                    quoteattr(self.type), '>', text, '</mesh>']
         #print ''.join(tab)
-        self.set_xml_element(etree.fromstringlist(tab, parser=XML_parser))
+        self.load_xml_element(etree.fromstringlist(tab, parser=XMLparser))
 
     @property
     def type_and_kind_str(self):
@@ -119,14 +125,14 @@ class TreeFragmentGrid(Grid):
             self.element = element
         #Grid.__init__(self, name, type, method)
 
-    def set_xml_element(self, element):
+    def load_xml_element(self, element):
         self.element = element
         with AttributeReader(element) as a:
             a.mark_read('name', 'type')
             if self.is_generator: a.mark_read('method')
     #    self.fireChanged()    #TODO ???
 
-    def get_xml_element(self):
+    def make_xml_element(self):
         return self.element
 
     @property
@@ -150,7 +156,10 @@ class GridWithoutConf(Grid):
 
     @staticmethod
     def from_xml(grids_model, element):
-        return GridWithoutConf(grids_model, element.attrib['name'], element.attrib['type'], element.attrib.get('method', None))
+        return GridWithoutConf(grids_model,
+                               element.attrib['name'],
+                               element.attrib['type'],
+                               element.attrib.get('method', None))
 
     def get_controller(self, document):
         from ...controller import NoConfController
@@ -166,30 +175,36 @@ class GridsModel(TableModel):
     def __init__(self, parent=None, info_cb=None, *args):
         super(GridsModel, self).__init__('grids', parent, info_cb, *args)
         self._message = None
+        self.endcomments = []
 
-    def set_xml_element(self, element, undoable=True):
-        self._set_entries([] if element is None else [construct_grid(self, g) for g in element], undoable)
+    def load_xml_element(self, element, undoable=True):
+        with OrderedTagReader(element) as reader:
+            self._set_entries([] if element is None else [construct_grid(self, g) for g in reader], undoable)
+            self.endcomments = reader.get_comments()
 
-    def get_xml_element(self):
+    def make_xml_element(self):
         res = etree.Element(self.name)
-        for e in self.entries: res.append(e.get_xml_element())
+        for e in self.entries:
+            for c in e.comments:
+                res.append(etree.Comment(c))
+            res.append(e.make_xml_element())
+        for c in self.endcomments:
+            res.append(etree.Comment(c))
         return res
 
     def columnCount(self, parent=QModelIndex()):
-        return 2    # 3 if comment supported
+        return 2
 
     def headerData(self, col, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
             if col == 0: return 'Name'
             if col == 1: return 'Type (Method)'
-            if col == 2: return 'Comment'
         return None
 
     def get(self, col, row):
         if col == 0: return self.entries[row].name
         if col == 1: return self.entries[row].type_and_kind_str
-        if col == 2: return self.entries[row].comment
-        raise IndexError('column number for GridsModel should be 0, 1, or 2, but is %d' % col)
+        raise IndexError('column number for GridsModel should be 0 or 1, but is %d' % col)
 
     def set(self, col, row, value):
         if col == 0: self.entries[row].name = value

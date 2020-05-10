@@ -44,7 +44,7 @@ class ScriptModel(SectionModel):
         prepare_completions()
         self.editor = None
 
-    def set_xml_element(self, element, undoable=True):
+    def load_xml_element(self, element, undoable=True):
         #TODO undo support (??)
         require_no_children(element)
         require_no_attributes(element)
@@ -54,7 +54,7 @@ class ScriptModel(SectionModel):
             self.set_text('')
 
     # XML element that represents whole section
-    def get_xml_element(self):
+    def make_xml_element(self):
         res = etree.Element(self.name)
         if self._code and self._code != '\n':
             code = '\n' + self._code

@@ -23,10 +23,10 @@ class FilterSolver(Solver):
         self.name = name
         self.geometry = ''
 
-    def get_xml_element(self):
+    def make_xml_element(self):
         return etree.Element(self.category, {"name": self.name, "for": self.what, "geometry": self.geometry})
 
-    def set_xml_element(self, element):
+    def load_xml_element(self, element):
         self.category = element.tag
         with AttributeReader(element) as attr:
             self.name = attr.get('name', None)

@@ -772,7 +772,7 @@ def plot_mesh(mesh, color='0.5', lw=1.0, plane=None, margin=False, axes=None, fi
         x_min = mesh[0]; x_max = mesh[-1]
         y_max = y_min = None
 
-    elif isinstance(mesh, plask.mesh.TriangularMesh2D):
+    elif isinstance(mesh, plask.mesh.Triangular2D):
         ix, iy = 0, 1
         x_min, x_max, y_min, y_max = _plot_triangular(mesh, lines, color, lw, zorder, alpha, ix, iy)
 

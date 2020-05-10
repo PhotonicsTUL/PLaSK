@@ -16,8 +16,8 @@ class TestGUIModelMaterial(GUITestCase):
                                                 MaterialsModel.Material.Property('mobe', '2*T')])
         self.materials.entries.append(self.material)
 
-    def test_get_xml_element(self):
-        self.assertEqualXML(self.material.get_xml_element(),
+    def test_make_xml_element(self):
+        self.assertEqualXML(self.material.make_xml_element(),
                             "<material name='custom_material' base='Al'><dens>1</dens><mobe>2*T</mobe></material>")
 
     def test_rowCount(self):
@@ -56,8 +56,8 @@ class TestGUIModelMaterials(GUITestCase):
             self.materials, "second_material", "Ag", comments=["comment"]))
         self.materials.endcomments = ["end"]
 
-    def test_get_xml_element(self):
-        self.assertEqualXML(self.materials.get_xml_element(),
+    def test_make_xml_element(self):
+        self.assertEqualXML(self.materials.make_xml_element(),
            "<materials>"
                "<material name='custom_material' base='Al(0.5)GaN'>"
                    "<!--dans-->"
@@ -69,8 +69,8 @@ class TestGUIModelMaterials(GUITestCase):
                "<!--end-->"
            "</materials>")
 
-    def test_set_xml_element(self):
-        self.materials.set_xml_element(etree.XML(
+    def test_load_xml_element(self):
+        self.materials.load_xml_element(etree.XML(
             '''<materials>
                 <material name="a" base="AuGe"/>
                 <material name="b" base="Ag" alloy="yes"><!--mod--><mobe>3</mobe><!--bcom--></material>

@@ -10,13 +10,13 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from lxml.etree import Element, SubElement
+from lxml import etree
 
 from ...qt.QtCore import *
 from ..table import TableModelEditMethods
 from ...utils.str import empty_to_none
 from ...utils.validators import can_be_float, can_be_bool, can_be_int
-from ...utils.xml import require_no_children, UnorderedTagReader, AttributeReader
+from ...utils.xml import require_no_children, UnorderedTagReader, AttributeReader, OrderedTagReader
 from . import Grid
 from .mesh_rectangular import AXIS_NAMES
 
@@ -42,9 +42,10 @@ class RefinementConf:
         self.at = at
         self.by = by
         self.every = every
+        self.comments = []
 
-    def get_xml_element(self):
-        res = Element('axis{}'.format(self.axis))
+    def make_xml_element(self):
+        res = etree.Element('axis{}'.format(self.axis))
         for attr in RefinementConf.attributes_names:
             a = getattr(self, attr, None)
             if a is not None: res.attrib[attr] = a
@@ -157,28 +158,44 @@ class RectangularSimpleGenerator(Grid):
     @staticmethod
     def from_xml(grids_model, element):
         e = RectangularSimpleGenerator(grids_model, element.attrib['name'], element.attrib['type'])
-        e.set_xml_element(element)
+        e.load_xml_element(element)
         return e
 
     def __init__(self, grids_model, name, type, method='simple'):
         super(RectangularSimpleGenerator, self).__init__(grids_model, name, type, method)
         self.split = None
+        self.boundaries_comments = []
 
     @property
     def dim(self):
         return 1 if self.type == 'ordered' else int(self.type[-2])
 
-    def get_xml_element(self):
-        res = super(RectangularSimpleGenerator, self).get_xml_element()
+    def make_xml_element(self):
+        res = super(RectangularSimpleGenerator, self).make_xml_element()
+        for c in self.boundaries_comments:
+            res.append(etree.Comment(c))
         if self.split is not None:
-            SubElement(res, "boundaries", attrib={'split': self.split})
+            etree.SubElement(res, "boundaries", attrib={'split': self.split})
+        self.save_endcomments(res)
         return res
 
-    def set_xml_element(self, element):
-        super(RectangularSimpleGenerator, self).set_xml_element(element)
-        boundaries = element.find('boundaries')
+    def _read_xml(self, reader):
+        boundaries = reader.find('boundaries')
         if boundaries is not None:
             self.split = boundaries.attrib.get('split')
+            self.boundaries_comments = boundaries.comments
+        else:
+            self.boundaries_comments = []
+        self.endcomments = reader.get_comments()
+
+    def load_xml_element(self, element):
+        if isinstance(element, UnorderedTagReader):
+            super(RectangularSimpleGenerator, self).load_xml_element(element.parent_element)
+            self._read_xml(element)
+        else:
+            super(RectangularSimpleGenerator, self).load_xml_element(element)
+            with UnorderedTagReader(element) as reader:
+                self._read_xml(reader)
 
     def get_controller(self, document):
         from ...controller.grids.generator_rectangular import RectangularSimpleGeneratorController
@@ -195,7 +212,7 @@ class RectangularRegularGenerator(RectangularSimpleGenerator):
     @staticmethod
     def from_xml(grids_model, element):
         e = RectangularRegularGenerator(grids_model, element.attrib['name'], element.attrib['type'])
-        e.set_xml_element(element)
+        e.load_xml_element(element)
         return e
 
     def __init__(self, grids_model, name, type):
@@ -203,9 +220,10 @@ class RectangularRegularGenerator(RectangularSimpleGenerator):
         self.spacing0 = None
         self.spacing1 = None
         self.spacing2 = None
+        self.spacing_comments = []
 
-    def get_xml_element(self):
-        res = super(RectangularRegularGenerator, self).get_xml_element()
+    def make_xml_element(self):
+        res = super(RectangularRegularGenerator, self).make_xml_element()
         dim = self.dim
         if dim == 1:
             if self.spacing0 is not None:
@@ -218,20 +236,26 @@ class RectangularRegularGenerator(RectangularSimpleGenerator):
                 attr = getattr(self,'spacing{}'.format(i))
                 if attr is not None:
                     attrs['every{}'.format(i)] = attr
+        for c in self.spacing_comments:
+            res.append(etree.Comment(c))
         if attrs:
-            SubElement(res, "spacing", attrib=attrs)
+            etree.SubElement(res, "spacing", attrib=attrs)
         return res
 
-    def set_xml_element(self, element):
-        super(RectangularRegularGenerator, self).set_xml_element(element)
-        spacing = element.find('spacing')
-        if spacing is not None:
-            dim = self.dim
-            if dim == 1:
-                self.spacing0 = spacing.attrib.get('every')
+    def load_xml_element(self, element):
+        with UnorderedTagReader(element) as reader:
+            super(RectangularRegularGenerator, self).load_xml_element(reader)
+            spacing = reader.find('spacing')
+            if spacing is not None:
+                dim = self.dim
+                if dim == 1:
+                    self.spacing0 = spacing.attrib.get('every')
+                else:
+                    for i in range(dim):
+                        setattr(self,'spacing{}'.format(i), spacing.attrib.get('every{}'.format(i)))
+                self.spacing_comments = spacing.comments
             else:
-                for i in range(dim):
-                    setattr(self,'spacing{}'.format(i), spacing.attrib.get('every{}'.format(i)))
+                self.spacing_comments = []
 
     def get_controller(self, document):
         from ...controller.grids.generator_rectangular import RectangularRegularGeneratorController
@@ -256,54 +280,79 @@ class RectangularRefinedGenerator(Grid):
         self.warn_missing = warn_missing
         self.warn_multiple = warn_multiple
         self.warn_outside = warn_outside
+        self.options_comments = []
+        self.refinements_comments = []
+        self.refinements_endcomments = []
+        self.warnings_comments = []
 
     @property
     def dim(self):
         return 1 if self.type == 'ordered' else int(self.type[-2])
 
-    def get_xml_common(self, res, options=None):
+    def save_xml_common(self, res, options=None):
         if options is None:
             options = {}
         if self.aspect:
             options['aspect'] = self.aspect
+        for c in self.options_comments:
+            res.append(etree.Comment(c))
         if options:
-            SubElement(res, "options", attrib=options)
+            etree.SubElement(res, "options", attrib=options)
+        for c in self.refinements_comments:
+            res.append(etree.Comment(c))
         if len(self.refinements.entries) > 0:
-            refinements_element = SubElement(res, 'refinements')
+            refinements_element = etree.SubElement(res, 'refinements')
             for r in self.refinements.entries:
-                refinements_element.append(r.get_xml_element())
-        warnings_el = Element('warnings')
+                for c in r.comments:
+                    refinements_element.append(etree.Comment(c))
+                refinements_element.append(r.make_xml_element())
+            for c in self.refinements_endcomments:
+                refinements_element.append(etree.Comment(c))
+        warnings_el = etree.Element('warnings')
         for w in RectangularDivideGenerator.warnings:
             v = getattr(self, 'warn_' + w, None)
             if v is not None and v != '': warnings_el.attrib[w] = v
-        if warnings_el.attrib: res.append(warnings_el)
+        for c in self.warnings_comments:
+            res.append(etree.Comment(c))
+        if warnings_el.attrib:
+            res.append(warnings_el)
 
-    def set_xml_common(self, res, *opts):
-        options = res.find('options')
-        if options is not None:
-            with AttributeReader(options) as a:
+    def load_xml_common(self, reader: UnorderedTagReader, *opts):
+        options_element = reader.find('options')
+        if options_element is not None:
+            with AttributeReader(options_element) as a:
                 self.aspect = a.get('aspect', None)
                 for opt in opts:
                     setattr(self, opt, a.get(opt, None))
+            self.options_comments = options_element.comments
         else:
             self.aspect = None
             for opt in opts:
                 setattr(self, opt, None)
+            self.options_comments = []
         self.refinements.entries = []
-        refinements_element = res.find('refinements')
+        refinements_element = reader.find('refinements')
         if refinements_element is not None:
-            for ref_el in refinements_element:
-                to_append = RefinementConf()
-                to_append.set_from_xml(ref_el)
-                self.refinements.entries.append(to_append)
-        warnings_element = res.find('warnings')
-        if warnings_element is None:
-            for w in RectangularDivideGenerator.warnings:
-                setattr(self, 'warn_' + w, None)
+            with OrderedTagReader(refinements_element) as refinements_reader:
+                for ref_el in refinements_reader:
+                    to_append = RefinementConf()
+                    to_append.set_from_xml(ref_el)
+                    to_append.comments = ref_el.comments
+                    self.refinements.entries.append(to_append)
+                self.refinements_endcomments = refinements_reader.get_comments()
+            self.refinements_comments = refinements_element.comments
         else:
+            self.refinements_comments = []
+        warnings_element = reader.find('warnings')
+        if warnings_element is not None:
             with AttributeReader(warnings_element) as a:
                 for w in RectangularDivideGenerator.warnings:
                     setattr(self, 'warn_' + w, a.get(w, None))
+            self.warnings_comments = warnings_element.comments
+        else:
+            for w in RectangularDivideGenerator.warnings:
+                setattr(self, 'warn_' + w, None)
+            self.warnings_comments = []
 
     def create_info(self, res, rows):
         super(RectangularRefinedGenerator, self).create_info(res, rows)
@@ -321,7 +370,7 @@ class RectangularDivideGenerator(RectangularRefinedGenerator):
     @staticmethod
     def from_xml(grids_model, element):
         e = RectangularDivideGenerator(grids_model, element.attrib['name'], element.attrib['type'])
-        e.set_xml_element(element)
+        e.load_xml_element(element)
         return e
 
     def __init__(self, grids_model, name, type, gradual=None, aspect=None, prediv=None, postdiv=None, refinements=None,
@@ -332,11 +381,15 @@ class RectangularDivideGenerator(RectangularRefinedGenerator):
         self.gradual = gradual
         self.prediv = [None for _ in range(0, self.dim)] if prediv is None else prediv
         self.postdiv = [None for _ in range(0, self.dim)] if postdiv is None else postdiv
+        self.prediv_comments = []
+        self.postdiv_comments = []
 
     def _append_div_xml_element(self, div_name, dst):
         div = getattr(self, div_name)
+        for c in getattr(self, div_name + '_comments'):
+            dst.append(etree.Comment(c))
         #if div is None: return
-        div_element = Element(div_name)
+        div_element = etree.Element(div_name)
         if div[0] is not None and div.count(div[0]) == self.dim:
             div_element.attrib['by'] = div[0]
             dst.append(div_element)
@@ -346,19 +399,21 @@ class RectangularDivideGenerator(RectangularRefinedGenerator):
             if div_element.attrib:
                 dst.append(div_element)
 
-    def get_xml_element(self):
-        res = super(RectangularDivideGenerator, self).get_xml_element()
+    def make_xml_element(self):
+        res = super(RectangularDivideGenerator, self).make_xml_element()
         options = {}
         if self.gradual is not None: options['gradual'] = self.gradual
         self._append_div_xml_element('prediv', res)
         self._append_div_xml_element('postdiv', res)
-        self.get_xml_common(res, options)
+        self.save_xml_common(res, options)
+        self.save_endcomments(res)
         return res
 
     def _div_from_xml(self, div_name, src):
         div_element = src.find(div_name)
         if div_element is None:
             setattr(self, div_name, [None for _ in range(0, self.dim)])
+            setattr(self, div_name + '_comments', [])
         else:
             with AttributeReader(div_element) as a:
                 by = a.get('by')
@@ -366,13 +421,15 @@ class RectangularDivideGenerator(RectangularRefinedGenerator):
                     setattr(self, div_name, [by for _ in range(0, self.dim)])
                 else:
                     setattr(self, div_name, [a.get('by'+str(i)) for i in range(0, self.dim)])
+            setattr(self, div_name + '_comments', div_element.comments)
 
-    def set_xml_element(self, element):
-        super(RectangularDivideGenerator, self).set_xml_element(element)
-        with UnorderedTagReader(element) as res:
-            self._div_from_xml('prediv', res)
-            self._div_from_xml('postdiv', res)
-            self.set_xml_common(res, 'gradual')
+    def load_xml_element(self, element):
+        super(RectangularDivideGenerator, self).load_xml_element(element)
+        with UnorderedTagReader(element) as reader:
+            self._div_from_xml('prediv', reader)
+            self._div_from_xml('postdiv', reader)
+            self.load_xml_common(reader, 'gradual')
+            self.endcomments = reader.get_comments()
 
     def get_controller(self, document):
         from ...controller.grids.generator_rectangular import RectangularDivideGeneratorController
@@ -393,7 +450,7 @@ class RectangularSmoothGenerator(RectangularRefinedGenerator):
     @staticmethod
     def from_xml(grids_model, element):
         e = RectangularSmoothGenerator(grids_model, element.attrib['name'], element.attrib['type'])
-        e.set_xml_element(element)
+        e.load_xml_element(element)
         return e
 
     def __init__(self, grids_model, name, type, aspect=None, small=None, large=None, factor=None, refinements=None,
@@ -404,6 +461,7 @@ class RectangularSmoothGenerator(RectangularRefinedGenerator):
         self.small = [None for _ in range(0, self.dim)] if small is None else small
         self.large = [None for _ in range(0, self.dim)] if large is None else large
         self.factor = [None for _ in range(0, self.dim)] if factor is None else factor
+        self.steps_comments = []
 
     @property
     def dim(self):
@@ -419,14 +477,17 @@ class RectangularSmoothGenerator(RectangularRefinedGenerator):
                 if value[i] is not None:
                     element.attrib[attr + str(i)] = value[i]
 
-    def get_xml_element(self):
-        res = super(RectangularSmoothGenerator, self).get_xml_element()
+    def make_xml_element(self):
+        res = super(RectangularSmoothGenerator, self).make_xml_element()
+        for c in self.steps_comments:
+            res.append(etree.Comment(c))
         if self.small is not None or self.factor is not None:
-            steps = SubElement(res, 'steps')
+            steps = etree.SubElement(res, 'steps')
             self._set_steps_attribute('small', steps)
             self._set_steps_attribute('large', steps)
             self._set_steps_attribute('factor', steps)
-        self.get_xml_common(res)
+        self.save_xml_common(res)
+        self.save_endcomments(res)
         return res
 
     def _steps_from_xml(self, name, reader):
@@ -436,19 +497,22 @@ class RectangularSmoothGenerator(RectangularRefinedGenerator):
         else:
             setattr(self, name, [reader.get(name + str(i)) for i in range(0, self.dim)])
 
-    def set_xml_element(self, element):
-        super(RectangularSmoothGenerator, self).set_xml_element(element)
-        with UnorderedTagReader(element) as res:
-            self.set_xml_common(res, 'gradual')
-            steps = res.find('steps')
+    def load_xml_element(self, element):
+        super(RectangularSmoothGenerator, self).load_xml_element(element)
+        with UnorderedTagReader(element) as reader:
+            self.load_xml_common(reader, 'gradual')
+            steps = reader.find('steps')
             if steps is None:
                 self.small = self.dim * [None]
                 self.factor = self.dim * [None]
+                self.steps_comments = []
             else:
                 with AttributeReader(steps) as a:
                     self._steps_from_xml('small', a)
                     self._steps_from_xml('large', a)
                     self._steps_from_xml('factor', a)
+                self.steps_comments = steps.comments
+            self.endcomments = reader.get_comments()
 
     def create_info(self, res, rows):
         super(RectangularSmoothGenerator, self).create_info(res, rows)

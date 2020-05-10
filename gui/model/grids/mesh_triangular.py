@@ -6,6 +6,6 @@ class TriangularMesh2D(TreeFragmentGrid):
     pass
 
 
-#class ExtrudedTriangularMesh2D(Grid):  %TODO
+#class ExtrudedTriangularMesh3D(Grid):  %TODO
 class ExtrudedTriangularMesh3D(TreeFragmentGrid):
     pass

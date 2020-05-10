@@ -32,7 +32,7 @@ from .. import SectionModel, Info
 from .reader import GNReadConf
 from .constructor import construct_geometry_object, construct_by_name
 from ..info import info_level_icon
-from ...utils.xml import AttributeReader
+from ...utils.xml import AttributeReader, OrderedTagReader
 from .types import geometry_types_geometries, gname
 from .node import GNFakeRoot
 from .again_copy import GNAgain
@@ -265,6 +265,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
         self._message = None
         self.dirty = False
         self.show_props = True
+        self.endcomments = []
 
     @property
     def roots(self):
@@ -275,21 +276,28 @@ class GeometryModel(SectionModel, QAbstractItemModel):
         self.fake_root.children = new_roots
 
     # XML element that represents whole section
-    def get_xml_element(self):
+    def make_xml_element(self):
         res = etree.Element(self.name)
         if self.axes: res.attrib['axes'] = self.axes
         conf = GNReadConf(axes=self.axes)
-        for geom in self.roots: res.append(geom.get_xml_element(conf))
+        for geom in self.roots:
+            for c in geom.comments:
+                res.append(etree.Comment(c))
+            res.append(geom.make_xml_element(conf))
+        for c in self.endcomments:
+            res.append(etree.Comment(c))
         return res
 
-    def set_xml_element(self, element, undoable=True):
+    def load_xml_element(self, element, undoable=True):
         with AttributeReader(element) as a: new_axes = a.get('axes')
         conf = GNReadConf(axes=new_axes)
         new_roots = []
-        for child_element in element:
-            root = construct_geometry_object(child_element, conf, geometry_types_geometries)
-            root._parent = self.fake_root
-            new_roots.append(root)
+        with OrderedTagReader(element) as reader:
+            for child_element in reader:
+                root = construct_geometry_object(child_element, conf, geometry_types_geometries)
+                root._parent = self.fake_root
+                new_roots.append(root)
+            self.endcomments = reader.get_comments()
         command = GeometryModel.SetRootsCommand(self, new_axes, new_roots)
         if undoable:
             self.undo_stack.push(command)

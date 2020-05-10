@@ -449,7 +449,7 @@ else:
             self.session.exec_command(self.command_line)
 
             stdin = self.session.makefile('wb')
-            stdin.write(self.main_window.document.get_content())
+            stdin.write(self.main_window.document.get_contents())
             stdin.flush()
             self.session.shutdown_write()
 

@@ -12,12 +12,14 @@
 # GNU General Public License for more details.
 
 import os
+from collections import OrderedDict
+
 from lxml import etree
 
 import yaml
 
 from ..info import Info
-from ...utils.xml import AttributeReader, print_interior
+from ...utils.xml import AttributeReader, print_interior, UnorderedTagReader
 from ...utils.validators import can_be_int, can_be_float, can_be_one_of, can_be_bool
 from ...utils.files import open_utf8
 from . import Solver, SOLVERS, CATEGORIES
@@ -128,45 +130,68 @@ class SchemaSolver(Solver):
         self.mesh_types = mesh_types
         self.need_mesh = need_mesh
         self.set_fresh_data()
+        self.incomments = {}
         self._controller = None
 
     def set_fresh_data(self):
-        self.data = dict((schema.name,
-                          dict((a.name, None) for a in schema.attrs.flat) if isinstance(schema, SchemaTag) else [])
-                         for schema in self.schema)
+        self.data = {schema.name:
+                         {a.name: None for a in schema.attrs.flat} if isinstance(schema, SchemaTag) else []
+                     for schema in self.schema}
 
-    def get_xml_element(self):
+    def make_xml_element(self):
         element = etree.Element(self.category, {'name': self.name, 'solver': self.solver})
         if self.lib is not None:
             element.attrib['lib'] = self.lib
         if self.geometry:
+            for c in self.incomments.get('geometry', ()):
+                element.append(etree.Comment(c))
             etree.SubElement(element, 'geometry', {'ref': self.geometry})
         if self.mesh:
+            for c in self.incomments.get('mesh', ()):
+                element.append(etree.Comment(c))
             etree.SubElement(element, 'mesh', {'ref': self.mesh})
+        done = OrderedDict()
         for schema in self.schema:
             tag = schema.name
             data = self.data[tag]
             if isinstance(schema, SchemaTag):
                 attrs = dict((item for item in data.items() if item[1] and item[0][-1] != '#'))
-                if attrs:
-                    if '/' in tag:
-                        path = tag.split('/')
-                        tag = path[-1]
-                        el = element
-                        for tg in path[:-1]:
-                            f = el.find(tg)
-                            if f is not None:
-                                el = f
-                            else:
-                                el = etree.SubElement(el, tg)
-                        etree.SubElement(el, tag, attrs)
+                if '/' in tag:
+                    path = tag.split('/')
+                    tag = path[-1]
+                    el = element
+                    ck = None
+                    for tg in path[:-1]:
+                        ck = tg if ck is None else ck+'/'+tg
+                        f = el.find(tg)
+                        if f is not None:
+                            el = f
+                        else:
+                            for c in self.incomments.get(ck, ()):
+                                el.append(etree.Comment(c))
+                            el = etree.SubElement(el, tg)
+                            done[ck] = el
+                    ck += '/'+tag
+                    for c in self.incomments.get(ck, ()):
+                        el.append(etree.Comment(c))
+                    done[ck] = etree.SubElement(el, tag, attrs)
+                else:
+                    el = element.find(tag)
+                    if el is None:
+                        for c in self.incomments.get(tag, ()):
+                            element.append(etree.Comment(c))
+                        done[tag] = etree.SubElement(element, tag, attrs)
                     else:
-                        etree.SubElement(element, tag, attrs)
+                        el.attrib.update(attrs)
             elif isinstance(schema, SchemaBoundaryConditions):
+                for c in self.incomments.get(schema.name, ()):
+                    element.append(etree.Comment(c))
                 xml = schema.to_xml(data)
                 if xml is not None:
                     element.append(xml)
             else:
+                for c in self.incomments.get(tag, ()):
+                    element.append(etree.Comment(c))
                 if data:
                     if not isinstance(data, str): data = data.encode('utf8')
                     lines = data.split('\n')
@@ -174,39 +199,60 @@ class SchemaSolver(Solver):
                     lines = '\n    '.join(lines)
                     el = etree.fromstringlist(['<', tag, '>\n    ', lines, '\n  </', tag, '>'])
                     element.append(el)
+                    done[tag] = el
+        for ck, el in reversed(done.items()):
+            for c in self.incomments.get(ck+'/', ()):
+                el.append(etree.Comment(c))
+            if len(el) == 0 and len(el.attrib) == 0:
+                el.getparent().remove(el)
+        for c in self.incomments.get('/', ()):
+            element.append(etree.Comment(c))
         return element
 
-    def set_xml_element(self, element):
+    def load_xml_element(self, element):
         self.set_fresh_data()
-        super(SchemaSolver, self).set_xml_element(element)
-        el = element.find('geometry')
-        if el is not None:
-            self.geometry = el.attrib.get('ref')
-            #TODO report missing or mismatching geometry
-        if self.mesh_types:
-            el = element.find('mesh')
+        super(SchemaSolver, self).load_xml_element(element)
+        self.incomments = {}
+        with UnorderedTagReader(element) as reader:
+            el = reader.find('geometry')
             if el is not None:
-                self.mesh = el.attrib.get('ref')
-                #TODO report missing or mismatching mesh
-        for schema in self.schema:
-            el = element.find(schema.name)
-            if el is not None:
-                if isinstance(schema, SchemaTag):
-                    try:
-                        data = self.data[schema.name]
-                    except KeyError:
-                        pass
+                self.geometry = el.attrib.get('ref')
+                #TODO report missing or mismatching geometry
+                self.incomments['geometry'] = el.comments
+            if self.mesh_types:
+                el = reader.find('mesh')
+                if el is not None:
+                    self.mesh = el.attrib.get('ref')
+                    #TODO report missing or mismatching mesh
+                    self.incomments['mesh'] = el.comments
+            groups = set()
+            for schema in self.schema:
+                el = reader.find(schema.name)
+                if el is not None:
+                    if isinstance(schema, SchemaTag):
+                        try:
+                            data = self.data[schema.name]
+                        except KeyError:
+                            pass
+                        else:
+                            with AttributeReader(el) as attrs:
+                                for name in attrs:
+                                    if name+'#' in data:
+                                        data[name+'0'] = attrs[name]
+                                    else:
+                                        data[name] = attrs[name]
+                    elif isinstance(schema, SchemaBoundaryConditions):
+                        self.data[schema.name] = schema.from_xml(el)
                     else:
-                        with AttributeReader(el) as attrs:
-                            for name in attrs:
-                                if name+'#' in data:
-                                    data[name+'0'] = attrs[name]
-                                else:
-                                    data[name] = attrs[name]
-                elif isinstance(schema, SchemaBoundaryConditions):
-                    self.data[schema.name] = schema.from_xml(el)
-                else:
-                    self.data[schema.name] = print_interior(el)
+                        self.data[schema.name] = print_interior(el)
+                    self.incomments[schema.name] = el.comments
+                    if '/' in schema.name:
+                        groups.add('/'.join(schema.name.split('/')[:-1]))
+            for group in groups:
+                el = reader.find(group)
+                self.incomments[group] = el.comments
+                self.incomments[group+'/'] = reader.get_comments(el, True)
+            self.incomments['/'] = reader.get_comments()
 
     def get_controller(self, document):
         from ...controller.solvers.schemasolver import SchemaSolverController
@@ -274,7 +320,7 @@ class SchemaSolverFactory:
         result = SchemaSolver(self.category, self.schema, self.lib, self.solver, self.geometry_type, self.mesh_types,
                               self.need_mesh, name, parent, info_cb)
         if element is not None:
-            result.set_xml_element(element)
+            result.load_xml_element(element)
         if self.lib is not None and result.lib != self.lib:
             result.lib = self.lib  # force solver lib
         return result

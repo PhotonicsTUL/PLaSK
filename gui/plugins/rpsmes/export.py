@@ -178,7 +178,7 @@ else:
         manager = plask.Manager()
         try:
             with HandleMaterialsModule(parent.document):
-                manager.load(parent.document.get_content(sections=('defines', 'materials', 'geometry')))
+                manager.load(parent.document.get_contents(sections=('defines', 'materials', 'geometry')))
             controller = parent.document.geometry.controllers[0]
             current_model = controller.current_root()
             name = controller.current_root().name

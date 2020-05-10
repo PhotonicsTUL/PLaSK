@@ -32,7 +32,7 @@ from ...model.grids import GridsModel, construct_grid
 from ...model.materials import HandleMaterialsModule
 from ...model.info import Info
 from ...utils import get_manager
-from ...utils.xml import XML_parser
+from ...utils.xml import XMLparser
 from ...utils.config import CONFIG
 
 basestring = str, bytes
@@ -254,11 +254,11 @@ class GridsController(Controller):
             if self.manager is None:
                 manager = get_manager()
                 with HandleMaterialsModule(self.document):
-                    manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry')))
+                    manager.load(self.document.get_contents(sections=('defines', 'materials', 'geometry')))
             else:
                 manager = self.manager
                 manager.msh.clear()
-            manager.load(self.document.get_content(sections=('grids',)))
+            manager.load(self.document.get_contents(sections=('grids',)))
             self.manager = manager
             try:
                 self.selected_geometry = str(self.mesh_preview.toolbar.widgets['select_geometry'].currentText())
@@ -336,11 +336,11 @@ class GridsController(Controller):
             if self.manager is None:
                 manager = get_manager()
                 with HandleMaterialsModule(self.document):
-                    manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry')))
+                    manager.load(self.document.get_contents(sections=('defines', 'materials', 'geometry')))
             else:
                 manager = self.manager
                 manager.msh.clear()
-            manager.load(self.document.get_content(sections=('grids',)))
+            manager.load(self.document.get_contents(sections=('grids',)))
             self.manager = manager
             mesh = manager.msh[self._current_controller.model.name](manager.geo[self.selected_geometry])
             name = self._current_controller.model.name + '-' + self.selected_geometry
@@ -348,7 +348,7 @@ class GridsController(Controller):
             if _DEBUG:
                 print(xml, file=sys.stderr)
             mesh_model = construct_grid(self.model,
-                                        etree.parse(StringIO(str(xml)), XML_parser).getroot().find('grids/mesh'))
+                                        etree.parse(StringIO(str(xml)), XMLparser).getroot().find('grids/mesh'))
             mesh_model.geometry_name = self.selected_geometry
             index = self.grids_table.selectionModel().currentIndex()
             if index.isValid():

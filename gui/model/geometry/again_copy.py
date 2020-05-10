@@ -60,7 +60,7 @@ class GNAgain(GNode):
     @staticmethod
     def from_xml(element, conf):
         result = GNAgain()
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result
 
     @property
@@ -212,7 +212,7 @@ class GNCopy(GNObject):
             elif t.tag == 'replace': el = GNCReplace(parent=self)
             elif t.tag == 'toblock': el = GNCToBlock(parent=self)
             else: ordered_reader.recent_was_unexpected()
-            el.set_xml_element(t, conf)
+            el.load_xml_element(t, conf)
 
     def tag_name(self, full_name=True):
         return "copy"
@@ -284,5 +284,5 @@ class GNCopy(GNObject):
     @staticmethod
     def from_xml(element, conf):
         result = GNCopy()
-        result.set_xml_element(element, conf)
+        result.load_xml_element(element, conf)
         return result

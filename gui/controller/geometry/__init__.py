@@ -308,7 +308,7 @@ class GeometryController(Controller):
             if self.manager is None:
                 manager = get_manager()
                 with HandleMaterialsModule(self.document):
-                    manager.load(self.document.get_content(sections=('defines', 'materials')))
+                    manager.load(self.document.get_contents(sections=('defines', 'materials')))
             else:
                 manager = self.manager
                 manager.geo.clear()
@@ -316,7 +316,7 @@ class GeometryController(Controller):
                 manager._roots.clear()
                 self.plotted_object = None
             with HandleMaterialsModule(self.document):
-                manager.load(self.document.get_content(sections=('defines', 'materials', 'geometry')))
+                manager.load(self.document.get_contents(sections=('defines', 'materials', 'geometry')))
             self.manager = manager
             try:
                 plotted_object = self.model.fake_root.get_corresponding_object(tree_element, manager)

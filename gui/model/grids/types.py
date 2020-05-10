@@ -77,13 +77,23 @@ def construct_grid(grids_model, element):
         k = element.attrib.keys()
         k.sort()
         if k != ['name', 'type']: raise ValueError('<mesh> tag must have two attributes (name and type), but has: %s' % ', '.join(k))
-        return contruct_mesh(grids_model, element)
+        result = contruct_mesh(grids_model, element)
+        try:
+            result.comments = element.comments
+        except AttributeError:
+            result.comments = []
+        return result
 
     if element.tag == "generator":
         k = element.attrib.keys()
         k.sort()
         if k != ['method', 'name', 'type']: raise ValueError('<generator> tag must have attributes "method", "name" and "type", but has: %s' % ', '.join(k))
-        return contruct_generator(grids_model, element)
+        result = contruct_generator(grids_model, element)
+        try:
+            result.comments = element.comments
+        except AttributeError:
+            result.comments = []
+        return result
 
     raise ValueError('In <grids> section only <mesh> and <generator> tags are allowed, but got "%s".' % element.tag)
 

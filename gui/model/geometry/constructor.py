@@ -53,8 +53,10 @@ def construct_geometry_object(element, conf, *allowed_types):
     s = None if dim is None else '{}d'.format(dim)
     for m in allowed_types:
         c = m.get(element.tag)
-        if c is None and s is not None: c = m.get(element.tag + s)
-        if c is not None: return c(element, conf)
+        if c is None and s is not None:
+            c = m.get(element.tag + s)
+        if c is not None:
+            return c(element, conf)
     raise ValueError('Unexpected tag: <{}>'.format(element.tag))
 
 

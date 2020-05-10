@@ -44,12 +44,12 @@ class TestGUIModelDefines(GUITestCase):
     def test_columnCount(self):
         self.assertEqual(self.defines.columnCount(), 2)
 
-    def test_get_xml_element(self):
-        self.assertEqualXML(self.defines.get_xml_element(),
+    def test_make_xml_element(self):
+        self.assertEqualXML(self.defines.make_xml_element(),
             '<defines><define name="def1" value="val1"/><!--def 2 comment--><define name="def2" value="val2"/></defines>')
 
-    def test_set_xml_element(self):
-        self.defines.set_xml_element(etree.XML(
+    def test_load_xml_element(self):
+        self.defines.load_xml_element(etree.XML(
             '<defines><!--comment--><define name="x1" value="y1"/><!--last--></defines>'))
         self.assertEqual(len(self.defines.entries), 1)
         self.assertEqual(self.defines.entries[0].name, "x1")

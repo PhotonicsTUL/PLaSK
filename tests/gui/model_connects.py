@@ -39,13 +39,13 @@ class TestGUIConnectDefines(GUITestCase):
     def test_columnCount(self):
         self.assertEqual(self.connects.columnCount(), 2)
 
-    def test_get_xml_element(self):
-        self.assertEqualXML(self.connects.get_xml_element(),
+    def test_make_xml_element(self):
+        self.assertEqualXML(self.connects.make_xml_element(),
             '<connects><connect in="in1" out="out1"/><!--connect 2 comment--><connect in="in2" out="out2"/></connects>')
 
-    def test_set_xml_element(self):
+    def test_load_xml_element(self):
         xml = etree.XML('<connects><!--comment--><connect in="x1" out="y1"/><!--last--></connects>')
-        self.connects.set_xml_element(xml)
+        self.connects.load_xml_element(xml)
         self.assertEqual(len(self.connects.entries), 1)
         self.assertEqual(self.connects.entries[0].input, "x1")
         self.assertEqual(self.connects.entries[0].output, "y1")
