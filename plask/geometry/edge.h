@@ -109,18 +109,18 @@ struct PLASK_API Strategy {
  * Universal strategies form subset of strategies, and could be required in some context.
  */
 struct PLASK_API UniversalStrategy: public Strategy {
-    virtual UniversalStrategy* clone() const override = 0;
+    UniversalStrategy* clone() const override = 0;
 };
 
 /**
  * Strategy which does nothing.
  */
 struct PLASK_API Null: public UniversalStrategy {
-    virtual Type type() const override { return DEFAULT; }
-    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
-    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
-    virtual Null* clone() const override;
-    virtual std::string str() const override;
+    Type type() const override { return DEFAULT; }
+    void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
+    void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
+    Null* clone() const override;
+    std::string str() const override;
 };
 
 /**
@@ -139,14 +139,14 @@ struct PLASK_API SimpleMaterial: public UniversalStrategy {
      */
     SimpleMaterial(const shared_ptr<Material>& material): material(material) {}
 
-    virtual Type type() const override { return SIMPLE; }
+    Type type() const override { return SIMPLE; }
 
-    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
-    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
+    void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
+    void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
 
-    virtual SimpleMaterial* clone() const override;
+    SimpleMaterial* clone() const override;
 
-    virtual std::string str() const override;
+    std::string str() const override;
 
 };
 
@@ -155,14 +155,14 @@ struct PLASK_API SimpleMaterial: public UniversalStrategy {
  */
 struct PLASK_API Extend: public UniversalStrategy {
 
-    virtual Type type() const override { return EXTEND; }
+    Type type() const override { return EXTEND; }
 
-    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
-    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
+    void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
+    void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
 
-    virtual Extend* clone() const override;
+    Extend* clone() const override;
 
-    virtual std::string str() const override;
+    std::string str() const override;
 
 };
 
@@ -171,14 +171,14 @@ struct PLASK_API Extend: public UniversalStrategy {
  */
 struct PLASK_API Periodic: public Strategy {
 
-    virtual Type type() const override { return PERIODIC; }
+    Type type() const override { return PERIODIC; }
 
-    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
-    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
+    void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
+    void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
 
-    virtual Periodic* clone() const override;
+    Periodic* clone() const override;
 
-    virtual std::string str() const override;
+    std::string str() const override;
 
     /*virtual bool canCoexistsWith(const Strategy& oppositeStrategy) const {
         return oppositeStrategy.type() == Strategy::PERIODIC;
@@ -187,16 +187,16 @@ struct PLASK_API Periodic: public Strategy {
 
 struct PLASK_API Mirror: public Strategy {
 
-    virtual Type type() const override { return MIRROR; }
+    Type type() const override { return MIRROR; }
 
-    virtual void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
-    virtual void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
+    void applyLo(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
+    void applyHi(double bbox_lo, double bbox_hi, double& p, shared_ptr<Material>& result_material, const Strategy* opposite) const override;
 
-    virtual bool canMoveOutsideBoundingBox() const override;
+    bool canMoveOutsideBoundingBox() const override;
 
-    virtual Mirror* clone() const override;
+    Mirror* clone() const override;
 
-    virtual std::string str() const override;
+    std::string str() const override;
 
 };
 

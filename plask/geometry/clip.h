@@ -9,12 +9,10 @@ namespace plask {
  * Represent geometry object equal to its child clipped to given box.
  * @ingroup GEOMETRY_OBJ
  */
-template <int dim>
-struct PLASK_API Clip: public GeometryObjectTransform<dim> {
-
+template <int dim> struct PLASK_API Clip : public GeometryObjectTransform<dim> {
     static const char* NAME;
 
-    virtual std::string getTypeName() const override { return NAME; }
+    std::string getTypeName() const override { return NAME; }
 
     typedef typename GeometryObjectTransform<dim>::ChildType ChildType;
 
@@ -31,39 +29,40 @@ struct PLASK_API Clip: public GeometryObjectTransform<dim> {
      */
     Box clipBox;
 
-    //Clip(const Clip<dim>& tocpy) = default;
+    // Clip(const Clip<dim>& tocpy) = default;
 
     /**
      * @param child child geometry object to clip
      * @param Clip Clip
      */
-    explicit Clip(shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >(), const Box& clipBox = Primitive<dim>::INF_BOX)
+    explicit Clip(shared_ptr<GeometryObjectD<dim>> child = shared_ptr<GeometryObjectD<dim>>(),
+                  const Box& clipBox = Primitive<dim>::INF_BOX)
         : GeometryObjectTransform<dim>(child), clipBox(clipBox) {}
 
     explicit Clip(GeometryObjectD<dim>& child, const Box& clipBox = Primitive<dim>::INF_BOX)
         : GeometryObjectTransform<dim>(child), clipBox(clipBox) {}
 
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
+    shared_ptr<Material> getMaterial(const DVec& p) const override;
 
-    virtual bool contains(const DVec& p) const override;
+    bool contains(const DVec& p) const override;
 
     using GeometryObjectTransform<dim>::getPathsTo;
 
-    GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
+    GeometryObject::Subtree getPathsAt(const DVec& point, bool all = false) const override;
 
-    virtual Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
+    Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
 
-    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
+    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate,
+                                   std::vector<DVec>& dest,
+                                   const PathHints* path = 0) const override;
 
     /**
      * Get shallow copy of this.
      * @return shallow copy of this
      */
-    shared_ptr<Clip<dim>> copyShallow() const {
-         return plask::make_shared<Clip<dim>>(getChild(), clipBox);
-    }
+    shared_ptr<Clip<dim>> copyShallow() const { return plask::make_shared<Clip<dim>>(getChild(), clipBox); }
 
-    virtual shared_ptr<GeometryObject> shallowCopy() const override;
+    shared_ptr<GeometryObject> shallowCopy() const override;
 
     /**
      * Get shallow copy of this with diffrent clip box.
@@ -74,10 +73,17 @@ struct PLASK_API Clip: public GeometryObjectTransform<dim> {
         return plask::make_shared<Clip<dim>>(getChild(), new_clip);
     }
 
-    protected:
+    void addPointsAlong(std::set<double>& points,
+                        Primitive<3>::Direction direction,
+                        unsigned max_steps,
+                        double min_step_size) const override;
 
+    void addLineSegmentsToSet(std::set<typename GeometryObjectD<dim>::LineSegment>& segments,
+                              unsigned max_steps,
+                              double min_step_size) const override;
+
+  protected:
     void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
-
 };
 
 template <> void Clip<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
@@ -86,6 +92,6 @@ template <> void Clip<3>::writeXMLAttr(XMLWriter::Element& dest_xml_object, cons
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Clip<2>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Clip<3>)
 
-}   // namespace plask
+}  // namespace plask
 
-#endif // PLASK__GEOMETRY_CLIP_H
+#endif  // PLASK__GEOMETRY_CLIP_H

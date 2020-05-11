@@ -157,7 +157,7 @@ struct DataSourceDataImpl: public LazyDataImpl<plask::optional<typename DataSour
 
     DataSourceDataImpl(const DataSourceType& data_src, const MeshD<DataSourceType::DIM>& dst_mesh): data_src(data_src), dst_mesh(dst_mesh) {}
 
-    virtual std::size_t size() const override { return dst_mesh.size(); }
+    std::size_t size() const override { return dst_mesh.size(); }
 
 };*/
 
@@ -276,7 +276,7 @@ struct InnerDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
         return regions.size();
     }
 
-    virtual void calcConnectionParameters() override {
+    void calcConnectionParameters() override {
         regions.clear();
         std::vector<OutVec> pos = this->outputObj->getObjectPositions(*this->inputObj, this->getPath());
         for (auto& p: pos) {
@@ -315,7 +315,7 @@ struct OuterDataSource: public DataSourceWithReceiver<PropertyT, OutputSpaceType
 
     Vec<InputGeomObj::DIM, double> inTranslation;
 
-    virtual void calcConnectionParameters() override {
+    void calcConnectionParameters() override {
         std::vector<Vec<InputGeomObj::DIM, double>> pos = this->inputObj->getObjectPositions(*this->outputObj, this->getPath());
         if (pos.size() != 1) throw Exception("Inner output geometry object has not unambiguous position in outer input geometry object.");
         inTranslation = pos[0];

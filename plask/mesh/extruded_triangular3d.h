@@ -344,7 +344,7 @@ private:
                 }
             }
 
-            virtual bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& other) const override {
+            bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& other) const override {
                 return longTranIter == static_cast<const IteratorImpl&>(other).longTranIter &&
                        vertIndex == static_cast<const IteratorImpl&>(other).vertIndex;
             }
@@ -413,7 +413,7 @@ private:
                 ++longTranIndex;
             }
 
-            virtual bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& other) const override {
+            bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& other) const override {
                 return longTranIndex == static_cast<const IteratorImpl&>(other).longTranIndex;
             }
 

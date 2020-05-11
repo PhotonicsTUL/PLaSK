@@ -75,10 +75,10 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal3DSolver: public SolverWithMes
     void solveMatrix(SparseBandMatrix3D& A, DataVector<double>& B);
 
     /// Initialize the solver
-    virtual void onInitialize() override;
+    void onInitialize() override;
 
     /// Invalidate the data
-    virtual void onInvalidate() override;
+    void onInvalidate() override;
 
     /// Perform computations for particular matrix type
     template <typename MatrixT>
@@ -123,11 +123,11 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal3DSolver: public SolverWithMes
      **/
     double compute(int loops=1);
 
-    virtual void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
+    void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
     FiniteElementMethodThermal3DSolver(const std::string& name="");
 
-    virtual std::string getClassName() const override { return "thermal.Static3D"; }
+    std::string getClassName() const override { return "thermal.Static3D"; }
 
     ~FiniteElementMethodThermal3DSolver();
 

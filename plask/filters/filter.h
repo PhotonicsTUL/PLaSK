@@ -53,7 +53,7 @@ struct FilterBaseImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTempl
             outerSourceData = filter.outerSource->operator()(dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         }
 
-        virtual ValueType at(std::size_t point_index) const override {
+        ValueType at(std::size_t point_index) const override {
             for (std::size_t source_index = 0; source_index < innerSourcesData.size(); ++source_index) {
                 //if (!innerSourcesData[source_index])
                 //    innerSourcesData[source_index] = filter.innerSources[source_index]->operator()(dst_mesh, extra_args, method);
@@ -64,7 +64,7 @@ struct FilterBaseImpl< PropertyT, FIELD_PROPERTY, OutputSpaceType, VariadicTempl
             return *outerSourceData(point_index);
         }
 
-        virtual std::size_t size() const override { return dst_mesh->size(); }
+        std::size_t size() const override { return dst_mesh->size(); }
 
     };
 
@@ -111,7 +111,7 @@ public:
         setDefault(PropertyAt<PropertyT, OutputSpaceType>::getDefaultValue());
     }
 
-    virtual std::string getClassName() const override { return "Filter"; }
+    std::string getClassName() const override { return "Filter"; }
 
     /**
      * Get this filter output geometry.
@@ -268,7 +268,7 @@ struct FilterBaseImpl< PropertyT, MULTI_FIELD_PROPERTY, OutputSpaceType, Variadi
             outerSourceData = filter.outerSource->operator()(num, dst_mesh, std::forward<ExtraArgs>(extra_args)..., method);
         }
 
-        virtual ValueType at(std::size_t point_index) const override {
+        ValueType at(std::size_t point_index) const override {
             for (std::size_t source_index = 0; source_index < innerSourcesData.size(); ++source_index) {
                 //if (!innerSourcesData[source_index])
                 //    innerSourcesData[source_index] = filter.innerSources[source_index]->operator()(dst_mesh, extra_args, method);
@@ -279,7 +279,7 @@ struct FilterBaseImpl< PropertyT, MULTI_FIELD_PROPERTY, OutputSpaceType, Variadi
             return *outerSourceData(point_index);
         }
 
-        virtual std::size_t size() const override { return dst_mesh->size(); }
+        std::size_t size() const override { return dst_mesh->size(); }
 
     };
 
@@ -334,7 +334,7 @@ public:
         setDefault(PropertyAt<PropertyT, OutputSpaceType>::getDefaultValue());
     }
 
-    virtual std::string getClassName() const override { return "Filter"; }
+    std::string getClassName() const override { return "Filter"; }
 
     /**
      * Get this filter output geometry.
@@ -582,7 +582,7 @@ struct FilterImpl<PropertyT, Geometry2DCartesian>: public FilterBase<PropertyT, 
         return input(obj.getChild(), path);
     }
 
-    virtual ReceiverFor<PropertyT, Geometry2DCylindrical>& input(Geometry2DCylindrical&, const PathHints* = nullptr) override {
+    ReceiverFor<PropertyT, Geometry2DCylindrical>& input(Geometry2DCylindrical&, const PathHints* = nullptr) override {
         throw Exception("Bad use of filter over Cartesian space. Cartesian geometry 2D can't contain cylindrical geometry and can't be included in cylindrical geometry.");
     }
 

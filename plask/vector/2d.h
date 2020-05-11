@@ -299,7 +299,7 @@ PLASK_NO_WARNING_END
      * @param i number of coordinate
      * @return vector similar to this but with changed i-th component to oposite
      */
-    inline Vec<2,T> fliped(size_t i) {
+    inline Vec<2,T> flipped(size_t i) {
         Vec<2,T> res = *this;
         res.flip(i);
         return res;

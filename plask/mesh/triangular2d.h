@@ -335,7 +335,7 @@ struct PLASK_API TriangularMesh2D: public MeshD<2> {
      *        or @c ~(DIELECTRIC|METAL) for selecting everything else
      * @return the masked mesh constructed
      */
-    TriangularMesh2D masked(const GeometryD<2>& geom, unsigned int materialKinds) const {
+    TriangularMesh2D masked(const GeometryD<2>& geom, unsigned materialKinds) const {
         return masked([&](const Element& el) { return (geom.getMaterial(el.getMidpoint())->kind() & materialKinds) != 0; });
     }
 

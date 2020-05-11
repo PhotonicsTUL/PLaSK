@@ -551,7 +551,7 @@ namespace spline {
                 }
             }
 
-            /* loop from X - 2 to 0 inclusive (safely testing loop condition for an unsigned integer), to perform the back substitution */
+            /* loop from X - 2 to 0 inclusive (safely testing loop condition for an unsignedeger), to perform the back substitution */
             for (size_t i = n1, si = n1*stride; i-- > 0; si -= stride) {
                 for (size_t c1 = 0, s1 = 0; c1 != size1; ++c1, s1 += stride1) {
                     for (size_t c2 = 0, s2 = 0; c2 != size2; ++c2, s2 += stride2)

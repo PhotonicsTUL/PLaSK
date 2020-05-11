@@ -94,7 +94,7 @@ struct PolymorphicForwardIteratorWrapperImpl: public PolymorphicForwardIteratorI
 
     void increment() override { ++wrapped_iterator; }
 
-    virtual bool equal(const PolymorphicForwardIteratorImpl<ValueT, ReferenceT>& other) const override {
+    bool equal(const PolymorphicForwardIteratorImpl<ValueT, ReferenceT>& other) const override {
         return wrapped_iterator == static_cast<const PolymorphicForwardIteratorWrapperImpl<wrapped_iterator_type, ValueT, ReferenceT>&>(other).wrapped_iterator;
     }
 

@@ -1319,8 +1319,8 @@ long gain::Calculate_Gain_Profile_n(const ExternalLevels& zewpoziomy, double sum
 //    }
 //  sort(min.begin(),min.end());
 //  double m= min[0];
-//  unsigned int gdzie=0;
-//  for(unsigned int i=1;i<=min.size()-1;i++)
+//  unsigned gdzie=0;
+//  for(unsigned i=1;i<=min.size()-1;i++)
 //    {
 //      if(Get_gain_at(m)<Get_gain_at(min[i]))
 //        {
@@ -1359,8 +1359,8 @@ long gain::Calculate_Gain_Profile_n(const ExternalLevels& zewpoziomy, double sum
 //    }
 //  sort(min.begin(),min.end());
 //  double m= min[0];
-//  unsigned int gdzie=0;
-//  for(unsigned int i=1;i<=min.size()-1;i++)
+//  unsigned gdzie=0;
+//  for(unsigned i=1;i<=min.size()-1;i++)
 //    {
 //      if(Get_gain_at_n(m, zewpoziomy, sumaszer)<Get_gain_at_n(min[i], zewpoziomy, sumaszer))
 //        {

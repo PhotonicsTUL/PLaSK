@@ -31,11 +31,11 @@ struct ReductionTo2DMesh: public MeshD<2> {
     ReductionTo2DMesh(const shared_ptr<const MeshD<3>> sourceMesh, const Vec<3,double>& translation)
         : translation(vec<2>(translation)), sourceMesh(sourceMesh) {}
 
-    virtual Vec<2, double> at(std::size_t index) const override {
+    Vec<2, double> at(std::size_t index) const override {
         return vec<2>(sourceMesh->at(index)) - translation;
     }
 
-    virtual std::size_t size() const override {
+    std::size_t size() const override {
         return sourceMesh->size();
     }
 };
@@ -62,11 +62,11 @@ struct PLASK_API CylReductionTo2DMesh: public MeshD<2> {
     CylReductionTo2DMesh(const shared_ptr<const MeshD<3>> sourceMesh, const Vec<3,double>& translation=Primitive<3>::ZERO_VEC)
         : translation(translation), sourceMesh(sourceMesh) {}
 
-    virtual Vec<2, double> at(std::size_t index) const override {
+    Vec<2, double> at(std::size_t index) const override {
         return rotateToLonTranAbs(sourceMesh->at(index) - translation);
     }
 
-    virtual std::size_t size() const override {
+    std::size_t size() const override {
         return sourceMesh->size();
     }
 
@@ -102,11 +102,11 @@ public:
         this->translation.lon() += lon;
     }
 
-    virtual Vec<3, double> at(std::size_t index) const override {
+    Vec<3, double> at(std::size_t index) const override {
         return vec3Dplus2D(translation, sourceMesh->at(index));
     }
 
-    virtual std::size_t size() const override {
+    std::size_t size() const override {
         return sourceMesh->size();
     }
 };
@@ -144,11 +144,11 @@ public:
         this->translation.lon() += longBegin;
     }
 
-    virtual Vec<3, double> at(std::size_t index) const override {
+    Vec<3, double> at(std::size_t index) const override {
         return translation + vec(sourceMesh->at(index / pointsCount), stepSize * double(index));
     }
 
-    virtual std::size_t size() const override {
+    std::size_t size() const override {
         return sourceMesh->size() * pointsCount;
     }
 };
@@ -188,7 +188,7 @@ public:
         : sourceMesh(sourceMesh), translation(translation), slice(PI_DOUBLED / double(pointsCount)), pointsCount(pointsCount) {
     }
 
-    virtual Vec<3, double> at(std::size_t index) const override {
+    Vec<3, double> at(std::size_t index) const override {
         Vec<2, double> p = sourceMesh->at(index / pointsCount);
         const double angle = slice * double(index % pointsCount);
         return Vec<3, double>(
@@ -198,7 +198,7 @@ public:
         );
     }
 
-    virtual std::size_t size() const override {
+    std::size_t size() const override {
         return sourceMesh->size() * pointsCount;
     }
 

@@ -551,7 +551,7 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
      * @param index index of point, from 0 to size()-1
      * @return point with given @p index
      */
-    virtual Vec<2, double> at(std::size_t index) const override {
+    Vec<2, double> at(std::size_t index) const override {
         return Vec<2, double>(axis[0]->at(index0(index)), axis[1]->at(index1(index)));
     }
 
@@ -803,9 +803,9 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
 
         BoundaryIteratorImpl(const RectangularMesh2D& mesh, std::size_t line, std::size_t index): mesh(mesh), line(line), index(index) {}
 
-        virtual void increment() override { ++index; }
+        void increment() override { ++index; }
 
-        virtual bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& other) const override {
+        bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& other) const override {
             return index == static_cast<const BoundaryIteratorImpl&>(other).index;
         }
 
@@ -828,7 +828,7 @@ class PLASK_API RectangularMesh2D: public RectangularMeshBase2D {
 
         HorizontalIteratorImpl(const RectangularMesh2D& mesh, std::size_t line, std::size_t index): BoundaryIteratorImpl(mesh, line, index) {}
 
-        virtual std::size_t dereference() const override { return this->mesh.index(this->index, this->line); }
+        std::size_t dereference() const override { return this->mesh.index(this->index, this->line); }
 
         std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl> clone() const override {
             return std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl>(new HorizontalIteratorImpl(*this));

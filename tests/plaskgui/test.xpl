@@ -67,7 +67,7 @@
     <!--c2-->
     <stack name="stack2d">
       <!--c3-->
-      <shelf flat="no">
+      <shelf steps-num="20" flat="no">
         <stack name="new">
           <arrange name="Pilars" dtran="0.4" dvert="0" count="3">
             <stack name="STOS">
@@ -123,7 +123,7 @@
     </copy>
   </cartesian2d>
   <cartesian2d name="simple">
-    <stack>
+    <stack name="simple-stack">
       <again ref="blok2"/>
       <stack repeat="3">
         <rectangle material="Al(0.9)GaAs" dtran="1" dvert="0.3"/>
@@ -273,6 +273,11 @@
       </align>
     </stack>
   </cartesian2d>
+  <cartesian3d name="revolved" axes="x,y,z">
+    <revolution rev-steps-num="20">
+      <again ref="simple-stack"/>
+    </revolution>
+  </cartesian3d>
 </geometry>
 
 <grids>

@@ -169,6 +169,7 @@ class GridsController(Controller):
         self.grids_table.setFocus()
 
     def on_edit_exit(self):
+        self.manager = None
         if self._current_controller is not None:
             self._last_index = self._current_index
             self.grids_table.selectionModel().clear()

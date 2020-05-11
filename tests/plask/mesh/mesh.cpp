@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE(Mesh) {
 
         //plask::MeshD<plask::space::Cartesian3D> methods implementation:
 
-        virtual std::size_t size() const override {
+        std::size_t size() const override {
             return 1;
         }
 

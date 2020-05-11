@@ -15,7 +15,7 @@ struct PLASK_API Intersection: public GeometryObjectTransform<dim> {
 
     static const char* NAME;
 
-    virtual std::string getTypeName() const override { return NAME; }
+    std::string getTypeName() const override { return NAME; }
 
     typedef typename GeometryObjectTransform<dim>::ChildType ChildType;
 
@@ -56,19 +56,19 @@ struct PLASK_API Intersection: public GeometryObjectTransform<dim> {
     explicit Intersection(GeometryObjectD<dim>& child, shared_ptr< GeometryObjectD<dim> > clipShape = shared_ptr< GeometryObjectD<dim> >())
         : GeometryObjectTransform<dim>(child), envelope(clipShape) {}
 
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
+    shared_ptr<Material> getMaterial(const DVec& p) const override;
 
-    virtual bool contains(const DVec& p) const override;
+    bool contains(const DVec& p) const override;
 
     using GeometryObjectTransform<dim>::getPathsTo;
 
     GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
 
-    virtual Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
+    Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
+    void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
 
-    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
+    void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
 
     /**
      * Get shallow copy of this.
@@ -78,7 +78,7 @@ struct PLASK_API Intersection: public GeometryObjectTransform<dim> {
          return plask::make_shared<Intersection<dim>>(getChild(), envelope);
     }
 
-    virtual shared_ptr<GeometryObject> shallowCopy() const override;
+    shared_ptr<GeometryObject> shallowCopy() const override;
 
     /**
      * Get shallow copy of this with diffrent clipping shape.
@@ -89,12 +89,21 @@ struct PLASK_API Intersection: public GeometryObjectTransform<dim> {
         return plask::make_shared<Intersection<dim>>(getChild(), clipShape);
     }
 
+    void addPointsAlong(std::set<double>& points,
+                        Primitive<3>::Direction direction,
+                        unsigned max_steps,
+                        double min_step_size) const override;
+
+    void addLineSegmentsToSet(std::set<typename GeometryObjectD<dim>::LineSegment>& segments,
+                              unsigned max_steps,
+                              double min_step_size) const override;
+
     /**
-     * Check if point is included in the envelop.
+     * Check if point is included in the envelope.
      * @param p point to check
      * @return @c true if @p p is in envelope or there is no envelope.
      */
-    inline bool inEnvelop(const typename Intersection<dim>::DVec &p) const {
+    inline bool inEnvelope(const typename Intersection<dim>::DVec &p) const {
         return !envelope || envelope->contains(p);
     }
 

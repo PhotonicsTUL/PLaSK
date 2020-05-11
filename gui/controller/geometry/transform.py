@@ -94,11 +94,24 @@ class GNRevolutionController(GNObjectController):
                                   u' It specifies whether the item will be implicitly clipped to non-negative '
                                   u'transverse coordinates. Defaults to \'no\'.')
         super(GNRevolutionController, self).construct_form()
+        self.rev_step_num = self.construct_line_edit('Maximum steps number:', node_property_name='rev_step_num',
+                                                     display_property_name='maximum steps number')
+        self.rev_step_num.setToolTip(u'&lt;revolution <b>rev-steps-num</b>="" rev-steps-dist="" ...&gt;<br/>'
+                                     u'Maximum number of the mesh steps in horizontal directions the revolution is '
+                                     u'divided into. (integer)')
+        self.rev_step_num.setPlaceholderText('10')
+        self.rev_step_dist = self.construct_line_edit('Minimum step size:', node_property_name='rev_step_dist',
+                                                      display_property_name='minimum step size', unit=u'µm')
+        self.rev_step_dist.setToolTip(u'&lt;revolution rev-steps-num="" <b>rev-steps-dist</b>="" ...&gt;<br/>'
+                                      u'Minimum step size in horizontal directions.')
+        self.rev_step_dist.setPlaceholderText('0.005')
 
     def fill_form(self):
         super(GNRevolutionController, self).fill_form()
-        with BlockQtSignals(self.auto_clip):
+        with BlockQtSignals(self.auto_clip, self.rev_step_num, self.rev_step_dist):
             self.auto_clip.setEditText(none_to_empty(self.node.auto_clip))
+            self.rev_step_num.setText(none_to_empty(self.node.rev_step_num))
+            self.rev_step_dist.setText(none_to_empty(self.node.rev_step_dist))
 
 
 class GNTranslationController(GNObjectController):

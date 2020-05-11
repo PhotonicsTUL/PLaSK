@@ -107,6 +107,8 @@ class GNCToBlockController(GNCopyChildController):
 
 class GNCopyController(GNObjectController):
 
+    have_mesh_settings = False
+
     def construct_form(self):
         self.construct_group('Copy Settings')
         self.source = self.construct_names_before_self_combo_box('From:', node_property_name='source')

@@ -46,15 +46,15 @@ struct OnePoint3DMesh: public plask::MeshD<3> {
 
     // plask::MeshD<3> methods implementation:
 
-    virtual std::size_t size() const override {
+    std::size_t size() const override {
         return 1;
     }
 
-    virtual plask::Vec<3, double> at(std::size_t index) const override {
+    plask::Vec<3, double> at(std::size_t index) const override {
         return point;
     }
 
-    virtual void writeXML(XMLElement& object) const override {
+    void writeXML(XMLElement& object) const override {
         object.attr("type", "point3d"); // this is required attribute for the provided object
         object.addTag("point")
                .attr("c0", point.c0)

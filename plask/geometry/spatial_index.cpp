@@ -24,11 +24,11 @@ struct GeometryObjectBBox {
 template <int DIMS>
 struct EmptyLeafCacheNode: public SpatialIndexNode<DIMS> {
 
-    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& /*p*/) const override {
+    shared_ptr<Material> getMaterial(const Vec<DIMS>& /*p*/) const override {
         return shared_ptr<Material>();
     }
 
-    virtual bool contains(const Vec<DIMS>& /*p*/) const override {
+    bool contains(const Vec<DIMS>& /*p*/) const override {
         return false;
     }
 
@@ -57,7 +57,7 @@ struct LeafCacheNode: public SpatialIndexNode<DIMS> {
             children.push_back(c);
     }
 
-    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const override {
+    shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const override {
         for (auto child_it = children.rbegin(); child_it != children.rend(); ++child_it) {
             shared_ptr<Material> r = (*child_it)->getMaterial(p);
             if (r != nullptr) return r;
@@ -65,7 +65,7 @@ struct LeafCacheNode: public SpatialIndexNode<DIMS> {
         return shared_ptr<Material>();
     }
 
-    virtual bool contains(const Vec<DIMS>& p) const override {
+    bool contains(const Vec<DIMS>& p) const override {
         for (auto child: children) if (child->contains(p)) return true;
         return false;
     }
@@ -116,11 +116,11 @@ struct InternalCacheNode: public SpatialIndexNode<DIMS> {
         : offset(offset), lo(lo), hi(hi)
     {}
 
-    virtual shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const override {
+    shared_ptr<Material> getMaterial(const Vec<DIMS>& p) const override {
         return p[dir] < offset ? lo->getMaterial(p) : hi->getMaterial(p);
     }
 
-    virtual bool contains(const Vec<DIMS>& p) const override {
+    bool contains(const Vec<DIMS>& p) const override {
         return p[dir] < offset ? lo->contains(p) : hi->contains(p);
     }
 

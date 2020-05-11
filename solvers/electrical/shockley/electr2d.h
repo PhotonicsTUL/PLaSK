@@ -83,20 +83,20 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
     void solveMatrix(SparseBandMatrix2D& A, DataVector<double>& B);
 
     /// Initialize the solver
-    virtual void onInitialize() override;
+    void onInitialize() override;
 
     /// Invalidate the data
-    virtual void onInvalidate() override;
+    void onInvalidate() override;
 
     /// Get info on active region
     void setActiveRegions();
 
-    virtual void onMeshChange(const typename RectangularMesh<2>::Event& evt) override {
+    void onMeshChange(const typename RectangularMesh<2>::Event& evt) override {
         SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onMeshChange(evt);
         setActiveRegions();
     }
 
-    virtual void onGeometryChange(const Geometry::Event& evt) override {
+    void onGeometryChange(const Geometry::Event& evt) override {
         SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onGeometryChange(evt);
         setActiveRegions();
     }
@@ -296,11 +296,11 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
         setActiveRegions();
     }
 
-    virtual void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
+    void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
     FiniteElementMethodElectrical2DSolver(const std::string& name="");
 
-    virtual std::string getClassName() const override;
+    std::string getClassName() const override;
 
     ~FiniteElementMethodElectrical2DSolver();
 

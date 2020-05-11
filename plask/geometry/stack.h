@@ -121,15 +121,15 @@ struct PLASK_API StackContainerBaseImpl: public GeometryObjectContainer<dim> {
         return getChildForHeight(height, to_ignore);
     }
 
-    virtual bool contains(const DVec& p) const override;
+    bool contains(const DVec& p) const override;
 
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
+    shared_ptr<Material> getMaterial(const DVec& p) const override;
 
-    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
+    GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
 
-    virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) override;
+    bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) override;
 
-    virtual void removeAtUnsafe(std::size_t index) override;
+    void removeAtUnsafe(std::size_t index) override;
 
     /// Called by child.change signal, update heights call this change
     void onChildChanged(const GeometryObject::Event& evt) override;
@@ -230,7 +230,7 @@ public:
 
     static const char* NAME;
 
-    virtual std::string getTypeName() const override { return NAME; }
+    std::string getTypeName() const override { return NAME; }
 
     /**
      * Check if all children have the same heights.
@@ -320,9 +320,9 @@ public:
         return insertUnsafe(el, 0);
     }
 
-    virtual shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const override;
+    shared_ptr<GeometryObject> changedVersionForChildren(std::vector<std::pair<shared_ptr<ChildType>, Vec<3, double>>>& children_after_change, Vec<3, double>* recomended_translation) const override;
 
-    virtual void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &) const override;
+    void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &) const override;
 
     shared_ptr<GeometryObject> shallowCopy() const override;
 
@@ -358,7 +358,7 @@ struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim
 
     static const char* NAME;
 
-    virtual std::string getTypeName() const override { return NAME; }
+    std::string getTypeName() const override { return NAME; }
 
     ChildAligner default_aligner;
 
@@ -505,12 +505,12 @@ struct PLASK_API StackContainer: public WithAligners< StackContainerBaseImpl<dim
         this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }*/
 
-    virtual bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) override;
+    bool removeIfTUnsafe(const std::function<bool(const shared_ptr<TranslationT>& c)>& predicate) override;
 
-    virtual void removeAtUnsafe(std::size_t index) override;
+    void removeAtUnsafe(std::size_t index) override;
 
     //add in reverse order
-    virtual void writeXML(XMLWriter::Element& parent_xml_object, GeometryObject::WriteXMLCallback& write_cb, AxisNames parent_axes) const override;
+    void writeXML(XMLWriter::Element& parent_xml_object, GeometryObject::WriteXMLCallback& write_cb, AxisNames parent_axes) const override;
 
     shared_ptr<GeometryObject> shallowCopy() const override;
 
@@ -606,33 +606,33 @@ class PLASK_API MultiStackContainer: public UpperClass {
     //TODO good but unused
     //virtual bool intersects(const Box& area) const;
 
-    virtual Box getBoundingBox() const override;
+    Box getBoundingBox() const override;
 
-    virtual Box getRealBoundingBox() const override;
+    Box getRealBoundingBox() const override;
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
+    void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
 
-    virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override;
+    void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override;
 
-    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
+    void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
 
     // void extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints *path = 0) const;
 
-    virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override;
+    GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override;
 
-    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
+    GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
 
-    virtual bool contains(const DVec& p) const override;
+    bool contains(const DVec& p) const override;
 
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
+    shared_ptr<Material> getMaterial(const DVec& p) const override;
 
-    virtual std::size_t getChildrenCount() const override { return children.size() * repeat_count; }
+    std::size_t getChildrenCount() const override { return children.size() * repeat_count; }
 
-    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override;
+    shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override;
 
-    virtual std::size_t getRealChildrenCount() const override;
+    std::size_t getRealChildrenCount() const override;
 
-    virtual shared_ptr<GeometryObject> getRealChildNo(std::size_t child_no) const override;
+    shared_ptr<GeometryObject> getRealChildNo(std::size_t child_no) const override;
 
     unsigned getRepeatCount() const { return repeat_count; }
 
@@ -645,6 +645,15 @@ class PLASK_API MultiStackContainer: public UpperClass {
     shared_ptr<GeometryObject> shallowCopy() const override;
 
     shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
+
+    void addPointsAlong(std::set<double>& points,
+                        Primitive<3>::Direction direction,
+                        unsigned max_steps,
+                        double min_step_size) const override;
+
+    void addLineSegmentsToSet(std::set<typename GeometryObjectD<DIM>::LineSegment>& segments,
+                              unsigned max_steps,
+                              double min_step_size) const override;
 
 protected:
     void writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const override;

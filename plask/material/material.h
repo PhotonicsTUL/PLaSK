@@ -47,7 +47,7 @@ struct MaterialsDB;
 struct PLASK_API Material {
 
     /// Material kind
-    enum Kind: unsigned int {
+    enum Kind: unsigned {
         GENERIC        = (1<<0), ///< generic material
         EMPTY          = (1<<1), ///< no material or air
         SEMICONDUCTOR  = (1<<2), ///< semiconductor
@@ -884,8 +884,8 @@ struct PLASK_API DummyMaterial: public Material {
  */
 struct PLASK_API Semiconductor: public Material {
     static constexpr const char* NAME = "semiconductor";
-    virtual std::string name() const override;
-    virtual Kind kind() const override;
+    std::string name() const override;
+    Kind kind() const override;
 };
 
 /**
@@ -893,9 +893,9 @@ struct PLASK_API Semiconductor: public Material {
  */
 struct PLASK_API Metal: public Material {
     static constexpr const char* NAME = "metal";
-    virtual std::string name() const override;
-    virtual Kind kind() const override;
-    virtual double eps(double T) const override;
+    std::string name() const override;
+    Kind kind() const override;
+    double eps(double T) const override;
 
 };
 
@@ -904,8 +904,8 @@ struct PLASK_API Metal: public Material {
  */
 struct PLASK_API Oxide: public Material {
     static constexpr const char* NAME = "oxide";
-    virtual std::string name() const override;
-    virtual Kind kind() const override;
+    std::string name() const override;
+    Kind kind() const override;
 };
 
 /**
@@ -913,8 +913,8 @@ struct PLASK_API Oxide: public Material {
  */
 struct PLASK_API Dielectric: public Material {
     static constexpr const char* NAME = "dielectric";
-    virtual std::string name() const override;
-    virtual Kind kind() const override;
+    std::string name() const override;
+    Kind kind() const override;
 };
 
 /**
@@ -922,17 +922,17 @@ struct PLASK_API Dielectric: public Material {
  */
 struct PLASK_API LiquidCrystal: public Material {
     static constexpr const char* NAME = "liquid_crystal";
-    virtual std::string name() const override;
-    virtual Kind kind() const override;
+    std::string name() const override;
+    Kind kind() const override;
 };
 
 /**
  * Generic material, which can actually be instantiated
  */
 struct PLASK_API GenericMaterial : public Material {
-    virtual std::string name() const override { return ""; }
-    virtual Material::Kind kind() const override { return Material::GENERIC; }
-    virtual bool isEqual(const Material&) const override { return true; } // all generic materials are always equal
+    std::string name() const override { return ""; }
+    Material::Kind kind() const override { return Material::GENERIC; }
+    bool isEqual(const Material&) const override { return true; } // all generic materials are always equal
 };
 
 /**

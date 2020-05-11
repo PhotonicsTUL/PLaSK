@@ -20,6 +20,8 @@ from ...utils.str import empty_to_none, none_to_empty
 
 class GNGeometryController(GNObjectController):
 
+    have_mesh_settings = False
+
     def _borders_to_model_undoable(self):
         self._set_node_property_undoable('edges',
             [[empty_to_none(self.edges[dir][lh].currentText()) for lh in range(0, 2)] for dir in range(0, self.node.dim)],

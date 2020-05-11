@@ -54,10 +54,10 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal3DSolver: public Solver
     void solveMatrix(DgbMatrix& A, DataVector<double>& B);
 
     /// Initialize the solver
-    virtual void onInitialize() override;
+    void onInitialize() override;
 
     /// Invalidate the data
-    virtual void onInvalidate() override;
+    void onInvalidate() override;
 
   public:
 
@@ -99,11 +99,11 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal3DSolver: public Solver
     /// Get calculations elapsed time
     double getElapsTime() const { return elapstime; }
 
-    virtual void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
+    void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
     FiniteElementMethodDynamicThermal3DSolver(const std::string& name="");
 
-    virtual std::string getClassName() const override { return "thermal.Dynamic3D"; }
+    std::string getClassName() const override { return "thermal.Dynamic3D"; }
 
     ~FiniteElementMethodDynamicThermal3DSolver();
 

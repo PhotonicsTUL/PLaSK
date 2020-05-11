@@ -325,14 +325,20 @@ class GNRevolution(GNTransform):
     def __init__(self, parent=None):
         super(GNTransform, self).__init__(parent=parent, dim=3, children_dim=2)
         self.auto_clip = None
+        self.rev_step_num = None
+        self.rev_step_dist = None
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNRevolution, self)._attributes_from_xml(attribute_reader, conf)
         self.auto_clip = attribute_reader.get('auto-clip')
+        self.rev_step_num = attribute_reader.get('rev-steps-num')
+        self.rev_step_dist = attribute_reader.get('rev-steps-dist')
 
     def _attributes_to_xml(self, element, conf):
         super(GNRevolution, self)._attributes_to_xml(element, conf)
         if self.auto_clip is not None: element.attrib['auto-clip'] = self.auto_clip
+        if self.rev_step_num is not None: element.attrib['rev-steps-num'] = self.rev_step_num
+        if self.rev_step_dist is not None: element.attrib['rev-steps-dist'] = self.rev_step_dist
 
     def tag_name(self, full_name=True):
         return "revolution"

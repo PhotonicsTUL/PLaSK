@@ -148,7 +148,7 @@ struct DataFromCyl2Dto3DSourceImpl<PropertyT, FIELD_PROPERTY, VariadicTemplateTy
 
     };
 
-    virtual void calcConnectionParameters() override {
+    void calcConnectionParameters() override {
         InnerDataSource<PropertyT, Geometry3D, Geometry2DCylindrical, Geometry3D, Revolution>::calcConnectionParameters();
         auto child = this->inputObj->getChild();
         if (!child) {
@@ -226,7 +226,7 @@ struct DataFromCyl2Dto3DSourceImpl<PropertyT, MULTI_FIELD_PROPERTY, VariadicTemp
 
     };
 
-    virtual void calcConnectionParameters() override {
+    void calcConnectionParameters() override {
         InnerDataSource<PropertyT, Geometry3D, Geometry2DCylindrical, Geometry3D, Revolution>::calcConnectionParameters();
         auto child = this->inputObj->getChild();
         if (!child) {

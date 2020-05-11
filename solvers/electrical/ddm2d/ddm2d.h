@@ -103,19 +103,19 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     bool strained;                  ///< Consider strain in QW?
 
     /// Initialize the solver
-    virtual void onInitialize() override;
+    void onInitialize() override;
 
     /// Invalidate the data
-    virtual void onInvalidate() override;
+    void onInvalidate() override;
 
     /// Get info on active region
     size_t getActiveRegionMeshIndex(size_t actnum) const;
 
-    virtual void onMeshChange(const typename RectangularMesh<2>::Event& evt) override {
+    void onMeshChange(const typename RectangularMesh<2>::Event& evt) override {
         SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onMeshChange(evt);
     }
 
-    virtual void onGeometryChange(const Geometry::Event& evt) override {
+    void onGeometryChange(const Geometry::Event& evt) override {
         SolverWithMesh<Geometry2DType, RectangularMesh<2>>::onGeometryChange(evt);
     }
 
@@ -474,11 +474,11 @@ struct PLASK_SOLVER_API DriftDiffusionModel2DSolver: public SolverWithMesh<Geome
     /// Return the maximum estimated error.
     //double getErr() const { return toterr; }
 
-    virtual void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
+    void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
     DriftDiffusionModel2DSolver(const std::string& name="");
 
-    virtual std::string getClassName() const override;
+    std::string getClassName() const override;
 
     ~DriftDiffusionModel2DSolver();
 

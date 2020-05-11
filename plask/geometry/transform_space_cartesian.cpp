@@ -1,8 +1,8 @@
 #include "transform_space_cartesian.h"
 
 #include <algorithm>
-#include "reader.h"
 #include "../manager.h"
+#include "reader.h"
 
 #define PLASK_EXTRUSION_NAME "extrusion"
 
@@ -30,7 +30,7 @@ shared_ptr<Material> Extrusion::getMaterial(const DVec& p) const {
     return (this->hasChild() && canBeInside(p)) ? this->_child->getMaterial(childVec(p)) : shared_ptr<Material>();
 }
 
-Extrusion::Box Extrusion::fromChildCoords(const Extrusion::ChildType::Box &child_bbox) const {
+Extrusion::Box Extrusion::fromChildCoords(const Extrusion::ChildType::Box& child_bbox) const {
     return parentBox(child_bbox);
 }
 
@@ -49,22 +49,25 @@ GeometryObject::Subtree Extrusion::getPathsAt(const DVec& point, bool all) const
         return GeometryObject::Subtree();
 }
 
-void Extrusion::writeXMLAttr(XMLWriter::Element &dest_xml_object, const AxisNames &axes) const {
+void Extrusion::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {
     BaseClass::writeXMLAttr(dest_xml_object, axes);
     dest_xml_object.attr("length", length);
 }
 
-void Extrusion::getPositionsToVec(const GeometryObject::Predicate &predicate, std::vector<GeometryObjectTransformSpace::DVec> &dest, const PathHints *path) const {
+void Extrusion::getPositionsToVec(const GeometryObject::Predicate& predicate,
+                                  std::vector<GeometryObjectTransformSpace::DVec>& dest,
+                                  const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(Primitive<3>::ZERO_VEC);
         return;
     }
     if (!this->hasChild()) return;
     auto child_pos_vec = this->_child->getPositions(predicate, path);
-    for (const auto& v: child_pos_vec) dest.push_back(parentVec(v, std::numeric_limits<double>::quiet_NaN()));
+    for (const auto& v : child_pos_vec) dest.push_back(parentVec(v, std::numeric_limits<double>::quiet_NaN()));
 }
 
-// void Extrusion::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<3> > >&dest, const PathHints *path) const {
+// void Extrusion::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const
+// GeometryObjectD<3> > >&dest, const PathHints *path) const {
 //     if (predicate(*this)) {
 //         dest.push_back(static_pointer_cast< const GeometryObjectD<3> >(this->shared_from_this()));
 //         return;
@@ -74,12 +77,46 @@ void Extrusion::getPositionsToVec(const GeometryObject::Predicate &predicate, st
 //         dest.emplace_back(new Extrusion(const_pointer_cast<GeometryObjectD<2>>(c), this->length));
 // }
 
+void Extrusion::addPointsAlong(std::set<double>& points,
+                               Primitive<3>::Direction direction,
+                               unsigned max_steps,
+                               double min_step_size) const {
+    if (!this->hasChild()) return;
+    if (direction == Primitive<3>::DIRECTION_LONG) {
+        points.insert(0);
+        points.insert(length);
+    } else {
+        if (this->max_steps) max_steps = this->max_steps;
+        if (this->min_step_size) min_step_size = this->min_step_size;
+        _child->addPointsAlong(points, direction, max_steps, min_step_size);
+    }
+}
+
+void Extrusion::addLineSegmentsToSet(std::set<typename GeometryObjectD<3>::LineSegment>& segments,
+                                     unsigned max_steps,
+                                     double min_step_size) const {
+    if (!this->hasChild()) return;
+    typedef typename GeometryObjectD<3>::LineSegment Segment3;
+    typedef typename GeometryObjectD<2>::LineSegment Segment2;
+    if (this->max_steps) max_steps = this->max_steps;
+    if (this->min_step_size) min_step_size = this->min_step_size;
+    std::set<Segment2> child_segments;
+    _child->addLineSegmentsToSet(child_segments, max_steps, min_step_size);
+    for (const auto& s: child_segments) {
+        segments.insert(Segment3(DVec(0., s.p0().c0, s.p0().c1), DVec(0., s.p1().c0, s.p1().c1)));
+        segments.insert(Segment3(DVec(0., s.p0().c0, s.p0().c1), DVec(length, s.p0().c0, s.p0().c1)));
+        segments.insert(Segment3(DVec(0., s.p1().c0, s.p1().c1), DVec(length, s.p1().c0, s.p1().c1)));
+        segments.insert(Segment3(DVec(length, s.p0().c0, s.p0().c1), DVec(length, s.p1().c0, s.p1().c1)));
+    }
+}
+
 shared_ptr<GeometryObject> read_cartesianExtend(GeometryReader& reader) {
     double length = reader.source.requireAttribute<double>("length");
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
-    return plask::make_shared<Extrusion>(reader.readExactlyOneChild<typename Extrusion::ChildType>(!reader.manager.draft), length);
+    return plask::make_shared<Extrusion>(
+        reader.readExactlyOneChild<typename Extrusion::ChildType>(!reader.manager.draft), length);
 }
 
 static GeometryReader::RegisterObjectReader cartesianExtend2D_reader(PLASK_EXTRUSION_NAME, read_cartesianExtend);
 
-}   // namespace plask
+}  // namespace plask

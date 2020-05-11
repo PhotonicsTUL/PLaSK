@@ -196,9 +196,9 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
 
     virtual ~FreeCarrierGainSolver();
 
-    virtual std::string getClassName() const override;
+    std::string getClassName() const override;
 
-    virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager) override;
+    void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager) override;
 
   private:
 
@@ -275,10 +275,10 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
     void estimateLevels();
 
     /// Initialize the solver
-    virtual void onInitialize() override;
+    void onInitialize() override;
 
     /// Invalidate the gain
-    virtual void onInvalidate() override;
+    void onInvalidate() override;
 
     /// Notify that gain was changed
     void onInputChange(ReceiverBase&, ReceiverBase::ChangeReason)

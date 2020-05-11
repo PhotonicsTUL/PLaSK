@@ -1,6 +1,6 @@
 #include "transform_space_cylindric.h"
-#include "reader.h"
 #include "../manager.h"
+#include "reader.h"
 
 #define PLASK_REVOLUTION_NAME "revolution"
 
@@ -10,10 +10,9 @@ const char* Revolution::NAME = PLASK_REVOLUTION_NAME;
 
 std::string Revolution::getTypeName() const { return NAME; }
 
-bool Revolution::contains(const GeometryObjectD< 3 >::DVec& p) const {
+bool Revolution::contains(const GeometryObjectD<3>::DVec& p) const {
     return this->hasChild() && this->_child->contains(childVec(p));
 }
-
 
 /*bool Revolution::intersects(const Box& area) const {
     return getChild()->intersects(childBox(area));
@@ -23,31 +22,29 @@ shared_ptr<Material> Revolution::getMaterial(const DVec& p) const {
     return this->hasChild() ? this->_child->getMaterial(childVec(p)) : shared_ptr<Material>();
 }
 
-Revolution::Box Revolution::fromChildCoords(const Revolution::ChildType::Box &child_bbox) const {
+Revolution::Box Revolution::fromChildCoords(const Revolution::ChildType::Box& child_bbox) const {
     return parentBox(child_bbox);
 }
 
-shared_ptr<GeometryObject> Revolution::shallowCopy() const {
-    return plask::make_shared<Revolution>(this->_child);
-}
+shared_ptr<GeometryObject> Revolution::shallowCopy() const { return plask::make_shared<Revolution>(this->_child); }
 
 GeometryObject::Subtree Revolution::getPathsAt(const DVec& point, bool all) const {
     if (!this->hasChild()) return GeometryObject::Subtree();
     return GeometryObject::Subtree::extendIfNotEmpty(this, this->_child->getPathsAt(childVec(point), all));
 }
 
-void Revolution::getPositionsToVec(const GeometryObject::Predicate &predicate, std::vector<GeometryObjectTransformSpace::DVec> &dest, const PathHints *path) const {
+void Revolution::getPositionsToVec(const GeometryObject::Predicate& predicate,
+                                   std::vector<GeometryObjectTransformSpace::DVec>& dest,
+                                   const PathHints* path) const {
     if (predicate(*this)) {
         dest.push_back(Primitive<3>::ZERO_VEC);
         return;
     }
     if (!this->hasChild()) return;
     auto child_pos_vec = this->_child->getPositions(predicate, path);
-    for (const auto& v: child_pos_vec)
-        dest.emplace_back(
-           std::numeric_limits<double>::quiet_NaN(),
-           std::numeric_limits<double>::quiet_NaN(),
-           v.vert()    //only vert component is well defined
+    for (const auto& v : child_pos_vec)
+        dest.emplace_back(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(),
+                          v.vert()  // only vert component is well defined
         );
 }
 
@@ -55,7 +52,8 @@ bool Revolution::childIsClipped() const {
     return this->hasChild() && (this->_child->getBoundingBox().lower.tran() < 0);
 }
 
-// void Revolution::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<3> > >&dest, const PathHints *path) const {
+// void Revolution::extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const
+// GeometryObjectD<3> > >&dest, const PathHints *path) const {
 //     if (predicate(*this)) {
 //         dest.push_back(static_pointer_cast< const GeometryObjectD<3> >(this->shared_from_this()));
 //         return;
@@ -71,25 +69,72 @@ bool Revolution::childIsClipped() const {
     return result;
 }*/ //TODO bugy
 
-
-
 Box3D Revolution::parentBox(const ChildBox& r) {
     double tran = std::max(r.upper.tran(), 0.0);
-    return Box3D(
-            vec(-tran, -tran, r.lower.vert()),
-            vec(tran,  tran,  r.upper.vert())
-           );
+    return Box3D(vec(-tran, -tran, r.lower.vert()), vec(tran, tran, r.upper.vert()));
 }
+
+
+void Revolution::addPointsAlong(std::set<double>& points,
+                                Primitive<3>::Direction direction,
+                                unsigned max_steps,
+                                double min_step_size) const {
+    if (!this->hasChild()) return;
+    if (this->max_steps) max_steps = this->max_steps;
+    if (this->min_step_size) min_step_size = this->min_step_size;
+    if (direction == Primitive<3>::DIRECTION_VERT) {
+        this->_child->addPointsAlong(points, Primitive<3>::DIRECTION_VERT, max_steps, min_step_size);
+    } else {
+        std::set<double> child_points;
+        this->_child->addPointsAlong(child_points, Primitive<3>::DIRECTION_TRAN, max_steps, min_step_size);
+        if (child_points.size() == 0) return;
+        // Finer separation
+        std::vector<double> pts;
+        pts.reserve(child_points.size());
+        pts.insert(pts.end(), child_points.begin(), child_points.end());
+        double rr = pts[pts.size() - 1] - pts[0];
+        for (size_t i = 1; i < pts.size(); ++i) {
+            double r = pts[i-1];
+            double dr = pts[i] - r;
+            unsigned maxsteps = rev_max_steps * (dr / rr);
+            unsigned steps = min(unsigned(dr / rev_min_step_size), maxsteps);
+            double step = dr / steps;
+            for (unsigned j = 0; j < steps; ++j) {
+                points.insert(-r - j * step);
+                points.insert(r + j * step);
+            }
+        }
+        points.insert(-pts[pts.size() - 1]);
+        points.insert(pts[pts.size() - 1]);
+    }
+}
+
+void Revolution::addLineSegmentsToSet(std::set<typename GeometryObjectD<3>::LineSegment>& segments,
+                                      unsigned max_steps,
+                                      double min_step_size) const {
+    if (!this->hasChild()) return;
+    if (this->max_steps) max_steps = this->max_steps;
+    if (this->min_step_size) min_step_size = this->min_step_size;
+    // TODO
+}
+
 
 shared_ptr<GeometryObject> read_revolution(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);
     bool auto_clip = reader.source.getAttribute("auto-clip", false);
-    return plask::make_shared<Revolution>(reader.readExactlyOneChild<typename Revolution::ChildType>(!reader.manager.draft), auto_clip);
+    auto rev_max_steps = reader.source.getAttribute<unsigned>("rev-steps-num");
+    auto rev_min_step_size = reader.source.getAttribute<double>("rev-steps-dist");
+    auto revolution = plask::make_shared<Revolution>(
+        reader.readExactlyOneChild<typename Revolution::ChildType>(!reader.manager.draft), auto_clip);
+    if (rev_max_steps) revolution->rev_max_steps = *rev_max_steps;
+    if (rev_min_step_size) revolution->rev_min_step_size = *rev_min_step_size;
+    return revolution;
     /*if (res->childIsClipped()) {
-        writelog(LOG_WARNING, "Child of <revolution>, read from XPL line {0}, is implicitly clipped (to non-negative tran. coordinates).", line_nr);
+        writelog(LOG_WARNING, "Child of <revolution>, read from XPL line {0}, is implicitly clipped (to non-negative
+    tran. coordinates).", line_nr);
     }*/
 }
 
 static GeometryReader::RegisterObjectReader revolution_reader(PLASK_REVOLUTION_NAME, read_revolution);
 
-}   // namespace plask
+}  // namespace plask

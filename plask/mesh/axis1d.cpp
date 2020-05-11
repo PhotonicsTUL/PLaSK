@@ -21,9 +21,9 @@ public:
 
     //void setWrapped(shared_ptr<const MeshAxis > wrapped);
 
-    //virtual void clear() override { setWrapped(nullptr); }
+    //void clear() override { setWrapped(nullptr); }
 
-    virtual std::size_t size() const override;
+    std::size_t size() const override;
 
     double at(std::size_t index) const override;
 

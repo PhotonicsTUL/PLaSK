@@ -227,3 +227,11 @@ class GNCylindrical(GNGeometryBase):
         result = GNCylindrical()
         result.load_xml_element(element, conf)
         return result
+
+    def get_step_dist(self):
+        if self._parent is not None:
+            return self._parent.get_step_dist()
+
+    def get_step_num(self):
+        if self._parent is not None:
+            return self._parent.get_step_num()

@@ -82,7 +82,7 @@ struct PLASK_API OrderedMesh1DSimpleGenerator: public MeshGeneratorD<1> {
     /// Create generator
     OrderedMesh1DSimpleGenerator(bool split=false): split(split) {}
 
-    virtual shared_ptr<MeshD<1>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
+    shared_ptr<MeshD<1>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
 
 
@@ -100,7 +100,7 @@ struct PLASK_API RectangularMesh2DSimpleGenerator: public MeshGeneratorD<2> {
     /// Create generator
     RectangularMesh2DSimpleGenerator(bool split=false): split(split) {}
 
-    virtual shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
+    shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
 
 /**
@@ -117,7 +117,7 @@ struct PLASK_API RectangularMesh3DSimpleGenerator: public MeshGeneratorD<3> {
     /// Create generator
     RectangularMesh3DSimpleGenerator(bool split=false): split(split) {}
 
-    virtual shared_ptr<MeshD<3>> generate(const shared_ptr<GeometryObjectD<3>>& geometry) override;
+    shared_ptr<MeshD<3>> generate(const shared_ptr<GeometryObjectD<3>>& geometry) override;
 };
 
 
@@ -140,7 +140,7 @@ class PLASK_API OrderedMesh1DRegularGenerator: public OrderedMesh1DSimpleGenerat
     OrderedMesh1DRegularGenerator(double spacing, bool split=false):
         OrderedMesh1DSimpleGenerator(split), spacing(spacing) {}
 
-    virtual shared_ptr<MeshD<1>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
+    shared_ptr<MeshD<1>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
 
 
@@ -170,7 +170,7 @@ class PLASK_API RectangularMesh2DRegularGenerator: public RectangularMesh2DSimpl
     RectangularMesh2DRegularGenerator(double spacing0, double spacing1, bool split=false):
         RectangularMesh2DSimpleGenerator(split), spacing0(spacing0), spacing1(spacing1) {}
 
-    virtual shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
+    shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
 
 /**
@@ -200,7 +200,7 @@ struct PLASK_API RectangularMesh3DRegularGenerator: public RectangularMesh3DSimp
     RectangularMesh3DRegularGenerator(double spacing0, double spacing1, double spacing2, bool split=false):
         RectangularMesh3DSimpleGenerator(split), spacing0(spacing0), spacing1(spacing1), spacing2(spacing2) {}
 
-    virtual shared_ptr<MeshD<3>> generate(const shared_ptr<GeometryObjectD<3>>& geometry) override;
+    shared_ptr<MeshD<3>> generate(const shared_ptr<GeometryObjectD<3>>& geometry) override;
 };
 
 
@@ -220,7 +220,7 @@ class PLASK_API RectangularMesh2DFrom1DGenerator: public MeshGeneratorD<2> {
     RectangularMesh2DFrom1DGenerator(const shared_ptr<MeshGeneratorD<1>>& source):
         horizontal_generator(source) {}
 
-    virtual shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
+    shared_ptr<MeshD<2>> generate(const shared_ptr<GeometryObjectD<2>>& geometry) override;
 };
 
 

@@ -28,7 +28,7 @@ class PLASK_API Extrusion: public GeometryObjectTransformSpace<3, 2> {
 
     static const char* NAME;
 
-    virtual std::string getTypeName() const override;
+    std::string getTypeName() const override;
 
     double getLength() const { return length; }
 
@@ -38,20 +38,20 @@ class PLASK_API Extrusion: public GeometryObjectTransformSpace<3, 2> {
      */
     void setLength(double new_length);
 
-    virtual bool contains(const DVec& p) const override;
+    bool contains(const DVec& p) const override;
 
     //TODO good but unused
     //virtual bool intersects(const Box& area) const;
 
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
+    shared_ptr<Material> getMaterial(const DVec& p) const override;
 
     //virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryObject>, Box, DVec>>& dest, const PathHints* path = 0) const;
 
-    virtual Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
+    Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
 
-    //virtual std::vector< plask::shared_ptr< const plask::GeometryObject > > getLeafs() const override;
+    //std::vector< plask::shared_ptr< const plask::GeometryObject > > getLeafs() const override;
 
-    virtual shared_ptr<GeometryObject> shallowCopy() const override;
+    shared_ptr<GeometryObject> shallowCopy() const override;
 
     using GeometryObjectTransformSpace<3, 2>::getPathsTo;
 
@@ -98,6 +98,15 @@ class PLASK_API Extrusion: public GeometryObjectTransformSpace<3, 2> {
      * @return box in space of this (3d), in lon direction: from 0.0 to @p length
      */
     Box parentBox(const ChildBox& r) const { return Box(parentVec(r.lower, 0.0), parentVec(r.upper, length)); }
+
+    void addPointsAlong(std::set<double>& points,
+                        Primitive<3>::Direction direction,
+                        unsigned max_steps,
+                        double min_step_size) const override;
+
+    void addLineSegmentsToSet(std::set<typename GeometryObjectD<3>::LineSegment>& segments,
+                              unsigned max_steps,
+                              double min_step_size) const override;
 };
 
 }   // namespace plask

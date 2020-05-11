@@ -705,7 +705,7 @@ class SolverOver: public Solver {
         diconnectGeometry();
     }
 
-    virtual void loadConfiguration(XMLReader& source, Manager& manager) override;
+    void loadConfiguration(XMLReader& source, Manager& manager) override;
 
     void parseStandardConfiguration(XMLReader& source, Manager& manager, const std::string& expected_msg="solver configuration element");
 
@@ -801,7 +801,7 @@ private:
         clearGenerator();
     }
 
-    virtual void loadConfiguration(XMLReader& source, Manager& manager) override;
+    void loadConfiguration(XMLReader& source, Manager& manager) override;
 
     void parseStandardConfiguration(XMLReader& source, Manager& manager, const std::string& expected_msg="solver configuration element");
 
@@ -821,7 +821,7 @@ private:
      * Typically, you should call SolverWithMesh::onGeometryChange(const Geometry::Event&) when you overwrite this method.
      * @param evt information about geometry changes
      */
-    virtual void onGeometryChange(const Geometry::Event& PLASK_UNUSED(evt)) override {
+    void onGeometryChange(const Geometry::Event& PLASK_UNUSED(evt)) override {
         this->invalidate();
         this->regenerateMesh();
     }

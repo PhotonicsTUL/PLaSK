@@ -58,21 +58,6 @@ class GNLeafController(GNObjectController):
 
         super(GNLeafController, self).construct_form()
 
-        self.construct_group('Meshing Settings')
-        self.step_num = self.construct_line_edit('Maximum steps number:', node_property_name='step_num',
-                                                 display_property_name='maximum steps number')
-        self.step_num.setToolTip(u'&lt;{} <b>steps-num</b>="" steps-dist="" ...&gt;<br/>'
-                                 u'Maximum number of the mesh steps in each direction the object is divided into '
-                                 u'if it is non-uniform. (integer)'
-                                 .format(self.node.tag_name(False)))
-        self.step_num.setPlaceholderText('10')
-        self.step_dist = self.construct_line_edit('Minimum step size:', node_property_name='step_dist',
-                                                  display_property_name='minimum step size', unit=u'µm')
-        self.step_dist.setToolTip(u'&lt;{} steps-num="" <b>steps-dist</b>="" ...&gt;<br/>'
-                                  u'Minimum step size if the object is non-uniform.'
-                                  .format(self.node.tag_name(False)))
-        self.step_dist.setPlaceholderText('0.005')
-
     def select_info(self, info):
         prop = getattr(info, 'property')
         if prop == 'material':
@@ -125,8 +110,6 @@ class GNLeafController(GNObjectController):
                 self.material_bottom.setEditText(none_to_empty(self.node.material_bottom))
                 self.material_top.setEditText(none_to_empty(self.node.material_top))
                 self.material_shape.setText(none_to_empty(self.node.material_shape))
-        self.step_num.setText(none_to_empty(self.node.step_num))
-        self.step_dist.setText(none_to_empty(self.node.step_dist))
 
 
 class GNBlockController(GNLeafController):

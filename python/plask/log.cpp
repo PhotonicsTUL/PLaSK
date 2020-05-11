@@ -54,7 +54,7 @@ struct PythonSysLogger: public plask::Logger {
 
     PythonSysLogger();
 
-    virtual void writelog(plask::LogLevel level, const std::string& msg) override;
+    void writelog(plask::LogLevel level, const std::string& msg) override;
 
 };
 

@@ -242,29 +242,29 @@ struct PLASK_API EmptyBoundaryImpl: public BoundaryNodeSetImpl {
 
     struct IteratorImpl: public BoundaryNodeSetImpl::IteratorImpl {
 
-        virtual std::size_t dereference() const override {
+        std::size_t dereference() const override {
             throw Exception("Dereference of empty boundary iterator.");
         }
 
-        virtual void increment() override {}
+        void increment() override {}
 
-        virtual bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& PLASK_UNUSED(other)) const override {
+        bool equal(const typename BoundaryNodeSetImpl::IteratorImpl& PLASK_UNUSED(other)) const override {
             return true;
         }
 
-        virtual std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl> clone() const override {
+        std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl> clone() const override {
             return std::unique_ptr<typename BoundaryNodeSetImpl::IteratorImpl>(new IteratorImpl);
         }
 
     };
 
-    virtual bool contains(std::size_t PLASK_UNUSED(mesh_index)) const override { return false; }
+    bool contains(std::size_t PLASK_UNUSED(mesh_index)) const override { return false; }
 
-    virtual typename BoundaryNodeSetImpl::const_iterator begin() const override {
+    typename BoundaryNodeSetImpl::const_iterator begin() const override {
         return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl);
     }
 
-    virtual typename BoundaryNodeSetImpl::const_iterator end() const override {
+    typename BoundaryNodeSetImpl::const_iterator end() const override {
         return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl);
     }
 
@@ -272,7 +272,7 @@ struct PLASK_API EmptyBoundaryImpl: public BoundaryNodeSetImpl {
         return 0;
     }
 
-    virtual bool empty() const override { return true; }
+    bool empty() const override { return true; }
 };
 
 /**
@@ -289,15 +289,15 @@ struct PLASK_API StdSetBoundaryImpl: public BoundaryNodeSetImpl {
 
     StdSetBoundaryImpl(StdNodeSet set): set(std::move(set)) {}
 
-    virtual bool contains(std::size_t mesh_index) const override {
+    bool contains(std::size_t mesh_index) const override {
         return set.find(mesh_index) != set.end();
     }
 
-    virtual typename BoundaryNodeSetImpl::const_iterator begin() const override {
+    typename BoundaryNodeSetImpl::const_iterator begin() const override {
         return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl(set.begin()));
     }
 
-    virtual typename BoundaryNodeSetImpl::const_iterator end() const override {
+    typename BoundaryNodeSetImpl::const_iterator end() const override {
         return typename BoundaryNodeSetImpl::Iterator(new IteratorImpl(set.end()));
     }
 
@@ -305,7 +305,7 @@ struct PLASK_API StdSetBoundaryImpl: public BoundaryNodeSetImpl {
         return set.size();
     }
 
-    virtual bool empty() const override {
+    bool empty() const override {
         return set.empty();
     }
 };
@@ -457,11 +457,11 @@ struct UnionBoundarySetImpl: public BoundaryNodeSetImpl {
         }
 
     public:
-        virtual std::size_t dereference() const override {
+        std::size_t dereference() const override {
             return minimal_position();
         }
 
-        virtual void increment() override {
+        void increment() override {
             std::size_t m = minimal_position();
             for (IteratorWithEnd& v: position)
                 if (v.valid() && *v.iter == m) ++v.iter;
@@ -476,7 +476,7 @@ struct UnionBoundarySetImpl: public BoundaryNodeSetImpl {
     UnionBoundarySetImpl(BoundaryNodeSet A, BoundaryNodeSet B)
         : boundaries(std::initializer_list<plask::BoundaryNodeSet>{A, B}) {}
 
-    virtual bool contains(std::size_t mesh_index) const override {
+    bool contains(std::size_t mesh_index) const override {
         for (auto& b: boundaries)
             if (b.contains(mesh_index)) return true;
         return false;
@@ -573,11 +573,11 @@ struct DiffBoundarySetImpl: public BoundaryNodeSetImpl {
             return std::unique_ptr<BoundaryNodeSetImpl::IteratorImpl>(new IteratorImpl(*this));
         }
 
-        virtual std::size_t dereference() const override {
+        std::size_t dereference() const override {
             return *Apos.iter;
         }
 
-        virtual void increment() override {
+        void increment() override {
             ++Apos.iter;
             advanceAtoNearestValidPos();
         }
@@ -587,7 +587,7 @@ struct DiffBoundarySetImpl: public BoundaryNodeSetImpl {
     DiffBoundarySetImpl(BoundaryNodeSet A, BoundaryNodeSet B):
         A(std::move(A)), B(std::move(B)) {   }
 
-    virtual bool contains(std::size_t mesh_index) const override {
+    bool contains(std::size_t mesh_index) const override {
         return A.contains(mesh_index) && !B.contains(mesh_index);
     }
 
@@ -661,11 +661,11 @@ struct IntersectionBoundarySetImpl: public BoundaryNodeSetImpl {
             return std::unique_ptr<BoundaryNodeSetImpl::IteratorImpl>(new IteratorImpl(*this));
         }
 
-        virtual std::size_t dereference() const override {
+        std::size_t dereference() const override {
             return *Apos.iter;
         }
 
-        virtual void increment() override {
+        void increment() override {
             ++Apos.iter;
             ++Bpos.iter;
             advanceToNearestValidPos();
@@ -676,7 +676,7 @@ struct IntersectionBoundarySetImpl: public BoundaryNodeSetImpl {
     IntersectionBoundarySetImpl(BoundaryNodeSet A, BoundaryNodeSet B):
         A(std::move(A)), B(std::move(B)) {   }
 
-    virtual bool contains(std::size_t mesh_index) const override {
+    bool contains(std::size_t mesh_index) const override {
         return A.contains(mesh_index) && B.contains(mesh_index);
     }
 
@@ -809,7 +809,7 @@ struct PredicateBoundaryImpl: public BoundaryNodeSetWithMeshImpl<typename MeshT:
                ++this->meshIterator;  //go to first element which fulfill predicate
        }
 
-        virtual std::size_t dereference() const override {
+        std::size_t dereference() const override {
             return meshIterator.getIndex();
         }
 
@@ -857,7 +857,7 @@ private:
 
 public:
 
-    virtual bool contains(std::size_t mesh_index) const override {
+    bool contains(std::size_t mesh_index) const override {
         return this->check_predicate(mesh_index);
     }
 

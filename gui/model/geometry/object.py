@@ -34,11 +34,15 @@ class GNObject(GNode):
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNObject, self)._attributes_from_xml(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, 'name', 'role', 'axes')
+        self.step_num = attribute_reader.get('steps-num')
+        self.step_dist = attribute_reader.get('steps-dist')
         if self.axes is not None: conf.axes = self.axes
 
     def _attributes_to_xml(self, element, conf):
         super(GNObject, self)._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'name', 'role', 'axes')
+        if self.step_num is not None: element.attrib['steps-num'] = self.step_num
+        if self.step_dist is not None: element.attrib['steps-dist'] = self.step_dist
         if self.axes is not None: conf.axes = self.axes
 
     def python_type(self):

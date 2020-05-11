@@ -52,9 +52,9 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public SolverWithMe
         {
         }
 
-        virtual std::string getClassName() const override;
+        std::string getClassName() const override;
 
-        virtual void loadConfiguration(XMLReader&, Manager&) override;
+        void loadConfiguration(XMLReader&, Manager&) override;
 
         void compute(ComputationType type);
         void compute_initial();
@@ -137,8 +137,8 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public SolverWithMe
 
         DataVector<const Tensor2<double>> averageLi(LazyData<Vec<3,dcomplex>> initLi, const RectangularMesh<2>& mesh_Li);
 
-        virtual void onInitialize() override;
-        virtual void onInvalidate() override;
+        void onInitialize() override;
+        void onInvalidate() override;
 
         struct ConcentrationDataImpl: public LazyDataImpl<double>
         {

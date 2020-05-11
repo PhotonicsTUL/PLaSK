@@ -410,7 +410,7 @@ struct InterpolatedLazyDataImpl: public LazyDataImpl<DstT> {
                              const shared_ptr<const MeshD<SrcMeshType::DIM>>& dst_mesh, const InterpolationFlags& flags)
         : src_mesh(src_mesh), dst_mesh(dst_mesh), src_vec(src_vec), flags(flags) {}
 
-    virtual std::size_t size() const override { return dst_mesh->size(); }
+    std::size_t size() const override { return dst_mesh->size(); }
 
 };
 
@@ -426,7 +426,7 @@ struct LinearInterpolatedLazyDataImpl: public InterpolatedLazyDataImpl<DstT, Src
                                    shared_ptr<const MeshD<SrcMeshType::DIM>> dst_mesh, const InterpolationFlags& flags):
         InterpolatedLazyDataImpl<DstT, SrcMeshType>(src_mesh, src_vec, dst_mesh, flags) {}
 
-    virtual DstT at(std::size_t index) const override {
+    DstT at(std::size_t index) const override {
         return this->src_mesh->interpolateLinear(this->src_vec, this->dst_mesh->at(index), this->flags);
     }
 
@@ -444,7 +444,7 @@ struct NearestNeighborInterpolatedLazyDataImpl: public InterpolatedLazyDataImpl<
                                             shared_ptr<const MeshD<SrcMeshType::DIM>> dst_mesh, const InterpolationFlags& flags):
         InterpolatedLazyDataImpl<DstT, SrcMeshType, DstT>(src_mesh, src_vec, dst_mesh, flags) {}
 
-    virtual SrcT at(std::size_t index) const override {
+    SrcT at(std::size_t index) const override {
         return this->src_mesh->interpolateNearestNeighbor(this->src_vec, this->dst_mesh->at(index), this->flags);
     }
 

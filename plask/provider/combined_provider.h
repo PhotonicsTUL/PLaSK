@@ -160,7 +160,7 @@ struct FieldSumProviderImpl<PropertyT, SpaceT, VariadicTemplateTypesHolder<Extra
 
     };
 
-    virtual ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=INTERPOLATION_DEFAULT) const override {
+    ProvidedType operator()(shared_ptr<const MeshD<SpaceT::DIM>> dst_mesh, ExtraArgs... extra_args, InterpolationMethod method=INTERPOLATION_DEFAULT) const override {
         this->ensureHasProviders();
         std::vector<LazyData<ValueType>> providers;
         auto p = this->begin();

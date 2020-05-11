@@ -11,11 +11,11 @@ struct TrifreeCaller {
     void operator()(void* ptr) const { trifree(ptr); }
 };
 
-shared_ptr<MeshD<2>> TriangleGenerator::generate(const shared_ptr<GeometryObjectD<DIM> > &geometry) {
+shared_ptr<MeshD<2>> TriangleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry) {
     triangulateio in = {}, out = {};    // are fields are nulled, so we will only fill fields we need
 
     in.numberofpoints = 4;
-    std::unique_ptr<REAL[]> in_points(new REAL[8]);
+    std::unique_ptr<double[]> in_points(new double[8]);
     Box2D bb = geometry->getBoundingBox();
     in.pointlist = in_points.get();
     in_points[0] = in_points[6] = bb.left();

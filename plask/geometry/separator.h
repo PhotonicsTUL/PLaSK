@@ -28,26 +28,26 @@ struct PLASK_API GeometryObjectSeparator: public GeometryObjectD<dim> {
     using GeometryObjectD<dim>::getBoundingBox;
     using GeometryObjectD<dim>::shared_from_this;
 
-    virtual GeometryObject::Type getType() const override;
+    GeometryObject::Type getType() const override;
 
     static const char* NAME;
 
-    virtual std::string getTypeName() const override;
+    std::string getTypeName() const override;
 
     /**
      * Separators typically have no materials, so this just return nullptr.
      * @param p point
      * @return @c nullptr
      */
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
+    shared_ptr<Material> getMaterial(const DVec& p) const override;
 
-    //virtual void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryObject>, Box, DVec>>& dest, const PathHints* path = 0) const override;
+    //void getLeafsInfoToVec(std::vector<std::tuple<shared_ptr<const GeometryObject>, Box, DVec>>& dest, const PathHints* path = 0) const override;
 
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
+    void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
 
-    virtual void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override;
+    void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override;
 
-    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* = 0) const override;
+    void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* = 0) const override;
 
 /*    inline void getLeafsToVec(std::vector< shared_ptr<const GeometryObject> >& dest) const override {
         dest.push_back(this->shared_from_this());
@@ -57,17 +57,17 @@ struct PLASK_API GeometryObjectSeparator: public GeometryObjectD<dim> {
         return { this->shared_from_this() };
     }*/
 
-    virtual bool hasInSubtree(const GeometryObject& el) const override;
+    bool hasInSubtree(const GeometryObject& el) const override;
 
-    virtual GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override;
+    GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override;
 
-    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool=false) const override;
+    GeometryObject::Subtree getPathsAt(const DVec& point, bool=false) const override;
 
-    virtual std::size_t getChildrenCount() const override { return 0; }
+    std::size_t getChildrenCount() const override { return 0; }
 
-    virtual shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override;
+    shared_ptr<GeometryObject> getChildNo(std::size_t child_no) const override;
 
-    virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const override;
+    shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const override;
 
     // void extractToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints* = 0) const {
     //     if (predicate(*this)) dest.push_back(static_pointer_cast< const GeometryObjectD<dim> >(this->shared_from_this()));
@@ -75,9 +75,18 @@ struct PLASK_API GeometryObjectSeparator: public GeometryObjectD<dim> {
 
     shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
 
-    virtual bool contains(const DVec& p) const override;
+    bool contains(const DVec& p) const override;
 
-    /*virtual bool intersects(const Box& area) const override {
+    void addPointsAlong(std::set<double>& points,
+                        Primitive<3>::Direction direction,
+                        unsigned max_steps,
+                        double min_step_size) const override {}
+
+    void addLineSegmentsToSet(std::set<typename GeometryObjectD<dim>::LineSegment>& segments,
+                              unsigned max_steps,
+                              double min_step_size) const override {}
+
+    /*bool intersects(const Box& area) const override {
         return this->getBoundingBox().intersects(area); //TODO ?? maybe set area to empty
     }*/
 
@@ -105,7 +114,7 @@ struct Gap1D: public GeometryObjectSeparator<dim> {
     static constexpr const char* NAME = "gap";              ///< name of gap type, used as XML tag name when write to XML
     static constexpr const char* XML_SIZE_ATTR = "size";    ///< name of size attribute in XML
 
-    virtual std::string getTypeName() const override { return NAME; }
+    std::string getTypeName() const override { return NAME; }
 
     /// Size of gap.
     double size;
@@ -116,7 +125,7 @@ struct Gap1D: public GeometryObjectSeparator<dim> {
      */
     Gap1D(double size = 0.0): size(size) {}
 
-    virtual Box getBoundingBox() const override {
+    Box getBoundingBox() const override {
         auto size_vec = Primitive<dim>::ZERO_VEC;
         size_vec[direction] = size;
         return Box(Primitive<dim>::ZERO_VEC, size_vec);
@@ -131,7 +140,7 @@ struct Gap1D: public GeometryObjectSeparator<dim> {
         this->fireChanged(GeometryObject::Event::EVENT_RESIZE);
     }
 
-    virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override {
+    void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override {
         BaseClass::writeXMLAttr(dest_xml_object, axes);
         dest_xml_object.attr(XML_SIZE_ATTR, size);
     }

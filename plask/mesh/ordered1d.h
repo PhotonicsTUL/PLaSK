@@ -153,9 +153,9 @@ public:
     void writeXML(XMLElement& object) const override;
 
     /// @return number of points in mesh
-    virtual std::size_t size() const override { return points.size(); }
+    std::size_t size() const override { return points.size(); }
 
-    virtual double at(std::size_t index) const override { assert(index < points.size()); return points[index]; }
+    double at(std::size_t index) const override { assert(index < points.size()); return points[index]; }
 
     // @return true only if there are no points in mesh
     //bool empty() const { return points.empty(); }

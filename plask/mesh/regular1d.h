@@ -81,7 +81,7 @@ class PLASK_API RegularAxis: public MeshAxis {
     double step() const { return _step; }
 
     /// @return number of points in the mesh
-    virtual std::size_t size() const override { return points_count; }
+    std::size_t size() const override { return points_count; }
 
     /**
      * Compare meshes.
@@ -113,7 +113,7 @@ class PLASK_API RegularAxis: public MeshAxis {
      */
     double operator[](std::size_t index) const { return lo + double(index) * _step; }
 
-    virtual double at(std::size_t index) const override { return lo + double(index) * _step; }
+    double at(std::size_t index) const override { return lo + double(index) * _step; }
 
     /**
      * Remove all points from mesh.
@@ -168,7 +168,7 @@ class PLASK_API RegularAxis: public MeshAxis {
      */
     std::size_t findNearestIndex(double to_find) const override { return findNearest(to_find) - begin(); }
 
-    virtual shared_ptr<MeshAxis> clone() const override { return plask::make_shared<RegularAxis>(*this); }
+    shared_ptr<MeshAxis> clone() const override { return plask::make_shared<RegularAxis>(*this); }
 
     void writeXML(XMLElement& object) const override;
 

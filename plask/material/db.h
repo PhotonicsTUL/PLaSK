@@ -190,7 +190,7 @@ struct PLASK_API MaterialsDB {
             return (*constructor)(mixedComposition(m1_weight), NAN);
         }
 
-        virtual shared_ptr<Material> singleMaterial() const override {
+        shared_ptr<Material> singleMaterial() const override {
             return material1composition == material2composition ? (*constructor)(material1composition, NAN) : shared_ptr<Material>();
         }
     };
@@ -225,7 +225,7 @@ struct PLASK_API MaterialsDB {
                                   m1DopAmount * pow(m1_weight, shape) + m2DopAmount * (1.0 - pow(m1_weight, shape)));
         }
 
-        virtual shared_ptr<Material> singleMaterial() const override {
+        shared_ptr<Material> singleMaterial() const override {
             return (material1composition == material2composition) && (m1DopAmount == m2DopAmount) ?
                         (*constructor)(material1composition, m1DopAmount) : shared_ptr<Material>();
         }
@@ -259,7 +259,7 @@ struct PLASK_API MaterialsDB {
             return (*constructor)(Material::Composition(), m1DopAmount * pow(m1_weight, shape) + m2DopAmount * (1.0 - pow(m1_weight, shape)));
         }
 
-        virtual shared_ptr<Material> singleMaterial() const override {
+        shared_ptr<Material> singleMaterial() const override {
             return m1DopAmount == m2DopAmount ? (*constructor)(Material::Composition(), m1DopAmount) : shared_ptr<Material>();
         }
     };
@@ -291,7 +291,7 @@ struct PLASK_API MaterialsDB {
             return plask::make_shared<DummyMaterial>(full_name);
         }
 
-        virtual shared_ptr<Material> singleMaterial() const override {
+        shared_ptr<Material> singleMaterial() const override {
             return plask::make_shared<DummyMaterial>(full_name);
         }
     };
@@ -359,7 +359,7 @@ public:
 
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
 
-        virtual shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const override {
+        shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const override {
             ensureCompositionIsNotEmpty(composition);
             return plask::make_shared<MaterialType>(Material::completeComposition(composition), doping);
         }
@@ -372,7 +372,7 @@ public:
 
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
 
-        virtual shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const override {
+        shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const override {
             ensureCompositionIsNotEmpty(composition);
             ensureNoDoping(doping);
             return plask::make_shared<MaterialType>(Material::completeComposition(composition));
@@ -386,7 +386,7 @@ public:
 
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
 
-        virtual shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const override {
+        shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const override {
             ensureCompositionIsEmpty(composition);
             return plask::make_shared<MaterialType>(doping);
         }
@@ -399,7 +399,7 @@ public:
 
         DelegateMaterialConstructor(const std::string& material_name): MaterialConstructor(material_name) {}
 
-        virtual shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const override {
+        shared_ptr<Material> operator()(const Material::Composition& composition, double doping) const override {
             ensureCompositionIsEmpty(composition);
             ensureNoDoping(doping);
             return plask::make_shared<MaterialType>();

@@ -94,17 +94,17 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
     void solveMatrix(SparseBandMatrix3D& A, DataVector<double>& B);
 
     /// Initialize the solver
-    virtual void onInitialize() override;
+    void onInitialize() override;
 
     /// Invalidate the data
-    virtual void onInvalidate() override;
+    void onInvalidate() override;
 
-    virtual void onMeshChange(const typename RectangularMesh<3>::Event& evt) override {
+    void onMeshChange(const typename RectangularMesh<3>::Event& evt) override {
         SolverWithMesh<Geometry3D, RectangularMesh<3>>::onMeshChange(evt);
         setActiveRegions();
     }
 
-    virtual void onGeometryChange(const Geometry::Event& evt) override {
+    void onGeometryChange(const Geometry::Event& evt) override {
         SolverWithMesh<Geometry3D, RectangularMesh<3>>::onGeometryChange(evt);
         setActiveRegions();
     }
@@ -183,9 +183,9 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
 
     FiniteElementMethodElectrical3DSolver(const std::string& name="");
 
-    virtual void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
+    void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
-    virtual std::string getClassName() const override { return "electrical.Shockley3D"; }
+    std::string getClassName() const override { return "electrical.Shockley3D"; }
 
     ~FiniteElementMethodElectrical3DSolver();
 

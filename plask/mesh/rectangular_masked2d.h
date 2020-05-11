@@ -311,7 +311,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
      *        or @c ~(DIELECTRIC|METAL) for selecting everything else
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
      */
-    RectangularMaskedMesh2D(const RectangularMesh<2>& rectangularMesh, const GeometryD<2>& geom, unsigned int materialKinds, bool clone_axes = false)
+    RectangularMaskedMesh2D(const RectangularMesh<2>& rectangularMesh, const GeometryD<2>& geom, unsigned materialKinds, bool clone_axes = false)
         : RectangularMaskedMesh2D(rectangularMesh,
                                     [&](const RectangularMesh2D::Element& el) { return (geom.getMaterial(el.getMidpoint())->kind() & materialKinds) != 0; },
                                     clone_axes)
@@ -328,7 +328,7 @@ struct PLASK_API RectangularMaskedMesh2D: public RectangularMaskedMeshBase<2> {
      *        or @c ~(DIELECTRIC|METAL) for selecting everything else
      * @param clone_axes whether axes of the @p rectangularMesh should be cloned (if @c true) or shared (if @c false; default)
      */
-    void reset(const RectangularMesh<2>& rectangularMesh, const GeometryD<2>& geom, unsigned int materialKinds, bool clone_axes = false) {
+    void reset(const RectangularMesh<2>& rectangularMesh, const GeometryD<2>& geom, unsigned materialKinds, bool clone_axes = false) {
         reset(rectangularMesh,
              [&](const RectangularMesh2D::Element& el) { return (geom.getMaterial(el.getMidpoint())->kind() & materialKinds) != 0; },
              clone_axes);

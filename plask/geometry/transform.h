@@ -1,8 +1,8 @@
 #ifndef PLASK__GEOMETRY_TRANSFORM_H
 #define PLASK__GEOMETRY_TRANSFORM_H
 
-#include "object.h"
 #include <boost/bind.hpp>
+#include "object.h"
 //#include <functional>
 
 namespace plask {
@@ -11,19 +11,22 @@ namespace plask {
  * Template of base class for all transform nodes.
  * Transform node has exactly one child node and represent object which is equal to child after transform.
  * @tparam dim number of dimensions of this object
- * @tparam Child_Type type of child, can be in space with different number of dimensions than this is (in such case see @ref GeometryObjectTransformSpace).
+ * @tparam Child_Type type of child, can be in space with different number of dimensions than this is (in such case see
+ * @ref GeometryObjectTransformSpace).
  * @ingroup GEOMETRY_OBJ
  */
-template < int dim, typename Child_Type = GeometryObjectD<dim> >
-struct GeometryObjectTransform: public GeometryObjectD<dim> {
-
+template <int dim, typename Child_Type = GeometryObjectD<dim>>
+struct GeometryObjectTransform : public GeometryObjectD<dim> {
     typedef typename GeometryObjectD<dim>::DVec DVec;
     typedef typename GeometryObjectD<dim>::Box Box;
     typedef Child_Type ChildType;
 
-    explicit GeometryObjectTransform(shared_ptr<ChildType> child = nullptr): _child(child) { connectOnChildChanged(); }
+    explicit GeometryObjectTransform(shared_ptr<ChildType> child = nullptr) : _child(child) { connectOnChildChanged(); }
 
-    explicit GeometryObjectTransform(ChildType& child): _child(static_pointer_cast<ChildType>(child.shared_from_this())) { connectOnChildChanged(); }
+    explicit GeometryObjectTransform(ChildType& child)
+        : _child(static_pointer_cast<ChildType>(child.shared_from_this())) {
+        connectOnChildChanged();
+    }
 
     virtual ~GeometryObjectTransform() { disconnectOnChildChanged(); }
 
@@ -33,7 +36,9 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
         getChild()->getLeafsToVec(dest);
     }*/
 
-    void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override {
+    void getObjectsToVec(const GeometryObject::Predicate& predicate,
+                         std::vector<shared_ptr<const GeometryObject>>& dest,
+                         const PathHints* path = 0) const override {
         if (predicate(*this)) {
             dest.push_back(this->shared_from_this());
         } else {
@@ -49,31 +54,26 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
     /// Connect onChildChanged to current child change signal
     void connectOnChildChanged() {
         if (hasChild())
-            _child->changed.connect(
-                boost::bind(&GeometryObjectTransform<dim, Child_Type>::onChildChanged, this, _1)
-            );
+            _child->changed.connect(boost::bind(&GeometryObjectTransform<dim, Child_Type>::onChildChanged, this, _1));
     }
 
     /// Disconnect onChildChanged from current child change signal
     void disconnectOnChildChanged() {
         if (hasChild())
             _child->changed.disconnect(
-                boost::bind(&GeometryObjectTransform<dim, Child_Type>::onChildChanged, this, _1)
-            );
+                boost::bind(&GeometryObjectTransform<dim, Child_Type>::onChildChanged, this, _1));
     }
 
     /**
      * Get child.
      * @return child
      */
-    inline shared_ptr<ChildType> getChild() const {
-        return _child;
-    }
+    inline shared_ptr<ChildType> getChild() const { return _child; }
 
     /**
      * Set new child.
-     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after setting the new child.
-     * It also doesn't call change signal.
+     * This method is fast but also unsafe because it doesn't ensure that there will be no cycle in geometry graph after
+     * setting the new child. It also doesn't call change signal.
      * @param child new child
      */
     void setChildUnsafe(const shared_ptr<ChildType>& child) {
@@ -90,7 +90,7 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
      * TODO @throw NoChildException if child is an empty pointer
      */
     void setChild(const shared_ptr<ChildType>& child) {
-        //if (!child) throw NoChildException();
+        // if (!child) throw NoChildException();
         if (child == _child) return;
         if (child) this->ensureCanHaveAsChild(*child);
         setChildUnsafe(child);
@@ -135,32 +135,37 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
      * @param child child for the copy
      * @return the copy of this
      */
-    shared_ptr<GeometryObjectTransform<dim, Child_Type>> shallowCopyWithChild(const shared_ptr<ChildType>& child) const {
-        shared_ptr<GeometryObjectTransform<dim, Child_Type>> result = static_pointer_cast<GeometryObjectTransform<dim, Child_Type>>(this->shallowCopy());
+    shared_ptr<GeometryObjectTransform<dim, Child_Type>> shallowCopyWithChild(
+        const shared_ptr<ChildType>& child) const {
+        shared_ptr<GeometryObjectTransform<dim, Child_Type>> result =
+            static_pointer_cast<GeometryObjectTransform<dim, Child_Type>>(this->shallowCopy());
         result->setChild(child);
         return result;
     }
 
-    shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override {
+    shared_ptr<GeometryObject> deepCopy(
+        std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override {
         auto found = copied.find(this);
         if (found != copied.end()) return found->second;
-        shared_ptr<GeometryObjectTransform<dim, Child_Type>> result = static_pointer_cast<GeometryObjectTransform<dim, Child_Type>>(this->shallowCopy());
+        shared_ptr<GeometryObjectTransform<dim, Child_Type>> result =
+            static_pointer_cast<GeometryObjectTransform<dim, Child_Type>>(this->shallowCopy());
         copied[this] = result;
         if (hasChild()) result->setChild(dynamic_pointer_cast<ChildType>(_child->deepCopy(copied)));
         return result;
     }
 
-    shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const override {
+    shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer,
+                                                    Vec<3, double>* translation = 0) const override {
         shared_ptr<GeometryObject> result(const_pointer_cast<GeometryObject>(this->shared_from_this()));
         if (changer.apply(result, translation) || !hasChild()) return result;
         shared_ptr<const GeometryObject> new_child = _child->changedVersion(changer, translation);
         if (!new_child) return shared_ptr<const GeometryObject>();  // child was deleted, so we also should be
-        return new_child == _child ? result : shallowCopyWithChild(const_pointer_cast<ChildType>(dynamic_pointer_cast<const ChildType>(new_child)));
+        return new_child == _child ? result
+                                   : shallowCopyWithChild(const_pointer_cast<ChildType>(
+                                         dynamic_pointer_cast<const ChildType>(new_child)));
     }
 
-    void removeAtUnsafe(std::size_t) override {
-        _child.reset();
-    }
+    void removeAtUnsafe(std::size_t) override { _child.reset(); }
 
     /**
      * Conver bounding box from child's to this's coordinates.
@@ -170,12 +175,13 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
     virtual Box fromChildCoords(const typename ChildType::Box& child_bbox) const = 0;
 
     Box getBoundingBox() const override {
-        return this->hasChild() ?
-                    this->fromChildCoords(this->_child->getBoundingBox()) :
-                    Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
+        return this->hasChild() ? this->fromChildCoords(this->_child->getBoundingBox())
+                                : Box(Primitive<dim>::ZERO_VEC, Primitive<dim>::ZERO_VEC);
     }
 
-    void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path) const override {
+    void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate,
+                               std::vector<Box>& dest,
+                               const PathHints* path) const override {
         if (predicate(*this)) {
             dest.push_back(this->getBoundingBox());
             return;
@@ -183,7 +189,7 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
         if (!hasChild()) return;
         auto child_boxes = this->_child->getBoundingBoxes(predicate, path);
         dest.reserve(dest.size() + child_boxes.size());
-        for (auto& r: child_boxes) dest.push_back(this->fromChildCoords(r));
+        for (auto& r : child_boxes) dest.push_back(this->fromChildCoords(r));
     }
 
     /**
@@ -191,26 +197,26 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
      * @param type required type
      * @return @c true only if this has a child of required @c type
      */
-    inline bool childHasType(GeometryObject::Type type) const {
-         return hasChild() && (_child->getType() == type);
-    }
+    inline bool childHasType(GeometryObject::Type type) const { return hasChild() && (_child->getType() == type); }
 
   protected:
     shared_ptr<ChildType> _child;
 
     /**
-     * Possible implementation for getPositionsToVec, which does not change children position and is used by many subclasses.
-     * This is a tamplate since this code is not proper for space changer.
+     * Possible implementation for getPositionsToVec, which does not change children position and is used by many
+     * subclasses. This is a tamplate since this code is not proper for space changer.
      */
     template <typename ThisType>
-    inline static void _getNotChangedPositionsToVec(ThisType _this, const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path) {
+    inline static void _getNotChangedPositionsToVec(ThisType _this,
+                                                    const GeometryObject::Predicate& predicate,
+                                                    std::vector<DVec>& dest,
+                                                    const PathHints* path) {
         if (predicate(*_this)) {
             dest.push_back(Primitive<dim>::ZERO_VEC);
             return;
         }
         if (_this->hasChild()) _this->_child->getPositionsToVec(predicate, dest, path);
     }
-
 };
 
 /**
@@ -220,18 +226,18 @@ struct GeometryObjectTransform: public GeometryObjectD<dim> {
  * @tparam ChildType type of child, should be in space with @a child_dim number of dimensions
  * @ingroup GEOMETRY_OBJ
  */
-template < int this_dim, int child_dim = 5-this_dim, typename ChildType = GeometryObjectD<child_dim> >
-struct GeometryObjectTransformSpace: public GeometryObjectTransform<this_dim, ChildType> {
-
+template <int this_dim, int child_dim = 5 - this_dim, typename ChildType = GeometryObjectD<child_dim>>
+struct GeometryObjectTransformSpace : public GeometryObjectTransform<this_dim, ChildType> {
     typedef typename ChildType::Box ChildBox;
     typedef typename ChildType::DVec ChildVec;
     typedef typename GeometryObjectTransform<this_dim, ChildType>::DVec DVec;
     using GeometryObjectTransform<this_dim, ChildType>::getChild;
 
-    explicit GeometryObjectTransformSpace(shared_ptr<ChildType> child = shared_ptr<ChildType>()): GeometryObjectTransform<this_dim, ChildType>(child) {}
+    explicit GeometryObjectTransformSpace(shared_ptr<ChildType> child = shared_ptr<ChildType>())
+        : GeometryObjectTransform<this_dim, ChildType>(child) {}
 
     /// @return TYPE_SPACE_CHANGER
-    virtual GeometryObject::Type getType() const override { return GeometryObject::TYPE_SPACE_CHANGER; }
+    GeometryObject::Type getType() const override { return GeometryObject::TYPE_SPACE_CHANGER; }
 
     /*virtual std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > getLeafsWithTranslations() const {
         std::vector< shared_ptr<const GeometryObject> > v = getChild()->getLeafs();
@@ -241,21 +247,18 @@ struct GeometryObjectTransformSpace: public GeometryObjectTransform<this_dim, Ch
         });
         return result;
     }*/
-
 };
 
 /**
  * Represent geometry object equal to its child translated by vector.
  * @ingroup GEOMETRY_OBJ
  */
-template <int dim>
-struct PLASK_API Translation: public GeometryObjectTransform<dim> {
-
+template <int dim> struct PLASK_API Translation : public GeometryObjectTransform<dim> {
     typedef GeometryObjectTransform<dim> BaseClass;
 
     static const char* NAME;
 
-    virtual std::string getTypeName() const override;
+    std::string getTypeName() const override;
 
     typedef typename BaseClass::ChildType ChildType;
 
@@ -272,13 +275,14 @@ struct PLASK_API Translation: public GeometryObjectTransform<dim> {
      */
     DVec translation;
 
-    //Translation(const Translation<dim>& translation) = default;
+    // Translation(const Translation<dim>& translation) = default;
 
     /**
      * @param child child geometry object, object to translate
      * @param translation translation
      */
-    explicit Translation(shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >(), const DVec& translation = Primitive<dim>::ZERO_VEC)
+    explicit Translation(shared_ptr<GeometryObjectD<dim>> child = shared_ptr<GeometryObjectD<dim>>(),
+                         const DVec& translation = Primitive<dim>::ZERO_VEC)
         : BaseClass(child), translation(translation) {}
 
     explicit Translation(GeometryObjectD<dim>& child, const DVec& translation = Primitive<dim>::ZERO_VEC)
@@ -286,57 +290,62 @@ struct PLASK_API Translation: public GeometryObjectTransform<dim> {
 
     /**
      * Construct new translation which:
-     * - if child is translation it is equal to Translation(child_or_translation->getChild(), child_or_translation->translation + translation)
+     * - if child is translation it is equal to Translation(child_or_translation->getChild(),
+     * child_or_translation->translation + translation)
      * - in other it is equal to Translation(child_or_translation, translation)
      * @param child_or_translation child, potential Translation
      * @param translation extra translation
      * @return constructed translation
      */
-    static shared_ptr<Translation<dim>> compress(shared_ptr< GeometryObjectD<dim> > child_or_translation = shared_ptr< GeometryObjectD<dim> >(), const DVec& translation = Primitive<dim>::ZERO_VEC);
+    static shared_ptr<Translation<dim>> compress(
+        shared_ptr<GeometryObjectD<dim>> child_or_translation = shared_ptr<GeometryObjectD<dim>>(),
+        const DVec& translation = Primitive<dim>::ZERO_VEC);
 
-    virtual shared_ptr<Material> getMaterial(const DVec& p) const override;
+    shared_ptr<Material> getMaterial(const DVec& p) const override;
 
-    virtual bool contains(const DVec& p) const override;
+    bool contains(const DVec& p) const override;
 
-    //TODO to use (impl. is good) or remove
+    // TODO to use (impl. is good) or remove
     /*virtual bool intersects(const Box& area) const {
         return getChild()->intersects(area.translated(-translation));
     }*/
 
     using GeometryObjectTransform<dim>::getPathsTo;
 
-    virtual GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
+    GeometryObject::Subtree getPathsAt(const DVec& point, bool all = false) const override;
 
-    /*virtual void getLeafsInfoToVec(std::vector< std::tuple<shared_ptr<const GeometryObject>, Box, DVec> >& dest, const PathHints* path = 0) const {
-        const std::size_t old_size = dest.size();
-        getChild()->getLeafsInfoToVec(dest, path);
+    /*virtual void getLeafsInfoToVec(std::vector< std::tuple<shared_ptr<const GeometryObject>, Box, DVec> >& dest, const
+    PathHints* path = 0) const { const std::size_t old_size = dest.size(); getChild()->getLeafsInfoToVec(dest, path);
         for (auto i = dest.begin() + old_size; i != dest.end(); ++i) {
             std::get<1>(*i).translate(translation);
             std::get<2>(*i) += translation;
         }
     }*/
 
-    virtual Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
+    Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
 
     /*virtual std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > getLeafsWithTranslations() const {
-        std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > result = getChild()->getLeafsWithTranslations();
-        for (std::tuple<shared_ptr<const GeometryObject>, DVec>& r: result) std::get<1>(r) += translation;
-        return result;
+        std::vector< std::tuple<shared_ptr<const GeometryObject>, DVec> > result =
+    getChild()->getLeafsWithTranslations(); for (std::tuple<shared_ptr<const GeometryObject>, DVec>& r: result)
+    std::get<1>(r) += translation; return result;
     }*/
 
-    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
+    virtual void getPositionsToVec(const GeometryObject::Predicate& predicate,
+                                   std::vector<DVec>& dest,
+                                   const PathHints* path = 0) const override;
 
     /**
      * Get shallow copy of this.
      * @return shallow copy of this
      */
     shared_ptr<Translation<dim>> copyShallow() const {
-         return shared_ptr<Translation<dim>>(new Translation<dim>(getChild(), translation));
+        return shared_ptr<Translation<dim>>(new Translation<dim>(getChild(), translation));
     }
 
-    virtual shared_ptr<GeometryObject> shallowCopy() const override;
+    shared_ptr<GeometryObject> shallowCopy() const override;
 
-    virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer, Vec<3, double>* translation = 0) const override;
+    virtual shared_ptr<const GeometryObject> changedVersion(const GeometryObject::Changer& changer,
+                                                            Vec<3, double>* translation = 0) const override;
 
     /**
      * Get shallow copy of this with diffrent translation.
@@ -346,10 +355,19 @@ struct PLASK_API Translation: public GeometryObjectTransform<dim> {
         return shared_ptr<Translation<dim>>(new Translation<dim>(getChild(), new_translation));
     }
 
-   virtual void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
+    void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
 
-    // void extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints *path) const;
+    // void extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<dim>
+    // > >& dest, const PathHints *path) const;
 
+    void addPointsAlong(std::set<double>& points,
+                        Primitive<3>::Direction direction,
+                        unsigned max_steps,
+                        double min_step_size) const override;
+
+    void addLineSegmentsToSet(std::set<typename GeometryObjectD<dim>::LineSegment>& segments,
+                              unsigned max_steps,
+                              double min_step_size) const override;
 };
 
 template <> void Translation<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;
@@ -358,6 +376,6 @@ template <> void Translation<3>::writeXMLAttr(XMLWriter::Element& dest_xml_objec
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Translation<2>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Translation<3>)
 
-}       // namespace plask
+}  // namespace plask
 
-#endif // PLASK__GEOMETRY_TRANSFORM_H
+#endif  // PLASK__GEOMETRY_TRANSFORM_H

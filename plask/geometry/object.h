@@ -6,30 +6,36 @@ This file contains base class for geometries objects.
 */
 
 /** @defgroup GEOMETRY_OBJ Geometry Objects
-*/
+ */
 
-#include <vector>
-#include <tuple>
 #include <functional>
 #include <set>
+#include <tuple>
+#include <vector>
 
-#include "../material/material.h"
 #include "../material/air.h"
-#include "primitives.h"
+#include "../material/material.h"
 #include "../utils/iterators.h"
+#include "primitives.h"
 
 #include <boost/signals2.hpp>
 #include "../utils/event.h"
 
 #include "../axes.h"
-#include "../utils/xml/writer.h"
 #include "../utils/warnings.h"
+#include "../utils/xml/writer.h"
 
 /// Value for expected suffix for names of 2D objects types, see GeometryReader::expectedSuffix.
 #define PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D "2d"
 
 /// Value for expected suffix for names of 3D objects types, see GeometryReader::expectedSuffix.
 #define PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D "3d"
+
+/// Default value for splitting leafs (maximum steps)
+#define PLASK_GEOMETRY_MAX_STEPS 10
+
+/// Default value for splitting leafs (minimum step size)
+#define PLASK_GEOMETRY_MIN_STEP_SIZE 0.005
 
 namespace plask {
 
@@ -39,23 +45,22 @@ struct PathHints;
 struct Path;
 
 struct Geometry;
-template < int dimensions > struct GeometryObjectD;
-template < int dimensions > struct TranslationContainer;
+template <int dimensions> struct GeometryObjectD;
+template <int dimensions> struct TranslationContainer;
 
 /**
  * Base class for all geometries.
  * @ingroup GEOMETRY_OBJ
  */
-struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> {
-
-    ///Type of geometry object.
+struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject> {
+    /// Type of geometry object.
     enum Type {
-        TYPE_LEAF = 0,         ///< leaf object (has no child)
-        TYPE_TRANSFORM = 1,    ///< transform object (has one child)
-        TYPE_SPACE_CHANGER = 2,///< transform object which changing its space, typically changing number of dimensions (has one child)
-        TYPE_CONTAINER = 3,    ///< container (can have more than one child)
-        TYPE_GEOMETRY = 4,     ///< geometry / space
-        TYPE_SEPARATOR = 5     ///< objects of this type are used internaly, mainly as separators
+        TYPE_LEAF = 0,           ///< leaf object (has no child)
+        TYPE_TRANSFORM = 1,      ///< transform object (has one child)
+        TYPE_SPACE_CHANGER = 2,  ///< transform object which changes its space (has one child)
+        TYPE_CONTAINER = 3,      ///< container (can have more than one child)
+        TYPE_GEOMETRY = 4,       ///< geometry / space
+        TYPE_SEPARATOR = 5       ///< objects of this type are used internaly, mainly as separators
     };
 
     /**
@@ -63,47 +68,53 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      *
      * Subroles of this can contains additional information about specific type of event.
      *
-     * Note: when object is being deleted (isDelete() returns @c true), source() can't be succesfully dynamic cast to subroles of GeometryObject,
-     * because source() is already partially deleted.
+     * Note: when object is being deleted (isDelete() returns @c true), source() can't be succesfully dynamic cast to
+     * subroles of GeometryObject, because source() is already partially deleted.
      */
-    class PLASK_API Event: public EventWithSourceAndFlags<GeometryObject, unsigned> {
-
+    class PLASK_API Event : public EventWithSourceAndFlags<GeometryObject, unsigned> {
         const GeometryObject* _originalSource;
 
-    public:
-
+      public:
         using EventWithSourceAndFlags<GeometryObject, unsigned>::FlagsType;
 
         /// Event flags (which describes event properties).
-        enum Flags: FlagsType {
-            EVENT_DELETE = 1<<0,          ///< is deleted
-            EVENT_RESIZE = 1<<1,          ///< size could be changed
-            EVENT_DELEGATED = 1<<2,       ///< delegated from child
-            EVENT_CHILDREN_INSERT = 1<<3, ///< children was inserted
-            EVENT_CHILDREN_REMOVE = 1<<4, ///< children was removed
-            EVENT_CHILDREN_GENERIC = 1<<5,///< children list was changed (other or custom changes)
-            EVENT_EDGES = 1<<6,           ///< edges was changed (only Geometries/calculation spaces emit events with this flags)
-            EVENT_STEPS = 1<<7,           ///< step refining was changed
-            EVENT_USER_DEFINED = 1<<8     ///< user-defined flags could have ids: EVENT_USER_DEFINED, EVENT_USER_DEFINED<<1, EVENT_USER_DEFINED<<2, ...
+        enum Flags : FlagsType {
+            EVENT_DELETE = 1 << 0,            ///< is deleted
+            EVENT_RESIZE = 1 << 1,            ///< size could be changed
+            EVENT_DELEGATED = 1 << 2,         ///< delegated from child
+            EVENT_CHILDREN_INSERT = 1 << 3,   ///< children was inserted
+            EVENT_CHILDREN_REMOVE = 1 << 4,   ///< children was removed
+            EVENT_CHILDREN_GENERIC = 1 << 5,  ///< children list was changed (other or custom changes)
+            EVENT_EDGES =
+                1 << 6,  ///< edges was changed (only Geometries/calculation spaces emit events with this flags)
+            EVENT_STEPS = 1 << 7,        ///< step refining was changed
+            EVENT_USER_DEFINED = 1 << 8  ///< user-defined flags could have ids: EVENT_USER_DEFINED,
+                                         ///< EVENT_USER_DEFINED<<1, EVENT_USER_DEFINED<<2, ...
         };
 
         /**
          * Get event's flags for parent in tree of geometry
-         * (useful to calculate flags for event which should be generated by parent of object which is a source of this event).
+         * (useful to calculate flags for event which should be generated by parent of object which is a source of this
+         * event).
          * @return flags for parent in tree of geometry
          */
-        FlagsType flagsForParent() const { return flagsWithout(EVENT_DELETE | EVENT_CHILDREN_INSERT | EVENT_CHILDREN_REMOVE | EVENT_CHILDREN_GENERIC) | EVENT_DELEGATED | (hasFlag(EVENT_DELETE) ? EVENT_RESIZE : 0u); }
+        FlagsType flagsForParent() const {
+            return flagsWithout(EVENT_DELETE | EVENT_CHILDREN_INSERT | EVENT_CHILDREN_REMOVE | EVENT_CHILDREN_GENERIC) |
+                   EVENT_DELEGATED | (hasFlag(EVENT_DELETE) ? EVENT_RESIZE : 0u);
+        }
 
         /**
-         * Get event's flags for parent in tree of geometry, for parents which want to delegate information about changes of children list.
-         * (uses mainly by parents of hidden child to calculate flags for event which should be generated by parent of object which is a source of this event).
+         * Get event's flags for parent in tree of geometry, for parents which want to delegate information about
+         * changes of children list. (uses mainly by parents of hidden child to calculate flags for event which should
+         * be generated by parent of object which is a source of this event).
          *
          * Note: In most cases You should use flagsForParent() instead.
          * @return flags for parent in tree of geometry
          */
         FlagsType flagsForParentWithChildrenWasChangedInformation() const {
             FlagsType result = flagsForParent();
-            if (hasAnyFlag(EVENT_CHILDREN_INSERT | EVENT_CHILDREN_REMOVE | EVENT_CHILDREN_GENERIC)) result |= EVENT_CHILDREN_GENERIC;
+            if (hasAnyFlag(EVENT_CHILDREN_INSERT | EVENT_CHILDREN_REMOVE | EVENT_CHILDREN_GENERIC))
+                result |= EVENT_CHILDREN_GENERIC;
             return result;
         }
 
@@ -136,7 +147,9 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
          * Check if CHILD_LIST flag is set, which mean that children list of source could be changed.
          * @return @c true only if CHILD_LIST flag is set
          */
-        bool hasChangedChildrenList() const { return hasAnyFlag(EVENT_CHILDREN_INSERT|EVENT_CHILDREN_REMOVE|EVENT_CHILDREN_GENERIC); }
+        bool hasChangedChildrenList() const {
+            return hasAnyFlag(EVENT_CHILDREN_INSERT | EVENT_CHILDREN_REMOVE | EVENT_CHILDREN_GENERIC);
+        }
 
         /**
          * Check if EVENT_EDGES flag is set, which mean that edges connected with source could changed.
@@ -155,7 +168,8 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
          * @param source source and original source of event
          * @param flags which describes event's properties
          */
-        explicit Event(GeometryObject* source, FlagsType flags = 0): EventWithSourceAndFlags<GeometryObject, unsigned>(source, flags), _originalSource(source) {}
+        explicit Event(GeometryObject* source, FlagsType flags = 0)
+            : EventWithSourceAndFlags<GeometryObject, unsigned>(source, flags), _originalSource(source) {}
 
         /**
          * Construct event.
@@ -163,8 +177,8 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
          * @param originalSource original source of event
          * @param flags which describes event's properties
          */
-        explicit Event(GeometryObject* source, const GeometryObject* originalSource, FlagsType flags): EventWithSourceAndFlags<GeometryObject, unsigned>(source, flags), _originalSource(originalSource) {}
-
+        explicit Event(GeometryObject* source, const GeometryObject* originalSource, FlagsType flags)
+            : EventWithSourceAndFlags<GeometryObject, unsigned>(source, flags), _originalSource(originalSource) {}
     };
 
     /**
@@ -172,11 +186,13 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      *
      * Provides extra information about changes: first and last index.
      */
-    struct PLASK_API ChildrenListChangedEvent: public Event {
-
+    struct PLASK_API ChildrenListChangedEvent : public Event {
         using Event::FlagsType;
 
-        ChildrenListChangedEvent(GeometryObject* source, FlagsType flags, const std::size_t beginIndex, const std::size_t endIndex)
+        ChildrenListChangedEvent(GeometryObject* source,
+                                 FlagsType flags,
+                                 const std::size_t beginIndex,
+                                 const std::size_t endIndex)
             : Event(source, flags), beginIndex(beginIndex), endIndex(endIndex) {}
 
         /// Index of first child which was changed.
@@ -184,14 +200,12 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
 
         /// Index of last children which was changed incremented by 1.
         const std::size_t endIndex;
-
     };
 
     /**
      * This structure can refer to part of geometry tree.
      */
     struct PLASK_API Subtree {
-
         /// Geometry object.
         shared_ptr<const GeometryObject> object;
 
@@ -202,48 +216,57 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
          * Construct a subtree witch is empty or has only one node.
          * @param object geometry object, or null pointer to construct an empty Subtree
          */
-        Subtree(shared_ptr<const GeometryObject> object = shared_ptr<const GeometryObject>()): object(object) {}
+        Subtree(shared_ptr<const GeometryObject> object = shared_ptr<const GeometryObject>()) : object(object) {}
 
         /**
          * Construct a subtree.
          * @param object geometry object
          * @param children some (but not necessary all) children of @p object
          */
-        Subtree(shared_ptr<const GeometryObject> object, const std::vector<Subtree>& children): object(object), children(children) {}
+        Subtree(shared_ptr<const GeometryObject> object, const std::vector<Subtree>& children)
+            : object(object), children(children) {}
 
         /**
          * Construct subtree.
          * @param object geometry object
          * @param children some (but not necessary all) children of @p object
          */
-        Subtree(shared_ptr<const GeometryObject> object, std::vector<Subtree>&& children): object(object), children(std::forward< std::vector<Subtree> >(children)) {}
+        Subtree(shared_ptr<const GeometryObject> object, std::vector<Subtree>&& children)
+            : object(object), children(std::forward<std::vector<Subtree>>(children)) {}
 
         /**
-         * Construct subtree which consists of given @p root object and @p children or empty object if @p children vector is empty.
+         * Construct subtree which consists of given @p root object and @p children or empty object if @p children
+         * vector is empty.
          *
          * This method is used to make set of paths (subtree) longer if this set is not empty.
          * @param root potential root of constructed subtree object
          * @param children potential children of @p root in constructed subtree
-         * @return subtree which consists of given @p root object and @p children or empty object if @p children vector is empty
+         * @return subtree which consists of given @p root object and @p children or empty object if @p children vector
+         * is empty
          */
         static Subtree extendIfNotEmpty(shared_ptr<const GeometryObject> root, Subtree&& children) {
-            return children.empty() ? Subtree() : Subtree(root, std::vector<Subtree>{ std::forward< Subtree >(children) });
+            return children.empty() ? Subtree() : Subtree(root, std::vector<Subtree>{std::forward<Subtree>(children)});
         }
 
         /**
-         * Construct subtree which consists of given @p root object and @p children or empty object if @p children vector is empty.
+         * Construct subtree which consists of given @p root object and @p children or empty object if @p children
+         * vector is empty.
          *
          * This method is used to make set of paths (subtree) longer if this set is not empty.
          * @param root potential root of constructed subtree object
          * @param children potential children of @p root in constructed subtree
-         * @return subtree which consists of given @p root object and @p children or empty object if @p children vector is empty
+         * @return subtree which consists of given @p root object and @p children or empty object if @p children vector
+         * is empty
          */
         static Subtree extendIfNotEmpty(const GeometryObject* root, Subtree&& children) {
-            return children.empty() ? Subtree() : Subtree(root->shared_from_this(), std::vector<Subtree>{ std::forward< Subtree >(children) });
+            return children.empty()
+                       ? Subtree()
+                       : Subtree(root->shared_from_this(), std::vector<Subtree>{std::forward<Subtree>(children)});
         }
 
         /**
-         * Check if this subtree inludes more than one branch (has more than one children or has one child which has more than one branch).
+         * Check if this subtree inludes more than one branch (has more than one children or has one child which has
+         * more than one branch).
          * @return @c true only if this subtree inludes branches, @c false if it is linear path
          */
         bool hasBranches() const;
@@ -275,18 +298,19 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * Geometry changer can change GeometryObject to another one.
      */
     struct PLASK_API Changer {
-
         /// Virtual destructor. Do nothing.
         virtual ~Changer() {}
 
         /**
          * Try to apply changes.
-         * @param[in,out] to_change pointer to object which eventualy will be changed (in such case pointer after call can point to another geometry object)
-         * @param[out] translation optional, extra translation for object after change (in case of 2d object caller reads only @a tran and @a up components of this vector)
-         * @return @c true only if something was changed, @c false if nothing was changed (in such case changer doesn't change arguments)
+         * @param[in,out] to_change pointer to object which eventualy will be changed (in such case pointer after call
+         * can point to another geometry object)
+         * @param[out] translation optional, extra translation for object after change (in case of 2d object caller
+         * reads only @a tran and @a up components of this vector)
+         * @return @c true only if something was changed, @c false if nothing was changed (in such case changer doesn't
+         * change arguments)
          */
         virtual bool apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation = 0) const = 0;
-
     };
 
     /**
@@ -296,8 +320,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * up to time when one of this call returns @c true (and then it returns @c true) or
      * there are no mora changers in changes vector (and then it returns @c false).
      */
-    struct PLASK_API CompositeChanger: public Changer {
-
+    struct PLASK_API CompositeChanger : public Changer {
         std::vector<const Changer*> changers;
 
         /**
@@ -318,7 +341,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
          * @param changer changer to append
          * @return @c *this
          */
-        CompositeChanger& append(const Changer* changer) { return operator ()(changer); }
+        CompositeChanger& append(const Changer* changer) { return operator()(changer); }
 
         /**
          * Construct empty composit changer.
@@ -328,15 +351,13 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
         /// Delete all held changers (using delete operator).
         ~CompositeChanger();
 
-        virtual bool apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation = 0) const override;
-
+        bool apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation = 0) const override;
     };
 
     /**
      * Changer which replaces given geometry object @a from to given geometry object @a to.
      */
-    struct PLASK_API ReplaceChanger: public Changer {
-
+    struct PLASK_API ReplaceChanger : public Changer {
         shared_ptr<const GeometryObject> from;
         shared_ptr<GeometryObject> to;
 
@@ -359,32 +380,28 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
          * @param calc_replace functor which is used to calculate change destination object
          */
         template <typename F>
-        ReplaceChanger(const shared_ptr<const GeometryObject>& from, F calc_replace): from(from), translation(0.0, 0.0, 0.0) {
+        ReplaceChanger(const shared_ptr<const GeometryObject>& from, F calc_replace)
+            : from(from), translation(0.0, 0.0, 0.0) {
             this->to = calc_replace(this->from);
         }
 
-        virtual bool apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation = 0) const override;
-
+        bool apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation = 0) const override;
     };
 
     /**
      * Changer which replaces given geometry object @a toChange to block (2d or 3d, depents from @a toChange)
      * with size equals to @a toChange bounding box, and with given material.
      */
-    struct PLASK_API ToBlockChanger: public ReplaceChanger {
-
+    struct PLASK_API ToBlockChanger : public ReplaceChanger {
         ToBlockChanger(shared_ptr<const GeometryObject> toChange, shared_ptr<Material> material);
-
     };
 
-    struct PLASK_API DeleteChanger: public Changer {
-
+    struct PLASK_API DeleteChanger : public Changer {
         shared_ptr<const GeometryObject> toDel;
 
-        DeleteChanger(shared_ptr<const GeometryObject> toDel): toDel(toDel) {}
+        DeleteChanger(shared_ptr<const GeometryObject> toDel) : toDel(toDel) {}
 
-        virtual bool apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation = 0) const override;
-
+        bool apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation = 0) const override;
     };
 
     /// Predicate on GeometryObject
@@ -396,17 +413,17 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
     /// Predicate which check if given object is another instance of some particular object (given in constructor).
     struct PLASK_API PredicateIsA {
         const GeometryObject& objectToBeEqual;
-        PredicateIsA(const GeometryObject& objectToBeEqual): objectToBeEqual(objectToBeEqual) {}
-        PredicateIsA(const shared_ptr<GeometryObject>& objectToBeEqual): objectToBeEqual(*objectToBeEqual) {}
-        PredicateIsA(const shared_ptr<const GeometryObject>& objectToBeEqual): objectToBeEqual(*objectToBeEqual) {}
+        PredicateIsA(const GeometryObject& objectToBeEqual) : objectToBeEqual(objectToBeEqual) {}
+        PredicateIsA(const shared_ptr<GeometryObject>& objectToBeEqual) : objectToBeEqual(*objectToBeEqual) {}
+        PredicateIsA(const shared_ptr<const GeometryObject>& objectToBeEqual) : objectToBeEqual(*objectToBeEqual) {}
         bool operator()(const GeometryObject& el) const { return &el == &objectToBeEqual; }
     };
 
     /// Predicate which check if given object belong to class with given name.
     struct PLASK_API PredicateHasRole {
         std::string role_name;
-        PredicateHasRole(const std::string& role_name): role_name(role_name) {};
-        PredicateHasRole(std::string&& role_name): role_name(std::move(role_name)) {};
+        PredicateHasRole(const std::string& role_name) : role_name(role_name){};
+        PredicateHasRole(std::string&& role_name) : role_name(std::move(role_name)){};
         bool operator()(const GeometryObject& obj) const { return obj.hasRole(role_name); }
     };
 
@@ -414,7 +431,8 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * Base class for callbacks used by save() method to get names of objects and paths.
      *
      * Default implementation just returns empty names and list of names.
-     * It is enought to save geometry tree without any names or with all names auto-generated (see @ref prerareToAutonaming).
+     * It is enought to save geometry tree without any names or with all names auto-generated (see @ref
+     * prerareToAutonaming).
      *
      * Example (save vector of objects to dest XML in "geometry" section):
      * @code
@@ -430,7 +448,6 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * @endcode
      */
     class PLASK_API WriteXMLCallback {
-
         /**
          * Names of already saved objects.
          *
@@ -438,25 +455,26 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
          */
         std::map<const GeometryObject*, std::string> names_of_saved;
 
-        std::map<const GeometryObject*, unsigned> counts;   ///< allow to count objects (used by auto-naming)
+        std::map<const GeometryObject*, unsigned> counts;  ///< allow to count objects (used by auto-naming)
 
         unsigned nextAutoName;
 
-        public:
-
-        WriteXMLCallback(): nextAutoName(0) {}
+      public:
+        WriteXMLCallback() : nextAutoName(0) {}
 
         /**
          * Calling of this method allows for automatic name generation when saving some subtrees using this.
          *
-         * This method must be called exactly once for root of each subtree which will be write to XML before any writes.
+         * This method must be called exactly once for root of each subtree which will be write to XML before any
+         * writes.
          */
         void prerareToAutonaming(const GeometryObject& subtree_root);
 
         /**
          * Get name of given @p object.
          * @param[in] object
-         * @param[in, out] axesNames axes names which was used when saved parent of @p object, this can assign to it new value to use in branch rooted by @p object
+         * @param[in, out] axesNames axes names which was used when saved parent of @p object, this can assign to it new
+         * value to use in branch rooted by @p object
          * @return name of @p object or empty string if @p object has no name
          */
         virtual std::string getName(const GeometryObject& object, AxisNames& axesNames) const;
@@ -468,7 +486,9 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
          * @param[in] index_of_child_in_parent index of @p child in @p parent real childrent list
          * @return names of path fragment from @p parent to @p child (can be empty)
          */
-        virtual std::vector<std::string> getPathNames(const GeometryObject& parent, const GeometryObject& child, std::size_t index_of_child_in_parent) const;
+        virtual std::vector<std::string> getPathNames(const GeometryObject& parent,
+                                                      const GeometryObject& child,
+                                                      std::size_t index_of_child_in_parent) const;
 
         /**
          * Append to XML tag, with optional name (obtain by getName), and axes attribiute.
@@ -476,13 +496,16 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
          * It is also possible that this creates a reference tag, and this case should be checked by @ref isRef method.
          * @param parent_tag parent XML tag
          * @param object object to write
-         * @param[in, out] axesNames axis names which was used when saved parent of @p object, this can assign to it new value to use in branch rooted by @p object
-         *  (assigned pointer must be valid while branch will be saved, typically it is a pointer to object in register)
+         * @param[in, out] axesNames axis names which was used when saved parent of @p object, this can assign to it new
+         * value to use in branch rooted by @p object (assigned pointer must be valid while branch will be saved,
+         * typically it is a pointer to object in register)
          * @return opened XML tag ready to add extra atribiutes of @p object or reference tag.
          */
         XMLWriter::Element makeTag(XMLElement& parent_tag, const GeometryObject& object, AxisNames& axesNames);
 
-        XMLElement makeChildTag(XMLElement& container_tag, const GeometryObject& container, std::size_t index_of_child_in_parent) const;
+        XMLElement makeChildTag(XMLElement& container_tag,
+                                const GeometryObject& container,
+                                std::size_t index_of_child_in_parent) const;
 
         /**
          * Check if given XML object represents a reference to another geometry object.
@@ -490,24 +513,23 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
          * @return @c true only if @p el represents a reference
          */
         static bool isRef(const XMLElement& el) { return el.getName() == "again"; }
-
     };
 
-    /// Maximum division if the object is not uniform
-    unsigned long max_points;
+    /// Maximum number of points to split a single leaf
+    unsigned max_steps;
 
-    /// Minimum distance between division lines if the object is not uniform
-    double min_ply;
+    /// Minimum distance between divisions for a single leaf
+    double min_step_size;
 
-    /// Set max_points
-    void setMaxPoints(unsigned long value) {
-        max_points = value;
+    /// Set max_steps
+    void setMaxSteps(unsigned long value) {
+        max_steps = value;
         fireChanged(GeometryObject::Event::EVENT_STEPS);
     }
 
-    /// Set min_ply
-    void setMinPly(double value) {
-        min_ply = value;
+    /// Set min_step_size
+    void setMinStepSize(double value) {
+        min_step_size = value;
         fireChanged(GeometryObject::Event::EVENT_STEPS);
     }
 
@@ -522,16 +544,18 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * @param obj, method slot to connect, object and it's method
      * @param at specifies where the slot should be connected:
      *  - boost::signals2::at_front indicates that the slot will be connected at the front of the list or group of slots
-     *  - boost::signals2::at_back (default) indicates that the slot will be connected at the back of the list or group of slots
+     *  - boost::signals2::at_back (default) indicates that the slot will be connected at the back of the list or group
+     * of slots
      */
     template <typename ClassT, typename methodT>
-    boost::signals2::connection changedConnectMethod(ClassT* obj, methodT method, boost::signals2::connect_position at = boost::signals2::at_back) {
+    boost::signals2::connection changedConnectMethod(ClassT* obj,
+                                                     methodT method,
+                                                     boost::signals2::connect_position at = boost::signals2::at_back) {
         return changed.connect(boost::bind(method, obj, _1), at);
     }
 
     /// Disconnect a method from changed signal
-    template <typename ClassT, typename methodT>
-    void changedDisconnectMethod(ClassT* obj, methodT method) {
+    template <typename ClassT, typename methodT> void changedDisconnectMethod(ClassT* obj, methodT method) {
         changed.disconnect(boost::bind(method, obj, _1));
     }
 
@@ -548,17 +572,20 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * Call changed with this as event source.
      * @param event_constructor_params_without_source parameters for event constructor (without first - source)
      */
-    template<typename EventT = Event, typename ...Args>
+    template <typename EventT = Event, typename... Args>
     void fireChanged(Args&&... event_constructor_params_without_source) {
         EventT evt(this, std::forward<Args>(event_constructor_params_without_source)...);
-        changed(evt);   //callChanged
+        changed(evt);  // callChanged
     }
 
     /**
      * Initialize this to be the same as @p to_copy but doesn't have any changes observer.
      * @param to_copy object to copy
      */
-    GeometryObject(const GeometryObject& to_copy): enable_shared_from_this<GeometryObject>(to_copy), max_points(to_copy.max_points), min_ply(to_copy.min_ply) {}
+    GeometryObject(const GeometryObject& to_copy)
+        : enable_shared_from_this<GeometryObject>(to_copy),
+          max_steps(to_copy.max_steps),
+          min_step_size(to_copy.min_step_size) {}
 
     /**
      * Set this to be the same as @p to_copy but doesn't change changes observer.
@@ -566,12 +593,14 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      */
     GeometryObject& operator=(const GeometryObject& to_copy) {
         enable_shared_from_this<GeometryObject>::operator=(to_copy);
-        max_points = to_copy.max_points;
-        min_ply = to_copy.min_ply;
+        max_steps = to_copy.max_steps;
+        min_step_size = to_copy.min_step_size;
         return *this;
     }
 
-    GeometryObject(): max_points(10), min_ply(0.005) {}
+    GeometryObject() : max_steps(0), min_step_size(0) {}
+
+    GeometryObject(unsigned max_steps, double min_step_size) : max_steps(max_steps), min_step_size(min_step_size) {}
 
     /**
      * Virtual destructor. Inform all change listeners.
@@ -589,13 +618,15 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
     /**
      * Write geometry tree branch rooted by this to XML.
      *
-     * Default implementation write XML tag for this (with eventual name and axes attribiutes) call writeXMLAttr to append extra atribiutes, and write all real children.
-     * Typically you should overwrite only writeXMLAttr method.
+     * Default implementation write XML tag for this (with eventual name and axes attribiutes) call writeXMLAttr to
+     * append extra atribiutes, and write all real children. Typically you should overwrite only writeXMLAttr method.
      * @param parent_xml_object destination, parent XML object
      * @param write_cb write callback, used to get names for objects and paths
      * @param parent_axes names of axes (typically used by parent of this)
      */
-    virtual void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames parent_axes) const;
+    virtual void writeXML(XMLWriter::Element& parent_xml_object,
+                          WriteXMLCallback& write_cb,
+                          AxisNames parent_axes) const;
 
     /**
      * Write geometry tree branch rooted by this to XML.
@@ -623,27 +654,25 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * Cast this to GeometryObjectD<DIMS>.
      * @return this casted to GeometryObjectD<DIMS> or nullptr if casting is not possible.
      */
-    template<int DIMS>
-    shared_ptr< GeometryObjectD<DIMS> > asD();
+    template <int DIMS> shared_ptr<GeometryObjectD<DIMS>> asD();
 
     /**
      * Cast this to GeometryObjectD<DIMS> (const version).
      * @return this casted to GeometryObjectD<DIMS> or nullptr if casting is not possible.
      */
-    template<int DIMS>
-    shared_ptr< const GeometryObjectD<DIMS> > asD() const;
+    template <int DIMS> shared_ptr<const GeometryObjectD<DIMS>> asD() const;
 
     /**
      * Cast this to Geometry.
      * @return this casted to Geometry or nullptr if casting is not possible.
      */
-    shared_ptr< Geometry > asGeometry();
+    shared_ptr<Geometry> asGeometry();
 
     /**
      * Cast this to Geometry.
      * @return this casted to Geometry or nullptr if casting is not possible.
      */
-    shared_ptr< const Geometry > asGeometry() const;
+    shared_ptr<const Geometry> asGeometry() const;
 
     /**
      * Check if geometry is: leaf, transform or container type object.
@@ -663,14 +692,34 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      *
      * Default implementation returns nullptr.
      */
-    //virtual shared_ptr<Material> singleMaterial() const { return shared_ptr<Material>(); }
+    // virtual shared_ptr<Material> singleMaterial() const { return shared_ptr<Material>(); }
 
     /**
-     * Get information if object is solid in its bouding-box in given @p direction.
-     * @param direction direction
-     * @return @c true only if object is solid in its bouding-box in given @p direction
+     * Add characteristic points information along specified axis to set
+     * \param[in,out] points ordered set of division points along specified axis
+     * \param direction axis direction
+     * \param max_steps maximum number of points to split single leaf
+     * \param min_step_size minimum distance between divisions for a single leaf
      */
-    virtual bool isUniform(Primitive<3>::Direction PLASK_UNUSED(direction)) const { return false; }
+    virtual void addPointsAlong(std::set<double>& points,
+                                Primitive<3>::Direction PLASK_UNUSED(direction),
+                                unsigned PLASK_UNUSED(max_steps),
+                                double PLASK_UNUSED(min_step_size)) const = 0;
+
+    /**
+     * Get characteristic points information along specified axis
+     * \param direction axis direction
+     * \param max_steps maximum number of points to split single leaf
+     * \param min_step_size minimum distance between divisions for a single leaf
+     * \returns ordered set of division points along specified axis
+     */
+    std::set<double> getPointsAlong(Primitive<3>::Direction direction,
+                                    unsigned max_steps = PLASK_GEOMETRY_MAX_STEPS,
+                                    double min_step_size = PLASK_GEOMETRY_MIN_STEP_SIZE) const {
+        std::set<double> points;
+        addPointsAlong(points, direction, max_steps, min_step_size);
+        return points;
+    }
 
     /**
      * Check if this object belongs to class (has tag) with name @p role_name.
@@ -704,8 +753,8 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
 
     /**
      * Check if object is ready for calculation.
-     * Throw exception if object is in bad state and can't be used in calculations, for example has not required children, etc.
-     * Default implementation do nothing, but inherited class can change this behavior.
+     * Throw exception if object is in bad state and can't be used in calculations, for example has not required
+     * children, etc. Default implementation do nothing, but inherited class can change this behavior.
      * @throw Exception if object is not ready for calculation
      */
     virtual void validate() const {}
@@ -715,7 +764,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * @param el object to search for
      * @return @c true only if @a el is in subtree with @c this in root
      */
-    //TODO ? predicate, path
+    // TODO ? predicate, path
     virtual bool hasInSubtree(const GeometryObject& el) const;
 
     bool hasInSubtree(const GeometryObject& el, const PathHints* pathHints) const {
@@ -730,9 +779,10 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * Find paths to @a el.
      * @param el object to search for
      * @param pathHints (optional) path hints which limits search space
-     * @return sub-tree with paths to given object (@p el is in all leafs), empty sub-tree if @p el is not in subtree with @c this in root
+     * @return sub-tree with paths to given object (@p el is in all leafs), empty sub-tree if @p el is not in subtree
+     * with @c this in root
      */
-    //TODO ? predicate
+    // TODO ? predicate
     virtual Subtree getPathsTo(const GeometryObject& el, const PathHints* pathHints = 0) const = 0;
 
     /**
@@ -741,7 +791,9 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * @param dest destination vector
      * @param path (optional) path hints which limits search space
      */
-    virtual void getObjectsToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const = 0;
+    virtual void getObjectsToVec(const Predicate& predicate,
+                                 std::vector<shared_ptr<const GeometryObject>>& dest,
+                                 const PathHints* path = 0) const = 0;
 
     /**
      * Append all objects from subtree with this in root, which fullfil predicate to vector @p dest.
@@ -749,7 +801,9 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * @param dest destination vector
      * @param path path hints which limits search space
      */
-    void getObjectsToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints& path) const {
+    void getObjectsToVec(const Predicate& predicate,
+                         std::vector<shared_ptr<const GeometryObject>>& dest,
+                         const PathHints& path) const {
         getObjectsToVec(predicate, dest, &path);
     }
 
@@ -759,8 +813,9 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * @param path (optional) path hints which limits search space
      * @return vector of all objects from subtree with this in root, which fullfil predicate
      */
-    std::vector< shared_ptr<const GeometryObject> > getObjects(const Predicate& predicate, const PathHints* path = 0) const {
-        std::vector< shared_ptr<const GeometryObject> > result;
+    std::vector<shared_ptr<const GeometryObject>> getObjects(const Predicate& predicate,
+                                                             const PathHints* path = 0) const {
+        std::vector<shared_ptr<const GeometryObject>> result;
         getObjectsToVec(predicate, result, path);
         return result;
     }
@@ -771,7 +826,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * @param path path hints which limits search space
      * @return vector of all objects from subtree with this in root, which fullfil predicate
      */
-    std::vector< shared_ptr<const GeometryObject> > getObjects(const Predicate& predicate, const PathHints& path) const {
+    std::vector<shared_ptr<const GeometryObject>> getObjects(const Predicate& predicate, const PathHints& path) const {
         return getObjects(predicate, &path);
     }
 
@@ -780,7 +835,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * @param dest leafs destination vector
      * @param path (optional) path hints which limits search space
      */
-    void getLeafsToVec(std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const {
+    void getLeafsToVec(std::vector<shared_ptr<const GeometryObject>>& dest, const PathHints* path = 0) const {
         getObjectsToVec(&GeometryObject::PredicateIsLeaf, dest, path);
     }
 
@@ -789,7 +844,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * @param dest leafs destination vector
      * @param path path hints which limits search space
      */
-    void getLeafsToVec(std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints& path) const {
+    void getLeafsToVec(std::vector<shared_ptr<const GeometryObject>>& dest, const PathHints& path) const {
         getLeafsToVec(dest, &path);
     }
 
@@ -798,8 +853,8 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * @param path (optional) path hints which limits search space
      * @return all leafs in subtree with this object as root
      */
-    std::vector< shared_ptr<const GeometryObject> > getLeafs(const PathHints* path = 0) const {
-        std::vector< shared_ptr<const GeometryObject> > result;
+    std::vector<shared_ptr<const GeometryObject>> getLeafs(const PathHints* path = 0) const {
+        std::vector<shared_ptr<const GeometryObject>> result;
         getLeafsToVec(result, path);
         return result;
     }
@@ -809,9 +864,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * @param path path hints which limits search space
      * @return all leafs in subtree with this object as root
      */
-    std::vector< shared_ptr<const GeometryObject> > getLeafs(const PathHints& path) const {
-        return getLeafs(&path);
-    }
+    std::vector<shared_ptr<const GeometryObject>> getLeafs(const PathHints& path) const { return getLeafs(&path); }
 
     /**
      * Append all objects with a specified role in subtree with this in root to vector @p dest.
@@ -864,8 +917,8 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
     /**
      * Remove child at given @p index.
      *
-     * This is unsafe but fast version, it doesn't check index and doesn't call fireChildrenChanged() to inform listeners about this object changes.
-     * Caller should do this manually or call removeAt(std::size_t) instead.
+     * This is unsafe but fast version, it doesn't check index and doesn't call fireChildrenChanged() to inform
+     * listeners about this object changes. Caller should do this manually or call removeAt(std::size_t) instead.
      *
      * Default implementation throw excption but this method is overwritten in subroles.
      * @param index index of real child to remove
@@ -881,7 +934,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
     void removeAt(std::size_t index) {
         ensureIsValidChildNr(index, "removeAt", "index");
         removeAtUnsafe(index);
-        fireChildrenRemoved(index, index+1);
+        fireChildrenRemoved(index, index + 1);
     }
 
     void removeRangeUnsafe(std::size_t index_begin, std::size_t index_end) {
@@ -895,7 +948,7 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      */
     bool removeRange(std::size_t index_begin, std::size_t index_end) {
         if (index_begin >= index_end) return false;
-        ensureIsValidChildNr(index_end-1, "removeRange", "index_end-1");
+        ensureIsValidChildNr(index_end - 1, "removeRange", "index_end-1");
         removeRangeUnsafe(index_begin, index_end);
         fireChildrenRemoved(index_begin, index_end);
         return true;
@@ -905,19 +958,19 @@ struct PLASK_API GeometryObject: public enable_shared_from_this<GeometryObject> 
      * Call a @p callback for each object in subtree with @c this in root.
      *
      * Visit tree in pre-order.
-     * @param callback call-back to call, should return @c true only if descendants of object given as parameter should be visited
+     * @param callback call-back to call, should return @c true only if descendants of object given as parameter should
+     * be visited
      */
-    virtual void forEachRealObjectInSubtree(std::function<bool(const GeometryObject &)> callback) const;
+    virtual void forEachRealObjectInSubtree(std::function<bool(const GeometryObject&)> callback) const;
 
-private:
-    struct ChildGetter {    //used by begin(), end()
+  private:
+    struct ChildGetter {  // used by begin(), end()
         shared_ptr<const GeometryObject> el;
-        ChildGetter(const shared_ptr<const GeometryObject>& el): el(el) {}
+        ChildGetter(const shared_ptr<const GeometryObject>& el) : el(el) {}
         shared_ptr<GeometryObject> operator()(std::size_t index) const { return el->getChildNo(index); }
     };
 
-public:
-
+  public:
     ///@return begin begin iterator over children
     FunctorIndexedIterator<ChildGetter> begin() const {
         return FunctorIndexedIterator<ChildGetter>(ChildGetter(this->shared_from_this()), 0);
@@ -928,7 +981,7 @@ public:
         return FunctorIndexedIterator<ChildGetter>(ChildGetter(this->shared_from_this()), getChildrenCount());
     }
 
-    //virtual GeometryTransform getTransform()
+    // virtual GeometryTransform getTransform()
 
     /**
      * Get this or copy of this with some changes in subtree.
@@ -936,7 +989,8 @@ public:
      * @param[out] translation optional, if non-null, recommended translation of this after change will be stored
      * @return pointer to this (if nothing was changed) or copy of this with some changes in subtree
      */
-    virtual shared_ptr<const GeometryObject> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const = 0;
+    virtual shared_ptr<const GeometryObject> changedVersion(const Changer& changer,
+                                                            Vec<3, double>* translation = 0) const = 0;
 
     /**
      * Get shallow copy of this. In the shallow copy all children are the same
@@ -949,7 +1003,8 @@ public:
      * @param copied map containing copied objects to avoid double copying
      * @return deep copy of this
      */
-    virtual shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const = 0;
+    virtual shared_ptr<GeometryObject> deepCopy(
+        std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const = 0;
 
     /**
      * Get deep copy of this. In the deep copy all children are copied.
@@ -974,10 +1029,11 @@ public:
      * Throw CyclicReferenceException if @p potential_child has this in subtree.
      * @param[in] potential_child potential, new child of this
      */
-    void ensureCanHaveAsChild(const GeometryObject& potential_child) const { potential_child.ensureCanHasAsParent(*this); }
+    void ensureCanHaveAsChild(const GeometryObject& potential_child) const {
+        potential_child.ensureCanHasAsParent(*this);
+    }
 
-protected:
-
+  protected:
     /**
      * Append XML attribiutes of this to @p dest_xml_object.
      *
@@ -993,7 +1049,9 @@ protected:
      * @param write_cb write callback, used to get names for objects and paths
      * @param axes chosen name of axes
      */
-    virtual void writeXMLChildren(XMLWriter::Element& dest_xml_object, WriteXMLCallback& write_cb, const AxisNames &axes) const;
+    virtual void writeXMLChildren(XMLWriter::Element& dest_xml_object,
+                                  WriteXMLCallback& write_cb,
+                                  const AxisNames& axes) const;
 
     /**
      * Check if given @p index is valid child index and throw exception of it is not.
@@ -1002,10 +1060,12 @@ protected:
      * @param arg_name name of index argument in caller method, used to format excption message
      * @throw OutOfBoundsException if index is not valid
      */
-    void ensureIsValidChildNr(std::size_t child_no, const char* method_name = "getChildNo", const char* arg_name = "child_no") const {
+    void ensureIsValidChildNr(std::size_t child_no,
+                              const char* method_name = "getChildNo",
+                              const char* arg_name = "child_no") const {
         std::size_t children_count = getRealChildrenCount();
         if (child_no >= children_count)
-            throw OutOfBoundsException(method_name, arg_name, child_no, 0, children_count-1);
+            throw OutOfBoundsException(method_name, arg_name, child_no, 0, children_count - 1);
     }
 
     /**
@@ -1015,10 +1075,12 @@ protected:
      * @param arg_name name of index argument in caller method, used to format excption message
      * @throw OutOfBoundsException if index is not valid
      */
-    void ensureIsValidInsertPosition(std::size_t child_no, const char* method_name = "insert", const char* arg_name = "pos") const {
+    void ensureIsValidInsertPosition(std::size_t child_no,
+                                     const char* method_name = "insert",
+                                     const char* arg_name = "pos") const {
         std::size_t children_count = getRealChildrenCount();
         if (child_no > children_count)
-            throw OutOfBoundsException(method_name, arg_name, child_no, 0, children_count-1);
+            throw OutOfBoundsException(method_name, arg_name, child_no, 0, children_count - 1);
     }
 
     /// Inform observers that children list was changed (also that this is resized)
@@ -1027,13 +1089,14 @@ protected:
     }
 
     void fireChildrenRemoved(std::size_t beginIndex, std::size_t endIndex) {
-        this->fireChanged<ChildrenListChangedEvent>(GeometryObject::Event::EVENT_RESIZE | GeometryObject::Event::EVENT_CHILDREN_REMOVE, beginIndex, endIndex);
+        this->fireChanged<ChildrenListChangedEvent>(
+            GeometryObject::Event::EVENT_RESIZE | GeometryObject::Event::EVENT_CHILDREN_REMOVE, beginIndex, endIndex);
     }
 
     void fireChildrenInserted(std::size_t beginIndex, std::size_t endIndex) {
-        this->fireChanged<ChildrenListChangedEvent>(GeometryObject::Event::EVENT_RESIZE | GeometryObject::Event::EVENT_CHILDREN_INSERT, beginIndex, endIndex);
+        this->fireChanged<ChildrenListChangedEvent>(
+            GeometryObject::Event::EVENT_RESIZE | GeometryObject::Event::EVENT_CHILDREN_INSERT, beginIndex, endIndex);
     }
-
 };
 
 template <int dim> struct Translation;
@@ -1043,12 +1106,32 @@ template <int dim> struct Translation;
  * @tparam dimensions number of dimensions, 2 or 3
  * @ingroup GEOMETRY_OBJ
  */
-template <int dim>
-struct PLASK_API GeometryObjectD: public GeometryObject {
-
+template <int dim> struct PLASK_API GeometryObjectD : public GeometryObject {
     static const int DIM = dim;
     typedef typename Primitive<dim>::Box Box;
     typedef typename Primitive<dim>::DVec DVec;
+
+    /**
+     * Line segment represented by two unordered points
+     */
+    struct LineSegment {
+      private:
+        DVec _p[2];
+
+      public:
+        LineSegment(const DVec& p0, const DVec& p1) {
+            _p[0] = p0;
+            _p[1] = p1;
+            if (_p[1] < _p[0]) std::swap(_p[0], _p[1]);
+        }
+        const DVec& p0() const { return _p[0]; }
+        const DVec& p1() const { return _p[1]; }
+        const DVec& operator[](std::size_t i) const { return _p[i]; }
+
+        bool operator<(const LineSegment& c) const {
+            return _p[0] < c._p[0] || (!(c._p[0] < _p[0]) && _p[1] < c._p[1]);
+        }
+    };
 
     int getDimensionsCount() const override { return dim; }
 
@@ -1060,7 +1143,7 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
      * @param all if true then return all paths if branches overlap the point
      * @return all paths, last one is on top and overlies the rest
      */
-    virtual Subtree getPathsAt(const DVec& point, bool all=false) const = 0;
+    virtual Subtree getPathsAt(const DVec& point, bool all = false) const = 0;
 
     /**
      * Check if this geometry object contains point.
@@ -1074,8 +1157,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
      * @param area rectangular area
      * @return true only if this geometry contains some points from @a area
      */
-    //TODO unused - to use and implement in subclasses (most have impl.) or to remove
-    //virtual bool intersects(const Box& area) const = 0;
+    // TODO unused - to use and implement in subclasses (most have impl.) or to remove
+    // virtual bool intersects(const Box& area) const = 0;
 
     /**
      * Calculate minimal rectangle which contains all points of geometry object.
@@ -1114,20 +1197,27 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
     }
 
     /**
-     * Calculate and append to vector bounding boxes of all nodes which fulfill given @p predicate, optionally marked by path.
+     * Calculate and append to vector bounding boxes of all nodes which fulfill given @p predicate, optionally marked by
+     * path.
      * @param predicate
-     * @param dest place to add result, bounding boxes will be added in the same order which is generated by GeometryObject::getObjects
+     * @param dest place to add result, bounding boxes will be added in the same order which is generated by
+     * GeometryObject::getObjects
      * @param path path (optional) path hints which limits search space
      */
-    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const = 0;
+    virtual void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate,
+                                       std::vector<Box>& dest,
+                                       const PathHints* path = 0) const = 0;
 
     /**
      * Calculate and append to vector bounding boxes of all nodes which fulfill given @p predicate, marked by path.
      * @param predicate
-     * @param dest place to add result, bounding boxes will be added in the same order which is generated by GeometryObject::getObjects
+     * @param dest place to add result, bounding boxes will be added in the same order which is generated by
+     * GeometryObject::getObjects
      * @param path path hints which limits search space
      */
-    void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints& path) const {
+    void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate,
+                               std::vector<Box>& dest,
+                               const PathHints& path) const {
         getBoundingBoxesToVec(predicate, dest, &path);
     }
 
@@ -1155,7 +1245,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
 
     /**
      * Calculate and append to vector bounding boxes of all leafs, optionally marked by path.
-     * @param dest place to add result, bounding boxes will be added in the same order which is generated by GeometryObject::getLeafsToVec
+     * @param dest place to add result, bounding boxes will be added in the same order which is generated by
+     * GeometryObject::getLeafsToVec
      * @param path (optional) path hints which limits search space
      */
     void getLeafsBoundingBoxesToVec(std::vector<Box>& dest, const PathHints* path = 0) const {
@@ -1164,7 +1255,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
 
     /**
      * Calculate and append to vector bounding boxes of all leafs, marked by path.
-     * @param dest place to add result, bounding boxes will be added in the same order which is generated by GeometryObject::getLeafsToVec
+     * @param dest place to add result, bounding boxes will be added in the same order which is generated by
+     * GeometryObject::getLeafsToVec
      * @param path path hints which limits search space
      */
     void getLeafsBoundingBoxesToVec(std::vector<Box>& dest, const PathHints& path) const {
@@ -1174,7 +1266,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
     /**
      * Calculate bounding boxes of all leafs, optionally marked by path.
      * @param path (optional) path hints which limits search space
-     * @return bounding boxes of all leafs, in the same order which is generated by GeometryObject::getLeafs(const PathHints*)
+     * @return bounding boxes of all leafs, in the same order which is generated by GeometryObject::getLeafs(const
+     * PathHints*)
      */
     std::vector<Box> getLeafsBoundingBoxes(const PathHints* path = 0) const {
         std::vector<Box> result;
@@ -1185,11 +1278,10 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
     /**
      * Calculate bounding boxes of all leafs, marked by path.
      * @param path path hints which limits search space
-     * @return bounding boxes of all leafs, in the same order which is generated by GeometryObject::getLeafs(const PathHints&)
+     * @return bounding boxes of all leafs, in the same order which is generated by GeometryObject::getLeafs(const
+     * PathHints&)
      */
-    std::vector<Box> getLeafsBoundingBoxes(const PathHints& path) const {
-        return getLeafsBoundingBoxes(&path);
-    }
+    std::vector<Box> getLeafsBoundingBoxes(const PathHints& path) const { return getLeafsBoundingBoxes(&path); }
 
     /**
      * Calculate and append to vector bounding boxes of all instances of given \p object, optionally marked by path.
@@ -1197,7 +1289,9 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
      * @param dest place to add result
      * @param path (optional) path hints which limits search space
      */
-    void getObjectBoundingBoxesToVec(std::vector<Box>& dest, const GeometryObject& object, const PathHints* path = 0) const {
+    void getObjectBoundingBoxesToVec(std::vector<Box>& dest,
+                                     const GeometryObject& object,
+                                     const PathHints* path = 0) const {
         getBoundingBoxesToVec(GeometryObject::PredicateIsA(object), dest, path);
     }
 
@@ -1207,7 +1301,9 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
      * @param dest place to add result
      * @param path path hints which limits search space
      */
-    void getObjectBoundingBoxesToVec(std::vector<Box>& dest, const GeometryObject& object, const PathHints& path) const {
+    void getObjectBoundingBoxesToVec(std::vector<Box>& dest,
+                                     const GeometryObject& object,
+                                     const PathHints& path) const {
         getObjectBoundingBoxesToVec(dest, object, &path);
     }
 
@@ -1227,23 +1323,27 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
      * Calculate bounding boxes of all instances of given @p objects, marked by @p path.
      * @param object object
      * @param path path hints which limits search space
-     * @return bounding boxes of all objects, in the same order which is generated by GeometryObject::getObjects(const PathHints&)
+     * @return bounding boxes of all objects, in the same order which is generated by GeometryObject::getObjects(const
+     * PathHints&)
      */
     std::vector<Box> getObjectBoundingBoxes(const GeometryObject& object, const PathHints& path) const {
         return getObjectBoundingBoxes(object, &path);
     }
 
-
     /**
-     * Calculate and append to vector positions of all nodes which fulfill given @p predicate, optionally marked by path.
+     * Calculate and append to vector positions of all nodes which fulfill given @p predicate, optionally marked by
+     * path.
      *
      * Some objects can have all vector of NaNs as translations.
      * This mean that translation is not well defined (some space changer on path).
      * @param predicate predicate required to match
-     * @param dest place to add result, positions will be added in the same order which is generated by GeometryObject::getObjectsToVec
+     * @param dest place to add result, positions will be added in the same order which is generated by
+     * GeometryObject::getObjectsToVec
      * @param path (optional) path hints which limits search space
      */
-    virtual void getPositionsToVec(const Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const = 0;
+    virtual void getPositionsToVec(const Predicate& predicate,
+                                   std::vector<DVec>& dest,
+                                   const PathHints* path = 0) const = 0;
 
     /**
      * Calculate and append to vector positions of all nodes which fulfill given @p predicate, marked by path.
@@ -1251,7 +1351,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
      * Some objects can have all vector of NaNs as translations.
      * This mean that translation is not well defined (some space changer on path).
      * @param predicate predicate required to match
-     * @param dest place to add result, positions will be added in the same order which is generated by GeometryObject::getObjectsToVec
+     * @param dest place to add result, positions will be added in the same order which is generated by
+     * GeometryObject::getObjectsToVec
      * @param path path hints which limits search space
      */
     void getPositionsToVec(const Predicate& predicate, std::vector<DVec>& dest, const PathHints& path) const {
@@ -1259,10 +1360,12 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
     }
 
     /**
-     * Calculate and append to vector positions of all nodes which fulfill given @p predicate, optionally marked by path.
+     * Calculate and append to vector positions of all nodes which fulfill given @p predicate, optionally marked by
+     * path.
      * @param predicate predicate required to match
      * @param path (optional) path hints which limits search space
-     * @return positions of the pointed objects in the sub-tree with this object in the root, in the same order which is generated by GeometryObject::getObjects
+     * @return positions of the pointed objects in the sub-tree with this object in the root, in the same order which is
+     * generated by GeometryObject::getObjects
      *
      * Some objects can have all vector of NaNs as translations.
      * This mean that translation is not well defined (some space changer on path).
@@ -1277,7 +1380,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
      * Calculate and append to vector positions of all nodes which fulfill given @p predicate, marked by path.
      * @param predicate predicate required to match
      * @param path path hints which limits search space
-     * @return positions of the pointed objects in the sub-tree with this object in the root, in the same order which is generated by GeometryObject::getObjects
+     * @return positions of the pointed objects in the sub-tree with this object in the root, in the same order which is
+     * generated by GeometryObject::getObjects
      *
      * Some objects can have all vector of NaNs as translations.
      * This mean that translation is not well defined (some space changer on path).
@@ -1291,7 +1395,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
      *
      * Some leafs can have vector of NaNs as translations.
      * This mean that translation is not well defined (some space changer on path).
-     * @param dest place to add result, positions will be added in the same order which is generated by GeometryObject::getLeafsToVec
+     * @param dest place to add result, positions will be added in the same order which is generated by
+     * GeometryObject::getLeafsToVec
      * @param path (optional) path hints which limits search space
      */
     void getLeafsPositionsToVec(std::vector<DVec>& dest, const PathHints* path = 0) const {
@@ -1303,7 +1408,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
      *
      * Some leafs can have vector of NaNs as translations.
      * This mean that translation is not well defined (some space changer on path).
-     * @param dest place to add result, positions will be added in the same order which is generated by GeometryObject::getLeafsToVec
+     * @param dest place to add result, positions will be added in the same order which is generated by
+     * GeometryObject::getLeafsToVec
      * @param path path hints which limits search space
      */
     void getLeafsPositionsToVec(std::vector<DVec>& dest, const PathHints& path) const {
@@ -1313,7 +1419,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
     /**
      * Calculate and return a vector of positions of all leafs, optionally marked by path.
      * @param path (optional) path hints which limits search space
-     * @return positions of leafs in the sub-tree with this object in the root, in the same order which is generated by GeometryObject::getLeafs
+     * @return positions of leafs in the sub-tree with this object in the root, in the same order which is generated by
+     * GeometryObject::getLeafs
      *
      * Some leafs can have vector of NaNs as translations.
      * This mean that translation is not well defined (some space changer on path).
@@ -1327,25 +1434,27 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
     /**
      * Calculate and return a vector of positions of all leafs, marked by path.
      * @param path path hints which limits search space
-     * @return positions of leafs in the sub-tree with this object in the root, in the same order which is generated by GeometryObject::getLeafs
+     * @return positions of leafs in the sub-tree with this object in the root, in the same order which is generated by
+     * GeometryObject::getLeafs
      *
      * Some leafs can have vector of NaNs as translations.
      * This mean that translation is not well defined (some space changer on path).
      */
-    std::vector<DVec> getLeafsPositions(const PathHints& path) const {
-        return getLeafsPositions(&path);
-    }
+    std::vector<DVec> getLeafsPositions(const PathHints& path) const { return getLeafsPositions(&path); }
 
     /**
      * Calculate and append to vector positions of all instances of given @p object, optionally marked by path.
      *
      * Some objects can have vector of NaNs as translations.
      * This mean that translation is not well defined (some space changer on path).
-     * @param dest place to add result, positions will be added in the same order which is generated by GeometryObject::getObjectsToVec
+     * @param dest place to add result, positions will be added in the same order which is generated by
+     * GeometryObject::getObjectsToVec
      * @param object object to which instances translations should be found
      * @param path (optional) path hints which limits search space
      */
-    void getObjectPositionsToVec(std::vector<DVec>& dest, const GeometryObject& object, const PathHints* path = 0) const {
+    void getObjectPositionsToVec(std::vector<DVec>& dest,
+                                 const GeometryObject& object,
+                                 const PathHints* path = 0) const {
         getPositionsToVec(PredicateIsA(object), dest, path);
     }
 
@@ -1354,7 +1463,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
      *
      * Some objects can have vector of NaNs as translations.
      * This mean that translation is not well defined (some space changer on path).
-     * @param dest place to add result, positions will be added in the same order which is generated by GeometryObject::getObjectsToVec
+     * @param dest place to add result, positions will be added in the same order which is generated by
+     * GeometryObject::getObjectsToVec
      * @param object object to which instances translations should be found
      * @param path path hints which limits search space
      */
@@ -1395,7 +1505,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
     //  * @param dest[out] place to append resulted objects
     //  * @param path
     //  */
-    // virtual void extractToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints* path = 0) const = 0;
+    // virtual void extractToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >&
+    // dest, const PathHints* path = 0) const = 0;
 
     // /*
     //  * Get objects from the subtree with root in this, which fulfill predecate. Returned objects
@@ -1404,7 +1515,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
     //  * @param dest[out] place to append resulted objects
     //  * @param path
     //  */
-    // void extractToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const PathHints& path) const {
+    // void extractToVec(const Predicate& predicate, std::vector< shared_ptr<const GeometryObjectD<dim> > >& dest, const
+    // PathHints& path) const {
     //     extractToVec(predicate, dest, &path);
     // }
 
@@ -1415,7 +1527,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
     //  * @param path
     //  * @return resulted objects
     //  */
-    // std::vector< shared_ptr<const GeometryObjectD<dim> > > extract(const Predicate& predicate, const PathHints* path = 0) const {
+    // std::vector< shared_ptr<const GeometryObjectD<dim> > > extract(const Predicate& predicate, const PathHints* path
+    // = 0) const {
     //     std::vector< shared_ptr<const GeometryObjectD<dim> > > dest;
     //     extractToVec(predicate, dest, path);
     //     return dest;
@@ -1428,7 +1541,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
     //  * @param path
     //  * @return resulted objects
     //  */
-    // std::vector<shared_ptr<const GeometryObjectD<dim>>> extract(const Predicate& predicate, const PathHints& path) const {
+    // std::vector<shared_ptr<const GeometryObjectD<dim>>> extract(const Predicate& predicate, const PathHints& path)
+    // const {
     //     return extract(predicate, &path);
     // }
 
@@ -1439,7 +1553,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
     //  * @param path
     //  * @return resulted objects
     //  */
-    // std::vector<shared_ptr<const GeometryObjectD<dim>>> extractObject(const GeometryObjectD<dim>& object, const PathHints* path = 0) {
+    // std::vector<shared_ptr<const GeometryObjectD<dim>>> extractObject(const GeometryObjectD<dim>& object, const
+    // PathHints* path = 0) {
     //     return extract(PredicateIsA(object), path);
     // }
 
@@ -1450,12 +1565,14 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
     //  * @param path
     //  * @return resulted objects
     //  */
-    // std::vector<shared_ptr<const GeometryObjectD<dim>>> extractObject(const GeometryObjectD<dim>& object, const PathHints& path) {
+    // std::vector<shared_ptr<const GeometryObjectD<dim>>> extractObject(const GeometryObjectD<dim>& object, const
+    // PathHints& path) {
     //     return extractObject(object, &path);
     // }
 
     // /*
-    //  * Get leafs withing subtree with root in this, wrapped in transformations, which transform them to the root coordinates.
+    //  * Get leafs withing subtree with root in this, wrapped in transformations, which transform them to the root
+    //  coordinates.
     //  * @param path
     //  * @return resulted objects
     //  */
@@ -1464,7 +1581,8 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
     // }
 
     // /*
-    //  * Get leafs withing subtree with root in this, wrapped in transformations, which transform them to the root coordinates.
+    //  * Get leafs withing subtree with root in this, wrapped in transformations, which transform them to the root
+    //  coordinates.
     //  * @param path
     //  * @return resulted objects
     //  */
@@ -1473,10 +1591,12 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
     // }
 
     // //TODO
-    // //shared_ptr<const TranslationContainer<dim>> extractIntoContainer(const Predicate& predicate, const PathHints* path = 0) const;
-    // //shared_ptr<const TranslationContainer<dim>> extractIntoContainer(const Predicate& predicate, const PathHints& path) const;
+    // //shared_ptr<const TranslationContainer<dim>> extractIntoContainer(const Predicate& predicate, const PathHints*
+    // path = 0) const;
+    // //shared_ptr<const TranslationContainer<dim>> extractIntoContainer(const Predicate& predicate, const PathHints&
+    // path) const;
 
-    //Path getMatchingPathToObjectAt(const DVec& point, const Predicate& predicate, const PathHints* path = 0) const;
+    // Path getMatchingPathToObjectAt(const DVec& point, const Predicate& predicate, const PathHints* path = 0) const;
 
     /**
      * Get object closest to the root, which contains specific point and fulfills the predicate
@@ -1485,7 +1605,9 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
      * \param path optional path hints filtering out some objects
      * \return resulted object or empty pointer
      */
-    shared_ptr<const GeometryObject> getMatchingAt(const DVec& point, const Predicate& predicate, const PathHints* path = 0) const;
+    shared_ptr<const GeometryObject> getMatchingAt(const DVec& point,
+                                                   const Predicate& predicate,
+                                                   const PathHints* path = 0) const;
 
     /**
      * Get object closest to the root, which contains specific point and fulfills the predicate
@@ -1494,7 +1616,9 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
      * \param path path hints filtering out some objects
      * \return resulted object or empty pointer
      */
-    inline shared_ptr<const GeometryObject> getMatchingAt(const DVec& point, const Predicate& predicate, const PathHints& path) const {
+    inline shared_ptr<const GeometryObject> getMatchingAt(const DVec& point,
+                                                          const Predicate& predicate,
+                                                          const PathHints& path) const {
         return getMatchingAt(point, predicate, &path);
     }
 
@@ -1557,7 +1681,9 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
      * @return object which is at given @p point, is not hidden by another object and plays role with name @p role_name,
      *          @c nullptr if there is not such object
      */
-    shared_ptr<const GeometryObject> hasRoleAt(const std::string& role_name, const DVec& point, const plask::PathHints* path = 0) const {
+    shared_ptr<const GeometryObject> hasRoleAt(const std::string& role_name,
+                                               const DVec& point,
+                                               const plask::PathHints* path = 0) const {
         return getMatchingAt(point, GeometryObject::PredicateHasRole(role_name), path);
     }
 
@@ -1570,21 +1696,39 @@ struct PLASK_API GeometryObjectD: public GeometryObject {
      * @return object which is at given @p point, is not hidden by another object and plays role with name @p role_name,
      *          nullptr if there is not such object
      */
-    shared_ptr<const GeometryObject> hasRoleAt(const std::string& role_name, const DVec& point, const plask::PathHints& path) const {
+    shared_ptr<const GeometryObject> hasRoleAt(const std::string& role_name,
+                                               const DVec& point,
+                                               const plask::PathHints& path) const {
         return hasRoleAt(role_name, point, &path);
+    }
+
+    /**
+     * Add characteristic points to the set and edges connecting them
+     * \param max_steps maximum number of points to split single leaf
+     * \param min_step_size minimum distance between divisions for a single leaf
+     * \param[in, out] segments set to extend
+     */
+    virtual void addLineSegmentsToSet(std::set<LineSegment>& PLASK_UNUSED(segments),
+                                      unsigned PLASK_UNUSED(max_steps),
+                                      double PLASK_UNUSED(min_step_size)) const = 0;
+
+    /**
+     * Add characteristic points to the set and edges connecting them
+     * \param max_steps maximum number of points to split single leaf
+     * \param min_step_size minimum distance between divisions for a single leaf
+     * \return segments set
+     */
+    std::set<LineSegment> getLineSegments(unsigned max_steps = PLASK_GEOMETRY_MAX_STEPS,
+                                          double min_step_size = PLASK_GEOMETRY_MIN_STEP_SIZE) const {
+        std::set<LineSegment> segments;
+        addLineSegmentsToSet(segments, max_steps, min_step_size);
+        return segments;
     }
 };
 
 PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectD<2>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(GeometryObjectD<3>)
 
-} // namespace plask
+}  // namespace plask
 
-#endif // PLASK__GEOMETRY_OBJECT_H
-
-
-
-
-
-
-
+#endif  // PLASK__GEOMETRY_OBJECT_H

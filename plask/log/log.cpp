@@ -65,7 +65,7 @@ struct StderrLogger: public plask::Logger {
 
     const char* head(plask::LogLevel level);
 
-    virtual void writelog(plask::LogLevel level, const std::string& msg) override;
+    void writelog(plask::LogLevel level, const std::string& msg) override;
 
 };
 

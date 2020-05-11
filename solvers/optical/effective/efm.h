@@ -306,14 +306,14 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
         inGain.changedDisconnectMethod(this, &EffectiveFrequencyCyl::onInputChange);
     }
 
-    virtual std::string getClassName() const override { return "optical.EffectiveFrequencyCyl"; }
+    std::string getClassName() const override { return "optical.EffectiveFrequencyCyl"; }
 
-    virtual std::string getClassDescription() const override {
+    std::string getClassDescription() const override {
         return "Calculate optical modes and optical field distribution using the effective index method "
                "in Cartesian two-dimensional space.";
     }
 
-    virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager) override;
+    void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager) override;
 
     /// Get emission direction
     ///\return emission direction
@@ -473,10 +473,10 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     bool asymptotic;
 
     /// Initialize the solver
-    virtual void onInitialize() override;
+    void onInitialize() override;
 
     /// Invalidate the data
-    virtual void onInvalidate() override;
+    void onInvalidate() override;
 
     /**
      * Update refractive index cache

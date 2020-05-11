@@ -73,11 +73,11 @@ struct ConstValueLazyDataImpl: public LazyDataImpl<T> {
 
     ConstValueLazyDataImpl(std::size_t size, const T& value): value_(value), size_(size) {}
 
-    virtual T at(std::size_t) const override { return value_; }
+    T at(std::size_t) const override { return value_; }
 
-    virtual std::size_t size() const override { return size_; }
+    std::size_t size() const override { return size_; }
 
-    virtual DataVector<const T> getAll() const override { return DataVector<const T>(size_, value_); }
+    DataVector<const T> getAll() const override { return DataVector<const T>(size_, value_); }
 
 };
 
@@ -93,13 +93,13 @@ struct LazyDataFromVectorImpl: public LazyDataImpl<T> {
 
     LazyDataFromVectorImpl(DataVector<const T> vec): vec(vec) {}
 
-    virtual T at(std::size_t index) const override { return vec[index]; }
+    T at(std::size_t index) const override { return vec[index]; }
 
-    virtual std::size_t size() const override { return vec.size(); }
+    std::size_t size() const override { return vec.size(); }
 
-    virtual DataVector<const T> getAll() const override { return vec; }
+    DataVector<const T> getAll() const override { return vec; }
 
-    virtual DataVector<T> claim() const override { return vec.claim(); }
+    DataVector<T> claim() const override { return vec.claim(); }
 };
 
 /**
@@ -115,9 +115,9 @@ struct LazyDataDelegateImpl: public LazyDataImpl<T> {
   public:
     LazyDataDelegateImpl(std::size_t size, std::function<T(std::size_t)> func): siz(size), func(std::move(func)) {}
 
-    virtual T at(std::size_t index) const override { return func(index); }
+    T at(std::size_t index) const override { return func(index); }
 
-    virtual std::size_t size() const override { return siz; }
+    std::size_t size() const override { return siz; }
 };
 
 
@@ -132,7 +132,7 @@ struct LazyDataWithMeshImpl: public LazyDataImpl<T> {
 
     LazyDataWithMeshImpl(shared_ptr<const DstMeshType> dst_mesh): dst_mesh(dst_mesh) {}
 
-    virtual std::size_t size() const override { return dst_mesh->size(); }
+    std::size_t size() const override { return dst_mesh->size(); }
 
 };*/
 
@@ -259,9 +259,9 @@ struct ScaledLazyDataImpl: public LazyDataImpl<ReturnedType> {
     ScaledLazyDataImpl(LazyData<T> data, const ScaleT& scale)
         : data(std::move(data)), scale(scale) {}
 
-    virtual ReturnedType at(std::size_t index) const override { return data[index] * scale; }
+    ReturnedType at(std::size_t index) const override { return data[index] * scale; }
 
-    virtual std::size_t size() const override { return data.size(); }
+    std::size_t size() const override { return data.size(); }
 
 };
 

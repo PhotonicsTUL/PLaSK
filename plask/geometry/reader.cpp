@@ -78,8 +78,8 @@ GeometryReader::GeometryReader(plask::Manager &manager, plask::XMLReader &source
 inline bool isAutoName(const std::string& name) { return !name.empty() && name[0] == '#'; }
 
 
-#define XML_MAX_POINTS_ATTR "steps-num"
-#define XML_MIN_PLY_ATTR "steps-dist"
+#define XML_MAX_STEPS_ATTR "steps-num"
+#define XML_MIN_STEP_SIZE_ATTR "steps-dist"
 
 shared_ptr<GeometryObject> GeometryReader::readObject() {
     std::string nodeName = source.getNodeName();
@@ -96,8 +96,8 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
 
     plask::optional<std::string> roles = source.getAttribute("role");    // read roles (tags)
 
-    auto max_points = source.getAttribute<unsigned long>(XML_MAX_POINTS_ATTR);
-    auto min_ply = source.getAttribute<double>(XML_MIN_PLY_ATTR);
+    auto max_steps = source.getAttribute<unsigned long>(XML_MAX_STEPS_ATTR);
+    auto min_step_size = source.getAttribute<double>(XML_MIN_STEP_SIZE_ATTR);
 
     shared_ptr<GeometryObject> new_object;    // new object that will be constructed
 
@@ -187,13 +187,8 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
         }
     }
 
-    if (new_object->isLeaf()) {
-        if (max_points) new_object->max_points = *max_points;
-        if (min_ply) new_object->min_ply = *min_ply;
-    } else {
-        if (max_points) throw XMLUnexpectedAttrException(source, XML_MAX_POINTS_ATTR);
-        if (min_ply) throw XMLUnexpectedAttrException(source, XML_MIN_PLY_ATTR);
-    }
+    if (max_steps) new_object->max_steps = *max_steps;
+    if (min_step_size) new_object->min_step_size = *min_step_size;
 
     return new_object;
 }

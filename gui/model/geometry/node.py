@@ -43,6 +43,8 @@ class GNode:
         self.path = None                # path inside the parent (container)
         self._parent = None             # needed for set_parent working fine
         self.set_parent(parent, parent_index)
+        self.step_num = None            # maximum steps number for leafs (here because of possible iteration)
+        self.step_dist = None           # maximum step size for leafs (here because of possible iteration)
         self.comments = []              # comments before element in XML
         self.endcomments = []           # comments at the end of the element (in XML)
         self.itemcomments = []          # comments inside <item> this node is in (in XML)
@@ -521,6 +523,18 @@ class GNode:
         :param OrderedDict names: names of objects which are before this in tree
         """
         if not can_be_float(self.in_parent_attrs.get('zero')): self._wrong_type(res, 'float', 'zero')
+
+    def get_step_dist(self, with_self=True):
+        if with_self and self.step_dist is not None:
+            return self.step_dist
+        if self._parent is not None:
+            return self._parent.get_step_dist()
+
+    def get_step_num(self, with_self=True):
+        if with_self and self.step_num is not None:
+            return self.step_num
+        if self._parent is not None:
+            return self._parent.get_step_num()
 
 
 class GNFakeRoot(GNode):

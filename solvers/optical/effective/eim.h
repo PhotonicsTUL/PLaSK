@@ -176,14 +176,14 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
         inGain.changedDisconnectMethod(this, &EffectiveIndex2D::onInputChange);
     }
 
-    virtual std::string getClassName() const override { return "optical.EffectiveIndex2D"; }
+    std::string getClassName() const override { return "optical.EffectiveIndex2D"; }
 
-    virtual std::string getClassDescription() const override {
+    std::string getClassDescription() const override {
         return "Calculate optical modes and optical field distribution using the effective index method "
                "in Cartesian two-dimensional space.";
     }
 
-    virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager) override;
+    void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager) override;
 
     /// \return position of the main stripe
     double getStripeX() const { return stripex; }
@@ -342,10 +342,10 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     }
 
     /// Initialize the solver
-    virtual void onInitialize() override;
+    void onInitialize() override;
 
     /// Invalidate the data
-    virtual void onInvalidate() override;
+    void onInvalidate() override;
 
     /// Cache of the normalized frequency [1/µm]
     dcomplex k0;
