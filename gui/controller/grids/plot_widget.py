@@ -50,8 +50,20 @@ class PlotWidget(PlotWidgetBase):
             self.disable_planes(('long','tran','vert'))
 
         def select_geometry(self, *args):
-            # if self.controller._current_controller is not None:
-            #     self.controller._current_controller.geometry_name = self.widgets['select_geometry'].currentText()
+            if self.controller._current_controller is not None:
+                geometry_name = self.widgets['select_geometry'].currentText()
+                # self.controller._current_controller.geometry_name = self.widgets['select_geometry'].currentText()
+                try:
+                    dim = max(self.controller._current_controller.model.dim, 2)
+                except AttributeError:
+                    pass
+                else:
+                    if dim == 3:
+                        self.enable_planes(
+                            self.controller.geometry_axes_names.get(geometry_name, ('long','tran','vert')))
+                    else:
+                        self.disable_planes(
+                            self.controller.geometry_axes_names.get(geometry_name, ('long','tran','vert')))
             if self.controller.plot_auto_refresh:
                 self.controller.plot()
             else:

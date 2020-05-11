@@ -115,12 +115,12 @@ class GridsController(Controller):
 
         self.model.changed.connect(self.on_model_change)
 
-        self.geometry_list = None
         self.selected_geometry = None
         self.plotted_geometry = None
         self.checked_plane = '12'
         self.plotted_model = self.plotted_mesh = None
         self.plot_auto_refresh = False
+        self.geometry_axes_names = {}
 
         self.document.window.config_changed.connect(self.reconfig)
 
@@ -129,20 +129,24 @@ class GridsController(Controller):
             try:
                 dim = max(self._current_controller.model.dim, 2)
             except AttributeError:
-                if self.geometry_list is not None:
-                    self.geometry_list.clear()
                 return
-            if dim == 3:
-                self.mesh_preview.toolbar.enable_planes(('long','tran','vert'))
-            else:
-                self.mesh_preview.toolbar.disable_planes(('long','tran','vert'))
-            geoms = [''] + list(r.name for r in self.document.geometry.model.get_roots(dim=dim) if r.name is not None)
+            geoms = [('', ('long','tran','vert'))] + \
+                    list((r.name, r.get_axes_conf()) for r in self.document.geometry.model.get_roots(dim=dim)
+                         if r.name is not None)
+            self.geometry_axes_names = dict(geoms)
             geometry_list = self.mesh_preview.toolbar.widgets['select_geometry']
             with BlockQtSignals(geometry_list):
                 geometry_list.clear()
-                geometry_list.addItems(geoms)
+                geometry_list.addItems([g[0] for g in geoms])
             try:
-                geometry_list.setCurrentIndex(geoms.index(self._current_controller.model.geometry_name))
+                geometry_name = self._current_controller.model.geometry_name
+                geometry_list.setCurrentIndex(geoms.index(geometry_name))
+                if dim == 3:
+                    self.mesh_preview.toolbar.enable_planes(
+                        self.geometry_axes_names.get(geometry_name, ('long','tran','vert')))
+                else:
+                    self.mesh_preview.toolbar.disable_planes(
+                        self.geometry_axes_names.get(geometry_name, ('long','tran','vert')))
             except (AttributeError, ValueError):
                 pass
 
