@@ -742,7 +742,7 @@ void MultiStackContainer<UpperClass>::addPointsAlongToSet(std::set<double>& poin
 
 template <typename UpperClass>
 void MultiStackContainer<UpperClass>::addLineSegmentsToSet(
-    std::set<typename GeometryObjectD<MultiStackContainer<UpperClass>::DIM>::LineSegment>& segments,
+    std::set<typename GeometryObjectD<UpperClass::DIM>::LineSegment>& segments,
     unsigned max_steps,
     double min_step_size) const {
     if (repeat_count == 0) return;

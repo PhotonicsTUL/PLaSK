@@ -651,7 +651,7 @@ class PLASK_API MultiStackContainer: public UpperClass {
                         unsigned max_steps,
                         double min_step_size) const override;
 
-    void addLineSegmentsToSet(std::set<typename GeometryObjectD<DIM>::LineSegment>& segments,
+    void addLineSegmentsToSet(std::set<typename GeometryObjectD<UpperClass::DIM>::LineSegment>& segments,
                               unsigned max_steps,
                               double min_step_size) const override;
 
