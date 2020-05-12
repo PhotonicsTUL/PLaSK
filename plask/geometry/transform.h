@@ -360,7 +360,7 @@ template <int dim> struct PLASK_API Translation : public GeometryObjectTransform
     // void extractToVec(const GeometryObject::Predicate &predicate, std::vector< shared_ptr<const GeometryObjectD<dim>
     // > >& dest, const PathHints *path) const;
 
-    void addPointsAlong(std::set<double>& points,
+    void addPointsAlongToSet(std::set<double>& points,
                         Primitive<3>::Direction direction,
                         unsigned max_steps,
                         double min_step_size) const override;

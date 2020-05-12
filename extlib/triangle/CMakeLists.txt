@@ -15,9 +15,9 @@ endforeach()
 
 if (PLASK_TRIANGLE_SHARED)
     set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)  # all functions will be exported from windows DLL
-    add_library(triangle SHARED triangle.c triangle.h)
+    add_library(triangle SHARED triangle.cc triangle.h)
 else()
-    add_library(triangle STATIC triangle.c triangle.h)
+    add_library(triangle STATIC triangle.cc triangle.h)
 endif ()
 
 target_compile_options(triangle PRIVATE -DTRILIBRARY -DNO_TIMER -fPIC)

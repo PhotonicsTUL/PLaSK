@@ -294,10 +294,10 @@ template <int dim> struct PLASK_API GeometryObjectContainer : public GeometryObj
         for (auto child : children) fun(*child);
     }
 
-    void addPointsAlong(std::set<double>& points,
-                        Primitive<3>::Direction direction,
-                        unsigned max_steps,
-                        double min_step_size) const override;
+    void addPointsAlongToSet(std::set<double>& points,
+                             Primitive<3>::Direction direction,
+                             unsigned max_steps,
+                             double min_step_size) const override;
 
     void addLineSegmentsToSet(std::set<typename GeometryObjectD<dim>::LineSegment>& segments,
                               unsigned max_steps,

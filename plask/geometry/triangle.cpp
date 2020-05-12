@@ -43,10 +43,10 @@ bool Triangle::contains(const Triangle::DVec& p) const {
     return (b1 == b2) && (b2 == (sign(p, Primitive<2>::ZERO_VEC, p0) < 0.0));
 }
 
-void Triangle::addPointsAlong(std::set<double>& points,
-                              Primitive<3>::Direction direction,
-                              unsigned max_steps,
-                              double min_step_size) const {
+void Triangle::addPointsAlongToSet(std::set<double>& points,
+                                   Primitive<3>::Direction direction,
+                                   unsigned max_steps,
+                                   double min_step_size) const {
     assert(0 < int(direction) && int(direction) < 3);
     if (this->max_steps) max_steps = this->max_steps;
     if (this->min_step_size) min_step_size = this->min_step_size;
@@ -55,13 +55,14 @@ void Triangle::addPointsAlong(std::set<double>& points,
 
     // Sort x
     if (x[2] < x[0]) std::swap(x[0], x[2]);
-    if (x[1] > x[2]) {
+    if (x[1] > x[2])
         std::swap(x[1], x[2]);
-    } else if (x[1] < x[0])
+    else if (x[1] < x[0])
         std::swap(x[1], x[0]);
 
     for (int i = 0; i < 3; ++i) points.insert(x[i]);
     double dx02 = x[2] - x[0];
+    if (dx02 == 0) return;
 
     for (int i = 0; i < 2; ++i) {
         double dx = x[i + 1] - x[i];
@@ -75,7 +76,63 @@ void Triangle::addPointsAlong(std::set<double>& points,
 void Triangle::addLineSegmentsToSet(std::set<typename GeometryObjectD<2>::LineSegment>& segments,
                                     unsigned max_steps,
                                     double min_step_size) const {
-    // TODO
+    if (!materialProvider->isUniform(Primitive<3>::DIRECTION_TRAN))
+        throw NotImplemented("Triangular mesh for triangles non-uniform in transverse direction");
+    typedef typename GeometryObjectD<2>::LineSegment Segment;
+    if (materialProvider->isUniform(Primitive<3>::DIRECTION_VERT)) {
+        segments.insert(Segment(Primitive<2>::ZERO_VEC, p0));
+        segments.insert(Segment(Primitive<2>::ZERO_VEC, p1));
+        segments.insert(Segment(p0, p1));
+    } else {
+        if (this->max_steps) max_steps = this->max_steps;
+        if (this->min_step_size) min_step_size = this->min_step_size;
+
+        // Here we replace x and y for simplicity of analysis
+        double x[3] = {0., p0[1], p1[1]};
+        double y[3] = {0., p0[0], p1[0]};
+
+        // Sort x
+        if (x[2] < x[0]) {
+            std::swap(x[0], x[2]);
+            std::swap(y[0], y[2]);
+        }
+        if (x[1] > x[2]) {
+            std::swap(x[1], x[2]);
+            std::swap(y[1], y[2]);
+        } else if (x[1] < x[0]) {
+            std::swap(x[1], x[0]);
+            std::swap(y[1], y[0]);
+        }
+
+        double dx02 = x[2] - x[0];
+        if (dx02 == 0) return;
+
+        double a2 = (y[2] - y[0]) / dx02, b2 = (x[2] * y[0] - x[0] * y[2]) / dx02;
+
+        DVec d1(y[0], x[0]), d2(y[0], x[0]);
+        for (int i = 0; i < 2; ++i) {
+            double dx = x[i + 1] - x[i];
+            double a1 = (y[i + 1] - y[i]) / dx, b1 = (x[i + 1] * y[i] - x[i] * y[i + 1]) / dx;
+            unsigned maxsteps = max_steps * (dx / dx02);
+            unsigned steps = min(unsigned(dx / min_step_size), maxsteps);
+            if (steps < 2) continue;
+            double step = dx / steps;
+            for (unsigned j = 0; j < steps; ++j) {
+                double t = x[i] + j * step;
+                DVec e1(a1 * t + b1, t), e2(a2 * t + b2, t);
+                if (i != 0 || j != 0) {
+                    segments.insert(Segment(d1, e1));
+                    segments.insert(Segment(d2, e2));
+                    segments.insert(Segment(e1, e2));
+                }
+                d1 = e1;
+                d2 = e2;
+            }
+        }
+        DVec e(y[2], x[2]);
+        segments.insert(Segment(d1, e));
+        segments.insert(Segment(d2, e));
+    }
 }
 
 void Triangle::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const {

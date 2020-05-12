@@ -646,7 +646,7 @@ class PLASK_API MultiStackContainer: public UpperClass {
 
     shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
 
-    void addPointsAlong(std::set<double>& points,
+    void addPointsAlongToSet(std::set<double>& points,
                         Primitive<3>::Direction direction,
                         unsigned max_steps,
                         double min_step_size) const override;

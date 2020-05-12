@@ -701,10 +701,10 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
      * \param max_steps maximum number of points to split single leaf
      * \param min_step_size minimum distance between divisions for a single leaf
      */
-    virtual void addPointsAlong(std::set<double>& points,
-                                Primitive<3>::Direction PLASK_UNUSED(direction),
-                                unsigned PLASK_UNUSED(max_steps),
-                                double PLASK_UNUSED(min_step_size)) const = 0;
+    virtual void addPointsAlongToSet(std::set<double>& points,
+                                     Primitive<3>::Direction PLASK_UNUSED(direction),
+                                     unsigned PLASK_UNUSED(max_steps),
+                                     double PLASK_UNUSED(min_step_size)) const = 0;
 
     /**
      * Get characteristic points information along specified axis
@@ -717,7 +717,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
                                     unsigned max_steps = PLASK_GEOMETRY_MAX_STEPS,
                                     double min_step_size = PLASK_GEOMETRY_MIN_STEP_SIZE) const {
         std::set<double> points;
-        addPointsAlong(points, direction, max_steps, min_step_size);
+        addPointsAlongToSet(points, direction, max_steps, min_step_size);
         return points;
     }
 

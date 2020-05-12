@@ -722,18 +722,18 @@ shared_ptr<GeometryObject> MultiStackContainer<UpperClass>::changedVersionForChi
 }
 
 template <typename UpperClass>
-void MultiStackContainer<UpperClass>::addPointsAlong(std::set<double>& points,
+void MultiStackContainer<UpperClass>::addPointsAlongToSet(std::set<double>& points,
                                                      Primitive<3>::Direction direction,
                                                      unsigned max_steps,
                                                      double min_step_size) const {
     if (repeat_count == 0) return;
     if (repeat_count == 1 || direction != UpperClass::GROWING_DIR + (3 - DIM)) {
-        UpperClass::addPointsAlong(points, direction, max_steps, min_step_size);
+        UpperClass::addPointsAlongToSet(points, direction, max_steps, min_step_size);
         return;
     }
     double shift = stackHeights.back() - stackHeights.front();
     std::set<double> points0;
-    UpperClass::addPointsAlong(points0, direction, max_steps, min_step_size);
+    UpperClass::addPointsAlongToSet(points0, direction, max_steps, min_step_size);
     for (size_t i = 0; i < repeat_count; ++i) {
         double trans = i * shift;
         for (double p : points0) points.insert(p + trans);

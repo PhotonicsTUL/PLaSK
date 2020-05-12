@@ -183,10 +183,10 @@ template <int dim> bool Block<dim>::contains(const typename Block<dim>::DVec& p)
 }
 
 template <int dim>
-void Block<dim>::addPointsAlong(std::set<double>& points,
-                                Primitive<3>::Direction direction,
-                                unsigned max_steps,
-                                double min_step_size) const {
+void Block<dim>::addPointsAlongToSet(std::set<double>& points,
+                                     Primitive<3>::Direction direction,
+                                     unsigned max_steps,
+                                     double min_step_size) const {
     assert(int(direction) >= 3 - dim && int(direction) <= 3);
     if (this->materialProvider->isUniform(direction)) {
         points.insert(0);
@@ -209,13 +209,13 @@ void Block<2>::addLineSegmentsToSet(std::set<typename GeometryObjectD<2>::LineSe
     std::vector<double> pts0, pts1;
     {
         std::set<double> ps;
-        addPointsAlong(ps, Primitive<3>::Direction(Primitive<3>::DIRECTION_TRAN), max_steps, min_step_size);
+        addPointsAlongToSet(ps, Primitive<3>::Direction(Primitive<3>::DIRECTION_TRAN), max_steps, min_step_size);
         pts0.reserve(ps.size());
         pts0.insert(pts0.end(), ps.begin(), ps.end());
     }
     {
         std::set<double> ps;
-        addPointsAlong(ps, Primitive<3>::Direction(Primitive<3>::DIRECTION_VERT), max_steps, min_step_size);
+        addPointsAlongToSet(ps, Primitive<3>::Direction(Primitive<3>::DIRECTION_VERT), max_steps, min_step_size);
         pts1.reserve(ps.size());
         pts1.insert(pts1.end(), ps.begin(), ps.end());
     }
@@ -239,19 +239,19 @@ void Block<3>::addLineSegmentsToSet(std::set<typename GeometryObjectD<3>::LineSe
     std::vector<double> pts0, pts1, pts2;
     {
         std::set<double> ps;
-        addPointsAlong(ps, Primitive<3>::Direction(Primitive<3>::DIRECTION_LONG), max_steps, min_step_size);
+        addPointsAlongToSet(ps, Primitive<3>::Direction(Primitive<3>::DIRECTION_LONG), max_steps, min_step_size);
         pts0.reserve(ps.size());
         pts0.insert(pts0.end(), ps.begin(), ps.end());
     }
     {
         std::set<double> ps;
-        addPointsAlong(ps, Primitive<3>::Direction(Primitive<3>::DIRECTION_TRAN), max_steps, min_step_size);
+        addPointsAlongToSet(ps, Primitive<3>::Direction(Primitive<3>::DIRECTION_TRAN), max_steps, min_step_size);
         pts1.reserve(ps.size());
         pts1.insert(pts1.end(), ps.begin(), ps.end());
     }
     {
         std::set<double> ps;
-        addPointsAlong(ps, Primitive<3>::Direction(Primitive<3>::DIRECTION_VERT), max_steps, min_step_size);
+        addPointsAlongToSet(ps, Primitive<3>::Direction(Primitive<3>::DIRECTION_VERT), max_steps, min_step_size);
         pts2.reserve(ps.size());
         pts2.insert(pts2.end(), ps.begin(), ps.end());
     }

@@ -41,7 +41,7 @@ template <int dim> struct PLASK_API Circle : public GeometryObjectLeaf<dim> {
 
     bool contains(const DVec& p) const override;
 
-    void addPointsAlong(std::set<double>& points,
+    void addPointsAlongToSet(std::set<double>& points,
                         Primitive<3>::Direction direction,
                         unsigned max_steps,
                         double min_step_size) const override;

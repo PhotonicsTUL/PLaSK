@@ -1,9 +1,8 @@
 #include "generator_triangular.h"
 #include "triangular2d.h"
 
-extern "C" {
 #include <triangle.h>
-}
+using namespace triangle;
 
 namespace plask {
 
@@ -11,28 +10,81 @@ struct TrifreeCaller {
     void operator()(void* ptr) const { trifree(ptr); }
 };
 
-shared_ptr<MeshD<2>> TriangleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry) {
-    triangulateio in = {}, out = {};    // are fields are nulled, so we will only fill fields we need
+struct VecFuzzyCompare {
+    bool operator()(const typename Primitive<2>::DVec& a, const typename Primitive<2>::DVec& b) const {
+        return Primitive<2>::vecFuzzyCompare(a, b);
+    }
+};
 
-    in.numberofpoints = 4;
-    std::unique_ptr<double[]> in_points(new double[8]);
+shared_ptr<MeshD<2>> TriangleGenerator::generate(const shared_ptr<GeometryObjectD<2>>& geometry) {
+    typedef typename GeometryObjectD<2>::LineSegment LineSegment;
+    typedef typename Primitive<2>::DVec DVec;
+    typedef std::map<typename Primitive<2>::DVec, int, VecFuzzyCompare> PointMap;
+
+    std::set<LineSegment> lineSegments = geometry->getLineSegments();
+
+    // Make sets of points and segments removing duplicates
     Box2D bb = geometry->getBoundingBox();
+
+    PointMap pointmap;
+    std::set<std::pair<int, int>> segmentsset;
+    if (full) {
+        pointmap[DVec(bb.left(), bb.bottom())] = 0;
+        pointmap[DVec(bb.right(), bb.bottom())] = 1;
+        pointmap[DVec(bb.right(), bb.top())] = 2;
+        pointmap[DVec(bb.left(), bb.top())] = 3;
+
+        if (pointmap.size() < 4)
+            throw BadMesh("TriangularGenerator", "Geometry object is too small to create triangular mesh");
+
+        segmentsset.insert(std::make_pair(0, 1));
+        segmentsset.insert(std::make_pair(1, 2));
+        segmentsset.insert(std::make_pair(2, 3));
+        segmentsset.insert(std::make_pair(0, 3));
+    }
+
+    size_t n = pointmap.size();
+    for (const LineSegment& segment : lineSegments) {
+        int iseg[2];
+        for (int i = 0; i < 2; ++i) {
+            bool ok;
+            PointMap::iterator it;
+            std::tie(it, ok) = pointmap.insert(std::make_pair(segment[i], n));
+            if (ok) ++n;
+            iseg[i] = it->second;
+        }
+        if (iseg[0] != iseg[1]) {
+            if (iseg[0] > iseg[1]) std::swap(iseg[0], iseg[1]);
+            segmentsset.insert(std::make_pair(iseg[0], iseg[1]));
+        }
+    }
+
+    triangulateio in = {}, out = {};  // are fields are nulled, so we will only fill fields we need
+
+    in.numberofpoints = pointmap.size();
+    std::unique_ptr<double[]> in_points(new double[2 * in.numberofpoints]);
     in.pointlist = in_points.get();
-    in_points[0] = in_points[6] = bb.left();
-    in_points[2] = in_points[4] = bb.right();
-    in_points[1] = in_points[3] = bb.top();
-    in_points[5] = in_points[7] = bb.bottom();
-    in.numberofsegments = 4;
-    std::unique_ptr<int[]> in_segments(new int[8]);
+    for (auto pi : pointmap) {
+        in_points[2 * pi.second] = pi.first.c0;
+        in_points[2 * pi.second + 1] = pi.first.c1;
+        std::cerr << format("{}: {:5.3f}, {:5.3f}\n", pi.second, pi.first.c0, pi.first.c1);
+    }
+
+    in.numberofsegments = segmentsset.size();
+    std::unique_ptr<int[]> in_segments(new int[2 * in.numberofsegments]);
     in.segmentlist = in_segments.get();
-    in_segments[0] = 0; in_segments[1] = 1;
-    in_segments[2] = 1; in_segments[3] = 2;
-    in_segments[4] = 2; in_segments[5] = 3;
-    in_segments[6] = 3; in_segments[7] = 0;
+    n = 0;
+    for (auto s : segmentsset) {
+        in_segments[n] = s.first;
+        in_segments[n + 1] = s.second;
+        n += 2;
+        std::cerr << s.first << "-" << s.second << "\n";
+    }
 
     triangulate(const_cast<char*>(getSwitches().c_str()), &in, &out, nullptr);
 
-    // just for case we free memory which could be allocated by triangulate but we do not need (some of this can be nullptr):
+    // just for case we free memory which could be allocated by triangulate but we do not need (some of this can be
+    // nullptr):
     trifree(out.pointattributelist);
     trifree(out.pointmarkerlist);
     trifree(out.triangleattributelist);
@@ -52,30 +104,33 @@ shared_ptr<MeshD<2>> TriangleGenerator::generate(const shared_ptr<GeometryObject
 
     shared_ptr<TriangularMesh2D> result = make_shared<TriangularMesh2D>();
     result->nodes.reserve(out.numberofpoints);
-    for (std::size_t i = 0; i < std::size_t(out.numberofpoints)*2; i += 2)
-        result->nodes.emplace_back(out.pointlist[i], out.pointlist[i+1]);
+    for (std::size_t i = 0; i < std::size_t(out.numberofpoints) * 2; i += 2)
+        result->nodes.emplace_back(out.pointlist[i], out.pointlist[i + 1]);
     result->elementNodes.reserve(out.numberoftriangles);
-    for (std::size_t i = 0; i < std::size_t(out.numberoftriangles)*3; i += 3)
-        result->elementNodes.push_back({
-            std::size_t(out.trianglelist[i]),
-            std::size_t(out.trianglelist[i+1]),
-            std::size_t(out.trianglelist[i+2])
-        });
-        // it is also possible by triangle, to use 6 numbers per triangle, but we do not support such things at the moment
+    for (std::size_t i = 0; i < std::size_t(out.numberoftriangles) * 3; i += 3)
+        result->elementNodes.push_back({std::size_t(out.trianglelist[i]), std::size_t(out.trianglelist[i + 1]),
+                                        std::size_t(out.trianglelist[i + 2])});
+    // it is also possible by triangle, to use 6 numbers per triangle, but we do not support such things at the moment
     return result;
 }
 
 std::string TriangleGenerator::getSwitches() const {
     std::ostringstream result;
 
+    // p - specifies vertices, segments, holes, regional attributes, and regional area constraints
     // z - points (and other items) are numbered from zero
     // Q - quiet
     // B - suppresses boundary markers in the output
-    // P - suppresses the output .poly file. Saves disk space, but you lose the ability to maintain
-    //     constraining segments on later refinements of the mesh.
-    result << "zQBP";
+    // P - suppresses the output .poly file
+    result << "pzQqBP";
 
+    // D - Conforming Delaunay triangulation
+    if (delaunay) result << 'D';
+
+    // a - imposes a maximum triangle area
     if (maxTriangleArea) result << 'a' << std::fixed << *maxTriangleArea;
+
+    // q -  adds vertices to the mesh to ensure that all angles are between given and 140 degrees.
     if (minTriangleAngle) {
         result << 'q';
         if (!isnan(*minTriangleAngle)) result << std::fixed << *minTriangleAngle;
@@ -91,12 +146,14 @@ shared_ptr<MeshGenerator> readTriangleGenerator(XMLReader& reader, const Manager
     if (reader.requireTagOrEnd("options")) {
         result->maxTriangleArea = reader.getAttribute<double>("maxarea");
         result->minTriangleAngle = reader.getAttribute<double>("minangle");
-        reader.requireTagEnd(); // end of options
-        reader.requireTagEnd(); // end of generator
+        result->delaunay = reader.getAttribute<bool>("delaunay", false);
+        result->full = reader.getAttribute<bool>("full", false);
+        reader.requireTagEnd();  // end of options
+        reader.requireTagEnd();  // end of generator
     }
     return result;
 }
 
 static RegisterMeshGeneratorReader trianglegenerator_reader("triangular2d.triangle", readTriangleGenerator);
 
-}   // namespace plask
+}  // namespace plask

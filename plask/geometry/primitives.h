@@ -749,7 +749,7 @@ template <> struct PLASK_API Primitive<1> {
     static const DVec ZERO_VEC;
 
     /// Compare if \c a < \b with reasonable tollerance
-    inline static bool vec_fuzzy_compare(DVec a, DVec b) { return b - a > POINT_TOLLERANCE; }
+    inline static bool vecFuzzyCompare(DVec a, DVec b) { return b - a > POINT_TOLLERANCE; }
 };
 
 /**
@@ -781,7 +781,7 @@ template <> struct PLASK_API Primitive<2> {
     }
 
     /// Compare if \c a < \b with reasonable tollerance
-    inline static bool vec_fuzzy_compare(const DVec& a, const DVec& b) {
+    inline static bool vecFuzzyCompare(const DVec& a, const DVec& b) {
         return b.c1 - a.c1 > POINT_TOLLERANCE || (a.c1 - b.c1 <= POINT_TOLLERANCE && b.c0 - a.c0 > POINT_TOLLERANCE);
     }
 };
@@ -823,7 +823,7 @@ template <> struct PLASK_API Primitive<3> {
     }
 
     /// Compare if \c a < \b with reasonable tollerance
-    inline static bool vec_fuzzy_compare(const DVec& a, const DVec& b) {
+    inline static bool vecFuzzyCompare(const DVec& a, const DVec& b) {
         return b.c2 - a.c2 > POINT_TOLLERANCE || (a.c2 - b.c2 <= POINT_TOLLERANCE &&
                                                   (b.c1 - a.c1 > POINT_TOLLERANCE || (a.c1 - b.c1 <= POINT_TOLLERANCE &&
                                                                                       b.c0 - a.c0 > POINT_TOLLERANCE)));

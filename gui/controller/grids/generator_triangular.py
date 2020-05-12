@@ -2,6 +2,7 @@ from . import GridController
 
 from ...qt.QtWidgets import *
 from ..defines import get_defines_completer
+from ...utils.widgets import EditComboBox
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
 import weakref
@@ -33,12 +34,23 @@ class TriangularTriangleGeneratorController(GridController):
                                 u'A minimum angle (float [°])')
         form_layout.addRow("Minimum angle [°]:", self.minangle)
 
+        self.full = EditComboBox()
+        self.full.addItems(('', 'yes', 'no'))
+        self.full.setEditable(True)
+        self.full.editingFinished.connect(
+            lambda: weakself._change_attr('full', empty_to_none(weakself.full.currentText())))
+        self.full.setCompleter(self.defines)
+        self.full.setToolTip(u'&lt;options <b>full</b>=""&gt;<br/>'
+                             u'Fill the whole bounding box of the geometry (bool)')
+        form_layout.addRow("Fill whole area:", self.full)
+
         self.form.setLayout(form_layout)
 
     def fill_form(self):
         super(TriangularTriangleGeneratorController, self).fill_form()
         with BlockQtSignals(self.maxarea): self.maxarea.setText(none_to_empty(self.model.maxarea))
         with BlockQtSignals(self.minangle): self.minangle.setText(none_to_empty(self.model.minangle))
+        with BlockQtSignals(self.full): self.minangle.setText(none_to_empty(self.model.full))
 
     def get_widget(self):
         return self.form

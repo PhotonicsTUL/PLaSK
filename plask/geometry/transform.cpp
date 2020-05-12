@@ -105,14 +105,14 @@ template <> void Translation<3>::writeXMLAttr(XMLWriter::Element& dest_xml_objec
 // }
 
 template <int dim>
-void Translation<dim>::addPointsAlong(std::set<double>& points,
+void Translation<dim>::addPointsAlongToSet(std::set<double>& points,
                                       Primitive<3>::Direction direction,
                                       unsigned max_steps,
                                       double min_step_size) const {
     if (this->_child) {
         double trans = translation[int(direction) - (3 - dim)];
         std::set<double> child_points;
-        this->_child->addPointsAlong(child_points, direction, this->max_steps ? this->max_steps : max_steps,
+        this->_child->addPointsAlongToSet(child_points, direction, this->max_steps ? this->max_steps : max_steps,
                                      this->min_step_size ? this->min_step_size : min_step_size);
         for (double p : child_points) points.insert(p + trans);
     }

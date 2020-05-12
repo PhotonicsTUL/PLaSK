@@ -115,10 +115,10 @@ template <int dim> struct PLASK_API ArrangeContainer : public GeometryObjectTran
         this->fireChildrenChanged();
     }
 
-    void addPointsAlong(std::set<double>& points,
-                        Primitive<3>::Direction direction,
-                        unsigned max_steps,
-                        double min_step_size) const override;
+    void addPointsAlongToSet(std::set<double>& points,
+                             Primitive<3>::Direction direction,
+                             unsigned max_steps,
+                             double min_step_size) const override;
 
     void addLineSegmentsToSet(std::set<typename GeometryObjectD<dim>::LineSegment>& segments,
                               unsigned max_steps,
@@ -243,10 +243,10 @@ struct PLASK_API Lattice : public GeometryObjectTransform<3> {
 
     shared_ptr<GeometryObject> shallowCopy() const override { return copyShallow(); }
 
-    void addPointsAlong(std::set<double>& points,
-                        Primitive<3>::Direction direction,
-                        unsigned max_steps,
-                        double min_step_size) const override;
+    void addPointsAlongToSet(std::set<double>& points,
+                             Primitive<3>::Direction direction,
+                             unsigned max_steps,
+                             double min_step_size) const override;
 
     void addLineSegmentsToSet(std::set<typename GeometryObjectD<3>::LineSegment>& segments,
                               unsigned max_steps,

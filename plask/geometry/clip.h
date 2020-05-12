@@ -73,10 +73,10 @@ template <int dim> struct PLASK_API Clip : public GeometryObjectTransform<dim> {
         return plask::make_shared<Clip<dim>>(getChild(), new_clip);
     }
 
-    void addPointsAlong(std::set<double>& points,
-                        Primitive<3>::Direction direction,
-                        unsigned max_steps,
-                        double min_step_size) const override;
+    void addPointsAlongToSet(std::set<double>& points,
+                             Primitive<3>::Direction direction,
+                             unsigned max_steps,
+                             double min_step_size) const override;
 
     void addLineSegmentsToSet(std::set<typename GeometryObjectD<dim>::LineSegment>& segments,
                               unsigned max_steps,
@@ -84,6 +84,9 @@ template <int dim> struct PLASK_API Clip : public GeometryObjectTransform<dim> {
 
   protected:
     void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
+
+  private:
+    void addClippedSegment(std::set<typename GeometryObjectD<dim>::LineSegment>& segments, DVec p0, DVec p1) const;
 };
 
 template <> void Clip<2>::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const;

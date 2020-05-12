@@ -77,7 +77,7 @@ void Extrusion::getPositionsToVec(const GeometryObject::Predicate& predicate,
 //         dest.emplace_back(new Extrusion(const_pointer_cast<GeometryObjectD<2>>(c), this->length));
 // }
 
-void Extrusion::addPointsAlong(std::set<double>& points,
+void Extrusion::addPointsAlongToSet(std::set<double>& points,
                                Primitive<3>::Direction direction,
                                unsigned max_steps,
                                double min_step_size) const {
@@ -88,7 +88,7 @@ void Extrusion::addPointsAlong(std::set<double>& points,
     } else {
         if (this->max_steps) max_steps = this->max_steps;
         if (this->min_step_size) min_step_size = this->min_step_size;
-        _child->addPointsAlong(points, direction, max_steps, min_step_size);
+        _child->addPointsAlongToSet(points, direction, max_steps, min_step_size);
     }
 }
 

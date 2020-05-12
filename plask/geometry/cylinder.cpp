@@ -27,10 +27,10 @@ void Cylinder::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames
     materialProvider->writeXML(dest_xml_object, axes).attr("radius", radius).attr("height", height);
 }
 
-void Cylinder::addPointsAlong(std::set<double>& points,
-                              Primitive<3>::Direction direction,
-                              unsigned max_steps,
-                              double min_step_size) const {
+void Cylinder::addPointsAlongToSet(std::set<double>& points,
+                                   Primitive<3>::Direction direction,
+                                   unsigned max_steps,
+                                   double min_step_size) const {
     if (direction == Primitive<3>::DIRECTION_VERT) {
         if (materialProvider->isUniform(Primitive<3>::DIRECTION_VERT)) {
             points.insert(0);
@@ -54,7 +54,60 @@ void Cylinder::addPointsAlong(std::set<double>& points,
 void Cylinder::addLineSegmentsToSet(std::set<typename GeometryObjectD<3>::LineSegment>& segments,
                                     unsigned max_steps,
                                     double min_step_size) const {
-    // TODO
+    typedef typename GeometryObjectD<3>::LineSegment Segment;
+    if (this->max_steps) max_steps = this->max_steps;
+    if (this->min_step_size) min_step_size = this->min_step_size;
+    unsigned steps = min(unsigned(M_PI * radius / min_step_size), max_steps);
+    double dphi = M_PI / steps;
+
+    // Make vertical axis
+    std::vector<double> zz;
+    if (materialProvider->isUniform(Primitive<3>::DIRECTION_VERT)) {
+        zz.reserve(2);
+        zz.push_back(0);
+        zz.push_back(height);
+    } else {
+        unsigned zsteps = min(unsigned(height / min_step_size), max_steps);
+        double zstep = height / zsteps;
+        zz.reserve(zsteps + 1);
+        for (unsigned i = 0; i <= zsteps; ++i) zz.push_back(i * zstep);
+    }
+
+    double z0;
+    for (double z1 : zz) {
+        double x0 = radius, y0 = 0;
+        if (z1 != 0.) {
+            segments.insert(Segment(DVec(-x0, -y0, z0), DVec(-x0, -y0, z1)));
+            segments.insert(Segment(DVec(x0, -y0, z0), DVec(x0, -y0, z1)));
+            segments.insert(Segment(DVec(-x0, y0, z0), DVec(-x0, y0, z1)));
+            segments.insert(Segment(DVec(x0, y0, z0), DVec(x0, y0, z1)));
+        }
+        for (unsigned i = 1; i <= (steps + 1) / 2; ++i) {
+            double phi = dphi * i;
+            double x1 = radius * cos(phi), y1 = radius * sin(phi);
+            segments.insert(Segment(DVec(-x0, -y0, z1), DVec(-x1, -y1, z1)));
+            segments.insert(Segment(DVec(x0, -y0, z1), DVec(x1, -y1, z1)));
+            segments.insert(Segment(DVec(-x0, y0, z1), DVec(-x1, y1, z1)));
+            segments.insert(Segment(DVec(x0, y0, z1), DVec(x1, y1, z1)));
+            if (z1 != 0.) {
+                segments.insert(Segment(DVec(-x1, -y1, z0), DVec(-x1, -y1, z1)));
+                segments.insert(Segment(DVec(x1, -y1, z0), DVec(x1, -y1, z1)));
+                segments.insert(Segment(DVec(-x1, y1, z0), DVec(-x1, y1, z1)));
+                segments.insert(Segment(DVec(x1, y1, z0), DVec(x1, y1, z1)));
+            }
+            if (x1 >= 0 && !materialProvider->isUniform(Primitive<3>::DIRECTION_LONG)) {
+                segments.insert(Segment(DVec(-x1, -y1, z1), DVec(-x1, y1, z1)));
+                segments.insert(Segment(DVec(x1, -y1, z1), DVec(x1, y1, z1)));
+            }
+            if (!materialProvider->isUniform(Primitive<3>::DIRECTION_TRAN)) {
+                segments.insert(Segment(DVec(-x1, -y1, z1), DVec(x1, -y1, z1)));
+                segments.insert(Segment(DVec(-x1, y1, z1), DVec(x1, y1, z1)));
+            }
+            x0 = x1;
+            y0 = y1;
+        }
+        z0 = z1;
+    }
 }
 
 shared_ptr<GeometryObject> read_cylinder(GeometryReader& reader) {

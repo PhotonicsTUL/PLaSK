@@ -95,7 +95,7 @@ struct PLASK_API Revolution : public GeometryObjectTransformSpace<3, 2> {
      */
     static Box parentBox(const ChildBox& r);
 
-    void addPointsAlong(std::set<double>& points,
+    void addPointsAlongToSet(std::set<double>& points,
                         Primitive<3>::Direction direction,
                         unsigned max_steps,
                         double min_step_size) const override;

@@ -52,10 +52,10 @@ struct PLASK_API Triangle : public GeometryObjectLeaf<2> {
 
     shared_ptr<GeometryObject> shallowCopy() const override { return make_shared<Triangle>(*this); }
 
-    void addPointsAlong(std::set<double>& points,
-                        Primitive<3>::Direction direction,
-                        unsigned max_steps,
-                        double min_step_size) const override;
+    void addPointsAlongToSet(std::set<double>& points,
+                             Primitive<3>::Direction direction,
+                             unsigned max_steps,
+                             double min_step_size) const override;
 
     void addLineSegmentsToSet(std::set<typename GeometryObjectD<2>::LineSegment>& segments,
                               unsigned max_steps,

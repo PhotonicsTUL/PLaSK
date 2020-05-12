@@ -253,14 +253,14 @@ template <int dim> void GeometryObjectContainer<dim>::removeAtUnsafe(std::size_t
 }
 
 template <int dim>
-void GeometryObjectContainer<dim>::addPointsAlong(std::set<double>& points,
-                                                  Primitive<3>::Direction direction,
-                                                  unsigned max_steps,
-                                                  double min_step_size) const {
+void GeometryObjectContainer<dim>::addPointsAlongToSet(std::set<double>& points,
+                                                       Primitive<3>::Direction direction,
+                                                       unsigned max_steps,
+                                                       double min_step_size) const {
     for (const auto& child : children) {
         if (child)
-            child->addPointsAlong(points, direction, this->max_steps ? this->max_steps : max_steps,
-                                  this->min_step_size ? this->min_step_size : min_step_size);
+            child->addPointsAlongToSet(points, direction, this->max_steps ? this->max_steps : max_steps,
+                                       this->min_step_size ? this->min_step_size : min_step_size);
     }
 }
 

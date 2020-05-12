@@ -52,17 +52,17 @@ void Flip<dim>::getPositionsToVec(const GeometryObject::Predicate& predicate,
 template <int dim> shared_ptr<GeometryObject> Flip<dim>::shallowCopy() const { return copyShallow(); }
 
 template <int dim>
-void Flip<dim>::addPointsAlong(std::set<double>& points,
-                               Primitive<3>::Direction direction,
-                               unsigned max_steps,
-                               double min_step_size) const {
+void Flip<dim>::addPointsAlongToSet(std::set<double>& points,
+                                    Primitive<3>::Direction direction,
+                                    unsigned max_steps,
+                                    double min_step_size) const {
     if (this->_child) {
         if (int(direction) == int(flipDir) + 3 - dim) {
             std::set<double> child_points;
-            this->_child->addPointsAlong(child_points, direction, max_steps, min_step_size);
+            this->_child->addPointsAlongToSet(child_points, direction, max_steps, min_step_size);
             for (double p : child_points) points.insert(-p);
         } else {
-            this->_child->addPointsAlong(points, direction, max_steps, min_step_size);
+            this->_child->addPointsAlongToSet(points, direction, max_steps, min_step_size);
         }
     }
 }
@@ -197,20 +197,20 @@ template <int dim> shared_ptr<GeometryObject> Mirror<dim>::getRealChildNo(std::s
 template <int dim> shared_ptr<GeometryObject> Mirror<dim>::shallowCopy() const { return copyShallow(); }
 
 template <int dim>
-void Mirror<dim>::addPointsAlong(std::set<double>& points,
-                                 Primitive<3>::Direction direction,
-                                 unsigned max_steps,
-                                 double min_step_size) const {
+void Mirror<dim>::addPointsAlongToSet(std::set<double>& points,
+                                      Primitive<3>::Direction direction,
+                                      unsigned max_steps,
+                                      double min_step_size) const {
     if (this->_child) {
         if (this->max_steps) max_steps = this->max_steps;
         if (this->min_step_size) min_step_size = this->min_step_size;
         if (int(direction) == int(flipDir) + 3 - dim) {
             std::set<double> child_points;
-            this->_child->addPointsAlong(child_points, direction, max_steps, min_step_size);
+            this->_child->addPointsAlongToSet(child_points, direction, max_steps, min_step_size);
             for (double p : child_points) points.insert(-p);
             for (double p : child_points) points.insert(p);
         } else {
-            this->_child->addPointsAlong(points, direction, max_steps, min_step_size);
+            this->_child->addPointsAlongToSet(points, direction, max_steps, min_step_size);
         }
     }
 }

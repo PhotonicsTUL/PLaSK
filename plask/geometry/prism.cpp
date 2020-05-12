@@ -55,10 +55,10 @@ void Prism::writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& a
         .attr("height", height);
 }
 
-void Prism::addPointsAlong(std::set<double>& points,
-                           Primitive<3>::Direction direction,
-                           unsigned max_steps,
-                           double min_step_size) const {
+void Prism::addPointsAlongToSet(std::set<double>& points,
+                                Primitive<3>::Direction direction,
+                                unsigned max_steps,
+                                double min_step_size) const {
     if (direction == Primitive<3>::DIRECTION_VERT) {
         if (materialProvider->isUniform(Primitive<3>::DIRECTION_VERT)) {
             points.insert(0);
@@ -71,14 +71,54 @@ void Prism::addPointsAlong(std::set<double>& points,
             for (unsigned i = 0; i <= steps; ++i) points.insert(i * step);
         }
     } else {
-        // TODO
+        if (this->max_steps) max_steps = this->max_steps;
+        if (this->min_step_size) min_step_size = this->min_step_size;
+
+        double x[3] = {0., p0[int(direction)], p1[int(direction)]};
+
+        // Sort x
+        if (x[2] < x[0]) std::swap(x[0], x[2]);
+        if (x[1] > x[2])
+            std::swap(x[1], x[2]);
+        else if (x[1] < x[0])
+            std::swap(x[1], x[0]);
+
+        for (int i = 0; i < 3; ++i) points.insert(x[i]);
+        double dx02 = x[2] - x[0];
+        if (dx02 == 0) return;
+
+        for (int i = 0; i < 2; ++i) {
+            double dx = x[i + 1] - x[i];
+            unsigned maxsteps = max_steps * (dx / dx02);
+            unsigned steps = min(unsigned(dx / min_step_size), maxsteps);
+            double step = dx / steps;
+            for (unsigned j = 1; j < steps; ++j) points.insert(x[i] + j * step);
+        }
     }
 }
 
 void Prism::addLineSegmentsToSet(std::set<typename GeometryObjectD<3>::LineSegment>& segments,
                                  unsigned max_steps,
                                  double min_step_size) const {
-    // TODO
+    if (!materialProvider->isUniform(Primitive<3>::DIRECTION_LONG))
+        throw NotImplemented("Prismatic mesh for prisms non-uniform in longitudinal direction");
+    if (!materialProvider->isUniform(Primitive<3>::DIRECTION_TRAN))
+        throw NotImplemented("Prismatic mesh for prisms non-uniform in transverse direction");
+    std::set<double> vert;
+    addPointsAlongToSet(vert, Primitive<3>::DIRECTION_VERT, max_steps, min_step_size);
+    typedef typename GeometryObjectD<3>::LineSegment Segment;
+    double pv = 0.;
+    for (double v : vert) {
+        segments.insert(Segment(DVec(0., 0., v), DVec(p0[0], p0[1], v)));
+        segments.insert(Segment(DVec(0., 0., v), DVec(p1[0], p1[1], v)));
+        segments.insert(Segment(DVec(p0[0], p0[1], v), DVec(p1[0], p1[1], v)));
+        if (v != 0.) {
+            segments.insert(Segment(DVec(0., 0., pv), DVec(0., 0., v)));
+            segments.insert(Segment(DVec(p0[0], p0[1], pv), DVec(p0[0], p0[1], v)));
+            segments.insert(Segment(DVec(p1[0], p1[1], pv), DVec(p1[0], p1[1], v)));
+        }
+        pv = v;
+    }
 }
 
 shared_ptr<GeometryObject> read_prism(GeometryReader& reader) {

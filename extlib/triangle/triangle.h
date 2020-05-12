@@ -256,6 +256,9 @@
     #define ANSI_DECLARATORS
 #endif
 
+
+namespace triangle {
+
 struct triangulateio {
   REAL *pointlist;                                               /* In / out */
   REAL *pointattributelist;                                      /* In / out */
@@ -295,3 +298,5 @@ void trifree(void *memptr);
 void triangulate();
 void trifree();
 #endif /* not ANSI_DECLARATORS */
+
+} // namespace triangle

@@ -3,8 +3,8 @@
 
 #include "transform.h"
 
-//Flip - odbicie
-//Mirror - odbicie i klonowanie
+// Flip - odbicie
+// Mirror - odbicie i klonowanie
 
 namespace plask {
 
@@ -13,9 +13,7 @@ namespace plask {
  * @tparam dim
  * @ingroup GEOMETRY_OBJ
  */
-template <int dim>
-struct PLASK_API Flip: public GeometryObjectTransform<dim> {
-
+template <int dim> struct PLASK_API Flip : public GeometryObjectTransform<dim> {
     typedef GeometryObjectTransform<dim> BaseClass;
 
     static const char* NAME;
@@ -37,7 +35,8 @@ struct PLASK_API Flip: public GeometryObjectTransform<dim> {
      * @param flipDir flip direction, 2D or 3D axis number
      * @param child child geometry object, object to reflect
      */
-    explicit Flip(typename Primitive<dim>::Direction flipDir, shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >())
+    explicit Flip(typename Primitive<dim>::Direction flipDir,
+                  shared_ptr<GeometryObjectD<dim>> child = shared_ptr<GeometryObjectD<dim>>())
         : BaseClass(child), flipDir(flipDir) {}
 
     /// 2D or 3D axis number
@@ -58,33 +57,32 @@ struct PLASK_API Flip: public GeometryObjectTransform<dim> {
 
     using GeometryObjectTransform<dim>::getPathsTo;
 
-    GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
+    GeometryObject::Subtree getPathsAt(const DVec& point, bool all = false) const override;
 
     Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
 
-    void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
+    void getPositionsToVec(const GeometryObject::Predicate& predicate,
+                           std::vector<DVec>& dest,
+                           const PathHints* path = 0) const override;
 
     /**
      * Get shallow copy of this.
      * @return shallow copy of this
      */
-    shared_ptr<Flip<dim>> copyShallow() const {
-         return shared_ptr<Flip<dim>>(new Flip<dim>(flipDir, getChild()));
-    }
+    shared_ptr<Flip<dim>> copyShallow() const { return shared_ptr<Flip<dim>>(new Flip<dim>(flipDir, getChild())); }
 
     shared_ptr<GeometryObject> shallowCopy() const override;
 
-    void addPointsAlong(std::set<double>& points,
-                        Primitive<3>::Direction direction,
-                        unsigned max_steps,
-                        double min_step_size) const override;
+    void addPointsAlongToSet(std::set<double>& points,
+                             Primitive<3>::Direction direction,
+                             unsigned max_steps,
+                             double min_step_size) const override;
 
     void addLineSegmentsToSet(std::set<typename GeometryObjectD<dim>::LineSegment>& segments,
                               unsigned max_steps,
                               double min_step_size) const override;
 
     void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
-
 };
 
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Flip<2>)
@@ -95,10 +93,8 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(Flip<3>)
  * @tparam dim
  * @ingroup GEOMETRY_OBJ
  */
-//TODO add checking of coordinates
-template <int dim>
-struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
-
+// TODO add checking of coordinates
+template <int dim> struct PLASK_API Mirror : public GeometryObjectTransform<dim> {
     typedef GeometryObjectTransform<dim> BaseClass;
 
     static const char* NAME;
@@ -119,7 +115,8 @@ struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
      * @param flipDir
      * @param child child geometry object, object to reflect
      */
-    explicit Mirror(typename Primitive<dim>::Direction flipDir, shared_ptr< GeometryObjectD<dim> > child = shared_ptr< GeometryObjectD<dim> >())
+    explicit Mirror(typename Primitive<dim>::Direction flipDir,
+                    shared_ptr<GeometryObjectD<dim>> child = shared_ptr<GeometryObjectD<dim>>())
         : BaseClass(child), flipDir(flipDir) {}
 
     /// 2D or 3D axis number
@@ -129,17 +126,11 @@ struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
 
     Box getRealBoundingBox() const override;
 
-    DVec flipped(DVec v) const {
-        return v.flipped(flipDir);
-    }
+    DVec flipped(DVec v) const { return v.flipped(flipDir); }
 
-    DVec flippedIfNeg(DVec v) const {
-        return v[flipDir] >= 0 ? v : v.flipped(flipDir);
-    }
+    DVec flippedIfNeg(DVec v) const { return v[flipDir] >= 0 ? v : v.flipped(flipDir); }
 
-    void extend(Box& toExt) const {
-        toExt.lower[flipDir] = - toExt.upper[flipDir];
-    }
+    void extend(Box& toExt) const { toExt.lower[flipDir] = -toExt.upper[flipDir]; }
 
     Box extended(Box res) const {
         extend(res);
@@ -154,15 +145,21 @@ struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
 
     Box fromChildCoords(const typename ChildType::Box& child_bbox) const override;
 
-    void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate, std::vector<Box>& dest, const PathHints* path = 0) const override;
+    void getBoundingBoxesToVec(const GeometryObject::Predicate& predicate,
+                               std::vector<Box>& dest,
+                               const PathHints* path = 0) const override;
 
-    void getObjectsToVec(const GeometryObject::Predicate& predicate, std::vector< shared_ptr<const GeometryObject> >& dest, const PathHints* path = 0) const override;
+    void getObjectsToVec(const GeometryObject::Predicate& predicate,
+                         std::vector<shared_ptr<const GeometryObject>>& dest,
+                         const PathHints* path = 0) const override;
 
-    void getPositionsToVec(const GeometryObject::Predicate& predicate, std::vector<DVec>& dest, const PathHints* path = 0) const override;
+    void getPositionsToVec(const GeometryObject::Predicate& predicate,
+                           std::vector<DVec>& dest,
+                           const PathHints* path = 0) const override;
 
     GeometryObject::Subtree getPathsTo(const GeometryObject& el, const PathHints* path = 0) const override;
 
-    GeometryObject::Subtree getPathsAt(const DVec& point, bool all=false) const override;
+    GeometryObject::Subtree getPathsAt(const DVec& point, bool all = false) const override;
 
     std::size_t getChildrenCount() const override;
 
@@ -177,13 +174,13 @@ struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
      * @return shallow copy of this
      */
     shared_ptr<Mirror<dim>> copyShallow() const {
-         return shared_ptr<Mirror<dim>>(new Mirror<dim>(flipDir, this->_child));
+        return shared_ptr<Mirror<dim>>(new Mirror<dim>(flipDir, this->_child));
     }
 
-    void addPointsAlong(std::set<double>& points,
-                        Primitive<3>::Direction direction,
-                        unsigned max_steps,
-                        double min_step_size) const override;
+    void addPointsAlongToSet(std::set<double>& points,
+                             Primitive<3>::Direction direction,
+                             unsigned max_steps,
+                             double min_step_size) const override;
 
     void addLineSegmentsToSet(std::set<typename GeometryObjectD<dim>::LineSegment>& segments,
                               unsigned max_steps,
@@ -192,12 +189,11 @@ struct PLASK_API Mirror: public GeometryObjectTransform<dim> {
     shared_ptr<GeometryObject> shallowCopy() const override;
 
     void writeXMLAttr(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
-
 };
 
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Mirror<2>)
 PLASK_API_EXTERN_TEMPLATE_STRUCT(Mirror<3>)
 
-}   // namespace plask
+}  // namespace plask
 
-#endif // MIRROR_H
+#endif  // MIRROR_H

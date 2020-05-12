@@ -350,9 +350,9 @@
   <!--trangle-->
   <generator name="triangle" type="triangular2d" method="triangle">
     <!--options-->
-    <options maxarea="1" minangle="30"/>
     <!--end-->
   </generator>
+  <generator name="revol" type="rectangular3d" method="simple"/>
 </grids>
 
 <solvers>

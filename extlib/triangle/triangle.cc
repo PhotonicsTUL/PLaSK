@@ -357,6 +357,13 @@
 #include "triangle.h"
 #endif /* TRILIBRARY */
 
+
+#include "plask.hh"
+
+namespace triangle {
+
+
+
 /* A few forward declarations.                                               */
 
 #ifndef TRILIBRARY
@@ -1407,6 +1414,8 @@ REAL area;                                      /* The area of the triangle. */
 /**                                                                         **/
 /**                                                                         **/
 
+#ifndef TRILIBRARY
+
 #ifdef ANSI_DECLARATORS
 void triexit(int status)
 #else /* not ANSI_DECLARATORS */
@@ -1417,6 +1426,8 @@ int status;
 {
   exit(status);
 }
+
+#endif
 
 #ifdef ANSI_DECLARATORS
 VOID *trimalloc(int size)
@@ -16004,3 +16015,5 @@ char **argv;
   return 0;
 #endif /* not TRILIBRARY */
 }
+
+} // namespace triangle

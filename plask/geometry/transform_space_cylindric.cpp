@@ -74,19 +74,18 @@ Box3D Revolution::parentBox(const ChildBox& r) {
     return Box3D(vec(-tran, -tran, r.lower.vert()), vec(tran, tran, r.upper.vert()));
 }
 
-
-void Revolution::addPointsAlong(std::set<double>& points,
-                                Primitive<3>::Direction direction,
-                                unsigned max_steps,
-                                double min_step_size) const {
+void Revolution::addPointsAlongToSet(std::set<double>& points,
+                                     Primitive<3>::Direction direction,
+                                     unsigned max_steps,
+                                     double min_step_size) const {
     if (!this->hasChild()) return;
     if (this->max_steps) max_steps = this->max_steps;
     if (this->min_step_size) min_step_size = this->min_step_size;
     if (direction == Primitive<3>::DIRECTION_VERT) {
-        this->_child->addPointsAlong(points, Primitive<3>::DIRECTION_VERT, max_steps, min_step_size);
+        this->_child->addPointsAlongToSet(points, Primitive<3>::DIRECTION_VERT, max_steps, min_step_size);
     } else {
         std::set<double> child_points;
-        this->_child->addPointsAlong(child_points, Primitive<3>::DIRECTION_TRAN, max_steps, min_step_size);
+        this->_child->addPointsAlongToSet(child_points, Primitive<3>::DIRECTION_TRAN, max_steps, min_step_size);
         if (child_points.size() == 0) return;
         // Finer separation
         std::vector<double> pts;
@@ -94,7 +93,7 @@ void Revolution::addPointsAlong(std::set<double>& points,
         pts.insert(pts.end(), child_points.begin(), child_points.end());
         double rr = pts[pts.size() - 1] - pts[0];
         for (size_t i = 1; i < pts.size(); ++i) {
-            double r = pts[i-1];
+            double r = pts[i - 1];
             double dr = pts[i] - r;
             unsigned maxsteps = rev_max_steps * (dr / rr);
             unsigned steps = min(unsigned(dr / rev_min_step_size), maxsteps);
@@ -113,11 +112,39 @@ void Revolution::addLineSegmentsToSet(std::set<typename GeometryObjectD<3>::Line
                                       unsigned max_steps,
                                       double min_step_size) const {
     if (!this->hasChild()) return;
+    typedef typename GeometryObjectD<3>::LineSegment Segment;
     if (this->max_steps) max_steps = this->max_steps;
     if (this->min_step_size) min_step_size = this->min_step_size;
-    // TODO
+    std::set<typename GeometryObjectD<2>::LineSegment> segments2;
+    this->_child->addLineSegmentsToSet(segments2, max_steps, min_step_size);
+    double radius = max(abs(this->_child->getBoundingBox().left()), abs(this->_child->getBoundingBox().right()));
+    unsigned steps = min(unsigned(M_PI * radius / min_step_size), max_steps);
+    double dphi = M_PI / steps;
+    double cos0 = 1., sin0 = 0;
+    for (unsigned i = 1; i <= (steps + 1) / 2; ++i) {
+        double phi = dphi * i;
+        double cos1 = cos(phi), sin1 = sin(phi);
+        for (auto seg : segments2) {
+            double x[2], y[2], z[2];
+            for (int j = 0; j < 2; ++i) {
+                x[j] = seg[j].c0 * cos1;
+                y[j] = seg[j].c0 * sin1;
+                z[j] = seg[j].c1;
+                double x0 = seg[j].c0 * cos0, y0 = seg[j].c0 * cos0;
+                segments.insert(Segment(DVec(-x0, -y0, z[j]), DVec(-x[j], -y[j], z[j])));
+                segments.insert(Segment(DVec(x0, -y0, z[j]), DVec(x[j], -y[j], z[j])));
+                segments.insert(Segment(DVec(-x0, y0, z[j]), DVec(-x[j], y[j], z[j])));
+                segments.insert(Segment(DVec(x0, y0, z[j]), DVec(x[j], y[j], z[j])));
+            }
+            segments.insert(Segment(DVec(-x[0], -y[0], z[0]), DVec(-x[1], -y[1], z[1])));
+            segments.insert(Segment(DVec(x[0], -y[0], z[0]), DVec(x[1], -y[1], z[1])));
+            segments.insert(Segment(DVec(-x[0], y[0], z[0]), DVec(-x[1], y[1], z[1])));
+            segments.insert(Segment(DVec(x[0], y[0], z[0]), DVec(x[1], y[1], z[1])));
+        }
+        cos0 = cos1;
+        sin0 = sin1;
+    }
 }
-
 
 shared_ptr<GeometryObject> read_revolution(GeometryReader& reader) {
     GeometryReader::SetExpectedSuffix suffixSetter(reader, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D);

@@ -184,14 +184,14 @@ typename ArrangeContainer<dim>::Box ArrangeContainer<dim>::fromChildCoords(
 }
 
 template <int dim>
-void ArrangeContainer<dim>::addPointsAlong(std::set<double>& points,
-                                           Primitive<3>::Direction direction,
-                                           unsigned max_steps,
-                                           double min_step_size) const {
+void ArrangeContainer<dim>::addPointsAlongToSet(std::set<double>& points,
+                                                Primitive<3>::Direction direction,
+                                                unsigned max_steps,
+                                                double min_step_size) const {
     if (!this->hasChild()) return;
     std::set<double> child_points;
-    _child->addPointsAlong(child_points, direction, this->max_steps ? this->max_steps : max_steps,
-                           this->min_step_size ? this->min_step_size : min_step_size);
+    _child->addPointsAlongToSet(child_points, direction, this->max_steps ? this->max_steps : max_steps,
+                                this->min_step_size ? this->min_step_size : min_step_size);
     for (int i = 0; i < repeat_count; ++i) {
         double trans = i * translation[int(direction) - (3 - dim)];
         for (double p : child_points) points.insert(p + trans);
@@ -429,13 +429,13 @@ void Lattice::refillContainer() {
     }
 }
 
-void Lattice::addPointsAlong(std::set<double>& points,
-                             Primitive<3>::Direction direction,
-                             unsigned max_steps,
-                             double min_step_size) const {
+void Lattice::addPointsAlongToSet(std::set<double>& points,
+                                  Primitive<3>::Direction direction,
+                                  unsigned max_steps,
+                                  double min_step_size) const {
     if (!this->hasChild()) return;
-    container->addPointsAlong(points, direction, this->max_steps ? this->max_steps : max_steps,
-                              this->min_step_size ? this->min_step_size : min_step_size);
+    container->addPointsAlongToSet(points, direction, this->max_steps ? this->max_steps : max_steps,
+                                   this->min_step_size ? this->min_step_size : min_step_size);
 }
 
 void Lattice::addLineSegmentsToSet(std::set<typename GeometryObjectD<3>::LineSegment>& segments,

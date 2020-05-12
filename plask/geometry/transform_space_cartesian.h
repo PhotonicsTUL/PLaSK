@@ -99,7 +99,7 @@ class PLASK_API Extrusion: public GeometryObjectTransformSpace<3, 2> {
      */
     Box parentBox(const ChildBox& r) const { return Box(parentVec(r.lower, 0.0), parentVec(r.upper, length)); }
 
-    void addPointsAlong(std::set<double>& points,
+    void addPointsAlongToSet(std::set<double>& points,
                         Primitive<3>::Direction direction,
                         unsigned max_steps,
                         double min_step_size) const override;

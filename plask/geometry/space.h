@@ -877,17 +877,17 @@ class PLASK_API Geometry2DCartesian : public GeometryD<2> {
      * \param[in,out] points ordered set of division points along specified axis
      * \param direction axis direction
      */
-    void addPointsAlong(std::set<double>& points,
-                        Primitive<3>::Direction direction,
-                        unsigned = 0,
-                        double = 0) const override {
+    void addPointsAlongToSet(std::set<double>& points,
+                             Primitive<3>::Direction direction,
+                             unsigned = 0,
+                             double = 0) const override {
         shared_ptr<GeometryObjectD<2>> child;
         try {
             child = getChild();
         } catch (NoChildException) {
             return;
         }
-        child->addPointsAlong(points, direction, max_steps, min_step_size);
+        child->addPointsAlongToSet(points, direction, max_steps, min_step_size);
     }
 
     /**
@@ -897,7 +897,7 @@ class PLASK_API Geometry2DCartesian : public GeometryD<2> {
      */
     std::set<double> getPointsAlong(Primitive<3>::Direction direction) const {
         std::set<double> points;
-        addPointsAlong(points, direction);
+        addPointsAlongToSet(points, direction);
         return points;
     }
 
@@ -1087,17 +1087,17 @@ class PLASK_API Geometry2DCylindrical : public GeometryD<2> {
      * \param[in,out] points ordered set of division points along specified axis
      * \param direction axis direction
      */
-    void addPointsAlong(std::set<double>& points,
-                        Primitive<3>::Direction direction,
-                        unsigned = 0,
-                        double = 0) const override {
+    void addPointsAlongToSet(std::set<double>& points,
+                             Primitive<3>::Direction direction,
+                             unsigned = 0,
+                             double = 0) const override {
         shared_ptr<GeometryObjectD<2>> child;
         try {
             child = getChild();
         } catch (NoChildException) {
             return;
         }
-        child->addPointsAlong(points, direction, max_steps, min_step_size);
+        child->addPointsAlongToSet(points, direction, max_steps, min_step_size);
     }
 
     /**
@@ -1107,7 +1107,7 @@ class PLASK_API Geometry2DCylindrical : public GeometryD<2> {
      */
     std::set<double> getPointsAlong(Primitive<3>::Direction direction) const {
         std::set<double> points;
-        addPointsAlong(points, direction);
+        addPointsAlongToSet(points, direction);
         return points;
     }
 
@@ -1301,17 +1301,17 @@ class PLASK_API Geometry3D : public GeometryD<3> {
      * \param[in,out] points ordered set of division points along specified axis
      * \param direction axis direction
      */
-    void addPointsAlong(std::set<double>& points,
-                        Primitive<3>::Direction direction,
-                        unsigned = 0,
-                        double = 0) const override {
+    void addPointsAlongToSet(std::set<double>& points,
+                             Primitive<3>::Direction direction,
+                             unsigned = 0,
+                             double = 0) const override {
         shared_ptr<GeometryObjectD<3>> child;
         try {
             child = getChild();
         } catch (NoChildException) {
             return;
         }
-        child->addPointsAlong(points, direction, max_steps, min_step_size);
+        child->addPointsAlongToSet(points, direction, max_steps, min_step_size);
     }
 
     /**
@@ -1321,7 +1321,7 @@ class PLASK_API Geometry3D : public GeometryD<3> {
      */
     std::set<double> getPointsAlong(Primitive<3>::Direction direction) const {
         std::set<double> points;
-        addPointsAlong(points, direction);
+        addPointsAlongToSet(points, direction);
         return points;
     }
 

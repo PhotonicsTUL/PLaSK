@@ -68,19 +68,19 @@ void Intersection<dim>::getPositionsToVec(const GeometryObject::Predicate& predi
 template <int dim> shared_ptr<GeometryObject> Intersection<dim>::shallowCopy() const { return copyShallow(); }
 
 template <int dim>
-void Intersection<dim>::addPointsAlong(std::set<double>& points,
-                                       Primitive<3>::Direction direction,
-                                       unsigned max_steps,
-                                       double min_step_size) const {
+void Intersection<dim>::addPointsAlongToSet(std::set<double>& points,
+                                            Primitive<3>::Direction direction,
+                                            unsigned max_steps,
+                                            double min_step_size) const {
     if (this->_child) {
         if (!envelope) {
-            this->_child->addPointsAlong(points, direction, this->max_steps ? this->max_steps : max_steps,
-                                         this->min_step_size ? this->min_step_size : min_step_size);
+            this->_child->addPointsAlongToSet(points, direction, this->max_steps ? this->max_steps : max_steps,
+                                              this->min_step_size ? this->min_step_size : min_step_size);
             return;
         }
         std::set<double> child_points;
-        this->_child->addPointsAlong(child_points, direction, this->max_steps ? this->max_steps : max_steps,
-                                     this->min_step_size ? this->min_step_size : min_step_size);
+        this->_child->addPointsAlongToSet(child_points, direction, this->max_steps ? this->max_steps : max_steps,
+                                          this->min_step_size ? this->min_step_size : min_step_size);
         auto clipbox = envelope->getBoundingBox();
         auto bbox = this->getBoundingBox();
         points.insert(bbox.lower[int(direction) - (3 - dim)]);
@@ -102,12 +102,13 @@ void Intersection<dim>::addLineSegmentsToSet(std::set<typename GeometryObjectD<d
                                                this->min_step_size ? this->min_step_size : min_step_size);
             return;
         }
-        std::set<typename GeometryObjectD<dim>::LineSegment> child_segments;
-        this->_child->addLineSegmentsToSet(child_segments, this->max_steps ? this->max_steps : max_steps,
-                                           this->min_step_size ? this->min_step_size : min_step_size);
-        for (const auto& s : child_segments) {
-            if (envelope->contains(s.p0()) || envelope->contains(s.p1())) segments.insert(s);
-        }
+        throw NotImplemented("Getting line segments for objects interception");
+        // std::set<typename GeometryObjectD<dim>::LineSegment> child_segments;
+        // this->_child->addLineSegmentsToSet(child_segments, this->max_steps ? this->max_steps : max_steps,
+        //                                    this->min_step_size ? this->min_step_size : min_step_size);
+        // for (const auto& s : child_segments) {
+        //     if (envelope->contains(s.p0()) && envelope->contains(s.p1())) segments.insert(s);
+        // }
     }
 }
 
