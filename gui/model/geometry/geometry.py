@@ -91,6 +91,9 @@ class GNCartesian(GNGeometryBase):
         super(GNCartesian, self).__init__(parent=parent, dim=dim)
         if dim == 2:
             self.length = None
+            self.axes = 'x,y'
+        else:
+            self.axes = 'x,y,z'
 
     def accept_as_child(self, node):
         if not self.accept_new_child(): return False
@@ -175,6 +178,7 @@ class GNCylindrical(GNGeometryBase):
 
     def __init__(self, parent=None):
         super(GNCylindrical, self).__init__(parent=parent, dim=2)
+        self.axes = 'r,z'
 
     def accept_as_child(self, node):
         if not self.accept_new_child(): return False
