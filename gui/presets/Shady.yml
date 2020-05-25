@@ -66,13 +66,10 @@ plots:
   grid_color: '#393c42'
 syntax:
   python_builtin: 'color=#b58900'
-  python_comment: 'color=#586e75
-    italic=true'
+  python_comment: 'color=#586e75,italic=true'
   python_decorator: 'color=#d33682'
-  python_define: 'color=#859900
-    italic=true'
-  python_keyword: 'color=#dc322f
-    bold=true'
+  python_define: 'color=#859900,italic=true'
+  python_keyword: 'color=#dc322f,bold=true'
   python_loaded: 'color=#6c71c4'
   python_log: 'color=#6c71c4'
   python_member: 'color=#2aa198'
@@ -85,10 +82,8 @@ syntax:
   python_special: 'color=#6c71c4'
   python_string: 'color=#268bd2'
   xml_attr: 'color=#b58900'
-  xml_comment: 'color=#586e75
-    italic=true'
+  xml_comment: 'color=#586e75,italic=true'
   xml_define: 'color=#6c71c4'
-  xml_tag: 'color=#dc322f
-    bold=true'
+  xml_tag: 'color=#dc322f,bold=true'
   xml_text: 'color=#eee8d5'
   xml_value: 'color=#2aa198'
