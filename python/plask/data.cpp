@@ -263,7 +263,7 @@ template <typename MeshT> struct PythonDataVector_SliceBase {
 
         for (int id = 0; id != dim; ++id) {
             int ax = iteration_order[id];
-            py::extract<int>index(slice[ax]);
+            py::extract<int> index(slice[ax]);
             size_t size = src_mesh->getAxis(ax)->size();
             stride[id] = 1;
             for (int i = 0; i < id; ++i) stride[i] *= size;

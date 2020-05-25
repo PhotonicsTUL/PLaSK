@@ -386,6 +386,18 @@ class MaterialField:
     def __getattr__(self, item):
         return lambda *args, **kwargs: \
             Data(numpy.array([getattr(m, item)(*args, **kwargs) for m in self.materials]), self.mesh)
+    
+    def __len__(self):
+        return len(self.materials)
+    
+    def __iter__(self):
+        return iter(self.materials)
+
+    def __getitem__(self, index):
+        if isinstance(index, (tuple, list)):
+            return self.materials[self.mesh.index(*index)]
+        else:
+            return self.materials[index]
 
 
 def get_material_field(self, mesh):
