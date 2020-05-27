@@ -140,6 +140,7 @@ struct GeometryObjectTransform : public GeometryObjectD<dim> {
         shared_ptr<GeometryObjectTransform<dim, Child_Type>> result =
             static_pointer_cast<GeometryObjectTransform<dim, Child_Type>>(this->shallowCopy());
         result->setChild(child);
+        result->roles = this->roles;
         return result;
     }
 

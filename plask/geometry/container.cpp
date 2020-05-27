@@ -219,6 +219,7 @@ shared_ptr<const GeometryObject> GeometryObjectContainer<dim>::changedVersion(co
 
     if (translation) *translation = vec(0.0, 0.0, 0.0);  // we can't recommend anything special
     if (were_changes) result = this->changedVersionForChildren(children_after_change, translation);
+    result->roles = this->roles;
 
     return result;
 }
