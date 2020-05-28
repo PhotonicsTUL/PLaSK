@@ -9,7 +9,6 @@ FermiGainSolver<GeometryType>::FermiGainSolver(const std::string& name): SolverW
     inTemperature = 300.; // temperature receiver has some sensible value
     lifetime = 0.1; // [ps]
     matrixelem = 0.; // [m0*eV]
-    matrixelemscfact = 1.; // [-] change it when numerical value is different from the experimental one
     cond_waveguide_depth = 0.00; // [eV]
     vale_waveguide_depth = 0.00; // [eV]
     cond_qw_shift = 0.; // [eV]
@@ -42,7 +41,6 @@ void FermiGainSolver<GeometryType>::loadConfiguration(XMLReader& reader, Manager
         if (param == "config") {
             lifetime = reader.getAttribute<double>("lifetime", lifetime);
             matrixelem = reader.getAttribute<double>("matrix-elem", matrixelem);
-            matrixelemscfact = reader.getAttribute<double>("matrix-elem-scaling", matrixelemscfact);
             cond_qw_shift = reader.getAttribute<double>("cond-shift", cond_qw_shift);
             vale_qw_shift = reader.getAttribute<double>("vale-shift", vale_qw_shift);
             if_strain = reader.getAttribute<bool>("strained", if_strain);
@@ -350,7 +348,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
     gainModule.Set_well_width(region.qwlen); //powinno byc - szerokosc pojedynczej studni
     gainModule.Set_waveguide_width(region.totallen);
     gainModule.Set_lifetime(lifetime);
-    gainModule.Set_momentum_matrix_element(matrixelem*matrixelemscfact);
+    gainModule.Set_momentum_matrix_element(matrixelem);
 
     gainModule.Set_cond_waveguide_depth(cond_waveguide_depth);
     gainModule.Set_vale_waveguide_depth(vale_waveguide_depth);
@@ -448,9 +446,7 @@ QW::gain FermiGainSolver<GeometryType>::getGainModule(double wavelength, double 
 
     if (!matrixelem) matrixelem = (1./gainModule.Get_electron_mass_transverse() - 1.)*(qEg+gainModule.Get_split_off())*qEg/(qEg+2.*gainModule.Get_split_off()/3.)/2.;
 
-    //matrixelem *= matrixelemscfact;
-    gainModule.Set_momentum_matrix_element(matrixelem*matrixelemscfact);
-    //writelog(LOG_INFO, "recalculated matrix elem: {0}", matrixelem*matrixelemscfact); // TEST
+    gainModule.Set_momentum_matrix_element(matrixelem);
 
     gainModule.Set_bandgap(qEg);
     gainModule.Set_valence_depth(vdepth);

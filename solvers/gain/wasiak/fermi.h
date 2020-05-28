@@ -159,7 +159,6 @@ struct PLASK_SOLVER_API FermiGainSolver: public SolverWithMesh<GeometryType, Mes
     double vale_qw_shift;           ///< additional valence band shift for qw [eV]
     double lifetime;                ///< stimulated emission lifetime [ps]
     double matrixelem;              ///< optical matrix element [m0*eV]
-    double matrixelemscfact;        ///< scaling factor for optical matrix element [-]
     double differenceQuotient;      ///< difference quotient of dG_dn derivative
 
     QW::gain getGainModule(double wavelength, double T, double n, const ActiveRegionInfo& region);
@@ -217,9 +216,6 @@ struct PLASK_SOLVER_API FermiGainSolver: public SolverWithMesh<GeometryType, Mes
 
     double getMatrixElem() const { return matrixelem; }
     void setMatrixElem(double iMatrixElem)  { matrixelem = iMatrixElem; }
-
-    double getMatrixElemScFact() const { return matrixelemscfact; }
-    void setMatrixElemScFact(double iMatrixElemScFact)  { matrixelemscfact = iMatrixElemScFact; }
 
     double getCondQWShift() const { return cond_qw_shift; }
     void setCondQWShift(double iCondQWShift)  { cond_qw_shift = iCondQWShift; }

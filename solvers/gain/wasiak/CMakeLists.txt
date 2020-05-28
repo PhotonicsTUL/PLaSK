@@ -40,6 +40,10 @@ set(SOLVER_LINK_LIBRARIES ${GSL_LIBRARIES})
 #set(SOLVER_COMPILE_FLAGS ${CMAKE_GSL_CXX_FLAGS})
 add_definitions(-DPLASK)
 
+if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
+    add_definitions(-D_DEBUG)
+endif()
+
 # If you want, you can manually specify your sources. Just uncomment and edit
 # the following lines. If you don't do it, your solver directory will be scanned
 # automatically for solver_src and the 'python' subdirectory for interface_src.
@@ -56,9 +60,10 @@ file(GLOB solver_src *.cpp wzmocnienie/*.cc)
 enable_testing()
 
 if(BUILD_TESTING)
-    add_executable(simplegaintest tests/simplegaintest.cpp)
-    target_link_libraries(simplegaintest libplask ${SOLVER_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
-    add_solver_test(solvers/gain/wasiak simplegaintest)
+    # add_executable(simplegaintest tests/simplegaintest.cpp)
+    # target_link_libraries(simplegaintest libplask ${SOLVER_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
+    # add_solver_test(solvers/gain/wasiak simplegaintest)
+    
     # add_python_test(solvers/gain/wasiak-new ${CMAKE_CURRENT_SOURCE_DIR}/tests/newgain.py)
 endif()
 

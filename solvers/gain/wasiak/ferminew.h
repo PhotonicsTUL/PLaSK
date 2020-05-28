@@ -19,45 +19,10 @@ template <typename GeometryT> struct GainSpectrum;
 template <typename GeometryT> struct LuminescenceSpectrum;
 
 struct Levels {
-    int mEc, mEvhh, mEvlh;  // to choose the correct band edges
-    std::vector<kubly::warstwa*> mpEc, mpEvhh, mpEvlh;
-    std::unique_ptr<kubly::struktura> mpStrEc, mpStrEvhh, mpStrEvlh;
-    plask::shared_ptr<kubly::obszar_aktywny> aktyw;
-    bool invalid;
-    Levels() : mEc(-1), mEvhh(-1), mEvlh(-1), invalid(true) {}
-    Levels(Levels&& src)
-        : mEc(src.mEc),
-          mEvhh(src.mEvhh),
-          mEvlh(src.mEvlh),
-          mpEc(std::move(src.mpEc)),
-          mpEvhh(std::move(src.mpEvhh)),
-          mpEvlh(std::move(src.mpEvlh)),
-          mpStrEc(std::move(src.mpStrEc)),
-          mpStrEvhh(std::move(src.mpStrEvhh)),
-          mpStrEvlh(std::move(src.mpStrEvlh)),
-          aktyw(std::move(src.aktyw)),
-          invalid(src.invalid) {
-        src.mpEc.clear();
-        src.mpEvhh.clear();
-        src.mpEvlh.clear();
-    }
-    void clearEc() {
-        for (kubly::warstwa* ptr : mpEc) delete ptr;
-        mpEc.clear();
-    }
-    void clearEvhh() {
-        for (kubly::warstwa* ptr : mpEvhh) delete ptr;
-        mpEvhh.clear();
-    }
-    void clearEvlh() {
-        for (kubly::warstwa* ptr : mpEvlh) delete ptr;
-        mpEvlh.clear();
-    }
-    ~Levels() {
-        clearEc();
-        clearEvhh();
-        clearEvlh();
-    }
+    double Eg;
+    std::unique_ptr<kubly::struktura> bandsEc, bandsEvhh, bandsEvlh;
+    std::unique_ptr<kubly::struktura> modbandsEc, modbandsEvhh, modbandsEvlh;
+    plask::shared_ptr<kubly::obszar_aktywny> activeRegion;
 };
 
 inline static double nm_to_eV(double wavelength) { return (plask::phys::h_eV * plask::phys::c) / (wavelength * 1e-9); }
@@ -67,11 +32,24 @@ inline static double nm_to_eV(double wavelength) { return (plask::phys::h_eV * p
  */
 template <typename GeometryType>
 struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType, MeshAxis> {
-    /// Structure containing information about each active region
-    struct ActiveRegionInfo {
+    /**
+     *  Structure containing information about each active region
+     */
+    struct ActiveRegionData {
         shared_ptr<StackContainer<2>> layers;  ///< Stack containing all layers in the active region
         Vec<2> origin;                         ///< Location of the active region stack origin
-        ActiveRegionInfo(Vec<2> origin) : layers(plask::make_shared<StackContainer<2>>()), origin(origin) {}
+        std::set<int> QWs;
+
+        // LUKASZ
+        std::vector<double> lens;  ///< Thicknesses of the layers in the active region
+
+        // shared_ptr<Material> materialQW;        ///< Quantum well material
+        // shared_ptr<Material> materialBarrier;   ///< Barrier material
+        double qwlen;       ///< Single quantum well thickness [Å]
+        double qwtotallen;  ///< Total quantum wells thickness [Å]
+        double totallen;    ///< Total active region thickness [Å]
+
+        ActiveRegionData(Vec<2> origin) : layers(plask::make_shared<StackContainer<2>>()), origin(origin) {}
 
         /// Return number of layers in the active region with surrounding barriers
         size_t size() const { return layers->getChildrenCount(); }
@@ -107,25 +85,19 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
             return layers->getChildForHeight(point.c1 - origin.c1)->getChild()->hasRole("QW");
         }
 
-        // LUKASZ
-        std::vector<shared_ptr<Material>> actMaterials;  ///< All materials in the active region
-        std::vector<double> lens;                        ///< Thicknesses of the layers in the active region
-
-        // shared_ptr<Material> materialQW;        ///< Quantum well material
-        // shared_ptr<Material> materialBarrier;   ///< Barrier material
-        double qwlen;       ///< Single quantum well thickness [Å]
-        double qwtotallen;  ///< Total quantum wells thickness [Å]
-        double totallen;    ///< Total active region thickness [Å]
-        double bottomlen;   ///< Bottom spacer thickness [Å]
-        double toplen;      ///< Top spacer thickness [Å]
-
         /**
          * Summarize active region, check for appropriateness and compute some values
          * \param solver solver
          */
         void summarize(const FermiNewGainSolver<GeometryType>* solver) {
-            auto bbox = layers->getBoundingBox();
-            totallen = 1e4 * (bbox.upper[1] - bbox.lower[1] - bottomlen - toplen);  // 1e4: µm -> Å
+            totallen = 1e4 * (layers->getBoundingBox().height() -
+                              static_pointer_cast<GeometryObjectD<GeometryType::DIM>>(layers->getChildNo(0))
+                                  ->getBoundingBox()
+                                  .height() -
+                              static_pointer_cast<GeometryObjectD<GeometryType::DIM>>(
+                                  layers->getChildNo(layers->getChildrenCount() - 1))
+                                  ->getBoundingBox()
+                                  .height());  // 1e4: µm -> Å
             size_t qwn = 0;
             qwtotallen = 0.;
             bool lastbarrier = true;
@@ -140,7 +112,8 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
                         throw Exception("{0}: Multiple quantum well materials in active region.", solver->getId());*/
                     auto bbox = static_cast<GeometryObjectD<2>*>(layer.get())->getBoundingBox();
                     qwtotallen += bbox.upper[1] - bbox.lower[1];
-                    if (lastbarrier) ++qwn;
+                    if (lastbarrier)
+                        ++qwn;
                     else
                         solver->writelog(LOG_WARNING, "Considering two adjacent quantum wells as one");
                     lastbarrier = false;
@@ -165,6 +138,21 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
             qwlen = qwtotallen / qwn;
         }
     };
+
+    /**
+     * Active region information with optional modified structure
+     */
+    struct ActiveRegionInfo : public ActiveRegionData {
+        boost::optional<ActiveRegionData> mod;  ///< Modified structure data
+
+        ActiveRegionInfo(Vec<2> origin) : ActiveRegionData(origin) {}
+
+        ActiveRegionInfo(const ActiveRegionData& src) : ActiveRegionData(src) {}
+
+        ActiveRegionInfo(ActiveRegionData&& src) : ActiveRegionData(std::move(src)) {}
+    };
+
+    shared_ptr<GeometryType> geometry_mod;  ///< Modified geometry for broadening calculation
 
     shared_ptr<Material> materialSubstrate;  ///< Substrate material
 
@@ -191,6 +179,28 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
 
     virtual void loadConfiguration(plask::XMLReader& reader, plask::Manager& manager);
 
+    /// Get modified geometry
+    shared_ptr<GeometryType> getModGeometry() const { return geometry_mod; }
+
+    /**
+     * Set new modified geometry for the solver
+     * @param geometry new modified geometry space
+     */
+    void setModGeometry(const shared_ptr<GeometryType>& geometry) {
+        if (geometry == this->geometry_mod) return;
+        writelog(LOG_INFO, "Attaching modified geometry to solver");
+        disconnectModGeometry();
+        this->geometry_mod = geometry;
+        if (this->geometry_mod)
+            this->geometry_mod->changedConnectMethod(this, &FermiNewGainSolver<GeometryType>::onModGeometryChange);
+        onModGeometryChange(Geometry::Event(geometry.get(), 0));
+    }
+
+    void disconnectModGeometry() {
+        if (this->geometry_mod)
+            this->geometry_mod->changedDisconnectMethod(this, &FermiNewGainSolver<GeometryType>::onModGeometryChange);
+    }
+
     friend struct DataBase<GeometryType, Tensor2<double>>;
     friend struct DataBase<GeometryType, double>;
     friend struct GainData<GeometryType>;
@@ -203,22 +213,26 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
     friend struct LuminescenceSpectrum<GeometryType>;
     friend class wzmocnienie;
 
-    double cond_qw_shift;        ///< additional conduction band shift for qw [eV]
-    double vale_qw_shift;        ///< additional valence band shift for qw [eV]
-    double qw_width_mod;         ///< qw width modifier [-]
-    double roughness;            ///< roughness [-]
-    double lifetime;             ///< lifetime [ps]
-    double matrix_elem;          ///< optical matrix element [m0*eV]
-    double matrix_elem_sc_fact;  ///< scaling factor for optical matrix element [-]
-    double differenceQuotient;   ///< difference quotient of dG_dn derivative
-    // bool fixQWsWidths;            ///< if true QW widths will not be changed for gain calculations
-    double Tref;  ///< reference temperature [K]                                          // 11.12.2014 - dodana linia
+    double condQWshift;         ///< additional conduction band shift for qw [eV]
+    double valeQWshift;         ///< additional valence band shift for qw [eV]
+    double QWwidthMod;          ///< qw width modifier [-]
+    double roughness;           ///< roughness [-]
+    double lifetime;            ///< lifetime [ps]
+    double matrixElem;          ///< optical matrix element [m0*eV]
+    double differenceQuotient;  ///< difference quotient of dG_dn derivative
+    double Tref;                ///< reference temperature [K]
 
-    void findEnergyLevels(Levels& levels, const ActiveRegionInfo& region, double iT, bool iShowSpecLogs = false);
-    int buildStructure(Levels& levels, double T, const ActiveRegionInfo& region, bool iShowSpecLogs = false);
-    int buildEc(Levels& levels, double T, const ActiveRegionInfo& region, bool iShowSpecLogs = false);
-    int buildEvhh(Levels& levels, double T, const ActiveRegionInfo& region, bool iShowSpecLogs = false);
-    int buildEvlh(Levels& levels, double T, const ActiveRegionInfo& region, bool iShowSpecLogs = false);
+    void findEnergyLevels(Levels& levels, const ActiveRegionInfo& region, double T, bool showDetails = false);
+
+    void buildStructure(double T,
+                        const ActiveRegionData& region,
+                        std::unique_ptr<kubly::struktura>& bandsEc,
+                        std::unique_ptr<kubly::struktura>& bandsEvhh,
+                        std::unique_ptr<kubly::struktura>& bandsEvlh,
+                        bool showDetails = false);
+    kubly::struktura* buildEc(double T, const ActiveRegionData& region, bool showDetails = false);
+    kubly::struktura* buildEvhh(double T, const ActiveRegionData& region, bool showDetails = false);
+    kubly::struktura* buildEvlh(double T, const ActiveRegionData& region, bool showDetails = false);
 
     void showEnergyLevels(std::string str, const std::unique_ptr<kubly::struktura>& structure, double nQW);
 
@@ -237,6 +251,9 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
     /// Invalidate the gain
     virtual void onInvalidate();
 
+    /// otify that modified geometry was chaged
+    void onModGeometryChange(const Geometry::Event&) { this->invalidate(); }
+
     /// Notify that gain was chaged
     void onInputChange(ReceiverBase&, ReceiverBase::ChangeReason) {
         outGain.fireChanged();  // the input changed, so we inform the world that everybody should get the new gain
@@ -246,9 +263,14 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
 
     /**
      * Detect active regions.
+     */
+    std::list<ActiveRegionData> detectActiveRegions(const shared_ptr<GeometryType>& geometry);
+
+    /**
+     * Detect active regions and store their info in the \p regions field.
      * Store information about them in the \p regions field.
      */
-    void detectActiveRegions();
+    void prepareActiveRegionsInfo();
 
     /**
      * Method computing the gain on the mesh (called by gain provider)
@@ -311,34 +333,26 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
         }
     }
 
-    double getMatrixElem() const { return matrix_elem; }
+    double getMatrixElem() const { return matrixElem; }
     void setMatrixElem(double iMatrixElem) {
-        if (matrix_elem != iMatrixElem) {
-            matrix_elem = iMatrixElem;
+        if (matrixElem != iMatrixElem) {
+            matrixElem = iMatrixElem;
             if (build_struct_once) this->invalidate();
         }
     }
 
-    double getMatrixElemScFact() const { return matrix_elem_sc_fact; }
-    void setMatrixElemScFact(double iMatrixElemScFact) {
-        if (matrix_elem_sc_fact != iMatrixElemScFact) {
-            matrix_elem_sc_fact = iMatrixElemScFact;
-            if (build_struct_once) this->invalidate();
-        }
-    }
-
-    double getCondQWShift() const { return cond_qw_shift; }
+    double getCondQWShift() const { return condQWshift; }
     void setCondQWShift(double iCondQWShift) {
-        if (cond_qw_shift != iCondQWShift) {
-            cond_qw_shift = iCondQWShift;
+        if (condQWshift != iCondQWShift) {
+            condQWshift = iCondQWShift;
             if (build_struct_once) this->invalidate();
         }
     }
 
-    double getValeQWShift() const { return vale_qw_shift; }
+    double getValeQWShift() const { return valeQWshift; }
     void setValeQWShift(double iValeQWShift) {
-        if (vale_qw_shift != iValeQWShift) {
-            vale_qw_shift = iValeQWShift;
+        if (valeQWshift != iValeQWShift) {
+            valeQWshift = iValeQWShift;
             if (build_struct_once) this->invalidate();
         }
     }
