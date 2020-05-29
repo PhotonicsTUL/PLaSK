@@ -18,9 +18,9 @@ FermiNewGainSolver<GeometryType>::FermiNewGainSolver(const std::string& name)
     inTemperature = 300.;       // temperature receiver has some sensible value
     condQWshift = 0.;           // [eV]
     valeQWshift = 0.;           // [eV]
-    QWwidthMod = 40.;           // [-] (if equal to 10 - differences in QW widths are to big)
-    roughness = 0.05;           // [-]
-    lifetime = 0.1;             // [ps]
+    QWwidthMod = 100.;          // [-] (if equal to 10 - differences in QW widths are to big)
+    roughness = 1.00;           // [-]
+    lifetime = 0.0;             // [ps]
     matrixElem = 0.;            // [m0*eV]
     differenceQuotient = 0.01;  // [%]
     strains = false;
@@ -307,7 +307,7 @@ FermiNewGainSolver<GeometryType>::detectActiveRegions(const shared_ptr<GeometryT
         this->writelog(LOG_DEBUG, "QW initial thickness: {0} nm", 0.1 * region.qwlen);
 
         if (adjust_widths) {
-            double hstep = region.qwlen * roughness / QWwidthMod;
+            double hstep = region.qwlen / QWwidthMod;
             if (!(nQW % 2)) {
                 double dh0 = -(floor(nQW / 2) + 0.5) * hstep;
                 for (int i = 0; i < N; ++i) {
@@ -368,7 +368,7 @@ void FermiNewGainSolver<GeometryType>::findEnergyLevels(Levels& levels,
     if (levels.bandsEvhh) holes.push_back(levels.bandsEvhh.get());
     if (levels.bandsEvlh) holes.push_back(levels.bandsEvlh.get());
 
-    levels.Eg = region.getLayerMaterial(0)->Eg(T, 0.);  // cladding Eg (eV)
+    levels.Eg = region.getLayerMaterial(0)->CB(T, 0.) - region.getLayerMaterial(0)->VB(T, 0.);  // cladding Eg (eV)
 
     if (region.mod) {
         buildStructure(T, *region.mod, levels.modbandsEc, levels.modbandsEvhh, levels.modbandsEvlh, showDetails);
@@ -413,7 +413,7 @@ void FermiNewGainSolver<GeometryType>::buildStructure(double T,
 
     if (!Ec)
         throw BadInput(this->getId(),
-                       "Conduction QW depth negative for electrons, check VB values of active-region materials");
+                       "Conduction QW depth negative for electrons, check CB values of active-region materials");
     if (!Evhh && !Evlh)
         throw BadInput(this->getId(),
                        "Valence QW depth negative for both heavy holes and light holes, check VB values of "
@@ -443,9 +443,11 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T,
 
     int N = region.size();  // number of all layers in the active region (QW, barr, external)
 
-    double lattSub = this->materialSubstrate->lattC(T, 'a');
-    double straine = 0.;
-    if (strains) straine = lattSub / region.getLayerMaterial(0)->lattC(T, 'a') - 1.;
+    double lattSub, straine = 0.;
+    if (strains) {
+        lattSub = this->materialSubstrate->lattC(T, 'a');
+        straine = lattSub / region.getLayerMaterial(0)->lattC(T, 'a') - 1.;
+    }
 
     double DEc = region.getLayerMaterial(0)->CB(T, straine);  // Ec0 for cladding
 
@@ -469,7 +471,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T,
                                                     region.getLayerMaterial(i)->Me(T, straine).c00, x, Ec, (x + h),
                                                     Ec));  // wells and barriers
         x += h;
-        if (region.getLayerMaterial(i)->CB(T, straine) >= DEc) return nullptr;
+        if (region.getLayerMaterial(i)->CB(T, straine) > DEc) return nullptr;
     }
     if (strains) straine = lattSub / region.getLayerMaterial(N - 1)->lattC(T, 'a') - 1.;
     Ec = (region.getLayerMaterial(N - 1)->CB(T, straine) - DEc);
@@ -492,16 +494,18 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
 
     int N = region.size();  // number of all layers int the active region (QW, barr, external)
 
-    double lattSub = this->materialSubstrate->lattC(T, 'a');
-    double straine = 0.;
-    if (strains) straine = lattSub / region.getLayerMaterial(0)->lattC(T, 'a') - 1.;
+    double lattSub, straine = 0.;
+    if (strains) {
+        lattSub = this->materialSubstrate->lattC(T, 'a');
+        straine = lattSub / region.getLayerMaterial(0)->lattC(T, 'a') - 1.;
+    }
 
-    double DEvhh = region.getLayerMaterial(0)->VB(T, straine, 'G', 'H');  // Ev0 for cladding
+    double DEvhh = region.getLayerMaterial(0)->VB(T, straine, '*', 'H');  // Ev0 for cladding
 
     double x = 0.;
-    double Evhh = -(region.getLayerMaterial(0)->VB(T, straine, 'G', 'H') - DEvhh);
+    double Evhh = -(region.getLayerMaterial(0)->VB(T, straine, '*', 'H') - DEvhh);
     if (showDetails)
-        this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", 1, region.getLayerMaterial(0)->VB(T, straine, 'G', 'H'));
+        this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", 1, region.getLayerMaterial(0)->VB(T, straine, '*', 'H'));
     levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::lewa,
                                                       region.getLayerMaterial(0)->Mhh(T, straine).c11,
                                                       region.getLayerMaterial(0)->Mhh(T, straine).c00, x,
@@ -511,21 +515,21 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
         double h = region.lens[i];  // h (A)
         double VBshift = 0.;
         if (region.isQW(i)) VBshift = valeQWshift;
-        Evhh = -(region.getLayerMaterial(i)->VB(T, straine, 'G', 'H') + VBshift - DEvhh);
+        Evhh = -(region.getLayerMaterial(i)->VB(T, straine, '*', 'H') + VBshift - DEvhh);
         if (showDetails)
             this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", i + 1,
-                           region.getLayerMaterial(i)->VB(T, straine, 'G', 'H') + VBshift);
+                           region.getLayerMaterial(i)->VB(T, straine, '*', 'H') + VBshift);
         levels.data.emplace_back(new kubly::warstwa(region.getLayerMaterial(i)->Mhh(T, straine).c11,
                                                     region.getLayerMaterial(i)->Mhh(T, straine).c00, x, Evhh, (x + h),
                                                     Evhh));  // wells and barriers
         x += h;
-        if (region.getLayerMaterial(i)->VB(T, straine, 'G', 'H') <= DEvhh) return nullptr;
+        if (region.getLayerMaterial(i)->VB(T, straine, '*', 'H') < DEvhh) return nullptr;
     }
     if (strains) straine = lattSub / region.getLayerMaterial(N - 1)->lattC(T, 'a') - 1.;
-    Evhh = -(region.getLayerMaterial(N - 1)->VB(T, straine, 'G', 'H') - DEvhh);
+    Evhh = -(region.getLayerMaterial(N - 1)->VB(T, straine, '*', 'H') - DEvhh);
     if (showDetails)
         this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", N,
-                       region.getLayerMaterial(N - 1)->VB(T, straine, 'G', 'H'));
+                       region.getLayerMaterial(N - 1)->VB(T, straine, '*', 'H'));
     levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::prawa,
                                                       region.getLayerMaterial(N - 1)->Mhh(T, straine).c11,
                                                       region.getLayerMaterial(N - 1)->Mhh(T, straine).c00, x, Evhh));
@@ -542,16 +546,18 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvlh(double T,
 
     int N = region.size();  // number of all layers int the active region (QW, barr, external)
 
-    double lattSub = this->materialSubstrate->lattC(T, 'a');
-    double straine = 0.;
-    if (strains) straine = lattSub / region.getLayerMaterial(0)->lattC(T, 'a') - 1.;
+    double lattSub, straine = 0.;
+    if (strains) {
+        lattSub = this->materialSubstrate->lattC(T, 'a');
+        straine = lattSub / region.getLayerMaterial(0)->lattC(T, 'a') - 1.;
+    }
 
-    double DEvlh = region.getLayerMaterial(0)->VB(T, straine, 'G', 'L');  // Ev0 for cladding
+    double DEvlh = region.getLayerMaterial(0)->VB(T, straine, '*', 'L');  // Ev0 for cladding
 
     double x = 0.;
-    double Evlh = -(region.getLayerMaterial(0)->VB(T, straine, 'G', 'L') - DEvlh);
+    double Evlh = -(region.getLayerMaterial(0)->VB(T, straine, '*', 'L') - DEvlh);
     if (showDetails)
-        this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", 1, region.getLayerMaterial(0)->VB(T, straine, 'G', 'L'));
+        this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", 1, region.getLayerMaterial(0)->VB(T, straine, '*', 'L'));
     levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::lewa,
                                                       region.getLayerMaterial(0)->Mlh(T, straine).c11,
                                                       region.getLayerMaterial(0)->Mlh(T, straine).c00, x,
@@ -561,22 +567,22 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvlh(double T,
         double h = region.lens[i];  // tH (A)
         double VBshift = 0.;
         if (region.isQW(i)) VBshift = valeQWshift;
-        Evlh = -(region.getLayerMaterial(i)->VB(T, straine, 'G', 'L') + VBshift - DEvlh);
+        Evlh = -(region.getLayerMaterial(i)->VB(T, straine, '*', 'L') + VBshift - DEvlh);
         if (showDetails)
             this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", i + 1,
-                           region.getLayerMaterial(i)->VB(T, straine, 'G', 'L') + VBshift);
+                           region.getLayerMaterial(i)->VB(T, straine, '*', 'L') + VBshift);
         levels.data.emplace_back(new kubly::warstwa(region.getLayerMaterial(i)->Mlh(T, straine).c11,
                                                     region.getLayerMaterial(i)->Mlh(T, straine).c00, x, Evlh, (x + h),
                                                     Evlh));  // wells and barriers
         x += h;
-        if (region.getLayerMaterial(i)->VB(T, straine, 'G', 'L') <= DEvlh) return nullptr;
+        if (region.getLayerMaterial(i)->VB(T, straine, '*', 'L') < DEvlh) return nullptr;
         ;
     }
     if (strains) straine = lattSub / region.getLayerMaterial(N - 1)->lattC(T, 'a') - 1.;
-    Evlh = -(region.getLayerMaterial(N - 1)->VB(T, straine, 'G', 'L') - DEvlh);
+    Evlh = -(region.getLayerMaterial(N - 1)->VB(T, straine, '*', 'L') - DEvlh);
     if (showDetails)
         this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", N,
-                       region.getLayerMaterial(N - 1)->VB(T, straine, 'G', 'L'));
+                       region.getLayerMaterial(N - 1)->VB(T, straine, '*', 'L'));
     levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::prawa,
                                                       region.getLayerMaterial(N - 1)->Mlh(T, straine).c11,
                                                       region.getLayerMaterial(N - 1)->Mlh(T, straine).c00, x, Evlh));

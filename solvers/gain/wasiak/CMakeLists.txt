@@ -40,7 +40,9 @@ set(SOLVER_LINK_LIBRARIES ${GSL_LIBRARIES})
 #set(SOLVER_COMPILE_FLAGS ${CMAKE_GSL_CXX_FLAGS})
 add_definitions(-DPLASK)
 
-if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug" OR "${CMAKE_BUILD_TYPE}" STREQUAL "RelWithDebInfo")
+option(DEBUG_WASIAK_GAIN "Add debug messages to MW gain" OFF)
+
+if(DEBUG_WASIAK_GAIN)
     add_definitions(-D_DEBUG)
 endif()
 
@@ -64,7 +66,7 @@ if(BUILD_TESTING)
     # target_link_libraries(simplegaintest libplask ${SOLVER_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
     # add_solver_test(solvers/gain/wasiak simplegaintest)
     
-    # add_python_test(solvers/gain/wasiak-new ${CMAKE_CURRENT_SOURCE_DIR}/tests/newgain.py)
+    add_xpl_test(solvers/gain/wasiak-new ${CMAKE_CURRENT_SOURCE_DIR}/tests/newtest1.xpl)
 endif()
 
 # Build everything the default way.

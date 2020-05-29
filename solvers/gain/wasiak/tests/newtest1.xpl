@@ -1,5 +1,9 @@
 <plask loglevel="debug">
 
+<defines>
+  <define name="expected_gain" value="566.89"/>
+</defines>
+
 <materials>
   <material name="AlGaAs" base="AlGaAs" alloy="yes">
     <nr>3.5</nr>
@@ -27,7 +31,6 @@
       </replace>
     </copy>
   </cartesian2d>
-
 </geometry>
 
 <solvers>
@@ -47,8 +50,10 @@ mids = mesh.Rectangular2D(mids.axis0, mids.axis1[1:])
 mats = GEO.main.get_material_field(mids)
 print("                  CB[eV]   VB[eV]   Dso[eV]   Me[m0] Mhh[m0] Mlh[m0]")
 for mat in mats:
-    print(f"{str(mat):14} {mat.CB():9.6f}   {mat.VB():6.3f}   {mat.Dso():7.4f}   "
-          f"{mat.Me()[0]:6.4f}   {mat.Mhh()[0]:5.3f}   {mat.Mlh()[0]:5.3f}")
+    print("{mat:14s} {CB:9.6f}   {VB:6.3f}   {Dso:7.4f}   "
+          "{Me:6.4f}   {Mhh:5.3f}   {Mlh:5.3f}".format(
+            mat=str(mat), CB=mat.CB(), VB=mat.VB(), Dso=mat.Dso(),
+            Me=mat.Me()[0], Mhh=mat.Mhh()[0], Mlh=mat.Mlh()[0]))
 # layer 1 - CB: 0.947424 eV, VB: -1.012 eV, Dso: 0.3166 eV, Me: 0.0898 m0, Mhh: 0.402 m0, Mlh: 0.126 m0
 # layer 2 - CB: 0.810993 eV, VB: -0.906 eV, Dso: 0.3288 eV, Me: 0.0784 m0, Mhh: 0.366 m0, Mlh: 0.108 m0
 # layer 3 - CB: 0.634115 eV, VB: -0.805 eV, Dso: 0.3404 eV, Me: 0.0676 m0, Mhh: 0.332 m0, Mlh: 0.091 m0
@@ -61,6 +66,15 @@ for mat in mats:
 # layer_ 4 - CB: 0.810993 eV, VB: -0.906 eV, Dso: 0.3288 eV, Me: 0.0784 m0, Mhh: 0.366 m0, Mlh: 0.108 m0
 # layer_ 5 - CB: 0.947424 eV, VB: -1.012 eV, Dso: 0.3166 eV, Me: 0.0898 m0, Mhh: 0.402 m0, Mlh: 0.126 m0
 # layer_ 6 - CB: 0.622482 eV, VB: -0.8 eV
+
+
+# msh = mesh.Rectangular2D.SimpleGenerator(split=True)(GEO.main)
+# msh.axis1 = msh.axis1[3:-1]
+# msh.axis0 = mesh.Ordered([0.5])
+# plot_profile(GEO.main.get_material_field(msh).VB(hole='H'))
+# plot_profile(GEO.main.get_material_field(msh).CB())
+# plot_profile(GEO.main.get_material_field(msh).VB(hole='L'))
+# show()
 
 
 class NewGainValues(unittest.TestCase):
@@ -76,11 +90,11 @@ class NewGainValues(unittest.TestCase):
 
     def testGain(self):
         m = mesh.Rectangular2D([0.5], [0.034])
-        self.assertAlmostEqual(GAIN.outGain(m, 840.)[0][0], 574.0123516)
+        self.assertAlmostEqual(GAIN.outGain(m, 840.)[0][0], expected_gain, 1)
 
-    # def testGainSpectrum(self):
-    #     spectrum = GAIN.spectrum(0.5, 0.034)
-    #     self.assertAlmostEqual(spectrum(840), 574.0123516 * 28/68)
+    def testGainSpectrum(self):
+        spectrum = GAIN.spectrum(0.5, 0.034)
+        self.assertAlmostEqual(spectrum(840), expected_gain, 1)
 
 
 if __name__ == '__main__':

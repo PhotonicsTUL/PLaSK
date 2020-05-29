@@ -215,7 +215,7 @@ BOOST_PYTHON_MODULE(wasiak) {
     plask_import_array();
 
     {
-        CLASS(fermi::FermiGainSolver<Geometry2DCartesian>, "Wasiak2D",
+        CLASS(fermi::FermiGainSolver<Geometry2DCartesian>, "WasiakOld2D",
               "Gain solver based on Fermi Golden Rule for Cartesian 2D geometry.")
         solver.def("determine_levels", &FermiGain_determineLevels<Geometry2DCartesian>,
                    "Determine quasi-Fermi levels and carriers levels inside QW", (py::arg("T"), "n"));
@@ -244,7 +244,7 @@ BOOST_PYTHON_MODULE(wasiak) {
             .def("__call__", &FermiGainSpectrum__call__<Geometry2DCartesian>);
     }
     {
-        CLASS(fermi::FermiGainSolver<Geometry2DCylindrical>, "WasiakCyl",
+        CLASS(fermi::FermiGainSolver<Geometry2DCylindrical>, "WasiakOldCyl",
               "Gain solver based on Fermi Golden Rule for Cylindrical 2D geometry.")
         solver.def("determine_levels", &FermiGain_determineLevels<Geometry2DCylindrical>,
                    "Determine quasi-Fermi levels and carriers levels inside QW", (py::arg("T"), "n"));
