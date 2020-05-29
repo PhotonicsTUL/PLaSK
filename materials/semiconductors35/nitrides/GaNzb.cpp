@@ -56,13 +56,14 @@ Tensor2<double> GaNzb::Me(double T, double e, char point) const {
         tMe.c00 = tMeX; tMe.c11 = tMeX;
     }
     else if (point == '*') {
-        if ( Eg(T,e,'G') == Eg(T,e,'*') ) {
+        double EgG = Eg(T,e,'G'), EgX = Eg(T,e,'X');
+        if (EgG <= EgX) {
             tMe.c00 = tMeG; tMe.c11 = tMeG;
-        }
-        else if ( Eg(T,e,'X') == Eg(T,e,'*') ) {
+        } else {
             tMe.c00 = tMeX; tMe.c11 = tMeX;
         }
-    }
+    } else
+        throw Exception("GaNzb: Me: bad point '{c}'", point);
     return ( tMe );
 }
 

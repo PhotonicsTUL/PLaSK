@@ -60,16 +60,16 @@ Tensor2<double> GaSb::Me(double T, double e, char point) const {
         tMe.c00 = tMeL; tMe.c11 = tMeL;
     }
     else if (point == '*') {
-        if ( Eg(T,e,'G') == Eg(T,e,'*') ) {
+        double EgG = Eg(T,e,'G'), EgX = Eg(T,e,'X'), EgL = Eg(T,e,'L');
+        if (EgG <= EgX && EgG <= EgL) {
             tMe.c00 = tMeG; tMe.c11 = tMeG;
-        }
-        else if ( Eg(T,e,'X') == Eg(T,e,'*') ) {
+        } else if (EgX <= EgL){
             tMe.c00 = tMeX; tMe.c11 = tMeX;
-        }
-        else if ( Eg(T,e,'L') == Eg(T,e,'*') ) {
+        } else {
             tMe.c00 = tMeL; tMe.c11 = tMeL;
         }
-    }
+    } else
+        throw Exception("GaSb: Me: bad point '{c}'", point);
     return ( tMe );
 }
 
