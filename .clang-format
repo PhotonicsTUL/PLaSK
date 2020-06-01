@@ -6,7 +6,7 @@ AllowShortIfStatementsOnASingleLine: WithoutElse
 AllowShortLambdasOnASingleLine: All
 AllowShortLoopsOnASingleLine: true
 AlwaysBreakTemplateDeclarations: MultiLine
-ColumnLimit: 120
+ColumnLimit: 132
 CompactNamespaces: true
 Cpp11BracedListStyle: true
 DerivePointerAlignment: false
