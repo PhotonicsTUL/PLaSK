@@ -32,6 +32,7 @@ template <typename To, typename From = To> static shared_ptr<To> Mesh__init__(co
 }
 
 namespace detail {
+
 struct OrderedAxis_from_Sequence {
     OrderedAxis_from_Sequence() {
         boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<OrderedAxis>());
@@ -49,6 +50,24 @@ struct OrderedAxis_from_Sequence {
         data->convertible = storage;
     }
 };
+
+struct OrderedAxis_from_SingleNumber {
+    OrderedAxis_from_SingleNumber() {
+        boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<OrderedAxis>());
+    }
+
+    static void* convertible(PyObject* obj) {
+        if (PyFloat_Check(obj) || PyInt_Check(obj)) return obj;
+        return NULL;
+    }
+
+    static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
+        void* storage = ((boost::python::converter::rvalue_from_python_storage<OrderedAxis>*)data)->storage.bytes;
+        new (storage) OrderedAxis({py::extract<double>(obj)()});
+        data->convertible = storage;
+    }
+};
+
 }  // namespace detail
 
 static py::object OrderedAxis__array__(py::object self, py::object dtype) {
@@ -78,7 +97,8 @@ static py::object OrderedAxis__getitem__(const OrderedAxis& self, const py::obje
         if (!PySlice_Check(slice.ptr())) throw TypeError("axis indices must be integers or slices");
         Py_ssize_t start, stop, stride, length;
 #if PY_VERSION_HEX < 0x03060100
-        if (PySlice_GetIndicesEx(slice.ptr(), self.size(), &start, &stop, &stride, &length) < 0) throw py::error_already_set();
+        if (PySlice_GetIndicesEx(slice.ptr(), self.size(), &start, &stop, &stride, &length) < 0)
+            throw py::error_already_set();
 #else
         if (PySlice_Unpack(slice.ptr(), &start, &stop, &stride) < 0) throw py::error_already_set();
         length = PySlice_AdjustIndices(self.size(), &start, &stop, stride);
@@ -160,14 +180,15 @@ static py::object RegularAxis__getitem__(const RegularAxis& self, const py::obje
         if (!PySlice_Check(slice.ptr())) throw TypeError("axis indices must be integers or slices");
         Py_ssize_t start, stop, stride, length;
 #if PY_VERSION_HEX < 0x03060100
-        if (PySlice_GetIndicesEx(slice.ptr(), self.size(), &start, &stop, &stride, &length) < 0) throw py::error_already_set();
+        if (PySlice_GetIndicesEx(slice.ptr(), self.size(), &start, &stop, &stride, &length) < 0)
+            throw py::error_already_set();
 #else
         if (PySlice_Unpack(slice.ptr(), &start, &stop, &stride) < 0) throw py::error_already_set();
         length = PySlice_AdjustIndices(self.size(), &start, &stop, stride);
 #endif
         double step = self.step() * stride;
         double first = self.first() + self.step() * start;
-        return py::object(make_shared<RegularAxis>(first, first + step * (length-1), length));
+        return py::object(make_shared<RegularAxis>(first, first + step * (length - 1), length));
     }
 }
 
@@ -201,11 +222,13 @@ template <typename MeshT> static shared_ptr<MeshT> RectangularMesh2D__init__empt
 
 shared_ptr<MeshAxis> extract_axis(const py::object& axis) {
     py::extract<shared_ptr<MeshAxis>> convert(axis);
-    if (convert.check())
+    if (convert.check()) {
         return convert;
-    else if (PySequence_Check(axis.ptr())) {
+    } else if (PySequence_Check(axis.ptr())) {
         py::stl_input_iterator<double> begin(axis), end;
         return plask::make_shared<OrderedAxis>(std::vector<double>(begin, end));
+    } else if (PyFloat_Check(axis.ptr()) || PyInt_Check(axis.ptr())) {
+        return plask::make_shared<OrderedAxis>(std::initializer_list<double>({py::extract<double>(axis)()}));
     } else {
         throw TypeError("Wrong type of axis, it must derive from Rectangular1D or be a sequence.");
     }
@@ -993,6 +1016,7 @@ void register_mesh_rectangular() {
         .def(py::self == py::self)
         .def("__iter__", py::range(&OrderedAxis::begin, &OrderedAxis::end));
     detail::OrderedAxis_from_Sequence();
+    detail::OrderedAxis_from_SingleNumber();
     py::implicitly_convertible<shared_ptr<OrderedAxis>, shared_ptr<const OrderedAxis>>();
 
     {
