@@ -16,6 +16,7 @@ This file contains classes which can hold (or points to) datas.
 #include <type_traits>  // std::is_trivially_destructible, std::false_type, std::true_type
 
 #include "memalloc.h"
+#include "math.h"
 #include "exceptions.h"
 #include "log/log.h"
 
@@ -25,10 +26,8 @@ namespace plask {
 
 namespace detail {
 
-#if defined(__clang__) || defined(__INTEL_COMPILER) || !defined(__GNUC__) || __GNUC__ > 4
-// clang and intel both define fake __GNUC__ see http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
     template <class T>
-    inline void do_construct_array(T* first, T* last, const std::false_type&) {
+    inline void _construct_array(T* first, T* last, const std::false_type&) {
         while(first != last) {
             new(first) T();
             ++first;
@@ -36,34 +35,11 @@ namespace detail {
     }
 
     template <class T>
-    inline void do_construct_array(T*, T*, const std::true_type&) {
+    inline void _construct_array(T*, T*, const std::true_type&) {
     }
 
     template <class T>
-    inline void construct_array(T* first, T* last) {
-       do_construct_array(first, last, std::is_trivially_default_constructible<T>());
-    }
-#else
-    template <class T>
-    inline void do_construct_array(T* first, T* last, const boost::false_type&) {
-        while(first != last) {
-            new(first) T();
-            ++first;
-        }
-    }
-
-    template <class T>
-    inline void do_construct_array(T*, T*, const boost::true_type&) {
-    }
-
-    template <class T>
-    inline void construct_array(T* first, T* last) {
-       do_construct_array(first, last, typename boost::has_trivial_default_constructor<T>::type());
-    }
-#endif
-
-    template <class T>
-    inline void do_destroy_array(T* first, T* last, const std::false_type&) {
+    inline void _destroy_array(T* first, T* last, const std::false_type&) {
         while(last != first) {
             --last;
             last->~T();
@@ -71,20 +47,31 @@ namespace detail {
     }
 
     template <class T>
-    inline void do_destroy_array(T*, T*, const std::true_type&) {
+    inline void _destroy_array(T*, T*, const std::true_type&) {
+    }
+
+    template <class T>
+    inline void construct_array(T* first, T* last) {
+        _construct_array(first, last, std::is_trivially_default_constructible<T>());
     }
 
     template <class T>
     inline void destroy_array(T* first, T* last) {
-       do_destroy_array(first, last,
-#if defined(__clang__) || defined(__INTEL_COMPILER) || !defined(__GNUC__) || __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 7)
-// clang and intel both define fake __GNUC__ see http://nadeausoftware.com/articles/2012/10/c_c_tip_how_detect_compiler_name_and_version_using_compiler_predefined_macros
-                        std::is_trivially_destructible<T>()
-#else
-                        std::has_trivial_destructor<T>()
-#endif
-       );
+        _destroy_array(first, last, std::is_trivially_destructible<T>());
     }
+
+    // We consider dcomplex as POD (do not value-initialize memory)
+
+    template <>
+    inline void construct_array(dcomplex* first, dcomplex* last) {
+        _construct_array(first, last, std::true_type());
+    }
+
+    template <>
+    inline void destroy_array(dcomplex* first, dcomplex* last) {
+        _destroy_array(first, last, std::true_type());
+    }
+
 
     /// Garbage collector info for DataVector
     struct DataVectorGC {

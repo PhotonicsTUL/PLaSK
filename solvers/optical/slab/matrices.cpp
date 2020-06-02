@@ -107,8 +107,8 @@ int eigenv(cmatrix& A, cdiagonal& vals, cmatrix* rightv, cmatrix* leftv)
     // Create the workplace
     const std::size_t lwork = 2*N+1;
     //int lwork = N*N;
-    std::unique_ptr<dcomplex[]> work(new dcomplex[lwork]);
-    std::unique_ptr<double[]> rwork(new double[2*N]);
+    aligned_unique_ptr<dcomplex[]> work(aligned_malloc<dcomplex>(lwork));
+    aligned_unique_ptr<double[]> rwork(aligned_malloc<double>(2*N));
 
     // Call the lapack subroutine
     int info;

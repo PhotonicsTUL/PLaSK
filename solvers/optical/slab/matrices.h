@@ -27,7 +27,7 @@ class Matrix {
         if (gc && gc->fetch_sub(1, std::memory_order_release) == 1) {
             std::atomic_thread_fence(std::memory_order_acquire);
             delete gc;
-            aligned_delete_array(r*c, data_);
+            aligned_free(data_);
             write_debug("freeing matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
         }
     }
@@ -40,11 +40,13 @@ class Matrix {
 
     Matrix() : r(0), c(0), data_(nullptr), gc(nullptr) {}
 
-    Matrix(size_t m, size_t n) : r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new std::atomic<int>(1)) {
+    Matrix(size_t m, size_t n) : r(m), c(n),
+        data_(aligned_malloc<T>(m*n)), gc(new std::atomic<int>(1)) {
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
     }
 
-    Matrix(size_t m, size_t n, T val) : r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new std::atomic<int>(1)) {
+    Matrix(size_t m, size_t n, T val) : r(m), c(n),
+        data_(aligned_malloc<T>(m*n)), gc(new std::atomic<int>(1)) {
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
         std::fill_n(data_, m*n, val);
     }
@@ -60,7 +62,8 @@ class Matrix {
         return *this;
     }
 
-    Matrix(const MatrixDiagonal<T>& M): r(M.size()), c(M.size()), data_(aligned_new_array<T>(M.size()*M.size())), gc(new std::atomic<int>(1))  {
+    Matrix(const MatrixDiagonal<T>& M): r(M.size()), c(M.size()),
+        data_(aligned_malloc<T>(M.size()*M.size())), gc(new std::atomic<int>(1))  {
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p} (from diagonal)", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
         std::fill_n(data_, r*c, 0);
         for (int j = 0, n = 0; j < r; j++, n += c+1) data_[n] = M[j];
@@ -70,7 +73,8 @@ class Matrix {
         // Create matrix using exiting data. This data is never garbage-collected
     }
 
-    Matrix(size_t m, size_t n, std::initializer_list<T> data): r(m), c(n), data_(aligned_new_array<T>(m*n)), gc(new std::atomic<int>(1)) {
+    Matrix(size_t m, size_t n, std::initializer_list<T> data): r(m), c(n),
+        data_(aligned_malloc<T>(m*n)), gc(new std::atomic<int>(1)) {
         std::copy(data.begin(), data.end(), data_);
     }
 
@@ -88,7 +92,7 @@ class Matrix {
     void reset(size_t m, size_t n) {
         dec_ref();
         r = m; c = n;
-        data_ = aligned_new_array<T>(m*n);
+        data_ = aligned_malloc<T>(m*n);
         gc = new std::atomic<int>(1);
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
     }
@@ -96,7 +100,7 @@ class Matrix {
     void reset(size_t m, size_t n, T val) {
         dec_ref();
         r = m; c = n;
-        data_ = aligned_new_array<T>(m*n);
+        data_ = aligned_malloc<T>(m*n);
         gc = new std::atomic<int>(1);
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
         std::fill_n(data_, m*n, val);
@@ -185,7 +189,7 @@ class MatrixDiagonal {
         if (gc && gc->fetch_sub(1, std::memory_order_release) == 1) {
             std::atomic_thread_fence(std::memory_order_acquire);
             delete gc;
-            aligned_delete_array(siz, data_);
+            aligned_free(data_);
             write_debug("freeing diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, double(siz*sizeof(T))/1048576., (void*)data_);
         }
     }
@@ -198,11 +202,11 @@ class MatrixDiagonal {
 
     MatrixDiagonal() : siz(0), gc(nullptr) {}
 
-    MatrixDiagonal(size_t n) : siz(n), data_(aligned_new_array<T>(n)), gc(new std::atomic<int>(1)) {
+    MatrixDiagonal(size_t n) : siz(n), data_(aligned_malloc<T>(n)), gc(new std::atomic<int>(1)) {
         write_debug("allocating diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, double(siz*sizeof(T))/1048576., (void*)data_);
     }
 
-    MatrixDiagonal(size_t n, T val) : siz(n), data_(aligned_new_array<T>(n)), gc(new std::atomic<int>(1)) {
+    MatrixDiagonal(size_t n, T val) : siz(n), data_(aligned_malloc<T>(n)), gc(new std::atomic<int>(1)) {
         write_debug("allocating and filling diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, double(siz*sizeof(T))/1048576., (void*)data_);
         std::fill_n(data_, n, val);
     }
@@ -232,7 +236,7 @@ class MatrixDiagonal {
     void reset(size_t n) {
         dec_ref();
         siz = n;
-        data_ = aligned_new_array<T>(n);
+        data_ = aligned_malloc<T>(n);
         gc = new std::atomic<int>(1);
         write_debug("allocating diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, double(siz*sizeof(T))/1048576., (void*)data_);
     }
@@ -240,7 +244,7 @@ class MatrixDiagonal {
     void reset(size_t n, T val) {
         dec_ref();
         siz = n;
-        data_ = aligned_new_array<T>(n);
+        data_ = aligned_malloc<T>(n);
         gc = new std::atomic<int>(1);
         write_debug("allocating diagonal matrix {0}x{0} ({1:.3f} MB) at {2}", siz, double(siz*sizeof(T))/1048576., (void*)data_);
         std::fill_n(data_, n, val);
