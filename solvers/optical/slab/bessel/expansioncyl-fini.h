@@ -3,15 +3,13 @@
 
 #include <plask/plask.hpp>
 
-#include "expansioncyl.h"
-#include "../patterson.h"
 #include "../meshadapter.h"
-
+#include "../patterson.h"
+#include "expansioncyl.h"
 
 namespace plask { namespace optical { namespace slab {
 
-struct PLASK_SOLVER_API ExpansionBesselFini: public ExpansionBessel {
-
+struct PLASK_SOLVER_API ExpansionBesselFini : public ExpansionBessel {
     /**
      * Create new expansion
      * \param solver solver which performs calculations
@@ -34,27 +32,25 @@ struct PLASK_SOLVER_API ExpansionBesselFini: public ExpansionBessel {
     double integrateField(WhichField field, size_t l, const cvector& E, const cvector& H) override;
 
   protected:
-
     /// Integrals for magnetic permeability
     Integrals mu_integrals;
 
     void layerIntegrals(size_t layer, double lam, double glam) override;
 
-#ifndef NDEBUG
-  public:
-    cmatrix muVmm();
-    cmatrix muVpp();
-    cmatrix muTmm();
-    cmatrix muTpp();
-    cmatrix muTmp();
-    cmatrix muTpm();
-    cmatrix muDm();
-    cmatrix muDp();
-    dmatrix muVV();
-#endif
-
+    // #ifndef NDEBUG
+    //   public:
+    //     cmatrix muVmm();
+    //     cmatrix muVpp();
+    //     cmatrix muTmm();
+    //     cmatrix muTpp();
+    //     cmatrix muTmp();
+    //     cmatrix muTpm();
+    //     cmatrix muDm();
+    //     cmatrix muDp();
+    //     dmatrix muVV();
+    // #endif
 };
 
-}}} // # namespace plask::optical::slab
+}}}  // namespace plask::optical::slab
 
-#endif // PLASK__SOLVER__SLAB_EXPANSIONCYL_FINI_H
+#endif  // PLASK__SOLVER__SLAB_EXPANSIONCYL_FINI_H

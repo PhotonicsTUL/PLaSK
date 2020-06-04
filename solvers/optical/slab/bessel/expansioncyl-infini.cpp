@@ -88,38 +88,38 @@ void ExpansionBesselInfini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
     const Integrals& eps = layers_integrals[layer];
 
     std::fill(RH.begin(), RH.end(), 0.);
-    for (size_t i = 0; i != N; ++i) {
-        size_t is = idxs(i); size_t ip = idxp(i);
-        double g = kpts[i] * ib;
-        double dg = kdelts[i];
-        dcomplex f = 0.5 * g * dg * ik0;
-        for (size_t j = 0; j != N; ++j) {
-            size_t jp = idxp(j);
-            double k = kpts[j] * ib;
-            dcomplex fk = f * k;
-            RH(is, jp) = - fk * (k * (eps.Vmm(i,j) - eps.Vpp(i,j)) + eps.Dm(i,j) + eps.Dp(i,j));
-            RH(ip, jp) = - fk * (k * (eps.Vmm(i,j) + eps.Vpp(i,j)) + eps.Dm(i,j) - eps.Dp(i,j));
-        }
-        RH(is, is)  = k0;
-        RH(ip, ip) += k0 - g*g * ik0 * eps0[layer].second;
-    }
+    // for (size_t i = 0; i != N; ++i) {
+    //     size_t is = idxs(i); size_t ip = idxp(i);
+    //     double g = kpts[i] * ib;
+    //     double dg = kdelts[i];
+    //     dcomplex f = 0.5 * g * dg * ik0;
+    //     for (size_t j = 0; j != N; ++j) {
+    //         size_t jp = idxp(j);
+    //         double k = kpts[j] * ib;
+    //         dcomplex fk = f * k;
+    //         RH(is, jp) = - fk * (k * (eps.Vmm(i,j) - eps.Vpp(i,j)) + eps.Dm(i,j) + eps.Dp(i,j));
+    //         RH(ip, jp) = - fk * (k * (eps.Vmm(i,j) + eps.Vpp(i,j)) + eps.Dm(i,j) - eps.Dp(i,j));
+    //     }
+    //     RH(is, is)  = k0;
+    //     RH(ip, ip) += k0 - g*g * ik0 * eps0[layer].second;
+    // }
 
-    for (size_t i = 0; i != N; ++i) {
-        size_t is = idxs(i); size_t ip = idxp(i);
-        double g = kpts[i] * ib;
-        double dg = kdelts[i];
-        dcomplex f = 0.5 * g * dg * k0;
-        for (size_t j = 0; j != N; ++j) {
-            size_t js = idxs(j); size_t jp = idxp(j);
-            RE(ip, js) = f * (eps.Tmm(i,j) + eps.Tmp(i,j) - eps.Tpp(i,j) - eps.Tpm(i,j));
-            RE(is, js) = f * (eps.Tmm(i,j) + eps.Tmp(i,j) + eps.Tpp(i,j) + eps.Tpm(i,j));
-            RE(ip, jp) = f * (eps.Tmm(i,j) - eps.Tmp(i,j) + eps.Tpp(i,j) - eps.Tpm(i,j));
-            RE(is, jp) = f * (eps.Tmm(i,j) - eps.Tmp(i,j) - eps.Tpp(i,j) + eps.Tpm(i,j));
-        }
-        dcomplex k0eps = k0 * eps0[layer].first;
-        RE(ip, ip) += k0eps;
-        RE(is, is) += k0eps - g*g * ik0;
-    }
+    // for (size_t i = 0; i != N; ++i) {
+    //     size_t is = idxs(i); size_t ip = idxp(i);
+    //     double g = kpts[i] * ib;
+    //     double dg = kdelts[i];
+    //     dcomplex f = 0.5 * g * dg * k0;
+    //     for (size_t j = 0; j != N; ++j) {
+    //         size_t js = idxs(j); size_t jp = idxp(j);
+    //         RE(ip, js) = f * (eps.Tmm(i,j) + eps.Tmp(i,j) - eps.Tpp(i,j) - eps.Tpm(i,j));
+    //         RE(is, js) = f * (eps.Tmm(i,j) + eps.Tmp(i,j) + eps.Tpp(i,j) + eps.Tpm(i,j));
+    //         RE(ip, jp) = f * (eps.Tmm(i,j) - eps.Tmp(i,j) + eps.Tpp(i,j) - eps.Tpm(i,j));
+    //         RE(is, jp) = f * (eps.Tmm(i,j) - eps.Tmp(i,j) - eps.Tpp(i,j) + eps.Tpm(i,j));
+    //     }
+    //     dcomplex k0eps = k0 * eps0[layer].first;
+    //     RE(ip, ip) += k0eps;
+    //     RE(is, is) += k0eps - g*g * ik0;
+    // }
 }
 
 

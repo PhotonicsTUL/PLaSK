@@ -450,20 +450,34 @@ cmatrix inv(cmatrix& A);
 dcomplex det(cmatrix& A);
 int eigenv(cmatrix& A, cdiagonal& vals, cmatrix* rightv=NULL, cmatrix* leftv=NULL);
 
+/// Zero matrix
+template <typename T>
+void zero_matrix(Matrix<T>& A, size_t m, size_t n) {
+    if (A.rows() != m || A.cols() != n) A.reset(m, n, 0.);
+    else std::fill_n(A.data(), m*n, T(0.));
+}
+
+/// Zero matrix
+template <typename T>
+void zero_matrix(Matrix<T>& A) {
+    std::fill_n(A.data(), A.rows()*A.cols(), T(0.));
+}
+
 /// Create unit matrix
 template <typename T>
 void make_unit_matrix(Matrix<T>& A, size_t n) {
-    if (A.rows() != n || A.cols() != n) A.reset(n, n, 0.);
-    else std::fill_n(A.data(), n*n, 0.);
-    for (int i = 0; i < n; ++i) A(i,i) = 1.;
+    zero_matrix(A, n, n);
+    constexpr T one(1.);
+    for (int i = 0; i < n; ++i) A(i,i) = one;
 }
 
 /// Create unit matrix
 template <typename T>
 void make_unit_matrix(Matrix<T>& A) {
     assert(A.rows() == A.cols());
-    std::fill_n(A.data(), A.rows()*A.cols(), 0.);
-    for (int i = 0; i < A.rows(); ++i) A(i,i) = 1.;
+    zero_matrix(A);
+    constexpr T one(1.);
+    for (int i = 0; i < A.rows(); ++i) A(i,i) = one;
 }
 
 }}}

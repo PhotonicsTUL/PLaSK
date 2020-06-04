@@ -354,28 +354,28 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
     double getWavelength(size_t n) override;
 
-#ifndef NDEBUG
-  public:
-    cmatrix epsVmm(size_t layer);
-    cmatrix epsVpp(size_t layer);
-    cmatrix epsTmm(size_t layer);
-    cmatrix epsTpp(size_t layer);
-    cmatrix epsTmp(size_t layer);
-    cmatrix epsTpm(size_t layer);
-    cmatrix epsDm(size_t layer);
-    cmatrix epsDp(size_t layer);
-    dmatrix epsVV(size_t layer);
+// #ifndef NDEBUG
+//   public:
+//     cmatrix epsVmm(size_t layer);
+//     cmatrix epsVpp(size_t layer);
+//     cmatrix epsTmm(size_t layer);
+//     cmatrix epsTpp(size_t layer);
+//     cmatrix epsTmp(size_t layer);
+//     cmatrix epsTpm(size_t layer);
+//     cmatrix epsDm(size_t layer);
+//     cmatrix epsDp(size_t layer);
+//     dmatrix epsVV(size_t layer);
 
-    cmatrix muVmm();
-    cmatrix muVpp();
-    cmatrix muTmm();
-    cmatrix muTpp();
-    cmatrix muTmp();
-    cmatrix muTpm();
-    cmatrix muDm();
-    cmatrix muDp();
-    dmatrix muVV();
-#endif
+//     cmatrix muVmm();
+//     cmatrix muVpp();
+//     cmatrix muTmm();
+//     cmatrix muTpp();
+//     cmatrix muTmp();
+//     cmatrix muTpm();
+//     cmatrix muDm();
+//     cmatrix muDp();
+//     dmatrix muVV();
+// #endif
 
 };
 

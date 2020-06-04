@@ -209,135 +209,135 @@ double BesselSolverCyl::getWavelength(size_t n) {
 }
 
 
-#ifndef NDEBUG
-cmatrix BesselSolverCyl::epsVmm(size_t layer) {
-    Solver::initCalculation();
-    computeIntegrals();
-    return expansion->epsVmm(layer);
-}
-cmatrix BesselSolverCyl::epsVpp(size_t layer) {
-    Solver::initCalculation();
-    computeIntegrals();
-    return expansion->epsVpp(layer);
-}
-cmatrix BesselSolverCyl::epsTmm(size_t layer) {
-    Solver::initCalculation();
-    computeIntegrals();
-    return expansion->epsTmm(layer);
-}
-cmatrix BesselSolverCyl::epsTpp(size_t layer) {
-    Solver::initCalculation();
-    computeIntegrals();
-    return expansion->epsTpp(layer);
-}
-cmatrix BesselSolverCyl::epsTmp(size_t layer) {
-    Solver::initCalculation();
-    computeIntegrals();
-    return expansion->epsTmp(layer);
-}
-cmatrix BesselSolverCyl::epsTpm(size_t layer) {
-    Solver::initCalculation();
-    computeIntegrals();
-    return expansion->epsTpm(layer);
-}
-cmatrix BesselSolverCyl::epsDm(size_t layer) {
-    Solver::initCalculation();
-    computeIntegrals();
-    return expansion->epsDm(layer);
-}
-cmatrix BesselSolverCyl::epsDp(size_t layer) {
-    Solver::initCalculation();
-    computeIntegrals();
-    return expansion->epsDp(layer);
-}
-dmatrix BesselSolverCyl::epsVV(size_t layer) {
-    Solver::initCalculation();
-    computeIntegrals();
-    return expansion->epsVV(layer);
-}
+// #ifndef NDEBUG
+// cmatrix BesselSolverCyl::epsVmm(size_t layer) {
+//     Solver::initCalculation();
+//     computeIntegrals();
+//     return expansion->epsVmm(layer);
+// }
+// cmatrix BesselSolverCyl::epsVpp(size_t layer) {
+//     Solver::initCalculation();
+//     computeIntegrals();
+//     return expansion->epsVpp(layer);
+// }
+// cmatrix BesselSolverCyl::epsTmm(size_t layer) {
+//     Solver::initCalculation();
+//     computeIntegrals();
+//     return expansion->epsTmm(layer);
+// }
+// cmatrix BesselSolverCyl::epsTpp(size_t layer) {
+//     Solver::initCalculation();
+//     computeIntegrals();
+//     return expansion->epsTpp(layer);
+// }
+// cmatrix BesselSolverCyl::epsTmp(size_t layer) {
+//     Solver::initCalculation();
+//     computeIntegrals();
+//     return expansion->epsTmp(layer);
+// }
+// cmatrix BesselSolverCyl::epsTpm(size_t layer) {
+//     Solver::initCalculation();
+//     computeIntegrals();
+//     return expansion->epsTpm(layer);
+// }
+// cmatrix BesselSolverCyl::epsDm(size_t layer) {
+//     Solver::initCalculation();
+//     computeIntegrals();
+//     return expansion->epsDm(layer);
+// }
+// cmatrix BesselSolverCyl::epsDp(size_t layer) {
+//     Solver::initCalculation();
+//     computeIntegrals();
+//     return expansion->epsDp(layer);
+// }
+// dmatrix BesselSolverCyl::epsVV(size_t layer) {
+//     Solver::initCalculation();
+//     computeIntegrals();
+//     return expansion->epsVV(layer);
+// }
 
-cmatrix BesselSolverCyl::muVmm() {
-    Solver::initCalculation();
-    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
-        computeIntegrals();
-        return finite_expansion->muVmm();
-    } else {
-        return cmatrix();
-    }
-}
-cmatrix BesselSolverCyl::muVpp() {
-    Solver::initCalculation();
-    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
-        computeIntegrals();
-        return finite_expansion->muVpp();
-    } else {
-        return cmatrix();
-    }
-}
-cmatrix BesselSolverCyl::muTmm() {
-    Solver::initCalculation();
-    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
-        computeIntegrals();
-        return finite_expansion->muTmm();
-    } else {
-        return cmatrix();
-    }
-}
-cmatrix BesselSolverCyl::muTpp() {
-    Solver::initCalculation();
-    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
-        computeIntegrals();
-        return finite_expansion->muTpp();
-    } else {
-        return cmatrix();
-    }
-}
-cmatrix BesselSolverCyl::muTmp() {
-    Solver::initCalculation();
-    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
-        computeIntegrals();
-        return finite_expansion->muTmp();
-    } else {
-        return cmatrix();
-    }
-}
-cmatrix BesselSolverCyl::muTpm() {
-    Solver::initCalculation();
-    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
-        computeIntegrals();
-        return finite_expansion->muTpm();
-    } else {
-        return cmatrix();
-    }
-}
-cmatrix BesselSolverCyl::muDm() {
-    Solver::initCalculation();
-    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
-        computeIntegrals();
-        return finite_expansion->muDm();
-    } else {
-        return cmatrix();
-    }
-}
-cmatrix BesselSolverCyl::muDp() {
-    Solver::initCalculation();
-    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
-        computeIntegrals();
-        return finite_expansion->muDp();
-    } else {
-        return cmatrix();
-    }
-}
-dmatrix BesselSolverCyl::muVV() {
-    Solver::initCalculation();
-    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
-        computeIntegrals();
-        return finite_expansion->muVV();
-    } else {
-        return dmatrix();
-    }
-}
-#endif
+// cmatrix BesselSolverCyl::muVmm() {
+//     Solver::initCalculation();
+//     if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+//         computeIntegrals();
+//         return finite_expansion->muVmm();
+//     } else {
+//         return cmatrix();
+//     }
+// }
+// cmatrix BesselSolverCyl::muVpp() {
+//     Solver::initCalculation();
+//     if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+//         computeIntegrals();
+//         return finite_expansion->muVpp();
+//     } else {
+//         return cmatrix();
+//     }
+// }
+// cmatrix BesselSolverCyl::muTmm() {
+//     Solver::initCalculation();
+//     if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+//         computeIntegrals();
+//         return finite_expansion->muTmm();
+//     } else {
+//         return cmatrix();
+//     }
+// }
+// cmatrix BesselSolverCyl::muTpp() {
+//     Solver::initCalculation();
+//     if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+//         computeIntegrals();
+//         return finite_expansion->muTpp();
+//     } else {
+//         return cmatrix();
+//     }
+// }
+// cmatrix BesselSolverCyl::muTmp() {
+//     Solver::initCalculation();
+//     if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+//         computeIntegrals();
+//         return finite_expansion->muTmp();
+//     } else {
+//         return cmatrix();
+//     }
+// }
+// cmatrix BesselSolverCyl::muTpm() {
+//     Solver::initCalculation();
+//     if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+//         computeIntegrals();
+//         return finite_expansion->muTpm();
+//     } else {
+//         return cmatrix();
+//     }
+// }
+// cmatrix BesselSolverCyl::muDm() {
+//     Solver::initCalculation();
+//     if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+//         computeIntegrals();
+//         return finite_expansion->muDm();
+//     } else {
+//         return cmatrix();
+//     }
+// }
+// cmatrix BesselSolverCyl::muDp() {
+//     Solver::initCalculation();
+//     if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+//         computeIntegrals();
+//         return finite_expansion->muDp();
+//     } else {
+//         return cmatrix();
+//     }
+// }
+// dmatrix BesselSolverCyl::muVV() {
+//     Solver::initCalculation();
+//     if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+//         computeIntegrals();
+//         return finite_expansion->muVV();
+//     } else {
+//         return dmatrix();
+//     }
+// }
+// #endif
 
 
 }}} // # namespace plask::optical::slab
