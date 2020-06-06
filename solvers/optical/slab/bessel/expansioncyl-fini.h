@@ -37,18 +37,14 @@ struct PLASK_SOLVER_API ExpansionBesselFini : public ExpansionBessel {
 
     void layerIntegrals(size_t layer, double lam, double glam) override;
 
-    // #ifndef NDEBUG
-    //   public:
-    //     cmatrix muVmm();
-    //     cmatrix muVpp();
-    //     cmatrix muTmm();
-    //     cmatrix muTpp();
-    //     cmatrix muTmp();
-    //     cmatrix muTpm();
-    //     cmatrix muDm();
-    //     cmatrix muDp();
-    //     dmatrix muVV();
-    // #endif
+    #ifndef NDEBUG
+      public:
+        cmatrix muV_k();
+        cmatrix muTss();
+        cmatrix muTsp();
+        cmatrix muTps();
+        cmatrix muTpp();
+    #endif
 };
 
 }}}  // namespace plask::optical::slab

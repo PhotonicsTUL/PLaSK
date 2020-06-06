@@ -32,6 +32,11 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         WAVEVECTORS_MANUAL
     };
 
+    enum Rule {
+        RULE_INVERSE,
+        RULE_DIRECT
+    };
+
     std::string getClassName() const override { return "optical.BesselCyl"; }
 
     struct Mode {
@@ -86,6 +91,9 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     void computeIntegrals() override {
         expansion->computeIntegrals();
     }
+
+    /// Coefficients matrix expansion rule
+    Rule rule;
 
     /// Scale for k-points for infinite expansion
     double kscale;
@@ -165,6 +173,14 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     /// Set new domain
     void setDomain(BesselDomain dom) {
         domain = dom;
+        invalidate();
+    }
+
+    /// Get current domain
+    Rule getRule() const { return rule; }
+    /// Set new domain
+    void setRule(Rule r) {
+        rule = r;
         invalidate();
     }
 
@@ -354,28 +370,19 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
     double getWavelength(size_t n) override;
 
-// #ifndef NDEBUG
-//   public:
-//     cmatrix epsVmm(size_t layer);
-//     cmatrix epsVpp(size_t layer);
-//     cmatrix epsTmm(size_t layer);
-//     cmatrix epsTpp(size_t layer);
-//     cmatrix epsTmp(size_t layer);
-//     cmatrix epsTpm(size_t layer);
-//     cmatrix epsDm(size_t layer);
-//     cmatrix epsDp(size_t layer);
-//     dmatrix epsVV(size_t layer);
-
-//     cmatrix muVmm();
-//     cmatrix muVpp();
-//     cmatrix muTmm();
-//     cmatrix muTpp();
-//     cmatrix muTmp();
-//     cmatrix muTpm();
-//     cmatrix muDm();
-//     cmatrix muDp();
-//     dmatrix muVV();
-// #endif
+#ifndef NDEBUG
+  public:
+    cmatrix epsV_k(size_t layer);
+    cmatrix epsTss(size_t layer);
+    cmatrix epsTsp(size_t layer);
+    cmatrix epsTps(size_t layer);
+    cmatrix epsTpp(size_t layer);
+    cmatrix muV_k();
+    cmatrix muTss();
+    cmatrix muTsp();
+    cmatrix muTps();
+    cmatrix muTpp();
+#endif
 
 };
 

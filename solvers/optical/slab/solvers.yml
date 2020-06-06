@@ -854,6 +854,16 @@
         A list of relative wavevetors ranges. The numbers should be relative to the inverse of the structure
         width. The actual wavevectors used in the computations are the avrages of each two adjacent values
         specified here and the integration weights are the sizes of each interval.
+    - attr: rule
+      label: Matrix rule
+      type: choice
+      choices:
+        - direct
+        - inverse
+      default: inverse
+      help: >
+        Expansion rule for coefficients matrix. Can be direct or inverse. Inverse rule is proven to provide better
+        convergence and should be used in almost every case.
 
   - tag: mode
     label: Mode Properties
