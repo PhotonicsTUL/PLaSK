@@ -12,40 +12,42 @@ using namespace plask::optical::slab;
 using namespace plask::optical::slab::python;
 
 #ifndef NDEBUG
-struct CMatrix_Python {
-    cmatrix data;
-    CMatrix_Python(const cmatrix& data): data(data) {}
-    CMatrix_Python(const CMatrix_Python& src): data(src.data) {}
+template <typename T>
+struct Matrix_Python {
+    Matrix<T> data;
+    Matrix_Python(const Matrix<T>& data): data(data) {}
+    Matrix_Python(const Matrix_Python<T>& src): data(src.data) {}
 
-    static PyObject* convert(const cmatrix& self) {
+    static PyObject* convert(const Matrix<T>& self) {
         npy_intp dims[2] = { static_cast<npy_intp>(self.rows()), static_cast<npy_intp>(self.cols()) };
         npy_intp strides[2] = { sizeof(dcomplex), npy_intp(self.rows() * sizeof(dcomplex)) };
 
-        PyObject* arr = PyArray_New(&PyArray_Type, 2, dims, NPY_CDOUBLE, strides,
+        PyObject* arr = PyArray_New(&PyArray_Type, 2, dims, plask::python::detail::typenum<T>(), strides,
                                     (void*)self.data(), 0, 0, NULL);
         if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from matrix");
         // Make sure the data vector stays alive as long as the array
-        py::object oself {CMatrix_Python(self)};
+        py::object oself {Matrix_Python<T>(self)};
         py::incref(oself.ptr());
         PyArray_SetBaseObject((PyArrayObject*)arr, oself.ptr());
         return arr;
     }
 };
 
-struct CDiagonal_Python {
-    cdiagonal data;
-    CDiagonal_Python(const cdiagonal& data): data(data) {}
-    CDiagonal_Python(const CDiagonal_Python& src): data(src.data) {}
+template <typename T>
+struct Diagonal_Python {
+    MatrixDiagonal<T> data;
+    Diagonal_Python(const MatrixDiagonal<T>& data): data(data) {}
+    Diagonal_Python(const Diagonal_Python<T>& src): data(src.data) {}
 
-    static PyObject* convert(const cdiagonal& self) {
+    static PyObject* convert(const MatrixDiagonal<T>& self) {
         npy_intp dims[1] = { static_cast<npy_intp>(self.size()) };
         npy_intp strides[1] = { sizeof(dcomplex) };
 
-        PyObject* arr = PyArray_New(&PyArray_Type, 1, dims, NPY_CDOUBLE, strides,
+        PyObject* arr = PyArray_New(&PyArray_Type, 1, dims, plask::python::detail::typenum<T>(), strides,
                                     (void*)self.data(), 0, 0, NULL);
         if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from matrix");
         // Make sure the data vector stays alive as long as the array
-        py::object oself {CDiagonal_Python(self)};
+        py::object oself {Diagonal_Python<T>(self)};
         py::incref(oself.ptr());
         PyArray_SetBaseObject((PyArrayObject*)arr, oself.ptr());
         return arr;
@@ -89,12 +91,18 @@ BOOST_PYTHON_MODULE(slab)
     plask_import_array();
 
 #ifndef NDEBUG
-    py::class_<CMatrix_Python>("_cmatrix", py::no_init);
+    py::class_<Matrix_Python<dcomplex>>("_cmatrix", py::no_init);
     py::delattr(py::scope(), "_cmatrix");
-    py::to_python_converter<cmatrix, CMatrix_Python>();
-    py::class_<CDiagonal_Python>("_cdiagonal", py::no_init);
+    py::to_python_converter<cmatrix, Matrix_Python<dcomplex>>();
+    py::class_<Diagonal_Python<dcomplex>>("_cdiagonal", py::no_init);
     py::delattr(py::scope(), "_cdiagonal");
-    py::to_python_converter<cdiagonal, CDiagonal_Python>();
+    py::to_python_converter<cdiagonal, Diagonal_Python<dcomplex>>();
+    py::class_<Matrix_Python<double>>("_dmatrix", py::no_init);
+    py::delattr(py::scope(), "_dmatrix");
+    py::to_python_converter<dmatrix, Matrix_Python<double>>();
+    // py::class_<Diagonal_Python<double>>("_ddiagonal", py::no_init);
+    // py::delattr(py::scope(), "_ddiagonal");
+    // py::to_python_converter<MatrixDiagonal<double>, Diagonal_Python<double>>();
 #endif
 
     py::to_python_converter<Expansion::Component, PythonComponentConventer>();

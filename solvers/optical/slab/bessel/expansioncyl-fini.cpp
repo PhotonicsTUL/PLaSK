@@ -50,7 +50,6 @@ void ExpansionBesselFini::init2() {
     auto raxis = mesh->tran();
 
     size_t nr = raxis->size(), N = SOLVER->size;
-    mu_integrals.reset(N);
 
     double ib = 1. / rbounds[rbounds.size() - 1];
 
@@ -83,14 +82,20 @@ void ExpansionBesselFini::init2() {
             imu_data.get()[ri] = imu * w;
         }
 
-        if (SOLVER->rule == BesselSolverCyl::RULE_INVERSE) {
-            integrateParams(mu_integrals, mu_data.get(), mu_data.get(), mu_data.get());
-        } else {
-            integrateParams(mu_integrals, mu_data.get(), imu_data.get(), imu_data.get());
+        switch (SOLVER->rule) {
+          case BesselSolverCyl::RULE_INVERSE_1:
+          case BesselSolverCyl::RULE_INVERSE_2:
+          case BesselSolverCyl::RULE_INVERSE_3:
+            integrateParams(mu_integrals, mu_data.get(), mu_data.get(), mu_data.get()); break;
+          case BesselSolverCyl::RULE_SEMI_INVERSE:
+            integrateParams(mu_integrals, mu_data.get(), imu_data.get(), mu_data.get()); break;
+          case BesselSolverCyl::RULE_DIRECT:
+            integrateParams(mu_integrals, mu_data.get(), imu_data.get(), imu_data.get()); break;
         }
 
     } else {
 
+        mu_integrals.reset(N);
         zero_matrix(mu_integrals.V_k);
         zero_matrix(mu_integrals.Tss);
         zero_matrix(mu_integrals.Tsp);
@@ -130,10 +135,10 @@ void ExpansionBesselFini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
             size_t is = idxs(i), ip = idxp(i);
             double g = kpts[i] * ib;
             dcomplex gVk = ik0 * g * eps.V_k(i,j);
-            RH(is,jp) = 0.5 * (  gVk + k0 * mu.Tsp(i,j) );
-            RH(is,js) = 0.5 * (  gVk + k0 * mu.Tss(i,j) );
-            RH(ip,jp) = 0.5 * ( -gVk - k0 * mu.Tpp(i,j) );
-            RH(ip,js) = 0.5 * ( -gVk - k0 * mu.Tps(i,j) );
+            RH(is,jp) = 0.5 * (  gVk - k0 * mu.Tsp(i,j) );
+            RH(is,js) = 0.5 * (  gVk - k0 * mu.Tss(i,j) );
+            RH(ip,jp) = 0.5 * ( -gVk + k0 * mu.Tpp(i,j) );
+            RH(ip,js) = 0.5 * ( -gVk + k0 * mu.Tps(i,j) );
         }
     }
 
@@ -144,55 +149,62 @@ void ExpansionBesselFini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
             size_t is = idxs(i), ip = idxp(i);
             double g = kpts[i] * ib;
             dcomplex gVk = ik0 * g * mu.V_k(i,j);
-            RE(ip,js) = 0.5 * ( -gVk - k0 * eps.Tps(i,j) );
-            RE(ip,jp) = 0.5 * ( -gVk - k0 * eps.Tpp(i,j) );
-            RE(is,js) = 0.5 * (  gVk + k0 * eps.Tss(i,j) );
-            RE(is,jp) = 0.5 * (  gVk + k0 * eps.Tsp(i,j) );
+            RE(ip,js) = 0.5 * ( -gVk + k0 * eps.Tps(i,j) );
+            RE(ip,jp) = 0.5 * ( -gVk + k0 * eps.Tpp(i,j) );
+            RE(is,js) = 0.5 * (  gVk - k0 * eps.Tss(i,j) );
+            RE(is,jp) = 0.5 * (  gVk - k0 * eps.Tsp(i,j) );
         }
     }
     #undef mu
 }
 
 double ExpansionBesselFini::integratePoyntingVert(const cvector& E, const cvector& H) {
-    // double result = 0.;
-    // for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
-    //     double eta = cyl_bessel_j(m + 1, kpts[i]) * rbounds[rbounds.size() - 1];
-    //     eta = 2 * eta * eta;  // 4 × ½
-    //     size_t is = idxs(i);
-    //     size_t ip = idxp(i);
-    //     result += real(E[is] * conj(H[is]) + E[ip] * conj(H[ip])) * eta;
-    // }
-    // return 2e-12 * PI * result;  // µm² -> m²
-    return 1.;
+    double result = 0.;
+    for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
+        double eta = cyl_bessel_j(m + 1, kpts[i]) * rbounds[rbounds.size() - 1];
+        eta = 2 * eta * eta;  // 4 × ½
+        size_t is = idxs(i);
+        size_t ip = idxp(i);
+        result += real(E[is] * conj(H[is]) + E[ip] * conj(H[ip])) * eta;
+    }
+    return 2e-12 * PI * result;  // µm² -> m²
 }
 
-double ExpansionBesselFini::integrateField(WhichField field, size_t l, const cvector& E, const cvector& H) {
-    // double result = 0.;
-    // double R = rbounds[rbounds.size()-1];
-    // double iRk02 = 1. / (R*R * real(k0*conj(k0)));
-    // if (which_field == FIELD_E) {
-    //     for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
-    //         double eta = cyl_bessel_j(m+1, kpts[i]) * R; eta = 2. * eta*eta; // 4 × ½
-    //         size_t is = idxs(i);
-    //         size_t ip = idxp(i);
-    //         result += real(E[is]*conj(E[is]) + E[ip]*conj(E[ip])) * eta;
-    //         // Add Ez²
-    //         double g4 = 4. * iRk02 * kpts[i];
-    //         for (size_t j = 0; j < N; ++j) {
-    //             size_t jp = idxp(j);
-    //             result += g4*kpts[j] * layers_integrals[l].VV(i,j) * real(H[ip]*conj(H[jp]));
-    //         }
-    //     }
-    // } else {
-    //     for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
-    //         double eta = cyl_bessel_j(m+1, kpts[i]) * R; eta = eta*eta; // 2 × ½
-    //         size_t is = idxs(i);
-    //         size_t ip = idxp(i);
-    //         result += (2. * (real(H[is]*conj(H[is]) + H[ip]*conj(H[ip]))) + iRk02*kpts[i]*kpts[i] * real(E[is]*conj(E[is]))) *
-    //         eta;
-    //     }
-    // }
-    // return 0.5 * 2*PI * result;
+double ExpansionBesselFini::integrateField(WhichField field, size_t layer, const cvector& E, const cvector& H) {
+    size_t N = SOLVER->size;
+    double resxy = 0.;
+    double resz = 0.;
+    double R = rbounds[rbounds.size()-1];
+    if (which_field == FIELD_E) {
+        cvector Ez(N), Dz(N);
+        for (size_t j = 0; j != N; ++j) {
+            size_t js = idxs(j), jp = idxp(j);
+            Dz[j] = H[js] + H[jp];
+        }
+        mult_matrix_by_vector(layers_integrals[layer].V_k, Dz, Ez);
+        for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
+            double eta = cyl_bessel_j(m+1, kpts[i]) * R; eta = 2. * eta*eta; // 4 × ½
+            size_t is = idxs(i);
+            size_t ip = idxp(i);
+            resxy += real(E[is]*conj(E[is]) + E[ip]*conj(E[ip])) * eta;
+            resz += real(Ez[i]*conj(Ez[i])) * eta;
+        }
+    } else {
+        cvector Hz(N), Bz(N);
+        for (size_t j = 0; j != N; ++j) {
+            size_t js = idxs(j), jp = idxp(j);
+            Bz[j] = E[js] + E[jp];
+        }
+        mult_matrix_by_vector(mu_integrals.V_k, Bz, Hz);
+        for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
+            double eta = cyl_bessel_j(m+1, kpts[i]) * R; eta = eta*eta; // 2 × ½
+            size_t is = idxs(i);
+            size_t ip = idxp(i);
+            resxy += real(H[is]*conj(H[is]) + H[ip]*conj(H[ip])) * eta;
+            resz += real(Hz[i]*conj(Hz[i])) * eta;
+        }
+    }
+    return 0.5 * 2*PI * (resxy + resz / real(k0*conj(k0)));
 }
 
 #ifndef NDEBUG

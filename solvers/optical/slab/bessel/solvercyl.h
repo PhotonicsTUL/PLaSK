@@ -33,7 +33,10 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     };
 
     enum Rule {
-        RULE_INVERSE,
+        RULE_SEMI_INVERSE,
+        RULE_INVERSE_1,
+        RULE_INVERSE_2,
+        RULE_INVERSE_3,
         RULE_DIRECT
     };
 
@@ -44,7 +47,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         dcomplex k0;                    ///< Stored mode frequency
         int m;                          ///< Stored angular parameter
         double power;                   ///< Mode power [mW]
-        double tolx;                            ///< Tolerance for mode comparison
+        double tolx;                    ///< Tolerance for mode comparison
 
         Mode(const std::unique_ptr<ExpansionBessel>& expansion, double tolx):
             lam0(expansion->lam0), k0(expansion->k0), m(expansion->m), power(1.), tolx(tolx) {}

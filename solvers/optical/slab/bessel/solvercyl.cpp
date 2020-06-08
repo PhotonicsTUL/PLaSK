@@ -10,7 +10,7 @@ BesselSolverCyl::BesselSolverCyl(const std::string& name):
     domain(DOMAIN_INFINITE),
     m(1),
     size(12),
-    rule(RULE_INVERSE),
+    rule(RULE_INVERSE_3),
     kscale(10.),
     kmethod(WAVEVECTORS_UNIFORM),
     integral_error(1e-6),
@@ -61,7 +61,10 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
                 }
             }
             rule = reader.enumAttribute<Rule>("rule")
-                .value("inverse", RULE_INVERSE)
+                .value("semi-inverse", RULE_SEMI_INVERSE)
+                .value("inverse1", RULE_INVERSE_1)
+                .value("inverse2", RULE_INVERSE_2)
+                .value("inverse3", RULE_INVERSE_3)
                 .value("direct", RULE_DIRECT)
                 .get(rule);
             reader.requireTagEnd();

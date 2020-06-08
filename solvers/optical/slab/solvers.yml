@@ -858,8 +858,9 @@
       label: Matrix rule
       type: choice
       choices:
-        - direct
         - inverse
+        - semi-inverse
+        - direct
       default: inverse
       help: >
         Expansion rule for coefficients matrix. Can be direct or inverse. Inverse rule is proven to provide better

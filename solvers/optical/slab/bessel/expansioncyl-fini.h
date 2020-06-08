@@ -29,7 +29,7 @@ struct PLASK_SOLVER_API ExpansionBesselFini : public ExpansionBessel {
 
     double integratePoyntingVert(const cvector& E, const cvector& H) override;
 
-    double integrateField(WhichField field, size_t l, const cvector& E, const cvector& H) override;
+    double integrateField(WhichField field, size_t layer, const cvector& E, const cvector& H) override;
 
   protected:
     /// Integrals for magnetic permeability

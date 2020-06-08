@@ -135,7 +135,10 @@ void export_BesselSolverCyl()
     ;
 
     py_enum<typename BesselSolverCyl::Rule>()
-        .value("INVERSE", BesselSolverCyl::RULE_INVERSE)
+        .value("SEMI_INVERSE", BesselSolverCyl::RULE_SEMI_INVERSE)
+        .value("INVERSE1", BesselSolverCyl::RULE_INVERSE_1)
+        .value("INVERSE2", BesselSolverCyl::RULE_INVERSE_2)
+        .value("INVERSE3", BesselSolverCyl::RULE_INVERSE_3)
         .value("DIRECT", BesselSolverCyl::RULE_DIRECT)
     ;
 
@@ -155,9 +158,9 @@ void export_BesselSolverCyl()
     PROVIDER(outLoss, "");
     RW_PROPERTY(domain, getDomain, setDomain, u8"Computational domain ('finite' or 'infinite').");
     RW_PROPERTY(rule, getRule, setRule,
-        u8"Expansion rule for coefficients matrix. Can be 'direct' or 'inverse'.\n"
-        u8"Inverse rule is proven to provide better convergence and should be used\n"
-        u8"in almost every case.\n");
+        u8"Expansion rule for coefficients matrix. Can be 'direct', 'semi-inverse'\n"
+        u8"or 'inverse'. Inverse rule is proven to provide the best convergence and\n"
+        u8"should be used in almost every case.\n");
     RW_PROPERTY(size, getSize, setSize, u8"Orthogonal expansion size.");
     RW_PROPERTY(kmethod, getKmethod, setKmethod,
         u8"Method of selecting wavevectors for numerical Hankel transform in infinite\n"

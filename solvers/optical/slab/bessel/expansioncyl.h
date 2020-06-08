@@ -104,17 +104,16 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
 
     /// Matrices with computed integrals necessary to construct RE and RH matrices
     struct Integrals {
-        cmatrix V_k;  ///< [ J_{m}(gr) eps_{zz} J_{m}(kr) r dr ]^{-1} [k]
-        cmatrix Tss;  ///< [ J_{m-1}(gr) eps_{rr}^{-1} J_{m-1}(kr) r dr ]^{-1} + [ J_{m-1}(gr) eps_{pp} J_{m-1}(kr) r dr ]
-        cmatrix Tsp;  ///< [ J_{m-1}(gr) eps_{rr}^{-1} J_{m-1}(kr) r dr ]^{-1} [ J_{m-1}(hr) J_{m+1}(kr) r dr ]
-                      ///<  - [ J_{m-1}(gr)eps_{pp} J_{m-1}(kr) r dr ]
-        cmatrix Tps;  ///< [ J_{m+1}(gr) eps_{rr}^{-1} J_{m+1}(hr) r dr ]^{-1} [ J_{m+1}(hr) J_{m-1}(kr) r dr ]
-                      ///<  - [ J_{m+1}(gr)eps_{pp} J_{m+1}(kr) r dr ]
-        cmatrix Tpp;  ///< [ J_{m+1}(gr) eps_{rr}^{-1} J_{m+1}(hr) r dr ]^{-1} + [ J_{m+1}(gr) eps_{pp} J_{m+1}(kr) r dr ]
+        cmatrix V_k;
+        cmatrix TT;
+        cmatrix Tss;
+        cmatrix Tsp;
+        cmatrix Tps;
+        cmatrix Tpp;
 
-      public:
         void reset() {
             V_k.reset();
+            TT.reset();
             Tss.reset();
             Tsp.reset();
             Tps.reset();
@@ -123,10 +122,12 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
 
         void reset(size_t N) {
             V_k.reset(N, N);
-            Tss.reset(N, N);
-            Tsp.reset(N, N);
-            Tps.reset(N, N);
-            Tpp.reset(N, N);
+            TT.reset(2*N, 2*N);
+            size_t NN = N * N;
+            Tss.reset(N, N, TT.data());
+            Tsp.reset(N, N, TT.data() + NN);
+            Tps.reset(N, N, TT.data() + 2*NN);
+            Tpp.reset(N, N, TT.data() + 3*NN);
         }
     };
 
