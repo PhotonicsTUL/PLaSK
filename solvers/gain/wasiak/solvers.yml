@@ -221,12 +221,12 @@
     - attr: ref
       label: Geometry
       required: true
-      type: Cartesian2D geometry
+      type: Cylindrical geometry
       help: >
         Name of the geometry used by the this solver.
     - attr: mod
       label: Modified
-      type: Cartesian2D geometry
+      type: Cylindrical geometry
       help: >
         Name of the modified geometry for broadening calculation.
   - tag: mesh
