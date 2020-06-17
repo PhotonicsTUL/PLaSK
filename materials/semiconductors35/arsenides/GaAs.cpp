@@ -250,30 +250,54 @@ double GaAs::cp(double /*T*/) const { return 0.327e3; }
 
 Material::ConductivityType GaAs::condtype() const { return Material::CONDUCTIVITY_I; }
 
+// MI_PROPERTY(GaAs, nr,
+//             //MISource("D.T.F. Marple, J. Appl. Phys. 35 (1964) 1241-1242; "),
+//             //MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence
+//             //MIComment("fit by Lukasz Piskorski")
+//             MISource("S. Gehrsitz, J. Appl. Phys. 87 (2000) 7825-7837; "),
+//             MIComment("fit by Leszek Frasunkiewicz")
+//            )
+// double GaAs::nr(double lam, double T, double /*n*/) const {
+//     double Al = 1e-30;
+//     double A = -0.4490233379*Al + 3.25759049;
+//     double B = 29.22871618*pow(Al,(-2.35349122*pow(Al,8.844978824)));
+//     double C = -304.7269552*Al*Al*Al + 335.1918592*Al*Al + 194.6726344*Al - 559.6098207;
+
+//     //dn/dT
+//     double Ad = 0.0003442176581*Al*Al*Al - 0.0005412098145*Al*Al + 0.00008671640556*Al + 0.0002093262406;
+//     double Bd = 132.1382231*exp(-8.32822628*Al*Al*Al + 14.65496754*Al*Al - 7.135900438*Al);
+//     double Cd = 117.24*Al -689.06;
+//     double dndT = Ad*exp(Bd / (lam + Cd));
+
+//     return ( A*exp(B / (lam + C)) + dndT*(T-296) );
+// }
+
+
 MI_PROPERTY(GaAs, nr,
-            //MISource("D.T.F. Marple, J. Appl. Phys. 35 (1964) 1241-1242"),
-            //MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence
-            //MINote("fit by Lukasz Piskorski")
-            MISource("S. Gehrsitz, J. Appl. Phys. 87 (2000) 7825-7837"),
-            MINote("fit by Leszek Frasunkiewicz")
+            MISource("T. Skauliet al., J. Appl. Phys., 94, 6447-6455 (2003)"),
+            MISee("https://doi.org/10.1063/1.1621740")
            )
 double GaAs::nr(double lam, double T, double /*n*/) const {
-    double Al = 1e-30;
-    double A = -0.4490233379*Al + 3.25759049;
-    double B = 29.22871618*pow(Al,(-2.35349122*pow(Al,8.844978824)));
-    double C = -304.7269552*Al*Al*Al + 335.1918592*Al*Al + 194.6726344*Al - 559.6098207;
 
-    //dn/dT
-    double Ad = 0.0003442176581*Al*Al*Al - 0.0005412098145*Al*Al + 0.00008671640556*Al + 0.0002093262406;
-    double Bd = 132.1382231*exp(-8.32822628*Al*Al*Al + 14.65496754*Al*Al - 7.135900438*Al);
-    double Cd = 117.24*Al -689.06;
-    double dndT = Ad*exp(Bd / (lam + Cd));
+    const double dT = T - 295.15;  // 22 °C
 
-    return ( A*exp(B / (lam + C)) + dndT*(T-296) );
-    //old
-    //double L2 = lam*lam*1e-6;
-    //double nR296K = sqrt(1.+9.659*L2/(L2-0.137));
-    //return ( nR296K + nR296K*4.5e-5*(T-296.) );
+    const double E0 = 1.425000 - (0.00037164 + 7.497e-7 * dT) * dT,
+                 E1 = 2.400356 - 0.00051458 * dT,
+                 E2 = 7.691979 - 0.00046545 * dT,
+                 E3 = 0.034303 + 0.00001136 * dT;
+
+    const double EE0 = E0 * E0, EE1 = E1 * E1, EE2 = E2 * E2, EE3 = E3 * E3;
+
+    const double eps = 12.99386;
+    const double G3 = 0.00218176;
+    const double A = 0.689578;
+
+    const double ee = phys::h_eVc1e9*phys::h_eVc1e9 / (lam * lam); // photon energy squared
+    const double ne2 = 1 + A/M_PI * log((EE1 - ee) / (EE0 - ee)) +
+                         eps/M_PI * log((EE2 - ee) / (EE1 - ee)) +
+                                   G3 / (EE3 - ee);
+
+    return sqrt(ne2);
 }
 
 MI_PROPERTY(GaAs, absp,
