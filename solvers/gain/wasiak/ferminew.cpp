@@ -403,6 +403,8 @@ void FermiNewGainSolver<GeometryType>::buildStructure(double T,
             for (int i = 0; i < region.size(); ++i) {
                 double e = (this->materialSubstrate->lattC(T, 'a') - region.getLayerMaterial(i)->lattC(T, 'a')) /
                            region.getLayerMaterial(i)->lattC(T, 'a');
+                if ((i == 0) || (i == region.size()-1))
+                    e = 0.;
                 this->writelog(LOG_DEBUG, "Layer {0} - strain: {1}{2}", i + 1, e * 100., '%');
             }
     }
@@ -444,9 +446,10 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T,
     int N = region.size();  // number of all layers in the active region (QW, barr, external)
 
     double lattSub, straine = 0.;
+    double straineClad = 0.;
     if (strains) {
         lattSub = this->materialSubstrate->lattC(T, 'a');
-        straine = lattSub / region.getLayerMaterial(0)->lattC(T, 'a') - 1.;
+        straine = straineClad; // lattSub / region.getLayerMaterial(0)->lattC(T, 'a') - 1.;
     }
 
     double DEc = region.getLayerMaterial(0)->CB(T, straine);  // Ec0 for cladding
@@ -473,7 +476,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T,
         x += h;
         if (region.getLayerMaterial(i)->CB(T, straine) > DEc) return nullptr;
     }
-    if (strains) straine = lattSub / region.getLayerMaterial(N - 1)->lattC(T, 'a') - 1.;
+    if (strains) straine = straineClad; // lattSub / region.getLayerMaterial(N - 1)->lattC(T, 'a') - 1.;
     Ec = (region.getLayerMaterial(N - 1)->CB(T, straine) - DEc);
     if (showDetails)
         this->writelog(LOG_DEBUG, "Layer {0} CB: {1} eV", N, region.getLayerMaterial(N - 1)->CB(T, straine));
@@ -495,9 +498,10 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
     int N = region.size();  // number of all layers int the active region (QW, barr, external)
 
     double lattSub, straine = 0.;
+    double straineClad = 0.;
     if (strains) {
         lattSub = this->materialSubstrate->lattC(T, 'a');
-        straine = lattSub / region.getLayerMaterial(0)->lattC(T, 'a') - 1.;
+        straine = straineClad; // lattSub / region.getLayerMaterial(0)->lattC(T, 'a') - 1.;
     }
 
     double DEvhh = region.getLayerMaterial(0)->VB(T, straine, '*', 'H');  // Ev0 for cladding
@@ -525,7 +529,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
         x += h;
         if (region.getLayerMaterial(i)->VB(T, straine, '*', 'H') < DEvhh) return nullptr;
     }
-    if (strains) straine = lattSub / region.getLayerMaterial(N - 1)->lattC(T, 'a') - 1.;
+    if (strains) straine = straineClad; // lattSub / region.getLayerMaterial(N - 1)->lattC(T, 'a') - 1.;
     Evhh = -(region.getLayerMaterial(N - 1)->VB(T, straine, '*', 'H') - DEvhh);
     if (showDetails)
         this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", N,
@@ -547,9 +551,10 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvlh(double T,
     int N = region.size();  // number of all layers int the active region (QW, barr, external)
 
     double lattSub, straine = 0.;
+    double straineClad = 0.;
     if (strains) {
         lattSub = this->materialSubstrate->lattC(T, 'a');
-        straine = lattSub / region.getLayerMaterial(0)->lattC(T, 'a') - 1.;
+        straine = straineClad; // lattSub / region.getLayerMaterial(0)->lattC(T, 'a') - 1.;
     }
 
     double DEvlh = region.getLayerMaterial(0)->VB(T, straine, '*', 'L');  // Ev0 for cladding
@@ -578,7 +583,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvlh(double T,
         if (region.getLayerMaterial(i)->VB(T, straine, '*', 'L') < DEvlh) return nullptr;
         ;
     }
-    if (strains) straine = lattSub / region.getLayerMaterial(N - 1)->lattC(T, 'a') - 1.;
+    if (strains) straine = straineClad; // lattSub / region.getLayerMaterial(N - 1)->lattC(T, 'a') - 1.;
     Evlh = -(region.getLayerMaterial(N - 1)->VB(T, straine, '*', 'L') - DEvlh);
     if (showDetails)
         this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", N,
