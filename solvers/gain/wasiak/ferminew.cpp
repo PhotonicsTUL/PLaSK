@@ -446,20 +446,19 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T,
     int N = region.size();  // number of all layers in the active region (QW, barr, external)
 
     double lattSub, straine = 0.;
-    double straineClad = 0.;
+    
     if (strains) {
         lattSub = this->materialSubstrate->lattC(T, 'a');
-        straine = straineClad; // lattSub / region.getLayerMaterial(0)->lattC(T, 'a') - 1.;
     }
 
-    double DEc = region.getLayerMaterial(0)->CB(T, straine);  // Ec0 for cladding
+    double DEc = region.getLayerMaterial(0)->CB(T, 0.);  // Ec0 for cladding
 
     double x = 0.;
-    double Ec = region.getLayerMaterial(0)->CB(T, straine) - DEc;
-    if (showDetails) this->writelog(LOG_DEBUG, "Layer {0} CB: {1} eV", 1, region.getLayerMaterial(0)->CB(T, straine));
+    double Ec = region.getLayerMaterial(0)->CB(T, 0.) - DEc;
+    if (showDetails) this->writelog(LOG_DEBUG, "Layer {0} CB: {1} eV", 1, region.getLayerMaterial(0)->CB(T, 0.));
     levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::lewa,
-                                                      region.getLayerMaterial(0)->Me(T, straine).c11,
-                                                      region.getLayerMaterial(0)->Me(T, straine).c00, x,
+                                                      region.getLayerMaterial(0)->Me(T, 0.).c11,
+                                                      region.getLayerMaterial(0)->Me(T, 0.).c00, x,
                                                       Ec));  // left cladding
     for (int i = 1; i < N - 1; ++i) {
         if (strains) straine = lattSub / region.getLayerMaterial(i)->lattC(T, 'a') - 1.;
@@ -476,13 +475,13 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T,
         x += h;
         if (region.getLayerMaterial(i)->CB(T, straine) > DEc) return nullptr;
     }
-    if (strains) straine = straineClad; // lattSub / region.getLayerMaterial(N - 1)->lattC(T, 'a') - 1.;
-    Ec = (region.getLayerMaterial(N - 1)->CB(T, straine) - DEc);
+    
+    Ec = (region.getLayerMaterial(N - 1)->CB(T, 0.) - DEc);
     if (showDetails)
-        this->writelog(LOG_DEBUG, "Layer {0} CB: {1} eV", N, region.getLayerMaterial(N - 1)->CB(T, straine));
+        this->writelog(LOG_DEBUG, "Layer {0} CB: {1} eV", N, region.getLayerMaterial(N - 1)->CB(T, 0.));
     levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::prawa,
-                                                      region.getLayerMaterial(N - 1)->Me(T, straine).c11,
-                                                      region.getLayerMaterial(N - 1)->Me(T, straine).c00, x,
+                                                      region.getLayerMaterial(N - 1)->Me(T, 0.).c11,
+                                                      region.getLayerMaterial(N - 1)->Me(T, 0.).c00, x,
                                                       Ec));  // right cladding
 
     this->writelog(LOG_DETAIL, "Computing energy levels for electrons");
@@ -498,21 +497,20 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
     int N = region.size();  // number of all layers int the active region (QW, barr, external)
 
     double lattSub, straine = 0.;
-    double straineClad = 0.;
+
     if (strains) {
         lattSub = this->materialSubstrate->lattC(T, 'a');
-        straine = straineClad; // lattSub / region.getLayerMaterial(0)->lattC(T, 'a') - 1.;
     }
 
-    double DEvhh = region.getLayerMaterial(0)->VB(T, straine, '*', 'H');  // Ev0 for cladding
+    double DEvhh = region.getLayerMaterial(0)->VB(T, 0., '*', 'H');  // Ev0 for cladding
 
     double x = 0.;
-    double Evhh = -(region.getLayerMaterial(0)->VB(T, straine, '*', 'H') - DEvhh);
+    double Evhh = -(region.getLayerMaterial(0)->VB(T, 0., '*', 'H') - DEvhh);
     if (showDetails)
-        this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", 1, region.getLayerMaterial(0)->VB(T, straine, '*', 'H'));
+        this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", 1, region.getLayerMaterial(0)->VB(T, 0., '*', 'H'));
     levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::lewa,
-                                                      region.getLayerMaterial(0)->Mhh(T, straine).c11,
-                                                      region.getLayerMaterial(0)->Mhh(T, straine).c00, x,
+                                                      region.getLayerMaterial(0)->Mhh(T, 0.).c11,
+                                                      region.getLayerMaterial(0)->Mhh(T, 0.).c00, x,
                                                       Evhh));  // left cladding
     for (int i = 1; i < N - 1; ++i) {
         if (strains) straine = lattSub / region.getLayerMaterial(i)->lattC(T, 'a') - 1.;
@@ -529,14 +527,14 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvhh(double T,
         x += h;
         if (region.getLayerMaterial(i)->VB(T, straine, '*', 'H') < DEvhh) return nullptr;
     }
-    if (strains) straine = straineClad; // lattSub / region.getLayerMaterial(N - 1)->lattC(T, 'a') - 1.;
-    Evhh = -(region.getLayerMaterial(N - 1)->VB(T, straine, '*', 'H') - DEvhh);
+
+    Evhh = -(region.getLayerMaterial(N - 1)->VB(T, 0., '*', 'H') - DEvhh);
     if (showDetails)
         this->writelog(LOG_DEBUG, "Layer {0} VB(hh): {1} eV", N,
-                       region.getLayerMaterial(N - 1)->VB(T, straine, '*', 'H'));
+                       region.getLayerMaterial(N - 1)->VB(T, 0., '*', 'H'));
     levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::prawa,
-                                                      region.getLayerMaterial(N - 1)->Mhh(T, straine).c11,
-                                                      region.getLayerMaterial(N - 1)->Mhh(T, straine).c00, x, Evhh));
+                                                      region.getLayerMaterial(N - 1)->Mhh(T, 0.).c11,
+                                                      region.getLayerMaterial(N - 1)->Mhh(T, 0.).c00, x, Evhh));
 
     this->writelog(LOG_DETAIL, "Computing energy levels for heavy holes");
     return new kubly::struktura(levels.data, kubly::struktura::hh);
@@ -551,21 +549,20 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvlh(double T,
     int N = region.size();  // number of all layers int the active region (QW, barr, external)
 
     double lattSub, straine = 0.;
-    double straineClad = 0.;
+
     if (strains) {
         lattSub = this->materialSubstrate->lattC(T, 'a');
-        straine = straineClad; // lattSub / region.getLayerMaterial(0)->lattC(T, 'a') - 1.;
     }
 
-    double DEvlh = region.getLayerMaterial(0)->VB(T, straine, '*', 'L');  // Ev0 for cladding
+    double DEvlh = region.getLayerMaterial(0)->VB(T, 0., '*', 'L');  // Ev0 for cladding
 
     double x = 0.;
-    double Evlh = -(region.getLayerMaterial(0)->VB(T, straine, '*', 'L') - DEvlh);
+    double Evlh = -(region.getLayerMaterial(0)->VB(T, 0., '*', 'L') - DEvlh);
     if (showDetails)
-        this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", 1, region.getLayerMaterial(0)->VB(T, straine, '*', 'L'));
+        this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", 1, region.getLayerMaterial(0)->VB(T, 0., '*', 'L'));
     levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::lewa,
-                                                      region.getLayerMaterial(0)->Mlh(T, straine).c11,
-                                                      region.getLayerMaterial(0)->Mlh(T, straine).c00, x,
+                                                      region.getLayerMaterial(0)->Mlh(T, 0.).c11,
+                                                      region.getLayerMaterial(0)->Mlh(T, 0.).c00, x,
                                                       Evlh));  // left cladding
     for (int i = 1; i < N - 1; ++i) {
         if (strains) straine = lattSub / region.getLayerMaterial(i)->lattC(T, 'a') - 1.;
@@ -583,14 +580,14 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEvlh(double T,
         if (region.getLayerMaterial(i)->VB(T, straine, '*', 'L') < DEvlh) return nullptr;
         ;
     }
-    if (strains) straine = straineClad; // lattSub / region.getLayerMaterial(N - 1)->lattC(T, 'a') - 1.;
-    Evlh = -(region.getLayerMaterial(N - 1)->VB(T, straine, '*', 'L') - DEvlh);
+
+    Evlh = -(region.getLayerMaterial(N - 1)->VB(T, 0., '*', 'L') - DEvlh);
     if (showDetails)
         this->writelog(LOG_DEBUG, "Layer {0} VB(lh): {1} eV", N,
-                       region.getLayerMaterial(N - 1)->VB(T, straine, '*', 'L'));
+                       region.getLayerMaterial(N - 1)->VB(T, 0., '*', 'L'));
     levels.data.emplace_back(new kubly::warstwa_skraj(kubly::warstwa_skraj::prawa,
-                                                      region.getLayerMaterial(N - 1)->Mlh(T, straine).c11,
-                                                      region.getLayerMaterial(N - 1)->Mlh(T, straine).c00, x, Evlh));
+                                                      region.getLayerMaterial(N - 1)->Mlh(T, 0.).c11,
+                                                      region.getLayerMaterial(N - 1)->Mlh(T, 0.).c00, x, Evlh));
 
     this->writelog(LOG_DETAIL, "Computing energy levels for light holes");
     return new kubly::struktura(levels.data, kubly::struktura::lh);
