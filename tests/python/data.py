@@ -7,20 +7,28 @@ from numpy import *
 from numpy.testing import assert_array_equal
 
 import plask
-import plask.mesh
-import plask.geometry
+from plask import Data, mesh
 
 class DataTest(unittest.TestCase):
 
     def testFromArray(self):
-        m1 = plask.mesh.Rectangular2D([0, 1], [0, 1, 2], ordering='01')
-        m2 = plask.mesh.Rectangular2D([0, 1], [0, 1, 2], ordering='10')
+        m1 = mesh.Rectangular2D([0, 1], [0, 1, 2], ordering='01')
+        m2 = mesh.Rectangular2D([0, 1], [0, 1, 2], ordering='10')
         a = array([[0., 1., 2.], [3., 4., 5.]])
-        d1 = plask.Data(a, m1)
-        d2 = plask.Data(a, m2)
+        d1 = Data(a, m1)
+        d2 = Data(a, m2)
         self.assertEqual( list(d1), [0., 1., 2., 3., 4., 5.] )
         self.assertEqual( list(d2), [0., 3., 1., 4., 2., 5.] )
         assert_array_equal( d1.array, d2.array )
+
+    def testMultiIndex(self):
+        data2d = Data(array([[1., 2.], [3., 4.]]), mesh.Rectangular2D([0., 1.], [0., 1.]))
+        self.assertIsInstance(data2d[0, 1], float)
+        self.assertEqual(data2d[0, 1], 2.)
+
+        data3d = Data(array([[[1., 2.], [3., 4.]]]), mesh.Rectangular3D([0.], [0., 1.], [0., 1.]))
+        self.assertIsInstance(data3d[0, 0, 1], float)
+        self.assertEqual(data3d[0, 1, -1], 4.)
 
     def testSlice2D(self):
         axis = mesh.Regular(0, 9, 10)

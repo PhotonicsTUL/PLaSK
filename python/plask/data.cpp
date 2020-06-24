@@ -2,90 +2,63 @@
 #define NO_IMPORT_ARRAY
 
 #include "python_globals.h"
-#include "python_provider.h"
-#include "python_numpy.h"
 #include "python_mesh.h"
+#include "python_numpy.h"
+#include "python_provider.h"
 
+#include <plask/data.h>
+#include <plask/mesh/extruded_triangular3d.h>
 #include <plask/mesh/mesh.h>
 #include <plask/mesh/rectangular.h>
 #include <plask/mesh/triangular2d.h>
-#include <plask/mesh/extruded_triangular3d.h>
-#include <plask/data.h>
 
 namespace boost { namespace python {
 
-template <>
-struct base_type_traits<PyArrayObject>
-{
-    typedef PyObject type;
-};
+template <> struct base_type_traits<PyArrayObject> { typedef PyObject type; };
 
-}}
+}}  // namespace boost::python
 
 namespace plask {
 
-template <> template <>
-DataVector<const Tensor2<double>>::DataVector(const DataVector<const Vec<2,double>>& src)
-    : DataVector(reinterpret_cast<const DataVector<const Tensor2<double>>&>(src)) {
-}
+template <>
+template <>
+DataVector<const Tensor2<double>>::DataVector(const DataVector<const Vec<2, double>>& src)
+    : DataVector(reinterpret_cast<const DataVector<const Tensor2<double>>&>(src)) {}
 
-template <> template <>
-DataVector<const Tensor2<dcomplex>>::DataVector(const DataVector<const Vec<2,dcomplex>>& src)
-    : DataVector(reinterpret_cast<const DataVector<const Tensor2<dcomplex>>&>(src)) {
-}
+template <>
+template <>
+DataVector<const Tensor2<dcomplex>>::DataVector(const DataVector<const Vec<2, dcomplex>>& src)
+    : DataVector(reinterpret_cast<const DataVector<const Tensor2<dcomplex>>&>(src)) {}
 
+template <typename T> inline static Tensor2<double> abs(const Tensor2<T>& x) { return Tensor2<double>(abs(x.c00), abs(x.c11)); }
 
-template <typename T>
-inline static Tensor2<double> abs(const Tensor2<T>& x) {
-    return Tensor2<double>(abs(x.c00), abs(x.c11));
-}
-
-template <typename T>
-inline static Tensor3<double> abs(const Tensor3<T>& x) {
+template <typename T> inline static Tensor3<double> abs(const Tensor3<T>& x) {
     return Tensor3<double>(abs(x.c00), abs(x.c11), abs(x.c22), abs(x.c01));
 }
 
+template <typename T> inline static Vec<2, double> real(const Vec<2, T>& x) { return Vec<2, double>(real(x.c0), real(x.c1)); }
 
-template <typename T>
-inline static Vec<2,double> real(const Vec<2,T>& x) {
-    return Vec<2,double>(real(x.c0), real(x.c1));
+template <typename T> inline static Vec<3, double> real(const Vec<3, T>& x) {
+    return Vec<3, double>(real(x.c0), real(x.c1), real(x.c2));
 }
 
-template <typename T>
-inline static Vec<3,double> real(const Vec<3,T>& x) {
-    return Vec<3,double>(real(x.c0), real(x.c1), real(x.c2));
-}
+template <typename T> inline static Tensor2<double> real(const Tensor2<T>& x) { return Tensor2<double>(real(x.c00), real(x.c11)); }
 
-template <typename T>
-inline static Tensor2<double> real(const Tensor2<T>& x) {
-    return Tensor2<double>(real(x.c00), real(x.c11));
-}
-
-template <typename T>
-inline static Tensor3<double> real(const Tensor3<T>& x) {
+template <typename T> inline static Tensor3<double> real(const Tensor3<T>& x) {
     return Tensor3<double>(real(x.c00), real(x.c11), real(x.c22), real(x.c01));
 }
 
-template <typename T>
-inline static Vec<2,double> imag(const Vec<2,T>& x) {
-    return Vec<2,double>(imag(x.c0), imag(x.c1));
+template <typename T> inline static Vec<2, double> imag(const Vec<2, T>& x) { return Vec<2, double>(imag(x.c0), imag(x.c1)); }
+
+template <typename T> inline static Vec<3, double> imag(const Vec<3, T>& x) {
+    return Vec<3, double>(imag(x.c0), imag(x.c1), imag(x.c2));
 }
 
-template <typename T>
-inline static Vec<3,double> imag(const Vec<3,T>& x) {
-    return Vec<3,double>(imag(x.c0), imag(x.c1), imag(x.c2));
-}
+template <typename T> inline static Tensor2<double> imag(const Tensor2<T>& x) { return Tensor2<double>(imag(x.c00), imag(x.c11)); }
 
-template <typename T>
-inline static Tensor2<double> imag(const Tensor2<T>& x) {
-    return Tensor2<double>(imag(x.c00), imag(x.c11));
-}
-
-template <typename T>
-inline static Tensor3<double> imag(const Tensor3<T>& x) {
+template <typename T> inline static Tensor3<double> imag(const Tensor3<T>& x) {
     return Tensor3<double>(imag(x.c00), imag(x.c11), imag(x.c22), imag(x.c01));
 }
-
 
 namespace python {
 
@@ -95,7 +68,7 @@ static const char* DATA_DOCSTRING =
     u8"This class is returned by field providers and receivers and cointains the values\n"
     u8"of the computed field at specified mesh points. It can be passed to the field\n"
     u8"plotting and saving functions or even feeded to some receivers. Also, if the\n"
-    u8"mesh is a rectangular one, the data can be converted into an multi-dimensional\n"\
+    u8"mesh is a rectangular one, the data can be converted into an multi-dimensional\n"
     u8"numpy array.\n\n"
 
     u8"You may access the data by indexing the :class:`~plask.Data` object, where the\n"
@@ -149,114 +122,125 @@ static const char* DATA_DOCSTRING =
     u8"Construction of the data objects is efficient i.e. no data is copied in the\n"
     u8"memory from the provided array.\n";
 
-
 /*
  * Some helper functions for getting information on rectangular meshes
  */
 namespace detail {
 
-    template <typename T> struct isBasicData: std::false_type {};
-    template <typename T> struct isBasicData<const T>: isBasicData<typename std::remove_const<T>::type> {};
+template <typename T> struct isBasicData : std::false_type {};
+template <typename T> struct isBasicData<const T> : isBasicData<typename std::remove_const<T>::type> {};
 
-    template<> struct isBasicData<double> : std::true_type {};
-    template<> struct isBasicData<dcomplex> : std::true_type {};
-    template<> struct isBasicData<Vec<2,double>> : std::true_type {};
-    template<> struct isBasicData<Vec<2,dcomplex>> : std::true_type {};
-    template<> struct isBasicData<Vec<3,double>> : std::true_type {};
-    template<> struct isBasicData<Vec<3,dcomplex>> : std::true_type {};
-    template<> struct isBasicData<Tensor2<double>> : std::true_type {};
-    template<> struct isBasicData<Tensor2<dcomplex>> : std::true_type {};
-    template<> struct isBasicData<Tensor3<double>> : std::true_type {};
-    template<> struct isBasicData<Tensor3<dcomplex>> : std::true_type {};
+template <> struct isBasicData<double> : std::true_type {};
+template <> struct isBasicData<dcomplex> : std::true_type {};
+template <> struct isBasicData<Vec<2, double>> : std::true_type {};
+template <> struct isBasicData<Vec<2, dcomplex>> : std::true_type {};
+template <> struct isBasicData<Vec<3, double>> : std::true_type {};
+template <> struct isBasicData<Vec<3, dcomplex>> : std::true_type {};
+template <> struct isBasicData<Tensor2<double>> : std::true_type {};
+template <> struct isBasicData<Tensor2<dcomplex>> : std::true_type {};
+template <> struct isBasicData<Tensor3<double>> : std::true_type {};
+template <> struct isBasicData<Tensor3<dcomplex>> : std::true_type {};
 
-    template <typename T> struct basetype { typedef T type; };
-    template <typename T, int dim> struct basetype<const Vec<dim,T>> { typedef T type; };
-    template <typename T> struct basetype<const Tensor2<T>> { typedef T type; };
-    template <typename T> struct basetype<const Tensor3<T>> { typedef T type; };
+template <typename T> struct basetype { typedef T type; };
+template <typename T, int dim> struct basetype<const Vec<dim, T>> { typedef T type; };
+template <typename T> struct basetype<const Tensor2<T>> { typedef T type; };
+template <typename T> struct basetype<const Tensor3<T>> { typedef T type; };
 
-    template <typename T> constexpr inline static npy_intp type_dim() { return 1; }
-    template <> constexpr inline npy_intp type_dim<Vec<2,double>>() { return 2; }
-    template <> constexpr inline npy_intp type_dim<Vec<2,dcomplex>>() { return 2; }
-    template <> constexpr inline npy_intp type_dim<Vec<3,double>>() { return 3; }
-    template <> constexpr inline npy_intp type_dim<Vec<3,dcomplex>>() { return 3; }
-    // template <> constexpr inline npy_intp type_dim<Tensor2<double>>() { return 2; }
-    // template <> constexpr inline npy_intp type_dim<Tensor2<dcomplex>>() { return 2; }
-    template <> constexpr inline npy_intp type_dim<Tensor3<double>>() { return 4; }
-    template <> constexpr inline npy_intp type_dim<Tensor3<dcomplex>>() { return 4; }
-    template <> constexpr inline npy_intp type_dim<const Vec<2,double>>() { return 2; }
-    template <> constexpr inline npy_intp type_dim<const Vec<2,dcomplex>>() { return 2; }
-    template <> constexpr inline npy_intp type_dim<const Vec<3,double>>() { return 3; }
-    template <> constexpr inline npy_intp type_dim<const Vec<3,dcomplex>>() { return 3; }
-    template <> constexpr inline npy_intp type_dim<const Tensor2<double>>() { return 2; }
-    template <> constexpr inline npy_intp type_dim<const Tensor2<dcomplex>>() { return 2; }
-    template <> constexpr inline npy_intp type_dim<const Tensor3<double>>() { return 4; }
-    template <> constexpr inline npy_intp type_dim<const Tensor3<dcomplex>>() { return 4; }
+template <typename T> constexpr inline static npy_intp type_dim() { return 1; }
+template <> constexpr inline npy_intp type_dim<Vec<2, double>>() { return 2; }
+template <> constexpr inline npy_intp type_dim<Vec<2, dcomplex>>() { return 2; }
+template <> constexpr inline npy_intp type_dim<Vec<3, double>>() { return 3; }
+template <> constexpr inline npy_intp type_dim<Vec<3, dcomplex>>() { return 3; }
+// template <> constexpr inline npy_intp type_dim<Tensor2<double>>() { return 2; }
+// template <> constexpr inline npy_intp type_dim<Tensor2<dcomplex>>() { return 2; }
+template <> constexpr inline npy_intp type_dim<Tensor3<double>>() { return 4; }
+template <> constexpr inline npy_intp type_dim<Tensor3<dcomplex>>() { return 4; }
+template <> constexpr inline npy_intp type_dim<const Vec<2, double>>() { return 2; }
+template <> constexpr inline npy_intp type_dim<const Vec<2, dcomplex>>() { return 2; }
+template <> constexpr inline npy_intp type_dim<const Vec<3, double>>() { return 3; }
+template <> constexpr inline npy_intp type_dim<const Vec<3, dcomplex>>() { return 3; }
+template <> constexpr inline npy_intp type_dim<const Tensor2<double>>() { return 2; }
+template <> constexpr inline npy_intp type_dim<const Tensor2<dcomplex>>() { return 2; }
+template <> constexpr inline npy_intp type_dim<const Tensor3<double>>() { return 4; }
+template <> constexpr inline npy_intp type_dim<const Tensor3<dcomplex>>() { return 4; }
 
+inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<2>& mesh) {
+    return {npy_intp(mesh.axis[0]->size()), npy_intp(mesh.axis[1]->size())};
+}
+inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<3>& mesh) {
+    return {npy_intp(mesh.axis[0]->size()), npy_intp(mesh.axis[1]->size()), npy_intp(mesh.axis[2]->size())};
+}
 
-    inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<2>& mesh) { return { npy_intp(mesh.axis[0]->size()), npy_intp(mesh.axis[1]->size()) }; }
-    inline static std::vector<npy_intp> mesh_dims(const RectangularMesh<3>& mesh) { return { npy_intp(mesh.axis[0]->size()), npy_intp(mesh.axis[1]->size()), npy_intp(mesh.axis[2]->size()) }; }
-
-    template <typename T>
-    inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<2>& mesh, size_t nd) {
-        std::vector<npy_intp> strides(nd);
-        strides.back() = sizeof(T) / type_dim<T>();
-        if (mesh.getIterationOrder() == RectangularMesh<2>::ORDER_10) {
-            strides[0] = sizeof(T);
-            strides[1] = mesh.axis[0]->size() * sizeof(T);
-        } else {
-            strides[0] = mesh.axis[1]->size() * sizeof(T);
-            strides[1] = sizeof(T);
-        }
-        return strides;
+template <typename T> inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<2>& mesh, size_t nd) {
+    std::vector<npy_intp> strides(nd);
+    strides.back() = sizeof(T) / type_dim<T>();
+    if (mesh.getIterationOrder() == RectangularMesh<2>::ORDER_10) {
+        strides[0] = sizeof(T);
+        strides[1] = mesh.axis[0]->size() * sizeof(T);
+    } else {
+        strides[0] = mesh.axis[1]->size() * sizeof(T);
+        strides[1] = sizeof(T);
     }
+    return strides;
+}
 
-    #define ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(MeshT, first, second, third) \
-        case MeshT::ORDER_##first##second##third: \
-            strides[first] = mesh.axis[second]->size() * mesh.axis[third]->size() * sizeof(T); \
-            strides[second] = mesh.axis[third]->size() * sizeof(T); \
-            strides[third] = sizeof(T); \
-            break;
+#define ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(MeshT, first, second, third)               \
+    case MeshT::ORDER_##first##second##third:                                              \
+        strides[first] = mesh.axis[second]->size() * mesh.axis[third]->size() * sizeof(T); \
+        strides[second] = mesh.axis[third]->size() * sizeof(T);                            \
+        strides[third] = sizeof(T);                                                        \
+        break;
 
-    template <typename T>
-    inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<3>& mesh, size_t nd) {
-        std::vector<npy_intp> strides(nd, sizeof(T)/type_dim<T>());
-        typedef RectangularMesh<3> Mesh3D;
-        switch (mesh.getIterationOrder()) {
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 0,1,2)
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 0,2,1)
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 1,0,2)
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 1,2,0)
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 2,0,1)
-            ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 2,1,0)
-        }
-        return strides;
+template <typename T> inline static std::vector<npy_intp> mesh_strides(const RectangularMesh<3>& mesh, size_t nd) {
+    std::vector<npy_intp> strides(nd, sizeof(T) / type_dim<T>());
+    typedef RectangularMesh<3> Mesh3D;
+    switch (mesh.getIterationOrder()) {
+        ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 0, 1, 2)
+        ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 0, 2, 1)
+        ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 1, 0, 2)
+        ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 1, 2, 0)
+        ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 2, 0, 1)
+        ITERATION_ORDER_STRIDE_CASE_RECTILINEAR(Mesh3D, 2, 1, 0)
     }
+    return strides;
+}
 
-    #undef ITERATION_ORDER_STRIDE_CASE_RECTILINEAR
+#undef ITERATION_ORDER_STRIDE_CASE_RECTILINEAR
 
-} // namespace  detail
-
+}  // namespace  detail
 
 template <typename T, int dim>
-static const typename DataVector<T>::const_iterator PythonDataVector_begin(const PythonDataVector<T,dim>& self) { return self.begin(); }
+static const typename DataVector<T>::const_iterator PythonDataVector_begin(const PythonDataVector<T, dim>& self) {
+    return self.begin();
+}
 
 template <typename T, int dim>
-static const typename DataVector<T>::const_iterator PythonDataVector_end(const PythonDataVector<T,dim>& self) { return self.end(); }
-
-
+static const typename DataVector<T>::const_iterator PythonDataVector_end(const PythonDataVector<T, dim>& self) {
+    return self.end();
+}
 
 template <typename MeshT> struct PythonDataVector_SliceBase {
-
     enum { dim = MeshT::DIM };
 
     Py_ssize_t start[dim], stop[dim], step[dim], length[dim], stride[dim];
     shared_ptr<MeshT> mesh;
-    
+
+    static size_t index(const shared_ptr<MeshD<dim>>& data_mesh, const py::object& indices) {
+        auto src_mesh = dynamic_pointer_cast<MeshT>(data_mesh);
+        if (!src_mesh) throw TypeError("{0}D slice can only be extracted for data with RectangularMesh{0}D", dim);
+        Vec<dim, int> vec = Vec<dim, int>::fromIterator(py::stl_input_iterator<int>(indices));
+        for (int i = 0; i != dim; ++i) {
+            size_t size = src_mesh->getAxis(i)->size();
+            if (vec[i] < 0) vec[i] += size;
+            if (vec[i] < 0 || vec[i] >= size) throw IndexError("index out of range");
+        }
+        return src_mesh->index(Vec<dim, size_t>(vec));
+    }
 
     PythonDataVector_SliceBase(const shared_ptr<MeshD<dim>>& data_mesh, const py::object& slice) {
         auto src_mesh = dynamic_pointer_cast<MeshT>(data_mesh);
         if (!src_mesh) throw TypeError("{0}D slice can only be extracted for data with RectangularMesh{0}D", dim);
-        
+
         const char* iteration_order = src_mesh->getIterationOrderAsArray();
 
         mesh = make_shared<MeshT>(src_mesh->getIterationOrder());
@@ -271,23 +255,20 @@ template <typename MeshT> struct PythonDataVector_SliceBase {
             if (index.check()) {
                 int idx(index);
                 if (idx < 0) idx += size;
-                if (idx >= size)
-                    throw IndexError("Index {}} is out of bounds for axis {}} with size {}",
-                                     idx, ax, size);
+                if (idx >= size) throw IndexError("Index {}} is out of bounds for axis {}} with size {}", idx, ax, size);
                 start[id] = idx;
-                stop[id] = idx+1;
+                stop[id] = idx + 1;
                 step[id] = 1;
                 length[id] = 1;
             } else {
-#               if PY_VERSION_HEX < 0x03060100
-                    if (PySlice_GetIndicesEx(py::object(slice[ax]).ptr(), size, 
-                        start+id, stop+id, step+id, length+id) < 0)
-                        throw py::error_already_set();
-#               else
-                    if (PySlice_Unpack(py::object(slice[ax]).ptr(), start+id, stop+id, step+id) < 0)
-                        throw py::error_already_set();
-                    length[id] = PySlice_AdjustIndices(size, start+id, stop+id, step[id]);
-#               endif
+#if PY_VERSION_HEX < 0x03060100
+                if (PySlice_GetIndicesEx(py::object(slice[ax]).ptr(), size, start + id, stop + id, step + id, length + id) < 0)
+                    throw py::error_already_set();
+#else
+                if (PySlice_Unpack(py::object(slice[ax]).ptr(), start + id, stop + id, step + id) < 0)
+                    throw py::error_already_set();
+                length[id] = PySlice_AdjustIndices(size, start + id, stop + id, step[id]);
+#endif
             }
             if (step[id] < 0) throw ValueError("Negative slice steps are not suported for Data");
             std::vector<double> points;
@@ -301,14 +282,11 @@ template <typename MeshT> struct PythonDataVector_SliceBase {
 
 template <typename T, int dim> struct PythonDataVector_Slice {};
 
-template <typename T>
-struct PythonDataVector_Slice<T,2>: public PythonDataVector_SliceBase<RectangularMesh2D> {
-    
-    const PythonDataVector<T,2>& self;
+template <typename T> struct PythonDataVector_Slice<T, 2> : public PythonDataVector_SliceBase<RectangularMesh2D> {
+    const PythonDataVector<T, 2>& self;
 
-    PythonDataVector_Slice(const PythonDataVector<T,2>& self, const py::object& slice): 
-        PythonDataVector_SliceBase<RectangularMesh2D>(self.mesh, slice),
-        self(self) {}
+    PythonDataVector_Slice(const PythonDataVector<T, 2>& self, const py::object& slice)
+        : PythonDataVector_SliceBase<RectangularMesh2D>(self.mesh, slice), self(self) {}
 
     operator py::object() const {
         DataVector<typename std::remove_const<T>::type> data(size_t(length[0] * length[1]));
@@ -316,83 +294,82 @@ struct PythonDataVector_Slice<T,2>: public PythonDataVector_SliceBase<Rectangula
 
         for (int i0 = start[0]; i0 < stop[0]; i0 += step[0]) {
             int offset0 = i0 * stride[0];
-            for (int i1 = start[1]; i1 < stop[1]; i1 += step[1], ++dst)
-                *dst = self[offset0 + i1];
+            for (int i1 = start[1]; i1 < stop[1]; i1 += step[1], ++dst) *dst = self[offset0 + i1];
         }
 
-        auto result = plask::make_shared<PythonDataVector<T,dim>>(data, mesh);
+        auto result = plask::make_shared<PythonDataVector<T, dim>>(data, mesh);
         return py::object(result);
     }
 };
 
-template <typename T>
-struct PythonDataVector_Slice<T,3>: public PythonDataVector_SliceBase<RectangularMesh3D> {
-    
-    const PythonDataVector<T,3>& self;
+template <typename T> struct PythonDataVector_Slice<T, 3> : public PythonDataVector_SliceBase<RectangularMesh3D> {
+    const PythonDataVector<T, 3>& self;
 
-    PythonDataVector_Slice(const PythonDataVector<T,3>& self, const py::object& slice): 
-        PythonDataVector_SliceBase<RectangularMesh3D>(self.mesh, slice),
-        self(self) {}
+    PythonDataVector_Slice(const PythonDataVector<T, 3>& self, const py::object& slice)
+        : PythonDataVector_SliceBase<RectangularMesh3D>(self.mesh, slice), self(self) {}
 
     operator py::object() const {
-       DataVector<typename std::remove_const<T>::type> data(size_t(length[0] * length[1] * length[2]));
+        DataVector<typename std::remove_const<T>::type> data(size_t(length[0] * length[1] * length[2]));
         auto* dst = data.data();
 
         for (int i0 = start[0]; i0 < stop[0]; i0 += step[0]) {
             int offset0 = i0 * stride[0];
             for (int i1 = start[1]; i1 < stop[1]; i1 += step[1]) {
                 int offset1 = offset0 + i1 * stride[1];
-                for (int i2 = start[2]; i2 < stop[2]; i2 += step[2], ++dst)
-                    *dst = self[offset1 + i2];
+                for (int i2 = start[2]; i2 < stop[2]; i2 += step[2], ++dst) *dst = self[offset1 + i2];
             }
         }
 
-        auto result = plask::make_shared<PythonDataVector<T,dim>>(data, mesh);
+        auto result = plask::make_shared<PythonDataVector<T, dim>>(data, mesh);
         return py::object(result);
     }
 };
 
-
 template <typename T, int dim>
-static py::object PythonDataVector_getitem(const PythonDataVector<T,dim>& self, const py::object& item) {
+static py::object PythonDataVector_getitem(const PythonDataVector<T, dim>& self, const py::object& item) {
     py::extract<std::ptrdiff_t> index(item);
     if (index.check()) {
         std::ptrdiff_t i = index();
         if (i < 0) i += self.size();
         if (i < 0 || std::size_t(i) >= self.size()) throw IndexError(u8"index out of range");
         return py::object(self[i]);
-    } else if (PyTuple_Check(item.ptr()) && py::len(item) == dim) {
+    } else if (PyTuple_Check(item.ptr())) {
+        if (py::len(item) != dim)
+            throw TypeError("You must use either 1 or {} data indices", dim);
+        bool all_int = true;
         for (int i = 0; i != dim; ++i) {
             PyObject* it = py::object(item[i]).ptr();
-            if (!(PySlice_Check(it) || PyInt_Check(it)))
-                throw TypeError("Data indices must be integers or {}D slices", dim);
+            bool is_int = PyInt_Check(it);
+            if (!(PySlice_Check(it) || is_int))
+                throw TypeError("Data indices must be integers or {}D slices not {}", dim,
+                                py::extract<std::string>(item[i].attr("__class__").attr("__name__"))());
+            all_int = all_int && is_int;
         }
-        return PythonDataVector_Slice<T,dim>(self, item);
+        if (all_int)
+            return py::object(self[PythonDataVector_Slice<T, dim>::index(self.mesh, item)]);
+        else
+            return PythonDataVector_Slice<T, dim>(self, item);
     } else {
         throw TypeError("Data indices must be integers or {}D slices not {}", dim,
                         py::extract<std::string>(item.attr("__class__").attr("__name__"))());
     }
 }
 
-
-template <typename T, int dim>
-static bool PythonDataVector_contains(const PythonDataVector<T,dim>& self, const T& key) { return std::find(self.begin(), self.end(), key) != self.end(); }
-
-
-template <typename T, int dim>
-py::handle<> DataVector_dtype() {
-    return detail::dtype<typename std::remove_const<T>::type>();
+template <typename T, int dim> static bool PythonDataVector_contains(const PythonDataVector<T, dim>& self, const T& key) {
+    return std::find(self.begin(), self.end(), key) != self.end();
 }
 
+template <typename T, int dim> py::handle<> DataVector_dtype() { return detail::dtype<typename std::remove_const<T>::type>(); }
 
 template <typename T, int dim>
-static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type
-PythonDataVector__array__(py::object oself, py::object dtype=py::object()) {
-    const PythonDataVector<T,dim>* self = py::extract<const PythonDataVector<T,dim>*>(oself);
+static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type PythonDataVector__array__(
+    py::object oself,
+    py::object dtype = py::object()) {
+    const PythonDataVector<T, dim>* self = py::extract<const PythonDataVector<T, dim>*>(oself);
     if (self->mesh_changed) throw Exception(u8"Cannot create array, mesh changed since data retrieval");
-    const int nd = (detail::type_dim<T>() == 1)? 1 : 2;
-    npy_intp dims[] = { static_cast<npy_intp>(self->mesh->size()), detail::type_dim<T>() };
-    npy_intp strides[] = { static_cast<npy_intp>(sizeof(T)), static_cast<npy_intp>(sizeof(T) / detail::type_dim<T>()) };
+    const int nd = (detail::type_dim<T>() == 1) ? 1 : 2;
+    npy_intp dims[] = {static_cast<npy_intp>(self->mesh->size()), detail::type_dim<T>()};
+    npy_intp strides[] = {static_cast<npy_intp>(sizeof(T)), static_cast<npy_intp>(sizeof(T) / detail::type_dim<T>())};
     PyObject* arr = PyArray_New(&PyArray_Type, nd, dims, detail::typenum<T>(), strides, (void*)self->data(), 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from data");
     confirm_array<T>(arr, oself, dtype);
@@ -400,47 +377,38 @@ PythonDataVector__array__(py::object oself, py::object dtype=py::object()) {
 }
 
 template <typename T, int dim>
-static typename std::enable_if<!detail::isBasicData<T>::value, py::object>::type
-PythonDataVector__array__(py::object oself, py::object dtype=py::object()) {
-    const PythonDataVector<T,dim>* self = py::extract<const PythonDataVector<T,dim>*>(oself);
+static typename std::enable_if<!detail::isBasicData<T>::value, py::object>::type PythonDataVector__array__(
+    py::object oself,
+    py::object dtype = py::object()) {
+    const PythonDataVector<T, dim>* self = py::extract<const PythonDataVector<T, dim>*>(oself);
     if (!dtype.is_none()) throw ValueError(u8"dtype for this data must not be specified");
     if (self->mesh_changed) throw Exception(u8"Cannot create array, mesh changed since data retrieval");
 
-    npy_intp dims[] = { static_cast<npy_intp>(self->size()) };
+    npy_intp dims[] = {static_cast<npy_intp>(self->size())};
     py::object arr(py::handle<>(PyArray_SimpleNew(1, dims, NPY_OBJECT)));
     PyObject** arr_data = static_cast<PyObject**>(PyArray_DATA((PyArrayObject*)arr.ptr()));
-    for (auto i = self->begin(); i != self->end(); ++i, ++arr_data)
-        *arr_data = py::incref(py::object(*i).ptr());
+    for (auto i = self->begin(); i != self->end(); ++i, ++arr_data) *arr_data = py::incref(py::object(*i).ptr());
     return arr;
 }
 
-
-
 template <typename T, typename MeshT, int dim>
-static inline typename std::enable_if<detail::isBasicData<T>::value, PyObject*>::type
-PythonDataVector_ArrayImpl(const PythonDataVector<T,dim>* self) {
+static inline typename std::enable_if<detail::isBasicData<T>::value, PyObject*>::type PythonDataVector_ArrayImpl(
+    const PythonDataVector<T, dim>* self) {
     shared_ptr<MeshT> mesh = dynamic_pointer_cast<MeshT>(self->mesh);
     if (!mesh) return nullptr;
 
     std::vector<npy_intp> dims = detail::mesh_dims(*mesh);
     if (detail::type_dim<T>() != 1) dims.push_back(detail::type_dim<T>());
 
-    PyObject* arr = PyArray_New(&PyArray_Type,
-                                int(dims.size()),
-                                & dims.front(),
-                                detail::typenum<T>(),
-                                & detail::mesh_strides<T>(*mesh, dims.size()).front(),
-                                (void*)self->data(),
-                                0,
-                                0,
-                                NULL);
+    PyObject* arr = PyArray_New(&PyArray_Type, int(dims.size()), &dims.front(), detail::typenum<T>(),
+                                &detail::mesh_strides<T>(*mesh, dims.size()).front(), (void*)self->data(), 0, 0, NULL);
     if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from data");
     return arr;
 }
 
 template <typename T, typename MeshT, int dim>
-static inline typename std::enable_if<!detail::isBasicData<T>::value, PyObject*>::type
-PythonDataVector_ArrayImpl(const PythonDataVector<T,dim>* self) {
+static inline typename std::enable_if<!detail::isBasicData<T>::value, PyObject*>::type PythonDataVector_ArrayImpl(
+    const PythonDataVector<T, dim>* self) {
     shared_ptr<MeshT> mesh = dynamic_pointer_cast<MeshT>(self->mesh);
     if (!mesh) return nullptr;
 
@@ -450,151 +418,145 @@ PythonDataVector_ArrayImpl(const PythonDataVector<T,dim>* self) {
     if (arr == nullptr) throw plask::CriticalException(u8"Cannot create array from data");
 
     PyObject** arr_data = static_cast<PyObject**>(PyArray_DATA((PyArrayObject*)arr));
-    for (auto i = self->begin(); i < self->end(); ++i, ++arr_data)
-        *arr_data = py::incref(py::object(*i).ptr());
+    for (auto i = self->begin(); i < self->end(); ++i, ++arr_data) *arr_data = py::incref(py::object(*i).ptr());
 
     return arr;
 }
 
-template <typename T, int dim>
-static py::object PythonDataVector_Array(py::object oself) {
-    const PythonDataVector<T,dim>* self = py::extract<const PythonDataVector<T,dim>*>(oself);
+template <typename T, int dim> static py::object PythonDataVector_Array(py::object oself) {
+    const PythonDataVector<T, dim>* self = py::extract<const PythonDataVector<T, dim>*>(oself);
 
     if (self->mesh_changed) throw Exception(u8"Cannot create array, mesh changed since data retrieval");
 
     PyObject* arr = PythonDataVector_ArrayImpl<T, RectangularMesh<2>>(self);
     if (!arr) arr = PythonDataVector_ArrayImpl<T, RectangularMesh<3>>(self);
 
-    if (arr == nullptr) throw TypeError(u8"Cannot create array for data on this mesh type (possible only for {0})",
-                                        (dim == 2)? "mesh.RectangularMesh2D" : "mesh.RectangularMesh3D");
+    if (arr == nullptr)
+        throw TypeError(u8"Cannot create array for data on this mesh type (possible only for {0})",
+                        (dim == 2) ? "mesh.RectangularMesh2D" : "mesh.RectangularMesh3D");
 
     py::incref(oself.ptr());
-    PyArray_SetBaseObject((PyArrayObject*)arr, oself.ptr()); // Make sure the data vector stays alive as long as the array
+    PyArray_SetBaseObject((PyArrayObject*)arr, oself.ptr());  // Make sure the data vector stays alive as long as the array
     // confirm_array<T>(arr, oself, dtype);
 
     return py::object(py::handle<>(arr));
 }
 
-
 namespace detail {
 
-    template <typename T, int dim>
-    static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type
-    makeDataVectorImpl(PyArrayObject* arr, shared_ptr<MeshD<dim>> mesh) {
+template <typename T, int dim>
+static typename std::enable_if<detail::isBasicData<T>::value, py::object>::type makeDataVectorImpl(PyArrayObject* arr,
+                                                                                                   shared_ptr<MeshD<dim>> mesh) {
+    size_t size;
+    py::handle<PyArrayObject> newarr;
 
-        size_t size;
-        py::handle<PyArrayObject> newarr;
-
-        if (PyArray_NDIM(arr) == 1) {
-            size = PyArray_DIMS(arr)[0] / type_dim<T>();
-            if (PyArray_STRIDES(arr)[0] != sizeof(T)) {
-                writelog(LOG_DEBUG, u8"Copying numpy array to make is contiguous");
-                npy_intp sizes[] = { PyArray_DIMS(arr)[0] };
-                npy_intp strides[] = { sizeof(T) };
-                newarr = py::handle<PyArrayObject>(
-                    (PyArrayObject*)PyArray_New(&PyArray_Type, 1, sizes,
-                                                PyArray_TYPE(arr), strides,
-                                                nullptr, 0, 0, nullptr)
-                );
-                PyArray_CopyInto(newarr.get(), arr);
-                arr = newarr.get();
-            }
-        } else if (type_dim<T>() != 1 && PyArray_NDIM(arr) == 2 &&
-                   std::size_t(PyArray_DIMS(arr)[0]) == mesh->size() && PyArray_DIMS(arr)[1] == type_dim<T>()) {
-            size = mesh->size();
-            if (PyArray_STRIDES(arr)[0] != sizeof(T)) {
-                writelog(LOG_DEBUG, u8"Copying numpy array to make is contiguous");
-                npy_intp sizes[] = { static_cast<npy_intp>(size), type_dim<T>() };
-                npy_intp strides[] = { static_cast<npy_intp>(sizeof(T)), static_cast<npy_intp>(sizeof(T) / type_dim<T>()) };
-                newarr = py::handle<PyArrayObject>(
-                    (PyArrayObject*)PyArray_New(&PyArray_Type, 2, sizes,
-                                                PyArray_TYPE(arr), strides,
-                                                nullptr, 0, 0, nullptr)
-                );
-                PyArray_CopyInto(newarr.get(), arr);
-                arr = newarr.get();
-            }
-        } else {
-            auto rectangular = dynamic_pointer_cast<RectangularMesh<dim>>(mesh);
-            if (!rectangular) throw TypeError(u8"For this mesh type only one-dimensional array is allowed");
-            auto meshdims = mesh_dims(*rectangular);
-            if (type_dim<T>() != 1) meshdims.push_back(type_dim<T>());
-            std::size_t nd = meshdims.size();
-            if ((std::size_t)PyArray_NDIM(arr) != nd) throw ValueError(u8"Provided array must have either 1 or {0} dimensions", dim);
-            for (std::size_t i = 0; i != nd; ++i)
-                if (meshdims[i] != PyArray_DIMS(arr)[i])
-                    throw ValueError(u8"Dimension {0} for the array ({2}) does not match with the mesh ({1})", i, meshdims[i], PyArray_DIMS(arr)[i]);
-            auto meshstrides = mesh_strides<T>(*rectangular, nd);
-            for (std::size_t i = 0; i != nd; ++i) {
-                if (meshstrides[i] != PyArray_STRIDES(arr)[i]) {
-                    writelog(LOG_DEBUG, u8"Copying numpy array to match mesh strides");
-                    newarr = py::handle<PyArrayObject>(
-                        (PyArrayObject*)PyArray_New(&PyArray_Type, int(nd), meshdims.data(),
-                                                    PyArray_TYPE(arr), meshstrides.data(),
-                                                    nullptr, 0, 0, nullptr)
-                    );
-                    PyArray_CopyInto(newarr.get(), arr);
-                    arr = newarr.get();
-                    break;
-                }
-            }
-            size = mesh->size();
+    if (PyArray_NDIM(arr) == 1) {
+        size = PyArray_DIMS(arr)[0] / type_dim<T>();
+        if (PyArray_STRIDES(arr)[0] != sizeof(T)) {
+            writelog(LOG_DEBUG, u8"Copying numpy array to make is contiguous");
+            npy_intp sizes[] = {PyArray_DIMS(arr)[0]};
+            npy_intp strides[] = {sizeof(T)};
+            newarr = py::handle<PyArrayObject>(
+                (PyArrayObject*)PyArray_New(&PyArray_Type, 1, sizes, PyArray_TYPE(arr), strides, nullptr, 0, 0, nullptr));
+            PyArray_CopyInto(newarr.get(), arr);
+            arr = newarr.get();
         }
+    } else if (type_dim<T>() != 1 && PyArray_NDIM(arr) == 2 && std::size_t(PyArray_DIMS(arr)[0]) == mesh->size() &&
+               PyArray_DIMS(arr)[1] == type_dim<T>()) {
+        size = mesh->size();
+        if (PyArray_STRIDES(arr)[0] != sizeof(T)) {
+            writelog(LOG_DEBUG, u8"Copying numpy array to make is contiguous");
+            npy_intp sizes[] = {static_cast<npy_intp>(size), type_dim<T>()};
+            npy_intp strides[] = {static_cast<npy_intp>(sizeof(T)), static_cast<npy_intp>(sizeof(T) / type_dim<T>())};
+            newarr = py::handle<PyArrayObject>(
+                (PyArrayObject*)PyArray_New(&PyArray_Type, 2, sizes, PyArray_TYPE(arr), strides, nullptr, 0, 0, nullptr));
+            PyArray_CopyInto(newarr.get(), arr);
+            arr = newarr.get();
+        }
+    } else {
+        auto rectangular = dynamic_pointer_cast<RectangularMesh<dim>>(mesh);
+        if (!rectangular) throw TypeError(u8"For this mesh type only one-dimensional array is allowed");
+        auto meshdims = mesh_dims(*rectangular);
+        if (type_dim<T>() != 1) meshdims.push_back(type_dim<T>());
+        std::size_t nd = meshdims.size();
+        if ((std::size_t)PyArray_NDIM(arr) != nd) throw ValueError(u8"Provided array must have either 1 or {0} dimensions", dim);
+        for (std::size_t i = 0; i != nd; ++i)
+            if (meshdims[i] != PyArray_DIMS(arr)[i])
+                throw ValueError(u8"Dimension {0} for the array ({2}) does not match with the mesh ({1})", i, meshdims[i],
+                                 PyArray_DIMS(arr)[i]);
+        auto meshstrides = mesh_strides<T>(*rectangular, nd);
+        for (std::size_t i = 0; i != nd; ++i) {
+            if (meshstrides[i] != PyArray_STRIDES(arr)[i]) {
+                writelog(LOG_DEBUG, u8"Copying numpy array to match mesh strides");
+                newarr = py::handle<PyArrayObject>((PyArrayObject*)PyArray_New(
+                    &PyArray_Type, int(nd), meshdims.data(), PyArray_TYPE(arr), meshstrides.data(), nullptr, 0, 0, nullptr));
+                PyArray_CopyInto(newarr.get(), arr);
+                arr = newarr.get();
+                break;
+            }
+        }
+        size = mesh->size();
+    }
 
+    if (size != mesh->size()) throw ValueError(u8"Sizes of data ({0}) and mesh ({1}) do not match", size, mesh->size());
+
+    auto result = plask::make_shared<PythonDataVector<const T, dim>>(
+        DataVector<const T>((const T*)PyArray_DATA(arr), size, NumpyDataDeleter(arr)), mesh);
+
+    return py::object(result);
+}
+
+template <typename T, int dim>
+static typename std::enable_if<!detail::isBasicData<T>::value, py::object>::type makeDataVectorImpl(PyArrayObject* arr,
+                                                                                                    shared_ptr<MeshD<dim>> mesh) {
+    size_t size;
+    py::handle<PyArrayObject> newarr;
+
+    if (PyArray_NDIM(arr) != 1) {
+        throw NotImplemented(u8"Data from multi-dimensional array for this dtype");
+    } else {
         if (size != mesh->size()) throw ValueError(u8"Sizes of data ({0}) and mesh ({1}) do not match", size, mesh->size());
-
-        auto result = plask::make_shared<PythonDataVector<const T,dim>>(
-            DataVector<const T>((const T*)PyArray_DATA(arr), size, NumpyDataDeleter(arr)),
-            mesh);
-
+        size = PyArray_DIMS(arr)[0];
+        PyArrayIterObject* iter = (PyArrayIterObject*)PyArray_IterNew((PyObject*)arr);
+        auto data = DataVector<T>(size);
+        for (size_t i = 0; i != size; ++i) {
+            data[i] = py::extract<T>((*(PyObject**)iter->dataptr));
+            PyArray_ITER_NEXT(iter);
+        }
+        auto result = plask::make_shared<PythonDataVector<T, dim>>(data, mesh);
         return py::object(result);
     }
+}
 
-    template <typename T, int dim>
-    static typename std::enable_if<!detail::isBasicData<T>::value, py::object>::type
-    makeDataVectorImpl(PyArrayObject* arr, shared_ptr<MeshD<dim>> mesh) {
-
-        size_t size;
-        py::handle<PyArrayObject> newarr;
-
-        if (PyArray_NDIM(arr) != 1) {
-            throw NotImplemented(u8"Data from multi-dimensional array for this dtype");
-        } else {
-            if (size != mesh->size()) throw ValueError(u8"Sizes of data ({0}) and mesh ({1}) do not match", size, mesh->size());
-            size = PyArray_DIMS(arr)[0];
-            PyArrayIterObject* iter = (PyArrayIterObject*)PyArray_IterNew((PyObject*)arr);
-            auto data = DataVector<T>(size);
-            for (size_t i = 0; i != size; ++i) {
-                data[i] = py::extract<T>((*(PyObject**)iter->dataptr));
-                 PyArray_ITER_NEXT(iter);
-            }
-            auto result = plask::make_shared<PythonDataVector<T,dim>>(data, mesh);
-            return py::object(result);
-        }
-
+template <typename T, int dim> static py::object makeDataVector(PyArrayObject* arr, shared_ptr<MeshD<dim>> mesh) {
+    size_t ndim = PyArray_NDIM(arr);
+    size_t last_dim = PyArray_DIMS(arr)[ndim - 1];
+    if (ndim == 1) {
+        if (last_dim == 2 * mesh->size())
+            return makeDataVectorImpl<Vec<2, T>, dim>(arr, mesh);
+        else if (last_dim == 3 * mesh->size())
+            return makeDataVectorImpl<Vec<3, T>, dim>(arr, mesh);
+        else if (last_dim == 4 * mesh->size())
+            return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
+    } else if (ndim == 2 && std::size_t(PyArray_DIMS(arr)[0]) == mesh->size()) {
+        if (last_dim == 2)
+            return makeDataVectorImpl<Vec<2, T>, dim>(arr, mesh);
+        else if (last_dim == 3)
+            return makeDataVectorImpl<Vec<3, T>, dim>(arr, mesh);
+        else if (last_dim == 4)
+            return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
+    } else if (ndim == dim + 1) {
+        if (last_dim == 2)
+            return makeDataVectorImpl<Vec<2, T>, dim>(arr, mesh);
+        else if (last_dim == 3)
+            return makeDataVectorImpl<Vec<3, T>, dim>(arr, mesh);
+        else if (last_dim == 4)
+            return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
     }
+    return makeDataVectorImpl<T, dim>(arr, mesh);
+}
 
-    template <typename T, int dim>
-    static py::object makeDataVector(PyArrayObject* arr, shared_ptr<MeshD<dim>> mesh) {
-        size_t ndim = PyArray_NDIM(arr);
-        size_t last_dim = PyArray_DIMS(arr)[ndim-1];
-        if (ndim == 1) {
-            if (last_dim == 2 * mesh->size()) return makeDataVectorImpl<Vec<2,T>, dim>(arr, mesh);
-            else if (last_dim == 3 * mesh->size()) return makeDataVectorImpl<Vec<3,T>, dim>(arr, mesh);
-            else if (last_dim == 4 * mesh->size()) return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
-        } else if (ndim == 2 && std::size_t(PyArray_DIMS(arr)[0]) == mesh->size()) {
-            if (last_dim == 2) return makeDataVectorImpl<Vec<2,T>, dim>(arr, mesh);
-            else if (last_dim == 3) return makeDataVectorImpl<Vec<3,T>, dim>(arr, mesh);
-            else if (last_dim == 4) return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
-        } else if (ndim == dim+1) {
-            if (last_dim == 2) return makeDataVectorImpl<Vec<2,T>, dim>(arr, mesh);
-            else if (last_dim == 3) return makeDataVectorImpl<Vec<3,T>, dim>(arr, mesh);
-            else if (last_dim == 4) return makeDataVectorImpl<Tensor3<T>, dim>(arr, mesh);
-        }
-        return makeDataVectorImpl<T, dim>(arr, mesh);
-    }
-
-} // namespace  detail
+}  // namespace  detail
 
 PLASK_PYTHON_API py::object Data(PyObject* obj, py::object omesh) {
     if (!PyArray_Check(obj)) throw TypeError(u8"data needs to be array object");
@@ -604,39 +566,42 @@ PLASK_PYTHON_API py::object Data(PyObject* obj, py::object omesh) {
         shared_ptr<MeshD<2>> mesh = py::extract<shared_ptr<MeshD<2>>>(omesh);
 
         switch (PyArray_TYPE(arr)) {
-            case NPY_DOUBLE: return detail::makeDataVector<double,2>(arr, mesh);
-            case NPY_CDOUBLE: return detail::makeDataVector<dcomplex,2>(arr, mesh);
-            default: throw TypeError(u8"Array has wrong dtype (only float and complex allowed)");
-        }
-
-    } catch (py::error_already_set&) { PyErr_Clear(); try {
-        shared_ptr<MeshD<3>> mesh = py::extract<shared_ptr<MeshD<3>>>(omesh);
-
-        switch (PyArray_TYPE(arr)) {
-            case NPY_DOUBLE: return detail::makeDataVector<double,3>(arr, mesh);
-            case NPY_CDOUBLE: return detail::makeDataVector<dcomplex,3>(arr, mesh);
+            case NPY_DOUBLE: return detail::makeDataVector<double, 2>(arr, mesh);
+            case NPY_CDOUBLE: return detail::makeDataVector<dcomplex, 2>(arr, mesh);
             default: throw TypeError(u8"Array has wrong dtype (only float and complex allowed)");
         }
 
     } catch (py::error_already_set&) {
-        throw TypeError(u8"mesh must be a proper mesh object");
-    }}
+        PyErr_Clear();
+        try {
+            shared_ptr<MeshD<3>> mesh = py::extract<shared_ptr<MeshD<3>>>(omesh);
+
+            switch (PyArray_TYPE(arr)) {
+                case NPY_DOUBLE: return detail::makeDataVector<double, 3>(arr, mesh);
+                case NPY_CDOUBLE: return detail::makeDataVector<dcomplex, 3>(arr, mesh);
+                default: throw TypeError(u8"Array has wrong dtype (only float and complex allowed)");
+            }
+
+        } catch (py::error_already_set&) {
+            throw TypeError(u8"mesh must be a proper mesh object");
+        }
+    }
 
     return py::object();
 }
 
 template <typename T, int dim>
-static PythonDataVector<T,dim> PythonDataVector__add__(const PythonDataVector<T,dim>& vec1, const PythonDataVector<T,dim>& vec2) {
-    if (vec1.mesh != vec2.mesh)
-        throw ValueError(u8"You may only add data on the same mesh");
-    return PythonDataVector<T,dim>(vec1 + vec2, vec1.mesh);
+static PythonDataVector<T, dim> PythonDataVector__add__(const PythonDataVector<T, dim>& vec1,
+                                                        const PythonDataVector<T, dim>& vec2) {
+    if (vec1.mesh != vec2.mesh) throw ValueError(u8"You may only add data on the same mesh");
+    return PythonDataVector<T, dim>(vec1 + vec2, vec1.mesh);
 }
 
 template <typename T, int dim>
-static PythonDataVector<T,dim> PythonDataVector__sub__(const PythonDataVector<T,dim>& vec1, const PythonDataVector<T,dim>& vec2) {
-    if (vec1.mesh != vec2.mesh)
-        throw ValueError(u8"You may only subtract data on the same mesh");
-    return PythonDataVector<T,dim>(vec1 + vec2, vec1.mesh);
+static PythonDataVector<T, dim> PythonDataVector__sub__(const PythonDataVector<T, dim>& vec1,
+                                                        const PythonDataVector<T, dim>& vec2) {
+    if (vec1.mesh != vec2.mesh) throw ValueError(u8"You may only subtract data on the same mesh");
+    return PythonDataVector<T, dim>(vec1 + vec2, vec1.mesh);
 }
 
 // template <typename T, int dim>
@@ -653,19 +618,18 @@ static PythonDataVector<T,dim> PythonDataVector__sub__(const PythonDataVector<T,
 //     vec1 -= vec2;
 // }
 
-template <typename T, int dim>
-static PythonDataVector<T,dim> PythonDataVector__neg__(const PythonDataVector<T,dim>& vec) {
-    return PythonDataVector<T,dim>(-vec, vec.mesh);
+template <typename T, int dim> static PythonDataVector<T, dim> PythonDataVector__neg__(const PythonDataVector<T, dim>& vec) {
+    return PythonDataVector<T, dim>(-vec, vec.mesh);
 }
 
 template <typename T, int dim>
-static PythonDataVector<T,dim> PythonDataVector__mul__(const PythonDataVector<T,dim>& vec, typename detail::basetype<T>::type a) {
-    return PythonDataVector<T,dim>(vec * a, vec.mesh);
+static PythonDataVector<T, dim> PythonDataVector__mul__(const PythonDataVector<T, dim>& vec, typename detail::basetype<T>::type a) {
+    return PythonDataVector<T, dim>(vec * a, vec.mesh);
 }
 
 template <typename T, int dim>
-static PythonDataVector<T,dim> PythonDataVector__div__(const PythonDataVector<T,dim>& vec, typename detail::basetype<T>::type a) {
-    return PythonDataVector<T,dim>(vec / a, vec.mesh);
+static PythonDataVector<T, dim> PythonDataVector__div__(const PythonDataVector<T, dim>& vec, typename detail::basetype<T>::type a) {
+    return PythonDataVector<T, dim>(vec / a, vec.mesh);
 }
 
 // template <typename T, int dim>
@@ -678,31 +642,29 @@ static PythonDataVector<T,dim> PythonDataVector__div__(const PythonDataVector<T,
 //     vec /= a;
 // }
 
-
 template <typename T, int dim>
-static PythonDataVector<const decltype(abs(T())),dim> PythonDataVector__abs__(const PythonDataVector<T,dim>& vec) {
+static PythonDataVector<const decltype(abs(T())), dim> PythonDataVector__abs__(const PythonDataVector<T, dim>& vec) {
     DataVector<decltype(abs(T()))> absvec(vec.size());
     for (size_t i = 0; i != vec.size(); ++i) absvec[i] = abs(vec[i]);
-    return PythonDataVector<const decltype(abs(T())),dim>(std::move(absvec), vec.mesh);
+    return PythonDataVector<const decltype(abs(T())), dim>(std::move(absvec), vec.mesh);
 }
 
 template <typename T, int dim>
-static PythonDataVector<const decltype(real(T())),dim> PythonDataVector_real(const PythonDataVector<T,dim>& vec) {
+static PythonDataVector<const decltype(real(T())), dim> PythonDataVector_real(const PythonDataVector<T, dim>& vec) {
     DataVector<decltype(real(T()))> revec(vec.size());
     for (size_t i = 0; i != vec.size(); ++i) revec[i] = real(vec[i]);
-    return PythonDataVector<const decltype(real(T())),dim>(std::move(revec), vec.mesh);
+    return PythonDataVector<const decltype(real(T())), dim>(std::move(revec), vec.mesh);
 }
 
 template <typename T, int dim>
-static PythonDataVector<const decltype(imag(T())),dim> PythonDataVector_imag(const PythonDataVector<T,dim>& vec) {
+static PythonDataVector<const decltype(imag(T())), dim> PythonDataVector_imag(const PythonDataVector<T, dim>& vec) {
     DataVector<decltype(imag(T()))> imvec(vec.size());
     for (size_t i = 0; i != vec.size(); ++i) imvec[i] = imag(vec[i]);
-    return PythonDataVector<const decltype(imag(T())),dim>(std::move(imvec), vec.mesh);
+    return PythonDataVector<const decltype(imag(T())), dim>(std::move(imvec), vec.mesh);
 }
 
-
 template <typename T, int dim>
-static bool PythonDataVector__eq__(const PythonDataVector<T,dim>& vec1, const PythonDataVector<T,dim>& vec2) {
+static bool PythonDataVector__eq__(const PythonDataVector<T, dim>& vec1, const PythonDataVector<T, dim>& vec2) {
     if (vec1.mesh != vec2.mesh) return false;
     for (size_t i = 0; i < vec1.size(); ++i)
         if (vec1[i] != vec2[i]) return false;
@@ -710,105 +672,91 @@ static bool PythonDataVector__eq__(const PythonDataVector<T,dim>& vec1, const Py
 }
 
 template <typename T, int dim>
-static inline py::class_<PythonDataVector<const T,dim>, shared_ptr<PythonDataVector<const T,dim>>> register_data_vector_common()
-{
-    py::class_<PythonDataVector<const T,dim>, shared_ptr<PythonDataVector<const T,dim>>>
-    data("_Data", DATA_DOCSTRING, py::no_init);
-    data
-        .def_readonly("mesh", &PythonDataVector<const T,dim>::mesh,
-            u8"The mesh at which the data was obtained.\n\n"
+static inline py::class_<PythonDataVector<const T, dim>, shared_ptr<PythonDataVector<const T, dim>>> register_data_vector_common() {
+    py::class_<PythonDataVector<const T, dim>, shared_ptr<PythonDataVector<const T, dim>>> data("_Data", DATA_DOCSTRING,
+                                                                                                py::no_init);
+    data.def_readonly("mesh", &PythonDataVector<const T, dim>::mesh,
+                      u8"The mesh at which the data was obtained.\n\n"
 
-            u8"The sequential points of this mesh always correspond to the sequential points of\n"
-            u8"the data. This implies that ``len(data.mesh) == len(data)`` is always True.\n"
-         )
-        .def("__len__", &PythonDataVector<const T,dim>::size)
-        .def("__getitem__", &PythonDataVector_getitem<const T,dim>)
-        .def("__contains__", &PythonDataVector_contains<const T,dim>)
-        .def("__iter__", py::range(&PythonDataVector_begin<const T,dim>, &PythonDataVector_end<const T,dim>))
-        .def("__array__", &PythonDataVector__array__<const T,dim>, py::arg("dtype")=py::object())
-        .def("__eq__", &PythonDataVector__eq__<const T,dim>)
-        .add_property("array", &PythonDataVector_Array<const T,dim>,
-            u8"Array formatted by the mesh.\n\n"
+                      u8"The sequential points of this mesh always correspond to the sequential points of\n"
+                      u8"the data. This implies that ``len(data.mesh) == len(data)`` is always True.\n")
+        .def("__len__", &PythonDataVector<const T, dim>::size)
+        .def("__getitem__", &PythonDataVector_getitem<const T, dim>)
+        .def("__contains__", &PythonDataVector_contains<const T, dim>)
+        .def("__iter__", py::range(&PythonDataVector_begin<const T, dim>, &PythonDataVector_end<const T, dim>))
+        .def("__array__", &PythonDataVector__array__<const T, dim>, py::arg("dtype") = py::object())
+        .def("__eq__", &PythonDataVector__eq__<const T, dim>)
+        .add_property("array", &PythonDataVector_Array<const T, dim>,
+                      u8"Array formatted by the mesh.\n\n"
 
-            u8"This attribute is available only if the :attr:`mesh` is a rectangular one. It\n"
-            u8"contains the held data reshaped to match the shape of the mesh (i.e. the first\n"
-            u8"dimension is equal the size of the first mesh axis and so on). If the data type\n"
-            u8"is :class:`plask.vec` then the array has one additional dimention equal to 2 for\n"
-            u8"2D vectors and 3 for 3D vectors. The vector components are stored in this\n"
-            u8"dimention.\n\n"
+                      u8"This attribute is available only if the :attr:`mesh` is a rectangular one. It\n"
+                      u8"contains the held data reshaped to match the shape of the mesh (i.e. the first\n"
+                      u8"dimension is equal the size of the first mesh axis and so on). If the data type\n"
+                      u8"is :class:`plask.vec` then the array has one additional dimention equal to 2 for\n"
+                      u8"2D vectors and 3 for 3D vectors. The vector components are stored in this\n"
+                      u8"dimention.\n\n"
 
-            u8"Example:\n"
-            u8"    >>> msh = plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1, 2]),\n"
-            u8"    ... plask.mesh.Rectilinear([10, 20]))\n"
-            u8"    >>> dat = Data(array([[[1., 0.], [2., 0.]], [[3., 1.], [4., 1.]]]), msh)\n"
-            u8"    >>> dat.array[:,:,0]\n"
-            u8"    array([[1., 2.],\n"
-            u8"           [3., 4.]])\n\n"
+                      u8"Example:\n"
+                      u8"    >>> msh = plask.mesh.Rectangular2D(plask.mesh.Rectilinear([1, 2]),\n"
+                      u8"    ... plask.mesh.Rectilinear([10, 20]))\n"
+                      u8"    >>> dat = Data(array([[[1., 0.], [2., 0.]], [[3., 1.], [4., 1.]]]), msh)\n"
+                      u8"    >>> dat.array[:,:,0]\n"
+                      u8"    array([[1., 2.],\n"
+                      u8"           [3., 4.]])\n\n"
 
-            u8"Accessing this field is efficient, as only the numpy array view is created and\n"
-            u8"no data is copied in the memory.\n"
-         )
-        .def("interpolate", dataInterpolate<const T,dim>, (py::arg("mesh"), "interpolation", py::arg("geometry")=py::object()),
-            u8"Interpolate data to a different mesh.\n\n"
+                      u8"Accessing this field is efficient, as only the numpy array view is created and\n"
+                      u8"no data is copied in the memory.\n")
+        .def("interpolate", dataInterpolate<const T, dim>, (py::arg("mesh"), "interpolation", py::arg("geometry") = py::object()),
+             u8"Interpolate data to a different mesh.\n\n"
 
-            u8"This method interpolated data into a different mesh using specified\n"
-            u8"interpolation method. This is exactly the same interpolation that is\n"
-            u8"usually done by solvers in their providers.\n\n"
+             u8"This method interpolated data into a different mesh using specified\n"
+             u8"interpolation method. This is exactly the same interpolation that is\n"
+             u8"usually done by solvers in their providers.\n\n"
 
-            u8"Args:\n"
-            u8"    mesh: Mesh to interpolate into.\n"
-            u8"    interpolation: Requested interpolation method.\n"
-            u8"    geometry: Optional geometry, over which the interpolation is performed.\n"
-            u8"Returns:\n"
-            u8"    plask._Data: Interpolated data."
-        )
-        .add_static_property("dtype", &DataVector_dtype<const T,dim>, "Type of the held values.")
-    ;
+             u8"Args:\n"
+             u8"    mesh: Mesh to interpolate into.\n"
+             u8"    interpolation: Requested interpolation method.\n"
+             u8"    geometry: Optional geometry, over which the interpolation is performed.\n"
+             u8"Returns:\n"
+             u8"    plask._Data: Interpolated data.")
+        .add_static_property("dtype", &DataVector_dtype<const T, dim>, "Type of the held values.");
     data.attr("__name__") = "Data";
     data.attr("__module__") = "plask";
 
     return data;
 }
 
-
-template <typename T, int dim>
-static inline typename std::enable_if<detail::isBasicData<T>::value>::type register_data_vector()
-{
-    auto data = register_data_vector_common<T,dim>();
-    data
-        .def("__add__", &PythonDataVector__add__<const T,dim>)
-        .def("__sub__", &PythonDataVector__sub__<const T,dim>)
-        .def("__mul__", &PythonDataVector__mul__<const T,dim>)
-        .def("__rmul__", &PythonDataVector__mul__<const T,dim>)
-        .def("__div__", &PythonDataVector__div__<const T,dim>)
-        .def("__truediv__", &PythonDataVector__div__<const T,dim>)
-        .def("__neg__", &PythonDataVector__neg__<const T,dim>)
-        .def("__abs__", &PythonDataVector__abs__<const T,dim>)
-        .add_property("real", &PythonDataVector_real<const T,dim>)
-        .add_property("imag", &PythonDataVector_imag<const T,dim>)
+template <typename T, int dim> static inline typename std::enable_if<detail::isBasicData<T>::value>::type register_data_vector() {
+    auto data = register_data_vector_common<T, dim>();
+    data.def("__add__", &PythonDataVector__add__<const T, dim>)
+        .def("__sub__", &PythonDataVector__sub__<const T, dim>)
+        .def("__mul__", &PythonDataVector__mul__<const T, dim>)
+        .def("__rmul__", &PythonDataVector__mul__<const T, dim>)
+        .def("__div__", &PythonDataVector__div__<const T, dim>)
+        .def("__truediv__", &PythonDataVector__div__<const T, dim>)
+        .def("__neg__", &PythonDataVector__neg__<const T, dim>)
+        .def("__abs__", &PythonDataVector__abs__<const T, dim>)
+        .add_property("real", &PythonDataVector_real<const T, dim>)
+        .add_property("imag", &PythonDataVector_imag<const T, dim>)
         // .def("__iadd__", &PythonDataVector__iadd__<const T,dim>)
         // .def("__isub__", &PythonDataVector__isub__<const T,dim>)
         // .def("__imul__", &PythonDataVector__imul__<const T,dim>)
         // .def("__idiv__", &PythonDataVector__idiv__<const T,dim>)
         // .def("__itruediv__", &PythonDataVector__idiv__<const T,dim>)
-    ;
+        ;
 }
 
-template <typename T, int dim>
-static inline typename std::enable_if<!detail::isBasicData<T>::value>::type register_data_vector()
-{
-    /*auto data = */register_data_vector_common<T,dim>();
+template <typename T, int dim> static inline typename std::enable_if<!detail::isBasicData<T>::value>::type register_data_vector() {
+    /*auto data = */ register_data_vector_common<T, dim>();
 }
 
-
-template <int dim>
-static inline void register_data_vectors_d() {
+template <int dim> static inline void register_data_vectors_d() {
     register_data_vector<double, dim>();
     register_data_vector<dcomplex, dim>();
-    register_data_vector<Vec<2,double>, dim>();
-    register_data_vector<Vec<2,dcomplex>, dim>();
-    register_data_vector<Vec<3,double>, dim>();
-    register_data_vector<Vec<3,dcomplex>, dim>();
+    register_data_vector<Vec<2, double>, dim>();
+    register_data_vector<Vec<2, dcomplex>, dim>();
+    register_data_vector<Vec<3, double>, dim>();
+    register_data_vector<Vec<3, dcomplex>, dim>();
     register_data_vector<Tensor2<double>, dim>();
     register_data_vector<Tensor2<dcomplex>, dim>();
     register_data_vector<Tensor3<double>, dim>();
@@ -822,37 +770,35 @@ static inline void register_data_vectors_d() {
     py::implicitly_convertible<PythonDataVector<const double, dim>, PythonDataVector<const Tensor3<double>, dim>>();
     py::implicitly_convertible<PythonDataVector<const dcomplex, dim>, PythonDataVector<const Tensor3<dcomplex>, dim>>();
 
-    py::implicitly_convertible<PythonDataVector<const Vec<2,double>, dim>, PythonDataVector<const Tensor2<double>, dim>>();
-    py::implicitly_convertible<PythonDataVector<const Vec<2,dcomplex>, dim>, PythonDataVector<const Tensor2<dcomplex>, dim>>();
+    py::implicitly_convertible<PythonDataVector<const Vec<2, double>, dim>, PythonDataVector<const Tensor2<double>, dim>>();
+    py::implicitly_convertible<PythonDataVector<const Vec<2, dcomplex>, dim>, PythonDataVector<const Tensor2<dcomplex>, dim>>();
 
-    py::implicitly_convertible<PythonDataVector<const Vec<3,double>, dim>, PythonDataVector<const Tensor3<double>, dim>>();
-    py::implicitly_convertible<PythonDataVector<const Vec<3,dcomplex>, dim>, PythonDataVector<const Tensor3<dcomplex>, dim>>();
+    py::implicitly_convertible<PythonDataVector<const Vec<3, double>, dim>, PythonDataVector<const Tensor3<double>, dim>>();
+    py::implicitly_convertible<PythonDataVector<const Vec<3, dcomplex>, dim>, PythonDataVector<const Tensor3<dcomplex>, dim>>();
 }
 
-void register_data_vectors()
-{
+void register_data_vectors() {
     register_data_vectors_d<2>();
     register_data_vectors_d<3>();
 
     py::def("Data", &Data, (py::arg("array"), "mesh"), DATA_DOCSTRING);
 }
 
+}  // namespace python
 
-} // namespace python
-
-template <int dim, typename SrcT, typename DstT>
-struct __InterpolateMeta__<python::MeshWrap<dim>, SrcT, DstT, 0>
-{
+template <int dim, typename SrcT, typename DstT> struct __InterpolateMeta__<python::MeshWrap<dim>, SrcT, DstT, 0> {
     inline static LazyData<typename std::remove_const<DstT>::type> interpolate(
-            const shared_ptr<const python::MeshWrap<dim>>& src_mesh, const DataVector<const SrcT>& src_vec,
-            const shared_ptr<const MeshD<dim>>& dst_mesh, InterpolationMethod method, const InterpolationFlags& /*flags*/) {
+        const shared_ptr<const python::MeshWrap<dim>>& src_mesh,
+        const DataVector<const SrcT>& src_vec,
+        const shared_ptr<const MeshD<dim>>& dst_mesh,
+        InterpolationMethod method,
+        const InterpolationFlags& /*flags*/) {
         OmpLockGuard<OmpNestLock> lock(python::python_omp_lock);
         typedef python::PythonDataVector<const DstT, dim> ReturnedType;
         boost::python::object omesh(const_pointer_cast<MeshD<dim>>(dst_mesh));
         auto source = plask::make_shared<python::PythonDataVector<const SrcT, dim>>(
             src_vec, const_pointer_cast<python::MeshWrap<dim>>(src_mesh));
-        boost::python::object result =
-            src_mesh->template call_python<boost::python::object>("interpolate", source, omesh, method);
+        boost::python::object result = src_mesh->template call_python<boost::python::object>("interpolate", source, omesh, method);
         try {
             return boost::python::extract<ReturnedType>(result)();
         } catch (boost::python::error_already_set&) {
@@ -862,31 +808,31 @@ struct __InterpolateMeta__<python::MeshWrap<dim>, SrcT, DstT, 0>
     }
 };
 
-
-template <>
-std::vector<double> InterpolationFlags::reflect<std::vector<double>>(int ax, std::vector<double> val) const {
+template <> std::vector<double> InterpolationFlags::reflect<std::vector<double>>(int ax, std::vector<double> val) const {
     if (sym[ax] & 14) {
         std::vector<double> result(val);
-        for (double& r: result) r = -r;
+        for (double& r : result) r = -r;
         return result;
-    }
-    else return val;
+    } else
+        return val;
 }
-
 
 namespace python {
 
-#define NEAREST_INTERPOLATE_MESH(M) \
-    if (auto src_mesh = dynamic_pointer_cast<M>(self.mesh)) \
-        return PythonDataVector<T,dim>(InterpolationAlgorithm<M, typename std::remove_const<T>::type, typename std::remove_const<T>::type, INTERPOLATION_NEAREST> \
-            ::interpolate(src_mesh, self, dst_mesh, flags), dst_mesh)
+#define NEAREST_INTERPOLATE_MESH(M)                                                                         \
+    if (auto src_mesh = dynamic_pointer_cast<M>(self.mesh))                                                 \
+    return PythonDataVector<T, dim>(                                                                        \
+        InterpolationAlgorithm<M, typename std::remove_const<T>::type, typename std::remove_const<T>::type, \
+                               INTERPOLATION_NEAREST>::interpolate(src_mesh, self, dst_mesh, flags),        \
+        dst_mesh)
 
-#define INTERPOLATE_MESH(M) \
+#define INTERPOLATE_MESH(M)                                 \
     if (auto src_mesh = dynamic_pointer_cast<M>(self.mesh)) \
-        return PythonDataVector<T,dim>(interpolate(src_mesh, self, dst_mesh, method, flags), dst_mesh)
+    return PythonDataVector<T, dim>(interpolate(src_mesh, self, dst_mesh, method, flags), dst_mesh)
 
 /*template <typename T>   // NN interpolation for 2D only meshes:
-static inline optional<PythonDataVector<T,2>> NNdataInterpolateImpl2D(const PythonDataVector<T,2>& self, shared_ptr<MeshD<2>> dst_mesh, const InterpolationFlags& flags)
+static inline optional<PythonDataVector<T,2>> NNdataInterpolateImpl2D(const PythonDataVector<T,2>& self, shared_ptr<MeshD<2>>
+dst_mesh, const InterpolationFlags& flags)
 {
     constexpr int dim = 2;
     NEAREST_INTERPOLATE_MESH(TriangularMesh2D::ElementMesh);
@@ -895,14 +841,15 @@ static inline optional<PythonDataVector<T,2>> NNdataInterpolateImpl2D(const Pyth
 }
 
 template <typename T>
-static inline optional<PythonDataVector<T,3>> NNdataInterpolateImpl2D(const PythonDataVector<T,3>&, shared_ptr<MeshD<3>>, const InterpolationFlags&)
-{ return optional<PythonDataVector<T,3>>(); } // do not change*/
+static inline optional<PythonDataVector<T,3>> NNdataInterpolateImpl2D(const PythonDataVector<T,3>&, shared_ptr<MeshD<3>>, const
+InterpolationFlags&) { return optional<PythonDataVector<T,3>>(); } // do not change*/
 
 template <typename T, int dim>
-static inline typename std::enable_if<!detail::isBasicData<T>::value, PythonDataVector<T,dim>>::type
-dataInterpolateImpl(const PythonDataVector<T,dim>& self, shared_ptr<MeshD<dim>> /*dst_mesh*/,
-                    InterpolationMethod method, const InterpolationFlags& /*flags*/)
-{
+static inline typename std::enable_if<!detail::isBasicData<T>::value, PythonDataVector<T, dim>>::type dataInterpolateImpl(
+    const PythonDataVector<T, dim>& self,
+    shared_ptr<MeshD<dim>> /*dst_mesh*/,
+    InterpolationMethod method,
+    const InterpolationFlags& /*flags*/) {
     /*if (method != INTERPOLATION_NEAREST)
         writelog(LOG_WARNING, u8"Using 'nearest' algorithm for interpolate(dtype={})", str(py::object(detail::dtype<T>())));
 
@@ -914,67 +861,65 @@ dataInterpolateImpl(const PythonDataVector<T,dim>& self, shared_ptr<MeshD<dim>> 
     // TODO add new mesh types here
 
     throw NotImplemented(format(u8"interpolate(source mesh type: {}, interpolation method: {}, dtype: {})",
-                                typeid(*self.mesh).name(), interpolationMethodNames[method]), str(py::object(detail::dtype<T>())));
+                                typeid(*self.mesh).name(), interpolationMethodNames[method]),
+                         str(py::object(detail::dtype<T>())));
 }
 
-template <typename T>   // linear interpolation for 2D only meshes:
-static inline optional<PythonDataVector<T,2>> OptionalLinearDataInterpolateImpl(
-        const PythonDataVector<T,2>& self, shared_ptr<MeshD<2>> dst_mesh,
-        InterpolationMethod method, const InterpolationFlags& flags)
-{
+template <typename T>  // linear interpolation for 2D only meshes:
+static inline optional<PythonDataVector<T, 2>> OptionalLinearDataInterpolateImpl(const PythonDataVector<T, 2>& self,
+                                                                                 shared_ptr<MeshD<2>> dst_mesh,
+                                                                                 InterpolationMethod method,
+                                                                                 const InterpolationFlags& flags) {
     constexpr int dim = 2;
     INTERPOLATE_MESH(TriangularMesh2D::ElementMesh);
     INTERPOLATE_MESH(TriangularMesh2D);
-    return optional<PythonDataVector<T,2>>();
+    return optional<PythonDataVector<T, 2>>();
 }
 
-template <typename T>   // linear interpolation for 3D only meshes:
-static inline optional<PythonDataVector<T,3>> OptionalLinearDataInterpolateImpl(
-        const PythonDataVector<T,3>& self, shared_ptr<MeshD<3>> dst_mesh,
-        InterpolationMethod method, const InterpolationFlags& flags)
-{
+template <typename T>  // linear interpolation for 3D only meshes:
+static inline optional<PythonDataVector<T, 3>> OptionalLinearDataInterpolateImpl(const PythonDataVector<T, 3>& self,
+                                                                                 shared_ptr<MeshD<3>> dst_mesh,
+                                                                                 InterpolationMethod method,
+                                                                                 const InterpolationFlags& flags) {
     constexpr int dim = 3;
     INTERPOLATE_MESH(ExtrudedTriangularMesh3D::ElementMesh);
     INTERPOLATE_MESH(ExtrudedTriangularMesh3D);
-    return optional<PythonDataVector<T,3>>();
+    return optional<PythonDataVector<T, 3>>();
 }
 
 template <typename T, int dim>
-static inline typename std::enable_if<detail::isBasicData<T>::value, PythonDataVector<T,dim>>::type
-dataInterpolateImpl(const PythonDataVector<T,dim>& self, shared_ptr<MeshD<dim>> dst_mesh,
-                    InterpolationMethod method, const InterpolationFlags& flags)
-{
-
+static inline typename std::enable_if<detail::isBasicData<T>::value, PythonDataVector<T, dim>>::type dataInterpolateImpl(
+    const PythonDataVector<T, dim>& self,
+    shared_ptr<MeshD<dim>> dst_mesh,
+    InterpolationMethod method,
+    const InterpolationFlags& flags) {
     if (self.mesh_changed) throw Exception(u8"Cannot interpolate, mesh changed since data retrieval");
 
     INTERPOLATE_MESH(typename RectangularMesh<dim>::ElementMesh);
     INTERPOLATE_MESH(RectangularMesh<dim>);
     INTERPOLATE_MESH(MeshWrap<dim>);
-    if (auto result = OptionalLinearDataInterpolateImpl<T>(self, dst_mesh, method, flags))
-            return std::move(*result);
+    if (auto result = OptionalLinearDataInterpolateImpl<T>(self, dst_mesh, method, flags)) return std::move(*result);
     // TODO add new mesh types here
 
-    throw NotImplemented(format(u8"interpolate(source mesh type: {}, interpolation method: {})",
-                                typeid(*self.mesh).name(), interpolationMethodNames[method]));
+    throw NotImplemented(format(u8"interpolate(source mesh type: {}, interpolation method: {})", typeid(*self.mesh).name(),
+                                interpolationMethodNames[method]));
 }
 
 template <typename T, int dim>
-PLASK_PYTHON_API PythonDataVector<T,dim>
-dataInterpolate(const PythonDataVector<T,dim>& self,
-                                                       shared_ptr<MeshD<dim>> dst_mesh,
-                                                       InterpolationMethod method,
-                                                       const py::object& geometry)
-{
+PLASK_PYTHON_API PythonDataVector<T, dim> dataInterpolate(const PythonDataVector<T, dim>& self,
+                                                          shared_ptr<MeshD<dim>> dst_mesh,
+                                                          InterpolationMethod method,
+                                                          const py::object& geometry) {
     InterpolationFlags flags;
     if (!geometry.is_none()) {
         py::extract<shared_ptr<const GeometryD<2>>> geometry2d(geometry);
         py::extract<shared_ptr<const GeometryD<3>>> geometry3d(geometry);
         if (geometry2d.check()) {
-            flags = InterpolationFlags(geometry2d(),
-                                       InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::POSITIVE);
+            flags =
+                InterpolationFlags(geometry2d(), InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::POSITIVE);
         } else if (geometry3d.check()) {
-            flags = InterpolationFlags(geometry3d(),
-                                       InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::POSITIVE);
+            flags = InterpolationFlags(geometry3d(), InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::POSITIVE,
+                                       InterpolationFlags::Symmetry::POSITIVE);
         } else
             throw TypeError(u8"'geometry' argument must be geometry.Geometry instance");
     }
@@ -982,7 +927,7 @@ dataInterpolate(const PythonDataVector<T,dim>& self,
     return dataInterpolateImpl<T, dim>(self, dst_mesh, method, flags);
 }
 
-
-}} // namespace plask::python
+}  // namespace python
+}  // namespace plask
 
 #include <plask/data.h>
