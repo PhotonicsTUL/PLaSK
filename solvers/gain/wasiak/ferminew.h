@@ -455,7 +455,7 @@ template <typename GeometryT> struct PLASK_SOLVER_API LuminescenceSpectrum {
     }
 
     /**
-     * Get luminescence at given valenegth
+     * Get luminescence at given wavelength
      * \param wavelength wavelength to get luminescence
      * \return luminescence
      */

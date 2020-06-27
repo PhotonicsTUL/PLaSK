@@ -886,11 +886,12 @@ template <typename GeometryT> struct DgDnData : public DataBase<GeometryT, Tenso
 
 inline static double sumLuminescence(kubly::wzmocnienie& gain, double wavelength) {
     double E = nm_to_eV(wavelength);
-    double result = 0.;
-    for (int nr_c = 0; nr_c <= (int)gain.pasma->pasmo_przew.size() - 1; nr_c++)
-        for (int nr_v = 0; nr_v <= (int)gain.pasma->pasmo_wal.size() - 1; nr_v++)
-            result += gain.spont_od_pary_pasm(E, nr_c, nr_v, 0);  // TODO: consider other polarization (now only TE)
-    return result;
+    //double result = 0.;
+    //for (int nr_c = 0; nr_c <= (int)gain.pasma->pasmo_przew.size() - 1; nr_c++)
+    //    for (int nr_v = 0; nr_v <= (int)gain.pasma->pasmo_wal.size() - 1; nr_v++)
+    //        result += gain.spont_od_pary_pasm(E, nr_c, nr_v, 0);  // TODO: consider other polarization (now only TE)
+    //return result;
+    return gain.lumin(E, 0.); // TODO: consider not only 0.<->TE,   TODO: add 1.<->TM, 2.<->TE+TM
 }
 
 template <typename GeometryT> struct LuminescenceData : public DataBase<GeometryT, double> {
