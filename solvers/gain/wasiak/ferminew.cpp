@@ -884,7 +884,7 @@ template <typename GeometryT> struct DgDnData : public DataBase<GeometryT, Tenso
     }
 };
 
-inline static double sumLuminescence(kubly::wzmocnienie& gain, double wavelength) {
+inline static double sumLuminescence(kubly::wzmocnienie& gain, double wavelength) { 
     double E = nm_to_eV(wavelength);
     //double result = 0.;
     //for (int nr_c = 0; nr_c <= (int)gain.pasma->pasmo_przew.size() - 1; nr_c++)

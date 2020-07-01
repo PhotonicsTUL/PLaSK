@@ -459,7 +459,7 @@ template <typename GeometryT> struct PLASK_SOLVER_API LuminescenceSpectrum {
      * \param wavelength wavelength to get luminescence
      * \return luminescence
      */
-    double getLuminescence(double wavelength);
+    double getLuminescence(double wavelength); 
 };
 
 }}}  // namespace plask::solvers::FermiNew
