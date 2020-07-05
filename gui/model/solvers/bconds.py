@@ -14,6 +14,7 @@ from lxml import etree
 
 from ...utils.xml import OrderedTagReader
 from ...qt.QtCore import *
+from ...qt.QtGui import *
 
 basestring = str, bytes
 class SchemaBoundaryConditions:
@@ -333,7 +334,7 @@ class BoundaryConditionsModel(QAbstractItemModel):
         return len(self.children_of_index(parent))
 
     def columnCount(self, parent=QModelIndex()):
-        return 2 + len(self.schema.keys)
+        return 3 + len(self.schema.keys)
 
     def index(self, row, column, parent=QModelIndex()):
         if not self.hasIndex(row, column, parent): return QModelIndex()
@@ -345,12 +346,13 @@ class BoundaryConditionsModel(QAbstractItemModel):
 
     def headerData(self, no, orientation, role):
         if role == Qt.DisplayRole:
-            if orientation == Qt.Horizontal:
+            # if orientation == Qt.Horizontal:
                 if no == 0: return 'Place'
                 elif no == 1: return 'Place Details'
-                else: return self.schema.keys[no - 2].title()
-            elif orientation == Qt.Vertical:
-                return str(no)
+                elif no == 2: return ' #'
+                else: return self.schema.keys[no-3].title()
+            # elif orientation == Qt.Vertical:
+            #     return str(no)
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
@@ -362,11 +364,25 @@ class BoundaryConditionsModel(QAbstractItemModel):
                 return node.place.label
             elif col == 1:
                 return str(node.place)
+            elif col == 2:
+                if not index.parent().isValid():
+                    return str(index.row()) + ' '
             else:
                 try:
-                    return node.value[self.schema.keys[col-2]]
+                    return node.value[self.schema.keys[col-3]]
                 except (IndexError, AttributeError):
                     pass
+        elif role == Qt.TextAlignmentRole:
+            if index.column() == 2:
+                return Qt.AlignRight
+        # elif role == Qt.BackgroundRole:
+        #     if index.column() == 2:
+        #         pal = QPalette()
+        #         return pal.color(QPalette.Window)
+        # elif role == Qt.ForegroundRole:
+        #     if index.column() == 2:
+        #         pal = QPalette()
+        #         return pal.color(QPalette.WindowText)
         # if role == Qt.ToolTipRole:
         #     return '\n'.join([str(err) for err in self.info_by_row.get(index.row(), []) if err.has_connection('cols', index.column())])
         # if role == Qt.DecorationRole: #Qt.BackgroundColorRole:   # maybe TextColorRole?
@@ -411,7 +427,7 @@ class BoundaryConditionsModel(QAbstractItemModel):
         if col == 1 or node.parent is not None:
             return False
         # col > 1 and node.parent is None:
-        entries[row].value[self.schema.keys[col-2]] = value
+        entries[row].value[self.schema.keys[col-3]] = value
         self.dataChanged.emit(index, index)
         return True
 
@@ -419,9 +435,9 @@ class BoundaryConditionsModel(QAbstractItemModel):
         flags = super(BoundaryConditionsModel, self).flags(index) \
                 | Qt.ItemIsSelectable | Qt.ItemIsEnabled #| Qt.ItemIsEditable
         col = index.column()
-        if col == 0 or\
-            (col == 1 and index.internalPointer().place.is_editable) or\
-            (col > 1 and index.internalPointer().parent is None):
+        if col == 0 or \
+            (col == 1 and index.internalPointer().place.is_editable) or \
+            (col > 2 and index.internalPointer().parent is None):
             flags |= Qt.ItemIsEditable
         return flags
 

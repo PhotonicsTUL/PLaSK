@@ -240,12 +240,17 @@ class BoundaryConditionsDialog(QDialog):
         self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.table.setColumnWidth(0, 150)
         self.table.setColumnWidth(1, 250)
-        #self.table.verticalHeader().show() # TODO tree view does not support this
 
-        #try:    # TODO tree view does not support this
-        #    self.table.horizontalHeader().setResizeMode(1, QHeaderView.Stretch)
-        #except AttributeError:
-        #    self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        try:
+           self.table.header().setResizeMode(1, QHeaderView.Stretch)
+        except AttributeError:
+           self.table.header().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.table.header().setMinimumSectionSize(self.table.fontMetrics().width('00 '))
+
+        self.table.header().setSectionResizeMode(2, QHeaderView.Fixed)
+        self.table.setColumnWidth(2, self.table.fontMetrics().width('000 '))
+        self.table.header().swapSections(0, 2)
+        self.table.header().swapSections(1, 2)
 
         table_edit_shortcut(self.table, 0, QKeySequence(Qt.Key_P))
         table_edit_shortcut(self.table, 1, QKeySequence(Qt.Key_D))
@@ -253,10 +258,10 @@ class BoundaryConditionsDialog(QDialog):
 
         self.defines_delegate = DefinesCompletionDelegate(controller.document.defines.model, self.table)
         defines_completer = get_defines_completer(controller.document.defines.model, self)
-        for i in range(2, self.model.columnCount()):
+        for i in range(3, self.model.columnCount()):
             self.table.setColumnWidth(i, 150)
             self.table.setItemDelegateForColumn(i, self.defines_delegate)
-            label = schema.keys[i-2].lower()
+            label = schema.keys[i-3].lower()
             for l in label:
                 if l not in used_shortcuts:
                     table_edit_shortcut(self.table, i, QKeySequence(l))
