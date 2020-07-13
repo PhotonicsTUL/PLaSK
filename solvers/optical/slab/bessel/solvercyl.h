@@ -40,6 +40,16 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         RULE_DIRECT
     };
 
+    const char* ruleName() {
+        switch (rule) {
+            case RULE_SEMI_INVERSE: return "semi-inverse";
+            case RULE_INVERSE_1: return "inverse1";
+            case RULE_INVERSE_2: return "inverse2";
+            case RULE_INVERSE_3: return "inverse3";
+            case RULE_DIRECT: return "direct";
+        }
+    }
+
     std::string getClassName() const override { return "optical.BesselCyl"; }
 
     struct Mode {
@@ -106,14 +116,64 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
   public:
 
-    /// Ranges for manual wavevectors
+    /// Abscissa for manual wavevectors
     std::vector<double> klist;
+
+    /// Weights for manual wavevectors
+    boost::optional<std::vector<double>> kweights;
 
     /// Class responsible for computing expansion coefficients
     std::unique_ptr<ExpansionBessel> expansion;
 
     /// Computed modes
     std::vector<Mode> modes;
+
+    /// Return list of wavevectors
+    std::vector<double> getKlist() {
+        initCalculation();
+        computeIntegrals();
+        return expansion->getKpts();
+    }
+
+    /// Set manual k-list
+    void setKlist(const std::vector<double>& values) {
+        if (kmethod != WAVEVECTORS_MANUAL) {
+            invalidate();
+            this->writelog(LOG_WARNING, "Setting Hankel transform method to Manual");
+            kmethod = WAVEVECTORS_MANUAL;
+        }
+        klist = values;
+    }
+
+    /// Return list of wavevector weights
+    std::vector<double> getKweights() {
+        if (domain == DOMAIN_INFINITE) {
+            initCalculation();
+            computeIntegrals();
+            ExpansionBesselInfini* ex = dynamic_cast<ExpansionBesselInfini*>(expansion.get());
+            if (ex) {
+                std::vector<double> result(ex->kdelts.begin(), ex->kdelts.end());
+                double R = expansion->rbounds[expansion->rbounds.size()-1];
+                for (auto& v: result) v *= R;
+                return result;
+            }
+        }
+        return std::vector<double>();
+    }
+
+    /// Set manual k-weights
+    void setKweights(const std::vector<double>& values) {
+        if (kmethod != WAVEVECTORS_MANUAL) {
+            invalidate();
+            this->writelog(LOG_WARNING, "Setting Hankel transform method to Manual");
+            kmethod = WAVEVECTORS_MANUAL;
+        }
+        kweights.reset(values);
+    }
+
+    void clearKweights() {
+        kweights.reset();
+    }
 
     void clearModes() override {
         modes.clear();

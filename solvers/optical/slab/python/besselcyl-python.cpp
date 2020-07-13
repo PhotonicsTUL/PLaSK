@@ -50,7 +50,7 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
                 what = WHAT_WAVELENGTH; array = kwargs[*i];
             } else
                 k0.reset(2e3*PI / py::extract<dcomplex>(kwargs[*i])());
-        } else if (*i == "kNumpyDataDeleter0") {
+        } else if (*i == "k0") {
             if (what == WHAT_WAVELENGTH || k0)
                 throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
@@ -126,6 +126,17 @@ static py::object BesselSolverCyl_getFieldVectorH(BesselSolverCyl& self, int num
     return arrayFromVec2D<NPY_CDOUBLE>(self.getFieldVectorH(num, z), false, 2);
 }
 
+static py::object BesselSolverCyl_getKweights(BesselSolverCyl& self) {
+    if (self.getDomain() == BesselSolverCyl::DOMAIN_INFINITE)
+        return py::object(self.getKweights());
+    return py::object();
+}
+
+static void BesselSolverCyl_setKweights(BesselSolverCyl& self, const py::object& value) {
+    if (value.is_none()) self.clearKweights();
+    else self.setKweights(py::extract<std::vector<double>>(value));
+}
+
 
 void export_BesselSolverCyl()
 {
@@ -165,13 +176,16 @@ void export_BesselSolverCyl()
     RW_PROPERTY(kmethod, getKmethod, setKmethod,
         u8"Method of selecting wavevectors for numerical Hankel transform in infinite\n"
         u8"domain.");
-    RW_FIELD(klist,
-             u8"A list of relative wavevetors ranges. The numbers should be relative to\n"
-             u8"the inverse of the structure width. The actual wavevectors used in\n"
-             u8"the computations are the avrages of each two adjacent values specified here\n"
-             u8"and the integration weights are the sizes of each interval.");
+    RW_PROPERTY(klist, getKlist, setKlist,
+            u8"A list of relative wavevector values or ranges. The numbers should be relative\n"
+            u8"to the inverse of the structure width. If no weights are given, the actual\n"
+            u8"wavevectors used in the computations are the averages of each two adjacent\n"
+            u8"values specified here and the integration weights are the sizes of each interval.");
+    solver.add_property("kweights", &BesselSolverCyl_getKweights, &BesselSolverCyl_setKweights,
+            u8"An optional list of relative wavevector weights. The numbers should be relative\n"
+            u8"to the inverse of the structure width.");
     RW_PROPERTY(kscale, getKscale, setKscale,
-                u8"Scale factor for wavectors used in infinite domain. Multiplied by the expansions\n"
+                u8"Scale factor for wavevectors used in infinite domain. Multiplied by the expansions\n"
                 u8"size and divided by the geometry width it is a maximum considered wavevector.\n");
     solver.add_property("lam", &__Class__::getLam, &Solver_setLam<__Class__>,
                 u8"Wavelength of the light [nm].\n");
@@ -215,24 +229,24 @@ void export_BesselSolverCyl()
     solver.def("compute_reflectivity", &Solver_computeReflectivity_index<BesselSolverCyl>,
                (py::arg("lam"), "side", "index"));
     solver.def("compute_reflectivity", &Solver_computeReflectivity_array<BesselSolverCyl>,
-               (py::arg("lam"), "side", "coffs"),
+               (py::arg("lam"), "side", "coeffs"),
                u8"Compute reflection coefficient on planar incidence [%].\n\n"
                u8"Args:\n"
                u8"    lam (float or array of floats): Incident light wavelength.\n"
                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                u8"        present.\n"
-               u8"    idx: Eigenmode number.\n"
+               u8"    index: Eigenmode number.\n"
                u8"    coeffs: expansion coefficients of the incident vector.\n");
     solver.def("compute_transmittivity", &Solver_computeTransmittivity_index<BesselSolverCyl>,
                (py::arg("lam"), "side", "index"));
     solver.def("compute_transmittivity", &Solver_computeTransmittivity_array<BesselSolverCyl>,
-               (py::arg("lam"), "side", "coffs"),
+               (py::arg("lam"), "side", "coeffs"),
                u8"Compute transmission coefficient on planar incidence [%].\n\n"
                u8"Args:\n"
                u8"    lam (float or array of floats): Incident light wavelength.\n"
                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                u8"        present.\n"
-               u8"    idx: Eigenmode number.\n"
+               u8"    index: Eigenmode number.\n"
                u8"    coeffs: expansion coefficients of the incident vector.\n");
     solver.def("scattering", Scattering<BesselSolverCyl>::from_index, py::with_custodian_and_ward_postcall<0,1>(), (py::arg("side"), "idx"));
     solver.def("scattering", Scattering<BesselSolverCyl>::from_array, py::with_custodian_and_ward_postcall<0,1>(), (py::arg("side"), "coeffs"),
@@ -275,7 +289,7 @@ void export_BesselSolverCyl()
     RO_FIELD(modes, "Computed modes.");
 
     solver.def("layer_eigenmodes", &Eigenmodes<BesselSolverCyl>::fromZ, py::arg("level"),
-        u8"Get eignemodes for a layer at specified level.\n\n"
+        u8"Get eigenmodes for a layer at specified level.\n\n"
         u8"This is a low-level function to access diagonalized eigenmodes for a specific\n"
         u8"layer. Please refer to the detailed solver description for the interpretation\n"
         u8"of the returned values.\n\n"

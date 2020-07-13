@@ -26,8 +26,6 @@ void ExpansionBesselInfini::init2()
         SOLVER->geometry->getEdge(Geometry::DIRECTION_TRAN, true).type() != edge::Strategy::EXTEND)
         throw BadInput(solver->getId(), "Outer geometry edge must be 'extend' or a simple material");
 
-    eps0.resize(solver->lcount);
-
     size_t N = SOLVER->size;
     double ib = 1. / rbounds[rbounds.size()-1];
 
@@ -47,31 +45,30 @@ void ExpansionBesselInfini::init2()
             kdelts *= ib;
             break;
         case BesselSolverCyl::WAVEVECTORS_MANUAL:
-            if (SOLVER->klist.size() != N+1)
-                throw BadInput(SOLVER->getId(), "Number of manually specified wavevectors must be {}", N+1);
             kpts.resize(N);
             kdelts.reset(N);
-            for (size_t i = 0; i != N; ++i) {
-                kpts[i] = 0.5 * (SOLVER->klist[i] + SOLVER->klist[i+1]);
-                kdelts[i] = ib * (SOLVER->klist[i+1] - SOLVER->klist[i]);
+            if (!SOLVER->kweights) {
+                if (SOLVER->klist.size() != N+1)
+                    throw BadInput(SOLVER->getId(), "If no weights are given number of manually specified wavevectors must be {}",
+                                   N+1);
+                for (size_t i = 0; i != N; ++i) {
+                    kpts[i] = 0.5 * (SOLVER->klist[i] + SOLVER->klist[i+1]);
+                    kdelts[i] = ib * (SOLVER->klist[i+1] - SOLVER->klist[i]);
+                }
+            } else {
+                if (SOLVER->klist.size() != N)
+                    throw BadInput(SOLVER->getId(), "If weights are given number of manually specified wavevectors must be {}",
+                                   N);
+                if (SOLVER->kweights->size() != N)
+                    throw BadInput(SOLVER->getId(), "Number of manually specified wavevector weights must be {}", N+1);
+                kpts = SOLVER->klist;
+                kdelts.reset(SOLVER->kweights->begin(), SOLVER->kweights->end());
+                kdelts *= ib;
             }
             break;
     }
 
     init3();
-}
-
-
-void ExpansionBesselInfini::reset()
-{
-    eps0.clear();
-    ExpansionBessel::reset();
-}
-
-
-void ExpansionBesselInfini::layerIntegrals(size_t layer, double lam, double glam)
-{
-    eps0[layer] = integrateLayer(layer, lam, glam, false);
 }
 
 
@@ -87,39 +84,39 @@ void ExpansionBesselInfini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH)
 
     const Integrals& eps = layers_integrals[layer];
 
-    std::fill(RH.begin(), RH.end(), 0.);
-    // for (size_t i = 0; i != N; ++i) {
-    //     size_t is = idxs(i); size_t ip = idxp(i);
-    //     double g = kpts[i] * ib;
-    //     double dg = kdelts[i];
-    //     dcomplex f = 0.5 * g * dg * ik0;
-    //     for (size_t j = 0; j != N; ++j) {
-    //         size_t jp = idxp(j);
-    //         double k = kpts[j] * ib;
-    //         dcomplex fk = f * k;
-    //         RH(is, jp) = - fk * (k * (eps.Vmm(i,j) - eps.Vpp(i,j)) + eps.Dm(i,j) + eps.Dp(i,j));
-    //         RH(ip, jp) = - fk * (k * (eps.Vmm(i,j) + eps.Vpp(i,j)) + eps.Dm(i,j) - eps.Dp(i,j));
-    //     }
-    //     RH(is, is)  = k0;
-    //     RH(ip, ip) += k0 - g*g * ik0 * eps0[layer].second;
-    // }
+    for (size_t j = 0; j != N; ++j) {
+        size_t js = idxs(j), jp = idxp(j);
+        // double k = kpts[j] * ib;
+        for (size_t i = 0; i != N; ++i) {
+            size_t is = idxs(i), ip = idxp(i);
+            double g = kpts[i] * ib;
+            dcomplex gVk = 0.5 * ik0 * g * eps.V_k(i,j);
+            RH(is,jp) =  gVk;
+            RH(is,js) =  gVk;
+            RH(ip,jp) = -gVk;
+            RH(ip,js) = -gVk;
+        }
+        RH(js,js) -= k0;
+        RH(jp,jp) += k0;
+    }
 
-    // for (size_t i = 0; i != N; ++i) {
-    //     size_t is = idxs(i); size_t ip = idxp(i);
-    //     double g = kpts[i] * ib;
-    //     double dg = kdelts[i];
-    //     dcomplex f = 0.5 * g * dg * k0;
-    //     for (size_t j = 0; j != N; ++j) {
-    //         size_t js = idxs(j); size_t jp = idxp(j);
-    //         RE(ip, js) = f * (eps.Tmm(i,j) + eps.Tmp(i,j) - eps.Tpp(i,j) - eps.Tpm(i,j));
-    //         RE(is, js) = f * (eps.Tmm(i,j) + eps.Tmp(i,j) + eps.Tpp(i,j) + eps.Tpm(i,j));
-    //         RE(ip, jp) = f * (eps.Tmm(i,j) - eps.Tmp(i,j) + eps.Tpp(i,j) - eps.Tpm(i,j));
-    //         RE(is, jp) = f * (eps.Tmm(i,j) - eps.Tmp(i,j) - eps.Tpp(i,j) + eps.Tpm(i,j));
-    //     }
-    //     dcomplex k0eps = k0 * eps0[layer].first;
-    //     RE(ip, ip) += k0eps;
-    //     RE(is, is) += k0eps - g*g * ik0;
-    // }
+    for (size_t j = 0; j != N; ++j) {
+        size_t js = idxs(j), jp = idxp(j);
+        for (size_t i = 0; i != N; ++i) {
+            size_t is = idxs(i), ip = idxp(i);
+            // double g = kpts[i] * ib;
+            RE(ip,js) =  0.5 * k0 * eps.Tps(i,j);
+            RE(ip,jp) =  0.5 * k0 * eps.Tpp(i,j);
+            RE(is,js) = -0.5 * k0 * eps.Tss(i,j);
+            RE(is,jp) = -0.5 * k0 * eps.Tsp(i,j);
+        }
+        double k = kpts[j] * ib;
+        dcomplex ik0k2 = 0.5 * ik0 * k*k;
+        RE(jp,js) -= ik0k2;
+        RE(jp,jp) -= ik0k2;
+        RE(js,js) += ik0k2;
+        RE(js,jp) += ik0k2;
+    }
 }
 
 

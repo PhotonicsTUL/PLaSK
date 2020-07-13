@@ -60,6 +60,24 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
                     }
                 }
             }
+            if (reader.hasAttribute("k-weights")) {
+                std::string value = reader.requireAttribute("k-weights");
+                if (value.empty() || value == "auto")
+                    kweights.reset();
+                else {
+                    kweights.reset(std::vector<double>());
+                    kweights->clear();
+                    for (auto val: boost::tokenizer<boost::char_separator<char>>(value,
+                                                                                boost::char_separator<char>(" ,;\t\n"))) {
+                        try {
+                            double val = boost::lexical_cast<double>(val);
+                            kweights->push_back(val);
+                        } catch (boost::bad_lexical_cast&) {
+                            throw XMLException(reader, format("Value '{0}' cannot be converted to float", val));
+                        }
+                    }
+                }
+            }
             rule = reader.enumAttribute<Rule>("rule")
                 .value("semi-inverse", RULE_SEMI_INVERSE)
                 .value("inverse1", RULE_INVERSE_1)

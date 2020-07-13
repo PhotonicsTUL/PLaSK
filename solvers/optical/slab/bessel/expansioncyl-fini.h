@@ -35,8 +35,6 @@ struct PLASK_SOLVER_API ExpansionBesselFini : public ExpansionBessel {
     /// Integrals for magnetic permeability
     Integrals mu_integrals;
 
-    void layerIntegrals(size_t layer, double lam, double glam) override;
-
     #ifndef NDEBUG
       public:
         cmatrix muV_k();

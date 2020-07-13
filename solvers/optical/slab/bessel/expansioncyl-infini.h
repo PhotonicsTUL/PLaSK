@@ -12,14 +12,7 @@ namespace plask { namespace optical { namespace slab {
 
 struct PLASK_SOLVER_API ExpansionBesselInfini: public ExpansionBessel {
 
-  protected:
-
-    /// Reference epsilons
-    std::vector<std::pair<dcomplex, dcomplex>> eps0;
-
     DataVector<double> kdelts;
-
-  public:
 
     /**
      * Create new expansion
@@ -30,18 +23,11 @@ struct PLASK_SOLVER_API ExpansionBesselInfini: public ExpansionBessel {
     /// Perform m-specific initialization
     void init2() override;
 
-    /// Free allocated memory
-    void reset() override;
-
     void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) override;
 
     double integratePoyntingVert(const cvector& E, const cvector& H) override;
 
     double integrateField(WhichField field, size_t l, const cvector& E, const cvector& H) override;
-
-  protected:
-
-    void layerIntegrals(size_t layer, double lam, double glam) override;
 };
 
 }}} // # namespace plask::optical::slab

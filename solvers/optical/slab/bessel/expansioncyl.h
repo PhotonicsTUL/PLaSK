@@ -140,10 +140,11 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
 
     Tensor3<dcomplex> getEps(size_t layer, size_t ri, double r, double matz, double lam, double glam);
 
-    std::pair<dcomplex, dcomplex> integrateLayer(size_t layer, double lam, double glam, bool finite);
+    void layerIntegrals(size_t layer, double lam, double glam) override;
 
     void integrateParams(Integrals& integrals,
-                         const dcomplex* datap, const dcomplex* datar, const dcomplex* dataz);
+                         const dcomplex* datap, const dcomplex* datar, const dcomplex* dataz,
+                         dcomplex datap0, dcomplex datar0, dcomplex dataz0);
 
   public:
     unsigned getM() const { return m; }
@@ -169,6 +170,11 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
         cmatrix epsTps(size_t layer);
         cmatrix epsTpp(size_t layer);
     #endif
+
+    /// Return expansion wavevectors
+    virtual std::vector<double> getKpts() {
+        return kpts;
+    }
 };
 
 }}}  // namespace plask::optical::slab

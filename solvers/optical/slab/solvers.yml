@@ -845,15 +845,21 @@
       type: float
       default: 10
       help: >
-        Scale factor for wavectors used in infinite domain. Multiplied by the expansion size and divided
+        Scale factor for wavevectors used in infinite domain. Multiplied by the expansion size and divided
         by the geometry width it is a maximum considered wavevector.
     - attr: k-list
       label: Wavectors list
       type: list of floats
       help: >
-        A list of relative wavevetors ranges. The numbers should be relative to the inverse of the structure
-        width. The actual wavevectors used in the computations are the avrages of each two adjacent values
-        specified here and the integration weights are the sizes of each interval.
+        A list of relative wavevectors or wavevector ranges. The numbers should be relative to the inverse
+        of the structure width. If no weights are given, the actual wavevectors used in the computations are
+        the averages of each two adjacent values specified here and the integration weights are the sizes
+        of each interval.
+    - attr: k-weights
+      label: Wavectors weights
+      type: list of floats
+      help: >
+        An optional  list of relative wavevector weights.
     - attr: rule
       label: Matrix rule
       type: choice

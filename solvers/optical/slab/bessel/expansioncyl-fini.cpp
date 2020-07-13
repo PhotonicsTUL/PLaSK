@@ -56,6 +56,8 @@ void ExpansionBesselFini::init2() {
     // Compute mu integrals
     if (SOLVER->pml.size > 0. && SOLVER->pml.factor != 1.) {
 
+        SOLVER->writelog(LOG_DETAIL, "Computing permeability integrals with {} rule", SOLVER->ruleName());
+
         size_t pmlseg = segments.size() - 1;
 
         size_t pmli = raxis->size() - segments[pmlseg].weights.size();
@@ -86,11 +88,11 @@ void ExpansionBesselFini::init2() {
           case BesselSolverCyl::RULE_INVERSE_1:
           case BesselSolverCyl::RULE_INVERSE_2:
           case BesselSolverCyl::RULE_INVERSE_3:
-            integrateParams(mu_integrals, mu_data.get(), mu_data.get(), mu_data.get()); break;
+            integrateParams(mu_integrals, mu_data.get(), mu_data.get(), mu_data.get(), 1., 1., 1.); break;
           case BesselSolverCyl::RULE_SEMI_INVERSE:
-            integrateParams(mu_integrals, mu_data.get(), imu_data.get(), mu_data.get()); break;
+            integrateParams(mu_integrals, mu_data.get(), imu_data.get(), mu_data.get(), 1., 1., 1.); break;
           case BesselSolverCyl::RULE_DIRECT:
-            integrateParams(mu_integrals, mu_data.get(), imu_data.get(), imu_data.get()); break;
+            integrateParams(mu_integrals, mu_data.get(), imu_data.get(), imu_data.get(), 1., 1., 1.); break;
         }
 
     } else {
@@ -113,8 +115,6 @@ void ExpansionBesselFini::reset() {
     mu_integrals.reset();
     ExpansionBessel::reset();
 }
-
-void ExpansionBesselFini::layerIntegrals(size_t layer, double lam, double glam) { integrateLayer(layer, lam, glam, true); }
 
 void ExpansionBesselFini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
     assert(initialized);

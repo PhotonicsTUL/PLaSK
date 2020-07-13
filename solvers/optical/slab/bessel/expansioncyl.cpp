@@ -2,6 +2,9 @@
 #include "solvercyl.h"
 #include "zeros-data.h"
 
+#include "expansioncyl-fini.h"
+#include "expansioncyl-infini.h"
+
 #include "../gauss_legendre.h"
 
 #include <boost/math/special_functions/bessel.hpp>
@@ -27,8 +30,10 @@ void ExpansionBessel::init1() {
     rbounds.addPoint(0.);
     OrderedAxis::WarningOff nowarn_rbounds(rbounds);
     size_t nseg = rbounds.size() - 1;
-    if (SOLVER->pml.dist > 0.) rbounds.addPoint(rbounds[nseg++] + SOLVER->pml.dist);
-    if (SOLVER->pml.size > 0.) rbounds.addPoint(rbounds[nseg++] + SOLVER->pml.size);
+    if (dynamic_cast<ExpansionBesselFini*>(this)) {
+        if (SOLVER->pml.dist > 0.) rbounds.addPoint(rbounds[nseg++] + SOLVER->pml.dist);
+        if (SOLVER->pml.size > 0.) rbounds.addPoint(rbounds[nseg++] + SOLVER->pml.size);
+    }
     segments.resize(nseg);
     double a, b = 0.;
     for (size_t i = 0; i < nseg; ++i) {
@@ -177,13 +182,17 @@ void ExpansionBessel::cleanupIntegrals(double, double) {
 }
 
 void ExpansionBessel::integrateParams(Integrals& integrals,
-                                      const dcomplex* datap, const dcomplex* datar, const dcomplex* dataz) {
+                                      const dcomplex* datap, const dcomplex* datar, const dcomplex* dataz,
+                                      dcomplex datap0, dcomplex datar0, dcomplex dataz0) {
     auto raxis = mesh->tran();
-    
+
     size_t nr = raxis->size(), N = SOLVER->size;
     double R = rbounds[rbounds.size()-1];
     double ib = 1. / R;
     double* factors; // scale factors for making matrices orthonormal
+
+    ExpansionBesselInfini* this_infini = dynamic_cast<ExpansionBesselInfini*>(this);
+    bool finite = !this_infini;
 
     integrals.reset(N);
 
@@ -201,9 +210,15 @@ void ExpansionBessel::integrateParams(Integrals& integrals,
     } else {
         factors = reinterpret_cast<double*>(temp.data());
     }
-    for (size_t i = 0; i < N; ++i) {
-        double fact = R * cyl_bessel_j(m+1, kpts[i]);
-        factors[i] = 2. / (fact * fact);
+    if (finite) {
+        for (size_t i = 0; i < N; ++i) {
+            double fact = R * cyl_bessel_j(m+1, kpts[i]);
+            factors[i] = 2. / (fact * fact);
+        }
+    } else {
+        for (size_t i = 0; i < N; ++i) {
+            factors[i] = kpts[i] * ib * this_infini->kdelts[i];
+        }
     }
     double* Jm = factors + N;
     double* Jp = factors + 2*N;
@@ -217,11 +232,10 @@ void ExpansionBessel::integrateParams(Integrals& integrals,
         zero_matrix(integrals.Tsp);
         zero_matrix(integrals.Tps);
         zero_matrix(integrals.Tpp);
-        
+
         for (size_t ri = 0; ri != nr; ++ri) {
             double r = raxis->at(ri);
-            const dcomplex epsp = datap[ri];
-            const dcomplex epsr = datar[ri];
+            dcomplex epst = datar[ri] + datap[ri], epsd = datar[ri] - datap[ri];
             const dcomplex iepsz = dataz[ri];
 
             for (size_t i = 0; i < N; ++i) {
@@ -236,14 +250,24 @@ void ExpansionBessel::integrateParams(Integrals& integrals,
                 for (size_t i = 0; i < N; ++i) {
                     double Jg = J[i], Jmg = Jm[i], Jpg = Jp[i];
                     integrals.V_k(i,j) += r * Jg * iepsz * Jk * k * factors[i];
-                    integrals.Tss(i,j) += r * Jmg * (epsr + epsp) * Jmk * factors[i];
-                    integrals.Tpp(i,j) += r * Jpg * (epsr + epsp) * Jpk * factors[i];
-                    integrals.Tsp(i,j) += r * Jmg * (epsr - epsp) * Jpk * factors[i];
-                    integrals.Tps(i,j) += r * Jpg * (epsr - epsp) * Jmk * factors[i];
+                    integrals.Tss(i,j) += r * Jmg * epst * Jmk * factors[i];
+                    integrals.Tsp(i,j) += r * Jmg * epsd * Jpk * factors[i];
+                    integrals.Tps(i,j) += r * Jpg * epsd * Jmk * factors[i];
+                    integrals.Tpp(i,j) += r * Jpg * epst * Jpk * factors[i];
                 }
             }
         }
-    
+        if (!finite) {
+            for (size_t i = 0; i < N; ++i) {
+                integrals.V_k(i,i) += dataz0 * kpts[i] * ib;
+                dcomplex epst = datar0 + datap0, epsd = datar0 - datap0;
+                integrals.Tss(i,i) += epst;
+                integrals.Tsp(i,i) += epsd;
+                integrals.Tps(i,i) += epsd;
+                integrals.Tpp(i,i) += epst;
+            }
+        }
+
     } else {
 
         if (SOLVER->rule == BesselSolverCyl::RULE_SEMI_INVERSE) {
@@ -255,21 +279,30 @@ void ExpansionBessel::integrateParams(Integrals& integrals,
 
             for (size_t ri = 0; ri != nr; ++ri) {
                 double r = raxis->at(ri);
-                dcomplex epsp = datap[ri], epsr = datar[ri];
+                dcomplex epst = datar[ri] + datap[ri], epsd = datar[ri] - datap[ri];
                 for (size_t i = 0; i < N; ++i) {
                     double kr = kpts[i] * ib * r;
                     Jm[i] = cyl_bessel_j(m-1, kr);
                     Jp[i] = cyl_bessel_j(m+1, kr);
                 }
                 for (size_t i = 0; i < N; ++i) {
-                    dcomplex c = r * factors[i];
-                    dcomplex cs = c * (epsr + epsp), cd = c * (epsr - epsp);
+                    dcomplex rc = r * factors[i];
+                    dcomplex cs = rc * epst, cd = rc * epsd;
                     for (size_t j = 0; j < N; ++j) {
                         integrals.Tss(i,j) += cs * Jm[i] * Jm[j];
                         integrals.Tsp(i,j) += cd * Jm[i] * Jp[j];
                         integrals.Tps(i,j) += cd * Jp[i] * Jm[j];
                         integrals.Tpp(i,j) += cs * Jp[i] * Jp[j];
                     }
+                }
+            }
+            if (!finite) {
+                for (size_t i = 0; i < N; ++i) {
+                    dcomplex epst = datar0 + datap0, epsd = datar0 - datap0;
+                    integrals.Tss(i,i) += epst;
+                    integrals.Tsp(i,i) += epsd;
+                    integrals.Tps(i,i) += epsd;
+                    integrals.Tpp(i,i) += epst;
                 }
             }
 
@@ -374,7 +407,7 @@ void ExpansionBessel::integrateParams(Integrals& integrals,
                 factors = reinterpret_cast<double*>(temp.data());
                 Jm = factors + N; Jp = factors + 2*N;
 
-            } else { // if (SOLVER->rule == BesselSolverCyl::RULE_INVERSE_2)
+            } else { // if (SOLVER->rule == BesselSolverCyl::RULE_INVERSE_3)
 
                 cmatrix work(temp);
 
@@ -394,7 +427,7 @@ void ExpansionBessel::integrateParams(Integrals& integrals,
                         double kr = kpts[i] * ib * r;
                         Jm[i] = cyl_bessel_j(m-1, kr);
                         Jp[i] = cyl_bessel_j(m+1, kr);
-                    }                                                                                                                                                                               
+                    }
                     for (size_t j = 0; j < N; ++j) {
                         for (size_t i = 0; i < N; ++i) {
                             integrals.TT(i,j) += riepsr * Jm[i] * Jm[j];
@@ -480,6 +513,7 @@ void ExpansionBessel::integrateParams(Integrals& integrals,
                 }
             }
         }
+        if (!finite) for (size_t i = 0; i < N; ++i) work(i,i) += dataz0;
 
         // make_unit_matrix(integrals.V_k);
         zero_matrix(integrals.V_k);
@@ -496,7 +530,7 @@ void ExpansionBessel::integrateParams(Integrals& integrals,
     }
 }
 
-std::pair<dcomplex, dcomplex> ExpansionBessel::integrateLayer(size_t layer, double lam, double glam, bool finite) {
+void ExpansionBessel::layerIntegrals(size_t layer, double lam, double glam) {
     if (isnan(real(k0)) || isnan(imag(k0))) throw BadInput(SOLVER->getId(), "No wavelength specified");
 
     auto geometry = SOLVER->getGeometry();
@@ -504,10 +538,11 @@ std::pair<dcomplex, dcomplex> ExpansionBessel::integrateLayer(size_t layer, doub
     auto raxis = mesh->tran();
 
     #if defined(OPENMP_FOUND)  // && !defined(NDEBUG)
-        SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer {:d}/{:d} in thread {:d}", layer, solver->lcount,
-                        omp_get_thread_num());
+        SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer {:d}/{:d} with {} rule in thread {:d}",
+                         layer, solver->lcount, SOLVER->ruleName(), omp_get_thread_num());
     #else
-        SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer {:d}/{:d}", layer, solver->lcount);
+        SOLVER->writelog(LOG_DETAIL, "Computing integrals for layer {:d}/{:d} with {} rule",
+                         layer, solver->lcount, SOLVER->ruleName());
     #endif
 
     if (isnan(lam)) throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
@@ -530,6 +565,8 @@ std::pair<dcomplex, dcomplex> ExpansionBessel::integrateLayer(size_t layer, doub
     // For checking if the layer is uniform
     diagonals[layer] = true;
 
+    bool finite = !dynamic_cast<ExpansionBesselInfini*>(this);
+
     size_t pmli = raxis->size();
     double pmlr;
     dcomplex epsp0, epsr0, epsz0;
@@ -540,17 +577,9 @@ std::pair<dcomplex, dcomplex> ExpansionBessel::integrateLayer(size_t layer, doub
             pmlr = rbounds[pmlseg];
         }
     } else {
-        double T = getT(layer, mesh->tran()->size() - 1);
-        Tensor3<dcomplex> eps0;
-        {
-            OmpLockGuard<OmpNestLock> lock;  // this must be declared before `material` to guard its destruction
-            auto material = geometry->getMaterial(vec(rbounds[rbounds.size() - 1] + 0.001, matz));
-            lock = material->lock();
-            eps0 = material->NR(lam, T);
-            if (isnan(eps0.c00) || isnan(eps0.c11) || isnan(eps0.c22) || isnan(eps0.c01))
-                throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
-                               material->name(), lam, T);
-        }
+        Tensor3<dcomplex> eps0 = getEps(layer, mesh->tran()->size()-1,
+                                        rbounds[rbounds.size()-1] + 0.001, matz,
+                                        lam, glam);
         eps0.sqr_inplace();
         epsp0 = eps0.c00;
         if (SOLVER->rule != BesselSolverCyl::RULE_DIRECT) {
@@ -626,27 +655,20 @@ std::pair<dcomplex, dcomplex> ExpansionBessel::integrateLayer(size_t layer, doub
         zero_matrix(integrals.Tsp);
         zero_matrix(integrals.Tps);
         zero_matrix(integrals.Tpp);
-        if (finite) {
-            double ib = 1. / rbounds[rbounds.size() - 1];
-            for (size_t i = 0; i < N; ++i) {
-                double k = kpts[i] * ib;
-                if (SOLVER->rule != BesselSolverCyl::RULE_DIRECT)
-                    integrals.V_k(i,i) = k / epsz0;
-                else
-                    integrals.V_k(i,i) = k * epsz0;
-                // integrals.Tss(i,i) = integrals.Tpp(i,i) = 1. / iepsr0 + epsp0;
-                // integrals.Tsp(i,i) = integrals.Tps(i,i) = 1. / iepsr0 - epsp0;
-                integrals.Tss(i,i) = integrals.Tpp(i,i) = 2. * epsp0;
-            }
+        double ib = 1. / rbounds[rbounds.size() - 1];
+        for (size_t i = 0; i < N; ++i) {
+            double k = kpts[i] * ib;
+            if (SOLVER->rule != BesselSolverCyl::RULE_DIRECT)
+                integrals.V_k(i,i) = k / epsz0;
+            else
+                integrals.V_k(i,i) = k * epsz0;
+            // integrals.Tss(i,i) = integrals.Tpp(i,i) = 1. / iepsr0 + epsp0;
+            // integrals.Tsp(i,i) = integrals.Tps(i,i) = 1. / iepsr0 - epsp0;
+            integrals.Tss(i,i) = integrals.Tpp(i,i) = 2. * epsp0;
         }
     } else {
-        integrateParams(layers_integrals[layer], epsp_data.get(), epsr_data.get(), epsz_data.get());
+        integrateParams(layers_integrals[layer], epsp_data.get(), epsr_data.get(), epsz_data.get(), epsp0, epsr0, epsz0);
     }
-
-    if (SOLVER->rule != BesselSolverCyl::RULE_DIRECT)
-        return std::make_pair(2. * epsp0, 1. / epsz0);
-    else
-        return std::make_pair(2. * epsp0, epsz0);
 }
 
 #ifndef NDEBUG
@@ -711,8 +733,8 @@ LazyData<Vec<3, dcomplex>> ExpansionBessel::getField(size_t layer,
 
     auto src_mesh =
         plask::make_shared<RectangularMesh<2>>(mesh->tran(), plask::make_shared<RegularAxis>(level->vpos(), level->vpos(), 1));
-    
-    
+
+
     if (which_field == FIELD_E) {
         cvector Ez(N);
         {
