@@ -120,7 +120,7 @@ class TreeFragmentSolver(Solver):
         self.element = element
 
     def make_xml_element(self):
-        return self.element
+        return self.element.get_etree_element()
 
     def get_text(self):
         return print_interior(self.element)

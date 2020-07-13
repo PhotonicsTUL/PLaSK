@@ -44,6 +44,8 @@ class Element:
     def __setitem__(self, key, value):
         self._element[key] = value
 
+    def get_etree_element(self):
+        return self._element
 
 def print_interior(element):
     """Print all subnodes of element (all except the element's opening and closing tags)"""
