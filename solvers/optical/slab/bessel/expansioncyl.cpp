@@ -235,8 +235,8 @@ void ExpansionBessel::integrateParams(Integrals& integrals,
 
         for (size_t ri = 0; ri != nr; ++ri) {
             double r = raxis->at(ri);
-            dcomplex epst = datar[ri] + datap[ri], epsd = datar[ri] - datap[ri];
-            const dcomplex iepsz = dataz[ri];
+            dcomplex repst = r * (datar[ri] + datap[ri]), repsd = r * (datar[ri] - datap[ri]);
+            const dcomplex riepsz = r * dataz[ri];
 
             for (size_t i = 0; i < N; ++i) {
                 double kr = kpts[i] * ib * r;
@@ -249,11 +249,11 @@ void ExpansionBessel::integrateParams(Integrals& integrals,
                 double Jk = J[j], Jmk = Jm[j], Jpk = Jp[j];
                 for (size_t i = 0; i < N; ++i) {
                     double Jg = J[i], Jmg = Jm[i], Jpg = Jp[i];
-                    integrals.V_k(i,j) += r * Jg * iepsz * Jk * k * factors[i];
-                    integrals.Tss(i,j) += r * Jmg * epst * Jmk * factors[i];
-                    integrals.Tsp(i,j) += r * Jmg * epsd * Jpk * factors[i];
-                    integrals.Tps(i,j) += r * Jpg * epsd * Jmk * factors[i];
-                    integrals.Tpp(i,j) += r * Jpg * epst * Jpk * factors[i];
+                    integrals.V_k(i,j) += Jg * riepsz * Jk * k * factors[i];
+                    integrals.Tss(i,j) += Jmg * repst * Jmk * factors[i];
+                    integrals.Tsp(i,j) += Jmg * repsd * Jpk * factors[i];
+                    integrals.Tps(i,j) += Jpg * repsd * Jmk * factors[i];
+                    integrals.Tpp(i,j) += Jpg * repst * Jpk * factors[i];
                 }
             }
         }
@@ -279,15 +279,14 @@ void ExpansionBessel::integrateParams(Integrals& integrals,
 
             for (size_t ri = 0; ri != nr; ++ri) {
                 double r = raxis->at(ri);
-                dcomplex epst = datar[ri] + datap[ri], epsd = datar[ri] - datap[ri];
+                dcomplex repst = r * (datar[ri] + datap[ri]), repsd = r * (datar[ri] - datap[ri]);
                 for (size_t i = 0; i < N; ++i) {
                     double kr = kpts[i] * ib * r;
                     Jm[i] = cyl_bessel_j(m-1, kr);
                     Jp[i] = cyl_bessel_j(m+1, kr);
                 }
                 for (size_t i = 0; i < N; ++i) {
-                    dcomplex rc = r * factors[i];
-                    dcomplex cs = rc * epst, cd = rc * epsd;
+                    dcomplex cs = factors[i] * repst, cd = factors[i] * repsd;
                     for (size_t j = 0; j < N; ++j) {
                         integrals.Tss(i,j) += cs * Jm[i] * Jm[j];
                         integrals.Tsp(i,j) += cd * Jm[i] * Jp[j];
@@ -318,27 +317,64 @@ void ExpansionBessel::integrateParams(Integrals& integrals,
                 zero_matrix(worksp);
                 zero_matrix(workps);
 
-                for (size_t ri = 0, wi = 0, seg = 0, nw = segments[0].weights.size(); ri != nr; ++ri, ++wi) {
-                    if (wi == nw) {
-                        nw = segments[++seg].weights.size();
-                        wi = 0;
+                if (finite) {
+                    for (size_t ri = 0, wi = 0, seg = 0, nw = segments[0].weights.size(); ri != nr; ++ri, ++wi) {
+                        if (wi == nw) {
+                            nw = segments[++seg].weights.size();
+                            wi = 0;
+                        }
+                        double r = raxis->at(ri);
+                        double rw = r * segments[seg].weights[wi] * segments[seg].D;
+                        dcomplex riepsr = r * datar[ri];
+                        for (size_t i = 0; i < N; ++i) {
+                            double kr = kpts[i] * ib * r;
+                            Jm[i] = cyl_bessel_j(m-1, kr);
+                            Jp[i] = cyl_bessel_j(m+1, kr);
+                        }
+                        for (size_t i = 0; i < N; ++i) {
+                            double cw = factors[i] * rw;
+                            dcomplex ce = factors[i] * riepsr;
+                            for (size_t j = 0; j < N; ++j) {
+                                workess(i,j) += ce * Jm[i] * Jm[j];
+                                workepp(i,j) += ce * Jp[i] * Jp[j];
+                                worksp(i,j) += cw * Jm[i] * Jp[j];
+                                workps(i,j) += cw * Jp[i] * Jm[j];
+                            }
+                        }
                     }
-                    double r = raxis->at(ri);
-                    double rw = r * segments[seg].weights[wi] * segments[seg].D;
-                    dcomplex riepsr = r * datar[ri];
-                    for (size_t i = 0; i < N; ++i) {
-                        double kr = kpts[i] * ib * r;
-                        Jm[i] = cyl_bessel_j(m-1, kr);
-                        Jp[i] = cyl_bessel_j(m+1, kr);
+                } else {
+                    for (size_t ri = 0; ri != nr; ++ri) {
+                        double r = raxis->at(ri);
+                        dcomplex riepsr = r * datar[ri];
+                        for (size_t i = 0; i < N; ++i) {
+                            double kr = kpts[i] * ib * r;
+                            Jm[i] = cyl_bessel_j(m-1, kr);
+                            Jp[i] = cyl_bessel_j(m+1, kr);
+                        }
+                        for (size_t i = 0; i < N; ++i) {
+                            dcomplex ce = factors[i] * riepsr;
+                            for (size_t j = 0; j < N; ++j) {
+                                workess(i,j) += ce * Jm[i] * Jm[j];
+                                workepp(i,j) += ce * Jp[i] * Jp[j];
+                            }
+                        }
                     }
                     for (size_t i = 0; i < N; ++i) {
-                        double cw = factors[i] * rw;
-                        dcomplex ce = factors[i] * riepsr;
-                        for (size_t j = 0; j < N; ++j) {
-                            workess(i,j) += ce * Jm[i] * Jm[j];
-                            workepp(i,j) += ce * Jp[i] * Jp[j];
-                            worksp(i,j) += cw * Jm[i] * Jp[j];
-                            workps(i,j) += cw * Jp[i] * Jm[j];
+                        workess(i,i) += datar0;
+                        workepp(i,i) += datar0;
+                    }
+
+                    // Compute  Jp(kr) Jm(gr) r dr  and  Jp(gr) Jm(kr) r dr  using analytical formula
+                    for (size_t j = 0; j < N; ++j) {
+                        double k = kpts[j] * ib;
+                        for (size_t i = 0; i < j; ++i) {
+                            double g = kpts[i] * ib;
+                            worksp(i,j) = factors[i] * 2*m / (k*g) * pow(g/k, m);   // g<k s=g p=k
+                        }
+                        worksp(j,j) = workps(j,j) = factors[j] * m / (k*k) - 1.;
+                        for (size_t i = j+1; i < N; ++i) {
+                            double g = kpts[i] * ib;
+                            workps(i,j) = factors[i] * 2*m / (k*g) * pow(k/g, m);   // k<g s=k p=g
                         }
                     }
                 }
@@ -357,6 +393,7 @@ void ExpansionBessel::integrateParams(Integrals& integrals,
                 Jm = factors + N; Jp = factors + 2*N;
 
             } else if (SOLVER->rule == BesselSolverCyl::RULE_INVERSE_2) {
+                if (!finite) throw NotImplemented("inverse rule (variant 2) for infinite expansion");
 
                 double* J  = factors + 3*N;
 
@@ -408,6 +445,7 @@ void ExpansionBessel::integrateParams(Integrals& integrals,
                 Jm = factors + N; Jp = factors + 2*N;
 
             } else { // if (SOLVER->rule == BesselSolverCyl::RULE_INVERSE_3)
+                if (!finite) throw NotImplemented("inverse rule (variant 3) for infinite expansion");
 
                 cmatrix work(temp);
 
@@ -491,6 +529,14 @@ void ExpansionBessel::integrateParams(Integrals& integrals,
                         integrals.Tps(i,j) -= c * Jp[i] * Jm[j];
                         integrals.Tpp(i,j) += c * Jp[i] * Jp[j];
                     }
+                }
+            }
+            if (!finite) {
+                for (size_t i = 0; i < N; ++i) {
+                    integrals.Tss(i,i) += datap0;
+                    integrals.Tsp(i,i) -= datap0;
+                    integrals.Tps(i,i) -= datap0;
+                    integrals.Tpp(i,i) += datap0;
                 }
             }
         }
@@ -809,6 +855,54 @@ LazyData<Tensor3<dcomplex>> ExpansionBessel::getMaterialNR(size_t layer,
     return interpolate(
         src_mesh, nrs, dest_mesh, interp,
         InterpolationFlags(SOLVER->getGeometry(), InterpolationFlags::Symmetry::POSITIVE, InterpolationFlags::Symmetry::NO));
+}
+
+
+double ExpansionBessel::integratePoyntingVert(const cvector& E, const cvector& H) {
+    double result = 0.;
+    for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
+        size_t is = idxs(i);
+        size_t ip = idxp(i);
+        result += real(- E[is] * conj(H[is]) + E[ip] * conj(H[ip])) * fieldFactor(i);
+    }
+    return 4e-12 * PI * result;  // µm² -> m²
+}
+
+double ExpansionBessel::integrateField(WhichField field, size_t layer, const cvector& E, const cvector& H) {
+    size_t N = SOLVER->size;
+    double resxy = 0.;
+    double resz = 0.;
+    double R = rbounds[rbounds.size()-1];
+    if (which_field == FIELD_E) {
+        cvector Ez(N), Dz(N);
+        for (size_t j = 0; j != N; ++j) {
+            size_t js = idxs(j), jp = idxp(j);
+            Dz[j] = H[js] + H[jp];
+        }
+        mult_matrix_by_vector(layers_integrals[layer].V_k, Dz, Ez);
+        for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
+            double eta = fieldFactor(i);
+            size_t is = idxs(i);
+            size_t ip = idxp(i);
+            resxy += real(E[is]*conj(E[is]) + E[ip]*conj(E[ip])) * eta;
+            resz += real(Ez[i]*conj(Ez[i])) * eta;
+        }
+    } else {
+        cvector Bz(N);
+        for (size_t j = 0; j != N; ++j) {
+            size_t js = idxs(j), jp = idxp(j);
+            Bz[j] = E[js] + E[jp];
+        }
+        cvector Hz = getHz(Bz);
+        for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
+            double eta = fieldFactor(i);
+            size_t is = idxs(i);
+            size_t ip = idxp(i);
+            resxy += real(H[is]*conj(H[is]) + H[ip]*conj(H[ip])) * eta;
+            resz += real(Hz[i]*conj(Hz[i])) * eta;
+        }
+    }
+    return 2*PI * (resxy + resz / real(k0*conj(k0)));
 }
 
 }}}  // namespace plask::optical::slab

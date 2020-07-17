@@ -65,6 +65,10 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
                                               InterpolationMethod interp = INTERPOLATION_DEFAULT) override;
 
+    double integratePoyntingVert(const cvector& E, const cvector& H) override;
+
+    double integrateField(WhichField field, size_t layer, const cvector& E, const cvector& H) override;
+
   private:
     inline double getT(size_t layer, size_t ri) {
         double T = 0., W = 0.;
@@ -145,6 +149,10 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
     void integrateParams(Integrals& integrals,
                          const dcomplex* datap, const dcomplex* datar, const dcomplex* dataz,
                          dcomplex datap0, dcomplex datar0, dcomplex dataz0);
+
+    virtual double fieldFactor(size_t i) = 0;
+
+    virtual cvector getHz(const cvector& Bz) = 0;
 
   public:
     unsigned getM() const { return m; }

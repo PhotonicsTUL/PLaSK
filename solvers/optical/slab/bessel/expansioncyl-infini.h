@@ -25,9 +25,13 @@ struct PLASK_SOLVER_API ExpansionBesselInfini: public ExpansionBessel {
 
     void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) override;
 
-    double integratePoyntingVert(const cvector& E, const cvector& H) override;
+  protected:
 
-    double integrateField(WhichField field, size_t l, const cvector& E, const cvector& H) override;
+    double fieldFactor(size_t i) override {
+        return rbounds[rbounds.size() - 1] / (kpts[i] * kdelts[i]);
+    }
+
+    cvector getHz(const cvector& Bz) override { return Bz; }
 };
 
 }}} // # namespace plask::optical::slab

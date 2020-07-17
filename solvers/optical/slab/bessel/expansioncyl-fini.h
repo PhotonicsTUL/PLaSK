@@ -27,13 +27,17 @@ struct PLASK_SOLVER_API ExpansionBesselFini : public ExpansionBessel {
 
     void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) override;
 
-    double integratePoyntingVert(const cvector& E, const cvector& H) override;
-
-    double integrateField(WhichField field, size_t layer, const cvector& E, const cvector& H) override;
-
   protected:
     /// Integrals for magnetic permeability
     Integrals mu_integrals;
+
+    double fieldFactor(size_t i) override;
+
+    cvector getHz(const cvector& Bz) override {
+        cvector Hz(Bz.size());
+        mult_matrix_by_vector(mu_integrals.V_k, Bz, Hz);
+        return Hz;
+    }
 
     #ifndef NDEBUG
       public:

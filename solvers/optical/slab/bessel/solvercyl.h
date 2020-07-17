@@ -48,6 +48,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
             case RULE_INVERSE_3: return "inverse3";
             case RULE_DIRECT: return "direct";
         }
+        return "unknown";
     }
 
     std::string getClassName() const override { return "optical.BesselCyl"; }

@@ -10,7 +10,7 @@ BesselSolverCyl::BesselSolverCyl(const std::string& name):
     domain(DOMAIN_INFINITE),
     m(1),
     size(12),
-    rule(RULE_INVERSE_3),
+    rule(RULE_SEMI_INVERSE),
     kscale(10.),
     kmethod(WAVEVECTORS_UNIFORM),
     integral_error(1e-6),
@@ -25,6 +25,8 @@ BesselSolverCyl::BesselSolverCyl(const std::string& name):
 
 void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
 {
+    bool obsolete_rule_warning = true;  //TODO remove in the future
+
     while (reader.requireTagOrEnd()) {
         std::string param = reader.getNodeName();
         if (param == "expansion") {
@@ -78,13 +80,17 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
                     }
                 }
             }
-            rule = reader.enumAttribute<Rule>("rule")
-                .value("semi-inverse", RULE_SEMI_INVERSE)
-                .value("inverse1", RULE_INVERSE_1)
-                .value("inverse2", RULE_INVERSE_2)
-                .value("inverse3", RULE_INVERSE_3)
-                .value("direct", RULE_DIRECT)
-                .get(rule);
+            if (reader.hasAttribute("rule")) {
+                rule = reader.enumAttribute<Rule>("rule")
+                    .value("semi-inverse", RULE_SEMI_INVERSE)
+                    .value("inverse", RULE_SEMI_INVERSE)
+                    .value("inverse1", RULE_INVERSE_1)
+                    .value("inverse2", RULE_INVERSE_2)
+                    .value("inverse3", RULE_INVERSE_3)
+                    .value("direct", RULE_DIRECT)
+                    .require();
+                obsolete_rule_warning = false;  //TODO remove in the future
+            }
             reader.requireTagEnd();
         } else if (param == "mode") {
             emission = reader.enumAttribute<Emission>("emission")
@@ -150,6 +156,9 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
         } else
             parseStandardConfiguration(reader, manager);
     }
+    if (obsolete_rule_warning)  //TODO remove in the future
+        writelog(LOG_WARNING, "New Bessel solver uses inverse rule by default, which may cause different results: "
+                            "set rule=\"direct\" for old behavior");
 }
 
 

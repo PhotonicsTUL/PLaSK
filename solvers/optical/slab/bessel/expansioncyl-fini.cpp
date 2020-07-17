@@ -158,54 +158,11 @@ void ExpansionBesselFini::getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) {
     #undef mu
 }
 
-double ExpansionBesselFini::integratePoyntingVert(const cvector& E, const cvector& H) {
-    double result = 0.;
-    for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
-        double eta = cyl_bessel_j(m + 1, kpts[i]) * rbounds[rbounds.size() - 1];
-        eta = 2 * eta * eta;  // 4 × ½
-        size_t is = idxs(i);
-        size_t ip = idxp(i);
-        result += real(E[is] * conj(H[is]) + E[ip] * conj(H[ip])) * eta;
-    }
-    return 2e-12 * PI * result;  // µm² -> m²
+double ExpansionBesselFini::fieldFactor(size_t i) {
+    double eta = cyl_bessel_j(m + 1, kpts[i]) * rbounds[rbounds.size() - 1];
+    return 0.5 * eta * eta;
 }
 
-double ExpansionBesselFini::integrateField(WhichField field, size_t layer, const cvector& E, const cvector& H) {
-    size_t N = SOLVER->size;
-    double resxy = 0.;
-    double resz = 0.;
-    double R = rbounds[rbounds.size()-1];
-    if (which_field == FIELD_E) {
-        cvector Ez(N), Dz(N);
-        for (size_t j = 0; j != N; ++j) {
-            size_t js = idxs(j), jp = idxp(j);
-            Dz[j] = H[js] + H[jp];
-        }
-        mult_matrix_by_vector(layers_integrals[layer].V_k, Dz, Ez);
-        for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
-            double eta = cyl_bessel_j(m+1, kpts[i]) * R; eta = 2. * eta*eta; // 4 × ½
-            size_t is = idxs(i);
-            size_t ip = idxp(i);
-            resxy += real(E[is]*conj(E[is]) + E[ip]*conj(E[ip])) * eta;
-            resz += real(Ez[i]*conj(Ez[i])) * eta;
-        }
-    } else {
-        cvector Hz(N), Bz(N);
-        for (size_t j = 0; j != N; ++j) {
-            size_t js = idxs(j), jp = idxp(j);
-            Bz[j] = E[js] + E[jp];
-        }
-        mult_matrix_by_vector(mu_integrals.V_k, Bz, Hz);
-        for (size_t i = 0, N = SOLVER->size; i < N; ++i) {
-            double eta = cyl_bessel_j(m+1, kpts[i]) * R; eta = eta*eta; // 2 × ½
-            size_t is = idxs(i);
-            size_t ip = idxp(i);
-            resxy += real(H[is]*conj(H[is]) + H[ip]*conj(H[ip])) * eta;
-            resz += real(Hz[i]*conj(Hz[i])) * eta;
-        }
-    }
-    return 0.5 * 2*PI * (resxy + resz / real(k0*conj(k0)));
-}
 
 #ifndef NDEBUG
 cmatrix ExpansionBesselFini::muV_k() {

@@ -1,4 +1,4 @@
-#include "gauss_legendre.h"
+#include "gauss_laguerre.h"
 #include "fortran.h"
 
 #include <memory>

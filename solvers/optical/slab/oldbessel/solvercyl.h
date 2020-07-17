@@ -309,11 +309,8 @@ struct PLASK_SOLVER_API OldBesselSolverCyl: public SlabSolver<SolverWithMesh<Geo
     /// Insert mode to the list or return the index of the exiting one
     size_t insertMode() {
         static bool warn = true;
-        if (warn && ((emission != EMISSION_TOP && emission != EMISSION_BOTTOM) || domain == DOMAIN_INFINITE)) {
-            if (domain == DOMAIN_INFINITE)
-                writelog(LOG_WARNING, "Mode fields are not normalized (infinite domain)");
-            else
-                writelog(LOG_WARNING, "Mode fields are not normalized (emission direction not specified)");
+        if (warn && (emission != EMISSION_TOP && emission != EMISSION_BOTTOM)) {
+            writelog(LOG_WARNING, "Mode fields are not normalized (emission direction not specified)");
             warn = false;
         }
         Mode mode(expansion, root.tolx);

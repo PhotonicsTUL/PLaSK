@@ -147,6 +147,7 @@ void export_BesselSolverCyl()
 
     py_enum<typename BesselSolverCyl::Rule>()
         .value("SEMI_INVERSE", BesselSolverCyl::RULE_SEMI_INVERSE)
+        .value("INVERSE", BesselSolverCyl::RULE_SEMI_INVERSE)
         .value("INVERSE1", BesselSolverCyl::RULE_INVERSE_1)
         .value("INVERSE2", BesselSolverCyl::RULE_INVERSE_2)
         .value("INVERSE3", BesselSolverCyl::RULE_INVERSE_3)

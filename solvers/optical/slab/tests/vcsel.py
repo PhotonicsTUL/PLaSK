@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 import unittest
 
+import sys
+
 from numpy import *
 
 from plask import *
@@ -71,7 +73,7 @@ class VCSEL(unittest.TestCase):
             <solvers>
               <optical name="bessel" lib="slab" solver="BesselCyl">
                 <geometry ref="vcsel"/>
-                <expansion domain="finite" lam0="980."/>
+                <expansion domain="finite" lam0="980." k-scale="0.1" k-method="laguerre"/>
                 <mode emission="top"/>
                 <pml dist="20." factor="1-0j" size="2.0"/>
                 <interface object="QW"/>
@@ -82,13 +84,16 @@ class VCSEL(unittest.TestCase):
         self.solver.initialize()
         self.profile = StepProfile(self.solver.geometry)
         self.solver.inGain = self.profile.outGain
+        self.solver.lam0 = 980.
         self.solver.size = 30
 
-    def testComputations(self):
+    def testComputationsFinite(self):
+        self.solver.domain = 'finite'
         m = self.solver.find_mode(980.1)
         self.assertEqual( m, 0 )
         self.assertEqual( len(self.solver.modes), 1 )
-        self.assertAlmostEqual( self.solver.modes[m].lam.real,  979.59, 2 )
+        # self.assertAlmostEqual( self.solver.modes[m].lam.real,  979.59, 2 )
+        self.assertAlmostEqual( self.solver.modes[m].lam.real,  979.587, 3 )
         self.assertAlmostEqual( self.solver.modes[m].lam.imag, -0.02077, 3 )
 
         # Test integration of the Pointing vector
@@ -102,14 +107,33 @@ class VCSEL(unittest.TestCase):
         P = 0.5 * real(E[:,1]*conj(H[:,0]) - E[:,0]*conj(H[:,1]))
         self.assertAlmostEqual( 2e3*pi * sum(1e-6*rr * P) * dr / self.solver.modes[m].power, 1.0, 3 )
 
+    def testComputationsInfinite(self):
+        self.solver.domain = 'infinite'
+        m = self.solver.find_mode(979.0)
+        self.assertEqual( m, 0 )
+        self.assertEqual( len(self.solver.modes), 1 )
+        self.assertAlmostEqual( self.solver.modes[m].lam.real,  979.614, 3 )
+        self.assertAlmostEqual( self.solver.modes[m].lam.imag, -0.02077, 3 )
+
+        # Test integration of the Pointing vector
+        R = 27.
+        n = 1000
+        dr = 1e-6*R / n
+        rr = linspace(0., R, n+1)
+        msh = mesh.Rectangular2D(rr, [self.solver.geometry.bbox.top + 1e-6])
+        E = self.solver.outLightE(m, msh).array[:,0,:]
+        H = self.solver.outLightH(m, msh).array[:,0,:]
+        P = 0.5 * real(E[:,1]*conj(H[:,0]) - E[:,0]*conj(H[:,1]))
+        self.assertAlmostEqual( 2e3*pi * sum(1e-6*rr * P) * dr / self.solver.modes[m].power, 1.0, 2 )
+
     def plot_determinant(self):
-        lams = linspace(979., 981., 201)
-        dets = self.solver.get_determinant(lam=lams, m=1, dispersive=False)
+        lams = linspace(979., 982., 201)
+        dets = self.solver.get_determinant(lam=lams, m=1)
         plot(lams, abs(dets))
         yscale('log')
 
     def plot_field(self):
-        self.solver.find_mode(980.1, m=1)
+        self.solver.find_mode(979.0, m=1)
         print_log('result', self.solver.modes[0])
         box = self.solver.geometry.bbox
         msh = mesh.Rectangular2D(mesh.Regular(0., box.right, 101),
@@ -165,24 +189,32 @@ class VCSEL(unittest.TestCase):
         integral_mesh = msh.elements.mesh
         rr, _ = meshgrid(integral_mesh.axis0, integral_mesh.axis1, indexing='ij')
 
-        E = self.solver.outLightE(integral_mesh).array
-        E2 = sum(real(E*conj(E)), -1)
-        EE0 = 0.5 * 2*pi * sum((rr * E2).ravel()) * dr * dz
-        EE1 = self.solver.integrateEE(box.bottom, box.top)
-        print_log('result', "E:", EE0 / EE1)
+        try:
+            E = self.solver.outLightE(integral_mesh).array
+            E2 = sum(real(E*conj(E)), -1)
+            EE0 = 0.5 * 2*pi * sum((rr * E2).ravel()) * dr * dz
+            EE1 = self.solver.integrateEE(box.bottom, box.top)
+            print_log('result', "E:", EE0 / EE1)
 
-        H = self.solver.outLightH(integral_mesh).array
-        H2 = sum(real(H*conj(H)), -1)
-        HH0 = 0.5 * 2*pi * sum((rr * H2).ravel()) * dr * dz
-        HH1 = self.solver.integrateHH(box.bottom, box.top)
-        print_log('result', "H:", HH0 / HH1)
+            H = self.solver.outLightH(integral_mesh).array
+            H2 = sum(real(H*conj(H)), -1)
+            HH0 = 0.5 * 2*pi * sum((rr * H2).ravel()) * dr * dz
+            HH1 = self.solver.integrateHH(box.bottom, box.top)
+            print_log('result', "H:", HH0 / HH1)
+
+        except NotImplemented:
+            pass
 
 
 if __name__ == "__main__":
     vcsel = VCSEL('plot_field')
     vcsel.setUp()
 
-    #vcsel.plot_determinant()
+    try:
+        vcsel.solver.domain = sys.argv[1]
+    except IndexError:
+        pass
+
+    # vcsel.plot_determinant()
     vcsel.plot_field()
     show()
-
