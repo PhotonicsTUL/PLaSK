@@ -54,19 +54,18 @@ endif()
 #set(interface_src python/file1.cpp python/file2.cpp python/file3.h)
 file(GLOB solver_src *.cpp wzmocnienie/*.cc)
 
-# To add unit tests to your project create appropriate targets (binary executables
-# or Python scripts) and register them using macro add_solver_test for binaries
-# and add_python_test(name file.py) for Python scripts. You should name
-# the test as 'solvers/your_solver/test_name'. Then uncomment and edit the line
-# below.
+# To add unit tests to your project create appropriate targets (binary executables,
+# Python scripts, or XPL files) and register them using CMake command add_solver_test.
+# Then uncomment and edit the line below.
+#
 enable_testing()
 
 if(BUILD_TESTING)
     # add_executable(simplegaintest tests/simplegaintest.cpp)
     # target_link_libraries(simplegaintest libplask ${SOLVER_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
     # add_solver_test(solvers/gain/wasiak simplegaintest)
-    
-    add_xpl_test(solvers/gain/wasiak-new ${CMAKE_CURRENT_SOURCE_DIR}/tests/newtest1.xpl)
+
+    add_solver_test(test1 ${CMAKE_CURRENT_SOURCE_DIR}/tests/newtest1.xpl)
 endif()
 
 # Build everything the default way.

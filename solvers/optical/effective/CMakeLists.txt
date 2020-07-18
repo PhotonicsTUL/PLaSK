@@ -49,22 +49,19 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES} camos)
 #set(interface_src python/effective.cpp)
 file(GLOB solver_src *.cpp *.hpp *.h)
 
-# To add unit tests to your project create appropriate targets (binary executables
-# or Python scripts) and register them using macro add_solver_test for binaries
-# and add_python_test(name file.py) for Python scripts. You should name
-# the test as 'solvers/your_solver/test_name'. Then uncomment and edit the line
-# below.
+# To add unit tests to your project create appropriate targets (binary executables,
+# Python scripts, or XPL files) and register them using CMake command add_solver_test.
+# Then uncomment and edit the line below.
 #
 enable_testing()
 
 #add_executable(eimtest tests/eimtest.cpp)
 #target_link_libraries(eimtest libplask ${SOLVER_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
-#add_solver_test(solvers/optical/effective eimtest)
 
-add_python_test(solvers/loading ${CMAKE_CURRENT_SOURCE_DIR}/tests/loading.py)
-add_python_test(solvers/optical/effective ${CMAKE_CURRENT_SOURCE_DIR}/tests/effective.py)
+add_solver_test(loading ${CMAKE_CURRENT_SOURCE_DIR}/tests/loading.py)
+add_solver_test(eim ${CMAKE_CURRENT_SOURCE_DIR}/tests/eim.py)
+add_solver_test(efm ${CMAKE_CURRENT_SOURCE_DIR}/tests/efm.py)
 
 # Build everything the default way.
 # Call this macro unless you really know what you are doing!
 make_default()
-

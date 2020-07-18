@@ -55,11 +55,9 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/inclu
 file(GLOB solver_src *.cpp *.h fourier/*.cpp fourier/*.h bessel/*.cpp bessel/*.h)
 
 
-# To add unit tests to your project create appropriate targets (binary executables
-# or Python scripts) and register them using macro add_solver_test for binaries
-# and add_python_test(name file.py) for Python scripts. You should name
-# the test as 'solvers/your_solver/test_name'. Then uncomment and edit the line
-# below.
+# To add unit tests to your project create appropriate targets (binary executables,
+# Python scripts, or XPL files) and register them using CMake command add_solver_test.
+# Then uncomment and edit the line below.
 #
 enable_testing()
 
@@ -67,24 +65,24 @@ if(BUILD_TESTING)
     foreach(slab_test fft toeplitz)
         add_executable(${slab_test}_test tests/${slab_test}_test.cpp)
         target_link_libraries(${slab_test}_test libplask ${SOLVER_LIBRARY} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES})
-        add_solver_test(solvers/optical/slab/${slab_test} ${slab_test}_test)
+        add_solver_test(${slab_test} ${slab_test}_test)
     endforeach()
     add_executable(invmult_benchmark tests/invmult_benchmark.cpp)
     target_link_libraries(invmult_benchmark libplask ${SOLVER_LIBRARY})
 endif()
 
-add_python_test(solvers/optical/slab ${CMAKE_CURRENT_SOURCE_DIR}/tests/slab.py)
-add_python_test(solvers/optical/temp ${CMAKE_CURRENT_SOURCE_DIR}/tests/temp.py)
-# add_python_test(solvers/optical/slab/bessel ${CMAKE_CURRENT_SOURCE_DIR}/tests/bessel.py)
-add_python_test(solvers/optical/slab/refl2d ${CMAKE_CURRENT_SOURCE_DIR}/tests/reflection2d.py)
-add_python_test(solvers/optical/slab/refl3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/reflection3d.py)
-add_python_test(solvers/optical/slab/grating ${CMAKE_CURRENT_SOURCE_DIR}/tests/grating.py)
-add_python_test(solvers/optical/slab/fresnel ${CMAKE_CURRENT_SOURCE_DIR}/tests/fresnel.py)
-add_python_test(solvers/optical/slab/wire2d ${CMAKE_CURRENT_SOURCE_DIR}/tests/wire2d.py)
-add_python_test(solvers/optical/slab/vcsel ${CMAKE_CURRENT_SOURCE_DIR}/tests/vcsel.py)
-add_xpl_test(solvers/optical/slab/vcsel3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/vcsel3d.xpl)
-add_xpl_test(solvers/optical/slab/huang ${CMAKE_CURRENT_SOURCE_DIR}/tests/huang.xpl)
-add_xpl_test(solvers/optical/slab/tilted ${CMAKE_CURRENT_SOURCE_DIR}/tests/tilted.xpl)
+add_solver_test(layers ${CMAKE_CURRENT_SOURCE_DIR}/tests/slab.py)
+add_solver_test(temperature ${CMAKE_CURRENT_SOURCE_DIR}/tests/temp.py)
+# add_solver_test(bessel ${CMAKE_CURRENT_SOURCE_DIR}/tests/bessel.py)
+add_solver_test(refl2d ${CMAKE_CURRENT_SOURCE_DIR}/tests/reflection2d.py)
+add_solver_test(refl3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/reflection3d.py)
+add_solver_test(grating ${CMAKE_CURRENT_SOURCE_DIR}/tests/grating.py)
+add_solver_test(fresnel ${CMAKE_CURRENT_SOURCE_DIR}/tests/fresnel.py)
+add_solver_test(wire2d ${CMAKE_CURRENT_SOURCE_DIR}/tests/wire2d.py)
+add_solver_test(vcsel ${CMAKE_CURRENT_SOURCE_DIR}/tests/vcsel.py)
+add_solver_test(vcsel3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/vcsel3d.xpl)
+add_solver_test(huang ${CMAKE_CURRENT_SOURCE_DIR}/tests/huang.xpl)
+add_solver_test(tilted ${CMAKE_CURRENT_SOURCE_DIR}/tests/tilted.xpl)
 
 
 # Uncomment and edit the line below if you need to link some external libraries

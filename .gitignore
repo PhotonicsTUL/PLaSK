@@ -11,3 +11,4 @@ build*
 __pycache__
 *.json
 *.h5
+Testing

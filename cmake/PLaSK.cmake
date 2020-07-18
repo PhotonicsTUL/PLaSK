@@ -52,6 +52,35 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     endif()
 endif()
 
+# This macro should be used to add all tests from solvers
+macro(add_solver_test test_name test_file)
+    if(${CMAKE_VERSION} VERSION_LESS "3.14.0")
+        string(FIND "${test_file}" "." _extidx)
+        if(${_extidx} EQUAL -1)
+            set(ext "")
+        else()
+            string(SUBSTRING "${test_file}" ${_extidx} -1 ext)
+        endif()
+    else()
+        get_filename_component(ext ${test_file} LAST_EXT)
+    endif()
+    set(test solvers/${SOLVER_CATEGORY_NAME}/${SOLVER_NAME}/${test_name})
+    if(("${ext}" STREQUAL ".py") OR ("${ext}" STREQUAL ".PY"))
+        add_test(NAME ${test}
+                COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})
+    elseif(("${ext}" STREQUAL ".xpl") OR ("${ext}" STREQUAL ".XPL"))
+        add_test(NAME ${test}
+                COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/xpl ${test_file})
+    else()
+        add_test(NAME ${test} COMMAND ${PLASK_SOLVER_PATH}/${test_file})
+        if(WIN32)
+            set_tests_properties(${test} PROPERTIES ENVIRONMENT "PATH=${plask_bin_path}\;${ENV_PATH}")
+        endif()
+        set(SOLVER_TEST_DEPENDS ${test_file})
+    endif()
+endmacro()
+
+
 
 # This is macro that sets all the targets automagically
 macro(make_default)
