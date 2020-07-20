@@ -181,7 +181,11 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
 
     /// Return expansion wavevectors
     virtual std::vector<double> getKpts() {
-        return kpts;
+        std::vector<double> res;
+        res.reserve(kpts.size());
+        double ib = 1. / rbounds[rbounds.size()-1];
+        for (double k: kpts) res.push_back(k * ib);
+        return res;
     }
 };
 

@@ -159,7 +159,7 @@ void export_OldBesselSolverCyl()
              u8"the computations are the avrages of each two adjacent values specified here\n"
              u8"and the integration weights are the sizes of each interval.");
     RW_PROPERTY(kscale, getKscale, setKscale,
-                u8"Scale factor for wavectors used in infinite domain. Multiplied by the expansions\n"
+                u8"Scale factor for wavevectors used in infinite domain. Multiplied by the expansions\n"
                 u8"size and divided by the geometry width it is a maximum considered wavevector.\n");
     solver.add_property("lam", &__Class__::getLam, &Solver_setLam<__Class__>,
                 u8"Wavelength of the light [nm].\n");

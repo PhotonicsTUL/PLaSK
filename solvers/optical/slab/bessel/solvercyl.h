@@ -27,6 +27,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
     enum InfiniteWavevectors {
         WAVEVECTORS_UNIFORM,
+        WAVEVECTORS_NONUNIFORM,
         // WAVEVECTORS_LEGENDRE,
         WAVEVECTORS_LAGUERRE,
         WAVEVECTORS_MANUAL
@@ -112,6 +113,9 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     /// Scale for k-points for infinite expansion
     double kscale;
 
+    /// Maximum k-vector/k0 for infinite expansion
+    double kmax;
+
     /// How integration points and weight should be computed
     InfiniteWavevectors kmethod;
 
@@ -152,12 +156,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
             initCalculation();
             computeIntegrals();
             ExpansionBesselInfini* ex = dynamic_cast<ExpansionBesselInfini*>(expansion.get());
-            if (ex) {
-                std::vector<double> result(ex->kdelts.begin(), ex->kdelts.end());
-                double R = expansion->rbounds[expansion->rbounds.size()-1];
-                for (auto& v: result) v *= R;
-                return result;
-            }
+            if (ex) return std::vector<double>(ex->kdelts.begin(), ex->kdelts.end());
         }
         return std::vector<double>();
     }
@@ -226,6 +225,11 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     double getKscale() const { return kscale; }
     /// Set scale for infinite wavevectors
     void setKscale(double s) { kscale = s; }
+
+    /// Get maximum wavevector/k0 for infinite domain
+    double getKmax() const { return kmax; }
+    /// Set maximum wavevector/k0 for infinite domain
+    void setKmax(double s) { kmax = s; }
 
     /// Get method of infinite k-space integration
     InfiniteWavevectors getKmethod() const { return kmethod; }

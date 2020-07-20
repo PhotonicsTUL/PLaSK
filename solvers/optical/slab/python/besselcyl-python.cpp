@@ -156,7 +156,8 @@ void export_BesselSolverCyl()
 
     py_enum<typename BesselSolverCyl::InfiniteWavevectors>()
         .value("UNIFORM", BesselSolverCyl::WAVEVECTORS_UNIFORM)
-        //.value("LEGENDRE", BesselSolverCyl::WAVEVECTORS_LEGENDRE)
+        .value("NONUNIFORM", BesselSolverCyl::WAVEVECTORS_NONUNIFORM)
+        .value("NON_UNIFORM", BesselSolverCyl::WAVEVECTORS_NONUNIFORM)
         .value("LAGUERRE", BesselSolverCyl::WAVEVECTORS_LAGUERRE)
         .value("MANUAL", BesselSolverCyl::WAVEVECTORS_MANUAL)
     ;
@@ -178,16 +179,16 @@ void export_BesselSolverCyl()
         u8"Method of selecting wavevectors for numerical Hankel transform in infinite\n"
         u8"domain.");
     RW_PROPERTY(klist, getKlist, setKlist,
-            u8"A list of relative wavevector values or ranges. The numbers should be relative\n"
-            u8"to the inverse of the structure width. If no weights are given, the actual\n"
-            u8"wavevectors used in the computations are the averages of each two adjacent\n"
-            u8"values specified here and the integration weights are the sizes of each interval.");
+            u8"A list of wavevectors ranges. If no weights are given, the actual wavevectors\n"
+            u8"used in the computations are the avrages of each two adjacent values specified\n"
+            u8"here and the integration weights are the sizes of each interval.\n");
     solver.add_property("kweights", &BesselSolverCyl_getKweights, &BesselSolverCyl_setKweights,
             u8"An optional list of relative wavevector weights. The numbers should be relative\n"
             u8"to the inverse of the structure width.");
+    RW_PROPERTY(kmax, getKmax, setKmax,
+                u8"Maximum wavevector used in infinite domain relative to the wavelength.\n");
     RW_PROPERTY(kscale, getKscale, setKscale,
-                u8"Scale factor for wavevectors used in infinite domain. Multiplied by the expansions\n"
-                u8"size and divided by the geometry width it is a maximum considered wavevector.\n");
+                u8"Scale factor for wavevectors used in infinite domain.\n");
     solver.add_property("lam", &__Class__::getLam, &Solver_setLam<__Class__>,
                 u8"Wavelength of the light [nm].\n");
     solver.add_property("wavelength", &__Class__::getLam, &Solver_setLam<__Class__>,

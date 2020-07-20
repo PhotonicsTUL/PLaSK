@@ -26,44 +26,91 @@ void ExpansionBesselInfini::init2()
         SOLVER->geometry->getEdge(Geometry::DIRECTION_TRAN, true).type() != edge::Strategy::EXTEND)
         throw BadInput(solver->getId(), "Outer geometry edge must be 'extend' or a simple material");
 
+    double k0 = isnan(lam0)? this->k0.real() : 2e3*M_PI / lam0;
+    double kmax = SOLVER->kmax * k0;
+
     size_t N = SOLVER->size;
-    double ib = 1. / rbounds[rbounds.size()-1];
+    double R = rbounds[rbounds.size()-1];
+    double ib = 1. / R;
+    double kdlt;
 
     switch (SOLVER->kmethod) {
         case BesselSolverCyl::WAVEVECTORS_UNIFORM:
+            SOLVER->writelog(LOG_DETAIL, "Using uniform wavevectors");
+            if (isnan(k0)) throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
             kpts.resize(N);
-            kdelts.reset(N, SOLVER->kscale * ib);
-            for (size_t i = 0; i != N; ++i) kpts[i] = (0.5 + double(i)) * SOLVER->kscale;
+            kdlt = SOLVER->kscale * kmax / N;
+            kdelts.reset(N, kdlt);
+            kdlt *= R;
+            for (size_t i = 0; i != N; ++i) kpts[i] = (0.5 + double(i) * kdlt);
             break;
-        // case BesselSolverCyl::WAVEVECTORS_LEGENDRE:
-        //     gaussLegendre(N, kpts, kdelts);
-        //     for (double& k: kpts) k = 0.5 * N * SOLVER->kscale * (1. + k);
-        //     kdelts *= 0.5 * N * SOLVER->kscale * ib;
-        //     break;
         case BesselSolverCyl::WAVEVECTORS_LAGUERRE:
+            SOLVER->writelog(LOG_DETAIL, "Using Laguerre wavevectors");
             gaussLaguerre(N, kpts, kdelts, 1. / (SOLVER->kscale));
             kdelts *= ib;
             break;
         case BesselSolverCyl::WAVEVECTORS_MANUAL:
+            SOLVER->writelog(LOG_DETAIL, "Using manual wavevectors");
             kpts.resize(N);
             kdelts.reset(N);
             if (!SOLVER->kweights) {
                 if (SOLVER->klist.size() != N+1)
-                    throw BadInput(SOLVER->getId(), "If no weights are given number of manually specified wavevectors must be {}",
+                    throw BadInput(SOLVER->getId(), "If no weights are given, number of manually specified wavevectors must be {}",
                                    N+1);
                 for (size_t i = 0; i != N; ++i) {
-                    kpts[i] = 0.5 * (SOLVER->klist[i] + SOLVER->klist[i+1]);
-                    kdelts[i] = ib * (SOLVER->klist[i+1] - SOLVER->klist[i]);
+                    kpts[i] = 0.5 * (SOLVER->klist[i] + SOLVER->klist[i+1]) * R;
+                    kdelts[i] = (SOLVER->klist[i+1] - SOLVER->klist[i]);
                 }
             } else {
                 if (SOLVER->klist.size() != N)
-                    throw BadInput(SOLVER->getId(), "If weights are given number of manually specified wavevectors must be {}",
+                    throw BadInput(SOLVER->getId(), "If weights are given, number of manually specified wavevectors must be {}",
                                    N);
                 if (SOLVER->kweights->size() != N)
                     throw BadInput(SOLVER->getId(), "Number of manually specified wavevector weights must be {}", N+1);
                 kpts = SOLVER->klist;
+                for (double& k: kpts) k *= R;
                 kdelts.reset(SOLVER->kweights->begin(), SOLVER->kweights->end());
-                kdelts *= ib;
+            }
+            break;
+        case BesselSolverCyl::WAVEVECTORS_NONUNIFORM:
+            SOLVER->writelog(LOG_DETAIL, "Using non-uniform wavevectors");
+            if (isnan(k0)) throw BadInput(SOLVER->getId(), "No wavelength given: specify 'lam' or 'lam0'");
+            kpts.resize(N);
+            kdelts.reset(N);
+            // Häyrynen, T., de Lasson, J.R., Gregersen, N., 2016.
+            // Open-geometry Fourier modal method: modeling nanophotonic structures in infinite domains.
+            // J. Opt. Soc. Am. A 33, 1298. https://doi.org/10.1364/josaa.33.001298
+            int M1, M2, M3;
+            M1 = M2 = (N+1) / 3;
+            M3 = N - M1 - M2;
+            if (M3 < 0) throw BadInput(SOLVER->getId(), "Too small expansion size");
+            int i = 0;
+            double k1 = 0.;
+            for(int m = 1; m <= M1; ++m, ++i) {
+                double theta = 0.5*M_PI * double(m) / M1;
+                double k2 = k0 * sin(theta) * SOLVER->kscale;
+                kdelts[i] = k2 - k1;
+                kpts[i] = 0.5 * (k1 + k2) * R;
+                k1 = k2;
+            }
+            double dlt1;
+            for(int m = 1; m <= M2; ++m, ++i) {
+                double theta = 0.5*M_PI * (1. + double(m) / M2);
+                double k2 = k0 * (2 - sin(theta)) * SOLVER->kscale;
+                kdelts[i] = dlt1 = k2 - k1;
+                kpts[i] = 0.5 * (k1 + k2) * R;
+                k1 = k2;
+            }
+            double km = k1;
+            double dlt2 = (kmax * SOLVER->kscale - km - M3 * dlt1) / (M3 * (M3 + 1));
+            if (dlt2 < 0)
+                throw BadInput(SOLVER->getId(), "For non-uniform wavevectors kmax must be at least {}",
+                               (km + M3 * dlt1) / SOLVER->kscale / k0);
+            for(int m = 1; m <= M3; ++m, ++i) {
+                double k2 = km + dlt1 * m + dlt2 * m * (m+1);
+                kdelts[i] = k2 - k1;
+                kpts[i] = 0.5 * (k1 + k2) * R;
+                k1 = k2;
             }
             break;
     }
