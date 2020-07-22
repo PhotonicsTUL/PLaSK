@@ -39,6 +39,10 @@ struct PLASK_SOLVER_API ExpansionBesselFini : public ExpansionBessel {
         return Hz;
     }
 
+    virtual void integrateParams(Integrals& integrals,
+                                 const dcomplex* datap, const dcomplex* datar, const dcomplex* dataz,
+                                 dcomplex datap0, dcomplex datar0, dcomplex dataz0);
+
     #ifndef NDEBUG
       public:
         cmatrix muV_k();

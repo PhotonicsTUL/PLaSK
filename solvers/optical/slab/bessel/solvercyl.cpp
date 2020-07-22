@@ -9,7 +9,7 @@ BesselSolverCyl::BesselSolverCyl(const std::string& name)
       domain(DOMAIN_INFINITE),
       m(1),
       size(12),
-      rule(RULE_SEMI_INVERSE),
+      rule(RULE_INVERSE_0),
       kscale(1.),
       kmax(5.),
       kmethod(WAVEVECTORS_UNIFORM),
@@ -80,11 +80,9 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager) {
             }
             if (reader.hasAttribute("rule")) {
                 rule = reader.enumAttribute<Rule>("rule")
-                           .value("semi-inverse", RULE_SEMI_INVERSE)
-                           .value("inverse", RULE_SEMI_INVERSE)
+                           .value("inverse", RULE_INVERSE_0)
                            .value("inverse1", RULE_INVERSE_1)
                            .value("inverse2", RULE_INVERSE_2)
-                           .value("inverse3", RULE_INVERSE_3)
                            .value("direct", RULE_DIRECT)
                            .require();
                 obsolete_rule_warning = false;  // TODO remove in the future

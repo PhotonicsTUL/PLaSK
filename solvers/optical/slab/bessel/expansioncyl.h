@@ -146,9 +146,9 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
 
     void layerIntegrals(size_t layer, double lam, double glam) override;
 
-    void integrateParams(Integrals& integrals,
-                         const dcomplex* datap, const dcomplex* datar, const dcomplex* dataz,
-                         dcomplex datap0, dcomplex datar0, dcomplex dataz0);
+    virtual void integrateParams(Integrals& integrals,
+                                 const dcomplex* datap, const dcomplex* datar, const dcomplex* dataz,
+                                 dcomplex datap0, dcomplex datar0, dcomplex dataz0) = 0;
 
     virtual double fieldFactor(size_t i) = 0;
 
