@@ -1,5 +1,5 @@
-#ifndef PLASK__SOLVER__SLAB_SOLVERCYL_H
-#define PLASK__SOLVER__SLAB_SOLVERCYL_H
+#ifndef PLASK__SOLVER__SLAB_OLDSOLVERCYL_H
+#define PLASK__SOLVER__SLAB_OLDSOLVERCYL_H
 
 #include <plask/plask.hpp>
 
@@ -14,11 +14,11 @@ namespace plask { namespace optical { namespace slab {
 /**
  * Reflection transformation solver in Cartesian 2D geometry.
  */
-struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geometry2DCylindrical,MeshAxis>> {
+struct PLASK_SOLVER_API OldBesselSolverCyl: public SlabSolver<SolverWithMesh<Geometry2DCylindrical,MeshAxis>> {
 
-    friend struct ExpansionBessel;
-    friend struct ExpansionBesselFini;
-    friend struct ExpansionBesselInfini;
+    friend struct ExpansionOldBessel;
+    friend struct ExpansionOldBesselFini;
+    friend struct ExpansionOldBesselInfini;
 
     enum BesselDomain {
         DOMAIN_FINITE,
@@ -27,28 +27,10 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
     enum InfiniteWavevectors {
         WAVEVECTORS_UNIFORM,
-        WAVEVECTORS_NONUNIFORM,
         // WAVEVECTORS_LEGENDRE,
         WAVEVECTORS_LAGUERRE,
         WAVEVECTORS_MANUAL
     };
-
-    enum Rule {
-        RULE_INVERSE_0,
-        RULE_INVERSE_1,
-        RULE_INVERSE_2,
-        RULE_DIRECT
-    };
-
-    const char* ruleName() {
-        switch (rule) {
-            case RULE_INVERSE_0: return "inverse";
-            case RULE_INVERSE_1: return "inverse (mod 1)";
-            case RULE_INVERSE_2: return "inverse (mod 2)";
-            case RULE_DIRECT: return "direct";
-        }
-        return "unknown";
-    }
 
     std::string getClassName() const override { return "optical.BesselCyl"; }
 
@@ -57,9 +39,9 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         dcomplex k0;                    ///< Stored mode frequency
         int m;                          ///< Stored angular parameter
         double power;                   ///< Mode power [mW]
-        double tolx;                    ///< Tolerance for mode comparison
+        double tolx;                            ///< Tolerance for mode comparison
 
-        Mode(const std::unique_ptr<ExpansionBessel>& expansion, double tolx):
+        Mode(const std::unique_ptr<ExpansionOldBessel>& expansion, double tolx):
             lam0(expansion->lam0), k0(expansion->k0), m(expansion->m), power(1.), tolx(tolx) {}
 
         bool operator==(const Mode& other) const {
@@ -67,7 +49,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
                    ((isnan(lam0) && isnan(other.lam0)) || lam0 == other.lam0);
         }
 
-        bool operator==(const std::unique_ptr<ExpansionBessel>& other) const {
+        bool operator==(const std::unique_ptr<ExpansionOldBessel>& other) const {
             return m == other->m && is_equal(k0, other->k0) && is_equal(lam0, other->lam0) &&
                    ((isnan(lam0) && isnan(other->lam0)) || lam0 == other->lam0);
         }
@@ -105,73 +87,22 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
         expansion->computeIntegrals();
     }
 
-    /// Coefficients matrix expansion rule
-    Rule rule;
-
     /// Scale for k-points for infinite expansion
     double kscale;
-
-    /// Maximum k-vector/k0 for infinite expansion
-    double kmax;
 
     /// How integration points and weight should be computed
     InfiniteWavevectors kmethod;
 
   public:
 
-    /// Abscissa for manual wavevectors
+    /// Ranges for manual wavevectors
     std::vector<double> klist;
 
-    /// Weights for manual wavevectors
-    boost::optional<std::vector<double>> kweights;
-
     /// Class responsible for computing expansion coefficients
-    std::unique_ptr<ExpansionBessel> expansion;
+    std::unique_ptr<ExpansionOldBessel> expansion;
 
     /// Computed modes
     std::vector<Mode> modes;
-
-    /// Return list of wavevectors
-    std::vector<double> getKlist() {
-        initCalculation();
-        computeIntegrals();
-        return expansion->getKpts();
-    }
-
-    /// Set manual k-list
-    void setKlist(const std::vector<double>& values) {
-        if (kmethod != WAVEVECTORS_MANUAL) {
-            invalidate();
-            this->writelog(LOG_WARNING, "Setting Hankel transform method to Manual");
-            kmethod = WAVEVECTORS_MANUAL;
-        }
-        klist = values;
-    }
-
-    /// Return list of wavevector weights
-    std::vector<double> getKweights() {
-        if (domain == DOMAIN_INFINITE) {
-            initCalculation();
-            computeIntegrals();
-            ExpansionBesselInfini* ex = dynamic_cast<ExpansionBesselInfini*>(expansion.get());
-            if (ex) return std::vector<double>(ex->kdelts.begin(), ex->kdelts.end());
-        }
-        return std::vector<double>();
-    }
-
-    /// Set manual k-weights
-    void setKweights(const std::vector<double>& values) {
-        if (kmethod != WAVEVECTORS_MANUAL) {
-            invalidate();
-            this->writelog(LOG_WARNING, "Setting Hankel transform method to Manual");
-            kmethod = WAVEVECTORS_MANUAL;
-        }
-        kweights.reset(values);
-    }
-
-    void clearKweights() {
-        kweights.reset();
-    }
 
     void clearModes() override {
         modes.clear();
@@ -199,7 +130,7 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     /// Provider for computed modal extinction
     typename ProviderFor<ModeLoss>::Delegate outLoss;
 
-    BesselSolverCyl(const std::string& name="");
+    OldBesselSolverCyl(const std::string& name="");
 
     void loadConfiguration(XMLReader& reader, Manager& manager) override;
 
@@ -224,11 +155,6 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     /// Set scale for infinite wavevectors
     void setKscale(double s) { kscale = s; }
 
-    /// Get maximum wavevector/k0 for infinite domain
-    double getKmax() const { return kmax; }
-    /// Set maximum wavevector/k0 for infinite domain
-    void setKmax(double s) { kmax = s; }
-
     /// Get method of infinite k-space integration
     InfiniteWavevectors getKmethod() const { return kmethod; }
     /// Set method of infinite k-space integration
@@ -239,14 +165,6 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     /// Set new domain
     void setDomain(BesselDomain dom) {
         domain = dom;
-        invalidate();
-    }
-
-    /// Get current domain
-    Rule getRule() const { return rule; }
-    /// Set new domain
-    void setRule(Rule r) {
-        rule = r;
         invalidate();
     }
 
@@ -391,11 +309,8 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
     /// Insert mode to the list or return the index of the exiting one
     size_t insertMode() {
         static bool warn = true;
-        if (warn && ((emission != EMISSION_TOP && emission != EMISSION_BOTTOM) || domain == DOMAIN_INFINITE)) {
-            if (domain == DOMAIN_INFINITE)
-                writelog(LOG_WARNING, "Mode fields are not normalized (infinite domain)");
-            else
-                writelog(LOG_WARNING, "Mode fields are not normalized (emission direction not specified)");
+        if (warn && (emission != EMISSION_TOP && emission != EMISSION_BOTTOM)) {
+            writelog(LOG_WARNING, "Mode fields are not normalized (emission direction not specified)");
             warn = false;
         }
         Mode mode(expansion, root.tolx);
@@ -438,16 +353,25 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
 #ifndef NDEBUG
   public:
-    cmatrix epsV_k(size_t layer);
-    cmatrix epsTss(size_t layer);
-    cmatrix epsTsp(size_t layer);
-    cmatrix epsTps(size_t layer);
+    cmatrix epsVmm(size_t layer);
+    cmatrix epsVpp(size_t layer);
+    cmatrix epsTmm(size_t layer);
     cmatrix epsTpp(size_t layer);
-    cmatrix muV_k();
-    cmatrix muTss();
-    cmatrix muTsp();
-    cmatrix muTps();
+    cmatrix epsTmp(size_t layer);
+    cmatrix epsTpm(size_t layer);
+    cmatrix epsDm(size_t layer);
+    cmatrix epsDp(size_t layer);
+    dmatrix epsVV(size_t layer);
+
+    cmatrix muVmm();
+    cmatrix muVpp();
+    cmatrix muTmm();
     cmatrix muTpp();
+    cmatrix muTmp();
+    cmatrix muTpm();
+    cmatrix muDm();
+    cmatrix muDp();
+    dmatrix muVV();
 #endif
 
 };
@@ -456,4 +380,4 @@ struct PLASK_SOLVER_API BesselSolverCyl: public SlabSolver<SolverWithMesh<Geomet
 
 }}} // # namespace plask::optical::slab
 
-#endif // PLASK__SOLVER__SLAB_SOLVERCYL_H
+#endif // PLASK__SOLVER__SLAB_OLDSOLVERCYL_H

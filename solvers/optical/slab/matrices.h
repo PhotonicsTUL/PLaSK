@@ -38,6 +38,8 @@ class Matrix {
 
   public:
 
+    typedef T DataType;
+
     Matrix() : r(0), c(0), data_(nullptr), gc(nullptr) {}
 
     Matrix(size_t m, size_t n) : r(m), c(n),
@@ -104,6 +106,13 @@ class Matrix {
         gc = new std::atomic<int>(1);
         write_debug("allocating matrix {:d}x{:d} ({:.3f} MB) at {:p}", r, c, double(r*c*sizeof(T))/1048576., (void*)data_);
         std::fill_n(data_, m*n, val);
+    }
+
+    void reset(size_t m, size_t n, T* existing_data) {
+        dec_ref();
+        r = m; c = n;
+        data_ = existing_data;
+        gc = nullptr;
     }
 
     inline const T* data() const { return data_; }
@@ -199,6 +208,8 @@ class MatrixDiagonal {
     }
 
   public:
+
+    typedef T DataType;
 
     MatrixDiagonal() : siz(0), gc(nullptr) {}
 
@@ -318,6 +329,39 @@ typedef DataVector<const dcomplex> const_cvector;
 typedef MatrixDiagonal<dcomplex> cdiagonal;
 
 //**************************************************************************
+/// Summation operator of the matrices
+template <typename T>
+inline Matrix<T> operator+(const Matrix<T>& A, const Matrix<T>& B) {
+    // if (A.rows() != B.rows() || A.cols() != B.cols()) throw ComputationError("operator*<cmatrix,cmatrix>", "Cannot add: dimensions does not match");
+    assert(A.rows() == B.rows() && A.cols() == B.cols());
+    Matrix<T> C(A.rows(), A.cols());
+    T* c = C.data();
+    for (const T *a = A.data(), *b = B.data(), *end = A.data() + A.rows()*A.cols(); a != end; ++a, ++b, ++c)
+        *c = *a + *b;
+    return C;
+}
+
+/// Difference operator of the matrices
+template <typename T>
+inline Matrix<T> operator-(const Matrix<T>& A, const Matrix<T>& B) {
+    // if (A.rows() != B.rows() || A.cols() != B.cols()) throw ComputationError("operator*<cmatrix,cmatrix>", "Cannot add: dimensions does not match");
+    assert(A.rows() == B.rows() && A.cols() == B.cols());
+    Matrix<T> C(A.rows(), A.cols());
+    T* c = C.data();
+    for (const T *a = A.data(), *b = B.data(), *end = A.data() + A.rows()*A.cols(); a != end; ++a, ++b, ++c)
+        *c = *a - *b;
+    return C;
+}
+
+/// Negation operator of the matrix
+template <typename T>
+inline Matrix<T> operator-(const Matrix<T>& A) {
+    Matrix<T> C(A.rows(), A.cols());
+    for (T *a = A.data(), *c = C.data(), *end = A.data() + A.rows()*A.cols(); a != end; ++a, ++c)
+        *c = - *a;
+    return C;
+}
+
 /// Multiplication operator of the matrices (using BLAS level3)
 inline cmatrix operator*(const cmatrix& A, const cmatrix& B) {
     // if (A.cols() != B.rows()) throw ComputationError("operator*<cmatrix,cmatrix>", "Cannot multiply: A.cols != B.rows");
@@ -408,8 +452,8 @@ inline void mult_matrix_by_vector(const cmatrix& A, const const_cvector& v, cvec
 
 inline void mult_matrix_by_matrix(const cmatrix& A, const cmatrix& B, cmatrix& dst) {
     const size_t k = A.cols(),
-                      m = A.rows(),
-                      n = B.cols();
+                 m = A.rows(),
+                 n = B.cols();
     // if (k != B.rows()) throw ComputationError("mult_matrix_by_matrix", "cannot multiply: A.cols != B.rows");
     // if (m != dst.rows()) throw ComputationError("mult_matrix_by_matrix", "A.rows != dst.rows");
     // if (n != dst.cols()) throw ComputationError("mult_matrix_by_matrix", "B.cols != dst.cols");
@@ -450,20 +494,44 @@ cmatrix inv(cmatrix& A);
 dcomplex det(cmatrix& A);
 int eigenv(cmatrix& A, cdiagonal& vals, cmatrix* rightv=NULL, cmatrix* leftv=NULL);
 
+// r-value wrappers
+inline cmatrix invmult(cmatrix&& A, cmatrix& B) { return invmult(A, B); }
+inline cvector invmult(cmatrix&& A, cvector& B) { return invmult(A, B); };
+inline cmatrix inv(cmatrix&& A) { return inv(A); }
+inline dcomplex det(cmatrix&& A) { return det(A); }
+inline int eigenv(cmatrix&& A, cdiagonal& vals, cmatrix* rightv=NULL, cmatrix* leftv=NULL) { 
+    return eigenv(A, vals, rightv, leftv);
+}
+
+
+/// Zero matrix
+template <typename T>
+void zero_matrix(Matrix<T>& A, size_t m, size_t n) {
+    if (A.rows() != m || A.cols() != n) A.reset(m, n, 0.);
+    else std::fill_n(A.data(), m*n, T(0.));
+}
+
+/// Zero matrix
+template <typename T>
+void zero_matrix(Matrix<T>& A) {
+    std::fill_n(A.data(), A.rows()*A.cols(), T(0.));
+}
+
 /// Create unit matrix
 template <typename T>
 void make_unit_matrix(Matrix<T>& A, size_t n) {
-    if (A.rows() != n || A.cols() != n) A.reset(n, n, 0.);
-    else std::fill_n(A.data(), n*n, 0.);
-    for (int i = 0; i < n; ++i) A(i,i) = 1.;
+    zero_matrix(A, n, n);
+    constexpr T one(1.);
+    for (int i = 0; i < n; ++i) A(i,i) = one;
 }
 
 /// Create unit matrix
 template <typename T>
 void make_unit_matrix(Matrix<T>& A) {
     assert(A.rows() == A.cols());
-    std::fill_n(A.data(), A.rows()*A.cols(), 0.);
-    for (int i = 0; i < A.rows(); ++i) A(i,i) = 1.;
+    zero_matrix(A);
+    constexpr T one(1.);
+    for (int i = 0; i < A.rows(); ++i) A(i,i) = one;
 }
 
 }}}

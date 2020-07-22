@@ -4,33 +4,33 @@
 
 namespace plask { namespace optical { namespace slab {
 
-
-BesselSolverCyl::BesselSolverCyl(const std::string& name):
-    SlabSolver<SolverWithMesh<Geometry2DCylindrical,MeshAxis>>(name),
-    domain(DOMAIN_INFINITE),
-    m(1),
-    size(12),
-    kscale(10.),
-    kmethod(WAVEVECTORS_UNIFORM),
-    integral_error(1e-6),
-    max_integration_points(1000),
-    outLoss(this, &BesselSolverCyl::getModalLoss,  &BesselSolverCyl::nummodes)
-{
+BesselSolverCyl::BesselSolverCyl(const std::string& name)
+    : SlabSolver<SolverWithMesh<Geometry2DCylindrical, MeshAxis>>(name),
+      domain(DOMAIN_INFINITE),
+      m(1),
+      size(12),
+      rule(RULE_INVERSE_0),
+      kscale(1.),
+      kmax(5.),
+      kmethod(WAVEVECTORS_UNIFORM),
+      integral_error(1e-6),
+      max_integration_points(1000),
+      outLoss(this, &BesselSolverCyl::getModalLoss, &BesselSolverCyl::nummodes) {
     pml.dist = 20.;
     pml.size = 0.;
     this->writelog(LOG_WARNING, "This is an EXPERIMENTAL solver! Calculation results may not be reliable!");
 }
 
+void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager) {
+    bool obsolete_rule_warning = true;  // TODO remove in the future
 
-void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
-{
     while (reader.requireTagOrEnd()) {
         std::string param = reader.getNodeName();
         if (param == "expansion") {
             domain = reader.enumAttribute<BesselDomain>("domain")
-                .value("finite", DOMAIN_FINITE)
-                .value("infinite", DOMAIN_INFINITE)
-                .get(domain);
+                         .value("finite", DOMAIN_FINITE)
+                         .value("infinite", DOMAIN_INFINITE)
+                         .get(domain);
             size = reader.getAttribute<size_t>("size", size);
             group_layers = reader.getAttribute<bool>("group-layers", group_layers);
             lam0 = reader.getAttribute<double>("lam0", NAN);
@@ -41,16 +41,18 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
             integral_error = reader.getAttribute<double>("integrals-error", integral_error);
             max_integration_points = reader.getAttribute<size_t>("integrals-points", max_integration_points);
             kscale = reader.getAttribute<double>("k-scale", kscale);
+            kmax = reader.getAttribute<double>("k-max", kmax);
             kmethod = reader.enumAttribute<InfiniteWavevectors>("k-method")
-                .value("uniform", WAVEVECTORS_UNIFORM)
-                // .value("legendre", WAVEVECTORS_LEGENDRE)
-                .value("laguerre", WAVEVECTORS_LAGUERRE)
-                .value("manual", WAVEVECTORS_MANUAL)
-                .get(kmethod);
+                          .value("uniform", WAVEVECTORS_UNIFORM)
+                          .value("nonuniform", WAVEVECTORS_NONUNIFORM)
+                          .value("non-uniform", WAVEVECTORS_NONUNIFORM)
+                          .value("laguerre", WAVEVECTORS_LAGUERRE)
+                          .value("manual", WAVEVECTORS_MANUAL)
+                          .get(kmethod);
             if (reader.hasAttribute("k-list")) {
                 klist.clear();
-                for (auto val: boost::tokenizer<boost::char_separator<char>>(reader.requireAttribute("k-list"),
-                                                                             boost::char_separator<char>(" ,;\t\n"))) {
+                for (auto val : boost::tokenizer<boost::char_separator<char>>(reader.requireAttribute("k-list"),
+                                                                              boost::char_separator<char>(" ,;\t\n"))) {
                     try {
                         double val = boost::lexical_cast<double>(val);
                         klist.push_back(val);
@@ -59,30 +61,59 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
                     }
                 }
             }
+            if (reader.hasAttribute("k-weights")) {
+                std::string value = reader.requireAttribute("k-weights");
+                if (value.empty() || value == "auto")
+                    kweights.reset();
+                else {
+                    kweights.reset(std::vector<double>());
+                    kweights->clear();
+                    for (auto val : boost::tokenizer<boost::char_separator<char>>(value, boost::char_separator<char>(" ,;\t\n"))) {
+                        try {
+                            double val = boost::lexical_cast<double>(val);
+                            kweights->push_back(val);
+                        } catch (boost::bad_lexical_cast&) {
+                            throw XMLException(reader, format("Value '{0}' cannot be converted to float", val));
+                        }
+                    }
+                }
+            }
+            if (reader.hasAttribute("rule")) {
+                rule = reader.enumAttribute<Rule>("rule")
+                           .value("inverse", RULE_INVERSE_0)
+                           .value("inverse1", RULE_INVERSE_1)
+                           .value("inverse2", RULE_INVERSE_2)
+                           .value("direct", RULE_DIRECT)
+                           .require();
+                obsolete_rule_warning = false;  // TODO remove in the future
+            }
             reader.requireTagEnd();
         } else if (param == "mode") {
             emission = reader.enumAttribute<Emission>("emission")
-                                .value("undefined", EMISSION_UNSPECIFIED)
-                                .value("top", EMISSION_TOP)
-                                .value("bottom", EMISSION_BOTTOM)
-                       .get(emission);
-            if (reader.hasAttribute("wavelength")) { //TODO Remove in the future
-                writelog(LOG_WARNING, "XML line {:d} in <mode>: Attribute 'wavelength' is obsolete, use 'lam' instead", reader.getLineNr());
+                           .value("undefined", EMISSION_UNSPECIFIED)
+                           .value("top", EMISSION_TOP)
+                           .value("bottom", EMISSION_BOTTOM)
+                           .get(emission);
+            if (reader.hasAttribute("wavelength")) {  // TODO Remove in the future
+                writelog(LOG_WARNING, "XML line {:d} in <mode>: Attribute 'wavelength' is obsolete, use 'lam' instead",
+                         reader.getLineNr());
                 if (reader.hasAttribute("lam")) throw XMLConflictingAttributesException(reader, "wavelength", "lam");
-                k0 = 2e3*PI / reader.requireAttribute<dcomplex>("wavelength");
+                k0 = 2e3 * PI / reader.requireAttribute<dcomplex>("wavelength");
             }
-            if (reader.hasAttribute("lam")) k0 = 2e3*PI / reader.requireAttribute<dcomplex>("lam");
+            if (reader.hasAttribute("lam")) k0 = 2e3 * PI / reader.requireAttribute<dcomplex>("lam");
             reader.requireTagEnd();
         } else if (param == "interface") {
             if (reader.hasAttribute("index")) {
-                throw XMLException(reader, "Setting interface by layer index is not supported anymore (set it by object or position)");
+                throw XMLException(reader,
+                                   "Setting interface by layer index is not supported anymore (set it by object or position)");
             } else if (reader.hasAttribute("position")) {
                 if (reader.hasAttribute("object")) throw XMLConflictingAttributesException(reader, "index", "object");
                 if (reader.hasAttribute("path")) throw XMLConflictingAttributesException(reader, "index", "path");
                 setInterfaceAt(reader.requireAttribute<double>("position"));
             } else if (reader.hasAttribute("object")) {
                 auto object = manager.requireGeometryObject<GeometryObject>(reader.requireAttribute("object"));
-                PathHints path; if (auto pathattr = reader.getAttribute("path")) path = manager.requirePathHints(*pathattr);
+                PathHints path;
+                if (auto pathattr = reader.getAttribute("path")) path = manager.requirePathHints(*pathattr);
                 setInterfaceOn(object, path);
             } else if (reader.hasAttribute("path")) {
                 throw XMLUnexpectedAttrException(reader, "path");
@@ -92,8 +123,9 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
             vpml.factor = reader.getAttribute<dcomplex>("factor", vpml.factor);
             vpml.size = reader.getAttribute<double>("size", vpml.size);
             vpml.dist = reader.getAttribute<double>("dist", vpml.dist);
-            if (reader.hasAttribute("order")) { //TODO Remove in the future
-                writelog(LOG_WARNING, "XML line {:d} in <vpml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
+            if (reader.hasAttribute("order")) {  // TODO Remove in the future
+                writelog(LOG_WARNING, "XML line {:d} in <vpml>: Attribute 'order' is obsolete, use 'shape' instead",
+                         reader.getLineNr());
                 if (reader.hasAttribute("shape")) throw XMLConflictingAttributesException(reader, "order", "shape");
                 vpml.order = reader.requireAttribute<double>("order");
             }
@@ -101,20 +133,21 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
             reader.requireTagEnd();
         } else if (param == "transfer") {
             transfer_method = reader.enumAttribute<Transfer::Method>("method")
-                .value("auto", Transfer::METHOD_AUTO)
-                .value("reflection", Transfer::METHOD_REFLECTION_ADMITTANCE)
-                .value("reflection-admittance", Transfer::METHOD_REFLECTION_ADMITTANCE)
-                .value("reflection-impedance", Transfer::METHOD_REFLECTION_IMPEDANCE)
-                .value("admittance", Transfer::METHOD_ADMITTANCE)
-                .value("impedance", Transfer::METHOD_IMPEDANCE)
-                .get(transfer_method);
+                                  .value("auto", Transfer::METHOD_AUTO)
+                                  .value("reflection", Transfer::METHOD_REFLECTION_ADMITTANCE)
+                                  .value("reflection-admittance", Transfer::METHOD_REFLECTION_ADMITTANCE)
+                                  .value("reflection-impedance", Transfer::METHOD_REFLECTION_IMPEDANCE)
+                                  .value("admittance", Transfer::METHOD_ADMITTANCE)
+                                  .value("impedance", Transfer::METHOD_IMPEDANCE)
+                                  .get(transfer_method);
             reader.requireTagEnd();
         } else if (param == "pml") {
             pml.factor = reader.getAttribute<dcomplex>("factor", pml.factor);
             pml.size = reader.getAttribute<double>("size", pml.size);
             pml.dist = reader.getAttribute<double>("dist", pml.dist);
-            if (reader.hasAttribute("order")) { //TODO Remove in the future
-                writelog(LOG_WARNING, "XML line {:d} in <pml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
+            if (reader.hasAttribute("order")) {  // TODO Remove in the future
+                writelog(LOG_WARNING, "XML line {:d} in <pml>: Attribute 'order' is obsolete, use 'shape' instead",
+                         reader.getLineNr());
                 pml.order = reader.requireAttribute<double>("order");
             }
             pml.order = reader.getAttribute<double>("shape", pml.order);
@@ -124,161 +157,146 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager)
         } else
             parseStandardConfiguration(reader, manager);
     }
+    if (obsolete_rule_warning)  // TODO remove in the future
+        writelog(LOG_WARNING,
+                 "New Bessel solver uses inverse rule by default, which may cause different results: "
+                 "set rule=\"direct\" for old behavior");
 }
 
-
-void BesselSolverCyl::onInitialize()
-{
+void BesselSolverCyl::onInitialize() {
     this->setupLayers();
-    if (this->interface == -1)
-        Solver::writelog(LOG_DETAIL, "Initializing BesselCyl solver ({0} layers in the stack)",
-                                     this->stack.size());
-    else
-        Solver::writelog(LOG_DETAIL, "Initializing BesselCyl solver ({0} layers in the stack, interface after {1} layer{2})",
-                                     this->stack.size(), this->interface, (this->interface==1)? "" : "s");
+    std::string dom;
     switch (domain) {
-        case DOMAIN_FINITE:
-            expansion.reset(new ExpansionBesselFini(this));
-            break;
-        case DOMAIN_INFINITE:
-            expansion.reset(new ExpansionBesselInfini(this));
-            break;
-        default:
-            assert(0);
+        case DOMAIN_FINITE: dom = "finite"; break;
+        case DOMAIN_INFINITE: dom = "infinite"; break;
+        default: assert(0);
+    }
+
+    if (this->interface == -1)
+        Solver::writelog(LOG_DETAIL, "Initializing BesselCyl solver in {} domain ({} layers in the stack)", dom,
+                         this->stack.size());
+    else
+        Solver::writelog(LOG_DETAIL,
+                         "Initializing BesselCyl solver in {} domain ({} layers in the stack, interface after {} layer{})", dom,
+                         this->stack.size(), this->interface, (this->interface == 1) ? "" : "s");
+    switch (domain) {
+        case DOMAIN_FINITE: expansion.reset(new ExpansionBesselFini(this)); break;
+        case DOMAIN_INFINITE: expansion.reset(new ExpansionBesselInfini(this)); break;
+        default: assert(0);
     }
     setExpansionDefaults();
     expansion->init1();
     this->recompute_integrals = true;
 }
 
-
-void BesselSolverCyl::onInvalidate()
-{
+void BesselSolverCyl::onInvalidate() {
     modes.clear();
     expansion->reset();
     transfer.reset();
 }
 
-
-size_t BesselSolverCyl::findMode(dcomplex start, int m)
-{
+size_t BesselSolverCyl::findMode(dcomplex start, int m) {
     Solver::initCalculation();
     ensureInterface();
     expansion->setLam0(this->lam0);
     expansion->setM(m);
     initTransfer(*expansion, false);
-    std::unique_ptr<RootDigger> root = getRootDigger([this](const dcomplex& x) {
-        if (isnan(x)) throw ComputationError(this->getId(), "'lam' converged to NaN");
-        expansion->setK0(2e3*PI/x); return transfer->determinant();
-    }, "lam");
+    std::unique_ptr<RootDigger> root = getRootDigger(
+        [this](const dcomplex& x) {
+            if (isnan(x)) throw ComputationError(this->getId(), "'lam' converged to NaN");
+            expansion->setK0(2e3 * PI / x);
+            return transfer->determinant();
+        },
+        "lam");
     root->find(start);
     return insertMode();
 }
 
-
-LazyData<Vec<3,dcomplex>> BesselSolverCyl::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
-{
-    if (num >= modes.size()) throw BadInput(this->getId()+".outLightE", "Mode {0} has not been computed", num);
+LazyData<Vec<3, dcomplex>> BesselSolverCyl::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) {
+    if (num >= modes.size()) throw BadInput(this->getId() + ".outLightE", "Mode {0} has not been computed", num);
     assert(transfer);
     applyMode(modes[num]);
     return transfer->getFieldE(modes[num].power, dst_mesh, method);
 }
 
-
-LazyData<Vec<3,dcomplex>> BesselSolverCyl::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
-{
-    if (num >= modes.size()) throw BadInput(this->getId()+".outLightH", "Mode {0} has not been computed", num);
+LazyData<Vec<3, dcomplex>> BesselSolverCyl::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) {
+    if (num >= modes.size()) throw BadInput(this->getId() + ".outLightH", "Mode {0} has not been computed", num);
     assert(transfer);
     applyMode(modes[num]);
     return transfer->getFieldH(modes[num].power, dst_mesh, method);
 }
 
-
-LazyData<double> BesselSolverCyl::getMagnitude(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
-{
-    if (num >= modes.size()) throw BadInput(this->getId()+".outLightMagnitude", "Mode {0} has not been computed", num);
+LazyData<double> BesselSolverCyl::getMagnitude(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) {
+    if (num >= modes.size()) throw BadInput(this->getId() + ".outLightMagnitude", "Mode {0} has not been computed", num);
     assert(transfer);
     applyMode(modes[num]);
     return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
 }
 
-
 double BesselSolverCyl::getWavelength(size_t n) {
     if (n >= modes.size()) throw NoValue(ModeWavelength::NAME);
-    return real(2e3*M_PI / modes[n].k0);
+    return real(2e3 * M_PI / modes[n].k0);
 }
-
 
 #ifndef NDEBUG
-cmatrix BesselSolverCyl::epsVmm(size_t layer) {
+cmatrix BesselSolverCyl::epsV_k(size_t layer) {
     Solver::initCalculation();
     computeIntegrals();
-    return expansion->epsVmm(layer);
+    return expansion->epsV_k(layer);
 }
-cmatrix BesselSolverCyl::epsVpp(size_t layer) {
+cmatrix BesselSolverCyl::epsTss(size_t layer) {
     Solver::initCalculation();
     computeIntegrals();
-    return expansion->epsVpp(layer);
-}
-cmatrix BesselSolverCyl::epsTmm(size_t layer) {
-    Solver::initCalculation();
-    computeIntegrals();
-    return expansion->epsTmm(layer);
+    return expansion->epsTss(layer);
 }
 cmatrix BesselSolverCyl::epsTpp(size_t layer) {
     Solver::initCalculation();
     computeIntegrals();
     return expansion->epsTpp(layer);
 }
-cmatrix BesselSolverCyl::epsTmp(size_t layer) {
+cmatrix BesselSolverCyl::epsTsp(size_t layer) {
     Solver::initCalculation();
     computeIntegrals();
-    return expansion->epsTmp(layer);
+    return expansion->epsTsp(layer);
 }
-cmatrix BesselSolverCyl::epsTpm(size_t layer) {
+cmatrix BesselSolverCyl::epsTps(size_t layer) {
     Solver::initCalculation();
     computeIntegrals();
-    return expansion->epsTpm(layer);
-}
-cmatrix BesselSolverCyl::epsDm(size_t layer) {
-    Solver::initCalculation();
-    computeIntegrals();
-    return expansion->epsDm(layer);
-}
-cmatrix BesselSolverCyl::epsDp(size_t layer) {
-    Solver::initCalculation();
-    computeIntegrals();
-    return expansion->epsDp(layer);
-}
-dmatrix BesselSolverCyl::epsVV(size_t layer) {
-    Solver::initCalculation();
-    computeIntegrals();
-    return expansion->epsVV(layer);
+    return expansion->epsTps(layer);
 }
 
-cmatrix BesselSolverCyl::muVmm() {
+cmatrix BesselSolverCyl::muV_k() {
     Solver::initCalculation();
     if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
         computeIntegrals();
-        return finite_expansion->muVmm();
+        return finite_expansion->muV_k();
     } else {
         return cmatrix();
     }
 }
-cmatrix BesselSolverCyl::muVpp() {
+cmatrix BesselSolverCyl::muTss() {
     Solver::initCalculation();
     if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
         computeIntegrals();
-        return finite_expansion->muVpp();
+        return finite_expansion->muTss();
     } else {
         return cmatrix();
     }
 }
-cmatrix BesselSolverCyl::muTmm() {
+cmatrix BesselSolverCyl::muTsp() {
     Solver::initCalculation();
     if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
         computeIntegrals();
-        return finite_expansion->muTmm();
+        return finite_expansion->muTsp();
+    } else {
+        return cmatrix();
+    }
+}
+cmatrix BesselSolverCyl::muTps() {
+    Solver::initCalculation();
+    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
+        computeIntegrals();
+        return finite_expansion->muTps();
     } else {
         return cmatrix();
     }
@@ -292,52 +310,6 @@ cmatrix BesselSolverCyl::muTpp() {
         return cmatrix();
     }
 }
-cmatrix BesselSolverCyl::muTmp() {
-    Solver::initCalculation();
-    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
-        computeIntegrals();
-        return finite_expansion->muTmp();
-    } else {
-        return cmatrix();
-    }
-}
-cmatrix BesselSolverCyl::muTpm() {
-    Solver::initCalculation();
-    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
-        computeIntegrals();
-        return finite_expansion->muTpm();
-    } else {
-        return cmatrix();
-    }
-}
-cmatrix BesselSolverCyl::muDm() {
-    Solver::initCalculation();
-    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
-        computeIntegrals();
-        return finite_expansion->muDm();
-    } else {
-        return cmatrix();
-    }
-}
-cmatrix BesselSolverCyl::muDp() {
-    Solver::initCalculation();
-    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
-        computeIntegrals();
-        return finite_expansion->muDp();
-    } else {
-        return cmatrix();
-    }
-}
-dmatrix BesselSolverCyl::muVV() {
-    Solver::initCalculation();
-    if (auto finite_expansion = dynamic_cast<ExpansionBesselFini*>(expansion.get())) {
-        computeIntegrals();
-        return finite_expansion->muVV();
-    } else {
-        return dmatrix();
-    }
-}
 #endif
 
-
-}}} // # namespace plask::optical::slab
+}}}  // namespace plask::optical::slab

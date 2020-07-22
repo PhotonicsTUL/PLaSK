@@ -493,6 +493,9 @@
     <optical lam="980"/>
     <root bcond="0" vmin="0" vmax="2"/>
   </meta>
+  <optical name="generic" solver="Generic2D" lib="generic">
+    <geometry ref="vcsel"/>
+  </optical>
 </solvers>
 
 <connects>

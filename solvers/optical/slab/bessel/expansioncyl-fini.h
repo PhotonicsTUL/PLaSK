@@ -3,15 +3,13 @@
 
 #include <plask/plask.hpp>
 
-#include "expansioncyl.h"
-#include "../patterson.h"
 #include "../meshadapter.h"
-
+#include "../patterson.h"
+#include "expansioncyl.h"
 
 namespace plask { namespace optical { namespace slab {
 
-struct PLASK_SOLVER_API ExpansionBesselFini: public ExpansionBessel {
-
+struct PLASK_SOLVER_API ExpansionBesselFini : public ExpansionBessel {
     /**
      * Create new expansion
      * \param solver solver which performs calculations
@@ -29,32 +27,32 @@ struct PLASK_SOLVER_API ExpansionBesselFini: public ExpansionBessel {
 
     void getMatrices(size_t layer, cmatrix& RE, cmatrix& RH) override;
 
-    double integratePoyntingVert(const cvector& E, const cvector& H) override;
-
-    double integrateField(WhichField field, size_t l, const cvector& E, const cvector& H) override;
-
   protected:
-
     /// Integrals for magnetic permeability
     Integrals mu_integrals;
 
-    void layerIntegrals(size_t layer, double lam, double glam) override;
+    double fieldFactor(size_t i) override;
 
-#ifndef NDEBUG
-  public:
-    cmatrix muVmm();
-    cmatrix muVpp();
-    cmatrix muTmm();
-    cmatrix muTpp();
-    cmatrix muTmp();
-    cmatrix muTpm();
-    cmatrix muDm();
-    cmatrix muDp();
-    dmatrix muVV();
-#endif
+    cvector getHz(const cvector& Bz) override {
+        cvector Hz(Bz.size());
+        mult_matrix_by_vector(mu_integrals.V_k, Bz, Hz);
+        return Hz;
+    }
 
+    virtual void integrateParams(Integrals& integrals,
+                                 const dcomplex* datap, const dcomplex* datar, const dcomplex* dataz,
+                                 dcomplex datap0, dcomplex datar0, dcomplex dataz0);
+
+    #ifndef NDEBUG
+      public:
+        cmatrix muV_k();
+        cmatrix muTss();
+        cmatrix muTsp();
+        cmatrix muTps();
+        cmatrix muTpp();
+    #endif
 };
 
-}}} // # namespace plask::optical::slab
+}}}  // namespace plask::optical::slab
 
-#endif // PLASK__SOLVER__SLAB_EXPANSIONCYL_FINI_H
+#endif  // PLASK__SOLVER__SLAB_EXPANSIONCYL_FINI_H
