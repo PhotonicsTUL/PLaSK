@@ -11,7 +11,7 @@ BesselSolverCyl::BesselSolverCyl(const std::string& name)
       size(12),
       rule(RULE_SEMI_INVERSE),
       kscale(1.),
-      kmax(10.),
+      kmax(5.),
       kmethod(WAVEVECTORS_UNIFORM),
       integral_error(1e-6),
       max_integration_points(1000),

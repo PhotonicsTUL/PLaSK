@@ -843,7 +843,7 @@
     - attr: k-max
       label: Maximum wavevector
       type: float
-      default: 10
+      default: 5
       help: >
         Maximum wavevector used in infinite domain relative to the wavelength.
     - attr: k-scale
