@@ -23,6 +23,9 @@ struct Levels {
     std::unique_ptr<kubly::struktura> bandsEc, bandsEvhh, bandsEvlh;
     std::unique_ptr<kubly::struktura> modbandsEc, modbandsEvhh, modbandsEvlh;
     plask::shared_ptr<kubly::obszar_aktywny> activeRegion;
+    operator bool() const {
+        return bool(bandsEc) || bool(bandsEvhh) || bool(bandsEvlh);
+    }
 };
 
 inline static double nm_to_eV(double wavelength) { return (plask::phys::h_eV * plask::phys::c) / (wavelength * 1e-9); }
@@ -318,49 +321,49 @@ struct PLASK_SOLVER_API FermiNewGainSolver : public SolverWithMesh<GeometryType,
     }
 
     double getRoughness() const { return roughness; }
-    void setRoughness(double iRoughness) {
-        if (roughness != iRoughness) {
-            roughness = iRoughness;
+    void setRoughness(double value) {
+        if (roughness != value) {
+            roughness = value;
             if (build_struct_once) this->invalidate();
         }
     }
 
     double getLifeTime() const { return lifetime; }
-    void setLifeTime(double iLifeTime) {
-        if (lifetime != iLifeTime) {
-            lifetime = iLifeTime;
-            if (build_struct_once) this->invalidate();
+    void setLifeTime(double value) {
+        if (lifetime != value) {
+            lifetime = value;
+            // if (build_struct_once) this->invalidate();
         }
     }
 
     double getMatrixElem() const { return matrixElem; }
-    void setMatrixElem(double iMatrixElem) {
-        if (matrixElem != iMatrixElem) {
-            matrixElem = iMatrixElem;
+    void setMatrixElem(double value) {
+        if (matrixElem != value) {
+            matrixElem = value;
             if (build_struct_once) this->invalidate();
         }
     }
 
     double getCondQWShift() const { return condQWshift; }
-    void setCondQWShift(double iCondQWShift) {
-        if (condQWshift != iCondQWShift) {
-            condQWshift = iCondQWShift;
+    void setCondQWShift(double value) {
+        if (condQWshift != value) {
+            condQWshift = value;
             if (build_struct_once) this->invalidate();
         }
     }
 
     double getValeQWShift() const { return valeQWshift; }
-    void setValeQWShift(double iValeQWShift) {
-        if (valeQWshift != iValeQWShift) {
-            valeQWshift = iValeQWShift;
+    void setValeQWShift(double value) {
+        if (valeQWshift != value) {
+            valeQWshift = value;
             if (build_struct_once) this->invalidate();
         }
     }
 
     double getTref() const { return Tref; }
-    void setTref(double iTref) {
-        if (Tref != iTref) {
-            Tref = iTref;
+    void setTref(double value) {
+        if (Tref != value) {
+            Tref = value;
             if (build_struct_once) this->invalidate();
         }
     }
@@ -384,17 +387,17 @@ template <typename GeometryT> struct PLASK_SOLVER_API GainSpectrum {
     Vec<2> point;                           ///< Point in which the gain is calculated
 
     /// Active region containing the point
-    const typename FermiNewGainSolver<GeometryT>::ActiveRegionInfo* region;
+    size_t reg;
 
-    double T;       ///< Temperature
-    double n;       ///< Carriers concentration
-    Levels levels;  ///< Computed energy levels
+    double T;                   ///< Temperature
+    double n;                   ///< Carriers concentration
+    unique_ptr<Levels> levels;  ///< Computed energy levels
     std::unique_ptr<kubly::wzmocnienie> gMod;
 
     GainSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point);
 
     GainSpectrum(const GainSpectrum& orig)
-        : solver(orig.solver), point(orig.point), region(orig.region), T(orig.T), n(orig.n) {}
+        : solver(orig.solver), point(orig.point), reg(orig.reg), T(orig.T), n(orig.n) {}
 
     GainSpectrum(GainSpectrum&& orig) = default;
 
@@ -427,17 +430,17 @@ template <typename GeometryT> struct PLASK_SOLVER_API LuminescenceSpectrum {
     Vec<2> point;                           ///< Point in which the luminescence is calculated
 
     /// Active region containing the point
-    const typename FermiNewGainSolver<GeometryT>::ActiveRegionInfo* region;
+    size_t reg;
 
-    double T;       ///< Temperature
-    double n;       ///< Carriers concentration
-    Levels levels;  ///< Computed energy levels
+    double T;                   ///< Temperature
+    double n;                   ///< Carriers concentration
+    unique_ptr<Levels> levels;  ///< Computed energy levels
     std::unique_ptr<kubly::wzmocnienie> gMod;
 
     LuminescenceSpectrum(FermiNewGainSolver<GeometryT>* solver, const Vec<2> point);
 
     LuminescenceSpectrum(const LuminescenceSpectrum& orig)
-        : solver(orig.solver), point(orig.point), region(orig.region), T(orig.T), n(orig.n) {}
+        : solver(orig.solver), point(orig.point), reg(orig.reg), T(orig.T), n(orig.n) {}
 
     LuminescenceSpectrum(LuminescenceSpectrum&& orig) = default;
 
@@ -459,7 +462,7 @@ template <typename GeometryT> struct PLASK_SOLVER_API LuminescenceSpectrum {
      * \param wavelength wavelength to get luminescence
      * \return luminescence
      */
-    double getLuminescence(double wavelength); 
+    double getLuminescence(double wavelength);
 };
 
 }}}  // namespace plask::solvers::FermiNew

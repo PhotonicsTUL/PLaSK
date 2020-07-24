@@ -171,13 +171,27 @@ static py::object FermiNew_getLevels(FermiNew::FermiNewGainSolver<GeometryT>& se
     for (size_t reg = 0; reg < self.region_levels.size(); ++reg) {
         py::dict info;
         py::list el, hh, lh;
-        self.findEnergyLevels(self.region_levels[reg], self.regions[reg], T, true);
-        if (self.region_levels[reg].bandsEc)
-            for (auto stan : self.region_levels[reg].bandsEc->rozwiazania) el.append(stan.poziom);
-        if (self.region_levels[reg].bandsEvhh)
-            for (auto stan : self.region_levels[reg].bandsEvhh->rozwiazania) hh.append(-stan.poziom);
-        if (self.region_levels[reg].bandsEvlh)
-            for (auto stan : self.region_levels[reg].bandsEvlh->rozwiazania) lh.append(-stan.poziom);
+        FermiNew::Levels* levels;
+        std::unique_ptr<FermiNew::Levels> levels_guard;
+        double deltaEg2 = 0.;
+        if (self.build_struct_once) {
+            if (!self.region_levels[reg])
+                self.findEnergyLevels(self.region_levels[reg], self.regions[reg], self.Tref, true);
+            double Eg = self.regions[reg].getLayerMaterial(0)->CB(T, 0.) - self.regions[reg].getLayerMaterial(0)->VB(T, 0.);
+            // TODO Add strain
+            deltaEg2 = 0.5 * (Eg - self.region_levels[reg].Eg);
+            levels = &self.region_levels[reg];
+        } else {
+            levels_guard.reset(new FermiNew::Levels);
+            levels = levels_guard.get();
+            self.findEnergyLevels(*levels, self.regions[reg], T, true);
+        }
+        if (levels->bandsEc)
+            for (auto stan : levels->bandsEc->rozwiazania) el.append(stan.poziom + deltaEg2);
+        if (levels->bandsEvhh)
+            for (auto stan : levels->bandsEvhh->rozwiazania) hh.append(-stan.poziom - deltaEg2);
+        if (levels->bandsEvlh)
+            for (auto stan : levels->bandsEvlh->rozwiazania) lh.append(-stan.poziom - deltaEg2);
         info["el"] = el;
         info["hh"] = hh;
         info["lh"] = lh;
@@ -197,8 +211,18 @@ static py::object FermiNew_getFermiLevels(FermiNew::FermiNewGainSolver<GeometryT
     if (reg < 0 || std::size_t(reg) >= self.regions.size())
         throw IndexError(u8"{}: Bad active region index", self.getId());
     const typename FermiNew::FermiNewGainSolver<GeometryT>::ActiveRegionInfo& region = self.regions[reg];
-    self.findEnergyLevels(self.region_levels[reg], self.regions[reg], T, true);
-    kubly::wzmocnienie gMod{self.getGainModule(1000., T, n, region, self.region_levels[reg], true)};
+    FermiNew::Levels* levels;
+    std::unique_ptr<FermiNew::Levels> levels_guard;
+    if (self.build_struct_once) {
+        if (!self.region_levels[reg])
+            self.findEnergyLevels(self.region_levels[reg], region, self.Tref, true);
+        levels = &self.region_levels[reg];
+    } else {
+        levels_guard.reset(new FermiNew::Levels);
+        levels = levels_guard.get();
+        self.findEnergyLevels(*levels, region, T, true);
+    }
+    kubly::wzmocnienie gMod{self.getGainModule(1000., T, n, region, *levels, true)};
 
     double straine =
         self.strains ? self.materialSubstrate->lattC(T, 'a') / region.getLayerMaterial(0)->lattC(T, 'a') - 1. : 0.;

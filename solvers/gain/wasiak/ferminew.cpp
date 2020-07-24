@@ -357,6 +357,8 @@ void FermiNewGainSolver<GeometryType>::findEnergyLevels(Levels& levels,
                                                         bool showDetails) {
     if (isnan(T) || T < 0.) throw ComputationError(this->getId(), "Wrong temperature ({0}K)", T);
 
+    this->writelog(LOG_DETAIL, "Determining energy levels");
+
     buildStructure(T, region, levels.bandsEc, levels.bandsEvhh, levels.bandsEvlh, showDetails);
 
     std::vector<double> dso;
@@ -394,8 +396,6 @@ void FermiNewGainSolver<GeometryType>::buildStructure(double T,
                                                       std::unique_ptr<kubly::struktura>& bandsEvhh,
                                                       std::unique_ptr<kubly::struktura>& bandsEvlh,
                                                       bool showDetails) {
-    this->writelog(LOG_DETAIL, "Determining levels");
-
     if (strains) {
         if (!this->materialSubstrate)
             throw ComputationError(this->getId(), "No layer with role 'substrate' has been found");
@@ -446,7 +446,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T,
     int N = region.size();  // number of all layers in the active region (QW, barr, external)
 
     double lattSub, straine = 0.;
-    
+
     if (strains) {
         lattSub = this->materialSubstrate->lattC(T, 'a');
     }
@@ -475,7 +475,7 @@ kubly::struktura* FermiNewGainSolver<GeometryType>::buildEc(double T,
         x += h;
         if (region.getLayerMaterial(i)->CB(T, straine) > DEc) return nullptr;
     }
-    
+
     Ec = (region.getLayerMaterial(N - 1)->CB(T, 0.) - DEc);
     if (showDetails)
         this->writelog(LOG_DEBUG, "Layer {0} CB: {1} eV", N, region.getLayerMaterial(N - 1)->CB(T, 0.));
@@ -796,7 +796,7 @@ template <typename GeometryT, typename T> struct DataBase : public LazyDataImpl<
             concs.name = "carriers concentration";
             temps.data = solver->inTemperature(temps.mesh, interp);
             concs.data = solver->inCarriersConcentration(temps.mesh, interp);
-            if (solver->build_struct_once)
+            if (solver->build_struct_once && !solver->region_levels[reg])
                 solver->findEnergyLevels(solver->region_levels[reg], solver->regions[reg], solver->Tref);
             std::exception_ptr error;
 #pragma omp parallel for
@@ -884,7 +884,7 @@ template <typename GeometryT> struct DgDnData : public DataBase<GeometryT, Tenso
     }
 };
 
-inline static double sumLuminescence(kubly::wzmocnienie& gain, double wavelength) { 
+inline static double sumLuminescence(kubly::wzmocnienie& gain, double wavelength) {
     double E = nm_to_eV(wavelength);
     //double result = 0.;
     //for (int nr_c = 0; nr_c <= (int)gain.pasma->pasmo_przew.size() - 1; nr_c++)
@@ -948,9 +948,8 @@ GainSpectrum<GeometryT>::GainSpectrum(FermiNewGainSolver<GeometryT>* solver, con
     auto mesh = plask::make_shared<const OnePointMesh<2>>(point);
     T = solver->inTemperature(mesh)[0];
     n = solver->inCarriersConcentration(mesh)[0];
-    for (const auto& reg : solver->regions) {
-        if (reg.contains(point)) {
-            region = &reg;
+    for (reg = 0; reg < solver->regions.size(); ++reg) {
+        if (solver->regions[reg].contains(point)) {
             solver->inTemperature.changedConnectMethod(this, &GainSpectrum::onTChange);
             solver->inCarriersConcentration.changedConnectMethod(this, &GainSpectrum::onNChange);
             return;
@@ -961,13 +960,21 @@ GainSpectrum<GeometryT>::GainSpectrum(FermiNewGainSolver<GeometryT>* solver, con
 
 template <typename GeometryT> double GainSpectrum<GeometryT>::getGain(double wavelength) {
     if (!gMod) {
-        solver->findEnergyLevels(levels, *region, T, true);
-        gMod.reset(new kubly::wzmocnienie(std::move(solver->getGainModule(wavelength, T, n, *region, levels, true))));
+        Levels* levels;
+        if (solver->build_struct_once && !solver->region_levels[reg]) {
+            solver->findEnergyLevels(solver->region_levels[reg], solver->regions[reg], solver->Tref);
+            levels = &solver->region_levels[reg];
+        } else {
+            this->levels.reset(new Levels);
+            levels = this->levels.get();
+            solver->findEnergyLevels(*levels, solver->regions[reg], T, true);
+        }
+        gMod.reset(new kubly::wzmocnienie(std::move(solver->getGainModule(wavelength, T, n, solver->regions[reg], *levels, true))));
     }
 
     double E = nm_to_eV(wavelength);
     double tau = solver->getLifeTime();
-    if (!tau || region->mod)
+    if (!tau || solver->regions[reg].mod)
         return (gMod->wzmocnienie_calk_bez_splotu(E));  // 20.10.2014 adding lifetime
     else
         return (gMod->wzmocnienie_calk_ze_splotem(E, phys::hb_eV * 1e12 / tau));  // 20.10.2014 adding lifetime
@@ -979,9 +986,8 @@ LuminescenceSpectrum<GeometryT>::LuminescenceSpectrum(FermiNewGainSolver<Geometr
     auto mesh = plask::make_shared<const OnePointMesh<2>>(point);
     T = solver->inTemperature(mesh)[0];
     n = solver->inCarriersConcentration(mesh)[0];
-    for (const auto& reg : solver->regions) {
-        if (reg.contains(point)) {
-            region = &reg;
+    for (reg = 0; reg < solver->regions.size(); ++reg) {
+        if (solver->regions[reg].contains(point)) {
             solver->inTemperature.changedConnectMethod(this, &LuminescenceSpectrum::onTChange);
             solver->inCarriersConcentration.changedConnectMethod(this, &LuminescenceSpectrum::onNChange);
             return;
@@ -992,10 +998,18 @@ LuminescenceSpectrum<GeometryT>::LuminescenceSpectrum(FermiNewGainSolver<Geometr
 
 template <typename GeometryT> double LuminescenceSpectrum<GeometryT>::getLuminescence(double wavelength) {
     if (!gMod) {
-        solver->findEnergyLevels(levels, *region, T, true);
-        gMod.reset(new kubly::wzmocnienie(std::move(solver->getGainModule(wavelength, T, n, *region, levels, true))));
+        Levels* levels;
+        if (solver->build_struct_once && !solver->region_levels[reg]) {
+            solver->findEnergyLevels(solver->region_levels[reg], solver->regions[reg], solver->Tref);
+            levels = &solver->region_levels[reg];
+        } else {
+            this->levels.reset(new Levels);
+            levels = this->levels.get();
+            solver->findEnergyLevels(*levels, solver->regions[reg], T, true);
+        }
+        gMod.reset(new kubly::wzmocnienie(std::move(solver->getGainModule(wavelength, T, n, solver->regions[reg], *levels, true))));
     }
-    double QWfrac = region->qwtotallen / region->totallen;
+    double QWfrac = solver->regions[reg].qwtotallen / solver->regions[reg].totallen;
     return sumLuminescence(*gMod, wavelength) / QWfrac;
 }
 
