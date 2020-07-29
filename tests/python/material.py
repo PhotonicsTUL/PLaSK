@@ -69,7 +69,7 @@ class Material(unittest.TestCase):
         self.assertEqual(m.name, "AlGaAs_fake")
         self.assertEqual( m.VB(1.0), 2.0 )
         self.assertEqual( m.nr(980., 300.), 3.5 )
-        self.assertEqual( m.NR(980., 300.), (3.5, 3.5, 3.5, 0.) )
+        self.assertEqual( tuple(m.NR(980., 300.)), (3.5, 3.5, 3.5, 0.) )
         self.assertEqual( m.thermk(), material.AlGaAs(Al=0.1).thermk() )
         self.assertNotEqual( m.nr(980., 300.), material.AlGaAs(Al=0.1).nr(980., 300.) )
         self.assertEqual( m, material.get('AlGaAs_fake', Al=0.1) )
@@ -87,7 +87,8 @@ class Material(unittest.TestCase):
         self.assertEqual( m1.name, "AlGaAs:Dp" )
         self.assertEqual( m1.VB(1.0), 3.0 )
         self.assertAlmostEqual( m1.CB(1.0), 0.8 )
-        self.assertEqual( ptest.NR(m1), (3.5, 3.6, 3.7, 0.1) )
+        print(ptest.NR(m1))
+        self.assertEqual( tuple(ptest.NR(m1)), (3.5, 3.6, 3.7, 0.1) )
 
         with(self.assertRaisesRegexp(TypeError, "'N' not allowed in material AlGaAs:Dp")):
             mx = Material.AlGaAsDp(Al=0.2, N=0.9, doping=1e18)
@@ -183,7 +184,7 @@ class Material(unittest.TestCase):
 
         m = AlGaAs_2_Si()
         self.assertEqual( m.doping, 1e18 )
- 
+
     def testPassingMaterialsByName(self):
         mat = plask.geometry.Rectangle(2,2, "Al(0.2)GaAs:Dp=3.0").get_material(0,0)
         self.assertEqual( mat.name, "AlGaAs:Dp" )
@@ -328,14 +329,14 @@ class Material(unittest.TestCase):
             self.assertEqual( material.get('Test').A(), 2 )
             self.assertEqual( saved.get('Test').A(), 1 )
         self.assertEqual( material.get('Test').A(), 1 )
-    
+
     def testMaterialWithParams(self):
         m1 = material.get('[nr=2.5 absp=2e5]')
         m2 = material.with_params(nr=2.5, absp=2e5)
         self.assertAlmostEqual( m1.Nr(980), 2.5-1.556j, 2 )
         self.assertEqual( str(m1), '[absp=200000 nr=2.5]' )
         self.assertEqual( m1, m2 )
-    
+
     def testMaterialWithParamsAndBase(self):
         m0 = material.get('GaAs')
         m1 = material.get('GaAs [nr=2.5 absp=2e5]')

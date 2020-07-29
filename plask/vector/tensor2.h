@@ -65,6 +65,28 @@ struct Tensor2 {
      */
     Tensor2(const Vec<2,T>& vec): c00(vec.c0), c11(vec.c1) {}
 
+   /**
+     * Get i-th component
+     * WARNING This function does not check if it is valid (for efficiency reasons)
+     * \param i number of coordinate
+     * \return i-th component
+     */
+    inline T& operator[](size_t i) {
+        assert(i < 2);
+        return *(&c00 + i);
+    }
+
+    /**
+     * Get i-th component
+     * WARNING This function does not check if it is valid (for efficiency reasons)
+     * \param i number of coordinate
+     * \return i-th component
+     */
+    inline const T& operator[](size_t i) const {
+        assert(i < 2);
+        return *(&c00 + i);
+    }
+
     /// Convert to std::tuple
     operator std::tuple<T,T>() const {
         return std::make_tuple(c00, c11);

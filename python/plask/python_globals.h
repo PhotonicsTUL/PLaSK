@@ -153,10 +153,10 @@ namespace detail {
     template <typename T> inline py::handle<> dtype() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(py::converter::registry::lookup(py::type_id<T>()).get_class_object()))); }
     template<> inline py::handle<> dtype<double>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyFloat_Type))); }
     template<> inline py::handle<> dtype<dcomplex>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyComplex_Type))); }
-    template<> inline py::handle<> dtype<Tensor2<double>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyTuple_Type))); }
-    template<> inline py::handle<> dtype<Tensor2<dcomplex>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyTuple_Type))); }
-    template<> inline py::handle<> dtype<Tensor3<double>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyTuple_Type))); }
-    template<> inline py::handle<> dtype<Tensor3<dcomplex>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyTuple_Type))); }
+    // template<> inline py::handle<> dtype<Tensor2<double>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyTuple_Type))); }
+    // template<> inline py::handle<> dtype<Tensor2<dcomplex>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyTuple_Type))); }
+    // template<> inline py::handle<> dtype<Tensor3<double>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyTuple_Type))); }
+    // template<> inline py::handle<> dtype<Tensor3<dcomplex>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyTuple_Type))); }
 }
 
 

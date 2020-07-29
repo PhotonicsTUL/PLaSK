@@ -16,7 +16,7 @@ class ReceiverTest(unittest.TestCase):
     def setUp(self):
         self.solver = plasktest.SimpleSolver()
         self.mesh1 = plask.mesh.Rectangular2D(plask.mesh.Regular(0., 4., 3), plask.mesh.Regular(0., 20., 3))
-        self.mesh2 = self.mesh1.elements.mesh;
+        self.mesh2 = self.mesh1.elements.mesh
 
 
     def testReceiverWithConstant(self):
@@ -52,13 +52,13 @@ class ReceiverTest(unittest.TestCase):
     def testMultiProviders(self):
        data0 = plask.Data(plask.array([250., 250., 250., 250.]), self.mesh2)
        data1 = plask.Data(plask.array([200., 200., 400., 400.]), self.mesh2)
-       self.solver.inIntensity = [data0, data1]
+       self.solver.inIntensity = data0, data1
        self.assertEqual( len(self.solver.inIntensity), 2 )
        self.assertEqual( list(self.solver.inIntensity(0,self.mesh2)), list(data0) )
        self.assertEqual( list(self.solver.inIntensity(1,self.mesh2)), list(data1) )
 
        inout = plasktest.solvers.InOut("inout")
-       inout.inWavelength = [1., 2., 3.]
+       inout.inWavelength = 1., 2., 3.
        self.assertEqual( len(inout.inWavelength), 3 )
        self.assertEqual( inout.inWavelength(0), 1. )
        self.assertEqual( inout.inWavelength(1), 2. )

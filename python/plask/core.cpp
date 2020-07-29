@@ -37,6 +37,7 @@ void register_xml_writer();
 void register_xml_reader();
 
 void register_vectors();
+void register_tensors();
 void register_mesh();
 void register_providers();
 
@@ -469,8 +470,9 @@ BOOST_PYTHON_MODULE(_plask)
     register_xml_writer();
     register_xml_reader();
 
-    // Vectors
+    // Vectors and tensors
     register_vectors();
+    register_tensors();
 
     register_vector_of<size_t>("unsigned_int");
     register_vector_of<int>("int");

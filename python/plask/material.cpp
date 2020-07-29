@@ -16,90 +16,6 @@ namespace plask { namespace python {
 
 namespace detail {
 
-    struct Tensor2_fromto_Python {
-
-        Tensor2_fromto_Python() {
-            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<Tensor2<double>>());
-            boost::python::to_python_converter<Tensor2<double>, Tensor2_fromto_Python>();
-        }
-
-        static void* convertible(PyObject* obj) {
-            if (!PySequence_Check(obj) && !PyFloat_Check(obj) && !PyInt_Check(obj)) return NULL;
-            return obj;
-        }
-
-        static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
-            void* storage = ((boost::python::converter::rvalue_from_python_storage<Tensor2<double>>*)data)->storage.bytes;
-            double first, second;
-            if (PyFloat_Check(obj) || PyInt_Check(obj)) {
-                first = second = py::extract<double>(obj);
-            } else if (PySequence_Length(obj) == 2) {
-                auto src = py::object(py::handle<>(py::borrowed(obj)));
-                auto ofirst = src[0];
-                auto osecond = src[1];
-                first = py::extract<double>(ofirst);
-                second = py::extract<double>(osecond);
-            } else {
-                throw TypeError(u8"float or sequence of exactly two floats required");
-            }
-            new(storage) Tensor2<double>(first, second);
-            data->convertible = storage;
-        }
-
-        static PyObject* convert(const Tensor2<double>& pair)  {
-            py::tuple tuple = py::make_tuple(pair.c00, pair.c11);
-            return boost::python::incref(tuple.ptr());
-        }
-    };
-
-    struct ComplexTensor_fromto_Python {
-
-        ComplexTensor_fromto_Python() {
-            boost::python::converter::registry::push_back(&convertible, &construct, boost::python::type_id<Tensor3<dcomplex>>());
-            boost::python::to_python_converter<Tensor3<dcomplex>, ComplexTensor_fromto_Python>();
-        }
-
-        static void* convertible(PyObject* obj) {
-            if (!PySequence_Check(obj)) return NULL;
-            return obj;
-        }
-
-        static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
-            py::object src = py::object(py::handle<>(py::borrowed(obj)));
-            void* storage = ((boost::python::converter::rvalue_from_python_storage<Tensor3<dcomplex>>*)data)->storage.bytes;
-            dcomplex vals[4];
-            int idx[4] = { 0, 1, 2, 3 };
-            auto seq = py::object(py::handle<>(py::borrowed(obj)));
-            if (py::len(seq) == 2) { idx[1] = 0; idx[2] = 1; idx[3] = -1; }
-            else if (py::len(seq) == 3) { idx[3] = -1; }
-            else if (py::len(seq) != 4)
-                throw TypeError(u8"sequence of exactly 2, 3, or 4 complex required");
-            for (int i = 0; i < 4; ++i) {
-                if (idx[i] != -1)  vals[i] = py::extract<dcomplex>(seq[idx[i]]);
-                else vals[i] = 0.;
-            }
-            new(storage) Tensor3<dcomplex>(vals[0], vals[1], vals[2], vals[3]);
-            data->convertible = storage;
-        }
-
-        static PyObject* convert(const Tensor3<dcomplex>& src)  {
-            py::tuple tuple = py::make_tuple(src.c00, src.c11, src.c22, src.c01);
-            return boost::python::incref(tuple.ptr());
-        }
-    };
-
-    struct Tensor3_from_Python {
-        Tensor3_from_Python() {
-            boost::python::to_python_converter<Tensor3<double>, Tensor3_from_Python>();
-        }
-
-        static PyObject* convert(const Tensor3<double>& src)  {
-            py::tuple tuple = py::make_tuple(src.c00, src.c11, src.c22, src.c01);
-            return boost::python::incref(tuple.ptr());
-        }
-    };
-
-
     struct StringFromMaterial {
 
         StringFromMaterial() {
@@ -741,7 +657,7 @@ shared_ptr<Material> MaterialsDB_const(py::tuple args, py::dict kwargs) {
             throw MaterialParseException("Bad material parameter value '{}={}'", std::string(*key),
                                          py::extract<std::string>(py::str(kwargs[*key]))());
         }
-        
+
     }
 
     return plask::make_shared<ConstMaterial>(base, params);
@@ -1394,11 +1310,6 @@ void initMaterials() {
 
     MaterialFromPythonString();
     register_exception<NoSuchMaterial>(PyExc_ValueError);
-
-    // Make std::pair<double,double> and std::tuple<dcomplex,dcomplex,dcomplex,dcomplex,dcomplex> understandable
-    detail::Tensor2_fromto_Python();
-    detail::ComplexTensor_fromto_Python();
-    detail::Tensor3_from_Python();
 
     py_enum<Material::Kind>()
         .value("GENERIC", Material::GENERIC)

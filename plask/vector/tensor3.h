@@ -96,6 +96,28 @@ struct Tensor3 {
      */
     Tensor3(const Vec<3,T>& vec): c00(vec.c0), c11(vec.c1), c22(vec.c2), c01(0.) {}
 
+   /**
+     * Get i-th component
+     * WARNING This function does not check if it is valid (for efficiency reasons)
+     * \param i number of coordinate
+     * \return i-th component
+     */
+    inline T& operator[](size_t i) {
+        assert(i < 4);
+        return *(&c00 + i);
+    }
+
+    /**
+     * Get i-th component
+     * WARNING This function does not check if it is valid (for efficiency reasons)
+     * \param i number of coordinate
+     * \return i-th component
+     */
+    inline const T& operator[](size_t i) const {
+        assert(i < 4);
+        return *(&c00 + i);
+    }
+
     /// Convert to std::tuple
     operator std::tuple<T,T,T,T>() const {
         return std::make_tuple(c00, c11, c22, c01);
