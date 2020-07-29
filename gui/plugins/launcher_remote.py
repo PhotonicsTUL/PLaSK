@@ -197,7 +197,8 @@ else:
         except ValueError:
             return default
 
-    X11_DEFAULT = False if system == 'Windows' else True
+    # X11_DEFAULT = False if system == 'Windows' else True
+    X11_DEFAULT = False
 
     class Account:
         """
@@ -294,16 +295,16 @@ else:
                 layout.addRow("&Command:", self.program_edit)
                 self._advanced_widgets.append(self.program_edit)
 
-                self.x11_checkbox = QCheckBox()
-                self.x11_checkbox.setToolTip(
-                    "Enable X11 forwarding. This allows to see graphical output from remote jobs, but requires "
-                    "a working X server. If you do not know what this means, leave the box unchanged.")
-                if account is not None:
-                    self.x11_checkbox.setChecked(account.x11)
-                else:
-                    self.x11_checkbox.setChecked(True)
-                layout.addRow("&X11 Forwarding:", self.x11_checkbox)
-                self._advanced_widgets.append(self.x11_checkbox)
+                # self.x11_checkbox = QCheckBox()
+                # self.x11_checkbox.setToolTip(
+                #     "Enable X11 forwarding. This allows to see graphical output from remote jobs, but requires "
+                #     "a working X server. If you do not know what this means, leave the box unchanged.")
+                # if account is not None:
+                #     self.x11_checkbox.setChecked(account.x11)
+                # else:
+                #     self.x11_checkbox.setChecked(True)
+                # layout.addRow("&X11 Forwarding:", self.x11_checkbox)
+                # self._advanced_widgets.append(self.x11_checkbox)
 
                 self._set_rows_visibility(self._advanced_widgets, False)
 
@@ -388,8 +389,8 @@ else:
                 ft='x' if isinstance(main_window.document, XPLDocument) else 'p')
 
             self.ssh = ssh
-            self.x11 = account.x11
-            self.local_x11_display = None
+            # self.x11 = account.x11
+            # self.local_x11_display = None
 
             fd, fb = (s.replace(' ', '&nbsp;') for s in os.path.split(fname))
             sep = os.path.sep
@@ -408,29 +409,32 @@ else:
             self.main_window.closed.connect(self.kill_process)
 
         def __del__(self):
-            self.main_window.closed.disconnect(self.kill_process)
-
-        def x11_handler(self, remote_channel, addrs=None):
-            if remote_channel is None:
-                return
             try:
-                self.transport.lock.acquire()
-                remote_fileno = remote_channel.fileno()
-                local_channel = get_x11_socket(*self.local_x11_display)
-                local_fileno = local_channel.fileno()
-                self.connections[remote_fileno] = local_channel
-                self.connections[local_fileno] = remote_channel
-                for chan in remote_channel, local_channel:
-                    if chan not in self.channels:
-                        self.channels.append(chan)
-                # self.transport._queue_incoming_channel(remote_channel)
-                self.transport.server_accept_cv.notify()
-            except:
-                if _DEBUG:
-                    import traceback
-                    traceback.print_exc()
-            finally:
-                self.transport.lock.release()
+                self.main_window.closed.disconnect(self.kill_process)
+            except RuntimeError:
+                pass
+
+        # def x11_handler(self, remote_channel, addrs=None):
+        #     if remote_channel is None:
+        #         return
+        #     try:
+        #         self.transport.lock.acquire()
+        #         remote_fileno = remote_channel.fileno()
+        #         local_channel = get_x11_socket(*self.local_x11_display)
+        #         local_fileno = local_channel.fileno()
+        #         self.connections[remote_fileno] = local_channel
+        #         self.connections[local_fileno] = remote_channel
+        #         for chan in remote_channel, local_channel:
+        #             if chan not in self.channels:
+        #                 self.channels.append(chan)
+        #         # self.transport._queue_incoming_channel(remote_channel)
+        #         self.transport.server_accept_cv.notify()
+        #     except:
+        #         if _DEBUG:
+        #             import traceback
+        #             traceback.print_exc()
+        #     finally:
+        #         self.transport.lock.release()
 
         def run(self):
             self.transport = self.ssh.get_transport()
@@ -441,10 +445,10 @@ else:
 
             self.connections = {}
             self.channels = [self.session]
-            if self.x11:
-                if self.local_x11_display is None:
-                    self.local_x11_display = get_x11_display()[:3]
-                self.session.request_x11(handler=self.x11_handler)
+            # if self.x11:
+            #     if self.local_x11_display is None:
+            #         self.local_x11_display = get_x11_display()[:3]
+            #     self.session.request_x11(handler=self.x11_handler)
 
             self.session.exec_command(self.command_line)
 
@@ -465,15 +469,21 @@ else:
                     if channel is self.session:
                         data = self.receive(data)
                     else:
+                        if channel.fileno() == -1:
+                            continue
                         try:
                             self.transport.lock.acquire()
                             counterpart = self.connections[channel.fileno()]
                             counterpart.sendall(channel.recv(4096))
                         except SocketError:
                             self.channels.remove(channel)
-                            self.channels.remove(counterpart)
+                            try:
+                                self.channels.remove(counterpart)
+                            except NameError:
+                                pass
+                            else:
+                                del self.connections[counterpart.fileno()]
                             del self.connections[channel.fileno()]
-                            del self.connections[counterpart.fileno()]
                             channel.close()
                             counterpart.close()
                         finally:
