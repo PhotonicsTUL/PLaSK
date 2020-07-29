@@ -29,7 +29,7 @@ struct PLASK_SOLVER_API ExpansionBesselInfini: public ExpansionBessel {
 
     virtual void integrateParams(Integrals& integrals,
                                  const dcomplex* datap, const dcomplex* datar, const dcomplex* dataz,
-                                 dcomplex datap0, dcomplex datar0, dcomplex dataz0);
+                                 dcomplex datap0, dcomplex datar0, dcomplex dataz0) override;
 
     double fieldFactor(size_t i) override {
         return rbounds[rbounds.size() - 1] / (kpts[i] * kdelts[i]);
