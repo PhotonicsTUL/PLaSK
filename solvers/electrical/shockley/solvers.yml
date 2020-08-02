@@ -92,19 +92,6 @@
       unit: S/m
       default: 5.0
       help: Initial vertical conductivity of the junctions.
-    - attr: heat
-      label: Heat generation method
-      type: choice
-      default: joules
-      choices:
-      - joules
-      - wavelength
-      help: Method of determination of the heat generated in the junction.
-    - attr: wavelength
-      label: Emitted wavelength
-      type: float
-      unit: nm
-      help: Emitted wavelength if heat generation method is set to ‘<i>wavelength</i>’.
   - &contacts
     tag: contacts
     label: Properties of the Contacts
@@ -148,7 +135,6 @@
   - outHeat
   - outConductivity
   receivers: &receivers
-  - inWavelength
   - inTemperature
 
 - solver: Shockley3D

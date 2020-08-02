@@ -14,7 +14,7 @@ This file contains portable utils to manage (mainly disable for a given fragment
 
 // this helps disable warning about unusing parameter in doxygen-friendly way
 #ifdef DOXYGEN
-    /// mark that the function parmater is unused and prevent compiler from warning about it
+    /// mark that the function paramater is unused and prevent compiler from warning about it
     #define PLASK_UNUSED(arg) arg
 #else
     #define PLASK_UNUSED(arg)

@@ -284,8 +284,8 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
         return *this;
     }
 
-    template <typename Boundary, typename ValueT>
-    ExportSolver& add_boundary_conditions(const char* name, BoundaryConditions<Boundary,ValueT> Class::* field, const char* help) {
+    template <typename Boundary, typename ValueT, typename ClassT = Class>
+    ExportSolver& add_boundary_conditions(const char* name, BoundaryConditions<Boundary,ValueT> ClassT::* field, const char* help) {
 
         std::string boundary_class;
         if (PyTypeObject* mesh = py::converter::registry::lookup(py::type_id<typename Boundary::MeshType>()).m_class_object) {

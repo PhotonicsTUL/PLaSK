@@ -95,6 +95,16 @@ class ShockleyCyl_Test(unittest.TestCase):
         heat = correct_current * 1.
         self.assertAlmostEqual( self.solver.get_total_heat(), heat, 3 )
 
+    def testComputationsTemp(self):
+        self.solver.beta = lambda T: log(T * 70)
+        self.solver.compute(1000)
+        correct_current = 1e-3 * pi * self.solver.js * (21000 - 1)
+        self.assertAlmostEqual( self.solver.get_total_current(), correct_current, 3 )
+        self.solver.inTemperature = 250
+        self.solver.compute(1000)
+        correct_current = 1e-3 * pi * self.solver.js * (17500 - 1)
+        self.assertAlmostEqual( self.solver.get_total_current(), correct_current, 3 )
+
     def testConductivity(self):
         msh = self.solver.mesh.elements.mesh
         geo = self.solver.geometry
