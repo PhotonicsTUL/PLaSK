@@ -90,7 +90,7 @@ BOOST_PYTHON_MODULE(static)
     Bc<Convection>(u8"Convective boundary condition value.");
     Bc<Radiation>(u8"Radiative boundary condition value.");
 
-    {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCartesian>, "Static2D",
+    {CLASS(ThermalFem2DSolver<Geometry2DCartesian>, "Static2D",
         u8"Finite element thermal solver for 2D Cartesian Geometry.")
         METHOD(compute, compute, u8"Run thermal calculations", py::arg("loops")=0);
         RO_PROPERTY(err, getErr, u8"Maximum estimated error");
@@ -111,7 +111,7 @@ BOOST_PYTHON_MODULE(static)
         solver.def_readwrite("logfreq", &__Class__::logfreq, u8"Frequency of iteration progress reporting");
     }
 
-    {CLASS(FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>, "StaticCyl",
+    {CLASS(ThermalFem2DSolver<Geometry2DCylindrical>, "StaticCyl",
         u8"Finite element thermal solver for 2D cylindrical Geometry.")
         METHOD(compute, compute, u8"Run thermal calculations", py::arg("loops")=0);
         RO_PROPERTY(err, getErr, u8"Maximum estimated error");
@@ -132,7 +132,7 @@ BOOST_PYTHON_MODULE(static)
         RW_FIELD(logfreq, u8"Frequency of iteration progress reporting");
     }
 
-    {CLASS(FiniteElementMethodThermal3DSolver, "Static3D", u8"Finite element thermal solver for 3D Geometry.")
+    {CLASS(ThermalFem3DSolver, "Static3D", u8"Finite element thermal solver for 3D Geometry.")
         METHOD(compute, compute, u8"Run thermal calculations", py::arg("loops")=0);
         RO_PROPERTY(err, getErr, u8"Maximum estimated error");
         RECEIVER(inHeat, "");

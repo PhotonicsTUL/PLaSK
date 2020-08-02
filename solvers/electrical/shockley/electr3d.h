@@ -9,7 +9,7 @@ namespace plask { namespace electrical { namespace shockley {
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
-struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWithMesh<Geometry3D, RectangularMesh<3>> {
+struct PLASK_SOLVER_API ElectricalFem3DSolver: public SolverWithMesh<Geometry3D, RectangularMesh<3>> {
 
   protected:
 
@@ -181,13 +181,13 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
     ReceiverFor<ModeWavelength> inWavelength; /// wavelength (for heat generation in the active region) [nm]
 
 
-    FiniteElementMethodElectrical3DSolver(const std::string& name="");
+    ElectricalFem3DSolver(const std::string& name="");
 
     void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
     std::string getClassName() const override { return "electrical.Shockley3D"; }
 
-    ~FiniteElementMethodElectrical3DSolver();
+    ~ElectricalFem3DSolver();
 
     /**
      * Run voltage calculations
@@ -328,4 +328,3 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical3DSolver: public SolverWith
 }}} //namespaces
 
 #endif
-

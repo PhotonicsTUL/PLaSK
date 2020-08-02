@@ -20,7 +20,7 @@ BOOST_PYTHON_MODULE(dynamic)
         .value("GAUSS", ALGORITHM_GAUSS)
     ;
 
-    {CLASS(FiniteElementMethodDynamicThermal2DSolver<Geometry2DCartesian>, "Dynamic2D",
+    {CLASS(DynamicThermalFem2DSolver<Geometry2DCartesian>, "Dynamic2D",
         u8"Finite element thermal solver for 2D Cartesian geometry.")
         METHOD(compute, compute, u8"Run thermal calculations", py::arg("time"));
         RECEIVER(inHeat, "");
@@ -40,7 +40,7 @@ BOOST_PYTHON_MODULE(dynamic)
         RO_PROPERTY(elapsed_time, getElapsTime, u8"Alias for :attr:`time` (obsolete).");
     }
 
-    {CLASS(FiniteElementMethodDynamicThermal2DSolver<Geometry2DCylindrical>, "DynamicCyl",
+    {CLASS(DynamicThermalFem2DSolver<Geometry2DCylindrical>, "DynamicCyl",
         u8"Finite element thermal solver for 2D cylindrical geometry.")
         METHOD(compute, compute, u8"Run thermal calculations", py::arg("time"));
         RECEIVER(inHeat, "");
@@ -60,7 +60,7 @@ BOOST_PYTHON_MODULE(dynamic)
         RO_PROPERTY(elapsed_time, getElapsTime, u8"Alias for :attr:`time` (obsolete).");
     }
 
-    {CLASS(FiniteElementMethodDynamicThermal3DSolver, "Dynamic3D",
+    {CLASS(DynamicThermalFem3DSolver, "Dynamic3D",
         u8"Finite element thermal solver for 3D Cartesian geometry.")
         METHOD(compute, compute, u8"Run thermal calculations", py::arg("time"));
         RECEIVER(inHeat, "");

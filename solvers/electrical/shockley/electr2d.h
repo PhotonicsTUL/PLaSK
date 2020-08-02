@@ -13,7 +13,7 @@ namespace plask { namespace electrical { namespace shockley {
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
 template<typename Geometry2DType>
-struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWithMesh<Geometry2DType, RectangularMesh<2>> {
+struct PLASK_SOLVER_API ElectricalFem2DSolver: public SolverWithMesh<Geometry2DType, RectangularMesh<2>> {
 
   protected:
 
@@ -298,11 +298,11 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
 
     void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
-    FiniteElementMethodElectrical2DSolver(const std::string& name="");
+    ElectricalFem2DSolver(const std::string& name="");
 
     std::string getClassName() const override;
 
-    ~FiniteElementMethodElectrical2DSolver();
+    ~ElectricalFem2DSolver();
 
   protected:
 
@@ -318,4 +318,3 @@ struct PLASK_SOLVER_API FiniteElementMethodElectrical2DSolver: public SolverWith
 }}} //namespaces
 
 #endif
-

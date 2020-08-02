@@ -4,12 +4,12 @@
 namespace plask { namespace thermal { namespace tstatic {
 
 template<typename Geometry2DType>
-FiniteElementMethodThermal2DSolver<Geometry2DType>::FiniteElementMethodThermal2DSolver(const std::string& name) :
+ThermalFem2DSolver<Geometry2DType>::ThermalFem2DSolver(const std::string& name) :
     SolverWithMesh<Geometry2DType, RectangularMesh<2>>(name),
     loopno(0),
-    outTemperature(this, &FiniteElementMethodThermal2DSolver<Geometry2DType>::getTemperatures),
-    outHeatFlux(this, &FiniteElementMethodThermal2DSolver<Geometry2DType>::getHeatFluxes),
-    outThermalConductivity(this, &FiniteElementMethodThermal2DSolver<Geometry2DType>::getThermalConductivity),
+    outTemperature(this, &ThermalFem2DSolver<Geometry2DType>::getTemperatures),
+    outHeatFlux(this, &ThermalFem2DSolver<Geometry2DType>::getHeatFluxes),
+    outThermalConductivity(this, &ThermalFem2DSolver<Geometry2DType>::getThermalConductivity),
     maxerr(0.05),
     inittemp(300.),
     algorithm(ALGORITHM_CHOLESKY),
@@ -25,12 +25,12 @@ FiniteElementMethodThermal2DSolver<Geometry2DType>::FiniteElementMethodThermal2D
 
 
 template<typename Geometry2DType>
-FiniteElementMethodThermal2DSolver<Geometry2DType>::~FiniteElementMethodThermal2DSolver() {
+ThermalFem2DSolver<Geometry2DType>::~ThermalFem2DSolver() {
 }
 
 
 template<typename Geometry2DType>
-void FiniteElementMethodThermal2DSolver<Geometry2DType>::loadConfiguration(XMLReader &source, Manager &manager)
+void ThermalFem2DSolver<Geometry2DType>::loadConfiguration(XMLReader &source, Manager &manager)
 {
     while (source.requireTagOrEnd())
     {
@@ -77,7 +77,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::loadConfiguration(XMLRe
 
 
 template<typename Geometry2DType>
-void FiniteElementMethodThermal2DSolver<Geometry2DType>::onInitialize() {
+void ThermalFem2DSolver<Geometry2DType>::onInitialize() {
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
 
@@ -126,7 +126,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::onInitialize() {
 }
 
 
-template<typename Geometry2DType> void FiniteElementMethodThermal2DSolver<Geometry2DType>::onInvalidate() {
+template<typename Geometry2DType> void ThermalFem2DSolver<Geometry2DType>::onInvalidate() {
     temperatures.reset();
     fluxes.reset();
     thickness.reset();
@@ -186,7 +186,7 @@ static void setBoundaries(const BoundaryConditionsWithMesh<RectangularMesh<2>::B
 
 
 template<> template<typename MatrixT>
-void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(MatrixT& A, DataVector<double>& B,
+void ThermalFem2DSolver<Geometry2DCartesian>::setMatrix(MatrixT& A, DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bheatflux,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,Convection>& bconvection,
@@ -311,7 +311,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::setMatrix(MatrixT&
 
 
 template<> template<typename MatrixT>
-void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(MatrixT& A, DataVector<double>& B,
+void ThermalFem2DSolver<Geometry2DCylindrical>::setMatrix(MatrixT& A, DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& btemperature,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,double>& bheatflux,
                    const BoundaryConditionsWithMesh<RectangularMesh<2>::Boundary,Convection>& bconvection,
@@ -454,7 +454,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::setMatrix(Matrix
 
 template<typename Geometry2DType>
 template <typename MatrixT>
-MatrixT FiniteElementMethodThermal2DSolver<Geometry2DType>::makeMatrix() {
+MatrixT ThermalFem2DSolver<Geometry2DType>::makeMatrix() {
     if (band == 0) {
         if (use_full_mesh) {
             band = this->mesh->minorAxis()->size() + 1;
@@ -470,14 +470,14 @@ MatrixT FiniteElementMethodThermal2DSolver<Geometry2DType>::makeMatrix() {
 
 // C++ if fucking stupid!!!!! We need to repeat this twice just because a fucking standard
 template<> template <>
-SparseBandMatrix2D FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::makeMatrix<SparseBandMatrix2D>() {
+SparseBandMatrix2D ThermalFem2DSolver<Geometry2DCartesian>::makeMatrix<SparseBandMatrix2D>() {
     if (!use_full_mesh)
         throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
     return SparseBandMatrix2D(this->maskedMesh->size(), this->mesh->minorAxis()->size());
 }
 
 template<> template <>
-SparseBandMatrix2D FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::makeMatrix<SparseBandMatrix2D>() {
+SparseBandMatrix2D ThermalFem2DSolver<Geometry2DCylindrical>::makeMatrix<SparseBandMatrix2D>() {
     if (!use_full_mesh)
         throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
     return SparseBandMatrix2D(this->maskedMesh->size(), this->mesh->minorAxis()->size());
@@ -485,7 +485,7 @@ SparseBandMatrix2D FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::ma
 
 
 template<typename Geometry2DType>
-double FiniteElementMethodThermal2DSolver<Geometry2DType>::compute(int loops) {
+double ThermalFem2DSolver<Geometry2DType>::compute(int loops) {
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
         case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
@@ -496,7 +496,7 @@ double FiniteElementMethodThermal2DSolver<Geometry2DType>::compute(int loops) {
 
 
 template<typename Geometry2DType> template<typename MatrixT>
-double FiniteElementMethodThermal2DSolver<Geometry2DType>::doCompute(int loops)
+double ThermalFem2DSolver<Geometry2DType>::doCompute(int loops)
 {
     this->initCalculation();
 
@@ -549,7 +549,7 @@ double FiniteElementMethodThermal2DSolver<Geometry2DType>::doCompute(int loops)
 
 
 template<typename Geometry2DType>
-void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, DataVector<double>& B)
+void ThermalFem2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& A, DataVector<double>& B)
 {
     int info = 0;
 
@@ -570,7 +570,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(DpbMatrix& 
 }
 
 template<typename Geometry2DType>
-void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, DataVector<double>& B)
+void ThermalFem2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& A, DataVector<double>& B)
 {
     int info = 0;
     this->writelog(LOG_DETAIL, "Solving matrix system");
@@ -594,7 +594,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(DgbMatrix& 
 }
 
 template<typename Geometry2DType>
-void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix2D& ioA, DataVector<double>& B)
+void ThermalFem2DSolver<Geometry2DType>::solveMatrix(SparseBandMatrix2D& ioA, DataVector<double>& B)
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
@@ -616,7 +616,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::solveMatrix(SparseBandM
 
 
 template<typename Geometry2DType>
-double FiniteElementMethodThermal2DSolver<Geometry2DType>::saveTemperatures(plask::DataVector<double>& T)
+double ThermalFem2DSolver<Geometry2DType>::saveTemperatures(plask::DataVector<double>& T)
 {
     double err = 0.;
     maxT = 0.;
@@ -632,7 +632,7 @@ double FiniteElementMethodThermal2DSolver<Geometry2DType>::saveTemperatures(plas
 
 
 template<typename Geometry2DType>
-void FiniteElementMethodThermal2DSolver<Geometry2DType>::saveHeatFluxes()
+void ThermalFem2DSolver<Geometry2DType>::saveHeatFluxes()
 {
     this->writelog(LOG_DETAIL, "Computing heat fluxes");
 
@@ -671,7 +671,7 @@ void FiniteElementMethodThermal2DSolver<Geometry2DType>::saveHeatFluxes()
 
 
 template<typename Geometry2DType>
-const LazyData<double> FiniteElementMethodThermal2DSolver<Geometry2DType>::getTemperatures(const shared_ptr<const MeshD<2>>& dest_mesh, InterpolationMethod method) const {
+const LazyData<double> ThermalFem2DSolver<Geometry2DType>::getTemperatures(const shared_ptr<const MeshD<2>>& dest_mesh, InterpolationMethod method) const {
     this->writelog(LOG_DEBUG, "Getting temperatures");
     if (!temperatures) return LazyData<double>(dest_mesh->size(), inittemp); // in case the receiver is connected and no temperature calculated yet
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
@@ -683,7 +683,7 @@ const LazyData<double> FiniteElementMethodThermal2DSolver<Geometry2DType>::getTe
 
 
 template<typename Geometry2DType>
-const LazyData<Vec<2>> FiniteElementMethodThermal2DSolver<Geometry2DType>::getHeatFluxes(const shared_ptr<const MeshD<2>>& dest_mesh, InterpolationMethod method) {
+const LazyData<Vec<2>> ThermalFem2DSolver<Geometry2DType>::getHeatFluxes(const shared_ptr<const MeshD<2>>& dest_mesh, InterpolationMethod method) {
     this->writelog(LOG_DEBUG, "Getting heat fluxes");
     if (!temperatures) return LazyData<Vec<2>>(dest_mesh->size(), Vec<2>(0.,0.)); // in case the receiver is connected and no fluxes calculated yet
     if (!fluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
@@ -699,15 +699,15 @@ const LazyData<Vec<2>> FiniteElementMethodThermal2DSolver<Geometry2DType>::getHe
 }
 
 
-template<typename Geometry2DType> FiniteElementMethodThermal2DSolver<Geometry2DType>::
-ThermalConductivityData::ThermalConductivityData(const FiniteElementMethodThermal2DSolver<Geometry2DType>* solver, const shared_ptr<const MeshD<2>>& dst_mesh):
+template<typename Geometry2DType> ThermalFem2DSolver<Geometry2DType>::
+ThermalConductivityData::ThermalConductivityData(const ThermalFem2DSolver<Geometry2DType>* solver, const shared_ptr<const MeshD<2>>& dst_mesh):
     solver(solver), dest_mesh(dst_mesh), flags(solver->geometry)
 {
     if (solver->temperatures) temps = interpolate(solver->maskedMesh, solver->temperatures, solver->maskedMesh->getElementMesh(), INTERPOLATION_LINEAR);
     else temps = LazyData<double>(solver->maskedMesh->getElementsCount(), solver->inittemp);
 }
 
-template<typename Geometry2DType> Tensor2<double> FiniteElementMethodThermal2DSolver<Geometry2DType>::
+template<typename Geometry2DType> Tensor2<double> ThermalFem2DSolver<Geometry2DType>::
 ThermalConductivityData::at(std::size_t i) const {
     auto point = flags.wrap(dest_mesh->at(i));
     std::size_t x = solver->mesh->axis[0]->findUpIndex(point[0]),
@@ -723,23 +723,23 @@ ThermalConductivityData::at(std::size_t i) const {
     }
 }
 
-template<typename Geometry2DType> std::size_t FiniteElementMethodThermal2DSolver<Geometry2DType>::
+template<typename Geometry2DType> std::size_t ThermalFem2DSolver<Geometry2DType>::
 ThermalConductivityData::size() const { return dest_mesh->size(); }
 
 template<typename Geometry2DType>
-const LazyData<Tensor2<double>> FiniteElementMethodThermal2DSolver<Geometry2DType>::getThermalConductivity(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod) {
+const LazyData<Tensor2<double>> ThermalFem2DSolver<Geometry2DType>::getThermalConductivity(const shared_ptr<const MeshD<2>>& dst_mesh, InterpolationMethod) {
     this->initCalculation();
     this->writelog(LOG_DEBUG, "Getting thermal conductivities");
     return LazyData<Tensor2<double>>(new
-        FiniteElementMethodThermal2DSolver<Geometry2DType>::ThermalConductivityData(this, dst_mesh)
+        ThermalFem2DSolver<Geometry2DType>::ThermalConductivityData(this, dst_mesh)
     );
 }
 
 
-template<> std::string FiniteElementMethodThermal2DSolver<Geometry2DCartesian>::getClassName() const { return "thermal.Static2D"; }
-template<> std::string FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>::getClassName() const { return "thermal.StaticCyl"; }
+template<> std::string ThermalFem2DSolver<Geometry2DCartesian>::getClassName() const { return "thermal.Static2D"; }
+template<> std::string ThermalFem2DSolver<Geometry2DCylindrical>::getClassName() const { return "thermal.StaticCyl"; }
 
-template struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver<Geometry2DCartesian>;
-template struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver<Geometry2DCylindrical>;
+template struct PLASK_SOLVER_API ThermalFem2DSolver<Geometry2DCartesian>;
+template struct PLASK_SOLVER_API ThermalFem2DSolver<Geometry2DCylindrical>;
 
 }}} // namespace plask::thermal::tstatic

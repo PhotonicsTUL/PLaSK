@@ -6,11 +6,11 @@ namespace plask { namespace thermal { namespace dynamic {
 
 const double BIG = 1e16;
 
-FiniteElementMethodDynamicThermal3DSolver::FiniteElementMethodDynamicThermal3DSolver(const std::string& name) :
+DynamicThermalFem3DSolver::DynamicThermalFem3DSolver(const std::string& name) :
     SolverWithMesh<Geometry3D, RectangularMesh<3>>(name),
-    outTemperature(this, &FiniteElementMethodDynamicThermal3DSolver::getTemperatures),
-    outHeatFlux(this, &FiniteElementMethodDynamicThermal3DSolver::getHeatFluxes),
-    outThermalConductivity(this, &FiniteElementMethodDynamicThermal3DSolver::getThermalConductivity),
+    outTemperature(this, &DynamicThermalFem3DSolver::getTemperatures),
+    outHeatFlux(this, &DynamicThermalFem3DSolver::getHeatFluxes),
+    outThermalConductivity(this, &DynamicThermalFem3DSolver::getThermalConductivity),
     algorithm(ALGORITHM_CHOLESKY),
     inittemp(300.),
     methodparam(0.5),
@@ -27,11 +27,11 @@ FiniteElementMethodDynamicThermal3DSolver::FiniteElementMethodDynamicThermal3DSo
 }
 
 
-FiniteElementMethodDynamicThermal3DSolver::~FiniteElementMethodDynamicThermal3DSolver() {
+DynamicThermalFem3DSolver::~DynamicThermalFem3DSolver() {
 }
 
 
-void FiniteElementMethodDynamicThermal3DSolver::loadConfiguration(XMLReader &source, Manager &manager)
+void DynamicThermalFem3DSolver::loadConfiguration(XMLReader &source, Manager &manager)
 {
     while (source.requireTagOrEnd())
     {
@@ -68,7 +68,7 @@ void FiniteElementMethodDynamicThermal3DSolver::loadConfiguration(XMLReader &sou
 }
 
 
-void FiniteElementMethodDynamicThermal3DSolver::onInitialize() {
+void DynamicThermalFem3DSolver::onInitialize() {
     if (!this->geometry) throw NoGeometryException(this->getId());
     if (!this->mesh) throw NoMeshException(this->getId());
     elapstime = 0.;
@@ -118,7 +118,7 @@ void FiniteElementMethodDynamicThermal3DSolver::onInitialize() {
 }
 
 
-void FiniteElementMethodDynamicThermal3DSolver::onInvalidate() {
+void DynamicThermalFem3DSolver::onInvalidate() {
     temperatures.reset();
     fluxes.reset();
     thickness.reset();
@@ -126,7 +126,7 @@ void FiniteElementMethodDynamicThermal3DSolver::onInvalidate() {
 
 
 template<typename MatrixT>
-void FiniteElementMethodDynamicThermal3DSolver::setMatrix(MatrixT& A, MatrixT& B, DataVector<double>& F,
+void DynamicThermalFem3DSolver::setMatrix(MatrixT& A, MatrixT& B, DataVector<double>& F,
         const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& btemperature)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
@@ -255,7 +255,7 @@ void FiniteElementMethodDynamicThermal3DSolver::setMatrix(MatrixT& A, MatrixT& B
 
 
 template <typename MatrixT>
-MatrixT FiniteElementMethodDynamicThermal3DSolver::makeMatrix() {
+MatrixT DynamicThermalFem3DSolver::makeMatrix() {
     if (band == 0) {
         if (use_full_mesh) {
             band = this->mesh->minorAxis()->size() + 1;
@@ -270,14 +270,14 @@ MatrixT FiniteElementMethodDynamicThermal3DSolver::makeMatrix() {
 }
 
 // template <>
-// SparseBandMatrix3D FiniteElementMethodDynamicThermal3DSolver::makeMatrix<SparseBandMatrix3D>() {
+// SparseBandMatrix3D DynamicThermalFem3DSolver::makeMatrix<SparseBandMatrix3D>() {
 //     if (!use_full_mesh)
 //         throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
 //     return SparseBandMatrix3D(this->maskedMesh->size(), mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
 // }
 
 
-double FiniteElementMethodDynamicThermal3DSolver::compute(double time) {
+double DynamicThermalFem3DSolver::compute(double time) {
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(time);
         case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(time);
@@ -287,7 +287,7 @@ double FiniteElementMethodDynamicThermal3DSolver::compute(double time) {
 
 
 template<typename MatrixT>
-double FiniteElementMethodDynamicThermal3DSolver::doCompute(double time)
+double DynamicThermalFem3DSolver::doCompute(double time)
 {
     this->initCalculation();
 
@@ -349,7 +349,7 @@ double FiniteElementMethodDynamicThermal3DSolver::doCompute(double time)
 }
 
 
-void FiniteElementMethodDynamicThermal3DSolver::prepareMatrix(DpbMatrix& A)
+void DynamicThermalFem3DSolver::prepareMatrix(DpbMatrix& A)
 {
     int info = 0;
 
@@ -363,7 +363,7 @@ void FiniteElementMethodDynamicThermal3DSolver::prepareMatrix(DpbMatrix& A)
     // now A contains factorized matrix
 }
 
-void FiniteElementMethodDynamicThermal3DSolver::solveMatrix(DpbMatrix& A, DataVector<double>& B)
+void DynamicThermalFem3DSolver::solveMatrix(DpbMatrix& A, DataVector<double>& B)
 {
     int info = 0;
 
@@ -374,7 +374,7 @@ void FiniteElementMethodDynamicThermal3DSolver::solveMatrix(DpbMatrix& A, DataVe
     // now B contains solutions
 }
 
-void FiniteElementMethodDynamicThermal3DSolver::prepareMatrix(DgbMatrix& A)
+void DynamicThermalFem3DSolver::prepareMatrix(DgbMatrix& A)
 {
     int info = 0;
     A.ipiv.reset(aligned_malloc<int>(A.size));
@@ -392,7 +392,7 @@ void FiniteElementMethodDynamicThermal3DSolver::prepareMatrix(DgbMatrix& A)
     // now A contains factorized matrix
 }
 
-void FiniteElementMethodDynamicThermal3DSolver::solveMatrix(DgbMatrix& A, DataVector<double>& B)
+void DynamicThermalFem3DSolver::solveMatrix(DgbMatrix& A, DataVector<double>& B)
 {
     int info = 0;
 
@@ -403,7 +403,7 @@ void FiniteElementMethodDynamicThermal3DSolver::solveMatrix(DgbMatrix& A, DataVe
     // now A contains factorized matrix and B the solutions
 }
 
-void FiniteElementMethodDynamicThermal3DSolver::saveHeatFluxes()
+void DynamicThermalFem3DSolver::saveHeatFluxes()
 {
     this->writelog(LOG_DETAIL, "Computing heat fluxes");
 
@@ -448,7 +448,7 @@ void FiniteElementMethodDynamicThermal3DSolver::saveHeatFluxes()
 }
 
 
-const LazyData<double> FiniteElementMethodDynamicThermal3DSolver::getTemperatures(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const {
+const LazyData<double> DynamicThermalFem3DSolver::getTemperatures(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) const {
     this->writelog(LOG_DEBUG, "Getting temperatures");
     if (!temperatures) return LazyData<double>(dst_mesh->size(), inittemp); // in case the receiver is connected and no temperature calculated yet
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
@@ -459,7 +459,7 @@ const LazyData<double> FiniteElementMethodDynamicThermal3DSolver::getTemperature
 }
 
 
-const LazyData<Vec<3>> FiniteElementMethodDynamicThermal3DSolver::getHeatFluxes(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
+const LazyData<Vec<3>> DynamicThermalFem3DSolver::getHeatFluxes(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod method) {
     this->writelog(LOG_DEBUG, "Getting heat fluxes");
     if (!temperatures) return LazyData<Vec<3>>(dst_mesh->size(), Vec<3>(0.,0.,0.)); // in case the receiver is connected and no fluxes calculated yet
     if (!fluxes) saveHeatFluxes(); // we will compute fluxes only if they are needed
@@ -475,14 +475,14 @@ const LazyData<Vec<3>> FiniteElementMethodDynamicThermal3DSolver::getHeatFluxes(
 }
 
 
-FiniteElementMethodDynamicThermal3DSolver::
-ThermalConductivityData::ThermalConductivityData(const FiniteElementMethodDynamicThermal3DSolver* solver, const shared_ptr<const MeshD<3>>& dst_mesh):
+DynamicThermalFem3DSolver::
+ThermalConductivityData::ThermalConductivityData(const DynamicThermalFem3DSolver* solver, const shared_ptr<const MeshD<3>>& dst_mesh):
     solver(solver), dest_mesh(dst_mesh), flags(solver->geometry)
 {
     if (solver->temperatures) temps = interpolate(solver->maskedMesh, solver->temperatures, solver->maskedMesh->getElementMesh(), INTERPOLATION_LINEAR);
     else temps = LazyData<double>(solver->mesh->getElementsCount(), solver->inittemp);
 }
-Tensor2<double> FiniteElementMethodDynamicThermal3DSolver::ThermalConductivityData::at(std::size_t i) const {
+Tensor2<double> DynamicThermalFem3DSolver::ThermalConductivityData::at(std::size_t i) const {
     auto point = flags.wrap(dest_mesh->at(i));
     std::size_t x = solver->mesh->axis[0]->findUpIndex(point[0]),
                 y = solver->mesh->axis[1]->findUpIndex(point[1]),
@@ -497,12 +497,12 @@ Tensor2<double> FiniteElementMethodDynamicThermal3DSolver::ThermalConductivityDa
         return material->thermk(temps[idx], solver->thickness[idx]);
     }
 }
-std::size_t FiniteElementMethodDynamicThermal3DSolver::ThermalConductivityData::size() const { return dest_mesh->size(); }
+std::size_t DynamicThermalFem3DSolver::ThermalConductivityData::size() const { return dest_mesh->size(); }
 
-const LazyData<Tensor2<double>> FiniteElementMethodDynamicThermal3DSolver::getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod /*method*/) {
+const LazyData<Tensor2<double>> DynamicThermalFem3DSolver::getThermalConductivity(const shared_ptr<const MeshD<3>>& dst_mesh, InterpolationMethod /*method*/) {
     this->initCalculation();
     this->writelog(LOG_DEBUG, "Getting thermal conductivities");
-    return LazyData<Tensor2<double>>(new FiniteElementMethodDynamicThermal3DSolver::ThermalConductivityData(this, dst_mesh));
+    return LazyData<Tensor2<double>>(new DynamicThermalFem3DSolver::ThermalConductivityData(this, dst_mesh));
 }
 
 

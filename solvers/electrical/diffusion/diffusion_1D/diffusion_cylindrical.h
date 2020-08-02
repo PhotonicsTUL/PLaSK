@@ -3,7 +3,7 @@
 namespace plask { namespace electrical { namespace diffusion_cylindrical {
 
 template<typename Geometry2DType>
-class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public SolverWithMesh<Geometry2DType, RegularMesh1D>
+class PLASK_SOLVER_API DiffusionFem2DSolver: public SolverWithMesh<Geometry2DType, RegularMesh1D>
 {
     public:
         enum FemMethod {
@@ -33,9 +33,9 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public SolverWithMe
         double minor_concentration;
         bool do_initial;                            ///< Should we start from initial computations
 
-        FiniteElementMethodDiffusion2DSolver<Geometry2DType>(const std::string& name=""):
+        DiffusionFem2DSolver<Geometry2DType>(const std::string& name=""):
             SolverWithMesh<Geometry2DType,RegularMesh1D>(name),
-            outCarriersConcentration(this, &FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration),
+            outCarriersConcentration(this, &DiffusionFem2DSolver<Geometry2DType>::getConcentration),
             interpolation_method(INTERPOLATION_SPLINE),
             relative_accuracy(0.01),
             max_mesh_changes(5),
@@ -48,7 +48,7 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public SolverWithMe
             inTemperature = 300.;
         }
 
-        virtual ~FiniteElementMethodDiffusion2DSolver<Geometry2DType>()
+        virtual ~DiffusionFem2DSolver<Geometry2DType>()
         {
         }
 
@@ -142,11 +142,11 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public SolverWithMe
 
         struct ConcentrationDataImpl: public LazyDataImpl<double>
         {
-            const FiniteElementMethodDiffusion2DSolver* solver;
+            const DiffusionFem2DSolver* solver;
             shared_ptr<const MeshD<2>> destination_mesh;
             InterpolationFlags interpolationFlags;
             LazyData<double> concentration;
-            ConcentrationDataImpl(const FiniteElementMethodDiffusion2DSolver* solver,
+            ConcentrationDataImpl(const DiffusionFem2DSolver* solver,
                                   shared_ptr<const MeshD<2>> dest_mesh,
                                   InterpolationMethod interp);
             double at(size_t i) const override;
@@ -157,15 +157,15 @@ class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver: public SolverWithMe
         const LazyData<double> getConcentration(CarriersConcentration::EnumType what, shared_ptr<const MeshD<2>> dest_mesh,
                                                 InterpolationMethod interpolation=INTERPOLATION_DEFAULT ) const;
 
-}; // class FiniteElementMethodDiffusion2DSolver
+}; // class DiffusionFem2DSolver
 
 template <> inline
-double FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::jacobian(double) {
+double DiffusionFem2DSolver<Geometry2DCartesian>::jacobian(double) {
     return 1;
 }
 
 template <> inline
-double FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::jacobian(double r) {
+double DiffusionFem2DSolver<Geometry2DCylindrical>::jacobian(double r) {
     return 2*plask::PI * r;
 } // 2*PI from integral over full angle,
 

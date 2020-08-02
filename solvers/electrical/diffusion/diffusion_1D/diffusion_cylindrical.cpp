@@ -11,7 +11,7 @@ namespace plask { namespace electrical { namespace diffusion_cylindrical {
 constexpr double inv_hc = 1.0e-9 / (phys::c * phys::h_J);
 using phys::Z0;
 
-template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::loadConfiguration(XMLReader& reader, Manager& manager)
+template<typename Geometry2DType> void DiffusionFem2DSolver<Geometry2DType>::loadConfiguration(XMLReader& reader, Manager& manager)
 {
     while (reader.requireTagOrEnd())
     {
@@ -45,25 +45,25 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 }
 
 
-template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::compute_initial()
+template<typename Geometry2DType> void DiffusionFem2DSolver<Geometry2DType>::compute_initial()
 {
     compute(COMPUTATION_INITIAL);
 }
 
 
-template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::compute_threshold()
+template<typename Geometry2DType> void DiffusionFem2DSolver<Geometry2DType>::compute_threshold()
 {
     compute(COMPUTATION_THRESHOLD);
 }
 
 
-template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::compute_overthreshold()
+template<typename Geometry2DType> void DiffusionFem2DSolver<Geometry2DType>::compute_overthreshold()
 {
     compute(COMPUTATION_OVERTHRESHOLD);
 }
 
 
-template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::onInitialize()
+template<typename Geometry2DType> void DiffusionFem2DSolver<Geometry2DType>::onInitialize()
 {
     iterations = 0;
     detected_QW = detectQuantumWells();
@@ -89,7 +89,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 }
 
 
-template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::onInvalidate()
+template<typename Geometry2DType> void DiffusionFem2DSolver<Geometry2DType>::onInvalidate()
 {
     j_on_the_mesh.reset();
     T_on_the_mesh.reset();
@@ -102,7 +102,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
     n_previous.reset();
 }
 
-template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::compute(ComputationType type)
+template<typename Geometry2DType> void DiffusionFem2DSolver<Geometry2DType>::compute(ComputationType type)
 {
     initial_computation = type == COMPUTATION_INITIAL || (this->initCalculation() && do_initial);
     threshold_computation = type == COMPUTATION_THRESHOLD;
@@ -172,7 +172,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 }
 
 
-template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geometry2DType>::MatrixFEM()
+template<typename Geometry2DType> bool DiffusionFem2DSolver<Geometry2DType>::MatrixFEM()
 {
     // Computation of K*n" - E*n = -F
     bool _convergence;
@@ -255,7 +255,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
 
             if (fem_method == FEM_LINEAR)  // 02.10.2012 Marcin Gebski
             {
-                FiniteElementMethodDiffusion2DSolver<Geometry2DType>::createMatrices(A_matrix, RHS_vector);
+                DiffusionFem2DSolver<Geometry2DType>::createMatrices(A_matrix, RHS_vector);
 
                 lapack_n = lapack_ldb = (int)current_mesh().size();
                 lapack_kd = 1;
@@ -323,7 +323,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
                     }
                 }
 
-                FiniteElementMethodDiffusion2DSolver<Geometry2DType>::createMatrices(A_matrix, RHS_vector);
+                DiffusionFem2DSolver<Geometry2DType>::createMatrices(A_matrix, RHS_vector);
 
                 lapack_n = lapack_ldb = (int)current_mesh().size();
                 lapack_kd = 2;
@@ -414,7 +414,7 @@ template<typename Geometry2DType> bool FiniteElementMethodDiffusion2DSolver<Geom
 }
 
 template<>
-void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(DataVector<double> A_matrix, DataVector<double> RHS_vector)
+void DiffusionFem2DSolver<Geometry2DCartesian>::createMatrices(DataVector<double> A_matrix, DataVector<double> RHS_vector)
 {
     // linear FEM elements variables:
 
@@ -511,7 +511,7 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::createMatrices(D
 }
 
 template<>
-void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices(DataVector<double> A_matrix, DataVector<double> RHS_vector)
+void DiffusionFem2DSolver<Geometry2DCylindrical>::createMatrices(DataVector<double> A_matrix, DataVector<double> RHS_vector)
 {
     // linear FEM elements variables:
 
@@ -609,8 +609,8 @@ void FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::createMatrices
     }
 }
 
-template<typename Geometry2DType> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::
-ConcentrationDataImpl::ConcentrationDataImpl(const FiniteElementMethodDiffusion2DSolver* solver,
+template<typename Geometry2DType> DiffusionFem2DSolver<Geometry2DType>::
+ConcentrationDataImpl::ConcentrationDataImpl(const DiffusionFem2DSolver* solver,
                                              shared_ptr<const plask::MeshD<2>> dest_mesh,
                                              InterpolationMethod interp):
     solver(solver), destination_mesh(dest_mesh), interpolationFlags(InterpolationFlags(solver->geometry)),
@@ -622,7 +622,7 @@ ConcentrationDataImpl::ConcentrationDataImpl(const FiniteElementMethodDiffusion2
 }
 
 template<typename Geometry2DType>
-double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::ConcentrationDataImpl::at(size_t i) const
+double DiffusionFem2DSolver<Geometry2DType>::ConcentrationDataImpl::at(size_t i) const
 {
     // Make sure we have concentration only in the quantum wells
     //TODO maybe more optimal approach would be reasonable?
@@ -639,16 +639,16 @@ double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::ConcentrationDataIm
 }
 
 template<typename Geometry2DType>
-const LazyData<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getConcentration(CarriersConcentration::EnumType what, shared_ptr<const plask::MeshD<2>> dest_mesh, InterpolationMethod interpolation) const
+const LazyData<double> DiffusionFem2DSolver<Geometry2DType>::getConcentration(CarriersConcentration::EnumType what, shared_ptr<const plask::MeshD<2>> dest_mesh, InterpolationMethod interpolation) const
 {
     if (what != CarriersConcentration::MAJORITY && what != CarriersConcentration::PAIRS) {
         return LazyData<double>(dest_mesh->size(), NAN);
     }
     if (!n_present.data()) throw NoValue("Carriers concentration");
-    return LazyData<double>(new FiniteElementMethodDiffusion2DSolver<Geometry2DType>::ConcentrationDataImpl(this, dest_mesh, interpolation));
+    return LazyData<double>(new DiffusionFem2DSolver<Geometry2DType>::ConcentrationDataImpl(this, dest_mesh, interpolation));
 }
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::K(int i)
+template<typename Geometry2DType> double DiffusionFem2DSolver<Geometry2DType>::K(int i)
 {
     double T = T_on_the_mesh[i];
     double product = 0.0;
@@ -657,7 +657,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
     return product;        // for initial distribution there is no diffusion
 }
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::E(int i)
+template<typename Geometry2DType> double DiffusionFem2DSolver<Geometry2DType>::E(int i)
 {
     double T = T_on_the_mesh[i];
     double n0 = n_previous[i];
@@ -673,7 +673,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
     return product;
 }
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::F(int i)
+template<typename Geometry2DType> double DiffusionFem2DSolver<Geometry2DType>::F(int i)
 {
     double T = T_on_the_mesh[i];
     double n0 = n_previous[i];
@@ -693,7 +693,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 }
 
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::nSecondDeriv(std::size_t i)
+template<typename Geometry2DType> double DiffusionFem2DSolver<Geometry2DType>::nSecondDeriv(std::size_t i)
 {
     double n_second_deriv = 0.0;     // second derivative with respect to r
     double dr = 0.0;
@@ -749,7 +749,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
 }
 
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::leftSide(std::size_t i)
+template<typename Geometry2DType> double DiffusionFem2DSolver<Geometry2DType>::leftSide(std::size_t i)
 {
     double T = T_on_the_mesh[i];
     double n = n_present[i];
@@ -770,7 +770,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
     return product;
 }
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::burning_integral()
+template<typename Geometry2DType> double DiffusionFem2DSolver<Geometry2DType>::burning_integral()
 {
     if (modesP.size() == 0)
         throw Exception("{0}: You must run over-threshold computations first before getting burring integral.", this->getId());
@@ -779,12 +779,12 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
     return int_val;
 }
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::rightSide(std::size_t i)
+template<typename Geometry2DType> double DiffusionFem2DSolver<Geometry2DType>::rightSide(std::size_t i)
 {
     return -abs(j_on_the_mesh[i][1])*1e+3/(plask::phys::qe*global_QW_width);
 }
 
-template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::detectQuantumWells()
+template<typename Geometry2DType> std::vector<Box2D> DiffusionFem2DSolver<Geometry2DType>::detectQuantumWells()
 {
     if (!this->geometry) throw NoGeometryException(this->getId());
 
@@ -858,7 +858,7 @@ template<typename Geometry2DType> std::vector<Box2D> FiniteElementMethodDiffusio
     return results;
 }
 
-template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getZQWCoordinate()
+template<typename Geometry2DType> double DiffusionFem2DSolver<Geometry2DType>::getZQWCoordinate()
 {
     double coordinate = 0.0;
     std::size_t no_QW = detected_QW.size();
@@ -877,7 +877,7 @@ template<typename Geometry2DType> double FiniteElementMethodDiffusion2DSolver<Ge
     return coordinate;
 }
 
-template<typename Geometry2DType> std::vector<double> FiniteElementMethodDiffusion2DSolver<Geometry2DType>::getZQWCoordinates()
+template<typename Geometry2DType> std::vector<double> DiffusionFem2DSolver<Geometry2DType>::getZQWCoordinates()
 {
     std::size_t no_QW = detected_QW.size();
     if (no_QW == 0)
@@ -891,7 +891,7 @@ template<typename Geometry2DType> std::vector<double> FiniteElementMethodDiffusi
     return coordinates;
 }
 
-template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geometry2DType>::determineQwWidth()
+template<typename Geometry2DType> void DiffusionFem2DSolver<Geometry2DType>::determineQwWidth()
 {
     global_QW_width = 0.;
     for (std::size_t i = 0; i < detected_QW.size(); i++)
@@ -902,7 +902,7 @@ template<typename Geometry2DType> void FiniteElementMethodDiffusion2DSolver<Geom
 }
 
 template<typename Geometry2DType>
-plask::DataVector<const Tensor2<double>> FiniteElementMethodDiffusion2DSolver<Geometry2DType>
+plask::DataVector<const Tensor2<double>> DiffusionFem2DSolver<Geometry2DType>
     ::averageLi(plask::LazyData<Vec<3,dcomplex>> Le, const plask::RectangularMesh<2>& mesh_Li)
 {
     plask::DataVector<Tensor2<double>> Li(current_mesh().size());
@@ -922,10 +922,10 @@ plask::DataVector<const Tensor2<double>> FiniteElementMethodDiffusion2DSolver<Ge
     return Li;
 }
 
-template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>::getClassName() const { return "electrical.Diffusion2D"; }
-template<> std::string FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.DiffusionCyl"; }
+template<> std::string DiffusionFem2DSolver<Geometry2DCartesian>::getClassName() const { return "electrical.Diffusion2D"; }
+template<> std::string DiffusionFem2DSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.DiffusionCyl"; }
 
-template class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>;
-template class PLASK_SOLVER_API FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>;
+template class PLASK_SOLVER_API DiffusionFem2DSolver<Geometry2DCartesian>;
+template class PLASK_SOLVER_API DiffusionFem2DSolver<Geometry2DCylindrical>;
 
 }}} //namespaces

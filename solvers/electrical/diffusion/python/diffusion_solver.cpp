@@ -10,7 +10,7 @@ using namespace plask::python;
 using namespace plask::electrical::diffusion_cylindrical;
 
 template <typename GeometryT>
-shared_ptr<RegularMesh1D> DiffusionSolver_current_mesh(FiniteElementMethodDiffusion2DSolver<GeometryT>& self) {
+shared_ptr<RegularMesh1D> DiffusionSolver_current_mesh(DiffusionFem2DSolver<GeometryT>& self) {
     return plask::make_shared<RegularMesh1D>(self.current_mesh());
 }
 
@@ -22,7 +22,7 @@ shared_ptr<RegularMesh1D> DiffusionSolver_current_mesh(FiniteElementMethodDiffus
  */
 BOOST_PYTHON_MODULE(diffusion)
 {
-    {CLASS(FiniteElementMethodDiffusion2DSolver<Geometry2DCylindrical>, "DiffusionCyl", u8"Calculates carrier pairs concentration in active region using FEM in one-dimensional cylindrical space")
+    {CLASS(DiffusionFem2DSolver<Geometry2DCylindrical>, "DiffusionCyl", u8"Calculates carrier pairs concentration in active region using FEM in one-dimensional cylindrical space")
 
         METHOD(compute_initial, compute_initial, u8"Perform the initial computation");
         METHOD(compute_threshold, compute_threshold, u8"Perform the threshold computation");
@@ -63,7 +63,7 @@ BOOST_PYTHON_MODULE(diffusion)
         ;
 
      }
-     {CLASS(FiniteElementMethodDiffusion2DSolver<Geometry2DCartesian>, "Diffusion2D", u8"Calculates carrier pairs concentration in active region using FEM in one-dimensional cartesian space")
+     {CLASS(DiffusionFem2DSolver<Geometry2DCartesian>, "Diffusion2D", u8"Calculates carrier pairs concentration in active region using FEM in one-dimensional cartesian space")
 
         METHOD(compute_initial, compute_initial, u8"Perform the initial computation");
         METHOD(compute_threshold, compute_threshold, u8"Perform the threshold computation");
@@ -104,4 +104,3 @@ BOOST_PYTHON_MODULE(diffusion)
      }
 
 }
-

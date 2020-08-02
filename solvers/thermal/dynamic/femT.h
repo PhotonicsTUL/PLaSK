@@ -1,5 +1,5 @@
-#ifndef PLASK__MODULE_THERMAL_FEMT_H
-#define PLASK__MODULE_THERMAL_FEMT_H
+#ifndef PLASK__MODULE_THERMAL_TFem_H
+#define PLASK__MODULE_THERMAL_TFem_H
 
 #include <plask/plask.hpp>
 
@@ -14,7 +14,7 @@ namespace plask { namespace thermal { namespace dynamic {
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
 template<typename Geometry2DType>
-struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public SolverWithMesh<Geometry2DType, RectangularMesh<2>> {
+struct PLASK_SOLVER_API DynamicThermalFem2DSolver: public SolverWithMesh<Geometry2DType, RectangularMesh<2>> {
 
   protected:
 
@@ -105,11 +105,11 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public Solver
 
     void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
-    FiniteElementMethodDynamicThermal2DSolver(const std::string& name="");
+    DynamicThermalFem2DSolver(const std::string& name="");
 
     std::string getClassName() const override;
 
-    ~FiniteElementMethodDynamicThermal2DSolver();
+    ~DynamicThermalFem2DSolver();
 
   protected:
 
@@ -117,11 +117,11 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public Solver
     bool use_full_mesh;                         ///< Should we use full mesh?
 
     struct ThermalConductivityData: public LazyDataImpl<Tensor2<double>> {
-        const FiniteElementMethodDynamicThermal2DSolver* solver;
+        const DynamicThermalFem2DSolver* solver;
         shared_ptr<const MeshD<2>> dest_mesh;
         InterpolationFlags flags;
         LazyData<double> temps;
-        ThermalConductivityData(const FiniteElementMethodDynamicThermal2DSolver* solver, const shared_ptr<const MeshD<2>>& dst_mesh);
+        ThermalConductivityData(const DynamicThermalFem2DSolver* solver, const shared_ptr<const MeshD<2>>& dst_mesh);
         Tensor2<double> at(std::size_t i) const override;
         std::size_t size() const override;
     };
@@ -143,4 +143,3 @@ struct PLASK_SOLVER_API FiniteElementMethodDynamicThermal2DSolver: public Solver
 } // namespace plask
 
 #endif
-

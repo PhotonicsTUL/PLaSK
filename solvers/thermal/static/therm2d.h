@@ -14,7 +14,7 @@ namespace plask { namespace thermal { namespace tstatic {
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
 template<typename Geometry2DType>
-struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver: public SolverWithMesh<Geometry2DType, RectangularMesh<2>> {
+struct PLASK_SOLVER_API ThermalFem2DSolver: public SolverWithMesh<Geometry2DType, RectangularMesh<2>> {
 
   protected:
 
@@ -109,11 +109,11 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver: public SolverWithMes
 
     void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
-    FiniteElementMethodThermal2DSolver(const std::string& name="");
+    ThermalFem2DSolver(const std::string& name="");
 
     std::string getClassName() const override;
 
-    ~FiniteElementMethodThermal2DSolver();
+    ~ThermalFem2DSolver();
 
   protected:
 
@@ -121,11 +121,11 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver: public SolverWithMes
     bool use_full_mesh;                         ///< Should we use full mesh?
 
     struct ThermalConductivityData: public LazyDataImpl<Tensor2<double>> {
-        const FiniteElementMethodThermal2DSolver* solver;
+        const ThermalFem2DSolver* solver;
         shared_ptr<const MeshD<2>> dest_mesh;
         InterpolationFlags flags;
         LazyData<double> temps;
-        ThermalConductivityData(const FiniteElementMethodThermal2DSolver* solver, const shared_ptr<const MeshD<2>>& dst_mesh);
+        ThermalConductivityData(const ThermalFem2DSolver* solver, const shared_ptr<const MeshD<2>>& dst_mesh);
         Tensor2<double> at(std::size_t i) const override;
         std::size_t size() const override;
     };
@@ -193,4 +193,3 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal2DSolver: public SolverWithMes
 }}} // namespaces
 
 #endif
-

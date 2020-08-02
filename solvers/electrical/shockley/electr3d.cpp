@@ -4,7 +4,7 @@
 
 namespace plask { namespace electrical { namespace shockley {
 
-FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(const std::string& name) :
+ElectricalFem3DSolver::ElectricalFem3DSolver(const std::string& name) :
     SolverWithMesh<Geometry3D, plask::RectangularMesh<3>>(name),
     pcond(5.),
     ncond(50.),
@@ -17,10 +17,10 @@ FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(con
     itererr(1e-8),
     iterlim(10000),
     logfreq(500),
-    outVoltage(this, &FiniteElementMethodElectrical3DSolver::getVoltage),
-    outCurrentDensity(this, &FiniteElementMethodElectrical3DSolver::getCurrentDensity),
-    outHeat(this, &FiniteElementMethodElectrical3DSolver::getHeatDensity),
-    outConductivity(this, &FiniteElementMethodElectrical3DSolver::getConductivity)
+    outVoltage(this, &ElectricalFem3DSolver::getVoltage),
+    outCurrentDensity(this, &ElectricalFem3DSolver::getCurrentDensity),
+    outHeat(this, &ElectricalFem3DSolver::getHeatDensity),
+    outConductivity(this, &ElectricalFem3DSolver::getConductivity)
 {
     js.assign(1, 1.),
     beta.assign(1, NAN),
@@ -31,11 +31,11 @@ FiniteElementMethodElectrical3DSolver::FiniteElementMethodElectrical3DSolver(con
 }
 
 
-FiniteElementMethodElectrical3DSolver::~FiniteElementMethodElectrical3DSolver() {
+ElectricalFem3DSolver::~ElectricalFem3DSolver() {
 }
 
 
-void FiniteElementMethodElectrical3DSolver::loadConfiguration(XMLReader &source, Manager &manager)
+void ElectricalFem3DSolver::loadConfiguration(XMLReader &source, Manager &manager)
 {
     while (source.requireTagOrEnd())
     {
@@ -106,7 +106,7 @@ void FiniteElementMethodElectrical3DSolver::loadConfiguration(XMLReader &source,
 }
 
 
-void FiniteElementMethodElectrical3DSolver::setActiveRegions()
+void ElectricalFem3DSolver::setActiveRegions()
 {
     this->invalidate();
 
@@ -207,7 +207,7 @@ void FiniteElementMethodElectrical3DSolver::setActiveRegions()
 }
 
 
-void FiniteElementMethodElectrical3DSolver::onInitialize() {
+void ElectricalFem3DSolver::onInitialize() {
     if (!geometry) throw NoGeometryException(getId());
     if (!mesh) throw NoMeshException(getId());
     loopno = 0;
@@ -224,7 +224,7 @@ void FiniteElementMethodElectrical3DSolver::onInitialize() {
 }
 
 
-void FiniteElementMethodElectrical3DSolver::onInvalidate() {
+void ElectricalFem3DSolver::onInvalidate() {
     conds.reset();
     potential.reset();
     current.reset();
@@ -233,7 +233,7 @@ void FiniteElementMethodElectrical3DSolver::onInvalidate() {
 }
 
 
-void FiniteElementMethodElectrical3DSolver::loadConductivity()
+void ElectricalFem3DSolver::loadConductivity()
 {
     auto midmesh = (this->maskedMesh)->getElementMesh();
     auto temperature = inTemperature(midmesh);
@@ -257,7 +257,7 @@ void FiniteElementMethodElectrical3DSolver::loadConductivity()
     }
 }
 
-void FiniteElementMethodElectrical3DSolver::saveConductivity()
+void ElectricalFem3DSolver::saveConductivity()
 {
     for (size_t n = 0; n < active.size(); ++n) {
         const auto& act = active[n];
@@ -272,7 +272,7 @@ void FiniteElementMethodElectrical3DSolver::saveConductivity()
 
 
 template <typename MatrixT>
-void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<double>& B,
+void ElectricalFem3DSolver::setMatrix(MatrixT& A, DataVector<double>& B,
                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& bvoltage)
 {
     this->writelog(LOG_DETAIL, "Setting up matrix system (size={0}, bands={1}({2}))", A.size, A.kd+1, A.ld+1);
@@ -375,7 +375,7 @@ void FiniteElementMethodElectrical3DSolver::setMatrix(MatrixT& A, DataVector<dou
 }
 
 template <typename MatrixT>
-void FiniteElementMethodElectrical3DSolver::applyBC(MatrixT& A, DataVector<double>& B,
+void ElectricalFem3DSolver::applyBC(MatrixT& A, DataVector<double>& B,
                                                     const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary, double> &bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
@@ -397,7 +397,7 @@ void FiniteElementMethodElectrical3DSolver::applyBC(MatrixT& A, DataVector<doubl
 }
 
 template <>
-void FiniteElementMethodElectrical3DSolver::applyBC<SparseBandMatrix3D>(SparseBandMatrix3D& A, DataVector<double>& B,
+void ElectricalFem3DSolver::applyBC<SparseBandMatrix3D>(SparseBandMatrix3D& A, DataVector<double>& B,
                                                                    const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary,double>& bvoltage) {
     // boundary conditions of the first kind
     for (auto cond: bvoltage) {
@@ -427,7 +427,7 @@ void FiniteElementMethodElectrical3DSolver::applyBC<SparseBandMatrix3D>(SparseBa
 
 
 
-double FiniteElementMethodElectrical3DSolver::compute(unsigned loops) {
+double ElectricalFem3DSolver::compute(unsigned loops) {
     switch (algorithm) {
         case ALGORITHM_CHOLESKY: return doCompute<DpbMatrix>(loops);
         case ALGORITHM_GAUSS: return doCompute<DgbMatrix>(loops);
@@ -437,7 +437,7 @@ double FiniteElementMethodElectrical3DSolver::compute(unsigned loops) {
 }
 
 template <typename MatrixT>
-MatrixT FiniteElementMethodElectrical3DSolver::makeMatrix() {
+MatrixT ElectricalFem3DSolver::makeMatrix() {
     if (band == 0) {
         if (use_full_mesh) {
             band = this->mesh->minorAxis()->size() * (this->mesh->mediumAxis()->size() + 1) + 1;
@@ -455,14 +455,14 @@ MatrixT FiniteElementMethodElectrical3DSolver::makeMatrix() {
 }
 
 template <>
-SparseBandMatrix3D FiniteElementMethodElectrical3DSolver::makeMatrix<SparseBandMatrix3D>() {
+SparseBandMatrix3D ElectricalFem3DSolver::makeMatrix<SparseBandMatrix3D>() {
     if (!use_full_mesh)
         throw NotImplemented(this->getId(), "Iterative algorithm with empty materials not included");
     return SparseBandMatrix3D(this->mesh->size(), mesh->mediumAxis()->size()*mesh->minorAxis()->size(), mesh->minorAxis()->size());
 }
 
 template <typename MatrixT>
-double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
+double ElectricalFem3DSolver::doCompute(unsigned loops)
 {
     this->initCalculation();
 
@@ -546,7 +546,7 @@ double FiniteElementMethodElectrical3DSolver::doCompute(unsigned loops)
 }
 
 
-void FiniteElementMethodElectrical3DSolver::solveMatrix(DpbMatrix& A, DataVector<double>& B)
+void ElectricalFem3DSolver::solveMatrix(DpbMatrix& A, DataVector<double>& B)
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
@@ -567,7 +567,7 @@ void FiniteElementMethodElectrical3DSolver::solveMatrix(DpbMatrix& A, DataVector
 }
 
 
-void FiniteElementMethodElectrical3DSolver::solveMatrix(DgbMatrix& A, DataVector<double>& B)
+void ElectricalFem3DSolver::solveMatrix(DgbMatrix& A, DataVector<double>& B)
 {
     int info = 0;
     this->writelog(LOG_DETAIL, "Solving matrix system");
@@ -591,7 +591,7 @@ void FiniteElementMethodElectrical3DSolver::solveMatrix(DgbMatrix& A, DataVector
 }
 
 
-void FiniteElementMethodElectrical3DSolver::solveMatrix(SparseBandMatrix3D& A, DataVector<double>& B)
+void ElectricalFem3DSolver::solveMatrix(SparseBandMatrix3D& A, DataVector<double>& B)
 {
     this->writelog(LOG_DETAIL, "Solving matrix system");
 
@@ -612,7 +612,7 @@ void FiniteElementMethodElectrical3DSolver::solveMatrix(SparseBandMatrix3D& A, D
 }
 
 
-void FiniteElementMethodElectrical3DSolver::saveHeatDensity()
+void ElectricalFem3DSolver::saveHeatDensity()
 {
     this->writelog(LOG_DETAIL, "Computing heat densities");
 
@@ -681,7 +681,7 @@ void FiniteElementMethodElectrical3DSolver::saveHeatDensity()
 }
 
 
-double FiniteElementMethodElectrical3DSolver::integrateCurrent(size_t vindex, bool onlyactive)
+double ElectricalFem3DSolver::integrateCurrent(size_t vindex, bool onlyactive)
 {
     if (!potential) throw NoValue("Current densities");
     this->writelog(LOG_DETAIL, "Computing total current");
@@ -701,7 +701,7 @@ double FiniteElementMethodElectrical3DSolver::integrateCurrent(size_t vindex, bo
     return result * 0.01; // kA/cm² µm² -->  mA
 }
 
-double FiniteElementMethodElectrical3DSolver::getTotalCurrent(size_t nact)
+double ElectricalFem3DSolver::getTotalCurrent(size_t nact)
 {
     if (nact >= active.size()) throw BadInput(this->getId(), "Wrong active region number");
     const auto& act = active[nact];
@@ -711,7 +711,7 @@ double FiniteElementMethodElectrical3DSolver::getTotalCurrent(size_t nact)
 }
 
 
-const LazyData<double> FiniteElementMethodElectrical3DSolver::getVoltage(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) const {
+const LazyData<double> ElectricalFem3DSolver::getVoltage(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) const {
     if (!potential) throw NoValue("Voltage");
     this->writelog(LOG_DEBUG, "Getting potential");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
@@ -722,7 +722,7 @@ const LazyData<double> FiniteElementMethodElectrical3DSolver::getVoltage(shared_
 }
 
 
-const LazyData<Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) {
+const LazyData<Vec<3> > ElectricalFem3DSolver::getCurrentDensity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) {
     if (!potential) throw NoValue("Current density");
     this->writelog(LOG_DEBUG, "Getting current density");
     if (method == INTERPOLATION_DEFAULT) method = INTERPOLATION_LINEAR;
@@ -747,7 +747,7 @@ const LazyData<Vec<3> > FiniteElementMethodElectrical3DSolver::getCurrentDensity
 }
 
 
-const LazyData<double> FiniteElementMethodElectrical3DSolver::getHeatDensity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) {
+const LazyData<double> ElectricalFem3DSolver::getHeatDensity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod method) {
     if (!potential) throw NoValue("Heat density");
     this->writelog(LOG_DEBUG, "Getting heat density");
     if (!heat) saveHeatDensity(); // we will compute heats only if they are needed
@@ -773,7 +773,7 @@ const LazyData<double> FiniteElementMethodElectrical3DSolver::getHeatDensity(sha
 }
 
 
-const LazyData<Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConductivity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod /*method*/) {
+const LazyData<Tensor2<double>> ElectricalFem3DSolver::getConductivity(shared_ptr<const MeshD<3>> dest_mesh, InterpolationMethod /*method*/) {
     initCalculation();
     writelog(LOG_DEBUG, "Getting conductivities");
     loadConductivity();
@@ -781,7 +781,7 @@ const LazyData<Tensor2<double>> FiniteElementMethodElectrical3DSolver::getConduc
     return interpolate(maskedMesh->getElementMesh(), conds, dest_mesh, INTERPOLATION_NEAREST, flags);
 }
 
-double FiniteElementMethodElectrical3DSolver::getTotalEnergy() {
+double ElectricalFem3DSolver::getTotalEnergy() {
     double W = 0.;
     auto T = inTemperature(maskedMesh->getElementMesh());
     for (auto el: maskedMesh->elements()) {
@@ -813,7 +813,7 @@ double FiniteElementMethodElectrical3DSolver::getTotalEnergy() {
 }
 
 
-double FiniteElementMethodElectrical3DSolver::getCapacitance() {
+double ElectricalFem3DSolver::getCapacitance() {
 
     if (this->voltage_boundary.size() != 2) {
         throw BadInput(this->getId(), "Cannot estimate applied voltage (exactly 2 voltage boundary conditions required)");
@@ -825,7 +825,7 @@ double FiniteElementMethodElectrical3DSolver::getCapacitance() {
 }
 
 
-double FiniteElementMethodElectrical3DSolver::getTotalHeat() {
+double ElectricalFem3DSolver::getTotalHeat() {
     double W = 0.;
     if (!heat) saveHeatDensity(); // we will compute heats only if they are needed
     for (auto el: this->maskedMesh->elements()) {

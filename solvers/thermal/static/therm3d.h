@@ -1,5 +1,5 @@
-#ifndef PLASK__MODULE_THERMAL_FEMT_H
-#define PLASK__MODULE_THERMAL_FEMT_H
+#ifndef PLASK__MODULE_THERMAL_TFem_H
+#define PLASK__MODULE_THERMAL_TFem_H
 
 #include <plask/plask.hpp>
 
@@ -13,7 +13,7 @@ namespace plask { namespace thermal { namespace tstatic {
 /**
  * Solver performing calculations in 2D Cartesian or Cylindrical space using finite element method
  */
-struct PLASK_SOLVER_API FiniteElementMethodThermal3DSolver: public SolverWithMesh<Geometry3D, RectangularMesh<3>> {
+struct PLASK_SOLVER_API ThermalFem3DSolver: public SolverWithMesh<Geometry3D, RectangularMesh<3>> {
 
   protected:
 
@@ -125,11 +125,11 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal3DSolver: public SolverWithMes
 
     void loadConfiguration(XMLReader& source, Manager& manager) override; // for solver configuration (see: *.xpl file with structures)
 
-    FiniteElementMethodThermal3DSolver(const std::string& name="");
+    ThermalFem3DSolver(const std::string& name="");
 
     std::string getClassName() const override { return "thermal.Static3D"; }
 
-    ~FiniteElementMethodThermal3DSolver();
+    ~ThermalFem3DSolver();
 
     /// Get max absolute correction for temperature
     double getErr() const { return toterr; }
@@ -149,11 +149,11 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal3DSolver: public SolverWithMes
     bool use_full_mesh;                         ///< Should we use full mesh?
 
     struct ThermalConductivityData: public LazyDataImpl<Tensor2<double>> {
-        const FiniteElementMethodThermal3DSolver* solver;
+        const ThermalFem3DSolver* solver;
         shared_ptr<const MeshD<3>> dest_mesh;
         InterpolationFlags flags;
         LazyData<double> temps;
-        ThermalConductivityData(const FiniteElementMethodThermal3DSolver* solver, const shared_ptr<const MeshD<3>>& dst_mesh);
+        ThermalConductivityData(const ThermalFem3DSolver* solver, const shared_ptr<const MeshD<3>>& dst_mesh);
         Tensor2<double> at(std::size_t i) const override;
         std::size_t size() const override;
     };
@@ -168,4 +168,3 @@ struct PLASK_SOLVER_API FiniteElementMethodThermal3DSolver: public SolverWithMes
 }}} //namespaces
 
 #endif
-

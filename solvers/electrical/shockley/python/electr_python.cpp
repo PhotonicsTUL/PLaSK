@@ -196,11 +196,10 @@ BOOST_PYTHON_MODULE(shockley)
         .value("WAVELENGTH", HEAT_BANDGAP)
     ;
 
-    register_electrical_solver<FiniteElementMethodElectrical2DSolver<Geometry2DCartesian>>("Shockley2D", "2D Cartesian");
+    register_electrical_solver<ElectricalFem2DSolver<Geometry2DCartesian>>("Shockley2D", "2D Cartesian");
 
-    register_electrical_solver<FiniteElementMethodElectrical2DSolver<Geometry2DCylindrical>>("ShockleyCyl", "2D cylindrical");
+    register_electrical_solver<ElectricalFem2DSolver<Geometry2DCylindrical>>("ShockleyCyl", "2D cylindrical");
 
-    register_electrical_solver<FiniteElementMethodElectrical3DSolver>("Shockley3D", "3D Cartesian");
+    register_electrical_solver<ElectricalFem3DSolver>("Shockley3D", "3D Cartesian");
 
 }
-
