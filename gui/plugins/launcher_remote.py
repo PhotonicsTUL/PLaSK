@@ -217,7 +217,7 @@ else:
             self.userhost = source.userhost
             self.port = source.port
             self.program = source.program
-            self.x11 = source.x11
+            # self.x11 = source.x11
 
         @classmethod
         def load(cls, name, config):
@@ -364,9 +364,9 @@ else:
             def port(self):
                 return self.port_input.value()
 
-            @property
-            def x11(self):
-                return self.x11_checkbox.isChecked()
+            # @property
+            # def x11(self):
+            #     return self.x11_checkbox.isChecked()
 
             @property
             def program(self):
