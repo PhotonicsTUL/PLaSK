@@ -724,7 +724,10 @@ struct Scattering {
                  u8"    z1 (float): Lower vertical bound of the integral.\n"
                  u8"    z2 (float): Upper vertical bound of the integral.\n\n"
                  u8"Returns:\n"
-                 u8"    float: Computed integral [V\\ :sup:`2` / m\\ :sup:`2`].\n"
+                 u8"    float: Computed integral [V\\ :sup:`2` / m\\ :sup:`2`].\n\n"
+                 u8"Warning:\n"
+                 u8"    This method may return incorrect results for layers with gain,\n"
+                 u8"    due to the strong non-Hemiticity!\n"
             )
             .def("integrateHH", &Scattering<SolverT>::getIntegralHH, (py::arg("z1"), "z2"),
                  u8"Get average integral of the squared magnetic field:\n\n"
@@ -735,6 +738,9 @@ struct Scattering {
                  u8"    z2 (float): Upper vertical bound of the integral.\n"
                  u8"Returns:\n"
                  u8"    float: Computed integral [A\\ :sup:`2` / m\\ :sup:`2`].\n"
+                 u8"Warning:\n"
+                 u8"    This method may return incorrect results for layers with gain,\n"
+                 u8"    due to the strong non-Hemiticity!\n"
               )
 
             .add_property("R", &Scattering<SolverT>::reflectivity, u8"Total reflection coefficient [-].")
@@ -1065,6 +1071,9 @@ inline void export_base(Class solver) {
                u8"    z2 (float): Upper vertical bound of the integral.\n\n"
                u8"Returns:\n"
                u8"    float: Computed integral [V\\ :sup:`2` / m\\ :sup:`2`].\n"
+               u8"Warning:\n"
+               u8"    This method may return incorrect results for layers with gain,\n"
+               u8"    due to the strong non-Hemiticity!\n"
               );
         solver.def("integrateHH", &getIntegralHH_0<Solver>, (py::arg("z1"), "z2"));
         solver.def("integrateHH", &getIntegralHH<Solver>, (py::arg("num"), "z1", "z2"),
@@ -1077,6 +1086,9 @@ inline void export_base(Class solver) {
                u8"    z2 (float): Upper vertical bound of the integral.\n"
                u8"Returns:\n"
                u8"    float: Computed integral [A\\ :sup:`2` / m\\ :sup:`2`].\n"
+               u8"Warning:\n"
+               u8"    This method may return incorrect results for layers with gain,\n"
+               u8"    due to the strong non-Hemiticity!\n"
               );
 
 #ifndef NDEBUG
@@ -1089,4 +1101,3 @@ inline void export_base(Class solver) {
 }}}} // # namespace plask::optical::slab::python
 
 #endif // PLASK__SOLVER__OPTICAL__SLAB_PYTHON_H
-

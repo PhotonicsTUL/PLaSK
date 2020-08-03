@@ -125,7 +125,7 @@ def save_field(field, file, path='', mode='a'):
         file.close()
 
 
-def load_field(file, path=''):
+def load_field(file, path='/'):
     """
     Load field from HDF5 file.
 
