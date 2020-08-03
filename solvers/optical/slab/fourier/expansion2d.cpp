@@ -1281,7 +1281,7 @@ double ExpansionPW2D::integratePoyntingVert(const cvector& E, const cvector& H)
     if (!isinf(L))
         P *= L * 1e-6;
 
-    return P * (right - left) * 1e-6; // µm² -> m²
+    return P * (symmetric()? 2 * right : right - left) * 1e-6; // µm² -> m²
 }
 
 

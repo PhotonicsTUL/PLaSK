@@ -932,7 +932,9 @@ double ExpansionPW3D::integratePoyntingVert(const cvector& E, const cvector& H)
         }
     }
 
-    return P * (front - back) * (right - left) * 1e-12; // µm² -> m²
+    double dlong = symmetric_long()? 2 * front : front - back,
+           dtran = symmetric_tran()? 2 * right : right - left;
+    return P * dlong * dtran * 1e-12; // µm² -> m²
 }
 
 
