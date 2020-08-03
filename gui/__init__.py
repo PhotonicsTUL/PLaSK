@@ -253,6 +253,10 @@ class MainWindow(QMainWindow):
         plot_material_action.triggered.connect(lambda: show_material_plot(self, self.document.materials.model,
                                                                           self.document.defines.model))
 
+        fullscreen_action = QAction(QIcon.fromTheme('view-fullscreen'), 'Toggle full screen', self)
+        fullscreen_action.setShortcut(QKeySequence('F11'))
+        fullscreen_action.triggered.connect(self.toggle_fullscreen)
+
         settings_action = QAction(QIcon.fromTheme('document-properties'), 'GUI Se&ttings...', self)
         settings_action.setStatusTip('Change some GUI settings')
         settings_action.triggered.connect(self.show_settings)
@@ -310,6 +314,7 @@ class MainWindow(QMainWindow):
                 self.menu.addSeparator()
         self.menu.addAction(install_license_action)
         self._pysparkle_place = self.menu.addSeparator()
+        self.menu.addAction(fullscreen_action)
         self.menu.addAction(settings_action)
         self.menu.addSeparator()
         self.menu.addAction(exit_action)
@@ -368,18 +373,20 @@ class MainWindow(QMainWindow):
         geometry = CONFIG['session/geometry']
         if geometry is not None:
             screen = desktop.availableGeometry(geometry.center())
-            if geometry.left() <= screen.left()+1 and geometry.top() <= screen.top()+1 and \
-               geometry.right()+1 >= screen.width() and geometry.bottom()+1 >= screen.height():
-                self.showMaximized()
-            else:
-                geometry.setWidth(min(geometry.width(), screen.right()-geometry.left()+1))
-                geometry.setHeight(min(geometry.height(), screen.bottom()-geometry.top()+1))
-                self.setGeometry(geometry)
+            geometry.setWidth(min(geometry.width(), screen.right()-geometry.left()+1))
+            geometry.setHeight(min(geometry.height(), screen.bottom()-geometry.top()+1))
+            self.setGeometry(geometry)
         else:
             screen = desktop.availableGeometry(self)
             self.resize(screen.width() * 0.8, screen.height() * 0.9)
 
         self.setAcceptDrops(True)
+
+
+        state = Qt.WindowNoState
+        if CONFIG['session/maximized']: state |= Qt.WindowMaximized
+        if CONFIG['session/fullscreen']: state |= Qt.WindowFullScreen
+        self.setWindowState(state)
 
         self.show()
 
@@ -648,8 +655,13 @@ class MainWindow(QMainWindow):
         except KeyError:
             pass
 
-        geometry = self.geometry()
-        CONFIG['session/geometry'] = geometry
+        fullscreen = self.isFullScreen()
+        maximized = self.isMaximized()
+        CONFIG['session/fullscreen'] = fullscreen
+        CONFIG['session/maximized'] = maximized
+        if not (fullscreen or maximized):
+            geometry = self.geometry()
+            CONFIG['session/geometry'] = geometry
         CONFIG.sync()
 
     def set_changed(self, changed):
@@ -879,6 +891,12 @@ class MainWindow(QMainWindow):
                 del LICENSE['expiration']
             self.about()
 
+    def toggle_fullscreen(self):
+        state = self.windowState()
+        if not state & Qt.WindowFullScreen:
+            self.setWindowState(state | Qt.WindowFullScreen)
+        else:
+            self.setWindowState(state & ~Qt.WindowFullScreen)
 
 class GotoDialog(QDialog):
     def __init__(self, parent=None):
