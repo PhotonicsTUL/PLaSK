@@ -62,7 +62,7 @@ static void from_import_all(const char* name, py::object& dest)
 
 //******************************************************************************
 // Initialize the binary modules and load the package from disk
-static py::object initPlask(int argc, const system_char* argv[])
+static py::object initPlask(int argc, const system_char* argv[], bool banner)
 {
     // Initialize the plask module
     if (PyImport_AppendInittab("_plask", &PLASK_MODULE) != 0) throw plask::CriticalException("No _plask module");
@@ -97,7 +97,11 @@ static py::object initPlask(int argc, const system_char* argv[])
     path.insert(1, solvers_path);
     if (argc > 0) // This is correct!!! argv[0] here is argv[1] in `main`
         try {
-            path.insert(0, system_to_utf8(boost::filesystem::absolute(boost::filesystem::path(argv[0])).parent_path().wstring()));
+            boost::filesystem::path argpath = boost::filesystem::absolute(boost::filesystem::path(argv[0]));
+            if (!boost::filesystem::is_directory(argpath))
+                path.insert(0, system_to_utf8(argpath.parent_path().wstring()));
+            else
+                path.insert(0, system_to_utf8(argpath.wstring()));
         } catch (std::runtime_error&) { // can be thrown if there is wrong locale set
             system_string file(argv[0]);
             size_t pos = file.rfind(system_char(plask::FILE_PATH_SEPARATOR));
@@ -113,18 +117,22 @@ static py::object initPlask(int argc, const system_char* argv[])
 
     py::object _plask = py::import("_plask");
 
-    plask::writelog(plask::LOG_INFO, PLASK_BANNER);
-    plask::writelog(plask::LOG_INFO, PLASK_COPYRIGHT);
-#ifdef LICENSE_CHECK
-    std::string user = plask::license_verifier.getUser();
-    if (user != "") {
-        std::string  institution = plask::license_verifier.getInstitution(), expiration = plask::license_verifier.getExpiration();
-        if (!institution.empty())
-            plask::writelog(plask::LOG_INFO, "Licensed to {} {}{}", user, institution, (expiration != "")? " (until "+expiration+")" : "");
-        else
-            plask::writelog(plask::LOG_INFO, "Licensed to {}{}", user, (expiration != "")? " (until "+expiration+")" : "");
+    if (banner) {
+        plask::writelog(plask::LOG_INFO, PLASK_BANNER);
+        plask::writelog(plask::LOG_INFO, PLASK_COPYRIGHT);
+#       ifdef LICENSE_CHECK
+            std::string user = plask::license_verifier.getUser();
+            if (user != "") {
+                std::string  institution = plask::license_verifier.getInstitution(),
+                             expiration = plask::license_verifier.getExpiration();
+                if (!institution.empty())
+                    plask::writelog(plask::LOG_INFO, "Licensed to {} {}{}", user, institution,
+                                                     (expiration != "")? " (until "+expiration+")" : "");
+                else
+                    plask::writelog(plask::LOG_INFO, "Licensed to {}{}", user, (expiration != "")? " (until "+expiration+")" : "");
+            }
+#       endif
     }
-#endif
 
     sys.attr("modules")["plask._plask"] = _plask;
 
@@ -423,9 +431,15 @@ int system_main(int argc, const system_char *argv[])
     if (log_color) plask::python::setLoggingColor(log_color);
     if (loglevel) plask::maxLoglevel = *loglevel;
 
+    // Check if we are faking python
+    std::string basename = argv[0];
+    std::string::size_type last_sep = basename.find_last_of(plask::FILE_PATH_SEPARATOR);
+    if (last_sep != std::string::npos) basename = basename.substr(last_sep+1);
+    bool banner = basename.size() < 6 || basename.substr(0, 6) != "python";
+
     // Initalize python and load the plask module
     try {
-        initPlask(argc-1, argv+1);
+        initPlask(argc-1, argv+1, banner);
     } catch (plask::CriticalException&) {
         plask::writelog(plask::LOG_CRITICAL_ERROR, "Cannot import plask builtin module.");
         endPlask();
@@ -518,6 +532,7 @@ int system_main(int argc, const system_char *argv[])
 
             // Detect if the file is Python script or PLaSK input
             if (realfile) {
+                boost::filesystem::path filepath(filename);
                 if (!filetype) {
                     // check file extension
                     try {
@@ -529,6 +544,10 @@ int system_main(int argc, const system_char *argv[])
                 }
                 if (!filetype) {
                     // check first char (should be '<' in XML)
+                    if (boost::filesystem::is_directory(filepath)) {
+                        filepath.append("__main__.py");
+                        filename = filepath.string();
+                    }
                     FILE* file = system_fopen(filename.c_str(), CSTR(r));
                     if (!file) throw std::invalid_argument("No such file: '" + system_to_utf8(filename) + "'");
                     int c;
@@ -539,6 +558,10 @@ int system_main(int argc, const system_char *argv[])
                     if (c == '<') filetype = FILE_XML;
                     else filetype = FILE_PY;
                 } else {
+                    if (filetype == FILE_PY && boost::filesystem::is_directory(filepath)) {
+                        filepath.append("__main__.py");
+                        filename = filepath.string();
+                    }
                     FILE* file = system_fopen(filename.c_str(), CSTR(r));
                     if (!file) throw std::invalid_argument("No such file: '" + system_to_utf8(filename) + "'");
                     std::fclose(file);
