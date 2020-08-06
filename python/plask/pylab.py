@@ -6,8 +6,15 @@ This is an interface to Matplotlib and pylab.
 import sys as _sys
 import os as _os
 
+_qt_api = _os.environ.get('PLASK_QT_API', _os.environ.get('QT_API'))
+
 if 'PLASK_MPLBACKEND' in _os.environ:
     _os.environ['MPLBACKEND'] = _os.environ['PLASK_MPLBACKEND']
+elif 'MPLBACKEND' not in _os.environ:
+    if _qt_api in ('pyside2', 'pyqt5'):
+        _os.environ['MPLBACKEND'] = 'Qt5Agg'
+    elif _qt_api in ('pyside', 'pyqt'):
+        _os.environ['MPLBACKEND'] = 'Qt4Agg'
 
 import matplotlib.colors
 import matplotlib.lines
@@ -17,8 +24,7 @@ import matplotlib.artist
 backend = matplotlib.get_backend()
 
 # Specify Qt4 API v2 while it is not too late
-if backend == 'Qt4Agg' and _os.environ.get('QT_API') != 'pyside' and \
-        matplotlib.rcParams.get('backend.qt4', 'PyQt4') == 'PyQt4':
+if backend == 'Qt4Agg' and _qt_api != 'pyside' and matplotlib.rcParams.get('backend.qt4', 'PyQt4') == 'PyQt4':
     try:
         import sip
         for n in ("QString", "QVariant"):
@@ -28,6 +34,7 @@ if backend == 'Qt4Agg' and _os.environ.get('QT_API') != 'pyside' and \
                 pass
     except:
         pass
+
 # Fix for Anaconda bug
 elif backend == 'Qt5Agg' and _os.name == 'nt':
     from PyQt5 import QtWidgets as _QtWidgets
