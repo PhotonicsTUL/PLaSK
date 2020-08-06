@@ -67,6 +67,11 @@ inline py::object system_str_to_pyobject(const system_string& str) {
 	return system_str_to_pyobject(str.data(), int(str.size()));
 }
 
+inline system_string path_to_system_string(const boost::filesystem::path& path) {
+	return path.wstring();
+}
+
+
 #define system_main wmain
 #define CSTR(s) L ## #s
 
@@ -83,4 +88,9 @@ constexpr auto system_fopen = &fopen;
 #define system_Py_fopen _Py_fopen
 #define system_main main
 #define CSTR(s) #s
+
+inline system_string path_to_system_string(const boost::filesystem::path& path) {
+	return path.string();
+}
+
 #endif

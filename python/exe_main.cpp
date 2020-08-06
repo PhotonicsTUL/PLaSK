@@ -432,10 +432,10 @@ int system_main(int argc, const system_char *argv[])
     if (loglevel) plask::maxLoglevel = *loglevel;
 
     // Check if we are faking python
-    std::string basename = argv[0];
-    std::string::size_type last_sep = basename.find_last_of(plask::FILE_PATH_SEPARATOR);
+    system_string basename = argv[0];
+    system_string::size_type last_sep = basename.find_last_of(plask::FILE_PATH_SEPARATOR);
     if (last_sep != std::string::npos) basename = basename.substr(last_sep+1);
-    bool banner = basename.size() < 6 || basename.substr(0, 6) != "python";
+    bool banner = basename.size() < 6 || basename.substr(0, 6) != CSTR(python);
 
     // Initalize python and load the plask module
     try {
@@ -545,8 +545,8 @@ int system_main(int argc, const system_char *argv[])
                 if (!filetype) {
                     // check first char (should be '<' in XML)
                     if (boost::filesystem::is_directory(filepath)) {
-                        filepath.append("__main__.py");
-                        filename = filepath.string();
+                        filepath /= "__main__.py";
+                        filename = path_to_system_string(filepath);
                     }
                     FILE* file = system_fopen(filename.c_str(), CSTR(r));
                     if (!file) throw std::invalid_argument("No such file: '" + system_to_utf8(filename) + "'");
@@ -559,8 +559,8 @@ int system_main(int argc, const system_char *argv[])
                     else filetype = FILE_PY;
                 } else {
                     if (filetype == FILE_PY && boost::filesystem::is_directory(filepath)) {
-                        filepath.append("__main__.py");
-                        filename = filepath.string();
+                        filepath /= "__main__.py";
+                        filename = path_to_system_string(filepath);
                     }
                     FILE* file = system_fopen(filename.c_str(), CSTR(r));
                     if (!file) throw std::invalid_argument("No such file: '" + system_to_utf8(filename) + "'");
