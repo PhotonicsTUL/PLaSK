@@ -78,6 +78,14 @@ class Refinements(TableModelEditMethods, QAbstractTableModel):
         self.entries = entries if entries is not None else []
         self.one = int(self.generator.dim == 1)
 
+    @property
+    def name(self):
+        try:
+            generator_name = self.generator.name + ' '
+        except AttributeError:
+            generator_name = ''
+        return "{}refinements".format(generator_name)
+
     def rowCount(self, parent=QModelIndex()):
         if parent.isValid(): return 0
         return len(self.entries)
@@ -526,4 +534,3 @@ class RectangularSmoothGenerator(RectangularRefinedGenerator):
     def get_controller(self, document):
         from ...controller.grids.generator_rectangular import RectangularSmoothGeneratorController
         return RectangularSmoothGeneratorController(document=document, model=self)
-

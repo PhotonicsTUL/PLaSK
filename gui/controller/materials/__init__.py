@@ -374,6 +374,17 @@ class MaterialsTable(QTableView):
             super(MaterialsTable, self).closeEditor(editor, hint)
 
 
+class _PropEdit(TextEditor):
+
+    def __init__(self, *args, **kwargs):
+        super(_PropEdit, self).__init__(*args, **kwargs)
+        self.merge_index = 1
+
+    def focusOutEvent(self, event):
+        super(_PropEdit, self).focusOutEvent(event)
+        self.merge_index += 1
+
+
 class MaterialsController(Controller):
 
     def __init__(self, document, material_selection_model=None):
@@ -463,7 +474,7 @@ class MaterialsController(Controller):
         table_edit_shortcut(self.properties_table, 1, 'v')
 
         # font.setPointSize(font.pointSize()-1)
-        self.propedit = TextEditor(self.prop_splitter, line_numbers=False)
+        self.propedit = _PropEdit(self.prop_splitter, line_numbers=False)
         self.propedit.highlighter = SyntaxHighlighter(self.propedit.document(), *load_syntax(syntax, scheme),
                                                       default_font=EDITOR_FONT)
         self.propedit.hide()
@@ -557,7 +568,8 @@ class MaterialsController(Controller):
     def propedit_changed(self, row):
         self.selected_material.dataChanged.disconnect(self.property_data_changed)
         try:
-            self.selected_material.setData(self.selected_material.createIndex(row, 1), self.propedit.toPlainText())
+            self.selected_material.setData(self.selected_material.createIndex(row, 1), self.propedit.toPlainText(),
+                                           merge_id=self.propedit.merge_index)
         finally:
             self.selected_material.dataChanged.connect(self.property_data_changed)
 

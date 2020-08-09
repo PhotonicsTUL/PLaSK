@@ -28,8 +28,9 @@ class TableModelEditMethods:
 
     class InsertEntryCommand(QUndoCommand):
 
-        def __init__(self, table, index, entry, QUndoCommand_parent = None):
-            super(TableModelEditMethods.InsertEntryCommand, self).__init__('insert row {}'.format(index+1), QUndoCommand_parent)
+        def __init__(self, table, index, entry, parent=None):
+            super(TableModelEditMethods.InsertEntryCommand, self).\
+                __init__('insert row {} in {}'.format(index+1), parent, table.name)
             self.index = index
             self.table = table
             self.entry = entry
@@ -59,8 +60,9 @@ class TableModelEditMethods:
 
     class RemoveEntryCommand(QUndoCommand):
 
-        def __init__(self, table, index, QUndoCommand_parent = None):
-            super(TableModelEditMethods.RemoveEntryCommand, self).__init__('remove row {}'.format(index+1), QUndoCommand_parent)
+        def __init__(self, table, index, parent=None):
+            super(TableModelEditMethods.RemoveEntryCommand, self).\
+                __init__('remove row {} from {}'.format(index+1), parent, table.name)
             self.index = index
             self.table = table
             self.removed_entry = self.table.entries[self.index]
@@ -95,12 +97,13 @@ class TableModelEditMethods:
 
     class SwapEntriesCommand(QUndoCommand):
 
-        def __init__(self, table, index1, index2, QUndoCommand_parent = None):
+        def __init__(self, table, index1, index2, parent=None):
             if index2 < index1:
                 self.index1, self.index2 = index2, index1
             else:
                 self.index1, self.index2 = index1, index2
-            super(TableModelEditMethods.SwapEntriesCommand, self).__init__('swap entries at rows {} and {}'.format(index1+1, index2+1), QUndoCommand_parent)
+            super(TableModelEditMethods.SwapEntriesCommand, self).\
+                __init__('swap entries at rows {} and {} in {}'.format(index1+1, index2+1, table.name), parent)
             self.table = table
 
         def redo(self):
@@ -126,14 +129,21 @@ class TableModelEditMethods:
 
     class SetDataCommand(QUndoCommand):
 
-        def __init__(self, table, col, row, new_value, QUndoCommand_parent = None):
-            super(TableModel.SetDataCommand, self)\
-                .__init__(u'change cell value at row {} to "{}"'.format(row+1, new_value), QUndoCommand_parent)
+        def __init__(self, table, col, row, new_value, parent=None, merge_id=-1):
             self.table = table
             self.col = col
             self.row = row
             self.old_value = table.get_raw(col, row)
             self.new_value = new_value
+            self._id = merge_id
+            super(TableModel.SetDataCommand, self).__init__(self._get_title(), parent)
+
+        def _get_title(self):
+            col_name = self.table.headerData(self.col, Qt.Horizontal, Qt.DisplayRole).lower()
+            return u"change {} at row {} to '{}' in {}".format(col_name, self.row+1, self.new_value, self.table.name)
+
+        def id(self):
+            return self._id
 
         def redo(self):
             self.table.set_and_fire(self.col, self.row, self.new_value)
@@ -141,19 +151,26 @@ class TableModelEditMethods:
         def undo(self):
             self.table.set_and_fire(self.col, self.row, self.old_value)
 
-    def setData(self, index, value, role=Qt.EditRole):
+        def mergeWith(self, other):
+            if self.table is not other.table or self.row != other.row or self.col != other.col:
+                return False
+            self.new_value = other.new_value
+            self.setText(self._get_title())
+            return True
+
+    def setData(self, index, value, role=Qt.EditRole, merge_id=-1):
         #self.set(index.column(), index.row(), value)
         #self.fire_changed()
         #self.dataChanged.emit(index, index)
         if self.is_read_only() or not index.isValid() or value == self.data(index):
             return False
-        self._exec_command(TableModel.SetDataCommand(self, index.column(), index.row(), value))
+        self._exec_command(TableModel.SetDataCommand(self, index.column(), index.row(), value, merge_id=merge_id))
         return True
 
     class SetEntriesCommand(QUndoCommand):
 
-        def __init__(self, table, new_entries, QUndoCommand_parent = None):
-            super(TableModel.SetEntriesCommand, self).__init__('edit XPL source', QUndoCommand_parent)
+        def __init__(self, table, new_entries, parent=None):
+            super(TableModel.SetEntriesCommand, self).__init__('edit XPL source for {}'.format(table.name), parent)
             self.table = table
             self.old_entries = table.entries
             self.new_entries = new_entries
