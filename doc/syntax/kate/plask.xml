@@ -7,7 +7,7 @@
 	<!ENTITY entref  "&amp;(#[0-9]+|#[xX][0-9A-Fa-f]+|&name;);">
 ]>
 <language name="PLaSK" version="0.01" kateversion="2.4" section="Markup"
-  extensions="*.xpl;*.plsx;*.plsk" mimetype="application/plask"
+  extensions="*.xpl" mimetype="application/x-plask"
   casesensitive="1" author="Maciej Dems (maciej.dems@p.lodz.pl)" license="LGPL">
 
 <highlighting>
