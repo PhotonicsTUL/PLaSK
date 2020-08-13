@@ -30,7 +30,7 @@ class TableModelEditMethods:
 
         def __init__(self, table, index, entry, parent=None):
             super(TableModelEditMethods.InsertEntryCommand, self).\
-                __init__('insert row {} in {}'.format(index+1), parent, table.name)
+                __init__('insert row {} to {}'.format(index+1, table.name), parent)
             self.index = index
             self.table = table
             self.entry = entry
@@ -62,7 +62,7 @@ class TableModelEditMethods:
 
         def __init__(self, table, index, parent=None):
             super(TableModelEditMethods.RemoveEntryCommand, self).\
-                __init__('remove row {} from {}'.format(index+1), parent, table.name)
+                __init__('remove row {} from {}'.format(index+1, table.name), parent)
             self.index = index
             self.table = table
             self.removed_entry = self.table.entries[self.index]
