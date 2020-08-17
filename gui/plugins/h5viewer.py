@@ -34,10 +34,12 @@ from gui.utils.widgets import set_icon_size
 from gui.xpldocument import XPLDocument
 from gui.model.materials import HandleMaterialsModule
 
-if QT_API == 'PyQt5':
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-else:
+if QT_API in ('PyQt', 'PySide'):
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
+else:
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
 
 
 class FieldWidget(QWidget):

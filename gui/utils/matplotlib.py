@@ -26,12 +26,13 @@ from ..qt import QT_API
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
-if QT_API in ('PyQt5', 'PySide2'):
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
-else:
+if QT_API in ('PyQt', 'PySide'):
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
+else:
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
+from matplotlib.backend_bases import NavigationToolbar2
 import matplotlib.colors
 
 from ..utils.widgets import set_icon_size
@@ -97,7 +98,15 @@ class PlotWidgetBase(QWidget):
 
         def __init__(self, canvas, parent, controller=None, coordinates=True):
             self.widgets = {}
-            super(PlotWidgetBase.NavigationToolbar, self).__init__(canvas, parent, coordinates)
+
+            # We need to copy-change the parent constructor, as the original does not suit our needs
+            QToolBar.__init__(self, parent)
+            self.setAllowedAreas(Qt.TopToolBarArea | Qt.BottomToolBarArea)
+            self.coordinates = coordinates
+            self._actions = {}
+            self._create_toolbar()
+            NavigationToolbar2.__init__(self, canvas)
+
             self.controller = weakref.proxy(controller)
             if 'select_plane' in self._actions:
                 self.disable_planes(('long','tran','vert'))
@@ -107,6 +116,9 @@ class PlotWidgetBase(QWidget):
                 return QIcon.fromTheme(name)
 
         def _init_toolbar(self):
+            pass    # this may be called by an old Matplotlib
+
+        def _create_toolbar(self):
             self.layout().setContentsMargins(0,0,0,0)
             for text, tooltip_text, icon, callback, checked in self.toolitems:
                 if text is None:
@@ -162,17 +174,24 @@ class PlotWidgetBase(QWidget):
             if self.controller is not None:
                 self.controller.plot()
 
+        @property
+        def _current_mode(self):
+            try:
+                return self.mode.name
+            except AttributeError:
+                return self._active
+
         def mouse_move(self, event):
-            if not event.inaxes or not self._active:
+            if not event.inaxes or not self._current_mode:
                 if self._lastCursor != cursors.POINTER:
                     self.set_cursor(cursors.POINTER)
                     self._lastCursor = cursors.POINTER
             else:
-                if self._active == 'ZOOM':
+                if self._current_mode == 'ZOOM':
                     if self._lastCursor != cursors.SELECT_REGION:
                         self.set_cursor(cursors.SELECT_REGION)
                         self._lastCursor = cursors.SELECT_REGION
-                elif (self._active == 'PAN' and
+                elif (self._current_mode == 'PAN' and
                       self._lastCursor != cursors.MOVE):
                     self.set_cursor(cursors.MOVE)
                     self._lastCursor = cursors.MOVE
@@ -188,8 +207,13 @@ class PlotWidgetBase(QWidget):
                 self.set_message(s)
 
         def aspect(self):
-            try: parent = self.parent()
-            except TypeError: parent = self.parent
+            try:
+                parent = self.canvas.parent()
+            except AttributeError:
+                try:
+                    parent = self.parent()
+                except TypeError:
+                    parent = self.parent
             parent.aspect_locked = not parent.aspect_locked
             if parent.aspect_locked:
                 parent.axes.set_aspect('equal')
