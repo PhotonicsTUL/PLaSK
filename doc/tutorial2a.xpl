@@ -66,7 +66,7 @@ efm.inGain = profile.outGain
 
 mode_number = efm.find_mode(978.43, m=m)
 mode_wavelength = efm.outWavelength(mode_number)
-          
+
 r = linspace(0., 20., 151)
 
 p = linspace(0., 2*pi, 361)
@@ -85,7 +85,7 @@ plot(p, [8.] * len(p), color='w')
 tight_layout(0.1)
 window_title("Magnitude")
 
-Fr = efm.outElectricField(mode_number, mesh.Rectangular2D(r, [4.83]))
+Fr = efm.outLightE(mode_number, mesh.Rectangular2D(r, [4.83]))
 F = -array(Fr)[None,:,1] * cos(m * p[:,None])
 F /= max(abs(F[0,:]))
 
