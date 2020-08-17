@@ -470,6 +470,18 @@ struct RegisterReceiverImpl<ReceiverT, MULTI_FIELD_PROPERTY, VariadicTemplateTyp
     }
 };
 
+template <typename Class, typename ClassT, typename ReceiverT> struct ReceiverGetter {
+    typedef typename ReceiverT::PropertyTag PropertyT;
+    typedef detail::RegisterReceiverImpl<ReceiverT, PropertyT::propertyType, typename PropertyT::ExtraParams> RegisterT;
+
+    ReceiverGetter(ReceiverT ClassT::*field) : field(field) {}
+
+    const ReceiverT& operator()(const Class& self) { return self.*field; }
+
+  private:
+    ReceiverT ClassT::*field;
+};
+
 template <typename Class, typename ClassT, typename ReceiverT> struct ReceiverSetter {
     typedef typename ReceiverT::PropertyTag PropertyT;
     typedef detail::RegisterReceiverImpl<ReceiverT, PropertyT::propertyType, typename PropertyT::ExtraParams> RegisterT;

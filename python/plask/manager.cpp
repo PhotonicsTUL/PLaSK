@@ -184,26 +184,28 @@ PLASK_PYTHON_API void loadXpl(py::object self, py::object src, py::dict vars, py
     manager->overrites = py::tuple(vars.keys());
     if (vars.has_key("self"))
         throw ValueError("Definition name 'self' is reserved");
-    manager->defs.update(vars.copy());
-    manager->defs["self"] = self;
+    manager->defs.update(vars);
+
+    struct SelfGuard {
+        PythonManager* manager;
+        SelfGuard(PythonManager* manager, const py::object& self): manager(manager) {
+            manager->defs["self"] = self;
+        }
+        ~SelfGuard() { py::delitem(manager->defs, py::str("self")); }
+    };
+    SelfGuard guard(manager, self);
 
     reader.setFilter(PythonXMLFilter(manager));
 
-    try {
-        if (filter.is_none()) {
-            manager->load(reader, Manager::ExternalSourcesFromFile(filename));
-        } else {
-            py::list sections = py::list(filter);
-            auto filterfun = [sections](const std::string& section) -> bool {
-                return py::extract<bool>(sections.contains(section));
-            };
-            manager->load(reader, Manager::ExternalSourcesFromFile(filename), filterfun);
-        }
-    } catch (...) {
-        py::delitem(manager->defs, py::str("self"));
-        throw;
+    if (filter.is_none()) {
+        manager->load(reader, Manager::ExternalSourcesFromFile(filename));
+    } else {
+        py::list sections = py::list(filter);
+        auto filterfun = [sections](const std::string& section) -> bool {
+            return py::extract<bool>(sections.contains(section));
+        };
+        manager->load(reader, Manager::ExternalSourcesFromFile(filename), filterfun);
     }
-    py::delitem(manager->defs, py::str("self"));
 
     manager->validatePositions();
 }

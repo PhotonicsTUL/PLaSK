@@ -272,7 +272,11 @@ struct ExportSolver : public py::class_<SolverT, shared_ptr<SolverT>, py::bases<
 
         static_assert(std::is_base_of<ReceiverBase, ReceiverT>::value, "add_receiver used for non-receiver type");
 
-        this->add_property(name, py::make_getter<ReceiverT ClassT::*>(field),
+        this->add_property(name,
+                           py::make_function(detail::ReceiverGetter<Class,ClassT,ReceiverT>(field),
+                                             py::return_internal_reference<>(),
+                                             boost::mpl::vector2<const ReceiverT&, const Class&>()
+                                            ),
                            py::make_function(detail::ReceiverSetter<Class,ClassT,ReceiverT>(field),
                                              py::default_call_policies(),
                                              boost::mpl::vector3<void, Class&, py::object>()
