@@ -181,20 +181,21 @@ class PlotWidgetBase(QWidget):
             except AttributeError:
                 return self._active
 
+        def set_cursor(self, cursor):
+            super(PlotWidgetBase.NavigationToolbar, self).set_cursor(cursor)
+            self._lastCursor = cursor
+
         def mouse_move(self, event):
-            if not event.inaxes or not self._current_mode:
+            if not event.inaxes or not self._current_mode or self._current_mode == 'NONE':
                 if self._lastCursor != cursors.POINTER:
                     self.set_cursor(cursors.POINTER)
-                    self._lastCursor = cursors.POINTER
             else:
                 if self._current_mode == 'ZOOM':
                     if self._lastCursor != cursors.SELECT_REGION:
                         self.set_cursor(cursors.SELECT_REGION)
-                        self._lastCursor = cursors.SELECT_REGION
                 elif (self._current_mode == 'PAN' and
                       self._lastCursor != cursors.MOVE):
                     self.set_cursor(cursors.MOVE)
-                    self._lastCursor = cursors.MOVE
 
             if event.xdata is not None and event.ydata is not None:
                 s = u'{2[0]} = {0:.4f} µm  {2[1]} = {1:.4f} µm'.format(float(event.xdata), float(event.ydata), self._axes)
