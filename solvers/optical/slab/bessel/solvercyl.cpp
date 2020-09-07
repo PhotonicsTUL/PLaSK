@@ -12,7 +12,7 @@ BesselSolverCyl::BesselSolverCyl(const std::string& name)
       rule(RULE_INVERSE_0),
       kscale(1.),
       kmax(5.),
-      kmethod(WAVEVECTORS_UNIFORM),
+      kmethod(WAVEVECTORS_NONUNIFORM),
       integral_error(1e-6),
       max_integration_points(1000),
       outLoss(this, &BesselSolverCyl::getModalLoss, &BesselSolverCyl::nummodes) {

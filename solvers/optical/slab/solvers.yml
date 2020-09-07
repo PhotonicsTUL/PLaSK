@@ -836,7 +836,7 @@
     - attr: k-method
       label: Wavevectors selection method
       type: choice
-      default: uniform
+      default: nonuniform
       choices: [ uniform, nonuniform, laguerre, manual ]
       help: >
         Method of selecting wavevectors for numerical Hankel transform in infinite domain.
