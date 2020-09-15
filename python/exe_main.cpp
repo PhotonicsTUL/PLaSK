@@ -242,6 +242,10 @@ int system_main(int argc, const system_char *argv[])
 {
     //setlocale(LC_ALL,""); std::locale::global(std::locale(""));    // set default locale from env (C is used when program starts), boost filesystem will do the same
 
+    system_string basename = argv[0];
+    system_string::size_type last_sep = basename.find_last_of(plask::FILE_PATH_SEPARATOR);
+    if (last_sep != std::string::npos) basename = basename.substr(last_sep+1);
+
     if (argc > 1) {
         system_string arg(argv[1]);
         if (arg == CSTR(-V) || arg == CSTR(--version)) {
@@ -432,9 +436,6 @@ int system_main(int argc, const system_char *argv[])
     if (loglevel) plask::maxLoglevel = *loglevel;
 
     // Check if we are faking python
-    system_string basename = argv[0];
-    system_string::size_type last_sep = basename.find_last_of(plask::FILE_PATH_SEPARATOR);
-    if (last_sep != std::string::npos) basename = basename.substr(last_sep+1);
     bool banner = basename.size() < 6 || basename.substr(0, 6) != CSTR(python);
 
     // Initalize python and load the plask module
