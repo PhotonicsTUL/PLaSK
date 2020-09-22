@@ -291,7 +291,7 @@ shared_ptr<OrderedAxis> RectangularMeshDivideGenerator<dim>::processAxis(
     result.addOrderedPoints(points.begin(), points.end());
 
     // Now ensure, that the grids do not change to quickly
-    if (result.size() > 2 && gradual) {
+    if (result.size() > 2 && getGradual(dir)) {
         size_t end = result.size() - 2;
         double w_prev = INFINITY, w = result[1] - result[0], w_next = result[2] - result[1];
         for (size_t i = 0; i <= end;) {
@@ -570,9 +570,10 @@ template <int dim> shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLR
                 if (reader.hasAttribute("by1")) throw XMLConflictingAttributesException(reader, "by", "by1");
                 if (reader.hasAttribute("by2")) throw XMLConflictingAttributesException(reader, "by", "by2");
                 for (int i = 0; i < dim; ++i) result->pre_divisions[i] = *into;
-            } else
+            } else {
                 for (int i = 0; i < dim; ++i)
                     result->pre_divisions[i] = reader.getAttribute<size_t>(format("by{0}", i), 1);
+                }
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "postdiv") {
             plask::optional<size_t> into = reader.getAttribute<size_t>("by");
@@ -581,12 +582,23 @@ template <int dim> shared_ptr<MeshGenerator> readRectangularDivideGenerator(XMLR
                 if (reader.hasAttribute("by1")) throw XMLConflictingAttributesException(reader, "by", "by1");
                 if (reader.hasAttribute("by2")) throw XMLConflictingAttributesException(reader, "by", "by2");
                 for (int i = 0; i < dim; ++i) result->post_divisions[i] = *into;
-            } else
+            } else {
                 for (int i = 0; i < dim; ++i)
                     result->post_divisions[i] = reader.getAttribute<size_t>(format("by{0}", i), 1);
+                }
             reader.requireTagEnd();
         } else if (reader.getNodeName() == "options") {
-            result->setGradual(reader.getAttribute<bool>("gradual", result->getGradual()));
+            plask::optional<bool> gradual = reader.getAttribute<bool>("gradual");
+            if (gradual) {
+                if (reader.hasAttribute("gradual0")) throw XMLConflictingAttributesException(reader, "gradual", "gradual0");
+                if (reader.hasAttribute("gradual1")) throw XMLConflictingAttributesException(reader, "gradual", "gradual1");
+                if (reader.hasAttribute("gradual2")) throw XMLConflictingAttributesException(reader, "gradual", "gradual2");
+                result->gradual = (*gradual)? 7 : 0;
+            } else {
+                for (int i = 0; i < dim; ++i) {
+                    result->setGradual(i, reader.getAttribute<bool>(format("gradual{0}", i), true));
+                }
+            }
             result->setAspect(reader.getAttribute<double>("aspect", result->getAspect()));
             reader.requireTagEnd();
         } else

@@ -444,7 +444,7 @@ struct PLASK_API RectangularMeshDivideGenerator: public RectangularMeshRefinedGe
     size_t pre_divisions[dim];
     size_t post_divisions[dim];
 
-    bool gradual;
+    char gradual;
 
     shared_ptr<OrderedAxis> processAxis(shared_ptr<OrderedAxis> axis, const shared_ptr<GeometryObjectD<DIM>>& geometry, size_t dir) override;
 
@@ -456,7 +456,7 @@ struct PLASK_API RectangularMeshDivideGenerator: public RectangularMeshRefinedGe
     /**
      * Create new generator
      */
-    RectangularMeshDivideGenerator(): gradual(true)
+    RectangularMeshDivideGenerator(): gradual(7)
     {
         for (int i = 0; i != dim; ++i) {
             pre_divisions[i] = 1;
@@ -490,14 +490,30 @@ struct PLASK_API RectangularMeshDivideGenerator: public RectangularMeshRefinedGe
         this->fireChanged();
     }
 
-    /// \return true if the adjacent mesh elements cannot differ more than twice in size along each axis
-    bool getGradual() const { return gradual; }
+    /// \return true if the adjacent mesh elements cannot differ more than twice in size along axis \p dir
+    inline bool getGradual(size_t dir) const {
+        assert(dir <= dim);
+        return (gradual >> dir) & 1;
+    }
 
-    /// \param value true if the adjacent mesh elements cannot differ more than twice in size along each axis
-    void setGradual(bool value) {
-        gradual = value;
+    /// \param value true if the adjacent mesh elements cannot differ more than twice in size along axis \p dir
+    inline void setGradual(size_t dir, bool value) {
+        assert(dir <= dim);
+        gradual &= ~(1 << dir);
+        if (value) gradual |= 1 << dir;
         this->fireChanged();
     }
+
+    /// \return true if the adjacent mesh elements cannot differ more than twice in size along axis \p direction
+    inline bool getGradual(typename Primitive<DIM>::Direction direction) const {
+        return getGradual(size_t(direction));
+    }
+
+    /// \param value true if the adjacent mesh elements cannot differ more than twice in size along axis \p direction
+    inline void setGradual(typename Primitive<DIM>::Direction direction, bool value) {
+        setGradual(size_t(direction), value);
+    }
+
 };
 
 PLASK_API_EXTERN_TEMPLATE_STRUCT(RectangularMeshDivideGenerator<1>)

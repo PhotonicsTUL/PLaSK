@@ -329,9 +329,16 @@ class RectangularRefinedGenerator(Grid):
         options_element = reader.find('options')
         if options_element is not None:
             with AttributeReader(options_element) as a:
-                self.aspect = a.get('aspect', None)
+                self.aspect = a.get('aspect')
+                if 'gradual' in a:
+                    g = a['gradual']
+                    self.gradual = [g for _ in range(0, self.dim)]
+                for i in range(self.dim):
+                    g = a.get('gradual{}'.format(i))
+                    if g is not None:
+                        self.gradual[i] = g
                 for opt in opts:
-                    setattr(self, opt, a.get(opt, None))
+                    setattr(self, opt, a.get(opt))
             self.options_comments = options_element.comments
         else:
             self.aspect = None
@@ -386,7 +393,7 @@ class RectangularDivideGenerator(RectangularRefinedGenerator):
 
         super(RectangularDivideGenerator, self).__init__(grids_model, name, type, 'divide', aspect,
                                                          refinements, warn_missing, warn_multiple, warn_outside)
-        self.gradual = gradual
+        self.gradual = [None for _ in range(0, self.dim)] if gradual is None else gradual
         self.prediv = [None for _ in range(0, self.dim)] if prediv is None else prediv
         self.postdiv = [None for _ in range(0, self.dim)] if postdiv is None else postdiv
         self.prediv_comments = []
@@ -410,7 +417,13 @@ class RectangularDivideGenerator(RectangularRefinedGenerator):
     def make_xml_element(self):
         res = super(RectangularDivideGenerator, self).make_xml_element()
         options = {}
-        if self.gradual is not None: options['gradual'] = self.gradual
+        if self.dim == 1 or all(g == self.gradual[0] for g in self.gradual):
+            if self.gradual[0] is not None:
+                options['gradual'] = self.gradual[0]
+        else:
+            for i in range(self.dim):
+                if self.gradual[i] is not None:
+                    options['gradual{}'.format(i)] = self.gradual[i]
         self._append_div_xml_element('prediv', res)
         self._append_div_xml_element('postdiv', res)
         self.save_xml_common(res, options)
@@ -436,7 +449,7 @@ class RectangularDivideGenerator(RectangularRefinedGenerator):
         with UnorderedTagReader(element) as reader:
             self._div_from_xml('prediv', reader)
             self._div_from_xml('postdiv', reader)
-            self.load_xml_common(reader, 'gradual')
+            self.load_xml_common(reader)
             self.endcomments = reader.get_comments()
 
     def get_controller(self, document):
@@ -449,7 +462,9 @@ class RectangularDivideGenerator(RectangularRefinedGenerator):
             for i, p in enumerate(getattr(self, div_type)):
                 if not can_be_int(p, int_validator=lambda n: n>0):
                     self._required(res, rows, (div_type, i), 'a component of {}'.format(div_type), type='positive integer')
-        if not can_be_bool(self.gradual): self._required(res, rows, 'gradual', type='boolean')
+        for i in range(self.dim):
+            if not can_be_bool(self.gradual[i]):
+                self._required(res, rows, 'gradual{}'.format(i), type='boolean')
 
 
 class RectangularSmoothGenerator(RectangularRefinedGenerator):
@@ -508,7 +523,7 @@ class RectangularSmoothGenerator(RectangularRefinedGenerator):
     def load_xml_element(self, element):
         super(RectangularSmoothGenerator, self).load_xml_element(element)
         with UnorderedTagReader(element) as reader:
-            self.load_xml_common(reader, 'gradual')
+            self.load_xml_common(reader)
             steps = reader.find('steps')
             if steps is None:
                 self.small = self.dim * [None]

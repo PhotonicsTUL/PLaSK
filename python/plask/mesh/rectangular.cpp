@@ -791,20 +791,63 @@ template <int dim>
 shared_ptr<RectangularMeshDivideGenerator<dim>> RectangularMeshDivideGenerator__init__(py::object prediv,
                                                                                        py::object postdiv,
                                                                                        double aspect,
-                                                                                       bool gradual,
+                                                                                       py::object gradual,
                                                                                        bool warn_multiple,
                                                                                        bool warn_missing,
                                                                                        bool warn_outside) {
     auto result = plask::make_shared<RectangularMeshDivideGenerator<dim>>();
     if (!prediv.is_none()) detail::DivideGeneratorDivMethods<dim>::setPre(*result, prediv);
     if (!postdiv.is_none()) detail::DivideGeneratorDivMethods<dim>::setPost(*result, postdiv);
-    result->gradual = gradual;
+    if (gradual.ptr() == Py_True)
+        result->gradual = 255;
+    else if (gradual.ptr() == Py_False)
+        result->gradual = 0;
+    else {
+        result->gradual = 0;
+        for (int i = 0; i != dim; ++i)
+            result->setGradual(i, py::extract<bool>(gradual[i]));
+    }
     result->aspect = aspect;
     result->warn_multiple = warn_multiple;
     result->warn_missing = warn_missing;
     result->warn_outside = warn_outside;
     return result;
 };
+
+template <int dim>
+py::object RectangularMeshDivideGenerator_getGradual(const RectangularMeshDivideGenerator<dim>& self);
+
+template <>
+py::object RectangularMeshDivideGenerator_getGradual<1>(const RectangularMeshDivideGenerator<1>& self) {
+    return py::object(bool(self.gradual));
+}
+
+template <>
+py::object RectangularMeshDivideGenerator_getGradual<2>(const RectangularMeshDivideGenerator<2>& self) {
+    return py::make_tuple(self.getGradual(0), self.getGradual(1));
+}
+
+template <>
+py::object RectangularMeshDivideGenerator_getGradual<3>(const RectangularMeshDivideGenerator<3>& self) {
+    return py::make_tuple(self.getGradual(0), self.getGradual(1), self.getGradual(2));
+}
+
+template <int dim>
+void RectangularMeshDivideGenerator_setGradual(RectangularMeshDivideGenerator<dim>& self, py::object value) {
+    if (value.ptr() == Py_True) {
+        self.gradual = 7;
+        self.fireChanged();
+    } else if (value.ptr() == Py_False) {
+        self.gradual = 0;
+        self.fireChanged();
+    } else {
+        self.gradual = 0;
+        for (int i = 0; i != dim; ++i)
+            self.setGradual(i, py::extract<bool>(value[i]));
+    }
+}
+
+
 
 template <int dim> void register_divide_generator() {
     py::class_<RectangularMeshDivideGenerator<dim>, shared_ptr<RectangularMeshDivideGenerator<dim>>,
@@ -823,8 +866,8 @@ template <int dim> void register_divide_generator() {
                                   (py::arg("prediv") = py::object(), py::arg("postdiv") = py::object(),
                                    py::arg("aspect") = 0, py::arg("gradual") = true, py::arg("warn_multiple") = true,
                                    py::arg("warn_missing") = true, py::arg("warn_outside") = true)))
-        .add_property("gradual", &RectangularMeshDivideGenerator<dim>::getGradual,
-                      &RectangularMeshDivideGenerator<dim>::setGradual,
+        .add_property("gradual", &RectangularMeshDivideGenerator_getGradual<dim>,
+                      &RectangularMeshDivideGenerator_setGradual<dim>,
                       "Limit maximum adjacent objects size change to the factor of two.");
     py::implicitly_convertible<shared_ptr<RectangularMeshDivideGenerator<dim>>,
                                shared_ptr<const RectangularMeshDivideGenerator<dim>>>();

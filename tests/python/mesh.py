@@ -38,7 +38,6 @@ class OrderedMeshes(unittest.TestCase):
             i1 = m.index1(i)
             self.assertEqual( m.index(i0, i1), i )
 
-
     def testOrdering3D(self):
         m = self.mesh3
 
@@ -72,7 +71,6 @@ class OrderedMeshes(unittest.TestCase):
             self.assertEqual( m.major_index(i),  m.index0(i) )
         plask.mesh.Rectangular2D(plask.mesh.Ordered([1,3,2,1]), plask.mesh.Ordered(array([10,20], float)))
 
-
     def testBoundary(self):
         self.mesh2.ordering = "10"
         geo = plask.geometry.Cartesian2D(plask.geometry.Rectangle(0,0,None))
@@ -83,77 +81,6 @@ class OrderedMeshes(unittest.TestCase):
         self.assertEqual( list(b), [0, 3] )
 
         self.assertEqual( plasktest.test_boundary(self.mesh2, geo, lambda mesh,i: i in [2,3]), [2, 3] )
-
-
-    def testDivideGenerator(self):
-        stack = plask.geometry.Stack2D()
-        stack.append(plask.geometry.Rectangle(2, 2, None))
-        stack.append(plask.geometry.Rectangle(2, 16, None))
-        rect = plask.geometry.Rectangle(2, 16, None)
-        stack.append(rect)
-
-        generator1 = plask.mesh.Rectangular2D.SimpleGenerator()
-        generator2 = plask.mesh.Rectangular2D.DivideGenerator()
-        generator2.prediv = 2,2
-        generator2.add_refinement("v", rect, 8.)
-
-        self.assertEqual( list(generator2.get_refinements("v").values()), [[8.]] )
-
-        mesh1 = generator1(stack)
-        self.assertEqual( list(mesh1.axis0), [0., 2.] )
-        self.assertEqual( list(mesh1.axis1), [0., 2., 18., 34.] )
-
-        geom = plask.geometry.Cartesian2D(stack)
-        mesh2 = generator2(geom)
-        self.assertEqual( list(mesh2.axis0), [0., 1., 2.] )
-        self.assertEqual( list(mesh2.axis1), [0., 1., 2., 4., 6., 10., 18., 22., 26., 30., 34.] )
-
-        generator3 = plask.mesh.Rectangular2D.DivideGenerator()
-        stack = plask.geometry.Stack2D()
-        stack.append(plask.geometry.Rectangle(1000., 5., None))
-        stack.append(plask.geometry.Rectangle(1000., 10., None))
-        stack.append(plask.geometry.Rectangle(1000., 50., None))
-        stack.append(plask.geometry.Rectangle(1000., 150., None))
-        mesh3 = generator3(stack)
-        self.assertEqual( list(mesh3.axis1), [0., 5., 15., 27.5, 40., 65.,102.5, 140., 215.] )
-
-        generator1d = plask.mesh.Ordered.DivideGenerator()
-        generator1d.postdiv = 2
-        shelf = geometry.Shelf2D()
-        shelf.append(geometry.Rectangle(1., 1., None))
-        shelf.append(geometry.Rectangle(8., 1., None))
-        self.assertEqual( list(generator1d(shelf)), [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 9.0] )
-
-
-    def testDivideGeneratorXML(self):
-        manager = plask.Manager()
-        manager.load('''
-        <plask>
-          <geometry>
-            <cartesian2d name="main" axes="xy">
-              <rectangle name="rect" dx="50" dy="5" material="GaAs"/>
-            </cartesian2d>
-          </geometry>
-          <grids>
-            <generator type="rectangular2d" method="divide" name="refined">
-              <refinements>
-                <axis0 object="rect" by="5"/>
-                <axis1 object="rect" every="1."/>
-              </refinements>
-            </generator>
-            <generator type="ordered" method="divide" name="one">
-              <refinements>
-                <axis0 object="rect" by="2"/>
-              </refinements>
-            </generator>
-          </grids>
-        </plask>
-        ''')
-        msh = manager.msg['refined'](manager.geo['rect'])
-        self.assertEqual( list(msh.axis0), [0., 10., 20., 30., 40., 50.] )
-        self.assertEqual( list(msh.axis1), [0., 1., 2., 3., 4., 5.] )
-        self.assertEqual( list(manager.msg['one'](manager.geo['rect'])), [0., 25., 50.] )
-
 
     def testRegenerationInSolver(self):
         stack = plask.geometry.Stack2D()
@@ -270,6 +197,116 @@ class Interpolation(unittest.TestCase):
         dst = plask.mesh.Rectangular2D([1], [1])
         data = plask.Data(array([[1., 2.], [3., 4.]]), src)
         self.assertAlmostEqual( data.interpolate(dst, 'linear')[0], 2.5 )
+
+
+class DivideGenerator(unittest.TestCase):
+    def testDivideGenerator(self):
+        stack = plask.geometry.Stack2D()
+        stack.append(plask.geometry.Rectangle(2, 2, None))
+        stack.append(plask.geometry.Rectangle(2, 16, None))
+        rect = plask.geometry.Rectangle(2, 16, None)
+        stack.append(rect)
+
+        generator1 = plask.mesh.Rectangular2D.SimpleGenerator()
+        generator2 = plask.mesh.Rectangular2D.DivideGenerator()
+        generator2.prediv = 2,2
+        generator2.add_refinement("v", rect, 8.)
+
+        self.assertEqual( list(generator2.get_refinements("v").values()), [[8.]] )
+
+        mesh1 = generator1(stack)
+        self.assertEqual( list(mesh1.axis0), [0., 2.] )
+        self.assertEqual( list(mesh1.axis1), [0., 2., 18., 34.] )
+
+        geom = plask.geometry.Cartesian2D(stack)
+        mesh2 = generator2(geom)
+        self.assertEqual( list(mesh2.axis0), [0., 1., 2.] )
+        self.assertEqual( list(mesh2.axis1), [0., 1., 2., 4., 6., 10., 18., 22., 26., 30., 34.] )
+
+        generator3 = plask.mesh.Rectangular2D.DivideGenerator()
+        stack = plask.geometry.Stack2D()
+        stack.append(plask.geometry.Rectangle(1000., 5., None))
+        stack.append(plask.geometry.Rectangle(1000., 10., None))
+        stack.append(plask.geometry.Rectangle(1000., 50., None))
+        stack.append(plask.geometry.Rectangle(1000., 150., None))
+        mesh3 = generator3(stack)
+        self.assertEqual( list(mesh3.axis1), [0., 5., 15., 27.5, 40., 65.,102.5, 140., 215.] )
+
+        generator1d = plask.mesh.Ordered.DivideGenerator()
+        generator1d.postdiv = 2
+        shelf = geometry.Shelf2D()
+        shelf.append(geometry.Rectangle(1., 1., None))
+        shelf.append(geometry.Rectangle(8., 1., None))
+        self.assertEqual( list(generator1d(shelf)), [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 9.0] )
+
+    def testDivideGeneratorXML(self):
+        manager = plask.Manager()
+        manager.load('''
+        <plask>
+          <geometry>
+            <cartesian2d name="main" axes="xy">
+              <rectangle name="rect" dx="50" dy="5" material="GaAs"/>
+            </cartesian2d>
+          </geometry>
+          <grids>
+            <generator type="rectangular2d" method="divide" name="refined">
+              <refinements>
+                <axis0 object="rect" by="5"/>
+                <axis1 object="rect" every="1."/>
+              </refinements>
+            </generator>
+            <generator type="ordered" method="divide" name="one">
+              <refinements>
+                <axis0 object="rect" by="2"/>
+              </refinements>
+            </generator>
+          </grids>
+        </plask>
+        ''')
+        msh = manager.msh['refined'](manager.geo['rect'])
+        self.assertEqual( list(msh.axis0), [0., 10., 20., 30., 40., 50.] )
+        self.assertEqual( list(msh.axis1), [0., 1., 2., 3., 4., 5.] )
+        self.assertEqual( list(manager.msh['one'](manager.geo['rect'])), [0., 25., 50.] )
+
+    def testGradual(self):
+        manager = plask.Manager()
+        manager.load('''
+        <plask>
+          <geometry>
+            <cartesian2d name="main" axes="xy">
+              <align left="0" bottom="0">
+                <rectangle dx="5" dy="5" material="GaAs"/>
+                <rectangle dx="1" dy="1" material="GaAs"/>
+              </align>
+            </cartesian2d>
+          </geometry>
+          <grids>
+            <generator type="rectangular2d" method="divide" name="grad">
+              <options gradual1="no"/>
+            </generator>
+          </grids>
+        </plask>
+        ''')
+        gen = manager.msh['grad']
+        self.assertEqual( gen.gradual, (True, False) )
+        msh = gen(manager.geo['main'])
+        self.assertEqual( list(msh.axis0), [0., 1., 3., 5.] )
+        self.assertEqual( list(msh.axis1), [0., 1., 5.] )
+        gen.gradual = False, True
+        self.assertEqual( gen.gradual, (False, True) )
+        msh = gen(manager.geo['main'])
+        self.assertEqual( list(msh.axis0), [0., 1., 5.] )
+        self.assertEqual( list(msh.axis1), [0., 1., 3., 5.] )
+        gen.gradual = False
+        self.assertEqual( gen.gradual, (False, False) )
+        msh = gen(manager.geo['main'])
+        self.assertEqual( list(msh.axis0), [0., 1., 5.] )
+        self.assertEqual( list(msh.axis1), [0., 1., 5.] )
+        gen.gradual = True
+        self.assertEqual( gen.gradual, (True, True) )
+        msh = gen(manager.geo['main'])
+        self.assertEqual( list(msh.axis0), [0., 1., 3., 5.] )
+        self.assertEqual( list(msh.axis1), [0., 1., 3., 5.] )
 
 
 class SmoothGenerator(unittest.TestCase):

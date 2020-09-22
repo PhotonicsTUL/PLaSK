@@ -283,12 +283,16 @@
   <!--G1-->
   <generator name="default" type="rectangular2d" method="divide">
     <postdiv by0="2" by1="1"/>
+    <options gradual1="no"/>
     <refinements>
       <axis1 object="p-contact" at="50"/>
       <axis0 object="oxide" at="-0.1"/>
       <axis0 object="oxide" at="-0.05"/>
       <axis0 object="aperture" at="0.1"/>
     </refinements>
+  </generator>
+  <generator name="tridi" type="rectangular3d" method="divide">
+    <options gradual1="no"/>
   </generator>
   <!--M1-->
   <mesh name="diffusion" type="regular">

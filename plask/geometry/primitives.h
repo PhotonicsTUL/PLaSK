@@ -748,6 +748,8 @@ template <> struct PLASK_API Primitive<1> {
     /// Zeroed 1d vector.
     static const DVec ZERO_VEC;
 
+    enum Direction { DIRECTION = 0 };
+
     /// Compare if \c a < \b with reasonable tollerance
     inline static bool vecFuzzyCompare(DVec a, DVec b) { return b - a > POINT_TOLLERANCE; }
 };
