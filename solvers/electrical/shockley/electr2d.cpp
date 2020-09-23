@@ -298,7 +298,8 @@ void ElectricalFem2DSolver<Geometry2DType>::setMatrix(
                         potentials[this->maskedMesh->index(right, act.bottom)] +
                         potentials[this->maskedMesh->index(left, act.top)] + potentials[this->maskedMesh->index(right, act.top)]) /
                     act.height;
-                conds[i] = Tensor2<double>(0., jy * act.height / activeVoltage(nact - 1, 0.1 * jy, temperature[i]));
+                size_t ti = this->maskedMesh->element(e.getIndex0(), (act.top + act.bottom) / 2).getIndex();
+                conds[i] = Tensor2<double>(0., jy * act.height / activeVoltage(nact - 1, 0.1 * jy, temperature[ti]));
                 if (isnan(conds[i].c11) || abs(conds[i].c11) < 1e-16) conds[i].c11 = 1e-16;
             }
         }

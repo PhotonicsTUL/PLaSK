@@ -250,7 +250,8 @@ void ElectricalFem3DSolver::setMatrix(MatrixT& A,
                         potential[maskedMesh->index(front, left, act.top)] + potential[maskedMesh->index(back, right, act.top)] +
                         potential[maskedMesh->index(front, right, act.top)]) /
                     act.height;
-                conds[index] = Tensor2<double>(0., jy * act.height / activeVoltage(nact-1, 0.1 * jy, temperature[index]));
+                size_t tidx = this->maskedMesh->element(elem.getIndex0(), elem.getIndex1(), (act.top + act.bottom) / 2).getIndex();
+                conds[index] = Tensor2<double>(0., jy * act.height / activeVoltage(nact-1, 0.1 * jy, temperature[tidx]));
                 if (isnan(conds[index].c11) || abs(conds[index].c11) < 1e-16) {
                     conds[index].c11 = 1e-16;
                 }
