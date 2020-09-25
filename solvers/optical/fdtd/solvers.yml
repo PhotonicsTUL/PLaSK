@@ -1,0 +1,93 @@
+# This is a YAML file for your solver specification. You must modify it accordingly to your
+# solver's configuration. For general information on YAML files, take a look at
+# https://learn.getgrav.org/advanced/yaml
+
+# If your library has more than one solver, make separate 'solver' element for each one of them:
+- solver: FDTD2D
+  lib: fdtd
+  category: optical
+  # This is a description of your solver that will appear in the user manual.
+  help: >
+    Test skeleton for the FDTD solver.
+
+  # Specify geometry type of your solver here:
+  geometry: Cartesian2D
+
+  #  Specify each configuration tag:
+  tags:
+  - tag: comp_space                     # tag name
+    label: Computational grid                    # label shown in GUI
+    help: >                                     # description of your tag in the user manual
+      Parameters describing the computational space.
+    attrs:
+    # List configuration attributes:
+    - attr: resolution                           # attribute name
+      label: Resolution
+      type: int                      # attribute type
+      # Allowed attribute types are:
+      # - float
+      # - int
+      # - bool
+      # - choice
+      # - geometry object
+      # - geometry path
+      # - Carterian2D geometry
+      # - cylindrical geometry
+      # - Cartesian3D geometry
+      # - mesh
+      unit: div/µm                                # attribute unit
+      help: >                                   # description in the user manual
+        Defines the resolution of the computational grid used by the solver.
+
+    - attr: pml
+      label: PML layer thickness
+      type: float
+      unit: µm
+      help: >
+        Defines the thickness of PML boundaries.
+
+    - attr: pml_shift
+      label: PML layer distance
+      type: float
+      unit: µm
+      help: >
+        Defines the distance by which the PML layer is moved from the computational space.
+
+  - tag: simulation_options
+    label: Simulation options
+    help: >
+      Parameters describing the simulation.
+    attrs:
+    - attr: courant_factor
+      label: Courant factor
+      type: float
+      help: >
+        Define the Courant factor used in the simulation.
+    - attr: temperature
+      label: Temperature
+      type: float
+      unit: K
+      default: 300
+      help: >
+        Defines the temperature used for fetching the material parameters.
+    - attr: wavelength
+      label: Wavelength
+      type: float
+      unit: nm
+      default: 1000
+      help: >
+        Defines the wavelength used for fetching the material parameters. 
+
+  - tag: sources
+    label: Sources
+    widget: null
+
+
+  # This is boundary conditions read by your solver. You need only to specity the tag name
+  # in the 'bcond' field and the label.
+  - bcond: boundary_condition
+    label: Boundary Condition
+
+  receivers:
+  # Here you specify all the solver providers.
+  - inReceiver: inWavelength
