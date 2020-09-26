@@ -7,7 +7,6 @@ using namespace plask::python;
 #include "fourier2d-python.h"
 #include "fourier3d-python.h"
 #include "besselcyl-python.h"
-#include "oldbesselcyl-python.h"
 using namespace plask::optical::slab;
 using namespace plask::optical::slab::python;
 
@@ -167,8 +166,6 @@ BOOST_PYTHON_MODULE(slab)
     export_FourierSolver2D();
     export_FourierSolver3D();
     export_BesselSolverCyl();
-    export_OldBesselSolverCyl();
 
     py::converter::registry::push_back(&CoeffsArray::convertible, &CoeffsArray::construct, boost::python::type_id<CoeffsArray>());
 }
-
