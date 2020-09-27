@@ -28,11 +28,16 @@ struct PLASK_SOLVER_API XanceTransfer: public Transfer {
 
     std::vector<cmatrix> memY;                  ///< admittance matrices for each layer
 
-    double get_d(size_t n, double& z) {       ///< get layer thickness and adjust z
+    /// Get layer thickness and adjust z
+    double get_d(size_t n, double& z, PropagationDirection& part) {
         double d = (n == 0 || std::size_t(n) == solver->vbounds->size())?
             solver->vpml.dist :
             solver->vbounds->at(n) - solver->vbounds->at(n-1);
-        if (std::ptrdiff_t(n) >= solver->interface) z = d - z;
+        if (std::ptrdiff_t(n) >= solver->interface) {
+            z = d - z;
+            if (part == PROPAGATION_DOWNWARDS) part = PROPAGATION_UPWARDS;
+            else if (part == PROPAGATION_UPWARDS) part = PROPAGATION_DOWNWARDS;
+        }
         else if (n == 0) z += d;
         return d;
     }
@@ -45,9 +50,9 @@ struct PLASK_SOLVER_API XanceTransfer: public Transfer {
 
   protected:
 
-    cvector getFieldVectorE(double z, std::size_t n) override;
+    cvector getFieldVectorE(double z, std::size_t n, PropagationDirection part = PROPAGATION_TOTAL) override;
 
-    cvector getFieldVectorH(double z, std::size_t n) override;
+    cvector getFieldVectorH(double z, std::size_t n, PropagationDirection part = PROPAGATION_TOTAL) override;
 
     /**
      * Store the Y matrix for the layer prepared before

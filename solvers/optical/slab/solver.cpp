@@ -27,13 +27,13 @@ void SlabBase::initTransfer(Expansion& expansion, bool reflection) {
     if (reflection) {
         ReflectionTransfer::Matching matching =
             (transfer_method == Transfer::METHOD_REFLECTION_IMPEDANCE)?
-                ReflectionTransfer::MATCH_IMPEDANCE : 
+                ReflectionTransfer::MATCH_IMPEDANCE :
                 ReflectionTransfer::MATCH_ADMITTANCE;
         if (!this->transfer) {
             ReflectionTransfer* transfer = dynamic_cast<ReflectionTransfer*>(this->transfer.get());
             if (!transfer || transfer->diagonalizer->source() != &expansion || transfer->matching != matching)
                 this->transfer.reset(new ReflectionTransfer(this, expansion, matching));
-        } 
+        }
     } else {
         if (transfer_method == Transfer::METHOD_IMPEDANCE) {
             if (!this->transfer || !dynamic_cast<ImpedanceTransfer*>(this->transfer.get()) ||
@@ -53,9 +53,13 @@ SlabSolver<BaseT>::SlabSolver(const std::string& name): BaseT(name),
     smooth(0.),
     outRefractiveIndex(this, &SlabSolver<BaseT>::getRefractiveIndexProfile),
     outWavelength(this, &SlabSolver<BaseT>::getWavelength, &SlabSolver<BaseT>::nummodes),
-    outLightMagnitude(this, &SlabSolver<BaseT>::getMagnitude, &SlabSolver<BaseT>::nummodes),
-    outLightE(this, &SlabSolver<BaseT>::getE, &SlabSolver<BaseT>::nummodes),
-    outLightH(this, &SlabSolver<BaseT>::getH, &SlabSolver<BaseT>::nummodes)
+    outLightMagnitude(this, &SlabSolver<BaseT>::getLightMagnitude, &SlabSolver<BaseT>::nummodes),
+    outLightE(this, &SlabSolver<BaseT>::getLightE<>, &SlabSolver<BaseT>::nummodes),
+    outLightH(this, &SlabSolver<BaseT>::getLightH<>, &SlabSolver<BaseT>::nummodes),
+    outUpwardsLightE(this, &SlabSolver<BaseT>::getLightE<PROPAGATION_UPWARDS>, &SlabSolver<BaseT>::nummodes),
+    outUpwardsLightH(this, &SlabSolver<BaseT>::getLightH<PROPAGATION_UPWARDS>, &SlabSolver<BaseT>::nummodes),
+    outDownwardsLightE(this, &SlabSolver<BaseT>::getLightE<PROPAGATION_DOWNWARDS>, &SlabSolver<BaseT>::nummodes),
+    outDownwardsLightH(this, &SlabSolver<BaseT>::getLightH<PROPAGATION_DOWNWARDS>, &SlabSolver<BaseT>::nummodes)
 {
     inTemperature = 300.; // temperature receiver has some sensible value
     this->inTemperature.changedConnectMethod(this, &SlabSolver<BaseT>::onInputChanged);
@@ -583,6 +587,37 @@ cvector SlabBase::getTransmittedCoefficients(const cvector& incident, Transfer::
 
     return transfer->getTransmissionVector(incident, side);
 }
+
+
+template <typename BaseT>
+template <PropagationDirection part>
+LazyData<Vec<3,dcomplex>> SlabSolver<BaseT>::getLightE(size_t num, shared_ptr<const MeshD<BaseT::SpaceType::DIM>> dst_mesh, InterpolationMethod method)
+{
+    assert(transfer);
+    double power = applyMode(num);
+    return transfer->getFieldE(power, dst_mesh, method, part);
+}
+
+
+template <typename BaseT>
+template <PropagationDirection part>
+LazyData<Vec<3,dcomplex>> SlabSolver<BaseT>::getLightH(size_t num, shared_ptr<const MeshD<BaseT::SpaceType::DIM>> dst_mesh, InterpolationMethod method)
+{
+    assert(transfer);
+    double power = applyMode(num);
+    return transfer->getFieldH(power, dst_mesh, method, part);
+}
+
+
+template <typename BaseT>
+LazyData<double> SlabSolver<BaseT>::getLightMagnitude(size_t num, shared_ptr<const MeshD<BaseT::SpaceType::DIM>> dst_mesh, InterpolationMethod method)
+{
+    assert(transfer);
+    double power = applyMode(num);
+    return transfer->getFieldMagnitude(power, dst_mesh, method);
+}
+
+
 
 
 

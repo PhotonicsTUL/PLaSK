@@ -503,11 +503,11 @@ void ReflectionTransfer::determineReflectedFields(const cvector& incident, Incid
 }
 
 
-cvector ReflectionTransfer::getFieldVectorE(double z, std::size_t n)
+cvector ReflectionTransfer::getFieldVectorE(double z, std::size_t n, PropagationDirection part)
 {
     assert(fields_determined != DETERMINED_NOTHING);
 
-    adjust_z(n, z);
+    adjust_z(n, z, part);
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
 
@@ -517,6 +517,8 @@ cvector ReflectionTransfer::getFieldVectorE(double z, std::size_t n)
     for (std::size_t i = 0; i < N; i++) {
         dcomplex phi = - I * gamma[i] * z;
         dcomplex ef = F1[i] * exp(phi), eb = B1[i] * exp(-phi);
+        if (part == PROPAGATION_UPWARDS) eb = 0;
+        else if (part == PROPAGATION_DOWNWARDS) ef = 0;
         if (isnan(ef) || isinf(ef.real()) || isinf(ef.imag())) ef = exp(log(F1[i]) + phi);
         if (isnan(eb) || isinf(eb.real()) || isinf(eb.imag())) eb = exp(log(B1[i]) - phi);
         if (isnan(ef) || isinf(ef.real()) || isinf(ef.imag())) ef = 0.;  // not elegant but allows to avoid NaNs
@@ -528,11 +530,11 @@ cvector ReflectionTransfer::getFieldVectorE(double z, std::size_t n)
 }
 
 
-cvector ReflectionTransfer::getFieldVectorH(double z, std::size_t n)
+cvector ReflectionTransfer::getFieldVectorH(double z, std::size_t n, PropagationDirection part)
 {
     assert(fields_determined != DETERMINED_NOTHING);
 
-    adjust_z(n, z);
+    adjust_z(n, z, part);
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
 
@@ -542,6 +544,8 @@ cvector ReflectionTransfer::getFieldVectorH(double z, std::size_t n)
     for (std::size_t i = 0; i < N; i++) {
         dcomplex phi = - I * gamma[i] * z;
         dcomplex ef = F1[i] * exp(phi), eb = B1[i] * exp(-phi);
+        if (part == PROPAGATION_UPWARDS) eb = 0;
+        else if (part == PROPAGATION_DOWNWARDS) ef = 0;
         if (isnan(ef) || isinf(ef.real()) || isinf(ef.imag())) ef = exp(log(F1[i]) + phi);
         if (isnan(eb) || isinf(eb.real()) || isinf(eb.imag())) eb = exp(log(B1[i]) - phi);
         if (isnan(ef) || isinf(ef.real()) || isinf(ef.imag())) ef = 0.;  // not elegant but allows to avoid NaNs

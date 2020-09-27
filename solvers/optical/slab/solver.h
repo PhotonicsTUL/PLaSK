@@ -15,29 +15,27 @@ struct PML {
     double size;      ///< Size of the PMLs
     double dist;      ///< Distance of the PMLs from defined computational domain
     double order;     ///< Order of the PMLs
-    PML(): factor(1.,0.), size(1.), dist(0.5), order(1) {}
-    PML(dcomplex factor, double size, double dist, double order): factor(factor), size(size), dist(dist), order(order) {}
+    PML() : factor(1., 0.), size(1.), dist(0.5), order(1) {}
+    PML(dcomplex factor, double size, double dist, double order) : factor(factor), size(size), dist(dist), order(order) {}
 };
 
 /**
  * Common base with layer details independent on the geomety
  */
 struct PLASK_SOLVER_API SlabBase {
-
     /// Directions of the possible emission
     enum Emission {
-        EMISSION_UNSPECIFIED = 0,   ///< Side emission (fields not normalized)
-        EMISSION_TOP,               ///< Top emission
-        EMISSION_BOTTOM,            ///< Bottom emission
-        EMISSION_FRONT,             ///< Front emission
-        EMISSION_BACK               ///< Back emission
+        EMISSION_UNSPECIFIED = 0,  ///< Side emission (fields not normalized)
+        EMISSION_TOP,              ///< Top emission
+        EMISSION_BOTTOM,           ///< Bottom emission
+        EMISSION_FRONT,            ///< Front emission
+        EMISSION_BACK              ///< Back emission
     };
 
     /// Direction of the light emission for fields normalization
     Emission emission;
 
   protected:
-
     /// Create and return rootdigger of a desired type
     std::unique_ptr<RootDigger> getRootDigger(const RootDigger::function_type& func, const char* name);
 
@@ -58,15 +56,14 @@ struct PLASK_SOLVER_API SlabBase {
         root.lambda_min = reader.getAttribute<double>("lambd", root.lambda_min);
         root.initial_dist = reader.getAttribute<dcomplex>("initial-range", root.initial_dist);
         root.method = reader.enumAttribute<RootDigger::Method>("method")
-            .value("brent", RootDigger::ROOT_BRENT)
-            .value("broyden", RootDigger::ROOT_BROYDEN)
-            .value("muller", RootDigger::ROOT_MULLER)
-            .get(root.method);
+                          .value("brent", RootDigger::ROOT_BRENT)
+                          .value("broyden", RootDigger::ROOT_BROYDEN)
+                          .value("muller", RootDigger::ROOT_MULLER)
+                          .get(root.method);
         reader.requireTagEnd();
     }
 
   public:
-
     /// Transfer method object (AdmittanceTransfer or ReflectionTransfer)
     std::unique_ptr<Transfer> transfer;
 
@@ -116,7 +113,6 @@ struct PLASK_SOLVER_API SlabBase {
     bool always_recompute_gain;
 
   protected:
-
     /// Can layers be automatically grouped
     bool group_layers;
 
@@ -130,35 +126,32 @@ struct PLASK_SOLVER_API SlabBase {
     double temp_layer;
 
   public:
-
-    SlabBase():
-        emission(EMISSION_UNSPECIFIED),
-        transfer_method(Transfer::METHOD_AUTO),
-        interface(-1),
-        interface_position(NAN),
-        lam0(NAN),
-        k0(NAN),
-        vpml(dcomplex(1.,-2.), 2.0, 10., 0),
-        recompute_integrals(true), always_recompute_gain(false), group_layers(true),
-        max_temp_diff(NAN), temp_dist(0.5), temp_layer(0.05)
-    {}
+    SlabBase()
+        : emission(EMISSION_UNSPECIFIED),
+          transfer_method(Transfer::METHOD_AUTO),
+          interface(-1),
+          interface_position(NAN),
+          lam0(NAN),
+          k0(NAN),
+          vpml(dcomplex(1., -2.), 2.0, 10., 0),
+          recompute_integrals(true),
+          always_recompute_gain(false),
+          group_layers(true),
+          max_temp_diff(NAN),
+          temp_dist(0.5),
+          temp_layer(0.05) {}
 
     virtual ~SlabBase() {}
 
     /// Get lam0
-    double getLam0() const {
-        return lam0;
-    }
+    double getLam0() const { return lam0; }
     /// Set lam0
     void setLam0(double lam) {
         lam0 = lam;
-        if (!isnan(lam) && (isnan(real(k0)) || isnan(imag(k0))))
-            k0 = 2e3*PI / lam;
+        if (!isnan(lam) && (isnan(real(k0)) || isnan(imag(k0)))) k0 = 2e3 * PI / lam;
     }
     /// Clear lam0
-    void clearLam0() {
-        lam0 = NAN;
-    }
+    void clearLam0() { lam0 = NAN; }
 
     /// Get current k0
     dcomplex getK0() const { return k0; }
@@ -170,12 +163,10 @@ struct PLASK_SOLVER_API SlabBase {
     }
 
     /// Get current wavelength
-    dcomplex getLam() const { return 2e3*PI / k0; }
+    dcomplex getLam() const { return 2e3 * PI / k0; }
 
     /// Set current wavelength
-    void setLam(dcomplex lambda) {
-        k0 = 2e3*PI / lambda;
-    }
+    void setLam(dcomplex lambda) { k0 = 2e3 * PI / lambda; }
 
     /// Reset determined fields
     void clearFields() {
@@ -189,9 +180,11 @@ struct PLASK_SOLVER_API SlabBase {
      * \return layer number (in the stack)
      */
     size_t getLayerFor(double& h) const {
-        size_t n = vbounds->findUpIndex(h+1e-15);
-        if (n == 0) h -= vbounds->at(0);
-        else h -= vbounds->at(n-1);
+        size_t n = vbounds->findUpIndex(h + 1e-15);
+        if (n == 0)
+            h -= vbounds->at(0);
+        else
+            h -= vbounds->at(n - 1);
         return n;
     }
 
@@ -215,14 +208,13 @@ struct PLASK_SOLVER_API SlabBase {
      * \param with_k0 Change k0
      * \returns \c true if anything was changed
      */
-    virtual bool setExpansionDefaults(bool with_k0=true) = 0;
+    virtual bool setExpansionDefaults(bool with_k0 = true) = 0;
 
     /// Throw exception if the interface position is unsuitable for eigenmode computations
     void ensureInterface() {
-        if (interface == -1)
-            throw BadInput(this->getId(), "No interface position set");
+        if (interface == -1) throw BadInput(this->getId(), "No interface position set");
         if (interface == 0 || interface >= std::ptrdiff_t(stack.size()))
-            throw BadInput(this->getId(), "Wrong interface position {0} (min: 1, max: {1})", interface, stack.size()-1);
+            throw BadInput(this->getId(), "Wrong interface position {0} (min: 1, max: {1})", interface, stack.size() - 1);
     }
 
     /// Get solver expansion
@@ -270,7 +262,6 @@ struct PLASK_SOLVER_API SlabBase {
      */
     cvector getTransmittedCoefficients(const cvector& incident, Transfer::IncidentDirection side);
 
-
     /**
      * Get reflection coefficient
      * \param incident incident field vector
@@ -278,7 +269,7 @@ struct PLASK_SOLVER_API SlabBase {
      */
     double getReflection(const cvector& incident, Transfer::IncidentDirection side) {
         double R = 0.;
-        for (double r: getReflectedFluxes(incident, side)) R += r;
+        for (double r : getReflectedFluxes(incident, side)) R += r;
         return R;
     }
 
@@ -289,7 +280,7 @@ struct PLASK_SOLVER_API SlabBase {
      */
     double getTransmission(const cvector& incident, Transfer::IncidentDirection side) {
         double T = 0.;
-        for (double t: getTransmittedFluxes(incident, side)) T += t;
+        for (double t : getTransmittedFluxes(incident, side)) T += t;
         return T;
     }
 
@@ -301,9 +292,7 @@ struct PLASK_SOLVER_API SlabBase {
 /**
  * Base class for all slab solvers
  */
-template <typename BaseT>
-class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
-
+template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, public SlabBase {
     /// Reset structure if input is changed
     void onInputChanged(ReceiverBase&, ReceiverBase::ChangeReason) {
         this->clearModes();
@@ -321,10 +310,7 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
     }
 
   protected:
-
-    void onInitialize() override {
-        setupLayers();
-    }
+    void onInitialize() override { setupLayers(); }
 
     void onGeometryChange(const Geometry::Event& evt) override {
         BaseT::onGeometryChange(evt);
@@ -346,7 +332,6 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
     void setupLayers();
 
   public:
-
     /// Smoothing coefficient
     double smooth;
 
@@ -371,7 +356,19 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
     /// Provider of the optical magnetic field
     typename ProviderFor<ModeLightH, typename BaseT::SpaceType>::Delegate outLightH;
 
-    SlabSolver(const std::string& name="");
+    /// Provider of the optical electric field propagating upwards
+    typename ProviderFor<ModeLightE, typename BaseT::SpaceType>::Delegate outUpwardsLightE;
+
+    /// Provider of the optical magnetic field propagating upwards
+    typename ProviderFor<ModeLightH, typename BaseT::SpaceType>::Delegate outUpwardsLightH;
+
+    /// Provider of the optical electric field propagating downwards
+    typename ProviderFor<ModeLightE, typename BaseT::SpaceType>::Delegate outDownwardsLightE;
+
+    /// Provider of the optical magnetic field propagating downwards
+    typename ProviderFor<ModeLightH, typename BaseT::SpaceType>::Delegate outDownwardsLightH;
+
+    SlabSolver(const std::string& name = "");
 
     ~SlabSolver();
 
@@ -453,7 +450,7 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
      * \param object where the interface should  be set on
      * \param path path specifying object in the geometry
      */
-    void setInterfaceOn(const shared_ptr<const GeometryObject>& object, const PathHints* path=nullptr) {
+    void setInterfaceOn(const shared_ptr<const GeometryObject>& object, const PathHints* path = nullptr) {
         auto boxes = this->geometry->getObjectBoundingBoxes(object, path);
         if (boxes.size() != 1) throw NotUniqueObjectException();
         if (interface_position != boxes[0].lower.vert()) {
@@ -468,9 +465,7 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
      * \param object where the interface should  be set on
      * \param path path specifying object in the geometry
      */
-    void setInterfaceOn(const shared_ptr<const GeometryObject>& object, const PathHints& path) {
-        setInterfaceOn(object, &path);
-    }
+    void setInterfaceOn(const shared_ptr<const GeometryObject>& object, const PathHints& path) { setInterfaceOn(object, &path); }
 
     /// Get discontinuity matrix determinant for the current parameters
     dcomplex getDeterminant() {
@@ -481,12 +476,16 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
     }
 
   protected:
-
     /**
      * Return number of determined modes
      */
     virtual size_t nummodes() const = 0;
 
+    /**
+     * Apply mode number n
+     * \return Mode power
+     */
+    virtual double applyMode(size_t n) = 0;
 
     /**
      * Get refractive index after expansion
@@ -494,7 +493,7 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
      * \param method interpolation method
      */
     DataVector<const Tensor3<dcomplex>> getRefractiveIndexProfile(const shared_ptr<const MeshD<BaseT::SpaceType::DIM>>& dst_mesh,
-                                                                  InterpolationMethod interp=INTERPOLATION_DEFAULT);
+                                                                  InterpolationMethod interp = INTERPOLATION_DEFAULT);
 
     /**
      * Compute electric field
@@ -502,7 +501,10 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual LazyData<Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<BaseT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) = 0;
+    template <PropagationDirection part = PROPAGATION_TOTAL>
+    LazyData<Vec<3, dcomplex>> getLightE(size_t num,
+                                         shared_ptr<const MeshD<BaseT::SpaceType::DIM>> dst_mesh,
+                                         InterpolationMethod method);
 
     /**
      * Compute magnetic field
@@ -510,7 +512,10 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual LazyData<Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<BaseT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) = 0;
+    template <PropagationDirection part = PROPAGATION_TOTAL>
+    LazyData<Vec<3, dcomplex>> getLightH(size_t num,
+                                         shared_ptr<const MeshD<BaseT::SpaceType::DIM>> dst_mesh,
+                                         InterpolationMethod method);
 
     /**
      * Compute normalized electric field intensity 1/2 E conj(E) / P
@@ -518,18 +523,17 @@ class PLASK_SOLVER_API SlabSolver: public BaseT, public SlabBase {
      * \param dst_mesh destination mesh
      * \param method interpolation method
      */
-    virtual LazyData<double> getMagnitude(size_t num, shared_ptr<const MeshD<BaseT::SpaceType::DIM>> dst_mesh, InterpolationMethod method) = 0;
+    LazyData<double> getLightMagnitude(size_t num,
+                                       shared_ptr<const MeshD<BaseT::SpaceType::DIM>> dst_mesh,
+                                       InterpolationMethod method);
 
     /**
      * Return mode wavelength
      * \param n mode number
      */
     virtual double getWavelength(size_t n) = 0;
-
 };
 
+}}}  // namespace plask::optical::slab
 
-}}} // namespace
-
-#endif // PLASK__SOLVER_SLAB_SLABBASE_H
-
+#endif  // PLASK__SOLVER_SLAB_SLABBASE_H

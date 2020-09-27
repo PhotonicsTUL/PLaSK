@@ -9,9 +9,8 @@
   <define name="estart" value="980.5"/>
   <define name="bstart" value="980.7"/>
   <define name="N0" value="10"/>
-  <define name="pml" value="1.-2j"/>
+  <define name="pml" value="1-2j"/>
   <define name="det" value="False"/>
-  <define name="scale" value="10"/>
 </defines>
 
 <materials>
@@ -73,7 +72,7 @@
   </optical>
   <optical name="bessel" solver="BesselCyl" lib="slab">
     <geometry ref="vcsel"/>
-    <expansion domain="{domain}" k-method="uniform" k-scale="{scale}" lam0="980." size="{N0 if N0 is not None else 20}"/>
+    <expansion domain="{domain}" k-method="laguerre" k-scale="0.5" k-max="4" lam0="980." size="{N0 if N0 is not None else 20}"/>
     <interface object="QW"/>
     <pml dist="30." factor="{pml}" size="2."/>
   </optical>
@@ -138,7 +137,7 @@ else:
     bessel.find_mode(bstart, m=m+1)
     mag = bessel.outLightMagnitude(rmsh)
     plot_profile(mag/max(mag), label="Bessel")
-    
+
 plot_profile(efield/max(efield), ls='--', color='0.8', label="EFM")
 
 legend(loc='best')
@@ -164,7 +163,7 @@ if N0 is None:
     ylabel("Q-factor [-]", color=cc[1])
     gcf().canvas.set_window_title(u"Convergence — base" + desc)
     tight_layout(0.2)
-    
+
     figure()
     plot(NN, times, '-', color=cc[2])
     plot(NN, times, '.', color=cc[2])
@@ -172,7 +171,7 @@ if N0 is None:
     ylabel("Computation time [s]")
     gcf().canvas.set_window_title(u"Computation time — base" + desc)
     tight_layout(0.2)
-    
+
     bessel.size = 20
 
 else:
@@ -208,9 +207,9 @@ if mesa is None:
     ylabel("Light magnitude [a.u.]")
     gcf().canvas.set_window_title(u"Mode profiles — mesa" + desc)
     tight_layout(0.2)
-    
+
     lams = array(lams)
-    
+
     figure()
     plot(mesas, real(lams), '-', color=cc[0])
     plot(mesas, real(lams), '.', color=cc[0])

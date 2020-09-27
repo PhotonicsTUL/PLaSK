@@ -305,14 +305,16 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
      * \param side incidence direction
      * \param dst_mesh target mesh
      * \param method interpolation method
+     * \param part part of the field (forward-, backward-propagating, or total) that is wanted
      */
     LazyData<Vec<3,dcomplex>> getScatteredFieldE(const cvector& incident,
                                                  Transfer::IncidentDirection side,
                                                  const shared_ptr<const MeshD<3>>& dst_mesh,
-                                                 InterpolationMethod method) {
+                                                 InterpolationMethod method,
+                                                 PropagationDirection part = PROPAGATION_TOTAL) {
         if (!Solver::initCalculation()) setExpansionDefaults(false);
         if (!transfer) initTransfer(expansion, true);
-        return transfer->getScatteredFieldE(incident, side, dst_mesh, method);
+        return transfer->getScatteredFieldE(incident, side, dst_mesh, method, part);
     }
 
     /**
@@ -321,14 +323,16 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
      * \param side incidence direction
      * \param dst_mesh target mesh
      * \param method interpolation method
+     * \param part part of the field (forward-, backward-propagating, or total) that is wanted
      */
     LazyData<Vec<3,dcomplex>> getScatteredFieldH(const cvector& incident,
                                                  Transfer::IncidentDirection side,
                                                  const shared_ptr<const MeshD<3>>& dst_mesh,
-                                                 InterpolationMethod method) {
+                                                 InterpolationMethod method,
+                                                 PropagationDirection part = PROPAGATION_TOTAL) {
         if (!Solver::initCalculation()) setExpansionDefaults(false);
         if (!transfer) initTransfer(expansion, true);
-        return transfer->getScatteredFieldH(incident, side, dst_mesh, method);
+        return transfer->getScatteredFieldH(incident, side, dst_mesh, method, part);
     }
 
     /**
@@ -449,6 +453,12 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     size_t nummodes() const override { return modes.size(); }
 
+    double applyMode(size_t n) override {
+        if (n >= modes.size()) throw BadInput(this->getId(), "Mode {0} has not been computed", n);
+        applyMode(modes[n]);
+        return modes[n].power;
+    }
+
     /**
      * Return mode effective index
      * \param n mode number
@@ -477,12 +487,6 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         }
     }
 
-    LazyData<Vec<3,dcomplex>> getE(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
-
-    LazyData<Vec<3,dcomplex>> getH(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
-
-    LazyData<double> getMagnitude(size_t num, shared_ptr<const MeshD<3>> dst_mesh, InterpolationMethod method) override;
-
     double getWavelength(size_t n) override;
 };
 
@@ -490,4 +494,3 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 }}} // namespace
 
 #endif
-

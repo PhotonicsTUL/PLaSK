@@ -793,9 +793,11 @@
   - outLightMagnitude
   - outLoss
   - outLightE
-  - outElectricField: LightE
   - outLightH
-  - outMagneticField: LightH
+  - outUpwardsLightE: LightE
+  - outUpwardsLightH: LightH
+  - outDownwardsLightE: LightE
+  - outDownwardsLightH: LightH
   - outRefractiveIndex
   - outWavelength
 

@@ -212,26 +212,6 @@ size_t BesselSolverCyl::findMode(dcomplex start, int m) {
     return insertMode();
 }
 
-LazyData<Vec<3, dcomplex>> BesselSolverCyl::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) {
-    if (num >= modes.size()) throw BadInput(this->getId() + ".outLightE", "Mode {0} has not been computed", num);
-    assert(transfer);
-    applyMode(modes[num]);
-    return transfer->getFieldE(modes[num].power, dst_mesh, method);
-}
-
-LazyData<Vec<3, dcomplex>> BesselSolverCyl::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) {
-    if (num >= modes.size()) throw BadInput(this->getId() + ".outLightH", "Mode {0} has not been computed", num);
-    assert(transfer);
-    applyMode(modes[num]);
-    return transfer->getFieldH(modes[num].power, dst_mesh, method);
-}
-
-LazyData<double> BesselSolverCyl::getMagnitude(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method) {
-    if (num >= modes.size()) throw BadInput(this->getId() + ".outLightMagnitude", "Mode {0} has not been computed", num);
-    assert(transfer);
-    applyMode(modes[num]);
-    return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
-}
 
 double BesselSolverCyl::getWavelength(size_t n) {
     if (n >= modes.size()) throw NoValue(ModeWavelength::NAME);

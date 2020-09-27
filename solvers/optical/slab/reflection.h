@@ -49,11 +49,13 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
             memP[n] = P.copy();
     }
 
-    void adjust_z(size_t n, double& z) {
+    void adjust_z(size_t n, double& z, PropagationDirection& part) {
         if (std::ptrdiff_t(n) >= solver->interface) {
             z = - z;
             if (n != 0 && n != solver->vbounds->size())
                 z += solver->vbounds->at(n) - solver->vbounds->at(n-1);
+            if (part == PROPAGATION_DOWNWARDS) part = PROPAGATION_UPWARDS;
+            else if (part == PROPAGATION_UPWARDS) part = PROPAGATION_DOWNWARDS;
         }
     }
 
@@ -86,9 +88,9 @@ struct PLASK_SOLVER_API ReflectionTransfer: public Transfer {
 
     void determineReflectedFields(const cvector& incident, IncidentDirection side) override;
 
-    cvector getFieldVectorE(double z, std::size_t n) override;
+    cvector getFieldVectorE(double z, std::size_t n, PropagationDirection part = PROPAGATION_TOTAL) override;
 
-    cvector getFieldVectorH(double z, std::size_t n) override;
+    cvector getFieldVectorH(double z, std::size_t n, PropagationDirection part = PROPAGATION_TOTAL) override;
 
     /**
      * Get admittance (A) and discontinuity (M) matrices for half of the structure

@@ -34,13 +34,13 @@ void XanceTransfer::storeY(size_t n)
 }
 
 
-cvector XanceTransfer::getFieldVectorE(double z, std::size_t n)
+cvector XanceTransfer::getFieldVectorE(double z, std::size_t n, PropagationDirection part)
 {
     cvector E0 = fields[n].E0;
     cvector Ed = fields[n].Ed;
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
-    double d = get_d(n, z);
+    double d = get_d(n, z, part);
 
     if ((n == 0 || std::size_t(n) == solver->vbounds->size()) && z < 0.)
         return cvector(diagonalizer->source()->matrixSize(), NAN);
@@ -48,24 +48,39 @@ cvector XanceTransfer::getFieldVectorE(double z, std::size_t n)
     const std::size_t N = gamma.size();
     cvector E(N);
 
-    for (std::size_t i = 0; i < N; i++) {
-        dcomplex g = gamma[i];
-        //E[i] = (sin(g*(d-z)) * E0[i] + sin(g*z) * Ed[i]) / sin(g*d);
-
-        double a = abs(exp(2.*I*g*d));
-        if (isinf(a) || a < SMALL) {
-            dcomplex d0p = exp(I*g*z) - exp(I*g*(z-2*d));
-            dcomplex d0n = exp(I*g*(2*d-z)) - exp(-I*g*z);
-            if (isinf(real(d0p)) || isinf(imag(d0p))) d0p = 0.; else d0p = 1./ d0p;
-            if (isinf(real(d0n)) || isinf(imag(d0n))) d0n = 0.; else d0n = 1./ d0n;
-            dcomplex ddp = exp(I*g*(d-z)) - exp(-I*g*(d+z));
-            dcomplex ddn = exp(I*g*(d+z)) - exp(I*g*(z-d));
-            if (isinf(real(ddp)) || isinf(imag(ddp))) ddp = 0.; else ddp = 1./ ddp;
-            if (isinf(real(ddn)) || isinf(imag(ddn))) ddn = 0.; else ddn = 1./ ddn;
-            E[i] = (d0p-d0n) * E0[i] + (ddp-ddn) * Ed[i];
-        } else {
-            E[i] = (sinh(I*g*(d-z)) * E0[i] + sinh(I*g*z) * Ed[i]) / sinh(I*g*d);
-        }
+    switch (part) {
+        case PROPAGATION_TOTAL:
+            for (std::size_t i = 0; i < N; i++) {
+                dcomplex g = gamma[i];
+                //E[i] = (sin(g*(d-z)) * E0[i] + sin(g*z) * Ed[i]) / sin(g*d);
+                double a = abs(exp(2.*I*g*d));
+                if (isinf(a) || a < SMALL) {
+                    dcomplex d0p = exp(I*g*z) - exp(I*g*(z-2*d));
+                    dcomplex d0n = exp(I*g*(2*d-z)) - exp(-I*g*z);
+                    if (isinf(real(d0p)) || isinf(imag(d0p))) d0p = 0.; else d0p = 1./ d0p;
+                    if (isinf(real(d0n)) || isinf(imag(d0n))) d0n = 0.; else d0n = 1./ d0n;
+                    dcomplex ddp = exp(I*g*(d-z)) - exp(-I*g*(d+z));
+                    dcomplex ddn = exp(I*g*(d+z)) - exp(I*g*(z-d));
+                    if (isinf(real(ddp)) || isinf(imag(ddp))) ddp = 0.; else ddp = 1./ ddp;
+                    if (isinf(real(ddn)) || isinf(imag(ddn))) ddn = 0.; else ddn = 1./ ddn;
+                    E[i] = (d0p-d0n) * E0[i] + (ddp-ddn) * Ed[i];
+                } else {
+                    E[i] = (sinh(I*g*(d-z)) * E0[i] + sinh(I*g*z) * Ed[i]) / sinh(I*g*d);
+                }
+            }
+            break;
+        case PROPAGATION_UPWARDS:
+            for (std::size_t i = 0; i < N; i++) {
+                dcomplex g = gamma[i]; if (g.real() < 0) g = -g;
+                E[i] = 0.5 * (E0[i] * exp(I*g*d) - Ed[i]) * exp(-I*g*z) / sinh(I*g*d);
+            }
+            break;
+        case PROPAGATION_DOWNWARDS:
+            for (std::size_t i = 0; i < N; i++) {
+                dcomplex g = gamma[i]; if (g.real() < 0) g = -g;
+                E[i] = 0.5 * (Ed[i] - E0[i] * exp(-I*g*d)) * exp(I*g*z) / sinh(I*g*d);
+            }
+            break;
     }
 
     cvector result(diagonalizer->source()->matrixSize());
@@ -75,13 +90,13 @@ cvector XanceTransfer::getFieldVectorE(double z, std::size_t n)
 }
 
 
-cvector XanceTransfer::getFieldVectorH(double z, std::size_t n)
+cvector XanceTransfer::getFieldVectorH(double z, std::size_t n, PropagationDirection part)
 {
     cvector H0 = fields[n].H0;
     cvector Hd = fields[n].Hd;
 
     cdiagonal gamma = diagonalizer->Gamma(solver->stack[n]);
-    double d = get_d(n, z);
+    double d = get_d(n, z, part);
 
     if ((n == 0 || std::size_t(n) == solver->vbounds->size()) && z < 0.)
         return cvector(diagonalizer->source()->matrixSize(), NAN);
@@ -89,24 +104,40 @@ cvector XanceTransfer::getFieldVectorH(double z, std::size_t n)
     const std::size_t N = gamma.size();
     cvector H(N);
 
-    for (std::size_t i = 0; i < N; i++) {
-        dcomplex g = gamma[i];
-        //H[i] = (sin(g*(d-z)) * H0[i] + sin(g*z) * Hd[i]) / sin(g*d);
+    switch (part) {
+        case PROPAGATION_TOTAL:
+            for (std::size_t i = 0; i < N; i++) {
+                dcomplex g = gamma[i];
+                //H[i] = (sin(g*(d-z)) * H0[i] + sin(g*z) * Hd[i]) / sin(g*d);
 
-        double a = abs(exp(2.*I*g*d));
-        if (isinf(a) || a < SMALL) {
-            dcomplex d0p = exp(I*g*z) - exp(I*g*(z-2*d));
-            dcomplex d0n = exp(I*g*(2*d-z)) - exp(-I*g*z);
-            if (isinf(real(d0p)) || isinf(imag(d0p))) d0p = 0.; else d0p = 1./ d0p;
-            if (isinf(real(d0n)) || isinf(imag(d0n))) d0n = 0.; else d0n = 1./ d0n;
-            dcomplex ddp = exp(I*g*(d-z)) - exp(-I*g*(d+z));
-            dcomplex ddn = exp(I*g*(d+z)) - exp(I*g*(z-d));
-            if (isinf(real(ddp)) || isinf(imag(ddp))) ddp = 0.; else ddp = 1./ ddp;
-            if (isinf(real(ddn)) || isinf(imag(ddn))) ddn = 0.; else ddn = 1./ ddn;
-            H[i] = (d0p-d0n) * H0[i] + (ddp-ddn) * Hd[i];
-        } else {
-            H[i] = (sinh(I*g*(d-z)) * H0[i] + sinh(I*g*z) * Hd[i]) / sinh(I*g*d);
-        }
+                double a = abs(exp(2.*I*g*d));
+                if (isinf(a) || a < SMALL) {
+                    dcomplex d0p = exp(I*g*z) - exp(I*g*(z-2*d));
+                    dcomplex d0n = exp(I*g*(2*d-z)) - exp(-I*g*z);
+                    if (isinf(real(d0p)) || isinf(imag(d0p))) d0p = 0.; else d0p = 1./ d0p;
+                    if (isinf(real(d0n)) || isinf(imag(d0n))) d0n = 0.; else d0n = 1./ d0n;
+                    dcomplex ddp = exp(I*g*(d-z)) - exp(-I*g*(d+z));
+                    dcomplex ddn = exp(I*g*(d+z)) - exp(I*g*(z-d));
+                    if (isinf(real(ddp)) || isinf(imag(ddp))) ddp = 0.; else ddp = 1./ ddp;
+                    if (isinf(real(ddn)) || isinf(imag(ddn))) ddn = 0.; else ddn = 1./ ddn;
+                    H[i] = (d0p-d0n) * H0[i] + (ddp-ddn) * Hd[i];
+                } else {
+                    H[i] = (sinh(I*g*(d-z)) * H0[i] + sinh(I*g*z) * Hd[i]) / sinh(I*g*d);
+                }
+            }
+            break;
+        case PROPAGATION_UPWARDS:
+            for (std::size_t i = 0; i < N; i++) {
+                dcomplex g = gamma[i]; if (g.real() < 0) g = -g;
+                H[i] = 0.5 * (H0[i] * exp(I*g*d) - Hd[i]) * exp(-I*g*z) / sinh(I*g*d);
+            }
+            break;
+        case PROPAGATION_DOWNWARDS:
+            for (std::size_t i = 0; i < N; i++) {
+                dcomplex g = gamma[i]; if (g.real() < 0) g = -g;
+                H[i] = 0.5 * (Hd[i] - H0[i] * exp(-I*g*d)) * exp(I*g*z) / sinh(I*g*d);
+            }
+            break;
     }
 
     cvector result(diagonalizer->source()->matrixSize());
@@ -141,8 +172,9 @@ double XanceTransfer::integrateField(WhichField field, size_t n, double z1, doub
             TH = diagonalizer->TH(layer);
     cdiagonal gamma = diagonalizer->Gamma(layer);
 
-    get_d(n, z1);
-    double d = get_d(n, z2);
+    PropagationDirection part = PROPAGATION_TOTAL;
+    get_d(n, z1, part);
+    double d = get_d(n, z2, part);
 
     if (std::ptrdiff_t(n) >= solver->interface) std::swap(z1, z2);
 

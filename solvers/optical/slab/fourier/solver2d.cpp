@@ -229,34 +229,6 @@ size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
 }
 
 
-
-LazyData<Vec<3,dcomplex>> FourierSolver2D::getE(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
-{
-    if (num >= modes.size()) throw BadInput(this->getId()+".outLightE", "Mode {0} has not been computed", num);
-    assert(transfer);
-    applyMode(modes[num]);
-    return transfer->getFieldE(modes[num].power, dst_mesh, method);
-}
-
-
-LazyData<Vec<3,dcomplex>> FourierSolver2D::getH(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
-{
-    if (num >= modes.size()) throw BadInput(this->getId()+".outLightH", "Mode {0} has not been computed", num);
-    assert(transfer);
-    applyMode(modes[num]);
-    return transfer->getFieldH(modes[num].power, dst_mesh, method);
-}
-
-
-LazyData<double> FourierSolver2D::getMagnitude(size_t num, shared_ptr<const MeshD<2>> dst_mesh, InterpolationMethod method)
-{
-    if (num >= modes.size()) throw BadInput(this->getId()+".outLightMagnitude", "Mode {0} has not been computed", num);
-    assert(transfer);
-    applyMode(modes[num]);
-    return transfer->getFieldMagnitude(modes[num].power, dst_mesh, method);
-}
-
-
 double FourierSolver2D::getWavelength(size_t n) {
     if (n >= modes.size()) throw NoValue(ModeWavelength::NAME);
     return real(2e3*M_PI / modes[n].k0);
