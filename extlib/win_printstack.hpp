@@ -61,7 +61,7 @@ inline void backtrace_symbols_fd(void *const *buffer, int size, int fd)
  for (i = 0; i < size; i++)
    {
      sprintf(s, "[+0x%zx]\n", (size_t) buffer[i]);
-     write(fd, s, strlen(s));
+     _write(fd, s, strlen(s));
    }
  _commit(fd);
 }

@@ -584,10 +584,25 @@ struct Scattering {
             return parent->solver->getScatteredFieldE(parent->incident, parent->side, dst_mesh, method,
                                         (parent->side == Transfer::INCIDENCE_BOTTOM)? PROPAGATION_DOWNWARDS : PROPAGATION_UPWARDS);
         }
-
         LazyData<Vec<3,dcomplex>> getLightH(const shared_ptr<const MeshD<SolverT::SpaceType::DIM>>& dst_mesh, InterpolationMethod method) {
             return parent->solver->getScatteredFieldH(parent->incident, parent->side, dst_mesh, method,
                                         (parent->side == Transfer::INCIDENCE_BOTTOM)? PROPAGATION_DOWNWARDS : PROPAGATION_UPWARDS);
+        }
+        inline static void registerClass(const char* suffix, const char* name) {
+            py::class_<Scattering<SolverT>::Reflected, boost::noncopyable>("Reflected", "Reflected field details", py::no_init)
+                .add_property("coeffs", &Scattering<SolverT>::Reflected::get_coefficients, "Raw reflection ceofficients for modes.")
+                .add_property("fluxes", &Scattering<SolverT>::Reflected::get_fluxes, "Perpendicular fluxes for reflected modes.")
+                .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Reflected::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()),
+                            format("Reflected eigenmodes.\n\n"
+                                    ":rtype: :class:`~optical.slab.{}{}.Eigenmodes`", name, suffix).c_str()
+                            )
+                .def_readonly("outLightE", reinterpret_cast<ProviderFor<LightE, typename SolverT::SpaceType> Scattering<SolverT>::Reflected::*>
+                                        (&Scattering<SolverT>::Reflected::outLightE),
+                    format(docstring_attr_provider<LightE>(), "LightE", suffix, u8"electric field", u8"V/m", "", "", "", "outLightE").c_str() )
+                .def_readonly("outLightH", reinterpret_cast<ProviderFor<LightH, typename SolverT::SpaceType> Scattering<SolverT>::Reflected::*>
+                                        (&Scattering<SolverT>::Reflected::outLightH),
+                    format(docstring_attr_provider<LightH>(), "LightH", suffix, u8"magnetic field", u8"A/m", "", "", "", "outLightH").c_str() )
+            ;
         }
     };
     Reflected* get_reflected() { return new Reflected(this); }
@@ -616,10 +631,25 @@ struct Scattering {
             return parent->solver->getScatteredFieldE(parent->incident, parent->side, dst_mesh, method,
                                         (parent->side == Transfer::INCIDENCE_BOTTOM)? PROPAGATION_UPWARDS : PROPAGATION_DOWNWARDS);
         }
-
         LazyData<Vec<3,dcomplex>> getLightH(const shared_ptr<const MeshD<SolverT::SpaceType::DIM>>& dst_mesh, InterpolationMethod method) {
             return parent->solver->getScatteredFieldH(parent->incident, parent->side, dst_mesh, method,
                                         (parent->side == Transfer::INCIDENCE_BOTTOM)? PROPAGATION_UPWARDS : PROPAGATION_DOWNWARDS);
+        }
+        inline static void registerClass(const char* suffix, const char* name) {
+            py::class_<Scattering<SolverT>::Incident, boost::noncopyable>("Incident", "Incident field details", py::no_init)
+                .add_property("coeffs", &Scattering<SolverT>::Incident::get_coefficients, "Raw incident ceofficients for modes.")
+                .add_property("fluxes", &Scattering<SolverT>::Incident::get_fluxes, "Perpendicular fluxes for incident modes.")
+                .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Incident::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()),
+                            format("Incident eigenmodes.\n\n"
+                                    ":rtype: :class:`~optical.slab.{}{}.Eigenmodes`", name, suffix).c_str()
+                            )
+                .def_readonly("outLightE", reinterpret_cast<ProviderFor<LightE, typename SolverT::SpaceType> Scattering<SolverT>::Incident::*>
+                                        (&Scattering<SolverT>::Incident::outLightE),
+                    format(docstring_attr_provider<LightE>(), "LightE", suffix, u8"electric field", u8"V/m", "", "", "", "outLightE").c_str() )
+                .def_readonly("outLightH", reinterpret_cast<ProviderFor<LightH, typename SolverT::SpaceType> Scattering<SolverT>::Incident::*>
+                                        (&Scattering<SolverT>::Incident::outLightH),
+                    format(docstring_attr_provider<LightH>(), "LightH", suffix, u8"magnetic field", u8"A/m", "", "", "", "outLightH").c_str() )
+            ;
         }
     };
     Incident* get_incident() { return new Incident(this); }
@@ -649,10 +679,25 @@ struct Scattering {
             return parent->solver->getScatteredFieldE(parent->incident, parent->side, dst_mesh, method,
                                         (parent->side == Transfer::INCIDENCE_BOTTOM)? PROPAGATION_UPWARDS : PROPAGATION_DOWNWARDS);
         }
-
         LazyData<Vec<3,dcomplex>> getLightH(const shared_ptr<const MeshD<SolverT::SpaceType::DIM>>& dst_mesh, InterpolationMethod method) {
             return parent->solver->getScatteredFieldH(parent->incident, parent->side, dst_mesh, method,
                                         (parent->side == Transfer::INCIDENCE_BOTTOM)? PROPAGATION_UPWARDS : PROPAGATION_DOWNWARDS);
+        }
+        inline static void registerClass(const char* suffix, const char* name) {
+            py::class_<Scattering<SolverT>::Transmitted, boost::noncopyable>("Transmitted", "Transmitted field details", py::no_init)
+                .add_property("coeffs", &Scattering<SolverT>::Transmitted::get_coefficients, "Raw transmission ceofficients for modes.")
+                .add_property("fluxes", &Scattering<SolverT>::Transmitted::get_fluxes, "Perpendicular fluxes for transmitted modes.")
+                .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Transmitted::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()),
+                            format("Transmitted eigenmodes.\n\n"
+                                    ":rtype: :class:`~optical.slab.{}{}.Eigenmodes`", name, suffix).c_str()
+                            )
+                .def_readonly("outLightE", reinterpret_cast<ProviderFor<LightE, typename SolverT::SpaceType> Scattering<SolverT>::Transmitted::*>
+                                        (&Scattering<SolverT>::Transmitted::outLightE),
+                    format(docstring_attr_provider<LightE>(), "LightE", suffix, u8"electric field", u8"V/m", "", "", "", "outLightE").c_str() )
+                .def_readonly("outLightH", reinterpret_cast<ProviderFor<LightH, typename SolverT::SpaceType> Scattering<SolverT>::Transmitted::*>
+                                        (&Scattering<SolverT>::Transmitted::outLightH),
+                    format(docstring_attr_provider<LightH>(), "LightH", suffix, u8"magnetic field", u8"A/m", "", "", "", "outLightH").c_str() )
+            ;
         }
     };
     Transmitted* get_transmitted() { return new Transmitted(this); }
@@ -806,50 +851,11 @@ struct Scattering {
 
         py::scope scope(cls);
 
-        py::class_<Scattering<SolverT>::Reflected, boost::noncopyable>("Reflected", "Reflected field details", py::no_init)
-            .add_property("coeffs", &Scattering<SolverT>::Reflected::get_coefficients, "Raw reflection ceofficients for modes.")
-            .add_property("fluxes", &Scattering<SolverT>::Reflected::get_fluxes, "Perpendicular fluxes for reflected modes.")
-            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Reflected::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()),
-                          format("Reflected eigenmodes.\n\n"
-                                 ":rtype: :class:`~optical.slab.{}{}.Eigenmodes`", name, suffix).c_str()
-                         )
-            .def_readonly("outLightE", reinterpret_cast<ProviderFor<LightE, typename SolverT::SpaceType> Scattering<SolverT>::Reflected::*>
-                                       (&Scattering<SolverT>::Reflected::outLightE),
-                format(docstring_attr_provider<LightE>(), "LightE", suffix, u8"electric field", u8"V/m", "", "", "", "outLightE").c_str() )
-            .def_readonly("outLightH", reinterpret_cast<ProviderFor<LightH, typename SolverT::SpaceType> Scattering<SolverT>::Reflected::*>
-                                       (&Scattering<SolverT>::Reflected::outLightH),
-                format(docstring_attr_provider<LightH>(), "LightH", suffix, u8"magnetic field", u8"A/m", "", "", "", "outLightH").c_str() )
-        ;
+        Scattering<SolverT>::Reflected::registerClass(suffix, name);
 
-        py::class_<Scattering<SolverT>::Transmitted, boost::noncopyable>("Transmitted", "Transmitted field details", py::no_init)
-            .add_property("coeffs", &Scattering<SolverT>::Transmitted::get_coefficients, "Raw transmission ceofficients for modes.")
-            .add_property("fluxes", &Scattering<SolverT>::Transmitted::get_fluxes, "Perpendicular fluxes for transmitted modes.")
-            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Transmitted::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()),
-                          format("Transmitted eigenmodes.\n\n"
-                                 ":rtype: :class:`~optical.slab.{}{}.Eigenmodes`", name, suffix).c_str()
-                         )
-            .def_readonly("outLightE", reinterpret_cast<ProviderFor<LightE, typename SolverT::SpaceType> Scattering<SolverT>::Transmitted::*>
-                                       (&Scattering<SolverT>::Transmitted::outLightE),
-                format(docstring_attr_provider<LightE>(), "LightE", suffix, u8"electric field", u8"V/m", "", "", "", "outLightE").c_str() )
-            .def_readonly("outLightH", reinterpret_cast<ProviderFor<LightH, typename SolverT::SpaceType> Scattering<SolverT>::Transmitted::*>
-                                       (&Scattering<SolverT>::Transmitted::outLightH),
-                format(docstring_attr_provider<LightH>(), "LightH", suffix, u8"magnetic field", u8"A/m", "", "", "", "outLightH").c_str() )
-        ;
+        Scattering<SolverT>::Incident::registerClass(suffix, name);
 
-        py::class_<Scattering<SolverT>::Incident, boost::noncopyable>("Incident", "Incident field details", py::no_init)
-            .add_property("coeffs", &Scattering<SolverT>::Incident::get_coefficients, "Raw incident ceofficients for modes.")
-            .add_property("fluxes", &Scattering<SolverT>::Incident::get_fluxes, "Perpendicular fluxes for incident modes.")
-            .add_property("eigenmodes", py::make_function(&Scattering<SolverT>::Incident::eigenmodes, py::with_custodian_and_ward_postcall<0,1>()),
-                          format("Incident eigenmodes.\n\n"
-                                 ":rtype: :class:`~optical.slab.{}{}.Eigenmodes`", name, suffix).c_str()
-                         )
-            .def_readonly("outLightE", reinterpret_cast<ProviderFor<LightE, typename SolverT::SpaceType> Scattering<SolverT>::Incident::*>
-                                       (&Scattering<SolverT>::Incident::outLightE),
-                format(docstring_attr_provider<LightE>(), "LightE", suffix, u8"electric field", u8"V/m", "", "", "", "outLightE").c_str() )
-            .def_readonly("outLightH", reinterpret_cast<ProviderFor<LightH, typename SolverT::SpaceType> Scattering<SolverT>::Incident::*>
-                                       (&Scattering<SolverT>::Incident::outLightH),
-                format(docstring_attr_provider<LightH>(), "LightH", suffix, u8"magnetic field", u8"A/m", "", "", "", "outLightH").c_str() )
-        ;
+        Scattering<SolverT>::Transmitted::registerClass(suffix, name);
 
 //             .def("get_electric_coefficients", FourierSolver2D_getReflectedFieldVectorE, py::arg("level"),
 //                 u8"Get Fourier expansion coefficients for the electric field.\n\n"

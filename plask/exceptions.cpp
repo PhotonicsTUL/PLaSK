@@ -1,3 +1,8 @@
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) // win32 support
+#include <win_printstack.hpp>
+#include <signal.h>     /* signal, raise, sig_atomic_t */
+#endif
+
 #include "exceptions.h"
 
 #include <plask/config.h>
@@ -6,21 +11,18 @@
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32) // win32 support
 
-#include <win_printstack.hpp>
-#include <signal.h>     /* signal, raise, sig_atomic_t */
-
 inline void print_current_exception() {
     std::exception_ptr p = std::current_exception();
     if (p) {
         try {
              std::rethrow_exception (p);
         } catch (std::exception& e) {
-             printf("Current exception: {}\n", e.what());
+             printf("Current exception: %s\n", e.what());
         } catch (...) {
-             printf("{}\n", "Current exception is not std one.");
+             printf("%s\n", "Current exception is not std one.");
         }
     } else
-        printf("{}\n", "There is no current exception.");
+        printf("%s\n", "There is no current exception.");
 }
 
 const char* sig_name(int sig_nr) {
@@ -35,7 +37,7 @@ const char* sig_name(int sig_nr) {
 void plask_win_signal_handler (int param) {
 	#pragma omp critical (winbacktrace)
 	{
-        printf("Signal {} ({:d}) handler:\n", sig_name(param), param);
+        printf("Signal %s (%d) handler:\n", sig_name(param), param);
 		print_current_exception();
 		//SIG_DFL(param); //call default signal handler
 		printStack();   //print stack-trace
@@ -45,7 +47,7 @@ void plask_win_signal_handler (int param) {
 void plask_win_terminate_handler () {
 	#pragma omp critical (winbacktrace)
 	{
-		printf("Terminate hadnler:\n");
+		printf("Terminate handler:\n");
 		print_current_exception();
 		printStack();   //print stack-trace
 		abort();  // forces abnormal termination
