@@ -263,6 +263,7 @@ void Manager::loadSolvers(XMLReader& reader) {
         if (!this->solvers.insert(std::make_pair(name, solver)).second)
             throw NamesConflictException("Solver", name);
     }
+    assert(reader.getNodeName() == "solvers");
 }
 
 void Manager::loadConnects(XMLReader& reader)
