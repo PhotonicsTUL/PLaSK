@@ -29,6 +29,9 @@
     <NR>3.6, 3.6, 3.4, 0.0</NR>
     <thermk>10.+ 0.001 * T**2</thermk>
   </material>
+  <material name="AlGaAs_xxx" base="AlGaAs" alloy="yes">
+    <nr>3 * self.Al</nr>
+  </material>
   <material name="InGaAsQW" base="In(0.2)GaAs"/>
   <material name="InGaAs_QW:Si" base="InGaAs:Si" alloy="yes">
     <nr>3.621</nr>

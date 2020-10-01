@@ -205,10 +205,6 @@ class MaterialPlot(QWidget):
         layout.addWidget(splitter)
         self.setLayout(layout)
 
-        if init_material is not None:
-            self.set_material(init_material, True)
-            self.material.setDisabled(True)
-
         self.property_changed()
         for arg in self.arguments:
             arg_text = arg.text()[:-1]
@@ -217,6 +213,12 @@ class MaterialPlot(QWidget):
                 break
             elif arg_text == 'T':
                 arg.setChecked(True)
+
+        if init_material is not None:
+            self.set_material(init_material, True)
+            self.material.setDisabled(True)
+        else:
+            self.set_material(self.material.currentText(), True)
 
     def resizeEvent(self, event):
         if self.error.isVisible():
@@ -557,7 +559,7 @@ class MaterialPlot(QWidget):
             return
         x = event.xdata
         y = self.vals(x)
-        if isinstance(y, tuple):
+        if hasattr(y, '__len__'):
             y = '(' + ', '.join("{:.5g}".format(i) for i in y) + ')'
         else:
             y = "{:.5g}".format(y)

@@ -105,7 +105,7 @@ namespace detail {
 template <int dim> static constexpr int tensor_size();
 template <> constexpr int tensor_size<2>() { return 2; }
 template <> constexpr int tensor_size<3>() { return 4; }
-template <int dim> static int tensor__len__() { return tensor_size<dim>(); }
+template <int dim> static int tensor__len__(const py::object& ) { return tensor_size<dim>(); }
 
 // v = tensor[i]
 template <int dim, typename T>

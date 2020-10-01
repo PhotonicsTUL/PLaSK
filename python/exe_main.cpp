@@ -224,9 +224,13 @@ void endPlask() {
 
     // Py_Finalize is not supported by Boost, however we should call atexit hooks
     //Py_Finalize();
-    py::object atexit = py::import("atexit");
-    if (PyObject_HasAttrString(atexit.ptr(), "_run_exitfuncs"))
-        atexit.attr("_run_exitfuncs")();
+    try {
+        py::object atexit = py::import("atexit");
+        if (PyObject_HasAttrString(atexit.ptr(), "_run_exitfuncs"))
+            atexit.attr("_run_exitfuncs")();
+    } catch (py::error_already_set) {
+        handlePythonException();
+    }
     finalizeMPI();
 
     // Flush buffers
