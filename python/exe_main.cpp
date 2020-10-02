@@ -42,9 +42,8 @@ namespace plask { namespace python {
 }}
 
 //******************************************************************************
-static void from_import_all(const char* name, py::object& dest)
+static void from_import_all(const py::object& module, py::object& dest)
 {
-    py::object module = py::import(name);
     py::dict module_dict = py::dict(module.attr("__dict__"));
     py::list all;
 
@@ -58,6 +57,12 @@ static void from_import_all(const char* name, py::object& dest)
     for (auto item = begin; item != end; item++) {
         if ((*item)[0] != '_') dest[*item] = module_dict[*item];
     }
+}
+
+static void from_import_all(const char* name, py::object& dest)
+{
+    py::object module = py::import(name);
+    from_import_all(module, dest);
 }
 
 //******************************************************************************
@@ -465,7 +470,7 @@ int system_main(int argc, const system_char *argv[])
             }
             py::object plask = py::import("plask");
             globals["plask"] = plask;           // import plask
-            from_import_all("plask", globals);  // from plask import *
+            from_import_all(plask, globals);    // from plask import *
 
             PyObject* result = NULL;
             PyObject* code = system_Py_CompileString(command, CSTR(-c), Py_file_input);
@@ -492,7 +497,7 @@ int system_main(int argc, const system_char *argv[])
             }
             py::object plask = py::import("plask");
             globals["plask"] = plask;           // import plask
-            from_import_all("plask", globals);  // from plask import *
+            from_import_all(plask, globals);    // from plask import *
 
 
             py::object runpy = py::import("runpy");
@@ -513,7 +518,7 @@ int system_main(int argc, const system_char *argv[])
         try {
             py::object plask = py::import("plask");
             globals["plask"] = plask;           // import plask
-            from_import_all("plask", globals);  // from plask import *
+            from_import_all(plask, globals);    // from plask import *
         } catch (py::error_already_set&) {
             int exitcode = handlePythonException();
             endPlask();
