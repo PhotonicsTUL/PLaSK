@@ -23,7 +23,7 @@ from ...utils.texteditor import TextEditorWithCB
 from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, EditComboBox, MultiLineEdit, LineEditWithClear
 from ...utils.qsignals import BlockQtSignals
 from ...utils.qundo import UndoCommandWithSetter
-from ...model.solvers.schemasolver import SchemaTag, \
+from ...model.solvers.schemasolver import SchemaTag, SchemaCustomWidgetTag, \
     AttrGroup, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath, AttrGeometry, AttrMesh
 from ...model.solvers.bconds import SchemaBoundaryConditions
 from ..source import SCHEME
@@ -147,7 +147,6 @@ class SolverWidget(QWidget):
         for schema in controller.model.schema:
             group = schema.name
             gname = group.split('/')[-1]
-            bc = isinstance(schema, SchemaBoundaryConditions)
             if last_header != schema.label:
                 last_header = schema.label
                 rows = []
@@ -170,7 +169,13 @@ class SolverWidget(QWidget):
                     else:
                         edit = self._add_attr(attr, defines, gname, group)
                     self._add_row(attr.label, edit, rows)
-            elif bc:
+            elif isinstance(schema, SchemaCustomWidgetTag):
+                edit = QPushButton(schema.button_label)
+                edit.sizePolicy().setHorizontalStretch(1)
+                edit.pressed.connect(lambda schema=schema: weakself.launch_custom_editor(schema))
+                self.controls[group] = edit
+                self._add_row(schema.label, edit, rows)
+            elif isinstance(schema, SchemaBoundaryConditions):
                 edit = QPushButton("View / Edit")
                 edit.sizePolicy().setHorizontalStretch(1)
                 edit.pressed.connect(lambda schema=schema: weakself.edit_boundary_conditions(schema))
@@ -459,17 +464,32 @@ class SolverWidget(QWidget):
                                     set_conflict(conflicting, True)
             elif isinstance(schema, SchemaBoundaryConditions):
                 self.controls[group].setText("     View / Edit  ({})".format(len(model.data[group])))
-            else:
+            elif not isinstance(schema, SchemaCustomWidgetTag):
                 edit = self.controls[group]
                 with BlockQtSignals(edit):
                     edit.setPlainText(model.data[group])
 
-    def edit_boundary_conditions(self, schema):
+    def edit_boundary_conditions(self, sechema):
         data = deepcopy(self.controller.model.data[schema.name])
         dialog = BoundaryConditionsDialog(self.controller, schema, data)
         result = dialog.exec_()
         if result == QDialog.Accepted:
             self._change_boundary_condition(schema, data)
+
+    def launch_custom_editor(self, schema):
+        old_data = self.controller.model.data[schema.name]
+        new_data = schema.edit_func(deepcopy(old_data), self.controller.document)
+        if new_data is not None and new_data != old_data:
+            assert new_data.name == schema.name
+            node = self.controller.solver_model
+            def set_value(value):
+                node.data[schema.name] = value
+            model = self.controller.section_model
+            model.undo_stack.push(UndoCommandWithSetter(
+                model, set_value, new_data, old_data,
+                u"change solver's {}"
+                    .format(schema.name if schema.label is None else schema.label.strip().lower())
+            ))
 
 
 class SchemaSolverController(Controller):

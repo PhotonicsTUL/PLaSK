@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "PLaSK Solver",
   "description": "Specification of a PLaSK solver configuration",
   "type": "array",
@@ -163,65 +163,113 @@
       "description": "Tag specification",
       "required": [
         "tag",
-        "label",
-        "attrs"
+        "label"
       ],
-      "additionalProperties": false,
-      "properties": {
-        "tag": {
-          "type": "string",
-          "description": "Tag name"
-        },
-        "label": {
-          "type": "string",
-          "description": "Tag label to display in GUI"
-        },
-        "help": {
-          "type": "string",
-          "description": "Detailed description of the tag"
-        },
-        "attrs": {
-          "type": "array",
-          "description": "List of specific configuration attributes and groups",
-          "items": {
-            "oneOf": [
-              {
-                "$ref": "#/definitions/attr"
-              },
-              {
-                "type": "object",
-                "description": "Group of attributes to display in a single line",
-                "required": [
-                  "group",
-                  "attrs"
-                ],
-                "additionalProperties": false,
-                "properties": {
-                  "group": {
-                    "type": "string",
-                    "description": "Group label"
+      "oneOf": [
+        {
+          "required": [
+            "attrs"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "tag": {
+              "type": "string",
+              "description": "Tag name"
+            },
+            "label": {
+              "type": "string",
+              "description": "Tag label to display in GUI"
+            },
+            "help": {
+              "type": "string",
+              "description": "Detailed description of the tag"
+            },
+            "attrs": {
+              "type": "array",
+              "description": "List of specific configuration attributes and groups",
+              "items": {
+                "oneOf": [
+                  {
+                    "$ref": "#/definitions/attr"
                   },
-                  "attrs": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/attr"
+                  {
+                    "type": "object",
+                    "description": "Group of attributes to display in a single line",
+                    "required": [
+                      "group",
+                      "attrs"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                      "group": {
+                        "type": "string",
+                        "description": "Group label"
+                      },
+                      "attrs": {
+                        "type": "array",
+                        "items": {
+                          "$ref": "#/definitions/attr"
+                        }
+                      },
+                      "unit": {
+                        "type": "string"
+                      }
                     }
-                  },
-                  "unit": {
-                    "type": "string"
                   }
+                ]
+              }
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/tag"
+              }
+            }
+          }
+        },
+        {
+          "required": [
+            "widget"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "tag": {
+              "type": "string",
+              "description": "Tag name"
+            },
+            "label": {
+              "type": "string",
+              "description": "Tag label to display in GUI"
+            },
+            "help": {
+              "type": "string",
+              "description": "Detailed description of the tag"
+            },
+            "widget": {
+              "type": "object",
+              "description": "GUI widget specification",
+              "required": [
+                "file",
+                "func"
+              ],
+              "properties": {
+                "button label": {
+                  "type": "string",
+                  "description": "Label on the button opening editor"
+                },
+                "file": {
+                  "type": "string",
+                  "description": "Filename of the editor Python module (relative to solvers.yml file)"
+                },
+                "func": {
+                  "type": "string",
+                  "desccription": "Name of the function in the Python module launching the editor"
                 }
               }
-            ]
-          }
-        },
-        "tags": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/tag"
+            }
           }
         }
-      }
+      ]
     }
   },
   "items": {
@@ -243,7 +291,8 @@
           "electrical",
           "optical",
           "meta",
-          "gain"
+          "gain",
+          "local"
         ],
         "description": "Solver category"
       },

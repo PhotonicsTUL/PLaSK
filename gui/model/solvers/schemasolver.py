@@ -11,8 +11,10 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
+import sys
 import os
 from collections import OrderedDict
+from importlib import import_module
 
 from lxml import etree
 
@@ -22,7 +24,7 @@ from ..info import Info
 from ...utils.xml import AttributeReader, print_interior, UnorderedTagReader
 from ...utils.validators import can_be_int, can_be_float, can_be_one_of, can_be_bool
 from ...utils.files import open_utf8
-from . import Solver, SOLVERS, CATEGORIES
+from . import Solver, Tag, SOLVERS, CATEGORIES
 from .bconds import BCONDS, SchemaBoundaryConditions
 
 # Disable yaml warning
@@ -117,6 +119,14 @@ class SchemaTag:
         self.attrs = attrs
 
 
+class SchemaCustomWidgetTag:
+    def __init__(self, name, label, button_label, edit_func):
+        self.name = name
+        self.label = label
+        self.button_label = button_label
+        self.edit_func = edit_func
+
+
 class SchemaSolver(Solver):
     """Model for solver with its configuration specified in a scheme file solvers.yml
        and automatically generated controller widget"""
@@ -135,7 +145,8 @@ class SchemaSolver(Solver):
 
     def set_fresh_data(self):
         self.data = {schema.name:
-                         {a.name: None for a in schema.attrs.flat} if isinstance(schema, SchemaTag) else []
+                         {a.name: None for a in schema.attrs.flat} if isinstance(schema, SchemaTag) else
+                         Tag(schema.name)  if isinstance(schema, SchemaCustomWidgetTag) else []
                      for schema in self.schema}
 
     def make_xml_element(self):
@@ -183,6 +194,11 @@ class SchemaSolver(Solver):
                         done[tag] = etree.SubElement(element, tag, attrs)
                     else:
                         el.attrib.update(attrs)
+            elif isinstance(schema, SchemaCustomWidgetTag):
+                if data:
+                    for c in self.incomments.get(schema.name, ()):
+                        element.append(etree.Comment(c))
+                    element.append(data.make_xml_element())
             elif isinstance(schema, SchemaBoundaryConditions):
                 for c in self.incomments.get(schema.name, ()):
                     element.append(etree.Comment(c))
@@ -241,6 +257,8 @@ class SchemaSolver(Solver):
                                         data[name+'0'] = attrs[name]
                                     else:
                                         data[name] = attrs[name]
+                    elif isinstance(schema, SchemaCustomWidgetTag):
+                        self.data[schema.name] = Tag.from_xml(el)
                     elif isinstance(schema, SchemaBoundaryConditions):
                         self.data[schema.name] = schema.from_xml(el)
                     else:
@@ -368,6 +386,8 @@ def _iter_tags(tags):
     for tag in tags:
         yield tag
         if 'tags' in tag:
+            if 'widget' in tag:
+                raise TypeError("Solver schema cannot specify both 'tags' and 'widget'")
             for t in _iter_tags(tag['tags']):
                 t['tag'] = tag['tag'] + '/' + t['tag']
                 yield t
@@ -406,20 +426,40 @@ def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
             for tag in _iter_tags(solver.get('tags', [])):
                 if 'tag' in tag:
                     tn, tl = tag['tag'], tag['label']
-                    attrs = AttrList()
-                    for attr in tag.get('attrs', []):
-                        if 'attr' in attr:
-                            attrs.append(read_attr(tn, attr))
-                        elif 'group' in attr:
-                            gl = attr['group']
-                            gu = attr.get('unit')
-                            if gu is not None:
-                                gl += u' [{}]'.format(gu)
-                            group = AttrGroup(gl)
-                            for a in attr.get('attrs', []):
-                                group.append(read_attr(tn, a))
-                            attrs.append(group)
-                    schema.append(SchemaTag(tn, tl, attrs))
+                    if 'widget' in tag:
+                        if 'attrs' in tag:
+                            raise TypeError("Solver schema cannot specify both 'attrs' and 'widget'")
+                        widget = tag['widget']
+                        modname = widget['file']
+                        if modname.endswith('__init__.py'):
+                            modname = modname[:-11]
+                        elif modname.endswith('.py'):
+                            modname = modname[:-3]
+                        else:
+                            raise ValueError("Widget file '{}' in '{}' tag is not a Python file".format(modname, tn))
+                        modpath, modname = os.path.split(modname)
+                        if not os.path.isabs(modpath):
+                            modpath = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(filename)), modpath))
+                        sys.path.insert(0, modpath)
+                        mod = import_module(modname)
+                        del sys.path[0]
+                        func = mod.__dict__[widget['func']]
+                        schema.append(SchemaCustomWidgetTag(tn, tl, widget.get('button label', "View / Edit"), func))
+                    else:
+                        attrs = AttrList()
+                        for attr in tag.get('attrs', []):
+                            if 'attr' in attr:
+                                attrs.append(read_attr(tn, attr))
+                            elif 'group' in attr:
+                                gl = attr['group']
+                                gu = attr.get('unit')
+                                if gu is not None:
+                                    gl += u' [{}]'.format(gu)
+                                group = AttrGroup(gl)
+                                for a in attr.get('attrs', []):
+                                    group.append(read_attr(tn, a))
+                                attrs.append(group)
+                        schema.append(SchemaTag(tn, tl, attrs))
                 elif 'bcond' in tag:
                     values = tag.get('values')
                     if values is not None and not isinstance(values, list):

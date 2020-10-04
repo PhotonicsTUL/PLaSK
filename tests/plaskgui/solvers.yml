@@ -6,25 +6,30 @@
   mesh: Rectangular2D
 
   tags:
-  - tag: tag
-    label: Some tag
-    help: Configuration of the self-consistent loop.
-    attrs:
-    - attr: attr1
-      label: Attribute one
-      type: float
-      default: 0
-      help: First attribute.
-    - attr: attr2
-      label: Attribute two
-      type: choice
-      choices:
-      - value1
-      - value2
-      help: Second attribute.
+    - tag: tag
+      label: Some tag
+      help: Configuration of the self-consistent loop.
+      attrs:
+        - attr: attr1
+          label: Attribute one
+          type: float
+          default: 0
+          help: First attribute.
+        - attr: attr2
+          label: Attribute two
+          type: choice
+          choices:
+            - value1
+            - value2
+          help: Second attribute.
+    - tag: custom
+      label: Custom tag
+      widget:
+            file: editor.py
+            func: open_editor
 
   providers:
-  - outProvider
+    - outProvider
 
   receivers:
-  - inReceiver
+    - inReceiver

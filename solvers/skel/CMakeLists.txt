@@ -70,6 +70,14 @@ include(PLaSK)
 #add_solver_test(bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
 
 
+# If you want to install some additional files required by GUI, specify them here,
+#  he destination will always be solvers directory, so if you have any files in a subdirectory
+# (e.g. ./gui), you must use DIRECTORIES prefix.
+# Also no rename is performed, so ensure you will not clash with other solvers from the same category.
+#
+#set(SOLVER_GUI_INSTALL_FILES your_solver_gui.py)
+#set(SOLVER_GUI_INSTALL_DIRECTORIES your_solver_gui)
+
 # Build everything the default way.
 # Call this macro unless you really know what you are doing!
 make_default()

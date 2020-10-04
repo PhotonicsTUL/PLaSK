@@ -202,7 +202,7 @@ class SectionModel(TreeFragmentModel):
 
 
 class SectionModelTreeBased(SectionModel):
-    """Model of section which just hold XML etree Element"""
+    """Model of section which just holds XML etree Element"""
 
     def __init__(self, name):
         SectionModel.__init__(self, name)
@@ -220,6 +220,3 @@ class SectionModelTreeBased(SectionModel):
     # XML element that represents whole section
     def make_xml_element(self):
         return self.element
-
-
-

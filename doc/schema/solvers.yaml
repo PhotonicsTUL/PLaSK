@@ -1,4 +1,4 @@
-$schema: http://json-schema.org/draft-06/schema#
+$schema: http://json-schema.org/draft-07/schema#
 title: PLaSK Solver
 description: Specification of a PLaSK solver configuration
 type: array
@@ -6,7 +6,7 @@ definitions:
   attr:
     type: object
     description: Attribute specification
-    required: [ attr, label, type ]
+    required: [attr, label, type]
     additionalProperties: false
     properties:
       attr:
@@ -19,20 +19,20 @@ definitions:
         type: string
         description: Attribute type
         enum:
-        - string
-        - float
-        - complex
-        - int
-        - bool
-        - choice
-        - Cartesian2D geometry
-        - cylindrical geometry
-        - Cartesian3D geometry
-        - geometry object
-        - geometry path
-        - mesh
-        - list of floats
-        - list of ints
+          - string
+          - float
+          - complex
+          - int
+          - bool
+          - choice
+          - Cartesian2D geometry
+          - cylindrical geometry
+          - Cartesian3D geometry
+          - geometry object
+          - geometry path
+          - mesh
+          - list of floats
+          - list of ints
       unit:
         type: string
         description: Attribute value unit
@@ -74,66 +74,87 @@ definitions:
       choices:
         properties:
           type:
-            enum: [ choice ]
-      other: { $ref: '#/definitions/attr/dependencies/choices' }
-      case sensitive: { $ref: '#/definitions/attr/dependencies/choices' }
+            enum: [choice]
+      other: { $ref: "#/definitions/attr/dependencies/choices" }
+      case sensitive: { $ref: "#/definitions/attr/dependencies/choices" }
       mesh types:
         properties:
           type:
-            enum: [ mesh ]
+            enum: [mesh]
     oneOf:
-    - properties:
-        type:
-          not:
-            enum: [ choice, mesh ]
-    - properties:
-        type:
-          enum: [ choice ]
-      required: [ choices ]
-    - properties:
-        type:
-          enum: [ mesh ]
-      required: [ 'mesh types' ]
+      - properties:
+          type:
+            not:
+              enum: [choice, mesh]
+      - properties:
+          type:
+            enum: [choice]
+        required: [choices]
+      - properties:
+          type:
+            enum: [mesh]
+        required: ["mesh types"]
   tag:
     description: Tag specification
-    required: [ tag, label, attrs ]
-    additionalProperties: false
-    properties:
-      tag:
-        type: string
-        description: Tag name
-      label:
-        type: string
-        description: Tag label to display in GUI
-      help:
-        type: string
-        description: Detailed description of the tag
-      attrs:
-        type: array
-        description: List of specific configuration attributes and groups
-        items:
-          oneOf:
-          - $ref: '#/definitions/attr'
-          - type: object
-            description: Group of attributes to display in a single line
-            required: [ group, attrs ]
-            additionalProperties: false
+    required: [tag, label]
+    oneOf:
+      - required: [attrs]
+        additionalProperties: false
+        properties:
+          tag: &property-tag
+            type: string
+            description: Tag name
+          label: &property-label
+            type: string
+            description: Tag label to display in GUI
+          help: &property-help
+            type: string
+            description: Detailed description of the tag
+          attrs:
+            type: array
+            description: List of specific configuration attributes and groups
+            items:
+              oneOf:
+                - $ref: "#/definitions/attr"
+                - type: object
+                  description: Group of attributes to display in a single line
+                  required: [group, attrs]
+                  additionalProperties: false
+                  properties:
+                    group:
+                      type: string
+                      description: Group label
+                    attrs:
+                      type: array
+                      items: { $ref: "#/definitions/attr" }
+                    unit:
+                      type: string
+          tags:
+            type: array
+            items: { $ref: "#/definitions/tag" }
+      - required: [widget]
+        additionalProperties: false
+        properties:
+          tag: *property-tag
+          label: *property-label
+          help: *property-help
+          widget:
+            type: "object"
+            description: GUI widget specification
+            required: [file, func]
             properties:
-              group:
+              button label:
                 type: string
-                description: Group label
-              attrs:
-                type: array
-                items: { $ref: '#/definitions/attr' }
-              unit:
+                description: Label on the button opening editor
+              file:
                 type: string
-      tags:
-        type: array
-        items: { $ref: '#/definitions/tag' }
-
+                description: Filename of the editor Python module (relative to solvers.yml file)
+              func:
+                type: string
+                desccription: Name of the function in the Python module launching the editor
 items:
   type: object
-  required: [ solver, category ]
+  required: [solver, category]
   additionalProperties: false
   properties:
     solver:
@@ -141,7 +162,7 @@ items:
       description: Solver name
     category:
       type: string
-      enum: [ thermal, electrical, optical, meta, gain ]
+      enum: [thermal, electrical, optical, meta, gain, local]
       description: Solver category
     lib:
       type: string
@@ -151,14 +172,14 @@ items:
       description: Detailed description of the solver purpose
     geometry:
       type: string
-      enum: [ Cartesian2D, Cylindrical, Cartesian3D ]
+      enum: [Cartesian2D, Cylindrical, Cartesian3D]
       description: Default solver geometry type
     mesh:
       oneOf:
-      - type: string
-      - type: array
-        items:
-          type: string
+        - type: string
+        - type: array
+          items:
+            type: string
       description: Default solver mesh
     need mesh:
       type: boolean
@@ -170,63 +191,62 @@ items:
       items:
         type: object
         oneOf:
-        - $ref: '#/definitions/tag'
-        - description: Boundary conditions tag
-          required: [ bcond, label ]
-          additionalProperties: false
-          properties:
-            bcond:
-              type: string
-              description: Boundary condition tag name
-            label:
-              type: string
-              description: Boundary condition label to display in GUI
-            group:
-              type: string
-              description: Group of boundary conditions, this one belongs to
-            mesh type:
-              type: string
-              description: Mesh type required by this boundary condition
-            mesh:
-              type: object
-              description: Tag/attribute for the mesh associated with this boundary condition.
-              additionalProperties: false
-              properties:
-                tag:
-                  type: string
-                attr:
-                  type: string
-            geometry:
-              type: object
-              description: Tag/attribute for the geometry associated with this boundary condition.
-              additionalProperties: false
-              properties:
-                tag:
-                  type: string
-                attr:
-                  type: string
-            values:
-              type: array
-              description: Names of boundary condition values it other than just 'value'
-              items:
+          - $ref: "#/definitions/tag"
+          - description: Boundary conditions tag
+            required: [bcond, label]
+            additionalProperties: false
+            properties:
+              bcond:
                 type: string
-            help:
-              type: string
-              description: Additional description of the boundary condition
+                description: Boundary condition tag name
+              label:
+                type: string
+                description: Boundary condition label to display in GUI
+              group:
+                type: string
+                description: Group of boundary conditions, this one belongs to
+              mesh type:
+                type: string
+                description: Mesh type required by this boundary condition
+              mesh:
+                type: object
+                description: Tag/attribute for the mesh associated with this boundary condition.
+                additionalProperties: false
+                properties:
+                  tag:
+                    type: string
+                  attr:
+                    type: string
+              geometry:
+                type: object
+                description: Tag/attribute for the geometry associated with this boundary condition.
+                additionalProperties: false
+                properties:
+                  tag:
+                    type: string
+                  attr:
+                    type: string
+              values:
+                type: array
+                description: Names of boundary condition values it other than just 'value'
+                items:
+                  type: string
+              help:
+                type: string
+                description: Additional description of the boundary condition
     providers:
       type: array
       description: List of the solver providers
       items: &provider-items
         oneOf:
-        - type: string
-        - type: object
-          minProperties: 1
-          maxProperties: 1
-          patternProperties:
-            .*:
-              type: string
+          - type: string
+          - type: object
+            minProperties: 1
+            maxProperties: 1
+            patternProperties:
+              .*:
+                type: string
     receivers:
       type: array
       description: List of the solver receivers
       items: *provider-items
-

@@ -17,7 +17,7 @@ from lxml import etree
 from xml.sax.saxutils import quoteattr
 
 from ...qt.QtCore import *
-from ...utils.xml import print_interior, XMLparser, AttributeReader, OrderedTagReader
+from ...utils.xml import print_interior, XMLparser, AttributeReader, OrderedTagReader, Element
 from ...controller.source import SourceEditController
 from ..table import TableModel
 from .. import TreeFragmentModel, Info
@@ -109,7 +109,7 @@ class TreeFragmentSolver(Solver):
     @staticmethod
     def create_empty(category, solver='', name='', parent=None, info_cb=None):
         element = etree.Element(category, {"name": name, "solver": solver})
-        return TreeFragmentSolver(element, parent, info_cb)
+        return TreeFragmentSolver(Element(element), parent, info_cb)
 
     def __init__(self, element, parent=None, info_cb=None):
         """Either element or rest of parameters (method is still optional), should be provided."""
@@ -152,6 +152,50 @@ class TreeFragmentSolver(Solver):
     @name.setter
     def name(self, value):
         self.element.attrib['name'] = value
+
+
+class Tag:
+    """XML tag for custom configuration"""
+    tags: "list of child tags"
+    attrs: "dict of tag attributes"
+
+    def __init__(self, name: str, tags: list = [], attrs: dict = {}):
+        self.name = name
+        self.tags = tags
+        self.attrs = attrs
+        self._comments = []
+        self._endcomments = []
+
+    def __bool__(self):
+        return bool(self.tags or self.attrs or self._comments or self._endcomments)
+
+    @staticmethod
+    def from_xml(element):
+        tag = Tag(element.tag)
+        tag.load_xml_element(element)
+        return tag
+
+    def load_xml_element(self, element):
+        if element.attrib is not None:
+            self.attrs = element.attrib
+        else:
+            self.attrs = {}
+        self._comments = element.comments
+        with OrderedTagReader(element) as reader:
+            self.tags = [Tag.from_xml(i) for i in reader]
+            self._endcomments = reader.get_comments()
+
+    def make_xml_element(self):
+        attrs = self.attrs if self.attrs else None
+        res = etree.Element(self.name, attrs)
+        if self.tags:
+            for tag in self.tags:
+                for c in tag._comments:
+                    res.append(etree.Comment(c))
+                res.append(tag.make_xml_element())
+        for c in self._endcomments:
+            res.append(etree.Comment(c))
+        return res
 
 
 from .filter import FilterSolver

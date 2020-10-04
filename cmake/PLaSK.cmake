@@ -211,6 +211,13 @@ macro(make_pure_python)
                             )
         install(FILES ${SOLVER_STUB} DESTINATION share/plask/stubs/${SOLVER_CATEGORY_NAME} COMPONENT gui)
         add_custom_target(${SOLVER_LIBRARY}-stub ALL DEPENDS ${SOLVER_LIBRARY}-python ${SOLVER_PYTHON_MODULE} ${SOLVER_STUB})
+        if(DEFINED SOLVER_GUI_INSTALL_FILES)
+            install(FILES ${SOLVER_GUI_INSTALL_FILES} DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT gui)
+        endif()
+        if(DEFINED SOLVER_GUI_INSTALL_DIRECTORIES)
+            install(DIRECTORIES ${SOLVER_GUI_INSTALL_DIRECTORIES} DESTINATION ${SOLVER_INSTALL_PATH} COMPONENT gui
+                    PATTERN "__pycache__" EXCLUDE PATTERN "*.pyc" EXCLUDE PATTERN "*.pyo" EXCLUDE)
+        endif()
     endif()
 
     if(BUILD_TESTING)

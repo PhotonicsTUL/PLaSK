@@ -502,6 +502,18 @@
   <optical name="generic" solver="Generic2D" lib="generic">
     <geometry ref="vcsel"/>
   </optical>
+  <local name="local1" solver="OneFile" lib="test">
+    <geometry ref="GeoE"/>
+    <mesh ref="default"/>
+  </local>
+  <local name="local2" solver="Test" lib="something">
+    <geometry ref="geo2d"/>
+    <mesh ref="default"/>
+    <custom attr="attr0">
+      <tag1/>
+      <tag2/>
+    </custom>
+  </local>
 </solvers>
 
 <connects>
