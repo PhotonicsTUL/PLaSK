@@ -13,8 +13,13 @@ if 'PLASK_MPLBACKEND' in _os.environ:
 elif 'MPLBACKEND' not in _os.environ:
     if _qt_api in ('pyside2', 'pyqt5'):
         _os.environ['MPLBACKEND'] = 'Qt5Agg'
-    elif _qt_api in ('pyside', 'pyqt'):
+    elif _qt_api in ('pyside', 'pyqt', 'pyqt4'):
         _os.environ['MPLBACKEND'] = 'Qt4Agg'
+
+if _qt_api == 'pyqt4' and _os.environ['MPLBACKEND'] == 'Qt4Agg':
+    _os.environ['QT_API'] = 'pyqt'
+elif _qt_api is not None:
+    _os.environ['QT_API'] = _qt_api
 
 import matplotlib.colors
 import matplotlib.lines
