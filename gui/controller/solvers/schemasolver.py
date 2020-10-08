@@ -469,7 +469,7 @@ class SolverWidget(QWidget):
                 with BlockQtSignals(edit):
                     edit.setPlainText(model.data[group])
 
-    def edit_boundary_conditions(self, sechema):
+    def edit_boundary_conditions(self, schema):
         data = deepcopy(self.controller.model.data[schema.name])
         dialog = BoundaryConditionsDialog(self.controller, schema, data)
         result = dialog.exec_()
