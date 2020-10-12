@@ -1,8 +1,8 @@
-#include "../python_globals.h"
-#include "../python_numpy.h"
-#include "../python_mesh.h"
+#include "../python_globals.hpp"
+#include "../python_numpy.hpp"
+#include "../python_mesh.hpp"
 
-#include <plask/mesh/extruded_triangular3d.h>
+#include "plask/mesh/extruded_triangular3d.hpp"
 
 namespace plask { namespace python {
 

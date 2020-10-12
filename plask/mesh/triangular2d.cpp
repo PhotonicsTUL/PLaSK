@@ -1,11 +1,11 @@
-#include "triangular2d.h"
+#include "triangular2d.hpp"
 
 #include <boost/range/irange.hpp>
 #include <boost/icl/interval_map.hpp>
 #include <unordered_map>
 
-#include "../utils/interpolation.h"
-#include "rectangular_common.h"
+#include "../utils/interpolation.hpp"
+#include "rectangular_common.hpp"
 
 namespace plask {
 

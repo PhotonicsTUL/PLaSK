@@ -1,4 +1,4 @@
-#include "matrices.h"
+#include "matrices.hpp"
 
 namespace plask { namespace optical { namespace slab {
 

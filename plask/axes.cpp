@@ -1,6 +1,6 @@
-#include "axes.h"
-#include "exceptions.h"
-#include "utils/string.h"
+#include "axes.hpp"
+#include "exceptions.hpp"
+#include "utils/string.hpp"
 
 namespace plask {
 

@@ -1,7 +1,7 @@
-#include "transform.h"
+#include "transform.hpp"
 
-#include "../manager.h"
-#include "reader.h"
+#include "../manager.hpp"
+#include "reader.hpp"
 
 #define PLASK_TRANSLATION2D_NAME ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
 #define PLASK_TRANSLATION3D_NAME ("translation" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)

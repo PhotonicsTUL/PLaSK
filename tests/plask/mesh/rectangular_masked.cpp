@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include <plask/mesh/rectangular_masked.h>
+#include "plask/mesh/rectangular_masked.hpp"
 
 plask::RectangularMaskedMesh2D constructMesh(plask::RectangularMesh2D::IterationOrder iter_order = plask::RectangularMesh2D::ORDER_01) {
     auto axis0 = plask::make_shared<plask::OrderedAxis>(std::initializer_list<double>{1.0, 2.0, 5.0, 10.0, 18.0});

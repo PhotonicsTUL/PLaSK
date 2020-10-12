@@ -1,8 +1,8 @@
-#include "path.h"
+#include "path.hpp"
 
-#include <plask/config.h>
+#include <plask/config.hpp>
 
-#include "object.h"
+#include "object.hpp"
 
 namespace plask {
 

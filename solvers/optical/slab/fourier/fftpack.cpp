@@ -1,4 +1,4 @@
-#include "fft.h"
+#include "fft.hpp"
 
 #ifndef USE_FFTW // use fftpacx instead of fftw
 

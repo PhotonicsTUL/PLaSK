@@ -11,7 +11,7 @@ std::string normalize_test_case_name(const_string name) {
 }}}
 #endif
 
-#include "../your_solver.h"
+#include "../your_solver.hpp"
 using namespace plask;
 
 BOOST_AUTO_TEST_SUITE(your_solver)

@@ -1,7 +1,7 @@
-#include <plask/log/log.h>
-#include <plask/manager.h>
+#include "plask/log/log.hpp"
+#include "plask/manager.hpp"
 
-#include "generator_rectangular.h"
+#include "generator_rectangular.hpp"
 
 namespace plask {
 

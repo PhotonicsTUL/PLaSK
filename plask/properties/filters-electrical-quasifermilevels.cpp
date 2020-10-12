@@ -1,6 +1,6 @@
-#include "electrical.h"
+#include "electrical.hpp"
 
-#include <plask/filters/factory.h>
+#include "plask/filters/factory.hpp"
 
 namespace plask {
 

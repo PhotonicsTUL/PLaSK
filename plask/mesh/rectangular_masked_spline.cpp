@@ -1,7 +1,7 @@
-#include "rectangular_masked_spline.h"
-#include "hyman.h"
-#include "../exceptions.h"
-#include "../math.h"
+#include "rectangular_masked_spline.hpp"
+#include "hyman.hpp"
+#include "../exceptions.hpp"
+#include "../math.hpp"
 
 /*5*/
 namespace plask {

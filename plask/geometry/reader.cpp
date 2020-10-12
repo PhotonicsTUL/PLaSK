@@ -1,6 +1,6 @@
-#include "reader.h"
+#include "reader.hpp"
 
-#include "../manager.h"
+#include "../manager.hpp"
 
 namespace plask {
 

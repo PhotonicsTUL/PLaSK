@@ -3,9 +3,9 @@
 #include <boost/range/adaptor/transformed.hpp>
 using boost::algorithm::clamp;
 
-#include "expansion2d.h"
-#include "solver2d.h"
-#include "../meshadapter.h"
+#include "expansion2d.hpp"
+#include "solver2d.hpp"
+#include "../meshadapter.hpp"
 
 #define SOLVER static_cast<FourierSolver2D*>(solver)
 

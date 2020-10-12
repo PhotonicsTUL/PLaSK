@@ -3,9 +3,9 @@
 using namespace plask;
 using namespace plask::python;
 
-#include "../beta.h"
-#include "../electr2d.h"
-#include "../electr3d.h"
+#include "../beta.hpp"
+#include "../electr2d.hpp"
+#include "../electr3d.hpp"
 using namespace plask::electrical::shockley;
 
 static py::object outPotential(const py::object& self) {

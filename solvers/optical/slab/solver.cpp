@@ -1,13 +1,13 @@
-#include "solver.h"
-#include "diagonalizer.h"
-#include "expansion.h"
-#include "meshadapter.h"
-#include "muller.h"
-#include "broyden.h"
-#include "brent.h"
-#include "reflection.h"
-#include "admittance.h"
-#include "impedance.h"
+#include "solver.hpp"
+#include "diagonalizer.hpp"
+#include "expansion.hpp"
+#include "meshadapter.hpp"
+#include "muller.hpp"
+#include "broyden.hpp"
+#include "brent.hpp"
+#include "reflection.hpp"
+#include "admittance.hpp"
+#include "impedance.hpp"
 
 namespace plask { namespace optical { namespace slab {
 

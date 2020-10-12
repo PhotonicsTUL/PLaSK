@@ -1,4 +1,4 @@
-#include "python_globals.h"
+#include "python_globals.hpp"
 
 #include <cstdlib>
 
@@ -9,9 +9,9 @@
 #include <boost/python/enum.hpp>
 #include <boost/python/raw_function.hpp>
 
-#include <plask/log/log.h>
-#include <plask/log/data.h>
-#include <plask/parallel.h>
+#include "plask/log/log.hpp"
+#include "plask/log/data.hpp"
+#include "plask/parallel.hpp"
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   include <plask/utils/minimal_windows.h>

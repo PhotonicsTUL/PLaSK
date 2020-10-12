@@ -1,4 +1,4 @@
-#include "system.h"
+#include "system.hpp"
 #include <cstdlib>
 
 #if defined(_MSC_VER) || defined(__MINGW32__)

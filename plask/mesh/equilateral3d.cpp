@@ -1,5 +1,5 @@
-#include "equilateral3d.h"
-#include "equilateral3d.h"
+#include "equilateral3d.hpp"
+#include "equilateral3d.hpp"
 
 namespace plask {
 

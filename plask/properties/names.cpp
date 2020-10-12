@@ -1,8 +1,8 @@
-#include "thermal.h"
-#include "electrical.h"
-#include "gain.h"
-#include "optical.h"
-#include"energylevels.h"
+#include "thermal.hpp"
+#include "electrical.hpp"
+#include "gain.hpp"
+#include "optical.hpp"
+#include "energylevels.hpp"
 
 namespace plask {
 

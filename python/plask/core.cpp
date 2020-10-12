@@ -4,22 +4,22 @@
 
 #define PY_ARRAY_UNIQUE_SYMBOL PLASK_ARRAY_API
 
-#include "python_globals.h"
-#include "python_manager.h"
-#include "python_numpy.h"
-#include "python_util/raw_constructor.h"
+#include "python_globals.hpp"
+#include "python_manager.hpp"
+#include "python_numpy.hpp"
+#include "python_util/raw_constructor.hpp"
 #include <frameobject.h> // for Python traceback
-#include <plask/utils/warnings.h>
+#include "plask/utils/warnings.hpp"
 PLASK_NO_UNUSED_VARIABLE_WARNING_BEGIN
 #include <datetime.h>
 PLASK_NO_WARNING_END
 
-#include <plask/version.h>
-#include <plask/exceptions.h>
-#include <plask/mesh/interpolation.h>
-#include <plask/memory.h>
-#include <plask/solver.h>
-#include <plask/license/verify.h>
+#include <plask/version.hpp>
+#include "plask/exceptions.hpp"
+#include "plask/mesh/interpolation.hpp"
+#include "plask/memory.hpp"
+#include "plask/solver.hpp"
+#include "plask/license/verify.hpp"
 
 using namespace plask::python;
 

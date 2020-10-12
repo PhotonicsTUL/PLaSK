@@ -1,8 +1,8 @@
-#include "transform_space_cartesian.h"
+#include "transform_space_cartesian.hpp"
 
 #include <algorithm>
-#include "../manager.h"
-#include "reader.h"
+#include "../manager.hpp"
+#include "reader.hpp"
 
 #define PLASK_EXTRUSION_NAME "extrusion"
 

@@ -1,7 +1,7 @@
-#include "solver.h"
-#include "utils/string.h"
+#include "solver.hpp"
+#include "utils/string.hpp"
 
-#include "license/verify.h"
+#include "license/verify.hpp"
 
 namespace plask {
 

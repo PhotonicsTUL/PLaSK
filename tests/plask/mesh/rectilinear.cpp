@@ -1,9 +1,9 @@
 #include <boost/test/unit_test.hpp>
 
-#include <plask/geometry/stack.h>
-#include <plask/geometry/leaf.h>
+#include "plask/geometry/stack.hpp"
+#include "plask/geometry/leaf.hpp"
 
-#include <plask/mesh/generator_rectangular.h>
+#include "plask/mesh/generator_rectangular.hpp"
 
 BOOST_AUTO_TEST_SUITE(rectilinear) // MUST be the same as the file name
 

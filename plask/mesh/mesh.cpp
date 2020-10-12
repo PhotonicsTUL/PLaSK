@@ -1,4 +1,4 @@
-#include "mesh.h"
+#include "mesh.hpp"
 
 namespace plask {
 

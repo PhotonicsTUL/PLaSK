@@ -1,4 +1,4 @@
-#include "your_solver.h"
+#include "your_solver.hpp"
 
 namespace plask { namespace category { namespace your_solver {
 

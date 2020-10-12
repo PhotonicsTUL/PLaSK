@@ -1,4 +1,4 @@
-#include "space.h"
+#include "space.hpp"
 
 #include <memory>
 #include <cassert>

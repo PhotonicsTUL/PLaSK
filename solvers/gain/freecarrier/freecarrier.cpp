@@ -1,6 +1,6 @@
-#include "gauss_matrix.h"
-#include "freecarrier.h"
-#include "fd.h"
+#include "gauss_matrix.hpp"
+#include "freecarrier.hpp"
+#include "fd.hpp"
 
 namespace plask { namespace gain { namespace freecarrier {
 

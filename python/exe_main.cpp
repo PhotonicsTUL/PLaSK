@@ -1,8 +1,8 @@
-#include "exe_common.h" // includes windows.h
+#include "exe_common.hpp" // includes windows.h
 
-#include <plask/utils/system.h>
-#include <plask/config.h>
-#include "../license_sign/getmac.h"
+#include "plask/utils/system.hpp"
+#include <plask/config.hpp>
+#include "../license_sign/getmac.hpp"
 
 #if defined(MS_WINDOWS) || defined(__CYGWIN__)
 #  include <io.h>

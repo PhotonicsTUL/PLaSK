@@ -1,5 +1,5 @@
-#include "stack.h"
-#include "separator.h"
+#include "stack.hpp"
+#include "separator.hpp"
 
 #define PLASK_STACK2D_NAME ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
 #define PLASK_STACK3D_NAME ("stack" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)

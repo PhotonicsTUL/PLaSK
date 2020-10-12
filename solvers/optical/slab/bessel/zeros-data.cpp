@@ -1,4 +1,4 @@
-#include "zeros-data.h"
+#include "zeros-data.hpp"
 
 namespace plask { namespace optical { namespace slab {
 

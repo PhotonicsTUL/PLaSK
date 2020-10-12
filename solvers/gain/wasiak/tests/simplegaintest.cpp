@@ -2,7 +2,7 @@
 #define BOOST_TEST_MODULE "Simple gain test"
 #include <boost/test/unit_test.hpp>
 
-#include "../fermi.h"
+#include "../fermi.hpp"
 using namespace plask;
 using namespace plask::solvers::fermi;
 

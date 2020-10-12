@@ -1,5 +1,5 @@
-#include "gauss_legendre.h"
-#include "fortran.h"
+#include "gauss_legendre.hpp"
+#include "fortran.hpp"
 
 #include <boost/math/special_functions/legendre.hpp>
 using boost::math::legendre_p;

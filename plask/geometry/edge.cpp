@@ -1,4 +1,4 @@
-#include "edge.h"
+#include "edge.hpp"
 #include <cmath>
 
 #include <boost/algorithm/string.hpp>

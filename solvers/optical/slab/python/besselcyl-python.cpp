@@ -1,10 +1,10 @@
 #define PY_ARRAY_UNIQUE_SYMBOL PLASK_OPTICAL_SLAB_ARRAY_API
 #define NO_IMPORT_ARRAY
 
-#include <plask/python_numpy.h>
+#include "plask/python_numpy.hpp"
 
-#include "besselcyl-python.h"
-#include "slab-python.h"
+#include "besselcyl-python.hpp"
+#include "slab-python.hpp"
 
 namespace plask { namespace optical { namespace slab { namespace python {
 

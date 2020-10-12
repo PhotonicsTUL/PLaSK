@@ -1,8 +1,8 @@
 #include <boost/test/unit_test.hpp>
-#include <plask/filters/filter.h>
-#include <plask/mesh/basic.h>
-#include <plask/geometry/geometry.h>
-#include "common/dumb_material.h"
+#include "plask/filters/filter.hpp"
+#include "plask/mesh/basic.hpp"
+#include "plask/geometry/geometry.hpp"
+#include "common/dumb_material.hpp"
 
 struct TestEnvGeom2D {
 

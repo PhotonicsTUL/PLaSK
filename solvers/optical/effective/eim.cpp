@@ -1,5 +1,5 @@
 #include <exception>
-#include "eim.h"
+#include "eim.hpp"
 
 namespace plask { namespace optical { namespace effective {
 

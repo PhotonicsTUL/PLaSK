@@ -1,7 +1,7 @@
-#include "loader.h"
+#include "loader.hpp"
 
 #include <iostream>
-#include "../../exceptions.h"
+#include "../../exceptions.hpp"
 
 #ifdef PLASK__UTILS_PLUGIN_WINAPI
     #include "../minimal_windows.h"
@@ -123,4 +123,3 @@ DynamicLibrary::handle_t DynamicLibrary::release() {
 
 
 }   // namespace plask
-

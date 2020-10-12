@@ -3,9 +3,9 @@
 #include <signal.h>     /* signal, raise, sig_atomic_t */
 #endif
 
-#include "exceptions.h"
+#include "exceptions.hpp"
 
-#include <plask/config.h>
+#include <plask/config.hpp>
 
 #ifdef PRINT_STACKTRACE_ON_EXCEPTION
 

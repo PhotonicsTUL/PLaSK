@@ -1,10 +1,10 @@
-#include "geometry.h"
+#include "geometry.hpp"
 
-#include <plask/geometry/leaf.h>
-#include <plask/geometry/cylinder.h>
-#include <plask/geometry/triangle.h>
-#include <plask/geometry/circle.h>
-#include <plask/geometry/prism.h>
+#include "plask/geometry/leaf.hpp"
+#include "plask/geometry/cylinder.hpp"
+#include "plask/geometry/triangle.hpp"
+#include "plask/geometry/circle.hpp"
+#include "plask/geometry/prism.hpp"
 
 
 namespace plask { namespace python {

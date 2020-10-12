@@ -1,7 +1,7 @@
-#include "intersection.h"
+#include "intersection.hpp"
 
-#include "../manager.h"
-#include "reader.h"
+#include "../manager.hpp"
+#include "reader.hpp"
 
 #define PLASK_INTERSECTION2D_NAME ("intersection" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
 #define PLASK_INTERSECTION3D_NAME ("intersection" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)

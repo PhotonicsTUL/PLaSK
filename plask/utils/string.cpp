@@ -1,4 +1,4 @@
-#include "string.h"
+#include "string.hpp"
 
 #include <boost/lexical_cast.hpp>
 

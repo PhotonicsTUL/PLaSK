@@ -1,10 +1,10 @@
-#include "geometry.h"
-#include "../python_util/py_set.h"
+#include "geometry.hpp"
+#include "../python_util/py_set.hpp"
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <boost/python/raw_function.hpp>
 
-#include <plask/geometry/container.h>
-#include <plask/geometry/translation_container.h>
+#include "plask/geometry/container.hpp"
+#include "plask/geometry/translation_container.hpp"
 
 namespace plask { namespace python {
 

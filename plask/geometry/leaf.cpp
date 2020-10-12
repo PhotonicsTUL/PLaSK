@@ -1,6 +1,6 @@
-#include "leaf.h"
-#include "../manager.h"
-#include "reader.h"
+#include "leaf.hpp"
+#include "../manager.hpp"
+#include "reader.hpp"
 
 #define PLASK_BLOCK2D_NAME ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
 #define PLASK_BLOCK3D_NAME ("block" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)

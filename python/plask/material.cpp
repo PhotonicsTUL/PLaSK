@@ -1,16 +1,16 @@
-#include "python_globals.h"
+#include "python_globals.hpp"
 #include <boost/python/raw_function.hpp>
 #include <boost/python/stl_iterator.hpp>
 #include <algorithm>
 
-#include <plask/config.h>
-#include <plask/utils/string.h>
-#include <plask/exceptions.h>
-#include <plask/material/mixed.h>
-#include <plask/material/db.h>
-#include <plask/material/info.h>
+#include <plask/config.hpp>
+#include "plask/utils/string.hpp"
+#include "plask/exceptions.hpp"
+#include "plask/material/mixed.hpp"
+#include "plask/material/db.hpp"
+#include "plask/material/info.hpp"
 
-#include "python_util/raw_constructor.h"
+#include "python_util/raw_constructor.hpp"
 
 namespace plask { namespace python {
 

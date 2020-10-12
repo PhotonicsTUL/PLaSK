@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include <plask/vec.h>
+#include "plask/vec.hpp"
 
 BOOST_AUTO_TEST_SUITE(vectors) // MUST be the same as the file name
 

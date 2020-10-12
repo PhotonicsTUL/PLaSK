@@ -1,7 +1,7 @@
 #include <boost/algorithm/string.hpp>
 
-#include "const_material.h"
-#include "db.h"
+#include "const_material.hpp"
+#include "db.hpp"
 
 namespace plask {
 

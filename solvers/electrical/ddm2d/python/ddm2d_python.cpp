@@ -3,7 +3,7 @@
 using namespace plask;
 using namespace plask::python;
 
-#include "../ddm2d.h"
+#include "../ddm2d.hpp"
 using namespace plask::electrical::drift_diffusion;
 
 template <typename GeometryT>

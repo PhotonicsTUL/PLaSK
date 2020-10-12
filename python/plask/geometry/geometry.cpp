@@ -1,12 +1,12 @@
 #include <cmath>
-#include "../python_globals.h"
+#include "../python_globals.hpp"
 #include <boost/python/stl_iterator.hpp>
-#include "../python_util/raw_constructor.h"
+#include "../python_util/raw_constructor.hpp"
 
-#include <plask/config.h>
-#include <plask/exceptions.h>
-#include <plask/geometry/leaf.h>
-#include <plask/utils/format.h>
+#include <plask/config.hpp>
+#include "plask/exceptions.hpp"
+#include "plask/geometry/leaf.hpp"
+#include "plask/utils/format.hpp"
 
 namespace plask { namespace python {
 

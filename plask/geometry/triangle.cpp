@@ -1,7 +1,7 @@
-#include "triangle.h"
-#include "reader.h"
+#include "triangle.hpp"
+#include "reader.hpp"
 
-#include "../manager.h"
+#include "../manager.hpp"
 
 #define PLASK_TRIANGLE_NAME "triangle"
 

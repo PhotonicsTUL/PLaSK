@@ -1,10 +1,10 @@
-#include "material.h"
+#include "material.hpp"
 
 #include <boost/lexical_cast.hpp>
-#include "../utils/stl.h"
-#include "../utils/string.h"
-#include "../log/log.h"
-#include "db.h"
+#include "../utils/stl.hpp"
+#include "../utils/string.hpp"
+#include "../log/log.hpp"
+#include "db.hpp"
 
 #include <cmath>
 #include <set>

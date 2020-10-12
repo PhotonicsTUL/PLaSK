@@ -1,6 +1,6 @@
 #include <type_traits>
 
-#include "electr3d.h"
+#include "electr3d.hpp"
 
 namespace plask { namespace electrical { namespace shockley {
 

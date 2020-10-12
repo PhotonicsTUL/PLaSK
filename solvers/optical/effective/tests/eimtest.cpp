@@ -3,7 +3,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <plask/plask.hpp>
-#include "../eim.h"
+#include "../eim.hpp"
 using namespace plask;
 using namespace plask::optical::effective;
 

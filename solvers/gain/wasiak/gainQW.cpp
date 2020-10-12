@@ -1,9 +1,9 @@
 #include <iostream>
 
-#include "fd.h"
+#include "fd.hpp"
 using namespace plask;
 
-#include "gainQW.h"
+#include "gainQW.hpp"
 
 using QW::nosnik;
 using QW::gain;

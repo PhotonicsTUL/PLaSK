@@ -1,6 +1,6 @@
-#include "python_globals.h"
+#include "python_globals.hpp"
 
-#include <plask/utils/xml/reader.h>
+#include "plask/utils/xml/reader.hpp"
 
 namespace plask { namespace python {
 

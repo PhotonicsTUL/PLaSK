@@ -1,7 +1,7 @@
-#include "rectangular2d.h"
+#include "rectangular2d.hpp"
 
-#include "regular1d.h"
-#include "ordered1d.h"
+#include "regular1d.hpp"
+#include "ordered1d.hpp"
 
 namespace plask {
 

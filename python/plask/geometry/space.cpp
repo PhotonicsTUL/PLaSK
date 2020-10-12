@@ -1,17 +1,17 @@
 #define PY_ARRAY_UNIQUE_SYMBOL PLASK_ARRAY_API
 #define NO_IMPORT_ARRAY
 
-#include "../python_globals.h"
-#include "../python_numpy.h"
+#include "../python_globals.hpp"
+#include "../python_numpy.hpp"
 #include <boost/python/stl_iterator.hpp>
 #include <boost/python/suite/indexing/map_indexing_suite.hpp>
 
-#include "../python_util/raw_constructor.h"
+#include "../python_util/raw_constructor.hpp"
 
-#include <plask/geometry/space.h>
-#include <plask/geometry/path.h>
-#include <plask/mesh/mesh.h>
-#include <plask/mesh/generator_rectangular.h>
+#include "plask/geometry/space.hpp"
+#include "plask/geometry/path.hpp"
+#include "plask/mesh/mesh.hpp"
+#include "plask/mesh/generator_rectangular.hpp"
 
 #include <limits>
 

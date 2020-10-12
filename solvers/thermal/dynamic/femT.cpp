@@ -1,4 +1,4 @@
-#include "femT.h"
+#include "femT.hpp"
 
 namespace plask { namespace thermal { namespace dynamic {
 

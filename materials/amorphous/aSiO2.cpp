@@ -1,9 +1,9 @@
-#include "aSiO2.h"
+#include "aSiO2.hpp"
 
 #include <cmath>
-#include <plask/log/log.h>
-#include <plask/material/db.h>  //MaterialsDB::Register
-#include <plask/material/info.h>    //MaterialInfo::DB::Register
+#include "plask/log/log.hpp"
+#include "plask/material/db.hpp"  //MaterialsDB::Register
+#include "plask/material/info.hpp"    //MaterialInfo::DB::Register
 
 namespace plask { namespace materials {
 

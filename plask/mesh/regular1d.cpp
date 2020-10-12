@@ -1,6 +1,6 @@
-#include "regular1d.h"
+#include "regular1d.hpp"
 
-#include "../log/log.h"
+#include "../log/log.hpp"
 
 namespace plask {
 

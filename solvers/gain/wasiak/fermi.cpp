@@ -1,4 +1,4 @@
-#include "fermi.h"
+#include "fermi.hpp"
 
 namespace plask { namespace solvers { namespace fermi {
 

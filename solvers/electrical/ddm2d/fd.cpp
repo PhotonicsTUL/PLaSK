@@ -1,7 +1,7 @@
 #include <limits>
-#include <plask/math.h>
+#include "plask/math.hpp"
 
-#include "fd.h"
+#include "fd.hpp"
 
 namespace plask {
 

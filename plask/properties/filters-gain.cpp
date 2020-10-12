@@ -1,6 +1,6 @@
-#include "gain.h"
+#include "gain.hpp"
 
-#include <plask/filters/factory.h>
+#include "plask/filters/factory.hpp"
 
 namespace plask {
 

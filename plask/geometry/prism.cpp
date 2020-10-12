@@ -1,7 +1,7 @@
-#include "prism.h"
-#include "reader.h"
+#include "prism.hpp"
+#include "reader.hpp"
 
-#include "../manager.h"
+#include "../manager.hpp"
 
 #define PLASK_PRISM_NAME "prism"
 

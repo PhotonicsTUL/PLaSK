@@ -1,7 +1,7 @@
 #include <boost/test/unit_test.hpp>
 
-#include <plask/mesh/triangular2d.h>
-#include <plask/mesh/generator_triangular.h>
+#include "plask/mesh/triangular2d.hpp"
+#include "plask/mesh/generator_triangular.hpp"
 
 BOOST_AUTO_TEST_SUITE(triangular) // MUST be the same as the file name
 

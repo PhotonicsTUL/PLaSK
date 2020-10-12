@@ -1,15 +1,15 @@
 /** \file
  * Sample Python wrapper for your solver.
  */
-#include <plask/python_util/ufunc.h>
+#include "plask/python_util/ufunc.hpp"
 #include <boost/python/raw_function.hpp>
 #include <cmath>
 #include <plask/python.hpp>
 using namespace plask;
 using namespace plask::python;
 
-#include "../fermi.h"
-#include "../ferminew.h"
+#include "../fermi.hpp"
+#include "../ferminew.hpp"
 using namespace plask::solvers;
 
 template <typename GeometryT>

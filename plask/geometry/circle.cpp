@@ -1,6 +1,6 @@
-#include "circle.h"
-#include "../manager.h"
-#include "reader.h"
+#include "circle.hpp"
+#include "../manager.hpp"
+#include "reader.hpp"
 
 #define PLASK_CIRCLE2D_NAME "circle"
 #define PLASK_CIRCLE3D_NAME "sphere"

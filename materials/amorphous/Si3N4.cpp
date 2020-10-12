@@ -1,8 +1,8 @@
-#include "Si3N4.h"
+#include "Si3N4.hpp"
 
 #include <cmath>
-#include <plask/material/db.h>  //MaterialsDB::Register
-#include <plask/material/info.h>    //MaterialInfo::DB::Register
+#include "plask/material/db.hpp"  //MaterialsDB::Register
+#include "plask/material/info.hpp"    //MaterialInfo::DB::Register
 
 namespace plask { namespace materials {
 

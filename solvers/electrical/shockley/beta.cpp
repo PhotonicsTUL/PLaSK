@@ -1,4 +1,4 @@
-#include "beta.h"
+#include "beta.hpp"
 
 namespace plask { namespace electrical { namespace shockley {
 

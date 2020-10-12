@@ -1,7 +1,7 @@
-#include "reader.h"
+#include "reader.hpp"
 #include <expat.h>
 
-#include "../../math.h"
+#include "../../math.hpp"
 
 #include <fstream>
 

@@ -1,5 +1,5 @@
 #include <boost/test/unit_test.hpp>
-#include <plask/data.h>
+#include "plask/data.hpp"
 
 BOOST_AUTO_TEST_SUITE(data) // MUST be the same as the file name
 

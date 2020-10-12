@@ -1,4 +1,4 @@
-#include "expansion.h"
+#include "expansion.hpp"
 
 namespace plask { namespace optical { namespace slab {
 

@@ -1,4 +1,4 @@
-#include "exe_common.h" // includes windows.h
+#include "exe_common.hpp" // includes windows.h
 
 //******************************************************************************
 #define PLASK_MODULE PyInit__plask

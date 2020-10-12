@@ -3,13 +3,13 @@
 #define PY_ARRAY_UNIQUE_SYMBOL PLASK_ARRAY_API
 #define NO_IMPORT_ARRAY
 
-#include <plask/vec.h>
-#include <plask/exceptions.h>
-#include <plask/config.h>
+#include "plask/vec.hpp"
+#include "plask/exceptions.hpp"
+#include <plask/config.hpp>
 
-#include "python_globals.h"
-#include "python_numpy.h"
-#include "python_util/raw_constructor.h"
+#include "python_globals.hpp"
+#include "python_numpy.hpp"
+#include "python_util/raw_constructor.hpp"
 
 #include <boost/python/stl_iterator.hpp>
 #include <boost/concept_check.hpp>

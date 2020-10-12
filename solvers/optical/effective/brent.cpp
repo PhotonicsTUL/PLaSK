@@ -1,4 +1,4 @@
-#include "brent.h"
+#include "brent.hpp"
 
 namespace plask { namespace optical { namespace effective {
 

@@ -6,7 +6,7 @@
 using namespace plask;
 using namespace plask::python;
 
-#include "../diffusion_1D/diffusion_cylindrical.h"
+#include "../diffusion_1D/diffusion_cylindrical.hpp"
 using namespace plask::electrical::diffusion_cylindrical;
 
 template <typename GeometryT>

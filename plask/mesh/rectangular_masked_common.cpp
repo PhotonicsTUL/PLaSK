@@ -1,3 +1,3 @@
-#include "rectangular_masked_common.h"
+#include "rectangular_masked_common.hpp"
 
 

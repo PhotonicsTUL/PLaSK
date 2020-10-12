@@ -1,16 +1,16 @@
 #define PY_ARRAY_UNIQUE_SYMBOL PLASK_ARRAY_API
 #define NO_IMPORT_ARRAY
 
-#include "python_globals.h"
-#include "python_mesh.h"
-#include "python_numpy.h"
-#include "python_provider.h"
+#include "python_globals.hpp"
+#include "python_mesh.hpp"
+#include "python_numpy.hpp"
+#include "python_provider.hpp"
 
-#include <plask/data.h>
-#include <plask/mesh/extruded_triangular3d.h>
-#include <plask/mesh/mesh.h>
-#include <plask/mesh/rectangular.h>
-#include <plask/mesh/triangular2d.h>
+#include "plask/data.hpp"
+#include "plask/mesh/extruded_triangular3d.hpp"
+#include "plask/mesh/mesh.hpp"
+#include "plask/mesh/rectangular.hpp"
+#include "plask/mesh/triangular2d.hpp"
 
 namespace boost { namespace python {
 
@@ -930,4 +930,4 @@ PLASK_PYTHON_API PythonDataVector<T, dim> dataInterpolate(const PythonDataVector
 }  // namespace python
 }  // namespace plask
 
-#include <plask/data.h>
+#include "plask/data.hpp"

@@ -1,9 +1,9 @@
-#include "expansioncyl-infini.h"
-#include "solvercyl.h"
-#include "zeros-data.h"
+#include "expansioncyl-infini.hpp"
+#include "solvercyl.hpp"
+#include "zeros-data.hpp"
 
-#include "../gauss_legendre.h"
-#include "../gauss_laguerre.h"
+#include "../gauss_legendre.hpp"
+#include "../gauss_laguerre.hpp"
 
 #include <boost/math/special_functions/bessel.hpp>
 using boost::math::cyl_bessel_j;

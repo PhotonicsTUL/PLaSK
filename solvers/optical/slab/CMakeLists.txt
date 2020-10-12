@@ -31,7 +31,7 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES} fftpacx)
 
 #find_package(Eigen3)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/include/plask/optical/slab/config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in ${CMAKE_BINARY_DIR}/include/plask/optical/slab/config.hpp)
 
 
 

@@ -1,4 +1,4 @@
-#include "diffusion_cylindrical.h"
+#include "diffusion_cylindrical.hpp"
 
 #define dpbtrf_ F77_GLOBAL(dpbtrf,DPBTRF)
 #define dpbtrs_ F77_GLOBAL(dpbtrs,DPBTRS)

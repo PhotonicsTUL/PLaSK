@@ -1,4 +1,4 @@
-#include "electr2d.h"
+#include "electr2d.hpp"
 
 namespace plask { namespace electrical { namespace shockley {
 

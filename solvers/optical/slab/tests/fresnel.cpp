@@ -3,8 +3,8 @@
 #include <boost/test/unit_test.hpp>
 
 #include <plask/plask.hpp>
-#include "../fourier/solver2d.h"
-#include "../fourier/solver2d.h"
+#include "../fourier/solver2d.hpp"
+#include "../fourier/solver2d.hpp"
 using namespace plask;
 using namespace plask::optical::slab;
 

@@ -1,10 +1,10 @@
-#include "db.h"
-#include "mixed.h"
-#include "const_material.h"
+#include "db.hpp"
+#include "mixed.hpp"
+#include "const_material.hpp"
 
-#include "../utils/string.h"
-#include "../utils/dynlib/manager.h"
-#include "../log/log.h"
+#include "../utils/string.hpp"
+#include "../utils/dynlib/manager.hpp"
+#include "../log/log.hpp"
 
 #include <boost/filesystem.hpp>
 

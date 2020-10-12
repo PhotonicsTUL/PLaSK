@@ -1,8 +1,8 @@
 #define PY_ARRAY_UNIQUE_SYMBOL PLASK_OPTICAL_SLAB_ARRAY_API
 #define NO_IMPORT_ARRAY
 
-#include "fourier2d-python.h"
-#include "slab-python.h"
+#include "fourier2d-python.hpp"
+#include "slab-python.hpp"
 
 
 namespace plask { namespace optical { namespace slab { namespace python {

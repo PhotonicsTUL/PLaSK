@@ -1,4 +1,4 @@
-#include "separator.h"
+#include "separator.hpp"
 
 #define PLASK_SEPARATOR2D_NAME ("separator" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
 #define PLASK_SEPARATOR3D_NAME ("separator" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)

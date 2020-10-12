@@ -1,6 +1,6 @@
-#include "lattice.h"
-#include "../manager.h"
-#include "reader.h"
+#include "lattice.hpp"
+#include "../manager.hpp"
+#include "reader.hpp"
 
 // used by lattice
 #include <map>

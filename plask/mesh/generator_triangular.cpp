@@ -1,5 +1,5 @@
-#include "generator_triangular.h"
-#include "triangular2d.h"
+#include "generator_triangular.hpp"
+#include "triangular2d.hpp"
 
 #include <triangle.h>
 using namespace triangle;

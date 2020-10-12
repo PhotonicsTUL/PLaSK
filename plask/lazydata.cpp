@@ -1,4 +1,4 @@
-#include "lazydata.h"
+#include "lazydata.hpp"
 
 namespace plask {
 

@@ -2,19 +2,19 @@
 #include <sstream>
 #include <boost/algorithm/string.hpp>
 
-#include "../utils/system.h"
+#include "../utils/system.hpp"
 
 // This should not be included in any plask .h file because it can be not distributed to solvers' developers:
-#include "../../license_sign/license.h"
-#include "../../license_sign/getmac.h"
+#include "../../license_sign/license.hpp"
+#include "../../license_sign/getmac.hpp"
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   include <shlobj.h>
 #endif
 
-#include <plask/config.h>
-#include <plask/log/log.h>
-#include "verify.h"
+#include <plask/config.hpp>
+#include "plask/log/log.hpp"
+#include "verify.hpp"
 
 #define PLASK_LICENSE_EXPIRY_TAG_NAME "expiry"
 #define PLASK_LICENSE_MAC_TAG_NAME "system"

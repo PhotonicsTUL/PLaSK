@@ -4,12 +4,12 @@
 
 #include <boost/tokenizer.hpp>
 
-#include <plask/filters/filter.h>
-#include <plask/manager.h>
+#include "plask/filters/filter.hpp"
+#include "plask/manager.hpp"
 
-#include "python_globals.h"
-#include "python_manager.h"
-#include "python_provider.h"
+#include "python_globals.hpp"
+#include "python_manager.hpp"
+#include "python_provider.hpp"
 
 namespace plask { namespace python {
 

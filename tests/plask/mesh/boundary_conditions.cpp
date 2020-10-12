@@ -1,10 +1,10 @@
 #include <boost/test/unit_test.hpp>
 
-#include <plask/mesh/rectangular.h>
-#include <plask/mesh/boundary_conditions.h>
-#include <plask/manager.h>
-#include <plask/utils/xml.h>
-#include "../common/dumb_material.h"
+#include "plask/mesh/rectangular.hpp"
+#include "plask/mesh/boundary_conditions.hpp"
+#include "plask/manager.hpp"
+#include "plask/utils/xml.hpp"
+#include "../common/dumb_material.hpp"
 
 BOOST_AUTO_TEST_SUITE(boundary_conditions) // MUST be the same as the file name
 

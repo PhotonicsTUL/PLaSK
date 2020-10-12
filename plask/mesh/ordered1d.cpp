@@ -1,7 +1,7 @@
-#include "ordered1d.h"
+#include "ordered1d.hpp"
 
-#include "../utils/stl.h"
-#include "../log/log.h"
+#include "../utils/stl.hpp"
+#include "../log/log.hpp"
 
 namespace plask {
 

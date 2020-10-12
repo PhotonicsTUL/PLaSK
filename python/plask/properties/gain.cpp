@@ -1,7 +1,7 @@
-#include "../python_globals.h"
-#include "../python_property.h"
+#include "../python_globals.hpp"
+#include "../python_property.hpp"
 
-#include <plask/properties/gain.h>
+#include "plask/properties/gain.hpp"
 
 namespace plask { namespace python {
 

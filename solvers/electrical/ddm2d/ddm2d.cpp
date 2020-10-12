@@ -12,7 +12,7 @@
     }
 #endif
 
-#include "ddm2d.h"
+#include "ddm2d.hpp"
 
 namespace plask { namespace electrical { namespace drift_diffusion {
 

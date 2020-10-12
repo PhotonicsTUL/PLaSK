@@ -1,7 +1,7 @@
-#include "rootdigger.h"
-#include "muller.h"
-#include "broyden.h"
-#include "brent.h"
+#include "rootdigger.hpp"
+#include "muller.hpp"
+#include "broyden.hpp"
+#include "brent.hpp"
 
 namespace plask { namespace optical { namespace effective {
 

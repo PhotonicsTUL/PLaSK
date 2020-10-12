@@ -1,4 +1,4 @@
-#include "interpolation.h"
+#include "interpolation.hpp"
 
 namespace plask {
 

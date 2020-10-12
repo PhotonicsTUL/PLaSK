@@ -1,6 +1,6 @@
-#include "writer.h"
+#include "writer.hpp"
 
-#include "exceptions.h"
+#include "exceptions.hpp"
 
 #include <fstream>
 

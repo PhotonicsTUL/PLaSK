@@ -2,14 +2,14 @@
 #   define BOOST_USE_WINDOWS_H
 #endif*/
 
-#include "reflection.h"
-#include "solver.h"
-#include "diagonalizer.h"
-#include "expansion.h"
-#include "fortran.h"
-#include "meshadapter.h"
+#include "reflection.hpp"
+#include "solver.hpp"
+#include "diagonalizer.hpp"
+#include "expansion.hpp"
+#include "fortran.hpp"
+#include "meshadapter.hpp"
 
-#include <plask/utils/openmp.h>
+#include "plask/utils/openmp.hpp"
 
 namespace plask { namespace optical { namespace slab {
 

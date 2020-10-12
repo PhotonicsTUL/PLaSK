@@ -1,9 +1,9 @@
-#include "air.h"
-#include "../log/log.h"
+#include "air.hpp"
+#include "../log/log.hpp"
 
 #include <cmath>
-#include <plask/material/db.h>  //MaterialsDB::Register
-#include <plask/material/info.h>    //MaterialInfo::DB::Register
+#include "plask/material/db.hpp"  //MaterialsDB::Register
+#include "plask/material/info.hpp"    //MaterialInfo::DB::Register
 
 namespace plask { namespace materials {
 

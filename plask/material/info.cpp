@@ -1,5 +1,5 @@
-#include "info.h"
-#include "db.h"
+#include "info.hpp"
+#include "db.hpp"
 
 #include <limits>
 

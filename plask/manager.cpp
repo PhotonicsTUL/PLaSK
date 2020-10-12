@@ -1,15 +1,15 @@
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 
-#include "manager.h"
+#include "manager.hpp"
 
-#include "utils/stl.h"
-#include "geometry/reader.h"
-#include "filters/factory.h"
+#include "utils/stl.hpp"
+#include "geometry/reader.hpp"
+#include "filters/factory.hpp"
 
-#include "utils/dynlib/manager.h"
+#include "utils/dynlib/manager.hpp"
 
-#include "utils/system.h"
+#include "utils/system.hpp"
 
 namespace plask {
 

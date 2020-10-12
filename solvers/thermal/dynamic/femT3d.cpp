@@ -1,6 +1,6 @@
 #include <type_traits>
 
-#include "femT3d.h"
+#include "femT3d.hpp"
 
 namespace plask { namespace thermal { namespace dynamic {
 

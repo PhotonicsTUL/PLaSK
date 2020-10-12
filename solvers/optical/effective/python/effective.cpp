@@ -3,12 +3,12 @@
  */
 #include <cmath>
 #include <plask/python.hpp>
-#include <plask/python_util/ufunc.h>
+#include "plask/python_util/ufunc.hpp"
 using namespace plask;
 using namespace plask::python;
 
-#include "../eim.h"
-#include "../efm.h"
+#include "../eim.hpp"
+#include "../efm.hpp"
 using namespace plask::optical::effective;
 
 #define ROOTDIGGER_ATTRS_DOC \

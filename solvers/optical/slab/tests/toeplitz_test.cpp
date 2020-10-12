@@ -24,7 +24,7 @@ std::string normalize_test_case_name(const_string name) {
     BOOST_CHECK_SMALL(total_error, double(distance(begin(aa), ae)) * tolerance); \
 }
 
-#include "../fourier/toeplitz.h"
+#include "../fourier/toeplitz.hpp"
 using namespace plask;
 using namespace plask::optical::slab;
 

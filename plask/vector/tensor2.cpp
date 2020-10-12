@@ -1,4 +1,4 @@
-#include "tensor2.h"
+#include "tensor2.hpp"
 
 namespace plask {
 

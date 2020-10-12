@@ -1,6 +1,6 @@
-#include "optical.h"
+#include "optical.hpp"
 
-#include <plask/filters/factory.h>
+#include "plask/filters/factory.hpp"
 
 namespace plask {
 

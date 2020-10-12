@@ -1,4 +1,4 @@
-#include "meshadapter.h"
+#include "meshadapter.hpp"
 
 namespace plask { namespace optical { namespace slab {
 

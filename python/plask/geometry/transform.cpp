@@ -1,9 +1,9 @@
-#include "geometry.h"
+#include "geometry.hpp"
 
-#include <plask/geometry/transform.h>
-#include <plask/geometry/mirror.h>
-#include <plask/geometry/clip.h>
-#include <plask/geometry/intersection.h>
+#include "plask/geometry/transform.hpp"
+#include "plask/geometry/mirror.hpp"
+#include "plask/geometry/clip.hpp"
+#include "plask/geometry/intersection.hpp"
 
 namespace plask { namespace python {
 

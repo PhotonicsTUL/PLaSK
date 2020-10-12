@@ -1,6 +1,6 @@
-#include "geometry.h"
+#include "geometry.hpp"
 
-#include <plask/geometry/lattice.h>
+#include "plask/geometry/lattice.hpp"
 
 namespace plask { namespace python {
 

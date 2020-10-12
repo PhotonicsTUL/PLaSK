@@ -1,6 +1,6 @@
-#include "solver2d.h"
-#include "expansion2d.h"
-#include "../diagonalizer.h"
+#include "solver2d.hpp"
+#include "expansion2d.hpp"
+#include "../diagonalizer.hpp"
 
 namespace plask { namespace optical { namespace slab {
 

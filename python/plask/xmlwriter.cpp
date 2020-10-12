@@ -1,13 +1,13 @@
-#include "python_globals.h"
+#include "python_globals.hpp"
 #include <boost/python/raw_function.hpp>
 #include <boost/python/stl_iterator.hpp>
 
-#include <plask/config.h>
-#include <plask/geometry/space.h>
-#include <plask/mesh/mesh.h>
-#include <plask/utils/string.h>
+#include <plask/config.hpp>
+#include "plask/geometry/space.hpp"
+#include "plask/mesh/mesh.hpp"
+#include "plask/utils/string.hpp"
 
-#include "python_util/raw_constructor.h"
+#include "python_util/raw_constructor.hpp"
 
 namespace plask { namespace python {
 

@@ -1,9 +1,9 @@
-#include "geometry.h"
+#include "geometry.hpp"
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include <boost/algorithm/string.hpp>
 
-#include <plask/geometry/container.h>
+#include "plask/geometry/container.hpp"
 
 
 namespace plask { namespace python {

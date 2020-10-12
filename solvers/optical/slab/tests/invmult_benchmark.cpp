@@ -1,6 +1,6 @@
 #include <plask/plask.hpp>
-#include "../matrices.h"
-#include "../fourier/toeplitz.h"
+#include "../matrices.hpp"
+#include "../fourier/toeplitz.hpp"
 
 using namespace plask;
 using namespace plask::optical::slab;

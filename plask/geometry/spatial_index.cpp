@@ -1,4 +1,4 @@
-#include "spatial_index.h"
+#include "spatial_index.hpp"
 
 namespace plask {
 

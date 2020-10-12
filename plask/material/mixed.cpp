@@ -1,4 +1,4 @@
-#include "mixed.h"
+#include "mixed.hpp"
 
 namespace plask {
 

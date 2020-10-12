@@ -1,8 +1,8 @@
-#include "geometry.h"
-#include "../python_util/py_set.h"
+#include "geometry.hpp"
+#include "../python_util/py_set.hpp"
 
-#include <plask/geometry/path.h>
-#include <plask/geometry/object.h>
+#include "plask/geometry/path.hpp"
+#include "plask/geometry/object.hpp"
 
 namespace plask { namespace python {
 

@@ -1,5 +1,5 @@
-#include "muller.h"
-#include "solver.h"
+#include "muller.hpp"
+#include "solver.hpp"
 using namespace std;
 
 namespace plask { namespace optical { namespace slab {

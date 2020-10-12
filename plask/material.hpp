@@ -3,7 +3,7 @@
 
 /// @file This file should be included to build custom material database.
 
-#include "material/material.h"
-#include "material/db.h"
+#include "material/material.hpp"
+#include "material/db.hpp"
 
 #endif // PLASK__MATERIAL_HPP

@@ -1,11 +1,11 @@
-#include "python_globals.h"
+#include "python_globals.hpp"
 
-#include <plask/utils/string.h>
-#include <plask/utils/xml/reader.h>
-#include <plask/material/db.h>
+#include "plask/utils/string.hpp"
+#include "plask/utils/xml/reader.hpp"
+#include "plask/material/db.hpp"
 
-#include "python_manager.h"
-#include "python_ptr.h"
+#include "python_manager.hpp"
+#include "python_ptr.hpp"
 
 namespace plask { namespace python {
 

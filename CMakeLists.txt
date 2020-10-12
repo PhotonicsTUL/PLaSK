@@ -57,7 +57,7 @@ endif()
 include_directories(.)          # solvers can include plask using <plask/plask.hpp>
 include_directories(python)     # solvers can also include <plask/python.hpp>
 include_directories(extlib)     # place for local external libraries
-include_directories(${CMAKE_BINARY_DIR}/include) # for include plask/config.h
+include_directories(${CMAKE_BINARY_DIR}/include) # for include plask/config.hpp
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "lib")
@@ -301,7 +301,7 @@ file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h plask/*.hpp solvers/pr
 file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp solvers/providers/*.cpp)
 
 # Python sources and files
-file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp python/plask/*.h)
+file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp python/plask/*.hpp)
 file(GLOB_RECURSE python_plask_py python/plask/*.py)
 list(REMOVE_ITEM python_plask_py "${CMAKE_SOURCE_DIR}/python/plask/_plask.py")
 
@@ -359,7 +359,7 @@ if(INSTALL_DEV)
     install(DIRECTORY plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
     install(DIRECTORY solvers/providers DESTINATION include/plask COMPONENT dev FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN ".*" EXCLUDE)
     install(FILES extlib/fmt/format.h extlib/fmt/core.h extlib/fmt/ostream.h DESTINATION include/fmt COMPONENT dev)
-    install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
+    install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.hpp DESTINATION include/plask COMPONENT dev)
 endif()
 
 set(PLaSK_LIBRARIES libplask)
@@ -370,7 +370,7 @@ set(PLaSK_PYTHON_LIBRARIES libplask_python)
 add_subdirectory(materials)
 
 # ---------- Program to sign license file ----------------------
-file(GLOB_RECURSE license_sign_src FOLLOW_SYMLINKS license_sign/*.cpp license_sign/*.h)
+file(GLOB_RECURSE license_sign_src FOLLOW_SYMLINKS license_sign/*.cpp license_sign/*.hpp)
 add_executable(plask-license-sign ${license_sign_src})
 target_link_libraries(plask-license-sign libplask)
 
@@ -701,7 +701,7 @@ if(BUILD_TESTING)
 
     enable_testing()
     if(Boost_UNIT_TEST_FRAMEWORK_FOUND)
-        file(GLOB_RECURSE plask-test_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.h)
+        file(GLOB_RECURSE plask-test_src FOLLOW_SYMLINKS tests/plask/*.cpp tests/plask/*.hpp)
         add_executable(plask-test ${plask-test_src})
         set_target_properties(plask-test PROPERTIES OUTPUT_NAME test_plask)
         target_link_libraries(plask-test ${Boost_UNIT_TEST_FRAMEWORK_LIBRARIES} libplask)
@@ -858,12 +858,13 @@ endif()
 # ----------===== Public headers for writing material databases =====--------
 
 if(NOT INSTALL_DEV AND INSTALL_MATERIALS_DEV)
-    install(FILES plask/material.hpp plask/math.h plask/memory.h plask/exceptions.h plask/parallel.h DESTINATION include/plask COMPONENT dev)
-    install(FILES plask/material/material.h plask/material/db.h  DESTINATION include/plask/material COMPONENT dev)
-    install(FILES plask/utils/format.h plask/utils/string.h plask/utils/system.h DESTINATION include/plask/utils COMPONENT dev)
-    install(FILES plask/vector/tensor2.h plask/vector/tensor3.h DESTINATION include/plask/vector COMPONENT dev)
-    install(FILES plask/phys/constants.h plask/phys/functions.h DESTINATION include/plask/phys COMPONENT dev)
-    install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.h DESTINATION include/plask COMPONENT dev)
+    install(FILES plask/material.hpp plask/math.hpp plask/memory.hpp plask/exceptions.hpp plask/parallel.hpp
+            DESTINATION include/plask COMPONENT dev)
+    install(FILES plask/material/material.hpp plask/material/db.hpp DESTINATION include/plask/material COMPONENT dev)
+    install(FILES plask/utils/format.hpp plask/utils/string.hpp plask/utils/system.hpp DESTINATION include/plask/utils COMPONENT dev)
+    install(FILES plask/vector/tensor2.hpp plask/vector/tensor3.hpp DESTINATION include/plask/vector COMPONENT dev)
+    install(FILES plask/phys/constants.hpp plask/phys/functions.hpp DESTINATION include/plask/phys COMPONENT dev)
+    install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.hpp DESTINATION include/plask COMPONENT dev)
 endif()
 
 # ----------===== Packaging =====--------------------------------------------
@@ -1026,6 +1027,6 @@ set(CPACK_SOURCE_IGNORE_FILES
 
 include(CPack)
 
-# ----------===== config.h & version.h =====--------------------------------------------
-configure_file(${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_BINARY_DIR}/include/plask/config.h)
-configure_file(${CMAKE_SOURCE_DIR}/version.h.in ${CMAKE_BINARY_DIR}/include/plask/version.h)
+# ----------===== config.hpp & version.hpp =====--------------------------------------------
+configure_file(${CMAKE_SOURCE_DIR}/config.hpp.in ${CMAKE_BINARY_DIR}/include/plask/config.hpp)
+configure_file(${CMAKE_SOURCE_DIR}/version.hpp.in ${CMAKE_BINARY_DIR}/include/plask/version.hpp)

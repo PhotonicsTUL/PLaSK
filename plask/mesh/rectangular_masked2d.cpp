@@ -1,4 +1,4 @@
-#include "rectangular_masked2d.h"
+#include "rectangular_masked2d.hpp"
 
 namespace plask {
 

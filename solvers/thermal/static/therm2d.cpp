@@ -1,5 +1,5 @@
-#include "therm2d.h"
-#include "conjugate_gradient.h"
+#include "therm2d.hpp"
+#include "conjugate_gradient.hpp"
 
 namespace plask { namespace thermal { namespace tstatic {
 

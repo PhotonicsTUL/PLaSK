@@ -1,4 +1,4 @@
-#include "broyden.h"
+#include "broyden.hpp"
 using namespace std;
 
 namespace plask { namespace optical { namespace effective {

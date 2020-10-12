@@ -1,4 +1,4 @@
-#include "python_filters.h"
+#include "python_filters.hpp"
 
 namespace plask { namespace python {
 

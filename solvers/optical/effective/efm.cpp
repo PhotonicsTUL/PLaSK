@@ -1,6 +1,6 @@
-#include "efm.h"
-#include "patterson.h"
-#include "gauss_matrix.h"
+#include "efm.hpp"
+#include "patterson.hpp"
+#include "gauss_matrix.hpp"
 
 using plask::dcomplex;
 

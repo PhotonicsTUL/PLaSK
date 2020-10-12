@@ -1,7 +1,7 @@
-#include "geometry.h"
+#include "geometry.hpp"
 
-#include <plask/geometry/transform_space_cartesian.h>
-#include <plask/geometry/transform_space_cylindric.h>
+#include "plask/geometry/transform_space_cartesian.hpp"
+#include "plask/geometry/transform_space_cylindric.hpp"
 
 namespace plask { namespace python {
 

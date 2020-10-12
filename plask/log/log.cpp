@@ -1,6 +1,6 @@
 #include <cstdio>
 
-#include "log.h"
+#include "log.hpp"
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
 #   include <plask/utils/minimal_windows.h>
@@ -9,7 +9,7 @@
 #endif
 
 #ifdef OPENMP_FOUND
-#   include "../parallel.h"
+#   include "../parallel.hpp"
 #endif
 
 namespace plask {

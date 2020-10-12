@@ -1,5 +1,5 @@
-#include "patterson.h"
-#include "patterson-data.h"
+#include "patterson.hpp"
+#include "patterson-data.hpp"
 
 namespace plask { namespace optical { namespace effective {
 

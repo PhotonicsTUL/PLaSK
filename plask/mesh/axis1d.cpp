@@ -1,7 +1,7 @@
-#include "axis1d.h"
-#include "ordered1d.h"
+#include "axis1d.hpp"
+#include "ordered1d.hpp"
 
-#include "../utils/stl.h"
+#include "../utils/stl.hpp"
 
 namespace plask {
 

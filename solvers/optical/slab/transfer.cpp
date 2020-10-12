@@ -1,8 +1,8 @@
-#include "transfer.h"
-#include "diagonalizer.h"
-#include "expansion.h"
-#include "fortran.h"
-#include "solver.h"
+#include "transfer.hpp"
+#include "diagonalizer.hpp"
+#include "expansion.hpp"
+#include "fortran.hpp"
+#include "solver.hpp"
 
 namespace plask { namespace optical { namespace slab {
 

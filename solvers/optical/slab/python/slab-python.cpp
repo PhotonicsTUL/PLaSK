@@ -1,12 +1,12 @@
 #define PY_ARRAY_UNIQUE_SYMBOL PLASK_OPTICAL_SLAB_ARRAY_API
 
-#include "slab-python.h"
+#include "slab-python.hpp"
 using namespace plask;
 using namespace plask::python;
 
-#include "fourier2d-python.h"
-#include "fourier3d-python.h"
-#include "besselcyl-python.h"
+#include "fourier2d-python.hpp"
+#include "fourier3d-python.hpp"
+#include "besselcyl-python.hpp"
 using namespace plask::optical::slab;
 using namespace plask::optical::slab::python;
 

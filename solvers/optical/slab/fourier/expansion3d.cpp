@@ -1,9 +1,9 @@
 #include <boost/algorithm/clamp.hpp>
 using boost::algorithm::clamp;
 
-#include "expansion3d.h"
-#include "solver3d.h"
-#include "../meshadapter.h"
+#include "expansion3d.hpp"
+#include "solver3d.hpp"
+#include "../meshadapter.hpp"
 
 #define SOLVER static_cast<FourierSolver3D*>(solver)
 

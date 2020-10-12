@@ -1,6 +1,6 @@
-#include "thermal.h"
+#include "thermal.hpp"
 
-#include <plask/filters/factory.h>
+#include "plask/filters/factory.hpp"
 
 namespace plask {
 

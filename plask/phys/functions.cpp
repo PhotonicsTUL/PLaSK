@@ -1,5 +1,5 @@
-#include "functions.h"
-#include "constants.h"
+#include "functions.hpp"
+#include "constants.hpp"
 
 namespace plask { namespace phys {
 

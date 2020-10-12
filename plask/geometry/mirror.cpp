@@ -1,6 +1,6 @@
-#include "mirror.h"
-#include "../manager.h"
-#include "reader.h"
+#include "mirror.hpp"
+#include "../manager.hpp"
+#include "reader.hpp"
 
 #define PLASK_FLIP2D_NAME ("flip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D)
 #define PLASK_FLIP3D_NAME ("flip" PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D)

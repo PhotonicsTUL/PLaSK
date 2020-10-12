@@ -1,5 +1,5 @@
-#include "gauss_laguerre.h"
-#include "fortran.h"
+#include "gauss_laguerre.hpp"
+#include "fortran.hpp"
 
 #include <memory>
 

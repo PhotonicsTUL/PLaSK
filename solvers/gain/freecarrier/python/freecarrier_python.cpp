@@ -3,11 +3,11 @@
  */
 #include <cmath>
 #include <plask/python.hpp>
-#include <plask/python_util/ufunc.h>
+#include "plask/python_util/ufunc.hpp"
 using namespace plask;
 using namespace plask::python;
 
-#include "../freecarrier.h"
+#include "../freecarrier.hpp"
 using namespace plask::gain::freecarrier;
 
 #ifndef NDEBUG

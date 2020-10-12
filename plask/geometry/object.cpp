@@ -1,11 +1,11 @@
 #include <boost/algorithm/string/join.hpp>
 
-#include "object.h"
-#include "leaf.h"
-#include "transform.h"
-#include "space.h"
-#include "path.h"
-#include "reader.h"
+#include "object.hpp"
+#include "leaf.hpp"
+#include "transform.hpp"
+#include "space.hpp"
+#include "path.hpp"
+#include "reader.hpp"
 
 namespace plask {
 

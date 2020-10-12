@@ -2,12 +2,12 @@
 #   define BOOST_USE_WINDOWS_H
 #endif*/
 
-#include "impedance.h"
-#include "solver.h"
-#include "diagonalizer.h"
-#include "expansion.h"
-#include "fortran.h"
-#include "meshadapter.h"
+#include "impedance.hpp"
+#include "solver.hpp"
+#include "diagonalizer.hpp"
+#include "expansion.hpp"
+#include "fortran.hpp"
+#include "meshadapter.hpp"
 
 namespace plask { namespace optical { namespace slab {
 

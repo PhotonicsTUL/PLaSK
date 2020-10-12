@@ -1,4 +1,4 @@
-#include "bisection.h"
+#include "bisection.hpp"
 
 namespace plask { namespace optical { namespace effective {
 

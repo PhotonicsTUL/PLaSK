@@ -3,8 +3,8 @@
 using namespace plask;
 using namespace plask::python;
 
-#include "../therm2d.h"
-#include "../therm3d.h"
+#include "../therm2d.hpp"
+#include "../therm3d.hpp"
 using namespace plask::thermal::tstatic;
 
 namespace plask { namespace thermal { namespace tstatic {

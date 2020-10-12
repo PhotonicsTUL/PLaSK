@@ -50,66 +50,66 @@ You should start reading from section \ref solvers "How to implement an own solv
 - \subpage geometry "All about geometry."
 */
 
-#include <plask/config.h>
+#include <plask/config.hpp>
 
-#include "memory.h"
-#include "memalloc.h"
-#include "math.h"
-#include "exceptions.h"
-#include "solver.h"
-#include "vec.h"
-#include "axes.h"
-#include "manager.h"
+#include "memory.hpp"
+#include "memalloc.hpp"
+#include "math.hpp"
+#include "exceptions.hpp"
+#include "solver.hpp"
+#include "vec.hpp"
+#include "axes.hpp"
+#include "manager.hpp"
 
-#include "vector/tensor2.h"
-#include "vector/tensor3.h"
+#include "vector/tensor2.hpp"
+#include "vector/tensor3.hpp"
 
-#include "material/material.h"
-#include "material/db.h"
-#include "material/info.h"
+#include "material/material.hpp"
+#include "material/db.hpp"
+#include "material/info.hpp"
 
-#include "log/log.h"
-#include "log/data.h"
-#include "log/id.h"
+#include "log/log.hpp"
+#include "log/data.hpp"
+#include "log/id.hpp"
 
-#include "utils/xml.h"
+#include "utils/xml.hpp"
 
-#include "parallel.h"
+#include "parallel.hpp"
 
 //this contains all geometry stuff
-#include "geometry/geometry.h"
+#include "geometry/geometry.hpp"
 
-#include "mesh/mesh.h"
-#include "mesh/utils.h"
-#include "mesh/interpolation.h"
-#include "mesh/boundary_conditions.h"
-#include "mesh/rectangular.h"
-#include "mesh/generator_rectangular.h"
-#include "mesh/rectangular_spline.h"
-#include "mesh/rectangular_masked.h"
-#include "mesh/rectangular_masked_spline.h"
-#include "mesh/triangular2d.h"
-#include "mesh/extruded_triangular3d.h"
-#include "mesh/basic.h"
+#include "mesh/mesh.hpp"
+#include "mesh/utils.hpp"
+#include "mesh/interpolation.hpp"
+#include "mesh/boundary_conditions.hpp"
+#include "mesh/rectangular.hpp"
+#include "mesh/generator_rectangular.hpp"
+#include "mesh/rectangular_spline.hpp"
+#include "mesh/rectangular_masked.hpp"
+#include "mesh/rectangular_masked_spline.hpp"
+#include "mesh/triangular2d.hpp"
+#include "mesh/extruded_triangular3d.hpp"
+#include "mesh/basic.hpp"
 
-#include "provider/provider.h"
-#include "provider/providerfor.h"
-#include "provider/combined_provider.h"
+#include "provider/provider.hpp"
+#include "provider/providerfor.hpp"
+#include "provider/combined_provider.hpp"
 
-#include "phys/constants.h"
-#include "phys/functions.h"
+#include "phys/constants.hpp"
+#include "phys/functions.hpp"
 
-#include "properties/thermal.h"
-#include "properties/electrical.h"
-#include "properties/optical.h"
-#include "properties/gain.h"
-#include "properties/energylevels.h"
+#include "properties/thermal.hpp"
+#include "properties/electrical.hpp"
+#include "properties/optical.hpp"
+#include "properties/gain.hpp"
+#include "properties/energylevels.hpp"
 
-#include "filters/filter.h"
+#include "filters/filter.hpp"
 
-#include "utils/openmp.h"
+#include "utils/openmp.hpp"
 
-#include "utils/warnings.h"
+#include "utils/warnings.hpp"
 
 
 #endif // PLASK__PLASK_HPP

@@ -3,8 +3,8 @@
 using namespace plask;
 using namespace plask::python;
 
-#include "../femT.h"
-#include "../femT3d.h"
+#include "../femT.hpp"
+#include "../femT3d.hpp"
 using namespace plask::thermal::dynamic;
 
 /**

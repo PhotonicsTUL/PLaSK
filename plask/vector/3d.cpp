@@ -1,4 +1,4 @@
-#include "3d.h"
+#include "3d.hpp"
 
 namespace plask {
 

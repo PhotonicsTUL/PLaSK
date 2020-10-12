@@ -1,4 +1,4 @@
-#include "metal.h"
+#include "metal.hpp"
 #include "Faddeeva.hh"
 
 namespace plask { namespace materials {

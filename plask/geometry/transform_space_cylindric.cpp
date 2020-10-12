@@ -1,6 +1,6 @@
-#include "transform_space_cylindric.h"
-#include "../manager.h"
-#include "reader.h"
+#include "transform_space_cylindric.hpp"
+#include "../manager.hpp"
+#include "reader.hpp"
 
 #define PLASK_REVOLUTION_NAME "revolution"
 

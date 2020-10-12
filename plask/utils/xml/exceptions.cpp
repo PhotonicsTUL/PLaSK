@@ -1,5 +1,5 @@
-#include "exceptions.h"
-#include "reader.h"
+#include "exceptions.hpp"
+#include "reader.hpp"
 
 namespace plask {
 

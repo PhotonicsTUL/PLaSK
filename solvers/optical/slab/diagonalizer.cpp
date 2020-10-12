@@ -1,5 +1,5 @@
-#include "diagonalizer.h"
-#include "expansion.h"
+#include "diagonalizer.hpp"
+#include "expansion.hpp"
 
 #include <plask/plask.hpp>
 

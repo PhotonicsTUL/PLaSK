@@ -1,9 +1,9 @@
-#include "license.h"
+#include "license.hpp"
 
 #include <sstream>
 #include <fstream>
 
-#include "getmac.h"
+#include "getmac.hpp"
 
 void print_macs() {
     std::cout << "\nNote: Detected system ids:\n";

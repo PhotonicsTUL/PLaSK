@@ -1,6 +1,6 @@
-#include "geometry.h"
+#include "geometry.hpp"
 
-#include <plask/geometry/primitives.h>
+#include "plask/geometry/primitives.hpp"
 
 namespace plask { namespace python {
 

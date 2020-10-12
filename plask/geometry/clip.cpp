@@ -1,7 +1,7 @@
-#include "clip.h"
+#include "clip.hpp"
 
-#include "../manager.h"
-#include "reader.h"
+#include "../manager.hpp"
+#include "reader.hpp"
 
 #include <limits>
 

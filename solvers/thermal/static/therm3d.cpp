@@ -1,7 +1,7 @@
 #include <type_traits>
 
-#include "therm3d.h"
-#include "conjugate_gradient.h"
+#include "therm3d.hpp"
+#include "conjugate_gradient.hpp"
 
 namespace plask { namespace thermal { namespace tstatic {
 

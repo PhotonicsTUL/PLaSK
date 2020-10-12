@@ -1,11 +1,11 @@
-#include "expansioncyl.h"
-#include "solvercyl.h"
-#include "zeros-data.h"
+#include "expansioncyl.hpp"
+#include "solvercyl.hpp"
+#include "zeros-data.hpp"
 
-#include "expansioncyl-fini.h"
-#include "expansioncyl-infini.h"
+#include "expansioncyl-fini.hpp"
+#include "expansioncyl-infini.hpp"
 
-#include "../gauss_legendre.h"
+#include "../gauss_legendre.hpp"
 
 #include <boost/math/special_functions/bessel.hpp>
 #include <boost/math/special_functions/legendre.hpp>

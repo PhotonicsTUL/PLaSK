@@ -1,6 +1,6 @@
 #include <memory>
 
-#include "solvercyl.h"
+#include "solvercyl.hpp"
 
 namespace plask { namespace optical { namespace slab {
 

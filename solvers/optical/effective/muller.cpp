@@ -1,4 +1,4 @@
-#include "muller.h"
+#include "muller.hpp"
 using namespace std;
 
 namespace plask { namespace optical { namespace effective {

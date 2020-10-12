@@ -1,5 +1,5 @@
-#include "rectangular_common.h"
-#include "regular1d.h"
+#include "rectangular_common.hpp"
+#include "regular1d.hpp"
 
 namespace plask {
 

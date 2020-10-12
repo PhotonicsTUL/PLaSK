@@ -1,6 +1,6 @@
-#include "cylinder.h"
-#include "../manager.h"
-#include "reader.h"
+#include "cylinder.hpp"
+#include "../manager.hpp"
+#include "reader.hpp"
 
 #define PLASK_CYLINDER_NAME "cylinder"
 

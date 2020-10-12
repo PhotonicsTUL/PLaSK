@@ -1,5 +1,5 @@
-#include "factory.h"
-#include "../utils/string.h"
+#include "factory.hpp"
+#include "../utils/string.hpp"
 
 namespace plask {
 

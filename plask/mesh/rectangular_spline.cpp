@@ -1,6 +1,6 @@
-#include "rectangular_spline.h"
-#include "hyman.h"
-#include "../exceptions.h"
+#include "rectangular_spline.hpp"
+#include "hyman.hpp"
+#include "../exceptions.hpp"
 
 namespace plask {
 

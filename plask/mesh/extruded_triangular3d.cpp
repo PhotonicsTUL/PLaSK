@@ -1,9 +1,9 @@
-#include "extruded_triangular3d.h"
+#include "extruded_triangular3d.hpp"
 
 #include <boost/range/irange.hpp>
 
-#include "../utils/interpolation.h"
-#include "rectangular_common.h"
+#include "../utils/interpolation.hpp"
+#include "rectangular_common.hpp"
 
 namespace plask {
 

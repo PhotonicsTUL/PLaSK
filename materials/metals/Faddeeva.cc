@@ -89,7 +89,7 @@
    #define TEST_FADDEEVA).
 
    If HAVE_CONFIG_H is #defined (e.g. by compiling with -DHAVE_CONFIG_H),
-   then we #include "config.h", which is assumed to be a GNU autoconf-style
+   then we #include "config.hpp", which is assumed to be a GNU autoconf-style
    header defining HAVE_* macros to indicate the presence of features. In
    particular, if HAVE_ISNAN and HAVE_ISINF are #defined, we use those
    functions in math.h instead of defining our own, and if HAVE_ERF and/or
@@ -133,7 +133,7 @@
                        plain C (using C99 complex numbers).
                        For real x, use standard-library erf(x)
                        and erfc(x) if available (for C99 or C++11).
-                       #include "config.h" if HAVE_CONFIG_H is #defined.
+                       #include "config.hpp" if HAVE_CONFIG_H is #defined.
      15 December 2012: Portability fixes (copysign, Inf/NaN creation),
                        use CMPLX/__builtin_complex if available in C,
                        slight accuracy improvements to erf and dawson
