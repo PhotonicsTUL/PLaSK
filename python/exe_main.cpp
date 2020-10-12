@@ -445,7 +445,12 @@ int system_main(int argc, const system_char *argv[])
     if (loglevel) plask::maxLoglevel = *loglevel;
 
     // Check if we are faking python
-    bool banner = basename.size() < 6 || basename.substr(0, 6) != CSTR(python);
+
+    bool banner = !std::getenv("PLASK_NOBANNER");
+    if (banner) {
+        banner = basename.size() < 6 || basename.substr(0, 6) != CSTR(python);
+        if (!banner) putenv(const_cast<char*>("PLASK_NOBANNER=1"));
+    }
 
     // Initalize python and load the plask module
     try {
