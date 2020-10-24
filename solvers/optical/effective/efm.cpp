@@ -662,8 +662,10 @@ dcomplex EffectiveFrequencyCyl::detS(const dcomplex& lam, Mode& mode, bool save)
             T = A.solve(B) * T;
             if (save) mode.rfields[i-1] = T * mode.rfields[rsize-1];
         }
-        dcomplex f = 1e6 * sqrt(1. / integrateBessel(mode)); // 1e6: V/µm -> V/m
-        for (size_t r = 0; r != rsize; ++r) mode.rfields[r] *= f;
+        if (save) {
+            dcomplex f = 1e6 * sqrt(1. / integrateBessel(mode)); // 1e6: V/µm -> V/m
+            for (size_t r = 0; r != rsize; ++r) mode.rfields[r] *= f;
+        }
         // In the innermost area there must not be any infinity, so H_0 = 0.
         //    j = [ JJ JH ] 0
         //    0 = [ HJ HH ] 1
