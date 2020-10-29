@@ -880,6 +880,8 @@ struct Scattering {
     }
 };
 
+template <typename SolverT> inline const char* solver_compute_reflectivity_name() { return "compute_reflectivity"; }
+template <typename SolverT> inline const char* solver_compute_transmittivity_name() { return "compute_transmittivity"; }
 
 
 template <typename SolverT>
@@ -896,7 +898,7 @@ py::object Solver_computeReflectivity_polarization(SolverT* self,
         cvector incident = self->incidentVector(side, polarization, lam);
         self->getExpansion().setK0(k0);
         return 100. * self->getReflection(incident, side);
-    }, wavelength);
+    }, wavelength, solver_compute_reflectivity_name<SolverT>(), "lam");
 }
 
 template <typename SolverT>
@@ -913,7 +915,7 @@ py::object Solver_computeTransmittivity_polarization(SolverT* self,
         cvector incident = self->incidentVector(side, polarization, lam);
         self->getExpansion().setK0(k0);
         return 100. * self->getTransmission(incident, side);
-    }, wavelength);
+    }, wavelength, solver_compute_transmittivity_name<SolverT>(), "lam");
 }
 
 template <typename SolverT>
@@ -930,7 +932,7 @@ py::object Solver_computeReflectivity_index(SolverT* self,
         cvector incident = self->SlabBase::incidentVector(index);
         self->getExpansion().setK0(k0);
         return 100. * self->getReflection(incident, side);
-    }, wavelength);
+    }, wavelength, solver_compute_reflectivity_name<SolverT>(), "lam");
 }
 
 template <typename SolverT>
@@ -947,7 +949,7 @@ py::object Solver_computeTransmittivity_index(SolverT* self,
         cvector incident = self->SlabBase::incidentVector(index);
         self->getExpansion().setK0(k0);
         return 100. * self->getTransmission(incident, side);
-    }, wavelength);
+    }, wavelength, solver_compute_transmittivity_name<SolverT>(), "lam");
 }
 
 template <typename SolverT>
@@ -971,7 +973,7 @@ py::object Solver_computeReflectivity_array(SolverT* self,
         double k0 = 2e3*PI/lam;
         self->getExpansion().setK0(k0);
         return 100. * self->getReflection(incident, side);
-    }, wavelength);
+    }, wavelength, solver_compute_reflectivity_name<SolverT>(), "lam");
 }
 
 template <typename SolverT>
@@ -995,7 +997,7 @@ py::object Solver_computeTransmittivity_array(SolverT* self,
         double k0 = 2e3*PI/lam;
         self->getExpansion().setK0(k0);
         return 100. * self->getTransmission(incident, side);
-    }, wavelength);
+    }, wavelength, solver_compute_transmittivity_name<SolverT>(), "lam");
 }
 
 

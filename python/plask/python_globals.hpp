@@ -159,6 +159,14 @@ namespace detail {
     // template<> inline py::handle<> dtype<Tensor3<dcomplex>>() { return py::handle<>(py::borrowed<>(reinterpret_cast<PyObject*>(&PyTuple_Type))); }
 }
 
+// ----------------------------------------------------------------------------------------------------------------------
+// Geometry suffix
+
+template <typename GeometryT> inline std::string format_geometry_suffix(const char*);
+template <> inline std::string format_geometry_suffix<Geometry2DCartesian>(const char* fmt) { return format(fmt, "2D"); }
+template <> inline std::string format_geometry_suffix<Geometry2DCylindrical>(const char* fmt) { return format(fmt, "Cyl"); }
+template <> inline std::string format_geometry_suffix<Geometry3D>(const char* fmt) { return format(fmt, "3D"); }
+
 
 // ----------------------------------------------------------------------------------------------------------------------
 // Register vectors of something
@@ -235,6 +243,10 @@ struct LoggingConfig
 
     LogLevel getLogLevel() const { return maxLoglevel; }
     void setLogLevel(LogLevel level) { if (!forcedLoglevel) maxLoglevel = level; }
+
+    std::string __str__() const;
+
+    std::string __repr__() const;
 };
 
 
@@ -244,6 +256,9 @@ struct Config
     std::string axes_name() const;
 
     void set_axes(std::string axis);
+
+    bool getUfuncIgnoreError() const;
+    void setUfuncIgnoreError(bool value);
 
     std::string __str__() const;
 

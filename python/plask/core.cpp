@@ -79,6 +79,7 @@ PLASK_PYTHON_API OmpNestLock python_omp_lock;
 
 // Config
 PLASK_PYTHON_API AxisNames current_axes = AxisNames::axisNamesRegister.get("ltv");
+PLASK_PYTHON_API bool ufunc_ignore_errors = true;
 
 static LoggingConfig getLoggingConfig(const Config&) {
     return LoggingConfig();
@@ -99,22 +100,45 @@ py::list axeslist_by_name(const std::string& axes_names) {
     return l;
 }
 
+
+
+bool Config::getUfuncIgnoreError() const { return ufunc_ignore_errors; }
+void Config::setUfuncIgnoreError(bool value) { ufunc_ignore_errors = value; }
+
+
 std::string Config::__str__() const {
-    return  "axes:        " + axes_name()
-        + "\nlog.colors:  " + str(LoggingConfig().getLoggingColor())
-        + "\nlog.level:   " + str(py::object(maxLoglevel))
-        + "\nlog.output:  " + str(LoggingConfig().getLoggingDest());
+    return  "axes:         " + axes_name()
+        + "\nlog.colors:   " + str(LoggingConfig().getLoggingColor())
+        + "\nlog.level:    " + str(py::object(maxLoglevel))
+        + "\nlog.output:   " + str(LoggingConfig().getLoggingDest())
+        + "\nnan_on_error: " + (ufunc_ignore_errors? "True" : "False");
     ;
 }
 
 std::string Config:: __repr__() const {
     return
         format("config.axes = '{}'", axes_name()) +
-           + "\nlog.colors = " + str(LoggingConfig().getLoggingColor())
-           + "\nlog.level = LOG_" + str(py::object(maxLoglevel))
-           + "\nlog.output = " + str(LoggingConfig().getLoggingDest());
+           + "\nconfig.log.colors = " + str(LoggingConfig().getLoggingColor())
+           + "\nconfig.log.level = LOG_" + str(py::object(maxLoglevel))
+           + "\nconfig.log.output = " + str(LoggingConfig().getLoggingDest())
+           + "\nconfig.nan_on_error = " + (ufunc_ignore_errors? "True" : "False");
     ;
 }
+
+std::string LoggingConfig::__str__() const {
+    return  "colors: " + str(getLoggingColor())
+        + "\nlevel:  " + str(py::object(maxLoglevel))
+        + "\noutput: " + str(getLoggingDest());
+    ;
+}
+
+std::string LoggingConfig::__repr__() const {
+    return "log.colors = " + str(getLoggingColor())
+        + "\nlog.level = LOG_" + str(py::object(maxLoglevel))
+        + "\nlog.output = " + str(getLoggingDest());
+    ;
+}
+
 
 inline static void register_config()
 {
@@ -197,6 +221,13 @@ inline static void register_config()
                       u8"**output**\n"
                       u8"        Stream to which the log messages are printed. Can be either **stderr**\n"
                       u8"        (which is the default) or **stdout** (turned on for interactive mode).\n"
+                     )
+        .add_property("nan_on_error", &Config::getUfuncIgnoreError, &Config::setUfuncIgnoreError,
+                      u8"Ignore error for array computations and return NAN.\n\n"
+
+                      u8"If this parameter is ``True``, some solver methods will not report computation\n"
+                      u8"errors if an array is passed as an argument. Instead, such methods will set\n"
+                      u8"the corresponding value in the result array to NAN.\n"
                      );
     py::scope().attr("config") = Config();
 }

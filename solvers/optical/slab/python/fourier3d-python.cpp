@@ -6,6 +6,14 @@
 
 namespace plask { namespace optical { namespace slab { namespace python {
 
+template <> inline const char* solver_compute_reflectivity_name<FourierSolver3D>() {
+    return "Fourier3D.compute_reflectivity";
+}
+
+template <> inline const char* solver_compute_transmittivity_name<FourierSolver3D>() {
+    return "Fourier3D.compute_transmittivity";
+}
+
 
 template <NPY_TYPES type>
 static inline py::object arrayFromVec3D(cvector data, size_t minor, int dim) {
@@ -325,22 +333,22 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
         case WHAT_WAVELENGTH:
             return UFUNC<dcomplex>(
                 [self](dcomplex x) -> dcomplex { self->expansion.setK0(2e3*PI/x); return self->getDeterminant(); },
-                array
+                array, "Fourier3D.get_determinant", "lam"
             );
         case WHAT_K0:
             return UFUNC<dcomplex>(
                 [self](dcomplex x) -> dcomplex { self->expansion.setK0(x); return self->getDeterminant(); },
-                array
+                array, "Fourier3D.get_determinant", "k0"
             );
         case WHAT_KLONG:
             return UFUNC<dcomplex>(
                 [self](dcomplex x) -> dcomplex { self->expansion.setKlong(x); return self->getDeterminant(); },
-                array
+                array, "Fourier3D.get_determinant", "klong"
             );
         case WHAT_KTRAN:
             return UFUNC<dcomplex>(
                 [self](dcomplex x) -> dcomplex { self->expansion.setKtran(x); return self->getDeterminant(); },
-                array
+                array, "Fourier3D.get_determinant", "ktran"
             );
     }
     return py::object();
@@ -679,4 +687,3 @@ void export_FourierSolver3D()
 }
 
 }}}} // namespace plask::optical::slab::python
-

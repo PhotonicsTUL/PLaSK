@@ -8,6 +8,15 @@
 
 namespace plask { namespace optical { namespace slab { namespace python {
 
+template <> inline const char* solver_compute_reflectivity_name<BesselSolverCyl>() {
+    return "BesselCyl.compute_reflectivity";
+}
+
+template <> inline const char* solver_compute_transmittivity_name<BesselSolverCyl>() {
+    return "BesselCyl.compute_transmittivity";
+}
+
+
 template <>
 py::object Eigenmodes<BesselSolverCyl>::array(const dcomplex* data, size_t N) const {
     const int dim = 2, strid = 2;
@@ -79,12 +88,16 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
         case WHAT_WAVELENGTH:
             return UFUNC<dcomplex>(
                 [self](dcomplex x) -> dcomplex { self->expansion->setK0(2e3*PI / x); return self->getDeterminant(); },
-                array
+                array,
+                "BesselCyl.get_determinant",
+                "lam"
             );
         case WHAT_K0:
             return UFUNC<dcomplex>(
                 [self](dcomplex x) -> dcomplex { self->expansion->setK0(x); return self->getDeterminant(); },
-                array
+                array,
+                "BesselCyl.get_determinant",
+                "k0"
             );
     }
     return py::object();

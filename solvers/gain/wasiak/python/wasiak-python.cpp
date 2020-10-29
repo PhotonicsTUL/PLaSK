@@ -21,7 +21,7 @@ static fermi::GainSpectrum<GeometryT> FermiGetGainSpectrum2(fermi::FermiGainSolv
 
 template <typename GeometryT>
 static py::object FermiGainSpectrum__call__(fermi::GainSpectrum<GeometryT>& self, py::object wavelengths) {
-    return PARALLEL_UFUNC<double>([&](double x) { return self.getGain(x); }, wavelengths);
+    return PARALLEL_UFUNC<double>([&](double x) { return self.getGain(x); }, wavelengths, "Spectrum", "lam");
 }
 
 template <typename GeometryT>
@@ -109,7 +109,7 @@ static FermiNew::GainSpectrum<GeometryT> FermiNewGetGainSpectrum2(FermiNew::Ferm
 
 template <typename GeometryT>
 static py::object FermiNewGainSpectrum__call__(FermiNew::GainSpectrum<GeometryT>& self, py::object wavelengths) {
-    return UFUNC<double>([&](double x) { return self.getGain(x); }, wavelengths);
+    return UFUNC<double>([&](double x) { return self.getGain(x); }, wavelengths, "Spectrum", "lam");
 }
 
 template <typename GeometryT>
@@ -121,7 +121,7 @@ FermiNewGetLuminescenceSpectrum2(FermiNew::FermiNewGainSolver<GeometryT>* solver
 template <typename GeometryT>
 static py::object FermiNewLuminescenceSpectrum__call__(FermiNew::LuminescenceSpectrum<GeometryT>& self,
                                                        py::object wavelengths) {
-    return UFUNC<double>([&](double x) { return self.getLuminescence(x); }, wavelengths);
+    return UFUNC<double>([&](double x) { return self.getLuminescence(x); }, wavelengths, "Spectrum", "lam");
 }
 
 /*template <typename GeometryT>
@@ -265,7 +265,7 @@ BOOST_PYTHON_MODULE(wasiak) {
                    plask::shared_ptr<fermi::GainSpectrum<Geometry2DCartesian>>>(
             "Spectrum", "Gain spectrum class. You can call it like a function to get gains for different vavelengths.",
             py::no_init)
-            .def("__call__", &FermiGainSpectrum__call__<Geometry2DCartesian>);
+            .def("__call__", &FermiGainSpectrum__call__<Geometry2DCartesian>, py::arg("lam"));
     }
     {
         CLASS(fermi::FermiGainSolver<Geometry2DCylindrical>, "WasiakOldCyl",
@@ -294,7 +294,7 @@ BOOST_PYTHON_MODULE(wasiak) {
                    plask::shared_ptr<fermi::GainSpectrum<Geometry2DCylindrical>>>(
             "Spectrum", "Gain spectrum class. You can call it like a function to get gains for different vavelengths.",
             py::no_init)
-            .def("__call__", &FermiGainSpectrum__call__<Geometry2DCylindrical>);
+            .def("__call__", &FermiGainSpectrum__call__<Geometry2DCylindrical>, py::arg("lam"));
     }
 
     {
@@ -345,14 +345,14 @@ BOOST_PYTHON_MODULE(wasiak) {
                    plask::shared_ptr<FermiNew::GainSpectrum<Geometry2DCartesian>>>(
             "Spectrum", "Gain spectrum class. You can call it like a function to get gains for different vavelengths.",
             py::no_init)
-            .def("__call__", &FermiNewGainSpectrum__call__<Geometry2DCartesian>);
+            .def("__call__", &FermiNewGainSpectrum__call__<Geometry2DCartesian>, py::arg("lam"));
         py::class_<FermiNew::LuminescenceSpectrum<Geometry2DCartesian>,
                    plask::shared_ptr<FermiNew::LuminescenceSpectrum<Geometry2DCartesian>>>(
             "LuminescenceSpectrum",
             "Luminescence spectrum class. You can call it like a function to get luminescences for different "
             "vavelengths.",
             py::no_init)
-            .def("__call__", &FermiNewLuminescenceSpectrum__call__<Geometry2DCartesian>);
+            .def("__call__", &FermiNewLuminescenceSpectrum__call__<Geometry2DCartesian>, py::arg("lam"));
     }
     {
         CLASS(FermiNew::FermiNewGainSolver<Geometry2DCylindrical>, "WasiakNewCyl",
@@ -402,13 +402,13 @@ BOOST_PYTHON_MODULE(wasiak) {
                    plask::shared_ptr<FermiNew::GainSpectrum<Geometry2DCylindrical>>>(
             "Spectrum", "Gain spectrum class. You can call it like a function to get gains for different vavelengths.",
             py::no_init)
-            .def("__call__", &FermiNewGainSpectrum__call__<Geometry2DCylindrical>);
+            .def("__call__", &FermiNewGainSpectrum__call__<Geometry2DCylindrical>, py::arg("lam"));
         py::class_<FermiNew::LuminescenceSpectrum<Geometry2DCylindrical>,
                    plask::shared_ptr<FermiNew::LuminescenceSpectrum<Geometry2DCylindrical>>>(
             "LuminescenceSpectrum",
             "Luminescence spectrum class. You can call it like a function to get luminescences for different "
             "vavelengths.",
             py::no_init)
-            .def("__call__", &FermiNewLuminescenceSpectrum__call__<Geometry2DCylindrical>);
+            .def("__call__", &FermiNewLuminescenceSpectrum__call__<Geometry2DCylindrical>, py::arg("lam"));
     }
 }

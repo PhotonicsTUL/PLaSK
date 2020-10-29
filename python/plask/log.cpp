@@ -351,6 +351,8 @@ void register_python_log()
              u8"but can make log not visible if PLaSK is used interactively. Call this method\n"
              u8"to use Python sys.stderr or sys.stdout for log printing.\n")
         .staticmethod("use_python")
+        .def("__str__", &LoggingConfig::__str__)
+        .def("__repr__", &LoggingConfig::__repr__)
     ;
 }
 

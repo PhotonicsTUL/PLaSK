@@ -11,25 +11,29 @@ using namespace plask::python;
 using namespace plask::gain::freecarrier;
 
 #ifndef NDEBUG
+
 template <typename GeometryT>
 static py::object FreeCarrier_detEl(FreeCarrierGainSolver<GeometryT>* self, py::object E, size_t reg=0, size_t well=0) {
     self->initCalculation();
     typename FreeCarrierGainSolver<GeometryT>::ActiveRegionParams params(self, self->regions[reg], self->getT0());
-    return PARALLEL_UFUNC<double>([self,&params,well](double x){return self->detEl(x, params, well);}, E);
+    std::string name = format_geometry_suffix<GeometryT>("FreeCarrier{}.det_El");
+    return PARALLEL_UFUNC<double>([self,&params,well](double x){return self->detEl(x, params, well);}, E, name.c_str(), "E");
 }
 
 template <typename GeometryT>
 static py::object FreeCarrier_detHh(FreeCarrierGainSolver<GeometryT>* self, py::object E, size_t reg=0, size_t well=0) {
     self->initCalculation();
     typename FreeCarrierGainSolver<GeometryT>::ActiveRegionParams params(self, self->regions[reg], self->getT0());
-    return PARALLEL_UFUNC<double>([self,&params,well](double x){return self->detHh(x, params, well);}, E);
+    std::string name = format_geometry_suffix<GeometryT>("FreeCarrier{}.det_Hh");
+    return PARALLEL_UFUNC<double>([self,&params,well](double x){return self->detHh(x, params, well);}, E, name.c_str(), "E");
 }
 
 template <typename GeometryT>
 static py::object FreeCarrier_detLh(FreeCarrierGainSolver<GeometryT>* self, py::object E, size_t reg=0, size_t well=0) {
     self->initCalculation();
     typename FreeCarrierGainSolver<GeometryT>::ActiveRegionParams params(self, self->regions[reg], self->getT0());
-    return PARALLEL_UFUNC<double>([self,&params,well](double x){return self->detLh(x, params, well);}, E);
+    std::string name = format_geometry_suffix<GeometryT>("FreeCarrier{}.det_Lh");
+    return PARALLEL_UFUNC<double>([self,&params,well](double x){return self->detLh(x, params, well);}, E, name.c_str(), "E");
 }
 
 template <typename GeometryT>
@@ -37,7 +41,8 @@ static py::object FreeCarrierGainSolver_getN(FreeCarrierGainSolver<GeometryT>* s
     double T = (pT.is_none())? self->getT0() : py::extract<double>(pT);
     self->initCalculation();
     typename FreeCarrierGainSolver<GeometryT>::ActiveRegionParams params(self, self->params0[reg], T);
-    return PARALLEL_UFUNC<double>([self,T,reg,&params](double x){return self->getN(x, T, params);}, F);
+    std::string name = format_geometry_suffix<GeometryT>("FreeCarrier{}.getN");
+    return PARALLEL_UFUNC<double>([self,T,reg,&params](double x){return self->getN(x, T, params);}, F, name.c_str(), "F");
 }
 
 template <typename GeometryT>
@@ -45,7 +50,8 @@ static py::object FreeCarrierGainSolver_getP(FreeCarrierGainSolver<GeometryT>* s
     double T = (pT.is_none())? self->getT0() : py::extract<double>(pT);
     self->initCalculation();
     typename FreeCarrierGainSolver<GeometryT>::ActiveRegionParams params(self, self->params0[reg], T);
-    return PARALLEL_UFUNC<double>([self,T,reg,&params](double x){return self->getP(x, T, params);}, F);
+    std::string name = format_geometry_suffix<GeometryT>("FreeCarrier{}.getP");
+    return PARALLEL_UFUNC<double>([self,T,reg,&params](double x){return self->getP(x, T, params);}, F, name.c_str(), "F");
 }
 #endif
 
@@ -89,7 +95,7 @@ static shared_ptr<GainSpectrum<GeometryT>> FreeCarrierGetGainSpectrum2(FreeCarri
 
 template <typename GeometryT>
 static py::object FreeCarrierGainSpectrum__call__(GainSpectrum<GeometryT>& self, py::object wavelengths) {
-   // return PARALLEL_UFUNC<double>([&](double x){return self.getGain(x);}, wavelengths);
+    // return PARALLEL_UFUNC<double>([&](double x){return self.getGain(x);}, wavelengths, "Spectrum", "lam");
     try {
         return py::object(self.getGain(py::extract<double>(wavelengths)));
     } catch (py::error_already_set&) {
@@ -302,4 +308,3 @@ BOOST_PYTHON_MODULE(freecarrier)
         ;
     }
 }
-
