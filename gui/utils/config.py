@@ -152,6 +152,7 @@ DEFAULTS = {
     'workarounds/jedi_no_dot': False,
     'workarounds/no_jedi': False,
     'workarounds/system_jedi': False,
+    'workarounds/no_unicode_minus': False,
     'experimental/preserve_comments': False,
 }
 GROUPS = set(e.split('/', 1)[0] for e in DEFAULTS)
@@ -306,6 +307,10 @@ CONFIG_WIDGETS = OrderedDict([
             ("Automatically check for updates",
              CheckBox('updates/automatic_check',
                       "If this option is checked, PLaSK will automatically check for a new version on startup.")),
+            ("Do not use Unicode minus",
+             CheckBox("workarounds/no_unicode_minus",
+                      "Do not use Unicode minus sign. You should check if if you see some strange character in your plots "
+                      "instead of the minus sign.")),
         ]),
         ("Help", [
             ("Show only online help",
@@ -1043,6 +1048,9 @@ class ConfigDialog(QDialog):
             matplotlib.rcParams['axes.facecolor'] = CONFIG['plots/face_color']
             matplotlib.rcParams['axes.edgecolor'] = CONFIG['plots/edge_color']
             matplotlib.rcParams['grid.color'] = CONFIG['plots/grid_color']
+            try: matplotlib.rcParams['axes.unicode_minus'] = not CONFIG['workarounds/no_unicode_minus']
+            except KeyError: pass
+
         self.parent().config_changed.emit()
         if need_restart:
             QMessageBox.information(None,
@@ -1053,4 +1061,3 @@ class ConfigDialog(QDialog):
     def accept(self):
         self.apply()
         super(ConfigDialog, self).accept()
-

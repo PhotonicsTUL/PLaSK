@@ -1156,19 +1156,34 @@ def main():
     load_plugins()
 
     if matplotlib:
-        ft = QWidget().font()
-        pd = APPLICATION.desktop()
+        font = APPLICATION.font()
+        desktop = APPLICATION.desktop()
+        color = APPLICATION.palette().color(QPalette.Text).name()
         matplotlib.rcParams.update({
-            'figure.dpi': pd.logicalDpiY(),
-            'font.size': ft.pointSize(),
-            'font.family': ft.family(),
-            'mathtext.fontset': 'stixsans',
-            # 'mathtext.cal': ft.family(),
-            # 'mathtext.rm': ft.family(),
-            # 'mathtext.it': ft.family() + ':italic',
-            # 'mathtext.bf': ft.family() + ':bold',
-            # 'mathtext.sf': ft.family()
+            'figure.dpi': desktop.logicalDpiY(),
+            'font.family': font.family(),
+            'font.size': font.pointSize(),
+            'font.weight': 'normal',
+            'mathtext.fontset': 'custom',
+            'mathtext.cal': font.family(),
+            'mathtext.rm': font.family(),
+            'mathtext.it': font.family() + ':italic',
+            'mathtext.bf': font.family() + ':bold',
+            'mathtext.sf': font.family(),
+            'text.color': color,
+            'axes.labelcolor': color,
+            'xtick.color': color,
+            'ytick.color': color,
+            # 'patch.edgecolor': color,
+            # 'axes.edgecolor': color,
+            # 'grid.color': color,
+            'figure.facecolor': APPLICATION.palette().color(QPalette.Background).name(),
         })
+        if CONFIG['workarounds/no_unicode_minus']:
+            try:
+                matplotlib.rcParams['axes.unicode_minus'] = False
+            except KeyError:
+                pass
 
     SESSION = Session()
     if APPLICATION.isSessionRestored():

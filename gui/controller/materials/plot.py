@@ -117,30 +117,11 @@ class MaterialPlot(QWidget):
         plot.setDefault(True)
         plot.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
-        # Update text colors
-        color = self.palette().color(QPalette.Text).name()
-        font = QApplication.font()
-
-        self.mplrc = {
-            'font.family': font.family(),
-            'font.size': font.pointSize(),
-            'font.weight': font.weight(),
-            'patch.edgecolor': color,
-            'text.color': color,
-            'axes.edgecolor': color,
-            'axes.labelcolor': color,
-            'xtick.color': color,
-            'ytick.color': color,
-            'grid.color': color,
-            'figure.facecolor': self.palette().color(QPalette.Background).name(),
-        }
-
-        with matplotlib.rc_context(self.mplrc):
-            self.figure = Figure()
-            self.canvas = FigureCanvas(self.figure)
-            self.canvas.setParent(self)
-            self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-            self.canvas.updateGeometry()
+        self.figure = Figure()
+        self.canvas = FigureCanvas(self.figure)
+        self.canvas.setParent(self)
+        self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.canvas.updateGeometry()
         self.axes = None
         self.axes2 = None
 
@@ -405,141 +386,138 @@ class MaterialPlot(QWidget):
                     yield str(k.text())[:-1].replace('&', ''), val
 
     def update_plot(self):
-        with matplotlib.rc_context(self.mplrc):
-            self.figure.clear()
-            self.axes = self.figure.add_subplot(111)
-            self.axes2 = None
-            param = str(self.param.currentText())
+        self.figure.clear()
+        self.axes = self.figure.add_subplot(111)
+        self.axes2 = None
+        param = str(self.param.currentText())
 
-            import warnings
-            old_showwarning = warnings.showwarning
-            warns = []
+        import warnings
+        old_showwarning = warnings.showwarning
+        warns = []
 
-            def showwarning(message, category, filename, lineno, file=None, line=None):
-                message = str(message)
-                if message not in warns:
-                    warns.append(message)
-            warnings.showwarning = showwarning
+        def showwarning(message, category, filename, lineno, file=None, line=None):
+            message = str(message)
+            if message not in warns:
+                warns.append(message)
+        warnings.showwarning = showwarning
 
+        try:
             try:
-                try:
-                    start, end = (float(v.text()) for v in self.arguments[self.arg_button][:2])
-                except ValueError:
-                    raise ValueError("Wrong ranges '{}' - '{}'"
-                                     .format(*(v.text() for v in self.arguments[self.arg_button][:2])))
-                plot_range = numpy.linspace(start, end, 1001)
-                plot_cat = self.arguments[self.arg_button][3]
-                other_args = dict(self._parse_other_args(self.arg_button, 2))
-                other_elements = dict(self._parse_other_args(self.arg_button, 0))
-                other_elements.update(dict(('doping', v) for k,v in self._parse_other_args(self.arg_button, 1)))
-                arg_name = 'doping' if plot_cat == 1 else str(self.arg_button.text())[:-1].replace('&', '')
-                material_name = str(self.material.currentText())
-                if plask is not None:
-                    if plot_cat == 2:
-                        material = self.materialdb.get(material_name, **other_elements)
-                        self.vals = lambda a: material.__getattribute__(param)(**dict(((arg_name, a),), **other_args))
-                    else:
-                        self.vals = lambda a: self.materialdb.get(material_name, **dict(((arg_name, a),), **other_elements)).\
-                            __getattribute__(param)(**other_args)
+                start, end = (float(v.text()) for v in self.arguments[self.arg_button][:2])
+            except ValueError:
+                raise ValueError("Wrong ranges '{}' - '{}'"
+                                    .format(*(v.text() for v in self.arguments[self.arg_button][:2])))
+            plot_range = numpy.linspace(start, end, 1001)
+            plot_cat = self.arguments[self.arg_button][3]
+            other_args = dict(self._parse_other_args(self.arg_button, 2))
+            other_elements = dict(self._parse_other_args(self.arg_button, 0))
+            other_elements.update(dict(('doping', v) for k,v in self._parse_other_args(self.arg_button, 1)))
+            arg_name = 'doping' if plot_cat == 1 else str(self.arg_button.text())[:-1].replace('&', '')
+            material_name = str(self.material.currentText())
+            if plask is not None:
+                if plot_cat == 2:
+                    material = self.materialdb.get(material_name, **other_elements)
+                    self.vals = lambda a: material.__getattribute__(param)(**dict(((arg_name, a),), **other_args))
                 else:
-                    model_materials = set()
-                    material = None
-                    if self.model is not None:
-                        while material_name not in model_materials:  # loop for looking-up the base
-                            material = [e for e in self.model.entries if e.name == material_name]
-                            if material:
-                                model_materials.add(material_name)
-                                material = material[0]
-                                mprop = [p for p in material.properties if p[0] == param]
-                                if mprop:
-                                    expr = mprop[0][1]
-                                    code = compile(expr, '', 'eval')
-                                    class Material: pass
-                                    mat = Material()
-                                    for k, v in other_elements.items():
-                                        setattr(mat, k, v)
-                                    other_args['self'] = mat
-                                    if plot_cat == 2:
-                                        self.vals = lambda a: eval(code, numpy.__dict__,
-                                                                   dict(((arg_name, a),), **other_args))
-                                    else:
-                                        def f(a):
-                                            setattr(mat, arg_name, a)
-                                            return eval(code, numpy.__dict__, dict((), **other_args))
-                                        self.vals = f
-                                    break
-                                else:
-                                    material_name = material.base  # and we repeat the loop
-                                    material = None
-                            else:
-                                break
-                vals = numpy.array([self.vals(a) for a in plot_range])
-                if vals.dtype == complex:
-                    self.axes2 = self.axes.twinx()
-                    self.axes.plot(plot_range, vals.real)
-                    self.axes2.plot(plot_range, vals.imag, ls='--')
-                else:
-                    self.axes.plot(plot_range, vals)
-                self.parent().setWindowTitle("Material Parameter: {} @ {}".format(param, material_name))
-            except Exception as err:
-                if _DEBUG:
-                    import traceback
-                    traceback.print_exc()
-                self.error.setText('<div style="color:red;">{}</div>'.format(str(err)))
-                self.error.show()
-                self.label.hide()
-                self.error.setFixedHeight(self.error.document().size().height())
-                self.axes.xaxis.set_major_locator(NullLocator())
-                self.axes.yaxis.set_major_locator(NullLocator())
-                if self.axes2 is not None:
-                    self.axes2.xaxis.set_major_locator(NullLocator())
-                    self.axes2.yaxis.set_major_locator(NullLocator())
+                    self.vals = lambda a: self.materialdb.get(material_name, **dict(((arg_name, a),), **other_elements)).\
+                        __getattribute__(param)(**other_args)
             else:
-                self.axes.xaxis.set_major_locator(AutoLocator())
-                self.axes.yaxis.set_major_locator(AutoLocator())
-                if self.axes2 is not None:
-                    self.axes2.xaxis.set_major_locator(AutoLocator())
-                    self.axes2.yaxis.set_major_locator(AutoLocator())
-                self.error.clear()
-                self.error.hide()
-                self.xn = self.arg_button.text()[:-1].replace('&', '')
-                self.yn = param
-                self.xu = self.arg_button.unit
-                self.yu = MATERIALS_PROPERTES[param][1]
-                self.label.show()
-                self.label.setText(' ')
-                self.axes.set_xlim(start, end)
-                self.axes.set_xlabel(html_to_tex(u"{}{} [{}]".format(self.arg_button.descr[0].upper(),
-                                                                     self.arg_button.descr[1:],
-                                                                     self.arg_button.unit)))
-                self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
-                self.axes.set_ylabel('[]')
-                if self.axes2 is not None:
-                    self.axes2.set_ylabel('[]')
-                self.figure.tight_layout(pad=0.2)
-                label = html_to_tex(MATERIALS_PROPERTES[param][0]).splitlines()[0] +\
-                        ' [' + html_to_tex(MATERIALS_PROPERTES[param][1]) + ']'
-                if self.axes2 is None:
-                    self.axes.set_ylabel(label)
-                else:
-                    self.axes.set_ylabel(label + " (real part, solid)")
-                    self.axes2.set_ylabel(label + " (imaginary part, dashed)")
+                model_materials = set()
+                material = None
+                if self.model is not None:
+                    while material_name not in model_materials:  # loop for looking-up the base
+                        material = [e for e in self.model.entries if e.name == material_name]
+                        if material:
+                            model_materials.add(material_name)
+                            material = material[0]
+                            mprop = [p for p in material.properties if p[0] == param]
+                            if mprop:
+                                expr = mprop[0][1]
+                                code = compile(expr, '', 'eval')
+                                class Material: pass
+                                mat = Material()
+                                for k, v in other_elements.items():
+                                    setattr(mat, k, v)
+                                other_args['self'] = mat
+                                if plot_cat == 2:
+                                    self.vals = lambda a: eval(code, numpy.__dict__,
+                                                                dict(((arg_name, a),), **other_args))
+                                else:
+                                    def f(a):
+                                        setattr(mat, arg_name, a)
+                                        return eval(code, numpy.__dict__, dict((), **other_args))
+                                    self.vals = f
+                                break
+                            else:
+                                material_name = material.base  # and we repeat the loop
+                                material = None
+                        else:
+                            break
+            vals = numpy.array([self.vals(a) for a in plot_range])
+            if vals.dtype == complex:
+                self.axes2 = self.axes.twinx()
+                self.axes.plot(plot_range, vals.real)
+                self.axes2.plot(plot_range, vals.imag, ls='--')
+            else:
+                self.axes.plot(plot_range, vals)
+            self.parent().setWindowTitle("Material Parameter: {} @ {}".format(param, material_name))
+        except Exception as err:
+            if _DEBUG:
+                import traceback
+                traceback.print_exc()
+            self.error.setText('<div style="color:red;">{}</div>'.format(str(err)))
+            self.error.show()
+            self.label.hide()
+            self.error.setFixedHeight(self.error.document().size().height())
+            self.axes.xaxis.set_major_locator(NullLocator())
+            self.axes.yaxis.set_major_locator(NullLocator())
+            if self.axes2 is not None:
+                self.axes2.xaxis.set_major_locator(NullLocator())
+                self.axes2.yaxis.set_major_locator(NullLocator())
+        else:
+            axeses = (self.axes,) if self.axes2 is None else (self.axes, self.axes2)
+            for axes in axeses:
+                axes.xaxis.set_major_locator(AutoLocator())
+                axes.yaxis.set_major_locator(AutoLocator())
+            self.error.clear()
+            self.error.hide()
+            self.xn = self.arg_button.text()[:-1].replace('&', '')
+            self.yn = param
+            self.xu = self.arg_button.unit
+            self.yu = MATERIALS_PROPERTES[param][1]
+            self.label.show()
+            self.label.setText(' ')
+            self.axes.set_xlim(start, end)
+            self.axes.set_xlabel(html_to_tex(u"{}{} [{}]".format(self.arg_button.descr[0].upper(),
+                                                                    self.arg_button.descr[1:],
+                                                                    self.arg_button.unit)))
+            self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
+            for axes in axeses:
+                axes.set_ylabel('[]')
+            self.figure.tight_layout(pad=0.2)
+            xlabel = html_to_tex(MATERIALS_PROPERTES[param][0]).splitlines()[0] +\
+                    ' [' + html_to_tex(MATERIALS_PROPERTES[param][1]) + ']'
+            if self.axes2 is None:
+                self.axes.set_ylabel(xlabel)
+            else:
+                self.axes.set_ylabel(xlabel + " (real part, solid)")
+                self.axes2.set_ylabel(xlabel + " (imaginary part, dashed)")
 
-                import matplotlib.pyplot as plt
-                plt.yticks()
+            # import matplotlib.pyplot as plt
+            # plt.yticks()
 
-                self._cursor = Cursor(self.axes, horizOn=False, useblit=True, color='#888888', linewidth=1)
-                self.update_scale()
+            self._cursor = Cursor(self.axes, horizOn=False, useblit=True, color='#888888', linewidth=1)
+            self.update_scale()
 
-                warnings.showwarning = old_showwarning
-                if warns:
-                    # if self.error.text(): self.error.append("\n")
-                    self.error.append("\n".join(warns))
-                    self.error.show()
-                    self.error.setFixedHeight(self.error.document().size().height())
+            warnings.showwarning = old_showwarning
+            if warns:
+                # if self.error.text(): self.error.append("\n")
+                self.error.append("\n".join(warns))
+                self.error.show()
+                self.error.setFixedHeight(self.error.document().size().height())
 
     def update_scale(self):
-        fmtr = ScalarFormatter(useOffset=False)
+        fmtr = ScalarFormatter(useOffset=False, useLocale=False)
         if self.axes is not None:
             self.axes.set_xscale('log' if self.logx_action.isChecked() else 'linear')
             self.axes.set_yscale('log' if self.logy_action.isChecked() else 'linear')
