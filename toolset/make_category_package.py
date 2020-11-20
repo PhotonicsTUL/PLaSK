@@ -6,11 +6,6 @@ import os
 
 import yaml
 
-# Disable yaml warning
-try:
-    yaml.warnings({'YAMLLoadWarning': False})
-except (TypeError, NameError, AttributeError):
-    pass
 
 source = sys.argv[1]
 target = sys.argv[2]
@@ -35,7 +30,7 @@ for dirname, _, files in os.walk(source):
     if 'solvers.yml' in files:
         library = os.path.basename(dirname)
         try:
-            source = yaml.load(open_utf8(os.path.join(dirname, 'solvers.yml')))
+            source = yaml.safe_load(open_utf8(os.path.join(dirname, 'solvers.yml')))
         except:
             continue
 

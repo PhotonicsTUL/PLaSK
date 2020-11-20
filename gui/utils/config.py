@@ -592,7 +592,7 @@ class Config:
         self.qsettings.sync()
 
     def load(self, filename, widgets=None):
-        data = yaml.load(open(filename))
+        data = yaml.safe_load(open(filename))
         if not isinstance(data, dict):
             raise TypeError("Wrong YAML file contents.")
         for prefix, group in data.items():

@@ -20,12 +20,6 @@ try:
 except ImportError:
     import yaml
 
-    # Disable yaml warning
-    try:
-        yaml.warnings({'YAMLLoadWarning': False})
-    except (TypeError, NameError, AttributeError):
-        pass
-
     def dict_representer(dumper, data):
         return dumper.represent_dict(data.iteritems())
 
@@ -100,12 +94,12 @@ else:
 
 
 schema_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'doc', 'schema', 'solvers.yaml')
-schema = yaml.load(open_utf8(schema_file))
+schema = yaml.safe_load(open_utf8(schema_file))
 validator = jsonschema.validators.validator_for(schema)(schema)
 
 
 def validate(fname):
-    instance = yaml.load(open_utf8(fname), **kwargs)
+    instance = yaml.safe_load(open_utf8(fname), **kwargs)
     error = jsonschema.exceptions.best_match(validator.iter_errors(instance))
     if error:
         print_error(error, fname, instance)

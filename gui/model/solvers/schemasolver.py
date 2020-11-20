@@ -396,7 +396,7 @@ def _iter_tags(tags):
 def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
     if yaml is None: return
 
-    for solver in yaml.load(open_utf8(filename)):
+    for solver in yaml.safe_load(open_utf8(filename)):
         try:
             if not isinstance(solver, dict): continue
 

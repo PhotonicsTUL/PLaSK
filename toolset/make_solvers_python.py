@@ -7,11 +7,6 @@ import textwrap
 
 import yaml
 
-# Disable yaml warning
-try:
-    yaml.warnings({'YAMLLoadWarning': False})
-except (TypeError, NameError, AttributeError):
-    pass
 
 plaskdir = os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0])))
 
@@ -92,9 +87,9 @@ def browse_tags(outer, docs, initializers, loaders):
 
 
 try:
-	source = yaml.load(open(fname, encoding='utf-8'))
+	source = yaml.safe_load(open(fname, encoding='utf-8'))
 except TypeError:
-	source = yaml.load(open(fname))
+	source = yaml.safe_load(open(fname))
 
 docs = OrderedDict()
 initializers = []

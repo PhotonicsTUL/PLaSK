@@ -9,12 +9,6 @@ from codecs import open
 
 import yaml
 
-# Disable yaml warning
-try:
-    yaml.warnings({'YAMLLoadWarning': False})
-except (TypeError, NameError, AttributeError):
-    pass
-
 
 plaskdir = os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[0])))
 docdir = os.path.join(plaskdir, 'doc')
@@ -51,7 +45,7 @@ def make_rst(dirname):
     category = os.path.basename(os.path.dirname(dirname))
     library = os.path.basename(dirname)
 
-    source = yaml.load(open(os.path.join(dirname, 'solvers.yml'), encoding='utf8'))
+    source = yaml.safe_load(open(os.path.join(dirname, 'solvers.yml'), encoding='utf8'))
 
     for solver in source:
         if not isinstance(solver, dict): continue

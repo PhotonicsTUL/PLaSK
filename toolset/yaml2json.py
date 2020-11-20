@@ -16,6 +16,6 @@ except IndexError:
     outfile = os.path.splitext(infile)[0] + '.json'
 
 
-data = yaml.load(open(infile), Loader=yaml.SafeLoader)
+data = yaml.safe_load(open(infile))
 
 json.dump(data, open(outfile, 'w'), indent=2)
