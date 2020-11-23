@@ -128,7 +128,7 @@ class ThermoElectric(plask.Solver):
             self._read_attr(tag, 'iterlim', self.thermal, int)
             self._read_attr(tag, 'logfreq', self.thermal, int)
         elif tag == 'ematrix':
-            self._read_attr(tag, 'algorithm', self.thermal)
+            self._read_attr(tag, 'algorithm', self.electrical)
             self._read_attr(tag, 'itererr', self.electrical, float)
             self._read_attr(tag, 'iterlim', self.electrical, int)
             self._read_attr(tag, 'logfreq', self.electrical, int)
@@ -464,10 +464,16 @@ class ThermoElectric(plask.Solver):
         return defines
 
     def _get_info(self):
-        return self._get_defines_info() + [
-            "Total current [mA]:            {:8.3f}".format(self.get_total_current()),
-            "Maximum temperature [K]:       {:8.3f}".format(max(self.get_temperature()))
-        ]
+        info = self._get_defines_info()
+        try:
+            info.append("Total current [mA]:            {:8.3f}".format(self.get_total_current()))
+        except:
+            pass
+        try:
+            info.append("Maximum temperature [K]:       {:8.3f}".format(max(self.get_temperature())))
+        except:
+            pass
+        return info
 
 
 class ThermoElectric2D(ThermoElectric):
