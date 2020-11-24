@@ -134,7 +134,8 @@ class RectangularMesh(Grid):
             for i in range(0, self.dim):
                 el = r.get(RectangularMesh.axis_tag_name(i))
                 self.axis[i].set_from_xml(el)
-                self.axis[i].comments = el.comments
+                if el is not None:
+                    self.axis[i].comments = el.comments
             self.endcomments = r.get_comments()
 
     def get_controller(self, document):
