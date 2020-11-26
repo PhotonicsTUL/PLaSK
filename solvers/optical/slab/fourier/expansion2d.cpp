@@ -1125,9 +1125,10 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                     field[ieh-dz].lon() = - E[iEz(i)];
                     field[ieh-dz].vert() = 0.;
                     for (int j = symmetric()? 0 : -order; j <= order; ++j) {
-                        field[ieh-dz].vert() -= coeff_matrices[l].reyy(ieh,iEH(j)) * (beta * H[iHx(j)] + (b*double(j)-ktran) * H[iHz(j)]);
+                        field[ieh-dz].vert() += coeff_matrices[l].reyy(ieh,iEH(j))
+                                                * ((b*double(j)-ktran) * H[iHz(j)] - beta * H[iHx(j)]);
                     }
-                    field[iEH(i)-dz].vert() /= k0;
+                    field[ieh-dz].vert() /= k0;
                 }
             }
         }
@@ -1169,9 +1170,10 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                     else {
                         field[ieh-dz].vert() = 0.;
                         for (int j = symmetric()? 0 : -order; j <= order; ++j)
-                            field[ieh-dz].vert() += coeff_matrix_rmyy(ieh,iEH(j)) * (beta * E[iEx(j)] - (b*double(j)-ktran) * E[iEz(j)]);
+                            field[ieh-dz].vert() += coeff_matrix_rmyy(ieh,iEH(j))
+                                                    * (beta * E[iEx(j)] - (b*double(j)-ktran) * E[iEz(j)]);
                     }
-                    field[ieh].vert() /= k0;
+                    field[ieh-dz].vert() /= k0;
                 }
             }
         }
@@ -1205,7 +1207,7 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
                     double x = dest_mesh->at(i)[0];
                     if (!periodic) x = clamp(x, -right, right);
                     double cs =  2. * cos(B * k * x);
-                    double sn =  2. * sin(B * k * x);
+                    dcomplex sn =  2. * I * sin(B * k * x);
                     if (sym == E_TRAN) {
                         result[i].lon() += field[k].lon() * sn;
                         result[i].tran() += field[k].tran() * cs;
@@ -1224,6 +1226,18 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
             fft_x.execute(&(field.data()->tran()));
             fft_yz.execute(&(field.data()->lon()));
             fft_yz.execute(&(field.data()->vert()));
+            if (sym == E_TRAN) {
+                for (Vec<3,dcomplex>& f: field) {
+                    f.c0 = dcomplex(-f.c0.imag(), f.c0.real());
+                    f.c2 = dcomplex(-f.c2.imag(), f.c2.real());
+
+                }
+            } else {
+                for (Vec<3,dcomplex>& f: field) {
+                    f.c1 = dcomplex(-f.c1.imag(), f.c1.real());
+
+                }
+            }
             double dx = 0.5 * (right-left) / double(N);
             auto src_mesh = plask::make_shared<RectangularMesh<2>>(plask::make_shared<RegularAxis>(left+dx, right-dx, field.size()), plask::make_shared<RegularAxis>(vpos, vpos, 1));
             return interpolate(src_mesh, field, dest_mesh, field_interpolation,
