@@ -59,7 +59,8 @@ Functions
 {%- block exceptions %}
 {%- if exceptions %}
 
-.. rubric:: Exceptions
+Exceptions
+----------
 
 .. autosummary::
    :template: exception.rst
@@ -75,7 +76,8 @@ Functions
 {%- block constants %}
 {%- if constants %}
 
-.. rubric:: Defined
+Defined
+-------
 
 {%- for item in constants %}
 * {{ item }}
@@ -91,7 +93,8 @@ Functions
 Descriptions
 ------------
 
-.. rubric:: Function Details
+Function Details
+^^^^^^^^^^^^^^^^
 
 {%- for item in functions %}
 {%- if not item.startswith('_') %}

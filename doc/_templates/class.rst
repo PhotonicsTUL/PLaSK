@@ -75,7 +75,8 @@ Descriptions
 {%- block methods_desc %}
 {%- if methods %}
 
-.. rubric:: Method Details
+Method Details
+^^^^^^^^^^^^^^
 
 {%- for item in methods %}
 
@@ -89,7 +90,8 @@ Descriptions
 {%- block attributes_desc %}
 {%- if attributes %}
 
-.. rubric:: Attribute Details
+Attribute Details
+^^^^^^^^^^^^^^^^^
 
 {%- for item in attributes %}
 {%- if not item.startswith('_') %}
@@ -108,7 +110,8 @@ Descriptions
 {% block static_attributes_desc -%}
 {% if static_attributes -%}
 
-.. rubric:: Static Attribute Details
+Static Attribute Details
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 {% if 'dtype' in static_attributes -%}
 .. attribute:: {{ module }}.{{ objname }}.dtype

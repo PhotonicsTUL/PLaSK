@@ -84,7 +84,8 @@ Descriptions
 {%- block methods_desc %}
 {%- if methods %}
 
-.. rubric:: Method Details
+Method Details
+^^^^^^^^^^^^^^
 
 {%- for item in methods %}
 {%- if not item.startswith('_') and item not in ['load_xpl', 'on_initialize', 'on_invalidate']  %}
@@ -101,7 +102,8 @@ Descriptions
 {%- if attributes %}
 
 {% if attributes | select('is_receiver') | first -%}
-.. rubric:: Receiver Details
+Receiver Details
+^^^^^^^^^^^^^^^^
 
 {%- for item in attributes | select('is_receiver') %}
 
@@ -111,7 +113,8 @@ Descriptions
 {%- endif %}
 
 {% if attributes | select('is_provider') | first -%}
-.. rubric:: Provider Details
+Provider Details
+^^^^^^^^^^^^^^^^
 
 {%- for item in attributes | select('is_provider') %}
 
@@ -122,7 +125,8 @@ Descriptions
 {%- endif %}
 
 {% if attributes | select('is_other') | first -%}
-.. rubric:: Attribute Details
+Attribute Details
+^^^^^^^^^^^^^^^^^
 
 {%- for item in attributes | select('is_other') %}
 
