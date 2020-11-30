@@ -294,7 +294,7 @@ GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD,
                          u8"    point (plask.vector): Vector with local coordinates of the tested point.\n"
                          u8"    c0 (float): Horizontal local coordinate of the tested point.\n"
                          u8"    c1 (float): Vertical local coordinate of the tested point.\n"
-                         u8"    mesh (plask.mesh.Mesh): Mech, which points are tested.\n"
+                         u8"    mesh (plask.mesh.Mesh): Mesh, which points are tested.\n"
                          u8"Returns:\n"
                          u8"    bool: True if the specified geometry object contains the given point.\n"
                          u8"          If a mesh is tested, the return value is an array of bools.\n",
@@ -309,7 +309,7 @@ GEOMETRY_ELEMENT_23D_DOC(GeometryObjectD,
                          u8"    c0 (float): Longitudinal local coordinate of the tested point.\n"
                          u8"    c1 (float): Transverse local coordinate of the tested point.\n"
                          u8"    c2 (float): Vertical local coordinate of the tested point.\n"
-                         u8"    mesh (plask.mesh.Mesh): Mech, which points are tested.\n"
+                         u8"    mesh (plask.mesh.Mesh): Mesh, which points are tested.\n"
                          u8"Returns:\n"
                          u8"    bool: True if the specified geometry object contains the given point.\n"
                          u8"          If a mesh is tested, the return value is an array of bools.\n")
