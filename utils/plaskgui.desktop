@@ -10,4 +10,4 @@ StartupNotify=true
 Terminal=false
 TerminalOptions=
 Type=Application
-Categories=Science;Education;Physics;Python;Qt;
+Categories=Science;Physics;Python;Qt;
