@@ -307,8 +307,6 @@ class GeometryController(Controller):
         try:
             if self.manager is None:
                 manager = get_manager()
-                with HandleMaterialsModule(self.document):
-                    manager.load(self.document.get_contents(sections=('defines', 'materials')))
             else:
                 manager = self.manager
                 manager.geo.clear()
@@ -686,4 +684,3 @@ class GeometryController(Controller):
             self._current_controller.select_info(info)
         except AttributeError:
             pass
-

@@ -52,7 +52,11 @@ def print_interior(element):
     text = element.text.lstrip('\n') if element.text else ''
     for c in element:
         text += etree.tostring(c, pretty_print=True, encoding='unicode')
-    return text
+    lines = text.splitlines()
+    if lines and not lines[-1].strip():
+        lines = lines[:-1]
+    indent = min(len(line) - len(line.lstrip()) for line in lines)
+    return "\n".join(line[indent:] for line in lines)
 
 
 def attr_to_xml(src_obj, dst_element, *attr_names, **defaults):
@@ -115,7 +119,7 @@ class AttributeReader:
             with AttributeReader(xml_element) as a:
                 # use a.get(...) or a[...] to access to xml_element.attrib
     """
-    
+
     def __init__(self, element):
         """
             :param element: elementtree Element or AttributeReader (in such case self.is_sub_reader is set to True and set of attributes read are shared)
@@ -129,7 +133,7 @@ class AttributeReader:
             self.element = element
             self.read = set()
             self.is_sub_reader = False
-        
+
     def get(self, key, default=None):
         self.read.add(key)
         return self.element.attrib.get(key, default)
@@ -139,10 +143,10 @@ class AttributeReader:
         if res is None:
             raise KeyError('Attribute "{}" is expected in tag <{}>{}.'.format(key, self.element.tag, at_line_str(self.element)))
         return res
-    
+
     def __len__(self):
         return len(self.element.attrib)
-        
+
     def __getitem__(self, key):
         self.read.add(key)
         return self.element.attrib[key]
@@ -150,10 +154,10 @@ class AttributeReader:
     def __contains__(self, key):
         self.read.add(key)
         return key in self.element.attrib
-    
+
     def mark_read(self, *keys):
         for k in keys: self.read.add(k)
-        
+
     def require_all_read(self):
         """Raise ValueError if not all attributes have been read from XML tag. Do nothing if self.is_sub_reader is True."""
         if self.is_sub_reader: return
@@ -169,7 +173,7 @@ class AttributeReader:
 
     def __enter__(self):
         return self
-        
+
     def __exit__(self, exc_type, exc_value, traceback):
         """
             It raises ValueError if any other exception haven't been raised

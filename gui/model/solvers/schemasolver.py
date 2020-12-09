@@ -119,6 +119,12 @@ class SchemaTag:
         self.attrs = attrs
 
 
+class SchemaGenericTag:
+    def __init__(self, name, label):
+        self.name = name
+        self.label = label
+
+
 class SchemaCustomWidgetTag:
     def __init__(self, name, label, button_label, edit_func):
         self.name = name
@@ -146,7 +152,8 @@ class SchemaSolver(Solver):
     def set_fresh_data(self):
         self.data = {schema.name:
                          {a.name: None for a in schema.attrs.flat} if isinstance(schema, SchemaTag) else
-                         Tag(schema.name)  if isinstance(schema, SchemaCustomWidgetTag) else []
+                         Tag(schema.name) if isinstance(schema, SchemaCustomWidgetTag) else
+                         '' if isinstance(schema, SchemaGenericTag) else []
                      for schema in self.schema}
 
     def make_xml_element(self):
@@ -209,7 +216,6 @@ class SchemaSolver(Solver):
                 for c in self.incomments.get(tag, ()):
                     element.append(etree.Comment(c))
                 if data:
-                    if not isinstance(data, str): data = data.encode('utf8')
                     lines = data.split('\n')
                     if not lines[-1]: lines = lines[:-1]
                     lines = '\n    '.join(lines)
@@ -219,7 +225,7 @@ class SchemaSolver(Solver):
         for ck, el in reversed(done.items()):
             for c in self.incomments.get(ck+'/', ()):
                 el.append(etree.Comment(c))
-            if len(el) == 0 and len(el.attrib) == 0:
+            if len(el) == 0 and len(el.attrib) == 0 and el.text is None:
                 el.getparent().remove(el)
         for c in self.incomments.get('/', ()):
             element.append(etree.Comment(c))
@@ -430,21 +436,24 @@ def load_yaml(filename, categories=CATEGORIES, solvers=SOLVERS):
                         if 'attrs' in tag:
                             raise TypeError("Solver schema cannot specify both 'attrs' and 'widget'")
                         widget = tag['widget']
-                        modname = widget['file']
-                        if modname.endswith('__init__.py'):
-                            modname = modname[:-11]
-                        elif modname.endswith('.py'):
-                            modname = modname[:-3]
+                        if widget is None:
+                            schema.append(SchemaGenericTag(tn, tl))
                         else:
-                            raise ValueError("Widget file '{}' in '{}' tag is not a Python file".format(modname, tn))
-                        modpath, modname = os.path.split(modname)
-                        if not os.path.isabs(modpath):
-                            modpath = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(filename)), modpath))
-                        sys.path.insert(0, modpath)
-                        mod = import_module(modname)
-                        del sys.path[0]
-                        func = mod.__dict__[widget['func']]
-                        schema.append(SchemaCustomWidgetTag(tn, tl, widget.get('button label', "View / Edit"), func))
+                            modname = widget['file']
+                            if modname.endswith('__init__.py'):
+                                modname = modname[:-11]
+                            elif modname.endswith('.py'):
+                                modname = modname[:-3]
+                            else:
+                                raise ValueError("Widget file '{}' in '{}' tag is not a Python file".format(modname, tn))
+                            modpath, modname = os.path.split(modname)
+                            if not os.path.isabs(modpath):
+                                modpath = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(filename)), modpath))
+                            sys.path.insert(0, modpath)
+                            mod = import_module(modname)
+                            del sys.path[0]
+                            func = mod.__dict__[widget['func']]
+                            schema.append(SchemaCustomWidgetTag(tn, tl, widget.get('button label', "View / Edit"), func))
                     else:
                         attrs = AttrList()
                         for attr in tag.get('attrs', []):

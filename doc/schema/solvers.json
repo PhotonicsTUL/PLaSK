@@ -246,26 +246,33 @@
               "description": "Detailed description of the tag"
             },
             "widget": {
-              "type": "object",
-              "description": "GUI widget specification",
-              "required": [
-                "file",
-                "func"
-              ],
-              "properties": {
-                "button label": {
-                  "type": "string",
-                  "description": "Label on the button opening editor"
+              "oneOf": [
+                {
+                  "type": "object",
+                  "description": "GUI widget specification",
+                  "required": [
+                    "file",
+                    "func"
+                  ],
+                  "properties": {
+                    "button label": {
+                      "type": "string",
+                      "description": "Label on the button opening editor"
+                    },
+                    "file": {
+                      "type": "string",
+                      "description": "Filename of the editor Python module (relative to solvers.yml file)"
+                    },
+                    "func": {
+                      "type": "string",
+                      "desccription": "Name of the function in the Python module launching the editor"
+                    }
+                  }
                 },
-                "file": {
-                  "type": "string",
-                  "description": "Filename of the editor Python module (relative to solvers.yml file)"
-                },
-                "func": {
-                  "type": "string",
-                  "desccription": "Name of the function in the Python module launching the editor"
+                {
+                  "type": "null"
                 }
-              }
+              ]
             }
           }
         }
