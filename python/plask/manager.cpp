@@ -615,7 +615,7 @@ static void register_manager_dict(const std::string name) {
     py::scope scope = c;
     (void) scope;   // don't warn about unused variable scope
 
-    py::class_<detail::dict_iterator<T>>("Iterator", py::no_init)
+    py::class_<detail::dict_iterator<T>>("_Iterator", py::no_init)
         .def("__iter__", &detail::dict_iterator<T>::__iter__, py::return_self<>())
         .def("__next__", &detail::dict_iterator<T>::next)
     ;
@@ -645,7 +645,7 @@ void register_manager() {
         .def_readonly("script", &Manager::script, u8"Script read from XML file.")
         .def_readwrite("draft", &Manager::draft,
                        u8"Flag indicating draft mode. If True then dummy material is created if the proper\n"
-                       u8"one cannot be found in the database.\n Also some objects do not need to have all\n"
+                       u8"one cannot be found in the database. Also some objects do not need to have all\n"
                        u8"the atttributes set, which are then filled with some reasonable defaults."
                        u8"Otherwise an exception is raised.")
         .def_readonly("_scriptline", &Manager::scriptline, "First line of the script.")

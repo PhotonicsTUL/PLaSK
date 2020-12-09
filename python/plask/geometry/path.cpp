@@ -169,9 +169,9 @@ void register_geometry_path()
 
     py::class_<PathHints, shared_ptr<PathHints>>("PathHints",
                           u8"Hint used for resolving ambiguities in a geometry tree.\n\n"
-                          u8"PathHints is used to resolve ambiguities if any object is present in the"
-                          u8"geometry\n tree more than once. It contains a set of PathHint objects holding\n"
-                          u8"weak references to containers and their items.", py::no_init)
+                          u8"PathHints is used to resolve ambiguities if any object is present in the\n"
+                          u8"geometry tree more than once. It contains a set of PathHint objects holding\n"
+                          u8"weak references to containers and their items.\n", py::no_init)
         .def("__init__", py::make_constructor(PathHints__init__<>))
         .def("__init__", py::make_constructor(PathHints__init__<const PathHints::Hint&>))
         .def("__init__", py::make_constructor(PathHints__init__<const GeometryObject&>))
@@ -217,15 +217,15 @@ void register_geometry_path()
              (py::arg("path"), py::arg("hints")=py::object()), py::return_self<>(),
              u8"Append an object/hint/subtree/path list to this path.\n\n"
              u8"Args:\n"
-             u8"object (GeometryObject): Geometry object to append to the path. It must be\n"
-             u8"                         an item of a container already present in it.\n"
-             u8"hint (PathHint): Hint returned by a addition of an object to the container\n"
-             u8"                 already present in the path.\n"
-             u8"subtree (Subtree): Subtree to add to the path. It must somehow be connected\n"
-             u8"                   with it."
-             u8"path (Path): Another path to join with the exising one. There must be some\n"
-             u8"             connection between the two paths."
-             u8"hints (PathHint, optional): Optional hints used for resolving ambiguities.\n"
+             u8"    object (GeometryObject): Geometry object to append to the path. It must be\n"
+             u8"                             an item of a container already present in it.\n"
+             u8"    hint (PathHint): Hint returned by a addition of an object to the container\n"
+             u8"                     already present in the path.\n"
+             u8"    subtree (Subtree): Subtree to add to the path. It must somehow be connected\n"
+             u8"                       with it.\n"
+             u8"    path (Path): Another path to join with the exising one. There must be some\n"
+             u8"                 connection between the two paths.\n"
+             u8"    hints (PathHint, optional): Optional hints used for resolving ambiguities.\n"
             )
         .def(py::self += py::other<Path>())
         .def(py::self += py::other<PathHints::Hint>())

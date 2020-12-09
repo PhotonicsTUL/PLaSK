@@ -19,22 +19,6 @@ Constants
 :attr:`kB.J`    Boltzmann constant [J/K]
 :attr:`kB.eV`   Boltzmann constant [eV/K]
 =============== ============================================================
-
-Functions
-=========
-
-.. autosummary::
-
-   wl
-   eV2nm
-   nm2eV
-
-Descriptions
-============
-
-.. autofunction::   wl
-.. autofunction::   eV2nm
-.. autofunction::   nm2eV
 """
 
 from plask import material as _material

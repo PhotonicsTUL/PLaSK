@@ -149,7 +149,7 @@ struct RegisterBoundaryConditions {
             py::scope scope1 = bc;
             (void) scope1;   // don't warn about unused variable scope1
 
-            py::class_<Iter>("Iterator", py::no_init)
+            py::class_<Iter>("_Iterator", py::no_init)
                 .def("__next__", &Iter::next, py::return_value_policy<py::reference_existing_object>())
                 .def("__iter__", pass_through)
             ;
@@ -163,7 +163,7 @@ struct RegisterBoundaryConditions {
 
             py::scope scope2 = cd;
             (void) scope2;   // don't warn about unused variable scope2
-            py::class_<ConditionIter>("Iterator", py::no_init)
+            py::class_<ConditionIter>("_Iterator", py::no_init)
                 .def("__next__", &ConditionIter::next)
                 .def("__iter__", pass_through)
             ;
@@ -178,4 +178,3 @@ struct RegisterBoundaryConditions {
 }} // namespace plask::python
 
 #endif // PLASK__PYTHON_BOUNDARIES_H
-

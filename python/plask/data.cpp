@@ -689,7 +689,7 @@ static inline py::class_<PythonDataVector<const T, dim>, shared_ptr<PythonDataVe
         .add_property("array", &PythonDataVector_Array<const T, dim>,
                       u8"Array formatted by the mesh.\n\n"
 
-                      u8"This attribute is available only if the :attr:`mesh` is a rectangular one. It\n"
+                      u8"This attribute is available only if the :attr:~plask.Data.mesh` is a rectangular one. It\n"
                       u8"contains the held data reshaped to match the shape of the mesh (i.e. the first\n"
                       u8"dimension is equal the size of the first mesh axis and so on). If the data type\n"
                       u8"is :class:`plask.vec` then the array has one additional dimention equal to 2 for\n"

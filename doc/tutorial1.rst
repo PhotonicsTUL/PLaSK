@@ -16,6 +16,7 @@ Geometry
 ^^^^^^^^
 
 .. _fig-tutorial1-geometry:
+
 .. figure:: tutorial1-geometry.*
    :scale: 120%
    :align: center
@@ -317,7 +318,7 @@ You can download the complete file from this tutorial: :download:`tutorial1.xpl 
 .. [#GEO.name] For your convenience it can be also accessed as ``GEO.main``.
 .. [#plot_field-limit] Actually ``plot_field`` sets the axes limit to the area covered by the mesh on which the field was computed. However, in this case it just covers the whole structure.
 .. [#show] ``show()`` will probably not work if you run PLaSK remotely or using any batch system. In such case, you should replace it with ``savefig("filename")`` in order to save the figure directly to disk. However, you should also adjust the plot ranges in advance: ``xlim(0, 150); ylim(0, 305)``
-.. [#mesh-is-module] Specifically, :mod:`mesh` is a Python module and :class:`~plask.mesh.Rectangular2D` a class defined inside of this module.
+.. [#mesh-is-module] Specifically, :mod:`~plask.mesh` is a Python module and :class:`~plask.mesh.Rectangular2D` a class defined inside of this module.
 
 
 .. |list-add| image:: list-add.png

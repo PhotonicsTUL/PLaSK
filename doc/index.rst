@@ -28,5 +28,4 @@ PLaSK User Manual
     xpl
     api
     glossary
-    genindex
     licensing

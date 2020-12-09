@@ -837,16 +837,16 @@ struct Scattering {
 
             .add_property("reflected", py::make_function(&Scattering<SolverT>::get_reflected,
                                          py::return_value_policy<py::manage_new_object, py::with_custodian_and_ward_postcall<0,1>>()),
-                          u8"Reflected field details.\n\n"
-                          u8":rtype: Reflected")
+                          format(u8"Reflected field details.\n\n"
+                                 u8":rtype: optical.slab.{}{}.Reflected", name, suffix).c_str())
             .add_property("transmitted", py::make_function(&Scattering<SolverT>::get_transmitted,
                                          py::return_value_policy<py::manage_new_object, py::with_custodian_and_ward_postcall<0,1>>()),
-                          u8"Transmitted field details.\n\n"
-                          u8":rtype: Transmitted")
+                          format(u8"Transmitted field details.\n\n"
+                                 u8":rtype: optical.slab.{}{}.Transmitted", name, suffix).c_str())
             .add_property("incident", py::make_function(&Scattering<SolverT>::get_incident,
                                          py::return_value_policy<py::manage_new_object, py::with_custodian_and_ward_postcall<0,1>>()),
-                          u8"Incident field details.\n\n"
-                          u8":rtype: Incident")
+                          format(u8"Incident field details.\n\n"
+                                 u8":rtype: optical.slab.{}{}.Incident", name, suffix).c_str())
         ;
 
         py::scope scope(cls);

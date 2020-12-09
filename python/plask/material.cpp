@@ -971,13 +971,13 @@ void initMaterials() {
 
     {
         py::scope scope(materialsDB);
-        py::class_<MaterialsDBIterator, boost::noncopyable>("Iterator", py::no_init)
+        py::class_<MaterialsDBIterator, boost::noncopyable>("_Iterator", py::no_init)
             .def("__next__", &MaterialsDBIterator::next)
             .def("__iter__", pass_through)
         ;
     }
 
-    py::class_<TemporaryMaterialDatabase, boost::noncopyable>("SavedMaterialsContext", py::no_init)
+    py::class_<TemporaryMaterialDatabase, boost::noncopyable>("_SavedMaterialsContext", py::no_init)
         .def("__enter__", &TemporaryMaterialDatabase::enter, py::return_value_policy<py::reference_existing_object>())
         .def("__exit__", &TemporaryMaterialDatabase::exit)
     ;

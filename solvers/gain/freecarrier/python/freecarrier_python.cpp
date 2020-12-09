@@ -180,7 +180,7 @@ BOOST_PYTHON_MODULE(freecarrier)
         );
         solver.def("get_fermi_levels", &FreeCarrier_getFermiLevels<Geometry2DCartesian>, (arg("n"), arg("T")=py::object(), arg("reg")=0),
             u8"Get quasi Fermi levels.\n\n"
-            u8"Compute quasi-Fermi levels in specified active region.\n"
+            u8"Compute quasi-Fermi levels in specified active region.\n\n"
             u8"Args:\n"
             u8"    n (float): Carriers concentration to determine the levels for\n"
             u8"               [1/cm\\ :sup:`3`\\ ].\n"
@@ -256,13 +256,13 @@ BOOST_PYTHON_MODULE(freecarrier)
         );
         solver.def("get_fermi_levels", &FreeCarrier_getFermiLevels<Geometry2DCylindrical>, (arg("n"), arg("T")=py::object(), arg("reg")=0),
             u8"Get quasi-Fermi levels.\n\n"
-            u8"Compute quasi-Fermi levels in specified active region.\n"
+            u8"Compute quasi-Fermi levels in specified active region.\n\n"
             u8"Args:\n"
             u8"    n (float): Carriers concentration to determine the levels for\n"
             u8"               [1/cm\\ :sup:`3`\\ ].\n"
             u8"    T (float or ``None``): Temperature to get the levels. If this argument is\n"
             u8"                           ``None``, the estimates for temperature :py:attr:`T0`\n"
-            u8"                           are returned.\n\n"
+            u8"                           are returned.\n"
             u8"    reg (int): Active region number.\n"
             u8"Returns:\n"
             u8"    tuple: Two-element tuple with quasi-Fermi levels for electrons and holes.\n"

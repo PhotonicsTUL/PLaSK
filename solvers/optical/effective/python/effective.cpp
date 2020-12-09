@@ -347,8 +347,8 @@ BOOST_PYTHON_MODULE(effective) {
                  u8"   ~optical.effective.EffectiveIndex2D.Mode.neff\n"
                  u8"   ~optical.effective.EffectiveIndex2D.Mode.symmetry\n"
                  u8"   ~optical.effective.EffectiveIndex2D.Mode.power\n"
-                 u8"   ~optical.effective.EffectiveIndex2D.Mode.total_absorption\n"
-                 u8":rtype: Mode\n");
+                 u8"   ~optical.effective.EffectiveIndex2D.Mode.total_absorption\n\n"
+                 u8":rtype: optical.effecticve.EffectiveIndex2D.Mode\n");
 
         py::scope scope = solver;
         (void)scope;  // don't warn about unused variable scope
@@ -481,8 +481,8 @@ BOOST_PYTHON_MODULE(effective) {
                  u8"   ~optical.effective.EffectiveFrequencyCyl.Mode.wavelength\n"
                  u8"   ~optical.effective.EffectiveFrequencyCyl.Mode.power\n"
                  u8"   ~optical.effective.EffectiveFrequencyCyl.Mode.total_absorption\n"
-                 u8"   ~optical.effective.EffectiveFrequencyCyl.Mode.gain_integral\n"
-                 u8":rtype: Mode\n");
+                 u8"   ~optical.effective.EffectiveFrequencyCyl.Mode.gain_integral\n\n"
+                 u8":rtype: optical.effective.EffectiveFrquencyCyl.Mode\n");
         solver.add_property("vat", &EffectiveFrequencyCyl_getStripeR, &EffectiveFrequencyCyl_setStripeR,
                             u8"Radial position of at which the vertical part of the field is calculated.\n\n"
                             u8"Should be a float number or ``None`` to compute effective frequencies for all\n"

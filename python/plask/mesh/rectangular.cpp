@@ -420,7 +420,7 @@ template <typename T, int dim, typename GT> struct AxisParamProxy {
 
         py::scope scope2 = cls;
         (void)scope2;  // don't warn about unused variable scope2
-        py::class_<Iter, shared_ptr<Iter>, boost::noncopyable>("Iterator", py::no_init)
+        py::class_<Iter, shared_ptr<Iter>, boost::noncopyable>("_Iterator", py::no_init)
             .def("__next__", &Iter::next)
             .def("__iter__", pass_through);
     }
@@ -1228,7 +1228,7 @@ void register_mesh_rectangular() {
         (void)scope;  // don't warn about unused variable scope
 
         py::class_<RectangularMesh2D::Element>(
-            "Element", u8"Element (FEM-like, rectangular) of the :py:class:`mesh.Rectangular2D", py::no_init)
+            "Element", u8"Element (FEM-like, rectangular) of the :py:class:`~plask.mesh.Rectangular2D` mesh", py::no_init)
             .add_property("index0", /*size_t*/ &RectangularMesh2D::Element::getIndex0,
                           u8"Element index in the first axis")
             .add_property("index1", /*size_t*/ &RectangularMesh2D::Element::getIndex1,
@@ -1262,7 +1262,7 @@ void register_mesh_rectangular() {
             // &RectangularMesh2D::Element::getUpUp, u8"Position of the top left right vertex of the elemnent")
             ;
 
-        py::class_<RectangularMesh2D::Elements>("Elements", u8"Element list in the :py:class:`mesh.Rectangular2D",
+        py::class_<RectangularMesh2D::Elements>("Elements", u8"Element list in the :py:class:`~plask.mesh.Rectangular2D` mesh",
                                                 py::no_init)
             .def("__len__", &RectangularMesh2D::Elements::size)
             .def("__getitem__", &RectangularMesh2D::Elements::operator[], py::with_custodian_and_ward_postcall<0, 1>())
@@ -1445,7 +1445,7 @@ void register_mesh_rectangular() {
         (void)scope;  // don't warn about unused variable scope
 
         py::class_<RectilinearMesh3D::Element>(
-            "Element", u8"Element (FEM-like, rectangular) of the :py:class:`mesh.Rectangular3D", py::no_init)
+            "Element", u8"Element (FEM-like, rectangular) of the :py:class:`~plask.mesh.Rectangular3D` mesh", py::no_init)
             .add_property("index0", /*size_t*/ &RectilinearMesh3D::Element::getIndex0,
                           u8"Element index in the first axis")
             .add_property("index1", /*size_t*/ &RectilinearMesh3D::Element::getIndex1,
@@ -1480,7 +1480,7 @@ void register_mesh_rectangular() {
             .def("__contains__", &RectilinearMesh3D::Element::contains,
                  "check if given point is included in this element");
 
-        py::class_<RectilinearMesh3D::Elements>("Elements", u8"Element list in the :py:class:`mesh.Rectangular3D",
+        py::class_<RectilinearMesh3D::Elements>("Elements", u8"Element list in the :py:class:`~plask.mesh.Rectangular3D` mesh",
                                                 py::no_init)
             .def("__len__", &RectilinearMesh3D::Elements::size)
             .def("__getitem__", &RectilinearMesh3D::Elements::operator[], py::with_custodian_and_ward_postcall<0, 1>())
