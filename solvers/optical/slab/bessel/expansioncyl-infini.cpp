@@ -5,8 +5,7 @@
 #include "../gauss_legendre.hpp"
 #include "../gauss_laguerre.hpp"
 
-#include <boost/math/special_functions/bessel.hpp>
-using boost::math::cyl_bessel_j;
+#include "besselj.hpp"
 
 #define SOLVER static_cast<BesselSolverCyl*>(solver)
 

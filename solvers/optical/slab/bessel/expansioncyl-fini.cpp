@@ -4,10 +4,7 @@
 
 #include "../gauss_legendre.hpp"
 
-#include <boost/math/special_functions/bessel.hpp>
-using boost::math::cyl_bessel_j;
-using boost::math::cyl_bessel_j_zero;
-using boost::math::legendre_p;
+#include "besselj.hpp"
 
 #define SOLVER static_cast<BesselSolverCyl*>(solver)
 

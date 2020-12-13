@@ -12,6 +12,14 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../../cmake)
 include(PLaSK)
 
 
+# Custom settings
+option(USE_GSL "Use GSL library instead of Boost")
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in ${CMAKE_BINARY_DIR}/include/plask/optical/slab/config.hpp)
+
+
+
+
 # Uncomment and edit the line below if you need to link some external libraries.
 # Note that most probably you will need to use CMake command find_package or find_library
 # to find the library in the system.
@@ -23,6 +31,11 @@ find_package(LAPACK REQUIRED)
 
 set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES} fftpacx)
 
+if(USE_GSL)
+    find_package(GSL REQUIRED)
+    set(SOLVER_LINK_LIBRARIES ${SOLVER_LINK_LIBRARIES} ${GSL_LIBRARIES})
+endif()
+
 # Uncomment and edit the line below if you need some special include directories.
 # If you use external libraries, you can use the variables returned by find_package.
 # Don't include external directories with your own headers. Just copy them here and
@@ -30,10 +43,6 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES} fftpacx)
 #set(SOLVER_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/xxxx)
 
 #find_package(Eigen3)
-
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.hpp.in ${CMAKE_BINARY_DIR}/include/plask/optical/slab/config.hpp)
-
-
 
 # Uncomment and edit the line below if you need some special linker flags.
 #
