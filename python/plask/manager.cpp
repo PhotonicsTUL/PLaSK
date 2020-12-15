@@ -210,9 +210,9 @@ PLASK_PYTHON_API void loadXpl(py::object self, py::object src, py::dict vars, py
     manager->validatePositions();
 }
 
-PLASK_PYTHON_API void PythonManager_load(py::object self, py::object src, py::dict vars, py::object filter=py::object()) {
+PLASK_PYTHON_API void PythonManager_load(py::object self, py::object src, py::dict defs, py::object filter=py::object()) {
     try {
-        loadXpl(self, src, vars, filter);
+        loadXpl(self, src, defs, filter);
     } catch (XMLExceptionWithCause& err) {
         err.throwPythonException();
     }
@@ -678,13 +678,13 @@ void register_manager() {
              u8"    source (string or file): File to read.\n"
              u8"        The value of this argument can be either a file name, an open file\n"
              u8"        object, or an XML string to read.\n"
-             u8"    vars (dict): Dictionary of user-defined variables (which string keys).\n"
+             u8"    defs (dict): Dictionary of user-defined variables (which string keys).\n"
              u8"        The values of this dictionary overrides the ones given in the\n"
              u8"        :xml:tag:`<defines>` section of the XPL file.\n"
              u8"    sections (list): List of section to read.\n"
              u8"        If this parameter is given, only the listed sections of the XPL file are\n"
              u8"        read and the other ones are skipped.\n",
-             (py::arg("source"), py::arg("vars")=py::dict(), py::arg("sections")=py::object()))
+             (py::arg("source"), py::arg("defs")=py::dict(), py::arg("sections")=py::object()))
         .def_readonly("defs", &PythonManager::defs,
                        u8"Local defines.\n\n"
                        u8"This is a combination of the values specified in the :xml:tag:`<defines>`\n"

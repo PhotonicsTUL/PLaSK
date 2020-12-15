@@ -13,7 +13,7 @@ import os as _os
 import weakref as _weakref
 
 # this buit-ins are overriden by numpy:
-_any = any 
+_any = any
 _sum = sum
 
 #_os.environ["PLASK_PREFIX_PATH"] = _os.sep.join(__file__.split(_os.sep)[:-5])
@@ -137,13 +137,13 @@ geometry.AlignContainer3D = geometry.Align3D
 
 ## ## plask.manager ## ##
 
-def loadxpl(source, vars={}, sections=None, destination=None, update=False):
+def loadxpl(source, defs={}, sections=None, destination=None, update=False):
     """
     Load the XPL file. All sections contents is read into the `destination` scope.
 
     Args:
         source (str): Name of the XPL file or open file object.
-        vars (dict): Optional dictionary with substitution variables. Values
+        defs (dict): Optional dictionary with substitution variables. Values
                      specified in the <defines> section of the XPL file are
                      overridden with the one specified in this parameter.
         sections (list): List of section names to read.
@@ -163,7 +163,7 @@ def loadxpl(source, vars={}, sections=None, destination=None, update=False):
             destination['__manager__'] = manager = Manager()
     else:
         destination['__manager__'] = manager = Manager()
-    manager.load(source, vars, sections)
+    manager.load(source, defs, sections)
     manager.export(destination)
     material.update_factories() # There might have been some materials in the source file
     # Set default axes if all loaded geometries share the same
@@ -172,21 +172,21 @@ def loadxpl(source, vars={}, sections=None, destination=None, update=False):
     if same: current_axes = lst[0]
 
 
-def runxpl(source, vars={}):
+def runxpl(source, defs={}):
     """
     Load and run the code from the XPL file. Unlike :func:`loadxpl` this function
     does not modify the current global scope.
 
     Args:
         source (str): Name of the XPL file or open file object.
-        vars (dict): Optional dictionary with substitution variables. Values
+        defs (dict): Optional dictionary with substitution variables. Values
                      specified in the <defines> section of the XPL file are
                      overridden with the one specified in this parameter.
     """
     env = globals().copy()
     env['plask'] = sys.modules["plask"]
-    env.update(vars)
-    loadxpl(source, vars, destination=env)
+    env.update(defs)
+    loadxpl(source, defs, destination=env)
     if type(source) == str:
         filename = source
     else:
@@ -386,10 +386,10 @@ class MaterialField:
     def __getattr__(self, item):
         return lambda *args, **kwargs: \
             Data(numpy.array([getattr(m, item)(*args, **kwargs) for m in self.materials]), self.mesh)
-    
+
     def __len__(self):
         return len(self.materials)
-    
+
     def __iter__(self):
         return iter(self.materials)
 
