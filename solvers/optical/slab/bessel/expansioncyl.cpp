@@ -27,8 +27,8 @@ void ExpansionBessel::init1() {
         rbounds = OrderedAxis(*SOLVER->getMesh());
     else
         rbounds = std::move(*makeGeometryGrid1D(SOLVER->getGeometry()));
-    rbounds.addPoint(0.);
     OrderedAxis::WarningOff nowarn_rbounds(rbounds);
+    rbounds.addPoint(0.);
     size_t nseg = rbounds.size() - 1;
     if (dynamic_cast<ExpansionBesselFini*>(this)) {
         if (SOLVER->pml.dist > 0.) rbounds.addPoint(rbounds[nseg++] + SOLVER->pml.dist);
