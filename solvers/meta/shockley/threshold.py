@@ -368,7 +368,7 @@ class ThresholdSearch(ThermoElectric):
         plask.ylabel(u"Gain [1/cm]")
         plask.window_title("Gain Profile")
 
-    def plot_gain_spectrum(self, lams, pos=0., junction=0, **kwargs):
+    def plot_gain_spectrum(self, lams, pos=0., junction=0, comp=None, **kwargs):
         """
         Plot gain spectrum for specified junction.
 
@@ -379,11 +379,25 @@ class ThresholdSearch(ThermoElectric):
 
             junction (int): Junction number to take gain from.
 
+            comp (int or str): Spectrum component to plot
+
             **kwargs: Keyword arguments passed to the plot function.
         """
         level = list(self._iter_levels(self.diffusion.geometry, [pos]))[junction][1]
         spectrum = self.gain.spectrum(level[0])
-        plask.plot(lams, spectrum(lams), **kwargs)
+        if comp is None:
+            plask.plot(lams, spectrum(lams), **kwargs)
+        else:
+            _comp = comp
+            try:
+                if isinstance(comp, str):
+                    comp = plask.config.axes.index(comp)
+                    if comp != 0: comp -= 1
+                if comp < 0 or comp > 1:
+                    raise ValueError(comp)
+            except (ValueError, TypeError) as err:
+                    raise ValueError("Bad spectrum component '{}'".format(_comp)) from err
+            plask.plot(lams, np.array(spectrum(lams))[:,comp], **kwargs)
         plask.xlabel(u"Wavelength [nm]")
         plask.ylabel(u"Gain [1/cm]")
         plask.window_title("Gain Spectrum")
