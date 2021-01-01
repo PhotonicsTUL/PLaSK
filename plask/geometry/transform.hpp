@@ -1,6 +1,7 @@
 #ifndef PLASK__GEOMETRY_TRANSFORM_H
 #define PLASK__GEOMETRY_TRANSFORM_H
 
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
 #include <boost/bind.hpp>
 #include "object.hpp"
 //#include <functional>

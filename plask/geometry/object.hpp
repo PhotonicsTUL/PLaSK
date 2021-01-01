@@ -25,6 +25,9 @@ This file contains base class for geometries objects.
 #include "../utils/warnings.hpp"
 #include "../utils/xml/writer.hpp"
 
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
+#include <boost/bind.hpp>
+
 /// Value for expected suffix for names of 2D objects types, see GeometryReader::expectedSuffix.
 #define PLASK_GEOMETRY_TYPE_NAME_SUFFIX_2D "2d"
 

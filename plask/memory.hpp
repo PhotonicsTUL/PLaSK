@@ -24,6 +24,8 @@ namespace plask {
 #else // PLASK_SHARED_PTR_STD
 // Use boost::shared_ptr
 
+#define BOOST_BIND_GLOBAL_PLACEHOLDERS
+
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/weak_ptr.hpp>
