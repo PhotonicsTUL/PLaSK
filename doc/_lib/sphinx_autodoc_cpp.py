@@ -170,7 +170,7 @@ class PlaskDocMixin:
                                 '<autodoc>')
 
         elif isinstance(self, autodoc.AttributeDocumenter):
-            if not self._datadescriptor:
+            if not (hasattr(self, '_datadescriptor') and self._datadescriptor):
                 try:
                     objrepr = safe_repr(self.object)
                 except ValueError:
