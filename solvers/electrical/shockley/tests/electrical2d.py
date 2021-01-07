@@ -74,7 +74,7 @@ class ShockleyCyl_Test(unittest.TestCase):
         stack.prepend(rect)
         stack.prepend(junc)
         stack.prepend(rect)
-        space = geometry.Cylindrical2D(stack)
+        space = geometry.Cylindrical(stack)
         self.solver = ShockleyCyl("electricalcyl")
         self.solver.geometry = space
         generator = mesh.Rectangular2D.DivideGenerator()

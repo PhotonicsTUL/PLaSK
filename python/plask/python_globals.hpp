@@ -220,7 +220,7 @@ static inline py::class_<std::vector<T>, shared_ptr<std::vector<T>>> register_ve
 // Get space names
 template <typename SpaceT> static inline std::string spaceName();
 template <> inline std::string spaceName<Geometry2DCartesian>() { return "Cartesian2D"; }
-template <> inline std::string spaceName<Geometry2DCylindrical>() { return "Cylindrical2D"; }
+template <> inline std::string spaceName<Geometry2DCylindrical>() { return "Cylindrical"; }
 template <> inline std::string spaceName<Geometry3D>() { return "Cartesian3D"; }
 template <> inline std::string spaceName<void>() { return ""; }
 

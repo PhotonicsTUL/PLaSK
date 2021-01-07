@@ -122,7 +122,7 @@ class ProfileTest(unittest.TestCase):
         stack = plask.geometry.Stack2D()
         stack.prepend(hot)
         stack.prepend(cold)
-        geom = plask.geometry.Cylindrical2D(stack)
+        geom = plask.geometry.Cylindrical(stack)
         profile = plask.StepProfile(geom)
         profile[hot] = 1e7
         receiver = plask.flow.HeatReceiverCyl()
@@ -140,7 +140,7 @@ class ProfileTest(unittest.TestCase):
         stack.prepend(hot)
         bottom = stack.prepend(warm)
 
-        geom = plask.geometry.Cylindrical2D(stack)
+        geom = plask.geometry.Cylindrical(stack)
 
         profile1 = plask.StepProfile(geom)
         profile1[warm, top] = 1e9

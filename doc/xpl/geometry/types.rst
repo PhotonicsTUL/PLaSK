@@ -30,7 +30,7 @@ These elements are are placed directly in the :xml:tag`geometry` section. All ot
 
 .. xml:tag:: <cylindrical2d> (or <cylindrical>)
 
-   Corresponding Python class: :py:class:`plask.geometry.Cylindrical2D`.
+   Corresponding Python class: :py:class:`plask.geometry.Cylindrical`.
 
    Two-dimensional cylindrical geometry.
 

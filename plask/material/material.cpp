@@ -203,10 +203,10 @@ double Material::Ni(double /*T*/) const { throwNotImplemented("Ni(double T)"); }
 
 double Material::nr(double /*lam*/, double /*T*/, double /*n*/) const { throwNotImplemented("nr(double lam, double T, double n)"); }
 
-dcomplex Material::Nr(double lam, double T, double /*n*/) const { return dcomplex(nr(lam,T), -7.95774715459e-09*absp(lam,T)*lam); }
+dcomplex Material::Nr(double lam, double T, double n) const { return dcomplex(nr(lam,T, n), -7.95774715459e-09*absp(lam,T)*lam); }
 
-Tensor3<dcomplex> Material::NR(double lam, double T, double /*n*/) const {
-    return Nr(lam, T);
+Tensor3<dcomplex> Material::NR(double lam, double T, double n) const {
+    return Nr(lam, T, n);
 }
 
 bool Material::operator ==(const Material &other) const {

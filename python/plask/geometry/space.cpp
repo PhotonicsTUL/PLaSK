@@ -683,9 +683,9 @@ void register_calculation_spaces() {
              u8"according to their settings.")
     ;
 
-    py::class_<Geometry2DCylindrical, shared_ptr<Geometry2DCylindrical>, py::bases<Geometry>>("Cylindrical2D",
+    py::class_<Geometry2DCylindrical, shared_ptr<Geometry2DCylindrical>, py::bases<Geometry>>("Cylindrical",
         u8"Geometry in 2D cylindrical space.\n\n"
-        u8"Cylindrical2D(root, **edges)\n"
+        u8"Cylindrical(root, **edges)\n"
         u8"Create a cylindrical space around a two-dimensional geometry object.\n\n"
         u8"Args:\n"
         u8"    root (GeometryObject2D or Revolution): Root object of the geometry.\n"
@@ -696,8 +696,8 @@ void register_calculation_spaces() {
         u8"        *periodic*, or *extend*).\n\n"
         u8"Example:\n"
         u8"    >>> block = geometry.Block2D(4, 2, 'GaAs')\n"
-        u8"    >>> geometry.Cylindrical2D(block, bottom='AlAs', outer='extend')\n"
-        u8"    <plask.geometry.Cylindrical2D object at (0x3dd6c70)>",
+        u8"    >>> geometry.Cylindrical(block, bottom='AlAs', outer='extend')\n"
+        u8"    <plask.geometry.Cylindrical object at (0x3dd6c70)>",
         py::no_init)
         .def("__init__", raw_constructor(Geometry2DCylindrical__init__, 1))
         .add_property("item", &Geometry2DCylindrical::getChild,
@@ -712,7 +712,7 @@ void register_calculation_spaces() {
                       u8"    :class:`plask.geometry.Box2D`\n"
                      )
         .def_readwrite("default_material", &Geometry2DCylindrical::defaultMaterial,
-                       u8"This material is returned by :meth:`~plask.geometry.Cylindrical2D.get_material`\n"
+                       u8"This material is returned by :meth:`~plask.geometry.Cylindrical.get_material`\n"
                        u8"for the points that do not belong to any object in the geometry tree.\n"
                        u8"any object in the geometry tree.\n"
                       )
@@ -723,7 +723,7 @@ void register_calculation_spaces() {
              u8"Get material at the given point.\n\n"
              u8"This method returns a material object with the material at the given point if\n"
              u8"this point is located within the geometry object *self*. Otherwise the method\n"
-             u8"returns :attr:`~plask.geometry.Cylindrical2D.default_material`.\n\n"
+             u8"returns :attr:`~plask.geometry.Cylindrical.default_material`.\n\n"
              u8"Args:\n"
              u8"    point (plask.vector): Vector with local coordinates of the tested point.\n"
              u8"    c0 (float): Horizontal coordinate of the tested point.\n"
@@ -763,10 +763,10 @@ void register_calculation_spaces() {
              u8"Returns:\n"
              u8"    sequence: List of translations of the leafs.\n\n"
              u8"All these methods are guaranteed to return their sequences in the same order:\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_leafs`,\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_leafs_bboxes`,\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_leafs_positions`,\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_leafs_translations`.\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_leafs`,\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_leafs_bboxes`,\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_leafs_positions`,\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_leafs_translations`.\n"
             )
         .def("get_leafs_positions", (std::vector<Vec<2>>(Geometry2DCylindrical::*)(const PathHints&)const) &Geometry2DCylindrical::getLeafsPositions,
              (py::arg("path")=py::object()),
@@ -779,10 +779,10 @@ void register_calculation_spaces() {
              u8"Returns:\n"
              u8"    sequence: List of vectors containing the position of the leafs.\n\n"
              u8"All these methods are guaranteed to return their sequences in the same order:\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_leafs`,\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_leafs_bboxes`,\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_leafs_positions`,\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_leafs_translations`.\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_leafs`,\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_leafs_bboxes`,\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_leafs_positions`,\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_leafs_translations`.\n"
             )
         .def("get_leafs_bboxes", (std::vector<Box2D>(Geometry2DCylindrical::*)(const PathHints&)const) &Geometry2DCylindrical::getLeafsBoundingBoxes,
              (py::arg("path")=py::object()),
@@ -795,10 +795,10 @@ void register_calculation_spaces() {
              u8"Returns:\n"
              u8"    sequence: List of vectors containing the position of the leafs.\n\n"
              u8"All these methods are guaranteed to return their sequences in the same order:\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_leafs`,\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_leafs_bboxes`,\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_leafs_positions`,\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_leafs_translations`.\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_leafs`,\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_leafs_bboxes`,\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_leafs_positions`,\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_leafs_translations`.\n"
             )
         .def("get_leafs_translations", &Space_leafsAsTranslations<Geometry2DCylindrical>, (py::arg("path")=py::object()),
              u8"Get list of :class:`Translation` objects holding all the geometry tree leafs.\n\n"
@@ -810,10 +810,10 @@ void register_calculation_spaces() {
              u8"Returns:\n"
              u8"    sequence: List of translations of the leafs.\n\n"
              u8"All these methods are guaranteed to return their sequences in the same order:\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_leafs`,\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_leafs_bboxes`,\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_leafs_positions`,\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_leafs_translations`.\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_leafs`,\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_leafs_bboxes`,\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_leafs_positions`,\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_leafs_translations`.\n"
             )
         .def("get_object_positions", (std::vector<Vec<2>>(Geometry2DCylindrical::*)(const shared_ptr<const GeometryObject>&, const PathHints&)const) &Geometry2DCylindrical::getObjectPositions,
              (py::arg("object"), py::arg("path")=py::object()),
@@ -826,8 +826,8 @@ void register_calculation_spaces() {
              u8"    the object.\n\n"
              u8"All these methods are guaranteed to return their sequences in the same order,\n"
              u8"provided they are called with the same arguments:\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_object_bboxes`,\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_object_positions`\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_object_bboxes`,\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_object_positions`\n"
             )
         .def("get_object_bboxes", (std::vector<Box2D>(Geometry2DCylindrical::*)(const shared_ptr<const GeometryObject>&, const PathHints&)const) &Geometry2DCylindrical::getObjectBoundingBoxes,
              (py::arg("object"), py::arg("path")=py::object()),
@@ -840,8 +840,8 @@ void register_calculation_spaces() {
              u8"    sequence: List of bounding boxes of the instances of the object.\n\n"
              u8"All these methods are guaranteed to return their sequences in the same order,\n"
              u8"provided they are called with the same arguments:\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_object_bboxes`,\n"
-             u8":meth:`~plask.geometry.Cylindrical2D.get_object_positions`\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_object_bboxes`,\n"
+             u8":meth:`~plask.geometry.Cylindrical.get_object_positions`\n"
             )
         .def("get_paths", &Geometry2DCylindrical::getPathsAt, (py::arg("point"), py::arg("all")=false),
              u8"Get subtree containing paths to all leafs covering the specified point.\n\n"

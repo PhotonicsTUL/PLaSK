@@ -200,7 +200,7 @@ class GNCylindrical(GNGeometryBase):
         return "cylindrical{}d".format(self.dim) if full_name else "cylindrical"
 
     def python_type(self):
-        return 'geometry.Cylindrical2D'
+        return 'geometry.Cylindrical'
 
     def add_child_options(self):
         res = super(GNCylindrical, self).add_child_options()

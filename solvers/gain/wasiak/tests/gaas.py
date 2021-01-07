@@ -90,7 +90,7 @@ class TestStructureGain(unittest.TestCase):
         stack.prepend(active)
         stack.prepend(substrate)
         stack.prepend(substrate)
-        return geometry.Cylindrical2D(stack), active, well
+        return geometry.Cylindrical(stack), active, well
 
     def setUp(self):
         self.msh = mesh.Rectangular2D([0.], [1000.0100])

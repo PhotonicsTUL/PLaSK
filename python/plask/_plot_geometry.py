@@ -524,7 +524,7 @@ def _draw_geometry2d(env, geometry_object, transform, clipbox, plask_real_path):
         return
 
 _geometry_drawers[plask.geometry.Cartesian2D] = _draw_geometry2d
-_geometry_drawers[plask.geometry.Cylindrical2D] = _draw_geometry2d
+_geometry_drawers[plask.geometry.Cylindrical] = _draw_geometry2d
 
 
 
@@ -650,7 +650,7 @@ def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=
     else:
         dd = 1
         ax = (0,1)
-        dirs = (("inner", "outer") if type(geometry) == plask.geometry.Cylindrical2D else ("left", "right"),
+        dirs = (("inner", "outer") if type(geometry) == plask.geometry.Cylindrical else ("left", "right"),
                 ("top", "bottom"))
 
     if zorder is None:
@@ -666,7 +666,7 @@ def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=
         periods = array((periods, periods), int)
     try:
         if geometry.edges[dirs[0][0]] == 'mirror' or geometry.edges[dirs[0][1]] == 'mirror' or \
-           isinstance(geometry, plask.geometry.Cylindrical2D):
+           isinstance(geometry, plask.geometry.Cylindrical):
             hshift *= 2
             hmirrortransform = matplotlib.transforms.Affine2D.from_values(-1., 0, 0, 1., 0, 0)
             hmirror = mirror

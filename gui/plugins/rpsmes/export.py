@@ -55,7 +55,7 @@ else:
 
         outl(name)
         outl("All                     laser_material")
-        if type(geo) == plask.geometry.Cylindrical2D:
+        if type(geo) == plask.geometry.Cylindrical:
             outl("1           1           axis_symmetry_and_laser_length")
         elif type(geo) == plask.geometry.Cartesian2D:
             outl("0           %g          axis_symmetry_and_laser_length" % geo.extrusion.length)

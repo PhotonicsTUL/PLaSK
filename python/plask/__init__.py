@@ -135,6 +135,12 @@ geometry.AlignContainer2D = geometry.Align2D
 geometry.AlignContainer3D = geometry.Align3D
 
 
+class Cylindrical2D(geometry.Cylindrical):
+    """obsolete"""
+geometry.Cylindrical2D = Cylindrical2D
+del Cylindrical2D
+
+
 ## ## plask.manager ## ##
 
 def loadxpl(source, defs={}, sections=None, destination=None, update=False):
@@ -257,7 +263,7 @@ class StepProfile:
         <plask.geometry.PathHint at 0x47466b0>
         >>> stack.prepend(cold)
         <plask.geometry.PathHint at 0x47469e0>
-        >>> geom = geometry.Cylindrical2D(stack)
+        >>> geom = geometry.Cylindrical(stack)
         >>> profile = StepProfile(geom)
         >>> profile[hot] = 1e7
         >>> receiver = flow.HeatReceiverCyl()
@@ -303,7 +309,7 @@ class StepProfile:
         if name in self.providers:
             return self.providers[name]
         suffix = { geometry.Cartesian2D: '2D',
-                   geometry.Cylindrical2D: 'Cyl',
+                   geometry.Cylindrical: 'Cyl',
                    geometry.Cartesian3D: '3D' }[type(self._geometry)]
         provider = flow.__dict__[name[3:] + "Provider" + suffix](self)
         self.providers[name] = provider
