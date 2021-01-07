@@ -55,7 +55,7 @@ def print_interior(element):
     lines = text.splitlines()
     if lines and not lines[-1].strip():
         lines = lines[:-1]
-    indent = min(len(line) - len(line.lstrip()) for line in lines)
+    indent = min(len(line) - len(line.lstrip()) for line in lines) if lines else 0
     return "\n".join(line[indent:] for line in lines)
 
 
