@@ -270,18 +270,8 @@ void ExpansionPW3D::reset() {
 
 
 
-void ExpansionPW3D::prepareIntegrals(double lam, double glam) {
-    temperature = SOLVER->inTemperature(mesh);
-    gain_connected = SOLVER->inGain.hasProvider();
-    if (gain_connected) {
-        if (isnan(glam)) glam = lam;
-        gain = SOLVER->inGain(mesh, glam);
-    }
-}
-
-void ExpansionPW3D::cleanupIntegrals(double, double) {
-    temperature.reset();
-    gain.reset();
+void ExpansionPW3D::beforeLayersIntegrals(double lam, double glam) {
+    SOLVER->prepareExpansionIntegrals(this, mesh, lam, glam);
 }
 
 
@@ -362,24 +352,27 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
             Vec<2> norm(0.,0.);
             for (size_t t = tbegin, j = 0; t != tend; ++t) {
                 for (size_t l = lbegin; l != lend; ++l, ++j) {
-                    double T = 0., W = 0.;
+                    double T = 0., W = 0., C = 0.;
                     for (size_t k = 0, v = mesh->index(l, t, 0); k != mesh->vert()->size(); ++v, ++k) {
                         if (solver->stack[k] == layer) {
                             double w = (k == 0 || k == mesh->vert()->size()-1)? 1e-6 : solver->vbounds->at(k) - solver->vbounds->at(k-1);
-                            T += w * temperature[v]; W += w;
+                            T += w * temperature[v]; C += w * carriers[v]; W += w;
                         }
                     }
                     T /= W;
+                    C /= W;
                     {
                         OmpLockGuard<OmpNestLock> lock; // this must be declared before `material` to guard its destruction
                         auto material = geometry->getMaterial(vec(long_mesh->at(l), tran_mesh->at(t), matv));
                         lock = material->lock();
-                        cell[j] = material->NR(lam, T);
+                        cell[j] = material->NR(lam, T, C);
                         if (isnan(cell[j].c00) || isnan(cell[j].c11) || isnan(cell[j].c22) || isnan(cell[j].c01))
-                            throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K", material->name(), lam, T);
+                            throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm, T={}K n={}/cm3",
+                             material->name(), lam, T, C);
                     }
                     if (cell[j].c01 != 0.) {
-                        if (symmetric_long() || symmetric_tran()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
+                        if (symmetric_long() || symmetric_tran())
+                            throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");
                     }
                     if (gain_connected && solver->lgained[layer]) {
                         auto roles = geometry->getRolesAt(vec(long_mesh->at(l), tran_mesh->at(t), matv));

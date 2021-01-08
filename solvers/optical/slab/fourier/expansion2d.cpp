@@ -217,18 +217,8 @@ void ExpansionPW2D::reset() {
 }
 
 
-void ExpansionPW2D::prepareIntegrals(double lam, double glam) {
-    temperature = SOLVER->inTemperature(mesh);
-    gain_connected = SOLVER->inGain.hasProvider();
-    if (gain_connected) {
-        if (isnan(glam)) glam = lam;
-        gain = SOLVER->inGain(mesh, glam);
-    }
-}
-
-void ExpansionPW2D::cleanupIntegrals(double, double) {
-    temperature.reset();
-    gain.reset();
+void ExpansionPW2D::beforeLayersIntegrals(double lam, double glam) {
+    SOLVER->prepareExpansionIntegrals(this, mesh, lam, glam);
 }
 
 
@@ -288,7 +278,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 refl = geometry->getMaterial(vec(pl,maty))->NR(lam, Tl).sqr();
                 if (isnan(refl.c00) || isnan(refl.c11) || isnan(refl.c22) || isnan(refl.c01))
                     throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
-                                material->name(), lam, Tl);
+                                   material->name(), lam, Tl);
             }{
                 OmpLockGuard<OmpNestLock> lock; // this must be declared before `material` to guard its destruction
                 auto material = geometry->getMaterial(vec(pr,maty));
@@ -296,7 +286,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 refr = geometry->getMaterial(vec(pr,maty))->NR(lam, Tr).sqr();
                 if (isnan(refr.c00) || isnan(refr.c11) || isnan(refr.c22) || isnan(refr.c01))
                     throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K",
-                                material->name(), lam, Tr);
+                                   material->name(), lam, Tr);
             }
         }
 

@@ -176,6 +176,7 @@
   receivers: &receivers
   - inTemperature
   - inGain
+  - inCarriersConcentration
 
 ###########################################################################################
 

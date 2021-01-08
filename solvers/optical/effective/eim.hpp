@@ -154,6 +154,9 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     /// Receiver for the gain
     ReceiverFor<Gain, Geometry2DCartesian> inGain;
 
+    /// Receiver for the carriers concentration
+    ReceiverFor<CarriersConcentration, Geometry2DCartesian> inCarriersConcentration;
+
     /// Provider for computed effective index
     typename ProviderFor<ModeEffectiveIndex>::Delegate outNeff;
 
@@ -174,6 +177,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
     virtual ~EffectiveIndex2D() {
         inTemperature.changedDisconnectMethod(this, &EffectiveIndex2D::onInputChange);
         inGain.changedDisconnectMethod(this, &EffectiveIndex2D::onInputChange);
+        inCarriersConcentration.changedDisconnectMethod(this, &EffectiveIndex2D::onInputChange);
     }
 
     std::string getClassName() const override { return "optical.EffectiveIndex2D"; }

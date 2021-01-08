@@ -116,18 +116,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     FFT::Forward2D matFFT;                  ///< FFT object for material coefficients
 
-    /// Obtained temperature
-    LazyData<double> temperature;
-
-    /// Flag indicating if the gain is connected
-    bool gain_connected;
-
-    /// Obtained gain
-    LazyData<Tensor2<double>> gain;
-
-    void prepareIntegrals(double lam, double glam) override;
-
-    void cleanupIntegrals(double lam, double glam) override;
+    void beforeLayersIntegrals(double lam, double glam) override;
 
     void layerIntegrals(size_t layer, double lam, double glam) override;
 

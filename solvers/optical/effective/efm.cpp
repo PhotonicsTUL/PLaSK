@@ -37,6 +37,7 @@ EffectiveFrequencyCyl::EffectiveFrequencyCyl(const std::string& name) :
     stripe_root.method = RootDigger::ROOT_MULLER;
     inTemperature.changedConnectMethod(this, &EffectiveFrequencyCyl::onInputChange);
     inGain.changedConnectMethod(this, &EffectiveFrequencyCyl::onInputChange);
+    inCarriersConcentration.changedConnectMethod(this, &EffectiveFrequencyCyl::onInputChange);
 }
 
 
@@ -280,22 +281,25 @@ void EffectiveFrequencyCyl::updateCache()
             axis1->addPoint(mesh->axis[1]->at(mesh->axis[1]->size()-1) + 2.*OrderedAxis::MIN_DISTANCE);
 
         auto midmesh = plask::make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
-        auto temp = inTemperature(midmesh);
+        auto temp = inTemperature.hasProvider() ? inTemperature(midmesh) : LazyData<double>(midmesh->size(), 300.);
         bool have_gain = false;
         LazyData<Tensor2<double>> gain1, gain2;
+        auto carriers = inCarriersConcentration.hasProvider() ? inCarriersConcentration(CarriersConcentration::MAJORITY, midmesh)
+                                                             : LazyData<double>(midmesh->size(), 0.);
 
         for (size_t ir = 0; ir != rsize; ++ir) {
             for (size_t iz = zbegin; iz < zsize; ++iz) {
                 size_t idx = midmesh->index(ir, iz-zbegin);
                 double T = temp[idx];
+                double cc = carriers[idx];
                 auto point = midmesh->at(idx);
                 auto material = geometry->getMaterial(point);
                 auto roles = geometry->getRolesAt(point);
                 // Nr = nr + i/(4π) λ g
                 // Ng = Nr - λ dN/dλ = Nr - λ dn/dλ - i/(4π) λ^2 dg/dλ
                 if (roles.find("QW") == roles.end() && roles.find("QD") == roles.end() && roles.find("gain") == roles.end()) {
-                    nrCache[ir][iz] = material->Nr(lam, T);
-                    ngCache[ir][iz] = nrCache[ir][iz] - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * i2h;
+                    nrCache[ir][iz] = material->Nr(lam, T, cc);
+                    ngCache[ir][iz] = nrCache[ir][iz] - lam * (material->Nr(lam2, T, cc) - material->Nr(lam1, T, cc)) * i2h;
                 } else { // we ignore the material absorption as it should be considered in the gain already
                     need_gain = true;
                     if (!have_gain) {
@@ -305,8 +309,8 @@ void EffectiveFrequencyCyl::updateCache()
                     }
                     double g = 0.5 * (gain1[idx].c00 + gain2[idx].c00);
                     double gs = (gain2[idx].c00 - gain1[idx].c00) * i2h;
-                    double nr = real(material->Nr(lam, T));
-                    double ng = real(nr - lam * (material->Nr(lam2, T) - material->Nr(lam1, T)) * i2h);
+                    double nr = real(material->Nr(lam, T, cc));
+                    double ng = real(nr - lam * (material->Nr(lam2, T, cc) - material->Nr(lam1, T, cc)) * i2h);
                     nrCache[ir][iz] = dcomplex(nr, (0.25e-7/PI) * lam * g);
                     ngCache[ir][iz] = dcomplex(ng, isnan(gs)? 0. : - (0.25e-7/PI) * lam*lam * gs);
                 }

@@ -70,17 +70,19 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
     double integrateField(WhichField field, size_t layer, const cvector& E, const cvector& H) override;
 
   private:
-    inline double getT(size_t layer, size_t ri) {
-        double T = 0., W = 0.;
+    inline std::pair<double,double> getTC(size_t layer, size_t ri) {
+        double T = 0., W = 0., C = 0.;
         for (size_t k = 0, v = ri * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
             if (solver->stack[k] == layer) {
                 double w = (k == 0 || k == mesh->vert()->size() - 1) ? 1e-6 : solver->vbounds->at(k) - solver->vbounds->at(k - 1);
                 T += w * temperature[v];
+                C += w * carriers[v];
                 W += w;
             }
         }
         T /= W;
-        return T;
+        C /= W;
+        return std::make_pair(T, C);
     }
 
   protected:
@@ -96,15 +98,6 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
 
     /// Information if the layer is diagonal
     std::vector<bool> diagonals;
-
-    /// Obtained temperature
-    LazyData<double> temperature;
-
-    /// Flag indicating if the gain is connected
-    bool gain_connected;
-
-    /// Obtained gain
-    LazyData<Tensor2<double>> gain;
 
     /// Matrices with computed integrals necessary to construct RE and RH matrices
     struct Integrals {
@@ -138,9 +131,7 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
     /// Computed integrals
     std::vector<Integrals> layers_integrals;
 
-    void prepareIntegrals(double lam, double glam) override;
-
-    void cleanupIntegrals(double, double) override;
+    void beforeLayersIntegrals(double lam, double glam) override;
 
     Tensor3<dcomplex> getEps(size_t layer, size_t ri, double r, double matz, double lam, double glam);
 
@@ -155,6 +146,11 @@ struct PLASK_SOLVER_API ExpansionBessel : public Expansion {
     virtual cvector getHz(const cvector& Bz) = 0;
 
   public:
+
+    void beforeGetRefractiveIndex() override;
+
+    void afterGetRefractiveIndex() override;
+
     unsigned getM() const { return m; }
     void setM(unsigned n) {
         if (int(n) != m) {

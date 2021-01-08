@@ -164,6 +164,8 @@ void BesselSolverCyl::loadConfiguration(XMLReader& reader, Manager& manager) {
 }
 
 void BesselSolverCyl::onInitialize() {
+    if (size == 0)
+        throw BadInput(getId(), "Bessel solver size cannot be 0");
     this->setupLayers();
     std::string dom;
     switch (domain) {

@@ -7,7 +7,7 @@
 #   include <omp.h>
 #endif
 
-#include "solver.hpp"
+#include "solverbase.hpp"
 #include "matrices.hpp"
 #include "meshadapter.hpp"
 #include "temp_matrix.hpp"
@@ -35,6 +35,18 @@ struct PLASK_SOLVER_API Expansion {
     /// Material parameters wavelength
     double lam0;
 
+    /// Obtained temperature
+    LazyData<double> temperature;
+
+    /// Flag indicating if the gain is connected
+    bool gain_connected;
+
+    /// Obtained gain
+    LazyData<Tensor2<double>> gain;
+
+    /// Carriers concentration
+    LazyData<double> carriers;
+
     Expansion(SlabBase* solver): solver(solver), k0(NAN), lam0(NAN) {}
 
     virtual ~Expansion() {}
@@ -53,12 +65,16 @@ struct PLASK_SOLVER_API Expansion {
     /**
      * Method called before layer integrals are computed
      */
-    virtual void prepareIntegrals(double PLASK_UNUSED(lam), double PLASK_UNUSED(glam)) {}
+    virtual void beforeLayersIntegrals(double PLASK_UNUSED(lam), double PLASK_UNUSED(glam)) {}
 
     /**
      * Method called after layer integrals are computed
      */
-    virtual void cleanupIntegrals(double PLASK_UNUSED(lam), double PLASK_UNUSED(glam)) {}
+    virtual void afterLayersIntegrals() {
+        temperature.reset();
+        gain.reset();
+        carriers.reset();
+    }
 
     /**
      * Compute itegrals for RE and RH matrices
@@ -69,6 +85,14 @@ struct PLASK_SOLVER_API Expansion {
     virtual void layerIntegrals(size_t layer, double lam, double glam) = 0;
 
   public:
+
+    /// Prepare retrieval of refractive index
+    virtual void beforeGetRefractiveIndex() {
+        computeIntegrals();
+    }
+
+    /// Finish retrieval of refractive index
+    virtual void afterGetRefractiveIndex() {}
 
     /// Get lam0
     double getLam0() const { return lam0; }
@@ -114,7 +138,7 @@ struct PLASK_SOLVER_API Expansion {
             }
             size_t nlayers = solver->lcount;
             std::exception_ptr error;
-            prepareIntegrals(lam, glambda);
+            beforeLayersIntegrals(lam, glambda);
             #pragma omp parallel for
             for (plask::openmp_size_t l = 0; l < nlayers; ++l) {
                 if (error) continue;
@@ -125,7 +149,7 @@ struct PLASK_SOLVER_API Expansion {
                     error = std::current_exception();
                 }
             }
-            cleanupIntegrals(lam, glambda);
+            afterLayersIntegrals();
             if (error) std::rethrow_exception(error);
             solver->recompute_integrals = false;
             solver->recompute_gain_integrals = false;
@@ -138,7 +162,7 @@ struct PLASK_SOLVER_API Expansion {
             glayers.reserve(nlayers);
             for (size_t l = 0; l != nlayers; ++l) if (solver->lgained[l]) glayers.push_back(l);
             std::exception_ptr error;
-            prepareIntegrals(lam, glambda);
+            beforeLayersIntegrals(lam, glambda);
             #pragma omp parallel for
             for (plask::openmp_size_t l = 0; l < glayers.size(); ++l) {
                 if (error) continue;
@@ -149,7 +173,7 @@ struct PLASK_SOLVER_API Expansion {
                     error = std::current_exception();
                 }
             }
-            cleanupIntegrals(lam, glambda);
+            afterLayersIntegrals();
             if (error) std::rethrow_exception(error);
             solver->recompute_gain_integrals = false;
         }

@@ -122,39 +122,30 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
 
     FFT::Forward1D matFFT;                  ///< FFT object for material coefficients
 
-    /// Obtained temperature
-    LazyData<double> temperature;
-
-    /// Flag indicating if the gain is connected
-    bool gain_connected;
-
-    /// Obtained gain
-    LazyData<Tensor2<double>> gain;
-
-    void prepareIntegrals(double lam, double glam) override;
-
-    void cleanupIntegrals(double lam, double glam) override;
+    void beforeLayersIntegrals(double lam, double glam) override;
 
     void layerIntegrals(size_t layer, double lam, double glam) override;
 
     Tensor3<dcomplex> getEpsilon(const shared_ptr<GeometryD<2>>& geometry, size_t layer, double maty,
                                  double lam, double glam, size_t j) {
-        double T = 0., W = 0.;
+        double T = 0., W = 0., C = 0.;
         for (size_t k = 0, v = j * solver->verts->size(); k != mesh->vert()->size(); ++v, ++k) {
             if (solver->stack[k] == layer) {
                 double w = (k == 0 || k == mesh->vert()->size()-1)? 1e-6 : solver->vbounds->at(k) - solver->vbounds->at(k-1);
-                T += w * temperature[v]; W += w;
+                T += w * temperature[v]; C += w * carriers[v]; W += w;
             }
         }
         T /= W;
+        C /= W;
         Tensor3<dcomplex> nr;
         {
             OmpLockGuard<OmpNestLock> lock; // this must be declared before `material` to guard its destruction
             auto material = geometry->getMaterial(vec(mesh->tran()->at(j),maty));
             lock = material->lock();
-            nr = material->NR(lam, T);
+            nr = material->NR(lam, T, C);
             if (isnan(nr.c00) || isnan(nr.c11) || isnan(nr.c22) || isnan(nr.c01))
-                throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm and T={}K", material->name(), lam, T);
+                throw BadInput(solver->getId(), "Complex refractive index (NR) for {} is NaN at lam={}nm, T={}K, n={}/cm3",
+                               material->name(), lam, T, C);
         }
         if (nr.c01 != 0.) {
             if (symmetric()) throw BadInput(solver->getId(), "Symmetry not allowed for structure with non-diagonal NR tensor");

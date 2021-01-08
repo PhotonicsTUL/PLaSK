@@ -64,6 +64,7 @@ SlabSolver<BaseT>::SlabSolver(const std::string& name): BaseT(name),
     inTemperature = 300.; // temperature receiver has some sensible value
     this->inTemperature.changedConnectMethod(this, &SlabSolver<BaseT>::onInputChanged);
     this->inGain.changedConnectMethod(this, &SlabSolver<BaseT>::onGainChanged);
+    this->inCarriersConcentration.changedConnectMethod(this, &SlabSolver<BaseT>::onInputChanged);
 }
 
 template <typename BaseT>
@@ -71,6 +72,7 @@ SlabSolver<BaseT>::~SlabSolver()
 {
     this->inTemperature.changedDisconnectMethod(this, &SlabSolver<BaseT>::onInputChanged);
     this->inGain.changedDisconnectMethod(this, &SlabSolver<BaseT>::onGainChanged);
+    this->inCarriersConcentration.changedDisconnectMethod(this, &SlabSolver<BaseT>::onInputChanged);
 }
 
 
@@ -425,8 +427,8 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getRefractiveIndexProfile
     setExpansionDefaults(false);
     if (isnan(expansion.lam0) || always_recompute_gain || isnan(expansion.k0))
         expansion.setK0(isnan(k0)? 2e3*PI / lam0 : k0);
-    initTransfer(expansion, false);
-    computeIntegrals();
+    // initTransfer(expansion, false);
+    expansion.beforeGetRefractiveIndex();
 
     //TODO maybe there is a more efficient way to implement this
     DataVector<Tensor3<dcomplex>> result(dst_mesh->size());
@@ -439,7 +441,7 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getRefractiveIndexProfile
     //    size_t l = stack[n];
     //    LazyData<Tensor3<dcomplex>> data = cache.find(l);
     //    if (data == cache.end()) {
-    //        data = transfer->diagonalizer->source()->getMaterialNR(l, level, interp);
+    //        data = expansion.getMaterialNR(l, level, interp);
     //        cache[l] = data;
     //    }
     //    for (size_t i = 0; i != level->size(); ++i) result[level->index(i)] = data[i];
@@ -448,9 +450,11 @@ DataVector<const Tensor3<dcomplex>> SlabSolver<BaseT>::getRefractiveIndexProfile
         double h = level->vpos();
         size_t n = getLayerFor(h);
         size_t l = stack[n];
-        auto data = transfer->diagonalizer->source()->getMaterialNR(l, level, interp);
+        auto data = expansion.getMaterialNR(l, level, interp);
         for (size_t i = 0; i != level->size(); ++i) result[level->index(i)] = data[i];
     }
+
+    expansion.afterGetRefractiveIndex();
 
     return result;
 }

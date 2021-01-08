@@ -281,6 +281,9 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     /// Receiver for the gain
     ReceiverFor<Gain, Geometry2DCylindrical> inGain;
 
+    /// Receiver for the carriers concentration
+    ReceiverFor<CarriersConcentration, Geometry2DCylindrical> inCarriersConcentration;
+
     /// Provider for computed resonant wavelength
     typename ProviderFor<ModeWavelength>::Delegate outWavelength;
 
@@ -304,6 +307,7 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
     virtual ~EffectiveFrequencyCyl() {
         inTemperature.changedDisconnectMethod(this, &EffectiveFrequencyCyl::onInputChange);
         inGain.changedDisconnectMethod(this, &EffectiveFrequencyCyl::onInputChange);
+        inCarriersConcentration.changedDisconnectMethod(this, &EffectiveFrequencyCyl::onInputChange);
     }
 
     std::string getClassName() const override { return "optical.EffectiveFrequencyCyl"; }
@@ -584,4 +588,3 @@ struct PLASK_SOLVER_API EffectiveFrequencyCyl: public SolverWithMesh<Geometry2DC
 }}} // namespace plask::optical::effective
 
 #endif // PLASK__MODULE_OPTICAL_EFM_HPP
-

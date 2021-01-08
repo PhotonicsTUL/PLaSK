@@ -331,6 +331,7 @@ BOOST_PYTHON_MODULE(effective) {
         RW_PROPERTY(wavelength, getWavelength, setWavelength, "Current wavelength.");
         RECEIVER(inTemperature, "");
         RECEIVER(inGain, "");
+        RECEIVER(inCarriersConcentration, "");
         PROVIDER(outNeff, "");
         PROVIDER(outLightMagnitude, "");
         PROVIDER(outLightE, "");
@@ -462,6 +463,7 @@ BOOST_PYTHON_MODULE(effective) {
                    py::arg("num") = 0);
         RECEIVER(inTemperature, "");
         RECEIVER(inGain, "");
+        RECEIVER(inCarriersConcentration, "");
         PROVIDER(outWavelength, "");
         PROVIDER(outLoss, "");
         PROVIDER(outLightMagnitude, "");

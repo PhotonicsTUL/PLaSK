@@ -31,6 +31,7 @@ EffectiveIndex2D::EffectiveIndex2D(const std::string& name) :
     stripe_root.method = RootDigger::ROOT_MULLER;
     inTemperature.changedConnectMethod(this, &EffectiveIndex2D::onInputChange);
     inGain.changedConnectMethod(this, &EffectiveIndex2D::onInputChange);
+    inCarriersConcentration.changedConnectMethod(this, &EffectiveIndex2D::onInputChange);
 }
 
 
@@ -319,18 +320,21 @@ void EffectiveIndex2D::updateCache()
 
         writelog(LOG_DEBUG, "Updating refractive indices cache");
         auto midmesh = plask::make_shared<RectangularMesh<2>>(axis0, axis1, mesh->getIterationOrder());
-        auto temp = inTemperature(midmesh);
+        auto temp = inTemperature.hasProvider() ? inTemperature(midmesh) : LazyData<double>(midmesh->size(), 300.);
         bool have_gain = false;
         LazyData<Tensor2<double>> gain;
+        auto carriers = inCarriersConcentration.hasProvider() ? inCarriersConcentration(CarriersConcentration::MAJORITY, midmesh)
+                                                             : LazyData<double>(midmesh->size(), 0.);
 
         for (size_t ix = xbegin; ix < xend; ++ix) {
             for (size_t iy = ybegin; iy < yend; ++iy) {
                 size_t idx = midmesh->index(ix-xbegin, iy-ybegin);
                 double T = temp[idx];
+                double cc = carriers[idx];
                 auto point = midmesh->at(idx);
                 auto roles = geometry->getRolesAt(point);
                 if (roles.find("QW") == roles.end() && roles.find("QD") == roles.end() && roles.find("gain") == roles.end())
-                    nrCache[ix][iy] = geometry->getMaterial(point)->Nr(w, T);
+                    nrCache[ix][iy] = geometry->getMaterial(point)->Nr(w, T, cc);
                 else {  // we ignore the material absorption as it should be considered in the gain already
                     need_gain = true;
                     if (!have_gain) {
@@ -338,7 +342,7 @@ void EffectiveIndex2D::updateCache()
                         have_gain = true;
                     }
                     double g = (polarization==TM)? gain[idx].c11 : gain[idx].c00;
-                    nrCache[ix][iy] = dcomplex(real(geometry->getMaterial(point)->Nr(w, T)),
+                    nrCache[ix][iy] = dcomplex(real(geometry->getMaterial(point)->Nr(w, T, cc)),
                                                w * g * (0.25e-7/PI));
                 }
             }

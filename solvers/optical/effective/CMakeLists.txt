@@ -61,6 +61,7 @@ enable_testing()
 add_solver_test(loading ${CMAKE_CURRENT_SOURCE_DIR}/tests/loading.py)
 add_solver_test(eim ${CMAKE_CURRENT_SOURCE_DIR}/tests/eim.py)
 add_solver_test(efm ${CMAKE_CURRENT_SOURCE_DIR}/tests/efm.py)
+add_solver_test(carriers ${CMAKE_CURRENT_SOURCE_DIR}/tests/carriers.py)
 
 # Build everything the default way.
 # Call this macro unless you really know what you are doing!
