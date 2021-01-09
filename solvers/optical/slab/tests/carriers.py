@@ -63,7 +63,7 @@ class CarriersTest:
         self.solver.size = self.size
         self.solver.refine = 0
         self.solver.inGain = 1000.
-        self.test_mesh = mesh.Rectangular2D([0.], [0.050, 0.104, 0.158])
+        self.test_mesh = mesh.Rectangular2D([0.0], [0.050, 0.104, 0.158])
 
     def test_no_carriers(self):
         nr = self.solver.outRefractiveIndex(self.test_mesh).array[...,0].flatten().real
@@ -90,24 +90,24 @@ class Fourier2DCarriers(CarriersTest, unittest.TestCase):
     geometry_kwargs = {'left': 'mirror', 'right': 'periodic'}
 
 
-class BesselCylCarriers(CarriersTest, unittest.TestCase):
-    name = "bessel"
-    Geometry = Cylindrical
-    Solver = BesselCyl
-    size = 1
-    Diffusion = DiffusionCyl
+# class BesselCylCarriers(CarriersTest, unittest.TestCase):
+#     name = "bessel"
+#     Geometry = Cylindrical
+#     Solver = BesselCyl
+#     size = 1
+#     Diffusion = DiffusionCyl
 
 
-class Fourier3DCarriers(CarriersTest, unittest.TestCase):
-    name = "fourier3"
-    Solver = Fourier3D
-    Diffusion = DiffusionCyl
-    geometry_kwargs = {'left': 'mirror', 'back': 'mirror', 'right': 'periodic', 'front': 'periodic'}
+# class Fourier3DCarriers(CarriersTest, unittest.TestCase):
+#     name = "fourier3"
+#     Solver = Fourier3D
+#     Diffusion = DiffusionCyl
+#     geometry_kwargs = {'left': 'mirror', 'back': 'mirror', 'right': 'periodic', 'front': 'periodic'}
 
-    def Geometry(self, item, **kwargs):
-        return Cartesian3D(geometry.Clip3D(geometry.Revolution(item), left=0., back=0., right=0.35, front=0.35), **kwargs)
+#     def Geometry(self, item, **kwargs):
+#         return Cartesian3D(geometry.Clip3D(geometry.Revolution(item), left=0., back=0., right=0.35, front=0.35), **kwargs)
 
-    def setUp(self):
-        CarriersTest.setUp(self)
-        self.geometry = Cylindrical(self.geometry.item.item)
-        self.test_mesh = mesh.Rectangular3D([0.], [0.], [0.050, 0.104, 0.158])
+#     def setUp(self):
+#         CarriersTest.setUp(self)
+#         self.geometry = Cylindrical(self.geometry.item.item)
+#         self.test_mesh = mesh.Rectangular3D([0.], [0.], [0.050, 0.104, 0.158])

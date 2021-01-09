@@ -118,8 +118,13 @@ PLASK_API void prepareInterpolationForAxis(const MeshAxis& axis, const Interpola
                 hi = - hi;
                 invert_hi = true;
             } else if (flags.periodic(axis_nr)) {
-                lo = 2. * flags.high(axis_nr) - hi;
-                invert_hi = true;
+                if (wrapped_point_coord == flags.high(axis_nr)) {
+                    index_lo = index_hi - 1;
+                    lo = lo = axis.at(index_lo);
+                } else {
+                    lo = 2. * flags.high(axis_nr) - hi;
+                    invert_hi = true;
+                }
             } else {
                 hi += 1.;
             }

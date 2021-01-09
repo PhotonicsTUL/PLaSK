@@ -45,18 +45,19 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 # the following lines. If you don't do it, your solver directory will be scanned
 # automatically for solver_src and the 'python' subdirectory for interface_src.
 #
-set(solver_src diffusion_1D/diffusion_cylindrical.cpp)
+# set(solver_src diffusion1d.cpp)
 #set(interface_src python/file1.cpp python/file2.cpp python/file3.h)
 
 # To add unit tests to your project create appropriate targets (binary executables,
 # Python scripts, or XPL files) and register them using CMake command add_solver_test.
 # Then uncomment and edit the line below.
 #
-#enable_testing()
+enable_testing()
 #add_executable(mytest test/your_test.cpp test/other_source.cpp)
 #set(SOLVER_TEST_DEPENDS mytest)
 #add_solvers_test(foo ${PLASK_SOLVER_PATH}/mytest)
 #add_solver_test(bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
+add_solver_test(uniform ${CMAKE_CURRENT_SOURCE_DIR}/tests/uniform.py)
 
 
 # Build everything the default way.

@@ -221,6 +221,7 @@ public:
         if (periodic(ax)) {
             if (sym[ax]) {
                 x = std::fmod(abs(x), 2.*d);
+                if (x == 0.) x = 1e-12;
                 if (x > d) x = - (x - 2.*d);
                 if (hi[ax] < 0) x = - x;
             } else {
@@ -228,6 +229,7 @@ public:
                 x += (x >= 0)? lo[ax] : hi[ax];
             }
         } else if (sym[ax]) {
+            if (x == 0.) x = 1e-12;
             if (lo[ax] >= 0) x = abs(x);
             else x = - abs(x);
         }

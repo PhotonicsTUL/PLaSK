@@ -1,6 +1,6 @@
 #include <plask/plask.hpp>
 
-namespace plask { namespace electrical { namespace diffusion_cylindrical {
+namespace plask { namespace electrical { namespace diffusion1d {
 
 template<typename Geometry2DType>
 class PLASK_SOLVER_API DiffusionFem2DSolver: public SolverWithMesh<Geometry2DType, RegularMesh1D>
@@ -110,7 +110,7 @@ class PLASK_SOLVER_API DiffusionFem2DSolver: public SolverWithMesh<Geometry2DTyp
         // Methods for solving equation
         // K*n" -  E*n = -F
 
-        void createMatrices(DataVector<double> A_matrix, DataVector<double> RHS_vector);
+        void createMatrices(DataVector<double> A_matrix, DataVector<double> B_vector);
 
         double K(int i);
 //        double KInitial(size_t i, double T, double n0);	// K dla rozkladu poczatkowego
@@ -169,4 +169,4 @@ double DiffusionFem2DSolver<Geometry2DCylindrical>::jacobian(double r) {
     return 2*plask::PI * r;
 } // 2*PI from integral over full angle,
 
-}}} //namespace electrical::diffusion_cylindrical
+}}} //namespace electrical::diffusion1d
