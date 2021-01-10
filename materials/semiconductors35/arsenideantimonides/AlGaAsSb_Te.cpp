@@ -31,7 +31,7 @@ AlGaAsSb_Te::AlGaAsSb_Te(const Material::Composition& Comp, double Val): AlGaAsS
 
 MI_PROPERTY(AlGaAsSb_Te, mob,
             MISource("Chiu (1990) Te doping (1990) Appl. Phys. Lett. (Fig. 4)"),
-            MIComment("fit by Lukasz Piskorski")
+            MINote("fit by Lukasz Piskorski")
             )
 Tensor2<double> AlGaAsSb_Te::mob(double T) const {
     double tmob = mob_RT * pow(300./T,1.);
@@ -40,7 +40,7 @@ Tensor2<double> AlGaAsSb_Te::mob(double T) const {
 
 MI_PROPERTY(AlGaAsSb_Te, Nf,
             MISource("TODO"),
-            MIComment("fit by Lukasz Piskorski")
+            MINote("fit by Lukasz Piskorski")
             )
 double AlGaAsSb_Te::Nf(double T) const {
     double tD = 0.4506*log10(Nf_RT)-7.95;
@@ -52,7 +52,7 @@ double AlGaAsSb_Te::doping() const {
 }
 
 MI_PROPERTY(AlGaAsSb_Te, cond,
-            MIComment("-") // TODO
+            MINote("-") // TODO
             )
 Tensor2<double> AlGaAsSb_Te::cond(double T) const {
     double tCond = phys::qe * Nf(T)*1e6 * (mob(T).c00)*1e-4;
@@ -64,7 +64,7 @@ Material::ConductivityType AlGaAsSb_Te::condtype() const { return Material::COND
 MI_PROPERTY(AlGaAsSb_Te, nr,
             MISource("Alibert, J. Appl. Phys (1991)"),
             //MIArgumentRange(MaterialInfo::lam, 620, 2560),
-            MIComment("for AlGaAsSb lattice matched to GaSb")
+            MINote("for AlGaAsSb lattice matched to GaSb")
             )
 double AlGaAsSb_Te::nr(double lam, double T, double) const {
     double tE = phys::h_eVc1e9/lam; // lam -> E
@@ -85,8 +85,8 @@ double AlGaAsSb_Te::nr(double lam, double T, double) const {
 MI_PROPERTY(AlGaAsSb_Te, absp,
             MISource("A. Chandola et al., Semicond. Sci. Technol. 20 (2005) 886-893"),
             MIArgumentRange(MaterialInfo::lam, 1600, 4700),
-            MIComment("temperature dependence - assumed: (1/abs)(dabs/dT)=1e-3"),
-            MIComment("fit by Lukasz Piskorski")
+            MINote("temperature dependence - assumed: (1/abs)(dabs/dT)=1e-3"),
+            MINote("fit by Lukasz Piskorski")
             )
 double AlGaAsSb_Te::absp(double lam, double T) const {
     double tAbs_RT = 1e24*exp(-lam/33.) + 1.7e-24*Nf_RT*pow(lam,1.95) + pow(20.*sqrt(Nf_RT*1e-18),1.05);

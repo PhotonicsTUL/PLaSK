@@ -37,7 +37,7 @@ double GaSb::Eg(double T, double e, char point) const {
 
 MI_PROPERTY(GaSb, Dso,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaSb::Dso(double /*T*/, double /*e*/) const {
     return ( 0.76 );
@@ -45,7 +45,7 @@ double GaSb::Dso(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(GaSb, Me,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaSb::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0., 0.);
@@ -75,7 +75,7 @@ Tensor2<double> GaSb::Me(double T, double e, char point) const {
 
 MI_PROPERTY(GaSb, Mhh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaSb::Mhh(double /*T*/, double /*e*/) const {
     Tensor2<double> tMhh(0.22, 0.22); // [001]
@@ -84,7 +84,7 @@ Tensor2<double> GaSb::Mhh(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(GaSb, Mlh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaSb::Mlh(double /*T*/, double /*e*/) const {
     Tensor2<double> tMlh(0.045, 0.045); // [001]
@@ -93,8 +93,8 @@ Tensor2<double> GaSb::Mlh(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(GaSb, Mh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence; "),
-            MIComment("mh = (mhh^1.5+mlh^1.5)^(2/3)")
+            MINote("no temperature dependence"),
+            MINote("mh = (mhh^1.5+mlh^1.5)^(2/3)")
             )
 Tensor2<double> GaSb::Mh(double T, double e) const {
     double tMc00 = pow(pow(Mhh(T,e).c00,1.5)+pow(Mlh(T,e).c00,1.5),(2./3.));
@@ -114,7 +114,7 @@ double GaSb::CB(double T, double e, char point) const {
 
 MI_PROPERTY(GaSb, VB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaSb::VB(double T, double e, char /*point*/, char hole) const {
     double tVB(-0.03);
@@ -130,7 +130,7 @@ double GaSb::VB(double T, double e, char /*point*/, char hole) const {
 
 MI_PROPERTY(GaSb, ac,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaSb::ac(double /*T*/) const {
     return ( -7.5 );
@@ -138,7 +138,7 @@ double GaSb::ac(double /*T*/) const {
 
 MI_PROPERTY(GaSb, av,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaSb::av(double /*T*/) const {
     return ( 0.8 );
@@ -146,7 +146,7 @@ double GaSb::av(double /*T*/) const {
 
 MI_PROPERTY(GaSb, b,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaSb::b(double /*T*/) const {
     return ( -2.0 );
@@ -154,7 +154,7 @@ double GaSb::b(double /*T*/) const {
 
 MI_PROPERTY(GaSb, d,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaSb::d(double /*T*/) const {
     return ( -4.7 );
@@ -162,7 +162,7 @@ double GaSb::d(double /*T*/) const {
 
 MI_PROPERTY(GaSb, c11,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaSb::c11(double /*T*/) const {
     return ( 88.42 );
@@ -170,7 +170,7 @@ double GaSb::c11(double /*T*/) const {
 
 MI_PROPERTY(GaSb, c12,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaSb::c12(double /*T*/) const {
     return ( 40.26 );
@@ -178,14 +178,14 @@ double GaSb::c12(double /*T*/) const {
 
 MI_PROPERTY(GaSb, c44,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaSb::c44(double /*T*/) const {
     return ( 43.22 );
 }
 
 MI_PROPERTY(GaSb, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67"), // 300 K
             MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37"), // temperature dependence
             MIArgumentRange(MaterialInfo::T, 50, 920)
            )
@@ -195,11 +195,11 @@ Tensor2<double> GaSb::thermk(double T, double /*t*/) const {
 }
 
 MI_PROPERTY(GaSb, cond,
-            MISource("V. Sestakova et al., Proceedings of SPIE 4412 (2001) 161-165; "), // condRT = 1515 S/m
-            MISource("N.K. Udayashankar et al., Bull. Mater. Sci. 24 (2001) 445-453; "), // condRT = 1923 S/m
+            MISource("V. Sestakova et al., Proceedings of SPIE 4412 (2001) 161-165"), // condRT = 1515 S/m
+            MISource("N.K. Udayashankar et al., Bull. Mater. Sci. 24 (2001) 445-453"), // condRT = 1923 S/m
             MISource("M.W. Heller et al., J. Appl. Phys. 57 (1985) 4626-4632"), // cond(T)
-            MIComment("RT value: average value of electrical conductivity; "),
-            MIComment("cond(T) = cond(300K)*(300/T)^d; d=0.53 assumed by L. Piskorski (PLaSK developer), based on Fig.1 from Heller")
+            MINote("RT value: average value of electrical conductivity"),
+            MINote("cond(T) = cond(300K)*(300/T)^d; d=0.53 assumed by L. Piskorski (PLaSK developer), based on Fig.1 from Heller")
             )
 Tensor2<double> GaSb::cond(double T) const {
     double condT = 1700.*pow(300./T,0.53);
@@ -208,27 +208,27 @@ Tensor2<double> GaSb::cond(double T) const {
 
 MI_PROPERTY(GaSb, dens,
             MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaSb::dens(double /*T*/) const { return 5.61461e3; }
 
 MI_PROPERTY(GaSb, cp,
             MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaSb::cp(double /*T*/) const { return 0.344e3; }
 
 Material::ConductivityType GaSb::condtype() const { return Material::CONDUCTIVITY_I; }
 
 MI_PROPERTY(GaSb, nr,
-            MISource("M. Munoz-Uribe et al., Electronics Letters 32 (1996) 262-264; "), // nR @ RT
-            MISource("D.E. Aspnes et al., Phys. Rev. B 27 (1983) 985-1009; "), // nR @ RT
-            MISource("S. Adachi, J. Appl. Phys. 66 (1989) 6030-6040; "), // nR @ RT
+            MISource("M. Munoz-Uribe et al., Electronics Letters 32 (1996) 262-264"), // nR @ RT
+            MISource("D.E. Aspnes et al., Phys. Rev. B 27 (1983) 985-1009"), // nR @ RT
+            MISource("S. Adachi, J. Appl. Phys. 66 (1989) 6030-6040"), // nR @ RT
             MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.242"), // dnR/dT
             MIArgumentRange(MaterialInfo::lam, 620, 4700),
-            MIComment("nr(wv) relation fitted by L. Piskorski (PLaSK developer), unpublished; "),
-            MIComment("fitting data from 650-830nm and 1800-2560nm wavelength ranges; "),
-            MIComment("basing on fig.5a from Adachi nR(wv) relation can be used for 620-4700nm wavelength range")
+            MINote("nr(wv) relation fitted by L. Piskorski (PLaSK developer), unpublished"),
+            MINote("fitting data from 650-830nm and 1800-2560nm wavelength ranges"),
+            MINote("basing on fig.5a from Adachi nR(wv) relation can be used for 620-4700nm wavelength range")
             )
 double GaSb::nr(double lam, double T, double) const {
     double tE = phys::h_eVc1e9/lam; // lam -> E

@@ -63,13 +63,14 @@ const char* MaterialInfo::PROPERTY_NAME_STRING[55] = {
 };
 
 /// Names of arguments for which we need to give the ranges
-const char* MaterialInfo::ARGUMENT_NAME_STRING[6] = {
+const char* MaterialInfo::ARGUMENT_NAME_STRING[7] = {
     "T",
     "e",
     "lam",
     "n",
     "h",
-    "doping"
+    "doping",
+    "point"
 };
 
 
@@ -90,7 +91,7 @@ MaterialInfo::ARGUMENT_NAME MaterialInfo::parseArgumentName(const std::string &n
 
 MaterialInfo::Link::Link(const std::string &to_parse) {
     std::string s;
-    std::tie(s, this->comment) = plask::splitString2(to_parse, ' ');
+    std::tie(s, this->note) = plask::splitString2(to_parse, ' ');
     std::tie(this->className, s) = plask::splitString2(s, '.');
     this->property = MaterialInfo::parsePropertyName(s);
 }
@@ -98,7 +99,7 @@ MaterialInfo::Link::Link(const std::string &to_parse) {
 std::string MaterialInfo::Link::str() const {
     std::string result;
     ((result += this->className) += '.') += MaterialInfo::PROPERTY_NAME_STRING[this->property];
-    (result += ' ') += this->comment;
+    (result += ' ') += this->note;
     return result;
 }
 
@@ -126,13 +127,13 @@ plask::optional<MaterialInfo::PropertyInfo> MaterialInfo::getPropertyInfo(Materi
 const MaterialInfo::PropertyInfo::ArgumentRange MaterialInfo::PropertyInfo::NO_RANGE =
     ArgumentRange(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
 
-boost::tokenizer<boost::char_separator<char> > MaterialInfo::PropertyInfo::eachCommentLine() const {
-    return boost::tokenizer<boost::char_separator<char>>(_comment, boost::char_separator<char>("\n\r"));
+boost::tokenizer<boost::char_separator<char> > MaterialInfo::PropertyInfo::eachLine() const {
+    return boost::tokenizer<boost::char_separator<char>>(_info, boost::char_separator<char>("\n\r"));
 }
 
-std::vector<std::string> MaterialInfo::PropertyInfo::eachCommentOfType(const std::string &type) const {
+std::vector<std::string> MaterialInfo::PropertyInfo::eachOfType(const std::string &type) const {
     std::vector<std::string> result;
-    for (const std::string& line: eachCommentLine()) {
+    for (const std::string& line: eachLine()) {
         auto p = splitString2(line, ':');
         boost::trim(p.first); boost::trim(p.second);
         if (p.first == type)
@@ -143,7 +144,17 @@ std::vector<std::string> MaterialInfo::PropertyInfo::eachCommentOfType(const std
 
 std::string MaterialInfo::PropertyInfo::getSource() const {
     std::string result;
-    for (const std::string& source: eachCommentOfType("source")) {
+    for (const std::string& source: eachOfType("source")) {
+        if (source.empty()) continue;
+        if (!result.empty()) result += '\n';
+        result += source;
+    }
+    return result;
+}
+
+std::string MaterialInfo::PropertyInfo::getNote() const {
+    std::string result;
+    for (const std::string& source: eachOfType("note")) {
         if (source.empty()) continue;
         if (!result.empty()) result += '\n';
         result += source;
@@ -152,7 +163,7 @@ std::string MaterialInfo::PropertyInfo::getSource() const {
 }
 
 MaterialInfo::PropertyInfo::ArgumentRange MaterialInfo::PropertyInfo::getArgumentRange(plask::MaterialInfo::ARGUMENT_NAME argument) const {
-    for (const std::string& range_desc: eachCommentOfType(ARGUMENT_NAME_STRING[argument] + std::string(" range"))) {
+    for (const std::string& range_desc: eachOfType(ARGUMENT_NAME_STRING[argument] + std::string(" range"))) {
          std::string from, to;
          std::tie(from, to) = splitString2(range_desc, ':');
          try {
@@ -164,7 +175,7 @@ MaterialInfo::PropertyInfo::ArgumentRange MaterialInfo::PropertyInfo::getArgumen
 
 std::vector<MaterialInfo::Link> MaterialInfo::PropertyInfo::getLinks() const {
     std::vector<MaterialInfo::Link> result;
-    for (const std::string& link_str: eachCommentOfType("see"))
+    for (const std::string& link_str: eachOfType("see"))
         try {
             result.push_back(MaterialInfo::Link(link_str));
         } catch (const std::exception&) {}
@@ -178,7 +189,7 @@ MaterialInfo::PropertyInfo& MaterialInfo::PropertyInfo::setArgumentRange(Materia
         s += boost::lexical_cast<std::string>(range.first);
         s += ":";
         s += boost::lexical_cast<std::string>(range.second);
-        addComment(std::move(s));
+        add(std::move(s));
     }
     return *this;
 }

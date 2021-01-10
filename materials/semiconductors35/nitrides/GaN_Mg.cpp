@@ -22,8 +22,8 @@ GaN_Mg::GaN_Mg(double Val) {
 MI_PROPERTY(GaN_Mg, mob,
             MISource("P. Kozodoy et al., J. Appl. Phys. 87 (2000) 1832"),
             MIArgumentRange(MaterialInfo::T, 300, 400),
-            MIComment("based on 9 papers (2000-2009): MBE-grown Mg-doped GaN"),
-            MIComment("Nf: 2e17 - 6e18 cm^-3")
+            MINote("based on 9 papers (2000-2009): MBE-grown Mg-doped GaN"),
+            MINote("Nf: 2e17 - 6e18 cm^-3")
             )
 Tensor2<double> GaN_Mg::mob(double T) const {
     double tMob = mob_RT * (T*T*2.495E-5 -T*2.268E-2 +5.557);
@@ -33,22 +33,22 @@ Tensor2<double> GaN_Mg::mob(double T) const {
 MI_PROPERTY(GaN_Mg, Nf,
             MISource("P. Kozodoy et al., J. Appl. Phys. 87 (2000) 1832"),
             MIArgumentRange(MaterialInfo::T, 300, 400),
-            MIComment("based on 4 papers (1998-2008): MBE-grown Mg-doped GaN"),
-            MIComment("Mg: 1e19 - 8e20 cm^-3")
+            MINote("based on 4 papers (1998-2008): MBE-grown Mg-doped GaN"),
+            MINote("Mg: 1e19 - 8e20 cm^-3")
             )
 double GaN_Mg::Nf(double T) const {
 	return  Nf_RT * (T*T*2.884E-4 -T*0.147 + 19.080);
 }
 
 MI_PROPERTY(GaN_Mg, Na,
-            MIComment("-")
+            MINote("-")
             )
 double GaN_Mg::Na() const {
     return ( NA );
 }
 
 MI_PROPERTY(GaN_Mg, Nd,
-            MIComment("-")
+            MINote("-")
             )
 double GaN_Mg::Nd() const {
     return ( 0. );

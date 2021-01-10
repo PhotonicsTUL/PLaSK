@@ -26,7 +26,7 @@ GaSb_Te::GaSb_Te(double Val) {
 
 MI_PROPERTY(GaSb_Te, mob,
             MISource("Chiu (1990) Te doping (1990) Appl. Phys. Lett. (Fig. 4)"),
-            MIComment("fit by Lukasz Piskorski")
+            MINote("fit by Lukasz Piskorski")
             )
 Tensor2<double> GaSb_Te::mob(double T) const {
     double tmob = mob_RT * pow(300./T,1.);
@@ -35,7 +35,7 @@ Tensor2<double> GaSb_Te::mob(double T) const {
 
 MI_PROPERTY(GaSb_Te, Nf,
             MISource("TODO"),
-            MIComment("fit by Lukasz Piskorski")
+            MINote("fit by Lukasz Piskorski")
             )
 double GaSb_Te::Nf(double T) const {
     double tD = 0.4506*log10(Nf_RT)-7.95;
@@ -47,7 +47,7 @@ double GaSb_Te::doping() const {
 }
 
 MI_PROPERTY(GaSb_Te, cond,
-            MIComment("-") // TODO
+            MINote("-") // TODO
             )
 Tensor2<double> GaSb_Te::cond(double T) const {
     double tCond = phys::qe * Nf(T)*1e6 * (mob(T).c00)*1e-4;
@@ -61,9 +61,9 @@ MI_PROPERTY(GaSb_Te, nr,
             MISource("D.E. Aspnes et al., Phys. Rev. B 27 (1983) 985-1009"),
             MISource("S. Adachi, J. Appl. Phys. 66 (1989) 6030-6040"),
             MIArgumentRange(MaterialInfo::lam, 620, 2560),
-            MIComment("fit by Lukasz Piskorski"),
-            MIComment("no fitting data from 827-1798nm wavelength range"),
-            MIComment("basing on fig. 5a (Adachi,1989) nR(wv) relation can be used for 620-4700nm wavelength range")
+            MINote("fit by Lukasz Piskorski"),
+            MINote("no fitting data from 827-1798nm wavelength range"),
+            MINote("basing on fig. 5a (Adachi,1989) nR(wv) relation can be used for 620-4700nm wavelength range")
             )
 double GaSb_Te::nr(double lam, double T, double) const {
     double tE = phys::h_eVc1e9/lam; // lam -> E
@@ -75,8 +75,8 @@ double GaSb_Te::nr(double lam, double T, double) const {
 MI_PROPERTY(GaSb_Te, absp,
             MISource("A. Chandola et al., Semicond. Sci. Technol. 20 (2005) 886-893"),
             MIArgumentRange(MaterialInfo::lam, 1600, 4700),
-            MIComment("temperature dependence - assumed: (1/abs)(dabs/dT)=1e-3"),
-            MIComment("fit by Lukasz Piskorski")
+            MINote("temperature dependence - assumed: (1/abs)(dabs/dT)=1e-3"),
+            MINote("fit by Lukasz Piskorski")
             )
 double GaSb_Te::absp(double lam, double T) const {
     double tAbs_RT = 1e24*exp(-lam/33.) + 1.7e-24*Nf_RT*pow(lam,1.95) + pow(20.*sqrt(Nf_RT*1e-18),1.05);

@@ -32,7 +32,7 @@ Tensor2<double> GaInAs_C::mob(double /*T*/) const {
 
 MI_PROPERTY(GaInAs_C, Nf,
             MISource("TODO"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaInAs_C::Nf(double /*T*/) const {
     return ( Nf_RT );
@@ -43,7 +43,7 @@ double GaInAs_C::doping() const {
 }
 
 MI_PROPERTY(GaInAs_C, cond,
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaInAs_C::cond(double T) const {
     double tMob = mob(T).c00;
@@ -55,7 +55,7 @@ Material::ConductivityType GaInAs_C::condtype() const { return Material::CONDUCT
 
 MI_PROPERTY(GaInAs_C, absp,
             MISource("fit to ..."), // TODO
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaInAs_C::absp(double lam, double /*T*/) const {
     double tAbsp(0.);

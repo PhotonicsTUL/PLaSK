@@ -11,18 +11,18 @@ std::string Au::name() const { return NAME; }
 
 MI_PROPERTY(Au, absp,
     MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-    MIComment("no temperature dependence")
+    MINote("no temperature dependence")
 )
 
 
 MI_PROPERTY(Au, nr,
     MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-    MIComment("no temperature dependence")
+    MINote("no temperature dependence")
 )
 
 MI_PROPERTY(Au, Nr,
     MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-    MIComment("no temperature dependence")
+    MINote("no temperature dependence")
 )
 
 Au::Au(): LorentzDrudeMetal(9.03,
@@ -41,7 +41,7 @@ Au::Au(): LorentzDrudeMetal(9.03,
 
 MI_PROPERTY(Au, cond,
             MISource("CRC Handbook of Chemistry and Physics, Internet Version 2005, http://www.hbcpnetbase.com, edited by D.R. Lide, CRC Press, Boca Raton, FL, sec. 12, pp. 2121-2122, 2005."),
-            MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
+            MINote("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
 Tensor2<double> Au::cond(double T) const {
@@ -51,7 +51,7 @@ Tensor2<double> Au::cond(double T) const {
 
 MI_PROPERTY(Au, thermk,
             MISource("CRC Handbook of Chemistry and Physics, Internet Version 2005, http://www.hbcpnetbase.com, edited by D.R. Lide, CRC Press, Boca Raton, FL, sec. 12, 2005."),
-            MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
+            MINote("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
 Tensor2<double> Au::thermk(double T, double /*t*/) const {
@@ -61,7 +61,7 @@ Tensor2<double> Au::thermk(double T, double /*t*/) const {
 
 //MI_PROPERTY(Au, absp,
 //            MISource(""),
-//            MIComment("TODO"),
+//            MINote("TODO"),
 //            MIArgumentRange(MaterialInfo::lam, 490, 10000)
 //            )
 //double Au::absp(double lam, double /*T*/) const {
@@ -75,7 +75,7 @@ bool Au::isEqual(const Material &/*other*/) const {
 
 //MI_PROPERTY(Au, nr,
 //            MISource(""),
-//            MIComment("TODO"),
+//            MINote("TODO"),
 //            MIArgumentRange(MaterialInfo::lam, 700, 10000)
 //            )
 //double Au::nr(double lam, double /*T*/, double /*n*/) const {

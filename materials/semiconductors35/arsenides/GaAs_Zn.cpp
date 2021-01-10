@@ -18,7 +18,7 @@ GaAs_Zn::GaAs_Zn(double Val) {
 
 MI_PROPERTY(GaAs_Zn, mob,
             MISource("TODO"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaAs_Zn::mob(double T) const {
     double mob_T = mob_RT * pow(300./T,1.25);
@@ -27,7 +27,7 @@ Tensor2<double> GaAs_Zn::mob(double T) const {
 
 MI_PROPERTY(GaAs_Zn, Nf,
             MISource("TODO"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaAs_Zn::Nf(double /*T*/) const {
     return ( Nf_RT );
@@ -38,7 +38,7 @@ double GaAs_Zn::doping() const {
 }
 
 MI_PROPERTY(GaAs_Zn, cond,
-			MIComment("no temperature dependence")
+			MINote("no temperature dependence")
             )
 Tensor2<double> GaAs_Zn::cond(double T) const {
     double tMob = mob(T).c00;
@@ -50,7 +50,7 @@ Material::ConductivityType GaAs_Zn::condtype() const { return Material::CONDUCTI
 
 MI_PROPERTY(GaAs_Zn, absp,
             MISource("TODO"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaAs_Zn::absp(double lam, double /*T*/) const {
     double tAbsp(0.);

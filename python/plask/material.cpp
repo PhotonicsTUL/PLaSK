@@ -348,7 +348,7 @@ static void setMaterialInfo(const std::string& material_name, PyObject* class_ob
         if (PyObject* method_object = PyDict_GetItemString(reinterpret_cast<PyTypeObject*>(class_object)->tp_dict, BOOST_PP_STRINGIZE(meth))) { \
             if (PyObject* docstring_object = PyObject_GetAttrString(method_object, "__doc__")) { \
                 py::extract<std::string> docstring(docstring_object); \
-                if (docstring.check()) info(plask::MaterialInfo::meth).setComment(docstring()); \
+                if (docstring.check()) info(plask::MaterialInfo::meth).set(docstring()); \
             } \
         } \
     }
@@ -738,18 +738,23 @@ namespace detail {
         return getRanges(info, ranges, args...);
     }
 
+    static inline void setDictIfNotEmpty(py::dict& data, const char* key, const std::string& val) {
+        if (!val.empty()) data[key] = val;
+    }
+
     template <typename... Args>
     void getPropertyInfo(py::dict& result, const MaterialInfo& minfo, MaterialInfo::PROPERTY_NAME prop, Args... args) {
         if (plask::optional<plask::MaterialInfo::PropertyInfo> info = minfo.getPropertyInfo(prop)) {
             py::dict data;
-            if (info->getSource() != "") data["source"] = info->getSource();
-            // if (info->getComment() != "") data["comment"] = info->getComment();
+            setDictIfNotEmpty(data, "source", info->getSource());
+            setDictIfNotEmpty(data, "note", info->getNote());
             py::list links;
             for (const auto& link: info->getLinks()) {
-                if (link.comment == "")
+                if (link.note.empty())
                     links.append(py::make_tuple(link.className, MaterialInfo::PROPERTY_NAME_STRING[size_t(link.property)]));
                 else
-                    links.append(py::make_tuple(link.className, MaterialInfo::PROPERTY_NAME_STRING[size_t(link.property)], link.comment));
+                    links.append(py::make_tuple(link.className, MaterialInfo::PROPERTY_NAME_STRING[size_t(link.property)],
+                                                link.note));
             }
             if (links) data["seealso"] = links;
             py::dict ranges;

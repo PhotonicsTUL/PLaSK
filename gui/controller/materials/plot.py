@@ -289,6 +289,7 @@ class MaterialPlot(QWidget):
                     value = ", ".join("<i>{}</i>: {}".format(*i) for i in value.items())
                 elif type(value) == list or type(value) == tuple:
                     value = ", ".join(str(v) for v in value)
+                value = value.rstrip().replace("\n", "<br/>\n")
                 text += "<tr><td><b>{}: </b></td><td>{}</td></tr>".format(key, value)
             self.info.setText(text + "</table>")
             self.info.resize(self.info.document().idealWidth(), self.info.document().size().height())

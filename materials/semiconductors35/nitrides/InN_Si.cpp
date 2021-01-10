@@ -21,7 +21,7 @@ InN_Si::InN_Si(double Val) {
 MI_PROPERTY(InN_Si, mob,
             MISource("E. S. Hwang et al., J. Korean Phys. Soc. 48 (2006) 93"),
             MIArgumentRange(MaterialInfo::T, 300, 400),
-            MIComment("based on 6 papers (2005-2010): undoped/Si-doped InN/c-sapphire")
+            MINote("based on 6 papers (2005-2010): undoped/Si-doped InN/c-sapphire")
             )
 Tensor2<double> InN_Si::mob(double T) const {
     double tMob = mob_RT*(T*T*5.174E-6 -T*5.241E-3 +2.107);
@@ -31,21 +31,21 @@ Tensor2<double> InN_Si::mob(double T) const {
 MI_PROPERTY(InN_Si, Nf,
             MISource("E. S. Hwang et al., J. Korean Phys. Soc. 48 (2006) 93"),
             MIArgumentRange(MaterialInfo::T, 300, 400),
-            MIComment("Si: 6e17 - 7e18 cm^-3")
+            MINote("Si: 6e17 - 7e18 cm^-3")
             )
 double InN_Si::Nf(double T) const {
 	return ( Nf_RT*(-T*T*3.802E-6 +T*3.819E-3 +0.1965) );
 }
 
 MI_PROPERTY(InN_Si, Na,
-            MIComment("-")
+            MINote("-")
             )
 double InN_Si::Na() const {
     return ( 0. );
 }
 
 MI_PROPERTY(InN_Si, Nd,
-            MIComment("-")
+            MINote("-")
             )
 double InN_Si::Nd() const {
     return ( ND );

@@ -22,9 +22,9 @@ Material::Composition GaInNAs::composition() const {
 }
 
 MI_PROPERTY(GaInNAs, lattC,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696; "),
-            MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
+            MINote("linear interpolation: GaNzb, InNzb, GaAs, InAs")
             )
 double GaInNAs::lattC(double T, char x) const {
     double tLattC(0.);
@@ -36,10 +36,10 @@ double GaInNAs::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(GaInNAs, Eg,
-            MISource("R. Kudrawiec, J. Appl. Phys. 101 (2007) 023522; "),
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696; "),
+            MISource("R. Kudrawiec, J. Appl. Phys. 101 (2007) 023522"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("only for Gamma point")
+            MINote("only for Gamma point")
             )
 double GaInNAs::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -55,10 +55,10 @@ double GaInNAs::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInNAs, Dso,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696; "),
-            MISource("nonlinear interpolation: GaNzb, InNzb, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
+            MINote("nonlinear interpolation: GaNzb, InNzb, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInNAs::Dso(double T, double e) const {
     return ( Ga*As*mGaAs.Dso(T,e) + Ga*N*mGaN.Dso(T,e)
@@ -67,11 +67,11 @@ double GaInNAs::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(GaInNAs, Me,
-            MISource("Sarzala et al., Appl Phys A 108 (2012) 521-528; "), // bowing parameter
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232; "),
-            MISource("nonlinear interpolation: GaNzb, InNzb, GaAs, InAs"),
-            MIComment("only for Gamma point; "),
-            MIComment("no temperature dependence")
+            MISource("Sarzala et al., Appl Phys A 108 (2012) 521-528"), // bowing parameter
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232"),
+            MINote("nonlinear interpolation: GaNzb, InNzb, GaAs, InAs"),
+            MINote("only for Gamma point"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaInNAs::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0., 0.);
@@ -87,9 +87,9 @@ Tensor2<double> GaInNAs::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInNAs, Mhh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235; "),
-            MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MINote("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaInNAs::Mhh(double T, double e) const {
     double lMhh = Ga*As*mGaAs.Mhh(T,e).c00 + Ga*N*mGaN.Mhh(T,e).c00
@@ -100,9 +100,9 @@ Tensor2<double> GaInNAs::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(GaInNAs, Mlh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235; "),
-            MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MINote("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaInNAs::Mlh(double T, double e) const {
     double lMlh = Ga*As*mGaAs.Mlh(T,e).c00 + Ga*N*mGaN.Mlh(T,e).c00
@@ -114,8 +114,8 @@ Tensor2<double> GaInNAs::Mlh(double T, double e) const {
 
 MI_PROPERTY(GaInNAs, Mh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence; "),
-            MIComment("mh = (mhh^1.5+mlh^1.5)^(2/3)")
+            MINote("no temperature dependence"),
+            MINote("mh = (mhh^1.5+mlh^1.5)^(2/3)")
             )
 Tensor2<double> GaInNAs::Mh(double T, double e) const {
     double tMc00 = pow(pow(Mhh(T,e).c00,1.5)+pow(Mlh(T,e).c00,1.5),(2./3.));
@@ -125,9 +125,9 @@ Tensor2<double> GaInNAs::Mh(double T, double e) const {
 }
 
 MI_PROPERTY(GaInNAs, CB,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
-            MIComment("only for Gamma point")
+            MINote("only for Gamma point")
             )
 double GaInNAs::CB(double T, double e, char point) const {
     double tCB( VB(T,0.,point,'H') + Eg(T,0.,point) );
@@ -136,10 +136,10 @@ double GaInNAs::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInNAs, VB,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696; "),
-            MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
+            MINote("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInNAs::VB(double T, double e, char point, char hole) const {
     double tVB( Ga*As*mGaAs.VB(T,0.,point,hole) + Ga*N*mGaN.VB(T,0.,point,hole)
@@ -157,10 +157,10 @@ double GaInNAs::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(GaInNAs, ac,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696; "),
-            MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
+            MINote("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInNAs::ac(double T) const {
     return ( Ga*As*mGaAs.ac(T) + Ga*N*mGaN.ac(T)
@@ -169,70 +169,70 @@ double GaInNAs::ac(double T) const {
 }
 
 MI_PROPERTY(GaInNAs, av,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696; "),
-            MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
+            MINote("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInNAs::av(double T) const {
     return ( Ga*As*mGaAs.av(T) + Ga*N*mGaN.av(T) + In*As*mInAs.av(T) + In*N*mInN.av(T) );
 }
 
 MI_PROPERTY(GaInNAs, b,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696; "),
-            MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
+            MINote("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInNAs::b(double T) const {
     return ( Ga*As*mGaAs.b(T) + Ga*N*mGaN.b(T) + In*As*mInAs.b(T) + In*N*mInN.b(T) );
 }
 
 MI_PROPERTY(GaInNAs, d,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696; "),
-            MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
+            MINote("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInNAs::d(double T) const {
     return ( Ga*As*mGaAs.d(T) + Ga*N*mGaN.d(T) + In*As*mInAs.d(T) + In*N*mInN.d(T) );
 }
 
 MI_PROPERTY(GaInNAs, c11,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696; "),
-            MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
+            MINote("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInNAs::c11(double T) const {
     return ( Ga*As*mGaAs.c11(T) + Ga*N*mGaN.c11(T) + In*As*mInAs.c11(T) + In*N*mInN.c11(T) );
 }
 
 MI_PROPERTY(GaInNAs, c12,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696; "),
-            MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
+            MINote("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInNAs::c12(double T) const {
     return ( Ga*As*mGaAs.c12(T) + Ga*N*mGaN.c12(T) + In*As*mInAs.c12(T) + In*N*mInN.c12(T) );
 }
 
 MI_PROPERTY(GaInNAs, c44,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696; "),
-            MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
+            MINote("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInNAs::c44(double T) const {
     return ( Ga*As*mGaAs.c44(T) + Ga*N*mGaN.c44(T) + In*As*mInAs.c44(T) + In*N*mInN.c44(T) );
 }
 
 MI_PROPERTY(GaInNAs, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
-            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37; "), // temperature dependence for binaries
-            MISource("inversion of nonlinear interpolation of resistivity: GaAs, InAs"),
-            MIComment("no influence of nitrogen")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67"), // 300 K
+            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37"), // temperature dependence for binaries
+            MINote("inversion of nonlinear interpolation of resistivity: GaAs, InAs"),
+            MINote("no influence of nitrogen")
             )
 Tensor2<double> GaInNAs::thermk(double T, double t) const {
     double lCondT = 1./(Ga/mGaAs.thermk(T,t).c00 + In/mInAs.thermk(T,t).c00 + Ga*In*0.72),
@@ -241,19 +241,19 @@ Tensor2<double> GaInNAs::thermk(double T, double t) const {
 }
 
 MI_PROPERTY(GaInNAs, dens,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18; "),
-            MISource("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
+            MINote("linear interpolation: GaNzb, InNzb, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInNAs::dens(double T) const {
     return ( Ga*As*mGaAs.dens(T) + Ga*N*mGaN.dens(T) + In*As*mInAs.dens(T) + In*N*mInN.dens(T) );
 }
 
 MI_PROPERTY(GaInNAs, cp,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52; "),
-            MISource("linear interpolation: GaAs, InAs"),
-            MIComment("no influence of nitrogen; "),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52"),
+            MINote("linear interpolation: GaAs, InAs"),
+            MINote("no influence of nitrogen"),
+            MINote("no temperature dependence")
             )
 double GaInNAs::cp(double T) const {
     return ( Ga*mGaAs.cp(T) + In*mInAs.cp(T) ); // till cp for GaN(zb) and InN(zb) unknown
@@ -262,14 +262,14 @@ double GaInNAs::cp(double T) const {
 Material::ConductivityType GaInNAs::condtype() const { return Material::CONDUCTIVITY_I; }
 
 MI_PROPERTY(GaInNAs, nr,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double GaInNAs::nr(double /*lam*/, double /*T*/, double /*n*/) const {
     throw NotImplemented("nr for GaInNAs");
 }
 
 MI_PROPERTY(GaInNAs, absp,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double GaInNAs::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for GaInNAs");

@@ -21,7 +21,7 @@ GaSb_Si::GaSb_Si(double Val) {
 
 MI_PROPERTY(GaSb_Si, mob,
             MISource("D. Martin et al., Semiconductors Science and Technology 19 (2004) 1040-1052"), // TODO
-            MIComment("fit by Lukasz Piskorski")
+            MINote("fit by Lukasz Piskorski")
             )
 Tensor2<double> GaSb_Si::mob(double T) const {
     double tmob = mob_RT * pow(300./T,1.2);
@@ -30,7 +30,7 @@ Tensor2<double> GaSb_Si::mob(double T) const {
 
 MI_PROPERTY(GaSb_Si, Nf,
             MISource("Mirowska et al., Domieszkowanie ..."), // TODO
-            MIComment("fit by Lukasz Piskorski")
+            MINote("fit by Lukasz Piskorski")
             )
 double GaSb_Si::Nf(double T) const {
     double tD;
@@ -44,7 +44,7 @@ double GaSb_Si::doping() const {
 }
 
 MI_PROPERTY(GaSb_Si, cond,
-            MIComment("cond(T) = cond(300K)*(300/T)^d")
+            MINote("cond(T) = cond(300K)*(300/T)^d")
             )
 Tensor2<double> GaSb_Si::cond(double T) const {
     double tCond = phys::qe * Nf(T)*1e6 * (mob(T).c00)*1e-4;
@@ -56,9 +56,9 @@ MI_PROPERTY(GaSb_Si, nr,
             MISource("D.E. Aspnes et al., Phys. Rev. B 27 (1983) 985-1009"),
             MISource("S. Adachi, J. Appl. Phys. 66 (1989) 6030-6040"),
             MIArgumentRange(MaterialInfo::lam, 620, 2560),
-            MIComment("fit by Lukasz Piskorski"),
-            MIComment("no fitting data from 827-1798nm wavelength range"),
-            MIComment("basing on fig. 5a (Adachi,1989) nR(wv) relation can be used for 620-4700nm wavelength range")
+            MINote("fit by Lukasz Piskorski"),
+            MINote("no fitting data from 827-1798nm wavelength range"),
+            MINote("basing on fig. 5a (Adachi,1989) nR(wv) relation can be used for 620-4700nm wavelength range")
             )
 double GaSb_Si::nr(double lam, double T, double) const {
     double tE = phys::h_eVc1e9/lam; // lam -> E
@@ -70,7 +70,7 @@ double GaSb_Si::nr(double lam, double T, double) const {
 Material::ConductivityType GaSb_Si::condtype() const { return Material::CONDUCTIVITY_P; }
 
 MI_PROPERTY(GaSb_Si, absp,
-            MIComment("fit by Lukasz Piskorski")
+            MINote("fit by Lukasz Piskorski")
             )
 double GaSb_Si::absp(double lam, double T) const {
     double tAbs_RT = 1e24*exp(-lam/33.) + 2.02e-24*Nf_RT*pow(lam,2.) + pow(20.*sqrt(Nf_RT*1e-18),1.05);

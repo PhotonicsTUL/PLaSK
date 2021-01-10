@@ -11,18 +11,18 @@ std::string Al::name() const { return NAME; }
 
 MI_PROPERTY(Al, absp,
     MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-    MIComment("no temperature dependence")
+    MINote("no temperature dependence")
 )
 
 
 MI_PROPERTY(Al, nr,
     MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-    MIComment("no temperature dependence")
+    MINote("no temperature dependence")
 )
 
 MI_PROPERTY(Al, Nr,
     MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-    MIComment("no temperature dependence")
+    MINote("no temperature dependence")
 )
 
 Al::Al(): LorentzDrudeMetal(14.98,

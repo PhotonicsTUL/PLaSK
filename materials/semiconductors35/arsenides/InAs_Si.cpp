@@ -18,7 +18,7 @@ InAs_Si::InAs_Si(double Val) {
 
 MI_PROPERTY(InAs_Si, mob,
             MISource("L.-G. Li, Chin. Phys. Lett. 29 (2012) pp. 076801"),
-            MIComment("mob(T) assumed, TODO: find exp. data")
+            MINote("mob(T) assumed, TODO: find exp. data")
             )
 Tensor2<double> InAs_Si::mob(double T) const {
     double tmob = mob_RT * pow(300./T,0.8);
@@ -26,8 +26,8 @@ Tensor2<double> InAs_Si::mob(double T) const {
 }
 
 MI_PROPERTY(InAs_Si, Nf,
-            MIComment("Nf(ND) assumed, TODO: find exp. data"),
-            MIComment("no temperature dependence")
+            MINote("Nf(ND) assumed, TODO: find exp. data"),
+            MINote("no temperature dependence")
             )
 double InAs_Si::Nf(double /*T*/) const {
     return ( Nf_RT );
@@ -38,7 +38,7 @@ double InAs_Si::doping() const {
 }
 
 MI_PROPERTY(InAs_Si, cond,
-            MIComment("cond(T) assumed, TODO: find exp. data")
+            MINote("cond(T) assumed, TODO: find exp. data")
             )
 Tensor2<double> InAs_Si::cond(double T) const {
     double tCond_RT = phys::qe * Nf_RT*1e6 * mob_RT*1e-4;

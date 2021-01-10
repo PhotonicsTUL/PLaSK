@@ -25,6 +25,7 @@ class Material(unittest.TestCase):
             """
             T range: 300:400
             source: Just imagination
+            note: This is a test
             """
             return 3.5
         def absp(self, lam, T):
@@ -113,7 +114,9 @@ class Material(unittest.TestCase):
 
     def testInfo(self):
         self.assertEqual( material.info("WithChar"), {'chi': {'source': "Simplicity", 'ranges': {'T': (300., 400.)}}} )
-        self.assertEqual( material.info("AlGaAs_fake"), {'nr': {'source': "Just imagination", 'ranges': {'T': (300., 400.)}}} )
+        self.assertEqual( material.info("AlGaAs_fake"), {'nr': {'source': "Just imagination",
+                                                                'ranges': {'T': (300., 400.)},
+                                                                'note': "This is a test"}} )
 
     def testDefaultMaterials(self):
         self.assertIn( "GaN", material.db )

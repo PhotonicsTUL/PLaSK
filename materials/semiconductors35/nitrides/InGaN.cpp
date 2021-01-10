@@ -22,7 +22,7 @@ Material::Composition InGaN::composition() const {
 
 MI_PROPERTY(InGaN, thermk,
             MISource("B. N. Pantha et al., Applied Physics Letters 92 (2008) 042112"),
-            MIComment("based on data for In: 16% - 36%")
+            MINote("based on data for In: 16% - 36%")
             )
 Tensor2<double> InGaN::thermk(double T, double t) const {
     double lCondT = 1/(In/mInN.thermk(T).c00 + Ga/mGaN.thermk(T,t).c00 + In*Ga*0.215*exp(7.913*In)),
@@ -32,8 +32,8 @@ Tensor2<double> InGaN::thermk(double T, double t) const {
 
 MI_PROPERTY(InGaN, absp,
             MISource("J. Piprek et al., Proc. SPIE 6766 (2007) 67660H"),
-            MIComment("fit to GaN:Si/GaN:Mg/GaN:undoped in region 360 - 400 nm"),
-            MIComment("no temperature dependence")
+            MINote("fit to GaN:Si/GaN:Mg/GaN:undoped in region 360 - 400 nm"),
+            MINote("no temperature dependence")
             )
 double InGaN::absp(double lam, double T) const {
     double a = phys::h_eVc1e9/lam - Eg(T, 0, 'G');
@@ -41,7 +41,7 @@ double InGaN::absp(double lam, double T) const {
 }
 
 MI_PROPERTY(InGaN, nr,
-            MIComment("shift of the nR for GaN")
+            MINote("shift of the nR for GaN")
             )
 double InGaN::nr(double lam, double T, double /*n*/) const {
     double dEg = Eg(T,0.,'G') - mGaN.Eg(300.,0.,'G'),
@@ -82,7 +82,7 @@ double InGaN::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(InGaN, Me,
-            MISource("linear interpolation: InN, GaN")
+            MINote("linear interpolation: InN, GaN")
             )
 Tensor2<double> InGaN::Me(double T, double e, char point) const {
     double lMe = In*mInN.Me(T,e,point).c00 + Ga*mGaN.Me(T,e,point).c00,
@@ -91,7 +91,7 @@ Tensor2<double> InGaN::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(InGaN, Mhh,
-            MISource("linear interpolation: InN, GaN")
+            MINote("linear interpolation: InN, GaN")
             )
 Tensor2<double> InGaN::Mhh(double T, double e) const {
     double lMhh = In*mInN.Mhh(T,e).c00 + Ga*mGaN.Mhh(T,e).c00,
@@ -100,7 +100,7 @@ Tensor2<double> InGaN::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(InGaN, Mlh,
-            MISource("linear interpolation: InN, GaN")
+            MINote("linear interpolation: InN, GaN")
             )
 Tensor2<double> InGaN::Mlh(double T, double e) const {
     double lMlh = In*mInN.Mlh(T,e).c00 + Ga*mGaN.Mlh(T,e).c00,
@@ -121,7 +121,7 @@ double InGaN::CB(double T, double /*e*/, char point) const {
 MI_PROPERTY(InGaN, VB,
             MISource("- "),
             MISource("-"),
-            MIComment("-")
+            MINote("-")
             )
 double InGaN::VB(double T, double /*e*/, char point, char hole) const {
     double tVB( In*mInN.VB(T,0.,point,hole) + Ga*mGaN.VB(T,0.,point,hole) /*- In * Ga * 1.4*/ );
@@ -138,7 +138,7 @@ double InGaN::VB(double T, double /*e*/, char point, char hole) const {
 }
 
 MI_PROPERTY(InGaN, lattC,
-            MISource("linear interpolation: GaN, InN")
+            MINote("linear interpolation: GaN, InN")
             )
 double InGaN::lattC(double T, char x) const {
     double tLattC(0.);
@@ -157,4 +157,3 @@ bool InGaN::isEqual(const Material &other) const {
 static MaterialsDB::Register<InGaN> materialDB_register_InGaN;
 
 }}       // namespace plask::materials
-

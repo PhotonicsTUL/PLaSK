@@ -20,7 +20,7 @@ MI_PROPERTY(InSb_Si, mob,
             MISource("R.S. Popovic, Hall Effect Devices, CRC Press, 2003 (fig. 2.10, p. 45)"),
             MISource("J.E. Oh et al., J. Appl. Phys. 66 (1989) 3618-3621"),
             MISource("M. Henini, Molecular Beam Epitaxy: From Research to Mass Production, Newnes, 2012 (fig. 31.26, p. 712)"),
-            MIComment("mob(T) assumed, TODO: find exp. data")
+            MINote("mob(T) assumed, TODO: find exp. data")
             )
 Tensor2<double> InSb_Si::mob(double T) const {
     double tmob = mob_RT * pow(300./T,0.8);
@@ -28,8 +28,8 @@ Tensor2<double> InSb_Si::mob(double T) const {
 }
 
 MI_PROPERTY(InSb_Si, Nf,
-            MIComment("Nf(ND) assumed, TODO: find exp. data"),
-            MIComment("no temperature dependence")
+            MINote("Nf(ND) assumed, TODO: find exp. data"),
+            MINote("no temperature dependence")
             )
 double InSb_Si::Nf(double /*T*/) const {
     return ( Nf_RT );
@@ -40,7 +40,7 @@ double InSb_Si::doping() const {
 }
 
 MI_PROPERTY(InSb_Si, cond,
-            MIComment("cond(T) assumed, TODO: find exp. data")
+            MINote("cond(T) assumed, TODO: find exp. data")
             )
 Tensor2<double> InSb_Si::cond(double T) const {
     double tCond_RT = phys::qe * Nf_RT*1e6 * mob_RT*1e-4;

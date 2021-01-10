@@ -24,7 +24,7 @@ double GaAs_C::EactA(double /*T*/) const {
 }
 
 MI_PROPERTY(GaAs_C, EactD,
-            MIComment("this parameter will be removed")
+            MINote("this parameter will be removed")
             )
 double GaAs_C::EactD(double /*T*/) const {
     return 0.;
@@ -32,7 +32,7 @@ double GaAs_C::EactD(double /*T*/) const {
 
 MI_PROPERTY(GaAs_C, mob,
             MISource("fit to p-GaAs:C (based on 23 papers 1988 - 2006)"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaAs_C::mob(double T) const {
     double mob_T = mob_RT * pow(300./T,1.25);
@@ -41,21 +41,21 @@ Tensor2<double> GaAs_C::mob(double T) const {
 
 MI_PROPERTY(GaAs_C, Nf,
             MISource("TODO"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaAs_C::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
 MI_PROPERTY(GaAs_C, Na,
-            MIComment("-")
+            MINote("-")
             )
 double GaAs_C::Na() const {
     return ( NA );
 }
 
 MI_PROPERTY(GaAs_C, Nd,
-            MIComment("-")
+            MINote("-")
             )
 double GaAs_C::Nd() const {
     return ( 0. );
@@ -66,7 +66,7 @@ double GaAs_C::doping() const {
 }
 
 MI_PROPERTY(GaAs_C, cond,
-			MIComment("no temperature dependence")
+			MINote("no temperature dependence")
             )
 Tensor2<double> GaAs_C::cond(double T) const {
     double tMob = mob(T).c00;

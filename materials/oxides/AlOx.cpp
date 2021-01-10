@@ -10,7 +10,7 @@ std::string AlOx::name() const { return NAME; }
 
 MI_PROPERTY(AlOx, cond,
             MISource("A. Inoue et al., Journal of Materials Science 22 (1987) 2063-2068"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlOx::cond(double /*T*/) const {
     return ( Tensor2<double>(1e-7, 1e-7) );
@@ -18,7 +18,7 @@ Tensor2<double> AlOx::cond(double /*T*/) const {
 
 MI_PROPERTY(AlOx, thermk,
             MISource("M. Le Du et al., Electronics Letters 42 (2006) 65-66"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlOx::thermk(double /*T*/, double /*h*/) const {
     return ( Tensor2<double>(0.7, 0.7) );
@@ -26,7 +26,7 @@ Tensor2<double> AlOx::thermk(double /*T*/, double /*h*/) const {
 
 MI_PROPERTY(AlOx, absp,
             MISource(""),
-            MIComment("TODO")
+            MINote("TODO")
             )
 double AlOx::absp(double /*lam*/, double /*T*/) const {
     return ( 0. );
@@ -38,8 +38,8 @@ bool AlOx::isEqual(const Material &/*other*/) const {
 
 MI_PROPERTY(AlOx, nr,
             MISource("T.Kitatani et al., Japanese Journal of Applied Physics (part1) 41 (2002) 2954-2957"),
-            MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
-            MIComment("no temperature dependence"),
+            MINote("fit from: Lukasz Piskorski, PhD thesis, 2010"),
+            MINote("no temperature dependence"),
             MIArgumentRange(MaterialInfo::lam, 400, 1600)
 			)
 double AlOx::nr(double lam, double /*T*/, double /*n*/) const {

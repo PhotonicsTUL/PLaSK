@@ -21,7 +21,7 @@ InN_Mg::InN_Mg(double Val) {
 
 MI_PROPERTY(InN_Mg, mob,
             MISource("based on 4 papers (2006-2010): MBE-grown Mg-doped InN"),
-            MIComment("No T Dependence based on K. Kumakura et al., J. Appl. Phys. 93 (2003) 3370")
+            MINote("No T Dependence based on K. Kumakura et al., J. Appl. Phys. 93 (2003) 3370")
             )
 Tensor2<double> InN_Mg::mob(double /*T*/) const {
     return (Tensor2<double>(mob_RT,mob_RT));
@@ -29,21 +29,21 @@ Tensor2<double> InN_Mg::mob(double /*T*/) const {
 
 MI_PROPERTY(InN_Mg, Nf,
             MISource("based on 2 papers (2008-2009): Mg-doped InN"),
-            MIComment("No T Dependence based on K. Kumakura et al., J. Appl. Phys. 93 (2003) 3370")
+            MINote("No T Dependence based on K. Kumakura et al., J. Appl. Phys. 93 (2003) 3370")
             )
 double InN_Mg::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
 MI_PROPERTY(InN_Mg, Na,
-            MIComment("-")
+            MINote("-")
             )
 double InN_Mg::Na() const {
     return ( NA );
 }
 
 MI_PROPERTY(InN_Mg, Nd,
-            MIComment("-")
+            MINote("-")
             )
 double InN_Mg::Nd() const {
     return ( 0. );
@@ -54,7 +54,7 @@ double InN_Mg::doping() const {
 }
 
 MI_PROPERTY(InN_Mg, cond,
-            MIComment("No T Dependence based on K. Kumakura et al., J. Appl. Phys. 93 (2003) 3370")
+            MINote("No T Dependence based on K. Kumakura et al., J. Appl. Phys. 93 (2003) 3370")
             )
 Tensor2<double> InN_Mg::cond(double /*T*/) const {
     return (Tensor2<double>(cond_RT,cond_RT));

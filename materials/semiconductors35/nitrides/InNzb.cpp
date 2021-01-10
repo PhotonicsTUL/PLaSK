@@ -35,7 +35,7 @@ double InNzb::Eg(double T, double e, char point) const {
 
 MI_PROPERTY(InNzb, Dso,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double InNzb::Dso(double /*T*/, double /*e*/) const {
     return 0.005;
@@ -43,8 +43,8 @@ double InNzb::Dso(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(InNzb, Me,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232"),
-            MIComment("only for Gamma point; "),
-            MIComment("no temperature dependence")
+            MINote("only for Gamma point"),
+            MINote("no temperature dependence")
            )
 Tensor2<double> InNzb::Me(double /*T*/, double /*e*/, char point) const {
     Tensor2<double> tMe(0., 0.);
@@ -57,7 +57,7 @@ Tensor2<double> InNzb::Me(double /*T*/, double /*e*/, char point) const {
 
 MI_PROPERTY(InNzb, Mhh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 Tensor2<double> InNzb::Mhh(double /*T*/, double /*e*/) const {
     return Tensor2<double>(1.261, 1.261); // [001]
@@ -65,7 +65,7 @@ Tensor2<double> InNzb::Mhh(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(InNzb, Mlh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 Tensor2<double> InNzb::Mlh(double /*T*/, double /*e*/) const {
     return Tensor2<double>(0.100, 0.100);
@@ -73,8 +73,8 @@ Tensor2<double> InNzb::Mlh(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(InNzb, Mh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence; "),
-            MIComment("mh = (mhh^1.5+mlh^1.5)^(2/3)")
+            MINote("no temperature dependence"),
+            MINote("mh = (mhh^1.5+mlh^1.5)^(2/3)")
             )
 Tensor2<double> InNzb::Mh(double T, double e) const {
     double tMc00 = pow(pow(Mhh(T,e).c00,1.5)+pow(Mlh(T,e).c00,1.5),(2./3.));
@@ -94,7 +94,7 @@ double InNzb::CB(double T, double e, char point) const {
 
 MI_PROPERTY(InNzb, VB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double InNzb::VB(double T, double e, char /*point*/, char hole) const {
     double tVB(-2.34);
@@ -110,7 +110,7 @@ double InNzb::VB(double T, double e, char /*point*/, char hole) const {
 
 MI_PROPERTY(InNzb, ac,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double InNzb::ac(double /*T*/) const {
     return -2.65;
@@ -118,7 +118,7 @@ double InNzb::ac(double /*T*/) const {
 
 MI_PROPERTY(InNzb, av,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double InNzb::av(double /*T*/) const {
     return 0.7;
@@ -126,7 +126,7 @@ double InNzb::av(double /*T*/) const {
 
 MI_PROPERTY(InNzb, b,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double InNzb::b(double /*T*/) const {
     return -1.2;
@@ -134,7 +134,7 @@ double InNzb::b(double /*T*/) const {
 
 MI_PROPERTY(InNzb, d,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double InNzb::d(double /*T*/) const {
     return -9.3;
@@ -142,7 +142,7 @@ double InNzb::d(double /*T*/) const {
 
 MI_PROPERTY(InNzb, c11,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double InNzb::c11(double /*T*/) const {
     return 187.;
@@ -150,7 +150,7 @@ double InNzb::c11(double /*T*/) const {
 
 MI_PROPERTY(InNzb, c12,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double InNzb::c12(double /*T*/) const {
     return 125.;
@@ -158,7 +158,7 @@ double InNzb::c12(double /*T*/) const {
 
 MI_PROPERTY(InNzb, c44,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 94 (2003) 3675-3696"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double InNzb::c44(double /*T*/) const {
     return 86.;
@@ -166,7 +166,7 @@ double InNzb::c44(double /*T*/) const {
 
 MI_PROPERTY(InNzb, dens,
             MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double InNzb::dens(double /*T*/) const { return 6.903e3; }
 

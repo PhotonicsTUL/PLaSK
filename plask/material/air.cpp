@@ -25,7 +25,7 @@ double Air::chi(double /*T*/, double /*e*/, char /*point*/) const { RETURN_MATER
 
 MI_PROPERTY(Air, cond,
             MISource("S.D. Pawar et al., Journal of Geophysical Research, vol. 114, no. D2, id. D02205 (8 pp.), 2009"),
-            MIComment("average value from (0.3-0.8)*10^-14 S/m")
+            MINote("average value from (0.3-0.8)*10^-14 S/m")
            )
 Tensor2<double> Air::cond(double /*T*/) const {
     double c = 0.55e-14;
@@ -70,7 +70,7 @@ double Air::Ni(double /*T*/) const { RETURN_MATERIAL_NAN(Ni) }
 
 MI_PROPERTY(Air, nr,
             MISource("D.R. Lide, ed., CRC Handbook of Chemistry and Physics, Internet Version 2005, <http://www.hbcpnetbase.com>, CRC Press, Boca Raton, FL, 2005, section 10, p. 224"),
-            MIComment("using equation in source the calculated values are 1.0002-1.0003 for 200-2000nm wavelength range"),
+            MINote("using equation in source the calculated values are 1.0002-1.0003 for 200-2000nm wavelength range"),
             MIArgumentRange(MaterialInfo::T, 200, 2000)
            )
 double Air::nr(double /*lam*/, double /*T*/, double /*n*/) const { return 1.; }
@@ -82,7 +82,7 @@ double Air::cp(double /*T*/) const { return 1.007e3; }
 
 MI_PROPERTY(Air, thermk,
             MISource("D.R. Lide, ed., CRC Handbook of Chemistry and Physics, Internet Version 2005, <http://www.hbcpnetbase.com>, CRC Press, Boca Raton, FL, 2005, section 6, p. 175"),
-            MIComment("fit by Lukasz Piskorski"),
+            MINote("fit by Lukasz Piskorski"),
             MIArgumentRange(MaterialInfo::T, 100, 600)
            )
 Tensor2<double> Air::thermk(double T, double /*h*/) const {

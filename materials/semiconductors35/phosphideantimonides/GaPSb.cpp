@@ -20,8 +20,8 @@ Material::Composition GaPSb::composition() const {
 }
 
 MI_PROPERTY(GaPSb, lattC,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, GaSb")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, GaSb")
             )
 double GaPSb::lattC(double T, char x) const {
     double tLattC(0.);
@@ -31,8 +31,8 @@ double GaPSb::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(GaPSb, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("nonlinear interpolation: GaP, GaSb")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("nonlinear interpolation: GaP, GaSb")
             )
 double GaPSb::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -51,18 +51,18 @@ double GaPSb::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaPSb, Dso,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, GaSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, GaSb"),
+            MINote("no temperature dependence")
             )
 double GaPSb::Dso(double T, double e) const {
     return ( P*mGaP.Dso(T, e) + Sb*mGaSb.Dso(T, e) );
 }
 
 MI_PROPERTY(GaPSb, Me,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232; "),
-            MISource("linear interpolation: GaP, GaSb"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232"),
+            MINote("linear interpolation: GaP, GaSb"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaPSb::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0., 0.);
@@ -81,9 +81,9 @@ Tensor2<double> GaPSb::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaPSb, Mhh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235; "),
-            MISource("linear interpolation: GaP, GaSb"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MINote("linear interpolation: GaP, GaSb"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaPSb::Mhh(double T, double e) const {
     double lMhh = P*mGaP.Mhh(T,e).c00 + Sb*mGaSb.Mhh(T,e).c00,
@@ -92,9 +92,9 @@ Tensor2<double> GaPSb::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(GaPSb, Mlh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235; "),
-            MISource("linear interpolation: GaP, GaSb"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MINote("linear interpolation: GaP, GaSb"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaPSb::Mlh(double T, double e) const {
     double lMlh = P*mGaP.Mlh(T,e).c00 + Sb*mGaSb.Mlh(T,e).c00,
@@ -104,8 +104,8 @@ Tensor2<double> GaPSb::Mlh(double T, double e) const {
 
 MI_PROPERTY(GaPSb, Mh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence; "),
-            MIComment("mh = (mhh^1.5+mlh^1.5)^(2/3)")
+            MINote("no temperature dependence"),
+            MINote("mh = (mhh^1.5+mlh^1.5)^(2/3)")
             )
 Tensor2<double> GaPSb::Mh(double T, double e) const {
     double tMc00 = pow(pow(Mhh(T,e).c00,1.5)+pow(Mlh(T,e).c00,1.5),(2./3.));
@@ -124,9 +124,9 @@ double GaPSb::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaPSb, VB,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, GaSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, GaSb"),
+            MINote("no temperature dependence")
             )
 double GaPSb::VB(double T, double e, char point, char hole) const {
     double tVB( P*mGaP.VB(T,0.,point,hole) + Sb*mGaSb.VB(T,0.,point,hole) );
@@ -142,72 +142,72 @@ double GaPSb::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(GaPSb, ac,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, GaSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, GaSb"),
+            MINote("no temperature dependence")
             )
 double GaPSb::ac(double T) const {
     return ( P*mGaP.ac(T) + Sb*mGaSb.ac(T) );
 }
 
 MI_PROPERTY(GaPSb, av,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, GaSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, GaSb"),
+            MINote("no temperature dependence")
             )
 double GaPSb::av(double T) const {
     return ( P*mGaP.av(T) + Sb*mGaSb.av(T) );
 }
 
 MI_PROPERTY(GaPSb, b,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, GaSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, GaSb"),
+            MINote("no temperature dependence")
             )
 double GaPSb::b(double T) const {
     return ( P*mGaP.b(T) + Sb*mGaSb.b(T) );
 }
 
 MI_PROPERTY(GaPSb, d,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, GaSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, GaSb"),
+            MINote("no temperature dependence")
             )
 double GaPSb::d(double T) const {
     return ( P*mGaP.d(T) + Sb*mGaSb.d(T) );
 }
 
 MI_PROPERTY(GaPSb, c11,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, GaSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, GaSb"),
+            MINote("no temperature dependence")
             )
 double GaPSb::c11(double T) const {
     return ( P*mGaP.c11(T) + Sb*mGaSb.c11(T) );
 }
 
 MI_PROPERTY(GaPSb, c12,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, GaSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, GaSb"),
+            MINote("no temperature dependence")
             )
 double GaPSb::c12(double T) const {
     return ( P*mGaP.c12(T) + Sb*mGaSb.c12(T) );
 }
 
 MI_PROPERTY(GaPSb, c44,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, GaSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, GaSb"),
+            MINote("no temperature dependence")
             )
 double GaPSb::c44(double T) const {
     return ( P*mGaP.c44(T) + Sb*mGaSb.c44(T) );
 }
 
 MI_PROPERTY(GaPSb, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
-            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37; "), // temperature dependence for binaries
-            MISource("inversion of nonlinear interpolation of resistivity: GaP, GaSb")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67"), // 300 K
+            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37"), // temperature dependence for binaries
+            MINote("inversion of nonlinear interpolation of resistivity: GaP, GaSb")
             )
 Tensor2<double> GaPSb::thermk(double T, double t) const {
     double lCondT = 1./(P/mGaP.thermk(T,t).c00 + Sb/mGaSb.thermk(T,t).c00 + P*Sb*0.16),
@@ -216,18 +216,18 @@ Tensor2<double> GaPSb::thermk(double T, double t) const {
 }
 
 MI_PROPERTY(GaPSb, dens,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18; "),
-            MISource("linear interpolation: GaP, GaSb"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
+            MINote("linear interpolation: GaP, GaSb"),
+            MINote("no temperature dependence")
             )
 double GaPSb::dens(double T) const {
     return ( P*mGaP.dens(T) + Sb*mGaSb.dens(T) );
 }
 
 MI_PROPERTY(GaPSb, cp,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52; "),
-            MISource("linear interpolation: GaP, GaSb"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52"),
+            MINote("linear interpolation: GaP, GaSb"),
+            MINote("no temperature dependence")
             )
 double GaPSb::cp(double T) const {
     return ( P*mGaP.cp(T) + Sb*mGaSb.cp(T) );
@@ -236,14 +236,14 @@ double GaPSb::cp(double T) const {
 Material::ConductivityType GaPSb::condtype() const { return Material::CONDUCTIVITY_I; }
 
 MI_PROPERTY(GaPSb, nr,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double GaPSb::nr(double /*lam*/, double /*T*/, double /*n*/) const {
     throw NotImplemented("nr for GaPSb");
 }
 
 MI_PROPERTY(GaPSb, absp,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double GaPSb::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for GaPSb");

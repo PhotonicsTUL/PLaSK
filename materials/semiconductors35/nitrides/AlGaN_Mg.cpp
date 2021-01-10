@@ -28,7 +28,7 @@ Tensor2<double> AlGaN_Mg::mob(double T) const {
 }
 
 MI_PROPERTY(AlGaN_Mg, Nf,
-            MISource("linear interpolation: Mg-doped GaN, AlN")
+            MINote("linear interpolation: Mg-doped GaN, AlN")
             )
 double AlGaN_Mg::Nf(double T) const {
     return mGaN_Mg.Nf(T);

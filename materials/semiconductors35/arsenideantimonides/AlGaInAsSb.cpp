@@ -23,8 +23,8 @@ Material::Composition AlGaInAsSb::composition() const {
 }
 
 MI_PROPERTY(AlGaInAsSb, lattC,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs")
             )
 double AlGaInAsSb::lattC(double T, char x) const {
     double tLattC(0.);
@@ -38,8 +38,8 @@ double AlGaInAsSb::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(AlGaInAsSb, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("nonlinear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("nonlinear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs")
             )
 double AlGaInAsSb::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -83,9 +83,9 @@ double AlGaInAsSb::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlGaInAsSb, Dso,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("nonlinear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("nonlinear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
+            MINote("no temperature dependence")
             )
 double AlGaInAsSb::Dso(double T, double e) const {
     return ( Ga*As*mGaAs.Dso(T,e) + Ga*Sb*mGaSb.Dso(T,e)
@@ -96,9 +96,9 @@ double AlGaInAsSb::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(AlGaInAsSb, Me,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232; "),
-            MISource("nonlinear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232"),
+            MINote("nonlinear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlGaInAsSb::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0., 0.);
@@ -129,9 +129,9 @@ Tensor2<double> AlGaInAsSb::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlGaInAsSb, Mhh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235; "),
-            MISource("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MINote("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlGaInAsSb::Mhh(double T, double e) const {
     double lMhh = Ga*As*mGaAs.Mhh(T,e).c00 + Ga*Sb*mGaSb.Mhh(T,e).c00
@@ -144,9 +144,9 @@ Tensor2<double> AlGaInAsSb::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(AlGaInAsSb, Mlh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235; "),
-            MISource("nonlinear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MINote("nonlinear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlGaInAsSb::Mlh(double T, double e) const {
     double lMlh = Ga*As*mGaAs.Mlh(T,e).c00 + Ga*Sb*mGaSb.Mlh(T,e).c00
@@ -160,8 +160,8 @@ Tensor2<double> AlGaInAsSb::Mlh(double T, double e) const {
 
 MI_PROPERTY(AlGaInAsSb, Mh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence; "),
-            MIComment("mh = (mhh^1.5+mlh^1.5)^(2/3)")
+            MINote("no temperature dependence"),
+            MINote("mh = (mhh^1.5+mlh^1.5)^(2/3)")
             )
 Tensor2<double> AlGaInAsSb::Mh(double T, double e) const {
     double tMc00 = pow(pow(Mhh(T,e).c00,1.5)+pow(Mlh(T,e).c00,1.5),(2./3.));
@@ -180,9 +180,9 @@ double AlGaInAsSb::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlGaInAsSb, VB,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("nonlinear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("nonlinear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
+            MINote("no temperature dependence")
             )
 double AlGaInAsSb::VB(double T, double e, char point, char hole) const {
     double tVB( Ga*As*mGaAs.VB(T,0.,point,hole) + Ga*Sb*mGaSb.VB(T,0.,point,hole)
@@ -202,9 +202,9 @@ double AlGaInAsSb::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(AlGaInAsSb, ac,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
+            MINote("no temperature dependence")
             )
 double AlGaInAsSb::ac(double T) const {
     return ( Ga*As*mGaAs.ac(T) + Ga*Sb*mGaSb.ac(T)
@@ -214,63 +214,63 @@ double AlGaInAsSb::ac(double T) const {
 }
 
 MI_PROPERTY(AlGaInAsSb, av,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
+            MINote("no temperature dependence")
             )
 double AlGaInAsSb::av(double T) const {
     return ( Ga*As*mGaAs.av(T) + Ga*Sb*mGaSb.av(T) + In*As*mInAs.av(T) + In*Sb*mInSb.av(T) + Al*As*mAlAs.av(T) + Al*Sb*mAlSb.av(T) );
 }
 
 MI_PROPERTY(AlGaInAsSb, b,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
+            MINote("no temperature dependence")
             )
 double AlGaInAsSb::b(double T) const {
     return ( Ga*As*mGaAs.b(T) + Ga*Sb*mGaSb.b(T) + In*As*mInAs.b(T) + In*Sb*mInSb.b(T) + Al*As*mAlAs.b(T) + Al*Sb*mAlSb.b(T) );
 }
 
 MI_PROPERTY(AlGaInAsSb, d,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
+            MINote("no temperature dependence")
             )
 double AlGaInAsSb::d(double T) const {
     return ( Ga*As*mGaAs.d(T) + Ga*Sb*mGaSb.d(T) + In*As*mInAs.d(T) + In*Sb*mInSb.d(T) + Al*As*mAlAs.d(T) + Al*Sb*mAlSb.d(T) );
 }
 
 MI_PROPERTY(AlGaInAsSb, c11,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
+            MINote("no temperature dependence")
             )
 double AlGaInAsSb::c11(double T) const {
     return ( Ga*As*mGaAs.c11(T) + Ga*Sb*mGaSb.c11(T) + In*As*mInAs.c11(T) + In*Sb*mInSb.c11(T) + Al*As*mAlAs.c11(T) + Al*Sb*mAlSb.c11(T) );
 }
 
 MI_PROPERTY(AlGaInAsSb, c12,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
+            MINote("no temperature dependence")
             )
 double AlGaInAsSb::c12(double T) const {
     return ( Ga*As*mGaAs.c12(T) + Ga*Sb*mGaSb.c12(T) + In*As*mInAs.c12(T) + In*Sb*mInSb.c12(T) + Al*As*mAlAs.c12(T) + Al*Sb*mAlSb.c12(T) );
 }
 
 MI_PROPERTY(AlGaInAsSb, c44,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
+            MINote("no temperature dependence")
             )
 double AlGaInAsSb::c44(double T) const {
     return ( Ga*As*mGaAs.c44(T) + Ga*Sb*mGaSb.c44(T) + In*As*mInAs.c44(T) + In*Sb*mInSb.c44(T) + Al*As*mAlAs.c44(T) + Al*Sb*mAlSb.c44(T) );
 }
 
 MI_PROPERTY(AlGaInAsSb, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
-            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37; "), // temperature dependence for binaries
-            MISource("inversion of nonlinear interpolation of resistivity: InSb, GaSb, AlSb, InAs, GaAs, AlAs")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67"), // 300 K
+            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37"), // temperature dependence for binaries
+            MINote("inversion of nonlinear interpolation of resistivity: InSb, GaSb, AlSb, InAs, GaAs, AlAs")
             )
 Tensor2<double> AlGaInAsSb::thermk(double T, double t) const {
     double lCondT = 1./(Ga*As/mGaAs.thermk(T,t).c00 + Ga*Sb/mGaSb.thermk(T,t).c00
@@ -285,18 +285,18 @@ Tensor2<double> AlGaInAsSb::thermk(double T, double t) const {
 }
 
 MI_PROPERTY(AlGaInAsSb, dens,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18; "),
-            MISource("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
+            MINote("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
+            MINote("no temperature dependence")
             )
 double AlGaInAsSb::dens(double T) const {
     return ( Ga*As*mGaAs.dens(T) + Ga*Sb*mGaSb.dens(T) + In*As*mInAs.dens(T) + In*Sb*mInSb.dens(T) + Al*As*mAlAs.dens(T) + Al*Sb*mAlSb.dens(T) );
 }
 
 MI_PROPERTY(AlGaInAsSb, cp,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52; "),
-            MISource("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52"),
+            MINote("linear interpolation: InSb, GaSb, AlSb, InAs, GaAs, AlAs"),
+            MINote("no temperature dependence")
             )
 double AlGaInAsSb::cp(double T) const {
     return ( Ga*As*mGaAs.cp(T) + Ga*Sb*mGaSb.cp(T) + In*As*mInAs.cp(T) + In*Sb*mInSb.cp(T) + Al*As*mAlAs.cp(T) + Al*Sb*mAlSb.cp(T) );
@@ -306,7 +306,7 @@ Material::ConductivityType AlGaInAsSb::condtype() const { return Material::CONDU
 
 MI_PROPERTY(AlGaInAsSb, nr,
             MISource("C. Alibert et al., Journal of Applied Physics 69 (1991) 3208-3211"),
-            MIComment("the same formula as for AlGaAsSb")
+            MINote("the same formula as for AlGaAsSb")
             )
 double AlGaInAsSb::nr(double lam, double T, double /*n*/) const {
     double tE = phys::h_eVc1e9/lam; // lam -> E
@@ -323,7 +323,7 @@ double AlGaInAsSb::nr(double lam, double T, double /*n*/) const {
 }
 
 MI_PROPERTY(AlGaInAsSb, absp,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double AlGaInAsSb::absp(double /*lam*/, double /*T*/) const {
         throw NotImplemented("absp for AlGaInAsSb");

@@ -30,9 +30,9 @@ InAsSb_Si::InAsSb_Si(const Material::Composition& Comp, double Val): InAsSb(Comp
 
 MI_PROPERTY(InAsSb_Si, mob,
             MISource("T. Taliercio, Optics Express 22 (2014) pp. 24294-24303"),
-            MIComment("fit by Lukasz Piskorski"),
-            MIComment("fitted for high doping and high As content"),
-            MIComment("mob(T) assumed, TODO: find exp. data")
+            MINote("fit by Lukasz Piskorski"),
+            MINote("fitted for high doping and high As content"),
+            MINote("mob(T) assumed, TODO: find exp. data")
             )
 Tensor2<double> InAsSb_Si::mob(double T) const {
     double tmob = mob_RT * pow(300./T,1.7); // Adachi (2005) book (d=1.7 for InAs)
@@ -41,8 +41,8 @@ Tensor2<double> InAsSb_Si::mob(double T) const {
 
 MI_PROPERTY(InAsSb_Si, Nf,
             MISource("T. Taliercio, Optics Express 22 (2014) pp. 24294-24303"),
-            MIComment("fit by Lukasz Piskorski"),
-            MIComment("no temperature dependence")
+            MINote("fit by Lukasz Piskorski"),
+            MINote("no temperature dependence")
             )
 double InAsSb_Si::Nf(double T) const {
     double tD = -0.00332*log10(Nf_RT)+0.26;
@@ -54,7 +54,7 @@ double InAsSb_Si::doping() const {
 }
 
 MI_PROPERTY(InAsSb_Si, cond,
-            MIComment("cond(N,T) = q * n(N,T) * mob(n(N,T),T)")
+            MINote("cond(N,T) = q * n(N,T) * mob(n(N,T),T)")
             )
 Tensor2<double> InAsSb_Si::cond(double T) const {
     double tCond = phys::qe * Nf(T)*1e6 * (mob(T).c00)*1e-4;
@@ -64,10 +64,10 @@ Tensor2<double> InAsSb_Si::cond(double T) const {
 Material::ConductivityType InAsSb_Si::condtype() const { return Material::CONDUCTIVITY_N; }
 
 MI_PROPERTY(InAsSb_Si, nr,
-            MISource("P.P. Paskov et al., J. Appl. Phys. 81 (1997) 1890-1898; "), // nR @ RT
-            MISource("linear interpolation: InAs(0.80)Sb(0.20), InSb"),
-            MIComment("nr(wv) relations for interpolation fitted by L. Piskorski (PLaSK developer), unpublished; "),
-            MIComment("do not use for InAsSb with Sb content higher than 0.20"),
+            MISource("P.P. Paskov et al., J. Appl. Phys. 81 (1997) 1890-1898"), // nR @ RT
+            MINote("linear interpolation: InAs(0.80)Sb(0.20), InSb"),
+            MINote("nr(wv) relations for interpolation fitted by L. Piskorski (PLaSK developer), unpublished"),
+            MINote("do not use for InAsSb with Sb content higher than 0.20"),
             MIArgumentRange(MaterialInfo::lam, 2050, 3450)
             )
 double InAsSb_Si::nr(double lam, double T, double /*n*/) const {
@@ -88,7 +88,7 @@ double InAsSb_Si::nr(double lam, double T, double /*n*/) const {
 MI_PROPERTY(InAsSb, absp,
             MISource("A. Chandola et al., Semicond. Sci. Technol. 20 (2005) 886-893"),
             MIArgumentRange(MaterialInfo::lam, 2000, 20000),
-            MIComment("use it for highly doped InAsSb with high As content") // energy band narrowing included
+            MINote("use it for highly doped InAsSb with high As content") // energy band narrowing included
             )
 double InAsSb_Si::absp(double lam, double T) const {
     double tAbs_RT = 1e24*exp(-lam/33.) + ( As*6.5e-29*Nf_RT*pow(lam,3.) + Sb*2.8e-25*Nf_RT*pow(lam,2.) ) + pow(20.*sqrt(Nf_RT*1e-18),1.05);

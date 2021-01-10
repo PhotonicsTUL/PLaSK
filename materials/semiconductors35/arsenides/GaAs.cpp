@@ -36,7 +36,7 @@ double GaAs::Eg(double T, double e, char point) const {
 
 MI_PROPERTY(GaAs, Dso,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double GaAs::Dso(double /*T*/, double /*e*/) const {
     return 0.341;
@@ -44,7 +44,7 @@ double GaAs::Dso(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(GaAs, Me,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 Tensor2<double> GaAs::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0., 0.);
@@ -74,7 +74,7 @@ Tensor2<double> GaAs::Me(double T, double e, char point) const {
 
 MI_PROPERTY(GaAs, Mhh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 Tensor2<double> GaAs::Mhh(double /*T*/, double /*e*/) const {
     return Tensor2<double>(0.33, 0.33); // [001]
@@ -82,7 +82,7 @@ Tensor2<double> GaAs::Mhh(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(GaAs, Mlh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 Tensor2<double> GaAs::Mlh(double /*T*/, double /*e*/) const {
     return Tensor2<double>(0.090, 0.090);
@@ -90,8 +90,8 @@ Tensor2<double> GaAs::Mlh(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(GaAs, Mh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence; "),
-            MIComment("mh = (mhh^1.5+mlh^1.5)^(2/3)")
+            MINote("no temperature dependence"),
+            MINote("mh = (mhh^1.5+mlh^1.5)^(2/3)")
             )
 Tensor2<double> GaAs::Mh(double T, double e) const {
     double tMc00 = pow(pow(Mhh(T,e).c00,1.5)+pow(Mlh(T,e).c00,1.5),(2./3.));
@@ -101,7 +101,7 @@ Tensor2<double> GaAs::Mh(double T, double e) const {
 
 MI_PROPERTY(GaAs, y1,
 	MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) chapter 7"),
-	MIComment("no temperature dependence")
+	MINote("no temperature dependence")
 )
 double GaAs::y1() const {
 	return 7.10;
@@ -109,7 +109,7 @@ double GaAs::y1() const {
 
 MI_PROPERTY(GaAs, y2,
 	MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) chapter 7"),
-	MIComment("no temperature dependence")
+	MINote("no temperature dependence")
 )
 double GaAs::y2() const {
 	return 2.02;
@@ -117,7 +117,7 @@ double GaAs::y2() const {
 
 MI_PROPERTY(GaAs, y3,
 	MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) chapter 7"),
-	MIComment("no temperature dependence")
+	MINote("no temperature dependence")
 )
 double GaAs::y3() const {
 	return 2.91;
@@ -134,7 +134,7 @@ double GaAs::CB(double T, double e, char point) const {
 
 MI_PROPERTY(GaAs, VB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double GaAs::VB(double T, double e, char /*point*/, char hole) const {
     double tVB(-0.80);
@@ -150,7 +150,7 @@ double GaAs::VB(double T, double e, char /*point*/, char hole) const {
 
 MI_PROPERTY(GaAs, ac,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double GaAs::ac(double /*T*/) const {
     return -7.17;
@@ -158,7 +158,7 @@ double GaAs::ac(double /*T*/) const {
 
 MI_PROPERTY(GaAs, av,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double GaAs::av(double /*T*/) const {
     return 1.16;
@@ -166,7 +166,7 @@ double GaAs::av(double /*T*/) const {
 
 MI_PROPERTY(GaAs, b,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double GaAs::b(double /*T*/) const {
     return -2.0;
@@ -174,7 +174,7 @@ double GaAs::b(double /*T*/) const {
 
 MI_PROPERTY(GaAs, d,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double GaAs::d(double /*T*/) const {
     return -4.8;
@@ -182,7 +182,7 @@ double GaAs::d(double /*T*/) const {
 
 MI_PROPERTY(GaAs, c11,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double GaAs::c11(double /*T*/) const {
     return 122.1;
@@ -190,7 +190,7 @@ double GaAs::c11(double /*T*/) const {
 
 MI_PROPERTY(GaAs, c12,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double GaAs::c12(double /*T*/) const {
     return 56.6;
@@ -198,14 +198,14 @@ double GaAs::c12(double /*T*/) const {
 
 MI_PROPERTY(GaAs, c44,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double GaAs::c44(double /*T*/) const {
     return 60.0;
 }
 
 MI_PROPERTY(GaAs, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67"), // 300 K
             MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37"), // temperature dependence
             MIArgumentRange(MaterialInfo::T, 150, 1500)
            )
@@ -216,7 +216,7 @@ Tensor2<double> GaAs::thermk(double T, double /*t*/) const {
 
 MI_PROPERTY(GaAs, cond,
             MISource("http://www.ioffe.ru/SVA/NSM/Semicond/GaAs/electric.html"),
-            MIComment("Carrier concentration estimated")
+            MINote("Carrier concentration estimated")
            )
 Tensor2<double> GaAs::cond(double T) const {
     double c = 1e2 * phys::qe * 8000.* pow((300./T), 2./3.) * 1e16;
@@ -225,24 +225,24 @@ Tensor2<double> GaAs::cond(double T) const {
 
 MI_PROPERTY(GaAs, dens,
             MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaAs::dens(double /*T*/) const { return 5.31749e3; }
 
 MI_PROPERTY(GaAs, cp,
             MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaAs::cp(double /*T*/) const { return 0.327e3; }
 
 Material::ConductivityType GaAs::condtype() const { return Material::CONDUCTIVITY_I; }
 
 MI_PROPERTY(GaAs, nr,
-            //MISource("D.T.F. Marple, J. Appl. Phys. 35 (1964) 1241-1242; "),
+            //MISource("D.T.F. Marple, J. Appl. Phys. 35 (1964) 1241-1242"),
             //MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, Wiley 2005"), // temperature dependence
-            //MIComment("fit by Lukasz Piskorski")
-            MISource("S. Gehrsitz, J. Appl. Phys. 87 (2000) 7825-7837; "),
-            MIComment("fit by Leszek Frasunkiewicz")
+            //MINote("fit by Lukasz Piskorski")
+            MISource("S. Gehrsitz, J. Appl. Phys. 87 (2000) 7825-7837"),
+            MINote("fit by Leszek Frasunkiewicz")
            )
 double GaAs::nr(double lam, double T, double /*n*/) const {
     double Al = 1e-30;
@@ -265,7 +265,7 @@ double GaAs::nr(double lam, double T, double /*n*/) const {
 
 MI_PROPERTY(GaAs, absp,
             MISource(""),
-            MIComment("calculated as for Si-doped GaAs but with n = 1e16")
+            MINote("calculated as for Si-doped GaAs but with n = 1e16")
            )
 double GaAs::absp(double lam, double T) const {
     double tDWl = phys::h_eVc1e9*(Eg(300.,0.,'G')-Eg(T,0.,'G'))/(Eg(300.,0.,'G')*Eg(T,0.,'G'));

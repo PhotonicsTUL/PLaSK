@@ -22,7 +22,7 @@ AlAs_C::AlAs_C(double Val) {
 }
 
 MI_PROPERTY(AlAs_C, mob,
-            MIComment("TODO")
+            MINote("TODO")
             )
 Tensor2<double> AlAs_C::mob(double T) const {
     double mob_T = mob_RT * pow(300./T,1.25);
@@ -30,7 +30,7 @@ Tensor2<double> AlAs_C::mob(double T) const {
 }
 
 MI_PROPERTY(AlAs_C, Nf,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double AlAs_C::Nf(double /*T*/) const {
     return ( Nf_RT );
@@ -41,7 +41,7 @@ double AlAs_C::doping() const {
 }
 
 MI_PROPERTY(AlAs_C, cond,
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlAs_C::cond(double T) const {
     double tMob = mob(T).c00;

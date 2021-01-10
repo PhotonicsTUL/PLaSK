@@ -37,7 +37,7 @@ double AlP::Eg(double T, double e, char point) const {
 
 MI_PROPERTY(AlP, Dso,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double AlP::Dso(double /*T*/, double /*e*/) const {
     return ( 0.07 );
@@ -45,8 +45,8 @@ double AlP::Dso(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(AlP, Me,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232"),
-            MIComment("only for Gamma and X points; "),
-            MIComment("no temperature dependence")
+            MINote("only for Gamma and X points"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlP::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0., 0.);
@@ -71,7 +71,7 @@ Tensor2<double> AlP::Me(double T, double e, char point) const {
 
 MI_PROPERTY(AlP, Mhh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlP::Mhh(double /*T*/, double /*e*/) const {
     return Tensor2<double>(0.30, 0.30); // [001];
@@ -79,7 +79,7 @@ Tensor2<double> AlP::Mhh(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(AlP, Mlh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlP::Mlh(double /*T*/, double /*e*/) const {
     return Tensor2<double>(0.28, 0.28);
@@ -87,8 +87,8 @@ Tensor2<double> AlP::Mlh(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(AlP, Mh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence; "),
-            MIComment("mh = (mhh^1.5+mlh^1.5)^(2/3)")
+            MINote("no temperature dependence"),
+            MINote("mh = (mhh^1.5+mlh^1.5)^(2/3)")
             )
 Tensor2<double> AlP::Mh(double T, double e) const {
     double tMc00 = pow(pow(Mhh(T,e).c00,1.5)+pow(Mlh(T,e).c00,1.5),(2./3.));
@@ -108,7 +108,7 @@ double AlP::CB(double T, double e, char point) const {
 
 MI_PROPERTY(AlP, VB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double AlP::VB(double T, double e, char /*point*/, char hole) const {
     double tVB(-1.74);
@@ -124,7 +124,7 @@ double AlP::VB(double T, double e, char /*point*/, char hole) const {
 
 MI_PROPERTY(AlP, ac,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double AlP::ac(double /*T*/) const {
     return ( -5.7 );
@@ -132,7 +132,7 @@ double AlP::ac(double /*T*/) const {
 
 MI_PROPERTY(AlP, av,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double AlP::av(double /*T*/) const {
     return ( 3.0 );
@@ -140,7 +140,7 @@ double AlP::av(double /*T*/) const {
 
 MI_PROPERTY(AlP, b,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double AlP::b(double /*T*/) const {
     return ( -1.5 );
@@ -148,7 +148,7 @@ double AlP::b(double /*T*/) const {
 
 MI_PROPERTY(AlP, d,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double AlP::d(double /*T*/) const {
     return ( -4.6 );
@@ -156,7 +156,7 @@ double AlP::d(double /*T*/) const {
 
 MI_PROPERTY(AlP, c11,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double AlP::c11(double /*T*/) const {
     return ( 133.0 );
@@ -164,7 +164,7 @@ double AlP::c11(double /*T*/) const {
 
 MI_PROPERTY(AlP, c12,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double AlP::c12(double /*T*/) const {
     return ( 63.0 );
@@ -172,16 +172,16 @@ double AlP::c12(double /*T*/) const {
 
 MI_PROPERTY(AlP, c44,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double AlP::c44(double /*T*/) const {
     return ( 61.5 );
 }
 
 MI_PROPERTY(AlP, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67"), // 300 K
             MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37"), // temperature dependence
-            MIComment("temperature dependence assumed to be the same as for AlSb")
+            MINote("temperature dependence assumed to be the same as for AlSb")
             )
 Tensor2<double> AlP::thermk(double T, double /*t*/) const {
     double tCondT = (1./0.011)*pow((300./T),1.42);
@@ -190,27 +190,27 @@ Tensor2<double> AlP::thermk(double T, double /*t*/) const {
 
 MI_PROPERTY(AlP, dens,
             MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double AlP::dens(double /*T*/) const { return 2.3604e3; }
 
 MI_PROPERTY(AlP, cp,
             MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double AlP::cp(double /*T*/) const { return 0.727e3; }
 
 Material::ConductivityType AlP::condtype() const { return Material::CONDUCTIVITY_I; }
 
 MI_PROPERTY(AlP, nr,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double AlP::nr(double /*lam*/, double /*T*/, double /*n*/) const {
     throw NotImplemented("nr for AlP");
 }
 
 MI_PROPERTY(AlP, absp,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double AlP::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for AlP");

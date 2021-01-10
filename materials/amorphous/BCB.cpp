@@ -10,7 +10,7 @@ std::string BCB::name() const { return NAME; }
 
 MI_PROPERTY(BCB, cond,
             MISource("The DOW Chemical Company, CYCLOTENE Advanced Electronic Resins (2005) 1-9"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> BCB::cond(double /*T*/) const {
     return ( Tensor2<double>(1e-17, 1e-17) );
@@ -18,7 +18,7 @@ Tensor2<double> BCB::cond(double /*T*/) const {
 
 MI_PROPERTY(BCB, thermk,
             MISource("X. Xu et al., IEEE Components, Packaging, and Manufacturing Technology 2 (2012) 286-293"),
-            MIComment("fit for pure BCB by Lukasz Piskorski, unpublished"),
+            MINote("fit for pure BCB by Lukasz Piskorski, unpublished"),
             MIArgumentRange(MaterialInfo::T, 290, 420)
             )
 Tensor2<double> BCB::thermk(double T, double /*h*/) const {

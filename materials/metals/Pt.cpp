@@ -10,17 +10,17 @@ std::string Pt::name() const { return NAME; }
 
 MI_PROPERTY(Pt, absp,
     MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-    MIComment("no temperature dependence")
+    MINote("no temperature dependence")
 )
 
 MI_PROPERTY(Pt, nr,
     MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-    MIComment("no temperature dependence")
+    MINote("no temperature dependence")
 )
 
 MI_PROPERTY(Pt, Nr,
     MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-    MIComment("no temperature dependence")
+    MINote("no temperature dependence")
 )
 
 Pt::Pt(): LorentzDrudeMetal(9.59,
@@ -39,7 +39,7 @@ Pt::Pt(): LorentzDrudeMetal(9.59,
 
 MI_PROPERTY(Pt, cond,
             MISource("CRC Handbook of Chemistry and Physics, Internet Version 2005, http://www.hbcpnetbase.com, edited by D.R. Lide, CRC Press, Boca Raton, FL, sec. 12, pp. 2121-2122, 2005."),
-            MIComment("fit from: ?Lukasz Piskorski, PhD thesis, 2010"),
+            MINote("fit from: ?Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
 Tensor2<double> Pt::cond(double T) const {
@@ -49,7 +49,7 @@ Tensor2<double> Pt::cond(double T) const {
 
 MI_PROPERTY(Pt, thermk,
             MISource("CRC Handbook of Chemistry and Physics, Internet Version 2005, http://www.hbcpnetbase.com, edited by D.R. Lide, CRC Press, Boca Raton, FL, sec. 12, 2005."),
-            MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
+            MINote("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
 Tensor2<double> Pt::thermk(double T, double /*t*/) const {
@@ -59,7 +59,7 @@ Tensor2<double> Pt::thermk(double T, double /*t*/) const {
 
 //MI_PROPERTY(Pt, absp,
 //            MISource(""),
-//            MIComment("TODO"),
+//            MINote("TODO"),
 //            MIArgumentRange(MaterialInfo::lam, 400, 12400)
 //            )
 //double Pt::absp(double lam, double /*T*/) const {
@@ -76,7 +76,7 @@ bool Pt::isEqual(const Material &/*other*/) const {
 
 //MI_PROPERTY(Pt, nr,
 //            MISource(""),
-//            MIComment("TODO"),
+//            MINote("TODO"),
 //            MIArgumentRange(MaterialInfo::lam, 280, 12400)
 //            )
 //double Pt::nr(double lam, double /*T*/, double /*n*/) const {

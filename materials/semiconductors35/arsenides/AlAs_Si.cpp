@@ -22,7 +22,7 @@ AlAs_Si::AlAs_Si(double Val) {
 }
 
 MI_PROPERTY(AlAs_Si, mob,
-            MIComment("TODO")
+            MINote("TODO")
             )
 Tensor2<double> AlAs_Si::mob(double T) const {
     double mob_T = mob_RT * pow(300./T,1.4);
@@ -30,7 +30,7 @@ Tensor2<double> AlAs_Si::mob(double T) const {
 }
 
 MI_PROPERTY(AlAs_Si, Nf,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double AlAs_Si::Nf(double /*T*/) const {
     return ( Nf_RT );
@@ -41,7 +41,7 @@ double AlAs_Si::doping() const {
 }
 
 MI_PROPERTY(AlAs_Si, cond,
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlAs_Si::cond(double T) const {
     double tMob = mob(T).c00;

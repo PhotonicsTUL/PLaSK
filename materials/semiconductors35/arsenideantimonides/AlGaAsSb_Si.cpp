@@ -26,7 +26,7 @@ AlGaAsSb_Si::AlGaAsSb_Si(const Material::Composition& Comp, double Val): AlGaAsS
 
 MI_PROPERTY(AlGaAsSb_Si, mob,
             MISource("D. Martin et al., Semiconductors Science and Technology 19 (2004) 1040-1052"), // TODO
-            MIComment("fit by Lukasz Piskorski")
+            MINote("fit by Lukasz Piskorski")
             )
 Tensor2<double> AlGaAsSb_Si::mob(double T) const {
     double tmob = mob_RT * pow(300./T,1.2);
@@ -35,7 +35,7 @@ Tensor2<double> AlGaAsSb_Si::mob(double T) const {
 
 MI_PROPERTY(AlGaAsSb_Si, Nf,
             MISource("Mirowska et al., Domieszkowanie ..."), // TODO
-            MIComment("fit by Lukasz Piskorski")
+            MINote("fit by Lukasz Piskorski")
             )
 double AlGaAsSb_Si::Nf(double T) const {
     double tD;
@@ -49,7 +49,7 @@ double AlGaAsSb_Si::doping() const {
 }
 
 MI_PROPERTY(AlGaAsSb_Si, cond,
-            MIComment("cond(T) = cond(300K)*(300/T)^d")
+            MINote("cond(T) = cond(300K)*(300/T)^d")
             )
 Tensor2<double> AlGaAsSb_Si::cond(double T) const {
     double tCond = phys::qe * Nf(T)*1e6 * (mob(T).c00)*1e-4;
@@ -61,7 +61,7 @@ Material::ConductivityType AlGaAsSb_Si::condtype() const { return Material::COND
 MI_PROPERTY(AlGaAsSb_Si, nr,
             MISource("Alibert, J. Appl. Phys (1991)"),
             //MIArgumentRange(MaterialInfo::lam, 620, 2560),
-            MIComment("for AlGaAsSb lattice matched to GaSb")
+            MINote("for AlGaAsSb lattice matched to GaSb")
             )
 double AlGaAsSb_Si::nr(double lam, double T, double) const {
     double tE = phys::h_eVc1e9/lam; // lam -> E
@@ -80,7 +80,7 @@ double AlGaAsSb_Si::nr(double lam, double T, double) const {
 }
 
 MI_PROPERTY(AlGaAsSb_Si, absp,
-            MIComment("fit by Lukasz Piskorski")
+            MINote("fit by Lukasz Piskorski")
             )
 double AlGaAsSb_Si::absp(double lam, double T) const {
     double tAbs_RT = 1e24*exp(-lam/33.) + 2.02e-24*Nf_RT*pow(lam,2.) + pow(20.*sqrt(Nf_RT*1e-18),1.05);

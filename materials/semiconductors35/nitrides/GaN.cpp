@@ -32,8 +32,8 @@ Tensor2<double> GaN::thermk(double T, double t) const {
 
 MI_PROPERTY(GaN, absp,
             MISource("J. Piprek et al., Proc. SPIE 6766 (2007) 67660H"),
-            MIComment("fit to GaN:Si/GaN:Mg/GaN:undoped in region 360 - 400 nm"),
-            MIComment("no temperature dependence")
+            MINote("fit to GaN:Si/GaN:Mg/GaN:undoped in region 360 - 400 nm"),
+            MINote("no temperature dependence")
             )
 double GaN::absp(double lam, double T) const {
     double dE = phys::h_eVc1e9/lam - Eg(T, 0., 'G');
@@ -43,7 +43,7 @@ double GaN::absp(double lam, double T) const {
 MI_PROPERTY(GaN, nr,
             MISource("fit - Maciej Kuc"),
             MIArgumentRange(MaterialInfo::lam, 300, 580),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaN::nr(double lam, double T, double /*n*/) const {
     double tE = phys::h_eVc1e9 / lam - (Eg(T) - Eg(300.)), nR;
@@ -87,7 +87,7 @@ double GaN::Dso(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(GaN, Me,
             MISource("Adachi WILEY 2009"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaN::Me(double /*T*/, double /*e*/, char point) const {
     Tensor2<double> tMe(0.,0.);
@@ -127,7 +127,7 @@ double GaN::CB(double T, double /*e*/, char point) const {
 
 MI_PROPERTY(GaN, VB,
             MISource("-"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double GaN::VB(double /*T*/, double e, char /*point*/, char /*hole*/) const {
     double tVB(0.80);

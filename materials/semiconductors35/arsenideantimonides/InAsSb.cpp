@@ -20,8 +20,8 @@ Material::Composition InAsSb::composition() const {
 }
 
 MI_PROPERTY(InAsSb, lattC,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InAs, InSb")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InAs, InSb")
             )
 double InAsSb::lattC(double T, char x) const {
     double tLattC(0.);
@@ -31,8 +31,8 @@ double InAsSb::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(InAsSb, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("nonlinear interpolation: InAs, InSb")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("nonlinear interpolation: InAs, InSb")
             )
 double InAsSb::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -50,18 +50,18 @@ double InAsSb::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(InAsSb, Dso,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("nonlinear interpolation: InAs, InSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("nonlinear interpolation: InAs, InSb"),
+            MINote("no temperature dependence")
             )
 double InAsSb::Dso(double T, double e) const {
     return ( As*mInAs.Dso(T, e) + Sb*mInSb.Dso(T, e) - As*Sb*1.2 );
 }
 
 MI_PROPERTY(InAsSb, Me,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232; "),
-            MISource("nonlinear interpolation: InAs, InSb"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232"),
+            MINote("nonlinear interpolation: InAs, InSb"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> InAsSb::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0., 0.);
@@ -84,9 +84,9 @@ Tensor2<double> InAsSb::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(InAsSb, Mhh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235; "),
-            MISource("linear interpolation: InAs, InSb"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MINote("linear interpolation: InAs, InSb"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> InAsSb::Mhh(double T, double e) const {
     double lMhh = As*mInAs.Mhh(T,e).c00 + Sb*mInSb.Mhh(T,e).c00,
@@ -95,9 +95,9 @@ Tensor2<double> InAsSb::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(InAsSb, Mlh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235; "),
-            MISource("linear interpolation: InAs, InSb"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MINote("linear interpolation: InAs, InSb"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> InAsSb::Mlh(double T, double e) const {
     double lMlh = As*mInAs.Mlh(T,e).c00 + Sb*mInSb.Mlh(T,e).c00,
@@ -107,8 +107,8 @@ Tensor2<double> InAsSb::Mlh(double T, double e) const {
 
 MI_PROPERTY(InAsSb, Mh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence; "),
-            MIComment("mh = (mhh^1.5+mlh^1.5)^(2/3)")
+            MINote("no temperature dependence"),
+            MINote("mh = (mhh^1.5+mlh^1.5)^(2/3)")
             )
 Tensor2<double> InAsSb::Mh(double T, double e) const {
     double tMc00 = pow(pow(Mhh(T,e).c00,1.5)+pow(Mlh(T,e).c00,1.5),(2./3.));
@@ -127,9 +127,9 @@ double InAsSb::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(InAsSb, VB,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InAs, InSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InAs, InSb"),
+            MINote("no temperature dependence")
             )
 double InAsSb::VB(double T, double e, char point, char hole) const {
     double tVB( As*mInAs.VB(T,0.,point,hole) + Sb*mInSb.VB(T,0.,point,hole) );
@@ -144,72 +144,72 @@ double InAsSb::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(InAsSb, ac,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InAs, InSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InAs, InSb"),
+            MINote("no temperature dependence")
             )
 double InAsSb::ac(double T) const {
     return ( As*mInAs.ac(T) + Sb*mInSb.ac(T) );
 }
 
 MI_PROPERTY(InAsSb, av,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InAs, InSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InAs, InSb"),
+            MINote("no temperature dependence")
             )
 double InAsSb::av(double T) const {
     return ( As*mInAs.av(T) + Sb*mInSb.av(T) );
 }
 
 MI_PROPERTY(InAsSb, b,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InAs, InSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InAs, InSb"),
+            MINote("no temperature dependence")
             )
 double InAsSb::b(double T) const {
     return ( As*mInAs.b(T) + Sb*mInSb.b(T) );
 }
 
 MI_PROPERTY(InAsSb, d,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InAs, InSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InAs, InSb"),
+            MINote("no temperature dependence")
             )
 double InAsSb::d(double T) const {
     return ( As*mInAs.d(T) + Sb*mInSb.d(T) );
 }
 
 MI_PROPERTY(InAsSb, c11,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InAs, InSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InAs, InSb"),
+            MINote("no temperature dependence")
             )
 double InAsSb::c11(double T) const {
     return ( As*mInAs.c11(T) + Sb*mInSb.c11(T) );
 }
 
 MI_PROPERTY(InAsSb, c12,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InAs, InSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InAs, InSb"),
+            MINote("no temperature dependence")
             )
 double InAsSb::c12(double T) const {
     return ( As*mInAs.c12(T) + Sb*mInSb.c12(T) );
 }
 
 MI_PROPERTY(InAsSb, c44,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: InAs, InSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: InAs, InSb"),
+            MINote("no temperature dependence")
             )
 double InAsSb::c44(double T) const {
     return ( As*mInAs.c44(T) + Sb*mInSb.c44(T) );
 }
 
 MI_PROPERTY(InAsSb, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
-            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37; "), // temperature dependence for binaries
-            MISource("inversion of nonlinear interpolation of resistivity: InAs, InSb")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67"), // 300 K
+            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37"), // temperature dependence for binaries
+            MINote("inversion of nonlinear interpolation of resistivity: InAs, InSb")
             )
 Tensor2<double> InAsSb::thermk(double T, double t) const {
     double lCondT = 1./(As/mInAs.thermk(T,t).c00 + Sb/mInSb.thermk(T,t).c00 + As*Sb*0.91),
@@ -218,18 +218,18 @@ Tensor2<double> InAsSb::thermk(double T, double t) const {
 }
 
 MI_PROPERTY(InAsSb, dens,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18; "),
-            MISource("linear interpolation: InAs, InSb"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
+            MINote("linear interpolation: InAs, InSb"),
+            MINote("no temperature dependence")
             )
 double InAsSb::dens(double T) const {
     return ( As*mInAs.dens(T) + Sb*mInSb.dens(T) );
 }
 
 MI_PROPERTY(InAsSb, cp,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52; "),
-            MISource("linear interpolation: InAs, InSb"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52"),
+            MINote("linear interpolation: InAs, InSb"),
+            MINote("no temperature dependence")
             )
 double InAsSb::cp(double T) const {
     return ( As*mInAs.cp(T) + Sb*mInSb.cp(T) );
@@ -238,10 +238,10 @@ double InAsSb::cp(double T) const {
 Material::ConductivityType InAsSb::condtype() const { return Material::CONDUCTIVITY_I; }
 
 MI_PROPERTY(InAsSb, nr,
-            MISource("P.P. Paskov et al., J. Appl. Phys. 81 (1997) 1890-1898; "), // nR @ RT
-            MISource("linear interpolation: InAs(0.80)Sb(0.20), InSb"),
-            MIComment("nr(wv) relations for interpolation fitted by L. Piskorski (PLaSK developer), unpublished; "),
-            MIComment("do not use for InAsSb with Sb content higher than 0.20"),
+            MISource("P.P. Paskov et al., J. Appl. Phys. 81 (1997) 1890-1898"), // nR @ RT
+            MINote("linear interpolation: InAs(0.80)Sb(0.20), InSb"),
+            MINote("nr(wv) relations for interpolation fitted by L. Piskorski (PLaSK developer), unpublished"),
+            MINote("do not use for InAsSb with Sb content higher than 0.20"),
             MIArgumentRange(MaterialInfo::lam, 2050, 3450)
             )
 double InAsSb::nr(double lam, double T, double /*n*/) const {
@@ -258,7 +258,7 @@ double InAsSb::nr(double lam, double T, double /*n*/) const {
 }
 
 MI_PROPERTY(InAsSb, absp,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double InAsSb::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for InAsSb");

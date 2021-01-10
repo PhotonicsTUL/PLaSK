@@ -30,7 +30,7 @@ double AlGaAs_C::EactA(double /*T*/) const {
 }
 
 MI_PROPERTY(AlGaAs_C, EactD,
-            MIComment("this parameter will be removed")
+            MINote("this parameter will be removed")
             )
 double AlGaAs_C::EactD(double /*T*/) const {
     return 0.;
@@ -47,21 +47,21 @@ Tensor2<double> AlGaAs_C::mob(double T) const {
 
 MI_PROPERTY(AlGaAs_C, Nf,
             MISource("based on 3 papers 1991-2004 about C-doped AlGaAs"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double AlGaAs_C::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
 MI_PROPERTY(AlGaAs_C, Na,
-            MIComment("-")
+            MINote("-")
             )
 double AlGaAs_C::Na() const {
     return ( NA );
 }
 
 MI_PROPERTY(AlGaAs_C, Nd,
-            MIComment("-")
+            MINote("-")
             )
 double AlGaAs_C::Nd() const {
     return ( 0. );

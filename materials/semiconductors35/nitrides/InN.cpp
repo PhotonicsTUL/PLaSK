@@ -47,7 +47,7 @@ double InN::Dso(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(InN, Me,
             MISource("Adachi WILEY 2009"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> InN::Me(double /*T*/, double /*e*/, char point) const {
     Tensor2<double> tMe(0.,0.);
@@ -84,7 +84,7 @@ Tensor2<double> InN::Mlh(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(InN, VB,
             MISource("-"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
            )
 double InN::VB(double /*T*/, double e, char /*point*/, char /*hole*/) const {
     double tVB(1.85);

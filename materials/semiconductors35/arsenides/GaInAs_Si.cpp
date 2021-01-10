@@ -33,7 +33,7 @@ Tensor2<double> GaInAs_Si::mob(double /*T*/) const {
 
 MI_PROPERTY(GaInAs_Si, Nf,
             MISource("TODO"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaInAs_Si::Nf(double /*T*/) const {
     return ( Nf_RT );
@@ -44,7 +44,7 @@ double GaInAs_Si::doping() const {
 }
 
 MI_PROPERTY(GaInAs_Si, cond,
-            MIComment("")
+            MINote("")
             )
 Tensor2<double> GaInAs_Si::cond(double T) const {
     double tMob = mob(T).c00;
@@ -56,7 +56,7 @@ Material::ConductivityType GaInAs_Si::condtype() const { return Material::CONDUC
 
 MI_PROPERTY(GaInAs_Si, absp,
             MISource("calculations of the absorption for 9.5 um are based on http://www.ioffe.ru/SVA/NSM/Semicond"), // TODO
-            MIComment("temperature dependence only for the wavelength of about 9.5 um")
+            MINote("temperature dependence only for the wavelength of about 9.5 um")
             )
 double GaInAs_Si::absp(double lam, double T) const {
     double tAbsp(0.);

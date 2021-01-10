@@ -20,8 +20,8 @@ Material::Composition AlInAs::composition() const {
 }
 
 MI_PROPERTY(AlInAs, lattC,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlAs, InAs")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlAs, InAs")
             )
 double AlInAs::lattC(double T, char x) const {
     double tLattC(0.);
@@ -31,8 +31,8 @@ double AlInAs::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(AlInAs, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("nonlinear interpolation: AlAs, InAs")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("nonlinear interpolation: AlAs, InAs")
             )
 double AlInAs::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -50,18 +50,18 @@ double AlInAs::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlInAs, Dso,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("nonlinear interpolation: AlAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("nonlinear interpolation: AlAs, InAs"),
+            MINote("no temperature dependence")
             )
 double AlInAs::Dso(double T, double e) const {
     return ( Al*mAlAs.Dso(T,e) + In*mInAs.Dso(T,e) - Al*In*(0.15) );
 }
 
 MI_PROPERTY(AlInAs, Me,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232; "),
-            MISource("linear interpolation: AlAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232"),
+            MINote("linear interpolation: AlAs, InAs"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlInAs::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0., 0.);
@@ -84,9 +84,9 @@ Tensor2<double> AlInAs::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlInAs, Mhh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235; "),
-            MISource("linear interpolation: AlAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MINote("linear interpolation: AlAs, InAs"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlInAs::Mhh(double T, double e) const {
     double lMhh = Al*mAlAs.Mhh(T,e).c00 + In*mInAs.Mhh(T,e).c00,
@@ -95,9 +95,9 @@ Tensor2<double> AlInAs::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(AlInAs, Mlh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235; "),
-            MISource("linear interpolation: AlAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MINote("linear interpolation: AlAs, InAs"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlInAs::Mlh(double T, double e) const {
     double lMlh = Al*mAlAs.Mlh(T,e).c00 + In*mInAs.Mlh(T,e).c00,
@@ -107,8 +107,8 @@ Tensor2<double> AlInAs::Mlh(double T, double e) const {
 
 MI_PROPERTY(AlInAs, Mh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence; "),
-            MIComment("mh = (mhh^1.5+mlh^1.5)^(2/3)")
+            MINote("no temperature dependence"),
+            MINote("mh = (mhh^1.5+mlh^1.5)^(2/3)")
             )
 Tensor2<double> AlInAs::Mh(double T, double e) const {
     double tMc00 = pow(pow(Mhh(T,e).c00,1.5)+pow(Mlh(T,e).c00,1.5),(2./3.));
@@ -127,9 +127,9 @@ double AlInAs::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlInAs, VB,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlAs, InAs"),
+            MINote("no temperature dependence")
             )
 double AlInAs::VB(double T, double e, char point, char hole) const {
     double tVB( Al*mAlAs.VB(T,0.,point,hole) + In*mInAs.VB(T,0.,point,hole) );
@@ -146,8 +146,8 @@ double AlInAs::VB(double T, double e, char point, char hole) const {
 
 MI_PROPERTY(AlInAs, ac,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MISource("linear interpolation: AlAs, InAs"),
-            MIComment("no temperature dependence")
+            MINote("linear interpolation: AlAs, InAs"),
+            MINote("no temperature dependence")
             )
 double AlInAs::ac(double T) const {
     return ( Al*mAlAs.ac(T) + In*mInAs.ac(T) );
@@ -155,8 +155,8 @@ double AlInAs::ac(double T) const {
 
 MI_PROPERTY(AlInAs, av,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MISource("linear interpolation: AlAs, InAs"),
-            MIComment("no temperature dependence")
+            MINote("linear interpolation: AlAs, InAs"),
+            MINote("no temperature dependence")
             )
 double AlInAs::av(double T) const {
     return ( Al*mAlAs.av(T) + In*mInAs.av(T) );
@@ -164,8 +164,8 @@ double AlInAs::av(double T) const {
 
 MI_PROPERTY(AlInAs, b,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MISource("linear interpolation: AlAs, InAs"),
-            MIComment("no temperature dependence")
+            MINote("linear interpolation: AlAs, InAs"),
+            MINote("no temperature dependence")
             )
 double AlInAs::b(double T) const {
     return ( Al*mAlAs.b(T) + In*mInAs.b(T) );
@@ -173,8 +173,8 @@ double AlInAs::b(double T) const {
 
 MI_PROPERTY(AlInAs, d,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MISource("linear interpolation: AlAs, InAs"),
-            MIComment("no temperature dependence")
+            MINote("linear interpolation: AlAs, InAs"),
+            MINote("no temperature dependence")
             )
 double AlInAs::d(double T) const {
     return ( Al*mAlAs.d(T) + In*mInAs.d(T) );
@@ -182,8 +182,8 @@ double AlInAs::d(double T) const {
 
 MI_PROPERTY(AlInAs, c11,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MISource("linear interpolation: AlAs, InAs"),
-            MIComment("no temperature dependence")
+            MINote("linear interpolation: AlAs, InAs"),
+            MINote("no temperature dependence")
             )
 double AlInAs::c11(double T) const {
     return ( Al*mAlAs.c11(T) + In*mInAs.c11(T) );
@@ -191,8 +191,8 @@ double AlInAs::c11(double T) const {
 
 MI_PROPERTY(AlInAs, c12,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MISource("linear interpolation: AlAs, InAs"),
-            MIComment("no temperature dependence")
+            MINote("linear interpolation: AlAs, InAs"),
+            MINote("no temperature dependence")
             )
 double AlInAs::c12(double T) const {
     return ( Al*mAlAs.c12(T) + In*mInAs.c12(T) );
@@ -200,17 +200,17 @@ double AlInAs::c12(double T) const {
 
 MI_PROPERTY(AlInAs, c44,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MISource("linear interpolation: AlAs, InAs"),
-            MIComment("no temperature dependence")
+            MINote("linear interpolation: AlAs, InAs"),
+            MINote("no temperature dependence")
             )
 double AlInAs::c44(double T) const {
     return ( Al*mAlAs.c44(T) + In*mInAs.c44(T) );
 }
 
 MI_PROPERTY(AlInAs, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
-            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37; "), // temperature dependence for binaries
-            MISource("inversion of nonlinear interpolation of resistivity: AlAs, InAs")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67"), // 300 K
+            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37"), // temperature dependence for binaries
+            MINote("inversion of nonlinear interpolation of resistivity: AlAs, InAs")
             )
 Tensor2<double> AlInAs::thermk(double T, double t) const {
     double lCondT = 1./(Al/mAlAs.thermk(T,t).c00 + In/mInAs.thermk(T,t).c00 + Al*In*0.15),
@@ -219,18 +219,18 @@ Tensor2<double> AlInAs::thermk(double T, double t) const {
 }
 
 MI_PROPERTY(AlInAs, dens,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18; "),
-            MISource("linear interpolation: AlAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
+            MINote("linear interpolation: AlAs, InAs"),
+            MINote("no temperature dependence")
             )
 double AlInAs::dens(double T) const {
     return ( Al*mAlAs.dens(T) + In*mInAs.dens(T) );
 }
 
 MI_PROPERTY(AlInAs, cp,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52; "),
-            MISource("linear interpolation: AlAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52"),
+            MINote("linear interpolation: AlAs, InAs"),
+            MINote("no temperature dependence")
             )
 double AlInAs::cp(double T) const {
     return ( Al*mAlAs.cp(T) + In*mInAs.cp(T) );
@@ -240,7 +240,7 @@ Material::ConductivityType AlInAs::condtype() const { return Material::CONDUCTIV
 
 MI_PROPERTY(AlInAs, nr,
             MISource("M.J. Mondry et al., IEEE Photon. Technol. Lett. 4 (1992) 627-630"),
-            MIComment("data for the wavelength ranging 1000-2000 nm")
+            MINote("data for the wavelength ranging 1000-2000 nm")
             )
 double AlInAs::nr(double lam, double T, double /*n*/) const {
     double tnr = sqrt(8.677 + (1.214*lam*lam)/(lam*lam-730.8*730.8)), //lam: 1000-2000 nm
@@ -249,7 +249,7 @@ double AlInAs::nr(double lam, double T, double /*n*/) const {
 }
 
 MI_PROPERTY(AlInAs, absp,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double AlInAs::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for AlGaAs");

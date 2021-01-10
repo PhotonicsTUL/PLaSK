@@ -28,21 +28,21 @@ Tensor2<double> InGaN_Si::mob(double T) const {
 }
 
 MI_PROPERTY(InGaN_Si, Nf,
-            MISource("linear interpolation: Si-doped GaN, InN")
+            MINote("linear interpolation: Si-doped GaN, InN")
             )
 double InGaN_Si::Nf(double T) const {
     return ( mInN_Si.Nf(T)*In + mGaN_Si.Nf(T)*Ga );
 }
 
 MI_PROPERTY(InGaN_Si, Na,
-            MIComment("-")
+            MINote("-")
             )
 double InGaN_Si::Na() const {
     return ( 0. );
 }
 
 MI_PROPERTY(InGaN_Si, Nd,
-            MIComment("-")
+            MINote("-")
             )
 double InGaN_Si::Nd() const {
     return ( ND );
@@ -60,7 +60,7 @@ Material::ConductivityType InGaN_Si::condtype() const { return Material::CONDUCT
 
 MI_PROPERTY(InGaN_Si, thermk,
             MISeeClass<InGaN>(MaterialInfo::thermk),
-            MIComment("Si doping dependence for GaN")
+            MINote("Si doping dependence for GaN")
             )
 Tensor2<double> InGaN_Si::thermk(double T, double t) const {
     double lCondT = 1/(In/mInN_Si.thermk(T).c00 + Ga/mGaN_Si.thermk(T,t).c00 + In*Ga*0.215*exp(7.913*In)),

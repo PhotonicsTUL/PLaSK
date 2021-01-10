@@ -11,7 +11,7 @@ std::string aSiO2::name() const { return NAME; }
 
 MI_PROPERTY(aSiO2, cond,
             MISource("www.siliconfareast.com/sio2si3n4.htm"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> aSiO2::cond(double /*T*/) const {
     return ( Tensor2<double>(1e-13, 1e-13) );
@@ -19,7 +19,7 @@ Tensor2<double> aSiO2::cond(double /*T*/) const {
 
 MI_PROPERTY(aSiO2, thermk,
             MISource("D.G. Cahill et al., Review of Scientific Instruments 61 (1990) 802-808"),
-            MIComment("fit from: Lukasz Piskorski, unpublished"),
+            MINote("fit from: Lukasz Piskorski, unpublished"),
             MIArgumentRange(MaterialInfo::T, 77, 750)
             )
 Tensor2<double> aSiO2::thermk(double T, double /*h*/) const {
@@ -44,8 +44,8 @@ double aSiO2::nr(double lam, double T, double /*n*/) const {
 MI_PROPERTY(aSiO2, absp,
             MISource("TODO"),
             MIArgumentRange(MaterialInfo::lam, 400, 4500),
-            MIComment("temperature dependence - assumed: (1/abs)(dabs/dT)=1e-3"),
-            MIComment("fit by Lukasz Piskorski")
+            MINote("temperature dependence - assumed: (1/abs)(dabs/dT)=1e-3"),
+            MINote("fit by Lukasz Piskorski")
             )
 double aSiO2::absp(double lam, double T) const {
     double tAbsRTL;

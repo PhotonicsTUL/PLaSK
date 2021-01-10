@@ -20,8 +20,8 @@ Material::Composition AlPSb::composition() const {
 }
 
 MI_PROPERTY(AlPSb, lattC,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, AlSb")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, AlSb")
             )
 double AlPSb::lattC(double T, char x) const {
     double tLattC(0.);
@@ -31,8 +31,8 @@ double AlPSb::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(AlPSb, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("nonlinear interpolation: AlP, AlSb")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("nonlinear interpolation: AlP, AlSb")
             )
 double AlPSb::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -50,18 +50,18 @@ double AlPSb::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlPSb, Dso,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, AlSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, AlSb"),
+            MINote("no temperature dependence")
             )
 double AlPSb::Dso(double T, double e) const {
     return ( P*mAlP.Dso(T, e) + Sb*mAlSb.Dso(T, e) );
 }
 
 MI_PROPERTY(AlPSb, Me,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232; "),
-            MISource("linear interpolation: AlP, AlSb"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232"),
+            MINote("linear interpolation: AlP, AlSb"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlPSb::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0., 0.);
@@ -80,9 +80,9 @@ Tensor2<double> AlPSb::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlPSb, Mhh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235; "),
-            MISource("linear interpolation: AlP, AlSb"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MINote("linear interpolation: AlP, AlSb"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlPSb::Mhh(double T, double e) const {
     double lMhh = P*mAlP.Mhh(T,e).c00 + Sb*mAlSb.Mhh(T,e).c00,
@@ -91,9 +91,9 @@ Tensor2<double> AlPSb::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(AlPSb, Mlh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235; "),
-            MISource("linear interpolation: AlP, AlSb"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MINote("linear interpolation: AlP, AlSb"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlPSb::Mlh(double T, double e) const {
     double lMlh = P*mAlP.Mlh(T,e).c00 + Sb*mAlSb.Mlh(T,e).c00,
@@ -103,8 +103,8 @@ Tensor2<double> AlPSb::Mlh(double T, double e) const {
 
 MI_PROPERTY(AlPSb, Mh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence; "),
-            MIComment("mh = (mhh^1.5+mlh^1.5)^(2/3)")
+            MINote("no temperature dependence"),
+            MINote("mh = (mhh^1.5+mlh^1.5)^(2/3)")
             )
 Tensor2<double> AlPSb::Mh(double T, double e) const {
     double tMc00 = pow(pow(Mhh(T,e).c00,1.5)+pow(Mlh(T,e).c00,1.5),(2./3.));
@@ -123,9 +123,9 @@ double AlPSb::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlPSb, VB,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, AlSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, AlSb"),
+            MINote("no temperature dependence")
             )
 double AlPSb::VB(double T, double e, char point, char hole) const {
     double tVB( P*mAlP.VB(T,0.,point,hole) + Sb*mAlSb.VB(T,0.,point,hole) );
@@ -141,72 +141,72 @@ double AlPSb::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(AlPSb, ac,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, AlSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, AlSb"),
+            MINote("no temperature dependence")
             )
 double AlPSb::ac(double T) const {
     return ( P*mAlP.ac(T) + Sb*mAlSb.ac(T) );
 }
 
 MI_PROPERTY(AlPSb, av,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, AlSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, AlSb"),
+            MINote("no temperature dependence")
             )
 double AlPSb::av(double T) const {
     return ( P*mAlP.av(T) + Sb*mAlSb.av(T) );
 }
 
 MI_PROPERTY(AlPSb, b,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, AlSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, AlSb"),
+            MINote("no temperature dependence")
             )
 double AlPSb::b(double T) const {
     return ( P*mAlP.b(T) + Sb*mAlSb.b(T) );
 }
 
 MI_PROPERTY(AlPSb, d,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, AlSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, AlSb"),
+            MINote("no temperature dependence")
             )
 double AlPSb::d(double T) const {
     return ( P*mAlP.d(T) + Sb*mAlSb.d(T) );
 }
 
 MI_PROPERTY(AlPSb, c11,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, AlSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, AlSb"),
+            MINote("no temperature dependence")
             )
 double AlPSb::c11(double T) const {
     return ( P*mAlP.c11(T) + Sb*mAlSb.c11(T) );
 }
 
 MI_PROPERTY(AlPSb, c12,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, AlSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, AlSb"),
+            MINote("no temperature dependence")
             )
 double AlPSb::c12(double T) const {
     return ( P*mAlP.c12(T) + Sb*mAlSb.c12(T) );
 }
 
 MI_PROPERTY(AlPSb, c44,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, AlSb"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, AlSb"),
+            MINote("no temperature dependence")
             )
 double AlPSb::c44(double T) const {
     return ( P*mAlP.c44(T) + Sb*mAlSb.c44(T) );
 }
 
 MI_PROPERTY(AlPSb, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
-            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37; "), // temperature dependence for binaries
-            MISource("inversion of nonlinear interpolation of resistivity: AlP, AlSb")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67"), // 300 K
+            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37"), // temperature dependence for binaries
+            MINote("inversion of nonlinear interpolation of resistivity: AlP, AlSb")
             )
 Tensor2<double> AlPSb::thermk(double T, double t) const {
     double lCondT = 1./(P/mAlP.thermk(T,t).c00 + Sb/mAlSb.thermk(T,t).c00 + P*Sb*0.16),
@@ -215,18 +215,18 @@ Tensor2<double> AlPSb::thermk(double T, double t) const {
 }
 
 MI_PROPERTY(AlPSb, dens,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18; "),
-            MISource("linear interpolation: AlP, AlSb"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
+            MINote("linear interpolation: AlP, AlSb"),
+            MINote("no temperature dependence")
             )
 double AlPSb::dens(double T) const {
     return ( P*mAlP.dens(T) + Sb*mAlSb.dens(T) );
 }
 
 MI_PROPERTY(AlPSb, cp,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52; "),
-            MISource("linear interpolation: AlP, AlSb"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52"),
+            MINote("linear interpolation: AlP, AlSb"),
+            MINote("no temperature dependence")
             )
 double AlPSb::cp(double T) const {
     return ( P*mAlP.cp(T) + Sb*mAlSb.cp(T) );
@@ -235,14 +235,14 @@ double AlPSb::cp(double T) const {
 Material::ConductivityType AlPSb::condtype() const { return Material::CONDUCTIVITY_I; }
 
 MI_PROPERTY(AlPSb, nr,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double AlPSb::nr(double /*lam*/, double /*T*/, double /*n*/) const {
     throw NotImplemented("nr for AlPSb");
 }
 
 MI_PROPERTY(AlPSb, absp,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double AlPSb::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for AlPSb");

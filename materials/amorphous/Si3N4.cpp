@@ -10,7 +10,7 @@ std::string Si3N4::name() const { return NAME; }
 
 MI_PROPERTY(Si3N4, cond,
             MISource(""),
-            MIComment("TODO")
+            MINote("TODO")
             )
 Tensor2<double> Si3N4::cond(double /*T*/) const {
     throw NotImplemented("cond for Si3N4");
@@ -18,7 +18,7 @@ Tensor2<double> Si3N4::cond(double /*T*/) const {
 
 MI_PROPERTY(Si3N4, thermk,
             MISource(""),
-            MIComment("TODO")
+            MINote("TODO")
             )
 Tensor2<double> Si3N4::thermk(double /*T*/, double /*h*/) const {
     throw NotImplemented("thermk for Si3N4");
@@ -36,7 +36,7 @@ double Si3N4::nr(double lam, double /*T*/, double /*n*/) const {
 }
 MI_PROPERTY(Si3N4, absp,
             MISource("S. Zhou et al., Proc. SPIE 7995 (2011) 79950T"),
-            MIComment("data for SiNx"),
+            MINote("data for SiNx"),
             MIArgumentRange(MaterialInfo::lam, 9000, 11000)
             )
 double Si3N4::absp(double lam, double /*T*/) const {

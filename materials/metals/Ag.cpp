@@ -11,17 +11,17 @@ std::string Ag::name() const { return NAME; }
 
 MI_PROPERTY(Ag, absp,
     MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-    MIComment("no temperature dependence")
+    MINote("no temperature dependence")
 )
 
 MI_PROPERTY(Ag, nr,
     MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-    MIComment("no temperature dependence")
+    MINote("no temperature dependence")
 )
 
 MI_PROPERTY(Ag, Nr,
     MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-    MIComment("no temperature dependence")
+    MINote("no temperature dependence")
 )
 
 Ag::Ag(): LorentzDrudeMetal(9.01,

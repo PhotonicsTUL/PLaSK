@@ -28,21 +28,21 @@ Tensor2<double> InGaN_Mg::mob(double T) const {
 }
 
 MI_PROPERTY(InGaN_Mg, Nf,
-            MISource("linear interpolation: Mg-doped GaN, InN")
+            MINote("linear interpolation: Mg-doped GaN, InN")
             )
 double InGaN_Mg::Nf(double T) const {
     return ( mInN_Mg.Nf(T)*In + mGaN_Mg.Nf(T)*Ga );
 }
 
 MI_PROPERTY(InGaN_Mg, Na,
-            MIComment("-")
+            MINote("-")
             )
 double InGaN_Mg::Na() const {
     return ( NA );
 }
 
 MI_PROPERTY(InGaN_Mg, Nd,
-            MIComment("-")
+            MINote("-")
             )
 double InGaN_Mg::Nd() const {
     return ( 0. );

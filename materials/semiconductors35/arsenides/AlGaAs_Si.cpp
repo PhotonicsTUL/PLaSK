@@ -28,7 +28,7 @@ AlGaAs_Si::AlGaAs_Si(const Material::Composition& Comp, double Val): AlGaAs(Comp
 }
 
 MI_PROPERTY(AlGaAs_Si, EactA,
-            MIComment("this parameter will be removed")
+            MINote("this parameter will be removed")
             )
 double AlGaAs_Si::EactA(double /*T*/) const {
     return 0.;
@@ -52,21 +52,21 @@ Tensor2<double> AlGaAs_Si::mob(double T) const {
 
 MI_PROPERTY(AlGaAs_Si, Nf,
             MISource("based on 2 papers 1982, 1984 about Si-doped AlGaAs"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double AlGaAs_Si::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
 MI_PROPERTY(AlGaAs_Si, Na,
-            MIComment("-")
+            MINote("-")
             )
 double AlGaAs_Si::Na() const {
     return ( 0. );
 }
 
 MI_PROPERTY(AlGaAs_Si, Nd,
-            MIComment("-")
+            MINote("-")
             )
 double AlGaAs_Si::Nd() const {
     return ( ND );

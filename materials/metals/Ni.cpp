@@ -10,17 +10,17 @@ std::string Ni::name() const { return NAME; }
 
 MI_PROPERTY(Ni, absp,
     MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-    MIComment("no temperature dependence")
+    MINote("no temperature dependence")
 )
 
 MI_PROPERTY(Ni, nr,
     MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-    MIComment("no temperature dependence")
+    MINote("no temperature dependence")
 )
 
 MI_PROPERTY(Ni, Nr,
     MISource("A. Rakic et al., Appl. Opt. 37(22) (1998) 5271-5283"),
-    MIComment("no temperature dependence")
+    MINote("no temperature dependence")
 )
 
 Ni::Ni(): LorentzDrudeMetal(15.92,
@@ -39,7 +39,7 @@ Ni::Ni(): LorentzDrudeMetal(15.92,
 
 MI_PROPERTY(Ni, cond,
             MISource("CRC Handbook of Chemistry and Physics, Internet Version 2005, http://www.hbcpnetbase.com, edited by D.R. Lide, CRC Press, Boca Raton, FL, sec. 12, pp. 2121-2122, 2005."),
-            MIComment("fit from: ?Lukasz Piskorski, PhD thesis, 2010"),
+            MINote("fit from: ?Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
 Tensor2<double> Ni::cond(double T) const {
@@ -49,7 +49,7 @@ Tensor2<double> Ni::cond(double T) const {
 
 MI_PROPERTY(Ni, thermk,
             MISource("CRC Handbook of Chemistry and Physics, Internet Version 2005, http://www.hbcpnetbase.com, edited by D.R. Lide, CRC Press, Boca Raton, FL, sec. 12, 2005."),
-            MIComment("fit from: Lukasz Piskorski, PhD thesis, 2010"),
+            MINote("fit from: Lukasz Piskorski, PhD thesis, 2010"),
             MIArgumentRange(MaterialInfo::T, 200, 500)
             )
 Tensor2<double> Ni::thermk(double T, double /*t*/) const {

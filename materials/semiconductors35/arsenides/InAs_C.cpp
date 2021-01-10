@@ -17,14 +17,14 @@ InAs_C::InAs_C(double Val) {
 }
 
 MI_PROPERTY(InAs_C, mob,
-            MIComment("TODO")
+            MINote("TODO")
             )
 Tensor2<double> InAs_C::mob(double /*T*/) const {
     return ( Tensor2<double>(mob_RT,mob_RT) );
 }
 
 MI_PROPERTY(InAs_C, Nf,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double InAs_C::Nf(double /*T*/) const {
     return ( Nf_RT );
@@ -35,7 +35,7 @@ double InAs_C::doping() const {
 }
 
 MI_PROPERTY(InAs_C, cond, // TODO
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> InAs_C::cond(double T) const {
     double tMob = mob(T).c00;

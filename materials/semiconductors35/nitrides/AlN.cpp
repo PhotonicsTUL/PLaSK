@@ -19,8 +19,8 @@ Tensor2<double> AlN::thermk(double T, double /*t*/) const {
 
 MI_PROPERTY(AlN, absp,
             MISource("J. Piprek et al., Proc. SPIE 6766 (2007) 67660H"),
-            MIComment("fit to GaN:Si/GaN:Mg/GaN:undoped in region 360 - 400 nm"),
-            MIComment("no temperature dependence")
+            MINote("fit to GaN:Si/GaN:Mg/GaN:undoped in region 360 - 400 nm"),
+            MINote("no temperature dependence")
             )
 double AlN::absp(double lam, double T) const {
     double a = phys::h_eVc1e9/lam - Eg(T,0.,'G');
@@ -30,7 +30,7 @@ double AlN::absp(double lam, double T) const {
 MI_PROPERTY(AlN, nr,
             MISource("www.rpi.edu Educational Resources (E.F. Schubert 2004)"),
             MIArgumentRange(MaterialInfo::lam, 225, 1240),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double AlN::nr(double lam, double /*T*/, double /*n*/) const {
     double a = phys::h_eVc1e9/lam;
@@ -66,7 +66,7 @@ double AlN::Dso(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(AlN, Me,
             MISource("Adachi WILEY 2009"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlN::Me(double /*T*/, double /*e*/, char point) const {
     Tensor2<double> tMe(0.,0.);

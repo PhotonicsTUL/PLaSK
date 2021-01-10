@@ -20,8 +20,8 @@ Material::Composition AlGaP::composition() const {
 }
 
 MI_PROPERTY(AlGaP, lattC,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, GaP")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, GaP")
             )
 double AlGaP::lattC(double T, char x) const {
     double tLattC(0.);
@@ -31,8 +31,8 @@ double AlGaP::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(AlGaP, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("nonlinear interpolation: AlP, GaP")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("nonlinear interpolation: AlP, GaP")
             )
 double AlGaP::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -51,18 +51,18 @@ double AlGaP::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlGaP, Dso,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, GaP"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, GaP"),
+            MINote("no temperature dependence")
             )
 double AlGaP::Dso(double T, double e) const {
     return ( Al*mAlP.Dso(T,e) + Ga*mGaP.Dso(T,e) );
 }
 
 MI_PROPERTY(AlGaP, Me,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232; "),
-            MISource("linear interpolation: AlP, GaP"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232"),
+            MINote("linear interpolation: AlP, GaP"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlGaP::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0., 0.);
@@ -81,9 +81,9 @@ Tensor2<double> AlGaP::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlGaP, Mhh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235; "),
-            MISource("linear interpolation: AlP, GaP"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MINote("linear interpolation: AlP, GaP"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlGaP::Mhh(double T, double e) const {
     double lMhh = Al*mAlP.Mhh(T,e).c00 + Ga*mGaP.Mhh(T,e).c00,
@@ -92,9 +92,9 @@ Tensor2<double> AlGaP::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(AlGaP, Mlh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235; "),
-            MISource("linear interpolation: AlP, GaP"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MINote("linear interpolation: AlP, GaP"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> AlGaP::Mlh(double T, double e) const {
     double lMlh = Al*mAlP.Mlh(T,e).c00 + Ga*mGaP.Mlh(T,e).c00,
@@ -104,8 +104,8 @@ Tensor2<double> AlGaP::Mlh(double T, double e) const {
 
 MI_PROPERTY(AlGaP, Mh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence; "),
-            MIComment("mh = (mhh^1.5+mlh^1.5)^(2/3)")
+            MINote("no temperature dependence"),
+            MINote("mh = (mhh^1.5+mlh^1.5)^(2/3)")
             )
 Tensor2<double> AlGaP::Mh(double T, double e) const {
     double tMc00 = pow(pow(Mhh(T,e).c00,1.5)+pow(Mlh(T,e).c00,1.5),(2./3.));
@@ -125,8 +125,8 @@ double AlGaP::CB(double T, double e, char point) const {
 
 MI_PROPERTY(AlGaP, VB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MISource("linear interpolation: AlP, GaP"),
-            MIComment("no temperature dependence")
+            MINote("linear interpolation: AlP, GaP"),
+            MINote("no temperature dependence")
             )
 double AlGaP::VB(double T, double e, char point, char hole) const {
     double tVB( Al*mAlP.VB(T,0.,point,hole) + Ga*mGaP.VB(T,0.,point,hole) );
@@ -142,72 +142,72 @@ double AlGaP::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(AlGaP, ac,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, GaP"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, GaP"),
+            MINote("no temperature dependence")
             )
 double AlGaP::ac(double T) const {
     return ( Al*mAlP.ac(T) + Ga*mGaP.ac(T) );
 }
 
 MI_PROPERTY(AlGaP, av,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, GaP"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, GaP"),
+            MINote("no temperature dependence")
             )
 double AlGaP::av(double T) const {
     return ( Al*mAlP.av(T) + Ga*mGaP.av(T) );
 }
 
 MI_PROPERTY(AlGaP, b,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, GaP"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, GaP"),
+            MINote("no temperature dependence")
             )
 double AlGaP::b(double T) const {
     return ( Al*mAlP.b(T) + Ga*mGaP.b(T) );
 }
 
 MI_PROPERTY(AlGaP, d,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, GaP"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, GaP"),
+            MINote("no temperature dependence")
             )
 double AlGaP::d(double T) const {
     return ( Al*mAlP.d(T) + Ga*mGaP.d(T) );
 }
 
 MI_PROPERTY(AlGaP, c11,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, GaP"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, GaP"),
+            MINote("no temperature dependence")
             )
 double AlGaP::c11(double T) const {
     return ( Al*mAlP.c11(T) + Ga*mGaP.c11(T) );
 }
 
 MI_PROPERTY(AlGaP, c12,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, GaP"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, GaP"),
+            MINote("no temperature dependence")
             )
 double AlGaP::c12(double T) const {
     return ( Al*mAlP.c12(T) + Ga*mGaP.c12(T) );
 }
 
 MI_PROPERTY(AlGaP, c44,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: AlP, GaP"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: AlP, GaP"),
+            MINote("no temperature dependence")
             )
 double AlGaP::c44(double T) const {
     return ( Al*mAlP.c44(T) + Ga*mGaP.c44(T) );
 }
 
 MI_PROPERTY(AlGaP, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
-            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37; "), // temperature dependence for binaries
-            MISource("inversion of nonlinear interpolation of resistivity: AlP, GaP")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67"), // 300 K
+            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37"), // temperature dependence for binaries
+            MINote("inversion of nonlinear interpolation of resistivity: AlP, GaP")
             )
 Tensor2<double> AlGaP::thermk(double T, double t) const {
     double lCondT = 1./(Al/mAlP.thermk(T,t).c00 + Ga/mGaP.thermk(T,t).c00 + Al*Ga*0.32),
@@ -216,18 +216,18 @@ Tensor2<double> AlGaP::thermk(double T, double t) const {
 }
 
 MI_PROPERTY(AlGaP, dens,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18; "),
-            MISource("linear interpolation: AlP, GaP"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
+            MINote("linear interpolation: AlP, GaP"),
+            MINote("no temperature dependence")
             )
 double AlGaP::dens(double T) const {
     return ( Al*mAlP.dens(T) + Ga*mGaP.dens(T) );
 }
 
 MI_PROPERTY(AlGaP, cp,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52; "),
-            MISource("linear interpolation: AlP, GaP"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52"),
+            MINote("linear interpolation: AlP, GaP"),
+            MINote("no temperature dependence")
             )
 double AlGaP::cp(double T) const {
     return ( Al*mAlP.cp(T) + Ga*mGaP.cp(T) );
@@ -236,14 +236,14 @@ double AlGaP::cp(double T) const {
 Material::ConductivityType AlGaP::condtype() const { return Material::CONDUCTIVITY_I; }
 
 MI_PROPERTY(AlGaP, nr,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double AlGaP::nr(double /*lam*/, double /*T*/, double /*n*/) const {
     throw NotImplemented("nr for AlGaP");
 }
 
 MI_PROPERTY(AlGaP, absp,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double AlGaP::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for AlGaP");

@@ -18,7 +18,7 @@ InP_Si::InP_Si(double Val) {
 
 MI_PROPERTY(InP_Si, mob,
             MISource("TODO"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> InP_Si::mob(double /*T*/) const {
     return ( Tensor2<double>(mob_RT,mob_RT) );
@@ -26,7 +26,7 @@ Tensor2<double> InP_Si::mob(double /*T*/) const {
 
 MI_PROPERTY(InP_Si, Nf,
             MISource("TODO"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double InP_Si::Nf(double /*T*/) const {
     return ( Nf_RT );
@@ -37,7 +37,7 @@ double InP_Si::doping() const {
 }
 
 MI_PROPERTY(InP_Si, cond,
-            MIComment("")
+            MINote("")
             )
 Tensor2<double> InP_Si::cond(double T) const {
     double tCond = phys::qe * Nf_RT*1e6 * mob_RT*1e-4 * pow(300./T,0.8);
@@ -48,7 +48,7 @@ Material::ConductivityType InP_Si::condtype() const { return Material::CONDUCTIV
 
 MI_PROPERTY(InP_Si, absp,
             MISource("TODO"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double InP_Si::absp(double lam, double /*T*/) const {
     double tAbsp(0.);

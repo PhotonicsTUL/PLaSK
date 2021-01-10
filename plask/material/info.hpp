@@ -95,11 +95,12 @@ struct PLASK_API MaterialInfo {
         lam,        ///< wavelength
         n,          ///< carriers concentration
         h,          ///< thickness
-        doping      ///< doping
+        doping,     ///< doping
+        point       ///< point
     };
 
     /// Names of the arguments
-    static const char* ARGUMENT_NAME_STRING[6];
+    static const char* ARGUMENT_NAME_STRING[7];
 
     static ARGUMENT_NAME parseArgumentName(const std::string& name);
 
@@ -111,20 +112,20 @@ struct PLASK_API MaterialInfo {
         std::string className;
         ///Property.
         PROPERTY_NAME property;
-        ///Link comment.
-        std::string comment;
+        ///Link note.
+        std::string note;
 
-        Link(std::string className, PROPERTY_NAME property, std::string comment = std::string())
-            : className(className), property(property), comment(comment) {}
+        Link(std::string className, PROPERTY_NAME property, std::string note = std::string())
+            : className(className), property(property), note(note) {}
 
         /**
          * Construct a link from a string.
-         * @param to_parse the string to parse, in form "class_name.property comment"
+         * @param to_parse the string to parse, in form "class_name.property info"
          */
         Link(const std::string& to_parse);
 
         /**
-         * Construct a string in format "class_name.property comment".
+         * Construct a string in format "class_name.property info".
          * @return the string constructed
          */
         std::string str() const;
@@ -133,41 +134,59 @@ struct PLASK_API MaterialInfo {
     /// Collect information about material property.
     class PLASK_API PropertyInfo {
 
-        /// Other comments about property
-        std::string _comment;
+        /// Other infos about property
+        std::string _info;
 
-        boost::tokenizer<boost::char_separator<char>> eachCommentLine() const;
-
-        std::vector<std::string> eachCommentOfType(const std::string& type) const;
+        /**
+         * Append info to string returned by get().
+         *
+         * If @p get() is not empty it appends end-line between @p get() and @p info.
+         * @param infoToAdd info to append
+         * @return *this
+         */
+        PropertyInfo& add(const std::string& infoToAdd) {
+            if (_info.empty()) _info = infoToAdd; else (_info += '\n') += infoToAdd;
+            return *this;
+        }
 
     public:
 
+        boost::tokenizer<boost::char_separator<char>> eachLine() const;
+
+        std::vector<std::string> eachOfType(const std::string& type) const;
+
         typedef std::pair<double, double> ArgumentRange;
 
-        /// Construct info with given comment.
-        PropertyInfo(std::string comment = ""): _comment(std::move(comment)) {}
+        /// Construct info with given info.
+        PropertyInfo(std::string info = ""): _info(std::move(info)) {}
 
         /// Returned by getArgumentRange if there is no range for given argument, holds two NaNs
         static const ArgumentRange NO_RANGE;
 
         /**
-         * Get bibliography source of calculation method of this material property. One source per line.
-         * @return bibliography source of calculation method of this material property
+         * Set info on this material property.
+         * @param new_info info
+         * @return *this
+         */
+        PropertyInfo& set(const std::string& new_info) { this->_info = new_info; return *this; }
+
+        /**
+         * Get info on this material property.
+         * @return info on this material property
+         */
+        const std::string& get() const { return _info; }
+
+        /**
+         * Get bibliography source of this material property. One source per line.
+         * @return bibliography source of this material property
          */
         std::string getSource() const;
 
         /**
-         * Set comment on this material property.
-         * @param new_comment comment
-         * @return *this
+         * Get note for this material property. One source per line.
+         * @return note this material property
          */
-        PropertyInfo& setComment(const std::string& new_comment) { this->_comment = new_comment; return *this; }
-
-        /**
-         * Get comment on this material property.
-         * @return comment on this material property
-         */
-        const std::string& getComment() const { return _comment; }
+        std::string getNote() const;
 
         /**
          * Get the range of argument's values for which the calculation method is known to works fine.
@@ -179,30 +198,27 @@ struct PLASK_API MaterialInfo {
         /**
          * Get array of "see also" links.
          *
-         * It finds them in comment. It tries to parse ech line which starts with "see:".
+         * It finds them in info. It tries to parse ech line which starts with "see:".
          * @return array of "see also" links
          */
         std::vector<Link> getLinks() const;
 
         /**
-         * Append bibliography source to the comment (and the string returned by getSource()).
+         * Append bibliography source to the info (and the string returned by getSource()).
          * @param sourceToAdd bibliography source to append
          * @return *this
          */
         PropertyInfo& addSource(const std::string& sourceToAdd) {
-            return addComment("source: " + sourceToAdd);
+            return add("source: " + sourceToAdd);
         }
 
         /**
-         * Append comment to string returned by getComment().
-         *
-         * If @p getComment() is not empty it appends end-line between @p getComment() and @p comment.
-         * @param commentToAdd comment to append
+         * Append note to the info (and the string returned by getSource()).
+         * @param sourceToAdd bibliography source to append
          * @return *this
          */
-        PropertyInfo& addComment(const std::string& commentToAdd) {
-            if (_comment.empty()) _comment = commentToAdd; else (_comment += '\n') += commentToAdd;
-            return *this;
+        PropertyInfo& addNote(const std::string& sourceToAdd) {
+            return add("note: " + sourceToAdd);
         }
 
         /**
@@ -228,7 +244,7 @@ struct PLASK_API MaterialInfo {
          * @param link link to add
          * @return *this
          */
-        PropertyInfo& addLink(const Link& link) { return addComment("see: " + link.str()); }
+        PropertyInfo& addLink(const Link& link) { return add("see: " + link.str()); }
     };
 
     /// Name of parent class
@@ -447,7 +463,7 @@ struct PLASK_API MaterialInfo {
 
         RegisterProperty& source(const std::string& source) { property.addSource(source); return *this; }
 
-        RegisterProperty& comment(const std::string& comment) { property.addComment(comment); return *this; }
+        RegisterProperty& info(const std::string& info) { property.add(info); return *this; }
 
         RegisterProperty& argumentRange(ARGUMENT_NAME argument, PropertyInfo::ArgumentRange range) {
             property.setArgumentRange(argument, range); return *this;
@@ -467,10 +483,10 @@ struct MISource {
     void set(MaterialInfo::PropertyInfo& p) const { p.addSource(value); }
 };
 
-struct MIComment {
+struct MINote {
     std::string value;
-    MIComment(const std::string& value): value(value) {}
-    void set(MaterialInfo::PropertyInfo& p) const { p.addComment(value); }
+    MINote(const std::string& value): value(value) {}
+    void set(MaterialInfo::PropertyInfo& p) const { p.addNote(value); }
 };
 
 struct MIArgumentRange {

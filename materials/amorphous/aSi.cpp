@@ -10,7 +10,7 @@ std::string aSi::name() const { return NAME; }
 
 MI_PROPERTY(aSi, cond,
             MISource("A.S. Diamond, Handbook of Imaging Materials, p. 630"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> aSi::cond(double /*T*/) const {
     return ( Tensor2<double>(0.1, 0.1) );
@@ -18,7 +18,7 @@ Tensor2<double> aSi::cond(double /*T*/) const {
 
 MI_PROPERTY(aSi, thermk,
             MISource("D.G. Cahill et al., Physical Review B 50 (1994) 6077-6081"),
-            MIComment("fit from: Lukasz Piskorski, unpublished"),
+            MINote("fit from: Lukasz Piskorski, unpublished"),
             MIArgumentRange(MaterialInfo::T, 77, 400)
             )
 Tensor2<double> aSi::thermk(double T, double /*h*/) const {
@@ -33,7 +33,7 @@ Material::ConductivityType aSi::condtype() const { return Material::CONDUCTIVITY
 MI_PROPERTY(aSi, nr,
             MISource("R.N. Kre et al., International Journal of the Physical Sciences 5 (2010) 675-682"),
             MIArgumentRange(MaterialInfo::lam, 2200, 3900),
-            MIComment("fit by Lukasz Piskorski")
+            MINote("fit by Lukasz Piskorski")
             )
 double aSi::nr(double lam, double T, double /*n*/) const {
     double tE = phys::h_eVc1e9/lam; // lam -> E
@@ -44,8 +44,8 @@ double aSi::nr(double lam, double T, double /*n*/) const {
 MI_PROPERTY(aSi, absp,
             MISource("TODO"),
             //MIArgumentRange(MaterialInfo::lam, 1600, 4700),
-            MIComment("temperature dependence - assumed: (1/abs)(dabs/dT)=1e-3"),
-            MIComment("fit by Lukasz Piskorski")
+            MINote("temperature dependence - assumed: (1/abs)(dabs/dT)=1e-3"),
+            MINote("fit by Lukasz Piskorski")
             )
 double aSi::absp(double lam, double T) const {
     double tE = phys::h_eVc1e9/lam; // lam -> E

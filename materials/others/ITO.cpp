@@ -18,7 +18,7 @@ Tensor2<double> ITO::cond(double /*T*/) const {
 
 MI_PROPERTY(ITO, thermk,
             MISource("T. Yagi et al. J. Vac. Sci. Technol. A 23 (2005) 1180-1186."),
-            MIComment("for bulk ITO thermal conductivity is about 14 W/mK")
+            MINote("for bulk ITO thermal conductivity is about 14 W/mK")
             )
 Tensor2<double> ITO::thermk(double /*T*/, double /*t*/) const {
     const double tCondT = 3.2;
@@ -28,7 +28,7 @@ Tensor2<double> ITO::thermk(double /*T*/, double /*t*/) const {
 MI_PROPERTY(ITO, absp,
             MISource("E.F. Schubert (2004) Refractive index and extinction coefficient of materials"),
             MISource("https://www.ecse.rpi.edu/~schubert/Educational-resources/Materials-Refractive-index-and-extinction-coefficient.pdf"),
-            MIComment("fit: Lukasz Piskorski"),
+            MINote("fit: Lukasz Piskorski"),
             MIArgumentRange(MaterialInfo::lam, 340, 1400)
             )
 double ITO::absp(double lam, double /*T*/) const {
@@ -52,7 +52,7 @@ bool ITO::isEqual(const Material &/*other*/) const {
 MI_PROPERTY(ITO, nr,
             MISource("E.F. Schubert (2004) Refractive index and extinction coefficient of materials"),
             MISource("https://www.ecse.rpi.edu/~schubert/Educational-resources/Materials-Refractive-index-and-extinction-coefficient.pdf"),
-            MIComment("fit: Lukasz Piskorski"),
+            MINote("fit: Lukasz Piskorski"),
             MIArgumentRange(MaterialInfo::lam, 340, 1400)
 			)
 double ITO::nr(double lam, double /*T*/, double /*n*/) const {

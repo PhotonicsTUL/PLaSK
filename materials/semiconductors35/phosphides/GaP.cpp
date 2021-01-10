@@ -37,7 +37,7 @@ double GaP::Eg(double T, double e, char point) const {
 
 MI_PROPERTY(GaP, Dso,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaP::Dso(double /*T*/, double /*e*/) const {
     return ( 0.08 );
@@ -45,7 +45,7 @@ double GaP::Dso(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(GaP, Me,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaP::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0., 0.);
@@ -75,7 +75,7 @@ Tensor2<double> GaP::Me(double T, double e, char point) const {
 
 MI_PROPERTY(GaP, Mhh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaP::Mhh(double /*T*/, double /*e*/) const {
     return Tensor2<double>(0.34, 0.34); // [001]
@@ -83,7 +83,7 @@ Tensor2<double> GaP::Mhh(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(GaP, Mlh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaP::Mlh(double /*T*/, double /*e*/) const {
     return Tensor2<double>(0.20, 0.20);
@@ -91,8 +91,8 @@ Tensor2<double> GaP::Mlh(double /*T*/, double /*e*/) const {
 
 MI_PROPERTY(GaP, Mh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence; "),
-            MIComment("mh = (mhh^1.5+mlh^1.5)^(2/3)")
+            MINote("no temperature dependence"),
+            MINote("mh = (mhh^1.5+mlh^1.5)^(2/3)")
             )
 Tensor2<double> GaP::Mh(double T, double e) const {
     double tMc00 = pow(pow(Mhh(T,e).c00,1.5)+pow(Mlh(T,e).c00,1.5),(2./3.));
@@ -112,7 +112,7 @@ double GaP::CB(double T, double e, char point) const {
 
 MI_PROPERTY(GaP, VB,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaP::VB(double T, double e, char /*point*/, char hole) const {
     double tVB(-1.27);
@@ -128,7 +128,7 @@ double GaP::VB(double T, double e, char /*point*/, char hole) const {
 
 MI_PROPERTY(GaP, ac,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaP::ac(double /*T*/) const {
     return ( -8.2 );
@@ -136,7 +136,7 @@ double GaP::ac(double /*T*/) const {
 
 MI_PROPERTY(GaP, av,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaP::av(double /*T*/) const {
     return ( 1.7 );
@@ -144,7 +144,7 @@ double GaP::av(double /*T*/) const {
 
 MI_PROPERTY(GaP, b,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaP::b(double /*T*/) const {
     return ( -1.6 );
@@ -152,7 +152,7 @@ double GaP::b(double /*T*/) const {
 
 MI_PROPERTY(GaP, d,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaP::d(double /*T*/) const {
     return ( -4.6 );
@@ -160,7 +160,7 @@ double GaP::d(double /*T*/) const {
 
 MI_PROPERTY(GaP, c11,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaP::c11(double /*T*/) const {
     return ( 140.5 );
@@ -168,7 +168,7 @@ double GaP::c11(double /*T*/) const {
 
 MI_PROPERTY(GaP, c12,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaP::c12(double /*T*/) const {
     return ( 62.03 );
@@ -176,14 +176,14 @@ double GaP::c12(double /*T*/) const {
 
 MI_PROPERTY(GaP, c44,
             MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaP::c44(double /*T*/) const {
     return ( 70.33 );
 }
 
 MI_PROPERTY(GaP, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67"), // 300 K
             MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37"), // temperature dependence
             MIArgumentRange(MaterialInfo::T, 60, 535)
             )
@@ -194,27 +194,27 @@ Tensor2<double> GaP::thermk(double T, double /*t*/) const {
 
 MI_PROPERTY(GaP, dens,
             MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaP::dens(double /*T*/) const { return 4.1299e3; }
 
 MI_PROPERTY(GaP, cp,
             MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaP::cp(double /*T*/) const { return 0.313e3; }
 
 Material::ConductivityType GaP::condtype() const { return Material::CONDUCTIVITY_I; }
 
 MI_PROPERTY(GaP, nr,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double GaP::nr(double /*lam*/, double /*T*/, double /*n*/) const {
     throw NotImplemented("nr for GaP");
 }
 
 MI_PROPERTY(GaP, absp,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double GaP::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for GaP");

@@ -28,7 +28,7 @@ Tensor2<double> AlGaN_Si::mob(double T) const {
 }
 
 MI_PROPERTY(AlGaN_Si, Nf,
-            MISource("linear interpolation: Si-doped GaN, AlN")
+            MINote("linear interpolation: Si-doped GaN, AlN")
             )
 double AlGaN_Si::Nf(double T) const {
     return ( mAlN_Si.Nf(T)*Al + mGaN_Si.Nf(T)*Ga );
@@ -46,7 +46,7 @@ Material::ConductivityType AlGaN_Si::condtype() const { return Material::CONDUCT
 
 MI_PROPERTY(AlGaN_Si, thermk,
             MISeeClass<AlGaN>(MaterialInfo::thermk),
-            MIComment("Si doping dependence for GaN")
+            MINote("Si doping dependence for GaN")
             )
 Tensor2<double> AlGaN_Si::thermk(double T, double t) const {
     double lCondT = 1/(Al/mAlN_Si.thermk(T,t).c00 + Ga/mGaN_Si.thermk(T,t).c00 + Al*Ga*0.4),

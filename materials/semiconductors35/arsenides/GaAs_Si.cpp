@@ -17,7 +17,7 @@ GaAs_Si::GaAs_Si(double Val) {
 }
 
 MI_PROPERTY(GaAs_Si, EactA,
-            MIComment("this parameter will be removed")
+            MINote("this parameter will be removed")
             )
 double GaAs_Si::EactA(double /*T*/) const {
     return 0.;
@@ -32,7 +32,7 @@ double GaAs_Si::EactD(double /*T*/) const {
 
 MI_PROPERTY(GaAs_Si, mob,
             MISource("fit to n-GaAs:Si (based on 8 papers 1982 - 2003)"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaAs_Si::mob(double T) const {
     double mob_T = mob_RT * pow(300./T,1.4);
@@ -41,21 +41,21 @@ Tensor2<double> GaAs_Si::mob(double T) const {
 
 MI_PROPERTY(GaAs_Si, Nf,
             MISource("based on 3 papers 1982 - 1996"),
-            MIComment("no temperature dependence")
+            MINote("no temperature dependence")
             )
 double GaAs_Si::Nf(double /*T*/) const {
     return ( Nf_RT );
 }
 
 MI_PROPERTY(GaAs_Si, Na,
-            MIComment("-")
+            MINote("-")
             )
 double GaAs_Si::Na() const {
     return ( 0. );
 }
 
 MI_PROPERTY(GaAs_Si, Nd,
-            MIComment("-")
+            MINote("-")
             )
 double GaAs_Si::Nd() const {
     return ( ND );
@@ -66,7 +66,7 @@ double GaAs_Si::doping() const {
 }
 
 MI_PROPERTY(GaAs_Si, cond,
-			MIComment("no temperature dependence")
+			MINote("no temperature dependence")
             )
 Tensor2<double> GaAs_Si::cond(double T) const {
     double tMob = mob(T).c00;

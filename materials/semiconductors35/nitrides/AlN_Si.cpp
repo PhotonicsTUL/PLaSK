@@ -22,7 +22,7 @@ AlN_Si::AlN_Si(double Val) {
 MI_PROPERTY(AlN_Si, mob,
             MISource("K. Kusakabe et al., Physica B 376-377 (2006) 520"),
             MIArgumentRange(MaterialInfo::T, 270, 400),
-            MIComment("based on 4 papers (2004-2008): Si-doped AlN")
+            MINote("based on 4 papers (2004-2008): Si-doped AlN")
 			)
 Tensor2<double> AlN_Si::mob(double T) const {
     double tMob = mob_RT * (1.486 - T*0.00162);
@@ -32,7 +32,7 @@ Tensor2<double> AlN_Si::mob(double T) const {
 MI_PROPERTY(AlN_Si, Nf,
             MISource("Y. Taniyasu, Nature Letters 44 (2006) 325"),
             MIArgumentRange(MaterialInfo::T, 300, 400),
-            MIComment("based on 2 papers (2004-2008): Si-doped AlN")
+            MINote("based on 2 papers (2004-2008): Si-doped AlN")
             )
 double AlN_Si::Nf(double T) const {
 	return ( Nf_RT * 3.502E-27*pow(T,10.680) );

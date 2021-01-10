@@ -22,8 +22,8 @@ Material::Composition GaInAsP::composition() const {
 }
 
 MI_PROPERTY(GaInAsP, lattC,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, InP, GaAs, InAs")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, InP, GaAs, InAs")
             )
 double GaInAsP::lattC(double T, char x) const {
     double tLattC(0.);
@@ -35,8 +35,8 @@ double GaInAsP::lattC(double T, char x) const {
 }
 
 MI_PROPERTY(GaInAsP, Eg,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("nonlinear interpolation: GaP, InP, GaAs, InAs")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("nonlinear interpolation: GaP, InP, GaAs, InAs")
             )
 double GaInAsP::Eg(double T, double e, char point) const {
     double tEg(0.);
@@ -67,9 +67,9 @@ double GaInAsP::Eg(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInAsP, Dso,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("nonlinear interpolation: GaP, InP, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("nonlinear interpolation: GaP, InP, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInAsP::Dso(double T, double e) const {
     return ( Ga*As*mGaAs.Dso(T,e) + Ga*P*mGaP.Dso(T,e)
@@ -78,9 +78,9 @@ double GaInAsP::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(GaInAsP, Me,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232; "),
-            MISource("nonlinear interpolation: GaP, InP, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.230-232"),
+            MINote("nonlinear interpolation: GaP, InP, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaInAsP::Me(double T, double e, char point) const {
     Tensor2<double> tMe(0., 0.);
@@ -103,9 +103,9 @@ Tensor2<double> GaInAsP::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInAsP, Mhh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235; "),
-            MISource("linear interpolation: GaP, InP, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MINote("linear interpolation: GaP, InP, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaInAsP::Mhh(double T, double e) const {
     double lMhh = Ga*As*mGaAs.Mhh(T,e).c00 + Ga*P*mGaP.Mhh(T,e).c00
@@ -116,9 +116,9 @@ Tensor2<double> GaInAsP::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(GaInAsP, Mlh,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235; "),
-            MISource("linear interpolation: GaP, InP, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
+            MINote("linear interpolation: GaP, InP, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 Tensor2<double> GaInAsP::Mlh(double T, double e) const {
     double lMlh = Ga*As*mGaAs.Mlh(T,e).c00 + Ga*P*mGaP.Mlh(T,e).c00
@@ -130,8 +130,8 @@ Tensor2<double> GaInAsP::Mlh(double T, double e) const {
 
 MI_PROPERTY(GaInAsP, Mh,
             MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.235"),
-            MIComment("no temperature dependence; "),
-            MIComment("mh = (mhh^1.5+mlh^1.5)^(2/3)")
+            MINote("no temperature dependence"),
+            MINote("mh = (mhh^1.5+mlh^1.5)^(2/3)")
             )
 Tensor2<double> GaInAsP::Mh(double T, double e) const {
     double tMc00 = pow(pow(Mhh(T,e).c00,1.5)+pow(Mlh(T,e).c00,1.5),(2./3.));
@@ -150,9 +150,9 @@ double GaInAsP::CB(double T, double e, char point) const {
 }
 
 MI_PROPERTY(GaInAsP, VB,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("nonlinear interpolation: GaP, InP, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("nonlinear interpolation: GaP, InP, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInAsP::VB(double T, double e, char point, char hole) const {
     double tVB( Ga*As*mGaAs.VB(T,0.,point,hole) + Ga*P*mGaP.VB(T,0.,point,hole)
@@ -170,9 +170,9 @@ double GaInAsP::VB(double T, double e, char point, char hole) const {
 }
 
 MI_PROPERTY(GaInAsP, ac,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("nonlinear interpolation: GaP, InP, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("nonlinear interpolation: GaP, InP, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInAsP::ac(double T) const {
     return ( Ga*As*mGaAs.ac(T) + Ga*P*mGaP.ac(T)
@@ -181,63 +181,63 @@ double GaInAsP::ac(double T) const {
 }
 
 MI_PROPERTY(GaInAsP, av,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, InP, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, InP, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInAsP::av(double T) const {
     return ( Ga*As*mGaAs.av(T) + Ga*P*mGaP.av(T) + In*As*mInAs.av(T) + In*P*mInP.av(T) );
 }
 
 MI_PROPERTY(GaInAsP, b,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, InP, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, InP, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInAsP::b(double T) const {
     return ( Ga*As*mGaAs.b(T) + Ga*P*mGaP.b(T) + In*As*mInAs.b(T) + In*P*mInP.b(T) );
 }
 
 MI_PROPERTY(GaInAsP, d,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, InP, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, InP, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInAsP::d(double T) const {
     return ( Ga*As*mGaAs.d(T) + Ga*P*mGaP.d(T) + In*As*mInAs.d(T) + In*P*mInP.d(T) );
 }
 
 MI_PROPERTY(GaInAsP, c11,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, InP, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, InP, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInAsP::c11(double T) const {
     return ( Ga*As*mGaAs.c11(T) + Ga*P*mGaP.c11(T) + In*As*mInAs.c11(T) + In*P*mInP.c11(T) );
 }
 
 MI_PROPERTY(GaInAsP, c12,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, InP, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, InP, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInAsP::c12(double T) const {
     return ( Ga*As*mGaAs.c12(T) + Ga*P*mGaP.c12(T) + In*As*mInAs.c12(T) + In*P*mInP.c12(T) );
 }
 
 MI_PROPERTY(GaInAsP, c44,
-            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875; "),
-            MISource("linear interpolation: GaP, InP, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("I. Vurgaftman et al., J. Appl. Phys. 89 (2001) 5815-5875"),
+            MINote("linear interpolation: GaP, InP, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInAsP::c44(double T) const {
     return ( Ga*As*mGaAs.c44(T) + Ga*P*mGaP.c44(T) + In*As*mInAs.c44(T) + In*P*mInP.c44(T) );
 }
 
 MI_PROPERTY(GaInAsP, thermk,
-            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67; "), // 300 K
-            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37; "), // temperature dependence for binaries
-            MISource("inversion of nonlinear interpolation of resistivity: GaP, InP, GaAs, InAs")
+            MISource("S. Adachi, Properties of Semiconductor Alloys: Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2009) p.67"), // 300 K
+            MISource("S. Adachi, Properties of Group-IV, III-V and II-VI Semiconductors, John Wiley and Sons (2005) p.37"), // temperature dependence for binaries
+            MINote("inversion of nonlinear interpolation of resistivity: GaP, InP, GaAs, InAs")
             )
 Tensor2<double> GaInAsP::thermk(double T, double t) const {
     double lCondT = 1./(Ga*As/mGaAs.thermk(T,t).c00 + Ga*P/mGaP.thermk(T,t).c00
@@ -250,18 +250,18 @@ Tensor2<double> GaInAsP::thermk(double T, double t) const {
 }
 
 MI_PROPERTY(GaInAsP, dens,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18; "),
-            MISource("linear interpolation: GaP, InP, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.18"),
+            MINote("linear interpolation: GaP, InP, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInAsP::dens(double T) const {
     return ( Ga*As*mGaAs.dens(T) + Ga*P*mGaP.dens(T) + In*As*mInAs.dens(T) + In*P*mInP.dens(T) );
 }
 
 MI_PROPERTY(GaInAsP, cp,
-            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52; "),
-            MISource("linear interpolation: GaP, InP, GaAs, InAs"),
-            MIComment("no temperature dependence")
+            MISource("S. Adachi, Properties of Semiconductors Alloys, John Wiley and Sons (2009) p.52"),
+            MINote("linear interpolation: GaP, InP, GaAs, InAs"),
+            MINote("no temperature dependence")
             )
 double GaInAsP::cp(double T) const {
     return ( Ga*As*mGaAs.cp(T) + Ga*P*mGaP.cp(T) + In*As*mInAs.cp(T) + In*P*mInP.cp(T) );
@@ -270,14 +270,14 @@ double GaInAsP::cp(double T) const {
 Material::ConductivityType GaInAsP::condtype() const { return Material::CONDUCTIVITY_I; }
 
 MI_PROPERTY(GaInAsP, nr,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double GaInAsP::nr(double /*lam*/, double /*T*/, double /*n*/) const {
     throw NotImplemented("nr for GaInAsP");
 }
 
 MI_PROPERTY(GaInAsP, absp,
-            MIComment("TODO")
+            MINote("TODO")
             )
 double GaInAsP::absp(double /*lam*/, double /*T*/) const {
     throw NotImplemented("absp for GaInAsP");

@@ -39,7 +39,7 @@ Tensor2<double> AlAsSb_Te::mob(double T) const {
 
 MI_PROPERTY(AlAsSb_Te, Nf,
             MISource("-"),
-            MIComment("TODO")
+            MINote("TODO")
             )
 double AlAsSb_Te::Nf(double /*T*/) const {
     return ( Nf_RT );
@@ -59,7 +59,7 @@ Material::ConductivityType AlAsSb_Te::condtype() const { return Material::CONDUC
 MI_PROPERTY(AlAsSb_Te, nr,
             MISource("C. Alibert et al., Journal of Applied Physics 69 (1991) 3208-3211"),
             MIArgumentRange(MaterialInfo::lam, 500, 7000),
-            MIComment("TODO")
+            MINote("TODO")
             )
 double AlAsSb_Te::nr(double lam, double T, double /*n*/) const {
     double tE = phys::h_eVc1e9/lam; // lam -> E
@@ -80,8 +80,8 @@ double AlAsSb_Te::nr(double lam, double T, double /*n*/) const {
 MI_PROPERTY(AlAsSb, absp,
             MISource("H. Hattasan (2013)"),
             //MIArgumentRange(MaterialInfo::lam, 2000, 20000),
-            MIComment("temperature dependence - assumed: (1/abs)(dabs/dT)=1e-3"),
-            MIComment("only free-carrier absorption assumed")
+            MINote("temperature dependence - assumed: (1/abs)(dabs/dT)=1e-3"),
+            MINote("only free-carrier absorption assumed")
             )
 double AlAsSb_Te::absp(double lam, double T) const {
     double tAbs_RT = 1.9e-24 * Nf_RT * pow(lam,2.);

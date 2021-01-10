@@ -22,7 +22,7 @@ Material::Composition AlGaN::composition() const {
 
 MI_PROPERTY(AlGaN, thermk,
             MISource("B. C. Daly et al., Journal of Applied Physics 92 (2002) 3820"),
-            MIComment("based on data for Al = 0.2, 0.45")
+            MINote("based on data for Al = 0.2, 0.45")
             )
 Tensor2<double> AlGaN::thermk(double T, double t) const {
     double lCondT = 1/(Al/mAlN.thermk(T,t).c00 + Ga/mGaN.thermk(T,t).c00 + Al*Ga*0.4),
@@ -32,8 +32,8 @@ Tensor2<double> AlGaN::thermk(double T, double t) const {
 
 MI_PROPERTY(AlGaN, absp,
             MISource("J. Piprek et al., Proc. SPIE 6766 (2007) 67660H"),
-            MIComment("fit to GaN:Si/GaN:Mg/GaN:undoped in region 360 - 400 nm"),
-            MIComment("no temperature dependence")
+            MINote("fit to GaN:Si/GaN:Mg/GaN:undoped in region 360 - 400 nm"),
+            MINote("no temperature dependence")
             )
 double AlGaN::absp(double lam, double T) const {
     double a = phys::h_eVc1e9/lam - Eg(T,0,'G');
@@ -41,7 +41,7 @@ double AlGaN::absp(double lam, double T) const {
 }
 
 MI_PROPERTY(AlGaN, nr,
-            MIComment("shift of the nR for GaN")
+            MINote("shift of the nR for GaN")
             )
 double AlGaN::nr(double lam, double T, double /*n*/) const {
     double dEg = Eg(T,0.,'G') - mGaN.Eg(300.,0.,'G'),
@@ -82,7 +82,7 @@ double AlGaN::Dso(double T, double e) const {
 }
 
 MI_PROPERTY(AlGaN, Me,
-            MISource("linear interpolation: AlN, GaN")
+            MINote("linear interpolation: AlN, GaN")
             )
 Tensor2<double> AlGaN::Me(double T, double e, char point) const {
     double lMe = Al*mAlN.Me(T,e,point).c00 + Ga*mGaN.Me(T,e,point).c00,
@@ -91,7 +91,7 @@ Tensor2<double> AlGaN::Me(double T, double e, char point) const {
 }
 
 MI_PROPERTY(AlGaN, Mhh,
-            MISource("linear interpolation: AlN, GaN")
+            MINote("linear interpolation: AlN, GaN")
             )
 Tensor2<double> AlGaN::Mhh(double T, double e) const {
     double lMhh = Al*mAlN.Mhh(T,e).c00 + Ga*mGaN.Mhh(T,e).c00,
@@ -100,7 +100,7 @@ Tensor2<double> AlGaN::Mhh(double T, double e) const {
 }
 
 MI_PROPERTY(AlGaN, Mlh,
-            MISource("linear interpolation: AlN, GaN")
+            MINote("linear interpolation: AlN, GaN")
             )
 Tensor2<double> AlGaN::Mlh(double T, double e) const {
     double lMlh = Al*mAlN.Mlh(T,e).c00 + Ga*mGaN.Mlh(T,e).c00,
@@ -109,7 +109,7 @@ Tensor2<double> AlGaN::Mlh(double T, double e) const {
 }
 
 MI_PROPERTY(AlGaN, lattC,
-            MISource("linear interpolation: GaN, AlN")
+            MINote("linear interpolation: GaN, AlN")
             )
 double AlGaN::lattC(double T, char x) const {
     double tLattC(0.);
