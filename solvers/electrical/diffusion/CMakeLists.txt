@@ -58,6 +58,7 @@ enable_testing()
 #add_solvers_test(foo ${PLASK_SOLVER_PATH}/mytest)
 #add_solver_test(bar ${CMAKE_CURRENT_SOURCE_DIR}/tests/mytest.py)
 add_solver_test(uniform ${CMAKE_CURRENT_SOURCE_DIR}/tests/uniform.py)
+add_solver_test(gaussian ${CMAKE_CURRENT_SOURCE_DIR}/tests/gaussian.py)
 
 
 # Build everything the default way.

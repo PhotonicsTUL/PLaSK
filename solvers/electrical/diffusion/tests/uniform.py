@@ -16,7 +16,7 @@ from electrical.diffusion import Diffusion2D, DiffusionCyl
 class GaAsQW(material.Material):
 
     def A(self, T=300):
-        return 30000000
+        return 3e7
 
     def B(self, T=300):
         return 1.7e-10
@@ -63,8 +63,8 @@ class DiffusionTest:
     def test_diffusion(self):
         self.solver.inCurrentDensity = vec(0., self.j)
         self.solver.compute_threshold()
-        nr = array(self.solver.outCarriersConcentration(self.test_mesh))
-        assert_allclose(nr, 9 * [self.n])
+        n = array(self.solver.outCarriersConcentration(self.test_mesh))
+        assert_allclose(n, 9 * [self.n])
 
 
 class Diffusion2D(DiffusionTest, unittest.TestCase):
@@ -74,7 +74,7 @@ class Diffusion2D(DiffusionTest, unittest.TestCase):
     geometry_kwargs = {'left': 'mirror', 'right': 'air'}
 
 
-# class DiffusionCyl(DiffusionTest, unittest.TestCase):
-#     name = "diffusioncyl"
-#     Geometry = Cylindrical
-#     Solver = DiffusionCyl
+class DiffusionCyl(DiffusionTest, unittest.TestCase):
+    name = "diffusioncyl"
+    Geometry = Cylindrical
+    Solver = DiffusionCyl
