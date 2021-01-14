@@ -33,9 +33,9 @@ shared_ptr<RegularMesh1D> DiffusionSolver_current_mesh(DiffusionFem2DSolver<Geom
  * The \a solver_name should be changed to match the name of the directory with our solver
  * (the one where you have put CMakeLists.txt). It will be visible from user interface under this name.
  */
-BOOST_PYTHON_MODULE(diffusion)
+BOOST_PYTHON_MODULE(olddiffusion)
 {
-    {CLASS(DiffusionFem2DSolver<Geometry2DCylindrical>, "DiffusionCyl", u8"Calculates carrier pairs concentration in active region using FEM in one-dimensional cylindrical space")
+    {CLASS(DiffusionFem2DSolver<Geometry2DCylindrical>, "OldDiffusionCyl", u8"Calculates carrier pairs concentration in active region using FEM in one-dimensional cylindrical space")
 
         METHOD(compute_initial, compute_initial, u8"Perform the initial computation");
         METHOD(compute_threshold, compute_threshold, u8"Perform the threshold computation");
@@ -76,7 +76,7 @@ BOOST_PYTHON_MODULE(diffusion)
         ;
 
      }
-     {CLASS(DiffusionFem2DSolver<Geometry2DCartesian>, "Diffusion2D", u8"Calculates carrier pairs concentration in active region using FEM in one-dimensional cartesian space")
+     {CLASS(DiffusionFem2DSolver<Geometry2DCartesian>, "OldDiffusion2D", u8"Calculates carrier pairs concentration in active region using FEM in one-dimensional cartesian space")
 
         METHOD(compute_initial, compute_initial, u8"Perform the initial computation");
         METHOD(compute_threshold, compute_threshold, u8"Perform the threshold computation");

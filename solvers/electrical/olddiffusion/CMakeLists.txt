@@ -16,7 +16,7 @@
 #/// In most cases you should be able to use it only setting the project name
 
 # Set the project name in the style: plask/solvergroup/solverlib
-project(plask/electrical/diffusion)
+project(plask/electrical/olddiffusion)
 
 
 # Do not change thew following two lines

@@ -21,7 +21,7 @@ from plask import material, geometry, mesh
 from plask.geometry import Cartesian2D, Cylindrical
 from plask.flow import CurrentDensityProvider2D, CurrentDensityProviderCyl
 
-from electrical.diffusion import Diffusion2D, DiffusionCyl
+from electrical.olddiffusion import OldDiffusion2D, OldDiffusionCyl
 
 
 A = 3e7         # (1/s)
@@ -100,7 +100,7 @@ class Diffusion2D(DiffusionTest, unittest.TestCase):
     name = "diffusion2d"
     Geometry = Cartesian2D
     geometry_kwargs = {'left': 'mirror', 'right': 'air'}
-    Solver = Diffusion2D
+    Solver = OldDiffusion2D
     provider = CurrentDensityProvider2D
     axes = 'xy'
 
@@ -108,7 +108,7 @@ class Diffusion2D(DiffusionTest, unittest.TestCase):
 class DiffusionCyl(DiffusionTest, unittest.TestCase):
     name = "diffusioncyl"
     Geometry = Cylindrical
-    Solver = DiffusionCyl
+    Solver = OldDiffusionCyl
     provider = CurrentDensityProviderCyl
     axes = 'rz'
 
