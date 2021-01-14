@@ -1,5 +1,5 @@
-- solver: Diffusion2D
-  lib: diffusion
+- solver: OldDiffusion2D
+  lib: olddiffusion
   category: electrical
   help: >
     Two-dimensional diffusion solver in Cartesian geometry.
@@ -63,8 +63,8 @@
 
 ################################################################################
 
-- solver: DiffusionCyl
-  lib: diffusion
+- solver: OldDiffusionCyl
+  lib: olddiffusion
   category: electrical
   help: >
     Two-dimensional diffusion solver in cylindrical geometry.

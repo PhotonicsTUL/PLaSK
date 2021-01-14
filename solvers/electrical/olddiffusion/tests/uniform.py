@@ -20,7 +20,7 @@ from plask import *
 from plask import material, geometry, mesh
 from plask.geometry import Cartesian2D, Cylindrical
 
-from electrical.diffusion import Diffusion2D, DiffusionCyl
+from electrical.olddiffusion import OldDiffusion2D, OldDiffusionCyl
 
 
 @material.simple('GaAs')
@@ -81,11 +81,11 @@ class DiffusionTest:
 class Diffusion2D(DiffusionTest, unittest.TestCase):
     name = "diffusion2d"
     Geometry = Cartesian2D
-    Solver = Diffusion2D
+    Solver = OldDiffusion2D
     geometry_kwargs = {'left': 'mirror', 'right': 'air'}
 
 
 class DiffusionCyl(DiffusionTest, unittest.TestCase):
     name = "diffusioncyl"
     Geometry = Cylindrical
-    Solver = DiffusionCyl
+    Solver = OldDiffusionCyl
