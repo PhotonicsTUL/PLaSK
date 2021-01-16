@@ -81,9 +81,9 @@ void ElectricalFem3DSolver::parseConfiguration(XMLReader& source, Manager& manag
         source.requireTagEnd();
     }
 
-        else if (!this->parseFemConfiguration(source, manager)) {
-            this->parseStandardConfiguration(source, manager);
-        }
+    else if (!this->parseFemConfiguration(source, manager)) {
+        this->parseStandardConfiguration(source, manager);
+    }
 }
 
 void ElectricalFem3DSolver::setupActiveRegions() {

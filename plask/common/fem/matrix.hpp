@@ -53,15 +53,6 @@ struct FemMatrix {
         std::fill_n(data, size * (ld + 1), 0.);
     }
 
-    template <typename BoundaryConditonsT> void applyBC(const BoundaryConditonsT& bconds, DataVector<double>& B) {
-        // boundary conditions of the first kind
-        for (auto cond : bconds) {
-            for (auto r : cond.place) {
-                setBC(B, r, cond.value);
-            }
-        }
-    }
-
     /**
      * Factorize the matrix in advance to speed up the solution
      * \param solver solver to use
@@ -112,7 +103,26 @@ struct FemMatrix {
      */
     virtual void addmult(const DataVector<const double>& vector, DataVector<double>& result) = 0;
 
-  protected:
+    /**
+     * Apply Diriichlet boundary conditions
+     * \param bconds boundary conditions
+     * \param B right hand side of the equation
+    */
+    template <typename BoundaryConditonsT> void applyBC(const BoundaryConditonsT& bconds, DataVector<double>& B) {
+        // boundary conditions of the first kind
+        for (auto cond : bconds) {
+            for (auto r : cond.place) {
+                setBC(B, r, cond.value);
+            }
+        }
+    }
+
+    /**
+     * Set Dirichlet boundary condition
+     * \param B right hand side of the equation
+     * \param r index of the row
+     * \param val value of the boundary condition
+    */
     virtual void setBC(DataVector<double>& B, size_t r, double val) {
         B[r] = val;
         (*this)(r, r) = 1.;

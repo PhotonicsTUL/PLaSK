@@ -1,0 +1,52 @@
+- solver: OldDiffusion2D
+  lib: olddiffusion
+  category: electrical
+  help: >
+    Two-dimensional diffusion solver in Cartesian geometry.
+
+  geometry: Cartesian2D
+  mesh: Regular
+  need mesh: false
+
+  tags:
+  - &loop
+    tag: loop
+    label: Configuration of the Self-Consistent Loop
+    help: Configuration of the self-consistent loop.
+    attrs:
+      - attr: maxerr
+        label: Maximum current density error
+        type: float
+        unit: "%"
+        default: 0.05
+        help: Maximum allowed current density error.
+  - !include &matrix { $file: fem.yml }
+
+  providers: &providers
+  - outCarriersConcentration
+
+  receivers: &receivers
+  - inTemperature
+  - inCurrentDensity
+  - inGain
+  - inLightE
+  - inWavelength
+
+################################################################################
+
+- solver: OldDiffusionCyl
+  lib: olddiffusion
+  category: electrical
+  help: >
+    Two-dimensional diffusion solver in cylindrical geometry.
+
+  geometry: Cylindrical
+  mesh: Regular
+
+  tags:
+  - *loop
+  - *matrix
+
+  providers: *providers
+
+  receivers: *receivers

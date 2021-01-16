@@ -130,7 +130,7 @@ template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::s
                     if (reg.bottom >= r)
                         reg.bottom = r;  // first row
                     else if (reg.rowr <= c)
-                        throw Exception("{0}: Active region {1} is disjoint", this->getId(), num - 1);
+                        throw Exception("{0}: Junction {1} is disjoint", this->getId(), num - 1);
                     reg.top = r + 1;
                     reg.rowl = c;
                     if (reg.left > reg.rowl) reg.left = reg.rowl;
