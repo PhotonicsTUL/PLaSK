@@ -12,6 +12,7 @@
 # GNU General Public License for more details.
 
 import sys
+import os.path
 import itertools
 from copy import copy
 
@@ -107,12 +108,21 @@ class MaterialPlot(QWidget):
         self.mat_toolbar = QToolBar()
         self.mat_toolbar.setStyleSheet("QToolBar { border: 0px }")
 
+        self.data = None
         self.arguments = {}
 
         # self.model.changed.connect(self.update_materials)
 
+        self.save = QPushButton()
+        self.save.setText("&Export")
+        self.save.setIcon(QIcon.fromTheme('document-save'))
+        self.save.pressed.connect(self.save_data)
+        self.save.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.save.setEnabled(False)
+
         plot = QPushButton()
         plot.setText("&Plot")
+        plot.setIcon(QIcon.fromTheme('matplotlib'))
         plot.pressed.connect(self.update_plot)
         plot.setDefault(True)
         plot.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -143,6 +153,7 @@ class MaterialPlot(QWidget):
         hbox2.addWidget(toolbar2)
         hbox2.addWidget(self.par_toolbar)
 
+        hbox2.addWidget(self.save)
         hbox2.addWidget(plot)
 
         layout = QVBoxLayout()
@@ -264,6 +275,7 @@ class MaterialPlot(QWidget):
                 val1.setText(PARAMS[select_text][1])
             act2 = toolbar.addWidget(val1)
             act2.setVisible(False)
+            toolbar.addWidget(QLabel((unit + '  ') if unit != '-' else '  '))
             self.arguments[select] = val0, val1, (sep, act2), what
         for arg in self.arguments:
             if arg.isChecked(): return
@@ -463,6 +475,8 @@ class MaterialPlot(QWidget):
                 self.axes.plot(plot_range, vals)
             self.parent().setWindowTitle("Material Parameter: {} @ {}".format(param, material_name))
         except Exception as err:
+            self.data = None
+            self.save.setEnabled(False)
             if _DEBUG:
                 import traceback
                 traceback.print_exc()
@@ -476,6 +490,10 @@ class MaterialPlot(QWidget):
                 self.axes2.xaxis.set_major_locator(NullLocator())
                 self.axes2.yaxis.set_major_locator(NullLocator())
         else:
+            other = other_elements.copy()
+            other.update(other_args)
+            self.data = plot_range, vals, other
+            self.save.setEnabled(True)
             axeses = (self.axes,) if self.axes2 is None else (self.axes, self.axes2)
             for axes in axeses:
                 axes.xaxis.set_major_locator(AutoLocator())
@@ -490,8 +508,8 @@ class MaterialPlot(QWidget):
             self.label.setText(' ')
             self.axes.set_xlim(start, end)
             self.axes.set_xlabel(html_to_tex(u"{}{} [{}]".format(self.arg_button.descr[0].upper(),
-                                                                    self.arg_button.descr[1:],
-                                                                    self.arg_button.unit)))
+                                                                 self.arg_button.descr[1:],
+                                                                 self.arg_button.unit)))
             self.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
             for axes in axeses:
                 axes.set_ylabel('[]')
@@ -516,6 +534,38 @@ class MaterialPlot(QWidget):
                 self.error.append("\n".join(warns))
                 self.error.show()
                 self.error.setFixedHeight(self.error.document().size().height())
+
+    def save_data(self):
+        if self.data is None:
+            return
+        from ... import CURRENT_DIR
+        material_name = self.material.currentText()
+        filename = os.path.join(CURRENT_DIR, '{}-{}-{}.txt'.format(material_name, self.yn, self.xn))
+        filename = QFileDialog.getSaveFileName(self,
+                                               "Export {} {} as".format(material_name, self.param.currentText()),
+                                               filename, "Text Data (*.txt)")
+        if type(filename) is tuple:
+            filename = filename[0]
+        if filename:
+            try:
+                x, y, other = self.data
+                units = {str(a.text())[:-1].replace('&', ''):
+                         a.unit.replace('<sup>', '').replace('</sup>', '') if a.unit != '-' else ''
+                         for a in self.arguments}
+                units['doping'] = 'cm-3'
+                other = '  '.join("{} = {} {}".format(k, v, units.get(k, '')) for k, v in other.items())
+                if len(y.shape) == 1:
+                    y = y[:,None]
+                if y.dtype == complex:
+                    r, c = y.shape
+                    y = y.view(float).reshape((r, 2*c))
+                data = numpy.concatenate((x[:,None], y), axis=1)
+                header = "{}\n{}\n{} [{}]  {} [{}]:".format(material_name, other, self.xn, self.xu, self.yn, self.yu)
+                numpy.savetxt(filename, data, fmt=['%g']*data.shape[1], header=header)
+            except Exception as err:
+                QMessageBox.critical(self, 'Cannot export data',
+                                     'Error exporting data to file "{}":\n{}'.format(filename, str(err)))
+
 
     def update_scale(self):
         fmtr = ScalarFormatter(useOffset=False, useLocale=False)
