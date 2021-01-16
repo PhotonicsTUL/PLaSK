@@ -54,10 +54,10 @@
   <g
      id="layer9"
      transform="translate(-181 -257)"
-     style="stroke:#4d4d4d;stroke-opacity:1;stroke-linejoin:round">
+     style="stroke:#232629;stroke-opacity:1;stroke-linejoin:round">
     <path
        id="rect7040"
-       style="enable-background:new;fill:#bebebe;fill-rule:evenodd;stroke:#4d4d4d;stroke-linejoin:round;stroke-opacity:1"
+       style="enable-background:new;fill:#bebebe;fill-rule:evenodd;stroke:#232629;stroke-linejoin:round;stroke-opacity:1"
        d="m189 257.06-2.25 3.4062-3.4375-1.1562 1.1562 3.4375-3.4062 2.25 3.4062 2.25-1.1562 3.4375 3.4375-1.1562 2.25 3.4062 2.25-3.4062 3.4375 1.1562-1.1562-3.4375 3.4062-2.25-3.4062-2.25 1.1562-3.4375-3.4375 1.1562zm0 4.5312 0.71875 0.6875 2 2c0.2236 0.22597 0.33131 0.56107 0.28125 0.875v0.84375h-0.875c-0.30421 0.0401-0.62444-0.0666-0.84375-0.28125l-0.28125-0.28125v2.5625h-2v-2.5625l-0.28125 0.28125c-0.19084 0.18226-0.45489 0.28559-0.71875 0.28125h-0.15625-0.84375v-0.78125c-0.001-0.0312-0.001-0.0625 0-0.0937-0.0401-0.30421 0.0666-0.62444 0.28125-0.84375l2-2z" />
   </g>
 </svg>

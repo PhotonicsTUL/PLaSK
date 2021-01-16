@@ -1137,21 +1137,22 @@ def main():
     pysparkle = None
 
     icons_theme = str(CONFIG['main_window/icons_theme']).lower()
+    icons_path = QIcon.themeSearchPaths()[:-1]
     if icons_theme == 'system':
-        icons_path = QIcon.themeSearchPaths()[:-1]
-        if not QIcon.themeName():
+        icons_theme = QIcon.themeName()
+        if not icons_theme:
             if dark_style():
                 QIcon.setThemeName('breeze-dark')
             else:
                 QIcon.setThemeName('breeze')
+        icons_path.append(os.path.join(__path__[0], 'icons'))
     else:
         if icons_theme == 'tango': icons_theme = 'hicolor'
         elif icons_theme == 'breeze' and dark_style():
             icons_theme = 'breeze-dark'
-        icons_path = [os.path.join(__path__[0], 'icons', icons_theme)]
-        QIcon.setThemeName(icons_theme)
-    icons_path.insert(0, os.path.join(__path__[0], 'icons'))
+        icons_path.insert(0, os.path.join(__path__[0], 'icons'))
     QIcon.setThemeSearchPaths(icons_path)
+    QIcon.setThemeName(icons_theme)
 
     load_plugins()
 
