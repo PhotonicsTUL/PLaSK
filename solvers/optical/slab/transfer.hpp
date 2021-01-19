@@ -52,6 +52,12 @@ struct PLASK_SOLVER_API Transfer {
         METHOD_IMPEDANCE,              ///< Impedance transfer
     };
 
+    /// Method of computing determinant in zero search
+    enum Determinant {
+        DETERMINANT_EIGENVALUE,
+        DETERMINANT_FULL
+    };
+
   protected:
     cmatrix interface_field_matrix;  ///< Determined field at the interface
     dcomplex* interface_field;       ///< Pointer to the interface field data

@@ -244,7 +244,16 @@
         <tt>-impedance</tt>, in which case the admittance/impedance matching is done at interface (for eigenmode search).
         You should prefer admittance if electric field is expected to have significant horizontal components (particularly
         at the interface) i.e. for TE-like modes and impedance for TM-like modes.
-
+    - attr: determinant
+      label: Determinant type
+      type: choice
+      default: eigenvalue
+      choices: [ eigenvalue, full ]
+      other: [ eigen ]
+      help: >
+        This attribute specified what is returned by the <tt>get_determinant</tt> method. Regardless of the determinant type,
+        its value must be zero for any mode. Depending on the determinant type value, the computed value is either
+        the characteristic matrix eigenvalue with the smallest magniture or the full determinant of this matrix.
   - &vpml
     tag: vpml
     label: Vertical PMLs

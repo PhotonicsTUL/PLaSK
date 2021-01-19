@@ -132,6 +132,12 @@ BOOST_PYTHON_MODULE(slab)
         .value("IMPEDANCE", Transfer::METHOD_IMPEDANCE)
     ;
 
+    py_enum<Transfer::Determinant>()
+        .value("EIGEN", Transfer::DETERMINANT_EIGENVALUE)
+        .value("EIGENVALUE", Transfer::DETERMINANT_EIGENVALUE)
+        .value("FULL", Transfer::DETERMINANT_FULL)
+    ;
+
     py_enum<RootDigger::Method>()
         .value("MULLER", RootDigger::ROOT_MULLER)
         .value("BROYDEN", RootDigger::ROOT_BROYDEN)

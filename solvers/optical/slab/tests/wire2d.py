@@ -12,7 +12,7 @@ config.axes = 'zxy'
 
 @material.simple()
 class Glass(material.Material):
-    def Nr(self, wl, T=300., n=0.): return 1.3
+    def Nr(self, wl, T=300., n=0.): return 1.30
 
 
 @material.simple()
@@ -31,9 +31,18 @@ class Wire(unittest.TestCase):
         wire_stack.append(rect)
         space = geometry.Cartesian2D(wire_stack, left="mirror")
         self.solver.geometry = space
+        self.solver.lam = 1000.
 
     def testComputations(self):
-        self.solver.lam = 1000.
+        self.solver.symmetry = 'Etran'
+        # self.solver.polarization = "Etran"
+        self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(neff=1.15)].neff, 1.147, 3 )
+        self.solver.symmetry = 'Htran'
+        # self.solver.polarization = "Htran"
+        self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(neff=1.05)].neff, 1.054, 3)
+
+    def testFullDeterminant(self):
+        self.solver.determinant_type = 'full'
         self.solver.symmetry = 'Etran'
         # self.solver.polarization = "Etran"
         self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(neff=1.15)].neff, 1.147, 3 )
@@ -43,7 +52,7 @@ class Wire(unittest.TestCase):
 
 
 # class WireLaser(unittest.TestCase):
-# 
+#
 #     def setUp(self):
 #         plask.config.axes = 'xy'
 #         rect1 = geometry.Rectangle(0.75, 0.24, Glass())
@@ -59,7 +68,7 @@ class Wire(unittest.TestCase):
 #         self.solver.mirrors = 0.7, 1.0
 #         self.profile = StepProfile(space)
 #         self.solver.inGain = self.profile.outGain
-# 
+#
 #     def testThreshold(self):
 #         try:
 #             from scipy.optimize import brentq
@@ -73,13 +82,13 @@ class Wire(unittest.TestCase):
 #                 return self.solver.modes[m].neff.imag
 #             gain = brentq(fun, 0., 100.)
 #             self.assertAlmostEqual(gain, 81.648, 2)
-# 
+#
 #     def testAbsorptionIntegral(self):
 #        self.profile[self.rect2] = 81.649513489
 #        m = self.solver.find_mode(1.15)
 #        self.solver.modes[m].power = 1.4
 #        self.assertAlmostEqual( self.solver.get_total_absorption(m), -2.0, 1 )
-# 
+#
 #     def testAbsorbedHeat(self):
 #         self.profile[self.rect2] = 81.649513489
 #         m = self.solver.find_mode(1.15)
@@ -93,5 +102,16 @@ class Wire(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
-
+    wire = Wire()
+    wire.setUp()
+    neffs = linspace(1.0, 1.3, 301)
+    wire.solver.symmetry = 'Etran'
+    det1 = wire.solver.get_determinant(neff=neffs)
+    wire.solver.determinant_type = 'full'
+    det2 = wire.solver.get_determinant(neff=neffs)
+    plot(neffs, abs(det1))
+    plot(neffs, abs(det2))
+    xlabel("$n_\\mathrm{eff}$")
+    ylabel("Determinant")
+    yscale('log')
+    show()

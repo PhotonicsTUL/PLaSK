@@ -64,25 +64,34 @@ dcomplex Transfer::determinant() {
     int info;
     zgeev('N', 'N', int(N), M.data(), int(N), evals, nullptr, 1, nullptr, 1, wrk, int(lwrk), rwrk, info);
     if (info != 0) throw ComputationError(solver->getId(), "eigenvalue determination failed");
-
-    // TODO add some consideration for degenerate modes
-    // Find the smallest eigenvalue
     dcomplex result;
-    double min_mag = 1e32;
-    for (std::size_t i = 0; i < N; i++) {
-        dcomplex val = evals[i];
-        double mag = abs2(val);
-        if (mag < min_mag) {
-            min_mag = mag;
-            result = val;
-        }
+
+    switch (solver->determinant_type) {
+        case DETERMINANT_EIGENVALUE: {
+            // TODO add some consideration for degenerate modes
+            // Find the smallest eigenvalue
+            double min_mag = 1e32;
+            for (std::size_t i = 0; i < N; i++) {
+                dcomplex val = evals[i];
+                double mag = abs2(val);
+                if (mag < min_mag) {
+                    min_mag = mag;
+                    result = val;
+                }
+            }
+        } break;
+
+        case DETERMINANT_FULL:
+            // Find the determinant
+            result = 1.;
+            for (int i = 0; i < N; i++) {
+                result *= evals[i];
+            }
+            break;
+
+        default:
+            assert(false);
     }
-    // // Find the determinant
-    // dcomplex result = 1.;
-    // for (int i = 0; i < N; i++) {
-    //     result *= evals[i];
-    // }
-    // result = log(result);
 
     interface_field = nullptr;
 

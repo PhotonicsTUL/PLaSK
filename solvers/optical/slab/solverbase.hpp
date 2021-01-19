@@ -35,6 +35,9 @@ struct PLASK_SOLVER_API SlabBase {
     /// Direction of the light emission for fields normalization
     Emission emission;
 
+    /// Method of computing determinant in zero search
+    Transfer::Determinant determinant_type;
+
   protected:
     /// Create and return rootdigger of a desired type
     std::unique_ptr<RootDigger> getRootDigger(const RootDigger::function_type& func, const char* name);
@@ -128,6 +131,7 @@ struct PLASK_SOLVER_API SlabBase {
   public:
     SlabBase()
         : emission(EMISSION_UNSPECIFIED),
+          determinant_type(Transfer::DETERMINANT_EIGENVALUE),
           transfer_method(Transfer::METHOD_AUTO),
           interface(-1),
           interface_position(NAN),

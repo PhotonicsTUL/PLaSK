@@ -79,42 +79,6 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             temp_dist = reader.getAttribute<double>("temp-dist", temp_dist);
             temp_layer = reader.getAttribute<double>("temp-layer", temp_layer);
             reader.requireTagEnd();
-        } else if (param == "interface") {
-            if (reader.hasAttribute("index")) {
-                throw XMLException(reader, "Setting interface by layer index is not supported anymore (set it by object or position)");
-            } else if (reader.hasAttribute("position")) {
-                if (reader.hasAttribute("object")) throw XMLConflictingAttributesException(reader, "index", "object");
-                if (reader.hasAttribute("path")) throw XMLConflictingAttributesException(reader, "index", "path");
-                setInterfaceAt(reader.requireAttribute<double>("position"));
-            } else if (reader.hasAttribute("object")) {
-                auto object = manager.requireGeometryObject<GeometryObject>(reader.requireAttribute("object"));
-                PathHints path; if (auto pathattr = reader.getAttribute("path")) path = manager.requirePathHints(*pathattr);
-                setInterfaceOn(object, path);
-            } else if (reader.hasAttribute("path")) {
-                throw XMLUnexpectedAttrException(reader, "path");
-            }
-            reader.requireTagEnd();
-        } else if (param == "vpml") {
-            vpml.factor = reader.getAttribute<dcomplex>("factor", vpml.factor);
-            vpml.size = reader.getAttribute<double>("size", vpml.size);
-            vpml.dist = reader.getAttribute<double>("dist", vpml.dist);
-            if (reader.hasAttribute("order")) { //TODO Remove in the future
-                writelog(LOG_WARNING, "XML line {:d} in <vpml>: Attribute 'order' is obsolete, use 'shape' instead", reader.getLineNr());
-                if (reader.hasAttribute("shape")) throw XMLConflictingAttributesException(reader, "order", "shape");
-                vpml.order = reader.requireAttribute<double>("order");
-            }
-            vpml.order = reader.getAttribute<double>("shape", vpml.order);
-            reader.requireTagEnd();
-        } else if (param == "transfer") {
-            transfer_method = reader.enumAttribute<Transfer::Method>("method")
-                .value("auto", Transfer::METHOD_AUTO)
-                .value("reflection", Transfer::METHOD_REFLECTION_ADMITTANCE)
-                .value("reflection-admittance", Transfer::METHOD_REFLECTION_ADMITTANCE)
-                .value("reflection-impedance", Transfer::METHOD_REFLECTION_IMPEDANCE)
-                .value("admittance", Transfer::METHOD_ADMITTANCE)
-                .value("impedance", Transfer::METHOD_IMPEDANCE)
-                .get(transfer_method);
-            reader.requireTagEnd();
         } else if (param == "pmls") {
             updatePML(pml_long, reader);
             updatePML(pml_tran, reader);
@@ -147,10 +111,8 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             if (sym_long != "") setSymmetryLong(readSymmetry(this, reader, sym_long));
             if (sym_tran != "") setSymmetryTran(readSymmetry(this, reader, sym_tran));
             reader.requireTagEnd();
-        } else if (param == "root") {
-            readRootDiggerConfig(reader);
         } else
-            parseStandardConfiguration(reader, manager);
+            parseCommonSlabConfiguration(reader, manager);
     }
 }
 

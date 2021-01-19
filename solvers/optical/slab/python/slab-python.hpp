@@ -1122,6 +1122,17 @@ inline void export_base(Class solver) {
                         "field is expected to have significant horizontal components (particularly\n"
                         "at the interface) i.e. for TE-like modes and impedance for TM-like modes."
                        );
+    solver.def_readwrite("determinant_type", &SlabBase::determinant_type,
+                         "Type of determinant that is computed in root finding.\n\n"
+                         "This attribute specifies what is returned by the :meth:`get_determinant`\n"
+                         "method. Regardless of the determinant type, its value must be zero for any mode.\n\n"
+                         "Can take on of the following values that specified what quantity is computed\n"
+                         "for the characteristic matrix:\n\n"
+                         "============ ======================================\n"
+                         "*eigenvalue* Eigenvalue with the smallest magnitude\n"
+                         "*full        Determinant of the matrix\n"
+                         "============ ======================================\n"
+                        );
     solver.add_property("lam0", Solver_getLam0<Solver>, Solver_setLam0<Solver>,
                         "Reference wavelength.\n\n"
                         "This is a wavelength at which refractive index is retrieved from the structure.\n"

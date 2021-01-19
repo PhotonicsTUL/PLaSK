@@ -50,6 +50,9 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
         }
     }
 
+    /// Parse common configuration from XML file
+    void parseCommonSlabConfiguration(XMLReader& reader, Manager& manager);
+
     /// Compute layer boundaries and detect layer sets
     void setupLayers();
 
