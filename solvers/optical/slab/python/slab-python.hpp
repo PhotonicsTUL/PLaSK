@@ -1130,7 +1130,7 @@ inline void export_base(Class solver) {
                          "for the characteristic matrix:\n\n"
                          "============ ======================================\n"
                          "*eigenvalue* Eigenvalue with the smallest magnitude\n"
-                         "*full        Determinant of the matrix\n"
+                         "*full*       Determinant of the matrix\n"
                          "============ ======================================\n"
                         );
     solver.add_property("lam0", Solver_getLam0<Solver>, Solver_setLam0<Solver>,

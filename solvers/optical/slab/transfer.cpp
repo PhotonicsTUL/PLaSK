@@ -61,14 +61,14 @@ dcomplex Transfer::determinant() {
     }
 
     // Find the eigenvalues of M using LAPACK
-    int info;
-    zgeev('N', 'N', int(N), M.data(), int(N), evals, nullptr, 1, nullptr, 1, wrk, int(lwrk), rwrk, info);
-    if (info != 0) throw ComputationError(solver->getId(), "eigenvalue determination failed");
     dcomplex result;
 
     switch (solver->determinant_type) {
         case DETERMINANT_EIGENVALUE: {
             // TODO add some consideration for degenerate modes
+            int info;
+            zgeev('N', 'N', int(N), M.data(), int(N), evals, nullptr, 1, nullptr, 1, wrk, int(lwrk), rwrk, info);
+            if (info != 0) throw ComputationError(solver->getId(), "eigenvalue determination failed");
             // Find the smallest eigenvalue
             double min_mag = 1e32;
             for (std::size_t i = 0; i < N; i++) {
@@ -82,11 +82,7 @@ dcomplex Transfer::determinant() {
         } break;
 
         case DETERMINANT_FULL:
-            // Find the determinant
-            result = 1.;
-            for (int i = 0; i < N; i++) {
-                result *= evals[i];
-            }
+            result = det(M);
             break;
 
         default:
