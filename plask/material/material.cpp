@@ -42,12 +42,12 @@ inline void fillGroupMaterialCompositionAmounts(NameValuePairIter begin, NameVal
             ++n;
         }
     }
-    if (n > 0 && sum - 1.0 > SMALL*n)
+    if (n > 0 && sum - 1.0 > SMALL * std::max(n, unsigned(1)))
         throw plask::MaterialParseException("Total material composition for group {0} elements exceeds 1", ROMANS[group_nr-1]);
     if (no_info != end) {
         no_info->second = 1.0 - sum;
     } else {
-        if (!is_zero(sum - 1.0))
+        if (!is_zero(sum - 1.0, SMALL * std::max(n, unsigned(1))))
              throw plask::MaterialParseException("Total material composition for group {0} elements ({1}) differs from 1", ROMANS[group_nr-1], sum);
     }
 }
