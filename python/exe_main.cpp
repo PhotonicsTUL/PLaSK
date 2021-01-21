@@ -22,6 +22,13 @@ PyAPI_DATA(int) Py_UnbufferedStdioFlag;
 //******************************************************************************
 py::object globals;
 
+enum FileType {
+    FILE_ANY = 0,
+    FILE_XML,
+    FILE_PY
+};
+static FileType filetype = FILE_ANY;
+
 //******************************************************************************
 
 // static PyThreadState* mainTS;   // state of the main thread
@@ -39,6 +46,8 @@ namespace plask { namespace python {
     extern PLASK_PYTHON_API AxisNames current_axes;
 
     extern PLASK_PYTHON_API py::dict* pyXplGlobals;
+
+    extern PLASK_PYTHON_API PyObject* pyXmlError;
 }}
 
 //******************************************************************************
@@ -217,6 +226,15 @@ int handlePythonException(const char* scriptname=nullptr) {
     PyErr_Fetch(&type, &value, &traceback);
     PyErr_NormalizeException(&type, &value, &traceback);
     py::handle<> value_h(value), type_h(type), traceback_h(py::allow_null(traceback));
+
+    if (type == plask::python::pyXmlError && filetype == FILE_XML && scriptname) {
+        PyObject* value_str = PyObject_Str(value);
+        std::string message = py::extract<std::string>(value_str);
+        Py_DECREF(value_str);
+        plask::writelog(plask::LOG_CRITICAL_ERROR, "{}, {}", scriptname, message);
+        return 1;
+    }
+
     return plask::python::printPythonException(type, value, traceback, scriptname);
 }
 
@@ -321,12 +339,6 @@ int system_main(int argc, const system_char *argv[])
     const system_char* runmodule = nullptr;
     const char* log_color = nullptr;
     bool python_logger = true;
-
-    enum {
-        FILE_ANY = 0,
-        FILE_XML,
-        FILE_PY
-    } filetype = FILE_ANY;
 
     std::deque<std::string> defs;
 
@@ -672,12 +684,12 @@ int system_main(int argc, const system_char *argv[])
             endPlask();
             return 2;
         }
+        catch (plask::XMLException& err) {
+            plask::writelog(plask::LOG_CRITICAL_ERROR, "{}, {}", system_to_utf8(filename), err.what());
+            endPlask();
+            return 2;
+        }
 #       ifndef PRINT_STACKTRACE_ON_EXCEPTION
-            catch (plask::XMLException& err) {
-                plask::writelog(plask::LOG_CRITICAL_ERROR, "{}, {}", system_to_utf8(filename), err.what());
-                endPlask();
-                return 2;
-            }
             catch (plask::Exception& err) {
                 plask::writelog(plask::LOG_CRITICAL_ERROR, "{}: {}", system_to_utf8(filename), err.what());
                 endPlask();

@@ -273,7 +273,7 @@ PLASK_PYTHON_API int printPythonException(PyObject* otype, PyObject* value, PyOb
         return exitcode;
     }
 
-   {
+    {
         PyObject* cause = PyException_GetCause(value);
         PyObject* context = PyException_GetContext(value);
         py::handle<> cause_h(py::allow_null(cause)), context_h(py::allow_null(context));
