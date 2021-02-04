@@ -254,7 +254,7 @@ void SlabSolver<BaseT>::parseCommonSlabConfiguration(XMLReader& reader, Manager&
         determinant_type = reader.enumAttribute<Transfer::Determinant>("determinant")
             .value("eigen", Transfer::DETERMINANT_EIGENVALUE)
             .value("eigenvalue", Transfer::DETERMINANT_EIGENVALUE)
-            .value("full", Transfer::DETERMINANT_EIGENVALUE)
+            .value("full", Transfer::DETERMINANT_FULL)
             .get(determinant_type);
         reader.requireTagEnd();
     } else if (param == "root") {
