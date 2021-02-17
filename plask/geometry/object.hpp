@@ -13,8 +13,11 @@ This file contains base class for geometries objects.
 #include <tuple>
 #include <vector>
 
+#include <boost/variant.hpp>
+
 #include "../material/air.hpp"
 #include "../material/material.hpp"
+#include "../material/db.hpp"
 #include "../utils/iterators.hpp"
 #include "primitives.hpp"
 
@@ -50,6 +53,11 @@ struct Path;
 struct Geometry;
 template <int dimensions> struct GeometryObjectD;
 template <int dimensions> struct TranslationContainer;
+
+/**
+ * Any of the allowed material types
+ */
+typedef boost::variant<shared_ptr<Material>, shared_ptr<MaterialsDB::MixedCompositionFactory>> SolidOrGradientMaterial;
 
 /**
  * Base class for all geometries.
@@ -396,7 +404,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
      * with size equals to @a toChange bounding box, and with given material.
      */
     struct PLASK_API ToBlockChanger : public ReplaceChanger {
-        ToBlockChanger(shared_ptr<const GeometryObject> toChange, shared_ptr<Material> material);
+        ToBlockChanger(shared_ptr<const GeometryObject> toChange, const SolidOrGradientMaterial& material);
     };
 
     struct PLASK_API DeleteChanger : public Changer {

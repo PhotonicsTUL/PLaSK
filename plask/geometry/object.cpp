@@ -34,7 +34,7 @@ bool GeometryObject::ReplaceChanger::apply(shared_ptr<GeometryObject> &to_change
     return true;
 }
 
-GeometryObject::ToBlockChanger::ToBlockChanger(shared_ptr<const GeometryObject> toChange, shared_ptr<Material> material) {
+GeometryObject::ToBlockChanger::ToBlockChanger(shared_ptr<const GeometryObject> toChange, const SolidOrGradientMaterial& material) {
     from = toChange;
     to = changeToBlock(material, from, translation);
 }

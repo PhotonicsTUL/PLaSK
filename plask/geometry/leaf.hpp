@@ -334,12 +334,12 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(Block<3>)
 
 /**
  * Construct Block with the same dimenstion as bouding box of @p to_change.
- * @param material material og the constructed Block
+ * @param material material of the constructed Block
  * @param to_change geometry object
  * @param translation[out] set to position (lower corner) of @c to_change bouding box
  * @return Block<to_change->getDimensionsCount()> object
  */
-PLASK_API shared_ptr<GeometryObject> changeToBlock(const shared_ptr<Material>& material,
+PLASK_API shared_ptr<GeometryObject> changeToBlock(const SolidOrGradientMaterial& material,
                                                    const shared_ptr<const GeometryObject>& to_change,
                                                    Vec<3, double>& translation);
 

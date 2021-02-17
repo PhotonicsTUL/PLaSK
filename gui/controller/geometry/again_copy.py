@@ -12,6 +12,7 @@
 # GNU General Public License for more details.
 from .object import GNObjectController
 from .node import GNodeController
+from .leaf import _GNMaterialMixin
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import none_to_empty
 
@@ -78,16 +79,16 @@ class GNCReplaceController(GNCopyChildController):
             self.replacer.setEditText(none_to_empty(self.node.replacer))
 
 
-class GNCToBlockController(GNCopyChildController):
+class GNCToBlockController(_GNMaterialMixin, GNCopyChildController):
 
     def construct_form(self):
         super(GNCToBlockController, self).construct_form()
         self.object.setToolTip('&lt;toblock <b>object</b>="" material=""/&gt;<br/>'
                                'Name of the object to replace with the the solid block. Required.')
-        self.material = self.construct_material_combo_box('Block material:', node_property_name='material')
-        self.material.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.material.setToolTip('&lt;toblock object="" <b>material</b>=""/&gt;<br/>'
-                                 'Material of the solid block. Required.')
+        self.get_material_row()
+        material_box, _ = self._construct_hbox('Block material:')
+        material_box.addWidget(self.material_selection_type)
+        material_box.addWidget(self.material_group)
         self.name = self.construct_line_edit('Name:', node_property_name='name')
         self.name.setToolTip('&lt;{} <b>name</b>="" ...&gt;<br/>'
                              'Replacing block name for further reference.'
@@ -99,10 +100,8 @@ class GNCToBlockController(GNCopyChildController):
 
     def fill_form(self):
         super(GNCToBlockController, self).fill_form()
-        with BlockQtSignals(self.material):
-            self.material.setEditText(none_to_empty(self.node.material))
-            self.name.setText(none_to_empty(self.node.name))
-            self.role.setText(none_to_empty(self.node.role))
+        self.name.setText(none_to_empty(self.node.name))
+        self.role.setText(none_to_empty(self.node.role))
 
 
 class GNCopyController(GNObjectController):
@@ -116,9 +115,9 @@ class GNCopyController(GNObjectController):
                                 'Name of the source two or three dimensional object to make modified copy of.'
                                 ' Usually it is some container that has some other named its items or sub-items.'
                                 ' Required.')
-        super(GNCopyController, self).construct_form()
+        super().construct_form()
 
     def fill_form(self):
-        super(GNCopyController, self).fill_form()
+        super().fill_form()
         with BlockQtSignals(self.source):
             self.source.setEditText(none_to_empty(self.node.source))

@@ -18,11 +18,9 @@ from ...qt.QtWidgets import *
 from ...utils.qsignals import BlockQtSignals
 
 
-class GNLeafController(GNObjectController):
+class _GNMaterialMixin:
 
-    def construct_form(self):
-        material_form = self.construct_group('Material')
-
+    def get_material_row(self):
         self.material_selection_type = QComboBox()
         self.material_selection_type.addItems(['Solid', 'Vertical Gradient'])
         self.material_selection_type.currentIndexChanged.connect(self._material_type_changed)
@@ -54,9 +52,7 @@ class GNLeafController(GNObjectController):
         self.material_group.addWidget(material_tb_group)
         self.material_selection_type.currentIndexChanged.connect(self.material_group.setCurrentIndex)
 
-        material_form.addRow(self.material_selection_type, self.material_group)
-
-        super(GNLeafController, self).construct_form()
+        return self.material_selection_type, self.material_group
 
     def select_info(self, info):
         prop = getattr(info, 'property')
@@ -66,7 +62,7 @@ class GNLeafController(GNObjectController):
             self.material_selection_type.setCurrentIndex(1)
             getattr(self, prop).setFocus()
         else:
-            super(GNLeafController, self).select_info(info)
+            super().select_info(info)
 
     def _material_type_changed(self):
         if self.material_selection_type.currentIndex() == 1:
@@ -98,7 +94,7 @@ class GNLeafController(GNObjectController):
             'change material')
 
     def fill_form(self):
-        super(GNLeafController, self).fill_form()
+        super().fill_form()
         with BlockQtSignals(self.material_selection_type,
                             self.material_solid, self.material_bottom, self.material_top, self.material_shape):
             index = 0 if self.node.is_solid() else 1
@@ -110,6 +106,14 @@ class GNLeafController(GNObjectController):
                 self.material_bottom.setEditText(none_to_empty(self.node.material_bottom))
                 self.material_top.setEditText(none_to_empty(self.node.material_top))
                 self.material_shape.setText(none_to_empty(self.node.material_shape))
+
+
+class GNLeafController(_GNMaterialMixin, GNObjectController):
+
+    def construct_form(self):
+        material_form = self.construct_group('Material')
+        material_form.addRow(*self.get_material_row())
+        super().construct_form()
 
 
 class GNBlockController(GNLeafController):

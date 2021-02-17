@@ -8,8 +8,7 @@
 namespace plask {
 
 template <int dim>
-XMLWriter::Element& GeometryObjectLeaf<dim>::SolidMaterial::writeXML(XMLWriter::Element& dest_xml_object,
-                                                                     const AxisNames&) const {
+XMLWriter::Element& GeometryObjectLeaf<dim>::SolidMaterial::writeXML(XMLWriter::Element& dest_xml_object, const AxisNames&) const {
     return material ? dest_xml_object.attr(GeometryReader::XML_MATERIAL_ATTR, material->str()) : dest_xml_object;
 }
 
@@ -26,8 +25,8 @@ template <int dim> GeometryReader& GeometryObjectLeaf<dim>::readMaterial(Geometr
     auto bottom_attr = src.source.getAttribute(GeometryReader::XML_MATERIAL_BOTTOM_ATTR);
     if (!top_attr && !bottom_attr) {
         if (src.source.hasAttribute(GeometryReader::XML_MATERIAL_GRADING_ATTR))
-            src.source.throwException(format("'{}' attribute allowed only for layers with graded material",
-                                             GeometryReader::XML_MATERIAL_GRADING_ATTR));
+            src.source.throwException(
+                format("'{}' attribute allowed only for layers with graded material", GeometryReader::XML_MATERIAL_GRADING_ATTR));
         if (src.materialsAreRequired) {
             this->setMaterialFast(src.getMaterial(src.source.requireAttribute(GeometryReader::XML_MATERIAL_ATTR)));
         } else if (plask::optional<std::string> matstr = src.source.getAttribute(GeometryReader::XML_MATERIAL_ATTR))
@@ -35,8 +34,7 @@ template <int dim> GeometryReader& GeometryObjectLeaf<dim>::readMaterial(Geometr
     } else {
         if (!top_attr || !bottom_attr)
             src.source.throwException(format("If '{0}' or '{1}' attribute is given, the other one is also required",
-                                             GeometryReader::XML_MATERIAL_TOP_ATTR,
-                                             GeometryReader::XML_MATERIAL_BOTTOM_ATTR));
+                                             GeometryReader::XML_MATERIAL_TOP_ATTR, GeometryReader::XML_MATERIAL_BOTTOM_ATTR));
         double shape = src.source.getAttribute<double>(GeometryReader::XML_MATERIAL_GRADING_ATTR, 1.);
         this->setMaterialTopBottomCompositionFast(src.getMixedCompositionFactory(*top_attr, *bottom_attr, shape));
     }
@@ -79,16 +77,13 @@ void GeometryObjectLeaf<dim>::getPositionsToVec(const GeometryObject::Predicate&
 
 template <int dim> bool GeometryObjectLeaf<dim>::hasInSubtree(const GeometryObject& el) const { return &el == this; }
 
-template <int dim>
-GeometryObject::Subtree GeometryObjectLeaf<dim>::getPathsTo(const GeometryObject& el, const PathHints*) const {
+template <int dim> GeometryObject::Subtree GeometryObjectLeaf<dim>::getPathsTo(const GeometryObject& el, const PathHints*) const {
     return GeometryObject::Subtree(&el == this ? this->shared_from_this() : shared_ptr<const GeometryObject>());
 }
 
 template <int dim>
-GeometryObject::Subtree GeometryObjectLeaf<dim>::getPathsAt(const typename GeometryObjectLeaf<dim>::DVec& point,
-                                                            bool) const {
-    return GeometryObject::Subtree(this->contains(point) ? this->shared_from_this()
-                                                         : shared_ptr<const GeometryObject>());
+GeometryObject::Subtree GeometryObjectLeaf<dim>::getPathsAt(const typename GeometryObjectLeaf<dim>::DVec& point, bool) const {
+    return GeometryObject::Subtree(this->contains(point) ? this->shared_from_this() : shared_ptr<const GeometryObject>());
 }
 
 template <int dim> shared_ptr<GeometryObject> GeometryObjectLeaf<dim>::getChildNo(std::size_t) const {
@@ -126,7 +121,8 @@ inline static double readAlternativeAttrs(GeometryReader& reader, const std::str
         return *value1;
     } else {
         if (!value2) {
-            if (reader.manager.draft) return 0.0;
+            if (reader.manager.draft)
+                return 0.0;
             else
                 throw XMLNoAttrException(reader.source, format("{0}' or '{1}", attr1, attr2));
         }
@@ -221,13 +217,11 @@ void Block<2>::addLineSegmentsToSet(std::set<typename GeometryObjectD<2>::LineSe
     }
     for (size_t i1 = 0; i1 < pts1.size(); ++i1) {
         double p1 = pts1[i1];
-        for (size_t i0 = 1; i0 < pts0.size(); ++i0)
-            segments.insert(Segment(DVec(pts0[i0 - 1], p1), DVec(pts0[i0], p1)));
+        for (size_t i0 = 1; i0 < pts0.size(); ++i0) segments.insert(Segment(DVec(pts0[i0 - 1], p1), DVec(pts0[i0], p1)));
     }
     for (size_t i0 = 0; i0 < pts0.size(); ++i0) {
         double p0 = pts0[i0];
-        for (size_t i1 = 1; i1 < pts1.size(); ++i1)
-            segments.insert(Segment(DVec(p0, pts1[i1 - 1]), DVec(p0, pts1[i1])));
+        for (size_t i1 = 1; i1 < pts1.size(); ++i1) segments.insert(Segment(DVec(p0, pts1[i1 - 1]), DVec(p0, pts1[i1])));
     }
 }
 
@@ -286,19 +280,37 @@ static GeometryReader::RegisterObjectReader rectangle_reader("rectangle", read_b
 static GeometryReader::RegisterObjectReader block3D_reader(PLASK_BLOCK3D_NAME, read_block3D);
 static GeometryReader::RegisterObjectReader cuboid_reader("cuboid", read_block3D);
 
-shared_ptr<GeometryObject> changeToBlock(const shared_ptr<Material>& material,
+namespace detail {
+
+template <int dim> struct MakeBlockVisitor : public boost::static_visitor<shared_ptr<Block<dim>>> {
+    Vec<dim> size;
+
+    MakeBlockVisitor(const Vec<dim>& size): size(size) {}
+
+    shared_ptr<Block<dim>> operator()(const shared_ptr<Material>& material) const {
+        return plask::make_shared<Block<dim>>(size, material);
+    }
+
+    shared_ptr<Block<dim>> operator()(const shared_ptr<MaterialsDB::MixedCompositionFactory>& material_factory) const {
+        return plask::make_shared<Block<dim>>(size, material_factory);
+    }
+};
+
+}  // namespace detail
+
+shared_ptr<GeometryObject> changeToBlock(const SolidOrGradientMaterial& material,
                                          const shared_ptr<const GeometryObject>& to_change,
                                          Vec<3, double>& translation) {
     if (to_change->getDimensionsCount() == 3) {
         shared_ptr<const GeometryObjectD<3>> el = static_pointer_cast<const GeometryObjectD<3>>(to_change);
         Box3D bb = el->getBoundingBox();
         translation = bb.lower;
-        return plask::make_shared<Block<3>>(bb.size(), material);
+        return boost::apply_visitor(detail::MakeBlockVisitor<3>(bb.size()), material);
     } else {  // to_change->getDimensionsCount() == 3
         shared_ptr<const GeometryObjectD<2>> el = static_pointer_cast<const GeometryObjectD<2>>(to_change);
         Box2D bb = el->getBoundingBox();
         translation = vec<3, double>(bb.lower);
-        return plask::make_shared<Block<2>>(bb.size(), material);
+        return boost::apply_visitor(detail::MakeBlockVisitor<2>(bb.size()), material);
     }
 }
 

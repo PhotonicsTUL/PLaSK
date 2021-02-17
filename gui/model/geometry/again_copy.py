@@ -161,24 +161,44 @@ class GNCToBlock(GNCopyChild):
 
     def __init__(self, parent=None, object=None, material=None):
         super(GNCToBlock, self).__init__(parent, object)
-        self.material = material
         self.name = None
         self.role = None
+        self.material_top = None
+        self.material_bottom = None
+        self.material_shape = None
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super(GNCToBlock, self)._attributes_from_xml(attribute_reader, conf)
-        xml_to_attr(attribute_reader, self, 'name', 'role', 'material')
+        self.material_bottom = self.material_top = attribute_reader.get('material')
+        if self.material_bottom is None:
+            self.material_bottom = attribute_reader.get('material-bottom')
+            self.material_top = attribute_reader.get('material-top')
+            self.material_shape = attribute_reader.get('material-shape')
+        xml_to_attr(attribute_reader, self, 'name', 'role')
 
     def _attributes_to_xml(self, element, conf):
         super(GNCToBlock, self)._attributes_to_xml(element, conf)
-        attr_to_xml(self, element, 'material', 'name', 'role')
+        if self.material_top == self.material_bottom:
+            if self.material_top is not None: element.attrib['material'] = self.material_top
+        else:
+            if self.material_top is not None: element.attrib['material-top'] = self.material_top
+            if self.material_bottom is not None: element.attrib['material-bottom'] = self.material_bottom
+            if self.material_shape is not None: element.attrib['material-shape'] = self.material_shape
+        attr_to_xml(self, element, 'name', 'role')
 
     def tag_name(self, full_name=True):
         return "toblock"
 
     def major_properties(self):
         res = super(GNCToBlock, self).major_properties()
-        res.append(('material', self.material))
+        if self.material_top == self.material_bottom:
+            res.append(('material', self.material_bottom))
+        else:
+            res.append('materials:')
+            res.append(('top', self.material_top))
+            res.append(('bottom', self.material_bottom))
+            if self.material_shape is not None: res.append(('shape', self.material_shape))
+            res.append(None)
         if self.name is not None:
             res.append(('name', self.name))
         return res
@@ -189,7 +209,15 @@ class GNCToBlock(GNCopyChild):
 
     def create_info(self, res, names):
         super(GNCToBlock, self).create_info(res, names)
-        if not self.material: self._require(res, 'material')
+        if not self.material_bottom or not self.material_top:
+            if not self.material_bottom and not self.material_top:
+                self._require(res, 'material')
+            else:
+                what = 'material_bottom' if not self.material_bottom else 'material_top'
+                self._require(res, what, what.replace('_', ' '))
+
+    def is_solid(self):
+        return self.material_bottom == self.material_top
 
 
 class GNCopy(GNObject):

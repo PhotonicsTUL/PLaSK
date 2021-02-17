@@ -132,9 +132,9 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
                         source.gotoEndOfCurrentTag();
                 } else if (operation_name == "toblock") {
                     shared_ptr<GeometryObject> op_from = requireObjectFromAttribute("object");
-                    shared_ptr<Material> blockMaterial = requireMaterial();
+                    SolidOrGradientMaterial blockMaterial = requireSolidOrGradientMaterial();
                     plask::optional<std::string> block_name = source.getAttribute(XML_NAME_ATTR);    // read name
-                    if (op_from && blockMaterial) {
+                    if (op_from) {
                         GeometryObject::ToBlockChanger* changer = new GeometryObject::ToBlockChanger(op_from, blockMaterial);
                         changers.append(changer);
                         if (block_name && !isAutoName(*block_name)) {
