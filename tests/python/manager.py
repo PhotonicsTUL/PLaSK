@@ -282,6 +282,52 @@ class CustomSolverTest(unittest.TestCase):
         self.assertEqual( solver.geometry, manager.geo.main )
 
 
+@plask.Manager._geometry_changer('test')
+class TestChanger:
+    def load_xpl(self, xml, manager):
+        self.delete = xml['delete']
+
+    def __call__(self, obj):
+        if isinstance(obj, (plask.geometry.GeometryObjectLeaf2D, plask.geometry.GeometryObjectLeaf3D)):
+            roles = list(obj.roles)
+            if self.delete in roles:
+                return []
+            elif roles:
+                obj.material = roles[-1]
+                return obj
+
+
+class PythonChangerTest(unittest.TestCase):
+
+    def testChanger(self):
+        manager = plask.Manager()
+        manager.load('''
+        <plask>
+          <geometry>
+            <cartesian2d name="test1" axes="x,y">
+              <stack>
+                <rectangle material="GaAs" dx="2" dy="1" role="GaN"/>
+                <rectangle material="AlAs" dx="2" dy="1" role="del"/>
+                <rectangle material="InAs" dx="2" dy="1"/>
+              </stack>
+            </cartesian2d>
+            <cartesian2d name="test2" axes="x,y">
+              <copy from="test1">
+                <test delete='del'/>
+              </copy>
+            </cartesian2d>
+            <cartesian2d name="test3" axes="x,y">
+              <rectangle material="GaAs" dx="1" dy="1"/>
+            </cartesian2d>
+          </geometry>
+        </plask>
+        ''')
+
+        self.assertEqual( str(manager.geo.test2.get_material(1, 0.5)), 'InAs' )
+        self.assertEqual( str(manager.geo.test2.get_material(1, 1.5)), 'GaN' )
+        self.assertEqual( str(manager.geo.test2.get_material(1, 2.5)), 'air' )
+
+
 if __name__ == '__main__':
     test = unittest.main(exit=False)
     sys.exit(not test.result.wasSuccessful())

@@ -103,7 +103,7 @@ static void vec__setitem__(Vec<dim,T>& self, int i, T v) {
 
 // len(v)
 template <int dim>
-static int vec__len__() { return dim; }
+static int vec__len__(const py::object&) { return dim; }
 
 // __str__(v)
 template <int dim, typename T>

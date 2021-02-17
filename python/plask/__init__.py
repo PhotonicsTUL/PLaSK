@@ -143,6 +143,11 @@ del Cylindrical2D
 
 ## ## plask.manager ## ##
 
+def _geometry_changer(name):
+    return lambda cls: Manager._register_geometry_changer(name, cls)
+Manager._geometry_changer = _geometry_changer
+del _geometry_changer
+
 def loadxpl(source, defs={}, sections=None, destination=None, update=False):
     """
     Load the XPL file. All sections contents is read into the `destination` scope.

@@ -76,6 +76,39 @@ class PLASK_API GeometryReader {
      */
     const char* expectedSuffix;
 
+    /**
+     * Create new copy transform with parameters reading from XML source.
+     *
+     * After return reader should point to end of tag of this object.
+     * Can call managers methods to read children (GeometryReader::readObject).
+     * Should throw exception if can't create object.
+     */
+    typedef std::function<GeometryObject::Changer*(GeometryReader& reader)> changer_read_f;
+
+    /**
+     * @return Global changer readers register.
+     * Map: xml tag name -> changer reader function.
+     */
+    static std::map<std::string, changer_read_f>& changerReaders();
+
+    /**
+     * Add reader to changerReaders.
+     * @param tag_name XML tag name
+     * @param reader changer reader function
+     */
+    static void registerChangerReader(const std::string& tag_name, changer_read_f reader);
+
+    /**
+     * Helper which call registerChangerReader in constructor.
+     *
+     * Each object can create one global instance of this class to register own reader.
+     */
+    struct PLASK_API RegisterChangerReader {
+        RegisterChangerReader(const std::string& tag_name, changer_read_f reader) {
+            GeometryReader::registerChangerReader(tag_name, reader);
+        }
+    };
+
     const AxisNames& getAxisNames() const;
 
     /**

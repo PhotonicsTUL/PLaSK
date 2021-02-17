@@ -47,6 +47,15 @@ void GeometryReader::registerObjectReader(const std::string &tag_name, object_re
     objectReaders()[tag_name] = reader;
 }
 
+std::map<std::string, GeometryReader::changer_read_f>& GeometryReader::changerReaders() {
+    static std::map<std::string, GeometryReader::changer_read_f> result;
+    return result;
+}
+
+void GeometryReader::registerChangerReader(const std::string &tag_name, changer_read_f reader) {
+    changerReaders()[tag_name] = reader;
+}
+
 const AxisNames &GeometryReader::getAxisNames() const {
     return *manager.axisNames;
 }
@@ -151,7 +160,11 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
                     if (op_from) changers.append(new GeometryObject::DeleteChanger(op_from));
                     source.requireTagEnd();
                 } else {
-                    throw Exception("\"{0}\" is not proper name of copy operation and so it is not allowed in <copy> tag.", operation_name);
+                    auto found = changerReaders().find(operation_name);
+                    if (found == changerReaders().end())
+                        throw Exception("\"{0}\" is not proper name of copy operation and so it is not allowed in <copy> tag.",
+                                        operation_name);
+                    changers.append(found->second(*this));
                 }
             }
             new_object = const_pointer_cast<GeometryObject>(from->changedVersion(changers));
