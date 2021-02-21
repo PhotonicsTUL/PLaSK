@@ -284,7 +284,7 @@ class CustomSolverTest(unittest.TestCase):
 
 @plask.Manager._geometry_changer('test')
 class TestChanger:
-    def load_xpl(self, xml, manager):
+    def __init__(self, xml, manager):
         self.delete = xml['delete']
 
     def __call__(self, obj):
@@ -297,15 +297,16 @@ class TestChanger:
                 return obj
 
 
-class PythonChangerTest(unittest.TestCase):
+class XplChangerTest(unittest.TestCase):
 
-    def testChanger(self):
-        manager = plask.Manager()
-        manager.load('''
+    def setUp(self):
+        self.manager = plask.Manager()
+        self.manager.load('''
         <plask>
           <geometry>
             <cartesian2d name="test1" axes="x,y">
               <stack>
+                <rectangle material="Cu" dx="2" dy="1" name="Cu"/>
                 <rectangle material="GaAs" dx="2" dy="1" role="GaN"/>
                 <rectangle material="AlAs" dx="2" dy="1" role="del"/>
                 <rectangle material="InAs" dx="2" dy="1"/>
@@ -314,6 +315,7 @@ class PythonChangerTest(unittest.TestCase):
             <cartesian2d name="test2" axes="x,y">
               <copy from="test1">
                 <test delete='del'/>
+                <delete object="Cu"/>
               </copy>
             </cartesian2d>
             <cartesian2d name="test3" axes="x,y">
@@ -323,9 +325,11 @@ class PythonChangerTest(unittest.TestCase):
         </plask>
         ''')
 
-        self.assertEqual( str(manager.geo.test2.get_material(1, 0.5)), 'InAs' )
-        self.assertEqual( str(manager.geo.test2.get_material(1, 1.5)), 'GaN' )
-        self.assertEqual( str(manager.geo.test2.get_material(1, 2.5)), 'air' )
+    def testChanger(self):
+        self.assertEqual( str(self.manager.geo.test2.get_material(1, 0.5)), 'InAs' )
+        self.assertEqual( str(self.manager.geo.test2.get_material(1, 1.5)), 'GaN' )
+        self.assertEqual( str(self.manager.geo.test2.get_material(1, 2.5)), 'air' )
+        self.assertEqual( str(self.manager.geo.test2.get_material(1, 3.5)), 'air' )
 
 
 if __name__ == '__main__':

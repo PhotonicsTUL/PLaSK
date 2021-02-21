@@ -83,5 +83,15 @@ template<> struct GeometryObjectD_vector_args<3> {
 };
 
 
+struct PythonGeometryObjectChanger: public GeometryObject::Changer {
+
+    py::object callable;
+
+    PythonGeometryObjectChanger(const py::object& callable): callable(callable) {}
+
+    bool apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation = 0) const override;
+};
+
+
 }} // namespace plask::python
 #endif // PLASK__PYTHON_GEOMETRY_H

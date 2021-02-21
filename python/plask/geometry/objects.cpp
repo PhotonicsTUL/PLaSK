@@ -97,6 +97,32 @@ template <> struct MethodsD<3> {
     }
 };
 
+
+bool PythonGeometryObjectChanger::apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation) const {
+    py::object result = callable(to_change);
+    if (!(result.is_none() || result.ptr() == Py_False)) {
+        if ((PyTuple_Check(result.ptr()) || PyList_Check(result.ptr())) && py::len(result) == 0)
+            to_change = shared_ptr<GeometryObject>();
+        else {
+            if (PyTuple_Check(result.ptr()) && py::len(result) == 2) {
+                if (translation) {
+                    size_t dim = py::len(result[1]);
+                    if (dim != 2 && dim != 3)
+                        throw TypeError("Translation must be 2D or 3D vector");
+                    (*translation)[0] = 0.;
+                    (*translation)[3-dim] = py::extract<double>(result[1][0]);
+                    (*translation)[3-dim+1] = py::extract<double>(result[1][1]);
+                }
+                result = result[0];
+            }
+            to_change = py::extract<shared_ptr<GeometryObject>>(result);
+        }
+        return true;
+    }
+    return false;
+}
+
+
 shared_ptr<GeometryObject> GeometryObject__getitem__(py::object oself, int i) {
     GeometryObject* self = py::extract<GeometryObject*>(oself);
     const std::size_t n = self->getChildrenCount();
@@ -142,6 +168,10 @@ static py::list GeometryObject_getWithRole(const shared_ptr<GeometryObject>& sel
     py::list result;
     for (auto i : objs) result.append(const_pointer_cast<GeometryObject>(i));
     return result;
+}
+
+static shared_ptr<GeometryObject> GeometryObject_ModifyObjects(const GeometryObject& self, py::object& callable) {
+    return const_pointer_cast<GeometryObject>(self.changedVersion(PythonGeometryObjectChanger(callable)));
 }
 
 template <int dim>
@@ -768,6 +798,17 @@ void register_geometry_object() {
              u8"    role (str): Role to search objects with.\n"
              u8"Returns:\n"
              u8"    sequence: List of objects matching your condition.\n\n")
+        .def("modify_objects", &GeometryObject_ModifyObjects, py::arg("callable"),
+             u8"Modify all objects in the geometry tree.\n\n"
+             u8"This method calls ``callable`` on every object in the geometry tree.\n"
+             u8"The ``callable`` takes a single geometry object as an argument and should\n"
+             u8"return ``None`` (in which case nothing happens), a new object to replace\n"
+             u8"the original one, or an empty tuple (which will result in the removal of\n"
+             u8"the original object).\n\n"
+             u8"Args:\n"
+             u8"    callable: a callable filtering each object in the tree\n\n"
+             u8"Returns:\n"
+             u8"    ~plask.geometry.GeometryObject: modified geometry\n")
         .def("__getitem__", &GeometryObject__getitem__)
         .def("__iter__", GeometryObjectIter::__iter__)
         .def("__repr__", &GeometryObject__repr__)

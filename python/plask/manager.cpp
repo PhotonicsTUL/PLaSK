@@ -11,6 +11,7 @@
 #include "python_globals.hpp"
 #include "python_manager.hpp"
 #include "python_provider.hpp"
+#include "geometry/geometry.hpp"
 
 namespace plask { namespace python {
 
@@ -636,54 +637,17 @@ struct ManagerRoots {
 };
 
 
-struct PythonChangerReader: public GeometryObject::Changer, Overriden<GeometryObject::Changer> {
-
-    py::object callable;
-
-    PythonChangerReader(const py::object& callable, const GeometryReader& reader): callable(callable) {
-        if (PyObject_HasAttrString(callable.ptr(), "load_xpl")) {
+static void registerXplPythonGeometryObjectChanger(const std::string& name, py::object changer_class) {
+    GeometryReader::registerChangerReader(name,
+        [changer_class](GeometryReader& reader) -> GeometryObject::Changer* {
             auto level0 = reader.source.getLevel() - 1;
-            callable.attr("load_xpl")(boost::ref(reader.source), boost::ref(reader.manager));
+            py::object changer = changer_class(boost::ref(reader.source), boost::ref(reader.manager));
             auto current_level = reader.source.getLevel() - size_t(reader.source.getNodeType() == XMLReader::NODE_ELEMENT_END);
             for (size_t i = current_level; i > level0; --i) reader.source.requireTagEnd();
-        } else {
-            reader.source.requireTagEnd();
+            return new PythonGeometryObjectChanger(changer);
         }
-    }
-
-    bool apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* translation = 0) const override {
-        py::object result = callable(to_change);
-        if (!result.is_none()) {
-            if ((PyTuple_Check(result.ptr()) || PyList_Check(result.ptr())) && py::len(result) == 0)
-                to_change = shared_ptr<GeometryObject>();
-            else {
-                if (PyTuple_Check(result.ptr()) && py::len(result) == 2) {
-                    if (translation) {
-                        size_t dim = py::len(result[1]);
-                        if (dim != 2 && dim != 3)
-                            throw TypeError("Translation must be 2D or 3D vector");
-                        (*translation)[0] = 0.;
-                        (*translation)[3-dim] = py::extract<double>(result[1][0]);
-                        (*translation)[3-dim+1] = py::extract<double>(result[1][1]);
-                    }
-                    result = result[0];
-                }
-                to_change = py::extract<shared_ptr<GeometryObject>>(result);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    static void registerChanger(const std::string& name, py::object callable_type) {
-        GeometryReader::registerChangerReader(name,
-            [callable_type](GeometryReader& reader) -> PythonChangerReader* {
-                py::object callable = (PyType_Check(callable_type.ptr()))? callable_type() : callable_type;
-                return new PythonChangerReader(callable, reader);
-            }
-        );
-    }
-};
+    );
+}
 
 
 void register_manager() {
@@ -774,7 +738,7 @@ void register_manager() {
         .def("clear",  &ManagerRoots::clear)
     ;
 
-    py::def("_register_geometry_changer", &PythonChangerReader::registerChanger, (py::arg("name"), "changer"));
+    py::def("_register_geometry_changer", &registerXplPythonGeometryObjectChanger, (py::arg("name"), "changer_class"));
 }
 
 }} // namespace plask::python

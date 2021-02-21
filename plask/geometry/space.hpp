@@ -150,9 +150,7 @@ struct PLASK_API Geometry : public GeometryObject {
      * \param higher \c true for higher bound, \c false for lower
      * \return \c true only if structure is periodic in given \p direction
      */
-    bool isExtended(Direction direction, bool higher) const {
-        return getEdge(direction, higher).type() == edge::Strategy::EXTEND;
-    }
+    bool isExtended(Direction direction, bool higher) const { return getEdge(direction, higher).type() == edge::Strategy::EXTEND; }
 
     Type getType() const override { return TYPE_GEOMETRY; }
 
@@ -329,9 +327,7 @@ template <int dim> class PLASK_API GeometryD : public Geometry {
      * @param path (optional) path hints which limits search space
      * @return all leafs in subtree with child of this object as root
      */
-    std::vector<shared_ptr<const GeometryObject>> getLeafs(const PathHints& path) const {
-        return getChild()->getLeafs(path);
-    }
+    std::vector<shared_ptr<const GeometryObject>> getLeafs(const PathHints& path) const { return getChild()->getLeafs(path); }
 
     /**
      * Calculate and return a vector of positions of all leafs, optionally marked by path.
@@ -342,9 +338,7 @@ template <int dim> class PLASK_API GeometryD : public Geometry {
      * Some leafs can have vector of NaNs as translations.
      * This mean that translation is not well defined (some space changer on path).
      */
-    std::vector<CoordsType> getLeafsPositions(const PathHints* path = nullptr) const {
-        return getChild()->getLeafsPositions(path);
-    }
+    std::vector<CoordsType> getLeafsPositions(const PathHints* path = nullptr) const { return getChild()->getLeafsPositions(path); }
 
     /**
      * Calculate and return a vector of positions of all leafs, optionally marked by path.
@@ -355,9 +349,7 @@ template <int dim> class PLASK_API GeometryD : public Geometry {
      * Some leafs can have vector of NaNs as translations.
      * This mean that translation is not well defined (some space changer on path).
      */
-    std::vector<CoordsType> getLeafsPositions(const PathHints& path) const {
-        return getChild()->getLeafsPositions(path);
-    }
+    std::vector<CoordsType> getLeafsPositions(const PathHints& path) const { return getChild()->getLeafsPositions(path); }
 
     /**
      * Calculate and return a vector of positions of all instances of given @p object, optionally marked by path.
@@ -408,8 +400,7 @@ template <int dim> class PLASK_API GeometryD : public Geometry {
      * Some objects can have vector of NaNs as translations.
      * This mean that translation is not well defined (some space changer on path).
      */
-    std::vector<CoordsType> getObjectPositions(const shared_ptr<const GeometryObject>& object,
-                                               const PathHints& path) const {
+    std::vector<CoordsType> getObjectPositions(const shared_ptr<const GeometryObject>& object, const PathHints& path) const {
         return getChild()->getObjectPositions(*object, path);
     }
 
@@ -452,8 +443,7 @@ template <int dim> class PLASK_API GeometryD : public Geometry {
      * @param path path hints which limits search space
      * @return bounding boxes of all instances of given \p object
      */
-    std::vector<typename Primitive<DIM>::Box> getObjectBoundingBoxes(const GeometryObject& object,
-                                                                     const PathHints& path) const {
+    std::vector<typename Primitive<DIM>::Box> getObjectBoundingBoxes(const GeometryObject& object, const PathHints& path) const {
         return getChild()->getObjectBoundingBoxes(object, path);
     }
 
@@ -498,17 +488,6 @@ template <int dim> class PLASK_API GeometryD : public Geometry {
      */
     GeometryObject::Subtree getPathsAt(const CoordsType& point, bool all = false) const {
         return getChild()->getPathsAt(wrapEdges(point), all);
-    }
-
-    /**
-     * Get child of this or copy of this child with some changes in subtree.
-     * @param[in] changer changer which will be aplied to subtree with this in root
-     * @param[out] translation optional, if non-null, recommended translation of this after change will be stored
-     * @return pointer to this (if nothing was change) or copy of this with some changes in subtree
-     */
-    shared_ptr<const GeometryObject> changedVersion(const Changer& changer,
-                                                    Vec<3, double>* translation = 0) const override {
-        return getChild()->changedVersion(changer, translation);
     }
 
     // std::vector<shared_ptr<const GeometryObjectD<DIMS>>> extract(const Predicate& predicate, const PathHints* path =
@@ -869,18 +848,14 @@ class PLASK_API Geometry2DCartesian : public GeometryD<2> {
 
     shared_ptr<GeometryObject> shallowCopy() const override;
 
-    shared_ptr<GeometryObject> deepCopy(
-        std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
+    shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
 
     /**
      * Add characteristic points information along specified axis to set
      * \param[in,out] points ordered set of division points along specified axis
      * \param direction axis direction
      */
-    void addPointsAlongToSet(std::set<double>& points,
-                             Primitive<3>::Direction direction,
-                             unsigned = 0,
-                             double = 0) const override {
+    void addPointsAlongToSet(std::set<double>& points, Primitive<3>::Direction direction, unsigned = 0, double = 0) const override {
         shared_ptr<GeometryObjectD<2>> child;
         try {
             child = getChild();
@@ -925,6 +900,14 @@ class PLASK_API Geometry2DCartesian : public GeometryD<2> {
         return segments;
     }
 
+    /**
+     * Get this or copy of this child with some changes in subtree.
+     * @param[in] changer changer which will be aplied to subtree with this in root
+     * @param[out] translation optional, if non-null, recommended translation of this after change will be stored
+     * @return pointer to this (if nothing was change) or copy of this with some changes in subtree
+     */
+    shared_ptr<const GeometryObject> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const override;
+
     void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const override;
 };
 
@@ -938,9 +921,7 @@ class PLASK_API Geometry2DCylindrical : public GeometryD<2> {
     edge::StrategyPairHolder<Primitive<2>::DIRECTION_TRAN, edge::UniversalStrategy> innerouter;
     edge::StrategyPairHolder<Primitive<2>::DIRECTION_VERT> bottomup;
 
-    static void ensureBoundDirIsProper(Direction direction /*, bool hi*/) {
-        Primitive<3>::ensureIsValid2DDirection(direction);
-    }
+    static void ensureBoundDirIsProper(Direction direction /*, bool hi*/) { Primitive<3>::ensureIsValid2DDirection(direction); }
 
   public:
     static constexpr const char* NAME = "cylindrical";
@@ -1079,18 +1060,14 @@ class PLASK_API Geometry2DCylindrical : public GeometryD<2> {
 
     shared_ptr<GeometryObject> shallowCopy() const override;
 
-    shared_ptr<GeometryObject> deepCopy(
-        std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
+    shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
 
     /**
      * Add characteristic points information along specified axis to set
      * \param[in,out] points ordered set of division points along specified axis
      * \param direction axis direction
      */
-    void addPointsAlongToSet(std::set<double>& points,
-                             Primitive<3>::Direction direction,
-                             unsigned = 0,
-                             double = 0) const override {
+    void addPointsAlongToSet(std::set<double>& points, Primitive<3>::Direction direction, unsigned = 0, double = 0) const override {
         shared_ptr<GeometryObjectD<2>> child;
         try {
             child = getChild();
@@ -1134,6 +1111,14 @@ class PLASK_API Geometry2DCylindrical : public GeometryD<2> {
         addLineSegmentsToSet(segments);
         return segments;
     }
+
+    /**
+     * Get this or copy of this child with some changes in subtree.
+     * @param[in] changer changer which will be aplied to subtree with this in root
+     * @param[out] translation optional, if non-null, recommended translation of this after change will be stored
+     * @return pointer to this (if nothing was change) or copy of this with some changes in subtree
+     */
+    shared_ptr<const GeometryObject> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const override;
 
     void writeXML(XMLWriter::Element& parent_xml_object, WriteXMLCallback& write_cb, AxisNames axes) const override;
 
@@ -1293,18 +1278,14 @@ class PLASK_API Geometry3D : public GeometryD<3> {
 
     shared_ptr<GeometryObject> shallowCopy() const override;
 
-    shared_ptr<GeometryObject> deepCopy(
-        std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
+    shared_ptr<GeometryObject> deepCopy(std::map<const GeometryObject*, shared_ptr<GeometryObject>>& copied) const override;
 
     /**
      * Add characteristic points information along specified axis to set
      * \param[in,out] points ordered set of division points along specified axis
      * \param direction axis direction
      */
-    void addPointsAlongToSet(std::set<double>& points,
-                             Primitive<3>::Direction direction,
-                             unsigned = 0,
-                             double = 0) const override {
+    void addPointsAlongToSet(std::set<double>& points, Primitive<3>::Direction direction, unsigned = 0, double = 0) const override {
         shared_ptr<GeometryObjectD<3>> child;
         try {
             child = getChild();
@@ -1348,6 +1329,14 @@ class PLASK_API Geometry3D : public GeometryD<3> {
         addLineSegmentsToSet(segments);
         return segments;
     }
+
+    /**
+     * Get this or copy of this child with some changes in subtree.
+     * @param[in] changer changer which will be aplied to subtree with this in root
+     * @param[out] translation optional, if non-null, recommended translation of this after change will be stored
+     * @return pointer to this (if nothing was change) or copy of this with some changes in subtree
+     */
+    shared_ptr<const GeometryObject> changedVersion(const Changer& changer, Vec<3, double>* translation = 0) const override;
 
     //     virtual Geometry3D* getSubspace(const shared_ptr<GeometryObjectD<3>>& object, const PathHints* path=nullptr,
     //     bool copyEdges=false) const;

@@ -453,6 +453,45 @@ shared_ptr<GeometryObject> Geometry3D::deepCopy(std::map<const GeometryObject*, 
 // Geometry3D* Geometry3D::getSubspace(const shared_ptr<GeometryObjectD<3>>& object, const PathHints* path, bool copyEdges) const {
 // }
 
+shared_ptr<const GeometryObject> Geometry2DCartesian::changedVersion(const Changer& changer, Vec<3, double>* translation) const {
+    auto child = getChild();
+    auto newChild = dynamic_pointer_cast<GeometryObjectD<2>>(
+        const_pointer_cast<GeometryObject>(child->changedVersion(changer, translation)));
+    if (child == newChild)
+        return shared_from_this();
+    shared_ptr<Geometry2DCartesian> result = make_shared<Geometry2DCartesian>(newChild, extrusion->getLength());
+    result->setEdges(DIRECTION_TRAN, leftright.getLo(), leftright.getHi());
+    result->setEdges(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
+    result->frontMaterial = frontMaterial;
+    result->backMaterial = backMaterial;
+    return result;
+}
+
+shared_ptr<const GeometryObject>Geometry2DCylindrical::changedVersion(const Changer& changer, Vec<3, double>* translation) const {
+    auto child = getChild();
+    auto newChild = dynamic_pointer_cast<GeometryObjectD<2>>(
+        const_pointer_cast<GeometryObject>(child->changedVersion(changer, translation)));
+    if (child == newChild)
+        return shared_from_this();
+    shared_ptr<Geometry2DCylindrical> result = make_shared<Geometry2DCylindrical>(newChild);
+    result->setEdges(DIRECTION_TRAN, innerouter.getLo(), innerouter.getHi());
+    result->setEdges(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
+    return result;
+}
+
+shared_ptr<const GeometryObject> Geometry3D::changedVersion(const Changer& changer, Vec<3, double>* translation) const {
+    auto child = getChild();
+    auto newChild = dynamic_pointer_cast<GeometryObjectD<3>>(
+        const_pointer_cast<GeometryObject>(child->changedVersion(changer, translation)));
+    if (child == newChild)
+        return shared_from_this();
+    shared_ptr<Geometry3D> result = make_shared<Geometry3D>(newChild);
+    result->setEdges(DIRECTION_LONG, backfront.getLo(), backfront.getHi());
+    result->setEdges(DIRECTION_TRAN, leftright.getLo(), leftright.getHi());
+    result->setEdges(DIRECTION_VERT, bottomup.getLo(), bottomup.getHi());
+    return result;
+}
+
 
 
 }   // namespace plask

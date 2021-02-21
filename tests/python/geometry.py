@@ -278,6 +278,36 @@ class Edges(unittest.TestCase):
         self.assertEqual( space.get_material(-9., 1.), GaN )
 
 
+class ModifyObjectsTest(unittest.TestCase):
+
+    def setUp(self):
+        stack = plask.geometry.Stack2D()
+        r1 = plask.geometry.Rectangle(2, 1, "GaAs")
+        r2 = plask.geometry.Rectangle(2, 1, "AlAs")
+        r3 = plask.geometry.Rectangle(2, 1, "InAs")
+        r1.role = 'GaN'
+        r2.role = 'del'
+        stack.prepend(r1)
+        stack.prepend(r2)
+        stack.prepend(r3)
+        self.geometry = plask.geometry.Cartesian2D(stack)
+
+    def filter(self, obj):
+        if isinstance(obj, (plask.geometry.GeometryObjectLeaf2D, plask.geometry.GeometryObjectLeaf3D)):
+            roles = list(obj.roles)
+            if 'del' in roles:
+                return []
+            elif roles:
+                obj.material = roles[-1]
+                return obj
+
+    def testModify(self):
+        geometry2 = self.geometry.modify_objects(self.filter)
+        self.assertEqual( str(geometry2.get_material(1, 0.5)), 'InAs' )
+        self.assertEqual( str(geometry2.get_material(1, 1.5)), 'GaN' )
+        self.assertEqual( str(geometry2.get_material(1, 2.5)), 'air' )
+
+
 if __name__ == '__main__':
     test = unittest.main(exit=False)
     sys.exit(not test.result.wasSuccessful())

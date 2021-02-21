@@ -114,6 +114,13 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
 
     if (nodeName == "copy") {
         shared_ptr<GeometryObject> from = requireObjectFromAttribute("from");
+        try {
+            if (auto geometry = dynamic_pointer_cast<Geometry2DCartesian>(from)) from = geometry->getExtrusion();
+            else if (auto geometry = dynamic_pointer_cast<Geometry2DCylindrical>(from)) from = geometry->getRevolution();
+            else if (auto geometry = dynamic_pointer_cast<Geometry3D>(from)) from = geometry->getChild();
+        } catch (NoChildException) {
+            from.reset();
+        }
         if (from) {
             GeometryObject::CompositeChanger changers;
             while (source.requireTagOrEnd()) {
