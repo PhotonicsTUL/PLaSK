@@ -12,7 +12,7 @@
 # GNU General Public License for more details.
 from .object import GNObjectController
 from .node import GNodeController
-from .leaf import _GNMaterialMixin
+from .leaf import GNMaterialControllerMixin
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import none_to_empty
 
@@ -79,7 +79,7 @@ class GNCReplaceController(GNCopyChildController):
             self.replacer.setEditText(none_to_empty(self.node.replacer))
 
 
-class GNCToBlockController(_GNMaterialMixin, GNCopyChildController):
+class GNCToBlockController(GNMaterialControllerMixin, GNCopyChildController):
 
     def construct_form(self):
         super(GNCToBlockController, self).construct_form()

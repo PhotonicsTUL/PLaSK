@@ -18,7 +18,7 @@ from ...qt.QtWidgets import *
 from ...utils.qsignals import BlockQtSignals
 
 
-class _GNMaterialMixin:
+class GNMaterialControllerMixin:
 
     def get_material_row(self):
         self.material_selection_type = QComboBox()
@@ -108,7 +108,7 @@ class _GNMaterialMixin:
                 self.material_shape.setText(none_to_empty(self.node.material_shape))
 
 
-class GNLeafController(_GNMaterialMixin, GNObjectController):
+class GNLeafController(GNMaterialControllerMixin, GNObjectController):
 
     def construct_form(self):
         material_form = self.construct_group('Material')

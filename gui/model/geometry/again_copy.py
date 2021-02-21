@@ -222,6 +222,12 @@ class GNCToBlock(GNCopyChild):
 
 class GNCopy(GNObject):
 
+    CHANGERS = {
+        'delete': GNCDelete,
+        'replace': GNCReplace,
+        'toblock': GNCToBlock,
+    }
+
     def __init__(self, parent=None, name=None, source=None):
         super(GNCopy, self).__init__(parent, name)
         self.source = source
@@ -236,10 +242,10 @@ class GNCopy(GNObject):
 
     def _children_from_xml(self, ordered_reader, conf):
         for t in ordered_reader.iter():
-            if t.tag == 'delete': el = GNCDelete(parent=self)
-            elif t.tag == 'replace': el = GNCReplace(parent=self)
-            elif t.tag == 'toblock': el = GNCToBlock(parent=self)
-            else: ordered_reader.recent_was_unexpected()
+            El = GNCopy.CHANGERS.get(t.tag)
+            if El is None:
+                ordered_reader.recent_was_unexpected()
+            el = El(parent=self)
             el.load_xml_element(t, conf)
 
     def tag_name(self, full_name=True):
@@ -257,11 +263,7 @@ class GNCopy(GNObject):
         return isinstance(node, GNCopyChild)
 
     def add_child_options(self):
-        return [{
-                'delete': lambda i1, i2: GNCDelete(),
-                'replace': lambda i1, i2: GNCReplace(),
-                'toblock': lambda i1, i2: GNCToBlock()
-                }]
+        return [{key: lambda i1, i2: val() for key,val in GNCopy.CHANGERS.items()}]
 
     def get_controller(self, document, model):
         from ...controller.geometry.again_copy import GNCopyController
@@ -306,8 +308,6 @@ class GNCopy(GNObject):
     def create_info(self, res, names):
         super(GNCopy, self).create_info(res, names)
         if not self.source: self._require(res, 'source', '"from" attribute')
-
-    #def model_to_real_index(self, index):  #TODO ??
 
     @staticmethod
     def from_xml(element, conf):
