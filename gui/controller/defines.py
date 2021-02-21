@@ -49,7 +49,7 @@ class AfterBracketCompleter(QCompleter):
 class DefinesCompleterModel(QAbstractTableModel):
 
     def __init__(self, model, parent=None, strings=None):
-        super(DefinesCompleterModel, self).__init__(parent)
+        super().__init__(parent)
         self.strings = [] if strings is None else strings
         self.defines = model
 
@@ -129,7 +129,7 @@ class DefinesCompletionDelegate(QStyledItemDelegate):
 
     def setEditorData(self, editor, index):
         with BlockQtSignals(editor):
-            super(DefinesCompletionDelegate, self).setEditorData(editor, index)
+            super().setEditorData(editor, index)
 
     # def setEditorData(self, editor, index):
     #     with BlockQtSignals(editor):

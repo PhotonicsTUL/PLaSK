@@ -80,7 +80,7 @@ class PlotWidget(PlotWidgetBase):
             else: self.controller.show_update_required()
 
     def __init__(self, controller=None, parent=None):
-        super(PlotWidget, self).__init__(controller, parent)
+        super().__init__(controller, parent)
         colors = CONFIG['geometry/material_colors'].copy()
         self.get_color = BwColor(colors, self.axes)
         # self.layout().setContentsMargins(0, 9, 6, 2)

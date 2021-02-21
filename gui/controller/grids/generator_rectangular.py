@@ -28,7 +28,7 @@ from ...utils.widgets import ComboBoxDelegate, EditComboBox
 class RectangularSimpleGeneratorController(GridController):
 
     def __init__(self, document, model):
-        super(RectangularSimpleGeneratorController, self).__init__(
+        super().__init__(
             document=document, model=model)
 
         self.form = QGroupBox()
@@ -55,7 +55,7 @@ class RectangularSimpleGeneratorController(GridController):
         form_layout.addWidget(self.split)
 
     def fill_form(self):
-        super(RectangularSimpleGeneratorController, self).fill_form()
+        super().fill_form()
         with BlockQtSignals(self.split):
             self.split.setEditText(none_to_empty(self.grid_model.split))
 
@@ -63,7 +63,7 @@ class RectangularSimpleGeneratorController(GridController):
         return self.form
 
     def select_info(self, info):
-        super(RectangularSimpleGeneratorController, self).select_info(info)
+        super().select_info(info)
         getattr(self, info.property).setFocus()
 
 
@@ -74,7 +74,7 @@ class RectangularRegularGeneratorController(RectangularSimpleGeneratorController
               ('  longitudinal:', '  transverse:', '  vertical:'))
 
     def __init__(self, document, model):
-        super(RectangularRegularGeneratorController, self).__init__(
+        super().__init__(
             document=document, model=model)
 
         self.form = QGroupBox()
@@ -108,7 +108,7 @@ class RectangularRegularGeneratorController(RectangularSimpleGeneratorController
         self.form.setLayout(form_layout)
 
     def fill_form(self):
-        super(RectangularRegularGeneratorController, self).fill_form()
+        super().fill_form()
         for i in range(self.grid_model.dim):
             attr = 'spacing{}'.format(i)
             getattr(self, attr).setText(
@@ -147,7 +147,7 @@ class RectangularRefinedGeneratorController(GridController):
         return res
 
     def __init__(self, document, model):
-        super(RectangularRefinedGeneratorController, self).__init__(
+        super().__init__(
             document=document, model=model)
 
         self.form = QGroupBox()
@@ -230,7 +230,7 @@ class RectangularRefinedGeneratorController(GridController):
         self.form.setLayout(vbox)
 
     def fill_form(self):
-        super(RectangularRefinedGeneratorController, self).fill_form()
+        super().fill_form()
         self.aspect.setText(none_to_empty(self.grid_model.aspect))
         with self.mute_changes():
             for attr_name in ['warn_'+w for w in RectangularDivideGenerator.warnings]:
@@ -243,7 +243,7 @@ class RectangularRefinedGeneratorController(GridController):
         return self.form
 
     def select_info(self, info):
-        super(RectangularRefinedGeneratorController, self).select_info(info)
+        super().select_info(info)
         try:
             if info.property == 'refinements':  # select refinements index using info.reinf_row and info.reinf_col
                 self.refinements.setCurrentIndex(
@@ -256,7 +256,7 @@ class RectangularDivideGeneratorController(RectangularRefinedGeneratorController
     """Ordered and rectangular 2D and 3D divide generator script."""
 
     def __init__(self, document, model):
-        super(RectangularDivideGeneratorController, self).__init__(
+        super().__init__(
             document=document, model=model)
 
         weakself = weakref.proxy(self)
@@ -301,7 +301,7 @@ class RectangularDivideGeneratorController(RectangularRefinedGeneratorController
                                              self.defines, 'postdiv')
 
     def fill_form(self):
-        super(RectangularDivideGeneratorController, self).fill_form()
+        super().fill_form()
         with self.mute_changes():
             for i, gradual in enumerate(self.gradual):
                 with BlockQtSignals(gradual):
@@ -311,12 +311,12 @@ class RectangularDivideGeneratorController(RectangularRefinedGeneratorController
                 self.postdiv[i].setText(self.model.postdiv[i])
 
     # def save_data_in_model(self):
-    #    super(RectangularDivideGeneratorController, self).save_data_in_model()
+    #    super().save_data_in_model()
     #    self.model.prediv = [empty_to_none(self.prediv[i].text()) for i in range(0, self.model.dim)]
     #    self.model.postdiv = [empty_to_none(self.postdiv[i].text()) for i in range(0, self.model.dim)]
 
     # def on_edit_enter(self):
-    #    super(RectangularDivideGeneratorController, self).on_edit_enter()
+    #    super().on_edit_enter()
     #    with self.mute_changes():
     #        for i in range(0, self.model.dim):
     #            self.prediv[i].setText(self.model.prediv[i])
@@ -327,7 +327,7 @@ class RectangularSmoothGeneratorController(RectangularRefinedGeneratorController
     """Ordered and rectangular 2D and 3D divide generator script."""
 
     def __init__(self, document, model):
-        super(RectangularSmoothGeneratorController, self).__init__(
+        super().__init__(
             document=document, model=model)
 
         self.small = self._make_param_hbox(self.form_layout, 'Smallest element:',
@@ -344,14 +344,14 @@ class RectangularSmoothGeneratorController(RectangularRefinedGeneratorController
                                             self.defines, 'factor')
 
     # def save_data_in_model(self):
-    #    super(RectangularSmoothGeneratorController, self).save_data_in_model()
+    #    super().save_data_in_model()
     #    self.model.small = [empty_to_none(self.small[i].text()) for i in range(0, self.model.dim)]
     #    self.model.large = [empty_to_none(self.large[i].text()) for i in range(0, self.model.dim)]
     #    self.model.factor = [empty_to_none(self.factor[i].text()) for i in range(0, self.model.dim)]
 
     def fill_form(self):
         with self.mute_changes():
-            super(RectangularSmoothGeneratorController, self).fill_form()
+            super().fill_form()
             for i in range(0, self.model.dim):
                 self.small[i].setText(self.model.small[i])
                 self.large[i].setText(self.model.large[i])

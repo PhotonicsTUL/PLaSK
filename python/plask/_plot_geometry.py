@@ -229,7 +229,7 @@ class DrawEnviroment:
         :param zorder: artists z order
         :param extra: flag indicating if extra_patches should be taken
         """
-        super(DrawEnviroment, self).__init__()
+        super().__init__()
         self.dest = dest
         self.fill = fill
         self.color = color if color is not None else matplotlib.rcParams['axes.edgecolor']

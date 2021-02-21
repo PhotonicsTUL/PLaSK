@@ -34,7 +34,7 @@ def _solvers_key(slv):
 class FilterController(Controller):
 
     def __init__(self, document, model):
-        super(FilterController, self).__init__(document, model)
+        super().__init__(document, model)
 
         self.widget = QWidget()
         layout = QFormLayout()
@@ -193,7 +193,7 @@ class NewSolverDialog(QDialog):
 
     def __init__(self, model, parent=None):
 
-        super(NewSolverDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle('Create New Solver')
         layout = QFormLayout()
         layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)

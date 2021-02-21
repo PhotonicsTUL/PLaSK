@@ -638,7 +638,7 @@ else:
 
         def __init__(self, name, userhost=None, port=22, program='', color=False, keep=None, compress=True, bp='',
                      run1='', runn='', partitions=None, qos=None, params=None):
-            super(Slurm, self).__init__(name, userhost, port, program, color, keep, compress, bp, run1, runn, params)
+            super().__init__(name, userhost, port, program, color, keep, compress, bp, run1, runn, params)
             if partitions:
                 self.partitions = partitions if isinstance(partitions, list) else partitions.split(',')
             else:
@@ -650,7 +650,7 @@ else:
             self.partition_combo = self.qos_combo = None
 
         def update(self, source):
-            super(Slurm, self).update(source)
+            super().update(source)
             self.partitions = source.partitions
             self.qos = source.qos
             if self._widget is not None:
@@ -674,7 +674,7 @@ else:
                     pass
 
         def save(self):
-            data = super(Slurm, self).save()
+            data = super().save()
             data['partitions'] = ','.join(self.partitions)
             data['qos'] = ','.join(self.qos)
             return data
@@ -784,7 +784,7 @@ else:
 
         def __init__(self, name, userhost=None, port=22, program='', color=False, keep=None, compress=True, bp='',
                      run1='', runn='', queues=None, params=None):
-            super(Torque, self).__init__(name, userhost, port, program, color, keep, compress, bp, run1, runn, params)
+            super().__init__(name, userhost, port, program, color, keep, compress, bp, run1, runn, params)
             if queues:
                 self.queues = queues if isinstance(queues, list) else queues.split(',')
             else:
@@ -792,7 +792,7 @@ else:
             self.queue_combo = None
 
         def update(self, source):
-            super(Torque, self).update(source)
+            super().update(source)
             self.queues = source.queues
             if self._widget is not None:
                 queue = self.queue_combo.currentText()
@@ -804,7 +804,7 @@ else:
                     pass
 
         def save(self):
-            data = super(Torque, self).save()
+            data = super().save()
             data['queues'] = ','.join(self.queues)
             return data
 
@@ -1470,7 +1470,7 @@ else:
 
         def __init__(self, sftp, host='/', path=None, parent=None):
             self.folder_icon = QIcon.fromTheme('folder')
-            super(RemoteDirDialog, self).__init__(parent)
+            super().__init__(parent)
             self.setWindowTitle("Select Folder")
             self.sftp = sftp
             if path is None: path = ['']

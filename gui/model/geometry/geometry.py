@@ -9,7 +9,7 @@ from ...utils.validators import can_be_float
 class GNGeometryBase(GNObject):
 
     def __init__(self, parent=None, dim=None):
-        super(GNGeometryBase, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        super().__init__(parent=parent, dim=dim, children_dim=dim)
         self.edges = [[None, None] for _ in range(0, dim)]
 
     def all_edges(self):
@@ -20,7 +20,7 @@ class GNGeometryBase(GNObject):
         return b if all(x == b for x in self.edges) else None
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNGeometryBase, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         all_names = self.get_alternative_direction_names()
 
         b = attribute_reader.get('edges')
@@ -45,7 +45,7 @@ class GNGeometryBase(GNObject):
                     if b is not None: self.edges[axis_nr][lo_hi_index] = b
 
     def _attributes_to_xml(self, element, conf):
-        super(GNGeometryBase, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         names = self.get_alternative_direction_names()
         for axis_nr in range(0, self.dim):
             for lo_hi_index in range(0, 2):
@@ -56,7 +56,7 @@ class GNGeometryBase(GNObject):
         construct_geometry_object(ordered_reader.get(), conf)
 
     def major_properties(self):
-        res = super(GNGeometryBase, self).major_properties()
+        res = super().major_properties()
         b = self.all_edges()
         if b is not None:
             res.append(('all edges', b[1]))
@@ -81,14 +81,14 @@ class GNGeometryBase(GNObject):
                 isinstance(node, GNCopy) or isinstance(node, GNAgain)
 
     def create_info(self, res, names):
-        super(GNGeometryBase, self).create_info(res, names)
+        super().create_info(res, names)
         self._require_child(res)
 
 
 class GNCartesian(GNGeometryBase):
 
     def __init__(self, parent=None, dim=None):
-        super(GNCartesian, self).__init__(parent=parent, dim=dim)
+        super().__init__(parent=parent, dim=dim)
         if dim == 2:
             self.length = None
             self.axes = 'x,y'
@@ -97,7 +97,7 @@ class GNCartesian(GNGeometryBase):
 
     def accept_as_child(self, node):
         if not self.accept_new_child(): return False
-        return super(GNCartesian, self).accept_as_child(node) or isinstance(node, GNExtrusion)
+        return super().accept_as_child(node) or isinstance(node, GNExtrusion)
 
     def get_alternative_direction_names(self):
         planar = (('left', 'right'),)
@@ -105,12 +105,12 @@ class GNCartesian(GNGeometryBase):
         return planar + (('bottom', 'top'),)
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNCartesian, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         if self.dim == 2:
             self.length = attribute_reader.get('length')
 
     def _attributes_to_xml(self, element, conf):
-        super(GNCartesian, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         if self.dim == 2:
             attr_to_xml(self, element, 'length')
 
@@ -131,7 +131,7 @@ class GNCartesian(GNGeometryBase):
         return 'geometry.Cartesian{}D'.format(self.dim)
 
     def add_child_options(self):
-        res = super(GNCartesian, self).add_child_options()
+        res = super().add_child_options()
         if self.dim == 2:
             from .types import geometry_types_3d_core_extrusion
             res.insert(0, geometry_types_3d_core_extrusion)
@@ -152,12 +152,12 @@ class GNCartesian(GNGeometryBase):
         return GNCartesian2DGeometryController(document, model, self) if self.dim == 2 else GNGeometryController(document, model, self)
 
     def major_properties(self):
-        res = super(GNCartesian, self).major_properties()
+        res = super().major_properties()
         if self.dim == 2: res.append(('length', self.length))
         return res
 
     def create_info(self, res, names):
-        super(GNCartesian, self).create_info(res, names)
+        super().create_info(res, names)
         if self.dim == 2 and not can_be_float(self.length, float_validator=lambda f: f >= 0):
             self._wrong_type(res, 'non-negative float', 'length', 'longitudinal dimension of the geometry')
 
@@ -177,12 +177,12 @@ class GNCartesian(GNGeometryBase):
 class GNCylindrical(GNGeometryBase):
 
     def __init__(self, parent=None):
-        super(GNCylindrical, self).__init__(parent=parent, dim=2)
+        super().__init__(parent=parent, dim=2)
         self.axes = 'r,z'
 
     def accept_as_child(self, node):
         if not self.accept_new_child(): return False
-        return super(GNCylindrical, self).accept_as_child(node) or isinstance(node, GNRevolution)
+        return super().accept_as_child(node) or isinstance(node, GNRevolution)
 
     def get_alternative_direction_names(self):
         return (('inner', 'outer'), ('bottom', 'top'))
@@ -203,7 +203,7 @@ class GNCylindrical(GNGeometryBase):
         return 'geometry.Cylindrical'
 
     def add_child_options(self):
-        res = super(GNCylindrical, self).add_child_options()
+        res = super().add_child_options()
         from .types import geometry_types_3d_core_revolution
         res.insert(0, geometry_types_3d_core_revolution)
         return res

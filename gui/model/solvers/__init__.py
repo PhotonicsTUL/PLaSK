@@ -47,7 +47,7 @@ class Solver(TreeFragmentModel):
     """Base class for all solver models"""
 
     def __init__(self, category, solver='', name='', parent=None, info_cb=None):
-        super(Solver, self).__init__(parent, info_cb)
+        super().__init__(parent, info_cb)
         self.category = category
         self.solver = solver
         self.name = name
@@ -204,7 +204,7 @@ from .filter import FilterSolver
 class SolversModel(TableModel):
 
     def __init__(self, parent=None, info_cb=None, *args):
-        super(SolversModel, self).__init__('solvers', parent, info_cb, *args)
+        super().__init__('solvers', parent, info_cb, *args)
         self.local_categories = []
         self.local_solvers = {}
         self.endcomments = []
@@ -230,7 +230,7 @@ class SolversModel(TableModel):
 
     def load_file_xml_element(self, element, filename=None):
         update_solvers(filename, self)
-        super(SolversModel, self).load_file_xml_element(element, filename)
+        super().load_file_xml_element(element, filename)
 
     def load_xml_element(self, element, undoable=True):
         if element is None:
@@ -273,7 +273,7 @@ class SolversModel(TableModel):
         if col == 2: self.entries[row].name = value
 
     def flags(self, index):
-        flags = super(SolversModel, self).flags(index)
+        flags = super().flags(index)
         if index.column() < 2: flags &= ~Qt.ItemIsEditable
         return flags
 
@@ -299,7 +299,7 @@ class SolversModel(TableModel):
         return "\n".join(solver.stub() for solver in self.entries)
 
     def create_info(self):
-        res = super(SolversModel, self).create_info()
+        res = super().create_info()
         names = OrderedDict()
         for i, entry in enumerate(self.entries):
             if not entry.category:

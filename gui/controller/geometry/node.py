@@ -288,7 +288,7 @@ class GNodeController(Controller):
         :param GeometryModel model:
         :param model.geometry.node.GNode node:
         """
-        super(GNodeController, self).__init__(document=document, model=model)
+        super().__init__(document=document, model=model)
         self.node = node
 
         self.defines_completer = get_defines_completer(document.defines.model, None)
@@ -319,13 +319,13 @@ class GNodeController(Controller):
         self.fill_form()
 
     def on_edit_enter(self):
-        super(GNodeController, self).on_edit_enter()
+        super().on_edit_enter()
         self.model.changed.connect(self._fill_form_cb)
         self.fill_form()
 
     def on_edit_exit(self):
         self.model.changed.disconnect(self._fill_form_cb)
-        return super(GNodeController, self).on_edit_exit()
+        return super().on_edit_exit()
 
     def get_widget(self):
         return self.form
@@ -340,5 +340,5 @@ class GNChildController(GNodeController):
 
     def __init__(self, document, model, node, child_node):
         self.child_node = child_node
-        super(GNChildController, self).__init__(document, model, node)
+        super().__init__(document, model, node)
         self.vbox.setContentsMargins(0, 0, 0, 0)

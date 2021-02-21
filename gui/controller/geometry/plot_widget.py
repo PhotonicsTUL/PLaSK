@@ -63,7 +63,7 @@ class PlotWidget(PlotWidgetBase):
                 self.controller.plot_element(plotted_tree_element, set_limits=True)
 
     def __init__(self, controller=None, parent=None, picker=None):
-        super(PlotWidget, self).__init__(controller, parent)
+        super().__init__(controller, parent)
         colors = CONFIG['geometry/material_colors'].copy()
         self.get_color = plask.ColorFromDict(colors, self.axes)
         self.picker = picker

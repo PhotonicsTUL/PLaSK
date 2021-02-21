@@ -124,7 +124,7 @@ class AttributeReader:
         """
             :param element: elementtree Element or AttributeReader (in such case self.is_sub_reader is set to True and set of attributes read are shared)
         """
-        super(AttributeReader, self).__init__()
+        super().__init__()
         if isinstance(element, AttributeReader):
             self.element = element.element
             self.read = element.read
@@ -197,7 +197,7 @@ class OrderedTagReader:
     """
 
     def __init__(self, parent_element, first_index=0):
-        # super(OrderedTagReader, self).__init__()
+        # super().__init__()
         self.parent_element = parent_element
         self.current_index = first_index
 
@@ -335,7 +335,7 @@ class UnorderedTagReader:
     """
 
     def __init__(self, parent_element):
-        # super(UnorderedTagReader, self).__init__()
+        # super().__init__()
         self.parent_element = parent_element
         self.read = set()
         tag_names = set()

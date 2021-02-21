@@ -373,7 +373,7 @@ class GridsController(Controller):
 class GridController(Controller):
 
     def __init__(self, document=None, model=None):
-        super(GridController, self).__init__(document, model)
+        super().__init__(document, model)
         #self.grid_model.changed.connect(self._model_change_cb)
 
     @property
@@ -414,14 +414,14 @@ class GridController(Controller):
         self.fill_form()
 
     def on_edit_enter(self):
-        super(GridController, self).on_edit_enter()
+        super().on_edit_enter()
         self.section_model.changed.connect(self._fill_form_cb)
         self.fill_form()
 
     def on_edit_exit(self):
         self.manager = None
         self.section_model.changed.disconnect(self._fill_form_cb)
-        return super(GridController, self).on_edit_exit()
+        return super().on_edit_exit()
 
     def select_info(self, info):
         try:

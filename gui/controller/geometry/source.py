@@ -62,7 +62,7 @@ else:
 class SourceWithPreviewWidget(QSplitter):
 
     def __init__(self, controller, parent=None):
-        super(SourceWithPreviewWidget, self).__init__(Qt.Horizontal, parent)
+        super().__init__(Qt.Horizontal, parent)
         self.controller = weakref.proxy(controller)
 
     @property
@@ -74,7 +74,7 @@ class GeometrySourceController(SourceEditController):
 
     if plask is not None:
         def __init__(self, document=None, model=None, line_numbers=True):
-            super(GeometrySourceController, self).__init__(document, model, line_numbers)
+            super().__init__(document, model, line_numbers)
             self.manager = None
             self.checked_plane = '12'
             self.timer = QTimer()
@@ -84,7 +84,7 @@ class GeometrySourceController(SourceEditController):
 
         def create_source_widget(self, parent):
             splitter = SourceWithPreviewWidget(self, parent)
-            self.source = super(GeometrySourceController, self).create_source_widget(splitter)
+            self.source = super().create_source_widget(splitter)
             self.source.toolbar.addSeparator()
             preview_action = self.source.add_action('&Preview', 'preview', None, self.show_geometry_preview)
             preview_action.setCheckable(True)
@@ -97,7 +97,7 @@ class GeometrySourceController(SourceEditController):
             return splitter
 
         def on_edit_enter(self):
-            super(GeometrySourceController, self).on_edit_enter()
+            super().on_edit_enter()
             self.source.editor.textChanged.connect(self.text_changed)
             self.last_index = None
             self._index = None
@@ -113,7 +113,7 @@ class GeometrySourceController(SourceEditController):
             except: pass
             try: self.source.editor.textChanged.disconnect(self.text_changed)
             except: pass
-            return super(GeometrySourceController, self).on_edit_exit()
+            return super().on_edit_exit()
 
     def show_geometry_preview(self, checked):
         self.geometry_view.setVisible(checked)
@@ -221,9 +221,9 @@ class GeometrySourceController(SourceEditController):
             pass
         else:
             self.document.window.goto_line(line)
-            
+
     def reconfig(self):
-        super(GeometrySourceController, self).reconfig()
+        super().reconfig()
         if self.geometry_view is not None:
             colors = CONFIG['geometry/material_colors'].copy()
             self.geometry_view.get_color = plask.ColorFromDict(colors, self.geometry_view.axes)

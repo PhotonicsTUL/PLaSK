@@ -25,7 +25,7 @@ class _UndoStack(QObject):
     cleanChanged = QtSignal(bool)
 
     def __init__(self, model):
-        super(_UndoStack, self).__init__()
+        super().__init__()
         self.model = model
 
     def isClean(self):

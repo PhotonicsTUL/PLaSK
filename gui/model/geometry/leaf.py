@@ -18,13 +18,13 @@ from ...utils.xml import xml_to_attr, attr_to_xml
 class GNLeaf(GNObject):
 
     def __init__(self, parent=None, dim=None):
-        super(GNLeaf, self).__init__(parent=parent, dim=dim, children_dim=None)
+        super().__init__(parent=parent, dim=dim, children_dim=None)
         self.material_top = None
         self.material_bottom = None
         self.material_shape = None
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNLeaf, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         self.set_material(attribute_reader.get('material'))
         if self.material_bottom is None:
             self.material_bottom = attribute_reader.get('material-bottom')
@@ -32,7 +32,7 @@ class GNLeaf(GNObject):
             self.material_shape = attribute_reader.get('material-shape')
 
     def _attributes_to_xml(self, element, conf):
-        super(GNLeaf, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         if self.material_top == self.material_bottom:
             if self.material_top is not None: element.attrib['material'] = self.material_top
         else:
@@ -41,7 +41,7 @@ class GNLeaf(GNObject):
             if self.material_shape is not None: element.attrib['material-shape'] = self.material_shape
 
     def major_properties(self):
-        res = super(GNLeaf, self).major_properties()
+        res = super().major_properties()
         if self.material_top == self.material_bottom:
             res.append(('material', self.material_bottom))
         else:
@@ -56,7 +56,7 @@ class GNLeaf(GNObject):
         return res
 
     def minor_properties(self):
-        res = super(GNLeaf, self).minor_properties()
+        res = super().minor_properties()
         res.append(('step dist', self.step_dist))
         res.append(('step num', self.step_num))
         return res
@@ -73,7 +73,7 @@ class GNLeaf(GNObject):
         return ''
 
     def create_info(self, res, names):
-        super(GNLeaf, self).create_info(res, names)
+        super().create_info(res, names)
         if not self.material_bottom or not self.material_top:
             if not self.material_bottom and not self.material_top:
                 self._require(res, 'material')
@@ -94,18 +94,18 @@ class GNBlock(GNLeaf):
     alt_names = ['length', 'width', 'height']
 
     def __init__(self, parent=None, dim=None):
-        super(GNBlock, self).__init__(parent=parent, dim=dim)
+        super().__init__(parent=parent, dim=dim)
         self.size = [None for _ in range(0, dim)]
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNBlock, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         self.size = [attribute_reader.get('d'+a) for a in conf.axes_names(self.dim)]
         for i, alt in enumerate(GNBlock.alt_names[3-self.dim:]):
             if self.size[i] is None:
                 self.size[i] = attribute_reader.get(alt)
 
     def _attributes_to_xml(self, element, conf):
-        super(GNBlock, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         for a in range(0, self.dim):
             if self.size[a] is not None: element.attrib['d'+conf.axis_name(self.dim, a)] = self.size[a]
 
@@ -117,7 +117,7 @@ class GNBlock(GNLeaf):
         return 'geometry.Block{}D'.format(self.dim)
 
     def major_properties(self):
-        res = super(GNBlock, self).major_properties()
+        res = super().major_properties()
         if any(self.size): res.append(('size', ', '.join('?' if x is None else x for x in self.size)))
         return res
 
@@ -126,7 +126,7 @@ class GNBlock(GNLeaf):
         return GNBlockController(document, model, self)
 
     def create_info(self, res, names):
-        super(GNBlock, self).create_info(res, names)
+        super().create_info(res, names)
         for i, v in enumerate(self.size):
             if not can_be_float(v, required=True): self._require(res, ('size', i), 'size component', type='float')
         # if None in self.size: self._require(res, 'size', indexes=(self.size.index(None),))
@@ -147,16 +147,16 @@ class GNBlock(GNLeaf):
 class GNCylinder(GNLeaf):
 
     def __init__(self, parent=None):
-        super(GNCylinder, self).__init__(parent=parent, dim=3)
+        super().__init__(parent=parent, dim=3)
         self.radius = None  #required in PLaSK but not in GUI
         self.height = None  #required in PLaSK but not in GUI
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNCylinder, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, 'radius', 'height')
 
     def _attributes_to_xml(self, element, conf):
-        super(GNCylinder, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'radius', 'height')
 
     def tag_name(self, full_name=True):
@@ -166,7 +166,7 @@ class GNCylinder(GNLeaf):
         return 'geometry.Cylinder'
 
     def major_properties(self):
-        res = super(GNCylinder, self).major_properties()
+        res = super().major_properties()
         res.append(('radius', self.radius))
         res.append(('height', self.height))
         return res
@@ -176,7 +176,7 @@ class GNCylinder(GNLeaf):
         return GNCylinderController(document, model, self)
 
     def create_info(self, res, names):
-        super(GNCylinder, self).create_info(res, names)
+        super().create_info(res, names)
         if not can_be_float(self.radius, required=True): self._require(res, 'radius', type='float')
         if not can_be_float(self.height, required=True): self._require(res, 'height', type='float')
 
@@ -190,15 +190,15 @@ class GNCylinder(GNLeaf):
 class GNCircle(GNLeaf):
 
     def __init__(self, parent=None, dim=None):
-        super(GNCircle, self).__init__(parent=parent, dim=dim)
+        super().__init__(parent=parent, dim=dim)
         self.radius = None  #required in PLaSK but not in GUI
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNCircle, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         self.radius = attribute_reader.get('radius')
 
     def _attributes_to_xml(self, element, conf):
-        super(GNCircle, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'radius')
 
     def tag_name(self, full_name=True):
@@ -208,12 +208,12 @@ class GNCircle(GNLeaf):
         return 'geometry.Circle' if self.dim == 2 else 'geometry.Sphere'
 
     def major_properties(self):
-        res = super(GNCircle, self).major_properties()
+        res = super().major_properties()
         res.append(('radius', self.radius))
         return res
 
     def create_info(self, res, names):
-        super(GNCircle, self).create_info(res, names)
+        super().create_info(res, names)
         if not can_be_float(self.radius, required=True): self._require(res, 'radius', type='float')
 
     def get_controller(self, document, model):
@@ -236,17 +236,17 @@ class GNCircle(GNLeaf):
 class GNTriangle(GNLeaf):
 
     def __init__(self, parent=None):
-        super(GNTriangle, self).__init__(parent=parent, dim=2)
+        super().__init__(parent=parent, dim=2)
         self.points = ((None, None), (None, None))
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNTriangle, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         n = conf.axes_names(2)
         r = attribute_reader
         self.points = ((r.get('a' + n[0]), r.get('a' + n[1])), (r.get('b' + n[0]), r.get('b' + n[1])))
 
     def _attributes_to_xml(self, element, conf):
-        super(GNTriangle, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         axis_names = conf.axes_names(2)
         for point_nr in range(0, 2):
             for axis_nr in range(0, self.dim):
@@ -260,7 +260,7 @@ class GNTriangle(GNLeaf):
         return 'geometry.Triangle'
 
     def major_properties(self):
-        res = super(GNTriangle, self).major_properties()
+        res = super().major_properties()
         points_str = ', '.join('({}, {})'.format(x[0] if x[0] else '?', x[1] if x[1] else '?')
                                for x in self.points if x != (None, None))
         if points_str: res.append(('points', points_str))
@@ -271,7 +271,7 @@ class GNTriangle(GNLeaf):
         return GNTriangleController(document, model, self)
 
     def create_info(self, res, names):
-        super(GNTriangle, self).create_info(res, names)
+        super().create_info(res, names)
         for p_nr in (0, 1):
             for i, v in enumerate(self.points[p_nr]):
                 if not can_be_float(v, required=True):
@@ -290,19 +290,19 @@ class GNTriangle(GNLeaf):
 class GNPrism(GNLeaf):
 
     def __init__(self, parent=None):
-        super(GNPrism, self).__init__(parent=parent, dim=2)
+        super().__init__(parent=parent, dim=2)
         self.points = ((None, None), (None, None))
         self.height = None
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNPrism, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         n = conf.axes_names(3)[:2]
         r = attribute_reader
         self.points = ((r.get('a' + n[0]), r.get('a' + n[1])), (r.get('b' + n[0]), r.get('b' + n[1])))
         self.height = r.get('height')
 
     def _attributes_to_xml(self, element, conf):
-        super(GNPrism, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         axis_names = conf.axes_names(3)[:2]
         for point_nr in range(0, 2):
             for axis_nr in range(0, self.dim):
@@ -317,7 +317,7 @@ class GNPrism(GNLeaf):
         return 'geometry.Prism'
 
     def major_properties(self):
-        res = super(GNPrism, self).major_properties()
+        res = super().major_properties()
         points_str = ', '.join('({}, {})'.format(x[0] if x[0] else '?', x[1] if x[1] else '?')
                                for x in self.points if x != (None, None))
         if points_str:
@@ -331,7 +331,7 @@ class GNPrism(GNLeaf):
         return GNPrismController(document, model, self)
 
     def create_info(self, res, names):
-        super(GNPrism, self).create_info(res, names)
+        super().create_info(res, names)
         for p_nr in (0, 1):
             for i, v in enumerate(self.points[p_nr]):
                 if not can_be_float(v, required=True):

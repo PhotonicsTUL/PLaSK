@@ -14,7 +14,7 @@ class TriangularTriangleGenerator(Grid):
         return e
 
     def __init__(self, grids_model, name, type, method='triangle'):
-        super(TriangularTriangleGenerator, self).__init__(grids_model, name, type, method)
+        super().__init__(grids_model, name, type, method)
         self.maxarea = None
         self.minangle = None
         self.full = None
@@ -25,7 +25,7 @@ class TriangularTriangleGenerator(Grid):
         return 2
 
     def make_xml_element(self):
-        res = super(TriangularTriangleGenerator, self).make_xml_element()
+        res = super().make_xml_element()
         options_dict = {}
         if self.maxarea is not None: options_dict['maxarea'] = self.maxarea
         if self.minangle is not None: options_dict['minangle'] = self.minangle
@@ -38,7 +38,7 @@ class TriangularTriangleGenerator(Grid):
         return res
 
     def load_xml_element(self, element):
-        super(TriangularTriangleGenerator, self).load_xml_element(element)
+        super().load_xml_element(element)
         with UnorderedTagReader(element) as reader:
             options = reader.find('options')
             if options is not None:
@@ -55,7 +55,7 @@ class TriangularTriangleGenerator(Grid):
         return TriangularTriangleGeneratorController(document=document, model=self)
 
     def create_info(self, res, rows):
-        super(TriangularTriangleGenerator, self).create_info(res, rows)
+        super().create_info(res, rows)
         if not can_be_float(self.maxarea):
             self._required(res, rows, 'maxarea', type='float')
         if not can_be_float(self.minangle):

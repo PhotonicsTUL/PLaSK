@@ -169,7 +169,7 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
                 } else {
                     auto found = changerReaders().find(operation_name);
                     if (found == changerReaders().end())
-                        throw Exception("\"{0}\" is not proper name of copy operation and so it is not allowed in <copy> tag.",
+                        throw Exception("\"{0}\" is not a proper name of copy operation and so it is not allowed in <copy> tag.",
                                         operation_name);
                     changers.append(found->second(*this));
                 }

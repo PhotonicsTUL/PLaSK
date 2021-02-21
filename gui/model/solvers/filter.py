@@ -18,7 +18,7 @@ from . import Solver
 class FilterSolver(Solver):
 
     def __init__(self, what='', name='', parent=None, info_cb=None):
-        super(FilterSolver, self).__init__('filter', parent=parent, info_cb=info_cb)
+        super().__init__('filter', parent=parent, info_cb=info_cb)
         self.what = what
         self.name = name
         self.geometry = ''

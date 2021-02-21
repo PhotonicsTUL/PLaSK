@@ -27,7 +27,7 @@ else:
     class RefactorAction(QAction):
 
         def __init__(self, parent):
-            super(RefactorAction, self).__init__(QIcon.fromTheme('show-source'),
+            super().__init__(QIcon.fromTheme('show-source'),
                                                  'Convert Script to Python&3', parent)
             self.triggered.connect(self.execute)
 

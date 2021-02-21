@@ -34,7 +34,7 @@ class Grid(TreeFragmentModel):
             return etree.Element("mesh", {"name": name, "type": type})
 
     def __init__(self, grids_model, name=None, type=None, method=None):
-        super(Grid, self).__init__(parent=grids_model)
+        super().__init__(parent=grids_model)
         if name is not None: self.name = name
         if type is not None: self.type = type
         if method is not None: self._method = method
@@ -118,7 +118,7 @@ class TreeFragmentGrid(Grid):
 
     def __init__(self, grids_model, name=None, type=None, method=None, element=None):
         """Either element or rest of parameters (method is still optional), should be provided."""
-        super(TreeFragmentGrid, self).__init__(grids_model)
+        super().__init__(grids_model)
         if element is None:
             self.element = Grid.contruct_empty_xml_element(name, type, method)
         else:
@@ -173,7 +173,7 @@ from .types import construct_grid, display_name
 class GridsModel(TableModel):
 
     def __init__(self, parent=None, info_cb=None, *args):
-        super(GridsModel, self).__init__('grids', parent, info_cb, *args)
+        super().__init__('grids', parent, info_cb, *args)
         self._message = None
         self.endcomments = []
 
@@ -211,7 +211,7 @@ class GridsModel(TableModel):
         #else: raise IndexError('column number for MaterialsModel should be 0, 1, or 2, but is %d' % col)
 
     def flags(self, index):
-        flags = super(GridsModel, self).flags(index)
+        flags = super().flags(index)
         if index.column() == 1: flags &= ~Qt.ItemIsEditable
         return flags
 
@@ -228,7 +228,7 @@ class GridsModel(TableModel):
         return res
 
     def create_info(self):
-        res = super(GridsModel, self).create_info()
+        res = super().create_info()
         names = OrderedDict()
         for i, entry in enumerate(self.entries):
             if not entry.name:

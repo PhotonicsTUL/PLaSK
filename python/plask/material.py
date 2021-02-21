@@ -130,7 +130,7 @@ class complex(alloy):
     def __init__(self, base=None):
         from . import print_log
         print_log('warning', "Decorator @material.complex is obsolete, use @material.alloy instead")
-        super(complex, self).__init__(base)
+        super().__init__(base)
 
 
 const = staticmethod

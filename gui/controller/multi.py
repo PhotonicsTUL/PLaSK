@@ -97,10 +97,10 @@ class GUIAndSourceController(MultiEditorController):
     def on_edit_enter(self):
         self.document.window.showsource_action.triggered.connect(self.change_editor)
         self.editorWidget.setCurrentIndex(int(self.document.window.get_show_source_state(do_enabled=True)))
-        super(GUIAndSourceController, self).on_edit_enter()
+        super().on_edit_enter()
 
     def on_edit_exit(self):
-        result = super(GUIAndSourceController, self).on_edit_exit()
+        result = super().on_edit_exit()
         self.document.window.showsource_action.triggered.disconnect(self.change_editor)
         self.document.window.set_show_source_state(None)
         return result

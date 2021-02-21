@@ -21,6 +21,7 @@ _NAMES = {
     'replace': "<replace object>",
     'toblock': "<make simple block>",
     'delete': "<delete object>",
+    'simplify-gradients': "<simplify gradients>",
     'again': "[Repeat object]",
     'copy': "[Copy and modify object]"
 }

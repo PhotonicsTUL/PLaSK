@@ -280,7 +280,7 @@ class PlotWidgetBase(QWidget):
                 self._actions['forward'].setEnabled(True)
 
     def __init__(self, controller=None, parent=None):
-        super(PlotWidgetBase, self).__init__(parent)
+        super().__init__(parent)
 
         self.selectors = []
         self.guidelines = {}
@@ -331,7 +331,7 @@ class PlotWidgetBase(QWidget):
         self.canvas.draw()
 
     def resizeEvent(self, event):
-        super(PlotWidgetBase, self).resizeEvent(event)
+        super().resizeEvent(event)
         self.figure.set_tight_layout(0)
 
     def plot_updater(self, set_limits, plane='12'):

@@ -220,7 +220,7 @@ class TableModel(TableModelEditMethods, SectionModel, QAbstractTableModel):
 
     def mark_info_invalid(self):
         self._row_to_errors = None   # this need to be refreshed
-        super(TableModel, self).mark_info_invalid()
+        super().mark_info_invalid()
 
     # QAbstractTableModel implementation
     def rowCount(self, parent=QModelIndex()):
@@ -251,7 +251,7 @@ class TableModel(TableModelEditMethods, SectionModel, QAbstractTableModel):
             #if max_level == info.Info.INFO: return QColor(220, 220, 255)
 
     def flags(self, index):
-        flags = super(TableModel, self).flags(index) | Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        flags = super().flags(index) | Qt.ItemIsSelectable | Qt.ItemIsEnabled
 
         if not self.is_read_only(): flags |= Qt.ItemIsEditable
         #flags |= Qt.ItemIsDragEnabled

@@ -52,10 +52,10 @@ class GNGeometryController(GNObjectController):
             grid_layout.addWidget(res[1], row, 3)
             self.edges.append(res)
             row += 1
-        super(GNGeometryController, self).construct_form(roles=False)
+        super().construct_form(roles=False)
 
     def fill_form(self):
-        super(GNGeometryController, self).fill_form()
+        super().fill_form()
         for dir in range(0, self.node.dim):
             for lh in range(0, 2):
                 with BlockQtSignals(self.edges[dir][lh]):
@@ -69,8 +69,8 @@ class GNCartesian2DGeometryController(GNGeometryController):
         self.length = self.construct_line_edit('Length:', unit=u'µm', node_property_name='length', display_property_name='longitudinal dimension of the geometry')
         self.length.setToolTip(u'&lt;cartesian2d <b>length</b>="" ...&gt;<br/>'
             u'Longitudinal dimension of the geometry (float [µm]). Default value is: +infty.')
-        super(GNCartesian2DGeometryController, self).construct_form()
+        super().construct_form()
 
     def fill_form(self):
-        super(GNCartesian2DGeometryController, self).fill_form()
+        super().fill_form()
         self.length.setText(none_to_empty(self.node.length))

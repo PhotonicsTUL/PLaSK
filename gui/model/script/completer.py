@@ -72,7 +72,7 @@ class CompletionsModel(QAbstractTableModel):
     _icons = {}
 
     def __init__(self, items):
-        super(CompletionsModel, self).__init__()
+        super().__init__()
         self.items = items
 
         if not self._icons:

@@ -25,7 +25,7 @@ from ...model.grids.types import construct_grid, meshes_types, generators_types,
 class NewGridDialog(QDialog):
 
     def __init__(self, parent=None):
-        super(NewGridDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("Create New Mesh")
 
         kind = QGroupBox("Kind")

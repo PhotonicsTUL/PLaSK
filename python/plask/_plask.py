@@ -299,7 +299,7 @@ class Solver:
          class MySolver(Solver):
 
              def __init__(self, name=''):
-                 super(MySolver, self).__init__(name)
+                 super().__init__(name)
                  self.param = 0.
                  self.geometry = None
                  self.mesh = None

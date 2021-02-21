@@ -22,15 +22,15 @@ from ...utils.xml import attr_to_xml, xml_to_attr
 class GNAgain(GNode):
 
     def __init__(self, parent=None, ref=None):
-        super(GNAgain, self).__init__(parent)
+        super().__init__(parent)
         self.ref = ref
 
     def _attributes_from_xml(self, attribute_reader, reader):
-        super(GNAgain, self)._attributes_from_xml(attribute_reader, reader)
+        super()._attributes_from_xml(attribute_reader, reader)
         self.ref = attribute_reader.get('ref')
 
     def _attributes_to_xml(self, element, conf):
-        super(GNAgain, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'ref')
 
     def tag_name(self, full_name=True):
@@ -40,7 +40,7 @@ class GNAgain(GNode):
         return ''
 
     def major_properties(self):
-        res = super(GNAgain, self).major_properties()
+        res = super().major_properties()
         res.append(('referenced object', self.ref))
         return res
 
@@ -52,7 +52,7 @@ class GNAgain(GNode):
         raise IndexError()
 
     def create_info(self, res, names):
-        super(GNAgain, self).create_info(res, names)
+        super().create_info(res, names)
         if not self.ref: self._require(res, 'ref', 'referenced object ("ref")')
 
     #def model_to_real_index(self, index):  #TODO ??
@@ -72,18 +72,18 @@ class GNAgain(GNode):
 class GNCopyChild(GNode):
 
     def __init__(self, parent=None, object=None):
-        super(GNCopyChild, self).__init__(parent)
+        super().__init__(parent)
         self.object = object
 
     def _attributes_from_xml(self, attribute_reader, conf):
         self.object = attribute_reader.get('object')
 
     def _attributes_to_xml(self, element, conf):
-        super(GNCopyChild, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'object')
 
     def major_properties(self):
-        res = super(GNCopyChild, self).major_properties()
+        res = super().major_properties()
         res.append(('object', self.object))
         return res
 
@@ -92,7 +92,7 @@ class GNCopyChild(GNode):
         return GNCopyChildController(document, model, self)
 
     def create_info(self, res, names):
-        super(GNCopyChild, self).create_info(res, names)
+        super().create_info(res, names)
         if not self.object: self._require(res, 'object')
 
 
@@ -106,22 +106,22 @@ class GNCDelete(GNCopyChild):
         return GNCDeleteController(document, model, self)
 
     def get_model_path(self, stop=None):
-        path = super(GNCDelete, self).get_model_path(stop)
+        path = super().get_model_path(stop)
         return path[:-1]
 
 
 class GNCReplace(GNCopyChild):
 
     def __init__(self, parent=None, object=None, replacer=None):
-        super(GNCReplace, self).__init__(parent, object)
+        super().__init__(parent, object)
         self.replacer = replacer    # within PLaSK
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNCReplace, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         self.replacer = attribute_reader.get('with')
 
     def _attributes_to_xml(self, element, conf):
-        super(GNCReplace, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         if self.replacer is not None: element.attrib['with'] = self.replacer
 
     def _children_from_xml(self, ordered_reader, conf):
@@ -139,13 +139,13 @@ class GNCReplace(GNCopyChild):
         return "replace"
 
     def create_info(self, res, names):
-        super(GNCReplace, self).create_info(res, names)
+        super().create_info(res, names)
         if (1 if self.replacer else 0) + len(self.children) != 1:
             self._append_info(res, 'Exactly one: "with" attribute or child must be given in {}.'.format(self.tag_name()),
                               Info.ERROR, property='replacer')
 
     def major_properties(self):
-        res = super(GNCReplace, self).major_properties()
+        res = super().major_properties()
         res.append(('with', self.replacer))
         return res
 
@@ -160,7 +160,7 @@ class GNCReplace(GNCopyChild):
 class GNCToBlock(GNCopyChild):
 
     def __init__(self, parent=None, object=None, material=None):
-        super(GNCToBlock, self).__init__(parent, object)
+        super().__init__(parent, object)
         self.name = None
         self.role = None
         self.material_top = None
@@ -168,7 +168,7 @@ class GNCToBlock(GNCopyChild):
         self.material_shape = None
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNCToBlock, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         self.material_bottom = self.material_top = attribute_reader.get('material')
         if self.material_bottom is None:
             self.material_bottom = attribute_reader.get('material-bottom')
@@ -177,7 +177,7 @@ class GNCToBlock(GNCopyChild):
         xml_to_attr(attribute_reader, self, 'name', 'role')
 
     def _attributes_to_xml(self, element, conf):
-        super(GNCToBlock, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         if self.material_top == self.material_bottom:
             if self.material_top is not None: element.attrib['material'] = self.material_top
         else:
@@ -190,7 +190,7 @@ class GNCToBlock(GNCopyChild):
         return "toblock"
 
     def major_properties(self):
-        res = super(GNCToBlock, self).major_properties()
+        res = super().major_properties()
         if self.material_top == self.material_bottom:
             res.append(('material', self.material_bottom))
         else:
@@ -208,7 +208,7 @@ class GNCToBlock(GNCopyChild):
         return GNCToBlockController(document, model, self)
 
     def create_info(self, res, names):
-        super(GNCToBlock, self).create_info(res, names)
+        super().create_info(res, names)
         if not self.material_bottom or not self.material_top:
             if not self.material_bottom and not self.material_top:
                 self._require(res, 'material')
@@ -229,15 +229,15 @@ class GNCopy(GNObject):
     }
 
     def __init__(self, parent=None, name=None, source=None):
-        super(GNCopy, self).__init__(parent, name)
+        super().__init__(parent, name)
         self.source = source
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNCopy, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         self.source = attribute_reader.get('from')
 
     def _attributes_to_xml(self, element, conf):
-        super(GNCopy, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         if self.source is not None: element.attrib['from'] = self.source
 
     def _children_from_xml(self, ordered_reader, conf):
@@ -301,12 +301,12 @@ class GNCopy(GNObject):
         return real_path
 
     def major_properties(self):
-        res = super(GNCopy, self).major_properties()
+        res = super().major_properties()
         res.append(('from', self.source))
         return res
 
     def create_info(self, res, names):
-        super(GNCopy, self).create_info(res, names)
+        super().create_info(res, names)
         if not self.source: self._require(res, 'source', '"from" attribute')
 
     @staticmethod

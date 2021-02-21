@@ -20,7 +20,7 @@ class BlockQtSignals:
     """
 
     def __init__(self, *objects):
-        super(BlockQtSignals, self).__init__()
+        super().__init__()
         self.objects = objects
         self.signals_blocked_state = tuple(o.blockSignals(True) for o in self.objects)
 

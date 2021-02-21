@@ -42,7 +42,7 @@ else:
 class PlaceDetailsEditor(QWidget):
 
     def __init__(self, delegate, parent=None):
-        super(PlaceDetailsEditor, self).__init__(parent)
+        super().__init__(parent)
         self.delegate = delegate
 
     def data_changed(self, *args):
@@ -53,7 +53,7 @@ class RectangularPlaceSide(PlaceDetailsEditor):
     Model = RectangularBC.PlaceSide
 
     def __init__(self, delegate, parent=None):
-        super(RectangularPlaceSide, self).__init__(delegate, parent)
+        super().__init__(delegate, parent)
         self.setAutoFillBackground(True)
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 4, 0)
@@ -85,7 +85,7 @@ class RectangularPlaceSide(PlaceDetailsEditor):
         self.setLayout(layout)
 
     def showEvent(self, event):
-        super(RectangularPlaceSide, self).showEvent(event)
+        super().showEvent(event)
         self.object.setFocus()
 
     def fill_details(self, obj, pth):
@@ -113,7 +113,7 @@ class RectangularPlaceLine(PlaceDetailsEditor):
     Model = RectangularBC.PlaceLine
 
     def __init__(self, delegate, parent=None):
-        super(RectangularPlaceLine, self).__init__(delegate, parent)
+        super().__init__(delegate, parent)
         self.setAutoFillBackground(True)
         layout = QHBoxLayout()
         layout.setContentsMargins(4, 0, 4, 0)
@@ -148,7 +148,7 @@ class RectangularPlaceLine(PlaceDetailsEditor):
         self.setLayout(layout)
 
     def showEvent(self, event):
-        super(RectangularPlaceLine, self).showEvent(event)
+        super().showEvent(event)
         self.position.setFocus()
 
     def load_data(self, data):
@@ -181,7 +181,7 @@ if preview_available:
                 if self.controller.plot_auto_refresh: self.plot()
 
         def __init__(self, controller=None, parent=None, picker=None):
-            super(PlotWidget, self).__init__(controller, parent)
+            super().__init__(controller, parent)
             colors = CONFIG['geometry/material_colors'].copy()
             self.get_color = BwColor(colors, self.axes)
             self.first = True
@@ -221,7 +221,7 @@ if preview_available:
 class BoundaryConditionsDialog(QDialog):
 
     def __init__(self, controller, schema, data, parent=None):
-        super(BoundaryConditionsDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle(schema.label2 + " Boundary Conditions")
         self.setWindowFlags(Qt.Window)
 
@@ -435,7 +435,7 @@ class BoundaryConditionsDialog(QDialog):
         self.preview.canvas.draw()
 
     def showEvent(self, event):
-        super(BoundaryConditionsDialog, self).showEvent(event)
+        super().showEvent(event)
         if self.info is not None and self.info.isVisible():
             self.info.setFixedHeight(self.info.document().size().height())
 
@@ -535,13 +535,13 @@ class PlaceDelegate(QStyledItemDelegate):
             self._first_enter = False
             return True
         else:
-            return super(PlaceDelegate, self).eventFilter(editor, event)
+            return super().eventFilter(editor, event)
 
 
 class PlaceDetailsDelegate(HTMLDelegate):
 
     def __init__(self, dialog, controller, defines=None, parent=None):
-        super(PlaceDetailsDelegate, self).__init__(parent)
+        super().__init__(parent)
         self.dialog = weakref.proxy(dialog)
         self.controller = controller
         self.defines = defines

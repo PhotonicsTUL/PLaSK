@@ -131,7 +131,7 @@ class FieldWidget(QWidget):
             self.canvas.draw()
 
     def __init__(self, controller=None, parent=None):
-        super(FieldWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.controller = weakref.proxy(controller)
         self.figure = Figure()
@@ -248,7 +248,7 @@ class ResultsWindow(QMainWindow):
         return fields
 
     def __init__(self, filename, parent=None):
-        super(ResultsWindow, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle(filename)
         self.plotted_field = None
 
@@ -314,7 +314,7 @@ class ResultsWindow(QMainWindow):
             return False
 
     def resizeEvent(self, event):
-        super(ResultsWindow, self).resizeEvent(event)
+        super().resizeEvent(event)
         self.plot_widget.figure.tight_layout(pad=0.1)
 
     def field_changed(self, name):
@@ -361,7 +361,7 @@ class ResultsWindow(QMainWindow):
 class AnalyzeResultsAction(QAction):
 
     def __init__(self, parent):
-        super(AnalyzeResultsAction, self).__init__(QIcon.fromTheme('edit-find'),
+        super().__init__(QIcon.fromTheme('edit-find'),
                                              'Anal&yze Results...', parent)
         self.setShortcut(QKeySequence('Ctrl+Shift+A'))
         self.triggered.connect(self.execute)

@@ -23,7 +23,7 @@ from ...utils.compat import next
 class GNZero(GNode):
 
     def __init__(self, parent=None, dim=None, parent_index=None):
-        super(GNZero, self).__init__(parent=parent, dim=dim, parent_index=parent_index)
+        super().__init__(parent=parent, dim=dim, parent_index=parent_index)
 
     def tag_name(self, full_name=True):
         return 'zero'
@@ -41,12 +41,12 @@ class GNZero(GNode):
 class GNGap(GNode):
 
     def __init__(self, parent=None):
-        super(GNGap, self).__init__(parent=parent, dim=2)
+        super().__init__(parent=parent, dim=2)
         self.size = None
         self.size_is_total = False
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNGap, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         self.size = attribute_reader.get('size')
         if self.size is not None:
             self.size_is_total = False
@@ -55,7 +55,7 @@ class GNGap(GNode):
             if self.size is not None: self.size_is_total = True
 
     def _attributes_to_xml(self, element, conf):
-        super(GNGap, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         if self.size is not None:
             element.attrib['total' if self.size_is_total else 'size'] = self.size
 
@@ -67,13 +67,13 @@ class GNGap(GNode):
         return GNGapController(document, model, self)
 
     def major_properties(self):
-        res = super(GNGap, self).major_properties()
+        res = super().major_properties()
         if self.size is not None:
             res.append(('total container size' if self.size_is_total else 'gap size', self.size))
         return res
 
     def create_info(self, res, names):
-        super(GNGap, self).create_info(res, names)
+        super().create_info(res, names)
         if not can_be_float(self.size, required=True, float_validator=lambda f: f >= 0):
             self._require(res, 'size', 'gap or total size', type='non-negative float')
 
@@ -107,7 +107,7 @@ class GNContainerBase(GNObject):
         return GNContainerChildController(document, model, self, child)
 
     def child_properties(self, child):
-        res = super(GNContainerBase, self).child_properties(child)
+        res = super().child_properties(child)
         res.append(('path', child.path))
         return res
 
@@ -166,7 +166,7 @@ class GNContainerBase(GNObject):
         :param GNReadConf conf: read configuration (axes, etc.)
         :return etree.Element: XML element which represent child (possibly item tag)
         """
-        child_element = super(GNContainerBase, self).get_child_xml_element(child, conf)
+        child_element = super().get_child_xml_element(child, conf)
         res = self.get_item_xml_element(child, conf)
         if res.attrib or child.itemcomments or child.itemendcomments:
             for c in child.itemcomments:
@@ -194,7 +194,7 @@ class GNStackBase(GNContainerBase):
         child.in_parent_attrs['zero'] = item_attr_reader.get('zero')
 
     def get_item_xml_element(self, child, conf):
-        res = super(GNStackBase, self).get_item_xml_element(child, conf)
+        res = super().get_item_xml_element(child, conf)
         zero = child.in_parent_attrs.get('zero')
         if zero is not None: res.attrib['zero'] = zero
         return res
@@ -208,13 +208,13 @@ class GNStack(GNStackBase):
     """2D/3D (multi-)stack"""
 
     def __init__(self, parent=None, dim=None):
-        super(GNStack, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        super().__init__(parent=parent, dim=dim, children_dim=dim)
         self.repeat = None
         self.shift = None
         self.aligners = [GNAligner(None, None) for _ in range(0, dim-1)]
 
     def accept_as_child(self, node):
-        return super(GNStack, self).accept_as_child(node) or isinstance(node, GNZero)
+        return super().accept_as_child(node) or isinstance(node, GNZero)
 
     def aligners_dir(self):
         return (0,) if self.children_dim == 2 else (0, 1)
@@ -224,28 +224,28 @@ class GNStack(GNStackBase):
         return dict(zip(self.aligners_dir(), aligners))
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNStack, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         self.repeat = attribute_reader.get('repeat')
         self.shift = attribute_reader.get('shift')
         self.aligners = conf.read_aligners(attribute_reader, self.children_dim, *self.aligners_dir())
 
     def _attributes_to_xml(self, element, conf):
-        super(GNStack, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'repeat', 'shift')
         conf.write_aligners(element, self.children_dim, self.aligners_dict())
 
     def item_attributes_from_xml(self, child, item_attr_reader, conf):
-        super(GNStack, self).item_attributes_from_xml(child, item_attr_reader, conf)
+        super().item_attributes_from_xml(child, item_attr_reader, conf)
         child.in_parent_aligners = conf.read_aligners(item_attr_reader, self.children_dim, *self.aligners_dir())
 
     def child_from_xml(self, child_element, conf):
         if child_element.tag == 'zero':
             GNZero(self, self.children_dim, parent_index=-1)
         else:
-            super(GNStack, self).child_from_xml(child_element, conf)
+            super().child_from_xml(child_element, conf)
 
     def get_item_xml_element(self, child, conf):
-        res = super(GNStack, self).get_item_xml_element(child, conf)
+        res = super().get_item_xml_element(child, conf)
         if child.in_parent_aligners is not None:
             conf.write_aligners(res, self.children_dim, self.aligners_dict(child.in_parent_aligners))
         return res
@@ -260,7 +260,7 @@ class GNStack(GNStackBase):
             return 'geometry.MultiStack{}D'.format(self.dim)
 
     def create_info(self, res, names):
-        super(GNStack, self).create_info(res, names)
+        super().create_info(res, names)
         zeros = tuple(z for z in self.children if isinstance(z, GNZero))
         zeros_num = len(zeros) + (1 if self.shift else 0)
         if zeros_num > 1: self._append_error(res,
@@ -270,7 +270,7 @@ class GNStack(GNStackBase):
         if not can_be_int(self.repeat, int_validator=lambda i: i >= 0): self._wrong_type(res, 'non-negative integer', 'repeat')
 
     def add_child_options(self):
-        res = super(GNStack, self).add_child_options()
+        res = super().add_child_options()
         res.insert(0, {'zero': GNZero.from_xml})
         return res
 
@@ -286,14 +286,14 @@ class GNStack(GNStackBase):
         return res
 
     def major_properties(self):
-        res = super(GNStack, self).major_properties()
+        res = super().major_properties()
         res += self._aligners_to_properties(self.aligners)
         res.append(('repeat', self.repeat))
         res.append(('shift', self.shift))
         return res
 
     def child_properties(self, child):
-        res = super(GNStack, self).child_properties(child)
+        res = super().child_properties(child)
         return res + self._aligners_to_properties(child.in_parent_aligners)
 
     def get_controller(self, document, model):
@@ -320,7 +320,7 @@ class GNStack(GNStackBase):
         return sum(1 for c in self.children if not isinstance(c, GNZero))
 
     def real_to_model_index(self, path_iterator):
-        index = super(GNStack, self).real_to_model_index(path_iterator)
+        index = super().real_to_model_index(path_iterator)
         real_count = self.real_children_count
         index = real_count - 1 - index % real_count  # reduce to the first period and change to model order
         i = 0   # considering GNZero nodes:
@@ -332,27 +332,27 @@ class GNStack(GNStackBase):
     def model_to_real_index(self, index, model):
         #if isinstance(self.children[index], GNZero)    #TODO throw exception
         index -= sum(1 for i in range(0, index) if isinstance(self.children[i], GNZero))
-        return super(GNStack, self).model_to_real_index(self.real_children_count - 1 - index, model)
+        return super().model_to_real_index(self.real_children_count - 1 - index, model)
 
 
 class GNShelf(GNStackBase):
     """(multi-)shelf"""
 
     def __init__(self, parent=None):
-        super(GNShelf, self).__init__(parent=parent, dim=2, children_dim=2)
+        super().__init__(parent=parent, dim=2, children_dim=2)
         self.repeat = None
         self.shift = None
         self.flat = None
 
     def accept_as_child(self, node):
-        return super(GNShelf, self).accept_as_child(node) or isinstance(node, GNZero) or isinstance(node, GNGap)
+        return super().accept_as_child(node) or isinstance(node, GNZero) or isinstance(node, GNGap)
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNShelf, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, 'repeat', 'shift', 'flat')
 
     def _attributes_to_xml(self, element, conf):
-        super(GNShelf, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'repeat', 'shift', 'flat')
 
     def child_from_xml(self, child_element, conf):
@@ -361,7 +361,7 @@ class GNShelf(GNStackBase):
         elif child_element.tag == 'gap':
             GNGap.from_xml(child_element, conf)
         else:
-            super(GNShelf, self).child_from_xml(child_element, conf)
+            super().child_from_xml(child_element, conf)
 
     def tag_name(self, full_name=True):
         return "shelf{}d".format(self.dim) if full_name else "shelf"
@@ -370,23 +370,23 @@ class GNShelf(GNStackBase):
         return 'geometry.Shelf2D{}'
 
     def add_child_options(self):
-        res = super(GNShelf, self).add_child_options()
+        res = super().add_child_options()
         res.insert(0, {'gap': GNGap.from_xml, 'zero': GNZero.from_xml})
         return res
 
     def major_properties(self):
-        res = super(GNShelf, self).major_properties()
+        res = super().major_properties()
         res.append(('repeat', self.repeat))
         res.append(('shift', self.shift))
         return res
 
     def minor_properties(self):
-        res = super(GNShelf, self).minor_properties()
+        res = super().minor_properties()
         res.append(('flat', self.flat))
         return res
 
     def create_info(self, res, names):
-        super(GNShelf, self).create_info(res, names)
+        super().create_info(res, names)
         zeros = tuple(z for z in self.children if isinstance(z, GNZero))
         zeros_num = len(zeros) + (1 if self.shift else 0)
         if zeros_num > 1: self._append_error(res,
@@ -416,26 +416,26 @@ class GNAlignContainer(GNContainerBase):
     """2D/3D align container"""
 
     def __init__(self, parent=None, dim=None):
-        super(GNAlignContainer, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        super().__init__(parent=parent, dim=dim, children_dim=dim)
         self.aligners = [GNAligner(None, None) for _ in range(0, self.children_dim)]
 
     def aligners_dir(self):
         return range(0, self.children_dim)
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNAlignContainer, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         self.aligners = conf.read_aligners(attribute_reader, self.children_dim)
 
     def _attributes_to_xml(self, element, conf):
-        super(GNAlignContainer, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         conf.write_aligners(element, self.children_dim, self.aligners)
 
     def item_attributes_from_xml(self, child, item_attr_reader, conf):
-        super(GNAlignContainer, self).item_attributes_from_xml(child, item_attr_reader, conf)
+        super().item_attributes_from_xml(child, item_attr_reader, conf)
         child.in_parent_aligners = conf.read_aligners(item_attr_reader, self.children_dim)
 
     def get_item_xml_element(self, child, conf):
-        res = super(GNAlignContainer, self).get_item_xml_element(child, conf)
+        res = super().get_item_xml_element(child, conf)
         if child.in_parent_aligners is not None:
             conf.write_aligners(res, self.children_dim, child.in_parent_aligners)
         return res
@@ -455,12 +455,12 @@ class GNAlignContainer(GNContainerBase):
         return res
 
     def create_info(self, res, names):
-        super(GNAlignContainer, self).create_info(res, names)
+        super().create_info(res, names)
         for i, a in enumerate(self.aligners):
             if not can_be_float(a.value): self._wrong_type(res, 'float', ('positions', i, 1), 'component of default items position')
 
     def major_properties(self):
-        return super(GNAlignContainer, self).major_properties() + self._aligners_to_properties(self.aligners)
+        return super().major_properties() + self._aligners_to_properties(self.aligners)
 
     def child_properties(self, child):
         if child.in_parent_aligners is None: return []

@@ -21,7 +21,7 @@ class GNObject(GNode):
     #next_serial_nr = 0
 
     def __init__(self, parent=None, dim=None, children_dim=None):
-        super(GNObject, self).__init__(parent, dim, children_dim)
+        super().__init__(parent, dim, children_dim)
         self.name = None
         self.role = None
         self.axes = None
@@ -32,14 +32,14 @@ class GNObject(GNode):
     #    return '#GUI{}'.format(self.serial_nr)
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNObject, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, 'name', 'role', 'axes')
         self.step_num = attribute_reader.get('steps-num')
         self.step_dist = attribute_reader.get('steps-dist')
         if self.axes is not None: conf.axes = self.axes
 
     def _attributes_to_xml(self, element, conf):
-        super(GNObject, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'name', 'role', 'axes')
         if self.step_num is not None: element.attrib['steps-num'] = self.step_num
         if self.step_dist is not None: element.attrib['steps-dist'] = self.step_dist
@@ -65,16 +65,16 @@ class GNObject(GNode):
         return GNObjectController(document, model, self)
 
     def minor_properties(self):
-        res = super(GNObject, self).minor_properties()
+        res = super().minor_properties()
         res.append(('axes', self.axes))
         res.append(('role', self.role))
         return res
-    
+
     def get_axes_conf(self):
         if self.axes is not None: return axes_as_list(self.axes)
-        return super(GNObject, self).get_axes_conf()
+        return super().get_axes_conf()
 
     def create_info(self, res, names):
-        super(GNObject, self).create_info(res, names)
+        super().create_info(res, names)
         if self.name is not None:
             names.setdefault(self.name, []).append(self)

@@ -80,7 +80,7 @@ class AttrMulti(Attr):
 
 class AttrChoice(Attr):
     def __init__(self, tag, name, label, required, help, typ, choices, other=(), cs=False, default=None):
-        super(AttrChoice, self).__init__(tag, name, label, required, help, typ, default)
+        super().__init__(tag, name, label, required, help, typ, default)
         self.choices = choices
         self.other = other
         self.cs = cs
@@ -88,13 +88,13 @@ class AttrChoice(Attr):
 
 class AttrBool(AttrChoice):
     def __init__(self, tag, name, label, required, help, typ, default=None):
-        super(AttrBool, self).__init__(tag, name, label, required, help, typ,
+        super().__init__(tag, name, label, required, help, typ,
                                        ('yes', 'no'), ('true', 'false', '1', '0'), default=default)
 
 
 class AttrGeometry(Attr):
     def __init__(self, tag, name, label, required, help, typ, geometry_type, default=None):
-        super(AttrGeometry, self).__init__(tag, name, label, required, help, typ, default)
+        super().__init__(tag, name, label, required, help, typ, default)
         self.type = geometry_type
 
 
@@ -108,7 +108,7 @@ class AttrGeometryPath(Attr):
 
 class AttrMesh(Attr):
     def __init__(self, tag, name, label, required, help, typ, mesh_types, default=None):
-        super(AttrMesh, self).__init__(tag, name, label, required, help, typ, default)
+        super().__init__(tag, name, label, required, help, typ, default)
         self.types = mesh_types
 
 
@@ -139,7 +139,7 @@ class SchemaSolver(Solver):
 
     def __init__(self, category, schema, lib=None, solver='', geometry_type=None, mesh_types=None,
                  need_mesh=True, name='', parent=None, info_cb=None):
-        super(SchemaSolver, self).__init__(category, solver, name, parent, info_cb)
+        super().__init__(category, solver, name, parent, info_cb)
         self.lib = lib
         self.schema = schema
         self.geometry_type = geometry_type
@@ -233,7 +233,7 @@ class SchemaSolver(Solver):
 
     def load_xml_element(self, element):
         self.set_fresh_data()
-        super(SchemaSolver, self).load_xml_element(element)
+        super().load_xml_element(element)
         self.incomments = {}
         with UnorderedTagReader(element) as reader:
             el = reader.find('geometry')
@@ -308,7 +308,7 @@ class SchemaSolver(Solver):
                                     Info.ERROR, rows=(row,), what=(tag.name, attr.name)))
 
     def create_info(self, row):
-        res = super(SchemaSolver, self).create_info(row)
+        res = super().create_info(row)
         if not self.geometry and self.geometry_type is not None:
             res.append(Info("Geometry required for solver '{}' [row: {}]".format(self.name, row+1),
                             Info.ERROR, rows=(row,), what='geometry'))

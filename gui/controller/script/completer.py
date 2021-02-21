@@ -21,7 +21,7 @@ from ...model.script.completer import CompletionsModel, get_completions
 class CompletionsController(QCompleter):
 
     def __init__(self, edit, parent=None):
-        super(CompletionsController, self).__init__(parent)
+        super().__init__(parent)
         self._edit = edit
         self.setWidget(edit)
         self.setCompletionMode(QCompleter.PopupCompletion)

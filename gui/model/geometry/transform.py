@@ -41,25 +41,25 @@ class GNTransform(GNObject):
         return 0    # some transform, like mirror, can produce some fake, extra children
 
     def create_info(self, res, names):
-        super(GNTransform, self).create_info(res, names)
+        super().create_info(res, names)
         self._require_child(res)
 
 
 class GNTranslation(GNTransform):
 
     def __init__(self, parent=None, dim=None):
-        super(GNTranslation, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        super().__init__(parent=parent, dim=dim, children_dim=dim)
         self.vector = [None for _ in range(0, dim)]
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNTranslation, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         axes_names = conf.axes_names(self.dim)
         self.vector = [None for _ in range(0, self.dim)]
         for i in range(0, self.dim):
             self.vector[i] = attribute_reader.get(axes_names[i])
 
     def _attributes_to_xml(self, element, conf):
-        super(GNTranslation, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         axes_names = conf.axes_names(self.dim)
         for i in range(0, self.dim):
             v = self.vector[i]
@@ -72,13 +72,13 @@ class GNTranslation(GNTransform):
         return 'geometry.Translation{}D'.format(self.dim)
 
     def major_properties(self):
-        res = super(GNTranslation, self).major_properties()
+        res = super().major_properties()
         if any(self.vector):
             res.append(('delta', ', '.join(x if x else '0' for x in self.vector)))
         return res
 
     def create_info(self, res, names):
-        super(GNTranslation, self).create_info(res, names)
+        super().create_info(res, names)
         for i, v in enumerate(self.vector):
             if not can_be_float(v): self._require(res, ('vector', i), 'component of translation vector', type='float')
         #if None in self.vector: self._require(res, 'vector', indexes=(self.vector.index(None),))
@@ -103,7 +103,7 @@ class GNTranslation(GNTransform):
 class GNClip(GNTransform):
 
     def __init__(self, parent=None, dim=None):
-        super(GNClip, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        super().__init__(parent=parent, dim=dim, children_dim=dim)
         self.left = None
         self.right = None
         self.bottom = None
@@ -117,11 +117,11 @@ class GNClip(GNTransform):
         return d2 if self.dim == 2 else ('back', 'front') + d2
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNClip, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, *self.bound_names())
 
     def _attributes_to_xml(self, element, conf):
-        super(GNClip, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         attr_to_xml(self, element, *self.bound_names())
 
     def tag_name(self, full_name=True):
@@ -131,12 +131,12 @@ class GNClip(GNTransform):
         return 'geometry.Clip{}D'.format(self.dim)
 
     def major_properties(self):
-        res = super(GNClip, self).major_properties()
+        res = super().major_properties()
         res.extend((n, getattr(self, n)) for n in self.bound_names())
         return res
 
     def create_info(self, res, names):
-        super(GNClip, self).create_info(res, names)
+        super().create_info(res, names)
         for b in self.bound_names():
             if not can_be_float(getattr(self, b)): self._wrong_type(res, 'float', b)
 
@@ -161,7 +161,7 @@ class GNAxisBaseTransform(GNTransform):
     '''Base class common for GNFlip and GNMirror. Includes axis attribute.'''
 
     def __init__(self, parent=None, dim=None):
-        super(GNAxisBaseTransform, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        super().__init__(parent=parent, dim=dim, children_dim=dim)
         self.axis = None
 
     def set_axis(self, axis, conf = None):
@@ -184,20 +184,20 @@ class GNAxisBaseTransform(GNTransform):
         return self.get_axes_conf_dim()[self.axis]
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNAxisBaseTransform, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         self.set_axis(attribute_reader.get('axis'), conf)
 
     def _attributes_to_xml(self, element, conf):
-        super(GNAxisBaseTransform, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         a_str = self.axis_str(conf)
         if a_str is not None: element.attrib['axis'] = a_str
 
     def create_info(self, res, names):
-        super(GNAxisBaseTransform, self).create_info(res, names)
+        super().create_info(res, names)
         if self.axis is None: self._require(res, 'axis')
 
     def major_properties(self):
-        res = super(GNAxisBaseTransform, self).major_properties()
+        res = super().major_properties()
         res.append(('axis', self.axis_str()))
         return res
 
@@ -255,7 +255,7 @@ class GNMirror(GNAxisBaseTransform):
 class GNIntersection(GNTransform):
 
     def __init__(self, parent=None, dim=None):
-        super(GNIntersection, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        super().__init__(parent=parent, dim=dim, children_dim=dim)
         self.axis = None
 
     def tag_name(self, full_name=True):
@@ -287,15 +287,15 @@ class GNIntersection(GNTransform):
 class GNExtrusion(GNTransform):
 
     def __init__(self, parent=None):
-        super(GNExtrusion, self).__init__(parent=parent, dim=3, children_dim=2)
+        super().__init__(parent=parent, dim=3, children_dim=2)
         self.length = None
-        
+
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNExtrusion, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         self.length = attribute_reader.get('length')
 
     def _attributes_to_xml(self, element, conf):
-        super(GNExtrusion, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'length')
 
     def tag_name(self, full_name=True):
@@ -305,7 +305,7 @@ class GNExtrusion(GNTransform):
         return 'geometry.Extrusion'
 
     def major_properties(self):
-        res = super(GNExtrusion, self).major_properties()
+        res = super().major_properties()
         res.append(('length', self.length))
         return res
 
@@ -323,19 +323,19 @@ class GNExtrusion(GNTransform):
 class GNRevolution(GNTransform):
 
     def __init__(self, parent=None):
-        super(GNTransform, self).__init__(parent=parent, dim=3, children_dim=2)
+        super().__init__(parent=parent, dim=3, children_dim=2)
         self.auto_clip = None
         self.rev_step_num = None
         self.rev_step_dist = None
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNRevolution, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         self.auto_clip = attribute_reader.get('auto-clip')
         self.rev_step_num = attribute_reader.get('rev-steps-num')
         self.rev_step_dist = attribute_reader.get('rev-steps-dist')
 
     def _attributes_to_xml(self, element, conf):
-        super(GNRevolution, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         if self.auto_clip is not None: element.attrib['auto-clip'] = self.auto_clip
         if self.rev_step_num is not None: element.attrib['rev-steps-num'] = self.rev_step_num
         if self.rev_step_dist is not None: element.attrib['rev-steps-dist'] = self.rev_step_dist
@@ -347,7 +347,7 @@ class GNRevolution(GNTransform):
         return 'geometry.Revolution'
 
     def major_properties(self):
-        res = super(GNRevolution, self).major_properties()
+        res = super().major_properties()
         res.append(('auto-clip', self.auto_clip))
         return res
 
@@ -365,13 +365,13 @@ class GNRevolution(GNTransform):
 class GNArrange(GNTransform):
 
     def __init__(self, parent=None, dim=None):
-        super(GNArrange, self).__init__(parent=parent, dim=dim, children_dim=dim)
+        super().__init__(parent=parent, dim=dim, children_dim=dim)
         self.step = [None for _ in range(0, dim)]
         self.count = None
         self.warning = None
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNArrange, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         axes_names = conf.axes_names(self.dim)
         self.step = [None for _ in range(0, self.dim)]
         for i in range(0, self.dim):
@@ -380,7 +380,7 @@ class GNArrange(GNTransform):
         self.warning = attribute_reader.get('warning')
 
     def _attributes_to_xml(self, element, conf):
-        super(GNArrange, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         axes_names = conf.axes_names(self.dim)
         for i in range(0, self.dim):
             v = self.step[i]
@@ -399,7 +399,7 @@ class GNArrange(GNTransform):
         return GNArrangeController(document, model, self)
 
     def major_properties(self):
-        res = super(GNArrange, self).major_properties()
+        res = super().major_properties()
         if any(self.step):
             res.append(('step', ', '.join(x if x else '0' for x in self.step)))
         if self.count:
@@ -407,7 +407,7 @@ class GNArrange(GNTransform):
         return res
 
     def create_info(self, res, names):
-        super(GNArrange, self).create_info(res, names)
+        super().create_info(res, names)
         if not can_be_int(self.count, required=True): self._require(res, 'count', type='integer')
         for i, s in enumerate(self.step):
             if not can_be_float(s): self._wrong_type(res, 'float', ('step', i), 'component of the spacing vector')
@@ -436,13 +436,13 @@ class GNArrange(GNTransform):
 class GNLattice(GNTransform):
 
     def __init__(self, parent=None):
-        super(GNLattice, self).__init__(parent=parent, dim=3, children_dim=3)
+        super().__init__(parent=parent, dim=3, children_dim=3)
         self.vectors = ((None, None, None), (None, None, None))
         self.segments = None
         self.segcomments = []   # comments before segments in XML
 
     def _attributes_from_xml(self, attribute_reader, conf):
-        super(GNLattice, self)._attributes_from_xml(attribute_reader, conf)
+        super()._attributes_from_xml(attribute_reader, conf)
         n = conf.axes_names(3)
         r = attribute_reader
         self.vectors = (
@@ -451,7 +451,7 @@ class GNLattice(GNTransform):
         )
 
     def _attributes_to_xml(self, element, conf):
-        super(GNLattice, self)._attributes_to_xml(element, conf)
+        super()._attributes_to_xml(element, conf)
         axis_names = conf.axes_names(3)
         for vector_nr in range(0, 2):
             for axis_nr in range(0, self.dim):
@@ -469,7 +469,7 @@ class GNLattice(GNTransform):
         return GNLatticeController(document, model, self)
 
     def major_properties(self):
-        res = super(GNLattice, self).major_properties()
+        res = super().major_properties()
         vectors_str = ', '.join('({}, {}, {})'.format(x[0] if x[0] else '0',
                                                       x[1] if x[1] else '0',
                                                       x[2] if x[2] else '0')
@@ -478,7 +478,7 @@ class GNLattice(GNTransform):
         return res
 
     def create_info(self, res, names):
-        super(GNLattice, self).create_info(res, names)
+        super().create_info(res, names)
         for vec_idx in range(0, 2):
             vec = self.vectors[vec_idx]
             for i, v in enumerate(vec):
@@ -509,7 +509,7 @@ class GNLattice(GNTransform):
         return 0
 
     def make_xml_element(self, conf):
-        el = super(GNLattice, self).make_xml_element(conf)
+        el = super().make_xml_element(conf)
         seg_el = etree.Element('segments')
         seg_el.text = none_to_empty(self.segments)
         for c in self.segcomments:
@@ -522,4 +522,4 @@ class GNLattice(GNTransform):
         require_no_children(seg_el)
         self.segments = get_text(seg_el)
         self.segcomments = seg_el.comments
-        super(GNLattice, self)._children_from_xml(ordered_reader, conf)
+        super()._children_from_xml(ordered_reader, conf)

@@ -101,7 +101,7 @@ class _CombolItemView(QListView):
 class LaunchDialog(QDialog):
 
     def __init__(self, window, launch_config, parent=None):
-        super(LaunchDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("Launch Computations")
         self.setWindowFlags(self.windowFlags() & ~Qt.WindowMaximizeButtonHint)
 

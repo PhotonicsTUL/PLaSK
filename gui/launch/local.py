@@ -28,7 +28,7 @@ from ..utils.files import which
 class LaunchThread(QThread):
 
     def __init__(self, program, fname, dirname, dock, main_window, args, defs):
-        super(LaunchThread, self).__init__()
+        super().__init__()
         self.main_window = main_window
         env = os.environ.copy()
         if CONFIG['workarounds/disable_omp']:

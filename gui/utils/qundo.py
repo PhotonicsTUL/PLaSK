@@ -8,7 +8,7 @@ class UndoCommandWithSetter(QUndoCommand):
     """
 
     def __init__(self, model, setter, new_value, old_value, action_name, parent=None):
-        super(UndoCommandWithSetter, self).__init__(action_name, parent)
+        super().__init__(action_name, parent)
         self.model = model
         self.setter = setter
         self.new_value = new_value

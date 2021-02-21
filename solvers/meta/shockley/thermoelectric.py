@@ -60,7 +60,7 @@ class ThermoElectric(plask.Solver):
     _Electrical = None
 
     def __init__(self, name):
-        super(ThermoElectric, self).__init__(name)
+        super().__init__(name)
         self.thermal = self._Thermal(name)
         self.electrical = self._Electrical(name)
         self.__reconnect()

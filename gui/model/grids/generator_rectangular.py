@@ -121,7 +121,7 @@ class Refinements(TableModelEditMethods, QAbstractTableModel):
             self.entries[row].set_attr_by_index(col+self.one, empty_to_none(value))
 
     def flags(self, index):
-        flags = super(Refinements, self).flags(index) | Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        flags = super().flags(index) | Qt.ItemIsSelectable | Qt.ItemIsEnabled
         if not self.is_read_only(): flags |= Qt.ItemIsEditable
         return flags
 
@@ -170,7 +170,7 @@ class RectangularSimpleGenerator(Grid):
         return e
 
     def __init__(self, grids_model, name, type, method='simple'):
-        super(RectangularSimpleGenerator, self).__init__(grids_model, name, type, method)
+        super().__init__(grids_model, name, type, method)
         self.split = None
         self.boundaries_comments = []
 
@@ -179,7 +179,7 @@ class RectangularSimpleGenerator(Grid):
         return 1 if self.type == 'ordered' else int(self.type[-2])
 
     def make_xml_element(self):
-        res = super(RectangularSimpleGenerator, self).make_xml_element()
+        res = super().make_xml_element()
         for c in self.boundaries_comments:
             res.append(etree.Comment(c))
         if self.split is not None:
@@ -198,10 +198,10 @@ class RectangularSimpleGenerator(Grid):
 
     def load_xml_element(self, element):
         if isinstance(element, UnorderedTagReader):
-            super(RectangularSimpleGenerator, self).load_xml_element(element.parent_element)
+            super().load_xml_element(element.parent_element)
             self._read_xml(element)
         else:
-            super(RectangularSimpleGenerator, self).load_xml_element(element)
+            super().load_xml_element(element)
             with UnorderedTagReader(element) as reader:
                 self._read_xml(reader)
 
@@ -210,7 +210,7 @@ class RectangularSimpleGenerator(Grid):
         return RectangularSimpleGeneratorController(document=document, model=self)
 
     def create_info(self, res, rows):
-        super(RectangularSimpleGenerator, self).create_info(res, rows)
+        super().create_info(res, rows)
         if not can_be_bool(self.split):
             self._required(res, rows, 'split', type='bool')
 
@@ -224,14 +224,14 @@ class RectangularRegularGenerator(RectangularSimpleGenerator):
         return e
 
     def __init__(self, grids_model, name, type):
-        super(RectangularRegularGenerator, self).__init__(grids_model, name, type, 'regular')
+        super().__init__(grids_model, name, type, 'regular')
         self.spacing0 = None
         self.spacing1 = None
         self.spacing2 = None
         self.spacing_comments = []
 
     def make_xml_element(self):
-        res = super(RectangularRegularGenerator, self).make_xml_element()
+        res = super().make_xml_element()
         dim = self.dim
         if dim == 1:
             if self.spacing0 is not None:
@@ -252,7 +252,7 @@ class RectangularRegularGenerator(RectangularSimpleGenerator):
 
     def load_xml_element(self, element):
         with UnorderedTagReader(element) as reader:
-            super(RectangularRegularGenerator, self).load_xml_element(reader)
+            super().load_xml_element(reader)
             spacing = reader.find('spacing')
             if spacing is not None:
                 dim = self.dim
@@ -270,7 +270,7 @@ class RectangularRegularGenerator(RectangularSimpleGenerator):
         return RectangularRegularGeneratorController(document=document, model=self)
 
     def create_info(self, res, rows):
-        super(RectangularRegularGenerator, self).create_info(res, rows)
+        super().create_info(res, rows)
         dim = self.dim
         for i in range(dim):
             if not can_be_float(getattr(self, 'spacing{}'.format(i))):
@@ -282,7 +282,7 @@ class RectangularRefinedGenerator(Grid):
 
     def __init__(self, grids_model, name, type, method, aspect=None, refinements=None,
                  warn_missing=None, warn_multiple=None, warn_outside=None):
-        super(RectangularRefinedGenerator, self).__init__(grids_model, name, type, method)
+        super().__init__(grids_model, name, type, method)
         self.aspect = aspect
         self.refinements = Refinements(self, refinements)
         self.warn_missing = warn_missing
@@ -370,7 +370,7 @@ class RectangularRefinedGenerator(Grid):
             self.warnings_comments = []
 
     def create_info(self, res, rows):
-        super(RectangularRefinedGenerator, self).create_info(res, rows)
+        super().create_info(res, rows)
         self.refinements.create_info(res, rows, 'refinements')
         if not can_be_float(self.aspect): self._required(res, rows, 'aspect', type='float')
         for w in RectangularDivideGenerator.warnings:
@@ -391,7 +391,7 @@ class RectangularDivideGenerator(RectangularRefinedGenerator):
     def __init__(self, grids_model, name, type, gradual=None, aspect=None, prediv=None, postdiv=None, refinements=None,
                  warn_missing=None, warn_multiple=None, warn_outside=None):
 
-        super(RectangularDivideGenerator, self).__init__(grids_model, name, type, 'divide', aspect,
+        super().__init__(grids_model, name, type, 'divide', aspect,
                                                          refinements, warn_missing, warn_multiple, warn_outside)
         self.gradual = [None for _ in range(0, self.dim)] if gradual is None else gradual
         self.prediv = [None for _ in range(0, self.dim)] if prediv is None else prediv
@@ -415,7 +415,7 @@ class RectangularDivideGenerator(RectangularRefinedGenerator):
                 dst.append(div_element)
 
     def make_xml_element(self):
-        res = super(RectangularDivideGenerator, self).make_xml_element()
+        res = super().make_xml_element()
         options = {}
         if self.dim == 1 or all(g == self.gradual[0] for g in self.gradual):
             if self.gradual[0] is not None:
@@ -445,7 +445,7 @@ class RectangularDivideGenerator(RectangularRefinedGenerator):
             setattr(self, div_name + '_comments', div_element.comments)
 
     def load_xml_element(self, element):
-        super(RectangularDivideGenerator, self).load_xml_element(element)
+        super().load_xml_element(element)
         with UnorderedTagReader(element) as reader:
             self._div_from_xml('prediv', reader)
             self._div_from_xml('postdiv', reader)
@@ -457,7 +457,7 @@ class RectangularDivideGenerator(RectangularRefinedGenerator):
         return RectangularDivideGeneratorController(document=document, model=self)
 
     def create_info(self, res, rows):
-        super(RectangularDivideGenerator, self).create_info(res, rows)
+        super().create_info(res, rows)
         for div_type in ('prediv', 'postdiv'):
             for i, p in enumerate(getattr(self, div_type)):
                 if not can_be_int(p, int_validator=lambda n: n>0):
@@ -479,7 +479,7 @@ class RectangularSmoothGenerator(RectangularRefinedGenerator):
     def __init__(self, grids_model, name, type, aspect=None, small=None, large=None, factor=None, refinements=None,
                  warn_missing=None, warn_multiple=None, warn_outside=None):
 
-        super(RectangularSmoothGenerator, self).__init__(grids_model, name, type, 'smooth', aspect,
+        super().__init__(grids_model, name, type, 'smooth', aspect,
                                                          refinements, warn_missing, warn_multiple, warn_outside)
         self.small = [None for _ in range(0, self.dim)] if small is None else small
         self.large = [None for _ in range(0, self.dim)] if large is None else large
@@ -501,7 +501,7 @@ class RectangularSmoothGenerator(RectangularRefinedGenerator):
                     element.attrib[attr + str(i)] = value[i]
 
     def make_xml_element(self):
-        res = super(RectangularSmoothGenerator, self).make_xml_element()
+        res = super().make_xml_element()
         for c in self.steps_comments:
             res.append(etree.Comment(c))
         if self.small is not None or self.factor is not None:
@@ -521,7 +521,7 @@ class RectangularSmoothGenerator(RectangularRefinedGenerator):
             setattr(self, name, [reader.get(name + str(i)) for i in range(0, self.dim)])
 
     def load_xml_element(self, element):
-        super(RectangularSmoothGenerator, self).load_xml_element(element)
+        super().load_xml_element(element)
         with UnorderedTagReader(element) as reader:
             self.load_xml_common(reader)
             steps = reader.find('steps')
@@ -538,7 +538,7 @@ class RectangularSmoothGenerator(RectangularRefinedGenerator):
             self.endcomments = reader.get_comments()
 
     def create_info(self, res, rows):
-        super(RectangularSmoothGenerator, self).create_info(res, rows)
+        super().create_info(res, rows)
         for i, p in enumerate(self.small):
             if not can_be_float(p): self._required(res, rows, ('small', i), 'a component of smallest element', type='float')
         for i, p in enumerate(self.large):

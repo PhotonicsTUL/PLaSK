@@ -24,7 +24,7 @@ class ETreeModel(QAbstractItemModel):
         :param root: ElementTree or sth. that has element attribute which is ElementTree
         :param parent: Qt parent
         """
-        super(ETreeModel, self).__init__(parent)
+        super().__init__(parent)
         self._root = root
 
     @property

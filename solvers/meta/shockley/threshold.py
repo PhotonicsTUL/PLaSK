@@ -42,7 +42,7 @@ class ThresholdSearch(ThermoElectric):
     skip_thermal = False
 
     def __init__(self, name):
-        super(ThresholdSearch, self).__init__(name)
+        super().__init__(name)
         self.diffusion = self._Diffusion(name)
         self.gain = self._Gain(name)
         self.optical = self._Optical(name)
@@ -67,7 +67,7 @@ class ThresholdSearch(ThermoElectric):
 
         This method should be called if some of the internal solvers were changed manually.
         """
-        super(ThresholdSearch, self).reconnect()
+        super().reconnect()
         self.__reconnect()
 
     def _parse_xpl(self, tag, manager):
@@ -114,7 +114,7 @@ class ThresholdSearch(ThermoElectric):
             elif tag == 'loop':
                 self.skip_thermal = tag.get('skip-thermal', self.skip_thermal)
                 self._read_attr(tag, 'inittemp', self.gain, float, 'T0')
-            super(ThresholdSearch, self)._parse_xpl(tag, manager)
+            super()._parse_xpl(tag, manager)
 
     def on_initialize(self):
         if not self.skip_thermal:
@@ -853,11 +853,11 @@ class ThresholdSearchCyl(ThresholdSearch):
     def __init__(self, name=''):
         from optical.effective import EffectiveFrequencyCyl
         self._Optical = EffectiveFrequencyCyl
-        super(ThresholdSearchCyl, self).__init__(name)
+        super().__init__(name)
         self.maxlam = None
 
     # def on_initialize(self):
-    #     super(ThresholdSearchCyl, self).on_initialize()
+    #     super().on_initialize()
 
     def get_lam(self):
         """
@@ -911,7 +911,7 @@ class ThresholdSearchCyl(ThresholdSearch):
         else:
             if tag == 'optical-root':
                 self._read_attr(tag, 'determinant', self.optical, str, 'determinant_mode')
-            super(ThresholdSearchCyl, self)._parse_xpl(tag, manager)
+            super()._parse_xpl(tag, manager)
 
     def get_vert_optical_determinant(self, vlam):
         """
@@ -948,7 +948,7 @@ class ThresholdSearchCyl(ThresholdSearch):
         plask.ylabel("Determinant [ar.u.]")
 
     def _get_info(self):
-        return super(ThresholdSearchCyl, self)._get_info() + [
+        return super()._get_info() + [
             "LP{}{} mode wavelength [nm]:     {:8.3f}".format(self.lpm, self.lpn, self.optical.modes[self.modeno].lam.real)
         ]
 
@@ -1096,14 +1096,14 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
     def __init__(self, name=''):
         from optical.slab import BesselCyl
         self._Optical = BesselCyl
-        super(ThresholdSearchBesselCyl, self).__init__(name)
+        super().__init__(name)
         self.maxlam = None
 
     # def on_initialize(self):
-    #     super(ThresholdSearchBesselCyl, self).on_initialize()
+    #     super().on_initialize()
 
     # def on_invalidate(self):
-    #     super(ThresholdSearchBesselCyl, self).on_invalidate()
+    #     super().on_invalidate()
 
     def get_lam(self):
         """
@@ -1187,10 +1187,10 @@ class ThresholdSearchBesselCyl(ThresholdSearch):
             self._read_attr(tag, 'dist', self.optical.pml, float, 'dist')
             self._read_attr(tag, 'size', self.optical.pml, float, 'size')
         else:
-            super(ThresholdSearchBesselCyl, self)._parse_xpl(tag, manager)
+            super()._parse_xpl(tag, manager)
 
     def _get_info(self):
-        return super(ThresholdSearchBesselCyl, self)._get_info() + [
+        return super()._get_info() + [
             "HE{}{} mode wavelength [nm]:     {:8.3f}".format(self.hem, self.hen, self.optical.modes[self.modeno].lam.real)
         ]
 
@@ -1319,10 +1319,10 @@ class ThresholdSearch2D(ThresholdSearch):
     def __init__(self, name=''):
         from optical.effective import EffectiveIndex2D
         self._Optical = EffectiveIndex2D
-        super(ThresholdSearch2D, self).__init__(name)
+        super().__init__(name)
 
     def on_initialize(self):
-        super(ThresholdSearch2D, self).on_initialize()
+        super().on_initialize()
         points = plask.mesh.Rectangular2D.SimpleGenerator()(self.optical.geometry).elements.mesh
         self._maxneff = max(self.optical.geometry.get_material(point).Nr(self.optical.wavelength.real).real
                             for point in points)
@@ -1369,7 +1369,7 @@ class ThresholdSearch2D(ThresholdSearch):
         else:
             if tag == 'optical-root':
                 self._read_attr(tag, 'determinant', self.optical, str)
-            super(ThresholdSearch2D, self)._parse_xpl(tag, manager)
+            super()._parse_xpl(tag, manager)
 
     def get_optical_determinant(self, neff):
         """
@@ -1440,7 +1440,7 @@ class ThresholdSearch2D(ThresholdSearch):
         plask.ylabel("Determinant [ar.u.]")
 
     def _get_info(self):
-        return super(ThresholdSearch2D, self)._get_info() + [
+        return super()._get_info() + [
             "Effective index:     {:8.3f}".format(self.optical.modes[self.modeno].neff.real)
         ]
 
@@ -1570,10 +1570,10 @@ class ThresholdSearchFourier2D(ThresholdSearch):
     def __init__(self, name=''):
         from optical.slab import Fourier2D
         self._Optical = Fourier2D
-        super(ThresholdSearchFourier2D, self).__init__(name)
+        super().__init__(name)
 
     def on_initialize(self):
-        super(ThresholdSearchFourier2D, self).on_initialize()
+        super().on_initialize()
         points = plask.mesh.Rectangular2D.SimpleGenerator()(self.optical.geometry).elements.mesh
         self._maxneff = max(self.optical.geometry.get_material(point).Nr(self.optical.wavelength.real).real
                             for point in points)
@@ -1643,7 +1643,7 @@ class ThresholdSearchFourier2D(ThresholdSearch):
             self._read_attr(tag, 'dist', self.optical.pml, float, 'dist')
             self._read_attr(tag, 'size', self.optical.pml, float, 'size')
         else:
-            super(ThresholdSearchFourier2D, self)._parse_xpl(tag, manager)
+            super()._parse_xpl(tag, manager)
 
     def get_optical_determinant(self, neff):
         """
@@ -1695,7 +1695,7 @@ class ThresholdSearchFourier2D(ThresholdSearch):
         plask.ylabel("Determinant [ar.u.]")
 
     def _get_info(self):
-        return super(ThresholdSearchFourier2D, self)._get_info() + [
+        return super()._get_info() + [
             "Effective index:     {:8.3f}".format(self.optical.modes[self.modeno].neff.real)
         ]
 

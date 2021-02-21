@@ -376,7 +376,7 @@ else:
     class RemoteLaunchThread(QThread):
 
         def __init__(self, ssh, account, fname, workdir, dock, main_window, args, defs):
-            super(RemoteLaunchThread, self).__init__()
+            super().__init__()
             self.main_window = main_window
 
             command = account.program or 'plask'
@@ -907,7 +907,7 @@ else:
 
         def __init__(self, sftp, host='/', path=None, parent=None):
             self.folder_icon = QIcon.fromTheme('folder')
-            super(RemoteDirDialog, self).__init__(parent)
+            super().__init__(parent)
             self.setWindowTitle("Select Folder")
             self.sftp = sftp
             if path is None: path = ['']

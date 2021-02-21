@@ -25,7 +25,7 @@ class GNAligner:
     POSITION_ORIGIN = 3
 
     def __init__(self, position=None, value=None):
-        super(GNAligner, self).__init__()
+        super().__init__()
         self.position = position
         self.value = value
 
@@ -112,7 +112,7 @@ class GNReadConf:
     """
 
     def __init__(self, conf=None, axes=None, parent=None):
-        super(GNReadConf, self).__init__()
+        super().__init__()
         self._axes = ['long', 'tran', 'vert']
         if conf is not None:
             self.axes = conf.axes

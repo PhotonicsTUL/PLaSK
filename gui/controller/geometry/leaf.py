@@ -131,10 +131,10 @@ class GNBlockController(GNLeafController):
         self.size = self.construct_point_controllers(row_name='Size', field_names=field_names, change_cb=lambda point:
             weakself._set_node_by_setter_undoable(setter, list(point), weakself.node.size, 'change block size'),
         )
-        super(GNBlockController, self).construct_form()
+        super().construct_form()
 
     def fill_form(self):
-        super(GNBlockController, self).fill_form()
+        super().fill_form()
         for i in range(0, self.node.dim):
             self.size[i].setText(none_to_empty(self.node.size[i]))
 
@@ -155,10 +155,10 @@ class GNTriangleController(GNLeafController):
                                                         change_cb=lambda point: weakself._on_point_set(0, point)),
                       self.construct_point_controllers(row_name='Second',
                                                        change_cb=lambda point: weakself._on_point_set(1, point)))
-        super(GNTriangleController, self).construct_form()
+        super().construct_form()
 
     def fill_form(self):
-        super(GNTriangleController, self).fill_form()
+        super().fill_form()
         for i in range(0, self.node.dim):
             self.points[0][i].setText(none_to_empty(self.node.points[0][i]))
             self.points[1][i].setText(none_to_empty(self.node.points[1][i]))
@@ -171,10 +171,10 @@ class GNCircleController(GNLeafController):
         self.radius = self.construct_line_edit('Radius:', unit=u'µm', node_property_name='radius')
         self.radius.setToolTip(u'&lt;{} <b>radius</b>="" ...&gt;<br/>'
                                u'Radius. (float [µm], required)'.format(self.node.tag_name(False)))
-        super(GNCircleController, self).construct_form()
+        super().construct_form()
 
     def fill_form(self):
-        super(GNCircleController, self).fill_form()
+        super().fill_form()
         self.radius.setText(none_to_empty(self.node.radius))
 
 
@@ -190,10 +190,10 @@ class GNCylinderController(GNLeafController):
                                                display_property_name='height of the cylinder')
         self.height.setToolTip(u'&lt;cylinder radius="" <b>height</b>="" ...&gt;<br/>'
                                u'Height of the cylinder. (float [µm], required)')
-        super(GNCylinderController, self).construct_form()
+        super().construct_form()
 
     def fill_form(self):
-        super(GNCylinderController, self).fill_form()
+        super().fill_form()
         self.radius.setText(none_to_empty(self.node.radius))
         self.height.setText(none_to_empty(self.node.height))
 
@@ -220,10 +220,10 @@ class GNPrismController(GNLeafController):
         self.height.setToolTip(u'&lt;prism radius="" <b>height</b>="" ...&gt;<br/>'
                                u'Height of the prism. (float [µm], required)')
 
-        super(GNPrismController, self).construct_form()
+        super().construct_form()
 
     def fill_form(self):
-        super(GNPrismController, self).fill_form()
+        super().fill_form()
         for i in range(0, self.node.dim):
             self.points[0][i].setText(none_to_empty(self.node.points[0][i]))
             self.points[1][i].setText(none_to_empty(self.node.points[1][i]))

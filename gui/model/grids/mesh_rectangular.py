@@ -69,7 +69,7 @@ class RectangularMesh1D(Grid):
         return e
 
     def __init__(self, grids_model, name, type):
-        super(RectangularMesh1D, self).__init__(grids_model, name, type)
+        super().__init__(grids_model, name, type)
         self.axis = AxisConf()
 
     @property
@@ -77,7 +77,7 @@ class RectangularMesh1D(Grid):
         return self.type == 'regular'
 
     def make_xml_element(self):
-        res = super(RectangularMesh1D, self).make_xml_element()
+        res = super().make_xml_element()
         for c in self.axis.comments:
             res.append(etree.Comment(c))
         self.axis.fill_xml_element(etree.SubElement(res, 'axis'))
@@ -85,7 +85,7 @@ class RectangularMesh1D(Grid):
         return res
 
     def load_xml_element(self, element):
-        super(RectangularMesh1D, self).load_xml_element(element)
+        super().load_xml_element(element)
         with OrderedTagReader(element) as r:
             el = r.get('axis')
             self.axis.set_from_xml(el)
@@ -97,7 +97,7 @@ class RectangularMesh1D(Grid):
         return RectangularMesh1DController(document=document, model=self)
 
     def create_info(self, res, rows):
-        super(RectangularMesh1D, self).create_info(res, rows)
+        super().create_info(res, rows)
         self.axis.create_info(self, res, rows, 'axis')
 
 
@@ -111,7 +111,7 @@ class RectangularMesh(Grid):
         return e
 
     def __init__(self, grids_model, dim, name):
-        super(RectangularMesh, self).__init__(grids_model, name, 'rectangular{}d'.format(dim))
+        super().__init__(grids_model, name, 'rectangular{}d'.format(dim))
         self.dim = dim
         self.axis = [AxisConf() for _ in range(0, self.dim)]
 
@@ -120,7 +120,7 @@ class RectangularMesh(Grid):
         return "axis{}".format(nr)
 
     def make_xml_element(self):
-        res = super(RectangularMesh, self).make_xml_element()
+        res = super().make_xml_element()
         for i in range(0, self.dim):
             for c in self.axis[i].comments:
                 res.append(etree.Comment(c))
@@ -129,7 +129,7 @@ class RectangularMesh(Grid):
         return res
 
     def load_xml_element(self, element):
-        super(RectangularMesh, self).load_xml_element(element)
+        super().load_xml_element(element)
         with UnorderedTagReader(element) as r:
             for i in range(0, self.dim):
                 el = r.get(RectangularMesh.axis_tag_name(i))
@@ -143,6 +143,6 @@ class RectangularMesh(Grid):
         return RectangularMeshController(document=document, model=self)
 
     def create_info(self, res, rows):
-        super(RectangularMesh, self).create_info(res, rows)
+        super().create_info(res, rows)
         for i in range(0, self.dim):
             self.axis[i].create_info(self, res, rows, ('axis', i))

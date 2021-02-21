@@ -159,7 +159,7 @@ class MainWindow(QMainWindow):
     config_changed = QtSignal()
 
     def __init__(self, filename=None, Document=XPLDocument):
-        super(MainWindow, self).__init__()
+        super().__init__()
 
         self.document = None
 
@@ -405,7 +405,7 @@ class MainWindow(QMainWindow):
 
 
     def showEvent(self, event):
-        super(MainWindow, self).showEvent(event)
+        super().showEvent(event)
         self.shown.emit()
 
     def _update_info_color(self):
@@ -900,7 +900,7 @@ class MainWindow(QMainWindow):
 
 class GotoDialog(QDialog):
     def __init__(self, parent=None):
-        super(GotoDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("Go to Line")
         vbox = QVBoxLayout()
         hbox = QHBoxLayout()

@@ -545,7 +545,7 @@ BOOST_PYTHON_MODULE(_plask)
            u8"     class MySolver(Solver):\n\n"
 
            u8"         def __init__(self, name=''):\n"
-           u8"             super(MySolver, self).__init__(name)\n"
+           u8"             super().__init__(name)\n"
            u8"             self.param = 0.\n"
            u8"             self.geometry = None\n"
            u8"             self.mesh = None\n"

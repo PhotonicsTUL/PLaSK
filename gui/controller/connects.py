@@ -24,13 +24,13 @@ class FlowDelegate(DefinesCompletionDelegate):
     attribute = None
 
     def __init__(self, document, parent):
-        super(FlowDelegate, self).__init__(document.defines.model, parent)
+        super().__init__(document.defines.model, parent)
         self.solvers_model = document.solvers.model
         self.document = document
 
     def createEditor(self, parent, option, index):
         items = self.get_slots()
-        if not items: return super(FlowDelegate, self).createEditor(parent, option, index)
+        if not items: return super().createEditor(parent, option, index)
         combo = QComboBox(parent)
         combo.setEditable(True)
         combo.addItems(items)

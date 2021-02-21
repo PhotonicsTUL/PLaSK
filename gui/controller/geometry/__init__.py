@@ -42,7 +42,7 @@ except ImportError:
 class GeometryTreeView(QTreeView):
 
     def __init__(self, *args, **kwargs):
-        super(GeometryTreeView, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self._current_index = None
 
     @QtSlot()
@@ -120,7 +120,7 @@ class GeometryController(Controller):
 
     def __init__(self, document, model=None):
         if model is None: model = GeometryModel()
-        super(GeometryController, self).__init__(document, model)
+        super().__init__(document, model)
 
         weakself = weakref.proxy(self)
 

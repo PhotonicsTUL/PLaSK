@@ -90,10 +90,10 @@ class GNLatticeController(GNObjectController):
         self.segments.setToolTip(u'One or more polygons formed by two or more vertices separated by ``;`` characters.\n'
                                  u'Each vertex consists of two space-separated integers. Every polygon should be put\n'
                                  u'in a separate line: it either adds or removes nodes from the lattice.')
-        super(GNLatticeController, self).construct_form()
+        super().construct_form()
 
     def fill_form(self):
-        super(GNLatticeController, self).fill_form()
+        super().fill_form()
         for i in range(0, self.node.dim):
             self.vectors[0][i].setText(none_to_empty(self.node.vectors[0][i]))
             self.vectors[1][i].setText(none_to_empty(self.node.vectors[1][i]))
@@ -158,7 +158,7 @@ class NavigationToolbar(NavigationToolbar2QT):
 
     def __init__(self, canvas, parent, coordinates=True):
         self.widgets = {}
-        super(NavigationToolbar, self).__init__(canvas, parent, coordinates)
+        super().__init__(canvas, parent, coordinates)
 
     def _icon(self, name):
         if name is not None:
@@ -302,7 +302,7 @@ class LatticeEditor(QDialog):
             return np.array(locs), len(locs), None
 
     def __init__(self, vecs, bounds=None, parent=None):
-        super(LatticeEditor, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("Edit Lattice Boundaries")
         vbox = QVBoxLayout()
         self.figure = Figure()
@@ -492,7 +492,7 @@ class LatticeEditor(QDialog):
                 self.canvas.restore_region(self.background)
                 self.canvas.blit(self.axes.bbox)
         else:
-            super(LatticeEditor, self).keyPressEvent(event)
+            super().keyPressEvent(event)
 
     def mouse_leave_callback(self, event):
         if self.mark.get_visible():

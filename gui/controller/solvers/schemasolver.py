@@ -79,7 +79,7 @@ def set_conflict(widget, conflict):
 class SolverWidget(QWidget):
 
     def __init__(self, controller, parent=None):
-        super(SolverWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.controller = weakref.proxy(controller)
 
@@ -500,7 +500,7 @@ class SchemaSolverController(Controller):
     """
 
     def __init__(self, document, model):
-        super(SchemaSolverController, self).__init__(document, model)
+        super().__init__(document, model)
         try:
             widget_class = self.model.widget
             if widget_class is None: raise AttributeError

@@ -66,7 +66,7 @@ class TreeFragmentModel(InfoSource):
             :param TreeFragmentModel parent: parent in models tree
             :param info_cb: call when list of error has been changed with parameters: section name, list of errors
         """
-        super(TreeFragmentModel, self).__init__(info_cb)
+        super().__init__(info_cb)
         self.changed = Signal()
         self.tree_parent = parent   # parent is not good name, due to its common use in Qt!
 
@@ -104,7 +104,7 @@ class SectionModel(TreeFragmentModel):
             :param info_cb: call when list of error has been changed with parameters: section name, list of errors
             :param undo_stack: undo stack for model; if None it is creates
         """
-        super(SectionModel, self).__init__(parent, info_cb=info_cb)
+        super().__init__(parent, info_cb=info_cb)
         self.name = name
         self.externalSource = None
         self.line_in_file = None
@@ -184,7 +184,7 @@ class SectionModel(TreeFragmentModel):
         self.line_in_file = element.sourceline   # TODO can be wrong when the next sections will not be read correctly
 
     def create_info(self):
-        res = super(SectionModel, self).create_info()
+        res = super().create_info()
         if self.is_read_only():
             res.append(Info('%s section is read-only' % self.name, Info.INFO))
         if self.externalSource is not None:

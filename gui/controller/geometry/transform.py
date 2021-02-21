@@ -27,10 +27,10 @@ class GNClipController(GNObjectController):
             getattr(self, b).setToolTip(u'&lt;clip <b>{0}</b>=""...&gt;<br/>'
                     u'{0} edge of the clipping rectangle. (float [µm], {1}INF by default)'.format(b, sign))
             sign = '+' if sign == '-' else '-'
-        super(GNClipController, self).construct_form()
+        super().construct_form()
 
     def fill_form(self):
-        super(GNClipController, self).fill_form()
+        super().fill_form()
         for b in self.node.bound_names():
             getattr(self, b).setText(none_to_empty(getattr(self.node, b)))
 
@@ -44,7 +44,7 @@ class GNFlipMirrorController(GNObjectController):
         #self.node.set_axis(empty_to_none(self.axis.currentText()))
 
     def fill_form(self):
-        super(GNFlipMirrorController, self).fill_form()
+        super().fill_form()
         with BlockQtSignals(self.axis):
             self.axis.setEditText(none_to_empty(self.node.axis_str()))
 
@@ -56,7 +56,7 @@ class GNFlipController(GNFlipMirrorController):
         self.axis = self.construct_combo_box('inverted axis', items=self.node.get_axes_conf_dim(), change_cb=self._save_axis_undoable)
         self.axis.setToolTip('&lt;flip <b>axis</b>="" ...&gt;<br/>'
                     'Name of the inverted axis (i.e. perpendicular to the reflection plane). (required)')
-        super(GNFlipController, self).construct_form()
+        super().construct_form()
 
 
 class GNMirrorController(GNFlipMirrorController):
@@ -66,7 +66,7 @@ class GNMirrorController(GNFlipMirrorController):
         self.axis = self.construct_combo_box('Inverted axis', items=self.node.get_axes_conf_dim(), change_cb=self._save_axis_undoable)
         self.axis.setToolTip('&lt;mirror <b>axis</b>="" ...&gt;<br/>'
                              'Name of the inverted axis (i.e. perpendicular to the reflection plane). (required)')
-        super(GNMirrorController, self).construct_form()
+        super().construct_form()
 
 
 class GNExtrusionController(GNObjectController):
@@ -76,10 +76,10 @@ class GNExtrusionController(GNObjectController):
         self.length = self.construct_line_edit('Length:', unit=u'µm', node_property_name='length', display_property_name='extrusion length')
         self.length.setToolTip(u'&lt;extrusion <b>length</b>="" ...&gt;<br/>'
                                u'Length of the extrusion. (float [µm], required)')
-        super(GNExtrusionController, self).construct_form()
+        super().construct_form()
 
     def fill_form(self):
-        super(GNExtrusionController, self).fill_form()
+        super().fill_form()
         self.length.setText(none_to_empty(self.node.length))
 
 
@@ -93,7 +93,7 @@ class GNRevolutionController(GNObjectController):
                                   u'The value of this attribute can be either \'yes\' of \'no\'.'
                                   u' It specifies whether the item will be implicitly clipped to non-negative '
                                   u'transverse coordinates. Defaults to \'no\'.')
-        super(GNRevolutionController, self).construct_form()
+        super().construct_form()
         self.rev_step_num = self.construct_line_edit('Maximum steps number:', node_property_name='rev_step_num',
                                                      display_property_name='maximum steps number')
         self.rev_step_num.setToolTip(u'&lt;revolution <b>rev-steps-num</b>="" rev-steps-dist="" ...&gt;<br/>'
@@ -107,7 +107,7 @@ class GNRevolutionController(GNObjectController):
         self.rev_step_dist.setPlaceholderText('0.005')
 
     def fill_form(self):
-        super(GNRevolutionController, self).fill_form()
+        super().fill_form()
         with BlockQtSignals(self.auto_clip, self.rev_step_num, self.rev_step_dist):
             self.auto_clip.setEditText(none_to_empty(self.node.auto_clip))
             self.rev_step_num.setText(none_to_empty(self.node.rev_step_num))
@@ -123,10 +123,10 @@ class GNTranslationController(GNObjectController):
         self.vector = self.construct_point_controllers(row_name='Vector', change_cb=lambda point:
             weakself._set_node_by_setter_undoable(setter, list(point),
                                                   weakself.node.vector, 'change translation vector'))
-        super(GNTranslationController, self).construct_form()
+        super().construct_form()
 
     def fill_form(self):
-        super(GNTranslationController, self).fill_form()
+        super().fill_form()
         for i in range(0, self.node.dim):
             self.vector[i].setText(none_to_empty(self.node.vector[i]))
 
@@ -142,12 +142,10 @@ class GNArrangeController(GNObjectController):
         self.count = self.construct_line_edit('Count:', node_property_name='count')
         self.count.setToolTip(u'&lt;arrange <b>count</b>="" ...&gt;<br/>'
                                u'Number of item repetitions.')
-        super(GNArrangeController, self).construct_form()
+        super().construct_form()
 
     def fill_form(self):
-        super(GNArrangeController, self).fill_form()
+        super().fill_form()
         for i in range(0, self.node.dim):
             self.step[i].setText(none_to_empty(self.node.step[i]))
         self.count.setText(none_to_empty(self.node.count))
-
-

@@ -228,7 +228,7 @@ class MaterialColorsConfig(QWidget):
             return False
 
     def __init__(self, parent=None):
-        super(MaterialColorsConfig, self).__init__(parent)
+        super().__init__(parent)
         toolbar = QHBoxLayout()
         add_action = QToolButton()
         add_action.setIcon(QIcon.fromTheme('list-add'))
@@ -864,7 +864,7 @@ class ConfigDialog(QDialog):
             CONFIG[self.entry] = self.edit.text()
 
     def __init__(self, parent):
-        super(ConfigDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("GUI Settings")
         vlayout = QVBoxLayout()
 
@@ -1060,4 +1060,4 @@ class ConfigDialog(QDialog):
 
     def accept(self):
         self.apply()
-        super(ConfigDialog, self).accept()
+        super().accept()

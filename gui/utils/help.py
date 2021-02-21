@@ -36,7 +36,7 @@ HELP_ENGINE = None
 class HelpBrowser(QTextBrowser):
 
     def __init__(self, parent=None):
-        super(HelpBrowser, self).__init__(parent)
+        super().__init__(parent)
         self.setOpenLinks(False)
         self.anchorClicked.connect(self.open_link)
         font = self.font()
@@ -61,7 +61,7 @@ class HelpBrowser(QTextBrowser):
 class HelpWindow(QSplitter):
 
     def __init__(self, main_window, parent=None):
-        super(HelpWindow, self).__init__(parent)
+        super().__init__(parent)
         self.setWindowTitle("PLaSK Help")
         self.setWindowIcon(QIcon.fromTheme('help-contents'))
 

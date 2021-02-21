@@ -38,7 +38,7 @@ class TextEditor(QPlainTextEdit):
     """Improved editor with line numbers and some other neat stuff"""
 
     def __init__(self, parent=None, line_numbers=True):
-        super(TextEditor, self).__init__(parent)
+        super().__init__(parent)
         palette = self.palette()
         palette.setColor(QPalette.Base, QColor(CONFIG['editor/background_color']))
         palette.setColor(QPalette.Text, QColor(CONFIG['editor/foreground_color']))
@@ -61,7 +61,7 @@ class TextEditor(QPlainTextEdit):
         self.textChanged.connect(self.on_text_change)
 
     def resizeEvent(self, e):
-        super(TextEditor, self).resizeEvent(e)
+        super().resizeEvent(e)
         if self.line_numbers is not None:
             cr = self.contentsRect()
             self.line_numbers.setGeometry(QRect(cr.left(), cr.top(),
@@ -72,12 +72,12 @@ class TextEditor(QPlainTextEdit):
             cursor = self.textCursor()
             start = min(cursor.position(), cursor.anchor())
             end = start + len(source.text())
-            super(TextEditor, self).insertFromMimeData(source)
+            super().insertFromMimeData(source)
             cursor.setPosition(start)
             cursor.setPosition(end, QTextCursor.KeepAnchor)
             self.setTextCursor(cursor)
         else:
-            super(TextEditor, self).insertFromMimeData(source)
+            super().insertFromMimeData(source)
 
     def on_text_change(self):
         self._changed_pos = self.textCursor().position()
@@ -99,14 +99,14 @@ class TextEditor(QPlainTextEdit):
             self.move_line_down()
             event.ignore()
             return
-        super(TextEditor, self).keyPressEvent(event)
+        super().keyPressEvent(event)
 
     def focusInEvent(self, event):
-        super(TextEditor, self).focusInEvent(event)
+        super().focusInEvent(event)
         self.update_selections()
 
     def focusOutEvent(self, event):
-        super(TextEditor, self).focusOutEvent(event)
+        super().focusOutEvent(event)
         self.update_selections()
 
     def update_selections(self, selections=None):
@@ -211,16 +211,16 @@ class TextEditorWithCB(TextEditor):
         key_cb - when kay is pressed
     """
     def __init__(self, focus_out_cb=None, key_cb=None, **kwargs):
-        super(TextEditorWithCB, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.focus_out_cb = focus_out_cb
         self.key_cb = key_cb
 
     def focusOutEvent(self, event):
-        super(TextEditorWithCB, self).focusOutEvent(event)
+        super().focusOutEvent(event)
         if self.focus_out_cb is not None: self.focus_out_cb()
 
     def keyPressEvent(self, event):
-        super(TextEditorWithCB, self).keyPressEvent(event)
+        super().keyPressEvent(event)
         if self.key_cb is not None: self.key_cb(event)
 
 
@@ -231,7 +231,7 @@ class LineNumberArea(QWidget):
     """
 
     def __init__(self, editor):
-        super(LineNumberArea, self).__init__(editor)
+        super().__init__(editor)
         self.editor = editor
         self._offset = 0
         self._count_cache = -1, -1
@@ -291,7 +291,7 @@ class LineEditWithHistory(QLineEdit):
     historyChanged = QtSignal()
 
     def __init__(self, parent=None, flags=None):
-        super(LineEditWithHistory, self).__init__(parent, flags)
+        super().__init__(parent, flags)
         self._history = []
         self._position = 1
         self.textEdited.connect(self._update_history)
@@ -320,13 +320,13 @@ class LineEditWithHistory(QLineEdit):
             self.setText(self._history[self._position])
             self._position += 1
             self.historyChanged.emit()
-        super(LineEditWithHistory, self).keyPressEvent(event)
+        super().keyPressEvent(event)
 
 
 class EditorWidget(QWidget):
 
     def __init__(self, parent, editor_class=TextEditor, *args, **kwargs):
-        super(EditorWidget, self).__init__(parent)
+        super().__init__(parent)
 
         self.editor = editor_class(self, *args, **kwargs)
 

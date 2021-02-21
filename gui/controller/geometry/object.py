@@ -28,7 +28,7 @@ class GNObjectController(GNodeController):
     have_mesh_settings = True
 
     #def __init__(self, document, model, node):
-    #    super(GNObjectController, self).__init__(document, model, node)
+    #    super().__init__(document, model, node)
     #    self.in_parent_controller = self.node.get_controller_for_inparent()
 
     def construct_form(self, roles=True):
@@ -89,7 +89,7 @@ class GNObjectController(GNodeController):
         if self.in_parent_controller is not None: self.in_parent_controller.save_data_in_model()
 
     def fill_form(self):
-        super(GNObjectController, self).fill_form()
+        super().fill_form()
         self.name.setText(none_to_empty(self.node.name))
         if self.role is not None:
             self.role.setText(none_to_empty(self.node.role))

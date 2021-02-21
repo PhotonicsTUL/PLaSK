@@ -11,7 +11,7 @@ import weakref
 class TriangularTriangleGeneratorController(GridController):
 
     def __init__(self, document, model):
-        super(TriangularTriangleGeneratorController, self).__init__(document=document, model=model)
+        super().__init__(document=document, model=model)
 
         self.form = QGroupBox()
         self.defines = get_defines_completer(self.document.defines.model, self.form)
@@ -47,7 +47,7 @@ class TriangularTriangleGeneratorController(GridController):
         self.form.setLayout(form_layout)
 
     def fill_form(self):
-        super(TriangularTriangleGeneratorController, self).fill_form()
+        super().fill_form()
         with BlockQtSignals(self.maxarea): self.maxarea.setText(none_to_empty(self.model.maxarea))
         with BlockQtSignals(self.minangle): self.minangle.setText(none_to_empty(self.model.minangle))
         with BlockQtSignals(self.full): self.minangle.setText(none_to_empty(self.model.full))
@@ -56,5 +56,5 @@ class TriangularTriangleGeneratorController(GridController):
         return self.form
 
     def select_info(self, info):
-        super(TriangularTriangleGeneratorController, self).select_info(info)
+        super().select_info(info)
         getattr(self, info.property).setFocus()

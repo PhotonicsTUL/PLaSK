@@ -28,7 +28,7 @@ class AxisEdit(QGroupBox):
         self.controller.fire_changed()
 
     def __init__(self, controller, axis_path, axis, title=None, allow_type_select=False, accept_non_regular=False):
-        super(AxisEdit, self).__init__(title if title is not None else axis)
+        super().__init__(title if title is not None else axis)
         if axis is None: axis = 'axis'
         self.controller = weakref.proxy(controller)
         self.axis_path = axis_path
@@ -136,7 +136,7 @@ class AxisEdit(QGroupBox):
 class RectangularMesh1DController(GridController):
     """1D rectangular mesh (ordered or regular) script"""
     def __init__(self, document, model):
-        super(RectangularMesh1DController, self).__init__(document=document, model=model)
+        super().__init__(document=document, model=model)
         self.axis = AxisEdit(self, 'axis', None, allow_type_select=False, accept_non_regular=not model.is_regular)
 
     def fill_form(self):
@@ -158,7 +158,7 @@ class RectangularMeshController(GridController):
     """2D and 3D rectangular mesh script"""
 
     def __init__(self, document, model):
-        super(RectangularMeshController, self).__init__(document=document, model=model)
+        super().__init__(document=document, model=model)
         self.form = QGroupBox()
         vbox = QVBoxLayout()
         self.axis = []

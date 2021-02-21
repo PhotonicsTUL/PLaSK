@@ -43,7 +43,7 @@ class PyObjMime(QMimeData):
     MIMETYPE = 'application/x-pyobj'
 
     def __init__(self, data=None):
-        super(PyObjMime, self).__init__()
+        super().__init__()
         self.data = data
         if data is not None:
             # Try to pickle data
@@ -614,7 +614,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
             return (root for root in self.roots if root.dim == dim)
 
     def create_info(self):
-        res = super(GeometryModel, self).create_info()
+        res = super().create_info()
         names = OrderedDict()
         for root in self.roots:
             for node in root.traverse_dfs():

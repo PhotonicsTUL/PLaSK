@@ -34,7 +34,7 @@ class GNode:
             :param int children_dim: required number of dimension of self's children or None
                    if no or any children are allowed
         """
-        super(GNode, self).__init__()
+        super().__init__()
         self.dim = dim
         self.children_dim = children_dim
         self.children = []
@@ -540,7 +540,7 @@ class GNode:
 class GNFakeRoot(GNode):
 
     def __init__(self, geometry_model):
-        super(GNFakeRoot, self).__init__()
+        super().__init__()
         self.model = geometry_model
 
     def accept_new_child(self):

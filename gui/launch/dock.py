@@ -36,7 +36,7 @@ LINE_ROLE = Qt.UserRole + 1
 class OutputModel(QAbstractListModel):
 
     def __init__(self, fm):
-        super(OutputModel, self).__init__()
+        super().__init__()
         self.update_font(fm)
         self.lines = []
 
@@ -82,7 +82,7 @@ class OutputModel(QAbstractListModel):
 class OutputListView(QListView):
 
     def __init__(self, parent=None):
-        super(OutputListView, self).__init__(parent)
+        super().__init__(parent)
         self.setMouseTracking(True)
 
         self.context_menu = QMenu()
@@ -106,7 +106,7 @@ class OutputListView(QListView):
         self.setPalette(pal)
 
     def mouseMoveEvent(self, event):
-        super(OutputListView, self).mouseMoveEvent(event)
+        super().mouseMoveEvent(event)
         index = self.indexAt(event.pos())
         line = self.model().data(index, LINE_ROLE)
         if line is not None:
@@ -127,7 +127,7 @@ class OutputListView(QListView):
 class OutputFilter(QSortFilterProxyModel):
 
     def __init__(self, window, model):
-        super(OutputFilter, self).__init__()
+        super().__init__()
         self.window = window
         self.setSourceModel(model)
 
@@ -138,13 +138,13 @@ class OutputFilter(QSortFilterProxyModel):
             return False
         if level != 0 and not self.window.levels[level-1].isChecked():
             return False
-        return super(OutputFilter, self).filterAcceptsRow(row, parent)
+        return super().filterAcceptsRow(row, parent)
 
 
 class OutputWindow(QDockWidget):
 
     def __init__(self, launcher, main_window, label="Launch local"):
-        super(OutputWindow, self).__init__("{} [{}]".format(label, strftime('%X')), main_window)
+        super().__init__("{} [{}]".format(label, strftime('%X')), main_window)
         self.setAttribute(Qt.WA_DeleteOnClose)
 
         self.launcher = launcher
@@ -452,7 +452,7 @@ class OutputWindow(QDockWidget):
         self.check_close_event(event)
         if not event.isAccepted():
             return
-        super(OutputWindow, self).closeEvent(event)
+        super().closeEvent(event)
         if focus:
             main_window = self.parent()
             others = [w for w in main_window.findChildren(QDockWidget)

@@ -44,7 +44,7 @@ class Controller:
         :param XPLDocument document: document
         :param model.SectionModel model: model
         """
-        super(Controller, self).__init__()
+        super().__init__()
         if document is not None:
             if isinstance(document, weakref.ProxyType):
                 self.document = document
@@ -57,7 +57,7 @@ class Controller:
     def save_data_in_model(self):
         """Called to force save data from editor in model (typically by on_edit_exit or when model is needed while
         editor still is active - for instance when user saves edited document to file)."""
-        pass  
+        pass
 
     def on_edit_enter(self):
         """Called when editor is entered and will be visible."""
@@ -122,7 +122,7 @@ class Controller:
 class NoConfController(Controller):
     """Controller for all models that does not require any configuration."""
     def __init__(self, text='Configuration is neither required nor available.', document=None, model=None):
-        super(NoConfController, self).__init__(document=document, model=model)
+        super().__init__(document=document, model=model)
         self.label = QLabel(text)
         self.label.setAlignment(Qt.AlignCenter)
 
@@ -139,7 +139,7 @@ class NoConfController(Controller):
 #
 #     def __init__(self, document, model):
 #         """self.grid must be available before call this __init__"""
-#         super(ControllerWithSubController, self).__init__(document, model)
+#         super().__init__(document, model)
 #
 #         self._last_index = None
 #         self._current_index = None

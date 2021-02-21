@@ -202,7 +202,7 @@ class TableController(Controller):
         return widget
 
     # def on_edit_enter(self):
-    #     super(TableController, self).on_edit_enter()
+    #     super().on_edit_enter()
     #     if not self.model.is_read_only():
     #         self.document.window.set_section_actions(*self.get_table_edit_actions())
 
@@ -214,6 +214,3 @@ class TableController(Controller):
 
     def select_info(self, info):
         select_index_from_info(info, self.model, self.table)
-
-
-

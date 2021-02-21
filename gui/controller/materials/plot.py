@@ -58,7 +58,7 @@ CURRENT_ARG = 'T'
 class MaterialPlot(QWidget):
 
     def __init__(self, model=None, defines=None, parent=None, init_material=None):
-        super(MaterialPlot, self).__init__(parent)
+        super().__init__(parent)
 
         self.model = model
         self.defines = defines

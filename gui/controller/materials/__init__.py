@@ -35,7 +35,7 @@ from .plot import show_material_plot
 class ComponentsPopup(QFrame):
 
     def __init__(self, close_cb, name, label, groups, doping, pos=None):
-        super(ComponentsPopup, self).__init__()
+        super().__init__()
         self.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint)
         self.setFrameStyle(QFrame.Box | QFrame.Plain)
         self.close_cb = close_cb
@@ -94,7 +94,7 @@ class ComponentsPopup(QFrame):
 class MaterialLineEdit(QLineEdit):
 
     def __init__(self, parent, materials_model, defines_model=None):
-        super(MaterialLineEdit, self).__init__(parent)
+        super().__init__(parent)
 
         self.materials_model = materials_model
         self.defines_model = defines_model
@@ -138,7 +138,7 @@ class MaterialsComboBox(QComboBox):
         :param editable: if True, material can be manually edited
         :param show_popup: if True, the composition popup can be shown
         """
-        super(MaterialsComboBox, self).__init__(parent)
+        super().__init__(parent)
         if materials_model is not None and editable:
             line_edit = MaterialLineEdit(self, materials_model, defines_model)
             self.setLineEdit(line_edit)
@@ -162,7 +162,7 @@ class MaterialsComboBox(QComboBox):
         self.material_edit_popup = None
 
     def setEditText(self, text: str):
-        super(MaterialsComboBox, self).setEditText(text)
+        super().setEditText(text)
         index = self.findData(text, Qt.DisplayRole)
         if index != -1:
             self.setCurrentIndex(index)
@@ -170,10 +170,10 @@ class MaterialsComboBox(QComboBox):
     def focusOutEvent(self, event):
         if self.material_edit_popup is None:
             self.editingFinished.emit()
-        super(MaterialsComboBox, self).focusOutEvent(event)
+        super().focusOutEvent(event)
 
     def keyPressEvent(self, event):
-        super(MaterialsComboBox, self).keyPressEvent(event)
+        super().keyPressEvent(event)
         if event.key() in (Qt.Key_Enter, Qt.Key_Return):
             self.editingFinished.emit()
 
@@ -226,7 +226,7 @@ class MaterialsComboBox(QComboBox):
 class ExternalLineEdit(QLineEdit):
 
     def __init__(self, parent, what, basedir=None):
-        super(ExternalLineEdit, self).__init__(parent)
+        super().__init__(parent)
         self.what = what
         self.basedir = basedir
 
@@ -277,7 +277,7 @@ class ExternalLineEdit(QLineEdit):
 class MaterialNameDelegate(QStyledItemDelegate):
 
     def __init__(self, model, defines, parent):
-        super(MaterialNameDelegate, self).__init__(parent)
+        super().__init__(parent)
         self.model = model
         self.defines = defines
 
@@ -298,7 +298,7 @@ class MaterialNameDelegate(QStyledItemDelegate):
             model.setData(index, editor.text(), Qt.EditRole)
 
     def sizeHint(self, item, index):
-        hint = super(MaterialNameDelegate, self).sizeHint(item, index)
+        hint = super().sizeHint(item, index)
         hint.setWidth(hint.width() + 24)
         return hint
 
@@ -333,7 +333,7 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
             opts = [opt for opt in opts if opt not in used]
             self._first_enter = True
 
-        if opts is None: return super(MaterialPropertiesDelegate, self).createEditor(parent, option, index)
+        if opts is None: return super().createEditor(parent, option, index)
 
         combo = QComboBox(parent)
         combo.setInsertPolicy(QComboBox.NoInsert)
@@ -364,24 +364,24 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
             self._first_enter = False
             return True
         else:
-            return super(MaterialPropertiesDelegate, self).eventFilter(editor, event)
+            return super().eventFilter(editor, event)
 
 
 class MaterialsTable(QTableView):
 
     def closeEditor(self, editor, hint):
         if not (isinstance(editor, ExternalLineEdit) and editor.keep):
-            super(MaterialsTable, self).closeEditor(editor, hint)
+            super().closeEditor(editor, hint)
 
 
 class _PropEdit(TextEditor):
 
     def __init__(self, *args, **kwargs):
-        super(_PropEdit, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.merge_index = 1
 
     def focusOutEvent(self, event):
-        super(_PropEdit, self).focusOutEvent(event)
+        super().focusOutEvent(event)
         self.merge_index += 1
 
 

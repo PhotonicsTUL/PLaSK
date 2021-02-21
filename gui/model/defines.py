@@ -71,7 +71,7 @@ class DefinesModel(TableModel):
         else: raise IndexError('column number for DefinesModel should be 0, 1, or 2, but is %d' % col)
 
     def create_info(self):
-        res = super(DefinesModel, self).create_info()
+        res = super().create_info()
         names = OrderedDict()
         for i, d in enumerate(self.entries):
             if not d.name:

@@ -70,7 +70,7 @@ class ScriptEditor(TextEditor):
 
     def __init__(self, parent=None, controller=None):
         self.controller = weakref.proxy(controller)
-        super(ScriptEditor, self).__init__(parent)
+        super().__init__(parent)
 
         self.cursorPositionChanged.connect(self.highlight_brackets)
         self.selectionChanged.connect(self.highlight_brackets)
@@ -222,7 +222,7 @@ class ScriptEditor(TextEditor):
             return
 
         if not (key == Qt.Key_Space and modifiers == Qt.ControlModifier) or CONFIG['workarounds/no_jedi']:
-            super(ScriptEditor, self).keyPressEvent(event)
+            super().keyPressEvent(event)
 
         if key in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Colon):
             autoindent(self)
@@ -258,11 +258,11 @@ class ScriptEditor(TextEditor):
                 QApplication.restoreOverrideCursor()
 
     def mouseMoveEvent(self, event):
-        super(ScriptEditor, self).mouseMoveEvent(event)
+        super().mouseMoveEvent(event)
         self._get_mouse_definitions(event)
 
     def mouseReleaseEvent(self, event):
-        super(ScriptEditor, self).mouseReleaseEvent(event)
+        super().mouseReleaseEvent(event)
         row, col = self._pointer_definition
         if event.modifiers() == Qt.ControlModifier and not self._pointer_blocked and row:
             cursor = QTextCursor(self.document().findBlockByLineNumber(row))
@@ -372,7 +372,7 @@ class ScriptController(SourceEditController):
             CONFIG.sync()
 
     def on_edit_enter(self):
-        super(ScriptController, self).on_edit_enter()
+        super().on_edit_enter()
         self.rehighlight()
 
     def rehighlight(self):
@@ -406,12 +406,12 @@ class ScriptController(SourceEditController):
                 self.rehighlight()
 
     def on_edit_exit(self):
-        return super(ScriptController, self).on_edit_exit()
+        return super().on_edit_exit()
 
     def save_data_in_model(self):
         self.before_save()
         self.before_save()
-        super(ScriptController, self).save_data_in_model()
+        super().save_data_in_model()
 
     def before_save(self):
         if CONFIG['editor/remove_trailing_spaces']:
@@ -454,7 +454,7 @@ class ScriptController(SourceEditController):
 class HelpDock(QDockWidget):
 
     def __init__(self, parent):
-        super(HelpDock, self).__init__(parent)
+        super().__init__(parent)
         self.textarea = QTextEdit()
         self.textarea.setReadOnly(True)
         help_font = QFont(EDITOR_FONT)

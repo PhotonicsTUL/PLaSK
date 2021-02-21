@@ -99,7 +99,7 @@ def create_undo_actions(toolbar, model, widget):
 class HTMLDelegate(QStyledItemDelegate):
 
     def __init__(self, parent=None, compact=False):
-        super(HTMLDelegate, self).__init__(parent)
+        super().__init__(parent)
         self.compact = compact
 
     def paint(self, painter, option, index):
@@ -181,7 +181,7 @@ class ComboBoxDelegate(QItemDelegate):
             combo.showPopup()
 
     # def sizeHint(self, option, index):
-    #     hint = super(ComboBoxDelegate, self).sizeHint(option, index)
+    #     hint = super().sizeHint(option, index)
     #     style = self.parent().style()
     #     opt = QStyleOptionComboBox()
     #     opt.initFrom(self.parent())
@@ -201,7 +201,7 @@ class ComboBoxDelegate(QItemDelegate):
             self._first_enter = False
             return True
         else:
-            return super(ComboBoxDelegate, self).eventFilter(combo, event)
+            return super().eventFilter(combo, event)
 
 
 class CheckBoxDelegate(QStyledItemDelegate):
@@ -287,12 +287,12 @@ class CheckBoxDelegate(QStyledItemDelegate):
 class VerticalScrollArea(QScrollArea):
 
     def __init__(self, parent=None):
-        super(VerticalScrollArea, self).__init__(parent)
+        super().__init__(parent)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
     def resizeEvent(self, event):
-        super(VerticalScrollArea, self).resizeEvent(event)
+        super().resizeEvent(event)
         widget = self.widget()
         if widget is not None:
             widget.setFixedWidth(event.size().width())
@@ -300,7 +300,7 @@ class VerticalScrollArea(QScrollArea):
     def eventFilter(self, obj, event):
         if obj and obj == self.widget() and event.type() == QEvent.Resize:
             self.setMinimumWidth(obj.minimumSizeHint().width() + self.verticalScrollBar().width())
-        return super(VerticalScrollArea, self).eventFilter(obj, event)
+        return super().eventFilter(obj, event)
 
 
 class EditComboBox(QComboBox):
@@ -313,15 +313,15 @@ class EditComboBox(QComboBox):
     # Instead, just connect to both: editingFinished and currentIndexChanged
     # PB
     # def __init__(self, *args, **kwargs):
-    #     super(ComboBox, self).__init__(*args, **kwargs)
+    #     super().__init__(*args, **kwargs)
     #     self.currentIndexChanged.connect(lambda *args: self.editingFinished.emit())
 
     def focusOutEvent(self, event):
         if not self.signalsBlocked(): self.editingFinished.emit()
-        super(EditComboBox, self).focusOutEvent(event)
+        super().focusOutEvent(event)
 
     def keyPressEvent(self, event):
-        super(EditComboBox, self).keyPressEvent(event)
+        super().keyPressEvent(event)
         if event.key() in (Qt.Key_Enter, Qt.Key_Return) and not self.signalsBlocked():
             self.editingFinished.emit()
 
@@ -329,20 +329,20 @@ class EditComboBox(QComboBox):
 class InfoListView(QListView):
 
     def __init__(self, model, parent):
-        super(InfoListView, self).__init__(parent)
+        super().__init__(parent)
         self.model = model
         self.setMouseTracking(True)
         self._orig_height = None
 
     def enterEvent(self, event):
-        super(InfoListView, self).enterEvent(event)
+        super().enterEvent(event)
         rows = self.model.rowCount()
         if rows > 0:
             self._orig_height = self.height()
             self.setFixedHeight(self.sizeHintForRow(0) * rows)
 
     def leaveEvent(self, event):
-        super(InfoListView, self).leaveEvent(event)
+        super().leaveEvent(event)
         if self._orig_height is not None:
             self.setFixedHeight(self._orig_height)
             self._orig_height = None
@@ -353,10 +353,10 @@ class TextEdit(QTextEdit):
 
     def focusOutEvent(self, event):
         if not self.signalsBlocked(): self.editingFinished.emit()
-        super(TextEdit, self).focusOutEvent(event)
+        super().focusOutEvent(event)
 
     def keyPressEvent(self, event):
-        super(TextEdit, self).keyPressEvent(event)
+        super().keyPressEvent(event)
         if event.key() in (Qt.Key_Enter, Qt.Key_Return) and event.modifiers() == Qt.CTRL and not self.signalsBlocked():
             self.editingFinished.emit()
 
@@ -369,16 +369,16 @@ class TextEditWithCB(QPlainTextEdit):
     """
 
     def __init__(self, focus_out_cb=None, key_cb=None, **kwargs):
-        super(TextEditWithCB, self).__init__(**kwargs)
+        super().__init__(**kwargs)
         self.focus_out_cb = focus_out_cb
         self.key_cb = key_cb
 
     def focusOutEvent(self, event):
-        super(TextEditWithCB, self).focusOutEvent(event)
+        super().focusOutEvent(event)
         if self.focus_out_cb is not None: self.focus_out_cb()
 
     def keyPressEvent(self, event):
-        super(TextEditWithCB, self).keyPressEvent(event)
+        super().keyPressEvent(event)
         if self.key_cb is not None: self.key_cb(event)
 
 
@@ -414,7 +414,7 @@ class MultiLineEdit(QWidget):
                 option.state &= ~QStyle.State_Selected
 
     def __init__(self, movable=False, change_cb=None, document=None, compact=True):
-        super(MultiLineEdit, self).__init__()
+        super().__init__()
         self.change_cb = change_cb
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -605,7 +605,7 @@ def fire_edit_end(widget=None):
 
 class LineEditWithClear(QLineEdit):
     def __init__(self, *args, **kwargs):
-        super(LineEditWithClear, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         clear_button = QToolButton(self)
         clear_button.setFocusPolicy(Qt.NoFocus)
         clear_button.setCursor(Qt.PointingHandCursor)

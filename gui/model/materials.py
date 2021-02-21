@@ -464,7 +464,7 @@ class MaterialsModel(TableModel):
             return self.materials_model.undo_stack
 
     def __init__(self, parent=None, info_cb=None, *args):
-        super(MaterialsModel, self).__init__(u'materials', parent, info_cb, *args)
+        super().__init__(u'materials', parent, info_cb, *args)
         self.document = None
 
     def load_xml_element(self, element, undoable=True):
@@ -522,10 +522,10 @@ class MaterialsModel(TableModel):
                 return "Check this box if material is a generic alloy (i.e. an alloy material, which you can specify " \
                        "composition of).\nIts name must then consist of compound elements symbols with optional "\
                        "label and dopant, separated by '_' and ':' respectively"
-        return super(MaterialsModel, self).data(index, role)
+        return super().data(index, role)
 
     def flags(self, index):
-        flags = super(MaterialsModel, self).flags(index)
+        flags = super().flags(index)
         if 1 <= index.column() < 3 and isinstance(self.entries[index.row()], MaterialsModel.External):
             flags &= ~Qt.ItemIsEditable & ~Qt.ItemIsEnabled
         return flags
@@ -570,7 +570,7 @@ class MaterialsModel(TableModel):
         return None
 
     def create_info(self):
-        res = super(MaterialsModel, self).create_info()
+        res = super().create_info()
 
         names = OrderedDict()
         for i, d in enumerate(self.entries):

@@ -41,7 +41,7 @@ update_xml_scheme()
 class XMLEditor(TextEditor):
 
     def __init__(self, parent=None, line_numbers=True):
-        super(XMLEditor, self).__init__(parent, line_numbers)
+        super().__init__(parent, line_numbers)
         palette = self.palette()
         color = parse_highlight(CONFIG['syntax/xml_text']).get('color')
         if color is None: color = CONFIG['editor/foreground_color']
@@ -89,7 +89,7 @@ class XMLEditor(TextEditor):
         elif key == Qt.Key_Slash:
             if parse_slash(self): return
 
-        super(XMLEditor, self).keyPressEvent(event)
+        super().keyPressEvent(event)
 
         if key in (Qt.Key_Enter, Qt.Key_Return):
             indent_new_line(self)

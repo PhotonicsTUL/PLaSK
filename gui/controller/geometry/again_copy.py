@@ -22,7 +22,7 @@ from ...qt.QtWidgets import QSizePolicy
 class GNAgainController(GNodeController):
 
     def construct_form(self):
-        super(GNAgainController, self).construct_form()
+        super().construct_form()
         self.construct_group('Again Settings')
         self.ref = self.construct_names_before_self_combo_box('Referenced object:', node_property_name='ref')
         self.ref.setToolTip('&lt;again <b>ref</b>=""/&gt;<br/>'
@@ -32,7 +32,7 @@ class GNAgainController(GNodeController):
             self.vbox.insertWidget(0, self.in_parent_controller.get_widget())
 
     def fill_form(self):
-        super(GNAgainController, self).fill_form()
+        super().fill_form()
         with BlockQtSignals(self.ref):
             self.ref.setEditText(none_to_empty(self.node.ref))
         if self.in_parent_controller is not None: self.in_parent_controller.fill_form()
@@ -44,12 +44,12 @@ class GNAgainController(GNodeController):
 class GNCopyChildController(GNodeController):
 
     def construct_form(self):
-        super(GNCopyChildController, self).construct_form()
+        super().construct_form()
         self.construct_group('Operation Settings')
         self.object = self.construct_names_before_self_combo_box('Object:', node_property_name='object')
 
     def fill_form(self):
-        super(GNCopyChildController, self).fill_form()
+        super().fill_form()
         with BlockQtSignals(self.object):
             self.object.setEditText(none_to_empty(self.node.object))
 
@@ -57,7 +57,7 @@ class GNCopyChildController(GNodeController):
 class GNCDeleteController(GNCopyChildController):
 
     def construct_form(self):
-        super(GNCDeleteController, self).construct_form()
+        super().construct_form()
         self.object.setToolTip('&lt;delete <b>object</b>=""/&gt;<br/>'
                                 'Name of the object to delete. Required.')
 
@@ -65,7 +65,7 @@ class GNCDeleteController(GNCopyChildController):
 class GNCReplaceController(GNCopyChildController):
 
     def construct_form(self):
-        super(GNCReplaceController, self).construct_form()
+        super().construct_form()
         self.object.setToolTip('&lt;replace <b>object</b>="" with=""/&gt;<br/>'
                                 'Name of the object to delete (replace). Required.')
         self.replacer = self.construct_names_before_self_combo_box('With:',
@@ -74,7 +74,7 @@ class GNCReplaceController(GNCopyChildController):
             'Name of the object to replace with. This object does not need to be located in the subtree of the copied object.')
 
     def fill_form(self):
-        super(GNCReplaceController, self).fill_form()
+        super().fill_form()
         with BlockQtSignals(self.replacer):
             self.replacer.setEditText(none_to_empty(self.node.replacer))
 
@@ -82,7 +82,7 @@ class GNCReplaceController(GNCopyChildController):
 class GNCToBlockController(GNMaterialControllerMixin, GNCopyChildController):
 
     def construct_form(self):
-        super(GNCToBlockController, self).construct_form()
+        super().construct_form()
         self.object.setToolTip('&lt;toblock <b>object</b>="" material=""/&gt;<br/>'
                                'Name of the object to replace with the the solid block. Required.')
         self.get_material_row()
@@ -99,7 +99,7 @@ class GNCToBlockController(GNMaterialControllerMixin, GNCopyChildController):
                              'Replacing block role. Important for some solvers.'.format(self.node.tag_name(False)))
 
     def fill_form(self):
-        super(GNCToBlockController, self).fill_form()
+        super().fill_form()
         self.name.setText(none_to_empty(self.node.name))
         self.role.setText(none_to_empty(self.node.role))
 

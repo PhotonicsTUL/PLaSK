@@ -308,7 +308,7 @@ class RectangularBC(SchemaBoundaryConditions):
 class BoundaryConditionsModel(QAbstractItemModel):
 
     def __init__(self, schema, conditions=None, parent=None):
-        super(BoundaryConditionsModel, self).__init__(parent)
+        super().__init__(parent)
         self.schema = schema
         self.entries = [] if conditions is None else conditions
 
@@ -432,7 +432,7 @@ class BoundaryConditionsModel(QAbstractItemModel):
         return True
 
     def flags(self, index):
-        flags = super(BoundaryConditionsModel, self).flags(index) \
+        flags = super().flags(index) \
                 | Qt.ItemIsSelectable | Qt.ItemIsEnabled #| Qt.ItemIsEditable
         col = index.column()
         if col == 0 or \
