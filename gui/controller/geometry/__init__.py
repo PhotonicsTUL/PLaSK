@@ -317,8 +317,8 @@ class GeometryController(Controller):
                 manager.load(self.document.get_contents(sections=('defines', 'materials', 'geometry')))
             self.manager = manager
             try:
-                plotted_object = self.model.fake_root.get_corresponding_object(tree_element, manager)
-            except ValueError:
+                plotted_object = self.model.fake_root.get_corresponding_objects(tree_element, manager)[0]
+            except (TypeError, ValueError):
                 return False
             if tree_element != self.plotted_tree_element:
                 try:
@@ -516,12 +516,12 @@ class GeometryController(Controller):
             self.geometry_view.clean_selectors()  # TODO: show geometry edges
             self.geometry_view.canvas.draw()
         else:
-            selected = self.model.fake_root.get_corresponding_object(node, self.manager)
+            self.geometry_view.clean_selectors()
+            selected = self.model.fake_root.get_corresponding_objects(node, self.manager)
             if selected is not None:
-                self.geometry_view.select_object(self.plotted_object, selected)
-            else:
-                self.geometry_view.clean_selectors()
-                self.geometry_view.canvas.draw()
+                for sel in selected:
+                    self.geometry_view.show_selection(self.plotted_object, sel)
+            self.geometry_view.canvas.draw()
 
     def set_current_index(self, new_index):
         """
@@ -592,13 +592,10 @@ class GeometryController(Controller):
 
     def zoom_to_current(self):
         if self.plotted_object is not None:
-            obj = self.model.fake_root.get_corresponding_object(self._current_index.internalPointer(), self.manager)
-            bboxes = self.plotted_object.get_object_bboxes(obj)
+            objs = self.model.fake_root.get_corresponding_objects(self._current_index.internalPointer(), self.manager)
+            bboxes = sum((list(self.plotted_object.get_object_bboxes(obj)) for obj in objs), start=[])
             if not bboxes: return
-            box = bboxes[0]
-            for b in bboxes[1:]:
-                box += b
-            self.geometry_view.zoom_bbox(box)
+            self.geometry_view.zoom_bbox(sum(bboxes[1:], start=bboxes[0]))
 
     def zoom_to_root(self):
         if self.plotted_object is not None:

@@ -79,8 +79,7 @@ class PlotWidget(PlotWidgetBase):
              artist.set_clip_box(clipbox)
         self.selectors.append(artist)
 
-    def select_object(self, root, selected):
-        self.clean_selectors()
+    def show_selection(self, root, selected, clean=True):
         if selected is None or root is None: return
         bboxes = root.get_object_bboxes(selected)
         if not bboxes: return
@@ -109,7 +108,6 @@ class PlotWidget(PlotWidgetBase):
         guidelines = self.guidelines.get(selected, ())
         for guideline in guidelines:
             self.add_selector(guideline)
-        self.canvas.draw()
 
     def update_plot(self, geometry, set_limits, plane='12'):
         updater = self.plot_updater(set_limits, plane)

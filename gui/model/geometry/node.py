@@ -553,14 +553,16 @@ class GNFakeRoot(GNode):
     def tag_name(self, full_name=True):
         return "geometry"
 
-    def get_corresponding_object(self, node, manager):
+    def get_corresponding_objects(self, node, manager):
         """
         Get object that corresponds to node in real objects tree.
         :param GNode node:
         :param plask.Manager manager: manager which describes real geometry objects tree
         :return plask.GeometryObject: object that corresponds to self in real objects tree
         """
+        if hasattr(node, 'get_corresponding_objects'):
+            return node.get_corresponding_objects(manager, self, self.model)
         try:
-            return self.get_object_by_model_path(manager, node.get_model_path(), self.model)[0]
+            return self.get_object_by_model_path(manager, node.get_model_path(), self.model)[0],
         except (IndexError, ValueError, TypeError):
             return None

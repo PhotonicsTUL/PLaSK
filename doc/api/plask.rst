@@ -18,6 +18,7 @@ Modules
    material
    flow
    phys
+   util
 
 Classes
 =======
@@ -31,6 +32,7 @@ Classes
    vec
    Data
    Manager
+   MaterialField
    StepProfile
    Solver
    XplWriter

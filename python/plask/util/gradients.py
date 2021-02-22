@@ -1,8 +1,19 @@
+"""Gradients simplification.
+
+This module contain functions to simplify gradient layers for optical calculations.
+Each such layer is replaced with two uniform layers providing the same transfer matrix.
+Using such simplified gradients for optical computations strongly improves the accuracy
+and speed of optical computations.
+
+For details see: M. Wasiak, M. Dobrski...
+"""
+
 from .. import geometry as _geometry
 
 
 def simplify(item, lam, T=300., linear='nr'):
-    """Return stack of two layers providing the same optical parameters as the gradient
+    """
+    Return stack of two layers providing the same optical parameters as the gradient
     layer.
 
     Args:
@@ -39,22 +50,24 @@ def simplify(item, lam, T=300., linear='nr'):
         nr = Nr.real
         absp = - Nr.imag / (7.95774715459e-09 * lam)
         stack.append(Block(dims, '{} [nr={} absp={}]'.format(material, nr, absp)))
+    stack.roles = item.roles | {'__gradient'}
 
     return stack
 
 
 def simplify_all(geometry, lam, T=300., linear='nr'):
-    """Replace all rectangular blocks with gradients with two-layer simplification
+    """
+    Replace all rectangular blocks with gradients with two-layer simplification
     in geometry tree.
 
     Args:
-        geometry (: object to simplify
+        geometry (~plask.geometry.GeometryObject): object to simplify
         lam (float): reference wavelength
         T (float): temperature for the refractive indices
         linear ('nr' or 'eps'): which parameter should be linear
 
     Returns:
-        ~plask.geometry.GeometryObject: an object repacing the original leaf
+        ~plask.geometry.GeometryObject: geometry with simplified gradients
     """
 
     def filter(item):

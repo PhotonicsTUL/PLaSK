@@ -281,13 +281,27 @@
       <again ref="simple-stack"/>
     </revolution>
   </cartesian3d>
+  <cartesian3d name="original3d" axes="x,y,z ">
+    <stack>
+      <cuboid material="GaAs" dx="5." dy="5." dz="1.0"/>
+      <cuboid material-top="Al(0.0)GaAs" material-bottom="Al(1.0)GaAs" dx="5." dy="5." dz="0.2"/>
+      <cuboid material="AlAs" dx="5." dy="5." dz="1.0"/>
+      <cuboid material-top="Al(1.0)GaAs" material-bottom="Al(0.0)GaAs" dx="5." dy="5." dz="0.5"/>
+      <cuboid material="GaAs" dx="5." dy="5." dz="1.0"/>
+    </stack>
+  </cartesian3d>
+  <cartesian3d name="simplified3d" axes="x,y">
+    <copy from="original3d">
+      <simplify-gradients lam="980"/>
+    </copy>
+  </cartesian3d>
   <cartesian2d name="original2d" axes="x,y">
     <stack>
-      <rectangle material="GaAs" dx="5" dy="1"/>
-      <rectangle material-top="Al(0.0)GaAs" material-bottom="Al(1.0)GaAs" dx="5" dy="1"/>
-      <rectangle material="AlAs" dx="5" dy="1"/>
-      <rectangle material-top="Al(1.0)GaAs" material-bottom="Al(0.0)GaAs" dx="5" dy="1"/>
-      <rectangle material="GaAs" dx="5" dy="1"/>
+      <rectangle material="GaAs" dx="5." dy="1.0"/>
+      <rectangle material-top="Al(0.0)GaAs" material-bottom="Al(1.0)GaAs" dx="5." dy="0.2"/>
+      <rectangle material="AlAs" dx="5." dy="1.0"/>
+      <rectangle material-top="Al(1.0)GaAs" material-bottom="Al(0.0)GaAs" dx="5." dy="0.5"/>
+      <rectangle material="GaAs" dx="5." dy="1.0"/>
     </stack>
   </cartesian2d>
   <cartesian2d name="simplified2d" axes="x,y">
@@ -532,19 +546,19 @@
   <optical name="fdtd" solver="FDTD2D" lib="fdtd">
     <geometry ref="geo2d"/>
     <sources>
-    <point x="1" y="1">
-      <continuous wavelength="980." start-time="0" end-time="inf" component="Ex" slownless="3" amplitude="1"/>
-    </point>
-    <point x="1" y="1">
-      <gaussian wavelength="980." start-time="0" end-time="infty" width="1" component="Ex" amplitude="1"/>
-    </point>
-    <volume ax="0" ay="0" bx="2" by="1">
-      <continuous wavelength="980." start-time="0" end-time="infinity" component="Ex" slownless="3" amplitude="1"/>
-    </volume>
-    <volume ax="0" ay="0" bx="2" by="1">
-      <gauss wavelength="980." start-time="0" end-time="inf" width="1" component="Ex" amplitude="1"/>
-    </volume>
-  </sources>
+      <point x="1" y="1">
+        <continuous wavelength="980." start-time="0" end-time="inf" component="Ex" slownless="3" amplitude="1"/>
+      </point>
+      <point x="1" y="1">
+        <gaussian wavelength="980." start-time="0" end-time="infty" width="1" component="Ex" amplitude="1"/>
+      </point>
+      <volume ax="0" ay="0" bx="2" by="1">
+        <continuous wavelength="980." start-time="0" end-time="infinity" component="Ex" slownless="3" amplitude="1"/>
+      </volume>
+      <volume ax="0" ay="0" bx="2" by="1">
+        <gauss wavelength="980." start-time="0" end-time="inf" width="1" component="Ex" amplitude="1"/>
+      </volume>
+    </sources>
   </optical>
 </solvers>
 

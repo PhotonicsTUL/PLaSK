@@ -1,6 +1,5 @@
 #coding: UTF-8
-"""
-Basic physical constants and utility functions.
+"""Basic physical constants and utility functions.
 
 Constants
 =========
@@ -51,8 +50,7 @@ kB = kB()
 
 
 def wl(mat, lam, T=300.):
-    """
-    Compute real length of optical wavelength in specified material.
+    """Compute real length of optical wavelength in specified material.
 
     This is utility function that computes the physical length of a single
     wavelength in specified material. Its main purpose is easier design of
@@ -73,8 +71,7 @@ def wl(mat, lam, T=300.):
 
 
 def eV2nm(eV):
-    """
-    Compute wavelength for specified photon energy.
+    """Compute wavelength for specified photon energy.
 
     Args:
         eV (float): Photon energy [eV].
@@ -86,8 +83,7 @@ def eV2nm(eV):
 
 
 def nm2eV(nm):
-    """
-    Compute photon energy for specified wavelength.
+    """Compute photon energy for specified wavelength.
 
     Args:
         nm (float): Wavelength [eV].

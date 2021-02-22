@@ -264,6 +264,12 @@ class GNSimplifyGradients(GNode):
             res.append(('only-role', self.only_role))
         return res
 
+    def get_corresponding_objects(self, manager, root, model):
+        obj = root.get_object_by_model_path(manager, self.get_model_path(), model)[0]
+        if self.only_role is None:
+            return obj.get_matching_objects(lambda i: '__gradient' in i.roles)
+        else:
+            return obj.get_matching_objects(lambda i: '__gradient' in i.roles and self.only_role in i.roles)
 
 class GNCopy(GNObject):
 

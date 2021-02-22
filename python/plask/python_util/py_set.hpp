@@ -30,9 +30,9 @@ struct set_to_python_list_conventer {
 
 namespace detail {
 
-    template<class KeyT> class py_set  {
+    template<typename KeyT>
+    struct py_set  {
 
-    public:
         // some typedefs for convinience
         typedef std::set<KeyT> setT;
 
@@ -73,28 +73,32 @@ namespace detail {
         }
 
         // set operations
-        static setT set_union(const setT& self, const setT &other) {
-                setT result;
-                std::set_union(self.begin(), self.end(), other.begin(), other.end(), std::inserter(result, result.begin()));
-                return result;
+        static setT set_union(const setT& self, const py::object &other) {
+            setT result;
+            py::stl_input_iterator<KeyT> other_begin(other), other_end;
+            std::set_union(self.begin(), self.end(), other_begin, other_end, std::inserter(result, result.begin()));
+            return result;
         }
 
-        static setT set_intersection(const setT& self, const setT &other) {
-                setT result;
-                std::set_intersection(self.begin(), self.end(), other.begin(), other.end(), std::inserter(result, result.begin()));
-                return result;
+        static setT set_intersection(const setT& self, const py::object &other) {
+            setT result;
+            py::stl_input_iterator<KeyT> other_begin(other), other_end;
+            std::set_intersection(self.begin(), self.end(), other_begin, other_end, std::inserter(result, result.begin()));
+            return result;
         }
 
-        static setT set_difference(const setT& self, const setT &other) {
-                setT result;
-                std::set_difference(self.begin(), self.end(), other.begin(), other.end(), std::inserter(result, result.begin()));
-                return result;
+        static setT set_difference(const setT& self, const py::object &other) {
+            setT result;
+            py::stl_input_iterator<KeyT> other_begin(other), other_end;
+            std::set_difference(self.begin(), self.end(), other_begin, other_end, std::inserter(result, result.begin()));
+            return result;
         }
 
-        static setT set_symmetric_difference(const setT& self, const setT &other) {
-                setT result;
-                std::set_symmetric_difference(self.begin(), self.end(), other.begin(), other.end(), std::inserter(result, result.begin()));
-                return result;
+        static setT set_symmetric_difference(const setT& self, const py::object &other) {
+            setT result;
+            py::stl_input_iterator<KeyT> other_begin(other), other_end;
+            std::set_symmetric_difference(self.begin(), self.end(), other_begin, other_end, std::inserter(result, result.begin()));
+            return result;
         }
 
     };
@@ -125,11 +129,14 @@ export_set(const char* py_name) {
 
        .def("union", &PySetT::set_union, "Return the union of sets as a new set.")
        .def("__add__", &PySetT::set_union)
+       .def("__or__", &PySetT::set_union)
        .def("intersection", &PySetT::set_intersection, "Return the union of sets as a new set.")
        .def("__mul__", &PySetT::set_intersection)
+       .def("__and__", &PySetT::set_intersection)
        .def("difference", &PySetT::set_difference, "Return the difference of sets as a new set.")
        .def("__sub__", &PySetT::set_difference, "set difference")
        .def("symmetric_difference", &PySetT::set_symmetric_difference, "Return objects unique to either set.")
+       .def("__xor__", &PySetT::set_symmetric_difference, "Return objects unique to either set.")
    ;
 }
 
@@ -152,11 +159,14 @@ export_frozenset(const char* py_name) {
 
        .def("union", &PySetT::set_union, "Return the union of sets as a new set.")
        .def("__add__", &PySetT::set_union)
+       .def("__or__", &PySetT::set_union)
        .def("intersection", &PySetT::set_intersection, "Return the union of sets as a new set.")
        .def("__mul__", &PySetT::set_intersection)
+       .def("__and__", &PySetT::set_intersection)
        .def("difference", &PySetT::set_difference, "Return the difference of sets as a new set.")
        .def("__sub__", &PySetT::set_difference, "set difference")
        .def("symmetric_difference", &PySetT::set_symmetric_difference, "Return objects unique to either set.")
+       .def("__xor__", &PySetT::set_symmetric_difference, "Return objects unique to either set.")
    ;
 }
 
