@@ -69,12 +69,11 @@ StackContainerBaseImpl<dim, growingDirection>::getChildForHeight(
             return shared_ptr<TranslationT>();
     }
     std::ptrdiff_t sh_index = it - stackHeights.begin();
-    if (sh_index > 1 && is_zero(height - stackHeights[sh_index - 1], 16 * SMALL))
-        sec_candidate = children[sh_index - 2];
-    else if (sh_index + 1 < std::ptrdiff_t(stackHeights.size()) &&
-             is_zero(stackHeights[sh_index + 1] - height, 16 * SMALL))
+    if (sh_index > 1 && is_zero(height - stackHeights[sh_index-1], 16 * SMALL))
+        sec_candidate = children[sh_index-2];
+    else if (sh_index + 1 < stackHeights.size() && is_zero(stackHeights[sh_index] - height, 16 * SMALL))
         sec_candidate = children[sh_index];
-    return children[sh_index - 1];
+    return children[sh_index-1];
 }
 
 template <int dim, typename Primitive<dim>::Direction growingDirection>
