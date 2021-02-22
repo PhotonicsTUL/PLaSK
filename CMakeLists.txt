@@ -292,10 +292,8 @@ file(GLOB_RECURSE plask_headers FOLLOW_SYMLINKS plask/*.h plask/*.hpp solvers/pr
 
 file(GLOB_RECURSE plask_src FOLLOW_SYMLINKS plask/*.cpp solvers/providers/*.cpp)
 
-# Python sources and files
+# Python sources
 file(GLOB_RECURSE python_plask_src FOLLOW_SYMLINKS python/plask/*.cpp python/plask/*.hpp)
-file(GLOB_RECURSE python_plask_py python/plask/*.py)
-list(REMOVE_ITEM python_plask_py "${CMAKE_SOURCE_DIR}/python/plask/_plask.py")
 
 if(WIN32 AND NOT MSVC AND USE_MANIFEST)
     set(manifest "1 24 \"${CMAKE_SOURCE_DIR}/toolset/mingw/${USE_MANIFEST}.manifest\"\n")
@@ -380,36 +378,53 @@ endif()
 
 if(BUILD_PYTHON)
 
-    foreach(py_file ${python_plask_py})
-        get_filename_component(py_file_name ${py_file} NAME)
-        list(APPEND python_plask_py_copied ${PLASK_PYTHON_PATH}/${py_file_name})
-        add_custom_command(OUTPUT ${PLASK_PYTHON_PATH}/${py_file_name}
-                           COMMAND ${CMAKE_COMMAND} ARGS -E copy ${py_file} ${PLASK_PYTHON_PATH}/${py_file_name}
-                           DEPENDS ${py_file})
-        if(WIN32)
-            if(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
-                list(APPEND python_plask_pyc ${PLASK_PYTHON_PATH}/${py_file_name}c)
-                list(APPEND python_plask_pyo ${PLASK_PYTHON_PATH}/${py_file_name}o)
-            else()
-                get_filename_component(py_file_base ${py_file} NAME_WE)
-                list(APPEND python_plask_pyc ${PLASK_PYTHON_PATH}/__pycache__/${py_file_base}.cpython-${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.pyc)
-                list(APPEND python_plask_pyo ${PLASK_PYTHON_PATH}/__pycache__/${py_file_base}.cpython-${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.opt-1.pyc)
-            endif()
+    # Python files
+    foreach(py_dir "" "/util")
+        set(python_plask_py_copied "")
+
+        file(GLOB python_plask_py "python/plask${py_dir}/*.py")
+        if("${py_dir}" STREQUAL "")
+            list(REMOVE_ITEM python_plask_py "${CMAKE_SOURCE_DIR}/python/plask/_plask.py")
+        else()
+            file(MAKE_DIRECTORY ${PLASK_PYTHON_PATH}${py_dir})
         endif()
+
+        foreach(py_file ${python_plask_py})
+            get_filename_component(py_file_name ${py_file} NAME)
+            list(APPEND python_plask_py_copied ${PLASK_PYTHON_PATH}${py_dir}/${py_file_name})
+            list(APPEND python_plask_py_copied_all ${PLASK_PYTHON_PATH}${py_dir}/${py_file_name})
+            add_custom_command(OUTPUT ${PLASK_PYTHON_PATH}${py_dir}/${py_file_name}
+                               COMMAND ${CMAKE_COMMAND} ARGS -E copy ${py_file} ${PLASK_PYTHON_PATH}${py_dir}/${py_file_name}
+                               DEPENDS ${py_file})
+            if(WIN32)
+                if(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
+                    list(APPEND python_plask_pyc ${PLASK_PYTHON_PATH}${py_dir}/${py_file_name}c)
+                    list(APPEND python_plask_pyo ${PLASK_PYTHON_PATH}${py_dir}/${py_file_name}o)
+                else()
+                    get_filename_component(py_file_base ${py_file} NAME_WE)
+                    list(APPEND python_plask_pyc ${PLASK_PYTHON_PATH}${py_dir}/__pycache__/${py_file_base}.cpython-${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.pyc)
+                    list(APPEND python_plask_pyo ${PLASK_PYTHON_PATH}${py_dir}/__pycache__/${py_file_base}.cpython-${PYTHON_VERSION_MAJOR}${PYTHON_VERSION_MINOR}.opt-1.pyc)
+                endif()
+            endif()
+        endforeach()
+
+        install(FILES ${python_plask_py_copied} DESTINATION lib/plask/python/plask${py_dir} COMPONENT core)
     endforeach()
 
-    add_custom_target(python-scripts ALL DEPENDS ${python_plask_py_copied})
+    add_custom_target(python-scripts ALL DEPENDS ${python_plask_py_copied_all})
 
     if(WIN32)
         add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${PLASK_PYTHON_PATH})
         add_custom_command(TARGET python-scripts COMMAND ${PYTHON_EXECUTABLE} -O -m compileall -q ${PLASK_PYTHON_PATH})
-        if(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
-            install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask COMPONENT core)
-            install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask COMPONENT core)
-        else()
-            install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask/__pycache__ COMPONENT core)
-            install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask/__pycache__ COMPONENT core)
-        endif()
+        foreach(py_dir "" "/util")
+            if(${PYTHON_VERSION_STRING} VERSION_LESS 3.0.0)
+                install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask${py_dir} COMPONENT core)
+                install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask${py_dir} COMPONENT core)
+            else()
+                install(FILES ${python_plask_pyc} DESTINATION lib/plask/python/plask${py_dir}/__pycache__ COMPONENT core)
+                install(FILES ${python_plask_pyo} DESTINATION lib/plask/python/plask${py_dir}/__pycache__ COMPONENT core)
+            endif()
+        endforeach()
     endif()
 
     include_directories(${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIRS})
@@ -481,7 +496,6 @@ if(BUILD_PYTHON)
         install(FILES ${plask_stubs_files} DESTINATION lib/plask/python/plask COMPONENT gui)
     endif()
 
-    install(FILES ${python_plask_py_copied} DESTINATION lib/plask/python/plask COMPONENT core)
     install(TARGETS plask RUNTIME DESTINATION bin COMPONENT core)
     if (INSTALL_DEV)
         install(DIRECTORY python/plask DESTINATION include COMPONENT dev FILES_MATCHING PATTERN "python*.h" PATTERN "python*.hpp" PATTERN ".*" EXCLUDE)

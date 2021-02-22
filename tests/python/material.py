@@ -141,7 +141,7 @@ class Material(unittest.TestCase):
         @material.simple(mm)
         class WithBase(material.Material):
             def __init__(self, **kwargs):
-                super(WithBase, self).__init__()
+                super().__init__()
 
         m1 = WithBase()
         self.assertEqual( m1.name, "WithBase" )
@@ -160,7 +160,7 @@ class Material(unittest.TestCase):
         class WithBase2(material.Material):
             name="WithBase2:Si"
             def __init__(self):
-                super(WithBase2, self).__init__(doping=1e18)
+                super().__init__(doping=1e18)
 
         m1 = WithBase2()
         m2 = material.get('Al(0.2)GaAs:Si=1e18')
@@ -171,7 +171,7 @@ class Material(unittest.TestCase):
         class AlGaAs_1_Si(material.Material):
             name="AlGaAs_1:Si"
             def __init__(self):
-                super(AlGaAs_1_Si, self).__init__(Al=0.2, doping=1e5)
+                super().__init__(Al=0.2, doping=1e5)
 
         m1 = AlGaAs_1_Si()
         m2 = material.get('Al(0.2)GaAs:Si=1e18')
@@ -183,7 +183,7 @@ class Material(unittest.TestCase):
         class AlGaAs_2_Si(material.Material):
             name="AlGaAs_2:Si"
             def __init__(self):
-                super(AlGaAs_2_Si, self).__init__(Al=0.2, doping=1e18)
+                super().__init__(Al=0.2, doping=1e18)
 
         m = AlGaAs_2_Si()
         self.assertEqual( m.doping, 1e18 )
@@ -209,12 +209,12 @@ class Material(unittest.TestCase):
         @material.simple('GaAs')
         class Mat1(material.Material):
             def __init__(self, val):
-                super(Mat1, self).__init__()
+                super().__init__()
                 self.val = val
         @material.simple('AlAs')
         class Mat2(material.Material):
             def __init__(self, val):
-                super(Mat2, self).__init__()
+                super().__init__()
                 self.val = val
         m1 = Mat1(1)
         m2 = Mat1(2)
@@ -227,7 +227,7 @@ class Material(unittest.TestCase):
         @material.simple()
         class Nat(material.Material):
             def __init__(self, val):
-                super(Nat, self).__init__()
+                super().__init__()
                 self.val = val
             def __eq__(self, other):
                 return self.val != other.val
@@ -304,7 +304,7 @@ class Material(unittest.TestCase):
         @material.simple('GaAs')
         class ChangingMaterial(material.Material):
             def __init__(self, point):
-                super(ChangingMaterial, self).__init__()
+                super().__init__()
                 self.point = point
             def cond(self, T=300.):
                 return self.point[0]**2

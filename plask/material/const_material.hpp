@@ -23,7 +23,7 @@ public:
 
     bool isEqual(const Material& other) const override {
         const ConstMaterial& cother = static_cast<const ConstMaterial&>(other);
-        return 
+        return
             ((!base && !cother.base) || (base && cother.base && *base == *cother.base)) &&
             (cache == cother.cache);
     }
@@ -35,7 +35,7 @@ public:
 
     Material::Kind kind() const override {
         if (base) return base->kind();
-        else return Material::GENERIC; 
+        else return Material::GENERIC;
     }
 
     Material::ConductivityType condtype() const override {

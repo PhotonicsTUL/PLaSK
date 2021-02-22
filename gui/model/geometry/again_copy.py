@@ -220,12 +220,58 @@ class GNCToBlock(GNCopyChild):
         return self.material_bottom == self.material_top
 
 
+class GNSimplifyGradients(GNode):
+
+    def __init__(self, parent=None, lam=None, linear=None, temp=None, only_role=None):
+        self.lam = lam
+        self.linear = linear
+        self.temp = temp
+        self.only_role = only_role
+        super().__init__(parent, object)
+
+    def tag_name(self, full_name=True):
+        return "simplify-gradients"
+
+    def get_controller(self, document, model):
+        from ...controller.geometry.again_copy import GNCSimplifyGradientsController
+        return GNCSimplifyGradientsController(document, model, self)
+
+    def get_model_path(self, stop=None):
+        path = super().get_model_path(stop)
+        return path[:-1]
+
+    def _attributes_from_xml(self, attribute_reader, conf):
+        super()._attributes_from_xml(attribute_reader, conf)
+        xml_to_attr(attribute_reader, self, 'lam', 'temp', 'linear')
+        self.only_role = attribute_reader.get('only-role')
+
+    def _attributes_to_xml(self, element, conf):
+        super()._attributes_to_xml(element, conf)
+        attr_to_xml(self, element, 'lam', 'temp', 'linear')
+        if self.only_role is not None:
+            element.attrib['only-role'] = self.only_role
+
+    def create_info(self, res, names):
+        super().create_info(res, names)
+        if self.lam is None:
+            self._require(res, 'lam')
+
+    def major_properties(self):
+        res = super().major_properties()
+        if self.lam is not None:
+            res.append(('wavelength', self.lam))
+        if self.only_role is not None:
+            res.append(('only-role', self.only_role))
+        return res
+
+
 class GNCopy(GNObject):
 
     CHANGERS = {
         'delete': GNCDelete,
         'replace': GNCReplace,
         'toblock': GNCToBlock,
+        'simplify-gradients': GNSimplifyGradients,
     }
 
     def __init__(self, parent=None, name=None, source=None):
@@ -288,8 +334,7 @@ class GNCopy(GNObject):
                     children_names = [getattr(c, 'name', None) for c in node.children]
                     dec = 0
                     for op in self.children:
-                        if isinstance(op, GNCDelete) and op.object is not None and \
-                           op.object in children_names:
+                        if isinstance(op, GNCDelete) and op.object is not None and op.object in children_names:
                             ci = children_names.index(op.object)
                             cri = node.model_to_real_index(ci, model)
                             if not isinstance(cri, Number): cri = cri[0]

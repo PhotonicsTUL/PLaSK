@@ -25,7 +25,7 @@ class AlGaAsDp(material.Material):
     name = "AlGaAs:Dp"
 
     def __init__(self, *args, **kwargs):
-        super(AlGaAsDp, self).__init__()
+        super().__init__()
         self.args = args,
         self.kwargs = kwargs
         self.composition = self.complete_composition(kwargs, self.name)

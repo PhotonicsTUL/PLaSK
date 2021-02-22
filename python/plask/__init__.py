@@ -148,6 +148,9 @@ def _geometry_changer(name):
 Manager._geometry_changer = _geometry_changer
 del _geometry_changer
 
+from .util import _geometry_copy_changers
+
+
 def loadxpl(source, defs={}, sections=None, destination=None, update=False):
     """
     Load the XPL file. All sections contents is read into the `destination` scope.
@@ -310,7 +313,7 @@ class StepProfile:
 
     def __getattr__(self, name):
         if name[:3] != 'out':
-            super(StepProfile, self).__getattr__(name)
+            super().__getattr__(name)
         if name in self.providers:
             return self.providers[name]
         suffix = { geometry.Cartesian2D: '2D',
