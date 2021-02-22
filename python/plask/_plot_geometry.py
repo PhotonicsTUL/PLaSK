@@ -152,6 +152,7 @@ class ColorFromDict:
         s = str(material)
         if self.tint_doping:
             s = s.split(':')[0]
+        s = s.split('[')[0].strip()
         try:
             result = self.material_dict[s]
         except KeyError:
