@@ -222,10 +222,11 @@ class GNCToBlock(GNCopyChild):
 
 class GNSimplifyGradients(GNode):
 
-    def __init__(self, parent=None, lam=None, linear=None, temp=None, only_role=None):
+    def __init__(self, parent=None, lam=None, linear=None, temp=None, dtemp=None, only_role=None):
         self.lam = lam
         self.linear = linear
         self.temp = temp
+        self.dtemp = dtemp
         self.only_role = only_role
         super().__init__(parent, object)
 
@@ -242,12 +243,12 @@ class GNSimplifyGradients(GNode):
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super()._attributes_from_xml(attribute_reader, conf)
-        xml_to_attr(attribute_reader, self, 'lam', 'temp', 'linear')
+        xml_to_attr(attribute_reader, self, 'lam', 'temp', 'linear', 'dtemp')
         self.only_role = attribute_reader.get('only-role')
 
     def _attributes_to_xml(self, element, conf):
         super()._attributes_to_xml(element, conf)
-        attr_to_xml(self, element, 'lam', 'temp', 'linear')
+        attr_to_xml(self, element, 'lam', 'temp', 'linear', 'dtemp')
         if self.only_role is not None:
             element.attrib['only-role'] = self.only_role
 
@@ -270,6 +271,7 @@ class GNSimplifyGradients(GNode):
             return obj.get_matching_objects(lambda i: hasattr(i, 'roles') and '__gradient' in i.roles)
         else:
             return obj.get_matching_objects(lambda i: hasattr(i, 'roles') and '__gradient' in i.roles and self.only_role in i.roles)
+
 
 class GNCopy(GNObject):
 

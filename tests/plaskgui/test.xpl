@@ -292,7 +292,7 @@
   </cartesian3d>
   <cartesian3d name="simplified3d" axes="x,y">
     <copy from="original3d">
-      <simplify-gradients lam="980"/>
+      <simplify-gradients lam="980" linear="eps"/>
     </copy>
   </cartesian3d>
   <cartesian2d name="original2d" axes="x,y">
@@ -306,7 +306,7 @@
   </cartesian2d>
   <cartesian2d name="simplified2d" axes="x,y">
     <copy from="original2d">
-      <simplify-gradients lam="980"/>
+      <simplify-gradients lam="980" linear="eps"/>
     </copy>
   </cartesian2d>
 </geometry>

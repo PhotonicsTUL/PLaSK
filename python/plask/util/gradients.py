@@ -8,10 +8,43 @@ and speed of optical computations.
 For details see: M. Wasiak, M. Dobrski...
 """
 
+from .. import tensor as _tensor, print_log as _log
 from .. import geometry as _geometry
+from ..material import Material as _Material
 
 
-def simplify(item, lam, T=300., linear='nr'):
+class _SimplifiedMaterial(_Material):
+
+    def __init__(self, base, Nr, lam, T, dNdl, dNdT):
+        super().__init__(base)
+        self._nr = Nr.real
+        fa = - 125663706.14366701 / lam
+        self._absp = fa * Nr.imag
+        self._lam = lam
+        self._T = T
+        self._dndl = dNdl.real
+        self._dndT = dNdT.real
+        self._dadl = fa * dNdl.imag
+        self._dadT = fa * dNdT.imag
+
+    def __str__(self):
+        return str(self.base)
+
+    def nr(self, lam, T=300., n=0.):
+        return self._nr + self._dndl * (lam - self._lam) + self._dndT * (T - self._T)
+
+    def absp(self, lam, T=300.):
+        return self._absp + self._dadl * (lam - self._lam) + self._dadT * (T - self._T)
+
+    def Nr(self, lam, T=300., n=0.):
+        return self.nr(lam, T, n) - 7.95774715459e-09 * self.absp(lam, T) * lam
+
+    def NR(self, lam, T=300., n=0.):
+        Nr = self.Nr(lam, T, n)
+        return _tensor(Nr, Nr, Nr)
+
+
+def simplify(item, lam, T=300., linear='nr', dT=100.):
     """
     Return stack of two layers providing the same optical parameters as the gradient
     layer.
@@ -21,6 +54,8 @@ def simplify(item, lam, T=300., linear='nr'):
         lam (float): reference wavelength
         T (float): temperature for the refractive indices
         linear ('nr' or 'eps'): which parameter should be linear
+        dT (float): temperature step for estimation of temperature dependence
+                    of refractive index
 
     Returns:
         ~plask.geometry.GeometryObject: an object repacing the original leaf
@@ -39,23 +74,36 @@ def simplify(item, lam, T=300., linear='nr'):
     except TypeError:   # the object is uniform
         return item
 
-    material = str(item.representative_material)
+    material = item.representative_material
 
     from ._gradients import simplify_gradient_nr
 
+    dl = 1e-6
+
+    data0 = simplify_gradient_nr(item.height, m0.Nr(lam, T), m1.Nr(lam, T), lam, linear)
+    dataT = simplify_gradient_nr(item.height, m0.Nr(lam, T+dT), m1.Nr(lam, T+dT), lam, linear, data0[0][0])
+    datal = simplify_gradient_nr(item.height, m0.Nr(lam+dl, T), m1.Nr(lam+dl, T), lam+dl, linear, data0[0][0])
+
+    _log('debug', '{0}->{1} ({2:.6f}nm, {3}K): {4[0]:.3f}[{4[1]:.4f}um] / {4[0]:.3f}[{4[1]:.4f}um]'
+         .format(m0, m1, lam, T, *data0))
+    _log('debug', '{0}->{1} ({2:.6f}nm, {3}K): {4[0]:.3f}[{4[1]:.4f}um] / {4[0]:.3f}[{4[1]:.4f}um] (dT)'
+         .format(m0, m1, lam, T+dT, *dataT))
+    _log('debug', '{0}->{1} ({2:.6f}nm, {3}K): {4[0]:.3f}[{4[1]:.4f}um] / {4[0]:.3f}[{4[1]:.4f}um] (dlam)'
+         .format(m0, m1, lam+dl, T, *datal))
+
     stack = Stack()
     dims = list(item.dims)
-    for Nr, d in simplify_gradient_nr(item.height, m0.Nr(lam, T), m1.Nr(lam, T), lam, linear):
+    for (Nr, d), (NrT, _), (Nrl, _) in zip(data0, dataT, datal):
         dims[-1] = d
-        nr = Nr.real
-        absp = - Nr.imag / (7.95774715459e-09 * lam)
-        stack.append(Block(dims, '{} [nr={} absp={}]'.format(material, nr, absp)))
+        dNdT = (NrT - Nr) / dT
+        nNdl = (Nrl - Nr) / dl
+        stack.append(Block(dims, _SimplifiedMaterial(material, Nr, lam, T, nNdl, dNdT)))
     stack.roles = item.roles | {'__gradient'}
 
     return stack
 
 
-def simplify_all(geometry, lam, T=300., linear='nr'):
+def simplify_all(geometry, lam, T=300., linear='nr', dT=100.):
     """
     Replace all rectangular blocks with gradients with two-layer simplification
     in geometry tree.
@@ -65,6 +113,8 @@ def simplify_all(geometry, lam, T=300., linear='nr'):
         lam (float): reference wavelength
         T (float): temperature for the refractive indices
         linear ('nr' or 'eps'): which parameter should be linear
+        dT (float): temperature step for estimation of temperature dependence
+                    of refractive index
 
     Returns:
         ~plask.geometry.GeometryObject: geometry with simplified gradients
@@ -72,7 +122,7 @@ def simplify_all(geometry, lam, T=300., linear='nr'):
 
     def filter(item):
         if isinstance(item, (_geometry.Rectangle, _geometry.Cuboid)):
-            new_item = simplify(item, lam, T, linear)
+            new_item = simplify(item, lam, T, linear, dT)
             if new_item is not item:
                 return new_item
 

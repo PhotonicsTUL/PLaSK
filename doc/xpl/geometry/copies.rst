@@ -48,3 +48,13 @@ Copies and references to geometry objects
          :attr required material: Material of the solid block.
          :attr name: Replacing block name for further reference. In the :xml:tag:`script` section, the object is available by ``GEO`` table, which is indexed by names of geometry objects.
          :attr role: Replacing block role. Important for some solvers.
+
+      .. xml:tag:: <simplify-gradients/>
+
+         Simplify all the gradient layers for optical calculations. Each such layer is replaced with two uniform layers providing the same transfer matrix. Using such simplified gradients for optical computations strongly improves the accuracy and speed of optical computations.
+
+         :attr required lam: Wavelength for which simplified gradient is determined.
+         :attr linear: Specifies which parameter is linear: refractive index (`nr`) or permittivity (`eps`).
+         :attr temp: Temperature at which the refractive indices are retrieved.
+         :attr dtemp: Temperature step for approximating temperature dependence of the simplified refractive indices.
+         :attr only-role: Only gradients with this role are simplified. If empty, all gradients are simplified.

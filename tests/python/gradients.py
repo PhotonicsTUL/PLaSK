@@ -36,20 +36,25 @@ class TestGradientXpl(unittest.TestCase):
         self.original2d = manager.geo.original2d
         self.simplified2d = manager.geo.simplified2d
 
+    res1 = 3.4029 + 1.5121e-6j
+    res2 = 3.0334 + 1.6038e-6j
+    d05 = 0.245692
+    d02 = 0.101723
+
     def test1(self):
         mesh = plask.mesh.Rectangular2D([2.], [1.01, 1.24, 1.26, 1.49])
-        self.assertAlmostEqual(self.simplified2d.item[1][0][0][0].height, 0.5 * 0.49138, 5)
+        self.assertAlmostEqual(self.simplified2d.item[1][0][0][0].height, self.d05, 4)
         self.assertAlmostEqual(self.simplified2d.item[1][0][0][0].height + self.simplified2d.item[1][0][1][0].height, 0.5, 5)
         assert_allclose(array(plask.MaterialField(self.simplified2d, mesh).nr(980.)),
-                        array([3.4029+1.5121e-6j, 3.4029+1.5121e-6j, 3.0334+1.6038e-6j, 3.0334+1.6038e-6j]),
+                        array([self.res1, self.res1, self.res2, self.res2]),
                         atol=1e-4)
 
     def test2(self):
         mesh = plask.mesh.Rectangular2D([2.], [2.51, 2.59, 2.61, 2.69])
-        self.assertAlmostEqual(self.simplified2d.item[3][0][0][0].height, 0.2 * 0.50862, 5)
+        self.assertAlmostEqual(self.simplified2d.item[3][0][0][0].height, self.d02, 4)
         self.assertAlmostEqual(self.simplified2d.item[3][0][0][0].height + self.simplified2d.item[3][0][1][0].height, 0.2, 5)
         assert_allclose(array(plask.MaterialField(self.simplified2d, mesh).nr(980.)),
-                        array([3.0334+1.6038e-6j, 3.0334+1.6038e-6j, 3.4029+1.5121e-6j, 3.4029+1.5121e-6j]),
+                        array([self.res2, self.res2, self.res1, self.res1]),
                         atol=1e-4)
 
     if __name__ == '__main__':
@@ -74,20 +79,25 @@ class TestGradientPython(unittest.TestCase):
 
         self.simplified2d = gradients.simplify_all(self.original2d, 980., linear='eps')
 
+    res1 = 3.4073-3.6809e-7j
+    res2 = 3.0385-3.6479e-7j
+    d05 = 0.250
+    d02 = 0.100
+
     def test1(self):
         mesh = plask.mesh.Rectangular2D([2.], [1.01, 1.24, 1.26, 1.49])
-        self.assertAlmostEqual(self.simplified2d[1][0][0][0].height, 0.5 * 0.500, 5)
+        self.assertAlmostEqual(self.simplified2d[1][0][0][0].height, self.d05, 4)
         self.assertAlmostEqual(self.simplified2d[1][0][0][0].height + self.simplified2d[1][0][1][0].height, 0.5, 5)
         assert_allclose(array(plask.MaterialField(self.simplified2d, mesh).nr(980.)),
-                        array([3.4073-3.6809e-7j, 3.4073-3.6809e-7j, 3.0385-3.6479e-7j, 3.0385-3.6479e-7j]),
+                        array([self.res1, self.res1, self.res2, self.res2]),
                         atol=1e-4)
 
     def test2(self):
         mesh = plask.mesh.Rectangular2D([2.], [2.51, 2.59, 2.61, 2.69])
-        self.assertAlmostEqual(self.simplified2d[3][0][0][0].height, 0.2 * 0.5000, 5)
+        self.assertAlmostEqual(self.simplified2d[3][0][0][0].height, self.d02, 4)
         self.assertAlmostEqual(self.simplified2d[3][0][0][0].height + self.simplified2d[3][0][1][0].height, 0.2, 5)
         assert_allclose(array(plask.MaterialField(self.simplified2d, mesh).nr(980.)),
-                        array([3.0385-3.6479e-7j, 3.0385-3.6479e-7j, 3.4073-3.6809e-7j, 3.4073-3.6809e-7j]),
+                        array([self.res2, self.res2, self.res1, self.res1]),
                         atol=1e-4)
 
     if __name__ == '__main__':
