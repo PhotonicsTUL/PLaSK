@@ -502,9 +502,13 @@ shared_ptr<Material> PythonMaterial::__init__(const py::tuple& args, const py::d
     py::object cls = self.attr("__class__");
 
     shared_ptr<PythonMaterial> ptr(new PythonMaterial(self));
+    ptr->params = kwargs2MaterialComposition(ptr->name(), kwargs);
+    ptr->params.composition = ptr->params.completeComposition();
+
     if (PyObject_HasAttrString(cls.ptr(), "_factory")) {
-        if (len > 1)
-            throw TypeError(u8"__init__ for registered material takes exactly 1 non-keyword argument ({:d} given)", len);
+        if (len > 1) {
+            throw TypeError(u8"__init__ for registered materials takes exactly 1 non-keyword arguments ({:d} given)", len);
+        }
         shared_ptr<PythonMaterialConstructor> factory
             = py::extract<shared_ptr<PythonMaterialConstructor>>(cls.attr("_factory"));
         ptr->base = factory->base_constructor(ptr->params.composition, ptr->params.doping);
@@ -516,9 +520,6 @@ shared_ptr<Material> PythonMaterial::__init__(const py::tuple& args, const py::d
         else
             ptr->base.reset(new GenericMaterial());
     }
-
-    ptr->params = kwargs2MaterialComposition(ptr->name(), kwargs);
-    ptr->params.composition = ptr->params.completeComposition();
 
     // Update cache
     auto found = cacheMap.find(cls.ptr());
