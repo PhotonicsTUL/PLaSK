@@ -18,17 +18,8 @@ def _kexpr(k, r):
     return (k * r[0,1] + r[1,0] / k) / (r[0,0] - r[1,1])
 
 
-def _maineq(kA, r, d):
-    return ((1 / kA) * np.arctan(-1. / _kexpr(kA, r)) + 1 / _kBfromkA(kA, r) * np.arctan(1. / _kexpr(_kBfromkA(kA, r), r)) - d)
-
-
-def _fsolve(func, z0, *args, **kwargs):
-    def func2(z, *a):
-        res = func(z[0] + 1j * z[1], *a)
-        return np.array([res.real, res.imag])
-
-    result = opt.fsolve(func2, np.array([z0.real, z0.imag]), *args, **kwargs)
-    return result[0] + 1j * result[1]
+def _maineq(kA, r):
+    return ((1./kA) * np.arctan(-1./_kexpr(kA, r)) + 1./_kBfromkA(kA, r) * np.arctan(1./_kexpr(_kBfromkA(kA, r), r)) - 1.0)
 
 
 def _pcfd(n, z):
@@ -42,59 +33,67 @@ def _pcfd(n, z):
 
 
 class Layer:
-    def __init__(self, d, ninit):
-        self.d = d
+    def __init__(self, ninit):
         self.ninit = ninit
 
     def twoLayers(self, lambda0):
         r = self.Tmatrix(lambda0)
-        kA = _fsolve(lambda kAx: _maineq(kAx, r, self.d), 2 * np.pi * self.ninit / lambda0)
+        kinit = 2*np.pi * np.array([self.ninit.real, self.ninit.imag]) / lambda0
+
+        def func(x):
+            res = _maineq(x[0] + 1j * x[1], r)
+            return np.array([res.real, res.imag])
+
+        kA = opt.fsolve(func, kinit)
+        kA = kA[0] + 1j * kA[1]
+
         nA = kA * lambda0 / (2 * np.pi)
         kB = _kBfromkA(kA, r)
         nB = kB * lambda0 / (2 * np.pi)
         dA = np.arctan(-1. / _kexpr(kA, r)) / kA
-        dB = self.d - dA
+        dB = 1.0 - dA
         return (nA, dA.real), (nB, dB.real)
 
 
 class GradLayer(Layer):
-    def __init__(self, nin, nout, d, ninit=None):
-        super().__init__(d, ninit if ninit is not None else nin)
+    def __init__(self, nin, nout, ninit=None):
+        if ninit is None:
+            ninit = nin + 0.333333 * (nout - nin)
+        super().__init__(ninit)
         self.nin = nin
         self.nout = nout
 
 
-class airyLayer(GradLayer):
+class AiryLayer(GradLayer):
     def Tmatrix(self, lambda0):
-        x0 = 0
-        x1 = x0 + self.d
         kin = 2 * np.pi * self.nin / lambda0
         kout = 2 * np.pi * self.nout / lambda0
-        A = (kout**2 - kin**2) / self.d
-        B = kin**2 - x0 * (kout**2 - kin**2) / self.d
+        A = kout**2 - kin**2
+        B = kin**2
 
-        a0, ap0, b0, bp0 = sp.airy(-((B + A * x0) / (-A)**(2 / 3)))
-        a1, ap1, b1, bp1 = sp.airy(-((B + A * x1) / (-A)**(2 / 3)))
+        a0, ap0, b0, bp0 = sp.airy(-(B / (-A)**0.666666666667))
+        a1, ap1, b1, bp1 = sp.airy(-((A+B) / (-A)**0.666666666667))
 
         return np.array([[-(np.pi * ap0 * b1) + np.pi * a1 * bp0, (np.pi * (-(a1 * b0) + a0 * b1)) / (-A)**0.333333333333],
                          [(-A)**0.333333333333 * np.pi * (ap1 * bp0 - ap0 * bp1), -(np.pi * ap1 * b0) + np.pi * a0 * bp1]])
 
-class pcfdLayer(GradLayer):
+class PcfdLayer(GradLayer):
     def Tmatrix(self, lambda0):
         kin = 2 * np.pi * self.nin / lambda0
         kout = 2 * np.pi * self.nout / lambda0
-        A = (kout - kin) / self.d
+        A = kout - kin
         B = kin
         VA = A**0.5
+        AB = A + B
 
         pcfd1 = _pcfd(0.5, ((1+1j) * B) / VA)
         pcfd2 = _pcfd(-0.5, ((1+1j) * B) / VA)
         pcfd3 = _pcfd(0.5, ((-1+1j) * B) / VA)
         pcfd4 = _pcfd(-0.5, ((-1+1j) * B) / VA)
-        pcfd5 = _pcfd(-0.5, ((1+1j) * (B + A * self.d)) / VA)
-        pcfd6 = _pcfd(-0.5, ((-1+1j) * (B + A * self.d)) / VA)
-        pcfd7 = _pcfd(0.5, ((-1+1j) * (B + A * self.d)) / VA)
-        pcfd8 = _pcfd(0.5, ((1+1j) * (B + A * self.d)) / VA)
+        pcfd5 = _pcfd(-0.5, ((1+1j) * AB) / VA)
+        pcfd6 = _pcfd(-0.5, ((-1+1j) * AB) / VA)
+        pcfd7 = _pcfd(0.5, ((-1+1j) * AB) / VA)
+        pcfd8 = _pcfd(0.5, ((1+1j) * AB) / VA)
 
         return np.array([[
             (
@@ -108,19 +107,22 @@ class pcfdLayer(GradLayer):
         ],
         [
             (
-                (B + A * self.d) * pcfd6 * ((-1+1j) * VA * pcfd1 + B * pcfd2) +
+                AB * pcfd6 * ((-1+1j) * VA * pcfd1 + B * pcfd2) +
                 pcfd7 * (-2 * A * pcfd1 + (1+1j) * VA * B * pcfd2) -
                 ((1+1j) * VA * pcfd3 + B * pcfd4) * ((-1+1j) * VA * pcfd8 +
-                (B + A * self.d) * pcfd5)
+                AB * pcfd5)
             ) / ((-1+1j) * VA * pcfd3 * pcfd2 + pcfd4 * ((-1-1j) * VA * pcfd1 + 2j * B * pcfd2)),
 
             (
                 1j * (
-                    (2 * _1P14 * VA * pcfd7 + 1.4142135623730951 * (B + A * self.d) * pcfd6) * pcfd2 +
-                    pcfd4 * (2 * _1P34 * VA * pcfd8 + 1.4142135623730951 * (B + A * self.d) * pcfd5)
+                    (2 * _1P14 * VA * pcfd7 + 1.4142135623730951 * AB * pcfd6) * pcfd2 +
+                    pcfd4 * (2 * _1P34 * VA * pcfd8 + 1.4142135623730951 * AB * pcfd5)
                 )
             ) / (2 * _1P34 * VA * pcfd3 * pcfd2 + 2j * pcfd4 * (_1P34 * VA * pcfd1 + 1.4142135623730951 * B * pcfd2))
         ]])
+
+
+__cache = {}
 
 
 def simplify_gradient_nr(d, n0, n1, lam, linear='nr', ninit=None):
@@ -134,13 +136,17 @@ def simplify_gradient_nr(d, n0, n1, lam, linear='nr', ninit=None):
         linear ('nr' or 'eps'): which parameter should be linear
         ninit (float or None): initial refractive index of the first simplified sub-layer
     """
-    if linear == 'eps':
-        layer = airyLayer(n0, n1, 1., ninit)
-    elif linear.lower() == 'nr':
-        layer = pcfdLayer(n0, n1, 1., ninit)
+    key = n0, n1, lam, linear
+    if key in __cache:
+        (nA, fA), (nB, fB) = __cache[key]
     else:
-        raise ValueError("'linear' argument must be either 'eps' or 'nr'")
-    (nA, fA), (nB, fB) = layer.twoLayers(lam)
+        if linear == 'eps':
+            layer = AiryLayer(n0, n1, ninit)
+        elif linear.lower() == 'nr':
+            layer = PcfdLayer(n0, n1, ninit)
+        else:
+            raise ValueError("'linear' argument must be either 'eps' or 'nr'")
+        (nA, fA), (nB, fB) = __cache[key] = layer.twoLayers(lam)
     return (nA, d * fA), (nB, d * fB)
 
 
