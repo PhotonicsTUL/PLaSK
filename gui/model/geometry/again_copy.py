@@ -20,7 +20,6 @@ from ...utils.xml import attr_to_xml, xml_to_attr
 
 
 class GNAgain(GNode):
-
     def __init__(self, parent=None, ref=None):
         super().__init__(parent)
         self.ref = ref
@@ -67,10 +66,10 @@ class GNAgain(GNode):
     def name(self):
         return self.ref
 
+
 # ---------- copy tag and its children: --------------
 
 class GNCopyChild(GNode):
-
     def __init__(self, parent=None, object=None):
         super().__init__(parent)
         self.object = object
@@ -97,7 +96,6 @@ class GNCopyChild(GNode):
 
 
 class GNCDelete(GNCopyChild):
-
     def tag_name(self, full_name=True):
         return "delete"
 
@@ -111,10 +109,9 @@ class GNCDelete(GNCopyChild):
 
 
 class GNCReplace(GNCopyChild):
-
     def __init__(self, parent=None, object=None, replacer=None):
         super().__init__(parent, object)
-        self.replacer = replacer    # within PLaSK
+        self.replacer = replacer  # within PLaSK
 
     def _attributes_from_xml(self, attribute_reader, conf):
         super()._attributes_from_xml(attribute_reader, conf)
@@ -141,8 +138,12 @@ class GNCReplace(GNCopyChild):
     def create_info(self, res, names):
         super().create_info(res, names)
         if (1 if self.replacer else 0) + len(self.children) != 1:
-            self._append_info(res, 'Exactly one: "with" attribute or child must be given in {}.'.format(self.tag_name()),
-                              Info.ERROR, property='replacer')
+            self._append_info(
+                res,
+                'Exactly one: "with" attribute or child must be given in {}.'.format(self.tag_name()),
+                Info.ERROR,
+                property='replacer'
+            )
 
     def major_properties(self):
         res = super().major_properties()
@@ -158,7 +159,6 @@ class GNCReplace(GNCopyChild):
 
 
 class GNCToBlock(GNCopyChild):
-
     def __init__(self, parent=None, object=None, material=None):
         super().__init__(parent, object)
         self.name = None
@@ -221,7 +221,6 @@ class GNCToBlock(GNCopyChild):
 
 
 class GNSimplifyGradients(GNode):
-
     def __init__(self, parent=None, lam=None, linear=None, temp=None, dtemp=None, only_role=None):
         self.lam = lam
         self.linear = linear
@@ -267,10 +266,15 @@ class GNSimplifyGradients(GNode):
 
     def get_corresponding_objects(self, manager, root, model):
         obj = root.get_object_by_model_path(manager, self.get_model_path(), model)[0]
-        if self.only_role is None:
-            return obj.get_matching_objects(lambda i: hasattr(i, 'roles') and '__gradient' in i.roles)
+        if obj is not None:
+            if self.only_role is None:
+                return list(set(obj.get_matching_objects(lambda i: hasattr(i, 'roles') and '__gradient' in i.roles)))
+            else:
+                return list(set(obj.get_matching_objects(
+                    lambda i: hasattr(i, 'roles') and '__gradient' in i.roles and self.only_role in i.roles
+                )))
         else:
-            return obj.get_matching_objects(lambda i: hasattr(i, 'roles') and '__gradient' in i.roles and self.only_role in i.roles)
+            return []
 
 
 class GNCopy(GNObject):
@@ -317,7 +321,7 @@ class GNCopy(GNObject):
         return isinstance(node, GNCopyChild)
 
     def add_child_options(self):
-        return [{key: lambda i1, i2: val() for key,val in GNCopy.CHANGERS.items()}]
+        return [{key: lambda i1, i2: val() for key, val in GNCopy.CHANGERS.items()}]
 
     def get_controller(self, document, model):
         from ...controller.geometry.again_copy import GNCopyController

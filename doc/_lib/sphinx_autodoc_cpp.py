@@ -94,7 +94,7 @@ class PlaskDocMixin:
 
     def _find_signatures(self, sig, encoding=None):
         docstrings = super(PlaskDocMixin, self).get_doc(encoding, 0)
-        if len(docstrings) != 1: return
+        if docstrings is None or len(docstrings) != 1: return
         doclines = docstrings[0]
         setattr(self, '__new_doclines', doclines)
         if not doclines: return

@@ -515,8 +515,12 @@ shared_ptr<Material> PythonMaterial::__init__(const py::tuple& args, const py::d
     } else {
         if (len > 2)
             throw TypeError(u8"__init__ for unregistered material takes at most 2 non-keyword arguments ({:d} given)", len);
-        if (len > 1)
+        if (len > 1) {
             ptr->base = py::extract<shared_ptr<Material>>(args[1]);
+            ptr->params.doping = ptr->base->doping();
+            ptr->params.dopant = ptr->base->dopant();
+            ptr->params.composition = ptr->base->composition();
+        }
         else
             ptr->base.reset(new GenericMaterial());
     }

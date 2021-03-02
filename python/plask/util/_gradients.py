@@ -26,8 +26,9 @@ def _pcfd(n, z):
     # return sp.pbdv(n.real, z)[0]  # this doesn't work for complex z
     a = -n - 0.5
     zeta = 0.5 * a + 0.25
-    y1 = np.exp(-0.25 * (z**2.0)) * sp.hyp1f1(zeta, 0.5, 0.5 * (z**2.0))
-    y2 = z * np.exp(-0.25 * (z**2.0)) * sp.hyp1f1(zeta + 0.5, 1.5, 0.5 * (z**2.0))
+    z2 = z**2
+    y1 = np.exp(-0.25 * z2) * sp.hyp1f1(zeta, 0.5, 0.5 * z2)
+    y2 = z * np.exp(-0.25 * z2) * sp.hyp1f1(zeta + 0.5, 1.5, 0.5 * z2)
     return 0.5641895835477563 * 0.5**zeta * (np.cos(np.pi*zeta) * sp.gamma(0.5-zeta) * y1 \
         -1.4142135623730951 * np.sin(np.pi*zeta) * sp.gamma(1-zeta) * y2)
 
@@ -107,10 +108,8 @@ class PcfdLayer(GradLayer):
         ],
         [
             (
-                AB * pcfd6 * ((-1+1j) * VA * pcfd1 + B * pcfd2) +
-                pcfd7 * (-2 * A * pcfd1 + (1+1j) * VA * B * pcfd2) -
-                ((1+1j) * VA * pcfd3 + B * pcfd4) * ((-1+1j) * VA * pcfd8 +
-                AB * pcfd5)
+                AB * pcfd6 * ((-1+1j) * VA * pcfd1 + B * pcfd2) + pcfd7 * (-2 * A * pcfd1 + (1+1j) * VA * B * pcfd2) -
+                ((1+1j) * VA * pcfd3 + B * pcfd4) * ((-1+1j) * VA * pcfd8 + AB * pcfd5)
             ) / ((-1+1j) * VA * pcfd3 * pcfd2 + pcfd4 * ((-1-1j) * VA * pcfd1 + 2j * B * pcfd2)),
 
             (
