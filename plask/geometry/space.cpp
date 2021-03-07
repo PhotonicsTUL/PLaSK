@@ -5,36 +5,80 @@
 
 namespace plask {
 
-void Geometry::setEdges(const std::function<plask::optional<std::string>(const std::string& s)>& borderValuesGetter, const AxisNames& axesNames, const MaterialsDB &materialsDB)
+void Geometry::setEdges(const std::function<plask::optional<std::string>(const std::string& s)>& borderValuesGetter,
+                        const AxisNames& axesNames,
+                        const MaterialsDB &materialsDB,
+                        bool draft)
 {
     plask::optional<std::string> v, v_lo, v_hi;
-    v = borderValuesGetter("edges");
-    if (v) setAllEdges(*edge::Strategy::fromStrUnique(*v, materialsDB));
-    v = borderValuesGetter("planar");
-    if (v) setPlanarEdges(*edge::Strategy::fromStrUnique(*v, materialsDB));
+    try {
+        v = borderValuesGetter("edges");
+        if (v) setAllEdges(*edge::Strategy::fromStrUnique(*v, materialsDB));
+    } catch (...) {
+        if (!draft) throw;
+    }
+    try {
+        v = borderValuesGetter("planar");
+        if (v) setPlanarEdges(*edge::Strategy::fromStrUnique(*v, materialsDB));
+    } catch (...) {
+        if (!draft) throw;
+    }
     for (int dir_nr = 0; dir_nr < 3; ++dir_nr) {
         std::string axis_name = axesNames[dir_nr];
-        v = borderValuesGetter(axis_name);
-        if (v) setEdges(Direction(dir_nr), *edge::Strategy::fromStrUnique(*v, materialsDB));
-        v_lo = borderValuesGetter(axis_name + "-lo");
-        if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 0)))) {
-            if (v_lo) throw BadInput("setEdges", "Egde specified by both '{0}-lo' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 0));
-            else v_lo = v;
+        try {
+            v = borderValuesGetter(axis_name);
+            if (v) setEdges(Direction(dir_nr), *edge::Strategy::fromStrUnique(*v, materialsDB));
+        } catch (...) {
+            if (!draft) throw;
         }
-        v_hi = borderValuesGetter(axis_name + "-hi");
-        if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 1)))) {
-            if (v_hi) throw BadInput("setEdges", "Egde specified by both '{0}-hi' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 1));
-            else v_hi = v;
+        try {
+            v_lo = borderValuesGetter(axis_name + "-lo");
+            if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 0)))) {
+                if (v_lo) throw BadInput("setEdges", "Egde specified by both '{0}-lo' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 0));
+                else v_lo = v;
+            }
+        } catch (...) {
+            if (!draft) throw;
+            v_lo.reset();
+        }
+        try {
+            v_hi = borderValuesGetter(axis_name + "-hi");
+            if ((v = borderValuesGetter(alternativeDirectionName(dir_nr, 1)))) {
+                if (v_hi) throw BadInput("setEdges", "Egde specified by both '{0}-hi' and '{1}'", axis_name, alternativeDirectionName(dir_nr, 1));
+                else v_hi = v;
+            }
+        } catch (...) {
+            if (!draft) throw;
+            v_hi.reset();
         }
         try {
             if (v_lo && v_hi) {
-                setEdges(Direction(dir_nr),  *edge::Strategy::fromStrUnique(*v_lo, materialsDB), *edge::Strategy::fromStrUnique(*v_hi, materialsDB));
-            } else {
-                if (v_lo) setEdge(Direction(dir_nr), false, *edge::Strategy::fromStrUnique(*v_lo, materialsDB));
-                if (v_hi) setEdge(Direction(dir_nr), true, *edge::Strategy::fromStrUnique(*v_hi, materialsDB));
+                try {
+                    setEdges(Direction(dir_nr), *edge::Strategy::fromStrUnique(*v_lo, materialsDB), *edge::Strategy::fromStrUnique(*v_hi, materialsDB));
+                    v_lo.reset();
+                    v_hi.reset();
+                } catch (...) {
+                    if (!draft) throw;
+                }
+            }
+            if (v_lo) {
+                try {
+                    setEdge(Direction(dir_nr), false, *edge::Strategy::fromStrUnique(*v_lo, materialsDB));
+                } catch (...) {
+                    if (!draft) throw;
+                }
+            }
+            if (v_hi) {
+                try {
+                    setEdge(Direction(dir_nr), true, *edge::Strategy::fromStrUnique(*v_hi, materialsDB));
+                } catch (...) {
+                    if (!draft) throw;
+                }
             }
         } catch (DimensionError&) {
-            throw BadInput("setEdges", "Axis '{0}' is not allowed for this space", axis_name);
+            if (!draft) throw BadInput("setEdges", "Axis '{0}' is not allowed for this space", axis_name);
+        } catch (...) {
+            if (!draft) throw;
         }
     }
 }
@@ -302,7 +346,15 @@ void Geometry2DCylindrical::setEdges(Direction direction, const edge::Strategy& 
 void Geometry2DCylindrical::setEdges(Direction direction, const edge::Strategy& border_lo, const edge::Strategy& border_hi) {
     ensureBoundDirIsProper(direction/*, false*/);
     //ensureBoundDirIsProper(direction, true);
-    bottomup.setStrategies(border_lo, border_hi);   //bottomup is only one valid proper bound for lo and hi
+    if (direction == DIRECTION_TRAN) {
+        try {
+            innerouter.setStrategies(dynamic_cast<const edge::UniversalStrategy&>(border_lo),
+                                     dynamic_cast<const edge::UniversalStrategy&>(border_hi));
+        } catch (std::bad_cast&) {
+            throw BadInput("setEdges", "Wrong edge type for inner or outer edge");
+        }
+    } else
+        bottomup.setStrategies(border_lo, border_hi);   //bottomup is only one valid proper bound for lo and hi
     fireChanged(Event::EVENT_EDGES);
 }
 

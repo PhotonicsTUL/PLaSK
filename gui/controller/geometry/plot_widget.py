@@ -19,7 +19,6 @@ from plask._plot_geometry import plane_to_axes
 from ...utils.config import CONFIG
 from ...utils.matplotlib import PlotWidgetBase
 
-
 to_rgba = ColorConverter().to_rgba
 
 
@@ -43,8 +42,7 @@ class PlotWidget(PlotWidgetBase):
             (None, None, None, None, None),
             ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False),
             (None, None, None, None, None),
-            ('Plane:', 'Select longitudinal-transverse plane', None, 'select_plane',
-             (('tran-long', 'long-vert', 'tran-vert'), 2)),
+            ('Plane:', 'Select longitudinal-transverse plane', None, 'select_plane', (('tran-long', 'long-vert', 'tran-vert'), 2)),
         )
 
         def home(self):
@@ -76,7 +74,7 @@ class PlotWidget(PlotWidgetBase):
     def add_selector(self, artist, clipbox=None):
         self.axes.add_patch(artist)
         if clipbox is not None:
-             artist.set_clip_box(clipbox)
+            artist.set_clip_box(clipbox)
         self.selectors.append(artist)
 
     def show_selection(self, root, selected, clean=True):
@@ -96,13 +94,16 @@ class PlotWidget(PlotWidgetBase):
             x, y = bbox.lower[ax[0]], bbox.lower[ax[1]]
             dx, dy = bbox.upper[ax[0]] - x, bbox.upper[ax[1]] - y
             if dx >= 0 and dy >= 0:
-                rect = matplotlib.patches.Rectangle((x, y), dx, dy, zorder=100.0, fill=False,
-                                                    ec=box_color, lw=box_lw)
+                rect = matplotlib.patches.Rectangle((x, y), dx, dy, zorder=100.0, fill=False, ec=box_color, lw=box_lw)
                 self.add_selector(rect)
                 if show_origin:
-                    origin = matplotlib.lines.Line2D((pos[ax[0]],), (pos[ax[1]],), zorder=101.0, marker='+',
-                                                     mec=origin_color, alpha=origin_alpha,
-                                                     mew=origin_lw, ms=origin_size)
+                    origin = matplotlib.lines.Line2D((pos[ax[0]],), (pos[ax[1]],),
+                                                     zorder=101.0,
+                                                     marker='+',
+                                                     mec=origin_color,
+                                                     alpha=origin_alpha,
+                                                     mew=origin_lw,
+                                                     ms=origin_size)
                     self.axes.add_line(origin)
                     self.selectors.append(origin)
         guidelines = self.guidelines.get(selected, ())
@@ -113,10 +114,22 @@ class PlotWidget(PlotWidgetBase):
         updater = self.plot_updater(set_limits, plane)
         for margin in updater:
             if geometry is not None:
-                _, self.guidelines = plask.plot_geometry(axes=self.axes, geometry=geometry,
-                                                 fill=True, margin=margin, zorder=1,
-                                                 plane=plane, lw=1.5, picker=self.picker,
-                                                 get_color=self.get_color,
-                                                 extra=dict(ec=to_rgba(CONFIG['geometry/extra_color'],
-                                                                       alpha=float(CONFIG['geometry/extra_alpha'])),
-                                                            lw=float(CONFIG['geometry/extra_width'])))
+                _, self.guidelines = plask.plot_geometry(
+                    axes=self.axes,
+                    geometry=geometry,
+                    fill=True,
+                    margin=margin,
+                    zorder=1,
+                    plane=plane,
+                    lw=1.5,
+                    picker=self.picker,
+                    get_color=self.get_color,
+                    extra=dict(
+                        ec=to_rgba(CONFIG['geometry/extra_color'], alpha=float(CONFIG['geometry/extra_alpha'])),
+                        lw=float(CONFIG['geometry/extra_width'])
+                    ),
+                    mirror=False,
+                    periods=False,
+                    edges=CONFIG['geometry/show_edges'],
+                    edge_alpha=float(CONFIG['geometry/edges_alpha'])
+                )

@@ -20,7 +20,6 @@ from ...utils.matplotlib import PlotWidgetBase, BwColor
 
 
 class PlotWidget(PlotWidgetBase):
-
     class NavigationToolbar(PlotWidgetBase.NavigationToolbar):
 
         toolitems = (
@@ -40,14 +39,13 @@ class PlotWidget(PlotWidgetBase):
             (None, None, None, None, None),
             ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False),
             (None, None, None, None, None),
-            ('Plane:', 'Select longitudinal-transverse plane', None, 'select_plane',
-             (('tran-long', 'long-vert', 'tran-vert'), 2)),
+            ('Plane:', 'Select longitudinal-transverse plane', None, 'select_plane', (('tran-long', 'long-vert', 'tran-vert'), 2)),
         )
 
         def __init__(self, *args, **kwargs):
             super(PlotWidget.NavigationToolbar, self).__init__(*args, **kwargs)
             self._actions['plot'].setShortcut(Qt.ALT + Qt.Key_P)
-            self.disable_planes(('long','tran','vert'))
+            self.disable_planes(('long', 'tran', 'vert'))
 
         def select_geometry(self, *args):
             if self.controller._current_controller is not None:
@@ -59,11 +57,9 @@ class PlotWidget(PlotWidgetBase):
                     pass
                 else:
                     if dim == 3:
-                        self.enable_planes(
-                            self.controller.geometry_axes_names.get(geometry_name, ('long','tran','vert')))
+                        self.enable_planes(self.controller.geometry_axes_names.get(geometry_name, ('long', 'tran', 'vert')))
                     else:
-                        self.disable_planes(
-                            self.controller.geometry_axes_names.get(geometry_name, ('long','tran','vert')))
+                        self.disable_planes(self.controller.geometry_axes_names.get(geometry_name, ('long', 'tran', 'vert')))
             if self.controller.plot_auto_refresh:
                 self.controller.plot()
             else:
@@ -89,12 +85,33 @@ class PlotWidget(PlotWidgetBase):
         updater = self.plot_updater(set_limits, plane)
         margin = next(updater)
         if mesh is not None:
-            plask.plot_mesh(axes=self.axes, mesh=mesh, margin=margin, zorder=1.5, plane=plane,
-                            lw=CONFIG['mesh/line_width'], color=CONFIG['mesh/mesh_color'])
+            plask.plot_mesh(
+                axes=self.axes,
+                mesh=mesh,
+                margin=margin,
+                zorder=1.5,
+                plane=plane,
+                lw=CONFIG['mesh/line_width'],
+                color=CONFIG['mesh/mesh_color']
+            )
             try:
                 if geometry is not None:
-                    plask.plot_geometry(axes=self.axes, geometry=geometry, fill=True, margin=margin, zorder=1,
-                                    plane=plane, lw=1.5, get_color=self.get_color)
+                    plask.plot_geometry(
+                        axes=self.axes,
+                        geometry=geometry,
+                        fill=True,
+                        margin=margin,
+                        zorder=1,
+                        plane=plane,
+                        lw=1.5,
+                        get_color=self.get_color,
+                        mirror=False,
+                        periods=False,
+                        edges=CONFIG['geometry/show_edges'],
+                        edge_alpha=float(CONFIG['geometry/edges_alpha'])
+                    )
             finally:
-                try: next(updater)
-                except StopIteration: pass
+                try:
+                    next(updater)
+                except StopIteration:
+                    pass

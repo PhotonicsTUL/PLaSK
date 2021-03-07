@@ -149,10 +149,9 @@ class ColorFromDict:
         Returns:
             tuple: Tuple with desired color in RGB format.
         """
-        s = str(material)
+        s = m = str(material).split('[')[0].strip()
         if self.tint_doping:
             s = s.split(':')[0]
-        s = s.split('[')[0].strip()
         try:
             result = self.material_dict[s]
         except KeyError:
@@ -160,7 +159,7 @@ class ColorFromDict:
                 if isinstance(r, frozenset):
                     try:
                         if not isinstance(material, plask.material.Material):
-                            material = plask.material.get(s)
+                            material = plask.material.get(m)
                         if r == frozenset(material.composition):
                             c = self.material_dict[r]
                             result = c(**material.composition)
@@ -185,7 +184,7 @@ class ColorFromDict:
         if self.tint_doping:
             try:
                 if not isinstance(material, plask.material.Material):
-                    material = plask.material.get(s)
+                    material = plask.material.get(m)
                 tint = self.DOPING_TINTS[material.condtype]
                 doping = material.doping
             except:
@@ -200,9 +199,9 @@ class ColorFromDict:
 
     def auto_color(self, material):
         """
-            Generate color for given material.
-            :param plask.Material material: material
-            :return (float, float, float): RGB color, 3 floats, each in range [0, 1]
+        Generate color for given material.
+        :param plask.Material material: material
+        :return (float, float, float): RGB color, 3 floats, each in range [0, 1]
         """
         s = str(material)
         if s == 'air':
@@ -213,13 +212,123 @@ class ColorFromDict:
         return colorsys.hsv_to_rgb(h, s, v)
 
 
+class Plane(matplotlib.patches.Patch):
+
+    def __init__(self, x0=None, y0=None, x1=None, y1=None, **kwargs):
+        self._x0 = x0
+        self._y0 = y0
+        self._x1 = x1
+        self._y1 = y1
+        super().__init__(**kwargs)
+
+    def get_path(self):
+        if self._x0 is None or self._x1 is None:
+            x0, x1 = self.axes.get_xlim()
+            if x0 > x1: x0, x1 = x1, x0
+            dx = 0.01 * (x1 - x0)
+            x0 = self._x0 if self._x0 is not None else x0 - dx
+            x1 = self._x1 if self._x1 is not None else x1 + dx
+        else:
+            x0 = self._x0
+            x1 = self._x1
+        if self._y0 is None or self._y1 is None:
+            y0, y1 = self.axes.get_ylim()
+            if y0 > y1: y0, y1 = y1, y0
+            dy = 0.01 * (y1 - y0)
+            y0 = self._y0 if self._y0 is not None else y0 - dy
+            y1 = self._y1 if self._y1 is not None else y1 + dy
+        else:
+            y0 = self._y0
+            y1 = self._y1
+        return matplotlib.patches.Path([[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]],
+                                       closed=True, readonly=True)
+
+    @property
+    def x0(self):
+        return self._x0
+
+    @x0.setter
+    def x0(self, val):
+        self._x0 = val
+        self.stale = True
+
+    @property
+    def y0(self):
+        return self._y0
+
+    @y0.setter
+    def y0(self, val):
+        self._y0 = val
+        self.stale = True
+
+    @property
+    def x1(self):
+        return self._x1
+
+    @x1.setter
+    def x1(self, val):
+        self._x1 = val
+        self.stale = True
+
+    @property
+    def y1(self):
+        return self._y1
+
+    @y1.setter
+    def y1(self, val):
+        self._y1 = val
+        self.stale = True
+
+
+class PeriodicArtist(matplotlib.artist.Artist):
+
+    def __init__(self, child, axes, clipbox, dx=0, dy=0):
+        super().__init__()
+        self._child = child
+        self._dx = dx
+        self._dy = dy
+        (self._x0, self._y0), (self._x1, self._y1) = child.get_path().get_extents(child.get_patch_transform()).get_points()
+        to_data = axes.transData.inverted()
+        self._child_transform = (child.get_data_transform() + to_data).frozen()
+        if clipbox is not None:
+            self._clipbox = matplotlib.transforms.Bbox(to_data.transform(clipbox.get_points()))
+        else:
+            self._clipbox = None
+
+    @staticmethod
+    def _get_range(lims, x0, x1, dx):
+        if dx == 0:
+            return (0,)
+        lo, hi = lims
+        if lo > hi: lo, hi = hi, lo
+        return range(math.floor((lo - x1) / dx), math.ceil((hi - x0) / dx) + 1)
+
+    def draw(self, renderer):
+        xrange = self._get_range(self.axes.get_xlim(), self._x0, self._x1, self._dx)
+        yrange = self._get_range(self.axes.get_ylim(), self._y0, self._y1, self._dy)
+        for iy in yrange:
+            dy = iy * self._dy
+            for ix in xrange:
+                if ix == 0 and iy == 0: continue    # skip original element
+                dx = ix * self._dx
+                transl = matplotlib.transforms.Affine2D().translate(dx, dy)
+                transform = transl + self.axes.transData
+                self._child.set_transform(self._child_transform + transform)
+                if self._clipbox is None:
+                    self._child.set_clip_box(self.get_clip_box())
+                else:
+                    clipbox = matplotlib.transforms.TransformedBbox(self._clipbox, transform)
+                    self._child.set_clip_box(BBoxIntersection(self.get_clip_box(), clipbox))
+                self._child.draw(renderer)
+
+
 class DrawEnviroment:
     """
         Drawing configuration.
     """
 
     def __init__(self, plane, dest, fill=False, color=None, get_color=None, lw=1.0, alpha=1.0, zorder=3.0, picker=None,
-                 extra=None):
+                 extra=None, periodic=None):
         """
         :param plane: plane to draw (important in 3D)
         :param dest: mpl axis where artist should be appended
@@ -229,6 +338,7 @@ class DrawEnviroment:
         :param alpha: opacity of the drawn environment
         :param zorder: artists z order
         :param extra: flag indicating if extra_patches should be taken
+        :param periodic: None or arguments for periodic aritist
         """
         super().__init__()
         self.dest = dest
@@ -241,6 +351,7 @@ class DrawEnviroment:
         self.picker = picker
         self.extra_patches = {}
         self.extra = extra
+        self.periodic = periodic
 
         if get_color is None:
             self.get_color = ColorFromDict(plask.MATERIAL_COLORS, dest)
@@ -266,12 +377,13 @@ class DrawEnviroment:
         artist.set_alpha(self.alpha)
         artist.set_picker(self.picker)
         artist.plask_real_path = plask_real_path
-        self.dest.add_patch(artist)
-        if clipbox is not None:
-            artist.set_clip_box(BBoxIntersection(clipbox, artist.get_clip_box()))
-            #artist.set_clip_box(clipbox)
-            #artist.set_clip_on(True)
-            #artist.set_clip_path(clipbox)
+        if self.periodic is not None:
+            wrapper = PeriodicArtist(artist, self.dest, clipbox, **self.periodic)
+            self.dest.add_artist(wrapper)
+        else:
+            self.dest.add_patch(artist)
+            if clipbox is not None:
+                artist.set_clip_box(BBoxIntersection(clipbox, artist.get_clip_box()))
         artist.set_zorder(self.zorder)
 
     def append_extra(self, geometry_object, artist):
@@ -286,7 +398,7 @@ class DrawEnviroment:
             getattr(artist, 'set_'+attr)(self.extra[attr])
         self.extra_patches.setdefault(geometry_object, []).append(artist)
 
-def _draw_bbox(env, geometry_object, bbox, transform, clipbox, plask_real_path):
+def draw_bbox(env, geometry_object, bbox, transform, clipbox, plask_real_path):
     block = matplotlib.patches.Rectangle(
         (bbox.lower[env.axes[0]], bbox.lower[env.axes[1]]),
         bbox.upper[env.axes[0]]-bbox.lower[env.axes[0]], bbox.upper[env.axes[1]]-bbox.lower[env.axes[1]],
@@ -295,42 +407,42 @@ def _draw_bbox(env, geometry_object, bbox, transform, clipbox, plask_real_path):
     env.append(block, clipbox, geometry_object, plask_real_path)
 
 
-def _draw_Block(env, geometry_object, transform, clipbox, plask_real_path):
-    _draw_bbox(env, geometry_object, geometry_object.bbox, transform, clipbox, plask_real_path)
+def draw_Block(env, geometry_object, transform, clipbox, plask_real_path):
+    draw_bbox(env, geometry_object, geometry_object.bbox, transform, clipbox, plask_real_path)
 
-_geometry_drawers[plask.geometry.Block2D] = _draw_Block
-_geometry_drawers[plask.geometry.Block3D] = _draw_Block
+_geometry_drawers[plask.geometry.Block2D] = draw_Block
+_geometry_drawers[plask.geometry.Block3D] = draw_Block
 
 
-def _draw_Triangle(env, geometry_object, transform, clipbox, plask_real_path):
+def draw_Triangle(env, geometry_object, transform, clipbox, plask_real_path):
     p1 = geometry_object.a
     p2 = geometry_object.b
     env.append(matplotlib.patches.Polygon(((0.0, 0.0), (p1[0], p1[1]), (p2[0], p2[1])), closed=True, transform=transform),
                clipbox, geometry_object, plask_real_path
     )
 
-_geometry_drawers[plask.geometry.Triangle] = _draw_Triangle
+_geometry_drawers[plask.geometry.Triangle] = draw_Triangle
 
 
-def _draw_Circle(env, geometry_object, transform, clipbox, plask_real_path):
+def draw_Circle(env, geometry_object, transform, clipbox, plask_real_path):
     env.append(matplotlib.patches.Circle((0.0, 0.0), geometry_object.radius, transform=transform),
                clipbox, geometry_object, plask_real_path
     )
 
-_geometry_drawers[plask.geometry.Circle] = _draw_Circle
-_geometry_drawers[plask.geometry.Sphere] = _draw_Circle
+_geometry_drawers[plask.geometry.Circle] = draw_Circle
+_geometry_drawers[plask.geometry.Sphere] = draw_Circle
 
 
-def _draw_Cylinder(env, geometry_object, transform, clipbox, plask_real_path):
+def draw_Cylinder(env, geometry_object, transform, clipbox, plask_real_path):
     if env.axes == (0, 1) or env.axes == (1, 0):
-        _draw_Circle(env, geometry_object, transform, clipbox, plask_real_path)
+        draw_Circle(env, geometry_object, transform, clipbox, plask_real_path)
     else:
-        _draw_Block(env, geometry_object, transform, clipbox, plask_real_path)
+        draw_Block(env, geometry_object, transform, clipbox, plask_real_path)
 
-_geometry_drawers[plask.geometry.Cylinder] = _draw_Cylinder
+_geometry_drawers[plask.geometry.Cylinder] = draw_Cylinder
 
 
-def _draw_Prism(env, geometry_object, transform, clipbox, plask_real_path):
+def draw_Prism(env, geometry_object, transform, clipbox, plask_real_path):
     p1 = geometry_object.a
     p2 = geometry_object.b
     if env.axes == (0, 1) or env.axes == (1, 0):
@@ -349,30 +461,30 @@ def _draw_Prism(env, geometry_object, transform, clipbox, plask_real_path):
             line = matplotlib.patches.Polygon(((pts[1], 0.), (pts[1], height)), transform=transform)
             env.append(line, clipbox, geometry_object, plask_real_path)
 
-        _draw_Block(env, geometry_object, transform, clipbox, plask_real_path)
+        draw_Block(env, geometry_object, transform, clipbox, plask_real_path)
 
 
-_geometry_drawers[plask.geometry.Prism] = _draw_Prism
+_geometry_drawers[plask.geometry.Prism] = draw_Prism
 
 
-def _draw_Extrusion(env, geometry_object, transform, clipbox, plask_real_path):
+def draw_Extrusion(env, geometry_object, transform, clipbox, plask_real_path):
     if env.axes == (1, 2) or env.axes == (2, 1):
         try:
             env.axes = tuple(x-1 for x in env.axes)  # change axes to 2D
-            _draw_geometry_object(env, geometry_object.item, transform, clipbox, plask_real_path + [0])
+            draw_geometry_object(env, geometry_object.item, transform, clipbox, plask_real_path + [0])
         except RuntimeError:
             return
         finally:    # revert axes settings, change back to 3D:
             env.axes = tuple(x+1 for x in env.axes)
     else:
-        #_draw_Block(env, geometry_object, transform, clipbox)  # draw block uses bbox, so it will work fine
+        #draw_Block(env, geometry_object, transform, clipbox)  # draw block uses bbox, so it will work fine
         for leaf_bbox in geometry_object.get_leafs_bboxes():
-            _draw_bbox(env, None, leaf_bbox, transform, clipbox, plask_real_path)
+            draw_bbox(env, None, leaf_bbox, transform, clipbox, plask_real_path)
 
-_geometry_drawers[plask.geometry.Extrusion] = _draw_Extrusion
+_geometry_drawers[plask.geometry.Extrusion] = draw_Extrusion
 
 
-def _draw_Revolution(env, geometry_object, transform, clipbox, plask_real_path):
+def draw_Revolution(env, geometry_object, transform, clipbox, plask_real_path):
     if env.axes == (0, 1) or env.axes == (1, 0):    # view from the top
         try:
             obj2d = geometry_object.item
@@ -390,34 +502,34 @@ def _draw_Revolution(env, geometry_object, transform, clipbox, plask_real_path):
         env.axes = tuple(0 if x == 0 else x-1 for x in original_axes)
         try:    #TODO modify clip-box?
             new_plask_real_path = plask_real_path + [0]
-            _draw_geometry_object(env, geometry_object.item, transform, clipbox, new_plask_real_path)
-            _draw_Flipped(env, geometry_object.item, transform, clipbox, 0, new_plask_real_path)
-            #_draw_Block(env, geometry_object, transform, clipbox)
+            draw_geometry_object(env, geometry_object.item, transform, clipbox, new_plask_real_path)
+            draw_Flipped(env, geometry_object.item, transform, clipbox, 0, new_plask_real_path)
+            #draw_Block(env, geometry_object, transform, clipbox)
         except RuntimeError:
             return
         finally:
             env.axes = original_axes
 
-_geometry_drawers[plask.geometry.Revolution] = _draw_Revolution
+_geometry_drawers[plask.geometry.Revolution] = draw_Revolution
 
 
-def _draw_Translation(env, geometry_object, transform, clipbox, plask_real_path):
+def draw_Translation(env, geometry_object, transform, clipbox, plask_real_path):
     new_transform = matplotlib.transforms.Affine2D()
     t = geometry_object.vec
     new_transform.translate(t[env.axes[0]], t[env.axes[1]])
     try:
-        _draw_geometry_object(env, geometry_object.item, new_transform + transform, clipbox, plask_real_path + [0])
+        draw_geometry_object(env, geometry_object.item, new_transform + transform, clipbox, plask_real_path + [0])
     except RuntimeError:
         return
 
 
-_geometry_drawers[plask.geometry.Translation2D] = _draw_Translation
-_geometry_drawers[plask.geometry.Translation3D] = _draw_Translation
+_geometry_drawers[plask.geometry.Translation2D] = draw_Translation
+_geometry_drawers[plask.geometry.Translation3D] = draw_Translation
 
 
-def _draw_Lattice(env, geometry_object, transform, clipbox, plask_real_path):
+def draw_Lattice(env, geometry_object, transform, clipbox, plask_real_path):
     for index, child in enumerate(geometry_object):
-        _draw_geometry_object(env, child, transform, clipbox, plask_real_path + [index])
+        draw_geometry_object(env, child, transform, clipbox, plask_real_path + [index])
     if env.extra is not None:
         v0, v1 = geometry_object.vec0, geometry_object.vec1
         for v in v0, v1:
@@ -430,45 +542,47 @@ def _draw_Lattice(env, geometry_object, transform, clipbox, plask_real_path):
             polygon = [(p[env.axes[0]], p[env.axes[1]]) for p in (v0*a0+v1*a1 for (a0,a1) in segment)]
             env.append_extra(geometry_object, matplotlib.patches.Polygon(polygon, closed=True, transform=transform))
 
-_geometry_drawers[plask.geometry.Lattice] = _draw_Lattice
+_geometry_drawers[plask.geometry.Lattice] = draw_Lattice
 
 
-def _draw_Flipped(env, geometry_object, transform, clipbox, axis_nr, plask_real_path):
+def draw_Flipped(env, geometry_object, transform, clipbox, axis_nr, plask_real_path):
     if axis_nr == env.axes[0]:
-        _draw_geometry_object(env, geometry_object, matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0) + transform, clipbox, plask_real_path)
+        draw_geometry_object(env, geometry_object, matplotlib.transforms.Affine2D.from_values(-1.0, 0, 0, 1.0, 0, 0) + transform, clipbox, plask_real_path)
     elif axis_nr == env.axes[1]:
-        _draw_geometry_object(env, geometry_object, matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0) + transform, clipbox, plask_real_path)
+        draw_geometry_object(env, geometry_object, matplotlib.transforms.Affine2D.from_values(1.0, 0, 0, -1.0, 0, 0) + transform, clipbox, plask_real_path)
     else:
-        _draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_path)
+        draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_path)
 
 
-def _draw_Flip(env, geometry_object, transform, clipbox, plask_real_path):
+def draw_Flip(env, geometry_object, transform, clipbox, plask_real_path):
     try:
-        _draw_Flipped(env, geometry_object.item, transform, clipbox, geometry_object.axis_nr, plask_real_path + [0])
+        draw_Flipped(env, geometry_object.item, transform, clipbox, geometry_object.axis_nr, plask_real_path + [0])
     except RuntimeError:
         return
 
-_geometry_drawers[plask.geometry.Flip2D] = _draw_Flip
-_geometry_drawers[plask.geometry.Flip3D] = _draw_Flip
+_geometry_drawers[plask.geometry.Flip2D] = draw_Flip
+_geometry_drawers[plask.geometry.Flip3D] = draw_Flip
 
 
-def _draw_Mirror(env, geometry_object, transform, clipbox, plask_real_path):
+def draw_Mirror(env, geometry_object, transform, clipbox, plask_real_path):
     #TODO modify clip-box?
     try:
-        _draw_geometry_object(env, geometry_object.item, transform, clipbox, plask_real_path + [0])
+        draw_geometry_object(env, geometry_object.item, transform, clipbox, plask_real_path + [0])
     except RuntimeError:
         return
     if geometry_object.axis_nr in env.axes:  # in 3D this must not be true
-        _draw_Flip(env, geometry_object, transform, clipbox, plask_real_path)
+        draw_Flip(env, geometry_object, transform, clipbox, plask_real_path)
 
-_geometry_drawers[plask.geometry.Mirror2D] = _draw_Mirror
-_geometry_drawers[plask.geometry.Mirror3D] = _draw_Mirror
+_geometry_drawers[plask.geometry.Mirror2D] = draw_Mirror
+_geometry_drawers[plask.geometry.Mirror3D] = draw_Mirror
 
 
-def _draw_clipped(env, geometry_object, transform, clipbox, new_clipbox, plask_real_path):
-    """Used by _draw_Clip and _draw_Intersection."""
-    def _b(bound):
-        return math.copysign(1e100, bound) if math.isinf(bound) else bound
+def _b(bound):
+    return math.copysign(1e100, bound) if math.isinf(bound) else bound
+
+
+def draw_clipped(env, geometry_object, transform, clipbox, new_clipbox, plask_real_path):
+    """Used by draw_Clip and draw_Intersection."""
 
     if new_clipbox.upper[env.axes[0]] < new_clipbox.lower[env.axes[0]] or \
        new_clipbox.upper[env.axes[1]] < new_clipbox.lower[env.axes[1]]:
@@ -490,46 +604,46 @@ def _draw_clipped(env, geometry_object, transform, clipbox, new_clipbox, plask_r
         clipbox = BBoxIntersection(clipbox, new_clipbox)
 
     if clipbox:
-        _draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_path)
+        draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_path)
     # else, if clipbox is empty now, it will be never non-empty, so all will be clipped-out
 
 
-def _draw_Clip(env, geometry_object, transform, clipbox, plask_real_path):
+def draw_Clip(env, geometry_object, transform, clipbox, plask_real_path):
     try:
-        _draw_clipped(env, geometry_object.item, transform, clipbox, geometry_object.clipbox, plask_real_path + [0])
+        draw_clipped(env, geometry_object.item, transform, clipbox, geometry_object.clipbox, plask_real_path + [0])
     except RuntimeError:
         return
 
-_geometry_drawers[plask.geometry.Clip2D] = _draw_Clip
-_geometry_drawers[plask.geometry.Clip3D] = _draw_Clip
+_geometry_drawers[plask.geometry.Clip2D] = draw_Clip
+_geometry_drawers[plask.geometry.Clip3D] = draw_Clip
 
 
-def _draw_Intersection(env, geometry_object, transform, clipbox, plask_real_path):
+def draw_Intersection(env, geometry_object, transform, clipbox, plask_real_path):
     try:
         if geometry_object.envelope is not None:
-            _draw_clipped(env, geometry_object.item, transform, clipbox, geometry_object.envelope.bbox,
+            draw_clipped(env, geometry_object.item, transform, clipbox, geometry_object.envelope.bbox,
                           plask_real_path + [0])
         else:
-            _draw_geometry_object(env, geometry_object.item, transform, clipbox, plask_real_path + [0])
+            draw_geometry_object(env, geometry_object.item, transform, clipbox, plask_real_path + [0])
     except RuntimeError:
         return
 
-_geometry_drawers[plask.geometry.Intersection2D] = _draw_Intersection
-_geometry_drawers[plask.geometry.Intersection3D] = _draw_Intersection
+_geometry_drawers[plask.geometry.Intersection2D] = draw_Intersection
+_geometry_drawers[plask.geometry.Intersection3D] = draw_Intersection
 
 
-def _draw_geometry2d(env, geometry_object, transform, clipbox, plask_real_path):
+def draw_geometry2d(env, geometry_object, transform, clipbox, plask_real_path):
     try:
-        _draw_geometry_object(env, geometry_object.item, transform, clipbox, plask_real_path + [0, 0])
+        draw_geometry_object(env, geometry_object.item, transform, clipbox, plask_real_path + [0, 0])
     except RuntimeError:
         return
 
-_geometry_drawers[plask.geometry.Cartesian2D] = _draw_geometry2d
-_geometry_drawers[plask.geometry.Cylindrical] = _draw_geometry2d
+_geometry_drawers[plask.geometry.Cartesian2D] = draw_geometry2d
+_geometry_drawers[plask.geometry.Cylindrical] = draw_geometry2d
 
 
 
-def _draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_path=None):
+def draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_path=None):
     """
     Draw geometry object.
     :param DrawEnviroment env: drawing configuration
@@ -543,9 +657,7 @@ def _draw_geometry_object(env, geometry_object, transform, clipbox, plask_real_p
     if drawer is None:
         try:
             for index, child in enumerate(geometry_object):
-                _draw_geometry_object(env, child, transform, clipbox, plask_real_path + [index])
-            #for child in geometry_object:
-            #    _draw_geometry_object(env, child, transform, clipbox)
+                draw_geometry_object(env, child, transform, clipbox, plask_real_path + [index])
         except TypeError:
             pass    # ignore non-iterable object
     else:
@@ -562,8 +674,9 @@ def plane_to_axes(plane, dim):
     return _get_2d_axes(plane) if dim == 3 else (0, 1)
 
 
-def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=False, periods=(1,1), fill=False,
-                  axes=None, figure=None, margin=None, get_color=None, alpha=1.0, extra=None, picker=None):
+def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=False, periods=True, fill=False,
+                  axes=None, figure=None, margin=None, get_color=None, alpha=1.0, extra=None, picker=None,
+                  edges=False, edge_alpha=0.25, edge_lw=None):
     """
     Plot specified geometry.
 
@@ -587,7 +700,8 @@ def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=
                 specification says so (i.e. some edges are set to
                 *mirror* or the geometry is a cylindrical one).
 
-        periods (int): Number of periods to plot periodic geometries.
+        periods (bool): If *True*, all visible periods are plotted in the periodic
+                geometries.
 
         fill (bool): If True, drawn geometry objects will be filled with colors
                 that depends on their material. For Cartesian3D geometry this
@@ -620,8 +734,15 @@ def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=
                 patches style (with keys like 'edgeceolor', 'linewidth', etc.,
                 see Matplotlib documentation for details).
 
-        picker (None|float|boolean|callable) matplotlib picker attribute
+        picker (None|float|boolean|callable): Matplotlib picker attribute
                 for all artists appended to plot (see matplotlib doc.).
+
+        edges (bool): If *True*, the geometry edges are plotted.
+
+        edge_alpha (float): Opacity of edges if they are plotted.
+
+        edge_lw (None|float): Linewidth for the edges. If *None*, it is zero for filled
+                plots and equal to `lw` for wireframes.
 
     Returns:
         matplotlib.axes.Axes: appended or given axes object
@@ -641,18 +762,25 @@ def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=
         else:
             axes = figure.add_subplot(111)
 
+    cyl = isinstance(geometry, plask.geometry.Cylindrical)
+
     # if isinstance(geometry, plask.geometry.Cartesian3D):
     if geometry.dims == 3:
         fill = False    # we ignore fill parameter in 3D
         dd = 0
         #if plane is None: plane = 'xy'
         ax = _get_2d_axes(plane)
-        dirs = tuple((("back", "front"), ("left", "right"), ("top", "bottom"))[i] for i in ax)
+        dirs = tuple((("back", "front"), ("left", "right"), ("bottom", "top"))[i] for i in ax)
     else:
         dd = 1
-        ax = (0,1)
-        dirs = (("inner", "outer") if type(geometry) == plask.geometry.Cylindrical else ("left", "right"),
-                ("top", "bottom"))
+        ax = 0, 1
+        dirs = (("inner", "outer") if cyl else ("left", "right"),
+                ("bottom", "top"))
+
+    try:
+        bg = (1. - edge_alpha)  * array(to_rgb(axes.get_facecolor()))
+    except AttributeError:
+        bg = (1. - edge_alpha)  * array(to_rgb(axes.get_axis_bgcolor()))
 
     if zorder is None:
         zorder = 0.5 if fill else 2.0
@@ -660,70 +788,255 @@ def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=
     env = DrawEnviroment(ax, axes, fill, color, get_color, lw, alpha, zorder=zorder, picker=picker,
                          extra=extra)
 
-    hshift, vshift = (geometry.bbox.size[a] for a in ax)
-    try:
-        periods = array((periods[0], periods[1]), int)
-    except TypeError:
-        periods = array((periods, periods), int)
-    try:
-        if geometry.edges[dirs[0][0]] == 'mirror' or geometry.edges[dirs[0][1]] == 'mirror' or \
-           isinstance(geometry, plask.geometry.Cylindrical):
-            hshift *= 2
-            hmirrortransform = matplotlib.transforms.Affine2D.from_values(-1., 0, 0, 1., 0, 0)
-            hmirror = mirror
-            periods[0] = 2*periods[0] - 1
-        else:
-            hmirror = False
-        if geometry.edges[dirs[1][0]] == 'mirror' or geometry.edges[dirs[1][1]] == 'mirror':
-            vshift *= 2
-            vmirrortransform = matplotlib.transforms.Affine2D.from_values(1., 0, 0, -1., 0, 0)
-            vmirror = mirror
-            periods[1] = 2*periods[1] - 1
-            if hmirror:
-                vhmirrortransform = matplotlib.transforms.Affine2D.from_values(-1., 0, 0, -1., 0, 0)
-        else:
-            vmirror = False
-        if geometry.edges[dirs[0][0]] == 'periodic' or geometry.edges[dirs[0][1]] == 'periodic':
-            hstart = -int((periods[0]-1) / 2)
-            hrange = range(hstart, hstart + max(periods[0], 1))
-        else:
-            hrange = (0,)
-        if geometry.edges[dirs[1][0]] == 'periodic' or geometry.edges[dirs[1][1]] == 'periodic':
-            vstart = -int((periods[1]-1) / 2)
-            vrange = range(vstart, vstart + max(periods[1], 1))
-        else:
-            vrange = (0,)
-    except AttributeError:  # we draw non-Geometry object
-        hmirror = False
-        vmirror = False
-        hrange = (0,)
-        vrange = (0,)
+    draw_geometry_object(env, geometry, axes.transData, None)
 
-    for iv in vrange:
-        for ih in hrange:
-            shift = matplotlib.transforms.Affine2D()
-            shift.translate(ih*hshift, iv*vshift)
-            _draw_geometry_object(env, geometry, shift + axes.transData, None)
+    env.picker = None   # below we draw only some visuals with no need to pick anything
+
+    try:
+        geometry_edges = (geometry.edges[dirs[0][0]], geometry.edges[dirs[0][1]]), \
+                         (geometry.edges[dirs[1][0]], geometry.edges[dirs[1][1]])
+    except AttributeError:
+        geometry_edges = (None, None), (None, None)
+
+    if edge_lw is None: edge_lw = lw
+    eec = edge_alpha * array(to_rgb(env.color)) + bg
+
+    _get_color = env.get_color
+    edge_get_color = lambda m: edge_alpha * array(to_rgb(_get_color(m))) + bg
+
+    ezo = zorder - 0.001
+    epzo = zorder - 0.002
+
+    have_extends = edges and any(geometry_edges[i][j] == 'extend' for i in (0,1) for j in (0,1))
+
+    # Draw uniform edges
+    if edges:
+        try:
+            bbox = geometry.bbox
+            ecd = [[None, None], [None, None]]
+            ecm = [[None, None], [None, None]]
+            for i in 0, 1:
+                lo = geometry_edges[i][0]
+                hi = geometry_edges[i][1]
+                if not lo or lo == 'air': lo = ''
+                if not hi or hi == 'air': hi = ''
+                if lo == 'periodic' or hi == 'periodic' or (lo == 'mirror' and hi == 'mirror'):
+                    continue
+                if lo == 'mirror':
+                    if hi != 'extend':
+                        ecd[i][0] = -bbox.upper[ax[i]]
+                        ecd[i][1] = bbox.upper[ax[i]]
+                        ecm[i][0] = ecm[i][1] = hi
+                elif hi == 'mirror':
+                    if lo != 'extend':
+                        ecd[i][0] = bbox.lower[ax[i]]
+                        ecd[i][1] = - bbox.lower[ax[i]]
+                        ecm[i][0] = ecm[i][1] = lo
+                else:
+                    if lo != 'extend':
+                        ecd[i][0], ecm[i][0] = bbox.lower[ax[i]], lo
+                    if hi != 'extend':
+                        ecd[i][1], ecm[i][1] = bbox.upper[ax[i]], hi
+            eco = [[None, None], ecd[1]] if ax[0] < ax[1] else [ecd[0], [None, None]]
+            if cyl:
+                if ecm[0][0] and ecd[0][0] > 0.:
+                    axes.add_patch(Plane(x0=-ecd[0][0], x1=ecd[0][0], y0=eco[1][0], y1=eco[1][1], fc=edge_get_color(ecm[0][0]),
+                                         lw=edge_lw, fill=fill, ec=eec, zorder=ezo))
+                if ecm[0][1]:
+                    axes.add_patch(Plane(x1=-ecd[0][1], y0=eco[1][0], y1=eco[1][1], fc=edge_get_color(ecm[0][1]),
+                                         lw=edge_lw, fill=fill, ec=eec, zorder=ezo))
+                    axes.add_patch(Plane(x0=ecd[0][1], y0=eco[1][0], y1=eco[1][1], fc=edge_get_color(ecm[0][1]),
+                                         lw=edge_lw, fill=fill, ec=eec, zorder=ezo))
+            else:
+                if ecm[0][0]:
+                    axes.add_patch(Plane(x1=ecd[0][0], y0=eco[1][0], y1=eco[1][1], fc=edge_get_color(ecm[0][0]),
+                                         lw=edge_lw, fill=fill, ec=eec, zorder=ezo))
+                if ecm[0][1]:
+                    axes.add_patch(Plane(x0=ecd[0][1], y0=eco[1][0], y1=eco[1][1], fc=edge_get_color(ecm[0][1]),
+                                         lw=edge_lw, fill=fill, ec=eec, zorder=ezo))
+            if ecm[1][0]:
+                axes.add_patch(Plane(y1=ecd[1][0], x0=eco[0][0], x1=eco[0][1], fc=edge_get_color(ecm[1][0]),
+                                     lw=edge_lw, fill=fill, ec=eec, zorder=ezo))
+            if ecm[1][1]:
+                axes.add_patch(Plane(y0=ecd[1][1], x0=eco[0][0], x1=eco[0][1], fc=edge_get_color(ecm[1][1]),
+                                     lw=edge_lw, fill=fill, ec=eec, zorder=ezo))
+        except (AttributeError, KeyError):
+            pass
+
+    hmirror = False
+    vmirror = False
+
+    if mirror or periods or edges:
+        bbox = geometry.bbox
+        (left, right), (bottom, top) = ((bbox.lower[a], bbox.upper[a]) for a in ax)
+        hshift, vshift = (bbox.size[a] for a in ax)
+        try:
+            if geometry_edges[0][0] == 'mirror' or geometry_edges[0][1] == 'mirror' or cyl:
+                if (cyl and left < 0.) or \
+                   (geometry_edges[0][0] == 'mirror' and left != 0.) or \
+                   (geometry_edges[0][1] == 'mirror' and right != 0.):
+                    plask.print_log('warning', 'Mirror is not located at the axis')
+                    hmirror = False
+                else:
+                    hshift *= 2
+                    hmirrortransform = matplotlib.transforms.Affine2D.from_values(-1., 0, 0, 1., 0, 0)
+                    hmirror = True
+            else:
+                hmirror = False
+            if geometry_edges[1][0] == 'mirror' or geometry_edges[1][1] == 'mirror':
+                if (geometry_edges[1][0] == 'mirror' and bottom != 0.) or \
+                   (geometry_edges[1][1] == 'mirror' and top != 0.):
+                    plask.print_log('warning', 'Mirror is not located at the axis')
+                    vmirror = False
+                else:
+                    vshift *= 2
+                    vmirrortransform = matplotlib.transforms.Affine2D.from_values(1., 0, 0, -1., 0, 0)
+                    vmirror = True
+                    if hmirror:
+                        vhmirrortransform = matplotlib.transforms.Affine2D.from_values(-1., 0, 0, -1., 0, 0)
+            else:
+                vmirror = False
+            if not (geometry_edges[0][0] == 'periodic' and (geometry_edges[0][1] in ('periodic', 'mirror')) or
+                    geometry_edges[0][0] == 'mirror' and geometry_edges[0][1] == 'periodic'):
+                hshift = 0
+            if not (geometry_edges[1][0] == 'periodic' and (geometry_edges[1][1] in ('periodic', 'mirror')) or
+                    geometry_edges[1][0] == 'mirror' and geometry_edges[1][1] == 'periodic'):
+                vshift = 0
+        except AttributeError:  # we draw non-Geometry object
+            pass
+
+        color = env.color
+
+        def _set_env_style(cond, per=False):
+            if cond:
+                env.lw = lw
+                env.get_color = _get_color
+                env.color = color
+                env.zorder = zorder
+            else:
+                env.lw = edge_lw
+                env.get_color = edge_get_color
+                env.color = eec
+                env.zorder = ezo if not per else epzo
+
+        if hmirror or vmirror:
             if hmirror:
-                _draw_geometry_object(env, geometry,
-                                      shift + hmirrortransform + axes.transData, None)
+                _set_env_style(mirror or (periods and hshift))
+                draw_geometry_object(env, geometry, hmirrortransform + axes.transData, None)
             if vmirror:
-                _draw_geometry_object(env, geometry,
-                                      shift + vmirrortransform + axes.transData, None)
+                _set_env_style(mirror or (periods and vshift))
+                draw_geometry_object(env, geometry, vmirrortransform + axes.transData, None)
                 if hmirror:
-                    _draw_geometry_object(env, geometry,
-                                          shift + vhmirrortransform + axes.transData, None)
+                    _set_env_style(mirror or (periods and hshift and vshift))
+                    draw_geometry_object(env, geometry, vhmirrortransform + axes.transData, None)
+
+        if hshift or vshift:
+            env.periodic = {'dx': hshift, 'dy': vshift}
+            _set_env_style(periods, True)
+            draw_geometry_object(env, geometry, axes.transData, None)
+            if hmirror:
+                _set_env_style(periods and (mirror or hshift), True)
+                draw_geometry_object(env, geometry, hmirrortransform + axes.transData, None)
+            if vmirror:
+                _set_env_style(periods and (mirror or vshift), True)
+                draw_geometry_object(env, geometry, vmirrortransform + axes.transData, None)
+                if hmirror:
+                    _set_env_style(periods and (mirror or (hshift and vshift)), True)
+                    draw_geometry_object(env, geometry, vhmirrortransform + axes.transData, None)
+            env.periodic = None
+
+        hvmirror = hmirror, vmirror
+
+        if have_extends:
+            if geometry.dims == 3:
+                geometry_mesh = plask.mesh.Rectangular3D.SimpleGenerator()(geometry)
+                v = ({0, 1, 2} - set(ax)).pop()
+                vmesh = getattr(geometry_mesh, "axis{:1d}".format(v)).get_midpoints()
+                try:
+                    nair = len(vmesh) * [plask.material.get('air')]
+                except ValueError:
+                    nair = len(vmesh) * [None]
+            else:  # geometry.dims == 2
+                geometry_mesh = plask.mesh.Rectangular2D.SimpleGenerator()(geometry)
+            emesh = [getattr(geometry_mesh, "axis{:1d}".format(a)) for a in ax]
+            blu = bbox.lower, bbox.upper
+            for i,a in enumerate(ax):
+                for j in (0,1):
+                    if geometry_edges[i][j] != 'extend': continue
+                    e = blu[j][a]
+                    xy = [[None, None], [None, None]]
+                    xy[i][1-j] = e
+                    xym = [[None, None], [None, None]]
+                    xym[i][j] = -e
+                    em = emesh[1-i]
+
+                    def _add_extend(g0, g1):
+                        if cyl and i == 0:
+                            if j == 0:
+                                if e != 0:
+                                    axes.add_patch(Plane(x0=-e, x1=e, y0=g0, y1=g1, fc=fc,
+                                                        lw=edge_lw, fill=fill, ec=eec, zorder=ezo))
+                            else:
+                                axes.add_patch(Plane(x1=-e, y0=g0, y1=g1, fc=fc, lw=edge_lw, fill=fill, ec=eec, zorder=ezo))
+                                axes.add_patch(Plane(x0=+e, y0=g0, y1=g1, fc=fc, lw=edge_lw, fill=fill, ec=eec, zorder=ezo))
+                        else:
+                            xy[1-i] = g0, g1
+                            axes.add_patch(Plane(x0=xy[0][0], x1=xy[0][1], y0=xy[1][0], y1=xy[1][1], fc=fc,
+                                                lw=edge_lw, fill=fill, ec=eec, zorder=ezo))
+                            if hvmirror[i]:
+                                xym[1-i] = g0, g1
+                                axes.add_patch(Plane(x0=xym[0][0], x1=xym[0][1], y0=xym[1][0], y1=xym[1][1], fc=fc,
+                                                    lw=edge_lw, fill=fill, ec=eec, zorder=ezo))
+
+                    fc = None
+                    pm = None
+                    g0 = g1 = em[0]
+                    ng = len(em)
+                    am = True
+                    for g2 in em[1:]:
+                        if geometry.dims == 2:
+                            p = [None, None]
+                            p[a] = e
+                            p[1-a] = 0.5 * (g1 + g2)
+                            m = geometry.get_material(p)
+                            if pm is not None:
+                                fc = edge_get_color(pm)
+                            am = str(pm) != 'air'
+                        else:
+                            m = [geometry.get_material(**{
+                                    "c{:1d}".format(a): e,
+                                    "c{:1d}".format(ax[1-i]): 0.5 * (g1 + g2),
+                                    "c{:1d}".format(v): cv,
+                                }) for cv in vmesh]
+                            am = pm != nair
+                        if m != pm:
+                            if g0 != g1 and am:
+                                _add_extend(g0, g1)
+                                if hvmirror[1-i]:
+                                    _add_extend(-g1, -g0)
+                            g0 = g1
+                        g1 = g2
+                        pm = m
+                    if geometry.dims == 2:
+                        am = str(m) != 'air'
+                        fc = edge_get_color(m)
+                    else:
+                        am = m != nair
+                    if am:
+                        _add_extend(g0, g1)
+                        if hvmirror[1-i]:
+                            _add_extend(-g1, -g0)
 
     if margin is not None:
         box = geometry.bbox
-        if hmirror:
+        if mirror and hmirror:
             m = max(abs(box.lower[ax[0]]), abs(box.upper[ax[0]]))
             m += 2. * m * margin
             axes.set_xlim(-m, m)
         else:
             m = (box.upper[ax[0]] - box.lower[ax[0]]) * margin
             axes.set_xlim(box.lower[ax[0]] - m, box.upper[ax[0]] + m)
-        if vmirror:
+        if mirror and vmirror:
             m = max(abs(box.lower[ax[1]]), abs(box.upper[ax[1]]))
             m += 2. * m * margin
             axes.set_ylim(-m, m)
@@ -734,8 +1047,8 @@ def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=
     if ax[0] > ax[1] and not axes.yaxis_inverted():
         axes.invert_yaxis()
 
-    axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[dd + ax[0]]))
-    axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[dd + ax[1]]))
+    axes.set_xlabel(u"${}$ [µm]".format(plask.config.axes[dd+ax[0]]))
+    axes.set_ylabel(u"${}$ [µm]".format(plask.config.axes[dd+ax[1]]))
 
     if extra is not None:
         return axes, env.extra_patches

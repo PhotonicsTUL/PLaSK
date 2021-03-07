@@ -211,7 +211,7 @@ class FieldWidget(QWidget):
             if geometry is not None:
                 try:
                     plask.plot_geometry(axes=self.axes, geometry=geometry, fill=False,
-                                        plane=plane, lw=1.0, color='w', alpha=0.25)
+                                        plane=plane, lw=1.0, color='w', alpha=0.25, mirror=True, periods=True)
                 except:
                     pass
             if self.cax is None:

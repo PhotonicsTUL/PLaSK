@@ -40,7 +40,6 @@ else:
 
 
 class PlaceDetailsEditor(QWidget):
-
     def __init__(self, delegate, parent=None):
         super().__init__(parent)
         self.delegate = delegate
@@ -98,10 +97,14 @@ class RectangularPlaceSide(PlaceDetailsEditor):
 
     def load_data(self, data):
         self.object.clear()
-        try: self.object.addItems([''] + list(self.delegate.controller.document.geometry.model.get_names()))
-        except AttributeError: pass
-        try: self.path.addItems([''] + list(self.delegate.controller.document.geometry.model.get_paths()))
-        except AttributeError: pass
+        try:
+            self.object.addItems([''] + list(self.delegate.controller.document.geometry.model.get_names()))
+        except AttributeError:
+            pass
+        try:
+            self.path.addItems([''] + list(self.delegate.controller.document.geometry.model.get_paths()))
+        except AttributeError:
+            pass
         self.fill_details(data.object, data.path)
 
     def save_data(self, data):
@@ -165,9 +168,7 @@ class RectangularPlaceLine(PlaceDetailsEditor):
 if preview_available:
 
     class PlotWidget(PlotWidgetBase):
-
         class NavigationToolbar(PlotWidgetBase.NavigationToolbar):
-
             def __init__(self, *args, **kwargs):
                 super(PlotWidget.NavigationToolbar, self).__init__(*args, **kwargs)
                 if self.controller.geometry_node.dim == 2:
@@ -202,10 +203,21 @@ if preview_available:
                     points = plask.plot_boundary(bconds, mesh, geometry, colors=colors, plane=plane, axes=self.axes)
                     if geometry is not None:
                         try:
-                            plask.plot_geometry(axes=self.axes, geometry=geometry, fill=True, zorder=1,
-                                                plane=plane, lw=1.0, get_color=self.get_color,
-                                                margin=m if self.first else None,
-                                                picker=self.picker)
+                            plask.plot_geometry(
+                                axes=self.axes,
+                                geometry=geometry,
+                                fill=True,
+                                zorder=1,
+                                plane=plane,
+                                lw=1.0,
+                                get_color=self.get_color,
+                                margin=m if self.first else None,
+                                picker=self.picker,
+                                mirror=False,
+                                periods=False,
+                                edges=CONFIG['geometry/show_edges'],
+                                edge_alpha=float(CONFIG['geometry/edges_alpha'])
+                            )
                         except:
                             pass
                 self.first = False
@@ -219,7 +231,6 @@ if preview_available:
 
 
 class BoundaryConditionsDialog(QDialog):
-
     def __init__(self, controller, schema, data, parent=None):
         super().__init__(parent)
         self.setWindowTitle(schema.label2 + " Boundary Conditions")
@@ -242,9 +253,9 @@ class BoundaryConditionsDialog(QDialog):
         self.table.setColumnWidth(1, 250)
 
         try:
-           self.table.header().setResizeMode(1, QHeaderView.Stretch)
+            self.table.header().setResizeMode(1, QHeaderView.Stretch)
         except AttributeError:
-           self.table.header().setSectionResizeMode(1, QHeaderView.Stretch)
+            self.table.header().setSectionResizeMode(1, QHeaderView.Stretch)
         self.table.header().setMinimumSectionSize(self.table.fontMetrics().width('00 '))
 
         self.table.header().setSectionResizeMode(2, QHeaderView.Fixed)
@@ -261,7 +272,7 @@ class BoundaryConditionsDialog(QDialog):
         for i in range(3, self.model.columnCount()):
             self.table.setColumnWidth(i, 150)
             self.table.setItemDelegateForColumn(i, self.defines_delegate)
-            label = schema.keys[i-3].lower()
+            label = schema.keys[i - 3].lower()
             for l in label:
                 if l not in used_shortcuts:
                     table_edit_shortcut(self.table, i, QKeySequence(l))
@@ -358,12 +369,15 @@ class BoundaryConditionsDialog(QDialog):
 
             if schema.mesh_type not in fake_plask_gui_solver.__dict__:
                 Mesh = getattr(plask.mesh, schema.mesh_type)
+
                 class Solver(plask.Solver):
                     __name__ = schema.mesh_type
+
                     def load_xpl(self, xpl, manager):
                         self.bconds = Mesh.BoundaryConditions()
                         for tag in xpl:
                             self.bconds.read_from_xpl(tag, manager)
+
                 setattr(fake_plask_gui_solver, schema.mesh_type, Solver)
             if self.preview is not None:
                 self.model.dataChanged.connect(self.update_plot)
@@ -479,8 +493,9 @@ class BoundaryConditionsDialog(QDialog):
                 index = top_level_index(index)
                 colors[index.row()] = CONFIG['boundary_conditions/selected_color']
 
-            self.points = self.preview.update_plot(plotted_bconds, self.mesh, self.geometry,
-                                                   plane=self.checked_plane, colors=colors)
+            self.points = self.preview.update_plot(
+                plotted_bconds, self.mesh, self.geometry, plane=self.checked_plane, colors=colors
+            )
             self.plotted_bconds = plotted_bconds
             self.message(None)
         except Exception as e:
@@ -539,7 +554,6 @@ class PlaceDelegate(QStyledItemDelegate):
 
 
 class PlaceDetailsDelegate(HTMLDelegate):
-
     def __init__(self, dialog, controller, defines=None, parent=None):
         super().__init__(parent)
         self.dialog = weakref.proxy(dialog)
@@ -566,7 +580,8 @@ class PlaceDetailsDelegate(HTMLDelegate):
 
 
 PLACES_EDITORS = {
-    'Rectangular2D': OrderedDict((
+    'Rectangular2D':
+    OrderedDict((
         ("Left", RectangularPlaceSide),
         ("Right", RectangularPlaceSide),
         ("Top", RectangularPlaceSide),
@@ -577,7 +592,8 @@ PLACES_EDITORS = {
         ("Intersection", None),
         ("Difference", None),
     )),
-    'Rectangular3D': OrderedDict((
+    'Rectangular3D':
+    OrderedDict((
         ("Left", RectangularPlaceSide),
         ("Right", RectangularPlaceSide),
         ("Top", RectangularPlaceSide),

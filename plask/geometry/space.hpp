@@ -111,10 +111,12 @@ struct PLASK_API Geometry : public GeometryObject {
      *   argument can be one of: "edges", "planar", "<axis_name>", "<axis_name>-lo", "<axis_name>-hi"
      * @param axesNames name of axes, use to create arguments for @p borderValuesGetter
      * @param materialsDB source of materials
+     * @param draft ignore errors
      */
     void setEdges(const std::function<plask::optional<std::string>(const std::string& s)>& borderValuesGetter,
                   const AxisNames& axesNames,
-                  const MaterialsDB& materialsDB = MaterialsDB::getDefault());
+                  const MaterialsDB& materialsDB = MaterialsDB::getDefault(),
+                  bool draft = false);
 
     /**
      * Get edge strategy or throw exception if edge can't be get for this calculation space or direction.

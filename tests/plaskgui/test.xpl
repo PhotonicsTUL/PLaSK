@@ -65,7 +65,7 @@
 
 <geometry>
   <!--c1-->
-  <cartesian2d name="geo2d" bottom="extend" length="1000">
+  <cartesian2d name="geo2d" left="mirror" bottom="GaN" length="1000">
     <!--c2-->
     <stack name="stack2d">
       <!--c3-->
@@ -111,7 +111,7 @@
     </stack>
   </cartesian2d>
   <!--break-->
-  <cartesian2d name="geo2d-copy">
+  <cartesian2d name="geo2d-copy" bottom="GaN">
     <copy from="stack2d">
       <toblock object="new" material-top="Al(1.0)GaAs" material-bottom="Al(0.0)GaAs" name="blok2" role="rola1"/>
       <replace object="stos2">
@@ -125,7 +125,7 @@
       <simplify-gradients lam="980"/>
     </copy>
   </cartesian2d>
-  <cartesian2d name="simple">
+  <cartesian2d name="simple" left="periodic" right="periodic" bottom="Au" top="extend">
     <stack name="simple-stack">
       <again ref="blok2"/>
       <stack repeat="3">
@@ -145,7 +145,7 @@
     </stack>
   </cartesian3d>
   <cartesian3d name="vcsel" axes="x,y,z" back="mirror" front="extend" left="mirror" right="extend" bottom="GaAs">
-    <clip>
+    <clip back="0" left="0">
       <align x="0" y="0" top="0">
         <item xcenter="0" ycenter="0">
           <stack>
@@ -182,7 +182,7 @@
       </align>
     </clip>
   </cartesian3d>
-  <cylindrical2d name="GeoE" axes="r,z">
+  <cylindrical2d name="GeoE" axes="r,z" bottom="GaAs:C=2e+18">
     <stack>
       <item right="{mesa/2-1}">
         <rectangle name="n-contact" material="Au" dr="4" dz="0.0500"/>
@@ -276,23 +276,23 @@
       </align>
     </stack>
   </cartesian2d>
-  <cartesian3d name="revolved" axes="x,y,z">
+  <cartesian3d name="revolved" axes="x,y,z" left="extend" right="extend">
     <revolution rev-steps-num="20">
       <again ref="simple-stack"/>
     </revolution>
   </cartesian3d>
-  <cartesian3d name="original3d" axes="x,y,z ">
+  <cartesian3d name="original3d" axes="x,y,z " left="extend" right="extend">
     <stack>
       <cuboid material="GaAs" dx="5." dy="5." dz="1.0"/>
       <cuboid material-top="Al(0.0)GaAs" material-bottom="Al(1.0)GaAs" dx="5." dy="5." dz="0.2"/>
       <cuboid material="AlAs" dx="5." dy="5." dz="1.0"/>
-      <cuboid material-top="Al(1.0)GaAs" material-bottom="Al(0.0)GaAs" dx="5." dy="5." dz="0.5"/>
+      <cuboid role="grad" material-top="Al(1.0)GaAs" material-bottom="Al(0.0)GaAs" dx="5." dy="5." dz="0.5"/>
       <cuboid material="GaAs" dx="5." dy="5." dz="1.0"/>
     </stack>
   </cartesian3d>
-  <cartesian3d name="simplified3d" axes="x,y">
+  <cartesian3d name="simplified3d" axes="x,y" left="extend" right="extend">
     <copy from="original3d">
-      <simplify-gradients lam="980" linear="eps"/>
+      <simplify-gradients lam="980" linear="eps" only-role="grad"/>
     </copy>
   </cartesian3d>
   <cartesian2d name="original2d" axes="x,y">
