@@ -44,6 +44,33 @@ shared_ptr<MaterialsDB::MixedCompositionFactory> GeometryReader::getMixedComposi
     }
 }
 
+SolidOrGradientMaterial GeometryReader::requireSolidOrGradientMaterial() const {
+    auto top_attr = source.getAttribute(GeometryReader::XML_MATERIAL_TOP_ATTR);
+    auto bottom_attr = source.getAttribute(GeometryReader::XML_MATERIAL_BOTTOM_ATTR);
+    if (!top_attr && !bottom_attr) {
+        if (source.hasAttribute(GeometryReader::XML_MATERIAL_GRADING_ATTR))
+            source.throwException(format("'{}' attribute allowed only for layers with graded material",
+                                            GeometryReader::XML_MATERIAL_GRADING_ATTR));
+        try {
+            return getMaterial(source.requireAttribute(XML_MATERIAL_ATTR));
+        } catch (XMLNoAttrException&) {
+            if (!manager.draft) throw;
+            else return plask::make_shared<DummyMaterial>("");
+        }
+    } else {
+        double shape = source.getAttribute<double>(GeometryReader::XML_MATERIAL_GRADING_ATTR, 1.);
+        if (!manager.draft) {
+            if (!top_attr || !bottom_attr)
+                source.throwException(format("If '{0}' or '{1}' attribute is given, the other one is also required",
+                                                GeometryReader::XML_MATERIAL_TOP_ATTR,
+                                                GeometryReader::XML_MATERIAL_BOTTOM_ATTR));
+            return getMixedCompositionFactory(*top_attr, *bottom_attr, shape);
+        } else
+            return (*getMixedCompositionFactory(*top_attr, *bottom_attr, shape))(0.5);
+    }
+}
+
+
 std::map<std::string, GeometryReader::object_read_f*>& GeometryReader::objectReaders() {
     static std::map<std::string, GeometryReader::object_read_f*> result;
     return result;

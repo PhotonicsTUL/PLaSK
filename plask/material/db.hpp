@@ -296,8 +296,6 @@ struct PLASK_API MaterialsDB {
         }
     };
 
-
-
   private:
 
     /// Type for map: material db key -> materials constructors object (with name)

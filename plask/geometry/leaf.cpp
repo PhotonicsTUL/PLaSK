@@ -32,11 +32,15 @@ template <int dim> GeometryReader& GeometryObjectLeaf<dim>::readMaterial(Geometr
         } else if (plask::optional<std::string> matstr = src.source.getAttribute(GeometryReader::XML_MATERIAL_ATTR))
             this->setMaterialFast(src.getMaterial(*matstr));
     } else {
-        if (!top_attr || !bottom_attr)
-            src.source.throwException(format("If '{0}' or '{1}' attribute is given, the other one is also required",
-                                             GeometryReader::XML_MATERIAL_TOP_ATTR, GeometryReader::XML_MATERIAL_BOTTOM_ATTR));
         double shape = src.source.getAttribute<double>(GeometryReader::XML_MATERIAL_GRADING_ATTR, 1.);
-        this->setMaterialTopBottomCompositionFast(src.getMixedCompositionFactory(*top_attr, *bottom_attr, shape));
+        if (!src.manager.draft) {
+            if (!top_attr || !bottom_attr)
+                src.source.throwException(format("If '{0}' or '{1}' attribute is given, the other one is also required",
+                                                 GeometryReader::XML_MATERIAL_TOP_ATTR,
+                                                 GeometryReader::XML_MATERIAL_BOTTOM_ATTR));
+            this->setMaterialTopBottomCompositionFast(src.getMixedCompositionFactory(*top_attr, *bottom_attr, shape));
+        } else
+            this->setMaterialFast((*src.getMixedCompositionFactory(*top_attr, *bottom_attr, shape))(0.5));
     }
     return src;
 }
