@@ -108,7 +108,8 @@ class PlotWidget(PlotWidgetBase):
                         mirror=False,
                         periods=False,
                         edges=CONFIG['geometry/show_edges'],
-                        edge_alpha=float(CONFIG['geometry/edges_alpha'])
+                        edge_alpha=float(CONFIG['geometry/edges_alpha']),
+                        edge_lw=0 if geometry.dims == 2 else 1.5
                     )
             finally:
                 try:

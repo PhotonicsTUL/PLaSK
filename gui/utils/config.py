@@ -95,7 +95,7 @@ DEFAULTS = {
     'geometry/selected_width': 2,
     'geometry/show_origin': True,
     'geometry/show_edges': True,
-    'geometry/edges_alpha': 0.1,
+    'geometry/edges_alpha': 0.2,
     'help/fontsize': 13,
     'help/online': False,
     'launcher/default': 'Local Process',
