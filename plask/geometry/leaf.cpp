@@ -40,7 +40,7 @@ template <int dim> GeometryReader& GeometryObjectLeaf<dim>::readMaterial(Geometr
                                                  GeometryReader::XML_MATERIAL_BOTTOM_ATTR));
             this->setMaterialTopBottomCompositionFast(src.getMixedCompositionFactory(*top_attr, *bottom_attr, shape));
         } else
-            this->setMaterialFast((*src.getMixedCompositionFactory(*top_attr, *bottom_attr, shape))(0.5));
+            this->setMaterialDraftTopBottomCompositionFast(src.getMixedCompositionFactory(*top_attr, *bottom_attr, shape));
     }
     return src;
 }
@@ -288,15 +288,22 @@ namespace detail {
 
 template <int dim> struct MakeBlockVisitor : public boost::static_visitor<shared_ptr<Block<dim>>> {
     Vec<dim> size;
+    bool draft;
 
-    MakeBlockVisitor(const Vec<dim>& size): size(size) {}
+    MakeBlockVisitor(const Vec<dim>& size, bool draft): size(size), draft(draft) {}
 
     shared_ptr<Block<dim>> operator()(const shared_ptr<Material>& material) const {
         return plask::make_shared<Block<dim>>(size, material);
     }
 
     shared_ptr<Block<dim>> operator()(const shared_ptr<MaterialsDB::MixedCompositionFactory>& material_factory) const {
-        return plask::make_shared<Block<dim>>(size, material_factory);
+        if (!draft)
+            return plask::make_shared<Block<dim>>(size, material_factory);
+        else {
+            auto result = plask::make_shared<Block<dim>>(size);
+            result->setMaterialDraftTopBottomCompositionFast(material_factory);
+            return result;
+        }
     }
 };
 
@@ -304,17 +311,17 @@ template <int dim> struct MakeBlockVisitor : public boost::static_visitor<shared
 
 shared_ptr<GeometryObject> changeToBlock(const SolidOrGradientMaterial& material,
                                          const shared_ptr<const GeometryObject>& to_change,
-                                         Vec<3, double>& translation) {
+                                         Vec<3, double>& translation, bool draft) {
     if (to_change->getDimensionsCount() == 3) {
         shared_ptr<const GeometryObjectD<3>> el = static_pointer_cast<const GeometryObjectD<3>>(to_change);
         Box3D bb = el->getBoundingBox();
         translation = bb.lower;
-        return boost::apply_visitor(detail::MakeBlockVisitor<3>(bb.size()), material);
+        return boost::apply_visitor(detail::MakeBlockVisitor<3>(bb.size(), draft), material);
     } else {  // to_change->getDimensionsCount() == 3
         shared_ptr<const GeometryObjectD<2>> el = static_pointer_cast<const GeometryObjectD<2>>(to_change);
         Box2D bb = el->getBoundingBox();
         translation = vec<3, double>(bb.lower);
-        return boost::apply_visitor(detail::MakeBlockVisitor<2>(bb.size()), material);
+        return boost::apply_visitor(detail::MakeBlockVisitor<2>(bb.size(), draft), material);
     }
 }
 

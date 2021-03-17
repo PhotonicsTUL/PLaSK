@@ -404,7 +404,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
      * with size equals to @a toChange bounding box, and with given material.
      */
     struct PLASK_API ToBlockChanger : public ReplaceChanger {
-        ToBlockChanger(shared_ptr<const GeometryObject> toChange, const SolidOrGradientMaterial& material);
+        ToBlockChanger(shared_ptr<const GeometryObject> toChange, const SolidOrGradientMaterial& material, bool draft = false);
     };
 
     struct PLASK_API DeleteChanger : public Changer {

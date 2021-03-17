@@ -97,6 +97,18 @@ template <int dim> struct PLASK_API GeometryObjectLeaf : public GeometryObjectD<
         XMLWriter::Element& writeXML(XMLWriter::Element& dest_xml_object, const AxisNames& axes) const override;
     };
 
+    struct PLASK_API DraftGradientMaterial : public GradientMaterial {
+
+        DraftGradientMaterial(shared_ptr<MaterialsDB::MixedCompositionFactory> materialFactory)
+            : GradientMaterial(materialFactory) {}
+
+        shared_ptr<Material> getMaterial(const GeometryObjectLeaf<dim>& thisObj, const DVec& p) const override {
+            return (*this->materialFactory)(0.5);
+        }
+
+        bool isUniform(Primitive<3>::Direction direction) const override { return true; }
+    };
+
   protected:
     std::unique_ptr<MaterialProvider> materialProvider;
 
@@ -158,7 +170,7 @@ template <int dim> struct PLASK_API GeometryObjectLeaf : public GeometryObjectD<
     void setMaterialFast(shared_ptr<Material> new_material) { materialProvider.reset(new SolidMaterial(new_material)); }
 
     /**
-     * Set new, lineary changeable, material.
+     * Set new graded material. Do not inform listeners about the change.
      * @param materialTopBottom materials to set (lineary changeble), first is the material on top of this, the second
      * is on bottom of this
      */
@@ -167,13 +179,22 @@ template <int dim> struct PLASK_API GeometryObjectLeaf : public GeometryObjectD<
     }
 
     /**
-     * Set new, lineary changeable, material. Do not inform listeners about the change.
+     * Set new material material.
      * @param materialTopBottom materials to set (lineary changeble), first is the material on top of this, the second
      * is on bottom of this
      */
     void setMaterialTopBottomComposition(shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom) {
         setMaterialTopBottomCompositionFast(materialTopBottom);
         this->fireChanged();
+    }
+
+    /**
+     * Set new draft graded material.
+     * @param materialTopBottom materials to set (lineary changeble), first is the material on top of this, the second
+     * is on bottom of this
+     */
+    void setMaterialDraftTopBottomCompositionFast(shared_ptr<MaterialsDB::MixedCompositionFactory> materialTopBottom) {
+        materialProvider.reset(new DraftGradientMaterial(materialTopBottom));
     }
 
     /**
@@ -337,11 +358,12 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(Block<3>)
  * @param material material of the constructed Block
  * @param to_change geometry object
  * @param translation[out] set to position (lower corner) of @c to_change bouding box
+ * @param draft should draft graded material be created?
  * @return Block<to_change->getDimensionsCount()> object
  */
 PLASK_API shared_ptr<GeometryObject> changeToBlock(const SolidOrGradientMaterial& material,
                                                    const shared_ptr<const GeometryObject>& to_change,
-                                                   Vec<3, double>& translation);
+                                                   Vec<3, double>& translation, bool draft = false);
 
 typedef Block<2> Rectangle;
 typedef Block<3> Cuboid;

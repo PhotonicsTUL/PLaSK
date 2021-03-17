@@ -34,9 +34,11 @@ bool GeometryObject::ReplaceChanger::apply(shared_ptr<GeometryObject> &to_change
     return true;
 }
 
-GeometryObject::ToBlockChanger::ToBlockChanger(shared_ptr<const GeometryObject> toChange, const SolidOrGradientMaterial& material) {
+GeometryObject::ToBlockChanger::ToBlockChanger(shared_ptr<const GeometryObject> toChange,
+                                               const SolidOrGradientMaterial& material,
+                                               bool draft) {
     from = toChange;
-    to = changeToBlock(material, from, translation);
+    to = changeToBlock(material, from, translation, draft);
 }
 
 bool GeometryObject::DeleteChanger::apply(shared_ptr<GeometryObject>& to_change, Vec<3, double>* /*translation*/) const {

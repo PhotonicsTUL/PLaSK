@@ -180,7 +180,8 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
                     SolidOrGradientMaterial blockMaterial = requireSolidOrGradientMaterial();
                     plask::optional<std::string> block_name = source.getAttribute(XML_NAME_ATTR);  // read name
                     if (op_from) {
-                        GeometryObject::ToBlockChanger* changer = new GeometryObject::ToBlockChanger(op_from, blockMaterial);
+                        GeometryObject::ToBlockChanger* changer =
+                            new GeometryObject::ToBlockChanger(op_from, blockMaterial, manager.draft);
                         changers.append(changer);
                         if (block_name && !isAutoName(*block_name)) {
                             BadId::throwIfBad("block replacing object", *block_name, '-');
