@@ -111,7 +111,7 @@
     </stack>
   </cartesian2d>
   <!--break-->
-  <cartesian2d name="geo2d-copy" bottom="GaN">
+  <cartesian2d name="geo2d-copy" left="extend" right="extend" bottom="GaN">
     <copy from="stack2d">
       <toblock object="new" material-top="Al(1.0)GaAs" material-bottom="Al(0.0)GaAs" name="blok2" role="rola1"/>
       <replace object="stos2">
@@ -546,19 +546,19 @@
   <optical name="fdtd" solver="FDTD2D" lib="fdtd">
     <geometry ref="geo2d"/>
     <sources>
-      <point x="1" y="1">
-        <continuous wavelength="980." start-time="0" end-time="inf" component="Ex" slownless="3" amplitude="1"/>
-      </point>
-      <point x="1" y="1">
-        <gaussian wavelength="980." start-time="0" end-time="infty" width="1" component="Ex" amplitude="1"/>
-      </point>
-      <volume ax="0" ay="0" bx="2" by="1">
-        <continuous wavelength="980." start-time="0" end-time="infinity" component="Ex" slownless="3" amplitude="1"/>
-      </volume>
-      <volume ax="0" ay="0" bx="2" by="1">
-        <gauss wavelength="980." start-time="0" end-time="inf" width="1" component="Ex" amplitude="1"/>
-      </volume>
-    </sources>
+    <point x="1" y="1">
+      <continuous wavelength="980." start-time="0" end-time="inf" component="Ex" slownless="3" amplitude="1"/>
+    </point>
+    <point x="1" y="1">
+      <gaussian wavelength="980." start-time="0" end-time="infty" width="1" component="Ex" amplitude="1"/>
+    </point>
+    <volume ax="0" ay="0" bx="2" by="1">
+      <continuous wavelength="980." start-time="0" end-time="infinity" component="Ex" slownless="3" amplitude="1"/>
+    </volume>
+    <volume ax="0" ay="0" bx="2" by="1">
+      <gauss wavelength="980." start-time="0" end-time="inf" width="1" component="Ex" amplitude="1"/>
+    </volume>
+  </sources>
   </optical>
 </solvers>
 
@@ -577,6 +577,11 @@
 <!--Script-->
 
 <script><![CDATA[
+print(GEO.roads.get_object_positions(GEO.small, PTH.blsl))
+print(GEO.roads.get_object_positions(GEO.small, PTH.blsr))
+print(GEO.roads.get_object_positions(GEO.small, PTH.brsl))
+print(GEO.roads.get_object_positions(GEO.small, PTH.brsr))
+
 print(sys.argv)
 
 print(material.get('InGa(0.8)As_QW:Si=1e19'))

@@ -285,6 +285,7 @@ class PeriodicArtist(matplotlib.artist.Artist):
     def __init__(self, child, axes, clipbox, dx=0, dy=0):
         super().__init__()
         self._child = child
+        self.set_zorder(child.get_zorder())
         self._dx = dx
         self._dy = dy
         (self._x0, self._y0), (self._x1, self._y1) = child.get_path().get_extents(child.get_patch_transform()).get_points()
