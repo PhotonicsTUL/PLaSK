@@ -435,13 +435,8 @@ if(BUILD_PYTHON)
     if(DEFINED no_strict_aliasing_flag)
         set_target_properties(libplask_python PROPERTIES COMPILE_FLAGS "${no_strict_aliasing_flag} -DPLASK_PYTHON_EXPORTS")
     else()
-        set_target_properties(libplask_python PROPERTIES COMPILE_FLAGS -DPLASK_PYTHON_EXPORTS)
+        set_target_properties(libplask_python PROPERTIES COMPILE_FLAGS "-DPLASK_PYTHON_EXPORTS")
     endif()
-    #if(WIN32)
-    #    set_target_properties(libplask_python PROPERTIES LINK_FLAGS -Wl,--export-all-symbols)
-    #endif()
-    # if(BUILD_PYTHON_MODULE)
-    # endif()
 
     if(WIN32)
         if(INSTALL_DEV)
@@ -452,6 +447,36 @@ if(BUILD_PYTHON)
         endif()
     else()
         install(TARGETS libplask_python LIBRARY DESTINATION lib COMPONENT core)
+    endif()
+
+    if(BUILD_PYTHON_MODULE)
+        if(WIN32)
+            add_library(plask_module SHARED ${python_plask_src})
+        else()
+            add_library(plask_module MODULE ${python_plask_src})
+        endif()
+        target_link_libraries(plask_module ${PYTHON_LIBRARIES} ${Boost_PYTHON_LIBRARIES} libplask)
+        set_target_properties(plask_module PROPERTIES OUTPUT_NAME plask_python)
+        if(DEFINED no_strict_aliasing_flag)
+            set_target_properties(plask_module PROPERTIES COMPILE_FLAGS "${no_strict_aliasing_flag} -DPLASK_PYTHON_EXPORTS")
+        else()
+            set_target_properties(plask_module PROPERTIES COMPILE_FLAGS "-DPLASK_PYTHON_EXPORTS")
+        endif()
+        set_target_properties(plask_module PROPERTIES
+                              LIBRARY_OUTPUT_DIRECTORY "${PLASK_PYTHON_PATH}"
+                              OUTPUT_NAME "_plask"
+                              INSTALL_RPATH "$ORIGIN"
+                              PREFIX "")
+        if(WIN32)
+            set_target_properties(plask_module PROPERTIES
+                                RUNTIME_OUTPUT_DIRECTORY "${PLASK_PYTHON_PATH}"
+                                SUFFIX ".pyd")
+        endif()
+        install(TARGETS plask_module DESTINATION lib/plask/python/plask COMPONENT core)
+        # execute_process(
+        #     COMMAND "${PYTHON_EXECUTABLE}" -c
+        #     "from distutils.sysconfig import get_python_lib; print(get_python_lib(prefix='', plat_specific=False))"
+        #     OUTPUT_VARIABLE PYTHON_SITE OUTPUT_STRIP_TRAILING_WHITESPACE)
     endif()
 
     if(WIN32 AND NOT MSVC)

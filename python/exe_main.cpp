@@ -105,10 +105,26 @@ static py::object initPlask(int argc, const system_char* argv[], bool banner)
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "lib";
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "plask";
     std::string solvers_path = plask_path;
-    plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "python";
-    solvers_path += plask::FILE_PATH_SEPARATOR; solvers_path += "solvers";
-    path.insert(0, plask_path);
-    path.insert(1, solvers_path);
+    if (const char* envPath = getenv("PLASK_PYTHON_PATH")) {
+        path.insert(0, envPath);
+    } else {
+        plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "python";
+        path.insert(0, plask_path);
+    }
+    if (const char* envPath = getenv("PLASK_SOLVERS_PATH")) {
+        size_t i = 0;
+#       if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+#           define PATHSEP ";"
+#       else
+#           define PATHSEP ":"
+#       endif
+        std::string envPaths(envPath);
+        for (auto p: boost::tokenizer<boost::char_separator<char>>(envPaths, boost::char_separator<char>(PATHSEP)))
+            path.insert(++i, p);
+    } else {
+        solvers_path += plask::FILE_PATH_SEPARATOR; solvers_path += "solvers";
+        path.insert(1, solvers_path);
+    }
     if (argc > 0) // This is correct!!! argv[0] here is argv[1] in `main`
         try {
             boost::filesystem::path argpath = boost::filesystem::absolute(boost::filesystem::path(argv[0]));
@@ -276,12 +292,16 @@ int system_main(int argc, const system_char *argv[])
     if (argc > 1) {
         system_string arg(argv[1]);
         if (arg == CSTR(-V) || arg == CSTR(--version)) {
-            printf("PLaSK " PLASK_VERSION "\n");
-#           ifdef LICENSE_CHECK
-                std::string user = plask::license_verifier.getUser(),
-                            expiry = plask::license_verifier.getExpiration();
-                if (user != "") printf("%s %s\n", user.c_str(), expiry.c_str());
-#           endif
+            if (basename.size() >= 6 && basename.substr(0, 6) == CSTR(python)) {
+                printf("Python %d.%d.%d\n", PY_MAJOR_VERSION, PY_MINOR_VERSION, PY_MICRO_VERSION);
+            } else {
+                printf("PLaSK " PLASK_VERSION "\n");
+    #           ifdef LICENSE_CHECK
+                    std::string user = plask::license_verifier.getUser(),
+                                expiry = plask::license_verifier.getExpiration();
+                    if (user != "") printf("%s %s\n", user.c_str(), expiry.c_str());
+    #           endif
+            }
             return 0;
         } else if (arg == CSTR(-s)) {
             for (auto& m: plask::getMacs()) {
