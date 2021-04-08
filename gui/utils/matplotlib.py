@@ -236,8 +236,12 @@ class PlotWidgetBase(QWidget):
 
         def disable_planes(self, axes):
             self._actions['select_plane'].setVisible(False)
-            if ',' in axes: axes = axes.split(',')
-            self._axes = axes[-2:]
+            try:
+                if ',' in axes: axes = axes.split(',')
+            except TypeError:
+                self._axes = 'tran', 'vert'
+            else:
+                self._axes = axes[-2:]
 
         def enable_planes(self, axes=None):
             self._actions['select_plane'].setVisible(True)
