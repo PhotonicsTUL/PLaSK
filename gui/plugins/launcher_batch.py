@@ -121,6 +121,9 @@ else:
     from gui.xpldocument import XPLDocument
     from gui.utils.config import CONFIG
 
+    from gui.utils.config import DEFAULTS as CONFIG_DEFAULTS
+    CONFIG_DEFAULTS['launcher_batch/email'] = ""
+
     from socket import timeout as TimeoutException
 
     from gzip import GzipFile
@@ -157,6 +160,9 @@ else:
     def batchsystem(cls):
         SYSTEMS[cls.SYSTEM] = cls
         return cls
+
+
+    EMAIL = ''
 
 
     class Account:
@@ -487,6 +493,8 @@ else:
             if filename in self.params:
                 config = LAUNCH_CONFIG[filename].setdefault('batch', {})
                 config[self.name] = self.params[filename]
+            CONFIG['launcher_batch/email'] = EMAIL
+            CONFIG.sync()
 
         def batch(self, name, params, path):
             return ''
@@ -634,6 +642,12 @@ else:
         SYSTEM = 'SLURM'
         RUNN = 'srun'
 
+        _NOTIFICATIONS = {
+            'b': 'BEGIN',
+            'e': 'END',
+            'a': 'FAIL'
+        }
+
         _value_suffix_re = re.compile("([\d.]*)(\D*)")
 
         def __init__(self, name, userhost=None, port=22, program='', color=False, keep=None, compress=True, bp='',
@@ -729,7 +743,14 @@ else:
                 output = "{0} -a {1[0]}-{1[1]}".format(quote(name+"-%A_%a.out"), params['array'])
             else:
                 output = quote("{}-%j.out".format(name))
-            return "{path}sbatch -J {name}{partition}{qos}{wall}{mem}{cpus}{nodes} -o {output} -D {dir}" \
+
+            if params['notify'] and EMAIL:
+                email = ' ' + quote('--mail-user=' + EMAIL) + ' --mail-type=' + \
+                    ','.join(self._NOTIFICATIONS[n] for n in params['notify'])
+            else:
+                email = ''
+
+            return "{path}sbatch -J {name}{partition}{qos}{wall}{mem}{cpus}{nodes}{email} -o {output} -D {dir}" \
                 .format(**locals())
 
         def tmpfile(self, fname, array):
@@ -835,7 +856,12 @@ else:
             if res:
                 res = ' -l ' + quote(','.join(res))
 
-            return "{path}qsub -N {name}{queue}{res}{array} -d {dir}".format(
+            if params['notify'] and EMAIL:
+                email = ' -M ' + quote(EMAIL) + ' -m ' + params['notify']
+            else:
+                email = ''
+
+            return "{path}qsub -N {name}{queue}{res}{array}{email} -d {dir}".format(
                 name=quote(name),
                 queue=queue,
                 res=res,
@@ -885,6 +911,8 @@ else:
         def __init__(self):
             self.current_account = None
             self.load_accounts()
+            global EMAIL
+            EMAIL = CONFIG['launcher_batch/email']
 
         class Widget(QWidget):
             def __init__(self, launcher, parent=None):
@@ -1055,6 +1083,29 @@ else:
             dirlayout.addWidget(dirbutton)
             layout.addLayout(dirlayout)
 
+            notify_layout = QHBoxLayout()
+            notify_layout.setContentsMargins(0, 0, 0, 0)
+            label = QLabel("Notify:  ")
+            notify_layout.addWidget(label)
+            self.notify_begin = QCheckBox()
+            self.notify_begin.setText("&Begin")
+            self.notify_begin.setToolTip("Notify about job the execution beginning.")
+            notify_layout.addWidget(self.notify_begin)
+            self.notify_end = QCheckBox()
+            self.notify_end.setText("Finis&h")
+            self.notify_end.setToolTip("Notify about completion of the job execution.")
+            notify_layout.addWidget(self.notify_end)
+            self.notify_fail = QCheckBox()
+            self.notify_fail.setText("Fa&il")
+            self.notify_fail.setToolTip("Notify about job failure.")
+            notify_layout.addWidget(self.notify_fail)
+            label = QLabel("  E-&mail:")
+            notify_layout.addWidget(label)
+            self.email = QLineEdit()
+            label.setBuddy(self.email)
+            notify_layout.addWidget(self.email)
+            layout.addLayout(notify_layout)
+
             self.params_button = QToolButton()
             self.params_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
             self.params_button.setIconSize(QSize(8, 8))
@@ -1089,7 +1140,7 @@ else:
             self.modules_button.setChecked(False)
             self.modules_button.toggled.connect(
                 lambda visible: self.show_optional(self.modules, visible, self.modules_button))
-            self.modules_button.setText("Environmental &Modules:")
+            self.modules_button.setText("En&vironmental Modules:")
             layout.addWidget(self.modules_button)
             self.modules = QPlainTextEdit()
             self.modules.setVisible(False)
@@ -1140,7 +1191,13 @@ else:
                       'nodes': self.nodes.value(),
                       'array': (self.array_from.value(), self.array_to.value()) if self.array.isChecked() else None,
                       'other': self.other_params.text(),
-                      'modules': self.modules.toPlainText()}
+                      'modules': self.modules.toPlainText(),
+                      'notify': ''}
+            global EMAIL
+            EMAIL = self.email.text()
+            if self.notify_begin.isChecked(): params['notify'] += 'b'
+            if self.notify_end.isChecked(): params['notify'] += 'e'
+            if self.notify_fail.isChecked(): params['notify'] += 'a'
             if self.accounts and self.current_account is not None:
                 params.update(self.accounts[self.current_account].get_params())
             return params
@@ -1167,6 +1224,10 @@ else:
                 self.modules.setPlainText(params.get('modules', ''))
                 self.show_optional(self.other_params, bool(params.get('other')), self.params_button)
                 self.show_optional(self.modules, bool(params.get('modules')), self.modules_button)
+                self.email.setText(EMAIL)
+                self.notify_begin.setChecked('b' in params.get('notify', ''))
+                self.notify_end.setChecked('e' in params.get('notify', ''))
+                self.notify_fail.setChecked('a' in params.get('notify', ''))
 
         def load_accounts(self):
             self.accounts = []
