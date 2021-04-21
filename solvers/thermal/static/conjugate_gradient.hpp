@@ -46,7 +46,7 @@ std::size_t solveDCG(Matrix& matrix, const Preconditioner& msolve, double* x, do
              size_t itmax=10000, double eps=1e-8, size_t logfreq=500, const std::string& log_prefix="",
              void(Matrix::*updatea)(double*)=&Matrix::noUpdate)
 {
-    Data2DLog<size_t,double> logger(log_prefix, "conjugate gradient", "iter", "resid");
+    DataLog<size_t,double> logger(log_prefix, "conjugate gradient", "iter", "resid");
     size_t logcount = logfreq;
 
     size_t n = matrix.size;

@@ -131,7 +131,7 @@ std::vector<dcomplex> EffectiveIndex2D::searchVNeffs(dcomplex neff1, dcomplex ne
 
     if (maxLoglevel >= LOG_RESULT) {
         if (results.size() != 0) {
-            Data2DLog<dcomplex,dcomplex> logger(getId(), format("stripe[{0}]", stripe-xbegin), "neff", "det");
+            DataLog<dcomplex,dcomplex> logger(getId(), format("stripe[{0}]", stripe-xbegin), "neff", "det");
             std::string msg = "Found vertical effective indices at: ";
             for (auto z: results) {
                 msg += str(z) + ", ";
@@ -198,7 +198,7 @@ std::vector<size_t> EffectiveIndex2D::findModes(dcomplex neff1, dcomplex neff2, 
     std::vector<size_t> idx(results.size());
 
     if (results.size() != 0) {
-        Data2DLog<dcomplex,dcomplex> logger(getId(), "Neffs", "Neff", "det");
+        DataLog<dcomplex,dcomplex> logger(getId(), "Neffs", "Neff", "det");
         auto refine = RootDigger::get(this, [this,&mode](const dcomplex& v){return this->detS(v,mode);}, logger, root);
         std::string msg = "Found modes at: ";
         for (auto zz: results) {
@@ -369,7 +369,7 @@ void EffectiveIndex2D::stageOne()
             writelog(LOG_DEBUG, "Nr[{0}] = [{1} ]", stripe-xbegin, nrs.str().substr(1));
         }
 #endif
-        Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{0}]", stripe-xbegin), "neff", "det");
+        DataLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{0}]", stripe-xbegin), "neff", "det");
         auto rootdigger = RootDigger::get(this, [&](const dcomplex& x){return this->detS1(x,nrCache[stripe]);}, log_stripe, stripe_root);
         if (vneff == 0.) {
             dcomplex maxn = *std::max_element(nrCache[stripe].begin(), nrCache[stripe].end(),

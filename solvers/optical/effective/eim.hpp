@@ -110,7 +110,7 @@ struct PLASK_SOLVER_API EffectiveIndex2D: public SolverWithMesh<Geometry2DCartes
            yend;    ///< Last element of vertical mesh to consider
 
     /// Logger for determinant
-    Data2DLog<dcomplex,dcomplex> log_value;
+    DataLog<dcomplex,dcomplex> log_value;
 
     /// Cached refractive indices
     std::vector<std::vector<dcomplex,aligned_allocator<dcomplex>>> nrCache;

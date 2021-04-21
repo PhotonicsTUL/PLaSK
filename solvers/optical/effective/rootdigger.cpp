@@ -5,7 +5,7 @@
 
 namespace plask { namespace optical { namespace effective {
 
-std::unique_ptr<RootDigger> RootDigger::get(Solver* solver, const function_type& func, Data2DLog<dcomplex,dcomplex>& detlog, const Params& params) {
+std::unique_ptr<RootDigger> RootDigger::get(Solver* solver, const function_type& func, DataLog<dcomplex,dcomplex>& detlog, const Params& params) {
     typedef std::unique_ptr<RootDigger> Res;
     if (params.method == RootDigger::ROOT_MULLER) return Res(new RootMuller(*solver, func, detlog, params));
     else if (params.method == RootDigger::ROOT_BROYDEN) return Res(new RootBroyden(*solver, func, detlog, params));

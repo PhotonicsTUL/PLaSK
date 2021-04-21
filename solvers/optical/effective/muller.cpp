@@ -19,9 +19,9 @@ dcomplex RootMuller::find(dcomplex start) const
 
     dcomplex x2 = first, x1 = second, x0 = start;
 
-    dcomplex f2 = val_function(x2); log_value(x2, f2);
-    dcomplex f1 = val_function(x1); log_value(x1, f1);
-    dcomplex f0 = val_function(x0); log_value.count(x0, f0);
+    dcomplex f2 = valFunction(x2); log_value(x2, f2);
+    dcomplex f1 = valFunction(x1); log_value(x1, f1);
+    dcomplex f0 = valFunction(x0); log_value.count(x0, f0);
 
     for (int i = 0; i < params.maxiter; ++i) {
         if (isnan(real(f0)) || isnan(imag(f0)))
@@ -34,14 +34,14 @@ dcomplex RootMuller::find(dcomplex start) const
         x2 = x1; f2 = f1;
         x1 = x0; f1 = f0;
         x0 = x1 - (x1-x2) * ( 2.*C / std::max(B+S, B-S, [](const dcomplex& a, const dcomplex& b){return abs2(a) < abs2(b);}) );
-        f0 = val_function(x0); log_value.count(x0, f0);
+        f0 = valFunction(x0); log_value.count(x0, f0);
         if (abs2(f0) < fmin2 || (abs2(x0-x1) < xtol2 && abs2(f0) < fmax2)) {
             writelog(LOG_RESULT, "Found root at " + str(x0));
             return x0;
         }
     }
 
-    throw ComputationError(solver.getId(), "Muller: {0}: maximum number of iterations reached", log_value.chart_name);
+    throw ComputationError(solver.getId(), "Muller: {0}: maximum number of iterations reached", log_value.chartName());
 }
 
 }}} // namespace plask::optical::effective

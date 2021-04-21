@@ -9,13 +9,16 @@
 namespace plask {
 
 /**
- * Template of base class for classes which store or log log n-dimensional data
+ * Template of base class for classes which store or log n-dimensional data
  */
-template <typename... Params>
+template <typename ArgT, typename ValT>
 class DataLog {
 
-    /// Counter for counted uses
-    int cntr;
+    int cntr;                   ///< Counter for counted uses
+    std::string global_prefix;  ///< Prefix for the log
+    std::string chart_name;     ///< Name of the plot
+    std::string axis_arg_name;  ///< Name of the argument
+    std::string axis_val_name;  ///< Name of the value
 
   protected:
 
@@ -25,70 +28,57 @@ class DataLog {
      * @param data data to log (e.g. argument and value)
      * @return current counter
      */
-      virtual DataLog& operator()(const Params&... data, int counter) = 0;
-
+    DataLog& operator()(const ArgT& arg, const ValT& val, int counter) {
+        writelog(LOG_DATA, "{0}: {6}: {1}={3} {2}={4} ({5})", global_prefix, axis_arg_name, axis_val_name, str(arg), str(val), counter+1, chart_name);
+        return *this;
+    };
 
   public:
 
-    DataLog() : cntr(0) {}
+    DataLog(const std::string& global_prefix, const std::string& chart_name, const std::string& axis_arg_name, const std::string& axis_val_name) :
+        cntr(0), global_prefix(global_prefix), chart_name(chart_name), axis_arg_name(axis_arg_name), axis_val_name(axis_val_name)
+    {
+    }
+
+    DataLog(const std::string& global_prefix, const std::string& axis_arg_name, const std::string& axis_val_name) :
+        cntr(0), global_prefix(global_prefix), chart_name(axis_val_name + "(" + axis_arg_name + ")_" + getUniqueString()), axis_arg_name(axis_arg_name), axis_val_name(axis_val_name)
+    {
+        // chart_name = axis_arg_name(axis_arg_name)_getUniqueString()
+    }
 
     /**
      * Log a data point. Most probably add another point to the chart.
      * @param data data to log (e.g. argument and value)
      * @return *this
      */
-    virtual DataLog& operator()(const Params&... data) = 0;
+    DataLog& operator()(const ArgT& arg, const ValT& val) {
+        writelog(LOG_DATA, "{0}: {5}: {1}={3} {2}={4}", global_prefix, axis_arg_name, axis_val_name, str(arg), str(val), chart_name);
+        return *this;
+    }
 
     /**
      * Log a data point with automatic counting. Most probably add another point to the list.
      * @param data data to log (e.g. argument and value)
      * @return current counter
      */
-    int count(const Params&... data) { (*this)(std::forward<const Params&>(data)..., cntr); return ++cntr; };
+    inline int count(const ArgT& arg, const ValT& val) { (*this)(arg, val, cntr); return ++cntr; };
+
+
+    /// Return current counter
+    int counter() const { return cntr; }
 
     /// Reset the counter
     void resetCounter() { cntr = 0; }
 
+    /// Report and throw error
+    void throwError(const ArgT& arg) const {
+        writelog(LOG_ERROR_DETAIL, "{0}: {4}: {1}={3} {2}=ERROR", global_prefix, axis_arg_name, axis_val_name, str(arg), chart_name);
+        throw;
+    }
 
-
-
+    /// Return chart name
+    std::string chartName() const { return chart_name; }
 };
-
-/**
- * Send 2d data to logs.
- */
-//TODO implementation
-template <typename ArgT, typename ValT>
-struct Data2DLog: public DataLog<ArgT, ValT> {
-
-    std::string global_prefix;  ///< Prefix for the log
-    std::string chart_name;     ///< Name of the plot
-    std::string axis_arg_name;  ///< Name of the argument
-    std::string axis_val_name;  ///< Name of the value
-
-    Data2DLog(const std::string& global_prefix, const std::string& chart_name, const std::string& axis_arg_name, const std::string& axis_val_name) :
-        global_prefix(global_prefix), chart_name(chart_name), axis_arg_name(axis_arg_name), axis_val_name(axis_val_name)
-    {
-    }
-
-    Data2DLog(const std::string& global_prefix, const std::string& axis_arg_name, const std::string& axis_val_name) :
-        global_prefix(global_prefix), chart_name(axis_val_name + "(" + axis_arg_name + ")_" + getUniqueString()), axis_arg_name(axis_arg_name), axis_val_name(axis_val_name)
-    {
-        //chart_name = axis_arg_name(axis_arg_name)_getUniqueString()
-    }
-
-    Data2DLog& operator()(const ArgT& arg, const ValT& val) override {
-        writelog(LOG_DATA, "{0}: {5}: {1}={3} {2}={4}", global_prefix, axis_arg_name, axis_val_name, str(arg), str(val), chart_name);
-        return *this;
-    }
-
-    Data2DLog& operator()(const ArgT& arg, const ValT& val, int counter) override {
-        writelog(LOG_DATA, "{0}: {6}: {1}={3} {2}={4} ({5})", global_prefix, axis_arg_name, axis_val_name, str(arg), str(val), counter+1, chart_name);
-        return *this;
-    };
-};
-
-
 
 }
 

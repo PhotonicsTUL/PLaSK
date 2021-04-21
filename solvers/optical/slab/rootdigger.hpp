@@ -44,11 +44,27 @@ struct RootDigger {
 
   protected:
 
+    // Write log message
+    template <typename... Args>
+    void writelog(LogLevel level, const std::string& msg, Args&&... args) const;
+
     // Solver
     SlabBase& solver;
 
     // Solver method computing the value to zero
     function_type val_function;
+
+    // Value writelog
+    DataLog<dcomplex,dcomplex> log_value;
+
+    inline dcomplex valFunction(dcomplex x) const {
+        try {
+            return val_function(x);
+        } catch (...) {
+            log_value.throwError(x);
+        }
+        return NAN;
+    }
 
   public:
 
@@ -56,11 +72,7 @@ struct RootDigger {
     Params params;
 
     // Constructor
-    RootDigger(SlabBase& solver, const function_type& val_fun, const Params& pars) :
-        solver(solver),
-        val_function(val_fun),
-        params(pars)
-    {};
+    RootDigger(SlabBase& solver, const function_type& val_fun, const Params& pars, const char* name);
 
     virtual ~RootDigger() {}
 

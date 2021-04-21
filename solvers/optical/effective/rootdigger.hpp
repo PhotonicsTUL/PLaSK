@@ -52,7 +52,15 @@ struct RootDigger {
     function_type val_function;
 
     // Value writelog
-    Data2DLog<dcomplex,dcomplex>& log_value;
+    DataLog<dcomplex,dcomplex>& log_value;
+
+    inline dcomplex valFunction(dcomplex x) const {
+        try {
+            return val_function(x);
+        } catch (...) {
+            log_value.throwError(x);
+        }
+    }
 
   public:
 
@@ -60,7 +68,7 @@ struct RootDigger {
     Params params;
 
     // Constructor
-    RootDigger(Solver& solver, const function_type& val_fun, Data2DLog<dcomplex,dcomplex>& log_value,
+    RootDigger(Solver& solver, const function_type& val_fun, DataLog<dcomplex,dcomplex>& log_value,
                const Params& pars) :
         solver(solver),
         val_function(val_fun),
@@ -84,7 +92,7 @@ struct RootDigger {
      * \param params rootdigger params
      * \return unique pointer to rootdigger
      */
-    static std::unique_ptr<RootDigger> get(Solver* solver, const function_type& func, Data2DLog<dcomplex,dcomplex>& detlog, const Params& params);
+    static std::unique_ptr<RootDigger> get(Solver* solver, const function_type& func, DataLog<dcomplex,dcomplex>& detlog, const Params& params);
 
     /// Read configuration from xml
     static void readRootDiggerConfig(XMLReader& reader, Params& params);

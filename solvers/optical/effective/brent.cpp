@@ -3,7 +3,7 @@
 namespace plask { namespace optical { namespace effective {
 
 #define carg(x) realaxis? dcomplex(x, imag(start)) : dcomplex(real(start), x)
-#define fun(x) abs(val_function(carg(x)))
+#define fun(x) abs(valFunction(carg(x)))
 
 double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis) const
 {
@@ -75,7 +75,7 @@ double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis) const
     if (!bounded)
         throw ComputationError(solver.getId(),
                                "Brent: {0}: minimum still unbounded after maximum number of iterations",
-                               log_value.chart_name);
+                               log_value.chartName());
 
     double sa = a, sb = b, w = x, v = x, e = 0.0;
     fw = fv = fx;
@@ -149,7 +149,7 @@ double RootBrent::axisBrent(dcomplex start, double& fx, bool realaxis) const
         }
         log_value.count(carg(x), fx);
     }
-    throw ComputationError(solver.getId(), "Brent: {0}: maximum number of iterations reached", log_value.chart_name);
+    throw ComputationError(solver.getId(), "Brent: {0}: maximum number of iterations reached", log_value.chartName());
     return 0;
 }
 
@@ -169,7 +169,7 @@ dcomplex RootBrent::find(dcomplex xstart) const
     if (f0 > params.tolf_min)
         ComputationError(solver.getId(),
                          "Brent: {0}: After real and imaginary minimum search, determinant still not small enough",
-                         log_value.chart_name);
+                         log_value.chartName());
     return xstart;
 }
 

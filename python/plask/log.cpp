@@ -24,13 +24,13 @@ namespace plask { namespace python {
 
 #define LOG_ENUM(v) loglevel.value(BOOST_PP_STRINGIZE(v), LOG_##v); scope.attr(BOOST_PP_STRINGIZE(LOG_##v)) = BOOST_PP_STRINGIZE(v);
 
-typedef Data2DLog<std::string, std::string> LogOO;
+typedef DataLog<std::string, std::string> LogOO;
 
-void Data2DLog__call__(LogOO& self, py::object arg, py::object val) {
+void DataLog__call__(LogOO& self, py::object arg, py::object val) {
     self(py::extract<std::string>(py::str(arg)), py::extract<std::string>(py::str(val)));
 }
 
-int Data2DLog_count(LogOO& self, py::object arg, py::object val) {
+int DataLog_count(LogOO& self, py::object arg, py::object val) {
     return self.count(py::extract<std::string>(py::str(arg)), py::extract<std::string>(py::str(val)));
 }
 
@@ -332,8 +332,8 @@ void register_python_log()
         u8"Class used to log relations between two variables (argument and value)\n\n"
         u8"DataLog2(prefix, arg_name, val_name)\n    Create log with specified prefix, name, and argument and value names\n",
         py::init<std::string,std::string,std::string,std::string>((py::arg("prefix"), "name", "arg_name", "val_name")))
-        .def("__call__", &Data2DLog__call__, (py::arg("arg"), "val"), u8"Log value pair")
-        .def("count", &Data2DLog_count, (py::arg("arg"), "val"), u8"Log value pair and count successive logs")
+        .def("__call__", &DataLog__call__, (py::arg("arg"), "val"), u8"Log value pair")
+        .def("count", &DataLog_count, (py::arg("arg"), "val"), u8"Log value pair and count successive logs")
         .def("reset", &LogOO::resetCounter, u8"Reset logs counter")
     ;
 

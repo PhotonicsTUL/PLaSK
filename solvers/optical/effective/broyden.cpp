@@ -32,8 +32,8 @@ void RootBroyden::fdjac(dcomplex x, dcomplex F, dcomplex& Jr, dcomplex& Ji) cons
     hr = xr1 - xr0; hi = xi1 - xi0;             // trick to reduce finite precision error
 
     dcomplex xr = dcomplex(xr1, xi0), xi = dcomplex(xr0, xi1);
-    dcomplex Fr = val_function(xr); log_value(xr, Fr);
-    dcomplex Fi = val_function(xi); log_value(xi, Fi);
+    dcomplex Fr = valFunction(xr); log_value(xr, Fr);
+    dcomplex Fi = valFunction(xi); log_value(xi, Fi);
 
     Jr = (Fr - F) / hr;
     Ji = (Fi - F) / hi;
@@ -69,7 +69,7 @@ bool RootBroyden::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, dou
         }
 
         x = x0 + lambda*p;
-        F = val_function(x);
+        F = valFunction(x);
         log_value.count(x, F);
 
         f = 0.5 * (real(F)*real(F) + imag(F)*imag(F));
@@ -114,7 +114,7 @@ bool RootBroyden::lnsearch(dcomplex& x, dcomplex& F, dcomplex g, dcomplex p, dou
 dcomplex RootBroyden::Broyden(dcomplex x) const
 {
     // Compute the initial guess of the function (and check for the root)
-    dcomplex F = val_function(x);
+    dcomplex F = valFunction(x);
     double absF = abs(F);
     log_value.count(x, F);
     if (absF < params.tolf_min) return x;

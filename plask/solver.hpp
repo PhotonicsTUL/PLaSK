@@ -634,14 +634,14 @@ class PLASK_API Solver {
     virtual std::string getClassDescription() const { return ""; }
 
     template<typename ArgT = double, typename ValT = double>
-    Data2DLog<ArgT, ValT> dataLog(const std::string& chart_name, const std::string& axis_arg_name, const std::string& axis_val_name) {
-        return Data2DLog<ArgT, ValT>(getId(), chart_name, axis_arg_name, axis_val_name);
+    DataLog<ArgT, ValT> dataLog(const std::string& chart_name, const std::string& axis_arg_name, const std::string& axis_val_name) {
+        return DataLog<ArgT, ValT>(getId(), chart_name, axis_arg_name, axis_val_name);
     }
 
 
     template<typename ArgT = double, typename ValT = double>
-    Data2DLog<ArgT, ValT> dataLog(const std::string& axis_arg_name, const std::string& axis_val_name) {
-        return Data2DLog<ArgT, ValT>(getId(), axis_arg_name, axis_val_name);
+    DataLog<ArgT, ValT> dataLog(const std::string& axis_arg_name, const std::string& axis_val_name) {
+        return DataLog<ArgT, ValT>(getId(), axis_arg_name, axis_val_name);
     }
 
     /**

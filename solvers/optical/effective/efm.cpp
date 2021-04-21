@@ -355,7 +355,7 @@ void EffectiveFrequencyCyl::stageOne()
                         veffs[i] = 1.; // TODO make sure this is so!
                         nng[i] = same_nr * same_ng;
                     } else {
-                        Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{}]", i), "vlam", "det");
+                        DataLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{}]", i), "vlam", "det");
                         auto rootdigger = RootDigger::get(this, [&](const dcomplex& x){return this->detS1(2. - 4e3*PI / x / k0, nrCache[i], ngCache[i]);}, log_stripe, stripe_root);
                         dcomplex start = (vlam == 0.)? 2e3*PI / k0 : vlam;
                         veffs[i] = freqv(rootdigger->find(start));
@@ -378,7 +378,7 @@ void EffectiveFrequencyCyl::stageOne()
                 }
                 writelog(LOG_DEBUG, "Nr/Ng[{0}] = [{1} ]", rstripe, nrgs.str().substr(1));
 #           endif
-            Data2DLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{}]", rstripe), "vlam", "det");
+            DataLog<dcomplex,dcomplex> log_stripe(getId(), format("stripe[{}]", rstripe), "vlam", "det");
             auto rootdigger = RootDigger::get(this,
                                   [&](const dcomplex& x){
                                       return this->detS1(2. - 4e3*PI / x / k0, nrCache[rstripe], ngCache[rstripe]);
