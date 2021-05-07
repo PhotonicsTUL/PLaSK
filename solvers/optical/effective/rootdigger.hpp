@@ -60,6 +60,7 @@ struct RootDigger {
         } catch (...) {
             log_value.throwError(x);
         }
+        return NAN;
     }
 
   public:
