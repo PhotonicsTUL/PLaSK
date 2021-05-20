@@ -93,7 +93,10 @@ class PlaskDocMixin:
         return True
 
     def _find_signatures(self, sig, encoding=None):
-        docstrings = super(PlaskDocMixin, self).get_doc(encoding, 0)
+        try:
+            docstrings = super(PlaskDocMixin, self).get_doc(encoding, 0)
+        except TypeError:
+            docstrings = super(PlaskDocMixin, self).get_doc()
         if docstrings is None or len(docstrings) != 1: return
         doclines = docstrings[0]
         setattr(self, '__new_doclines', doclines)
@@ -193,7 +196,10 @@ class PlaskDocMixin:
         lines = getattr(self, '__new_doclines', None)
         if lines is not None:
             return [lines]
-        return autodoc.Documenter.get_doc(self, encoding, ignore)
+        try:
+            return autodoc.Documenter.get_doc(self, encoding, ignore)
+        except TypeError:
+            return autodoc.Documenter.get_doc(self, ignore)
 
 
 class CppMethodDocumenter(PlaskDocMixin, autodoc.MethodDocumenter):
@@ -223,7 +229,7 @@ class CppAttributeDocumenter(PlaskDocMixin, autodoc.AttributeDocumenter):
         if 'show-signature' in self.options:
             return PlaskDocMixin.get_doc(self, encoding, ignore)
         else:
-            return autodoc.AttributeDocumenter.get_doc(self, encoding, ignore)
+            return autodoc.AttributeDocumenter.get_doc(self)
 
 
 # Hooks modifying default output for autosummary
