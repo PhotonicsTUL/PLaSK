@@ -385,6 +385,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverWithMesh<Geomet
      */
     double getIntegralEE(size_t num, double z1, double z2) {
         applyMode(modes[num]);
+        this->writelog(LOG_WARNING, "Integral functions give wrong results and will be removed in the future!");
         return transfer->getFieldIntegral(FIELD_E, z1, z2, modes[num].power);
     }
 
@@ -397,6 +398,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverWithMesh<Geomet
      */
     double getIntegralHH(size_t num, double z1, double z2) {
         applyMode(modes[num]);
+        this->writelog(LOG_WARNING, "Integral functions give wrong results and will be removed in the future!");
         return transfer->getFieldIntegral(FIELD_H, z1, z2, modes[num].power);
     }
 
@@ -411,6 +413,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverWithMesh<Geomet
     double getScatteredIntegralEE(const cvector& incident, Transfer::IncidentDirection side, double z1, double z2) {
         if (!Solver::initCalculation()) setExpansionDefaults(false);
         if (!transfer) initTransfer(expansion, true);
+        this->writelog(LOG_WARNING, "Integral functions give wrong results and will be removed in the future!");
         return transfer->getScatteredFieldIntegral(FIELD_E, incident, side, z1, z2);
     }
 
@@ -425,6 +428,7 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverWithMesh<Geomet
     double getScatteredIntegralHH(const cvector& incident, Transfer::IncidentDirection side, double z1, double z2) {
         if (!Solver::initCalculation()) setExpansionDefaults(false);
         if (!transfer) initTransfer(expansion, true);
+        this->writelog(LOG_WARNING, "Integral functions give wrong results and will be removed in the future!");
         return transfer->getScatteredFieldIntegral(FIELD_H, incident, side, z1, z2);
     }
 
