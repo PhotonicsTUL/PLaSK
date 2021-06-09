@@ -77,11 +77,8 @@ class ScriptEditor(TextEditor):
 
         self.comment_action = QAction('Co&mment lines', self)
         self.uncomment_action = QAction('Uncomm&ent lines', self)
-        self.comment_action.setShortcut(Qt.CTRL + Qt.Key_Slash)
-        if QT_API in ('PySide', 'PySide2'):
-            self.uncomment_action.setShortcut(Qt.CTRL + Qt.Key_Question)
-        else:
-            self.uncomment_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Slash)
+        CONFIG.set_shortcut(self.comment_action, 'python_comment')
+        CONFIG.set_shortcut(self.uncomment_action, 'python_uncomment')
         self.comment_action.triggered.connect(self.block_comment)
         self.uncomment_action.triggered.connect(self.block_uncomment)
         self.addAction(self.comment_action)
@@ -321,17 +318,17 @@ class ScriptController(SourceEditController):
         source.toolbar.addSeparator()
 
         help_action = QAction(QIcon.fromTheme('help-contents'), 'Open &Help', source)
-        help_action.setShortcut(Qt.CTRL + Qt.Key_F1)
+        CONFIG.set_shortcut(help_action, 'python_help')
         help_action.triggered.connect(self.open_help)
         source.editor.addAction(help_action)
         source.toolbar.addAction(help_action)
 
         doc_action = QAction(QIcon.fromTheme('help-contextual'), 'Show &Docstring', source)
-        doc_action.setShortcut(Qt.SHIFT + Qt.Key_F1)
+        CONFIG.set_shortcut(doc_action, 'python_docstring')
         doc_action.triggered.connect(self.show_docstring)
         source.editor.addAction(doc_action)
-        hide_doc_action = QAction('Hide help', source)
-        hide_doc_action.setShortcut(Qt.SHIFT + Qt.Key_Escape)
+        hide_doc_action = QAction('Hide Docstring', source)
+        CONFIG.set_shortcut(hide_doc_action, 'python_hide_docstring')
         hide_doc_action.triggered.connect(self.help_dock.hide)
         source.editor.addAction(hide_doc_action)
         source.toolbar.addAction(doc_action)

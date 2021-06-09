@@ -23,12 +23,13 @@ else:
     import gui
     from gui.qt.QtWidgets import *
     from gui.qt.QtGui import *
+    from gui.utils.config import CONFIG
 
     class RefactorAction(QAction):
 
         def __init__(self, parent):
-            super().__init__(QIcon.fromTheme('show-source'),
-                                                 'Convert Script to Python&3', parent)
+            super().__init__(QIcon.fromTheme('show-source'), 'Convert Script to Python&3', parent)
+            CONFIG.set_shortcut(self, 'convert_to_python3', 'Convert Script to Python3')
             self.triggered.connect(self.execute)
 
         def execute(self):

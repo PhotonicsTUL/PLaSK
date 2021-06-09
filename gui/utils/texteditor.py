@@ -341,8 +341,8 @@ class EditorWidget(QWidget):
         self.add_action('C&ut', 'edit-cut', None, self.editor.cut)
         self.add_action('&Paste', 'edit-paste', None, self.editor.paste)
         self.toolbar.addSeparator()
-        self.add_action('&Find...', 'edit-find', QKeySequence.Find, self.show_find)
-        self.add_action('&Replace...', 'edit-find-replace', QKeySequence.Replace, self.show_replace)
+        self.add_action('&Find...', 'edit-find', 'editor_find', self.show_find)
+        self.add_action('&Replace...', 'edit-find-replace', 'editor_replace', self.show_replace)
 
         self.make_find_replace_widget()
 
@@ -439,9 +439,12 @@ class EditorWidget(QWidget):
         self.find_toolbar.hide()
         self.replace_toolbar.hide()
         self.message_toolbar.hide()
-        self._add_shortcut(QKeySequence(Qt.Key_Escape), self.hide_toolbars)
-        self._add_shortcut(QKeySequence.FindNext, self.find_next, alt=QKeySequence(Qt.Key_F3))
-        self._add_shortcut(QKeySequence.FindPrevious, self.find_prev, alt=Qt.SHIFT+Qt.Key_F3)
+        hide_action = QAction(self)
+        hide_action.setShortcut(QKeySequence(Qt.Key_Escape))
+        hide_action.triggered.connect(self.hide_toolbars)
+        self.editor.addAction(hide_action)
+        self._add_shortcut('editor_find_next', self.find_next)
+        self._add_shortcut('editor_find_prev', self.find_prev)
         self.find_edit.textEdited.connect(self.find_type)
         self.find_edit.returnPressed.connect(self.find_next)
         self.replace_edit.returnPressed.connect(self.replace_next)
@@ -465,17 +468,15 @@ class EditorWidget(QWidget):
     def add_action(self, name, icon, shortcut, slot):
         action = QAction(QIcon.fromTheme(icon), name, self)
         if shortcut is not None:
-            action.setShortcut(shortcut)
+            CONFIG.set_shortcut(action, shortcut)
         action.triggered.connect(slot)
         self.toolbar.addAction(action)
         return action
 
-    def _add_shortcut(self, shortcut, slot, alt=None):
+    def _add_shortcut(self, shortcut, slot):
         action = QAction(self)
-        action.setShortcut(shortcut)
+        CONFIG.set_shortcut(action, shortcut)
         action.triggered.connect(slot)
-        if alt is not None and action.shortcut() != alt:
-            self._add_shortcut(alt, slot)
         self.editor.addAction(action)
         return action
 

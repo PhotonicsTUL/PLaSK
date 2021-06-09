@@ -31,6 +31,7 @@ from gui.qt.QtWidgets import *
 from gui.utils.matplotlib import PlotWidgetBase, cursors
 from gui.utils.qsignals import BlockQtSignals
 from gui.utils.widgets import set_icon_size
+from gui.utils.config import CONFIG, KEYBOARD_SHORTCUTS
 from gui.xpldocument import XPLDocument
 from gui.model.materials import HandleMaterialsModule
 
@@ -47,21 +48,23 @@ class FieldWidget(QWidget):
     class NavigationToolbar(PlotWidgetBase.NavigationToolbar):
 
         toolitems = (
-            ('Home', 'Zoom to whole geometry', 'go-home', 'home', None),
-            ('Back', 'Back to previous view', 'go-previous', 'back', None),
-            ('Forward', 'Forward to next view', 'go-next', 'forward', None),
-            (None, None, None, None, None),
-            ('Export', 'Export the figure', 'document-save', 'save_figure', None),
-            (None, None, None, None, None),
-            ('Pan', 'Pan axes with left mouse, zoom with right', 'transform-move', 'pan', False),
-            ('Zoom', 'Zoom to rectangle', 'zoom-in', 'zoom', False),
-            ('Subplots', 'Configure subplots', 'document-properties', 'configure_subplots', None),
-            ('Customize', 'Edit axis, curve and image parameters', 'document-edit', 'edit_parameters', None),
-            (None, None, None, None, None),
-            ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False),
-            (None, None, None, None, None),
+            ('Home', 'Zoom to whole geometry', 'go-home', 'home', None, 'plot_home'),
+            ('Back', 'Back to previous view', 'go-previous', 'back', None, 'plot_back'),
+            ('Forward', 'Forward to next view', 'go-next', 'forward', None, 'plot_forward'),
+            (None, None, None, None, None, None),
+            ('Export', 'Export the figure', 'document-save', 'save_figure', None, 'plot_export'),
+            (None, None, None, None, None, None),
+            ('Pan', 'Pan axes with left mouse, zoom with right', 'transform-move', 'pan', False, 'plot_pan'),
+            ('Zoom', 'Zoom to rectangle', 'zoom-in', 'zoom', False, 'plot_zoom'),
+            ('Subplots', 'Configure subplots', 'document-properties', 'configure_subplots', None, 'plot_subplots'),
+            ('Customize', 'Edit axis, curve and image parameters', 'document-edit', 'edit_parameters', None, 'plot_customize'),
+            (None, None, None, None, None, None),
+            ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False, 'plot_aspect'),
+            (None, None, None, None, None, None),
+            # ('Plane:', 'Select longitudinal-transverse plane', None, 'select_plane',
+            #  (('tran-long', 'long-vert', 'tran-vert'), 2), 'plot_plane'),
             ('Component:', 'Select vector component to plot', None, 'select_component',
-             (('long', 'tran', 'vert', 'abs'), 2)),
+             (('long', 'tran', 'vert', 'abs'), 2), 'plot_component'),
         )
 
         def __init__(self, canvas, parent, controller=None, coordinates=True):
@@ -361,10 +364,13 @@ class ResultsWindow(QMainWindow):
 class AnalyzeResultsAction(QAction):
 
     def __init__(self, parent):
-        super().__init__(QIcon.fromTheme('edit-find'),
-                                             'Anal&yze Results...', parent)
-        self.setShortcut(QKeySequence('Ctrl+Shift+A'))
+        super().__init__(QIcon.fromTheme('edit-find'), 'Anal&yze Results...', parent)
+        CONFIG.set_shortcut(self, 'analyze_results', 'Analyze Results...', 'Ctrl+Shift+A')
         self.triggered.connect(self.execute)
+
+        KEYBOARD_SHORTCUTS['plot_subplots'] = 'Plot: Subplots', None
+        KEYBOARD_SHORTCUTS['plot_customize'] = 'Plot: Customize', None
+        KEYBOARD_SHORTCUTS['plot_component'] = 'Plot: Select Component', None
 
     def execute(self):
         filename = QFileDialog.getOpenFileName(None, "Open HDF5 File", gui.CURRENT_DIR, "HDF5 file (*.h5)")

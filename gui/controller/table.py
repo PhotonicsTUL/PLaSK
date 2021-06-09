@@ -15,6 +15,7 @@ from ..qt.QtWidgets import *
 from ..qt.QtGui import *
 from . import Controller, select_index_from_info
 from ..utils.widgets import table_edit_shortcut, table_last_col_fill, create_undo_actions, set_icon_size
+from ..utils.config import CONFIG
 
 
 def top_level_index(index):
@@ -81,31 +82,31 @@ class TableActions:
         action = QAction(QIcon.fromTheme(icon), text, parent)
         action.setStatusTip(tip)
         if shortcut is not None:
-            action.setShortcut(shortcut)
+            CONFIG.set_shortcut(action, shortcut)
             action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
         action.triggered.connect(to_call)
         return action
 
     def get(self, parent):
-        self.add_action = TableActions.make_action('list-add', '&Add',
+        self.add_action = TableActions.make_action('list-add', '&Add Entry',
                                                     'Add new entry to the list', parent,
                                                     self.add_entry,
-                                                    Qt.CTRL + Qt.Key_Plus)
+                                                    'entry_add')
 
-        self.remove_action = TableActions.make_action('list-remove', '&Remove',
+        self.remove_action = TableActions.make_action('list-remove', '&Remove Entry',
                                                        'Remove selected entry from the list',
                                                        parent, self.remove_entry,
-                                                       Qt.SHIFT + Qt.Key_Delete)
+                                                       'entry_remove')
 
-        self.move_up_action = TableActions.make_action('go-up', 'Move &up',
+        self.move_up_action = TableActions.make_action('go-up', 'Move &Up',
                                                         'Change order of entries: move current entry up',
                                                         parent, self.move_up,
-                                                        Qt.CTRL + Qt.SHIFT + Qt.Key_Up)
+                                                        'entry_move_up')
 
-        self.move_down_action = TableActions.make_action('go-down', 'Move &down',
+        self.move_down_action = TableActions.make_action('go-down', 'Move &Down',
                                                           'Change order of entries: move current entry down',
                                                           parent, self.move_down,
-                                                          Qt.CTRL + Qt.SHIFT + Qt.Key_Down)
+                                                          'entry_move_down')
 
         return self.add_action, self.remove_action, self.move_up_action, self.move_down_action
 

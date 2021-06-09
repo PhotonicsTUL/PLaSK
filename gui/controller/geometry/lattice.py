@@ -30,6 +30,7 @@ if QT_API == 'PyQt5':
 else:
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
+from matplotlib.backend_bases import NavigationToolbar2
 
 from ...qt.QtCore import *
 from ...qt.QtGui import *
@@ -157,8 +158,12 @@ cursors = Cursors()
 class NavigationToolbar(NavigationToolbar2QT):
 
     def __init__(self, canvas, parent, coordinates=True):
+        QToolBar.__init__(self, parent)
         self.widgets = {}
-        super().__init__(canvas, parent, coordinates)
+        self.coordinates = coordinates
+        self._actions = {}
+        self._create_toolbar()
+        NavigationToolbar2.__init__(self, canvas)
 
     def _icon(self, name):
         if name is not None:
@@ -174,23 +179,26 @@ class NavigationToolbar(NavigationToolbar2QT):
         "however the boundaries of each polygon will be included into the final lattice.\n\n" \
         "Undo/redo buttons on the toolbar allow you to revert wrong editing or deletion."
 
-    toolbounds = (
-        ('Undo', 'Undo previous line edit', 'edit-undo', 'undo', None),
-        ('Redo', 'Redo line edit', 'edit-redo', 'redo', None),
-        (None, None, None, None, None),
-        ('Home', 'Zoom to whole geometry', 'go-home', 'home', None),
-        ('Back', 'Back to previous view', 'go-previous', 'back', None),
-        ('Forward', 'Forward to next view', 'go-next', 'forward', None),
-        (None, None, None, None, None),
-        ('Pan', 'Pan aHelp goes herexes with left mouse, zoom with right', 'transform-move', 'pan', False),
-        ('Zoom', 'Zoom to rectangle', 'zoom-in', 'zoom', False),
-        (None, None, None, None, None),
-        ('Help', HELP, 'help-contents', 'help', None),
+    toolitems = (
+        ('Undo', 'Undo previous line edit', 'edit-undo', 'undo', None, 'undo'),
+        ('Redo', 'Redo line edit', 'edit-redo', 'redo', None, 'redo'),
+        (None, None, None, None, None, None),
+        ('Home', 'Zoom to initial view', 'go-home', 'home', None, 'plot_home'),
+        ('Back', 'Back to previous view', 'go-previous', 'back', None, 'plot_back'),
+        ('Forward', 'Forward to next view', 'go-next', 'forward', None, 'plot_forward'),
+        (None, None, None, None, None, None),
+        ('Pan', 'Pan aHelp goes herexes with left mouse, zoom with right', 'transform-move', 'pan', False, 'plot_pan'),
+        ('Zoom', 'Zoom to rectangle', 'zoom-in', 'zoom', False, 'plot_zoom'),
+        (None, None, None, None, None, None),
+        ('Help', HELP, 'help-contents', 'help', None, None),
     )
 
     def _init_toolbar(self):
+        pass    # this may be called by an old Matplotlib
+
+    def _create_toolbar(self):
         self.layout().setContentsMargins(0,0,0,0)
-        for text, tooltip_text, icon, callback, checked in self.toolbounds:
+        for text, tooltip_text, icon, callback, checked, shortcut in self.toolitems:
             if text is None:
                 self.addSeparator()
             elif callback is None:
@@ -206,6 +214,8 @@ class NavigationToolbar(NavigationToolbar2QT):
                     if checked: action.setChecked(True)
                 if tooltip_text is not None:
                     action.setToolTip(tooltip_text)
+                if shortcut is not None:
+                    CONFIG.set_shortcut(action, shortcut)
                 self._actions[callback] = action
         try:
             self.buttons = {}
@@ -223,17 +233,24 @@ class NavigationToolbar(NavigationToolbar2QT):
             label_action = self.addWidget(self.locLabel)
             label_action.setVisible(True)
 
+    @property
+    def _current_mode(self):
+        try:
+            return self.mode.name
+        except AttributeError:
+            return self._active if self._active is not None else 'NONE'
+
     def mouse_move(self, event):
-        if not event.inaxes or not self._active:
+        if not event.inaxes or self._current_mode == 'NONE':
             if self._lastCursor != cursors.POINTER:
                 self.set_cursor(cursors.POINTER)
                 self._lastCursor = cursors.POINTER
         else:
-            if self._active == 'ZOOM':
+            if self._current_mode == 'ZOOM':
                 if self._lastCursor != cursors.SELECT_REGION:
                     self.set_cursor(cursors.SELECT_REGION)
                     self._lastCursor = cursors.SELECT_REGION
-            elif (self._active == 'PAN' and
+            elif (self._current_mode == 'PAN' and
                   self._lastCursor != cursors.MOVE):
                 self.set_cursor(cursors.MOVE)
                 self._lastCursor = cursors.MOVE
@@ -242,7 +259,7 @@ class NavigationToolbar(NavigationToolbar2QT):
             self.set_message(self.mode)
         else:
             if event.xdata is not None and event.ydata is not None:
-                xy = self.parent.get_node(event)
+                xy = self._get_parent().get_node(event)
                 s = u'{:d}, {:d}'.format(*xy)
             else:
                 s = ''
@@ -274,17 +291,27 @@ class NavigationToolbar(NavigationToolbar2QT):
             self._actions['forward'].setEnabled(True)
 
     def edit_mode(self):
-        return self._active is None
+        return self._current_mode == 'NONE'
+
+    def _get_parent(self):
+        try:
+            return self.canvas.parent()
+        except AttributeError:
+            try:
+                return self.parent()
+            except TypeError:
+                return self.parent
 
     def set_undo_buttons(self):
-        self._actions['undo'].setEnabled(self.parent.undo_index != 0)
-        self._actions['redo'].setEnabled(self.parent.undo_index < len(self.parent.undo_stack) - 1)
+        parent = self._get_parent()
+        self._actions['undo'].setEnabled(parent.undo_index != 0)
+        self._actions['redo'].setEnabled(parent.undo_index < len(parent.undo_stack) - 1)
 
     def undo(self):
-        self.parent.undo()
+        self._get_parent().undo()
 
     def redo(self):
-        self.parent.redo()
+        self._get_parent().redo()
 
     def help(self):
         QToolTip.showText(QCursor.pos(), self.HELP)
@@ -299,7 +326,7 @@ class LatticeEditor(QDialog):
         def __call__(self, v1, v2):
             self.set_bounds(v1, v2)
             locs = super(LatticeEditor.MultipleLocator, self).__call__()
-            return np.array(locs), len(locs), None
+            return np.array(locs), len(locs), 1.
 
     def __init__(self, vecs, bounds=None, parent=None):
         super().__init__(parent)

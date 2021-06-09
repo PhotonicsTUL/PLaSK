@@ -413,10 +413,10 @@ class MaterialsController(Controller):
             table_and_manipulators(self.materials_table, self.splitter, title="Materials")
         library_action = TableActions.make_action('material-library', 'Add &Library',
                                                   'Add new binary library to the list', self.materials_table,
-                                                  lambda: weakself.add_external('library'))
+                                                  lambda: weakself.add_external('library'), 'materials_add_library')
         module_action = TableActions.make_action('material-module', 'Add &Module',
                                                  'Add new python module to the list', self.materials_table,
-                                                 lambda: weakself.add_external('module'))
+                                                 lambda: weakself.add_external('module'), 'materials_add_module')
         tool_button = QToolButton()
         tool_button.setIcon(QIcon.fromTheme('material-external'))
         tool_menu = QMenu(self.materials_table)

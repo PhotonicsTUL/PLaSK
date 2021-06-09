@@ -14,6 +14,7 @@
 import sys
 import os
 from collections import OrderedDict
+from typing import Callable
 from numpy import log10, ceil
 
 try:
@@ -26,6 +27,7 @@ else:
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
+from ..qt import QT_API
 
 try:
     import yaml
@@ -157,6 +159,77 @@ DEFAULTS = {
     'workarounds/no_unicode_minus': False,
     'experimental/preserve_comments': False,
 }
+
+KEYBOARD_SHORTCUTS = {
+    'main_menu': ('Show Main Menu', 'F2'),
+    'new_xpl': ('New XPL File', QKeySequence.New),
+    'new_python': ('New Python File', None),
+    'open_file': ('Open File', QKeySequence.Open),
+    'save_file': ('Save File', QKeySequence.Save),
+    'saveas_file': ('Save File As...', QKeySequence.SaveAs),
+    'reload_file': ('Reload File', None),
+    'goto_line': ('Go to Line...', 'Ctrl+L'),
+    'show_source': ('Toggle Source View', 'F4'),
+    'launch': ('Launch…', 'F5'),
+    'examine_material': ('Examine Material Parameters...', 'Ctrl+Shift+M'),
+    'about': ('About...', None),
+    'help': ('Open Help...', 'F1'),
+    'install_license': ('Install License...', None),
+    'fullscreen': ('Toggle Full Screen', 'F11'),
+    'settings': ('GUI Settings...', Qt.CTRL + Qt.Key_Comma),
+    'quit': ('Exit', QKeySequence.Quit),
+    'undo': ('Undo', Qt.CTRL + Qt.Key_Z),
+    'redo': ('Redo', Qt.CTRL + Qt.SHIFT + Qt.Key_Z),
+    'entry_add': ('Add New Entry', Qt.CTRL + Qt.Key_Plus),
+    'entry_remove': ('Remove Entry', Qt.SHIFT + Qt.Key_Delete),
+    'entry_move_up': ('Move Entry Up', Qt.CTRL + Qt.SHIFT + Qt.Key_Up),
+    'entry_move_down': ('Move Entry Down', Qt.CTRL + Qt.SHIFT + Qt.Key_Down),
+    'materials_add_library': ('Materials: Add Library', None),
+    'materials_add_module': ('Materials: Add Module', None),
+    'entry_duplicate': ('Geometry: Duplicate', 'Ctrl+D'),
+    'geometry_search': ('Geometry: Search', QKeySequence.Find),
+    'geometry_reparent': ('Geometry: Insert into', None),
+    'geometry_show_props': ('Geometry: Show Properties', None),
+    'mesh_make': ('Meshing: Make Mesh', None),
+    'plot_plot': ('Plot: Plot', 'Alt+P'),
+    'plot_refresh': ('Plot: Refresh', None),
+    'plot_home': ('Plot: Home', None),
+    'plot_back': ('Plot: Back', None),
+    'plot_forward': ('Plot: Forward', None),
+    'plot_zoom_current': ('Plot: Zoom Selected', None),
+    'plot_export': ('Plot: Export', None),
+    'plot_pan': ('Plot: Pan', None),
+    'plot_zoom': ('Plot: Zoom', None),
+    'plot_aspect': ('Plot: Aspect', None),
+    'plot_plane': ('Plot: Select Plane', None),
+    'plot_geometry': ('Plot: Select Geometry', None),
+    'editor_find': ('Editor: Find', QKeySequence.Find),
+    'editor_find_next': ('Editor: Find Next', QKeySequence.FindNext),
+    'editor_find_prev': ('Editor: Find Previous', QKeySequence.FindPrevious),
+    'editor_replace': ('Editor: Replace', QKeySequence.Replace),
+    'python_comment': ('Python: Comment Lines', Qt.CTRL + Qt.Key_Slash),
+    'python_uncomment': ('Python: Uncomment Lines',
+                         Qt.CTRL + (Qt.Key_Question if QT_API in ('PySide', 'PySide2') else Qt.SHIFT + Qt.Key_Slash)),
+    'python_help': ('Python: Open Help', Qt.CTRL + Qt.Key_F1),
+    'python_docstring': ('Python: Show Docstring', Qt.SHIFT + Qt.Key_F1),
+    'python_hide_docstring': ('Python: Hide Docstring', Qt.SHIFT + Qt.Key_Escape),
+    'launcher_copy': ('Launcher: Copy', QKeySequence.Copy),
+    'launcher_select_all': ('Launcher: Select All', QKeySequence.SelectAll),
+    'launcher_clear_selection': ('Launcher: Clear Selection', None),
+    'launcher_show_error': ('Launcher: Show Error', Qt.Key_1),
+    'launcher_show_warning': ('Launcher: Show Warning', Qt.Key_2),
+    'launcher_show_important': ('Launcher: Show Important', Qt.Key_3),
+    'launcher_show_info': ('Launcher: Show Info', Qt.Key_4),
+    'launcher_show_result': ('Launcher: Show Result', Qt.Key_5),
+    'launcher_show_data': ('Launcher: Show Data', Qt.Key_6),
+    'launcher_show_detail': ('Launcher: Show Detail', Qt.Key_7),
+    'launcher_show_debug': ('Launcher: Show ebug', Qt.Key_8),
+    'launcher_halt': ('Launcher: Halt', 'Alt+X'),
+    'launcher_cleanup': ('Launcher: Cleanup All', 'Shift+Ctrl+W'),
+    'launcher_close': ('Launcher: Close', 'Ctrl+W'),
+}
+
+
 GROUPS = set(e.split('/', 1)[0] for e in DEFAULTS)
 
 def _get_launchers():
@@ -199,10 +272,10 @@ class MaterialColorsConfig(QWidget):
 
     class TableModel(QAbstractTableModel):
         def __init__(self):
-            super(MaterialColorsConfig.TableModel, self).__init__()
+            super().__init__()
             self.colors = list(CONFIG[MaterialColorsConfig.entry].items())
         def flags(self, index):
-            flags = super(MaterialColorsConfig.TableModel, self).flags(index) | Qt.ItemIsEnabled
+            flags = super().flags(index) | Qt.ItemIsEnabled
             if index.column() == 0:
                 flags |= Qt.ItemIsSelectable | Qt.ItemIsEditable
             else:
@@ -287,6 +360,12 @@ class MaterialColorsConfig(QWidget):
         CONFIG[self.entry] = dict(self.model.colors)
 
 
+def keyboard_shortcut_editors():
+    for entry, data in KEYBOARD_SHORTCUTS.items():
+        label = data[0]
+        yield label, lambda parent: ConfigDialog.KeySequence(entry, parent=parent)
+
+
 CONFIG_WIDGETS = OrderedDict([
     ("General", OrderedDict([
         ("Appearance && Behavior", [
@@ -314,6 +393,7 @@ CONFIG_WIDGETS = OrderedDict([
                       "Do not use Unicode minus sign. You should check if if you see some strange character in your plots "
                       "instead of the minus sign.")),
         ]),
+        ("Keyboard Shortcuts", keyboard_shortcut_editors),
         ("Help", [
             ("Show only online help",
              CheckBox('help/online',
@@ -544,11 +624,12 @@ class Config:
 
     def __init__(self):
         self.qsettings = QSettings("plask", "gui")
+        self._qshortcuts = {}
 
     def __getitem__(self, key):
         current = self.qsettings.value(key)
         if current is None:
-            return DEFAULTS.get(key)
+            current = DEFAULTS.get(key)
         try:
             return _parsed.get(current, current)
         except TypeError:
@@ -623,6 +704,36 @@ class Config:
                     if isinstance(value, str) and '#' in value: value = "'" + value + "'"
                     out.write('  ' + key + ': ' + str(value) + '\n')
 
+    def shortcut(self, entry):
+        key_sequence = self.qsettings.value('keyboard_shortcuts/' + entry)
+        if key_sequence is None:
+            key_sequence = KEYBOARD_SHORTCUTS.get(entry, (None, None))[1]
+        if key_sequence is not None and key_sequence != '':
+            if isinstance(key_sequence, QKeySequence):
+                return key_sequence
+            elif isinstance(key_sequence, str):
+                return QKeySequence(key_sequence, QKeySequence.PortableText)
+            else:
+                return QKeySequence(key_sequence)
+        else:
+            return QKeySequence()
+
+    def set_shortcut(self, action, entry, label=None, default=None):
+        if label is not None:
+            KEYBOARD_SHORTCUTS[entry] = label, default
+        key_sequence = self.shortcut(entry)
+        try:
+            action._tooltip = action.toolTip()
+        except AttributeError:
+            pass
+        else:
+            if not key_sequence.isEmpty():
+                action.setShortcut(key_sequence)
+                key_hint = '  ({})'.format(key_sequence.toString())
+            else:
+                key_hint = ''
+            action.setToolTip(action._tooltip + key_hint)
+        self._qshortcuts.setdefault(entry, set()).add(action)
 
 CONFIG = Config()
 
@@ -657,7 +768,7 @@ class ConfigDialog(QDialog):
 
     class CheckBox(QCheckBox):
         def __init__(self, entry, parent=None, help=None, needs_restart=False):
-            super(ConfigDialog.CheckBox, self).__init__(parent)
+            super().__init__(parent)
             self.entry = entry
             if help is not None: self.setWhatsThis(help)
             self.needs_restart = needs_restart
@@ -672,7 +783,7 @@ class ConfigDialog(QDialog):
 
     class Combo(QComboBox):
         def __init__(self, entry, options, parent=None, help=None, needs_restart=False):
-            super(ConfigDialog.Combo, self).__init__(parent)
+            super().__init__(parent)
             self.entry = entry
             if callable(options):
                 options = options()
@@ -697,7 +808,7 @@ class ConfigDialog(QDialog):
 
     class SpinBox(QSpinBox):
         def __init__(self, entry, parent=None, min=None, max=None, help=None, needs_restart=False):
-            super(ConfigDialog.SpinBox, self).__init__(parent)
+            super().__init__(parent)
             self.entry = entry
             if min is not None: self.setMinimum(min)
             if max is not None: self.setMaximum(max)
@@ -714,7 +825,7 @@ class ConfigDialog(QDialog):
 
     class FloatSpinBox(QDoubleSpinBox):
         def __init__(self, entry, parent=None, step=None, min=None, max=None, help=None, needs_restart=False):
-            super(ConfigDialog.FloatSpinBox, self).__init__(parent)
+            super().__init__(parent)
             self.entry = entry
             if min is not None: self.setMinimum(min)
             if max is not None: self.setMaximum(max)
@@ -734,7 +845,7 @@ class ConfigDialog(QDialog):
 
     class Color(QToolButton):
         def __init__(self, entry, parent=None, help=None, needs_restart=False):
-            super(ConfigDialog.Color, self).__init__(parent)
+            super().__init__(parent)
             self.entry = entry
             if help is not None:
                 self.setWhatsThis(help)
@@ -760,7 +871,7 @@ class ConfigDialog(QDialog):
 
     class Syntax(QWidget):
         def __init__(self, entry, parent=None, help=None, needs_restart=False):
-            super(ConfigDialog.Syntax, self).__init__(parent)
+            super().__init__(parent)
             self.entry = entry
             layout = QHBoxLayout()
             layout.setContentsMargins(0, 0, 0, 0)
@@ -806,7 +917,7 @@ class ConfigDialog(QDialog):
 
     class Font(QPushButton):
         def __init__(self, entry, parent=None, help=None, needs_restart=False):
-            super(ConfigDialog.Font, self).__init__(parent)
+            super().__init__(parent)
             self.entry = entry
             self.current_font = QFont()
             if help is not None:
@@ -836,7 +947,7 @@ class ConfigDialog(QDialog):
 
     class Path(QWidget):
         def __init__(self, entry, title,  mask, parent=None, help=None, needs_restart=False):
-            super(ConfigDialog.Path, self).__init__(parent)
+            super().__init__(parent)
             layout = QHBoxLayout()
             layout.setContentsMargins(0, 0, 0, 0)
             layout.setSpacing(0)
@@ -870,6 +981,50 @@ class ConfigDialog(QDialog):
         def save(self):
             CONFIG[self.entry] = self.edit.text()
 
+    try:
+        class KeySequence(QKeySequenceEdit):
+            def __init__(self, entry, parent=None):
+                value = CONFIG.shortcut(entry)
+                if value is not None:
+                    super().__init__(value, parent)
+                else:
+                    super().__init__(parent)
+                self.entry = entry
+            needs_restart = False
+            @property
+            def changed(self):
+                saved_key = CONFIG.shortcut(self.entry)
+                current_key = self.keySequence()
+                return not ((saved_key is None and current_key.isEmpty()) or (saved_key.toString() == current_key.toString()))
+            def load(self, value):
+                if value:
+                    self.setKeySequence(QKeySequence(value, QKeySequence.PortableText))
+                else:
+                    self.setKeySequence(QKeySequence())
+            def _set_shortcut(self, action):
+                current_key = self.keySequence()
+                try:
+                    action.setShortcut(current_key)
+                    if not current_key.isEmpty():
+                        key_hint = '  ({})'.format(current_key.toString())
+                    else:
+                        key_hint = ''
+                    try:
+                        action.setToolTip(action._tooltip + key_hint)
+                    except AttributeError:
+                        pass
+                except Exception as err:
+                    return False
+                else:
+                    return True
+            def save(self):
+                if self.changed:
+                    CONFIG._qshortcuts[self.entry] = \
+                        set(act for act in CONFIG._qshortcuts.get(self.entry, ()) if self._set_shortcut(act))
+                CONFIG['keyboard_shortcuts/' + self.entry] = self.keySequence().toString()
+    except NameError:
+        KeySequence = None
+
     def __init__(self, parent):
         super().__init__(parent)
         self.setWindowTitle("GUI Settings")
@@ -886,12 +1041,15 @@ class ConfigDialog(QDialog):
 
         self.items = {}
 
+        from .widgets import VerticalScrollArea
+
         for cat, tabs in CONFIG_WIDGETS.items():
             page = QTabWidget()
             stack.addWidget(page)
             categories.addItem(cat)
             for title, items in tabs.items():
-                tab = QWidget(page)
+                scroll = VerticalScrollArea(page)
+                tab = QWidget(scroll)
                 if isinstance(items, type) and issubclass(items, QWidget):
                     tab_layout = QVBoxLayout()
                     tab.setLayout(tab_layout)
@@ -904,6 +1062,8 @@ class ConfigDialog(QDialog):
                 else:
                     tab_layout = QFormLayout()
                     tab.setLayout(tab_layout)
+                    if isinstance(items, Callable):
+                        items = items()
                     for item in items:
                         if isinstance(item, basestring):
                             label = QLabel(item)
@@ -916,10 +1076,15 @@ class ConfigDialog(QDialog):
                             self.items[widget.entry] = widget
                             tab_layout.addRow(widget)
                         else:
-                            widget = item[1](self)
-                            self.items[widget.entry] = widget
-                            tab_layout.addRow(item[0], widget)
-                page.addTab(tab, title)
+                            try:
+                                widget = item[1](self)
+                            except TypeError:
+                                pass
+                            else:
+                                self.items[widget.entry] = widget
+                                tab_layout.addRow(item[0], widget)
+                scroll.setWidget(tab)
+                page.addTab(scroll, title)
 
         page = QTabWidget()
         tab = QWidget()

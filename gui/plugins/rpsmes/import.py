@@ -22,6 +22,7 @@ try:
     from gui.qt.QtCore import Qt
     from gui.qt.QtWidgets import *
     from gui.qt.QtGui import *
+    from gui.utils.config import CONFIG
 except ImportError:
     qt = False
 else:
@@ -614,6 +615,7 @@ if qt:
         action = QAction(QIcon.fromTheme('document-open'),
                                '&Import RPSMES .dan file...', parent)
         action.triggered.connect(lambda: import_dan(parent))
+        CONFIG.set_shortcut(action, 'import_dan', 'Import RPSMES .dan')
         return action
 
 

@@ -546,19 +546,19 @@
   <optical name="fdtd" solver="FDTD2D" lib="fdtd">
     <geometry ref="geo2d"/>
     <sources>
-    <point x="1" y="1">
-      <continuous wavelength="980." start-time="0" end-time="inf" component="Ex" slownless="3" amplitude="1"/>
-    </point>
-    <point x="1" y="1">
-      <gaussian wavelength="980." start-time="0" end-time="infty" width="1" component="Ex" amplitude="1"/>
-    </point>
-    <volume ax="0" ay="0" bx="2" by="1">
-      <continuous wavelength="980." start-time="0" end-time="infinity" component="Ex" slownless="3" amplitude="1"/>
-    </volume>
-    <volume ax="0" ay="0" bx="2" by="1">
-      <gauss wavelength="980." start-time="0" end-time="inf" width="1" component="Ex" amplitude="1"/>
-    </volume>
-  </sources>
+      <point x="1" y="1">
+        <continuous wavelength="980." start-time="0" end-time="inf" component="Ex" slownless="3" amplitude="1"/>
+      </point>
+      <point x="1" y="1">
+        <gaussian wavelength="980." start-time="0" end-time="infty" width="1" component="Ex" amplitude="1"/>
+      </point>
+      <volume ax="0" ay="0" bx="2" by="1">
+        <continuous wavelength="980." start-time="0" end-time="infinity" component="Ex" slownless="3" amplitude="1"/>
+      </volume>
+      <volume ax="0" ay="0" bx="2" by="1">
+        <gauss wavelength="980." start-time="0" end-time="inf" width="1" component="Ex" amplitude="1"/>
+      </volume>
+    </sources>
   </optical>
 </solvers>
 

@@ -17,6 +17,7 @@ from gui.qt.QtWidgets import *
 from gui.qt.QtGui import *
 from gui.xpldocument import XPLDocument
 from gui.model.materials import HandleMaterialsModule
+from gui.utils.config import CONFIG
 
 try:
     import plask
@@ -206,6 +207,7 @@ else:
 
     def export_dan_operation(parent):
         action = QAction(QIcon.fromTheme('document-save'),
-                               '&Export RPSMES .dan file...', parent)
+                               '&Export RPSMES .dan File...', parent)
         action.triggered.connect(lambda: export_dan(parent))
+        CONFIG.set_shortcut(action, 'export_dan', 'Export RPSMES .dan')
         return action

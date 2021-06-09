@@ -19,6 +19,7 @@ except ImportError:
     qt = False
 else:
     qt = True
+    from gui.utils.config import CONFIG
 
 import sys
 import os
@@ -259,8 +260,10 @@ if qt:
 
     def import_efm_operation(parent):
         action = QAction(QIcon.fromTheme('document-open'),
-                               'Import E&FM file...', parent)
+                               'Import E&FM File...', parent)
         action.triggered.connect(lambda: import_efm(parent))
+        CONFIG.set_shortcut(action, 'import_efm', 'Import EFM File')
+
         return action
 
 

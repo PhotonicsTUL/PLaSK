@@ -38,20 +38,22 @@ else:
         class NavigationToolbar(GeometryPlotWidget.NavigationToolbar):
 
             toolitems = (
-                ('Plot', 'Plot selected geometry object', 'draw-brush', 'plot', None),
-                ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', True),
-                (None, None, None, None, None),
-                ('Home', 'Zoom to whole geometry', 'go-home', 'home', None),
-                ('Back', 'Back to previous view', 'go-previous', 'back', None),
-                ('Forward', 'Forward to next view', 'go-next', 'forward', None),
-                (None, None, None, None, None),
-                ('Pan', 'Pan axes with left mouse, zoom with right', 'transform-move', 'pan', False),
-                ('Zoom', 'Zoom to rectangle', 'zoom-in', 'zoom', False),
-                (None, None, None, None, None),
-                ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False),
-                (None, None, None, None, None),
+                ('Plot', 'Plot selected geometry object', 'draw-brush', 'plot', None, 'plot_plot'),
+                ('Refresh', 'Refresh plot after each change of geometry', 'view-refresh', 'auto_refresh', True, 'plot_refresh'),
+                (None, None, None, None, None, None),
+                ('Home', 'Zoom to whole geometry', 'go-home', 'home', None, 'plot_home'),
+                ('Back', 'Back to previous view', 'go-previous', 'back', None, 'plot_back'),
+                ('Forward', 'Forward to next view', 'go-next', 'forward', None, 'plot_forward'),
+                (None, None, None, None, None, None),
+                ('Export', 'Export the figure', 'document-save', 'save_figure', None, 'plot_export'),
+                (None, None, None, None, None, None),
+                ('Pan', 'Pan axes with left mouse, zoom with right', 'transform-move', 'pan', False, 'plot_pan'),
+                ('Zoom', 'Zoom to rectangle', 'zoom-in', 'zoom', False, 'plot_zoom'),
+                (None, None, None, None, None, None),
+                ('Aspect', 'Set equal aspect ratio for both axes', 'system-lock-screen', 'aspect', False, 'plot_aspect'),
+                (None, None, None, None, None, None),
                 ('Plane:', 'Select longitudinal-transverse plane', None, 'select_plane',
-                 (('tran-long', 'long-vert', 'tran-vert'), 2)),
+                 (('tran-long', 'long-vert', 'tran-vert'), 2), 'plot_plane'),
             )
 
             def select_plane(self, index):

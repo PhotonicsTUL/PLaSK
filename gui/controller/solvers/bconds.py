@@ -175,7 +175,6 @@ if preview_available:
                     self.disable_planes(self.controller.geometry_node.axes)
                 else:
                     self.enable_planes(self.controller.geometry_node.axes)
-                self._actions['plot'].setShortcut(Qt.ALT + Qt.Key_P)
 
             def select_plane(self, index):
                 super(PlotWidget.NavigationToolbar, self).select_plane(index)

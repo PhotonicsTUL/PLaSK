@@ -104,7 +104,7 @@ class GeometryController(Controller):
         node = index.internalPointer()
         if node is None: return
         first = True
-        result = QMenu(self.more_menu)
+        result = QMenu(self.reparent_button)
         for section in node.add_parent_options(parent_index.internalPointer()):
             if not first:
                 result.addSeparator()
@@ -166,7 +166,7 @@ class GeometryController(Controller):
         self.main_splitter.setHandleWidth(4)
 
         search_action = QAction(QIcon.fromTheme('edit-find'), '&Search', self.main_splitter)
-        search_action.setShortcut(QKeySequence.Find)
+        CONFIG.set_shortcut(search_action, 'geometry_search')
         search_action.triggered.connect(lambda checked=False: weakself.search_combo.setFocus())
         self.main_splitter.addAction(search_action)
 
@@ -195,13 +195,16 @@ class GeometryController(Controller):
             a.triggered.connect(lambda checked=False, n=n: weakself.append_geometry_node(n))
             self.add_menu.addAction(a)
 
-    def fill_more_menu(self):
-        self.more_menu.clear()
+    def set_reparent_menu(self):
         current_index = self.tree.selectionModel().currentIndex()
         if current_index.isValid():
-            reparent = self._get_reparent_menu(current_index)
-            if reparent is not None and not reparent.isEmpty():
-                self.more_menu.addMenu(reparent).setText("&Insert into")
+            reparent_menu = self._get_reparent_menu(current_index)
+            if reparent_menu is not None and not reparent_menu.isEmpty():
+                self.reparent_button.setMenu(reparent_menu)
+                self.reparent_button.setEnabled(True)
+                return
+        self.reparent_button.setMenu(None)
+        self.reparent_button.setEnabled(False)
 
     def update_actions(self):
         has_selected_object = not self.tree.selectionModel().selection().isEmpty()
@@ -216,8 +219,7 @@ class GeometryController(Controller):
         parent = self.tree.selectionModel().currentIndex().parent()
         self.duplicate_action.setEnabled(parent.isValid() and parent.internalPointer().accept_new_child())
 
-        self.fill_more_menu()
-        self.more_menu.parent().setEnabled(not self.more_menu.isEmpty())
+        self.set_reparent_menu()
 
     def append_geometry_node(self, type_name):
         self.tree.model().append_geometry(type_name)
@@ -399,55 +401,60 @@ class GeometryController(Controller):
         self.add_menu = QMenu()
 
         add_button = QToolButton()
-        add_button.setText('Add')
+        add_button.setText('Add Item')
         add_button.setIcon(QIcon.fromTheme('list-add'))
-        add_button.setToolTip('Add new geometry object to the tree')
-        add_button.setShortcut(Qt.CTRL + Qt.Key_Plus)
+        add_button.setToolTip('Add Item')
+        add_button.setStatusTip('Add new geometry object to the tree')
+        CONFIG.set_shortcut(add_button, 'entry_add')
         add_button.setMenu(self.add_menu)
         add_button.setPopupMode(QToolButton.InstantPopup)
         toolbar.addWidget(add_button)
 
-        self.remove_action = QAction(QIcon.fromTheme('list-remove'), '&Remove', toolbar)
-        self.remove_action.setStatusTip('Remove selected node from the tree')
-        self.remove_action.setShortcut(Qt.SHIFT + Qt.Key_Delete)
+        self.remove_action = QAction(QIcon.fromTheme('list-remove'), '&Remove Item', toolbar)
+        self.remove_action.setStatusTip('Remove selected entry from the tree')
+        CONFIG.set_shortcut(self.remove_action, 'entry_remove')
         self.remove_action.triggered.connect(self.remove_current_node)
         toolbar.addAction(self.remove_action)
 
-        self.move_up_action = QAction(QIcon.fromTheme('go-up'), 'Move &up', toolbar)
+        self.move_up_action = QAction(QIcon.fromTheme('go-up'), 'Move &Up', toolbar)
         self.move_up_action.setStatusTip('Change order of entries: move current entry up')
-        self.move_up_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Up)
+        CONFIG.set_shortcut(self.move_up_action, 'entry_move_up')
         self.move_up_action.triggered.connect(self.move_current_up)
         toolbar.addAction(self.move_up_action)
 
-        self.move_down_action = QAction(QIcon.fromTheme('go-down'), 'Move d&own', toolbar)
+        self.move_down_action = QAction(QIcon.fromTheme('go-down'), 'Move D&own', toolbar)
         self.move_down_action.setStatusTip('Change order of entries: move current entry down')
-        self.move_down_action.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Down)
+        CONFIG.set_shortcut(self.move_down_action, 'entry_move_down')
         self.move_down_action.triggered.connect(self.move_current_down)
         toolbar.addAction(self.move_down_action)
 
         self.duplicate_action = QAction(QIcon.fromTheme('edit-copy'), '&Duplicate', toolbar)
         self.duplicate_action.setStatusTip('Duplicate current entry and insert it '
                                            'into default position of the same container')
-        self.duplicate_action.setShortcut(Qt.CTRL + Qt.Key_D)
+        CONFIG.set_shortcut(self.duplicate_action, 'entry_duplicate')
         self.duplicate_action.triggered.connect(self.duplicate_current)
         toolbar.addAction(self.duplicate_action)
 
         toolbar.addSeparator()
 
-        more_button = QToolButton(toolbar)
-        more_button.setIcon(QIcon.fromTheme('application-menu'))
-        self.more_menu = QMenu(more_button)
-        more_button.setMenu(self.more_menu)
-        more_button.setPopupMode(QToolButton.InstantPopup)
-        toolbar.addWidget(more_button)
+        self.reparent_button = QToolButton(toolbar)
+        self.reparent_button.setIcon(QIcon.fromTheme('object-group'))
+        self.reparent_button.setText("Insert into")
+        self.reparent_button.setToolTip("Insert into")
+        self.reparent_button.setPopupMode(QToolButton.InstantPopup)
+        CONFIG.set_shortcut(self.reparent_button, 'geometry_reparent')
+        toolbar.addWidget(self.reparent_button)
 
         toolbar.addSeparator()
 
         props_button = QToolButton(toolbar)
         props_button.setIcon(QIcon.fromTheme('document-properties'))
-        props_button.setToolTip("Show object properties in the tree view")
+        props_button.setText("Show Properties")
+        props_button.setToolTip("Show Properties")
+        props_button.setStatusTip("Show item properties in the tree view")
         props_button.setCheckable(True)
         props_button.setChecked(True)
+        CONFIG.set_shortcut(props_button, 'geometry_show_props')
         props_button.toggled.connect(self._show_props)
         toolbar.addWidget(props_button)
 

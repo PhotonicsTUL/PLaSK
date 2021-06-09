@@ -128,6 +128,19 @@ if matplotlib is not None:
     matplotlib.rcParams['grid.color'] = CONFIG['plots/grid_color']
 
 
+class MainMenuAction(QAction):
+
+    def __init__(self, button, parent=None):
+        super().__init__(parent)
+        self.button = button
+
+    def toolTip(self):
+        return self.button.toolTip()
+
+    def setToolTip(self, tooltip):
+        self.button.setToolTip(tooltip)
+
+
 class MainWindow(QMainWindow):
 
     SECTION_TITLES = dict(defines=" &Defines ", materials=" &Materials ", geometry=" &Geometry ", grids=" M&eshing ",
@@ -145,12 +158,12 @@ class MainWindow(QMainWindow):
     }
 
     SECTION_TIPS = {
-        'defines': "Edit the list of pre-defined variables for use in the rest of the file (Alt+D)",
-        'materials': "Edit custom materials (Alt+M)",
-        'geometry': "Edit geometries of your structures (Alt+G)",
-        'grids': "Edit computational meshes or set-up automatic mesh generators (Alt+E)",
-        'solvers': "Create and configure computational solvers (Alt+S)",
-        'connects': "Define connections between computational solvers (Alt+C)",
+        'defines': "Edit the list of pre-defined variables for use in the rest of the file  (Alt+D)",
+        'materials': "Edit custom materials  (Alt+M)",
+        'geometry': "Edit geometries of your structures  (Alt+G)",
+        'grids': "Edit computational meshes or set-up automatic mesh generators  (Alt+E)",
+        'solvers': "Create and configure computational solvers  (Alt+S)",
+        'connects': "Define connections between computational solvers  (Alt+C)",
         'script': "Edit control script for your computations (Alt+R)"}
 
     shown = QtSignal()
@@ -182,8 +195,8 @@ class MainWindow(QMainWindow):
 
         self.showsource_action = QAction(
             QIcon.fromTheme('show-source'),
-            'Show Sour&ce', self)
-        self.showsource_action.setShortcut(QKeySequence(Qt.Key_F4))
+            'Toggle sour&ce view', self)
+        CONFIG.set_shortcut(self.showsource_action, 'show_source')
         self.showsource_action.setCheckable(True)
         self.showsource_action.setStatusTip('Show XPL source of the current section')
         self.showsource_action.setEnabled(False)
@@ -211,70 +224,76 @@ class MainWindow(QMainWindow):
             self.setWindowModified(False)
 
         new_action = QAction(QIcon.fromTheme('document-new'), '&New', self)
-        new_action.setShortcut(QKeySequence.New)
+        CONFIG.set_shortcut(new_action, 'new_xpl')
         new_action.setStatusTip('Create a new XPL file')
         new_action.triggered.connect(lambda: self.new(XPLDocument))
 
         newpy_action = QAction(QIcon.fromTheme('document-new'), 'New &Python', self)
+        CONFIG.set_shortcut(newpy_action, 'new_python')
         newpy_action.setStatusTip('Create a new Python file')
         newpy_action.triggered.connect(lambda: self.new(PyDocument))
 
         open_action = QAction(QIcon.fromTheme('document-open'), '&Open...', self)
-        open_action.setShortcut(QKeySequence.Open)
-        open_action.setStatusTip('Open an existing file')
+        CONFIG.set_shortcut(open_action, 'open_file')
+        open_action.setStatusTip('Open an existing data file')
         open_action.triggered.connect(self.open)
 
         save_action = QAction(QIcon.fromTheme('document-save'), '&Save', self)
-        save_action.setShortcut(QKeySequence.Save)
+        CONFIG.set_shortcut(save_action, 'save_file')
         save_action.setStatusTip('Save the file to disk')
         save_action.triggered.connect(self.save)
 
         saveas_action = QAction(QIcon.fromTheme('document-save-as'), 'Save &As...', self)
-        saveas_action.setShortcut(QKeySequence.SaveAs)
+        CONFIG.set_shortcut(saveas_action, 'saveas_file')
         saveas_action.setStatusTip('Save the file to disk asking for a new name')
         saveas_action.triggered.connect(self.save_as)
 
         reload_action = QAction(QIcon.fromTheme('view-refresh'), '&Reload', self)
+        CONFIG.set_shortcut(reload_action, 'reload_file')
         reload_action.setStatusTip('Reload the current file from disk')
         reload_action.triggered.connect(self.reload)
 
         launch_action = QAction(QIcon.fromTheme('media-playback-start'), '&Launch...', self)
-        launch_action.setShortcut('F5')
+        CONFIG.set_shortcut(launch_action, 'launch')
         launch_action.setStatusTip('Launch the current file in PLaSK')
         launch_action.triggered.connect(lambda: launch_plask(self))
 
         goto_action = QAction(QIcon.fromTheme('go-jump'), '&Go to Line...', self)
-        goto_action.setShortcut(QKeySequence('Ctrl+L'))
+        CONFIG.set_shortcut(goto_action, 'goto_line')
         goto_action.setStatusTip('Go to the specified line')
         goto_action.triggered.connect(self.on_goto_line)
 
         plot_material_action = QAction(QIcon.fromTheme('matplotlib'), 'Examine &Material Parameters...', self)
-        plot_material_action.setShortcut(QKeySequence('Ctrl+Shift+M'))
+        CONFIG.set_shortcut(plot_material_action, 'examine_material')
         plot_material_action.triggered.connect(lambda: show_material_plot(self, self.document.materials.model,
                                                                           self.document.defines.model))
 
-        fullscreen_action = QAction(QIcon.fromTheme('view-fullscreen'), 'Toggle full screen', self)
-        fullscreen_action.setShortcut(QKeySequence('F11'))
+        fullscreen_action = QAction(QIcon.fromTheme('view-fullscreen'), 'Toggle Full Screen', self)
+        CONFIG.set_shortcut(fullscreen_action, 'fullscreen')
         fullscreen_action.triggered.connect(self.toggle_fullscreen)
 
         settings_action = QAction(QIcon.fromTheme('document-properties'), 'GUI Se&ttings...', self)
+        CONFIG.set_shortcut(settings_action, 'settings')
         settings_action.setStatusTip('Change some GUI settings')
         settings_action.triggered.connect(self.show_settings)
 
         about_action = QAction(QIcon.fromTheme('dialog-information'), 'A&bout...', self)
+        CONFIG.set_shortcut(about_action, 'about')
         about_action.setStatusTip('Show information about PLaSK')
         about_action.triggered.connect(self.about)
 
         help_action = QAction(QIcon.fromTheme('help-contents'), 'Open &Help...', self)
+        CONFIG.set_shortcut(help_action, 'help')
         help_action.setStatusTip('Open on-line help')
         help_action.triggered.connect(lambda: open_help(main_window=self))
 
         install_license_action = QAction('Install License...', self)
+        CONFIG.set_shortcut(install_license_action, 'install_license')
         install_license_action.setStatusTip('Install PLaSK license file into a proper location')
         install_license_action.triggered.connect(self.install_license)
 
         exit_action = QAction(QIcon.fromTheme('application-exit'), 'E&xit', self)
-        exit_action.setShortcut(QKeySequence.Quit)
+        CONFIG.set_shortcut(exit_action, 'quit')
         exit_action.setStatusTip('Exit application')
         exit_action.triggered.connect(self.close)
 
@@ -337,9 +356,11 @@ class MainWindow(QMainWindow):
             pal.setColor(QPalette.Button, QColor("#88aaff"))
         menu_button.setIcon(QIcon.fromTheme('plask-logo'))
         menu_button.setPalette(pal)
-        menu_button.setToolTip("Show operations menu (F2)")
-        menu_shortcut = QShortcut(QKeySequence(Qt.Key_F2), self)
-        menu_shortcut.activated.connect(menu_button.showMenu)
+        menu_button.setToolTip("Show main menu")
+        menu_action = MainMenuAction(menu_button)
+        menu_action.triggered.connect(menu_button.showMenu)
+        CONFIG.set_shortcut(menu_action, 'main_menu')
+        self.addAction(menu_action)
 
         menu_button.setMenu(self.menu)
         self.tabs.setCornerWidget(menu_button, Qt.TopLeftCorner)
@@ -434,7 +455,10 @@ class MainWindow(QMainWindow):
         for i,f in enumerate(reversed(load_recent_files())):
             action = QAction(f, self)
             action.triggered.connect(Func(f))
-            # action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_0 + (i+1)%10))
+            if i < 9:
+                action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_1 + i))
+            elif i == 9:
+                action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_0))
             self.recent_menu.addAction(action)
 
     def _try_load_from_file(self, filename, tab=None):
@@ -732,7 +756,9 @@ class MainWindow(QMainWindow):
             action_check_update = QAction(QIcon.fromTheme('software-update-available'),
                                           "Check for &Updates Now...", self)
             action_check_update.triggered.connect(lambda: pysparkle.check_update(verbose=True, force=True))
+            CONFIG.set_shortcut(action_check_update, 'check_for_updates', 'Check for Updates')
             self.menu.insertAction(self._pysparkle_place, action_check_update)
+
         self.shown.disconnect(self.init_pysparkle)
 
     class AboutWindow(QDialog):
