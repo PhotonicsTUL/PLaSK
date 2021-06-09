@@ -298,6 +298,9 @@ struct PLASK_SOLVER_API FreeCarrierGainSolver: public SolverWithMesh<GeometryTyp
     struct DgdnData;
     struct EnergyLevelsData;
 
+    typedef DataBase<Tensor2<double>> DataBaseTensor2;
+    typedef DataBase<std::vector<double>> DataBaseStdVector;
+
     /**
      * Compute the gain on the mesh. This method is called by gain provider.
      * \param what what to return (gain or its carriera derivative)

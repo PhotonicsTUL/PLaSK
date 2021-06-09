@@ -816,8 +816,10 @@ struct FreeCarrierGainSolver<GeometryT>::DataBase: public LazyDataImpl<DT>
     size_t size() const override { return dest_mesh->size(); }
 };
 
+
+
 template <typename GeometryT>
-struct FreeCarrierGainSolver<GeometryT>::InterpolatedData: public FreeCarrierGainSolver<GeometryT>::template DataBase<Tensor2<double>>
+struct FreeCarrierGainSolver<GeometryT>::InterpolatedData: public FreeCarrierGainSolver<GeometryT>::DataBaseTensor2
 {
     using typename DataBase<Tensor2<double>>::AveragedData;
 
@@ -989,7 +991,7 @@ shared_ptr<GainSpectrum<GeometryType>> FreeCarrierGainSolver<GeometryType>::getG
 
 
 template <typename GeometryT>
-struct FreeCarrierGainSolver<GeometryT>::EnergyLevelsData: public FreeCarrierGainSolver<GeometryT>::template DataBase<std::vector<double>>
+struct FreeCarrierGainSolver<GeometryT>::EnergyLevelsData: public FreeCarrierGainSolver<GeometryT>::DataBaseStdVector
 {
     using typename DataBase<std::vector<double>>::AveragedData;
 
