@@ -529,7 +529,7 @@ class ThresholdSearch(ThermoElectric):
         if lam is None: lam = self._get_lam().real
         max_gain = []
         for no, mesh in levels:
-            value = self.gain.outGain(mesh, lam)
+            value = self.gain.outGain(mesh, lam).array[:,:,0]
             max_gain.append(max(value))
         result.append("Maximum gain [1/cm]:          {}"
                       .format(', '.join('{:9.3f}'.format(g[0]) for g in max_gain)))
@@ -634,7 +634,7 @@ class ThresholdSearch(ThermoElectric):
         field = self.optical.outLightMagnitude(self.modeno, zmesh, interpolation)
         return field
 
-    def plot_optical_field(self, resolution=None, geometry_color='0.75', geometry_alpha=0.35, **kwargs):
+    def plot_optical_field(self, resolution=None, geometry_color='0.75', geometry_alpha=0.35, geometry_lw=1.0, **kwargs):
         """
         Plot computed optical mode field at threshold.
 
@@ -646,11 +646,13 @@ class ThresholdSearch(ThermoElectric):
 
             geometry_alpha (float): Geometry opacity (1 — fully opaque, 0 – invisible).
 
+            geometry_lw (float): Line width for geometry.
+
             **kwargs: Keyword arguments passed to the plot function.
         """
         field = self.get_optical_field(resolution)
         plask.plot_field(field, **kwargs)
-        plask.plot_geometry(self.optical.geometry, color=geometry_color, alpha=geometry_alpha)
+        plask.plot_geometry(self.optical.geometry, color=geometry_color, lw=geometry_lw)
         plask.gcf().canvas.set_window_title("Light Intensity")
 
     def plot_optical_field_horizontal(self, resolution=None, bounds=True, interpolation='linear', **kwargs):

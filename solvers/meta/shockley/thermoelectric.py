@@ -325,7 +325,8 @@ class ThermoElectric(plask.Solver):
             result[lb] = self.electrical.outCurrentDensity(msh, interpolation).array[:,0,1]
         return result
 
-    def plot_temperature(self, geometry_color='0.75', mesh_color=None, geometry_alpha=0.35, mesh_alpha=0.15, **kwargs):
+    def plot_temperature(self, geometry_color='0.75', mesh_color=None, geometry_alpha=0.35, mesh_alpha=0.15,
+                         geometry_lw=1.0, mesh_lw=1.0, **kwargs):
         """
         Plot computed temperature to the current axes.
 
@@ -340,6 +341,10 @@ class ThermoElectric(plask.Solver):
 
             mesh_alpha (float): Mesh opacity (1 — fully opaque, 0 – invisible).
 
+            geometry_lw (float): Line width for geometry.
+
+            mesh_lw (float): Line width for mesh.
+
             **kwargs: Keyword arguments passed to the plot function.
 
         See also:
@@ -350,12 +355,13 @@ class ThermoElectric(plask.Solver):
         cbar = plask.colorbar(use_gridspec=True)
         cbar.set_label("Temperature [K]")
         if geometry_color is not None:
-            plask.plot_geometry(self.thermal.geometry, color=geometry_color, alpha=geometry_alpha)
+            plask.plot_geometry(self.thermal.geometry, color=geometry_color, alpha=geometry_alpha, lw=geometry_lw)
         if mesh_color is not None:
-            plask.plot_mesh(self.thermal.mesh, color=mesh_color, alpha=mesh_alpha)
+            plask.plot_mesh(self.thermal.mesh, color=mesh_color, alpha=mesh_alpha, lw=mesh_lw)
         plask.window_title("Temperature")
 
-    def plot_voltage(self, geometry_color='0.75', mesh_color=None, geometry_alpha=0.35, mesh_alpha=0.15, **kwargs):
+    def plot_voltage(self, geometry_color='0.75', mesh_color=None, geometry_alpha=0.35, mesh_alpha=0.15,
+                     geometry_lw=1.0, mesh_lw=1.0, **kwargs):
         """
         Plot computed voltage to the current axes.
 
@@ -370,6 +376,10 @@ class ThermoElectric(plask.Solver):
 
             mesh_alpha (float): Mesh opacity (1 — fully opaque, 0 – invisible).
 
+            geometry_lw (float): Line width for geometry.
+
+            mesh_lw (float): Line width for mesh.
+
             **kwargs: Keyword arguments passed to the :func:`plask.plot_field`.
 
         See also:
@@ -380,9 +390,9 @@ class ThermoElectric(plask.Solver):
         cbar = plask.colorbar(use_gridspec=True)
         cbar.set_label("Voltage [V]")
         if geometry_color is not None:
-            plask.plot_geometry(self.electrical.geometry, color=geometry_color, alpha=geometry_alpha)
+            plask.plot_geometry(self.electrical.geometry, color=geometry_color, alpha=geometry_alpha, lw=geometry_lw)
         if mesh_color is not None:
-            plask.plot_mesh(self.electrical.mesh, color=mesh_color, alpha=mesh_alpha)
+            plask.plot_mesh(self.electrical.mesh, color=mesh_color, alpha=mesh_alpha, lw=mesh_lw)
         plask.window_title("Voltage")
 
     def plot_vertical_voltage(self, at=0., **kwargs):

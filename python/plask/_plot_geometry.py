@@ -763,6 +763,9 @@ def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=
         else:
             axes = figure.add_subplot(111)
 
+    if margin is None:
+        lims = axes.get_xlim(), axes.get_ylim()
+
     cyl = isinstance(geometry, plask.geometry.Cylindrical)
 
     # if isinstance(geometry, plask.geometry.Cartesian3D):
@@ -1044,6 +1047,9 @@ def plot_geometry(geometry, color=None, lw=1.0, plane=None, zorder=None, mirror=
         else:
             m = (box.upper[ax[1]] - box.lower[ax[1]]) * margin
             axes.set_ylim(box.lower[ax[1]] - m, box.upper[ax[1]] + m)
+    else:
+        axes.set_xlim(*lims[0])
+        axes.set_ylim(*lims[1])
 
     if ax[0] > ax[1] and not axes.yaxis_inverted():
         axes.invert_yaxis()
