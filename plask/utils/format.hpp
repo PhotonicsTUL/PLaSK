@@ -5,6 +5,8 @@
 This file contains utils to format strings.
 */
 
+#include <complex>
+
 //#include <plask/config.hpp>
 #include <boost/lexical_cast.hpp>
 #include <fmt/format.h>
