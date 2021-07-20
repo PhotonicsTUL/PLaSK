@@ -130,10 +130,14 @@ def process_generate_options(app):
                     if os.path.isfile(env.doc2path(x))]
     if not genfiles:
         return
-    from autosummary_generate import generate_autosummary_docs
+    try:
+        from autosummary.generate import generate_autosummary_docs
+    except ImportError:
+        from autosummary_generate import generate_autosummary_docs
     generate_autosummary_docs(app, genfiles, builder=app.builder,
                               base_path=app.srcdir)
 
+process_generate_options__orig = sphinx.ext.autosummary.process_generate_options
 sphinx.ext.autosummary.process_generate_options = process_generate_options
 
 
@@ -404,7 +408,14 @@ class ExecDirective(Directive):
 # -- Register custom elements ------------------------------------------------------
 
 def setup(app):
-    app.add_directive('exec', ExecDirective);
+    app.add_directive('exec', ExecDirective)
+    try:
+        for event in app.events.listeners['builder-inited']:
+            if event.handler == process_generate_options__orig:
+                app.disconnect(event.id)
+        app.connect('builder-inited', process_generate_options)
+    except AttributeError:
+        pass
     ExecDirective.app = app
     #sphinx.writers.latex.LaTeXTranslator.visit_table = latex_visit_table
     #sphinx.writers.latex.LaTeXTranslator.visit_thead = latex_visit_thead
