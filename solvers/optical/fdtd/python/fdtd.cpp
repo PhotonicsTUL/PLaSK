@@ -32,7 +32,7 @@ BOOST_PYTHON_MODULE(fdtd) {
         METHOD(addFluxDFT, addFluxDFT, "Add DFT flux over a given region,");
         METHOD(doHarminv, doHarminv, "",
                (py::arg("component"), py::arg("point"), py::arg("wavelength"), py::arg("dl"), py::arg("time") = 200.,
-                py::arg("NBands") = 100));
+                py::arg("nbands") = 100));
         METHOD(addFieldDFT, addFieldDFT, "");
         RO_FIELD(courantFactor, "Courant factor");
         RO_FIELD(elapsedTime, "Elapsed time in given in fs");
@@ -58,7 +58,7 @@ BOOST_PYTHON_MODULE(fdtd) {
         .def("field_array", &FieldsDFT::field, "Array");
 
     py::class_<FluxDFT, shared_ptr<FluxDFT>>("_FluxDFT", "Dokumnetacja", py::no_init)
-        .add_property("n_wave", &FluxDFT::n_wave, "Number of stored wavelengths.")
+        .def("__len__", &FluxDFT::n_wave)
         .add_property("flux", &FluxDFT::get_flux, "Stored flux values.")
         .add_property("wavelengths", &FluxDFT::get_waves, "Stored wavelengths.")
         .def("load_negative_flux", &FluxDFT::load_minus_flux_data, "Loads the negative DFT fields.");

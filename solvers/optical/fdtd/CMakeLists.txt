@@ -2,6 +2,7 @@
 #///  This is a default solver CMake file.
 #///
 #/// In most cases you should be able to use it only setting the project name
+#!EXCLUDE_ON Windows
 
 # Set the project name in the style: plask/solvergroup/solverlib
 project(plask/optical/fdtd)
