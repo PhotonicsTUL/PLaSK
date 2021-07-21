@@ -3,7 +3,6 @@
 
 #include <meep.hpp>
 #include <plask/plask.hpp>
-#include "comp_map.cpp"
 #include "meep_data_wrappers.hpp"
 #include "plask_material_function.hpp"
 
@@ -11,24 +10,31 @@ namespace plask { namespace solvers { namespace optical_fdtd {
 
 class PLASK_SOLVER_API FDTDSolver : public plask::SolverOver<plask::Geometry2DCartesian> {
   public:
-    // MEEP components
-    meep::grid_volume compBounds;                    // Use meep::vol2d later
-    shared_ptr<meep::structure> compStructure;       // Material parameters etc
-    shared_ptr<meep::fields> compFields;             // Fields chunks
-    std::vector<std::string> storedFieldComponents;  // Currently stored field component, probably a temporary solution
-    std::vector<SourceMEEP> sourceContainer;         // Used for storing the information about the sources
+    struct FieldData {
+        FDTDSolver* solver;
+        DataVector<plask::Vec<3, dcomplex>> field;
+        std::array<meep::component, 3> components;
 
-    DataVector<plask::Vec<3, dcomplex>> fieldValues;  // For storing the values of the field
-    plask::shared_ptr<RectangularMesh2D> fieldMesh;   // Mesh used for the extracted field;
-    int resolution;                                   // geometry resolution
-    double layerPML;                                  // PML layer thickness
-    double shiftPML;                                  // Value used for spacing of the PML later
-    double courantFactor;                             // Used for recalculation in order to obtain proper time-step
-    double wavelength;                                // Wavelength used for material properties
-    double temperature;                               // Temperature used for material properites
-    double dt;                                        // Single time-step in MEEP time units
-    double elapsedTime;                               // Time elapsed in the simulation (in SI)
-    const double baseTimeUnit;                        // One time unit in SI (fs)
+        FieldData(FDTDSolver* solver, std::array<meep::component, 3> components)
+            : solver(solver), field(solver->fieldSize()), components(components) {}
+    };
+
+    // MEEP components
+    meep::grid_volume compBounds;               // Use meep::vol2d later
+    shared_ptr<meep::structure> compStructure;  // Material parameters etc
+    shared_ptr<meep::fields> compFields;        // Fields chunks
+    std::vector<SourceMEEP> sourceContainer;    // Used for storing the information about the sources
+
+    plask::shared_ptr<RectangularMesh2D> fieldMesh;  // Mesh used for the extracted field;
+    int resolution;                                  // geometry resolution
+    double layerPML;                                 // PML layer thickness
+    double shiftPML;                                 // Value used for spacing of the PML later
+    double courantFactor;                            // Used for recalculation in order to obtain proper time-step
+    double wavelength;                               // Wavelength used for material properties
+    double temperature;                              // Temperature used for material properites
+    double dt;                                       // Single time-step in MEEP time units
+    double elapsedTime;                              // Time elapsed in the simulation (in SI)
+    const double baseTimeUnit;                       // One time unit in SI (fs)
 
     // Providers
     ProviderFor<LightH, Geometry2DCartesian>::Delegate outLightH;
@@ -37,9 +43,12 @@ class PLASK_SOLVER_API FDTDSolver : public plask::SolverOver<plask::Geometry2DCa
     FDTDSolver(const std::string& name);
     ~FDTDSolver() = default;
     virtual std::string getClassName() const;
+
     void compute(double time);
     void step();
-    void getField(const std::vector<std::string>& fields);
+
+    int fieldSize() const;
+
     void chunkloop(meep::fields_chunk* fc,
                    int ichunk,
                    meep::component cgrid,
@@ -55,7 +64,7 @@ class PLASK_SOLVER_API FDTDSolver : public plask::SolverOver<plask::Geometry2DCa
                    std::complex<double> shift_phase,
                    const meep::symmetry& S,
                    int sn,
-                   void* chunkloop_data);
+                   FieldData* chunkloop_data);
     static void solver_chunkloop(meep::fields_chunk* fc,
                                  int ichunk,
                                  meep::component cgrid,
@@ -72,8 +81,11 @@ class PLASK_SOLVER_API FDTDSolver : public plask::SolverOver<plask::Geometry2DCa
                                  const meep::symmetry& S,
                                  int sn,
                                  void* chunkloop_data);
-    void outputHDF5(std::string type);
+    void outputHDF5(meep::component component);
+
+    meep::component getXmlComponent(const XMLReader& reader, const char* attr) const;
     void loadConfiguration(XMLReader& reader, Manager& manager);
+
     double eps(const meep::vec& r);
     double conductivity(const meep::vec& r);
 
@@ -81,10 +93,13 @@ class PLASK_SOLVER_API FDTDSolver : public plask::SolverOver<plask::Geometry2DCa
     FluxDFT addFluxDFT(plask::Vec<2, double> p1, plask::Vec<2, double> p2, double wl_min, double wl_max, int Nlengths);
 
     // DFT Fields
-    FieldsDFT addFieldDFT(const boost::python::list& field_names, plask::Vec<2, double> p1, plask::Vec<2, double> p2, double wl);
+    FieldsDFT addFieldDFT(const std::vector<meep::component>& fields,
+                          plask::Vec<2, double> p1,
+                          plask::Vec<2, double> p2,
+                          double wl);
 
     // Harminv
-    shared_ptr<HarminvResults> doHarminv(const std::string& component,
+    shared_ptr<HarminvResults> doHarminv(meep::component component,
                                          plask::Vec<2, double> point,
                                          double wavelength,
                                          double dl,
@@ -93,15 +108,14 @@ class PLASK_SOLVER_API FDTDSolver : public plask::SolverOver<plask::Geometry2DCa
 
     // Setters
     void setGeometry();
-    void setFieldVec();
     void setSource();
     void setTimestep();
     void setMesh();
 
   protected:
     void onInitialize() override;
-    LazyData<plask::Vec<3, dcomplex>> getLightH(const plask::shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod int_method);
     LazyData<plask::Vec<3, dcomplex>> getLightE(const plask::shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod int_method);
+    LazyData<plask::Vec<3, dcomplex>> getLightH(const plask::shared_ptr<const MeshD<2>> dest_mesh, InterpolationMethod int_method);
 
   private:
     long long int timeToSteps(double time);

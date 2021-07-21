@@ -3,11 +3,8 @@
 
 #include <meep.hpp>
 #include <plask/plask.hpp>
-#include <plask/python.hpp>
-#include "comp_map.cpp"
 
 namespace plask { namespace solvers { namespace optical_fdtd {
-
 
 namespace dft {
 
@@ -21,7 +18,6 @@ template <typename T> class MeepHasNewDftFlux {
     static constexpr bool value = decltype(test<T>(nullptr))::value;
 };
 
-
 template <typename T>
 inline static typename std::enable_if<MeepHasNewDftFlux<T>::value, std::vector<double>>::type wavelengths(const T& data) {
     std::vector<double> wavelengths;
@@ -29,7 +25,6 @@ inline static typename std::enable_if<MeepHasNewDftFlux<T>::value, std::vector<d
     for (double freq : data.freq) wavelengths.push_back(1e3 / freq);
     return wavelengths;
 }
-
 
 template <typename T>
 inline static typename std::enable_if<!MeepHasNewDftFlux<T>::value, std::vector<double>>::type wavelengths(const T& data) {
@@ -41,7 +36,6 @@ inline static typename std::enable_if<!MeepHasNewDftFlux<T>::value, std::vector<
     for (size_t i = 0; i < nfreq; ++i) wavelengths.push_back(1e3 / (min_freq + i * dfreq));
     return wavelengths;
 }
-
 
 template <typename T> inline static typename std::enable_if<MeepHasNewDftFlux<T>::value, size_t>::type freq_size(const T& data) {
     return data.freq.size();
@@ -59,7 +53,6 @@ template <typename T> inline static typename std::enable_if<!MeepHasNewDftFlux<T
     return data.freq_min;
 }
 
-
 template <typename T> inline static typename std::enable_if<MeepHasNewDftFlux<T>::value, size_t>::type omega_size(const T* chunk) {
     return chunk->omega.size();
 }
@@ -68,26 +61,39 @@ template <typename T> inline static typename std::enable_if<!MeepHasNewDftFlux<T
     return chunk->Nomega;
 }
 
-}
+}  // namespace dft
 
 struct SourceMEEP {
-    std::string source_type;
-    double ax, ay, bx, by, lam, start_time, slowness, amplitude, width;
-    std::string component, end_time;
-    SourceMEEP(std::string sType,
+    enum Type { POINT_CONT, POINT_GAUSS, VOL_CONT, VOL_GAUSS };
+
+    Type type;
+    double ax, ay, bx, by, lam, start_time, end_time, slowness, amplitude, width;
+    meep::component component;
+    SourceMEEP(Type type,
                double ax,
                double ay,
                double bx,
                double by,
                double lam,
                double start_time,
-               std::string end_time,
+               double end_time,
                double amplitude,
                double width,
                double slowness,
-               std::string comp);
+               meep::component comp)
+        : type(type),
+          ax(ax),
+          ay(ay),
+          bx(bx),
+          by(by),
+          lam(lam),
+          start_time(start_time),
+          slowness(slowness),
+          amplitude(amplitude),
+          width(width),
+          component(comp),
+          end_time(end_time) {}
 };
-
 
 struct HarminvRawData {
     shared_ptr<std::vector<dcomplex>> amp;
@@ -120,15 +126,6 @@ struct HarminvResults {
 
     HarminvResults() = default;
     HarminvResults(shared_ptr<HarminvRawData> data, int n) : data(data), n_res(n) {}
-
-    int len() const { return n_res; }
-
-    HarminvValue getItem(int k) {
-        int n = len();
-        if (k < 0) k = n - k;
-        if (k < 0 || k >= n) throw plask::python::IndexError("Value outside of the possible index.");
-        return HarminvValue(k, data);
-    }
 };
 
 struct FieldsDFT {
@@ -138,14 +135,11 @@ struct FieldsDFT {
     FieldsDFT() = default;
     FieldsDFT(shared_ptr<meep::dft_fields> data, shared_ptr<meep::fields> fields) : data(data), fields(fields) {}
 
-    double freq() {
-        return dft::freq0(*data);
-    }
+    double freq() { return dft::freq0(*data); }
 
-    std::vector<dcomplex> field(const std::string& comp) {
+    std::vector<dcomplex> field(meep::component component) {
         int rank = 2;
         size_t dims[] = {1, 1, 0};
-        meep::component component = ComponentMap.at(comp);
         auto first_elem = fields->get_dft_array(*data, component, 1, &rank, dims);
         return std::vector<dcomplex>{dcomplex{1., 10.}};
     }
@@ -157,9 +151,7 @@ struct FluxDFT {  // Let it be a temporary name for now
     FluxDFT() = default;
     FluxDFT(shared_ptr<meep::dft_flux> data) : data(data){};
 
-    int n_wave() const {
-        return dft::freq_size(*data);
-    }
+    int n_wave() const { return dft::freq_size(*data); }
 
     std::vector<double> get_flux() {
         auto first = data->flux();
@@ -168,9 +160,7 @@ struct FluxDFT {  // Let it be a temporary name for now
         return flux_vector;
     }
 
-    std::vector<double> get_waves() {
-        return dft::wavelengths(*data);
-    }
+    std::vector<double> get_waves() { return dft::wavelengths(*data); }
 
     void load_minus_flux_data(const FluxDFT& loaded_flux) {
         // Load the transformed field data into a vector

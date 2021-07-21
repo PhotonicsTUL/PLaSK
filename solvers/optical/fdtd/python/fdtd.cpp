@@ -9,19 +9,26 @@ using namespace plask::python;
 #include "../fdtd.hpp"
 using namespace plask::solvers::optical_fdtd;
 
-/**
- * Initialization of your solver class to Python
- *
- * The \a solver_name should be changed to match the name of the directory with our solver
- * (the one where you have put CMakeLists.txt). It will be visible from user interface under this name.
- */
+
+static HarminvValue HarminvResults__getitem__(const HarminvResults& self, int k) {
+    int n = self.n_res;
+    if (k < 0) k = n - k;
+    if (k < 0 || k >= n) throw plask::python::IndexError("Value outside of the possible index.");
+    return HarminvValue(k, self.data);
+}
+
+static int HarminvResults__len__(const HarminvResults& self) {
+    return self.n_res;
+}
+
+
+
 BOOST_PYTHON_MODULE(fdtd) {
     {
         CLASS(FDTDSolver, "FDTD2D", "Finite-differences time-domain solver")
         METHOD(step, step, "Performs a single time-step.");
         METHOD(compute, compute, "Performs a computation for a given simulation time.");
         METHOD(outputHDF5, outputHDF5, "Outputs field data into a HDF5 file.");
-        METHOD(getField, getField, "Stores the field data in a complex vector.");
         METHOD(addFluxDFT, addFluxDFT, "Add DFT flux over a given region,");
         METHOD(doHarminv, doHarminv, "",
                (py::arg("component"), py::arg("point"), py::arg("wavelength"), py::arg("dl"), py::arg("time") = 200.,
@@ -43,8 +50,8 @@ BOOST_PYTHON_MODULE(fdtd) {
         .add_property("Q", &HarminvValue::q_factor, "Quality factor of the resonant mode");
 
     py::class_<HarminvResults, shared_ptr<HarminvResults>>("_HarminvResults", "Dokumentacja", py::no_init)
-        .def("__len__", &HarminvResults::len)
-        .def("__getitem__", &HarminvResults::getItem);
+        .def("__len__", &HarminvResults__len__)
+        .def("__getitem__", &HarminvResults__getitem__);
 
     py::class_<FieldsDFT, shared_ptr<FieldsDFT>>("_FieldsDFT", "Dokumentacja", py::no_init)
         .add_property("wavelength", &FieldsDFT::freq, "Wavelength")
