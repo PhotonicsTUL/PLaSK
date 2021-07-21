@@ -23,11 +23,6 @@ void FDTDSolver::step() {
     compFields->step();
 }
 
-void FDTDSolver::getField(const std::vector<std::string>& fields) {
-    storedFieldComponents = fields;
-    compFields->loop_in_chunks(&solver_chunkloop, this, compFields->total_volume());
-}
-
 void FDTDSolver::chunkloop(meep::fields_chunk* fc,
                            int ichunk,
                            meep::component cgrid,
@@ -43,16 +38,15 @@ void FDTDSolver::chunkloop(meep::fields_chunk* fc,
                            std::complex<double> shift_phase,
                            const meep::symmetry& S,
                            int sn,
-                           void* chunkloop_data) {
+                           FieldData* chunkloop_data) {
     meep::vec rshift(shift * (0.5 * fc->gv.inva));
-    std::vector<std::string> fields = ((FDTDSolver*)chunkloop_data)->storedFieldComponents;
 
     auto dx = 1, dy = 1;
-    if (((FDTDSolver*)chunkloop_data)->compBounds.little_corner().x() < 0) {
-        dx = ((FDTDSolver*)chunkloop_data)->compBounds.little_corner().x() + 1;
+    if (compBounds.little_corner().x() < 0) {
+        dx = compBounds.little_corner().x() + 1;
     }
-    if (((FDTDSolver*)chunkloop_data)->compBounds.little_corner().y() < 0) {
-        dy = ((FDTDSolver*)chunkloop_data)->compBounds.little_corner().y() + 1;
+    if (compBounds.little_corner().y() < 0) {
+        dy = compBounds.little_corner().y() + 1;
     }
 
     LOOP_OVER_IVECS(fc->gv, is, ie, idx) {
@@ -67,13 +61,13 @@ void FDTDSolver::chunkloop(meep::fields_chunk* fc,
         ivec ichild = S.transform(iparent, sn) + shift;
         meep::vec rchild = S.transform(rparent, sn) + rshift;
 
-        plask::Vec<3, dcomplex> tmp_vec{fc->get_field(ComponentMap.at(fields[0]), ichild),
-                                        fc->get_field(ComponentMap.at(fields[1]), ichild),
-                                        fc->get_field(ComponentMap.at(fields[2]), ichild)};
         auto x = (ichild.x() - dx) / 2;
         auto y = (ichild.y() - dy) / 2;
         auto index = ((FDTDSolver*)chunkloop_data)->fieldMesh->index(x, y);
-        ((FDTDSolver*)chunkloop_data)->fieldValues[index] = tmp_vec;
+
+        chunkloop_data->field[index] = plask::Vec<3, dcomplex>(fc->get_field(chunkloop_data->components[0], ichild),
+                                                               fc->get_field(chunkloop_data->components[1], ichild),
+                                                               fc->get_field(chunkloop_data->components[2], ichild));
     }
 };
 
@@ -93,91 +87,109 @@ void FDTDSolver::solver_chunkloop(meep::fields_chunk* fc,
                                   const meep::symmetry& S,
                                   int sn,
                                   void* chunkloop_data) {
-    FDTDSolver* self = (FDTDSolver*)chunkloop_data;
-    self->chunkloop(fc, ichunk, cgrid, is, ie, s0, s1, e0, e1, dV0, dV1, shift, shift_phase, S, sn, self);
+    FDTDSolver::FieldData* data = (FDTDSolver::FieldData*)chunkloop_data;
+    data->solver->chunkloop(fc, ichunk, cgrid, is, ie, s0, s1, e0, e1, dV0, dV1, shift, shift_phase, S, sn, data);
 }
 
-void FDTDSolver::outputHDF5(std::string type) {
+void FDTDSolver::outputHDF5(meep::component component) {
     initCalculation();
-    compFields->output_hdf5(ComponentMap.at(type), compBounds.surroundings());
+    compFields->output_hdf5(component, compBounds.surroundings());
+}
+
+meep::component FDTDSolver::getXmlComponent(const XMLReader& reader, const char* attr) const {  // Cartesian 2D
+    AxisNames* axes = nullptr;
+    if (this->getGeometry()) axes = &this->getGeometry()->axisNames;
+    const std::string repr = reader.requireAttribute(attr);
+    if (repr == "Etran" || repr == "Et" || (axes && repr == "E" + axes->getNameForTran())) return meep::Ex;
+    if (repr == "Evert" || repr == "Ev" || (axes && repr == "E" + axes->getNameForVert())) return meep::Ey;
+    if (repr == "Elong" || repr == "El" || (axes && repr == "E" + axes->getNameForLong())) return meep::Ez;
+    if (repr == "Dtran" || repr == "Dt" || (axes && repr == "D" + axes->getNameForTran())) return meep::Dx;
+    if (repr == "Dvert" || repr == "Dv" || (axes && repr == "D" + axes->getNameForVert())) return meep::Dy;
+    if (repr == "Dlong" || repr == "Dl" || (axes && repr == "D" + axes->getNameForLong())) return meep::Dz;
+    if (repr == "Htran" || repr == "Ht" || (axes && repr == "H" + axes->getNameForTran())) return meep::Hx;
+    if (repr == "Hvert" || repr == "Hv" || (axes && repr == "H" + axes->getNameForVert())) return meep::Hy;
+    if (repr == "Hlong" || repr == "Hl" || (axes && repr == "H" + axes->getNameForLong())) return meep::Hz;
+    if (repr == "Btran" || repr == "Bt" || (axes && repr == "B" + axes->getNameForTran())) return meep::Bx;
+    if (repr == "Bvert" || repr == "Bv" || (axes && repr == "B" + axes->getNameForVert())) return meep::By;
+    if (repr == "Blong" || repr == "Bl" || (axes && repr == "B" + axes->getNameForLong())) return meep::Bz;
+    throw XMLBadAttrException(reader, attr, repr, "field component name (maybe you need to specify the geometry first)");
 }
 
 void FDTDSolver::loadConfiguration(XMLReader& reader, Manager& manager) {
-    double ax = 0, ay = 0, bx = 0, by = 0, lam = 0, start_time = 0, slowness = 0, amplitude = 0, width = 0;
-    std::string component, end_time;
+    double ax, ay, bx, by, lam, start_time = 0, end_time = INFINITY, slowness, amplitude, width;
+    meep::component component;
 
     while (reader.requireTagOrEnd()) {
         std::string curr_node = reader.getNodeName();
 
         if (curr_node == "comp_space") {
-            resolution = *reader.getAttribute<int>("resolution");
-            layerPML = *reader.getAttribute<double>("pml");
-            shiftPML = *reader.getAttribute<double>("pml_shift");
+            resolution = reader.requireAttribute<int>("resolution");
+            layerPML = reader.requireAttribute<double>("pml");
+            shiftPML = reader.requireAttribute<double>("pml_shift");
             reader.requireTagEnd();
         } else if (curr_node == "simulation_options") {
-            courantFactor = *reader.getAttribute<double>("courant_factor");
-            wavelength = *reader.getAttribute<double>("wavelength");
-            temperature = *reader.getAttribute<double>("temperature");
+            courantFactor = reader.requireAttribute<double>("courant_factor");
+            wavelength = reader.requireAttribute<double>("wavelength");
+            temperature = reader.requireAttribute<double>("temperature");
             reader.requireTagEnd();
         } else if (curr_node == "sources") {
             while (reader.requireTagOrEnd()) {
                 curr_node = reader.getNodeName();
 
                 if (curr_node == "point") {
-                    ax = *reader.getAttribute<double>("x");
-                    ay = *reader.getAttribute<double>("y");
+                    ax = reader.requireAttribute<double>("x");
+                    ay = reader.requireAttribute<double>("y");
                     while (reader.requireTagOrEnd()) {
                         curr_node = reader.getNodeName();
-
                         if (curr_node == "continuous") {
-                            lam = *reader.getAttribute<double>("wavelength");
-                            start_time = *reader.getAttribute<double>("start-time");
-                            end_time = *reader.getAttribute<std::string>("end-time");
-                            component = *reader.getAttribute<std::string>("component");
-                            slowness = *reader.getAttribute<double>("slowness");
-                            amplitude = *reader.getAttribute<double>("amplitude");
-                            sourceContainer.push_back(SourceMEEP("point_cont", ax, ay, bx, by, lam, start_time, end_time, amplitude,
-                                                                 width, slowness, component));
+                            lam = reader.requireAttribute<double>("wavelength");
+                            start_time = reader.getAttribute<double>("start-time", start_time);
+                            end_time = reader.getAttribute<double>("end-time", end_time);
+                            component = getXmlComponent(reader, "component");
+                            slowness = reader.requireAttribute<double>("slowness");
+                            amplitude = reader.requireAttribute<double>("amplitude");
+                            sourceContainer.push_back(SourceMEEP(SourceMEEP::POINT_CONT, ax, ay, bx, by, lam, start_time, end_time,
+                                                                 amplitude, width, slowness, component));
                             reader.requireTagEnd();
                         } else if (curr_node == "gauss") {
-                            lam = *reader.getAttribute<double>("wavelength");
-                            start_time = *reader.getAttribute<double>("start-time");
-                            end_time = *reader.getAttribute<std::string>("end-time");
-                            width = *reader.getAttribute<double>("width");
-                            component = *reader.getAttribute<std::string>("component");
-                            amplitude = *reader.getAttribute<double>("amplitude");
-                            sourceContainer.push_back(SourceMEEP("point_gauss", ax, ay, bx, by, lam, start_time, end_time,
+                            lam = reader.requireAttribute<double>("wavelength");
+                            start_time = reader.getAttribute<double>("start-time", start_time);
+                            end_time = reader.getAttribute<double>("end-time", end_time);
+                            width = reader.requireAttribute<double>("width");
+                            component = getXmlComponent(reader, "component");
+                            amplitude = reader.requireAttribute<double>("amplitude");
+                            sourceContainer.push_back(SourceMEEP(SourceMEEP::POINT_GAUSS, ax, ay, bx, by, lam, start_time, end_time,
                                                                  amplitude, width, slowness, component));
                             reader.requireTagEnd();
                         }
                     }
                 } else if (curr_node == "volume") {
-                    ax = *reader.getAttribute<double>("ax");
-                    ay = *reader.getAttribute<double>("ay");
-                    bx = *reader.getAttribute<double>("bx");
-                    by = *reader.getAttribute<double>("by");
+                    ax = reader.requireAttribute<double>("ax");
+                    ay = reader.requireAttribute<double>("ay");
+                    bx = reader.requireAttribute<double>("bx");
+                    by = reader.requireAttribute<double>("by");
                     while (reader.requireTagOrEnd()) {
                         curr_node = reader.getNodeName();
 
                         if (curr_node == "continuous") {
-                            lam = *reader.getAttribute<double>("wavelength");
-                            start_time = *reader.getAttribute<double>("start-time");
-                            end_time = *reader.getAttribute<std::string>("end-time");
-                            component = *reader.getAttribute<std::string>("component");
-                            slowness = *reader.getAttribute<double>("slowness");
-                            amplitude = *reader.getAttribute<double>("amplitude");
-                            sourceContainer.push_back(SourceMEEP("vol_cont", ax, ay, bx, by, lam, start_time, end_time, amplitude,
-                                                                 width, slowness, component));
+                            lam = reader.requireAttribute<double>("wavelength");
+                            start_time = reader.getAttribute<double>("start-time", start_time);
+                            end_time = reader.getAttribute<double>("end-time", end_time);
+                            component = getXmlComponent(reader, "component");
+                            slowness = reader.requireAttribute<double>("slowness");
+                            amplitude = reader.requireAttribute<double>("amplitude");
+                            sourceContainer.push_back(SourceMEEP(SourceMEEP::VOL_CONT, ax, ay, bx, by, lam, start_time, end_time,
+                                                                 amplitude, width, slowness, component));
                             reader.requireTagEnd();
                         } else if (curr_node == "gauss") {
-                            lam = *reader.getAttribute<double>("wavelength");
-                            start_time = *reader.getAttribute<double>("start-time");
-                            end_time = *reader.getAttribute<std::string>("end-time");
-                            width = *reader.getAttribute<double>("width");
-                            component = *reader.getAttribute<std::string>("component");
-                            amplitude = *reader.getAttribute<double>("amplitude");
-                            sourceContainer.push_back(SourceMEEP("vol_gauss", ax, ay, bx, by, lam, start_time, end_time, amplitude,
-                                                                 width, slowness, component));
+                            lam = reader.requireAttribute<double>("wavelength");
+                            start_time = reader.getAttribute<double>("start-time", start_time);
+                            end_time = reader.getAttribute<double>("end-time", end_time);
+                            width = reader.requireAttribute<double>("width");
+                            component = getXmlComponent(reader, "component");
+                            amplitude = reader.requireAttribute<double>("amplitude");
+                            sourceContainer.push_back(SourceMEEP(SourceMEEP::VOL_GAUSS, ax, ay, bx, by, lam, start_time, end_time,
+                                                                 amplitude, width, slowness, component));
                             reader.requireTagEnd();
                         }
                     }
@@ -197,10 +209,10 @@ double FDTDSolver::eps(const meep::vec& r) {
 double FDTDSolver::conductivity(const meep::vec& r) {
     plask::Vec<2, double> geomVector{r.x(), r.y()};
     plask::dcomplex complex_index = geometry->getMaterial(geomVector)->Nr(wavelength, temperature);
-    return (2*plask::PI)*(1/(wavelength*1e-3))*(-complex_index.imag()/complex_index.real()); 
-    //Tensor2<double> sigma_tensor = geometry->getMaterial(geomVector)->cond(temperature);
-    //double meep_conductivity = (1e-6/plask::phys::c)*sigma_tensor.tran()*(1/(plask::phys::epsilon0*eps(r)));
-    //return meep_conductivity;
+    return (2 * plask::PI) * (1 / (wavelength * 1e-3)) * (-complex_index.imag() / complex_index.real());
+    // Tensor2<double> sigma_tensor = geometry->getMaterial(geomVector)->cond(temperature);
+    // double meep_conductivity = (1e-6/plask::phys::c)*sigma_tensor.tran()*(1/(plask::phys::epsilon0*eps(r)));
+    // return meep_conductivity;
 }
 
 /*
@@ -220,21 +232,15 @@ FluxDFT FDTDSolver::addFluxDFT(plask::Vec<2, double> p1, plask::Vec<2, double> p
 Field DFT
 */
 
-FieldsDFT FDTDSolver::addFieldDFT(const boost::python::list& field_names,
+FieldsDFT FDTDSolver::addFieldDFT(const std::vector<meep::component>& fields,
                                   plask::Vec<2, double> p1,
                                   plask::Vec<2, double> p2,
                                   double wl) {
-    auto n_fields = boost::python::len(field_names);
-    meep::volume flux_area(meep::vec(p1[0], p1[1]), meep::vec(p1[1], p2[1]));
-    std::vector<meep::component> fields;
+    const meep::volume flux_area(meep::vec(p1[0], p1[1]), meep::vec(p1[1], p2[1]));
     double freq = {1 / (wl * 1e-3)};
 
-    // Extract the fields from the python list
-    for (long i = 0; i < n_fields; ++i) {
-        fields.push_back(ComponentMap.at(boost::python::extract<std::string>(field_names[i])));
-    }
-    auto dft_field =
-        make_shared<meep::dft_fields>(compFields->add_dft_fields(fields.data(), fields.size(), flux_area, freq, freq, 1));
+    auto dft_field = make_shared<meep::dft_fields>(
+        compFields->add_dft_fields(const_cast<meep::component*>(fields.data()), fields.size(), flux_area, freq, freq, 1));
     FieldsDFT result_field(dft_field, compFields);
     return result_field;
 }
@@ -243,14 +249,14 @@ FieldsDFT FDTDSolver::addFieldDFT(const boost::python::list& field_names,
 Harminv
 */
 
-shared_ptr<HarminvResults> FDTDSolver::doHarminv(const std::string& component,
+shared_ptr<HarminvResults> FDTDSolver::doHarminv(meep::component component,
                                                  plask::Vec<2, double> point,
                                                  double wavelength,
                                                  double dl,
                                                  double time,
                                                  const unsigned int NBands) {
     // Specifying component and the point in space, empty vector and number of bands
-    meep::component c(ComponentMap.at(component));
+    meep::component c(component);
     meep::vec p(point[0], point[1]);
     std::vector<std::vector<double>> result_vector;
     const long long int N = timeToSteps(time);
@@ -300,13 +306,6 @@ void FDTDSolver::setGeometry() {
     compFields = make_shared<meep::fields>(compStructure.get());  // It may be quite bad
 }
 
-void FDTDSolver::setFieldVec() {
-    // Field vector initialization
-    auto size = compBounds.nx() * compBounds.ny();
-    plask::Vec<3, dcomplex> dummyVec({0, 0}, {0, 0}, {0, 0});
-    fieldValues = DataVector<plask::Vec<3, dcomplex>>(size, dummyVec);
-}
-
 void FDTDSolver::setSource() {
     double freq = 0;
     double et = meep::infinity;
@@ -315,31 +314,39 @@ void FDTDSolver::setSource() {
     for (auto& s : sourceContainer) {
         // First set correct frequency and times in the MEEP domain
         freq = 1 / (s.lam * 1e-3);
-        if (s.end_time != "inf")
-            et = fsToTimeMEEP(std::stod(s.end_time));
+        if (s.end_time != INFINITY)
+            et = fsToTimeMEEP(s.end_time);
         else
             et = meep::infinity;
         st = fsToTimeMEEP(s.start_time);
 
         // Add processed sources
-        if (s.source_type == "point_cont") {
-            auto source_ptr = plask::make_shared<meep::continuous_src_time>(freq, 0., st, et, s.slowness);
-            compFields->add_point_source(ComponentMap.at(s.component), *source_ptr, meep::vec(s.ax, s.ay), s.amplitude);
-        } else if (s.source_type == "point_gauss") {
-            double l_freq = (1 / ((s.lam + (s.width / 2)) * 1e-3));
-            double h_freq = (1 / ((s.lam - (s.width / 2)) * 1e-3));
-            auto source_ptr = plask::make_shared<meep::gaussian_src_time>(freq, h_freq - l_freq);  // s.start_time, et);
-            compFields->add_point_source(ComponentMap.at(s.component), *source_ptr, meep::vec(s.ax, s.ay), s.amplitude);
-        } else if (s.source_type == "vol_cont") {
-            auto source_ptr = plask::make_shared<meep::continuous_src_time>(freq, 0., st, et, s.slowness);
-            meep::volume pos_vec = meep::volume(meep::vec(s.ax, s.ay), meep::vec(s.bx, s.by));
-            compFields->add_volume_source(ComponentMap.at(s.component), *source_ptr, pos_vec, s.amplitude);
-        } else if (s.source_type == "vol_gauss") {
-            double l_freq = (1 / ((s.lam + (s.width / 2)) * 1e-3));
-            double h_freq = (1 / ((s.lam - (s.width / 2)) * 1e-3));
-            auto source_ptr = plask::make_shared<meep::gaussian_src_time>(freq, h_freq - l_freq);  // s.start_time, et);
-            meep::volume pos_vec = meep::volume(meep::vec(s.ax, s.ay), meep::vec(s.bx, s.by));
-            compFields->add_volume_source(ComponentMap.at(s.component), *source_ptr, pos_vec, s.amplitude);
+        switch (s.type) {
+            case SourceMEEP::POINT_CONT: {
+                auto source_ptr = plask::make_shared<meep::continuous_src_time>(freq, 0., st, et, s.slowness);
+                compFields->add_point_source(s.component, *source_ptr, meep::vec(s.ax, s.ay), s.amplitude);
+                break;
+            }
+            case SourceMEEP::POINT_GAUSS: {
+                double l_freq = (1 / ((s.lam + (s.width / 2)) * 1e-3));
+                double h_freq = (1 / ((s.lam - (s.width / 2)) * 1e-3));
+                auto source_ptr = plask::make_shared<meep::gaussian_src_time>(freq, h_freq - l_freq);  // s.start_time, et);
+                compFields->add_point_source(s.component, *source_ptr, meep::vec(s.ax, s.ay), s.amplitude);
+                break;
+            }
+            case SourceMEEP::VOL_CONT: {
+                auto source_ptr = plask::make_shared<meep::continuous_src_time>(freq, 0., st, et, s.slowness);
+                meep::volume pos_vec = meep::volume(meep::vec(s.ax, s.ay), meep::vec(s.bx, s.by));
+                compFields->add_volume_source(s.component, *source_ptr, pos_vec, s.amplitude);
+            }
+            case SourceMEEP::VOL_GAUSS: {
+                double l_freq = (1 / ((s.lam + (s.width / 2)) * 1e-3));
+                double h_freq = (1 / ((s.lam - (s.width / 2)) * 1e-3));
+                auto source_ptr = plask::make_shared<meep::gaussian_src_time>(freq, h_freq - l_freq);  // s.start_time, et);
+                meep::volume pos_vec = meep::volume(meep::vec(s.ax, s.ay), meep::vec(s.bx, s.by));
+                compFields->add_volume_source(s.component, *source_ptr, pos_vec, s.amplitude);
+                break;
+            }
         }
     }
 }
@@ -354,24 +361,27 @@ void FDTDSolver::setMesh() {
 void FDTDSolver::onInitialize() {
     if (!geometry) throw NoGeometryException(getId());
     setGeometry();
-    setFieldVec();
     setSource();
     setTimestep();
     setMesh();
     elapsedTime = 0;
 }
 
-LazyData<plask::Vec<3, dcomplex>> FDTDSolver::getLightH(const plask::shared_ptr<const MeshD<2>> dest_mesh,
-                                                        InterpolationMethod int_method) {
-    getField({"hx", "hy", "hz"});
-    return interpolate(fieldMesh, fieldValues, dest_mesh, int_method);
-}
-
 LazyData<plask::Vec<3, dcomplex>> FDTDSolver::getLightE(const plask::shared_ptr<const MeshD<2>> dest_mesh,
                                                         InterpolationMethod int_method) {
-    getField({"ex", "ey", "ez"});
-    return interpolate(fieldMesh, fieldValues, dest_mesh, int_method);
+    FieldData data(this, {meep::Ez, meep::Ex, meep::Ey});
+    compFields->loop_in_chunks(&solver_chunkloop, &data, compFields->total_volume());
+    return interpolate(fieldMesh, data.field, dest_mesh, int_method);
 }
+
+LazyData<plask::Vec<3, dcomplex>> FDTDSolver::getLightH(const plask::shared_ptr<const MeshD<2>> dest_mesh,
+                                                        InterpolationMethod int_method) {
+    FieldData data(this, {meep::Hz, meep::Hx, meep::Hy});
+    compFields->loop_in_chunks(&solver_chunkloop, &data, compFields->total_volume());
+    return interpolate(fieldMesh, data.field, dest_mesh, int_method);
+}
+
+int FDTDSolver::fieldSize() const { return compBounds.nx() * compBounds.ny(); }
 
 long long int FDTDSolver::timeToSteps(double time) { return (int)std::ceil(time / (dt * baseTimeUnit)); }
 
