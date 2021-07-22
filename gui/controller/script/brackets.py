@@ -122,10 +122,11 @@ def _highlight_bracket(bracket, block, column):
 def get_selections(editor, block, column):
     """List of QTextEdit.ExtraSelection's, which highlights brackets"""
     text = block.text()
-
-    if column > 0 and text[column - 1] in _ALL_BRACKETS:
-        return _highlight_bracket(text[column - 1], block, column - 1)
-    elif column < len(text) and text[column] in _ALL_BRACKETS:
-        return _highlight_bracket(text[column], block, column)
-    else:
-        return []
+    try:
+        if column > 0 and text[column - 1] in _ALL_BRACKETS:
+            return _highlight_bracket(text[column - 1], block, column - 1)
+        elif column < len(text) and text[column] in _ALL_BRACKETS:
+            return _highlight_bracket(text[column], block, column)
+    except IndexError:
+        pass
+    return []
