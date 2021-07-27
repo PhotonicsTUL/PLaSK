@@ -47,7 +47,7 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES} camos)
 #
 #set(solver_src eim.cpp eim.h efm.cpp efm.h broyden.cpp broyden.h bessel.h)
 #set(interface_src python/effective.cpp)
-file(GLOB solver_src *.cpp *.hpp *.h)
+file(GLOB solver_src *.cpp)
 
 # To add unit tests to your project create appropriate targets (binary executables,
 # Python scripts, or XPL files) and register them using CMake command add_solver_test.

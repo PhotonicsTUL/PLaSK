@@ -40,7 +40,7 @@ endforeach()
 set(SOLVER_INSTALL_PATH lib/plask/solvers/${SOLVER_PATH})
 
 # Automatically set sources from the current directory
-file(GLOB solver_src *.cpp *.hpp *.h)
+file(GLOB solver_src *.cpp)
 file(GLOB interface_src python/*.cpp)
 
 
