@@ -30,13 +30,13 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
            pir;                         ///< Index of the beginning of the right PML
 
     struct Coeffs {
-        DataVector<dcomplex> zz, rxx, yy, ryy, zx, rzx;
+        DataVector<dcomplex> zz, rxx, yy, ryy, zx;
     };
     /// Cached permittivity expansion coefficients
     std::vector<Coeffs> coeffs;
 
     struct CoeffMatrices {
-        cmatrix exx, reyy, ezx;
+        cmatrix exx, reyy;
     };
     /// Cached permittivity expansion coefficient matrixess
     std::vector<CoeffMatrices> coeff_matrices;
@@ -204,7 +204,6 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     const DataVector<dcomplex>& repsxx(size_t l) { return coeffs[l].rxx; }          ///< Get \f$ \varepsilon_{xx}^{-1} \f$
     const DataVector<dcomplex>& repsyy(size_t l) { return coeffs[l].ryy; }          ///< Get \f$ \varepsilon_{yy}^{-1} \f$
     const DataVector<dcomplex>& epszx(size_t l) { return coeffs[l].zx; }            ///< Get \f$ \varepsilon_{zx} \f$
-    const DataVector<dcomplex>& repszx(size_t l) { return coeffs[l].rzx; }          ///< Get \f$ \varepsilon_{zx}^{-1} \f$
     const DataVector<dcomplex>& muzz() { return mag; }                              ///< Get \f$ \mu_{zz} \f$
     const DataVector<dcomplex>& muxx() { return mag; }                              ///< Get \f$ \mu_{xx} \f$
     const DataVector<dcomplex>& muyy() { return mag; }                              ///< Get \f$ \mu_{yy} \f$
@@ -218,8 +217,6 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     dcomplex repsyy(size_t l, int i) { return coeffs[l].ryy[(i>=0)?i:i+nN]; }       ///< Get element of \f$ \varepsilon_{yy}^{-1} \f$
     dcomplex epszx(size_t l, int i) { return coeffs[l].zx[(i>=0)?i:i+nN]; }         ///< Get element of \f$ \varepsilon_{zx} \f$
     dcomplex epsxz(size_t l, int i) { return conj(coeffs[l].zx[(i>=0)?i:i+nN]); }   ///< Get element of \f$ \varepsilon_{zx} \f$
-    dcomplex repszx(size_t l, int i) { return coeffs[l].rzx[(i>=0)?i:i+nN]; }       ///< Get element of \f$ \varepsilon_{zx}^{-1} \f$
-    dcomplex iepsxz(size_t l, int i) { return conj(coeffs[l].rzx[(i>=0)?i:i+nN]); } ///< Get element of \f$ \varepsilon_{zx}^{-1} \f$
     dcomplex muzz(int i) { return mag[(i>=0)?i:i+nN]; }                             ///< Get element of \f$ \mu_{zz} \f$
     dcomplex muxx(int i) { return mag[(i>=0)?i:i+nN]; }                             ///< Get element of \f$ \mu_{xx} \f$
     dcomplex muyy(int i) { return mag[(i>=0)?i:i+nN]; }                             ///< Get element of \f$ \mu_{yy} \f$

@@ -333,13 +333,11 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                             if (symmetric())
                                 throw BadInput(solver->getId(), "Symmetry can be specified only for diagonal refractive index tensor (NR)");
                             coeffs[layer].zx.reset(nN, 0.);
-                            coeffs[layer].rzx.reset(nN, 0.);
                             epsilon_diagonal = false;
                         }
                         nd = true;
                         rm = 1. / (eps.c00*eps.c11 - eps.c01.real()*eps.c01.real() - eps.c01.imag()*eps.c01.imag());
                         coeffs[layer].zx[i] += eps.c01;
-                        coeffs[layer].rzx[i] -= rm*eps.c01;
                     };
                     if (eps.c00 != eps.c22 || eps.c11 != eps.c22 || !epsilon_isotropic) {
                         if (epsilon_isotropic) {
@@ -367,7 +365,6 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 }
                 if (!epsilon_diagonal) {
                     coeffs[layer].zx[i] *= factor;
-                    coeffs[layer].rzx[i] *= factor;
                 }
             }
         }
@@ -422,7 +419,6 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 }
                 if (!epsilon_diagonal) {
                     std::fill_n(coeffs[layer].zx.data()+1, n1, 0.);
-                    std::fill_n(coeffs[layer].rzx.data()+1, n1, 0.);
                 }
             }
         } else {
@@ -443,7 +439,6 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 }
                 if (!epsilon_diagonal) {
                     matFFT.execute(coeffs[layer].zx.data());
-                    matFFT.execute(coeffs[layer].rzx.data());
                 }
             }
         }
@@ -536,11 +531,9 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                             if (symmetric())
                                 throw BadInput(solver->getId(), "Symmetry can be specified only for diagonal refractive index tensor (NR)");
                             coeffs[layer].zx.reset(nN, 0.);
-                            coeffs[layer].rzx.reset(nN, 0.);
                             epsilon_diagonal = false;
                         }
                         add_coeffs(start, end, b, l, r, coeffs[layer].zx, eps.c01 - eps0.c01);
-                        add_coeffs(start, end, b, l, r, coeffs[layer].rzx, reps.c01 - reps0.c01);
                     }
                 }
                 eps = eps1;
@@ -565,7 +558,6 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 }
                 if (!epsilon_diagonal) {
                     coeffs[layer].zx[i] *= s;
-                    coeffs[layer].rzx[i] *= s;
                 }
             }
         }
@@ -623,19 +615,6 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
             coeff_matrices[layer].exx.reset(N, N);
             make_unit_matrix(coeff_matrices[layer].exx);
             invmult(work, coeff_matrices[layer].exx);
-
-            if (repszx(layer)) {
-                for (int j = -order; j <= order; ++j) {
-                    const size_t jt = iEH(j);
-                    for (int i = -order; i <= order; ++i) {
-                        const size_t it = iEH(i);
-                        work(it, jt) = repszx(layer,i-j);
-                    }
-                }
-                coeff_matrices[layer].ezx.reset(N, N);
-                make_unit_matrix(coeff_matrices[layer].ezx);
-                invmult(work, coeff_matrices[layer].ezx);
-            }
         }
     }
 }
@@ -1026,7 +1005,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
                     RE(ihx,jex) =   rk0 * beta* gi  * rmuyy(ij);
                     RE(ihx,jez) = - rk0 *  gi * gj  * workyy(it,jt) + k0 * epszz(l,ij);
                     if (epszx(l)) {
-                        RE(ihx,jex) -= k0 * coeff_matrices[l].ezx(it,jt);
+                        RE(ihx,jex) -= k0 * epszx(l,ij);
                         RE(ihz,jez) -= k0 * epsxz(l,ij);
                     }
                 }
