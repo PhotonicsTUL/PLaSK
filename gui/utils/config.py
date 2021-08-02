@@ -210,6 +210,7 @@ KEYBOARD_SHORTCUTS = {
     'python_comment': ('Python: Comment Lines', Qt.CTRL + Qt.Key_Slash),
     'python_uncomment': ('Python: Uncomment Lines',
                          Qt.CTRL + (Qt.Key_Question if QT_API in ('PySide', 'PySide2') else Qt.SHIFT + Qt.Key_Slash)),
+    'python_toggle_comment':('Python: Toggle Comment on Lines', None),
     'python_help': ('Python: Open Help', Qt.CTRL + Qt.Key_F1),
     'python_docstring': ('Python: Show Docstring', Qt.SHIFT + Qt.Key_F1),
     'python_hide_docstring': ('Python: Hide Docstring', Qt.SHIFT + Qt.Key_Escape),

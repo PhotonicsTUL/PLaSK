@@ -75,14 +75,18 @@ class ScriptEditor(TextEditor):
         self.cursorPositionChanged.connect(self.highlight_brackets)
         self.selectionChanged.connect(self.highlight_brackets)
 
-        self.comment_action = QAction('Co&mment lines', self)
-        self.uncomment_action = QAction('Uncomm&ent lines', self)
+        self.comment_action = QAction('Co&mment Lines', self)
+        self.uncomment_action = QAction('Uncomm&ent Lines', self)
+        self.toggle_comment_action = QAction('&Toggle Comment on Lines', self)
         CONFIG.set_shortcut(self.comment_action, 'python_comment')
         CONFIG.set_shortcut(self.uncomment_action, 'python_uncomment')
+        CONFIG.set_shortcut(self.toggle_comment_action, 'python_toggle_comment')
         self.comment_action.triggered.connect(self.block_comment)
         self.uncomment_action.triggered.connect(self.block_uncomment)
+        self.toggle_comment_action.triggered.connect(self.block_comment_toggle)
         self.addAction(self.comment_action)
         self.addAction(self.uncomment_action)
+        self.addAction(self.toggle_comment_action)
 
         self.completer = CompletionsController(self)
 
@@ -145,6 +149,32 @@ class ScriptEditor(TextEditor):
         except ValueError:
             pass
         cursor.endEditBlock()
+
+    def block_comment_toggle(self):
+        incomment = False
+        cursor = self.textCursor()
+        start = cursor.selectionStart()
+        end = cursor.selectionEnd()
+        cursor.setPosition(start)
+        cursor.movePosition(QTextCursor.StartOfBlock)
+        if cursor.position() == end: end += 1
+        document = self.document()
+        try:
+            while cursor.position() < end:
+                while document.characterAt(cursor.position()) in (' ', '\t'):
+                    if not cursor.movePosition(QTextCursor.NextCharacter): raise ValueError
+                if document.characterAt(cursor.position()) == '#':
+                    incomment = True
+                elif not cursor.atBlockEnd():
+                    incomment = False
+                    break
+                if not cursor.movePosition(QTextCursor.NextBlock): raise ValueError
+        except ValueError:
+            pass
+        if incomment:
+            self.block_uncomment()
+        else:
+            self.block_comment()
 
     def join_lines(self):
         cursor = self.textCursor()
@@ -299,6 +329,7 @@ class ScriptController(SourceEditController):
         menu = QMenu(button)
         menu.addAction(source.editor.comment_action)
         menu.addAction(source.editor.uncomment_action)
+        menu.addAction(source.editor.toggle_comment_action)
         button.setMenu(menu)
         button.setPopupMode(QToolButton.InstantPopup)
         source.toolbar.addWidget(button)
@@ -307,6 +338,7 @@ class ScriptController(SourceEditController):
             indent_action.setEnabled(False)
             source.editor.comment_action.setEnabled(False)
             source.editor.uncomment_action.setEnabled(False)
+            source.editor.toggle_comment_action.setEnabled(False)
 
         self.help_dock = HelpDock(window)
         parent.config_changed.connect(self.help_dock.reconfig)
