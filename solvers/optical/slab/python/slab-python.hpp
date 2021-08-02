@@ -201,9 +201,11 @@ struct PmlWrapper {
 
     PmlWrapper(Solver* solver, PML* pml): solver(solver), pml(pml) {}
 
+    PmlWrapper(const PML& pml): solver(nullptr), pml(new PML(pml)) {}
+
     PmlWrapper(const PmlWrapper& orig): solver(orig.solver) {
         if (solver) pml = orig.pml;
-        else pml = new PML(*pml);
+        else pml = new PML(*orig.pml);
     }
 
     ~PmlWrapper() { if (!solver) delete pml; }

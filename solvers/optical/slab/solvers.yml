@@ -40,7 +40,8 @@
       default: 12
       help: >
         Expansion size.
-    - attr: refine
+    - &refine
+      attr: refine
       label: Averaging points
       type: int
       default: 32
@@ -103,7 +104,8 @@
       help: >
         Minimum thickness of sublayers resulting from temperature-gradient division.
 
-  - tag: mode
+  - &mode2d
+    tag: mode
     label: Mode Properties
     help: >
       Mode properties.
@@ -193,7 +195,8 @@
       help: >
         Optional path name, specifying particular instance of the object given in the object attribute.
 
-  - tag: pml
+  - &pml2d
+    tag: pml
     label: Horizontal PMLs
     help: >
       Side absorbing perfectly matched layer boundary conditions parameters.
@@ -204,20 +207,23 @@
       default: 1.0
       help: >
         PML scaling factor.
-    - attr: shape
+    - &pm2d_shape
+      attr: shape
       label: Shape order
       type: float
       default: 1
       help: >
         PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).
-    - attr: dist
+    - &pm2d_dist
+      attr: dist
       label: Distance
       type: float
       unit: µm
       default: 0.5
       help: >
         PML distance from the structure.
-    - attr: size
+    - &pm2d_size
+      attr: size
       label: Size
       type: float
       unit: µm
@@ -254,6 +260,7 @@
         This attribute specified what is returned by the <tt>get_determinant</tt> method. Regardless of the determinant type,
         its value must be zero for any mode. Depending on the determinant type value, the computed value is either
         the characteristic matrix eigenvalue with the smallest magniture or the full determinant of this matrix.
+
   - &vpml
     tag: vpml
     label: Vertical PMLs
@@ -343,7 +350,8 @@
       help: >
         Initial range size (Muller method only).
 
-  - tag: mirrors
+  - &mirrors
+    tag: mirrors
     label: Mirror Losses
     help: >
       Front and back mirror losses.
@@ -359,7 +367,7 @@
       help: >
         Reflectivity of the back mirror.
 
-  providers:
+  providers: &providers2d
   - outLightMagnitude
   - outLightE
   - outLightH
@@ -563,7 +571,7 @@
       help: >
         Parameters of PMLs in longitudinal direction. This overrides the global side PMLs configuration.
       attrs:
-      - &pml-factor
+      - &pm3d_factor
         attr: factor
         label: Scaling factor
         type: complex
@@ -572,7 +580,7 @@
           attr: factor
         help: >
           PML scaling factor.
-      - &pml-shape
+      - &pm3d_shape
         attr: shape
         label: Shape order
         type: float
@@ -581,7 +589,7 @@
           attr: shape
         help: >
           PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).
-      - &pml-dist
+      - &pm3d_dist
         attr: dist
         label: Distance
         type: float
@@ -591,7 +599,7 @@
           attr: dist
         help: >
           PML distance from the structure.
-      - &pml-size
+      - &pm3d_size
         attr: size
         label: Size
         type: float
@@ -607,10 +615,10 @@
       help: >
         Parameters of PMLs in transverse direction. This overrides the global side PMLs configuration.
       attrs:
-      - *pml-factor
-      - *pml-shape
-      - *pml-dist
-      - *pml-size
+      - *pm3d_factor
+      - *pm3d_shape
+      - *pm3d_dist
+      - *pm3d_size
 
   - *transfer
 
@@ -621,9 +629,7 @@
   providers:
   - outLightMagnitude
   - outLightE
-  - outElectricField: LightE
   - outLightH
-  - outMagneticField: LightH
   - outRefractiveIndex
 
   receivers: *receivers
@@ -768,26 +774,9 @@
       default: 1.0
       help: >
         PML scaling factor.
-    - attr: shape
-      label: Shape order
-      type: float
-      default: 1
-      help: >
-        PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).
-    - attr: dist
-      label: Distance
-      type: float
-      unit: µm
-      default: 20.0
-      help: >
-        PML distance from the structure.
-    - attr: size
-      label: Size
-      type: float
-      unit: µm
-      default: 0.0
-      help: >
-        PML size.
+    - *pm2d_shape
+    - *pm2d_dist
+    - *pm2d_size
 
   providers:
   - outLightMagnitude
@@ -800,5 +789,100 @@
   - outDownwardsLightH: LightH
   - outRefractiveIndex
   - outWavelength
+
+  receivers: *receivers
+
+###########################################################################################
+
+- solver: Lines2D
+  lib: slab
+  category: optical
+  help: >
+    Vectorial optical solver based on the method of lines.
+
+  geometry: Cartesian2D
+
+  tags:
+  - tag: mesh
+    label: Mesh
+    help: >
+      Optional Regular mesh used by this solver.
+    attrs:
+    - attr: ref
+      label: Mesh
+      help: >
+        Name of the existing Regular mesh for use by this solver.
+      type: mesh
+      mesh types: [ Regular ]
+      conflicts:
+        - tag: discretization
+          attr: density
+  - tag: discretization
+    label: Details on the discretization
+    help: >
+      Details on the discretization expansion used in computations
+    attrs:
+    - *lam0
+    - *update-gain
+    - attr: density
+      label: Mesh density
+      type: float
+      unit: µm
+      help: >
+        Density of the auto-generated mesh
+      conflicts:
+        - tag: mesh
+          attr: ref
+    - *refine
+    - *group-layers
+    - *temp-diff
+    - *temp-dist
+    - *temp-layer
+
+  - *mode2d
+
+  - *interface
+
+  - tag: pml
+    label: Horizontal PMLs
+    help: >
+      Side absorbing perfectly matched layer boundary conditions parameters.
+    attrs:
+    - attr: factor
+      label: Scaling factor
+      type: complex
+      default: 2.0
+      help: >
+        PML scaling factor.
+    - attr: shape
+      label: Shape order
+      type: float
+      default: 1
+      help: >
+        PML shape order (0 → flat, 1 → linearly increasing, 2 → quadratic, etc.).
+    - attr: dist
+      label: Distance
+      type: float
+      unit: µm
+      default: 0.5
+      help: >
+        PML distance from the structure.
+    - attr: size
+      label: Size
+      type: float
+      unit: µm
+      default: 1.0
+      help: >
+        PML size.
+
+  - *transfer
+
+  - *vpml
+
+  - *root
+
+  - *mirrors
+
+  providers: *providers2d
 
   receivers: *receivers
