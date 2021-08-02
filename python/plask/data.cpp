@@ -643,6 +643,13 @@ static PythonDataVector<T, dim> PythonDataVector__div__(const PythonDataVector<T
 // }
 
 template <typename T, int dim>
+static PythonDataVector<T, dim> PythonDataVector__pow__(const PythonDataVector<T, dim>& vec, double a) {
+    DataVector<typename std::remove_const<T>::type> vec2(vec.size());
+    for (size_t i = 0; i != vec.size(); ++i) vec2[i] = std::pow(vec[i], a);
+    return PythonDataVector<const T, dim>(std::move(vec2), vec.mesh);
+}
+
+template <typename T, int dim>
 static PythonDataVector<const decltype(abs(T())), dim> PythonDataVector__abs__(const PythonDataVector<T, dim>& vec) {
     DataVector<decltype(abs(T()))> absvec(vec.size());
     for (size_t i = 0; i != vec.size(); ++i) absvec[i] = abs(vec[i]);
@@ -734,6 +741,7 @@ template <typename T, int dim> static inline typename std::enable_if<detail::isB
         .def("__rmul__", &PythonDataVector__mul__<const T, dim>)
         .def("__div__", &PythonDataVector__div__<const T, dim>)
         .def("__truediv__", &PythonDataVector__div__<const T, dim>)
+        .def("__pow__", &PythonDataVector__pow__<const T, dim>)
         .def("__neg__", &PythonDataVector__neg__<const T, dim>)
         .def("__abs__", &PythonDataVector__abs__<const T, dim>)
         .add_property("real", &PythonDataVector_real<const T, dim>)

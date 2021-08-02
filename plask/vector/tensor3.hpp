@@ -272,7 +272,7 @@ struct Tensor3 {
     }
 
     /**
-     * Square root each component of tensor
+     * Square root of each component of tensor
      * \return squared tensor
      */
     Tensor3<T> sqrt() const {
@@ -280,12 +280,21 @@ struct Tensor3 {
     }
 
     /**
-     * Square root each component of tensor in place
+     * Square root of each component of tensor in place
      * \return *this (squared)
      */
     Tensor3<T>& sqrt_inplace() {
         c00 = std::sqrt(c00); c11 = std::sqrt(c11); c22 = std::sqrt(c22); c01 = std::sqrt(c01);
         return *this;
+    }
+
+    /**
+     * Power of each component of tensor
+     * \return squared tensor
+     */
+    template <typename OtherT>
+    Tensor3<T> pow(OtherT a) const {
+        return Tensor3<T>(std::pow(c00, a), std::pow(c11, a), std::pow(c22, a), std::pow(c01, a));
     }
 
     /**
@@ -354,5 +363,17 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(Tensor3< std::complex<double> >)
 */
 
 } //namespace plask
+
+namespace std {
+    template <typename T>
+    plask::Tensor3<T> sqrt(plask::Tensor3<T> tens) {
+        return tens.sqrt();
+    }
+
+    template <typename T, typename OtherT>
+    plask::Tensor3<T> pow(plask::Tensor3<T> tens, OtherT a) {
+        return tens.pow(a);
+    }
+}
 
 #endif // PLASK__TESNOR3_H

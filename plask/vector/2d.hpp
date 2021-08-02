@@ -284,6 +284,49 @@ PLASK_NO_WARNING_END
     }
 
     /**
+     * Square each component of tensor
+     * \return squared tensor
+     */
+    Vec<2,T> sqr() const {
+        return Vec<2,T>(c0*c0, c1*c1);
+    }
+
+    /**
+     * Square each component of tensor in place
+     * \return *this (squared)
+     */
+    Vec<2,T>& sqr_inplace() {
+        c0 *= c0; c1 *= c1;
+        return *this;
+    }
+
+    /**
+     * Square root of each component of tensor
+     * \return squared tensor
+     */
+    Vec<2,T> sqrt() const {
+        return Vec<2,T>(std::sqrt(c0), std::sqrt(c1));
+    }
+
+    /**
+     * Square root of each component of tensor in place
+     * \return *this (squared)
+     */
+    Vec<2,T>& sqrt_inplace() {
+        c0 = std::sqrt(c0); c1 = std::sqrt(c1);
+        return *this;
+    }
+
+    /**
+     * Power of each component of tensor
+     * \return squared tensor
+     */
+    template <typename OtherT>
+    Vec<2,T> pow(OtherT a) const {
+        return Vec<2,T>(std::pow(c0, a), std::pow(c1, a));
+    }
+
+    /**
      * Change i-th coordinate to oposite.
      * WARNING This function does not check if it is valid (for efficiency reasons)
      * @param i number of coordinate
@@ -411,11 +454,22 @@ inline bool is_zero(const Vec<2,T>& v) {
 }
 
 
-
 PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(Vec<2, double>)
 PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(Vec<2, std::complex<double> >)
 PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(Vec<2, int>)
 
 } //namespace plask
+
+namespace std {
+    template <typename T>
+    plask::Vec<2,T> sqrt(plask::Vec<2,T> vec) {
+        return vec.sqrt();
+    }
+
+    template <typename T, typename OtherT>
+    plask::Vec<2,T> pow(plask::Vec<2,T> vec, OtherT a) {
+        return vec.pow(a);
+    }
+}
 
 #endif // PLASK__VECTOR2D_H

@@ -312,6 +312,49 @@ PLASK_NO_WARNING_END
     }
 
     /**
+     * Square each component of tensor
+     * \return squared tensor
+     */
+    Vec<3,T> sqr() const {
+        return Vec<3,T>(c0*c0, c1*c1, c2*c2);
+    }
+
+    /**
+     * Square each component of tensor in place
+     * \return *this (squared)
+     */
+    Vec<3,T>& sqr_inplace() {
+        c0 *= c0; c1 *= c1; c2 *= c2;
+        return *this;
+    }
+
+    /**
+     * Square root of each component of tensor
+     * \return squared tensor
+     */
+    Vec<3,T> sqrt() const {
+        return Vec<3,T>(std::sqrt(c0), std::sqrt(c1), std::sqrt(c2));
+    }
+
+    /**
+     * Square root of each component of tensor in place
+     * \return *this (squared)
+     */
+    Vec<3,T>& sqrt_inplace() {
+        c0 = std::sqrt(c0); c1 = std::sqrt(c1); c2 = std::sqrt(c2);
+        return *this;
+    }
+
+    /**
+     * Power of each component of tensor
+     * \return squared tensor
+     */
+    template <typename OtherT>
+    Vec<3,T> pow(OtherT a) const {
+        return Vec<3,T>(std::pow(c0, a), std::pow(c1, a), std::pow(c2, a));
+    }
+
+    /**
      * Change i-th coordinate to oposite.
      * WARNING This function does not check if it is valid (for efficiency reasons)
      * @param i number of coordinate
@@ -436,5 +479,17 @@ PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(Vec<3, double>)
 PLASK_API_EXTERN_TEMPLATE_SPECIALIZATION_STRUCT(Vec<3, std::complex<double> >)
 
 } //namespace plask
+
+namespace std {
+    template <typename T>
+    plask::Vec<3,T> sqrt(plask::Vec<3,T> vec) {
+        return vec.sqrt();
+    }
+
+    template <typename T, typename OtherT>
+    plask::Vec<3,T> pow(plask::Vec<3,T> vec, OtherT a) {
+        return vec.pow(a);
+    }
+}
 
 #endif // PLASK__VECTORCART3D_H

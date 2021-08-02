@@ -208,6 +208,49 @@ struct Tensor2 {
     }
 
     /**
+     * Square each component of tensor
+     * \return squared tensor
+     */
+    Tensor2<T> sqr() const {
+        return Tensor2<T>(c00*c00, c11*c11);
+    }
+
+    /**
+     * Square each component of tensor in place
+     * \return *this (squared)
+     */
+    Tensor2<T>& sqr_inplace() {
+        c00 *= c00; c11 *= c11;
+        return *this;
+    }
+
+    /**
+     * Square root of each component of tensor
+     * \return squared tensor
+     */
+    Tensor2<T> sqrt() const {
+        return Tensor2<T>(std::sqrt(c00), std::sqrt(c11));
+    }
+
+    /**
+     * Square root of each component of tensor in place
+     * \return *this (squared)
+     */
+    Tensor2<T>& sqrt_inplace() {
+        c00 = std::sqrt(c00); c11 = std::sqrt(c11);
+        return *this;
+    }
+
+    /**
+     * Power of each component of tensor
+     * \return squared tensor
+     */
+    template <typename OtherT>
+    Tensor2<T> pow(OtherT a) const {
+        return Tensor2<T>(std::pow(c00, a), std::pow(c11, a));
+    }
+
+    /**
      * Print tensor to stream using format (where c00 and c11 are tensor components): [c00, c11]
      * @param out print destination, output stream
      * @param to_print tensor to print
@@ -263,5 +306,17 @@ PLASK_API_EXTERN_TEMPLATE_STRUCT(Tensor2< std::complex<double> >)
 */
 
 } //namespace plask
+
+namespace std {
+    template <typename T>
+    plask::Tensor2<T> sqrt(plask::Tensor2<T> tens) {
+        return tens.sqrt();
+    }
+
+    template <typename T, typename OtherT>
+    plask::Tensor2<T> pow(plask::Tensor2<T> tens, OtherT a) {
+        return tens.pow(a);
+    }
+}
 
 #endif // PLASK__TESNOR2_H
