@@ -82,8 +82,15 @@
           "description": "List of conflicting attributes",
           "items": {
             "type": "object",
+            "required": [
+              "attr"
+            ],
+            "additionalProperties": false,
             "properties": {
               "attr": {
+                "type": "string"
+              },
+              "tag": {
                 "type": "string"
               }
             }
