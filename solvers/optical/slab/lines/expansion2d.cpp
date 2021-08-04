@@ -254,8 +254,7 @@ void ExpansionFD2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH) {
 
     dcomplex ik(-SOLVER->ktran.imag(), SOLVER->ktran.real()), k2 = SOLVER->ktran * SOLVER->ktran;
 
-    int N = int(mesh->size());
-    int N1 = N - 1;
+    size_t N = mesh->size();
 
     double h = 1. / (mesh->step());
     double h2 = h * h;
@@ -264,56 +263,33 @@ void ExpansionFD2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH) {
     std::fill_n(RH.data(), RH.rows() * RH.cols(), dcomplex(0.));
 
     if (polarization == E_LONG) {
-        for (int i = 0; i != N; ++i) RH(i, i) = rk0 * beta2 * repsyy(l, i) - k0 * muxx(i);
+        for (size_t i = 0; i != N; ++i) RH(i, i) = rk0 * beta2 * repsyy(l, i) - k0 * muxx(i);
 
-        for (int i = 1; i != N1; ++i) {
-            dcomplex rmu = rmuyy(i), drmu = 0.5 * h * (rmuyy(i + 1) - rmuyy(i - 1));
+        for (size_t i = 0; i != N; ++i) {
+            size_t im, ip;
+            Component sm, sp;
+            checkEdges(i, im, ip, sm, sp);
+            dcomplex rmu = rmuyy(i), drmu = 0.5 * h * (rmuyy(ip) - rmuyy(im));
             dcomplex c1 = (0.5 * drmu + rmu * ik) * h, c2 = rmu * h2;
-            RE(i, i - 1) = -rk0 * (-c1 + c2);
+            if (im != i) RE(i, im) -= flip<E_LONG>(sm, rk0 * (-c1 + c2));
             RE(i, i) = -rk0 * (drmu * ik - rmu * k2 - 2. * c2) - k0 * epszz(l, i);
-            RE(i, i + 1) = -rk0 * (+c1 + c2);
-        }
-
-        if (symmetric()) {
-            dcomplex r2k0muh2 = 2. * rk0 * h2 * rmuyy(0);
-            RE(0, 1) = (symmetry == E_LONG) ? -r2k0muh2 : 0.;
-            RE(0, 0) = r2k0muh2 - k0 * epszz(l, 0);
-
-            r2k0muh2 = 2. * rk0 * h2 * rmuyy(N1);
-            if (periodic) {
-                RE(N1, N1 - 1) = (symmetry == E_LONG) ? -r2k0muh2 : 0.;
-                RE(N1, N1) = r2k0muh2 - k0 * epszz(l, N1);
-            } else {
-                RE(N1, N1 - 1) = (symmetry == E_LONG) ? -0.5 * r2k0muh2 : 0.;
-                RE(N1, N1) = r2k0muh2 - k0 * epszz(l, N1);
-            }
-        } else {
-            if (periodic) {
-                dcomplex rmu = rmuyy(0);
-                dcomplex c1 = rmu * ik * h, c2 = rmu * h2;
-                RE(0, N1) = -rk0 * (-c1 + c2);
-                RE(0, 0) = +rk0 * (rmu * k2 + 2. * c2) - k0 * epszz(l, 0);
-                RE(0, 1) = -rk0 * (+c1 + c2);
-                rmu = rmuyy(N1);
-                c1 = rmu * ik * h;
-                c2 = rmu * h2;
-                RE(N1, N1 - 1) = -rk0 * (-c1 + c2);
-                RE(N1, N1) = +rk0 * (rmu * k2 + 2. * c2) - k0 * epszz(l, N1);
-                RE(N1, 0) = -rk0 * (+c1 + c2);
-            } else {
-                dcomplex rmu = rmuyy(0);
-                dcomplex c1 = rmu * ik * h, c2 = rmu * h2;
-                RE(0, 0) = +rk0 * (rmu * k2 + 2. * c2) - k0 * epszz(l, N1);
-                RE(0, 1) = -rk0 * (+c1 + c2);
-                rmu = rmuyy(N1);
-                c1 = rmu * ik * h;
-                c2 = rmu * h2;
-                RE(N1, N1 - 1) = -rk0 * (-c1 + c2);
-                RE(N1, N1) = +rk0 * (rmu * k2 + 2. * c2) - k0 * epszz(l, N1);
-            }
+            if (ip != i) RE(i, ip) -= flip<E_LONG>(sp, rk0 * (+c1 + c2));
         }
 
     } else if (polarization == E_TRAN) {
+        for (size_t i = 0; i != N; ++i) RE(i, i) = - rk0 * beta2 * rmuyy(i) + k0 * epsxx(l, i);
+
+        for (size_t i = 0; i != N; ++i) {
+            size_t im, ip;
+            Component sm, sp;
+            checkEdges(i, im, ip, sm, sp);
+            dcomplex reps = repsyy(l, i), dreps = 0.5 * h * (repsyy(l, ip) - repsyy(l, im));
+            dcomplex c1 = (0.5 * dreps + reps * ik) * h, c2 = reps * h2;
+            if (im != i) RH(i, im) += flip<E_TRAN>(sm, rk0 * (-c1 + c2));
+            RH(i, i) = rk0 * (dreps * ik - reps * k2 - 2. * c2) + k0 * muzz(i);
+            if (ip != i) RH(i, ip) += flip<E_TRAN>(sp, rk0 * (+c1 + c2));
+        }
+
     } else {
     }
 
@@ -322,209 +298,6 @@ void ExpansionFD2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH) {
         if (RE(i, i) == 0.) RE(i, i) = 1e-32;
     for (size_t i = 0; i != N; ++i)
         if (RH(i, i) == 0.) RH(i, i) = 1e-32;
-
-    // if (coeff_matrices.empty()) coeff_matrices.resize(solver->lcount);
-
-    // const int order = int(SOLVER->getSize());
-    // double b = 2.*PI / (right-left) * (symmetric()? 0.5 : 1.0);
-    // double bb = b * b;
-
-    // // Ez represents -Ez
-
-    // if (separated()) {
-    //     if (symmetric()) {
-    //         // Separated symmetric()
-    //         if (polarization == E_LONG) {                   // Ez & Hx
-    //             const bool sym = symmetry == E_LONG;
-    //             if (!periodic) {
-    //                 coeff_matrix_rmyy.copyto(RE);
-    //                 coeff_matrix_mxx.copyto(RH);
-    //             } else {
-    //                 make_unit_matrix(RE);
-    //                 make_unit_matrix(RH);
-    //             }
-    //             for (int i = 0; i <= order; ++i) {
-    //                 dcomplex gi = - rk0 * bb * double(i);
-    //                 RE(i,0) = k0 * epszz(l,i);
-    //                 RH(i,0) *= k0;
-    //                 for (int j = 1; j <= order; ++j) {
-    //                     RE(i,j) = gi * double(j) * RE(i,j) + k0 * (sym? epszz(l,abs(i-j)) + epszz(l,i+j) : epszz(l,abs(i-j)) -
-    //                     epszz(l,i+j)); RH(i,j) *= k0;
-    //                 }
-    //                 // Ugly hack to avoid singularity
-    //                 if (RE(i,i) == 0.) RE(i,i) = 1e-32;
-    //                 if (RH(i,i) == 0.) RH(i,i) = 1e-32;
-    //             }
-    //         } else {                                        // Ex & Hz
-    //             const bool sym = symmetry == E_TRAN;
-    //             coeff_matrices[l].exx.copyto(RE);
-    //             coeff_matrices[l].reyy.copyto(RH);
-    //             for (int i = 0; i <= order; ++i) {
-    //                 const dcomplex gi = - rk0 * bb * double(i);
-    //                 RE(i,0) *= k0;
-    //                 RH(i,0) = k0 * muzz(i);
-    //                 for (int j = 1; j <= order; ++j) {
-    //                     RE(i,j) *= k0;
-    //                     RH(i,j) = gi * double(j) * RH(i,j) + k0 * (sym? muzz(abs(i-j)) + muzz(i+j) : muzz(abs(i-j)) - muzz(i+j));
-    //                 }
-    //                 // Ugly hack to avoid singularity
-    //                 if (RE(i,i) == 0.) RE(i,i) = 1e-32;
-    //                 if (RH(i,i) == 0.) RH(i,i) = 1e-32;
-    //             }
-    //         }
-    //     } else {
-    //         // Separated asymmetric()
-    //         if (polarization == E_LONG) {                   // Ez & Hx
-    //             if (!periodic) {
-    //                 coeff_matrix_rmyy.copyto(RE);
-    //                 coeff_matrix_mxx.copyto(RH);
-    //             } else {
-    //                 make_unit_matrix(RE);
-    //                 make_unit_matrix(RH);
-    //             }
-    //             for (int i = -order; i <= order; ++i) {
-    //                 const dcomplex gi = - rk0 * (b * double(i) - ktran);
-    //                 const size_t it = iEH(i);
-    //                 for (int j = -order; j <= order; ++j) {
-    //                     const size_t jt = iEH(j);
-    //                     RE(it,jt) = gi * (b * double(j) - ktran) * RE(it,jt) + k0 * epszz(l,i-j);
-    //                     RH(it,jt) *= k0;
-    //                 }
-    //                 // Ugly hack to avoid singularity
-    //                 if (RE(it,it) == 0.) RE(it,it) = 1e-32;
-    //                 if (RH(it,it) == 0.) RH(it,it) = 1e-32;
-    //             }
-    //         } else {                                        // Ex & Hz
-    //             coeff_matrices[l].exx.copyto(RE);
-    //             coeff_matrices[l].reyy.copyto(RH);
-    //             for (int i = -order; i <= order; ++i) {
-    //                 const dcomplex gi = - rk0 * (b * double(i) - ktran);
-    //                 const size_t it = iEH(i);
-    //                 for (int j = -order; j <= order; ++j) {
-    //                     const size_t jt = iEH(j);
-    //                     RE(it,jt) *= k0;
-    //                     RH(it,jt) = gi * (b * double(j) - ktran) * RH(it,jt) + k0 * muzz(i-j);
-    //                 }
-    //                 // Ugly hack to avoid singularity
-    //                 if (RE(it,it) == 0.) RE(it,it) = 1e-32;
-    //                 if (RH(it,it) == 0.) RH(it,it) = 1e-32;
-    //             }
-    //         }
-    //     }
-    // } else {
-    //     // work matrix is 2N×2N, so we can use its space for four N×N matrices
-    //     const size_t NN = N*N;
-    //     TempMatrix temp = getTempMatrix();
-    //     cmatrix work(temp);
-    //     cmatrix workij(N, N, work.data());
-    //     cmatrix workxx, workyy;
-    //     if (symmetric()) {
-    //         // Full symmetric()
-    //         const bool sel = symmetry == E_LONG;
-    //         workyy = coeff_matrices[l].reyy;
-    //         if (!periodic) {
-    //             workxx = coeff_matrix_mxx;
-    //         } else {
-    //             workxx = cmatrix(N, N, work.data()+NN);
-    //             make_unit_matrix(workxx);
-    //         }
-    //         for (int i = 0; i <= order; ++i) {
-    //             const dcomplex gi = b * double(i) - ktran;
-    //             const size_t iex = iEx(i), iez = iEz(i);
-    //             for (int j = 0; j <= order; ++j) {
-    //                 int ijp = abs(i-j), ijn = i+j;
-    //                 dcomplex gj = b * double(j) - ktran;
-    //                 const size_t jhx = iHx(j), jhz = iHz(j);
-    //                 dcomplex reyy = j == 0? repsyy(l,i) :
-    //                                 sel? repsyy(l,ijp) + repsyy(l,ijn) : repsyy(l,ijp) - repsyy(l,ijn);
-    //                 RH(iex,jhz) = - rk0 *  gi * gj  * workyy(i,j) +
-    //                                 k0 * (j == 0? muzz(i) : sel? muzz(ijp) - muzz(ijn) : muzz(ijp) + muzz(ijn));
-    //                 RH(iex,jhx) = - rk0 * beta* gi  * reyy;
-    //                 RH(iez,jhz) = - rk0 * beta* gj  * workyy(i,j);
-    //                 RH(iez,jhx) = - rk0 * beta*beta * reyy + k0 * workxx(i,j);
-    //             }
-    //             // Ugly hack to avoid singularity
-    //             if (RH(iex,iex) == 0.) RH(iex,iex) = 1e-32;
-    //             if (RH(iez,iez) == 0.) RH(iez,iez) = 1e-32;
-    //         }
-    //         workxx = coeff_matrices[l].exx;
-    //         if (!periodic) {
-    //             workyy = coeff_matrix_rmyy;
-    //         } else {
-    //             workyy = cmatrix(N, N, work.data()+2*NN);
-    //             make_unit_matrix(workyy);
-    //         }
-    //         for (int i = 0; i <= order; ++i) {
-    //             const dcomplex gi = b * double(i) - ktran;
-    //             const size_t ihx = iHx(i), ihz = iHz(i);
-    //             for (int j = 0; j <= order; ++j) {
-    //                 int ijp = abs(i-j), ijn = i+j;
-    //                 dcomplex gj = b * double(j) - ktran;
-    //                 const size_t jex = iEx(j), jez = iEz(j);
-    //                 dcomplex rmyy = j == 0? rmuyy(i) :
-    //                                 sel? rmuyy(ijp) - rmuyy(ijn) : rmuyy(ijp) + rmuyy(ijn);
-    //                 RE(ihz,jex) = - rk0 * beta*beta * rmyy + k0 * workxx(i,j);
-    //                 RE(ihz,jez) =   rk0 * beta* gj  * workyy(i,j);
-    //                 RE(ihx,jex) =   rk0 * beta* gi  * rmyy;
-    //                 RE(ihx,jez) = - rk0 *  gi * gj  * workyy(i,j) +
-    //                                 k0 * (j == 0? epszz(l,i) : sel? epszz(l,ijp) + epszz(l,ijn) : epszz(l,ijp) - epszz(l,ijn));
-    //             }
-    //             // Ugly hack to avoid singularity
-    //             if (RE(ihx,ihx) == 0.) RE(ihx,ihx) = 1e-32;
-    //             if (RE(ihz,ihz) == 0.) RE(ihz,ihz) = 1e-32;
-    //         }
-    //     } else {
-    //         // Full asymmetric()
-    //         workyy = coeff_matrices[l].reyy;
-    //         if (!periodic) {
-    //             workxx = coeff_matrix_mxx;
-    //         } else {
-    //             workxx = cmatrix(N, N, work.data()+NN);
-    //             make_unit_matrix(workxx);
-    //         }
-    //         for (int i = -order; i <= order; ++i) {
-    //             const dcomplex gi = b * double(i) - ktran;
-    //             const size_t iex = iEx(i), iez = iEz(i), it = iEH(i);
-    //             for (int j = -order; j <= order; ++j) {
-    //                 int ij = i-j;   dcomplex gj = b * double(j) - ktran;
-    //                 const size_t jhx = iHx(j), jhz = iHz(j), jt = iEH(j);
-    //                 RH(iex,jhz) = - rk0 *  gi * gj  * workyy(it,jt) + k0 * muzz(ij);
-    //                 RH(iex,jhx) = - rk0 * beta* gi  * repsyy(l,ij);
-    //                 RH(iez,jhz) = - rk0 * beta* gj  * workyy(it,jt);
-    //                 RH(iez,jhx) = - rk0 * beta*beta * repsyy(l,ij) + k0 * workxx(it,jt);
-    //             }
-    //             // Ugly hack to avoid singularity
-    //             if (RH(iex,iex) == 0.) RH(iex,iex) = 1e-32;
-    //             if (RH(iez,iez) == 0.) RH(iez,iez) = 1e-32;
-    //         }
-    //         workxx = coeff_matrices[l].exx;
-    //         if (!periodic) {
-    //             workyy = coeff_matrix_rmyy;
-    //         } else {
-    //             workyy = cmatrix(N, N, work.data()+2*NN);
-    //             make_unit_matrix(workyy);
-    //         }
-    //         for (int i = -order; i <= order; ++i) {
-    //             const dcomplex gi = b * double(i) - ktran;
-    //             const size_t ihx = iHx(i), ihz = iHz(i), it = iEH(i);
-    //             for (int j = -order; j <= order; ++j) {
-    //                 int ij = i-j;   dcomplex gj = b * double(j) - ktran;
-    //                 const size_t jex = iEx(j), jez = iEz(j), jt = iEH(j);
-    //                 RE(ihz,jex) = - rk0 * beta*beta * rmuyy(ij) + k0 * workxx(it,jt);
-    //                 RE(ihz,jez) =   rk0 * beta* gj  * workyy(it,jt);
-    //                 RE(ihx,jex) =   rk0 * beta* gi  * rmuyy(ij);
-    //                 RE(ihx,jez) = - rk0 *  gi * gj  * workyy(it,jt) + k0 * epszz(l,ij);
-    //                 if (epszx(l)) {
-    //                     RE(ihx,jex) -= k0 * coeff_matrices[l].ezx(it,jt);
-    //                     RE(ihz,jez) -= k0 * epsxz(l,ij);
-    //                 }
-    //             }
-    //             // Ugly hack to avoid singularity
-    //             if (RE(ihx,ihx) == 0.) RE(ihx,ihx) = 1e-32;
-    //             if (RE(ihz,ihz) == 0.) RE(ihz,ihz) = 1e-32;
-    //         }
-    //     }
-    // }
 }
 
 void ExpansionFD2D::prepareField() {

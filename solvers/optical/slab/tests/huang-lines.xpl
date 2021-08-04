@@ -74,20 +74,20 @@ class GratingTest(unittest.TestCase):
         self.assertAlmostEqual( r_te[0], 99.934, 2 )
         self.assertAlmostEqual( r_te[1], 98.890, 2 )
 
-#     def testTM_separated_asymmetric(self):
-#         solver.polarization = 'Et'
-#         solver.symmetry = None
-#         r_tm = solver.compute_reflectivity(array([1298., 1344.]), 'top', 'Et')
-#         self.assertAlmostEqual( r_tm[0], 98.504, 2 )
-#         self.assertAlmostEqual( r_tm[1], 28.228, 2 )
-#
-#     def testTM_separated_symmetric(self):
-#         solver.polarization = 'Et'
-#         solver.symmetry = 'Et'
-#         r_tm = solver.compute_reflectivity(array([1298., 1344.]), 'top', 'Et')
-#         self.assertAlmostEqual( r_tm[0], 98.640, 2 )
-#         self.assertAlmostEqual( r_tm[1], 28.228, 2 )
-#
+    def testTM_separated_asymmetric(self):
+        solver.polarization = 'Et'
+        solver.symmetry = None
+        r_tm = solver.compute_reflectivity(array([1298., 1344.]), 'top', 'Et')
+        self.assertAlmostEqual( r_tm[0], 98.504, 2 )
+        self.assertAlmostEqual( r_tm[1], 28.228, 2 )
+
+    def testTM_separated_symmetric(self):
+        solver.polarization = 'Et'
+        solver.symmetry = 'Et'
+        r_tm = solver.compute_reflectivity(array([1298., 1344.]), 'top', 'Et')
+        self.assertAlmostEqual( r_tm[0], 98.640, 2 )
+        self.assertAlmostEqual( r_tm[1], 28.228, 2 )
+
 #     def testTE_asymmetric(self):
 #         solver.polarization = None
 #         solver.symmetry = None

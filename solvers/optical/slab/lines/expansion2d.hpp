@@ -60,7 +60,7 @@ struct PLASK_SOLVER_API ExpansionFD2D : public Expansion {
     /// Free allocated memory
     void reset();
 
-    bool diagonalQE(size_t l) const override { return false; } // 🙁
+    bool diagonalQE(size_t l) const override { return false; }  // 🙁
 
     size_t matrixSize() const override { return separated() ? mesh->size() : 2 * mesh->size(); }
 
@@ -87,6 +87,40 @@ struct PLASK_SOLVER_API ExpansionFD2D : public Expansion {
 
   private:
     DataVector<Vec<3, dcomplex>> field;
+
+    inline void checkEdges(size_t i, size_t& im, size_t& ip, Component& sm, Component& sp) {
+        size_t N1 = mesh->size() - 1;
+        im = i - 1;
+        ip = i + 1;
+        sm = sp = E_UNSPECIFIED;
+        if (i == 0) {
+            if (symmetric()) {
+                im = 1;
+                sm = Component(3 - int(symmetry));
+            } else if (periodic) {
+                im = N1;
+            } else {
+                im = i;
+            }
+        }
+        if (i == N1) {
+            if (periodic) {
+                if (symmetric()) {
+                    ip = N1 - 1;
+                    sp = Component(3 - int(symmetry));
+                } else {
+                    ip = 0;
+                }
+            } else {
+                ip = i;
+            }
+        }
+    }
+
+    template<Component comp>
+    inline dcomplex flip(Component sym, dcomplex val) {
+        return (sym != comp) ? val : -val;
+    }
 
   protected:
     DataVector<dcomplex> mag;  ///< Magnetic permeability coefficients (used with for PMLs)
@@ -182,11 +216,11 @@ struct PLASK_SOLVER_API ExpansionFD2D : public Expansion {
     Component getPolarization() const { return polarization; }
     void setPolarization(Component pol);
 
-    size_t iEx(int i) { return 2 * i; }      ///< Get \f$ E_x \f$ index
-    size_t iEz(int i) { return 2 * i + 1; }  ///< Get \f$ E_z \f$ index
-    size_t iHx(int i) { return 2 * i + 1; }  ///< Get \f$ H_x \f$ index
-    size_t iHz(int i) { return 2 * i; }      ///< Get \f$ H_z \f$ index
-    size_t iEH(int i) { return i; }          ///< Get \f$ E \f$ or \f$ H \f$ index for separated equations
+    size_t iEx(size_t i) { return 2 * i; }      ///< Get \f$ E_x \f$ index
+    size_t iEz(size_t i) { return 2 * i + 1; }  ///< Get \f$ E_z \f$ index
+    size_t iHx(size_t i) { return 2 * i + 1; }  ///< Get \f$ H_x \f$ index
+    size_t iHz(size_t i) { return 2 * i; }      ///< Get \f$ H_z \f$ index
+    size_t iEH(size_t i) { return i; }          ///< Get \f$ E \f$ or \f$ H \f$ index for separated equations
 
     // dcomplex epszz(size_t l, int i) { return coeffs[l].zz[(i >= 0) ? i : i + nN]; }  ///< Get element of \f$ \varepsilon_{zz} \f$
     // dcomplex epsyy(size_t l, int i) { return coeffs[l].yy[(i >= 0) ? i : i + nN]; }  ///< Get element of \f$ \varepsilon_{yy} \f$
@@ -219,9 +253,9 @@ struct PLASK_SOLVER_API ExpansionFD2D : public Expansion {
     dcomplex epszx(size_t l, int i) const { return epsilon[l][i].c01; }
     dcomplex epsxz(size_t l, int i) const { return conj(epsilon[l][i].c01); }
 
-    dcomplex rmuyy(int i) const { return 1. / mag[i]; }
-    dcomplex muxx(int i) const { return 1. / mag[i]; }
-    dcomplex muzz(int i) const { return mag[i]; }
+    dcomplex rmuyy(size_t i) const { return 1. / mag[i]; }
+    dcomplex muxx(size_t i) const { return 1. / mag[i]; }
+    dcomplex muzz(size_t i) const { return mag[i]; }
 };
 
 }}}  // namespace plask::optical::slab
