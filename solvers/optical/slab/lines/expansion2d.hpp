@@ -30,9 +30,6 @@ struct PLASK_SOLVER_API ExpansionFD2D : public Expansion {
     /// Cached permittivity values
     std::vector<DataVector<Tensor3<dcomplex>>> epsilon;
 
-    /// Information if the layer is diagonal
-    std::vector<bool> diagonals;
-
     /// Mesh for getting material data
     shared_ptr<RectangularMesh<2>> material_mesh;
 
@@ -63,7 +60,7 @@ struct PLASK_SOLVER_API ExpansionFD2D : public Expansion {
     /// Free allocated memory
     void reset();
 
-    bool diagonalQE(size_t l) const override { return diagonals[l]; }
+    bool diagonalQE(size_t l) const override { return false; } // 🙁
 
     size_t matrixSize() const override { return separated() ? mesh->size() : 2 * mesh->size(); }
 
@@ -191,19 +188,6 @@ struct PLASK_SOLVER_API ExpansionFD2D : public Expansion {
     size_t iHz(int i) { return 2 * i; }      ///< Get \f$ H_z \f$ index
     size_t iEH(int i) { return i; }          ///< Get \f$ E \f$ or \f$ H \f$ index for separated equations
 
-    // const DataVector<dcomplex>& epszz(size_t l) { return coeffs[l].zz; }    ///< Get \f$ \varepsilon_{zz} \f$
-    // const DataVector<dcomplex>& epsyy(size_t l) { return coeffs[l].yy; }    ///< Get \f$ \varepsilon_{yy} \f$
-    // const DataVector<dcomplex>& repsxx(size_t l) { return coeffs[l].rxx; }  ///< Get \f$ \varepsilon_{xx}^{-1} \f$
-    // const DataVector<dcomplex>& repsyy(size_t l) { return coeffs[l].ryy; }  ///< Get \f$ \varepsilon_{yy}^{-1} \f$
-    // const DataVector<dcomplex>& epszx(size_t l) { return coeffs[l].zx; }    ///< Get \f$ \varepsilon_{zx} \f$
-    // const DataVector<dcomplex>& repszx(size_t l) { return coeffs[l].rzx; }  ///< Get \f$ \varepsilon_{zx}^{-1} \f$
-    // const DataVector<dcomplex>& muzz() { return mag; }                      ///< Get \f$ \mu_{zz} \f$
-    // const DataVector<dcomplex>& muxx() { return mag; }                      ///< Get \f$ \mu_{xx} \f$
-    // const DataVector<dcomplex>& muyy() { return mag; }                      ///< Get \f$ \mu_{yy} \f$
-    // const DataVector<dcomplex>& rmuzz() { return rmag; }                    ///< Get \f$ \mu_{zz}^{-1} \f$
-    // const DataVector<dcomplex>& rmuxx() { return rmag; }                    ///< Get \f$ \mu_{xx}^{-1} \f$
-    // const DataVector<dcomplex>& rmuyy() { return rmag; }                    ///< Get \f$ \mu_{yy}^{-1} \f$
-
     // dcomplex epszz(size_t l, int i) { return coeffs[l].zz[(i >= 0) ? i : i + nN]; }  ///< Get element of \f$ \varepsilon_{zz} \f$
     // dcomplex epsyy(size_t l, int i) { return coeffs[l].yy[(i >= 0) ? i : i + nN]; }  ///< Get element of \f$ \varepsilon_{yy} \f$
     // dcomplex repsxx(size_t l, int i) {
@@ -229,11 +213,15 @@ struct PLASK_SOLVER_API ExpansionFD2D : public Expansion {
     // dcomplex rmuxx(int i) { return rmag[(i >= 0) ? i : i + nN]; }  ///< Get element of \f$ \mu_{xx}^{-1} \f$
     // dcomplex rmuyy(int i) { return rmag[(i >= 0) ? i : i + nN]; }  ///< Get element of \f$ \mu_{yy}^{-1} \f$
 
-    // size_t iEx(int i) { return 2 * ((i >= 0) ? i : i + N); }      ///< Get \f$ E_x \f$ index
-    // size_t iEz(int i) { return 2 * ((i >= 0) ? i : i + N) + 1; }  ///< Get \f$ E_z \f$ index
-    // size_t iHx(int i) { return 2 * ((i >= 0) ? i : i + N) + 1; }  ///< Get \f$ H_x \f$ index
-    // size_t iHz(int i) { return 2 * ((i >= 0) ? i : i + N); }      ///< Get \f$ H_z \f$ index
-    // size_t iEH(int i) { return (i >= 0) ? i : i + N; }            ///< Get \f$ E \f$ or \f$ H \f$ index for separated equations
+    dcomplex repsyy(size_t l, int i) const { return epsilon[l][i].c22; }
+    dcomplex epsxx(size_t l, int i) const { return epsilon[l][i].c00; }
+    dcomplex epszz(size_t l, int i) const { return epsilon[l][i].c11; }
+    dcomplex epszx(size_t l, int i) const { return epsilon[l][i].c01; }
+    dcomplex epsxz(size_t l, int i) const { return conj(epsilon[l][i].c01); }
+
+    dcomplex rmuyy(int i) const { return 1. / mag[i]; }
+    dcomplex muxx(int i) const { return 1. / mag[i]; }
+    dcomplex muzz(int i) const { return mag[i]; }
 };
 
 }}}  // namespace plask::optical::slab

@@ -135,7 +135,6 @@ void ExpansionFD2D::init() {
 
     // Allocate memory for expansion coefficients
     size_t nlayers = solver->lcount;
-    diagonals.assign(nlayers, false);
     epsilon.resize(solver->lcount);
 }
 
@@ -164,8 +163,6 @@ void ExpansionFD2D::layerIntegrals(size_t layer, double lam, double glam) {
             break;
         }
     }
-
-    diagonals[layer] = true;
 
     size_t shift = npl + ndl;
     size_t N = mesh->size() - shift - npr - ndr;
@@ -203,7 +200,7 @@ void ExpansionFD2D::layerIntegrals(size_t layer, double lam, double glam) {
 
     // Add PMLs
     if (!periodic) {
-        double dx = mesh->at(1) - mesh->at(0);
+        double dx = mesh->step();
         auto epsl = epsilon[layer][shift];
         std::fill(epsilon[layer].begin() + npl, epsilon[layer].begin() + shift, epsl);
         for (size_t i = 0; i < npl; ++i) {
@@ -221,13 +218,9 @@ void ExpansionFD2D::layerIntegrals(size_t layer, double lam, double glam) {
         }
     }
 
-    Tensor3<dcomplex> eps0 = epsilon[layer][0];
     for (Tensor3<dcomplex>& eps : epsilon[layer]) {
-        if (!is_zero(eps - eps0)) diagonals[layer] = false;
         eps.c22 = 1. / eps.c22;
     }
-
-    if (diagonals[layer]) SOLVER->writelog(LOG_DETAIL, "Layer {0} is uniform", layer);
 }
 
 LazyData<Tensor3<dcomplex>> ExpansionFD2D::getMaterialNR(size_t l,
@@ -240,7 +233,7 @@ LazyData<Tensor3<dcomplex>> ExpansionFD2D::getMaterialNR(size_t l,
 
     DataVector<Tensor3<dcomplex>> nr(this->epsilon[l].size());
     Tensor3<dcomplex>* to = nr.begin();
-    for (const Tensor3<dcomplex>& val: this->epsilon[l]) {
+    for (const Tensor3<dcomplex>& val : this->epsilon[l]) {
         *(to++) = Tensor3<dcomplex>(sqrt(val.c00), sqrt(val.c11), sqrt(1. / val.c22), sqrt(val.c01));
     }
 
@@ -255,12 +248,84 @@ void ExpansionFD2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH) {
     if (isnan(k0)) throw BadInput(SOLVER->getId(), "Wavelength or k0 not set");
     if (isinf(k0.real())) throw BadInput(SOLVER->getId(), "Wavelength must not be 0");
 
+    dcomplex beta{this->beta.real(), this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real() / k0.real())};
+    dcomplex beta2 = beta * beta;
+    dcomplex rk0 = 1. / k0;
+
+    dcomplex ik(-SOLVER->ktran.imag(), SOLVER->ktran.real()), k2 = SOLVER->ktran * SOLVER->ktran;
+
+    int N = int(mesh->size());
+    int N1 = N - 1;
+
+    double h = 1. / (mesh->step());
+    double h2 = h * h;
+
+    std::fill_n(RE.data(), RE.rows() * RE.cols(), dcomplex(0.));
+    std::fill_n(RH.data(), RH.rows() * RH.cols(), dcomplex(0.));
+
+    if (polarization == E_LONG) {
+        for (int i = 0; i != N; ++i) RH(i, i) = rk0 * beta2 * repsyy(l, i) - k0 * muxx(i);
+
+        for (int i = 1; i != N1; ++i) {
+            dcomplex rmu = rmuyy(i), drmu = 0.5 * h * (rmuyy(i + 1) - rmuyy(i - 1));
+            dcomplex c1 = (0.5 * drmu + rmu * ik) * h, c2 = rmu * h2;
+            RE(i, i - 1) = -rk0 * (-c1 + c2);
+            RE(i, i) = -rk0 * (drmu * ik - rmu * k2 - 2. * c2) - k0 * epszz(l, i);
+            RE(i, i + 1) = -rk0 * (+c1 + c2);
+        }
+
+        if (symmetric()) {
+            dcomplex r2k0muh2 = 2. * rk0 * h2 * rmuyy(0);
+            RE(0, 1) = (symmetry == E_LONG) ? -r2k0muh2 : 0.;
+            RE(0, 0) = r2k0muh2 - k0 * epszz(l, 0);
+
+            r2k0muh2 = 2. * rk0 * h2 * rmuyy(N1);
+            if (periodic) {
+                RE(N1, N1 - 1) = (symmetry == E_LONG) ? -r2k0muh2 : 0.;
+                RE(N1, N1) = r2k0muh2 - k0 * epszz(l, N1);
+            } else {
+                RE(N1, N1 - 1) = (symmetry == E_LONG) ? -0.5 * r2k0muh2 : 0.;
+                RE(N1, N1) = r2k0muh2 - k0 * epszz(l, N1);
+            }
+        } else {
+            if (periodic) {
+                dcomplex rmu = rmuyy(0);
+                dcomplex c1 = rmu * ik * h, c2 = rmu * h2;
+                RE(0, N1) = -rk0 * (-c1 + c2);
+                RE(0, 0) = +rk0 * (rmu * k2 + 2. * c2) - k0 * epszz(l, 0);
+                RE(0, 1) = -rk0 * (+c1 + c2);
+                rmu = rmuyy(N1);
+                c1 = rmu * ik * h;
+                c2 = rmu * h2;
+                RE(N1, N1 - 1) = -rk0 * (-c1 + c2);
+                RE(N1, N1) = +rk0 * (rmu * k2 + 2. * c2) - k0 * epszz(l, N1);
+                RE(N1, 0) = -rk0 * (+c1 + c2);
+            } else {
+                dcomplex rmu = rmuyy(0);
+                dcomplex c1 = rmu * ik * h, c2 = rmu * h2;
+                RE(0, 0) = +rk0 * (rmu * k2 + 2. * c2) - k0 * epszz(l, N1);
+                RE(0, 1) = -rk0 * (+c1 + c2);
+                rmu = rmuyy(N1);
+                c1 = rmu * ik * h;
+                c2 = rmu * h2;
+                RE(N1, N1 - 1) = -rk0 * (-c1 + c2);
+                RE(N1, N1) = +rk0 * (rmu * k2 + 2. * c2) - k0 * epszz(l, N1);
+            }
+        }
+
+    } else if (polarization == E_TRAN) {
+    } else {
+    }
+
+    // Ugly hack to avoid singularity
+    for (size_t i = 0; i != N; ++i)
+        if (RE(i, i) == 0.) RE(i, i) = 1e-32;
+    for (size_t i = 0; i != N; ++i)
+        if (RH(i, i) == 0.) RH(i, i) = 1e-32;
+
     // if (coeff_matrices.empty()) coeff_matrices.resize(solver->lcount);
 
-    // dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
-
     // const int order = int(SOLVER->getSize());
-    // dcomplex rk0 = 1. / k0, k02 = k0*k0;
     // double b = 2.*PI / (right-left) * (symmetric()? 0.5 : 1.0);
     // double bb = b * b;
 
@@ -463,10 +528,10 @@ void ExpansionFD2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH) {
 }
 
 void ExpansionFD2D::prepareField() {
-    // if (field_interpolation == INTERPOLATION_DEFAULT) field_interpolation = INTERPOLATION_LINES;
+    // if (field_interpolation == INTERPOLATION_DEFAULT) field_interpolation = INTERPOLATION_FOURIER;
     // if (symmetric()) {
     //     field.reset(N);
-    //     if (field_interpolation != INTERPOLATION_LINES) {
+    //     if (field_interpolation != INTERPOLATION_FOURIER) {
     //         Component sym = (which_field == FIELD_E)? symmetry : Component(3-symmetry);
     //         int df = SOLVER->dct2()? 0 : 4;
     //         fft_x = FFT::Backward1D(1, N, FFT::Symmetry(sym+df), 3);    // tran
@@ -474,7 +539,7 @@ void ExpansionFD2D::prepareField() {
     //     }
     // } else {
     //     field.reset(N + 1);
-    //     if (field_interpolation != INTERPOLATION_LINES)
+    //     if (field_interpolation != INTERPOLATION_FOURIER)
     //         fft_x = FFT::Backward1D(3, N, FFT::SYMMETRY_NONE);
     // }
 }
@@ -485,6 +550,7 @@ LazyData<Vec<3, dcomplex>> ExpansionFD2D::getField(size_t l,
                                                    const shared_ptr<const typename LevelsAdapter::Level>& level,
                                                    const cvector& E,
                                                    const cvector& H) {
+    throw NotImplemented(" ExpansionFD2D::getField");
     // Component sym = (which_field == FIELD_E)? symmetry : Component((3-symmetry) % 3);
 
     // dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
@@ -495,8 +561,8 @@ LazyData<Vec<3, dcomplex>> ExpansionFD2D::getField(size_t l,
     // auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
     // double vpos = level->vpos();
 
-    // int dx = (symmetric() && field_interpolation != INTERPOLATION_LINES && sym != E_TRAN)? 1 : 0; // 1 for sin expansion of tran
-    // component int dz = (symmetric() && field_interpolation != INTERPOLATION_LINES && sym != E_LONG)? 1 : 0; // 1 for sin
+    // int dx = (symmetric() && field_interpolation != INTERPOLATION_FOURIER && sym != E_TRAN)? 1 : 0; // 1 for sin expansion of
+    // tran component int dz = (symmetric() && field_interpolation != INTERPOLATION_FOURIER && sym != E_LONG)? 1 : 0; // 1 for sin
     // expansion of long component
 
     // TempMatrix temp = getTempMatrix();
@@ -590,7 +656,7 @@ LazyData<Vec<3, dcomplex>> ExpansionFD2D::getField(size_t l,
     // if (dx) { field[field.size()-1].tran() = 0.; }
     // if (dz) { field[field.size()-1].lon() = 0.; field[field.size()-1].vert() = 0.; }
 
-    // if (field_interpolation == INTERPOLATION_LINES) {
+    // if (field_interpolation == INTERPOLATION_FOURIER) {
     //     DataVector<Vec<3,dcomplex>> result(dest_mesh->size());
     //     double L = right - left;
     //     if (!symmetric()) {
@@ -671,39 +737,40 @@ LazyData<Vec<3, dcomplex>> ExpansionFD2D::getField(size_t l,
 }
 
 double ExpansionFD2D::integratePoyntingVert(const cvector& E, const cvector& H) {
-    //     double P = 0.;
+    size_t N = mesh->size();
+    double P = 0.;
+    double dx = mesh->step();
 
-    //     const int ord = int(SOLVER->getSize());
+    if (separated()) {
+        for (size_t i = 0; i != N; ++i) {
+            P += real(E[i] * conj(H[i]));
+        }
+    } else {
+        for (size_t i = 0; i != N; ++i) {
+            P += real(E[iEz(i)] * conj(H[iHx(i)])) - real(E[iEx(i)] * conj(H[iHz(i)]));
+        }
+    }
 
-    //     if (separated()) {
-    //         if (symmetric()) {
-    //             for (int i = 0; i <= ord; ++i) {
-    //                 P += real(E[iEH(i)] * conj(H[iEH(i)]));
-    //             }
-    //             P = 2. * P - real(E[iEH(0)] * conj(H[iEH(0)]));
-    //         } else {
-    //             for (int i = -ord; i <= ord; ++i) {
-    //                 P += real(E[iEH(i)] * conj(H[iEH(i)]));
-    //             }
-    //         }
-    //     } else {
-    //         if (symmetric()) {
-    //             for (int i = 0; i <= ord; ++i) {
-    //                 P -= real(E[iEz(i)] * conj(H[iHx(i)]) + E[iEx(i)] * conj(H[iHz(i)]));
-    //             }
-    //             P = 2. * P + real(E[iEz(0)] * conj(H[iHx(0)]) + E[iEx(0)] * conj(H[iHz(0)]));
-    //         } else {
-    //             for (int i = -ord; i <= ord; ++i) {
-    //                 P -= real(E[iEz(i)] * conj(H[iHx(i)]) + E[iEx(i)] * conj(H[iHz(i)]));
-    //             }
-    //         }
-    //     }
+    if (symmetric()) {
+        if (separated()) {
+            P -= 0.5 * real(E[0] * conj(H[0]));
+        } else {
+            P -= 0.5 * (real(E[iEz(0)] * conj(H[iHx(0)])) - real(E[iEx(0)] * conj(H[iHz(0)])));
+        }
+        if (periodic) {
+            size_t N1 = N - 1;
+            if (separated()) {
+                P -= 0.5 * real(E[N1] * conj(H[N1]));
+            } else {
+                P -= 0.5 * (real(E[iEz(N1)] * conj(H[iHx(N1)])) - real(E[iEx(N1)] * conj(H[iHz(N1)])));
+            }
+        }
+    }
 
-    //     double L = SOLVER->geometry->getExtrusion()->getLength();
-    //     if (!isinf(L))
-    //         P *= L * 1e-6;
+    double L = SOLVER->geometry->getExtrusion()->getLength();
+    if (!isinf(L)) P *= L * 1e-6;
 
-    //     return P * (symmetric()? 2 * right : right - left) * 1e-6; // µm² -> m²
+    return P * (symmetric() ? 2. : 1.) * dx * 1e-6;  // µm² -> m²
 }
 
 void ExpansionFD2D::getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmatrix& RE, const cdiagonal& gamma) {
@@ -749,6 +816,7 @@ void ExpansionFD2D::getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmat
 }
 
 double ExpansionFD2D::integrateField(WhichField field, size_t l, const cvector& E, const cvector& H) {
+    return 1.;
     // const int order = int(SOLVER->getSize());
     // double b = 2.*PI / (right-left) * (symmetric()? 0.5 : 1.0);
 
