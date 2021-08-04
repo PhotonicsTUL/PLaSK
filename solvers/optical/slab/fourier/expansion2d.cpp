@@ -824,7 +824,7 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
     dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
 
     const int order = int(SOLVER->getSize());
-    dcomplex rk0 = 1. / k0, k02 = k0*k0;
+    dcomplex rk0 = 1. / k0;
     double b = 2.*PI / (right-left) * (symmetric()? 0.5 : 1.0);
     double bb = b * b;
 

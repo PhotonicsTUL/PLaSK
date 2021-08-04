@@ -222,12 +222,12 @@ cvector LinesSolver2D::incidentVector(Transfer::IncidentDirection side, Expansio
         std::fill(incident.begin(), incident.end(), 1.);
     } else {
         if (polarization == Expansion::E_TRAN) {
-            for (size_t i = 0; i < expansion.mesh->size(); ++i) {
+            for (size_t i = 0, end = expansion.mesh->size(); i < end; ++i) {
                 incident[expansion.iEx(i)] = 1.;
                 incident[expansion.iEz(i)] = 0.;
             }
         } else {
-            for (size_t i = 0; i < expansion.mesh->size(); ++i) {
+            for (size_t i = 0, end = expansion.mesh->size(); i < end; ++i) {
                 incident[expansion.iEx(i)] = 0.;
                 incident[expansion.iEz(i)] = 1.;
             }
