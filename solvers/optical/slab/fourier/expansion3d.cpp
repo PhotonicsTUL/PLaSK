@@ -850,47 +850,44 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
                 plask::make_shared<RegularAxis>(vpos, vpos, 1),
                 RectangularMesh<3>::ORDER_210
             );
-            auto result = interpolate(src_mesh, field, dest_mesh, field_interpolation,
-                                      InterpolationFlags(SOLVER->getGeometry(),
-                                                         symmetric_long()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
-                                                         symmetric_tran()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
-                                                         InterpolationFlags::Symmetry::NO),
-                                      false).claim();
-            if (symmetric_long()) {
-                double Ll = 2. * front;
-                if (syml == E_TRAN)
-                    for (size_t i = 0; i != dest_mesh->size(); ++i) {
+            LazyData<Vec<3,dcomplex>> interpolated =
+                interpolate(src_mesh, field, dest_mesh, field_interpolation,
+                            InterpolationFlags(SOLVER->getGeometry(),
+                                               symmetric_long()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
+                                               symmetric_tran()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
+                                               InterpolationFlags::Symmetry::NO),
+                            false);
+
+            return LazyData<Vec<3,dcomplex>>(interpolated.size(), [interpolated, dest_mesh, syml, symt, kx, ky, this] (size_t i) -> Vec<3,dcomplex> {
+                Vec<3,dcomplex> result = interpolated[i];
+                if (symmetric_long()) {
+                    double Ll = 2. * front;
+                    if (syml == E_TRAN) {
                         double x = std::fmod(dest_mesh->at(i)[0], Ll);
-                        if ((-front <= x && x < 0) || x > front) { result[i].lon() = -result[i].lon(); result[i].vert() = -result[i].vert(); }
-                    }
-                else
-                    for (size_t i = 0; i != dest_mesh->size(); ++i) {
+                        if ((-front <= x && x < 0) || x > front) { result.lon() = -result.lon(); result.vert() = -result.vert(); }
+                    } else {
                         double x = std::fmod(dest_mesh->at(i)[0], Ll);
-                        if ((-front <= x && x < 0) || x > front) { result[i].tran() = -result[i].tran(); }
+                        if ((-front <= x && x < 0) || x > front) { result.tran() = -result.tran(); }
                     }
-            } else {
-                dcomplex ikx = I * kx;
-                for (size_t i = 0; i != dest_mesh->size(); ++i)
+                } else {
+                    dcomplex ikx = I * kx;
                     result[i] *= exp(- ikx * dest_mesh->at(i).c0);
-            }
-            if (symmetric_tran()) {
-                double Lt = 2. * right;
-                if (symt == E_TRAN)
-                    for (size_t i = 0; i != dest_mesh->size(); ++i) {
+                }
+                if (symmetric_tran()) {
+                    double Lt = 2. * right;
+                    if (symt == E_TRAN) {
                         double y = std::fmod(dest_mesh->at(i)[1], Lt);
-                        if ((-right <= y && y < 0) || y > right) { result[i].lon() = -result[i].lon(); result[i].vert() = -result[i].vert(); }
-                    }
-                else
-                    for (size_t i = 0; i != dest_mesh->size(); ++i) {
+                        if ((-right <= y && y < 0) || y > right) { result.lon() = -result.lon(); result.vert() = -result.vert(); }
+                    } else {
                         double y = std::fmod(dest_mesh->at(i)[1], Lt);
-                        if ((-right <= y && y < 0) || y > right) { result[i].tran() = -result[i].tran(); }
+                        if ((-right <= y && y < 0) || y > right) { result.tran() = -result.tran(); }
                     }
-            } else {
-                dcomplex iky = I * ky;
-                for (size_t i = 0; i != dest_mesh->size(); ++i)
-                    result[i] *= exp(- iky * dest_mesh->at(i).c1);
-            }
-            return result;
+                } else {
+                    dcomplex iky = I * ky;
+                    result *= exp(- iky * dest_mesh->at(i).c1);
+                }
+                return result;
+            });
         } else {
             fft_z.execute(reinterpret_cast<dcomplex*>(field.data()));
             for (size_t l = 0, off = nl*Nt; l != Nl; ++l) field[off+l] = field[l];
@@ -901,13 +898,14 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
                 plask::make_shared<RegularAxis>(vpos, vpos, 1),
                 RectangularMesh<3>::ORDER_210
             );
-            auto result = interpolate(src_mesh, field, dest_mesh, field_interpolation,
-                                      InterpolationFlags(SOLVER->getGeometry(), InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::NO),
-                                      false).claim();
+            LazyData<Vec<3,dcomplex>> interpolated =
+                interpolate(src_mesh, field, dest_mesh, field_interpolation,
+                            InterpolationFlags(SOLVER->getGeometry(), InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::NO),
+                            false);
             dcomplex ikx = I * kx, iky = I * ky;
-            for (size_t i = 0; i != dest_mesh->size(); ++i)
-                result[i] *= exp(- ikx * dest_mesh->at(i).c0 - iky * dest_mesh->at(i).c1);
-            return result;
+            return LazyData<Vec<3,dcomplex>>(interpolated.size(), [interpolated, dest_mesh, ikx, iky] (size_t i) {
+                return interpolated[i] * exp(- ikx * dest_mesh->at(i).c0 - iky * dest_mesh->at(i).c1);
+            });
         }
     }
 }

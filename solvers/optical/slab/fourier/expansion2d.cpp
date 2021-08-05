@@ -1218,13 +1218,15 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
             fft_x.execute(reinterpret_cast<dcomplex*>(field.data()));
             field[N] = field[0];
             auto src_mesh = plask::make_shared<RectangularMesh<2>>(plask::make_shared<RegularAxis>(left, right, field.size()), plask::make_shared<RegularAxis>(vpos, vpos, 1));
-            auto result = interpolate(src_mesh, field, dest_mesh, field_interpolation,
-                                      InterpolationFlags(SOLVER->getGeometry(), InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::NO),
-                                      false).claim();
+            LazyData<Vec<3,dcomplex>> interpolated =
+                interpolate(src_mesh, field, dest_mesh, field_interpolation,
+                            InterpolationFlags(SOLVER->getGeometry(),
+                            InterpolationFlags::Symmetry::NO, InterpolationFlags::Symmetry::NO),
+                            false);
             dcomplex ikx = I * ktran;
-            for (size_t i = 0; i != dest_mesh->size(); ++i)
-                result[i] *= exp(- ikx * dest_mesh->at(i).c0);
-            return result;
+            return LazyData<Vec<3,dcomplex>>(interpolated.size(), [interpolated, dest_mesh, ikx] (size_t i) {
+                return interpolated[i] * exp(-ikx * dest_mesh->at(i).c0);
+            });
         }
     }
 }
