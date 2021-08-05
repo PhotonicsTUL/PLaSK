@@ -691,9 +691,10 @@ dvector SlabBase::getReflectedFluxes(const cvector& incident, Transfer::Incident
 
     for (size_t i = 0; i != N; ++i) {
         double R = real(reflected[i] * conj(reflected[i]));
-        if (R != 0.)
+        if (R != 0.) {
             result[i] = R * expansion.getModeFlux(i, transfer->diagonalizer->TE(l), transfer->diagonalizer->TH(l)) / input_flux;
-        else
+            if (result[i] > 1.) result[i] = 1. / result[i];
+        } else
             result[i] = 0.;
     }
 
