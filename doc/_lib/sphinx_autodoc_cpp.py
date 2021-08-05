@@ -134,7 +134,7 @@ class PlaskDocMixin:
             sigs = ['(*args, **kwargs)']
 
         # unindent docstring
-        doclines = prepare_docstring("\n".join(doclines), 0)
+        doclines = prepare_docstring("\n".join(doclines))
 
         setattr(self, '__new_doclines', doclines)
 
@@ -192,14 +192,14 @@ class PlaskDocMixin:
             sig = super(PlaskDocMixin, self).format_signature()
         return sig
 
-    def get_doc(self, encoding=None, ignore=1):
+    def get_doc(self, encoding=None, ignore=None):
         lines = getattr(self, '__new_doclines', None)
         if lines is not None:
             return [lines]
         try:
-            return autodoc.Documenter.get_doc(self, encoding, ignore)
+            return autodoc.Documenter.get_doc(self, encoding)
         except TypeError:
-            return autodoc.Documenter.get_doc(self, ignore)
+            return autodoc.Documenter.get_doc(self)
 
 
 class CppMethodDocumenter(PlaskDocMixin, autodoc.MethodDocumenter):
