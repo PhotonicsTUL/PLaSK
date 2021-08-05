@@ -248,49 +248,96 @@ void ExpansionFD2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH) {
     if (isnan(k0)) throw BadInput(SOLVER->getId(), "Wavelength or k0 not set");
     if (isinf(k0.real())) throw BadInput(SOLVER->getId(), "Wavelength must not be 0");
 
-    dcomplex beta{this->beta.real(), this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real() / k0.real())};
-    dcomplex beta2 = beta * beta;
-    dcomplex rk0 = 1. / k0;
+    const dcomplex beta{this->beta.real(), this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real() / k0.real())};
+    const dcomplex beta2 = beta * beta, ibeta{-beta.imag(), beta.real()};
+    const dcomplex rk0 = 1. / k0;
+    const dcomplex rk0beta2 = rk0 * beta2;
 
-    dcomplex ik(-SOLVER->ktran.imag(), SOLVER->ktran.real()), k2 = SOLVER->ktran * SOLVER->ktran;
+    const dcomplex ik(-SOLVER->ktran.imag(), SOLVER->ktran.real()), k2 = SOLVER->ktran * SOLVER->ktran;
 
-    size_t N = mesh->size();
+    const size_t N = mesh->size();
 
-    double h = 1. / (mesh->step());
-    double h2 = h * h;
+    const double h = 1. / (mesh->step());
+    const double h2 = h * h;
 
     std::fill_n(RE.data(), RE.rows() * RE.cols(), dcomplex(0.));
     std::fill_n(RH.data(), RH.rows() * RH.cols(), dcomplex(0.));
 
     if (polarization == E_LONG) {
-        for (size_t i = 0; i != N; ++i) RH(i, i) = rk0 * beta2 * repsyy(l, i) - k0 * muxx(i);
+        for (size_t i = 0; i != N; ++i) RH(i, i) = rk0beta2 * repsyy(l, i) - k0 * muxx(i);
 
         for (size_t i = 0; i != N; ++i) {
             size_t im, ip;
             Component sm, sp;
             checkEdges(i, im, ip, sm, sp);
-            dcomplex rmu = rmuyy(i), drmu = 0.5 * h * (rmuyy(ip) - rmuyy(im));
+            const dcomplex rmu = rmuyy(i), drmu = 0.5 * h * (rmuyy(ip) - rmuyy(im));
             dcomplex c1 = (0.5 * drmu + rmu * ik) * h, c2 = rmu * h2;
-            if (im != i) RE(i, im) -= flip<E_LONG>(sm, rk0 * (-c1 + c2));
+            if (im != INVALID_INDEX) RE(i, im) -= rk0 * flip<E_LONG>(sm, -c1 + c2);
             RE(i, i) = -rk0 * (drmu * ik - rmu * k2 - 2. * c2) - k0 * epszz(l, i);
-            if (ip != i) RE(i, ip) -= flip<E_LONG>(sp, rk0 * (+c1 + c2));
+            if (ip != INVALID_INDEX) RE(i, ip) -= rk0 * flip<E_LONG>(sp, +c1 + c2);
         }
 
     } else if (polarization == E_TRAN) {
-        for (size_t i = 0; i != N; ++i) RE(i, i) = - rk0 * beta2 * rmuyy(i) + k0 * epsxx(l, i);
+        for (size_t i = 0; i != N; ++i) RE(i, i) = -rk0beta2 * rmuyy(i) + k0 * epsxx(l, i);
 
         for (size_t i = 0; i != N; ++i) {
             size_t im, ip;
             Component sm, sp;
             checkEdges(i, im, ip, sm, sp);
-            dcomplex reps = repsyy(l, i), dreps = 0.5 * h * (repsyy(l, ip) - repsyy(l, im));
+            const dcomplex reps = repsyy(l, i), dreps = 0.5 * h * (repsyy(l, ip) - repsyy(l, im));
             dcomplex c1 = (0.5 * dreps + reps * ik) * h, c2 = reps * h2;
-            if (im != i) RH(i, im) += flip<E_TRAN>(sm, rk0 * (-c1 + c2));
+            if (im != INVALID_INDEX) RH(i, im) += rk0 * flip<E_TRAN>(sm, -c1 + c2);
             RH(i, i) = rk0 * (dreps * ik - reps * k2 - 2. * c2) + k0 * muzz(i);
-            if (ip != i) RH(i, ip) += flip<E_TRAN>(sp, rk0 * (+c1 + c2));
+            if (ip != INVALID_INDEX) RH(i, ip) += rk0 * flip<E_TRAN>(sp, +c1 + c2);
         }
 
     } else {
+        for (size_t i = 0; i != N; ++i) {
+            const size_t iex = iEx(i), iez = iEz(i);
+            const size_t ihx = iHx(i), ihz = iHz(i);
+            size_t im, ip;
+            Component sm, sp;
+            checkEdges(i, im, ip, sm, sp);
+            const size_t iexm = iEx(im), iezm = iEz(im);
+            const size_t iexp = iEx(ip), iezp = iEz(ip);
+            const size_t ihxm = iHx(im), ihzm = iHz(im);
+            const size_t ihxp = iHx(ip), ihzp = iHz(ip);
+            const dcomplex reps = repsyy(l, i), dreps = 0.5 * h * (repsyy(l, ip) - repsyy(l, im));
+            const dcomplex rmu = rmuyy(i), drmu = 0.5 * h * (rmuyy(ip) - rmuyy(im));
+
+            dcomplex c1 = (0.5 * dreps + reps * ik) * h, c2 = reps * h2;
+            if (im != INVALID_INDEX) RH(iex, ihzm) += rk0 * flip<E_TRAN>(sm, -c1 + c2);
+            RH(iex, ihz) = rk0 * (dreps * ik - reps * k2 - 2. * c2) + k0 * muzz(i);
+            if (ip != INVALID_INDEX) RH(iex, ihzp) += rk0 * flip<E_TRAN>(sp, +c1 + c2);
+
+            c1 = rk0 * ibeta * reps * 0.5 * h;
+            if (im != INVALID_INDEX) RH(iex, ihxm) += flip<E_LONG>(sm, -c1);
+            RH(iex, ihx) = rk0 * ibeta * (dreps + reps * ik);
+            if (ip != INVALID_INDEX) RH(iex, ihxp) += rk0 * flip<E_LONG>(sp, +c1);
+
+            if (im != INVALID_INDEX) RH(iez, ihzm) -= flip<E_TRAN>(sm, -c1);
+            RH(iez, ihz) = -rk0 * ibeta * reps * ik;
+            if (ip != INVALID_INDEX) RH(iez, ihzp) -= rk0 * flip<E_TRAN>(sp, +c1);
+
+            RH(iez, ihx) = rk0beta2 * reps - k0 * muxx(i);
+
+            RE(ihz, iex) = -rk0beta2 * rmu + k0 * epsxx(l, i);
+
+            c1 = rk0 * ibeta * rmu * 0.5 * h;
+            if (im != INVALID_INDEX) RE(ihz, iezm) += flip<E_LONG>(sm, -c1);
+            RE(ihz, iez) = rk0 * ibeta * rmu * ik;
+            if (ip != INVALID_INDEX) RE(ihz, iezp) += rk0 * flip<E_LONG>(sp, +c1);
+
+            if (im != INVALID_INDEX) RE(ihx, iexm) -= flip<E_TRAN>(sm, -c1);
+            RE(ihx, iex) = -rk0 * ibeta * (drmu + rmu * ik);
+            if (ip != INVALID_INDEX) RE(ihx, iexp) -= rk0 * flip<E_TRAN>(sp, +c1);
+
+            c1 = (0.5 * drmu + rmu * ik) * h;
+            c2 = rmu * h2;
+            if (im != INVALID_INDEX) RE(ihx, iezm) -= rk0 * flip<E_LONG>(sm, -c1 + c2);
+            RE(ihx, iez) = -rk0 * (drmu * ik - rmu * k2 - 2. * c2) - k0 * epszz(l, i);
+            if (ip != INVALID_INDEX) RE(ihx, iezp) -= rk0 * flip<E_LONG>(sp, +c1 + c2);
+        }
     }
 
     // Ugly hack to avoid singularity
@@ -300,22 +347,7 @@ void ExpansionFD2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH) {
         if (RH(i, i) == 0.) RH(i, i) = 1e-32;
 }
 
-void ExpansionFD2D::prepareField() {
-    // if (field_interpolation == INTERPOLATION_DEFAULT) field_interpolation = INTERPOLATION_FOURIER;
-    // if (symmetric()) {
-    //     field.reset(N);
-    //     if (field_interpolation != INTERPOLATION_FOURIER) {
-    //         Component sym = (which_field == FIELD_E)? symmetry : Component(3-symmetry);
-    //         int df = SOLVER->dct2()? 0 : 4;
-    //         fft_x = FFT::Backward1D(1, N, FFT::Symmetry(sym+df), 3);    // tran
-    //         fft_yz = FFT::Backward1D(1, N, FFT::Symmetry(3-sym+df), 3); // long
-    //     }
-    // } else {
-    //     field.reset(N + 1);
-    //     if (field_interpolation != INTERPOLATION_FOURIER)
-    //         fft_x = FFT::Backward1D(3, N, FFT::SYMMETRY_NONE);
-    // }
-}
+void ExpansionFD2D::prepareField() { field.reset(mesh->size()); }
 
 void ExpansionFD2D::cleanupField() { field.reset(); }
 
@@ -323,190 +355,95 @@ LazyData<Vec<3, dcomplex>> ExpansionFD2D::getField(size_t l,
                                                    const shared_ptr<const typename LevelsAdapter::Level>& level,
                                                    const cvector& E,
                                                    const cvector& H) {
-    throw NotImplemented(" ExpansionFD2D::getField");
-    // Component sym = (which_field == FIELD_E)? symmetry : Component((3-symmetry) % 3);
+    Component sym = (which_field == FIELD_E) ? symmetry : Component((3 - symmetry) % 3);
 
-    // dcomplex beta{ this->beta.real(),  this->beta.imag() - SOLVER->getMirrorLosses(this->beta.real()/k0.real()) };
+    dcomplex ibeta{-this->beta.imag() + SOLVER->getMirrorLosses(this->beta.real() / k0.real()), this->beta.real()};
+    dcomplex irk0 = I / k0;
 
-    // const int order = int(SOLVER->getSize());
-    // double b = 2.*PI / (right-left) * (symmetric()? 0.5 : 1.0);
-    // assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
-    // auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
-    // double vpos = level->vpos();
+    assert(dynamic_pointer_cast<const MeshD<2>>(level->mesh()));
+    auto dest_mesh = static_pointer_cast<const MeshD<2>>(level->mesh());
+    double vpos = level->vpos();
+    size_t N = mesh->size();
+    double h = 0.5 / mesh->step();
 
-    // int dx = (symmetric() && field_interpolation != INTERPOLATION_FOURIER && sym != E_TRAN)? 1 : 0; // 1 for sin expansion of
-    // tran component int dz = (symmetric() && field_interpolation != INTERPOLATION_FOURIER && sym != E_LONG)? 1 : 0; // 1 for sin
-    // expansion of long component
+    if (which_field == FIELD_E) {
+        if (polarization == E_LONG) {
+            for (size_t i = 0; i != N; ++i) {
+                field[i].tran() = field[i].vert() = 0.;
+                field[i].lon() = E[i];
+            }
+        } else if (polarization == E_TRAN) {
+            for (size_t i = 0; i != N; ++i) {
+                size_t im, ip;
+                Component sm, sp;
+                checkEdges(i, im, ip, sm, sp);
+                field[i].lon() = 0.;
+                field[i].tran() = E[i];
+                field[i].vert() = 0.;
+                dcomplex f = irk0 * repsyy(l, i) * h;
+                if (im != INVALID_INDEX) field[i].vert() -= f * flip<E_TRAN>(sm, H[im]);
+                if (ip != INVALID_INDEX) field[i].vert() += f * flip<E_TRAN>(sp, H[ip]);
+            }
+        } else {
+            for (size_t i = 0; i != N; ++i) {
+                size_t im, ip;
+                Component sm, sp;
+                checkEdges(i, im, ip, sm, sp);
+                field[i].lon() = E[iEz(i)];
+                field[i].tran() = E[iEx(i)];
+                field[i].vert() = ibeta * H[iHx(i)];
+                if (im != INVALID_INDEX) field[i].vert() -= h * flip<E_TRAN>(sm, H[iHz(im)]);
+                if (ip != INVALID_INDEX) field[i].vert() += h * flip<E_TRAN>(sp, H[iHz(ip)]);
+                field[i].vert() *= irk0 * repsyy(l, i);
+            }
+        }
+    } else {                           // which_field == FIELD_H
+        if (polarization == E_TRAN) {  // polarization == H_LONG
+            for (size_t i = 0; i != N; ++i) {
+                field[i].tran() = field[i].vert() = 0.;
+                field[i].lon() = H[i];
+            }
+        } else if (polarization == E_LONG) {  // polarization == H_TRAN
+            for (size_t i = 0; i != N; ++i) {
+                size_t im, ip;
+                Component sm, sp;
+                checkEdges(i, im, ip, sm, sp);
+                field[i].lon() = 0.;
+                field[i].tran() = H[i];
+                field[i].vert() = 0.;
+                dcomplex f = -irk0 * rmuyy(i) * h;
+                if (im != INVALID_INDEX) field[i].vert() -= f * flip<E_LONG>(sm, E[im]);
+                if (ip != INVALID_INDEX) field[i].vert() += f * flip<E_LONG>(sp, E[ip]);
+            }
+        } else {
+            for (size_t i = 0; i != N; ++i) {
+                size_t im, ip;
+                Component sm, sp;
+                checkEdges(i, im, ip, sm, sp);
+                field[i].lon() = H[iHz(i)];
+                field[i].tran() = H[iHx(i)];
+                field[i].vert() = ibeta * H[iHx(i)];
+                if (im != INVALID_INDEX) field[i].vert() -= h * flip<E_LONG>(sm, E[iEz(im)]);
+                if (ip != INVALID_INDEX) field[i].vert() += h * flip<E_LONG>(sp, E[iEz(ip)]);
+                field[i].vert() *= -irk0 * rmuyy(i);
+            }
+        }
+    }
 
-    // TempMatrix temp = getTempMatrix();
-    // cvector work(temp.data(), N);
+    auto src_mesh = plask::make_shared<RectangularMesh<2>>(mesh, plask::make_shared<RegularAxis>(vpos, vpos, 1));
 
-    // if (which_field == FIELD_E) {
-    //     if (polarization == E_LONG) {
-    //         for (int i = symmetric()? 0 : -order; i <= order; ++i) {
-    //             size_t ieh = iEH(i);
-    //             field[ieh].tran() = field[ieh].vert() = 0.;
-    //             if (ieh != 0 || !dz) field[ieh-dz].lon() = - E[ieh];
-    //         }
-    //     } else if (polarization == E_TRAN) {
-    //         for (int i = symmetric()? 0 : -order; i <= order; ++i) {
-    //             size_t ieh = iEH(i);
-    //             field[ieh].lon() = 0.;
-    //             if (ieh != 0 || !dx)
-    //                 field[ieh-dx].tran() = E[ieh];
-    //             if (ieh != 0 || !dz) {
-    //                 field[ieh-dz].vert() = 0.;
-    //                 for (int j = symmetric()? 0 : -order; j <= order; ++j) {
-    //                     size_t jeh = iEH(j);
-    //                     field[ieh-dz].vert() += coeff_matrices[l].reyy(ieh,jeh) * (b*double(j)-ktran) * H[jeh];
-    //                 }
-    //                 field[ieh-dz].vert() /= k0;
-    //             }
-    //         }
-    //     } else {
-    //         for (int i = symmetric()? 0 : -order; i <= order; ++i) {
-    //             size_t ieh = iEH(i);
-    //             if (ieh != 0 || !dx)
-    //                 field[ieh-dx].tran() = E[iEx(i)];
-    //             if (ieh != 0 || !dz) {
-    //                 field[ieh-dz].lon() = - E[iEz(i)];
-    //                 field[ieh-dz].vert() = 0.;
-    //                 for (int j = symmetric()? 0 : -order; j <= order; ++j) {
-    //                     field[ieh-dz].vert() += coeff_matrices[l].reyy(ieh,iEH(j))
-    //                                             * ((b*double(j)-ktran) * H[iHz(j)] - beta * H[iHx(j)]);
-    //                 }
-    //                 field[ieh-dz].vert() /= k0;
-    //             }
-    //         }
-    //     }
-    // } else { // which_field == FIELD_H
-    //     if (polarization == E_TRAN) {  // polarization == H_LONG
-    //         for (int i = symmetric()? 0 : -order; i <= order; ++i) {
-    //             size_t ieh = iEH(i);
-    //             field[ieh].tran() = field[ieh].vert() = 0.;
-    //             if (ieh != 0 || !dz) field[ieh-dz].lon() = H[ieh];
-    //         }
-    //     } else if (polarization == E_LONG) {  // polarization == H_TRAN
-    //         for (int i = symmetric()? 0 : -order; i <= order; ++i) {
-    //             size_t ieh = iEH(i);
-    //             field[ieh].lon() = 0.;
-    //             if (ieh != 0 || !dx)
-    //                 field[ieh-dx].tran() = H[ieh];
-    //             if (ieh != 0 || !dz) {
-    //                 if (periodic)
-    //                     field[ieh-dz].vert() = - (b*double(i)-ktran) * E[ieh];
-    //                 else {
-    //                     field[ieh-dz].vert() = 0.;
-    //                     for (int j = symmetric()? 0 : -order; j <= order; ++j) {
-    //                         size_t jeh = iEH(j);
-    //                         field[ieh-dz].vert() -= coeff_matrix_rmyy(ieh,jeh) * (b*double(j)-ktran) * E[jeh];
-    //                     }
-    //                 }
-    //                 field[ieh-dz].vert() /= k0;
-    //             }
-    //         }
-    //     } else {
-    //         for (int i = symmetric()? 0 : -order; i <= order; ++i) {
-    //             size_t ieh = iEH(i);
-    //             if (ieh != 0 || !dx)
-    //                 field[ieh-dx].tran() = H[iHx(i)];
-    //             if (ieh != 0 || !dz) {
-    //                 field[ieh-dz].lon() = H[iHz(i)];
-    //                 if (periodic)
-    //                     field[ieh-dz].vert() = (beta * E[iEx(i)] - (b*double(i)-ktran) * E[iEz(i)]);
-    //                 else {
-    //                     field[ieh-dz].vert() = 0.;
-    //                     for (int j = symmetric()? 0 : -order; j <= order; ++j)
-    //                         field[ieh-dz].vert() += coeff_matrix_rmyy(ieh,iEH(j))
-    //                                                 * (beta * E[iEx(j)] - (b*double(j)-ktran) * E[iEz(j)]);
-    //                 }
-    //                 field[ieh-dz].vert() /= k0;
-    //             }
-    //         }
-    //     }
-    // }
+    auto result = interpolate(src_mesh, field, dest_mesh, field_interpolation,
+                              InterpolationFlags(SOLVER->getGeometry(),
+                                                 (sym == E_UNSPECIFIED) ? InterpolationFlags::Symmetry::NO
+                                                 : (sym == E_TRAN)      ? InterpolationFlags::Symmetry::NPN
+                                                                        : InterpolationFlags::Symmetry::PNP,
+                                                 InterpolationFlags::Symmetry::NO),
+                              false)
+                      .claim();
 
-    // if (dx) { field[field.size()-1].tran() = 0.; }
-    // if (dz) { field[field.size()-1].lon() = 0.; field[field.size()-1].vert() = 0.; }
-
-    // if (field_interpolation == INTERPOLATION_FOURIER) {
-    //     DataVector<Vec<3,dcomplex>> result(dest_mesh->size());
-    //     double L = right - left;
-    //     if (!symmetric()) {
-    //         dcomplex B = 2*PI * I / L;
-    //         dcomplex ikx = I * ktran;
-    //         result.reset(dest_mesh->size(), Vec<3,dcomplex>(0.,0.,0.));
-    //         for (int k = -order; k <= order; ++k) {
-    //             size_t j = (k>=0)? k : k + N;
-    //             dcomplex G = B * double(k) - ikx;
-    //             for (size_t i = 0; i != dest_mesh->size(); ++i) {
-    //                 double x = dest_mesh->at(i)[0];
-    //                 if (!periodic) x = clamp(x, left, right);
-    //                 result[i] += field[j] * exp(G * (x-left));
-    //             }
-    //         }
-    //     } else {
-    //         double B = PI / L;
-    //         result.reset(dest_mesh->size());
-    //         for (size_t i = 0; i != dest_mesh->size(); ++i) {
-    //             result[i] = field[0];
-    //             for (int k = 1; k <= order; ++k) {
-    //                 double x = dest_mesh->at(i)[0];
-    //                 if (!periodic) x = clamp(x, -right, right);
-    //                 double cs =  2. * cos(B * k * x);
-    //                 dcomplex sn =  2. * I * sin(B * k * x);
-    //                 if (sym == E_TRAN) {
-    //                     result[i].lon() += field[k].lon() * sn;
-    //                     result[i].tran() += field[k].tran() * cs;
-    //                     result[i].vert() += field[k].vert() * sn;
-    //                 } else {
-    //                     result[i].lon() += field[k].lon() * cs;
-    //                     result[i].tran() += field[k].tran() * sn;
-    //                     result[i].vert() += field[k].vert() * cs;
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     return result;
-    // } else {
-    //     if (symmetric()) {
-    //         fft_x.execute(&(field.data()->tran()));
-    //         fft_yz.execute(&(field.data()->lon()));
-    //         fft_yz.execute(&(field.data()->vert()));
-    //         if (sym == E_TRAN) {
-    //             for (Vec<3,dcomplex>& f: field) {
-    //                 f.c0 = dcomplex(-f.c0.imag(), f.c0.real());
-    //                 f.c2 = dcomplex(-f.c2.imag(), f.c2.real());
-
-    //             }
-    //         } else {
-    //             for (Vec<3,dcomplex>& f: field) {
-    //                 f.c1 = dcomplex(-f.c1.imag(), f.c1.real());
-
-    //             }
-    //         }
-    //         double dx = 0.5 * (right-left) / double(N);
-    //         auto src_mesh = plask::make_shared<RectangularMesh<2>>(plask::make_shared<RegularAxis>(left+dx, right-dx,
-    //         field.size()), plask::make_shared<RegularAxis>(vpos, vpos, 1)); return interpolate(src_mesh, field, dest_mesh,
-    //         field_interpolation,
-    //                            InterpolationFlags(SOLVER->getGeometry(),
-    //                                 (sym == E_TRAN)? InterpolationFlags::Symmetry::NPN : InterpolationFlags::Symmetry::PNP,
-    //                                 InterpolationFlags::Symmetry::NO),
-    //                                 false);
-    //     } else {
-    //         fft_x.execute(reinterpret_cast<dcomplex*>(field.data()));
-    //         field[N] = field[0];
-    //         auto src_mesh = plask::make_shared<RectangularMesh<2>>(plask::make_shared<RegularAxis>(left, right, field.size()),
-    //         plask::make_shared<RegularAxis>(vpos, vpos, 1)); auto result = interpolate(src_mesh, field, dest_mesh,
-    //         field_interpolation,
-    //                                   InterpolationFlags(SOLVER->getGeometry(), InterpolationFlags::Symmetry::NO,
-    //                                   InterpolationFlags::Symmetry::NO), false).claim();
-    //         dcomplex ikx = I * ktran;
-    //         for (size_t i = 0; i != dest_mesh->size(); ++i)
-    //             result[i] *= exp(- ikx * dest_mesh->at(i).c0);
-    //         return result;
-    //     }
-    // }
+    dcomplex ikx = I * ktran;
+    for (size_t i = 0; i != dest_mesh->size(); ++i) result[i] *= exp(-ikx * dest_mesh->at(i).c0);
+    return result;
 }
 
 double ExpansionFD2D::integratePoyntingVert(const cvector& E, const cvector& H) {
@@ -589,137 +526,8 @@ void ExpansionFD2D::getDiagonalEigenvectors(cmatrix& Te, cmatrix Te1, const cmat
 }
 
 double ExpansionFD2D::integrateField(WhichField field, size_t l, const cvector& E, const cvector& H) {
+    throw NotImplemented("ExpansionFD2D::integrateField");
     return 1.;
-    // const int order = int(SOLVER->getSize());
-    // double b = 2.*PI / (right-left) * (symmetric()? 0.5 : 1.0);
-
-    // dcomplex vert;
-    // double sum = 0.;
-
-    // if (which_field == FIELD_E) {
-    //     if (polarization == E_TRAN) {
-    //         if (symmetric()) {
-    //             for (int i = 0; i <= order; ++i) {
-    //                 vert = 0.;
-    //                 for (int j = 0; j <= order; ++j)
-    //                     vert += coeff_matrices[l].reyy(i,j) * b*double(j) * H[j];
-    //                 vert /= k0;
-    //                 sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
-    //             }
-    //         } else {
-    //             for (int i = -order; i <= order; ++i) {
-    //                 vert = 0.; // beta is equal to 0
-    //                 size_t ieh = iEH(i);
-    //                 for (int j = -order; j <= order; ++j) {
-    //                     size_t jeh = iEH(j);
-    //                     vert += coeff_matrices[l].reyy(ieh,jeh) * (b*double(j)-ktran) * H[jeh];
-    //                 }
-    //                 vert /= k0;
-    //                 sum += real(vert * conj(vert));
-    //             }
-    //         }
-    //     } else if (polarization != E_LONG) {
-    //         if (symmetric()) {
-    //             for (int i = 0; i <= order; ++i) {
-    //                 vert = 0.;
-    //                 for (int j = 0; j <= order; ++j)
-    //                     vert -= coeff_matrices[l].reyy(i,j) * (beta * H[iHx(j)] + (b*double(j)-ktran) * H[iHz(j)]);
-    //                 vert /= k0;
-    //                 sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
-    //             }
-    //         } else {
-    //             for (int i = -order; i <= order; ++i) {
-    //                 vert = 0.;
-    //                 for (int j = -order; j <= order; ++j)
-    //                     vert -= coeff_matrices[l].reyy(iEH(i),iEH(j)) * (beta * H[iHx(j)] + (b*double(j)-ktran) * H[iHz(j)]);
-    //                 vert /= k0;
-    //                 sum += real(vert * conj(vert));
-    //             }
-    //         }
-    //     }
-    // } else { // which_field == FIELD_H
-    //     if (polarization == E_LONG) {  // polarization == H_TRAN
-    //         if (symmetric()) {
-    //             for (int i = 0; i <= order; ++i) {
-    //                 if (periodic)
-    //                     vert = - (b*double(i)-ktran) * E[iEH(i)];
-    //                 else {
-    //                     vert = 0.;
-    //                     for (int j = 0; j <= order; ++j)
-    //                         vert -= coeff_matrix_rmyy(i,j) * (b*double(j)-ktran) * E[iEH(j)];
-    //                 }
-    //                 vert /= k0;
-    //                 sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
-    //             }
-    //         } else {
-    //             for (int i = -order; i <= order; ++i) {
-    //                 if (periodic)
-    //                     vert = - (b*double(i)-ktran) * E[iEH(i)];
-    //                 else {
-    //                     vert = 0.;
-    //                     for (int j = -order; j <= order; ++j)
-    //                         vert -= coeff_matrix_rmyy(i,j) * (b*double(j)-ktran) * E[iEH(j)];
-    //                 }
-    //                 vert /= k0;
-    //                 sum += real(vert * conj(vert));
-    //             }
-    //         }
-    //     } else if (polarization != E_TRAN) {
-    //         for (int i = symmetric()? 0 : -order; i <= order; ++i) {
-    //             if (symmetric()) {
-    //                 if (periodic)
-    //                     vert = (beta * E[iEx(i)] - (b*double(i)-ktran) * E[iEz(i)]);
-    //                 else {
-    //                     vert = 0.;
-    //                     for (int j = 0; j <= order; ++j)
-    //                         vert += coeff_matrix_rmyy(i,j) * (beta * E[iEx(j)] - (b*double(j)-ktran) * E[iEz(j)]);
-    //                 }
-    //                 vert /= k0;
-    //                 sum += ((i == 0)? 1. : 2.) * real(vert * conj(vert));
-    //             } else {
-    //                 if (periodic)
-    //                     vert = (beta * E[iEx(i)] - (b*double(i)-ktran) * E[iEz(i)]);
-    //                 else {
-    //                     vert = 0.;
-    //                     for (int j = -order; j <= order; ++j)
-    //                         vert += coeff_matrix_rmyy(i,j) * (beta * E[iEx(j)] - (b*double(j)-ktran) * E[iEz(j)]);
-    //                 }
-    //                 vert /= k0;
-    //                 sum += real(vert * conj(vert));
-    //             }
-    //         }
-    //     }
-    // }
-
-    // double L = (right-left) * (symmetric()? 2. : 1.);
-    // if (field == FIELD_E) {
-    //     if (symmetric()) {
-    //         for (dcomplex e: E) sum += 2. * real(e * conj(e));
-    //         if (separated()) {
-    //             size_t i = iEH(0);
-    //             sum -= real(E[i] * conj(E[i]));
-    //         } else {
-    //             size_t ix = iEx(0), iz = iEz(0);
-    //             sum -= real(E[ix] * conj(E[ix])) + real(E[iz] * conj(E[iz]));
-    //         }
-    //     } else {
-    //         for (dcomplex e: E) sum += real(e * conj(e));
-    //     }
-    // } else {
-    //     if (symmetric()) {
-    //         for (dcomplex h: H) sum += 2. * real(h * conj(h));
-    //         if (separated()) {
-    //             size_t i = iEH(0);
-    //             sum -= real(H[i] * conj(H[i]));
-    //         } else {
-    //             size_t ix = iHx(0), iz = iHz(0);
-    //             sum -= real(H[ix] * conj(H[ix])) + real(H[iz] * conj(H[iz]));
-    //         }
-    //     } else {
-    //         for (dcomplex e: H) sum += real(e * conj(e));
-    //     }
-    // }
-    // return 0.5 * L * sum;
 }
 
 }}}  // namespace plask::optical::slab

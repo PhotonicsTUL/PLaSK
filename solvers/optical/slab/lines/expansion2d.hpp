@@ -6,6 +6,8 @@
 #include "../expansion.hpp"
 #include "../meshadapter.hpp"
 
+#define INVALID_INDEX size_t(-1)
+
 namespace plask { namespace optical { namespace slab {
 
 struct LinesSolver2D;
@@ -100,7 +102,7 @@ struct PLASK_SOLVER_API ExpansionFD2D : public Expansion {
             } else if (periodic) {
                 im = N1;
             } else {
-                im = i;
+                im = INVALID_INDEX;
             }
         }
         if (i == N1) {
@@ -112,7 +114,7 @@ struct PLASK_SOLVER_API ExpansionFD2D : public Expansion {
                     ip = 0;
                 }
             } else {
-                ip = i;
+                ip = INVALID_INDEX;
             }
         }
     }
