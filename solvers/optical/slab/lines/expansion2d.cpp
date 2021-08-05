@@ -371,7 +371,9 @@ LazyData<Vec<3, dcomplex>> ExpansionFD2D::getField(size_t l,
             for (size_t i = 0; i != N; ++i) {
                 field[i].tran() = field[i].vert() = 0.;
                 field[i].lon() = E[i];
+std::cerr << str(E[i]) << "  ";
             }
+std::cerr << "\n\n";
         } else if (polarization == E_TRAN) {
             for (size_t i = 0; i != N; ++i) {
                 size_t im, ip;
@@ -432,18 +434,19 @@ LazyData<Vec<3, dcomplex>> ExpansionFD2D::getField(size_t l,
 
     auto src_mesh = plask::make_shared<RectangularMesh<2>>(mesh, plask::make_shared<RegularAxis>(vpos, vpos, 1));
 
-    auto result = interpolate(src_mesh, field, dest_mesh, field_interpolation,
-                              InterpolationFlags(SOLVER->getGeometry(),
-                                                 (sym == E_UNSPECIFIED) ? InterpolationFlags::Symmetry::NO
-                                                 : (sym == E_TRAN)      ? InterpolationFlags::Symmetry::NPN
-                                                                        : InterpolationFlags::Symmetry::PNP,
-                                                 InterpolationFlags::Symmetry::NO),
-                              false)
-                      .claim();
+    LazyData<Vec<3, dcomplex>> interpolated =
+        interpolate(src_mesh, field, dest_mesh, getInterpolationMethod<INTERPOLATION_LINEAR>(field_interpolation),
+                    InterpolationFlags(SOLVER->getGeometry(),
+                                       (sym == E_UNSPECIFIED) ? InterpolationFlags::Symmetry::NO
+                                       : (sym == E_TRAN)      ? InterpolationFlags::Symmetry::NPN
+                                                              : InterpolationFlags::Symmetry::PNP,
+                                       InterpolationFlags::Symmetry::NO),
+                    false);
 
     dcomplex ikx = I * ktran;
-    for (size_t i = 0; i != dest_mesh->size(); ++i) result[i] *= exp(-ikx * dest_mesh->at(i).c0);
-    return result;
+    return LazyData<Vec<3,dcomplex>>(interpolated.size(), [interpolated, dest_mesh, ikx] (size_t i) {
+        return interpolated[i] * exp(-ikx * dest_mesh->at(i).c0);
+    });
 }
 
 double ExpansionFD2D::integratePoyntingVert(const cvector& E, const cvector& H) {
