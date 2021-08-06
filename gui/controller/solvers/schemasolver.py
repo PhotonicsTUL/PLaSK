@@ -85,13 +85,13 @@ class SolverWidget(QWidget):
 
         scroll = VerticalScrollArea(self)
 
-        filter = LineEditWithClear()
-        filter.setPlaceholderText("Filter...")
-        filter.textChanged.connect(self.filter)
+        self.filter = LineEditWithClear()
+        self.filter.setPlaceholderText("Filter...")
+        self.filter.textChanged.connect(self.build_form)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(filter)
+        layout.addWidget(self.filter)
         layout.addWidget(scroll)
         layout.setSpacing(3)
         self.setLayout(layout)
@@ -121,7 +121,7 @@ class SolverWidget(QWidget):
             self.geometry.setToolTip(u'&lt;<b>geometry ref</b>=""&gt;<br/>'
                                      u'Name of the existing geometry for use by this solver.')
             # TODO add some graphical thumbnail
-            self._add_row("Geometry", self.geometry, rows)
+            self._add_row(rows, self.geometry, "Geometry")
         else:
             self.geometry = None
 
@@ -138,7 +138,7 @@ class SolverWidget(QWidget):
                                  .format(' or '.join(controller.model.mesh_types)))
             # TODO add some graphical thumbnail
 
-            self._add_row("Mesh", self.mesh, rows)
+            self._add_row(rows, self.mesh, "Mesh")
         else:
             self.mesh = None
 
@@ -168,19 +168,19 @@ class SolverWidget(QWidget):
                             sep = ' '
                     else:
                         edit = self._add_attr(attr, defines, gname, group)
-                    self._add_row(attr.label, edit, rows)
+                    self._add_row(rows, edit, attr.label)
             elif isinstance(schema, SchemaCustomWidgetTag):
                 edit = QPushButton(schema.button_label)
                 edit.sizePolicy().setHorizontalStretch(1)
                 edit.pressed.connect(lambda schema=schema: weakself.launch_custom_editor(schema))
                 self.controls[group] = edit
-                self._add_row(schema.label, edit, rows)
+                self._add_row(rows, edit, schema.label)
             elif isinstance(schema, SchemaBoundaryConditions):
                 edit = QPushButton("View / Edit")
                 edit.sizePolicy().setHorizontalStretch(1)
                 edit.pressed.connect(lambda schema=schema: weakself.edit_boundary_conditions(schema))
                 self.controls[group] = edit
-                self._add_row(schema.label2, edit, rows)
+                self._add_row(rows, edit, schema.label2)
             else:
                 edit = TextEditorWithCB(parent=parent, line_numbers=False)
                 font = QFont(EDITOR_FONT)
@@ -189,10 +189,11 @@ class SolverWidget(QWidget):
                                                      default_font=font)
                 edit.setToolTip(u'&lt;<b>{0}</b>&gt;...&lt;/<b>{0}</b>&gt;<br/>{1}'.format(gname, schema.label))
                 self.controls[group] = edit
-                rows.append(edit)
-                self.form_layout.addRow(edit)
+                self._add_row(rows, edit)
                 # edit.textChanged.connect(self.controller.fire_changed)
                 edit.focus_out_cb = lambda edit=edit, group=group: weakself._change_attr(group, None, edit.toPlainText())
+
+        self.build_form()
 
         main.setLayout(self.form_layout)
         scroll.setWidget(main)
@@ -322,11 +323,7 @@ class SolverWidget(QWidget):
 
         def toggled(selected):
             button.setArrowType(Qt.DownArrow if selected else Qt.RightArrow)
-            for edit in rows:
-                edit.setVisible(selected)
-                label = weakself.form_layout.labelForField(edit)
-                if label is not None:
-                    label.setVisible(selected)
+            self.build_form()
 
         button.toggled.connect(toggled)
 
@@ -334,43 +331,40 @@ class SolverWidget(QWidget):
         font.setBold(True)
         button.setFont(font)
 
-        self.form_layout.addRow(button)
-
         self.headers.append((button, rows))
 
-    def _show_rows(self, rows):
-        for edit in rows:
-            edit.setVisible(True)
-            label = self.form_layout.labelForField(edit)
-            if label is not None:
-                label.setVisible(True)
-
-    def filter(self, text):
+    def build_form(self, text=None):
+        if text is None:
+            text = self.filter.text()
+        for _ in range(self.form_layout.rowCount()):
+            taken = self.form_layout.takeRow(0);
+            taken.fieldItem.widget().setParent(None)
+            label = taken.labelItem
+            if label is not None: label.widget().setParent(None)
         if text:
             text = text.lower()
             for button, rows in self.headers:
-                if not button.isChecked():
-                    continue
-                if text in button.text().lower():
-                    self._show_rows(rows)
-                else:
-                    for edit in rows:
-                        label = self.form_layout.labelForField(edit)
-                        if label is None:
-                            edit.setVisible(False)
-                        else:
-                            visible = text in label.text().lower()
-                            edit.setVisible(visible)
-                            label.setVisible(visible)
+                self.form_layout.addRow(button)
+                if button.isChecked():
+                    if text in button.text().lower():
+                        for row in rows:
+                            self.form_layout.addRow(*row)
+                    else:
+                        for row in rows:
+                            if isinstance(row[0], str) and text in row[0]:
+                                self.form_layout.addRow(*row)
         else:
             for button, rows in self.headers:
-                if not button.isChecked():
-                    continue
-                self._show_rows(rows)
+                self.form_layout.addRow(button)
+                if button.isChecked():
+                    for row in rows:
+                        self.form_layout.addRow(*row)
 
-    def _add_row(self, label, edit, rows):
-        rows.append(edit)
-        self.form_layout.addRow(label + ':', edit)
+    def _add_row(self, rows, edit, label=None):
+        if label is not None:
+            rows.append((label + ':', edit))
+        else:
+            rows.append((edit,))
 
     def _get_grids(self, mesh_types):
         if mesh_types is None:
