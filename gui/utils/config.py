@@ -207,10 +207,10 @@ KEYBOARD_SHORTCUTS = {
     'editor_find_next': ('Editor: Find Next', QKeySequence.FindNext),
     'editor_find_prev': ('Editor: Find Previous', QKeySequence.FindPrevious),
     'editor_replace': ('Editor: Replace', QKeySequence.Replace),
-    'python_comment': ('Python: Comment Lines', Qt.CTRL + Qt.Key_Slash),
+    'python_comment': ('Python: Comment Lines', None),
     'python_uncomment': ('Python: Uncomment Lines',
                          Qt.CTRL + (Qt.Key_Question if QT_API in ('PySide', 'PySide2') else Qt.SHIFT + Qt.Key_Slash)),
-    'python_toggle_comment':('Python: Toggle Comment on Lines', None),
+    'python_toggle_comment':('Python: Toggle Comment on Lines', Qt.CTRL + Qt.Key_Slash),
     'python_help': ('Python: Open Help', Qt.CTRL + Qt.Key_F1),
     'python_docstring': ('Python: Show Docstring', Qt.SHIFT + Qt.Key_F1),
     'python_hide_docstring': ('Python: Hide Docstring', Qt.SHIFT + Qt.Key_Escape),
@@ -719,6 +719,13 @@ class Config:
         else:
             return QKeySequence()
 
+    def shortcut_used_by(self, shortcut, ignore=None):
+        if shortcut.isEmpty(): return None
+        for entry in KEYBOARD_SHORTCUTS:
+            if entry != ignore and self.shortcut(entry) == shortcut:
+                return entry
+        return None
+
     def set_shortcut(self, action, entry, label=None, default=None):
         if label is not None:
             KEYBOARD_SHORTCUTS[entry] = label, default
@@ -991,6 +998,7 @@ class ConfigDialog(QDialog):
                 else:
                     super().__init__(parent)
                 self.entry = entry
+                self.editingFinished.connect(self.key_changed)
             needs_restart = False
             @property
             def changed(self):
@@ -1023,6 +1031,17 @@ class ConfigDialog(QDialog):
                     CONFIG._qshortcuts[self.entry] = \
                         set(act for act in CONFIG._qshortcuts.get(self.entry, ()) if self._set_shortcut(act))
                 CONFIG['keyboard_shortcuts/' + self.entry] = self.keySequence().toString()
+            def key_changed(self):
+                new_key = self.keySequence()
+                if new_key.isEmpty(): return
+                used = CONFIG.shortcut_used_by(new_key, self.entry)
+                if used is not None:
+                    confirm = QMessageBox.question(self, "Shortcut Already Used",
+                        "Shortcut is already used by action ‘{}’. Do you want to assign it to ‘{}’?".format(
+                            KEYBOARD_SHORTCUTS[used][0], KEYBOARD_SHORTCUTS[self.entry][0]),
+                        QMessageBox.Yes | QMessageBox.No,  QMessageBox.No)
+                    if confirm == QMessageBox.No:
+                        self.setKeySequence(CONFIG.shortcut(self.entry))
     except NameError:
         KeySequence = None
 
