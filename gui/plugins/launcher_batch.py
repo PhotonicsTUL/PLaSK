@@ -11,7 +11,7 @@
 # GNU General Public License for more details.
 # coding: utf8
 
-# plugin: Batch Laucher
+# plugin: Batch Launcher
 # description: Launcher allowing to submit computations to a remote batch system (SLURM or Torque).
 # description: Requires Paramiko.
 
