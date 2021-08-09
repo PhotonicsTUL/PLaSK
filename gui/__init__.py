@@ -63,7 +63,8 @@ from .model.info import InfoListModel, Info
 from .launch import launch_plask
 from .controller.materials.plot import show_material_plot
 
-from .utils.config import ConfigProxy, ConfigDialog, dark_style
+from .utils.config import ConfigProxy, dark_style
+from .utils.settings import SettingsDialog
 from .utils.texteditor import update_textedit
 from .utils.widgets import fire_edit_end, InfoListView
 from .utils.help import open_help
@@ -620,7 +621,7 @@ class MainWindow(QMainWindow):
         return True
 
     def show_settings(self):
-        dialog = ConfigDialog(self)
+        dialog = SettingsDialog(self)
         dialog.exec_()
 
     def current_section_exit(self):

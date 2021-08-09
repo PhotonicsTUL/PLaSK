@@ -337,10 +337,10 @@ class SolverWidget(QWidget):
         if text is None:
             text = self.filter.text()
         for _ in range(self.form_layout.rowCount()):
-            taken = self.form_layout.takeRow(0);
-            taken.fieldItem.widget().setParent(None)
-            label = taken.labelItem
-            if label is not None: label.widget().setParent(None)
+            item = self.form_layout.itemAt(0, QFormLayout.FieldRole)
+            widget = item.layout() or item.widget()
+            widget.setParent(None)
+            self.form_layout.removeRow(0)
         if text:
             text = text.lower()
             for button, rows in self.headers:
@@ -351,7 +351,7 @@ class SolverWidget(QWidget):
                             self.form_layout.addRow(*row)
                     else:
                         for row in rows:
-                            if isinstance(row[0], str) and text in row[0]:
+                            if text in row[0].lower():
                                 self.form_layout.addRow(*row)
         else:
             for button, rows in self.headers:

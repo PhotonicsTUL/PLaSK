@@ -290,6 +290,7 @@ class VerticalScrollArea(QScrollArea):
         super().__init__(parent)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setWidgetResizable(True)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
