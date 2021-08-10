@@ -21,6 +21,7 @@ from .. import Controller, select_index_from_info
 from ..table import table_with_manipulators
 from ..defines import get_defines_completer
 
+from .schemasolver import SolverWidget  # this is necessary to trigger YAML files load
 
 def _solvers_key(slv):
     try:
