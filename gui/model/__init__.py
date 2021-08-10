@@ -84,7 +84,6 @@ class TreeFragmentModel(InfoSource):
 
     def get_text(self):
         return print_interior(self.make_xml_element())
-        #return etree.tostring(self.make_xml_element())
 
     def is_read_only(self):
         """

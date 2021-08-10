@@ -114,16 +114,25 @@ class TreeFragmentSolver(Solver):
     def __init__(self, element, parent=None, info_cb=None):
         """Either element or rest of parameters (method is still optional), should be provided."""
         TreeFragmentModel.__init__(self, parent, info_cb)
+        self.comments = []
         self.element = element
 
     def load_xml_element(self, element):
-        self.element = element
+        if isinstance(element, Element):
+            self.element = element
+        else:
+            self.element = Element(element)
 
     def make_xml_element(self):
         return self.element.get_etree_element()
 
     def get_text(self):
         return print_interior(self.element)
+
+    def set_text(self, text):
+        if text.rstrip() != self.get_text().rstrip():
+            super().set_text(text)
+            self.fire_changed()
 
     @property
     def category(self):
