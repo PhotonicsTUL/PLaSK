@@ -390,8 +390,8 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                         }
                 }
                 if (!epsilon_diagonal) {
-                    for (size_t i = 1; i != nN; ++i)
-                        if (!is_zero(coeffs[layer].zx[i] - coeffs[layer].zx[0])) {
+                    for (size_t i = 0; i != nN; ++i)
+                        if (!is_zero(coeffs[layer].zx[i])) {
                             diagonals[layer] = false; break;
                         }
                 }

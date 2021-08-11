@@ -456,13 +456,17 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
 
     // Check if the layer is uniform
     if (periodic_tran && periodic_long) {
-        diagonals[layer] = true;
-        for (size_t i = 1; i != nM; ++i) {
-            Tensor3<dcomplex> diff = work[i] - work[0];
-            if (!(is_zero(diff.c00) && is_zero(diff.c11) && is_zero(diff.c22) && is_zero(diff.c01))) {
-                diagonals[layer] = false;
-                break;
+        if (is_zero(work[0].c01)) {
+            diagonals[layer] = true;
+            for (size_t i = 1; i != nM; ++i) {
+                Tensor3<dcomplex> diff = work[i] - work[0];
+                if (!(is_zero(diff.c00) && is_zero(diff.c11) && is_zero(diff.c22) && is_zero(work[i].c01))) {
+                    diagonals[layer] = false;
+                    break;
+                }
             }
+        } else {
+            diagonals[layer] = false;
         }
     } else
         diagonals[layer] = false;
