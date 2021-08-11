@@ -268,9 +268,10 @@ def get_launchers():
 
 
 def keyboard_shortcut_editors():
-    for entry, data in KEYBOARD_SHORTCUTS.items():
-        label = data[0]
-        yield label, lambda parent: SettingsDialog.KeySequence(entry, parent=parent)
+    if SettingsDialog.KeySequence is not None:
+        for entry, data in KEYBOARD_SHORTCUTS.items():
+            label = data[0]
+            yield label, lambda parent: SettingsDialog.KeySequence(entry, parent=parent)
 
 
 CONFIG_WIDGETS = OrderedDict([
@@ -520,6 +521,9 @@ class SettingsDialog(QDialog):
             self.setChecked(value)
         def save(self):
             CONFIG[self.entry] = self.isChecked()
+        @property
+        def str(self):
+            return ''
 
     class Combo(QComboBox):
         def __init__(self, entry, options, parent=None, help=None, needs_restart=False):
@@ -545,6 +549,9 @@ class SettingsDialog(QDialog):
                 self.setCurrentIndex(index)
         def save(self):
             CONFIG[self.entry] = self.currentText()
+        @property
+        def str(self):
+            return self.currentText()
 
     class SpinBox(QSpinBox):
         def __init__(self, entry, parent=None, min=None, max=None, help=None, needs_restart=False):
@@ -562,6 +569,9 @@ class SettingsDialog(QDialog):
             self.setValue(value)
         def save(self):
             CONFIG[self.entry] = self.value()
+        @property
+        def str(self):
+            return str(self.value())
 
     class FloatSpinBox(QDoubleSpinBox):
         def __init__(self, entry, parent=None, step=None, min=None, max=None, help=None, needs_restart=False):
@@ -582,6 +592,9 @@ class SettingsDialog(QDialog):
             self.setValue(value)
         def save(self):
             CONFIG[self.entry] = self.value()
+        @property
+        def str(self):
+            return str(self.value())
 
     class Color(QToolButton):
         def __init__(self, entry, parent=None, help=None, needs_restart=False):
@@ -608,6 +621,9 @@ class SettingsDialog(QDialog):
             self.setStyleSheet(u"background-color: {};".format(value))
         def save(self):
             CONFIG[self.entry] = self._color
+        @property
+        def str(self):
+            return str(self._color)
 
     class Syntax(QWidget):
         def __init__(self, entry, parent=None, help=None, needs_restart=False):
@@ -654,6 +670,13 @@ class SettingsDialog(QDialog):
             if self.bold.isChecked(): syntax.append('bold=true')
             if self.italic.isChecked(): syntax.append('italic=true')
             CONFIG[self.entry] = ', '.join(syntax)
+        @property
+        def str(self):
+            syntax = []
+            if self._color is not None: syntax.append(self._color)
+            if self.bold.isChecked(): syntax.append('bold')
+            if self.italic.isChecked(): syntax.append('italic')
+            return ' '.join(syntax)
 
     class Font(QPushButton):
         def __init__(self, entry, parent=None, help=None, needs_restart=False):
@@ -684,6 +707,11 @@ class SettingsDialog(QDialog):
             self.setFont(self.current_font)
         def save(self):
             CONFIG[self.entry] = self.current_font.toString().split(',')
+        @property
+        def str(self):
+            family = self.current_font.family()
+            size = self.current_font.pointSize()
+            return "{} {}".format(family, size)
 
     class Path(QWidget):
         def __init__(self, entry, title,  mask, parent=None, help=None, needs_restart=False):
@@ -720,6 +748,9 @@ class SettingsDialog(QDialog):
                 self.edit.setText(str(value))
         def save(self):
             CONFIG[self.entry] = self.edit.text()
+        @property
+        def str(self):
+            return self.edit.text()
 
     try:
         class KeySequence(QKeySequenceEdit):
@@ -774,6 +805,9 @@ class SettingsDialog(QDialog):
                         QMessageBox.Yes | QMessageBox.No,  QMessageBox.No)
                     if confirm == QMessageBox.No:
                         self.setKeySequence(CONFIG.shortcut(self.entry))
+            @property
+            def str(self):
+                return self.keySequence().toString()
     except NameError:
         KeySequence = None
 
@@ -924,7 +958,8 @@ class SettingsDialog(QDialog):
                                     tab.addRow(*item)
                                 else:
                                     show_group = False
-                            elif show_group or (isinstance(item[0], str) and filter in item[0].lower()):
+                            elif show_group or (isinstance(item[0], str) and filter in item[0].lower()) or \
+                                 (len(item) > 1 and hasattr(item[1], 'str') and filter in item[1].str.lower()):
                                     tab.addRow(*item)
                     show_tab = tab.count() > 0
                 else:
