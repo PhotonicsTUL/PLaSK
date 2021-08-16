@@ -125,11 +125,11 @@ struct XMLPythonDataSource: public XMLReader::DataSource {
 };
 
 inline boost::filesystem::path pyobject_to_path(py::object src) {
-Py_ssize_t size;
-wchar_t* str = PyUnicode_AsWideCharString(src.ptr(), &size);
-std::wstring wstr(str, size);
-PyMem_Free(str);
-return wstr;
+    Py_ssize_t size;
+    wchar_t* str = PyUnicode_AsWideCharString(src.ptr(), &size);
+    std::wstring wstr(str, size);
+    PyMem_Free(str);
+    return wstr;
 }
 
 void XMLExceptionWithCause::setPythonException() {

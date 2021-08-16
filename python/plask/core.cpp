@@ -259,8 +259,8 @@ PLASK_PYTHON_API int printPythonException(PyObject* otype, PyObject* value, PyOb
                 value = code;
             }
         }
-        if (PyInt_Check(value))
-            exitcode = (int)PyInt_AsLong(value);
+        if (PyLong_Check(value))
+            exitcode = (int)PyLong_AsLong(value);
         else {
             std::cerr.flush();
             std::cout.flush();
@@ -299,8 +299,8 @@ PLASK_PYTHON_API int printPythonException(PyObject* otype, PyObject* value, PyOb
         PyTracebackObject* traceback = original_traceback;
         while (traceback) {
             int lineno = traceback->tb_lineno + scriptline;
-            std::string filename = PyString_AsString(traceback->tb_frame->f_code->co_filename);
-            std::string funcname = PyString_AsString(traceback->tb_frame->f_code->co_name);
+            std::string filename = py::extract<std::string>(traceback->tb_frame->f_code->co_filename);
+            std::string funcname = py::extract<std::string>(traceback->tb_frame->f_code->co_name);
             if (funcname == "<module>" && (traceback == original_traceback || (second_is_script && traceback == original_traceback->tb_next)))
                 funcname = "<script>";
             if (traceback->tb_next)
@@ -352,8 +352,8 @@ py::docstring_options doc_options(
 //     }
 //
 //     static void* convertible(PyObject* obj) {
-//         return (PyArray_Check(obj) PyArray_IsIntegerScalar(obj) && PyObject_TypeCheck(obj, &PyInt64ArrType_Type))? obj : NULL;
-//         // return PyObject_TypeCheck(obj, &PyInt64ArrType_Type)? obj : NULL;
+//         return (PyArray_Check(obj) PyArray_IsIntegerScalar(obj) && PyObject_TypeCheck(obj, &PyLong64ArrType_Type))? obj : NULL;
+//         // return PyObject_TypeCheck(obj, &PyLong64ArrType_Type)? obj : NULL;
 //     }
 //
 //     static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {

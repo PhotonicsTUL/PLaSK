@@ -135,8 +135,8 @@ struct PythonComponentConventer {
     // Determine if obj can be converted into component
     static void* convertible(PyObject* obj) {
         if (obj == Py_None) return obj;
-        if (!PyString_Check(obj)) return nullptr;
-        const char* repr = PyString_AsString(obj);
+        if (!PyUnicode_Check(obj)) return nullptr;
+        const char* repr = PyUnicode_AsUTF8(obj);
         if (!strcmp(repr, "none") || !strcmp(repr, "NONE") || !strcmp(repr, "None") ||
             ((repr[0] == 'E' || repr[0] == 'H') &&
              (repr[1] == 'l' || repr[1] == 't' || repr[1] == 'x' || repr[1] == 'y' || repr[1] == 'z' || repr[1] == 'r' || repr[1] == 'p')))

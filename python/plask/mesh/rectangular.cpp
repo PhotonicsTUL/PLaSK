@@ -57,7 +57,7 @@ struct OrderedAxis_from_SingleNumber {
     }
 
     static void* convertible(PyObject* obj) {
-        if (PyFloat_Check(obj) || PyInt_Check(obj)) return obj;
+        if (PyFloat_Check(obj) || PyLong_Check(obj)) return obj;
         return NULL;
     }
 
@@ -132,7 +132,7 @@ boost::python::type_id<RegularAxis>());
         }
 
         static void* convertible(PyObject* obj) {
-            if (PyTuple_Check(obj) || PyFloat_Check(obj) || PyInt_Check(obj)) return obj;
+            if (PyTuple_Check(obj) || PyFloat_Check(obj) || PyLong_Check(obj)) return obj;
             if (PySequence_Check(obj) && PySequence_Length(obj) == 1) return obj;
             return NULL;
         }
@@ -142,7 +142,7 @@ boost::python::type_id<RegularAxis>());
             void* storage = ((boost::python::converter::rvalue_from_python_storage<RegularAxis>*)data)->storage.bytes;
             auto tuple = py::object(py::handle<>(py::borrowed(obj)));
             try {
-                if (PyFloat_Check(obj) || PyInt_Check(obj)) {
+                if (PyFloat_Check(obj) || PyLong_Check(obj)) {
                     double val = py::extract<double>(tuple);
                     new(storage) RegularAxis(val, val, 1);
                 } else if (py::len(tuple) == 1) {
@@ -227,7 +227,7 @@ shared_ptr<MeshAxis> extract_axis(const py::object& axis) {
     } else if (PySequence_Check(axis.ptr())) {
         py::stl_input_iterator<double> begin(axis), end;
         return plask::make_shared<OrderedAxis>(std::vector<double>(begin, end));
-    } else if (PyFloat_Check(axis.ptr()) || PyInt_Check(axis.ptr())) {
+    } else if (PyFloat_Check(axis.ptr()) || PyLong_Check(axis.ptr())) {
         return plask::make_shared<OrderedAxis>(std::initializer_list<double>({py::extract<double>(axis)()}));
     } else {
         throw TypeError("Wrong type of axis, it must derive from Rectangular1D or be a sequence.");

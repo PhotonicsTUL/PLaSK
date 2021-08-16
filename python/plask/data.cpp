@@ -339,7 +339,7 @@ static py::object PythonDataVector_getitem(const PythonDataVector<T, dim>& self,
         bool all_int = true;
         for (int i = 0; i != dim; ++i) {
             PyObject* it = py::object(item[i]).ptr();
-            bool is_int = PyInt_Check(it);
+            bool is_int = PyLong_Check(it);
             if (!(PySlice_Check(it) || is_int))
                 throw TypeError("Data indices must be integers or {}D slices not {}", dim,
                                 py::extract<std::string>(item[i].attr("__class__").attr("__name__"))());

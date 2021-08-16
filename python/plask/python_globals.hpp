@@ -95,13 +95,6 @@ inline int printPythonException(PyObject* value, const char* scriptname=nullptr,
     return printPythonException(type, value, traceback, scriptname, second_is_script, scriptline);
 }
 
-// ----------------------------------------------------------------------------------------------------------------------
-// String functions for Python3
-inline auto PyString_Check(PyObject* o) -> decltype(PyUnicode_Check(o)) { return PyUnicode_Check(o); }
-inline const char* PyString_AsString(PyObject* o) { return py::extract<const char*>(o); }
-inline bool PyInt_Check(PyObject* o) { return PyLong_Check(o); }
-inline long PyInt_AsLong(PyObject* o) { return PyLong_AsLong(o); }
-
 
 // ----------------------------------------------------------------------------------------------------------------------
 // Compare shared pointers
@@ -371,7 +364,7 @@ inline static py::object eval_common_type(const std::string& value) {
     if (value == "no" || value == "false" || value == "False") return py::object(false);
     try {
         py::object val = py::eval(value.c_str());
-        if (PyInt_Check(val.ptr()) || PyFloat_Check(val.ptr()) || PyComplex_Check(val.ptr()) ||
+        if (PyLong_Check(val.ptr()) || PyFloat_Check(val.ptr()) || PyComplex_Check(val.ptr()) ||
             PyTuple_Check(val.ptr()) || PyList_Check(val.ptr()))
             return val;
         else

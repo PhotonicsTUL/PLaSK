@@ -3,10 +3,6 @@
 //******************************************************************************
 #define PLASK_MODULE PyInit__plask
 extern "C" PyObject* PLASK_MODULE(void);
-inline auto PyString_Check(PyObject* o) -> decltype(PyUnicode_Check(o)) { return PyUnicode_Check(o); }
-inline const char* PyString_AsString(PyObject* o) { return py::extract<const char*>(o); }
-inline bool PyInt_Check(PyObject* o) { return PyLong_Check(o); }
-inline long PyInt_AsLong(PyObject* o) { return PyLong_AsLong(o); }
 
 //******************************************************************************
 
@@ -103,7 +99,7 @@ int handlePythonException(/*const char* scriptname=nullptr*/) {
     py::handle<> value_h(value), type_h(type), original_traceback_h(py::allow_null(original_traceback));
     if (type == PyExc_SystemExit) {
         int exitcode = 0;
-        if (PyInt_Check(value)) exitcode = (int)PyInt_AsLong(value);
+        if (PyLong_Check(value)) exitcode = (int)PyLong_AsLong(value);
         PyErr_Clear();
         return exitcode;
     }

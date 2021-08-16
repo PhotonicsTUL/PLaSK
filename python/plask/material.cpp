@@ -55,12 +55,12 @@ struct MaterialFromPythonString {
 
     // Determine if obj can be converted into Material
     static void* convertible(PyObject* obj) {
-        if (!PyString_Check(obj)) return 0;
+        if (!PyUnicode_Check(obj)) return 0;
         return obj;
     }
 
     static void construct(PyObject* obj, boost::python::converter::rvalue_from_python_stage1_data* data) {
-        std::string value = PyString_AsString(obj);
+        std::string value = py::extract<std::string>(obj);
 
         // Grab pointer to memory into which to construct the new Material
         void* storage = ((boost::python::converter::rvalue_from_python_storage<shared_ptr<Material>>*)data)->storage.bytes;
