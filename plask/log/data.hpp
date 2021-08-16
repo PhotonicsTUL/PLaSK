@@ -29,7 +29,8 @@ class DataLog {
      * @return current counter
      */
     DataLog& operator()(const ArgT& arg, const ValT& val, int counter) {
-        writelog(LOG_DATA, "{0}: {6}: {1}={3} {2}={4} ({5})", global_prefix, axis_arg_name, axis_val_name, str(arg), str(val), counter+1, chart_name);
+        writelog(LOG_DATA, "{}: {}: {}={} {}={} ({}) [{}]",
+                 global_prefix, chart_name, axis_arg_name, str(arg), axis_val_name, str(val), str(abs(val)), counter+1);
         return *this;
     };
 
@@ -52,7 +53,8 @@ class DataLog {
      * @return *this
      */
     DataLog& operator()(const ArgT& arg, const ValT& val) {
-        writelog(LOG_DATA, "{0}: {5}: {1}={3} {2}={4}", global_prefix, axis_arg_name, axis_val_name, str(arg), str(val), chart_name);
+        writelog(LOG_DATA, "{}: {}: {}={} {}={} ({})",
+                 global_prefix, chart_name, axis_arg_name, str(arg), axis_val_name, str(val), str(abs(val)));
         return *this;
     }
 
@@ -79,6 +81,12 @@ class DataLog {
     /// Return chart name
     std::string chartName() const { return chart_name; }
 };
+
+template <> DataLog<std::string, std::string>&
+DataLog<std::string, std::string>::operator()(const std::string& arg, const std::string& val, int counter);
+
+template <> DataLog<std::string, std::string>&
+DataLog<std::string, std::string>::operator()(const std::string& arg, const std::string& val);
 
 }
 

@@ -20,18 +20,64 @@
 #   include <unistd.h>
 #endif
 
-namespace plask { namespace python {
+#define PY_OBJECT boost::python::object
+
+namespace plask {
+
+template <> DataLog<PY_OBJECT, PY_OBJECT>&
+DataLog<PY_OBJECT, PY_OBJECT>::operator()(const PY_OBJECT& arg, const PY_OBJECT& val, int counter) {
+    try {
+        PY_OBJECT builtins = boost::python::import("builtins");
+        PY_OBJECT absval = builtins.attr("abs")(val);
+        writelog(LOG_DATA, "{}: {}: {}={} {}={} ({}) [{}]",
+                    global_prefix, chart_name, axis_arg_name,
+                    boost::python::extract<std::string>(boost::python::str(arg))(),
+                    axis_val_name,
+                    boost::python::extract<std::string>(boost::python::str(val))(),
+                    boost::python::extract<std::string>(boost::python::str(absval))(),
+                    counter+1);
+    } catch (boost::python::error_already_set) {
+        PyErr_Clear();
+        writelog(LOG_DATA, "{}: {}: {}={} {}={} [{}]",
+                    global_prefix, chart_name, axis_arg_name,
+                    boost::python::extract<std::string>(boost::python::str(arg))(),
+                    axis_val_name,
+                    boost::python::extract<std::string>(boost::python::str(val))(),
+                    counter+1);
+    }
+    return *this;
+}
+
+template <> DataLog<PY_OBJECT, PY_OBJECT>&
+DataLog<PY_OBJECT, PY_OBJECT>::operator()(const PY_OBJECT& arg, const PY_OBJECT& val) {
+    try {
+        PY_OBJECT builtins = boost::python::import("builtins");
+        PY_OBJECT absval = builtins.attr("abs")(val);
+        writelog(LOG_DATA, "{}: {}: {}={} {}={} ({})",
+                    global_prefix, chart_name, axis_arg_name,
+                    boost::python::extract<std::string>(boost::python::str(arg))(),
+                    axis_val_name,
+                    boost::python::extract<std::string>(boost::python::str(val))(),
+                    boost::python::extract<std::string>(boost::python::str(absval))());
+    } catch (boost::python::error_already_set) {
+        PyErr_Clear();
+        writelog(LOG_DATA, "{}: {}: {}={} {}={}",
+                    global_prefix, chart_name, axis_arg_name,
+                    boost::python::extract<std::string>(boost::python::str(arg))(),
+                    axis_val_name,
+                    boost::python::extract<std::string>(boost::python::str(val))());
+    }
+    return *this;
+}
+
+namespace python {
 
 #define LOG_ENUM(v) loglevel.value(BOOST_PP_STRINGIZE(v), LOG_##v); scope.attr(BOOST_PP_STRINGIZE(LOG_##v)) = BOOST_PP_STRINGIZE(v);
 
-typedef DataLog<std::string, std::string> LogOO;
+typedef DataLog<py::object, py::object> LogOO;
 
 void DataLog__call__(LogOO& self, py::object arg, py::object val) {
-    self(py::extract<std::string>(py::str(arg)), py::extract<std::string>(py::str(val)));
-}
-
-int DataLog_count(LogOO& self, py::object arg, py::object val) {
-    return self.count(py::extract<std::string>(py::str(arg)), py::extract<std::string>(py::str(val)));
+    self(arg, val);
 }
 
 // Logger
@@ -333,7 +379,7 @@ void register_python_log()
         u8"DataLog2(prefix, arg_name, val_name)\n    Create log with specified prefix, name, and argument and value names\n",
         py::init<std::string,std::string,std::string,std::string>((py::arg("prefix"), "name", "arg_name", "val_name")))
         .def("__call__", &DataLog__call__, (py::arg("arg"), "val"), u8"Log value pair")
-        .def("count", &DataLog_count, (py::arg("arg"), "val"), u8"Log value pair and count successive logs")
+        .def("count", &LogOO::count, (py::arg("arg"), "val"), u8"Log value pair and count successive logs")
         .def("reset", &LogOO::resetCounter, u8"Reset logs counter")
     ;
 
