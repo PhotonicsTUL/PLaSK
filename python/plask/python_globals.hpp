@@ -237,6 +237,8 @@ struct LoggingConfig
     LogLevel getLogLevel() const { return maxLoglevel; }
     void setLogLevel(LogLevel level) { if (!forcedLoglevel) maxLoglevel = level; }
 
+    void forceLogLevel(LogLevel level) { maxLoglevel = level; }
+
     std::string __str__() const;
 
     std::string __repr__() const;

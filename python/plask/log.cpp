@@ -349,6 +349,28 @@ py::object print_log(py::tuple args, py::dict kwargs) {
     return py::object();
 }
 
+struct ForcedLogLevelContext {
+
+    LogLevel storedLevel, wantedLevel;
+
+    ForcedLogLevelContext(LogLevel level): storedLevel(maxLoglevel), wantedLevel(level) {}
+
+    LogLevel __enter__() {
+        storedLevel = maxLoglevel;
+        maxLoglevel = wantedLevel;
+        return maxLoglevel;
+    }
+
+    bool __exit__(py::object type, py::object value, py::object traceback) {
+        maxLoglevel = storedLevel;
+        return false;
+    }
+
+    static ForcedLogLevelContext __new__(LogLevel level) {
+        return ForcedLogLevelContext(level);
+    }
+};
+
 void register_python_log()
 {
     py_enum<LogLevel> loglevel;
@@ -399,6 +421,18 @@ void register_python_log()
         .staticmethod("use_python")
         .def("__str__", &LoggingConfig::__str__)
         .def("__repr__", &LoggingConfig::__repr__)
+        .def("forced_level", &ForcedLogLevelContext::__new__,
+            u8"Temporarily force log level.\n\n"
+            u8"Use in ``with`` statement. For example:\n\n"
+            u8"    >>> with config.log.forced_level('detail'):\n"
+            u8"    >>>     pass\n",
+            py::arg("level"))
+        .staticmethod("forced_level")
+    ;
+
+    py::class_<ForcedLogLevelContext>("_ForcedLogLevelContextManager", u8"Context manager for forcing log level", py::no_init)
+        .def("__enter__", &ForcedLogLevelContext::__enter__)
+        .def("__exit__", &ForcedLogLevelContext::__exit__)
     ;
 }
 
