@@ -62,7 +62,10 @@ def window_title(title):
     Set the title text of the window containing the figure.  Note that
     this has no effect if there is no window (e.g., a PS backend).
     """
-    gcf().canvas.set_window_title(title)
+    try:
+        get_current_fig_manager().set_window_title(title)
+    except AttributeError:
+        gcf().canvas.set_window_title(title)
 
 # Easier rc handling. Make conditional on matplotlib version if I manage to introduce it there
 if True:
