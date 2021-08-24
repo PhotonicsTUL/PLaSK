@@ -11,13 +11,18 @@ import numpy
 import h5py
 import plask
 
-def save_rectangular1d(dest_group, name, mesh):
+def save_rectangular1d(dest_group, name, mesh, compress=None):
     mesh_type = type(mesh)
     if mesh_type is plask.mesh.Regular:
         axis = dest_group.create_dataset(name, (1,), dtype=numpy.dtype([('start', float), ('stop', float), ('num', int)]))
         axis[0] = mesh.start, mesh.stop, len(mesh)
     else:
-        axis = dest_group.create_dataset(name, data=numpy.array(mesh))
+        if compress is None:
+            axis = dest_group.create_dataset(name, data=numpy.array(mesh))
+        else:
+            mesh_array = numpy.array(mesh)
+            axis = dest_group.create_dataset(name, data=mesh_array, chunks=mesh_array.shape,
+                                             compression='gzip', compression_opts=compress)
     axis.attrs['type'] = mesh_type.__name__
     return axis
 
@@ -37,7 +42,7 @@ def load_rectangular1d(src_group, name):
         return plask.mesh.Ordered(data)
 
 
-def save_field(field, file, path='', mode='a'):
+def save_field(field, file, path='', mode='a', compress=None):
     """
     Save field to HDF5 file.
 
@@ -51,6 +56,7 @@ def save_field(field, file, path='', mode='a'):
         path (str): HDF5 path (group and dataset name), under which the
            data is saved in the HDF5 file.
         mode (str): Mode used for opening new files.
+        compress (None or int): Compression level. If None, data is not compressed.
 
     If ``file`` is a string, a new HDF5 file is opened with the mode
     specified by ``mode``. Then both the data and its mesh are written to
@@ -95,11 +101,16 @@ def save_field(field, file, path='', mode='a'):
     else:
         dest = file
 
-    data = dest.create_dataset('_data', data=field.array)
+    if compress is None:
+        data = dest.create_dataset('_data', data=field.array)
+    else:
+        field_array = field.array
+        data = dest.create_dataset('_data', data=field_array, chunks=field_array.shape,
+                                   compression='gzip', compression_opts=compress)
 
     mesh_group = dest.create_group('_mesh')
     if mst in (plask.mesh.Ordered, plask.mesh.Regular):
-        axis_dataset = save_rectangular1d(mesh_group, 'points', msh)
+        axis_dataset = save_rectangular1d(mesh_group, 'points', msh, compress)
         if type(msh) is plask.mesh.Ordered:
             try:
                 data.dims[0].label = plask.current_axes[2]
@@ -112,7 +123,7 @@ def save_field(field, file, path='', mode='a'):
         mesh_group.attrs['type'] = mst.__name__
         #mesh_group.attrs['ordering'] = msh.ordering
         for i,ax in enumerate(axes):
-            axis_dataset = save_rectangular1d(mesh_group, 'axis{:d}'.format(n-1-i), ax)
+            axis_dataset = save_rectangular1d(mesh_group, 'axis{:d}'.format(n-1-i), ax, compress)
             if type(ax) is plask.mesh.Ordered:
                 try:
                     data.dims[i].label = plask.current_axes[3-n+i]
