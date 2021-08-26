@@ -9,17 +9,25 @@ allows to easily perform complex self-consistent analysis of complete devices.
 """
 
 import sys
-import os as _os
+import os
 import weakref as _weakref
 
 # this buit-ins are overriden by numpy:
 _any = any
 _sum = sum
 
-#_os.environ["PLASK_PREFIX_PATH"] = _os.sep.join(__file__.split(_os.sep)[:-5])
+_basepath = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_i = sys.path.index(_basepath) if _basepath in sys.path else 0
+_basepath = os.path.dirname(_basepath)
+if 'PLASK_PREFIX_PATH' not in os.environ:
+    os.environ["PLASK_PREFIX_PATH"] = os.path.dirname(os.path.dirname(_basepath))
 
-import _plask
-from ._plask import *
+try:
+    from . import _plask
+    from ._plask import *
+except ImportError:  # this seems necessary for Python 3.4
+    import _plask
+    from _plask import *
 
 try: from ._plask import _print_stack # for debug only
 except ImportError: pass
@@ -28,6 +36,14 @@ except ImportError: pass
 def print_exc():
     """Print last exception to PLaSK log."""
     _plask._print_exception(sys.exc_type, sys.exc_value, sys.exc_traceback)
+
+
+if 'PLASK_SOLVERS_PATH' in os.environ:
+    for _path in os.environ['PLASK_SOLVERS_PATH'].split(';' if os.name == 'nt' else ':'):
+        _i += 1
+        os.path.insert(_i, _path)
+else:
+    sys.path.insert(_i+1, os.path.join(_basepath, 'solvers'))
 
 
 ## ## plask.material ## ##
@@ -442,9 +458,9 @@ wl = phys.wl
 ## ##  ## ##
 
 for JOBID in 'PLASK_JOBID', 'JOB_ID', 'SLURM_JOB_ID', 'SLURM_JOBID', 'PBS_JOBID', 'LSB_JOBID', 'LOAD_STEP_ID':
-    if JOBID in _os.environ:
-        try: JOBID = int(_os.environ[JOBID])
-        except ValueError: JOBID = _os.environ[JOBID]
+    if JOBID in os.environ:
+        try: JOBID = int(os.environ[JOBID])
+        except ValueError: JOBID = os.environ[JOBID]
         BATCH = True
         break
 else:
@@ -454,17 +470,17 @@ else:
     del _time
 
 for ARRAYID in 'PLASK_ARRAYID', 'PBS_ARRAYID', 'SLURM_ARRAY_TASK_ID', 'LSB_JOBINDEX', 'SGE_TASK_ID':
-    if ARRAYID in _os.environ:
-        try: ARRAYID = int(_os.environ[ARRAYID])
-        except ValueError: ARRAYID = _os.environ[ARRAYID]
+    if ARRAYID in os.environ:
+        try: ARRAYID = int(os.environ[ARRAYID])
+        except ValueError: ARRAYID = os.environ[ARRAYID]
         break
 else:
     ARRAYID = None
 
 for PROCID in 'PLASK_PROCID', 'OMPI_COMM_WORLD_RANK', 'PMI_RANK', 'SLURM_PROCID', 'PBS_VNODENUM':
-    if PROCID in _os.environ:
-        try: PROCID = int(_os.environ[PROCID])
-        except ValueError: PROCID = _os.environ[PROCID]
+    if PROCID in os.environ:
+        try: PROCID = int(os.environ[PROCID])
+        except ValueError: PROCID = os.environ[PROCID]
         break
 else:
     PROCID = None

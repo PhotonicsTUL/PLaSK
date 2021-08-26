@@ -36,7 +36,9 @@ public:
     PyHandle(const PyHandle<T>& o) { this->ptr = o.ptr; Py_XINCREF(this->ptr); }
 
     /// Call Py_XDECREF.
-    ~PyHandle() { Py_XDECREF(ptr); }
+    ~PyHandle() {
+        if (Py_IsInitialized()) Py_XDECREF(ptr);  // this desctructor may be called after interpretter is finalized
+    }
 
     /**
      * Copy operator, call Py_XDECREF(this->ptr) and Py_XINCREF(o->ptr) if @p o holds different pointer than this holds.
@@ -104,7 +106,11 @@ public:
      * Release the current pointer and set it to new one.
      * @param new_ptr new pointer to hold
      */
-    void reset(T* new_ptr = nullptr) { Py_XDECREF(ptr); ptr = new_ptr; }
+    void reset(T* new_ptr = nullptr) {
+        if (new_ptr == ptr) return;
+        Py_XDECREF(ptr);
+        ptr = new_ptr;
+    }
 };
 
 } }

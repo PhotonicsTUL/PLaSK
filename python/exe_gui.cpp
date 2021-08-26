@@ -45,11 +45,8 @@ static py::object initPlask(int argc, const system_char* const argv[])
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "lib";
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "plask";
     path.insert(0, plask_path);
-    std::string solvers_path = plask_path;
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "python";
-    solvers_path += plask::FILE_PATH_SEPARATOR; solvers_path += "solvers";
     path.insert(0, plask_path);
-    path.insert(1, solvers_path);
     if (argc > 0) // This is correct!!! argv[0] here is argv[1] in `main`
         try {
             path.insert(0, boost::filesystem::absolute(boost::filesystem::path(argv[0])).parent_path().string());

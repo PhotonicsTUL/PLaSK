@@ -100,26 +100,11 @@ static py::object initPlask(int argc, const system_char* argv[], bool banner)
     std::string plask_path = plask::prefixPath();
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "lib";
     plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "plask";
-    std::string solvers_path = plask_path;
     if (const char* envPath = getenv("PLASK_PYTHON_PATH")) {
         path.insert(0, envPath);
     } else {
         plask_path += plask::FILE_PATH_SEPARATOR; plask_path += "python";
         path.insert(0, plask_path);
-    }
-    if (const char* envPath = getenv("PLASK_SOLVERS_PATH")) {
-        size_t i = 0;
-#       if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
-#           define PATHSEP ";"
-#       else
-#           define PATHSEP ":"
-#       endif
-        std::string envPaths(envPath);
-        for (auto p: boost::tokenizer<boost::char_separator<char>>(envPaths, boost::char_separator<char>(PATHSEP)))
-            path.insert(++i, p);
-    } else {
-        solvers_path += plask::FILE_PATH_SEPARATOR; solvers_path += "solvers";
-        path.insert(1, solvers_path);
     }
     if (argc > 0) // This is correct!!! argv[0] here is argv[1] in `main`
         try {

@@ -50,7 +50,7 @@ Air = lambda: air
 if 'PLASK_DEFAULT_MATERIALS' not in _os.environ:
     _material.load_all_libraries()
 else:
-    for _ml in _os.environ['PLASK_DEFAULT_MATERIALS'].split(','):
+    for _ml in _os.environ['PLASK_DEFAULT_MATERIALS'].split(';' if _os.name == 'nt' else ':'):
         if _ml: _material.load_library(_ml)
 update_factories()
 
@@ -68,7 +68,7 @@ def load_library(lib):
     _material.load_library(lib)
     update_factories()
 
-def load_all_libraries(lib):
+def load_all_libraries(dir):
     """
     Load all materials from specified directory to database.
 
@@ -81,7 +81,7 @@ def load_all_libraries(lib):
     Args:
         dir (str): Directory name to load materials from.
     """
-    _material.load_all_libraries(lib)
+    _material.load_all_libraries(dir)
     update_factories()
 
 
