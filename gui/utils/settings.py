@@ -968,7 +968,10 @@ class SettingsDialog(QDialog):
                         tab.filter_view(None)
                     else:
                         show_tab = tab.filter_view(filter)
-                page.setTabVisible(tab_index, show_tab)
+                try:
+                    page.setTabVisible(tab_index, show_tab)
+                except AttributeError:
+                    pass
                 if show_tab: show_page = True
 
             if show_page:
