@@ -78,15 +78,23 @@ class ScriptEditor(TextEditor):
         self.comment_action = QAction('Co&mment Lines', self)
         self.uncomment_action = QAction('Uncomm&ent Lines', self)
         self.toggle_comment_action = QAction('&Toggle Comment on Lines', self)
+        self.complete_action = QAction('Show Completer', self)
+        self.join_lines_action = QAction('Join Lines', self)
         CONFIG.set_shortcut(self.comment_action, 'python_comment')
         CONFIG.set_shortcut(self.uncomment_action, 'python_uncomment')
         CONFIG.set_shortcut(self.toggle_comment_action, 'python_toggle_comment')
+        CONFIG.set_shortcut(self.complete_action, 'python_completion')
+        CONFIG.set_shortcut(self.join_lines_action, 'python_join_lines')
         self.comment_action.triggered.connect(self.block_comment)
         self.uncomment_action.triggered.connect(self.block_uncomment)
         self.toggle_comment_action.triggered.connect(self.block_comment_toggle)
+        self.complete_action.triggered.connect(self.show_completer)
+        self.join_lines_action.triggered.connect(self.join_lines)
         self.addAction(self.comment_action)
         self.addAction(self.uncomment_action)
         self.addAction(self.toggle_comment_action)
+        self.addAction(self.complete_action)
+        self.addAction(self.join_lines_action)
 
         self.completer = CompletionsController(self)
 
@@ -244,18 +252,17 @@ class ScriptEditor(TextEditor):
                     cursor.movePosition(QTextCursor.Right, mode)
                 self.setTextCursor(cursor)
                 return
-        elif key == Qt.Key_J and modifiers & Qt.ShiftModifier and modifiers & Qt.ControlModifier:
-            self.join_lines()
-            return
 
-        if not (key == Qt.Key_Space and modifiers == Qt.ControlModifier) or CONFIG['workarounds/no_jedi']:
-            super().keyPressEvent(event)
+        super().keyPressEvent(event)
 
         if key in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Colon):
             autoindent(self)
-        elif ((key == Qt.Key_Period and not CONFIG['workarounds/jedi_no_dot']) or
-              (key == Qt.Key_Space and modifiers == Qt.ControlModifier)) and \
-                not self.completer.popup().isVisible() and not CONFIG['workarounds/no_jedi']:
+        elif key == Qt.Key_Period and not (CONFIG['workarounds/no_jedi'] or CONFIG['workarounds/jedi_no_dot'] or
+                                           self.completer.popup().isVisible()):
+            self.completer.start_completion()
+
+    def show_completer(self):
+        if not (CONFIG['workarounds/no_jedi'] or self.completer.popup().isVisible()):
             self.completer.start_completion()
 
     def link_definition(self, row, col):
@@ -423,9 +430,6 @@ class ScriptController(SourceEditController):
         self.highlighter.rehighlight()
 
     def reconfig(self):
-        global MATCH_COLOR, REPLACE_COLOR
-        MATCH_COLOR = QColor(CONFIG['editor/match_color'])
-        REPLACE_COLOR = QColor(CONFIG['editor/replace_color'])
         editor = self.source_widget.editor
         editor.reconfig()
         update_brackets_colors()

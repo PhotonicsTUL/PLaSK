@@ -209,6 +209,8 @@ KEYBOARD_SHORTCUTS = {
     'python_help': ('Python: Open Help', Qt.CTRL + Qt.Key_F1),
     'python_docstring': ('Python: Show Docstring', Qt.SHIFT + Qt.Key_F1),
     'python_hide_docstring': ('Python: Hide Docstring', Qt.SHIFT + Qt.Key_Escape),
+    'python_completion': ('Python: Show Completions', Qt.CTRL + Qt.Key_Space),
+    'python_join_lines': ('Python: Join Lines', Qt.SHIFT + Qt.CTRL + Qt.Key_J),
     'launcher_copy': ('Launcher: Copy', QKeySequence.Copy),
     'launcher_select_all': ('Launcher: Select All', QKeySequence.SelectAll),
     'launcher_clear_selection': ('Launcher: Clear Selection', None),
