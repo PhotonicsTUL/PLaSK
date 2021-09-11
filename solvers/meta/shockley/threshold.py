@@ -383,7 +383,7 @@ class ThresholdSearch(ThermoElectric):
 
             **kwargs: Keyword arguments passed to the plot function.
         """
-        level = list(self._iter_levels(self.diffusion.geometry, [pos]))[junction][1]
+        level = list(self._iter_levels(self.diffusion.geometry, [pos], 'QW', 'QD', 'gain'))[junction][1]
         spectrum = self.gain.spectrum(level[0])
         if comp is None:
             plask.plot(lams, spectrum(lams), **kwargs)
