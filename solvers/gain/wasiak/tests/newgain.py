@@ -107,7 +107,7 @@ class NewGainValues(unittest.TestCase):
         peak = max(zip(wavelengths,gains), key=lambda wg: wg[1])
         print("Gain peak: {}".format(peak[0]))
         print(gains)
-        self.assertAlmostEqual( peak[0], 2180, 1 )
+        self.assertAlmostEqual(peak[0], 2180, 1)
 
     def testComputationsGainVal(self):
 
@@ -130,9 +130,9 @@ class NewGainValues(unittest.TestCase):
         for i in range(9):
             print("[{}]: {}".format(i, outgain[i],"cm-1"))
 
-        self.assertAlmostEqual( outgain[1], 2527.548, 2 )
-        self.assertAlmostEqual( outgain[4], 2527.548, 2 )
-        self.assertAlmostEqual( outgain[7], 2527.548, 2 )
+        self.assertAlmostEqual(outgain[1], 2527.548, 2)
+        self.assertAlmostEqual(outgain[4], 2527.548, 2)
+        self.assertAlmostEqual(outgain[7], 2527.548, 2)
 
 
 if __name__ == '__main__':

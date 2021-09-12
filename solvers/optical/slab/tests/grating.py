@@ -52,14 +52,14 @@ class GratingTest(unittest.TestCase):
         l_te = array([1500., 1600.])
         self.solver.lam0 = 1500.
         r_te = self.solver.compute_reflectivity(l_te, 'top', 'El')
-        self.assertAlmostEqual( r_te[0], 99.934, 2 )
-        self.assertAlmostEqual( r_te[1], 98.886, 2 )
+        self.assertAlmostEqual(r_te[0], 99.934, 2)
+        self.assertAlmostEqual(r_te[1], 98.886, 2)
 
         l_tm = array([1298., 1344.])
         self.solver.lam0 = 1300.
         r_tm = self.solver.compute_reflectivity(l_tm, 'top', 'Et')
-        self.assertAlmostEqual( r_tm[0], 98.529, 2 )
-        self.assertAlmostEqual( r_tm[1], 28.296, 2 )
+        self.assertAlmostEqual(r_tm[0], 98.529, 2)
+        self.assertAlmostEqual(r_tm[1], 28.296, 2)
 
     def testIntegrals(self):
         self.solver.lam = self.solver.lam0 = 1500.

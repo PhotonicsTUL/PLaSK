@@ -48,41 +48,41 @@ class ManagerTest(unittest.TestCase):
 
 
     def testGeometry(self):
-        self.assertEqual( len(self.manager.geo), 3 )
-        self.assertEqual( type(self.manager.geo["Block-3"]), plask.geometry.Block2D )
+        self.assertEqual(len(self.manager.geo), 3)
+        self.assertEqual(type(self.manager.geo["Block-3"]), plask.geometry.Block2D)
         self.assertEqual( list(self.manager.geo["Stack-2"].get_leafs_bboxes()),
             [plask.geometry.Box2D(0,0,5,2), plask.geometry.Box2D(0,2,5,4)] )
-        self.assertEqual( type(self.manager.geo.Space_1), plask.geometry.Cartesian2D )
-        self.assertEqual( len(self.manager.pth), 1 )
+        self.assertEqual(type(self.manager.geo.Space_1), plask.geometry.Cartesian2D)
+        self.assertEqual(len(self.manager.pth), 1)
         with self.assertRaises(KeyError): self.manager.geo["nonexistent"]
 
 
     def testDictionaries(self):
-        self.assertEqual( list(self.manager.geo), ["Block-3", "Space-1", "Stack-2"] )
+        self.assertEqual(list(self.manager.geo), ["Block-3", "Space-1", "Stack-2"])
 
 
     def testExport(self):
         self.manager.export(globals())
-        self.assertIn( "Space-1", GEO )
-        self.assertEqual( type(GEO.Space_1), plask.geometry.Cartesian2D )
+        self.assertIn("Space-1", GEO)
+        self.assertEqual(type(GEO.Space_1), plask.geometry.Cartesian2D)
 
 
     def testMesh(self):
-        self.assertEqual( len(self.manager.msh), 4 )
-        self.assertEqual( self.manager.msh.lin.axis0 , [1, 2, 3] )
-        self.assertEqual( self.manager.msh.lin.axis1 , [10, 20, 30] )
-        self.assertEqual( list(self.manager.msh["reg"].axis1) , [1, 2, 3] )
-        self.assertEqual( list(self.manager.msh["reg"].axis0) , [10, 20, 30] )
+        self.assertEqual(len(self.manager.msh), 4)
+        self.assertEqual(self.manager.msh.lin.axis0 , [1, 2, 3])
+        self.assertEqual(self.manager.msh.lin.axis1 , [10, 20, 30])
+        self.assertEqual(list(self.manager.msh["reg"].axis1) , [1, 2, 3])
+        self.assertEqual(list(self.manager.msh["reg"].axis0) , [10, 20, 30])
 
 
     def testGenerators(self):
-        self.assertEqual( tuple(self.manager.msh.test.prediv), (4,4) )
-        self.assertEqual( tuple(self.manager.msh.test.postdiv), (2,3) )
-        self.assertEqual( self.manager.msh.test.warn_missing, False )
+        self.assertEqual(tuple(self.manager.msh.test.prediv), (4,4))
+        self.assertEqual(tuple(self.manager.msh.test.postdiv), (2,3))
+        self.assertEqual(self.manager.msh.test.warn_missing, False)
 
         mesh = self.manager.msh.refined.generate(self.manager.geo.Stack_2)
-        self.assertEqual( mesh.axis1, [0., 2., 3., 4.] )
-        self.assertEqual( mesh.axis0, [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0] )
+        self.assertEqual(mesh.axis1, [0., 2., 3., 4.])
+        self.assertEqual(mesh.axis0, [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0])
 
 
     def testException(self):
@@ -154,8 +154,8 @@ class ManagerTest(unittest.TestCase):
           </connects>
         </plask>
         ''')
-        self.assertEqual( manager.solvers.output.inWavelength(0), 2 )
-        self.assertEqual( manager.solvers.input.inWavelength(0), 5 )
+        self.assertEqual(manager.solvers.output.inWavelength(0), 2)
+        self.assertEqual(manager.solvers.input.inWavelength(0), 5)
 
 
     def testMaterials(self):
@@ -184,17 +184,17 @@ class ManagerTest(unittest.TestCase):
         ''')
         material.update_factories()
         mat = plask.material.XmlMat()
-        self.assertAlmostEqual( mat.nr(900, 300), 1.39 )
-        self.assertAlmostEqual( mat.Nr(900, 300), 1.39-7.16197244e-06j )
-        self.assertEqual( tuple(plask.material.XmlMatSimple().NR(900, 300)), (3.5, 3.5, 3.5, 0.) )
+        self.assertAlmostEqual(mat.nr(900, 300), 1.39)
+        self.assertAlmostEqual(mat.Nr(900, 300), 1.39-7.16197244e-06j)
+        self.assertEqual(tuple(plask.material.XmlMatSimple().NR(900, 300)), (3.5, 3.5, 3.5, 0.))
 
 
         mad = plask.material.XmlMat(dopant="Mg", doping=1e18)
-        self.assertEqual( mad.cond(300), material.GaN(dopant="Mg", doping=1e18).cond(300) )
-        self.assertEqual( mad.absp(900, 300), 300 * 1e18 )
+        self.assertEqual(mad.cond(300), material.GaN(dopant="Mg", doping=1e18).cond(300))
+        self.assertEqual(mad.absp(900, 300), 300 * 1e18)
 
         mad20 = plask.material.XmlMatMg20()
-        self.assertEqual( mad20.cond(300), material.GaN(dopant="Mg", doping=1e20).cond(300) )
+        self.assertEqual(mad20.cond(300), material.GaN(dopant="Mg", doping=1e20).cond(300))
 
 
     def testVariables(self):
@@ -216,10 +216,10 @@ class ManagerTest(unittest.TestCase):
           </geometry>
         </plask>
         ''', {'hh1': 4})
-        self.assertEqual( str(manager.geo.block1.material), 'AlAs' )
-        self.assertEqual( manager.geo.block1.dims[1], 2 )
-        self.assertEqual( manager.geo.block2.dims[0], 5 )
-        self.assertEqual( manager.geo.block2.dims[1], 1 )
+        self.assertEqual(str(manager.geo.block1.material), 'AlAs')
+        self.assertEqual(manager.geo.block1.dims[1], 2)
+        self.assertEqual(manager.geo.block2.dims[0], 5)
+        self.assertEqual(manager.geo.block2.dims[1], 1)
 
 
 class FakeModule:
@@ -273,13 +273,13 @@ class CustomSolverTest(unittest.TestCase):
         </plask>
         ''')
         solver = manager.solvers['custom']
-        self.assertIsInstance( solver, FakeModule.CustomSolver )
-        self.assertEqual( solver.text, "passed" )
-        self.assertEqual( solver.a, 4 )
-        self.assertEqual( solver.b, 0 )
-        self.assertEqual( solver.c, "ok" )
-        self.assertEqual( solver.attrs, dict(a=2, c='ok', d=True) )
-        self.assertEqual( solver.geometry, manager.geo.main )
+        self.assertIsInstance(solver, FakeModule.CustomSolver)
+        self.assertEqual(solver.text, "passed")
+        self.assertEqual(solver.a, 4)
+        self.assertEqual(solver.b, 0)
+        self.assertEqual(solver.c, "ok")
+        self.assertEqual(solver.attrs, dict(a=2, c='ok', d=True))
+        self.assertEqual(solver.geometry, manager.geo.main)
 
 
 @plask.Manager._geometry_changer('test')
@@ -326,10 +326,10 @@ class XplChangerTest(unittest.TestCase):
         ''')
 
     def testChanger(self):
-        self.assertEqual( str(self.manager.geo.test2.get_material(1, 0.5)), 'InAs' )
-        self.assertEqual( str(self.manager.geo.test2.get_material(1, 1.5)), 'GaN' )
-        self.assertEqual( str(self.manager.geo.test2.get_material(1, 2.5)), 'air' )
-        self.assertEqual( str(self.manager.geo.test2.get_material(1, 3.5)), 'air' )
+        self.assertEqual(str(self.manager.geo.test2.get_material(1, 0.5)), 'InAs')
+        self.assertEqual(str(self.manager.geo.test2.get_material(1, 1.5)), 'GaN')
+        self.assertEqual(str(self.manager.geo.test2.get_material(1, 2.5)), 'air')
+        self.assertEqual(str(self.manager.geo.test2.get_material(1, 3.5)), 'air')
 
 
 if __name__ == '__main__':

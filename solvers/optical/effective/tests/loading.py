@@ -51,20 +51,20 @@ class EffectiveIndex2D_Test(unittest.TestCase):
         self.solver1.inTemperature = profile.outTemperature
 
     def testLoadConfigurations(self):
-        self.assertEqual( self.solver1.id, "eff1:optical.EffectiveIndex2D" )
+        self.assertEqual(self.solver1.id, "eff1:optical.EffectiveIndex2D")
 
-        self.assertEqual( self.solver1.geometry, self.manager.geo.Space_1 )
-        self.assertEqual( self.solver2.geometry.item, self.manager.geo.Stack_2 )
+        self.assertEqual(self.solver1.geometry, self.manager.geo.Space_1)
+        self.assertEqual(self.solver2.geometry.item, self.manager.geo.Stack_2)
 
-        self.assertEqual( self.solver1.mesh, self.manager.msh.lin )
-        self.assertEqual( self.solver2.mesh, self.manager.msg.div(self.manager.geo.Space_1.item) )
+        self.assertEqual(self.solver1.mesh, self.manager.msh.lin)
+        self.assertEqual(self.solver2.mesh, self.manager.msg.div(self.manager.geo.Space_1.item))
 
-        self.assertEqual( self.solver1.polarization, "TM" )
-        self.assertEqual( self.solver1.root.tolx, 0.1 )
+        self.assertEqual(self.solver1.polarization, "TM")
+        self.assertEqual(self.solver1.root.tolx, 0.1)
 
 
     def testProfile(self):
         m = plask.mesh.Rectangular2D(plask.mesh.Regular(1.,), plask.mesh.Regular(1., 5., 2))
         print(list(m))
         print(self.manager.geo.Space_1.get_leafs_bboxes())
-        self.assertEqual( list(self.solver1.inTemperature(m)), [320., 300.] )
+        self.assertEqual(list(self.solver1.inTemperature(m)), [320., 300.])

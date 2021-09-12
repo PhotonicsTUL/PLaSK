@@ -101,7 +101,7 @@ class GratingTest(unittest.TestCase):
 
     def testComputations(self):
         SOLVER.compute(save=False)
-        self.assertAlmostEqual( SOLVER.get_total_current(), 1.754, 3 )
+        self.assertAlmostEqual(SOLVER.get_total_current(), 1.754, 3)
 
 
 if __name__ == '__main__':

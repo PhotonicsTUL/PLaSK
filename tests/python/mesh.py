@@ -20,23 +20,23 @@ class OrderedMeshes(unittest.TestCase):
     def testOrdering2D(self):
         m = self.mesh2
 
-        self.assertEqual( [list(i) for i in m], [[1,10], [1,20], [2,10], [2,20], [3,10], [3,20]] )
-        self.assertEqual( m.minor_axis, m.axis1 )
-        self.assertEqual( m.major_axis, m.axis0 )
+        self.assertEqual([list(i) for i in m], [[1,10], [1,20], [2,10], [2,20], [3,10], [3,20]])
+        self.assertEqual(m.minor_axis, m.axis1)
+        self.assertEqual(m.major_axis, m.axis0)
         for i in range(len(m)):
-            self.assertEqual( m.minor_index(i), m.index1(i) )
-            self.assertEqual( m.major_index(i), m.index0(i) )
+            self.assertEqual(m.minor_index(i), m.index1(i))
+            self.assertEqual(m.major_index(i), m.index0(i))
 
         m.ordering = '10'
-        self.assertEqual( [list(i) for i in m], [[1,10], [2,10], [3,10], [1,20], [2,20], [3,20]] )
+        self.assertEqual([list(i) for i in m], [[1,10], [2,10], [3,10], [1,20], [2,20], [3,20]])
 
         m.ordering = 'best'
-        self.assertEqual( [list(i) for i in m], [[1,10], [1,20], [2,10], [2,20], [3,10], [3,20]] )
+        self.assertEqual([list(i) for i in m], [[1,10], [1,20], [2,10], [2,20], [3,10], [3,20]])
 
         for i in range(len(m)):
             i0 = m.index0(i)
             i1 = m.index1(i)
-            self.assertEqual( m.index(i0, i1), i )
+            self.assertEqual(m.index(i0, i1), i)
 
     def testOrdering3D(self):
         m = self.mesh3
@@ -56,19 +56,19 @@ class OrderedMeshes(unittest.TestCase):
             i0 = m.index0(i)
             i1 = m.index1(i)
             i2 = m.index2(i)
-            self.assertEqual( m.index(i0, i1, i2), i )
+            self.assertEqual(m.index(i0, i1, i2), i)
 
         m.ordering = 'best'
         self.assertEqual( [list(i) for i in m], [[1,10,100], [1,10,200], [1,20,100], [1,20,200],
                                                  [2,10,100], [2,10,200], [2,20,100], [2,20,200],
                                                  [3,10,100], [3,10,200], [3,20,100], [3,20,200]] )
-        self.assertEqual( m.minor_axis,  m.axis2 )
-        self.assertEqual( m.medium_axis, m.axis1 )
-        self.assertEqual( m.major_axis,  m.axis0 )
+        self.assertEqual(m.minor_axis,  m.axis2)
+        self.assertEqual(m.medium_axis, m.axis1)
+        self.assertEqual(m.major_axis,  m.axis0)
         for i in range(len(m)):
-            self.assertEqual( m.minor_index(i),  m.index2(i) )
-            self.assertEqual( m.middle_index(i), m.index1(i) )
-            self.assertEqual( m.major_index(i),  m.index0(i) )
+            self.assertEqual(m.minor_index(i),  m.index2(i))
+            self.assertEqual(m.middle_index(i), m.index1(i))
+            self.assertEqual(m.major_index(i),  m.index0(i))
         plask.mesh.Rectangular2D(plask.mesh.Ordered([1,3,2,1]), plask.mesh.Ordered(array([10,20], float)))
 
     def testBoundary(self):
@@ -78,9 +78,9 @@ class OrderedMeshes(unittest.TestCase):
         self.assertIn(0, b)
         self.assertNotIn(1, b)
         self.assertIn(3, b)
-        self.assertEqual( list(b), [0, 3] )
+        self.assertEqual(list(b), [0, 3])
 
-        self.assertEqual( plasktest.test_boundary(self.mesh2, geo, lambda mesh,i: i in [2,3]), [2, 3] )
+        self.assertEqual(plasktest.test_boundary(self.mesh2, geo, lambda mesh,i: i in [2,3]), [2, 3])
 
     def testRegenerationInSolver(self):
         stack = plask.geometry.Stack2D()
@@ -96,7 +96,7 @@ class OrderedMeshes(unittest.TestCase):
         solver.geometry = plask.geometry.Cartesian2D(stack)
         self.assertTrue(solver.mesh_changed)
 
-        self.assertEqual( list(solver.mesh.axis1), [0., 2.] )
+        self.assertEqual(list(solver.mesh.axis1), [0., 2.])
 
         solver.initialize()
         self.assertTrue(solver.initialized)
@@ -104,13 +104,13 @@ class OrderedMeshes(unittest.TestCase):
 
         generator.prediv[1] = 2
         self.assertTrue(solver.mesh_changed)
-        self.assertEqual( list(solver.mesh.axis1), [0., 1., 2.] )
+        self.assertEqual(list(solver.mesh.axis1), [0., 1., 2.])
         generator.prediv = 3,3
         generator.prediv /= 3
 
         stack.append(rect)
         self.assertFalse(solver.initialized)
-        self.assertEqual( list(solver.mesh.axis1), [0., 2., 4.] )
+        self.assertEqual(list(solver.mesh.axis1), [0., 2., 4.])
 
 
     def testEvents(self):
@@ -151,11 +151,11 @@ class OrderedMeshes(unittest.TestCase):
 class CustomMesh(unittest.TestCase):
 
     def _test(self, m):
-        self.assertEqual( plasktest.mesh2d_at(m, 0), (2., 1.) )
-        self.assertEqual( plasktest.mesh2d_at(m, 1), (4., 2.) )
+        self.assertEqual(plasktest.mesh2d_at(m, 0), (2., 1.))
+        self.assertEqual(plasktest.mesh2d_at(m, 1), (4., 2.))
 
         source = Data(array([1., 2., 3., 4.]), mesh.Rectangular2D([0., 4.], [0., 2.]))
-        self.assertEqual( list(source.interpolate(m, 'linear')), [2.5, 4.0] )
+        self.assertEqual(list(source.interpolate(m, 'linear')), [2.5, 4.0])
 
     def testPythonMesh2D(self):
         class M(mesh.Mesh2D):
@@ -169,7 +169,7 @@ class CustomMesh(unittest.TestCase):
         self._test(m)
         data = Data(array([2., 3.]), m)
         dest = mesh.Rectangular2D([0.], [0.])
-        self.assertEqual( list(data.interpolate(dest, 'linear')), [123.] )
+        self.assertEqual(list(data.interpolate(dest, 'linear')), [123.])
 
     def testUnstructuredMesh2D(self):
         m = mesh.Unstructured2D([[2., 1.], [4., 2.]])
@@ -186,8 +186,8 @@ class Aspect(unittest.TestCase):
         geo = plask.geometry.Cartesian2D(align)
         gen = plask.mesh.Rectangular2D.DivideGenerator(gradual=False, aspect=5)
         msh = gen(geo)
-        self.assertEqual( list(msh.axis0), [-1., 0., 5., 10.] )
-        self.assertEqual( list(msh.axis1), [-20., -15., -10., -5., 0., 1.] )
+        self.assertEqual(list(msh.axis0), [-1., 0., 5., 10.])
+        self.assertEqual(list(msh.axis1), [-20., -15., -10., -5., 0., 1.])
 
 
 class Interpolation(unittest.TestCase):
@@ -196,7 +196,7 @@ class Interpolation(unittest.TestCase):
         src = plask.mesh.Rectangular2D([0, 2], [0, 2])
         dst = plask.mesh.Rectangular2D([1], [1])
         data = plask.Data(array([[1., 2.], [3., 4.]]), src)
-        self.assertAlmostEqual( data.interpolate(dst, 'linear')[0], 2.5 )
+        self.assertAlmostEqual(data.interpolate(dst, 'linear')[0], 2.5)
 
 
 class DivideGenerator(unittest.TestCase):
@@ -212,16 +212,16 @@ class DivideGenerator(unittest.TestCase):
         generator2.prediv = 2,2
         generator2.add_refinement("v", rect, 8.)
 
-        self.assertEqual( list(generator2.get_refinements("v").values()), [[8.]] )
+        self.assertEqual(list(generator2.get_refinements("v").values()), [[8.]])
 
         mesh1 = generator1(stack)
-        self.assertEqual( list(mesh1.axis0), [0., 2.] )
-        self.assertEqual( list(mesh1.axis1), [0., 2., 18., 34.] )
+        self.assertEqual(list(mesh1.axis0), [0., 2.])
+        self.assertEqual(list(mesh1.axis1), [0., 2., 18., 34.])
 
         geom = plask.geometry.Cartesian2D(stack)
         mesh2 = generator2(geom)
-        self.assertEqual( list(mesh2.axis0), [0., 1., 2.] )
-        self.assertEqual( list(mesh2.axis1), [0., 1., 2., 4., 6., 10., 18., 22., 26., 30., 34.] )
+        self.assertEqual(list(mesh2.axis0), [0., 1., 2.])
+        self.assertEqual(list(mesh2.axis1), [0., 1., 2., 4., 6., 10., 18., 22., 26., 30., 34.])
 
         generator3 = plask.mesh.Rectangular2D.DivideGenerator()
         stack = plask.geometry.Stack2D()
@@ -230,14 +230,14 @@ class DivideGenerator(unittest.TestCase):
         stack.append(plask.geometry.Rectangle(1000., 50., None))
         stack.append(plask.geometry.Rectangle(1000., 150., None))
         mesh3 = generator3(stack)
-        self.assertEqual( list(mesh3.axis1), [0., 5., 15., 27.5, 40., 65.,102.5, 140., 215.] )
+        self.assertEqual(list(mesh3.axis1), [0., 5., 15., 27.5, 40., 65.,102.5, 140., 215.])
 
         generator1d = plask.mesh.Ordered.DivideGenerator()
         generator1d.postdiv = 2
         shelf = geometry.Shelf2D()
         shelf.append(geometry.Rectangle(1., 1., None))
         shelf.append(geometry.Rectangle(8., 1., None))
-        self.assertEqual( list(generator1d(shelf)), [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 9.0] )
+        self.assertEqual(list(generator1d(shelf)), [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 9.0])
 
     def testDivideGeneratorXML(self):
         manager = plask.Manager()
@@ -264,9 +264,9 @@ class DivideGenerator(unittest.TestCase):
         </plask>
         ''')
         msh = manager.msh['refined'](manager.geo['rect'])
-        self.assertEqual( list(msh.axis0), [0., 10., 20., 30., 40., 50.] )
-        self.assertEqual( list(msh.axis1), [0., 1., 2., 3., 4., 5.] )
-        self.assertEqual( list(manager.msh['one'](manager.geo['rect'])), [0., 25., 50.] )
+        self.assertEqual(list(msh.axis0), [0., 10., 20., 30., 40., 50.])
+        self.assertEqual(list(msh.axis1), [0., 1., 2., 3., 4., 5.])
+        self.assertEqual(list(manager.msh['one'](manager.geo['rect'])), [0., 25., 50.])
 
     def testGradual(self):
         manager = plask.Manager()
@@ -288,25 +288,25 @@ class DivideGenerator(unittest.TestCase):
         </plask>
         ''')
         gen = manager.msh['grad']
-        self.assertEqual( gen.gradual, (True, False) )
+        self.assertEqual(gen.gradual, (True, False))
         msh = gen(manager.geo['main'])
-        self.assertEqual( list(msh.axis0), [0., 1., 3., 5.] )
-        self.assertEqual( list(msh.axis1), [0., 1., 5.] )
+        self.assertEqual(list(msh.axis0), [0., 1., 3., 5.])
+        self.assertEqual(list(msh.axis1), [0., 1., 5.])
         gen.gradual = False, True
-        self.assertEqual( gen.gradual, (False, True) )
+        self.assertEqual(gen.gradual, (False, True))
         msh = gen(manager.geo['main'])
-        self.assertEqual( list(msh.axis0), [0., 1., 5.] )
-        self.assertEqual( list(msh.axis1), [0., 1., 3., 5.] )
+        self.assertEqual(list(msh.axis0), [0., 1., 5.])
+        self.assertEqual(list(msh.axis1), [0., 1., 3., 5.])
         gen.gradual = False
-        self.assertEqual( gen.gradual, (False, False) )
+        self.assertEqual(gen.gradual, (False, False))
         msh = gen(manager.geo['main'])
-        self.assertEqual( list(msh.axis0), [0., 1., 5.] )
-        self.assertEqual( list(msh.axis1), [0., 1., 5.] )
+        self.assertEqual(list(msh.axis0), [0., 1., 5.])
+        self.assertEqual(list(msh.axis1), [0., 1., 5.])
         gen.gradual = True
-        self.assertEqual( gen.gradual, (True, True) )
+        self.assertEqual(gen.gradual, (True, True))
         msh = gen(manager.geo['main'])
-        self.assertEqual( list(msh.axis0), [0., 1., 3., 5.] )
-        self.assertEqual( list(msh.axis1), [0., 1., 3., 5.] )
+        self.assertEqual(list(msh.axis0), [0., 1., 3., 5.])
+        self.assertEqual(list(msh.axis1), [0., 1., 3., 5.])
 
 
 class SmoothGenerator(unittest.TestCase):
@@ -321,28 +321,28 @@ class SmoothGenerator(unittest.TestCase):
     def testExact(self):
         msh = self.generator(self.geometry)
         self.generator.small = 2.
-        self.assertEqual( list(msh), [0., 2., 6., 14., 22., 26., 28.] )
+        self.assertEqual(list(msh), [0., 2., 6., 14., 22., 26., 28.])
 
     def testEven(self):
         msh = self.generator(self.geometry)
-        self.assertEqual( list(msh), [0., 2., 6., 14., 22., 26., 28.] )
+        self.assertEqual(list(msh), [0., 2., 6., 14., 22., 26., 28.])
 
     def testOdd(self):
         self.rect.width = 44.
         msh = self.generator(self.geometry)
-        self.assertEqual( list(msh), [0., 2., 6., 14., 30., 38., 42., 44.] )
+        self.assertEqual(list(msh), [0., 2., 6., 14., 30., 38., 42., 44.])
 
     def testLimitedEven(self):
         self.rect.width = 44.
         self.generator.large = 9.
         msh = self.generator(self.geometry)
-        self.assertEqual( list(msh), [0., 2., 6., 14., 22., 30., 38., 42., 44.] )
+        self.assertEqual(list(msh), [0., 2., 6., 14., 22., 30., 38., 42., 44.])
 
     def testLimitedOdd(self):
         self.rect.width = 36.
         self.generator.large = 9.
         msh = self.generator(self.geometry)
-        self.assertEqual( list(msh), [0., 2., 6., 14., 22., 30., 34., 36.] )
+        self.assertEqual(list(msh), [0., 2., 6., 14., 22., 30., 34., 36.])
 
 
 if __name__ == '__main__':

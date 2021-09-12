@@ -87,7 +87,7 @@ class EffectiveFrequency(unittest.TestCase):
         self.solver.modes[0].power = 2000.
         field = self.solver.outLightMagnitude(0,msh).array[:,-1]
         integral = 2e-12 * pi * sum(field * msh.axis0) * dr
-        self.assertAlmostEqual( integral, 2., 4 )
+        self.assertAlmostEqual(integral, 2., 4)
 
     def testRefractiveIndex(self):
         self.solver.set_simple_mesh()
@@ -101,9 +101,9 @@ class EffectiveFrequency(unittest.TestCase):
 
     def testComputations(self):
         m = self.solver.find_mode(980.1)
-        self.assertEqual( m, 0 )
-        self.assertEqual( len(self.solver.modes), 1 )
-        self.assertAlmostEqual( self.solver.modes[m].lam, 979.702-0.021j, 3 )
+        self.assertEqual(m, 0)
+        self.assertEqual(len(self.solver.modes), 1)
+        self.assertAlmostEqual(self.solver.modes[m].lam, 979.702-0.021j, 3)
 
     def testThreshold(self):
         try:
@@ -116,7 +116,7 @@ class EffectiveFrequency(unittest.TestCase):
                 m = self.solver.find_mode(980.1)
                 return imag(self.solver.modes[m].lam)
             threshold = brentq(fun, 0., 2000., xtol=1e-6)
-            self.assertAlmostEqual( threshold, 1181.7, 1 )
+            self.assertAlmostEqual(threshold, 1181.7, 1)
 
     def testAbsorptionIntegral(self):
         self.profile[self.manager.geo['active']] = 1181.6834
@@ -125,7 +125,7 @@ class EffectiveFrequency(unittest.TestCase):
         box = self.solver.geometry.item.bbox
         field = self.solver.outLightMagnitude(m, mesh.Rectangular2D(mesh.Ordered([0.]), mesh.Ordered([box.lower.z, box.upper.z])))
         total_power = self.solver.modes[m].power * (1. + 3.53 * field[0] / field[1])
-        self.assertAlmostEqual( -self.solver.get_total_absorption(m), total_power, 2 )
+        self.assertAlmostEqual(-self.solver.get_total_absorption(m), total_power, 2)
 
     def testAbsorbedHeat(self):
         self.profile[self.manager.geo['active']] = 1181.6834
@@ -136,18 +136,18 @@ class EffectiveFrequency(unittest.TestCase):
         heat = self.solver.outHeat(msh).array[:,0]
         # 1e-15: µm³->m³ W->mW
         integral = 2e-15 * pi * sum(heat * msh.axis0) * (box.upper.z - box.lower.z) * (msh.axis0[1] - msh.axis0[0])
-        self.assertAlmostEqual( integral, self.solver.get_total_absorption(m), 2 )
+        self.assertAlmostEqual(integral, self.solver.get_total_absorption(m), 2)
 
     def testNeffs(self):
         rr = array([0.0, 2.0, 6.0])
         neffs = self.solver.get_nng(rr)
-        self.assertAlmostEqual( neffs[0], 3.3174, 3 )
-        self.assertAlmostEqual( neffs[1], 3.3174, 3 )
-        self.assertAlmostEqual( neffs[2], 3.2816, 3 )
+        self.assertAlmostEqual(neffs[0], 3.3174, 3)
+        self.assertAlmostEqual(neffs[1], 3.3174, 3)
+        self.assertAlmostEqual(neffs[2], 3.2816, 3)
 
     def testDeltaNeffs(self):
         rr = array([0.0, 2.0, 6.0])
         neffs = self.solver.get_delta_neff(rr)
-        self.assertAlmostEqual( neffs[0], 0.0244635-0.0095423j, 6 )
-        self.assertAlmostEqual( neffs[1], 0.0244635-0.0095423j, 6 )
-        self.assertAlmostEqual( neffs[2], 0.0006568-0.3719099j, 6 )
+        self.assertAlmostEqual(neffs[0], 0.0244635-0.0095423j, 6)
+        self.assertAlmostEqual(neffs[1], 0.0244635-0.0095423j, 6)
+        self.assertAlmostEqual(neffs[2], 0.0006568-0.3719099j, 6)

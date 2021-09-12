@@ -68,11 +68,11 @@ class LayerSetTest(unittest.TestCase):
         self.mat = self.manager.geo.vcsel.get_material
 
     def testInterface(self):
-        self.assertEqual( self.solver.interface, 62 )
+        self.assertEqual(self.solver.interface, 62)
         self.solver.set_interface(0.)
-        self.assertEqual( self.solver.interface, 60 )
+        self.assertEqual(self.solver.interface, 60)
         self.solver.set_interface(self.manager.geo.QW)
-        self.assertEqual( self.solver.interface, 61 )
+        self.assertEqual(self.solver.interface, 61)
 
     def testLayers(self):
         self.solver.initialize()
@@ -80,7 +80,6 @@ class LayerSetTest(unittest.TestCase):
         stack = list(self.solver.stack)[-1::-1]
         #for i in enumerate(layers):
             #print("%d: %s" % i)
-        #self.assertEqual( layers, ['GaAs/GaAs', 'AlGaAs/AlGaAs', 'GaAs/GaAs', 'InGaAs/InGaAs', 'AlAs/AlOx', 'air/air'] )
+        #self.assertEqual(layers, ['GaAs/GaAs', 'AlGaAs/AlGaAs', 'GaAs/GaAs', 'InGaAs/InGaAs', 'AlAs/AlOx', 'air/air'])
         print(stack)
-        self.assertEqual( stack, [5] + 25*[0,1] + [4,2,3,2] + 30*[1,0] )
-
+        self.assertEqual(stack, [5] + 25*[0,1] + [4,2,3,2] + 30*[1,0])

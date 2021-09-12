@@ -36,7 +36,7 @@ class Wire(unittest.TestCase):
     def testComputations(self):
         self.solver.symmetry = 'Etran'
         # self.solver.polarization = "Etran"
-        self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(neff=1.15)].neff, 1.147, 3 )
+        self.assertAlmostEqual(self.solver.modes[self.solver.find_mode(neff=1.15)].neff, 1.147, 3)
         self.solver.symmetry = 'Htran'
         # self.solver.polarization = "Htran"
         self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(neff=1.05)].neff, 1.054, 3)
@@ -45,7 +45,7 @@ class Wire(unittest.TestCase):
         self.solver.determinant_type = 'full'
         self.solver.symmetry = 'Etran'
         # self.solver.polarization = "Etran"
-        self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(neff=1.15)].neff, 1.147, 3 )
+        self.assertAlmostEqual(self.solver.modes[self.solver.find_mode(neff=1.15)].neff, 1.147, 3)
         self.solver.symmetry = 'Htran'
         # self.solver.polarization = "Htran"
         self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(neff=1.05)].neff, 1.054, 3)
@@ -87,7 +87,7 @@ class Wire(unittest.TestCase):
 #        self.profile[self.rect2] = 81.649513489
 #        m = self.solver.find_mode(1.15)
 #        self.solver.modes[m].power = 1.4
-#        self.assertAlmostEqual( self.solver.get_total_absorption(m), -2.0, 1 )
+#        self.assertAlmostEqual(self.solver.get_total_absorption(m), -2.0, 1)
 #
 #     def testAbsorbedHeat(self):
 #         self.profile[self.rect2] = 81.649513489
@@ -98,7 +98,7 @@ class Wire(unittest.TestCase):
 #         heat = self.solver.outHeat(msh)
 #         # 1e-15: µm³->m³ W->mW
 #         integral = 2e-15 * sum(heat) * (msh.axis0[1] - msh.axis0[0]) * (msh.axis1[1] - msh.axis1[0]) * self.solver.geometry.extrusion.length
-#         self.assertAlmostEqual( integral, self.solver.get_total_absorption(m), 2 )
+#         self.assertAlmostEqual(integral, self.solver.get_total_absorption(m), 2)
 
 
 if __name__ == '__main__':

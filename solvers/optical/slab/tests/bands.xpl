@@ -51,7 +51,7 @@ class BandsTest(unittest.TestCase):
     def testComputations(self):
         OPTICAL.ktran, OPTICAL.klong = 3.142, 1.814
         m = OPTICAL.find_mode(k0=2.0500)
-        self.assertAlmostEqual( OPTICAL.modes[m].k0, 2.039, 3 )
+        self.assertAlmostEqual(OPTICAL.modes[m].k0, 2.039, 3)
 
 
 if __name__ == "__main__":

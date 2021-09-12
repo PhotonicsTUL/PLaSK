@@ -38,5 +38,5 @@ class Layer_Test(unittest.TestCase):
         for p in self.solver.mesh.get_midpoints():
             print(self.solver.geometry.get_material(p))
         conds = self.solver.outThermalConductivity(msh)
-        self.assertAlmostEqual( conds[0][0], 2.000000, 6 )
-        self.assertAlmostEqual( conds[1][0], 2.000000, 6 )
+        self.assertAlmostEqual(conds[0][0], 2.000000, 6)
+        self.assertAlmostEqual(conds[1][0], 2.000000, 6)

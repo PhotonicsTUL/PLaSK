@@ -17,9 +17,9 @@ class DataTest(unittest.TestCase):
         a = array([[0., 1., 2.], [3., 4., 5.]])
         d1 = Data(a, m1)
         d2 = Data(a, m2)
-        self.assertEqual( list(d1), [0., 1., 2., 3., 4., 5.] )
-        self.assertEqual( list(d2), [0., 3., 1., 4., 2., 5.] )
-        assert_array_equal( d1.array, d2.array )
+        self.assertEqual(list(d1), [0., 1., 2., 3., 4., 5.])
+        self.assertEqual(list(d2), [0., 3., 1., 4., 2., 5.])
+        assert_array_equal(d1.array, d2.array)
 
     def testMultiIndex(self):
         data2d = Data(array([[1., 2.], [3., 4.]]), mesh.Rectangular2D([0., 1.], [0., 1.]))

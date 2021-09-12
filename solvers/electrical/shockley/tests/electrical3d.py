@@ -51,21 +51,21 @@ class Shockley3D_Test(unittest.TestCase):
     def testComputations(self):
         self.solver.compute(1000)
         correct_current = 1e-9 * self.S * self.solver.js * (exp(self.solver.beta) - 1)
-        self.assertAlmostEqual( self.solver.get_total_current(), correct_current, 3 )
+        self.assertAlmostEqual(self.solver.get_total_current(), correct_current, 3)
         capacitance = eps0 * material.GaAs().eps() * self.S / 0.02 # pF
-        self.assertAlmostEqual( self.solver.get_capacitance(), capacitance, 2 )
+        self.assertAlmostEqual(self.solver.get_capacitance(), capacitance, 2)
         heat = correct_current * 1.
-        self.assertAlmostEqual( self.solver.get_total_heat(), heat, 3 )
+        self.assertAlmostEqual(self.solver.get_total_heat(), heat, 3)
 
     def testComputationsTemp(self):
         self.solver.beta = lambda T: log(T * 70)
         self.solver.compute(1000)
         correct_current = 1e-9 * self.S * self.solver.js * (21000 - 1)
-        self.assertAlmostEqual( self.solver.get_total_current(), correct_current, 3 )
+        self.assertAlmostEqual(self.solver.get_total_current(), correct_current, 3)
         self.solver.inTemperature = 250
         self.solver.compute(1000)
         correct_current = 1e-9 * self.S * self.solver.js * (17500 - 1)
-        self.assertAlmostEqual( self.solver.get_total_current(), correct_current, 3 )
+        self.assertAlmostEqual(self.solver.get_total_current(), correct_current, 3)
 
     def testConductivity(self):
         msh = self.solver.mesh.elements.mesh
@@ -73,7 +73,7 @@ class Shockley3D_Test(unittest.TestCase):
         conds = [geo.get_material(point).cond(300.) if not geo.has_role('active', point) else (0.,5.) for point in msh]
         ac = material.Air().cond(300.)
         result = [ac if isnan(c[0]) else c for c in self.solver.outConductivity(msh)]
-        self.assertSequenceEqual( result, conds )
+        self.assertSequenceEqual(result, conds)
 
     if __name__ == '__main__':
         def testGeometry(self):

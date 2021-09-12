@@ -28,7 +28,7 @@ class EffectiveIndex(unittest.TestCase):
         self.solver.geometry = space
 
     def testBasic(self):
-        self.assertEqual( self.solver.id, "eim:optical.EffectiveIndex2D" )
+        self.assertEqual(self.solver.id, "eim:optical.EffectiveIndex2D")
 
     def testExceptions(self):
         with self.assertRaisesRegexp(ValueError, r"^Effective index \[0\] cannot be provided now$"):
@@ -39,7 +39,7 @@ class EffectiveIndex(unittest.TestCase):
     def testComputations(self):
         self.solver.wavelength = 1000.
         self.solver.polarization = "TE"
-        self.assertAlmostEqual( self.solver.modes[self.solver.find_mode(1.15, '+')].neff, 1.1465, 3 )
+        self.assertAlmostEqual(self.solver.modes[self.solver.find_mode(1.15, '+')].neff, 1.1465, 3)
         self.solver.root.method = 'muller'
         self.solver.stripe_root.method = 'muller'
         self.solver.polarization = "TM"
@@ -53,14 +53,14 @@ class EffectiveIndex(unittest.TestCase):
         msh = self.solver.mesh.get_midpoints()
         geo = self.solver.geometry
         refr = [geo.get_material(point).Nr(1000., 300.) for point in msh]
-        self.assertEqual( [nr[0] for nr in self.solver.outRefractiveIndex(msh)], refr )
+        self.assertEqual([nr[0] for nr in self.solver.outRefractiveIndex(msh)], refr)
 
     def testDeltaNeffs(self):
         xx = array([0.0, 0.5, 1.0])
         neffs = self.solver.get_delta_neff(xx)
-        self.assertAlmostEqual( neffs[0], 1.1829, 3 )
-        self.assertAlmostEqual( neffs[1], 1.1829, 3 )
-        self.assertAlmostEqual( neffs[2], 0.9240, 3 )
+        self.assertAlmostEqual(neffs[0], 1.1829, 3)
+        self.assertAlmostEqual(neffs[1], 1.1829, 3)
+        self.assertAlmostEqual(neffs[2], 0.9240, 3)
 
 
 class EffectiveIndexLaser(unittest.TestCase):
@@ -99,7 +99,7 @@ class EffectiveIndexLaser(unittest.TestCase):
        self.profile[self.rect2] = 81.649513489
        m = self.solver.find_mode(1.15)
        self.solver.modes[m].power = 1.4
-       self.assertAlmostEqual( self.solver.get_total_absorption(m), -2.0, 1 )
+       self.assertAlmostEqual(self.solver.get_total_absorption(m), -2.0, 1)
 
     def testAbsorbedHeat(self):
         self.profile[self.rect2] = 81.649513489
@@ -110,4 +110,4 @@ class EffectiveIndexLaser(unittest.TestCase):
         heat = self.solver.outHeat(msh)
         # 1e-15: µm³->m³ W->mW
         integral = 2e-15 * sum(heat) * (msh.axis0[1] - msh.axis0[0]) * (msh.axis1[1] - msh.axis1[0]) * self.solver.geometry.extrusion.length
-        self.assertAlmostEqual( integral, self.solver.get_total_absorption(m), 2 )
+        self.assertAlmostEqual(integral, self.solver.get_total_absorption(m), 2)

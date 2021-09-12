@@ -62,57 +62,57 @@ class GratingTest(unittest.TestCase):
         solver.polarization = 'El'
         solver.symmetry = None
         r_te = solver.compute_reflectivity(array([1500., 1600.]), 'top', 'El')
-        self.assertAlmostEqual( r_te[0], 99.934, 2 )
-        self.assertAlmostEqual( r_te[1], 98.878, 2 )
+        self.assertAlmostEqual(r_te[0], 99.934, 2)
+        self.assertAlmostEqual(r_te[1], 98.878, 2)
 
     def testTE_separated_symmetric(self):
         solver.polarization = 'El'
         solver.symmetry = 'El'
         r_te = solver.compute_reflectivity(array([1500., 1600.]), 'top', 'El')
-        self.assertAlmostEqual( r_te[0], 99.934, 2 )
-        self.assertAlmostEqual( r_te[1], 98.864, 2 )
+        self.assertAlmostEqual(r_te[0], 99.934, 2)
+        self.assertAlmostEqual(r_te[1], 98.864, 2)
 
     def testTM_separated_asymmetric(self):
         solver.polarization = 'Et'
         solver.symmetry = None
         r_tm = solver.compute_reflectivity(array([1298., 1344.]), 'top', 'Et')
-        self.assertAlmostEqual( r_tm[0], 98.504, 2 )
-        self.assertAlmostEqual( r_tm[1], 28.228, 2 )
+        self.assertAlmostEqual(r_tm[0], 98.504, 2)
+        self.assertAlmostEqual(r_tm[1], 28.228, 2)
 
     def testTM_separated_symmetric(self):
         solver.polarization = 'Et'
         solver.symmetry = 'Et'
         r_tm = solver.compute_reflectivity(array([1298., 1344.]), 'top', 'Et')
-        self.assertAlmostEqual( r_tm[0], 98.640, 2 )
-        self.assertAlmostEqual( r_tm[1], 28.228, 2 )
+        self.assertAlmostEqual(r_tm[0], 98.640, 2)
+        self.assertAlmostEqual(r_tm[1], 28.228, 2)
 
     def testTE_asymmetric(self):
         solver.polarization = None
         solver.symmetry = None
         r_te = solver.compute_reflectivity(array([1500., 1600.]), 'top', 'El')
-        self.assertAlmostEqual( r_te[0], 99.934, 2 )
-        self.assertAlmostEqual( r_te[1], 98.878, 2 )
+        self.assertAlmostEqual(r_te[0], 99.934, 2)
+        self.assertAlmostEqual(r_te[1], 98.878, 2)
 
     def testTE_symmetric(self):
         solver.polarization = None
         solver.symmetry = 'El'
         r_te = solver.compute_reflectivity(array([1500., 1600.]), 'top', 'El')
-        self.assertAlmostEqual( r_te[0], 99.934, 2 )
-        self.assertAlmostEqual( r_te[1], 98.864, 2 )
+        self.assertAlmostEqual(r_te[0], 99.934, 2)
+        self.assertAlmostEqual(r_te[1], 98.864, 2)
 
     def testTM_asymmetric(self):
         solver.polarization = None
         solver.symmetry = None
         r_tm = solver.compute_reflectivity(array([1298., 1344.]), 'top', 'Et')
-        self.assertAlmostEqual( r_tm[0], 98.504, 2 )
-        self.assertAlmostEqual( r_tm[1], 28.228, 2 )
+        self.assertAlmostEqual(r_tm[0], 98.504, 2)
+        self.assertAlmostEqual(r_tm[1], 28.228, 2)
 
     def testTM_symmetric(self):
         solver.polarization = None
         solver.symmetry = 'Et'
         r_tm = solver.compute_reflectivity(array([1298., 1344.]), 'top', 'Et')
-        self.assertAlmostEqual( r_tm[0], 98.640, 2 )
-        self.assertAlmostEqual( r_tm[1], 28.228, 2 )
+        self.assertAlmostEqual(r_tm[0], 98.640, 2)
+        self.assertAlmostEqual(r_tm[1], 28.228, 2)
 
 
 if __name__ == '__main__':

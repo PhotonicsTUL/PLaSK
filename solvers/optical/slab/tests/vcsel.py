@@ -90,11 +90,11 @@ class VCSEL(unittest.TestCase):
     def testComputationsFinite(self):
         self.solver.domain = 'finite'
         m = self.solver.find_mode(980.1)
-        self.assertEqual( m, 0 )
-        self.assertEqual( len(self.solver.modes), 1 )
-        # self.assertAlmostEqual( self.solver.modes[m].lam.real,  979.59, 2 )
-        self.assertAlmostEqual( self.solver.modes[m].lam.real,  979.587, 3 )
-        self.assertAlmostEqual( self.solver.modes[m].lam.imag, -0.02077, 3 )
+        self.assertEqual(m, 0)
+        self.assertEqual(len(self.solver.modes), 1)
+        # self.assertAlmostEqual(self.solver.modes[m].lam.real,  979.59, 2)
+        self.assertAlmostEqual(self.solver.modes[m].lam.real,  979.587, 3)
+        self.assertAlmostEqual(self.solver.modes[m].lam.imag, -0.02077, 3)
 
         # Test integration of the Pointing vector
         R = 27.
@@ -105,15 +105,15 @@ class VCSEL(unittest.TestCase):
         E = self.solver.outLightE(m, msh).array[:,0,:]
         H = self.solver.outLightH(m, msh).array[:,0,:]
         P = 0.5 * real(E[:,1]*conj(H[:,0]) - E[:,0]*conj(H[:,1]))
-        self.assertAlmostEqual( 2e3*pi * sum(1e-6*rr * P) * dr / self.solver.modes[m].power, 1.0, 3 )
+        self.assertAlmostEqual(2e3*pi * sum(1e-6*rr * P) * dr / self.solver.modes[m].power, 1.0, 3)
 
     def testComputationsInfinite(self):
         self.solver.domain = 'infinite'
         m = self.solver.find_mode(979.0)
-        self.assertEqual( m, 0 )
-        self.assertEqual( len(self.solver.modes), 1 )
-        self.assertAlmostEqual( self.solver.modes[m].lam.real,  979.614, 3 )
-        self.assertAlmostEqual( self.solver.modes[m].lam.imag, -0.02077, 3 )
+        self.assertEqual(m, 0)
+        self.assertEqual(len(self.solver.modes), 1)
+        self.assertAlmostEqual(self.solver.modes[m].lam.real,  979.614, 3)
+        self.assertAlmostEqual(self.solver.modes[m].lam.imag, -0.02077, 3)
 
         # Test integration of the Pointing vector
         R = 27.
@@ -124,7 +124,7 @@ class VCSEL(unittest.TestCase):
         E = self.solver.outLightE(m, msh).array[:,0,:]
         H = self.solver.outLightH(m, msh).array[:,0,:]
         P = 0.5 * real(E[:,1]*conj(H[:,0]) - E[:,0]*conj(H[:,1]))
-        self.assertAlmostEqual( 2e3*pi * sum(1e-6*rr * P) * dr / self.solver.modes[m].power, 1.0, 2 )
+        self.assertAlmostEqual(2e3*pi * sum(1e-6*rr * P) * dr / self.solver.modes[m].power, 1.0, 2)
 
     def plot_determinant(self):
         lams = linspace(979., 982., 201)
