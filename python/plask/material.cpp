@@ -217,15 +217,39 @@ class PythonMaterial: public MaterialWithBase, Overriden<Material>
     }
 
     double lattC(double T, char x) const override { return call<double>("lattC", &Material::lattC, cache->lattC, T, x); }
-    double Eg(double T, double e, char point) const override { return call<double>("Eg", &Material::Eg, cache->Eg, T, e, point); }
+    double Eg(double T, double e, char point) const override {
+        try { return call_override<double>("Eg", cache->Eg, T, e, point); }
+        catch (NotImplemented&) {
+            if ((cache->VB || overriden("VB")) && (cache->CB || overriden("CB"))) {
+                try {
+                    return call_override<double>("CB", cache->CB, T, e, point) -
+                           call_override<double>("VB", cache->VB, T, e, point, "H");
+                }
+                catch (NotImplemented&) {}
+            }
+            return base->Eg(T, e, point);
+        }
+    }
     double CB(double T, double e, char point) const override {
         try { return call_override<double>("CB", cache->CB, T, e, point); }
         catch (NotImplemented&) {
-            try { return VB(T, e, point, 'H') + Eg(T, e, point); }
-            catch (NotImplemented&) { return base->CB(T, e, point); }
+            if (cache->VB || cache->Eg || overriden("VB") || overriden("Eg")) {
+                try { return VB(T, e, point, 'H') + Eg(T, e, point); }
+                catch (NotImplemented&) {}
+            }
+            return base->CB(T, e, point);
         }
     }
-    double VB(double T, double e, char point, char hole) const override { return call<double>("VB", &Material::VB, cache->VB, T, e, point, hole); }
+    double VB(double T, double e, char point, char hole) const override {
+        try { return call_override<double>("VB", cache->VB, T, e, point, hole); }
+        catch (NotImplemented&) {
+            if (cache->CB || overriden("CB")) {
+                try { return call_override<double>("CB", cache->CB, T, e, point) - Eg(T, e, point); }
+                catch (NotImplemented&) {}
+            }
+            return base->VB(T, e, point, hole);
+        }
+    }
     double Dso(double T, double e) const override { return call<double>("Dso", &Material::Dso, cache->Dso, T, e); }
     double Mso(double T, double e) const override { return call<double>("Mso", &Material::Mso, cache->Mso, T, e); }
     Tensor2<double> Me(double T, double e, char point) const override { return call<Tensor2<double>>("Me", &Material::Me, cache->Me, T, e, point); }
@@ -536,17 +560,25 @@ shared_ptr<Material> PythonMaterial::__init__(const py::tuple& args, const py::d
         ptr->cache = cache;
         #define CHECK_CACHE(Type, fun, name, ...) \
         if (PyObject_HasAttrString(self.ptr(), name)) { \
-            if (PyFunction_Check(py::object(self.attr(name)).ptr())) { \
-                try { \
-                    cache->fun.reset(py::extract<Type>(self.attr(name)())); \
-                    writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '{}'", cls_name); \
-                } catch (py::error_already_set&) { \
-                    PyErr_Clear(); \
+            py::object method = py::object(self.attr(name)); \
+            if (PyFunction_Check(method.ptr())) { \
+                if (PyCodeObject* code = reinterpret_cast<PyCodeObject*>(PyFunction_GetCode(method.ptr()))) { \
+                    if (code->co_varnames && PyTuple_GET_SIZE(code->co_varnames) == 0) { \
+                        writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '{}'", cls_name); \
+                        try { \
+                            py::object value = method(); \
+                            cache->fun.reset(py::extract<Type>(value)); \
+                        } catch (py::error_already_set&) { \
+                            throw TypeError("Cannot convert return value of static method '" name "()' in material class '{}' to correct type", cls_name); \
+                        } \
+                    } else { \
+                        throw TypeError("Method '" name "()' in material class '{}' can be static only if it takes no parameters", cls_name); \
+                    } \
                 } \
-            } else if (!PyMethod_Check(py::object(self.attr(name)).ptr())) { \
+            } else if (!PyMethod_Check(method.ptr())) { \
+                writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '{}'", cls_name); \
                 try { \
-                    cache->fun.reset(py::extract<Type>(self.attr(name))); \
-                    writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '{}'", cls_name); \
+                    cache->fun.reset(py::extract<Type>(method)); \
                 } catch (py::error_already_set&) { \
                     throw TypeError("Cannot convert static parameter '" name "' in material class '{}' to correct type", cls_name); \
                 } \

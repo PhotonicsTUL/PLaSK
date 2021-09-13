@@ -19,8 +19,7 @@ class Barrier(material.Material):
     Mhh = 0.6
     Mlh = 0.14
     D = 10
-    @staticmethod
-    def VB(T=300., e=0., point=None, hole=None):
+    def VB(self, T=300., e=0., point=None, hole=None):
         return -0.75
     def A(self, T=300.):
         return 7e7 + (T-300) * 1.4e5
@@ -52,21 +51,17 @@ class Well(material.Material):
 
 @material.simple('Barrier')
 class Barrier0(material.Material):
-    @staticmethod
-    def VB(T=300., e=0., point=None, hole=None):
+    def VB(self, T=300., e=0., point=None, hole=None):
         return -0.5
-    @staticmethod
-    def Eg(T=300., e=0., point=None):
+    def Eg(self, T=300., e=0., point=None):
         return 0.9
 
 
 @material.simple('Well')
 class Well0(material.Material):
-    @staticmethod
-    def VB(T=300., e=0., point=None, hole=None):
+    def VB(self, T=300., e=0., point=None, hole=None):
         return -0.2
-    @staticmethod
-    def Eg(T=300., e=0., point=None):
+    def Eg(self, T=300., e=0., point=None):
         return 0.1
 
 
@@ -170,8 +165,8 @@ class TestStructureGain(unittest.TestCase):
 
 if __name__ == '__main__':
     test = unittest.main(exit=False)
-    #instance = TestStructureGain('plot_bands')
-    #instance.setUp()
-    #instance.plot_bands()
-    #show()
+    instance = TestStructureGain('plot_bands')
+    instance.setUp()
+    instance.plot_bands()
+    show()
     sys.exit(not test.result.wasSuccessful())

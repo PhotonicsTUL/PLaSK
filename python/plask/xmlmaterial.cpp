@@ -165,7 +165,17 @@ class PythonEvalMaterial: public MaterialWithBase
         return call<rtype>(cls->fun, locals, BOOST_PP_STRINGIZE(fun));
 
     double lattC(double T, char x) const override { PYTHON_EVAL_CALL_2(double, lattC, T, x) }
-    double Eg(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(double, Eg, T, e, point) }
+    double Eg(double T, double e, char point) const override {
+        if (cls->cache.Eg) return *cls->cache.Eg;
+        if (cls->Eg != NULL) {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+            py::dict locals; locals["self"] = self; locals["T"] = T; locals["e"] = e; locals["point"] = point;
+            return py::extract<double>(py::handle<>(py_eval(cls->Eg, locals)).get());
+        }
+        if ((cls->VB != NULL || cls->cache.VB) && (cls->CB != NULL || cls->cache.CB))
+            return CB(T, e, point) - VB(T, e, point, 'H');
+        return base->Eg(T, e, point);
+    }
     double CB(double T, double e, char point) const override {
         if (cls->cache.CB) return *cls->cache.CB;
         if (cls->CB != NULL) {
@@ -173,11 +183,21 @@ class PythonEvalMaterial: public MaterialWithBase
             py::dict locals; locals["self"] = self; locals["T"] = T; locals["e"] = e; locals["point"] = point;
             return py::extract<double>(py::handle<>(py_eval(cls->CB, locals)).get());
         }
-        if (cls->VB != NULL || cls->Eg != NULL || cls->cache.VB || cls->cache.Eg)
+        if (cls->VB != NULL || cls->cache.VB || cls->Eg != NULL || cls->cache.Eg)
             return VB(T, e, point, 'H') + Eg(T, e, point);
         return base->CB(T, e, point);
     }
-    double VB(double T, double e, char point, char hole) const override { PYTHON_EVAL_CALL_4(double, VB, T, e, point, hole) }
+    double VB(double T, double e, char point, char hole) const override {
+        if (cls->cache.VB) return *cls->cache.VB;
+        if (cls->VB != NULL) {
+            OmpLockGuard<OmpNestLock> lock(python_omp_lock);
+            py::dict locals; locals["self"] = self; locals["T"] = T; locals["e"] = e; locals["point"] = point; locals["hole"] = hole;
+            return py::extract<double>(py::handle<>(py_eval(cls->VB, locals)).get());
+        }
+        if (cls->CB != NULL || cls->cache.CB)
+            return CB(T, e, point) - Eg(T, e, point);
+        return base->VB(T, e, point, hole);
+    }
     double Dso(double T, double e) const override { PYTHON_EVAL_CALL_2(double, Dso, T, e) }
     double Mso(double T, double e) const override { PYTHON_EVAL_CALL_2(double, Mso, T, e) }
     Tensor2<double> Me(double T, double e, char point) const override { PYTHON_EVAL_CALL_3(Tensor2<double>, Me, T, e, point) }

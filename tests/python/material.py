@@ -351,6 +351,184 @@ class Material(unittest.TestCase):
         self.assertEqual(m1, m2)
 
 
+class TestBandGap(unittest.TestCase):
+
+    @material.simple()
+    class BandGapBase(material.Material):
+        Eg = 10.
+        CB = 30.
+        def VB(self, T, e, point, hole):
+            return 20. if hole == 'H' else 15.
+
+    @material.simple('BandGapBase')
+    class EgVBpy(material.Material):
+        def Eg(*args): return 1.
+        def VB(*args): return 2.
+
+    @material.simple('BandGapBase')
+    class EgCBpy(material.Material):
+        def Eg(*args): return 1.
+        def CB(*args): return 3.
+
+    @material.simple('BandGapBase')
+    class VBCBpy(material.Material):
+        def VB(*args): return 2.
+        def CB(*args): return 3.
+
+    @material.simple('BandGapBase')
+    class Egpy(material.Material):
+        def Eg(*args): return 1.
+
+    @material.simple('BandGapBase')
+    class VBpy(material.Material):
+        def VB(*args): return 2.
+
+    @material.simple('BandGapBase')
+    class CBpy(material.Material):
+        def CB(*args): return 3.
+
+    def testEgVBpy(self):
+        mat = material.get('EgVBpy')
+        self.assertEqual(mat.Eg(300., 0., '*'), 1.)
+        self.assertEqual(mat.VB(300., 0., '*', 'H'), 2.)
+        self.assertEqual(mat.VB(300., 0., '*', 'L'), 2.)
+        self.assertEqual(mat.CB(300., 0., '*'), 3.)
+
+    def testEgCBpy(self):
+        mat = material.get('EgCBpy')
+        self.assertEqual(mat.Eg(300., 0., '*'), 1.)
+        self.assertEqual(mat.VB(300., 0., '*', 'H'), 2.)
+        self.assertEqual(mat.VB(300., 0., '*', 'L'), 2.)
+        self.assertEqual(mat.CB(300., 0., '*'), 3.)
+
+    def testVBCBpy(self):
+        mat = material.get('VBCBpy')
+        self.assertEqual(mat.Eg(300., 0., '*'), 1.)
+        self.assertEqual(mat.VB(300., 0., '*', 'H'), 2.)
+        self.assertEqual(mat.VB(300., 0., '*', 'L'), 2.)
+        self.assertEqual(mat.CB(300., 0., '*'), 3.)
+
+    def testEgpy(self):
+        mat = material.get('Egpy')
+        self.assertEqual(mat.Eg(300., 0., '*'), 1.)
+        self.assertEqual(mat.VB(300., 0., '*', 'H'), 20.)
+        self.assertEqual(mat.VB(300., 0., '*', 'L'), 15.)
+        self.assertEqual(mat.CB(300., 0., '*'), 21.)
+
+    def testVBpy(self):
+        mat = material.get('VBpy')
+        self.assertEqual(mat.Eg(300., 0., '*'), 10.)
+        self.assertEqual(mat.VB(300., 0., '*', 'H'), 2.)
+        self.assertEqual(mat.VB(300., 0., '*', 'L'), 2.)
+        self.assertEqual(mat.CB(300., 0., '*'), 12.)
+
+    def testCBpy(self):
+        mat = material.get('CBpy')
+        self.assertEqual(mat.Eg(300., 0., '*'), 10.)
+        self.assertEqual(mat.VB(300., 0., '*', 'H'), -7.)
+        self.assertEqual(mat.VB(300., 0., '*', 'L'), -7.)
+        self.assertEqual(mat.CB(300., 0., '*'), 3.)
+
+    def testEgVBxml(self):
+        plask.loadxpl("""\
+        <plask>
+          <materials>
+            <material name="EgVBxml" base="BandGapBase">
+              <Eg>1.</Eg>
+              <VB>2. + 0*T</VB>
+            </material>
+          </materials>
+        </plask>
+        """)
+        mat = material.get('EgVBxml')
+        self.assertEqual(mat.Eg(300., 0., '*'), 1.)
+        self.assertEqual(mat.VB(300., 0., '*', 'H'), 2.)
+        self.assertEqual(mat.VB(300., 0., '*', 'L'), 2.)
+        self.assertEqual(mat.CB(300., 0., '*'), 3.)
+
+    def testEgCBxml(self):
+        plask.loadxpl("""\
+        <plask>
+          <materials>
+            <material name="EgCBxml" base="BandGapBase">
+              <Eg>1.</Eg>
+              <CB>3.</CB>
+            </material>
+          </materials>
+        </plask>
+        """)
+        mat = material.get('EgCBxml')
+        self.assertEqual(mat.Eg(300., 0., '*'), 1.)
+        self.assertEqual(mat.VB(300., 0., '*', 'H'), 2.)
+        self.assertEqual(mat.VB(300., 0., '*', 'L'), 2.)
+        self.assertEqual(mat.CB(300., 0., '*'), 3.)
+
+    def testVBCBxml(self):
+        plask.loadxpl("""\
+        <plask>
+          <materials>
+            <material name="VBCBxml" base="BandGapBase">
+              <VB>2.</VB>
+              <CB>3. + 0*T</CB>
+            </material>
+          </materials>
+        </plask>
+        """)
+        mat = material.get('VBCBxml')
+        self.assertEqual(mat.Eg(300., 0., '*'), 1.)
+        self.assertEqual(mat.VB(300., 0., '*', 'H'), 2.)
+        self.assertEqual(mat.VB(300., 0., '*', 'L'), 2.)
+        self.assertEqual(mat.CB(300., 0., '*'), 3.)
+
+    def testEgxml(self):
+        plask.loadxpl("""\
+        <plask>
+          <materials>
+            <material name="Egxml" base="BandGapBase">
+              <Eg>1.</Eg>
+            </material>
+          </materials>
+        </plask>
+        """)
+        mat = material.get('Egxml')
+        self.assertEqual(mat.Eg(300., 0., '*'), 1.)
+        self.assertEqual(mat.VB(300., 0., '*', 'H'), 20.)
+        self.assertEqual(mat.VB(300., 0., '*', 'L'), 15.)
+        self.assertEqual(mat.CB(300., 0., '*'), 21.)
+
+    def testVBxml(self):
+        plask.loadxpl("""\
+        <plask>
+          <materials>
+            <material name="VBxml" base="BandGapBase">
+              <VB>2.0 if hole =='H' else 1.5</VB>
+            </material>
+          </materials>
+        </plask>
+        """)
+        mat = material.get('VBxml')
+        self.assertEqual(mat.Eg(300., 0., '*'), 10.)
+        self.assertEqual(mat.VB(300., 0., '*', 'H'), 2.0)
+        self.assertEqual(mat.VB(300., 0., '*', 'L'), 1.5)
+        self.assertEqual(mat.CB(300., 0., '*'), 12.)
+
+    def testCBxml(self):
+        plask.loadxpl("""\
+        <plask>
+          <materials>
+            <material name="CBxml" base="BandGapBase">
+              <CB>3.</CB>
+            </material>
+          </materials>
+        </plask>
+        """)
+        mat = material.get('CBxml')
+        self.assertEqual(mat.Eg(300., 0., '*'), 10.)
+        self.assertEqual(mat.VB(300., 0., '*', 'H'), -7.)
+        self.assertEqual(mat.VB(300., 0., '*', 'L'), -7.)
+        self.assertEqual(mat.CB(300., 0., '*'), 3.)
+
+
 if __name__ == '__main__':
     test = unittest.main(exit=False)
     sys.exit(not test.result.wasSuccessful())
