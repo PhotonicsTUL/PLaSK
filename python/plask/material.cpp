@@ -80,8 +80,11 @@ struct MaterialFromPythonString {
 class PythonMaterial: public MaterialWithBase, Overriden<Material>
 {
     static std::map<PyObject*, std::unique_ptr<MaterialCache>> cacheMap;
+
+  public:
     MaterialCache* cache;
 
+  private:
     template <typename R, typename... Args>
     inline R call_method(const char* name, Args... args) const {
         py::object result = py::call_method<py::object>(self, name, args...);
@@ -518,6 +521,69 @@ static Material::Parameters kwargs2MaterialComposition(const std::string& full_n
     return result;
 }
 
+namespace detail {
+    #define MAKE_CACHED_VALUE_GETTER(Type, param) \
+    Type Cached##param##Getter(const py::tuple& args, const py::dict&) { \
+        const PythonMaterial* self(static_cast<const PythonMaterial*>(py::extract<const Material*>(args[0])())); \
+        return *self->cache->param; \
+    } \
+    py::object Cached##param##GetterObj;
+
+    MAKE_CACHED_VALUE_GETTER(double, lattC)
+    MAKE_CACHED_VALUE_GETTER(double, Eg)
+    MAKE_CACHED_VALUE_GETTER(double, CB)
+    MAKE_CACHED_VALUE_GETTER(double, VB)
+    MAKE_CACHED_VALUE_GETTER(double, Dso)
+    MAKE_CACHED_VALUE_GETTER(double, Mso)
+    MAKE_CACHED_VALUE_GETTER(Tensor2<double>, Me)
+    MAKE_CACHED_VALUE_GETTER(Tensor2<double>, Mhh)
+    MAKE_CACHED_VALUE_GETTER(Tensor2<double>, Mlh)
+    MAKE_CACHED_VALUE_GETTER(Tensor2<double>, Mh)
+    MAKE_CACHED_VALUE_GETTER(double, ac)
+    MAKE_CACHED_VALUE_GETTER(double, av)
+    MAKE_CACHED_VALUE_GETTER(double, b)
+    MAKE_CACHED_VALUE_GETTER(double, d)
+    MAKE_CACHED_VALUE_GETTER(double, c11)
+    MAKE_CACHED_VALUE_GETTER(double, c12)
+    MAKE_CACHED_VALUE_GETTER(double, c44)
+    MAKE_CACHED_VALUE_GETTER(double, eps)
+    MAKE_CACHED_VALUE_GETTER(double, chi)
+    MAKE_CACHED_VALUE_GETTER(double, Na)
+    MAKE_CACHED_VALUE_GETTER(double, Nd)
+    MAKE_CACHED_VALUE_GETTER(double, Ni)
+    MAKE_CACHED_VALUE_GETTER(double, Nf)
+    MAKE_CACHED_VALUE_GETTER(double, EactD)
+    MAKE_CACHED_VALUE_GETTER(double, EactA)
+    MAKE_CACHED_VALUE_GETTER(Tensor2<double>, mob)
+    MAKE_CACHED_VALUE_GETTER(Tensor2<double>, cond)
+    MAKE_CACHED_VALUE_GETTER(double, A)
+    MAKE_CACHED_VALUE_GETTER(double, B)
+    MAKE_CACHED_VALUE_GETTER(double, C)
+    MAKE_CACHED_VALUE_GETTER(double, D)
+    MAKE_CACHED_VALUE_GETTER(Tensor2<double>, thermk)
+    MAKE_CACHED_VALUE_GETTER(double, dens)
+    MAKE_CACHED_VALUE_GETTER(double, cp)
+    MAKE_CACHED_VALUE_GETTER(double, nr)
+    MAKE_CACHED_VALUE_GETTER(double, absp)
+    MAKE_CACHED_VALUE_GETTER(dcomplex, Nr)
+    MAKE_CACHED_VALUE_GETTER(Tensor3<dcomplex>, NR)
+    MAKE_CACHED_VALUE_GETTER(Tensor2<double>, mobe)
+    MAKE_CACHED_VALUE_GETTER(Tensor2<double>, mobh)
+    MAKE_CACHED_VALUE_GETTER(double, taue)
+    MAKE_CACHED_VALUE_GETTER(double, tauh)
+    MAKE_CACHED_VALUE_GETTER(double, Ce)
+    MAKE_CACHED_VALUE_GETTER(double, Ch)
+    MAKE_CACHED_VALUE_GETTER(double, e13)
+    MAKE_CACHED_VALUE_GETTER(double, e15)
+    MAKE_CACHED_VALUE_GETTER(double, e33)
+    MAKE_CACHED_VALUE_GETTER(double, c13)
+    MAKE_CACHED_VALUE_GETTER(double, c33)
+    MAKE_CACHED_VALUE_GETTER(double, Psp)
+    MAKE_CACHED_VALUE_GETTER(double, y1)
+    MAKE_CACHED_VALUE_GETTER(double, y2)
+    MAKE_CACHED_VALUE_GETTER(double, y3)
+}
+
 shared_ptr<Material> PythonMaterial::__init__(const py::tuple& args, const py::dict& kwargs)
 {
     auto len = py::len(args);
@@ -558,85 +624,97 @@ shared_ptr<Material> PythonMaterial::__init__(const py::tuple& args, const py::d
         // MaterialCache* cache = cacheMap.emplace(cls.ptr(), std::unique_ptr<MaterialCache>(new MaterialCache)).first->second.get();
         MaterialCache* cache = (cacheMap[cls.ptr()] = std::unique_ptr<MaterialCache>(new MaterialCache)).get();
         ptr->cache = cache;
-        #define CHECK_CACHE(Type, fun, name, ...) \
-        if (PyObject_HasAttrString(self.ptr(), name)) { \
-            py::object method = py::object(self.attr(name)); \
+        #define CHECK_CACHE(Type, param, ...) \
+        if (py::object(cls.attr(BOOST_PP_STRINGIZE(param))).ptr() == detail::Cached##param##GetterObj.ptr()) { \
+            py::stl_input_iterator<py::object> begin(cls.attr("__mro__")), end; \
+            begin++; /* ignore self */\
+            for (auto i = begin; i != end; i++) { \
+                auto f = cacheMap.find(i->ptr()); \
+                if (f != cacheMap.end() && f->second->param) { \
+                    cache->param.reset(*f->second->param); \
+                    break; \
+                } \
+            } \
+        } else if (PyObject_HasAttrString(self.ptr(), BOOST_PP_STRINGIZE(param))) { \
+            py::object method = py::object(self.attr(BOOST_PP_STRINGIZE(param))); \
             if (PyFunction_Check(method.ptr())) { \
                 if (PyCodeObject* code = reinterpret_cast<PyCodeObject*>(PyFunction_GetCode(method.ptr()))) { \
                     if (code->co_varnames && PyTuple_GET_SIZE(code->co_varnames) == 0) { \
-                        writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '{}'", cls_name); \
+                        writelog(LOG_DEBUG, "Caching parameter '" BOOST_PP_STRINGIZE(param) "' in material class '{}'", cls_name); \
                         try { \
                             py::object value = method(); \
-                            cache->fun.reset(py::extract<Type>(value)); \
+                            cache->param.reset(py::extract<Type>(value)); \
                         } catch (py::error_already_set&) { \
-                            throw TypeError("Cannot convert return value of static method '" name "()' in material class '{}' to correct type", cls_name); \
+                            throw TypeError("Cannot convert return value of static method '" BOOST_PP_STRINGIZE(param) "()' in material class '{}' to correct type", cls_name); \
                         } \
+                        py::setattr(cls, py::object(BOOST_PP_STRINGIZE(param)), detail::Cached##param##GetterObj); \
                     } else { \
-                        throw TypeError("Method '" name "()' in material class '{}' can be static only if it takes no parameters", cls_name); \
+                        throw TypeError("Method '" BOOST_PP_STRINGIZE(param) "()' in material class '{}' can be static only if it takes no parameters", cls_name); \
                     } \
                 } \
             } else if (!PyMethod_Check(method.ptr())) { \
-                writelog(LOG_DEBUG, "Caching parameter '" name "' in material class '{}'", cls_name); \
+                writelog(LOG_DEBUG, "Caching parameter '" BOOST_PP_STRINGIZE(param) "' in material class '{}'", cls_name); \
                 try { \
-                    cache->fun.reset(py::extract<Type>(method)); \
+                    cache->param.reset(py::extract<Type>(method)); \
                 } catch (py::error_already_set&) { \
-                    throw TypeError("Cannot convert static parameter '" name "' in material class '{}' to correct type", cls_name); \
+                    throw TypeError("Cannot convert static parameter '" BOOST_PP_STRINGIZE(param) "' in material class '{}' to correct type", cls_name); \
                 } \
+                py::setattr(cls, py::object(BOOST_PP_STRINGIZE(param)), detail::Cached##param##GetterObj); \
             } \
         }
-        CHECK_CACHE(double, lattC, "lattC", 300., py::object())
-        CHECK_CACHE(double, Eg, "Eg", 300., 0., "G")
-        CHECK_CACHE(double, CB, "CB", 300., 0., "G")
-        CHECK_CACHE(double, VB, "VB", 300., 0., "H")
-        CHECK_CACHE(double, Dso, "Dso", 300., 0.)
-        CHECK_CACHE(double, Mso, "Mso", 300., 0.)
-        CHECK_CACHE(Tensor2<double>, Me, "Me", 300., 0.)
-        CHECK_CACHE(Tensor2<double>, Mhh, "Mhh", 300., 0.)
-        CHECK_CACHE(Tensor2<double>, Mlh, "Mlh", 300., 0.)
-        CHECK_CACHE(Tensor2<double>, Mh, "Mh", 300., 0.)
-        CHECK_CACHE(double, ac, "ac", 300.)
-        CHECK_CACHE(double, av, "av", 300.)
-        CHECK_CACHE(double, b, "b", 300.)
-        CHECK_CACHE(double, d, "d", 300.)
-        CHECK_CACHE(double, c11, "c11", 300.)
-        CHECK_CACHE(double, c12, "c12", 300.)
-        CHECK_CACHE(double, c44, "c44", 300.)
-        CHECK_CACHE(double, eps, "eps", 300.)
-        CHECK_CACHE(double, chi, "chi", 300., 0., "G")
-        CHECK_CACHE(double, Na, "Na")
-        CHECK_CACHE(double, Nd, "Nd")
-        CHECK_CACHE(double, Ni, "Ni", 300.)
-        CHECK_CACHE(double, Nf, "Nf", 300.)
-        CHECK_CACHE(double, EactD, "EactD", 300.)
-        CHECK_CACHE(double, EactA, "EactA", 300.)
-        CHECK_CACHE(Tensor2<double>, mob, "mob", 300.)
-        CHECK_CACHE(Tensor2<double>, cond, "cond", 300.)
-        CHECK_CACHE(double, A, "A", 300.)
-        CHECK_CACHE(double, B, "B", 300.)
-        CHECK_CACHE(double, C, "C", 300.)
-        CHECK_CACHE(double, D, "D", 300.)
-        CHECK_CACHE(Tensor2<double>, thermk, "thermk", 300., INFINITY)
-        CHECK_CACHE(double, dens, "dens", 300.)
-        CHECK_CACHE(double, cp, "cp", 300.)
-        CHECK_CACHE(double, nr, "nr", py::object(), 300., 0.)
-        CHECK_CACHE(double, absp, "absp", py::object(), 300.)
-        CHECK_CACHE(dcomplex, Nr, "Nr", py::object(), 300., 0.)
-        CHECK_CACHE(Tensor3<dcomplex>, NR, "NR", py::object(), 300., 0.)
-        CHECK_CACHE(Tensor2<double>, mobe, "mobe", 300.)
-        CHECK_CACHE(Tensor2<double>, mobh, "mobh", 300.)
-        CHECK_CACHE(double, taue, "taue", 300.)
-        CHECK_CACHE(double, tauh, "tauh", 300.)
-        CHECK_CACHE(double, Ce, "Ce", 300.)
-        CHECK_CACHE(double, Ch, "Ch", 300.)
-        CHECK_CACHE(double, e13, "e13", 300.)
-        CHECK_CACHE(double, e15, "e15", 300.)
-        CHECK_CACHE(double, e33, "e33", 300.)
-        CHECK_CACHE(double, c13, "c13", 300.)
-        CHECK_CACHE(double, c33, "c33", 300.)
-        CHECK_CACHE(double, Psp, "Psp", 300.)
-        CHECK_CACHE(double, y1, "y1")
-        CHECK_CACHE(double, y2, "y2")
-        CHECK_CACHE(double, y3, "y3")
+        CHECK_CACHE(double, lattC, 300., py::object())
+        CHECK_CACHE(double, Eg, 300., 0., "*")
+        CHECK_CACHE(double, CB, 300., 0., "*")
+        CHECK_CACHE(double, VB, 300., 0., "*", "H")
+        CHECK_CACHE(double, Dso, 300., 0.)
+        CHECK_CACHE(double, Mso, 300., 0.)
+        CHECK_CACHE(Tensor2<double>, Me, 300., 0.)
+        CHECK_CACHE(Tensor2<double>, Mhh, 300., 0.)
+        CHECK_CACHE(Tensor2<double>, Mlh, 300., 0.)
+        CHECK_CACHE(Tensor2<double>, Mh, 300., 0.)
+        CHECK_CACHE(double, ac, 300.)
+        CHECK_CACHE(double, av, 300.)
+        CHECK_CACHE(double, b, 300.)
+        CHECK_CACHE(double, d, 300.)
+        CHECK_CACHE(double, c11, 300.)
+        CHECK_CACHE(double, c12, 300.)
+        CHECK_CACHE(double, c44, 300.)
+        CHECK_CACHE(double, eps, 300.)
+        CHECK_CACHE(double, chi, 300., 0., "G")
+        CHECK_CACHE(double, Na)
+        CHECK_CACHE(double, Nd)
+        CHECK_CACHE(double, Ni, 300.)
+        CHECK_CACHE(double, Nf, 300.)
+        CHECK_CACHE(double, EactD, 300.)
+        CHECK_CACHE(double, EactA, 300.)
+        CHECK_CACHE(Tensor2<double>, mob, 300.)
+        CHECK_CACHE(Tensor2<double>, cond, 300.)
+        CHECK_CACHE(double, A, 300.)
+        CHECK_CACHE(double, B, 300.)
+        CHECK_CACHE(double, C, 300.)
+        CHECK_CACHE(double, D, 300.)
+        CHECK_CACHE(Tensor2<double>, thermk, 300., INFINITY)
+        CHECK_CACHE(double, dens, 300.)
+        CHECK_CACHE(double, cp, 300.)
+        CHECK_CACHE(double, nr, py::object(), 300., 0.)
+        CHECK_CACHE(double, absp, py::object(), 300.)
+        CHECK_CACHE(dcomplex, Nr, py::object(), 300., 0.)
+        CHECK_CACHE(Tensor3<dcomplex>, NR, py::object(), 300., 0.)
+        CHECK_CACHE(Tensor2<double>, mobe, 300.)
+        CHECK_CACHE(Tensor2<double>, mobh, 300.)
+        CHECK_CACHE(double, taue, 300.)
+        CHECK_CACHE(double, tauh, 300.)
+        CHECK_CACHE(double, Ce, 300.)
+        CHECK_CACHE(double, Ch, 300.)
+        CHECK_CACHE(double, e13, 300.)
+        CHECK_CACHE(double, e15, 300.)
+        CHECK_CACHE(double, e33, 300.)
+        CHECK_CACHE(double, c13, 300.)
+        CHECK_CACHE(double, c33, 300.)
+        CHECK_CACHE(double, Psp, 300.)
+        CHECK_CACHE(double, y1)
+        CHECK_CACHE(double, y2)
+        CHECK_CACHE(double, y3)
     }
     return ptr;
 }
@@ -1388,7 +1466,63 @@ void initMaterials() {
             (py::arg("name"), "material", "base"),
             u8"Register new complex material class to the database");
 
-    // Material info
+    #define REGISTER_CACHED_VALUE_GETTER(param) \
+        detail::Cached##param##GetterObj = py::raw_function(&detail::Cached##param##Getter); \
+//        detail::Cached##param##GetterObj.attr("__doc__") = MaterialClass.attr(BOOST_PP_STRINGIZE(param)).attr("__doc__");
+
+    REGISTER_CACHED_VALUE_GETTER(lattC);
+    REGISTER_CACHED_VALUE_GETTER(Eg);
+    REGISTER_CACHED_VALUE_GETTER(CB);
+    REGISTER_CACHED_VALUE_GETTER(VB);
+    REGISTER_CACHED_VALUE_GETTER(Dso);
+    REGISTER_CACHED_VALUE_GETTER(Mso);
+    REGISTER_CACHED_VALUE_GETTER(Me);
+    REGISTER_CACHED_VALUE_GETTER(Mhh);
+    REGISTER_CACHED_VALUE_GETTER(Mlh);
+    REGISTER_CACHED_VALUE_GETTER(Mh);
+    REGISTER_CACHED_VALUE_GETTER(ac);
+    REGISTER_CACHED_VALUE_GETTER(av);
+    REGISTER_CACHED_VALUE_GETTER(b);
+    REGISTER_CACHED_VALUE_GETTER(d);
+    REGISTER_CACHED_VALUE_GETTER(c11);
+    REGISTER_CACHED_VALUE_GETTER(c12);
+    REGISTER_CACHED_VALUE_GETTER(c44);
+    REGISTER_CACHED_VALUE_GETTER(eps);
+    REGISTER_CACHED_VALUE_GETTER(chi);
+    REGISTER_CACHED_VALUE_GETTER(Na);
+    REGISTER_CACHED_VALUE_GETTER(Nd);
+    REGISTER_CACHED_VALUE_GETTER(Ni);
+    REGISTER_CACHED_VALUE_GETTER(Nf);
+    REGISTER_CACHED_VALUE_GETTER(EactD);
+    REGISTER_CACHED_VALUE_GETTER(EactA);
+    REGISTER_CACHED_VALUE_GETTER(mob);
+    REGISTER_CACHED_VALUE_GETTER(cond);
+    REGISTER_CACHED_VALUE_GETTER(A);
+    REGISTER_CACHED_VALUE_GETTER(B);
+    REGISTER_CACHED_VALUE_GETTER(C);
+    REGISTER_CACHED_VALUE_GETTER(D);
+    REGISTER_CACHED_VALUE_GETTER(thermk);
+    REGISTER_CACHED_VALUE_GETTER(dens);
+    REGISTER_CACHED_VALUE_GETTER(cp);
+    REGISTER_CACHED_VALUE_GETTER(nr);
+    REGISTER_CACHED_VALUE_GETTER(absp);
+    REGISTER_CACHED_VALUE_GETTER(Nr);
+    REGISTER_CACHED_VALUE_GETTER(NR);
+    REGISTER_CACHED_VALUE_GETTER(mobe);
+    REGISTER_CACHED_VALUE_GETTER(mobh);
+    REGISTER_CACHED_VALUE_GETTER(taue);
+    REGISTER_CACHED_VALUE_GETTER(tauh);
+    REGISTER_CACHED_VALUE_GETTER(Ce);
+    REGISTER_CACHED_VALUE_GETTER(Ch);
+    REGISTER_CACHED_VALUE_GETTER(e13);
+    REGISTER_CACHED_VALUE_GETTER(e15);
+    REGISTER_CACHED_VALUE_GETTER(e33);
+    REGISTER_CACHED_VALUE_GETTER(c13);
+    REGISTER_CACHED_VALUE_GETTER(c33);
+    REGISTER_CACHED_VALUE_GETTER(Psp);
+    REGISTER_CACHED_VALUE_GETTER(y1);
+    REGISTER_CACHED_VALUE_GETTER(y2);
+    REGISTER_CACHED_VALUE_GETTER(y3);
 }
 
 }} // namespace plask::python

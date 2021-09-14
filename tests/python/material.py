@@ -387,6 +387,14 @@ class TestBandGap(unittest.TestCase):
     class CBpy(material.Material):
         def CB(*args): return 3.
 
+    def testBase1(self):
+        mat = material.get('BandGapBase')
+        self.assertEqual(mat.Eg(300., 0., '*'), 10.)
+
+    def testBase2(self):
+        mat = TestBandGap.BandGapBase()
+        self.assertEqual(mat.Eg(300., 0., '*'), 10.)
+
     def testEgVBpy(self):
         mat = material.get('EgVBpy')
         self.assertEqual(mat.Eg(300., 0., '*'), 1.)
@@ -527,7 +535,6 @@ class TestBandGap(unittest.TestCase):
         self.assertEqual(mat.VB(300., 0., '*', 'H'), -7.)
         self.assertEqual(mat.VB(300., 0., '*', 'L'), -7.)
         self.assertEqual(mat.CB(300., 0., '*'), 3.)
-
 
 if __name__ == '__main__':
     test = unittest.main(exit=False)
