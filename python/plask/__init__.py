@@ -41,7 +41,7 @@ def print_exc():
 if 'PLASK_SOLVERS_PATH' in os.environ:
     for _path in os.environ['PLASK_SOLVERS_PATH'].split(';' if os.name == 'nt' else ':'):
         _i += 1
-        os.path.insert(_i, _path)
+        sys.path.insert(_i, _path)
 else:
     sys.path.insert(_i+1, os.path.join(_basepath, 'solvers'))
 

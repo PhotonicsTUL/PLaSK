@@ -93,6 +93,7 @@ option(BUILD_DEVEL_DOC "Build doxygen documentation." OFF)
 
 option(BUILD_PYTHON "Build and install Python interface to PLaSK (recommended)." ON)
 cmake_dependent_option(BUILD_PYTHON_MODULE "Build Python interface as external module." OFF "BUILD_PYTHON" OFF)
+cmake_dependent_option(INSTALL_PYTHON_PTH "Install 'plask.pth' into Python directory" OFF "BUILD_PYTHON_MODULE" OFF)
 cmake_dependent_option(BUILD_GUI "Build and install GUI." ON "BUILD_PYTHON" OFF)
 
 option(BUILD_TESTING "Build unit tests." ON)
@@ -471,12 +472,18 @@ if(BUILD_PYTHON)
             set_target_properties(plask_module PROPERTIES
                                 RUNTIME_OUTPUT_DIRECTORY "${PLASK_PYTHON_PATH}"
                                 SUFFIX ".pyd")
+        else()
+            if(INSTALL_PYTHON_PTH)
+                execute_process(
+                    COMMAND "${PYTHON_EXECUTABLE}" -c
+                    "from distutils.sysconfig import get_python_lib; print(get_python_lib(plat_specific=False,standard_lib=False))"
+                    OUTPUT_VARIABLE PYTHON_SITE OUTPUT_STRIP_TRAILING_WHITESPACE)
+                file(WRITE "${CMAKE_BINARY_DIR}/CMakeFiles/plask.pth" "${CMAKE_INSTALL_PREFIX}/lib/plask/python\n")
+                install(FILES "${CMAKE_BINARY_DIR}/CMakeFiles/plask.pth" DESTINATION "${PYTHON_SITE}" COMPONENT core)
+            endif()
         endif()
         install(TARGETS plask_module DESTINATION lib/plask/python/plask COMPONENT core)
-        # execute_process(
-        #     COMMAND "${PYTHON_EXECUTABLE}" -c
-        #     "from distutils.sysconfig import get_python_lib; print(get_python_lib(prefix='', plat_specific=False))"
-        #     OUTPUT_VARIABLE PYTHON_SITE OUTPUT_STRIP_TRAILING_WHITESPACE)
+
     endif()
 
     if(WIN32 AND NOT MSVC)
