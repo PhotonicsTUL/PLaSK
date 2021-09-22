@@ -16,7 +16,7 @@ extern "C" PyObject* PLASK_MODULE(void);
 PyAPI_DATA(int) Py_UnbufferedStdioFlag;
 
 //******************************************************************************
-py::object globals;
+py::object* globals;
 
 enum FileType {
     FILE_ANY = 0,
@@ -160,7 +160,7 @@ static py::object initPlask(int argc, const system_char* argv[], bool banner)
     //PyEval_ReleaseLock();
 
     PyObject* __main__ = PyImport_AddModule("__main__");
-    globals = py::object(py::handle<>(py::borrowed(PyModule_GetDict(__main__))));
+    globals = new py::object(py::handle<>(py::borrowed(PyModule_GetDict(__main__))));
 
     return _plask;
 }
@@ -487,12 +487,12 @@ int system_main(int argc, const system_char *argv[])
                 throw py::error_already_set();
             }
             py::object plask = py::import("plask");
-            globals["plask"] = plask;           // import plask
-            from_import_all(plask, globals);    // from plask import *
+            (*globals)["plask"] = plask;           // import plask
+            from_import_all(plask, *globals);    // from plask import *
 
             PyObject* result = NULL;
             PyObject* code = system_Py_CompileString(command, CSTR(-c), Py_file_input);
-            if (code) result = PyEval_EvalCode(code, globals.ptr(), globals.ptr());
+            if (code) result = PyEval_EvalCode(code, globals->ptr(), globals->ptr());
             Py_XDECREF(code);
             if (!result) py::throw_error_already_set();
             else Py_DECREF(result);
@@ -514,8 +514,8 @@ int system_main(int argc, const system_char *argv[])
                 throw py::error_already_set();
             }
             py::object plask = py::import("plask");
-            globals["plask"] = plask;           // import plask
-            from_import_all(plask, globals);    // from plask import *
+            (*globals)["plask"] = plask;           // import plask
+            from_import_all(plask, *globals);    // from plask import *
 
 
             py::object runpy = py::import("runpy");
@@ -535,8 +535,8 @@ int system_main(int argc, const system_char *argv[])
         // Add plask to the global namespace
         try {
             py::object plask = py::import("plask");
-            globals["plask"] = plask;           // import plask
-            from_import_all(plask, globals);    // from plask import *
+            (*globals)["plask"] = plask;           // import plask
+            from_import_all(plask, *globals);    // from plask import *
         } catch (py::error_already_set&) {
             int exitcode = handlePythonException();
             endPlask();
@@ -556,7 +556,7 @@ int system_main(int argc, const system_char *argv[])
                 py::object sys = py::import("sys");
                 sys.attr("argv")[0] = filename;
             }
-            globals["__file__"] = filename;
+            (*globals)["__file__"] = filename;
 
             // Detect if the file is Python script or PLaSK input
             if (realfile) {
@@ -623,7 +623,7 @@ int system_main(int argc, const system_char *argv[])
 
                 auto manager = plask::make_shared<plask::python::PythonManager>();
                 py::object omanager(manager);
-                globals["__manager__"] = omanager;
+                (*globals)["__manager__"] = omanager;
                 if (realfile)
                     plask::python::loadXpl(omanager, system_str_to_pyobject(filename), locals);
                 else {
@@ -632,9 +632,9 @@ int system_main(int argc, const system_char *argv[])
                 }
                 if (manager->scriptline)
                     manager->script = "#coding: utf8\n" + std::string(manager->scriptline-1, '\n') + manager->script;
-                PyDict_Update(globals.ptr(), manager->defs.ptr());
+                PyDict_Update(globals->ptr(), manager->defs.ptr());
                 PyDict_Update(plask::python::pyXplGlobals->ptr(), manager->defs.ptr());
-                plask::python::PythonManager::export_dict(omanager, globals);
+                plask::python::PythonManager::export_dict(omanager, *globals);
 
                 // Set default axes if all loaded geometries share the same
                 plask::optional<plask::AxisNames> axes;
@@ -650,7 +650,7 @@ int system_main(int argc, const system_char *argv[])
                 PyObject* result = NULL;
                 PyObject* code = system_Py_CompileString(manager->script.c_str(), filename.c_str(), Py_file_input);
                 if (code)
-                    result = PyEval_EvalCode(code, globals.ptr(), globals.ptr());
+                    result = PyEval_EvalCode(code, globals->ptr(), globals->ptr());
                 Py_XDECREF(code);
                 if (!result) py::throw_error_already_set();
                 else Py_DECREF(result);
@@ -665,9 +665,9 @@ int system_main(int argc, const system_char *argv[])
                 if (realfile) {
                     FILE* file = system_Py_fopen(filename.c_str(), CSTR(r));
                     // TODO conversion to UTF-8 might not be proper here, especially for windows
-                    result = PyRun_FileEx(file, system_to_utf8(filename).c_str(), Py_file_input, globals.ptr(), globals.ptr(), 1);
+                    result = PyRun_FileEx(file, system_to_utf8(filename).c_str(), Py_file_input, globals->ptr(), globals->ptr(), 1);
                 } else {
-                    result = PyRun_File(stdin, system_to_utf8(filename).c_str(), Py_file_input, globals.ptr(), globals.ptr());
+                    result = PyRun_File(stdin, system_to_utf8(filename).c_str(), Py_file_input, globals->ptr(), globals->ptr());
                 }
                 Py_XDECREF(pyfile);
                 if (!result) py::throw_error_already_set();

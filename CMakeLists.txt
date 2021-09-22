@@ -1,7 +1,7 @@
 # CMake file for project PLaSK
 
 cmake_minimum_required(VERSION 3.0)
-# cmake_policy(SET CMP0017 OLD)       # ensure our CMake modules are loaded first
+cmake_policy(SET CMP0054 NEW)       # silence unnesessary warning
 
 project(plask)
 
@@ -959,12 +959,31 @@ if(WIN32)
         !define MUI_STARTMENUPAGE_DEFAULTFOLDER \\\"PLaSK\\\"
         !include \\\"${CMAKE_SOURCE_DIR_WINDOWS}\\\\cmake\\\\fileassoc.nsh\\\"")
     set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
+        Var /GLOBAL PYROOT
+        SetRegView 64
         !insertmacro APP_ASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\" \\\"PLaSK structure data\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe,1\\\" \\\"Open in PLaSK GUI\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe \\\$\\\\\\\"%1\\\$\\\\\\\"\\\"
         !insertmacro UPDATEFILEASSOC
+        WriteRegStr HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plask.exe\\\" \\\"\\\" \\\"$INSTDIR\\\\bin\\\\plask.exe\\\"
+        WriteRegStr HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plaskgui.exe\\\" \\\"\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe\\\"
+        ReadRegStr $PYROOT HKLM \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
+        StrCmp $PYROOT \\\"\\\" plask_install_end
+        WriteRegStr HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plask.exe\\\" \\\"Path\\\" \\\"$PYROOT;$PYROOT\\\\Library\\\\usr\\\\bin;$PYROOT\\\\Library\\\\bin\\\"
+        WriteRegStr HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plaskgui.exe\\\" \\\"Path\\\" \\\"$PYROOT;$PYROOT\\\\Library\\\\usr\\\\bin;$PYROOT\\\\Library\\\\bin\\\"
+        FileOpen $9 \\\"$PYROOT\\\\Lib\\\\site-packages\\\\plask.pth\\\" w
+        FileWrite $9 \\\"$INSTDIR\\\\lib\\\\plask\\\\python$\\\\r$\\\\n\\\"
+        FileClose $9
+        plask_install_end:
+        SetRegView 32
     ")
     set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
+        SetRegView 64
         !insertmacro APP_UNASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\"
         !insertmacro UPDATEFILEASSOC
+        DeleteRegKey HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plask.exe\\\"
+        DeleteRegKey HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plaskgui.exe\\\"
+        ReadRegStr $1 HKLM \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
+        Delete \\\"$1\\\\Lib\\\\site-packages\\\\plask.pth\\\"
+        SetRegView 32
     ")
 endif()
 
