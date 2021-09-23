@@ -62,7 +62,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PLaSK'
-copyright = u'2014-2020, Lodz University of Technology'
+copyright = u'2014-2022, Lodz University of Technology'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the

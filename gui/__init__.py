@@ -808,7 +808,7 @@ class MainWindow(QMainWindow):
             horizontal.setAlignment(icon_label, Qt.AlignTop)
 
             label = QLabel(u"<b>PLaSK — Photonic Laser Simulation Kit</b><br/>\n"
-                           u"© 2014-2020 Lodz University of Technology, Photonics Group<br/><br/>" + text)
+                           u"© 2014-2022 Lodz University of Technology, Photonics Group<br/><br/>" + text)
             label.setTextFormat(Qt.RichText)
             label.setWordWrap(True)
             horizontal.addWidget(label)
