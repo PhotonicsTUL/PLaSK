@@ -1,7 +1,10 @@
 # CMake file for project PLaSK
 
 cmake_minimum_required(VERSION 3.0)
-cmake_policy(SET CMP0054 NEW)       # silence unnesessary warning
+
+if(${CMAKE_VERSION} VERSION_GREATER "3.0.9")
+    cmake_policy(SET CMP0054 NEW)       # silence unnesessary warning
+endif()
 
 project(plask)
 
