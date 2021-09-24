@@ -965,27 +965,35 @@ if(WIN32)
         Var /GLOBAL PYROOT
         SetRegView 64
         !insertmacro APP_ASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\" \\\"PLaSK structure data\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe,1\\\" \\\"Open in PLaSK GUI\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe \\\$\\\\\\\"%1\\\$\\\\\\\"\\\"
-        !insertmacro UPDATEFILEASSOC
         WriteRegStr HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plask.exe\\\" \\\"\\\" \\\"$INSTDIR\\\\bin\\\\plask.exe\\\"
         WriteRegStr HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plaskgui.exe\\\" \\\"\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe\\\"
         ReadRegStr $PYROOT HKLM \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
-        StrCmp $PYROOT \\\"\\\" plask_install_end
+        StrCmp $PYROOT \\\"\\\" plask_no_python
         WriteRegStr HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plask.exe\\\" \\\"Path\\\" \\\"$PYROOT;$PYROOT\\\\Library\\\\usr\\\\bin;$PYROOT\\\\Library\\\\bin\\\"
         WriteRegStr HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plaskgui.exe\\\" \\\"Path\\\" \\\"$PYROOT;$PYROOT\\\\Library\\\\usr\\\\bin;$PYROOT\\\\Library\\\\bin\\\"
         FileOpen $9 \\\"$PYROOT\\\\Lib\\\\site-packages\\\\plask.pth\\\" w
         FileWrite $9 \\\"$INSTDIR\\\\lib\\\\plask\\\\python$\\\\r$\\\\n\\\"
         FileClose $9
-        plask_install_end:
+        plask_no_python:
+        !insertmacro UPDATEFILEASSOC
+        IntCmp $dev_selected 0 plask_no_define_root
+        WriteRegStr HKLM \\\"SYSTEM\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment\\\" \\\"PLASK_ROOT\\\" \\\"$INSTDIR\\\"
+        SendMessage \\\${HWND_BROADCAST} \\\${WM_WININICHANGE} 0 \\\"STR:Environment\\\" /TIMEOUT=5000
+        plask_no_define_root:
         SetRegView 32
     ")
     set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
         SetRegView 64
-        !insertmacro APP_UNASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\"
-        !insertmacro UPDATEFILEASSOC
         DeleteRegKey HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plask.exe\\\"
         DeleteRegKey HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plaskgui.exe\\\"
         ReadRegStr $1 HKLM \\\"SOFTWARE\\\\Python\\\\PythonCore\\\\${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}\\\\InstallPath\\\" \\\"\\\"
         Delete \\\"$1\\\\Lib\\\\site-packages\\\\plask.pth\\\"
+        !insertmacro APP_UNASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\"
+        !insertmacro UPDATEFILEASSOC
+        IntCmp $dev_was_installed 0 plask_no_delete_root
+        DeleteRegValue HKLM \\\"SYSTEM\\\\CurrentControlSet\\\\Control\\\\Session Manager\\\\Environment\\\" \\\"PLASK_ROOT\\\"
+        SendMessage \\\${HWND_BROADCAST} \\\${WM_WININICHANGE} 0 \\\"STR:Environment\\\" /TIMEOUT=5000
+        plask_no_delete_root:
         SetRegView 32
     ")
 endif()
