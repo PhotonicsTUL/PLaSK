@@ -14,10 +14,9 @@ from ..qt.QtWidgets import *
 
 from .table import TableController
 from .defines import DefinesCompletionDelegate
-
 from ..model.connects import ConnectsModel
 from ..model.solvers import SOLVERS
-
+from ..utils.widgets import ComboBox
 
 class FlowDelegate(DefinesCompletionDelegate):
 
@@ -31,7 +30,7 @@ class FlowDelegate(DefinesCompletionDelegate):
     def createEditor(self, parent, option, index):
         items = self.get_slots()
         if not items: return super().createEditor(parent, option, index)
-        combo = QComboBox(parent)
+        combo = ComboBox(parent)
         combo.setEditable(True)
         combo.addItems(items)
         combo.setEditText(index.data())

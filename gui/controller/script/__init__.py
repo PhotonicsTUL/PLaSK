@@ -28,7 +28,7 @@ from .indenter import indent, unindent, autoindent
 from ..source import SourceEditController
 from ...model.script import ScriptModel
 from ...utils.config import CONFIG, parse_highlight, parse_font
-from ...utils.widgets import EDITOR_FONT
+from ...utils.widgets import EDITOR_FONT, ComboBox
 from ...utils.texteditor import TextEditor, EditorWidget
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
 
@@ -383,7 +383,7 @@ class ScriptController(SourceEditController):
             spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             source.toolbar.addWidget(spacer)
             source.toolbar.addWidget(QLabel("Log Level: "))
-            self.loglevel = QComboBox()
+            self.loglevel = ComboBox()
             levels = ['Error', 'Warning', 'Important', 'Info', 'Result', 'Data', 'Detail', 'Debug']
             self.loglevel.addItems(levels)
             try:

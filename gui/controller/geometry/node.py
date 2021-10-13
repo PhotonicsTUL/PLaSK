@@ -21,7 +21,7 @@ from ...model.geometry.reader import GNAligner
 
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
-from ...utils.widgets import EditComboBox, MultiLineEdit
+from ...utils.widgets import EditComboBox, MultiLineEdit, ComboBox
 from ...utils import getattr_by_path
 
 
@@ -231,7 +231,7 @@ class GNodeController(Controller):
         for r, c in enumerate(aligners_dir):
             axis = QLabel(('Longitudinal:', 'Transverse:', 'Vertical:')[c+3-dim])
             layout.addWidget(axis, r, 0)
-            position = QComboBox()
+            position = ComboBox()
             position.addItems(GNAligner.display_names(dim, c))
             layout.addWidget(position, r, 1)
             layout.addWidget(QLabel('at'), r, 2)

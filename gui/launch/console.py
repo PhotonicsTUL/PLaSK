@@ -25,6 +25,7 @@ from .. import XPLDocument
 from ..qt.QtGui import *
 from ..qt.QtWidgets import *
 from ..utils.config import CONFIG
+from ..utils.widgets import ComboBox
 
 
 def which(program):
@@ -69,7 +70,7 @@ class Launcher:
         dirlayout.addWidget(dirbutton)
         layout.addLayout(dirlayout)
         layout.addWidget(QLabel("Log level:"))
-        self.loglevel = QComboBox()
+        self.loglevel = ComboBox()
         loglevels = ['Error', 'Warning', 'Important', 'Info', 'Result', 'Data', 'Detail', 'Debug']
         self.loglevel.addItems(loglevels)
         if isinstance(main_window.document, XPLDocument):

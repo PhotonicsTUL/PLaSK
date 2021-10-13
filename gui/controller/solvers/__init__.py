@@ -16,7 +16,7 @@ from ...qt.QtCore import *
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *
 from ...model.connects import PROPS
-from ...utils.widgets import table_last_col_fill, table_edit_shortcut
+from ...utils.widgets import table_last_col_fill, table_edit_shortcut, ComboBox
 from .. import Controller, select_index_from_info
 from ..table import table_with_manipulators
 from ..defines import get_defines_completer
@@ -40,13 +40,13 @@ class FilterController(Controller):
         layout = QFormLayout()
         layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
 
-        self.what = QComboBox()
+        self.what = ComboBox()
         self.what.addItems(PROPS)
         self.what.currentIndexChanged.connect(self.fire_changed)
         self.what.setToolTip('Name physical property to filter.')
         layout.addRow('For:', self.what)
 
-        self.geometry = QComboBox()
+        self.geometry = ComboBox()
         self.geometry.setEditable(True)
         self.geometry.editTextChanged.connect(self.fire_changed)
         self.geometry.currentIndexChanged.connect(self.fire_changed)
@@ -200,7 +200,7 @@ class NewSolverDialog(QDialog):
 
         self.model = model
 
-        self.category = QComboBox()
+        self.category = ComboBox()
         categories = CATEGORIES + model.local_categories
         categories += ([] if categories[-1] is None else [None])
         self.category.addItems([c.title() for c in categories if c is not None])
@@ -212,7 +212,7 @@ class NewSolverDialog(QDialog):
         self.category.currentIndexChanged.connect(self.category_changed)
         layout.addRow("C&ategory:", self.category)
 
-        self.solver = QComboBox()
+        self.solver = ComboBox()
         self.solver.setEditable(True)
         if MODELS:
             self.solver.setMinimumWidth(max(self.solver.fontMetrics().width(slv) for _,slv in MODELS) + 32)

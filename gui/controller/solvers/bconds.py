@@ -22,7 +22,7 @@ from ...qt import QtSignal, QtSlot
 from ...utils import get_manager
 from ...utils.config import CONFIG, dark_style
 from ...utils.str import none_to_empty, empty_to_none
-from ...utils.widgets import HTMLDelegate, EditComboBox, table_edit_shortcut
+from ...utils.widgets import HTMLDelegate, EditComboBox, table_edit_shortcut, ComboBox
 from ...utils.qsignals import BlockQtSignals
 from ..defines import DefinesCompletionDelegate, get_defines_completer
 from ..table import table_with_manipulators, top_level_index
@@ -524,7 +524,7 @@ class PlaceDelegate(QStyledItemDelegate):
         else:
             opts = list(opts)
 
-        combo = QComboBox(parent)
+        combo = ComboBox(parent)
         combo.setInsertPolicy(QComboBox.NoInsert)
         combo.addItems(opts)
         combo.setMaxVisibleItems(len(opts))

@@ -20,6 +20,7 @@ from ...qt.QtWidgets import *
 from ...model.grids import Grid
 from ...model.grids.types import construct_grid, meshes_types, generators_types,\
     generator_methods, xml_name
+from ...utils.widgets import ComboBox
 
 
 class NewGridDialog(QDialog):
@@ -42,13 +43,13 @@ class NewGridDialog(QDialog):
         self.name_edit = QLineEdit()
         self.name_edit.setToolTip('Name of the mesh or generator for reference in configuration of the solvers.')
 
-        self.type_edit = QComboBox()
+        self.type_edit = ComboBox()
         self.type_edit.setEditable(True)
         self.type_edit.setInsertPolicy(QComboBox.NoInsert)
         self.type_edit.editTextChanged.connect(self._type_changed)
         self.type_edit.setToolTip('Type of the mesh.')
 
-        self.method_edit = QComboBox()
+        self.method_edit = ComboBox()
         self.method_edit.setEditable(True)
         self.method_edit.setInsertPolicy(QComboBox.NoInsert)
         self.method_edit.setToolTip('Generation method i.e. the type of the generator.')

@@ -38,7 +38,7 @@ from ...model.materials import MATERIALS_PROPERTES, material_html_help, parse_ma
                                HandleMaterialsModule
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import html_to_tex
-from ...utils.widgets import set_icon_size
+from ...utils.widgets import set_icon_size, ComboBox
 from ...utils.config import dark_style
 
 basestring = str, bytes
@@ -83,7 +83,7 @@ class MaterialPlot(QWidget):
         self.material.setInsertPolicy(QComboBox.NoInsert)
         self.material.setMinimumWidth(180)
         self.material.currentIndexChanged.connect(self.material_changed)
-        self.param = QComboBox()
+        self.param = ComboBox()
         self.param.addItems([k for k in MATERIALS_PROPERTES.keys() if k != 'condtype'])
         self.param.setCurrentIndex(self.param.findText(CURRENT_PROP))
         self.param.currentIndexChanged.connect(self.property_changed)

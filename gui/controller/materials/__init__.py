@@ -23,7 +23,7 @@ from ..script import scheme
 from ...model.materials import MaterialsModel, BASE_MATERIALS, default_materialdb, \
     material_html_help, parse_material_components, elements_re
 from ...utils.texteditor import TextEditor
-from ...utils.widgets import HTMLDelegate, table_last_col_fill, EDITOR_FONT, table_edit_shortcut, CheckBoxDelegate
+from ...utils.widgets import HTMLDelegate, table_last_col_fill, EDITOR_FONT, table_edit_shortcut, CheckBoxDelegate, ComboBox
 from ...utils.qsignals import BlockQtSignals
 from .. import Controller, select_index_from_info
 from ..defines import DefinesCompletionDelegate
@@ -122,7 +122,7 @@ class MaterialLineEdit(QLineEdit):
         show_material_plot(self.parent(), self.materials_model, self.defines_model, self.text())
 
 
-class MaterialsComboBox(QComboBox):
+class MaterialsComboBox(ComboBox):
 
     editingFinished = QtSignal()
 
@@ -221,6 +221,8 @@ class MaterialsComboBox(QComboBox):
             pass  # it is possible that internal combo box has been deleted
         if self.popup_select_cb is not None: self.popup_select_cb(material_name)
 
+    def wheelEvent(self, evt):
+        evt.ignore()
 
 
 class ExternalLineEdit(QLineEdit):
@@ -335,7 +337,7 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
 
         if opts is None: return super().createEditor(parent, option, index)
 
-        combo = QComboBox(parent)
+        combo = ComboBox(parent)
         combo.setInsertPolicy(QComboBox.NoInsert)
         combo.addItems(opts)
         combo.setMaxVisibleItems(len(opts))

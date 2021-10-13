@@ -23,7 +23,7 @@ from ...model.info import Info
 from ...model.materials import HandleMaterialsModule
 from .. import Controller
 from ...utils import get_manager
-from ...utils.widgets import HTMLDelegate, VerticalScrollArea, create_undo_actions, set_icon_size
+from ...utils.widgets import HTMLDelegate, VerticalScrollArea, create_undo_actions, set_icon_size, ComboBox
 from ...utils.config import CONFIG
 
 try:
@@ -461,7 +461,7 @@ class GeometryController(Controller):
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         toolbar.addWidget(spacer)
-        self.search_combo = QComboBox()
+        self.search_combo = ComboBox()
         self.search_combo.setEditable(True)
         self.search_combo.setInsertPolicy(QComboBox.NoInsert)
         search_box = self.search_combo.lineEdit()

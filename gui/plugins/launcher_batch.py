@@ -28,7 +28,7 @@ from gui.qt.QtCore import Qt, QSize
 from gui.qt.QtGui import *
 from gui.qt.QtWidgets import *
 from gui.launch import LAUNCHERS, LAUNCH_CONFIG
-from gui.utils.widgets import MultiLineEdit
+from gui.utils.widgets import MultiLineEdit, ComboBox
 from gui.utils.qsignals import BlockQtSignals
 
 try:
@@ -281,7 +281,7 @@ else:
                 self.user_edit.textEdited.connect(self.userhost_edited)
                 layout.addRow("&User:", self.user_edit)
 
-                self.systems_combo = QComboBox()
+                self.systems_combo = ComboBox()
                 self.systems_combo.setToolTip("Batch job scheduling system at the execution host.\n"
                                               "If you are not sure about the correct value, contact\n"
                                               "the host administrator.")
@@ -769,7 +769,7 @@ else:
                 layout.setContentsMargins(0, 0, 0, 0)
                 self.partition_label = QLabel("&Partition:", self._widget)
                 layout.addWidget(self.partition_label)#, 0, 0)
-                self.partition_combo = QComboBox(self._widget)
+                self.partition_combo = ComboBox(self._widget)
                 self.partition_combo.setToolTip("Select the partition to send your job to.")
                 self.partition_combo.addItems(self.partitions)
                 self.partition_label.setBuddy(self.partition_combo)
@@ -779,7 +779,7 @@ else:
                     self.partition_combo.setVisible(False)
                 self.qos_label = QLabel("&QOS:", self._widget)
                 layout.addWidget(self.qos_label)#, 1, 0)
-                self.qos_combo = QComboBox(self._widget)
+                self.qos_combo = ComboBox(self._widget)
                 self.qos_combo.setToolTip("Select the QOS to send your job to.")
                 self.qos_combo.addItems(self.qos)
                 self.qos_label.setBuddy(self.qos_combo)
@@ -882,7 +882,7 @@ else:
                 layout.setContentsMargins(0, 0, 0, 0)
                 label = QLabel("Execution &queue:", self._widget)
                 layout.addWidget(label)
-                self.queue_combo = QComboBox(self._widget)
+                self.queue_combo = ComboBox(self._widget)
                 self.queue_combo.setToolTip("Select the execution queue to send your job to.")
                 self.queue_combo.addItems(self.queues)
                 # if self._saved_queue is not None:
@@ -936,7 +936,7 @@ else:
             layout.addWidget(label)
             accounts_layout = QHBoxLayout()
             accounts_layout.setContentsMargins(0, 0, 0, 0)
-            self.accounts_combo = QComboBox()
+            self.accounts_combo = ComboBox()
             self.accounts_combo.addItems([a.name for a in self.accounts])
             if self.current_account is not None:
                 self.accounts_combo.setCurrentIndex(self.current_account)
@@ -1154,7 +1154,7 @@ else:
 
             label = QLabel("&Log level:")
             layout.addWidget(label)
-            self.loglevel = QComboBox()
+            self.loglevel = ComboBox()
             loglevels = ["Error", "Warning", "Important", "Info", "Result", "Data", "Detail", "Debug"]
             self.loglevel.addItems(loglevels)
             self.loglevel.setToolTip("Logging level of the executed script.")

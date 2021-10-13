@@ -27,6 +27,7 @@ from gui.qt.QtGui import *
 from gui.qt.QtWidgets import *
 from gui.launch import LAUNCHERS, LAUNCH_CONFIG
 from gui.launch.dock import OutputWindow
+from gui.utils.widgets import ComboBox
 from gui import _DEBUG
 
 try:
@@ -537,7 +538,7 @@ else:
             layout.addWidget(label)
             accounts_layout = QHBoxLayout()
             accounts_layout.setContentsMargins(0, 0, 0, 0)
-            self.accounts_combo = QComboBox()
+            self.accounts_combo = ComboBox()
             self.accounts_combo.addItems([a.name for a in self.accounts])
             if self.current_account is not None:
                 self.accounts_combo.setCurrentIndex(self.current_account)

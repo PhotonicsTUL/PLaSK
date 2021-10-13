@@ -16,12 +16,13 @@ from .object import GNObjectController
 from ...utils.str import empty_to_none, none_to_empty
 from ...qt.QtWidgets import *
 from ...utils.qsignals import BlockQtSignals
+from ...utils.widgets import ComboBox
 
 
 class GNMaterialControllerMixin:
 
     def get_material_row(self):
-        self.material_selection_type = QComboBox()
+        self.material_selection_type = ComboBox()
         self.material_selection_type.addItems(['Solid', 'Vertical Gradient'])
         self.material_selection_type.currentIndexChanged.connect(self._material_type_changed)
 

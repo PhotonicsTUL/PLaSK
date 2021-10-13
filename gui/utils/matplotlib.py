@@ -35,7 +35,7 @@ else:
 from matplotlib.backend_bases import NavigationToolbar2
 import matplotlib.colors
 
-from ..utils.widgets import set_icon_size
+from ..utils.widgets import set_icon_size, ComboBox
 
 from .config import CONFIG
 
@@ -127,7 +127,7 @@ class PlotWidgetBase(QWidget):
                     self.addWidget(QLabel(text))
                 else:
                     if type(checked) in (tuple, list):
-                        combo = QComboBox()
+                        combo = ComboBox()
                         combo.addItems(checked[0])
                         combo.setCurrentIndex(checked[1])
                         combo.currentIndexChanged.connect(getattr(self, callback))

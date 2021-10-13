@@ -445,7 +445,7 @@ class SolverWidget(QWidget):
                                     self._set_items(edit, list(self._get_grids(item.types)))
                                 except AttributeError:
                                     pass
-                            if type(edit) in (EditComboBox, QComboBox):
+                            if isinstance(edit, QComboBox):
                                 edit.setCurrentIndex(edit.findText(value))
                                 edit.setEditText(value)
                             else:

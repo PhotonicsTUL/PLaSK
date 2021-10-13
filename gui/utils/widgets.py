@@ -159,7 +159,7 @@ class ComboBoxDelegate(QItemDelegate):
         self.editable = editable
 
     def createEditor(self, parent, option, index):
-        combo = QComboBox(parent)
+        combo = ComboBox(parent)
         combo.setEditable(self.editable)
         combo.setInsertPolicy(QComboBox.NoInsert)
         try:
@@ -304,18 +304,15 @@ class VerticalScrollArea(QScrollArea):
         return super().eventFilter(obj, event)
 
 
-class EditComboBox(QComboBox):
+class ComboBox(QComboBox):
+
+    def wheelEvent(self, evt):
+        evt.ignore()
+
+
+class EditComboBox(ComboBox):
 
     editingFinished = QtSignal()
-
-    # Please do not mix these two signals!
-    # currentIndexChanged is also emitted from very unexpected places like addItems,
-    # which ruins some my code (in Solver undo)
-    # Instead, just connect to both: editingFinished and currentIndexChanged
-    # PB
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-    #     self.currentIndexChanged.connect(lambda *args: self.editingFinished.emit())
 
     def focusOutEvent(self, event):
         if not self.signalsBlocked(): self.editingFinished.emit()
@@ -325,7 +322,6 @@ class EditComboBox(QComboBox):
         super().keyPressEvent(event)
         if event.key() in (Qt.Key_Enter, Qt.Key_Return) and not self.signalsBlocked():
             self.editingFinished.emit()
-
 
 class InfoListView(QListView):
 

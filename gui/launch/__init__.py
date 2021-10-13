@@ -16,7 +16,7 @@ import json
 from ..qt.QtGui import *
 from ..qt.QtWidgets import *
 from ..qt.QtCore import *
-from ..utils.widgets import EditComboBox
+from ..utils.widgets import ComboBox, EditComboBox
 from ..utils.config import CONFIG, parse_highlight
 from ..utils.qsignals import BlockQtSignals
 from ..utils import system
@@ -108,7 +108,7 @@ class LaunchDialog(QDialog):
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
-        combo = QComboBox()
+        combo = ComboBox()
         combo.insertItems(len(LAUNCHERS), [item.name for item in LAUNCHERS])
         combo.currentIndexChanged.connect(self.launcher_changed, Qt.QueuedConnection)
         self.layout.addWidget(combo)
@@ -138,7 +138,7 @@ class LaunchDialog(QDialog):
                                                         [e.name for e in window.document.defines.model.entries])
             self.highlighter.rehighlight()
             self.recent_defines = launch_config.setdefault('defines', [])
-            self.recent_defines_combo = QComboBox()
+            self.recent_defines_combo = ComboBox()
             self.recent_defines_combo.setView(_CombolItemView(self.recent_defines_combo, self.recent_defines, 1))
             self.recent_defines_combo.addItems([''] +
                 ['; '.join('{}={}'.format(it[0], it[1]) for it in

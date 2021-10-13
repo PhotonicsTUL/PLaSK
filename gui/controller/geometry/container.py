@@ -18,6 +18,7 @@ from .object import GNObjectController
 from .node import GNodeController, GNChildController, aligners_to_controllers
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
+from ...utils.widgets import ComboBox
 
 
 class GNGapController(GNodeController):
@@ -35,7 +36,7 @@ class GNGapController(GNodeController):
 
     def construct_form(self):
         super().construct_form()
-        self.gap_type = QComboBox()
+        self.gap_type = ComboBox()
         self.gap_type.addItems(['Gap size', 'Total container size'])
         self.gap_type.currentIndexChanged.connect(self._on_change_gap_params)
         self.gap_value = self.construct_line_edit(self.gap_type, unit=u'µm', change_cb=self._on_change_gap_params)
