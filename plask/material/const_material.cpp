@@ -2,6 +2,7 @@
 
 #include "const_material.hpp"
 #include "db.hpp"
+#include "../utils/lexical_cast.hpp"
 
 namespace plask {
 
@@ -134,6 +135,9 @@ ConstMaterial::ConstMaterial(const std::string& full_name) {
             } else if (key == "absp") {
                 if (cache.absp) throw MaterialParseException("{}: Repeated parameter 'absp'", full_name);
                 cache.absp.reset(boost::lexical_cast<double>(value));
+            } else if (key == "Nr") {
+                if (cache.nr) throw MaterialParseException("{}: Repeated parameter 'Nr'", full_name);
+                cache.Nr.reset(boost::lexical_cast<dcomplex>(value));
             } else if (key == "mobe") {
                 if (cache.mobe) throw MaterialParseException("{}: Repeated parameter 'mobe'", full_name);
                 cache.mobe.reset(boost::lexical_cast<double>(value));
@@ -224,6 +228,7 @@ ConstMaterial::ConstMaterial(const shared_ptr<Material>& base, const std::map<st
         else if (item.first == "cp") cache.cp.reset(item.second);
         else if (item.first == "nr") cache.nr.reset(item.second);
         else if (item.first == "absp") cache.absp.reset(item.second);
+        else if (item.first == "Nr") cache.Nr.reset(item.second);
         else if (item.first == "mobe") cache.mobe.reset(item.second);
         else if (item.first == "mobh") cache.mobh.reset(item.second);
         else if (item.first == "taue") cache.taue.reset(item.second);
@@ -289,6 +294,7 @@ std::string ConstMaterial::str() const{
     if (cache.Nf) { result += (c? " Nf=" : "Nf=") + plask::str(*cache.Nf); c= true; }
     if (cache.Ni) { result += (c? " Ni=" : "Ni=") + plask::str(*cache.Ni); c= true; }
     if (cache.nr) { result += (c? " nr=" : "nr=") + plask::str(*cache.nr); c= true; }
+    if (cache.Nr) { result += (c? " Nr=" : "Nr=") + plask::str(*cache.Nr); c= true; }
     if (cache.Psp) { result += (c? " Psp=" : "Psp=") + plask::str(*cache.Psp); c= true; }
     if (cache.taue) { result += (c? " taue=" : "taue=") + plask::str(*cache.taue); c= true; }
     if (cache.tauh) { result += (c? " tauh=" : "tauh=") + plask::str(*cache.tauh); c= true; }
@@ -504,6 +510,7 @@ double ConstMaterial::nr(double lam, double T, double n) const {
 }
 
 dcomplex ConstMaterial::Nr(double lam, double T, double n) const {
+    if (cache.Nr) return *cache.Nr;
     try {
         return dcomplex(nr(lam,T), -7.95774715459e-09*absp(lam,T)*lam);
     } catch (MaterialMethodNotImplemented) {
@@ -514,7 +521,7 @@ dcomplex ConstMaterial::Nr(double lam, double T, double n) const {
 
 Tensor3<dcomplex> ConstMaterial::NR(double lam, double T, double n) const {
     try {
-        return dcomplex(nr(lam,T), -7.95774715459e-09*absp(lam,T)*lam);
+        return Nr(lam, T, n);
     } catch (MaterialMethodNotImplemented) {
         if (base) return base->NR(lam, T, n);
         else throwNotImplemented("NR(double lam, double T, double n)");
