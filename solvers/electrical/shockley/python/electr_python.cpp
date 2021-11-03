@@ -37,6 +37,24 @@ struct Shockley: BetaSolver<GeometryT> {
         return py::object();
     }
 
+    static void __setattr__(const py::object& oself, const std::string& attr, const py::object& value) {
+        Shockley<GeometryT>& self = py::extract<Shockley<GeometryT>&>(oself);
+
+        try {
+            if (attr.substr(0, 4) == "beta") {
+                self.setBeta(boost::lexical_cast<size_t>(attr.substr(4)), value);
+                return;
+            }
+            if (attr.substr(0, 2) == "js") {
+                self.setJs(boost::lexical_cast<size_t>(attr.substr(2)), value);
+                return;
+            }
+        } catch (boost::bad_lexical_cast&) {
+        }
+
+        oself.attr("__class__").attr("__base__").attr("__setattr__")(oself, attr, value);
+    }
+
     py::object getBeta(size_t n) const {
         if (n < beta_function.size() && !beta_function[n].is_none()) return beta_function[n];
         return py::object(BetaSolver<GeometryT>::getBeta(n));
@@ -82,25 +100,81 @@ struct Shockley: BetaSolver<GeometryT> {
     }
 };
 
-template <typename Class> void Shockley__setattr__(const py::object& oself, const std::string& attr, const py::object& value) {
-    Class& self = py::extract<Class&>(oself);
+template <typename GeometryT>
+struct PythonCondSolver : public std::conditional<std::is_same<GeometryT, Geometry3D>::value,
+                                                        ElectricalFem3DSolver,
+                                                        ElectricalFem2DSolver<GeometryT>>::type {
+    typedef typename std::conditional<std::is_same<GeometryT, Geometry3D>::value,
+                                      ElectricalFem3DSolver,
+                                      ElectricalFem2DSolver<GeometryT>>::type BaseClass;
 
-    try {
-        if (attr.substr(0, 4) == "beta") {
-            self.setBeta(boost::lexical_cast<size_t>(attr.substr(4)), value);
-            return;
-        }
-        if (attr.substr(0, 2) == "js") {
-            self.setJs(boost::lexical_cast<size_t>(attr.substr(2)), value);
-            return;
-        }
-    } catch (boost::bad_lexical_cast&) {
+    std::vector<py::object> cond_function;
+
+    PythonCondSolver(const std::string& id=""): BaseClass(id) {}
+
+    py::object getCond0() const { return getCond(0); }
+    void setCond0(const py::object& value) { setCond(0, value); }
+
+    py::object getCond(size_t n) const {
+        if (n < cond_function.size()) return cond_function[n];
+        return py::object();
     }
 
-    oself.attr("__class__").attr("__base__").attr("__setattr__")(oself, attr, value);
-}
+    void setCond(size_t n, const py::object& value) {
+        if (PyCallable_Check(value.ptr())) {
+            if (this->cond_function.size() <= n) this->cond_function.resize(n + 1);
+            cond_function[n] = value;
+            this->invalidate();
+        } else {
+            throw TypeError("{}: cond{} must be a a callable", this->getId(), n);
+        }
+    }
 
-template <typename __Class__> inline static void register_electrical_solver(const char* name, const char* geoname) {
+    py::object __getattr__(const std::string& attr) const {
+        try {
+            if (attr.substr(0, 4) == "cond") return py::object(getCond(boost::lexical_cast<size_t>(attr.substr(4))));
+        } catch (boost::bad_lexical_cast&) {
+            throw AttributeError(u8"{0} object has no attribute '{1}'", this->getClassName(), attr);
+        }
+        return py::object();
+    }
+
+    static void __setattr__(const py::object& oself, const std::string& attr, const py::object& value) {
+        PythonCondSolver<GeometryT>& self = py::extract<PythonCondSolver<GeometryT>&>(oself);
+
+        try {
+            if (attr.substr(0, 4) == "cond") {
+                self.setCond(boost::lexical_cast<size_t>(attr.substr(4)), value);
+                return;
+            }
+        } catch (boost::bad_lexical_cast&) {
+        }
+
+        oself.attr("__class__").attr("__base__").attr("__setattr__")(oself, attr, value);
+    }
+
+    /** Compute voltage drop of the active region
+     *  \param n active region number
+     *  \param jy vertical current [kA/cm²]
+     *  \param T temperature [K]
+     */
+    double activeVoltage(size_t n, double jy, double T) override {
+        if (n >= this->active.size() || n >= cond_function.size() || cond_function[n].is_none())
+            throw IndexError("No conductivity for active region {}", n);
+        double cond = py::extract<double>(cond_function[n](jy, T));
+        return 10. * jy * this->active[n].height / cond;
+    }
+
+    std::string getClassName() const override;
+};
+
+template<> std::string PythonCondSolver<Geometry2DCartesian>::getClassName() const { return "electrical.ActiveCond2D"; }
+template<> std::string PythonCondSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.ActiveCondCyl"; }
+template<> std::string PythonCondSolver<Geometry3D>::getClassName() const { return "electrical.ActiveCond3D"; }
+
+
+
+template <typename __Class__> inline static ExportSolver<__Class__> register_electrical_solver(const char* name, const char* geoname) {
     ExportSolver<__Class__> solver(name,
                                    format(
                                        u8"{0}(name=\"\")\n\n"
@@ -120,20 +194,6 @@ template <typename __Class__> inline static void register_electrical_solver(cons
     RW_FIELD(maxerr, u8"Limit for the potential updates");
     RW_FIELD(algorithm, u8"Chosen matrix factorization algorithm");
     RW_PROPERTY(include_empty, usingFullMesh, useFullMesh, "Should empty regions (e.g. air) be included into computation domain?");
-    solver.add_property("beta", &__Class__::getBeta0, &__Class__::setBeta0,
-                        u8"Junction coefficient [1/V].\n\n"
-                        u8"In case there is more than one junction you may set $\\beta$ parameter for any\n"
-                        u8"of them by using ``beta#`` property, where # is the junction number (specified\n"
-                        u8"by a role ``junction#`` or ``active#``).\n\n"
-                        u8"``beta`` is an alias for ``beta0``.\n");
-    solver.add_property("js", &__Class__::getJs0, &__Class__::setJs0,
-                        u8"Reverse bias current density [A/m\\ :sup:`2`\\ ].\n\n"
-                        u8"In case there is more than one junction you may set $j_s$ parameter for any\n"
-                        u8"of them by using ``js#`` property, where # is the junction number (specified\n"
-                        u8"by a role ``junction#`` or ``active#``).\n\n"
-                        u8"``js`` is an alias for ``js0``.\n");
-    solver.def("__getattr__", &__Class__::__getattr__);
-    solver.def("__setattr__", &Shockley__setattr__<__Class__>);
     RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, u8"Conductivity of the p-contact");
     RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, u8"Conductivity of the n-contact");
     solver.add_property("pnjcond", &__Class__::getCondJunc, (void (__Class__::*)(double)) & __Class__::setCondJunc,
@@ -162,6 +222,42 @@ template <typename __Class__> inline static void register_electrical_solver(cons
            u8"Get the total heat produced by the current flowing in the structure.\n\n"
            u8"Return:\n"
            u8"    Total produced heat [mW].\n");
+
+    return solver;
+}
+
+template <typename GeoT> inline static void register_shockley_solver(const char* name, const char* geoname) {
+    typedef Shockley<GeoT> __Class__;
+    ExportSolver<__Class__> solver = register_electrical_solver<__Class__>(name, geoname);
+    solver.add_property("beta", &__Class__::getBeta0, &__Class__::setBeta0,
+                        u8"Junction coefficient [1/V].\n\n"
+                        u8"In case, there is more than one junction you may set $\\beta$ parameter for any\n"
+                        u8"of them by using ``beta#`` property, where # is the junction number (specified\n"
+                        u8"by a role ``junction#`` or ``active#``).\n\n"
+                        u8"``beta`` is an alias for ``beta0``.\n");
+    solver.add_property("js", &__Class__::getJs0, &__Class__::setJs0,
+                        u8"Reverse bias current density [A/m\\ :sup:`2`\\ ].\n\n"
+                        u8"In case, there is more than one junction you may set $j_s$ parameter for any\n"
+                        u8"of them by using ``js#`` property, where # is the junction number (specified\n"
+                        u8"by a role ``junction#`` or ``active#``).\n\n"
+                        u8"``js`` is an alias for ``js0``.\n");
+    solver.def("__getattr__", &__Class__::__getattr__);
+    solver.def("__setattr__", &__Class__::__setattr__);
+}
+
+template <typename GeoT> inline static void register_cond_solver(const char* name, const char* geoname) {
+    typedef PythonCondSolver<GeoT> __Class__;
+    ExportSolver<__Class__> solver = register_electrical_solver<__Class__>(name, geoname);
+    solver.add_property("cond", &__Class__::getCond0, &__Class__::setCond0,
+                        u8"Junction conductivity function [S/m].\n\n"
+                        u8"This function should take current density [kA/cm²] and temperature [K]\n"
+                        u8"as arguments and return a conductivity [S/m]. In case,there is more than\n"
+                        u8"one junction you may set such function for any of them by using ``cond#``\n"
+                        u8"property, where # is the junction number (specified by a role ``junction#``\n"
+                        u8" or ``active#``).\n\n"
+                        u8"``cond`` is an alias for ``cond0``.\n");
+    solver.def("__getattr__", &__Class__::__getattr__);
+    solver.def("__setattr__", &__Class__::__setattr__);
 }
 
 /**
@@ -176,9 +272,11 @@ BOOST_PYTHON_MODULE(shockley) {
         .value("GAUSS", ALGORITHM_GAUSS)
         .value("ITERATIVE", ALGORITHM_ITERATIVE);
 
-    register_electrical_solver<Shockley<Geometry2DCartesian>>("Shockley2D", "2D Cartesian");
+    register_shockley_solver<Geometry2DCartesian>("Shockley2D", "2D Cartesian");
+    register_shockley_solver<Geometry2DCylindrical>("ShockleyCyl", "2D cylindrical");
+    register_shockley_solver<Geometry3D>("Shockley3D", "3D Cartesian");
 
-    register_electrical_solver<Shockley<Geometry2DCylindrical>>("ShockleyCyl", "2D cylindrical");
-
-    register_electrical_solver<Shockley<Geometry3D>>("Shockley3D", "3D Cartesian");
+    register_cond_solver<Geometry2DCartesian>("ActiveCond2D", "2D Cartesian");
+    register_cond_solver<Geometry2DCylindrical>("ActiveCondCyl", "2D cylindrical");
+    register_cond_solver<Geometry3D>("ActiveCond3D", "3D Cartesian");
 }

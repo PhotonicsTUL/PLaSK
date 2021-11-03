@@ -114,7 +114,7 @@ if __name__ == '__main__':
         axhline(0., lw=0.7, color='k')
         plot(x, test.j(x), color='C0', label='current')
         xlabel(f"${config.axes[1]}$ [µm]")
-        ylabel("$j$ [kA/cm]")
+        ylabel("$j$ [kA/cm$^2$]")
         legend(loc='upper left')
         twinx()
         plot(x, test.n(x), 'C1', label='concentration (analytic)')

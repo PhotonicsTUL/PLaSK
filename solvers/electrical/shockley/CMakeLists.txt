@@ -48,8 +48,9 @@ set(SOLVER_LINK_LIBRARIES ${LAPACK_LIBRARIES})
 # Then uncomment and edit the line below.
 enable_testing()
 #add_executable(mytest test/source1.cpp test/source2.cpp)
-add_solver_test(shockley2d ${CMAKE_CURRENT_SOURCE_DIR}/tests/electrical2d.py)
-add_solver_test(shockley3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/electrical3d.py)
+add_solver_test(shockley2d ${CMAKE_CURRENT_SOURCE_DIR}/tests/shockley2d.py)
+add_solver_test(shockley3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/shockley3d.py)
+add_solver_test(cond2d ${CMAKE_CURRENT_SOURCE_DIR}/tests/cond2d.py)
 
 #file(GLOB_RECURSE femtest_src FOLLOW_SYMLINKS tests/*.cpp tests/*.h)
 #add_executable(femtest ${femtest_src})

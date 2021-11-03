@@ -109,9 +109,12 @@
       unit: S/m
       default: 50.0
       help: n-contact conductivity.
-  providers:
+  providers: &providers
+  - outVoltage
   - outCurrentDensity
-  receivers:
+  - outHeat
+  - outConductivity
+  receivers: &receivers
   - inTemperature
 
 
@@ -129,17 +132,15 @@
   - *matrix
   - *junction
   - *contacts
-  providers: &providers
-  - outVoltage
-  - outCurrentDensity
-  - outHeat
-  - outConductivity
-  receivers: &receivers
-  - inTemperature
+  providers: *providers
+  receivers: *receivers
 
 - solver: Shockley3D
   lib: shockley
   category: electrical
+  help: >
+    Three-dimensional phenomenological solver in Cartesian geometry based on Shockley equation
+    and using finite-element method.
   geometry: Cartesian3D
   tags:
   - tag: mesh
@@ -162,6 +163,70 @@
   - *loop
   - *matrix
   - *junction
+  - *contacts
+  providers: *providers
+  receivers: *receivers
+
+
+- solver: ActiveCond2D
+  lib: shockley
+  category: electrical
+  help: >
+    Two-dimensional phenomenological solver in Cartesian geometry based on custom active region conductivity
+    and using finite-element method.
+  geometry: Cylindrical
+  tags:
+  - *mesh
+  - *voltage
+  - *loop
+  - *matrix
+  - *contacts
+  providers: *providers
+  receivers: *receivers
+
+- solver: ActiveCondCyl
+  lib: shockley
+  category: electrical
+  help: >
+    Two-dimensional phenomenological solver in cylindrical geometry based on custom active region conductivity
+    and using finite-element method.
+  geometry: Cylindrical
+  tags:
+  - *mesh
+  - *voltage
+  - *loop
+  - *matrix
+  - *contacts
+  providers: *providers
+  receivers: *receivers
+
+- solver: ActiveCond3D
+  lib: shockley
+  category: electrical
+  help: >
+    Three-dimensional phenomenological solver in Cartesian geometry based on custom active region conductivity
+    and using finite-element method.
+  geometry: Cartesian3D
+  tags:
+  - tag: mesh
+    label: Mesh
+    help: >
+      Rectangular3D mesh used by this solver.
+    attrs:
+    - attr: ref
+      label: Mesh
+      required: true
+      type: mesh
+      mesh types: [ Rectangular3D ]
+      help: >
+        Name of a Rectangular3D mesh defined in the :xml:tag:`<grids>` section.
+    - *full-mesh
+  - bcond: voltage
+    label: Voltage
+    mesh type: Rectangular3D
+    mesh: { tag: mesh, attr: ref }
+  - *loop
+  - *matrix
   - *contacts
   providers: *providers
   receivers: *receivers
