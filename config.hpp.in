@@ -93,6 +93,7 @@
 #else
     // extern templates does not work well with dllexport/dllimport and so we can't used it at win32
     #define PLASK_USE_EXTERN_TEMPLATES
+    #cmakedefine SHOW_SPLASH
 #endif
 
 

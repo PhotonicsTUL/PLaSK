@@ -109,6 +109,8 @@ set(USE_PROFILER "" CACHE STRING "Type of the profiler to use. Leave empty for n
 
 if(WIN32 AND NOT MSVC)
     set(USE_MANIFEST "msvcr90" CACHE STRING "Manifest to include into Windows executables")
+else()
+    cmake_dependent_option(USE_SPLASH "Show splash screen using Xlib." ON "BUILD_GUI" OFF)
 endif()
 
 option(LICENSE_CHECK "Perform license check" OFF)
@@ -558,7 +560,27 @@ if(BUILD_PYTHON)
                            ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash868.bmp
                            ${CMAKE_BINARY_DIR}/CMakeFiles/plaskgui.dir/splash1116.bmp)
         else()
-            add_executable(plaskgui WIN32 python/exe_gui.cpp)
+            if(USE_SPLASH)
+                find_package(X11)
+                if(X11_FOUND)
+                    set(SHOW_SPLASH TRUE)
+                endif()
+            endif()
+            if(SHOW_SPLASH)
+                foreach(bs 620 868 1116)
+                    add_custom_command(OUTPUT include/plask/splash${bs}.h
+                                    COMMAND ${PYTHON_EXECUTABLE} ARGS
+                                        "${CMAKE_SOURCE_DIR}/toolset/make_splash_header.py"
+                                        "${CMAKE_SOURCE_DIR}/gui/splash${bs}.png"
+                                        "${CMAKE_BINARY_DIR}/include/plask"
+                                    DEPENDS ${CMAKE_SOURCE_DIR}/gui/splash${bs}.png)
+                endforeach()
+                add_executable(plaskgui
+                            python/exe_gui.cpp include/plask/splash620.h include/plask/splash868.h include/plask/splash1116.h)
+                target_link_libraries(plaskgui ${X11_LIBRARIES})
+            else()
+                add_executable(plaskgui python/exe_gui.cpp)
+            endif()
         endif()
         target_link_libraries(plaskgui ${Boost_PYTHON_LIBRARIES} ${PYTHON_LIBRARIES} libplask_python libplask)
         if(DEFINED no_strict_aliasing_flag OR DEFINED EXE_FLAGS)
@@ -905,7 +927,8 @@ if(NOT INSTALL_DEV AND INSTALL_MATERIALS_DEV)
     install(FILES plask/utils/format.hpp plask/utils/string.hpp plask/utils/system.hpp DESTINATION include/plask/utils COMPONENT dev)
     install(FILES plask/vector/tensor2.hpp plask/vector/tensor3.hpp DESTINATION include/plask/vector COMPONENT dev)
     install(FILES plask/phys/constants.hpp plask/phys/functions.hpp DESTINATION include/plask/phys COMPONENT dev)
-    install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.hpp DESTINATION include/plask COMPONENT dev)
+    install(FILES ${CMAKE_BINARY_DIR}/include/plask/config.hpp  ${CMAKE_BINARY_DIR}/include/plask/version.hpp
+            DESTINATION include/plask COMPONENT dev)
 endif()
 
 # ----------===== Packaging =====--------------------------------------------
