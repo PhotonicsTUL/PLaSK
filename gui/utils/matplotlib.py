@@ -369,6 +369,5 @@ class PlotWidgetBase(QWidget):
         return res
 
     def clear(self):
-        self.axes.lines = []
-        self.axes.patches = []
+        self.axes.clear()
         self.canvas.draw()
