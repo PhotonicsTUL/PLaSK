@@ -261,15 +261,16 @@ class Splash {
             data = splash1116.data;
         }
 
-        window = XCreateSimpleWindow(display, RootWindow(display, scr), 10, 10, width, height, 0, BlackPixel(display, scr),
-                                     WhitePixel(display, scr));
+        window = XCreateSimpleWindow(display, RootWindow(display, scr),
+                                     (screen_width - width) / 2, (screen_height - height) / 2, width, height,
+                                     0, BlackPixel(display, scr), BlackPixel(display, scr));
 
         Atom type = XInternAtom(display, "_NET_WM_WINDOW_TYPE", False);
         Atom value = XInternAtom(display, "_NET_WM_WINDOW_TYPE_SPLASH", False);
         XChangeProperty(display, window, type, XA_ATOM, 32, PropModeReplace, reinterpret_cast<unsigned char*>(&value), 1);
 
-        XImage* image = XCreateImage(display, DefaultVisual(display, 0), 24, ZPixmap, 0, const_cast<char*>(data), width,
-                                     height, 32, 0);
+        XImage* image = XCreateImage(display, DefaultVisual(display, 0), 24, ZPixmap, 0, const_cast<char*>(data),
+                                     width, height, 32, 0);
 
         pixmap = XCreatePixmap(display, window, width, height, DefaultDepthOfScreen(DefaultScreenOfDisplay(display)));
         GC gc = XCreateGC(display, pixmap, 0, NULL);
@@ -282,8 +283,6 @@ class Splash {
         XClearWindow(display, window);
         wmDeleteMessage = XInternAtom(display, "WM_DELETE_WINDOW", False);
         XSetWMProtocols(display, window, &wmDeleteMessage, 1);
-
-        XMoveWindow(display, window, (screen_width - width) / 2, (screen_height - height) / 2);
 
         XMapWindow(display, window);
 
