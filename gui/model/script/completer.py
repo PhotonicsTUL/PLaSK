@@ -97,17 +97,17 @@ class CompletionsModel(QAbstractTableModel):
                             "flow": code_context,
                            })
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
+    def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
         return ('icon', 'completion')[section]
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if index.isValid():
             row = index.row()
             col = index.column()
             value = self.items[row]
-            if role in (Qt.DisplayRole, Qt.EditRole):
+            if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
                 return value[0]
-            elif role == Qt.DecorationRole:
+            elif role == Qt.ItemDataRole.DecorationRole:
                 return self._icons.get(value[1], QIcon())
             else:
                 return None

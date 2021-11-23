@@ -58,13 +58,13 @@ class RectangularPlaceSide(PlaceDetailsEditor):
         layout.setContentsMargins(0, 0, 4, 0)
         self.object = EditComboBox()
         self.object.sizePolicy().setHorizontalStretch(2)
-        self.object.sizePolicy().setHorizontalPolicy(QSizePolicy.MinimumExpanding)
+        self.object.sizePolicy().setHorizontalPolicy(QSizePolicy.Policy.MinimumExpanding)
         self.object.setEditable(True)
         self.object.currentIndexChanged.connect(self.data_changed)
         self.object.editingFinished.connect(self.data_changed)
         self.path = EditComboBox()
         self.path.sizePolicy().setHorizontalStretch(1)
-        self.path.sizePolicy().setHorizontalPolicy(QSizePolicy.MinimumExpanding)
+        self.path.sizePolicy().setHorizontalPolicy(QSizePolicy.Policy.MinimumExpanding)
         self.path.setEditable(True)
         self.path.currentIndexChanged.connect(self.data_changed)
         self.path.editingFinished.connect(self.data_changed)
@@ -73,12 +73,12 @@ class RectangularPlaceSide(PlaceDetailsEditor):
             self.path.setCompleter(delegate.defines)
         label = QLabel(" Obj&ect:")
         label.setBuddy(self.object)
-        label.setFixedWidth(label.fontMetrics().width(label.text()))
+        label.setFixedWidth(label.fontMetrics().horizontalAdvance(label.text()))
         layout.addWidget(label)
         layout.addWidget(self.object)
         label = QLabel(" &Path:")
         label.setBuddy(self.path)
-        label.setFixedWidth(label.fontMetrics().width(label.text()))
+        label.setFixedWidth(label.fontMetrics().horizontalAdvance(label.text()))
         layout.addWidget(label)
         layout.addWidget(self.path)
         self.setLayout(layout)
@@ -135,17 +135,17 @@ class RectangularPlaceLine(PlaceDetailsEditor):
             self.stop.setCompleter(delegate.defines)
         label = QLabel(" &Pos:")
         label.setBuddy(self.position)
-        label.setFixedWidth(label.fontMetrics().width(label.text()))
+        label.setFixedWidth(label.fontMetrics().horizontalAdvance(label.text()))
         layout.addWidget(label)
         layout.addWidget(self.position)
         label = QLabel(" &From:")
         label.setBuddy(self.start)
-        label.setFixedWidth(label.fontMetrics().width(label.text()))
+        label.setFixedWidth(label.fontMetrics().horizontalAdvance(label.text()))
         layout.addWidget(label)
         layout.addWidget(self.start)
         label = QLabel(" &To:")
         label.setBuddy(self.stop)
-        label.setFixedWidth(label.fontMetrics().width(label.text()))
+        label.setFixedWidth(label.fontMetrics().horizontalAdvance(label.text()))
         layout.addWidget(label)
         layout.addWidget(self.stop)
         self.setLayout(layout)
@@ -234,7 +234,7 @@ class BoundaryConditionsDialog(QDialog):
     def __init__(self, controller, schema, data, parent=None):
         super().__init__(parent)
         self.setWindowTitle(schema.label2 + " Boundary Conditions")
-        self.setWindowFlags(Qt.Window)
+        self.setWindowFlags(Qt.WindowType.Window)
 
         self.schema = schema
         self.data = data
@@ -247,24 +247,24 @@ class BoundaryConditionsDialog(QDialog):
         self.table = QTreeView()
         self.model = BoundaryConditionsModel(schema, data)
         self.table.setModel(self.model)
-        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.table.setColumnWidth(0, 150)
         self.table.setColumnWidth(1, 250)
 
         try:
-            self.table.header().setResizeMode(1, QHeaderView.Stretch)
+            self.table.header().setResizeMode(1, QHeaderView.ResizeMode.Stretch)
         except AttributeError:
-            self.table.header().setSectionResizeMode(1, QHeaderView.Stretch)
-        self.table.header().setMinimumSectionSize(self.table.fontMetrics().width('00 '))
+            self.table.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.table.header().setMinimumSectionSize(self.table.fontMetrics().horizontalAdvance('00 '))
 
-        self.table.header().setSectionResizeMode(2, QHeaderView.Fixed)
-        self.table.setColumnWidth(2, self.table.fontMetrics().width('000 '))
+        self.table.header().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        self.table.setColumnWidth(2, self.table.fontMetrics().horizontalAdvance('000 '))
         self.table.header().swapSections(0, 2)
         self.table.header().swapSections(1, 2)
 
-        table_edit_shortcut(self.table, 0, QKeySequence(Qt.Key_P))
-        table_edit_shortcut(self.table, 1, QKeySequence(Qt.Key_D))
+        table_edit_shortcut(self.table, 0, QKeySequence(Qt.Key.Key_P))
+        table_edit_shortcut(self.table, 1, QKeySequence(Qt.Key.Key_D))
         used_shortcuts = ['p', 'd']
 
         self.defines_delegate = DefinesCompletionDelegate(controller.document.defines.model, self.table)
@@ -301,10 +301,10 @@ class BoundaryConditionsDialog(QDialog):
             self.info.setContentsMargins(0, 0, 0, 0)
             self.info.setFrameStyle(0)
             pal = self.info.palette()
-            pal.setColor(QPalette.Base, QColor("#6f4402" if dark_style() else "#ffc"))
+            pal.setColor(QPalette.ColorRole.Base, QColor("#6f4402" if dark_style() else "#ffc"))
             self.info.setPalette(pal)
             self.info.acceptRichText()
-            self.info.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            self.info.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             self.info.hide()
 
             try:
@@ -353,7 +353,7 @@ class BoundaryConditionsDialog(QDialog):
                     layout.addWidget(table_with_manipulators(self.table))
                 else:
                     splitter = QSplitter(self)
-                    splitter.setOrientation(Qt.Vertical)
+                    splitter.setOrientation(Qt.Orientation.Vertical)
                     self.preview = PlotWidget(self, splitter, picker=True)
                     wid = QWidget()
                     lay = QVBoxLayout()
@@ -390,7 +390,7 @@ class BoundaryConditionsDialog(QDialog):
             self.preview = self.info = None
             layout.addWidget(table_with_manipulators(self.table))
 
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
@@ -407,7 +407,7 @@ class BoundaryConditionsDialog(QDialog):
         # that `setCurrentIndex` is called only once if there are multiple artists in
         # the clicked spot.
         self._picked_path = event.artist.plask_real_path
-        QMetaObject.invokeMethod(self, '_picked_object', Qt.QueuedConnection)
+        QMetaObject.invokeMethod(self, '_picked_object', Qt.ConnectionType.QueuedConnection)
 
     @QtSlot()
     def _picked_object(self):
@@ -525,7 +525,7 @@ class PlaceDelegate(QStyledItemDelegate):
             opts = list(opts)
 
         combo = ComboBox(parent)
-        combo.setInsertPolicy(QComboBox.NoInsert)
+        combo.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         combo.addItems(opts)
         combo.setMaxVisibleItems(len(opts))
         if index.column() == 0:
@@ -537,7 +537,7 @@ class PlaceDelegate(QStyledItemDelegate):
             combo.setEditable(True)
             combo.setEditText(index.data())
             completer = combo.completer()
-            completer.setCaseSensitivity(Qt.CaseSensitive)
+            completer.setCaseSensitivity(Qt.CaseSensitivity.CaseSensitive)
             combo.setCompleter(completer)
 
         combo.currentIndexChanged.connect(lambda _: self.placeChanged.emit)
@@ -545,7 +545,7 @@ class PlaceDelegate(QStyledItemDelegate):
         return combo
 
     def eventFilter(self, editor, event):
-        if isinstance(editor, QComboBox) and event.type() == QEvent.Enter and self._first_enter:
+        if isinstance(editor, QComboBox) and event.type() == QEvent.Type.Enter and self._first_enter:
             editor.showPopup()
             self._first_enter = False
             return True

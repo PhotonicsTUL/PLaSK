@@ -13,6 +13,7 @@
 import weakref
 
 from ...qt.QtWidgets import *
+from ...qt.QtGui import *
 
 from .. import Controller
 from ..materials import MaterialsComboBox
@@ -142,7 +143,7 @@ class GNodeController(Controller):
                             display_property_name=None, node=None, change_cb=None):
         res = EditComboBox()
         res.setEditable(editable)
-        res.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        res.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         res.addItems(items)
         if row_name: self._get_current_form().addRow(row_name, res)
         if change_cb is not None:

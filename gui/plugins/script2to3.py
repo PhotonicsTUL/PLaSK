@@ -23,6 +23,7 @@ else:
     import gui
     from gui.qt.QtWidgets import *
     from gui.qt.QtGui import *
+    from gui.qt import qt_exec
     from gui.utils.config import CONFIG
 
     class RefactorAction(QAction):
@@ -45,15 +46,15 @@ else:
                 msgbox.setText("There was an error while converting your script to Python3!")
                 msgbox.setInformativeText("Check if the script does not have any Python2 syntax errors.")
                 msgbox.setDetailedText(str(err))
-                msgbox.setStandardButtons(QMessageBox.Ok)
-                msgbox.setIcon(QMessageBox.Critical)
-                msgbox.exec_()
+                msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+                msgbox.setIcon(QMessageBox.Icon.Critical)
+                qt_exec(msgbox)
             else:
-                editor.moveCursor(QTextCursor.Start)
+                editor.moveCursor(QTextCursor.MoveOperation.Start)
                 try:
-                    editor.moveCursor(QTextCursor.End, QTextCursor.KeepAnchor)
+                    editor.moveCursor(QTextCursor.MoveOperation.End, QTextCursor.MoveMode.KeepAnchor)
                 except (TypeError, AttributeError):
-                    editor.moveCursor(QTextCursor.End, True)
+                    editor.moveCursor(QTextCursor.MoveOperation.End, True)
                 cursor = editor.textCursor()
                 cursor.insertText(str(node3)[:-1])
 
@@ -61,9 +62,9 @@ else:
                 msgbox.setWindowTitle("Python3 Conversion")
                 msgbox.setText("Your script have been converted to Python3.")
                 msgbox.setInformativeText("You should verify it now and do the manual adjustments if necessary.")
-                msgbox.setStandardButtons(QMessageBox.Ok)
-                msgbox.setIcon(QMessageBox.Information)
-                msgbox.exec_()
+                msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+                msgbox.setIcon(QMessageBox.Icon.Information)
+                qt_exec(msgbox)
 
     if gui.ACTIONS:
         gui.ACTIONS.append(None)

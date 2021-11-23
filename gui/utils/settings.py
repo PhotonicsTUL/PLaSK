@@ -22,11 +22,11 @@ try:
 except ImportError:
     matplotlib = None
 
-from .config import CONFIG, KEYBOARD_SHORTCUTS, parse_font, parse_highlight
+from .config import CONFIG, KEYBOARD_SHORTCUTS, set_font, parse_highlight
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
-from ..qt import QT_API
+from ..qt import QT_API, qt_exec
 from .qsignals import BlockQtSignals
 from .widgets import LineEditWithClear, VerticalScrollArea, EDITOR_FONT
 
@@ -90,28 +90,28 @@ class MaterialColorsConfig(QWidget):
             self.colors = list(CONFIG[MaterialColorsConfig.entry].items())
             self.filter = None
         def flags(self, index):
-            flags = super().flags(index) | Qt.ItemIsEnabled
+            flags = super().flags(index) | Qt.ItemFlag.ItemIsEnabled
             if index.column() == 0:
-                flags |= Qt.ItemIsSelectable | Qt.ItemIsEditable
+                flags |= Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEditable
             else:
-                flags &= ~Qt.ItemIsSelectable
+                flags &= ~Qt.ItemFlag.ItemIsSelectable
             return flags
         def columnCount(self, parent=None):
             return 2
         def rowCount(self, parent=None):
             return len(self.colors)
-        def headerData(self, section, orientation, role=Qt.DisplayRole):
-            if role == Qt.DisplayRole and orientation == Qt.Horizontal:
+        def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
+            if role == Qt.ItemDataRole.DisplayRole and orientation == Qt.Orientation.Horizontal:
                 return ('Material', 'Color')[section]
-        def data(self, index, role=Qt.DisplayRole):
+        def data(self, index, role=Qt.ItemDataRole.DisplayRole):
             if index.column() == 0:
-                if role == Qt.DisplayRole or role == Qt.EditRole:
+                if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
                     return self.colors[index.row()][0]
             elif index.column() == 1:
-                if role == Qt.BackgroundColorRole:
+                if role == Qt.ItemDataRole.BackgroundRole:
                     color = self.colors[index.row()][1]
                     return QColor(color) if color is not None else None
-        def setData(self, index, value, role=Qt.EditRole):
+        def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
             row = index.row()
             if index.column() == 0:
                 self.colors[row] = value, self.colors[row][1]
@@ -144,18 +144,18 @@ class MaterialColorsConfig(QWidget):
         remove.setIcon(QIcon.fromTheme('list-remove'))
         remove.pressed.connect(self.remove)
         toolbar.addWidget(remove)
-        toolbar.setAlignment(Qt.AlignLeft)
+        toolbar.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         self.model = self.TableModel()
         self.filter = QSortFilterProxyModel()
         self.filter.setSourceModel(self.model)
-        self.filter.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.filter.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.filter.setDynamicSortFilter(True)
 
         self.table = QTableView()
         self.table.setModel(self.filter)
         self.table.horizontalHeader().setStretchLastSection(True)
-        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
 
         self.table.clicked.connect(self.select_color)
 
@@ -169,7 +169,7 @@ class MaterialColorsConfig(QWidget):
         layout.addWidget(self.table)
         self.setLayout(layout)
 
-        self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+        self.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
 
         items[self.entry] = self
 
@@ -194,9 +194,9 @@ class MaterialColorsConfig(QWidget):
         if index.column() != 1: return
         row = index.row()
         dlg = QColorDialog(self.parent())
-        color = self.filter.data(index, Qt.BackgroundColorRole)
+        color = self.filter.data(index, Qt.ItemDataRole.BackgroundRole)
         if color is not None: dlg.setCurrentColor(color)
-        if dlg.exec_():
+        if qt_exec(dlg):
             self.filter.setData(index, dlg.currentColor().name())
 
     def load(self, value):
@@ -223,14 +223,14 @@ class PluginsConfig(QWidget):
         layout.addWidget(label)
         # frame = VerticalScrollArea()
         frame = QScrollArea()
-        frame.setFrameStyle(QFrame.StyledPanel | QFrame.Sunken)
-        frame.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        frame.setBackgroundRole(QPalette.Base)
+        frame.setFrameStyle(QFrame.Shape.StyledPanel | QFrame.Shadow.Sunken)
+        frame.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        frame.setBackgroundRole(QPalette.ColorRole.Base)
         frame.setAutoFillBackground(True)
         layout.addWidget(frame)
         inframe = QWidget()
         self.plugins_layout = QGridLayout()
-        self.plugins_layout.setAlignment(Qt.AlignTop)
+        self.plugins_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.plugins_layout.setHorizontalSpacing(8)
         self.plugins_layout.setVerticalSpacing(16)
         inframe.setLayout(self.plugins_layout)
@@ -239,9 +239,9 @@ class PluginsConfig(QWidget):
             entry = 'plugins/{}'.format(plugin)
             if CONFIG[entry] is None: CONFIG[entry] = True
             checkbox = SettingsDialog.CheckBox(entry, help=desc, needs_restart=True)
-            checkbox.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+            checkbox.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
             label = QLabel()
-            label.setTextFormat(Qt.RichText)
+            label.setTextFormat(Qt.TextFormat.RichText)
             if desc is not None:
                 label.setText('{}<br/><span style="font-size: small">{}</span>'.format(name, desc))
             else:
@@ -603,14 +603,14 @@ class SettingsDialog(QDialog):
             if help is not None:
                 self.setWhatsThis(help)
             self.clicked.connect(self.on_press)
-            self.setSizePolicy(QSizePolicy.Expanding, self.sizePolicy().verticalPolicy())
+            self.setSizePolicy(QSizePolicy.Policy.Expanding, self.sizePolicy().verticalPolicy())
             self.needs_restart = needs_restart
             self.load(CONFIG[self.entry])
         def on_press(self):
             dlg = QColorDialog(self.parent())
             if self._color:
                 dlg.setCurrentColor(QColor(self._color))
-            if dlg.exec_():
+            if qt_exec(dlg):
                 self._color = dlg.currentColor().name()
                 self.setStyleSheet(u"background-color: {};".format(self._color))
         @property
@@ -634,7 +634,7 @@ class SettingsDialog(QDialog):
             layout.setSpacing(4)
             self.setLayout(layout)
             self.color_button = QToolButton(self)
-            self.color_button.setSizePolicy(QSizePolicy.Expanding, self.color_button.sizePolicy().verticalPolicy())
+            self.color_button.setSizePolicy(QSizePolicy.Policy.Expanding, self.color_button.sizePolicy().verticalPolicy())
             self.color_button.clicked.connect(self.on_color_press)
             layout.addWidget(self.color_button)
             self.bold = QCheckBox('bold', self)
@@ -645,14 +645,14 @@ class SettingsDialog(QDialog):
             self.needs_restart = needs_restart
             self.load(CONFIG[self.entry])
         def on_color_press(self):
-            if QApplication.keyboardModifiers() == Qt.CTRL:
+            if QApplication.keyboardModifiers() == Qt.Modifier.CTRL:
                 self._color = None
                 self.color_button.setStyleSheet("")
                 return
             dlg = QColorDialog(self.parent())
             if self._color:
                 dlg.setCurrentColor(QColor(self._color))
-            if dlg.exec_():
+            if qt_exec(dlg):
                 self._color = dlg.currentColor().name()
                 self.color_button.setStyleSheet(u"background-color: {};".format(self._color))
                 self.changed = True
@@ -686,27 +686,32 @@ class SettingsDialog(QDialog):
             if help is not None:
                 self.setWhatsThis(help)
             self.clicked.connect(self.on_press)
-            self.setSizePolicy(QSizePolicy.Expanding, self.sizePolicy().verticalPolicy())
+            self.setSizePolicy(QSizePolicy.Policy.Expanding, self.sizePolicy().verticalPolicy())
             self.needs_restart = needs_restart
-            self.load(parse_font(self.entry))
+            self.load(CONFIG[self.entry])
         def on_press(self):
             dlg = QFontDialog(self.parent())
             dlg.setCurrentFont(self.current_font)
-            if dlg.exec_():
+            if qt_exec(dlg):
                 self.current_font = dlg.selectedFont()
                 self.setText("{} {}".format(self.current_font.family(), self.current_font.pointSize()))
                 self.setFont(self.current_font)
         @property
         def changed(self):
-            return CONFIG[self.entry] != self.current_font.toString().split(',')
+            return CONFIG[self.entry][:2] != self.current_font.toString().split(',')[:2]
         def load(self, value):
-            self.current_font.fromString(value)
-            family = self.current_font.family()
-            size = self.current_font.pointSize()
+            if isinstance(value, str):
+                value = value.split(',')
+            family, size = (v.strip() for v in value[:2])
+            self.current_font.setFamily(family)
+            try:
+                self.current_font.setPointSize(int(size))
+            except ValueError:
+                pass
             self.setText("{} {}".format(family, size))
             self.setFont(self.current_font)
         def save(self):
-            CONFIG[self.entry] = self.current_font.toString().split(',')
+            CONFIG[self.entry] = self.current_font.toString().split(',')[:2]
         @property
         def str(self):
             family = self.current_font.family()
@@ -770,7 +775,7 @@ class SettingsDialog(QDialog):
                 return not ((saved_key is None and current_key.isEmpty()) or (saved_key.toString() == current_key.toString()))
             def load(self, value):
                 if value:
-                    self.setKeySequence(QKeySequence(value, QKeySequence.PortableText))
+                    self.setKeySequence(QKeySequence(value, QKeySequence.SequenceFormat.PortableText))
                 else:
                     self.setKeySequence(QKeySequence())
             def _set_shortcut(self, action):
@@ -802,8 +807,8 @@ class SettingsDialog(QDialog):
                     confirm = QMessageBox.question(self, "Shortcut Already Used",
                         "Shortcut is already used by action ‘{}’. Do you want to assign it to ‘{}’?".format(
                             KEYBOARD_SHORTCUTS[used][0], KEYBOARD_SHORTCUTS[self.entry][0]),
-                        QMessageBox.Yes | QMessageBox.No,  QMessageBox.No)
-                    if confirm == QMessageBox.No:
+                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,  QMessageBox.StandardButton.No)
+                    if confirm == QMessageBox.StandardButton.No:
                         self.setKeySequence(CONFIG.shortcut(self.entry))
             @property
             def str(self):
@@ -842,7 +847,7 @@ class SettingsDialog(QDialog):
             for title, items in tabs.items():
                 if isinstance(items, type) and issubclass(items, QWidget):
                     widget = items(self.items)
-                    widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+                    widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
                     page_items.append((title, widget, ()))
                     page_tabs.append((title, widget, None))
                 else:
@@ -895,10 +900,10 @@ class SettingsDialog(QDialog):
         self.filter.setFixedWidth(cwidth)
 
         buttons = QDialogButtonBox(
-            QDialogButtonBox.Ok | QDialogButtonBox.Apply |  QDialogButtonBox.Cancel)
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Apply |  QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
-        buttons.button(QDialogButtonBox.Apply).clicked.connect(self.apply)
+        buttons.button(QDialogButtonBox.StandardButton.Apply).clicked.connect(self.apply)
 
         hlayout = QHBoxLayout()
         hlayout.setContentsMargins(0, 0, 0, 0)
@@ -941,7 +946,7 @@ class SettingsDialog(QDialog):
                 show_whole_tab = show_whole_page or filter in title.lower()
                 if tab_items:
                     for _ in range(tab.count()):
-                        item = tab.itemAt(0, QFormLayout.FieldRole)
+                        item = tab.itemAt(0, QFormLayout.ItemRole.FieldRole)
                         if item:
                             widget = item.layout() or item.widget()
                             widget.setParent(None)
@@ -1001,9 +1006,9 @@ class SettingsDialog(QDialog):
             msgbox.setWindowTitle("Settings Import Error")
             msgbox.setText("The file '{}' could not be loaded from disk.".format(filename))
             msgbox.setInformativeText(unicode(err))
-            msgbox.setStandardButtons(QMessageBox.Ok)
-            msgbox.setIcon(QMessageBox.Critical)
-            msgbox.exec_()
+            msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+            msgbox.setIcon(QMessageBox.Icon.Critical)
+            qt_exec(msgbox)
 
     def save(self):
         from .. import CURRENT_DIR
@@ -1018,16 +1023,16 @@ class SettingsDialog(QDialog):
             msgbox.setWindowTitle("Settings Export Error")
             msgbox.setText("The file '{}' could not be saved to disk.".format(filename))
             msgbox.setInformativeText(unicode(err))
-            msgbox.setStandardButtons(QMessageBox.Ok)
-            msgbox.setIcon(QMessageBox.Critical)
-            msgbox.exec_()
+            msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+            msgbox.setIcon(QMessageBox.Icon.Critical)
+            qt_exec(msgbox)
         else:
             msgbox = QMessageBox()
             msgbox.setWindowTitle("Settings Exported")
             msgbox.setText("Settings exported to file '{}'.".format(filename))
-            msgbox.setStandardButtons(QMessageBox.Ok)
-            msgbox.setIcon(QMessageBox.Information)
-            msgbox.exec_()
+            msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+            msgbox.setIcon(QMessageBox.Icon.Information)
+            qt_exec(msgbox)
 
     def apply(self):
         need_restart = False
@@ -1036,7 +1041,7 @@ class SettingsDialog(QDialog):
                 need_restart = True
             item.save()
         CONFIG.sync()
-        EDITOR_FONT.fromString(parse_font('editor/font'))
+        set_font(EDITOR_FONT, 'editor/font')
         # This should be changed before the plots are updates
         if matplotlib is not None:
             matplotlib.rcParams['axes.facecolor'] = CONFIG['plots/face_color']

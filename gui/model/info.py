@@ -103,28 +103,28 @@ class InfoListModel(QAbstractListModel):
     #def columnCount(self, parent=QModelIndex()):
     #    return 1
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if not index.isValid(): return None
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             row = index.row()
             n = len(self.entries)
             if row == 0 and n > 1:
                 return self.entries[row].text + "  (+{} message{})".format(n-1, "" if n == 2 else "s")
             else:
                 return self.entries[row].text
-        if role == Qt.DecorationRole:
+        if role == Qt.ItemDataRole.DecorationRole:
             return info_level_icon(self.entries[index.row()].level)
-        if role == Qt.TextAlignmentRole:
+        if role == Qt.ItemDataRole.TextAlignmentRole:
             try: return self.entries[index.row()].align
             except AttributeError: return None
-        # if role == Qt.FontRole:
+        # if role == Qt.ItemDataRole.FontRole:
         #     font = QFont()
         #     font.setUnderline(True)
         #     return font
         return None
 
     def headerData(self, col, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return 'text'
         return None
 

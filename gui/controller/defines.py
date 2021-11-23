@@ -56,9 +56,9 @@ class DefinesCompleterModel(QAbstractTableModel):
     def make_file_xml_element(self):
         return self.defines.make_file_xml_element()
 
-    def data(self, index, role=Qt.EditRole):
+    def data(self, index, role=Qt.ItemDataRole.EditRole):
         col = index.column()
-        if role == Qt.DisplayRole or role == Qt.EditRole:
+        if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             ls = len(self.strings)
             if index.row() < ls:
                 if col == 0:
@@ -70,8 +70,8 @@ class DefinesCompleterModel(QAbstractTableModel):
                     return '{{{}}}'.format(self.defines.get(0, index.row()-ls))
                 else:
                     return self.defines.get(col, index.row()-ls)
-        elif role in (Qt.TextColorRole, Qt.ForegroundRole) and col != 0:
-            return QColor(Qt.gray)
+        elif role == Qt.ItemDataRole.ForegroundRole and col != 0:
+            return QColor(Qt.GlobalColor.gray)
 
     def columnCount(self, parent=QModelIndex()):
         return 2
@@ -96,14 +96,14 @@ def get_defines_completer(model, parent, strings=None):
     #tab.resizeColumnsToContents()
     tab.setModel(model)
     tab.setMinimumSize(0, 200)
-    #tab.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
+    #tab.horizontalHeader().setResizeMode(QHeaderView.ResizeMode.ResizeToContents)
     try:
-        tab.horizontalHeader().setResizeMode(QHeaderView.Stretch)
+        tab.horizontalHeader().setResizeMode(QHeaderView.ResizeMode.Stretch)
     except AttributeError:
-        tab.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-    tab.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-    tab.setSelectionBehavior(QTableView.SelectRows)
-    tab.setSelectionMode(QTableView.SingleSelection)
+        tab.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+    tab.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+    tab.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+    tab.setSelectionMode(QTableView.SelectionMode.SingleSelection)
     tab.horizontalHeader().hide()
     tab.verticalHeader().hide()
     tab.setSortingEnabled(False)

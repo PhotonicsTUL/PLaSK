@@ -14,106 +14,79 @@ import sys
 import os
 
 
-QT_API = os.environ.get('PLASK_QT_API', os.environ.get('QT_API'))
-
-if QT_API is not None:
-    QT_API = dict(pyqt='PyQt4v2', pyqt4='PyQt4v2', pyqt4v2='PyQt4v2', pyside='PySide',
-                  pyqt5='PyQt5', pyside2='PySide2').get(QT_API)
-    if QT_API is None:
-        import warnings
-        warnings.warn("Ignoring unknown QT_API environmental variable!")
-    else:
-        try: _mplbackend = os.environ.pop('MPLBACKEND')
-        except KeyError: _mplbackend = None
-        try:
-            import matplotlib
-        except ImportError:
-            pass
-        else:
-            if QT_API in ('PyQt5', 'PySide2'):
-                matplotlib.use('Qt5Agg')
-            else:
-                matplotlib.use('Qt4Agg')
-        finally:
-            if _mplbackend is not None:
-                os.environ['MPLBACKEND'] = _mplbackend
-
-if QT_API is None:
+def _setup_matplotlib(backend):
     try:
         import matplotlib
     except ImportError:
-        QT_API = 'PyQt5'
+        pass
     else:
-        if matplotlib.get_backend() == 'Qt4Agg':
-            QT_API = matplotlib.rcParams.get('backend.qt4', 'PyQt4')
-        else:
+        try:
+            matplotlib.use('QtAgg')
+        except ValueError:
+            if backend not in ('PyQt5', 'PySide2'):
+                return False
             matplotlib.use('Qt5Agg')
             try:
-                QT_API = matplotlib.backends.backend_qt5.QT_API
-            except:
-                QT_API = matplotlib.rcParams.get('backend.qt5', 'PyQt5')
+                matplotlib.rcParams['backend.qt5'] = backend
+            except (KeyError, ValueError):
+                pass
+    return True
 
-for QT_API in (QT_API, 'PyQt5', 'PySide2', 'PyQt4', 'PySide'):
+
+QT_API = os.environ.get('PLASK_QT_API', os.environ.get('QT_API'))
+
+if QT_API is not None:
+    QT_API = dict(pyqt5='PyQt5', pyside2='PySide2', pyqt6='PyQt6', pyside6='PySide6').get(QT_API)
     if QT_API is None:
+        import warnings
+        warnings.warn("Ignoring unknown QT_API environmental variable!")
+
+for QT_API in (QT_API, 'PySide2', 'PyQt5', 'PySide6', 'PyQt6'):
+    if QT_API is None or not _setup_matplotlib(QT_API):
         continue
-    elif QT_API == 'PySide':
-        try:
-            from PySide import QtCore, QtGui, QtGui as QtWidgets, QtHelp
-        except ImportError:
-            pass
-        else:
-            QtSignal = QtCore.Signal
-            QtSlot = QtCore.Slot
-            break
-    elif QT_API in ('PyQt4', 'PyQt4v2'):
-        try:
-            import sip
-            for n in ("QString", "QVariant"):
-                try:
-                    sip.setapi(n, 2)
-                except:
-                    pass
-            from PyQt4 import QtCore, QtGui, QtGui as QtWidgets, QtHelp
-        except ImportError:
-            pass
-        else:
-            QtSignal = QtCore.pyqtSignal
-            QtSlot = QtCore.pyqtSlot
-            break
+    elif QT_API == 'PyQt6':
+        try: from PyQt6 import QtCore, QtWidgets, QtGui, QtHelp
+        except ImportError: pass
+        else: break
+    elif QT_API == 'PySide6':
+        try: from PySide6 import QtCore, QtWidgets, QtGui, QtHelp
+        except ImportError: pass
+        else: break
     elif QT_API == 'PyQt5':
-        try:
-            from PyQt5 import QtCore, QtWidgets, QtGui, QtHelp
-        except ImportError:
-            pass
-        else:
-            if os.name == 'nt':
-                QtWidgets.QApplication.addLibraryPath(os.path.join(sys.prefix, 'Library', 'plugins'))
-                QtWidgets.QApplication.addLibraryPath(os.path.join(os.path.dirname(QtCore.__file__), 'plugins'))
-            QtSignal = QtCore.pyqtSignal
-            QtSlot = QtCore.pyqtSlot
-            break
+        try: from PyQt5 import QtCore, QtWidgets, QtGui, QtHelp
+        except ImportError: pass
+        else: break
     else:  # QT_API == 'PySide2':
-        try:
-            from PySide2 import QtCore, QtWidgets, QtGui, QtHelp
-        except ImportError:
-            pass
-        else:
-            QT_API = 'PySide2'
-            QtSignal = QtCore.Signal
-            QtSlot = QtCore.Slot
-            break
+        try: from PySide2 import QtCore, QtWidgets, QtGui, QtHelp
+        except ImportError: pass
+        else: break
+
+if QT_API in ('PyQt5', 'PyQt6'):
+    QtSignal = QtCore.pyqtSignal
+    QtSlot = QtCore.pyqtSlot
+else:
+    QtSignal = QtCore.Signal
+    QtSlot = QtCore.Slot
 
 if os.name == 'nt' and QT_API in ('PyQt5', 'PySide2'):
     QtWidgets.QApplication.addLibraryPath(os.path.join(sys.prefix, 'Library', 'plugins'))
     QtWidgets.QApplication.addLibraryPath(os.path.join(os.path.dirname(QtCore.__file__), 'plugins'))
 
-if QT_API.startswith('PyQt4'):
-    os.environ['QT_API'] = 'pyqt'
+
+if QT_API in ('PyQt5', 'PySide2'):
+    def qt_exec(self, *args, **kwargs):
+        return self.exec_(*args, **kwargs)
+    if not hasattr(QtGui.QFontMetrics, 'horizontalAdvance'):
+        QtGui.QFontMetrics.horizontalAdvance = lambda self, *args, **kwargs: self.width(*args, **kwargs)
 else:
-    os.environ['QT_API'] = QT_API.lower()
+    def qt_exec(self, *args, **kwargs):
+        return self.exec(*args, **kwargs)
+
+
+os.environ['QT_API'] = QT_API.lower()
 
 sys.modules['gui.qt.QtCore'] = QtCore
 sys.modules['gui.qt.QtWidgets'] = QtWidgets
 sys.modules['gui.qt.QtGui'] = QtGui
 sys.modules['gui.qt.QtHelp'] = QtHelp
-__all__ = ['QtCore', 'QtWidgets', 'QtGui', 'QtHelp', 'QT_API', 'QtSignal', 'QtSlot']
+__all__ = ['QtCore', 'QtWidgets', 'QtGui', 'QtHelp', 'QT_API', 'QtSignal', 'QtSlot', 'qt_exec']

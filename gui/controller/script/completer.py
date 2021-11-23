@@ -24,8 +24,8 @@ class CompletionsController(QCompleter):
         super().__init__(parent)
         self._edit = edit
         self.setWidget(edit)
-        self.setCompletionMode(QCompleter.PopupCompletion)
-        self.setCaseSensitivity(Qt.CaseInsensitive)
+        self.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+        self.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.activated.connect(self.insert_completion)
         self.popup().setMinimumWidth(300)
         self.popup().setMinimumHeight(200)
@@ -37,8 +37,8 @@ class CompletionsController(QCompleter):
         extra = len(self.completionPrefix())
         if not (cursor.atBlockStart() or
                 self._edit.document().characterAt(cursor.position()-1).isspace()):
-            cursor.movePosition(QTextCursor.Left)
-        cursor.movePosition(QTextCursor.EndOfWord)
+            cursor.movePosition(QTextCursor.MoveOperation.Left)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfWord)
         cursor.insertText(completion[extra:])
         self._edit.setTextCursor(cursor)
 
@@ -48,7 +48,7 @@ class CompletionsController(QCompleter):
         cursor = self._edit.textCursor()
         row = cursor.blockNumber()
         col = cursor.positionInBlock()
-        cursor.select(QTextCursor.WordUnderCursor)
+        cursor.select(QTextCursor.SelectionType.WordUnderCursor)
         completion_prefix = cursor.selectedText()
 
         def thread_finished(completions):
@@ -57,7 +57,7 @@ class CompletionsController(QCompleter):
                 self.show_completion_popup(completion_prefix, completions)
             # QApplication.restoreOverrideCursor()
 
-        # QApplication.setOverrideCursor(Qt.BusyCursor)
+        # QApplication.setOverrideCursor(Qt.CursorShape.BusyCursor)
         if CONFIG['workarounds/blocking_jedi']:
             thread_finished(get_completions(self._edit.controller.document, self._edit.toPlainText(), row, col))
         else:

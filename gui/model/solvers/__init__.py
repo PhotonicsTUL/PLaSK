@@ -263,7 +263,7 @@ class SolversModel(TableModel):
         return 3
 
     def headerData(self, col, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             if col == 0: return 'Category'
             if col == 1: return 'Solver'
             if col == 2: return 'Name'
@@ -283,7 +283,7 @@ class SolversModel(TableModel):
 
     def flags(self, index):
         flags = super().flags(index)
-        if index.column() < 2: flags &= ~Qt.ItemIsEditable
+        if index.column() < 2: flags &= ~Qt.ItemFlag.ItemIsEditable
         return flags
 
     def create_default_entry(self):

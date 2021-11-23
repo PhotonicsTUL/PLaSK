@@ -27,6 +27,7 @@ import json
 from gui.qt.QtCore import Qt, QSize
 from gui.qt.QtGui import *
 from gui.qt.QtWidgets import *
+from gui.qt import qt_exec
 from gui.launch import LAUNCHERS, LAUNCH_CONFIG
 from gui.utils.widgets import MultiLineEdit, ComboBox
 from gui.utils.qsignals import BlockQtSignals
@@ -57,7 +58,7 @@ except ImportError:
             message.anchorClicked.connect(self._open_link)
             message.setOpenLinks(False)
             pal = message.palette()
-            pal.setColor(QPalette.Base, pal.color(QPalette.Window))
+            pal.setColor(QPalette.ColorRole.Base, pal.color(QPalette.ColorRole.Window))
             message.setPalette(pal)
             return message
 
@@ -378,8 +379,8 @@ else:
                 abutton.setCheckable(True)
                 abutton.toggled.connect(self.show_advanced)
 
-                buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-                buttons.addButton(abutton, QDialogButtonBox.ActionRole)
+                buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+                buttons.addButton(abutton, QDialogButtonBox.ButtonRole.ActionRole)
                 buttons.accepted.connect(self.accept)
                 buttons.rejected.connect(self.reject)
                 layout.addRow(buttons)
@@ -598,7 +599,7 @@ else:
             list_edit.setToolTip("List of available {} at the execution host.\n"
                                  "If you are not sure about the correct value, contact\n"
                                  "the host administrator.".format(name))
-            list_edit.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+            list_edit.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.MinimumExpanding)
             box.addWidget(list_edit)
             if account is not None:
                 if getattr(account, attr, None):
@@ -990,26 +991,26 @@ else:
 
             grid_layout = QGridLayout()
             label = QLabel("Wall &time:")
-            grid_layout.addWidget(label, 0, 0, Qt.AlignRight)
+            grid_layout.addWidget(label, 0, 0, Qt.AlignmentFlag.AlignRight)
             self.wall_time = QLineEdit()
             self.wall_time.setToolTip("Total time your computation will run. Refer to the batch system\n"
                                       "documentation for the allowed format of this field.")
             label.setBuddy(self.wall_time)
             grid_layout.addWidget(self.wall_time, 0, 1)
             label = QLabel("M&em limit:")
-            grid_layout.addWidget(label, 1, 0, Qt.AlignRight)
+            grid_layout.addWidget(label, 1, 0, Qt.AlignmentFlag.AlignRight)
             self.memory = QLineEdit()
             self.memory.setToolTip("Total computer memory on each node your job will require. Refer to\n"
                                    "the batch system documentation for the allowed format of this field.")
             label.setBuddy(self.memory)
             grid_layout.addWidget(self.memory, 1, 1)
             label = QLabel("&Nodes:")
-            grid_layout.addWidget(label, 0, 2, Qt.AlignRight)
+            grid_layout.addWidget(label, 0, 2, Qt.AlignmentFlag.AlignRight)
             self.nodes = QSpinBox()
             self.nodes.setMinimum(1)
             # self.nodes.setSpecialValueText("default")
-            self.nodes.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            self.nodes.setAlignment(Qt.AlignRight)
+            self.nodes.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            self.nodes.setAlignment(Qt.AlignmentFlag.AlignRight)
             self.nodes.setToolTip("Number of independent nodes your job will allocate. By general PLaSK\n"
                                   "does not operate on multiple nodes, so 1 is usually the best choice.\n"
                                   "However, you may have written your Python script in such way that it\n"
@@ -1019,12 +1020,12 @@ else:
             label.setBuddy(self.nodes)
             grid_layout.addWidget(self.nodes, 0, 3)
             label = QLabel("&CPUs/node:")
-            grid_layout.addWidget(label, 1, 2, Qt.AlignRight)
+            grid_layout.addWidget(label, 1, 2, Qt.AlignmentFlag.AlignRight)
             self.cpus = QSpinBox()
             self.cpus.setMinimum(0)
             self.cpus.setSpecialValueText("default")
-            self.cpus.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            self.cpus.setAlignment(Qt.AlignRight)
+            self.cpus.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            self.cpus.setAlignment(Qt.AlignmentFlag.AlignRight)
             self.cpus.setToolTip("Number of CPUs on each node your job will utilize.")
             label.setBuddy(self.cpus)
             grid_layout.addWidget(self.cpus, 1, 3)
@@ -1042,8 +1043,8 @@ else:
             array_widget_layout.setContentsMargins(0, 0, 0, 0)
             self.array_from = QSpinBox()
             self.array_from.setMaximum(99999)
-            self.array_from.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            self.array_from.setAlignment(Qt.AlignRight)
+            self.array_from.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            self.array_from.setAlignment(Qt.AlignmentFlag.AlignRight)
             self.array_from.setToolTip("First job array index.")
             label = QLabel("&start:")
             label.setBuddy(self.array_from)
@@ -1051,8 +1052,8 @@ else:
             array_widget_layout.addWidget(self.array_from)
             self.array_to = QSpinBox()
             self.array_to.setMaximum(99999)
-            self.array_to.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-            self.array_to.setAlignment(Qt.AlignRight)
+            self.array_to.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            self.array_to.setAlignment(Qt.AlignmentFlag.AlignRight)
             self.array_to.setToolTip("Last job array index.")
             label = QLabel(" en&d:")
             label.setBuddy(self.array_to)
@@ -1107,7 +1108,7 @@ else:
             layout.addLayout(notify_layout)
 
             self.params_button = QToolButton()
-            self.params_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+            self.params_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
             self.params_button.setIconSize(QSize(8, 8))
             self.params_button.setStyleSheet("""
                 border: none;
@@ -1128,14 +1129,14 @@ else:
             layout.addWidget(self.other_params)
 
             self.modules_button = QToolButton()
-            self.modules_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+            self.modules_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
             self.modules_button.setIconSize(QSize(8, 8))
             self.modules_button.setStyleSheet("""
                 border: none;
                 margin-left: -2px;
                 padding-left: 0px;
             """)
-            self.modules_button.setArrowType(Qt.RightArrow)
+            self.modules_button.setArrowType(Qt.ArrowType.RightArrow)
             self.modules_button.setCheckable(True)
             self.modules_button.setChecked(False)
             self.modules_button.toggled.connect(
@@ -1175,7 +1176,7 @@ else:
                 for account in self.accounts:
                     account.update_widget(account.params.get(self.filename, {}))
 
-            widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             return widget
 
         def exit(self, window, visible):
@@ -1255,7 +1256,7 @@ else:
 
         def account_add(self):
             dialog = Account.EditDialog()
-            if dialog.exec_() == QDialog.Accepted:
+            if qt_exec(dialog) == QDialog.DialogCode.Accepted:
                 name = dialog.name
                 if name not in self.accounts:
                     account = SYSTEMS[dialog.system](name)
@@ -1279,7 +1280,7 @@ else:
             old = self.accounts_combo.currentText()
             idx = self.accounts_combo.currentIndex()
             dialog = Account.EditDialog(self.accounts[idx], old)
-            if dialog.exec_() == QDialog.Accepted:
+            if qt_exec(dialog) == QDialog.DialogCode.Accepted:
                 new = dialog.name
                 if new != old and new in (a.name for a in self.accounts):
                     QMessageBox.critical(None, "Edit Error",
@@ -1304,8 +1305,8 @@ else:
             confirm = QMessageBox.warning(None, "Remove Account?",
                                           "Do you really want to remove the account '{}'?"
                                           .format(self.accounts[self.current_account].name),
-                                          QMessageBox.Yes | QMessageBox.No)
-            if confirm == QMessageBox.Yes:
+                                          QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            if confirm == QMessageBox.StandardButton.Yes:
                 self.accounts_layout.removeWidget(self.account_widgets[self.current_account])
                 self.account_widgets[self.current_account].setParent(None)  # delete the widget
                 del self.account_widgets[self.current_account]
@@ -1338,7 +1339,7 @@ else:
             field.setVisible(visible)
             if button is not None:
                 button.setChecked(visible)
-                button.setArrowType(Qt.DownArrow if visible else Qt.RightArrow)
+                button.setArrowType(Qt.ArrowType.DownArrow if visible else Qt.ArrowType.RightArrow)
             self._adjust_window_size()
 
         def _adjust_window_size(self):
@@ -1377,11 +1378,11 @@ else:
                                                 "If you do not trust this host, hit Cancel to "
                                                 "abandon the connection."
                                                 .format(hostname, key.get_name()[4:], str(hexlify(key.get_fingerprint()))),
-                                                 QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
-                if add == QMessageBox.Cancel:
+                                                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel)
+                if add == QMessageBox.StandardButton.Cancel:
                     raise Launcher.AbortException('Server {} not found in known_hosts'.format(hostname))
                 client.get_host_keys().add(hostname, key.get_name(), key)
-                if add == QMessageBox.Yes:
+                if add == QMessageBox.StandardButton.Yes:
                     Launcher._save_host_keys(client.get_host_keys())
 
         @classmethod
@@ -1427,18 +1428,18 @@ else:
                                                     "abandon the connection."
                                                     .format(err.hostname, err.key.get_name()[4:],
                                                             str(hexlify(err.key.get_fingerprint()))),
-                                                    QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
-                    if add == QMessageBox.Cancel:
+                                                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel)
+                    if add == QMessageBox.StandardButton.Cancel:
                         return
                     ssh.get_host_keys().add(err.hostname, err.key.get_name(), err.key)
-                    if add == QMessageBox.Yes:
+                    if add == QMessageBox.StandardButton.Yes:
                         cls._save_host_keys(ssh.get_host_keys())
                 except paramiko.AuthenticationException:
                     dialog = QInputDialog()
                     dialog.setLabelText("Password required for {}@{}. Please enter valid password:"
                                         .format(user, host))
-                    dialog.setTextEchoMode(QLineEdit.Password)
-                    if dialog.exec_() == QDialog.Accepted:
+                    dialog.setTextEchoMode(QLineEdit.EchoMode.Password)
+                    if qt_exec(dialog) == QDialog.DialogCode.Accepted:
                         passwd = cls._passwd_cache[host, user] = dialog.textValue()
                     else:
                         return
@@ -1450,8 +1451,8 @@ else:
                     answer = QMessageBox.critical(None, "Connection Error",
                                                         "Could not connect to {}.\n\n{}\n\nTry again?"
                                                         .format(host, msg),
-                                                        QMessageBox.Yes|QMessageBox.No)
-                    if answer == QMessageBox.No:
+                                                        QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No)
+                    if answer == QMessageBox.StandardButton.No:
                         return
                 else:
                     return ssh
@@ -1517,7 +1518,7 @@ else:
             sftp = ssh.open_sftp()
 
             dialog = RemoteDirDialog(sftp, host, workdir)
-            if dialog.exec_() == QDialog.Accepted:
+            if qt_exec(dialog) == QDialog.DialogCode.Accepted:
                 self.workdir.setText(dialog.item_path(dialog.tree.currentItem()))
 
 
@@ -1526,7 +1527,7 @@ else:
         # class Item(QTreeWidgetItem):
         #     def __init__(self, *args):
         #         super(RemoteDirDialog.Item, self).__init__(*args)
-        #         self.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
+        #         self.setChildIndicatorPolicy(QTreeWidgetItem.ChildIndicatorPolicy.ShowIndicator)
         #         self.read = False
 
         def __init__(self, sftp, host='/', path=None, parent=None):
@@ -1541,7 +1542,7 @@ else:
             self.tree = QTreeWidget()
             self.tree.setHeaderHidden(True)
             layout.addWidget(self.tree)
-            buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+            buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
             buttons.accepted.connect(self.accept)
             buttons.rejected.connect(self.reject)
             layout.addWidget(buttons)
@@ -1549,7 +1550,7 @@ else:
             item = QTreeWidgetItem()
             item.setText(0, host)
             item.setIcon(0, QIcon.fromTheme('network-server'))
-            item.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
+            item.setChildIndicatorPolicy(QTreeWidgetItem.ChildIndicatorPolicy.ShowIndicator)
             self.tree.addTopLevelItem(item)
             self.tree.itemExpanded.connect(self.item_expanded)
             self.resize(540, 720)
@@ -1576,7 +1577,7 @@ else:
             return '/' + '/'.join(path[1:])
 
         def item_expanded(self, item):
-            if item.childIndicatorPolicy() == QTreeWidgetItem.ShowIndicator:
+            if item.childIndicatorPolicy() == QTreeWidgetItem.ChildIndicatorPolicy.ShowIndicator:
                 path = self.item_path(item)
                 dirs = []
                 try:
@@ -1590,9 +1591,9 @@ else:
                         sub = QTreeWidgetItem()
                         sub.setText(0, d.filename)
                         sub.setIcon(0, self.folder_icon)
-                        sub.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
+                        sub.setChildIndicatorPolicy(QTreeWidgetItem.ChildIndicatorPolicy.ShowIndicator)
                         item.addChild(sub)
-                item.setChildIndicatorPolicy(QTreeWidgetItem.DontShowIndicatorWhenChildless)
+                item.setChildIndicatorPolicy(QTreeWidgetItem.ChildIndicatorPolicy.DontShowIndicatorWhenChildless)
 
 
 LAUNCHERS.append(Launcher())

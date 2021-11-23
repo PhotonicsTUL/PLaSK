@@ -26,16 +26,16 @@ def indent(editor, col=0):
         start = cursor.selectionStart()
         end = cursor.selectionEnd()
         cursor.setPosition(start)
-        cursor.movePosition(QTextCursor.StartOfBlock)
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
         if cursor.position() == end: end += 1
         while cursor.position() < end:
             cursor.insertText('  ')
             end += 2
-            if not cursor.movePosition(QTextCursor.NextBlock):
+            if not cursor.movePosition(QTextCursor.MoveOperation.NextBlock):
                 break
         cursor.endEditBlock()
     else:
-        cursor.movePosition(QTextCursor.StartOfBlock)
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
         cursor.insertText(' ' * (2 - (col % 2)))
 
 
@@ -49,16 +49,16 @@ def unindent(editor, col=2):
             start = cursor.selectionStart()
             end = cursor.selectionEnd()
             cursor.setPosition(start)
-            cursor.movePosition(QTextCursor.StartOfBlock)
+            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
             if cursor.position() == end: end += 1
             while cursor.position() < end:
                 for i in range(2):
                     if document.characterAt(cursor.position()) != ' ': break
                     cursor.deleteChar()
                     end -= 1
-                if not cursor.movePosition(QTextCursor.NextBlock): raise ValueError
+                if not cursor.movePosition(QTextCursor.MoveOperation.NextBlock): raise ValueError
         else:
-            cursor.movePosition(QTextCursor.StartOfBlock)
+            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
             for i in range(min(col,2)):
                 if document.characterAt(cursor.position()) != ' ':
                     break
@@ -119,7 +119,7 @@ def parse_slash(editor):
         cur = cursor.block().position() + col
         if cur < pos and text[cur:].strip() == '':
             cursor.setPosition(cur)
-            cursor.setPosition(pos, QTextCursor.KeepAnchor)
+            cursor.setPosition(pos, QTextCursor.MoveMode.KeepAnchor)
             if cursor.hasSelection():
                 cursor.deleteChar()
         cursor.endEditBlock()

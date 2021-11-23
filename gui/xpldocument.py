@@ -27,7 +27,7 @@ from .controller.source import SourceEditController
 from .controller.defines import DefinesController
 if plask is not None:
     from .controller.geometry import GeometryController
-from .controller.script import ScriptController
+from .controller.script import ScriptController, LOG_LEVELS
 from .controller.multi import GUIAndSourceController, GeometryGUIAndSourceController
 from .controller.solvers import SolversController
 from .controller.connects import ConnectsController
@@ -209,6 +209,8 @@ class XPLDocument:
 
     #TODO undo support, in script undo stack
     def set_loglevel(self, loglevel):
+        if isinstance(loglevel, int):
+            loglevel = LOG_LEVELS[loglevel]
         loglevel = loglevel.lower()
         if self.loglevel != loglevel:
             # def loglevelsetter(s, v): s.loglevel = v

@@ -29,16 +29,16 @@ def indent(editor, col=0):
         start = cursor.selectionStart()
         end = cursor.selectionEnd()
         cursor.setPosition(start)
-        cursor.movePosition(QTextCursor.StartOfBlock)
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
         if cursor.position() == end: end += 1
         while cursor.position() < end:
             cursor.insertText('    ')
             end += 4
-            if not cursor.movePosition(QTextCursor.NextBlock):
+            if not cursor.movePosition(QTextCursor.MoveOperation.NextBlock):
                 break
         cursor.endEditBlock()
     else:
-        cursor.movePosition(QTextCursor.StartOfBlock)
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
         cursor.insertText(' ' * (4 - (col % 4)))
 
 
@@ -52,16 +52,16 @@ def unindent(editor, col=4):
             start = cursor.selectionStart()
             end = cursor.selectionEnd()
             cursor.setPosition(start)
-            cursor.movePosition(QTextCursor.StartOfBlock)
+            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
             if cursor.position() == end: end += 1
             while cursor.position() < end:
                 for i in range(4):
                     if document.characterAt(cursor.position()) != ' ': break
                     cursor.deleteChar()
                     end -= 1
-                if not cursor.movePosition(QTextCursor.NextBlock): raise ValueError
+                if not cursor.movePosition(QTextCursor.MoveOperation.NextBlock): raise ValueError
         else:
-            cursor.movePosition(QTextCursor.StartOfBlock)
+            cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
             for i in range(min(col,4)):
                 if document.characterAt(cursor.position()) != ' ':
                     break
@@ -109,7 +109,7 @@ def autoindent(editor):
                 prevlen += 4
             if prevlen != len(cspaces):
                 nl = len(cspaces) - len(_find_prev_indent_level(document, row+1, cspaces))
-                cursor.movePosition(QTextCursor.StartOfBlock)
+                cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
                 for i in range(nl):
                     cursor.deleteChar()
     cursor.endEditBlock()

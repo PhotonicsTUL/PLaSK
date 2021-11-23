@@ -39,8 +39,8 @@ class GNMaterialControllerMixin:
                                  u'one allows to specify non-linearly varying material. (float)'
                                  .format(self.node.tag_name(False)))
         self.material_shape.setPlaceholderText('1')
-        self.material_bottom.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.material_top.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.material_bottom.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.material_top.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.material_shape.setMaximumWidth(50)
         material_tb_hbox.addWidget(self.material_bottom)
         material_tb_hbox.addWidget(QLabel('...'))

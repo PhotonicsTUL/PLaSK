@@ -39,7 +39,7 @@ except (KeyError, ValueError):
 from .qt.QtCore import *
 from .qt.QtWidgets import *
 from .qt.QtGui import *
-from .qt import QtSignal, QT_API
+from .qt import QtSignal, QT_API, qt_exec
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'share', 'plask', 'stubs'))
 
@@ -181,7 +181,7 @@ class MainWindow(QMainWindow):
         self.tabs = QTabWidget(self)
         self.tabs.setDocumentMode(True)
         self.tabs.currentChanged[int].connect(self.tab_change)
-        # self.tabs.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Maximum)
+        # self.tabs.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Maximum)
 
         menu_bar = QMenuBar(self)
         menu_bar.setVisible(False)
@@ -207,14 +207,14 @@ class MainWindow(QMainWindow):
         self.info_model = InfoListModel(None)
         self.info_table = InfoListView(self.info_model, self)
         self.info_table.setModel(self.info_model)
-        self.info_table.setSelectionMode(QListView.NoSelection)
+        self.info_table.setSelectionMode(QListView.SelectionMode.NoSelection)
         self.info_model.entries = [Info('', Info.NONE)]
         self.info_table.setFixedHeight(self.info_table.sizeHintForRow(0))
         self.info_model.entries = []
         info_selection_model = self.info_table.selectionModel()
         info_selection_model.currentChanged.connect(self._on_select_info)
 
-        self.info_table.setFrameShape(QFrame.NoFrame)
+        self.info_table.setFrameShape(QFrame.Shape.NoFrame)
         layout.addWidget(self.info_table)
         self.info_model.layoutChanged.connect(self._update_info_color)
 
@@ -341,8 +341,8 @@ class MainWindow(QMainWindow):
 
         if os.name == 'nt':
             menu_button = QToolButton(self)
-            menu_button.setPopupMode(QToolButton.InstantPopup)
-            menu_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+            menu_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+            menu_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
             menu_button.setAutoFillBackground(True)
             font = menu_button.font()
             font.setBold(True)
@@ -352,9 +352,9 @@ class MainWindow(QMainWindow):
         menu_button.setText("PLaSK")
         pal = menu_button.palette()
         if CONFIG['main_window/dark_style']:
-            pal.setColor(QPalette.Button, QColor(42, 130, 218))
+            pal.setColor(QPalette.ColorRole.Button, QColor(42, 130, 218))
         else:
-            pal.setColor(QPalette.Button, QColor("#88aaff"))
+            pal.setColor(QPalette.ColorRole.Button, QColor("#88aaff"))
         menu_button.setIcon(QIcon.fromTheme('plask-logo'))
         menu_button.setPalette(pal)
         menu_button.setToolTip("Show main menu")
@@ -364,7 +364,7 @@ class MainWindow(QMainWindow):
         self.addAction(menu_action)
 
         menu_button.setMenu(self.menu)
-        self.tabs.setCornerWidget(menu_button, Qt.TopLeftCorner)
+        self.tabs.setCornerWidget(menu_button, Qt.Corner.TopLeftCorner)
 
         tabs_menu = QMenu("Sections", menu_bar)
         def add_tab_menu(indx):
@@ -381,9 +381,9 @@ class MainWindow(QMainWindow):
 
         source_button = QToolButton(self)
         source_button.setDefaultAction(self.showsource_action)
-        self.tabs.setCornerWidget(source_button, Qt.TopRightCorner)
+        self.tabs.setCornerWidget(source_button, Qt.Corner.TopRightCorner)
 
-        self.shown.connect(self.init_pysparkle, Qt.QueuedConnection)
+        self.shown.connect(self.init_pysparkle, Qt.ConnectionType.QueuedConnection)
 
         fs = int(1.3 * QFont().pointSize())
         self.tabs.setStyleSheet("QTabBar {{ font-size: {}pt; }}".format(fs))
@@ -391,23 +391,28 @@ class MainWindow(QMainWindow):
 
         self.config_changed.connect(update_textedit)
 
-        desktop = QDesktopWidget()
         geometry = CONFIG['session/geometry']
         if geometry is not None:
-            screen = desktop.availableGeometry(geometry.center())
+            try:
+                screen = QApplication.screenAt(geometry.center()).availableGeometry()
+            except AttributeError:
+                screen = QDesktopWidget().availableGeometry(geometry.center())
             geometry.setWidth(min(geometry.width(), screen.right()-geometry.left()+1))
             geometry.setHeight(min(geometry.height(), screen.bottom()-geometry.top()+1))
             self.setGeometry(geometry)
         else:
-            screen = desktop.availableGeometry(self)
+            try:
+                screen = self.screen().availableGeometry()
+            except NameError:
+                screen = QDesktopWidget().availableGeometry(self)
             self.resize(screen.width() * 0.8, screen.height() * 0.9)
 
         self.setAcceptDrops(True)
 
 
-        state = Qt.WindowNoState
-        if CONFIG['session/maximized']: state |= Qt.WindowMaximized
-        if CONFIG['session/fullscreen']: state |= Qt.WindowFullScreen
+        state = Qt.WindowState.WindowNoState
+        if CONFIG['session/maximized']: state |= Qt.WindowState.WindowMaximized
+        if CONFIG['session/fullscreen']: state |= Qt.WindowState.WindowFullScreen
         self.setWindowState(state)
 
         self.show()
@@ -433,9 +438,9 @@ class MainWindow(QMainWindow):
     def _update_info_color(self):
         pal = self.info_table.palette()
         if any(info.level != Info.NONE for info in self.info_model.entries):
-            pal.setColor(QPalette.Base, QColor("#6f4402" if dark_style() else "#ffc"))
+            pal.setColor(QPalette.ColorRole.Base, QColor("#6f4402" if dark_style() else "#ffc"))
         else:
-            pal.setColor(QPalette.Base, pal.color(QPalette.Window))
+            pal.setColor(QPalette.ColorRole.Base, pal.color(QPalette.ColorRole.Window))
         self.info_table.setPalette(pal)
 
     def _on_select_info(self, current, _):
@@ -457,9 +462,9 @@ class MainWindow(QMainWindow):
             action = QAction(f, self)
             action.triggered.connect(Func(f))
             if i < 9:
-                action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_1 + i))
+                action.setShortcut(QKeySequence(Qt.Modifier.CTRL | Qt.Key(int(Qt.Key.Key_1) + i)))
             elif i == 9:
-                action.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_0))
+                action.setShortcut(QKeySequence(Qt.Modifier.CTRL | Qt.Key.Key_0))
             self.recent_menu.addAction(action)
 
     def _try_load_from_file(self, filename, tab=None):
@@ -535,8 +540,8 @@ class MainWindow(QMainWindow):
         if self.isWindowModified():
             confirm = QMessageBox.question(self, "Unsaved Changes",
                                            "File has unsaved changes. Do you want to discard them and reload the file?",
-                                           QMessageBox.Yes | QMessageBox.No,  QMessageBox.No)
-            if confirm == QMessageBox.No:
+                                           QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,  QMessageBox.StandardButton.No)
+            if confirm == QMessageBox.StandardButton.No:
                 return
         current_tab_index = self.current_tab_index
         self.document.controller_by_index(current_tab_index).on_edit_exit()
@@ -553,9 +558,9 @@ class MainWindow(QMainWindow):
             msgbox.setWindowTitle("Save Error")
             msgbox.setText("The file '{}' could not be saved to disk.".format(filename))
             msgbox.setInformativeText(str(err))
-            msgbox.setStandardButtons(QMessageBox.Ok)
-            msgbox.setIcon(QMessageBox.Critical)
-            msgbox.exec_()
+            msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+            msgbox.setIcon(QMessageBox.Icon.Critical)
+            qt_exec(msgbox)
             return False
         else:
             abspath = os.path.abspath(filename)
@@ -602,10 +607,10 @@ class MainWindow(QMainWindow):
                 msgbox.setText("Edited content of the current section is invalid.")
                 msgbox.setDetailedText(str(e))
                 msgbox.setInformativeText("Do you want to save anyway (with the old content of the current section)?")
-                msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-                msgbox.setIcon(QMessageBox.Warning)
-                #msgbox.setDefaultButton(QMessageBox.Yes);
-                return msgbox.exec_() == QMessageBox.Yes
+                msgbox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                msgbox.setIcon(QMessageBox.Icon.Warning)
+                #msgbox.setDefaultButton(QMessageBox.StandardButton.Yes);
+                return qt_exec(msgbox) == QMessageBox.StandardButton.Yes
 
         errors = self.document.get_info(Info.ERROR)
         if errors:
@@ -614,15 +619,15 @@ class MainWindow(QMainWindow):
                            "It is possible to save it, however launching it will most probably fail.")
             msgbox.setDetailedText('\n'.join(map(str, errors)))
             msgbox.setInformativeText("Do you want to save anyway?")
-            msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-            msgbox.setIcon(QMessageBox.Warning)
-            msgbox.setDefaultButton(QMessageBox.Yes)
-            return msgbox.exec_() == QMessageBox.Yes
+            msgbox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            msgbox.setIcon(QMessageBox.Icon.Warning)
+            msgbox.setDefaultButton(QMessageBox.StandardButton.Yes)
+            return qt_exec(msgbox) == QMessageBox.StandardButton.Yes
         return True
 
     def show_settings(self):
         dialog = SettingsDialog(self)
-        dialog.exec_()
+        qt_exec(dialog)
 
     def current_section_exit(self):
         """"Should be called just before leaving the current section."""
@@ -667,8 +672,8 @@ class MainWindow(QMainWindow):
         if self.isWindowModified():
             confirm = QMessageBox.question(self, "Unsaved File",
                                                  "File is not saved. Do you want to save it before closing the window?",
-                                                 QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
-            if confirm == QMessageBox.Cancel or (confirm == QMessageBox.Yes and not self.save()):
+                                                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel)
+            if confirm == QMessageBox.StandardButton.Cancel or (confirm == QMessageBox.StandardButton.Yes and not self.save()):
                 event.ignore()
                 return
 
@@ -702,7 +707,7 @@ class MainWindow(QMainWindow):
 
     def on_goto_line(self):
         dialog = GotoDialog(self)
-        if dialog.exec_():
+        if qt_exec(dialog):
             self.goto_line(int(dialog.input.text()))
         else:
             return
@@ -710,7 +715,7 @@ class MainWindow(QMainWindow):
     def goto_line(self, line_number=None):
         if line_number is None:
             dialog = GotoDialog(self)
-            if dialog.exec_():
+            if qt_exec(dialog):
                 line_number = int(dialog.input.text())
             else:
                 return
@@ -752,7 +757,7 @@ class MainWindow(QMainWindow):
             if VERSION is not None:
                 pysparkle = PySparkle("https://plask.app/appcast.xml", "PLaSK", VERSION[:10],
                                       config=ConfigProxy('updates'), shutdown=close_all_windows,
-                                      frontend='qt5' if QT_API in ('PyQt5', 'PySide2') else 'qt4')
+                                      frontend='qt')
         if pysparkle is not None:
             action_check_update = QAction(QIcon.fromTheme('software-update-available'),
                                           "Check for &Updates Now...", self)
@@ -766,7 +771,7 @@ class MainWindow(QMainWindow):
 
         def __init__(self, text, parent=None):
             super(MainWindow.AboutWindow, self).__init__(parent)
-            self.setWindowFlags(Qt.FramelessWindowHint | Qt.Popup)
+            self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Popup)
             self.setWindowTitle("About PLaSK")
             self.setStyleSheet("""
                 QDialog {
@@ -779,7 +784,10 @@ class MainWindow(QMainWindow):
             outer.setContentsMargins(0, 0, 0, 0)
             outer.setSpacing(0)
 
-            scale = QApplication.desktop().logicalDpiX() / 96.
+            try:
+                scale = QApplication.primaryScreen().logicalDotsPerInch() / 96.
+            except AttributeError:
+                scale = QApplication.desktop().logicalDpiX() / 96.
             if scale < 1.4:
                 image_name = 'splash620'
             elif scale < 1.8:
@@ -799,23 +807,23 @@ class MainWindow(QMainWindow):
             horizontal.setSpacing(16)
 
             style = QApplication.style()
-            ics = style.pixelMetric(QStyle.PM_MessageBoxIconSize)
+            ics = style.pixelMetric(QStyle.PixelMetric.PM_MessageBoxIconSize)
             icon = QIcon.fromTheme('dialog-information')
             icon_label = QLabel()
-            icon_label.setPixmap(icon.pixmap(ics, QIcon.Normal, QIcon.Off))
+            icon_label.setPixmap(icon.pixmap(ics, QIcon.Mode.Normal, QIcon.State.Off))
             icon_label.setFixedWidth(ics)
             horizontal.addWidget(icon_label)
-            horizontal.setAlignment(icon_label, Qt.AlignTop)
+            horizontal.setAlignment(icon_label, Qt.AlignmentFlag.AlignTop)
 
             label = QLabel(u"<b>PLaSK — Photonic Laser Simulation Kit</b><br/>\n"
                            u"© 2014-2022 Lodz University of Technology, Photonics Group<br/><br/>" + text)
-            label.setTextFormat(Qt.RichText)
+            label.setTextFormat(Qt.TextFormat.RichText)
             label.setWordWrap(True)
             horizontal.addWidget(label)
 
             vertical.addLayout(horizontal)
 
-            button_box = QDialogButtonBox(QDialogButtonBox.Ok)
+            button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
             button_box.accepted.connect(self.accept)
             vertical.addWidget(button_box)
 
@@ -865,7 +873,7 @@ class MainWindow(QMainWindow):
         QApplication.clipboard().setText(details)
 
         msgbox.move(self.frameGeometry().topLeft() + self.rect().center() - msgbox.rect().center())
-        msgbox.exec_()
+        qt_exec(msgbox)
 
     def install_license(self):
         filename = QFileDialog.getOpenFileName(self, "Open file", CURRENT_DIR,
@@ -879,10 +887,10 @@ class MainWindow(QMainWindow):
             msgbox = QMessageBox()
             msgbox.setWindowTitle("License Exists")
             msgbox.setText("The license file '{}' already exists. Do you want to replace it?".format(dest))
-            msgbox.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-            msgbox.setIcon(QMessageBox.Question)
-            answer = msgbox.exec_()
-            if answer == QMessageBox.No: return
+            msgbox.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            msgbox.setIcon(QMessageBox.Icon.Question)
+            answer = qt_exec(msgbox)
+            if answer == QMessageBox.StandardButton.No: return
         try:
             copy(filename, dest)
         except Exception as err:
@@ -890,9 +898,9 @@ class MainWindow(QMainWindow):
             msgbox.setWindowTitle("License Install Error")
             msgbox.setText("The license file '{}' could not be installed.".format(filename))
             msgbox.setInformativeText(str(err))
-            msgbox.setStandardButtons(QMessageBox.Ok)
-            msgbox.setIcon(QMessageBox.Critical)
-            msgbox.exec_()
+            msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+            msgbox.setIcon(QMessageBox.Icon.Critical)
+            qt_exec(msgbox)
         else:
             dom = etree.parse(filename)
             root = dom.getroot()
@@ -920,10 +928,10 @@ class MainWindow(QMainWindow):
 
     def toggle_fullscreen(self):
         state = self.windowState()
-        if not state & Qt.WindowFullScreen:
-            self.setWindowState(state | Qt.WindowFullScreen)
+        if not state & Qt.WindowState.WindowFullScreen:
+            self.setWindowState(state | Qt.WindowState.WindowFullScreen)
         else:
-            self.setWindowState(state & ~Qt.WindowFullScreen)
+            self.setWindowState(state & ~Qt.WindowState.WindowFullScreen)
 
 class GotoDialog(QDialog):
     def __init__(self, parent=None):
@@ -937,7 +945,7 @@ class GotoDialog(QDialog):
         hbox.addWidget(label)
         hbox.addWidget(self.input)
         vbox.addLayout(hbox)
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         vbox.addWidget(buttons)
@@ -1136,30 +1144,27 @@ def main():
 
     APPLICATION = QApplication(sys.argv)
     APPLICATION.setApplicationName("PLaSK")
-    APPLICATION.setAttribute(Qt.AA_DontShowIconsInMenus, False)
+    APPLICATION.setAttribute(Qt.ApplicationAttribute.AA_DontShowIconsInMenus, False)
     sys.argv = APPLICATION.arguments()
 
     if CONFIG['main_window/dark_style']:
-        if QT_API == 'PyQt5':
-            APPLICATION.setStyle(QStyleFactory.create("Fusion"))
-        else:
-            APPLICATION.setStyle(QStyleFactory.create("Plastique"))
+        APPLICATION.setStyle(QStyleFactory.create("Fusion"))
         dark_palette = QPalette()
-        dark_palette.setColor(QPalette.Window, QColor(53, 53, 53))
-        dark_palette.setColor(QPalette.WindowText, QColor('#dddddd'))
-        dark_palette.setColor(QPalette.Base, QColor(25, 25, 25))
-        dark_palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
-        dark_palette.setColor(QPalette.ToolTipBase, QColor('#dddddd'))
-        dark_palette.setColor(QPalette.ToolTipText, QColor('#dddddd'))
-        dark_palette.setColor(QPalette.Text, QColor('#dddddd'))
-        dark_palette.setColor(QPalette.Button, QColor(53, 53, 53))
-        dark_palette.setColor(QPalette.ButtonText, QColor('#dddddd'))
-        dark_palette.setColor(QPalette.BrightText, Qt.red)
-        dark_palette.setColor(QPalette.Link, QColor(42, 130, 218))
-        dark_palette.setColor(QPalette.Highlight, QColor(42, 130, 218))
-        dark_palette.setColor(QPalette.HighlightedText, Qt.black)
-        qApp.setPalette(dark_palette)
-        qApp.setStyleSheet("QToolTip { color: #dddddd; background-color: #2a82da; border: 1px solid #dddddd; }")
+        dark_palette.setColor(QPalette.ColorRole.Window, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.ColorRole.WindowText, QColor('#dddddd'))
+        dark_palette.setColor(QPalette.ColorRole.Base, QColor(25, 25, 25))
+        dark_palette.setColor(QPalette.ColorRole.AlternateBase, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.ColorRole.ToolTipBase, QColor('#dddddd'))
+        dark_palette.setColor(QPalette.ColorRole.ToolTipText, QColor('#dddddd'))
+        dark_palette.setColor(QPalette.ColorRole.Text, QColor('#dddddd'))
+        dark_palette.setColor(QPalette.ColorRole.Button, QColor(53, 53, 53))
+        dark_palette.setColor(QPalette.ColorRole.ButtonText, QColor('#dddddd'))
+        dark_palette.setColor(QPalette.ColorRole.BrightText, Qt.GlobalColor.red)
+        dark_palette.setColor(QPalette.ColorRole.Link, QColor(42, 130, 218))
+        dark_palette.setColor(QPalette.ColorRole.Highlight, QColor(42, 130, 218))
+        dark_palette.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.black)
+        APPLICATION.setPalette(dark_palette)
+        APPLICATION.setStyleSheet("QToolTip { color: #dddddd; background-color: #2a82da; border: 1px solid #dddddd; }")
 
     pysparkle = None
 
@@ -1185,10 +1190,13 @@ def main():
 
     if matplotlib:
         font = APPLICATION.font()
-        desktop = APPLICATION.desktop()
-        color = APPLICATION.palette().color(QPalette.Text).name()
+        try:
+            dpi = APPLICATION.desktop().logicalDpiY()
+        except AttributeError:
+            dpi = APPLICATION.primaryScreen().logicalDotsPerInch()
+        color = APPLICATION.palette().color(QPalette.ColorRole.Text).name()
         matplotlib.rcParams.update({
-            'figure.dpi': desktop.logicalDpiY(),
+            'figure.dpi': dpi,
             'font.family': font.family(),
             'font.size': font.pointSize(),
             'font.weight': 'normal',
@@ -1205,7 +1213,7 @@ def main():
             # 'patch.edgecolor': color,
             # 'axes.edgecolor': color,
             # 'grid.color': color,
-            'figure.facecolor': APPLICATION.palette().color(QPalette.Background).name(),
+            'figure.facecolor': APPLICATION.palette().color(QPalette.ColorRole.Window).name(),
         })
         if CONFIG['workarounds/no_unicode_minus']:
             try:
@@ -1232,7 +1240,7 @@ def main():
     except (NameError, AttributeError):
         pass
 
-    exit_code = APPLICATION.exec_()
+    exit_code = qt_exec(APPLICATION)
 
     try:
         # This prevents crash on exit, because of PyFinalize not being supported by boost

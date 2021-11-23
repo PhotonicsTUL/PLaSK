@@ -135,15 +135,15 @@ class ModelTest(QObject):
         QVERIFY( self._model.buddy(QModelIndex()) == QModelIndex() )
         self._model.canFetchMore ( QModelIndex() )
         QVERIFY( self._model.columnCount ( QModelIndex() ) >= 0 )
-        QVERIFY( self._model.data( QModelIndex(), Qt.DisplayRole ) == None )
+        QVERIFY( self._model.data( QModelIndex(), Qt.ItemDataRole.DisplayRole ) == None )
         self._fetchingMore = True
         self._model.fetchMore ( QModelIndex() )
         self._fetchingMore = False
         flags = self._model.flags ( QModelIndex() )
-        QVERIFY( flags == Qt.ItemIsDropEnabled or flags == 0 )
+        QVERIFY( flags == Qt.ItemFlag.ItemIsDropEnabled or flags == 0 )
         self._model.hasChildren ( QModelIndex() )
         self._model.hasIndex ( 0, 0 )
-        self._model.headerData ( 0, Qt.Horizontal, Qt.DisplayRole )
+        self._model.headerData ( 0, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole )
         self._model.index ( 0, 0, QModelIndex() )
         self._model.itemData ( QModelIndex() )
         cache = None
@@ -154,8 +154,8 @@ class ModelTest(QObject):
         QVERIFY( self._model.rowCount(QModelIndex()) >= 0 )
         variant = None
         self._model.setData ( QModelIndex(), variant, -1 )
-        self._model.setHeaderData ( -1, Qt.Horizontal, variant )
-        self._model.setHeaderData ( 999999, Qt.Horizontal, variant )
+        self._model.setHeaderData ( -1, Qt.Orientation.Horizontal, variant )
+        self._model.setHeaderData ( 999999, Qt.Orientation.Horizontal, variant )
         self._model.sibling ( 0, 0, QModelIndex() )
         self._model.span ( QModelIndex() )
         self._model.supportedDropActions()
@@ -369,7 +369,7 @@ class ModelTest(QObject):
                 QCOMPARE( index.column(), c )
                 # While you can technically return a QVariant usually this is a sign
                 # of a bug in data().  Disable if this really is ok in your model.
-                # QVERIFY( self._model.data ( index, Qt.DisplayRole ).isValid() )
+                # QVERIFY( self._model.data ( index, Qt.ItemDataRole.DisplayRole ).isValid() )
 
                 # If the next test fails here is some somewhat useful debug you play with.
 
@@ -401,7 +401,7 @@ class ModelTest(QObject):
         Tests model's implementation of QAbstractItemModel::data()
         """
         # Invalid index should return an invalid qvariant
-        QVERIFY( not self._model.data( QModelIndex(), Qt.DisplayRole ) )
+        QVERIFY( not self._model.data( QModelIndex(), Qt.ItemDataRole.DisplayRole ) )
 
         if self._model.rowCount(QModelIndex()) == 0:
             return
@@ -410,63 +410,63 @@ class ModelTest(QObject):
         QVERIFY( self._model.index ( 0, 0, QModelIndex() ).isValid() )
 
         # shouldn't be able to set data on an invalid index
-        QVERIFY( not self._model.setData ( QModelIndex(), "foo", Qt.DisplayRole ) )
+        QVERIFY( not self._model.setData ( QModelIndex(), "foo", Qt.ItemDataRole.DisplayRole ) )
 
         # General Purpose roles that should return a QString
-        variant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.ToolTipRole )
+        variant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.ItemDataRole.ToolTipRole )
         if variant:
             pass # TODO
             # QVERIFY( qVariantCanConvert<QString> ( variant ) )
 
-        variant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.StatusTipRole )
+        variant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.ItemDataRole.StatusTipRole )
         if variant:
             pass # TODO
             # QVERIFY( qVariantCanConvert<QString> ( variant ) )
 
-        variant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.WhatsThisRole )
+        variant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.ItemDataRole.WhatsThisRole )
         if variant:
             pass # TODO
             # QVERIFY( qVariantCanConvert<QString> ( variant ) )
 
 
         # General Purpose roles that should return a QSize
-        variant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.SizeHintRole )
+        variant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.ItemDataRole.SizeHintRole )
         if variant:
             pass # TODO
             # QVERIFY( qVariantCanConvert<QSize> ( variant ) )
 
         # General Purpose roles that should return a QFont
-        fontVariant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.FontRole )
+        fontVariant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.ItemDataRole.FontRole )
         if fontVariant:
             pass # TODO
             # QVERIFY( qVariantCanConvert<QFont> ( fontVariant ) )
 
         # Check that the alignment is one we know about
-        textAlignmentVariant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.TextAlignmentRole )
+        textAlignmentVariant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.ItemDataRole.TextAlignmentRole )
         if textAlignmentVariant:
             pass # TODO
             # alignment = textAlignmentVariant.toInt()
-            # QCOMPARE( alignment, ( alignment & ( Qt.AlignHorizontal_Mask | Qt.AlignVertical_Mask ) ) )
+            # QCOMPARE( alignment, ( alignment & ( Qt.AlignmentFlag.AlignHorizontal_Mask | Qt.AlignmentFlag.AlignVertical_Mask ) ) )
 
         # General Purpose roles that should return a QColor
-        colorVariant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.BackgroundColorRole )
+        colorVariant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.ItemDataRole.BackgroundRole )
         if colorVariant:
             pass # TODO
             # QVERIFY( qVariantCanConvert<QColor> ( colorVariant ) )
 
-        colorVariant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.TextColorRole )
+        colorVariant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.ItemDataRole.ForegroundRole )
         if colorVariant:
             pass # TODO
             # QVERIFY( qVariantCanConvert<QColor> ( colorVariant ) )
 
         # Check that the "check state" is one we know about.
-        checkStateVariant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.CheckStateRole )
+        checkStateVariant = self._model.data( self._model.index ( 0, 0, QModelIndex() ), Qt.ItemDataRole.CheckStateRole )
         if checkStateVariant:
             pass # TODO
             # state = checkStateVariant.toInt()
-            # QVERIFY( state == Qt.Unchecked or
-            #          state == Qt.PartiallyChecked or
-            #          state == Qt.Checked )
+            # QVERIFY( state == Qt.CheckState.Unchecked or
+            #          state == Qt.CheckState.PartiallyChecked or
+            #          state == Qt.CheckState.Checked )
 
     def rowsAboutToBeInserted (self, parent, start, end):
         """
@@ -482,8 +482,8 @@ class ModelTest(QObject):
         c = Changing()
         c.parent = parent
         c.oldSize = self._model.rowCount ( parent )
-        c.last = self._model.data ( self._model.index ( start - 1, 0, parent ), Qt.DisplayRole )
-        c.next = self._model.data ( self._model.index ( start, 0, parent ), Qt.DisplayRole )
+        c.last = self._model.data ( self._model.index ( start - 1, 0, parent ), Qt.ItemDataRole.DisplayRole )
+        c.next = self._model.data ( self._model.index ( start, 0, parent ), Qt.ItemDataRole.DisplayRole )
         self._insert.append(c)
 
 
@@ -505,9 +505,9 @@ class ModelTest(QObject):
         #    qDebug()
 
         QVERIFY( c.oldSize + ( end - start + 1 ) == self._model.rowCount ( parent ) )
-        QVERIFY( c.last == self._model.data( self._model.index ( start - 1, 0, c.parent ), Qt.DisplayRole ) )
+        QVERIFY( c.last == self._model.data( self._model.index ( start - 1, 0, c.parent ), Qt.ItemDataRole.DisplayRole ) )
 
-        if c.next != self._model.data(self._model.index(end + 1, 0, c.parent), Qt.DisplayRole):
+        if c.next != self._model.data(self._model.index(end + 1, 0, c.parent), Qt.ItemDataRole.DisplayRole):
             #qDebug() << start << end
             #for (int i=0; i < self._model.rowCount(); ++i)
             #    qDebug() << self._model.index(i, 0).data().toString()
@@ -515,7 +515,7 @@ class ModelTest(QObject):
             pass
 
 
-        QVERIFY( c.next == self._model.data( self._model.index ( end + 1, 0, c.parent ), Qt.DisplayRole ) )
+        QVERIFY( c.next == self._model.data( self._model.index ( end + 1, 0, c.parent ), Qt.ItemDataRole.DisplayRole ) )
 
     def layoutAboutToBeChanged(self):
         for i in range(min(max(0, self._model.rowCount(QModelIndex())), 100)):
@@ -538,8 +538,8 @@ class ModelTest(QObject):
         c = Changing()
         c.parent = parent
         c.oldSize = self._model.rowCount ( parent )
-        c.last = self._model.data(self._model.index ( start - 1, 0, parent ), Qt.DisplayRole)
-        c.next = self._model.data(self._model.index ( end + 1, 0, parent ), Qt.DisplayRole)
+        c.last = self._model.data(self._model.index ( start - 1, 0, parent ), Qt.ItemDataRole.DisplayRole)
+        c.next = self._model.data(self._model.index ( end + 1, 0, parent ), Qt.ItemDataRole.DisplayRole)
         self._remove.append( c )
 
     def rowsRemoved(self, parent, start, end):
@@ -552,5 +552,5 @@ class ModelTest(QObject):
         c = self._remove.pop()
         QVERIFY(c.parent == parent )
         QVERIFY(c.oldSize - ( end - start + 1 ) == self._model.rowCount( parent ) )
-        QVERIFY(c.last == self._model.data(self._model.index ( start - 1, 0, c.parent ), Qt.DisplayRole))
-        QVERIFY(c.next == self._model.data(self._model.index ( start, 0, c.parent ), Qt.DisplayRole))
+        QVERIFY(c.last == self._model.data(self._model.index ( start - 1, 0, c.parent ), Qt.ItemDataRole.DisplayRole))
+        QVERIFY(c.next == self._model.data(self._model.index ( start, 0, c.parent ), Qt.ItemDataRole.DisplayRole))

@@ -103,7 +103,7 @@ def _make_match_selection(block, column, matched):
     selection.format.setBackground(bg_color)
     selection.cursor = QTextCursor(block)
     selection.cursor.setPosition(block.position() + column)
-    selection.cursor.movePosition(QTextCursor.Right, QTextCursor.KeepAnchor)
+    selection.cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.KeepAnchor)
 
     return selection
 

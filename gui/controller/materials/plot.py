@@ -23,11 +23,10 @@ from matplotlib.figure import Figure
 from matplotlib.widgets import Cursor
 from matplotlib.ticker import ScalarFormatter, NullLocator, AutoLocator
 
-from ...qt import QT_API
-if QT_API in ('PyQt5', 'PySide2'):
+try:
+    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+except ImportError:
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-else:
-    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 
 from ... import _DEBUG
 
@@ -80,7 +79,7 @@ class MaterialPlot(QWidget):
 
         self.material = MaterialsComboBox(self, model, editable=QLineEdit, show_popup=False)
         self.material.setEditable(False)
-        self.material.setInsertPolicy(QComboBox.NoInsert)
+        self.material.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         self.material.setMinimumWidth(180)
         self.material.currentIndexChanged.connect(self.material_changed)
         self.param = ComboBox()
@@ -96,13 +95,13 @@ class MaterialPlot(QWidget):
         set_icon_size(toolbar1)
         toolbar1.addWidget(QLabel("Material: "))
         toolbar1.addWidget(self.material)
-        toolbar1.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        toolbar1.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         toolbar2 = QToolBar()
         toolbar2.setStyleSheet("QToolBar { border: 0px }")
         set_icon_size(toolbar2)
         toolbar2.addWidget(QLabel("Parameter: "))
         toolbar2.addWidget(self.param)
-        toolbar2.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        toolbar2.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.par_toolbar = QToolBar()
         self.par_toolbar.setStyleSheet("QToolBar { border: 0px }")
         self.mat_toolbar = QToolBar()
@@ -117,7 +116,7 @@ class MaterialPlot(QWidget):
         self.save.setText("&Export")
         self.save.setIcon(QIcon.fromTheme('document-save'))
         self.save.pressed.connect(self.save_data)
-        self.save.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.save.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.save.setEnabled(False)
 
         plot = QPushButton()
@@ -125,12 +124,12 @@ class MaterialPlot(QWidget):
         plot.setIcon(QIcon.fromTheme('matplotlib'))
         plot.pressed.connect(self.update_plot)
         plot.setDefault(True)
-        plot.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        plot.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setParent(self)
-        self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.canvas.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.canvas.updateGeometry()
         self.axes = None
         self.axes2 = None
@@ -141,10 +140,10 @@ class MaterialPlot(QWidget):
         self.error.setContentsMargins(0, 0, 0, 0)
         self.error.setFrameStyle(0)
         pal = self.error.palette()
-        pal.setColor(QPalette.Base, QColor("#6f4402" if dark_style() else "#ffc"))
+        pal.setColor(QPalette.ColorRole.Base, QColor("#6f4402" if dark_style() else "#ffc"))
         self.error.setPalette(pal)
         self.error.acceptRichText()
-        self.error.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.error.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         hbox1 = QHBoxLayout()
         hbox2 = QHBoxLayout()
@@ -166,11 +165,11 @@ class MaterialPlot(QWidget):
         plotbox = QVBoxLayout()
         plotbox.addWidget(self.error)
         plotbox.addWidget(self.label)
-        plotbox.setAlignment(self.label, Qt.AlignRight)
+        plotbox.setAlignment(self.label, Qt.AlignmentFlag.AlignRight)
         plotbox.addWidget(self.canvas)
 
         splitter = QSplitter(self)
-        splitter.setOrientation(Qt.Vertical)
+        splitter.setOrientation(Qt.Orientation.Vertical)
         plotbox_widget = QWidget()
         plotbox_widget.setLayout(plotbox)
         splitter.addWidget(plotbox_widget)
@@ -183,14 +182,14 @@ class MaterialPlot(QWidget):
         self.logy_action.triggered.connect(self.update_scale)
         self.canvas.addAction(self.logy_action)
         self.canvas.addAction(self.logx_action)
-        self.canvas.setContextMenuPolicy(Qt.ActionsContextMenu)
+        self.canvas.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
 
         self.info = QTextEdit(self)
         self.info.setAcceptRichText(True)
         self.info.setReadOnly(True)
         self.info.setContentsMargins(0, 0, 0, 0)
         self.info.setFrameStyle(0)
-        self.info.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
+        self.info.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
 
         splitter.addWidget(self.info)
 
@@ -257,7 +256,7 @@ class MaterialPlot(QWidget):
             select.descr = descr
             select.unit = unit
             val0 = QLineEdit()
-            val0.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Fixed)
+            val0.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
             val0.returnPressed.connect(self.update_plot)
             val0.setObjectName(name+'0')
             val0.textChanged.connect(self.param_changed)
@@ -265,7 +264,7 @@ class MaterialPlot(QWidget):
             sep = toolbar.addWidget(QLabel("-"))
             sep.setVisible(False)
             val1 = QLineEdit()
-            val1.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Fixed)
+            val1.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Fixed)
             val1.returnPressed.connect(self.update_plot)
             val1.setObjectName(name+'1')
             val1.textChanged.connect(self.param_changed)
@@ -602,10 +601,10 @@ def show_material_plot(parent, model, defines, init_material=None):
     # plot_window.setFeatures(QDockWidget.AllDockWidgetFeatures)
     # plot_window.setFloating(True)
     # plot_window.setWidget(MaterialPlot())
-    # self.document.window.addDockWidget(Qt.BottomDockWidgetArea, plot_window)
+    # self.document.window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, plot_window)
     plot_window = QMainWindow(parent)
     plot_window.setWindowTitle("Material Parameter")
-    plot_window.setAttribute(Qt.WA_DeleteOnClose)
+    plot_window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
     try:
         plot = MaterialPlot(model, defines, plot_window, init_material=init_material)
     except Exception as err:

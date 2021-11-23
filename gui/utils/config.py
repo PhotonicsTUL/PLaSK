@@ -157,11 +157,11 @@ if os.name == 'posix':
 
 KEYBOARD_SHORTCUTS = {
     'main_menu': ('Show Main Menu', 'F2'),
-    'new_xpl': ('New XPL File', QKeySequence.New),
+    'new_xpl': ('New XPL File', QKeySequence.StandardKey.New),
     'new_python': ('New Python File', None),
-    'open_file': ('Open File', QKeySequence.Open),
-    'save_file': ('Save File', QKeySequence.Save),
-    'saveas_file': ('Save File As...', QKeySequence.SaveAs),
+    'open_file': ('Open File', QKeySequence.StandardKey.Open),
+    'save_file': ('Save File', QKeySequence.StandardKey.Save),
+    'saveas_file': ('Save File As...', QKeySequence.StandardKey.SaveAs),
     'reload_file': ('Reload File', None),
     'goto_line': ('Go to Line...', 'Ctrl+L'),
     'show_source': ('Toggle Source View', 'F4'),
@@ -171,18 +171,18 @@ KEYBOARD_SHORTCUTS = {
     'help': ('Open Help...', 'F1'),
     'install_license': ('Install License...', None),
     'fullscreen': ('Toggle Full Screen', 'F11'),
-    'settings': ('GUI Settings...', Qt.CTRL + Qt.Key_Comma),
-    'quit': ('Exit', QKeySequence.Quit),
-    'undo': ('Undo', Qt.CTRL + Qt.Key_Z),
-    'redo': ('Redo', Qt.CTRL + Qt.SHIFT + Qt.Key_Z),
-    'entry_add': ('Add New Entry', Qt.CTRL + Qt.Key_Plus),
-    'entry_remove': ('Remove Entry', Qt.SHIFT + Qt.Key_Delete),
-    'entry_move_up': ('Move Entry Up', Qt.CTRL + Qt.SHIFT + Qt.Key_Up),
-    'entry_move_down': ('Move Entry Down', Qt.CTRL + Qt.SHIFT + Qt.Key_Down),
+    'settings': ('GUI Settings...', Qt.Modifier.CTRL | Qt.Key.Key_Comma),
+    'quit': ('Exit', QKeySequence.StandardKey.Quit),
+    'undo': ('Undo', Qt.Modifier.CTRL | Qt.Key.Key_Z),
+    'redo': ('Redo', Qt.Modifier.CTRL | Qt.Modifier.SHIFT | Qt.Key.Key_Z),
+    'entry_add': ('Add New Entry', Qt.Modifier.CTRL | Qt.Key.Key_Plus),
+    'entry_remove': ('Remove Entry', Qt.Modifier.SHIFT | Qt.Key.Key_Delete),
+    'entry_move_up': ('Move Entry Up', Qt.Modifier.CTRL | Qt.Modifier.SHIFT | Qt.Key.Key_Up),
+    'entry_move_down': ('Move Entry Down', Qt.Modifier.CTRL | Qt.Modifier.SHIFT | Qt.Key.Key_Down),
     'materials_add_library': ('Materials: Add Library', None),
     'materials_add_module': ('Materials: Add Module', None),
     'entry_duplicate': ('Geometry: Duplicate', 'Ctrl+D'),
-    'geometry_search': ('Geometry: Search', QKeySequence.Find),
+    'geometry_search': ('Geometry: Search', QKeySequence.StandardKey.Find),
     'geometry_reparent': ('Geometry: Insert into', None),
     'geometry_show_props': ('Geometry: Show Properties', None),
     'mesh_make': ('Meshing: Make Mesh', None),
@@ -198,30 +198,29 @@ KEYBOARD_SHORTCUTS = {
     'plot_aspect': ('Plot: Aspect', None),
     'plot_plane': ('Plot: Select Plane', None),
     'plot_geometry': ('Plot: Select Geometry', None),
-    'editor_find': ('Editor: Find', QKeySequence.Find),
-    'editor_find_next': ('Editor: Find Next', QKeySequence.FindNext),
-    'editor_find_prev': ('Editor: Find Previous', QKeySequence.FindPrevious),
-    'editor_replace': ('Editor: Replace', QKeySequence.Replace),
+    'editor_find': ('Editor: Find', QKeySequence.StandardKey.Find),
+    'editor_find_next': ('Editor: Find Next', QKeySequence.StandardKey.FindNext),
+    'editor_find_prev': ('Editor: Find Previous', QKeySequence.StandardKey.FindPrevious),
+    'editor_replace': ('Editor: Replace', QKeySequence.StandardKey.Replace),
     'python_comment': ('Python: Comment Lines', None),
-    'python_uncomment': ('Python: Uncomment Lines',
-                         Qt.CTRL + (Qt.Key_Question if QT_API in ('PySide', 'PySide2') else Qt.SHIFT + Qt.Key_Slash)),
-    'python_toggle_comment':('Python: Toggle Comment on Lines', Qt.CTRL + Qt.Key_Slash),
-    'python_help': ('Python: Open Help', Qt.CTRL + Qt.Key_F1),
-    'python_docstring': ('Python: Show Docstring', Qt.SHIFT + Qt.Key_F1),
-    'python_hide_docstring': ('Python: Hide Docstring', Qt.SHIFT + Qt.Key_Escape),
-    'python_completion': ('Python: Show Completions', Qt.CTRL + Qt.Key_Space),
-    'python_join_lines': ('Python: Join Lines', Qt.SHIFT + Qt.CTRL + Qt.Key_J),
-    'launcher_copy': ('Launcher: Copy', QKeySequence.Copy),
-    'launcher_select_all': ('Launcher: Select All', QKeySequence.SelectAll),
+    'python_uncomment': ('Python: Uncomment Lines', Qt.Modifier.CTRL | Qt.Key.Key_Question),
+    'python_toggle_comment':('Python: Toggle Comment on Lines', Qt.Modifier.CTRL | Qt.Key.Key_Slash),
+    'python_help': ('Python: Open Help', Qt.Modifier.CTRL | Qt.Key.Key_F1),
+    'python_docstring': ('Python: Show Docstring', Qt.Modifier.SHIFT | Qt.Key.Key_F1),
+    'python_hide_docstring': ('Python: Hide Docstring', Qt.Modifier.SHIFT | Qt.Key.Key_Escape),
+    'python_completion': ('Python: Show Completions', Qt.Modifier.CTRL | Qt.Key.Key_Space),
+    'python_join_lines': ('Python: Join Lines', Qt.Modifier.SHIFT | Qt.Modifier.CTRL | Qt.Key.Key_J),
+    'launcher_copy': ('Launcher: Copy', QKeySequence.StandardKey.Copy),
+    'launcher_select_all': ('Launcher: Select All', QKeySequence.StandardKey.SelectAll),
     'launcher_clear_selection': ('Launcher: Clear Selection', None),
-    'launcher_show_error': ('Launcher: Show Error', Qt.Key_1),
-    'launcher_show_warning': ('Launcher: Show Warning', Qt.Key_2),
-    'launcher_show_important': ('Launcher: Show Important', Qt.Key_3),
-    'launcher_show_info': ('Launcher: Show Info', Qt.Key_4),
-    'launcher_show_result': ('Launcher: Show Result', Qt.Key_5),
-    'launcher_show_data': ('Launcher: Show Data', Qt.Key_6),
-    'launcher_show_detail': ('Launcher: Show Detail', Qt.Key_7),
-    'launcher_show_debug': ('Launcher: Show ebug', Qt.Key_8),
+    'launcher_show_error': ('Launcher: Show Error', Qt.Key.Key_1),
+    'launcher_show_warning': ('Launcher: Show Warning', Qt.Key.Key_2),
+    'launcher_show_important': ('Launcher: Show Important', Qt.Key.Key_3),
+    'launcher_show_info': ('Launcher: Show Info', Qt.Key.Key_4),
+    'launcher_show_result': ('Launcher: Show Result', Qt.Key.Key_5),
+    'launcher_show_data': ('Launcher: Show Data', Qt.Key.Key_6),
+    'launcher_show_detail': ('Launcher: Show Detail', Qt.Key.Key_7),
+    'launcher_show_debug': ('Launcher: Show ebug', Qt.Key.Key_8),
     'launcher_halt': ('Launcher: Halt', 'Alt+X'),
     'launcher_cleanup': ('Launcher: Cleanup All', 'Shift+Ctrl+W'),
     'launcher_close': ('Launcher: Close', 'Ctrl+W'),
@@ -244,11 +243,17 @@ def parse_highlight(string):
     return result
 
 
-def parse_font(entry):
-    font = CONFIG[entry]
-    if isinstance(font, (str, str)):
-        font = font.split(',')
-    return ','.join(font[:-1])+',0'
+def set_font(font, entry):
+    values = CONFIG[entry]
+    if isinstance(values, str):
+        values = values.split(',')
+    font.setFamily(values[0])
+    try:
+        pointsize = int(values[1])
+    except ValueError:
+        pass
+    else:
+        font.setPointSize(pointsize)
 
 
 class Config:
@@ -344,7 +349,7 @@ class Config:
             if isinstance(key_sequence, QKeySequence):
                 return key_sequence
             elif isinstance(key_sequence, str):
-                return QKeySequence(key_sequence, QKeySequence.PortableText)
+                return QKeySequence(key_sequence, QKeySequence.SequenceFormat.PortableText)
             else:
                 return QKeySequence(key_sequence)
         else:
@@ -379,8 +384,8 @@ CONFIG = Config()
 
 def dark_style():
     palette = QPalette()
-    base_color = palette.color(QPalette.Base)
-    text_color = palette.color(QPalette.Text)
+    base_color = palette.color(QPalette.ColorRole.Base)
+    text_color = palette.color(QPalette.ColorRole.Text)
     return base_color.lightness() < text_color.lightness()
 
 

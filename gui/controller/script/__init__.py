@@ -27,13 +27,16 @@ from .brackets import get_selections as get_bracket_selections, update_brackets_
 from .indenter import indent, unindent, autoindent
 from ..source import SourceEditController
 from ...model.script import ScriptModel
-from ...utils.config import CONFIG, parse_highlight, parse_font
+from ...utils.config import CONFIG, parse_highlight, set_font
 from ...utils.widgets import EDITOR_FONT, ComboBox
 from ...utils.texteditor import TextEditor, EditorWidget
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
 
 from ...lib.highlighter.python36 import syntax, default_key
 from ...lib.highlighter.plask import syntax as plask_syntax
+
+
+LOG_LEVELS = ['Error', 'Warning', 'Important', 'Info', 'Result', 'Data', 'Detail', 'Debug']
 
 
 syntax['formats'].update(plask_syntax['formats'])
@@ -114,23 +117,23 @@ class ScriptEditor(TextEditor):
         start = cursor.selectionStart()
         end = cursor.selectionEnd()
         cursor.setPosition(start)
-        cursor.movePosition(QTextCursor.StartOfBlock)
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
         start = cursor.position()
         if start == end: end += 1
         document = self.document()
         margin = inf
         while cursor.position() < end:
             while document.characterAt(cursor.position()) in (' ', '\t'):
-                if not cursor.movePosition(QTextCursor.NextCharacter): break
+                if not cursor.movePosition(QTextCursor.MoveOperation.NextCharacter): break
             margin = min(cursor.positionInBlock(), margin)
-            if not cursor.movePosition(QTextCursor.NextBlock):
+            if not cursor.movePosition(QTextCursor.MoveOperation.NextBlock):
                 break
         cursor.setPosition(start)
         while cursor.position() < end:
-            cursor.movePosition(QTextCursor.NextCharacter, QTextCursor.MoveAnchor, margin)
+            cursor.movePosition(QTextCursor.MoveOperation.NextCharacter, QTextCursor.MoveMode.MoveAnchor, margin)
             cursor.insertText("# ")
             end += 2
-            if not cursor.movePosition(QTextCursor.NextBlock):
+            if not cursor.movePosition(QTextCursor.MoveOperation.NextBlock):
                 break
         cursor.endEditBlock()
 
@@ -140,20 +143,20 @@ class ScriptEditor(TextEditor):
         start = cursor.selectionStart()
         end = cursor.selectionEnd()
         cursor.setPosition(start)
-        cursor.movePosition(QTextCursor.StartOfBlock)
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
         if cursor.position() == end: end += 1
         document = self.document()
         try:
             while cursor.position() < end:
                 while document.characterAt(cursor.position()) in (' ', '\t'):
-                    if not cursor.movePosition(QTextCursor.NextCharacter): raise ValueError
+                    if not cursor.movePosition(QTextCursor.MoveOperation.NextCharacter): raise ValueError
                 if document.characterAt(cursor.position()) == '#':
                     cursor.deleteChar()
                     end -= 1
                     if document.characterAt(cursor.position()) == ' ':
                         cursor.deleteChar()
                         end -= 1
-                if not cursor.movePosition(QTextCursor.NextBlock): raise ValueError
+                if not cursor.movePosition(QTextCursor.MoveOperation.NextBlock): raise ValueError
         except ValueError:
             pass
         cursor.endEditBlock()
@@ -164,19 +167,19 @@ class ScriptEditor(TextEditor):
         start = cursor.selectionStart()
         end = cursor.selectionEnd()
         cursor.setPosition(start)
-        cursor.movePosition(QTextCursor.StartOfBlock)
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
         if cursor.position() == end: end += 1
         document = self.document()
         try:
             while cursor.position() < end:
                 while document.characterAt(cursor.position()) in (' ', '\t'):
-                    if not cursor.movePosition(QTextCursor.NextCharacter): raise ValueError
+                    if not cursor.movePosition(QTextCursor.MoveOperation.NextCharacter): raise ValueError
                 if document.characterAt(cursor.position()) == '#':
                     incomment = True
                 elif not cursor.atBlockEnd():
                     incomment = False
                     break
-                if not cursor.movePosition(QTextCursor.NextBlock): raise ValueError
+                if not cursor.movePosition(QTextCursor.MoveOperation.NextBlock): raise ValueError
         except ValueError:
             pass
         if incomment:
@@ -186,7 +189,7 @@ class ScriptEditor(TextEditor):
 
     def join_lines(self):
         cursor = self.textCursor()
-        cursor.movePosition(QTextCursor.EndOfBlock)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
         if cursor.atEnd(): return
         document = self.document()
         cursor.beginEditBlock()
@@ -201,63 +204,63 @@ class ScriptEditor(TextEditor):
         modifiers = event.modifiers()
 
         if self.completer.popup().isVisible():
-            if event.key() in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Escape, Qt.Key_Tab, Qt.Key_Backtab):
+            if event.key() in (Qt.Key.Key_Enter, Qt.Key.Key_Return, Qt.Key.Key_Escape, Qt.Key.Key_Tab, Qt.Key.Key_Backtab):
                 event.ignore()
                 return  # let the completer do default behaviors
-            elif event.key() == Qt.Key_Backspace:
+            elif event.key() == Qt.Key.Key_Backspace:
                 self.completer.setCompletionPrefix(self.completer.completionPrefix()[:-1])
             elif event.text():
                 last = event.text()[-1]
-                if modifiers & ~(Qt.ControlModifier | Qt.ShiftModifier) or \
+                if modifiers & ~(Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier) or \
                         not (last.isalpha() or last.isdigit() or last == '_'):
                     self.completer.popup().hide()
                 else:
                     self.completer.setCompletionPrefix(self.completer.completionPrefix() + event.text())
-            elif key not in (Qt.Key_Shift, Qt.Key_Control, Qt.Key_Alt, Qt.Key_AltGr,
-                             Qt.Key_Meta, Qt.Key_Super_L, Qt.Key_Super_R):
+            elif key not in (Qt.Key.Key_Shift, Qt.Key.Key_Control, Qt.Key.Key_Alt, Qt.Key.Key_AltGr,
+                             Qt.Key.Key_Meta, Qt.Key.Key_Super_L, Qt.Key.Key_Super_R):
                 self.completer.popup().hide()
 
-        if key in (Qt.Key_Tab, Qt.Key_Backtab) or \
-                key == Qt.Key_Backspace and modifiers != (Qt.ControlModifier | Qt.ShiftModifier):
+        if key in (Qt.Key.Key_Tab, Qt.Key.Key_Backtab) or \
+                key == Qt.Key.Key_Backspace and modifiers != (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier):
             cursor = self.textCursor()
             if cursor.hasSelection():
-                if key == Qt.Key_Tab:
+                if key == Qt.Key.Key_Tab:
                     indent(self)
                     return
-                elif key == Qt.Key_Backtab:
+                elif key == Qt.Key.Key_Backtab:
                     unindent(self)
                     return
-            elif key == Qt.Key_Backtab:
+            elif key == Qt.Key.Key_Backtab:
                 unindent(self)
                 return
             else:
                 col = cursor.positionInBlock()
                 inindent = not cursor.block().text()[:col].strip()
                 if inindent:
-                    if key == Qt.Key_Tab:
+                    if key == Qt.Key.Key_Tab:
                         indent(self, col)
                         return
                     else:
                         if not (cursor.atBlockStart()):
                             unindent(self, col)
                             return
-        elif key == Qt.Key_Home and not modifiers & ~Qt.ShiftModifier:
+        elif key == Qt.Key.Key_Home and not modifiers & ~Qt.KeyboardModifier.ShiftModifier:
             cursor = self.textCursor()
             txt = cursor.block().text()
             col = cursor.positionInBlock()
-            mode = QTextCursor.KeepAnchor if modifiers & Qt.ShiftModifier else QTextCursor.MoveAnchor
+            mode = QTextCursor.MoveMode.KeepAnchor if modifiers & Qt.KeyboardModifier.ShiftModifier else QTextCursor.MoveMode.MoveAnchor
             if txt[:col].strip() or (col == 0 and txt.strip()):
-                cursor.movePosition(QTextCursor.StartOfBlock, mode)
+                cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock, mode)
                 while self.document().characterAt(cursor.position()) in [' ', '\t']:
-                    cursor.movePosition(QTextCursor.Right, mode)
+                    cursor.movePosition(QTextCursor.MoveOperation.Right, mode)
                 self.setTextCursor(cursor)
                 return
 
         super().keyPressEvent(event)
 
-        if key in (Qt.Key_Enter, Qt.Key_Return, Qt.Key_Colon):
+        if key in (Qt.Key.Key_Enter, Qt.Key.Key_Return, Qt.Key.Key_Colon):
             autoindent(self)
-        elif key == Qt.Key_Period and not (CONFIG['workarounds/no_jedi'] or CONFIG['workarounds/jedi_no_dot'] or
+        elif key == Qt.Key.Key_Period and not (CONFIG['workarounds/no_jedi'] or CONFIG['workarounds/jedi_no_dot'] or
                                            self.completer.popup().isVisible()):
             self.completer.start_completion()
 
@@ -270,12 +273,12 @@ class ScriptEditor(TextEditor):
         self._pointer_definition = row, col
         cursor = QApplication.overrideCursor()
         if not cursor and row is not None:
-            QApplication.setOverrideCursor(Qt.PointingHandCursor)
-        elif cursor and cursor.shape() == Qt.PointingHandCursor and row is None:
+            QApplication.setOverrideCursor(Qt.CursorShape.PointingHandCursor)
+        elif cursor and cursor.shape() == Qt.CursorShape.PointingHandCursor and row is None:
             QApplication.restoreOverrideCursor()
 
     def _get_mouse_definitions(self, event):
-        if event.modifiers() == Qt.ControlModifier:
+        if event.modifiers() == Qt.KeyboardModifier.ControlModifier:
             if self._pointer_blocked: return
             self._pointer_blocked = True
             cursor = self.cursorForPosition(event.pos())
@@ -288,7 +291,7 @@ class ScriptEditor(TextEditor):
                 self.link_definition(*get_definitions(self.controller.document, self.toPlainText(), row, col))
         else:
             cursor = QApplication.overrideCursor()
-            if cursor and cursor.shape() == Qt.PointingHandCursor:
+            if cursor and cursor.shape() == Qt.CursorShape.PointingHandCursor:
                 QApplication.restoreOverrideCursor()
 
     def mouseMoveEvent(self, event):
@@ -298,9 +301,9 @@ class ScriptEditor(TextEditor):
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)
         row, col = self._pointer_definition
-        if event.modifiers() == Qt.ControlModifier and not self._pointer_blocked and row:
+        if event.modifiers() == Qt.KeyboardModifier.ControlModifier and not self._pointer_blocked and row:
             cursor = QTextCursor(self.document().findBlockByLineNumber(row))
-            cursor.movePosition(QTextCursor.Right, QTextCursor.MoveAnchor, col)
+            cursor.movePosition(QTextCursor.MoveOperation.Right, QTextCursor.MoveMode.MoveAnchor, col)
             self.setTextCursor(cursor)
 
 
@@ -314,7 +317,7 @@ class ScriptController(SourceEditController):
 
     def create_source_widget(self, parent):
         window = QMainWindow(parent)
-        window.setWindowFlags(Qt.Widget)
+        window.setWindowFlags(Qt.WindowType.Widget)
 
         source = EditorWidget(parent, ScriptEditor, self)
 
@@ -338,7 +341,7 @@ class ScriptController(SourceEditController):
         menu.addAction(source.editor.uncomment_action)
         menu.addAction(source.editor.toggle_comment_action)
         button.setMenu(menu)
-        button.setPopupMode(QToolButton.InstantPopup)
+        button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         source.toolbar.addWidget(button)
         if self.model.is_read_only():
             unindent_action.setEnabled(False)
@@ -351,7 +354,7 @@ class ScriptController(SourceEditController):
         parent.config_changed.connect(self.help_dock.reconfig)
         state = CONFIG['session/scriptwindow']
         if state is None or not window.restoreState(state):
-            window.addDockWidget(Qt.RightDockWidgetArea, self.help_dock)
+            window.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.help_dock)
         self.help_dock.hide()
 
         source.toolbar.addSeparator()
@@ -380,17 +383,16 @@ class ScriptController(SourceEditController):
             pass
         else:
             spacer = QWidget()
-            spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             source.toolbar.addWidget(spacer)
             source.toolbar.addWidget(QLabel("Log Level: "))
             self.loglevel = ComboBox()
-            levels = ['Error', 'Warning', 'Important', 'Info', 'Result', 'Data', 'Detail', 'Debug']
-            self.loglevel.addItems(levels)
+            self.loglevel.addItems(LOG_LEVELS)
             try:
-                self.loglevel.setCurrentIndex(levels.index(loglevel.title()))
+                self.loglevel.setCurrentIndex(LOG_LEVELS.index(loglevel.title()))
             except ValueError:
                 self.loglevel.setCurrentIndex(6)
-            self.loglevel.currentIndexChanged[str].connect(self.document.set_loglevel)
+            self.loglevel.currentIndexChanged.connect(self.document.set_loglevel)
             source.toolbar.addWidget(self.loglevel)
 
         window.setCentralWidget(source)
@@ -453,7 +455,7 @@ class ScriptController(SourceEditController):
             document = editor.document()
             cursor = editor.textCursor()
             cursor.beginEditBlock()
-            regex = QRegExp(r'\s+$')
+            regex = QRegularExpression(r'\s+$')
             found = document.find(regex)
             while found and not found.isNull():
                 found.removeSelectedText()
@@ -467,10 +469,10 @@ class ScriptController(SourceEditController):
     def show_docstring(self):
         if CONFIG['workarounds/no_jedi']: return
         cursor = self.source_widget.editor.textCursor()
-        cursor.movePosition(QTextCursor.EndOfWord)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfWord)
         row = cursor.blockNumber()
         col = cursor.positionInBlock()
-        # QApplication.setOverrideCursor(Qt.BusyCursor)
+        # QApplication.setOverrideCursor(Qt.CursorShape.BusyCursor)
         if CONFIG['workarounds/blocking_jedi']:
             result = get_docstring(self.document, self.source_widget.editor.toPlainText(), row, col)
             if type(result) is tuple:
@@ -491,14 +493,14 @@ class HelpDock(QDockWidget):
         self.textarea = QTextEdit()
         self.textarea.setReadOnly(True)
         help_font = QFont(EDITOR_FONT)
-        help_font.fromString(parse_font('editor/help_font'))
+        set_font(help_font, 'editor/help_font')
         pal = self.textarea.palette()
-        pal.setColor(QPalette.Base, QColor(CONFIG['editor/help_background_color']))
-        pal.setColor(QPalette.Text, QColor(CONFIG['editor/help_foreground_color']))
+        pal.setColor(QPalette.ColorRole.Base, QColor(CONFIG['editor/help_background_color']))
+        pal.setColor(QPalette.ColorRole.Text, QColor(CONFIG['editor/help_foreground_color']))
         self.textarea.setPalette(pal)
         self.textarea.setFont(help_font)
         font_metrics = self.textarea.fontMetrics()
-        self.textarea.setMinimumWidth(86 * font_metrics.width('a'))
+        self.textarea.setMinimumWidth(86 * font_metrics.horizontalAdvance('a'))
         self.textarea.setMinimumHeight(8 * font_metrics.height())
         self.setWidget(self.textarea)
         self.setObjectName('help')
@@ -512,10 +514,10 @@ class HelpDock(QDockWidget):
 
     def reconfig(self):
         help_font = self.textarea.font()
-        help_font.fromString(parse_font('editor/help_font'))
+        set_font(help_font, 'editor/help_font')
         self.textarea.setFont(help_font)
         font_metrics = self.textarea.fontMetrics()
-        self.textarea.setMinimumWidth(86 * font_metrics.width('a'))
+        self.textarea.setMinimumWidth(86 * font_metrics.horizontalAdvance('a'))
         self.textarea.setMinimumHeight(8 * font_metrics.height())
         self.textarea.setStyleSheet("QTextEdit {{ color: {fg}; background-color: {bg} }}".format(
             fg=(CONFIG['editor/help_foreground_color']),

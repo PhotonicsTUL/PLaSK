@@ -66,25 +66,25 @@ class GridsController(Controller):
         #self.grids_table.setItemDelegateForColumn(1, MaterialBaseDelegate(self.document.defines.model, self.grids_table))
         #self.materialsTableActions = TableActions(self.grids_table)
         table_last_col_fill(self.grids_table, self.model.columnCount(None), 80)
-        self.grids_table.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.grids_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.grids_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.grids_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         table_edit_shortcut(self.grids_table, 0, 'n')
         table, toolbar = table_and_manipulators(self.grids_table, self.splitter, title="Meshes and Generators")
         self.splitter.addWidget(table)
         self.grids_table.setVisible(False)
         try:
-            self.grids_table.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
+            self.grids_table.horizontalHeader().setResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         except AttributeError:
-            self.grids_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+            self.grids_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.grids_table.setVisible(True)
 
         self.vertical_splitter = QSplitter()
-        self.vertical_splitter.setOrientation(Qt.Vertical)
+        self.vertical_splitter.setOrientation(Qt.Orientation.Vertical)
 
         if plask is not None:
             self.mesh_preview = PlotWidget(self, self.vertical_splitter)
             # self.status_bar = QLabel()
-            # self.status_bar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            # self.status_bar.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             # self.status_bar.setStyleSheet("border: 1px solid palette(dark)")
             # self.mesh_preview.layout().addWidget(self.status_bar)
             self.vertical_splitter.addWidget(self.mesh_preview)
@@ -105,8 +105,8 @@ class GridsController(Controller):
 
         focus_action = QAction(self.grids_table)
         focus_action.triggered.connect(lambda: weakself.parent_for_editor_widget.currentWidget().setFocus())
-        focus_action.setShortcut(QKeySequence(Qt.Key_Return))
-        focus_action.setShortcutContext(Qt.WidgetShortcut)
+        focus_action.setShortcut(QKeySequence(Qt.Key.Key_Return))
+        focus_action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
         self.grids_table.addAction(focus_action)
 
         self.splitter.setSizes([10000,26000])
@@ -190,7 +190,7 @@ class GridsController(Controller):
         if new_selection.indexes() == old_selection.indexes(): return
         indexes = new_selection.indexes()
         if not self.set_current_index(new_index=(indexes[0].row() if indexes else None)):
-            self.grids_table.selectionModel().select(old_selection, QItemSelectionModel.ClearAndSelect)
+            self.grids_table.selectionModel().select(old_selection, QItemSelectionModel.SelectionFlag.ClearAndSelect)
 
     def set_current_index(self, new_index):
         """

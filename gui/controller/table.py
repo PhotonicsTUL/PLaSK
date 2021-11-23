@@ -46,7 +46,7 @@ class TableActions:
             self.table.selectRow(row)
         else:
             self.table.selectionModel().setCurrentIndex(self.model.index(row, 0, QModelIndex()),
-                                               QItemSelectionModel.SelectCurrent | QItemSelectionModel.Rows | QItemSelectionModel.ClearAndSelect)
+                                               QItemSelectionModel.SelectionFlag.SelectCurrent | QItemSelectionModel.SelectionFlag.Rows | QItemSelectionModel.SelectionFlag.ClearAndSelect)
 
     def add_entry(self):
         index = self.top_level_selection_index()
@@ -83,7 +83,7 @@ class TableActions:
         action.setStatusTip(tip)
         if shortcut is not None:
             CONFIG.set_shortcut(action, shortcut)
-            action.setShortcutContext(Qt.WidgetWithChildrenShortcut)
+            action.setShortcutContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
         action.triggered.connect(to_call)
         return action
 
@@ -160,22 +160,22 @@ class TableController(Controller):
         cols = self.model.columnCount(None)  # column widths:
         for c in range(0, cols-1):
             self.table.setColumnWidth(c, 200)
-            #self.table.horizontalHeader().setResizeMode(c, QHeaderView.ResizeToContents);
+            #self.table.horizontalHeader().setResizeMode(c, QHeaderView.ResizeMode.ResizeToContents);
         try:
-            self.table.horizontalHeader().setResizeMode(cols-1, QHeaderView.Stretch)
+            self.table.horizontalHeader().setResizeMode(cols-1, QHeaderView.ResizeMode.Stretch)
         except AttributeError:
-            self.table.horizontalHeader().setSectionResizeMode(cols-1, QHeaderView.Stretch)
+            self.table.horizontalHeader().setSectionResizeMode(cols-1, QHeaderView.ResizeMode.Stretch)
 
-        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         table_last_col_fill(self.table, model.columnCount(None))
         try:
-            self.table.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
+            self.table.horizontalHeader().setResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         except AttributeError:
-            self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+            self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
 
         for col in range(model.columnCount()):
-            label = model.headerData(col, Qt.Horizontal, Qt.DisplayRole)
+            label = model.headerData(col, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole)
             table_edit_shortcut(self.table, col, label[0].lower())
 
     def get_widget(self):

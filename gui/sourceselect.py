@@ -19,7 +19,7 @@ class SourceSelectDialog(QDialog):
     
     def __init__(self, parent=None):
         QDialog.__init__(self, parent)
-        buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         
         #connect(buttonBox, SIGNAL(accepted()), self, SLOT(accept()))
         #connect(buttonBox, SIGNAL(rejected()), self, SLOT(reject()))

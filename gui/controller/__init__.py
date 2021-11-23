@@ -96,7 +96,7 @@ class Controller:
                 "{}: {}\n\n"
                 "Do you want to discard your changes in this {}editor and move on?"
                 .format(exc.__class__.__name__, str(exc), '' if cat is None else (cat+' ')),
-                QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No) == QMessageBox.StandardButton.Yes
         else:
             return True
 
@@ -124,7 +124,7 @@ class NoConfController(Controller):
     def __init__(self, text='Configuration is neither required nor available.', document=None, model=None):
         super().__init__(document=document, model=model)
         self.label = QLabel(text)
-        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
     def get_widget(self):
         return self.label
@@ -146,8 +146,8 @@ class NoConfController(Controller):
 #         self._current_controller = None
 #
 #         self.grid.setModel(self.model)
-#         self.grid.setSelectionMode(QAbstractItemView.SingleSelection)
-#         self.grid.setSelectionBehavior(QAbstractItemView.SelectRows)
+#         self.grid.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+#         self.grid.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
 #
 #         self.parent_for_editor_widget = QStackedWidget()
 #
@@ -188,7 +188,7 @@ class NoConfController(Controller):
 #         if new_selection.indexes() == old_selection.indexes(): return
 #         indexes = new_selection.indexes()
 #         if not self.set_current_index(new_index=(indexes[0].row() if indexes else None)):
-#             self.grid.selectionModel().select(old_selection, QItemSelectionModel.ClearAndSelect)
+#             self.grid.selectionModel().select(old_selection, QItemSelectionModel.SelectionFlag.ClearAndSelect)
 #
 #     def on_edit_enter(self):
 #         self.grid.selectionModel().clear()   # model could completly changed

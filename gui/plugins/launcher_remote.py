@@ -25,6 +25,7 @@ import json
 from gui.qt.QtCore import *
 from gui.qt.QtGui import *
 from gui.qt.QtWidgets import *
+from gui.qt import qt_exec
 from gui.launch import LAUNCHERS, LAUNCH_CONFIG
 from gui.launch.dock import OutputWindow
 from gui.utils.widgets import ComboBox
@@ -58,7 +59,7 @@ except ImportError:
             message.anchorClicked.connect(self._open_link)
             message.setOpenLinks(False)
             pal = message.palette()
-            pal.setColor(QPalette.Base, pal.color(QPalette.Window))
+            pal.setColor(QPalette.ColorRole.Base, pal.color(QPalette.ColorRole.Window))
             message.setPalette(pal)
             return message
 
@@ -313,13 +314,13 @@ else:
                 abutton.setCheckable(True)
                 abutton.toggled.connect(self.show_advanced)
 
-                buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-                buttons.addButton(abutton, QDialogButtonBox.ActionRole)
+                buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+                buttons.addButton(abutton, QDialogButtonBox.ButtonRole.ActionRole)
                 buttons.accepted.connect(self.accept)
                 buttons.rejected.connect(self.reject)
                 layout.addRow(buttons)
 
-                layout.setSizeConstraint(QLayout.SetFixedSize)
+                layout.setSizeConstraint(QLayout.SizeConstraint.SetFixedSize)
 
                 self.host_edit.setFocus()
 
@@ -615,7 +616,7 @@ else:
             layout.addWidget(self.debug)
 
             layout.setContentsMargins(1, 1, 1, 1)
-            widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
             if self.accounts:
                 self.load_workdirs()
@@ -670,7 +671,7 @@ else:
 
         def account_add(self):
             dialog = Account.EditDialog()
-            if dialog.exec_() == QDialog.Accepted:
+            if qt_exec(dialog) == QDialog.DialogCode.Accepted:
                 name = dialog.name
                 if name not in self.accounts:
                     account = Account(name)
@@ -691,7 +692,7 @@ else:
             old = self.accounts_combo.currentText()
             idx = self.accounts_combo.currentIndex()
             dialog = Account.EditDialog(self.accounts[idx], old)
-            if dialog.exec_() == QDialog.Accepted:
+            if qt_exec(dialog) == QDialog.DialogCode.Accepted:
                 new = dialog.name
                 if new != old and new in (a.name for a in self.accounts):
                     QMessageBox.critical(None, "Edit Error",
@@ -708,8 +709,8 @@ else:
             confirm = QMessageBox.warning(None, "Remove Account?",
                                           "Do you really want to remove the account '{}'?"
                                           .format(self.accounts[self.current_account].name),
-                                          QMessageBox.Yes | QMessageBox.No)
-            if confirm == QMessageBox.Yes:
+                                          QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            if confirm == QMessageBox.StandardButton.Yes:
                 del self.accounts[self.current_account]
                 idx = self.current_account
                 self.current_account = None
@@ -761,11 +762,11 @@ else:
                                                 "If you do not trust this host, hit Cancel to "
                                                 "abandon the connection."
                                                 .format(hostname, key.get_name()[4:], str(hexlify(key.get_fingerprint()))),
-                                                 QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
-                if add == QMessageBox.Cancel:
+                                                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel)
+                if add == QMessageBox.StandardButton.Cancel:
                     raise Launcher.AbortException('Server {} not found in known_hosts'.format(hostname))
                 client.get_host_keys().add(hostname, key.get_name(), key)
-                if add == QMessageBox.Yes:
+                if add == QMessageBox.StandardButton.Yes:
                     Launcher._save_host_keys(client.get_host_keys())
 
         @classmethod
@@ -811,18 +812,18 @@ else:
                                                     "abandon the connection."
                                                     .format(err.hostname, err.key.get_name()[4:],
                                                             str(hexlify(err.key.get_fingerprint()))),
-                                                    QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
-                    if add == QMessageBox.Cancel:
+                                                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel)
+                    if add == QMessageBox.StandardButton.Cancel:
                         return
                     ssh.get_host_keys().add(err.hostname, err.key.get_name(), err.key)
-                    if add == QMessageBox.Yes:
+                    if add == QMessageBox.StandardButton.Yes:
                         cls._save_host_keys(ssh.get_host_keys())
                 except paramiko.AuthenticationException:
                     dialog = QInputDialog()
                     dialog.setLabelText("Password required for {}@{}. Please enter valid password:"
                                         .format(user, host))
-                    dialog.setTextEchoMode(QLineEdit.Password)
-                    if dialog.exec_() == QDialog.Accepted:
+                    dialog.setTextEchoMode(QLineEdit.EchoMode.Password)
+                    if qt_exec(dialog) == QDialog.DialogCode.Accepted:
                         passwd = cls._passwd_cache[host, user] = dialog.textValue()
                     else:
                         return
@@ -834,8 +835,8 @@ else:
                     answer = QMessageBox.critical(None, "Connection Error",
                                                         "Could not connect to {}.\n\n{}\n\nTry again?"
                                                         .format(host, msg),
-                                                        QMessageBox.Yes|QMessageBox.No)
-                    if answer == QMessageBox.No:
+                                                        QMessageBox.StandardButton.Yes|QMessageBox.StandardButton.No)
+                    if answer == QMessageBox.StandardButton.No:
                         return
                 else:
                     return ssh
@@ -868,11 +869,11 @@ else:
             dock = OutputWindow(self, main_window, "Launch at " + account.name)
             try:
                 bottom_docked = [w for w in main_window.findChildren(QDockWidget)
-                                 if main_window.dockWidgetArea(w) == (Qt.BottomDockWidgetArea)][-1]
+                                 if main_window.dockWidgetArea(w) == (Qt.DockWidgetArea.BottomDockWidgetArea)][-1]
             except IndexError:
-                main_window.addDockWidget(Qt.BottomDockWidgetArea, dock)
+                main_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, dock)
             else:
-                main_window.addDockWidget(Qt.BottomDockWidgetArea, dock)
+                main_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, dock)
                 main_window.tabifyDockWidget(bottom_docked, dock)
                 dock.show()
                 dock.raise_()
@@ -900,7 +901,7 @@ else:
             sftp = ssh.open_sftp()
 
             dialog = RemoteDirDialog(sftp, host, workdir)
-            if dialog.exec_() == QDialog.Accepted:
+            if qt_exec(dialog) == QDialog.DialogCode.Accepted:
                 self.workdir.setText(dialog.item_path(dialog.tree.currentItem()))
 
 
@@ -918,7 +919,7 @@ else:
             self.tree = QTreeWidget()
             self.tree.setHeaderHidden(True)
             layout.addWidget(self.tree)
-            buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+            buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
             buttons.accepted.connect(self.accept)
             buttons.rejected.connect(self.reject)
             layout.addWidget(buttons)
@@ -926,7 +927,7 @@ else:
             item = QTreeWidgetItem()
             item.setText(0, host)
             item.setIcon(0, QIcon.fromTheme('network-server'))
-            item.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
+            item.setChildIndicatorPolicy(QTreeWidgetItem.ChildIndicatorPolicy.ShowIndicator)
             self.tree.addTopLevelItem(item)
             self.tree.itemExpanded.connect(self.item_expanded)
             self.resize(540, 720)
@@ -953,7 +954,7 @@ else:
             return '/' + '/'.join(path[1:])
 
         def item_expanded(self, item):
-            if item.childIndicatorPolicy() == QTreeWidgetItem.ShowIndicator:
+            if item.childIndicatorPolicy() == QTreeWidgetItem.ChildIndicatorPolicy.ShowIndicator:
                 path = self.item_path(item)
                 dirs = []
                 try:
@@ -967,9 +968,9 @@ else:
                         sub = QTreeWidgetItem()
                         sub.setText(0, d.filename)
                         sub.setIcon(0, self.folder_icon)
-                        sub.setChildIndicatorPolicy(QTreeWidgetItem.ShowIndicator)
+                        sub.setChildIndicatorPolicy(QTreeWidgetItem.ChildIndicatorPolicy.ShowIndicator)
                         item.addChild(sub)
-                item.setChildIndicatorPolicy(QTreeWidgetItem.DontShowIndicatorWhenChildless)
+                item.setChildIndicatorPolicy(QTreeWidgetItem.ChildIndicatorPolicy.DontShowIndicatorWhenChildless)
 
 
 LAUNCHERS.append(Launcher())

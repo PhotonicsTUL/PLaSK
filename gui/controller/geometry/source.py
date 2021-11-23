@@ -64,7 +64,7 @@ else:
 class SourceWithPreviewWidget(QSplitter):
 
     def __init__(self, controller, parent=None):
-        super().__init__(Qt.Horizontal, parent)
+        super().__init__(Qt.Orientation.Horizontal, parent)
         self.controller = weakref.proxy(controller)
 
     @property
@@ -160,7 +160,7 @@ class GeometrySourceController(SourceEditController):
     def plot_current_element(self, set_limits=False):
         if not self.geometry_view.isVisible(): return
         try:
-            QApplication.setOverrideCursor(Qt.WaitCursor)
+            QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
             QApplication.processEvents()
             try:
                 if self.manager is None:

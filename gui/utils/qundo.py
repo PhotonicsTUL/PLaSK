@@ -1,4 +1,5 @@
 from ..qt.QtWidgets import *
+from ..qt.QtGui import *
 
 
 class UndoCommandWithSetter(QUndoCommand):

@@ -23,18 +23,17 @@ from matplotlib.backend_bases import MouseEvent
 from mpl_toolkits.axisartist.grid_helper_curvelinear import GridHelperCurveLinear
 from mpl_toolkits.axisartist import Subplot
 
-from ...qt import QT_API
-if QT_API == 'PyQt5':
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
-else:
-    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
+try:
+    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
+except ImportError:
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
+
 from matplotlib.backend_bases import NavigationToolbar2
 
 from ...qt.QtCore import *
 from ...qt.QtGui import *
 from ...qt.QtWidgets import *
+from ...qt import qt_exec
 
 from ...xpldocument import FieldParser
 
@@ -135,15 +134,15 @@ class GNLatticeController(GNObjectController):
                     answer = QMessageBox.warning(None, "Unrecognized Boundary",
                                                        "At least one boundary segment cannot be parsed. "
                                                        "Do you want to launch the editor ignoring wrong "
-                                                       "segments?", QMessageBox.Yes | QMessageBox.No)
-                    if answer == QMessageBox.Yes: msg = False
+                                                       "segments?", QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+                    if answer == QMessageBox.StandardButton.Yes: msg = False
                     else: return
             else:
                 if item:
                     bounds.append(item)
 
         dialog = LatticeEditor(vecs, bounds)
-        if dialog.exec_():
+        if qt_exec(dialog):
             segments = ' ^ '.join('; '.join('{:d} {:d}'.format(*xy) for xy in item)
                                   for item in dialog.bounds)
             self._set_node_property_undoable('segments', segments)
@@ -228,8 +227,8 @@ class NavigationToolbar(NavigationToolbar2QT):
         # will resize this label instead of the buttons.
         if self.coordinates:
             self.locLabel = QLabel("", self)
-            self.locLabel.setAlignment(Qt.AlignRight | Qt.AlignTop)
-            self.locLabel.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Ignored))
+            self.locLabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
+            self.locLabel.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored))
             label_action = self.addWidget(self.locLabel)
             label_action.setVisible(True)
 
@@ -339,11 +338,11 @@ class LatticeEditor(QDialog):
         set_icon_size(self.toolbar)
         vbox.addWidget(self.toolbar)
         vbox.addWidget(self.canvas)
-        #self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.figure.set_facecolor(self.palette().color(QPalette.Background).name())
+        #self.canvas.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.figure.set_facecolor(self.palette().color(QPalette.ColorRole.Window).name())
         self.figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
         self.canvas.updateGeometry()
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         vbox.addWidget(buttons)
@@ -409,7 +408,8 @@ class LatticeEditor(QDialog):
         self.undo_index = 0
 
     def _set_lines(self):
-        self.axes.lines = []
+        for line in self.axes.lines[:]:
+            line.remove()
         self.axes.add_line(self.mark)
         self.axes.add_line(self.points)
         for item in self.bounds:
@@ -512,7 +512,7 @@ class LatticeEditor(QDialog):
                         break
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Escape:
+        if event.key() == Qt.Key.Key_Escape:
             if self.current is not None:
                 self.current = None
                 del self.axes.lines[-1]

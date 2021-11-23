@@ -26,7 +26,7 @@ except ImportError:
 
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
-from ...qt.QtCore import *
+from ...qt.QtGui import *
 
 from .. import SectionModel, Info
 from .reader import GNReadConf
@@ -315,9 +315,9 @@ class GeometryModel(SectionModel, QAbstractItemModel):
     def columnCount(self, parent = QModelIndex()):
         return 2
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if not index.isValid(): return None
-        if role == Qt.DisplayRole:  # or role == Qt.EditRole:
+        if role == Qt.ItemDataRole.DisplayRole:  # or role == Qt.ItemDataRole.EditRole:
             item = index.internalPointer()
             if index.column() == 0:
                 return item.display_name(full_name=False)
@@ -350,7 +350,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
                 else:
                     res = ''
                 return res
-        elif role == Qt.ToolTipRole:
+        elif role == Qt.ItemDataRole.ToolTipRole:
             item = index.internalPointer()
             res = '<table><tr><td colspan="2"><b>' + html.escape(item.display_name(full_name=False)) + '</b>'
             name = getattr(item, 'name', '')
@@ -381,7 +381,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
                             # replacing ' ' to '&nbsp;' is for better line breaking (not in middle of name/value)
             res += '</td></tr></table>'
             return res
-        elif role == Qt.DecorationRole and index.column() == 0:
+        elif role == Qt.ItemDataRole.DecorationRole and index.column() == 0:
             node = self.node_for_index(index)
             if node is self.fake_root: return
             if self._info is not None:
@@ -396,19 +396,19 @@ class GeometryModel(SectionModel, QAbstractItemModel):
 
     def flags(self, index):
         if not index.isValid():
-            return Qt.NoItemFlags if self.is_read_only() else Qt.ItemIsDropEnabled
-        res = Qt.ItemIsEnabled | Qt.ItemIsSelectable
+            return Qt.ItemFlag.NoItemFlags if self.is_read_only() else Qt.ItemFlag.ItemIsDropEnabled
+        res = Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
         if not self.is_read_only():
-            res |= Qt.ItemIsDragEnabled
+            res |= Qt.ItemFlag.ItemIsDragEnabled
             if index.internalPointer().accept_new_child():
-                res |= Qt.ItemIsDropEnabled
+                res |= Qt.ItemFlag.ItemIsDropEnabled
         return res
 
     def supportedDropActions(self):
-        return Qt.MoveAction | Qt.CopyAction | Qt.LinkAction
+        return Qt.DropAction.MoveAction | Qt.DropAction.CopyAction | Qt.DropAction.LinkAction
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+    def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return ('Tag', 'Properties' if self.show_props else 'Name')[section]
         return None
 
@@ -457,8 +457,8 @@ class GeometryModel(SectionModel, QAbstractItemModel):
     def dropMimeData(self, mime_data, action, row, column, parentIndex):
         if not self.canDropMimeData(mime_data, action, row, column, parentIndex):
             return False    # qt should call this earlier but some version of qt have a bug
-        if action == Qt.IgnoreAction: return True
-        if action == Qt.MoveAction:
+        if action == Qt.DropAction.IgnoreAction: return True
+        if action == Qt.DropAction.MoveAction:
             moved_obj = mime_data.itemInstance()
             parent = self.node_for_index(parentIndex)
             if moved_obj.parent != parent:
@@ -466,13 +466,13 @@ class GeometryModel(SectionModel, QAbstractItemModel):
                 moved_obj = deepcopy(moved_obj, memo={id(moved_obj._parent): moved_obj._parent})
             self.insert_node(parent, moved_obj, None if row == -1 else row, merge_with_next_remove=True)
             return True # removeRows will be called and will remove current moved_obj
-        if action == Qt.CopyAction:
+        if action == Qt.DropAction.CopyAction:
             copied_obj = mime_data.itemInstance()
             parent = self.node_for_index(parentIndex)
             copied_obj = deepcopy(copied_obj, memo={id(copied_obj._parent): copied_obj._parent})
             self.insert_node(parent, copied_obj, None if row == -1 else row)
             return True
-        if action == Qt.LinkAction:
+        if action == Qt.DropAction.LinkAction:
             linked_obj = mime_data.itemInstance()
             parent = self.node_for_index(parentIndex)
             from .again_copy import GNAgain
@@ -484,7 +484,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
     def canDropMimeData(self, mime_data, action, row, column, parentIndex):
         """TODO this is optional but why qt doesn't call this??"""
         try:
-            if action in (Qt.MoveAction, Qt.CopyAction):
+            if action in (Qt.DropAction.MoveAction, Qt.DropAction.CopyAction):
                 moved_obj = mime_data.itemInstance()
                 parent = parentIndex.internalPointer()
                 if parent is None:
@@ -492,7 +492,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
                     return isinstance(moved_obj, GNGeometryBase)
                 else:
                     return moved_obj not in parent.path_to_root and parent.accept_as_child(moved_obj)
-            if action == Qt.LinkAction:
+            if action == Qt.DropAction.LinkAction:
                 linked_obj = mime_data.itemInstance()
                 parent = parentIndex.internalPointer()
                 if parent is None or linked_obj.name is None:

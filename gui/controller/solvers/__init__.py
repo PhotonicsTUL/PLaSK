@@ -15,6 +15,7 @@ from itertools import groupby
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *
+from ...qt import qt_exec
 from ...model.connects import PROPS
 from ...utils.widgets import table_last_col_fill, table_edit_shortcut, ComboBox
 from .. import Controller, select_index_from_info
@@ -38,7 +39,7 @@ class FilterController(Controller):
 
         self.widget = QWidget()
         layout = QFormLayout()
-        layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+        layout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
 
         self.what = ComboBox()
         self.what.addItems(PROPS)
@@ -100,12 +101,12 @@ class SolversController(Controller):
         self.solvers_table = QTableView()
         self.solvers_table.setModel(self.model)
         table_last_col_fill(self.solvers_table, self.model.columnCount(None), [100, 200])
-        self.solvers_table.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.solvers_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.solvers_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.solvers_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         try:
-            self.solvers_table.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
+            self.solvers_table.horizontalHeader().setResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         except AttributeError:
-            self.solvers_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+            self.solvers_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         table_edit_shortcut(self.solvers_table, 2, 'n')
         self.splitter.addWidget(table_with_manipulators(self.solvers_table, self.splitter, title="Solvers"))
 
@@ -118,8 +119,8 @@ class SolversController(Controller):
 
         focus_action = QAction(self.solvers_table)
         focus_action.triggered.connect(lambda: weakself.parent_for_editor_widget.currentWidget().setFocus())
-        focus_action.setShortcut(QKeySequence(Qt.Key_Return))
-        focus_action.setShortcutContext(Qt.WidgetShortcut)
+        focus_action.setShortcut(QKeySequence(Qt.Key.Key_Return))
+        focus_action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
         self.solvers_table.addAction(focus_action)
 
         selection_model = self.solvers_table.selectionModel()
@@ -159,7 +160,7 @@ class SolversController(Controller):
         if new_selection.indexes() == old_selection.indexes(): return
         indexes = new_selection.indexes()
         if not self.set_current_index(new_index=(indexes[0].row() if indexes else None)):
-            self.solvers_table.selectionModel().select(old_selection, QItemSelectionModel.ClearAndSelect)
+            self.solvers_table.selectionModel().select(old_selection, QItemSelectionModel.SelectionFlag.ClearAndSelect)
 
     def get_widget(self):
         return self.splitter
@@ -196,7 +197,7 @@ class NewSolverDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle('Create New Solver')
         layout = QFormLayout()
-        layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+        layout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
 
         self.model = model
 
@@ -215,14 +216,17 @@ class NewSolverDialog(QDialog):
         self.solver = ComboBox()
         self.solver.setEditable(True)
         if MODELS:
-            self.solver.setMinimumWidth(max(self.solver.fontMetrics().width(slv) for _,slv in MODELS) + 32)
-            self.solver.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Preferred)
+            try:
+                self.solver.setMinimumWidth(max(self.solver.fontMetrics().horizonalAdvnce(slv) for _,slv in MODELS) + 32)
+            except AttributeError:
+                self.solver.setMinimumWidth(max(self.solver.fontMetrics().width(slv) for _,slv in MODELS) + 32)
+            self.solver.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Preferred)
         layout.addRow("&Solver:", self.solver)
 
         self.name = QLineEdit()
         layout.addRow("&Name:", self.name)
 
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok |  QDialogButtonBox.Cancel)
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok |  QDialogButtonBox.StandardButton.Cancel)
         button_box.accepted.connect(self.accept)
         button_box.rejected.connect(self.reject)
         layout.addRow(button_box)
@@ -252,7 +256,7 @@ class NewSolverDialog(QDialog):
 
 def get_new_solver(model):
     dialog = NewSolverDialog(model)
-    if dialog.exec_() == QDialog.Accepted:
+    if qt_exec(dialog) == QDialog.DialogCode.Accepted:
         return dict(category=dialog.category.currentText().lower(),
                     solver=dialog.solver.currentText(),
                     name=dialog.name.text())

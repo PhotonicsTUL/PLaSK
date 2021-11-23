@@ -15,7 +15,7 @@ import weakref
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *
-from ...qt import QtSlot
+from ...qt import QtSlot, qt_exec
 from ...model.geometry import GeometryModel
 from ...model.geometry.types import geometry_types_geometries_core, gname
 from ...model.geometry.geometry import GNGeometryBase
@@ -62,30 +62,29 @@ class GeometryController(Controller):
         self.tree.setExpanded(parent_index, True)
         new_index = self.model.index(pos, 0, parent_index)
         self.tree.selectionModel().select(new_index,
-                                          QItemSelectionModel.Clear | QItemSelectionModel.Select |
-                                          QItemSelectionModel.Rows)
+                                          QItemSelectionModel.SelectionFlag.Clear | QItemSelectionModel.SelectionFlag.Select |
+                                          QItemSelectionModel.SelectionFlag.Rows)
         self.tree.setCurrentIndex(new_index)
         self.update_actions()
 
-    def _get_add_child_menu(self, geometry_node_index):
+    def _make_add_item_menu(self, geometry_node_index, menu, label):
         geometry_node = geometry_node_index.internalPointer()
-        if geometry_node is None or not geometry_node.accept_new_child(): return None
+        if geometry_node is None or not geometry_node.accept_new_child(): return
         first = True
-        result = QMenu()
+        submenu = menu.addMenu(label)
         weakself = weakref.proxy(self)
         for section in geometry_node.add_child_options():
             if not first:
-                result.addSeparator()
+                submenu.addSeparator()
             first = False
             for type_name, type_constructor in section.items():
                 if type_name.endswith('2d') or type_name.endswith('3d'):
                     type_name = type_name[:-2]
-                a = QAction(gname(type_name, True), result)
+                a = QAction(gname(type_name, True), submenu)
                 a.triggered.connect(lambda checked=False, type_constructor=type_constructor,
                                            parent_index=geometry_node_index:
                                     weakself._add_child(type_constructor, parent_index))
-                result.addAction(a)
-        return result
+                submenu.addAction(a)
 
     def _reparent(self, index, type_constructor):
         parent_index = index.parent()
@@ -93,8 +92,8 @@ class GeometryController(Controller):
         new_index = self.model.reparent(index, type_constructor)
         self.tree.setExpanded(new_index, True)
         self.tree.selectionModel().select(new_index,
-                                          QItemSelectionModel.Clear | QItemSelectionModel.Select |
-                                          QItemSelectionModel.Rows)
+                                          QItemSelectionModel.SelectionFlag.Clear | QItemSelectionModel.SelectionFlag.Select |
+                                          QItemSelectionModel.SelectionFlag.Rows)
         self.tree.setCurrentIndex(new_index)
         self.update_actions()
 
@@ -154,7 +153,7 @@ class GeometryController(Controller):
         self.checked_plane = '12'
 
         self.vertical_splitter = QSplitter()
-        self.vertical_splitter.setOrientation(Qt.Vertical)
+        self.vertical_splitter.setOrientation(Qt.Orientation.Vertical)
 
         self.vertical_splitter.addWidget(tree_with_buttons)
 
@@ -174,7 +173,7 @@ class GeometryController(Controller):
             self.geometry_view = PlotWidget(self, picker=True)
             self.geometry_view.canvas.mpl_connect('pick_event', self.on_pick_object)
             # self.status_bar = QLabel()
-            # self.status_bar.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            # self.status_bar.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             # self.status_bar.setStyleSheet("border: 1px solid palette(dark)")
             # self.geometry_view.layout().addWidget(self.status_bar)
             self.main_splitter.addWidget(self.geometry_view)
@@ -186,10 +185,7 @@ class GeometryController(Controller):
         self.add_menu.clear()
         current_index = self.tree.selectionModel().currentIndex()
         if current_index.isValid():
-            add_child_menu = self._get_add_child_menu(current_index)
-            if add_child_menu:
-                self._add_action = self.add_menu.addAction('&Item')
-                self._add_action.setMenu(add_child_menu)
+            self._make_add_item_menu(current_index, self.add_menu, "&Item")
         for n in geometry_types_geometries_core.keys():
             a = QAction(gname(n, True), self.add_menu)
             a.triggered.connect(lambda checked=False, n=n: weakself.append_geometry_node(n))
@@ -225,8 +221,8 @@ class GeometryController(Controller):
         self.tree.model().append_geometry(type_name)
         new_index = self.model.index(len(self.tree.model().roots)-1, 0)
         self.tree.selectionModel().select(new_index,
-                                          QItemSelectionModel.Clear | QItemSelectionModel.Select |
-                                          QItemSelectionModel.Rows)
+                                          QItemSelectionModel.SelectionFlag.Clear | QItemSelectionModel.SelectionFlag.Select |
+                                          QItemSelectionModel.SelectionFlag.Rows)
         self.tree.setCurrentIndex(new_index)
         self.update_actions()
 
@@ -237,9 +233,7 @@ class GeometryController(Controller):
         weakself = weakref.proxy(self)
 
         menu = QMenu(self.tree)
-        add_child_menu = self._get_add_child_menu(index)
-        if add_child_menu:
-            menu.addMenu(add_child_menu).setText("&Add item")
+        self._make_add_item_menu(index, menu, "&Add item")
         menu.addAction("&Remove", lambda: weakself.remove_node(index))
         u, d = self.model.can_move_node_up_down(index)
         if u: menu.addAction("Move &up", lambda: weakself.move_up(index))
@@ -256,7 +250,7 @@ class GeometryController(Controller):
             if not menu.isEmpty(): menu.addSeparator()
             menu.addMenu(reparent_menu).setText("&Insert into")
 
-        menu.exec_(self.tree.mapToGlobal(pos))
+        qt_exec(menu, self.tree.mapToGlobal(pos))
 
     def remove_node(self, index):
         model = self.tree.model()
@@ -303,7 +297,7 @@ class GeometryController(Controller):
         # the clicked spot.
         self.tree._current_index = self.model.index_for_node(
             self.plotted_tree_element.get_node_by_real_path(event.artist.plask_real_path))
-        QMetaObject.invokeMethod(self.tree, 'update_current_index', Qt.QueuedConnection)
+        QMetaObject.invokeMethod(self.tree, 'update_current_index', Qt.ConnectionType.QueuedConnection)
 
     def plot_element(self, tree_element, set_limits):
         try:
@@ -407,7 +401,7 @@ class GeometryController(Controller):
         add_button.setStatusTip('Add new geometry object to the tree')
         CONFIG.set_shortcut(add_button, 'entry_add')
         add_button.setMenu(self.add_menu)
-        add_button.setPopupMode(QToolButton.InstantPopup)
+        add_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         toolbar.addWidget(add_button)
 
         self.remove_action = QAction(QIcon.fromTheme('list-remove'), '&Remove Item', toolbar)
@@ -441,7 +435,7 @@ class GeometryController(Controller):
         self.reparent_button.setIcon(QIcon.fromTheme('object-group'))
         self.reparent_button.setText("Insert into")
         self.reparent_button.setToolTip("Insert into")
-        self.reparent_button.setPopupMode(QToolButton.InstantPopup)
+        self.reparent_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         CONFIG.set_shortcut(self.reparent_button, 'geometry_reparent')
         toolbar.addWidget(self.reparent_button)
 
@@ -459,13 +453,13 @@ class GeometryController(Controller):
         toolbar.addWidget(props_button)
 
         spacer = QWidget()
-        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         toolbar.addWidget(spacer)
         self.search_combo = ComboBox()
         self.search_combo.setEditable(True)
-        self.search_combo.setInsertPolicy(QComboBox.NoInsert)
+        self.search_combo.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         search_box = self.search_combo.lineEdit()
-        # search_box.setAlignment(Qt.AlignRight)
+        # search_box.setAlignment(Qt.AlignmentFlag.AlignRight)
         search_box.setPlaceholderText("Name search")
         search_box.returnPressed.connect(self.search)
         self.search_combo.currentIndexChanged.connect(lambda i: weakself.search())
@@ -485,7 +479,7 @@ class GeometryController(Controller):
         index0 = self.model.index(0, 1)
         index1 = self.model.index(self.model.rowCount()-1, 1)
         self.model.dataChanged.emit(index0, index1)
-        self.tree.header().headerDataChanged(Qt.Horizontal, 1, 1)
+        self.tree.header().headerDataChanged(Qt.Orientation.Horizontal, 1, 1)
 
     def _construct_tree(self, model):
         self.tree = GeometryTreeView()
@@ -499,10 +493,10 @@ class GeometryController(Controller):
         self.tree.dragEnabled()
         self.tree.acceptDrops()
         self.tree.showDropIndicator()
-        self.tree.setDragDropMode(QAbstractItemView.DragDrop)
-        self.tree.setDefaultDropAction(Qt.MoveAction)
+        self.tree.setDragDropMode(QAbstractItemView.DragDropMode.DragDrop)
+        self.tree.setDefaultDropAction(Qt.DropAction.MoveAction)
 
-        self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tree.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.tree.customContextMenuRequested.connect(self.on_tree_context_menu)
 
         self.tree.expanded.connect(self._resize_first_column)
@@ -583,7 +577,7 @@ class GeometryController(Controller):
             self.tree.setFocus()
         else:
             red = QPalette()
-            red.setColor(QPalette.Text, QColor("#a00"))
+            red.setColor(QPalette.ColorRole.Text, QColor("#a00"))
             pal = self.search_combo.palette()
             self.search_combo.setPalette(red)
             weakself = weakref.proxy(self)
@@ -613,7 +607,7 @@ class GeometryController(Controller):
         if new_selection.indexes() == old_selection.indexes(): return
         indexes = new_selection.indexes()
         if not self.set_current_index(new_index=(indexes[0] if indexes else None)):
-            self.tree.selectionModel().select(old_selection, QItemSelectionModel.ClearAndSelect)
+            self.tree.selectionModel().select(old_selection, QItemSelectionModel.SelectionFlag.ClearAndSelect)
 
     def on_edit_enter(self):
         self.tree.selectionModel().clear()   # model could have been completely changed
@@ -625,8 +619,8 @@ class GeometryController(Controller):
                 raise IndexError(self._last_index)
             new_index = self._last_index
             self.tree.selectionModel().select(new_index,
-                                              QItemSelectionModel.Clear | QItemSelectionModel.Select |
-                                              QItemSelectionModel.Rows)
+                                              QItemSelectionModel.SelectionFlag.Clear | QItemSelectionModel.SelectionFlag.Select |
+                                              QItemSelectionModel.SelectionFlag.Rows)
             self.tree.setCurrentIndex(new_index)
             self.plot(self.plotted_tree_element)
             if self._lims is not None:
@@ -636,8 +630,8 @@ class GeometryController(Controller):
         except IndexError:
             new_index = self.model.index(0, 0)
             self.tree.selectionModel().select(new_index,
-                                              QItemSelectionModel.Clear | QItemSelectionModel.Select |
-                                              QItemSelectionModel.Rows)
+                                              QItemSelectionModel.SelectionFlag.Clear | QItemSelectionModel.SelectionFlag.Select |
+                                              QItemSelectionModel.SelectionFlag.Rows)
             self.tree.setCurrentIndex(new_index)
             self.plot()
         self._fill_search_combo()

@@ -64,7 +64,7 @@ class Launcher:
         self.diredit.setReadOnly(True)
         self.diredit.setText(dirname)
         pal = self.diredit.palette()
-        pal.setColor(QPalette.Base, QPalette().color(QPalette.Normal, QPalette.Window))
+        pal.setColor(QPalette.ColorRole.Base, QPalette().color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Window))
         self.diredit.setPalette(pal)
         dirlayout.addWidget(self.diredit)
         dirlayout.addWidget(dirbutton)
@@ -96,8 +96,8 @@ class Launcher:
             confirm = QMessageBox.question(main_window, "Unsaved File",
                                                  "The file must be saved before launching local computations. "
                                                  "Do you want to save the file now?",
-                                                 QMessageBox.Yes | QMessageBox.No)
-            if confirm == QMessageBox.No or not main_window.save():
+                                                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            if confirm == QMessageBox.StandardButton.No or not main_window.save():
                 return
         filename = os.path.abspath(main_window.document.filename)
         if self.dirname:
@@ -131,7 +131,7 @@ class Launcher:
                                      "Cannot execute graphical console program '{}'.\n\n"
                                      "Please select a correct one in the settings dialog\n"
                                      "(General Settings > Launcher)."
-                                     .format(term), QMessageBox.Ok)
+                                     .format(term), QMessageBox.StandardButton.Ok)
                 return
             subprocess.Popen([term, '-e', command], cwd=dirname, env=env)
 

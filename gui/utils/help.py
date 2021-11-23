@@ -12,6 +12,7 @@
 # GNU General Public License for more details.
 
 import sys
+import os
 import os.path
 import webbrowser
 
@@ -26,6 +27,8 @@ from .widgets import set_icon_size
 HELP_URL = 'https://docs.plask.app'
 
 HELP_DIR = os.path.join(os.path.dirname(os.path.dirname(sys.executable)), 'share', 'doc', 'plask')
+HELP_DIR = os.environ.get('PLASK_HELP_DIR', HELP_DIR)
+
 HELP_FILE = os.path.join(HELP_DIR, 'plask.qch')
 COLLECTION_FILE = os.path.join(HELP_DIR, 'plask.qhc')
 
@@ -96,7 +99,7 @@ class HelpWindow(QSplitter):
         self.toolbar.addSeparator()
         self.toolbar.addAction(web)
 
-        self.setOrientation(Qt.Horizontal)
+        self.setOrientation(Qt.Orientation.Horizontal)
         tabs = QTabWidget(self)
         tabs.setMaximumWidth(480)
         tabs.addTab(HELP_ENGINE.contentWidget(), "Contents")

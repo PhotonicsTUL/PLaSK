@@ -75,4 +75,4 @@ class ScriptModel(SectionModel):
         line_in_file = 0 if self.line_in_file is None else self.line_in_file
         cursor = self.editor.textCursor()
         return [Info('{}:{}   '.format(cursor.blockNumber()+line_in_file+1, cursor.columnNumber()+1),
-                     align=Qt.AlignRight)]
+                     align=Qt.AlignmentFlag.AlignRight)]

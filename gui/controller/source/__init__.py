@@ -45,53 +45,53 @@ class XMLEditor(TextEditor):
         palette = self.palette()
         color = parse_highlight(CONFIG['syntax/xml_text']).get('color')
         if color is None: color = CONFIG['editor/foreground_color']
-        palette.setColor(QPalette.Text, QColor(color))
+        palette.setColor(QPalette.ColorRole.Text, QColor(color))
         self.setPalette(palette)
 
     def keyPressEvent(self, event):
         key = event.key()
         modifiers = event.modifiers()
 
-        if key in (Qt.Key_Tab, Qt.Key_Backtab, Qt.Key_Backspace):
+        if key in (Qt.Key.Key_Tab, Qt.Key.Key_Backtab, Qt.Key.Key_Backspace):
             cursor = self.textCursor()
             if cursor.hasSelection():
-                if key == Qt.Key_Tab:
+                if key == Qt.Key.Key_Tab:
                     indent(self)
                     return
-                elif key == Qt.Key_Backtab:
+                elif key == Qt.Key.Key_Backtab:
                     unindent(self)
                     return
-            elif key == Qt.Key_Backtab:
+            elif key == Qt.Key.Key_Backtab:
                 unindent(self)
                 return
             else:
                 col = cursor.positionInBlock()
                 inindent = not cursor.block().text()[:col].strip()
                 if inindent:
-                    if key == Qt.Key_Tab:
+                    if key == Qt.Key.Key_Tab:
                         indent(self, col)
                         return
                     else:
                         if not (cursor.atBlockStart()):
                             unindent(self, col)
                             return
-        elif key == Qt.Key_Home and not modifiers & ~Qt.ShiftModifier:
+        elif key == Qt.Key.Key_Home and not modifiers & ~Qt.KeyboardModifier.ShiftModifier:
             cursor = self.textCursor()
             txt = cursor.block().text()
             col = cursor.positionInBlock()
-            mode = QTextCursor.KeepAnchor if modifiers & Qt.ShiftModifier else QTextCursor.MoveAnchor
+            mode = QTextCursor.MoveMode.KeepAnchor if modifiers & Qt.KeyboardModifier.ShiftModifier else QTextCursor.MoveMode.MoveAnchor
             if txt[:col].strip():
-                cursor.movePosition(QTextCursor.StartOfBlock, mode)
+                cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock, mode)
                 while self.document().characterAt(cursor.position()) in [' ', '\t']:
-                    cursor.movePosition(QTextCursor.Right, mode)
+                    cursor.movePosition(QTextCursor.MoveOperation.Right, mode)
                 self.setTextCursor(cursor)
                 return
-        elif key == Qt.Key_Slash:
+        elif key == Qt.Key.Key_Slash:
             if parse_slash(self): return
 
         super().keyPressEvent(event)
 
-        if key in (Qt.Key_Enter, Qt.Key_Return):
+        if key in (Qt.Key.Key_Enter, Qt.Key.Key_Return):
             indent_new_line(self)
 
     def reconfig(self):

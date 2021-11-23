@@ -15,6 +15,7 @@ from copy import deepcopy
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *
+from ...qt import qt_exec
 from ..defines import get_defines_completer
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
 from ...lib.highlighter.xml import syntax
@@ -60,9 +61,9 @@ def set_attr_list(model, group, attr, values):
 def set_conflict(widget, conflict):
     with BlockQtSignals(widget):
         widget.setEnabled(not conflict)
-        color = QPalette().color(QPalette.Normal, QPalette.Window if conflict else QPalette.Base)
+        color = QPalette().color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Window if conflict else QPalette.ColorRole.Base)
         # palette = widget.palette()
-        # palette.setColor(QPalette.Base, color)
+        # palette.setColor(QPalette.ColorRole.Base, color)
         # widget.setPalette(palette)
         try:
             if conflict:
@@ -97,7 +98,7 @@ class SolverWidget(QWidget):
         self.setLayout(layout)
 
         self.form_layout = QFormLayout()
-        self.form_layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+        self.form_layout.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
 
         main = QWidget()
 
@@ -161,7 +162,7 @@ class SolverWidget(QWidget):
                         sep = ''
                         for item in attr:
                             field = self._add_attr(item, defines, gname, group)
-                            field.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
+                            field.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Maximum)
                             label = QLabel(sep + item.label + ':')
                             lay.addWidget(label)
                             lay.addWidget(field)
@@ -309,8 +310,8 @@ class SolverWidget(QWidget):
         button = QToolButton()
         button.setCheckable(True)
         button.setChecked(True)
-        button.setArrowType(Qt.DownArrow)
-        button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        button.setArrowType(Qt.ArrowType.DownArrow)
+        button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
         button.setIconSize(QSize(8, 8))
         button.setStyleSheet("""
             border: none;
@@ -322,7 +323,7 @@ class SolverWidget(QWidget):
         weakself = weakref.proxy(self)
 
         def toggled(selected):
-            button.setArrowType(Qt.DownArrow if selected else Qt.RightArrow)
+            button.setArrowType(Qt.ArrowType.DownArrow if selected else Qt.ArrowType.RightArrow)
             self.build_form()
 
         button.toggled.connect(toggled)
@@ -337,7 +338,7 @@ class SolverWidget(QWidget):
         if text is None:
             text = self.filter.text()
         for _ in range(self.form_layout.rowCount()):
-            item = self.form_layout.itemAt(0, QFormLayout.FieldRole)
+            item = self.form_layout.itemAt(0, QFormLayout.ItemRole.FieldRole)
             widget = item.layout() or item.widget()
             widget.setParent(None)
             self.form_layout.removeRow(0)
@@ -466,8 +467,8 @@ class SolverWidget(QWidget):
     def edit_boundary_conditions(self, schema):
         data = deepcopy(self.controller.model.data[schema.name])
         dialog = BoundaryConditionsDialog(self.controller, schema, data)
-        result = dialog.exec_()
-        if result == QDialog.Accepted:
+        result = qt_exec(dialog)
+        if result == QDialog.DialogCode.Accepted:
             self._change_boundary_condition(schema, data)
 
     def launch_custom_editor(self, schema):

@@ -15,6 +15,7 @@ import os
 import gui
 from gui.qt.QtWidgets import *
 from gui.qt.QtGui import *
+from gui.qt import qt_exec
 from gui.xpldocument import XPLDocument
 from gui.model.materials import HandleMaterialsModule
 from gui.utils.config import CONFIG
@@ -169,9 +170,9 @@ else:
             msgbox = QMessageBox()
             msgbox.setWindowTitle("Export Error")
             msgbox.setText("You can only export from xpl file.")
-            msgbox.setStandardButtons(QMessageBox.Ok)
+            msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
             msgbox.setIcon(QMessageBox.Error)
-            msgbox.exec_()
+            qt_exec(msgbox)
             return
 
         # geometries = parent.document.geometry.model.roots
@@ -191,8 +192,8 @@ else:
             msgbox.setWindowTitle("RPSMES Export Error")
             msgbox.setText("There was an error while writing the RPSMES file.")
             msgbox.setDetailedText(str(err))
-            msgbox.setStandardButtons(QMessageBox.Ok)
-            msgbox.setIcon(QMessageBox.Critical)
+            msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+            msgbox.setIcon(QMessageBox.Icon.Critical)
             if gui._DEBUG:
                 import traceback
                 traceback.print_exc()
@@ -201,9 +202,9 @@ else:
             msgbox.setWindowTitle("RPSMES Export")
             msgbox.setText("Geometry '{}' exported to '{}_temp.dan'. "
                            "You should examine the file and correct it!".format(name, filename))
-            msgbox.setStandardButtons(QMessageBox.Ok)
-            msgbox.setIcon(QMessageBox.Information)
-        msgbox.exec_()
+            msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+            msgbox.setIcon(QMessageBox.Icon.Information)
+        qt_exec(msgbox)
 
     def export_dan_operation(parent):
         action = QAction(QIcon.fromTheme('document-save'),

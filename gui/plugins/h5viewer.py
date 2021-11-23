@@ -35,12 +35,10 @@ from gui.utils.config import CONFIG, KEYBOARD_SHORTCUTS
 from gui.xpldocument import XPLDocument
 from gui.model.materials import HandleMaterialsModule
 
-if QT_API in ('PyQt', 'PySide'):
-    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
-else:
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
+try:
+    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
+except ImportError:
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
 
 
 class FieldWidget(QWidget):
@@ -140,7 +138,7 @@ class FieldWidget(QWidget):
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setParent(self)
-        #self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        #self.canvas.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.figure.set_facecolor(self.palette().color(QPalette.Background).name())
         self.figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
         self.canvas.updateGeometry()
@@ -262,7 +260,7 @@ class ResultsWindow(QMainWindow):
 
         splitter1 = QSplitter(self)
         splitter2 = QSplitter(splitter1)
-        splitter2.setOrientation(Qt.Vertical)
+        splitter2.setOrientation(Qt.Orientation.Vertical)
         splitter1.addWidget(splitter2)
 
         self.setCentralWidget(splitter1)
@@ -281,13 +279,13 @@ class ResultsWindow(QMainWindow):
         self.update_geometries()
 
         if len(fields) > 0:
-            self.field_list.setSelectionMode(QAbstractItemView.SingleSelection)
+            self.field_list.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
             self.field_list.addItems(fields)
             self.field_list.currentTextChanged.connect(self.field_changed)
             self.field_list.item(0).setSelected(True)
             self.geometry_list.currentTextChanged.connect(self.geometry_changed)
         else:
-            self.field_list.setSelectionMode(QAbstractItemView.NoSelection)
+            self.field_list.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
             self.field_list.addItem("No fields in the selected file!")
 
         self.showMaximized()

@@ -14,6 +14,7 @@ from ..qt.QtCore import *
 
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
+from ..qt.QtGui import *
 from . import SectionModel
 from . import info
 
@@ -139,7 +140,7 @@ class TableModelEditMethods:
             super(TableModel.SetDataCommand, self).__init__(self._get_title(), parent)
 
         def _get_title(self):
-            col_name = self.table.headerData(self.col, Qt.Horizontal, Qt.DisplayRole).lower()
+            col_name = self.table.headerData(self.col, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole).lower()
             return u"change {} at row {} to '{}' in {}".format(col_name, self.row+1, self.new_value, self.table.name)
 
         def id(self):
@@ -158,7 +159,7 @@ class TableModelEditMethods:
             self.setText(self._get_title())
             return True
 
-    def setData(self, index, value, role=Qt.EditRole, merge_id=-1):
+    def setData(self, index, value, role=Qt.ItemDataRole.EditRole, merge_id=-1):
         #self.set(index.column(), index.row(), value)
         #self.fire_changed()
         #self.dataChanged.emit(index, index)
@@ -230,14 +231,14 @@ class TableModel(TableModelEditMethods, SectionModel, QAbstractTableModel):
     def get_raw(self, col, row):
         return self.get(col, row)
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if not index.isValid(): return None
-        if role == Qt.DisplayRole or role == Qt.EditRole:
+        if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             return self.get(index.column(), index.row())
-        if role == Qt.ToolTipRole:
+        if role == Qt.ItemDataRole.ToolTipRole:
             return '\n'.join([str(err) for err in self.info_by_row.get(index.row(), [])
                               if err.has_connection('cols', index.column())])
-        if role == Qt.DecorationRole: #Qt.BackgroundColorRole:   #maybe TextColorRole?
+        if role == Qt.ItemDataRole.DecorationRole: #Qt.ItemDataRole.BackgroundColorRole:   #maybe TextColorRole?
             max_level = -1
             c = index.column()
             for err in self.info_by_row.get(index.row(), []):
@@ -245,16 +246,16 @@ class TableModel(TableModelEditMethods, SectionModel, QAbstractTableModel):
                     # c == 0 -> whole row messages have decoration only in the first column
                     if err.level > max_level: max_level = err.level
             return info.info_level_icon(max_level)
-            #c = QPalette().color(QPalette.Window)    #default color
+            #c = QPalette().color(QPalette.ColorRole.Window)    #default color
             #if max_level == info.Info.ERROR: return QColor(255, 220, 220)
             #if max_level == info.Info.WARNING: return QColor(255, 255, 160)
             #if max_level == info.Info.INFO: return QColor(220, 220, 255)
 
     def flags(self, index):
-        flags = super().flags(index) | Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        flags = super().flags(index) | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
 
-        if not self.is_read_only(): flags |= Qt.ItemIsEditable
-        #flags |= Qt.ItemIsDragEnabled
-        #flags |= Qt.ItemIsDropEnabled
+        if not self.is_read_only(): flags |= Qt.ItemFlag.ItemIsEditable
+        #flags |= Qt.ItemFlag.ItemIsDragEnabled
+        #flags |= Qt.ItemFlag.ItemIsDropEnabled
 
         return flags

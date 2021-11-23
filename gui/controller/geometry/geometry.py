@@ -47,7 +47,7 @@ class GNGeometryController(GNObjectController):
                         for _ in range(0, 2))
             for r in res:
                 r.lineEdit().setPlaceholderText('air')
-                r.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+                r.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             grid_layout.addWidget(res[0], row, 1)
             grid_layout.addWidget(res[1], row, 3)
             self.edges.append(res)

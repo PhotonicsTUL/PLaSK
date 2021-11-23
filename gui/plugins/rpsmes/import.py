@@ -586,9 +586,9 @@ if qt:
             msgbox.setText("There was an error while reading the RPSMES file.\n\n"
                            "Probably the chosen file was not in a RPSMES or the parser does not understand its syntax.")
             msgbox.setDetailedText(str(err))
-            msgbox.setStandardButtons(QMessageBox.Ok)
-            msgbox.setIcon(QMessageBox.Critical)
-            msgbox.exec_()
+            msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+            msgbox.setIcon(QMessageBox.Icon.Critical)
+            qt_exec(msgbox)
         else:
             oname = obase + '.xpl'
             n = 1
@@ -605,9 +605,9 @@ if qt:
                 msgbox.setWindowTitle("Import Error")
                 msgbox.setText("There was an error while saving the converted XPL file.")
                 msgbox.setDetailedText(str(err))
-                msgbox.setStandardButtons(QMessageBox.Ok)
-                msgbox.setIcon(QMessageBox.Critical)
-                msgbox.exec_()
+                msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+                msgbox.setIcon(QMessageBox.Icon.Critical)
+                qt_exec(msgbox)
             else:
                 parent.load_file(oname)
 

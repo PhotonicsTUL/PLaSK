@@ -36,8 +36,8 @@ class ComponentsPopup(QFrame):
 
     def __init__(self, close_cb, name, label, groups, doping, pos=None):
         super().__init__()
-        self.setWindowFlags(Qt.Popup | Qt.FramelessWindowHint)
-        self.setFrameStyle(QFrame.Box | QFrame.Plain)
+        self.setWindowFlags(Qt.WindowType.Popup | Qt.WindowType.FramelessWindowHint)
+        self.setFrameStyle(QFrame.Shape.Box | QFrame.Shadow.Plain)
         self.close_cb = close_cb
         self.elements = elements_re.findall(name)
         self.label = label
@@ -69,7 +69,7 @@ class ComponentsPopup(QFrame):
         if first: first.setFocus()
 
     def keyPressEvent(self, event):
-        if event.key() in (Qt.Key_Return, Qt.Key_Enter, Qt.Key_Escape):
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter, Qt.Key.Key_Escape):
             self.close()
 
     def closeEvent(self, event):
@@ -102,20 +102,20 @@ class MaterialLineEdit(QLineEdit):
         # Create a button with icon
         self.button = QToolButton(self)
         self.button.setIcon(QIcon.fromTheme('matplotlib'))
-        self.button.setCursor(Qt.PointingHandCursor)
+        self.button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.button.setStyleSheet("QToolButton { border: none; padding: 0px; }")
 
         # signals, clear lineEdit if btn pressed; change btn visibility on input
         self.button.clicked.connect(self.show_material)
 
-        frw = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
+        frw = self.style().pixelMetric(QStyle.PixelMetric.PM_DefaultFrameWidth)
         self.setStyleSheet("QLineEdit {{ padding-right: {}px; }} ".format(self.button.sizeHint().width() + frw + 1))
         msh = self.minimumSizeHint().height()
         self.button.setMaximumHeight(msh)
 
     def resizeEvent(self, event):
         sz = self.button.sizeHint()
-        frw = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
+        frw = self.style().pixelMetric(QStyle.PixelMetric.PM_DefaultFrameWidth)
         self.button.move(self.rect().right() - frw - sz.width(), (self.rect().bottom() + 1 - sz.height()) / 2)
 
     def show_material(self):
@@ -147,7 +147,7 @@ class MaterialsComboBox(ComboBox):
         material_list = self.append_materials(materials_model, limit_model, items)
         self.popup_select_cb = popup_select_cb
         self.setEditable(True)
-        self.setInsertPolicy(QComboBox.NoInsert)
+        self.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         if defines_model is not None:
             completer = get_defines_completer(defines_model, parent, material_list)
             if show_popup:
@@ -158,12 +158,12 @@ class MaterialsComboBox(ComboBox):
                 self.setEditable(False)
         self.setMaxVisibleItems(len(material_list))
         if show_popup:
-            self.currentIndexChanged[str].connect(self.show_components_popup)
+            self.currentIndexChanged.connect(lambda i: self.show_components_popup(self.itemText(i)))
         self.material_edit_popup = None
 
     def setEditText(self, text: str):
         super().setEditText(text)
-        index = self.findData(text, Qt.DisplayRole)
+        index = self.findData(text, Qt.ItemDataRole.DisplayRole)
         if index != -1:
             self.setCurrentIndex(index)
 
@@ -174,7 +174,7 @@ class MaterialsComboBox(ComboBox):
 
     def keyPressEvent(self, event):
         super().keyPressEvent(event)
-        if event.key() in (Qt.Key_Enter, Qt.Key_Return):
+        if event.key() in (Qt.Key.Key_Enter, Qt.Key.Key_Return):
             self.editingFinished.emit()
 
     def append_list(self, list_to_append, insert_separator=True):
@@ -235,11 +235,11 @@ class ExternalLineEdit(QLineEdit):
         # Create a button with icon
         self.button = QToolButton(self)
         self.button.setIcon(QIcon.fromTheme('document-open'))
-        self.button.setCursor(Qt.PointingHandCursor)
+        self.button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.button.setStyleSheet("QToolButton { border: none; padding: 0px; }")
         self.button.clicked.connect(self.show_file_dialog)
 
-        frw = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
+        frw = self.style().pixelMetric(QStyle.PixelMetric.PM_DefaultFrameWidth)
         self.setStyleSheet("QLineEdit {{ padding-right: {}px; }} ".format(self.button.sizeHint().width() + frw + 1))
         msh = self.minimumSizeHint().height()
         self.button.setMaximumHeight(msh)
@@ -248,7 +248,7 @@ class ExternalLineEdit(QLineEdit):
 
     def resizeEvent(self, event):
         sz = self.button.sizeHint()
-        frw = self.style().pixelMetric(QStyle.PM_DefaultFrameWidth)
+        frw = self.style().pixelMetric(QStyle.PixelMetric.PM_DefaultFrameWidth)
         self.button.move(self.rect().right() - frw - sz.width(), (self.rect().bottom() + 1 - sz.height()) / 2)
 
     def show_file_dialog(self):
@@ -297,7 +297,7 @@ class MaterialNameDelegate(QStyledItemDelegate):
 
     def setModelData(self, editor, model, index):
         if not (isinstance(editor, ExternalLineEdit) and editor.keep):
-            model.setData(index, editor.text(), Qt.EditRole)
+            model.setData(index, editor.text(), Qt.ItemDataRole.EditRole)
 
     def sizeHint(self, item, index):
         hint = super().sizeHint(item, index)
@@ -338,7 +338,7 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
         if opts is None: return super().createEditor(parent, option, index)
 
         combo = ComboBox(parent)
-        combo.setInsertPolicy(QComboBox.NoInsert)
+        combo.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         combo.addItems(opts)
         combo.setMaxVisibleItems(len(opts))
         if index.column() == 0:
@@ -352,7 +352,7 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
             combo.setEditable(True)
             combo.setEditText(index.data())
             completer = combo.completer()
-            completer.setCaseSensitivity(Qt.CaseSensitive)
+            completer.setCaseSensitivity(Qt.CaseSensitivity.CaseSensitive)
             combo.setCompleter(completer)
         #combo.setCompleter(completer)
         #self.connect(combo, SIGNAL("currentIndexChanged(int)"),
@@ -361,7 +361,7 @@ class MaterialPropertiesDelegate(DefinesCompletionDelegate):
         return combo
 
     def eventFilter(self, editor, event):
-        if isinstance(editor, QComboBox) and event.type() == QEvent.Enter and self._first_enter:
+        if isinstance(editor, QComboBox) and event.type() == QEvent.Type.Enter and self._first_enter:
             editor.showPopup()
             self._first_enter = False
             return True
@@ -425,14 +425,14 @@ class MaterialsController(Controller):
         tool_menu.addAction(library_action)
         tool_menu.addAction(module_action)
         tool_button.setMenu(tool_menu)
-        tool_button.setPopupMode(QToolButton.InstantPopup)
+        tool_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         materials_toolbar.addWidget(tool_button)
         self.splitter.addWidget(materials_table)
         # materials_toolbar.addSeparator()
         # materials_toolbar.addAction(self.document.window.material_plot_action)
 
         self.prop_splitter = QSplitter()
-        self.prop_splitter.setOrientation(Qt.Vertical)
+        self.prop_splitter.setOrientation(Qt.Orientation.Vertical)
 
         #self.property_model = MaterialPropertyModel(material_selection_model)
         self.properties_table = QTableView()
@@ -449,16 +449,16 @@ class MaterialsController(Controller):
                                                                                  title="Material Properties")
         self.prop_splitter.addWidget(self.properties_widget)
 
-        self.materials_table.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.materials_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.materials_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.materials_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.materials_table.setColumnWidth(0, 140)
         try:
-            self.materials_table.horizontalHeader().setResizeMode(1, QHeaderView.Stretch)
+            self.materials_table.horizontalHeader().setResizeMode(1, QHeaderView.ResizeMode.Stretch)
         except AttributeError:
-            self.materials_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+            self.materials_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
 
         check_box_style_option = QStyleOptionButton()
-        check_box_rect = QApplication.style().subElementRect(QStyle.SE_CheckBoxIndicator,
+        check_box_rect = QApplication.style().subElementRect(QStyle.SubElement.SE_CheckBoxIndicator,
                                                                    check_box_style_option, None)
         self.materials_table.setColumnWidth(2, check_box_rect.width()+8)
 
@@ -469,8 +469,8 @@ class MaterialsController(Controller):
 
         self.model.infoChanged.connect(self.update_materials_table)
 
-        self.properties_table.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.properties_table.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.properties_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
+        self.properties_table.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         table_last_col_fill(self.properties_table, 4, [80, 320, 50])
         table_edit_shortcut(self.properties_table, 0, 'n')
         table_edit_shortcut(self.properties_table, 1, 'v')
@@ -485,8 +485,8 @@ class MaterialsController(Controller):
 
         focus_action = QAction(self.materials_table)
         focus_action.triggered.connect(self.properties_table.setFocus)
-        focus_action.setShortcut(QKeySequence(Qt.Key_Return))
-        focus_action.setShortcutContext(Qt.WidgetShortcut)
+        focus_action.setShortcut(QKeySequence(Qt.Key.Key_Return))
+        focus_action.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
         self.materials_table.addAction(focus_action)
 
         self.prop_splitter.addWidget(self.propedit)
@@ -525,11 +525,11 @@ class MaterialsController(Controller):
             self.selected_material = self.model.entries[indexes[0].row()]
             if isinstance(self.selected_material, MaterialsModel.External):
                 self.model.get_materials(indexes[0].row()+1)
-                self.properties_table.setSelectionMode(QAbstractItemView.NoSelection)
+                self.properties_table.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
                 self.properties_toolbar.setEnabled(False)
                 self.properties_widget.setTitle("{} Properties".format(self.selected_material.what.title()))
             else:
-                self.properties_table.setSelectionMode(QAbstractItemView.SingleSelection)
+                self.properties_table.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
                 self.properties_toolbar.setEnabled(True)
                 self.properties_widget.setTitle("Material Properties")
             self.properties_table.setModel(self.selected_material)
@@ -538,11 +538,11 @@ class MaterialsController(Controller):
             self.prop_splitter.setEnabled(True)
             if isinstance(self.selected_material, MaterialsModel.Material):
                 try:
-                    # self.properties_table.horizontalHeader().setResizeMode(0, QHeaderView.ResizeToContents)
-                    self.properties_table.horizontalHeader().setResizeMode(2, QHeaderView.ResizeToContents)
+                    # self.properties_table.horizontalHeader().setResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+                    self.properties_table.horizontalHeader().setResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
                 except AttributeError:
-                    # self.properties_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeToContents)
-                    self.properties_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeToContents)
+                    # self.properties_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+                    self.properties_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
                 self.properties_table.resizeColumnToContents(1)
                 self.properties_table.resizeRowsToContents()
         else:

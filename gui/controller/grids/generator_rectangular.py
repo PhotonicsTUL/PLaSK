@@ -38,7 +38,7 @@ class RectangularSimpleGeneratorController(GridController):
         form_layout.addWidget(label)
         self.make_split_combo(form_layout, weakref.proxy(self))
 
-        form_layout.setAlignment(Qt.AlignLeft)
+        form_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         self.form.setLayout(form_layout)
 
@@ -187,9 +187,9 @@ class RectangularRefinedGeneratorController(GridController):
                           RectangularDivideGeneratorController.warnings_help.get(w, ''))
             setattr(self, 'warn_'+w, cb)
             label = QLabel(w+':')
-            label.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
+            label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
             warnings_layout.addWidget(label)
-            cb.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+            cb.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Preferred)
             cb.lineEdit().setPlaceholderText('yes')
             warnings_layout.addWidget(cb)
         self.form_layout.addRow('Warnings:', warnings_layout)
@@ -219,7 +219,7 @@ class RectangularRefinedGeneratorController(GridController):
         self.refinements.setItemDelegateForColumn(3-one, defines_delegate)
         self.refinements.setItemDelegateForColumn(4-one, defines_delegate)
         self.refinements.setItemDelegateForColumn(5-one, defines_delegate)
-        # self.refinements.horizontalHeader().setResizeMode(QHeaderView.ResizeToContents)
+        # self.refinements.horizontalHeader().setResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.refinements.setColumnWidth(1-one, 140)
         self.refinements.setColumnWidth(2-one, 120)
         self.refinements.setMinimumHeight(100)
@@ -266,8 +266,8 @@ class RectangularDivideGeneratorController(RectangularRefinedGeneratorController
         self.options.insertWidget(0, QLabel("gradual axis:"))
         if dim != 1:
             line = QFrame()
-            line.setFrameShape(QFrame.VLine)
-            line.setFrameShadow(QFrame.Sunken)
+            line.setFrameShape(QFrame.Shape.VLine)
+            line.setFrameShadow(QFrame.Shadow.Sunken)
             line.setLineWidth(1)
             self.options.insertWidget(1, line)
         for i in range(dim-1, -1, -1):

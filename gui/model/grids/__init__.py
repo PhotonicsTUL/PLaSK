@@ -196,7 +196,7 @@ class GridsModel(TableModel):
         return 2
 
     def headerData(self, col, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             if col == 0: return 'Name'
             if col == 1: return 'Type (Method)'
         return None
@@ -212,7 +212,7 @@ class GridsModel(TableModel):
 
     def flags(self, index):
         flags = super().flags(index)
-        if index.column() == 1: flags &= ~Qt.ItemIsEditable
+        if index.column() == 1: flags &= ~Qt.ItemFlag.ItemIsEditable
         return flags
 
     def create_default_entry(self):

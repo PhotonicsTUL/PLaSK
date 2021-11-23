@@ -11,12 +11,10 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-try:
-    from ...qt.QtCore import *
-except ImportError:
-    from ...qt.QtGui import QStringListModel
-
+from ...qt.QtCore import *
+from ...qt.QtGui import *
 from ...qt.QtWidgets import *
+from ...qt import qt_exec
 from ...model.grids import Grid
 from ...model.grids.types import construct_grid, meshes_types, generators_types,\
     generator_methods, xml_name
@@ -45,13 +43,13 @@ class NewGridDialog(QDialog):
 
         self.type_edit = ComboBox()
         self.type_edit.setEditable(True)
-        self.type_edit.setInsertPolicy(QComboBox.NoInsert)
+        self.type_edit.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         self.type_edit.editTextChanged.connect(self._type_changed)
         self.type_edit.setToolTip('Type of the mesh.')
 
         self.method_edit = ComboBox()
         self.method_edit.setEditable(True)
-        self.method_edit.setInsertPolicy(QComboBox.NoInsert)
+        self.method_edit.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         self.method_edit.setToolTip('Generation method i.e. the type of the generator.')
         #self.method_edit_label = QLabel("Method:")
 
@@ -60,7 +58,7 @@ class NewGridDialog(QDialog):
         self.form_layout.addRow("&Type:", self.type_edit)
         self.form_layout.addRow("M&ethod:", self.method_edit)
 
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok |  QDialogButtonBox.Cancel)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok |  QDialogButtonBox.StandardButton.Cancel)
         self.button_box.accepted.connect(self.accept)
         self.button_box.rejected.connect(self.reject)
 
@@ -105,5 +103,5 @@ class NewGridDialog(QDialog):
 
 def construct_grid_using_dialog(grids_model):
     dial = NewGridDialog()
-    if dial.exec_() == QDialog.Accepted:
+    if qt_exec(dial) == QDialog.DialogCode.Accepted:
         return dial.get_grid(grids_model)

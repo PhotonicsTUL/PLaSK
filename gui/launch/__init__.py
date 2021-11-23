@@ -16,6 +16,7 @@ import json
 from ..qt.QtGui import *
 from ..qt.QtWidgets import *
 from ..qt.QtCore import *
+from ..qt import qt_exec
 from ..utils.widgets import ComboBox, EditComboBox
 from ..utils.config import CONFIG, parse_highlight
 from ..utils.qsignals import BlockQtSignals
@@ -59,7 +60,7 @@ class DefinesSyntaxHighlighter(QSyntaxHighlighter):
                 assert isinstance(f, Format), "Format expected, {!r} found".format(f)
             f.tcf.setFontFamily(parent.defaultFont().family())
             self.formats[f.name] = f.tcf
-        self.formats['key'].setFontWeight(QFont.Bold)
+        self.formats['key'].setFontWeight(QFont.Weight.Bold)
         self.formats['bad key'] = Format('bad key', self.formats['key'].foreground().color(),
                                          bold=True, strikeout=True).tcf
         self.formats['bad key'].setFontFamily(parent.defaultFont().family())
@@ -89,7 +90,7 @@ class _CombolItemView(QListView):
         self.offset = offset
 
     def keyReleaseEvent(self, event):
-        if event.key() == Qt.Key_Delete:
+        if event.key() == Qt.Key.Key_Delete:
             index = self.currentIndex()
             if index.isValid() and index.row() >= self.offset:
                 self.model().removeRow(index.row())
@@ -103,14 +104,14 @@ class LaunchDialog(QDialog):
     def __init__(self, window, launch_config, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Launch Computations")
-        self.setWindowFlags(self.windowFlags() & ~Qt.WindowMaximizeButtonHint)
+        self.setWindowFlags(self.windowFlags() & ~Qt.WindowType.WindowMaximizeButtonHint)
 
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
         combo = ComboBox()
         combo.insertItems(len(LAUNCHERS), [item.name for item in LAUNCHERS])
-        combo.currentIndexChanged.connect(self.launcher_changed, Qt.QueuedConnection)
+        combo.currentIndexChanged.connect(self.launcher_changed, Qt.ConnectionType.QueuedConnection)
         self.layout.addWidget(combo)
 
         if window.document.defines is not None:
@@ -118,14 +119,14 @@ class LaunchDialog(QDialog):
             self.defines_button.setCheckable(True)
             self.defines_button.setChecked(_DEFS_VISIBLE)
             self.defines_button.toggled.connect(self.show_defines)
-            self.defines_button.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+            self.defines_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
             self.defines_button.setIconSize(QSize(8, 8))
             self.defines_button.setStyleSheet("""
                 border: none;
                 margin-left: -2px;
                 padding-left: 0px;
             """)
-            self.defines_button.setArrowType(Qt.DownArrow if _DEFS_VISIBLE else Qt.RightArrow)
+            self.defines_button.setArrowType(Qt.ArrowType.DownArrow if _DEFS_VISIBLE else Qt.ArrowType.RightArrow)
             self.defines_button.setText("Temporary de&fines:")
             self.layout.addWidget(self.defines_button)
 
@@ -172,10 +173,10 @@ class LaunchDialog(QDialog):
 
         combo.setCurrentIndex(current_launcher)
 
-        self.setFixedWidth(5*QFontMetrics(QFont()).width(self.windowTitle()))
+        self.setFixedWidth(5*QFontMetrics(QFont()).horizontalAdvance(self.windowTitle()))
         self.setFixedHeight(self.sizeHint().height())
 
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok |  QDialogButtonBox.Cancel)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok |  QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         self.layout.addWidget(buttons)
@@ -197,7 +198,7 @@ class LaunchDialog(QDialog):
             self.recent_defines_combo.setCurrentIndex(0)
 
     def show_defines(self, visible):
-        self.defines_button.setArrowType(Qt.DownArrow if visible else Qt.RightArrow)
+        self.defines_button.setArrowType(Qt.ArrowType.DownArrow if visible else Qt.ArrowType.RightArrow)
         global _DEFS_VISIBLE
         _DEFS_VISIBLE = visible
         self.defines.setVisible(visible)
@@ -255,10 +256,10 @@ def launch_plask(window):
         if not isinstance(launch_config, dict): launch_config = {}
         LAUNCH_CONFIG[window.document.filename] = launch_config
     dialog = LaunchDialog(window, launch_config)
-    result = dialog.exec_()
+    result = qt_exec(dialog)
     launcher = LAUNCHERS[current_launcher]
     launch_args = dialog.args_edit.currentText().strip()
-    if result == QDialog.Accepted:
+    if result == QDialog.DialogCode.Accepted:
         try:
             launch_config['args'].remove(launch_args)
         except KeyError:
@@ -277,9 +278,9 @@ def launch_plask(window):
                     msgbox = QMessageBox()
                     msgbox.setWindowTitle("Wrong Defines")
                     msgbox.setText("Wrong define: '{}'".format(line))
-                    msgbox.setStandardButtons(QMessageBox.Ok)
-                    msgbox.setIcon(QMessageBox.Critical)
-                    msgbox.exec_()
+                    msgbox.setStandardButtons(QMessageBox.StandardButton.Ok)
+                    msgbox.setIcon(QMessageBox.Icon.Critical)
+                    qt_exec(msgbox)
                     return
                 items = line.split('=',1)
                 name = items[0].strip()

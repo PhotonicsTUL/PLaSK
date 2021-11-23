@@ -15,18 +15,18 @@ import collections
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
-from ..qt import QtSignal
+from ..qt import QtSignal, qt_exec
 try:
     from ..qt.QtGui import QStyleOptionViewItemV4 as QStyleOptionViewItem
 except ImportError:
     from ..qt.QtWidgets import QStyleOptionViewItem
 from .qsignals import BlockQtSignals
 
-from ..utils.config import CONFIG, parse_font
+from ..utils.config import CONFIG, set_font
 
 EDITOR_FONT = QFont()
 EDITOR_FONT.setBold(False)
-EDITOR_FONT.fromString(parse_font('editor/font'))
+set_font(EDITOR_FONT, 'editor/font')
 
 
 def set_icon_size(widget):
@@ -42,14 +42,14 @@ def set_icon_size(widget):
 
 
 def table_edit_shortcut(table, col, key):
-    table.setEditTriggers(QAbstractItemView.SelectedClicked | QAbstractItemView.DoubleClicked)
+    table.setEditTriggers(QAbstractItemView.EditTrigger.SelectedClicked | QAbstractItemView.EditTrigger.DoubleClicked)
     def operation():
         selected = table.selectedIndexes()
         if selected:
             table.edit((table.model()).index(selected[0].row(), col))
     shortcut = QShortcut(key, table)
     shortcut.activated.connect(operation)
-    shortcut.setContext(Qt.WidgetShortcut)
+    shortcut.setContext(Qt.ShortcutContext.WidgetShortcut)
 
 
 def table_last_col_fill(table, cols_count, col_size=0):
@@ -57,7 +57,7 @@ def table_last_col_fill(table, cols_count, col_size=0):
         for c in range(0, cols_count-1): table.setColumnWidth(c, col_size[c])
     else:
         for c in range(0, cols_count-1): table.setColumnWidth(c, col_size)
-    #table.horizontalHeader().setResizeMode(cols_count-1, QHeaderView.Stretch)
+    #table.horizontalHeader().setResizeMode(cols_count-1, QHeaderView.ResizeMode.Stretch)
     table.horizontalHeader().setStretchLastSection(True)
 
 
@@ -70,7 +70,7 @@ def create_undo_actions(toolbar, model, widget):
     class SetupMenu:
         def __init__(self, action, redo):
             self.button = toolbar.widgetForAction(action)
-            self.button.setContextMenuPolicy(Qt.CustomContextMenu)
+            self.button.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
             self.button.customContextMenuRequested.connect(self)
             self.redo = redo
             self.prefix = ('Undo ', 'Redo ')[redo]
@@ -90,7 +90,7 @@ def create_undo_actions(toolbar, model, widget):
                 if n < 9: nr = " &{}  ".format(n+1)
                 else: nr = "{}  ".format(n+1)
                 menu.addAction(nr+self.prefix+undo_stack.text(i), lambda i=i: undo_stack.setIndex(i+self.redo))
-            menu.exec_(self.button.mapToGlobal(pos))
+            qt_exec(menu, self.button.mapToGlobal(pos))
 
     toolbar._undo_menu = SetupMenu(undo, 0)
     toolbar._redo_menu = SetupMenu(redo, 1)
@@ -111,22 +111,23 @@ class HTMLDelegate(QStyledItemDelegate):
         doc = QTextDocument()
         if self.compact:
             text_option = doc.defaultTextOption()
-            text_option.setWrapMode(QTextOption.NoWrap)
+            text_option.setWrapMode(QTextOption.WrapMode.NoWrap)
             doc.setDefaultTextOption(text_option)
         doc.documentLayout().setPaintDevice(self.parent())
         doc.setHtml(options.text)
         doc.setTextWidth(max(300, options.rect.width()))    #TODO 300 -> member
 
         options.text = ""
-        style.drawControl(QStyle.CE_ItemViewItem, options, painter);
+        style.drawControl(QStyle.ControlElement.CE_ItemViewItem, options, painter);
 
         ctx = QAbstractTextDocumentLayout.PaintContext()
 
         # Highlighting text if item is selected
-        #if (optionV4.state & QStyle::State_Selected)
-            #ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
+        #if optionV4.state & QStyle.StateFlag.State_Selected:
+            #ctx.palette.setColor(QPalette.ColorRole.Text,
+            #                     optionV4.palette.color(QPalette.ColorRole.Active, QPalette.ColorRole.HighlightedText));
 
-        textrect = style.subElementRect(QStyle.SE_ItemViewItemText, options, None)
+        textrect = style.subElementRect(QStyle.SubElement.SE_ItemViewItemText, options, None)
         painter.save()
         topleft = textrect.topLeft()
         topleft.setY(topleft.y() + max(int((textrect.height() - doc.size().height()) / 2), 0))
@@ -161,7 +162,7 @@ class ComboBoxDelegate(QItemDelegate):
     def createEditor(self, parent, option, index):
         combo = ComboBox(parent)
         combo.setEditable(self.editable)
-        combo.setInsertPolicy(QComboBox.NoInsert)
+        combo.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         try:
             self._list = list(self.list())
         except TypeError:
@@ -185,7 +186,7 @@ class ComboBoxDelegate(QItemDelegate):
     #     style = self.parent().style()
     #     opt = QStyleOptionComboBox()
     #     opt.initFrom(self.parent())
-    #     rc = style.subControlRect(QStyle.CC_ComboBox, opt, QStyle.SC_ComboBoxArrow, self.parent())
+    #     rc = style.subControlRect(QStyle.ComplexControl.CC_ComboBox, opt, QStyle.SC_ComboBoxArrow, self.parent())
     #     try:
     #         lst = list(self.list())
     #     except TypeError:
@@ -196,7 +197,7 @@ class ComboBoxDelegate(QItemDelegate):
     #     print hint.width()
 
     def eventFilter(self, combo, event):
-        if not self.editable and event.type() == QEvent.Enter and self._first_enter:
+        if not self.editable and event.type() == QEvent.Type.Enter and self._first_enter:
             combo.showPopup()
             self._first_enter = False
             return True
@@ -216,27 +217,27 @@ class CheckBoxDelegate(QStyledItemDelegate):
         """
         Paint a checkbox without the label.
         """
-        if not index.model().data(index, Qt.UserRole):
+        if not index.model().data(index, Qt.ItemDataRole.UserRole):
             return
 
-        checked = bool(index.model().data(index, Qt.DisplayRole))
+        checked = bool(index.model().data(index, Qt.ItemDataRole.DisplayRole))
         check_box_style_option = QStyleOptionButton()
 
-        if index.flags() & Qt.ItemIsEditable:
-            check_box_style_option.state |= QStyle.State_Enabled
+        if index.flags() & Qt.ItemFlag.ItemIsEditable:
+            check_box_style_option.state |= QStyle.StateFlag.State_Enabled
         else:
-            check_box_style_option.state |= QStyle.State_ReadOnly
+            check_box_style_option.state |= QStyle.StateFlag.State_ReadOnly
 
         if checked:
-            check_box_style_option.state |= QStyle.State_On
+            check_box_style_option.state |= QStyle.StateFlag.State_On
         else:
-            check_box_style_option.state |= QStyle.State_Off
+            check_box_style_option.state |= QStyle.StateFlag.State_Off
 
         check_box_style_option.rect = self.get_check_box_rect(option)
-        if not (index.model().flags(index) & Qt.ItemIsEditable):
-            check_box_style_option.state |= QStyle.State_ReadOnly
+        if not (index.model().flags(index) & Qt.ItemFlag.ItemIsEditable):
+            check_box_style_option.state |= QStyle.StateFlag.State_ReadOnly
 
-        QApplication.style().drawControl(QStyle.CE_CheckBox, check_box_style_option, painter)
+        QApplication.style().drawControl(QStyle.ControlElement.CE_CheckBox, check_box_style_option, painter)
 
     def editorEvent(self, event, model, option, index):
         """
@@ -244,17 +245,17 @@ class CheckBoxDelegate(QStyledItemDelegate):
         if the user presses the left mousebutton or presses
         Key_Space or Key_Select and this cell is editable. Otherwise do nothing.
         """
-        if not (index.flags() & Qt.ItemIsEditable):
+        if not (index.flags() & Qt.ItemFlag.ItemIsEditable):
             return False
 
         # Do not change the checkbox-state
-        if event.type() == QEvent.MouseButtonRelease or event.type() == QEvent.MouseButtonDblClick:
-            if event.button() != Qt.LeftButton or not self.get_check_box_rect(option).contains(event.pos()):
+        if event.type() == QEvent.Type.MouseButtonRelease or event.type() == QEvent.Type.MouseButtonDblClick:
+            if event.button() != Qt.MouseButton.LeftButton or not self.get_check_box_rect(option).contains(event.pos()):
                 return False
-            if event.type() == QEvent.MouseButtonDblClick:
+            if event.type() == QEvent.Type.MouseButtonDblClick:
                 return True
-        elif event.type() == QEvent.KeyPress:
-            if event.key() != Qt.Key_Space and event.key() != Qt.Key_Select:
+        elif event.type() == QEvent.Type.KeyPress:
+            if event.key() != Qt.Key.Key_Space and event.key() != Qt.Key.Key_Select:
                 return False
         else:
             return False
@@ -267,13 +268,13 @@ class CheckBoxDelegate(QStyledItemDelegate):
         """
         The user wanted to change the old state in the opposite.
         """
-        new_value = not bool(index.model().data(index, Qt.DisplayRole))
-        model.setData(index, new_value, Qt.EditRole)
+        new_value = not bool(index.model().data(index, Qt.ItemDataRole.DisplayRole))
+        model.setData(index, new_value, Qt.ItemDataRole.EditRole)
 
     @staticmethod
     def get_check_box_rect(option):
         check_box_style_option = QStyleOptionButton()
-        check_box_rect = QApplication.style().subElementRect(QStyle.SE_CheckBoxIndicator,
+        check_box_rect = QApplication.style().subElementRect(QStyle.SubElement.SE_CheckBoxIndicator,
                                                                    check_box_style_option, None)
         check_box_point = QPoint (option.rect.x() +
                                          option.rect.width() / 2 -
@@ -288,8 +289,8 @@ class VerticalScrollArea(QScrollArea):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setWidgetResizable(True)
 
     def resizeEvent(self, event):
@@ -299,7 +300,7 @@ class VerticalScrollArea(QScrollArea):
             widget.setFixedWidth(event.size().width())
 
     def eventFilter(self, obj, event):
-        if obj and obj == self.widget() and event.type() == QEvent.Resize:
+        if obj and obj == self.widget() and event.type() == QEvent.Type.Resize:
             self.setMinimumWidth(obj.minimumSizeHint().width() + self.verticalScrollBar().width())
         return super().eventFilter(obj, event)
 
@@ -320,7 +321,7 @@ class EditComboBox(ComboBox):
 
     def keyPressEvent(self, event):
         super().keyPressEvent(event)
-        if event.key() in (Qt.Key_Enter, Qt.Key_Return) and not self.signalsBlocked():
+        if event.key() in (Qt.Key.Key_Enter, Qt.Key.Key_Return) and not self.signalsBlocked():
             self.editingFinished.emit()
 
 class InfoListView(QListView):
@@ -354,7 +355,7 @@ class TextEdit(QTextEdit):
 
     def keyPressEvent(self, event):
         super().keyPressEvent(event)
-        if event.key() in (Qt.Key_Enter, Qt.Key_Return) and event.modifiers() == Qt.CTRL and not self.signalsBlocked():
+        if event.key() in (Qt.Key.Key_Enter, Qt.Key.Key_Return) and event.modifiers() == Qt.Modifier.CTRL and not self.signalsBlocked():
             self.editingFinished.emit()
 
 
@@ -404,11 +405,11 @@ class MultiLineEdit(QWidget):
             return editor
         def initStyleOption(self, option, index):
             super(MultiLineEdit.Delegate, self).initStyleOption(option, index)
-            option.state &= ~QStyle.State_MouseOver
-            if option.state & QStyle.State_Selected:
-                option.state |= QStyle.State_MouseOver
+            option.state &= ~QStyle.StateFlag.State_MouseOver
+            if option.state & QStyle.StateFlag.State_Selected:
+                option.state |= QStyle.StateFlag.State_MouseOver
             if not self.parent().hasFocus():
-                option.state &= ~QStyle.State_Selected
+                option.state &= ~QStyle.StateFlag.State_Selected
 
     def __init__(self, movable=False, change_cb=None, document=None, compact=True):
         super().__init__()
@@ -427,9 +428,9 @@ class MultiLineEdit(QWidget):
         add.pressed.connect(self.add_item)
         buttons.addWidget(add, 0, 0)
         act = QAction(self.list_widget)
-        act.setShortcut(QKeySequence(Qt.Key_Plus))
+        act.setShortcut(QKeySequence(Qt.Key.Key_Plus))
         act.triggered.connect(self.add_item)
-        act.setShortcutContext(Qt.WidgetShortcut)
+        act.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
         self.list_widget.addAction(act)
         self.remove = QToolButton()
         self.remove.setIcon(QIcon.fromTheme('list-remove'))
@@ -445,10 +446,10 @@ class MultiLineEdit(QWidget):
             self.remove.setStyleSheet('border: none;')
             delegate = MultiLineEdit.Delegate(self.list_widget, defines)
             self.list_widget.setItemDelegate(delegate)
-            self.list_widget.setEditTriggers(QAbstractItemView.CurrentChanged |
-                                             QAbstractItemView.SelectedClicked |
-                                             QAbstractItemView.DoubleClicked |
-                                             QAbstractItemView.EditKeyPressed)
+            self.list_widget.setEditTriggers(QAbstractItemView.EditTrigger.CurrentChanged |
+                                             QAbstractItemView.EditTrigger.SelectedClicked |
+                                             QAbstractItemView.EditTrigger.DoubleClicked |
+                                             QAbstractItemView.EditTrigger.EditKeyPressed)
             self.list_widget.setFixedHeight(60)
             self.edit = None
         else:
@@ -457,12 +458,12 @@ class MultiLineEdit(QWidget):
             self.edit.pressed.connect(self.edit_item)
             buttons.addWidget(self.edit, 1, 0)
             buttons.addWidget(self.remove, 2, 0)
-            self.list_widget.setEditTriggers(QAbstractItemView.DoubleClicked |
-                                             QAbstractItemView.EditKeyPressed)
+            self.list_widget.setEditTriggers(QAbstractItemView.EditTrigger.DoubleClicked |
+                                             QAbstractItemView.EditTrigger.EditKeyPressed)
         act = QAction(self.list_widget)
-        act.setShortcut(QKeySequence(Qt.Key_Delete))
+        act.setShortcut(QKeySequence(Qt.Key.Key_Delete))
         act.triggered.connect(self.remove_item)
-        act.setShortcutContext(Qt.WidgetShortcut)
+        act.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
         self.list_widget.addAction(act)
         self._movable = movable
         if movable:
@@ -470,17 +471,17 @@ class MultiLineEdit(QWidget):
             self.up.setIcon(QIcon.fromTheme('go-up'))
             self.up.pressed.connect(self.move_up)
             act = QAction(self.list_widget)
-            act.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Up)
+            act.setShortcut(Qt.Modifier.CTRL + Qt.Modifier.SHIFT + Qt.Key.Key_Up)
             act.triggered.connect(self.move_up)
-            act.setShortcutContext(Qt.WidgetShortcut)
+            act.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
             self.list_widget.addAction(act)
             self.down = QToolButton()
             self.down.setIcon(QIcon.fromTheme('go-down'))
             self.down.pressed.connect(self.move_down)
             act = QAction(self.list_widget)
-            act.setShortcut(Qt.CTRL + Qt.SHIFT + Qt.Key_Down)
+            act.setShortcut(Qt.Modifier.CTRL + Qt.Modifier.SHIFT + Qt.Key.Key_Down)
             act.triggered.connect(self.move_down)
-            act.setShortcutContext(Qt.WidgetShortcut)
+            act.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
             self.list_widget.addAction(act)
             if compact:
                 self.up.setStyleSheet('border: none;')
@@ -496,9 +497,9 @@ class MultiLineEdit(QWidget):
         layout.addLayout(buttons)
         self.selected()
         # act = QAction(self.list_widget)
-        # act.setShortcut(QKeySequence(Qt.Key_Return))
+        # act.setShortcut(QKeySequence(Qt.Key.Key_Return))
         # act.triggered.connect(self.edit_item)
-        # act.setShortcutContext(Qt.WidgetShortcut)
+        # act.setShortcutContext(Qt.ShortcutContext.WidgetShortcut)
         # self.list_widget.addAction(act)
         self.list_widget.itemSelectionChanged.connect(self.selected)
         self.list_widget.itemChanged.connect(self.item_changed)
@@ -532,7 +533,7 @@ class MultiLineEdit(QWidget):
                 item = QListWidgetItem()
             else:
                 item = QListWidgetItem('[enter value]')
-            item.setFlags(item.flags() | Qt.ItemIsEditable)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable)
             current = self.list_widget.currentRow()
             if self._movable and current != -1:
                 self.list_widget.insertItem(current+1, item)
@@ -578,7 +579,7 @@ class MultiLineEdit(QWidget):
                 self.list_widget.addItems(values)
                 for i in range(n):
                     item = self.list_widget.item(i)
-                    item.setFlags(item.flags() | Qt.ItemIsEditable)
+                    item.setFlags(item.flags() | Qt.ItemFlag.ItemIsEditable)
             else:
                 for i in range(n):
                     item = self.list_widget.item(i)
@@ -604,12 +605,12 @@ class LineEditWithClear(QLineEdit):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         clear_button = QToolButton(self)
-        clear_button.setFocusPolicy(Qt.NoFocus)
-        clear_button.setCursor(Qt.PointingHandCursor)
+        clear_button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        clear_button.setCursor(Qt.CursorShape.PointingHandCursor)
         clear_button.setIcon(QIcon(QIcon.fromTheme("edit-clear")))
         clear_button.setStyleSheet("background: transparent; border: none;")
         clear_button.clicked.connect(self.clear)
         layout = QHBoxLayout(self)
-        layout.addWidget(clear_button, 0, Qt.AlignRight)
+        layout.addWidget(clear_button, 0, Qt.AlignmentFlag.AlignRight)
         layout.setSpacing(0)
         layout.setContentsMargins(5, 5, 5, 5)

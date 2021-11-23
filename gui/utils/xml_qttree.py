@@ -40,16 +40,16 @@ class ETreeModel(QAbstractItemModel):
 
     def data(self, index, role):
         if not index.isValid(): return None
-        if role != Qt.DisplayRole: return None
+        if role != Qt.ItemDataRole.DisplayRole: return None
         item = index.internalPointer()
         return item.tag
 
     def flags(self, index):
-        if not index.isValid(): return Qt.NoItemFlags
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        if not index.isValid(): return Qt.ItemFlag.NoItemFlags
+        return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
 
     def headerData(self, section, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             return 'tag'
         return None
 

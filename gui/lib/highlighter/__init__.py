@@ -21,7 +21,7 @@ class Format:
 
     __slots__ = ("name", "tcf")
 
-    NAME = QTextFormat.UserProperty + 1
+    NAME = QTextFormat.Property.UserProperty + 1
 
     def __init__(self, name, color=None, bold=None, italic=None, underline=None, strikeout=None, base_format=None):
         self.name = name
@@ -37,9 +37,9 @@ class Format:
             tcf.setForeground(QBrush(color))
         if bold is not None:
             if bold:
-                tcf.setFontWeight(QFont.Bold)
+                tcf.setFontWeight(QFont.Weight.Bold)
             else:
-                tcf.setFontWeight(QFont.Normal)
+                tcf.setFontWeight(QFont.Weight.Normal)
         if italic is not None:
             tcf.setFontItalic(italic)
         if underline is not None:

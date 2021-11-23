@@ -15,7 +15,7 @@ import math
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
-from ..qt import QtSignal
+from ..qt import QtSignal, qt_exec
 from .config import CONFIG, dark_style
 from .widgets import EDITOR_FONT, set_icon_size
 
@@ -40,11 +40,11 @@ class TextEditor(QPlainTextEdit):
     def __init__(self, parent=None, line_numbers=True):
         super().__init__(parent)
         palette = self.palette()
-        palette.setColor(QPalette.Base, QColor(CONFIG['editor/background_color']))
-        palette.setColor(QPalette.Text, QColor(CONFIG['editor/foreground_color']))
+        palette.setColor(QPalette.ColorRole.Base, QColor(CONFIG['editor/background_color']))
+        palette.setColor(QPalette.ColorRole.Text, QColor(CONFIG['editor/foreground_color']))
         self.setFont(EDITOR_FONT)
         self.setPalette(palette)
-        self.setLineWrapMode(QPlainTextEdit.NoWrap)
+        self.setLineWrapMode(QPlainTextEdit.LineWrapMode.NoWrap)
         if line_numbers:
             self.line_numbers = LineNumberArea(self)
             self.line_numbers.setFont(EDITOR_FONT)
@@ -74,7 +74,7 @@ class TextEditor(QPlainTextEdit):
             end = start + len(source.text())
             super().insertFromMimeData(source)
             cursor.setPosition(start)
-            cursor.setPosition(end, QTextCursor.KeepAnchor)
+            cursor.setPosition(end, QTextCursor.MoveMode.KeepAnchor)
             self.setTextCursor(cursor)
         else:
             super().insertFromMimeData(source)
@@ -85,17 +85,17 @@ class TextEditor(QPlainTextEdit):
     def keyPressEvent(self, event):
         key = event.key()
         modifiers = event.modifiers()
-        if key == Qt.Key_Backspace and modifiers == (Qt.ControlModifier | Qt.ShiftModifier):
+        if key == Qt.Key.Key_Backspace and modifiers == (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier):
             cursor = self.textCursor()
             cursor.setPosition(self._changed_pos)
             self.setTextCursor(cursor)
             event.ignore()
             return
-        elif key == Qt.Key_Up and modifiers == (Qt.ControlModifier | Qt.ShiftModifier):
+        elif key == Qt.Key.Key_Up and modifiers == (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier):
             self.move_line_up()
             event.ignore()
             return
-        elif key == Qt.Key_Down and modifiers == (Qt.ControlModifier | Qt.ShiftModifier):
+        elif key == Qt.Key.Key_Down and modifiers == (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier):
             self.move_line_down()
             event.ignore()
             return
@@ -125,22 +125,22 @@ class TextEditor(QPlainTextEdit):
             if cursor.positionInBlock() == 0:
                 dst -= 1
         cursor.setPosition(start)
-        if not cursor.movePosition(QTextCursor.PreviousBlock):
+        if not cursor.movePosition(QTextCursor.MoveOperation.PreviousBlock):
             cursor.endEditBlock()
             return
         src = cursor.position()
-        cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
         line = cursor.selectedText()
         cursor.setPosition(dst)
-        cursor.movePosition(QTextCursor.EndOfBlock)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
         cursor.insertText('\n'+line)
         cursor.setPosition(src)
-        cursor.movePosition(QTextCursor.NextBlock, QTextCursor.KeepAnchor)
+        cursor.movePosition(QTextCursor.MoveOperation.NextBlock, QTextCursor.MoveMode.KeepAnchor)
         cursor.removeSelectedText()
         cursor.endEditBlock()
         cursor.setPosition(start-len(line)-1)
         if start != end:
-            cursor.setPosition(end-len(line)-1, QTextCursor.KeepAnchor)
+            cursor.setPosition(end-len(line)-1, QTextCursor.MoveMode.KeepAnchor)
         self.setTextCursor(cursor)
 
     def move_line_down(self):
@@ -150,28 +150,28 @@ class TextEditor(QPlainTextEdit):
         end = cursor.selectionEnd()
         cursor.setPosition(end)
         if start != end and cursor.positionInBlock() == 0:
-            cursor.movePosition(QTextCursor.PreviousCharacter)
-        if not cursor.movePosition(QTextCursor.NextBlock):
+            cursor.movePosition(QTextCursor.MoveOperation.PreviousCharacter)
+        if not cursor.movePosition(QTextCursor.MoveOperation.NextBlock):
             cursor.endEditBlock()
             return
-        cursor.movePosition(QTextCursor.EndOfBlock, QTextCursor.KeepAnchor)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock, QTextCursor.MoveMode.KeepAnchor)
         line = cursor.selectedText()
         cursor.removeSelectedText()
         cursor.deletePreviousChar()  # remove previous newline
         cursor.setPosition(start)
-        cursor.movePosition(QTextCursor.StartOfBlock)
+        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
         cursor.insertText(line+'\n')
         cursor.endEditBlock()
         cursor.setPosition(start+len(line)+1)
         if start != end:
-            cursor.setPosition(end+len(line)+1, QTextCursor.KeepAnchor)
+            cursor.setPosition(end+len(line)+1, QTextCursor.MoveMode.KeepAnchor)
         self.setTextCursor(cursor)
 
     def highlight_current_line(self):
         selection = QTextEdit.ExtraSelection()
         if self.hasFocus():
             selection.format.setBackground(CURRENT_LINE_COLOR)
-        selection.format.setProperty(QTextFormat.FullWidthSelection, True)
+        selection.format.setProperty(QTextFormat.Property.FullWidthSelection, True)
         selection.cursor = self.textCursor()
         selection.cursor.clearSelection()
         return [selection]
@@ -182,11 +182,11 @@ class TextEditor(QPlainTextEdit):
         document = self.document()
         text = cursor.selectedText()
         if not text.strip(): return []
-        cursor.movePosition(QTextCursor.Start)
+        cursor.movePosition(QTextCursor.MoveOperation.Start)
         selections = []
         while True:
             cursor = document.find(text, cursor,
-                                   QTextDocument.FindCaseSensitively | QTextDocument.FindWholeWords)
+                                   QTextDocument.FindFlag.FindCaseSensitively | QTextDocument.FindFlag.FindWholeWords)
             if not cursor.isNull():
                 selection = QTextEdit.ExtraSelection()
                 selection.cursor = cursor
@@ -240,7 +240,8 @@ class LineNumberArea(QWidget):
         """Return required width"""
         count = max(1, self.editor.blockCount() + self._offset)
         digits = int(math.log10(count)) + 1
-        return 8 + self.editor.fontMetrics().width('9') * digits
+        width = self.editor.fontMetrics().horizontalAdvance('9')
+        return 8 + width * digits
 
     def sizeHint(self):
         QSize(self.get_width(), 0)
@@ -269,7 +270,7 @@ class LineNumberArea(QWidget):
             if block.isVisible() and bottom >= event.rect().top():
                 painter.setPen(LINENUMBER_FOREGROUND_COLOR)
                 painter.drawText(0, top, self.width()-3, self.editor.fontMetrics().height(),
-                                 Qt.AlignRight, str(block_number))
+                                 Qt.AlignmentFlag.AlignRight, str(block_number))
             block = block.next()
             top = bottom
             bottom = top + self.editor.blockBoundingRect(block).height()
@@ -312,11 +313,11 @@ class LineEditWithHistory(QLineEdit):
         self._position = len(self._history) + 1
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Up and self._position > 1:
+        if event.key() == Qt.Key.Key_Up and self._position > 1:
             self._position -= 1
             self.setText(self._history[self._position-1])
             self.historyChanged.emit()
-        elif event.key() == Qt.Key_Down and self._position < len(self._history):
+        elif event.key() == Qt.Key.Key_Down and self._position < len(self._history):
             self.setText(self._history[self._position])
             self._position += 1
             self.historyChanged.emit()
@@ -372,11 +373,11 @@ class EditorWidget(QWidget):
                                                "           background-color: #ffffcc; color: black; }")
         find_label = QLabel()
         find_label.setText("Search: ")
-        find_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        find_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         replace_label = QLabel()
         replace_label.setText("Replace: ")
-        replace_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        label_width = replace_label.fontMetrics().width(replace_label.text())
+        replace_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        label_width = replace_label.fontMetrics().horizontalAdvance(replace_label.text())
         find_label.setFixedWidth(label_width)
         replace_label.setFixedWidth(label_width)
         self.find_edit = LineEditWithHistory()
@@ -400,7 +401,7 @@ class EditorWidget(QWidget):
         self.find_regex.triggered.connect(self.trigger_regex)
         self.find_selection = QAction('&Selection Only', self.find_edit)
         self.find_selection.setCheckable(True)
-        self.find_edit.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.find_edit.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.find_edit.customContextMenuRequested.connect(self._find_context_menu)
         self.find_options = QMenu()
         self.find_options.addAction(self.find_matchcase)
@@ -429,7 +430,7 @@ class EditorWidget(QWidget):
         replace_all_button = QPushButton(self)
         replace_all_button.setText("Replace &all")
         replace_all_button.pressed.connect(self.replace_all)
-        width = int(replace_button.fontMetrics().width(replace_button.text()) * 1.2)
+        width = int(replace_button.fontMetrics().horizontalAdvance(replace_button.text()) * 1.2)
         next_button.setFixedWidth(width)
         prev_button.setFixedWidth(width)
         replace_button.setFixedWidth(width)
@@ -440,7 +441,7 @@ class EditorWidget(QWidget):
         self.replace_toolbar.hide()
         self.message_toolbar.hide()
         hide_action = QAction(self)
-        hide_action.setShortcut(QKeySequence(Qt.Key_Escape))
+        hide_action.setShortcut(QKeySequence(Qt.Key.Key_Escape))
         hide_action.triggered.connect(self.hide_toolbars)
         self.editor.addAction(hide_action)
         self._add_shortcut('editor_find_next', self.find_next)
@@ -457,12 +458,12 @@ class EditorWidget(QWidget):
         menu.addAction(self.find_wholewords)
         menu.addAction(self.find_regex)
         menu.addAction(self.find_selection)
-        menu.exec_(self.find_toolbar.mapToGlobal(pos))
+        qt_exec(menu, self.find_toolbar.mapToGlobal(pos))
 
     def _find_flags(self):
-        flags = QTextDocument.FindFlags()
-        if self.find_matchcase.isChecked(): flags |= QTextDocument.FindCaseSensitively
-        if self.find_wholewords.isChecked(): flags |= QTextDocument.FindWholeWords
+        flags = QTextDocument.FindFlag(0)
+        if self.find_matchcase.isChecked(): flags |= QTextDocument.FindFlag.FindCaseSensitively
+        if self.find_wholewords.isChecked(): flags |= QTextDocument.FindFlag.FindWholeWords
         return flags
 
     def add_action(self, name, icon, shortcut, slot):
@@ -524,19 +525,23 @@ class EditorWidget(QWidget):
         cursor = self.editor.textCursor()
         if not cursor.hasSelection(): return []
         document = self.editor.document()
-        cursor.movePosition(QTextCursor.Start)
+        cursor.movePosition(QTextCursor.MoveOperation.Start)
         selections = []
         if self.find_regex.isChecked():
-            findtext = QRegExp(self.find_edit.text())
+            findtext = QRegularExpression(self.find_edit.text())
         else:
             findtext = self.find_edit.text()
         while True:
             cursor = document.find(findtext, cursor, self._find_flags())
             if not cursor.isNull():
-                selection = QTextEdit.ExtraSelection()
-                selection.cursor = cursor
-                selection.format.setBackground(MATCH_COLOR)
-                selections.append(selection)
+                if not cursor.selection().isEmpty():
+                    selection = QTextEdit.ExtraSelection()
+                    selection.cursor = cursor
+                    selection.format.setBackground(MATCH_COLOR)
+                    selections.append(selection)
+                else:
+                    if not cursor.movePosition(QTextCursor.MoveOperation.NextCharacter):
+                        break
             else:
                 break
         self.editor.update_selections(selections + self._replaced_selections)
@@ -551,28 +556,28 @@ class EditorWidget(QWidget):
             cursor.setPosition(cursor.selectionStart())
         pal = self.replace_edit.palette()
         if self.find_regex.isChecked():
-            self._findtext = QRegExp(self.find_edit.text())
+            self._findtext = QRegularExpression(self.find_edit.text())
         else:
             self._findtext = self.find_edit.text()
         if self._findtext:
             document = self.editor.document()
             findflags = self._find_flags()
-            if backward: findflags |= QTextDocument.FindBackward
+            if backward: findflags |= QTextDocument.FindFlag.FindBackward
             found = document.find(self._findtext, cursor, findflags)
             if found.isNull() and rewind:
-                cursor.movePosition(QTextCursor.End if backward else QTextCursor.Start)
+                cursor.movePosition(QTextCursor.MoveOperation.End if backward else QTextCursor.MoveOperation.Start)
                 found = document.find(self._findtext, cursor, findflags)
             if found.isNull():
-                pal.setColor(QPalette.Base, QColor("#381111" if dark_style() else "#fdd"))
+                pal.setColor(QPalette.ColorRole.Base, QColor("#381111" if dark_style() else "#fdd"))
                 self.find_edit.setPalette(pal)
                 return False
             elif theend is not None and found.selectionEnd() > theend:
-                pal.setColor(QPalette.Base, QColor("#381111" if dark_style() else "#fdd"))
+                pal.setColor(QPalette.ColorRole.Base, QColor("#381111" if dark_style() else "#fdd"))
                 self.find_edit.setPalette(pal)
                 return False
             else:
                 self.editor.setTextCursor(found)
-                pal.setColor(QPalette.Base, QColor("#232" if dark_style() else "#dfd"))
+                pal.setColor(QPalette.ColorRole.Base, QColor("#232" if dark_style() else "#dfd"))
                 self.find_edit.setPalette(pal)
                 self._highlight_matches()
                 return True
@@ -601,24 +606,36 @@ class EditorWidget(QWidget):
 
     def _replace_regexp(self, cursor):
         block = cursor.block()
-        self._findtext.indexIn(block.text(), cursor.selectionStart()-block.position())  # guaranteed to succeed
+        match = self._findtext.match(block.text(), cursor.selectionStart()-block.position())  # guaranteed to succeed
         text = self.replace_edit.text()
         result = ""
-        s = 0
-        ignore = False
+        part = 0
+        escape = False
+        dollar = False
         for i, c in enumerate(text):
-            if text[i] in '0123456789\\' and i != 0 and text[i-1] == '\\' and not ignore:
-                result += text[s:i-1]
-                s = i + 1
-                if text[i] == '\\':
+            if dollar and c.isdigit():
+                result += match.captured(int(c))
+                part = i + 1
+                dollar = False
+                continue
+            dollar = False
+            if c == '\\':
+                result += text[part:i]
+                part = i + 1
+                escape = not escape
+                if not escape:
                     result += '\\'
-                    ignore = True
-                else:
-                    g = int(text[i])
-                    result += self._findtext.cap(g)
-            elif ignore:
-                ignore = False
-        result += text[s:]
+            elif c == '$' and not escape:
+                result += text[part:i]
+                part = i + 1
+                dollar = True
+            else:
+                if escape:
+                    result += text[part:i]
+                    part = i + 1
+                    result += ("\\"+c).encode('raw_unicode_escape').decode('unicode_escape')
+                escape = False
+        result += text[part:]
         return result
 
     def replace_next(self):
@@ -642,7 +659,7 @@ class EditorWidget(QWidget):
         cursor = self.editor.textCursor()
         start = cursor.selectionStart()
         oldlen = self.editor.document().characterCount()
-        if isinstance(self._findtext, QRegExp):
+        if isinstance(self._findtext, QRegularExpression):
             cursor.insertText(self._replace_regexp(cursor))
         else:
             cursor.insertText(self.replace_edit.text())
@@ -652,14 +669,14 @@ class EditorWidget(QWidget):
         selection = QTextEdit.ExtraSelection()
         selection.cursor = self.editor.textCursor()
         selection.cursor.setPosition(start)
-        selection.cursor.setPosition(end, QTextCursor.KeepAnchor)
+        selection.cursor.setPosition(end, QTextCursor.MoveMode.KeepAnchor)
         selection.format.setBackground(REPLACE_COLOR)
         self._replaced_selections.append(selection)
         self._replace_count += 1
         if not self._find(cont=False, rewind=rewind, theend=theend):
             self.editor.update_selections(self._replaced_selections)
             cursor.setPosition(start)
-            cursor.setPosition(end, QTextCursor.KeepAnchor)
+            cursor.setPosition(end, QTextCursor.MoveMode.KeepAnchor)
             self.editor.setTextCursor(cursor)
             return False
         # self.editor.setFocus()
@@ -680,7 +697,7 @@ class EditorWidget(QWidget):
         self._replace_count = 0
         try:
             if end is None:
-                cursor.movePosition(QTextCursor.Start)
+                cursor.movePosition(QTextCursor.MoveOperation.Start)
             self.editor.setTextCursor(cursor)
             doclen = self.editor.document().characterCount()
             while self._replace_next(rewind=False, theend=end):
@@ -690,7 +707,7 @@ class EditorWidget(QWidget):
                     doclen = newlen
             if start is not None:
                 cursor.setPosition(start)
-                cursor.setPosition(end + self.editor.document().characterCount() - doclen, QTextCursor.KeepAnchor)
+                cursor.setPosition(end + self.editor.document().characterCount() - doclen, QTextCursor.MoveMode.KeepAnchor)
                 self.editor.setTextCursor(cursor)
         finally:
             cursor.endEditBlock()

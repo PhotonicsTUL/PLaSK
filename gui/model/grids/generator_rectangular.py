@@ -101,11 +101,11 @@ class Refinements(TableModelEditMethods, QAbstractTableModel):
 
     get_raw = get
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if not index.isValid(): return None
-        if role == Qt.DisplayRole or role == Qt.EditRole:
+        if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
             return self.get(index.column(), index.row())
-        if role == Qt.ToolTipRole:
+        if role == Qt.ItemDataRole.ToolTipRole:
             col = index.column()
             attr = ('</b>... ', '<b>object</b>=""', '<b>path</b>=""',
                     '<b>at</b>=""', '<b>by</b>=""', '<b>every</b>=""')[col]
@@ -121,12 +121,12 @@ class Refinements(TableModelEditMethods, QAbstractTableModel):
             self.entries[row].set_attr_by_index(col+self.one, empty_to_none(value))
 
     def flags(self, index):
-        flags = super().flags(index) | Qt.ItemIsSelectable | Qt.ItemIsEnabled
-        if not self.is_read_only(): flags |= Qt.ItemIsEditable
+        flags = super().flags(index) | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
+        if not self.is_read_only(): flags |= Qt.ItemFlag.ItemIsEditable
         return flags
 
     def headerData(self, col, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             try:
                 return RefinementConf.all_attributes_names[col+self.one].title()
             except IndexError:

@@ -14,7 +14,7 @@ import shutil
 import re
 
 from .qt.QtWidgets import *
-from .controller.script import ScriptController
+from .controller.script import ScriptController, LOG_LEVELS
 from .utils.config import CONFIG
 
 coding_re_s = re.compile("(?:\\s*#[^\\n]*\\n)*\\s*#[^\\n]*coding[=:]\\s*([-\\w.]+)")
@@ -118,4 +118,6 @@ class PyDocument:
         return ""
 
     def set_loglevel(self, loglevel):
+        if isinstance(loglevel, int):
+            loglevel = LOG_LEVELS[loglevel]
         self.loglevel = loglevel

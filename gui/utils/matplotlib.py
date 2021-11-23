@@ -26,12 +26,10 @@ from ..qt import QT_API
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
 from ..qt.QtGui import *
-if QT_API in ('PyQt', 'PySide'):
-    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-    from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
-else:
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-    from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT
+try:
+    from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
+except ImportError:
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
 from matplotlib.backend_bases import NavigationToolbar2
 import matplotlib.colors
 
@@ -45,10 +43,10 @@ class Cursors:
 cursors = Cursors()
 
 cursord = {
-    cursors.MOVE: Qt.SizeAllCursor,
-    cursors.HAND: Qt.PointingHandCursor,
-    cursors.POINTER: Qt.ArrowCursor,
-    cursors.SELECT_REGION: Qt.CrossCursor,
+    cursors.MOVE: Qt.CursorShape.SizeAllCursor,
+    cursors.HAND: Qt.CursorShape.PointingHandCursor,
+    cursors.POINTER: Qt.CursorShape.ArrowCursor,
+    cursors.SELECT_REGION: Qt.CursorShape.CrossCursor,
 }
 
 
@@ -101,7 +99,7 @@ class PlotWidgetBase(QWidget):
 
             # We need to copy-change the parent constructor, as the original does not suit our needs
             QToolBar.__init__(self, parent)
-            self.setAllowedAreas(Qt.TopToolBarArea | Qt.BottomToolBarArea)
+            self.setAllowedAreas(Qt.ToolBarArea(Qt.ToolBarArea.TopToolBarArea | Qt.ToolBarArea.BottomToolBarArea))
             self.coordinates = coordinates
             self._actions = {}
             self._create_toolbar()
@@ -140,7 +138,7 @@ class PlotWidgetBase(QWidget):
                             widget = QWidget()
                             layout = QHBoxLayout()
                             layout.setContentsMargins(0, 2, 0, 0)
-                            layout.setAlignment(Qt.AlignVCenter)
+                            layout.setAlignment(Qt.AlignmentFlag.AlignVCenter)
                             layout.addWidget(QLabel(text))
                             layout.addWidget(combo)
                             widget.setLayout(layout)
@@ -164,8 +162,8 @@ class PlotWidgetBase(QWidget):
             # will resize this label instead of the buttons.
             if self.coordinates:
                 self.locLabel = QLabel("", self)
-                self.locLabel.setAlignment(Qt.AlignRight | Qt.AlignTop)
-                self.locLabel.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Ignored))
+                self.locLabel.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignTop)
+                self.locLabel.setSizePolicy(QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Ignored))
                 label_action = self.addWidget(self.locLabel)
                 label_action.setVisible(True)
 
@@ -294,8 +292,8 @@ class PlotWidgetBase(QWidget):
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setParent(self)
-        #self.canvas.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.figure.set_facecolor(self.palette().color(QPalette.Background).name())
+        #self.canvas.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.figure.set_facecolor(self.palette().color(QPalette.ColorRole.Window).name())
         self.figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
         self.canvas.updateGeometry()
         self.toolbar = self.NavigationToolbar(self.canvas, self, controller)

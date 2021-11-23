@@ -96,7 +96,7 @@ class DefinesModel(TableModel):
         return 2    # 3 if comment supported
 
     def headerData(self, col, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             if col == 0: return 'Name'
             if col == 1: return 'Value'
             if col == 2: return 'Comment'

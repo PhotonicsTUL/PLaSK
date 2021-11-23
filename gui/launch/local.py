@@ -105,7 +105,7 @@ class Launcher:
         self.diredit.setReadOnly(True)
         self.diredit.setText(dirname)
         pal = self.diredit.palette()
-        pal.setColor(QPalette.Base, QPalette().color(QPalette.Normal, QPalette.Window))
+        pal.setColor(QPalette.ColorRole.Base, QPalette().color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Window))
         self.diredit.setPalette(pal)
         dirlayout.addWidget(self.diredit)
         dirlayout.addWidget(dirbutton)
@@ -143,7 +143,7 @@ class Launcher:
         layout.addWidget(self.debug)
 
         layout.setContentsMargins(1, 1, 1, 1)
-        widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         return widget
 
     def launch(self, main_window, args, defs):
@@ -157,8 +157,8 @@ class Launcher:
             confirm = QMessageBox.question(main_window, "Unsaved File",
                                            "The file must be saved before launching local computations. "
                                            "Do you want to save the file now?",
-                                           QMessageBox.Yes | QMessageBox.No)
-            if confirm == QMessageBox.No or not main_window.save():
+                                           QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            if confirm == QMessageBox.StandardButton.No or not main_window.save():
                 return
         filename = os.path.abspath(main_window.document.filename)
         if self.dirname:
@@ -169,11 +169,11 @@ class Launcher:
         dock = OutputWindow(self, main_window)
         try:
             bottom_docked = [w for w in main_window.findChildren(QDockWidget)
-                             if main_window.dockWidgetArea(w) == (Qt.BottomDockWidgetArea)][-1]
+                             if main_window.dockWidgetArea(w) == (Qt.DockWidgetArea.BottomDockWidgetArea)][-1]
         except IndexError:
-            main_window.addDockWidget(Qt.BottomDockWidgetArea, dock)
+            main_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, dock)
         else:
-            main_window.addDockWidget(Qt.BottomDockWidgetArea, dock)
+            main_window.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, dock)
             main_window.tabifyDockWidget(bottom_docked, dock)
             dock.show()
             dock.raise_()

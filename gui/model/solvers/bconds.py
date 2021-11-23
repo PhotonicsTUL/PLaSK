@@ -345,19 +345,19 @@ class BoundaryConditionsModel(QAbstractItemModel):
         return self.index_for_place(index.internalPointer().parent)
 
     def headerData(self, no, orientation, role):
-        if role == Qt.DisplayRole:
-            # if orientation == Qt.Horizontal:
+        if role == Qt.ItemDataRole.DisplayRole:
+            # if orientation == Qt.Orientation.Horizontal:
                 if no == 0: return 'Place'
                 elif no == 1: return 'Place Details'
                 elif no == 2: return ' #'
                 else: return self.schema.keys[no-3].title()
-            # elif orientation == Qt.Vertical:
+            # elif orientation == Qt.Orientation.Vertical:
             #     return str(no)
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if not index.isValid():
             return None
-        if role in (Qt.DisplayRole, Qt.EditRole):
+        if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.EditRole):
             node = index.internalPointer()
             col = index.column()
             if col == 0:
@@ -372,20 +372,20 @@ class BoundaryConditionsModel(QAbstractItemModel):
                     return node.value[self.schema.keys[col-3]]
                 except (IndexError, AttributeError):
                     pass
-        elif role == Qt.TextAlignmentRole:
+        elif role == Qt.ItemDataRole.TextAlignmentRole:
             if index.column() == 2:
-                return Qt.AlignRight
-        # elif role == Qt.BackgroundRole:
+                return Qt.AlignmentFlag.AlignRight
+        # elif role == Qt.ItemDataRole.BackgroundRole:
         #     if index.column() == 2:
         #         pal = QPalette()
-        #         return pal.color(QPalette.Window)
-        # elif role == Qt.ForegroundRole:
+        #         return pal.color(QPalette.ColorRole.Window)
+        # elif role == Qt.ItemDataRole.ForegroundRole:
         #     if index.column() == 2:
         #         pal = QPalette()
-        #         return pal.color(QPalette.WindowText)
-        # if role == Qt.ToolTipRole:
+        #         return pal.color(QPalette.ColorRole.WindowText)
+        # if role == Qt.ItemDataRole.ToolTipRole:
         #     return '\n'.join([str(err) for err in self.info_by_row.get(index.row(), []) if err.has_connection('cols', index.column())])
-        # if role == Qt.DecorationRole: #Qt.BackgroundColorRole:   # maybe TextColorRole?
+        # if role == Qt.ItemDataRole.DecorationRole: #Qt.ItemDataRole.BackgroundColorRole:   # maybe TextColorRole?
         #     max_level = -1
         #     c = index.column()
         #     for err in self.info_by_row.get(index.row(), []):
@@ -393,7 +393,7 @@ class BoundaryConditionsModel(QAbstractItemModel):
         #             if err.level > max_level: max_level = err.level
         #     return info.info_level_icon(max_level)
 
-    def setData(self, index, value, role=Qt.EditRole):
+    def setData(self, index, value, role=Qt.ItemDataRole.EditRole):
         if not index.isValid(): return False
         node = index.internalPointer()
         entries = self.children_of_node(node.parent)
@@ -433,12 +433,12 @@ class BoundaryConditionsModel(QAbstractItemModel):
 
     def flags(self, index):
         flags = super().flags(index) \
-                | Qt.ItemIsSelectable | Qt.ItemIsEnabled #| Qt.ItemIsEditable
+                | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled #| Qt.ItemFlag.ItemIsEditable
         col = index.column()
         if col == 0 or \
             (col == 1 and index.internalPointer().place.is_editable) or \
             (col > 2 and index.internalPointer().parent is None):
-            flags |= Qt.ItemIsEditable
+            flags |= Qt.ItemFlag.ItemIsEditable
         return flags
 
     def insert(self, index=None, value=None):

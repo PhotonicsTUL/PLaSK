@@ -330,7 +330,7 @@ class MaterialsModel(TableModel):
             return 1
 
         def headerData(self, col, orientation, role):
-            if orientation == Qt.Horizontal and role == Qt.DisplayRole and col == 0:
+            if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole and col == 0:
                 return 'Materials in the ' + self.what
             return None
 
@@ -338,9 +338,9 @@ class MaterialsModel(TableModel):
             if self.cache is None: return 0
             return len(self.cache)
 
-        def data(self, index, role=Qt.DisplayRole):
+        def data(self, index, role=Qt.ItemDataRole.DisplayRole):
             if not index.isValid() or self.cache is None: return None
-            if role == Qt.DisplayRole:
+            if role == Qt.ItemDataRole.DisplayRole:
                 return self.cache[index.row()]
 
     class Material(TableModelEditMethods, QAbstractTableModel): #(InfoSource)
@@ -398,22 +398,22 @@ class MaterialsModel(TableModel):
 
         get_raw = get
 
-        def data(self, index, role=Qt.DisplayRole):
+        def data(self, index, role=Qt.ItemDataRole.DisplayRole):
             if not index.isValid(): return None
-            if role == Qt.DisplayRole or role == Qt.EditRole:
+            if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
                 return self.get(index.column(), index.row())
-    #         if role == Qt.ToolTipRole:
+    #         if role == Qt.ItemDataRole.ToolTipRole:
     #             return '\n'.join(str(err) for err in self.info_by_row.get(index.row(), [])
     #                              if err.has_connection(u'cols', index.column())s)
-    #         if role == Qt.DecorationRole: #Qt.BackgroundColorRole:   #maybe TextColorRole?
+    #         if role == Qt.ItemDataRole.DecorationRole: #Qt.ItemDataRole.BackgroundColorRole:   #maybe TextColorRole?
     #             max_level = -1
     #             c = index.column()
     #             for err in self.info_by_row.get(index.row(), []):
     #                 if err.has_connection(u'cols', c, c == 0):
     #                     if err.level > max_level: max_level = err.level
     #             return info.info_level_icon(max_level)
-            if role == Qt.BackgroundRole and index.column() >= 2:
-                return QBrush(QPalette().color(QPalette.Normal, QPalette.Window))
+            if role == Qt.ItemDataRole.BackgroundRole and index.column() >= 2:
+                return QBrush(QPalette().color(QPalette.ColorGroup.Normal, QPalette.ColorRole.Window))
 
         def set(self, col, row, value):
             p = self.properties[row]
@@ -423,16 +423,16 @@ class MaterialsModel(TableModel):
                 p.value = value
 
         def flags(self, index):
-            flags = super(MaterialsModel.Material, self).flags(index) | Qt.ItemIsSelectable | Qt.ItemIsEnabled
+            flags = super(MaterialsModel.Material, self).flags(index) | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
 
-            if index.column() in [0, 1] and not self.materials_model.is_read_only(): flags |= Qt.ItemIsEditable
-            #flags |= Qt.ItemIsDragEnabled
-            #flags |= Qt.ItemIsDropEnabled
+            if index.column() in [0, 1] and not self.materials_model.is_read_only(): flags |= Qt.ItemFlag.ItemIsEditable
+            #flags |= Qt.ItemFlag.ItemIsDragEnabled
+            #flags |= Qt.ItemFlag.ItemIsDropEnabled
 
             return flags
 
         def headerData(self, col, orientation, role):
-            if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
                 try:
                     return ('Name', 'Value', 'Unit', 'Help')[col]
                 except IndexError:
@@ -503,22 +503,22 @@ class MaterialsModel(TableModel):
             res.append(etree.Comment(c))
         return res
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if isinstance(self.entries[index.row()], MaterialsModel.External):
             if index.column() == 1:
-                if role == Qt.FontRole:
+                if role == Qt.ItemDataRole.FontRole:
                     font = QFont()
                     font.setItalic(True)
                     return font
-            elif index.column() == 0 and role == Qt.DecorationRole:
+            elif index.column() == 0 and role == Qt.ItemDataRole.DecorationRole:
                 return QIcon.fromTheme(
                     {'library': 'material-library', 'module': 'material-module'}[self.entries[index.row()].what])
-            elif index.column() == 2 and role == Qt.UserRole:
+            elif index.column() == 2 and role == Qt.ItemDataRole.UserRole:
                 return False
         if index.column() == 2:
-            if role == Qt.UserRole:
+            if role == Qt.ItemDataRole.UserRole:
                 return True
-            if role == Qt.ToolTipRole:
+            if role == Qt.ItemDataRole.ToolTipRole:
                 return "Check this box if material is a generic alloy (i.e. an alloy material, which you can specify " \
                        "composition of).\nIts name must then consist of compound elements symbols with optional "\
                        "label and dopant, separated by '_' and ':' respectively"
@@ -527,7 +527,7 @@ class MaterialsModel(TableModel):
     def flags(self, index):
         flags = super().flags(index)
         if 1 <= index.column() < 3 and isinstance(self.entries[index.row()], MaterialsModel.External):
-            flags &= ~Qt.ItemIsEditable & ~Qt.ItemIsEnabled
+            flags &= ~Qt.ItemFlag.ItemIsEditable & ~Qt.ItemFlag.ItemIsEnabled
         return flags
 
     def get(self, col, row):
@@ -550,7 +550,7 @@ class MaterialsModel(TableModel):
             index0 = entry.index(0, 0)
             last = len(entry.cache) - 1 if entry.cache is not None else 0
             index1 = entry.index(last, 0)
-            entry.headerDataChanged.emit(Qt.Vertical, 0, last)
+            entry.headerDataChanged.emit(Qt.Orientation.Vertical, 0, last)
             entry.dataChanged.emit(index0, index1)
 
     def create_default_entry(self):
@@ -562,7 +562,7 @@ class MaterialsModel(TableModel):
         return 3    # 4 if comment supported
 
     def headerData(self, col, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+        if orientation == Qt.Orientation.Horizontal and role == Qt.ItemDataRole.DisplayRole:
             if col == 0: return 'Name'
             if col == 1: return 'Base'
             if col == 2: return '(..)'
