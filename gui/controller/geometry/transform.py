@@ -53,7 +53,7 @@ class GNFlipController(GNFlipMirrorController):
 
     def construct_form(self):
         self.construct_group('Flip Settings')
-        self.axis = self.construct_combo_box('inverted axis', items=self.node.get_axes_conf_dim(), change_cb=self._save_axis_undoable)
+        self.axis = self.construct_combo_box('Flipped axis', items=self.node.get_axes_conf_dim(), change_cb=self._save_axis_undoable)
         self.axis.setToolTip('&lt;flip <b>axis</b>="" ...&gt;<br/>'
                     'Name of the inverted axis (i.e. perpendicular to the reflection plane). (required)')
         super().construct_form()
@@ -63,9 +63,9 @@ class GNMirrorController(GNFlipMirrorController):
 
     def construct_form(self):
         self.construct_group('Mirror Settings')
-        self.axis = self.construct_combo_box('Inverted axis', items=self.node.get_axes_conf_dim(), change_cb=self._save_axis_undoable)
+        self.axis = self.construct_combo_box('Mirrored axis', items=self.node.get_axes_conf_dim(), change_cb=self._save_axis_undoable)
         self.axis.setToolTip('&lt;mirror <b>axis</b>="" ...&gt;<br/>'
-                             'Name of the inverted axis (i.e. perpendicular to the reflection plane). (required)')
+                             'Name of the mirrored axis (i.e. perpendicular to the reflection plane). (required)')
         super().construct_form()
 
 
