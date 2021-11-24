@@ -38,12 +38,16 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.mathjax',
 # Use Napoleon if available for pretty docstrings formatting
 
 try:
-    import sphinxcontrib.napoleon
+    try:
+        import sphinx.ext.napoleon
+        extensions.append('sphinx.ext.napoleon')
+    except ImportError:
+        import sphinxcontrib.napoleon
+        extensions.append('sphinxcontrib.napoleon')
 except ImportError:
     import warnings
     warnings.warn("No napoleon installed. API doc will not be properly formatted!")
 else:
-    extensions.append('sphinxcontrib.napoleon')
     napoleon_use_param = True
     napoleon_use_admonition_for_examples = True
     napoleon_numpy_docstring = False
