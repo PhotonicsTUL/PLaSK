@@ -57,12 +57,15 @@ class XMLEditor(TextEditor):
             if cursor.hasSelection():
                 if key == Qt.Key.Key_Tab:
                     indent(self)
+                    event.ignore()
                     return
                 elif key == Qt.Key.Key_Backtab:
                     unindent(self)
+                    event.ignore()
                     return
             elif key == Qt.Key.Key_Backtab:
                 unindent(self)
+                event.ignore()
                 return
             else:
                 col = cursor.positionInBlock()
@@ -70,10 +73,12 @@ class XMLEditor(TextEditor):
                 if inindent:
                     if key == Qt.Key.Key_Tab:
                         indent(self, col)
+                        event.ignore()
                         return
                     else:
                         if not (cursor.atBlockStart()):
                             unindent(self, col)
+                            event.ignore()
                             return
         elif key == Qt.Key.Key_Home and not modifiers & ~Qt.KeyboardModifier.ShiftModifier:
             cursor = self.textCursor()
@@ -85,9 +90,23 @@ class XMLEditor(TextEditor):
                 while self.document().characterAt(cursor.position()) in [' ', '\t']:
                     cursor.movePosition(QTextCursor.MoveOperation.Right, mode)
                 self.setTextCursor(cursor)
+                event.ignore()
                 return
         elif key == Qt.Key.Key_Slash:
-            if parse_slash(self): return
+            if parse_slash(self):
+                event.ignore()
+                return
+        elif key == Qt.Key.Key_Less:
+            cursor = self.textCursor()
+            if cursor.hasSelection():
+                pos, anchor = cursor.position() + 1, cursor.anchor() + 1
+                text = '<' + cursor.selectedText() + '>'
+                cursor.insertText(text)
+                cursor.setPosition(anchor)
+                cursor.setPosition(pos, QTextCursor.MoveMode.KeepAnchor)
+                self.setTextCursor(cursor)
+                event.ignore()
+                return
 
         super().keyPressEvent(event)
 

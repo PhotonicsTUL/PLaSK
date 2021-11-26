@@ -56,7 +56,6 @@ class TextEditor(QPlainTextEdit):
         self.cursorPositionChanged.connect(self.update_selections)
         self.selectionChanged.connect(self.update_selections)
         self.selections = []
-
         self._changed_pos = 0
         self.textChanged.connect(self.on_text_change)
 
@@ -85,6 +84,7 @@ class TextEditor(QPlainTextEdit):
     def keyPressEvent(self, event):
         key = event.key()
         modifiers = event.modifiers()
+        char = event.text()
         if key == Qt.Key.Key_Backspace and modifiers == (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier):
             cursor = self.textCursor()
             cursor.setPosition(self._changed_pos)
@@ -99,6 +99,18 @@ class TextEditor(QPlainTextEdit):
             self.move_line_down()
             event.ignore()
             return
+        elif char and char in '([{"\'':
+            cursor = self.textCursor()
+            if cursor.hasSelection():
+                pos, anchor = cursor.position() + 1, cursor.anchor() + 1
+                text = char + cursor.selectedText() + {'(': ')', '[': ']', '{': '}', '"': '"', "'": "'"}[char]
+                cursor.insertText(text)
+                cursor.setPosition(anchor)
+                cursor.setPosition(pos, QTextCursor.MoveMode.KeepAnchor)
+                self.setTextCursor(cursor)
+                event.ignore()
+                return
+
         super().keyPressEvent(event)
 
     def focusInEvent(self, event):
