@@ -147,6 +147,21 @@ class OrderedMeshes(unittest.TestCase):
         self.assertTrue(test.regular2d_changed)
         test.regular2d.axis0.resize(20)
 
+    def testOrderedSlice(self):
+        mesh = plask.mesh.Ordered(range(21))
+        del mesh[11::2]
+        self.assertEqual(list(mesh), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20])
+        del mesh[11:]
+        self.assertEqual(list(mesh), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        del mesh[0]
+        self.assertEqual(list(mesh), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+        del mesh[0:15:2]
+        self.assertEqual(list(mesh), [2, 4, 6, 8, 10])
+        del mesh[-1:-3]
+        self.assertEqual(list(mesh), [2, 4, 6, 8, 10])
+        del mesh[-3:-1]
+        self.assertEqual(list(mesh), [2, 4, 10])
+
 
 class CustomMesh(unittest.TestCase):
 

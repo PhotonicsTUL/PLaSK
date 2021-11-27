@@ -54,10 +54,12 @@ class TempGradientTest(unittest.TestCase):
         stack = list(self.solver.stack)
         vaxis = self.solver.layer_edges
         centers = self.solver.layer_centers
-        self.assertEqual(stack, [0, 1, 1, 3, 4, 5, 2])
-        self.assertEqual(str(vaxis), '[0, 2, 15.45, 18.35, 19.6, 20]')
+        self.assertEqual(stack, [0, 1, 3, 4, 5, 2])
+        self.assertEqual(str(vaxis), '[0, 15.45, 18.35, 19.6, 20]')
         if __name__ == '__main__':
             temp = self.temp.interpolate(mesh.Rectangular2D([0.5], vaxis), 'linear')
+            for x in mesh.Rectangular2D.SimpleGenerator()(self.solver.geometry).axis1:
+              axvline(x, color='0.5', lw=0.5)
             print(stack)
             print(list(vaxis))
             cmap = matplotlib.cm.get_cmap()

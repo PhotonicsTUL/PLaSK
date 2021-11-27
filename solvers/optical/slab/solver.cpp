@@ -378,7 +378,6 @@ void SlabSolver<BaseT>::setupLayers()
             lgained.push_back(gain);
         }
     }
-
     assert(vbounds->size() == stack.size()-1);
     assert(verts->size() == stack.size());
     assert(layers.size() == lcount);
@@ -451,6 +450,27 @@ void SlabSolver<BaseT>::setupLayers()
         }
     }
     assert(lgained.size() == lcount);
+
+    // Merge identical adjacent layers
+    for(size_t i = 0; i < vbounds->size(); ++i) {
+        if (stack[i] == stack[i+1]) {
+            stack.erase(stack.begin() + i+1);
+            vbounds->removePoint(i);
+            verts->removePoints(i, i+2);
+            if (i == 0) {
+                OrderedAxis::WarningOff nowarn(verts);
+                verts->addPoint(vbounds->at(i) - 2.*OrderedAxis::MIN_DISTANCE);
+            } else if (i == vbounds->size()) {
+                OrderedAxis::WarningOff nowarn(verts);
+                verts->addPoint(vbounds->at(i-1) + 2.*OrderedAxis::MIN_DISTANCE);
+            } else {
+                verts->addPoint(0.5 * (vbounds->at(i-1) + vbounds->at(i)));
+            }
+            --i;
+            assert(vbounds->size() == stack.size()-1);
+            assert(verts->size() == stack.size());
+        }
+    }
 
     Solver::writelog(LOG_DETAIL, "Detected {0} {1}layers", lcount, group_layers? "distinct " : "");
 

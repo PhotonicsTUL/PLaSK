@@ -183,9 +183,24 @@ public:
 
     /**
      * Remove point at specified index
-     * \param index intex of the point to remove
+     * \param index index of the point to remove
      */
     void removePoint(std::size_t index);
+
+    /**
+     * Remove range of points between specified indices
+     * \param start index of the first point to remove
+     * \param stop index of the first point keep
+     */
+    void removePoints(std::size_t start, std::size_t stop);
+
+    /**
+     * Remove range of points between specified indices
+     * \param start index of the first point to remove
+     * \param stop index of the first point keep
+     * \param step step to remove poinst
+     */
+    void removePoints(std::size_t start, std::size_t stop, std::ptrdiff_t step);
 
     /**
      * Add points from ordered range.

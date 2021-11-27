@@ -109,6 +109,33 @@ void OrderedAxis::removePoint(std::size_t index) {
     fireResized();
 }
 
+void OrderedAxis::removePoints(std::size_t start, std::size_t stop) {
+    points.erase(points.begin() + start, points.begin() + stop);
+    fireResized();
+}
+
+void OrderedAxis::removePoints(std::size_t start, std::size_t stop, std::ptrdiff_t step) {
+    if (step > 0) {
+        if (stop < start) return;
+        if (step == 1)
+            points.erase(points.begin() + start, points.begin() + stop);
+        else
+            for (std::size_t i = start; i < stop; i += step) {
+                points.erase(points.begin() + (i--));
+                stop--;
+            }
+    } else
+        if (stop > start) return;
+        if (step == -1)
+            points.erase(points.begin() + stop, points.begin() + start);
+        else if (step == 0)
+            throw Exception("OrderedAxis: step cannot be zero");
+        else
+            for (std::size_t i = start; i > stop; i += step)
+                points.erase(points.begin() + i);
+    fireResized();
+}
+
 
 void OrderedAxis::clear() {
     points.clear();

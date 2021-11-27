@@ -96,13 +96,13 @@ static py::object OrderedAxis__getitem__(const OrderedAxis& self, const py::obje
     } else {
         if (!PySlice_Check(slice.ptr())) throw TypeError("axis indices must be integers or slices");
         Py_ssize_t start, stop, stride, length;
-#if PY_VERSION_HEX < 0x03060100
-        if (PySlice_GetIndicesEx(slice.ptr(), self.size(), &start, &stop, &stride, &length) < 0)
-            throw py::error_already_set();
-#else
-        if (PySlice_Unpack(slice.ptr(), &start, &stop, &stride) < 0) throw py::error_already_set();
-        length = PySlice_AdjustIndices(self.size(), &start, &stop, stride);
-#endif
+#       if PY_VERSION_HEX < 0x03060100
+            if (PySlice_GetIndicesEx(slice.ptr(), self.size(), &start, &stop, &stride, &length) < 0)
+                throw py::error_already_set();
+#       else
+            if (PySlice_Unpack(slice.ptr(), &start, &stop, &stride) < 0) throw py::error_already_set();
+               length = PySlice_AdjustIndices(self.size(), &start, &stop, stride);
+#       endif
         std::vector<double> points;
         points.reserve(length);
         for (int i = start; i < stop; i += stride) points.push_back(self[i]);
@@ -110,10 +110,27 @@ static py::object OrderedAxis__getitem__(const OrderedAxis& self, const py::obje
     }
 }
 
-static void OrderedAxis__delitem__(OrderedAxis& self, int i) {
-    if (i < 0) i += int(self.size());
-    if (i < 0 || size_t(i) >= self.size()) throw IndexError("axis/mesh index out of range");
-    self.removePoint(i);
+static void OrderedAxis__delitem__(OrderedAxis& self, const py::object& slice) {
+    int size = int(self.size());
+    py::extract<int> index(slice);
+    if (index.check()) {
+        int i = index();
+        if (i < 0) i += size;
+        if (i < 0 || i >= size) throw IndexError("axis/mesh index out of range");
+        self.removePoint(i);
+    } else {
+        if (!PySlice_Check(slice.ptr())) throw TypeError("axis indices must be integers or slices");
+        Py_ssize_t start, stop, step, length;
+#       if PY_VERSION_HEX < 0x03060100
+            if (PySlice_GetIndicesEx(py::object(slice).ptr(), size, &start, &stop, &step, &length) < 0)
+                throw py::error_already_set();
+#       else
+            if (PySlice_Unpack(py::object(slice).ptr(), &start, &stop, &step) < 0)
+                throw py::error_already_set();
+            length = PySlice_AdjustIndices(size, &start, &stop, step);
+#       endif
+        self.removePoints(start, stop, step);
+    }
 }
 
 static void OrderedAxis_extend(OrderedAxis& self, py::object sequence) {
@@ -179,13 +196,13 @@ static py::object RegularAxis__getitem__(const RegularAxis& self, const py::obje
     } else {
         if (!PySlice_Check(slice.ptr())) throw TypeError("axis indices must be integers or slices");
         Py_ssize_t start, stop, stride, length;
-#if PY_VERSION_HEX < 0x03060100
-        if (PySlice_GetIndicesEx(slice.ptr(), self.size(), &start, &stop, &stride, &length) < 0)
-            throw py::error_already_set();
-#else
-        if (PySlice_Unpack(slice.ptr(), &start, &stop, &stride) < 0) throw py::error_already_set();
-        length = PySlice_AdjustIndices(self.size(), &start, &stop, stride);
-#endif
+#       if PY_VERSION_HEX < 0x03060100
+            if (PySlice_GetIndicesEx(slice.ptr(), self.size(), &start, &stop, &stride, &length) < 0)
+                throw py::error_already_set();
+#       else
+            if (PySlice_Unpack(slice.ptr(), &start, &stop, &stride) < 0) throw py::error_already_set();
+               length = PySlice_AdjustIndices(self.size(), &start, &stop, stride);
+#       endif
         double step = self.step() * stride;
         double first = self.first() + self.step() * start;
         return py::object(make_shared<RegularAxis>(first, first + step * (length - 1), length));
