@@ -536,6 +536,26 @@ class TestBandGap(unittest.TestCase):
         self.assertEqual(mat.VB(300., 0., '*', 'L'), -7.)
         self.assertEqual(mat.CB(300., 0., '*'), 3.)
 
+
+class TestXmlFile(unittest.TestCase):
+
+    def testExec(self):
+        plask.loadxpl("""\
+        <plask>
+          <materials>
+            <material name="Exec" base="semiconductor">
+              <cond>
+                T2 = 2 * T
+                __value__ = T2 - 500
+              </cond>
+            </material>
+          </materials>
+        </plask>
+        """)
+        mat = material.get('Exec')
+        self.assertEqual(mat.cond(300.), 100.)
+
+
 if __name__ == '__main__':
     test = unittest.main(exit=False)
     sys.exit(not test.result.wasSuccessful())

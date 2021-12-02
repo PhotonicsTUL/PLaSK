@@ -286,7 +286,10 @@ void PythonManager::loadConnects(XMLReader& reader)
         auto in_solver = solvers.find(in.first);
         if (in_solver == solvers.end()) throw XMLException(reader, format(u8"Cannot find (in) solver with name '{0}'.", in.first));
         try { solverin = py::object(in_solver->second); }
-        catch (py::error_already_set&) { throw XMLException(reader, format(u8"Cannot convert solver '{0}' to python object.", in.first)); }
+        catch (py::error_already_set&) {
+            PyErr_Clear();
+            throw XMLException(reader, format(u8"Cannot convert solver '{0}' to python object.", in.first));
+        }
 
         if (dynamic_pointer_cast<FilterCommonBase>(in_solver->second)) {
             int points = 10;
@@ -300,13 +303,17 @@ void PythonManager::loadConnects(XMLReader& reader)
                 else
                     receiver = solverin[py::make_tuple(geometrics[obj], pathHints[pth], points)];
             } catch (py::error_already_set&) {
+                PyErr_Clear();
                 throw XMLException(reader, getPythonExceptionMessage());
             } catch(std::exception& err) {
                 throw XMLException(reader, err.what());
             }
         } else {
             try { receiver = solverin.attr(in.second.c_str()); }
-            catch (py::error_already_set&) { throw XMLException(reader, format("Solver '{0}' does not have attribute '{1}'.", in.first, in.second)); }
+            catch (py::error_already_set&) {
+                PyErr_Clear();
+                throw XMLException(reader, format("Solver '{0}' does not have attribute '{1}'.", in.first, in.second));
+            }
         }
 
         std::string outkey = reader.requireAttribute("out");
@@ -321,12 +328,20 @@ void PythonManager::loadConnects(XMLReader& reader)
             py::object solverout, prov;
 
             auto out_solver = solvers.find(out.first);
-            if (out_solver == solvers.end()) throw XMLException(reader, format(u8"Cannot find (out) solver with name '{0}'.", out.first));
+            if (out_solver == solvers.end()) {
+                throw XMLException(reader, format(u8"Cannot find (out) solver with name '{0}'.", out.first));
+            }
             try { solverout = py::object(out_solver->second); }
-            catch (py::error_already_set&) { throw XMLException(reader, format(u8"Cannot convert solver '{0}' to python object.", out.first)); }
+            catch (py::error_already_set&) {
+                PyErr_Clear();
+                throw XMLException(reader, format(u8"Cannot convert solver '{0}' to python object.", out.first));
+            }
 
             try { prov = solverout.attr(out.second.c_str()); }
-            catch (py::error_already_set&) { throw XMLException(reader, format(u8"Solver '{0}' does not have attribute '{1}'.", out.first, out.second)); }
+            catch (py::error_already_set&) {
+                PyErr_Clear();
+                throw XMLException(reader, format(u8"Solver '{0}' does not have attribute '{1}'.", out.first, out.second));
+            }
 
             if (provider.is_none()) provider = prov;
             else provider = provider + prov;
@@ -335,6 +350,7 @@ void PythonManager::loadConnects(XMLReader& reader)
         try {
             receiver.attr("attach")(provider);
         } catch (py::error_already_set&) {
+            PyErr_Clear();
             throw XMLException(reader, format(u8"Cannot connect '{0}' to '{1}'.", outkey, inkey));
         }
 

@@ -68,7 +68,7 @@ class Context:
 
     def _parse_next(self, n, p, f=None):
         if f is None:
-            f = self.name if n is None or n == '#' else n
+            f = self.name if n is None or isinstance(n, int) else n
         self.groups.append(n)
         self.formats.append(f)
         return p
@@ -84,7 +84,9 @@ class ContextScanner:
             self.contexts.append(c)
             cidx[c.name] = i
         for c in self.contexts:
-            c.groups = [-1 if g is None else -2 if g == '#' else cidx[g] for g in c.groups]
+            c.groups = [-2 if g is None else
+                        -1 + g if isinstance(g, int) else
+                        cidx[g] for g in c.groups]
         self.modulo = len(self.contexts)
 
     def scan(self, current_state, text):
@@ -102,11 +104,12 @@ class ContextScanner:
                 lastindex = found.lastindex - 1
                 next_state = current_context.groups[lastindex]
                 next_format = current_context.formats[lastindex]
-                if next_state == -1:
+                if next_state < -1:
                     yield start, end, next_format, current_state, False
-                    current_state //= modulo
+                    for _ in range(next_state, -1):
+                        current_state //= modulo
                     current_context = contexts[current_state % modulo]
-                elif next_state == -2:
+                elif next_state == -1:
                     yield start, end, next_format, current_state, False
                 else:
                     current_state = current_state * modulo + next_state

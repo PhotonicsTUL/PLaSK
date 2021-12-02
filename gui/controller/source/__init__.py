@@ -19,22 +19,20 @@ from ...utils.qsignals import BlockQtSignals
 from ...utils.texteditor import TextEditor, EditorWidget
 from ...utils.widgets import EDITOR_FONT, set_icon_size
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
-from ...lib.highlighter.xml import syntax
+from ...lib.highlighter.xml import SYNTAX
 from .xml_formatter import indent, unindent, indent_new_line, parse_slash
+
 
 SCHEME = {}
 
-
 def update_xml_scheme():
     global SCHEME
-    SCHEME = {
-        'syntax_comment': parse_highlight(CONFIG['syntax/xml_comment']),
-        'syntax_tag': parse_highlight(CONFIG['syntax/xml_tag']),
-        'syntax_attr': parse_highlight(CONFIG['syntax/xml_attr']),
-        'syntax_value': parse_highlight(CONFIG['syntax/xml_value']),
-        'syntax_text': parse_highlight(CONFIG['syntax/xml_text']),
-        'syntax_define': parse_highlight(CONFIG['syntax/xml_define']),
-    }
+    SCHEME['syntax_comment'] = parse_highlight(CONFIG['syntax/xml_comment'])
+    SCHEME['syntax_tag'] = parse_highlight(CONFIG['syntax/xml_tag'])
+    SCHEME['syntax_attr'] = parse_highlight(CONFIG['syntax/xml_attr'])
+    SCHEME['syntax_value'] = parse_highlight(CONFIG['syntax/xml_value'])
+    SCHEME['syntax_text'] = parse_highlight(CONFIG['syntax/xml_text'])
+    SCHEME['syntax_define'] = parse_highlight(CONFIG['syntax/xml_define'])
 update_xml_scheme()
 
 
@@ -137,7 +135,7 @@ class SourceEditController(Controller):
     def create_source_widget(self, parent):
         source = EditorWidget(parent, XMLEditor, line_numbers=self.line_numbers)
         self.highlighter = SyntaxHighlighter(source.editor.document(),
-                                             *load_syntax(syntax, SCHEME),
+                                             *load_syntax(SYNTAX, SCHEME),
                                              default_font=EDITOR_FONT)
         source.editor.setReadOnly(self.model.is_read_only())
         return source
@@ -158,7 +156,7 @@ class SourceEditController(Controller):
             with BlockQtSignals(editor):
                 update_xml_scheme()
                 self.highlighter = SyntaxHighlighter(editor.document(),
-                                                     *load_syntax(syntax, SCHEME),
+                                                     *load_syntax(SYNTAX, SCHEME),
                                                      default_font=EDITOR_FONT)
 
     def load_data_from_model(self):

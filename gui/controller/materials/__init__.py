@@ -12,24 +12,29 @@
 import os
 import weakref
 import itertools
+from copy import copy
 
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *
 from ...qt import QtSignal
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
-from ...lib.highlighter.python36 import syntax
-from ..script import scheme
+from ...lib.highlighter.plask import SYNTAX, get_syntax
+from ..script import SCHEME
 from ...model.materials import MaterialsModel, BASE_MATERIALS, default_materialdb, \
     material_html_help, parse_material_components, elements_re
 from ...utils.texteditor import TextEditor
 from ...utils.widgets import HTMLDelegate, table_last_col_fill, EDITOR_FONT, table_edit_shortcut, CheckBoxDelegate, ComboBox
 from ...utils.qsignals import BlockQtSignals
+from ...utils.config import CONFIG, parse_highlight
 from .. import Controller, select_index_from_info
 from ..defines import DefinesCompletionDelegate
 from ..table import table_and_manipulators, TableActions
 from ..defines import get_defines_completer
 from .plot import show_material_plot
+
+
+SYNTAX['formats']['__value__'] = '{syntax_material_value}'
 
 
 class ComponentsPopup(QFrame):
@@ -477,8 +482,7 @@ class MaterialsController(Controller):
 
         # font.setPointSize(font.pointSize()-1)
         self.propedit = _PropEdit(self.prop_splitter, line_numbers=False)
-        self.propedit.highlighter = SyntaxHighlighter(self.propedit.document(), *load_syntax(syntax, scheme),
-                                                      default_font=EDITOR_FONT)
+
         self.propedit.hide()
 
         self.document.window.config_changed.connect(self.reconfig)
@@ -495,11 +499,21 @@ class MaterialsController(Controller):
         self.splitter.addWidget(self.prop_splitter)
         self.splitter.setSizes([10000, 30000])
 
+    def propedit_rehighlight(self):
+        SCHEME['syntax_material_value'] = parse_highlight(CONFIG['syntax/xml_tag'])
+        syntax = get_syntax(self.document.defines, __value__=['__value__'])
+        self.propedit.highlighter = SyntaxHighlighter(self.propedit.document(),
+                                                      *load_syntax(syntax, SCHEME),
+                                                      default_font=EDITOR_FONT)
+        self.propedit.highlighter.rehighlight()
+
     def reconfig(self):
         with BlockQtSignals(self.propedit):
-            del self.propedit.highlighter
-            self.propedit.highlighter = SyntaxHighlighter(self.propedit.document(), *load_syntax(syntax, scheme),
-                                                          default_font=EDITOR_FONT)
+            try:
+                del self.propedit.highlighter
+            except AttributeError:
+                pass
+            self.propedit_rehighlight()
 
     def update_materials_table(self, model):
         if model == self.model and model.rowCount():
@@ -591,6 +605,7 @@ class MaterialsController(Controller):
         except (ValueError, AttributeError):
             self.materials_table.selectRow(0)
         self.materials_table.setFocus()
+        self.propedit_rehighlight()
 
     def select_info(self, info):
         if select_index_from_info(info, self.model, self.materials_table):

@@ -60,7 +60,13 @@ class PythonEvalMaterial: public MaterialWithBase
     friend struct PythonEvalMaterialConstructor;
 
     static inline PyObject* py_eval(PyCodeObject *fun, const py::dict& locals) {
-        return PyEval_EvalCode((PyObject*)fun, pyXplGlobals->ptr(), locals.ptr());
+        PyObject* result = PyEval_EvalCode((PyObject*)fun, pyXplGlobals->ptr(), locals.ptr());
+        if (result == Py_None && locals.has_key("__value__")) {
+            Py_DECREF(result);
+            result = PyDict_GetItemString(locals.ptr(), "__value__");
+            Py_INCREF(result);
+        }
+        return result;
     }
 
     template <typename RETURN>
@@ -170,7 +176,7 @@ class PythonEvalMaterial: public MaterialWithBase
         if (cls->Eg != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             py::dict locals; locals["self"] = self; locals["T"] = T; locals["e"] = e; locals["point"] = point;
-            return py::extract<double>(py::handle<>(py_eval(cls->Eg, locals)).get());
+            return call<double>(cls->Eg, locals, "Eg");
         }
         if ((cls->VB != NULL || cls->cache.VB) && (cls->CB != NULL || cls->cache.CB))
             return CB(T, e, point) - VB(T, e, point, 'H');
@@ -181,7 +187,7 @@ class PythonEvalMaterial: public MaterialWithBase
         if (cls->CB != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             py::dict locals; locals["self"] = self; locals["T"] = T; locals["e"] = e; locals["point"] = point;
-            return py::extract<double>(py::handle<>(py_eval(cls->CB, locals)).get());
+            return call<double>(cls->CB, locals, "CB");
         }
         if (cls->VB != NULL || cls->cache.VB || cls->Eg != NULL || cls->cache.Eg)
             return VB(T, e, point, 'H') + Eg(T, e, point);
@@ -192,7 +198,7 @@ class PythonEvalMaterial: public MaterialWithBase
         if (cls->VB != NULL) {
             OmpLockGuard<OmpNestLock> lock(python_omp_lock);
             py::dict locals; locals["self"] = self; locals["T"] = T; locals["e"] = e; locals["point"] = point; locals["hole"] = hole;
-            return py::extract<double>(py::handle<>(py_eval(cls->VB, locals)).get());
+            return call<double>(cls->VB, locals, "VB");
         }
         if (cls->CB != NULL || cls->cache.CB)
             return CB(T, e, point) - Eg(T, e, point);
@@ -319,6 +325,28 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
     return material;
 }
 
+static inline const char* trim(const std::string& t) {
+    const char* s = t.c_str();
+    while (std::isspace(*s)) ++s;
+    return s;
+};
+
+static inline const char* block(std::string& t) {
+    const char* s = t.c_str();
+    while (std::isblank(*s)) ++s;
+    bool indent;
+    while (*s == '\n' || *s == '\r') {
+        ++s;
+        indent = false;
+        while (std::isblank(*s)) { ++s; indent = true; }
+    }
+    if (indent) {
+        t = "if (True):\n" + t;
+        s = t.c_str();
+    }
+    return s;
+};
+
 void PythonManager::loadMaterial(XMLReader& reader) {
     try {
         std::string material_name = reader.requireAttribute("name");
@@ -328,16 +356,18 @@ void PythonManager::loadMaterial(XMLReader& reader) {
         shared_ptr<PythonEvalMaterialConstructor> constructor = plask::make_shared<PythonEvalMaterialConstructor>(material_name, base_name, alloy);
         constructor->self = constructor;
 
-        auto trim = [](const char* s) -> const char* {
-            while (std::isspace(*s)) ++s;
-            return s;
-        };
-
-#       define COMPILE_PYTHON_MATERIAL_FUNCTION2(funcname, func) \
+#       define COMPILE_PYTHON_MATERIAL_FUNCTION_(funcname, func) \
         else if (reader.getNodeName() == funcname) { \
-            constructor->func = (PyCodeObject*)Py_CompileString(trim(reader.requireTextInCurrentTag().c_str()), funcname, Py_eval_input); \
-            if (constructor->func == nullptr) \
+            std::string text = reader.requireTextInCurrentTag(); \
+            constructor->func = (PyCodeObject*)Py_CompileString(trim(text), funcname, Py_eval_input); \
+            if (constructor->func == nullptr) { \
+                PyErr_Clear(); \
+                constructor->func = (PyCodeObject*)Py_CompileString(block(text), funcname, Py_file_input); \
+            } \
+            if (constructor->func == nullptr) { \
+                PyErr_Clear(); \
                 throw XMLException(format("XML line {0} in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
+            } \
             try { \
                 py::dict locals; \
                 constructor->cache.func.reset( \
@@ -351,7 +381,7 @@ void PythonManager::loadMaterial(XMLReader& reader) {
             } \
         }
 
-#       define COMPILE_PYTHON_MATERIAL_FUNCTION(func) COMPILE_PYTHON_MATERIAL_FUNCTION2(BOOST_PP_STRINGIZE(func), func)
+#       define COMPILE_PYTHON_MATERIAL_FUNCTION(func) COMPILE_PYTHON_MATERIAL_FUNCTION_(BOOST_PP_STRINGIZE(func), func)
 
         while (reader.requireTagOrEnd()) {
             if (reader.getNodeName() == "condtype") {

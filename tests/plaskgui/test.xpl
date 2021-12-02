@@ -25,7 +25,11 @@
 
 <materials>
   <material name="test" base="semiconductor">
-    <A>0.1 * T + 0.02 * (T-300)**2</A>
+    <cond>
+      param = aperture * T
+      __value__ = param - 500
+    </cond>
+    <A><![CDATA[0.1 * T + 0.02 * (T-300)**2 if T < 400. else 1000.]]></A>
     <NR>3.6, 3.6, 3.4, 0.0</NR>
     <thermk>10.+ 0.001 * T**2</thermk>
   </material>
@@ -543,23 +547,6 @@
       <tag2/>
     </custom>
   </local>
-  <optical name="fdtd" solver="FDTD2D" lib="fdtd">
-    <geometry ref="geo2d"/>
-    <sources>
-      <point x="1" y="1">
-        <continuous wavelength="980." start-time="0" end-time="inf" component="Ex" slownless="3" amplitude="1"/>
-      </point>
-      <point x="1" y="1">
-        <gaussian wavelength="980." start-time="0" end-time="infty" width="1" component="Ex" amplitude="1"/>
-      </point>
-      <volume ax="0" ay="0" bx="2" by="1">
-        <continuous wavelength="980." start-time="0" end-time="infinity" component="Ex" slownless="3" amplitude="1"/>
-      </volume>
-      <volume ax="0" ay="0" bx="2" by="1">
-        <gauss wavelength="980." start-time="0" end-time="inf" width="1" component="Ex" amplitude="1"/>
-      </volume>
-    </sources>
-  </optical>
 </solvers>
 
 <connects>
@@ -585,6 +572,8 @@ print(GEO.roads.get_object_positions(GEO.small, PTH.brsr))
 print(sys.argv)
 
 print(material.get('InGa(0.8)As_QW:Si=1e19'))
+
+print(material.get('test').cond(300.))
 
 GaAs = material.get('GaAs')
 print(GaAs.y1(), GaAs.y2(), GaAs.y3())

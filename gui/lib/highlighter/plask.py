@@ -1,6 +1,8 @@
-from __future__ import absolute_import
+from copy import copy
 
-syntax = {
+from .python import SYNTAX, PYTHON_DEFAULT_TOKENS
+
+plask_syntax = {
     'formats': {
         'member': '{syntax_member}',
         'plask': '{syntax_plask}',
@@ -76,7 +78,34 @@ else:
     _pylab.extend([
         'aspect', 'window_title'
     ])
-    syntax['tokens'].append(
+    plask_syntax['tokens'].append(
         ('pylab', _pylab,
          '(^|[^\\.\\w]|\\bplask\\.)', '(?:[\x08\\W]|$)')
     )
+
+
+SYNTAX['formats'].update(plask_syntax['formats'])
+SYNTAX['tokens'][PYTHON_DEFAULT_TOKENS][-1:-1] = plask_syntax['tokens']
+
+
+def get_syntax(defines=None, solvers=None, **kwargs):
+    syntax = {'formats': SYNTAX['formats'],
+              'contexts': SYNTAX['contexts'],
+              'tokens': copy(SYNTAX['tokens'])}
+    syntax['tokens'][PYTHON_DEFAULT_TOKENS] = copy(SYNTAX['tokens'][PYTHON_DEFAULT_TOKENS])
+    defs = ['ARRAYID', 'PROCID', 'JOBID']
+    if defines is not None:
+        defs += [e.name for e in defines.model.entries]
+        syntax['tokens'][PYTHON_DEFAULT_TOKENS].insert(0, ('define', defs, '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
+    # current_syntax['tokens'][PYTHON_DEFAULT_TOKENS].insert(0, ('special', '__value__', '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
+    if solvers is not None:
+        solvs = [e.name for e in solvers.model.entries if e.name]
+        if solvs:
+            syntax['tokens'][PYTHON_DEFAULT_TOKENS].insert(0, ('solver', solvs, '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
+    for key, val in kwargs.items():
+        if isinstance(val, tuple):
+            item = (key,) + val
+        else:
+            item = (key, val, '(^|[^\\.\\w])', '(?:[\x08\\W]|$)')
+        syntax['tokens'][PYTHON_DEFAULT_TOKENS].insert(0, item)
+    return syntax

@@ -11,7 +11,6 @@
 # GNU General Public License for more details.
 import sys
 import weakref
-from copy import copy
 from numpy import inf
 
 from ...qt import QT_API
@@ -32,39 +31,33 @@ from ...utils.widgets import EDITOR_FONT, ComboBox
 from ...utils.texteditor import TextEditor, EditorWidget
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
 
-from ...lib.highlighter.python36 import syntax, default_key
-from ...lib.highlighter.plask import syntax as plask_syntax
+from ...lib.highlighter.plask import get_syntax
 
 
 LOG_LEVELS = ['Error', 'Warning', 'Important', 'Info', 'Result', 'Data', 'Detail', 'Debug']
 
 
-syntax['formats'].update(plask_syntax['formats'])
-syntax['tokens'][default_key][-1:-1] = plask_syntax['tokens']
-
+SCHEME = {}
 
 def update_python_scheme():
-    global scheme
-    scheme = {
-        'syntax_comment': parse_highlight(CONFIG['syntax/python_comment']),
-        'syntax_string': parse_highlight(CONFIG['syntax/python_string']),
-        'syntax_special': parse_highlight(CONFIG['syntax/python_special']),
-        'syntax_builtin': parse_highlight(CONFIG['syntax/python_builtin']),
-        'syntax_keyword': parse_highlight(CONFIG['syntax/python_keyword']),
-        'syntax_number': parse_highlight(CONFIG['syntax/python_number']),
-        'syntax_decorator': parse_highlight(CONFIG['syntax/python_decorator']),
-        'syntax_member': parse_highlight(CONFIG['syntax/python_member']),
-        'syntax_plask': parse_highlight(CONFIG['syntax/python_plask']),
-        'syntax_provider': parse_highlight(CONFIG['syntax/python_provider']),
-        'syntax_receiver': parse_highlight(CONFIG['syntax/python_receiver']),
-        'syntax_log': parse_highlight(CONFIG['syntax/python_log']),
-        'syntax_solver': parse_highlight(CONFIG['syntax/python_solver']),
-        'syntax_define': parse_highlight(CONFIG['syntax/python_define']),
-        'syntax_loaded': parse_highlight(CONFIG['syntax/python_loaded']),
-        'syntax_pylab': parse_highlight(CONFIG['syntax/python_pylab']),
-        'syntax_obsolete': {'color': '#aaaaaa', 'bold': True, 'italic': True}
-    }
-scheme = None   # Only for Pycharm not to complain about missing scheme
+    global SCHEME
+    SCHEME['syntax_comment'] = parse_highlight(CONFIG['syntax/python_comment'])
+    SCHEME['syntax_string'] = parse_highlight(CONFIG['syntax/python_string'])
+    SCHEME['syntax_special'] = parse_highlight(CONFIG['syntax/python_special'])
+    SCHEME['syntax_builtin'] = parse_highlight(CONFIG['syntax/python_builtin'])
+    SCHEME['syntax_keyword'] = parse_highlight(CONFIG['syntax/python_keyword'])
+    SCHEME['syntax_number'] = parse_highlight(CONFIG['syntax/python_number'])
+    SCHEME['syntax_decorator'] = parse_highlight(CONFIG['syntax/python_decorator'])
+    SCHEME['syntax_member'] = parse_highlight(CONFIG['syntax/python_member'])
+    SCHEME['syntax_plask'] = parse_highlight(CONFIG['syntax/python_plask'])
+    SCHEME['syntax_provider'] = parse_highlight(CONFIG['syntax/python_provider'])
+    SCHEME['syntax_receiver'] = parse_highlight(CONFIG['syntax/python_receiver'])
+    SCHEME['syntax_log'] = parse_highlight(CONFIG['syntax/python_log'])
+    SCHEME['syntax_solver'] = parse_highlight(CONFIG['syntax/python_solver'])
+    SCHEME['syntax_define'] = parse_highlight(CONFIG['syntax/python_define'])
+    SCHEME['syntax_loaded'] = parse_highlight(CONFIG['syntax/python_loaded'])
+    SCHEME['syntax_pylab'] = parse_highlight(CONFIG['syntax/python_pylab'])
+    SCHEME['syntax_obsolete'] = {'color': '#aaaaaa', 'bold': True, 'italic': True}
 update_python_scheme()
 
 
@@ -414,20 +407,9 @@ class ScriptController(SourceEditController):
         self.rehighlight()
 
     def rehighlight(self):
-        current_syntax = {'formats': syntax['formats'],
-                          'contexts': syntax['contexts'],
-                          'tokens': copy(syntax['tokens'])}
-        current_syntax['tokens'][default_key] = copy(syntax['tokens'][default_key])
-        defines = ['ARRAYID', 'PROCID', 'JOBID']
-        if self.document.defines is not None:
-            defines += [e.name for e in self.document.defines.model.entries]
-        current_syntax['tokens'][default_key].insert(0, ('define', defines, '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
-        if self.document.solvers is not None:
-            solvers = [e.name for e in self.document.solvers.model.entries if e.name]
-            if solvers:
-                current_syntax['tokens'][default_key].insert(0, ('solver', solvers, '(^|[^\\.\\w])', '(?:[\x08\\W]|$)'))
+        syntax = get_syntax(self.document.defines, self.document.solvers)
         self.highlighter = SyntaxHighlighter(self.source_widget.editor.document(),
-                                             *load_syntax(current_syntax, scheme),
+                                             *load_syntax(syntax, SCHEME),
                                              default_font=EDITOR_FONT)
         self.highlighter.rehighlight()
 

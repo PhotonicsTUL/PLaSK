@@ -1,4 +1,4 @@
-default_context = [
+PYTHON_DEFAULT_CONTEXTS = [
     ('comment', '#'),
     ('dict', '{'),
     ('string raw multi single', "[buBU]?[rR]'''"),
@@ -19,9 +19,9 @@ default_context = [
     ('string format double', '[fF]"'),
 ]
 
-default_key = ('default', 'dict', 'format')
+PYTHON_DEFAULT_TOKENS = ('default', 'dict', 'format')
 
-syntax = {
+SYNTAX = {
     'formats': {
         'builtin': '{syntax_builtin}',
         'comment': '{syntax_comment}',
@@ -48,9 +48,9 @@ syntax = {
     },
 
     'contexts': [
-        ('default', default_context, True),
-        ('dict', [(None, '}')] + default_context, True),
-        ('format', default_context + [
+        ('default', PYTHON_DEFAULT_CONTEXTS, True),
+        ('dict', [(None, '}')] + PYTHON_DEFAULT_CONTEXTS, True),
+        ('format', PYTHON_DEFAULT_CONTEXTS + [
             (None,
              r'(?:![rs])?(?::([^}]?[&lt;&gt;=^])?[ +-]?#?0?[\d]*(?:\.[\d]+)?[bcdeEfFgGnosxX%]?)?\s*\}',
              'special')
@@ -64,18 +64,18 @@ syntax = {
         ('string single', [(None, "'")]),
         ('string multi double', [(None, '"""')], True),
         ('string double', [(None, '"')]),
-        ('string raw format multi single', [(None, "'''"), ('#', "{{"), ('format', "{", 'special')], True),
-        ('string raw format single', [(None, "'"), ('#', "{{"), ('format', "{", 'special')]),
-        ('string raw format multi double', [(None, '"""'), ('#', "{{"), ('format', "{", 'special')], True),
-        ('string raw format double', [(None, '"'), ('#', "{{"), ('format', "{", 'special')]),
-        ('string format multi single', [(None, "'''"), ('#', "{{"), ('format', "{", 'special')], True),
-        ('string format single', [(None, "'"), ('#', "{{"), ('format', "{", 'special')]),
-        ('string format multi double', [(None, '"""'), ('#', "{{"), ('format', "{", 'special')], True),
-        ('string format double', [(None, '"'), ('#', "{{"), ('format', "{", 'special')]),
+        ('string raw format multi single', [(None, "'''"), (0, "{{"), ('format', "{", 'special')], True),
+        ('string raw format single', [(None, "'"), (0, "{{"), ('format', "{", 'special')]),
+        ('string raw format multi double', [(None, '"""'), (0, "{{"), ('format', "{", 'special')], True),
+        ('string raw format double', [(None, '"'), (0, "{{"), ('format', "{", 'special')]),
+        ('string format multi single', [(None, "'''"), (0, "{{"), ('format', "{", 'special')], True),
+        ('string format single', [(None, "'"), (0, "{{"), ('format', "{", 'special')]),
+        ('string format multi double', [(None, '"""'), (0, "{{"), ('format', "{", 'special')], True),
+        ('string format double', [(None, '"'), (0, "{{"), ('format', "{", 'special')]),
     ],
 
     'tokens': {
-        default_key: [
+        PYTHON_DEFAULT_TOKENS: [
             ('hexnumber', '(0x)([\da-fA-F])+?'),
             ('number', r'[-+]?[\d]*\.?[\d]+([eE][-+]?[\d]+)?[jJ]?|0x[\da-f]+'),
             ('keyword', [
@@ -251,4 +251,3 @@ syntax = {
         ]
     }
 }
-

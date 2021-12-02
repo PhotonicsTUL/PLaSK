@@ -18,7 +18,7 @@ from ...qt.QtGui import *
 from ...qt import qt_exec
 from ..defines import get_defines_completer
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
-from ...lib.highlighter.xml import syntax
+from ...lib.highlighter.xml import SYNTAX
 from ...utils.str import empty_to_none
 from ...utils.texteditor import TextEditorWithCB
 from ...utils.widgets import VerticalScrollArea, EDITOR_FONT, EditComboBox, MultiLineEdit, LineEditWithClear
@@ -186,7 +186,7 @@ class SolverWidget(QWidget):
                 edit = TextEditorWithCB(parent=parent, line_numbers=False)
                 font = QFont(EDITOR_FONT)
                 font.setPointSize(font.pointSize() - 1)
-                edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(syntax, SCHEME),
+                edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(SYNTAX, SCHEME),
                                                      default_font=font)
                 edit.setToolTip(u'&lt;<b>{0}</b>&gt;...&lt;/<b>{0}</b>&gt;<br/>{1}'.format(gname, schema.label))
                 self.controls[group] = edit

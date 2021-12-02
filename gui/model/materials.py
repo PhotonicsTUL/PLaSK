@@ -356,7 +356,17 @@ class MaterialsModel(TableModel):
                 for c in self.comments:
                     material_element.append(etree.Comment(c))
                 el = etree.SubElement(material_element, self.name)
-                if self.value: el.text = self.value
+                if self.value:
+                    value = self.value
+                    lines = [line.rstrip() for line in value.splitlines()]
+                    while lines and not lines[0]: lines = lines[1:]
+                    if lines and not lines[-1]: lines = lines[:-1]
+                    if len(lines) > 1:
+                        value = ''.join(['\n      ' + line for line in lines]) + '\n    '
+                    if '<' in value or '>' in value or '&' in value:
+                        el.text = etree.CDATA(value)
+                    else:
+                        el.text = value
 
         def __init__(self, materials_model, name, base=None, properties=None, alloy=False, comments=None,
                      endcomments=None, parent=None, *args):
@@ -478,8 +488,15 @@ class MaterialsModel(TableModel):
                             for prop in props:
                                 require_no_children(prop)
                                 with AttributeReader(prop) as _:
-                                   properties.append(MaterialsModel.Material.Property(prop.tag, get_text(prop),
-                                                                                      prop.comments))
+                                    value = get_text(prop)
+                                    lines = [line.rstrip() for line in value.splitlines()]
+                                    while lines and not lines[0]: lines = lines[1:]
+                                    if lines and not lines[-1]: lines = lines[:-1]
+                                    if lines:
+                                        strip = min(len(line) - len(line.lstrip()) for line in lines)
+                                        if strip > 0:
+                                            value = '\n'.join(line[strip:] for line in lines)
+                                    properties.append(MaterialsModel.Material.Property(prop.tag, value, prop.comments))
                             base = mat_attrib.get('base', None)
                             if base is None: base = mat_attrib.get('kind')  # for old files
                             alloy = mat_attrib.get('complex', '')  #TODO remove soon
@@ -502,6 +519,12 @@ class MaterialsModel(TableModel):
         for c in self.endcomments:
             res.append(etree.Comment(c))
         return res
+
+    def get_text(self):
+        element = self.make_xml_element()
+        if len(element) == 0: return ""
+        lines = etree.tostring(element, pretty_print=True, encoding='unicode').splitlines()[1:-1]
+        return "\n".join(line[2:] for line in lines)
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if isinstance(self.entries[index.row()], MaterialsModel.External):
