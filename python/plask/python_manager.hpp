@@ -26,9 +26,9 @@ struct PLASK_PYTHON_API XMLExceptionWithCause: public XMLException {
         Py_XDECREF(cause);
     }
 
-    void print(const char* scriptname=nullptr, bool second_is_script=false, int scriptline=0) {
+    void print(const char* scriptname=nullptr, const char* top_frame=nullptr, int scriptline=0) {
         if (cause) {
-            printPythonException(cause, scriptname, second_is_script, scriptline);
+            printPythonException(cause, scriptname, top_frame, scriptline);
             writelog(LOG_ERROR_DETAIL, "The above exception was the direct cause of the following exception:");
         }
         plask::writelog(plask::LOG_CRITICAL_ERROR, "{}, {}", scriptname, what());
@@ -71,12 +71,8 @@ struct PLASK_PYTHON_API PythonManager: public Manager {
     static void export_dict(py::object self, py::object dict);
 
     void loadScript(XMLReader& reader) override;
-
-  private:
-    void removeSpaces(unsigned xmlline);
 };
 
 }} // namespace plask::python
 
 #endif // PLASK__PYTHON_MANAGER_H
-

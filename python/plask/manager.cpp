@@ -445,45 +445,8 @@ void PythonManager::loadScript(XMLReader &reader) {
     AssignWithBackup<XMLReader::Filter> backup(reader.contentFilter);   // do not filter script content
     unsigned line = reader.getLineNr();
     Manager::loadScript(reader);
-    removeSpaces(line);
+    removeIndent(script, line);
 }
-
-
-void PythonManager::removeSpaces(unsigned xmlline) {
-    auto line =  boost::make_split_iterator(script, boost::token_finder(boost::is_any_of("\n"), boost::token_compress_off));
-    size_t strip;
-    auto firstline = line;
-    auto beg = line->begin();
-    const auto endline = decltype(line)();
-    do { // Search for the first non-empty line to get initial indentation
-        strip = 0;
-        for (; beg != line->end() && (*beg == ' ' || *beg == '\t'); ++beg) {
-            if (*beg == ' ') ++strip;
-            else { strip += 8; strip -= strip % 8; } // add to closest full tab-stop
-        }
-        ++line;
-    } while (beg == line->end() && line != endline);
-    if (beg == line->begin() || line == endline) return;
-    std::string result;
-    line = firstline;
-    for (size_t lineno = 1; line != endline; ++line, ++lineno) { // indent all lines
-        size_t pos = 0;
-        for (beg = line->begin(); beg != line->end() && (pos < strip); ++beg) {
-            if (*beg == ' ') ++pos;
-            else if (*beg == '\t') { pos += 8; pos -= pos % 8; } // add to closest full tab-stop
-            else if (*beg == '#') { break; } // allow unidentation for comments
-            else {
-                ptrdiff_t d = std::distance(line->begin(), beg);
-                throw XMLException(format(u8"XML line {0}: Current script line indentation ({1} space{2}) is less than the indentation of the first script line ({3} space{4})",
-                                          xmlline+lineno, d, (d==1)?"":"s", strip, (strip==1)?"":"s"));
-            }
-        }
-        result += std::string(beg, line->end());
-        result += "\n";
-    }
-    script = std::move(result);
-}
-
 
 
 

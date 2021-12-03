@@ -275,7 +275,15 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
         if (l) {
             cartesian2d->setExtrusion(plask::make_shared<Extrusion>(readExactlyOneChild<GeometryObjectD<2>>(), *l));
         } else {
-            auto child = readExactlyOneChild<GeometryObject>();
+            shared_ptr<GeometryObject> child;
+            bool require_end = true;
+            if (source.requireNext(manager.draft
+                                    ? (XMLReader::NODE_ELEMENT | XMLReader::NODE_ELEMENT_END)
+                                    : XMLReader::NODE_ELEMENT) == XMLReader::NODE_ELEMENT) {
+                child = readObject();
+            } else {
+                require_end = false;
+            }
             auto child_as_extrusion = dynamic_pointer_cast<Extrusion>(child);
             if (child_as_extrusion) {
                 cartesian2d->setExtrusion(child_as_extrusion);
@@ -284,6 +292,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
                 if (!child_as_2d && !manager.draft) throw UnexpectedGeometryObjectTypeException();
                 cartesian2d->setExtrusion(plask::make_shared<Extrusion>(child_as_2d, INFINITY));
             }
+            if (require_end) source.requireTagEnd();
         }
 
     } else if (nodeName == "cylindrical" || nodeName == "cylindrical2d") {
@@ -291,7 +300,15 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
         result = plask::make_shared<Geometry2DCylindrical>();
         result->setEdges([&](const std::string& s) -> plask::optional<std::string> { return source.getAttribute(s); },
                          getAxisNames(), *materialsDB, manager.draft);
-        auto child = readExactlyOneChild<GeometryObject>();
+        shared_ptr<GeometryObject> child;
+        bool require_end = true;
+        if (source.requireNext(manager.draft
+                                ? (XMLReader::NODE_ELEMENT | XMLReader::NODE_ELEMENT_END)
+                                : XMLReader::NODE_ELEMENT) == XMLReader::NODE_ELEMENT) {
+            child = readObject();
+        } else {
+            require_end = false;
+        }
         auto child_as_revolution = dynamic_pointer_cast<Revolution>(child);
         if (child_as_revolution) {
             static_pointer_cast<Geometry2DCylindrical>(result)->setRevolution(child_as_revolution);
@@ -300,6 +317,7 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
             if (!child_as_2d && !manager.draft) throw UnexpectedGeometryObjectTypeException();
             static_pointer_cast<Geometry2DCylindrical>(result)->setRevolution(plask::make_shared<Revolution>(child_as_2d));
         }
+        if (require_end) source.requireTagEnd();
 
     } else if (nodeName == "cartesian3d") {
         SetExpectedSuffix suffixSetter(*this, PLASK_GEOMETRY_TYPE_NAME_SUFFIX_3D);

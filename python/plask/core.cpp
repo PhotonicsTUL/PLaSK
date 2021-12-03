@@ -247,7 +247,7 @@ static void printMultiLineLog(plask::LogLevel level, const std::string& msg, Arg
 
 
 // Print Python exception to PLaSK logging system
-PLASK_PYTHON_API int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback, const char* scriptname, bool second_is_script, int scriptline) {
+PLASK_PYTHON_API int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback, const char* scriptname, const char* top_frame, int scriptline) {
 
     if (otype == PyExc_SystemExit) {
         Py_INCREF(value);
@@ -278,10 +278,10 @@ PLASK_PYTHON_API int printPythonException(PyObject* otype, PyObject* value, PyOb
         PyObject* context = PyException_GetContext(value);
         py::handle<> cause_h(py::allow_null(cause)), context_h(py::allow_null(context));
         if (cause && cause != Py_None) {
-            printPythonException(cause, scriptname, second_is_script, scriptline);
+            printPythonException(cause, scriptname, top_frame, scriptline);
             writelog(LOG_ERROR_DETAIL, "The above exception was the direct cause of the following exception:");
         } else if (context && context != Py_None) {
-            printPythonException(context, scriptname, second_is_script, scriptline);
+            printPythonException(context, scriptname, top_frame, scriptline);
             writelog(LOG_ERROR_DETAIL, "During handling of the above exception, another exception occurred:");
         }
     }
@@ -301,8 +301,8 @@ PLASK_PYTHON_API int printPythonException(PyObject* otype, PyObject* value, PyOb
             int lineno = traceback->tb_lineno + scriptline;
             std::string filename = py::extract<std::string>(traceback->tb_frame->f_code->co_filename);
             std::string funcname = py::extract<std::string>(traceback->tb_frame->f_code->co_name);
-            if (funcname == "<module>" && (traceback == original_traceback || (second_is_script && traceback == original_traceback->tb_next)))
-                funcname = "<script>";
+            if (funcname == "<module>" && (traceback == original_traceback || (top_frame && traceback == original_traceback->tb_next)))
+                funcname = top_frame? top_frame : "<script>";
             if (traceback->tb_next)
                 plask::writelog(plask::LOG_ERROR_DETAIL, u8"{0} line {1}, function '{2}' calling:", filename, lineno, funcname);
             else {
@@ -674,9 +674,9 @@ BOOST_PYTHON_MODULE(_plask)
     register_exception<plask::ComputationError>(pyComputationError);
     py::scope().attr("ComputationError") = py::handle<>(py::incref(pyComputationError));
 
-    py::def("_print_exception", static_cast<int(*)(PyObject*, PyObject*, PyObject*, const char*, bool, int)>(&printPythonException),
+    py::def("_print_exception", static_cast<int(*)(PyObject*, PyObject*, PyObject*, const char*, const char*, int)>(&printPythonException),
             u8"Print exception information to PLaSK logging system",
-            (py::arg("exc_type"), "exc_value", "exc_traceback", py::arg("scriptname")="", py::arg("second_is_script")=false, py::arg("scriptline")=0));
+            (py::arg("exc_type"), "exc_value", "exc_traceback", py::arg("scriptname")="", py::arg("top_frame")="<module>", py::arg("scriptline")=0));
 
 #   ifdef PRINT_STACKTRACE_ON_EXCEPTION
         py::def("_print_stack", &printStack, "Print C stack (for debug purposes_");

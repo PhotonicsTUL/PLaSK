@@ -1,8 +1,106 @@
-#include "python_globals.hpp"
+#include <limits>
+#include <boost/algorithm/string.hpp>
 
 #include "plask/utils/xml/reader.hpp"
 
+#include "python_globals.hpp"
+
 namespace plask { namespace python {
+
+void removeIndent(std::string& text, unsigned xmlline, const char* tag) {
+    auto line =  boost::make_split_iterator(text, boost::token_finder(boost::is_any_of("\n"), boost::token_compress_off));
+    const boost::algorithm::split_iterator<std::string::iterator> endline;
+    auto firstline = line;
+    size_t strip;
+    std::string::iterator beg;
+    bool cont;
+    do { // Search for the first non-empty line to get initial indentation
+        strip = 0;
+        for (beg = line->begin(); beg != line->end() && (*beg == ' ' || *beg == '\t'); ++beg) {
+            if (*beg == ' ') ++strip;
+            else { strip += 8; strip -= strip % 8; } // add to closest full tab-stop
+        }
+        cont = beg == line->end();
+        line++;
+    } while (cont && line != endline);
+    if (beg == line->begin() || line == endline) {
+        boost::trim_left(text);
+        return;
+    }
+    std::string result;
+    line = firstline;
+    for (size_t lineno = 1; line != endline; ++line, ++lineno) { // indent all lines
+        size_t pos = 0;
+        for (beg = line->begin(); beg != line->end() && (pos < strip); ++beg) {
+            if (*beg == ' ') ++pos;
+            else if (*beg == '\t') { pos += 8; pos -= pos % 8; } // add to closest full tab-stop
+            else if (*beg == '#') { break; } // allow unidentation for comments
+            else {
+                ptrdiff_t d = std::distance(line->begin(), beg);
+                throw XMLException(format(u8"XML line {0}{5}: Python line indentation ({1} space{2}) is less than the indentation of the first line ({3} space{4})",
+                                          xmlline+lineno, d, (d==1)?"":"s", strip, (strip==1)?"":"s",
+                                          tag? format(" in <{}>", tag) : ""));
+            }
+        }
+        result += std::string(beg, line->end());
+        result += "\n";
+    }
+    text = std::move(result);
+}
+
+
+
+PyCodeObject* compilePythonFromXml(XMLReader& reader, bool exec) {
+    size_t lineno  = reader.getLineNr();
+    const std::string name = reader.getNodeName();
+
+    std::string text = reader.requireTextInCurrentTag();
+    boost::trim_right_if(text, boost::is_any_of(" \n\r\t"));
+
+    PyObject* result;
+    {
+        const char* s = text.c_str();
+        while (std::isspace(*s)) ++s;
+        result = Py_CompileString(s, name.c_str(), Py_eval_input);
+    }
+    if (result == nullptr && exec) {
+        PyErr_Clear();
+        size_t start;
+        if (text.find('\n') == std::string::npos) {
+            boost::trim_left(text);
+        } else {
+            for (start = 0; text[start] != '\n' && start < text.length(); ++start) {
+                if (!std::isspace(text[start]))
+                    throw XMLException(format("XML line {}", lineno),
+                        format("Python code must be either a single line or must begin from new line after <{}>", name), lineno);
+            }
+            if (start != text.length()) text = text.substr(start+1);
+            removeIndent(text, lineno, name.c_str());
+        }
+        result = Py_CompileString(text.c_str(), name.c_str(), Py_file_input);
+    }
+    if (result == nullptr) {
+        PyObject *ptype, *pvalue, *ptraceback;
+        PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+        Py_XDECREF(ptraceback);
+        std::string type, value;
+        size_t errline = reader.getLineNr();
+        if (ptype) { type = py::extract<std::string>(py::object(py::handle<>(ptype)).attr("__name__")); }
+        if (pvalue && PyTuple_Check(pvalue) && PyTuple_Size(pvalue) > 1) {
+            py::extract<std::string> evalue(PyTuple_GetItem(pvalue, 0));
+            if (evalue.check()) value = ": " + evalue();
+            PyObject* pdetails = PyTuple_GetItem(pvalue, 1);
+            if (pdetails && PyTuple_Check(pdetails) && PyTuple_Size(pdetails) > 1) {
+                py::extract<int> line(PyTuple_GetItem(pdetails, 1));
+                if (line.check()) errline = lineno + line() - 1;
+            }
+        }
+        Py_XDECREF(pvalue);
+        PyErr_Clear();
+        throw XMLException(format("XML line {} in <{}>", errline, name), format("{}{}", type, value), errline);
+    }
+    return reinterpret_cast<PyCodeObject*>(result);
+}
 
 //     /**
 //      * Get current type of node.

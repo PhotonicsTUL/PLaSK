@@ -343,10 +343,18 @@ inline shared_ptr<GeometryObject> GeometryReader::readObject<GeometryObject>() {
 // specialization for most types
 template <typename RequiredObjectType>
 inline shared_ptr<RequiredObjectType> GeometryReader::readExactlyOneChild(bool required) {
-    auto before_cast = readExactlyOneChild(required);
-    if (!required && !before_cast) return shared_ptr<RequiredObjectType>();
+    shared_ptr<GeometryObject> before_cast;
+    bool require_end = true;
+    if (source.requireNext((required && !manager.draft)
+                               ? XMLReader::NODE_ELEMENT
+                               : (XMLReader::NODE_ELEMENT | XMLReader::NODE_ELEMENT_END)) == XMLReader::NODE_ELEMENT)
+        before_cast = readObject();
+    else
+        require_end = false;
+    if (!before_cast && (!required || manager.draft)) return shared_ptr<RequiredObjectType>();
     shared_ptr<RequiredObjectType> result = dynamic_pointer_cast<RequiredObjectType>(before_cast);
     if (!result && !manager.draft) throw UnexpectedGeometryObjectTypeException();
+    if (require_end) source.requireTagEnd();
     return result;
 }
 

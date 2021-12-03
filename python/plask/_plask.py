@@ -549,9 +549,9 @@ _Data = Data # class alias
 
 __xpl__globals = __builtin__.dict()
 
-def _print_exception(exc_type, exc_value, exc_traceback, scriptname='', second_is_script=False):
+def _print_exception(exc_type, exc_value, exc_traceback, scriptname='', top_frame='<module>', scriptline=0):
     """
-    _print_exception(exc_type, exc_value, exc_traceback, scriptname='', second_is_script=False)
+    _print_exception(exc_type, exc_value, exc_traceback, scriptname='', top_frame='<module>', scriptline=0)
 
         Print exception information to PLaSK logging system
     """

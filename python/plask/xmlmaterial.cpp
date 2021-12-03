@@ -9,6 +9,9 @@
 
 namespace plask { namespace python {
 
+#define RETURN_VARIABLE "__value__"
+
+
 /**
  * Wrapper for Material read from XML of type eval
  * For all virtual functions it calls Python derivatives
@@ -61,9 +64,9 @@ class PythonEvalMaterial: public MaterialWithBase
 
     static inline PyObject* py_eval(PyCodeObject *fun, const py::dict& locals) {
         PyObject* result = PyEval_EvalCode((PyObject*)fun, pyXplGlobals->ptr(), locals.ptr());
-        if (result == Py_None && locals.has_key("__value__")) {
+        if (result == Py_None && locals.has_key(RETURN_VARIABLE)) {
             Py_DECREF(result);
-            result = PyDict_GetItemString(locals.ptr(), "__value__");
+            result = PyDict_GetItemString(locals.ptr(), RETURN_VARIABLE);
             Py_INCREF(result);
         }
         return result;
@@ -325,28 +328,6 @@ inline shared_ptr<Material> PythonEvalMaterialConstructor::operator()(const Mate
     return material;
 }
 
-static inline const char* trim(const std::string& t) {
-    const char* s = t.c_str();
-    while (std::isspace(*s)) ++s;
-    return s;
-};
-
-static inline const char* block(std::string& t) {
-    const char* s = t.c_str();
-    while (std::isblank(*s)) ++s;
-    bool indent;
-    while (*s == '\n' || *s == '\r') {
-        ++s;
-        indent = false;
-        while (std::isblank(*s)) { ++s; indent = true; }
-    }
-    if (indent) {
-        t = "if (True):\n" + t;
-        s = t.c_str();
-    }
-    return s;
-};
-
 void PythonManager::loadMaterial(XMLReader& reader) {
     try {
         std::string material_name = reader.requireAttribute("name");
@@ -358,16 +339,7 @@ void PythonManager::loadMaterial(XMLReader& reader) {
 
 #       define COMPILE_PYTHON_MATERIAL_FUNCTION_(funcname, func) \
         else if (reader.getNodeName() == funcname) { \
-            std::string text = reader.requireTextInCurrentTag(); \
-            constructor->func = (PyCodeObject*)Py_CompileString(trim(text), funcname, Py_eval_input); \
-            if (constructor->func == nullptr) { \
-                PyErr_Clear(); \
-                constructor->func = (PyCodeObject*)Py_CompileString(block(text), funcname, Py_file_input); \
-            } \
-            if (constructor->func == nullptr) { \
-                PyErr_Clear(); \
-                throw XMLException(format("XML line {0} in <" funcname ">", reader.getLineNr()), "Material parameter syntax error"); \
-            } \
+            constructor->func = compilePythonFromXml(reader); \
             try { \
                 py::dict locals; \
                 constructor->cache.func.reset( \

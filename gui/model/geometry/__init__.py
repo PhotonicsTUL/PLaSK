@@ -306,13 +306,19 @@ class GeometryModel(SectionModel, QAbstractItemModel):
             self.undo_stack.clear()
         self.dirty = True
 
+    def get_text(self):
+        element = self.make_xml_element()
+        if len(element) == 0: return ""
+        lines = etree.tostring(element, pretty_print=True, encoding='unicode').splitlines()[1:-1]
+        return "\n".join(line[2:] for line in lines)
+
     def stubs(self):
         res = 'class GEO:\n    """PLaSK object containing the defined geometry objects."""\n'
         res += '\n'.join(s for s in (r.stub() for r in self.roots) if s)
         return res
 
     # QAbstractItemModel implementation:
-    def columnCount(self, parent = QModelIndex()):
+    def columnCount(self, parent=QModelIndex()):
         return 2
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):

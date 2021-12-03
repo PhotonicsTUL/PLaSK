@@ -97,7 +97,7 @@ static py::object initPlask(int argc, const system_char* const argv[]) {
 }
 
 //******************************************************************************
-int handlePythonException(/*const char* scriptname=nullptr*/) {
+int handlePythonException() {
     PyObject* value;
     PyObject* type;
     PyObject* original_traceback;

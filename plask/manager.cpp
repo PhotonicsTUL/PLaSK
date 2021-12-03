@@ -281,7 +281,7 @@ void Manager::loadScript(XMLReader& reader)
     size_t start;
     for (start = 0; scr[start] != '\n' && start < scr.length(); ++start) {
         if (!std::isspace(scr[start]))
-            throw XMLException(reader, "Script must begin from new line after <script>");
+            throw XMLException(format("XML line {}", scriptline), "Script must begin from new line after <script>", scriptline);
     }
     if (start != scr.length()) script = scr.substr(start+1);
 }

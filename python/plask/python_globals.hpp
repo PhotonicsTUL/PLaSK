@@ -86,13 +86,13 @@ struct IOError: public Exception {
 PLASK_PYTHON_API std::string getPythonExceptionMessage();
 
 PLASK_PYTHON_API int printPythonException(PyObject* otype, PyObject* value, PyObject* otraceback,
-                                          const char* scriptname=nullptr, bool second_is_script=false, int scriptline=0);
+                                          const char* scriptname=nullptr, const char* top_frame=nullptr, int scriptline=0);
 
-inline int printPythonException(PyObject* value, const char* scriptname=nullptr, bool second_is_script=false, int scriptline=0) {
+inline int printPythonException(PyObject* value, const char* scriptname=nullptr, const char* top_frame=nullptr, int scriptline=0) {
     PyObject* type = PyObject_Type(value);
     PyObject* traceback = PyException_GetTraceback(value);
     py::handle<> type_h(type), traceback_h(py::allow_null(traceback));
-    return printPythonException(type, value, traceback, scriptname, second_is_script, scriptline);
+    return printPythonException(type, value, traceback, scriptname, top_frame, scriptline);
 }
 
 
@@ -376,6 +376,25 @@ inline static py::object eval_common_type(const std::string& value) {
         return py::str(value);
     }
 }
+
+/**
+ * Remove indentation of the Python part (based on the indentation of the first line)
+ * \param text text to fix
+ * \param xmlline line number for error messages
+ * \param tag tag name for error messages
+ */
+void removeIndent(std::string& text, unsigned xmlline, const char* tag = nullptr);
+
+
+/**
+ * Read Python code from reader (either for eval or exec).
+ * \param reader XML reader
+ * \param exec if \c false the code is compiled only for eval
+ * \return compiled PyCodeObject
+ */
+PyCodeObject* compilePythonFromXml(XMLReader& reader, bool exec = true);
+
+
 
 }} // namespace plask::python
 
