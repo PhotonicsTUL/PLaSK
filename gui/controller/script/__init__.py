@@ -22,75 +22,29 @@ from ...utils.qthread import BackgroundTask
 from ...utils.help import open_help
 from .completer import CompletionsController
 from ...model.script.completer import get_docstring, get_definitions
-from .brackets import get_selections as get_bracket_selections, update_brackets_colors
-from .indenter import indent, unindent, autoindent
 from ..source import SourceEditController
 from ...model.script import ScriptModel
-from ...utils.config import CONFIG, parse_highlight, set_font
+from ...utils.config import CONFIG, set_font
 from ...utils.widgets import EDITOR_FONT, ComboBox
 from ...utils.texteditor import TextEditor, EditorWidget
-from ...lib.highlighter import SyntaxHighlighter, load_syntax
-
-from ...lib.highlighter.plask import get_syntax
+from ...utils.texteditor.python import PythonTextEditor, PYTHON_SCHEME
+from ...utils.texteditor import EditorWidget
 
 
 LOG_LEVELS = ['Error', 'Warning', 'Important', 'Info', 'Result', 'Data', 'Detail', 'Debug']
 
 
-SCHEME = {}
-
-def update_python_scheme():
-    global SCHEME
-    SCHEME['syntax_comment'] = parse_highlight(CONFIG['syntax/python_comment'])
-    SCHEME['syntax_string'] = parse_highlight(CONFIG['syntax/python_string'])
-    SCHEME['syntax_special'] = parse_highlight(CONFIG['syntax/python_special'])
-    SCHEME['syntax_builtin'] = parse_highlight(CONFIG['syntax/python_builtin'])
-    SCHEME['syntax_keyword'] = parse_highlight(CONFIG['syntax/python_keyword'])
-    SCHEME['syntax_number'] = parse_highlight(CONFIG['syntax/python_number'])
-    SCHEME['syntax_decorator'] = parse_highlight(CONFIG['syntax/python_decorator'])
-    SCHEME['syntax_member'] = parse_highlight(CONFIG['syntax/python_member'])
-    SCHEME['syntax_plask'] = parse_highlight(CONFIG['syntax/python_plask'])
-    SCHEME['syntax_provider'] = parse_highlight(CONFIG['syntax/python_provider'])
-    SCHEME['syntax_receiver'] = parse_highlight(CONFIG['syntax/python_receiver'])
-    SCHEME['syntax_log'] = parse_highlight(CONFIG['syntax/python_log'])
-    SCHEME['syntax_solver'] = parse_highlight(CONFIG['syntax/python_solver'])
-    SCHEME['syntax_define'] = parse_highlight(CONFIG['syntax/python_define'])
-    SCHEME['syntax_loaded'] = parse_highlight(CONFIG['syntax/python_loaded'])
-    SCHEME['syntax_pylab'] = parse_highlight(CONFIG['syntax/python_pylab'])
-    SCHEME['syntax_obsolete'] = {'color': '#aaaaaa', 'bold': True, 'italic': True}
-update_python_scheme()
-
-
-class ScriptEditor(TextEditor):
-    """Editor with some features usefult for script editing"""
+class ScriptEditor(PythonTextEditor):
+    """Editor with some even more eatures usefult for script editing"""
 
     def __init__(self, parent=None, controller=None):
         self.controller = weakref.proxy(controller)
         super().__init__(parent)
 
-        self.cursorPositionChanged.connect(self.highlight_brackets)
-        self.selectionChanged.connect(self.highlight_brackets)
-
-        self.comment_action = QAction('Co&mment Lines', self)
-        self.uncomment_action = QAction('Uncomm&ent Lines', self)
-        self.toggle_comment_action = QAction('&Toggle Comment on Lines', self)
         self.complete_action = QAction('Show Completer', self)
-        self.join_lines_action = QAction('Join Lines', self)
-        CONFIG.set_shortcut(self.comment_action, 'python_comment')
-        CONFIG.set_shortcut(self.uncomment_action, 'python_uncomment')
-        CONFIG.set_shortcut(self.toggle_comment_action, 'python_toggle_comment')
         CONFIG.set_shortcut(self.complete_action, 'python_completion')
-        CONFIG.set_shortcut(self.join_lines_action, 'python_join_lines')
-        self.comment_action.triggered.connect(self.block_comment)
-        self.uncomment_action.triggered.connect(self.block_uncomment)
-        self.toggle_comment_action.triggered.connect(self.block_comment_toggle)
         self.complete_action.triggered.connect(self.show_completer)
-        self.join_lines_action.triggered.connect(self.join_lines)
-        self.addAction(self.comment_action)
-        self.addAction(self.uncomment_action)
-        self.addAction(self.toggle_comment_action)
         self.addAction(self.complete_action)
-        self.addAction(self.join_lines_action)
 
         self.completer = CompletionsController(self)
 
@@ -98,99 +52,6 @@ class ScriptEditor(TextEditor):
         self._pointer_definition = None, None
 
         self.setMouseTracking(True)
-
-    def highlight_brackets(self):
-        self.setExtraSelections(self.extraSelections() +
-                                get_bracket_selections(self, self.textCursor().block(),
-                                                       self.textCursor().positionInBlock()))
-
-    def block_comment(self):
-        cursor = self.textCursor()
-        cursor.beginEditBlock()
-        start = cursor.selectionStart()
-        end = cursor.selectionEnd()
-        cursor.setPosition(start)
-        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-        start = cursor.position()
-        if start == end: end += 1
-        document = self.document()
-        margin = inf
-        while cursor.position() < end:
-            while document.characterAt(cursor.position()) in (' ', '\t'):
-                if not cursor.movePosition(QTextCursor.MoveOperation.NextCharacter): break
-            margin = min(cursor.positionInBlock(), margin)
-            if not cursor.movePosition(QTextCursor.MoveOperation.NextBlock):
-                break
-        cursor.setPosition(start)
-        while cursor.position() < end:
-            cursor.movePosition(QTextCursor.MoveOperation.NextCharacter, QTextCursor.MoveMode.MoveAnchor, margin)
-            cursor.insertText("# ")
-            end += 2
-            if not cursor.movePosition(QTextCursor.MoveOperation.NextBlock):
-                break
-        cursor.endEditBlock()
-
-    def block_uncomment(self):
-        cursor = self.textCursor()
-        cursor.beginEditBlock()
-        start = cursor.selectionStart()
-        end = cursor.selectionEnd()
-        cursor.setPosition(start)
-        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-        if cursor.position() == end: end += 1
-        document = self.document()
-        try:
-            while cursor.position() < end:
-                while document.characterAt(cursor.position()) in (' ', '\t'):
-                    if not cursor.movePosition(QTextCursor.MoveOperation.NextCharacter): raise ValueError
-                if document.characterAt(cursor.position()) == '#':
-                    cursor.deleteChar()
-                    end -= 1
-                    if document.characterAt(cursor.position()) == ' ':
-                        cursor.deleteChar()
-                        end -= 1
-                if not cursor.movePosition(QTextCursor.MoveOperation.NextBlock): raise ValueError
-        except ValueError:
-            pass
-        cursor.endEditBlock()
-
-    def block_comment_toggle(self):
-        incomment = False
-        cursor = self.textCursor()
-        start = cursor.selectionStart()
-        end = cursor.selectionEnd()
-        cursor.setPosition(start)
-        cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock)
-        if cursor.position() == end: end += 1
-        document = self.document()
-        try:
-            while cursor.position() < end:
-                while document.characterAt(cursor.position()) in (' ', '\t'):
-                    if not cursor.movePosition(QTextCursor.MoveOperation.NextCharacter): raise ValueError
-                if document.characterAt(cursor.position()) == '#':
-                    incomment = True
-                elif not cursor.atBlockEnd():
-                    incomment = False
-                    break
-                if not cursor.movePosition(QTextCursor.MoveOperation.NextBlock): raise ValueError
-        except ValueError:
-            pass
-        if incomment:
-            self.block_uncomment()
-        else:
-            self.block_comment()
-
-    def join_lines(self):
-        cursor = self.textCursor()
-        cursor.movePosition(QTextCursor.MoveOperation.EndOfBlock)
-        if cursor.atEnd(): return
-        document = self.document()
-        cursor.beginEditBlock()
-        cursor.deleteChar()
-        while document.characterAt(cursor.position()) in ' \t':
-            cursor.deleteChar()
-        cursor.insertText(' ')
-        cursor.endEditBlock()
 
     def keyPressEvent(self, event):
         key = event.key()
@@ -213,47 +74,9 @@ class ScriptEditor(TextEditor):
                              Qt.Key.Key_Meta, Qt.Key.Key_Super_L, Qt.Key.Key_Super_R):
                 self.completer.popup().hide()
 
-        if key in (Qt.Key.Key_Tab, Qt.Key.Key_Backtab) or \
-                key == Qt.Key.Key_Backspace and modifiers != (Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier):
-            cursor = self.textCursor()
-            if cursor.hasSelection():
-                if key == Qt.Key.Key_Tab:
-                    indent(self)
-                    return
-                elif key == Qt.Key.Key_Backtab:
-                    unindent(self)
-                    return
-            elif key == Qt.Key.Key_Backtab:
-                unindent(self)
-                return
-            else:
-                col = cursor.positionInBlock()
-                inindent = not cursor.block().text()[:col].strip()
-                if inindent:
-                    if key == Qt.Key.Key_Tab:
-                        indent(self, col)
-                        return
-                    else:
-                        if not (cursor.atBlockStart()):
-                            unindent(self, col)
-                            return
-        elif key == Qt.Key.Key_Home and not modifiers & ~Qt.KeyboardModifier.ShiftModifier:
-            cursor = self.textCursor()
-            txt = cursor.block().text()
-            col = cursor.positionInBlock()
-            mode = QTextCursor.MoveMode.KeepAnchor if modifiers & Qt.KeyboardModifier.ShiftModifier else QTextCursor.MoveMode.MoveAnchor
-            if txt[:col].strip() or (col == 0 and txt.strip()):
-                cursor.movePosition(QTextCursor.MoveOperation.StartOfBlock, mode)
-                while self.document().characterAt(cursor.position()) in [' ', '\t']:
-                    cursor.movePosition(QTextCursor.MoveOperation.Right, mode)
-                self.setTextCursor(cursor)
-                return
-
         super().keyPressEvent(event)
 
-        if key in (Qt.Key.Key_Enter, Qt.Key.Key_Return, Qt.Key.Key_Colon):
-            autoindent(self)
-        elif key == Qt.Key.Key_Period and not (CONFIG['workarounds/no_jedi'] or CONFIG['workarounds/jedi_no_dot'] or
+        if key == Qt.Key.Key_Period and not (CONFIG['workarounds/no_jedi'] or CONFIG['workarounds/jedi_no_dot'] or
                                            self.completer.popup().isVisible()):
             self.completer.start_completion()
 
@@ -306,7 +129,6 @@ class ScriptController(SourceEditController):
         if model is None: model = ScriptModel()
         SourceEditController.__init__(self, document, model)
         self.document.window.config_changed.connect(self.reconfig)
-        self.highlighter = None
 
     def create_source_widget(self, parent):
         window = QMainWindow(parent)
@@ -404,23 +226,10 @@ class ScriptController(SourceEditController):
 
     def on_edit_enter(self):
         super().on_edit_enter()
-        self.rehighlight()
-
-    def rehighlight(self):
-        syntax = get_syntax(self.document.defines, self.document.solvers)
-        self.highlighter = SyntaxHighlighter(self.source_widget.editor.document(),
-                                             *load_syntax(syntax, SCHEME),
-                                             default_font=EDITOR_FONT)
-        self.highlighter.rehighlight()
+        self.source_widget.editor.rehighlight(self.document.defines, self.document.solvers)
 
     def reconfig(self):
-        editor = self.source_widget.editor
-        editor.reconfig()
-        update_brackets_colors()
-        if self.highlighter is not None:
-            with BlockQtSignals(editor):
-                update_python_scheme()
-                self.rehighlight()
+        self.source_widget.editor.reconfig()
 
     def on_edit_exit(self):
         return super().on_edit_exit()

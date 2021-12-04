@@ -12,12 +12,12 @@
 
 import math
 
-from ..qt.QtCore import *
-from ..qt.QtWidgets import *
-from ..qt.QtGui import *
-from ..qt import QtSignal, qt_exec
-from .config import CONFIG, dark_style
-from .widgets import EDITOR_FONT, set_icon_size
+from ...qt.QtCore import *
+from ...qt.QtWidgets import *
+from ...qt.QtGui import *
+from ...qt import QtSignal, qt_exec
+from ..config import CONFIG, dark_style
+from ..widgets import EDITOR_FONT, set_icon_size
 
 
 def update_textedit():
@@ -218,9 +218,9 @@ class TextEditor(QPlainTextEdit):
 
 class TextEditorWithCB(TextEditor):
     """
-        TextEditor which emits some extra callbacks:
-        focus_out_cb - when it lost focus
-        key_cb - when kay is pressed
+    TextEditor which emits some extra callbacks:
+    focus_out_cb - when it lost focus
+    key_cb - when a key is pressed
     """
     def __init__(self, focus_out_cb=None, key_cb=None, **kwargs):
         super().__init__(**kwargs)
@@ -238,7 +238,6 @@ class TextEditorWithCB(TextEditor):
 
 class LineNumberArea(QWidget):
     """Line numbers widget
-
        http://qt4-project.org/doc/qt4-4.8/widgets-codeeditor.html
     """
 
@@ -455,7 +454,8 @@ class EditorWidget(QWidget):
         hide_action = QAction(self)
         hide_action.setShortcut(QKeySequence(Qt.Key.Key_Escape))
         hide_action.triggered.connect(self.hide_toolbars)
-        self.editor.addAction(hide_action)
+        self.find_edit.addAction(hide_action)
+        # self.replace_edit.addAction(hide_action)
         self._add_shortcut('editor_find_next', self.find_next)
         self._add_shortcut('editor_find_prev', self.find_prev)
         self.find_edit.textEdited.connect(self.find_type)

@@ -35,7 +35,7 @@ PREAMBLE = """\
 from pylab import *
 import plask
 from plask import *
-import plask.geometry, plask.mesh, plask.material, plask.plow, plask.phys, plask.algorithm
+import plask.geometry, plask.mesh, plask.material, plask.flow, plask.phys, plask.algorithm
 from plask import geometry, mesh, material, flow, phys, algorithm
 from plask.pylab import *
 from plask.hdf5 import *

@@ -61,11 +61,11 @@ def print_interior(element):
 
 def attr_to_xml(src_obj, dst_element, *attr_names, **defaults):
     """
-        Set XML attributes in dst_element.attrib using attributes from src_obj.
-        Only existing, not-None attributes are set.
-        :param src_obj: source object
-        :param dst_element: destination element
-        :param str *attr_names: names of attributes to transfer
+    Set XML attributes in dst_element.attrib using attributes from src_obj.
+    Only existing, not-None attributes are set.
+    :param src_obj: source object
+    :param dst_element: destination element
+    :param str *attr_names: names of attributes to transfer
     """
     for attr in attr_names:
         a = getattr(src_obj, attr, None)
@@ -75,12 +75,12 @@ def attr_to_xml(src_obj, dst_element, *attr_names, **defaults):
 
 def xml_to_attr(src, dst_obj, *attr_names):
     """
-        Set dst_obj attributes using data from src_element attributes.
-        All attributes not included in src are set to None.
-        If src is None all attributes are set to None.
-        :param src: elementtree element or AttributeReader
-        :param dst_obj: destination object
-        :param *attr_names: names of attributes to transfer
+    Set dst_obj attributes using data from src_element attributes.
+    All attributes not included in src are set to None.
+    If src is None all attributes are set to None.
+    :param src: elementtree element or AttributeReader
+    :param dst_obj: destination object
+    :param *attr_names: names of attributes to transfer
     """
     if src is None:
         for attr in attr_names: setattr(dst_obj, attr, None)
@@ -110,6 +110,42 @@ def get_text(element):
             else:
                 text += comment.tail
     return text
+
+
+def get_text_unindent(element):
+    """
+    Get text from XML element and remove indentation
+    :param element: XML element
+    :return: read text
+    """
+    text = get_text(element)
+    lines = [line.rstrip() for line in text.splitlines()]
+    while lines and not lines[0]: lines = lines[1:]
+    if lines and not lines[-1]: lines = lines[:-1]
+    if lines:
+        strip = min(len(line) - len(line.lstrip()) for line in lines)
+        if strip > 0:
+            text = '\n'.join(line[strip:] for line in lines)
+    return text
+
+
+def make_indented_text(text, level):
+    """Make text element addind indentation
+    :param text: Tekst to insert into XML
+    :param level: Tag level
+    :return: read text or CDATA
+    """
+    lines = [line.rstrip() for line in text.splitlines()]
+    while lines and not lines[0]: lines = lines[1:]
+    if lines and not lines[-1]: lines = lines[:-1]
+    end = '\n' + '  ' * level
+    sep = end + '  '
+    if len(lines) > 1:
+        text = ''.join([sep + line for line in lines]) + end
+    if '<' in text or '>' in text or '&' in text:
+        return etree.CDATA(text)
+    else:
+        return text
 
 
 class AttributeReader:

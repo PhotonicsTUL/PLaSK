@@ -27,7 +27,7 @@ from ...utils.qundo import UndoCommandWithSetter
 from ...model.solvers.schemasolver import SchemaTag, SchemaCustomWidgetTag, \
     AttrGroup, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath, AttrGeometry, AttrMesh
 from ...model.solvers.bconds import SchemaBoundaryConditions
-from ..source import SCHEME
+from ..source import XML_SCHEME
 from . import Controller
 from .bconds import BoundaryConditionsDialog
 
@@ -186,7 +186,7 @@ class SolverWidget(QWidget):
                 edit = TextEditorWithCB(parent=parent, line_numbers=False)
                 font = QFont(EDITOR_FONT)
                 font.setPointSize(font.pointSize() - 1)
-                edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(SYNTAX, SCHEME),
+                edit.highlighter = SyntaxHighlighter(edit.document(), *load_syntax(SYNTAX, XML_SCHEME),
                                                      default_font=font)
                 edit.setToolTip(u'&lt;<b>{0}</b>&gt;...&lt;/<b>{0}</b>&gt;<br/>{1}'.format(gname, schema.label))
                 self.controls[group] = edit

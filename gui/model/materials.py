@@ -28,7 +28,8 @@ from ..qt.QtGui import *
 from ..qt.QtWidgets import *
 from .table import TableModel, TableModelEditMethods
 from .info import Info
-from ..utils.xml import AttributeReader, require_no_attributes, require_no_children, OrderedTagReader, get_text
+from ..utils.xml import AttributeReader, require_no_attributes, require_no_children, OrderedTagReader, \
+                        get_text_unindent, make_indented_text
 
 try:
     import plask
@@ -357,16 +358,7 @@ class MaterialsModel(TableModel):
                     material_element.append(etree.Comment(c))
                 el = etree.SubElement(material_element, self.name)
                 if self.value:
-                    value = self.value
-                    lines = [line.rstrip() for line in value.splitlines()]
-                    while lines and not lines[0]: lines = lines[1:]
-                    if lines and not lines[-1]: lines = lines[:-1]
-                    if len(lines) > 1:
-                        value = ''.join(['\n      ' + line for line in lines]) + '\n    '
-                    if '<' in value or '>' in value or '&' in value:
-                        el.text = etree.CDATA(value)
-                    else:
-                        el.text = value
+                    el.text = make_indented_text(self.value, 2)
 
         def __init__(self, materials_model, name, base=None, properties=None, alloy=False, comments=None,
                      endcomments=None, parent=None, *args):
@@ -488,19 +480,11 @@ class MaterialsModel(TableModel):
                             for prop in props:
                                 require_no_children(prop)
                                 with AttributeReader(prop) as _:
-                                    value = get_text(prop)
-                                    lines = [line.rstrip() for line in value.splitlines()]
-                                    while lines and not lines[0]: lines = lines[1:]
-                                    if lines and not lines[-1]: lines = lines[:-1]
-                                    if lines:
-                                        strip = min(len(line) - len(line.lstrip()) for line in lines)
-                                        if strip > 0:
-                                            value = '\n'.join(line[strip:] for line in lines)
+                                    value = get_text_unindent(prop)
                                     properties.append(MaterialsModel.Material.Property(prop.tag, value, prop.comments))
                             base = mat_attrib.get('base', None)
                             if base is None: base = mat_attrib.get('kind')  # for old files
-                            alloy = mat_attrib.get('complex', '')  #TODO remove soon
-                            alloy = mat_attrib.get('alloy', alloy).lower() in ('yes', 'true', '1')
+                            alloy = mat_attrib.get('alloy', '').lower() in ('yes', 'true', '1')
                             material = MaterialsModel.Material(self, mat_attrib.get('name', ''), base, properties,
                                                                alloy, mat.comments, props.get_comments())
                             new_entries.append(material)

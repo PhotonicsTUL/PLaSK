@@ -23,16 +23,16 @@ from ...lib.highlighter.xml import SYNTAX
 from .xml_formatter import indent, unindent, indent_new_line, parse_slash
 
 
-SCHEME = {}
+XML_SCHEME = {}
 
 def update_xml_scheme():
-    global SCHEME
-    SCHEME['syntax_comment'] = parse_highlight(CONFIG['syntax/xml_comment'])
-    SCHEME['syntax_tag'] = parse_highlight(CONFIG['syntax/xml_tag'])
-    SCHEME['syntax_attr'] = parse_highlight(CONFIG['syntax/xml_attr'])
-    SCHEME['syntax_value'] = parse_highlight(CONFIG['syntax/xml_value'])
-    SCHEME['syntax_text'] = parse_highlight(CONFIG['syntax/xml_text'])
-    SCHEME['syntax_define'] = parse_highlight(CONFIG['syntax/xml_define'])
+    global XML_SCHEME
+    XML_SCHEME['syntax_comment'] = parse_highlight(CONFIG['syntax/xml_comment'])
+    XML_SCHEME['syntax_tag'] = parse_highlight(CONFIG['syntax/xml_tag'])
+    XML_SCHEME['syntax_attr'] = parse_highlight(CONFIG['syntax/xml_attr'])
+    XML_SCHEME['syntax_value'] = parse_highlight(CONFIG['syntax/xml_value'])
+    XML_SCHEME['syntax_text'] = parse_highlight(CONFIG['syntax/xml_text'])
+    XML_SCHEME['syntax_define'] = parse_highlight(CONFIG['syntax/xml_define'])
 update_xml_scheme()
 
 
@@ -135,7 +135,7 @@ class SourceEditController(Controller):
     def create_source_widget(self, parent):
         source = EditorWidget(parent, XMLEditor, line_numbers=self.line_numbers)
         self.highlighter = SyntaxHighlighter(source.editor.document(),
-                                             *load_syntax(SYNTAX, SCHEME),
+                                             *load_syntax(SYNTAX, XML_SCHEME),
                                              default_font=EDITOR_FONT)
         source.editor.setReadOnly(self.model.is_read_only())
         return source
@@ -156,7 +156,7 @@ class SourceEditController(Controller):
             with BlockQtSignals(editor):
                 update_xml_scheme()
                 self.highlighter = SyntaxHighlighter(editor.document(),
-                                                     *load_syntax(SYNTAX, SCHEME),
+                                                     *load_syntax(SYNTAX, XML_SCHEME),
                                                      default_font=EDITOR_FONT)
 
     def load_data_from_model(self):

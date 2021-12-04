@@ -28,9 +28,6 @@ class GNObject(GNode):
         #self.serial_nr = GNObject.next_serial_nr
         #GNObject.next_serial_nr += 1
 
-    #def serial_name(self):
-    #    return '#GUI{}'.format(self.serial_nr)
-
     def _attributes_from_xml(self, attribute_reader, conf):
         super()._attributes_from_xml(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, 'name', 'role', 'axes')

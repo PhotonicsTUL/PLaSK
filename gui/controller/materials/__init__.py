@@ -20,10 +20,10 @@ from ...qt.QtGui import *
 from ...qt import QtSignal
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
 from ...lib.highlighter.plask import SYNTAX, get_syntax
-from ..script import SCHEME
 from ...model.materials import MaterialsModel, BASE_MATERIALS, default_materialdb, \
     material_html_help, parse_material_components, elements_re
-from ...utils.texteditor import TextEditor
+from ...utils.texteditor.python import PythonTextEditor, PYTHON_SCHEME
+
 from ...utils.widgets import HTMLDelegate, table_last_col_fill, EDITOR_FONT, table_edit_shortcut, CheckBoxDelegate, ComboBox
 from ...utils.qsignals import BlockQtSignals
 from ...utils.config import CONFIG, parse_highlight
@@ -34,7 +34,7 @@ from ..defines import get_defines_completer
 from .plot import show_material_plot
 
 
-SYNTAX['formats']['__value__'] = '{syntax_material_value}'
+SYNTAX['formats']['__value__'] = '{syntax_solver}'
 
 
 class ComponentsPopup(QFrame):
@@ -281,6 +281,7 @@ class ExternalLineEdit(QLineEdit):
         self.setText(filename)
         self.selectAll()
 
+
 class MaterialNameDelegate(QStyledItemDelegate):
 
     def __init__(self, model, defines, parent):
@@ -381,7 +382,7 @@ class MaterialsTable(QTableView):
             super().closeEditor(editor, hint)
 
 
-class _PropEdit(TextEditor):
+class _PropEdit(PythonTextEditor):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -500,20 +501,11 @@ class MaterialsController(Controller):
         self.splitter.setSizes([10000, 30000])
 
     def propedit_rehighlight(self):
-        SCHEME['syntax_material_value'] = parse_highlight(CONFIG['syntax/xml_tag'])
-        syntax = get_syntax(self.document.defines, __value__=['__value__'])
-        self.propedit.highlighter = SyntaxHighlighter(self.propedit.document(),
-                                                      *load_syntax(syntax, SCHEME),
-                                                      default_font=EDITOR_FONT)
-        self.propedit.highlighter.rehighlight()
+        with BlockQtSignals(self.propedit):
+            self.propedit.rehighlight(self.document.defines, __value__=['__value__'])
 
     def reconfig(self):
-        with BlockQtSignals(self.propedit):
-            try:
-                del self.propedit.highlighter
-            except AttributeError:
-                pass
-            self.propedit_rehighlight()
+        self.propedit_rehighlight()
 
     def update_materials_table(self, model):
         if model == self.model and model.rowCount():
