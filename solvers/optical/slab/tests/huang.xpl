@@ -13,13 +13,13 @@
 
 <materials>
   <material name="Subs" base="dielectric">
-    <nr>{ns}</nr>
+    <nr>ns</nr>
   </material>
   <material name="Hi" base="dielectric">
-    <nr>{nh}</nr>
+    <nr>nh</nr>
   </material>
   <material name="Lo" base="dielectric">
-    <nr>{nl}</nr>
+    <nr>nl</nr>
   </material>
 </materials>
 
