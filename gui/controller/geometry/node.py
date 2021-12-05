@@ -14,6 +14,7 @@ import weakref
 
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *
+from ...qt import QtSignal
 
 from .. import Controller
 from ..materials import MaterialsComboBox
@@ -23,6 +24,7 @@ from ...model.geometry.reader import GNAligner
 from ...utils.qsignals import BlockQtSignals
 from ...utils.str import empty_to_none, none_to_empty
 from ...utils.widgets import EditComboBox, MultiLineEdit, ComboBox
+from ...utils.texteditor import TextEditor
 from ...utils import getattr_by_path
 
 
@@ -100,7 +102,7 @@ class GNodeController(Controller):
         else:
             return False
 
-    def _get_current_form(self):
+    def get_current_form(self):
         if not hasattr(self, '_current_form'): self.construct_group()
         return self._current_form
 
@@ -114,7 +116,7 @@ class GNodeController(Controller):
                 box.addWidget(res)
                 box.addWidget(QLabel(unit))
             else:
-                self._get_current_form().addRow(row_name, res)
+                self.get_current_form().addRow(row_name, res)
         if change_cb is not None:
             res.editingFinished.connect(change_cb)
         elif node_property_name is not None:
@@ -130,7 +132,7 @@ class GNodeController(Controller):
         # res = TextEditWithCB(key_cb=key_cb)
         # res.setTabChangesFocus(True)
         # res.setFixedHeight(int(3.5 * QFontMetrics(res.font()).height()))
-        if row_name: self._get_current_form().addRow(row_name, res)
+        if row_name: self.get_current_form().addRow(row_name, res)
         if change_cb is not None:
             res.focus_out_cb = change_cb
         elif node_property_name is not None:
@@ -139,13 +141,32 @@ class GNodeController(Controller):
                 node_property_name, sep.join(res.get_values()), display_property_name)
         return res
 
+    def construct_text_edit(self, row_name=None, node_property_name=None, display_property_name=None,
+                            change_cb=None, editor_class=TextEditor):
+        if change_cb is None and node_property_name is not None:
+            weakself = weakref.proxy(self)
+            change_cb = lambda: weakself._set_node_property_undoable(
+                node_property_name, res.toPlainText(), display_property_name)
+
+        class EditorCB(editor_class):
+            editingFinished = QtSignal()
+            def focusOutEvent(self, event):
+                super().focusOutEvent(event)
+                self.editingFinished.emit()
+
+        res = EditorCB(line_numbers=False)
+        if change_cb is not None:
+            res.editingFinished.connect(change_cb)
+        if row_name: self.get_current_form().addRow(row_name, res)
+        return res
+
     def construct_combo_box(self, row_name=None, items=(), editable=True, node_property_name=None,
                             display_property_name=None, node=None, change_cb=None):
         res = EditComboBox()
         res.setEditable(editable)
         res.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         res.addItems(items)
-        if row_name: self._get_current_form().addRow(row_name, res)
+        if row_name: self.get_current_form().addRow(row_name, res)
         if change_cb is not None:
             res.editingFinished.connect(change_cb)
         elif node_property_name is not None:
@@ -166,7 +187,7 @@ class GNodeController(Controller):
                                 popup_select_cb=lambda m: change_cb(), items=items)
         res.setEditable(True)
         res.setMinimumWidth(2)
-        if row_name: self._get_current_form().addRow(row_name, res)
+        if row_name: self.get_current_form().addRow(row_name, res)
         if change_cb is not None:
             res.editingFinished.connect(change_cb)
         return res
@@ -197,7 +218,7 @@ class GNodeController(Controller):
         widget.setLayout(layout)
 
         if row_name:
-            self._get_current_form().addRow(row_name, widget)
+            self.get_current_form().addRow(row_name, widget)
             return res
         else:
             return widget
@@ -245,7 +266,7 @@ class GNodeController(Controller):
             for p in positions:
                 p[0].currentIndexChanged.connect(cb)
                 p[1].editingFinished.connect(cb)
-        if add_to_current: self._get_current_form().addRow(layout)
+        if add_to_current: self.get_current_form().addRow(layout)
         return positions
 
     def _construct_hbox(self, row_name=None):
@@ -254,7 +275,7 @@ class GNodeController(Controller):
         group = QWidget(self.form)
         group.setContentsMargins(0, 0, 0, 0)
         group.setLayout(hbox)
-        if row_name: self._get_current_form().addRow(row_name, group)
+        if row_name: self.get_current_form().addRow(row_name, group)
         return hbox, group
 
     def construct_point_controllers(self, row_name=None, dim=None, field_names=None, change_cb=None):

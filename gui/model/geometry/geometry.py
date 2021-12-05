@@ -8,6 +8,8 @@ from ...utils.validators import can_be_float
 
 class GNGeometryBase(GNObject):
 
+    have_mesh_settings = False
+
     def __init__(self, parent=None, dim=None):
         super().__init__(parent=parent, dim=dim, children_dim=dim)
         self.edges = [[None, None] for _ in range(0, dim)]

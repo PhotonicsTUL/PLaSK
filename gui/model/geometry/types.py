@@ -23,7 +23,8 @@ _NAMES = {
     'delete': "<delete object>",
     'simplify-gradients': "<simplify gradients>",
     'again': "[Repeat object]",
-    'copy': "[Copy and modify object]"
+    'copy': "[Copy and modify object]",
+    'python': "[Define object in Python]",
 }
 
 def gname(key, menu=False):
@@ -38,12 +39,13 @@ def gname(key, menu=False):
         return key.title()
 
 
+from .geometry import GNCartesian, GNCylindrical
 from .leaf import GNBlock, GNCircle, GNCylinder, GNTriangle, GNPrism
 from .container import GNStack, GNAlignContainer, GNShelf
 from .transform import GNClip, GNExtrusion, GNFlip, GNMirror, GNRevolution,\
     GNTranslation, GNIntersection, GNArrange, GNLattice
 from .again_copy import GNCopy, GNAgain
-from .geometry import GNCartesian, GNCylindrical
+from .python_object import GNPython
 
 geometry_types_2d_core_leafs = OrderedDict((  # only unique names of types, displayed in add menu
     ('rectangle', GNBlock.from_xml_2d),
@@ -86,7 +88,7 @@ geometry_types_3d_core_leafs = OrderedDict((
     ('cuboid', GNBlock.from_xml_3d),
     ('sphere', GNCircle.from_xml_3d),
     ('cylinder', GNCylinder.from_xml_3d),
-    ('prism', GNPrism.from_xml_3d)
+    ('prism', GNPrism.from_xml_3d),
 ))
 geometry_types_3d_core_containers = OrderedDict((
     ('stack3d', GNStack.from_xml_3d),
@@ -132,6 +134,7 @@ geometry_types_3d.update(geometry_types_3d_core)
 geometry_types_other = OrderedDict((
     ('again', GNAgain.from_xml),
     ('copy', GNCopy.from_xml),
+    ('python', GNPython.from_xml),
 ))
 
 

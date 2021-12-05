@@ -18,6 +18,8 @@ from ...utils.xml import xml_to_attr, attr_to_xml
 class GNObject(GNode):
     """Base class for all nodes read by GeometryReader::readObject() in PLaSK."""
 
+    have_mesh_settings = True
+
     #next_serial_nr = 0
 
     def __init__(self, parent=None, dim=None, children_dim=None):
@@ -31,16 +33,18 @@ class GNObject(GNode):
     def _attributes_from_xml(self, attribute_reader, conf):
         super()._attributes_from_xml(attribute_reader, conf)
         xml_to_attr(attribute_reader, self, 'name', 'role', 'axes')
-        self.step_num = attribute_reader.get('steps-num')
-        self.step_dist = attribute_reader.get('steps-dist')
         if self.axes is not None: conf.axes = self.axes
+        if self.have_mesh_settings:
+            self.step_num = attribute_reader.get('steps-num')
+            self.step_dist = attribute_reader.get('steps-dist')
 
     def _attributes_to_xml(self, element, conf):
         super()._attributes_to_xml(element, conf)
         attr_to_xml(self, element, 'name', 'role', 'axes')
-        if self.step_num is not None: element.attrib['steps-num'] = self.step_num
-        if self.step_dist is not None: element.attrib['steps-dist'] = self.step_dist
         if self.axes is not None: conf.axes = self.axes
+        if self.have_mesh_settings:
+            if self.step_num is not None: element.attrib['steps-num'] = self.step_num
+            if self.step_dist is not None: element.attrib['steps-dist'] = self.step_dist
 
     def python_type(self):
         return 'None'

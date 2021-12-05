@@ -279,6 +279,8 @@ class GNSimplifyGradients(GNode):
 
 class GNCopy(GNObject):
 
+    have_mesh_settings = False
+
     CHANGERS = {
         'delete': GNCDelete,
         'replace': GNCReplace,

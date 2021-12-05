@@ -19,7 +19,7 @@ from ...qt.QtWidgets import *
 from ...qt.QtGui import *
 from ...qt import QtSignal
 from ...lib.highlighter import SyntaxHighlighter, load_syntax
-from ...lib.highlighter.plask import SYNTAX, get_syntax
+from ...lib.highlighter.plask import SYNTAX
 from ...model.materials import MaterialsModel, BASE_MATERIALS, default_materialdb, \
     material_html_help, parse_material_components, elements_re
 from ...utils.texteditor.python import PythonTextEditor, PYTHON_SCHEME
@@ -34,7 +34,7 @@ from ..defines import get_defines_completer
 from .plot import show_material_plot
 
 
-SYNTAX['formats']['__value__'] = '{syntax_solver}'
+SYNTAX['formats']['material_property_value'] = '{syntax_solver}'
 
 
 class ComponentsPopup(QFrame):
@@ -502,7 +502,7 @@ class MaterialsController(Controller):
 
     def propedit_rehighlight(self):
         with BlockQtSignals(self.propedit):
-            self.propedit.rehighlight(self.document.defines, __value__=['__value__'])
+            self.propedit.rehighlight(self.document.defines, material_property_value=['__value__'])
 
     def reconfig(self):
         self.propedit_rehighlight()

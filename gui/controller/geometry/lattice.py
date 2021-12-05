@@ -67,7 +67,7 @@ class GNLatticeController(GNObjectController):
             left.clicked.connect(edit_cb)
         else:
             left = "Boundaries:"
-        self._get_current_form().addRow(left, res)
+        self.get_current_form().addRow(left, res)
         if change_cb is not None:
             res.focus_out_cb = change_cb
         elif node_property_name is not None:
@@ -78,7 +78,6 @@ class GNLatticeController(GNObjectController):
 
     def construct_form(self):
         self.construct_group('Lattice Vectors')
-        self.construct_group('Lattice Vectors')
         weakself = weakref.proxy(self)
         self.vectors = (self.construct_point_controllers(row_name='First',
                                                          change_cb=lambda vec: weakself._on_point_set(0, vec)),
@@ -87,9 +86,9 @@ class GNLatticeController(GNObjectController):
         self.construct_group('Lattice Boundaries')
         self.segments = self.construct_lattice_edit(node_property_name='segments',
                                                     change_cb=self._segments_changed, edit_cb=self.edit_segments)
-        self.segments.setToolTip(u'One or more polygons formed by two or more vertices separated by ``;`` characters.\n'
-                                 u'Each vertex consists of two space-separated integers. Every polygon should be put\n'
-                                 u'in a separate line: it either adds or removes nodes from the lattice.')
+        self.segments.setToolTip('One or more polygons formed by two or more vertices separated by ``;`` characters.\n'
+                                 'Each vertex consists of two space-separated integers. Every polygon should be put\n'
+                                 'in a separate line: it either adds or removes nodes from the lattice.')
         super().construct_form()
 
     def fill_form(self):
@@ -115,8 +114,8 @@ class GNLatticeController(GNObjectController):
                 raise ValueError("Zero lattice vector")
         except:
             QMessageBox.critical(None, "Wrong Lattice Vectors",
-                                             "No proper lattice vectors are defined. "
-                                             "Define them first before starting the boundary editor.")
+                                 "No proper lattice vectors are defined. "
+                                 "Define them first before starting the boundary editor.")
             return
 
         bounds = []
