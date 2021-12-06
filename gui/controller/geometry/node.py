@@ -143,11 +143,6 @@ class GNodeController(Controller):
 
     def construct_text_edit(self, row_name=None, node_property_name=None, display_property_name=None,
                             change_cb=None, editor_class=TextEditor):
-        if change_cb is None and node_property_name is not None:
-            weakself = weakref.proxy(self)
-            change_cb = lambda: weakself._set_node_property_undoable(
-                node_property_name, res.toPlainText(), display_property_name)
-
         class EditorCB(editor_class):
             editingFinished = QtSignal()
             def focusOutEvent(self, event):
@@ -155,6 +150,15 @@ class GNodeController(Controller):
                 self.editingFinished.emit()
 
         res = EditorCB(line_numbers=False)
+
+        if change_cb is None and node_property_name is not None:
+            weakself = weakref.proxy(self)
+            weakres = weakref.proxy(res)
+            def change_cb():
+                weakself._set_node_property_undoable(node_property_name, res.toPlainText(), display_property_name)
+                weakres.document().setModified(False)
+                weakres.modificationChanged.emit(False)
+
         if change_cb is not None:
             res.editingFinished.connect(change_cb)
         if row_name: self.get_current_form().addRow(row_name, res)

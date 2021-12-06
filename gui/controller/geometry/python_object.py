@@ -38,7 +38,11 @@ class GNPythonController(GNObjectController):
                                                editor_class=PythonTextEditor)
         self.editor.setToolTip('Type Python code here. You should assign the geometry object to insert here '
                                'to the variable <tt>__object__</tt>.')
-        self.get_current_form().addRow(self.editor)
+        form = self.get_current_form()
+        form.addRow(self.editor)
+        group = form.parent()
+        self.editor.modificationChanged.connect(lambda mod: group.setTitle('Python Code' + ('*' if mod else '')))
+
         super().construct_form()
 
     def fill_form(self):
