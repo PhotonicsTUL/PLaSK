@@ -7,6 +7,9 @@
 
 namespace plask { namespace python {
 
+extern PLASK_PYTHON_API const char* xplFilename;
+
+
 void removeIndent(std::string& text, unsigned xmlline, const char* tag) {
     auto line =  boost::make_split_iterator(text, boost::token_finder(boost::is_any_of("\n"), boost::token_compress_off));
     const boost::algorithm::split_iterator<std::string::iterator> endline;
@@ -52,7 +55,8 @@ void removeIndent(std::string& text, unsigned xmlline, const char* tag) {
 
 PyCodeObject* compilePythonFromXml(XMLReader& reader, bool exec) {
     size_t lineno  = reader.getLineNr();
-    const std::string name = reader.getNodeName();
+    const std::string tag = reader.getNodeName();
+    const std::string name = xplFilename? format("{} in <{}>, XML", xplFilename, tag) : format("<{}>", tag);
 
     std::string text = reader.requireTextInCurrentTag();
     boost::trim_right_if(text, boost::is_any_of(" \n\r\t"));
@@ -60,8 +64,12 @@ PyCodeObject* compilePythonFromXml(XMLReader& reader, bool exec) {
     PyObject* result;
     {
         const char* s = text.c_str();
-        while (std::isspace(*s)) ++s;
-        result = Py_CompileString(s, name.c_str(), Py_eval_input);
+        size_t i = 0;
+        while (std::isspace(*s)) {
+            if (*s == '\n') lineno++;
+            ++i; ++s;
+        }
+        result = Py_CompileString((std::string(lineno, '\n') + text.substr(i)).c_str(), name.c_str(), Py_eval_input);
     }
     if (result == nullptr && exec) {
         PyErr_Clear();
@@ -72,12 +80,12 @@ PyCodeObject* compilePythonFromXml(XMLReader& reader, bool exec) {
             for (start = 0; text[start] != '\n' && start < text.length(); ++start) {
                 if (!std::isspace(text[start]))
                     throw XMLException(format("XML line {}", lineno),
-                        format("Python code must be either a single line or must begin from new line after <{}>", name), lineno);
+                        format("Python code must be either a single line or must begin from new line after <{}>", tag), lineno);
             }
             if (start != text.length()) text = text.substr(start+1);
-            removeIndent(text, lineno, name.c_str());
+            removeIndent(text, lineno, tag.c_str());
         }
-        result = Py_CompileString(text.c_str(), name.c_str(), Py_file_input);
+        result = Py_CompileString((std::string(lineno-1, '\n') + text).c_str(), name.c_str(), Py_file_input);
     }
     if (result == nullptr) {
         PyObject *ptype, *pvalue, *ptraceback;
@@ -92,12 +100,12 @@ PyCodeObject* compilePythonFromXml(XMLReader& reader, bool exec) {
             PyObject* pdetails = PyTuple_GetItem(pvalue, 1);
             if (pdetails && PyTuple_Check(pdetails) && PyTuple_Size(pdetails) > 1) {
                 py::extract<int> line(PyTuple_GetItem(pdetails, 1));
-                if (line.check()) errline = lineno + line() - 1;
+                if (line.check()) errline = line();
             }
         }
         Py_XDECREF(pvalue);
         PyErr_Clear();
-        throw XMLException(format("XML line {} in <{}>", errline, name), format("{}{}", type, value), errline);
+        throw XMLException(format("XML line {} in <{}>", errline, tag), format("{}{}", type, value), errline);
     }
     return reinterpret_cast<PyCodeObject*>(result);
 }

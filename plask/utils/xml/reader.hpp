@@ -393,7 +393,7 @@ public:
      * Set attribute and content filter to @p f.
      * @param f new filter common for attribute and content
      */
-    void setFilter(Filter f) {
+    void setFilters(Filter f) {
         attributeFilter = f;
         contentFilter = f;
     }

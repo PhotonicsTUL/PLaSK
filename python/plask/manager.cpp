@@ -197,7 +197,7 @@ PLASK_PYTHON_API void loadXpl(py::object self, py::object src, py::dict vars, py
     };
     SelfGuard guard(manager, self);
 
-    // reader.setFilter(PythonXMLFilter(manager));
+    // reader.setFilters(PythonXMLFilter(manager));
     reader.attributeFilter = PythonXMLFilter(manager);
 
     if (filter.is_none()) {

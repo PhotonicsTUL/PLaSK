@@ -233,7 +233,10 @@ inline static void register_config()
 }
 
 
-// Globals for XML material
+/// XPL filename
+PLASK_PYTHON_API const char* xplFilename = nullptr;
+
+/// Globals for XML material
 PLASK_PYTHON_API py::dict* pyXplGlobals;
 
 template <typename... Args>
