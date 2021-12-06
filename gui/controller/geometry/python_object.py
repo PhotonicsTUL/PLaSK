@@ -15,16 +15,41 @@ import weakref
 from ...qt.QtCore import *
 from ...qt.QtGui import *
 from ...qt.QtWidgets import *
-from ...qt import qt_exec
-
-from ...lib.highlighter.plask import SYNTAX, get_syntax
-
-from ...utils.texteditor.python import PythonTextEditor
-from ...utils.qsignals import BlockQtSignals
+from ...qt import QtSignal
 from .object import GNObjectController
-
+from ...utils.texteditor.python import PythonTextEditor
+from ...utils.texteditor import EditorWidget
+from ...utils.qsignals import BlockQtSignals
+from ...utils.config import CONFIG
+from ...lib.highlighter.plask import SYNTAX, get_syntax
+from ...import APPLICATION
 
 SYNTAX['formats']['geometry_object'] = '{syntax_solver}'
+
+
+WINDOW_TITLE = "Python Geometry Object"
+
+
+class _PythonEditorWidow(QMainWindow):
+
+    def __init__(self, controller, parent=None):
+        self.controller = controller
+        super().__init__(parent)
+
+    def commit(self):
+        self.controller.editor.editingFinished.emit()
+        editor = self.centralWidget().editor
+        editor.document().setModified(False)
+        editor.modificationChanged.emit(False)
+
+    def event(self, event):
+        if event.type() == QEvent.Type.WindowDeactivate:
+            self.commit()
+        return super().event(event)
+
+    def closeEvent(self, event):
+        super().closeEvent(event)
+        self.controller.button.setChecked(False)
 
 
 class GNPythonController(GNObjectController):
@@ -40,8 +65,21 @@ class GNPythonController(GNObjectController):
                                'to the variable <tt>__object__</tt>.')
         form = self.get_current_form()
         form.addRow(self.editor)
-        group = form.parent()
-        self.editor.modificationChanged.connect(lambda mod: group.setTitle('Python Code' + ('*' if mod else '')))
+
+        self._python_group = form.parent()
+        self.editor.modificationChanged.connect(lambda mod: weakself._python_group.setTitle('Python Code' + ('*' if mod else '')))
+        self.document.window.config_changed.connect(self.reconfig)
+
+        self.button = QToolButton()
+        self.button.setIcon(QIcon.fromTheme('view-fullscreen'))
+        self.button.setCheckable(True)
+        self.button.toggled.connect(self.toggle_window)
+        self.button.setToolTip("Show large editor.")
+        row = QHBoxLayout()
+        row.addStretch()
+        row.addWidget(self.button)
+        form.addRow(row)
+        self.window = None
 
         super().construct_form()
 
@@ -49,4 +87,38 @@ class GNPythonController(GNObjectController):
         super().fill_form()
         with BlockQtSignals(self.editor):
             self.editor.setPlainText(self.node.code)
+        self.reconfig()
+
+    def toggle_window(self, show):
+        if show:
+            if self.window is None:
+                weakself = weakref.proxy(self)
+                self.window = _PythonEditorWidow(weakself)
+                self.window.setWindowTitle(WINDOW_TITLE)
+                widget = EditorWidget(self.window, editor_class=PythonTextEditor, line_numbers=False)
+                widget.editor.setDocument(self.editor.document())
+                self.editor.modificationChanged.connect(
+                    lambda mod: self.window.setWindowTitle(WINDOW_TITLE + ('*' if mod else '')))
+                self.document.window.config_changed.connect(self.reconfig)
+                self.window.setCentralWidget(widget)
+                screen = self.document.window.screen().availableGeometry()
+                w, h = screen.width(), screen.height()
+                save_action = QAction()
+                CONFIG.set_shortcut(save_action, 'save_file')
+                save_action.triggered.connect(self.window_save)
+                widget.addAction(save_action)
+                self.window.resize(w * 3 // 4, h * 3 // 4)
+                self.window.move(w // 8, h// 8)
+            self.window.show()
+            self.window.raise_()
+        elif self.window is not None:
+            self.window.close()
+
+    def window_save(self):
+        self.window.commit()
+        # self.document.window.save()
+
+    def reconfig(self):
         self.editor.rehighlight(self.document.defines, geometry_object=['__object__'])
+        if self.window is not None:
+            self.window.centralWidget().editor.rehighlight(self.document.defines, geometry_object=['__object__'])

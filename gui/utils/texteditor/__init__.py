@@ -337,7 +337,7 @@ class LineEditWithHistory(QLineEdit):
 
 class EditorWidget(QWidget):
 
-    def __init__(self, parent, editor_class=TextEditor, *args, **kwargs):
+    def __init__(self, parent=None, editor_class=TextEditor, *args, **kwargs):
         super().__init__(parent)
 
         self.editor = editor_class(self, *args, **kwargs)

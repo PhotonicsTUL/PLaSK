@@ -613,3 +613,4 @@ def show_material_plot(parent, model, defines, init_material=None):
         return
     plot_window.setCentralWidget(plot)
     plot_window.show()
+    plot_window.raise_()
