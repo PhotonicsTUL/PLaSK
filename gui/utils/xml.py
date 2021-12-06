@@ -123,9 +123,8 @@ def get_text_unindent(element):
     while lines and not lines[0]: lines = lines[1:]
     if lines and not lines[-1]: lines = lines[:-1]
     if lines:
-        strip = min(len(line) - len(line.lstrip()) for line in lines)
-        if strip > 0:
-            text = '\n'.join(line[strip:] for line in lines)
+        strip = min(len(l) - len(sl) for (l, sl) in ((line, line.lstrip()) for line in lines) if sl)
+        text = '\n'.join(line[strip:] for line in lines)
     return text
 
 

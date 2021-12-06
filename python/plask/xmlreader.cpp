@@ -7,7 +7,7 @@
 
 namespace plask { namespace python {
 
-extern PLASK_PYTHON_API const char* xplFilename;
+extern PLASK_PYTHON_API std::string xplFilename;
 
 
 void removeIndent(std::string& text, unsigned xmlline, const char* tag) {
@@ -52,11 +52,10 @@ void removeIndent(std::string& text, unsigned xmlline, const char* tag) {
 }
 
 
-
-PyCodeObject* compilePythonFromXml(XMLReader& reader, bool exec) {
+PyCodeObject* compilePythonFromXml(XMLReader& reader, bool exec, bool draft) {
     size_t lineno  = reader.getLineNr();
     const std::string tag = reader.getNodeName();
-    const std::string name = xplFilename? format("{} in <{}>, XML", xplFilename, tag) : format("<{}>", tag);
+    const std::string name = xplFilename.empty()? format("<{}>", tag) : format("{} in <{}>, XML", xplFilename, tag);
 
     std::string text = reader.requireTextInCurrentTag();
     boost::trim_right_if(text, boost::is_any_of(" \n\r\t"));
@@ -88,6 +87,10 @@ PyCodeObject* compilePythonFromXml(XMLReader& reader, bool exec) {
         result = Py_CompileString((std::string(lineno-1, '\n') + text).c_str(), name.c_str(), Py_file_input);
     }
     if (result == nullptr) {
+        if (draft) {
+            PyErr_Clear();
+            return nullptr;
+        }
         PyObject *ptype, *pvalue, *ptraceback;
         PyErr_Fetch(&ptype, &pvalue, &ptraceback);
         Py_XDECREF(ptraceback);

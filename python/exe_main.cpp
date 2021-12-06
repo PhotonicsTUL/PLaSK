@@ -41,7 +41,7 @@ namespace plask { namespace python {
 
     extern PLASK_PYTHON_API AxisNames current_axes;
 
-    extern PLASK_PYTHON_API const char* xplFilename;
+    extern PLASK_PYTHON_API std::string xplFilename;
 
     extern PLASK_PYTHON_API py::dict* pyXplGlobals;
 
@@ -558,9 +558,6 @@ int system_main(int argc, const system_char *argv[])
                 py::object sys = py::import("sys");
                 sys.attr("argv")[0] = filename;
             }
-            (*globals)["__file__"] = filename;
-            (*plask::python::pyXplGlobals)["__file__"] = filename;
-            plask::python::xplFilename = filename.c_str();
 
             // Detect if the file is Python script or PLaSK input
             if (realfile) {
@@ -604,6 +601,9 @@ int system_main(int argc, const system_char *argv[])
                     throw std::invalid_argument("Filetype must by specified (with -x or -p) when reading from <stdin>");
                 }
             }
+            (*globals)["__file__"] = filename;
+            (*plask::python::pyXplGlobals)["__file__"] = filename;
+            plask::python::xplFilename = system_to_utf8(filename);
 
             if (filetype == FILE_XML) {
 

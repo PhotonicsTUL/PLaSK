@@ -78,9 +78,9 @@ DECLARE_GEOMETRY_ELEMENT_23D(Translation, "Translation",
     u8"Transform that holds a translated geometry object together with its translation\n"
     u8"vector ("," version).\n\n"
     u8"Args:\n"
-    u8"item (GeomeryObject): Item to translate.\n"
-    u8"vec (plask.vec): Translation vector.\n"
-    u8"cx (float): Component of the translation vector along the *x* axis.\n")
+    u8"    item (GeomeryObject): Item to translate.\n"
+    u8"    vec (plask.vec): Translation vector.\n"
+    u8"    c# (float): Component of the translation vector along the *#* axis.\n")
 {
     GEOMETRY_ELEMENT_23D(Translation, GeometryObjectTransform<dim>, py::no_init)
     .def("__init__", py::make_constructor(&Translation_constructor1<dim>, py::default_call_policies(), (py::arg("item"), py::arg("vec"))))

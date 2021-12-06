@@ -234,7 +234,7 @@ inline static void register_config()
 
 
 /// XPL filename
-PLASK_PYTHON_API const char* xplFilename = nullptr;
+PLASK_PYTHON_API std::string xplFilename;
 
 /// Globals for XML material
 PLASK_PYTHON_API py::dict* pyXplGlobals;

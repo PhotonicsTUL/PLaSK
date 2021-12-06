@@ -390,9 +390,10 @@ void removeIndent(std::string& text, unsigned xmlline, const char* tag = nullptr
  * Read Python code from reader (either for eval or exec).
  * \param reader XML reader
  * \param exec if \c false the code is compiled only for eval
+ * \param draft if \c true the errors are ignored
  * \return compiled PyCodeObject
  */
-PyCodeObject* compilePythonFromXml(XMLReader& reader, bool exec = true);
+PyCodeObject* compilePythonFromXml(XMLReader& reader, bool exec = true, bool draft = false);
 
 
 
