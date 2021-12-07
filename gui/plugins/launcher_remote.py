@@ -394,14 +394,6 @@ else:
             # self.x11 = account.x11
             # self.local_x11_display = None
 
-            fd, fb = (s.replace(' ', '&nbsp;') for s in os.path.split(fname))
-            sep = os.path.sep
-            if sep == '\\':
-                sep = '\\\\'
-                fd = fd.replace('\\', '\\\\')
-            self.link = re.compile(
-                '((?:{}{})?{}(?:(?:,|:)(?: XML)? line |:))(\\d+)(.*)'.format(fd, sep, fb))
-
             self.dock = dock
 
             try:
@@ -503,10 +495,10 @@ else:
                     else:
                         data = b''
                     for line in lines:
-                        self.dock.parse_line(line, self.link)
+                        self.dock.parse_line(line)
             if finish:
                 for line in data.splitlines():
-                    self.dock.parse_line(line, self.link)
+                    self.dock.parse_line(line)
                 data = b''
             return data
 
@@ -866,7 +858,7 @@ else:
                 workdir = '/'.join((stdout.read().decode('utf8').strip(), workdir))
             ssh.exec_command("mkdir -p {}".format(quote(workdir)))
 
-            dock = OutputWindow(self, main_window, "Launch at " + account.name)
+            dock = OutputWindow(self, main_window, filename, "Launch at " + account.name)
             try:
                 bottom_docked = [w for w in main_window.findChildren(QDockWidget)
                                  if main_window.dockWidgetArea(w) == (Qt.DockWidgetArea.BottomDockWidgetArea)][-1]

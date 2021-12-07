@@ -13,7 +13,6 @@
 # GNU General Public License for more details.
 
 import os
-import re
 import subprocess
 import sys
 
@@ -46,14 +45,6 @@ class LaunchThread(QThread):
             self.proc = subprocess.Popen([program, '-ldebug', '-g'] + list(defs) + ['--', fname] + list(args),
                                          cwd=dirname, stdout=subprocess.PIPE, env=env, stderr=subprocess.STDOUT,
                                          bufsize=0, startupinfo=si)
-        fd, fb = (s.replace(' ', '&nbsp;') for s in os.path.split(fname))
-        sep = os.path.sep
-        if sep == '\\':
-            sep = '\\\\'
-            fd = fd.replace('\\', '\\\\')
-        fd = re.escape(fd)
-        fb = re.escape(fb)
-        self.link = re.compile(u'((?:{}{})?{}(?:(?:,|:)?(?: XML)? line |:))(\\d+)(.*)'.format(fd, sep, fb))
         self.dock = dock
         try:
             self.terminated.connect(self.kill_process)
@@ -70,10 +61,10 @@ class LaunchThread(QThread):
     def run(self):
         while self.proc.poll() is None:
             line = self.proc.stdout.readline().rstrip()
-            self.dock.parse_line(line, self.link)
+            self.dock.parse_line(line)
         out, _ = self.proc.communicate()
         for line in out.splitlines():
-            self.dock.parse_line(line, self.link)
+            self.dock.parse_line(line)
 
     def kill_process(self):
         try:
@@ -166,7 +157,7 @@ class Launcher:
         else:
             dirname = os.path.dirname(filename)
 
-        dock = OutputWindow(self, main_window)
+        dock = OutputWindow(self, main_window, filename)
         try:
             bottom_docked = [w for w in main_window.findChildren(QDockWidget)
                              if main_window.dockWidgetArea(w) == (Qt.DockWidgetArea.BottomDockWidgetArea)][-1]

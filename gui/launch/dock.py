@@ -9,6 +9,8 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
+import os.path
+import re
 from time import strftime
 
 from ..utils.widgets import LineEditWithClear, set_icon_size
@@ -145,7 +147,7 @@ class OutputFilter(QSortFilterProxyModel):
 
 class OutputWindow(QDockWidget):
 
-    def __init__(self, launcher, main_window, label="Launch local"):
+    def __init__(self, launcher, main_window, filename=None, label="Launch local"):
         super().__init__("{} [{}]".format(label, strftime('%X')), main_window)
         self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
 
@@ -349,6 +351,17 @@ class OutputWindow(QDockWidget):
 
         self.newlines = []
 
+        if filename is not None:
+            fd, fb = (s.replace(' ', '&nbsp;') for s in os.path.split(filename))
+            sep = os.path.sep
+            if sep == '\\':
+                sep = '\\\\'
+                fd = fd.replace('\\', '\\\\')
+            self.link = re.compile(
+                '((?:{}{})?{}(?:(?:,|:| in <\S+>,?)(?: XML)? line |:))(\\d+)(.*)'.format(fd, sep, fb))
+        else:
+            self.link = None
+
     def reconfig(self):
         font = self.messages.font()
         if set_font(font, 'launcher_local/font'):
@@ -369,7 +382,7 @@ class OutputWindow(QDockWidget):
     def filter_text(self, text):
         self.filter.setFilterFixedString(text)
 
-    def parse_line(self, line, link=None):
+    def parse_line(self, line, fname=None):
         if not line: return
         try:
             line = line.decode(self.main_window.document.coding)
@@ -389,8 +402,8 @@ class OutputWindow(QDockWidget):
                  'ERROR DETAIL  :': LEVEL_ERROR_DETAIL,
                  'DEBUG         :': LEVEL_DEBUG}.get(line[:15], 0)
         lineno = None
-        if link is not None:
-            match = link.search(line)
+        if self.link is not None:
+            match = self.link.search(line)
             if match is not None:
                 lineno = int(match.groups()[1])
         try:

@@ -30,22 +30,11 @@ except ImportError:
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT
 from matplotlib.backend_bases import NavigationToolbar2
 import matplotlib.colors
+from matplotlib.backend_tools import cursors
 
 from ..utils.widgets import set_icon_size, ComboBox
 
 from .config import CONFIG
-
-class Cursors:
-    # this class is only used as a simple namespace
-    HAND, POINTER, SELECT_REGION, MOVE = range(4)
-cursors = Cursors()
-
-cursord = {
-    cursors.MOVE: Qt.CursorShape.SizeAllCursor,
-    cursors.HAND: Qt.CursorShape.PointingHandCursor,
-    cursors.POINTER: Qt.CursorShape.ArrowCursor,
-    cursors.SELECT_REGION: Qt.CursorShape.CrossCursor,
-}
 
 
 class BwColor:

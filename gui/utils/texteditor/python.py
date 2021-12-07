@@ -22,6 +22,7 @@ from ...lib.highlighter.plask import get_syntax
 from . import TextEditor
 from .brackets import get_selections as get_bracket_selections, update_brackets_colors
 from .indenter import indent, unindent, autoindent
+from numpy import inf
 
 
 PYTHON_SCHEME = {}

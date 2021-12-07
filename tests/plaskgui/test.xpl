@@ -57,7 +57,7 @@
     <nr>5</nr>
   </material>
   <material name="a" base="semiconductor">
-    <thermk>100 + T/{tt}</thermk>
+    <thermk>100 + T/tt</thermk>
   </material>
   <material name="b" base="a"/>
   <material name="GaAs" base="GaAs">

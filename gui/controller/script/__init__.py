@@ -11,7 +11,6 @@
 # GNU General Public License for more details.
 import sys
 import weakref
-from numpy import inf
 
 from ...qt import QT_API
 from ...qt.QtCore import *
