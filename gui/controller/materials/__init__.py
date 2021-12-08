@@ -22,7 +22,7 @@ from ...lib.highlighter import SyntaxHighlighter, load_syntax
 from ...lib.highlighter.plask import SYNTAX
 from ...model.materials import MaterialsModel, BASE_MATERIALS, default_materialdb, \
     material_html_help, parse_material_components, elements_re
-from ...utils.texteditor.python import PythonTextEditor, PYTHON_SCHEME
+from ...utils.texteditor.python import PythonEditor, PYTHON_SCHEME
 
 from ...utils.widgets import HTMLDelegate, table_last_col_fill, EDITOR_FONT, table_edit_shortcut, CheckBoxDelegate, ComboBox
 from ...utils.qsignals import BlockQtSignals
@@ -382,7 +382,7 @@ class MaterialsTable(QTableView):
             super().closeEditor(editor, hint)
 
 
-class _PropEdit(PythonTextEditor):
+class _PropEdit(PythonEditor):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -482,7 +482,7 @@ class MaterialsController(Controller):
         table_edit_shortcut(self.properties_table, 1, 'v')
 
         # font.setPointSize(font.pointSize()-1)
-        self.propedit = _PropEdit(self.prop_splitter, line_numbers=False)
+        self.propedit = _PropEdit(self.prop_splitter, self.document, line_numbers=False)
 
         self.propedit.hide()
 

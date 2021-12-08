@@ -27,7 +27,7 @@ from ...utils.qundo import UndoCommandWithSetter
 from ...model.solvers.schemasolver import SchemaTag, SchemaCustomWidgetTag, \
     AttrGroup, AttrMulti, AttrChoice, AttrGeometryObject, AttrGeometryPath, AttrGeometry, AttrMesh
 from ...model.solvers.bconds import SchemaBoundaryConditions
-from ..source import XML_SCHEME
+from ...utils.texteditor.xml import XML_SCHEME
 from . import Controller
 from .bconds import BoundaryConditionsDialog
 

@@ -17,8 +17,7 @@ from ...qt.QtGui import *
 from ...qt.QtWidgets import *
 from ...qt import QtSignal
 from .object import GNObjectController
-from ...utils.texteditor.python import PythonTextEditor
-from ...utils.texteditor import EditorWidget
+from ...utils.texteditor.python import PythonEditor, PythonEditorWidget
 from ...utils.qsignals import BlockQtSignals
 from ...utils.config import CONFIG
 from ...lib.highlighter.plask import SYNTAX, get_syntax
@@ -34,6 +33,7 @@ class _PythonEditorWidow(QMainWindow):
 
     def __init__(self, controller, parent=None):
         self.controller = controller
+        self.config_changed = controller.document.window.config_changed
         super().__init__(parent)
 
     def commit(self):
@@ -60,7 +60,7 @@ class GNPythonController(GNObjectController):
         self.construct_group('Python Code')
         weakself = weakref.proxy(self)
         self.editor = self.construct_text_edit(node_property_name='code', display_property_name="python code",
-                                               editor_class=PythonTextEditor)
+                                               editor_class=PythonEditor, document=self.document)
         self.editor.setToolTip('Type Python code here. You should assign the geometry object to insert here '
                                'to the variable <tt>__object__</tt>.')
         form = self.get_current_form()
@@ -95,7 +95,7 @@ class GNPythonController(GNObjectController):
                 weakself = weakref.proxy(self)
                 self.window = _PythonEditorWidow(weakself)
                 self.window.setWindowTitle(WINDOW_TITLE)
-                widget = EditorWidget(self.window, editor_class=PythonTextEditor, line_numbers=False)
+                widget = PythonEditorWidget(self.window, self.document, line_numbers=False)
                 widget.editor.setDocument(self.editor.document())
                 self.editor.modificationChanged.connect(
                     lambda mod: self.window.setWindowTitle(WINDOW_TITLE + ('*' if mod else '')))

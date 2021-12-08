@@ -13,9 +13,9 @@
 # Bracket highliter. Calculates list of QTextEdit.ExtraSelection.
 # Based on https://github.com/hlamer/qutepart
 
-from ...qt.QtWidgets import *
-from ...qt.QtGui import *
-from ...utils.config import CONFIG
+from ....qt.QtWidgets import *
+from ....qt.QtGui import *
+from ....utils.config import CONFIG
 
 
 def update_brackets_colors():

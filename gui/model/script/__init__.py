@@ -17,7 +17,6 @@ from ...qt import QtSignal
 from ...utils.xml import require_no_children, require_no_attributes
 from .. import SectionModel
 from ..info import Info
-from .completer import prepare_completions
 
 
 class _UndoStack(QObject):
@@ -41,7 +40,6 @@ class ScriptModel(SectionModel):
     def __init__(self, info_cb=None):
         SectionModel.__init__(self, 'script', info_cb, undo_stack=_UndoStack(self))
         self._code = ''
-        prepare_completions()
         self.editor = None
 
     def load_xml_element(self, element, undoable=True):

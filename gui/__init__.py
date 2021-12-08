@@ -66,6 +66,7 @@ from .controller.materials.plot import show_material_plot
 from .utils.config import ConfigProxy, dark_style
 from .utils.settings import SettingsDialog
 from .utils.texteditor import update_textedit
+from .utils.texteditor.python.completer import prepare_completions
 from .utils.widgets import fire_edit_end, InfoListView
 from .utils.help import open_help
 
@@ -1146,6 +1147,8 @@ def main():
     APPLICATION.setApplicationName("PLaSK")
     APPLICATION.setAttribute(Qt.ApplicationAttribute.AA_DontShowIconsInMenus, False)
     sys.argv = APPLICATION.arguments()
+
+    prepare_completions()
 
     if CONFIG['main_window/dark_style']:
         APPLICATION.setStyle(QStyleFactory.create("Fusion"))

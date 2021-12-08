@@ -142,14 +142,14 @@ class GNodeController(Controller):
         return res
 
     def construct_text_edit(self, row_name=None, node_property_name=None, display_property_name=None,
-                            change_cb=None, editor_class=TextEditor):
+                            change_cb=None, editor_class=TextEditor, *args, **kwargs):
         class EditorCB(editor_class):
             editingFinished = QtSignal()
             def focusOutEvent(self, event):
                 super().focusOutEvent(event)
                 self.editingFinished.emit()
 
-        res = EditorCB(line_numbers=False)
+        res = EditorCB(*args, line_numbers=False, **kwargs)
 
         if change_cb is None and node_property_name is not None:
             weakself = weakref.proxy(self)

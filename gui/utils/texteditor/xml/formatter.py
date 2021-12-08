@@ -13,7 +13,7 @@
 import re
 from xml.parsers import expat
 
-from ...qt.QtGui import *
+from ....qt.QtGui import *
 
 indent_re = re.compile(r'.*<[^/><]+>\s*$')
 

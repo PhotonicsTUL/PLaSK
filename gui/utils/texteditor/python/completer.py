@@ -13,10 +13,12 @@
 import sys
 import os
 
-from ...qt.QtCore import *
-from ...qt.QtGui import *
-from ...utils.qthread import BackgroundTask, Lock
-from ...utils.config import CONFIG
+from ....qt.QtCore import *
+from ....qt.QtGui import *
+from ....qt.QtWidgets import *
+
+from ....utils.qthread import BackgroundTask, Lock
+from ....utils.config import CONFIG
 
 try:
     import jedi
@@ -130,7 +132,7 @@ def _try_type(compl):
 
 def get_completions(document, text, block, column):
     if jedi is None or CONFIG['workarounds/no_jedi']: return
-    from ... import _DEBUG
+    from .... import _DEBUG
     with Lock(JEDI_MUTEX) as lck:
         try:
             prefix = PREAMBLE + document.stubs() + '\n'
@@ -152,7 +154,7 @@ def get_completions(document, text, block, column):
 
 def get_docstring(document, text, block, column):
     if jedi is None or CONFIG['workarounds/no_jedi']: return
-    from ... import _DEBUG
+    from .... import _DEBUG
     with Lock(JEDI_MUTEX) as lck:
         try:
             prefix = PREAMBLE + document.stubs()
@@ -197,3 +199,60 @@ def get_definitions(document, text, block, column):
             if d.line is not None:
                 return d.line-1, d.column
         return None, None
+
+
+class CompletionsController(QCompleter):
+
+    def __init__(self, edit, parent=None):
+        super().__init__(parent)
+        self._edit = edit
+        self.setWidget(edit)
+        self.setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+        self.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+        self.activated.connect(self.insert_completion)
+        self.popup().setMinimumWidth(300)
+        self.popup().setMinimumHeight(200)
+        self.popup().setAlternatingRowColors(True)
+
+    def insert_completion(self, completion):
+        # if self.widget() != self._edit: return
+        cursor = self._edit.textCursor()
+        extra = len(self.completionPrefix())
+        if not (cursor.atBlockStart() or
+                self._edit.document().characterAt(cursor.position()-1).isspace()):
+            cursor.movePosition(QTextCursor.MoveOperation.Left)
+        cursor.movePosition(QTextCursor.MoveOperation.EndOfWord)
+        cursor.insertText(completion[extra:])
+        self._edit.setTextCursor(cursor)
+
+    def start_completion(self):
+        if CONFIG['workarounds/no_jedi']: return
+
+        cursor = self._edit.textCursor()
+        row = cursor.blockNumber()
+        col = cursor.positionInBlock()
+        cursor.select(QTextCursor.SelectionType.WordUnderCursor)
+        completion_prefix = cursor.selectedText()
+
+        def thread_finished(completions):
+            tc = self._edit.textCursor()
+            if tc.blockNumber() == row and tc.positionInBlock() == col:
+                self.show_completion_popup(completion_prefix, completions)
+            # QApplication.restoreOverrideCursor()
+
+        # QApplication.setOverrideCursor(Qt.CursorShape.BusyCursor)
+        if CONFIG['workarounds/blocking_jedi']:
+            thread_finished(self._edit.get_completions(row, col))
+        else:
+            task = BackgroundTask(lambda: self._edit.get_completions(row, col), thread_finished)
+            task.start()
+
+    def show_completion_popup(self, completion_prefix, completions):
+        if completions is not None:
+            self.setModel(CompletionsModel(completions))
+            if completion_prefix != self.completionPrefix():
+                self.setCompletionPrefix(completion_prefix)
+                self.popup().setCurrentIndex(self.completionModel().index(0, 0))
+            rect = self._edit.cursorRect()
+            rect.setWidth(self.popup().sizeHintForColumn(0) + self.popup().verticalScrollBar().sizeHint().width())
+            self.complete(rect)  # popup it up!
