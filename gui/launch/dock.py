@@ -358,7 +358,7 @@ class OutputWindow(QDockWidget):
                 sep = '\\\\'
                 fd = fd.replace('\\', '\\\\')
             self.link = re.compile(
-                '((?:{}{})?{}(?:(?:,|:| in <\S+>,?)(?: XML)? line |:))(\\d+)(.*)'.format(fd, sep, fb))
+                r'((?:{}{})?{}(?:(?:|,|:| in <\S+>,?)(?: XML)? line |:))(\d+)(.*)'.format(fd, sep, fb))
         else:
             self.link = None
 
