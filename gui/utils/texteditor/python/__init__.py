@@ -101,6 +101,8 @@ class PythonEditor(TextEditor):
         else:
             self._document = None
 
+        self.highlighter = None
+
     def highlight_brackets(self):
         self.setExtraSelections(self.extraSelections() +
                                 get_bracket_selections(self, self.textCursor().block(),
@@ -268,7 +270,7 @@ class PythonEditor(TextEditor):
         super().reconfig()
         update_brackets_colors()
         if self.highlighter is not None:
-            with BlockQtSignals(editor):
+            with BlockQtSignals(self):
                 update_python_scheme()
                 self.rehighlight(*args, **kwargs)
 
