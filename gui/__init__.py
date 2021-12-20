@@ -404,7 +404,7 @@ class MainWindow(QMainWindow):
         else:
             try:
                 screen = self.screen().availableGeometry()
-            except NameError:
+            except AttributeError:
                 screen = QDesktopWidget().availableGeometry(self)
             self.resize(screen.width() * 0.8, screen.height() * 0.9)
 
