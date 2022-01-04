@@ -10,7 +10,7 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-import collections
+from collections.abc import Sequence
 
 from ..qt.QtCore import *
 from ..qt.QtWidgets import *
@@ -53,7 +53,7 @@ def table_edit_shortcut(table, col, key):
 
 
 def table_last_col_fill(table, cols_count, col_size=0):
-    if isinstance(col_size, collections.Sequence):
+    if isinstance(col_size, Sequence):
         for c in range(0, cols_count-1): table.setColumnWidth(c, col_size[c])
     else:
         for c in range(0, cols_count-1): table.setColumnWidth(c, col_size)
@@ -149,7 +149,7 @@ class HTMLDelegate(QStyledItemDelegate):
         doc.setTextWidth(max(300, options.rect.width()))
         if not self.compact:
             height = doc.size().height()
-        return QSize(doc.idealWidth(), height)
+        return QSize(int(doc.idealWidth()), int(height))
 
 
 class ComboBoxDelegate(QItemDelegate):

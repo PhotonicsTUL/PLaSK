@@ -174,24 +174,34 @@ shared_ptr<Clip<dim>> Clip_constructor1(shared_ptr<GeometryObjectD<dim>> object,
 
 template <int dim> struct Clip_constructor2 {};
 template <> struct Clip_constructor2<2> {
-    static inline shared_ptr<Clip<2>> call(shared_ptr<GeometryObjectD<2>> object, double left, double bottom, double right, double top) {
+    static inline shared_ptr<Clip<2>> call(shared_ptr<GeometryObjectD<2>> object, const py::object& pleft, const py::object& pbottom, const py::object& pright, const py::object& ptop) {
+            double left = pleft.is_none()? -INFINITY : py::extract<double>(pleft),
+                   bottom = pbottom.is_none()? -INFINITY : py::extract<double>(pbottom),
+                   right = pright.is_none()? INFINITY : py::extract<double>(pright),
+                   top = ptop.is_none()? INFINITY : py::extract<double>(ptop);
             return plask::make_shared<Clip<2>>(object, Box2D(left, bottom, right, top));
     }
     const static py::detail::keywords<5> args;
 };
 const py::detail::keywords<5> Clip_constructor2<2>::args = (py::arg("item"),
-                                                            py::arg("left")=-INFINITY, py::arg("bottom")=-INFINITY,
-                                                            py::arg("right")=INFINITY, py::arg("top")=INFINITY);
+                                                            py::arg("left")=py::object(), py::arg("bottom")=py::object(),
+                                                            py::arg("right")=py::object(), py::arg("top")=py::object());
 
 template <> struct Clip_constructor2<3> {
-    static inline shared_ptr<Clip<3>> call(shared_ptr<GeometryObjectD<3>> object, double back, double left, double bottom, double front, double right, double top) {
+    static inline shared_ptr<Clip<3>> call(shared_ptr<GeometryObjectD<3>> object, const py::object& pback, const py::object& pleft, const py::object& pbottom, const py::object& pfront, const py::object& pright, const py::object& ptop) {
+            double back = pback.is_none()? -INFINITY : py::extract<double>(pback),
+                   left = pleft.is_none()? -INFINITY : py::extract<double>(pleft),
+                   bottom = pbottom.is_none()? -INFINITY : py::extract<double>(pbottom),
+                   front = pfront.is_none()? INFINITY : py::extract<double>(pfront),
+                   right = pright.is_none()? INFINITY : py::extract<double>(pright),
+                   top = ptop.is_none()? INFINITY : py::extract<double>(ptop);
             return plask::make_shared<Clip<3>>(object, Box3D(back, left, bottom, front, right, top));
     }
     const static py::detail::keywords<7> args;
 };
 const py::detail::keywords<7> Clip_constructor2<3>::args = (py::arg("item"),
-                                                            py::arg("back")=-INFINITY, py::arg("left")=-INFINITY, py::arg("bottom")=-INFINITY,
-                                                            py::arg("front")=INFINITY, py::arg("right")=INFINITY, py::arg("top")=INFINITY);
+                                                            py::arg("back")=py::object(), py::arg("left")=py::object(), py::arg("bottom")=py::object(),
+                                                            py::arg("front")=py::object(), py::arg("right")=py::object(), py::arg("top")=py::object());
 
 
 template <int dim> inline const char* ClipName();

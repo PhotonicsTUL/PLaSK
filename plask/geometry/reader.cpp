@@ -145,7 +145,7 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
                 from = geometry->getRevolution();
             else if (auto geometry = dynamic_pointer_cast<Geometry3D>(from))
                 from = geometry->getChild();
-        } catch (NoChildException) {
+        } catch (const NoChildException&) {
             from.reset();
         }
         if (from) {

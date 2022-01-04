@@ -533,7 +533,7 @@ struct PLASK_API GeometryObject : public enable_shared_from_this<GeometryObject>
     double min_step_size;
 
     /// Set max_steps
-    void setMaxSteps(unsigned long value) {
+    void setMaxSteps(unsigned value) {
         max_steps = value;
         fireChanged(GeometryObject::Event::EVENT_STEPS);
     }

@@ -14,7 +14,7 @@ import matplotlib.artist
 
 from numpy import array
 
-import collections
+from collections.abc import Callable
 from zlib import crc32
 
 from .pylab import _get_2d_axes
@@ -174,7 +174,7 @@ class ColorFromDict:
                     else:
                         if m is not None:
                             c = self.material_dict[r]
-                            if isinstance(c, collections.Callable):
+                            if isinstance(c, Callable):
                                 result = c(*m.groups())
                             else:
                                 result = m.expand(c)
@@ -356,7 +356,7 @@ class DrawEnviroment:
 
         if get_color is None:
             self.get_color = ColorFromDict(plask.MATERIAL_COLORS, dest)
-        elif get_color is not None and not isinstance(get_color, collections.Callable):
+        elif get_color is not None and not isinstance(get_color, Callable):
             self.get_color = ColorFromDict(get_color, dest)
         else:
             self.get_color = get_color

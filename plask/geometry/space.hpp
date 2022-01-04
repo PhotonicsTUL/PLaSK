@@ -861,7 +861,7 @@ class PLASK_API Geometry2DCartesian : public GeometryD<2> {
         shared_ptr<GeometryObjectD<2>> child;
         try {
             child = getChild();
-        } catch (NoChildException) {
+        } catch (const NoChildException&) {
             return;
         }
         child->addPointsAlongToSet(points, direction, max_steps, min_step_size);
@@ -886,7 +886,7 @@ class PLASK_API Geometry2DCartesian : public GeometryD<2> {
         shared_ptr<GeometryObjectD<2>> child;
         try {
             child = getChild();
-        } catch (NoChildException) {
+        } catch (const NoChildException&) {
             return;
         }
         child->addLineSegmentsToSet(segments, max_steps, min_step_size);
@@ -1073,7 +1073,7 @@ class PLASK_API Geometry2DCylindrical : public GeometryD<2> {
         shared_ptr<GeometryObjectD<2>> child;
         try {
             child = getChild();
-        } catch (NoChildException) {
+        } catch (const NoChildException&) {
             return;
         }
         child->addPointsAlongToSet(points, direction, max_steps, min_step_size);
@@ -1098,7 +1098,7 @@ class PLASK_API Geometry2DCylindrical : public GeometryD<2> {
         shared_ptr<GeometryObjectD<2>> child;
         try {
             child = getChild();
-        } catch (NoChildException) {
+        } catch (const NoChildException&) {
             return;
         }
         child->addLineSegmentsToSet(segments, max_steps, min_step_size);
@@ -1291,7 +1291,7 @@ class PLASK_API Geometry3D : public GeometryD<3> {
         shared_ptr<GeometryObjectD<3>> child;
         try {
             child = getChild();
-        } catch (NoChildException) {
+        } catch (const NoChildException&) {
             return;
         }
         child->addPointsAlongToSet(points, direction, max_steps, min_step_size);
@@ -1316,7 +1316,7 @@ class PLASK_API Geometry3D : public GeometryD<3> {
         shared_ptr<GeometryObjectD<3>> child;
         try {
             child = getChild();
-        } catch (NoChildException) {
+        } catch (const NoChildException&) {
             return;
         }
         child->addLineSegmentsToSet(segments, max_steps, min_step_size);
