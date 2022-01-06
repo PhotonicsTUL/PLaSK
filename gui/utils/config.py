@@ -192,7 +192,7 @@ KEYBOARD_SHORTCUTS = {
     'plot_back': ('Plot: Back', None),
     'plot_forward': ('Plot: Forward', None),
     'plot_zoom_current': ('Plot: Zoom Selected', None),
-    'plot_export': ('Plot: Export', None),
+    'plot_save': ('Plot: Save', None),
     'plot_pan': ('Plot: Pan', None),
     'plot_zoom': ('Plot: Zoom', None),
     'plot_aspect': ('Plot: Aspect', None),

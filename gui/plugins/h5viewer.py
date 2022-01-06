@@ -15,8 +15,11 @@
 # description: Viewer of the fields saved to HDF5 files with 'save_field' function.
 
 import sys
+import os
 import weakref
 import h5py
+
+from collections.abc import Iterable
 
 from matplotlib.figure import Figure
 import matplotlib.colorbar
@@ -50,7 +53,8 @@ class FieldWidget(QWidget):
             ('Back', 'Back to previous view', 'go-previous', 'back', None, 'plot_back'),
             ('Forward', 'Forward to next view', 'go-next', 'forward', None, 'plot_forward'),
             (None, None, None, None, None, None),
-            ('Export', 'Export the figure', 'document-save', 'save_figure', None, 'plot_export'),
+            ('Save', 'Save the figure', 'document-save', 'save_figure', None, 'plot_save'),
+            ('Export', 'Export data in text format', 'document-save-as', 'export_data', None, 'plot_save'),
             (None, None, None, None, None, None),
             ('Pan', 'Pan axes with left mouse, zoom with right', 'transform-move', 'pan', False, 'plot_pan'),
             ('Zoom', 'Zoom to rectangle', 'zoom-in', 'zoom', False, 'plot_zoom'),
@@ -66,14 +70,17 @@ class FieldWidget(QWidget):
         )
 
         def __init__(self, canvas, parent, controller=None, coordinates=True):
-            super(FieldWidget.NavigationToolbar, self).__init__(canvas, parent, controller, coordinates)
+            super().__init__(canvas, parent, controller, coordinates)
             self._actions['select_component'].setVisible(False)
             self.comp = 2
             self.mag = True
+            self._active = None
 
         def select_component(self, index):
             self.comp = index
-            self.parent.update_plot(self.parent.plotted_field, self.parent.plotted_geometry, None, False)
+            try: parent = self.parent()
+            except TypeError: parent = self.parent
+            parent.update_plot(parent.plotted_field, parent.plotted_geometry, None, False)
 
         def enable_component(self, visible, mag):
             self._actions['select_component'].setVisible(visible)
@@ -95,7 +102,9 @@ class FieldWidget(QWidget):
                     self._lastCursor = cursors.MOVE
 
             if event.xdata is not None and event.ydata is not None:
-                if self.parent.is_profile:
+                try: parent = self.parent()
+                except TypeError: parent = self.parent
+                if parent.is_profile:
                     s = u'{2[0]} = {0:.4f} µm  value = {1:.3g}'\
                         .format(float(event.xdata), float(event.ydata), self._axes)
                 else:
@@ -131,6 +140,12 @@ class FieldWidget(QWidget):
             parent.figure.tight_layout(pad=0.1)
             self.canvas.draw()
 
+        def export_data(self):
+            try: parent = self.parent()
+            except TypeError: parent = self.parent
+            if parent.controller is not None:
+                parent.controller.export_data()
+
     def __init__(self, controller=None, parent=None):
         super().__init__(parent)
 
@@ -139,7 +154,7 @@ class FieldWidget(QWidget):
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setParent(self)
         #self.canvas.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.figure.set_facecolor(self.palette().color(QPalette.Background).name())
+        self.figure.set_facecolor(self.palette().color(QPalette.ColorRole.Window).name())
         self.figure.subplots_adjust(left=0, right=1, bottom=0, top=1)
         self.canvas.updateGeometry()
         self.toolbar = self.NavigationToolbar(self.canvas, self, controller)
@@ -358,6 +373,39 @@ class ResultsWindow(QMainWindow):
             geometry = None
         self.plot_widget.update_plot(field, geometry, self.axes.get(geom, self._default_axes), False)
 
+    def export_data(self):
+        if self.document.filename is not None:
+            fieldname = self.field_list.currentItem().text()
+            filename = os.path.splitext(self.document.filename)[0] + fieldname.replace('/', '-') + '.txt'
+        else:
+            filename = gui.CURRENT_DIR
+
+        filename = QFileDialog.getSaveFileName(self, "Export data as", filename, "Text file (*.txt)")
+        if type(filename) == tuple: filename = filename[0]
+        if not filename: return
+
+        field = self.plot_widget.plotted_field
+
+        if len(field) > 0:
+            val = field[0]
+            if isinstance(val, Iterable):
+                if isinstance(val[0], complex):
+                    fmt = lambda val: "  ".join("{0.real} {0.imag}".format(v) for v in val)
+                else:
+                    fmt = lambda val: "  ".join(str(v) for v in val)
+            elif isinstance(val, complex):
+                fmt = lambda val: "{0.real} {0.imag}".format(val)
+            else:
+                fmt = lambda val: val
+
+        try:
+            QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
+            with open(filename, 'w') as out:
+                for pnt, val in zip(field.mesh, field):
+                    print(*pnt, "  ", fmt(val), file=out)
+        finally:
+            QApplication.restoreOverrideCursor()
+
 
 class AnalyzeResultsAction(QAction):
 
@@ -369,6 +417,7 @@ class AnalyzeResultsAction(QAction):
         KEYBOARD_SHORTCUTS['plot_subplots'] = 'Plot: Subplots', None
         KEYBOARD_SHORTCUTS['plot_customize'] = 'Plot: Customize', None
         KEYBOARD_SHORTCUTS['plot_component'] = 'Plot: Select Component', None
+        KEYBOARD_SHORTCUTS['plot_export'] = 'Plot: Export Data', None
 
     def execute(self):
         filename = QFileDialog.getOpenFileName(None, "Open HDF5 File", gui.CURRENT_DIR, "HDF5 file (*.h5)")

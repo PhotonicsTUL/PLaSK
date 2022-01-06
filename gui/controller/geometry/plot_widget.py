@@ -35,7 +35,7 @@ class PlotWidget(PlotWidgetBase):
             ('Forward', 'Forward to next view', 'go-next', 'forward', None, 'plot_forward'),
             ('Zoom Selected', 'Zoom to selected object', 'zoom-fit-best', 'zoom_current', None, 'plot_zoom_current'),
             (None, None, None, None, None, None),
-            ('Export', 'Export the figure', 'document-save', 'save_figure', None, 'plot_export'),
+            ('Save', 'Save the figure', 'document-save', 'save_figure', None, 'plot_save'),
             (None, None, None, None, None, None),
             ('Pan', 'Pan axes with left mouse, zoom with right', 'transform-move', 'pan', False, 'plot_pan'),
             ('Zoom', 'Zoom to rectangle', 'zoom-in', 'zoom', False, 'plot_zoom'),

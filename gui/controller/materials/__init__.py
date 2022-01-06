@@ -121,7 +121,7 @@ class MaterialLineEdit(QLineEdit):
     def resizeEvent(self, event):
         sz = self.button.sizeHint()
         frw = self.style().pixelMetric(QStyle.PixelMetric.PM_DefaultFrameWidth)
-        self.button.move(self.rect().right() - frw - sz.width(), (self.rect().bottom() + 1 - sz.height()) / 2)
+        self.button.move(self.rect().right() - frw - sz.width(), (self.rect().bottom() + 1 - sz.height()) // 2)
 
     def show_material(self):
         show_material_plot(self.parent(), self.materials_model, self.defines_model, self.text())
