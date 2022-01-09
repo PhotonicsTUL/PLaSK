@@ -1194,9 +1194,9 @@ def main():
     if matplotlib:
         font = APPLICATION.font()
         try:
-            dpi = APPLICATION.desktop().logicalDpiY()
-        except AttributeError:
             dpi = APPLICATION.primaryScreen().logicalDotsPerInch()
+        except AttributeError:
+            dpi = APPLICATION.desktop().logicalDpiY()
         color = APPLICATION.palette().color(QPalette.ColorRole.Text).name()
         matplotlib.rcParams.update({
             'figure.dpi': dpi,

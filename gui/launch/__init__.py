@@ -131,6 +131,8 @@ class LaunchDialog(QDialog):
             self.layout.addWidget(self.defines_button)
 
             self.defines = QPlainTextEdit()
+            self.defines.setMinimumHeight(3 * self.defines.fontMetrics().height())
+            self.defines.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             self.layout.addWidget(self.defines)
             self.defines.setVisible(_DEFS_VISIBLE)
             self.edited_defines = '\n'.join(e.name + '=' for e in window.document.defines.model.entries)
@@ -174,14 +176,29 @@ class LaunchDialog(QDialog):
         combo.setCurrentIndex(current_launcher)
 
         self.setFixedWidth(5*QFontMetrics(QFont()).horizontalAdvance(self.windowTitle()))
-        self.setFixedHeight(self.sizeHint().height())
 
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok |  QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         self.layout.addWidget(buttons)
 
-        self.setFixedHeight(self.sizeHint().height())
+        self.adjust_height()
+
+    def adjust_height(self):
+        height = self.sizeHint().height()
+        try:
+            screen = self.screen().availableGeometry()
+        except AttributeError:
+            screen = QDesktopWidget().availableGeometry(self)
+        screen_height = screen.size().height() - (self.frameGeometry().height() - self.geometry().height())
+        if height > screen_height:
+            height = screen_height
+        self.setMinimumHeight(height)
+        try:
+            allow_expand = LAUNCHERS[current_launcher].allow_expand
+        except AttributeError:
+            allow_expand = False
+        self.setMaximumHeight(screen_height if (allow_expand or self.defines.isVisible()) else height)
         self.adjustSize()
 
     def recent_defines_selected(self, i):
@@ -203,16 +220,14 @@ class LaunchDialog(QDialog):
         _DEFS_VISIBLE = visible
         self.defines.setVisible(visible)
         self.recent_defines_combo.setVisible(visible)
-        self.setFixedHeight(self.sizeHint().height())
-        self.adjustSize()
+        self.adjust_height()
 
     def launcher_changed(self, index):
         global current_launcher
         self.launcher_widgets[current_launcher].setVisible(False)
         current_launcher = index
         self.launcher_widgets[current_launcher].setVisible(True)
-        self.setFixedHeight(self.sizeHint().height())
-        self.adjustSize()
+        self.adjust_height()
 
 def _get_config_filename(filename):
     dirname, basename = os.path.split(filename)

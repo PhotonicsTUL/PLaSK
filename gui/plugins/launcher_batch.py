@@ -45,6 +45,7 @@ except ImportError:
     import subprocess
     import platform
 
+
     class Launcher:
         name = "Remote Batch Job"
 
@@ -909,6 +910,12 @@ else:
 
         _passwd_cache = {}
 
+        class ModulesPlainTextEdit(QPlainTextEdit):
+            def sizeHint(self):
+                size = super().sizeHint()
+                size.setHeight(3 * self.fontMetrics().height())
+                return size
+
         def __init__(self):
             self.current_account = None
             self.load_accounts()
@@ -1143,9 +1150,10 @@ else:
                 lambda visible: self.show_optional(self.modules, visible, self.modules_button))
             self.modules_button.setText("En&vironmental Modules:")
             layout.addWidget(self.modules_button)
-            self.modules = QPlainTextEdit()
+            self.modules = self.ModulesPlainTextEdit()
+            self.modules.setMinimumHeight(3 * self.modules.fontMetrics().height())
+            self.modules.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             self.modules.setVisible(False)
-            self.modules.setFixedHeight(3 * self.modules.fontMetrics().height())
             self.modules.setToolTip("Many HPC clusters use LMOD modules to set-up computation environment.\n"
                                     "Here you can specify a list of such modules to load before launching PLaSK.\n"
                                     "Just put one module name or module/version (e.g. 'openblas/0.2.19') per line.\n"
@@ -1176,8 +1184,11 @@ else:
                 for account in self.accounts:
                     account.update_widget(account.params.get(self.filename, {}))
 
-            widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             return widget
+
+        @property
+        def allow_expand(self):
+            return self.modules.isVisible()
 
         def exit(self, window, visible):
             filename = window.document.filename
@@ -1348,8 +1359,7 @@ else:
             width = self._widget.width()
             self._widget.adjustSize()
             self._widget.setFixedWidth(width)
-            dialog.setFixedHeight(dialog.sizeHint().height())
-            dialog.adjustSize()
+            dialog.adjust_height()
 
         class AbortException(Exception):
             pass
