@@ -30,7 +30,7 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
            pir;                         ///< Index of the beginning of the right PML
 
     struct Coeffs {
-        DataVector<dcomplex> zz, rxx, yy, ryy, zx;
+        DataVector<dcomplex> zz, rxx, yy, zx;
     };
     /// Cached permittivity expansion coefficients
     std::vector<Coeffs> coeffs;
@@ -202,7 +202,6 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     const DataVector<dcomplex>& epszz(size_t l) { return coeffs[l].zz; }            ///< Get \f$ \varepsilon_{zz} \f$
     const DataVector<dcomplex>& epsyy(size_t l) { return coeffs[l].yy; }            ///< Get \f$ \varepsilon_{yy} \f$
     const DataVector<dcomplex>& repsxx(size_t l) { return coeffs[l].rxx; }          ///< Get \f$ \varepsilon_{xx}^{-1} \f$
-    const DataVector<dcomplex>& repsyy(size_t l) { return coeffs[l].ryy; }          ///< Get \f$ \varepsilon_{yy}^{-1} \f$
     const DataVector<dcomplex>& epszx(size_t l) { return coeffs[l].zx; }            ///< Get \f$ \varepsilon_{zx} \f$
     const DataVector<dcomplex>& muzz() { return mag; }                              ///< Get \f$ \mu_{zz} \f$
     const DataVector<dcomplex>& muxx() { return mag; }                              ///< Get \f$ \mu_{xx} \f$
@@ -214,7 +213,6 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     dcomplex epszz(size_t l, int i) { return coeffs[l].zz[(i>=0)?i:i+nN]; }         ///< Get element of \f$ \varepsilon_{zz} \f$
     dcomplex epsyy(size_t l, int i) { return coeffs[l].yy[(i>=0)?i:i+nN]; }         ///< Get element of \f$ \varepsilon_{yy} \f$
     dcomplex repsxx(size_t l, int i) { return coeffs[l].rxx[(i>=0)?i:i+nN]; }       ///< Get element of \f$ \varepsilon_{xx}^{-1} \f$
-    dcomplex repsyy(size_t l, int i) { return coeffs[l].ryy[(i>=0)?i:i+nN]; }       ///< Get element of \f$ \varepsilon_{yy}^{-1} \f$
     dcomplex epszx(size_t l, int i) { return coeffs[l].zx[(i>=0)?i:i+nN]; }         ///< Get element of \f$ \varepsilon_{zx} \f$
     dcomplex epsxz(size_t l, int i) { return conj(coeffs[l].zx[(i>=0)?i:i+nN]); }   ///< Get element of \f$ \varepsilon_{zx} \f$
     dcomplex muzz(int i) { return mag[(i>=0)?i:i+nN]; }                             ///< Get element of \f$ \mu_{zz} \f$
@@ -222,7 +220,6 @@ struct PLASK_SOLVER_API ExpansionPW2D: public Expansion {
     dcomplex muyy(int i) { return mag[(i>=0)?i:i+nN]; }                             ///< Get element of \f$ \mu_{yy} \f$
     dcomplex rmuzz(int i) { return rmag[(i>=0)?i:i+nN]; }                           ///< Get element of \f$ \mu_{zz}^{-1} \f$
     dcomplex rmuxx(int i) { return rmag[(i>=0)?i:i+nN]; }                           ///< Get element of \f$ \mu_{xx}^{-1} \f$
-    dcomplex rmuyy(int i) { return rmag[(i>=0)?i:i+nN]; }                           ///< Get element of \f$ \mu_{yy}^{-1} \f$
 
     size_t iEx(int i) { return 2 * ((i>=0)?i:i+N); }        ///< Get \f$ E_x \f$ index
     size_t iEz(int i) { return 2 * ((i>=0)?i:i+N) + 1; }    ///< Get \f$ E_z \f$ index

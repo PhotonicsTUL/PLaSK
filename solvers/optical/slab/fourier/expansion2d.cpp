@@ -342,11 +342,9 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                     if (eps.c00 != eps.c22 || eps.c11 != eps.c22 || !epsilon_isotropic) {
                         if (epsilon_isotropic) {
                             coeffs[layer].zz = coeffs[layer].yy.copy();
-                            coeffs[layer].ryy = coeffs[layer].rxx.copy();
                             epsilon_isotropic = false;
                         }
                         coeffs[layer].zz[i] += eps.c00;
-                        coeffs[layer].ryy[i] += 1./eps.c22;
                     }
                     coeffs[layer].rxx[i] += nd? rm*eps.c00 : 1./eps.c11;
 
@@ -361,7 +359,6 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 coeffs[layer].yy[i] *= factor;
                 if (!epsilon_isotropic) {
                     coeffs[layer].zz[i] *= factor;
-                    coeffs[layer].ryy[i] *= factor;
                 }
                 if (!epsilon_diagonal) {
                     coeffs[layer].zx[i] *= factor;
@@ -410,12 +407,10 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 std::fill_n(coeffs[layer].yy.data()+1, n1, 0.);
                 if (epsilon_isotropic) {
                     if (polarization != E_TRAN) {
-                        coeffs[layer].ryy = coeffs[layer].rxx;
                         coeffs[layer].zz = coeffs[layer].yy;
                     }
                 } else {
                     std::fill_n(coeffs[layer].zz.data()+1, n1, 0.);
-                    std::fill_n(coeffs[layer].ryy.data()+1, n1, 0.);
                 }
                 if (!epsilon_diagonal) {
                     std::fill_n(coeffs[layer].zx.data()+1, n1, 0.);
@@ -430,12 +425,10 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 matFFT.execute(coeffs[layer].yy.data());
                 if (epsilon_isotropic) {
                     if (polarization != E_TRAN) {
-                        coeffs[layer].ryy = coeffs[layer].rxx;
                         coeffs[layer].zz = coeffs[layer].yy;
                     }
                 } else {
                     matFFT.execute(coeffs[layer].zz.data());
-                    matFFT.execute(coeffs[layer].ryy.data());
                 }
                 if (!epsilon_diagonal) {
                     matFFT.execute(coeffs[layer].zx.data());
@@ -479,9 +472,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
             if (polarization != E_TRAN) {
                 if (eps0.c00 != eps0.c22 || eps0.c11 != eps0.c22) {
                     coeffs[layer].zz.reset(nN, 0.); coeffs[layer].zz[0] = eps0.c00;
-                    coeffs[layer].ryy.reset(nN, 0.); coeffs[layer].ryy[0] = reps0.c22;
                 } else {
-                    coeffs[layer].ryy = coeffs[layer].rxx;
                     coeffs[layer].zz = coeffs[layer].yy;
                 }
             }
@@ -518,11 +509,9 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                     if (eps.c00 != eps.c22 || eps.c11 != eps.c22 || !epsilon_isotropic) {
                         if (epsilon_isotropic) {
                             coeffs[layer].zz = coeffs[layer].yy.copy();
-                            coeffs[layer].ryy = coeffs[layer].rxx.copy();
                             epsilon_isotropic = false;
                         }
                         add_coeffs(start, end, b, l, r, coeffs[layer].zz, eps.c00 - eps0.c00);
-                        add_coeffs(start, end, b, l, r, coeffs[layer].ryy, reps.c22 - reps0.c22);
                     }
                     add_coeffs(start, end, b, l, r, coeffs[layer].rxx, reps.c11 - reps0.c11);
                     add_coeffs(start, end, b, l, r, coeffs[layer].yy, eps.c22 - eps0.c22);
@@ -554,7 +543,6 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 coeffs[layer].rxx[i] *= s;
                 if (!epsilon_isotropic) {
                     coeffs[layer].zz[i] *= s;
-                    coeffs[layer].ryy[i] *= s;
                 }
                 if (!epsilon_diagonal) {
                     coeffs[layer].zx[i] *= s;
@@ -924,13 +912,11 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
                     int ijp = abs(i-j), ijn = i+j;
                     dcomplex gj = b * double(j) - ktran;
                     const size_t jhx = iHx(j), jhz = iHz(j);
-                    dcomplex reyy = j == 0? repsyy(l,i) :
-                                    sel? repsyy(l,ijp) + repsyy(l,ijn) : repsyy(l,ijp) - repsyy(l,ijn);
                     RH(iex,jhz) = - rk0 *  gi * gj  * workyy(i,j) +
                                     k0 * (j == 0? muzz(i) : sel? muzz(ijp) - muzz(ijn) : muzz(ijp) + muzz(ijn));
-                    RH(iex,jhx) = - rk0 * beta* gi  * reyy;
+                    RH(iex,jhx) = - rk0 * beta* gi  * workyy(i,j);
                     RH(iez,jhz) = - rk0 * beta* gj  * workyy(i,j);
-                    RH(iez,jhx) = - rk0 * beta*beta * reyy + k0 * workxx(i,j);
+                    RH(iez,jhx) = - rk0 * beta*beta * workyy(i,j) + k0 * workxx(i,j);
                 }
                 // Ugly hack to avoid singularity
                 if (RH(iex,iex) == 0.) RH(iex,iex) = 1e-32;
@@ -950,11 +936,9 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
                     int ijp = abs(i-j), ijn = i+j;
                     dcomplex gj = b * double(j) - ktran;
                     const size_t jex = iEx(j), jez = iEz(j);
-                    dcomplex rmyy = j == 0? rmuyy(i) :
-                                    sel? rmuyy(ijp) - rmuyy(ijn) : rmuyy(ijp) + rmuyy(ijn);
-                    RE(ihz,jex) = - rk0 * beta*beta * rmyy + k0 * workxx(i,j);
+                    RE(ihz,jex) = - rk0 * beta*beta * workyy(i,j) + k0 * workxx(i,j);
                     RE(ihz,jez) =   rk0 * beta* gj  * workyy(i,j);
-                    RE(ihx,jex) =   rk0 * beta* gi  * rmyy;
+                    RE(ihx,jex) =   rk0 * beta* gi  * workyy(i,j);
                     RE(ihx,jez) = - rk0 *  gi * gj  * workyy(i,j) +
                                     k0 * (j == 0? epszz(l,i) : sel? epszz(l,ijp) + epszz(l,ijn) : epszz(l,ijp) - epszz(l,ijn));
                 }
@@ -978,9 +962,9 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
                     int ij = i-j;   dcomplex gj = b * double(j) - ktran;
                     const size_t jhx = iHx(j), jhz = iHz(j), jt = iEH(j);
                     RH(iex,jhz) = - rk0 *  gi * gj  * workyy(it,jt) + k0 * muzz(ij);
-                    RH(iex,jhx) = - rk0 * beta* gi  * repsyy(l,ij);
+                    RH(iex,jhx) = - rk0 * beta* gi  * workyy(it,jt);
                     RH(iez,jhz) = - rk0 * beta* gj  * workyy(it,jt);
-                    RH(iez,jhx) = - rk0 * beta*beta * repsyy(l,ij) + k0 * workxx(it,jt);
+                    RH(iez,jhx) = - rk0 * beta*beta * workyy(it,jt) + k0 * workxx(it,jt);
                 }
                 // Ugly hack to avoid singularity
                 if (RH(iex,iex) == 0.) RH(iex,iex) = 1e-32;
@@ -999,9 +983,9 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
                 for (int j = -order; j <= order; ++j) {
                     int ij = i-j;   dcomplex gj = b * double(j) - ktran;
                     const size_t jex = iEx(j), jez = iEz(j), jt = iEH(j);
-                    RE(ihz,jex) = - rk0 * beta*beta * rmuyy(ij) + k0 * workxx(it,jt);
+                    RE(ihz,jex) = - rk0 * beta*beta * workyy(it,jt) + k0 * workxx(it,jt);
                     RE(ihz,jez) =   rk0 * beta* gj  * workyy(it,jt);
-                    RE(ihx,jex) =   rk0 * beta* gi  * rmuyy(ij);
+                    RE(ihx,jex) =   rk0 * beta* gi  * workyy(it,jt);
                     RE(ihx,jez) = - rk0 *  gi * gj  * workyy(it,jt) + k0 * epszz(l,ij);
                     if (epszx(l)) {
                         RE(ihx,jex) -= k0 * epszx(l,ij);
