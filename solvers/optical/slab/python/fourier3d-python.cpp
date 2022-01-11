@@ -466,6 +466,12 @@ static shared_ptr<Scattering<FourierSolver3D>> FourierSolver3D_scatteringGaussia
 
 void export_FourierSolver3D()
 {
+    py_enum<FourierSolver3D::ExpansionRule>()
+        .value("NEW", FourierSolver3D::RULE_NEW)
+        .value("OLD", FourierSolver3D::RULE_OLD1)
+        .value("OLD1", FourierSolver3D::RULE_OLD1)
+    ;
+
     CLASS(FourierSolver3D, "Fourier3D",
         u8"Optical Solver using Fourier expansion in 3D.\n\n"
         u8"It calculates optical modes and optical field distribution using Fourier slab method\n"
@@ -501,6 +507,7 @@ void export_FourierSolver3D()
                         &FourierSolver3D_SymmetryLongTranWrapper::setter,
                         u8"Longitudinal and transverse mode symmetries.\n");
     solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT, "Type of discrete cosine transform for symmetric expansion.");
+    solver.add_property("rule", &__Class__::getRule, &__Class__::setRule, "Permittivity inversion rule.");
     solver.add_property("lam", &__Class__::getLam, &Solver_setLam<__Class__>,
                 u8"Wavelength of the light [nm].\n\n"
                 u8"Use this property only if you are looking for anything else than\n"

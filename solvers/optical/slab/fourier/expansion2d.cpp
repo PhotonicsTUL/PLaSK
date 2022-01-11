@@ -906,7 +906,6 @@ void ExpansionPW2D::getMatrices(size_t l, cmatrix& RE, cmatrix& RH)
         const size_t NN = N*N;
         TempMatrix temp = getTempMatrix();
         cmatrix work(temp);
-        cmatrix workij(N, N, work.data());
         cmatrix workxx, workyy;
         if (symmetric()) {
             // Full symmetric()

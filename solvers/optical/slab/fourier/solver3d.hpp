@@ -30,6 +30,12 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
         WHAT_KTRAN          ///< Search for transverse wavevector
     };
 
+    /// Expansion rule
+    enum ExpansionRule {
+        RULE_NEW,
+        RULE_OLD1
+    };
+
     struct Mode {
         Expansion::Component symmetry_long;     ///< Mode symmetry in long direction
         Expansion::Component symmetry_tran;     ///< Mode symmetry in tran direction
@@ -101,6 +107,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     /// Type of discrete cosine transform. Can be only 1 or two
     int dct;
+
+    /// Expansion rule
+    ExpansionRule expansion_rule;
 
   public:
 
@@ -260,6 +269,16 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     }
     /// True if DCT == 2
     bool dct2() const { return dct == 2; }
+
+    /// Get expansion rule
+    ExpansionRule getRule() const { return expansion_rule; }
+    /// Set expansion rule
+    void setRule(ExpansionRule rule) {
+        if (rule != expansion_rule) {
+            expansion_rule = rule;
+            invalidate();
+        }
+    }
 
     // /// Get mesh at which material parameters are sampled along longitudinal axis
     // RegularAxis getLongMesh() const { return expansion.mesh->lon(); }

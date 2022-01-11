@@ -143,7 +143,7 @@ plot_profile(efield/max(efield), ls='--', color='0.8', label="EFM")
 legend(loc='best')
 ylabel("Light magnitude [a.u.]")
 gcf().canvas.set_window_title(u"Mode profiles — base" + desc)
-tight_layout(0.2)
+tight_layout(pad=0.2)
 
 if N0 is None:
     lams = array(lams)
@@ -162,7 +162,7 @@ if N0 is None:
     gca().ticklabel_format(useOffset=False)
     ylabel("Q-factor [-]", color=cc[1])
     gcf().canvas.set_window_title(u"Convergence — base" + desc)
-    tight_layout(0.2)
+    tight_layout(pad=0.2)
 
     figure()
     plot(NN, times, '-', color=cc[2])
@@ -170,7 +170,7 @@ if N0 is None:
     xlabel("Base size")
     ylabel("Computation time [s]")
     gcf().canvas.set_window_title(u"Computation time — base" + desc)
-    tight_layout(0.2)
+    tight_layout(pad=0.2)
 
     bessel.size = 20
 
@@ -206,7 +206,7 @@ if mesa is None:
     legend(loc='best')
     ylabel("Light magnitude [a.u.]")
     gcf().canvas.set_window_title(u"Mode profiles — mesa" + desc)
-    tight_layout(0.2)
+    tight_layout(pad=0.2)
 
     lams = array(lams)
 
@@ -225,7 +225,7 @@ if mesa is None:
     gca().ticklabel_format(useOffset=False)
     ylabel("Q-factor [-]", color=cc[1])
     gcf().canvas.set_window_title(u"Convergence — mesa" + desc)
-    tight_layout(0.2)
+    tight_layout(pad=0.2)
 
 show()
 ]]></script>

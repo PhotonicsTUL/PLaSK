@@ -476,6 +476,18 @@
         help: >
           Factor by which the number of coefficients is increased for FFT along transverse direction.
           You cannot set this attribute together with ‘Oversampling’ (<tt>oversampling</tt>).
+    - attr: rule
+      label: Expansion rule
+      type: choice
+      choices:
+        - new
+        - old
+      other:
+        - old1
+      default: new
+      help: >
+        Permittivity inversion rule. The new rule is supposed to provide the best convergence. The old ones ara available
+        for consistency with old results.
     - *dct
     - *smooth
     - *group-layers

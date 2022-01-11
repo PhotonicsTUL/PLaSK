@@ -146,19 +146,19 @@ class VCSEL(unittest.TestCase):
         plot_field(field, scale, comp='r', cmap='bwr')
         gcf().canvas.set_window_title("Er")
         colorbar(use_gridspec=True)
-        tight_layout(0.1)
+        tight_layout(pad=0.1)
         figure()
         plot_geometry(self.solver.geometry, color='k', alpha=0.15)
         plot_field(field, scale, comp='p', cmap='bwr')
         colorbar(use_gridspec=True)
         gcf().canvas.set_window_title("Ep")
-        tight_layout(0.1)
+        tight_layout(pad=0.1)
         figure()
         plot_geometry(self.solver.geometry, color='k', alpha=0.15)
         plot_field(field, scale, comp='z', cmap='bwr')
         colorbar(use_gridspec=True)
         gcf().canvas.set_window_title("Ez")
-        tight_layout(0.1)
+        tight_layout(pad=0.1)
 
         figure()
         plot_geometry(self.solver.geometry, color='w', alpha=0.15)
@@ -166,7 +166,7 @@ class VCSEL(unittest.TestCase):
         plot_field(light)
         colorbar(use_gridspec=True)
         gcf().canvas.set_window_title("Mag")
-        tight_layout(0.1)
+        tight_layout(pad=0.1)
 
         z = self.solver.geometry.get_object_bboxes(self.manager.geo.QW)[0].center.z
         arr = light.array
@@ -176,11 +176,11 @@ class VCSEL(unittest.TestCase):
         figure()
         plot_profile(self.solver.outLightMagnitude(rmsh))
         gcf().canvas.set_window_title(u"Horizontal (z = {:.1f} µm".format(z))
-        tight_layout(0.1)
+        tight_layout(pad=0.1)
         figure()
         plot_profile(self.solver.outLightMagnitude(zmsh), swap_axes=True)
         gcf().canvas.set_window_title(u"Vertical (r = {:.1f} µm".format(r))
-        tight_layout(0.1)
+        tight_layout(pad=0.1)
 
         # Test integration of the fields
 

@@ -41,6 +41,9 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     /// Cached permittivity expansion coefficients
     std::vector<DataVector<Tensor3<dcomplex>>> coeffs;
 
+    /// Cached ε_zz matrices
+    std::vector<cmatrix> coeffs_ezz;
+
     /// Information if the layer is diagonal
     std::vector<bool> diagonals;
 
@@ -173,6 +176,15 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
         if (l < 0) l += int(nNl);
         if (t < 0) t += int(nNt);
         return coeffs[lay][nNl * t + l].c22;
+    }
+
+    /// Get \f$ \varepsilon_{zz}^{-1} \f$
+    dcomplex iepszz(size_t lay, int il, int jl, int it, int jt) {
+        if (jl < 0) { if (symmetric_long()) return 0.; else jl += int(Nl); }
+        if (jt < 0) { if (symmetric_tran()) return 0.; else jt += int(Nt); }
+        if (il < 0) il += int(Nl);
+        if (it < 0) it += int(Nt);
+        return coeffs_ezz[lay](Nl * it + il, Nl * jt + jl);
     }
 
     /// Get \f$ \varepsilon_{xy} \f$

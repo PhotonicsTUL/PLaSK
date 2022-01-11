@@ -249,6 +249,7 @@ void ExpansionPW3D::init()
     // Allocate memory for expansion coefficients
     size_t nlayers = solver->lcount;
     coeffs.resize(nlayers);
+    coeffs_ezz.resize(nlayers);
     diagonals.assign(nlayers, false);
 
     mesh = plask::make_shared<RectangularMesh<3>>
@@ -262,6 +263,7 @@ void ExpansionPW3D::init()
 
 void ExpansionPW3D::reset() {
     coeffs.clear();
+    coeffs_ezz.clear();
     initialized = false;
     k0 = klong = ktran = lam0 = NAN;
     mesh.reset();
@@ -447,10 +449,10 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
                 // [ S. G. Johnson and J. D. Joannopoulos, Opt. Express, vol. 8, pp. 173-190 (2001) ]
                 norm /= a;
                 Tensor3<double> P(norm.c0*norm.c0, norm.c1*norm.c1, 0., norm.c0*norm.c1);
-                Tensor3<double> P1(1.-P.c00, 1.-P.c11, 1., -P.c01);
+                Tensor3<double> P1(1. - P.c00, 1. - P.c11, 1., -P.c01);
                 eps = commutator(P, ieps.inv()) + commutator(P1, eps);
             }
-            if (eps.c22 != 0.) eps.c22 = 1./eps.c22;
+            if (SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1 && eps.c22 != 0.) eps.c22 = 1./eps.c22;
         }
     }
 
@@ -501,6 +503,43 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam)
             }
         }
     }
+
+    if (SOLVER->expansion_rule != FourierSolver3D::RULE_OLD1) {
+        TempMatrix temp = getTempMatrix();
+        size_t NN = Nl * Nt;
+        cmatrix work(NN, NN, temp.data());
+        zero_matrix(work);
+
+        int ordl = int(SOLVER->getLongSize()), ordt = int(SOLVER->getTranSize());
+
+        char symx = char(symmetric_long()? 2 * int(symmetry_long) - 3 : 0),
+             symy = char(symmetric_tran()? 2 * int(symmetry_tran) - 3 : 0);
+             // +1: Ex+, Ey-, Hx-, Hy+
+             //  0: no symmetry
+             // -1: Ex-, Ey+, Hx+, Hy-
+
+        for (int iy = (symy ? 0 : -ordt); iy <= ordt; ++iy) {
+            size_t Iy = (iy >= 0)? iy : iy + Nt;
+            for (int ix = (symx ? 0 : -ordl); ix <= ordl; ++ix) {
+                size_t Ix = (ix >= 0)? ix : ix + Nl;
+                for (int jy = -ordt; jy <= ordt; ++jy) {
+                    size_t Jy = (jy >= 0)? jy : jy + Nt;
+                    int ijy = iy - jy; if (symy && ijy < 0) ijy = - ijy;
+                    for (int jx = -ordl; jx <= ordl; ++jx) {
+                        size_t Jx = (jx >= 0)? jx : jx + Nl;
+                        double fx = 1., fy = 1.;
+                        if (symx && jx < 0) { fx *= symx; fy *= -symx; }
+                        if (symy && jy < 0) { fx *= symy; fy *= -symy; }
+                        int ijx = ix - jx; if (symx && ijx < 0) ijx = - ijx;
+                        work(Nl * Jy + Jx, Nl * Jy + Jx) += fx * fy * iepszz(layer, ijx, ijy);
+                    }
+                }
+            }
+        }
+        coeffs_ezz[layer].reset(NN, NN);
+        make_unit_matrix(coeffs_ezz[layer]);
+        invmult(work, coeffs_ezz[layer]);
+    }
 }
 
 
@@ -524,7 +563,8 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
                     eps += coeffs[lay][nNl*t+l] * exp(2*PI * I * (kl*(dest_mesh->at(i).c0-back) / Ll + phast));
                 }
             }
-            eps.c22 = 1. / eps.c22;
+            if (SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1)
+                eps.c22 = 1. / eps.c22;
             eps.sqrt_inplace();
             return eps;
         });
@@ -569,7 +609,8 @@ LazyData<Tensor3<dcomplex>> ExpansionPW3D::getMaterialNR(size_t lay, const share
             for (size_t l = 0, last = nl*(nt-1); l != nl; ++l) params[last+l] = params[l];
         }
         for (Tensor3<dcomplex>& eps: params) {
-            eps.c22 = 1. / eps.c22;
+            if (SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1)
+                eps.c22 = 1. / eps.c22;
             eps.sqrt_inplace();
         }
         auto src_mesh = plask::make_shared<RectangularMesh<3>>(lcmesh, tcmesh,
@@ -631,7 +672,8 @@ void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
                     double fx = 1., fy = 1.;
                     if (symx && jx < 0) { fx *= symx; fy *= -symx; }
                     if (symy && jy < 0) { fx *= symy; fy *= -symy; }
-                    dcomplex ieps = iepszz(lay, ijx, ijy) * ik0;
+                    dcomplex ieps = ((SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1)?
+                                     iepszz(lay, ijx, ijy) : iepszz(lay, ix, jx, iy, jy)) * ik0;
                     RH(iex,jhy) += fx * (- gx * px * ieps + k0 * muyy(lay, ijx, ijy));
                     RH(iey,jhy) += fx * (- gy * px * ieps);
                     RH(iex,jhx) += fy * (- gx * py * ieps);
@@ -742,7 +784,8 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
                                          ((jt < 0 && symmetry_tran == E_LONG)? -1. : 1);
                             double fhy = ((jl < 0 && symmetry_long == E_TRAN)? -1. : 1) *
                                          ((jt < 0 && symmetry_tran == E_TRAN)? -1. : 1);
-                            field[iez].vert() += iepszz(l,il-jl,it-jt) *
+                            field[iez].vert() += ((SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1)?
+                                                  iepszz(l,il-jl,it-jt) : iepszz(l,il,jl,it,jt)) *
                                 (  (bl*double(jl)-kx) * fhy*H[iHy(jl,jt)]
                                  + (bt*double(jt)-ky) * fhx*H[iHx(jl,jt)]);
                         }
@@ -989,7 +1032,8 @@ double ExpansionPW3D::integrateField(WhichField field, size_t l, const cvector& 
                                         ((jt < 0 && symmetry_tran == E_LONG)? -1. : 1);
                         double fhy = ((jl < 0 && symmetry_long == E_TRAN)? -1. : 1) *
                                         ((jt < 0 && symmetry_tran == E_TRAN)? -1. : 1);
-                        vert += iepszz(l,il-jl,it-jt) *
+                        vert += ((SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1)?
+                                 iepszz(l,il-jl,it-jt) : iepszz(l,il,jl,it,jt)) *
                                (  (bl*double(jl)-kx) * fhy*H[iHy(jl,jt)]
                                 + (bt*double(jt)-ky) * fhx*H[iHx(jl,jt)]);
                     }

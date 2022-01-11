@@ -93,14 +93,20 @@ class VCSEL(unittest.TestCase):
         fourier3d.size = 5
         fourier3d.root.method = 'broyden'
         fourier3d.symmetry = 'Ex', 'Ex'
+        fourier3d.rule = 'new'
 
     def testComputations(self):
         m = fourier3d.find_mode(lam=979.75)
         self.assertEqual(m, 0)
         self.assertEqual(len(fourier3d.modes), 1)
-        print(fourier3d.pmls)
+        self.assertAlmostEqual(fourier3d.modes[m].lam, 979.678-0.0264j, 3)
+
+    def testOldRule(self):
+        fourier3d.rule = 'old1'
+        m = fourier3d.find_mode(lam=979.75)
+        self.assertEqual(m, 0)
+        self.assertEqual(len(fourier3d.modes), 1)
         self.assertAlmostEqual(fourier3d.modes[m].lam, 979.678-0.021j, 3)
-        pass
 
 if __name__ == "__main__":
     vcsel = VCSEL('testComputations')

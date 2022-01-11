@@ -9,6 +9,7 @@ FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<SolverOver
     klong(0.), ktran(0.),
     symmetry_long(Expansion::E_UNSPECIFIED), symmetry_tran(Expansion::E_UNSPECIFIED),
     dct(2),
+    expansion_rule(RULE_NEW),
     expansion(this),
     refine_long(16), refine_tran(16),
     oversampling_long(1.), oversampling_tran(1.)
@@ -78,6 +79,11 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             max_temp_diff = reader.getAttribute<double>("temp-diff", max_temp_diff);
             temp_dist = reader.getAttribute<double>("temp-dist", temp_dist);
             temp_layer = reader.getAttribute<double>("temp-layer", temp_layer);
+            expansion_rule = reader.enumAttribute<ExpansionRule>("rule")
+                                .value("new", RULE_NEW)
+                                .value("old", RULE_OLD1)
+                                .value("old1", RULE_OLD1)
+                             .get(expansion_rule);
             reader.requireTagEnd();
         } else if (param == "pmls") {
             updatePML(pml_long, reader);
@@ -94,9 +100,9 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             }
         } else if (param == "mode") {
             emission = reader.enumAttribute<Emission>("emission")
-                                .value("undefined", EMISSION_UNSPECIFIED)
-                                .value("top", EMISSION_TOP)
-                                .value("bottom", EMISSION_BOTTOM)
+                            .value("undefined", EMISSION_UNSPECIFIED)
+                            .value("top", EMISSION_TOP)
+                            .value("bottom", EMISSION_BOTTOM)
                        .get(emission);
             if (reader.hasAttribute("wavelength")) { //TODO Remove in the future
                 writelog(LOG_WARNING, "XML line {:d} in <mode>: Attribute 'wavelength' is obsolete, use 'lam' instead", reader.getLineNr());
