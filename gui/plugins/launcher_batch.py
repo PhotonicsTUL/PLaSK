@@ -913,7 +913,7 @@ else:
         class ModulesPlainTextEdit(QPlainTextEdit):
             def sizeHint(self):
                 size = super().sizeHint()
-                size.setHeight(3 * self.fontMetrics().height())
+                size.setHeight(int(2.5 * self.fontMetrics().height()))
                 return size
 
         def __init__(self):
@@ -1151,7 +1151,7 @@ else:
             self.modules_button.setText("En&vironmental Modules:")
             layout.addWidget(self.modules_button)
             self.modules = self.ModulesPlainTextEdit()
-            self.modules.setMinimumHeight(3 * self.modules.fontMetrics().height())
+            self.modules.setMinimumHeight(self.modules.sizeHint().height())
             self.modules.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
             self.modules.setVisible(False)
             self.modules.setToolTip("Many HPC clusters use LMOD modules to set-up computation environment.\n"

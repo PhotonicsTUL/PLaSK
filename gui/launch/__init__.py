@@ -182,7 +182,16 @@ class LaunchDialog(QDialog):
         buttons.rejected.connect(self.reject)
         self.layout.addWidget(buttons)
 
-        self.adjust_height()
+    def showEvent(self, event):
+        super().showEvent(event)
+        self._needs_adjusting = True
+
+    # HACK for X11 wrongness
+    def paintEvent(self, event):
+        if self._needs_adjusting:
+            self.adjust_height()
+            self._needs_adjusting = False
+        super().paintEvent(event)
 
     def adjust_height(self):
         height = self.sizeHint().height()
