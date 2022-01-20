@@ -12,7 +12,7 @@ FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<SolverOver
     expansion_rule(RULE_NEW),
     expansion(this),
     refine_long(16), refine_tran(16),
-    oversampling_long(1.), oversampling_tran(1.)
+    norm_smooth(1e-3)
 {
     pml_tran.factor = {1., -2.};
     pml_long.factor = {1., -2.};
@@ -67,7 +67,18 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
         if (param == "expansion") {
             readComaAttr(reader, "size", size_long, size_tran);
             readComaAttr(reader, "refine", refine_long, refine_tran);
-            readComaAttr(reader, "oversampling", oversampling_long, oversampling_tran);
+            if (reader.hasAttribute("oversampling")) {
+                reader.ignoreAttribute("oversampling");
+                writelog(LOG_WARNING, "obsolete 'oversampling' atribute in XML line {}", reader.getLineNr());
+            }
+            if (reader.hasAttribute("oversampling-long")) {
+                reader.ignoreAttribute("oversampling-long");
+                writelog(LOG_WARNING, "obsolete 'oversampling-long' atribute in XML line {}", reader.getLineNr());
+            }
+            if (reader.hasAttribute("oversampling-tran")) {
+                reader.ignoreAttribute("oversampling-tran");
+                writelog(LOG_WARNING, "obsolete 'oversampling-tran' atribute in XML line {}", reader.getLineNr());
+            }
             smooth = reader.getAttribute<double>("smooth", smooth);
             int dc = reader.getAttribute<int>("dct", dct);
             if (dc != 1 && dc != 2)
@@ -83,7 +94,9 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
                                 .value("new", RULE_NEW)
                                 .value("old", RULE_OLD1)
                                 .value("old1", RULE_OLD1)
+                                .value("old2", RULE_OLD2)
                              .get(expansion_rule);
+            norm_smooth = reader.getAttribute<double>("norm-smooth", norm_smooth);
             reader.requireTagEnd();
         } else if (param == "pmls") {
             updatePML(pml_long, reader);

@@ -32,8 +32,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     /// Expansion rule
     enum ExpansionRule {
-        RULE_NEW,
-        RULE_OLD1
+        RULE_NEW = 0,
+        RULE_OLD2 = 1,
+        RULE_OLD1 = 2
     };
 
     struct Mode {
@@ -141,12 +142,8 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     /// Mesh multiplier for finer computation of the refractive indices in the transverse direction
     size_t refine_tran;
 
-    /// Factor by which the number of coefficients is multiplied for FFT along longitudinal direction.
-    /// Afterwards the coefficients are truncated to the required number.
-    double oversampling_long;
-    /// Factor by which the number of coefficients is multiplied for FFT along transverse direction.
-    /// Afterwards the coefficients are truncated to the required number.
-    double oversampling_tran;
+    /// Smoothing of the normal-direction functions
+    double norm_smooth;
 
     /// Longitudinal PMLs
     PML pml_long;
@@ -254,6 +251,16 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
             invalidate();
         }
         ktran = k;
+    }
+
+    /// Get current normal smooth
+    double getNormSmooth() const { return norm_smooth; }
+
+    /// Set current smooth
+    void setNormSmooth(double value) {
+        bool changed = norm_smooth != value;
+        norm_smooth = value;
+        if (changed) this->invalidate();
     }
 
     /// Get type of the DCT

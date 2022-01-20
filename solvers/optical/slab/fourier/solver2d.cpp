@@ -28,7 +28,7 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             smooth = reader.getAttribute<double>("smooth", smooth);
             if (reader.hasAttribute("oversampling")) {
                 reader.ignoreAttribute("oversampling");
-                writelog(LOG_WARNING, "'oversampling' is ignored in XML line {}", reader.getLineNr());
+                writelog(LOG_WARNING, "obsolete 'oversampling' atribute in XML line {}", reader.getLineNr());
             }
             ftt = reader.enumAttribute<FourierType>("ft")
                 .value("discrete", FOURIER_DISCRETE)

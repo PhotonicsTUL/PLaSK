@@ -185,10 +185,6 @@ FourierSolver3D_LongTranWrapper<size_t> FourierSolver3D_getRefine(FourierSolver3
     return FourierSolver3D_LongTranWrapper<size_t>(self, &self->refine_long, &self->refine_tran);
 }
 
-FourierSolver3D_LongTranWrapper<double> FourierSolver3D_getOversampling(FourierSolver3D* self) {
-    return FourierSolver3D_LongTranWrapper<double>(self, &self->oversampling_long, &self->oversampling_tran);
-}
-
 FourierSolver3D_LongTranWrapper<PML> FourierSolver3D_getPml(FourierSolver3D* self) {
     return FourierSolver3D_LongTranWrapper<PML>(self, &self->pml_long, &self->pml_tran);
 }
@@ -470,6 +466,7 @@ void export_FourierSolver3D()
         .value("NEW", FourierSolver3D::RULE_NEW)
         .value("OLD", FourierSolver3D::RULE_OLD1)
         .value("OLD1", FourierSolver3D::RULE_OLD1)
+        .value("OLD2", FourierSolver3D::RULE_OLD2)
     ;
 
     CLASS(FourierSolver3D, "Fourier3D",
@@ -489,12 +486,6 @@ void export_FourierSolver3D()
                                             py::default_call_policies(),
                                             boost::mpl::vector3<void, FourierSolver3D&, py::object>()),
                         u8"Number of refinement points for refractive index averaging in longitudinal and transverse directions.");
-    solver.add_property("oversampling",
-                        py::make_function(FourierSolver3D_getOversampling, py::with_custodian_and_ward_postcall<0,1>()),
-                        py::make_function(FourierSolver3D_LongTranSetter<double>(&FourierSolver3D::oversampling_long, &FourierSolver3D::oversampling_tran),
-                                            py::default_call_policies(),
-                                            boost::mpl::vector3<void, FourierSolver3D&, py::object>()),
-                        u8"Factor by which the number of coefficients is increased for FFT.");
     solver.add_property("pmls",
                         py::make_function(FourierSolver3D_getPml, py::with_custodian_and_ward_postcall<0,1>()),
                         py::make_function(FourierSolver3D_LongTranSetter<PML>(&FourierSolver3D::pml_long, &FourierSolver3D::pml_tran),
@@ -508,6 +499,8 @@ void export_FourierSolver3D()
                         u8"Longitudinal and transverse mode symmetries.\n");
     solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT, "Type of discrete cosine transform for symmetric expansion.");
     solver.add_property("rule", &__Class__::getRule, &__Class__::setRule, "Permittivity inversion rule.");
+    solver.add_property("norm_smooth", &__Class__::getNormSmooth, &__Class__::setNormSmooth,
+                        "Smoothing parameter for material boundaries normals (needed for the new expansion rule).");
     solver.add_property("lam", &__Class__::getLam, &Solver_setLam<__Class__>,
                 u8"Wavelength of the light [nm].\n\n"
                 u8"Use this property only if you are looking for anything else than\n"

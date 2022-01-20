@@ -22,7 +22,6 @@ periodic = False
 
 size = 12
 refine = 1
-oversampling = 1
 
 smooth = 0.005
 
@@ -95,7 +94,6 @@ opt.size = 0
 opt.size[axis] = size
 opt.smooth = smooth
 opt.refine = refine
-opt.oversampling = oversampling
 
 opt.dct = dct
 
@@ -169,4 +167,3 @@ gcf().canvas.set_window_title("%s %s" % ('Symmetric' if symmetric else 'Asymmetr
 del opt
 
 show()
-

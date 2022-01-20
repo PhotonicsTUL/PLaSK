@@ -33,19 +33,18 @@ struct PLASK_SOLVER_API Forward1D {
     /// Assignment operator
     Forward1D& operator=(Forward1D&& old);
     /** Init transfrom
-     * \param lot number of arrays to transform
+     * \param strid data stride
      * \param n size of a single array
      * \param symmetry symmetry of the transform
-     * \param strid data stride (defaults to \c lot)
      */
-    Forward1D(std::size_t lot, std::size_t n, Symmetry symmetry, std::size_t strid=0);
+    Forward1D(std::size_t strid, std::size_t n, Symmetry symmetry);
     ~Forward1D();
     /** Execute transform
      * \param data data to execute FFT
+     * \param lot number of arrays to transform, defaults to \c strid
      */
-    void execute(dcomplex* data);
+    void execute(dcomplex* data, int lot=0);
   private:
-    int lot;
     int n;
     int strid;
     Symmetry symmetry;
@@ -65,20 +64,19 @@ struct PLASK_SOLVER_API Forward2D {
     /// Assignment operator
     Forward2D& operator=(Forward2D&& old);
     /** Init transfrom
-     * \param lot number of arrays to transform
+     * \param strid data stride
      * \param n1,n2 dimensions of a single array
      * \param symmetry1,symmetry2 symmetry of the transform
-     * \param strid data stride (defaults to \c lot)
      * \param ld leading dimension (defaults to \c n1)
      */
-    Forward2D(std::size_t lot, std::size_t n1, std::size_t n2, Symmetry symmetry1, Symmetry symmetry2, std::size_t strid=0, std::size_t ld=0);
+    Forward2D(std::size_t strid, std::size_t n1, std::size_t n2, Symmetry symmetry1, Symmetry symmetry2, std::size_t ld=0);
     ~Forward2D();
     /** Execute transform
      * \param data data to execute FFT
+     * \param lot number of arrays to transform, defaults to \c strid
      */
-    void execute(dcomplex* data);
+    void execute(dcomplex* data, int lot=0);
   private:
-    int lot;
     int n1, n2;
     int strid1, strid2;
     Symmetry symmetry1, symmetry2;
@@ -98,19 +96,18 @@ struct PLASK_SOLVER_API Backward1D {
     /// Assignment operator
     Backward1D& operator=(Backward1D&& old);
     /** Init transfrom
-     * \param lot number of arrays to transform
+     * \param strid data stride
      * \param n size of a single array
      * \param symmetry symmetry of the transform
-     * \param strid data stride (defaults to \c lot)
      */
-    Backward1D(std::size_t lot, std::size_t n, Symmetry symmetry, std::size_t strid=0);
+    Backward1D(std::size_t strid, std::size_t n, Symmetry symmetry);
     ~Backward1D();
     /** Execute transform
      * \param data data to execute FFT
+     * \param lot number of arrays to transform, defaults to \c strid
      */
-    void execute(dcomplex* data);
+    void execute(dcomplex* data, int lot=0);
   private:
-    int lot;
     int n;
     int strid;
     Symmetry symmetry;
@@ -130,22 +127,21 @@ struct PLASK_SOLVER_API Backward2D {
     /// Assignment operator
     Backward2D& operator=(Backward2D&& old);
     /** Init transfrom
-     * \param lot number of arrays to transform
+     * \param strid data stride
      * \param n1,n2 dimensions of a single array
      * \param symmetry1,symmetry2 symmetry of the transform
-     * \param strid data stride (defaults to \c lot)
      * \param ld major row stride (defaults to \c n1)
      */
-    Backward2D(std::size_t lot, std::size_t n1, std::size_t n2, Symmetry symmetry1, Symmetry symmetry2, std::size_t strid=0, std::size_t ld=0);
+    Backward2D(std::size_t strid, std::size_t n1, std::size_t n2, Symmetry symmetry1, Symmetry symmetry2, std::size_t ld=0);
     ~Backward2D();
     /// Execute transform
     void execute();
     /** Execute transform
      *  \param data data to execute FFT
+     * \param lot number of arrays to transform, defaults to \c strid
      */
-    void execute(dcomplex* data);
+    void execute(dcomplex* data, int lot=0);
   private:
-    int lot;
     int n1, n2;
     int strid1, strid2;
     Symmetry symmetry1, symmetry2;

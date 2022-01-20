@@ -1058,7 +1058,7 @@ inline void export_base(Class solver) {
                "Set interface as close as possible to the specified position.\n\n"
                "Args:\n"
                "    pos (float): Position, near which the interface will be located.", py::arg("pos"));
-    solver.def_readwrite("smooth", &Solver::smooth, "Smoothing parameter for material boundaries (increases convergence).");
+    solver.add_property("smooth", &Solver::getSmooth, &Solver::setSmooth, "Smoothing parameter for material boundaries (increases convergence).");
     solver.add_property("stack", &SlabSolver_getStack<Solver>, "Stack of distinct layers.");
     solver.add_property("layer_edges", &SlabSolver_getLayerEdges<Solver>, "Vertical posiotions of egges of each layer.");
     solver.add_property("layer_centers", &SlabSolver_getLayerCenters<Solver>,

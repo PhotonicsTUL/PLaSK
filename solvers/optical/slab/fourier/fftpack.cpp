@@ -11,14 +11,14 @@ namespace plask { namespace optical { namespace slab { namespace FFT {
 Forward1D::Forward1D(): wsave(nullptr) {}
 
 Forward1D::Forward1D(Forward1D&& old):
-    lot(old.lot), n(old.n), strid(old.strid),
+    n(old.n), strid(old.strid),
     symmetry(old.symmetry),
     wsave(old.wsave) {
     old.wsave = nullptr;
 }
 
 Forward1D& Forward1D::operator=(Forward1D&& old) {
-    lot = old.lot; n = old.n; strid = old.strid;
+    n = old.n; strid = old.strid;
     symmetry = old.symmetry;
     aligned_free(wsave);
     wsave = old.wsave;
@@ -26,8 +26,8 @@ Forward1D& Forward1D::operator=(Forward1D&& old) {
     return *this;
 }
 
-Forward1D::Forward1D(std::size_t lot, std::size_t n, Symmetry symmetry, std::size_t strid):
-    lot(int(lot)), n(int(n)), strid(int(strid?strid:lot)), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
+Forward1D::Forward1D(std::size_t strid, std::size_t n, Symmetry symmetry):
+    n(int(n)), strid(int(strid)), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
     try {
         int ier;
         switch (symmetry) {
@@ -45,8 +45,9 @@ Forward1D::Forward1D(std::size_t lot, std::size_t n, Symmetry symmetry, std::siz
     }
 }
 
-void Forward1D::execute(dcomplex* data) {
+void Forward1D::execute(dcomplex* data, int lot) {
     if (!wsave) throw CriticalException("FFTPACX not initialized");
+    if (lot == 0) lot = strid;
     try {
         int ier;
         std::unique_ptr<double[]> work(new double[2*lot*(n+1)]);
@@ -83,14 +84,14 @@ Forward1D::~Forward1D() {
 Backward1D::Backward1D(): wsave(nullptr) {}
 
 Backward1D::Backward1D(Backward1D&& old):
-    lot(old.lot), n(old.n), strid(old.strid),
+    n(old.n), strid(old.strid),
     symmetry(old.symmetry),
     wsave(old.wsave) {
     old.wsave = nullptr;
 }
 
 Backward1D& Backward1D::operator=(Backward1D&& old) {
-    lot = old.lot; n = old.n; strid = old.strid;
+    n = old.n; strid = old.strid;
     symmetry = old.symmetry;
     aligned_free(wsave);
     wsave = old.wsave;
@@ -98,8 +99,8 @@ Backward1D& Backward1D::operator=(Backward1D&& old) {
     return *this;
 }
 
-Backward1D::Backward1D(std::size_t lot, std::size_t n, Symmetry symmetry, std::size_t strid):
-    lot(int(lot)), n(int(n)), strid(int(strid?strid:lot)), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
+Backward1D::Backward1D(std::size_t strid, std::size_t n, Symmetry symmetry):
+    n(int(n)), strid(int(strid)), symmetry(symmetry), wsave(aligned_malloc<double>(lensav(n))) {
     try {
         int ier;
         switch (symmetry) {
@@ -119,8 +120,9 @@ Backward1D::Backward1D(std::size_t lot, std::size_t n, Symmetry symmetry, std::s
     }
 }
 
-void Backward1D::execute(dcomplex* data) {
+void Backward1D::execute(dcomplex* data, int lot) {
     if (!wsave) throw CriticalException("FFTPACX not initialized");
+    if (lot == 0) lot = strid;
     try {
         int ier;
         std::unique_ptr<double[]> work(new double[(symmetry==SYMMETRY_ODD_1)? 4*lot*n : 2*lot*(n+1)]);
@@ -157,7 +159,7 @@ Backward1D::~Backward1D() {
 Forward2D::Forward2D(): wsave1(nullptr), wsave2(nullptr) {}
 
 Forward2D::Forward2D(Forward2D&& old):
-    lot(old.lot), n1(old.n1), n2(old.n2),
+    n1(old.n1), n2(old.n2),
     strid1(old.strid1), strid2(old.strid2),
     symmetry1(old.symmetry1), symmetry2(old.symmetry2),
     wsave1(old.wsave1), wsave2(old.wsave2) {
@@ -165,7 +167,7 @@ Forward2D::Forward2D(Forward2D&& old):
 }
 
 Forward2D& Forward2D::operator=(Forward2D&& old) {
-    lot = old.lot; n1 = old.n1; n2 = old.n2;
+    n1 = old.n1; n2 = old.n2;
     strid1 = old.strid1; strid2 = old.strid2;
     symmetry1 = old.symmetry1; symmetry2 = old.symmetry2;
     aligned_free(wsave1); if (wsave2 != wsave1) aligned_free(wsave2);
@@ -174,8 +176,8 @@ Forward2D& Forward2D::operator=(Forward2D&& old) {
     return *this;
 }
 
-Forward2D::Forward2D(std::size_t lot, std::size_t n1, std::size_t n2, Symmetry symmetry1, Symmetry symmetry2, std::size_t strid, std::size_t ld):
-    lot(int(lot)), n1(int(n1)), n2(int(n2)), strid1(int(strid?strid:lot)), strid2(int((strid?strid:lot)*(ld?ld:n1))), symmetry1(symmetry1), symmetry2(symmetry2),
+Forward2D::Forward2D(std::size_t strid, std::size_t n1, std::size_t n2, Symmetry symmetry1, Symmetry symmetry2, std::size_t ld):
+    n1(int(n1)), n2(int(n2)), strid1(int(strid)), strid2(int(strid*(ld?ld:n1))), symmetry1(symmetry1), symmetry2(symmetry2),
     wsave1(aligned_malloc<double>(lensav(n1))) {
     if (n1 == n2 && symmetry1 == symmetry2) wsave2 = wsave1;
     else wsave2 = aligned_malloc<double>(lensav(n2));
@@ -208,8 +210,9 @@ Forward2D::Forward2D(std::size_t lot, std::size_t n1, std::size_t n2, Symmetry s
     }
 }
 
-void Forward2D::execute(dcomplex* data) {
+void Forward2D::execute(dcomplex* data, int lot) {
     if (!wsave1 || !wsave2) throw CriticalException("FFTPACX not initialized");
+    if (lot == 0) lot = strid1;
     try {
         int ier;
 		std::unique_ptr<double[]> work(new double[2*lot*(max(n1,n2)+1)]);
@@ -277,7 +280,7 @@ Forward2D::~Forward2D() {
 Backward2D::Backward2D(): wsave1(nullptr), wsave2(nullptr) {}
 
 Backward2D::Backward2D(Backward2D&& old):
-    lot(old.lot), n1(old.n1), n2(old.n2),
+    n1(old.n1), n2(old.n2),
     strid1(old.strid1), strid2(old.strid2),
     symmetry1(old.symmetry1), symmetry2(old.symmetry2),
     wsave1(old.wsave1), wsave2(old.wsave2) {
@@ -285,7 +288,7 @@ Backward2D::Backward2D(Backward2D&& old):
 }
 
 Backward2D& Backward2D::operator=(Backward2D&& old) {
-    lot = old.lot; n1 = old.n1; n2 = old.n2;
+    n1 = old.n1; n2 = old.n2;
     strid1 = old.strid1; strid2 = old.strid2;
     symmetry1 = old.symmetry1; symmetry2 = old.symmetry2;
     aligned_free(wsave1); if (wsave2 != wsave1) aligned_free(wsave2);
@@ -294,8 +297,8 @@ Backward2D& Backward2D::operator=(Backward2D&& old) {
     return *this;
 }
 
-Backward2D::Backward2D(std::size_t lot, std::size_t n1, std::size_t n2, Symmetry symmetry1, Symmetry symmetry2, std::size_t strid, std::size_t ld):
-    lot(int(lot)), n1(int(n1)), n2(int(n2)), strid1(int(strid?strid:lot)), strid2(int((strid?strid:lot)*(ld?ld:n1))), symmetry1(symmetry1), symmetry2(symmetry2),
+Backward2D::Backward2D(std::size_t strid, std::size_t n1, std::size_t n2, Symmetry symmetry1, Symmetry symmetry2, std::size_t ld):
+    n1(int(n1)), n2(int(n2)), strid1(int(strid)), strid2(int(strid*(ld?ld:n1))), symmetry1(symmetry1), symmetry2(symmetry2),
     wsave1(aligned_malloc<double>(lensav(n1))) {
     if (n1 == n2 && symmetry1 == symmetry2) wsave2 = wsave1;
     else wsave2 = aligned_malloc<double>(lensav(n2));
@@ -332,8 +335,9 @@ Backward2D::Backward2D(std::size_t lot, std::size_t n1, std::size_t n2, Symmetry
     }
 }
 
-void Backward2D::execute(dcomplex* data) {
+void Backward2D::execute(dcomplex* data, int lot) {
     if (!wsave1 || !wsave2) throw CriticalException("FFTPACX not initialized");
+    if (lot == 0) lot = strid1;
     try {
         int ier;
 		std::unique_ptr<double[]> work(new double[2*lot*(max(n1,n2)+1)]);
@@ -415,4 +419,3 @@ Backward2D::~Backward2D() {
 }}}} // namespace plask::optical::slab
 
 #endif // USE_FFTW
-
