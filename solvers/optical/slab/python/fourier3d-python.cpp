@@ -469,6 +469,15 @@ void export_FourierSolver3D()
         .value("OLD2", FourierSolver3D::RULE_OLD2)
     ;
 
+    registerProvider<ProviderFor<GradientFunctions,Geometry3D>>();
+    py_enum<GradientFunctions::EnumType>()
+        .value("COS2", GradientFunctions::COS2)
+        .value("COSSIN", GradientFunctions::COSSIN)
+        .value("C2", GradientFunctions::COS2)
+        .value("CS", GradientFunctions::COSSIN)
+    ;
+
+
     CLASS(FourierSolver3D, "Fourier3D",
         u8"Optical Solver using Fourier expansion in 3D.\n\n"
         u8"It calculates optical modes and optical field distribution using Fourier slab method\n"
@@ -499,8 +508,9 @@ void export_FourierSolver3D()
                         u8"Longitudinal and transverse mode symmetries.\n");
     solver.add_property("dct", &__Class__::getDCT, &__Class__::setDCT, "Type of discrete cosine transform for symmetric expansion.");
     solver.add_property("rule", &__Class__::getRule, &__Class__::setRule, "Permittivity inversion rule.");
-    solver.add_property("norm_smooth", &__Class__::getNormSmooth, &__Class__::setNormSmooth,
-                        "Smoothing parameter for material boundaries normals (needed for the new expansion rule).");
+    solver.add_property("grad_smooth", &__Class__::getGradSmooth, &__Class__::setGradSmooth,
+                        "Smoothing parameter for material boundaries gradients (needed for the new expansion rule).");
+    solver.add_provider("outGradients", &__Class__::outGradients, "Gradients are important if the new factorization rule is used.");
     solver.add_property("lam", &__Class__::getLam, &Solver_setLam<__Class__>,
                 u8"Wavelength of the light [nm].\n\n"
                 u8"Use this property only if you are looking for anything else than\n"

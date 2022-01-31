@@ -143,12 +143,15 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     size_t refine_tran;
 
     /// Smoothing of the normal-direction functions
-    double norm_smooth;
+    double grad_smooth;
 
     /// Longitudinal PMLs
     PML pml_long;
     /// Transverse PMLs
     PML pml_tran;
+
+    /// Provider for gradient functions
+    ProviderFor<GradientFunctions, Geometry3D>::Delegate outGradients;
 
     FourierSolver3D(const std::string& name="");
 
@@ -254,12 +257,12 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     }
 
     /// Get current normal smooth
-    double getNormSmooth() const { return norm_smooth; }
+    double getGradSmooth() const { return grad_smooth; }
 
     /// Set current smooth
-    void setNormSmooth(double value) {
-        bool changed = norm_smooth != value;
-        norm_smooth = value;
+    void setGradSmooth(double value) {
+        bool changed = grad_smooth != value;
+        grad_smooth = value;
         if (changed) this->invalidate();
     }
 
@@ -518,6 +521,11 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     }
 
     double getWavelength(size_t n) override;
+
+    LazyData<double> getGradients(GradientFunctions::EnumType what,
+                                  const shared_ptr<const MeshD<3>>& dst_mesh,
+                                  InterpolationMethod interp);
+
 };
 
 

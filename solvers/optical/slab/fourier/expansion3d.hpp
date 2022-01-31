@@ -10,6 +10,16 @@ namespace plask { namespace optical { namespace slab {
 
 struct FourierSolver3D;
 
+struct PLASK_SOLVER_API GradientFunctions: public MultiFieldProperty<double> {
+    enum EnumType {
+            COS2 = 0,
+            COSSIN = 1
+        };
+    static constexpr size_t NUM_VALS = 2;
+    static constexpr const char* NAME = "refractive index gradient functions cos² and cos·sin";
+    static constexpr const char* UNIT = "-";
+};
+
 struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     dcomplex klong,                     ///< Longitudinal wavevector
@@ -69,26 +79,26 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     /// Cached permittivity expansion coefficients
     std::vector<DataVector<Coeff>> coeffs;
 
-    /// Normals data structure (cos² and cos·sin)
-    struct Normals {
+    /// Gradient data structure (cos² and cos·sin)
+    struct Gradient {
         dcomplex c2, cs;
-        Normals(const Normals&) = default;
-        Normals(double c2, double cs): c2(c2), cs(cs) {}
-        Normals(const Vec<2>& norm): c2(norm.c0 * norm.c0), cs(norm.c0 * norm.c1) {}
-        Normals& operator=(const Normals& norm) = default;
-        Normals& operator=(const Vec<2>& norm) {
+        Gradient(const Gradient&) = default;
+        Gradient(double c2, double cs): c2(c2), cs(cs) {}
+        Gradient(const Vec<2>& norm): c2(norm.c0 * norm.c0), cs(norm.c0 * norm.c1) {}
+        Gradient& operator=(const Gradient& norm) = default;
+        Gradient& operator=(const Vec<2>& norm) {
             c2 = norm.c0 * norm.c0;
             cs = norm.c0 * norm.c1;
             return *this;
         }
-        Normals& operator+=(const Normals& norm) { c2 += norm.c2; cs += norm.cs; return *this; }
-        Normals& operator*=(double f) { c2 *= f; cs *= f; return *this; }
-        Normals operator/(size_t n) const { double f = 1. / double(n); return Normals(c2.real() * f, cs.real() * f); }
+        Gradient& operator+=(const Gradient& norm) { c2 += norm.c2; cs += norm.cs; return *this; }
+        Gradient& operator*=(double f) { c2 *= f; cs *= f; return *this; }
+        Gradient operator/(size_t n) const { double f = 1. / double(n); return Gradient(c2.real() * f, cs.real() * f); }
         bool isnan() const { return ::isnan(c2.real()); }
     };
 
-    /// Cached normals data
-    std::vector<DataVector<Normals>> normals;
+    /// Cached gradients data
+    std::vector<DataVector<Gradient>> gradients;
 
     /// Cached ε_zz, Δε_xx, and Δε_yy matrices
     std::vector<cmatrix> coeffs_ezz, coeffs_dexx, coeffs_deyy;
@@ -140,6 +150,10 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
                                               const shared_ptr<const typename LevelsAdapter::Level>& level,
                                               InterpolationMethod interp) override;
 
+    LazyData<double> getGradients(GradientFunctions::EnumType what,
+                                  const shared_ptr<const typename LevelsAdapter::Level>& level,
+                                  InterpolationMethod interp);
+
     double integrateField(WhichField field, size_t l, const cvector& E, const cvector& H) override;
 
     double integratePoyntingVert(const cvector& E, const cvector& H) override;
@@ -177,7 +191,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
         addToeplitzMatrix(work, ordl, ordt, lay, c, syml, symt, a);
     }
 
-    void makeToeplitzMatrix(cmatrix& workc2, cmatrix& workcs, const DataVector<Normals>& norms,
+    void makeToeplitzMatrix(cmatrix& workc2, cmatrix& workcs, const DataVector<Gradient>& norms,
                             int ordl, int ordt, char syml, char symt) {
         zero_matrix(workc2);
         zero_matrix(workcs);
@@ -207,7 +221,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     DataVector<Tensor2<dcomplex>> mag_tran; ///< Magnetic permeability coefficients in transverse direction (used with for PMLs)
 
     FFT::Forward2D matFFT;                  ///< FFT object for material coefficients
-    FFT::Forward2D normFFT;                 ///< FFT object for normals
+    FFT::Forward2D gradFFT;                 ///< FFT object for gradients
 
     void beforeLayersIntegrals(double lam, double glam) override;
 

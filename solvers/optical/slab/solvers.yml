@@ -460,12 +460,12 @@
       help: >
         Permittivity inversion rule. The new rule is supposed to provide the best convergence. The old ones ara available
         for consistency with old results.
-    - attr: norm-smooth
-      label: Normals smooth
+    - attr: grad-smooth
+      label: Gradient smooth
       type: float
       default: 0.001
       help: >
-        Smoothing parameter for material boundaries normals. This is needed for the new expansion rule.
+        Smoothing parameter for refreactive index gradients. This is needed for the new expansion rule.
     - *dct
     - *smooth
     - *group-layers

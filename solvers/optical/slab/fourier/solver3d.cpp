@@ -12,7 +12,8 @@ FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<SolverOver
     expansion_rule(RULE_NEW),
     expansion(this),
     refine_long(16), refine_tran(16),
-    norm_smooth(1e-3)
+    grad_smooth(1e-3),
+    outGradients(this, &FourierSolver3D::getGradients)
 {
     pml_tran.factor = {1., -2.};
     pml_long.factor = {1., -2.};
@@ -96,7 +97,7 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
                                 .value("old1", RULE_OLD1)
                                 .value("old2", RULE_OLD2)
                              .get(expansion_rule);
-            norm_smooth = reader.getAttribute<double>("norm-smooth", norm_smooth);
+            grad_smooth = reader.getAttribute<double>("grad-smooth", grad_smooth);
             reader.requireTagEnd();
         } else if (param == "pmls") {
             updatePML(pml_long, reader);
@@ -277,6 +278,20 @@ cvector FourierSolver3D::incidentGaussian(Transfer::IncidentDirection side, Expa
     }
 
     return transfer->diagonalizer->invTE(layer) * incident;
+}
+
+LazyData<double> FourierSolver3D::getGradients(GradientFunctions::EnumType what,
+                                               const shared_ptr<const MeshD<3>>& dst_mesh,
+                                               InterpolationMethod interp) {
+    initCalculation();
+    computeIntegrals();
+    DataVector<double> destination(dst_mesh->size());
+    auto levels = makeLevelsAdapter(dst_mesh);
+    while (auto level = levels->yield()) {
+        auto dest = expansion.getGradients(what, level, interp);
+        for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
+    }
+    return destination;
 }
 
 }}} // namespace
