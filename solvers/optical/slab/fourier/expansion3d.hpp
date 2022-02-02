@@ -81,20 +81,31 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
 
     /// Gradient data structure (cos² and cos·sin)
     struct Gradient {
+        struct Vertex;
         dcomplex c2, cs;
         Gradient(const Gradient&) = default;
         Gradient(double c2, double cs): c2(c2), cs(cs) {}
         Gradient(const Vec<2>& norm): c2(norm.c0 * norm.c0), cs(norm.c0 * norm.c1) {}
         Gradient& operator=(const Gradient& norm) = default;
         Gradient& operator=(const Vec<2>& norm) {
-            c2 = norm.c0 * norm.c0;
-            cs = norm.c0 * norm.c1;
+            // double f = 1. / (norm.c0*norm.c0 + norm.c1*norm.c1);
+            c2 = /* f *  */norm.c0 * norm.c0;
+            cs = /* f *  */norm.c0 * norm.c1;
             return *this;
         }
+        Gradient operator*(double f) const { return Gradient(c2.real() * f, cs.real() * f); }
+        Gradient operator/(double f) const { return Gradient(c2.real() / f, cs.real() / f); }
         Gradient& operator+=(const Gradient& norm) { c2 += norm.c2; cs += norm.cs; return *this; }
         Gradient& operator*=(double f) { c2 *= f; cs *= f; return *this; }
-        Gradient operator/(size_t n) const { double f = 1. / double(n); return Gradient(c2.real() * f, cs.real() * f); }
+        Gradient& operator/=(double f) { c2 /= f; cs /= f; return *this; }
+        // Gradient operator/(size_t n) const { double f = 1. / double(n); return Gradient(c2.real() * f, cs.real() * f); }
         bool isnan() const { return ::isnan(c2.real()); }
+    };
+
+    struct Gradient::Vertex {
+        int l, t;
+        Gradient val;
+        Vertex(int l, int t, const Gradient& src): l(l), t(t), val(src) {}
     };
 
     /// Cached gradients data
@@ -221,7 +232,7 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     DataVector<Tensor2<dcomplex>> mag_tran; ///< Magnetic permeability coefficients in transverse direction (used with for PMLs)
 
     FFT::Forward2D matFFT;                  ///< FFT object for material coefficients
-    FFT::Forward2D gradFFT;                 ///< FFT object for gradients
+    FFT::Forward2D cos2FFT, cssnFFT;        ///< FFT object for gradients
 
     void beforeLayersIntegrals(double lam, double glam) override;
 

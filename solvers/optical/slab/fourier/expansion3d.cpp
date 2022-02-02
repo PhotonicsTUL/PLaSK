@@ -45,7 +45,7 @@ void ExpansionPW3D::init()
             back = -back; front = -front;
             std::swap(back, front);
         }
-        if (back != 0.) throw BadMesh(SOLVER->getId(), "Longitudinally symmetric geometry must have one of its sides at symmetry axis");
+        if (back != 0.) throw BadInput(SOLVER->getId(), "Longitudinally symmetric geometry must have one of its sides at symmetry axis");
         if (!symmetric_long()) back = -front;
     }
     if (geometry->isSymmetric(Geometry3D::DIRECTION_TRAN)) {
@@ -53,7 +53,7 @@ void ExpansionPW3D::init()
             left = -left; right = -right;
             std::swap(left, right);
         }
-        if (left != 0.) throw BadMesh(SOLVER->getId(), "Transversely symmetric geometry must have one of its sides at symmetry axis");
+        if (left != 0.) throw BadInput(SOLVER->getId(), "Transversely symmetric geometry must have one of its sides at symmetry axis");
         if (!symmetric_tran()) left = -right;
     }
 
@@ -127,15 +127,20 @@ void ExpansionPW3D::init()
     if (symmetric_tran()) SOLVER->writelog(LOG_DETAIL, "Transverse symmetry is {0}", (symmetry_tran == E_TRAN)? "Etran" : "Elong");
 
     auto dct_symmetry = SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1;
+    auto dct_asymmetry = SOLVER->dct2()? FFT::SYMMETRY_ODD_2 : FFT::SYMMETRY_ODD_1;
 
     matFFT = FFT::Forward2D(6, nNl, nNt,
                             symmetric_long()? dct_symmetry : FFT::SYMMETRY_NONE,
                             symmetric_tran()? dct_symmetry : FFT::SYMMETRY_NONE);
 
-    if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW)
-        gradFFT = FFT::Forward2D(2, nNl, nNt,
+    if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW) {
+        cos2FFT = FFT::Forward2D(2, nNl, nNt,
                                  symmetric_long()? dct_symmetry : FFT::SYMMETRY_NONE,
                                  symmetric_tran()? dct_symmetry : FFT::SYMMETRY_NONE);
+        cssnFFT = FFT::Forward2D(2, nNl, nNt,
+                                 symmetric_long()? dct_asymmetry : FFT::SYMMETRY_NONE,
+                                 symmetric_tran()? dct_asymmetry : FFT::SYMMETRY_NONE);
+    }
 
     // Compute permeability coefficients
     if (!periodic_long || !periodic_tran) {
@@ -257,6 +262,20 @@ inline static Tensor3<decltype(T1()*T2())> commutator(const Tensor3<T1>& A, cons
     );
 }
 
+
+inline void add_vertex(int l, int t, ExpansionPW3D::Gradient& val, long double& W, const ExpansionPW3D::Gradient::Vertex& vertex) {
+    if (l == vertex.l && t == vertex.t) return;
+    int dl = l - vertex.l, dt = t - vertex.t;
+    long double w = 1. / (dl*dl + dt*dt);
+    w *= w;
+    val += vertex.val * w;
+    W += w;
+}
+
+inline double cf(const ExpansionPW3D::Coeff& c) {
+    return c.c00.real() + c.c11.real();
+}
+
 void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
     auto geometry = SOLVER->getGeometry();
 
@@ -266,7 +285,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
     const size_t refl = (SOLVER->refine_long)? SOLVER->refine_long : 1,
                  reft = (SOLVER->refine_tran)? SOLVER->refine_tran : 1;
     const size_t nN = nNl * nNt, NN = Nl * Nt, nNl1 = nNl - 1, nNt1 = nNt - 1;
-    const double normlim = min(Ll/double(nNl), Lt/double(nNt)) * 1e-9;
+    double normlim = min(Ll/double(nNl), Lt/double(nNt)) * 1e-9;
 
     #if defined(OPENMP_FOUND) // && !defined(NDEBUG)
         SOLVER->writelog(LOG_DETAIL, "Getting refractive indices for layer {}/{} (sampled at {}x{} points) in thread {}",
@@ -292,13 +311,15 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
         if (isnan(glam)) glam = lam;
     }
 
+    DataVector<Coeff>& coeffs = this->coeffs[layer];
+
     // Make space for the result
-    coeffs[layer].reset(nN);
-    std::fill_n(reinterpret_cast<char*>(coeffs[layer].data()), nN * sizeof(Coeff), 0);
+    coeffs.reset(nN);
+    std::fill_n(reinterpret_cast<char*>(coeffs.data()), nN * sizeof(Coeff), 0);
 
     // Normal cos² ans cos·sin for proper expansion rule
     if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW) {
-        gradients[layer].reset(nN, Gradient(NAN,NAN));
+        gradients[layer].reset(nN, Gradient(NAN, 0.));
     }
     size_t normnans = nN;
 
@@ -311,15 +332,34 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
 
     bool anisotropic = !(symmetric_long() || symmetric_tran()), nondiagonal = false;
 
+    // We store data for computing gradients
+    // TODO: is is possible to progressively store only neighbour cells and thus reduce the memory usage,
+    // but it is too hard for now
+    std::unique_ptr<double[]> vals_lock;
+    std::unique_ptr<TempMatrix> vals_temp_matrix;
+    double* vals;
+    size_t nMl = refl * nNl, nMt = reft * nNt;
+    if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW) {
+        if (nMl * nMt > 2 * matrixSize() * matrixSize()) {
+            vals_lock.reset(new double[nMl * nMt]);
+            vals = vals_lock.get();
+        } else {
+            vals_temp_matrix.reset(new TempMatrix(&temporary, matrixSize()));
+            vals = reinterpret_cast<double*>(vals_temp_matrix->data());
+        }
+    }
+
     for (size_t it = 0; it != nNt; ++it) {
         size_t tbegin = reft * it; size_t tend = tbegin + reft;
         double tran0 = 0.5 * (tran_mesh->at(tbegin) + tran_mesh->at(tend-1));
+
+        size_t cto = nNl * it;
 
         for (size_t il = 0; il != nNl; ++il) {
             size_t lbegin = refl * il; size_t lend = lbegin + refl;
             double long0 = 0.5 * (long_mesh->at(lbegin) + long_mesh->at(lend-1));
 
-            // Store epsilons for a single cell and compute surface normal
+            // Store epsilons for a single cell and compute surface normal (only for old rules)
             Vec<2> norm(0.,0.);
             for (size_t t = tbegin, j = 0; t != tend; ++t) {
                 for (size_t l = lbegin; l != lend; ++l, ++j) {
@@ -389,47 +429,41 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
                     }
 
                     norm += (real(cell[j].c00) + real(cell[j].c11)) * vec(long_mesh->at(l) - long0, tran_mesh->at(t) - tran0);
+
+                    if  (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW)
+                        vals[nMl * t + l] = abs(real(cell[j].c00)) + abs(real(cell[j].c11));
                 }
             }
 
             Tensor3<dcomplex> eps(0.);
-            Coeff& coeff = coeffs[layer][nNl * it + il];
+            Coeff& coeff = coeffs[cto + il];
+
+            // Compute avg(eps)
+            for (size_t t = tbegin, j = 0; t != tend; ++t) {
+                for (size_t l = lbegin; l != lend; ++l, ++j) {
+                    eps += cell[j];
+                }
+            }
+            eps *= nfact;
+            if (SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1 && eps.c22 != 0.) eps.c22 = 1./eps.c22;
 
             double a = abs(norm);
-            if (a < normlim) {
-                // Nothing to average
-                eps = cell[cell.size() / 2];
-                if (SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1 && eps.c22 != 0.) eps.c22 = 1./eps.c22;
-            } else {
+            if (a >= normlim && SOLVER->expansion_rule != FourierSolver3D::RULE_NEW) {
                 norm /= a;
 
-                // Compute avg(eps)
+                // Compute avg(eps**(-1))
+                Tensor3<dcomplex> ieps(0.);
                 for (size_t t = tbegin, j = 0; t != tend; ++t) {
                     for (size_t l = lbegin; l != lend; ++l, ++j) {
-                        eps += cell[j];
+                        ieps += cell[j].inv();
                     }
                 }
-                eps *= nfact;
-
-                if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW) {
-                    gradients[layer][Nl * it + il] = norm;
-                    --normnans;
-                } else {
-                    // Compute avg(eps**(-1))
-                    Tensor3<dcomplex> ieps(0.);
-                    for (size_t t = tbegin, j = 0; t != tend; ++t) {
-                        for (size_t l = lbegin; l != lend; ++l, ++j) {
-                            ieps += cell[j].inv();
-                        }
-                    }
-                    ieps *= nfact;
-                    // Average permittivity tensor according to:
-                    // [ S. G. Johnson and J. D. Joannopoulos, Opt. Express, vol. 8, pp. 173-190 (2001) ]
-                    Tensor3<double> P(norm.c0*norm.c0, norm.c1*norm.c1, 0., norm.c0*norm.c1);
-                    Tensor3<double> P1(1. - P.c00, 1. - P.c11, 1., -P.c01);
-                    eps = commutator(P, ieps.inv()) + commutator(P1, eps);
-                    if (SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1 && eps.c22 != 0.) eps.c22 = 1./eps.c22;
-                }
+                ieps *= nfact;
+                // Average permittivity tensor according to:
+                // [ S. G. Johnson and J. D. Joannopoulos, Opt. Express, vol. 8, pp. 173-190 (2001) ]
+                Tensor3<double> P(norm.c0*norm.c0, norm.c1*norm.c1, 0., norm.c0*norm.c1);
+                Tensor3<double> P1(1. - P.c00, 1. - P.c11, 1., -P.c01);
+                eps = commutator(P, ieps.inv()) + commutator(P1, eps);
             }
 
             if (!is_zero(eps.c00 - eps.c11)) anisotropic = true;
@@ -439,11 +473,86 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
         }
     }
 
+    // Compute surface normals using larger cell sizes
+    if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW) {
+        // First increase tollerance to avoid artifacts
+        double vmax = 0., vmin = std::numeric_limits<double>::max();
+        double* v = vals;
+        for (size_t i = 0, nM = nMl * nMt; i < nM; ++i, ++v) {
+            if (*v > vmax) vmax = *v;
+            if (*v < vmin) vmin = *v;
+        }
+        if (vmax != vmin) normlim *= 0.1 * (vmax - vmin);
+
+        bool nowrapl = !periodic_long || symmetric_long(), nowrapt = !periodic_tran || symmetric_tran();
+
+        for (size_t it = 0; it != nNt; ++it) {
+            std::ptrdiff_t tbegin, tend;
+            if (it == 0 && nowrapt) {
+                tbegin = 0;
+                tend = tbegin + reft;
+            } else if (it == nNt - 1 && nowrapt) {
+                tbegin = reft * it - reft / 2;
+                tend = nMt;
+            } else {
+                tbegin = reft * it - reft / 2;
+                tend = tbegin + 2 * reft;
+            }
+            double tran0 = 0.5 * (tran_mesh->at(tbegin) + tran_mesh->at(tend-1));
+
+            for (size_t il = 0; il != nNl; ++il) {
+                std::ptrdiff_t lbegin, lend;
+                if (il == 0 && nowrapl) {
+                    lbegin = 0;
+                    lend = lbegin + refl + refl / 2;
+                } else if (il == nNl - 1 && nowrapl) {
+                    lbegin = refl * il - refl / 2;
+                    lend = nMl;
+                } else {
+                    lbegin = refl * il - refl / 2;
+                    lend = lbegin + 2 * refl;
+                }
+                double long0 = 0.5 * (long_mesh->at(lbegin) + long_mesh->at(lend-1));
+
+                Vec<2> norm(0.,0.);
+                for (std::ptrdiff_t jt = tbegin; jt != tend; ++jt) {
+                    size_t t = (jt < 0)? jt + nMt :
+                               (jt >= nMt)? jt - nMt :
+                               jt;
+                    for (std::ptrdiff_t jl = lbegin; jl != lend; ++jl) {
+                        size_t l = (jl < 0)? jl + nMl :
+                                   (jl >= nMl)? jl - nMl :
+                                   jl;
+                        norm += vals[nMl * t + l] * vec(long_mesh->at(l) - long0, tran_mesh->at(t) - tran0);
+                    }
+                }
+
+                double a = abs(norm);
+                if (a >= normlim) {
+                    gradients[layer][nNl * it + il] = norm / a;
+                    --normnans;
+                }
+            }
+        }
+        vals_temp_matrix.reset();   // probably not really necessary
+    }
+
+    // int nn = 0;
+    // for (size_t il = 0; il < nNl; ++il) {
+    //     for (size_t it = 0; it < nNl; ++it) {
+    //         double val = gradients[layer][nNl * it + il].cs.real();
+    //         if (isnan(val)) nn++;
+    //         std::cerr << str(val, "{:4.1f} ");
+    //     }
+    //     std::cerr << "\n";
+    // }
+    // std::cerr << ":" << normnans << "/" << nn << "\n";
+
     // Check if the layer is uniform
     if (periodic_tran && periodic_long && !nondiagonal) {
         diagonals[layer] = true;
         for (size_t i = 1; i != nN; ++i) {
-            if (coeffs[layer][i].differs(coeffs[layer][0])) {
+            if (coeffs[i].differs(coeffs[0])) {
                 diagonals[layer] = false;
                 break;
             }
@@ -454,28 +563,28 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
 
     if (diagonals[layer]) {
         SOLVER->writelog(LOG_DETAIL, "Layer {0} is uniform", layer);
-        std::fill_n(reinterpret_cast<dcomplex*>(coeffs[layer].data() + 1), 6 * (coeffs[layer].size() - 1), 0.);
+        std::fill_n(reinterpret_cast<dcomplex*>(coeffs.data() + 1), 6 * (coeffs.size() - 1), 0.);
     } else {
-        // Perform FFT
+         // Perform FFT
         if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW) {
             if (anisotropic) {
-                matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[layer].data()), 5);
+                matFFT.execute(reinterpret_cast<dcomplex*>(coeffs.data()), 5);
             } else {
-                matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[layer].data()), 3);
+                matFFT.execute(reinterpret_cast<dcomplex*>(coeffs.data()), 3);
                 for (size_t i = 0; i != nN; ++i) {
-                    coeffs[layer][i].c11 = coeffs[layer][i].c00;
-                    coeffs[layer][i].ic11 = coeffs[layer][i].ic00;
+                    coeffs[i].c11 = coeffs[i].c00;
+                    coeffs[i].ic11 = coeffs[i].ic00;
                 }
             }
         } else {
-            matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[layer].data()), 2);
+            matFFT.execute(reinterpret_cast<dcomplex*>(coeffs.data()), 2);
             if (anisotropic) {
-                matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[layer].data()) + 3, 1);
+                matFFT.execute(reinterpret_cast<dcomplex*>(coeffs.data()) + 3, 1);
             } else {
-                for (size_t i = 0; i != nN; ++i) coeffs[layer][i].c11 = coeffs[layer][i].c00;
+                for (size_t i = 0; i != nN; ++i) coeffs[i].c11 = coeffs[i].c00;
             }
         }
-        if (nondiagonal) matFFT.execute(reinterpret_cast<dcomplex*>(coeffs[layer].data()) + 5, 1);
+        if (nondiagonal) matFFT.execute(reinterpret_cast<dcomplex*>(coeffs.data()) + 5, 1);
 
         // Smooth coefficients
         if (SOLVER->smooth) {
@@ -485,7 +594,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
                 int kt = int(it); if (!symmetric_tran() && kt > int(nNt/2)) kt -= int(nNt);
                 for (std::size_t il = 0; il != nNl; ++il) {
                     int kl = int(il); if (!symmetric_long() && kl > int(nNl/2)) kl -= int(nNl);
-                    coeffs[layer][nNl*it+il] *= exp(-SOLVER->smooth * (bb4l * kl*kl + bb4t * kt*kt));
+                    coeffs[nNl*it+il] *= exp(-SOLVER->smooth * (bb4l * kl*kl + bb4t * kt*kt));
                 }
             }
         }
@@ -494,8 +603,6 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
             TempMatrix tempMatrix = getTempMatrix();
             cmatrix work1(NN, NN, tempMatrix.data());
             cmatrix work2(NN, NN, tempMatrix.data() + NN*NN);
-            cmatrix work3(NN, NN, tempMatrix.data() + 2 * NN*NN);
-            cmatrix work4(NN, NN, tempMatrix.data() + 3 * NN*NN);
 
             int ordl = int(SOLVER->getLongSize()), ordt = int(SOLVER->getTranSize());
 
@@ -510,39 +617,72 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
             make_unit_matrix(coeffs_ezz[layer]);
             invmult(work1, coeffs_ezz[layer]);
 
-            if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW && !diagonals[layer]) {
+            if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW) {
                 bool need_correction = true;
 
                 // Fill gaps in cos² and cos·sin matrices
-                while (normnans) {
-                    size_t nnans = normnans;
-                    for (size_t t = 0, i = 0; t < nNt; ++t) {
-                        for (size_t l = 0; l < nNl; ++l, ++i) {
-                            if (gradients[layer][i].isnan()) {
-                                Gradient val(0.,0.);
-                                size_t n = 0;
-                                if (t != 0 && !gradients[layer][i-nNl].isnan()) { val += gradients[layer][i-nNl]; ++n; }
-                                if (l != 0 && !gradients[layer][i-1].isnan()) { val += gradients[layer][i-1]; ++n; }
-                                if (l != nNl1 && !gradients[layer][i+1].isnan()) { val += gradients[layer][i+1]; ++n; }
-                                if (t != nNt1 && !gradients[layer][i+nNl].isnan()) { val += gradients[layer][i+nNl]; ++n; }
-                                if (n != 0) {
-                                    gradients[layer][i] = val / n;
-                                    --nnans;
-                                }
-                            }
-                        }
-                    }
-                    if (nnans == normnans) {
-                        gradients[layer].fill(Gradient(0.,0.));
-                        need_correction = false;
-                        break;
-                    } else {
-                        normnans = nnans;
+                if (nN == normnans)
+                    throw ComputationError(SOLVER->getId(), "Cannot compute normals - consider changing expansion size");
+                std::vector<Gradient::Vertex> vertices;
+                vertices.reserve(nN - normnans);
+                size_t i = 0;
+                for (int t = 0; t < nNt; ++t) {
+                    for (int l = 0; l < nNl; ++l, ++i) {
+                        if (!gradients[layer][i].isnan())
+                            vertices.emplace_back(l, t, gradients[layer][i]);
                     }
                 }
+                i = 0;
+                for (int t = 0; t < nNt; ++t) {
+                    for (int l = 0; l < nNl; ++l, ++i) {
+                        if (gradients[layer][i].isnan()) {
+                            Gradient val(0., 0.);
+                            long double W = 0.;
+                            for (const Gradient::Vertex& v : vertices) {
+                                add_vertex(l, t, val, W, v);
+                                if (symmetric_long()) {
+                                    add_vertex(l, t, val, W, Gradient::Vertex(-v.l, v.t, v.val));
+                                    if (periodic_long)
+                                        add_vertex(l, t, val, W, Gradient::Vertex(2*nNl-v.l, v.t, v.val));
+                                } else if (periodic_long) {
+                                    add_vertex(l, t, val, W, Gradient::Vertex(v.l+nNl, v.t, v.val));
+                                    add_vertex(l, t, val, W, Gradient::Vertex(v.l-nNl, v.t, v.val));
+                                }
+                                if (symmetric_tran()) {
+                                    add_vertex(l, t, val, W, Gradient::Vertex(v.l, -v.t, v.val));
+                                    if (periodic_tran)
+                                        add_vertex(l, t, val, W, Gradient::Vertex(v.l, 2*nNt-v.t, v.val));
+                                } else if (periodic_tran) {
+                                    add_vertex(l, t, val, W, Gradient::Vertex(v.l, v.t+nNt, v.val));
+                                    add_vertex(l, t, val, W, Gradient::Vertex(v.l, v.t-nNt, v.val));
+                                }
+                            }
+                            gradients[layer][i] = val / W;
+                        }
+                    }
+                }
+                // for(auto& grad: gradients[layer]) {
+                //     double c2 = grad.c2.real();
+                //     if (c2 > 1) { grad.c2 = c2 = 1.; }  // just for safety
+                //     double cs = sqrt(c2 - c2*c2);
+                //     if (grad.cs.real() >= 0) grad.cs = cs;
+                //     else grad.cs = -cs;
+                // }
+
+                // int nn = 0;
+                // for (size_t il = 0; il < nNl; ++il) {
+                //     for (size_t it = 0; it < nNl; ++it) {
+                //         double val = gradients[layer][nNl * it + il].cs.real();
+                //         if (isnan(val)) nn++;
+                //         std::cerr << str(val, "{:4.1f} ");
+                //     }
+                //     std::cerr << "\n";
+                // }
+                // std::cerr << ":" << normnans << "/" << nn << " " << need_correction << "\n";
 
                 if (need_correction) {
-                    gradFFT.execute(reinterpret_cast<dcomplex*>(gradients[layer].data()));
+                    cos2FFT.execute(reinterpret_cast<dcomplex*>(gradients[layer].data()), 1);
+                    cssnFFT.execute(reinterpret_cast<dcomplex*>(gradients[layer].data()) + 1, 1);
 
                     // Smooth coefficients
                     if (SOLVER->grad_smooth) {
@@ -1232,13 +1372,16 @@ LazyData<double> ExpansionPW3D::getGradients(GradientFunctions::EnumType what,
     assert(dynamic_pointer_cast<const MeshD<3>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<3>>(level->mesh());
 
+    if (diagonals[lay]) return LazyData<double>(dest_mesh->size(), [](size_t i) { return 0.0; });
+
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
         return LazyData<double>(dest_mesh->size(), [this,lay,which,dest_mesh](size_t i) -> double {
-            double res;
+            double res = 0.;
             const int nt = symmetric_tran()? int(nNt)-1 : int(nNt/2),
                       nl = symmetric_long()? int(nNl)-1 : int(nNl/2);
             double Lt = right-left; if (symmetric_tran()) Lt *= 2;
             double Ll = front-back; if (symmetric_long()) Ll *= 2;
+            // double f = 1.;
             for (int kt = -nt; kt <= nt; ++kt) {
                 size_t t = (kt >= 0)? kt : (symmetric_tran())? -kt : kt + nNt;
                 const double phast = kt * (dest_mesh->at(i).c1-left) / Lt;
@@ -1248,20 +1391,22 @@ LazyData<double> ExpansionPW3D::getGradients(GradientFunctions::EnumType what,
                             exp(2*PI * I * (kl*(dest_mesh->at(i).c0-back) / Ll + phast))).real();
                 }
             }
+            if (which && (dest_mesh->at(i).c0 < 0) != (dest_mesh->at(i).c1 <0)) res = -res;
             return res;
         });
     } else {
         size_t nl = symmetric_long()? nNl : nNl+1, nt = symmetric_tran()? nNt : nNt+1;
-        auto dct_symmetry = SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1;
         DataVector<double> grads;
         {
             DataVector<dcomplex> work(nl * nt);
             for (size_t t = 0; t != nNt; ++t) {
                 size_t op = nl * t, oc = nNl * t;
                 for (size_t l = 0; l != nNl; ++l) {
-                    work[op+l] = *(reinterpret_cast<dcomplex*>((gradients[lay].data() + oc+l) + which));
+                    work[op+l] = *(reinterpret_cast<dcomplex*>((gradients[lay].data() + oc+l)) + which);
                 }
             }
+            auto dct_symmetry = SOLVER->dct2()? (which? FFT::SYMMETRY_ODD_2 : FFT::SYMMETRY_EVEN_2) :
+                                                (which? FFT::SYMMETRY_ODD_1 : FFT::SYMMETRY_EVEN_1);
             FFT::Backward2D(1, nNl, nNt,
                             symmetric_long()? dct_symmetry : FFT::SYMMETRY_NONE,
                             symmetric_tran()? dct_symmetry : FFT::SYMMETRY_NONE,
@@ -1297,10 +1442,14 @@ LazyData<double> ExpansionPW3D::getGradients(GradientFunctions::EnumType what,
         }
         auto src_mesh = plask::make_shared<RectangularMesh<3>>(lcmesh, tcmesh,
                             plask::make_shared<RegularAxis>(level->vpos(), level->vpos(), 1), RectangularMesh<3>::ORDER_210);
+
+        auto sym = (what == GradientFunctions::COS2)? InterpolationFlags::Symmetry::POSITIVE :
+                                                       InterpolationFlags::Symmetry::NEGATIVE;
+
         return interpolate(src_mesh, grads, dest_mesh, interp,
                            InterpolationFlags(SOLVER->getGeometry(),
-                                              symmetric_long()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
-                                              symmetric_tran()? InterpolationFlags::Symmetry::POSITIVE : InterpolationFlags::Symmetry::NO,
+                                              symmetric_long()? sym : InterpolationFlags::Symmetry::NO,
+                                              symmetric_tran()? sym : InterpolationFlags::Symmetry::NO,
                                               InterpolationFlags::Symmetry::POSITIVE)
                           );
     }
