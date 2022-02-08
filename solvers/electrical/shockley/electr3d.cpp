@@ -28,6 +28,12 @@ ElectricalFem3DSolver::ElectricalFem3DSolver(const std::string& name)
 
 ElectricalFem3DSolver::~ElectricalFem3DSolver() {}
 
+
+void ElectricalFem3DSolver::loadConfiguration(XMLReader &source, Manager &manager)
+{
+    while (source.requireTagOrEnd()) parseConfiguration(source, manager);
+}
+
 void ElectricalFem3DSolver::parseConfiguration(XMLReader& source, Manager& manager) {
     std::string param = source.getNodeName();
 
@@ -35,6 +41,8 @@ void ElectricalFem3DSolver::parseConfiguration(XMLReader& source, Manager& manag
         readBoundaryConditions(manager, source, voltage_boundary);
 
     else if (param == "loop") {
+        auto start_cond = source.getAttribute<double>("start-cond");
+        if (start_cond) this->setCondJunc(*start_cond);
         maxerr = source.getAttribute<double>("maxerr", maxerr);
         source.requireTagEnd();
     }
@@ -240,18 +248,17 @@ void ElectricalFem3DSolver::setMatrix(MatrixT& A,
                 size_t index = elem.getIndex(), lll = elem.getLoLoLoIndex(), uuu = elem.getUpUpUpIndex();
                 size_t back = maskedMesh->index0(lll), front = maskedMesh->index0(uuu), left = maskedMesh->index1(lll),
                        right = maskedMesh->index1(uuu);
-                const Active& act = active[nact-1];
-                double jy =     // [j] = 1e6 A/m²
-                    0.25 * conds[index].c11 *
-                    abs(-potential[maskedMesh->index(back, left, act.bottom)] -
-                        potential[maskedMesh->index(front, left, act.bottom)] -
-                        potential[maskedMesh->index(back, right, act.bottom)] -
-                        potential[maskedMesh->index(front, right, act.bottom)] + potential[maskedMesh->index(back, left, act.top)] +
-                        potential[maskedMesh->index(front, left, act.top)] + potential[maskedMesh->index(back, right, act.top)] +
-                        potential[maskedMesh->index(front, right, act.top)]) /
-                    act.height;
+                const Active& act = active[nact - 1];
+                double U =
+                    0.25 *
+                    (-potential[maskedMesh->index(back, left, act.bottom)] - potential[maskedMesh->index(front, left, act.bottom)] -
+                     potential[maskedMesh->index(back, right, act.bottom)] -
+                     potential[maskedMesh->index(front, right, act.bottom)] + potential[maskedMesh->index(back, left, act.top)] +
+                     potential[maskedMesh->index(front, left, act.top)] + potential[maskedMesh->index(back, right, act.top)] +
+                     potential[maskedMesh->index(front, right, act.top)]);
+                double jy = 0.1 * conds[index].c11 * U / act.height;   // [j] = kA/cm²
                 size_t tidx = this->maskedMesh->element(elem.getIndex0(), elem.getIndex1(), (act.top + act.bottom) / 2).getIndex();
-                conds[index] = Tensor2<double>(0., jy * act.height / activeVoltage(nact-1, 0.1 * jy, temperature[tidx]));
+                conds[index] = activeCond(nact - 1, U, jy, temperature[tidx]);
                 if (isnan(conds[index].c11) || abs(conds[index].c11) < 1e-16) {
                     conds[index].c11 = 1e-16;
                 }

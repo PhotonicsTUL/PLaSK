@@ -74,12 +74,13 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public SolverWithMesh<Geometry2D
                                double width,
                                const Vec<2, double>& midpoint);
 
-    /** Compute voltage drop of the active region
+    /** Compute conductivity int the the active region
      *  \param n active region number
+     *  \param U junction voltage [V]
      *  \param jy vertical current [kA/cm²]
      *  \param T temperature [K]
      */
-    virtual double activeVoltage(size_t n, double jy, double T) = 0;
+    virtual Tensor2<double> activeCond(size_t n, double U, double jy,double T) = 0;
 
     /** Load conductivities
      *  \return current temperature
@@ -278,6 +279,8 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public SolverWithMesh<Geometry2D
         use_full_mesh = val;
         setActiveRegions();
     }
+
+    void loadConfiguration(XMLReader& source, Manager& manager) override;
 
     void parseConfiguration(XMLReader& source, Manager& manager);
 

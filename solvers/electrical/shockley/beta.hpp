@@ -23,11 +23,13 @@ struct PLASK_SOLVER_API BetaSolver : public std::conditional<std::is_same<Geomet
 
     /** Compute voltage drop of the active region
      *  \param n active region number
+     *  \param U junction voltage
      *  \param jy vertical current [kA/cm²]
      *  \param T temperature [K]
      */
-    double activeVoltage(size_t n, double jy, double PLASK_UNUSED(T)) override {
-        return log(1e7 * jy / getJs(n) + 1.) / getBeta(n);
+    Tensor2<double> activeCond(size_t n, double PLASK_UNUSED(U), double jy, double PLASK_UNUSED(T)) override {
+        jy = abs(jy);
+        return Tensor2<double>(0., 10. * jy * this->active[n].height * getBeta(n) / log(1e7 * jy / getJs(n) + 1.));
     }
 
   public:
@@ -61,8 +63,7 @@ struct PLASK_SOLVER_API BetaSolver : public std::conditional<std::is_same<Geomet
         this->invalidate();
     }
 
-    void loadConfiguration(XMLReader& source,
-                           Manager& manager) override;  // for solver configuration (see: *.xpl file with structures)
+    void loadConfiguration(XMLReader& source, Manager& manager) override;
 
     BetaSolver(const std::string& name = "");
 

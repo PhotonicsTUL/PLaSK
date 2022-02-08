@@ -18,7 +18,10 @@ void BetaSolver<Geometry2DType>::loadConfiguration(XMLReader &source, Manager &m
             js[0] = source.getAttribute<double>("js", js[0]);
             beta[0] = source.getAttribute<double>("beta", beta[0]);
             auto condjunc = source.getAttribute<double>("pnjcond");
-            if (condjunc) this->setCondJunc(*condjunc);
+            if (condjunc) {
+                this->writelog(LOG_WARNING, "'pnjcond' attribute is obselete; use <loop start-cond=>");
+                this->setCondJunc(*condjunc);
+            }
             // if (source.hasAttribute("wavelength") || source.hasAttribute("heat"))
             //     throw XMLException(reader, "Heat computation by wavelegth is no onger supporte");
             for (auto attr: source.getAttributes()) {

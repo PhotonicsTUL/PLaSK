@@ -91,12 +91,13 @@ struct Shockley: BetaSolver<GeometryT> {
         }
     }
 
-    double activeVoltage(size_t n, double jy, double T) override {
+    Tensor2<double> activeCond(size_t n, double U, double jy, double T) override {
         double beta = (n < beta_function.size() && !beta_function[n].is_none()) ? py::extract<double>(beta_function[n](T))
                                                                                 : BetaSolver<GeometryT>::getBeta(n);
         double js = (n < js_function.size() && !js_function[n].is_none()) ? py::extract<double>(js_function[n](T))
                                                                           : BetaSolver<GeometryT>::getJs(n);
-        return log(1e7 * jy / js + 1.) / beta;
+        jy = abs(jy);
+        return Tensor2<double>(0., 10. * jy * beta * this->active[n].height / log(1e7 * jy / js + 1.));
     }
 };
 
@@ -155,14 +156,17 @@ struct PythonCondSolver : public std::conditional<std::is_same<GeometryT, Geomet
 
     /** Compute voltage drop of the active region
      *  \param n active region number
+     *  \param U junction voltage [V]
      *  \param jy vertical current [kA/cm²]
      *  \param T temperature [K]
      */
-    double activeVoltage(size_t n, double jy, double T) override {
+    Tensor2<double> activeCond(size_t n, double U, double jy, double T) override {
         if (n >= this->active.size() || n >= cond_function.size() || cond_function[n].is_none())
             throw IndexError("No conductivity for active region {}", n);
-        double cond = py::extract<double>(cond_function[n](jy, T));
-        return 10. * jy * this->active[n].height / cond;
+        py::object cond = cond_function[n](U, jy, T);
+        py::extract<double> double_cond(cond);
+        if (double_cond.check()) return Tensor2<double>(0., double_cond());
+        return py::extract<Tensor2<double>>(cond);
     }
 
     std::string getClassName() const override;
@@ -196,11 +200,12 @@ template <typename __Class__> inline static ExportSolver<__Class__> register_ele
     RW_PROPERTY(include_empty, usingFullMesh, useFullMesh, "Should empty regions (e.g. air) be included into computation domain?");
     RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, u8"Conductivity of the p-contact");
     RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, u8"Conductivity of the n-contact");
-    solver.add_property("pnjcond", &__Class__::getCondJunc, (void (__Class__::*)(double)) & __Class__::setCondJunc,
-                        u8"Default effective conductivity of the p-n junction.\n\n"
+    solver.add_property("start_cond", &__Class__::getCondJunc, (void (__Class__::*)(double)) & __Class__::setCondJunc,
+                        u8"Default effective conductivity of the active region.\n\n"
                         u8"Effective junction conductivity will be computed starting from this value.\n"
                         u8"Note that the actual junction conductivity after convergence can be obtained\n"
                         u8"with :attr:`outConductivity`.");
+    solver.attr("pnjcond") = solver.attr("start_cond");
     solver.add_property("outPotential", outPotential, u8"Not available in this solver. Use :attr:`outVoltage` instead.");
     RW_FIELD(itererr, u8"Allowed residual iteration for iterative method");
     RW_FIELD(iterlim, u8"Maximum number of iterations for iterative method");

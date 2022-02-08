@@ -24,6 +24,13 @@ ElectricalFem2DSolver<Geometry2DType>::ElectricalFem2DSolver(const std::string& 
     junction_conductivity.reset(1, default_junction_conductivity);
 }
 
+
+template<typename Geometry2DType>
+void ElectricalFem2DSolver<Geometry2DType>::loadConfiguration(XMLReader &source, Manager &manager)
+{
+    while (source.requireTagOrEnd()) parseConfiguration(source, manager);
+}
+
 template <typename Geometry2DType>
 void ElectricalFem2DSolver<Geometry2DType>::parseConfiguration(XMLReader& source, Manager& manager) {
     std::string param = source.getNodeName();
@@ -35,6 +42,8 @@ void ElectricalFem2DSolver<Geometry2DType>::parseConfiguration(XMLReader& source
 
     else if (param == "loop") {
         maxerr = source.getAttribute<double>("maxerr", maxerr);
+        auto start_cond = source.getAttribute<double>("start-cond");
+        if (start_cond) this->setCondJunc(*start_cond);
         source.requireTagEnd();
     }
 
@@ -292,14 +301,13 @@ void ElectricalFem2DSolver<Geometry2DType>::setMatrix(
                 size_t left = this->maskedMesh->index0(e.getLoLoIndex());
                 size_t right = this->maskedMesh->index0(e.getUpLoIndex());
                 const Active& act = active[nact - 1];
-                double jy =     // [j] = 1e6 * A/m²
-                    0.5 * conds[i].c11 *
-                    abs(-potentials[this->maskedMesh->index(left, act.bottom)] -
-                        potentials[this->maskedMesh->index(right, act.bottom)] +
-                        potentials[this->maskedMesh->index(left, act.top)] + potentials[this->maskedMesh->index(right, act.top)]) /
-                    act.height;
+                double U =
+                    0.5 *
+                    (potentials[this->maskedMesh->index(left, act.top)] - potentials[this->maskedMesh->index(left, act.bottom)] +
+                     potentials[this->maskedMesh->index(right, act.top)] - potentials[this->maskedMesh->index(right, act.bottom)]);
+                double jy = 0.1 * conds[i].c11 * U / act.height;   // [j] = kA/cm²
                 size_t ti = this->maskedMesh->element(e.getIndex0(), (act.top + act.bottom) / 2).getIndex();
-                conds[i] = Tensor2<double>(0., jy * act.height / activeVoltage(nact - 1, 0.1 * jy, temperature[ti]));
+                conds[i] = activeCond(nact - 1, U, jy, temperature[ti]);
                 if (isnan(conds[i].c11) || abs(conds[i].c11) < 1e-16) conds[i].c11 = 1e-16;
             }
         }

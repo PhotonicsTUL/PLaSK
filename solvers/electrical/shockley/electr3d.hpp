@@ -97,12 +97,13 @@ struct PLASK_SOLVER_API ElectricalFem3DSolver : public SolverWithMesh<Geometry3D
                  DataVector<double>& B,
                  const BoundaryConditionsWithMesh<RectangularMesh<3>::Boundary, double>& bvoltage);
 
-    /** Compute voltage drop of the active region
+    /** Compute conductivity int the active region
      *  \param n active region number
+     *  \param U junction voltage [V]
      *  \param jy vertical current [kA/cm²]
      *  \param T temperature [K]
      */
-    virtual double activeVoltage(size_t n, double jy, double T) = 0;
+    virtual Tensor2<double> activeCond(size_t n, double U, double jy, double T) = 0;
 
     /** Load conductivities
      *  \return current temperature
@@ -206,6 +207,8 @@ struct PLASK_SOLVER_API ElectricalFem3DSolver : public SolverWithMesh<Geometry3D
     ReceiverFor<Temperature, Geometry3D> inTemperature;
 
     ElectricalFem3DSolver(const std::string& name = "");
+
+    void loadConfiguration(XMLReader& source, Manager& manager) override;
 
     void parseConfiguration(XMLReader& source, Manager& manager);
 

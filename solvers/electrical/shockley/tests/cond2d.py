@@ -34,7 +34,7 @@ class Cond2D_Test(unittest.TestCase):
         generator = mesh.Rectangular2D.DivideGenerator()
         generator.prediv = 2,1
         self.solver.mesh = generator
-        self.solver.cond = lambda j, T: 0.05 + j
+        self.solver.cond = lambda U, j, T: 0.05 + abs(j)
         self.solver.maxerr = 1e-5
         self.solver.voltage_boundary.append(self.solver.mesh.Top(), 0.)
         self.solver.voltage_boundary.append(self.solver.mesh.Bottom(), 1.)

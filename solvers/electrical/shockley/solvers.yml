@@ -42,6 +42,12 @@
       unit: '%'
       default: 0.05
       help: Maximum allowed current density error.
+    - attr: start-cond
+      label: Initial conductivity of active regions
+      type: float
+      unit: S/m
+      default: 5.0
+      help: Initial vertical conductivity of all active regions.
   - &matrix
     tag: matrix
     label: Matrix Solver
@@ -86,12 +92,6 @@
       type: float
       unit: A/m<sup>2</sup>
       help: Reverse bias current densities.
-    - attr: pnjcond
-      label: Initial junctions conductivity
-      type: float
-      unit: S/m
-      default: 5.0
-      help: Initial vertical conductivity of the junctions.
   - &contacts
     tag: contacts
     label: Properties of the Contacts
@@ -173,7 +173,13 @@
   category: electrical
   help: >
     Two-dimensional phenomenological solver in Cartesian geometry based on custom active region conductivity
-    and using finite-element method.
+    and using finite-element method. To use this solver, you must create a Python function taking the juction voltage,
+    current density and temperature as asguments and returning junction conductivity. The returned value must be either
+    a dwo-dimensional tensor or a single value, in which case the conductivity is assumend to be zero in lateral direction.
+    Next, you must assign this function to the `cond` (or `cond0`, `cond1` etc. for multiple active regions) of the solver.
+
+    Example:
+        >>> solver.cond = lambda U, jy, T: 5.0
   geometry: Cylindrical
   tags:
   - *mesh
@@ -189,7 +195,13 @@
   category: electrical
   help: >
     Two-dimensional phenomenological solver in cylindrical geometry based on custom active region conductivity
-    and using finite-element method.
+    and using finite-element method. To use this solver, you must create a Python function taking the juction voltage,
+    current density and temperature as asguments and returning junction conductivity. The returned value must be either
+    a dwo-dimensional tensor or a single value, in which case the conductivity is assumend to be zero in lateral direction.
+    Next, you must assign this function to the `cond` (or `cond0`, `cond1` etc. for multiple active regions) of the solver.
+
+    Example:
+        >>> solver.cond = lambda U, jz, T: 5.0
   geometry: Cylindrical
   tags:
   - *mesh
@@ -205,7 +217,13 @@
   category: electrical
   help: >
     Three-dimensional phenomenological solver in Cartesian geometry based on custom active region conductivity
-    and using finite-element method.
+    and using finite-element method. To use this solver, you must create a Python function taking the juction voltage,
+    current density and temperature as asguments and returning junction conductivity. The returned value must be either
+    a dwo-dimensional tensor or a single value, in which case the conductivity is assumend to be zero in lateral direction.
+    Next, you must assign this function to the `cond` (or `cond0`, `cond1` etc. for multiple active regions) of the solver.
+
+    Example:
+        >>> solver.cond = lambda U, jz, T: 5.0
   geometry: Cartesian3D
   tags:
   - tag: mesh
