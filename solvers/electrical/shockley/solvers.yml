@@ -42,12 +42,20 @@
       unit: '%'
       default: 0.05
       help: Maximum allowed current density error.
-    - attr: start-cond
-      label: Initial conductivity of active regions
-      type: float
-      unit: S/m
-      default: 5.0
-      help: Initial vertical conductivity of all active regions.
+    - group: Initial active conductivity
+      attrs:
+      - attr: start-cond
+        label: Vertical
+        type: float
+        unit: S/m
+        default: 5.0
+        help: Initial vertical conductivity of all active regions.
+      - attr: start-cond-inplane
+        label: In-plane
+        type: float
+        unit: S/m
+        default: 0.0
+        help: Initial in-plane conductivity of all active regions.
   - &matrix
     tag: matrix
     label: Matrix Solver

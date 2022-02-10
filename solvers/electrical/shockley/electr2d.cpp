@@ -8,7 +8,7 @@ ElectricalFem2DSolver<Geometry2DType>::ElectricalFem2DSolver(const std::string& 
       pcond(5.),
       ncond(50.),
       loopno(0),
-      default_junction_conductivity(5.),
+      default_junction_conductivity(Tensor2<double>(0., 5.)),
       use_full_mesh(false),
       maxerr(0.05),
       outVoltage(this, &ElectricalFem2DSolver<Geometry2DType>::getVoltage),
@@ -24,10 +24,8 @@ ElectricalFem2DSolver<Geometry2DType>::ElectricalFem2DSolver(const std::string& 
     junction_conductivity.reset(1, default_junction_conductivity);
 }
 
-
-template<typename Geometry2DType>
-void ElectricalFem2DSolver<Geometry2DType>::loadConfiguration(XMLReader &source, Manager &manager)
-{
+template <typename Geometry2DType>
+void ElectricalFem2DSolver<Geometry2DType>::loadConfiguration(XMLReader& source, Manager& manager) {
     while (source.requireTagOrEnd()) parseConfiguration(source, manager);
 }
 
@@ -41,9 +39,25 @@ void ElectricalFem2DSolver<Geometry2DType>::parseConfiguration(XMLReader& source
         this->readBoundaryConditions(manager, source, voltage_boundary);
 
     else if (param == "loop") {
+        if (source.hasAttribute("start-cond") || source.hasAttribute("start-cond-inplane")) {
+            double c0 = default_junction_conductivity.c00, c1 = default_junction_conductivity.c11;
+            auto vert = source.getAttribute<std::string>("start-cond");
+            if (vert) {
+                if (vert->find(',') == std::string::npos) {
+                    c1 = boost::lexical_cast<double>(*vert);
+                } else {
+                    if (source.hasAttribute("start-cond-inplane"))
+                        throw XMLException(
+                            source, "tag attribute 'start-cond' has two values, but attribute 'start-cond-vert' is also provided");
+                    auto values = splitString2(*vert, ',');
+                    c0 = boost::lexical_cast<double>(values.first);
+                    c1 = boost::lexical_cast<double>(values.second);
+                }
+            }
+            c0 = source.getAttribute<double>("start-cond-inplane", c0);
+            this->setCondJunc(Tensor2<double>(c0, c1));
+        }
         maxerr = source.getAttribute<double>("maxerr", maxerr);
-        auto start_cond = source.getAttribute<double>("start-cond");
-        if (start_cond) this->setCondJunc(*start_cond);
         source.requireTagEnd();
     }
 
@@ -80,7 +94,7 @@ template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::s
 
     if (!this->geometry || !this->mesh) {
         if (junction_conductivity.size() != 1) {
-            double condy = 0.;
+            Tensor2<double> condy(0., 0.);
             for (auto cond : junction_conductivity) condy += cond;
             junction_conductivity.reset(1, condy / double(junction_conductivity.size()));
         }
@@ -153,7 +167,7 @@ template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::s
     }
 
     if (junction_conductivity.size() != condsize) {
-        double condy = 0.;
+        Tensor2<double> condy(0., 0.);
         for (auto cond : junction_conductivity) condy += cond;
         junction_conductivity.reset(max(condsize, size_t(1)), condy / double(junction_conductivity.size()));
     }
@@ -305,7 +319,7 @@ void ElectricalFem2DSolver<Geometry2DType>::setMatrix(
                     0.5 *
                     (potentials[this->maskedMesh->index(left, act.top)] - potentials[this->maskedMesh->index(left, act.bottom)] +
                      potentials[this->maskedMesh->index(right, act.top)] - potentials[this->maskedMesh->index(right, act.bottom)]);
-                double jy = 0.1 * conds[i].c11 * U / act.height;   // [j] = kA/cm²
+                double jy = 0.1 * conds[i].c11 * U / act.height;  // [j] = kA/cm²
                 size_t ti = this->maskedMesh->element(e.getIndex0(), (act.top + act.bottom) / 2).getIndex();
                 conds[i] = activeCond(nact - 1, U, jy, temperature[ti]);
                 if (isnan(conds[i].c11) || abs(conds[i].c11) < 1e-16) conds[i].c11 = 1e-16;
@@ -388,7 +402,7 @@ template <typename Geometry2DType> LazyData<double> ElectricalFem2DSolver<Geomet
         auto roles = this->geometry->getRolesAt(midpoint);
         if (size_t actn = isActive(midpoint)) {
             const auto& act = active[actn - 1];
-            conds[i] = Tensor2<double>(0., junction_conductivity[act.offset + e.getIndex0()]);
+            conds[i] = junction_conductivity[act.offset + e.getIndex0()];
             if (isnan(conds[i].c11) || abs(conds[i].c11) < 1e-16) conds[i].c11 = 1e-16;
         } else if (roles.find("p-contact") != roles.end()) {
             conds[i] = Tensor2<double>(pcond, pcond);
@@ -405,7 +419,7 @@ template <typename Geometry2DType> void ElectricalFem2DSolver<Geometry2DType>::s
     for (size_t n = 0; n < active.size(); ++n) {
         const auto& act = active[n];
         for (size_t i = act.left, r = (act.top + act.bottom) / 2; i != act.right; ++i)
-            junction_conductivity[act.offset + i] = conds[this->maskedMesh->element(i, r).getIndex()].c11;
+            junction_conductivity[act.offset + i] = conds[this->maskedMesh->element(i, r).getIndex()];
     }
 }
 

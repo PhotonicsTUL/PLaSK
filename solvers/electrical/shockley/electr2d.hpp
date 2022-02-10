@@ -32,7 +32,7 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public SolverWithMesh<Geometry2D
         size_t left, right, bottom, top;
         ptrdiff_t offset;
         double height;
-        Active() {}
+        Active() : left(0), right(0), bottom(0), top(0), offset(0), height(0.) {}
         Active(size_t tot, size_t l, size_t r, size_t b, size_t t, double h)
             : left(l), right(r), bottom(b), top(t), offset(tot - l), height(h) {}
     };
@@ -47,8 +47,8 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public SolverWithMesh<Geometry2D
                     ///< script)
     Vec<2, double> maxcur;  ///< Maximum current in the structure
 
-    DataVector<double> junction_conductivity;  ///< electrical conductivity for p-n junction in y-direction [S/m]
-    double default_junction_conductivity;      ///< default electrical conductivity for p-n junction in y-direction [S/m]
+    DataVector<Tensor2<double>> junction_conductivity;  ///< electrical conductivity for p-n junction in y-direction [S/m]
+    Tensor2<double> default_junction_conductivity;      ///< default electrical conductivity for p-n junction in y-direction [S/m]
 
     DataVector<Tensor2<double>> conds;    ///< Cached element conductivities
     DataVector<double> potentials;        ///< Computed potentials
@@ -80,7 +80,7 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public SolverWithMesh<Geometry2D
      *  \param jy vertical current [kA/cm²]
      *  \param T temperature [K]
      */
-    virtual Tensor2<double> activeCond(size_t n, double U, double jy,double T) = 0;
+    virtual Tensor2<double> activeCond(size_t n, double U, double jy, double T) = 0;
 
     /** Load conductivities
      *  \return current temperature
@@ -255,17 +255,21 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public SolverWithMesh<Geometry2D
         this->invalidate();
     }
 
-    /// Get default juction conductivity [S/m]
-    double getCondJunc() const { return junction_conductivity; }
-    /// Set default juction conductivity [S/m]
+    /// Get data with junction effective conductivity
+    DataVector<const Tensor2<double>> getCondJunc() const { return junction_conductivity; }
+    /// Set junction effective conductivity to the single value
     void setCondJunc(double cond) {
+        junction_conductivity.reset(max(junction_conductivity.size(), size_t(1)), cond);
+        default_junction_conductivity = Tensor2<double>(0., cond);
+    }
+    /// Set junction effective conductivity to the single value
+    void setCondJunc(Tensor2<double> cond) {
         junction_conductivity.reset(max(junction_conductivity.size(), size_t(1)), cond);
         default_junction_conductivity = cond;
     }
-    /// Set default juction conductivity [S/m]
-    void setCondJunc(const DataVector<const double>& cond) {
+    /// Set junction effective conductivity to previously read data
+    void setCondJunc(const DataVector<Tensor2<double>>& cond) {
         size_t condsize = 0;
-        for (const auto& act : active) condsize += act.right - act.left;
         condsize = max(condsize, size_t(1));
         if (!this->mesh || cond.size() != condsize)
             throw BadInput(this->getId(), "Provided junction conductivity vector has wrong size");

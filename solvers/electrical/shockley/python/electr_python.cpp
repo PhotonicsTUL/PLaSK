@@ -14,12 +14,10 @@ static py::object outPotential(const py::object& self) {
     return py::object();
 }
 
-template <typename GeometryT>
-struct Shockley: BetaSolver<GeometryT> {
-
+template <typename GeometryT> struct Shockley : BetaSolver<GeometryT> {
     std::vector<py::object> beta_function, js_function;
 
-    Shockley(const std::string& id=""): BetaSolver<GeometryT>(id) {}
+    Shockley(const std::string& id = "") : BetaSolver<GeometryT>(id) {}
 
     py::object getBeta0() const { return getBeta(0); }
     void setBeta0(const py::object& value) { setBeta(0, value); }
@@ -32,14 +30,12 @@ struct Shockley: BetaSolver<GeometryT> {
             if (attr.substr(0, 4) == "beta") return py::object(getBeta(boost::lexical_cast<size_t>(attr.substr(4))));
             if (attr.substr(0, 2) == "js") return py::object(getJs(boost::lexical_cast<size_t>(attr.substr(2))));
         } catch (boost::bad_lexical_cast&) {
-            throw AttributeError(u8"{0} object has no attribute '{1}'", this->getClassName(), attr);
         }
-        return py::object();
+        throw AttributeError(u8"'{0}' object has no attribute '{1}'", this->getClassName(), attr);
     }
 
     static void __setattr__(const py::object& oself, const std::string& attr, const py::object& value) {
         Shockley<GeometryT>& self = py::extract<Shockley<GeometryT>&>(oself);
-
         try {
             if (attr.substr(0, 4) == "beta") {
                 self.setBeta(boost::lexical_cast<size_t>(attr.substr(4)), value);
@@ -51,7 +47,6 @@ struct Shockley: BetaSolver<GeometryT> {
             }
         } catch (boost::bad_lexical_cast&) {
         }
-
         oself.attr("__class__").attr("__base__").attr("__setattr__")(oself, attr, value);
     }
 
@@ -103,15 +98,15 @@ struct Shockley: BetaSolver<GeometryT> {
 
 template <typename GeometryT>
 struct PythonCondSolver : public std::conditional<std::is_same<GeometryT, Geometry3D>::value,
-                                                        ElectricalFem3DSolver,
-                                                        ElectricalFem2DSolver<GeometryT>>::type {
+                                                  ElectricalFem3DSolver,
+                                                  ElectricalFem2DSolver<GeometryT>>::type {
     typedef typename std::conditional<std::is_same<GeometryT, Geometry3D>::value,
                                       ElectricalFem3DSolver,
                                       ElectricalFem2DSolver<GeometryT>>::type BaseClass;
 
     std::vector<py::object> cond_function;
 
-    PythonCondSolver(const std::string& id=""): BaseClass(id) {}
+    PythonCondSolver(const std::string& id = "") : BaseClass(id) {}
 
     py::object getCond0() const { return getCond(0); }
     void setCond0(const py::object& value) { setCond(0, value); }
@@ -135,9 +130,8 @@ struct PythonCondSolver : public std::conditional<std::is_same<GeometryT, Geomet
         try {
             if (attr.substr(0, 4) == "cond") return py::object(getCond(boost::lexical_cast<size_t>(attr.substr(4))));
         } catch (boost::bad_lexical_cast&) {
-            throw AttributeError(u8"{0} object has no attribute '{1}'", this->getClassName(), attr);
         }
-        return py::object();
+        throw AttributeError(u8"'{0}' object has no attribute '{1}'", this->getClassName(), attr);
     }
 
     static void __setattr__(const py::object& oself, const std::string& attr, const py::object& value) {
@@ -172,18 +166,24 @@ struct PythonCondSolver : public std::conditional<std::is_same<GeometryT, Geomet
     std::string getClassName() const override;
 };
 
-template<> std::string PythonCondSolver<Geometry2DCartesian>::getClassName() const { return "electrical.ActiveCond2D"; }
-template<> std::string PythonCondSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.ActiveCondCyl"; }
-template<> std::string PythonCondSolver<Geometry3D>::getClassName() const { return "electrical.ActiveCond3D"; }
+template <typename Class> void setCondJunc(Class& self, const py::object& value) {
+    py::extract<double> double_cond(value);
+    if (double_cond.check())
+        self.setCondJunc(double_cond());
+    else
+        self.setCondJunc(py::extract<Tensor2<double>>(value)());
+}
 
+template <> std::string PythonCondSolver<Geometry2DCartesian>::getClassName() const { return "electrical.ActiveCond2D"; }
+template <> std::string PythonCondSolver<Geometry2DCylindrical>::getClassName() const { return "electrical.ActiveCondCyl"; }
+template <> std::string PythonCondSolver<Geometry3D>::getClassName() const { return "electrical.ActiveCond3D"; }
 
-
-template <typename __Class__> inline static ExportSolver<__Class__> register_electrical_solver(const char* name, const char* geoname) {
+template <typename __Class__>
+inline static ExportSolver<__Class__> register_electrical_solver(const char* name, const char* geoname) {
     ExportSolver<__Class__> solver(name,
-                                   format(
-                                       u8"{0}(name=\"\")\n\n"
-                                       u8"Finite element thermal solver for {1} geometry.",
-                                       name, geoname)
+                                   format(u8"{0}(name=\"\")\n\n"
+                                          u8"Finite element thermal solver for {1} geometry.",
+                                          name, geoname)
                                        .c_str(),
                                    py::init<std::string>(py::arg("name") = ""));
     METHOD(compute, compute, u8"Run electrical calculations", py::arg("loops") = 0);
@@ -200,7 +200,7 @@ template <typename __Class__> inline static ExportSolver<__Class__> register_ele
     RW_PROPERTY(include_empty, usingFullMesh, useFullMesh, "Should empty regions (e.g. air) be included into computation domain?");
     RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, u8"Conductivity of the p-contact");
     RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, u8"Conductivity of the n-contact");
-    solver.add_property("start_cond", &__Class__::getCondJunc, (void (__Class__::*)(double)) & __Class__::setCondJunc,
+    solver.add_property("start_cond", &__Class__::getCondJunc, &setCondJunc<__Class__>,
                         u8"Default effective conductivity of the active region.\n\n"
                         u8"Effective junction conductivity will be computed starting from this value.\n"
                         u8"Note that the actual junction conductivity after convergence can be obtained\n"

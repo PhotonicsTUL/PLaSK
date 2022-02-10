@@ -9,7 +9,7 @@ ElectricalFem3DSolver::ElectricalFem3DSolver(const std::string& name)
       pcond(5.),
       ncond(50.),
       loopno(0),
-      default_junction_conductivity(5.),
+      default_junction_conductivity(Tensor2<double>(0., 5.)),
       use_full_mesh(false),
       algorithm(ALGORITHM_CHOLESKY),
       maxerr(0.05),
@@ -28,9 +28,7 @@ ElectricalFem3DSolver::ElectricalFem3DSolver(const std::string& name)
 
 ElectricalFem3DSolver::~ElectricalFem3DSolver() {}
 
-
-void ElectricalFem3DSolver::loadConfiguration(XMLReader &source, Manager &manager)
-{
+void ElectricalFem3DSolver::loadConfiguration(XMLReader& source, Manager& manager) {
     while (source.requireTagOrEnd()) parseConfiguration(source, manager);
 }
 
@@ -41,8 +39,24 @@ void ElectricalFem3DSolver::parseConfiguration(XMLReader& source, Manager& manag
         readBoundaryConditions(manager, source, voltage_boundary);
 
     else if (param == "loop") {
-        auto start_cond = source.getAttribute<double>("start-cond");
-        if (start_cond) this->setCondJunc(*start_cond);
+        if (source.hasAttribute("start-cond") || source.hasAttribute("start-cond-inplane")) {
+            double c0 = default_junction_conductivity.c00, c1 = default_junction_conductivity.c11;
+            auto vert = source.getAttribute<std::string>("start-cond");
+            if (vert) {
+                if (vert->find(',') == std::string::npos) {
+                    c1 = boost::lexical_cast<double>(*vert);
+                } else {
+                    if (source.hasAttribute("start-cond-inplane"))
+                        throw XMLException(
+                            source, "tag attribute 'start-cond' has two values, but attribute 'start-cond-vert' is also provided");
+                    auto values = splitString2(*vert, ',');
+                    c0 = boost::lexical_cast<double>(values.first);
+                    c1 = boost::lexical_cast<double>(values.second);
+                }
+            }
+            c0 = source.getAttribute<double>("start-cond-inplane", c0);
+            this->setCondJunc(Tensor2<double>(c0, c1));
+        }
         maxerr = source.getAttribute<double>("maxerr", maxerr);
         source.requireTagEnd();
     }
@@ -78,7 +92,7 @@ void ElectricalFem3DSolver::setActiveRegions() {
 
     if (!geometry || !mesh) {
         if (junction_conductivity.size() != 1) {
-            double condy = 0.;
+            Tensor2<double> condy(0., 0.);
             for (auto cond : junction_conductivity) condy += cond;
             junction_conductivity.reset(1, condy / double(junction_conductivity.size()));
         }
@@ -168,7 +182,7 @@ void ElectricalFem3DSolver::setActiveRegions() {
     }
 
     if (junction_conductivity.size() != condsize) {
-        double condy = 0.;
+        Tensor2<double> condy(0., 0.);
         for (auto cond : junction_conductivity) condy += cond;
         junction_conductivity.reset(condsize, condy / double(junction_conductivity.size()));
     }
@@ -209,7 +223,7 @@ LazyData<double> ElectricalFem3DSolver::loadConductivity() {
         auto roles = this->geometry->getRolesAt(midpoint);
         if (size_t actn = isActive(midpoint)) {
             const auto& act = active[actn - 1];
-            conds[i] = Tensor2<double>(0., junction_conductivity[act.offset + act.ld * e.getIndex1() + e.getIndex0()]);
+            conds[i] = junction_conductivity[act.offset + act.ld * e.getIndex1() + e.getIndex0()];
             if (isnan(conds[i].c11) || abs(conds[i].c11) < 1e-16) conds[i].c11 = 1e-16;
         } else if (roles.find("p-contact") != roles.end()) {
             conds[i] = Tensor2<double>(pcond, pcond);
@@ -229,7 +243,7 @@ void ElectricalFem3DSolver::saveConductivity() {
         for (size_t t = act.left; t != act.right; ++t) {
             size_t offset = act.offset + act.ld * t;
             for (size_t l = act.back; l != act.front; ++l)
-                junction_conductivity[offset + l] = conds[this->maskedMesh->element(l, t, v).getIndex()].c11;
+                junction_conductivity[offset + l] = conds[this->maskedMesh->element(l, t, v).getIndex()];
         }
     }
 }
@@ -256,7 +270,7 @@ void ElectricalFem3DSolver::setMatrix(MatrixT& A,
                      potential[maskedMesh->index(front, right, act.bottom)] + potential[maskedMesh->index(back, left, act.top)] +
                      potential[maskedMesh->index(front, left, act.top)] + potential[maskedMesh->index(back, right, act.top)] +
                      potential[maskedMesh->index(front, right, act.top)]);
-                double jy = 0.1 * conds[index].c11 * U / act.height;   // [j] = kA/cm²
+                double jy = 0.1 * conds[index].c11 * U / act.height;  // [j] = kA/cm²
                 size_t tidx = this->maskedMesh->element(elem.getIndex0(), elem.getIndex1(), (act.top + act.bottom) / 2).getIndex();
                 conds[index] = activeCond(nact - 1, U, jy, temperature[tidx]);
                 if (isnan(conds[index].c11) || abs(conds[index].c11) < 1e-16) {
