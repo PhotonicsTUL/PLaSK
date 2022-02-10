@@ -71,7 +71,7 @@ class ScriptController(SourceEditController):
         self.source_widget.editor.rehighlight(self.document.defines, self.document.solvers)
 
     def reconfig(self):
-        self.source_widget.editor.reconfig()
+        self.source_widget.editor.reconfig(self.document.defines, self.document.solvers)
 
     def on_edit_exit(self):
         return super().on_edit_exit()
