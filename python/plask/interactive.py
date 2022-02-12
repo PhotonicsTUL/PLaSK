@@ -154,7 +154,9 @@ def interact(ipython=None, argv=[]):
             except AttributeError:
                 mainloop = ip.start
             else:
-                mainloop = lambda: ip.shell.mainloop(BANNER)
+                def mainloop():
+                    ip.shell.show_banner(BANNER)
+                    ip.shell.mainloop()
 
     if not in_ipython:
         try:
