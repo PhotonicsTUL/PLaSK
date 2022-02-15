@@ -1,6 +1,7 @@
-[Icon Theme/actions]
-Name=Breeze Dark
+[Icon Theme]
+Name=Breeze Dark PLaSK
 Comment=Elegant monochromatic icon theme
+Inherits=breeze-dark
 Hidden=true
 
 Directories=scalable

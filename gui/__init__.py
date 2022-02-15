@@ -1177,14 +1177,17 @@ def main():
         icons_theme = QIcon.themeName()
         if not icons_theme:
             if dark_style():
-                QIcon.setThemeName('breeze-dark')
+                QIcon.setThemeName('breeze-dark-plask')
             else:
-                QIcon.setThemeName('breeze')
+                QIcon.setThemeName('breeze-plask')
         icons_path.append(os.path.join(__path__[0], 'icons'))
     else:
         if icons_theme == 'tango': icons_theme = 'hicolor'
-        elif icons_theme == 'breeze' and dark_style():
-            icons_theme = 'breeze-dark'
+        elif icons_theme == 'breeze':
+            if dark_style():
+                icons_theme = 'breeze-dark-plask'
+            else:
+                icons_theme = 'breeze-plask'
         icons_path.insert(0, os.path.join(__path__[0], 'icons'))
     QIcon.setThemeSearchPaths(icons_path)
     QIcon.setThemeName(icons_theme)
