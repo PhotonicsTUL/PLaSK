@@ -43,7 +43,6 @@ Package 'plask' is already imported into global namespace.
 '''
 
 preexec_lines = [
-'from __future__ import division',
 'from numpy import *',
 'import plask',
 ]
@@ -118,6 +117,7 @@ def interact(ipython=None, argv=[]):
     global preexec_lines, BANNER
 
     preexec_lines.append('from plask import *')
+    preexec_lines.append('try: ion()\nexcept NameError: pass')
 
     in_ipython = False
 
