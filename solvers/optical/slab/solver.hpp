@@ -170,6 +170,7 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
         if (pos != interface_position) {
             this->invalidate();
             interface_position = pos;
+            Solver::writelog(LOG_DEBUG, "Setting interface at position {:g}um", interface_position);
         }
     }
 
@@ -184,7 +185,7 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
         if (interface_position != boxes[0].lower.vert()) {
             this->invalidate();
             interface_position = boxes[0].lower.vert();
-            Solver::writelog(LOG_DEBUG, "Setting interface at position {:g}", interface_position);
+            Solver::writelog(LOG_DEBUG, "Setting interface on an object at position {:g}um", interface_position);
         }
     }
 

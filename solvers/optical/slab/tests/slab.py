@@ -83,3 +83,24 @@ class LayerSetTest(unittest.TestCase):
         #self.assertEqual(layers, ['GaAs/GaAs', 'AlGaAs/AlGaAs', 'GaAs/GaAs', 'InGaAs/InGaAs', 'AlAs/AlOx', 'air/air'])
         print(stack)
         self.assertEqual(stack, [5] + 25*[0,1] + [4,2,3,2] + 30*[1,0])
+
+
+class MergeTestTest(unittest.TestCase):
+
+    def setUp(self):
+      rect = geometry.Rectangle(1., 1., 'GaAs')
+      stack = geometry.Stack2D()
+      stack.prepend(rect)
+      stack.prepend(rect)
+      path = stack.prepend(rect)
+      stack.prepend(rect)
+      stack.prepend(rect)
+      self.solver = Fourier2D('solver')
+      self.solver.geometry = geometry.Cartesian2D(stack)
+      self.solver.set_interface(rect, path)
+
+    def testMerge(self):
+      self.solver.initialize()
+      stack = list(self.solver.stack)
+      print(stack)
+      self.assertEqual(stack, [0, 1, 1, 0])

@@ -451,9 +451,19 @@ void SlabSolver<BaseT>::setupLayers()
     }
     assert(lgained.size() == lcount);
 
+    if (!isnan(interface_position)) {
+        interface = std::lower_bound(vbounds->begin(), vbounds->end(),
+                                     interface_position - 0.5*OrderedAxis::MIN_DISTANCE) - vbounds->begin() + 1;
+                                     // OrderedAxis::MIN_DISTANCE to compensate for truncation errors
+        if (std::size_t(interface) > vbounds->size()) interface = vbounds->size();
+    } else
+        interface = -1;
+
+
     // Merge identical adjacent layers
+    std::ptrdiff_t i1 = interface - 1;
     for(size_t i = 0; i < vbounds->size(); ++i) {
-        if (stack[i] == stack[i+1]) {
+        if (stack[i] == stack[i+1] && i != i1) {
             stack.erase(stack.begin() + i+1);
             vbounds->removePoint(i);
             verts->removePoints(i, i+2);
@@ -467,8 +477,10 @@ void SlabSolver<BaseT>::setupLayers()
                 verts->addPoint(0.5 * (vbounds->at(i-1) + vbounds->at(i)));
             }
             --i;
+            if (i < i1) { --interface; --i1; }
             assert(vbounds->size() == stack.size()-1);
             assert(verts->size() == stack.size());
+            if (vbounds->size() == 1) break;    // We always have minimum two layers
         }
     }
 
@@ -480,14 +492,12 @@ void SlabSolver<BaseT>::setupLayers()
     //     std::cerr << stack[i] << (lgained[stack[i]]? "*\n" : "\n");
     // }
 
-    if (!isnan(interface_position)) {
-        double pos = interface_position;
-        interface = std::lower_bound(vbounds->begin(), vbounds->end(), pos-0.5*OrderedAxis::MIN_DISTANCE) - vbounds->begin() + 1; // OrderedAxis::MIN_DISTANCE to compensate for truncation errors
-        if (std::size_t(interface) > vbounds->size()) interface = vbounds->size();
-        pos = vbounds->at(interface-1); if (abs(pos) < OrderedAxis::MIN_DISTANCE) pos = 0.;
-        Solver::writelog(LOG_DEBUG, "Setting interface at layer {:d} (exact position {:g})", interface, pos);
-    } else
+    if (interface >= 0) {
+        double pos = vbounds->at(interface-1); if (abs(pos) < OrderedAxis::MIN_DISTANCE) pos = 0.;
+        Solver::writelog(LOG_DEBUG, "Interface is at layer {:d} (exact position {:g}um)", interface, pos);
+    } else {
         interface = -1;
+    }
 }
 
 
