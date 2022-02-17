@@ -675,12 +675,12 @@ endif()
 
 macro(add_python_test test test_file)
     add_test(NAME python/${test}
-             COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/main ${test_file})  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
+             COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/runner ${test_file})  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
 endmacro()
 
 macro(add_gui_test test test_file)
     add_test(NAME gui/${test}
-             COMMAND plask ${CMAKE_SOURCE_DIR}/tests/gui/main ${test_file} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/gui)  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
+             COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/runner ${test_file} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/gui)  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
 endmacro()
 
 macro(add_xpl_test test test_file)
