@@ -279,7 +279,8 @@ inline double cf(const ExpansionPW3D::Coeff& c) {
 void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
     auto geometry = SOLVER->getGeometry();
 
-    auto long_mesh = mesh->lon(), tran_mesh = mesh->tran();
+    auto long_mesh = static_pointer_cast<RegularAxis>(mesh->lon()),
+         tran_mesh = static_pointer_cast<RegularAxis>(mesh->tran());
 
     const double Lt = right - left, Ll = front - back;
     const size_t refl = (SOLVER->refine_long)? SOLVER->refine_long : 1,
@@ -428,10 +429,10 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
                         cell[j].c22 *= s;
                     }
 
-                    norm += (real(cell[j].c00) + real(cell[j].c11)) * vec(long_mesh->at(l) - long0, tran_mesh->at(t) - tran0);
-
-                    if  (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW)
+                    if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW)
                         vals[nMl * t + l] = abs(real(cell[j].c00)) + abs(real(cell[j].c11));
+                    else
+                        norm += (real(cell[j].c00) + real(cell[j].c11)) * vec(long_mesh->at(l) - long0, tran_mesh->at(t) - tran0);
                 }
             }
 
@@ -498,7 +499,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
                 tbegin = reft * it - reft / 2;
                 tend = tbegin + 2 * reft;
             }
-            double tran0 = 0.5 * (tran_mesh->at(tbegin) + tran_mesh->at(tend-1));
+            double tran0 = tran_mesh->first() + 0.5 * (tbegin + tend - 1) * tran_mesh->step();
 
             for (size_t il = 0; il != nNl; ++il) {
                 std::ptrdiff_t lbegin, lend;
@@ -512,7 +513,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
                     lbegin = refl * il - refl / 2;
                     lend = lbegin + 2 * refl;
                 }
-                double long0 = 0.5 * (long_mesh->at(lbegin) + long_mesh->at(lend-1));
+                double long0 = long_mesh->first() + 0.5 * (lbegin + lend - 1) * long_mesh->step();
 
                 Vec<2> norm(0.,0.);
                 for (std::ptrdiff_t jt = tbegin; jt != tend; ++jt) {
@@ -618,8 +619,6 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
             invmult(work1, coeffs_ezz[layer]);
 
             if (SOLVER->expansion_rule == FourierSolver3D::RULE_NEW) {
-                bool need_correction = true;
-
                 // Fill gaps in cos² and cos·sin matrices
                 if (nN == normnans)
                     throw ComputationError(SOLVER->getId(), "Cannot compute normals - consider changing expansion size");
@@ -669,49 +668,57 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
                 //     else grad.cs = -cs;
                 // }
 
-                // int nn = 0;
                 // for (size_t il = 0; il < nNl; ++il) {
-                //     for (size_t it = 0; it < nNl; ++it) {
-                //         double val = gradients[layer][nNl * it + il].cs.real();
-                //         if (isnan(val)) nn++;
-                //         std::cerr << str(val, "{:4.1f} ");
+                //     for (size_t it = 0; it < nNt; ++it) {
+                //         auto val = gradients[layer][nNl * it + il];
+                //         std::cerr << str(val.c2, "{:.6f}{:+.6f}j/") << str(val.cs, "{:.6f}{:+.6f}j ");
                 //     }
+                // }
+                // std::cerr << "\n\n";
+
+                cos2FFT.execute(reinterpret_cast<dcomplex*>(gradients[layer].data()), 1);
+                cssnFFT.execute(reinterpret_cast<dcomplex*>(gradients[layer].data()) + 1, 1);
+
+                // makeToeplitzMatrix(work1, work2, gradients[layer], ordl, ordt, symx, symy);
+                // for (size_t r = 0; r != work1.rows(); ++r) {
+                //     for (size_t c = 0; c != work1.cols(); ++c)
+                //         std::cerr << str(work1(r,c), "{:7.4f}{:+7.4f}j ");
                 //     std::cerr << "\n";
                 // }
-                // std::cerr << ":" << normnans << "/" << nn << " " << need_correction << "\n";
+                // std::cerr << "\n";
+                // for (size_t r = 0; r != work2.rows(); ++r) {
+                //     for (size_t c = 0; c != work2.cols(); ++c)
+                //         std::cerr << str(work2(r,c), "{:7.4f}{:+7.4f}j ");
+                //     std::cerr << "\n";
+                // }
 
-                if (need_correction) {
-                    cos2FFT.execute(reinterpret_cast<dcomplex*>(gradients[layer].data()), 1);
-                    cssnFFT.execute(reinterpret_cast<dcomplex*>(gradients[layer].data()) + 1, 1);
-
-                    // Smooth coefficients
-                    if (SOLVER->grad_smooth) {
-                        double bb4l = PI / ((front-back) * (symmetric_long()? 2 : 1)); bb4l *= bb4l; // (2π/Ll)² / 4
-                        double bb4t = PI / ((right-left) * (symmetric_tran()? 2 : 1)); bb4t *= bb4t; // (2π/Lt)² / 4
-                        for (std::size_t it = 0; it != nNt; ++it) {
-                            int kt = int(it); if (!symmetric_tran() && kt > int(nNt/2)) kt -= int(nNt);
-                            for (std::size_t il = 0; il != nNl; ++il) {
-                                int kl = int(il); if (!symmetric_long() && kl > int(nNl/2)) kl -= int(nNl);
-                                gradients[layer][nNl*it+il] *= exp(-SOLVER->grad_smooth * (bb4l * kl*kl + bb4t * kt*kt));
-                            }
+                // Smooth coefficients
+                if (SOLVER->grad_smooth) {
+                    double bb4l = PI / ((front-back) * (symmetric_long()? 2 : 1)); bb4l *= bb4l; // (2π/Ll)² / 4
+                    double bb4t = PI / ((right-left) * (symmetric_tran()? 2 : 1)); bb4t *= bb4t; // (2π/Lt)² / 4
+                    for (std::size_t it = 0; it != nNt; ++it) {
+                        int kt = int(it); if (!symmetric_tran() && kt > int(nNt/2)) kt -= int(nNt);
+                        for (std::size_t il = 0; il != nNl; ++il) {
+                            int kl = int(il); if (!symmetric_long() && kl > int(nNl/2)) kl -= int(nNl);
+                            gradients[layer][nNl*it+il] *= exp(-SOLVER->grad_smooth * (bb4l * kl*kl + bb4t * kt*kt));
                         }
                     }
+                }
 
-                    makeToeplitzMatrix(work1, ordl, ordt, layer, 2, symx, symy);
-                    coeffs_dexx[layer].reset(NN, NN);
-                    make_unit_matrix(work1);
-                    invmult(work1, coeffs_dexx[layer]);
-                    addToeplitzMatrix(coeffs_dexx[layer], ordl, ordt, layer, 1, symx, symy, -1.);
+                makeToeplitzMatrix(work1, ordl, ordt, layer, 2, symx, symy);
+                coeffs_dexx[layer].reset(NN, NN);
+                make_unit_matrix(coeffs_dexx[layer]);
+                invmult(work1, coeffs_dexx[layer]);
+                addToeplitzMatrix(coeffs_dexx[layer], ordl, ordt, layer, 1, symx, symy, -1.);
 
-                    if (anisotropic) {
-                        makeToeplitzMatrix(work1, ordl, ordt, layer, 4, -symx, -symy);
-                        coeffs_deyy[layer].reset(NN, NN);
-                        make_unit_matrix(work1);
-                        invmult(work1, coeffs_deyy[layer]);
-                        addToeplitzMatrix(coeffs_deyy[layer], ordl, ordt, layer, 3, -symx, -symy, -1.);
-                    } else {
-                        coeffs_deyy[layer] = coeffs_dexx[layer];
-                    }
+                if (anisotropic) {
+                    makeToeplitzMatrix(work1, ordl, ordt, layer, 4, -symx, -symy);
+                    coeffs_deyy[layer].reset(NN, NN);
+                    make_unit_matrix(coeffs_deyy[layer]);
+                    invmult(work1, coeffs_deyy[layer]);
+                    addToeplitzMatrix(coeffs_deyy[layer], ordl, ordt, layer, 3, -symx, -symy, -1.);
+                } else {
+                    coeffs_deyy[layer] = coeffs_dexx[layer];
                 }
             } else {
                 coeffs_dexx[layer].reset();
@@ -892,7 +899,6 @@ void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
                             RH(iey,jhy) += fx * (- gy * px * ieps);
                             RH(iex,jhx) += fy * (- gx * py * ieps);
                             RH(iey,jhx) += fy * (- gy * py * ieps);
-                            dcomplex imu = imuzz(lay, ijx, ijy) * ik0;
                             RE(ihy,jex) += fx * ( k0 * workxx(i,j) );
                             RE(ihx,jex) += fx * ( k0 * conj(workyx(i,j)));  // Should this conjugate be here?
                             RE(ihy,jey) += fy * ( k0 * workxy(i,j));
@@ -1366,13 +1372,14 @@ LazyData<double> ExpansionPW3D::getGradients(GradientFunctions::EnumType what,
                                              const shared_ptr<const typename LevelsAdapter::Level>& level,
                                              InterpolationMethod interp) {
     double z = level->vpos();
-    const size_t lay = solver->getLayerFor(z);
+    const size_t lay = SOLVER->stack[solver->getLayerFor(z)];
     const int which = int(what);
 
     assert(dynamic_pointer_cast<const MeshD<3>>(level->mesh()));
     auto dest_mesh = static_pointer_cast<const MeshD<3>>(level->mesh());
 
-    if (diagonals[lay]) return LazyData<double>(dest_mesh->size(), [](size_t i) { return 0.0; });
+    if (diagonals[lay] || SOLVER->expansion_rule != FourierSolver3D::RULE_NEW)
+        return LazyData<double>(dest_mesh->size(), [](size_t i) { return 0.0; });
 
     if (interp == INTERPOLATION_DEFAULT || interp == INTERPOLATION_FOURIER) {
         return LazyData<double>(dest_mesh->size(), [this,lay,which,dest_mesh](size_t i) -> double {

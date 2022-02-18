@@ -84,7 +84,8 @@ from optical import slab
 
 plask.config.axes = "xyz"
 
-class VCSEL(unittest.TestCase):
+
+class VCSEL:
 
     def setUp(self):
         self.profile = StepProfile(fourier3d.geometry)
@@ -95,30 +96,40 @@ class VCSEL(unittest.TestCase):
         fourier3d.symmetry = 'Ex', 'Ex'
         fourier3d.rule = 'new'
 
+
+class NewRule(VCSEL, unittest.TestCase):
+
     def testComputations(self):
         fourier3d.symmetry = None, None
         m = fourier3d.find_mode(lam=979.75)
         self.assertEqual(m, 0)
         self.assertEqual(len(fourier3d.modes), 1)
-        self.assertAlmostEqual(fourier3d.modes[m].lam, 979.689-0.0231j, 3)
+        self.assertAlmostEqual(fourier3d.modes[m].lam, 979.687-0.0210j, 3)
 
-    def testOld1Rule(self):
+
+class Old1Rule(VCSEL, unittest.TestCase):
+
+    def testComputations(self):
         fourier3d.symmetry = None, None
         fourier3d.rule = 'old1'
         m = fourier3d.find_mode(lam=979.75)
         self.assertEqual(m, 0)
         self.assertEqual(len(fourier3d.modes), 1)
-        self.assertAlmostEqual(fourier3d.modes[m].lam, 979.678-0.021j, 3)
+        self.assertAlmostEqual(fourier3d.modes[m].lam, 979.678-0.0210j, 3)
 
-    def testOld2Rule(self):
+
+class Old2Rule(VCSEL, unittest.TestCase):
+
+    def testComputations(self):
         fourier3d.rule = 'old2'
         m = fourier3d.find_mode(lam=979.75)
         self.assertEqual(m, 0)
         self.assertEqual(len(fourier3d.modes), 1)
         self.assertAlmostEqual(fourier3d.modes[m].lam, 979.678-0.0227j, 3)
 
+
 if __name__ == "__main__":
-    vcsel = VCSEL('testComputations')
+    vcsel = NewRule('testComputations')
     vcsel.setUp()
 
     fourier3d.initialize()

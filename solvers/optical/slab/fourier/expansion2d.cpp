@@ -597,7 +597,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 const size_t jt = iEH(j);
                 for (int i = -order; i <= order; ++i) {
                     const size_t it = iEH(i);
-                    work(it, jt) = repsxx(layer,i-j);
+                    work(it,jt) = repsxx(layer,i-j);
                 }
             }
             coeff_matrices[layer].exx.reset(N, N);
