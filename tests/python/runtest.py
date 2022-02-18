@@ -48,6 +48,10 @@ class PlaskTestResult(unittest.TextTestResult):
 
 
 if __name__ == '__main__':
+    if len(sys.argv) < 2:
+        print("Usage: ", sys.executable, "-m runtest test_file.(py|xpl) [tests...]", file=sys.stderr)
+        sys.exit(127)
+
     sys.path.insert(0, os.path.dirname(sys.argv[1]))
 
     __name__, ext = os.path.splitext(os.path.basename(sys.argv[1]))
@@ -104,6 +108,3 @@ if __name__ == '__main__':
         errors += len(result.errors) + len(result.failures)
 
     sys.exit(errors)
-
-#vim: filetype=python
-#kate: syntax Python;

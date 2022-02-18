@@ -67,7 +67,7 @@ macro(add_solver_test test_name test_file)
     set(test solvers/${SOLVER_CATEGORY_NAME}/${SOLVER_NAME}/${test_name})
     if(("${ext}" STREQUAL ".py") OR ("${ext}" STREQUAL ".PY") OR ("${ext}" STREQUAL ".xpl") OR ("${ext}" STREQUAL ".XPL"))
         add_test(NAME ${test}
-                COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/runner ${test_file})
+                COMMAND plask -m runtest ${test_file})
     else()
         add_test(NAME ${test} COMMAND ${PLASK_SOLVER_PATH}/${test_file})
         if(WIN32)

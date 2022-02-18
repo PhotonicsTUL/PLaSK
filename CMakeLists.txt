@@ -675,18 +675,14 @@ endif()
 
 macro(add_python_test test test_file)
     add_test(NAME python/${test}
-             COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/runner ${test_file})  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
+             COMMAND plask -m runtest ${test_file})  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
 endmacro()
 
 macro(add_gui_test test test_file)
     add_test(NAME gui/${test}
-             COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/runner ${test_file} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/gui)  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
+             COMMAND plask -m runtest ${test_file} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/gui)  # $<TARGET_FILE_DIR:plask>  $<TARGET_FILE:plask>
 endmacro()
 
-macro(add_xpl_test test test_file)
-    add_test(NAME xpl/${test}
-             COMMAND plask ${CMAKE_SOURCE_DIR}/tests/python/xpl ${test_file})
-endmacro()
 
 # ----------===== Solvers =====--------------------------------------------
 
@@ -798,6 +794,12 @@ if(BUILD_TESTING)
             target_link_libraries(plask-test-python ${PYTHON_LIBRARIES} ${Boost_LIBRARIES} libplask)
         endif()
         set(plask_test_depends ${plask_test_depends} plask-test-python)
+
+        add_custom_command(OUTPUT "${PLASK_PATH}/python/runtest.py"
+                           COMMAND ${CMAKE_COMMAND} ARGS -E copy "${CMAKE_SOURCE_DIR}/tests/python/runtest.py" "${PLASK_PATH}/python"
+                           DEPENDS "${CMAKE_SOURCE_DIR}/tests/python/runtest.py")
+        set(plask_test_depends ${plask_test_depends} "${PLASK_PATH}/python/runtest.py")
+        add_custom_target(python-test-runner ALL DEPENDS "${PLASK_PATH}/python/runtest.py")
 
         file(GLOB_RECURSE python_tests FOLLOW_SYMLINKS tests/python/*.py)
         foreach(test_file ${python_tests})
