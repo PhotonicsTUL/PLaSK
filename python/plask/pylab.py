@@ -346,7 +346,7 @@ def plot_field(field, levels=16, plane=None, fill=True, antialiased=False, comp=
         if levels is not None:
             result = axes.contourf(xaxis, yaxis, data, levels, antialiased=antialiased, **kwargs)
         else:
-            result = axes.imshow(data, extent=(xaxis[0], xaxis[-1], yaxis[0], yaxis[-1]), origin='lower', **kwargs)
+            result = axes.pcolormesh(xaxis, yaxis, data, antialiased=antialiased, **kwargs)
     else:
         if 'colors' not in kwargs and 'cmap' not in kwargs:
             result = axes.contour(xaxis, yaxis, data, levels, colors='k', antialiased=antialiased, **kwargs)
