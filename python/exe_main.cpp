@@ -296,7 +296,7 @@ int system_main(int argc, const system_char *argv[])
         } else if (arg == CSTR(-h) || arg == CSTR(--help) || arg == CSTR(-?)) {
             printf(
                 // "usage: plask [option]... [def=val]... [-i | -c cmd | -m mod | file | -] [args]\n\n"
-                "usage: plask [option]... [-i | -c cmd | -m mod | file | -] [args]\n\n"
+                "usage: plask [option]... [-i | -c cmd | -m module | file | -] [args]\n\n"
 
                 "Options and arguments:\n"
                 "-c cmd         program passed in as string (terminates option list)\n"
@@ -519,10 +519,9 @@ int system_main(int argc, const system_char *argv[])
             (*globals)["plask"] = plask;           // import plask
             from_import_all(plask, *globals);    // from plask import *
 
-
             py::object runpy = py::import("runpy");
             py::object runasmain = runpy.attr("_run_module_as_main");
-            runasmain(runmodule, true);
+            runasmain(system_string(runmodule), true);
         } catch (py::error_already_set&) {
             int exitcode = handlePythonException();
             endPlask();
