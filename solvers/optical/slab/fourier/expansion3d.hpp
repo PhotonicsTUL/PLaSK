@@ -29,6 +29,8 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
            Nt;                          ///< Number of expansion coefficients in transverse direction
     size_t nNl,                         ///< Number of of required coefficients for material parameters in longitudinal direction
            nNt;                         ///< Number of of required coefficients for material parameters in transverse direction
+    size_t eNl,                         ///< Number of expansion coefficients in longitudinal direction ignoring symmetry
+           eNt;                         ///< Number of expansion coefficients in transverse direction ignoring symmetry
 
     double left;                        ///< Left side of the sampled area
     double right;                       ///< Right side of the sampled area
@@ -182,10 +184,10 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
             for (int il = (syml ? 0 : -ordl); il <= ordl; ++il) {
                 size_t Il = (il >= 0)? il : il + Nl;
                 for (int jt = -ordt; jt <= ordt; ++jt) {
-                    size_t Jt = (jt >= 0)? jt : jt + Nt;
+                    size_t Jt = (jt >= 0)? jt : (symt)? -jt : jt + Nt;
                     int ijt = it - jt; if (symt && ijt < 0) ijt = -ijt;
                     for (int jl = -ordl; jl <= ordl; ++jl) {
-                        size_t Jl = (jl >= 0)? jl : jl + Nl;
+                        size_t Jl = (jl >= 0)? jl : (syml)? -jl : jl + Nl;
                         double f = 1.;
                         if (syml && jl < 0) { f *= syml; }
                         if (symt && jt < 0) { f *= symt; }
@@ -210,16 +212,19 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
             size_t It = (it >= 0)? it : it + Nt;
             for (int il = (syml ? 0 : -ordl); il <= ordl; ++il) {
                 size_t Il = (il >= 0)? il : il + Nl;
+                size_t I = Nl * It + Il;
                 for (int jt = -ordt; jt <= ordt; ++jt) {
-                    size_t Jt = (jt >= 0)? jt : jt + Nt;
-                    int ijt = it - jt; if (ijt < 0) { if (symt) ijt = -ijt; else ijt += int(nNt); }
+                    size_t Jt = (jt >= 0)? jt : (symt)? -jt : jt + Nt;
+                    int ijt = it - jt; if (ijt < 0) ijt = symt? -ijt : ijt + nNt;
                     for (int jl = -ordl; jl <= ordl; ++jl) {
-                        size_t Jl = (jl >= 0)? jl : jl + Nl;
-                        int ijl = il - jl; if (ijl < 0) { if (syml) ijl = -ijl; else ijl += int(nNl); }
-                        size_t i = Nl * It + Il, j = Nl * Jt + Jl;
-                        int ij = nNl * ijt + ijl;
-                        workc2(i,j) += norms[ij].c2;
-                        workcs(i,j) += norms[ij].cs;
+                        size_t Jl = (jl >= 0)? jl : (syml)? -jl : jl + Nl;
+                        double fc = 1., fs = 1.;
+                        if (syml && jl < 0) { fc *= syml; fs *= -syml; }
+                        if (symt && jt < 0) { fc *= symt; fs *= -symt; }
+                        int ijl = il - jl; if (ijl < 0) ijl = syml? -ijl : ijl + nNl;
+                        size_t J = Nl * Jt + Jl, ij = nNl * ijt + ijl;
+                        workc2(I,J) += fc * norms[ij].c2;
+                        workcs(I,J) += fs * norms[ij].cs;
                     }
                 }
             }
@@ -279,6 +284,15 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
         assert(0 <= l && std::size_t(l) < Nl);
         assert(0 <= t && std::size_t(t) < Nt);
         return Nl * t + l;
+    }
+
+    /// Get single index for x-y ignoring symmetry
+    size_t idxe(int l, int t) {
+        if (l < 0) l += int(eNl);
+        if (t < 0) t += int(eNt);
+        assert(0 <= l && std::size_t(l) < eNl);
+        assert(0 <= t && std::size_t(t) < eNt);
+        return eNl * t + l;
     }
 
     /// Get \f$ \varepsilon_{xx} \f$

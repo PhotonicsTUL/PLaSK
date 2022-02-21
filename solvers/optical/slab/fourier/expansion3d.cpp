@@ -74,6 +74,9 @@ void ExpansionPW3D::init()
 
     double Ll, Lt;
 
+    eNl = 2 * SOLVER->getLongSize() + 1;
+    eNt = 2 * SOLVER->getTranSize() + 1;
+
     if (!symmetric_long()) {
         Ll = front - back;
         Nl = 2 * SOLVER->getLongSize() + 1;
@@ -706,12 +709,19 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
                 }
 
                 makeToeplitzMatrix(work1, ordl, ordt, layer, 2, symx, symy);
+                // for (size_t r = 0; r < NN; ++r) {
+                //     for (size_t c = 0; c < NN; ++c) {
+                //         std::cerr << str(work1(r,c), "{:9.6f}{:+9.6f}j") << "  ";
+                //     }
+                //     std::cerr << "\n";
+                // }
+                // std::cerr << "\n";
                 coeffs_dexx[layer].reset(NN, NN);
                 make_unit_matrix(coeffs_dexx[layer]);
                 invmult(work1, coeffs_dexx[layer]);
                 addToeplitzMatrix(coeffs_dexx[layer], ordl, ordt, layer, 1, symx, symy, -1.);
 
-                if (anisotropic) {
+                if (anisotropic || !(symmetric_long() && symmetric_tran())) {
                     makeToeplitzMatrix(work1, ordl, ordt, layer, 4, -symx, -symy);
                     coeffs_deyy[layer].reset(NN, NN);
                     make_unit_matrix(coeffs_deyy[layer]);
@@ -852,14 +862,20 @@ void ExpansionPW3D::getMatrices(size_t lay, cmatrix& RE, cmatrix& RH)
 
         makeToeplitzMatrix(workc2, workcs, gradients[lay], ordl, ordt, symx, symy);
 
-        mult_matrix_by_matrix(workc2, coeffs_dexx[lay], workxx);
-        mult_matrix_by_matrix(workcs, coeffs_dexx[lay], workxy);
-        if (coeffs_deyy[lay].data() != coeffs_dexx[lay].data()) {
-            mult_matrix_by_matrix(workc2, coeffs_deyy[lay], workyy);
-            mult_matrix_by_matrix(workcs, coeffs_deyy[lay], workyx);
+        mult_matrix_by_matrix(coeffs_dexx[lay], workc2, workxx);
+        mult_matrix_by_matrix(coeffs_dexx[lay], workcs, workxy);
+        if (!(symmetric_long() || symmetric_tran())) {
+            if (coeffs_deyy[lay].data() != coeffs_dexx[lay].data()) {
+                mult_matrix_by_matrix(coeffs_deyy[lay], workc2, workyy);
+                mult_matrix_by_matrix(coeffs_deyy[lay], workcs, workyx);
+            } else {
+                workyy = workxx;
+                workyx = workxy;
+            }
         } else {
-            workyy = workxx;
-            workyx = workxy;
+            makeToeplitzMatrix(workc2, workcs, gradients[lay], ordl, ordt, -symx, -symy);
+            mult_matrix_by_matrix(coeffs_deyy[lay], workc2, workyy);
+            mult_matrix_by_matrix(coeffs_deyy[lay], workcs, workyx);
         }
 
         zero_matrix(RE);
