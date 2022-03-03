@@ -406,7 +406,7 @@ class MainWindow(QMainWindow):
                 screen = self.screen().availableGeometry()
             except AttributeError:
                 screen = QDesktopWidget().availableGeometry(self)
-            self.resize(screen.width() * 0.8, screen.height() * 0.9)
+            self.resize(int(screen.width() * 0.8), int(screen.height() * 0.9))
 
         self.setAcceptDrops(True)
 
