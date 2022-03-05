@@ -280,7 +280,7 @@ class LineNumberArea(QWidget):
         while block.isValid() and top <= event.rect().bottom():
             if block.isVisible() and bottom >= event.rect().top():
                 painter.setPen(LINENUMBER_FOREGROUND_COLOR)
-                painter.drawText(0, top, self.width()-3, self.editor.fontMetrics().height(),
+                painter.drawText(0, int(top), self.width()-3, self.editor.fontMetrics().height(),
                                  Qt.AlignmentFlag.AlignRight, str(block_number))
             block = block.next()
             top = bottom
