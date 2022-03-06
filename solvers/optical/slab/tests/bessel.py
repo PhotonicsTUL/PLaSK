@@ -38,7 +38,6 @@ class Disk(unittest.TestCase):
         stack.prepend(above)
         self.geometry = geometry.Cylindrical(stack)
 
-
         #self.solver = EffectiveFrequencyCyl('EFM')
         #self.solver.geometry = self.geometry
         #self.solver.lam0 = 1500./f
