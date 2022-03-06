@@ -387,15 +387,33 @@ int system_main(int argc, const system_char *argv[])
             }
             if (loglevel) plask::forcedLoglevel = true;
             argc -= drop; argv += drop;
-        } else if (arg == CSTR(-c)) {
-            command = argv[2];
-            argv[2] = CSTR(-c);
-            --argc; ++argv;
+        } else if (arg.substr(0,2) == CSTR(-c)) {
+            int drop = 0;
+            if (arg.length() > 2)
+                command = argv[1]+2;
+            else if (argc > 2) {
+                command = argv[2];
+                ++drop;
+            } else {
+                fprintf(stderr, "No command specified for the -c option\n");
+                return 4;
+            }
+            argc -= drop; argv += drop;
+            argv[1] = CSTR(-c);
             break;
-        } else if (arg == CSTR(-m)) {
-            runmodule = argv[2];
-            argv[2] = CSTR(-m);
-            --argc; ++argv;
+        } else if (arg.substr(0,2) == CSTR(-m)) {
+            int drop = 0;
+            if (arg.length() > 2)
+                runmodule = argv[1]+2;
+            else if (argc > 2) {
+                runmodule = argv[2];
+                ++drop;
+            } else {
+                fprintf(stderr, "No module specified for the -m option\n");
+                return 4;
+            }
+            argc -= drop; argv += drop;
+            argv[1] = CSTR(-m);
             break;
         } else if (arg == CSTR(-g)) {
 #           if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
@@ -439,7 +457,7 @@ int system_main(int argc, const system_char *argv[])
                 def = argv[2];
                 ++drop;
             } else {
-                fprintf(stderr, "No define specified\n");
+                fprintf(stderr, "No define specified for the -D option\n");
                 return 4;
             }
             defs.push_back(system_to_utf8(def));
@@ -493,7 +511,7 @@ int system_main(int argc, const system_char *argv[])
             from_import_all(plask, *globals);    // from plask import *
 
             PyObject* result = NULL;
-            PyObject* code = system_Py_CompileString(command, CSTR(-c), Py_file_input);
+            PyObject* code = system_Py_CompileString(command, CSTR(<string>), Py_file_input);
             if (code) result = PyEval_EvalCode(code, globals->ptr(), globals->ptr());
             Py_XDECREF(code);
             if (!result) py::throw_error_already_set();
@@ -516,8 +534,8 @@ int system_main(int argc, const system_char *argv[])
                 throw py::error_already_set();
             }
             py::object plask = py::import("plask");
-            (*globals)["plask"] = plask;           // import plask
-            from_import_all(plask, *globals);    // from plask import *
+            (*globals)["plask"] = plask;            // import plask
+            from_import_all(plask, *globals);       // from plask import *
 
             py::object runpy = py::import("runpy");
             py::object runasmain = runpy.attr("_run_module_as_main");

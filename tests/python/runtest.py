@@ -5,6 +5,7 @@ import os.path
 
 import plask
 
+
 class PlaskTestResult(unittest.TextTestResult):
     '''Format test failures/exceptions if IDE-friendly form'''
 
