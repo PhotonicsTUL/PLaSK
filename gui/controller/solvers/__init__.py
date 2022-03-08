@@ -216,10 +216,7 @@ class NewSolverDialog(QDialog):
         self.solver = ComboBox()
         self.solver.setEditable(True)
         if MODELS:
-            try:
-                self.solver.setMinimumWidth(max(self.solver.fontMetrics().horizonalAdvnce(slv) for _,slv in MODELS) + 32)
-            except AttributeError:
-                self.solver.setMinimumWidth(max(self.solver.fontMetrics().width(slv) for _,slv in MODELS) + 32)
+            self.solver.setMinimumWidth(max(self.solver.fontMetrics().horizontalAdvance(slv) for _,slv in MODELS) + 32)
             self.solver.setSizePolicy(QSizePolicy.Policy.MinimumExpanding, QSizePolicy.Policy.Preferred)
         layout.addRow("&Solver:", self.solver)
 

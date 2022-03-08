@@ -26,7 +26,6 @@ from ..lib.highlighter import Format
 from .local import Launcher as LocalLauncher
 from .console import Launcher as ConsoleLauncher
 
-
 LAUNCH_CONFIG = {}
 
 _DEFS_VISIBLE = False
@@ -46,13 +45,13 @@ class DefinesSyntaxHighlighter(QSyntaxHighlighter):
         self.formats = {}
 
         for n, f in (
-                ('inactive', parse_highlight(CONFIG['syntax/python_comment'])),
-                ('key', parse_highlight(CONFIG['syntax/python_define'])),
-                ('eq', parse_highlight(CONFIG['syntax/python_special'])),
-            ):
+            ('inactive', parse_highlight(CONFIG['syntax/python_comment'])),
+            ('key', parse_highlight(CONFIG['syntax/python_define'])),
+            ('eq', parse_highlight(CONFIG['syntax/python_special'])),
+        ):
             if isinstance(f, str):
-                f = (f,)  # only color specified
-            if isinstance(f, (tuple,list)) and len(f) > 0:
+                f = (f, )  # only color specified
+            if isinstance(f, (tuple, list)) and len(f) > 0:
                 f = Format(qFuzzyIsNull(), f[0])
             elif isinstance(f, dict):
                 f = Format(n, f.get('color'))
@@ -61,8 +60,7 @@ class DefinesSyntaxHighlighter(QSyntaxHighlighter):
             f.tcf.setFontFamily(parent.defaultFont().family())
             self.formats[f.name] = f.tcf
         self.formats['key'].setFontWeight(QFont.Weight.Bold)
-        self.formats['bad key'] = Format('bad key', self.formats['key'].foreground().color(),
-                                         bold=True, strikeout=True).tcf
+        self.formats['bad key'] = Format('bad key', self.formats['key'].foreground().color(), bold=True, strikeout=True).tcf
         self.formats['bad key'].setFontFamily(parent.defaultFont().family())
 
     def highlightBlock(self, text):
@@ -95,7 +93,7 @@ class _CombolItemView(QListView):
             if index.isValid() and index.row() >= self.offset:
                 self.model().removeRow(index.row())
                 if self.source_list is not None:
-                    del self.source_list[index.row()-self.offset]
+                    del self.source_list[index.row() - self.offset]
         super().keyReleaseEvent(event)
 
 
@@ -121,11 +119,13 @@ class LaunchDialog(QDialog):
             self.defines_button.toggled.connect(self.show_defines)
             self.defines_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
             self.defines_button.setIconSize(QSize(8, 8))
-            self.defines_button.setStyleSheet("""
+            self.defines_button.setStyleSheet(
+                """
                 border: none;
                 margin-left: -2px;
                 padding-left: 0px;
-            """)
+            """
+            )
             self.defines_button.setArrowType(Qt.ArrowType.DownArrow if _DEFS_VISIBLE else Qt.ArrowType.RightArrow)
             self.defines_button.setText("Temporary de&fines:")
             self.layout.addWidget(self.defines_button)
@@ -137,21 +137,25 @@ class LaunchDialog(QDialog):
             self.defines.setVisible(_DEFS_VISIBLE)
             self.edited_defines = '\n'.join(e.name + '=' for e in window.document.defines.model.entries)
             self.defines.setPlainText(self.edited_defines)
-            self.highlighter = DefinesSyntaxHighlighter(self.defines.document(),
-                                                        [e.name for e in window.document.defines.model.entries])
+            self.highlighter = DefinesSyntaxHighlighter(
+                self.defines.document(), [e.name for e in window.document.defines.model.entries]
+            )
             self.highlighter.rehighlight()
             self.recent_defines = launch_config.setdefault('defines', [])
             self.recent_defines_combo = ComboBox()
             self.recent_defines_combo.setView(_CombolItemView(self.recent_defines_combo, self.recent_defines, 1))
-            self.recent_defines_combo.addItems([''] +
-                ['; '.join('{}={}'.format(it[0], it[1]) for it in
-                           ([i.strip() for i in ln.split('=', 1)] for ln in defs.splitlines())
-                           if len(it) == 2 and it[1]
-                          ) for defs in self.recent_defines])
+            self.recent_defines_combo.addItems([''] + [
+                '; '.join(
+                    '{}={}'.format(it[0], it[1]) for it in ([i.strip() for i in ln.split('=', 1)]
+                                                            for ln in defs.splitlines()) if len(it) == 2 and it[1]
+                ) for defs in self.recent_defines
+            ])
             self.layout.addWidget(self.recent_defines_combo)
             self.recent_defines_combo.setVisible(_DEFS_VISIBLE)
             self.recent_defines_combo.currentIndexChanged.connect(self.recent_defines_selected)
             self.defines.textChanged.connect(self.defines_edited)
+        else:
+            self.defines = None
 
         self.args_edit = EditComboBox()
         args = launch_config.get('args', [''])
@@ -175,9 +179,9 @@ class LaunchDialog(QDialog):
 
         combo.setCurrentIndex(current_launcher)
 
-        self.setFixedWidth(5*QFontMetrics(QFont()).horizontalAdvance(self.windowTitle()))
+        self.setFixedWidth(5 * QFontMetrics(QFont()).horizontalAdvance(self.windowTitle()))
 
-        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok |  QDialogButtonBox.StandardButton.Cancel)
+        buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         self.layout.addWidget(buttons)
@@ -207,7 +211,9 @@ class LaunchDialog(QDialog):
             allow_expand = LAUNCHERS[current_launcher].allow_expand
         except AttributeError:
             allow_expand = False
-        self.setMaximumHeight(screen_height if (allow_expand or self.defines.isVisible()) else height)
+        self.setMaximumHeight(
+            screen_height if (allow_expand or (self.defines is not None and self.defines.isVisible())) else height
+        )
         self.adjustSize()
 
     def recent_defines_selected(self, i):
@@ -215,7 +221,7 @@ class LaunchDialog(QDialog):
             if i == 0:
                 self.defines.setPlainText(self.edited_defines)
             else:
-                self.defines.setPlainText(self.recent_defines[i-1])
+                self.defines.setPlainText(self.recent_defines[i - 1])
 
     def defines_edited(self):
         self.edited_defines = self.defines.toPlainText()
@@ -238,13 +244,16 @@ class LaunchDialog(QDialog):
         self.launcher_widgets[current_launcher].setVisible(True)
         self.adjust_height()
 
+
 def _get_config_filename(filename):
     dirname, basename = os.path.split(filename)
-    return os.path.join(dirname, '.'+basename+'.json')
+    return os.path.join(dirname, '.' + basename + '.json')
+
 
 def load_launch_config(filename):
     with open(_get_config_filename(filename)) as config_file:
         return json.load(config_file).get('launch', {})
+
 
 def save_launch_config(filename):
     try:
@@ -306,7 +315,7 @@ def launch_plask(window):
                     msgbox.setIcon(QMessageBox.Icon.Critical)
                     qt_exec(msgbox)
                     return
-                items = line.split('=',1)
+                items = line.split('=', 1)
                 name = items[0].strip()
                 value = items[1].strip()
                 if value:
