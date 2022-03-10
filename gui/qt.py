@@ -68,7 +68,7 @@ else:
     QtSignal = QtCore.Signal
     QtSlot = QtCore.Slot
 
-if os.name == 'nt' and QT_API in ('PyQt5', 'PySide2'):
+if os.name == 'nt':
     QtWidgets.QApplication.addLibraryPath(os.path.join(sys.prefix, 'Library', 'plugins'))
     QtWidgets.QApplication.addLibraryPath(os.path.join(os.path.dirname(QtCore.__file__), 'plugins'))
 
