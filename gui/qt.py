@@ -46,19 +46,23 @@ for QT_API in (QT_API, 'PySide2', 'PyQt5', 'PySide6', 'PyQt6'):
         continue
     elif QT_API == 'PyQt6':
         try: from PyQt6 import QtCore, QtWidgets, QtGui, QtHelp
-        except ImportError: pass
+        except ImportError:
+            if 'PyQt6' in sys.modules: del sys.modules['PyQt6']
         else: break
     elif QT_API == 'PySide6':
         try: from PySide6 import QtCore, QtWidgets, QtGui, QtHelp
-        except ImportError: pass
+        except ImportError:
+            if 'PySide6' in sys.modules: del sys.modules['PySide6']
         else: break
     elif QT_API == 'PyQt5':
         try: from PyQt5 import QtCore, QtWidgets, QtGui, QtHelp
-        except ImportError: pass
+        except ImportError:
+            del sys.modules['PyQt5']
         else: break
     else:  # QT_API == 'PySide2':
         try: from PySide2 import QtCore, QtWidgets, QtGui, QtHelp
-        except ImportError: pass
+        except ImportError:
+            if 'PySide2' in sys.modules: del sys.modules['PySide2']
         else: break
 
 if QT_API in ('PyQt5', 'PyQt6'):
