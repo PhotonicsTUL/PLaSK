@@ -123,7 +123,7 @@ class Old2Rule(VCSEL, unittest.TestCase):
         m = fourier3d.find_mode(lam=979.75)
         self.assertEqual(m, 0)
         self.assertEqual(len(fourier3d.modes), 1)
-        self.assertAlmostEqual(fourier3d.modes[m].lam, 979.678-0.0227j, 3)
+        self.assertAlmostEqual(fourier3d.modes[m].lam, 979.678-0.0208j, 3)
 
 
 if __name__ == "__main__":

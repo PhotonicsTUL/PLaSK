@@ -337,7 +337,7 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
     bool anisotropic = !(symmetric_long() || symmetric_tran()), nondiagonal = false;
 
     // We store data for computing gradients
-    // TODO: is is possible to progressively store only neighbour cells and thus reduce the memory usage,
+    // TODO: it is possible to progressively store only neighbour cells and thus reduce the memory usage,
     // but it is too hard for now
     std::unique_ptr<double[]> vals_lock;
     std::unique_ptr<TempMatrix> vals_temp_matrix;
@@ -663,13 +663,13 @@ void ExpansionPW3D::layerIntegrals(size_t layer, double lam, double glam) {
                         }
                     }
                 }
-                // for(auto& grad: gradients[layer]) {
-                //     double c2 = grad.c2.real();
-                //     if (c2 > 1) { grad.c2 = c2 = 1.; }  // just for safety
-                //     double cs = sqrt(c2 - c2*c2);
-                //     if (grad.cs.real() >= 0) grad.cs = cs;
-                //     else grad.cs = -cs;
-                // }
+                for(auto& grad: gradients[layer]) {
+                    double c2 = grad.c2.real();
+                    if (c2 > 1.) { grad.c2 = c2 = 1.; }  // just for safety
+                    double cs = sqrt(c2 - c2*c2);
+                    if (grad.cs.real() >= 0) grad.cs = cs;
+                    else grad.cs = -cs;
+                }
 
                 // for (size_t il = 0; il < nNl; ++il) {
                 //     for (size_t it = 0; it < nNt; ++it) {
@@ -1074,8 +1074,9 @@ LazyData<Vec<3, dcomplex>> ExpansionPW3D::getField(size_t l, const shared_ptr<co
                                          ((jt < 0 && symmetry_tran == E_LONG)? -1. : 1);
                             double fhy = ((jl < 0 && symmetry_long == E_TRAN)? -1. : 1) *
                                          ((jt < 0 && symmetry_tran == E_TRAN)? -1. : 1);
-                            field[iez].vert() += ((diagonal || SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1)?
-                                                  iepszz(l,il-jl,it-jt) : iepszz(l,il,jl,it,jt)) *
+                            field[iez].vert() += ((SOLVER->expansion_rule == FourierSolver3D::RULE_OLD1)? iepszz(l,il-jl,it-jt) :
+                                                  diagonal? ((il == jl && it == jt)? 1. / coeffs[l][0].c22 : 0.) :
+                                                  iepszz(l,il,jl,it,jt)) *
                                 (  (bl*double(jl)-kx) * fhy*H[iHy(jl,jt)]
                                  + (bt*double(jt)-ky) * fhx*H[iHx(jl,jt)]);
                         }
