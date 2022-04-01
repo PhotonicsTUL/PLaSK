@@ -12,6 +12,7 @@ ElectricalFem3DSolver::ElectricalFem3DSolver(const std::string& name)
       default_junction_conductivity(Tensor2<double>(0., 5.)),
       use_full_mesh(false),
       algorithm(ALGORITHM_CHOLESKY),
+      convergence(CONVERGENCE_FAST),
       maxerr(0.05),
       itererr(1e-8),
       iterlim(10000),
@@ -57,6 +58,10 @@ void ElectricalFem3DSolver::parseConfiguration(XMLReader& source, Manager& manag
             c0 = source.getAttribute<double>("start-cond-inplane", c0);
             this->setCondJunc(Tensor2<double>(c0, c1));
         }
+        convergence = source.enumAttribute<Convergence>("convergence")
+                        .value("fast", CONVERGENCE_FAST)
+                        .value("stable", CONVERGENCE_STABLE)
+                        .get(convergence);
         maxerr = source.getAttribute<double>("maxerr", maxerr);
         source.requireTagEnd();
     }
@@ -272,7 +277,13 @@ void ElectricalFem3DSolver::setMatrix(MatrixT& A,
                      potential[maskedMesh->index(front, right, act.top)]);
                 double jy = 0.1 * conds[index].c11 * U / act.height;  // [j] = kA/cm²
                 size_t tidx = this->maskedMesh->element(elem.getIndex0(), elem.getIndex1(), (act.top + act.bottom) / 2).getIndex();
-                conds[index] = activeCond(nact - 1, U, jy, temperature[tidx]);
+                Tensor2<double> cond = activeCond(nact - 1, U, jy, temperature[tidx]);
+                switch (convergence) {
+                    case CONVERGENCE_STABLE:
+                        cond = 0.5 * (conds[index] + cond);
+                    case CONVERGENCE_FAST:
+                        conds[index] = cond;
+                }
                 if (isnan(conds[index].c11) || abs(conds[index].c11) < 1e-16) {
                     conds[index].c11 = 1e-16;
                 }

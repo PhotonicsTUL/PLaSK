@@ -17,6 +17,14 @@ enum Algorithm {
     ALGORITHM_ITERATIVE ///< Conjugate gradient iterative solver
 };
 
+/// Convergence algorithm
+enum Convergence {
+    CONVERGENCE_FAST = 0,   ///< Default fast convergence
+    CONVERGENCE_STABLE = 1  ///< Stable slown down convergence
+};
+
+
+
 }}} // # namespace plask::electrical::shockley
 
 #endif // PLASK__SOLVER__ELECTRICAL_SHOCKLEY_COMMON_H

@@ -197,6 +197,7 @@ inline static ExportSolver<__Class__> register_electrical_solver(const char* nam
     BOUNDARY_CONDITIONS(voltage_boundary, u8"Boundary conditions of the first kind (constant potential)");
     RW_FIELD(maxerr, u8"Limit for the potential updates");
     RW_FIELD(algorithm, u8"Chosen matrix factorization algorithm");
+    RW_FIELD(convergence, u8"Convergence method.\n\nIf stable, covergence is slown down to ensure stability.");
     RW_PROPERTY(include_empty, usingFullMesh, useFullMesh, "Should empty regions (e.g. air) be included into computation domain?");
     RW_PROPERTY(pcond, getCondPcontact, setCondPcontact, u8"Conductivity of the p-contact");
     RW_PROPERTY(ncond, getCondNcontact, setCondNcontact, u8"Conductivity of the n-contact");

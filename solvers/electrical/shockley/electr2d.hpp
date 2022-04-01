@@ -191,7 +191,8 @@ struct PLASK_SOLVER_API ElectricalFem2DSolver : public SolverWithMesh<Geometry2D
 
     ReceiverFor<Temperature, Geometry2DType> inTemperature;
 
-    Algorithm algorithm;  ///< Factorization algorithm to use
+    Algorithm algorithm;        ///< Factorization algorithm to use
+    Convergence convergence;    ///< Convergence method
 
     double itererr;  ///< Allowed residual iteration for iterative method
     size_t iterlim;  ///< Maximum nunber of iterations for iterative method

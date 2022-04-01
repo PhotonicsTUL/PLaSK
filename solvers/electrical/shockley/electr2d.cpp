@@ -16,6 +16,7 @@ ElectricalFem2DSolver<Geometry2DType>::ElectricalFem2DSolver(const std::string& 
       outHeat(this, &ElectricalFem2DSolver<Geometry2DType>::getHeatDensities),
       outConductivity(this, &ElectricalFem2DSolver<Geometry2DType>::getConductivity),
       algorithm(ALGORITHM_CHOLESKY),
+      convergence(CONVERGENCE_FAST),
       itererr(1e-8),
       iterlim(10000),
       logfreq(500) {
@@ -57,6 +58,10 @@ void ElectricalFem2DSolver<Geometry2DType>::parseConfiguration(XMLReader& source
             c0 = source.getAttribute<double>("start-cond-inplane", c0);
             this->setCondJunc(Tensor2<double>(c0, c1));
         }
+        convergence = source.enumAttribute<Convergence>("convergence")
+                        .value("fast", CONVERGENCE_FAST)
+                        .value("stable", CONVERGENCE_STABLE)
+                        .get(convergence);
         maxerr = source.getAttribute<double>("maxerr", maxerr);
         source.requireTagEnd();
     }
@@ -321,7 +326,13 @@ void ElectricalFem2DSolver<Geometry2DType>::setMatrix(
                      potentials[this->maskedMesh->index(right, act.top)] - potentials[this->maskedMesh->index(right, act.bottom)]);
                 double jy = 0.1 * conds[i].c11 * U / act.height;  // [j] = kA/cm²
                 size_t ti = this->maskedMesh->element(e.getIndex0(), (act.top + act.bottom) / 2).getIndex();
-                conds[i] = activeCond(nact - 1, U, jy, temperature[ti]);
+                Tensor2<double> cond = activeCond(nact - 1, U, jy, temperature[ti]);
+                switch (convergence) {
+                    case CONVERGENCE_STABLE:
+                        cond = 0.5 * (conds[i] + cond);
+                    case CONVERGENCE_FAST:
+                        conds[i] = cond;
+                }
                 if (isnan(conds[i].c11) || abs(conds[i].c11) < 1e-16) conds[i].c11 = 1e-16;
             }
         }

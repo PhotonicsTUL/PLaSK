@@ -56,6 +56,14 @@
         unit: S/m
         default: 0.0
         help: Initial in-plane conductivity of all active regions.
+    - attr: convergence
+      label: Convergence method
+      type: choice
+      default: fast
+      choices:
+      - fast
+      - stable
+      help: Convergence method. If <tt>stable</tt>, covergence is slown down to ensure stability.
   - &matrix
     tag: matrix
     label: Matrix Solver

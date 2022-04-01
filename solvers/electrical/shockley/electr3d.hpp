@@ -192,7 +192,8 @@ struct PLASK_SOLVER_API ElectricalFem3DSolver : public SolverWithMesh<Geometry3D
     size_t isActive(const RectangularMaskedMesh<3>::Element& element) const { return isActive(element.getMidpoint()); }
 
   public:
-    Algorithm algorithm;  ///< Factorization algorithm to use
+    Algorithm algorithm;        ///< Factorization algorithm to use
+    Convergence convergence;    ///< Convergence method
 
     double maxerr;          ///< Maximum relative current density correction accepted as convergence
     Vec<3, double> maxcur;  ///< Maximum current in the structure
