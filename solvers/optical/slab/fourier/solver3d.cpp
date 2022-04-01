@@ -93,6 +93,7 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
             temp_layer = reader.getAttribute<double>("temp-layer", temp_layer);
             expansion_rule = reader.enumAttribute<ExpansionRule>("rule")
                                 .value("new", RULE_NEW)
+                                .value("semi", RULE_OLD2)
                                 .value("old", RULE_OLD1)
                                 .value("old1", RULE_OLD1)
                                 .value("old2", RULE_OLD2)

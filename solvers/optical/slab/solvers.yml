@@ -452,13 +452,14 @@
       type: choice
       choices:
         - new
+        - semi
         - old
       other:
         - old1
         - old2
       default: new
       help: >
-        Permittivity inversion rule. The new rule is supposed to provide the best convergence. The old ones ara available
+        Permittivity inversion rule. The new rule is supposed to provide the best convergence. 'old' and 'semi' are available
         for consistency with old results.
     - attr: grad-smooth
       label: Gradient smooth

@@ -104,12 +104,6 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
         bool isnan() const { return ::isnan(c2.real()); }
     };
 
-    struct Gradient::Vertex {
-        int l, t;
-        Gradient val;
-        Vertex(int l, int t, const Gradient& src): l(l), t(t), val(src) {}
-    };
-
     /// Cached gradients data
     std::vector<DataVector<Gradient>> gradients;
 
@@ -370,6 +364,12 @@ struct PLASK_SOLVER_API ExpansionPW3D: public Expansion {
     size_t iHy(int l, int t) {
         return 2 * idx(l, t);
     }
+};
+
+struct ExpansionPW3D::Gradient::Vertex {
+    int l, t;
+    Gradient val;
+    Vertex(int l, int t, const Gradient& src): l(l), t(t), val(src) {}
 };
 
 }}} // namespace plask
