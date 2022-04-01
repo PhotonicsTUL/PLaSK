@@ -93,6 +93,8 @@ add_solver_test(vcsel3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/vcsel3d.xpl)
 add_solver_test(huang ${CMAKE_CURRENT_SOURCE_DIR}/tests/huang.xpl)
 add_solver_test(tilted ${CMAKE_CURRENT_SOURCE_DIR}/tests/tilted.xpl)
 add_solver_test(carriers ${CMAKE_CURRENT_SOURCE_DIR}/tests/carriers.py)
+add_solver_test(fibercyl ${CMAKE_CURRENT_SOURCE_DIR}/tests/fiber-cyl.xpl)
+add_solver_test(fiber3d ${CMAKE_CURRENT_SOURCE_DIR}/tests/fiber-3d.xpl)
 
 
 # Uncomment and edit the line below if you need to link some external libraries

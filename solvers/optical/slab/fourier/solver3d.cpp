@@ -12,7 +12,8 @@ FourierSolver3D::FourierSolver3D(const std::string& name): SlabSolver<SolverOver
     expansion_rule(RULE_NEW),
     expansion(this),
     refine_long(16), refine_tran(16),
-    oversampling_long(1.), oversampling_tran(1.)
+    grad_smooth(1e-3),
+    outGradients(this, &FourierSolver3D::getGradients)
 {
     pml_tran.factor = {1., -2.};
     pml_long.factor = {1., -2.};
@@ -67,7 +68,18 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
         if (param == "expansion") {
             readComaAttr(reader, "size", size_long, size_tran);
             readComaAttr(reader, "refine", refine_long, refine_tran);
-            readComaAttr(reader, "oversampling", oversampling_long, oversampling_tran);
+            if (reader.hasAttribute("oversampling")) {
+                reader.ignoreAttribute("oversampling");
+                writelog(LOG_WARNING, "obsolete 'oversampling' atribute in XML line {}", reader.getLineNr());
+            }
+            if (reader.hasAttribute("oversampling-long")) {
+                reader.ignoreAttribute("oversampling-long");
+                writelog(LOG_WARNING, "obsolete 'oversampling-long' atribute in XML line {}", reader.getLineNr());
+            }
+            if (reader.hasAttribute("oversampling-tran")) {
+                reader.ignoreAttribute("oversampling-tran");
+                writelog(LOG_WARNING, "obsolete 'oversampling-tran' atribute in XML line {}", reader.getLineNr());
+            }
             smooth = reader.getAttribute<double>("smooth", smooth);
             int dc = reader.getAttribute<int>("dct", dct);
             if (dc != 1 && dc != 2)
@@ -83,7 +95,9 @@ void FourierSolver3D::loadConfiguration(XMLReader& reader, Manager& manager)
                                 .value("new", RULE_NEW)
                                 .value("old", RULE_OLD1)
                                 .value("old1", RULE_OLD1)
+                                .value("old2", RULE_OLD2)
                              .get(expansion_rule);
+            grad_smooth = reader.getAttribute<double>("grad-smooth", grad_smooth);
             reader.requireTagEnd();
         } else if (param == "pmls") {
             updatePML(pml_long, reader);
@@ -264,6 +278,20 @@ cvector FourierSolver3D::incidentGaussian(Transfer::IncidentDirection side, Expa
     }
 
     return transfer->diagonalizer->invTE(layer) * incident;
+}
+
+LazyData<double> FourierSolver3D::getGradients(GradientFunctions::EnumType what,
+                                               const shared_ptr<const MeshD<3>>& dst_mesh,
+                                               InterpolationMethod interp) {
+    initCalculation();
+    computeIntegrals();
+    DataVector<double> destination(dst_mesh->size());
+    auto levels = makeLevelsAdapter(dst_mesh);
+    while (auto level = levels->yield()) {
+        auto dest = expansion.getGradients(what, level, interp);
+        for (size_t i = 0; i != level->size(); ++i) destination[level->index(i)] = dest[i];
+    }
+    return destination;
 }
 
 }}} // namespace

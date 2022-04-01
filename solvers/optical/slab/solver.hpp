@@ -56,9 +56,10 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
     /// Compute layer boundaries and detect layer sets
     void setupLayers();
 
-  public:
     /// Smoothing coefficient
     double smooth;
+
+  public:
 
     /// Receiver for the temperature
     ReceiverFor<Temperature, typename BaseT::SpaceType> inTemperature;
@@ -99,6 +100,16 @@ template <typename BaseT> class PLASK_SOLVER_API SlabSolver : public BaseT, publ
     SlabSolver(const std::string& name = "");
 
     ~SlabSolver();
+
+    /// Get current smooth
+    double getSmooth() const { return smooth; }
+
+    /// Set current smooth
+    void setSmooth(double value) {
+        bool changed = smooth != value;
+        smooth = value;
+        if (changed) this->invalidate();
+    }
 
     /// Get currently selected transfer method
     Transfer::Method getTransferMethod() const { return transfer_method; }

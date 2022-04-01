@@ -132,4 +132,3 @@ inline TempMatrix TempMatrixPool::get(size_t N) {
 }}} // namespace plask
 
 #endif // PLASK__SOLVER_SLAB_TEMPMATRIX_H
-

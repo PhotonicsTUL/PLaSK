@@ -597,7 +597,7 @@ void ExpansionPW2D::layerIntegrals(size_t layer, double lam, double glam)
                 const size_t jt = iEH(j);
                 for (int i = -order; i <= order; ++i) {
                     const size_t it = iEH(i);
-                    work(it, jt) = repsxx(layer,i-j);
+                    work(it,jt) = repsxx(layer,i-j);
                 }
             }
             coeff_matrices[layer].exx.reset(N, N);
@@ -682,10 +682,10 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
         }
     } else {
         DataVector<Tensor3<dcomplex>> params(symmetric()? nN : nN+1);
-        FFT::Backward1D fft(1, int(nN), symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE, 4);
+        FFT::Backward1D fft(4, int(nN), symmetric()? SOLVER->dct2()? FFT::SYMMETRY_EVEN_2 : FFT::SYMMETRY_EVEN_1 : FFT::SYMMETRY_NONE);
         if (symmetry == E_LONG) {
             for (size_t i = 0; i != nN; ++i) params[i].c00 = coeffs[l].zz[i];
-            fft.execute(reinterpret_cast<dcomplex*>(params.data()));
+            fft.execute(reinterpret_cast<dcomplex*>(params.data(), 1));
             for (Tensor3<dcomplex>& eps: params) {
                 eps.c22 = eps.c11 = eps.c00;
                 eps.sqrt_inplace();
@@ -695,11 +695,11 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
                 params[i].c11 = coeffs[l].rxx[i];
                 params[i].c22 = coeffs[l].yy[i];
             }
-            fft.execute(reinterpret_cast<dcomplex*>(params.data())+1);
-            fft.execute(reinterpret_cast<dcomplex*>(params.data())+2);
+            fft.execute(reinterpret_cast<dcomplex*>(params.data())+1, 1);
+            fft.execute(reinterpret_cast<dcomplex*>(params.data())+2, 1);
             if (coeffs[l].zx) {
                 for (size_t i = 0; i != nN; ++i) params[i].c01 = coeffs[l].zx[i];
-                fft.execute(reinterpret_cast<dcomplex*>(params.data())+3);
+                fft.execute(reinterpret_cast<dcomplex*>(params.data())+3, 1);
             } else {
                 for (size_t i = 0; i != nN; ++i) params[i].c01 = 0.;
             }
@@ -711,7 +711,7 @@ LazyData<Tensor3<dcomplex>> ExpansionPW2D::getMaterialNR(size_t l, const shared_
                 }
             } else {
                 for (size_t i = 0; i != nN; ++i) params[i].c00 = coeffs[l].zz[i];
-                fft.execute(reinterpret_cast<dcomplex*>(params.data()));
+                fft.execute(reinterpret_cast<dcomplex*>(params.data()), 1);
                 for (Tensor3<dcomplex>& eps: params) {
                     eps.c11 = 1. / eps.c11;
                     eps.sqrt_inplace();
@@ -1009,8 +1009,8 @@ void ExpansionPW2D::prepareField()
         if (field_interpolation != INTERPOLATION_FOURIER) {
             Component sym = (which_field == FIELD_E)? symmetry : Component(3-symmetry);
             int df = SOLVER->dct2()? 0 : 4;
-            fft_x = FFT::Backward1D(1, N, FFT::Symmetry(sym+df), 3);    // tran
-            fft_yz = FFT::Backward1D(1, N, FFT::Symmetry(3-sym+df), 3); // long
+            fft_x = FFT::Backward1D(3, N, FFT::Symmetry(sym+df));    // tran
+            fft_yz = FFT::Backward1D(3, N, FFT::Symmetry(3-sym+df)); // long
         }
     } else {
         field.reset(N + 1);
@@ -1175,9 +1175,9 @@ LazyData<Vec<3,dcomplex>> ExpansionPW2D::getField(size_t l, const shared_ptr<con
         return result;
     } else {
         if (symmetric()) {
-            fft_x.execute(&(field.data()->tran()));
-            fft_yz.execute(&(field.data()->lon()));
-            fft_yz.execute(&(field.data()->vert()));
+            fft_x.execute(&(field.data()->tran()), 1);
+            fft_yz.execute(&(field.data()->lon()), 1);
+            fft_yz.execute(&(field.data()->vert()), 1);
             if (sym == E_TRAN) {
                 for (Vec<3,dcomplex>& f: field) {
                     f.c0 = dcomplex(-f.c0.imag(), f.c0.real());

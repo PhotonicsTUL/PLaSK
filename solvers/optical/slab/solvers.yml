@@ -447,35 +447,6 @@
         help: >
           Number of refinement points for refractive index averaging along transverse axis. You cannot
           set this attribute together with ‘Averaging points’ (<tt>refine</tt>).
-    - attr: oversampling
-      label: Oversampling
-      type: float
-      default: 1
-      conflicts:
-      - attr: oversampling-long
-      - attr: oversampling-tran
-      help: >
-        Factor by which the number of coefficients is increased for FFT along longitudinal and transverse
-        directions. You cannot set this attribute together with ‘Longitudinal oversampling’ (<tt>oversampling-long</tt>)
-        and ‘Transverse oversampling’ (<tt>oversampling-tran</tt>) .
-    - group: Oversampling
-      attrs:
-      - attr: oversampling-long
-        label: Longitudinal
-        type: float
-        conflicts:
-        - attr: oversampling
-        help: >
-          Factor by which the number of coefficients is increased for FFT along longitudinal direction.
-          You cannot set this attribute together with ‘Oversampling’ (<tt>oversampling</tt>).
-      - attr: oversampling-tran
-        label: Transverse
-        type: float
-        conflicts:
-        - attr: oversampling
-        help: >
-          Factor by which the number of coefficients is increased for FFT along transverse direction.
-          You cannot set this attribute together with ‘Oversampling’ (<tt>oversampling</tt>).
     - attr: rule
       label: Expansion rule
       type: choice
@@ -484,10 +455,17 @@
         - old
       other:
         - old1
+        - old2
       default: new
       help: >
         Permittivity inversion rule. The new rule is supposed to provide the best convergence. The old ones ara available
         for consistency with old results.
+    - attr: grad-smooth
+      label: Gradient smooth
+      type: float
+      default: 0.001
+      help: >
+        Smoothing parameter for refreactive index gradients. This is needed for the new expansion rule.
     - *dct
     - *smooth
     - *group-layers

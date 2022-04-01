@@ -32,8 +32,9 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
 
     /// Expansion rule
     enum ExpansionRule {
-        RULE_NEW,
-        RULE_OLD1
+        RULE_NEW = 0,
+        RULE_OLD2 = 1,
+        RULE_OLD1 = 2
     };
 
     struct Mode {
@@ -141,17 +142,16 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     /// Mesh multiplier for finer computation of the refractive indices in the transverse direction
     size_t refine_tran;
 
-    /// Factor by which the number of coefficients is multiplied for FFT along longitudinal direction.
-    /// Afterwards the coefficients are truncated to the required number.
-    double oversampling_long;
-    /// Factor by which the number of coefficients is multiplied for FFT along transverse direction.
-    /// Afterwards the coefficients are truncated to the required number.
-    double oversampling_tran;
+    /// Smoothing of the normal-direction functions
+    double grad_smooth;
 
     /// Longitudinal PMLs
     PML pml_long;
     /// Transverse PMLs
     PML pml_tran;
+
+    /// Provider for gradient functions
+    ProviderFor<GradientFunctions, Geometry3D>::Delegate outGradients;
 
     FourierSolver3D(const std::string& name="");
 
@@ -254,6 +254,16 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
             invalidate();
         }
         ktran = k;
+    }
+
+    /// Get current normal smooth
+    double getGradSmooth() const { return grad_smooth; }
+
+    /// Set current smooth
+    void setGradSmooth(double value) {
+        bool changed = grad_smooth != value;
+        grad_smooth = value;
+        if (changed) this->invalidate();
     }
 
     /// Get type of the DCT
@@ -511,6 +521,11 @@ struct PLASK_SOLVER_API FourierSolver3D: public SlabSolver<SolverOver<Geometry3D
     }
 
     double getWavelength(size_t n) override;
+
+    LazyData<double> getGradients(GradientFunctions::EnumType what,
+                                  const shared_ptr<const MeshD<3>>& dst_mesh,
+                                  InterpolationMethod interp);
+
 };
 
 
