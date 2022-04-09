@@ -985,9 +985,12 @@ if(WIN32)
     # Very ugly hack!
     set(CPACK_NSIS_COMPRESSOR "lzma
         !define MUI_STARTMENUPAGE_DEFAULTFOLDER \\\"PLaSK\\\"
-        !include \\\"${CMAKE_SOURCE_DIR_WINDOWS}\\\\cmake\\\\fileassoc.nsh\\\"")
+        !include \\\"${CMAKE_SOURCE_DIR_WINDOWS}\\\\cmake\\\\fileassoc.nsh\\\"
+        !include \\\"LogicLib.nsh\\\"
+        !include \\\"FileFunc.nsh\\\"")
     set(CPACK_NSIS_EXTRA_INSTALL_COMMANDS "
         Var /GLOBAL PYROOT
+        Var /GLOBAL cmdLineParams
         SetRegView 64
         !insertmacro APP_ASSOCIATE \\\"xpl\\\" \\\"PLaSK.xpl\\\" \\\"PLaSK structure data\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe,1\\\" \\\"Open in PLaSK GUI\\\" \\\"$INSTDIR\\\\bin\\\\plaskgui.exe \\\$\\\\\\\"%1\\\$\\\\\\\"\\\"
         WriteRegStr HKLM \\\"SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\App Paths\\\\plask.exe\\\" \\\"\\\" \\\"$INSTDIR\\\\bin\\\\plask.exe\\\"
@@ -1006,6 +1009,18 @@ if(WIN32)
         SendMessage \\\${HWND_BROADCAST} \\\${WM_WININICHANGE} 0 \\\"STR:Environment\\\" /TIMEOUT=5000
         plask_no_define_root:
         SetRegView 32
+        Push $R0
+        \\\${GetParameters} $cmdLineParams
+        \\\${GetOptions} $cmdLineParams '/DeleteInstaller' $R0
+        IfErrors nodelete
+        IfRebootFlag 0 noreboot
+        Delete /rebootok \\\"$EXEPATH\\\"
+        Goto nodelete
+        noreboot:
+        Delete /rebootok \\\"$EXEPATH\\\"
+        SetRebootFlag false
+        nodelete:
+        Pop $R0
     ")
     set(CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS "
         SetRegView 64
