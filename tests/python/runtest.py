@@ -21,7 +21,11 @@ class PlaskTestResult(unittest.TextTestResult):
 
         if exctype is test.failureException:
             # Skip assert*() traceback levels
-            length = self._count_relevant_tb_levels(tb)
+            length = 0
+            t = tb
+            while t and not self._is_relevant_tb_level(t):
+                length += 1
+                t = t.tb_next
             tb_lines = traceback.extract_tb(tb, length)
         else:
             tb_lines = traceback.extract_tb(tb)

@@ -44,11 +44,11 @@ bool isEngAlpha(char ch) { return isEngLower(ch) || isEngUpper(ch); }
 
 bool isDigit(char ch) { return '0' <= ch && ch <= '9'; }
 
-bool isCid(const char* potential_id, char underline_ch) {
-    if (!isEngAlpha(*potential_id) && *potential_id != underline_ch)
+bool isCid(const char* potential_id) {
+    if (!isEngAlpha(*potential_id) && *potential_id != '_')
         return false;   //first should be letter or underline
     for (++potential_id; *potential_id; ++potential_id) //all next, if are non NULL
-        if (!isEngAlpha(*potential_id) && !isDigit(*potential_id) && *potential_id != underline_ch)    //must be letter, digit or underline
+        if (!isEngAlpha(*potential_id) && !isDigit(*potential_id) && *potential_id != '_')    //must be letter, digit or underline
             return false;
     return true;
 }

@@ -35,6 +35,21 @@ class GeometryReader;
  */
 struct PLASK_API Manager {
 
+    template <typename T>
+    struct Map: std::map<std::string, T> {
+        typename std::map<std::string, T>::iterator find(const std::string& key) {
+            std::string name = key;
+            std::replace(name.begin(), name.end(), '-', '_');
+            return std::map<std::string, T>::find(name);
+        }
+
+        typename std::map<std::string, T>::const_iterator find(const std::string& key) const {
+            std::string name = key;
+            std::replace(name.begin(), name.end(), '-', '_');
+            return std::map<std::string, T>::find(name);
+        }
+    };
+
     /// Throw exception with information that loading from external sources is not supported or disallowed.
     static void disallowExternalSources(Manager& PLASK_UNUSED(manager), const std::string& url, const std::string& section) {
         throw Exception("Can't load section \"{0}\" from \"{1}\". Loading from external sources is not supported or disallowed.", section, url); }
@@ -141,23 +156,23 @@ private:
     static constexpr const char* XML_AXES_ATTR = "axes";            ///< name of axes attribute in XML
 
     /// Allow to access path hints by name.
-    std::map<std::string, PathHints> pathHints;
+    Map<PathHints> pathHints;
 
     /// Roots objects, geometries.
     std::vector<shared_ptr<Geometry>> roots;
 
     /// Geometries and geometry objects by name.
-    std::map<std::string, shared_ptr<GeometryObject>> geometrics;
+    Map<shared_ptr<GeometryObject>> geometrics;
 
     /// Meshes by name.
-    std::map< std::string, shared_ptr<MeshBase>> meshes;
+    Map<shared_ptr<MeshBase>> meshes;
 
     /// Solvers by name.
-    std::map< std::string, shared_ptr<Solver>> solvers;
+    Map<shared_ptr<Solver>> solvers;
 
     /// Boundaries places by name.
     //TODO? move to special modules reader class to have more local scope?
-    std::map< std::string, boost::any> boundaries;
+    Map<boost::any> boundaries;
 
     /// Script read from file
     std::string script;
@@ -622,7 +637,10 @@ Boundary Manager::readBoundary(XMLReader& reader) {
     } else
         reader.throwUnexpectedElementException("place, union, intersection, or difference tag");
     if (boundary.isNull() && !draft) throw XMLException(reader, "Can't parse boundary place from XML.");
-    if (placename) this->storeBoundary(*placename, boundary);
+    if (placename) {
+        std::replace(placename->begin(), placename->end(), '-', '_');
+        this->storeBoundary(*placename, boundary);
+    }
     return boundary;
 }
 

@@ -179,7 +179,8 @@ void Manager::loadGrids(XMLReader &reader)
         if (reader.getNodeName() == "mesh") {
             std::string type = reader.requireAttribute("type");
             std::string name = reader.requireAttribute("name");
-            BadId::throwIfBad("mesh", name, '-');
+            std::replace(name.begin(), name.end(), '-', '_');
+            BadId::throwIfBad("mesh", name);
             if (meshes.find(name) != meshes.end())
                 throw NamesConflictException("Mesh or mesh generator", name);
             shared_ptr<Mesh> mesh = RegisterMeshReader::getReader(type)(reader);
@@ -190,7 +191,8 @@ void Manager::loadGrids(XMLReader &reader)
             std::string type = reader.requireAttribute("type");
             std::string method = reader.requireAttribute("method");
             std::string name = reader.requireAttribute("name");
-            BadId::throwIfBad("generator", name, '-');
+            std::replace(name.begin(), name.end(), '-', '_');
+            BadId::throwIfBad("generator", name);
             std::string key = type + "." + method;
             if (meshes.find(name) != meshes.end())
                 throw NamesConflictException("Mesh or mesh generator", name);
@@ -215,7 +217,8 @@ void Manager::loadSolvers(XMLReader& reader) {
     if (reader.getNodeType() != XMLReader::NODE_ELEMENT || reader.getNodeName() != std::string("solvers"))
         throw XMLUnexpectedElementException(reader, "<solvers>");
     while (reader.requireTagOrEnd()) {
-        const std::string name = reader.requireAttribute("name");
+        std::string name = reader.requireAttribute("name");
+        std::replace(name.begin(), name.end(), '-', '_');
         BadId::throwIfBad("solver", name);
         if (shared_ptr<Solver> filter = FiltersFactory::getDefault().get(reader, *this)) {
             if (!this->solvers.insert(std::make_pair(name, filter)).second)

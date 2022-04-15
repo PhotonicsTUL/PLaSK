@@ -138,16 +138,16 @@ struct PLASK_API ComputationError: public Exception {
  */
 struct PLASK_API BadId: public Exception {
 
-    BadId(const std::string& where, const char* str_to_check, char underline_ch = '_')
-        : Exception("\"{0}\" is a bad name for a {1} (must be letters, digits, or '{2}' and cannot start with a digit) ", str_to_check, where, underline_ch) {};
+    BadId(const std::string& where, const char* str_to_check)
+        : Exception("\"{0}\" is a bad name for a {1} (must be letters, digits, or '_' and cannot start with a digit) ", str_to_check, where) {};
 
-    static void throwIfBad(const std::string& where, const char* str_to_check, char underline_ch = '_') {
-        if (!isCid(str_to_check, underline_ch))
-            throw BadId(where, str_to_check, underline_ch);
+    static void throwIfBad(const std::string& where, const char* str_to_check) {
+        if (!isCid(str_to_check))
+            throw BadId(where, str_to_check);
     }
 
-    static void throwIfBad(const std::string& where, const std::string& str_to_check, char underline_ch = '_') {
-        throwIfBad(where, str_to_check.c_str(), underline_ch);
+    static void throwIfBad(const std::string& where, const std::string& str_to_check) {
+        throwIfBad(where, str_to_check.c_str());
     }
 
 };

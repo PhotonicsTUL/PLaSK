@@ -50,15 +50,15 @@ class ManagerTest(unittest.TestCase):
     def testGeometry(self):
         self.assertEqual(len(self.manager.geo), 3)
         self.assertEqual(type(self.manager.geo["Block-3"]), plask.geometry.Block2D)
-        self.assertEqual( list(self.manager.geo["Stack-2"].get_leafs_bboxes()),
-            [plask.geometry.Box2D(0,0,5,2), plask.geometry.Box2D(0,2,5,4)] )
+        self.assertEqual(list(self.manager.geo["Stack-2"].get_leafs_bboxes()),
+            [plask.geometry.Box2D(0,0,5,2), plask.geometry.Box2D(0,2,5,4)])
         self.assertEqual(type(self.manager.geo.Space_1), plask.geometry.Cartesian2D)
         self.assertEqual(len(self.manager.pth), 1)
         with self.assertRaises(KeyError): self.manager.geo["nonexistent"]
 
 
     def testDictionaries(self):
-        self.assertEqual(list(self.manager.geo), ["Block-3", "Space-1", "Stack-2"])
+        self.assertEqual(list(self.manager.geo), ["Block_3", "Space_1", "Stack_2"])
 
 
     def testExport(self):

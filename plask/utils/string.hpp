@@ -149,10 +149,9 @@ PLASK_API std::vector<std::string> splitEsc(const std::string& str, char splitte
 /**
  * Check if @p potential_id is valid C/C++/python name.
  * @param potential_id
- * @param underline_ch underline character which can be in id, '_' by default
  * @return @c true only if @p potential_id is valid C/C++/python name
  */
-PLASK_API bool isCid(const char* potential_id, char underline_ch = '_');
+PLASK_API bool isCid(const char* potential_id);
 
 
 /// Get simplified type name of given type

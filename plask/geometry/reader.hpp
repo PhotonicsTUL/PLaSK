@@ -321,7 +321,11 @@ class PLASK_API GeometryReader {
      * @param object geometry object which should be available by name which was read from current tag
      */
     void registerObjectNameFromCurrentNode(shared_ptr<GeometryObject> object) {
-        registerObjectName(source.getAttribute(XML_NAME_ATTR), object);
+        auto name = source.getAttribute(XML_NAME_ATTR);
+        if (name) {
+            std::replace(name->begin(), name->end(), '-', '_');
+            registerObjectName(*name, object);
+        }
     }
 
 };

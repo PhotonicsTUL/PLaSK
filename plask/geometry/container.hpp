@@ -326,8 +326,9 @@ inline void read_children(GeometryReader& reader,
             PathHints::Hint hint = child_param_read();  // this calls readExactlyOneChild
             if (paths_str) {
                 auto paths = splitEscIterator(*paths_str, ',');
-                for (auto& path : paths) {
-                    BadId::throwIfBad("path", path, '-');
+                for (std::string path : paths) {
+                    std::replace(path.begin(), path.end(), '-', '_');
+                    BadId::throwIfBad("path", path);
                     reader.manager.pathHints[path].addHint(hint);
                 }
             }

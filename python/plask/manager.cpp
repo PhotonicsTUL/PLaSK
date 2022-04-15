@@ -458,36 +458,36 @@ template <> const std::string item_name<PathHints>() { return "path"; }
 template <> const std::string item_name<shared_ptr<Solver>>() { return "solver"; }
 
 template <typename T>
-static py::object dict__getitem__(const std::map<std::string,T>& self, std::string key) {
+static py::object dict__getitem__(const Manager::Map<T>& self, std::string key) {
     auto found = self.find(key);
     if (found == self.end()) throw KeyError(key);
     return py::object(found->second);
 }
 
 template <typename T>
-static void dict__setitem__(std::map<std::string,T>& self, std::string key, const T& value) {
+static void dict__setitem__(Manager::Map<T>& self, std::string key, const T& value) {
     self[key] = value;
 }
 
 template <typename T>
-static void dict__delitem__(std::map<std::string,T>& self, std::string key) {
+static void dict__delitem__(Manager::Map<T>& self, std::string key) {
     auto found = self.find(key);
     if (found == self.end()) throw  KeyError(key);
     self.erase(found);
 }
 
 template <typename T>
-static size_t dict__len__(const std::map<std::string,T>& self) {
+static size_t dict__len__(const Manager::Map<T>& self) {
     return self.size();
 }
 
 template <typename T>
-static bool dict__contains__(const std::map<std::string,T>& self, const std::string& key) {
+static bool dict__contains__(const Manager::Map<T>& self, const std::string& key) {
     return self.find(key) != self.end();
 }
 
 template <typename T>
-static py::list dict_keys(const std::map<std::string,T>& self) {
+static py::list dict_keys(const Manager::Map<T>& self) {
     py::list result;
     for (auto item: self) {
         result.append(item.first);
@@ -496,7 +496,7 @@ static py::list dict_keys(const std::map<std::string,T>& self) {
 }
 
 template <typename T>
-static py::list dict_values(const std::map<std::string,T>& self) {
+static py::list dict_values(const Manager::Map<T>& self) {
     py::list result;
     for (auto item: self) {
         result.append(item.second);
@@ -505,7 +505,7 @@ static py::list dict_values(const std::map<std::string,T>& self) {
 }
 
 template <typename T>
-static py::list dict_items(const std::map<std::string,T>& self) {
+static py::list dict_items(const Manager::Map<T>& self) {
     py::list result;
     for (auto item: self) {
         result.append(py::make_tuple(item.first, item.second));
@@ -514,9 +514,8 @@ static py::list dict_items(const std::map<std::string,T>& self) {
 }
 
 template <typename T>
-static py::object dict__getattr__(const std::map<std::string,T>& self, const std::string& attr) {
+static py::object dict__getattr__(const Manager::Map<T>& self, const std::string& attr) {
     std::string key = attr;
-    std::replace(key.begin(), key.end(), '_', '-');
     auto found = self.find(key);
     if (found == self.end()) {
         PyErr_SetString(PyExc_AttributeError, format("No " + item_name<T>() + " with id '{0}'", attr).c_str());
@@ -526,16 +525,14 @@ static py::object dict__getattr__(const std::map<std::string,T>& self, const std
 }
 
 template <typename T>
-static void dict__setattr__(std::map<std::string,T>& self, const std::string& attr, const T& value) {
+static void dict__setattr__(Manager::Map<T>& self, const std::string& attr, const T& value) {
     std::string key = attr;
-    std::replace(key.begin(), key.end(), '_', '-');
     self[key] = value;
 }
 
 template <typename T>
-static void dict__delattr__(std::map<std::string,T>& self, const std::string& attr) {
+static void dict__delattr__(Manager::Map<T>& self, const std::string& attr) {
     std::string key = attr;
-    std::replace(key.begin(), key.end(), '_', ' ');
     auto found = self.find(key);
     if (found == self.end()) throw AttributeError("No " + item_name<T>() + " with id '{0}'", attr);
     self.erase(found);
@@ -545,16 +542,16 @@ namespace detail {
 
     template <typename T>
     struct dict_iterator {
-        const std::map<std::string,T>& dict;
-        typename std::map<std::string,T>::const_iterator i;
+        const Manager::Map<T>& dict;
+        typename Manager::Map<T>::const_iterator i;
         bool is_attr;
-        static dict_iterator<T> new_iterator(const std::map<std::string,T>& d) {
+        static dict_iterator<T> new_iterator(const Manager::Map<T>& d) {
             return dict_iterator<T>(d, false);
         }
-        static dict_iterator<T> new_attr_iterator(const std::map<std::string,T>& d) {
+        static dict_iterator<T> new_attr_iterator(const Manager::Map<T>& d) {
             return dict_iterator<T>(d, true);
         }
-        dict_iterator(const std::map<std::string,T>& d, bool attr) : dict(d), i(d.begin()), is_attr(attr) {}
+        dict_iterator(const Manager::Map<T>& d, bool attr) : dict(d), i(d.begin()), is_attr(attr) {}
         dict_iterator(const dict_iterator<T>&) = default;
         dict_iterator<T>* __iter__() { return this; }
         std::string next() {
@@ -574,7 +571,7 @@ namespace detail {
 
 template <typename T>
 static void register_manager_dict(const std::string name) {
-    py::class_<std::map<std::string, T>, boost::noncopyable> c((name+"Dict").c_str(), (u8"Dictionary holding each loaded " + item_name<T>()).c_str(), py::no_init); c
+    py::class_<Manager::Map< T>, boost::noncopyable> c((name+"Dict").c_str(), (u8"Dictionary holding each loaded " + item_name<T>()).c_str(), py::no_init); c
         .def("__getitem__", &dict__getitem__<T>)
         // .def("__setitem__", &dict__setitem__<T>)
         // .def("__delitem__", &dict__delitem__<T>)
@@ -585,7 +582,7 @@ static void register_manager_dict(const std::string name) {
         .def("values", &dict_values<T>)
         .def("items", &dict_items<T>)
         .def("__getattr__", &dict__getattr__<T>)
-        .def("clear", &std::map<std::string, T>::clear, u8"Remove all elements from the dictionary.")
+        .def("clear", &Manager::Map< T>::clear, u8"Remove all elements from the dictionary.")
         // .def("__setattr__", &dict__setattr__<T>)
         // .def("__delattr__", &dict__delattr__<T>)
     ;

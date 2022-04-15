@@ -125,7 +125,10 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
     }
 
     plask::optional<std::string> name = source.getAttribute(XML_NAME_ATTR);  // read name
-    if (name && !isAutoName(*name)) BadId::throwIfBad("geometry object", *name, '-');
+    if (name && !isAutoName(*name)) {
+        std::replace(name->begin(), name->end(), '-', '_');
+        BadId::throwIfBad("geometry object", *name);
+    }
 
     plask::optional<std::string> roles = source.getAttribute("role");  // read roles (tags)
 
@@ -184,7 +187,8 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
                             new GeometryObject::ToBlockChanger(op_from, blockMaterial, manager.draft);
                         changers.append(changer);
                         if (block_name && !isAutoName(*block_name)) {
-                            BadId::throwIfBad("block replacing object", *block_name, '-');
+                            std::replace(block_name->begin(), block_name->end(), '-', '_');
+                            BadId::throwIfBad("block replacing object", *block_name);
                             other_names.push_back(std::make_pair(*block_name, changer->to));
                         }
                         if (plask::optional<std::string> block_roles = source.getAttribute("role")) {  // if have some roles
@@ -230,7 +234,6 @@ shared_ptr<GeometryObject> GeometryReader::readObject() {
         new_object->clearRoles();  // in case of copied object: overwrite
         auto roles_it = splitEscIterator(*roles, ',');
         for (const std::string& c : roles_it) {
-            // BadId::throwIfBad("path", path, '-');
             new_object->addRole(c);
         }
     }
@@ -257,7 +260,8 @@ shared_ptr<Geometry> GeometryReader::readGeometry() {
     std::string nodeName = source.getNodeName();
     plask::optional<std::string> name = source.getAttribute(XML_NAME_ATTR);
     if (name) {
-        BadId::throwIfBad("geometry", *name, '-');
+        std::replace(name->begin(), name->end(), '-', '_');
+        BadId::throwIfBad("geometry", *name);
         if (manager.geometrics.find(*name) != manager.geometrics.end())
             throw XMLDuplicatedElementException(source, "Geometry '" + *name + "'");
     }
