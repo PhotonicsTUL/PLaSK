@@ -145,7 +145,7 @@
       type: choice
       default: none
       choices: *none-tran-long
-      other: *components
+      other: [ Ex, Ey, Ez, Er, Ep, Et, El, Htran, Hlong, Hx, Hy, Hz, Hr, Hp, Ht, Hl, TE, TM ]
       case sensitive: true
       help: >
         Mode polarization. Give an existing field component here (e.g. '<i>Etran</i>', '<i>Hx</i>').

@@ -325,6 +325,32 @@ static shared_ptr<Scattering<FourierSolver2D>> FourierSolver2D_scatteringGaussia
         new Scattering<FourierSolver2D>(&self, side, self.incidentGaussian(side, polarization, sigma, center)));
 }
 
+void FourierSolver2D_setPolarization(FourierSolver2D* self, PyObject* obj) {
+    Expansion::Component val;
+    if (obj == Py_None) {
+        val = Expansion::E_UNSPECIFIED;
+    } else {
+        AxisNames* axes = getCurrentAxes();
+        try {
+            std::string repr = py::extract<std::string>(obj);
+            if (repr == "none" || repr == "NONE" || repr == "None")
+                val = Expansion::E_UNSPECIFIED;
+            else if (repr == "Etran" || repr == "Et" || repr == "E"+axes->getNameForTran() ||
+                     repr == "Hlong" || repr == "Hl" || repr == "H"+axes->getNameForLong() || repr == "TM")
+                val = Expansion::E_TRAN;
+            else if (repr == "Elong" || repr == "El" || repr == "E"+axes->getNameForLong() ||
+                     repr == "Htran" || repr == "Ht" || repr == "H"+axes->getNameForTran() || repr == "TE")
+                val = Expansion::E_LONG;
+            else
+                throw py::error_already_set();
+        } catch (py::error_already_set&) {
+            throw ValueError("Wrong component specification.");
+        }
+    }
+    self->setPolarization(val);
+}
+
+
 void export_FourierSolver2D() {
     py_enum<typename FourierSolver2D::FourierType>()
         .value("DISCRETE", FourierSolver2D::FOURIER_DISCRETE)
@@ -338,7 +364,7 @@ void export_FourierSolver2D() {
     PROVIDER(outNeff, "Effective index of the last computed mode.");
     RW_PROPERTY(size, getSize, setSize, "Orthogonal expansion size.");
     RW_PROPERTY(symmetry, getSymmetry, setSymmetry, "Mode symmetry.");
-    RW_PROPERTY(polarization, getPolarization, setPolarization, "Mode polarization.");
+    solver.add_property("polarization", &__Class__::getPolarization, &FourierSolver2D_setPolarization, "Mode polarization.");
     solver.add_property("lam", &__Class__::getLam, &Solver_setLam<__Class__>,
                         u8"Wavelength of the light [nm].\n\n"
                         u8"Use this property only if you are looking for anything else than\n"

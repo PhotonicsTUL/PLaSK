@@ -95,10 +95,10 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
                 if (repr == "none" || repr == "NONE" || repr == "None")
                     val = Expansion::E_UNSPECIFIED;
                 else if (repr == "TE" || repr == "Etran" || repr == "Et" || (axes && repr == "E"+axes->getNameForTran()) ||
-                         repr == "Hlong" || repr == "Hl" || (axes && repr == "H"+axes->getNameForLong()))
+                         repr == "Hlong" || repr == "Hl" || (axes && repr == "H"+axes->getNameForLong()) || repr == "TM")
                     val = Expansion::E_TRAN;
                 else if (repr == "TM" || repr == "Elong" || repr == "El" || (axes && repr == "E"+axes->getNameForLong()) ||
-                         repr == "Htran" || repr == "Ht" || (axes && repr == "H"+axes->getNameForTran()))
+                         repr == "Htran" || repr == "Ht" || (axes && repr == "H"+axes->getNameForTran()) || repr == "TE")
                     val = Expansion::E_LONG;
                 else
                     throw XMLBadAttrException(reader, "polarization", repr, "existing field component name (maybe you need to specify the geometry first)");
