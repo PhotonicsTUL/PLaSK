@@ -538,14 +538,10 @@
     <optical lam="980"/>
     <root bcond="0" vmin="0" vmax="2"/>
   </meta>
-  <optical name="generic" solver="Generic2D" lib="generic">
+  <local name="local1" solver="Generic2D" lib="solvers">
     <geometry ref="vcsel"/>
-  </optical>
-  <local name="local1" solver="OneFile" lib="test">
-    <geometry ref="GeoE"/>
-    <mesh ref="default"/>
   </local>
-  <local name="local2" solver="Test" lib="something">
+  <local name="local2" solver="Configured2D" lib="solvers">
     <geometry ref="geo2d"/>
     <mesh ref="default"/>
     <custom attr="attr0">
