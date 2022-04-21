@@ -325,29 +325,58 @@ static shared_ptr<Scattering<FourierSolver2D>> FourierSolver2D_scatteringGaussia
         new Scattering<FourierSolver2D>(&self, side, self.incidentGaussian(side, polarization, sigma, center)));
 }
 
-void FourierSolver2D_setPolarization(FourierSolver2D* self, PyObject* obj) {
-    Expansion::Component val;
-    if (obj == Py_None) {
-        val = Expansion::E_UNSPECIFIED;
-    } else {
-        AxisNames* axes = getCurrentAxes();
-        try {
-            std::string repr = py::extract<std::string>(obj);
-            if (repr == "none" || repr == "NONE" || repr == "None")
-                val = Expansion::E_UNSPECIFIED;
-            else if (repr == "Etran" || repr == "Et" || repr == "E"+axes->getNameForTran() ||
-                     repr == "Hlong" || repr == "Hl" || repr == "H"+axes->getNameForLong() || repr == "TM")
-                val = Expansion::E_TRAN;
-            else if (repr == "Elong" || repr == "El" || repr == "E"+axes->getNameForLong() ||
-                     repr == "Htran" || repr == "Ht" || repr == "H"+axes->getNameForTran() || repr == "TE")
-                val = Expansion::E_LONG;
-            else
-                throw py::error_already_set();
-        } catch (py::error_already_set&) {
-            throw ValueError("Wrong component specification.");
+namespace detail {
+    static Expansion::Component getPolarization2D(PyObject* obj) {
+        Expansion::Component val;
+        if (obj == Py_None) {
+            val = Expansion::E_UNSPECIFIED;
+        } else {
+            AxisNames* axes = getCurrentAxes();
+            try {
+                std::string repr = py::extract<std::string>(obj);
+                if (repr == "none" || repr == "NONE" || repr == "None")
+                    val = Expansion::E_UNSPECIFIED;
+                else if (repr == "Etran" || repr == "Et" || repr == "E"+axes->getNameForTran() ||
+                        repr == "Hlong" || repr == "Hl" || repr == "H"+axes->getNameForLong() || repr == "TM")
+                    val = Expansion::E_TRAN;
+                else if (repr == "Elong" || repr == "El" || repr == "E"+axes->getNameForLong() ||
+                        repr == "Htran" || repr == "Ht" || repr == "H"+axes->getNameForTran() || repr == "TE")
+                    val = Expansion::E_LONG;
+                else
+                    throw py::error_already_set();
+            } catch (py::error_already_set&) {
+                throw ValueError("Wrong component specification.");
+            }
         }
+        return val;
     }
-    self->setPolarization(val);
+}
+
+void FourierSolver2D_setPolarization(FourierSolver2D* self, PyObject* polarization) {
+    self->setPolarization(detail::getPolarization2D(polarization));
+}
+
+py::object FourierSolver2D_computeReflectivity_polarization(FourierSolver2D* self,
+                                                            py::object wavelength,
+                                                            Transfer::IncidentDirection side,
+                                                            PyObject* polarization
+                                                           ) {
+    return Solver_computeReflectivity_polarization(self, wavelength, side, detail::getPolarization2D(polarization));
+}
+
+py::object FourierSolver2D_computeTransmittivity_polarization(FourierSolver2D* self,
+                                                              py::object wavelength,
+                                                              Transfer::IncidentDirection side,
+                                                              PyObject* polarization
+                                                             ) {
+    return Solver_computeTransmittivity_polarization(self, wavelength, side, detail::getPolarization2D(polarization));
+}
+
+shared_ptr<Scattering<FourierSolver2D>> FourierSolver2D_Scattering_from_polarization(FourierSolver2D* parent,
+                                                                                     Transfer::IncidentDirection side,
+                                                                                     PyObject* polarization
+                                                                                    ) {
+    return Scattering<FourierSolver2D>::from_polarization(parent, side, detail::getPolarization2D(polarization));
 }
 
 
@@ -422,7 +451,7 @@ void export_FourierSolver2D() {
                u8"    k0 (complex): Normalized frequency.\n"
                u8"    neff (complex): Longitudinal effective index.\n"
                u8"    ktran (complex): Transverse wavevector.\n");
-    solver.def("compute_reflectivity", &Solver_computeReflectivity_polarization<FourierSolver2D>,
+    solver.def("compute_reflectivity", &FourierSolver2D_computeReflectivity_polarization,
                (py::arg("lam"), "side", "polarization"));
     solver.def("compute_reflectivity", &Solver_computeReflectivity_index<FourierSolver2D>, (py::arg("lam"), "side", "index"));
     solver.def("compute_reflectivity", &Solver_computeReflectivity_array<FourierSolver2D>, (py::arg("lam"), "side", "coffs"),
@@ -436,7 +465,7 @@ void export_FourierSolver2D() {
                u8"        name of the non-vanishing electric field component.\n"
                u8"    idx: Eigenmode number.\n"
                u8"    coeffs: expansion coefficients of the incident vector.\n");
-    solver.def("compute_transmittivity", &Solver_computeTransmittivity_polarization<FourierSolver2D>,
+    solver.def("compute_transmittivity", &FourierSolver2D_computeTransmittivity_polarization,
                (py::arg("lam"), "side", "polarization"));
     solver.def("compute_transmittivity", &Solver_computeTransmittivity_index<FourierSolver2D>, (py::arg("lam"), "side", "index"));
     solver.def("compute_transmittivity", &Solver_computeTransmittivity_array<FourierSolver2D>, (py::arg("lam"), "side", "coffs"),
@@ -456,7 +485,7 @@ void export_FourierSolver2D() {
     solver.add_property("pml", py::make_function(&Solver_getPML<FourierSolver2D>, py::with_custodian_and_ward_postcall<0, 1>()),
                         &Solver_setPML<FourierSolver2D>, u8"Side Perfectly Matched Layers boundary conditions.\n\n" PML_ATTRS_DOC);
     RO_FIELD(modes, "Computed modes.");
-    solver.def("scattering", Scattering<FourierSolver2D>::from_polarization, py::with_custodian_and_ward_postcall<0, 1>(),
+    solver.def("scattering", FourierSolver2D_Scattering_from_polarization, py::with_custodian_and_ward_postcall<0, 1>(),
                (py::arg("side"), "polarization"));
     solver.def("scattering", Scattering<FourierSolver2D>::from_index, py::with_custodian_and_ward_postcall<0, 1>(),
                (py::arg("side"), "idx"));

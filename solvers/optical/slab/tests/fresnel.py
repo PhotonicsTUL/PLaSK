@@ -109,25 +109,25 @@ class FresnelTest(unittest.TestCase):
 
         solver.polarization = None
         #solver.initialize()
-        with Refl(solver, 'long', 'El') as refl:
+        with Refl(solver, 'long', 'TE') as refl:
             for a in angles:
                 R, T = refl(a)
                 self.assertAlmostEqual(R, R_TM(a), 3)
                 self.assertAlmostEqual(T, T_TM(a), 3)
 
-        with Refl(solver, 'long', 'Et') as refl:
+        with Refl(solver, 'long', 'TM') as refl:
             for a in angles:
                 R, T = refl(a)
                 self.assertAlmostEqual(R, R_TE(a), 3)
                 self.assertAlmostEqual(T, T_TE(a), 3)
 
-        with Refl(solver, 'tran', 'El') as refl:
+        with Refl(solver, 'tran', 'TE') as refl:
             for a in angles:
                 R, T = refl(a)
                 self.assertAlmostEqual(R, R_TE(a), 3)
                 self.assertAlmostEqual(T, T_TE(a), 3)
 
-        with Refl(solver, 'tran', 'Et') as refl:
+        with Refl(solver, 'tran', 'TM') as refl:
             for a in angles:
                 R, T = refl(a)
                 self.assertAlmostEqual(R, R_TM(a), 3)
