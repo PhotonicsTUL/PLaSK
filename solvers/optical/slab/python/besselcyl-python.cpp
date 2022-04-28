@@ -212,7 +212,7 @@ void export_BesselSolverCyl()
            u8"Only one of the following arguments can be given through a keyword.\n"
            u8"It is the starting point for search of the specified parameter.\n\n"
            u8"Args:\n"
-           u8"    lam (complex): Starting wavelength.\n"
+           u8"    lam (complex): Starting wavelength [nm].\n"
            u8"    m (int): HE/EH Mode angular number. If ``None``, use :attr:`m` attribute.\n",
            (arg("lam"), arg("m")=py::object())
           );
@@ -223,7 +223,7 @@ void export_BesselSolverCyl()
                 u8"exception if the determinant for the specified parameters is too large.\n\n"
                 u8"Arguments can be given through keywords only.\n\n"
                 u8"Args:\n"
-                u8"    lam (complex): Wavelength.\n"
+                u8"    lam (complex): Wavelength [nm].\n"
                 u8"    m (int): HE/EH Mode angular number.\n"
               );
     RW_FIELD(emission, "Direction of the useful light emission.\n\n"
@@ -235,7 +235,7 @@ void export_BesselSolverCyl()
                u8"Compute discontinuity matrix determinant.\n\n"
                u8"Arguments can be given through keywords only.\n\n"
                u8"Args:\n"
-               u8"    lam (complex): Wavelength.\n"
+               u8"    lam (complex): Wavelength [nm].\n"
                u8"    k0 (complex): Normalized frequency.\n"
                u8"    m (int): HE/EH Mode angular number.\n"
               );
@@ -245,7 +245,7 @@ void export_BesselSolverCyl()
                (py::arg("lam"), "side", "coeffs"),
                u8"Compute reflection coefficient on planar incidence [%].\n\n"
                u8"Args:\n"
-               u8"    lam (float or array of floats): Incident light wavelength.\n"
+               u8"    lam (float or array of floats): Incident light wavelength [nm].\n"
                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                u8"        present.\n"
                u8"    index: Eigenmode number.\n"
@@ -256,7 +256,7 @@ void export_BesselSolverCyl()
                (py::arg("lam"), "side", "coeffs"),
                u8"Compute transmission coefficient on planar incidence [%].\n\n"
                u8"Args:\n"
-               u8"    lam (float or array of floats): Incident light wavelength.\n"
+               u8"    lam (float or array of floats): Incident light wavelength [nm].\n"
                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                u8"        present.\n"
                u8"    index: Eigenmode number.\n"

@@ -427,19 +427,19 @@ void export_FourierSolver2D() {
                u8"Compute discontinuity matrix determinant.\n\n"
                u8"Arguments can be given through keywords only.\n\n"
                u8"Args:\n"
-               u8"    lam (complex): Wavelength.\n"
-               u8"    k0 (complex): Normalized frequency.\n"
+               u8"    lam (complex): Wavelength [nm].\n"
+               u8"    k0 (complex): Normalized frequency [1/µm].\n"
                u8"    neff (complex): Longitudinal effective index.\n"
-               u8"    ktran (complex): Transverse wavevector.\n");
+               u8"    ktran (complex): Transverse wavevector [1/µm].\n");
     solver.def("find_mode", py::raw_function(FourierSolver2D_findMode),
                u8"Compute the mode near the specified effective index.\n\n"
                u8"Only one of the following arguments can be given through a keyword.\n"
                u8"It is the starting point for search of the specified parameter.\n\n"
                u8"Args:\n"
-               u8"    lam (complex): Wavelength.\n"
-               u8"    k0 (complex): Normalized frequency.\n"
+               u8"    lam (complex): Wavelength [nm].\n"
+               u8"    k0 (complex): Normalized frequency [1/µm].\n"
                u8"    neff (complex): Longitudinal effective index.\n"
-               u8"    ktran (complex): Transverse wavevector.\n");
+               u8"    ktran (complex): Transverse wavevector [1/µm].\n");
     solver.def("set_mode", py::raw_function(FourierSolver2D_setMode),
                u8"Set the mode for specified parameters.\n\n"
                u8"This method should be used if you have found a mode manually and want to insert\n"
@@ -447,17 +447,17 @@ void export_FourierSolver2D() {
                u8"exception if the determinant for the specified parameters is too large.\n\n"
                u8"Arguments can be given through keywords only.\n\n"
                u8"Args:\n"
-               u8"    lam (complex): Wavelength.\n"
-               u8"    k0 (complex): Normalized frequency.\n"
+               u8"    lam (complex): Wavelength [nm].\n"
+               u8"    k0 (complex): Normalized frequency [1/µm].\n"
                u8"    neff (complex): Longitudinal effective index.\n"
-               u8"    ktran (complex): Transverse wavevector.\n");
+               u8"    ktran (complex): Transverse wavevector [1/µm].\n");
     solver.def("compute_reflectivity", &FourierSolver2D_computeReflectivity_polarization,
                (py::arg("lam"), "side", "polarization"));
     solver.def("compute_reflectivity", &Solver_computeReflectivity_index<FourierSolver2D>, (py::arg("lam"), "side", "index"));
     solver.def("compute_reflectivity", &Solver_computeReflectivity_array<FourierSolver2D>, (py::arg("lam"), "side", "coffs"),
                u8"Compute reflection coefficient on planar incidence [%].\n\n"
                u8"Args:\n"
-               u8"    lam (float or array of floats): Incident light wavelength.\n"
+               u8"    lam (float or array of floats): Incident light wavelength [nm].\n"
                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                u8"        present.\n"
                u8"    polarization: Specification of the incident light polarization.\n"
@@ -471,7 +471,7 @@ void export_FourierSolver2D() {
     solver.def("compute_transmittivity", &Solver_computeTransmittivity_array<FourierSolver2D>, (py::arg("lam"), "side", "coffs"),
                u8"Compute transmission coefficient on planar incidence [%].\n\n"
                u8"Args:\n"
-               u8"    lam (float or array of floats): Incident light wavelength.\n"
+               u8"    lam (float or array of floats): Incident light wavelength [nm].\n"
                u8"    side (`top` or `bottom`): Side of the structure where the incident light is\n"
                u8"        present.\n"
                u8"    polarization: Specification of the incident light polarization.\n"
