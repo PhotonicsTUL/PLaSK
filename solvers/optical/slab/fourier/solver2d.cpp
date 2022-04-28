@@ -94,10 +94,10 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
                 if (geometry) axes = &geometry->axisNames;
                 if (repr == "none" || repr == "NONE" || repr == "None")
                     val = Expansion::E_UNSPECIFIED;
-                else if (repr == "TE" || repr == "Etran" || repr == "Et" || (axes && repr == "E"+axes->getNameForTran()) ||
+                else if (repr == "Etran" || repr == "Et" || (axes && repr == "E"+axes->getNameForTran()) ||
                          repr == "Hlong" || repr == "Hl" || (axes && repr == "H"+axes->getNameForLong()) || repr == "TM")
                     val = Expansion::E_TRAN;
-                else if (repr == "TM" || repr == "Elong" || repr == "El" || (axes && repr == "E"+axes->getNameForLong()) ||
+                else if (repr == "Elong" || repr == "El" || (axes && repr == "E"+axes->getNameForLong()) ||
                          repr == "Htran" || repr == "Ht" || (axes && repr == "H"+axes->getNameForTran()) || repr == "TE")
                     val = Expansion::E_LONG;
                 else
