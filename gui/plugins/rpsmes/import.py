@@ -15,7 +15,6 @@ from __future__ import print_function
 
 import sys
 import os
-from collections import OrderedDict
 
 try:
     import gui
@@ -405,7 +404,7 @@ def read_dan(fname):
     axes = ['xy', 'rz'][sym]
 
     regions = []
-    materials = OrderedDict()
+    materials = {}
     heats = {}
 
     # Read each region

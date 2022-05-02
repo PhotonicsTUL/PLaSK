@@ -113,7 +113,6 @@ else:
     import paramiko.hostkeys
 
     import os.path
-    from collections import OrderedDict
 
     try:
         from shlex import quote
@@ -157,7 +156,7 @@ else:
             return default
 
 
-    SYSTEMS = OrderedDict()
+    SYSTEMS = {}
 
     def batchsystem(cls):
         SYSTEMS[cls.SYSTEM] = cls

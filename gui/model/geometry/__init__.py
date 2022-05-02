@@ -10,7 +10,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 import html
-from collections import OrderedDict
 from copy import deepcopy
 from lxml import etree
 
@@ -621,7 +620,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
 
     def create_info(self):
         res = super().create_info()
-        names = OrderedDict()
+        names = {}
         for root in self.roots:
             for node in root.traverse_dfs():
                 node.create_info(res, names)

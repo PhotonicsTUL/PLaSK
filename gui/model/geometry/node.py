@@ -520,7 +520,7 @@ class GNode:
     def create_info(self, res, names):
         """
         :param List(Info) res: place to append info objects
-        :param OrderedDict names: names of objects which are before this in tree
+        :param dict names: names of objects which are before this in tree
         """
         if not can_be_float(self.in_parent_attrs.get('zero')): self._wrong_type(res, 'float', 'zero')
 

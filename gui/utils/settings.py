@@ -13,7 +13,6 @@
 
 import sys
 import os
-from collections import OrderedDict
 from typing import Callable
 from numpy import log10, ceil
 
@@ -28,7 +27,7 @@ from ..qt.QtWidgets import *
 from ..qt.QtGui import *
 from ..qt import QT_API, qt_exec
 from .qsignals import BlockQtSignals
-from .widgets import LineEditWithClear, VerticalScrollArea, EDITOR_FONT
+from .widgets import LineEditWithClear, VerticalScrollArea, MultiLineEdit, EDITOR_FONT
 
 
 try:
@@ -76,6 +75,9 @@ def Font(entry, help=None, needs_restart=False):
 
 def Path(entry, title, mask, help=None, needs_restart=False):
     return lambda parent: SettingsDialog.Path(entry, title, mask, help=help, parent=parent, needs_restart=needs_restart)
+
+def MultiLine(entry, help=None, needs_restart=False):
+    return lambda parent: SettingsDialog.MultiLine(entry, help=help, parent=parent, needs_restart=needs_restart)
 
 
 class MaterialColorsConfig(QWidget):
@@ -274,9 +276,9 @@ def keyboard_shortcut_editors():
             yield label, lambda parent: SettingsDialog.KeySequence(entry, parent=parent)
 
 
-CONFIG_WIDGETS = OrderedDict([
-    ("General", OrderedDict([
-        ("Appearance && Behavior", [
+CONFIG_WIDGETS = {
+    "General": {
+        "Appearance && Behavior": [
             ("Create backup files on save",
              CheckBox('main_window/make_backup',
                       "Create backup files on save. "
@@ -300,17 +302,17 @@ CONFIG_WIDGETS = OrderedDict([
              CheckBox("workarounds/no_unicode_minus",
                       "Do not use Unicode minus sign. You should check if if you see some strange character in your plots "
                       "instead of the minus sign.")),
-        ]),
-        ("Keyboard Shortcuts", keyboard_shortcut_editors),
-        ("Help", [
+        ],
+        "Keyboard Shortcuts": keyboard_shortcut_editors,
+        "Help": [
             ("Show only online help",
              CheckBox('help/online',
                       "If this is checked ‘Show Help’ opens online help in an external browser window.")),
             ("Help window font size",
              SpinBox('help/fontsize', 1, 512,
                      "Default font size in the help window.")),
-        ]),
-        ("Experimental Features", [
+        ],
+        "Experimental Features": [
             "Here you can turn on experimental features. Please expect that they do not work 100% reliable.\n"
             "Turning them on may cause GUI to crash or the correct files may not load properly.\n\n"
             "You have been warned, use at your own risk!\n",
@@ -320,16 +322,15 @@ CONFIG_WIDGETS = OrderedDict([
                       needs_restart=True)),
 
         ]
-         )
-    ])),
-    ("Graphics", OrderedDict([
-        ("General", [
+    },
+    "Graphics": {
+        "General": [
             ("Background color", Color('plots/face_color', "Background color of all plots.")),
             ("Edges color", Color('plots/edge_color', "Color of edges in all plots.")),
             ("Axes color", Color('plots/axes_color', "Color of zero axes in all plots.")),
             ("Grid color", Color('plots/grid_color', "Color of grid in all plots.")),
-        ]),
-        ("Geometry View", [
+        ],
+        "Geometry View": [
             ("Selection frame color", Color('geometry/selected_color',
                                             "Color of a frame around the selected object.")),
             ("Selection frame opacity", FloatSpinBox('geometry/selected_alpha',
@@ -373,22 +374,22 @@ CONFIG_WIDGETS = OrderedDict([
                                             "Color of active line in lattice editor.")),
             ("Lattice mark color", Color('geometry/lattice_mark_color',
                                          "Color of current node mark in lattice editor.")),
-        ]),
-        ("Mesh Preview", [
+        ],
+        "Mesh Preview": [
             ("Mesh color", Color('mesh/mesh_color', "Mesh color in the preview plot.")),
             ("Mesh line width", FloatSpinBox('mesh/line_width', step=0.1, min=0.1,
                                              help="Mesh lines width in the preview plot.")),
-        ]),
-        ("Boundary Conditions", [
+        ],
+        "Boundary Conditions": [
             ("Marker color", Color('boundary_conditions/color',
                                    "Marker color in the boundary conditions preview plot.")),
             ("Selected color", Color('boundary_conditions/selected_color',
                                    "Marker color of the selected boundary condition.")),
-        ]),
-        ("Material Colors", MaterialColorsConfig)
-    ])),
-    ("Editor", OrderedDict([
-        ("Appearance && Behavior", [
+        ],
+        "Material Colors": MaterialColorsConfig
+    },
+    "Editor": {
+        "Appearance && Behavior": [
             ("Keep selection after paste", CheckBox('editor/select_after_paste',
                                                     "Keep selection of pasted text.")),
             ("Remove trailing spaces", CheckBox('editor/remove_trailing_spaces',
@@ -419,8 +420,8 @@ CONFIG_WIDGETS = OrderedDict([
             ("Help font", Font('editor/help_font', "Font in script on-line help.")),
             ("Foreground color", Color('editor/help_foreground_color', "Foreground color in script on-line help.")),
             ("Background color", Color('editor/help_background_color', "Background color in script on-line help.")),
-        ]),
-        ("Python Syntax", [
+        ],
+        "Python Syntax": [
             ("Comment", Syntax('syntax/python_comment', "Python syntax highlighting.")),
             ("String", Syntax('syntax/python_string', "Python syntax highlighting.")),
             ("Special character", Syntax('syntax/python_special', "Python syntax highlighting.")),
@@ -437,16 +438,16 @@ CONFIG_WIDGETS = OrderedDict([
             ("XPL Definition", Syntax('syntax/python_define', "Python syntax highlighting.")),
             ("PLaSK dictionary", Syntax('syntax/python_loaded', "Python syntax highlighting.")),
             ("Pylab identifier", Syntax('syntax/python_pylab', "Python syntax highlighting.")),
-        ]),
-        ("XML Syntax", [
+        ],
+        "XML Syntax": [
             ("XML Tag", Syntax('syntax/xml_tag', "XML syntax highlighting.")),
             ("XML Attribute", Syntax('syntax/xml_attr', "XML syntax highlighting.")),
             ("XML Value", Syntax('syntax/xml_value', "XML syntax highlighting.")),
             ("XML Text", Syntax('syntax/xml_text', "XML syntax highlighting.")),
             ("XML Defined Value", Syntax('syntax/xml_define', "XML syntax highlighting.")),
             ("XML Comment", Syntax('syntax/xml_comment', "XML syntax highlighting.")),
-        ]),
-        ("Script Completion", [
+        ],
+        "Script Completion": [
             ("Do not complete on dot", CheckBox('workarounds/jedi_no_dot',
                                                 "Do not show completion pop-up after you type a dot. This still allows "
                                                 "to show the pop-up manually by pressing Ctrl+Space.")),
@@ -461,16 +462,15 @@ CONFIG_WIDGETS = OrderedDict([
                                                        "reported to cause GUI crashes.", True)),
             ("Disable completion", CheckBox('workarounds/no_jedi',
                                             "Disable script completion and on-line help.")),
-        ]),
-    ])),
-    ("Launcher", OrderedDict([
-        ("Settings",
-         [
+        ],
+    },
+    "Launcher": {
+        "Settings": [
             ("Default launcher", Combo('launcher/default', get_launchers,
                                        "Default launcher to select in new window.")),
             ("Messages font", Font('launcher_local/font', "Font in local launcher window.")),
-        ]),
-        ("Colors", [
+        ],
+        "Colors": [
             ("Background color", Color('launcher_local/background_color', "Background color in launcher window.")),
             ("Foreground color", Color('launcher_local/color_0', "Foreground color in launcher window.")),
             ("Critical error", Color('launcher_local/color_1', "Log colors.")),
@@ -483,18 +483,17 @@ CONFIG_WIDGETS = OrderedDict([
             ("Detail", Color('launcher_local/color_8', "Log colors.")),
             ("Error detail", Color('launcher_local/color_9', "Log colors.")),
             ("Debug", Color('launcher_local/color_10', "Log colors.")),
-        ]),
-        ("Workarounds",
-         [
+        ],
+        "Workarounds": [
             ("PLaSK executable", Path('launcher_local/program', "PLaSK executable",
                                       "PLaSK (plask{0});;Any program (*{0})".format('.exe' if sys.platform == 'win32' else ''),
                                       "Full patch to PLaSK executable (leave empty for default)")),
             ("Disable OpenMP", CheckBox('workarounds/disable_omp',
                                         "Disable parallel computations with OpenMP.")),
-        ]),
-    ])),
-    ("Plugins", {"Plugins": PluginsConfig})
-])
+        ],
+    },
+    "Plugins": {"Plugins": PluginsConfig}
+}
 
 
 if os.name == 'posix':
@@ -643,6 +642,7 @@ class SettingsDialog(QDialog):
             layout.addWidget(self.italic)
             if help is not None: self.setWhatsThis(help)
             self.needs_restart = needs_restart
+            self.setFixedHeight(self.minimumSizeHint().height())
             self.load(CONFIG[self.entry])
         def on_color_press(self):
             if QApplication.keyboardModifiers() == Qt.Modifier.CTRL:
@@ -737,6 +737,7 @@ class SettingsDialog(QDialog):
             if help is not None:
                 self.setWhatsThis(help)
             self.needs_restart = needs_restart
+            self.setFixedHeight(self.minimumSizeHint().height())
             self.load(CONFIG[self.entry])
         def pushed(self):
             dirname = os.path.dirname(self.edit.text())
@@ -815,6 +816,26 @@ class SettingsDialog(QDialog):
                 return self.keySequence().toString()
     except NameError:
         KeySequence = None
+
+    class MultiLine(MultiLineEdit):
+        def __init__(self, entry, parent=None, help=None, needs_restart=False):
+            super().__init__(parent, movable=True, compact=False)
+            self.entry = entry
+            if help is not None: self.setWhatsThis(help)
+            self.needs_restart = needs_restart
+            self.setFixedHeight(self.minimumSizeHint().height())
+            self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            self.load(CONFIG[self.entry])
+        @property
+        def changed(self):
+            return CONFIG[self.entry] != '\n'.join(self.get_values())
+        def load(self, value):
+            self.set_values(value.splitlines())
+        def save(self):
+            CONFIG[self.entry] = '\n'.join(self.get_values())
+        @property
+        def str(self):
+            return '\n'.join(self.get_values())
 
     def __init__(self, parent):
         super().__init__(parent)

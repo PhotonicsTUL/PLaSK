@@ -15,7 +15,6 @@
 import sys
 import os.path
 from lxml import etree
-from collections import OrderedDict
 import yaml
 
 # Disable yaml warning
@@ -23,33 +22,6 @@ try:
     yaml.warnings({'YAMLLoadWarning': False})
 except (TypeError, NameError, AttributeError):
     pass
-
-
-def represent_odict(dump, tag, mapping, flow_style=None):
-    value = []
-    node = yaml.MappingNode(tag, value, flow_style=flow_style)
-    if dump.alias_key is not None:
-        dump.represented_objects[dump.alias_key] = node
-    best_style = True
-    if hasattr(mapping, 'items'):
-        mapping = mapping.items()
-    for item_key, item_value in mapping:
-        node_key = dump.represent_data(item_key)
-        node_value = dump.represent_data(item_value)
-        if not (isinstance(node_key, yaml.ScalarNode) and not node_key.style):
-            best_style = False
-        if not (isinstance(node_value, yaml.ScalarNode) and not node_value.style):
-            best_style = False
-        value.append((node_key, node_value))
-    if flow_style is None:
-        if dump.default_flow_style is not None:
-            node.flow_style = dump.default_flow_style
-        else:
-            node.flow_style = best_style
-    return node
-
-yaml.SafeDumper.add_representer(OrderedDict,
-                                lambda dumper, value: represent_odict(dumper, u'tag:yaml.org,2002:map', value))
 
 
 class AnchorSafeDumper(yaml.SafeDumper):
@@ -96,7 +68,7 @@ ATTRS = []
 
 
 def read_attr(attr, xns):
-    info = OrderedDict()
+    info = {}
     info['attr'] = attr.attrib['name']
     info['label'] = attr.attrib['label']
     if attr.attrib.get('required') == 'yes':
@@ -118,7 +90,7 @@ def read_attr(attr, xns):
     conflicts = []
     for conflict in attr.findall(xns + 'conflicts'):
         ct = conflict.attrib.get('tag')
-        ci = OrderedDict()
+        ci = {}
         if ct is not None:
             ci['tag'] = ct
         ci['attr'] = conflict.attrib['attr']
@@ -140,7 +112,7 @@ TAGS = []
 
 def iter_tags(parent, ns, xns, target):
     for tag in parent.xpath('p:tag|p:bcond', namespaces={'p': ns}):
-        info = OrderedDict()
+        info = {}
         if tag.tag == xns + 'tag':
             info['tag'] = tag.attrib['name']
             info['label'] = tag.attrib['label']
@@ -150,7 +122,7 @@ def iter_tags(parent, ns, xns, target):
                 if attr.tag == xns + 'attr':
                     attrs.append(read_attr(attr, xns))
                 elif attr.tag == xns + 'group':
-                    gi = OrderedDict()
+                    gi = {}
                     gi['group'] = attr.attrib['label']
                     optional(attr, 'unit', gi)
                     gi['attrs'] = []
@@ -171,11 +143,11 @@ def iter_tags(parent, ns, xns, target):
             optional(tag, 'type', info, 'mesh type')
             mesh = tag.attrib.get('mesh')
             if mesh:
-                mi = info['mesh'] = OrderedDict()
+                mi = info['mesh'] = {}
                 mi['tag'], mi['attr'] = mesh.split(':')
             geometry = tag.attrib.get('geometry')
             if mesh:
-                gi = info['geometry'] = OrderedDict()
+                gi = info['geometry'] = {}
                 gi['tag'], gi['attr'] = geometry.split(':')
             if tag.text:
                 info['help'] = parse_text(tag.text)
@@ -209,7 +181,7 @@ def proceed(filename):
         if solver.attrib.get('obsolete'):
             continue
 
-        info = OrderedDict()
+        info = {}
         info['solver'] = solver.attrib['name']
 
         template = templates.get(solver.attrib.get('template'))

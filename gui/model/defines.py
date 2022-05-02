@@ -10,7 +10,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 
-from collections import OrderedDict
 from lxml import etree
 
 from ..qt.QtCore import *
@@ -72,7 +71,7 @@ class DefinesModel(TableModel):
 
     def create_info(self):
         res = super().create_info()
-        names = OrderedDict()
+        names = {}
         for i, d in enumerate(self.entries):
             if not d.name:
                 res.append(Info('Definition name is required [row: {}]'.format(i+1), Info.ERROR, rows=(i,), cols=(0,)))

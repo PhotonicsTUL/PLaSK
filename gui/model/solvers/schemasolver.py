@@ -13,7 +13,6 @@
 
 import sys
 import os
-from collections import OrderedDict
 from importlib import import_module
 
 from lxml import etree
@@ -168,7 +167,7 @@ class SchemaSolver(Solver):
             for c in self.incomments.get('mesh', ()):
                 element.append(etree.Comment(c))
             etree.SubElement(element, 'mesh', {'ref': self.mesh})
-        done = OrderedDict()
+        done = {}
         for schema in self.schema:
             tag = schema.name
             data = self.data[tag]

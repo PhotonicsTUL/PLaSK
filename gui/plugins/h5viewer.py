@@ -410,7 +410,7 @@ class ResultsWindow(QMainWindow):
 class AnalyzeResultsAction(QAction):
 
     def __init__(self, parent):
-        super().__init__(QIcon.fromTheme('edit-find'), 'Anal&yze Results...', parent)
+        super().__init__(QIcon.fromTheme('edit-find'), 'Analy&ze Results...', parent)
         CONFIG.set_shortcut(self, 'analyze_results', 'Analyze Results...', 'Ctrl+Shift+A')
         self.triggered.connect(self.execute)
 

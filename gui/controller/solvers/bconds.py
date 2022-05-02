@@ -11,7 +11,6 @@
 # GNU General Public License for more details.
 import sys
 import weakref
-from collections import OrderedDict
 
 from lxml.etree import tostring
 
@@ -40,6 +39,7 @@ else:
 
 
 class PlaceDetailsEditor(QWidget):
+
     def __init__(self, delegate, parent=None):
         super().__init__(parent)
         self.delegate = delegate
@@ -168,7 +168,9 @@ class RectangularPlaceLine(PlaceDetailsEditor):
 if preview_available:
 
     class PlotWidget(PlotWidgetBase):
+
         class NavigationToolbar(PlotWidgetBase.NavigationToolbar):
+
             def __init__(self, *args, **kwargs):
                 super(PlotWidget.NavigationToolbar, self).__init__(*args, **kwargs)
                 if self.controller.geometry_node.dim == 2:
@@ -231,6 +233,7 @@ if preview_available:
 
 
 class BoundaryConditionsDialog(QDialog):
+
     def __init__(self, controller, schema, data, parent=None):
         super().__init__(parent)
         self.setWindowTitle(schema.label2 + " Boundary Conditions")
@@ -554,6 +557,7 @@ class PlaceDelegate(QStyledItemDelegate):
 
 
 class PlaceDetailsDelegate(HTMLDelegate):
+
     def __init__(self, dialog, controller, defines=None, parent=None):
         super().__init__(parent)
         self.dialog = weakref.proxy(dialog)
@@ -580,28 +584,26 @@ class PlaceDetailsDelegate(HTMLDelegate):
 
 
 PLACES_EDITORS = {
-    'Rectangular2D':
-    OrderedDict((
-        ("Left", RectangularPlaceSide),
-        ("Right", RectangularPlaceSide),
-        ("Top", RectangularPlaceSide),
-        ("Bottom", RectangularPlaceSide),
-        ("Horizontal Line", RectangularPlaceLine),
-        ("Vertical Line", RectangularPlaceLine),
-        ("Union", None),
-        ("Intersection", None),
-        ("Difference", None),
-    )),
-    'Rectangular3D':
-    OrderedDict((
-        ("Left", RectangularPlaceSide),
-        ("Right", RectangularPlaceSide),
-        ("Top", RectangularPlaceSide),
-        ("Bottom", RectangularPlaceSide),
-        ("Front", RectangularPlaceSide),
-        ("Back", RectangularPlaceSide),
-        ("Union", None),
-        ("Intersection", None),
-        ("Difference", None),
-    )),
+    'Rectangular2D': {
+        "Left": RectangularPlaceSide,
+        "Right": RectangularPlaceSide,
+        "Top": RectangularPlaceSide,
+        "Bottom": RectangularPlaceSide,
+        "Horizontal Line": RectangularPlaceLine,
+        "Vertical Line": RectangularPlaceLine,
+        "Union": None,
+        "Intersection": None,
+        "Difference": None,
+    },
+    'Rectangular3D': {
+        "Left": RectangularPlaceSide,
+        "Right": RectangularPlaceSide,
+        "Top": RectangularPlaceSide,
+        "Bottom": RectangularPlaceSide,
+        "Front": RectangularPlaceSide,
+        "Back": RectangularPlaceSide,
+        "Union": None,
+        "Intersection": None,
+        "Difference": None,
+    },
 }

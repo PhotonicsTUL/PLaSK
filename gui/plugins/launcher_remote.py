@@ -111,7 +111,6 @@ else:
     import paramiko.hostkeys
 
     import os.path
-    from collections import OrderedDict
 
     import select
 

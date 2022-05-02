@@ -407,8 +407,8 @@ class MultiLineEdit(QWidget):
             if not self.parent().hasFocus():
                 option.state &= ~QStyle.StateFlag.State_Selected
 
-    def __init__(self, movable=False, change_cb=None, document=None, compact=True):
-        super().__init__()
+    def __init__(self, parent=None, movable=False, change_cb=None, document=None, compact=True):
+        super().__init__(parent)
         self.change_cb = change_cb
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)

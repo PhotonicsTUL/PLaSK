@@ -11,7 +11,6 @@
 # GNU General Public License for more details.
 
 # Base classes for entries in grids model
-from collections import OrderedDict
 from lxml import etree
 from xml.sax.saxutils import quoteattr
 
@@ -229,7 +228,7 @@ class GridsModel(TableModel):
 
     def create_info(self):
         res = super().create_info()
-        names = OrderedDict()
+        names = {}
         for i, entry in enumerate(self.entries):
             if not entry.name:
                 res.append(Info('Grid name is required [row: {}]'.format(i+1), Info.ERROR, rows=(i,), cols=(0,)))

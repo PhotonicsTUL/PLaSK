@@ -2,7 +2,6 @@
 #coding: utf8
 import sys
 import os
-from collections import OrderedDict
 import textwrap
 
 import yaml
@@ -91,9 +90,9 @@ try:
 except TypeError:
 	source = yaml.safe_load(open(fname))
 
-docs = OrderedDict()
+docs = {}
 initializers = []
-loaders = OrderedDict()
+loaders = {}
 
 for solver in source:
     if not isinstance(solver, dict): continue

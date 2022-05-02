@@ -4,8 +4,6 @@ import os
 import jsonschema
 import jsonschema.exceptions
 
-from collections import OrderedDict
-
 
 def open_utf8(*args, **kwargs):
     try:
@@ -24,12 +22,11 @@ except ImportError:
         return dumper.represent_dict(data.iteritems())
 
     def dict_constructor(loader, node):
-        return OrderedDict(loader.construct_pairs(node))
+        return loader.construct_pairs(node)
 
     def text_constructor(loader, node):
         return loader.construct_scalar(node).strip().encode('utf-8')
 
-    yaml.add_representer(OrderedDict, dict_representer)
     yaml.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, dict_constructor)
     yaml.add_constructor(yaml.resolver.BaseResolver.DEFAULT_SCALAR_TAG, text_constructor)
 
@@ -99,7 +96,7 @@ validator = jsonschema.validators.validator_for(schema)(schema)
 
 
 def validate(fname):
-    instance = yaml.safe_load(open_utf8(fname), **kwargs)
+    instance = yaml.load(open_utf8(fname), **kwargs)
     error = jsonschema.exceptions.best_match(validator.iter_errors(instance))
     if error:
         print_error(error, fname, instance)
