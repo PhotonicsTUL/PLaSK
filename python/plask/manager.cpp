@@ -66,7 +66,7 @@ class PythonXMLFilter {
 
     std::string operator()(const std::string& in) const {
         std::string result;
-        result.reserve(in.size());  //we guess that output will have the simillar size as input
+        result.reserve(in.size());  // we guess that output will have the simillar size as input
         for (std::string::size_type pos = 0; pos < in.size(); ++pos) {
             if (in[pos] == '{') {
                 ++pos;
@@ -87,6 +87,9 @@ class PythonXMLFilter {
                     throw plask::Exception("Cannot find '}' mathing to '{' at position {0} in: {1}", pos-1, in);
                 result += eval(in.substr(pos, close_pos-1 - pos));
                 pos = close_pos-1;    // pos with '}' that will be skipped
+            } else if (in[pos] == '}' && in[pos+1] == '}') {
+                result += '}';
+                ++pos;
             } else
                 result += in[pos];
         }
