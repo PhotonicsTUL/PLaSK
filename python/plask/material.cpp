@@ -1464,7 +1464,7 @@ void initMaterials() {
 
     py::def("_register_material_alloy", &registerAlloyMaterial,
             (py::arg("name"), "material", "base"),
-            u8"Register new complex material class to the database");
+            u8"Register new alloy material class to the database");
 
     #define REGISTER_CACHED_VALUE_GETTER(param) \
         detail::Cached##param##GetterObj = py::raw_function(&detail::Cached##param##Getter); \

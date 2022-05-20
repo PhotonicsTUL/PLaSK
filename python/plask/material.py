@@ -126,11 +126,5 @@ class alloy:
         _material._register_material_alloy(cls.name, cls, self.base)
         return cls
 
-class complex(alloy):
-    def __init__(self, base=None):
-        from . import print_log
-        print_log('warning', "Decorator @material.complex is obsolete, use @material.alloy instead")
-        super().__init__(base)
-
 
 const = staticmethod
