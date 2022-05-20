@@ -319,8 +319,9 @@ cvector AdmittanceTransfer::getReflectionVector(const cvector& incident, Inciden
 
 void AdmittanceTransfer::determineReflectedFields(const cvector& incident, IncidentDirection side)
 {
-    if (fields_determined == DETERMINED_REFLECTED && incident == incident_vector) return;
+    if (fields_determined == DETERMINED_REFLECTED && incident == incident_vector && side == incident_side) return;
     incident_vector = incident.copy();
+    incident_side = side;
 
     writelog(LOG_DETAIL, solver->getId() + ": Determining reflected optical fields");
 
