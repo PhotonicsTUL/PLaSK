@@ -273,6 +273,7 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
 
     dcomplex klong = self->getKlong(), ktran = self->getKtran();
     plask::optional<dcomplex> wavelength, k0;
+    std::string _klong, _ktran;
 
     AxisNames* axes = getCurrentAxes();
     py::stl_input_iterator<std::string> begin(kwargs), end;
@@ -290,19 +291,33 @@ py::object FourierSolver3D_getDeterminant(py::tuple args, py::dict kwargs) {
             } else
                 k0.reset(dcomplex(py::extract<dcomplex>(kwargs[*i])));
         } else if (*i == "klong" || *i == "kl" || *i == "k"+axes->getNameForLong()) {
+            if (_klong != "") throw BadInput(self->getId(), u8"'{}' was already specified as '{}'", *i, _klong);
+            _klong = *i;
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
+                if (expansion->symmetric_long())
+                    throw Exception("{0}: Cannot get determinant for longitudinal wavevector array with longitudinal symmetry",
+                                    self->getId());
                 if (what) throw TypeError(u8"Only one key may be an array");
                 what = WHAT_KLONG; array = kwargs[*i];
-            } else
+            } else {
                 klong = py::extract<dcomplex>(kwargs[*i]);
+                if (expansion->symmetric_long() && klong != 0.)
+                    throw Exception("{0}: Longitudinal wavevector must be 0 with longitudinal symmetry", self->getId());
+            }
         } else if (*i == "ktran" || *i == "kt" || *i == "k"+axes->getNameForTran()) {
+            if (_ktran != "") throw BadInput(self->getId(), u8"'{}' was already specified as '{}'", *i, _ktran);
+            _ktran = *i;
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
+                if (expansion->symmetric_tran())
+                    throw Exception("{0}: Cannot get determinant for transverse wavevector array with transverse symmetry",
+                                    self->getId());
                 if (what) throw TypeError(u8"Only one key may be an array");
                 what = WHAT_KTRAN; array = kwargs[*i];
-            } else
+            } else {
                 ktran = py::extract<dcomplex>(kwargs[*i]);
-        } else if (*i == "dispersive") {
-            throw TypeError(u8"Dispersive argument has been removed: set solver.lam0 attribute");
+                if (expansion->symmetric_tran() && ktran != 0.)
+                    throw Exception("{0}: Transverse wavevector must be 0 with transverse symmetry", self->getId());
+            }
         } else
             throw TypeError(u8"get_determinant() got unexpected keyword argument '{0}'", *i);
     }

@@ -69,7 +69,11 @@ void FourierSolver2D::loadConfiguration(XMLReader& reader, Manager& manager)
             }
             if (reader.hasAttribute("lam")) k0 = 2e3*PI / reader.requireAttribute<dcomplex>("lam");
             ktran = reader.getAttribute<dcomplex>("k-tran", ktran);
-            beta = reader.getAttribute<dcomplex>("k-long", beta);
+            if (reader.hasAttribute("beta")) {
+                if (reader.hasAttribute("k-long")) throw XMLConflictingAttributesException(reader, "beta", "k-long");
+                beta = reader.requireAttribute<dcomplex>("beta");
+            } else
+                beta = reader.getAttribute<dcomplex>("k-long", beta);
             if (reader.hasAttribute("symmetry")) {
                 std::string repr = reader.requireAttribute("symmetry");
                 Expansion::Component val;
@@ -185,6 +189,17 @@ size_t FourierSolver2D::findMode(FourierSolver2D::What what, dcomplex start)
                 if (isnan(x)) throw ComputationError(this->getId(), "'ktran' converged to NaN");
                 expansion.setKtran(x); return transfer->determinant();
             }, "ktran");
+            break;
+        case FourierSolver2D::WHAT_BETA:
+            if (expansion.separated())
+                throw Exception("{0}: Cannot search for longitudinal wavevector with polarization separation", getId());
+            expansion.setK0(k0);
+            expansion.setKtran(ktran);
+            clearFields();
+            root = getRootDigger([this](const dcomplex& x) {
+                if (isnan(x)) throw ComputationError(this->getId(), "'beta' converged to NaN");
+                expansion.setBeta(x); return transfer->determinant();
+            }, "beta");
             break;
     }
     root->find(start);

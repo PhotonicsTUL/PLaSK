@@ -21,8 +21,9 @@ struct PLASK_SOLVER_API FourierSolver2D: public SlabSolver<SolverWithMesh<Geomet
     enum What {
         WHAT_WAVELENGTH,    ///< Search for wavelength
         WHAT_K0,            ///< Search for normalized frequency
-        WHAT_NEFF,         ///< Search for longitudinal effective index
-        WHAT_KTRAN          ///< Search for transverse wavevector
+        WHAT_NEFF,          ///< Search for longitudinal effective index
+        WHAT_KTRAN,         ///< Search for transverse wavevector
+        WHAT_BETA           ///< Search for longitudinal wavevector
     };
 
 

@@ -51,7 +51,7 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
     plask::optional<dcomplex> k0;
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
-        if (*i == "lam" || *i == "wavelength") {
+        if (*i == "lam") {
             if (what == WHAT_K0 || k0)
                 throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
@@ -69,8 +69,6 @@ py::object BesselSolverCyl_getDeterminant(py::tuple args, py::dict kwargs) {
                 k0.reset(py::extract<dcomplex>(kwargs[*i]));
         } else if (*i == "m") {
             m = py::extract<int>(kwargs[*i]);
-        } else if (*i == "dispersive") {
-            throw TypeError(u8"Dispersive argument has been removed: set solver.lam0 attribute");
         } else
             throw TypeError(u8"get_determinant() got unexpected keyword argument '{0}'", *i);
     }

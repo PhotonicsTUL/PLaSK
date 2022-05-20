@@ -65,16 +65,17 @@ static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs
     FourierSolver2D* self = py::extract<FourierSolver2D*>(args[0]);
     auto* expansion = &self->expansion;
 
-    enum What { WHAT_NOTHING = 0, WHAT_WAVELENGTH, WHAT_K0, WHAT_NEFF, WHAT_KTRAN };
+    enum What { WHAT_NOTHING = 0, WHAT_WAVELENGTH, WHAT_K0, WHAT_NEFF, WHAT_KTRAN, WHAT_BETA };
     What what = WHAT_NOTHING;
     py::object array;
 
-    plask::optional<dcomplex> k0, neff, ktran;
+    plask::optional<dcomplex> k0, neff, ktran, beta;
+    std::string _ktran, _beta;
 
     AxisNames* axes = getCurrentAxes();
     py::stl_input_iterator<std::string> begin(kwargs), end;
     for (auto i = begin; i != end; ++i) {
-        if (*i == "lam" || *i == "wavelength") {
+        if (*i == "lam") {
             if (what == WHAT_K0 || k0) throw BadInput(self->getId(), u8"'lam' and 'k0' are mutually exclusive");
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
                 if (what) throw TypeError(u8"Only one key may be an array");
@@ -91,39 +92,66 @@ static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs
             } else
                 k0.reset(py::extract<dcomplex>(kwargs[*i]));
         } else if (*i == "neff") {
+            if (what == WHAT_BETA || beta) throw BadInput(self->getId(), u8"'neff' and '{}' are mutually exclusive", _beta);
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
+                if (expansion->separated())
+                    throw Exception("{0}: Cannot get determinant for effective index array with polarization separation",
+                                    self->getId());
                 if (what) throw TypeError(u8"Only one key may be an array");
                 what = WHAT_NEFF;
                 array = kwargs[*i];
-            } else
+            } else {
                 neff.reset(py::extract<dcomplex>(kwargs[*i]));
+                if (expansion->separated() && *neff != 0.)
+                    throw Exception("{0}: Effective index must be 0 with polarization separation",
+                                    self->getId());
+            }
         } else if (*i == "ktran" || *i == "kt" || *i == "k" + axes->getNameForTran()) {
+            if (what == WHAT_KTRAN || ktran) throw BadInput(self->getId(), u8"'{}' was already specified as '{}'", *i, _ktran);
+            _ktran = *i;
             if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
+                if (expansion->symmetric())
+                    throw Exception("{0}: Cannot get determinant for transverse wavevector array with symmetry", self->getId());
                 if (what) throw TypeError(u8"Only one key may be an array");
                 what = WHAT_KTRAN;
                 array = kwargs[*i];
-            } else
+            } else {
                 ktran.reset(py::extract<dcomplex>(kwargs[*i]));
-        } else if (*i == "dispersive") {
-            throw TypeError(u8"Dispersive argument has been removed: set solver.lam0 attribute");
+                if (expansion->symmetric() && *ktran != 0.)
+                    throw Exception("{0}: Transverse wavevector must be 0 with symmetry",
+                                    self->getId());
+            }
+        } else if (*i == "beta" || *i == "klong" || *i == "kl" || *i == "k"+axes->getNameForLong()) {
+            if (what == WHAT_BETA || beta) throw BadInput(self->getId(), u8"'{}' was already specified as '{}'", *i, _beta);
+            _beta = *i;
+            if (what == WHAT_NEFF || neff) throw BadInput(self->getId(), u8"'{}' and 'neff' are mutually exclusive", *i);
+            if (PyArray_Check(py::object(kwargs[*i]).ptr())) {
+                if (expansion->separated())
+                    throw Exception("{0}: Cannot get determinant for longitudinal wavevector array with polarization separation",
+                                    self->getId());
+                if (what) throw TypeError(u8"Only one key may be an array");
+                what = WHAT_BETA;
+                array = kwargs[*i];
+            } else {
+                beta.reset(py::extract<dcomplex>(kwargs[*i]));
+                if (expansion->separated() && *beta != 0.)
+                    throw Exception("{0}: Longitudinal wavevector must be 0 with polarization separation",
+                                    self->getId());
+            }
         } else
             throw TypeError(u8"get_determinant() got unexpected keyword argument '{0}'", *i);
     }
 
     self->Solver::initCalculation();
 
-    if (k0)
-        expansion->setK0(*k0);
-    else
-        expansion->setK0(self->getK0());
-    if (neff) {
-        if (what != WHAT_WAVELENGTH && what != WHAT_K0) expansion->setBeta(*neff * expansion->k0);
-    } else
-        expansion->setBeta(self->getBeta());
-    if (ktran)
-        expansion->setKtran(*ktran);
-    else
-        expansion->setKtran(self->getKtran());
+    if (k0) expansion->setK0(*k0);
+    else expansion->setK0(self->getK0());
+    if (neff) { if (what != WHAT_WAVELENGTH && what != WHAT_K0) expansion->setBeta(*neff * expansion->k0); }
+    else expansion->setBeta(self->getBeta());
+    if (ktran) expansion->setKtran(*ktran);
+    else expansion->setKtran(self->getKtran());
+    if (beta) expansion->setBeta(*beta);
+    else expansion->setBeta(self->getBeta());
     expansion->setLam0(self->getLam0());
     expansion->setSymmetry(self->getSymmetry());
     expansion->setPolarization(self->getPolarization());
@@ -168,6 +196,15 @@ static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs
                 array,
                 "Fourier2D.get_determinant",
                 "ktran");
+        case WHAT_BETA:
+            return UFUNC<dcomplex>(
+                [self](dcomplex x) -> dcomplex {
+                    self->expansion.setBeta(x);
+                    return self->getDeterminant();
+                },
+                array,
+                "Fourier2D.get_determinant",
+                "beta");
     }
     return py::object();
 }
@@ -234,6 +271,8 @@ static size_t FourierSolver2D_findMode(py::tuple args, py::dict kwargs) {
         what = FourierSolver2D::WHAT_NEFF;
     else if (key == "ktran" || key == "kt" || key == "k" + axes->getNameForTran())
         what = FourierSolver2D::WHAT_KTRAN;
+    else if (key == "beta" || key == "klong" || key == "kl" || key == "k" + axes->getNameForTran())
+        what = FourierSolver2D::WHAT_BETA;
     else
         throw TypeError(u8"find_mode() got unexpected keyword argument '{0}'", key);
 
@@ -407,6 +446,8 @@ void export_FourierSolver2D() {
                 u8"Longitudinal propagation constant of the light [1/µm].\n\n"
                 u8"Use this property only if you are looking for anything else than\n"
                 u8"the longitudinal component of the propagation vector and the effective index.\n");
+    RW_PROPERTY(beta, getBeta, setBeta,
+                u8"Alias for :attr:`klong`\n");
     RW_PROPERTY(ktran, getKtran, setKtran,
                 u8"Transverse propagation constant of the light [1/µm].\n\n"
                 u8"Use this property only  if you are looking for anything else than\n"

@@ -188,6 +188,8 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
             }, "k0");
             break;
         case FourierSolver3D::WHAT_KLONG:
+            if (expansion.symmetric_long())
+                throw Exception("{}: Cannot search for longitudinal wavevector with longitudinal symmetry", getId());
             expansion.setK0(this->k0);
             expansion.setKtran(ktran);
             transfer->fields_determined = Transfer::DETERMINED_NOTHING;
@@ -197,6 +199,8 @@ size_t FourierSolver3D::findMode(FourierSolver3D::What what, dcomplex start)
             }, "klong");
             break;
         case FourierSolver3D::WHAT_KTRAN:
+            if (expansion.symmetric_tran())
+                throw Exception("{}: Cannot search for transverse wavevector with transverse symmetry", getId());
             expansion.setK0(this->k0);
             expansion.setKlong(klong);
             transfer->fields_determined = Transfer::DETERMINED_NOTHING;
