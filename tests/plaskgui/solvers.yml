@@ -1,5 +1,5 @@
 - solver: Configured2D
-  lib: something
+  lib: solvers
   category: local
 
   geometry: Cartesian2D
