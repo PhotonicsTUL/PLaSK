@@ -147,11 +147,10 @@ static py::object FourierSolver2D_getDeterminant(py::tuple args, py::dict kwargs
     if (k0) expansion->setK0(*k0);
     else expansion->setK0(self->getK0());
     if (neff) { if (what != WHAT_WAVELENGTH && what != WHAT_K0) expansion->setBeta(*neff * expansion->k0); }
+    else if (beta) expansion->setBeta(*beta);
     else expansion->setBeta(self->getBeta());
     if (ktran) expansion->setKtran(*ktran);
     else expansion->setKtran(self->getKtran());
-    if (beta) expansion->setBeta(*beta);
-    else expansion->setBeta(self->getBeta());
     expansion->setLam0(self->getLam0());
     expansion->setSymmetry(self->getSymmetry());
     expansion->setPolarization(self->getPolarization());
