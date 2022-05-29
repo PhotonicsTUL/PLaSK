@@ -305,7 +305,7 @@ struct PLASK_API MaterialsDB {
     constructors_map_t constructors;
 
     // Static const constructors_map_t::mapped_type& iter_val(const constructors_map_t::value_type &pair) { return pair.second; }
-    struct iter_val: public std::unary_function<const constructors_map_t::value_type&, const constructors_map_t::mapped_type&> {
+    struct iter_val: public std::function<const constructors_map_t::mapped_type&(const constructors_map_t::value_type&)> {
         const constructors_map_t::mapped_type& operator()(const constructors_map_t::value_type &pair) const { return pair.second; }
     };
 

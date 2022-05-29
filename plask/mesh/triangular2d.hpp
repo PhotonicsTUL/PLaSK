@@ -409,7 +409,7 @@ private:
     static std::set<std::size_t> allBoundaryNodes(const SegmentsCounts& segmentsCount);
 
     template <typename T>   // we can't use std::grater as it use >, and we have < only
-    struct greater: public std::binary_function<T, T, bool> {
+    struct greater: public std::function<bool(T, T)> {
       bool operator()(const T& first, const T& second) const { return second < first; }
     };
 
