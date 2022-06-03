@@ -157,7 +157,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
         def id(self):
             if self.merge_with_next_remove and self.next_remove is None:
                 return GeometryModel.REMOVE_COMMAND_ID
-            return super().id()
+            return super(GeometryModel.InsertChildCommand, self).id()
 
     class SwapChildrenCommand(QUndoCommand):
 
@@ -169,7 +169,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
             if parent_node is None: parent_node = model.fake_root
             self.parent_node = parent_node
             self.model = model
-            super().__init__('swap items of {} at rows {} and {}'
+            super(GeometryModel.SwapChildrenCommand, self).__init__('swap items of {} at rows {} and {}'
                                                                     .format(parent_node.tag_name(full_name=False),
                                                                             self.index1+1, self.index2+1), parent)
 
@@ -196,7 +196,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
             new_parent.path, new_parent.in_parent_aligners = new_child.path, new_child.in_parent_aligners
             new_child.path = new_child.in_parent_aligners = None
             new_child.set_parent(self.new_parent, self.new_parent.new_child_pos(), remove_from_old_parent=False)
-            super().__init__(
+            super(GeometryModel.ReparentCommand, self).__init__(
                 "insert {} into {}".format(gname(child_node.tag_name(full_name=False)),
                                            gname(new_parent.tag_name(full_name=False))), parent)
 
@@ -233,7 +233,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
     class SetRootsCommand(QUndoCommand):
 
         def __init__(self, model, axes, roots, QUndoCommand_parent = None):
-            super().__init__('edit XPL source', QUndoCommand_parent)
+            super(GeometryModel.SetRootsCommand, self).__init__('edit XPL source', QUndoCommand_parent)
             self.model = model
             self.old_axes = model.axes
             self.old_roots = model.roots
@@ -485,7 +485,6 @@ class GeometryModel(SectionModel, QAbstractItemModel):
         return False
 
     def canDropMimeData(self, mime_data, action, row, column, parentIndex):
-        """TODO this is optional but why qt doesn't call this??"""
         try:
             if action in (Qt.DropAction.MoveAction, Qt.DropAction.CopyAction):
                 moved_obj = mime_data.itemInstance()

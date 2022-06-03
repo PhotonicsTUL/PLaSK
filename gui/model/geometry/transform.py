@@ -26,9 +26,10 @@ class GNTransform(GNObject):
     def accept_as_child(self, node):
         from .geometry import GNGeometryBase
         if not self.accept_new_child() or isinstance(node, GNGeometryBase): return False
-        from again_copy import GNCopy, GNAgain
-        return (isinstance(node, GNObject) and node.dim == self.children_dim) or\
-                isinstance(node, GNCopy) or isinstance(node, GNAgain)
+        from .again_copy import GNCopy, GNAgain
+        from .python_object import GNPython
+        return (isinstance(node, GNObject) and node.dim == self.children_dim) or \
+                isinstance(node, GNCopy) or isinstance(node, GNAgain) or isinstance(node, GNPython)
 
     def _children_from_xml(self, ordered_reader, conf):
         construct_geometry_object(ordered_reader.get(), conf)
