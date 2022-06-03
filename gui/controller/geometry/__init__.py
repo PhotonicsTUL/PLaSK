@@ -180,6 +180,9 @@ class GeometryController(Controller):
 
         self.document.window.config_changed.connect(self.reconfig)
 
+        self.model.dropped.connect(lambda index: weakself.tree.setCurrentIndex(index))
+
+
     def fill_add_menu(self):
         weakself = weakref.proxy(self)
         self.add_menu.clear()

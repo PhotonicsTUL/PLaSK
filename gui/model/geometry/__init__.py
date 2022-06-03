@@ -23,6 +23,7 @@ try:
 except ImportError:
     import pickle
 
+from ...qt import QtSignal
 from ...qt.QtCore import *
 from ...qt.QtWidgets import *
 from ...qt.QtGui import *
@@ -73,6 +74,8 @@ class GeometryModel(SectionModel, QAbstractItemModel):
 
     REMOVE_COMMAND_ID = 0
 
+    dropped = QtSignal(QModelIndex)
+
     class RemoveChildrenCommand(QUndoCommand):
 
         def __init__(self, model, parent_node, row, end, parent=None):
@@ -112,7 +115,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
 
     class InsertChildCommand(QUndoCommand):
 
-        def __init__(self, model, parent_node, row, child_node, merge_with_next_remove=False, parent=None):
+        def __init__(self, model, parent_node, row, child_node, merge_with_next_remove=False, parent=None, name="add"):
             self.model = model
             self.parent_node = parent_node
             if row is None: row = parent_node.new_child_pos()
@@ -120,7 +123,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
             self.child_node = child_node
             self.merge_with_next_remove = merge_with_next_remove
             self.next_remove = None
-            super().__init__("add {}".format(gname(child_node.tag_name(full_name=False))), parent)
+            super().__init__("{} {}".format(name, gname(child_node.tag_name(full_name=False))), parent)
 
         @property
         def parent_index(self):
@@ -263,6 +266,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
         self.dirty = False
         self.show_props = True
         self.endcomments = []
+        self._moved_node = None
 
     @property
     def roots(self):
@@ -457,6 +461,12 @@ class GeometryModel(SectionModel, QAbstractItemModel):
     def mimeData(self, indexes):
         return PyObjMime(indexes[0].internalPointer())
 
+    def fire_changed(self, *args, **kwargs):
+        super().fire_changed(*args, **kwargs)
+        if self._moved_node is not None:
+            self.dropped.emit(self.index_for_node(self._moved_node))
+            self._moved_node = None
+
     def dropMimeData(self, mime_data, action, row, column, parentIndex):
         if not self.canDropMimeData(mime_data, action, row, column, parentIndex):
             return False    # qt should call this earlier but some version of qt have a bug
@@ -467,20 +477,23 @@ class GeometryModel(SectionModel, QAbstractItemModel):
             if moved_obj.parent != parent:
                 # without copy, the parent of source is incorrect after changing and then remove will crash
                 moved_obj = deepcopy(moved_obj, memo={id(moved_obj._parent): moved_obj._parent})
-            self.insert_node(parent, moved_obj, None if row == -1 else row, merge_with_next_remove=True)
+            self.insert_node(parent, moved_obj, None if row == -1 else row, merge_with_next_remove=True, action_name="move")
+            self._moved_node = moved_obj
             return True # removeRows will be called and will remove current moved_obj
         if action == Qt.DropAction.CopyAction:
             copied_obj = mime_data.itemInstance()
             parent = self.node_for_index(parentIndex)
             copied_obj = deepcopy(copied_obj, memo={id(copied_obj._parent): copied_obj._parent})
-            self.insert_node(parent, copied_obj, None if row == -1 else row)
+            self.insert_node(parent, copied_obj, None if row == -1 else row, action_name="copy")
+            self.dropped.emit(self.index_for_node(copied_obj))
             return True
         if action == Qt.DropAction.LinkAction:
             linked_obj = mime_data.itemInstance()
             parent = self.node_for_index(parentIndex)
             from .again_copy import GNAgain
             again = GNAgain(ref=linked_obj.name)
-            self.insert_node(parent, again, None if row == -1 else row)
+            self.insert_node(parent, again, None if row == -1 else row, action_name="make")
+            self.dropped.emit(self.index_for_node(again))
             return True
         return False
 
@@ -520,10 +533,10 @@ class GeometryModel(SectionModel, QAbstractItemModel):
             return QModelIndex()
         return index
 
-    def insert_node(self, parent_node, child_node, pos=None, merge_with_next_remove=False):
+    def insert_node(self, parent_node, child_node, pos=None, merge_with_next_remove=False, action_name="add"):
         self.undo_stack.push(
-            GeometryModel.InsertChildCommand(self, parent_node, pos, child_node,
-                                             merge_with_next_remove=merge_with_next_remove))
+            GeometryModel.InsertChildCommand(self, parent_node, pos, child_node, merge_with_next_remove=merge_with_next_remove,
+                                             name=action_name))
 
     def append_geometry(self, type_name):
         self.insert_node(self.fake_root, construct_by_name(type_name, geometry_types_geometries), len(self.roots))
