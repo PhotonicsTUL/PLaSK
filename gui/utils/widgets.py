@@ -387,12 +387,12 @@ class MultiLineEdit(QWidget):
 
     class LineEdit(QLineEdit):
         def focusInEvent(self, event):
-            super(MultiLineEdit.LineEdit, self).focusInEvent(event)
+            super().focusInEvent(event)
             self.deselect()
 
     class Delegate(QStyledItemDelegate):
         def __init__(self, parent=None, defines=None):
-            super(MultiLineEdit.Delegate, self).__init__(parent)
+            super().__init__(parent)
             self.defines = defines
         def createEditor(self, parent, option, index):
             editor = MultiLineEdit.LineEdit(parent)
@@ -401,7 +401,7 @@ class MultiLineEdit(QWidget):
                 editor.setCompleter(get_defines_completer(self.defines, editor))
             return editor
         def initStyleOption(self, option, index):
-            super(MultiLineEdit.Delegate, self).initStyleOption(option, index)
+            super().initStyleOption(option, index)
             option.state &= ~QStyle.StateFlag.State_MouseOver
             if option.state & QStyle.StateFlag.State_Selected:
                 option.state |= QStyle.StateFlag.State_MouseOver

@@ -57,7 +57,7 @@ else:
             )
 
             def select_plane(self, index):
-                super(GeometryPlotWidget.NavigationToolbar, self).select_plane(index)
+                super().select_plane(index)
                 self.controller.plot()
 
 

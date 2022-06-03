@@ -319,11 +319,11 @@ class LatticeEditor(QDialog):
 
     class MultipleLocator(ticker.MultipleLocator):
         def __init__(self, base=1.0):
-            super(LatticeEditor.MultipleLocator, self).__init__(base)
+            super().__init__(base)
             self.create_dummy_axis()
         def __call__(self, v1, v2):
             self.set_bounds(v1, v2)
-            locs = super(LatticeEditor.MultipleLocator, self).__call__()
+            locs = super().__call__()
             return np.array(locs), len(locs), 1.
 
     def __init__(self, vecs, bounds=None, parent=None):

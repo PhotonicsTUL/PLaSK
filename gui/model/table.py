@@ -30,7 +30,7 @@ class TableModelEditMethods:
     class InsertEntryCommand(QUndoCommand):
 
         def __init__(self, table, index, entry, parent=None):
-            super(TableModelEditMethods.InsertEntryCommand, self).\
+            super().\
                 __init__('insert row {} to {}'.format(index+1, table.name), parent)
             self.index = index
             self.table = table
@@ -62,7 +62,7 @@ class TableModelEditMethods:
     class RemoveEntryCommand(QUndoCommand):
 
         def __init__(self, table, index, parent=None):
-            super(TableModelEditMethods.RemoveEntryCommand, self).\
+            super().\
                 __init__('remove row {} from {}'.format(index+1, table.name), parent)
             self.index = index
             self.table = table
@@ -103,7 +103,7 @@ class TableModelEditMethods:
                 self.index1, self.index2 = index2, index1
             else:
                 self.index1, self.index2 = index1, index2
-            super(TableModelEditMethods.SwapEntriesCommand, self).\
+            super().\
                 __init__('swap entries at rows {} and {} in {}'.format(index1+1, index2+1, table.name), parent)
             self.table = table
 
@@ -137,7 +137,7 @@ class TableModelEditMethods:
             self.old_value = table.get_raw(col, row)
             self.new_value = new_value
             self._id = merge_id
-            super(TableModel.SetDataCommand, self).__init__(self._get_title(), parent)
+            super().__init__(self._get_title(), parent)
 
         def _get_title(self):
             col_name = self.table.headerData(self.col, Qt.Orientation.Horizontal, Qt.ItemDataRole.DisplayRole).lower()
@@ -171,7 +171,7 @@ class TableModelEditMethods:
     class SetEntriesCommand(QUndoCommand):
 
         def __init__(self, table, new_entries, parent=None):
-            super(TableModel.SetEntriesCommand, self).__init__('edit XPL source for {}'.format(table.name), parent)
+            super().__init__('edit XPL source for {}'.format(table.name), parent)
             self.table = table
             self.old_entries = table.entries
             self.new_entries = new_entries

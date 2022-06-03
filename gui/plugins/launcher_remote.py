@@ -240,7 +240,7 @@ else:
 
         class EditDialog(QDialog):
             def __init__(self, account=None, name=None, parent=None):
-                super(Account.EditDialog, self).__init__(parent)
+                super().__init__(parent)
 
                 if account is not None and account.userhost:
                     user, host = account.userhost.split('@')

@@ -771,7 +771,7 @@ class MainWindow(QMainWindow):
     class AboutWindow(QDialog):
 
         def __init__(self, text, parent=None):
-            super(MainWindow.AboutWindow, self).__init__(parent)
+            super().__init__(parent)
             self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Popup)
             self.setWindowTitle("About PLaSK")
             self.setStyleSheet("""

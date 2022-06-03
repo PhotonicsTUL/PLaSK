@@ -289,19 +289,19 @@ class MaterialsModel(TableModel):
                     return self.fun(name, cls, base)
 
             def __init__(self, document):
-                super(MaterialsModel._HandleMaterialsModule, self).__init__(document)
+                super().__init__(document)
                 self.names = []
                 self._register_simple = plask._material._register_material_simple
                 self._register_alloy = plask._material._register_material_alloy
 
             def __enter__(self):
-                super(MaterialsModel._HandleMaterialsModule, self).__enter__()
+                super().__enter__()
                 plask._material._register_material_simple = self.Register(self, self._register_simple)
                 plask._material._register_material_alloy = self.Register(self, self._register_alloy)
                 return self
 
             def __exit__(self, type=None, value=None, traceback=None):
-                super(MaterialsModel._HandleMaterialsModule, self).__exit__(type, value, traceback)
+                super().__exit__(type, value, traceback)
                 plask._material._register_material_simple = self._register_simple
                 plask._material._register_material_alloy = self._register_alloy
 
@@ -312,7 +312,7 @@ class MaterialsModel(TableModel):
     class External(QAbstractTableModel):
 
         def __init__(self, materials_model, what, name='', comments=None):
-            super(MaterialsModel.External, self).__init__()
+            super().__init__()
             self.materials_model = materials_model
             self.what = what
             self.name = name
@@ -424,7 +424,7 @@ class MaterialsModel(TableModel):
                 p.value = value
 
         def flags(self, index):
-            flags = super(MaterialsModel.Material, self).flags(index) | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
+            flags = super().flags(index) | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
 
             if index.column() in [0, 1] and not self.materials_model.is_read_only(): flags |= Qt.ItemFlag.ItemIsEditable
             #flags |= Qt.ItemFlag.ItemIsDragEnabled

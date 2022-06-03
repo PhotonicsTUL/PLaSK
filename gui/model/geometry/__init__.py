@@ -85,8 +85,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
                 name = 'items'
             else:
                 name = gname(self.removed_elements[0].tag_name(full_name=False))
-            super(GeometryModel.RemoveChildrenCommand, self).__init__(
-                "remove "+name, parent)
+            super().__init__("remove "+name, parent)
 
         @property
         def parent_index(self):
@@ -121,8 +120,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
             self.child_node = child_node
             self.merge_with_next_remove = merge_with_next_remove
             self.next_remove = None
-            super(GeometryModel.InsertChildCommand, self).__init__(
-                "add {}".format(gname(child_node.tag_name(full_name=False))), parent)
+            super().__init__("add {}".format(gname(child_node.tag_name(full_name=False))), parent)
 
         @property
         def parent_index(self):
@@ -159,7 +157,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
         def id(self):
             if self.merge_with_next_remove and self.next_remove is None:
                 return GeometryModel.REMOVE_COMMAND_ID
-            return super(GeometryModel.InsertChildCommand, self).id()
+            return super().id()
 
     class SwapChildrenCommand(QUndoCommand):
 
@@ -171,7 +169,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
             if parent_node is None: parent_node = model.fake_root
             self.parent_node = parent_node
             self.model = model
-            super(GeometryModel.SwapChildrenCommand, self).__init__('swap items of {} at rows {} and {}'
+            super().__init__('swap items of {} at rows {} and {}'
                                                                     .format(parent_node.tag_name(full_name=False),
                                                                             self.index1+1, self.index2+1), parent)
 
@@ -198,7 +196,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
             new_parent.path, new_parent.in_parent_aligners = new_child.path, new_child.in_parent_aligners
             new_child.path = new_child.in_parent_aligners = None
             new_child.set_parent(self.new_parent, self.new_parent.new_child_pos(), remove_from_old_parent=False)
-            super(GeometryModel.ReparentCommand, self).__init__(
+            super().__init__(
                 "insert {} into {}".format(gname(child_node.tag_name(full_name=False)),
                                            gname(new_parent.tag_name(full_name=False))), parent)
 
@@ -235,7 +233,7 @@ class GeometryModel(SectionModel, QAbstractItemModel):
     class SetRootsCommand(QUndoCommand):
 
         def __init__(self, model, axes, roots, QUndoCommand_parent = None):
-            super(GeometryModel.SetRootsCommand, self).__init__('edit XPL source', QUndoCommand_parent)
+            super().__init__('edit XPL source', QUndoCommand_parent)
             self.model = model
             self.old_axes = model.axes
             self.old_roots = model.roots

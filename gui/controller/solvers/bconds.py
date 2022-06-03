@@ -172,14 +172,14 @@ if preview_available:
         class NavigationToolbar(PlotWidgetBase.NavigationToolbar):
 
             def __init__(self, *args, **kwargs):
-                super(PlotWidget.NavigationToolbar, self).__init__(*args, **kwargs)
+                super().__init__(*args, **kwargs)
                 if self.controller.geometry_node.dim == 2:
                     self.disable_planes(self.controller.geometry_node.axes)
                 else:
                     self.enable_planes(self.controller.geometry_node.axes)
 
             def select_plane(self, index):
-                super(PlotWidget.NavigationToolbar, self).select_plane(index)
+                super().select_plane(index)
                 if self.controller.plot_auto_refresh: self.plot()
 
         def __init__(self, controller=None, parent=None, picker=None):

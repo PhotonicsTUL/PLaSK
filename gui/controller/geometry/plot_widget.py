@@ -55,7 +55,7 @@ class PlotWidget(PlotWidgetBase):
                 self.controller.zoom_to_current()
 
         def select_plane(self, index):
-            super(PlotWidget.NavigationToolbar, self).select_plane(index)
+            super().select_plane(index)
             plotted_tree_element = self.controller.plotted_tree_element
             if plotted_tree_element is not None and \
                getattr(plotted_tree_element, 'dim') == 3:

@@ -15,7 +15,7 @@ class Material(unittest.TestCase):
     class AlGaAs_fake(material.Material):
         def __init__(self, **kwargs):
             print(kwargs)
-            super(Material.AlGaAs_fake, self).__init__(**kwargs)
+            super().__init__(**kwargs)
             ptest.print_ptr(self)
         def __del__(self):
             ptest.print_ptr(self)
@@ -35,7 +35,7 @@ class Material(unittest.TestCase):
     class AlGaAsDp(material.Material):
         name = "AlGaAs:Dp"
         def __init__(self, *args, **kwargs):
-            super(Material.AlGaAsDp, self).__init__(**kwargs)
+            super().__init__(**kwargs)
             print(kwargs)
             print("Composition: %s" % self.composition)
         def __del__(self):

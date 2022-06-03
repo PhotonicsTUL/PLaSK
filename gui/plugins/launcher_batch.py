@@ -236,7 +236,7 @@ else:
 
         class EditDialog(QDialog):
             def __init__(self, account=None, name=None, parent=None):
-                super(Account.EditDialog, self).__init__(parent)
+                super().__init__(parent)
 
                 if account is not None and account.userhost:
                     user, host = account.userhost.split('@')
@@ -424,13 +424,13 @@ else:
             #                               dynamic)):
             #         QMessageBox.critical(None, "Error", "Entered data contain illegal characters (:,).")
             #     else:
-            #         super(Account.EditDialog, self).accept()
+            #         super().accept()
 
             def __getattr__(self, attr):
                 if attr in self._getters:
                     return self._getters[attr]()
                 else:
-                    super(Account.EditDialog, self).__getattr__(attr)
+                    super().__getattr__(attr)
 
             @property
             def name(self):
@@ -924,12 +924,12 @@ else:
         class Widget(QWidget):
             def __init__(self, launcher, parent=None):
                 self.launcher = launcher
-                super(Launcher.Widget, self).__init__(parent)
+                super().__init__(parent)
             def hideEvent(self, event):
                 if self.launcher.accounts and self.launcher.current_account is not None:
                     self.launcher.accounts[self.launcher.current_account].params[self.launcher.filename] = \
                         self.launcher.get_params()
-                super(Launcher.Widget, self).hideEvent(event)
+                super().hideEvent(event)
 
         def widget(self, main_window, parent=None):
             widget = Launcher.Widget(self, parent)
@@ -1535,7 +1535,7 @@ else:
 
         # class Item(QTreeWidgetItem):
         #     def __init__(self, *args):
-        #         super(RemoteDirDialog.Item, self).__init__(*args)
+        #         super().__init__(*args)
         #         self.setChildIndicatorPolicy(QTreeWidgetItem.ChildIndicatorPolicy.ShowIndicator)
         #         self.read = False
 

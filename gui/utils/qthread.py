@@ -20,7 +20,7 @@ class BackgroundTask:
     class Thread(QThread):
 
         def __init__(self, task):
-            super(BackgroundTask.Thread, self).__init__()
+            super().__init__()
             self._task = task
 
         def run(self):

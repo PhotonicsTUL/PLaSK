@@ -44,7 +44,7 @@ class PlotWidget(PlotWidgetBase):
         )
 
         def __init__(self, *args, **kwargs):
-            super(PlotWidget.NavigationToolbar, self).__init__(*args, **kwargs)
+            super().__init__(*args, **kwargs)
             self.disable_planes(('long', 'tran', 'vert'))
 
         def select_geometry(self, *args):
@@ -71,7 +71,7 @@ class PlotWidget(PlotWidgetBase):
                 self.parent.zoom_bbox(box)
 
         def select_plane(self, index):
-            super(PlotWidget.NavigationToolbar, self).select_plane(index)
+            super().select_plane(index)
             if self.controller.plot_auto_refresh: self.controller.plot()
             else: self.controller.show_update_required()
 

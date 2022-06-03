@@ -96,7 +96,7 @@ class RectangularBC(SchemaBoundaryConditions):
         is_editable = True
 
         def __init__(self, side, of=None, path=None):
-            super(RectangularBC.PlaceSide, self).__init__()
+            super().__init__()
             self.side = side
             self.object = of
             self.path = path
@@ -135,7 +135,7 @@ class RectangularBC(SchemaBoundaryConditions):
         is_editable = True
 
         def __init__(self, line, at=0, start=0, stop=0):
-            super(RectangularBC.PlaceLine, self).__init__()
+            super().__init__()
             self.line = line
             self.at = at
             self.start = start
@@ -173,7 +173,7 @@ class RectangularBC(SchemaBoundaryConditions):
         is_editable = False
 
         def __init__(self, operation=None):
-            super(RectangularBC.SetOp, self).__init__()
+            super().__init__()
             self.operation = operation
 
         def make_xml_element(self):

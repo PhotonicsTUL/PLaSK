@@ -169,7 +169,7 @@ class PlotWidgetBase(QWidget):
                 return self._active if self._active is not None else 'NONE'
 
         def set_cursor(self, cursor):
-            super(PlotWidgetBase.NavigationToolbar, self).set_cursor(cursor)
+            super().set_cursor(cursor)
             self._lastCursor = cursor
 
         def mouse_move(self, event):
