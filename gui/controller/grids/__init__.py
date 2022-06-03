@@ -389,9 +389,9 @@ class GridController(Controller):
 
     def _change(self, setter, value, old_value, label):
         if value != old_value:
-            weakself = weakref.proxy(self)
+            grid_model = self.grid_model
             self.section_model.undo_stack.push(UndoCommandWithSetter(
-                self.section_model, lambda v: setter(weakself.grid_model, v),
+                self.section_model, lambda v: setter(grid_model, v),
                 value, old_value, "change grid's {}".format(label)
             ))
 
@@ -402,9 +402,9 @@ class GridController(Controller):
                 label = attr
                 while not isinstance(label, basestring):
                     label = label[0]
-            weakself = weakref.proxy(self)
+            grid_model = self.grid_model
             self.section_model.undo_stack.push(UndoCommandWithSetter(
-                self.section_model, lambda v: setattr_by_path(weakself.grid_model, attr, v),
+                self.section_model, lambda v: setattr_by_path(grid_model, attr, v),
                 value, old_value, "change grid's {}".format(label)
             ))
 
