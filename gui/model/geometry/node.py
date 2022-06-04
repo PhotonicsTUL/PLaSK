@@ -537,6 +537,9 @@ class GNode:
             return self._parent.get_step_num()
 
 
+    def __contains__(self, obj):
+        return False if obj is None else True if obj.parent == self else (obj.parent in self)
+
 class GNFakeRoot(GNode):
 
     def __init__(self, geometry_model):

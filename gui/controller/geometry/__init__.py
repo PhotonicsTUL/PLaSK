@@ -45,6 +45,15 @@ class GeometryTreeView(QTreeView):
         super().__init__(*args, **kwargs)
         self._current_index = None
 
+    def expand_children(self, index):
+        if not index.isValid(): return
+
+        for i in range(index.model().rowCount(index)):
+            self.expand_children(index.child(i, 0))
+
+        if not self.isExpanded(index):
+            self.expand(index)
+
     @QtSlot()
     def update_current_index(self):
         if self._current_index is not None:
@@ -130,6 +139,7 @@ class GeometryController(Controller):
         self.model.changed.connect(self.on_model_change)
 
         self._current_index = None
+        self._current_root = None
         self._last_index = None
         self._current_controller = None
 
@@ -143,8 +153,9 @@ class GeometryController(Controller):
         vbox.setContentsMargins(0, 0, 0, 0)
         vbox.setSpacing(0)
 
+        self._construct_tree(model)
         vbox.addWidget(self._construct_toolbar())
-        vbox.addWidget(self._construct_tree(model))
+        vbox.addWidget(self.tree)
         tree_selection_model = self.tree.selectionModel()   # workaround of segfault in pySide,
         # see http://stackoverflow.com/questions/19211430/pyside-segfault-when-using-qitemselectionmodel-with-qlistview
         tree_selection_model.selectionChanged.connect(self.object_selected)
@@ -288,8 +299,10 @@ class GeometryController(Controller):
         self.move_down(self.tree.selectionModel().currentIndex())
 
     def duplicate(self, index):
-        self.model.duplicate(index)
+        new_index = self.model.duplicate(index)
         self.update_actions()
+        self.tree.setCurrentIndex(new_index)
+        return new_index
 
     def duplicate_current(self):
         return self.duplicate(self.tree.selectionModel().currentIndex())
@@ -458,6 +471,7 @@ class GeometryController(Controller):
         spacer = QWidget()
         spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         toolbar.addWidget(spacer)
+
         self.search_combo = ComboBox()
         self.search_combo.setEditable(True)
         self.search_combo.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
@@ -471,6 +485,23 @@ class GeometryController(Controller):
         find_action = QAction(QIcon.fromTheme('edit-find'), '&Find', toolbar)
         find_action.triggered.connect(self.search)
         toolbar.addAction(find_action)
+
+        toolbar.addSeparator()
+        self.expand_all_action = QAction(QIcon.fromTheme('go-down'), '&Expand Current Geometry', toolbar)
+        self.expand_all_action.setStatusTip('Expand current geometry')
+        CONFIG.set_shortcut(self.expand_all_action, 'geometry_tree_expand_current')
+        self.expand_all_action.triggered.connect(self.expand_current_root)
+        toolbar.addAction(self.expand_all_action)
+        self.expand_all_action = QAction(QIcon.fromTheme('expand-all'), 'E&xpand All', toolbar)
+        self.expand_all_action.setStatusTip('Expand whole geometry tree')
+        CONFIG.set_shortcut(self.expand_all_action, 'geometry_tree_expand_all')
+        self.expand_all_action.triggered.connect(self.tree.expandAll)
+        toolbar.addAction(self.expand_all_action)
+        self.collapse_all_action = QAction(QIcon.fromTheme('collapse-all'), 'Co&llapse All', toolbar)
+        self.collapse_all_action.setStatusTip('Collapse geometry tree')
+        CONFIG.set_shortcut(self.collapse_all_action, 'geometry_tree_collapse_all')
+        self.collapse_all_action.triggered.connect(self.tree.collapseAll)
+        toolbar.addAction(self.collapse_all_action)
 
         self.model.dataChanged.connect(lambda i,j: weakself._fill_search_combo())
 
@@ -538,12 +569,15 @@ class GeometryController(Controller):
             if not self._current_controller.on_edit_exit():
                 return False
         self._current_index = new_index
-        if self._current_index is None:
+        if self._current_index is None or not self._current_index.isValid():
             self._current_controller = None
             self.parent_for_editor_widget.setWidget(QWidget())
             self.vertical_splitter.moveSplitter(1, 0)
+            current_element = None
+            self._current_root = None
         else:
-            self._current_controller = self._current_index.internalPointer().get_controller(self.document, self.model)
+            current_element = self._current_index.internalPointer()
+            self._current_controller = current_element.get_controller(self.document, self.model)
             widget = self._current_controller.get_widget()
             self.parent_for_editor_widget.setWidget(widget)
             widget.update()
@@ -552,22 +586,17 @@ class GeometryController(Controller):
             self.parent_for_editor_widget.resize(QSize(0, 0))  # make sure resizeEvent will be triggered
             self.vertical_splitter.moveSplitter(split, 1)  # it will resize parent_for_editor_widget back
             self._current_controller.on_edit_enter()
-        self.update_actions()
-
-        #geometry_node = self.tree.selectionModel().currentIndex().internalPointer()
-        try:
-            plotted_root = self.plotted_tree_element.root
-            current_root = self._current_index.internalPointer().root
-        except AttributeError:
-            pass
-        else:
-            if current_root != plotted_root:
-                self.plot(current_root)
+            self._current_root = current_element.root
+            self.tree.expand_children(self._current_index)
+            if self.plotted_tree_element is None or current_element not in self.plotted_tree_element:
+                self.plot(self._current_root)
             if self.plotted_object is not None:
                 self.show_selection()
-                # self.plot_action.setEnabled(isinstance(geometry_node, GNAgain) or isinstance(geometry_node, GNObject))
-
+        self.update_actions()
         return True
+
+    def expand_current_root(self):
+        self.tree.expand_children(self.model.index_for_node(self._current_root))
 
     def search(self):
         text = self.search_combo.currentText()

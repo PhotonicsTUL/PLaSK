@@ -484,6 +484,10 @@ class GeometryModel(SectionModel, QAbstractItemModel):
             copied_obj = mime_data.itemInstance()
             parent = self.node_for_index(parentIndex)
             copied_obj = deepcopy(copied_obj, memo={id(copied_obj._parent): copied_obj._parent})
+            try:
+                if copied_obj.name is not None: copied_obj.name = None
+            except AttributeError:
+                pass
             self.insert_node(parent, copied_obj, None if row == -1 else row, action_name="copy")
             self.dropped.emit(self.index_for_node(copied_obj))
             return True
@@ -576,7 +580,8 @@ class GeometryModel(SectionModel, QAbstractItemModel):
             if copied.name is not None: copied.name = None
         except AttributeError:
             pass
-        self.insert_node(parent_node, copied)
+        self.insert_node(parent_node, copied, action_name="duplicate")
+        return self.index_for_node(copied)
 
     def reparent(self, index, type_constructor):
         parent_index = index.parent()
